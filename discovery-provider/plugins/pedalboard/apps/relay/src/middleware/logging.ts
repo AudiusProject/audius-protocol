@@ -23,8 +23,11 @@ export const outgoingLog = (request: Request, response: Response) => {
     new Date().getTime() - response.locals.ctx.startTime.getTime();
   const { route, method } = request;
   const { locals: ctx } = response;
-  const statusCode = response.statusCode
-  logger.info({ route, method, ctx, responseTime, statusCode }, "request completed");
+  const statusCode = response.statusCode;
+  logger.info(
+    { route, method, ctx, responseTime, statusCode },
+    "request completed"
+  );
 };
 
 export const outgoingRequestLogger = (

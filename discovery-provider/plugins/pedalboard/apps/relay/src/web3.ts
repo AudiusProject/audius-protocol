@@ -3,7 +3,7 @@ import { Config } from "./config/config";
 import { logger } from "./logger";
 import Web3 from "web3";
 
-export let web3js: Web3
+export let web3js: Web3;
 
 export type Web3Result = {
   web3: ethers.providers.JsonRpcProvider;
@@ -17,7 +17,7 @@ export const connectWeb3 = async (config: Config): Promise<Web3Result> => {
     // TODO: check nethermind specific health here
     try {
       const web3 = new ethers.providers.JsonRpcProvider(rpcEndpoint);
-      web3js = new Web3(new Web3.providers.HttpProvider(rpcEndpoint))
+      web3js = new Web3(new Web3.providers.HttpProvider(rpcEndpoint));
       const { chainId } = await web3.getNetwork();
       return { web3, chainId: chainId.toString() };
     } catch (e) {
@@ -31,14 +31,11 @@ export const connectWeb3 = async (config: Config): Promise<Web3Result> => {
   console.warn(`falling back to ${rpcEndpointFallback}`);
   const web3 = new ethers.providers.JsonRpcProvider(rpcEndpointFallback);
   const { chainId } = await web3.getNetwork();
-  web3js = new Web3(new Web3.providers.HttpProvider(rpcEndpointFallback))
+  web3js = new Web3(new Web3.providers.HttpProvider(rpcEndpointFallback));
   return { web3, chainId: chainId.toString() };
 };
 
-export const confirm = async (
-  txHash: string,
-  retries = 24
-): Promise<any> => {
+export const confirm = async (txHash: string, retries = 24): Promise<any> => {
   let tries = 0;
   while (tries !== retries) {
     const receipt = await web3js.eth.getTransactionReceipt(txHash);

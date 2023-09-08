@@ -1,3 +1,4 @@
+import { config } from ".";
 import { logger } from "./logger";
 import { Wallet, providers } from "ethers";
 
@@ -29,6 +30,14 @@ export class WalletManager {
   }
 
   private generateWallets(): Wallet[] {
+    if (config.environment === "dev") {
+      logger.info("generating from hardcoded priv key in dev mode");
+      return [...Array(10).keys()].map((_) =>
+        new Wallet(
+          "34efbbc0431c7f481cdba15d65bbc9ef47196b9cf38d5c4b30afa2bcf86fafba"
+        ).connect(this.web3)
+      );
+    }
     return [...Array(10).keys()].map((_) =>
       Wallet.createRandom().connect(this.web3)
     );

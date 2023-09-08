@@ -38,17 +38,17 @@ export const detectAbuse = async (
 ) => {
   // if aao turned off, never detect abuse
   if (!aaoConfig.useAao || !user.handle) {
-    next()
+    next();
     return;
   }
-  let rules: AbuseRule[]
+  let rules: AbuseRule[];
   try {
-      rules = await requestAbuseData(aaoConfig, user.handle, reqIp, false);
+    rules = await requestAbuseData(aaoConfig, user.handle, reqIp, false);
   } catch (e) {
-    logger.warn({ e }, "error returned from antiabuse oracle")
+    logger.warn({ e }, "error returned from antiabuse oracle");
     // block requests on issues with aao
-    internalError(next, "AAO unreachable")
-    return
+    internalError(next, "AAO unreachable");
+    return;
   }
   const {
     appliedRules,
@@ -57,9 +57,7 @@ export const detectAbuse = async (
     blockedFromEmails,
   } = determineAbuseRules(aaoConfig, rules);
   logger.info(
-    `detectAbuse: got info for handle ${
-      user.handle
-    }: ${JSON.stringify({
+    `detectAbuse: got info for handle ${user.handle}: ${JSON.stringify({
       appliedRules,
       blockedFromRelay,
       blockedFromNotifications,
@@ -67,8 +65,8 @@ export const detectAbuse = async (
     })}`
   );
   if (blockedFromRelay) {
-    antiAbuseError(next, "blocked from relay")
-    return
+    antiAbuseError(next, "blocked from relay");
+    return;
   }
   next();
 };

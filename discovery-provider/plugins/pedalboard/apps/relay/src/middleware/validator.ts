@@ -52,7 +52,7 @@ export const validator = async (
   // @ts-ignore, partially populate for now
   let user: Users = {
     wallet: senderAddress || null,
-    handle: handle || null
+    handle: handle || null,
   };
   try {
     user = await retrieveUser(
@@ -63,7 +63,10 @@ export const validator = async (
       handle
     );
   } catch (e) {
-    logger.error({ e }, "could not gather user from db, continuing with senderAddress and handle")
+    logger.error(
+      { e },
+      "could not gather user from db, continuing with senderAddress and handle"
+    );
   }
 
   // inject remaining fields into ctx for downstream middleware
