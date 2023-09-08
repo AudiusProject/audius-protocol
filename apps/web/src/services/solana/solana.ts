@@ -14,7 +14,7 @@ import {
 
 import { getLibs } from 'services/audius-libs'
 
-const ROOT_ACCOUNT_SIZE = 0 // Root account takes 0 bytes, but still pays rent!
+export const ROOT_ACCOUNT_SIZE = 0 // Root account takes 0 bytes, but still pays rent!
 
 /**
  * Gets the solana connection from libs.

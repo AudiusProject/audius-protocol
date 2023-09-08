@@ -14,6 +14,7 @@ import {
   Token
 } from '@solana/spl-token'
 import {
+  LAMPORTS_PER_SOL,
   PublicKey,
   Transaction,
   sendAndConfirmTransaction
@@ -23,7 +24,10 @@ import { takeLatest } from 'redux-saga/effects'
 import { call, put, select } from 'typed-redux-saga'
 
 import { getLibs } from 'services/audius-libs'
-import { getSwapUSDCUserBankInstructions } from 'services/solana/WithdrawUSDC'
+import {
+  getSwapUSDCUserBankInstructions,
+  getFundDestinationTokenAccountFees
+} from 'services/solana/WithdrawUSDC'
 import {
   isSolWallet,
   getTokenAccountInfo,
@@ -31,7 +35,8 @@ import {
   getRootSolanaAccount,
   getSignatureForTransaction,
   createAssociatedTokenAccountInstruction,
-  getRecentBlockhash
+  getRecentBlockhash,
+  ROOT_ACCOUNT_SIZE
 } from 'services/solana/solana'
 
 const {
@@ -156,41 +161,64 @@ function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
         console.debug(
           'Withdraw USDC - destination associated token account does not exist'
         )
-        // First swap some USDC for SOL to fund the destination associated token account
-        const swapInstructions = yield* call(getSwapUSDCUserBankInstructions, {
-          destinationAddress,
-          feePayer: feePayerPubkey
-        })
-        const swapRecentBlockhash = yield* call(getRecentBlockhash)
-        const signatureWithPubkey = yield* call(getSignatureForTransaction, {
-          instructions: swapInstructions,
-          signer: rootSolanaAccount,
-          feePayer: feePayerPubkey,
-          recentBlockhash: swapRecentBlockhash
-        })
-        // Send swap instructions to relay
-        const { res: swapRes, error: swapError } = yield* call(
-          [transactionHandler, transactionHandler.handleTransaction],
-          {
-            instructions: swapInstructions,
-            feePayerOverride: feePayerPubkey,
-            skipPreflight: false,
-            signatures: signatureWithPubkey.map((s) => ({
-              signature: s.signature!,
-              publicKey: s.publicKey.toString()
-            })),
-            recentBlockhash: swapRecentBlockhash
-          }
+        // Check if there is enough SOL to fund the destination associated token account
+        const feeAmount = yield* call(
+          getFundDestinationTokenAccountFees,
+          new PublicKey(destinationAddress)
         )
-        if (swapError) {
-          throw new Error(`Swap transaction failed: ${swapError}`)
+        const existingBalance =
+          (yield* call(
+            [connection, connection.getBalance],
+            rootSolanaAccount.publicKey
+          )) / LAMPORTS_PER_SOL
+        // Need to maintain a minimum balance to pay rent for root solana account
+        const rootSolanaAccountRent =
+          (yield* call(
+            [connection, connection.getMinimumBalanceForRentExemption],
+            ROOT_ACCOUNT_SIZE
+          )) / LAMPORTS_PER_SOL
+
+        if (feeAmount > existingBalance - rootSolanaAccountRent) {
+          // Swap USDC for SOL to fund the destination associated token account
+          console.debug(
+            `Withdraw USDC - not enough SOL to fund destination account, attempting to swap USDC for SOL. Fee amount: ${feeAmount}, existing balance: ${existingBalance}, rent for root solana account: ${rootSolanaAccountRent}`
+          )
+          const swapInstructions = yield* call(
+            getSwapUSDCUserBankInstructions,
+            {
+              destinationAddress,
+              amount: feeAmount - existingBalance,
+              feePayer: feePayerPubkey
+            }
+          )
+          const swapRecentBlockhash = yield* call(getRecentBlockhash)
+          const signatureWithPubkey = yield* call(getSignatureForTransaction, {
+            instructions: swapInstructions,
+            signer: rootSolanaAccount,
+            feePayer: feePayerPubkey,
+            recentBlockhash: swapRecentBlockhash
+          })
+          // Send swap instructions to relay
+          const { res: swapRes, error: swapError } = yield* call(
+            [transactionHandler, transactionHandler.handleTransaction],
+            {
+              instructions: swapInstructions,
+              feePayerOverride: feePayerPubkey,
+              skipPreflight: false,
+              signatures: signatureWithPubkey.map((s) => ({
+                signature: s.signature!,
+                publicKey: s.publicKey.toString()
+              })),
+              recentBlockhash: swapRecentBlockhash
+            }
+          )
+          if (swapError) {
+            throw new Error(`Swap transaction failed: ${swapError}`)
+          }
+          console.debug(`Withdraw USDC - swap successful: ${swapRes}`)
         }
-        console.debug(`Withdraw USDC - swap successful: ${swapRes}`)
 
         // Then create and fund the destination associated token account
-        // using funds from the root solana account that we just swapped for.
-        // TODO: use existing funds if possible
-        // https://linear.app/audius/issue/PAY-1793/use-existing-sol-funds-for-withdraw-usdc-fees
         const createRecentBlockhash = yield* call(getRecentBlockhash)
         const tx = new Transaction({ recentBlockhash: createRecentBlockhash })
         const createTokenAccountInstruction = yield* call(
@@ -228,7 +256,7 @@ function* doWithdrawUSDC({ payload }: ReturnType<typeof beginWithdrawUSDC>) {
       destinationTokenAccount = destinationTokenAccountPubkey.toString()
     }
     const amountWei = new BN(amount).mul(
-      new BN(TOKEN_LISTING_MAP.usdc.decimals)
+      new BN(TOKEN_LISTING_MAP.USDC.decimals)
     )
     const usdcUserBank = yield* call(getUSDCUserBank)
     const transferInstructions = yield* call(
