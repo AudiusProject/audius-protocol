@@ -37,13 +37,13 @@ export const readConfig = (): Config => {
 
   // validate env
   const env = cleanEnv(process.env, {
-    audius_discprov_env: str(),
-    audius_contracts_entity_manager_address: str(),
-    audius_web3_localhost: str(),
-    audius_web3_host: str(),
-    audius_db_url: str(),
-    audius_aao_endpoint: str(),
-    audius_use_aao: bool(),
+    audius_discprov_env: str({ default: "dev" }),
+    audius_contracts_entity_manager_address: str({ default: "0x254dffcd3277C0b1660F6d42EFbB754edaBAbC2B" }),
+    audius_web3_localhost: str({ default: "http://audius-protocol-poa-ganache-1:8545" }),
+    audius_web3_host: str({ default: "http://audius-protocol-poa-ganache-1:8545" }),
+    audius_db_url: str({ default: "postgresql+psycopg2://postgres:postgres@db:5432/discovery_provider_1" }),
+    audius_aao_endpoint: str({ default: "" }),
+    audius_use_aao: bool({ default: false }),
     relay_server_host: str({ default: "0.0.0.0" }),
     relay_server_port: num({ default: 6001 }),
   });
