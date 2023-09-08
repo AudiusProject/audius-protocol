@@ -39,6 +39,7 @@ class AudiusLibsWrapper {
     const solanaWeb3Config = AudiusLibs.configSolanaWeb3({
       solanaClusterEndpoint: config.get('solanaEndpoint'),
       mintAddress: config.get('solanaMintAddress'),
+      usdcMintAddress: config.get('solanaUSDCMintAddress'),
       solanaTokenAddress: SOLANA_TOKEN_ADDRESS,
       claimableTokenProgramAddress: config.get(
         'solanaClaimableTokenProgramAddress'
