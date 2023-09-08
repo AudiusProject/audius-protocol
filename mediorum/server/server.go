@@ -109,6 +109,8 @@ type MediorumServer struct {
 
 	StartedAt time.Time
 	Config    MediorumConfig
+
+	crudSweepMutex sync.Mutex
 }
 
 type PeerHealth struct {
