@@ -10,6 +10,9 @@ import (
 const PullLimit = 10000
 
 func (ss *MediorumServer) serveCrudSweep(c echo.Context) error {
+	ss.crudSweepMutex.Lock()
+	defer ss.crudSweepMutex.Unlock()
+
 	after := c.QueryParam("after")
 	var ops []*crudr.Op
 	ss.crud.DB.

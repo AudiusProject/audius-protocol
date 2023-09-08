@@ -104,6 +104,8 @@ type MediorumServer struct {
 
 	StartedAt time.Time
 	Config    MediorumConfig
+
+	crudSweepMutex sync.Mutex
 }
 
 type PeerHealth struct {
@@ -216,6 +218,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	crud := crudr.New(config.Self.Host, config.privateKey, peerHosts, db)
 	dbPruneOldOps(db, config.Self.Host)
 	dbMigrate(crud, bucket, config.Self.Host)
+
+	// set 5s db connection timeout after migrations are completed
+	sqlDb, _ := db.DB()
+	sqlDb.SetConnMaxLifetime(time.Duration(5) * time.Second)
 
 	// Read trusted notifier endpoint from chain
 	var trustedNotifier ethcontracts.NotifierInfo
