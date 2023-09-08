@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@amplitude/node": "1.9.2",
-    "@audius/sdk": "3.0.3-beta.77",
+    "@audius/sdk": "3.0.8-beta.9",
     "@certusone/wormhole-sdk": "0.1.1",
     "@improbable-eng/grpc-web-node-http-transport": "0.15.0",
     "@opentelemetry/api": "1.3.0",
@@ -46,7 +46,7 @@
     "@sentry/node": "6.2.5",
     "@sentry/tracing": "6.2.5",
     "@solana/spl-token": "0.3.8",
-    "@solana/web3.js": "1.37.1",
+    "@solana/web3.js": "1.78.4",
     "apn": "2.2.0",
     "async-retry": "1.3.3",
     "aws-sdk": "2.595.0",
