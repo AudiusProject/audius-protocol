@@ -64,11 +64,6 @@ func startStagingOrProd(isProd, isRadixServer bool) {
 		g = registrar.NewAudiusApiGatewayProd()
 	}
 
-	// use custom DNS in staging + prod
-	// could scope it down to a TLD, but first want to test it works everywhere without surprises
-	// httputil.UseCustomDNS()
-	// TODO: custom DNS makes mediorum unable to communicate with the radix container
-
 	var peers, signers []server.Peer
 	var err error
 

@@ -73,10 +73,7 @@ func New(config RadixConfig) (*RadixServer, error) {
 		Config: &config,
 	}
 
-	// routes holds all of our handled routes
 	routes := echoServer.Group(apiBasePath)
-	routes.Use(middleware.CORS()) // TODO: can this be removed?
-
 	routes.GET("/info", rs.serveRadixInfo)
 	routes.GET("/cid/:cid", rs.radix.ServeCIDInfo)
 	routes.GET("/cids", rs.radix.ServeTreePaginated)
