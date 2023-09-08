@@ -23,7 +23,9 @@ import {
   Kind,
   LineupTrack,
   playlistUpdatesActions,
-  playlistUpdatesSelectors
+  playlistUpdatesSelectors,
+  LibraryCategoryType,
+  SavedPageTabs
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { debounce, isEqual } from 'lodash'
@@ -40,7 +42,12 @@ import { SavedPageProps as DesktopSavedPageProps } from './components/desktop/Sa
 import { SavedPageProps as MobileSavedPageProps } from './components/mobile/SavedPage'
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
-const { getSavedTracksLineup, hasReachedEnd } = savedPageSelectors
+const {
+  getSavedTracksLineup,
+  hasReachedEnd,
+  getTracksCategory,
+  getCollectionsCategory
+} = savedPageSelectors
 const { updatedPlaylistViewed } = playlistUpdatesActions
 const { makeGetTableMetadatas } = lineupSelectors
 
@@ -48,7 +55,7 @@ const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
 const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 
 const messages = {
-  title: 'Favorites',
+  title: 'Library',
   description: "View tracks that you've favorited"
 }
 
@@ -83,6 +90,7 @@ type SavedPageState = {
   initialOrder: UID[] | null
   reordering?: UID[] | null
   allowReordering?: boolean
+  shouldReturnToTrackPurchases: boolean
 }
 
 class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
@@ -92,12 +100,14 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     sortDirection: '',
     initialOrder: null,
     allTracksFetched: false,
-    currentTab: ProfileTabs.TRACKS
+    currentTab: ProfileTabs.TRACKS,
+    shouldReturnToTrackPurchases: false
   }
 
   handleFetchSavedTracks = debounce(() => {
     this.props.fetchSavedTracks(
       this.state.filterText,
+      this.props.tracksCategory,
       this.state.sortMethod,
       this.state.sortDirection
     )
@@ -108,6 +118,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     const { filterText, sortMethod, sortDirection } = this.state
     this.props.fetchMoreSavedTracks(
       filterText,
+      this.props.tracksCategory,
       sortMethod,
       sortDirection,
       offset,
@@ -118,6 +129,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   componentDidMount() {
     this.props.fetchSavedTracks(
       this.state.filterText,
+      this.props.tracksCategory,
       this.state.sortMethod,
       this.state.sortDirection
     )
@@ -130,8 +142,9 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     this.props.resetSavedTracks()
   }
 
-  componentDidUpdate() {
-    const { tracks } = this.props
+  componentDidUpdate(prevProps: SavedPageProps) {
+    const { tracksCategory: prevTracksCategory } = prevProps
+    const { tracks, tracksCategory } = this.props
     const allTracksFetched = tracks.entries.every(
       (track) => track.kind === Kind.TRACKS
     )
@@ -152,6 +165,10 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
         initialOrder,
         reordering: initialOrder
       })
+    }
+
+    if (prevTracksCategory !== tracksCategory) {
+      this.handleFetchSavedTracks()
     }
   }
 
@@ -257,7 +274,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       record(
         make(Name.PLAYBACK_PAUSE, {
           id: `${trackRecord.track_id}`,
-          source: PlaybackSource.FAVORITES_PAGE
+          source: PlaybackSource.LIBRARY_PAGE
         })
       )
     } else if (playingUid !== trackRecord.uid) {
@@ -265,7 +282,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${trackRecord.track_id}`,
-          source: PlaybackSource.FAVORITES_PAGE
+          source: PlaybackSource.LIBRARY_PAGE
         })
       )
     } else {
@@ -273,7 +290,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${trackRecord.track_id}`,
-          source: PlaybackSource.FAVORITES_PAGE
+          source: PlaybackSource.LIBRARY_PAGE
         })
       )
     }
@@ -287,7 +304,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       record(
         make(Name.PLAYBACK_PAUSE, {
           id: `${trackId}`,
-          source: PlaybackSource.FAVORITES_PAGE
+          source: PlaybackSource.LIBRARY_PAGE
         })
       )
     } else if (playingUid !== uid) {
@@ -295,7 +312,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${trackId}`,
-          source: PlaybackSource.FAVORITES_PAGE
+          source: PlaybackSource.LIBRARY_PAGE
         })
       )
     } else {
@@ -303,7 +320,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${trackId}`,
-          source: PlaybackSource.FAVORITES_PAGE
+          source: PlaybackSource.LIBRARY_PAGE
         })
       )
     }
@@ -356,7 +373,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       record(
         make(Name.PLAYBACK_PAUSE, {
           id: `${playingId}`,
-          source: PlaybackSource.FAVORITES_PAGE
+          source: PlaybackSource.LIBRARY_PAGE
         })
       )
     } else if (!playing && isQueued) {
@@ -364,7 +381,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${playingId}`,
-          source: PlaybackSource.FAVORITES_PAGE
+          source: PlaybackSource.LIBRARY_PAGE
         })
       )
     } else if (entries.length > 0) {
@@ -372,7 +389,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       record(
         make(Name.PLAYBACK_PLAY, {
           id: `${playingId}`,
-          source: PlaybackSource.FAVORITES_PAGE
+          source: PlaybackSource.LIBRARY_PAGE
         })
       )
     }
@@ -410,7 +427,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     if (updatedOrder) this.props.updateLineupOrder(updatedOrder)
   }
 
-  onChangeTab = (tab: ProfileTabs) => {
+  onChangeTab = (tab: SavedPageTabs) => {
     this.setState({
       currentTab: tab
     })
@@ -521,7 +538,9 @@ function makeMapStateToProps() {
       playing: getPlaying(state),
       buffering: getBuffering(state),
       playlistUpdates: selectAllPlaylistUpdateIds(state),
-      hasReachedEnd: hasReachedEnd(state)
+      hasReachedEnd: hasReachedEnd(state),
+      tracksCategory: getTracksCategory(state),
+      collectionsCategory: getCollectionsCategory(state)
     }
   }
   return mapStateToProps
@@ -531,16 +550,25 @@ function mapDispatchToProps(dispatch: Dispatch) {
   return {
     fetchSavedTracks: (
       query?: string,
+      category?: LibraryCategoryType,
       sortMethod?: string,
       sortDirection?: string,
       offset?: number,
       limit?: number
     ) =>
       dispatch(
-        saveActions.fetchSaves(query, sortMethod, sortDirection, offset, limit)
+        saveActions.fetchSaves(
+          query,
+          category,
+          sortMethod,
+          sortDirection,
+          offset,
+          limit
+        )
       ),
     fetchMoreSavedTracks: (
       query?: string,
+      category?: LibraryCategoryType,
       sortMethod?: string,
       sortDirection?: string,
       offset?: number,
@@ -549,6 +577,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(
         saveActions.fetchMoreSaves(
           query,
+          category,
           sortMethod,
           sortDirection,
           offset,
@@ -565,17 +594,15 @@ function mapDispatchToProps(dispatch: Dispatch) {
     play: (uid?: UID) => dispatch(tracksActions.play(uid)),
     pause: () => dispatch(tracksActions.pause()),
     repostTrack: (trackId: ID) =>
-      dispatch(socialActions.repostTrack(trackId, RepostSource.FAVORITES_PAGE)),
+      dispatch(socialActions.repostTrack(trackId, RepostSource.LIBRARY_PAGE)),
     undoRepostTrack: (trackId: ID) =>
       dispatch(
-        socialActions.undoRepostTrack(trackId, RepostSource.FAVORITES_PAGE)
+        socialActions.undoRepostTrack(trackId, RepostSource.LIBRARY_PAGE)
       ),
     saveTrack: (trackId: ID) =>
-      dispatch(socialActions.saveTrack(trackId, FavoriteSource.FAVORITES_PAGE)),
+      dispatch(socialActions.saveTrack(trackId, FavoriteSource.LIBRARY_PAGE)),
     unsaveTrack: (trackId: ID) =>
-      dispatch(
-        socialActions.unsaveTrack(trackId, FavoriteSource.FAVORITES_PAGE)
-      ),
+      dispatch(socialActions.unsaveTrack(trackId, FavoriteSource.LIBRARY_PAGE)),
     record: (event: TrackEvent) => dispatch(event)
   }
 }

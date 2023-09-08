@@ -30,6 +30,7 @@ export type Drawer =
   | 'SupportersInfo'
   | 'PremiumTrackPurchase'
   | 'StripeOnramp'
+  | 'OfflineListening'
 
 export type DrawerData = {
   EnablePushNotifications: undefined
@@ -49,6 +50,10 @@ export type DrawerData = {
   UnfavoriteDownloadedCollection: { collectionId: number }
   RemoveAllDownloads: undefined
   RemoveDownloadedFavorites: undefined
+  OfflineListening: {
+    isFavoritesMarkedForDownload: boolean
+    onSaveChanges: (isFavoritesOn: boolean) => void
+  }
   RemoveDownloadedCollection: {
     collectionId: ID
   }
@@ -87,6 +92,7 @@ const initialState: DrawersState = {
   RemoveAllDownloads: false,
   RemoveDownloadedCollection: false,
   RemoveDownloadedFavorites: false,
+  OfflineListening: false,
   UnfavoriteDownloadedCollection: false,
   RateCallToAction: false,
   LockedContent: false,
