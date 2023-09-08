@@ -55,7 +55,7 @@ func (ss *MediorumServer) startRepairer() {
 
 func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 	ctx := context.Background()
-	var bytesShouldStore int64
+	var expectedContentSize int64
 
 	// scroll uploads and repair CIDs
 	// (later this can clean up "derivative" images if we make image resizing dynamic)
@@ -72,9 +72,9 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 		}
 		for _, u := range uploads {
 			uploadCursor = u.ID
-			ss.repairCid(u.OrigFileCID, cleanupMode, &bytesShouldStore)
+			ss.repairCid(u.OrigFileCID, cleanupMode, &expectedContentSize)
 			for _, cid := range u.TranscodeResults {
-				ss.repairCid(cid, cleanupMode, &bytesShouldStore)
+				ss.repairCid(cid, cleanupMode, &expectedContentSize)
 			}
 		}
 
@@ -103,15 +103,15 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 		}
 		for _, cid := range cidBatch {
 			cidCursor = cid
-			ss.repairCid(cid, cleanupMode, &bytesShouldStore)
+			ss.repairCid(cid, cleanupMode, &expectedContentSize)
 		}
 	}
 
-	ss.bytesShouldStore = bytesShouldStore
+	ss.expectedContentSize = expectedContentSize
 	return nil
 }
 
-func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, bytesShouldStore *int64) error {
+func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedContentSize *int64) error {
 	ctx := context.Background()
 	logger := ss.logger.With("task", "repair", "cid", cid, "cleanup", cleanupMode)
 
@@ -155,7 +155,7 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, bytesShouldSto
 	}
 
 	if alreadyHave {
-		*bytesShouldStore += attrs.Size
+		*expectedContentSize += attrs.Size
 	}
 
 	// get blobs that I should have (regardless of health of other nodes)
@@ -180,7 +180,7 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, bytesShouldSto
 			ss.radixSetHostHasCID(ss.Config.Self.Host, cid)
 			pulledAttrs, err := ss.bucket.Attributes(ctx, key)
 			if err != nil {
-				*bytesShouldStore += pulledAttrs.Size
+				*expectedContentSize += pulledAttrs.Size
 			}
 		} else {
 			logger.Warn("failed to pull from any host", "hosts", preferredHosts)
@@ -215,7 +215,7 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, bytesShouldSto
 			} else {
 				logger.Info("delete OK")
 				ss.radixSetHostNotHasCID(ss.Config.Self.Host, cid)
-				*bytesShouldStore -= attrs.Size
+				*expectedContentSize -= attrs.Size
 			}
 		}
 	}
@@ -258,7 +258,7 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, bytesShouldSto
 			if success {
 				pulledAttrs, err := ss.bucket.Attributes(ctx, key)
 				if err != nil {
-					*bytesShouldStore += pulledAttrs.Size
+					*expectedContentSize += pulledAttrs.Size
 				}
 			} else {
 				logger.Warn("failed to pull from any host", "hosts", preferredHosts)

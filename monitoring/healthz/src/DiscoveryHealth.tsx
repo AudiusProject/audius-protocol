@@ -139,7 +139,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const isBehind = health.block_difference > 5 ? 'is-behind' : ''
   const dbSize =
     bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
-  const bytesShouldStore = bytesToGb(health.bytesShouldStore)
+  const expectedContentSize = bytesToGb(health.expectedContentSize)
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
   const getPeers = (str: string | undefined) => {
@@ -210,7 +210,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
         </td>
       )}
       {isContent && (
-        <td>{`${bytesShouldStore} GB`}</td>
+        <td>{`${expectedContentSize} GB`}</td>
       )}
       <td>{`${dbSize} GB`}</td>
       <td>{`${yourIp}`}</td>
