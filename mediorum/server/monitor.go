@@ -31,7 +31,7 @@ func (ss *MediorumServer) monitorDiskAndDbStatus() {
 		ss.updateDiskAndDbStatus()
 		time.Sleep(time.Minute)
 	}
-	ticker := time.NewTicker(5 * time.Minute)
+	ticker := time.NewTicker(10 * time.Minute)
 	for range ticker.C {
 		ss.updateDiskAndDbStatus()
 	}
@@ -117,9 +117,9 @@ func (ss *MediorumServer) updateDiskAndDbStatus() {
 		ss.legacyDirUsed = bytesLegacy
 	}
 
-	bytesMediorum, err := getStorageUsed("/tmp/mediorum")
+	bytesMediorum, err := getStorageUsed(ss.Config.Dir)
 	if err != nil {
-		slog.Error("Error getting /tmp/mediorum bytes used", "err", err)
+		slog.Error(fmt.Sprintf("Error getting %s bytes used", ss.Config.Dir), "err", err)
 	} else {
 		ss.mediorumDirUsed = bytesMediorum
 	}
