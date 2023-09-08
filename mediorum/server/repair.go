@@ -46,7 +46,10 @@ func (ss *MediorumServer) startRepairer() {
 		} else {
 			logger.Info("repair OK", "took", took)
 		}
-
+		if cleanupMode {
+			ss.lastRepairCleanupComplete = time.Now()
+			ss.lastRepairCleanupDuration = took
+		}
 	}
 }
 
@@ -129,6 +132,12 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool) error {
 		}
 	}
 
+	if alreadyHave {
+		ss.radixSetHostHasCID(ss.Config.Self.Host, cid)
+	} else {
+		ss.radixSetHostNotHasCID(ss.Config.Self.Host, cid)
+	}
+
 	// in cleanup mode do some extra checks:
 	// - validate CID, delete if invalid (doesn't apply to Qm keys because their hash is not the CID)
 	if cleanupMode && alreadyHave && !cidutil.IsLegacyCID(cid) {
@@ -154,13 +163,16 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool) error {
 			err := ss.pullFileFromHost(host, cid)
 			if err != nil {
 				logger.Error("pull failed (blob I should have)", "err", err, "host", host)
+				ss.radixSetHostNotHasCID(host, cid)
 			} else {
 				logger.Info("pull OK (blob I should have)", "host", host)
 				success = true
 				break
 			}
 		}
-		if !success {
+		if success {
+			ss.radixSetHostHasCID(ss.Config.Self.Host, cid)
+		} else {
 			logger.Warn("failed to pull from any host", "hosts", preferredHosts)
 		}
 	}
@@ -176,6 +188,7 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool) error {
 		for _, host := range preferredHealthyHosts {
 			if ss.hostHasBlob(host, cid) {
 				depth++
+				ss.radixSetHostHasCID(host, cid)
 			}
 			if host == ss.Config.Self.Host {
 				break
@@ -191,6 +204,7 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool) error {
 				logger.Error("delete failed", "err", err)
 			} else {
 				logger.Info("delete OK")
+				ss.radixSetHostNotHasCID(ss.Config.Self.Host, cid)
 			}
 		}
 	}
@@ -204,6 +218,7 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool) error {
 		// loop preferredHosts (not preferredHealthyHosts) because hostHasBlob is the real source of truth for if a node can serve a blob (not our health info about the host, which could be outdated)
 		for _, host := range preferredHosts {
 			if ss.hostHasBlob(host, cid) {
+				ss.radixSetHostHasCID(host, cid)
 				if host == ss.Config.Self.Host {
 					continue
 				}
@@ -211,6 +226,8 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool) error {
 				if len(hasIt) == ss.Config.ReplicationFactor {
 					break
 				}
+			} else {
+				ss.radixSetHostNotHasCID(host, cid)
 			}
 		}
 
