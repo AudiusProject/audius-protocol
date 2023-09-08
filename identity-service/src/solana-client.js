@@ -96,7 +96,7 @@ let feePayerKeypairs = null
 
 // Optionally returns the existing singleFeePayer
 // Ensures other usages of this function do not break as we upgrade to multiple
-function getFeePayerKeypair(singleFeePayer = true) {
+function getFeePayerKeypair(singleFeePayer = true, pubkey = null) {
   if (!feePayerKeypairs) {
     feePayerKeypairs = config.get('solanaFeePayerWallets')
       ? config
@@ -116,6 +116,17 @@ function getFeePayerKeypair(singleFeePayer = true) {
     feePayerKeypairs.length === 0
   ) {
     return feePayerKeypair
+  }
+
+  if (pubkey) {
+    const feePayerIndex = feePayerKeypairs.findIndex(
+      (keypair) => keypair.publicKey.toString() === pubkey
+    )
+    if (feePayerIndex === -1) {
+      console.error('Fee payer for given public key not found')
+      return feePayerKeypair
+    }
+    return feePayerKeypairs[feePayerIndex]
   }
 
   const randomFeePayerIndex = Math.floor(

@@ -131,15 +131,15 @@ solanaRouter.post(
       retry
     })
 
-    const asdf = true
     if (error) {
-      // if (isTransactionTooLargeError(error)) {
-      if (asdf) {
+      if (isTransactionTooLargeError(error)) {
         console.log('REED got tx too large error, retrying with v0 tx')
+        const feePayerKeypair = getFeePayerKeypair(false, feePayerOverride)
+        console.log('REED found feepayerKeypair: ', feePayerKeypair)
         sendV0Transaction(
           libs.solanaWeb3Manager.connection,
           instructions,
-          feePayerOverride
+          feePayerKeypair
         )
       }
       // if the tx fails, store it in redis with a 24 hour expiration
