@@ -5,7 +5,9 @@ import {
   SolanaWalletAddress,
   getUSDCUserBank,
   getContext,
-  TOKEN_LISTING_MAP
+  TOKEN_LISTING_MAP,
+  getUserbankAccountInfo,
+  BNUSDC
 } from '@audius/common'
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -113,6 +115,7 @@ function* doSetDestinationAddress({
 function* doWithdrawUSDC({
   payload: { amount, destinationAddress, onSuccess }
 }: ReturnType<typeof beginWithdrawUSDC>) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   try {
     const libs = yield* call(getLibs)
     if (!libs.solanaWeb3Manager) {
@@ -122,6 +125,9 @@ function* doWithdrawUSDC({
     if (!destinationAddress || !amount) {
       throw new Error('Please enter a valid destination address and amount')
     }
+
+    let withdrawalAmount = amount
+
     const feePayer = yield* select(getFeePayer)
     if (feePayer === null) {
       throw new Error('Fee payer not set')
@@ -217,7 +223,21 @@ function* doWithdrawUSDC({
           if (swapError) {
             throw new Error(`Swap transaction failed: ${swapError}`)
           }
+
           console.debug(`Withdraw USDC - swap successful: ${swapRes}`)
+
+          // At this point, we have swapped some USDC for SOL. Make sure that we are able
+          // to still withdraw the amount we specified, and if not, withdraw as much as we can.
+          const accountInfo = yield* call(
+            getUserbankAccountInfo,
+            audiusBackendInstance,
+            { mint: 'usdc' }
+          )
+          const latestBalance = (accountInfo?.amount ?? new BN(0)) as BNUSDC
+          withdrawalAmount = Math.min(
+            withdrawalAmount,
+            latestBalance.toNumber()
+          )
         }
 
         // Then create and fund the destination associated token account
@@ -244,8 +264,6 @@ function* doWithdrawUSDC({
         )
       }
     }
-    // TODO: math.min(amount, balance)
-    // https://linear.app/audius/issue/PAY-1794/account-for-usdc-used-for-fees-before-withdrawing
     let destinationTokenAccount = destinationAddress
     if (isDestinationSolAddress) {
       const destinationTokenAccountPubkey = yield* call(
@@ -258,7 +276,7 @@ function* doWithdrawUSDC({
       destinationTokenAccount = destinationTokenAccountPubkey.toString()
     }
     // Multiply by 10^6 to account for USDC decimals, but also convert from cents to dollars
-    const amountWei = new BN(amount)
+    const withdrawalAmountWei = new BN(withdrawalAmount)
       .mul(new BN(10 ** TOKEN_LISTING_MAP.USDC.decimals))
       .div(new BN(100))
     const usdcUserBank = yield* call(getUSDCUserBank)
@@ -268,7 +286,7 @@ function* doWithdrawUSDC({
         libs.solanaWeb3Manager.createTransferInstructionsFromCurrentUser
       ],
       {
-        amount: amountWei,
+        amount: withdrawalAmountWei,
         feePayerKey: rootSolanaAccount.publicKey,
         senderSolanaAddress: usdcUserBank,
         recipientSolanaAddress: destinationTokenAccount,
