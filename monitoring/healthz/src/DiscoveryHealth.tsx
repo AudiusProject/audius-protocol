@@ -34,7 +34,7 @@ export function DiscoveryHealth() {
             {isDiscovery && <th>Storage</th>}
             {isContent && <th>Storage (legacy)</th>}
             {isContent && <th>Storage (mediorum)</th>}
-            {isContent && <th>Expected content storage (from repair.go)</th>}
+            {isContent && <th>Expected Content Size (from repair.go)</th>}
             <th>DB Size</th>
             <th>Your IP</th>
             {isDiscovery && <th>ACDC Health</th>}
