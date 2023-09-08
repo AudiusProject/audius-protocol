@@ -2,7 +2,7 @@ import {
   useUSDCBalance,
   formatCurrencyBalance,
   BNUSDC,
-  formatUSDCWeiToFloorCentsNumber
+  formatUSDCWeiToFloorDollarNumber
 } from '@audius/common'
 import BN from 'bn.js'
 import { useField } from 'formik'
@@ -27,8 +27,9 @@ const messages = {
 
 export const TransferInProgress = () => {
   const { data: balance } = useUSDCBalance()
-  const balanceNumber =
-    formatUSDCWeiToFloorCentsNumber((balance ?? new BN(0)) as BNUSDC) / 100
+  const balanceNumber = formatUSDCWeiToFloorDollarNumber(
+    (balance ?? new BN(0)) as BNUSDC
+  )
   const balanceFormatted = formatCurrencyBalance(balanceNumber)
 
   const [{ value: amountValue }] = useField(AMOUNT)

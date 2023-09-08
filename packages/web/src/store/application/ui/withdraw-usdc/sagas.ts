@@ -7,7 +7,8 @@ import {
   getContext,
   TOKEN_LISTING_MAP,
   getUserbankAccountInfo,
-  BNUSDC
+  BNUSDC,
+  formatUSDCWeiToFloorDollarNumber
 } from '@audius/common'
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -236,7 +237,7 @@ function* doWithdrawUSDC({
           const latestBalance = (accountInfo?.amount ?? new BN(0)) as BNUSDC
           withdrawalAmount = Math.min(
             withdrawalAmount,
-            latestBalance.toNumber()
+            formatUSDCWeiToFloorDollarNumber(latestBalance)
           )
         }
 

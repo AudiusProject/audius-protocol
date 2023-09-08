@@ -167,7 +167,7 @@ export const formatUSDCWeiToUSDString = (amount: StringUSDC, precision = 2) => {
 }
 
 /**
- * Formats a USDC BN (full precision) to a number suitable for display as a dollar amount.
+ * Formats a USDC BN (full precision) to a number of dollars.
  * Note: will lose precision by rounding _up_ to nearest cent.
  */
 export const formatUSDCWeiToCeilingDollarNumber = (amount: BNUSDC) => {
@@ -177,7 +177,23 @@ export const formatUSDCWeiToCeilingDollarNumber = (amount: BNUSDC) => {
 }
 
 /**
- * Formats a USDC BN (full precision) to a number of cents
+ * Formats a USDC BN (full precision) to a number of cents.
+ * Note: will lose precision by rounding _up_ to nearest cent.
+ */
+export const formatUSDCWeiToCeilingCentsNumber = (amount: BNUSDC) => {
+  return ceilingBNUSDCToNearestCent(amount).div(BN_USDC_CENT_WEI).toNumber()
+}
+
+/**
+ * Formats a USDC BN (full precision) to a number of dollars.
+ * Note: will lose precision by rounding _down_ to nearest cent.
+ */
+export const formatUSDCWeiToFloorDollarNumber = (amount: BNUSDC) => {
+  return floorBNUSDCToNearestCent(amount).div(BN_USDC_CENT_WEI).toNumber() / 100
+}
+
+/**
+ * Formats a USDC BN (full precision) to a number of cents.
  * Note: will lose precision by rounding _down_ to nearest cent.
  */
 export const formatUSDCWeiToFloorCentsNumber = (amount: BNUSDC) => {

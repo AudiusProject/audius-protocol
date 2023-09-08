@@ -11,7 +11,7 @@ import {
   BNUSDC,
   useWithdrawUSDCModal,
   WithdrawUSDCModalPages,
-  formatUSDCWeiToFloorCentsNumber
+  formatUSDCWeiToFloorDollarNumber
 } from '@audius/common'
 import {
   HarmonyButton,
@@ -58,8 +58,9 @@ export const EnterTransferDetails = () => {
   const { data: balance } = useUSDCBalance()
   const { setData } = useWithdrawUSDCModal()
 
-  const balanceNumber =
-    formatUSDCWeiToFloorCentsNumber((balance ?? new BN(0)) as BNUSDC) / 100
+  const balanceNumber = formatUSDCWeiToFloorDollarNumber(
+    (balance ?? new BN(0)) as BNUSDC
+  )
   const balanceFormatted = formatCurrencyBalance(balanceNumber)
 
   const [
@@ -86,7 +87,7 @@ export const EnterTransferDetails = () => {
     [setHumanizedValue, setAmountTouched]
   )
 
-  const [, { error: addressError }] = useField(ADDRESS)
+  const [{ value: address }, { error: addressError }] = useField(ADDRESS)
 
   const handleContinue = useCallback(() => {
     setData({ page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS })
@@ -136,7 +137,7 @@ export const EnterTransferDetails = () => {
         size={HarmonyButtonSize.DEFAULT}
         fullWidth
         text={messages.continue}
-        disabled={amountError || addressError}
+        disabled={amountError || addressError || !address}
         onClick={handleContinue}
       />
       <Hint
