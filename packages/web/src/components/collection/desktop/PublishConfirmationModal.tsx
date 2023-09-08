@@ -15,7 +15,7 @@ import {
 } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
-import styles from './PublishConfirmationModalFooter.module.css'
+import styles from './PublishConfirmationModal.module.css'
 
 const { publishPlaylist } = cacheCollectionsActions
 
@@ -46,7 +46,10 @@ export const PublishConfirmationModal = (
   return (
     <Modal {...other} size='small'>
       <ModalHeader>
-        <ModalTitle title={messages.title} icon={<IconRocket />} />
+        <ModalTitle
+          title={messages.title}
+          icon={<IconRocket className={styles.icon} />}
+        />
       </ModalHeader>
       <ModalContent>
         <ModalContentText>{messages.description}</ModalContentText>

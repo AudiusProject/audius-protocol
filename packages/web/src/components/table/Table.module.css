@@ -96,6 +96,10 @@
   width: 8px;
 }
 
+.sortCaret path {
+  fill: var(--neutral-light-4);
+}
+
 .pageButtonContainer {
   display: flex;
   justify-content: center;

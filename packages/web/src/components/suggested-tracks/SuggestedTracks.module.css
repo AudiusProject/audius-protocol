@@ -21,6 +21,10 @@
   transition: transform var(--expressive) !important;
 }
 
+.caret path {
+  fill: var(--neutral-light-4);
+}
+
 .caretExpanded {
   transform: rotate(180deg);
 }
