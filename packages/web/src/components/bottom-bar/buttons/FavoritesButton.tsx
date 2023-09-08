@@ -3,7 +3,7 @@ import { memo } from 'react'
 import AnimatedBottomButton from './AnimatedBottomButton'
 import { ButtonProps } from './types'
 
-const LibraryButton = ({
+const FavoritesButton = ({
   darkMode,
   onClick,
   href,
@@ -12,7 +12,7 @@ const LibraryButton = ({
 }: ButtonProps) => {
   return (
     <AnimatedBottomButton
-      uniqueKey='library-button'
+      uniqueKey='favorites-button'
       isActive={isActive}
       darkMode={darkMode}
       isMatrix={isMatrixMode}
@@ -24,4 +24,4 @@ const LibraryButton = ({
   )
 }
 
-export default memo(LibraryButton)
+export default memo(FavoritesButton)

@@ -6,4 +6,5 @@ export type HarmonySelectablePillProps = {
   isSelected: boolean
   label: string
   icon?: IconComponent
+  onClick?: () => void
 } & BaseButtonProps

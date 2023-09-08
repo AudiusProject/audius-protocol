@@ -1,32 +1,27 @@
 import { useCallback, useMemo } from 'react'
 
 import {
+  useFetchedSavedCollections,
+  useAccountPlaylists,
   cacheCollectionsActions,
-  CommonState,
   CreatePlaylistSource,
-  LibraryCategory,
-  savedPageSelectors,
-  SavedPageTabs,
+  Status,
   statusIsNotFinalized
 } from '@audius/common'
 import { IconPlus } from '@audius/stems'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import EmptyTable from 'components/tracks-table/EmptyTable'
 import UploadChip from 'components/upload/UploadChip'
-import { useCollectionsData } from 'pages/saved-page/hooks/useCollectionsData'
-
-import { emptyStateMessages } from '../emptyStateMessages'
+import { useOrderedLoad } from 'hooks/useOrderedLoad'
 
 import { CollectionCard } from './CollectionCard'
 import styles from './SavedPage.module.css'
-
 const { createPlaylist } = cacheCollectionsActions
-const { getCategory } = savedPageSelectors
 
 const messages = {
+  emptyPlaylistsHeader: 'You haven’t created or favorited any playlists yet.',
   emptyPlaylistsBody: 'Once you have, this is where you’ll find them!',
   createPlaylist: 'Create Playlist',
   newPlaylist: 'New Playlist'
@@ -34,58 +29,54 @@ const messages = {
 
 export const PlaylistsTabPage = () => {
   const dispatch = useDispatch()
-  const { status, hasMore, fetchMore, collections } =
-    useCollectionsData('playlist')
-  const emptyPlaylistsHeader = useSelector((state: CommonState) => {
-    const selectedCategory = getCategory(state, {
-      currentTab: SavedPageTabs.PLAYLISTS
-    })
-    if (selectedCategory === LibraryCategory.All) {
-      return emptyStateMessages.emptyPlaylistAllHeader
-    } else if (selectedCategory === LibraryCategory.Favorite) {
-      return emptyStateMessages.emptyPlaylistFavoritesHeader
-    } else {
-      return emptyStateMessages.emptyPlaylistRepostsHeader
-    }
-  })
 
-  const noResults = !statusIsNotFinalized(status) && collections?.length === 0
+  const { data: savedAlbums, status: accountPlaylistsStatus } =
+    useAccountPlaylists()
+  const savedAlbumIds = useMemo(
+    () => savedAlbums.map((a) => a.id),
+    [savedAlbums]
+  )
+
+  const {
+    data: fetchedAlbumIds,
+    status,
+    hasMore,
+    fetchMore
+  } = useFetchedSavedCollections({
+    collectionIds: savedAlbumIds,
+    type: 'albums',
+    pageSize: 20
+  })
+  const { isLoading, setDidLoad } = useOrderedLoad(fetchedAlbumIds.length)
+  const cards = fetchedAlbumIds.map((id, i) => {
+    return (
+      <CollectionCard
+        index={i}
+        isLoading={isLoading(i)}
+        setDidLoad={setDidLoad}
+        key={id}
+        albumId={id}
+      />
+    )
+  })
 
   const handleCreatePlaylist = useCallback(() => {
     dispatch(
       createPlaylist(
         { playlist_name: messages.newPlaylist },
-        CreatePlaylistSource.LIBRARY_PAGE
+        CreatePlaylistSource.FAVORITES_PAGE
       )
     )
   }, [dispatch])
 
-  const cards = useMemo(() => {
-    const createPlaylistCard = (
-      <UploadChip
-        type='playlist'
-        variant='card'
-        onClick={handleCreatePlaylist}
-      />
-    )
-    return [
-      createPlaylistCard,
-      ...collections?.map(({ playlist_id: id }, i) => {
-        return <CollectionCard index={i} key={id} albumId={id} />
-      })
-    ]
-  }, [collections, handleCreatePlaylist])
+  const noSavedPlaylists =
+    accountPlaylistsStatus === Status.SUCCESS && savedAlbumIds.length === 0
+  const noFetchedResults = !statusIsNotFinalized(status) && cards.length === 0
 
-  if (statusIsNotFinalized(status)) {
-    // TODO(nkang) - Confirm loading state UI
-    return <LoadingSpinner className={styles.spinner} />
-  }
-
-  // TODO(nkang) - Add separate error state
-  if (noResults || !collections) {
+  if (noSavedPlaylists || noFetchedResults) {
     return (
       <EmptyTable
-        primaryText={emptyPlaylistsHeader}
+        primaryText={messages.emptyPlaylistsHeader}
         secondaryText={messages.emptyPlaylistsBody}
         buttonLabel={messages.createPlaylist}
         buttonIcon={<IconPlus />}
@@ -93,6 +84,12 @@ export const PlaylistsTabPage = () => {
       />
     )
   }
+
+  const createPlaylistCard = (
+    <UploadChip type='playlist' variant='card' onClick={handleCreatePlaylist} />
+  )
+
+  cards.unshift(createPlaylistCard)
 
   return (
     <InfiniteCardLineup

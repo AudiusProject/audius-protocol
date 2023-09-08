@@ -1,19 +1,17 @@
 import { useContext } from 'react'
 
 import {
-  CommonState,
   ID,
-  LibraryCategory,
   Lineup,
+  SavedPageTabs as ProfileTabs,
   QueueItem,
   SavedPageCollection,
-  savedPageSelectors,
-  SavedPageTabs,
   SavedPageTrack,
   Status,
   TrackRecord,
   UID,
-  User
+  User,
+  savedPageSelectors
 } from '@audius/common'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
 import { useSelector } from 'react-redux'
@@ -30,18 +28,15 @@ import EmptyTable from 'components/tracks-table/EmptyTable'
 import useTabs from 'hooks/useTabs/useTabs'
 import { MainContentContext } from 'pages/MainContentContext'
 
-import { emptyStateMessages } from '../emptyStateMessages'
-
 import { AlbumsTabPage } from './AlbumsTabPage'
-import { LibraryCategorySelectionMenu } from './LibraryCategorySelectionMenu'
 import { PlaylistsTabPage } from './PlaylistsTabPage'
 import styles from './SavedPage.module.css'
 
-const { getInitialFetchStatus, getCategory } = savedPageSelectors
+const { getInitialFetchStatus } = savedPageSelectors
 
 const messages = {
-  libraryHeader: 'Library',
   filterPlaceholder: 'Filter Tracks',
+  emptyTracksHeader: 'You haven’t favorited any tracks yet.',
   emptyTracksBody: 'Once you have, this is where you’ll find them!',
   goToTrending: 'Go to Trending'
 }
@@ -74,11 +69,11 @@ export type SavedPageProps = {
   onClickRepost: (record: TrackRecord) => void
   onPlay: () => void
   onSortTracks: (sorters: any) => void
-  onChangeTab: (tab: SavedPageTabs) => void
+  onChangeTab: (tab: ProfileTabs) => void
   allTracksFetched: boolean
   filterText: string
   initialOrder: UID[] | null
-  currentTab: SavedPageTabs
+  currentTab: ProfileTabs
   account: (User & { albums: SavedPageCollection[] }) | undefined
   tracks: Lineup<SavedPageTrack>
   currentQueueItem: QueueItem
@@ -120,21 +115,6 @@ const SavedPage = ({
 }: SavedPageProps) => {
   const { mainContentRef } = useContext(MainContentContext)
   const initFetch = useSelector(getInitialFetchStatus)
-  const emptyTracksHeader = useSelector((state: CommonState) => {
-    const selectedCategory = getCategory(state, {
-      currentTab: SavedPageTabs.TRACKS
-    })
-    if (selectedCategory === LibraryCategory.All) {
-      return emptyStateMessages.emptyTrackAllHeader
-    } else if (selectedCategory === LibraryCategory.Favorite) {
-      return emptyStateMessages.emptyTrackFavoritesHeader
-    } else if (selectedCategory === LibraryCategory.Repost) {
-      return emptyStateMessages.emptyTrackRepostsHeader
-    } else {
-      return emptyStateMessages.emptyTrackPurchasedHeader
-    }
-  })
-
   const [dataSource, playingIndex] =
     status === Status.SUCCESS || entries.length
       ? getFilteredData(entries)
@@ -148,7 +128,7 @@ const SavedPage = ({
   const queuedAndPlaying = playing && isQueued
 
   // Setup play button
-  const playButtonActive = currentTab === SavedPageTabs.TRACKS && !tracksLoading
+  const playButtonActive = currentTab === ProfileTabs.TRACKS && !tracksLoading
   const playAllButton = (
     <div
       className={styles.playButtonContainer}
@@ -170,7 +150,7 @@ const SavedPage = ({
   )
 
   // Setup filter
-  const filterActive = currentTab === SavedPageTabs.TRACKS
+  const filterActive = currentTab === ProfileTabs.TRACKS
   const filter = (
     <div
       className={styles.filterContainer}
@@ -190,31 +170,31 @@ const SavedPage = ({
   const { tabs, body } = useTabs({
     isMobile: false,
     didChangeTabsFrom: (_, to) => {
-      onChangeTab(to as SavedPageTabs)
+      onChangeTab(to as ProfileTabs)
     },
     bodyClassName: styles.tabBody,
     elementClassName: styles.tabElement,
     tabs: [
       {
         icon: <IconNote />,
-        text: SavedPageTabs.TRACKS,
-        label: SavedPageTabs.TRACKS
+        text: ProfileTabs.TRACKS,
+        label: ProfileTabs.TRACKS
       },
       {
         icon: <IconAlbum />,
-        text: SavedPageTabs.ALBUMS,
-        label: SavedPageTabs.ALBUMS
+        text: ProfileTabs.ALBUMS,
+        label: ProfileTabs.ALBUMS
       },
       {
         icon: <IconPlaylists />,
-        text: SavedPageTabs.PLAYLISTS,
-        label: SavedPageTabs.PLAYLISTS
+        text: ProfileTabs.PLAYLISTS,
+        label: ProfileTabs.PLAYLISTS
       }
     ],
     elements: [
       isEmpty && !tracksLoading ? (
         <EmptyTable
-          primaryText={emptyTracksHeader}
+          primaryText={messages.emptyTracksHeader}
           secondaryText={messages.emptyTracksBody}
           buttonLabel={messages.goToTrending}
           onClick={() => goToRoute('/trending')}
@@ -248,20 +228,13 @@ const SavedPage = ({
     ]
   })
 
-  const headerBottomBar = (
-    <div className={styles.headerBottomBarContainer}>
-      {tabs}
-      {filter}
-    </div>
-  )
-
   const header = (
     <Header
-      primary={messages.libraryHeader}
+      primary='Favorites'
       secondary={isEmpty ? null : playAllButton}
-      rightDecorator={<LibraryCategorySelectionMenu currentTab={currentTab} />}
+      rightDecorator={filter}
       containerStyles={styles.savedPageHeader}
-      bottomBar={headerBottomBar}
+      bottomBar={tabs}
     />
   )
 

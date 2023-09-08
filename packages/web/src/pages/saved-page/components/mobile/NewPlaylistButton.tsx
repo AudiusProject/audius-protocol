@@ -38,7 +38,7 @@ const NewPlaylistButton = ({ open, onClick }: NewPlaylistButtonProps) => {
     }
     record(
       make(Name.PLAYLIST_OPEN_CREATE, {
-        source: CreatePlaylistSource.LIBRARY_PAGE
+        source: CreatePlaylistSource.FAVORITES_PAGE
       })
     )
   }, [open, onClick, record])
@@ -60,7 +60,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(
         createPlaylist(
           { playlist_name: 'New Playlist' },
-          CreatePlaylistSource.LIBRARY_PAGE
+          CreatePlaylistSource.FAVORITES_PAGE
         )
       )
   }

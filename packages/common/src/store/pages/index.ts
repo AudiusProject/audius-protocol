@@ -61,7 +61,6 @@ export { tracksActions as savedPageTracksLineupActions } from './saved-page/line
 export * as savedPageActions from './saved-page/actions'
 export * as savedPageSelectors from './saved-page/selectors'
 export * from './saved-page/types'
-export * from './saved-page/utils'
 export { default as savedPageReducer } from './saved-page/reducer'
 
 export {

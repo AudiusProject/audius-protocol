@@ -146,9 +146,9 @@ const NavigationContainer = (props: NavigationContainerProps) => {
                         UpbeatPlaylists: 'explore/upbeat'
                       }
                     },
-                    library: {
+                    favorites: {
                       screens: {
-                        Library: 'library'
+                        Favorites: 'favorites'
                       }
                     },
                     profile: {

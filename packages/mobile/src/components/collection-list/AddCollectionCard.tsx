@@ -41,7 +41,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export const AddCollectionCard = ({
   onCreate,
-  source = CreatePlaylistSource.LIBRARY_PAGE,
+  source = CreatePlaylistSource.FAVORITES_PAGE,
   sourceTrackId = null
 }: AddCollectionCardProps) => {
   const styles = useStyles()

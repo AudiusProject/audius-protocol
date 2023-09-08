@@ -27,7 +27,7 @@ import {
   EXPLORE_PAGE,
   FEED_PAGE,
   HISTORY_PAGE,
-  LIBRARY_PAGE,
+  SAVED_PAGE,
   TRENDING_PAGE
 } from 'utils/route'
 
@@ -47,7 +47,7 @@ const { getAccountStatus, getAccountUser } = accountSelectors
 
 const messages = {
   discover: 'Discover',
-  library: 'Your Music'
+  library: 'Library'
 }
 
 type OwnProps = {
@@ -168,10 +168,10 @@ const LeftNav = (props: NavColumnProps) => {
                   onDrop={draggingKind === 'album' ? saveCollection : saveTrack}
                 >
                   <LeftNavLink
-                    to={LIBRARY_PAGE}
+                    to={SAVED_PAGE}
                     onClick={onClickNavLinkWithAccount}
                   >
-                    Library
+                    Favorites
                   </LeftNavLink>
                 </LeftNavDroppable>
                 <LeftNavLink

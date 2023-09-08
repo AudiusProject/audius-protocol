@@ -586,7 +586,7 @@ export enum RepostSource {
   TRACK_PAGE = 'page',
   COLLECTION_PAGE = 'collection page',
   HISTORY_PAGE = 'history page',
-  LIBRARY_PAGE = 'library page',
+  FAVORITES_PAGE = 'favorites page',
   OVERFLOW = 'overflow',
   TRACK_LIST = 'track list'
 }
@@ -597,7 +597,7 @@ export enum FavoriteSource {
   TRACK_PAGE = 'page',
   COLLECTION_PAGE = 'collection page',
   HISTORY_PAGE = 'history page',
-  LIBRARY_PAGE = 'library page',
+  FAVORITES_PAGE = 'favorites page',
   OVERFLOW = 'overflow',
   TRACK_LIST = 'track list',
   SIGN_UP = 'sign up',
@@ -685,7 +685,7 @@ export enum CreatePlaylistSource {
   NAV = 'nav',
   CREATE_PAGE = 'create page',
   FROM_TRACK = 'from track',
-  LIBRARY_PAGE = 'library page',
+  FAVORITES_PAGE = 'favorites page',
   PROFILE_PAGE = 'profile page'
 }
 
@@ -1025,7 +1025,7 @@ export enum PlaybackSource {
   PLAYLIST_TRACK = 'playlist page track list',
   PLAYLIST_TILE_TRACK = 'playlist track tile',
   HISTORY_PAGE = 'history page',
-  LIBRARY_PAGE = 'library page',
+  FAVORITES_PAGE = 'favorites page',
   PASSIVE = 'passive',
   EMBED_PLAYER = 'embed player',
   CHAT_TRACK = 'chat_track',

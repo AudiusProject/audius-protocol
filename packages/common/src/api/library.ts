@@ -37,7 +37,7 @@ const fetchLibraryCollections = async ({
     offset,
     limit,
     category,
-    query,
+    query = '',
     sortMethod = 'added_date',
     sortDirection = 'desc'
   } = args

@@ -24,8 +24,7 @@ import {
   cacheUsersSelectors,
   useFetchedSavedCollections,
   usePremiumContentAccessMap,
-  useAccountAlbums,
-  LibraryCategory
+  useAccountAlbums
 } from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
@@ -50,7 +49,6 @@ import { useGoToRoute } from 'hooks/useGoToRoute'
 import useTabs from 'hooks/useTabs/useTabs'
 import { TRENDING_PAGE, collectionPage } from 'utils/route'
 
-import { emptyStateMessages } from '../emptyStateMessages'
 import { formatCardSecondaryText } from '../utils'
 
 import NewPlaylistButton from './NewPlaylistButton'
@@ -158,18 +156,6 @@ const TracksLineup = ({
       }
     })
   const contentRefCallback = useOffsetScroll()
-
-  const selectedCategory = LibraryCategory.Favorite
-  let emptyTracksHeader: string
-  // @ts-ignore `selectedCategory` will eventually come from store; hardcoded for now until rest of mobile web library is implemented.
-  if (selectedCategory === LibraryCategory.All) {
-    emptyTracksHeader = emptyStateMessages.emptyTrackAllHeader
-  } else if (selectedCategory === LibraryCategory.Favorite) {
-    emptyTracksHeader = emptyStateMessages.emptyTrackFavoritesHeader
-  } else {
-    emptyTracksHeader = emptyStateMessages.emptyTrackRepostsHeader
-  }
-
   return (
     <div className={styles.tracksLineupContainer}>
       {tracks.status !== Status.LOADING ? (
@@ -177,7 +163,7 @@ const TracksLineup = ({
           <EmptyTab
             message={
               <>
-                {emptyTracksHeader}
+                {messages.emptyTracks}
                 <i className={cn('emoji', 'face-with-monocle', styles.emoji)} />
               </>
             }
@@ -266,7 +252,6 @@ const AlbumCardLineup = () => {
 
   const { data: unfilteredAlbums, status: accountAlbumsStatus } =
     useAccountAlbums()
-
   const [filterText, setFilterText] = useState('')
   const filteredAlbumIds = useMemo(
     () => filterCollections(unfilteredAlbums, { filterText }).map((a) => a.id),
@@ -282,17 +267,6 @@ const AlbumCardLineup = () => {
     type: 'albums',
     pageSize: 20
   })
-
-  const selectedCategory = LibraryCategory.Favorite
-  let emptyAlbumsHeader: string
-  // @ts-ignore `selectedCategory` will eventually come from store; hardcoded for now until rest of mobile web library is implemented.
-  if (selectedCategory === LibraryCategory.All) {
-    emptyAlbumsHeader = emptyStateMessages.emptyAlbumAllHeader
-  } else if (selectedCategory === LibraryCategory.Favorite) {
-    emptyAlbumsHeader = emptyStateMessages.emptyAlbumFavoritesHeader
-  } else {
-    emptyAlbumsHeader = emptyStateMessages.emptyAlbumRepostsHeader
-  }
 
   const handleGoToTrending = useCallback(
     () => goToRoute(TRENDING_PAGE),
@@ -317,7 +291,7 @@ const AlbumCardLineup = () => {
         <EmptyTab
           message={
             <>
-              {emptyAlbumsHeader}
+              {messages.emptyAlbums}
               <i className={cn('emoji', 'face-with-monocle', styles.emoji)} />
             </>
           }
@@ -411,17 +385,6 @@ const PlaylistCardLineup = ({
     )
   })
 
-  const selectedCategory = LibraryCategory.Favorite
-  let emptyPlaylistsHeader: string
-  // @ts-ignore `selectedCategory` will eventually come from store; hardcoded for now until rest of mobile web library is implemented.
-  if (selectedCategory === LibraryCategory.All) {
-    emptyPlaylistsHeader = emptyStateMessages.emptyPlaylistAllHeader
-  } else if (selectedCategory === LibraryCategory.Favorite) {
-    emptyPlaylistsHeader = emptyStateMessages.emptyPlaylistFavoritesHeader
-  } else {
-    emptyPlaylistsHeader = emptyStateMessages.emptyPlaylistRepostsHeader
-  }
-
   const contentRefCallback = useOffsetScroll()
 
   return (
@@ -431,7 +394,7 @@ const PlaylistCardLineup = ({
           <EmptyTab
             message={
               <>
-                {emptyPlaylistsHeader}
+                {messages.emptyPlaylists}
                 <i className={cn('emoji', 'face-with-monocle', styles.emoji)} />
               </>
             }
@@ -464,6 +427,9 @@ const PlaylistCardLineup = ({
 }
 
 const messages = {
+  emptyTracks: "You haven't favorited any tracks yet.",
+  emptyAlbums: "You haven't favorited any albums yet.",
+  emptyPlaylists: "You haven't favorited any playlists yet.",
   filterTracks: 'Filter Tracks',
   filterAlbums: 'Filter Albums',
   filterPlaylists: 'Filter Playlists',
@@ -584,7 +550,7 @@ const SavedPage = ({
   useEffect(() => {
     setHeader(
       <>
-        <Header className={styles.header} title={<span>{title}</span>} />
+        <Header className={styles.header} title={title} />
         <div className={styles.tabBar}>{tabs}</div>
       </>
     )

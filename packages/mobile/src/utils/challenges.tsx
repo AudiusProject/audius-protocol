@@ -40,7 +40,7 @@ export type ChallengesParamList = {
   trending: undefined
   AccountVerificationScreen: undefined
   explore: undefined
-  library: undefined
+  favorites: undefined
   Upload: undefined
   params: { screen: string }
 }
@@ -125,7 +125,7 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
           : messages.sendFirstTipButton,
       buttonInfo: {
         navigation: {
-          screen: 'library'
+          screen: 'favorites'
         }
       }
     },

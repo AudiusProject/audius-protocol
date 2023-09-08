@@ -1,7 +1,5 @@
-import { Favorite } from 'models/Favorite'
-
-import { LibraryCategory, LibraryCategoryType, SavedPageTabs } from './types'
-
+// @ts-nocheck
+// TODO(nkang) - convert to TS
 export const FETCH_SAVES = 'SAVED/FETCH_SAVES'
 export const FETCH_SAVES_REQUESTED = 'SAVED/FETCH_SAVES_REQUESTED'
 export const FETCH_SAVES_SUCCEEDED = 'SAVED/FETCH_SAVES_SUCCEEDED'
@@ -15,21 +13,12 @@ export const FETCH_MORE_SAVES_FAILED = 'SAVED/FETCH_MORE_SAVES_FAILED'
 // Usually when filtering
 export const END_FETCHING = 'SAVED/END_FETCHING'
 
-export const ADD_LOCAL_TRACK = 'SAVED/ADD_LOCAL_TRACK'
-export const REMOVE_LOCAL_TRACK = 'SAVED/REMOVE_LOCAL_TRACK'
-export const ADD_LOCAL_COLLECTION = 'SAVED/ADD_LOCAL_COLLECTION'
-export const REMOVE_LOCAL_COLLECTION = 'SAVED/REMOVE_LOCAL_COLLECTION'
-
-export const SET_SELECTED_CATEGORY = 'SAVED/SET_SELECTED_CATEGORY'
-export const INIT_COLLECTIONS_CATEGORY_FROM_LOCAL_STORAGE =
-  'SAVED/INIT_COLLECTIONS_CATEGORY_FROM_LOCAL_STORAGE'
-export const INIT_TRACKS_CATEGORY_FROM_LOCAL_STORAGE =
-  'SAVED/INIT_TRACKS_CATEGORY_FROM_LOCAL_STORAGE'
+export const ADD_LOCAL_SAVE = 'SAVED/ADD_LOCAL_SAVE'
+export const REMOVE_LOCAL_SAVE = 'SAVED/REMOVE_LOCAL_SAVE'
 
 export const fetchSaves = (
   // the filter query for the "get tracks" query
   query = '',
-  category: LibraryCategoryType = LibraryCategory.Favorite,
   // the sort method for the "get tracks" query
   sortMethod = '',
   // the sort direction for the "get tracks" query
@@ -40,7 +29,6 @@ export const fetchSaves = (
   limit = 50
 ) => ({
   type: FETCH_SAVES,
-  category,
   offset,
   limit,
   query,
@@ -51,7 +39,6 @@ export const fetchSaves = (
 export const fetchMoreSaves = (
   // the filter query for the "get tracks" query
   query = '',
-  category: LibraryCategoryType = LibraryCategory.Favorite,
   // the sort method for the "get tracks" query
   sortMethod = '',
   // the sort direction for the "get tracks" query
@@ -62,7 +49,6 @@ export const fetchMoreSaves = (
   limit = 50
 ) => ({
   type: FETCH_MORE_SAVES,
-  category,
   offset,
   limit,
   query,
@@ -74,7 +60,7 @@ export const fetchSavesRequested = () => ({
   type: FETCH_SAVES_REQUESTED
 })
 
-export const fetchSavesSucceeded = (saves: Favorite[]) => ({
+export const fetchSavesSucceeded = (saves) => ({
   type: FETCH_SAVES_SUCCEEDED,
   saves
 })
@@ -83,7 +69,7 @@ export const fetchSavesFailed = () => ({
   type: FETCH_SAVES_FAILED
 })
 
-export const fetchMoreSavesSucceeded = (saves: Favorite[], offset: number) => ({
+export const fetchMoreSavesSucceeded = (saves, offset) => ({
   type: FETCH_MORE_SAVES_SUCCEEDED,
   saves,
   offset
@@ -93,90 +79,18 @@ export const fetchMoreSavesFailed = () => ({
   type: FETCH_MORE_SAVES_FAILED
 })
 
-export const endFetching = (endIndex: number) => ({
+export const endFetching = (endIndex) => ({
   type: END_FETCHING,
   endIndex
 })
 
-export const addLocalTrack = ({
+export const addLocalSave = (trackId, uid) => ({
+  type: ADD_LOCAL_SAVE,
   trackId,
-  uid,
-  category
-}: {
-  trackId: number
-  uid: string
-  category: LibraryCategoryType
-}) => ({
-  type: ADD_LOCAL_TRACK,
-  trackId,
-  uid,
-  category
+  uid
 })
 
-export const removeLocalTrack = ({
-  trackId,
-  category
-}: {
-  trackId: number
-  category: LibraryCategoryType
-}) => ({
-  type: REMOVE_LOCAL_TRACK,
-  trackId,
-  category
-})
-
-export const addLocalCollection = ({
-  collectionId,
-  isAlbum,
-  category
-}: {
-  collectionId: number
-  isAlbum: boolean
-  category: LibraryCategoryType
-}) => ({
-  type: ADD_LOCAL_COLLECTION,
-  collectionId,
-  isAlbum,
-  category
-})
-
-export const removeLocalCollection = ({
-  collectionId,
-  isAlbum,
-  category
-}: {
-  collectionId: number
-  isAlbum: boolean
-  category: LibraryCategoryType
-}) => ({
-  type: REMOVE_LOCAL_COLLECTION,
-  collectionId,
-  isAlbum,
-  category
-})
-
-export const initializeTracksCategoryFromLocalStorage = (
-  category: LibraryCategoryType
-) => ({
-  type: INIT_TRACKS_CATEGORY_FROM_LOCAL_STORAGE,
-  category
-})
-
-export const initializeCollectionsCategoryFromLocalStorage = (
-  category: LibraryCategoryType
-) => ({
-  type: INIT_COLLECTIONS_CATEGORY_FROM_LOCAL_STORAGE,
-  category
-})
-
-export const setSelectedCategory = ({
-  category,
-  currentTab
-}: {
-  category: LibraryCategoryType
-  currentTab: SavedPageTabs
-}) => ({
-  type: SET_SELECTED_CATEGORY,
-  category,
-  currentTab
+export const removeLocalSave = (trackId) => ({
+  type: REMOVE_LOCAL_SAVE,
+  trackId
 })

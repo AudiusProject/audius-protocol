@@ -58,8 +58,8 @@ import {
 } from 'app/utils/dominantColors'
 import { reportToSentry } from 'app/utils/reportToSentry'
 import { getTrackRoute } from 'app/utils/routes'
+import { useThemeColors } from 'app/utils/theme'
 
-import { HarmonyModalHeader } from '../core/HarmonyModalHeader'
 import { NativeDrawer } from '../drawer'
 import { DEFAULT_IMAGE_URL, useTrackImage } from '../image/TrackImage'
 
@@ -527,7 +527,7 @@ export const useShareToStory = ({
   }
 }
 
-const useStyles = makeStyles(({ spacing }) => ({
+const useStyles = makeStyles(({ spacing, palette }) => ({
   container: {
     paddingTop: spacing(4),
     paddingBottom: spacing(10),
@@ -535,14 +535,31 @@ const useStyles = makeStyles(({ spacing }) => ({
     paddingHorizontal: spacing(4),
     alignItems: 'center'
   },
+  title: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: spacing(2),
+    paddingBottom: spacing(4)
+  },
+  titleText: {
+    textTransform: 'uppercase',
+    marginTop: spacing(4)
+  },
   subtitleText: {
     marginTop: spacing(4)
+  },
+  titleIcon: {
+    position: 'relative',
+    top: 7,
+    color: palette.neutral,
+    marginRight: spacing(3)
   },
   button: {
     marginTop: spacing(4)
   },
   progress: {
-    marginTop: spacing(4),
     width: '100%',
     height: 24
   },
@@ -563,6 +580,7 @@ export const ShareToStoryProgressDrawer = () => {
     }),
     [styles.progressBar, styles.progressBarContainer]
   )
+  const { neutralLight2 } = useThemeColors()
   const progress = useSelector(getProgressPercentage)
   const cancel = useSelector(getCancel)
   const platform = useSelector(getPlatform)
@@ -586,10 +604,24 @@ export const ShareToStoryProgressDrawer = () => {
       onClose={handleCancel}
     >
       <View style={styles.container}>
-        <HarmonyModalHeader
-          icon={IconWavform}
-          title={messages.loadingStoryModalTitle}
-        />
+        <View style={styles.title}>
+          <IconWavform
+            style={styles.titleIcon}
+            fill={neutralLight2}
+            height={20}
+            width={24}
+          />
+          <View>
+            <Text
+              weight='heavy'
+              color='neutralLight2'
+              fontSize={'xl'}
+              style={styles.titleText}
+            >
+              {messages.loadingStoryModalTitle}
+            </Text>
+          </View>
+        </View>
         <View style={styles.progress}>
           <LinearProgress value={progress} styles={progressBarStyles} />
         </View>

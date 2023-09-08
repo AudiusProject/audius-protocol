@@ -57,7 +57,6 @@
 
 .filterContainer {
   transition: all 0.5s;
-  padding-bottom: var(--unit-5);
 }
 
 /* Body Content Wrapper */
@@ -116,20 +115,4 @@
 
 .createPlaylistIcon circle {
   fill: var(--neutral-light-2);
-}
-
-.spinner {
-  height: 40px;
-  width: 40px;
-  margin: 0 auto;
-}
-
-.spinner g path {
-  stroke: var(--secondary);
-}
-
-.headerBottomBarContainer {
-  display: flex;
-  justify-content: space-between;
-  align-items: end;
 }

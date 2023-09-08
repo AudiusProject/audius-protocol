@@ -1,13 +1,9 @@
 import { useCallback, useState } from 'react'
 
-import type { CommonState } from '@audius/common'
 import {
-  SavedPageTabs,
   CreatePlaylistSource,
-  LibraryCategory,
   reachabilitySelectors,
-  statusIsNotFinalized,
-  savedPageSelectors
+  statusIsNotFinalized
 } from '@audius/common'
 import Animated, { Layout } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
@@ -23,13 +19,9 @@ import { OfflineContentBanner } from './OfflineContentBanner'
 import { useCollectionsScreenData } from './useCollectionsScreenData'
 
 const { getIsReachable } = reachabilitySelectors
-const { getCategory } = savedPageSelectors
 
 const messages = {
-  emptyPlaylistFavoritesText: "You haven't favorited any playlists yet.",
-  emptyPlaylistRepostsText: "You haven't reposted any playlists yet.",
-  emptyPlaylistAllText:
-    "You haven't favorited, reposted, or purchased any playlists yet.",
+  emptyTabText: "You haven't favorited any playlists yet.",
   inputPlaceholder: 'Filter Playlists'
 }
 
@@ -56,26 +48,13 @@ export const PlaylistsTab = () => {
   const noItemsLoaded =
     !statusIsNotFinalized(status) && !userPlaylists?.length && !filterValue
 
-  const emptyTabText = useSelector((state: CommonState) => {
-    const selectedCategory = getCategory(state, {
-      currentTab: SavedPageTabs.PLAYLISTS
-    })
-    if (selectedCategory === LibraryCategory.All) {
-      return messages.emptyPlaylistAllText
-    } else if (selectedCategory === LibraryCategory.Favorite) {
-      return messages.emptyPlaylistFavoritesText
-    } else {
-      return messages.emptyPlaylistRepostsText
-    }
-  })
-
   return (
     <VirtualizedScrollView>
       {noItemsLoaded ? (
         !isReachable ? (
           <NoTracksPlaceholder />
         ) : (
-          <EmptyTileCTA message={emptyTabText} />
+          <EmptyTileCTA message={messages.emptyTabText} />
         )
       ) : (
         <>
@@ -97,7 +76,7 @@ export const PlaylistsTab = () => {
                   : null
               }
               showCreatePlaylistTile={!!isReachable}
-              createPlaylistSource={CreatePlaylistSource.LIBRARY_PAGE}
+              createPlaylistSource={CreatePlaylistSource.FAVORITES_PAGE}
             />
           </Animated.View>
         </>
