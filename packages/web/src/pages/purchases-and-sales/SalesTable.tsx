@@ -22,7 +22,7 @@ export type SalesTableColumn =
   | 'spacerLeft'
   | 'spacerRight'
 
-export type SalesTableSortMethod = 'contentId' | 'createdAt'
+export type SalesTableSortMethod = 'contentId' | 'createdAt' | 'buyerUserId'
 export type SalesTableSortDirection = 'asc' | 'desc'
 
 type SalesTableProps = {
@@ -90,10 +90,10 @@ const tableColumnMap = {
   buyer: {
     id: 'buyer',
     Header: 'Purchased By',
-    accessor: 'sellerUserId',
+    accessor: 'buyerUserId',
     Cell: renderBuyerCell,
     maxWidth: 200,
-    disableSortBy: true,
+    disableSortBy: false,
     align: 'left'
   },
   date: {
