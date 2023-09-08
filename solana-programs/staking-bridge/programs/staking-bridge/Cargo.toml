@@ -20,3 +20,5 @@ test-bpf = []
 anchor-lang = "0.28.0"
 anchor-spl = "0.28.0"
 hex = "0.4"
+solana-program = "=1.16.9"
+solana-security-txt = "1.1.1"

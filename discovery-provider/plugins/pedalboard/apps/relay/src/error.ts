@@ -49,6 +49,6 @@ export const antiAbuseError = (next: NextFunction, message: string) => {
   customError(next, {
     name: "ANTI_ABUSE_ERROR",
     statusCode: StatusCodes.UNAUTHORIZED,
-    message
-  })
-}
+    message,
+  });
+};

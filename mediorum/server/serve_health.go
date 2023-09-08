@@ -21,39 +21,41 @@ type healthCheckResponse struct {
 	Timestamp time.Time               `json:"timestamp"`
 }
 type healthCheckResponseData struct {
-	Healthy                 bool                       `json:"healthy"`
-	Version                 string                     `json:"version"`
-	Service                 string                     `json:"service"` // used by registerWithDelegate()
-	IsSeeding               bool                       `json:"isSeeding"`
-	BuiltAt                 string                     `json:"builtAt"`
-	StartedAt               time.Time                  `json:"startedAt"`
-	SPID                    int                        `json:"spID"`
-	SPOwnerWallet           string                     `json:"spOwnerWallet"`
-	Git                     string                     `json:"git"`
-	AudiusDockerCompose     string                     `json:"audiusDockerCompose"`
-	StoragePathUsed         uint64                     `json:"storagePathUsed"`  // bytes
-	StoragePathSize         uint64                     `json:"storagePathSize"`  // bytes
-	MediorumPathUsed        uint64                     `json:"mediorumPathUsed"` // bytes
-	MediorumPathSize        uint64                     `json:"mediorumPathSize"` // bytes
-	DatabaseSize            uint64                     `json:"databaseSize"`     // bytes
-	DbSizeErr               string                     `json:"dbSizeErr"`
-	UploadsCount            int64                      `json:"uploadsCount"`
-	UploadsCountErr         string                     `json:"uploadsCountErr"`
-	AutoUpgradeEnabled      bool                       `json:"autoUpgradeEnabled"`
-	TrustedNotifier         *ethcontracts.NotifierInfo `json:"trustedNotifier"`
-	Env                     string                     `json:"env"`
-	Self                    Peer                       `json:"self"`
-	WalletIsRegistered      bool                       `json:"wallet_is_registered"`
-	Signers                 []Peer                     `json:"signers"`
-	ReplicationFactor       int                        `json:"replicationFactor"`
-	Dir                     string                     `json:"dir"`
-	BlobStorePrefix         string                     `json:"blobStorePrefix"`
-	MoveFromBlobStorePrefix string                     `json:"moveFromBlobStorePrefix"`
-	ListenPort              string                     `json:"listenPort"`
-	TrustedNotifierID       int                        `json:"trustedNotifierId"`
-	PeerHealths             map[string]*PeerHealth     `json:"peerHealths"`
-	UnreachablePeers        []string                   `json:"unreachablePeers"`
-	StoreAll                bool                       `json:"storeAll"`
+	Healthy                   bool                       `json:"healthy"`
+	Version                   string                     `json:"version"`
+	Service                   string                     `json:"service"` // used by registerWithDelegate()
+	IsSeeding                 bool                       `json:"isSeeding"`
+	BuiltAt                   string                     `json:"builtAt"`
+	StartedAt                 time.Time                  `json:"startedAt"`
+	SPID                      int                        `json:"spID"`
+	SPOwnerWallet             string                     `json:"spOwnerWallet"`
+	Git                       string                     `json:"git"`
+	AudiusDockerCompose       string                     `json:"audiusDockerCompose"`
+	StoragePathUsed           uint64                     `json:"storagePathUsed"`  // bytes
+	StoragePathSize           uint64                     `json:"storagePathSize"`  // bytes
+	MediorumPathUsed          uint64                     `json:"mediorumPathUsed"` // bytes
+	MediorumPathSize          uint64                     `json:"mediorumPathSize"` // bytes
+	DatabaseSize              uint64                     `json:"databaseSize"`     // bytes
+	DbSizeErr                 string                     `json:"dbSizeErr"`
+	UploadsCount              int64                      `json:"uploadsCount"`
+	UploadsCountErr           string                     `json:"uploadsCountErr"`
+	AutoUpgradeEnabled        bool                       `json:"autoUpgradeEnabled"`
+	TrustedNotifier           *ethcontracts.NotifierInfo `json:"trustedNotifier"`
+	Env                       string                     `json:"env"`
+	Self                      Peer                       `json:"self"`
+	WalletIsRegistered        bool                       `json:"wallet_is_registered"`
+	Signers                   []Peer                     `json:"signers"`
+	ReplicationFactor         int                        `json:"replicationFactor"`
+	Dir                       string                     `json:"dir"`
+	BlobStorePrefix           string                     `json:"blobStorePrefix"`
+	MoveFromBlobStorePrefix   string                     `json:"moveFromBlobStorePrefix"`
+	ListenPort                string                     `json:"listenPort"`
+	TrustedNotifierID         int                        `json:"trustedNotifierId"`
+	PeerHealths               map[string]*PeerHealth     `json:"peerHealths"`
+	UnreachablePeers          []string                   `json:"unreachablePeers"`
+	StoreAll                  bool                       `json:"storeAll"`
+	LastRepairCleanupComplete time.Time                  `json:"lastRepairCleanupTime"`
+	LastRepairCleanupTookMins int                        `json:"lastRepairCleanTookMins"`
 }
 
 func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
@@ -84,39 +86,41 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	defer ss.peerHealthsMutex.RUnlock()
 
 	data := healthCheckResponseData{
-		Healthy:                 healthy,
-		Version:                 ss.Config.VersionJson.Version,
-		Service:                 ss.Config.VersionJson.Service,
-		IsSeeding:               ss.isSeeding,
-		BuiltAt:                 vcsBuildTime,
-		StartedAt:               ss.StartedAt,
-		SPID:                    ss.Config.SPID,
-		SPOwnerWallet:           ss.Config.SPOwnerWallet,
-		Git:                     ss.Config.GitSHA,
-		AudiusDockerCompose:     ss.Config.AudiusDockerCompose,
-		StoragePathUsed:         ss.storagePathUsed,
-		StoragePathSize:         ss.storagePathSize,
-		MediorumPathUsed:        ss.mediorumPathUsed,
-		MediorumPathSize:        ss.mediorumPathSize,
-		DatabaseSize:            ss.databaseSize,
-		DbSizeErr:               ss.dbSizeErr,
-		UploadsCount:            ss.uploadsCount,
-		UploadsCountErr:         ss.uploadsCountErr,
-		AutoUpgradeEnabled:      ss.Config.AutoUpgradeEnabled,
-		TrustedNotifier:         ss.trustedNotifier,
-		Dir:                     ss.Config.Dir,
-		BlobStorePrefix:         blobStorePrefix,
-		MoveFromBlobStorePrefix: blobStoreMoveFromPrefix,
-		ListenPort:              ss.Config.ListenPort,
-		ReplicationFactor:       ss.Config.ReplicationFactor,
-		Env:                     ss.Config.Env,
-		Self:                    ss.Config.Self,
-		WalletIsRegistered:      ss.Config.WalletIsRegistered,
-		TrustedNotifierID:       ss.Config.TrustedNotifierID,
-		PeerHealths:             ss.peerHealths,
-		UnreachablePeers:        ss.unreachablePeers,
-		Signers:                 ss.Config.Signers,
-		StoreAll:                ss.Config.StoreAll,
+		Healthy:                   healthy,
+		Version:                   ss.Config.VersionJson.Version,
+		Service:                   ss.Config.VersionJson.Service,
+		IsSeeding:                 ss.isSeeding,
+		BuiltAt:                   vcsBuildTime,
+		StartedAt:                 ss.StartedAt,
+		SPID:                      ss.Config.SPID,
+		SPOwnerWallet:             ss.Config.SPOwnerWallet,
+		Git:                       ss.Config.GitSHA,
+		AudiusDockerCompose:       ss.Config.AudiusDockerCompose,
+		StoragePathUsed:           ss.storagePathUsed,
+		StoragePathSize:           ss.storagePathSize,
+		MediorumPathUsed:          ss.mediorumPathUsed,
+		MediorumPathSize:          ss.mediorumPathSize,
+		DatabaseSize:              ss.databaseSize,
+		DbSizeErr:                 ss.dbSizeErr,
+		UploadsCount:              ss.uploadsCount,
+		UploadsCountErr:           ss.uploadsCountErr,
+		AutoUpgradeEnabled:        ss.Config.AutoUpgradeEnabled,
+		TrustedNotifier:           ss.trustedNotifier,
+		Dir:                       ss.Config.Dir,
+		BlobStorePrefix:           blobStorePrefix,
+		MoveFromBlobStorePrefix:   blobStoreMoveFromPrefix,
+		ListenPort:                ss.Config.ListenPort,
+		ReplicationFactor:         ss.Config.ReplicationFactor,
+		Env:                       ss.Config.Env,
+		Self:                      ss.Config.Self,
+		WalletIsRegistered:        ss.Config.WalletIsRegistered,
+		TrustedNotifierID:         ss.Config.TrustedNotifierID,
+		PeerHealths:               ss.peerHealths,
+		UnreachablePeers:          ss.unreachablePeers,
+		Signers:                   ss.Config.Signers,
+		StoreAll:                  ss.Config.StoreAll,
+		LastRepairCleanupComplete: ss.lastRepairCleanupComplete,
+		LastRepairCleanupTookMins: int(ss.lastRepairCleanupDuration.Minutes()),
 	}
 
 	dataBytes, err := json.Marshal(data)

@@ -14,6 +14,9 @@ use crate::router::{
     execute_transfers
 };
 
+#[cfg(not(feature = "no-entrypoint"))]
+use solana_security_txt::security_txt;
+
 declare_id!("6pca6uGGV5GYKY8W9aGfJbWPx4pe5mW8wLaP9c3LUNpp");
 
 #[program]
@@ -55,9 +58,6 @@ pub mod payment_router {
     }
 }
 
-#[account]
-pub struct Empty {}
-
 #[derive(Accounts)]
 pub struct CreatePaymentRouterBalancePDA<'info> {
     #[account(
@@ -69,27 +69,36 @@ pub struct CreatePaymentRouterBalancePDA<'info> {
     )]
     /// CHECK: This is the PDA owned by this program. This account will temporarily hold SOL USDC and SOL AUDIO tokens
     /// before transferring them over to given recipients, all within the same transaction.
-    pub payment_router_pda: Account<'info, Empty>,
+    pub payment_router_pda: AccountInfo<'info>,
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
-#[instruction(
-    payment_router_pda_bump: u8,
-    _amounts: Vec<u64>,
-    _total_amount: u64
-)]
 pub struct Route<'info> {
     #[account(mut)]
     /// CHECK: This is the token account owned by the PDA.
     pub sender: Account<'info, TokenAccount>,
     #[account(
         seeds = [b"payment_router".as_ref()],
-        bump = payment_router_pda_bump
+        bump
     )]
     /// CHECK: This is the PDA initialized in the CreatePaymentRouterBalancePDA instruction.
-    pub sender_owner: Account<'info, Empty>,
+    pub sender_owner: AccountInfo<'info>,
     pub spl_token: Program<'info, Token>,
+}
+
+#[cfg(not(feature = "no-entrypoint"))]
+security_txt! {
+    // Required fields
+    name: "Audius Payment Router",
+    project_url: "https://audius.co",
+    contacts: "email:security@audius.co",
+    policy: "",
+
+    // Optional Fields
+    preferred_languages: "en",
+    source_code: "https://github.com/AudiusProject/audius-protocol/tree/main/solana-programs/payment-router",
+    auditors: "Neodyme"
 }

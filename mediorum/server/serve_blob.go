@@ -22,12 +22,9 @@ import (
 
 func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
 	cid := c.Param("cid")
-	locations := []Blob{}
-	ss.crud.DB.Where(Blob{Key: cid}).Find(&locations)
 	preferred, _ := ss.rendezvousAllHosts(cid)
 	return c.JSON(200, map[string]any{
 		"cid":       cid,
-		"locations": locations,
 		"preferred": preferred,
 	})
 }
@@ -129,6 +126,9 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		// v2 file listen
 		if isAudioFile {
 			go ss.logTrackListen(c)
+		} else {
+			// images: cache 30 days
+			c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=2592000, immutable")
 		}
 
 		if c.Request().Method == "HEAD" {
@@ -327,7 +327,7 @@ func (ss *MediorumServer) serveInternalBlobPull(c echo.Context) error {
 }
 
 func (ss *MediorumServer) postBlob(c echo.Context) error {
-	if !ss.shouldReplicate() {
+	if !ss.diskHasSpace() {
 		return c.String(http.StatusServiceUnavailable, "disk is too full to accept new blobs")
 	}
 

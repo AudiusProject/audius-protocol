@@ -5,11 +5,22 @@ import { program } from "commander";
 
 import { initializeAudiusLibs } from "./utils.mjs";
 
-program.command("create-user")
+program
+  .command("create-user")
   .description("Create a new user")
-  .argument("[handle]", "The handle for the new user (chosen randomly if not specified)")
-  .option("-p, --password <password>", "The password for the new user", "password")
-  .option("-e, --email <email>", "The email for the new user (chosen randomly if not specified)")
+  .argument(
+    "[handle]",
+    "The handle for the new user (chosen randomly if not specified)"
+  )
+  .option(
+    "-p, --password <password>",
+    "The password for the new user",
+    "password"
+  )
+  .option(
+    "-e, --email <email>",
+    "The email for the new user (chosen randomly if not specified)"
+  )
   .action(async (handle, { password, email }) => {
     const audiusLibs = await initializeAudiusLibs();
 
@@ -30,7 +41,6 @@ program.command("create-user")
       location: `location${rand}`,
       name: `name ${rand}`,
     };
-
     try {
       const response = await audiusLibs.Account.signUpV2(
         email,
@@ -42,7 +52,6 @@ program.command("create-user")
         /* host */ null,
         /* generateRecoveryLink */ true
       );
-
       if (response.error) {
         program.error(chalk.red(response.error));
       }

@@ -88,6 +88,11 @@ func backgroundRefreshRegisteredPeers(discoveryConfig *config.DiscoveryConfig) {
 }
 
 func refreshRegisteredPeers(discoveryConfig *config.DiscoveryConfig) error {
+	if discoveryConfig.IsDev {
+		discoveryConfig.IsRegisteredWallet = true
+		return nil
+	}
+
 	peers, err := the_graph.Query(discoveryConfig.IsStaging, false)
 	if err != nil {
 		return err

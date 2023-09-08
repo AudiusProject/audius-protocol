@@ -10,6 +10,7 @@ import (
 	"mediorum/ethcontracts"
 	"mediorum/persistence"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/signal"
@@ -58,6 +59,7 @@ type MediorumConfig struct {
 	PostgresDSN          string `json:"-"`
 	PrivateKey           string `json:"-"`
 	ListenPort           string
+	RadixListenPort      string
 	TrustedNotifierID    int
 	SPID                 int
 	SPOwnerWallet        string
@@ -102,8 +104,13 @@ type MediorumServer struct {
 	unreachablePeers []string
 	redirectCache    *imcache.Cache[string, string]
 
+	lastRepairCleanupComplete time.Time
+	lastRepairCleanupDuration time.Duration
+
 	StartedAt time.Time
 	Config    MediorumConfig
+
+	crudSweepMutex sync.Mutex
 }
 
 type PeerHealth struct {
@@ -141,7 +148,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	}
 
 	if config.BlobStoreDSN == "" {
-		config.BlobStoreDSN = "file://" + config.Dir + "/blobs"
+		config.BlobStoreDSN = "file://" + config.Dir + "/blobs?no_tmp_dir=true"
 	}
 
 	if pk, err := ethcontracts.ParsePrivateKeyHex(config.PrivateKey); err != nil {
@@ -158,32 +165,36 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		}
 	}
 
+	logger := slog.With("self", config.Self.Host)
+
 	// ensure dir
-	os.MkdirAll(config.Dir, os.ModePerm)
+	if err := os.MkdirAll(config.Dir, os.ModePerm); err != nil {
+		logger.Error("failed to create local persistent storage dir", "err", err)
+	}
 
 	// bucket
 	bucket, err := persistence.Open(config.BlobStoreDSN)
 	if err != nil {
+		logger.Error("failed to open persistent storage bucket", "err", err)
 		return nil, err
 	}
-
-	logger := slog.With("self", config.Self.Host)
 
 	// bucket to move all files from
 	if config.MoveFromBlobStoreDSN != "" {
 		if config.MoveFromBlobStoreDSN == config.BlobStoreDSN {
-			log.Fatal("AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM cannot be the same as AUDIUS_STORAGE_DRIVER_URL")
+			logger.Error("AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM cannot be the same as AUDIUS_STORAGE_DRIVER_URL")
+			return nil, err
 		}
 		bucketToMoveFrom, err := persistence.Open(config.MoveFromBlobStoreDSN)
 		if err != nil {
-			log.Fatalf("Failed to open bucket to move from. Ensure AUDIUS_STORAGE_DRIVER_URL and AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM are set (the latter can be empty if not moving data): %v", err)
+			logger.Error("Failed to open bucket to move from. Ensure AUDIUS_STORAGE_DRIVER_URL and AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM are set (the latter can be empty if not moving data)", "err", err)
 			return nil, err
 		}
 
 		logger.Info(fmt.Sprintf("Moving all files from %s to %s. This may take a few hours...", config.MoveFromBlobStoreDSN, config.BlobStoreDSN))
 		err = persistence.MoveAllFiles(bucketToMoveFrom, bucket)
 		if err != nil {
-			log.Fatalf("Failed to move files. Ensure AUDIUS_STORAGE_DRIVER_URL and AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM are set (the latter can be empty if not moving data): %v", err)
+			logger.Error("Failed to move files. Ensure AUDIUS_STORAGE_DRIVER_URL and AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM are set (the latter can be empty if not moving data)", "err", err)
 			return nil, err
 		}
 
@@ -322,6 +333,13 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/metrics", ss.getMetrics)
 	internalApi.GET("/logs/partition-ops", ss.getPartitionOpsLog)
 	internalApi.GET("/logs/reaper", ss.getReaperLog)
+
+	// send all /radix routes to the radix container
+	if config.RadixListenPort != "" {
+		radixURL, _ := url.Parse("http://radix:" + config.RadixListenPort)
+		radixProxy := httputil.NewSingleHostReverseProxy(radixURL)
+		echoServer.Any("/radix*", echo.WrapHandler(radixProxy))
+	}
 
 	return ss, nil
 

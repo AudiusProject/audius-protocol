@@ -29,6 +29,9 @@ var delistStatusesDDL string
 //go:embed clean_up_unfindable_cids.sql
 var cleanUpUnfindableCIDsDDL string
 
+//go:embed drop_blobs.sql
+var dropBlobs string
+
 var mediorumMigrationTable = `
 	create table if not exists mediorum_migrations (
 		"hash" text primary key,
@@ -46,9 +49,11 @@ func Migrate(db *sql.DB, gormDB *gorm.DB, bucket *blob.Bucket, myHost string) {
 
 	migratePartitionOps(db, gormDB) // TODO: Remove after every node runs this
 	runMigration(db, delistStatusesDDL)
-	runMigration(db, cleanUpUnfindableCIDsDDL) // TODO: Remove after every node runs this
+	// runMigration(db, cleanUpUnfindableCIDsDDL) // TODO: Remove after every node runs this
 	// TODO: remove after this ran once on every node (when every node is >= v0.4.2)
 	migrateShardBucket(db, bucket)
+
+	runMigration(db, dropBlobs)
 
 	schedulePartitionOpsMigration(db, myHost) // TODO: Remove after every node runs the partition ops migration
 }
@@ -134,7 +139,7 @@ func migratePartitionOps(db *sql.DB, gormDB *gorm.DB) {
 		-- Kill all long-running sql queries
 		SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity WHERE state = 'active' AND now() - query_start > interval '1 minute';
 
-		DO $$ 
+		DO $$
 		BEGIN
 				IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'old_ops') THEN
 						ALTER TABLE IF EXISTS ops RENAME TO old_ops;
@@ -150,11 +155,11 @@ func migratePartitionOps(db *sql.DB, gormDB *gorm.DB) {
 			"data" JSONB)
 			PARTITION BY HASH ("host");
 
-		DO $$ 
-		DECLARE 
+		DO $$
+		DECLARE
 			i INTEGER;
 			partition_name TEXT;
-		BEGIN 
+		BEGIN
 			FOR i IN 0..1008 LOOP -- 1009 partitions
 				partition_name := 'ops_' || i;
 				EXECUTE 'CREATE TABLE IF NOT EXISTS ' || partition_name || ' PARTITION OF ops FOR VALUES WITH (MODULUS 1009, REMAINDER ' || i || ');';
@@ -164,7 +169,7 @@ func migratePartitionOps(db *sql.DB, gormDB *gorm.DB) {
 					EXCEPTION WHEN invalid_table_definition THEN NULL;
 				END;
 
-			END LOOP; 
+			END LOOP;
 		END $$;
 
 		COMMIT;`,

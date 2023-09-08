@@ -13,118 +13,25 @@ use anchor_spl::token::spl_token;
 use crate::constant::{
     ETH_CHAIN_ID,
     ETH_RECIPIENT_ADDRESS_PADDED_32_BYTES,
-    ETH_AUDIO_TOKEN_ADDRESS_PADDED_32_BYTES,
-    WORMHOLE_CORE_BRIDGE_ID,
-    WORMHOLE_TOKEN_BRIDGE_ID
+    ETH_AUDIO_TOKEN_ADDRESS_PADDED_32_BYTES
 };
-use crate::error::StakingBridgeErrorCode;
 use crate::{
     PostWormholeMessage,
     PostWormholeMessageData
 };
 
-/**
- * 1. Verify that we are calling the Wormhole Token Bridge program.
- * 2. Verify that we are using the Wormhole Core Bridge program.
- */
-pub fn check_wormhole_programs(
-    program_id: AccountInfo,
-    bridge_id: AccountInfo,
-) -> Result<()> {
-    // 1. Verify that we are calling the Wormhole Token Bridge program.
-    if program_id.key().to_string() != WORMHOLE_TOKEN_BRIDGE_ID.to_string() {
-        return Err(StakingBridgeErrorCode::NotCallingWormholeTokenBridgeProgram.into());
-    }
-    // 2. Verify that we are using the Wormhole Core Bridge program.
-    if bridge_id.key().to_string() != WORMHOLE_CORE_BRIDGE_ID.to_string() {
-        return Err(StakingBridgeErrorCode::InvalidWormholeCoreBridgeProgram.into());
-    }
-    Ok(())
-}
-
-pub fn check_wormhole_pdas(
+pub fn check_wrapped_mint_pda(
   accounts: &mut PostWormholeMessage,
-  config_bump: u8,
   wrapped_mint_bump: u8,
-  wrapped_meta_bump: u8,
-  authority_signer_bump: u8,
-  bridge_config_bump: u8,
-  emitter_bump: u8,
-  sequence_bump: u8,
-  fee_collector_bump: u8,
 ) -> Result<()> {
     let program_id = &accounts.program_id;
-    let bridge_id = &accounts.bridge_id;
-    let config = &accounts.config;
     let wrapped_mint = &accounts.wrapped_mint;
-    let wrapped_meta = &accounts.wrapped_meta;
-    let authority_signer = &accounts.authority_signer;
-    let bridge_config = &accounts.bridge_config;
-    let emitter = &accounts.emitter;
-    let sequence = &accounts.sequence;
-    let fee_collector = &accounts.fee_collector;
-
-    let (config_pda, config_pda_bump) = Pubkey::find_program_address(
-        &[b"config".as_ref()],
-        program_id.key
-    );
-    if *config.key != config_pda || config_bump != config_pda_bump {
-        return Err(ErrorCode::ConstraintSeeds.into());
-    }
 
     let (wrapped_mint_pda, wrapped_mint_pda_bump) = Pubkey::find_program_address(
         &[b"wrapped".as_ref(), &ETH_CHAIN_ID.to_be_bytes()[..2], hex::decode(ETH_AUDIO_TOKEN_ADDRESS_PADDED_32_BYTES).unwrap().as_ref()],
         program_id.key
     );
     if *wrapped_mint.key != wrapped_mint_pda || wrapped_mint_bump != wrapped_mint_pda_bump {
-        return Err(ErrorCode::ConstraintSeeds.into());
-    }
-
-    let (wrapped_meta_pda, wrapped_meta_pda_bump) = Pubkey::find_program_address(
-        &[b"meta".as_ref(), &wrapped_mint.key().as_ref()],
-        program_id.key
-    );
-    if *wrapped_meta.key != wrapped_meta_pda || wrapped_meta_bump != wrapped_meta_pda_bump {
-        return Err(ErrorCode::ConstraintSeeds.into());
-    }
-
-    let (authority_signer_pda, authority_signer_pda_bump) = Pubkey::find_program_address(
-        &[b"authority_signer".as_ref()],
-        program_id.key
-    );
-    if *authority_signer.key != authority_signer_pda || authority_signer_bump != authority_signer_pda_bump {
-        return Err(ErrorCode::ConstraintSeeds.into());
-    }
-
-    let (bridge_config_pda, bridge_config_pda_bump) = Pubkey::find_program_address(
-        &[b"Bridge".as_ref()],
-        bridge_id.key
-    );
-    if *bridge_config.key != bridge_config_pda || bridge_config_bump != bridge_config_pda_bump {
-        return Err(ErrorCode::ConstraintSeeds.into());
-    }
-
-    let (emitter_pda, emitter_pda_bump) = Pubkey::find_program_address(
-        &[b"emitter".as_ref()],
-        program_id.key
-    );
-    if *emitter.key != emitter_pda || emitter_bump != emitter_pda_bump {
-        return Err(ErrorCode::ConstraintSeeds.into());
-    }
-
-    let (sequence_pda, sequence_pda_bump) = Pubkey::find_program_address(
-        &[b"Sequence".as_ref(), &emitter.key().as_ref()],
-        bridge_id.key
-    );
-    if *sequence.key != sequence_pda || sequence_bump != sequence_pda_bump {
-        return Err(ErrorCode::ConstraintSeeds.into());
-    }
-
-    let (fee_collector_pda, fee_collector_pda_bump) = Pubkey::find_program_address(
-        &[b"fee_collector".as_ref()],
-        bridge_id.key
-    );
-    if *fee_collector.key != fee_collector_pda || fee_collector_bump != fee_collector_pda_bump {
         return Err(ErrorCode::ConstraintSeeds.into());
     }
 

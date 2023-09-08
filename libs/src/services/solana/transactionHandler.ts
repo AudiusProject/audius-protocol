@@ -207,7 +207,23 @@ export class TransactionHandler {
       })
     }
 
-    const rawTransaction = tx.serialize()
+    let rawTransaction: Buffer
+    try {
+      rawTransaction = tx.serialize()
+    } catch (e) {
+      logger.warn(`transactionHandler: transaction serialization failed: ${e}`)
+      let errorCode = null
+      let error = null
+      if (e instanceof Error) {
+        error = e.message
+        errorCode = this._parseSolanaErrorCode(error)
+      }
+      return {
+        res: null,
+        error,
+        errorCode
+      }
+    }
 
     // Send the txn
 

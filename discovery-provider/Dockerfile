@@ -13,30 +13,30 @@ COPY scripts/wait /wait
 
 RUN apk update && \
     apk add --no-cache \
-        alpine-sdk \
-        bash \
-        curl \
-        docker \
-        libffi-dev \
-        libseccomp-dev \
-        libxml2-dev \
-        libxslt-dev \
-        linux-headers \
-        nodejs \
-        npm \
-        python3=3.11.4-r0 \
-        python3-dev=3.11.4-r0 \
-        py3-numpy \
-        py3-pip \
-        py3-scipy \
-        py3-wheel \
-        redis \
-        rsyslog \
-        sudo \
-        gcc \
-        musl-dev \
-        gfortran \
-        openblas-dev
+    alpine-sdk \
+    bash \
+    curl \
+    docker \
+    libffi-dev \
+    libseccomp-dev \
+    libxml2-dev \
+    libxslt-dev \
+    linux-headers \
+    nodejs \
+    npm \
+    python3=3.11.5-r0 \
+    python3-dev=3.11.5-r0 \
+    py3-numpy \
+    py3-pip \
+    py3-scipy \
+    py3-wheel \
+    redis \
+    rsyslog \
+    sudo \
+    gcc \
+    musl-dev \
+    gfortran \
+    openblas-dev
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
@@ -54,12 +54,12 @@ RUN curl -O 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' 
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
     apk update && \
     apk add \
-        libpq=11.12-r0 \
-        postgresql-client=11.12-r0 \
-        postgresql-contrib=11.12-r0 \
-        postgresql-dev=11.12-r0 \
-        postgresql-libs=11.12-r0 \
-        postgresql=11.12-r0
+    libpq=11.12-r0 \
+    postgresql-client=11.12-r0 \
+    postgresql-contrib=11.12-r0 \
+    postgresql-dev=11.12-r0 \
+    postgresql-libs=11.12-r0 \
+    postgresql=11.12-r0
 
 RUN python3 -m pip install --upgrade pip
 
