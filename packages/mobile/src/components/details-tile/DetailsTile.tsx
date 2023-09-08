@@ -360,94 +360,104 @@ export const DetailsTile = ({
               </TouchableOpacity>
             ) : null}
           </View>
-          {isLongFormContent && isNewPodcastControlsEnabled ? (
-            <DetailsProgressInfo track={track} />
-          ) : null}
-          <View style={styles.buttonSection}>
-            {!doesUserHaveAccess && !isOwner && premiumConditions && trackId ? (
-              <DetailsTileNoAccess
-                trackId={trackId}
-                premiumConditions={premiumConditions}
-              />
-            ) : null}
-            {doesUserHaveAccess || isOwner ? (
-              <Button
-                styles={{
-                  text: styles.playButtonText,
-                  icon: styles.playButtonIcon
-                }}
-                title={isPlayingFullAccess ? messages.pause : playText}
-                size='large'
-                iconPosition='left'
-                icon={isPlayingFullAccess ? IconPause : PlayIcon}
-                onPress={handlePressPlay}
-                disabled={!isPlayable}
-                fullWidth
-              />
-            ) : null}
-            {(doesUserHaveAccess || isOwner) && premiumConditions ? (
-              <DetailsTileHasAccess
-                premiumConditions={premiumConditions}
-                isOwner={isOwner}
-                trackArtist={user}
-              />
-            ) : null}
-            {showPreviewButton ? <PreviewButton /> : null}
-            <DetailsTileActionButtons
-              hasReposted={!!hasReposted}
-              hasSaved={!!hasSaved}
-              hideFavorite={hideFavorite}
-              hideOverflow={hideOverflow}
-              hideRepost={hideRepost}
-              hideShare={hideShare}
-              isOwner={isOwner}
-              isPlaylist={isPlaylist}
-              collectionId={collectionId}
-              isPublished={isPublished}
-              onPressEdit={onPressEdit}
-              onPressOverflow={onPressOverflow}
-              onPressRepost={onPressRepost}
-              onPressSave={onPressSave}
-              onPressShare={onPressShare}
-              onPressPublish={onPressPublish}
-            />
-          </View>
-          {isAiGeneratedTracksEnabled && aiAttributionUserId ? (
-            <DetailsTileAiAttribution userId={aiAttributionUserId} />
-          ) : null}
-          {!isPublished ? null : (
-            <DetailsTileStats
-              favoriteCount={saveCount}
-              hideFavoriteCount={hideFavoriteCount}
-              hideListenCount={hideListenCount}
-              hideRepostCount={hideRepostCount}
-              onPressFavorites={onPressFavorites}
-              onPressReposts={onPressReposts}
-              playCount={playCount}
-              repostCount={repostCount}
-            />
+          {track?.is_delete ? (
+            // This is to introduce a gap
+            <View />
+          ) : (
+            <>
+              {isLongFormContent && isNewPodcastControlsEnabled ? (
+                <DetailsProgressInfo track={track} />
+              ) : null}
+              <View style={styles.buttonSection}>
+                {!doesUserHaveAccess &&
+                !isOwner &&
+                premiumConditions &&
+                trackId ? (
+                  <DetailsTileNoAccess
+                    trackId={trackId}
+                    premiumConditions={premiumConditions}
+                  />
+                ) : null}
+                {doesUserHaveAccess || isOwner ? (
+                  <Button
+                    styles={{
+                      text: styles.playButtonText,
+                      icon: styles.playButtonIcon
+                    }}
+                    title={isPlayingFullAccess ? messages.pause : playText}
+                    size='large'
+                    iconPosition='left'
+                    icon={isPlayingFullAccess ? IconPause : PlayIcon}
+                    onPress={handlePressPlay}
+                    disabled={!isPlayable}
+                    fullWidth
+                  />
+                ) : null}
+                {(doesUserHaveAccess || isOwner) && premiumConditions ? (
+                  <DetailsTileHasAccess
+                    premiumConditions={premiumConditions}
+                    isOwner={isOwner}
+                    trackArtist={user}
+                  />
+                ) : null}
+                {showPreviewButton ? <PreviewButton /> : null}
+                <DetailsTileActionButtons
+                  hasReposted={!!hasReposted}
+                  hasSaved={!!hasSaved}
+                  hideFavorite={hideFavorite}
+                  hideOverflow={hideOverflow}
+                  hideRepost={hideRepost}
+                  hideShare={hideShare}
+                  isOwner={isOwner}
+                  isPlaylist={isPlaylist}
+                  collectionId={collectionId}
+                  isPublished={isPublished}
+                  onPressEdit={onPressEdit}
+                  onPressOverflow={onPressOverflow}
+                  onPressRepost={onPressRepost}
+                  onPressSave={onPressSave}
+                  onPressShare={onPressShare}
+                  onPressPublish={onPressPublish}
+                />
+              </View>
+              {isAiGeneratedTracksEnabled && aiAttributionUserId ? (
+                <DetailsTileAiAttribution userId={aiAttributionUserId} />
+              ) : null}
+              {!isPublished ? null : (
+                <DetailsTileStats
+                  favoriteCount={saveCount}
+                  hideFavoriteCount={hideFavoriteCount}
+                  hideListenCount={hideListenCount}
+                  hideRepostCount={hideRepostCount}
+                  onPressFavorites={onPressFavorites}
+                  onPressReposts={onPressReposts}
+                  playCount={playCount}
+                  repostCount={repostCount}
+                />
+              )}
+              <View style={styles.descriptionContainer}>
+                {description ? (
+                  <Hyperlink
+                    source={descriptionLinkPressSource}
+                    style={styles.description}
+                    linkStyle={styles.link}
+                    text={squashNewLines(description)}
+                  />
+                ) : null}
+              </View>
+              <View
+                style={[
+                  styles.infoSection,
+                  hideFavoriteCount &&
+                    hideListenCount &&
+                    hideRepostCount &&
+                    styles.noStats
+                ]}
+              >
+                {renderDetailLabels()}
+              </View>
+            </>
           )}
-          <View style={styles.descriptionContainer}>
-            {description ? (
-              <Hyperlink
-                source={descriptionLinkPressSource}
-                style={styles.description}
-                linkStyle={styles.link}
-                text={squashNewLines(description)}
-              />
-            ) : null}
-          </View>
-          <View
-            style={[
-              styles.infoSection,
-              hideFavoriteCount &&
-                hideListenCount &&
-                hideRepostCount &&
-                styles.noStats
-            ]}
-          >
-            {renderDetailLabels()}
-          </View>
         </View>
       </View>
       {renderBottomContent?.()}

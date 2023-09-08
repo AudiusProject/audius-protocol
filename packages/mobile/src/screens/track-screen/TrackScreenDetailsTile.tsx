@@ -79,7 +79,8 @@ const messages = {
   collectibleGated: 'collectible gated',
   specialAccess: 'special access',
   usdcPurchase: 'premium track',
-  generatedWithAi: 'generated with ai'
+  generatedWithAi: 'generated with ai',
+  trackDeleted: 'track [deleted by artist]'
 }
 
 type TrackScreenDetailsTileProps = {
@@ -234,6 +235,7 @@ export const TrackScreenDetailsTile = ({
     has_current_user_reposted,
     has_current_user_saved,
     is_unlisted,
+    is_delete,
     is_premium: isPremium,
     mood,
     owner_id,
@@ -480,6 +482,23 @@ export const TrackScreenDetailsTile = ({
   }
 
   const renderHeader = () => {
+    if (is_delete) {
+      return (
+        <View style={styles.headerContainer}>
+          <View style={styles.headerRow}>
+            <Text
+              style={styles.headerText}
+              weight='medium'
+              fontSize='xs'
+              color={getDownloadTextColor()}
+            >
+              {messages.trackDeleted}
+            </Text>
+          </View>
+        </View>
+      )
+    }
+
     return is_unlisted ? (
       <View style={styles.hiddenDetailsTileWrapper}>
         <IconHidden fill={neutralLight4} />
