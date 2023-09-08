@@ -41,7 +41,6 @@ program
       location: `location${rand}`,
       name: `name ${rand}`,
     };
-    console.log("calling audius libs with account metadata");
     try {
       const response = await audiusLibs.Account.signUpV2(
         email,
@@ -53,7 +52,6 @@ program
         /* host */ null,
         /* generateRecoveryLink */ true
       );
-      console.log("response isss ", response);
       if (response.error) {
         program.error(chalk.red(response.error));
       }
