@@ -1,6 +1,6 @@
 const express = require('express')
 const crypto = require('crypto')
-// const { sendV0Transaction } = require('../utils/solanaAddressLookupTable')
+const { sendV0Transaction } = require('../utils/solanaAddressLookupTable')
 
 const { parameterizedAuthMiddleware } = require('../authMiddleware')
 const {
@@ -136,11 +136,11 @@ solanaRouter.post(
       // if (isTransactionTooLargeError(error)) {
       if (asdf) {
         console.log('REED got tx too large error, retrying with v0 tx')
-        // sendV0Transaction(
-        //   libs.solanaWeb3Manager.connection,
-        //   instructions,
-        //   feePayerOverride
-        // )
+        sendV0Transaction(
+          libs.solanaWeb3Manager.connection,
+          instructions,
+          feePayerOverride
+        )
       }
       // if the tx fails, store it in redis with a 24 hour expiration
       await redis.setex(
