@@ -1,112 +1,38 @@
+-- for all tables with is_current
+-- use a fkey constraint that cascades delete
 -- delete is_current false
 begin;
 
-CREATE OR REPLACE FUNCTION drop_fk_constraints(_ref_table_names text[])
-RETURNS VOID AS
+-- terminate all active queries to avoid
+SELECT pg_cancel_backend(pid) FROM pg_stat_activity WHERE state = 'active' and pid <> pg_backend_pid();
+
+LOCK TABLE users IN ACCESS EXCLUSIVE MODE;
+
+CREATE OR REPLACE FUNCTION log_message(message_text text)
+RETURNS void AS
 $$
-DECLARE
-   _constraint_name text;
-   _table_name text;
 BEGIN
-   FOR _table_name IN SELECT unnest(_ref_table_names) AS table_name
-   LOOP
-      FOR _constraint_name IN
-         SELECT conname
-         FROM   pg_constraint
-         WHERE  confrelid = _table_name::regclass
-         AND    conrelid::regclass::text <> 'revert_blocks' -- exclude revert_blocks since its constraint is correct
-      LOOP
-         EXECUTE format('ALTER TABLE %s DROP CONSTRAINT IF EXISTS %s', 
-                        quote_ident(_table_name), 
-                        quote_ident(_constraint_name));
-      END LOOP;
-   END LOOP;
-END
-$$ LANGUAGE plpgsql;
-
-
-SELECT drop_fk_constraints(ARRAY[
-    'developer_apps', 
-    'follows', 
-    'grants', 
-    'playlists', 
-    'playlist_seen', 
-    'reposts', 
-    'saves', 
-    'subscriptions', 
-    'tracks']
-);
-
-
-
-CREATE OR REPLACE FUNCTION delete_rows(_table_names text[])
-RETURNS VOID AS
+    RAISE NOTICE '% %', pg_backend_pid(), message_text;
+END;
 $$
-DECLARE
-   _table_name text;
-BEGIN
-   FOREACH _table_name IN ARRAY _table_names
-   LOOP
-      -- Logging the deletion
-      RAISE NOTICE 'Deleting rows from table % where is_current is false', _table_name;
+LANGUAGE plpgsql;
 
-      EXECUTE format('DELETE FROM %s WHERE is_current = false', 
-                     quote_ident(_table_name));
+SELECT log_message('creating new users table');
 
-   END LOOP;
-END
-$$ LANGUAGE plpgsql;
+-- replace users
+alter table users drop constraint if exists users_blocknumber_fkey;
+create table users_new (like users including all);
+insert into users_new select * from users where is_current = true;
 
-CREATE OR REPLACE FUNCTION add_fk_constraints(_table_names text[])
-RETURNS VOID AS
-$$
-DECLARE
-   _table_name text;
-BEGIN
-   FOREACH _table_name IN ARRAY _table_names
-   LOOP
-      -- Logging the action
-      RAISE NOTICE 'Adding foreign key constraint to table %', _table_name;
+SELECT log_message('replacing old users table');
 
-      EXECUTE format('ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (blocknumber) REFERENCES blocks (number) ON DELETE CASCADE', 
-                     quote_ident(_table_name), 
-                     quote_ident(_table_name || '_blocknumber_fkey'));
+drop table users;
+alter table users_new rename to users;
+alter table users add constraint users_blocknumber_fkey foreign key (blocknumber) references blocks (number) on delete cascade;
 
-   END LOOP;
-END
-$$ LANGUAGE plpgsql;
+-- re-enable triggers
+CREATE TRIGGER trg_users AFTER INSERT OR UPDATE ON public.users FOR EACH ROW EXECUTE PROCEDURE public.on_new_row();
+CREATE TRIGGER on_user AFTER INSERT ON public.users FOR EACH ROW EXECUTE PROCEDURE public.handle_user();
 
-
-SELECT delete_rows(ARRAY[
-    'associated_wallets', 
-    'developer_apps', 
-    'follows', 
-    'grants', 
-    'playlists', 
-    'playlist_seen', 
-    'reposts', 
-    'saves', 
-    'subscriptions', 
-    'tracks', 
-    'user_events', 
-    'users'
-]
-);
-
-SELECT add_fk_constraints(ARRAY[
-    'associated_wallets', 
-    'developer_apps', 
-    'follows', 
-    'grants', 
-    'playlists', 
-    'playlist_seen', 
-    'reposts', 
-    'saves', 
-    'subscriptions', 
-    'tracks', 
-    'user_events', 
-    'users'
-]
-);
 
 commit;
