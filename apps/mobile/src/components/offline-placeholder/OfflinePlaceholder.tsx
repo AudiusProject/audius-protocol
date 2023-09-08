@@ -9,7 +9,12 @@ import { Button, Text, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
-import { messages } from './messages'
+const messages = {
+  reloading: (isReloading: boolean) =>
+    isReloading ? 'Reloading...' : 'Reload',
+  title: `You’re Offline`,
+  subtitle: `We Couldn’t Load the Page.\nConnect to the Internet and Try Again.`
+}
 
 const useStyles = makeStyles(({ typography, spacing }) => ({
   button: {
@@ -59,7 +64,9 @@ export const OfflinePlaceholder = (props: OfflinePlaceholderProps) => {
     <View style={styles.container}>
       <IconNoWifi fill={neutralLight4} />
       <Text style={styles.header}>{messages.title}</Text>
-      <Text style={styles.subHeading}>{messages.subtitle}</Text>
+      <Text style={styles.subHeading} allowNewline>
+        {messages.subtitle}
+      </Text>
       <Button
         title={messages.reloading(isRefreshing)}
         disabled={isRefreshing}

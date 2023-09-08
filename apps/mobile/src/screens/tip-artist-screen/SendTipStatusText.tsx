@@ -29,7 +29,7 @@ export const SendTipStatusText = () => {
     return (
       <View>
         <DescriptionText>{messages.maintenance}</DescriptionText>
-        <DescriptionText>
+        <DescriptionText allowNewline>
           {messages.fewMinutes} {'\n'}
           {messages.holdOn}
         </DescriptionText>
