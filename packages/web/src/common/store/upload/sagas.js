@@ -160,7 +160,6 @@ function* uploadWorker(requestChan, respChan, progressChan) {
     return (progress) => {
       const key =
         'audio' in progress ? 'audio' : 'art' in progress ? 'art' : null
-      if (!key) return
       const { upload, transcode } = progress[key]
       const loaded = upload?.loaded
       const total = upload?.total
@@ -951,6 +950,12 @@ function* uploadSingleTrack(track) {
     const loaded = upload?.loaded
     const total = upload?.total
 
+    console.log({
+      index: 'single',
+      key,
+      loaded,
+      total
+    })
     progressChan.put(
       uploadActions.updateProgress(0, key, {
         loaded,

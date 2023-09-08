@@ -1,3 +1,5 @@
+import { cloneDeep } from 'lodash'
+
 import {
   TOGGLE_MULTI_TRACK_NOTIFICATION,
   UPLOAD_TRACKS_REQUESTED,
@@ -68,7 +70,9 @@ const actionsMap = {
     const newState = { ...state }
     newState.uploading = true
     newState.tracks = action.tracks
-    newState.uploadProgress = action.tracks.map(() => initialUploadState)
+    newState.uploadProgress = action.tracks.map(() =>
+      cloneDeep(initialUploadState)
+    )
     newState.metadata = action.metadata ?? null
     newState.uploadType = action.uploadType ?? null
     newState.stems = action.stems ?? newState.stems
@@ -114,10 +118,7 @@ const actionsMap = {
     newState.uploadProgress = [...(state.uploadProgress ?? [])]
     newState.uploadProgress[action.index][key].status = action.progress.status
     if (action.progress.loaded && action.progress.total) {
-      newState.uploadProgress[action.index][key].loaded = Math.max(
-        action.progress.loaded,
-        newState.uploadProgress[action.index][key].loaded ?? 0
-      )
+      newState.uploadProgress[action.index][key].loaded = action.progress.loaded
       newState.uploadProgress[action.index][key].total = action.progress.total
     }
     if (action.progress.transcode) {

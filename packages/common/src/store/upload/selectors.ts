@@ -1,4 +1,4 @@
-import { round } from 'lodash'
+import { cloneDeep, round } from 'lodash'
 
 import { CommonState } from '../commonStore'
 
@@ -47,12 +47,6 @@ const getKeyUploadProgress = (state: CommonState, key: 'art' | 'audio') => {
       : UPLOAD_WEIGHT * fileUploadProgress +
         TRANSCODE_WEIGHT * transcodeProgress
 
-  console.log({
-    key,
-    upload: `${round(fileUploadProgress * 100)}%`,
-    transcode: `${round(transcodeProgress * 100)}%`,
-    overall: `${round(overallProgress * 100)}%`
-  })
   return overallProgress
 }
 
