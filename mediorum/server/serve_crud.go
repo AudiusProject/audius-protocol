@@ -1,8 +1,10 @@
 package server
 
 import (
+	"context"
 	"mediorum/crudr"
 	"net/http"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -13,9 +15,13 @@ func (ss *MediorumServer) serveCrudSweep(c echo.Context) error {
 	ss.crudSweepMutex.Lock()
 	defer ss.crudSweepMutex.Unlock()
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
 	after := c.QueryParam("after")
 	var ops []*crudr.Op
 	ss.crud.DB.
+		WithContext(ctx).
 		Where("ulid > ?", after).
 		Limit(PullLimit).
 		Order("ulid asc").

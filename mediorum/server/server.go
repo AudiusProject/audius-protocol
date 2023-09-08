@@ -219,10 +219,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	dbPruneOldOps(db, config.Self.Host)
 	dbMigrate(crud, bucket, config.Self.Host)
 
-	// set 5s db connection timeout after migrations are completed
-	sqlDb, _ := db.DB()
-	sqlDb.SetConnMaxLifetime(time.Duration(5) * time.Second)
-
 	// Read trusted notifier endpoint from chain
 	var trustedNotifier ethcontracts.NotifierInfo
 	if config.TrustedNotifierID > 0 {
