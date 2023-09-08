@@ -20,6 +20,8 @@ LANGUAGE plpgsql;
 SELECT log_message('creating new users table');
 
 -- replace users
+drop materialized view if exists trending_params;
+
 alter table users drop constraint if exists users_blocknumber_fkey;
 create table users_new (like users including all);
 insert into users_new select * from users where is_current = true;
@@ -34,5 +36,7 @@ alter table users add constraint users_blocknumber_fkey foreign key (blocknumber
 CREATE TRIGGER trg_users AFTER INSERT OR UPDATE ON public.users FOR EACH ROW EXECUTE PROCEDURE public.on_new_row();
 CREATE TRIGGER on_user AFTER INSERT ON public.users FOR EACH ROW EXECUTE PROCEDURE public.handle_user();
 
+SELECT log_message('recreate trending params');
 
+select recreate_trending_params();
 commit;
