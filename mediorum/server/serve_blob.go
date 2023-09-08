@@ -126,6 +126,9 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		// v2 file listen
 		if isAudioFile {
 			go ss.logTrackListen(c)
+		} else {
+			// images: cache 30 days
+			c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=2592000, immutable")
 		}
 
 		if c.Request().Method == "HEAD" {
