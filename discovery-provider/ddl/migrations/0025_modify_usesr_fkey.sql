@@ -1,6 +1,5 @@
--- for all tables with is_current
+-- recreate users table without is_current false
 -- use a fkey constraint that cascades delete
--- delete is_current false
 begin;
 
 -- terminate all active queries to avoid
