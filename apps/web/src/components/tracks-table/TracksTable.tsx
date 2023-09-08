@@ -242,6 +242,9 @@ export const TracksTable = ({
 
   const renderPlaysCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
+    const { plays } = track
+    // negative plays indicates the track is hidden
+    if (plays === -1) return '-'
     return formatCount(track.plays)
   }, [])
 

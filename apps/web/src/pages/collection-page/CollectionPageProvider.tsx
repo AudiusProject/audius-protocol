@@ -411,7 +411,12 @@ class CollectionPage extends Component<
       handle: metadata.user.handle,
       date: metadata.dateAdded || metadata.created_at,
       time: metadata.duration,
-      plays: metadata.play_count
+      // for hidden tracks, we don't show the play_count and represent this
+      // as -1 for sorting. The tracks-table will render this as a dash.
+      plays:
+        metadata.is_unlisted && this.props.userId !== metadata.owner_id
+          ? -1
+          : metadata.play_count
     }))
   }
 
