@@ -272,7 +272,7 @@ const fetchData = async <Args, Data>(
     endpoint.onQueryStarted?.(fetchArgs, { dispatch })
 
     const apiData = await endpoint.fetch(fetchArgs, context)
-    if (!apiData) {
+    if (apiData == null) {
       throw new Error('Remote data not found')
     }
 

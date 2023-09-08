@@ -147,7 +147,8 @@ import {
   CHAT_PAGE,
   PROFILE_PAGE_AI_ATTRIBUTED_TRACKS,
   PURCHASES_PAGE,
-  SALES_PAGE
+  SALES_PAGE,
+  WITHDRAWALS_PAGE
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
@@ -170,6 +171,7 @@ import { FbSharePage } from './fb-share-page/FbSharePage'
 import FollowersPage from './followers-page/FollowersPage'
 import FollowingPage from './following-page/FollowingPage'
 import { PurchasesPage, SalesPage } from './purchases-and-sales'
+import { WithdrawalsPage } from './purchases-and-sales/WithdrawalsPage'
 import SettingsPage from './settings-page/SettingsPage'
 import { SubPage } from './settings-page/components/mobile/SettingsPage'
 import SmartCollectionPage from './smart-collection/SmartCollectionPage'
@@ -725,6 +727,11 @@ class App extends Component {
                 />
                 <Route exact path={PURCHASES_PAGE} component={PurchasesPage} />
                 <Route exact path={SALES_PAGE} component={SalesPage} />
+                <Route
+                  exact
+                  path={WITHDRAWALS_PAGE}
+                  component={WithdrawalsPage}
+                />
                 <Route
                   exact
                   path={CHAT_PAGE}

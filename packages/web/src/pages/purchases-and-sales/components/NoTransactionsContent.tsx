@@ -9,21 +9,21 @@ import { Icon } from 'components/Icon'
 import { Tile } from 'components/tile'
 import { Text } from 'components/typography'
 
-import styles from './NoPurchasesContent.module.css'
+import styles from './NoTransactionsContent.module.css'
 
-export type NoPurchasesContentProps = {
+export type NoTransactionsContentProps = {
   headerText: string
   bodyText: string
   ctaText: string
   onCTAClicked: () => void
 }
 
-export const NoPurchasesContent = ({
+export const NoTransactionsContent = ({
   headerText,
   bodyText,
   ctaText,
   onCTAClicked
-}: NoPurchasesContentProps) => {
+}: NoTransactionsContentProps) => {
   return (
     <Tile elevation='far' size='large' className={styles.tileContainer}>
       <div className={styles.contentContainer}>

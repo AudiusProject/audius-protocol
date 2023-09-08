@@ -22,7 +22,7 @@ import BN from 'bn.js'
 import { Icon } from 'components/Icon'
 import { Text } from 'components/typography'
 import { useGoToRoute } from 'hooks/useGoToRoute'
-import { SALES_PAGE } from 'utils/route'
+import { SALES_PAGE, WITHDRAWALS_PAGE } from 'utils/route'
 
 import styles from './USDCCard.module.css'
 
@@ -45,13 +45,11 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
   const menuItems: PopupMenuItem[] = [
     {
       text: messages.salesSummary,
-      // TODO: link to sales page https://linear.app/audius/issue/PAY-1763/wire-up-salespurchases-pages-on-artist-dashboard
       onClick: () => goToRoute(SALES_PAGE)
     },
     {
       text: messages.withdrawalHistory,
-      // TODO: link to withdraw history page https://linear.app/audius/issue/PAY-1763/wire-up-salespurchases-pages-on-artist-dashboard
-      onClick: () => {}
+      onClick: () => goToRoute(WITHDRAWALS_PAGE)
     }
   ]
 

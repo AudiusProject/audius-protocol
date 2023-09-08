@@ -151,11 +151,13 @@ export const ceilingBNUSDCToNearestCent = (value: BNUSDC): BNUSDC => {
 /** Formats a USDC wei string (full precision) to a fixed string suitable for
 display as a dollar amount. Note: will lose precision by rounding _up_ to nearest cent */
 export const formatUSDCWeiToUSDString = (amount: StringUSDC, precision = 2) => {
+  // remove negative sign if present.
+  const amountPos = amount.replace('-', '')
   // Since we only need two digits of precision, we will multiply up by 1000
   // with BN, divide by $1 Wei, ceiling up to the nearest cent,
   //  and then convert to JS number and divide back down before formatting to
   // two decimal places.
-  const cents = formatUSDCWeiToNumber(new BN(amount) as BNUSDC)
+  const cents = formatUSDCWeiToNumber(new BN(amountPos) as BNUSDC)
   return formatNumberCommas(cents.toFixed(precision))
 }
 

@@ -29,7 +29,7 @@ import {
   PurchasesTableSortDirection,
   PurchasesTableSortMethod
 } from './PurchasesTable'
-import { NoPurchasesContent } from './components/NoPurchasesContent'
+import { NoTransactionsContent } from './components/NoTransactionsContent'
 
 const { getUserId } = accountSelectors
 
@@ -69,7 +69,7 @@ const NoPurchases = () => {
   }, [dispatch])
 
   return (
-    <NoPurchasesContent
+    <NoTransactionsContent
       headerText={messages.noPurchasesHeader}
       bodyText={messages.noPurchasesBody}
       ctaText={messages.findSongs}
