@@ -11,7 +11,7 @@ export const validator = async (
   response: Response,
   next: NextFunction
 ) => {
-  const body = JSON.parse(request.body) as RelayRequest;
+  const body = request.body as RelayRequest;
 
   logger.info({ body }, "validating request");
 
@@ -49,7 +49,11 @@ export const validator = async (
   };
 
   // Gather user from input data
-  let user: Users;
+  // @ts-ignore, partially populate for now
+  let user: Users = {
+    wallet: senderAddress || null,
+    handle: handle || null,
+  };
   try {
     user = await retrieveUser(
       contractRegistryKey,
@@ -59,8 +63,10 @@ export const validator = async (
       handle
     );
   } catch (e) {
-    validationError(next, e as string);
-    return;
+    logger.error(
+      { e },
+      "could not gather user from db, continuing with senderAddress and handle"
+    );
   }
 
   // inject remaining fields into ctx for downstream middleware
