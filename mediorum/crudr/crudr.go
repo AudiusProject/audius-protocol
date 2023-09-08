@@ -48,15 +48,31 @@ type Crudr struct {
 func New(selfHost string, myPrivateKey *ecdsa.PrivateKey, peerHosts []string, db *gorm.DB) *Crudr {
 	selfHost = httputil.RemoveTrailingSlash(strings.ToLower(selfHost))
 
-	// TODO: change to partitioned schema after all nodes have migrated
 	opDDL := `
-	create table if not exists ops (
-		ulid text primary key,
-		host text not null,
-		action text not null,
-		"table" text not null,
-		data json
-	);
+	CREATE TABLE IF NOT EXISTS ops (
+		"ulid" TEXT,
+		"host" TEXT,
+		"action" TEXT,
+		"table" TEXT,
+		"data" JSONB)
+		PARTITION BY HASH ("host");
+
+	DO $$
+	DECLARE
+		i INTEGER;
+		partition_name TEXT;
+	BEGIN
+		FOR i IN 0..1008 LOOP -- 1009 partitions
+			partition_name := 'ops_' || i;
+			EXECUTE 'CREATE TABLE IF NOT EXISTS ' || partition_name || ' PARTITION OF ops FOR VALUES WITH (MODULUS 1009, REMAINDER ' || i || ');';
+
+			BEGIN
+				EXECUTE 'ALTER TABLE ' || partition_name || ' ADD PRIMARY KEY ("ulid");';
+				EXCEPTION WHEN invalid_table_definition THEN NULL;
+			END;
+
+		END LOOP;
+	END $$;
 	`
 	err := db.Exec(opDDL).Error
 
