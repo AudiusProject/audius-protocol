@@ -4,6 +4,7 @@ use anchor_lang::solana_program::{
   program::invoke_signed
 };
 use anchor_spl::token::spl_token;
+use anchor_spl::token::spl_token::state::{Account, GenericTokenAccount};
 
 use crate::error::PaymentRouterErrorCode;
 
@@ -17,9 +18,7 @@ pub fn check_sender(
     // i.e. that the owner of the sender account is owned by the program.
     // This is because we use the account macro with seeds and bump for the 'sender_owner'.
     let sender_data = sender.data.borrow();
-    let sender_account_owner = <anchor_spl::token::spl_token::state::Account as anchor_spl::token::spl_token::state::GenericTokenAccount>
-        ::unpack_account_owner(&sender_data)
-        .unwrap();
+    let sender_account_owner = Account::unpack_account_owner(&sender_data).unwrap();
     if sender_account_owner != sender_owner.key {
         return Err(PaymentRouterErrorCode::SenderTokenAccountNotOwnedByPDA.into());
     }

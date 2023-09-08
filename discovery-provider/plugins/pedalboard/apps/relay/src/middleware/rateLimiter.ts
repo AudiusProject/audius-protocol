@@ -25,17 +25,19 @@ export const rateLimiterMiddleware = async (
   }
 
   // if not EM transaction, return
-  if (res.locals.ctx.validatedRelayRequest.contractRegistryKey !== "EntityManager") {
-    next()
-    return
+  if (
+    res.locals.ctx.validatedRelayRequest.contractRegistryKey !== "EntityManager"
+  ) {
+    next();
+    return;
   }
 
   const operation = getEntityManagerActionKey(encodedABI);
 
   const isBlockedFromRelay = config.rateLimitBlockList.includes(signer);
   if (isBlockedFromRelay) {
-    rateLimitError(next, "blocked from relay")
-    return
+    rateLimitError(next, "blocked from relay");
+    return;
   }
 
   const limit = await determineLimit(
@@ -55,8 +57,8 @@ export const rateLimiterMiddleware = async (
   } catch (e) {
     if (e instanceof RateLimiterRes) {
       insertReplyHeaders(response, e as RateLimiterRes);
-      rateLimitError(next, "rate limit hit")
-      return
+      rateLimitError(next, "rate limit hit");
+      return;
     }
   }
   next();
@@ -76,7 +78,10 @@ const insertReplyHeaders = (res: Response, data: RateLimiterRes) => {
   const { msBeforeNext, remainingPoints, consumedPoints } = data;
   res.header("Retry-After", (msBeforeNext / 1000).toString());
   res.header("X-RateLimit-Remaining", remainingPoints.toString());
-  res.header("X-RateLimit-Reset", (new Date(Date.now() + msBeforeNext).toString()));
+  res.header(
+    "X-RateLimit-Reset",
+    new Date(Date.now() + msBeforeNext).toString()
+  );
   res.header("X-RateLimit-Consumed", consumedPoints.toString());
 };
 

@@ -19,3 +19,4 @@ test-bpf = []
 [dependencies]
 anchor-lang = "0.28.0"
 anchor-spl = "0.28.0"
+solana-security-txt = "1.1.1"
