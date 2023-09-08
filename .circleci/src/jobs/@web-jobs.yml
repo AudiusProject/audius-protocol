@@ -23,27 +23,27 @@ web-init:
     - run:
         name: typecheck
         command: |
-          cd apps/web
+          cd packages/web
           npm run typecheck
 
     - run:
         name: lint
         command: |
-          cd apps/web
+          cd packages/web
           npm run lint
 
     - run:
         name: stylelint
         command: |
-          cd apps/web
+          cd packages/web
           npm run stylelint
 
     - persist_to_workspace:
         root: ./
         paths:
           - node_modules
-          - apps/web/node_modules
-          - apps/probers/node_modules
+          - packages/web/node_modules
+          - packages/probers/node_modules
           - packages/stems/node_modules
           - packages/stems/dist
           - packages/common/node_modules
@@ -64,14 +64,14 @@ web-build-demo:
         # Set the branch name as the PUBLIC_URL so that relative paths work, e.g.
         # demo.audius.co/some-branch/handle/track resolves as /handle/track would at audius.co
         command: |
-          cd apps/web
+          cd packages/web
           export PUBLIC_URL=/${CIRCLE_BRANCH}
           CI=false npm run build:stage
           mv build-staging build-demo
     - persist_to_workspace:
         root: ./
         paths:
-          - apps/web/build-demo
+          - packages/web/build-demo
 
 web-build-staging:
   working_directory: ~/audius-protocol
@@ -81,7 +81,7 @@ web-build-staging:
   steps:
     - web-build:
         build-type: stage
-        build-directory: apps/web/build-staging
+        build-directory: packages/web/build-staging
         build-name: build-staging
 
 web-test-staging:
@@ -95,15 +95,15 @@ web-test-staging:
     - browser-tools/install-browser-tools:
         chrome-version: 116.0.5845.96 # TODO: remove when chromedriver downloads are fixed
     - cypress/install:
-        install-command: 'cd apps/probers && npx cypress install'
+        install-command: 'cd packages/probers && npx cypress install'
         install-browsers: false
     - cypress/run-tests:
-        cypress-command: 'cd apps/probers && npx cypress run --browser chrome'
-        start-command: 'npx serve -l 3001 -s apps/web/build-staging'
+        cypress-command: 'cd packages/probers && npx cypress run --browser chrome'
+        start-command: 'npx serve -l 3001 -s packages/web/build-staging'
     - store_artifacts:
-        path: /home/circleci/audius-client/apps/probers/cypress/videos
+        path: /home/circleci/audius-client/packages/probers/cypress/videos
     - store_artifacts:
-        path: /home/circleci/audius-client/apps/probers/cypress/screenshots
+        path: /home/circleci/audius-client/packages/probers/cypress/screenshots
 
 web-build-production:
   working_directory: ~/audius-protocol
@@ -113,7 +113,7 @@ web-build-production:
   steps:
     - web-build:
         build-type: prod-source-maps
-        build-directory: apps/web/build-production
+        build-directory: packages/web/build-production
         build-name: build-production
 
 web-deploy-demo:
@@ -127,7 +127,7 @@ web-deploy-demo:
         at: ./
     - run:
         name: Deploy to S3
-        command: aws s3 sync apps/web/build-demo s3://frontend-demo.audius.co/${CIRCLE_BRANCH} --delete --cache-control max-age=0
+        command: aws s3 sync packages/web/build-demo s3://frontend-demo.audius.co/${CIRCLE_BRANCH} --delete --cache-control max-age=0
     - web-pr-comment:
         comment: Preview this change https://demo.audius.co/${CIRCLE_BRANCH}
 
@@ -143,12 +143,12 @@ web-deploy-staging-s3:
     - run:
         name: Create TAR
         command: |
-          tar -zcvf apps/web/build-staging.tar.gz apps/web/build-staging
+          tar -zcvf packages/web/build-staging.tar.gz packages/web/build-staging
     - run:
         name: Deploy to S3
         command: |
-          aws s3 sync --exclude "apps/web/sitemaps/*" apps/web/build-staging s3://staging.audius.co --delete --cache-control max-age=0
-          aws s3 cp apps/web/build-staging.tar.gz s3://staging.audius.co/build-staging.tar.gz --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
+          aws s3 sync --exclude "packages/web/sitemaps/*" packages/web/build-staging s3://staging.audius.co --delete --cache-control max-age=0
+          aws s3 cp packages/web/build-staging.tar.gz s3://staging.audius.co/build-staging.tar.gz --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
 
 web-deploy-staging-cloudflare:
   working_directory: ~/audius-protocol
@@ -195,15 +195,15 @@ web-deploy-production-s3:
     - run:
         name: Create TAR
         command: |
-          tar -zcvf apps/web/build-production.tar.gz apps/web/build-production
+          tar -zcvf packages/web/build-production.tar.gz packages/web/build-production
     - run:
         name: Deploy to S3
         # Deploy, but exclude sourcemaps
         command: |
-          aws s3 sync --exclude "*.map" --exclude robots.txt --exclude "apps/web/sitemaps/*" apps/web/build-production s3://audius.co --delete --cache-control max-age=604800
+          aws s3 sync --exclude "*.map" --exclude robots.txt --exclude "packages/web/sitemaps/*" packages/web/build-production s3://audius.co --delete --cache-control max-age=604800
           aws s3 cp s3://audius.co/index.html s3://audius.co/index.html --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --metadata-directive REPLACE --acl public-read
-          aws s3 cp apps/web/robots.txt s3://audius.co --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
-          aws s3 cp apps/web/build-production.tar.gz s3://audius.co/build-production.tar.gz --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
+          aws s3 cp packages/web/robots.txt s3://audius.co --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
+          aws s3 cp packages/web/build-production.tar.gz s3://audius.co/build-production.tar.gz --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
     - run:
         name: Invalidate cache
         # Note: cache invalidation is charged per path, so this only counts as 1/1000 monthly quota.
@@ -231,22 +231,22 @@ web-deploy-sentry-sourcemaps:
     - run:
         name: install-sentry-cli
         command: |
-          cd apps/web
+          cd packages/web
           npm install @sentry/cli
     - run:
         name: cut-sentry-release
         command: |
-          cd apps/web
+          cd packages/web
           node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-client new ${CIRCLE_SHA1}
     - run:
         name: upload-sourcemaps
         command: |
-          cd apps/web
+          cd packages/web
           node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-client files ${CIRCLE_SHA1} upload-sourcemaps --no-rewrite build-production/static/js
     - run:
         name: finalize-release
         command: |
-          cd apps/web
+          cd packages/web
           node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-client finalize ${CIRCLE_SHA1}
 
 web-dist-mac-staging:

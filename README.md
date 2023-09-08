@@ -25,8 +25,8 @@ For further details on operating an Audius service, getting started with the Tok
 
 | Name                                                      | Description                            |
 | --------------------------------------------------------- | -------------------------------------- |
-| [`web`](./apps/web)                                   | The Audius web and desktop application |
-| [`mobile`](./apps/mobile)                             | The Audius mobile application          |
+| [`web`](./packages/web)                                   | The Audius web and desktop application |
+| [`mobile`](./packages/mobile)                             | The Audius mobile application          |
 
 ## Packages
 

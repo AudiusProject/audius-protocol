@@ -27,7 +27,7 @@ commands:
     steps:
       - run:
           name: Combine patch-files to single file
-          command: ls -d -- apps/*/patches/*.patch | xargs cat > << parameters.filename >>
+          command: ls -d -- packages/*/patches/*.patch | xargs cat > << parameters.filename >>
 
 jobs:
   # Generate the CircleCI continue_config.yml from .circleci/src
@@ -72,10 +72,10 @@ jobs:
           key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
           paths:
             - ./node_modules
-            - ./apps/web/node_modules
-            - ./apps/mobile/node_modules
-            - ./apps/probers/node_modules
-            - ./apps/embed/node_modules
+            - ./packages/web/node_modules
+            - ./packages/mobile/node_modules
+            - ./packages/probers/node_modules
+            - ./packages/embed/node_modules
             - ./packages/stems/node_modules
             - ./packages/common/node_modules
 
@@ -189,10 +189,10 @@ workflows:
             .* run-release-workflow false
             .* run-gcp-workflow true
             .* run-integration-workflow true
-            apps/web/.* run-web-workflow true
-            apps/mobile/.* run-mobile-workflow true
-            apps/probers/.* run-web-workflow true
-            apps/embed/.* run-embed-workflow true
+            packages/web/.* run-web-workflow true
+            packages/mobile/.* run-mobile-workflow true
+            packages/probers/.* run-web-workflow true
+            packages/embed/.* run-embed-workflow true
             packages/common/.* run-web-workflow true
             packages/common/.* run-mobile-workflow true
             packages/stems/.* run-stems-workflow true

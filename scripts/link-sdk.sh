@@ -18,5 +18,5 @@ cd -
 
 concurrently \
   "cd packages/common && npm link @audius/sdk" \
-  "cd apps/web && npm link @audius/sdk" \
-  "cd apps/mobile && npm link @audius/sdk" \
+  "cd packages/web && npm link @audius/sdk" \
+  "cd packages/mobile && npm link @audius/sdk" \

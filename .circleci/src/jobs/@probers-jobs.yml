@@ -7,6 +7,6 @@ probers-test-stage:
     - run:
         name: run prober tests against staging.audius.co
         command: |
-          cd apps/probers
+          cd packages/probers
           npx cypress install
           npm run cypress:run-stage

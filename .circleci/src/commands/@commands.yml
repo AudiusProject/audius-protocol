@@ -6,4 +6,4 @@ create_concatenated_patch_file:
   steps:
     - run:
         name: Combine patch-files to single file
-        command: ls -d -- apps/*/patches/*.patch | xargs cat > << parameters.filename >>
+        command: ls -d -- packages/*/patches/*.patch | xargs cat > << parameters.filename >>

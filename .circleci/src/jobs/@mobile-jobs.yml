@@ -7,13 +7,13 @@ mobile-init:
     - run:
         name: copy staging env
         command: |
-          cd apps/mobile
+          cd packages/mobile
           echo "FCM_SENDER_ID=$FCM_SENDER_ID" >> .env.stage
           echo "AMPLITUDE_WRITE_KEY=$AMPLITUDE_WRITE_KEY_STAGE" >> .env.stage
     - run:
         name: copy production env
         command: |
-          cd apps/mobile
+          cd packages/mobile
           echo "FCM_SENDER_ID=$FCM_SENDER_ID" >> .env.prod
           echo "AMPLITUDE_WRITE_KEY=$AMPLITUDE_WRITE_KEY_PROD" >> .env.prod
 
@@ -32,24 +32,24 @@ mobile-init:
 
     - run:
         name: typecheck
-        command: cd apps/mobile && npm run typecheck
+        command: cd packages/mobile && npm run typecheck
 
     - run:
         name: lint
-        command: cd apps/mobile && npm run lint
+        command: cd packages/mobile && npm run lint
 
     - persist_to_workspace:
         root: ./
         paths:
           - node_modules
-          - apps/web/node_modules
-          - apps/mobile/node_modules
+          - packages/web/node_modules
+          - packages/mobile/node_modules
           - packages/stems/node_modules
           - packages/stems/dist
           - packages/common/node_modules
           - packages/common/dist
-          - apps/mobile/.env.stage
-          - apps/mobile/.env.prod
+          - packages/mobile/.env.stage
+          - packages/mobile/.env.prod
 
 mobile-comment-native-code-change:
   working_directory: ~/audius-protocol
