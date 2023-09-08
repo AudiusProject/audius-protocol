@@ -39,8 +39,8 @@
     "STEMS======================================": "",
     "stems": "npm run start -w @audius/stems",
     "SDK========================================": "",
-    "sdk:update": "npm exec -- npm-check-updates @audius/sdk -u --target @beta && rm -rf apps/*/node_modules/@audius/sdk && npm i",
-    "sdk:update-hotfix": "npm exec -- npm-check-updates @audius/sdk -u --target @hotfix && rm -rf apps/*/node_modules/@audius/sdk && npm i",
+    "sdk:update": "npm exec -- npm-check-updates @audius/sdk -u --deep --target @beta && rm -rf packages/*/node_modules/@audius/sdk && npm i",
+    "sdk:update-hotfix": "npm exec -- npm-check-updates @audius/sdk -u --deep --target @hotfix && rm -rf packages/*/node_modules/@audius/sdk && npm i",
     "sdk:link": "./scripts/link-sdk.sh",
     "verify": "npm run verify -ws --if-present"
   },
