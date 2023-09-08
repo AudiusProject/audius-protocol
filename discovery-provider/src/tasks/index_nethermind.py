@@ -204,14 +204,6 @@ def process_state_changes(
         )
 
 
-@log_duration(logger)
-def revert_user_events(session, revert_user_events_entries, revert_block_number):
-    for user_events_to_revert in revert_user_events_entries:
-
-        logger.debug(f"Reverting user events: {user_events_to_revert}")
-        session.delete(user_events_to_revert)
-
-
 def get_latest_database_block(session: Session) -> Block:
     """
     Gets the latest block in the database.
@@ -453,10 +445,6 @@ def revert_block(session: Session, block_to_revert: Block):
         .first()
     )
 
-    revert_user_entries = (
-        session.query(User).filter(User.blocknumber == revert_block_number).all()
-    )
-
     revert_track_routes = (
         session.query(TrackRoute)
         .filter(TrackRoute.blocknumber == revert_block_number)
@@ -499,12 +487,6 @@ def revert_block(session: Session, block_to_revert: Block):
             previous_playlist_route_entry.is_current = True
         logger.info(f"Reverting playlist route {playlist_route_to_revert}")
         session.delete(playlist_route_to_revert)
-
-    for user_to_revert in revert_user_entries:
-
-        # Remove outdated user entries
-        logger.info(f"Reverting user: {user_to_revert}")
-        session.delete(user_to_revert)
 
     # delete block record and cascade delete from tables ^
     session.query(Block).filter(Block.blockhash == revert_hash).delete()
