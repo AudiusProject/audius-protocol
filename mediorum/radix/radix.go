@@ -1,6 +1,8 @@
 package radix
 
-// TODO: if the set of registered nodes changes then we need to wipe everything
+// TODO: if the set of registered nodes changes then we need to start rebuilding the tree from scratch
+
+// TODO: if memory grows too large, we can prune tombstones with 0 value (no hosts) on some interval (any interval > how often every host fetches updates from other hosts)
 
 import (
 	"encoding/json"
@@ -19,6 +21,7 @@ import (
 var (
 	baCompressedChar = "`"          // anything non-base32 will do
 	baPrefix         = "baeaaaiqse" // all CIDV1s start with this, while CIDV0s start with "Qm"
+	tombstoneSuffix  = "_"          // keys ending with this map to values containing hosts that don't have the CID
 
 	// save space by changing common suffixes like "/150x150x.jpg" to a prefix like "!" - anything non-base58 will do
 	suffixCompressedChars = map[string]string{
@@ -38,12 +41,12 @@ type Radix struct {
 	NumCIDsOnMyHost uint // "CIDs I double-checked that I'm storing during repair.go"
 	NumCIDsTotal    uint // "CIDs I checked in repair.go (even if I ignored them because I'm not in the top R rendezvous)"
 
-	myHost            string
-	tree              *iradix.Tree[uint16]
-	mu                sync.RWMutex
-	idToHost          map[uint8]string   // ints representing a node (to save space so we don't have to store the full host string)
-	combinations      map[uint16][]uint8 // ints representing a set/combination of nodes that have a CID (to store at radix leaves). 0 is reserved for "no hosts have this CID"
-	otherHostSuffixes map[string]string  // each host to the suffix we append to each key in our tree so we know it came from that host
+	myHost       string
+	cursors      map[string]*iradix.Tree[uint16] // cursors for other hosts so we don't send them the same CIDs we already sent before
+	tree         *iradix.Tree[uint16]
+	mu           sync.RWMutex
+	idToHost     map[uint8]string   // ints representing a node (to save space so we don't have to store the full host string)
+	combinations map[uint16][]uint8 // ints representing a set/combination of nodes that have a CID (to store at radix leaves). 0 is reserved for "no hosts have this CID"
 }
 
 func New(myHost string, otherHosts []string) (r *Radix) {
@@ -60,24 +63,24 @@ func New(myHost string, otherHosts []string) (r *Radix) {
 	}
 
 	r = &Radix{
-		tree:              iradix.New[uint16](),
-		myHost:            myHost,
-		idToHost:          make(map[uint8]string, len(otherHosts)),
-		otherHostSuffixes: make(map[string]string, len(otherHosts)),
-		combinations:      make(map[uint16][]uint8, 65535),
+		tree:         iradix.New[uint16](),
+		myHost:       myHost,
+		cursors:      make(map[string]*iradix.Tree[uint16], len(otherHosts)),
+		idToHost:     make(map[uint8]string, len(otherHosts)),
+		combinations: make(map[uint16][]uint8, 65535),
 	}
 
 	r.idToHost[0] = myHost
 	for i, otherHost := range otherHosts {
-		r.otherHostSuffixes[otherHost] = fmt.Sprintf("_%d", i)
 		r.idToHost[uint8(i+1)] = otherHost
+		r.cursors[otherHost] = r.tree.Txn().CommitOnly()
 	}
 
 	return
 }
 
 // GetHostsWithCID returns the hosts that we confirmed to have the given CID.
-// NOTE: This is only this host's view, which is only accurate for CIDs for which this host is in the top rendezvous. You will need to aggregate with other host' radix views to get a complete picture using GetOtherViewsOfHostsWithCID().
+// Note that this doesn't confirm that any host doesn't have the CID - they may have it but we haven't checked yet, or we haven't been told about it yet by a node that did check it
 func (r *Radix) GetHostsWithCID(cid string) []string {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -93,102 +96,35 @@ func (r *Radix) GetHostsWithCID(cid string) []string {
 	return hosts
 }
 
-// GetOtherViewsOfHostsWithCID returns a mapping of each other host to the other host's view of which hosts have the given CID.
-func (r *Radix) GetOtherViewsOfHostsWithCID(cid string) map[string][]string {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-	key := compressCID(cid)
-
-	otherHostViews := make(map[string][]string, len(r.otherHostSuffixes))
-	for otherHost, suffix := range r.otherHostSuffixes {
-		if idx, ok := r.tree.Get([]byte(key + suffix)); ok {
-			hostsWithCID := r.combinations[idx]
-			for _, idOfHostWithCID := range hostsWithCID {
-				otherHostViews[otherHost] = append(otherHostViews[otherHost], r.idToHost[idOfHostWithCID])
-			}
-		}
-	}
-
-	return otherHostViews
-}
-
-// SetHostHasCID should only be called after checking a host and confirming it has the given CID.
+// SetHostHasCID should only be called after checking a host and confirming it has the given CID
 func (r *Radix) SetHostHasCID(host, cid string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-
 	key := compressCID(cid)
-	hostID := r.getIdForHost(host)
-
-	idxOfCurrHostsWithCID, treeHasCID := r.tree.Get([]byte(key))
-	var hostsWithCID []uint8
-	if treeHasCID {
-		hostsWithCID = slices.Clone(r.combinations[idxOfCurrHostsWithCID])
-		if !slices.Contains(hostsWithCID, hostID) {
-			hostsWithCID = append(hostsWithCID, hostID)
-			if host == r.myHost {
-				r.NumCIDsOnMyHost++
-			}
-		}
-	} else {
-		hostsWithCID = []uint8{hostID}
-		r.NumCIDsTotal++
-		if host == r.myHost {
-			r.NumCIDsOnMyHost++
-		}
-	}
-
-	// set leaf for the CID to mark the index of the slice of hosts that have the CID
-	idxOfNewHostsWithCID := r.getOrMakeCombinationsIdx(hostsWithCID)
-	r.tree, _, _ = r.tree.Insert([]byte(key), idxOfNewHostsWithCID)
+	r.upsertKey(key, host, true)
 }
 
-// SetHostNotHasCID marks the given CID as not existing on the given host.
+// SetHostNotHasCID marks the given CID as not existing on the given host
 func (r *Radix) SetHostNotHasCID(host, cid string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-
 	key := compressCID(cid)
-	hostID := r.getIdForHost(host)
-
-	idxOfCurrHostsWithCID, treeHasCID := r.tree.Get([]byte(key))
-	if !treeHasCID {
-		return
-	}
-
-	// remove hostID from slice of hosts that have this CID
-	hostsWithCID := []uint8{}
-	for _, hostIDWithCID := range r.combinations[idxOfCurrHostsWithCID] {
-		if hostIDWithCID != hostID {
-			hostsWithCID = append(hostsWithCID, hostIDWithCID)
-		}
-	}
-	if host == r.myHost && len(hostsWithCID) < len(r.combinations[idxOfCurrHostsWithCID]) {
-		r.NumCIDsOnMyHost--
-	}
-
-	// set leaf for the CID to mark the index of the slice of hosts that now have the CID
-	if len(hostsWithCID) == 0 {
-		r.tree, _, _ = r.tree.Delete([]byte(key))
-	} else {
-		idxOfNewHostsWithCID := r.getOrMakeCombinationsIdx(hostsWithCID)
-		r.tree, _, _ = r.tree.Insert([]byte(key), idxOfNewHostsWithCID)
-	}
+	r.removeHostFromLeaf(key, host)
 }
 
 type ServeCIDInfoResp struct {
-	HostViews map[string][]string // map of host to which hosts they think have the CID
+	HostsWithCID  []string
+	CID           string
+	CompressedCID string
 }
 
 func (r *Radix) ServeCIDInfo(c echo.Context) error {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
 	cid := c.Param("cid")
-	hostViews := r.GetOtherViewsOfHostsWithCID(cid)
-	hostViews[r.myHost] = r.GetHostsWithCID(cid)
-
-	return c.JSON(http.StatusOK, ServeCIDInfoResp{HostViews: hostViews})
+	return c.JSON(http.StatusOK, ServeCIDInfoResp{
+		HostsWithCID:  r.GetHostsWithCID(cid),
+		CID:           cid,
+		CompressedCID: compressCID(cid),
+	})
 }
 
 const maxPageSize = 100000
@@ -196,15 +132,27 @@ const maxPageSize = 100000
 type ServeTreeInternalResp struct {
 	IdToHost     map[uint8]string
 	Combinations map[uint16][]uint8
-	Leaves       map[string]uint16
+	Leaves       []LeafEntry
 	LastKey      string
 }
 
+// used instead of a map to preserve order
+type LeafEntry struct {
+	Key          string
+	HostsWithCID uint16
+}
+
 // ServeTreePaginatedInternal returns a paginated list of tree leaves for other Content Nodes to use.
-// TODO: We should add delta tracking to reduce bandwidth usage: keep the previous tree for a week and only send the differences unless the other node requests the entire tree for the first time.
 func (r *Radix) ServeTreePaginatedInternal(c echo.Context) error {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
+
+	// find cursor for the requesting host so we don't send them the same CIDs we already sent before
+	host := c.QueryParam("host")
+	if _, ok := r.cursors[host]; !ok {
+		return c.JSON(http.StatusBadRequest, fmt.Sprintf("host %s not found", host))
+	}
+	prevTree := r.cursors[host]
 
 	greaterThanKey := c.QueryParam("greaterThanKey")
 	pageSize, err := strconv.Atoi(c.QueryParam("pageSize"))
@@ -219,21 +167,20 @@ func (r *Radix) ServeTreePaginatedInternal(c echo.Context) error {
 	}
 
 	resp := ServeTreeInternalResp{
-		Leaves:       make(map[string]uint16, pageSize),
+		Leaves:       make([]LeafEntry, 0, pageSize),
 		IdToHost:     map[uint8]string{},
 		Combinations: map[uint16][]uint8{},
 	}
 	var lastKey string
 	for key, val, ok := iter.Next(); ok && len(resp.Leaves) < pageSize; key, val, ok = iter.Next() {
-		keyStr := string(key)
-
-		// only share our own leaves - not leaves that are tracking other hosts
-		if strings.Contains(keyStr, "_") {
+		// skip sending unchanged leaves that we already sent to the requesting host
+		if prevVal, ok := prevTree.Get(key); ok && val == prevVal {
 			continue
 		}
 
+		keyStr := string(key)
 		lastKey = keyStr
-		resp.Leaves[keyStr] = val
+		resp.Leaves = append(resp.Leaves, LeafEntry{Key: keyStr, HostsWithCID: val})
 
 		// share our mappings so the other host can re-map them to their own IDs
 		if !slices.Contains(maps.Keys(resp.Combinations), val) {
@@ -245,15 +192,18 @@ func (r *Radix) ServeTreePaginatedInternal(c echo.Context) error {
 	}
 
 	resp.LastKey = lastKey
+
+	// update our cursor for this host (this "copying" of the tree is pointer-based so it doesn't take up much memory)
+	if resp.LastKey == "" {
+		r.cursors[host] = r.tree.Txn().CommitOnly()
+	}
+
 	return c.JSON(http.StatusOK, resp)
 }
 
-type ServeTreeCIDResp struct {
-	ReportedByHost string
-	HostsWithCID   []string
-}
 type ServeTreeResp struct {
-	CIDs map[string]ServeTreeCIDResp
+	CIDToHosts map[string][]string
+	LastCID    string
 }
 
 // ServeTreePaginated returns a paginated list of tree leaves in human-readable format.
@@ -274,52 +224,29 @@ func (r *Radix) ServeTreePaginated(c echo.Context) error {
 	}
 
 	resp := ServeTreeResp{
-		CIDs: make(map[string]ServeTreeCIDResp, pageSize),
+		CIDToHosts: make(map[string][]string, pageSize),
 	}
-	for key, val, ok := iter.Next(); ok && len(resp.CIDs) < pageSize; key, val, ok = iter.Next() {
+	for key, val, ok := iter.Next(); ok && len(resp.CIDToHosts) < pageSize; key, val, ok = iter.Next() {
 		keyStr := string(key)
-
-		host := r.myHost
-		if strings.Contains(keyStr, "_") {
-			// this is a leaf that's tracking another host's view
-			split := strings.Split(keyStr, "_")
-			keyStr = split[0]
-			suffix := "_" + split[1]
-
-			for otherHost, otherSuffix := range r.otherHostSuffixes {
-				if otherSuffix == suffix {
-					host = otherHost
-					break
-				}
-			}
-
-			if host == r.myHost {
-				// we couldn't find the host that this leaf is tracking - this should never happen
-				continue
-			}
-		}
-
+		cid := decompressKey(keyStr)
 		hostIDsWithCID := r.combinations[val]
 		hostsWithCID := make([]string, 0, len(hostIDsWithCID))
 		for _, hostID := range hostIDsWithCID {
 			hostsWithCID = append(hostsWithCID, r.idToHost[hostID])
 		}
 
-		resp.CIDs[decompressKey(keyStr)] = ServeTreeCIDResp{
-			ReportedByHost: host,
-			HostsWithCID:   hostsWithCID,
-		}
+		resp.CIDToHosts[cid] = hostsWithCID
+		resp.LastCID = cid
 	}
 
 	return c.JSON(http.StatusOK, resp)
 }
 
 type ServeReplicationCountsResp struct {
-	NumHostsStoringNumCIDs    map[string]map[int]int
-	NumHostsStoringNumCIDsAgg map[int]int
+	ReplicationFactorToNumCIDs map[int]int
 }
 
-// ServeReplicationCounts returns a mapping of number to the number of CIDs that are replicated by that many hosts.
+// ServeReplicationCounts returns a mapping of number to the number of CIDs that are replicated by that many hosts
 func (r *Radix) ServeReplicationCounts(c echo.Context) error {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -327,43 +254,12 @@ func (r *Radix) ServeReplicationCounts(c echo.Context) error {
 	iter := r.tree.Root().Iterator()
 
 	resp := ServeReplicationCountsResp{
-		NumHostsStoringNumCIDs:    make(map[string]map[int]int, len(r.otherHostSuffixes)+1),
-		NumHostsStoringNumCIDsAgg: map[int]int{},
-	}
-	resp.NumHostsStoringNumCIDs[r.myHost] = make(map[int]int)
-	for otherHost := range r.otherHostSuffixes {
-		resp.NumHostsStoringNumCIDs[otherHost] = make(map[int]int)
+		ReplicationFactorToNumCIDs: map[int]int{},
 	}
 
-	for key, val, ok := iter.Next(); ok; key, val, ok = iter.Next() {
-		keyStr := string(key)
-
-		if strings.Contains(keyStr, "_") {
-			// this is a leaf that's tracking another host's view
-			continue
-		}
-
-		// count num unique hosts that have this CID, as confirmed by us (myHost)
+	for _, val, ok := iter.Next(); ok; _, val, ok = iter.Next() {
 		hostsWithCID := r.combinations[val]
-		resp.NumHostsStoringNumCIDs[r.myHost][len(hostsWithCID)]++
-
-		// count num unique hosts that have this CID, as confirmed by all other hosts
-		for otherHost, suffix := range r.otherHostSuffixes {
-			if idx, ok := r.tree.Get([]byte(keyStr + suffix)); ok {
-				hostsWithCIDInOtherHostView := r.combinations[idx]
-				resp.NumHostsStoringNumCIDs[otherHost][len(hostsWithCIDInOtherHostView)]++
-
-				// aggregate unique hosts storing CID
-				for _, hostID := range hostsWithCIDInOtherHostView {
-					if !slices.Contains(hostsWithCID, hostID) {
-						hostsWithCID = append(hostsWithCID, hostID)
-					}
-				}
-			}
-		}
-
-		// count aggregated unique hosts that have this CID in the view of all hosts
-		resp.NumHostsStoringNumCIDsAgg[len(hostsWithCID)]++
+		resp.ReplicationFactorToNumCIDs[len(hostsWithCID)]++
 	}
 
 	return c.JSON(http.StatusOK, resp)
@@ -372,9 +268,10 @@ func (r *Radix) ServeReplicationCounts(c echo.Context) error {
 type ServeReplicationCIDs struct {
 	ReplicationFactor int
 	CIDs              []string
+	LastCID           string
 }
 
-// ServeReplicationCIDsPaginated return the CIDs that are replicated by the given number of hosts.
+// ServeReplicationCIDsPaginated return the CIDs that are replicated by the given number of hosts
 func (r *Radix) ServeReplicationCIDsPaginated(c echo.Context) error {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -402,30 +299,12 @@ func (r *Radix) ServeReplicationCIDsPaginated(c echo.Context) error {
 
 	for key, val, ok := iter.Next(); ok && len(resp.CIDs) < pageSize; key, val, ok = iter.Next() {
 		keyStr := string(key)
-
-		if strings.Contains(keyStr, "_") {
-			// this is a leaf that's tracking another host's view
-			continue
-		}
-
-		// aggregate unique hosts storing CID confirmed by this host (our view) and other host views
+		cid := decompressKey(keyStr)
 		hostsWithCID := r.combinations[val]
-		for _, suffix := range r.otherHostSuffixes {
-			if idx, ok := r.tree.Get([]byte(keyStr + suffix)); ok {
-				hostsWithCIDInOtherHostView := r.combinations[idx]
-
-				// aggregate unique hosts storing CID
-				for _, hostID := range hostsWithCIDInOtherHostView {
-					if !slices.Contains(hostsWithCID, hostID) {
-						hostsWithCID = append(hostsWithCID, hostID)
-					}
-				}
-			}
-		}
-
 		if replicationFactor == len(hostsWithCID) {
-			resp.CIDs = append(resp.CIDs, decompressKey(decompressKey(keyStr)))
+			resp.CIDs = append(resp.CIDs, cid)
 		}
+		resp.LastCID = cid
 	}
 
 	return c.JSON(http.StatusOK, resp)
@@ -436,7 +315,7 @@ type ServeNumCIDsOnOnlyHostsResp struct {
 	NumCIDsOnlyOnHosts int
 }
 
-// ServeNumCIDsOnOnlyHosts returns the number of CIDs that are only on the given hosts.
+// ServeNumCIDsOnOnlyHosts returns the number of CIDs that are only on the given hosts
 func (r *Radix) ServeNumCIDsOnOnlyHosts(c echo.Context) error {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -447,7 +326,7 @@ func (r *Radix) ServeNumCIDsOnOnlyHosts(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, "no hosts specified")
 	}
 	for _, host := range onlyOnHosts {
-		if _, ok := r.otherHostSuffixes[host]; !ok && host != r.myHost {
+		if _, ok := r.cursors[host]; !ok && host != r.myHost {
 			return c.JSON(http.StatusBadRequest, fmt.Sprintf("host %s not found", host))
 		}
 	}
@@ -458,27 +337,8 @@ func (r *Radix) ServeNumCIDsOnOnlyHosts(c echo.Context) error {
 		Hosts: onlyOnHosts,
 	}
 
-	for key, val, ok := iter.Next(); ok; key, val, ok = iter.Next() {
-		keyStr := string(key)
-
-		if strings.Contains(keyStr, "_") {
-			// this is a leaf that's tracking another host's view
-			continue
-		}
-
-		// find all hosts that have this CID
+	for _, val, ok := iter.Next(); ok; _, val, ok = iter.Next() {
 		hostsWithCID := r.combinations[val]
-		for _, suffix := range r.otherHostSuffixes {
-			if idx, ok := r.tree.Get([]byte(keyStr + suffix)); ok {
-				hostsWithCIDInOtherHostView := r.combinations[idx]
-				for _, hostID := range hostsWithCIDInOtherHostView {
-					if !slices.Contains(hostsWithCID, hostID) {
-						hostsWithCID = append(hostsWithCID, hostID)
-					}
-				}
-			}
-		}
-
 		if len(hostsWithCID) != len(onlyOnHosts) {
 			continue
 		}
@@ -496,6 +356,7 @@ func (r *Radix) ServeNumCIDsOnOnlyHosts(c echo.Context) error {
 type ServeCIDsOnOnlyHostsResp struct {
 	Hosts           []string
 	CIDsOnlyOnHosts []string
+	LastCID         string
 }
 
 // ServeCIDsOnOnlyHostsPaginated returns the CIDs that are only on the given hosts.
@@ -509,7 +370,7 @@ func (r *Radix) ServeCIDsOnOnlyHostsPaginated(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, "no hosts specified")
 	}
 	for _, host := range onlyOnHosts {
-		if _, ok := r.otherHostSuffixes[host]; !ok && host != r.myHost {
+		if _, ok := r.cursors[host]; !ok && host != r.myHost {
 			return c.JSON(http.StatusBadRequest, fmt.Sprintf("host %s not found", host))
 		}
 	}
@@ -533,24 +394,8 @@ func (r *Radix) ServeCIDsOnOnlyHostsPaginated(c echo.Context) error {
 
 	for key, val, ok := iter.Next(); ok && len(resp.CIDsOnlyOnHosts) < pageSize; key, val, ok = iter.Next() {
 		keyStr := string(key)
-
-		if strings.Contains(keyStr, "_") {
-			// this is a leaf that's tracking another host's view
-			continue
-		}
-
-		// find all hosts that have this CID
+		cid := decompressKey(keyStr)
 		hostsWithCID := r.combinations[val]
-		for _, suffix := range r.otherHostSuffixes {
-			if idx, ok := r.tree.Get([]byte(keyStr + suffix)); ok {
-				hostsWithCIDInOtherHostView := r.combinations[idx]
-				for _, hostID := range hostsWithCIDInOtherHostView {
-					if !slices.Contains(hostsWithCID, hostID) {
-						hostsWithCID = append(hostsWithCID, hostID)
-					}
-				}
-			}
-		}
 
 		if len(hostsWithCID) != len(onlyOnHosts) {
 			continue
@@ -560,7 +405,9 @@ func (r *Radix) ServeCIDsOnOnlyHostsPaginated(c echo.Context) error {
 				continue
 			}
 		}
-		resp.CIDsOnlyOnHosts = append(resp.CIDsOnlyOnHosts, decompressKey(keyStr))
+
+		resp.CIDsOnlyOnHosts = append(resp.CIDsOnlyOnHosts, cid)
+		resp.LastCID = cid
 	}
 
 	return c.JSON(http.StatusOK, resp)
@@ -569,7 +416,7 @@ func (r *Radix) ServeCIDsOnOnlyHostsPaginated(c echo.Context) error {
 // InsertOtherHostsView inserts leaves for every CID that otherHost reports having.
 func (r *Radix) InsertOtherHostsView(otherHost string, pageSize int) {
 	var result ServeTreeInternalResp
-	baseURL := fmt.Sprintf("%s/radix/internal/leaves?pageSize=%d", otherHost, pageSize)
+	baseURL := fmt.Sprintf("%s/radix/internal/leaves?pageSize=%d&host=%s", otherHost, pageSize, r.myHost)
 	for {
 		// build paginated URL
 		var nextURL string
@@ -593,34 +440,57 @@ func (r *Radix) InsertOtherHostsView(otherHost string, pageSize int) {
 	}
 }
 
-func (r *Radix) addLeavesFromOtherHost(otherHost string, leaves *map[string]uint16, idToHost *map[uint8]string, combinations *map[uint16][]uint8) {
+func (r *Radix) addLeavesFromOtherHost(otherHost string, leaves *[]LeafEntry, idToHost *map[uint8]string, combinations *map[uint16][]uint8) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	otherHosts := maps.Keys(r.otherHostSuffixes)
-	for key, leafValOnOtherHost := range *leaves {
+	for _, leafOnOtherHost := range *leaves {
 		// re-map the other host's IDs to our own
+		key := leafOnOtherHost.Key
+		leafValOnOtherHost := leafOnOtherHost.HostsWithCID
 		idsOnOtherHost := (*combinations)[leafValOnOtherHost]
-		hostIDs := make([]uint8, 0, len(idsOnOtherHost))
+		updatedHosts := make([]string, 0, len(idsOnOtherHost))
 		for _, idOnOtherHost := range idsOnOtherHost {
 			host := (*idToHost)[idOnOtherHost]
-			if !slices.Contains(otherHosts, host) && host != r.myHost {
+			if _, ok := r.cursors[host]; !ok && host != r.myHost {
 				continue // a new node probably registered that we're not aware of, so we'll ignore it for now
 			}
-			hostIDs = append(hostIDs, r.getIdForHost(host))
+
+			updatedHosts = append(updatedHosts, host)
 		}
 
-		// re-map host ID combination to our own
-		leafVal := r.getOrMakeCombinationsIdx(hostIDs)
+		if strings.HasSuffix(key, tombstoneSuffix) {
+			// this is a tombstone of hosts that _don't_ have the CID, so remove each host from the leaf in our tree
+			nonTombstoneKey := key[:len(key)-len(tombstoneSuffix)]
+			for _, host := range updatedHosts {
+				r.removeHostFromLeaf(nonTombstoneKey, host)
+			}
 
-		// add suffix to each key so we know it came from otherHost
-		otherHostKey := key + r.otherHostSuffixes[otherHost]
-		r.tree, _, _ = r.tree.Insert([]byte(otherHostKey), leafVal)
+			// handle hosts that are no longer in the updated tombstone (removing from tombstone = host now has the CID)
+			idxOfCurrHostsWithoutCID, ok := r.tree.Get([]byte(key))
+			if ok {
+				for _, hostIDWithoutCID := range r.combinations[idxOfCurrHostsWithoutCID] {
+					hostWithoutCID := r.idToHost[hostIDWithoutCID]
+					if !slices.Contains(updatedHosts, hostWithoutCID) {
+						r.upsertKey(nonTombstoneKey, hostWithoutCID, true)
+					}
+				}
+			}
 
-		// we want to be aware of this key, too
-		if _, ok := r.tree.Get([]byte(key)); !ok {
-			r.NumCIDsTotal++
-			r.tree, _, _ = r.tree.Insert([]byte(key), 0)
+			// finally, update our tombstone
+			for _, host := range updatedHosts {
+				r.upsertKey(key, host, false)
+			}
+
+			// edge case: we could've been sent an empty tombstone
+			if len(updatedHosts) == 0 {
+				r.tree, _, _ = r.tree.Insert([]byte(key), 0)
+			}
+		} else {
+			// add each host to the leaf in our tree unless we've previously marked it as not having this CID
+			for _, host := range updatedHosts {
+				r.upsertKey(key, host, false)
+			}
 		}
 	}
 }
@@ -657,6 +527,85 @@ func (r *Radix) getIdForHost(host string) uint8 {
 	}
 
 	panic("no ID found for host " + host)
+}
+
+// upsertKey inserts a leaf into the radix tree WITHOUT locking the mutex
+func (r *Radix) upsertKey(key, host string, overrideTombstone bool) {
+	isKeyTombstone := strings.HasSuffix(key, tombstoneSuffix)
+	hostID := r.getIdForHost(host)
+
+	// if another host is telling us us to mark this host as having the CID, but we have a tombstone, ignore it - they need to remove the tombstone to tell us that the host has the CID again
+	if !isKeyTombstone {
+		tombstonesIdx, ok := r.tree.Get([]byte(key + tombstoneSuffix))
+		if ok {
+			tombstoneHostIDs := r.combinations[tombstonesIdx]
+			if slices.Contains(tombstoneHostIDs, hostID) {
+				if overrideTombstone {
+					r.removeHostFromLeaf(key+tombstoneSuffix, host)
+				} else {
+					return
+				}
+			}
+		}
+	}
+
+	idxOfCurrHostsWithCID, treeHasCID := r.tree.Get([]byte(key))
+	var hostsWithCID []uint8
+	if treeHasCID {
+		hostsWithCID = slices.Clone(r.combinations[idxOfCurrHostsWithCID])
+		if !slices.Contains(hostsWithCID, hostID) {
+			hostsWithCID = append(hostsWithCID, hostID)
+			if host == r.myHost && !strings.HasSuffix(key, tombstoneSuffix) {
+				r.NumCIDsOnMyHost++
+			}
+		}
+	} else {
+		hostsWithCID = []uint8{hostID}
+		if !strings.HasSuffix(key, tombstoneSuffix) {
+			r.NumCIDsTotal++
+			if host == r.myHost {
+				r.NumCIDsOnMyHost++
+			}
+		}
+	}
+
+	// set leaf for the CID to mark the index of the slice of hosts that have the CID
+	idxOfNewHostsWithCID := r.getOrMakeCombinationsIdx(hostsWithCID)
+	r.tree, _, _ = r.tree.Insert([]byte(key), idxOfNewHostsWithCID)
+}
+
+// removeHostFromLeaf removes a host from a leaf in the radix tree WITHOUT locking the mutex
+func (r *Radix) removeHostFromLeaf(key, host string) {
+	isKeyTombstone := strings.HasSuffix(key, tombstoneSuffix)
+	hostID := r.getIdForHost(host)
+	idxOfCurrHostsWithCID, treeHasCID := r.tree.Get([]byte(key))
+	if !treeHasCID {
+		// tree doesn't have CID - there's nothing to do except insert a tombstone
+		if !isKeyTombstone {
+			r.upsertKey(key+tombstoneSuffix, host, false)
+		}
+		return
+	}
+
+	// remove hostID from slice of hosts that have this CID
+	hostsWithCID := []uint8{}
+	for _, hostIDWithCID := range r.combinations[idxOfCurrHostsWithCID] {
+		if hostIDWithCID != hostID {
+			hostsWithCID = append(hostsWithCID, hostIDWithCID)
+		}
+	}
+	if host == r.myHost && len(hostsWithCID) < len(r.combinations[idxOfCurrHostsWithCID]) && !strings.HasSuffix(key, tombstoneSuffix) {
+		r.NumCIDsOnMyHost--
+	}
+
+	// set leaf for the CID to mark the index of the slice of hosts that now have the CID after removing 'host' (0 if none)
+	idxOfNewHostsWithCID := r.getOrMakeCombinationsIdx(hostsWithCID)
+	r.tree, _, _ = r.tree.Insert([]byte(key), idxOfNewHostsWithCID)
+
+	// add a tombstone to the tree to mark that this host doesn't have the CID
+	if !isKeyTombstone {
+		r.upsertKey(key+tombstoneSuffix, host, false)
+	}
 }
 
 // compressCID returns a shortened key to save memory since many CIDs have commonalities.

@@ -103,7 +103,7 @@ func (rs *RadixServer) MustStart() {
 	}()
 
 	// keep our knowledge of other hosts' CIDs up to date
-	go rs.fetchCIDsFromNetwork()
+	go rs.gossipTreeUpdates()
 
 	// wait for shutdown signal
 	signal.Notify(rs.quit, os.Interrupt, syscall.SIGTERM)
@@ -134,7 +134,6 @@ func (rs *RadixServer) serveRadixInfo(c echo.Context) error {
 	return c.JSON(http.StatusOK, resp{
 		NumCIDsOnMyHost: rs.radix.NumCIDsOnMyHost,
 		NumCIDsTotal:    rs.radix.NumCIDsTotal,
-		// TODO: include last time it was updated / fully updated from repair.go, or just let healthz reference /health_check. But might be good to have this info to know if it should re-fetch the whole list or just a delta in the future.
 	})
 }
 
@@ -152,19 +151,19 @@ func (rs *RadixServer) handleSetHostNotHasCID(c echo.Context) error {
 	return c.String(http.StatusOK, "")
 }
 
+func (rs *RadixServer) gossipTreeUpdates() {
+	rs.fetchCIDsFromNetwork()
+	ticker := time.NewTicker(30 * time.Minute)
+	for range ticker.C {
+		rs.fetchCIDsFromNetwork()
+	}
+}
+
+// TODO: this is how mediorum gossips. really it should do like a n/2 instead of every node repeating CIDs that other nodes are already up-to-date about
 func (rs *RadixServer) fetchCIDsFromNetwork() {
 	for _, peer := range rs.Config.Peers {
 		if peer.Host != rs.Config.Self.Host {
 			rs.radix.InsertOtherHostsView(peer.Host, 100000)
-		}
-	}
-
-	ticker := time.NewTicker(6 * time.Hour)
-	for range ticker.C {
-		for _, peer := range rs.Config.Peers {
-			if peer.Host != rs.Config.Self.Host {
-				rs.radix.InsertOtherHostsView(peer.Host, 100000)
-			}
 		}
 	}
 }
