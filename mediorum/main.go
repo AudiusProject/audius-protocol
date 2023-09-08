@@ -120,6 +120,10 @@ func startStagingOrProd(isProd, isRadixServer bool) {
 	}
 
 	if isRadixServer {
+		if os.Getenv("AUDIUS_RADIX_ENABLED") != "true" {
+			select {}
+		}
+
 		config := rserver.RadixConfig{
 			Self: server.Peer{
 				Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
