@@ -2,9 +2,9 @@ const {
   SystemProgram,
   TransactionMessage,
   AddressLookupTableProgram,
-  VersionedTransaction
+  VersionedTransaction,
+  Transaction
 } = require('@solana/web3.js')
-const audiusLibsWrapper = require('../audiusLibsInstance')
 
 const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
   console.log('REED at top of sendV0Transaction')
@@ -17,7 +17,9 @@ const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
     })
   console.log('REED lookup table address:', lookupTableAddress.toBase58())
 
-  const addresses = instructions.map((inst) => [...inst])
+  const set = new Set()
+  instructions.forEach((i) => i.keys.map((k) => set.add(k.pubkey)))
+  const addresses = Array.from(set)
   console.log('REED addresses:', addresses)
   const extendInstruction = AddressLookupTableProgram.extendLookupTable({
     payer: feePayerAccount.publicKey,
@@ -30,11 +32,13 @@ const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
     ]
   })
   console.log('REED extend Instruction:', extendInstruction)
-  extendInstruction.feePayerAccount = feePayerAccount.publicKey
-  extendInstruction.sign(feePayerAccount)
-  const extendTxId = await connection.sendRawTransaction(
-    extendInstruction.serialize()
-  )
+  const recentBlockhash = (await connection.getLatestBlockhash('confirmed'))
+    .blockhash
+  const tx = new Transaction({ recentBlockhash })
+  tx.add(extendInstruction)
+  tx.feePayerAccount = feePayerAccount.publicKey
+  tx.sign(feePayerAccount)
+  const extendTxId = await connection.sendRawTransaction(tx.serialize())
   console.log(
     `Extend Transaction successfully sent: https://explorer.solana.com/tx/${extendTxId}`
   )
@@ -48,11 +52,11 @@ const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
     console.log(i, address.toBase58())
   }
 
-  const recentBlockhash = (await connection.getLatestBlockhash('confirmed'))
+  const recentBlockhashV0 = (await connection.getLatestBlockhash('confirmed'))
     .blockhash
   const messageV0 = new TransactionMessage({
     payerKey: feePayerAccount.publicKey,
-    recentBlockhash,
+    recentBlockhash: recentBlockhashV0,
     instructions // note this is an array of instructions
   }).compileToV0Message([lookupTableAccount])
 
