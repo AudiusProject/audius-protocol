@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"mediorum/crudr"
 	"net/http"
 	"time"
@@ -20,12 +21,16 @@ func (ss *MediorumServer) serveCrudSweep(c echo.Context) error {
 
 	after := c.QueryParam("after")
 	var ops []*crudr.Op
-	ss.crud.DB.
+	err := ss.crud.DB.
 		WithContext(ctx).
 		Where("ulid > ?", after).
 		Limit(PullLimit).
 		Order("ulid asc").
-		Find(&ops)
+		Find(&ops).
+		Error
+	if err != nil {
+		return c.String(500, fmt.Sprintf("Failed to query ops: %v", err))
+	}
 	return c.JSON(200, ops)
 }
 
