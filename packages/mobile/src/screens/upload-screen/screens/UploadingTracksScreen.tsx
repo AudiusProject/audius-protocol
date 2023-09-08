@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import type { CommonState, UploadTrack } from '@audius/common'
+import type { UploadTrack } from '@audius/common'
 import { uploadSelectors, UploadType, uploadActions } from '@audius/common'
 import { useRoute } from '@react-navigation/native'
 import { useKeepAwake } from '@sayem314/react-native-keep-awake'
@@ -17,7 +17,7 @@ import { useThemeColors } from 'app/utils/theme'
 import { UploadingTrackTile } from '../components'
 import type { UploadRouteProp } from '../types'
 const { uploadTracks } = uploadActions
-const { getUploadProgress, getUploadSuccess } = uploadSelectors
+const { getUploadSuccess, getCombinedUploadPercentage } = uploadSelectors
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: { marginHorizontal: spacing(3) },
@@ -64,14 +64,7 @@ export const UploadingTracksScreen = () => {
     dispatch(uploadTracks(tracks, undefined, UploadType.INDIVIDUAL_TRACK))
   })
 
-  const trackUploadProgress = useSelector((state: CommonState) => {
-    const uploadProgress = getUploadProgress(state)
-    if (!uploadProgress) return 0
-    const { loaded, total } = uploadProgress[0]
-    if (total === 0) return 0
-    return (loaded / total) * 100
-  })
-
+  const trackUploadProgress = useSelector(getCombinedUploadPercentage)
   const uploadSuccess = useSelector(getUploadSuccess)
 
   useEffect(() => {

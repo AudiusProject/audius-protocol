@@ -949,13 +949,6 @@ function* uploadSingleTrack(track) {
     const { upload, transcode } = progress[key]
     const loaded = upload?.loaded
     const total = upload?.total
-
-    console.log({
-      index: 'single',
-      key,
-      loaded,
-      total
-    })
     progressChan.put(
       uploadActions.updateProgress(0, key, {
         loaded,
