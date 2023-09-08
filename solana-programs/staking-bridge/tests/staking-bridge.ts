@@ -113,7 +113,7 @@ describe('staking-bridge', () => {
 
     try {
       const tx = await program.methods
-        .createStakingBridgeBalanceAtas(stakingBridgePdaBump)
+        .createStakingBridgeBalanceAtas()
         .accounts({
           stakingBridgePda,
           usdcTokenAccount,
@@ -211,7 +211,6 @@ describe('staking-bridge', () => {
       .raydiumSwap(
         amountIn,
         minimumAmountOut,
-        vaultNonce,
         stakingBridgePdaBump,
       )
       .accounts(accounts)
@@ -251,8 +250,8 @@ describe('staking-bridge', () => {
     // How many SOL AUDIO tokens to convert into ETH AUDIO tokens
     const uiAmount = 0.00001
     const { lastValidBlockHeight } = await connection.getLatestBlockhash()
+    const nonce = lastValidBlockHeight
     const {
-      nonce,
       amount,
     } = getPostMessageData({
       uiAmount,
@@ -363,7 +362,8 @@ describe('staking-bridge', () => {
       .postWormholeMessage(
         nonce,
         amount,
-        ...bumps
+        wrappedMintBump,
+        stakingBridgePdaBump,
       )
       .accounts(accounts)
       .signers(signers)
