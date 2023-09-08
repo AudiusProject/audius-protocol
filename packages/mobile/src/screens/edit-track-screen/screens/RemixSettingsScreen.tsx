@@ -41,7 +41,7 @@ const messages = {
   invalidRemixUrl: 'Please paste a valid Audius track URL',
   missingRemixUrl: 'Must include a link to the original track',
   enterLink: 'Enter an Audius Link',
-  changeAvailbilityPrefix: 'Availablity is set to ',
+  changeAvailbilityPrefix: 'Availablity is set to',
   changeAvailbilitySuffix:
     'To enable these options, change availability to Public.',
   collectibleGated: 'Collectible Gated. ',
@@ -214,17 +214,11 @@ export const RemixSettingsScreen = () => {
           {isPremium ? (
             <HelpCallout
               style={styles.changeAvailability}
-              content={
-                <View style={styles.changeAvailabilityText}>
-                  <Text>{messages.changeAvailbilityPrefix}</Text>
-                  <Text>
-                    {isCollectibleGated
-                      ? messages.collectibleGated
-                      : messages.specialAccess}
-                  </Text>
-                  <Text>{messages.changeAvailbilitySuffix}</Text>
-                </View>
-              }
+              content={`${messages.changeAvailbilityPrefix} ${
+                isCollectibleGated
+                  ? messages.collectibleGated
+                  : messages.specialAccess
+              } ${messages.changeAvailbilitySuffix}`}
             />
           ) : null}
           <View style={styles.option}>

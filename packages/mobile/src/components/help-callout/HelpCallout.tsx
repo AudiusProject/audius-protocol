@@ -23,7 +23,8 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   text: {
     flex: 1,
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
+    lineHeight: 20
   }
 }))
 
