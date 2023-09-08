@@ -16,11 +16,6 @@ import (
 
 // sweeper goroutine will pull messages on interval
 func (proc *RPCProcessor) startSweeper() {
-	// for now we reset cursor on boot every time...
-	// this is to try to resolve any prior bad state...
-	// if everything works we can remove this step
-	db.Conn.MustExec(`truncate rpc_cursor`)
-
 	for {
 		// visit each host in turn
 		for _, peer := range proc.discoveryConfig.Peers() {
