@@ -178,9 +178,9 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, bytesShouldSto
 		}
 		if success {
 			ss.radixSetHostHasCID(ss.Config.Self.Host, cid)
-			attrs, err := ss.bucket.Attributes(ctx, cid)
+			pulledAttrs, err := ss.bucket.Attributes(ctx, key)
 			if err != nil {
-				*bytesShouldStore += attrs.Size
+				*bytesShouldStore += pulledAttrs.Size
 			}
 		} else {
 			logger.Warn("failed to pull from any host", "hosts", preferredHosts)
@@ -208,7 +208,6 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, bytesShouldSto
 		// if i'm the first node that over-replicated, keep the file for a week as a buffer since a node ahead of me in the preferred order will likely be down temporarily at some point
 		wasReplicatedThisWeek := attrs.CreateTime.After(time.Now().Add(-24 * 7 * time.Hour))
 		if depth > ss.Config.ReplicationFactor+1 || depth == ss.Config.ReplicationFactor+1 && !wasReplicatedThisWeek {
-			attrs, attrsErr := ss.bucket.Attributes(ctx, cid)
 			logger.Info("deleting", "depth", depth, "hosts", preferredHosts, "healthyHosts", preferredHealthyHosts)
 			err = ss.dropFromMyBucket(cid)
 			if err != nil {
@@ -216,9 +215,7 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, bytesShouldSto
 			} else {
 				logger.Info("delete OK")
 				ss.radixSetHostNotHasCID(ss.Config.Self.Host, cid)
-				if attrsErr != nil {
-					*bytesShouldStore -= attrs.Size
-				}
+				*bytesShouldStore -= attrs.Size
 			}
 		}
 	}
@@ -258,13 +255,13 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, bytesShouldSto
 					break
 				}
 			}
-			if !success {
-				logger.Warn("failed to pull from any host", "hosts", preferredHosts)
-			} else {
-				attrs, err := ss.bucket.Attributes(ctx, cid)
+			if success {
+				pulledAttrs, err := ss.bucket.Attributes(ctx, key)
 				if err != nil {
-					*bytesShouldStore += attrs.Size
+					*bytesShouldStore += pulledAttrs.Size
 				}
+			} else {
+				logger.Warn("failed to pull from any host", "hosts", preferredHosts)
 			}
 		}
 	}
