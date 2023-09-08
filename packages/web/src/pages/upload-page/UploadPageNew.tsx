@@ -120,7 +120,7 @@ export const UploadPageNew = (props: UploadPageProps) => {
       )
       break
     case Phase.EDIT:
-      if (formState.uploadType) {
+      if (formState.uploadType !== undefined) {
         page = (
           <EditPage
             formState={formState}
@@ -137,7 +137,7 @@ export const UploadPageNew = (props: UploadPageProps) => {
       }
       break
     case Phase.FINISH:
-      if (formState.uploadType) {
+      if (formState.uploadType !== undefined) {
         page = (
           <FinishPageNew
             formState={formState}

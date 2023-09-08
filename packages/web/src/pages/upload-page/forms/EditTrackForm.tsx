@@ -10,6 +10,7 @@ import {
 import cn from 'classnames'
 import { Form, Formik, FormikProps, useField } from 'formik'
 import moment from 'moment'
+import { useUnmount } from 'react-use'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -119,6 +120,10 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
   const { playingPreviewIndex, togglePreview } =
     useContext(UploadPreviewContext)
   const isPreviewPlaying = playingPreviewIndex === trackIdx
+  const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')
+  useUnmount(() => {
+    setIndex(0)
+  })
 
   return (
     <Form>
