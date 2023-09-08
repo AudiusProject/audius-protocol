@@ -144,6 +144,12 @@ func (p *PeerClient) doSweep() error {
 	}
 
 	for _, op := range ops {
+		// ignore old blobs ops
+		if op.Table == "blobs" {
+			lastUlid = op.ULID
+			continue
+		}
+
 		err := p.crudr.ApplyOp(op)
 		if err != nil {
 			p.logger.Error("failed to apply op", "op", op, "err", err)

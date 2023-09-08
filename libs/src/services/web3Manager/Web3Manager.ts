@@ -243,34 +243,19 @@ export class Web3Manager {
       const response = await retry(
         async (bail) => {
           try {
-            if (this.useDiscoveryRelay()) {
-              // use discovery relay
-              const res = await this.discoveryProvider?.relay({
-                contractRegistryKey,
-                contractAddress,
-                senderAddress: this.ownerWallet!.getAddressString(),
-                encodedABI,
-                gasLimit,
-                handle: this.userSuppliedHandle,
-                nethermindContractAddress,
-                nethermindEncodedAbi
-              })
-              if (res === null || res === undefined) {
-                throw new Error("discovery relay returned empty response")
-              }
-              return res
-            } else {
-              return await this.identityService?.relay(
-                contractRegistryKey,
-                contractAddress,
-                this.ownerWallet!.getAddressString(),
-                encodedABI,
-                gasLimit,
-                this.userSuppliedHandle,
-                nethermindContractAddress,
-                nethermindEncodedAbi
-              )
-            }
+            const baseURL = this.useDiscoveryRelay() ? this.discoveryProvider?.discoveryProviderEndpoint : this.identityService?.identityServiceEndpoint
+            console.error(`relaying to base url ${baseURL}`)
+            return await this.identityService?.relay(
+              contractRegistryKey,
+              contractAddress,
+              this.ownerWallet!.getAddressString(),
+              encodedABI,
+              gasLimit,
+              this.userSuppliedHandle,
+              nethermindContractAddress,
+              nethermindEncodedAbi,
+              baseURL
+            )
           } catch (e: any) {
             // If forbidden, don't retry
             if (e.response.status === 403) {

@@ -154,7 +154,7 @@ type UpdateUploadBody struct {
 }
 
 func (ss *MediorumServer) updateUpload(c echo.Context) error {
-	if !ss.shouldReplicate() {
+	if !ss.diskHasSpace() {
 		return c.String(http.StatusServiceUnavailable, "disk is too full to accept new uploads")
 	}
 
@@ -215,7 +215,7 @@ func (ss *MediorumServer) updateUpload(c echo.Context) error {
 }
 
 func (ss *MediorumServer) postUpload(c echo.Context) error {
-	if !ss.shouldReplicate() {
+	if !ss.diskHasSpace() {
 		return c.String(http.StatusServiceUnavailable, "disk is too full to accept new uploads")
 	}
 

@@ -8,9 +8,9 @@ program
   .description(
     "Output auth headers (for use with curl: `curl -H @<(audius-cmd auth-headers)`)"
   )
-  .option("[account]", "The account to for which to generate auth headers")
-  .action(async ({ account }) => {
-    const audiusLibs = await initializeAudiusLibs(account);
+  .option("-f, --from [from]", "The account for which to generate auth headers")
+  .action(async ({ from }) => {
+    const audiusLibs = await initializeAudiusLibs(from);
 
     try {
       const unixTimestamp = Math.round(new Date().getTime() / 1000);
