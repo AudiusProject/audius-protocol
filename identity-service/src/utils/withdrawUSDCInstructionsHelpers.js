@@ -86,6 +86,7 @@ const isUSDCWithdrawalTransaction = (instructions) => {
     checkCloseAccountInstruction(instructions[instructions.length - 1])
   )
 
+  console.log('REED validations:', validations)
   return validations.every((validation) => validation)
 }
 

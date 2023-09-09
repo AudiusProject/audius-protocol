@@ -71,11 +71,11 @@ solanaRouter.post(
       instructions,
       optimizelyClient
     )
-    if (!isRelayAllowed) {
-      return errorResponseServerError(`Invalid relay instructions`, {
-        error: `Invalid relay instructions`
-      })
-    }
+    // if (!isRelayAllowed) {
+    //   return errorResponseServerError(`Invalid relay instructions`, {
+    //     error: `Invalid relay instructions`
+    //   })
+    // }
 
     // Social proof checks
     if (socialProofRequiredToSend && isSendInstruction(instructions)) {

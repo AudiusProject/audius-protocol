@@ -31,16 +31,22 @@ const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
       ...addresses
     ]
   })
+  console.log('REED create Instruction:', lookupTableInst)
   console.log('REED extend Instruction:', extendInstruction)
+
   const recentBlockhash = (await connection.getLatestBlockhash('confirmed'))
     .blockhash
-  const tx = new Transaction({ recentBlockhash })
-  tx.add(extendInstruction)
-  tx.feePayerAccount = feePayerAccount.publicKey
-  tx.sign(feePayerAccount)
-  const extendTxId = await connection.sendRawTransaction(tx.serialize())
+  const message = new TransactionMessage({
+    payerKey: feePayerAccount.publicKey,
+    recentBlockhash: recentBlockhash,
+    instructions: [lookupTableInst, extendInstruction]
+  }).compileToV0Message()
+
+  const transaction = new VersionedTransaction(message)
+  transaction.sign([feePayerAccount])
+  const tableTxId = await connection.sendTransaction(transaction)
   console.log(
-    `Extend Transaction successfully sent: https://explorer.solana.com/tx/${extendTxId}`
+    `Extend Transaction successfully sent: https://explorer.solana.com/tx/${tableTxId}`
   )
 
   const lookupTableAccount = await connection
