@@ -54,48 +54,18 @@ const sendTransactionWithLookupTable = async (
   )
   console.log('REED set:', set, set.size)
   console.log('REED addresses:', addresses, addresses.length)
-  const halfIndex = Math.floor(addresses.length / 2)
-  const firstHalf = addresses.slice(0, halfIndex)
-  const secondHalf = addresses.slice(halfIndex)
-  const extendInstructionFirstHalf =
-    AddressLookupTableProgram.extendLookupTable({
-      payer: feePayerAccount.publicKey,
-      authority: feePayerAccount.publicKey,
-      lookupTable: lookupTableAddress,
-      addresses: [
-        feePayerAccount.publicKey,
-        SystemProgram.programId,
-        ...firstHalf
-      ]
-    })
-  const txIdFirstHalf = await sendV0Transaction(
+  const extendInstruction = AddressLookupTableProgram.extendLookupTable({
+    payer: feePayerAccount.publicKey,
+    authority: feePayerAccount.publicKey,
+    lookupTable: lookupTableAddress,
+    addresses: [feePayerAccount.publicKey, SystemProgram.programId, addresses]
+  })
+  const tableTxId = await sendV0Transaction(
     connection,
-    [extendInstructionFirstHalf],
+    [lookupTableInst, extendInstruction],
     feePayerAccount
   )
-  console.log(
-    'REED successfully sent table transaction first half',
-    txIdFirstHalf
-  )
-
-  const extendInstructionSecondHalf =
-    AddressLookupTableProgram.extendLookupTable({
-      payer: feePayerAccount.publicKey,
-      authority: feePayerAccount.publicKey,
-      lookupTable: lookupTableAddress,
-      addresses: secondHalf
-    })
-
-  console.log('REED second half instruction:', extendInstructionSecondHalf)
-  const txIdSecondHalf = await sendV0Transaction(
-    connection,
-    [extendInstructionSecondHalf],
-    feePayerAccount
-  )
-  console.log(
-    'REED successfully sent table transaction second half',
-    txIdSecondHalf
-  )
+  console.log('REED successfully sent table transaction', tableTxId)
 
   const lookupTableAccount = await connection
     .getAddressLookupTable(lookupTableAddress)
