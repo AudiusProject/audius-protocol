@@ -26,15 +26,17 @@ const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
   })
   console.log('REED tx sent:', txId)
 
-  const confirmation = await connection.confirmTransaction({
-    signature: txId,
-    blockhash: recentBlockhash.blockhash,
-    lastValidBlockHeight: recentBlockhash.lastValidBlockHeight
-  })
+  // const confirmation = await connection.confirmTransaction({
+  //   signature: txId,
+  //   blockhash: recentBlockhash.blockhash,
+  //   lastValidBlockHeight: recentBlockhash.lastValidBlockHeight
+  // })
+  const confirmation = await connection.confirmTransaction(txId)
   if (confirmation.value.err) {
     throw new Error('V0 Transaction not confirmed: txId', txId)
   }
   console.log('REED tx confirmed:', confirmation)
+  return txId
 }
 
 const sendTransactionWithLookupTable = async (
