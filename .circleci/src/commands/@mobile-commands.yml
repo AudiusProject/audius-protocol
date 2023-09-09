@@ -219,9 +219,6 @@ mobile-release-saga-dapp-store:
       default: 'alpha'
       type: string
   steps:
-    - checkout
-    - attach_workspace:
-        at: ./
     - run:
         name: Add Java to PATH
         command: |
@@ -231,7 +228,7 @@ mobile-release-saga-dapp-store:
         name: Install dependencies
         command: |
           cd packages/mobile/dapp-store
-          corepack enable
+          corepack enable --install-directory ~/bin
           corepack prepare pnpm@`npm info pnpm --json | jq -r .version` --activate
           pnpm install
     - run:
@@ -249,6 +246,11 @@ mobile-release-saga-dapp-store:
           cd packages/mobile/android
           bundle exec fastlane incrementVersionCode package_name:<<parameters.bundle-id>> track:<<parameters.track>>
     - run:
+        name: Symlink react-native
+        command: |
+          ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native
+          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native
+    - run:
         name: Build Android
         command: |
           cd packages/mobile/android
@@ -257,19 +259,16 @@ mobile-release-saga-dapp-store:
         name: Validate release
         command: |
           cd packages/mobile/dapp-store
-          nvm use
           npx dapp-store validate release -k app-keypair.json -b $ANDROID_HOME/build-tools/33.0.0
     - run:
         name: Publish APK
         command: |
           cd packages/mobile/dapp-store
-          nvm use
           npx dapp-store create release -k app-keypair.json -b $ANDROID_HOME/build-tools/33.0.0 -u https://solana-mainnet.g.alchemy.com/v2/9j3Y1hc042MCH0_TqunwotlaFLHF6K4l
     - run:
         name: Issue update to dapp store
         command: |
           cd packages/mobile/dapp-store
-          nvm use
           npx dapp-store publish update -k app-keypair.json -u https://solana-mainnet.g.alchemy.com/v2/9j3Y1hc042MCH0_TqunwotlaFLHF6K4l --requestor-is-authorized --complies-with-solana-dapp-store-policies
     - run:
         name: Commit changes
