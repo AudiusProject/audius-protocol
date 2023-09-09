@@ -12,7 +12,7 @@ import {
   usersSocialActions
 } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
-import { Linking, View } from 'react-native'
+import { Linking } from 'react-native'
 import ViewShot from 'react-native-view-shot'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -51,24 +51,9 @@ const { getAccountUser } = accountSelectors
 export const shareToastTimeout = 1500
 
 const useStyles = makeStyles(({ spacing }) => ({
-  titleContainer: {
-    paddingBottom: spacing(4)
-  },
-  title: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: spacing(2),
-    paddingBottom: spacing(4)
-  },
-  titleText: {
-    textTransform: 'uppercase'
-  },
-  titleIcon: {
-    marginRight: spacing(3)
-  },
   titleHelperText: {
     paddingHorizontal: spacing(4),
+    marginBottom: spacing(4),
     textAlign: 'center'
   },
   row: {
@@ -96,7 +81,7 @@ export const ShareDrawer = () => {
   const { onClose } = useDrawerState('Share')
   const { onClose: onCloseNowPlaying } = useDrawer('NowPlaying')
 
-  const { secondary, neutralLight2 } = useThemeColors()
+  const { secondary } = useThemeColors()
   const dispatch = useDispatch()
   const content = useSelector(getShareContent)
   const source = useSelector(getShareSource)
@@ -302,33 +287,16 @@ export const ShareDrawer = () => {
         disableAutoClose={true}
         modalName='Share'
         rows={getRows()}
-        renderTitle={() => (
-          <View style={styles.titleContainer}>
-            <View style={styles.title}>
-              <IconShare
-                style={styles.titleIcon}
-                fill={neutralLight2}
-                height={18}
-                width={20}
-              />
-              <Text
-                weight='heavy'
-                color='neutralLight2'
-                fontSize='xl'
-                style={styles.titleText}
-              >
-                {messages.modalTitle(shareType)}
-              </Text>
-            </View>
-            {content?.type === 'playlist' && content.playlist.is_private ? (
-              <Text style={styles.titleHelperText} fontSize={'large'}>
-                {messages.hiddenPlaylistShareHelperText}
-              </Text>
-            ) : null}
-          </View>
-        )}
+        title={messages.modalTitle(shareType)}
+        titleIcon={IconShare}
         styles={{ row: styles.row }}
-      />
+      >
+        {content?.type !== 'playlist' || content?.playlist?.is_private ? (
+          <Text style={styles.titleHelperText} fontSize={'large'}>
+            {messages.hiddenPlaylistShareHelperText}
+          </Text>
+        ) : null}
+      </ActionDrawer>
     </>
   )
 }

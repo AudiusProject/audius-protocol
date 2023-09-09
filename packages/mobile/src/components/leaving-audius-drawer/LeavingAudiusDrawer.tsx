@@ -5,10 +5,10 @@ import { View } from 'react-native'
 
 import IconExternalLink from 'app/assets/images/iconExternalLink.svg'
 import IconInfo from 'app/assets/images/iconInfo.svg'
+import { Button, Text, useLink } from 'app/components/core'
 import Drawer from 'app/components/drawer/Drawer'
 import { makeStyles } from 'app/styles'
 
-import { Button, Text, useLink } from '../core'
 import { HelpCallout } from '../help-callout/HelpCallout'
 
 const messages = {
@@ -23,9 +23,6 @@ const useStyles = makeStyles(({ spacing }) => ({
     gap: spacing(4),
     paddingBottom: spacing(6),
     paddingHorizontal: spacing(4)
-  },
-  button: {
-    width: '100%'
   }
 }))
 
@@ -49,16 +46,12 @@ export const LeavingAudiusDrawer = () => {
           content={link}
           icon={IconExternalLink}
         />
+        <Button title={messages.visit} onPress={onLinkPress} fullWidth />
         <Button
-          style={styles.button}
-          title={messages.visit}
-          onPress={onLinkPress}
-        />
-        <Button
-          style={styles.button}
-          variant={'common'}
+          variant='common'
           title={messages.back}
           onPress={onClose}
+          fullWidth
         />
       </View>
     </Drawer>

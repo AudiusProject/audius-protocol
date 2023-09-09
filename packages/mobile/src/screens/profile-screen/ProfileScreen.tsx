@@ -28,7 +28,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { ProfileHeader } from './ProfileHeader'
 import { ProfileScreenSkeleton } from './ProfileScreenSkeleton'
-import { ProfileTabNavigator } from './ProfileTabNavigator'
+import { ProfileTabNavigator } from './ProfileTabs/ProfileTabNavigator'
 import { getIsOwner, useSelectProfileRoot } from './selectors'
 const { fetchRelatedArtists } = relatedArtistsUIActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions

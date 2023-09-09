@@ -16,8 +16,8 @@ import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { getCollectiblesRoute } from 'app/utils/routes'
 
-import { CollectiblesCard } from './CollectiblesCard'
-import { getProfile, useSelectProfile } from './selectors'
+import { CollectiblesCard } from '../CollectiblesCard'
+import { getProfile, useSelectProfile } from '../selectors'
 const getUserId = accountSelectors.getUserId
 
 const messages = {

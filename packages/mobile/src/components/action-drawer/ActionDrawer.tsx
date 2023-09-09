@@ -4,11 +4,13 @@ import { useCallback } from 'react'
 import type { Modals } from '@audius/common'
 import type { TextStyle, ViewStyle } from 'react-native'
 import { TouchableHighlight, View } from 'react-native'
+import type { SetOptional } from 'type-fest'
 
-import Text from 'app/components/text'
+import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
+import type { AppDrawerProps } from '../drawer/AppDrawer'
 import { AppDrawer, useDrawerState } from '../drawer/AppDrawer'
 
 export type ActionDrawerRow = {
@@ -19,19 +21,14 @@ export type ActionDrawerRow = {
   isDestructive?: boolean
 }
 
-type ActionSheetModalProps = {
+type ActionDrawerProps = {
   modalName: Modals
   rows: ActionDrawerRow[]
-  title?: string
-  renderTitle?: () => React.ReactNode
   styles?: { row?: ViewStyle }
   disableAutoClose?: boolean
-}
+} & SetOptional<AppDrawerProps, 'children'>
 
 const useStyles = makeStyles(({ palette, typography, spacing }) => ({
-  container: {
-    paddingVertical: spacing(4)
-  },
   row: {
     height: 56,
     alignItems: 'center',
@@ -57,14 +54,14 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
 }))
 
 // `ActionDrawer` is a drawer that presents a list of clickable rows with text
-const ActionDrawer = (props: ActionSheetModalProps) => {
+const ActionDrawer = (props: ActionDrawerProps) => {
   const {
     modalName,
     rows,
-    title,
-    renderTitle,
     styles: stylesProp,
-    disableAutoClose
+    disableAutoClose,
+    children,
+    ...other
   } = props
   const styles = useStyles()
   const { onClose } = useDrawerState(modalName)
@@ -85,13 +82,9 @@ const ActionDrawer = (props: ActionSheetModalProps) => {
   const { neutralLight9 } = useThemeColors()
 
   return (
-    <AppDrawer modalName={modalName}>
-      <View style={styles.container}>
-        {renderTitle ? (
-          renderTitle()
-        ) : title ? (
-          <Text style={[styles.row, styles.title]}>{title}</Text>
-        ) : null}
+    <AppDrawer modalName={modalName} {...other}>
+      <View>
+        {children}
         {rows.map(({ text, isDestructive = false, icon, style }, index) => (
           <TouchableHighlight
             key={`${text}-${index}`}
@@ -103,12 +96,10 @@ const ActionDrawer = (props: ActionSheetModalProps) => {
             <View style={[styles.row, stylesProp?.row]}>
               {icon ? <View style={styles.actionIcon}>{icon}</View> : null}
               <Text
-                style={[
-                  styles.action,
-                  isDestructive ? styles.destructiveAction : null,
-                  style
-                ]}
+                fontSize='xl'
                 weight='demiBold'
+                color={isDestructive ? 'accentRed' : 'secondary'}
+                style={style}
               >
                 {text}
               </Text>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
 import {
+  isAllowedExternalLink,
   isAudiusUrl,
   useLeavingAudiusModal,
   useLinkUnfurlMetadata
@@ -101,7 +102,7 @@ export const LinkPreview = ({
   const { onOpen: openLeavingAudiusModal } = useLeavingAudiusModal()
 
   const handlePress = useCallback(() => {
-    if (isAudiusUrl(href)) {
+    if (isAudiusUrl(href) || isAllowedExternalLink(href)) {
       goToURL()
     } else {
       openLeavingAudiusModal({ link: href })

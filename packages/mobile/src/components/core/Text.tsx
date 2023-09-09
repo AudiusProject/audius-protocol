@@ -68,7 +68,13 @@ export const Text = (props: TextProps) => {
         // Fix for demibold's weird positioning
         marginTop:
           weight === 'demiBold' && Platform.OS === 'ios'
-            ? spacing(fontSize === 'large' ? 1 : fontSize === 'small' ? 0.5 : 0)
+            ? spacing(
+                fontSize && ['xl', 'large'].includes(fontSize)
+                  ? 1
+                  : fontSize === 'small'
+                  ? 0.5
+                  : 0
+              )
             : undefined
       },
       fontSize &&

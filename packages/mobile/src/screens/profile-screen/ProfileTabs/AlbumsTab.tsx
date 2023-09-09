@@ -11,8 +11,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import { CollectionList } from 'app/components/collection-list/CollectionList'
 import { spacing } from 'app/styles/spacing'
 
-import { EmptyProfileTile } from './EmptyProfileTile'
-import { getIsOwner, useSelectProfile } from './selectors'
+import { EmptyProfileTile } from '../EmptyProfileTile'
+import { getIsOwner, useSelectProfile } from '../selectors'
 
 const { getProfileAlbums, getCollectionsStatus } = profilePageSelectors
 const { fetchCollections } = profilePageActions

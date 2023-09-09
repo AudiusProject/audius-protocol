@@ -111,7 +111,7 @@ export type DrawerProps = {
   /**
    * Header title if this drawer has a header
    */
-  title?: string
+  title?: ReactNode
   /**
    * Icon to display in the header next to the title (must also include title)
    */

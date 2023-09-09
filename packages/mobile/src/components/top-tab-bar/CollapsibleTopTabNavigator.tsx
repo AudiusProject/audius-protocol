@@ -18,6 +18,7 @@ type CollapsibleTabNavigatorContextProps = {
   refreshing?: boolean
   onRefresh?: () => void
   scrollY?: Animated.Value
+  params?: Record<string, unknown>
 }
 
 export const CollapsibleTabNavigatorContext =
@@ -34,16 +35,17 @@ type CollapsibleTabNavigatorContextProviderProps = {
   onRefresh?: () => void
   scrollY?: Animated.Value
   children: ReactNode
+  params?: Record<string, unknown>
 }
 
 export const CollapsibleTabNavigatorContextProvider = (
   props: CollapsibleTabNavigatorContextProviderProps
 ) => {
-  const { sceneName, refreshing, onRefresh, scrollY, children } = props
+  const { sceneName, refreshing, onRefresh, scrollY, params, children } = props
 
   const context = useMemo(
-    () => ({ sceneName, refreshing, onRefresh, scrollY }),
-    [sceneName, refreshing, onRefresh, scrollY]
+    () => ({ sceneName, refreshing, onRefresh, scrollY, params }),
+    [sceneName, refreshing, onRefresh, scrollY, params]
   )
 
   return (
@@ -142,6 +144,7 @@ export const collapsibleTabScreen = (config: TabScreenConfig) => {
           refreshing={refreshing}
           onRefresh={onRefresh}
           scrollY={scrollY}
+          params={initialParams}
         >
           <Component />
         </CollapsibleTabNavigatorContextProvider>

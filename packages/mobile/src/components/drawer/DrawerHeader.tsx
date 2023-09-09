@@ -1,27 +1,28 @@
-import type { ComponentType } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 
 import type { ImageSourcePropType } from 'react-native'
-import { TouchableOpacity, View, Image, Text } from 'react-native'
+import { TouchableOpacity, View, Image } from 'react-native'
 
 import IconRemove from 'app/assets/images/iconRemove.svg'
+import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import type { SvgProps } from 'app/types/svg'
 import { useColor } from 'app/utils/theme'
 
 type DrawerHeaderProps = {
   onClose: () => void
-  title?: string
+  title?: ReactNode
   titleIcon?: ComponentType<SvgProps>
   titleImage?: ImageSourcePropType
   isFullscreen?: boolean
 }
 
-export const useStyles = makeStyles(({ palette, typography, spacing }) => ({
+export const useStyles = makeStyles(({ spacing }) => ({
   titleBarContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing(6)
+    padding: spacing(8)
   },
 
   dismissContainer: {
@@ -32,21 +33,11 @@ export const useStyles = makeStyles(({ palette, typography, spacing }) => ({
 
   titleContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: spacing(5)
+    columnGap: spacing(2)
   },
-
-  titleIcon: {
-    marginRight: spacing(3),
+  titleImage: {
     height: spacing(6),
     width: spacing(6)
-  },
-
-  titleLabel: {
-    fontFamily: typography.fontByWeight.bold,
-    fontSize: typography.fontSize.large,
-    color: palette.neutral
   }
 }))
 
@@ -64,7 +55,7 @@ export const DrawerHeader = (props: DrawerHeaderProps) => {
 
   return title || isFullscreen ? (
     <View style={styles.titleBarContainer}>
-      {isFullscreen && (
+      {isFullscreen ? (
         <TouchableOpacity
           activeOpacity={0.7}
           onPress={onClose}
@@ -72,18 +63,20 @@ export const DrawerHeader = (props: DrawerHeaderProps) => {
         >
           <IconRemove width={30} height={30} fill={iconRemoveColor} />
         </TouchableOpacity>
-      )}
-      {title && (
+      ) : null}
+      {title ? (
         <View style={styles.titleContainer}>
           {TitleIcon ? (
-            <TitleIcon style={styles.titleIcon} fill={titleIconColor} />
+            <TitleIcon height={22} width={22} fill={titleIconColor} />
           ) : null}
           {titleImage ? (
-            <Image style={styles.titleIcon} source={titleImage} />
+            <Image style={styles.titleImage} source={titleImage} />
           ) : null}
-          <Text style={styles.titleLabel}>{title}</Text>
+          <Text fontSize='xl' weight='heavy' textTransform='uppercase'>
+            {title}
+          </Text>
         </View>
-      )}
+      ) : null}
     </View>
   ) : (
     <View />

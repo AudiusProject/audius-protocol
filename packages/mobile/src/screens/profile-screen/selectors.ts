@@ -1,3 +1,5 @@
+import { useContext } from 'react'
+
 import type { Nullable, User, CommonState } from '@audius/common'
 import {
   Status,
@@ -8,7 +10,9 @@ import {
 import { useSelector } from 'react-redux'
 import { createSelector } from 'reselect'
 
+import { CollapsibleTabNavigatorContext } from 'app/components/top-tab-bar'
 import { useRoute } from 'app/hooks/useRoute'
+
 const { getProfileUser, getProfileStatus, makeGetProfile, getProfileUserId } =
   profilePageSelectors
 const { getAccountUser, getUserId } = accountSelectors
@@ -16,8 +20,12 @@ const { getAccountUser, getUserId } = accountSelectors
 /*
  * Selects profile user and ensures rerenders occur only for changes specified in deps
  */
-export const useSelectProfileRoot = <K extends keyof User>(deps: K[]) => {
-  const { params } = useRoute<'Profile'>()
+export const useSelectProfileRoot = <K extends keyof User>(
+  deps: K[],
+  paramsProp?: Record<string, unknown>
+) => {
+  const { params: paramsRoute } = useRoute<'Profile'>()
+  const params = paramsProp ?? paramsRoute
   const { handle } = params
   const isAccountUser = handle === 'accountUser'
 
@@ -35,7 +43,7 @@ export const useSelectProfileRoot = <K extends keyof User>(deps: K[]) => {
 
       return profileSlice
     },
-    [isAccountUser, ...deps]
+    [isAccountUser, ...deps, params.handle, params.id]
   )
   return profile as Nullable<Pick<User, K>>
 }
@@ -45,7 +53,8 @@ export const useSelectProfileRoot = <K extends keyof User>(deps: K[]) => {
  * components that wouldn't render if user wasn't present
  */
 export const useSelectProfile = <K extends keyof User>(deps: K[]) => {
-  return useSelectProfileRoot(deps) as Pick<User, K>
+  const { params } = useContext(CollapsibleTabNavigatorContext)
+  return useSelectProfileRoot(deps, params) as Pick<User, K>
 }
 
 export const getProfile = makeGetProfile()

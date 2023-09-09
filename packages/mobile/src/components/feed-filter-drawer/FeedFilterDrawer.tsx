@@ -6,12 +6,11 @@ import {
   feedPageLineupActions as feedActions,
   feedPageActions
 } from '@audius/common'
-import { Text } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import ActionDrawer from 'app/components/action-drawer'
+import { Text } from 'app/components/core'
 import { make, track } from 'app/services/analytics'
-import { makeStyles } from 'app/styles'
 
 const { setFeedFilter } = feedPageActions
 
@@ -24,20 +23,8 @@ export const messages = {
   filterReposts: 'Reposts'
 }
 
-const useStyles = makeStyles(({ palette, spacing, typography }) => ({
-  title: {
-    ...typography.body,
-    color: palette.neutral,
-    textAlign: 'center',
-    marginTop: spacing(2),
-    marginBottom: spacing(4)
-  }
-}))
-
 export const FeedFilterDrawer = () => {
   const dispatch = useDispatch()
-
-  const styles = useStyles()
 
   const handleSelectFilter = useCallback(
     (filter: FeedFilter) => {
@@ -74,7 +61,11 @@ export const FeedFilterDrawer = () => {
   return (
     <ActionDrawer
       modalName={MODAL_NAME}
-      renderTitle={() => <Text style={styles.title}>{messages.title}</Text>}
+      title={
+        <Text color='neutral' textTransform='none'>
+          {messages.title}
+        </Text>
+      }
       rows={rows}
     />
   )

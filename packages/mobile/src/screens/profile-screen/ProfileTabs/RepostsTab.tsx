@@ -10,9 +10,9 @@ import { useRoute } from '@react-navigation/native'
 
 import { Lineup } from 'app/components/lineup'
 
-import { EmptyProfileTile } from './EmptyProfileTile'
-import type { ProfileTabRoutes } from './routes'
-import { useSelectProfile } from './selectors'
+import { EmptyProfileTile } from '../EmptyProfileTile'
+import type { ProfileTabRoutes } from '../routes'
+import { useSelectProfile } from '../selectors'
 
 const { getProfileFeedLineup } = profilePageSelectors
 

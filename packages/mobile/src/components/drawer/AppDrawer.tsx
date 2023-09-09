@@ -33,7 +33,7 @@ export const useDrawerState = (modalName: Modals) => {
   }
 }
 
-type AppDrawerProps = SetOptional<DrawerProps, 'isOpen' | 'onClose'> & {
+export type AppDrawerProps = SetOptional<DrawerProps, 'isOpen' | 'onClose'> & {
   modalName: Modals
 }
 

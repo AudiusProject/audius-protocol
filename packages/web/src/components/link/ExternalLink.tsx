@@ -1,6 +1,10 @@
 import { MouseEvent, useCallback } from 'react'
 
-import { Name, useLeavingAudiusModal } from '@audius/common'
+import {
+  Name,
+  isAllowedExternalLink,
+  useLeavingAudiusModal
+} from '@audius/common'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 
@@ -9,20 +13,6 @@ import { Link, LinkProps } from './Link'
 type ExternalLinkProps = LinkProps & {
   source?: 'profile page' | 'track page' | 'collection page'
 }
-
-const allowList = [
-  'facebook.com',
-  'www.facebook.com',
-  'instagram.com',
-  'www.instagram.com',
-  'tiktok.com',
-  'www.tiktok.com',
-  'twitter.com',
-  'www.twitter.com',
-  'x.com',
-  'www.x.com',
-  'blog.audius.co'
-]
 
 export const ExternalLink = (props: ExternalLinkProps) => {
   const { to, onClick, source, ...other } = props
@@ -42,7 +32,7 @@ export const ExternalLink = (props: ExternalLinkProps) => {
           })
         )
       }
-      if (!allowList.includes(new URL(to as string).hostname)) {
+      if (typeof to === 'string' && !isAllowedExternalLink(to)) {
         event.preventDefault()
         openLeavingAudiusModal({ link: to as string })
       }

@@ -9,8 +9,9 @@ import { useDispatch } from 'react-redux'
 
 import { Lineup } from 'app/components/lineup'
 
-import { EmptyProfileTile } from './EmptyProfileTile'
-import { useSelectProfile } from './selectors'
+import { EmptyProfileTile } from '../EmptyProfileTile'
+import { useSelectProfile } from '../selectors'
+
 const { getProfileTracksLineup } = profilePageSelectors
 
 export const TracksTab = () => {

@@ -13,14 +13,15 @@ import {
 } from 'app/components/top-tab-bar'
 import { useRoute } from 'app/hooks/useRoute'
 
+import { useSelectProfile } from '../selectors'
+import { useIsArtist } from '../useIsArtist'
+import { useShouldShowCollectiblesTab } from '../utils'
+
 import { AlbumsTab } from './AlbumsTab'
 import { CollectiblesTab } from './CollectiblesTab'
 import { PlaylistsTab } from './PlaylistsTab'
 import { RepostsTab } from './RepostsTab'
 import { TracksTab } from './TracksTab'
-import { useSelectProfile } from './selectors'
-import { useIsArtist } from './useIsArtist'
-import { useShouldShowCollectiblesTab } from './utils'
 
 // Height of a typical profile header
 const INITIAL_PROFILE_HEADER_HEIGHT = 1081
