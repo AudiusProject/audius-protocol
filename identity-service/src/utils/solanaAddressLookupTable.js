@@ -45,13 +45,18 @@ const sendTransactionWithLookupTable = async (
   console.log('REED successfully created table:', createTableTxId)
 
   const set = new Set()
-  instructions.forEach((i) => i.keys.map((k) => set.add(k.pubkey)))
-  const addresses = Array.from(set)
+  const addresses = []
+  instructions.forEach((i) =>
+    i.keys.map((k) => {
+      if (!set.has(k.pubkey.toString())) addresses.push(k.pubkey)
+      set.add(k.pubkey.toString())
+    })
+  )
+  console.log('REED set:', set, set.size)
+  console.log('REED addresses:', addresses, addresses.length)
   const halfIndex = Math.floor(addresses.length / 2)
   const firstHalf = addresses.slice(0, halfIndex)
   const secondHalf = addresses.slice(halfIndex)
-  console.log('REED first half:', firstHalf)
-  console.log('REED second half:', secondHalf)
   const extendInstructionFirstHalf =
     AddressLookupTableProgram.extendLookupTable({
       payer: feePayerAccount.publicKey,
