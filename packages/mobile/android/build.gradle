@@ -35,6 +35,9 @@ buildscript {
 
 allprojects {
     repositories {
+        maven { url "$rootDir/../node_modules/react-native/android" }
+        maven { url 'https://maven.google.com' }
+        maven { url "https://www.jitpack.io" }
         maven { url "https://maven.fpregistry.io/releases" }
         maven { url "https://storage.googleapis.com/snap-kit-build/maven" }
         maven { url "https://artifact.bytedance.com/repository/AwemeOpenSDK" }

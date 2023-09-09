@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 
+import type { Image } from '@audius/common'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import {
@@ -22,7 +23,6 @@ import {
   Platform,
   ScrollView
 } from 'react-native'
-import type { Asset } from 'react-native-image-picker'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -33,7 +33,6 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
-import type { Image } from 'app/types/image'
 import { launchSelectImageActionSheet } from 'app/utils/launchSelectImageActionSheet'
 import { useColor, useThemeColors } from 'app/utils/theme'
 
@@ -167,9 +166,6 @@ const useStyles = makeStyles(({ palette }) => ({
     paddingTop: 16,
     paddingLeft: 10,
     margin: 0
-  },
-  shareSheet: {
-    color: palette.secondary
   }
 }))
 
@@ -302,21 +298,19 @@ const ProfileManual = ({ navigation }: ProfileManualProps) => {
   }
 
   const openPhotoMenu = useCallback(() => {
-    const handleImageSelected = (image: Image, rawResponse: Asset) => {
+    const handleImageSelected = (image: Image) => {
       setIsPhotoLoading(true)
-      dispatch(
-        signOnActions.setField('profileImage', {
-          ...image,
-          file: {
-            uri: rawResponse.uri,
-            name: rawResponse.fileName || 'ProfileImage',
-            type: rawResponse.type
-          }
-        })
-      )
+      dispatch(signOnActions.setField('profileImage', image))
     }
-    launchSelectImageActionSheet(handleImageSelected, styles.shareSheet.color)
-  }, [setIsPhotoLoading, styles.shareSheet.color, dispatch])
+
+    const imageOptions = {
+      height: 1000,
+      width: 1000,
+      cropperCircleOverlay: true
+    }
+
+    launchSelectImageActionSheet(handleImageSelected, imageOptions)
+  }, [setIsPhotoLoading, dispatch])
 
   const errorView = ({
     handleIsValid,

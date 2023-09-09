@@ -117,6 +117,7 @@
     "react-native-get-random-values": "1.8.0",
     "react-native-google-cast": "4.6.0",
     "react-native-haptic-feedback": "1.11.0",
+    "react-native-image-crop-picker": "0.40.0",
     "react-native-image-picker": "4.10.2",
     "react-native-in-app-review": "4.2.1",
     "react-native-keyboard-aware-scroll-view": "0.9.5",

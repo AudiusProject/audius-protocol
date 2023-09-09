@@ -15,11 +15,8 @@ export type ScreenContentProps = OfflinePlaceholderProps & {
   isOfflineCapable?: boolean
 }
 
-export const ScreenContent = ({
-  children,
-  isOfflineCapable,
-  ...other
-}: ScreenContentProps) => {
+export const ScreenContent = (props: ScreenContentProps) => {
+  const { children, isOfflineCapable, ...other } = props
   const isReachable = useSelector(getIsReachable)
   const wasReachable = usePrevious(isReachable)
 

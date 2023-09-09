@@ -1,9 +1,10 @@
 import { useCallback, useMemo, useState } from 'react'
 
+import type { Image } from '@audius/common'
 import { useField } from 'formik'
 import type { ImageStyle, ViewStyle } from 'react-native'
 import { Animated, Pressable, View } from 'react-native'
-import type { Asset } from 'react-native-image-picker'
+import type { Options } from 'react-native-image-crop-picker'
 
 import IconUpload from 'app/assets/images/iconUpload.svg'
 import { DynamicImage } from 'app/components/core'
@@ -11,22 +12,16 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import type { StylesProps } from 'app/styles'
 import { makeStyles } from 'app/styles'
-import type { Image } from 'app/types/image'
 import { launchSelectImageActionSheet } from 'app/utils/launchSelectImageActionSheet'
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
-  root: {
-    marginHorizontal: spacing(4)
-  },
+const useStyles = makeStyles(({ palette }) => ({
   imageContainer: {
     aspectRatio: 1,
     width: '100%',
-    borderRadius: 8,
     overflow: 'hidden'
   },
   image: {
-    height: '100%',
-    borderRadius: 8
+    height: '100%'
   },
   centerIcon: {
     position: 'absolute',
@@ -46,27 +41,21 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     bottom: 0,
     backgroundColor: '#000',
     opacity: 0.2
-  },
-  shareSheet: {
-    color: palette.secondary
   }
 }))
 
-type FormImageInputProps = {
+type ProfileImageFieldProps = {
   isProcessing?: boolean
   name: string
+  imageOptions: Options
 } & StylesProps<{
   root?: ViewStyle
   imageContainer?: ViewStyle
   image?: ImageStyle
 }>
 
-export const FormImageInput = ({
-  isProcessing,
-  name,
-  styles: stylesProp,
-  style
-}: FormImageInputProps) => {
+export const ProfileImageField = (props: ProfileImageFieldProps) => {
+  const { isProcessing, name, styles: stylesProp, style, imageOptions } = props
   const styles = useStyles()
   const [isLoading, setIsLoading] = useState(false)
   const [{ value }, , { setValue }] = useField(name)
@@ -76,20 +65,12 @@ export const FormImageInput = ({
   const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.9)
 
   const handlePress = useCallback(() => {
-    const handleImageSelected = (_image: Image, rawResponse: Asset) => {
-      setValue({
-        url: rawResponse.uri,
-        file: {
-          uri: rawResponse.uri,
-          name: rawResponse.fileName,
-          type: rawResponse.type
-        },
-        source: 'original'
-      })
+    const handleImageSelected = (image: Image) => {
+      setValue(image)
       setIsLoading(true)
     }
-    launchSelectImageActionSheet(handleImageSelected, styles.shareSheet.color)
-  }, [setValue, styles.shareSheet.color])
+    launchSelectImageActionSheet(handleImageSelected, imageOptions)
+  }, [imageOptions, setValue])
 
   const isDefaultImage = /imageCoverPhotoBlank/.test(url)
 
@@ -100,7 +81,7 @@ export const FormImageInput = ({
 
   return (
     <Pressable
-      style={[styles.root, style, stylesProp?.root]}
+      style={[style, stylesProp?.root]}
       onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
