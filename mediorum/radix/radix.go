@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	iradix "github.com/hashicorp/go-immutable-radix/v2"
 	"github.com/labstack/echo/v4"
@@ -463,7 +464,15 @@ func (r *Radix) InsertOtherHostsView(otherHost string, pageSize int, resetCursor
 		}
 
 		// fetch next page
-		resp, _ := http.Get(nextURL)
+		client := &http.Client{Timeout: 3 * time.Minute}
+		req, err := http.NewRequest("GET", nextURL, nil)
+		if err != nil {
+			return
+		}
+		resp, err := client.Do(req)
+		if err != nil || resp == nil || resp.Body == nil {
+			return
+		}
 		if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 			return
 		}
