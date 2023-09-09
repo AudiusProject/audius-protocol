@@ -11,7 +11,7 @@ const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
   const recentBlockhash = await connection.getLatestBlockhash('finalized')
   const message = new TransactionMessage({
     payerKey: feePayerAccount.publicKey,
-    recentBlockhash,
+    recentBlockhash: recentBlockhash.blockhash,
     instructions
   }).compileToV0Message()
   console.log('REED message created:', message)
