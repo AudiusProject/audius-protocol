@@ -137,6 +137,21 @@ solanaRouter.post(
       if (isTransactionTooLargeError(error)) {
         console.log('REED got tx too large error, retrying with v0 tx')
         const feePayerKeypair = getFeePayerKeypair(false, feePayerOverride)
+        console.log('REED got feePayerKeyPair', feePayerKeypair)
+        console.log('REED feePayerKeyPair.publicKey', feePayerKeypair.publicKey)
+        console.log(
+          'REED feePayerKeyPair.privateKey',
+          feePayerKeypair.privateKey
+        )
+        console.log(
+          'REED feePayerKeyPair.publicKey()',
+          feePayerKeypair.publicKey()
+        )
+        console.log(
+          'REED feePayerKeyPair.privateKey()',
+          feePayerKeypair.privateKey()
+        )
+
         sendTransactionWithLookupTable(
           libs.solanaWeb3Manager.connection,
           instructions,

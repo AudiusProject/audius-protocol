@@ -126,6 +126,7 @@ function getFeePayerKeypair(singleFeePayer = true, pubkey = null) {
       console.error('Fee payer for given public key not found')
       return feePayerKeypair
     }
+    console.log('REED feePayerKeypair', pubkey, 'was at index', feePayerIndex)
     return feePayerKeypairs[feePayerIndex]
   }
 
