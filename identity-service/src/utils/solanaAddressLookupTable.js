@@ -3,7 +3,8 @@ const {
   TransactionMessage,
   AddressLookupTableProgram,
   VersionedTransaction,
-  Transaction
+  Transaction,
+  Keypair
 } = require('@solana/web3.js')
 
 const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
@@ -15,7 +16,11 @@ const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
     instructions
   }).compileToV0Message()
   const tx = new VersionedTransaction(message)
-  tx.sign([feePayerAccount])
+  console.log('REED got feePayerKeyPair', feePayerAccount)
+  console.log('REED feePayerKeyPair.publicKey', feePayerAccount.publicKey)
+  console.log('REED feePayerKeyPair.secretKey', feePayerAccount.secretKey)
+  const k = Keypair.fromSecretKey(feePayerAccount.secretKey)
+  tx.sign([k])
   return await connection.sendTransaction(tx)
 }
 
