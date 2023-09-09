@@ -2,9 +2,7 @@ const {
   SystemProgram,
   TransactionMessage,
   AddressLookupTableProgram,
-  VersionedTransaction,
-  Transaction,
-  Keypair
+  VersionedTransaction
 } = require('@solana/web3.js')
 
 const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
@@ -15,11 +13,10 @@ const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
     recentBlockhash,
     instructions
   }).compileToV0Message()
-  // const tx = new VersionedTransaction(message)
-  // tx.sign([feePayerAccount])
-  // const serialized = tx.serialize()
-  // return await connection.sendRawTransaction(serialized)
-  return await connection.sendTransaction(message, [feePayerAccount])
+  const tx = new VersionedTransaction(message)
+  tx.sign([feePayerAccount])
+  const serialized = tx.serialize()
+  return await connection.sendRawTransaction(serialized)
 }
 
 const sendTransactionWithLookupTable = async (
@@ -27,7 +24,7 @@ const sendTransactionWithLookupTable = async (
   instructions,
   feePayerAccount
 ) => {
-  const slot = await connection.getSlot()
+  const slot = await connection.getSlot('finalized')
   const [lookupTableInst, lookupTableAddress] =
     AddressLookupTableProgram.createLookupTable({
       authority: feePayerAccount.publicKey,
@@ -62,10 +59,6 @@ const sendTransactionWithLookupTable = async (
     'REED successfully sent table transaction first half',
     txIdFirstHalf
   )
-  for (let i = 0; i < lookupTableAccount.state.addresses.length; i++) {
-    const address = lookupTableAccount.state.addresses[i]
-    console.log('REED addresses in table:', i, address.toString())
-  }
 
   const extendInstructionSecondHalf =
     AddressLookupTableProgram.extendLookupTable({
@@ -85,21 +78,18 @@ const sendTransactionWithLookupTable = async (
     txIdSecondHalf
   )
 
-  console.log(
-    `REED Extend Transaction successfully sent: https://explorer.solana.com/tx/${tableTxId}`
-  )
-
   const lookupTableAccount = await connection
     .getAddressLookupTable(lookupTableAddress)
     .then((res) => res.value)
 
+  sleep(1)
+  console.log('REED num addresses:', lookupTableAccount.state.addresses.length)
   for (let i = 0; i < lookupTableAccount.state.addresses.length; i++) {
     const address = lookupTableAccount.state.addresses[i]
     console.log('REED addresses in account:', i, address.toBase58())
   }
-  sleep(1)
 
-  const recentBlockhashV0 = (await connection.getLatestBlockhash('confirmed'))
+  const recentBlockhashV0 = (await connection.getLatestBlockhash('finalized'))
     .blockhash
   const messageV0 = new TransactionMessage({
     payerKey: feePayerAccount.publicKey,
