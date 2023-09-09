@@ -14,12 +14,17 @@ const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
     recentBlockhash,
     instructions
   }).compileToV0Message()
+  console.log('REED message created:', message)
   const tx = new VersionedTransaction(message)
+  console.log('REED tx created:', tx)
   tx.sign([feePayerAccount])
+  console.log('REED tx signed:', tx)
   const serialized = tx.serialize()
+  console.log('REED tx serialized:', serialized)
   const txId = await connection.sendRawTransaction(serialized, {
     max_retries: MAX_RETRIES
   })
+  console.log('REED tx sent:', txId)
 
   const confirmation = await connection.confirmTransaction({
     signature: txId,
@@ -29,6 +34,7 @@ const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
   if (confirmation.value.err) {
     throw new Error('V0 Transaction not confirmed: txId', txId)
   }
+  console.log('REED tx confirmed:', confirmation)
 }
 
 const sendTransactionWithLookupTable = async (
@@ -44,6 +50,12 @@ const sendTransactionWithLookupTable = async (
       recentSlot: slot
     })
   console.log('REED lookup table address:', lookupTableAddress.toBase58())
+  const createTableTxId = await sendV0Transaction(
+    connection,
+    [lookupTableInst],
+    feePayerAccount
+  )
+  console.log('REED successfully created table:', createTableTxId)
 
   const set = new Set()
   instructions.forEach((i) => i.keys.map((k) => set.add(k.pubkey)))
@@ -64,7 +76,7 @@ const sendTransactionWithLookupTable = async (
     })
   const txIdFirstHalf = await sendV0Transaction(
     connection,
-    [lookupTableInst, extendInstructionFirstHalf],
+    [extendInstructionFirstHalf],
     feePayerAccount
   )
   console.log(
