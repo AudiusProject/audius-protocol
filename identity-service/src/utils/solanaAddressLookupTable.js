@@ -48,6 +48,7 @@ const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
   console.log(
     `Extend Transaction successfully sent: https://explorer.solana.com/tx/${tableTxId}`
   )
+  console.log('REED successfully sent table transaction')
 
   const lookupTableAccount = await connection
     .getAddressLookupTable(lookupTableAddress)
@@ -55,8 +56,9 @@ const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
 
   for (let i = 0; i < lookupTableAccount.state.addresses.length; i++) {
     const address = lookupTableAccount.state.addresses[i]
-    console.log(i, address.toBase58())
+    console.log('REED addresses in account:', i, address.toBase58())
   }
+  sleep(1)
 
   const recentBlockhashV0 = (await connection.getLatestBlockhash('confirmed'))
     .blockhash
@@ -78,6 +80,10 @@ const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
   const txid = await connection.sendRawTransaction(transactionV0)
 
   console.log(`Transaction: https://explorer.solana.com/tx/${txid}`)
+}
+
+function sleep(s) {
+  return new Promise((resolve) => setTimeout(resolve, s * 1000))
 }
 
 module.exports = {
