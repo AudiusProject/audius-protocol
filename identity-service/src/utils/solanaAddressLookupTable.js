@@ -7,7 +7,23 @@ const {
 } = require('@solana/web3.js')
 
 const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
-  console.log('REED at top of sendV0Transaction')
+  const recentBlockhash = (await connection.getLatestBlockhash('confirmed'))
+    .blockhash
+  const message = new TransactionMessage({
+    payerKey: feePayerAccount.publicKey,
+    recentBlockhash,
+    instructions
+  }).compileToV0Message()
+  const tx = new VersionedTransaction(message)
+  tx.sign([feePayerAccount])
+  return await connection.sendTransaction(tx)
+}
+
+const sendTransactionWithLookupTable = async (
+  connection,
+  instructions,
+  feePayerAccount
+) => {
   const slot = await connection.getSlot()
   const [lookupTableInst, lookupTableAddress] =
     AddressLookupTableProgram.createLookupTable({
@@ -20,35 +36,54 @@ const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
   const set = new Set()
   instructions.forEach((i) => i.keys.map((k) => set.add(k.pubkey)))
   const addresses = Array.from(set)
-  console.log('REED addresses:', addresses)
-  const extendInstruction = AddressLookupTableProgram.extendLookupTable({
-    payer: feePayerAccount.publicKey,
-    authority: feePayerAccount.publicKey,
-    lookupTable: lookupTableAddress,
-    addresses: [
-      feePayerAccount.publicKey,
-      SystemProgram.programId,
-      ...addresses
-    ]
-  })
-  console.log('REED create Instruction:', lookupTableInst)
-  console.log('REED extend Instruction:', extendInstruction)
-
-  const recentBlockhash = (await connection.getLatestBlockhash('confirmed'))
-    .blockhash
-  const message = new TransactionMessage({
-    payerKey: feePayerAccount.publicKey,
-    recentBlockhash: recentBlockhash,
-    instructions: [lookupTableInst, extendInstruction]
-  }).compileToV0Message()
-
-  const transaction = new VersionedTransaction(message)
-  transaction.sign([feePayerAccount])
-  const tableTxId = await connection.sendTransaction(transaction)
-  console.log(
-    `Extend Transaction successfully sent: https://explorer.solana.com/tx/${tableTxId}`
+  const halfIndex = Math.floor(addresses.length / 2)
+  const firstHalf = addresses.slice(0, halfIndex)
+  const secondHalf = addresses.slice(halfIndex)
+  const extendInstructionFirstHalf =
+    AddressLookupTableProgram.extendLookupTable({
+      payer: feePayerAccount.publicKey,
+      authority: feePayerAccount.publicKey,
+      lookupTable: lookupTableAddress,
+      addresses: [
+        feePayerAccount.publicKey,
+        SystemProgram.programId,
+        ...firstHalf
+      ]
+    })
+  const txIdFirstHalf = await sendV0Transaction(
+    connection,
+    [lookupTableInst, extendInstructionFirstHalf],
+    feePayerAccount
   )
-  console.log('REED successfully sent table transaction')
+  console.log(
+    'REED successfully sent table transaction first half',
+    txIdFirstHalf
+  )
+
+  const extendInstructionSecondHalf =
+    AddressLookupTableProgram.extendLookupTable({
+      payer: feePayerAccount.publicKey,
+      authority: feePayerAccount.publicKey,
+      lookupTable: lookupTableAddress,
+      addresses: [
+        feePayerAccount.publicKey,
+        SystemProgram.programId,
+        ...secondHalf
+      ]
+    })
+  const txIdSecondHalf = await sendV0Transaction(
+    connection,
+    [extendInstructionSecondHalf],
+    feePayerAccount
+  )
+  console.log(
+    'REED successfully sent table transaction second half',
+    txIdSecondHalf
+  )
+
+  console.log(
+    `REED Extend Transaction successfully sent: https://explorer.solana.com/tx/${tableTxId}`
+  )
 
   const lookupTableAccount = await connection
     .getAddressLookupTable(lookupTableAddress)
@@ -87,5 +122,5 @@ function sleep(s) {
 }
 
 module.exports = {
-  sendV0Transaction
+  sendTransactionWithLookupTable
 }

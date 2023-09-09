@@ -1,6 +1,8 @@
 const express = require('express')
 const crypto = require('crypto')
-const { sendV0Transaction } = require('../utils/solanaAddressLookupTable')
+const {
+  sendTransactionWithLookupTable
+} = require('../utils/solanaAddressLookupTable')
 
 const { parameterizedAuthMiddleware } = require('../authMiddleware')
 const {
@@ -135,8 +137,7 @@ solanaRouter.post(
       if (isTransactionTooLargeError(error)) {
         console.log('REED got tx too large error, retrying with v0 tx')
         const feePayerKeypair = getFeePayerKeypair(false, feePayerOverride)
-        console.log('REED found feepayerKeypair: ', feePayerKeypair)
-        sendV0Transaction(
+        sendTransactionWithLookupTable(
           libs.solanaWeb3Manager.connection,
           instructions,
           feePayerKeypair
