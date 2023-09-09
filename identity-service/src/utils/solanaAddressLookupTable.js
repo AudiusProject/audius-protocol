@@ -67,6 +67,7 @@ const sendTransactionWithLookupTable = async (
       lookupTable: lookupTableAddress,
       addresses: secondHalf
     })
+
   console.log('REED second half instruction:', extendInstructionSecondHalf)
   const txIdSecondHalf = await sendV0Transaction(
     connection,
