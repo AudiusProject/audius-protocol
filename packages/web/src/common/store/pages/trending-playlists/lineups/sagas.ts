@@ -30,11 +30,16 @@ function* getPlaylists({ limit, offset }: { limit: number; offset: number }) {
 
   const currentUserId = yield* select(getUserId)
 
+  // Temporary fix:
+  // For some reason, limit is 3 and we are not getting enough playlists back,
+  // maybe due to some bug in the lineup.
+  // Setting the limit to 10 so we at least get enough playlists back from first fetch for now.
+  const TMP_LIMIT = 10
   let playlists: UserCollectionMetadata[] = yield* call(
     (args) => apiClient.getTrendingPlaylists(args),
     {
       currentUserId,
-      limit,
+      limit: TMP_LIMIT,
       offset,
       time
     }
