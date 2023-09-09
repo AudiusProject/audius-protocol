@@ -8,20 +8,18 @@ const {
 } = require('@solana/web3.js')
 
 const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
-  const recentBlockhash = (await connection.getLatestBlockhash('confirmed'))
+  const recentBlockhash = (await connection.getLatestBlockhash('finalized'))
     .blockhash
   const message = new TransactionMessage({
     payerKey: feePayerAccount.publicKey,
     recentBlockhash,
     instructions
   }).compileToV0Message()
-  const tx = new VersionedTransaction(message)
-  console.log('REED got feePayerKeyPair', feePayerAccount)
-  console.log('REED feePayerKeyPair.publicKey', feePayerAccount.publicKey)
-  console.log('REED feePayerKeyPair.secretKey', feePayerAccount.secretKey)
-  const k = Keypair.fromSecretKey(feePayerAccount.secretKey)
-  tx.sign([k])
-  return await connection.sendTransaction(tx)
+  // const tx = new VersionedTransaction(message)
+  // tx.sign([feePayerAccount])
+  // const serialized = tx.serialize()
+  // return await connection.sendRawTransaction(serialized)
+  return await connection.sendTransaction(message, [feePayerAccount])
 }
 
 const sendTransactionWithLookupTable = async (
@@ -70,12 +68,9 @@ const sendTransactionWithLookupTable = async (
       payer: feePayerAccount.publicKey,
       authority: feePayerAccount.publicKey,
       lookupTable: lookupTableAddress,
-      addresses: [
-        feePayerAccount.publicKey,
-        SystemProgram.programId,
-        ...secondHalf
-      ]
+      addresses: secondHalf
     })
+  console.log('REED second half instruction:', extendInstructionSecondHalf)
   const txIdSecondHalf = await sendV0Transaction(
     connection,
     [extendInstructionSecondHalf],
