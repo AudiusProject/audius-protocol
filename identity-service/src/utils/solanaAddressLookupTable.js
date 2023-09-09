@@ -37,12 +37,6 @@ const sendTransactionWithLookupTable = async (
       recentSlot: slot
     })
   console.log('REED lookup table address:', lookupTableAddress.toBase58())
-  const createTableTxId = await sendV0Transaction(
-    connection,
-    [lookupTableInst],
-    feePayerAccount
-  )
-  console.log('REED successfully created table:', createTableTxId)
 
   const set = new Set()
   const addresses = []
@@ -58,7 +52,7 @@ const sendTransactionWithLookupTable = async (
     payer: feePayerAccount.publicKey,
     authority: feePayerAccount.publicKey,
     lookupTable: lookupTableAddress,
-    addresses: [feePayerAccount.publicKey, SystemProgram.programId, addresses]
+    addresses: addresses
   })
   const tableTxId = await sendV0Transaction(
     connection,
