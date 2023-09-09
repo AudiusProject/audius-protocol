@@ -62,6 +62,10 @@ const sendTransactionWithLookupTable = async (
     'REED successfully sent table transaction first half',
     txIdFirstHalf
   )
+  for (let i = 0; i < lookupTableAccount.state.addresses.length; i++) {
+    const address = lookupTableAccount.state.addresses[i]
+    console.log('REED addresses in table:', i, address.toString())
+  }
 
   const extendInstructionSecondHalf =
     AddressLookupTableProgram.extendLookupTable({
