@@ -34,6 +34,7 @@ export function DiscoveryHealth() {
             {isDiscovery && <th>Storage</th>}
             {isContent && <th>Storage (legacy)</th>}
             {isContent && <th>Storage (mediorum)</th>}
+            {isContent && <th>Expected Content Size (from repair.go)</th>}
             <th>DB Size</th>
             <th>Your IP</th>
             {isDiscovery && <th>ACDC Health</th>}
@@ -138,6 +139,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const isBehind = health.block_difference > 5 ? 'is-behind' : ''
   const dbSize =
     bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
+  const expectedContentSize = bytesToGb(health.expectedContentSize)
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
   const getPeers = (str: string | undefined) => {
@@ -206,6 +208,9 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
             {mediorumUsed} / {mediorumSize} GB
           </span>
         </td>
+      )}
+      {isContent && (
+        <td>{`${expectedContentSize} GB`}</td>
       )}
       <td>{`${dbSize} GB`}</td>
       <td>{`${yourIp}`}</td>
