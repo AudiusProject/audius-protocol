@@ -20,8 +20,8 @@ type diskStatus struct {
 	StoragePathSizeGB uint64    `json:"storagePathSizeGB"`
 	StoragePathUsedGB uint64    `json:"storagePathUsedGB"`
 	DatabaseSizeGB    uint64    `json:"databaseSizeGB"`
-	LegacyDirUsed     uint64    `json:"legacyDirUsed"`
-	MediorumDirUsed   uint64    `json:"megacyDirUsed"`
+	LegacyDirUsedGB   uint64    `json:"legacyDirUsed"`
+	MediorumDirUsedGB uint64    `json:"megacyDirUsed"`
 	Clock             time.Time `json:"clock"`
 }
 
@@ -136,8 +136,8 @@ func (ss *MediorumServer) updateDiskAndDbStatus() {
 		StoragePathSizeGB: ss.storagePathSize / (1 << 30),
 		StoragePathUsedGB: ss.storagePathUsed / (1 << 30),
 		DatabaseSizeGB:    ss.databaseSize / (1 << 30),
-		LegacyDirUsed:     ss.legacyDirUsed / (1 << 30),
-		MediorumDirUsed:   ss.mediorumDirUsed / (1 << 30),
+		LegacyDirUsedGB:   ss.legacyDirUsed / (1 << 30),
+		MediorumDirUsedGB: ss.mediorumDirUsed / (1 << 30),
 		Clock:             nearest5MinSinceEpoch(),
 	}
 	ss.logger.Info("updateDiskAndDbStatus", "diskStatus", status)
