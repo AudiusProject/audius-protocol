@@ -6,6 +6,23 @@ const {
 } = require('@solana/web3.js')
 
 const MAX_RETRIES = 5
+const MAX_RETRIES_GET_SLOT = 10
+
+const getValidSlot = async (connection) => {
+  let retries = MAX_RETRIES_GET_SLOT
+  while (retries > 0) {
+    const currentSlot = await connection.getSlot()
+    const slots = await connection.getBlocks(currentSlot - 200)
+    if (slots.length > 100) {
+      console.log('REED currentSlot is valid:', currentSlot)
+      return currentSlot
+    }
+    console.log('REED currentSlot is invalid:', currentSlot)
+    retries -= 1
+    sleep(1)
+  }
+  throw new Error('REED could not find valid slot')
+}
 
 const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
   const recentBlockhash = await connection.getLatestBlockhash('finalized')
@@ -14,28 +31,13 @@ const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
     recentBlockhash: recentBlockhash.blockhash,
     instructions
   }).compileToV0Message()
-  console.log('REED message created:', message)
   const tx = new VersionedTransaction(message)
-  console.log('REED tx created:', tx)
   tx.sign([feePayerAccount])
-  console.log('REED tx signed:', tx)
   const serialized = tx.serialize()
-  console.log('REED tx serialized:', serialized)
   const txId = await connection.sendRawTransaction(serialized, {
     max_retries: MAX_RETRIES
   })
   console.log('REED tx sent:', txId)
-
-  // const confirmation = await connection.confirmTransaction({
-  //   signature: txId,
-  //   blockhash: recentBlockhash.blockhash,
-  //   lastValidBlockHeight: recentBlockhash.lastValidBlockHeight
-  // })
-  const confirmation = await connection.confirmTransaction(txId)
-  if (confirmation.value.err) {
-    throw new Error('V0 Transaction not confirmed: txId', txId)
-  }
-  console.log('REED tx confirmed:', confirmation)
   return txId
 }
 
@@ -44,7 +46,7 @@ const sendTransactionWithLookupTable = async (
   instructions,
   feePayerAccount
 ) => {
-  const slot = await connection.getSlot('finalized')
+  const slot = await getValidSlot(connection)
   const [lookupTableInst, lookupTableAddress] =
     AddressLookupTableProgram.createLookupTable({
       authority: feePayerAccount.publicKey,
