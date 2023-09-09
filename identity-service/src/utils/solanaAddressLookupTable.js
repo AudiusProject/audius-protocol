@@ -5,9 +5,10 @@ const {
   VersionedTransaction
 } = require('@solana/web3.js')
 
+const MAX_RETRIES = 5
+
 const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
-  const recentBlockhash = (await connection.getLatestBlockhash('finalized'))
-    .blockhash
+  const recentBlockhash = await connection.getLatestBlockhash('finalized')
   const message = new TransactionMessage({
     payerKey: feePayerAccount.publicKey,
     recentBlockhash,
@@ -16,7 +17,18 @@ const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
   const tx = new VersionedTransaction(message)
   tx.sign([feePayerAccount])
   const serialized = tx.serialize()
-  return await connection.sendRawTransaction(serialized)
+  const txId = await connection.sendRawTransaction(serialized, {
+    max_retries: MAX_RETRIES
+  })
+
+  const confirmation = await connection.confirmTransaction({
+    signature: txId,
+    blockhash: recentBlockhash.blockhash,
+    lastValidBlockHeight: recentBlockhash.lastValidBlockHeight
+  })
+  if (confirmation.value.err) {
+    throw new Error('V0 Transaction not confirmed: txId', txId)
+  }
 }
 
 const sendTransactionWithLookupTable = async (
