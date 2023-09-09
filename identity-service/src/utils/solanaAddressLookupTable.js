@@ -6,23 +6,6 @@ const {
 } = require('@solana/web3.js')
 
 const MAX_RETRIES = 5
-const MAX_RETRIES_GET_SLOT = 10
-
-const getValidSlot = async (connection) => {
-  let retries = MAX_RETRIES_GET_SLOT
-  while (retries > 0) {
-    const currentSlot = await connection.getSlot()
-    const slots = await connection.getBlocks(currentSlot - 200)
-    if (slots.length > 100) {
-      console.log('REED currentSlot is valid:', currentSlot)
-      return currentSlot
-    }
-    console.log('REED currentSlot is invalid:', currentSlot)
-    retries -= 1
-    sleep(1)
-  }
-  throw new Error('REED could not find valid slot')
-}
 
 const sendV0Transaction = async (connection, instructions, feePayerAccount) => {
   const recentBlockhash = await connection.getLatestBlockhash('finalized')
@@ -46,7 +29,7 @@ const sendTransactionWithLookupTable = async (
   instructions,
   feePayerAccount
 ) => {
-  const slot = await getValidSlot(connection)
+  const slot = (await connection.getSlot()) - 100
   const [lookupTableInst, lookupTableAddress] =
     AddressLookupTableProgram.createLookupTable({
       authority: feePayerAccount.publicKey,
@@ -67,6 +50,8 @@ const sendTransactionWithLookupTable = async (
   const halfIndex = Math.floor(addresses.length / 2)
   const firstHalf = addresses.slice(0, halfIndex)
   const secondHalf = addresses.slice(halfIndex)
+  console.log('REED first half:', firstHalf)
+  console.log('REED second half:', secondHalf)
   const extendInstructionFirstHalf =
     AddressLookupTableProgram.extendLookupTable({
       payer: feePayerAccount.publicKey,
