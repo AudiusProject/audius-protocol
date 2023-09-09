@@ -25,6 +25,7 @@ import {
   playlistUpdatesActions,
   playlistUpdatesSelectors
 } from '@audius/common'
+import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { debounce, isEqual } from 'lodash'
 import { connect } from 'react-redux'
@@ -52,15 +53,17 @@ const messages = {
   description: "View tracks that you've favorited"
 }
 
+const { GetFavoritesSortMethodEnum } = full
+
 const sortMethodMap: Record<string, string> = {
-  title: 'title',
-  artist: 'artist_name',
-  created_at: 'release_date',
-  dateListened: 'last_listen_date',
-  dateSaved: 'saved_date',
-  time: 'length',
-  plays: 'plays',
-  repost_count: 'reposts'
+  title: GetFavoritesSortMethodEnum.Title,
+  artist: GetFavoritesSortMethodEnum.ArtistName,
+  created_at: GetFavoritesSortMethodEnum.ReleaseDate,
+  dateListened: GetFavoritesSortMethodEnum.LastListenDate,
+  dateSaved: GetFavoritesSortMethodEnum.AddedDate,
+  dateAdded: GetFavoritesSortMethodEnum.AddedDate,
+  plays: GetFavoritesSortMethodEnum.Plays,
+  repost_count: GetFavoritesSortMethodEnum.Reposts
 }
 
 type OwnProps = {
