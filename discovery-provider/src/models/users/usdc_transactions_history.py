@@ -34,3 +34,4 @@ class USDCTransactionsHistory(Base, RepresentableMixin):
     transaction_created_at = Column(DateTime, nullable=False)
     change = Column(Numeric, nullable=False)
     balance = Column(Numeric, nullable=False)
+    tx_metadata = Column(String, nullable=True)

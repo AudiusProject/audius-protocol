@@ -90,7 +90,8 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
         Save.user_id == user_id,
         Save.is_current == True,
         Save.is_delete == False,
-        Save.save_type == SaveType[collection_type],
+        # Both albums and playlists have SaveType.playlist at the moment, will filter albums with the join as necessary
+        or_(Save.save_type == SaveType.playlist, Save.save_type == SaveType.album),
     )
 
     reposts_base = session.query(
@@ -100,7 +101,11 @@ def _get_collection_library(args: GetCollectionLibraryArgs, session):
         Repost.user_id == user_id,
         Repost.is_current == True,
         Repost.is_delete == False,
-        Repost.repost_type == RepostType[collection_type],
+        # Both albums and playlists have RepostType.playlist at the moment, will filter albums with the join as necessary
+        or_(
+            Repost.repost_type == RepostType.playlist,
+            Repost.repost_type == RepostType.album,
+        ),
     )
 
     # Union everything for the "all" query

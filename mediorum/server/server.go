@@ -10,6 +10,7 @@ import (
 	"mediorum/ethcontracts"
 	"mediorum/persistence"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/signal"
@@ -58,6 +59,7 @@ type MediorumConfig struct {
 	PostgresDSN          string `json:"-"`
 	PrivateKey           string `json:"-"`
 	ListenPort           string
+	RadixListenPort      string
 	TrustedNotifierID    int
 	SPID                 int
 	SPOwnerWallet        string
@@ -76,21 +78,26 @@ type MediorumConfig struct {
 }
 
 type MediorumServer struct {
-	echo             *echo.Echo
-	bucket           *blob.Bucket
-	logger           *slog.Logger
-	crud             *crudr.Crudr
-	pgPool           *pgxpool.Pool
-	quit             chan os.Signal
-	trustedNotifier  *ethcontracts.NotifierInfo
+	echo            *echo.Echo
+	bucket          *blob.Bucket
+	logger          *slog.Logger
+	crud            *crudr.Crudr
+	pgPool          *pgxpool.Pool
+	quit            chan os.Signal
+	trustedNotifier *ethcontracts.NotifierInfo
+
+	// simplify
 	storagePathUsed  uint64
 	storagePathSize  uint64
 	mediorumPathUsed uint64
 	mediorumPathSize uint64
 	mediorumPathFree uint64
+	legacyDirUsed    uint64
+	mediorumDirUsed  uint64
 
-	databaseSize uint64
-	dbSizeErr    string
+	databaseSize        uint64
+	dbSizeErr           string
+	expectedContentSize int64
 
 	uploadsCount    int64
 	uploadsCountErr string
@@ -102,8 +109,13 @@ type MediorumServer struct {
 	unreachablePeers []string
 	redirectCache    *imcache.Cache[string, string]
 
+	lastRepairCleanupComplete time.Time
+	lastRepairCleanupDuration time.Duration
+
 	StartedAt time.Time
 	Config    MediorumConfig
+
+	crudSweepMutex sync.Mutex
 }
 
 type PeerHealth struct {
@@ -326,6 +338,13 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/metrics", ss.getMetrics)
 	internalApi.GET("/logs/partition-ops", ss.getPartitionOpsLog)
 	internalApi.GET("/logs/reaper", ss.getReaperLog)
+
+	// send all /radix routes to the radix container
+	if config.RadixListenPort != "" {
+		radixURL, _ := url.Parse("http://radix:" + config.RadixListenPort)
+		radixProxy := httputil.NewSingleHostReverseProxy(radixURL)
+		echoServer.Any("/radix*", echo.WrapHandler(radixProxy))
+	}
 
 	return ss, nil
 
