@@ -18,19 +18,19 @@ const sendV0Transaction = async (
   signatures = []
 ) => {
   const recentBlockhash = await connection.getLatestBlockhash('finalized')
-  console.log('REED recentBlockhash:', recentBlockhash)
   const message = new TransactionMessage({
     payerKey: feePayerAccount.publicKey,
     recentBlockhash: recentBlockhash.blockhash,
     instructions
   }).compileToV0Message(lookupTableArray)
-  console.log('REED message:', message)
   const tx = new VersionedTransaction(message)
-  console.log('REED tx:', tx)
   tx.sign([feePayerAccount])
+  console.log('REED tx with feePayer signed:', tx)
   if (Array.isArray(signatures)) {
     signatures.forEach(({ publicKey, signature }) => {
-      tx.addSignature(new PublicKey(publicKey), signature)
+      console.log('REED adding signature:', publicKey, signature)
+      console.log('REED signature.data:', signature.data)
+      tx.addSignature(new PublicKey(publicKey), signature.data)
     })
   }
   console.log('REED signed tx:', tx)
@@ -89,7 +89,6 @@ const sendTransactionWithLookupTable = async (
     instructions,
     feePayerAccount
   )
-
   await sleep(SLEEP_TIME)
   const lookupTableAccount = (
     await connection.getAddressLookupTable(lookupTableAddress)
@@ -99,11 +98,6 @@ const sendTransactionWithLookupTable = async (
     throw new Error(
       `Failed to get lookupTableAccount after waiting ${SLEEP_TIME} seconds`
     )
-  }
-  console.log('REED num addresses:', lookupTableAccount.state.addresses.length)
-  for (let i = 0; i < lookupTableAccount.state.addresses.length; i++) {
-    const address = lookupTableAccount.state.addresses[i]
-    console.log('REED addresses in account:', i, address.toBase58())
   }
 
   console.log('REED signatures:', signatures)
@@ -117,6 +111,7 @@ const sendTransactionWithLookupTable = async (
   console.log(
     `REED successfully sent swap transaction: https://explorer.solana.com/tx/${txId}`
   )
+  return txId
 }
 
 function sleep(s) {

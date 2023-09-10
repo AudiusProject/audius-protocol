@@ -36,6 +36,23 @@ const isTransactionTooLargeError = (error) => {
   return !!res
 }
 
+const handleV0Tx = async (instructions, feePayerOverride, signatures) => {
+  console.log('REED got tx too large error, retrying with v0 tx')
+  const feePayerKeypair = getFeePayerKeypair(false, feePayerOverride)
+  try {
+    const transactionSignature = await sendTransactionWithLookupTable(
+      instructions,
+      feePayerKeypair,
+      signatures
+    )
+    return successResponse({ transactionSignature })
+  } catch (e) {
+    console.log('REED error sending v0 tx:', e)
+    const errorString = 'Error sending v0 tx'
+    return errorResponseServerError(errorString, { error: e })
+  }
+}
+
 solanaRouter.post(
   '/relay',
   parameterizedAuthMiddleware({ shouldResponseBadRequest: false }),
@@ -135,19 +152,7 @@ solanaRouter.post(
 
     if (error) {
       if (isTransactionTooLargeError(error)) {
-        console.log('REED got tx too large error, retrying with v0 tx')
-        const feePayerKeypair = getFeePayerKeypair(false, feePayerOverride)
-        try {
-          sendTransactionWithLookupTable(
-            instructions,
-            feePayerKeypair,
-            signatures
-          )
-        } catch (e) {
-          console.log('REED error sending v0 tx:', e)
-          const errorString = 'Error sending v0 tx'
-          return errorResponseServerError(errorString, { error: e })
-        }
+        handleV0Tx(instructions, feePayerOverride, signatures)
       }
       // if the tx fails, store it in redis with a 24 hour expiration
       await redis.setex(
