@@ -15,14 +15,19 @@ const sendV0Transaction = async (
   lookupTableAccount = undefined
 ) => {
   const recentBlockhash = await connection.getLatestBlockhash('finalized')
+  console.log('REED recentBlockhash:', recentBlockhash)
   const message = new TransactionMessage({
     payerKey: feePayerAccount.publicKey,
     recentBlockhash: recentBlockhash.blockhash,
     instructions
   }).compileToV0Message([lookupTableAccount])
+  console.log('REED message:', message)
   const tx = new VersionedTransaction(message)
+  console.log('REED tx:', tx)
   tx.sign([feePayerAccount])
+  console.log('REED signed tx:', tx)
   const serialized = tx.serialize()
+  console.log('REED serialized tx:', serialized)
   const txId = await connection.sendRawTransaction(serialized, {
     max_retries: MAX_RETRIES
   })
