@@ -2,7 +2,8 @@ const {
   TransactionMessage,
   AddressLookupTableProgram,
   VersionedTransaction,
-  Connection
+  Connection,
+  PublicKey
 } = require('@solana/web3.js')
 const config = require('../config')
 
@@ -13,7 +14,8 @@ const sendV0Transaction = async (
   connection,
   instructions,
   feePayerAccount,
-  lookupTableArray = undefined
+  lookupTableArray = undefined,
+  signatures = []
 ) => {
   const recentBlockhash = await connection.getLatestBlockhash('finalized')
   console.log('REED recentBlockhash:', recentBlockhash)
@@ -26,6 +28,11 @@ const sendV0Transaction = async (
   const tx = new VersionedTransaction(message)
   console.log('REED tx:', tx)
   tx.sign([feePayerAccount])
+  if (Array.isArray(signatures)) {
+    signatures.forEach(({ publicKey, signature }) => {
+      tx.addSignature(new PublicKey(publicKey), signature)
+    })
+  }
   console.log('REED signed tx:', tx)
   const serialized = tx.serialize()
   console.log('REED serialized tx:', serialized)
@@ -71,7 +78,8 @@ const createLookupTable = async (connection, instructions, feePayerAccount) => {
 
 const sendTransactionWithLookupTable = async (
   instructions,
-  feePayerAccount
+  feePayerAccount,
+  signatures
 ) => {
   const SOLANA_RPC_ENDPOINT = config.get('solanaEndpoint')
   const connection = new Connection(SOLANA_RPC_ENDPOINT)
@@ -82,7 +90,7 @@ const sendTransactionWithLookupTable = async (
     feePayerAccount
   )
 
-  sleep(SLEEP_TIME)
+  await sleep(SLEEP_TIME)
   const lookupTableAccount = (
     await connection.getAddressLookupTable(lookupTableAddress)
   ).value
@@ -97,34 +105,17 @@ const sendTransactionWithLookupTable = async (
     console.log('REED addresses in account:', i, address.toBase58())
   }
 
+  console.log('REED signatures:', signatures)
   const txId = await sendV0Transaction(
     connection,
     instructions,
     feePayerAccount,
-    [lookupTableAccount]
+    [lookupTableAccount],
+    signatures
   )
   console.log(
     `REED successfully sent swap transaction: https://explorer.solana.com/tx/${txId}`
   )
-
-  // const recentBlockhashV0 = (await connection.getLatestBlockhash('finalized'))
-  //   .blockhash
-  // const messageV0 = new TransactionMessage({
-  //   payerKey: feePayerAccount.publicKey,
-  //   recentBlockhash: recentBlockhashV0,
-  //   instructions // note this is an array of instructions
-  // }).compileToV0Message([lookupTableAccount])
-
-  // // create a v0 transaction from the v0 message
-  // const transactionV0 = new VersionedTransaction(messageV0)
-
-  // // sign the v0 transaction using the file system wallet we created named `payer`
-  // transactionV0.sign([feePayerAccount])
-  // transactionV0.serialize()
-
-  // // send and confirm the transaction
-  // // (NOTE: There is NOT an array of Signers here; see the note below...)
-  // const txid = await connection.sendRawTransaction(transactionV0)
 }
 
 function sleep(s) {
