@@ -7,12 +7,13 @@ const {
 const config = require('../config')
 
 const MAX_RETRIES = 5
+const SLEEP_TIME = 20
 
 const sendV0Transaction = async (
   connection,
   instructions,
   feePayerAccount,
-  lookupTableAccount = undefined
+  lookupTableArray = undefined
 ) => {
   const recentBlockhash = await connection.getLatestBlockhash('finalized')
   console.log('REED recentBlockhash:', recentBlockhash)
@@ -20,7 +21,7 @@ const sendV0Transaction = async (
     payerKey: feePayerAccount.publicKey,
     recentBlockhash: recentBlockhash.blockhash,
     instructions
-  }).compileToV0Message([lookupTableAccount])
+  }).compileToV0Message(lookupTableArray)
   console.log('REED message:', message)
   const tx = new VersionedTransaction(message)
   console.log('REED tx:', tx)
@@ -81,10 +82,15 @@ const sendTransactionWithLookupTable = async (
     feePayerAccount
   )
 
-  sleep(1)
-  const lookupTableAccount = await connection
-    .getAddressLookupTable(lookupTableAddress)
-    .then((res) => res.value)
+  sleep(SLEEP_TIME)
+  const lookupTableAccount = (
+    await connection.getAddressLookupTable(lookupTableAddress)
+  ).value
+  if (!lookupTableAccount) {
+    throw new Error(
+      `Failed to get lookupTableAccount after waiting ${SLEEP_TIME} seconds`
+    )
+  }
   console.log('REED num addresses:', lookupTableAccount.state.addresses.length)
   for (let i = 0; i < lookupTableAccount.state.addresses.length; i++) {
     const address = lookupTableAccount.state.addresses[i]
@@ -95,10 +101,10 @@ const sendTransactionWithLookupTable = async (
     connection,
     instructions,
     feePayerAccount,
-    lookupTableAccount
+    [lookupTableAccount]
   )
   console.log(
-    `REED successfully sent swap transaction: https://explorer.solana.com/tx/${txid}`
+    `REED successfully sent swap transaction: https://explorer.solana.com/tx/${txId}`
   )
 
   // const recentBlockhashV0 = (await connection.getLatestBlockhash('finalized'))
