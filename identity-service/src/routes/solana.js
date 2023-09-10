@@ -39,6 +39,7 @@ const isTransactionTooLargeError = (error) => {
 const handleV0Tx = async (instructions, feePayerOverride, signatures) => {
   console.log('REED got tx too large error, retrying with v0 tx')
   const feePayerKeypair = getFeePayerKeypair(false, feePayerOverride)
+  console.log('REED got feePayerKeypair:', feePayerKeypair)
   try {
     const transactionSignature = await sendTransactionWithLookupTable(
       instructions,
@@ -152,7 +153,7 @@ solanaRouter.post(
 
     if (error) {
       if (isTransactionTooLargeError(error)) {
-        handleV0Tx(instructions, feePayerOverride, signatures)
+        await handleV0Tx(instructions, feePayerOverride, signatures)
       }
       // if the tx fails, store it in redis with a 24 hour expiration
       await redis.setex(

@@ -30,7 +30,7 @@ const sendV0Transaction = async (
     signatures.forEach(({ publicKey, signature }) => {
       console.log('REED adding signature:', publicKey, signature)
       console.log('REED signature.data:', signature.data)
-      tx.addSignature(new PublicKey(publicKey), signature.data)
+      tx.addSignature(new PublicKey(publicKey), new Uint8Array(signature.data))
     })
   }
   console.log('REED signed tx:', tx)
