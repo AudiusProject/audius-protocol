@@ -1,0 +1,62 @@
+.header > * {
+  display: flex;
+  align-items: center;
+}
+
+.header .iconRemix {
+  height: 24px;
+  width: 24px;
+  margin-right: 4px;
+}
+
+.matrix {
+}
+
+.iconRemix path {
+  fill: url(#linearGradient-1);
+}
+
+.iconRemix.matrix path {
+  fill: url(#matrixHeaderGradient);
+}
+
+.subHeader {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.subHeader .track {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.57px;
+  line-height: 20px;
+}
+
+.subHeader .track .iconVerified {
+  margin-left: 4px;
+}
+
+.subHeader .track .link {
+  margin: 0px 4px;
+  color: var(--secondary);
+  display: flex;
+  align-items: center;
+}
+
+.container {
+  padding: 14px 12px 0px;
+  width: 100%;
+}
+
+.tracksContainer {
+  width: 100%;
+  padding-top: 48px;
+}

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="18px" height="15px" viewBox="0 0 18 15" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <linearGradient id="gradientCrown" gradientTransform="rotate(45)" height="100%" width="100%">
+        <stop offset="0%" stop-color="var(--page-header-gradient-color-2)"/>
+        <stop offset="100%" stop-color="var(--page-header-gradient-color-1)"/>
+    </linearGradient>
+    <g id="🌈-Style-Guides" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Icon-Guide" transform="translate(-69.000000, -300.000000)" fill="#858199">
+            <g id="Stacked-Group-2" transform="translate(66.000000, 199.000000)">
+                <g id="icon/Upload" transform="translate(0.000000, 96.000000)">
+                    <path d="M17.625,10.7375 C17.625,10.7375 17.625,10.625 17.625,10.625 C17.625,7.475 15.15,5 12,5 C9.1875,5 6.825,7.025 6.4875,9.8375 C4.4625,10.5125 3,12.3125 3,14.5625 C3,17.375 5.25,19.625 8.0625,19.625 C9.975,19.625 14.7,19.625 16.5,19.625 C18.975,19.625 21,17.6 21,15.125 C21,12.9875 19.5375,11.3 17.625,10.7375 Z M13.125,14 L13.125,17.375 L10.875,17.375 L10.875,14 L7.5,14 L12,9.5 L16.5,14 L13.125,14 Z" id="Fill" fill-rule="evenodd" style="fill: url(#gradientCrown);"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

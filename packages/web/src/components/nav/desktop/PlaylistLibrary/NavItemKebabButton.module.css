@@ -1,0 +1,17 @@
+.root {
+  flex-shrink: 0;
+  margin-left: 10px;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.root:hover,
+.root:active,
+.root:focus {
+  color: var(--nav-column-link-hover);
+}
+
+.visible {
+  visibility: visible;
+  pointer-events: all;
+}

@@ -1,0 +1,25 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-6);
+}
+
+.amount {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-4);
+}
+
+.destination {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-2);
+  margin-bottom: var(--unit-12);
+}
+
+.spinner {
+  height: var(--unit-6);
+  width: var(--unit-6);
+  align-self: center;
+  margin: var(--unit-3);
+}

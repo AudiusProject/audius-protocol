@@ -1,0 +1,111 @@
+.contentWrapper {
+  position: relative;
+  padding: 14px 12px 0px;
+  width: 100%;
+}
+
+.tile {
+  width: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: var(--white);
+  padding: 16px 24px 24px;
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
+    0 2px 5px -2px var(--tile-shadow-3);
+  border: 1px solid var(--neutral-light-8);
+
+  margin: 0 auto;
+  text-align: left;
+  user-select: none;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.image {
+  height: 195px;
+  width: 195px;
+  margin-bottom: 23px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.type {
+  margin-bottom: 15px;
+  height: 18px;
+  color: var(--neutral-light-4);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.title {
+  color: var(--neutral);
+  font-size: 38px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  width: 100%;
+  position: relative;
+  min-height: 38px;
+}
+
+.title h1 {
+  color: var(--neutral);
+}
+
+.artistWrapper {
+  color: var(--neutral-light-5);
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+  width: 100%;
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.artistWrapper :global(.artistPopover) {
+  display: inline;
+}
+
+.artistWrapper .artist {
+  display: inline-flex;
+  align-items: center;
+  color: var(--secondary);
+  font-size: var(--font-l);
+  font-weight: var(--font-medium);
+  padding-left: 4px;
+}
+
+.artistWrapper .artist:hover {
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.buttonText {
+  text-transform: uppercase;
+}
+
+.lineupWrapper {
+  margin: auto;
+}
+
+.lineupHeader {
+  text-align: center;
+  text-transform: uppercase;
+
+  color: var(--neutral-light-4);
+  font-size: var(--font-medium);
+  font-weight: var(--font-bold);
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+  margin-top: 32px;
+}
+
+.verified {
+  margin-left: 4px;
+}

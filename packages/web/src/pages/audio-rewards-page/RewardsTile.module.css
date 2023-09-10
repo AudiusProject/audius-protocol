@@ -1,0 +1,205 @@
+.rewardsTile {
+  background-color: var(--white);
+  margin-bottom: 32px;
+  padding: 42px 28px 32px;
+}
+.title {
+  font-weight: 900;
+  font-size: 48px;
+  line-height: 49px;
+  background: var(--page-header-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+}
+
+.title.mobile {
+  font-size: 30px !important;
+}
+
+.subtitle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--neutral);
+  font-weight: var(--font-bold);
+  line-height: 32px;
+  margin-bottom: 40px;
+  font-size: var(--font-xl);
+}
+
+.subtitle.mobile {
+  font-size: var(--font-xs);
+  font-weight: var(--font-regular);
+  margin: 0px -10px 16px;
+  line-height: 19px;
+}
+
+.rewardsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.rewardPanelContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 0px 20px 32px;
+  flex: 0 0 calc(50% - 16px);
+  min-width: 340px;
+  border: 2px solid var(--neutral-light-7);
+  border-radius: 8px;
+  margin: 8px;
+  cursor: pointer;
+  transition: all 0.18s ease-in-out;
+}
+.rewardPanelContainer.mobile {
+  flex: 1 1 320px;
+  min-width: 320px;
+}
+.trendingRewardPanelContainer {
+  padding-top: 40px;
+}
+
+.rewardPanelTop {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  width: 100%;
+}
+.rewardPanelBottom {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.rewardPanelContainer:not(:first-child):not(:last-child) {
+  margin-left: 8px;
+  margin-right: 8px;
+}
+.rewardPanelContainer.mobile {
+  min-width: 320px;
+}
+
+@media screen and (max-width: 1060px) {
+  div.rewardPanelContainer {
+    flex: 1 1 340px;
+  }
+}
+
+.disbursed {
+  background: var(--neutral-light-10);
+}
+
+.pillContainer {
+  width: 100%;
+  height: 24px;
+  margin: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.pillMessage {
+  height: 28px;
+  padding: 4px 8px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  color: var(--secondary);
+  border-radius: 12px;
+  border-width: 1px;
+  border-color: var(--neutral-light-9);
+  border-style: solid;
+  background-color: var(--background);
+}
+
+.rewardTitle {
+  color: var(--neutral);
+  font-size: var(--font-2xl);
+  font-weight: var(--font-bold);
+  margin-bottom: 8px;
+  text-align: left;
+}
+.rewardTitle i {
+  margin-right: 8px;
+}
+.rewardTitle.mobile {
+  font-size: var(--font-l);
+}
+
+.rewardDescription {
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-demi-bold);
+  line-height: 24px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+.rewardDescription.mobile {
+  font-size: var(--font-s);
+  line-height: 17px;
+}
+
+.rewardProgress {
+  display: flex;
+  width: 100%;
+  margin-bottom: 24px;
+  align-items: center;
+}
+.rewardProgress.mobile {
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+.rewardProgressLabel {
+  color: var(--neutral-light-4);
+  font-weight: var(--font-heavy);
+  line-height: 20px;
+  font-size: var(--font-m);
+  text-transform: uppercase;
+  margin-right: 16px;
+}
+.rewardProgressBar {
+  flex: 1 1 0;
+}
+
+.panelButton {
+  height: var(--unit-8) !important;
+  width: 100%;
+  padding: 8px;
+  padding-left: 12px;
+}
+.panelButton.mobile {
+  height: var(--unit-8);
+  width: 100%;
+}
+.panelButton svg {
+  height: 20px;
+  width: 20px;
+}
+
+.panelButton .panelButtonText {
+  font-size: var(--font-s);
+  font-weight: var(--font-bold);
+  letter-spacing: 0;
+}
+
+.buttonIcon {
+  margin: 0 2px 0 0px !important;
+}
+
+.loadingRewardsTile.mobile {
+  height: 48px;
+  width: 48px;
+}
+
+.iconCheck {
+  padding: 1px;
+  margin-right: 10px;
+}
+.iconCheck path {
+  fill: var(--neutral-light-4);
+}

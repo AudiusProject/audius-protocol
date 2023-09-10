@@ -1,0 +1,174 @@
+.walletManagementTile {
+  margin-block-end: 32px;
+  background: var(--white);
+  overflow: hidden;
+
+  /* tileContainer */
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  border-radius: 12px;
+  box-shadow: 0px 16px 20px var(--table-shadow);
+  min-height: 210px;
+}
+
+.balanceContainer {
+  width: 100%;
+  background: var(--page-header-gradient);
+  padding: 24px;
+}
+.balanceAmount {
+  font-weight: 800;
+  font-size: 96px;
+  text-align: center;
+  color: var(--static-white);
+  text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+  margin-bottom: 6px;
+  opacity: 1;
+  transition: opacity 0.07s ease-in-out;
+}
+.balance {
+  opacity: 1;
+  transition: opacity 0.07s ease-in-out;
+  margin-top: 10px;
+  font-weight: var(--font-bold);
+  font-size: var(--font-2xl);
+  text-align: center;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+}
+.iconInfo {
+  height: 16px;
+  width: 16px;
+  margin-left: 4px;
+  margin-bottom: 2px;
+}
+.iconInfo:hover {
+  cursor: pointer;
+}
+.iconInfo path {
+  fill: rgba(255, 255, 255, 0.4);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  padding: 24px 24px 8px 24px;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+.headerIcon {
+  width: 71px;
+  height: 71px;
+}
+.headerText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.title {
+  font-weight: 900;
+  font-size: 40px;
+  line-height: 49px;
+  text-transform: uppercase;
+
+  background: var(--page-header-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.subtitle {
+  font-weight: var(--font-bold);
+  font-size: 16px;
+  line-height: 20px;
+  text-transform: uppercase;
+  color: var(--neutral-light-4);
+  align-self: flex-start;
+}
+
+.toggle {
+  border-top: 1px solid var(--neutral-light-8);
+}
+.toggle .advancedToggle {
+  padding-top: 20px;
+}
+
+.moreOptions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 24px;
+  gap: 24px;
+  border-bottom: 1px solid var(--neutral-light-8);
+}
+.moreOptionsSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  gap: 16px;
+}
+.advancedOptions {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 16px;
+}
+.advancedButton {
+  background: transparent !important;
+  border: 1px solid var(--neutral-light-6);
+  flex: 1 calc(50% - 8px);
+}
+.advancedButton .textClassName {
+  color: var(--neutral);
+  font-size: var(--font-s);
+}
+.advancedButton .iconStyle path {
+  fill: var(--neutral);
+}
+.advancedButton.disabled {
+  opacity: 0.5;
+  background-color: hsla(0, 0%, 100%, 0.1);
+}
+
+.onRampButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.onRampButtons > div {
+  flex: 1;
+}
+.onRampButtonTooltipContainer,
+.onRampButton {
+  width: 100%;
+}
+.onRampButtons > div:only-child > .onRampButton {
+  transition: all 120ms ease-in-out !important;
+}
+
+.manageWalletsButton:hover,
+div > .onRampButton:not(:disabled):hover:not(:active) {
+  transform: perspective(1px) scale3d(1.01, 1.01, 1.01);
+}
+
+.tooltip :global(.ant-tooltip-inner) {
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: var(--font-m);
+  font-weight: var(--font-demi-bold);
+}

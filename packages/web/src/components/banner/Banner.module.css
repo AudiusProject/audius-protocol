@@ -1,0 +1,43 @@
+.banner {
+  position: fixed;
+  min-height: 56px;
+  top: 0;
+  width: 100%;
+  background: var(--page-header-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--unit-10);
+}
+
+.banner.isElectron {
+  padding-left: 240px;
+}
+
+.banner.isElectron .iconRemove {
+  left: calc(240px + var(--unit-4));
+}
+
+.iconRemove {
+  height: var(--unit-6);
+  width: var(--unit-6);
+  position: absolute;
+  top: var(--unit-4);
+  left: var(--unit-4);
+  cursor: pointer;
+}
+.iconRemove:hover {
+  transform: scale(1.1);
+}
+.iconRemove:active {
+  transform: scale(0.95);
+}
+.iconSave g path,
+.iconRemove g path {
+  fill: var(--static-white);
+}
+
+.isMobile .iconRemove {
+  top: var(--unit-2);
+  left: var(--unit-2);
+}

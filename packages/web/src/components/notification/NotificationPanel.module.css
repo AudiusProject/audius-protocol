@@ -1,0 +1,66 @@
+.popup {
+  padding: 0;
+  border: none;
+  box-shadow: 0 4px 12px var(--notification-panel-box-shadow);
+}
+
+.panelContainer {
+  width: 428px;
+  display: inline-flex;
+  flex-direction: column;
+  border-radius: 8px;
+  background-color: var(--white);
+  padding: 0px;
+}
+
+.header {
+  width: 100%;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--secondary);
+  border-bottom: 2px solid var(--secondary-dark-2);
+  border-radius: 8px 8px 0px 0px;
+  padding: var(--unit-2);
+}
+
+.iconNotification {
+  fill: var(--static-white);
+  margin-right: var(--unit-2);
+  height: 30px;
+  width: 30px;
+}
+
+.iconNotification g {
+  fill: var(--static-white);
+}
+
+.title {
+  user-select: none;
+  color: var(--static-white);
+  font-size: var(--font-l);
+  line-height: 18px;
+  font-weight: var(--font-heavy);
+  letter-spacing: 0.29px;
+  text-transform: uppercase;
+}
+
+.scrollContent {
+  max-height: calc(100vh - 333px);
+  background: var(--white);
+  border-radius: 0px 0px 8px 8px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-2);
+  padding: var(--unit-8) var(--unit-4);
+  list-style-type: none;
+}
+
+.spinner {
+  width: var(--unit-8);
+  height: var(--unit-8);
+  margin: var(--unit-4) auto;
+}

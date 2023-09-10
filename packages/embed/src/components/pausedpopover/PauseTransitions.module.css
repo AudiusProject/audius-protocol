@@ -1,0 +1,33 @@
+.enter {
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
+
+.enterActive, .enterDone {
+  opacity: 1;
+}
+
+.enter > div {
+  transform: scale(0.65);
+}
+
+.enterActive > div, .enterDone > div {
+  transform: scale(1);
+}
+
+.exit {
+  transition: opacity 0.3s ease-out;
+  opacity: 1;
+}
+
+.exitActive, .exitDone {
+  opacity: 0;
+}
+
+.exitActive > div {
+  transform: scale(1);
+}
+
+.exitDone > div {
+  transform: scale(0.65);
+}

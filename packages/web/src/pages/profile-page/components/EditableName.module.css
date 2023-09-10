@@ -1,0 +1,64 @@
+.name h1 {
+  color: #fafafa;
+  display: inline;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.name > input,
+.name {
+  color: #fafafa;
+  font-size: 42px;
+  font-weight: var(--font-heavy);
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+  height: 52px;
+  line-height: normal;
+  text-overflow: ellipsis;
+  overflow: visible;
+  white-space: nowrap;
+  max-width: 100%;
+  width: 100%;
+  display: flex;
+}
+.name > input {
+  border: none;
+  box-shadow: none;
+  outline: none;
+  background: none;
+  color: #fafafa;
+  height: 50px;
+  padding: 0 0 8px 0;
+}
+.iconVerified {
+  margin-left: 4px;
+}
+.name > .editNameContainer > .iconPencil {
+  cursor: pointer;
+}
+.name > .editNameContainer > .iconPencil svg,
+.name > .iconVerified svg {
+  margin-left: 8px;
+  filter: drop-shadow(0px 1px 4px rgba(0, 0, 0, 0.7));
+}
+.name > .editNameContainer > .iconPencil svg {
+  margin-bottom: 8px;
+}
+
+.name > .editNameContainer > .iconPencil g path {
+  fill: var(--static-white);
+}
+
+.editNameContainer {
+  line-height: normal;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+}
+
+.editingName {
+  line-height: normal;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}

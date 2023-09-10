@@ -1,0 +1,41 @@
+.root {
+  flex: 1;
+  overflow-y: scroll;
+}
+
+.listRoot {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 32px;
+  height: 100%;
+}
+
+.separator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 0;
+  margin: var(--unit-8) 0;
+  scroll-margin: var(--unit-8) 0;
+  border-bottom: 1px solid var(--neutral-light-5);
+}
+
+.separator .tag {
+  padding: 3.5px 8px;
+  background: var(--neutral-light-5);
+  border-radius: 2px;
+
+  font-size: var(--font-xs);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--static-white);
+}
+
+.spinner {
+  margin: auto;
+  width: var(--unit-8);
+}

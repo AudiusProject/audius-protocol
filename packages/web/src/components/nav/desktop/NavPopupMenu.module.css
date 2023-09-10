@@ -1,0 +1,73 @@
+.headerIconWrapper {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.icon {
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 50%;
+  background-color: var(--neutral-light-9);
+  height: 24px;
+  width: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all ease-in-out 0.07s;
+  height: 24px;
+}
+
+.icon svg {
+  height: 20px;
+  width: 20px;
+  background-color: unset !important;
+  position: relative;
+}
+
+.icon > svg path {
+  fill: var(--neutral-light-4);
+}
+
+.popupItemText {
+  display: flex;
+  align-items: center;
+  gap: var(--unit-2);
+}
+
+/* Apply color svg transitions on hover */
+.icon:hover path,
+.icon:active path {
+  fill: var(--static-neutral-light-10) !important;
+}
+.icon:hover {
+  transform: scale3d(1.1, 1.1, 1.1);
+}
+
+.icon:active {
+  transform: scale3d(0.95, 0.95, 0.95);
+}
+
+.icon:global(.active),
+.icon:hover {
+  background-color: var(--secondary-light-2);
+}
+
+.crownIcon svg {
+  padding: 0 1px;
+  width: 100%;
+  height: 100%;
+}
+
+.container {
+  display: flex;
+  position: relative;
+}
+
+.notificationDot {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%);
+}

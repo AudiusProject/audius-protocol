@@ -1,19 +1,83 @@
 {
-  "name": "audius-protocol",
-  "description": "Giving everyone the freedom to distribute, monetize, and stream unstoppable audio",
-  "dependencies": {
-    "pre-commit": "1.2.2"
-  },
+  "name": "root",
+  "private": true,
+  "version": "1.5.40",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "check-secrets": "sh ./check_secrets.sh"
+    "preinstall": "./scripts/preinstall.sh",
+    "postinstall": "./scripts/postinstall.sh",
+    "patch-package": "patch-package --patch-dir=packages/mobile/patches && patch-package --patch-dir=packages/web/patches",
+    "build": "npm run build -w @audius/stems -w @audius/common",
+    "install-hooks": "mookme init --only-hook --skip-types-selection",
+    "lint": "npm run lint -ws --if-present",
+    "lint:fix": "npm run lint:fix -ws --if-present",
+    "clean": "npm run clean:auto -w audius-mobile-client && npm run clean:modules",
+    "clean:modules": "rm -rf node_modules && rm -rf packages/*/node_modules packages/*/node_modules",
+    "check-secrets": "sh ./scripts/check_secrets.sh",
+    "WEB========================================": "",
+    "web:dev": "npm run start:dev -w audius-client",
+    "web:stage": "npm run start:stage -w audius-client",
+    "web:prod": "npm run start:prod -w audius-client",
+    "DESKTOP====================================": "",
+    "desktop:dev": "concurrently -k 'BROWSER=none npm run start:dev -w audius-client' 'wait-on http://localhost:3000 && npm run electron:localhost -w audius-client -- 3000'",
+    "desktop:stage": "concurrently -k 'BROWSER=none npm run start:stage -w audius-client' 'wait-on http://localhost:3001 && npm run electron:localhost -w audius-client -- 3001'",
+    "desktop:prod": "concurrently -k 'BROWSER=none npm run start:prod -w audius-client' 'wait-on http://localhost:3002 && npm run electron:localhost -w audius-client -- 3002'",
+    "MOBILE=====================================": "",
+    "clear-cache": "watchman watch-del-all && npm run start -w audius-mobile-client --reset-cache",
+    "mobile": "npm run start -w audius-mobile-client",
+    "ios:dev": "npm run ios:dev -w audius-mobile-client",
+    "ios:stage": "npm run ios:stage -w audius-mobile-client",
+    "ios:prod": "npm run ios:prod -w audius-mobile-client",
+    "android:dev": "npm run android:dev -w audius-mobile-client",
+    "android:stage": "npm run android:stage -w audius-mobile-client",
+    "android:prod": "npm run android:prod -w audius-mobile-client",
+    "COMMON=====================================": "",
+    "common": "npm run start -w @audius/common",
+    "STEMS======================================": "",
+    "stems": "npm run start -w @audius/stems",
+    "SDK========================================": "",
+    "sdk:update": "npm exec -- npm-check-updates @audius/sdk -u --deep --target @beta && rm -rf packages/*/node_modules/@audius/sdk && npm i",
+    "sdk:update-hotfix": "npm exec -- npm-check-updates @audius/sdk -u --deep --target @hotfix && rm -rf packages/*/node_modules/@audius/sdk && npm i",
+    "sdk:link": "./scripts/link-sdk.sh",
+    "verify": "npm run verify -ws --if-present"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/AudiusProject/audius-protocol.git"
+  "devDependencies": {
+    "@types/keyv": "4.2.0",
+    "@typescript-eslint/eslint-plugin": "5.48.2",
+    "@typescript-eslint/parser": "5.48.2",
+    "concurrently": "7.4.0",
+    "eslint": "8.25.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-config-prettier-standard": "4.0.1",
+    "eslint-config-standard": "17.0.0",
+    "eslint-import-resolver-alias": "1.1.2",
+    "eslint-import-resolver-typescript": "3.5.5",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-jest": "27.1.1",
+    "eslint-plugin-n": "^15.3.0",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "eslint-plugin-promise": "6.1.0",
+    "eslint-plugin-react": "7.31.10",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "eslint-plugin-standard": "4.1.0",
+    "npm-check-updates": "16.4.1",
+    "patch-package": "6.5.1",
+    "prettier": "2.7.1",
+    "prettier-config-standard": "5.0.0",
+    "standard": "17.0.0",
+    "typescript": "4.9.4",
+    "wait-on": "6.0.1"
   },
-  "author": "",
-  "license": "Apache-2.0",
-  "pre-commit": [
-    "check-secrets"
-  ]
+  "dependencies": {
+    "@escape.tech/mookme": "2.2.0"
+  },
+  "overrides": {
+    "@types/react": "18.0.26",
+    "react-native-svg": "12.3.0",
+    "redux": "4.1.1",
+    "webpack": "5.88.2"
+  }
 }

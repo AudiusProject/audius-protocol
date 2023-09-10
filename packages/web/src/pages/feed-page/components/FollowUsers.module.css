@@ -1,0 +1,37 @@
+.followText {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  line-height: 26px;
+  margin-bottom: 24px;
+}
+
+.cardsContainer {
+  margin: 0px -8px 8px;
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.userCard {
+  margin: 0px 7px 16px;
+  max-width: 168px !important;
+  flex: 1 0 168px;
+  width: auto !important;
+}
+
+.buttonContainer {
+  width: 100%;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.button .buttonText {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 12px;
+}

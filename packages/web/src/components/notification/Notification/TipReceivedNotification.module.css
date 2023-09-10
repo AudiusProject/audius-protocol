@@ -1,0 +1,23 @@
+.body {
+  flex-direction: column;
+  align-items: unset;
+}
+
+.bodyText {
+  display: flex;
+  align-items: center;
+}
+
+.profilePicture {
+  margin-right: var(--unit-2);
+}
+
+.sayThanks {
+  margin-top: var(--unit-3);
+  font-size: var(--font-large);
+  color: var(--neutral-light-4);
+}
+
+.reactionList {
+  display: flex;
+}

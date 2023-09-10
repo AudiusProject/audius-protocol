@@ -1,0 +1,196 @@
+.playlistTrack {
+  border-bottom: 1px solid rgba(133, 129, 153, 0.1);
+  border-left: 1px solid rgba(133, 129, 153, 0.1);
+  border-right: 1px solid rgba(133, 129, 153, 0.1);
+  cursor: pointer;
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  text-align: left;
+  user-select: none;
+  line-height: normal;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.playlistTrack.noBorder {
+  border: none;
+}
+
+.playlistTrack.disabled {
+  cursor: default;
+}
+
+.playlistTrack.deleted:hover,
+.playlistTrack.deleted {
+  background-color: var(--neutral-light-9);
+  color: var(--neutral-light-4);
+}
+
+.large.playlistTrack,
+.small.playlistTrack {
+  height: 40px;
+  padding: 8px;
+}
+
+.playlistTrack:not(.disabled):hover {
+  background: var(--neutral-light-9);
+}
+
+.playlistTrack:not(.disabled):hover .more {
+  opacity: 1;
+}
+
+.playlistTrack:not(.disabled):hover .listButton {
+  opacity: 1;
+}
+
+.playlistTrack.active .listButton {
+  opacity: 1;
+}
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.small .wrapper,
+.large .wrapper {
+  padding: 8px;
+}
+
+.hide {
+  opacity: 0;
+}
+
+.show {
+  opacity: 1;
+  transition: opacity ease-in-out 0.5s;
+}
+
+.listButton {
+  width: 24px;
+  opacity: 0;
+}
+
+.trackNumber {
+  color: var(--neutral-light-4);
+  flex: 0 0 21px;
+  text-align: right;
+  margin-right: 11px;
+}
+
+.nameArtistContainer {
+  flex: 1;
+  display: flex;
+  text-overflow: ellipsis;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.trackTitle {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  min-width: 0;
+
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+}
+
+.trackTitle,
+.artistName {
+  align-items: center;
+  padding-right: 8px;
+}
+
+.artistName {
+  display: flex;
+  color: var(--neutral-light-2);
+  font-family: var(--font-family);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+}
+
+.disabled .artistName :global(.ant-popover-open):hover {
+  color: var(--neutral-light-2);
+  text-decoration: none;
+}
+
+.artistName .by {
+  margin-right: 4px;
+}
+
+.active .artistName {
+  color: var(--primary);
+}
+
+.trackTitle > span {
+  transition: all 0.04s ease-in-out;
+}
+
+.trackTitle > span:hover {
+  text-decoration: underline;
+  color: var(--primary);
+}
+
+.disabled .trackTitle > span:hover {
+  color: inherit;
+  text-decoration: none;
+}
+
+.active .trackTitle {
+  color: var(--primary);
+}
+
+.duration {
+  color: var(--neutral-light-4);
+  flex: 0 1 auto;
+}
+
+.active .duration {
+  color: var(--primary);
+}
+
+.more {
+  flex: 0 1 auto;
+  text-align: center;
+  opacity: 0;
+  margin: 0px 6px 0px 19px;
+}
+
+.menuContainer {
+  display: flex;
+  margin-left: 36px;
+  margin-right: 6px;
+}
+
+.iconKebabHorizontal {
+  margin: 0 auto;
+  width: 16px;
+  height: 16px;
+}
+
+.iconKebabHorizontal g path {
+  fill: var(--neutral-light-4);
+}
+
+.iconKebabHorizontal:hover {
+  transform: scale3d(1.1, 1.1, 1.1);
+}
+
+.iconKebabHorizontal:active {
+  transform: scale3d(1.1, 1.1, 1.1);
+}
+
+.skeleton {
+  margin-left: 16px;
+}

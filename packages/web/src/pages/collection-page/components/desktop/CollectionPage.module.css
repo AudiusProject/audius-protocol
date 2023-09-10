@@ -1,0 +1,73 @@
+.pageContainer {
+  padding-top: 80px;
+}
+
+.pageContent {
+  max-width: calc(1080px + var(--unit-4)) !important;
+}
+
+/* Body Content Wrapper */
+.bodyWrapper {
+  min-width: 774px;
+  margin-bottom: var(--unit-10);
+  overflow: hidden;
+}
+
+/* Empty Page Section Wrapper */
+.emptyWrapper {
+  padding: var(--unit-10);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+}
+
+.emptyText {
+  font-size: var(--font-l);
+  font-weight: var(--font-normal);
+}
+
+/* Top Header Section Wrapper */
+.bodyWrapper .topSectionWrapper {
+  background-color: var(--neutral-light-10);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+/* Track Table */
+.tracksTableWrapper {
+  border-radius: 0;
+  margin: 0;
+}
+
+.bodyWrapper .tableWrapper {
+  background-color: var(--neutral-light-10);
+  width: 100%;
+}
+
+/* Shrink Header Row Height */
+:global(.ant-table-thead > tr > th) {
+  line-height: 1 !important;
+  padding-top: 14px !important;
+  padding-bottom: 14px !important;
+}
+
+/* No border bottom on last row */
+:global(.ant-table-tbody > tr:last-child td) {
+  border-bottom: none;
+}
+
+.spinner {
+  background-color: var(--white);
+  width: 100%;
+  height: 70px;
+  padding-bottom: 32px;
+}
+
+.tileDivider {
+  margin-bottom: var(--unit-10);
+}

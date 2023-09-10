@@ -1,0 +1,23 @@
+.playBarWrapper {
+  display: flex;
+  position: fixed;
+  bottom: 0px;
+  bottom: env(safe-area-inset-bottom, 0px);
+  left: 0;
+  right: 0;
+  z-index: 12;
+}
+
+.playBarWrapper.isMobile {
+  z-index: 14;
+}
+
+.customHr {
+  position: absolute;
+  left: var(--nav-width-minus-border);
+  top: 0;
+  right: 0;
+  height: 1px;
+  background-color: var(--neutral-light-1);
+  opacity: 0.1;
+}

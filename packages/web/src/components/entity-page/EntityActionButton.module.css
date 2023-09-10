@@ -1,0 +1,8 @@
+.text {
+  font-size: var(--font-l) !important;
+  text-transform: uppercase;
+}
+
+.icon {
+  margin-right: var(--unit-2) !important;
+}

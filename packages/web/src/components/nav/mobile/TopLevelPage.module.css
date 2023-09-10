@@ -1,0 +1,21 @@
+.topLevelPage {
+  position: fixed;
+  top: 30px;
+  margin-top: 0px;
+  margin-top: env(safe-area-inset-top, 0px);
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 11;
+  background: var(--white);
+  visibility: hidden;
+  overflow: scroll;
+}
+
+.topLevelPage.show {
+  visibility: visible;
+}
+
+.topLevelPage.darkerBackground {
+  background: var(--notification-background-active);
+}

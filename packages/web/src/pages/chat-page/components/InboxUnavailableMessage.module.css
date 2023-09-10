@@ -1,0 +1,13 @@
+.root {
+  line-height: 130%;
+  padding: var(--unit-2);
+  font-weight: var(--font-medium);
+}
+
+.root a {
+  color: var(--secondary);
+}
+
+.root a:hover {
+  color: var(--primary);
+}

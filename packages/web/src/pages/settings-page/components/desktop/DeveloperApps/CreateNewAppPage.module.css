@@ -1,0 +1,32 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-6);
+}
+
+.creatingSpinner {
+  height: var(--unit-6);
+  width: var(--unit-6);
+  color: var(--white);
+}
+
+.creatingSpinner g path {
+  stroke: var(--white);
+}
+
+.actionsContainer {
+  display: flex;
+  gap: var(--unit-2);
+}
+
+.errorContainer {
+  text-align: center;
+}
+
+.errorText {
+  text-align: center;
+  font-weight: var(--font-bold);
+  color: var(--accent-red);
+  font-size: var(--font-m);
+  line-height: 120%;
+}

@@ -1,0 +1,63 @@
+embed-init:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - checkout
+
+    - create_concatenated_patch_file:
+        filename: combined-patch-file.txt
+
+    - restore_cache:
+        keys:
+          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+
+    - restore_cache:
+        keys:
+          - cache-{{ .Revision }}
+
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - node_modules
+          - packages/embed/node_modules
+          - packages/stems/node_modules
+          - packages/stems/dist
+
+embed-build-staging:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  resource_class: xlarge
+  steps:
+    - embed-build:
+        build-directory: packages/embed/build-staging
+        build-type: stage
+
+embed-build-production:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  resource_class: xlarge
+  steps:
+    - embed-build:
+        build-directory: packages/embed/build-production
+        build-type: prod
+
+embed-deploy-staging-cloudflare:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/python:3.7.12-node
+  steps:
+    - embed-deploy-cloudflare:
+        build-type: staging
+        environment: staging
+
+embed-deploy-production-cloudflare:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/python:3.7.12-node
+  steps:
+    - embed-deploy-cloudflare:
+        build-type: production
+        environment: production

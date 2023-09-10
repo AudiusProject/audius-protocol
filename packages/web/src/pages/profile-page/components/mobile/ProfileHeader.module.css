@@ -1,0 +1,312 @@
+/* Profile Header */
+.headerContainer {
+  user-select: none;
+  background-color: var(--white);
+  position: relative;
+  flex: 1;
+  width: 100%;
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.coverPhoto {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 96px;
+  display: flex;
+}
+
+.profilePictureWrapper {
+  position: absolute;
+  top: 37px;
+  left: 11px;
+  height: 82px;
+  width: 82px;
+  border-radius: 50%;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--white);
+  background: var(--white);
+  z-index: 10;
+}
+
+.profilePictureWrapper.isEditing {
+  height: 100px;
+  width: 100px;
+}
+
+.profilePicture {
+  background-color: var(--default-profile-picture-background);
+}
+
+.badgeArtist {
+  position: absolute;
+  top: 21px;
+  right: 13px;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.3);
+}
+
+.artistInfo {
+  padding: 30px 12px 12px;
+  display: inline-flex;
+  flex-direction: column;
+  z-index: 5;
+  background: var(--neutral-light-10);
+}
+
+.titleContainer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.titleContainer .left {
+  display: flex;
+  flex-direction: column;
+}
+
+.titleContainer .right {
+  display: flex;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.subscribeButton {
+  margin-right: 6px;
+}
+
+.titleContainer .right button {
+  width: 110px;
+}
+
+.titleContainer .right svg {
+  width: 20px !important;
+  height: 20px !important;
+  position: relative;
+  top: -1px;
+}
+
+.artistName {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: 18px;
+  font-weight: bold;
+  line-height: normal;
+  margin-bottom: 4px;
+  text-align: left;
+  display: flex;
+  margin-right: 8px;
+}
+
+.artistName h1 {
+  color: var(--neutral);
+  display: inline;
+}
+
+.artistName > .iconVerified {
+  margin-left: 4px;
+}
+
+.badgesSpan {
+  display: inline-block;
+}
+
+.artistHandleWrapper {
+  text-align: left;
+  margin-bottom: 14px;
+}
+
+.artistHandle {
+  color: var(--neutral-light-4);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  line-height: normal;
+  display: inline-block;
+  margin-right: 8px;
+}
+
+.artistMetrics {
+  display: inline-flex;
+  justify-content: flex-start;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.artistMetric {
+  transition: opacity 0.17s ease-in-out;
+  display: inline-flex;
+  margin-right: 16px;
+}
+
+.artistMetric:active {
+  transition: none;
+  opacity: 0.8;
+}
+
+.artistMetricValue {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: 800;
+  line-height: normal;
+  margin-right: 3px;
+}
+
+.artistMetricLabel {
+  color: var(--neutral-light-4);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  line-height: normal;
+}
+
+.socials {
+  display: inline-flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.badge {
+  margin-right: 32px;
+}
+
+.socialIcon {
+  margin-right: 16px;
+}
+
+.socialIcon svg {
+  height: 20px;
+  width: 20px;
+}
+
+.socialIcon svg path {
+  fill: var(--neutral);
+}
+
+.bio {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-align: left;
+  width: 100%;
+  margin-top: var(--unit-2);
+  transition: all 0.07s ease-in-out;
+}
+
+.bio:not(.bioExpanded) {
+  max-height: 40px !important;
+}
+
+.bioExpanded {
+  max-height: 5000px;
+  -webkit-line-clamp: unset;
+  -webkit-box-orient: unset;
+}
+
+.expandDescription {
+  width: 100%;
+  margin-top: 8px;
+  text-align: left;
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Loading Skeleton Styles */
+.loading {
+  background-color: var(--background);
+}
+
+.loadingSkeleton {
+  height: 16px;
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+.loadingSkeletonAvatar {
+  height: 82px !important;
+  width: 82px !important;
+  position: absolute;
+  left: 10px;
+  top: 38px;
+  z-index: 10;
+}
+
+.loadingSkeletonAvatar {
+  border-radius: 100%;
+}
+
+.loadingInfo {
+  margin-bottom: 8px;
+}
+
+.loadingNameContainer {
+  margin: 8px 0;
+}
+
+.loadingShortDesc {
+  width: 240px;
+  margin-top: 8px;
+}
+
+.loadingShortName {
+  width: 80px;
+}
+
+.editButton .editButtonText {
+  font-size: var(--font-xs) !important;
+}
+
+.sites {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+}
+
+.website,
+.donation {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-start;
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.5px;
+  line-height: 19px;
+}
+
+.website {
+  align-items: center;
+}
+
+.donation {
+  align-items: flex-start;
+}
+
+.website .socialIcon,
+.donation .socialIcon {
+  margin-right: 8px;
+}
+
+.website span {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+}
+
+.donation > span {
+  width: 90%;
+  text-align: left;
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+}
+
+.donation a {
+  color: var(--primary);
+}

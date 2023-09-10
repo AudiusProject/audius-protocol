@@ -1,0 +1,159 @@
+.container {
+  height: 100%;
+  width: 100%;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  transition: all ease-in-out 0.2s;
+  max-height: 0px;
+  margin-bottom: 0px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.container.fullHeight {
+  max-height: 496px;
+  margin-bottom: 52px;
+  opacity: 1;
+}
+
+.title {
+  color: var(--static-white);
+  font-size: var(--font-3xl);
+  font-weight: var(--font-bold);
+  letter-spacing: 0;
+  line-height: 34px;
+  text-align: center;
+  margin-bottom: 18px;
+  margin-top: 40px;
+}
+
+.description {
+  color: var(--static-white);
+  font-size: var(--font-2xl);
+  font-weight: var(--font-bold);
+  text-align: center;
+  margin: 0px 16px 32px;
+}
+
+.button {
+  margin: 0 16px;
+  margin-bottom: 24px;
+  height: 64px !important;
+  min-height: 64px;
+  width: 400px !important;
+  min-width: 400px;
+  transition: all 0.14s ease-in-out !important;
+}
+
+.buttonTwitter svg {
+  height: 32px !important;
+  width: 32px !important;
+}
+
+.buttonTwitter svg path {
+  fill: var(--static-twitter-blue) !important;
+}
+
+.button .buttonText {
+  max-width: 100%;
+  color: var(--static-twitter-blue);
+  font-size: var(--font-2xl);
+  font-weight: var(--font-bold);
+  letter-spacing: 0;
+  text-align: center;
+}
+
+.button .buttonTextTikTok {
+  color: black;
+  display: flex;
+  align-items: center;
+}
+
+.button .buttonTextTikTok svg {
+  margin-right: 8px;
+  min-width: 32px;
+}
+
+.copyLinkWrapper {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  margin-bottom: 36px;
+}
+
+.copyLinkContainer {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  transition: all ease-in-out 0.07s;
+  transform: scale3d(1, 1, 1);
+  backface-visibility: hidden;
+  cursor: pointer;
+}
+
+.copyLinkContainer:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--static-white);
+  transform: scale3d(1.02, 1.02, 1.02);
+}
+
+.copyLinkContainer:active {
+  transform: scale3d(0.99, 0.99, 0.99);
+}
+
+.shareIcon {
+  margin-right: 8px;
+  height: 28px;
+  width: 28px;
+}
+
+.shareIcon g path {
+  fill: var(--static-white);
+}
+
+.copyText {
+  color: var(--static-white);
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+  letter-spacing: 0;
+  line-height: 20px;
+  text-align: center;
+}
+
+.buttonContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.containerNew {
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  align-items: center;
+  gap: 24px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 8px;
+  transition: all ease-in-out 0.2s;
+  margin-bottom: 0px;
+  overflow: hidden;
+  padding: 40px;
+}
+
+.buttonContainerNew {
+  width: 100%;
+  max-width: 750px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+}

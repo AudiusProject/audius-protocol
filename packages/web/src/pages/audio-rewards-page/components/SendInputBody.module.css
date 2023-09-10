@@ -1,0 +1,82 @@
+.titleContainer {
+  margin: 24px auto;
+}
+
+.subtitle {
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: center;
+  color: #858199;
+}
+
+.subtitle2 {
+  font-weight: bold;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: center;
+  color: #858199;
+  display: inline-block;
+}
+
+.subtitle2 svg {
+  display: inline-block;
+  height: 20px;
+  width: 20px;
+  vertical-align: middle;
+  padding-left: 2px;
+  padding-bottom: 4px;
+}
+
+/* Input Styles */
+.inputContainer {
+  margin-top: 24px;
+  width: 100%;
+}
+
+.label {
+  text-align: left;
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 17px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--neutral);
+  opacity: 0.5;
+  margin-right: 8px;
+}
+
+.input {
+  background: var(--neutral-light-9);
+  font-style: normal;
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 20px;
+  border: none;
+  color: var(--neutral);
+}
+
+/* Button */
+.sendBtn {
+  margin: 24px;
+}
+
+.sendBtnText {
+  font-size: var(--font-s) !important;
+}
+
+.errorLabel {
+  color: var(--accent-red);
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: flex-start;
+  margin-top: 6px;
+  font-weight: var(--font-medium);
+  font-size: var(--font-m);
+  line-height: 24px;
+}
+
+.errorLabel > * {
+  margin-right: 16px;
+}

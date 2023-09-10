@@ -1,0 +1,50 @@
+.page {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.header {
+  height: 160px;
+}
+
+.headerWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.headerWrapper h2 {
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  letter-spacing: 0;
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+
+.spinner {
+  height: 40px;
+  width: 40px;
+  margin: 0 auto;
+}
+
+.spinner g path {
+  stroke: var(--secondary) !important;
+}
+
+.userName:hover {
+  cursor: pointer;
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-color: var(--primary-light-2);
+}
+
+.cardsContainer {
+  margin: -8px;
+}
+
+.cardsContainer > * {
+  margin-top: 8px;
+  margin-left: 8px;
+  margin-right: 8px;
+  margin-bottom: 16px;
+}

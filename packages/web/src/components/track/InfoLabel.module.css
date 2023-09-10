@@ -1,0 +1,29 @@
+.labelName {
+  color: var(--neutral-light-5);
+
+  font-size: var(--font-s);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.35px;
+
+  text-transform: uppercase;
+  white-space: nowrap;
+  word-break: keep-all;
+  text-decoration: none;
+  display: inline-flex;
+}
+
+.labelValue {
+  color: var(--neutral);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  padding-left: 8px;
+
+  display: inline-flex;
+  text-transform: capitalize;
+  word-break: keep-all;
+  text-decoration: none;
+}
+
+.labelValue > * {
+  display: inline;
+}

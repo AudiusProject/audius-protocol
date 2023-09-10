@@ -1,0 +1,71 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--unit-1);
+  padding: var(--unit-8);
+}
+
+.icon {
+  width: var(--unit-6);
+  height: var(--unit-6);
+  display: flex;
+  align-items: center;
+}
+
+.iconPlus {
+  composes: icon;
+}
+
+.iconPlus circle {
+  fill: var(--neutral-light-2);
+}
+
+.iconUpload {
+  composes: icon;
+}
+
+.iconUpload path {
+  fill: var(--neutral-light-2);
+}
+
+.text {
+  color: var(--neutral-light-2);
+}
+
+/* card */
+
+.card {
+  height: 304px;
+  width: 230px;
+
+  font-size: var(--font-xl);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.72px;
+  line-height: 27px;
+}
+
+/* nav */
+
+.nav {
+  height: 86px;
+  width: 100%;
+  font-size: var(--font-m);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.57px;
+}
+
+/* tile */
+
+.tile {
+  flex-direction: row;
+  height: 88px;
+  width: 100%;
+  font-size: var(--font-xl);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.72px;
+  line-height: 27px;
+
+  margin-bottom: 8px;
+}

@@ -1,0 +1,75 @@
+.container {
+  width: 208px;
+  height: 56px;
+  border-radius: 6px;
+  padding: 8px 6px;
+  display: flex;
+  background-color: var(--white);
+  box-shadow: 0 0 1px -2px var(--tile-shadow-1),
+    0 1px 0 -2px var(--tile-shadow-2), 0 2px 5px -2px var(--tile-shadow-3);
+  align-items: center;
+  cursor: pointer;
+  transition: all var(--quick);
+}
+
+.isCompact {
+  border-radius: 8px;
+  border: 1px solid var(--neutral-light-8);
+  justify-content: center;
+}
+
+.isCompact.container img {
+  height: 28px;
+  width: 28px;
+  margin-right: 11px;
+}
+
+.isCompact.container .text {
+  align-items: flex-start;
+  margin-right: 8px;
+}
+
+.container:hover {
+  transform: perspective(1px) scale3d(1.04, 1.04, 1.04);
+}
+
+.container:active {
+  transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
+}
+
+.container img {
+  height: 40px;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  padding: 2px 0px;
+}
+
+.tierNumber {
+  color: var(--neutral-light-6);
+  font-weight: 700;
+  font-size: font-s;
+  line-height: 14px;
+}
+
+.tierTextContainer {
+  margin-top: 4px;
+}
+
+.tierText {
+  overflow: visible;
+  font-weight: 900;
+  font-size: 22px;
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  text-transform: uppercase;
+}
+
+.divider {
+  background-color: var(--neutral-light-6);
+  width: 1px;
+  height: 32px;
+  margin: 0px 6px;
+}

@@ -1,0 +1,17 @@
+.collapsibleContainer {
+  /** Unfortunately, this calcluates to overflow: auto hidden; */
+  overflow: visible hidden;
+  /** Hack to hide horizontal scrollbars **/
+  padding: 0 150px;
+  margin: 0 -150px;
+  transition: height var(--quick);
+}
+
+.toggleCollapsedButton {
+  color: var(--neutral-light-4);
+  margin: 0 auto;
+}
+
+.toggleCollapsedButton .toggleCollapsedButtonIcon path {
+  fill: var(--neutral-light-4);
+}

@@ -1,0 +1,57 @@
+.countContainer {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  margin: 0px 24px 0px;
+  padding: 4px 8px;
+  transform: scale(1);
+  transition: transform 0.07s ease-in-out;
+}
+
+.countContainer:active .count {
+  transform: scale(0.93);
+  color: var(--primary) !important;
+}
+
+.countContainer:active svg path {
+  fill: var(--primary) !important;
+}
+
+.listenCount {
+  pointer-events: none;
+}
+
+.count {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-m);
+  font-weight: var(--font-bold);
+  line-height: 15px;
+  text-align: center;
+  margin-right: 3px;
+}
+
+.countLabel {
+  color: var(--neutral-light-4);
+  font-family: var(--font-family);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  line-height: 15px;
+  text-align: center;
+}
+
+.countContainer svg {
+  height: 16px !important;
+  width: 16px !important;
+}
+
+.countContainer svg path {
+  fill: var(--neutral-light-4);
+}
+
+.statsContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

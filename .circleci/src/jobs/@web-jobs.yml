@@ -1,0 +1,310 @@
+web-init:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+
+    - create_concatenated_patch_file:
+        filename: combined-patch-file.txt
+
+    - restore_cache:
+        keys:
+          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+
+    - restore_cache:
+        keys:
+          - cache-{{ .Revision }}
+
+    - common-lint
+
+    - run:
+        name: typecheck
+        command: |
+          cd packages/web
+          npm run typecheck
+
+    - run:
+        name: lint
+        command: |
+          cd packages/web
+          npm run lint
+
+    - run:
+        name: stylelint
+        command: |
+          cd packages/web
+          npm run stylelint
+
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - node_modules
+          - packages/web/node_modules
+          - packages/probers/node_modules
+          - packages/stems/node_modules
+          - packages/stems/dist
+          - packages/common/node_modules
+          - packages/common/dist
+
+web-build-demo:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  resource_class: xlarge
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: build-demo
+        no_output_timeout: 30m
+        # Set the branch name as the PUBLIC_URL so that relative paths work, e.g.
+        # demo.audius.co/some-branch/handle/track resolves as /handle/track would at audius.co
+        command: |
+          cd packages/web
+          export PUBLIC_URL=/${CIRCLE_BRANCH}
+          CI=false npm run build:stage
+          mv build-staging build-demo
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - packages/web/build-demo
+
+web-build-staging:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  resource_class: xlarge
+  steps:
+    - web-build:
+        build-type: stage
+        build-directory: packages/web/build-staging
+        build-name: build-staging
+
+web-test-staging:
+  working_directory: ~/audius-protocol
+  resource_class: large
+  executor: cypress/default
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - browser-tools/install-browser-tools:
+        chrome-version: 116.0.5845.96 # TODO: remove when chromedriver downloads are fixed
+    - cypress/install:
+        install-command: 'cd packages/probers && npx cypress install'
+        install-browsers: false
+    - cypress/run-tests:
+        cypress-command: 'cd packages/probers && npx cypress run --browser chrome'
+        start-command: 'npx serve -l 3001 -s packages/web/build-staging'
+    - store_artifacts:
+        path: /home/circleci/audius-client/packages/probers/cypress/videos
+    - store_artifacts:
+        path: /home/circleci/audius-client/packages/probers/cypress/screenshots
+
+web-build-production:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  resource_class: xlarge
+  steps:
+    - web-build:
+        build-type: prod-source-maps
+        build-directory: packages/web/build-production
+        build-name: build-production
+
+web-deploy-demo:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/python:3.7.12-node
+  steps:
+    - checkout
+    - aws-cli/install
+    - attach_workspace:
+        at: ./
+    - run:
+        name: Deploy to S3
+        command: aws s3 sync packages/web/build-demo s3://frontend-demo.audius.co/${CIRCLE_BRANCH} --delete --cache-control max-age=0
+    - web-pr-comment:
+        comment: Preview this change https://demo.audius.co/${CIRCLE_BRANCH}
+
+web-deploy-staging-s3:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/python:3.7.12-node
+  steps:
+    - checkout
+    - aws-cli/install
+    - attach_workspace:
+        at: ./
+    - run:
+        name: Create TAR
+        command: |
+          tar -zcvf packages/web/build-staging.tar.gz packages/web/build-staging
+    - run:
+        name: Deploy to S3
+        command: |
+          aws s3 sync --exclude "packages/web/sitemaps/*" packages/web/build-staging s3://staging.audius.co --delete --cache-control max-age=0
+          aws s3 cp packages/web/build-staging.tar.gz s3://staging.audius.co/build-staging.tar.gz --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
+
+web-deploy-staging-cloudflare:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/python:3.7.12-node
+  steps:
+    - web-deploy-cloudflare:
+        build-type: staging
+        environment: staging
+        copy-robots: false
+    - web-deploy-sourcemaps-s3
+
+web-deploy-release-candidate:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/python:3.7.12-node
+  steps:
+    - web-deploy-cloudflare:
+        build-type: production
+        environment: release
+        copy-robots: true
+    - web-deploy-sourcemaps-s3
+
+web-deploy-staging-release-candidate:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/python:3.7.12-node
+  steps:
+    - web-deploy-cloudflare:
+        build-type: staging
+        environment: staging-release
+        copy-robots: true
+    - web-deploy-sourcemaps-s3
+
+web-deploy-production-s3:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/python:3.7.12-node
+  steps:
+    - checkout
+    - aws-cli/install
+    - attach_workspace:
+        at: ./
+    - run:
+        name: Create TAR
+        command: |
+          tar -zcvf packages/web/build-production.tar.gz packages/web/build-production
+    - run:
+        name: Deploy to S3
+        # Deploy, but exclude sourcemaps
+        command: |
+          aws s3 sync --exclude "*.map" --exclude robots.txt --exclude "packages/web/sitemaps/*" packages/web/build-production s3://audius.co --delete --cache-control max-age=604800
+          aws s3 cp s3://audius.co/index.html s3://audius.co/index.html --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --metadata-directive REPLACE --acl public-read
+          aws s3 cp packages/web/robots.txt s3://audius.co --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
+          aws s3 cp packages/web/build-production.tar.gz s3://audius.co/build-production.tar.gz --cache-control max-age=0 --content-type 'application/json' --metadata-directive REPLACE
+    - run:
+        name: Invalidate cache
+        # Note: cache invalidation is charged per path, so this only counts as 1/1000 monthly quota.
+        command: aws cloudfront create-invalidation --distribution-id E1ZJ9Z971FJQJ8 --paths "/*"
+
+web-deploy-production-cloudflare:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/python:3.7.12-node
+  steps:
+    - web-deploy-cloudflare:
+        build-type: production
+        environment: production
+        copy-robots: true
+    - web-deploy-sourcemaps-s3
+
+web-deploy-sentry-sourcemaps:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: install-sentry-cli
+        command: |
+          cd packages/web
+          npm install @sentry/cli
+    - run:
+        name: cut-sentry-release
+        command: |
+          cd packages/web
+          node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-client new ${CIRCLE_SHA1}
+    - run:
+        name: upload-sourcemaps
+        command: |
+          cd packages/web
+          node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-client files ${CIRCLE_SHA1} upload-sourcemaps --no-rewrite build-production/static/js
+    - run:
+        name: finalize-release
+        command: |
+          cd packages/web
+          node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-client finalize ${CIRCLE_SHA1}
+
+web-dist-mac-staging:
+  working_directory: ~/audius-protocol
+  # run on macos so dmg can be created and signed.
+  resource_class: macos.x86.medium.gen2
+  macos:
+    xcode: '14.2.0'
+  steps:
+    - run:
+        name: Set Ruby Version
+        command: rbenv global 2.7.7 && rbenv rehash
+    - web-distribute:
+        build-type: mac-publish
+        install-license: true
+
+web-dist-win-staging:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: electronuserland/builder:16-wine-mono-05.22
+  steps:
+    - web-distribute:
+        build-type: win-publish
+
+web-dist-linux-staging:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: electronuserland/builder
+  steps:
+    - web-distribute:
+        build-type: linux-publish
+
+web-dist-mac-production:
+  working_directory: ~/audius-protocol
+  # run on macos so dmg can be created and signed.
+  resource_class: macos.x86.medium.gen2
+  macos:
+    xcode: '14.2.0'
+  steps:
+    - run:
+        name: Set Ruby Version
+        command: rbenv global 2.7.7 && rbenv rehash
+    - web-distribute:
+        build-type: mac-publish-production
+        install-license: true
+
+web-dist-win-production:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: electronuserland/builder:16-wine-mono-05.22
+  steps:
+    - web-distribute:
+        build-type: win-publish-production
+
+web-dist-linux-production:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: electronuserland/builder
+  steps:
+    - web-distribute:
+        build-type: linux-publish-production

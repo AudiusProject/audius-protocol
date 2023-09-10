@@ -1,0 +1,50 @@
+.container {
+  height: 24px;
+  background-color: var(--secondary);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  cursor: pointer;
+  margin-right: 12px;
+  padding: 0px 12px;
+  transition: background 0.17s ease-in-out;
+}
+
+.container.showIcon {
+  padding-left: 0px;
+}
+
+.container:active {
+  transition: none;
+  background-color: var(--secondary-light-2);
+}
+
+.text {
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 0.66px;
+  line-height: 10px;
+}
+
+.icon {
+  display: flex;
+  flex-direction: column;
+  height: 12px;
+  margin-left: 8px;
+  margin-right: 6px;
+}
+
+.icon svg:first-child {
+  transform: rotate(180deg);
+  margin-bottom: 2px;
+}
+
+.icon path {
+  fill: var(--darkmode-static-white);
+}
+
+.text {
+  color: var(--darkmode-static-white);
+}

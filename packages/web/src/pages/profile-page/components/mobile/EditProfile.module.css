@@ -1,0 +1,10 @@
+.editProfile {
+  background: var(--white);
+  padding-top: 64px;
+  min-height: 100vh;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+}

@@ -1,0 +1,135 @@
+.bodyContainer {
+  padding: 128px 22px 32px;
+}
+
+.container {
+  font-weight: var(--font-medium);
+  font-size: var(--font-l);
+  text-align: center;
+  color: var(--neutral);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container b {
+  font-weight: var(--font-bold);
+}
+
+.text {
+  line-height: 22px;
+}
+
+.warning {
+  margin-top: 32px;
+}
+
+.btnContainer {
+  width: 100%;
+  margin-top: 48px;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.error {
+  color: var(--accent-red);
+  font-weight: var(--font-medium);
+  font-size: var(--font-m);
+  width: 100%;
+  text-align: center;
+  margin-top: 16px;
+}
+
+.validationIcon {
+  height: 16px;
+  width: 16px;
+  margin-right: 10px;
+}
+
+.loadingContainer {
+  height: 48px;
+  margin: 120px auto;
+}
+
+.verified {
+  background-image: var(--page-header-gradient);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  font-weight: var(--font-heavy);
+  font-size: var(--font-3xl);
+  margin-bottom: 12px;
+  font-style: normal;
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.verifiedIcon {
+  margin: 36px auto 12px;
+  height: 48px;
+  width: 48px;
+  margin-bottom: 8px;
+}
+
+.profilePicture {
+  height: 112px;
+  width: 112px;
+  border-radius: 50%;
+  margin: 0px auto 8px;
+  overflow: hidden;
+}
+
+.displayName {
+  font-weight: var(--font-bold);
+  font-size: var(--font-xl);
+  color: var(--neutral);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.handle {
+  font-weight: normal;
+  font-size: var(--font-m);
+  color: var(--neutral-light-4);
+  margin-bottom: 86px;
+}
+
+.iconVerified {
+  margin-left: 4px;
+}
+
+.container .successBtn {
+  height: 64px;
+  padding: 0px 56px;
+}
+
+.successBtn .btnText {
+  font-weight: var(--font-bold);
+  font-size: var(--font-l);
+  text-transform: capitalize;
+  color: var(--neutral);
+}
+
+.disabledBtn {
+  background-color: var(--white);
+  border: 1px solid var(--neutral-light-6);
+  opacity: 0.5;
+  height: 64px !important;
+}
+
+.disabledBtn:hover,
+.disabledBtn:active {
+  transform: none !important;
+  background-color: var(--white) !important;
+  border: 1px solid var(--neutral-light-6) !important;
+}
+
+.disabledBtn .disabledBtnText {
+  color: var(--neutral);
+  font-weight: var(--font-demi-bold);
+}
+
+.socialButton {
+  width: 100%;
+}

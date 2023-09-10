@@ -1,0 +1,134 @@
+.visualizer {
+  /* Add z-index so it shows search bar and profile page elements. */
+  z-index: 15;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+}
+.visualizer.fade {
+  opacity: 1;
+}
+.visualizer.show {
+  display: block;
+}
+
+.closeButtonIcon {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.closeButtonIcon:hover {
+  transform: scale(1.1);
+}
+
+.closeButtonIcon g path {
+  fill: var(--static-white);
+}
+
+.logoWrapper {
+  position: absolute;
+  top: 9px; /* Want logo to be 25px from top, it has existing top-margin of 16px */
+  left: 0;
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo {
+  display: block;
+  height: 25px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+.infoOverlayTileShadow {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  width: 400px;
+  height: 400px;
+  opacity: 0.5;
+  background: radial-gradient(
+    95.31% 95.31% at 0.82% 100%,
+    #000000 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.infoOverlayTile {
+  padding-bottom: 20px;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow: hidden;
+  transition: all ease-in-out 0.18s, opacity ease-in-out 0.5s;
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  color: var(--neutral-dark-3);
+  text-shadow: 0px 2px 4px rgba(85, 84, 89, 0.2);
+}
+
+.artworkWrapper {
+  margin-left: 16px;
+  position: relative;
+}
+.artworkWrapper .artwork {
+  width: 208px;
+  height: 208px;
+  overflow: hidden;
+  border: 2px solid var(--currently-playing-border);
+  border-radius: 15px;
+  box-shadow: 0 5px 16px -2px rgba(85, 84, 89, 0.5) !important;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.playing {
+  cursor: pointer;
+}
+
+.trackInfoWrapper {
+  margin-top: 20px;
+  color: var(--static-white);
+}
+
+.emptyTrackInfoWrapper {
+  width: 100%;
+  height: 68px;
+  opacity: 0;
+}
+
+.visualizerDisabled {
+  top: 16px !important;
+  left: 64px !important;
+  right: -64px !important;
+  justify-content: center;
+  width: 100%;
+  padding: 0px;
+  max-width: calc(100% - 128px) !important;
+}
+
+.visualizerDisabled > :global(.ant-tooltip-content) {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.visualizerDisabled :global(.ant-tooltip-inner) {
+  width: 100%;
+  max-width: 780px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0px 16px;
+  background-color: var(--white) !important;
+  color: var(--secondary) !important;
+  font-size: var(--font-s);
+}

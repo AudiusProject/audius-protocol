@@ -1,0 +1,54 @@
+.root:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.root {
+  padding: var(--unit-6) 0;
+  border-top: 1px solid var(--neutral-light-7);
+  cursor: pointer;
+}
+
+.radio {
+  display: flex;
+  align-items: center;
+  height: var(--unit-9);
+  flex: 0 0 auto;
+}
+
+.optionTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--unit-2);
+}
+
+.input {
+  height: 24px;
+  width: 24px;
+}
+
+.root:has(.input:disabled) .optionTitle {
+  opacity: 0.5;
+}
+
+.root:has(.input:checked) .optionTitle {
+  color: var(--secondary);
+}
+
+.optionTitle path {
+  fill: var(--neutral);
+}
+
+.root:has(.input:checked) .optionTitle path {
+  fill: var(--secondary);
+}
+
+.collapsibleContainer {
+  /** Unfortunately, this calculates to overflow: auto hidden; */
+  overflow: visible hidden;
+  transition: height var(--quick);
+}
+
+.collapsibleContainer.collapsed {
+  display: none;
+}

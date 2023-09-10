@@ -1,0 +1,111 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  margin-bottom: 4px;
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: 500;
+}
+
+.dropdown {
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+}
+
+.dropdown.small {
+  height: 24px;
+  background-color: var(--white);
+}
+.dropdown.medium {
+  height: 34px;
+  background-color: var(--white);
+}
+.dropdown.large {
+  height: 50px;
+  font-size: var(--font-m);
+  background-color: var(--neutral-light-10);
+}
+
+.dropdown.shadow {
+  box-shadow: 0 0 1px 0 rgba(133, 129, 153, 0.5),
+    0 2px 6px -2px rgba(133, 129, 153, 0.25);
+}
+.dropdown.border {
+  border: 1px solid var(--neutral-light-8);
+}
+.dropdown.border:hover {
+  border-color: var(--neutral-light-6);
+}
+.dropdown.border.focused {
+  border-color: var(--secondary);
+}
+.dropdown.disabled {
+  background-color: var(--neutral-light-9);
+  color: var(--neutral-light-4);
+  cursor: default !important;
+}
+.dropdown.disabled:hover {
+  border-color: var(--neutral-light-8);
+}
+.dropdown.disabled g path {
+  fill: var(--neutral-light-4);
+}
+.dropdown.error.border {
+  border-color: var(--accent-red);
+}
+
+.selector {
+  padding: 0 16px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.iconCaret {
+  width: 10px;
+}
+
+.iconCaret path {
+  fill: var(--neutral);
+}
+
+.dropdown :global(.ant-dropdown) {
+  border-radius: 4px;
+  background-color: var(--white);
+  box-shadow: 0 0 2px 0 rgba(133, 129, 153, 0.3),
+    0 2px 5px -2px rgba(133, 129, 153, 0.3);
+  animation-duration: 0.18s;
+}
+
+.dropdown :global(.ant-dropdown-menu) {
+  border-radius: 4px;
+  background-color: var(--white);
+  box-shadow: none;
+  padding: 8px 0;
+}
+.dropdown :global(.ant-dropdown-menu-item) {
+  margin: 0 8px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  color: var(--neutral);
+  transition: all ease-in-out 0.04s;
+}
+.dropdown :global(.ant-dropdown-menu-item:hover) {
+  background: var(--secondary);
+  color: var(--white);
+}
+
+.dropdown.large :global(.ant-dropdown-menu-item) {
+  font-size: var(--font-m);
+  line-height: 28px;
+  height: 32px;
+}

@@ -1,0 +1,92 @@
+.playBar {
+  width: 100%;
+  min-width: 320px;
+  text-align: center;
+  height: 88px;
+  background: var(--neutral-light-10);
+  user-select: none;
+}
+
+.playBarContentWrapper {
+  display: flex;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.playBarPlayingInfo {
+  flex: 0 0 230px;
+  min-width: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: left;
+}
+
+.playBarControls {
+  flex: 1 0 218px;
+  display: flex;
+  flex-direction: column;
+}
+
+.timeControls {
+  margin: 18px 24px 0px;
+}
+
+.buttonControls {
+  margin: 0 auto;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 188px;
+  margin-bottom: 6px;
+}
+
+.buttonControls > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.playButton {
+  width: 32px;
+}
+
+.nextButton,
+.previousButton {
+  width: 22px;
+}
+
+.nextButton path,
+.previousButton path {
+  fill: var(--next-and-previous-buttons);
+}
+
+.shuffleButton,
+.repeatButton {
+  width: 16px;
+}
+
+.optionsRight {
+  flex: 0 0 230px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Favorite / Remove Icons */
+
+.toggleRepostContainer {
+  margin-left: 36px;
+}
+
+.toggleFavoriteContainer {
+  margin-left: 16px;
+}
+
+.toggleRepostContainer,
+.toggleFavoriteContainer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

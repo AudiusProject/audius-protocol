@@ -1,0 +1,8 @@
+.trophyIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.trophyIcon path {
+  fill: var(--neutral);
+}

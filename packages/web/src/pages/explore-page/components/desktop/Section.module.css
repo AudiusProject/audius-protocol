@@ -1,0 +1,144 @@
+.section {
+  background: var(--white);
+  padding: 20px 28px 24px;
+  border-radius: 8px;
+  box-shadow: 0 16px 20px -5px var(--table-shadow);
+  max-width: 1080px;
+  margin-bottom: 32px;
+}
+
+.title {
+  text-align: left;
+  color: var(--secondary);
+  font-size: 28px;
+  font-weight: var(--font-bold);
+  letter-spacing: 0.35px;
+  line-height: 34px;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  text-align: left;
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  letter-spacing: 0;
+  line-height: 20px;
+  margin-bottom: 12px;
+}
+
+.children {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.children {
+  margin: 0px -8px;
+}
+
+.children > * {
+  margin: 8px;
+}
+
+.twoColumnDynamicWithLeadingElement .children > *:nth-child(1) {
+  width: 100%;
+}
+
+.twoColumnDynamicWithLeadingElement .children > *:nth-child(9n + 2),
+.twoColumnDynamicWithLeadingElement .children > *:nth-child(9n + 3) {
+  width: calc(50% - 16px);
+}
+
+.twoColumnDynamicWithLeadingElement .children > *:nth-child(9n + 4),
+.twoColumnDynamicWithLeadingElement .children > *:nth-child(9n + 5),
+.twoColumnDynamicWithLeadingElement .children > *:nth-child(9n + 6),
+.twoColumnDynamicWithLeadingElement .children > *:nth-child(9n + 8) {
+  width: calc(33.33% - 16px);
+}
+
+.twoColumnDynamicWithLeadingElement .children > *:nth-child(9n + 7) {
+  width: calc(66.66% - 16px);
+}
+
+@media screen and (max-width: 1020px) {
+  .twoColumnDynamicWithLeadingElement .children > *:nth-child(n) {
+    width: 100%;
+  }
+}
+
+.twoColumnDynamicWithDoubleLeadingElementTenTile
+  .children
+  > *:nth-child(10n + 1),
+.twoColumnDynamicWithDoubleLeadingElementTenTile
+  .children
+  > *:nth-child(10n + 2) {
+  width: 100%;
+}
+
+.twoColumnDynamicWithDoubleLeadingElementTenTile
+  .children
+  > *:nth-child(10n + 3),
+.twoColumnDynamicWithDoubleLeadingElementTenTile
+  .children
+  > *:nth-child(10n + 4) {
+  width: calc(50% - 16px);
+}
+
+.twoColumnDynamicWithDoubleLeadingElementTenTile
+  .children
+  > *:nth-child(10n + 6),
+.twoColumnDynamicWithDoubleLeadingElementTenTile
+  .children
+  > *:nth-child(10n + 7),
+.twoColumnDynamicWithDoubleLeadingElementTenTile
+  .children
+  > *:nth-child(10n + 10) {
+  width: calc(33.33% - 16px);
+}
+
+.twoColumnDynamicWithDoubleLeadingElementTenTile
+  .children
+  > *:nth-child(10n + 5),
+.twoColumnDynamicWithDoubleLeadingElementTenTile
+  .children
+  > *:nth-child(10n + 8),
+.twoColumnDynamicWithDoubleLeadingElementTenTile
+  .children
+  > *:nth-child(10n + 9) {
+  width: calc(66.66% - 16px);
+}
+
+@media screen and (max-width: 1020px) {
+  .twoColumnDynamicWithDoubleLeadingElementTenTile .children > *:nth-child(n) {
+    width: 100%;
+  }
+}
+
+.expandable .children {
+  overflow: hidden;
+  max-height: 322px;
+  min-height: 322px;
+  transition: max-height ease-in-out 1s;
+  /* Negative margin to allow things inside to overflow outside */
+  margin: -16px -24px;
+  padding: 16px;
+  box-sizing: content-box;
+  transform: translate3d(0, 0, 0);
+}
+
+.expandable .children > * {
+  margin: 12px 10px;
+}
+
+.expandable.expanded .children {
+  max-height: 4000px;
+}
+
+.expandButton {
+  margin-top: 32px;
+}
+
+.expandable .expandButton .expandButtonText {
+  text-transform: uppercase;
+}

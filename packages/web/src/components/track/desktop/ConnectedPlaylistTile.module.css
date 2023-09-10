@@ -1,0 +1,111 @@
+.container:not(.loading):hover .artworkIcon {
+  opacity: 0.75;
+}
+
+.tracksContainer {
+  overflow-y: auto;
+  max-height: 240px;
+  background: var(--white);
+}
+
+.loading .tracksContainer {
+  padding-bottom: 24px;
+}
+
+.small .tracksContainer {
+  max-height: 100px;
+}
+
+.medium .tracksContainer {
+  max-height: 120px;
+}
+
+.tracksContainer::-webkit-scrollbar {
+  display: none;
+}
+
+.trackTile:hover {
+  background: var(--neutral-light-10) !important;
+}
+
+.container:hover .tracksContainer {
+  background: var(--neutral-light-10);
+}
+
+.iconKebabHorizontal path {
+  fill: var(--neutral-light-4);
+}
+
+.by {
+  font-weight: var(--font-medium);
+  font-size: var(--font-m);
+  color: var(--neutral-light-6);
+  margin-right: 4px;
+}
+
+.userName {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.active .name {
+  color: var(--primary);
+}
+
+.createdBy {
+  font-weight: var(--font-medium);
+  font-size: var(--font-m);
+
+  line-height: normal;
+  /* identical to box height, or 100% */
+  color: var(--neutral-light-4);
+  margin-right: 4px;
+}
+
+.iconVerified {
+  margin-left: 4px;
+  position: relative;
+  top: 2px;
+}
+
+.socialInfo {
+  display: inline-flex;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.menuContainer {
+  height: 24px !important;
+  width: 19px !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: scale3d(1, 1, 1);
+  transition: all 0.07s ease-in-out !important;
+}
+
+.menuContainer:hover {
+  transform: scale3d(1.1, 1.1, 1.1);
+}
+
+.menuContainer:active {
+  transform: scale3d(0.95, 0.95, 0.95);
+}
+
+.menuKebabContainer {
+  display: flex;
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container.large .menuKebabContainer {
+  height: 38px;
+  min-width: 38px;
+}
+
+.container.small .menuKebabContainer {
+  height: 30px;
+  min-width: 38px;
+}

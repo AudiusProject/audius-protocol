@@ -1,0 +1,10 @@
+.root {
+  background: var(--white);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 80px;
+}
+
+.share {
+  margin-top: 16px;
+}

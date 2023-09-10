@@ -1,0 +1,39 @@
+.container {
+  margin-top: 32px;
+}
+
+.tile {
+  margin-top: 16px;
+}
+
+.tipIcon {
+  width: 18px;
+  height: 18px;
+}
+.tipIcon path {
+  fill: var(--neutral);
+}
+
+.arrowIcon {
+  width: 20px;
+  height: 20px;
+}
+.arrowIcon path {
+  fill: var(--neutral-light-4);
+}
+
+.seeMore {
+  display: flex;
+  align-items: center;
+  margin-top: 16px;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  color: var(--neutral-light-4);
+}
+.seeMore:hover {
+  cursor: pointer;
+  transform: scale3d(1.01, 1.01, 1.01);
+}
+.seeMore:active {
+  transform: scale3d(0.99, 0.99, 0.99);
+}

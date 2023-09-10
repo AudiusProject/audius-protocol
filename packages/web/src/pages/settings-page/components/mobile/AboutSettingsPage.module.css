@@ -1,0 +1,39 @@
+.header {
+  display: flex;
+  align-items: center;
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
+.header img {
+  border-radius: 16px;
+  height: 84px;
+  width: 84px;
+  box-shadow: 0 5px 15px -5px rgba(17, 17, 17, 0.15);
+  margin-right: 16px;
+}
+
+.info {
+  text-align: left;
+}
+
+.title {
+  font-weight: var(--font-bold);
+  margin-bottom: 8px;
+  font-size: var(--font-m);
+}
+
+.versionInfo {
+  font-weight: var(--font-medium);
+  font-size: var(--font-xs);
+  line-height: 17px;
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+}
+
+.icon path {
+  fill: var(--neutral);
+}

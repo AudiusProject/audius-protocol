@@ -1,0 +1,42 @@
+.blockContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.blockContainer > .blockContainer {
+  margin: 0 12px;
+  padding-left: 24px;
+  gap: 8px;
+  border-left: 1px dashed var(--neutral-light-5);
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  padding: 8px 12px;
+}
+
+.blockHeader {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  color: var(--neutral-light-4);
+}
+
+.blockHeader svg path {
+  fill: var(--neutral-light-4);
+}
+
+.blockContent {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: var(--font-demi-bold);
+}

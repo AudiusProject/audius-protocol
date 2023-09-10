@@ -1,0 +1,25 @@
+.cardsContainer {
+  display: inline-flex;
+  flex-wrap: wrap;
+}
+
+.mobileContainer {
+  display: inline-flex;
+  justify-content: space-around;
+  align-content: flex-start;
+  flex-wrap: wrap;
+  margin-right: -5px;
+  margin-bottom: -5px;
+}
+
+.mobileCardContainer {
+  flex: 1;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+.emptyMobileCard {
+  width: 100%;
+  min-width: 174px;
+  max-width: 190px;
+}

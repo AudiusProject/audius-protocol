@@ -1,0 +1,22 @@
+.editActionsContainer {
+  display: flex;
+  justify-content: space-between;
+}
+
+.createActionsContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.buttonsRight {
+  display: inline-flex;
+  column-gap: var(--unit-4);
+}
+
+.deleteButton {
+  border-color: var(--accent-red);
+}
+
+.deleteButton .deleteButtonText {
+  color: var(--accent-red);
+}

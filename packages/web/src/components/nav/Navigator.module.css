@@ -1,0 +1,21 @@
+.navWrapper {
+  position: fixed;
+  z-index: 14;
+  width: 100%;
+}
+
+.leftNavWrapper {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  margin-bottom: 88px;
+  width: var(--nav-width);
+  /* Keep bottom of album art shadow from getting cut off */
+  overflow: visible;
+}
+
+/* Position the navbar over any banners on electron/desktop app */
+.isElectron {
+  position: fixed;
+}

@@ -1,0 +1,20 @@
+.bottomBar {
+  user-select: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-top: 1px solid var(--neutral-light-8);
+  background: var(--neutral-light-10);
+  /* Above the play bar so it can slide up from underneath */
+  z-index: 12;
+
+  padding: 0px;
+  padding: 0px env(safe-area-inset-right, 0px) 0px
+    env(safe-area-inset-left, 0px);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  touch-action: none;
+}

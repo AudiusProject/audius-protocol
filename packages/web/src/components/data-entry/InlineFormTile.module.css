@@ -1,0 +1,88 @@
+.inlineFormTile {
+  background: var(--white);
+  height: 100%;
+  cursor: pointer;
+  user-select: none;
+}
+
+.basic {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-top: 1px solid var(--neutral-light-8);
+}
+
+.basic > div {
+  flex: 0 0 70px;
+  margin: 0px 10px;
+}
+.basic > div.trackName {
+  flex: 1 auto;
+}
+.basic > div.handle {
+  flex: 0 0 8px;
+  margin-left: 16px;
+}
+
+.moreButton {
+  height: 28px;
+  padding: 0px 10px;
+}
+
+.moreButton .moreButtonText {
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  letter-spacing: 0.3px;
+}
+
+.moreButton .moreButtonIcon {
+  width: 16px;
+  margin-right: 4px !important;
+}
+
+.advanced {
+  margin-left: 22px;
+  padding-left: 20px;
+  border-left: 1px solid var(--neutral-light-8);
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height ease-in-out 0.18s, margin ease-in-out 0.18s;
+}
+
+.advanced.show {
+  margin-bottom: 16px;
+  margin-top: 16px;
+  max-height: 800px;
+  overflow: visible;
+}
+
+.label {
+  max-width: 72px;
+  width: 100%;
+  text-align: right;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-content: right;
+  align-items: flex-start;
+  padding: 4px 0;
+  margin: 8px 0;
+}
+.advanced .row:first-child {
+  margin-top: 0;
+}
+.advanced .row:last-child {
+  margin-bottom: 0;
+}
+.row > div {
+  flex: 1 auto;
+}
+.row > div:first-child {
+  margin-right: 38px;
+}
+.row > div:first-child:last-child {
+  margin-right: 0px;
+}

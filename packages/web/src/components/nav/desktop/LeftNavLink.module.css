@@ -1,0 +1,97 @@
+.link {
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  position: relative;
+  display: table;
+  min-width: 100px;
+
+  /* negative margin so the link hover chip shows up. */
+  margin-left: -16px;
+  /* left padding is visibly (32px + -16px margin =) 16px to match the left padding of .groupHeader */
+  padding: 5px 0 5px 32px;
+  color: var(--nav-column-link);
+  transition: color 0.07s ease-in-out;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  border: 0;
+  background: none;
+  text-align: inherit;
+}
+
+.link:hover:before {
+  border-right: 4px solid var(--neutral-light-4);
+}
+.link.disabled:hover {
+  border-right: none;
+}
+.link:global(.active):before {
+  border-right: 4px solid var(--primary);
+}
+.link:hover:before,
+.link:global(.active):before {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  margin: auto 0;
+  left: -16px;
+  border-radius: 4px;
+}
+.link:hover {
+  cursor: pointer;
+  color: var(--nav-column-link-hover);
+}
+.link:global(.active) {
+  color: var(--primary) !important;
+  font-weight: var(--font-medium);
+}
+.link.disabled,
+.link.disabled:hover {
+  color: var(--neutral-light-4);
+  pointer-events: none;
+}
+
+.droppableLink {
+  background-color: rgba(0, 0, 0, 0);
+  transition: background 0.07s ease-in-out;
+  border-radius: 6px;
+  width: 100%;
+  position: relative;
+}
+
+.droppableLink::after {
+  content: '';
+  position: absolute;
+  height: 2px;
+  width: 70%;
+  left: 20px;
+  bottom: 0;
+  opacity: 0;
+  border-radius: 2px;
+  background-color: var(--secondary);
+  transition: opacity 0.13s ease-in-out;
+}
+
+.droppableLinkHoverTrack {
+  background-color: rgba(152, 73, 214, 0.15);
+}
+
+.droppableLinkHoverPlaylist::after {
+  opacity: 1;
+}
+
+.droppableLinkActive > * {
+  color: var(--secondary);
+}
+
+.disabledLink,
+.droppableLinkInactive > * {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

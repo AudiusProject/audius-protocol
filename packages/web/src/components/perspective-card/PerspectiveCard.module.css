@@ -1,0 +1,123 @@
+.moveContainer {
+  display: inline-flex;
+  transform: translateX(0px);
+}
+
+.perspective {
+  cursor: pointer;
+  width: 100%;
+}
+
+.perspectiveCard {
+  position: relative;
+  display: inline-flex;
+  border-radius: 12px;
+  width: 100%;
+  overflow: hidden;
+  /* Overridden by props */
+  transition: all 0.18s ease-in-out;
+}
+
+.perspectiveCard:not(.isDisabled):hover {
+  transform: scale3d(1.03, 1.03, 1.03);
+}
+
+.perspectiveCard:not(.isDisabled):active {
+  transform: scale3d(0.99, 0.99, 0.99);
+}
+
+.perspectiveCard .backgroundIcon {
+  position: absolute;
+  right: -160px;
+  top: -16px;
+  bottom: -16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.perspectiveCard.overlay .backgroundIcon {
+  mix-blend-mode: overlay;
+}
+
+.rewardsPill {
+  position: absolute;
+  left: 16px;
+  bottom: 13px;
+}
+
+.rewardsPill svg {
+  filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1));
+}
+
+/* Don't try this at home kids.
+ * You need this on FF or the perspective 3d scaling
+ * of the container with overflow breaks the blend mode
+ * of the svg and causes jitter.
+ * But if you do this on webkit, it's bad!
+ */
+@-moz-document url-prefix() {
+  .perspectiveCard .backgroundIcon {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.perspectiveCard .backgroundIcon svg {
+  height: 110% !important;
+  min-width: 250px !important;
+}
+
+.perspectiveCard .backgroundIcon path {
+  fill: var(--neutral-light-10);
+  opacity: 0.3;
+}
+
+.textInterior {
+  min-height: 200px;
+  text-align: left;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.textInterior .title {
+  color: var(--static-white);
+  font-size: 26px;
+  font-weight: var(--font-heavy);
+  text-transform: uppercase;
+  letter-spacing: 0.33px;
+  line-height: 32px;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
+}
+
+.textInterior .subtitle {
+  color: var(--static-white);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.2px;
+  line-height: 23px;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
+}
+
+.emojiInterior {
+  min-height: 128px;
+  min-width: 192px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.emojiInterior .title {
+  color: var(--static-white);
+  font-size: var(--font-xl);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.25px;
+  line-height: 30px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.emojiInterior .emoji :global(.emoji) {
+  width: 45px;
+  height: 45px;
+}

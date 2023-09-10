@@ -1,0 +1,30 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.main {
+  flex: 2.67;
+  min-width: 0;
+  width: 100%;
+}
+
+.mini {
+  flex: 1;
+  min-width: 0;
+}
+
+.section {
+  min-width: 0;
+}
+
+.featuredContent {
+  width: 100%;
+}
+
+.featuredDelineate {
+  padding: 0px !important;
+  margin: 0px !important;
+  margin-bottom: 24px !important;
+}

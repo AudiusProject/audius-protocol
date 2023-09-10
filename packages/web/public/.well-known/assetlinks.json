@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "co.audius.app",
+      "sha256_cert_fingerprints": [
+        "DD:C9:10:5A:BF:73:B2:26:72:2D:65:F7:9E:38:4D:B7:91:3D:A6:95:3E:9A:D7:E6:B3:E1:B0:39:BB:52:38:DC"
+      ]
+    }
+  }
+]

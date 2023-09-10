@@ -1,0 +1,1 @@
+export { DetailsTile } from './DetailsTile'

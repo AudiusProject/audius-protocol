@@ -1,0 +1,308 @@
+.tableWrapper {
+  position: relative;
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px -2px var(--tile-shadow-3);
+  background-color: var(--white);
+  overflow: hidden;
+}
+
+.table {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  min-width: 0px !important;
+  background-color: var(--white);
+  padding-bottom: 5px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.tableHead {
+  position: relative;
+  display: block;
+  padding-top: 24px;
+  background-color: var(--white);
+  color: var(--neutral);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--neutral-light-8);
+}
+
+.tableHeadRow {
+  position: relative;
+  min-width: 0px !important;
+}
+
+.cellSection {
+  flex: 1 1 0;
+  position: relative;
+  display: flex;
+  overflow: hidden;
+}
+
+.cellSectionEnd {
+  position: relative;
+  flex: 0 0 144px;
+}
+
+.cellSectionEnd.menu {
+  flex: 0 0 64px;
+}
+
+.tableHeader {
+  position: relative;
+  background-color: var(--white);
+  padding-left: 12px;
+  padding-right: 12px;
+  line-height: 41px;
+  user-select: none;
+}
+
+.tableHeader.hasSorter .textCell {
+  padding-right: 6px;
+}
+
+.titleHeader + .titleHeader::before {
+  content: '';
+  position: absolute;
+  height: 18px;
+  width: 1px;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  background-color: var(--neutral-light-8);
+}
+
+.textCell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sortCaretContainer {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+}
+
+.sortCaret {
+  height: 8px;
+  width: 8px;
+}
+
+.sortCaret path {
+  fill: var(--neutral-light-4);
+}
+
+.pageButtonContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  padding: 12px;
+}
+
+.pageButton {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 24px;
+  width: 24px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--neutral-light-2);
+  cursor: pointer;
+}
+
+.pageButton:not(.active):hover {
+  color: var(--neutral);
+}
+
+.pageButton.active {
+  background-color: var(--secondary);
+  color: var(--static-white);
+  cursor: default;
+}
+
+.pageCaret {
+  height: 16px;
+  width: 16px;
+  margin: 0 8px;
+  cursor: pointer;
+}
+
+.pageCaret path {
+  fill: var(--neutral-light-4);
+}
+
+.pageCaret:not(.disabled):hover path {
+  fill: var(--neutral);
+}
+
+.pageCaret.disabled {
+  cursor: default;
+}
+
+.pageCaret.disabled path {
+  fill: var(--neutral-light-7);
+}
+
+.showMoreContainer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 15px 0;
+  background-color: var(--neutral-light-10);
+  border-top: 1px solid var(--neutral-light-8);
+  cursor: pointer;
+}
+
+.showMoreContainer:hover .showMoreText {
+  color: var(--neutral);
+}
+
+.showMoreContainer:hover .showMoreCaret path {
+  fill: var(--neutral);
+}
+
+.showMoreText {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--neutral-light-4);
+  transition: all 0.07s ease-in-out;
+}
+
+.showMoreCaret {
+  height: 16px;
+  width: 16px;
+}
+
+.showMoreCaret path {
+  transition: all 0.07s ease-in-out;
+  fill: var(--neutral-light-4);
+}
+
+.tableBody {
+  display: block;
+  overflow: hidden;
+  background-color: var(--neutral-light-9);
+}
+
+.tableRow {
+  display: flex;
+  position: relative;
+  background: var(--white);
+  min-width: 0px !important;
+  color: var(--neutral);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tableRow.active {
+  color: var(--primary);
+}
+
+.tableRow:hover:not(.skeletonRow) {
+  z-index: 1;
+  box-shadow: 0 1px 0 0 var(--neutral-light-8),
+    0 -1px 0 0 var(--neutral-light-8);
+  transition: all 0.07s ease-in-out;
+  background-color: var(--neutral-light-9);
+}
+
+.tableRow.disabled {
+  cursor: default;
+  color: var(--neutral-light-4);
+  background-color: var(--neutral-light-9);
+}
+
+.tableRow.disabled:hover {
+  box-shadow: none;
+  background-color: var(--neutral-light-9);
+}
+
+.tableCell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  vertical-align: middle;
+  justify-content: center;
+  height: 64px;
+  padding: 20px 12px;
+  background: transparent;
+  user-select: none;
+  transition: all 0.05s ease-in-out;
+}
+
+.textContainer {
+  position: relative;
+  max-width: 100%;
+  height: 18px;
+  display: inline-flex;
+}
+
+.textCell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.resizer {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  bottom: 0;
+  right: -2px;
+  width: 6px;
+}
+
+.leftAlign {
+  text-align: left;
+  justify-content: left;
+}
+
+.rightAlign {
+  text-align: right;
+  justify-content: right;
+}
+
+.loader {
+  position: relative;
+  height: 32px;
+  width: 32px;
+  margin: 24px auto;
+}
+
+.reorderableRow {
+  cursor: grab;
+}
+
+.droppable {
+  position: relative;
+}
+
+.droppable::after {
+  content: '';
+  position: absolute;
+  height: 3px;
+  left: 0;
+  right: 0;
+  top: 0;
+  background-color: var(--secondary);
+  opacity: 0;
+  z-index: 2;
+}
+
+.droppableHover::after {
+  opacity: 1;
+}

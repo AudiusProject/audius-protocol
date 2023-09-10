@@ -1,0 +1,92 @@
+.bottomButtons {
+  align-items: center;
+  border-top: 1px solid var(--neutral-light-8);
+  display: flex;
+  height: var(--unit-32);
+  justify-content: space-between;
+}
+
+.actions {
+  align-items: center;
+  display: flex;
+  gap: var(--unit-8);
+  justify-content: flex-start;
+}
+
+.button {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: var(--unit-8);
+  height: var(--unit-8);
+}
+
+.buttonContent {
+  width: var(--unit-6);
+  height: var(--unit-6);
+}
+
+.button path {
+  fill: var(--neutral) !important;
+}
+
+.activeButton path {
+  fill: var(--primary) !important;
+}
+
+.disabledButton path {
+  fill: var(--neutral-light-8) !important;
+}
+
+.tinted path {
+  fill: var(--neutral-light-4);
+}
+
+.share {
+  position: relative;
+  top: -1px;
+  height: var(--unit-8);
+  width: var(--unit-8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overflow {
+  height: var(--unit-8);
+  width: var(--unit-8);
+}
+
+.premiumContentContainer {
+  height: var(--unit-8);
+  padding-top: var(--unit-2);
+}
+
+.premiumContent {
+  align-items: center;
+  background-color: var(--accent-blue);
+  border-radius: var(--unit-1);
+  color: var(--static-white);
+  display: flex;
+  gap: var(--unit-1);
+  height: var(--unit-6);
+  padding: var(--unit-2) var(--unit-3);
+}
+
+.premiumContent svg {
+  width: var(--unit-4);
+  height: var(--unit-4);
+}
+
+.premiumContent path {
+  fill: var(--static-white);
+}
+
+.spinner {
+  height: var(--unit-4);
+  width: var(--unit-4);
+}
+
+.spinner g path {
+  stroke: var(--static-white);
+}

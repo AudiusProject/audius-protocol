@@ -1,0 +1,58 @@
+.container {
+  overflow: hidden;
+  border-radius: 40px;
+}
+
+.content {
+  padding-top: 16px;
+  padding-bottom: 64px;
+}
+
+.row,
+.title {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid var(--neutral-light-8);
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--neutral);
+}
+
+.row {
+  cursor: pointer;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: 0.23px;
+  line-height: 26px;
+  color: var(--action-sheet-text);
+}
+
+.row:last-child {
+  border-bottom: 1px solid var(--neutral-light-8);
+}
+
+.row:active {
+  background-color: var(--neutral-light-9);
+}
+
+.actionIcon {
+  min-width: 42px;
+  display: inline-flex;
+}
+
+.destructiveAction {
+  color: var(--accent-red);
+}
+.darkAction.destructiveAction {
+  color: var(--accent-red);
+}
+
+.darkAction {
+  color: var(--static-white);
+}

@@ -1,0 +1,287 @@
+.profilePageWrapper {
+  position: relative;
+  padding-bottom: 36px;
+  min-width: 788px;
+}
+
+.headerWrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* Style for static profile wrapper content */
+
+.mask {
+  padding: 0 16px;
+}
+
+.profileWrapping {
+  position: absolute;
+  /* Put the profilewrapping over the tab accent */
+  z-index: 10;
+  width: 100%;
+  max-width: 992px;
+  margin: 0 auto;
+  left: 0;
+  right: 0;
+  top: 264px;
+  padding: 0 16px;
+}
+
+.header {
+  height: 0;
+  display: flex;
+}
+
+.nameWrapper {
+  position: relative;
+  margin: 4px 0 0 32px;
+  text-align: left;
+  user-select: none;
+  max-width: 720px;
+  width: 100%;
+}
+
+.handleWrapper > .handle {
+  display: inline-block;
+  margin-right: 8px;
+  color: #fafafa;
+  font-size: var(--font-m);
+  font-weight: var(--font-demi-bold);
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+}
+
+.nameWrapper > .badgeArtist {
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.3));
+  margin-bottom: 8px;
+}
+.nameWrapper > .badgeArtist.hide {
+  visibility: hidden;
+}
+
+.nameWrapper .editableName {
+  max-width: 440px;
+}
+
+.info {
+  position: relative;
+  top: 237px;
+  width: 246px;
+  height: 0;
+  margin-left: -17px;
+  text-align: left;
+}
+
+.info > .about {
+  margin-left: 17px;
+  margin-right: 5px;
+  padding-right: 16px;
+  padding-bottom: 80px;
+}
+
+.info .infoHeader {
+  color: var(--neutral-light-2);
+  font-size: var(--font-xs);
+  font-weight: var(--font-heavy);
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+}
+
+.info .location,
+.info .joined {
+  color: var(--neutral);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  line-height: 16px;
+  user-select: none;
+}
+
+.description {
+  margin-bottom: var(--unit-4);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* truncates the content at a maximum of 4 lines */
+/* works on modern browsers */
+.truncated {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 4; /* number of lines to show */
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+
+.socials {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--unit-4);
+  padding-bottom: var(--unit-2);
+}
+.info .socialsTruncated {
+  display: flex;
+  align-items: center;
+}
+
+.titleContainer {
+  display: flex;
+  align-items: center;
+}
+.titleText {
+  margin-left: 6px;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+}
+
+.followingIcon {
+  width: 32px;
+}
+.viewAll path {
+  fill: var(--neutral-light-4);
+}
+.viewAll {
+  display: flex;
+  align-items: center;
+  margin-top: 12px;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  color: var(--neutral-light-4);
+}
+
+.info .followers {
+  user-select: none;
+  padding-top: 24px;
+  border-top: 1px solid var(--neutral-light-7);
+}
+
+.info .followers > .followersContent {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.info .followers > .followersContent > * {
+  margin-bottom: 6px;
+}
+
+.info > .edit {
+  background: var(--secondary);
+  padding: 12px 12px 4px 12px;
+  border-radius: 8px;
+  box-shadow: 0 2px 15px -2px rgba(133, 129, 153, 0.1),
+    0 10px 15px -2px rgba(126, 27, 204, 0.1);
+}
+
+.info > .edit > .editLabel {
+  color: var(--static-white);
+  font-size: var(--font-small);
+  font-weight: var(--font-bold);
+  line-height: 18px;
+  margin-bottom: 8px;
+}
+.info > .edit > .editLabel.section {
+  margin-top: 8px;
+}
+
+.info > .edit > .editField {
+  padding-bottom: 8px;
+}
+.info .descriptionInput {
+  margin-bottom: -5px;
+}
+.info .locationInput > input {
+  font-size: var(--font-xs);
+  padding-left: 9px;
+}
+
+/* Style for content section */
+
+.inset {
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  max-width: 753px;
+  padding-left: 229px;
+  padding-top: 16px;
+  box-sizing: content-box;
+}
+
+@media screen and (min-width: 1218px) {
+  .content {
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+.tiles,
+.cards {
+  width: 100%;
+  margin-top: 4px;
+  min-height: 500px;
+  padding: 0px 16px;
+}
+
+.cardLineup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.cardLineup > * {
+  margin: 6px;
+}
+
+.tabBody {
+  margin: -6px;
+}
+
+.badge {
+  margin-bottom: 16px !important;
+}
+
+.truncateContainer {
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  color: var(--neutral-light-4);
+  margin-top: 16px;
+}
+.truncateContainer:hover {
+  cursor: pointer;
+}
+.truncateContainer svg {
+  margin-left: 8px;
+}
+.truncateContainer:hover span {
+  color: var(--secondary);
+  transition: color 0.07s ease-out;
+}
+.truncateContainer:hover svg path {
+  fill: var(--secondary);
+  transition: fill 0.07s ease-out;
+}
+
+.socialsTruncated > * {
+  margin-right: 32px;
+  margin-bottom: 0px !important;
+}
+
+.tipAudioButtonContainer {
+  margin-top: 32px;
+}
+
+.aiGeneratedCalloutContainer {
+  margin-top: 32px;
+}
+
+.profileBottomSection {
+  display: flex;
+  flex-direction: column;
+  margin-top: 32px;
+  margin-bottom: 32px;
+  gap: 32px;
+}

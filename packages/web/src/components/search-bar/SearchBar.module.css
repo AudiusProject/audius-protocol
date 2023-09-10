@@ -1,0 +1,112 @@
+.searchBar {
+  position: relative;
+  display: flex;
+}
+
+.header {
+  color: var(--neutral);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  letter-spacing: 0.39px;
+  line-height: 20px;
+  padding-top: 8px;
+  transition: opacity 0.18s ease-in-out;
+}
+
+.open .header {
+  opacity: 0;
+}
+
+.searchWrapper {
+  position: fixed;
+  right: 12px;
+  top: 8px;
+  padding: 8px;
+  margin: -8px 0px -8px -8px;
+  cursor: pointer;
+}
+
+.iconSearch {
+  height: 16px;
+  width: 16px;
+}
+
+.iconSearch path {
+  transition: all 0.25s ease-in-out;
+  fill: var(--neutral-light-6);
+}
+
+.searchWrapper:hover .iconSearch path,
+.searchWrapper:active .iconSearch path {
+  fill: var(--neutral);
+}
+
+.searchBar input {
+  position: absolute;
+  top: 0;
+  right: -1px;
+
+  width: 0%;
+  transform: scaleX(0.25);
+  opacity: 0;
+
+  height: 32px;
+  outline: 0;
+  border: none;
+  background-color: var(--white);
+
+  padding: 0px;
+
+  color: var(--neutral);
+  font-size: var(--font-s);
+  line-height: 18px;
+
+  transition: transform 0.25s ease-in-out, opacity 0.25s ease-in-out;
+
+  border-radius: 6px;
+  border: none;
+  margin-left: auto;
+  transform-origin: right;
+}
+
+.searchBar input:focus {
+  outline: 0;
+}
+
+.searchBar input::placeholder {
+  color: var(--neutral-light-4);
+}
+
+.searchBar.open input {
+  padding: 0px 16px;
+  transform: scaleX(1);
+  border: 1px solid var(--neutral-light-7);
+  width: 100%;
+  opacity: 1;
+}
+
+.searchInput {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-clip: padding-box;
+}
+
+.spinnerContainer > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  top: -3px;
+  right: -2px;
+}
+
+.spinnerContainer svg {
+  max-height: 24px;
+  max-width: 24px;
+}
+
+.spinnerContainer g path {
+  stroke: var(--neutral-light-5) !important;
+  stroke-width: 3px;
+}

@@ -1,0 +1,18 @@
+.root {
+  display: inline-flex;
+  column-gap: var(--unit-2);
+}
+
+.root:hover .icon path {
+  fill: var(--primary);
+}
+
+.text {
+  max-width: 180px;
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+}
+
+.singleLink {
+  white-space: nowrap;
+}

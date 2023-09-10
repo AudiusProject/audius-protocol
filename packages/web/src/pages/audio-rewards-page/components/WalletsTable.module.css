@@ -1,0 +1,244 @@
+.container {
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+}
+
+/* Wallet */
+.walletContainer {
+  display: inline-flex;
+  align-items: center;
+}
+
+.walletContainer:not(.disabled) {
+  cursor: pointer;
+  transition: all 0.12s ease-in-out !important;
+  transform: scale3d(1, 1, 1);
+}
+
+.walletContainer:hover:not(.disabled) {
+  transform: scale3d(1.01, 1.01, 1.01);
+}
+
+.walletContainer:active:not(.disabled) {
+  transform: scale3d(0.98, 0.98, 0.98);
+}
+
+.walletContainer:hover:not(.disabled) {
+  cursor: pointer;
+}
+
+.copyContainer {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid var(--neutral-light-8);
+  align-items: center;
+  height: 57px;
+  width: 100%;
+}
+
+.mobile .copyContainer {
+  justify-content: space-between;
+}
+
+.removingWallet {
+  opacity: 0.5;
+}
+
+.iconCopy {
+  margin-left: 10px;
+  height: 16px;
+  width: 16px;
+}
+
+.iconCopy path {
+  fill: var(--neutral-light-4);
+}
+
+.removeContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  height: 40px;
+  background: var(--neutral-light-10);
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all ease-in-out 0.07s;
+  margin: 0px 24px;
+}
+
+.removeContainer.disabled {
+  cursor: default;
+}
+
+.removeContainer:hover:not(.disabled) {
+  background-color: var(--accent-red);
+}
+
+.removeContainer:hover:not(.disabled) .iconRemove path {
+  fill: var(--static-white);
+}
+
+.iconRemove {
+  height: 18px;
+  width: 18px;
+}
+
+.loading {
+  margin: 0px 36px;
+  height: 24px;
+  width: 24px;
+}
+
+.loading svg path {
+  fill: var(--secondary-light);
+  stroke: var(--secondary-light-1);
+}
+
+:global(#bitski-dialog-container) {
+  z-index: 1000000 !important;
+}
+
+.walletsHeader {
+  display: inline-flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+.walletsHeaderItem {
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  text-transform: uppercase;
+  color: var(--neutral-light-4);
+}
+
+.headerWallet {
+  padding-left: 24px;
+  flex: 0 0 162px;
+}
+
+.mobile .walletsHeaderItem {
+  flex: 1;
+}
+
+.noActions .headerWallet {
+  flex: 0 0 200px;
+}
+
+.mobile.noActions .headerWallet {
+  flex: 1 1 150px;
+}
+
+.headerCollectibles {
+  flex: 0 0 114px;
+  text-align: right;
+}
+
+.noActions .headerCollectibles {
+  flex: 0 0 192px;
+}
+
+.headerAudio {
+  flex: 0 0 144px;
+  padding-right: 98px;
+  text-align: right;
+}
+
+.noActions .headerAudio {
+  flex: 1 0 182px;
+  padding-right: 24px;
+}
+
+.mobile .headerAudio {
+  flex: 1;
+  padding-right: 24px;
+}
+
+.chainIconContainer {
+  height: 32px;
+  width: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--neutral-light-7);
+  box-shadow: 0px 0px 1px -2px rgba(133, 129, 153, 0.1),
+    0px 1px 0px -2px #e3e3e3, 0px 2px 5px -2px rgba(133, 129, 153, 0.25);
+  margin-right: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.chainIconEth {
+  width: 24px;
+}
+
+.chainIconSol {
+  width: 16px;
+}
+
+.addressContainer {
+  padding-left: 24px;
+  flex: 0 0 200px;
+}
+
+.mobile .addressContainer {
+  flex: 1;
+}
+
+.collectibleCount {
+  flex: 0 0 192px;
+  text-align: right;
+}
+
+.audioBalance {
+  flex: 0 0 182px;
+  text-align: right;
+}
+
+.hideCollectibles:not(.noActions) .audioBalance {
+  flex: 1 0 182px;
+}
+
+.noActions .audioBalance {
+  flex: 1 0 182px;
+  padding-right: 24px;
+}
+
+.mobile.noActions .audioBalance {
+  flex: 1;
+  padding-right: 24px;
+}
+
+.actionSpacing {
+  flex: 0 0 96px;
+}
+
+.walletText {
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-m);
+  color: var(--neutral);
+}
+
+.mobile .walletText {
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-s);
+  color: var(--neutral);
+}
+
+.balanceContainer {
+  display: inline-block;
+}
+
+.copyContainer .balanceContainer .balance {
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-m);
+  line-height: normal;
+  text-align: right;
+  color: var(--neutral);
+  background: none;
+  -webkit-text-fill-color: initial;
+  -webkit-background-clip: initial;
+}

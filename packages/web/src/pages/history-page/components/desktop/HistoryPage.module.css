@@ -1,0 +1,78 @@
+.historyPageWrapper {
+  position: relative;
+}
+
+.historyPageHeader .playAllButton {
+  margin-left: 28px;
+  height: 28px;
+  width: 94px;
+  display: flex;
+  justify-content: center;
+}
+.historyPageHeader .playAllButton .playAllButtonIcon {
+  margin-right: 8px;
+  width: 12px !important;
+  height: 12px !important;
+}
+
+.historyPageHeader .playAllButton .playAllButtonText {
+  font-size: 11px;
+}
+
+/* Filter Input in Header */
+.historyPageWrapper :global(.ant-input-affix-wrapper) {
+  position: absolute;
+  right: 0px;
+  width: 120px;
+  z-index: 1;
+}
+.historyPageWrapper :global(.ant-input-affix-wrapper .ant-input) {
+  border-radius: 4px;
+  border: 1px solid var(--neutral-light-8) !important;
+  box-shadow: 0 2px 5px 0 var(--search-bar-shadow);
+  background-color: var(--neutral-light-10);
+  transition: width 0.2s ease-in-out, background 0.04s ease-in-out;
+  color: var(--neutral);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  border: none;
+
+  padding-top: 1px;
+  padding-bottom: 1px;
+  height: 24px;
+}
+.historyPageWrapper :global(.ant-input-prefix) > svg {
+  width: 12px;
+  height: 12px;
+}
+.historyPageWrapper :global(.ant-input-prefix) > svg g path {
+  fill: var(--neutral-light-4);
+}
+
+/* Body Content Wrapper */
+.bodyWrapper {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Track Table */
+.bodyWrapper .tableWrapper {
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px -2px var(--tile-shadow-3);
+  background-color: var(--white);
+  margin-bottom: 35px;
+  padding-bottom: 5px;
+  overflow: hidden;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+}
+
+.spinner g path {
+  stroke: var(--secondary) !important;
+}

@@ -1,0 +1,6 @@
+.followingIcon {
+  width: 32px;
+}
+.followingIcon path {
+  fill: var(--neutral) !important;
+}

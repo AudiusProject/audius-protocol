@@ -1,0 +1,140 @@
+.cardContainerBase {
+  width: 100%;
+  min-width: 172px;
+  max-width: 190px;
+}
+
+.cardContainer {
+  composes: cardContainerBase;
+  cursor: pointer;
+  position: relative;
+  border: 1px solid var(--neutral-light-8);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.18s ease-in-out;
+
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 8px;
+  background-color: var(--white);
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
+    0 2px 5px -2px var(--tile-shadow-3);
+  flex: 1;
+  min-height: 216px;
+}
+
+.cardContainer:hover {
+  background-color: var(--neutral-light-10);
+  box-shadow: 0 1px 5px 1px var(--tile-shadow-1-alt),
+    0 1px 0 0 var(--tile-shadow-2), 0 2px 10px -2px var(--tile-shadow-3);
+}
+
+.cardContainer:active {
+  background-color: var(--neutral-light-10);
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1),
+    0 2px 3px -2px var(--tile-shadow-3);
+}
+
+.emptyCardContainer {
+  composes: cardContainerBase;
+}
+
+.tileCoverArtContainer {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  padding: 7px 6px 4px;
+}
+
+.coverArt {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--default-profile-picture-background);
+  overflow: hidden;
+
+  height: 160px;
+  min-width: 160px;
+  box-sizing: border-box;
+  flex: 1;
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 6px;
+}
+
+.text {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.userCardImage {
+  height: 160px;
+  width: 160px;
+  border-radius: 50%;
+}
+
+.primaryText {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-bold);
+  line-height: 18px;
+  text-align: center;
+  margin-bottom: 2px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 160px;
+  cursor: default;
+  user-select: none;
+}
+
+.secondaryText {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  line-height: 18px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+  cursor: default;
+  user-select: none;
+}
+
+.iconVerified {
+  display: inline-flex;
+  margin-left: 6px;
+  position: relative;
+  top: 2px;
+}
+
+.menu {
+  display: flex;
+  padding: 4px 12px 8px;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statsWrapper {
+  flex: 2;
+  justify-content: flex-start !important;
+  width: auto !important;
+}
+
+.statsWrapper > * {
+  margin-right: auto !important;
+}
+
+.trackCount {
+  color: var(--neutral-light-4);
+  font-size: var(--font-xs);
+  font-weight: var(--font-demi-bold);
+  letter-spacing: 0;
+  line-height: 8px;
+}

@@ -1,0 +1,291 @@
+.container {
+  position: relative;
+  flex: 1 1 352px;
+  border: 1px solid var(--neutral-light-8);
+  background-color: var(--white);
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
+    0 2px 5px -2px var(--tile-shadow-3);
+  display: flex;
+  overflow: hidden;
+  border-radius: 8px;
+  max-width: 400px;
+  cursor: pointer;
+  transition: all 0.2 ease-in-out;
+  user-select: none;
+  margin: 0px auto 12px;
+}
+
+.container.readonly {
+  margin: 0;
+  max-width: none;
+  min-width: 448px;
+  border: none;
+  box-shadow: none;
+}
+
+.container:active {
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1),
+    0 2px 3px -2px var(--tile-shadow-3);
+}
+
+.container .artworkIcon,
+.container .artworkIcon circle {
+  opacity: 0;
+}
+
+.container:hover .artworkIcon {
+  opacity: 0.75;
+}
+
+.container .artworkIcon path {
+  fill: var(--static-white);
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.rightContent {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 53px;
+}
+
+.rightContent > *:last-child {
+  border-bottom: 0px;
+}
+
+.metadata {
+  display: flex;
+  flex: 1 1;
+}
+
+.duration {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0px 10px;
+  margin-right: 12px;
+  transform: scale(1);
+  transition: transform 0.07s ease-in-out;
+}
+
+.statItem:active {
+  transform: scale(0.93);
+  color: var(--primary);
+}
+
+.statItem:active svg path {
+  fill: var(--primary);
+}
+
+.readonly .statItem:active {
+  color: unset;
+  transform: scale(1);
+}
+
+.overflowButton {
+  position: relative;
+  top: -2px;
+}
+
+.titles {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: var(--neutral);
+  font-size: 16px;
+  text-align: left;
+
+  /* Text truncation*/
+  flex: 0 1 65%;
+  overflow: hidden;
+  margin-right: 12px;
+  margin-top: 10px;
+  align-items: flex-start;
+}
+
+.titles.titleFeatured {
+  padding-top: 28px;
+}
+
+.title path {
+  fill: var(--primary);
+}
+
+.title svg {
+  flex: 0 0 auto;
+}
+
+.titles div {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.title {
+  margin-bottom: 2px;
+  position: relative;
+  min-height: 20px;
+  min-width: 90px;
+}
+
+.playIcon {
+  margin-left: var(--unit-2);
+}
+
+.playIcon path {
+  fill: var(--primary);
+}
+
+.artist {
+  max-width: 100%;
+  width: 100%;
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  position: relative;
+  min-height: 20px;
+}
+
+.userName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.skeleton {
+  position: absolute;
+  top: 0;
+}
+
+.stats {
+  display: flex;
+  flex: 0 0 30px;
+  align-items: stretch;
+  margin: 2px 0px;
+}
+
+.statText {
+  font-weight: var(--font-medium);
+  font-size: var(--font-xs);
+  letter-spacing: 0.2px;
+  line-height: 11px;
+  color: var(--neutral-light-4);
+}
+
+.stats svg {
+  width: 14px;
+  height: 14px;
+  position: relative;
+  bottom: 1px;
+}
+
+.stats path {
+  fill: var(--neutral-light-4);
+}
+
+.albumArtContainer {
+  height: 72px;
+  margin: 10px 12px 0px 10px;
+}
+
+.iconVerified {
+  flex: 0 0 14px;
+  margin-left: 4px;
+}
+
+/* Track Item */
+.trackItem {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  height: 28px;
+  line-height: normal;
+  font-size: var(--font-xs);
+  overflow: hidden;
+  padding: 12px;
+  font-weight: var(--font-medium);
+}
+
+.trackItem .index {
+  color: var(--neutral-light-4);
+  margin-right: 4px;
+  flex: 0 0;
+}
+
+.trackItem .trackTitle {
+  color: var(--neutral);
+  max-width: 220px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  margin-right: 4px;
+}
+
+.trackItem .byArtist {
+  color: var(--neutral-light-4);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.trackItem.activeTrackItem .index,
+.trackItem.activeTrackItem .trackTitle,
+.trackItem.activeTrackItem .byArtist {
+  color: var(--primary);
+}
+
+.trackItemDivider {
+  margin: 0px 11px;
+  width: calc(100% - 22px);
+  border-top: 1px solid var(--neutral-light-8);
+}
+
+.trackItemMore {
+  color: var(--neutral-light-4);
+}
+
+.readonly .favoriteButtonWrapper:hover {
+  transform: scale3d(1, 1, 1);
+}
+
+.favoriteButton {
+  height: 14px;
+  width: 14px;
+  margin-left: 4px;
+}
+
+.readonly .repostButtonWrapper:hover {
+  transform: scale3d(1, 1, 1);
+}
+
+.repostButton {
+  height: 16px;
+  width: 16px;
+  margin-left: 4px;
+}
+
+.hide {
+  opacity: 0 !important;
+}
+
+.show {
+  opacity: 1;
+  transition: opacity ease-in-out 0.5s;
+}
+
+.rankIcon {
+  margin: 0px 16px 0px 10px !important;
+}

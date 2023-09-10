@@ -1,0 +1,61 @@
+.wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #FFFFFF;
+  height: 20px !important;
+  border: 1px solid #F7F7F9;
+  box-sizing: border-box;
+  border-radius: 36px;
+  max-height: 20px;
+  width: 100%;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.playButton {
+  position: absolute;
+  cursor: default;
+  pointer-events: none;
+  height: 20px;
+  width: 20px;
+  padding: 1px;
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+.playButton path {
+  fill: var(--neutral-light-4) !important;
+}
+
+.info {
+  font-style: normal;
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 20px;
+  vertical-align: bottom;
+  height: 20px;
+  margin-left: 24px;
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.01em;
+  color: var(--neutral);
+  white-space: nowrap;
+  width: var(--info-width);
+}
+
+.logo {
+  height: 10px;
+  width: 10px;
+  margin-right: 5px;
+  justify-self: flex-end;
+}
+
+.logo path {
+  fill: var(--neutral-light-4);
+}

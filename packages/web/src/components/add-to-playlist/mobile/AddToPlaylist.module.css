@@ -1,0 +1,10 @@
+.cardsContainer {
+  padding: 0px 11px;
+  margin-top: 12px;
+}
+
+.bodyContainer {
+  margin: 16px auto;
+  padding: 0;
+  width: 100%;
+}

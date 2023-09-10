@@ -1,0 +1,245 @@
+.hide {
+  opacity: 0;
+}
+
+.show {
+  opacity: 1;
+  transition: opacity var(--calm);
+}
+
+.collectionHeader {
+  padding: 16px 16px 24px 16px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.topSection {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+}
+
+.coverArtWrapper {
+  height: 272px;
+  width: 272px;
+  min-height: 272px;
+  min-width: 272px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--neutral-light-8);
+  user-select: none;
+}
+
+.coverArt {
+  background-color: var(--neutral-light-6) !important;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.infoSection {
+  margin-left: 38px;
+  width: 100%;
+}
+
+.typeLabel {
+  display: flex;
+  align-items: center;
+  column-gap: var(--unit-2);
+  user-select: none;
+  padding-top: var(--unit-4);
+  padding-bottom: var(--unit-4);
+}
+
+.labelIcon {
+  height: var(--unit-4);
+  width: var(--unit-4);
+}
+
+.labelIcon path {
+  fill: var(--neutral-light-4);
+}
+
+.label {
+  text-transform: uppercase;
+  color: var(--neutral-light-4);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  letter-spacing: 3px;
+}
+
+.title {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  column-gap: var(--unit-2);
+  margin-bottom: var(--unit-1);
+  position: relative;
+}
+
+.editableTitle {
+  cursor: pointer;
+}
+
+.titleHeader {
+  color: var(--neutral);
+  font-size: var(--font-4xl);
+  line-height: 40px;
+  font-weight: var(--font-bold);
+  transition: opacity var(--calm), color var(--quick);
+}
+
+.editableTitle:hover .titleHeader {
+  color: var(--neutral-light-4);
+}
+
+.editIcon {
+  opacity: 0;
+  transition: opacity var(--quick);
+}
+
+.editIcon path {
+  fill: var(--neutral-light-4);
+}
+
+.editableTitle:hover .editIcon {
+  opacity: 1;
+}
+
+.artistWrapper {
+  color: var(--neutral-light-4);
+  font-size: var(--font-m);
+  font-weight: var(--font-demi-bold);
+  display: flex;
+  user-select: none;
+  position: relative;
+}
+
+.artistWrapper :global(.artistPopover) {
+  display: inline;
+}
+
+.artistWrapper .artist {
+  display: inline;
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-demi-bold);
+  line-height: 18px;
+  min-height: 18px;
+  padding-left: 4px;
+}
+
+.artistWrapper .artist:hover {
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.actionButtons {
+  margin-top: var(--unit-4);
+  display: flex;
+  align-items: center;
+  column-gap: var(--unit-2);
+}
+
+.infoLabelsSection {
+  margin-top: 18px;
+  user-select: none;
+}
+.infoLabelsSection .infoLabelPlacement {
+  display: inline-block;
+  padding-right: 24px;
+}
+.infoLabelsSection .infoDuration {
+  padding-right: 24px;
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-s);
+}
+
+.description {
+  margin-top: var(--unit-3);
+  margin-bottom: var(--unit-2);
+}
+
+/* Filter Input */
+.inputWrapper {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.inputWrapper :global(.ant-input-affix-wrapper) {
+  position: absolute;
+  right: 0px;
+  width: 120px;
+  user-select: none;
+}
+.inputWrapper :global(.ant-input-affix-wrapper .ant-input) {
+  border-radius: 4px;
+  border: 1px solid var(--neutral-light-8) !important;
+  box-shadow: none !important;
+  background-color: var(--neutral-light-10);
+  transition: width 0.2s ease-in-out, background 0.04s ease-in-out;
+  color: var(--neutral);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  height: 24px;
+}
+.inputWrapper :global(.ant-input-prefix) > svg {
+  width: 12px;
+  height: 12px;
+}
+.inputWrapper :global(.ant-input-prefix) > svg g path {
+  fill: var(--neutral-light-4);
+}
+
+.skeleton {
+  position: absolute;
+  top: 0;
+}
+
+.statsWrapper {
+  font-size: var(--font-s);
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+}
+
+.statsRow {
+  min-height: 26px;
+}
+
+.imageIcon {
+  opacity: 0.3;
+  mix-blend-mode: overlay;
+}
+
+.imageEditButtonWrapper {
+  opacity: 0;
+  transition: opacity var(--expressive);
+  position: absolute;
+  bottom: var(--unit-4);
+}
+
+.coverArtWrapper:hover .imageEditButtonWrapper {
+  opacity: 1;
+}
+
+.spinner {
+  display: block;
+  height: var(--unit-5);
+  width: var(--unit-5);
+}
+
+.spinner g path {
+  stroke: var(--white);
+}
+
+.collectionButtonText {
+  font-size: var(--font-l) !important;
+  text-transform: uppercase;
+}
+
+.collectionButtonIcon {
+  margin-right: var(--unit-2) !important;
+}

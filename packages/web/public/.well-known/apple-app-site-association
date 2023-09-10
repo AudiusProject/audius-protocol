@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "LRFCG93S85.co.audius.audiusmusic",
+        "paths": [
+          "NOT /oauth/auth*",
+          "NOT /legal*",
+          "*"
+        ]
+      }
+    ]
+  }
+}

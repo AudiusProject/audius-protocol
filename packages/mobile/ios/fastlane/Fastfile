@@ -1,0 +1,223 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+require 'json'
+require 'net/http'
+require 'securerandom'
+
+default_platform(:ios)
+
+AUDIUSMUSIC_ID = "co.audius.audiusmusic"
+AUDIUSMUSIC_RELEASECANDIDATE_ID = "co.audius.audiusmusic.releasecandidate"
+AUDIUSMUSIC_STAGING_ID = "co.audius.audiusmusic.staging"
+AUDIUSMUSIC_STAGING_RELEASECANDIDATE_ID = "co.audius.audiusmusic.staging.releasecandidate"
+AUDIUSMUSIC_PROFILE = "match AppStore co.audius.audiusmusic"
+AUDIUSMUSIC_RELEASECANDIDATE_PROFILE = "match AppStore co.audius.audiusmusic.releasecandidate"
+AUDIUSMUSIC_STAGING_PROFILE = "match AppStore co.audius.audiusmusic.staging"
+AUDIUSMUSIC_STAGING_RELEASECANDIDATE_PROFILE = "match AppStore co.audius.audiusmusic.staging.releasecandidate"
+TEAM = "LRFCG93S85"
+CODEPUSH_APP_NAME = 'Audius-Music/Audius'
+CODEPUSH_STAGING_DEPLOYMENT = 'Staging'
+CODEPUSH_RC_DEPLOYMENT = 'ReleaseCandidate'
+CODEPUSH_PROD_DEPLOYMENT = 'Production'
+
+platform :ios do
+  before_all do
+    setup_circle_ci
+  end
+
+  desc "Get latest Audius version in the app store"
+  private_lane :get_latest_app_store_version_number do
+    uri = URI("http://itunes.apple.com/lookup?bundleId=co.audius.audiusmusic&country=us&rand=" + SecureRandom.uuid)
+    response = Net::HTTP.get_response(uri)
+    response_body = JSON.parse(response.body)
+    version = response_body["results"][0]["version"]
+    version
+  end
+
+  desc "Get current release version and version in plist file"
+  private_lane :get_version do |options|
+
+    currentReleasedVersionString = get_latest_app_store_version_number()
+
+    currentReleasedVersionNumber = Gem::Version.new currentReleasedVersionString
+    plistVersionNumber = Gem::Version.new get_version_number_from_plist(
+      scheme: options[:scheme] ? options[:scheme] : 'AudiusReactNative'
+    )
+    puts currentReleasedVersionNumber
+    [currentReleasedVersionNumber, plistVersionNumber]
+  end
+
+  lane :haltIfCodePushEligible do |options|
+    currentReleasedVersionNumber, plistVersionNumber = get_version()
+    isVersionIncremented = plistVersionNumber > currentReleasedVersionNumber
+    if !isVersionIncremented
+      UI.message "Release will be through an over-the-air (Codepush) update, which can be triggered by approving the hold on the next job. Aborting full app release."
+      sh("circleci-agent step halt")
+    end
+  end
+
+  desc "Build the app"
+  lane :build do |options|
+
+    if options[:bundle_id] === AUDIUSMUSIC_ID
+      appId = AUDIUSMUSIC_ID
+      provisioningProfile = AUDIUSMUSIC_PROFILE
+      environment = 'production'
+      scheme = 'AudiusReactNative'
+      configuration = 'Release'
+    elsif options[:bundle_id] === AUDIUSMUSIC_STAGING_ID
+      appId = AUDIUSMUSIC_STAGING_ID
+      provisioningProfile = AUDIUSMUSIC_STAGING_PROFILE
+      environment = 'staging'
+      scheme = 'Staging'
+      configuration = 'Staging.Release'
+    elsif options[:bundle_id] === AUDIUSMUSIC_RELEASECANDIDATE_ID
+      appId = AUDIUSMUSIC_RELEASECANDIDATE_ID
+      provisioningProfile = AUDIUSMUSIC_RELEASECANDIDATE_PROFILE
+      environment = 'production'
+      scheme = 'AudiusReactNative'
+      configuration = 'ReleaseCandidate'
+    elsif options[:bundle_id] === AUDIUSMUSIC_STAGING_RELEASECANDIDATE_ID
+      appId = AUDIUSMUSIC_STAGING_RELEASECANDIDATE_ID
+      provisioningProfile = AUDIUSMUSIC_STAGING_RELEASECANDIDATE_PROFILE
+      environment = 'staging'
+      scheme = 'Staging'
+      configuration = 'Staging.ReleaseCandidate'
+    end
+
+    match(
+      type: "appstore",
+      readonly: is_ci,
+      app_identifier: options[:bundle_id]
+    )
+
+    settings_to_override = {
+      :BUNDLE_IDENTIFIER => appId,
+      :PROVISIONING_PROFILE_SPECIFIER => provisioningProfile,
+      :DEVELOPMENT_TEAM => TEAM
+    }
+
+    if ENV["IS_PRODUCTION"] == "true"
+      ENV["ENVFILE"]=".env.#{environment}"
+      puts "IS_PRODUCTION: #{ENV['IS_PRODUCTION']}"
+      puts "ENVFILE: #{ENV['ENVFILE']}"
+    end
+
+    plistVersionNumber = options[:plist_version] ? (options[:plist_version]) : (Gem::Version.new get_version_number_from_plist(
+      scheme: scheme
+    ))
+
+    # Increment build
+
+    # Build number (e.g. 12) needs to be unique for the given version number
+    # Increment using the updated version number so that for each version number
+    # build numbers start at 1
+
+    app_store_connect_api_key
+    increment_build_number(
+      build_number: app_store_build_number(
+        app_identifier: options[:bundle_id],
+        initial_build_number: 0,
+        version: plistVersionNumber.to_s,
+        live: false
+      ) + 1,
+    )
+
+    # Build ios
+    gym(
+      workspace: "AudiusReactNative.xcworkspace",
+      codesigning_identity: "iPhone Distribution",
+      scheme: scheme,
+      configuration: configuration,
+      xcargs: settings_to_override,
+      export_method: "app-store",
+      export_options: {
+          provisioningProfiles: {
+              appId => provisioningProfile
+          }
+      }
+    )
+  end
+
+  desc "Push a build to TestFlight"
+  lane :upload do |options|
+
+    if (options[:bundle_id] === 'co.audius.audiusmusic') 
+      appleId = "1491270519"
+      ipa = './output/gym/Audius Music.ipa'
+    elsif (options[:bundle_id] === 'co.audius.audiusmusic.staging')
+      appleId = "6444191594"
+      ipa = './output/gym/Audius Music Staging.ipa'
+    elsif (options[:bundle_id] === 'co.audius.audiusmusic.releasecandidate')
+      appleId = "6444068448"
+      ipa = './output/gym/Audius Music Release Candidate.ipa'
+    elsif (options[:bundle_id] === 'co.audius.audiusmusic.staging.releasecandidate')
+      appleId = "6444190971"
+      ipa = './output/gym/Audius Music Release Candidate Staging.ipa'
+    end
+   
+    # Upload to test flight
+    pilot(
+      skip_waiting_for_build_processing: true,
+      apple_id: appleId,
+      app_identifier: options[:bundle_id],
+      ipa: ipa,
+      # Don't actually distribute, just upload
+      skip_submission: true
+    )
+  end
+
+  desc "Build + upload via CodePush or TestFlight"
+  lane:build_and_upload do |options|
+    if options[:bundle_id] === AUDIUSMUSIC_ID
+      scheme = 'AudiusReactNative'
+      codepushDeployment = CODEPUSH_PROD_DEPLOYMENT
+    elsif options[:bundle_id] === AUDIUSMUSIC_STAGING_ID
+      scheme = 'Staging'
+      codepushDeployment = CODEPUSH_STAGING_DEPLOYMENT
+    elsif options[:bundle_id] === AUDIUSMUSIC_RELEASECANDIDATE_ID
+      scheme = 'AudiusReactNative'
+      codepushDeployment = CODEPUSH_RC_DEPLOYMENT
+    elsif options[:bundle_id] === AUDIUSMUSIC_STAGING_RELEASECANDIDATE_ID
+      scheme = 'Staging'
+      codepushDeployment = CODEPUSH_RC_DEPLOYMENT
+    end
+    currentReleasedVersionNumber, plistVersionNumber = get_version(scheme: scheme)
+    isVersionIncremented = plistVersionNumber > currentReleasedVersionNumber
+    packageJson = File.open "../../package.json"
+    packageJsonData = JSON.load packageJson
+    if !isVersionIncremented
+      # Hacky - don't codepush to RC deployment if this lane is running for Staging RC because we assume we will codepush to RC deployment in the Prod RC job. I.e. avoid codepushing to RC deployment twice.
+      if options[:bundle_id] != AUDIUSMUSIC_STAGING_RELEASECANDIDATE_ID
+        UI.message "Doing an over-the-air (Codepush) deployment"
+
+        sh("npm install -g appcenter-cli")
+        # Codepush to the right environment
+        sh("appcenter login --token #{ENV['APPCENTER_CODEPUSH_API_KEY']}")
+        sh("cd ../../ && appcenter codepush release-react -a #{CODEPUSH_APP_NAME} -t #{currentReleasedVersionNumber.to_s} -d #{codepushDeployment} --disable-duplicate-release-error --description #{packageJsonData["version"]}")
+        sh("appcenter logout")
+      else
+        UI.message "Did not do a deployment in order to avoid pushing to Release Candidate Codepush deployment twice."
+      end
+    else
+        # Build and upload to TestFlight
+        UI.message "Doing a full build and release (not over-the-air/Codepush)"
+        build(bundle_id: options[:bundle_id], current_released_version: currentReleasedVersionNumber, plist_version: plistVersionNumber)
+        upload(bundle_id: options[:bundle_id])
+    end
+  end
+
+end

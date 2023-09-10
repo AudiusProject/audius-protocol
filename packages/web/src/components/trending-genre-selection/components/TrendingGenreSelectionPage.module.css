@@ -1,0 +1,8 @@
+.container {
+  padding: 0px 12px;
+  background-color: var(--white);
+}
+
+.pageBackground {
+  background-color: var(--white);
+}

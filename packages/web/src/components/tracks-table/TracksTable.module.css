@@ -1,0 +1,149 @@
+.textContainer {
+  position: relative;
+  display: inline-flex;
+  gap: 4px;
+  max-width: 100%;
+}
+
+.textCell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.trackCell {
+  composes: textCell;
+  display: block;
+}
+
+.trackName {
+  display: flex;
+  align-items: center;
+}
+
+.trackName:hover:not(:has(.locked)) {
+  cursor: pointer;
+  transition: color 0.07s ease-out;
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-color: var(--primary-light-2);
+}
+
+.artistCellContainer {
+  width: 100%;
+}
+
+.badges {
+  display: inline-flex;
+  align-items: center;
+}
+
+.trackActionsContainer {
+  display: inline-flex;
+  gap: 16px;
+}
+
+.trackActionsContainer .tableActionButton {
+  opacity: 0;
+}
+
+.trackActionsContainer .placeholderButton {
+  width: 14px;
+}
+
+.tableActionButton.active {
+  opacity: 1;
+}
+
+.tablePlayButton {
+  position: absolute;
+  opacity: 0;
+  transition: opacity 0.07s ease-out;
+}
+
+.tablePlayButton.active {
+  opacity: 1;
+}
+
+.hiddenIcon {
+  position: absolute;
+  opacity: 1;
+  transition: opacity 0.07s ease-out;
+}
+
+.hiddenIcon.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hiddenIcon path {
+  fill: var(--neutral-light-4);
+}
+
+.tableRow:hover .tablePlayButton,
+.tableRow:hover .trackActionsContainer .tableActionButton {
+  opacity: 1;
+}
+
+.tableRow:hover .hiddenIcon {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tableRow.disabled {
+  cursor: default;
+  color: var(--neutral-light-4);
+  background-color: var(--neutral-light-9);
+}
+
+.tableRow.disabled:hover {
+  box-shadow: none;
+  background-color: var(--neutral-light-9);
+}
+
+.tableRow.disabled:hover .tablePlayButton {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tableRow.disabled:hover .hiddenIcon {
+  opacity: 1;
+}
+
+.tableRow.lockedRow {
+  background: var(--white);
+}
+
+.locked {
+  margin-left: var(--unit-1);
+  display: flex;
+  align-items: center;
+  padding: 2px var(--unit-2);
+  background: var(--accent-blue);
+  border-radius: 80px;
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-2xs);
+  color: var(--white);
+}
+
+.locked:hover {
+  text-decoration: none;
+}
+
+.locked svg {
+  margin-right: 2px;
+  width: 10px;
+  height: 10px;
+}
+
+.locked svg path {
+  fill: var(--white);
+}
+
+.lockedTrackName {
+  max-width: calc(100% - 64px);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

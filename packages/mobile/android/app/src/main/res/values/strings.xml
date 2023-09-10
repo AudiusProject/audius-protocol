@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Audius Music</string>
+    <string name="blob_provider_authority">co.audius.app.blob</string>
+</resources>

@@ -1,0 +1,8 @@
+.title {
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  line-height: 18px;
+  color: var(--neutral);
+  text-align: center;
+  margin: 8px 0 16px;
+}

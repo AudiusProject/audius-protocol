@@ -1,0 +1,58 @@
+.pill {
+  border: unset;
+  text-transform: uppercase;
+  height: 18px;
+  padding: 7px;
+  border-radius: 8px;
+  background-color: var(--neutral-light-8);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pill.clickable {
+  cursor: pointer;
+  transition: all 0.07s ease-in-out;
+}
+
+.pill.clickable:hover {
+  transform: perspective(1px) scale3d(1.05, 1.05, 1.05);
+  background-color: var(--neutral-light-7);
+}
+
+.pill.clickable:active {
+  transform: perspective(1px) scale3d(0.98, 0.98, 0.98);
+  background-color: var(--neutral-light-8);
+}
+
+.pill .text {
+  color: var(--neutral-light-3);
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  letter-spacing: 0.5px;
+}
+
+/** TODO: Figure out why Avenir when all caps causes line-height v-align issues */
+@-moz-document url-prefix() {
+  .pill .text {
+    height: 18px;
+    line-height: 20px;
+  }
+}
+
+.pill .icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-right: 1px;
+}
+
+.pill .icon svg {
+  width: 12px;
+  height: 12px;
+}
+
+.pill .icon g path {
+  fill: var(--neutral-light-3);
+}

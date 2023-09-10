@@ -1,0 +1,43 @@
+:root {
+  --header-padding-top: 52px;
+}
+
+.container {
+  position: fixed;
+  width: 100%;
+  top: 40px;
+  top: calc(40px + env(safe-area-inset-top, 0px));
+  height: 52px;
+  display: flex;
+  align-items: center;
+  background-color: var(--white);
+  z-index: 10;
+  min-width: var(--mobile-min-width);
+}
+
+.container > *:nth-child(2) {
+  margin-left: auto;
+}
+
+.title {
+  margin-left: 12px;
+  font-weight: var(--font-heavy);
+  font-size: 24px;
+  line-height: normal;
+
+  user-select: none;
+  background-image: var(--page-header-gradient);
+
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  text-shadow: var(--page-header-text-shadow);
+}
+
+/** iOS Safari doesn't do a good job persisting the title font styles to nested content */
+.title > * {
+  background-image: var(--page-header-gradient);
+
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  text-shadow: var(--page-header-text-shadow);
+}

@@ -1,0 +1,28 @@
+.textContainer {
+  position: relative;
+  display: inline-flex;
+  gap: 4px;
+  max-width: 100%;
+}
+
+.textCell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.icon {
+  margin-right: 22px;
+}
+
+.changeCell.increase {
+  color: var(--accent-green);
+}
+.changeCell.decrease {
+  color: var(--accent-orange);
+}
+
+.typeText {
+  line-height: 150%;
+}

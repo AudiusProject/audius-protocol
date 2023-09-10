@@ -1,0 +1,61 @@
+.transactionIcon {
+  display: flex;
+  position: relative;
+  padding: 12px;
+}
+.transactionIconMini {
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 18px;
+  height: 18px;
+  box-shadow: 0 0 0 2px var(--white);
+  border-radius: 100%;
+}
+.transactionIconMini.stripe {
+  background-color: #00aaf4;
+}
+.transactionIconMini.coinbase {
+  background-color: #0052ff;
+}
+.transactionIconMini.sent {
+  padding: 2px;
+  background-color: var(--accent-orange);
+}
+.transactionIconMini.received {
+  padding: 2px;
+  background-color: var(--accent-green);
+}
+
+.transactionIconMini.sent path,
+.transactionIconMini.received path {
+  fill: var(--white);
+}
+
+.icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 40px;
+  background: var(--white);
+  padding: 8px;
+  color: var(--accent-green);
+  border: 1px solid rgba(11, 164, 0, 0.3);
+  border-radius: 8px;
+}
+.icon.received .iconSvg path {
+  fill: var(--accent-green);
+}
+.icon.sent {
+  color: var(--accent-orange);
+  border: 1px solid rgba(255, 148, 0, 0.3);
+}
+.icon.sent .iconSvg path {
+  fill: var(--accent-orange);
+}

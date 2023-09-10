@@ -1,0 +1,71 @@
+.row {
+  background: var(--white);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+}
+
+.row.hasBody {
+  padding: 16px 20px;
+}
+
+.row.isClickable {
+  cursor: pointer;
+  transition: background 0.17s ease-in-out;
+}
+
+.row.isClickable:active {
+  transition: none;
+  background: var(--neutral-light-8);
+}
+
+.iconCaretRight {
+  justify-self: flex-end;
+  width: 16px;
+  height: 16px;
+}
+
+.iconCaretRight path {
+  fill: var(--neutral-light-4);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  color: var(--neutral);
+}
+
+.title i {
+  margin: 0 !important;
+}
+
+.text {
+  margin-left: 4px;
+}
+
+.body {
+  color: var(--neutral-light-2);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  text-align: left;
+  line-height: 19px;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.includeSpacing .body {
+  margin: 8px 0;
+}
+
+.includeSpacing .children {
+  margin-top: 8px;
+}

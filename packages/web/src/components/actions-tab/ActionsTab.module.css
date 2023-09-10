@@ -1,0 +1,170 @@
+.actionsSection {
+  display: flex;
+}
+
+.vertical {
+  width: 64px;
+  flex-direction: column;
+  border-radius: 0px 8px 0px 0px;
+}
+
+.actionsSection.small {
+  position: absolute;
+  right: 16px;
+  top: 8px;
+  width: 4px;
+  background: var(--white);
+}
+.actionButton {
+  position: relative;
+  flex: 1 auto;
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  margin-top: -1px;
+  background-color: var(--white);
+  border: 1px solid var(--neutral-light-8);
+  cursor: pointer;
+}
+
+.iconKebabHorizontal,
+.actionButton > svg {
+  margin: 0 auto;
+}
+.actionsSection.standalone .actionButton:first-child {
+  border-radius: 0px 0px 0px 8px;
+}
+.actionsSection.standalone .actionButton:last-child {
+  border-radius: 0px 0px 8px 0px;
+}
+
+.actionsSection.vertical .actionButton:first-child {
+  margin-top: 0px;
+  border-radius: 0px 8px 0px 0px;
+}
+.actionsSection.standalone.vertical .actionButton:last-child {
+  border-radius: 0px 0px 8px 0px;
+}
+
+.actionsSection .actionButton:hover {
+  z-index: 1;
+}
+
+.actionsSection.horizontal .actionButton {
+  border-bottom: none;
+}
+
+.actionsSection.horizontal .actionButton:first-child {
+  border-left: none;
+}
+.actionsSection.horizontal .actionButton:last-child {
+  border-right: none;
+}
+
+.show.actionsSection .actionButton:hover {
+  background: var(--neutral-light-9);
+  border-color: var(--neutral-light-7);
+}
+.show.actionsSection .actionButton:active {
+  box-shadow: inset 1px 1px 0 0 var(--neutral-light-7);
+  border-color: var(--neutral-light-7);
+  background: var(--neutral-light-8);
+}
+.show.actionsSection .actionButton:active g path {
+  fill: var(--neutral);
+}
+
+.iconContainer {
+  width: 24px;
+  height: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menuKebabContainer > div {
+  width: 100%;
+}
+
+.iconKebabHorizontalWrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.actionButton svg,
+.iconContainer svg,
+.iconKebabHorizontalWrapper svg {
+  transition: all 0.07s ease-in-out !important;
+}
+
+.show .actionButton:hover svg,
+.show .iconContainer:hover svg,
+.show .iconKebabHorizontalWrapper:hover svg {
+  transform: scale3d(1.1, 1.1, 1.1);
+}
+
+.show .actionButton:active svg,
+.show .iconContainer:active svg,
+.show .iconKebabHorizontalWrapper:active svg {
+  transform: scale(0.95);
+}
+
+.iconRepost,
+.iconShare .iconKebabHorizontal svg {
+  width: 18px;
+}
+.iconRepost g path,
+.iconShare g path,
+.iconKebabHorizontal g path,
+.iconListens g path {
+  fill: var(--neutral-light-4);
+}
+.iconRepost.reposted g path {
+  fill: var(--primary);
+}
+
+.disabled {
+  cursor: default !important;
+}
+.disabled .actionButton:hover,
+.disabled:hover {
+  background-color: var(--white) !important;
+  border-color: var(--neutral-light-8) !important;
+  box-shadow: none !important;
+}
+.show .disabled .actionButton:active,
+.disabled:active {
+  background-color: var(--white);
+  border-color: var(--neutral-light-8);
+  box-shadow: none;
+}
+
+.disabled .iconRepost g path,
+.disabled .iconKebabHorizontal g path,
+.disabled .iconShare g path {
+  fill: var(--neutral-light-8) !important;
+}
+
+.disabled .actionButton:hover svg,
+.disabled .iconContainer:hover svg,
+.disabled .iconKebabHorizontalWrapper:hover svg,
+.disabled svg {
+  transform: scale3d(1, 1, 1) !important;
+}
+
+.actionIconContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.disabled .actionIconContainer,
+.disabled .iconKebabHorizontalWrapper {
+  cursor: default;
+}

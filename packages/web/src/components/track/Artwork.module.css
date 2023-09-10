@@ -1,0 +1,73 @@
+.artworkWrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px;
+  border: 1px solid var(--neutral-light-8);
+}
+.artworkWrapper .artwork {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.artworkInset {
+  height: 100%;
+}
+
+.hasContentTitle .artworkWrapper.small {
+  margin-top: 0;
+  margin-bottom: 2px;
+}
+.artworkWrapper .artworkIcon {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transition: all ease-in-out 0.18s;
+}
+.artworkWrapper .artworkIcon > svg,
+.artworkWrapper .artworkIcon > div {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40%;
+  height: 40%;
+  transform: translate(-50%, -50%);
+  transition: all ease-in-out 0.18s;
+}
+
+.artworkWrapper .artworkIcon circle {
+  opacity: 0;
+}
+
+.small .artworkWrapper .artworkIcon > svg,
+.small .artworkWrapper .artworkIcon > div {
+  width: 65%;
+  height: 65%;
+}
+
+.artworkWrapper .artworkIcon path {
+  fill: var(--static-white);
+}
+.artworkWrapper .artworkIcon g circle[fill='#FFFFFF'] {
+  fill: rgba(0, 0, 0, 0);
+}
+
+.artworkWrapper :global(.ant-skeleton) {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.spinner {
+  pointer-events: none;
+  width: 36px;
+  height: 36px;
+}
+
+.spinner g path {
+  stroke: var(--static-white);
+}

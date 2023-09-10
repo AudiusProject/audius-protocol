@@ -1,0 +1,24 @@
+.emptySectionContainer {
+  width: 100%;
+  border-radius: 8px;
+  background-color: var(--white);
+  box-shadow: 0 2px 5px -2px rgba(133, 129, 153, 0.25);
+  padding: 54px 32px;
+  text-align: center;
+}
+
+.emptySectionText {
+  height: 74px;
+  width: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-content: center;
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+}
+
+.startListeningButton {
+  margin-top: 24px;
+}

@@ -1,0 +1,130 @@
+.label {
+  font-weight: 500;
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+svg.iconCalendar {
+  width: 16px;
+}
+
+.iconCalendar path {
+  fill: var(--neutral);
+}
+
+.datePicker :global(.CalendarMonth_caption) {
+  padding: 24px 0px 40px 0px;
+}
+
+.datePicker :global(.CalendarMonth_caption) strong {
+  font-size: var(--font-s);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  color: var(--neutral);
+}
+
+.datePicker :global(.SingleDatePickerInput_calendarIcon) {
+  margin: 1px 4px 1px 20px;
+  padding: 0px;
+  line-height: unset;
+}
+
+.datePicker :global(.SingleDatePickerInput) {
+  background-color: var(--neutral-light-10);
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 6px;
+  background-color: var(--neutral-light-10);
+  transition: border ease-in-out 0.1s;
+}
+.datePicker:hover :global(.SingleDatePickerInput) {
+  border-color: var(--neutral-light-6);
+}
+.datePicker.focused :global(.SingleDatePickerInput) {
+  border-color: var(--secondary);
+}
+.datePicker.invalid :global(.SingleDatePickerInput) {
+  border-color: var(--accent-red);
+}
+
+:global(.DayPicker),
+:global(.SingleDatePicker_picker),
+.datePicker :global(.DayPicker__horizontal),
+.datePicker :global(.CalendarMonth),
+.datePicker :global(.CalendarMonthGrid),
+.datePicker :global(.DayPickerNavigation_button__default) {
+  background: var(--white);
+}
+.datePicker :global(.DateInput_fangStroke) {
+  fill: var(--white);
+  stroke: var(--neutral-light-6);
+}
+.datePicker :global(.DayPickerNavigation_button__default) {
+  border-color: var(--neutral-light-7);
+}
+
+.datePicker :global(.DayPickerNavigation_button__default) path {
+  fill: var(--neutral);
+}
+
+.datePicker :global(.DateInput) {
+  background: var(--neutral-light-10);
+  border-radius: 6px;
+}
+
+.datePicker :global(.DateInput_input) {
+  background: var(--neutral-light-10);
+  border-radius: 6px;
+  color: var(--neutral);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+}
+.datePicker :global(.DateInput_input::placeholder) {
+  color: var(--neutral-light-2);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+}
+.datePicker :global(.DateInput_input__focused) {
+  border-bottom: none;
+  margin-bottom: 2px;
+}
+
+.datePicker :global(.DayPicker_weekHeader) small {
+  font-weight: var(--font-medium);
+  color: var(--neutral);
+  font-size: var(--font-xs);
+}
+
+.datePicker :global(.CalendarDay) {
+  font-size: var(--font-s);
+  vertical-align: middle;
+  font-weight: var(--font-demi-bold);
+  border: 1px solid var(--neutral-light-7);
+  background: var(--white);
+  color: var(--neutral);
+}
+
+.datePicker :global(.CalendarDay:hover) {
+  background-color: var(--secondary-light-2);
+  color: var(--white);
+  cursor: pointer;
+}
+
+.datePicker :global(.CalendarDay__blocked_out_of_range) {
+  color: var(--neutral-light-2);
+}
+
+.datePicker :global(.CalendarDay__blocked_out_of_range:hover) {
+  background-color: var(--white);
+  color: var(--neutral-light-2);
+  cursor: default;
+}
+
+.datePicker :global(.CalendarDay__selected) {
+  background-color: var(--secondary);
+  border: none;
+  color: var(--white);
+}
+
+.datePicker :global(.CalendarDay__selected:hover) {
+  background-color: var(--secondary-light-2);
+}

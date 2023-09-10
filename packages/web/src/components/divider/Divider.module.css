@@ -1,0 +1,11 @@
+.default {
+  border-color: var(--neutral-light-5);
+}
+
+.subdued {
+  border-color: var(--neutral-light-8);
+}
+
+.horizontal {
+  margin: var(--unit-3) 0;
+}

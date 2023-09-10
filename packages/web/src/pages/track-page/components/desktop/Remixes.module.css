@@ -1,0 +1,66 @@
+.remixes {
+  max-width: 960px;
+  width: 100%;
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 16px 20px -5px var(--table-shadow);
+  padding: 28px 0px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-transform: uppercase;
+  color: var(--secondary);
+  font-weight: var(--font-heavy);
+  font-size: var(--font-3xl);
+
+  user-select: none;
+  background-image: var(--page-header-gradient);
+
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+
+  margin-bottom: 24px;
+}
+
+/** Safari doesn't do a good job persisting the title font styles to nested content */
+.header > * {
+  background-image: var(--page-header-gradient);
+
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  text-shadow: var(--page-header-text-shadow);
+}
+
+.iconRemix {
+  height: 32px;
+  width: 32px;
+  margin-right: 8px;
+}
+
+.iconRemix path {
+  fill: url(#linearGradient-1);
+}
+
+.iconRemix.matrix path {
+  fill: url(#matrixHeaderGradient);
+}
+
+.tracks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.tracks > * {
+  margin-left: 14px;
+  margin-right: 14px;
+}
+
+.button {
+  margin-top: 20px;
+}

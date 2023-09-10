@@ -1,0 +1,128 @@
+.header {
+  background: var(--white);
+  border-bottom: 1px solid var(--neutral-light-8);
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 28px;
+  padding-right: 16px;
+  min-height: 56px;
+}
+
+.logo {
+  display: block;
+  height: 25px;
+  margin-top: var(--unit-4);
+  margin-bottom: var(--unit-4);
+}
+
+svg.logo path {
+  fill: var(--neutral-light-5);
+}
+
+.matrixLogo {
+  filter: drop-shadow(0px 0px 5px rgba(225, 255, 234, 0.25))
+    drop-shadow(0px 0px 15px rgba(20, 255, 0, 0.25));
+}
+
+svg.logo.matrixLogo path {
+  fill: url(#matrixHeaderGradient) !important;
+}
+
+.headerIconContainer {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.headerIconWrapper {
+  position: relative;
+  cursor: pointer;
+  height: 24px;
+  width: 24px;
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 50%;
+  margin-left: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all ease-in-out 0.07s;
+  background-color: var(--neutral-light-9);
+}
+
+.headerIconWrapper:global(.active),
+.headerIconWrapper:hover {
+  background-color: var(--secondary-light-2);
+  transform: scale3d(1.1, 1.1, 1.1);
+}
+
+.headerIconWrapper:active {
+  transform: scale3d(0.99, 0.99, 0.99);
+}
+
+.headerIconWrapper.iconNotification.active {
+  background-color: var(--accent-orange-light-1);
+}
+
+.headerIconWrapper.iconNotification.active:hover,
+.headerIconWrapper.iconNotification.active:active {
+  background-color: var(--accent-orange);
+}
+
+.headerIconWrapper:global(.active) svg path,
+.headerIconWrapper.iconNotification.active svg path {
+  fill: var(--static-neutral-light-10);
+}
+
+.headerIconWrapper.iconNotification.notificationsOpen,
+.headerIconWrapper.iconNotification.notificationsOpen:hover,
+.headerIconWrapper.iconNotification.notificationsOpen.active:hover,
+.headerIconWrapper.iconNotification.notificationsOpen:active,
+.headerIconWrapper.iconNotification.notificationsOpen.active:active {
+  background-color: var(--secondary);
+}
+
+.headerIconWrapper.iconNotification.notificationsOpen svg path {
+  fill: var(--static-neutral-light-10);
+}
+
+.headerIconWrapper:hover svg path,
+.headerIconWrapper:active svg path {
+  fill: var(--static-neutral-light-10);
+}
+
+.headerIconWrapper svg {
+  height: 20px;
+  width: 20px;
+}
+
+.headerIconWrapper svg path {
+  fill: var(--neutral-light-4);
+}
+
+.iconTag {
+  position: absolute;
+  top: -7px;
+  right: 0px;
+  transform: translateX(50%);
+  border-radius: 8px;
+  background-color: #d0021b;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.07px;
+  line-height: 14px;
+  text-transform: uppercase;
+  padding: 0px 6px;
+}
+
+.earlyAccess {
+  font-size: 10px;
+  position: absolute;
+  font-weight: var(--font-bold);
+  top: 34px;
+  color: var(--primary);
+  left: 58px;
+  letter-spacing: 0.5px;
+}

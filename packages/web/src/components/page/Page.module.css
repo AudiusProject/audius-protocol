@@ -1,0 +1,58 @@
+.pageContainer {
+  width: 100%;
+  position: relative;
+}
+
+.pageContainer .inset {
+  padding: 0px 56px 56px;
+}
+
+@media screen and (max-width: 1100px) {
+  .pageContainer .inset {
+    padding: 0px 16px 16px;
+  }
+}
+
+.pageContainer .flush {
+  top: calc(-1 * 44px);
+  padding: 0;
+}
+
+.pageContent {
+  margin: auto;
+  width: 100%;
+}
+
+.inset.medium > .pageContent {
+  max-width: 1080px;
+}
+.inset.large > .pageContent {
+  min-width: 600px;
+  max-width: 1080px;
+}
+
+.headerContainer {
+  position: fixed;
+  left: var(--nav-width);
+  z-index: 13;
+}
+
+.frosted {
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 10;
+}
+
+.headerBoxShadow {
+  height: 5px;
+  width: 100%;
+  box-shadow: var(--box-shadow-mid);
+  position: relative;
+  top: -5px;
+}
+
+.searchWrapper {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}

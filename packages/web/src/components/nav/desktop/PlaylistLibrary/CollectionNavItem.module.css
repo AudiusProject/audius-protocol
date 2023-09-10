@@ -1,0 +1,27 @@
+.root {
+  display: flex;
+  align-items: center;
+  line-height: normal;
+}
+
+.content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  line-height: normal;
+  width: 100%;
+}
+
+.level1 {
+  margin-left: var(--unit-2);
+}
+
+.collectionName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:global(.droppableLinkActive) .collectionName {
+  color: var(--secondary);
+}

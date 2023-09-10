@@ -1,0 +1,11 @@
+.modal {
+  width: 672px;
+}
+
+.title {
+  align-items: center;
+  display: flex;
+  gap: var(--unit-2);
+  justify-content: center;
+  text-transform: uppercase;
+}

@@ -1,0 +1,33 @@
+.body {
+  flex-direction: column;
+  align-items: unset;
+}
+
+.bodyUser {
+  display: flex;
+  align-items: center;
+}
+
+.profilePicture {
+  margin-right: var(--unit-2);
+}
+
+.userNameLink {
+  font-weight: var(--font-bold) !important;
+}
+
+.trending {
+  display: inline-flex;
+  align-items: center;
+  margin-top: var(--unit-3);
+}
+
+.trendingIcon {
+  margin-right: var(--unit-2);
+  height: 18px;
+  width: 20px;
+}
+
+.trendingIcon path {
+  fill: var(--neutral-light-4);
+}

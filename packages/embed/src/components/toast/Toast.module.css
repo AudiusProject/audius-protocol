@@ -1,0 +1,19 @@
+.container {
+  display: inline-flex;
+  justify-content: center;
+  border-radius: 8px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0.75) 100%
+  );
+  padding: 12px 28px;
+  margin: 0px 64px;
+  min-width: 268px;
+
+  color: #ffffff;
+  font-weight: bold;
+  text-align: center;
+  height: 20px;
+  transform: translateY(-60px) scaleY(1.2);
+}

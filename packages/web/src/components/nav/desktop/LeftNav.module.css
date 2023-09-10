@@ -1,0 +1,97 @@
+.leftNav {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: var(--neutral-light-10);
+  border-right: 1px solid var(--neutral-light-8);
+  user-select: none;
+  overflow: visible;
+}
+
+.leftNav :global(.ant-modal-wrap) {
+  position: absolute;
+  overflow: visible;
+  height: 100vh;
+  width: 100vw;
+}
+
+.leftNav .logo {
+  display: block;
+  height: 25px;
+  margin-top: 16px;
+  margin-bottom: 16px;
+  cursor: pointer;
+}
+
+.leftNavContent {
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+  transition: opacity 0.3s ease-in-out, box-shadow 0.2s ease;
+  flex-grow: 1;
+}
+
+.leftNavContent.dragScrollingUp {
+  box-shadow: inset 0px 8px 5px -5px var(--tile-shadow-3);
+}
+
+.leftNavContent.dragScrollingDown {
+  box-shadow: inset 0px -8px 5px -5px var(--tile-shadow-3);
+}
+
+.leftNavContent.show {
+  opacity: 1;
+}
+
+svg.logo path {
+  fill: var(--neutral-light-5);
+}
+
+.scrollable {
+  padding-top: 24px;
+}
+
+.photo {
+  position: relative;
+  cursor: pointer;
+
+  overflow: hidden;
+  flex: 0 0 48px;
+  height: 48px;
+  border-radius: 30px;
+  border: 1px solid var(--white);
+  box-shadow: 0 0 1px 0 rgba(133, 129, 153, 0.5);
+
+  text-align: center;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--default-profile-picture-background);
+}
+
+.links {
+  flex: 1 1 auto;
+  overflow: hidden;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.linkGroup {
+  margin: 0px 16px 25px;
+}
+
+.navAnchor {
+  padding-top: 17px;
+  border-top: 1px solid var(--neutral-light-8);
+  display: block;
+  text-align: center;
+}
+
+.profileCompletionContainer {
+  display: flex;
+  justify-content: center;
+}

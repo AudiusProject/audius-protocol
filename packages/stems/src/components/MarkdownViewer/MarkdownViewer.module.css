@@ -1,0 +1,96 @@
+.root {
+  user-select: none;
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.root h1,
+.root h2,
+.root h3,
+.root h4,
+.root h5,
+.root h6 {
+  margin-bottom: 24px;
+  font-weight: var(--font-bold);
+}
+
+.root h1 {
+  font-size: var(--font-3xl);
+}
+
+.root h2 {
+  font-size: var(--font-2xl);
+}
+
+.root h3 {
+  font-size: var(--font-xl);
+}
+
+.root h4 {
+  font-size: var(--font-l);
+}
+
+.root h5 {
+  font-size: var(--font-m);
+}
+
+.root h6 {
+  font-size: var(--font-s);
+}
+
+.root a {
+  color: var(--secondary);
+}
+
+.root p {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 24px;
+  margin-bottom: 24px;
+}
+
+.root strong {
+  font-weight: var(--font-bold);
+}
+
+.root em {
+  font-style: italic;
+}
+
+.root ul {
+  list-style-type: disc;
+  list-style-position: inside;
+}
+
+.root ol {
+  list-style: decimal;
+  margin-left: 12px;
+}
+
+.root ol li::before {
+  color: var(--neutral);
+  margin-right: 8px;
+}
+
+.root ol li {
+  margin-bottom: 24px;
+  padding-left: 8px;
+}
+
+.root ol li ol {
+  list-style: lower-latin;
+  margin-top: 24px;
+}
+
+.root ul li::before {
+  color: var(--neutral);
+  margin-right: 8px;
+}
+
+.root ul li {
+  margin-bottom: 24px;
+  padding-left: 8px;
+}

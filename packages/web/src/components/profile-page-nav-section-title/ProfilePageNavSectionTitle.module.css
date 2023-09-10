@@ -1,0 +1,19 @@
+.titleContainer {
+  display: flex;
+  align-items: center;
+}
+.titleAndIcon {
+  display: flex;
+  align-items: center;
+  margin-right: 4px;
+}
+.title {
+  margin-left: 6px;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+}
+.line {
+  flex-grow: 1;
+  height: 1px;
+  background: var(--neutral-light-7);
+}

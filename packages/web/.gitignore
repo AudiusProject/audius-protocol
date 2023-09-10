@@ -1,0 +1,56 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+
+# exposed public scripts except sw.js
+/public/scripts/*
+!/public/scripts/sw.js
+
+# env
+.env/.env.dev.local
+
+# testing
+/coverage
+
+# build
+/sourcemaps
+/build
+/build-development
+/build-demo
+/build-staging
+/build-mobile-staging
+/build-ci
+/build-production
+/build-mobile-production
+/storybook-static
+/build-ipfs-staging
+/build-ipfs-staging.zip
+/build-ipfs-production
+/build-ipfs-production.zip
+
+# distribution
+/dist
+electronConfig.json
+
+# misc
+.DS_Store
+.env.local
+.env.dev.local
+.env.test.local
+.env.prod.local
+.env.git
+*.swp
+yarn.lock
+react-app-env.d.ts
+.vscode
+.log
+.eslintcache
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+.idea
+.yalc
+yalc.lock

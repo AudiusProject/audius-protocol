@@ -1,0 +1,61 @@
+.root {
+  display: flex;
+  padding: var(--unit-4);
+  margin-bottom: var(--unit-2);
+  flex-direction: column;
+  gap: var(--unit-4);
+}
+
+.trackNameRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: var(--unit-2);
+}
+
+.iconDrag {
+  padding: var(--unit-3) var(--unit-2);
+}
+
+.trackIndex {
+  padding: var(--unit-3) var(--unit-2);
+}
+
+.overrideRow {
+  display: flex;
+  padding: var(--unit-2) 0px var(--unit-2) var(--unit-18);
+  justify-content: space-between;
+  align-items: center;
+}
+
+.overrideSwitch {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--unit-2);
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--unit-12);
+}
+
+.actionButton {
+  color: var(--text-subdued);
+}
+
+.trackInformation {
+  display: flex;
+  padding-left: 72px;
+  flex-direction: column;
+  gap: var(--unit-4);
+}
+
+.genreMood {
+  display: flex;
+  flex-direction: row;
+  gap: var(--unit-2);
+}

@@ -1,0 +1,48 @@
+.container {
+  display: flex;
+  flex-direction: column;
+}
+
+.hideTracksSection {
+  border-bottom: 1px solid var(--neutral-light-6);
+  padding: 8px 0px;
+  margin-bottom: 8px;
+}
+
+.modalBodyStyle {
+  max-width: 404px;
+  padding-bottom: 24px;
+}
+
+.section {
+  margin: 8px 0px;
+  display: flex;
+  align-items: center;
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  line-height: 20px;
+  transition: opacity 0.2s ease-in-out;
+  transform: translate3d(0, 0, 0);
+  opacity: 1;
+}
+
+.disabledSection {
+  opacity: 0.5;
+}
+
+.switchContainer {
+  margin-left: auto;
+  display: flex;
+  height: 100%;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.modalTitleStyle {
+  font-size: var(--font-l);
+  line-height: 23px;
+  letter-spacing: 0.5px;
+  font-weight: var(--font-heavy);
+  color: var(--neutral-light-4);
+}

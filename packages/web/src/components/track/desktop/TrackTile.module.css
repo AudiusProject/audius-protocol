@@ -1,0 +1,451 @@
+.container {
+  --border-width: 1px;
+  position: relative;
+  background: var(--white);
+  border: var(--border-width) solid var(--neutral-light-8);
+  border-radius: var(--unit-2) var(--unit-2) 0px 0px;
+  display: inline-flex;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.18s ease-in-out;
+}
+
+.container.standalone {
+  transform: scale3d(1, 1, 1);
+  border-radius: var(--unit-2);
+  box-shadow: 0px 2px 5px var(--tile-shadow-3), 0px 1px 0px var(--tile-shadow-2),
+    0px 0px 1px rgba(133, 129, 153, 0.1);
+}
+
+.container.standalone:not(.loading):not(.isDisabled):hover {
+  box-shadow: 0 1px 5px 1px var(--tile-shadow-1-alt),
+    0 1px 0 0 var(--tile-shadow-2), 0 2px 10px -2px var(--tile-shadow-3);
+  transform: scale3d(1.005, 1.005, 1.005);
+}
+.container.standalone:not(.loading):not(.isDisabled):active {
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1),
+    0 2px 3px -2px var(--tile-shadow-3);
+}
+
+.container.large.standalone {
+  margin-bottom: var(--unit-4);
+}
+
+.container.small.standalone {
+  margin-bottom: var(--unit-3);
+}
+
+.container.large {
+  height: 144px;
+}
+
+.container.small {
+  height: 124px;
+}
+
+.borderOffset {
+  position: absolute;
+  top: calc(-1 * var(--border-width));
+  left: calc(-1 * var(--border-width));
+}
+
+.order {
+  flex: 0 0 var(--unit-8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  color: var(--neutral-light-2);
+  position: relative;
+}
+
+.crownContainer {
+  position: absolute;
+  top: var(--unit-12);
+}
+
+.crownContainer svg {
+  width: 18px;
+  height: 13px;
+}
+
+.crownContainer path {
+  fill: var(--neutral-light-2);
+}
+
+.large .imageContainer {
+  flex: 0 0 128px;
+  height: 128px;
+  margin: var(--unit-2) 0px;
+}
+
+/* If the ordering is not present, add extra space to the left */
+.large .imageContainer.leftSpacing {
+  margin-left: var(--unit-2);
+}
+
+.small .imageContainer {
+  flex: 0 0 108px;
+  height: 108px;
+  margin: var(--unit-2) 0px;
+}
+
+/* If the ordering is not present, add extra space to the left */
+.small .imageContainer.leftSpacing {
+  margin-left: var(--unit-2);
+}
+
+.container:hover .artworkIcon {
+  opacity: 0.75;
+}
+
+.container.isDisabled {
+  cursor: default;
+}
+
+.body {
+  display: inline-flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1 1 auto;
+  padding: var(--unit-2) var(--unit-3) var(--unit-2) 18px;
+}
+
+.topSection {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+}
+
+/* Playlist or Album Header */
+.headerRow {
+  letter-spacing: 2.5px;
+  text-align: left;
+  height: var(--unit-3);
+
+  /* Neutral Light 4 [day] */
+  color: var(--neutral-light-4);
+}
+
+.titleRow {
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  user-select: none;
+  margin-right: 132px;
+  padding-bottom: 2px;
+}
+
+.titleRow .skeleton {
+  height: var(--unit-5);
+}
+
+.container .premiumDogEarContainer {
+  box-shadow: 0px 0px var(--unit-2) rgba(0, 0, 0, 0.25),
+    inset var(--unit-1) var(--unit-1) var(--unit-2) rgba(255, 255, 255, 0.2);
+}
+
+.volumeIcon {
+  margin-left: 6px;
+}
+
+.isActive .title {
+  color: var(--primary);
+}
+
+.isActive .volumeIcon path {
+  fill: var(--primary);
+}
+
+.creatorRow {
+  display: inline-flex;
+}
+
+.creatorRow .userName,
+.creatorRow .userName:active,
+.creatorRow .userName:hover {
+  text-decoration: inherit;
+  color: inherit;
+}
+
+.creatorRow .skeleton {
+  height: var(--unit-4);
+}
+
+.large .creatorRow {
+  margin-bottom: var(--unit-1);
+}
+
+.small .creatorRow {
+  margin-bottom: var(--unit-2);
+}
+
+.large .withoutHeader .creatorRow {
+  margin-bottom: var(--unit-2);
+}
+
+.creatorRow .by {
+  font-style: normal;
+  font-weight: var(--font-medium);
+  font-size: var(--font-m);
+  color: var(--neutral-light-6);
+
+  margin-right: var(--unit-1);
+}
+
+.creatorRow .name {
+  font-style: normal;
+  font-weight: var(--font-medium);
+  font-size: var(--font-m);
+
+  color: var(--neutral);
+}
+
+.isActive .withoutHeader .creatorRow .name {
+  color: var(--primary);
+}
+
+.isDisabled .title:hover,
+.isDisabled .creatorRow:hover {
+  cursor: default;
+  color: inherit;
+  text-decoration: none !important;
+}
+
+.isHidden {
+  visibility: hidden;
+}
+
+.socialsRow {
+  display: flex;
+  gap: var(--unit-4);
+}
+
+.large .socialsRow .skeleton {
+  height: var(--unit-6);
+}
+
+.small .socialsRow .skeleton {
+  height: 18px;
+}
+
+.large .socialsRow {
+  height: var(--unit-6);
+  margin-right: 80px;
+}
+
+.small .socialsRow {
+  height: 18px;
+  margin-right: var(--unit-20);
+}
+
+.small .bottomRight {
+  /* Match socialsRow to keep these in line */
+  height: 18px;
+}
+
+.socialInfo {
+  display: inline-flex;
+  flex: 1 1 100%;
+  min-width: 0;
+  justify-content: flex-start;
+}
+
+.artistPickLabelContainer {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: var(--unit-1);
+  color: var(--neutral-light-4);
+}
+
+.artistPickIcon {
+  height: var(--unit-4);
+  width: var(--unit-4);
+}
+.artistPickIcon path {
+  fill: var(--neutral-light-4);
+}
+
+/* Right side of the track tile */
+.topRight {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--unit-4);
+}
+
+.duration {
+  text-align: right;
+  letter-spacing: 0.2px;
+
+  /* Neutral Light 4 [day] */
+  color: var(--neutral-light-4);
+}
+
+.topRightIcon {
+  height: var(--unit-4);
+  width: var(--unit-4);
+  margin-right: 6px;
+}
+
+.topRightIcon path {
+  fill: var(--neutral-light-4);
+}
+
+.topRightIconLabel {
+  display: flex;
+  align-items: center;
+  flex: 1 0 auto;
+
+  color: var(--neutral-light-4);
+}
+.large .topRight {
+  /* Matches header row height for large tile variant */
+  line-height: var(--unit-3);
+}
+
+.progressTextContainer {
+  display: flex;
+  gap: var(--unit-3);
+  align-items: center;
+}
+
+.progressText {
+  white-space: nowrap;
+}
+
+.progressTextSlider {
+  height: var(--unit-1);
+  width: 128px;
+}
+
+.completeText {
+  display: flex;
+  gap: var(--unit-1);
+  align-items: center;
+  color: var(--secondary);
+}
+
+.completeIcon {
+  height: var(--unit-3);
+  width: var(--unit-3);
+}
+.completeIcon path {
+  fill: var(--secondary);
+}
+
+.bottomRight {
+  bottom: 0;
+  position: absolute;
+  right: 0;
+  display: inline-flex;
+}
+
+.plays {
+  text-align: right;
+  letter-spacing: 0.2px;
+  color: var(--neutral-light-4);
+}
+
+/* Track Tile Divider */
+.divider {
+  height: 1px;
+  min-height: 1px;
+  width: 100%;
+  background: var(--neutral-light-8);
+}
+
+.large .divider {
+  margin: var(--unit-2) 10px var(--unit-2) 0px;
+}
+
+/* If Header (Playlist or Album) is not present, add more spacing up top */
+.large .withoutHeader .divider {
+  margin: var(--unit-2) 10px var(--unit-2) 0px;
+}
+
+.small .divider {
+  margin: var(--unit-2) 13px 6px 0px;
+}
+
+/* Bottom Row Track TIle */
+.bottomRow {
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.bottomRow .iconButtons {
+  display: flex;
+  gap: var(--unit-8);
+}
+
+.bottomRow .iconButtonContainer {
+  position: relative;
+}
+
+.bottomRow .iconButton {
+  display: flex;
+  height: var(--unit-6);
+  width: var(--unit-6);
+  align-items: center;
+  transform: scale3d(1, 1, 1);
+  transition: all 0.12s ease-in-out !important;
+}
+
+.bottomRow .iconButton:hover {
+  transform: scale3d(1.18, 1.18, 1.18);
+}
+
+.bottomRow .iconButtonContainer.isDisabled .iconButton:hover {
+  transform: scale3d(1, 1, 1);
+}
+
+.bottomRow .iconButton:active {
+  transform: scale3d(0.95, 0.95, 0.95);
+}
+
+.bottomRow .iconButtonContainer.isDisabled .iconButton:active {
+  transform: scale3d(1, 1, 1);
+}
+
+.iconShareContainer {
+  height: var(--unit-6);
+  width: var(--unit-6);
+}
+
+/* Make the icon buttons a larger click target */
+.bottomRow .iconButton:after {
+  content: '';
+  padding: var(--unit-4);
+  position: absolute;
+  left: var(--negative-unit);
+  top: var(--negative-unit);
+}
+
+.iconKebabHorizontal path {
+  fill: var(--neutral-light-4);
+}
+
+.menuContainer {
+  transform: scale3d(1, 1, 1);
+  transition: all 0.07s ease-in-out !important;
+  display: flex;
+  align-items: center;
+  height: var(--unit-6);
+}
+
+.menuContainer:hover {
+  transform: scale3d(1.1, 1.1, 1.1);
+}
+
+.menuContainer:active {
+  transform: scale3d(0.95, 0.95, 0.95);
+}

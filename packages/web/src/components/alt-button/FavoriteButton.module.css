@@ -1,0 +1,71 @@
+@keyframes scaleX {
+  0% {
+    transform: scale(1, 1);
+  }
+
+  40% {
+    transform: scale(1.2, 1);
+  }
+
+  80% {
+    transform: scale(1, 1.05);
+  }
+}
+
+@keyframes scaleY {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+
+  30% {
+    transform: scale(1, 1.25);
+  }
+  70% {
+    transform: scale(1, 1.05);
+  }
+}
+
+.scaleXHolder {
+  animation: scaleX 0.5s ease-out 1;
+}
+
+.scaleYHolder {
+  animation: scaleY 0.3s ease-out 1;
+}
+
+.heart {
+  height: 22px;
+  width: 22px;
+  background-size: cover;
+  cursor: pointer;
+}
+
+.heartWrapper {
+  transform: scale3d(1, 1, 1);
+  transition: all 0.12s ease-in-out;
+}
+
+.heartWrapper:hover {
+  transform: scale3d(1.18, 1.18, 1.18);
+}
+
+.heartWrapper:active {
+  transform: scale3d(0.95, 0.95, 0.95);
+}
+
+.heartWrapper.isDisabled:hover {
+  transform: scale3d(1, 1, 1);
+}
+
+.heartWrapper.isDisabled:active {
+  transform: (1, 1, 1);
+}
+
+.isHidden {
+  visibility: hidden;
+}
+
+.isDisabled .heart {
+  cursor: auto;
+}

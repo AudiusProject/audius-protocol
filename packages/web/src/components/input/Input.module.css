@@ -1,0 +1,71 @@
+.inputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 32px;
+  width: 160px;
+  padding-left: 4px;
+  background-color: var(--input-background);
+  border-radius: 4px;
+  box-shadow: 0 2px 5px 0 var(--search-bar-shadow);
+  transition: 0.2s ease-in-out, background 0.04s ease-in-out;
+}
+
+/* Size styles */
+.inputContainer.large {
+  height: 40px;
+}
+.inputContainer.small {
+  height: 24px;
+}
+
+/* Variant Styles */
+.inputContainer.bordered {
+  border: 1px solid var(--search-bar-border);
+  box-shadow: none;
+}
+.inputContainer.bordered:hover {
+  border: 1px solid var(--neutral-light-6);
+}
+
+.inputPrefix {
+  position: relative;
+  padding-left: 6px;
+}
+.inputPrefix svg {
+  height: 12px;
+  width: 12px;
+}
+.inputPrefix svg g path {
+  fill: var(--neutral-light-4);
+}
+
+.input {
+  flex: 1 1 0;
+  position: relative;
+  height: 100%;
+  margin: 0;
+  padding: 0 10px 0 6px;
+  min-width: 0;
+  background-color: transparent;
+  color: var(--neutral);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  border: none;
+  outline: none;
+}
+.input::placeholder {
+  color: var(--neutral-light-4);
+}
+
+.inputSuffix {
+  position: relative;
+  padding-right: 6px;
+}
+.inputSuffix svg {
+  height: var(--unit-4);
+  width: var(--unit-4);
+}
+.inputSuffix svg g path {
+  fill: var(--neutral-light-4);
+}

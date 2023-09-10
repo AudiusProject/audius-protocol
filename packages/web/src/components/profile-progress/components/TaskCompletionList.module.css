@@ -1,0 +1,12 @@
+.container {
+  background-color: var(--secondary);
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+
+@media screen and (max-width: 1200px) {
+  .container {
+    justify-content: center;
+  }
+}

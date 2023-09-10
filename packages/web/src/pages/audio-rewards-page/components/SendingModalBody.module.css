@@ -1,0 +1,42 @@
+.titleWrapper {
+  margin: 24px 0px;
+}
+
+.addressWrapper {
+  display: flex;
+  flex-direction: column;
+  color: var(--neutral-light-4);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  align-items: center;
+}
+
+.arrow {
+  margin: 10px auto;
+  transform: rotateZ(90deg);
+  height: 18px;
+  width: 18px;
+}
+
+.arrow path {
+  fill: var(--neutral-light-4);
+}
+
+.buttonWrapper {
+  margin: 24px 0px;
+}
+
+.spinner {
+  margin: 24px;
+  width: 80px;
+}
+
+.message {
+  font-weight: var(--font-medium);
+  font-size: var(--font-m);
+  line-height: 24px;
+  text-align: center;
+  color: var(--neutral);
+  text-align: center;
+  margin-bottom: 24px;
+}

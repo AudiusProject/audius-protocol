@@ -1,0 +1,62 @@
+.container {
+  background-color: rgba(255, 255, 255, 0.95);
+  position: fixed;
+  display: flex;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  flex-direction: column;
+  align-items: center;
+  z-index: 3;
+  justify-content: space-evenly;
+  padding: 0px 16px;
+  opacity: 0;
+}
+
+.container.blur {
+  backdrop-filter: blur(4px);
+}
+
+.container > div {
+  transform: scale(0.65);
+  transition: all 0.45s cubic-bezier(.09,1.36,.48,.97);
+}
+
+.logo {
+  cursor: pointer;
+  padding: 24px;
+}
+
+.artworkSizing {
+  height: 196px;
+  width: 196px;
+}
+
+.dismissIcon {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  opacity: 0.5;
+  transform: scale(1);
+  transition: all 0.25s ease-out;
+  cursor: pointer;
+}
+
+.dismissIcon svg {
+  height: 36px;
+  width: 36px;
+}
+
+.dismissIcon:hover {
+  opacity: 0.3;
+  transform: scale(1.05);
+}
+
+.dismissIcon:active {
+  transform: scale(0.98);
+}
+
+.compactLabelFont {
+  font-size: 20px;
+}

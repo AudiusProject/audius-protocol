@@ -1,0 +1,16 @@
+{
+  "steps": [
+    {
+      "name": "typecheck",
+      "command": "npm run typecheck"
+    },
+    {
+      "name": "lint",
+      "command": "npm run lint"
+    },
+    {
+      "name": "style lint",
+      "command": "npm run stylelint"
+    }
+  ]
+}

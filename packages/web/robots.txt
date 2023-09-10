@@ -1,0 +1,8 @@
+# All
+User-agent: *
+Allow: /
+
+Sitemap: https://audius.co/sitemaps/default.xml
+Sitemap: https://audius.co/sitemaps/track/index.xml
+Sitemap: https://audius.co/sitemaps/playlist/index.xml
+Sitemap: https://audius.co/sitemaps/user/index.xml

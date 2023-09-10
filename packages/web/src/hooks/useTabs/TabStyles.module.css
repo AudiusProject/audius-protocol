@@ -1,0 +1,126 @@
+.tab {
+  display: flex;
+  height: 100%;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.18s ease-in-out;
+  align-items: center;
+}
+
+.tabWrapper {
+  display: flex;
+  height: 100%;
+}
+
+.tabWrapperMobile {
+  flex: 1;
+  margin: 0px 8px;
+}
+
+.tabMobile {
+  font-weight: var(--font-bold);
+  font-size: var(--font-2xs);
+  text-transform: uppercase;
+  letter-spacing: 0.15px;
+  line-height: 13px;
+
+  color: var(--neutral-light-4);
+  padding-top: 4px;
+  flex-direction: column;
+  width: 100%;
+}
+
+.tabDesktop {
+  flex-direction: row;
+  justify-content: center;
+  margin-right: 16px;
+  font-size: var(--font-s);
+  font-weight: var(--font-heavy);
+  color: var(--neutral-light-4);
+  padding: 0px 8px 4px;
+  min-height: 32px;
+  min-width: 110px;
+  letter-spacing: 0.66px;
+}
+
+.tabDesktop svg {
+  margin-right: 4px;
+}
+
+.tab path {
+  fill: var(--neutral-light-4);
+  transition: all 0.18s ease-in-out;
+}
+
+.tabDesktop:hover:not(.tabDisabled),
+.tab:active:not(.tabDesktop),
+.tabActive {
+  color: var(--neutral);
+}
+
+.tabDesktop:hover:not(.tabDisabled) path,
+.tab:active:not(.tabDesktop) path,
+.tabActive path {
+  fill: var(--neutral);
+}
+
+.tabDisabled {
+  cursor: auto;
+  color: var(--neutral-light-6);
+}
+
+.tabDisabled path {
+  fill: var(--neutral-light-6);
+}
+
+.tabBarContainer {
+  display: flex;
+}
+
+.tabBarContainerDesktop {
+  justify-content: flex-start;
+  height: 100%;
+}
+
+.tabBarContainerMobile {
+  height: 48px;
+  background-color: var(--white);
+  justify-content: space-around;
+  align-items: center;
+  position: relative;
+  box-shadow: 0 2px 5px -2px var(--tile-shadow-3);
+}
+
+.bodyContainer {
+  position: relative;
+}
+
+.bodyContainerDesktop {
+  height: 100%;
+}
+
+.gestureContainer {
+  overflow: hidden;
+}
+
+.elementWrapper {
+  display: flex;
+}
+
+.elementWrapper.isDragging {
+  overflow: hidden;
+}
+
+.elementScrollContainer {
+  top: 0px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.tabAccent {
+  height: 3px;
+  border-radius: 0 0 20px 20px;
+  background-color: var(--primary);
+  position: absolute;
+  z-index: 9;
+}

@@ -1,0 +1,26 @@
+.trackListContainer {
+  background-color: var(--white);
+}
+
+.border {
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 6px;
+  background-color: var(--white);
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
+    0 2px 5px -2px var(--tile-shadow-3);
+  overflow: hidden;
+}
+
+.divider {
+  border-bottom: 1px solid var(--neutral-light-7);
+  margin: 0px 24px;
+}
+
+.divider.noMargin {
+  border-bottom: 1px solid var(--neutral-light-8);
+  margin: 0;
+}
+
+.hideDivider {
+  opacity: 0;
+}

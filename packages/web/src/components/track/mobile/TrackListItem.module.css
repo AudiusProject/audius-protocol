@@ -1,0 +1,212 @@
+.trackContainer {
+  width: 100%;
+  height: 72px;
+  padding: 10px 24px;
+  background-color: var(--white);
+  display: inline-flex;
+  justify-content: flex-start;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.17s ease-in-out, border 0.17s ease-in-out;
+}
+
+.trackContainer:active:not(:has(.locked)) {
+  background-color: var(--neutral-light-9);
+}
+
+.trackContainer.isDragging {
+  background-color: var(--neutral-light-10);
+}
+
+.artworkContainer {
+  position: relative;
+  height: 52px;
+  width: 52px;
+  border-radius: 4px;
+  margin-right: 16px;
+  flex: 0 0 52px;
+}
+
+.artwork {
+  height: 100%;
+  width: 100%;
+  border-radius: 4px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.artworkContainer .loadingAnimation {
+  pointer-events: none;
+}
+
+.artworkIcon {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  transition: all ease-in-out 0.18s;
+  border-radius: 4px;
+}
+.artworkIcon > svg,
+.artworkIcon > div {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40%;
+  height: 40%;
+  transform: translate(-50%, -50%);
+  transition: all ease-in-out 0.18s;
+}
+
+.artworkIcon > svg,
+.artworkIcon > div {
+  width: 65%;
+  height: 65%;
+}
+
+.artworkIcon g path {
+  fill: rgba(255, 255, 255, 0.75);
+}
+
+.artworkIcon g circle {
+  fill: none;
+}
+
+.artworkContainer:hover .artworkIcon {
+  opacity: 0.75;
+}
+
+.artworkContainer .loadingAnimation {
+  pointer-events: none;
+}
+
+/* Deleted Styles */
+.isDeleted {
+  background-color: var(--neutral-light-9);
+  color: var(--neutral-light-4);
+}
+
+/* Play Button */
+.playButtonContainer {
+  margin-right: 16px;
+}
+
+/* Heart Icon */
+
+.iconContainer {
+  flex: 0 0 16px;
+  margin-left: 7px;
+}
+
+.heartIcon {
+  height: 16px;
+  width: 16px;
+}
+
+.heartIcon path {
+  fill: var(--neutral-light-4);
+}
+
+.heartIcon.isSaved path {
+  fill: var(--primary);
+}
+
+.dragIcon {
+  margin-right: 24px;
+}
+
+.dragIcon path {
+  fill: var(--neutral-light-4);
+}
+
+/* Track & Artist Name */
+
+.nameArtistContainer {
+  flex: 1;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  height: 100%;
+}
+
+.trackTitle {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  text-align: left;
+  line-height: normal;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.artistName {
+  color: var(--neutral-light-2);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  line-height: normal;
+
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+}
+
+.badges {
+  margin-left: 4px;
+}
+
+.isActive {
+  background-color: var(--neutral-light-9);
+}
+
+.kebabContainer svg path {
+  fill: var(--neutral-light-4);
+}
+
+.removeTrackContainer {
+  transition: transform 0.12s ease-in-out;
+}
+
+.removeTrackContainer.isRemoveActive {
+  transform: rotate(-90deg);
+}
+
+.locked {
+  display: flex;
+  align-items: center;
+  padding: 2px var(--unit-2);
+  background: var(--accent-blue);
+  border-radius: 80px;
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-2xs);
+  color: var(--white);
+}
+
+.locked svg {
+  margin-right: 2px;
+  width: 10px;
+  height: 10px;
+}
+
+.locked svg path {
+  fill: var(--white);
+}
+
+.lockedTrackTitle,
+.lockedBadges {
+  opacity: 0.5;
+}

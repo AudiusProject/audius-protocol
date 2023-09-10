@@ -1,0 +1,77 @@
+.headerContainer {
+  border-bottom-color: var(--neutral-light-8);
+}
+
+.modalBody {
+  display: flex;
+  overflow: hidden;
+  max-width: 528px;
+  width: 100%;
+  flex-direction: column;
+}
+
+.titleContainer {
+  display: flex;
+  align-items: center;
+}
+
+.titleIcon {
+  height: var(--unit-8);
+  width: var(--unit-8);
+  margin-right: var(--unit-2);
+}
+
+.titleIcon path {
+  fill: var(--neutral);
+}
+
+.title {
+  font-size: var(--font-xl);
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--unit-6);
+  text-align: center;
+  height: 100%;
+  justify-content: space-around;
+  font-weight: var(--font-bold);
+}
+
+.description {
+  font-weight: var(--font-medium);
+  font-size: var(--font-l);
+  line-height: 1.5;
+}
+
+.actionList {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-3);
+}
+
+.actionItemIcon {
+  min-width: 44px;
+  display: inline-flex;
+}
+
+.actionButton {
+  width: 100%;
+}
+
+/* The following have intentionally increased specificity to override stems button specificity */
+.actionButton .actionButtonLabel {
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+}
+
+.actionButton .shareIcon path {
+  fill: var(--secondary) !important;
+}
+
+.actionButton .shareActionLabel {
+  color: var(--secondary);
+}

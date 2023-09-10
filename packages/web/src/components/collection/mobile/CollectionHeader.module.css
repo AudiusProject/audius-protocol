@@ -1,0 +1,202 @@
+.collectionHeader {
+  padding: 16px 35px 0px;
+  width: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--white);
+}
+
+.typeLabel {
+  margin-bottom: 15px;
+  height: 18px;
+  color: var(--neutral-light-4);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.coverArt {
+  box-sizing: border-box;
+  height: 195px;
+  width: 195px;
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 23px;
+  background-size: cover;
+  background-position: 50%;
+  background-repeat: no-repeat;
+}
+
+.imageIcon {
+  opacity: 0.3;
+  mix-blend-mode: overlay;
+}
+
+.title {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+  line-height: 25px;
+  text-align: center;
+  margin-bottom: 15px;
+  word-break: break-all;
+}
+
+.artist {
+  margin-bottom: var(--unit-6);
+}
+
+/* Button Section */
+.buttonSection {
+  width: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+}
+
+.playAllButton {
+  width: 100%;
+  height: 40px !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.playAllButton .playAllButtonText {
+  color: var(--darkmode-static-white);
+  font-size: var(--font-xl);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.71px;
+  line-height: normal;
+  text-align: center;
+}
+
+.buttonContainer {
+  flex: 1;
+  width: 100%;
+}
+
+.smallerButtons {
+  width: calc(100% + 8px);
+  display: inline-flex;
+  margin: 0px -4px;
+}
+
+.smallerButton {
+  flex: 1 0 0;
+  padding: 0px;
+  display: flex;
+  justify-content: center;
+  margin: 0px 4px;
+}
+
+.shareButton {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Info Section */
+.infoSection {
+  border-top: 1px solid var(--neutral-light-7);
+  display: inline-flex;
+  flex-wrap: wrap;
+  width: 100%;
+  padding: 24px 0px 8px;
+}
+
+.infoSection.noStats {
+  border: none;
+}
+
+.infoFact {
+  flex: 1;
+  display: flex;
+  text-align: left;
+  margin-bottom: 16px;
+  width: 50%;
+}
+
+.infoLabel {
+  color: var(--neutral-light-5);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.infoValue {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  line-height: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.infoValue div {
+  display: flex;
+  align-items: center;
+}
+
+.collectionHeader > span {
+  width: 100%;
+}
+
+.description {
+  text-align: left;
+  width: 100%;
+  margin-bottom: var(--unit-6);
+}
+
+/* Loading */
+
+.loadingSkeleton {
+  padding: 0 !important;
+  border-radius: 4px;
+}
+
+.loadingSkeleton.loadingArtwork {
+  height: 195px !important;
+  width: 195px !important;
+}
+
+.loadingSkeleton.loadingTitle {
+  height: 24px;
+  width: 160px !important;
+}
+.loadingSkeleton.loadingName {
+  height: 24px;
+  width: 120px !important;
+}
+
+.loadingInfoSection {
+  width: 100%;
+}
+
+.loadingDescription {
+  margin-top: 8px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.loadingSkeleton.loadingInfoSection {
+  height: 24px;
+  width: 100% !important;
+}
+
+.loadingSkeleton.loadingDescription {
+  height: 24px;
+  width: 100% !important;
+}

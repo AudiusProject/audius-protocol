@@ -1,0 +1,10 @@
+.emptyTab {
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  width: 100%;
+  text-align: center;
+
+  margin-top: 38px;
+  user-select: none;
+}

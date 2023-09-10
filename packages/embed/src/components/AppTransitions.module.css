@@ -1,0 +1,19 @@
+.appear {
+  opacity: 0;
+  transform: scale(0.95) rotate3d(1, 0, 0, 20deg);
+}
+
+.appearMobileWebTwitter {
+  opacity: 0;
+}
+
+.appearActive {
+  opacity: 1;
+  transform: scale(1) rotate3d(1, 0, 0, 0deg);
+  transition: all 1s cubic-bezier(.19,1.04,.52,1.01);
+}
+
+.appearActiveMobileWebTwitter {
+  opacity: 1;
+  transition: all 1s cubic-bezier(.19,1.04,.52,1.01);
+}

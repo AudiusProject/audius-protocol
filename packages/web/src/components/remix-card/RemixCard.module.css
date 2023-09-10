@@ -1,0 +1,93 @@
+.remixCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 8px;
+  width: 128px;
+}
+
+.imagesContainer {
+  transition: transform 0.24s ease-in-out;
+}
+
+.imagesContainer:hover {
+  transform: scale(1.05);
+}
+
+.imagesContainer:active {
+  transform: scale(0.97);
+}
+
+.images {
+  position: relative;
+  cursor: pointer;
+}
+
+.coverArt {
+  width: 121px;
+  height: 121px;
+  box-sizing: border-box;
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.profilePicture {
+  z-index: 1;
+  overflow: hidden;
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  box-sizing: border-box;
+  height: 36px;
+  width: 36px;
+  border: 2px solid var(--neutral-light-8);
+  border-radius: 50%;
+}
+
+.artist {
+  margin-top: 8px;
+  cursor: pointer;
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  letter-spacing: 0;
+  line-height: 18px;
+  text-align: center;
+  max-width: 128px;
+  display: flex;
+}
+
+.by {
+  display: inline;
+  color: var(--neutral);
+  pointer-events: none;
+  text-decoration: none !important;
+}
+
+.name {
+  text-decoration: none !important;
+  display: block;
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  max-height: 36px;
+}
+
+.hoverable {
+  display: inline;
+  color: var(--secondary);
+}
+
+.hoverable:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.badges {
+  margin-left: 4px;
+  position: relative;
+  top: 1px;
+}

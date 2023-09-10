@@ -1,0 +1,112 @@
+.container {
+  padding: 24px 24px 0px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.mobile.container {
+  padding: 12px 8px 24px;
+}
+
+.totalAudio {
+  font-weight: var(--font-heavy);
+  font-size: 48px;
+  text-align: center;
+  color: var(--secondary);
+  line-height: normal;
+}
+
+.totalText {
+  font-weight: 800;
+  font-size: var(--font-2xl);
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--neutral-light-4);
+  margin-bottom: 24px;
+}
+
+.mobile .totalText {
+  font-weight: var(--font-bold);
+  font-size: var(--font-l);
+  margin-top: 8px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0px;
+
+  background: var(--neutral-light-10);
+  border: 2px solid var(--neutral-light-7);
+  border-radius: 16px;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-weight: var(--font-bold);
+  font-size: var(--font-2xl);
+  color: var(--neutral);
+}
+
+.mobile .sectionTitle {
+  font-size: var(--font-l);
+}
+
+.container .sectionAmount {
+  margin-left: 12px;
+  font-weight: var(--font-heavy);
+  font-size: var(--font-2xl);
+  line-height: normal;
+
+  color: var(--secondary);
+}
+
+.mobile.container .sectionAmount {
+  font-size: var(--font-l);
+}
+
+.sectionAmountContainer {
+  display: inline-block;
+}
+
+.sectionDescription {
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  text-align: center;
+  text-transform: uppercase;
+
+  /* Neutral Light 4 [day] */
+  color: var(--neutral-light-4);
+  margin-top: 12px;
+}
+
+.mobile .sectionDescription {
+  font-size: var(--font-xs);
+  line-height: normal;
+}
+
+.walletsTable {
+  padding: 24px 24px 0px;
+}
+
+.iconInfo {
+  height: 12px;
+  width: 12px;
+  margin: 0px 0px 2px 8px;
+}
+
+.mobile.container .iconInfo {
+  margin: 0px 0px 0px 8px;
+}
+
+.iconInfo path {
+  fill: var(--neutral-light-4);
+}
+
+.tooltip {
+  width: 250px;
+}

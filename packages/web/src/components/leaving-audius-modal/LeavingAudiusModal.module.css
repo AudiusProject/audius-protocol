@@ -1,0 +1,35 @@
+.content > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--unit-6);
+}
+
+.hint {
+  align-self: stretch;
+}
+
+.hintContent {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+
+  /*
+    Clamp vertically
+    Ignore the webkit prefix, it's actually supported across browsers: 
+    https://developer.mozilla.org/en-US/docs/Web/CSS/-webkit-line-clamp
+  */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 20;
+}
+
+.footer {
+  display: flex;
+  gap: var(--unit-2);
+  padding: 0 var(--unit-6) var(--unit-6);
+}
+
+.button {
+  flex: 1;
+}

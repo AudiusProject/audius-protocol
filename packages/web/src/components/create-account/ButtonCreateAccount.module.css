@@ -1,0 +1,95 @@
+@keyframes pulsing {
+  from {
+    transform: scale(0.99);
+  }
+  50% {
+    transform: scale(1.01);
+  }
+  to {
+    transform: scale(0.99);
+  }
+}
+
+.bigButton {
+  box-shadow: 0 0 0 0.5px rgba(50, 50, 93, 0.17),
+    0 2px 5px 0 rgba(50, 50, 93, 0.1), 0 1px 1.5px 0 rgba(0, 0, 0, 0.07),
+    0 1px 2px 0 rgba(0, 0, 0, 0.08), 0 0 0 0 transparent;
+  background: linear-gradient(135deg, #ee00ed 0%, #c214dc 100%);
+
+  color: #fff;
+  font-size: var(--font-l);
+  line-height: 25px;
+  font-weight: var(--font-demi-bold);
+  text-shadow: 0 1px 2px rgba(39, 31, 71, 0.25);
+  text-align: left;
+  display: block;
+
+  user-select: none;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  word-break: keep-all;
+
+  border: 0px solid transparent;
+  padding: 12px 20px 12px 20px;
+  margin: 0 auto;
+  border-radius: 4px;
+
+  transition: all 0.08s ease-in;
+}
+.bigButton:hover {
+  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0 0 0 0.5px rgba(50, 50, 93, 0.17),
+    0 2px 5px 0 rgba(50, 50, 93, 0.12), 0 3px 9px 0 rgba(50, 50, 93, 0.08),
+    0 1px 1.5px 0 rgba(0, 0, 0, 0.08), 0 1px 2px 0 rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, #d305e0 0%, #af0fc7 100%);
+}
+.bigButton:active {
+  transform: translateY(0px) scale(0.99);
+  box-shadow: 0 0 0 0.5px rgba(50, 50, 93, 0.17),
+    0 2px 5px 0 rgba(50, 50, 93, 0.1), 0 1px 1.5px 0 rgba(0, 0, 0, 0.07),
+    0 1px 2px 0 rgba(0, 0, 0, 0.08), 0 0 0 0 transparent;
+}
+
+.bigButton.navbar {
+  position: absolute;
+  bottom: 250px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.bigButton.navbar:hover {
+  transform: translateX(-50%) translateY(-1px) scale(1.01);
+}
+.bigButton.navbar:active {
+  transform: translateX(-50%) translateY(0px) scale(0.99);
+}
+
+/*span.icon {
+  margin-right: 15px;
+}*/
+.icon {
+  width: 28px;
+  margin-right: 15px;
+  vertical-align: bottom;
+  filter: drop-shadow(0 1px 2px rgba(39, 31, 71, 0.25));
+}
+
+.bigButton.pulse {
+  /*background-color: #54bd80 !important;*/
+  color: #fff !important;
+  /*background-image: linear-gradient(to bottom right, #61CB8C, #48AE7B) !important;*/
+  /*border: 1px solid #48AE7B;*/
+  animation: pulsing 2s ease-in-out !important;
+  animation-iteration-count: infinite !important;
+}
+
+.buttonText {
+  vertical-align: text-top;
+}
+
+.iconArrow {
+  width: 14px;
+  height: 14px;
+  margin-left: 8px;
+  vertical-align: text-bottom;
+}

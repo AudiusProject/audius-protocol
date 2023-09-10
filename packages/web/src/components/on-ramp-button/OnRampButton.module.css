@@ -1,0 +1,52 @@
+.coinbaseButton {
+  --brandColor: #0052ff;
+}
+.stripeButton {
+  --brandColor: #00aaf5;
+}
+
+/** Default **/
+.button:enabled {
+  background: var(--brandColor);
+  border: 1px solid var(--brandColor);
+}
+.button .textClassName {
+  color: var(--static-white);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-2xl);
+  font-weight: var(--font-demi-bold);
+  text-transform: none;
+}
+.logo path {
+  transition: all var(--quick);
+  fill: var(--static-white);
+}
+
+/** Hover **/
+.button:hover:enabled,
+.button:active:enabled {
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)),
+    var(--brandColor) !important;
+}
+.button.button:active:enabled {
+  transform: scale3d(0.99, 0.99, 0.99);
+}
+.button:hover:enabled .textClassName {
+  color: var(--static-white);
+}
+.button:hover:enabled .logo path {
+  fill: var(--static-white);
+}
+
+/** Disabled **/
+.button:disabled {
+  background: var(--neutral-light-6);
+}
+.button:disabled .textClassName {
+  color: var(--static-white);
+}
+.button:disabled .logo path {
+  fill: var(--static-white);
+}

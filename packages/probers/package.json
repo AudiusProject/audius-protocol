@@ -1,0 +1,36 @@
+{
+  "name": "probers",
+  "version": "1.5.40",
+  "description": "Automated client tests",
+  "scripts": {
+    "cypress:open": "cypress open",
+    "cypress:open-stage": "cypress open --env configFile=stage",
+    "cypress:run": "cypress run",
+    "cypress:run-stage": "cypress run --env configFile=stage",
+    "test:target": "env-cmd -f .env jest --runInBand",
+    "test": "npm run cypress:run",
+    "test:ci": "npm run cypress:run",
+    "lint": "eslint --cache --ext=js,jsx,ts,tsx cypress",
+    "lint:fix": "eslint --cache --fix --ext=js,jsx,ts,tsx cypress"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@testing-library/cypress": "^9.0.0",
+    "cypress": "^12.17.2",
+    "cypress-file-upload": "^5.0.8",
+    "cypress-wait-until": "^1.7.2",
+    "dayjs": "^1.11.6",
+    "typescript": "^4.8.4"
+  },
+  "standard": {
+    "env": [
+      "jest"
+    ],
+    "ignore": []
+  },
+  "devDependencies": {
+    "eslint": "8.19.0",
+    "eslint-plugin-cypress": "2.12.1"
+  }
+}

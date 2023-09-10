@@ -1,0 +1,64 @@
+.drawer {
+  min-height: 341px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 52px 12px;
+}
+
+.title {
+  font-style: normal;
+  font-weight: var(--font-heavy);
+  font-size: 28px;
+  line-height: 34px;
+  text-align: center;
+
+  color: var(--page-header-gradient);
+  user-select: none;
+  background-image: var(--page-header-gradient);
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  margin: 0px 0px 8px;
+}
+
+.description {
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-xl);
+  min-height: 102px;
+  margin-bottom: 16px;
+  line-height: 150%;
+  text-align: center;
+  letter-spacing: -0.3px;
+  padding: 0px 12px;
+  color: var(--neutral);
+}
+
+.submit {
+  height: 40px;
+  width: 100%;
+  background-color: var(--accent-red) !important;
+}
+
+.submit .submitText {
+  font-style: normal;
+  font-size: var(--font-m);
+  line-height: 12px;
+  text-align: center;
+  color: var(--white);
+}
+
+.cancel {
+  margin-top: 4px;
+  padding: 12px;
+  font-style: normal;
+  font-size: var(--font-m);
+  line-height: 12px;
+  text-align: center;
+  color: var(--secondary);
+}
+
+.cancel:hover,
+.cancel:active {
+  text-decoration: underline;
+}

@@ -1,0 +1,99 @@
+.button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  transition: all 0.08s ease-in;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.button > * {
+  display: flex;
+  width: 100%;
+}
+
+.buttonFixedSize {
+  height: 40px;
+  width: 40px;
+}
+
+.buttonFixedSize > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.repeat svg {
+  height: 22px !important;
+  width: 22px !important;
+}
+
+.shuffle svg {
+  height: 22px !important;
+  width: 22px !important;
+}
+
+.previousNext svg {
+  height: 30px !important;
+  width: 30px !important;
+}
+
+.playbackRateButton svg {
+  box-sizing: content-box;
+  height: 12px;
+  width: initial;
+  padding: 12px 0;
+}
+
+.popupTitle {
+  font-size: var(--font-2xs);
+  line-height: var(--font-2xs);
+  letter-spacing: 0.15px;
+  text-transform: uppercase;
+  color: var(--neutral);
+  padding: var(--unit-2) var(--unit-2) var(--unit);
+}
+
+.centeredItem {
+  justify-content: center;
+}
+
+.button:hover {
+  transform: scale(1.05);
+  opacity: 0.95;
+}
+.button:active {
+  transform: scale(0.95);
+}
+.button:focus {
+  outline: none;
+}
+.noAnimation path {
+  fill: var(--neutral);
+}
+
+.animation {
+  max-width: 100%;
+  max-height: 100%;
+  pointer-events: none;
+}
+
+.animation > div {
+  /* On some devices (iOS 13) the animation can get clipped with overflow hidden */
+  overflow: visible !important;
+}
+
+.playButton :global(#primaryBG) path,
+.playButton :global(#Primary) path {
+  fill: var(--primary);
+}
+
+.playButton :global(#playpause1) path,
+.playButton :global(#playpause2) path,
+.playButton :global(#White) path {
+  fill: var(--play-button-triangle);
+}

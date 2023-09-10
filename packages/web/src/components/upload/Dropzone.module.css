@@ -1,0 +1,71 @@
+.dropzone {
+  height: 100%;
+  min-height: 600px;
+  border-radius: 8px;
+  background-color: var(--white);
+  box-shadow: 0 2px 5px -2px var(--table-shadow);
+  cursor: pointer !important;
+  text-align: center;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+
+  font-size: var(--font-xl);
+  font-weight: var(--font-medium);
+  line-height: 24px;
+}
+
+.hoverBoundingBox {
+  width: 55%;
+  height: 35%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.textAboveIcon {
+  padding-bottom: 10px;
+}
+
+.iconUpload {
+  margin: 12px;
+  width: 40px;
+  height: 36px;
+}
+.iconUpload g path {
+  fill: var(--neutral);
+}
+.text > span {
+  color: var(--primary);
+}
+.text > span:hover {
+  border-bottom: 1px solid var(--primary);
+}
+
+.iconUpload,
+.iconUpload g path {
+  transition: all 0.2s ease-out !important;
+}
+.hoverBoundingBox:hover .iconUpload {
+  transform: scale3d(1.2, 1.2, 1.2);
+}
+.hoverBoundingBox:hover .iconUpload g path {
+  fill: var(--neutral-light-2);
+}
+
+.hoverBoundingBox:active .iconUpload {
+  transform: scale(0.95);
+}
+
+.dropzoneButton {
+  background: 0 0;
+  border: transparent;
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}

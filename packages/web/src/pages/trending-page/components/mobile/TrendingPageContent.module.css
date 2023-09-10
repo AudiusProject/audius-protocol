@@ -1,0 +1,39 @@
+.lineupContainer {
+  margin-bottom: 8px;
+  padding: 0px 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.lineupContainer.playing {
+  margin-bottom: 54px;
+}
+
+.header {
+  border-bottom: 1px solid var(--neutral-light-8);
+}
+
+.tabsContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--header-padding-top);
+}
+
+.tabBarHolder {
+  position: fixed;
+  top: 92px;
+  margin-top: 0px;
+  margin-top: env(safe-area-inset-top, 0px);
+  left: 0px;
+  right: 0px;
+  z-index: 10;
+}
+
+.tabBodyHolder {
+  margin-top: 60px;
+}
+
+.rewardsContainer {
+  margin: 12px 0px 8px;
+}

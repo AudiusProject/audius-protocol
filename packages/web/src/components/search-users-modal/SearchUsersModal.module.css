@@ -1,0 +1,36 @@
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 690px;
+  width: 488px;
+}
+
+.search {
+  max-width: 100%;
+  padding: var(--unit-6);
+  border-bottom: 1px solid var(--neutral-light-8);
+}
+
+.results {
+  flex: 1;
+}
+
+.icon path {
+  fill: var(--neutral);
+}
+
+.iconLight {
+  /* Fixes vertical alignment inside IconButton */
+  display: block;
+}
+
+.iconLight path {
+  fill: var(--neutral-light-4);
+}
+
+.spinner {
+  width: var(--unit-12);
+  height: var(--unit-12);
+  margin: var(--unit-4) auto;
+}

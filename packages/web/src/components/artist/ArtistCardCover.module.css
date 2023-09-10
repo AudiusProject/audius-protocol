@@ -1,0 +1,114 @@
+.artistCoverPhoto {
+  height: 136px !important;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 6px 6px 0px 0px;
+  /* NOTE: the width and margin left are b/c antd calculated partial pixels to shift the artist card */
+  width: calc(100% + 2px) !important;
+  margin-left: -1px;
+}
+
+.coverPhotoContentContainer {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: 100%;
+  padding-left: 16px;
+  padding-bottom: 8px;
+  background: linear-gradient(
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.05) 70%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+}
+
+.badgeArtist {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.3));
+}
+
+.profilePictureWrapper {
+  flex: 0 0 72px;
+  height: 72px !important;
+  width: 72px !important;
+}
+
+.profilePictureSkeleton {
+  height: 72px;
+  width: 72px;
+  border-radius: 50%;
+}
+
+.profilePicture {
+  height: 72px;
+  width: 72px;
+  border: 2px solid var(--white);
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--default-profile-picture-background);
+}
+
+.headerTextContainer {
+  display: flex;
+  flex-direction: column;
+  padding-left: 8px;
+}
+
+.nameContainer {
+  display: inline-flex;
+  align-items: center;
+}
+
+.artistName {
+  color: var(--static-white);
+  font-size: 20px;
+  font-weight: 900;
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+  text-shadow: 0 1px 2px rgba(39, 31, 71, 0.5);
+}
+
+.artistName:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.artistHandleWrapper {
+  white-space: nowrap;
+  margin-right: 10px;
+}
+
+.artistHandle {
+  display: inline-block;
+  color: var(--static-white);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.25px;
+  line-height: 18px;
+  user-select: none;
+  text-shadow: 0 1px 2px rgba(39, 31, 71, 0.5);
+  margin-right: 8px;
+}
+
+.artistHandle:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.iconVerified {
+  margin: 0px 16px 8px 8px;
+}
+
+.iconVerified svg {
+  filter: drop-shadow(0 1px 2px rgba(39, 31, 71, 0.5));
+  z-index: 10000;
+}

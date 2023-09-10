@@ -1,0 +1,52 @@
+.successPage {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: stretch;
+  gap: 24px;
+  padding-bottom: 24px;
+
+  font-weight: var(--font-bold);
+}
+
+.message {
+  text-align: center;
+  font-size: var(--font-l);
+}
+
+.label,
+.message,
+.review {
+  color: var(--neutral-light-4);
+}
+.review .reviewButtonIcon svg path {
+  fill: var(--neutral-light-4);
+}
+
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.purchasedAmount {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--static-accent-green);
+  font-size: var(--font-l);
+}
+
+.newBalance {
+  display: flex;
+  gap: 4px;
+  font-size: var(--font-3xl);
+}
+
+.review {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: var(--font-s);
+}

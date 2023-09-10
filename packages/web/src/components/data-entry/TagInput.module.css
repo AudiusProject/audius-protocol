@@ -1,0 +1,165 @@
+.wrapper {
+  width: 100%;
+  display: flex;
+  position: relative;
+}
+
+.wrapper.horizontal {
+  flex-direction: row;
+}
+.wrapper.horizontal .label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-right: 8px;
+}
+
+.wrapper.vertical {
+  flex-direction: column;
+}
+.wrapper.vertical .label {
+  margin-bottom: 4px;
+}
+
+.label {
+  margin-bottom: 4px;
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: 500;
+}
+
+.tagInput {
+  width: 100%;
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 6px;
+  padding: 4px 16px;
+  background-color: var(--neutral-light-10);
+  color: var(--neutral);
+  font-weight: 500;
+
+  cursor: text;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  user-select: none;
+  transition: border ease-in-out 0.1s;
+}
+.wrapper.normal > .tagInput {
+  min-height: 50px;
+}
+.wrapper.small > .tagInput {
+  min-height: 34px;
+}
+.wrapper.normal.horizontal .label {
+  max-height: 50px;
+}
+.wrapper.small.horizontal .label {
+  max-height: 34px;
+}
+.tagInput:hover {
+  border-color: var(--neutral-light-6);
+}
+.wrapper.focused .tagInput {
+  border-color: var(--secondary);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  margin: 4px;
+  background-color: var(--secondary);
+  color: var(--static-white);
+  border: none;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.83px;
+  text-transform: uppercase;
+  transition: all ease-in-out 0.1s;
+  cursor: default;
+  padding-right: 0;
+}
+.tag.last {
+  margin-right: 32px;
+}
+.tag::after {
+  display: none;
+}
+.tag:hover {
+  opacity: 0.9;
+}
+.tag.flash {
+  background-color: var(--neutral-light-7);
+  color: var(--neutral);
+}
+.tag.flash g path {
+  fill: var(--neutral);
+}
+
+.newTag {
+  border-radius: 4px;
+  background-color: var(--secondary-light-2);
+  transition: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+.newTag:hover {
+  transform: scale(1.05);
+}
+.newTag:active {
+  transform: scale(0.95);
+}
+
+.tagIconWrapper {
+  height: 100%;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  padding-right: 7px;
+  padding-bottom: 2px;
+}
+.iconSave {
+  width: 8px;
+  height: 8px;
+  margin-left: 5px;
+}
+.iconRemove {
+  height: 10px;
+  width: 10px;
+  margin-left: 4px;
+}
+.iconRemove:hover {
+  transform: scale(1.1);
+}
+.iconRemove:active {
+  transform: scale(0.95);
+}
+.iconSave g path,
+.iconRemove g path {
+  fill: var(--static-white);
+}
+
+.newTagInput {
+  height: 20px;
+  margin: 4px;
+  background: none;
+  border: none;
+  box-shadow: none;
+  outline: none;
+  width: 100px;
+}
+
+.tagCount {
+  position: absolute;
+  right: 16px;
+  bottom: 10px;
+  color: var(--neutral-light-4);
+  font-size: 12px;
+  font-weight: 500;
+}
+.tagCount.nearLimit {
+  color: var(--accent-orange);
+  font-weight: var(--font-bold);
+}

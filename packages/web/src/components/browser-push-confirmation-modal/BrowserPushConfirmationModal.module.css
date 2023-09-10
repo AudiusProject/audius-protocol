@@ -1,0 +1,52 @@
+.wrapperClassName {
+  position: absolute;
+  top: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.title {
+  color: var(--neutral-light-4);
+  font-size: var(--font-l);
+  letter-spacing: 0.5px;
+  line-height: 28px;
+  text-align: center;
+}
+
+.modalBody {
+  max-width: 559px;
+  width: 100%;
+}
+
+.textBody {
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  line-height: 22px;
+  text-align: center;
+  margin-top: 21px;
+}
+
+.description {
+  margin-bottom: 22px;
+}
+
+.buttons {
+  display: inline-flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 21px;
+}
+
+.mobile .buttons {
+  flex-direction: column;
+}
+
+.closeButton,
+.enableButton {
+  margin-bottom: 21px;
+}
+
+.headerContainerClassName {
+  padding: 14px 0px 6px !important;
+  border-bottom-color: var(--neutral-light-8);
+}

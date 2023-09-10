@@ -1,0 +1,49 @@
+{
+  "assets": {
+    "./media/publisher_icon.png": {
+      "path": "./media/publisher_icon.png",
+      "sha256": "0u8TN58HkQba/VePPDI0eVkk2aaJA9+rNMlYa57f5t0=",
+      "uri": "https://arweave.net/29JYV-2ATl-pMAvA93gDXGGuLZoKZwd41iX_b1fB33w"
+    },
+    "./media/app_icon.png": {
+      "path": "./media/app_icon.png",
+      "sha256": "0u8TN58HkQba/VePPDI0eVkk2aaJA9+rNMlYa57f5t0=",
+      "uri": "https://arweave.net/Ax9prBxqGqu3ea14Gg1j62lmWDenw351l929qnZxaV0"
+    },
+    "./media/screenshot6.png": {
+      "path": "./media/screenshot6.png",
+      "sha256": "VejLmbkOCEyGBqKd5yYZwlW5g/1AqWRU6AjHcJVGWng=",
+      "uri": "https://arweave.net/x04JGZg9YS8RJ9Mpv7zYeTxZiAR-1JnohiOWszbTMRo"
+    },
+    "./media/screenshot5.png": {
+      "path": "./media/screenshot5.png",
+      "sha256": "Zz6+ju2Nal+1tA72vFf9SQzXZ4jfC7spTCpI72+vG1s=",
+      "uri": "https://arweave.net/TuUpoB1ecxFB1cqOf7YcTjvJMdiFbq3Wcy5nrZSuEjU"
+    },
+    "./media/screenshot3.png": {
+      "path": "./media/screenshot3.png",
+      "sha256": "6qVaIghwKoyFnOTnaZuvWIbGNRoEKtM+pyuR6uBEm04=",
+      "uri": "https://arweave.net/TNBu6hjbNm_koIApHvK45wi5lzLci_OK1JgsBPf9x1g"
+    },
+    "./media/screenshot1.png": {
+      "path": "./media/screenshot1.png",
+      "sha256": "hvwSpajV+DeBAN/UEfMV1YQTyxNkV+c1UOB+UDUIyRw=",
+      "uri": "https://arweave.net/BftDoP6HFHolrMfQskM45c_74v_hCPqhcoSJnSCEc4g"
+    },
+    "./media/screenshot2.png": {
+      "path": "./media/screenshot2.png",
+      "sha256": "+08UZJiULn40vyV88epkT8aexwOtOqGn4LeEE74sDRw=",
+      "uri": "https://arweave.net/oYfhPhCOiZ8Li19XmvFIbA2jIjlXrAruNnQT_VnJr98"
+    },
+    "./media/screenshot4.png": {
+      "path": "./media/screenshot4.png",
+      "sha256": "5GTcN55u666vbR/rZpp3QDWd1P4GnKmtFQB22QmR1RA=",
+      "uri": "https://arweave.net/OyzQcYT5sYfF7dYBVPR-FlanhvBnQeUVhow2Tp25hnM"
+    },
+    "../android/app/build/outputs/apk/prod/release/app-prod-release.apk": {
+      "path": "../android/app/build/outputs/apk/prod/release/app-prod-release.apk",
+      "sha256": "i2ZA0Mrwif9O7g6rHrVBGmSAUAk5YecTzsv1tL6vczM=",
+      "uri": "https://arweave.net/-6b-bLLRsfKOmk9FlYscV8l3gFrjTRYqSieOss0-5Og"
+    }
+  }
+}

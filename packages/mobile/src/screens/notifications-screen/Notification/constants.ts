@@ -1,0 +1,2 @@
+export const USER_LENGTH_LIMIT = 8
+export const PROFILE_PICTURE_BORDER_WIDTH = 2

@@ -1,0 +1,38 @@
+.drawer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 160%;
+  height: 406px;
+}
+
+.top {
+  display: flex;
+  margin-top: 48px;
+  align-items: center;
+}
+
+.top img {
+  height: 108px;
+  width: 108px;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 160%;
+}
+
+.badgeColoredText {
+  margin: 8px 0px;
+}
+
+.topText {
+  display: flex;
+  flex-direction: column;
+  margin-left: 16px;
+}
+
+.textContainer {
+  max-width: 308px;
+  margin-top: 24px;
+}

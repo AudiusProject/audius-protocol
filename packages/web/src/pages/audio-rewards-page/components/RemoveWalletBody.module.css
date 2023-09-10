@@ -1,0 +1,48 @@
+.container {
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+  padding: 32px 0px 24px;
+}
+
+.warning {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--accent-red);
+  margin-bottom: 32px;
+}
+
+.wallet {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--neutral);
+  margin-bottom: 32px;
+}
+
+.btnContainer {
+  display: flex;
+  justify-content: center;
+}
+
+.removeBtn,
+.removeBtn:hover,
+.removeBtn:active {
+  background: var(--accent-red) !important;
+}
+
+.removeBtn .removeBtnText {
+  color: var(--white);
+}
+
+.btn .btnText {
+  font-weight: var(--font-bold);
+  font-size: var(--font-l);
+}
+
+.ignoreBtn {
+}
+
+.btn {
+  margin: 0px 12px;
+}

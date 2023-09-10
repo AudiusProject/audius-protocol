@@ -1,0 +1,29 @@
+.userHeader {
+  margin-left: 24px;
+  margin-bottom: 24px;
+}
+
+.accountWrapper {
+  display: block;
+  margin-bottom: 4px;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-shrink: 0;
+  transition: all ease-in-out 0.18s;
+
+  color: var(--neutral);
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-1);
+  margin-left: 16px;
+  margin-right: 16px;
+  text-align: left;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow: hidden;
+}

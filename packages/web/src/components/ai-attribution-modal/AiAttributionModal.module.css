@@ -1,0 +1,40 @@
+.root {
+  width: 720px;
+}
+
+.title {
+  color: var(--neutral-light-2);
+  text-transform: uppercase;
+}
+
+.titleIcon path {
+  fill: var(--neutral-light-2);
+}
+
+.content {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--unit-4);
+}
+
+.switchLabel {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.switchLabelText {
+  font-size: var(--font-xl);
+  font-weight: var(--font-bold);
+}
+
+.description {
+  font-size: var(--font-l);
+  font-weight: var(--font-medium);
+  line-height: 150%;
+}
+
+.doneButton {
+  align-self: center;
+}

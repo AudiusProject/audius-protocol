@@ -1,0 +1,140 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.inputRoot {
+  display: flex;
+  align-items: center;
+  gap: var(--unit-2);
+  padding: 0 var(--unit-4);
+  border: 1px solid var(--neutral-light-8);
+  border-radius: var(--unit-1);
+  background-color: var(--neutral-light-10);
+  transition: border ease-in-out 0.1s;
+}
+
+.small {
+  --gap: -4px;
+  --font-size: var(--font-s);
+  height: 34px;
+}
+
+.medium {
+  --gap: 0px;
+  --font-size: var(--font-m);
+  height: 50px;
+}
+
+.large {
+  --gap: var(--unit-1);
+  --font-size: var(--font-xl);
+  height: 66px;
+}
+
+.root:hover {
+  border-color: var(--neutral-light-6);
+}
+
+.focused {
+  border-color: var(--secondary);
+}
+
+.warning,
+.warning.focused {
+  border-color: var(--accent-orange);
+}
+
+.error,
+.error.focused {
+  border-color: var(--accent-red);
+}
+
+.error:hover,
+.error:hover.focused {
+  border-color: var(--accent-red-dark-1);
+}
+
+.disabled {
+  background-color: var(--neutral-light-9);
+  border-color: var(--neutral-light-8);
+}
+
+.textInput {
+  width: 100%;
+  height: 100%;
+  outline: 0;
+  border: 0;
+  background: none;
+  font-size: var(--font-size);
+  font-weight: var(--font-medium);
+}
+
+.textInput::placeholder,
+.label {
+  color: var(--neutral-light-4);
+  font-weight: var(--font-medium);
+}
+
+.inputRow {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.inputContainer {
+  flex: 1 1 0;
+}
+
+/** 
+ * Flex container so that the absolutely positioned elevated placeholder
+ * starts out centered vertically
+ **/
+.elevatedLabel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  font-size: var(--font-size);
+}
+
+/** Add the "*" to required fields, but have it disappear when elevated **/
+.required:not(.focused) .elevatedLabel .placeholder:not(.hasValue)::after {
+  content: ' *';
+}
+
+/** Push the input down a bit to make room for the elevated placeholder **/
+.elevatedLabel .inputRow {
+  padding-top: calc(var(--font-xs));
+}
+
+/** Position the elevated label absoutely on top of the input **/
+.label {
+  position: absolute;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+/** Move the elevated label to the top left if focused or has text **/
+.focused .elevatedLabel .label,
+.hasValue {
+  transform: translate(0px, calc(-1em - var(--gap)));
+  font-size: var(--font-xs);
+}
+
+/** Make a container for the character count... **/
+.characterCount {
+  position: relative;
+  padding-top: var(--unit-2);
+  align-self: flex-start;
+  color: var(--neutral-light-4);
+  font-size: var(--font-xs);
+  font-weight: var(--font-bold);
+}
+
+/** ... then position the actual count absolutely relative to that **/
+.characterCount span {
+  position: absolute;
+  right: 0;
+}

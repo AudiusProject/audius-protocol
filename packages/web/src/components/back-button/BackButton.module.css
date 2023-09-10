@@ -1,0 +1,39 @@
+.backButton {
+  height: 24px;
+  width: 24px;
+  background-color: var(--neutral-light-5);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  transform: rotate(180deg);
+  transition: all 0.07s ease-in-out;
+  cursor: pointer;
+  user-select: none;
+}
+.backButton.light {
+  background-color: var(--neutral-light-6);
+}
+
+.backButton g path {
+  fill: var(--white);
+}
+
+.backButton:hover {
+  background-color: var(--neutral-light-4);
+  transform: rotate(180deg) scale3d(1.04, 1.04, 1.04);
+}
+.backButton.light:hover {
+  background-color: var(--neutral-light-5);
+}
+
+.backButton:active {
+  background-color: var(--neutral-light-5);
+  transform: rotate(180deg) scale3d(0.95, 0.95, 0.95);
+}
+.backButton.light :active {
+  background-color: var(--neutral-light-6);
+}

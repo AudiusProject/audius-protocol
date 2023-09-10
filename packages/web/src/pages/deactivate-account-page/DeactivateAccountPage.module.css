@@ -1,0 +1,74 @@
+.tile {
+  flex: 1;
+  border-radius: 6px;
+  box-shadow: 0px 16px 20px var(--table-shadow);
+  width: 100%;
+  background-color: var(--white);
+  text-align: left;
+  padding: 50px;
+}
+
+.header {
+  font-weight: var(--font-bold);
+  font-size: var(--font-2xl);
+  color: var(--secondary);
+  margin: 10px 0;
+}
+
+.list {
+  list-style-type: disc;
+  line-height: 32px;
+  margin-inline-start: 1.5em;
+  margin-bottom: 50px;
+  font-weight: var(--font-demi-bold);
+}
+.list li:last-child {
+  font-weight: var(--font-bold);
+}
+
+.error {
+  color: var(--accent-red);
+  font-weight: var(--font-bold);
+  margin-bottom: 24px;
+}
+
+.button {
+  height: auto !important;
+  margin-inline-end: 24px;
+  padding: 12px 24px !important;
+}
+.button.buttonDanger,
+.button.buttonDanger:hover {
+  background-color: var(--accent-red);
+}
+.button.buttonDanger:active {
+  background-color: var(--accent-red-dark-1);
+}
+
+.button > span {
+  font-size: var(--font-m) !important;
+}
+
+/** MOBILE **/
+.mobile.tile {
+  padding: 24px;
+  margin: 32px 8px;
+}
+.mobile .header {
+  margin-bottom: 30px;
+}
+.mobile .list {
+  margin-bottom: 30px;
+}
+.mobile .error {
+  margin-bottom: 0;
+  text-align: center;
+}
+.mobile .errorMessage {
+  display: inline-block;
+  margin-bottom: 8px;
+}
+.mobile .button {
+  margin: 12px 0 0;
+  width: 100%;
+}

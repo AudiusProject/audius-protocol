@@ -1,0 +1,88 @@
+.inProgressPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.header {
+  font-size: var(--font-xl);
+  font-weight: var(--font-bold);
+  color: var(--neutral-light-4);
+}
+.headerCaps {
+  composes: header;
+  text-transform: uppercase;
+}
+.amount {
+  composes: header;
+  color: var(--neutral);
+}
+
+.callToAction {
+  color: var(--secondary);
+}
+
+.loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+}
+.showMoreToggle {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.showMoreToggle:global(.collapsed) {
+  border-top: 1px solid var(--neutral-light-8);
+}
+.showMoreToggle .showMoreToggleButton {
+  padding-top: 24px;
+  padding-bottom: 24px;
+}
+
+.moreInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+
+  padding: 16px 24px;
+
+  background: var(--neutral-light-10);
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 8px;
+}
+
+.caret {
+  width: 18px;
+  transform: rotate(-90deg);
+  vertical-align: baseline;
+}
+.caret path {
+  fill: var(--neutral-light-4);
+}
+
+.quote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.error {
+  white-space: pre-line;
+  color: var(--accent-red);
+  text-align: center;
+  font-weight: var(--font-demi-bold);
+  line-height: 150%;
+}

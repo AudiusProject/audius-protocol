@@ -1,0 +1,91 @@
+.accountWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  flex-shrink: 0;
+  padding-bottom: 4px;
+  color: var(--neutral);
+  transition: all ease-in-out 0.18s;
+}
+
+.accountWrapperLeftAlign {
+  justify-content: start;
+}
+
+.dynamicPhoto {
+  height: 78px;
+  border-radius: 40px;
+  border: 1px solid var(--white);
+  box-shadow: 0 0 1px 0 rgba(133, 129, 153, 0.5);
+
+  text-align: center;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--default-profile-picture-background);
+}
+
+.accountWrapper .photo {
+  position: relative;
+
+  overflow: hidden;
+  flex: 0 0 78px;
+  height: 78px;
+  border-radius: 30px;
+  border: 1px solid var(--white);
+  box-shadow: 0 0 1px 0 rgba(133, 129, 153, 0.5);
+
+  text-align: center;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--default-profile-picture-background);
+}
+
+.accountWrapper .userInfoWrapper {
+  margin-left: 8px;
+  text-align: left;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow: hidden;
+}
+
+.name {
+  font-size: var(--font-s);
+  line-height: 17px;
+  font-weight: var(--font-bold);
+  padding-bottom: 4px;
+  padding-right: 4px;
+  color: var(--neutral);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+}
+
+.badge {
+  margin-left: 4px;
+}
+
+.accountWrapper .userInfoWrapper .handleContainer {
+  display: inline-flex;
+  overflow: hidden;
+  line-height: 18px;
+  padding-right: 4px;
+}
+
+.handle {
+  font-size: var(--font-s);
+  color: var(--neutral);
+  font-weight: var(--font-medium);
+  transition: all 0.07s ease-in-out;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accountWrapper .userInfoWrapper .handleContainer svg {
+  transition: all 0.07s ease-in-out;
+}

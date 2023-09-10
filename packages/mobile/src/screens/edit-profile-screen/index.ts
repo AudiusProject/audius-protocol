@@ -1,0 +1,1 @@
+export { EditProfileScreen } from './EditProfileScreen'

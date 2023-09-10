@@ -1,0 +1,63 @@
+.hoverInfo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+}
+
+.coSign {
+  color: var(--neutral-light-4);
+  font-size: var(--font-xs);
+  font-weight: var(--font-heavy);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  line-height: 15px;
+  text-align: center;
+}
+
+.body {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--secondary);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  letter-spacing: 0;
+  line-height: 20px;
+}
+
+.icons {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+}
+
+.icons > * {
+  height: 16px;
+  width: 16px;
+}
+
+.icons > *:first-child {
+  margin-right: 4px;
+}
+
+.icons path {
+  fill: var(--secondary);
+}
+
+.text {
+  text-align: left;
+}
+
+.name {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 6px;
+}
+
+.iconVerified {
+  margin-left: 2px;
+}

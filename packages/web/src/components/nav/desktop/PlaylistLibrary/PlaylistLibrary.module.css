@@ -1,0 +1,18 @@
+.droppable {
+  padding-top: 10px;
+  margin-top: -10px;
+  transition: background 0.07s ease-in-out;
+  border-radius: 6px;
+}
+
+.droppableHover {
+  background-color: rgba(152, 73, 214, 0.15);
+}
+
+.header {
+  gap: var(--unit-2);
+}
+
+.droppableLink {
+  color: var(--secondary);
+}

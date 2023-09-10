@@ -1,0 +1,12 @@
+probers-test-stage:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:latest-browsers
+  steps:
+    - checkout
+    - run:
+        name: run prober tests against staging.audius.co
+        command: |
+          cd packages/probers
+          npx cypress install
+          npm run cypress:run-stage

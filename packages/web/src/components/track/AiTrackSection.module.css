@@ -1,0 +1,100 @@
+.root {
+  padding: 18px 24px;
+  border-top: 1px solid var(--neutral-light-7);
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: var(--neutral);
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  line-height: 18px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.iconRobot {
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+}
+
+.iconRobot path {
+  fill: var(--neutral);
+}
+
+.description {
+  display: flex;
+  font-size: var(--font-s);
+  line-height: 17px;
+  font-weight: var(--font-medium);
+  color: var(--neutral);
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.link {
+  color: var(--secondary);
+  font-size: var(--font-s);
+  line-height: 17px;
+  font-weight: var(--font-medium);
+}
+
+.link:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.attributedUser {
+  margin-left: 4px;
+  display: flex;
+  align-items: center;
+  color: var(--secondary);
+}
+
+.attributedUser:hover {
+  color: var(--secondary);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.attributedUser:active {
+  color: var(--secondary-dark-2);
+}
+
+.badgeIcon {
+  margin-left: 4px;
+}
+
+.button {
+  padding: 0px;
+}
+
+.buttonText {
+  font-size: var(--font-s);
+}
+
+.iconArrow {
+  width: 10px !important;
+  height: 10px !important;
+  margin-left: 4px;
+}
+
+.iconArrow path {
+  fill: var(--neutral-light-4) !important;
+}
+
+.button:hover .iconArrow path {
+  fill: var(--secondary) !important;
+}
+
+.buttonText {
+  color: var(--neutral-light-4);
+}
+
+.button:hover .buttonText {
+  color: var(--secondary);
+}

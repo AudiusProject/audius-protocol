@@ -1,0 +1,36 @@
+diff --git a/node_modules/micro-aes-gcm/index.js b/node_modules/micro-aes-gcm/index.js
+index c1b9cb5..73f4049 100644
+--- a/node_modules/micro-aes-gcm/index.js
++++ b/node_modules/micro-aes-gcm/index.js
+@@ -1,7 +1,7 @@
+ import * as nodeCrypto from 'crypto';
+ const crypto = {
+     node: nodeCrypto,
+-    web: typeof self === 'object' && 'crypto' in self ? self.crypto : undefined,
++    web: typeof self === 'object' && 'crypto' in self && 'subtle' in self['crypto'] ? self['crypto'] : undefined,
+ };
+ function hexToBytes(hex) {
+     if (typeof hex !== 'string') {
+@@ -71,7 +71,7 @@ export async function decrypt(sharedKey, encoded) {
+     else {
+         const ciphertext = encoded.slice(12, -16);
+         const authTag = encoded.slice(-16);
+-        const decipher = crypto.node.createDecipheriv('aes-256-gcm', sharedKey, iv);
++        const decipher = crypto.node.createDecipheriv('aes-256-gcm', sharedKey, iv, { authTagLength: 16 });
+         decipher.setAuthTag(authTag);
+         const plaintext = decipher.update(ciphertext);
+         const final = Uint8Array.from(decipher.final());
+diff --git a/node_modules/micro-aes-gcm/package.json b/node_modules/micro-aes-gcm/package.json
+index fbd0ac8..2cc7d49 100644
+--- a/node_modules/micro-aes-gcm/package.json
++++ b/node_modules/micro-aes-gcm/package.json
+@@ -14,6 +14,9 @@
+   "browser": {
+     "crypto": false
+   },
++  "react-native": {
++    "crypto": "crypto"
++  },
+   "scripts": {
+     "build": "tsc",
+     "test": "node test.mjs"

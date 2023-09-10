@@ -1,0 +1,118 @@
+.savedPageWrapper {
+  position: relative;
+  text-align: left;
+}
+
+.savedPageHeader {
+  justify-content: left;
+}
+
+.savedPageHeader .playAllButton {
+  margin-left: 28px;
+  height: 28px;
+  width: 94px;
+  display: flex;
+  justify-content: center;
+}
+.savedPageHeader .playAllButton .playAllButtonIcon {
+  margin-right: 8px;
+  width: 12px !important;
+  height: 12px !important;
+}
+
+.savedPageHeader .playAllButton .playAllButtonText {
+  font-size: 11px;
+}
+
+/* Filter Input in Header */
+.savedPageWrapper :global(.ant-input-affix-wrapper) {
+  position: absolute;
+  right: 0px;
+  top: 60px;
+  width: 120px;
+  z-index: 1;
+}
+.savedPageWrapper :global(.ant-input-affix-wrapper .ant-input) {
+  border-radius: 4px;
+  border: 1px solid var(--neutral-light-8) !important;
+  box-shadow: 0 2px 5px 0 var(--search-bar-shadow);
+  background-color: var(--neutral-light-10);
+  transition: width 0.2s ease-in-out, background 0.04s ease-in-out;
+  color: var(--neutral);
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
+  border: none;
+
+  padding-top: 1px;
+  padding-bottom: 1px;
+  height: 24px;
+}
+.savedPageWrapper :global(.ant-input-prefix) > svg {
+  width: 12px;
+  height: 12px;
+}
+.savedPageWrapper :global(.ant-input-prefix) > svg g path {
+  fill: var(--neutral-light-4);
+}
+
+.filterContainer {
+  transition: all 0.5s;
+}
+
+/* Body Content Wrapper */
+.bodyWrapper {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Track Table */
+.bodyWrapper .tableWrapper {
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px -2px rgba(133, 129, 153, 0.25);
+  background-color: var(--white);
+  padding-bottom: 5px;
+  overflow: hidden;
+}
+
+/* Albums */
+.cardsContainer {
+  gap: var(--unit-6) var(--unit-4);
+  margin-bottom: var(--unit-4);
+}
+
+.playButtonContainer {
+  transition: all 0.25s;
+}
+
+.tabElement {
+  justify-content: flex-start;
+}
+
+.albumsWrapper {
+  flex: 1 1 0;
+}
+
+.createPlaylistCard {
+  display: flex;
+  flex-direction: column;
+  row-gap: var(--unit-2);
+  align-items: center;
+  justify-content: center;
+}
+
+.createPlaylistText {
+  font-size: var(--font-xl);
+  font-weight: var(--font-bold);
+  color: var(--neutral-light-2);
+}
+
+.createPlaylistIcon {
+  height: var(--unit-5);
+  width: var(--unit-5);
+}
+
+.createPlaylistIcon circle {
+  fill: var(--neutral-light-2);
+}

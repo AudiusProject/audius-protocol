@@ -1,0 +1,3 @@
+provider: s3
+bucket: download.audius.co
+region: us-west-1

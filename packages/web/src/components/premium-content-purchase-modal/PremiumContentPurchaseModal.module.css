@@ -1,0 +1,10 @@
+.modal {
+  width: 720px;
+}
+
+.title {
+  align-items: center;
+  display: flex;
+  gap: var(--unit-2);
+  justify-content: center;
+}

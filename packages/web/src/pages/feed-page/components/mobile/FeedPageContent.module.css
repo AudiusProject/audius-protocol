@@ -1,0 +1,15 @@
+.lineupContainer {
+  margin-top: 12px;
+  margin-bottom: 8px;
+  padding: 0px 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.lineupContainer.playing {
+  margin-bottom: 54px;
+}
+
+.header {
+  border-bottom: 1px solid var(--neutral-light-8);
+}

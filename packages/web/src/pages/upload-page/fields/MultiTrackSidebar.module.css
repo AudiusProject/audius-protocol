@@ -1,0 +1,115 @@
+.root {
+  position: sticky;
+  top: 152px;
+  align-self: flex-start;
+  border-radius: 8px;
+
+  flex-shrink: 0;
+  width: 320px;
+  background: var(--background-surface-1);
+  box-shadow: var(--shadow-far);
+}
+
+.title {
+  padding: var(--unit-4);
+  border-radius: 8px 8px 0px 0px;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.body {
+  padding: var(--unit-4);
+  border-radius: 0px 0px 8px 8px;
+  background: var(--white);
+}
+
+.iconError {
+  height: 12px;
+  width: 12px;
+}
+
+.iconError path {
+  fill: var(--accent-red);
+}
+
+/* Track */
+.tracks {
+  margin: 0 calc(-1 * var(--unit-4));
+}
+
+.track {
+  justify-content: space-between;
+}
+
+.trackRoot {
+  cursor: pointer;
+  position: relative;
+  border-top: 1px solid transparent;
+  border-bottom: 1px solid transparent;
+}
+
+.trackRoot:hover {
+  background: var(--neutral-light-9);
+  border-top: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.trackInfo {
+  width: 100%;
+  padding: var(--unit-2) var(--unit-4);
+}
+
+.trackInfo.selected {
+  color: var(--secondary);
+}
+
+.trackInfo.error {
+  color: var(--accent-red);
+}
+
+.trackTitleContainer {
+  min-width: 0;
+  flex-grow: 1;
+}
+
+.trackTitleContainer > * {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.selectedIndicator {
+  width: 4px;
+  height: 42px;
+  position: absolute;
+  top: 6px;
+  border-radius: 0px 8px 8px 0px;
+  background: var(--secondary);
+}
+
+.trackIndex {
+  padding: var(--unit-2);
+}
+
+.artwork {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  border: 1px solid var(--border-strong);
+  background: lightgray 50% / cover no-repeat;
+  transition: border ease-in-out 0.1s;
+}
+
+.trackInfo .iconError {
+  height: 16px;
+  width: 16px;
+  margin: var(--unit-1);
+}
+
+.iconRemove {
+  padding-right: 8px;
+  display: none;
+}
+
+.trackRoot:hover .iconRemove {
+  display: flex;
+}

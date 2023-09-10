@@ -1,0 +1,240 @@
+.emoji {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  margin-bottom: 4px;
+  display: inline-block;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.emoji.small {
+  width: 16px;
+  height: 16px;
+  margin-bottom: 4px;
+}
+
+.emoji.large {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 6px;
+}
+
+.emoji.xl {
+  width: 32px;
+  height: 32px;
+}
+
+.emoji.xxl {
+  width: 45px;
+  height: 45px;
+}
+
+.emoji.dove-of-peace {
+  background-image: url('../fonts/emojis/dove-of-peace.png');
+}
+.emoji.face-with-party-horn-and-party-hat {
+  background-image: url('../fonts/emojis/face-with-party-horn-and-party-hat.png');
+}
+.emoji.emoji.dove-of-peace.xxl {
+  background-image: url('../fonts/emojis/dove-of-peace-160.png');
+}
+.emoji.astonished-face {
+  background-image: url('../fonts/emojis/astonished-face.png');
+}
+.emoji.cloud-with-rain {
+  background-image: url('../fonts/emojis/cloud-with-rain.png');
+}
+.emoji.confused-face {
+  background-image: url('../fonts/emojis/confused-face.png');
+}
+.emoji.crying-face {
+  background-image: url('../fonts/emojis/crying-face.png');
+}
+.emoji.dove-of-peace {
+  background-image: url('../fonts/emojis/dove-of-peace.png');
+}
+.emoji.eyes {
+  background-image: url('../fonts/emojis/eyes.png');
+}
+.emoji.face-throwing-a-kiss {
+  background-image: url('../fonts/emojis/face-throwing-a-kiss.png');
+}
+.emoji.face-with-cowboy-hat {
+  background-image: url('../fonts/emojis/face-with-cowboy-hat.png');
+}
+.emoji.face-with-monocle {
+  background-image: url('../fonts/emojis/face-with-monocle.png');
+}
+.emoji.fire {
+  background-image: url('../fonts/emojis/fire.png');
+}
+.emoji.fire.xxl {
+  background-image: url('../fonts/emojis/fire-160.png');
+}
+.emoji.flexed-biceps {
+  background-image: url('../fonts/emojis/flexed-biceps.png');
+}
+.emoji.grinning-face-with-star-eyes {
+  background-image: url('../fonts/emojis/grinning-face-with-star-eyes.png');
+}
+.emoji.headphone {
+  background-image: url('../fonts/emojis/headphone.png');
+}
+.emoji.heart-with-arrow {
+  background-image: url('../fonts/emojis/heart-with-arrow.png');
+}
+.emoji.heart-with-arrow.xxl {
+  background-image: url('../fonts/emojis/heart-with-arrow-160.png');
+}
+.emoji.lock {
+  background-image: url('../fonts/emojis/lock.png');
+}
+.emoji.multiple-musical-notes {
+  background-image: url('../fonts/emojis/multiple-musical-notes.png');
+}
+.emoji.treble-clef {
+  background-image: url('../fonts/emojis/treble-clef.png');
+}
+.emoji.neutral-face {
+  background-image: url('../fonts/emojis/neutral-face.png');
+}
+.emoji.party-popper {
+  background-image: url('../fonts/emojis/party-popper.png');
+}
+.emoji.person-raising-both-hands-in-celebration {
+  background-image: url('../fonts/emojis/person-raising-both-hands-in-celebration.png');
+}
+.emoji.police-cars-revolving-light {
+  background-image: url('../fonts/emojis/police-cars-revolving-light.png');
+}
+.emoji.pouting-face {
+  background-image: url('../fonts/emojis/pouting-face.png');
+}
+.emoji.pouting-face.xxl {
+  background-image: url('../fonts/emojis/pouting-face-160.png');
+}
+.emoji.relieved-face {
+  background-image: url('../fonts/emojis/relieved-face.png');
+}
+.emoji.serious-face-with-symbols-covering-mouth {
+  background-image: url('../fonts/emojis/serious-face-with-symbols-covering-mouth.png');
+}
+.emoji.shrug {
+  background-image: url('../fonts/emojis/shrug.png');
+}
+.emoji.sign-of-the-horns {
+  background-image: url('../fonts/emojis/sign-of-the-horns.png');
+}
+.emoji.slightly-smiling-face {
+  background-image: url('../fonts/emojis/slightly-smiling-face.png');
+}
+.emoji.smiling-face-with-horns {
+  background-image: url('../fonts/emojis/smiling-face-with-horns.png');
+}
+.emoji.smiling-face-with-sunglasses {
+  background-image: url('../fonts/emojis/smiling-face-with-sunglasses.png');
+}
+.emoji.thinking-face {
+  background-image: url('../fonts/emojis/thinking-face.png');
+}
+.emoji.thinking-face.xxl {
+  background-image: url('../fonts/emojis/thinking-face-160.png');
+}
+.emoji.sparkles {
+  background-image: url('../fonts/emojis/sparkles.png');
+}
+.emoji.face-screaming-in-fear {
+  background-image: url('../fonts/emojis/face-screaming-in-fear.png');
+}
+.emoji.woman-surfing {
+  background-image: url('../fonts/emojis/woman-surfing.png');
+}
+.emoji.waving-hand-sign {
+  background-image: url('../fonts/emojis/waving-hand-sign.png');
+}
+.emoji.slightly-frowning-face {
+  background-image: url('../fonts/emojis/slightly-frowning-face.png');
+}
+.emoji.money-mouth-face {
+  background-image: url('../fonts/emojis/money-mouth-face.png');
+}
+.emoji.white-star {
+  background-image: url('../fonts/emojis/white-medium-star.png');
+}
+.emoji.key {
+  background-image: url('../fonts/emojis/key.png');
+}
+.emoji.white-heavy-check-mark {
+  background-image: url('../fonts/emojis/white-heavy-check-mark.png');
+}
+.emoji.mobile-phone-with-arrow {
+  background-image: url('../fonts/emojis/mobile-phone-with-arrow.png');
+}
+.emoji.incoming-envelope {
+  background-image: url('../fonts/emojis/incoming-envelope.png');
+}
+.emoji.octagonal-sign {
+  background-image: url('../fonts/emojis/octagonal-sign.png');
+}
+.emoji.speech-balloon {
+  background-image: url('../fonts/emojis/speech-balloon.png');
+}
+.emoji.waning-crescent-moon {
+  background-image: url('../fonts/emojis/waning-crescent-moon.png');
+}
+.emoji.bell {
+  background-image: url('../fonts/emojis/bell.png');
+}
+.emoji.speaker-with-three-sound-waves {
+  background-image: url('../fonts/emojis/speaker-with-three-sound-waves.png');
+}
+.emoji.heavy-black-heart {
+  background-image: url('../fonts/emojis/heavy-black-heart.png');
+}
+.emoji.bottle-with-popping-cork {
+  background-image: url('../fonts/emojis/bottle-with-popping-cork.png');
+}
+.emoji.rabbit {
+  background-image: url('../fonts/emojis/rabbit.png');
+}
+.emoji.hole {
+  background-image: url('../fonts/emojis/hole.png');
+}
+.emoji.chart-increasing {
+  background-image: url('../fonts/emojis/chart-increasing.png');
+}
+.emoji.nerd-face {
+  background-image: url('../fonts/emojis/nerd-face.png');
+}
+.emoji.framed-picture {
+  background-image: url('../fonts/emojis/framed-picture.png');
+}
+.emoji.raised-hand {
+  background-image: url('../fonts/emojis/raised-hand.png');
+}
+.emoji.warning {
+  background-image: url('../fonts/emojis/warning.png');
+}
+.emoji.love-letter {
+  background-image: url('../fonts/emojis/love-letter.png');
+}
+.emoji.money-wings {
+  background-image: url('../fonts/emojis/money-with-wings.png');
+}
+.emoji.chart-bar {
+  background-image: url('../fonts/emojis/chart-bar.png');
+}
+.emoji.gear {
+  background-image: url('../fonts/emojis/gear.png');
+}
+.emoji.link-symbol {
+  background-image: url('../fonts/emojis/link-symbol.png');
+}
+.emoji.ballot-box-tick {
+  background-image: url('../fonts/emojis/ballot-box-tick.png');
+}
+.emoji.arrow-curve-up {
+  background-image: url('../fonts/emojis/right-arrow-curving-up.png');
+}

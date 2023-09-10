@@ -1,0 +1,27 @@
+.volumeBarWrapper {
+  display: flex;
+  align-items: center;
+}
+
+.volumeBar {
+  margin-left: 8px;
+  width: 68px;
+}
+
+.volumeIcon {
+  width: 16px;
+  height: 16px;
+  transition: all 0.17s ease-in-out;
+  cursor: pointer;
+}
+
+.volumeIcon path {
+  fill: var(--neutral);
+}
+
+.volumeIcon:hover {
+  transform: scale(1.1);
+}
+.volumeIcon:active {
+  transform: scale(0.9);
+}

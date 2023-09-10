@@ -1,0 +1,15 @@
+.root {
+  flex-shrink: 0;
+}
+
+.root > div:first-child {
+  position: static;
+}
+
+.isMobile {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 15;
+}

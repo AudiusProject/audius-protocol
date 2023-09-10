@@ -1,0 +1,46 @@
+.root {
+  display: flex;
+  align-items: center;
+  line-height: normal;
+}
+
+.iconFolder {
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+.iconFolderUpdated {
+  color: var(--secondary);
+}
+
+.folderName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.iconCaret {
+  flex-shrink: 0;
+  margin-left: 10px;
+}
+
+.iconCaret {
+  transition: transform 0.15s ease;
+}
+
+.iconCaretDown {
+  transform: rotate(90deg);
+}
+
+.droppable {
+  transition: background 0.07s ease-in-out;
+  border-radius: 6px;
+}
+
+.droppableHover {
+  background-color: rgba(152, 73, 214, 0.15);
+}
+
+.dragging > * {
+  pointer-events: none;
+}

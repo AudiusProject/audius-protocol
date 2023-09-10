@@ -1,0 +1,49 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-6);
+}
+
+.appsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.appsHeaderText {
+  font-size: var(--font-m);
+  font-weight: var(--font-bold);
+}
+
+.newAppButton {
+  padding: var(--unit-2) var(--unit-3);
+}
+
+.newAppButtonText {
+  font-size: var(--font-s) !important;
+}
+
+.newAppButtonIcon {
+  margin-right: var(--unit-2) !important;
+}
+
+.noApps {
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+}
+
+.spinner {
+  margin: 0 auto;
+  width: 40px;
+  height: 40px;
+}
+
+.divider {
+  margin: var(--unit-2) 0;
+}
+
+.appList {
+  row-gap: 8px;
+  display: flex;
+  flex-direction: column;
+}

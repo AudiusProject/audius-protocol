@@ -1,0 +1,123 @@
+.contentWrapper {
+  position: relative;
+  padding: 320px 16px 100px;
+}
+
+.headerWrapper {
+  position: absolute;
+
+  width: 100%;
+  height: 376px;
+}
+
+.tile {
+  width: 100%;
+  max-width: 960px;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: var(--white);
+  box-shadow: 0 16px 20px 0 var(--table-shadow);
+
+  margin: 0 auto;
+  text-align: left;
+  user-select: none;
+
+  display: flex;
+}
+
+.image {
+  height: 195px;
+  width: 195px;
+  margin: 24px 12px 24px 24px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.rightSide {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+  flex-grow: 1;
+}
+
+.type {
+  color: var(--neutral-light-4);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  letter-spacing: 3.5px;
+
+  user-select: none;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+}
+
+.title {
+  color: var(--neutral);
+  font-size: 38px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  width: 100%;
+  position: relative;
+  min-height: 38px;
+}
+
+.title h1 {
+  color: var(--neutral);
+}
+
+.artistWrapper {
+  color: var(--neutral-light-5);
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+  display: flex;
+  align-items: center;
+  width: 100%;
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.artistWrapper :global(.artistPopover) {
+  display: inline;
+}
+
+.artistWrapper .artist {
+  display: inline-flex;
+  align-items: center;
+  color: var(--secondary);
+  font-size: var(--font-l);
+  font-weight: var(--font-medium);
+  padding-left: 4px;
+}
+
+.artistWrapper .artist:hover {
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.buttonText {
+  text-transform: uppercase;
+}
+
+.lineupWrapper {
+  width: 720px;
+  margin: auto;
+}
+
+.lineupHeader {
+  text-align: center;
+  text-transform: uppercase;
+
+  color: var(--neutral-light-4);
+  font-size: var(--font-medium);
+  font-weight: var(--font-bold);
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+  margin-top: 32px;
+}
+
+.verified {
+  margin-left: 4px;
+}

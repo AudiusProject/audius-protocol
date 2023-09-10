@@ -1,0 +1,312 @@
+.container {
+  --border-width: 1px;
+  position: relative;
+  min-height: 152px;
+  flex: 1 1 352px;
+  border: var(--border-width) solid var(--neutral-light-8);
+  background-color: var(--white);
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
+    0 2px 5px -2px var(--tile-shadow-3);
+  display: flex;
+  padding: var(--unit-2);
+  border-radius: var(--unit-2);
+  max-width: 400px;
+  cursor: pointer;
+  transition: all 0.2 ease-in-out;
+  user-select: none;
+  margin: 0px auto var(--unit-3);
+}
+
+.borderOffset {
+  position: absolute;
+  top: calc(-1 * var(--border-width));
+  left: calc(-1 * var(--border-width));
+}
+
+.container.readonly {
+  --border-width: 0px;
+  min-width: 448px;
+  min-height: unset;
+  margin-bottom: 0;
+  border: none;
+  box-shadow: none;
+}
+
+.container .artworkIcon,
+.container .artworkIcon circle {
+  opacity: 0;
+}
+
+.container:hover .artworkIcon {
+  opacity: 0.75;
+}
+
+.container .artworkIcon path {
+  fill: var(--static-white);
+}
+
+.container:active {
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1),
+    0 2px 3px -2px var(--tile-shadow-3);
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.metadata {
+  position: relative;
+  display: flex;
+}
+
+.topRight {
+  position: absolute;
+  right: 0;
+  top: 0;
+  display: flex;
+  gap: var(--unit-2);
+  justify-content: flex-end;
+  align-items: center;
+  color: var(--text-subdued);
+}
+
+.topRightIcon {
+  display: flex;
+  align-items: center;
+  gap: var(--unit-2);
+}
+
+.topRightIcon svg {
+  height: var(--unit-4);
+  width: var(--unit-4);
+}
+
+.topRightIcon svg path {
+  fill: var(--neutral-light-4);
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  transform: scale(1);
+  transition: transform 0.07s ease-in-out;
+  gap: var(--unit-1);
+}
+
+.statItem:active {
+  transform: scale(0.93);
+  color: var(--primary);
+}
+
+.statItem:active svg path {
+  fill: var(--primary);
+}
+
+.disabledStatItem {
+  opacity: 0.5;
+}
+
+.readonly .statItem:active {
+  color: unset;
+  transform: scale(1);
+}
+
+.titles {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  color: var(--neutral);
+  font-size: var(--unit-4);
+  text-align: left;
+
+  /* Text truncation*/
+  flex: 0 1 65%;
+  overflow: hidden;
+  margin-right: var(--unit-3);
+}
+
+.titlesActive {
+  color: var(--primary);
+}
+
+.text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.titlesSkeleton div,
+.titlesSkeleton a {
+  width: 100%;
+}
+
+.title {
+  margin-top: auto;
+  padding-right: 5px;
+  width: 100%;
+}
+
+.playIcon {
+  margin-left: var(--unit-2);
+}
+
+.playIcon path {
+  fill: var(--primary);
+}
+
+.artist {
+  margin-bottom: auto;
+  padding-right: 5px;
+  max-width: 100%;
+  min-height: var(--unit-5);
+  flex-wrap: nowrap;
+  align-items: center;
+  position: relative;
+  display: flex;
+  color: inherit;
+}
+
+.skeleton {
+  position: absolute;
+  top: 0;
+}
+.skeleton div {
+  width: 100%;
+}
+
+.coSignLabel {
+  position: absolute;
+  bottom: -3px;
+  left: calc(var(--unit) * 20.5);
+  color: var(--primary);
+  text-transform: uppercase;
+}
+
+.coSignText {
+  align-items: center;
+  color: var(--neutral-light-4);
+  display: flex;
+  justify-content: flex-start;
+  gap: var(--unit-1);
+  line-height: calc(var(--unit) * 3.5);
+  margin-top: var(--unit-2);
+}
+
+.coSignText .name {
+  display: flex;
+  gap: var(--unit-1);
+  align-items: center;
+}
+
+.statsRow {
+  align-items: center;
+  color: var(--neutral-light-4);
+  display: flex;
+  gap: var(--unit-4);
+  height: var(--unit-4);
+  justify-content: space-between;
+  margin: var(--unit-2) 0;
+}
+
+.artistPickLabelContainer {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: var(--unit-1);
+  color: var(--neutral-light-4);
+}
+
+.artistPickIcon {
+  height: var(--unit-4);
+  width: var(--unit-4);
+}
+.artistPickIcon path {
+  fill: var(--neutral-light-4);
+}
+
+.stats {
+  align-items: center;
+  display: flex;
+  flex: 1 0 content;
+  gap: var(--unit-4);
+  justify-content: flex-start;
+}
+
+.stats svg {
+  width: var(--unit-4);
+  height: var(--unit-4);
+}
+
+.stats path {
+  fill: var(--neutral-light-4);
+}
+
+.albumArt {
+  border-radius: var(--unit-1);
+  flex: 0 0 74px;
+  background-size: 100%;
+}
+
+.albumArtContainer {
+  margin-right: var(--unit-2);
+}
+
+.iconVerified {
+  margin-left: var(--unit-1);
+}
+
+.readonly .favoriteButtonWrapper:hover {
+  transform: scale3d(1, 1, 1);
+}
+
+.favoriteButton {
+  height: calc(var(--unit) * 3.5);
+  width: calc(var(--unit) * 3.5);
+}
+
+.readonly .repostButtonWrapper:hover {
+  transform: scale3d(1, 1, 1);
+}
+
+.repostButton {
+  height: var(--unit-4);
+  width: var(--unit-4);
+}
+
+.hide {
+  opacity: 0;
+}
+
+.show {
+  opacity: 1;
+  transition: opacity ease-in-out 0.5s;
+}
+
+.rankContainer {
+  color: var(--secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--unit-1);
+  /* Rank icon should be slightly closer to edge, so this
+  moves it into the left padding */
+  margin-left: calc(-1 * var(--unit-half));
+}
+
+.rankContainer path {
+  fill: var(--secondary);
+}
+
+.isHidden {
+  visibility: hidden;
+}
+
+.container .premiumDogEarContainer {
+  box-shadow: 0px 0px var(--unit-2) rgba(0, 0, 0, 0.25),
+    inset var(--unit-1) var(--unit-1) var(--unit-2) rgba(255, 255, 255, 0.2);
+}

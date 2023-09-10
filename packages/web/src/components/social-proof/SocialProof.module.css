@@ -1,0 +1,45 @@
+.modalBodyStyle {
+  width: 400px;
+  max-width: 400px;
+}
+
+.container {
+  border-top: 1px solid var(--neutral-light-8);
+  padding: 24px 20px;
+  margin: 0px 24px;
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-m);
+  text-align: center;
+  color: var(--neutral);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.btnContainer {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.error {
+  color: var(--accent-red);
+  font-weight: var(--font-demi-bold);
+  display: flex;
+  width: 100%;
+  text-align: left;
+  padding: 0px 28px;
+  margin-top: 28px;
+}
+
+.validationIcon {
+  height: 16px;
+  width: 16px;
+  margin-right: 10px;
+}
+
+.loadingContainer {
+  height: 48px;
+  margin: 120px auto;
+}

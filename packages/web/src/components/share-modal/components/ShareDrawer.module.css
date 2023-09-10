@@ -1,0 +1,59 @@
+.titleContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: var(--unit-2) 0px var(--unit-4);
+}
+
+.titleIcon {
+  height: var(--unit-8);
+  width: var(--unit-8);
+  margin-right: var(--unit-2);
+}
+
+.titleIcon path {
+  fill: var(--neutral);
+}
+
+.title {
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+}
+
+.actionItem {
+  justify-content: left;
+  padding-left: 25px;
+}
+
+.action {
+  font-weight: var(--font-demi-bold);
+}
+
+.copyLinkAction {
+  composes: action;
+  color: var(--secondary);
+}
+
+.copyLinkAction svg path {
+  fill: var(--secondary);
+}
+
+.shareToTwitterAction {
+  composes: action;
+  color: var(--static-twitter-blue);
+  border-top: none;
+}
+
+.shareToTwitterAction g path {
+  fill: var(--static-twitter-blue);
+}
+
+.shareToTikTokAction {
+  composes: action;
+  color: black;
+}
+
+.shareToTikTokActionDark {
+  color: var(--static-white);
+}

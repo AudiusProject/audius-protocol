@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">RC Staging (Audius)</string>
+    <string name="blob_provider_authority">co.audius.app.staging.releasecandidate.blob</string>
+</resources>

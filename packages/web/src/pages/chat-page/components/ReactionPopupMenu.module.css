@@ -1,0 +1,12 @@
+.root {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  /* Setting explicit height to make the emojis pop out of the popup */
+  height: var(--unit-18);
+}
+
+.popup {
+  padding: 0;
+  border-radius: 56px;
+}

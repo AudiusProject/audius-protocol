@@ -1,0 +1,72 @@
+.modalBodyStyle {
+  min-width: 1000px;
+  min-height: 608px;
+  width: 100%;
+  max-width: 1008px;
+  background: var(--neutral-light-10);
+}
+
+.modalTitleStyle {
+  font-size: var(--font-l);
+  line-height: 23px;
+  letter-spacing: 0.5px;
+  font-weight: var(--font-heavy);
+  color: var(--neutral-light-4);
+  text-transform: uppercase;
+}
+
+.embed {
+  margin: 32px 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.frame {
+  flex: 1;
+  margin-right: 32px;
+  position: relative;
+}
+
+.switcher {
+  width: 100%;
+  position: absolute;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.switcher.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.details {
+  max-width: 400px;
+  flex-direction: column;
+}
+
+.panel {
+  margin-bottom: 18px;
+}
+
+.bottom {
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.title {
+  color: var(--neutral);
+  font-size: var(--font-l);
+  font-weight: var(--font-demi-bold);
+  line-height: 23px;
+  margin-bottom: 16px;
+}
+
+.button .buttonText {
+  font-size: var(--font-s);
+  text-transform: uppercase;
+  font-weight: var(--font-bold);
+  letter-spacing: 0.5px;
+  line-height: 10px;
+}

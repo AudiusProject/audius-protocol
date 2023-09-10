@@ -1,0 +1,218 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-2);
+  align-items: flex-start;
+}
+
+.root.isAuthor {
+  align-items: flex-end;
+}
+
+.root.hasReaction {
+  margin-bottom: var(--unit-2);
+}
+
+.bubble {
+  --bubble-color: var(--white);
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  max-width: 448px;
+  filter: var(--drop-shadow-near);
+  transition: background-color var(--expressive), filter var(--expressive);
+}
+
+.bubbleCorners {
+  border-radius: var(--unit-3);
+  overflow: hidden;
+}
+
+.text a {
+  color: var(--neutral);
+  text-decoration: underline !important;
+}
+
+.bubble:not(.nonInteractive):hover {
+  --bubble-color: var(--neutral-light-10);
+  filter: var(--drop-shadow-far);
+}
+
+.isAuthor .bubble {
+  --bubble-color: var(--secondary-light-2);
+}
+
+.isAuthor .text a {
+  color: var(--static-white);
+}
+
+.isAuthor .bubble:hover {
+  --bubble-color: var(--secondary-light-1);
+}
+
+.unfurl {
+  border-radius: 0;
+}
+
+.bubble .unfurl:not(:last-child) {
+  border-bottom: 1px solid var(--neutral-light-7);
+}
+
+.isAuthor .bubble .unfurl:not(:last-child) {
+  border-bottom: 1px solid var(--secondary-dark-1);
+}
+
+.text {
+  padding: var(--unit-4);
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-align: left;
+  line-height: 150%;
+  user-select: text;
+  background-color: var(--bubble-color);
+}
+
+.meta {
+  font-size: var(--font-xs);
+  color: var(--neutral-light-2);
+  margin-bottom: var(--unit-4);
+}
+
+/* Reactions positioning */
+
+.reactionsContainer {
+  bottom: -24px;
+  position: absolute;
+  flex-direction: row-reverse;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  cursor: pointer;
+}
+
+.reactionsContainer:not(.hasReaction) {
+  bottom: -16px;
+}
+
+.root.isAuthor .reactionsContainer {
+  left: -16px;
+}
+.root:not(.isAuthor) .reactionsContainer {
+  right: -16px;
+  direction: rtl;
+}
+
+.root.isAuthor .reactionsContainer.hasReaction {
+  left: -24px;
+}
+
+.root:not(.isAuthor) .reactionsContainer.hasReaction {
+  right: -24px;
+}
+
+/* Styling of reaction button inside the reactions container */
+
+.reactionsButton {
+  display: flex;
+  width: 100px;
+  height: 100px;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  /* transform looks better if it only eases-out */
+  transition: opacity var(--quick), transform 0.07s ease-out;
+}
+
+.reactionsContainer:not(.hasReaction) .reactionsButton {
+  background-color: var(--white);
+  border: 1px solid var(--neutral-light-6);
+  width: var(--unit-8);
+  height: var(--unit-8);
+  border-radius: 50%;
+}
+
+.bubble:hover .reactionsButton,
+.reactionsContainer.isOpened .reactionsButton,
+.reactionsContainer.hasReaction .reactionsButton {
+  transform: scale(1, 1);
+  opacity: 1;
+}
+
+.reactionsContainer:not(.hasReaction) path {
+  width: var(--unit-6);
+  height: var(--unit-6);
+  fill: var(--secondary);
+  transition: fill var(--quick);
+}
+
+.reactionsContainer:not(.hasReaction):hover .reactionsButton {
+  transform: scale(1.1);
+}
+
+.reactionsContainer:not(.hasReaction):hover .reactionsButton path {
+  fill: var(--secondary-dark-2);
+}
+
+.reactionsContainer:not(.hasReaction):active .reactionsButton {
+  transform: scale(0.6);
+}
+
+.reactionEmoji {
+  margin-inline-end: -28px;
+  filter: drop-shadow(-2px 0px 4px rgba(0, 0, 0, 0.15));
+}
+
+.reactionEmoji:hover {
+  transform: scale(1.1);
+}
+
+.reactionEmoji:active {
+  transform: scale(0.6);
+}
+
+.tail {
+  display: flex;
+  position: absolute;
+  bottom: 0;
+  z-index: -1;
+}
+
+:not(.hideMessage) .tail svg * {
+  fill: var(--bubble-color);
+  transition: fill var(--quick);
+}
+
+.hideMessage .tail svg * {
+  fill: var(--white);
+  transition: fill var(--quick);
+}
+
+.root:not(.isAuthor) .tail {
+  transform: scaleX(-1);
+  left: -7px;
+}
+
+.root.isAuthor .tail {
+  right: -7px;
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: var(--unit-1);
+
+  color: var(--accent-red);
+}
+
+.error:hover {
+  cursor: pointer;
+}
+
+.error svg {
+  width: var(--unit-3);
+  height: var(--unit-3);
+}
+
+.error svg path {
+  fill: var(--accent-red);
+}

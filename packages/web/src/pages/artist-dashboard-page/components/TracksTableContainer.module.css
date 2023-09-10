@@ -1,0 +1,57 @@
+.tableContainer {
+  border-radius: 6px;
+  background: var(--white);
+  box-shadow: var(--table-shadow) 0px var(--unit-4) var(--unit-5) 0px;
+  overflow: hidden;
+}
+
+.sectionContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin: var(--unit-3) 0px;
+}
+
+.header {
+  width: 100%;
+  padding: var(--unit-6);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--unit-2);
+}
+
+.pills {
+  display: flex;
+  gap: var(--unit-2);
+}
+
+.filterInput {
+  width: 160px;
+  height: var(--unit-6);
+  border-radius: var(--unit-1);
+  border-color: var(--neutral-light-8);
+  background: var(--neutral-light-10);
+}
+
+.close {
+  cursor: pointer;
+  height: var(--unit-6);
+  width: var(--unit-6);
+}
+
+.trackName {
+  max-width: 350px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:global(.ant-table-thead
+    > tr
+    > th.ant-table-column-has-actions.ant-table-column-has-sorters).col:global(.colName),
+.col:global(.colName) {
+  padding-left: var(--unit-6) !important;
+}

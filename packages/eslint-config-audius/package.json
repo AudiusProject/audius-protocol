@@ -1,0 +1,49 @@
+{
+  "name": "eslint-config-audius",
+  "version": "1.5.40",
+  "description": "Custom eslint config for Audius.",
+  "author": "Audius",
+  "homepage": "https://github.com/AudiusProject/audius-client#readme",
+  "license": "ISC",
+  "main": "src/index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AudiusProject/audius-client.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  },
+  "peerDependencies": {
+    "@typescript-eslint/eslint-plugin": "5.48.2",
+    "@typescript-eslint/parser": "5.48.2",
+    "eslint": "8.25.0",
+    "eslint-config-prettier": "8.5.0",
+    "eslint-config-prettier-standard": "4.0.1",
+    "eslint-config-standard": "17.0.0",
+    "eslint-import-resolver-alias": "1.1.2",
+    "eslint-import-resolver-typescript": "3.5.5",
+    "eslint-plugin-import": "2.26.0",
+    "eslint-plugin-jest": "27.1.1",
+    "eslint-plugin-n": "15.3.0",
+    "eslint-plugin-node": "11.1.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "eslint-plugin-promise": "6.1.0",
+    "eslint-plugin-react": "7.31.10",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "eslint-plugin-standard": "4.1.0",
+    "prettier": "2.7.1",
+    "prettier-config-standard": "5.0.0",
+    "standard": "17.0.0",
+    "typescript": "4.9.4"
+  },
+  "bugs": {
+    "url": "https://github.com/AudiusProject/audius-client/issues"
+  }
+}

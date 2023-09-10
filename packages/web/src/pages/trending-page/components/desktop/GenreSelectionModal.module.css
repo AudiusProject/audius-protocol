@@ -1,0 +1,17 @@
+.modalBody {
+  overflow: hidden;
+  height: 650px;
+  max-width: 500px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  margin: 0px 16px;
+}
+
+.scrollbar {
+  flex: 1;
+  min-height: 0px;
+}

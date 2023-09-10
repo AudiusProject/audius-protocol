@@ -1,0 +1,50 @@
+.pill {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transform: scale(1);
+  height: 24px;
+  padding: 0px 12px;
+  border-radius: 8px;
+  color: var(--neutral-light-2);
+  background-color: var(--neutral-light-10);
+  font-size: 15px;
+  border: 1px solid var(--neutral-light-4);
+  font-weight: var(--font-demi-bold);
+  margin-left: 8px;
+  line-height: 24px;
+
+  transition: transform 0.07s ease-in-out !important;
+  transition: background-color 0.1s ease;
+}
+
+.pill path {
+  fill: var(--neutral-light-2);
+}
+
+.pill:hover:not(.selectedPill):not(.isMobile) {
+  background-color: var(--secondary-light-2);
+  border-color: var(--secondary-light-2);
+  color: var(--darkmode-static-white);
+}
+
+.pill:active {
+  transform: scale(0.95);
+}
+
+.selectedPill {
+  color: var(--darkmode-static-white);
+  background-color: var(--secondary);
+  border-color: var(--secondary);
+  transform: scale(1);
+}
+
+.pill:hover path {
+  fill: var(--darkmode-static-white);
+}
+
+.pillContainer {
+  display: flex;
+}

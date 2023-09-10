@@ -1,0 +1,8 @@
+{
+  "packagesPath": "./packages",
+  "packages": [
+    "mobile",
+    "web"
+  ],
+  "addedBehavior": "exit"
+}

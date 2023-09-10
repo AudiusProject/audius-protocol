@@ -1,0 +1,67 @@
+.container {
+  opacity: 1;
+  height: 32px;
+  width: 32px;
+  border: 1px solid var(--neutral-light-6);
+  border-radius: 4px;
+  background-color: var(--white);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all ease-in-out 0.07s;
+  cursor: pointer;
+}
+
+.container:not(.isMobile):hover {
+  border: 1px solid var(--primary-dark-2);
+  background-color: var(--primary);
+}
+
+.container:active {
+  border: 1px solid var(--primary-dark-2);
+  background-color: var(--primary-dark-1);
+}
+
+.container.isSubscribed {
+  border: none;
+  background-color: var(--primary);
+}
+
+.container.isSubscribed:hover {
+  border: 1px solid var(--primary-dark-2);
+  background-color: var(--primary);
+}
+
+.container:not(.isMobile).isSubscribed:active {
+  border: 1px solid var(--primary-dark-2);
+  background-color: var(--primary-dark-1);
+}
+
+.icon {
+  height: 20px;
+  width: 20px;
+}
+
+.icon path {
+  fill: var(--neutral);
+  transition: all ease-in-out 0.07s;
+}
+
+.container.isSubscribed .icon path,
+.container:active .icon path,
+.container:not(.isMobile):hover .icon path {
+  fill: var(--static-neutral-light-10);
+}
+
+.container.isMatrix.isSubscribed .icon path,
+.container.isMatrix:active .icon path,
+.container.isMatrix:not(.isMobile):hover .icon path {
+  fill: var(--darkmode-static-white);
+}
+
+.container.notFollowing {
+  opacity: 0;
+  width: 0%;
+  border: 0px;
+  margin: 0px;
+}

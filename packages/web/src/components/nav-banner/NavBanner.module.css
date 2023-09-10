@@ -1,0 +1,46 @@
+.wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  background-color: var(--white);
+}
+
+.navBanner {
+  height: 48px;
+  padding-top: 10px;
+  margin-right: 16px;
+  margin-left: 233px;
+  width: 736px;
+  display: flex;
+  justify-content: space-between;
+
+  position: relative;
+}
+
+.navBanner:global(.overflowVisible .ant-tabs) {
+  overflow: visible;
+}
+
+.tabs {
+  width: 100%;
+}
+
+.navBanner > .dropdown {
+  position: absolute;
+  right: 0;
+}
+
+@media screen and (max-width: 1140px) {
+  .navBanner > .dropdown {
+    display: none;
+  }
+}

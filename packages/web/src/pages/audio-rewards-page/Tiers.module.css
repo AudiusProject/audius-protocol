@@ -1,0 +1,245 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--white);
+  flex: 1;
+  justify-content: flex-start;
+  border-radius: 12px;
+  box-shadow: 0px 16px 20px var(--table-shadow);
+  min-height: 210px;
+  margin-bottom: 32px;
+}
+
+.title {
+  background: var(--page-header-gradient);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 900;
+  line-height: 60px;
+  font-size: 48px;
+  margin-top: 48px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.title.mobile {
+  font-size: 30px;
+}
+
+.subtitle {
+  font-size: 20px;
+  line-height: 35.2px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.subtitle.mobile {
+  font-size: var(--font-xs);
+  line-height: 19px;
+  padding: 0px 10px;
+}
+
+.titleContainer {
+  margin-bottom: 70px;
+  max-width: 752px;
+  padding: 0 28px;
+}
+
+.titleContainer.mobile {
+  margin-bottom: 48px;
+}
+
+.tierNumberText {
+  color: var(--neutral-light-6);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 17.6px;
+  letter-spacing: 0.15em;
+}
+
+.badgeTierText {
+  margin: 8px 0px;
+}
+
+.divider {
+  height: 1px;
+  width: 80px;
+  background-color: var(--neutral-light-6);
+  margin: 24px 0px;
+}
+
+.imageWrapper {
+  margin-bottom: 24px;
+}
+
+.imageWrapper img {
+  height: 108px;
+  width: 108px;
+}
+
+.tiersContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: -24px;
+}
+
+.tiersContainer.mobile {
+  flex-direction: column;
+  width: 100%;
+  padding: 0px 26px;
+}
+
+.tierContainerWrapper {
+  margin: 32px 8px;
+}
+
+.tiersContainer.mobile > div {
+  margin-bottom: 24px;
+}
+
+.tierContainer {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  align-items: center;
+  width: 241px;
+  min-height: 547px;
+  padding: 40px 18px 14px;
+  border-radius: 16px;
+  border: 2px solid var(--neutral-light-7);
+  background-color: var(--neutral-light-10);
+}
+
+.tierContainer.compact {
+  min-height: 320px;
+  width: 100%;
+}
+
+.tierContainer.tierContainerActive {
+  border: none;
+  background-color: var(--white);
+}
+
+.tierContainerWrapper {
+  position: relative;
+}
+
+.tierContainerWrapper.tierContainerActive.compact {
+  margin-top: 36px;
+}
+
+.tierContainerWrapper.compact {
+  width: 100%;
+}
+
+.tierContainerWrapper.tierContainerActive {
+  border-radius: 20px;
+  padding: 4px;
+  background-image: var(--page-header-gradient);
+  box-shadow: 0px 6px 15px var(--page-header-text-shadow-color);
+}
+
+.unlocks {
+  color: var(--neutral-light-4);
+  font-weight: 900;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.tierTextContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  font-weight: 600;
+  font-size: 17px;
+  text-transform: capitalize;
+  width: 100%;
+}
+
+.tierTextContainer > span {
+  margin-bottom: 12px;
+  line-height: 160%;
+}
+
+.tierTextContainer span.sparkles i {
+  margin-right: 4px;
+}
+
+.tierTextContainer span:not(.sparkles) i {
+  height: 18px !important;
+  width: 18px !important;
+  margin-right: 8px;
+}
+
+.discordButton {
+  background: transparent !important;
+  border: 1px solid var(--neutral-light-6);
+}
+
+.updateRole {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.discordButton .iconDiscord {
+  height: 24px;
+  width: 24px;
+}
+
+.discordButton .iconDiscord path {
+  fill: var(--neutral);
+}
+
+.discordButton .discordButtonText {
+  color: var(--neutral) !important;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.currentTier {
+  position: absolute;
+  top: -35px;
+  right: calc(50% - 60px);
+  display: flex;
+  color: var(--secondary);
+  font-weight: 900;
+  font-size: 16px;
+  flex-direction: column;
+}
+
+.arrowWrapper {
+  transform: rotateZ(90deg);
+}
+
+.currentTier path {
+  fill: var(--secondary);
+}
+
+.buttonContainer {
+  display: flex;
+  margin: 48px 0px;
+}
+
+.buttonContainer.mobile {
+  flex-direction: column;
+  margin-top: 24px;
+}
+
+.buttonContainer:not(.mobile) > *:first-child {
+  margin-right: 16px;
+}
+
+.buttonContainer.mobile > *:first-child {
+  margin-bottom: 16px;
+}
+
+.tierLevel {
+  color: var(--secondary);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 17px;
+}

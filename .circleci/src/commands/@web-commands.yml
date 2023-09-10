@@ -1,0 +1,178 @@
+web-pr-comment:
+  parameters:
+    comment:
+      description: The comment to add to the PR
+      type: string
+    maxComments:
+      default: 1
+      description: Max nb of comments per PR
+      type: integer
+    pr:
+      default: $CIRCLE_PULL_REQUEST
+      description: The PR number or URL
+      type: string
+  steps:
+    - run:
+        command: |
+          sudo apt-get update
+          sudo apt-get install -y --force-yes ruby-full=1:2.7+1
+        name: Install Ruby
+    - run:
+        command: |
+          curl -sL https://raw.githubusercontent.com/stephencelis/ghi/master/ghi > ghi
+          chmod 755 ghi
+          sudo mv ghi /usr/local/bin
+        name: Install GHI
+    - run:
+        command: |
+          if [[ -z "${GHI_TOKEN}" ]]; then
+            echo "GHI_TOKEN not set"
+            /bin/false
+          fi
+        name: Check Token
+    - run:
+        command: |
+          GH_LOGIN=$(curl -sS https://api.github.com/user\?access_token\=$GHI_TOKEN | jq '.login' --raw-output)
+          echo "Authenticated with $GH_LOGIN"
+          PR_URL=<< parameters.pr >>
+          PR_ID=${PR_URL##*/}
+          echo "PR_ID=$PR_ID"
+          if [ -z $PR_ID ]; then
+            echo "No PR found, skipping"
+          else
+            if [ $(ghi comment --list $PR_ID | grep -c $GH_LOGIN) -ge << parameters.maxComments >> ]; then
+              echo "Already commented, skip"
+            else
+              ghi comment -m "<< parameters.comment >>"  $PR_ID
+            fi
+          fi
+        name: Send Comment
+
+web-build:
+  parameters:
+    build-type:
+      default: 'prod-source-maps'
+      type: string
+    build-directory:
+      default: 'packages/web/build-production'
+      type: string
+    build-name:
+      default: 'build-production'
+      type: string
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - when:
+        condition:
+          matches: { pattern: '^stage$', value: << parameters.build-type >> }
+        steps:
+          - run:
+              name: apply stage apple-app-site-association
+              command: |
+                cd packages/web/public/.well-known
+                cp apple-app-site-association-stage apple-app-site-association
+    - run:
+        name: build
+        no_output_timeout: 30m
+        command: |
+          cd packages/web
+          CI=false npm run build:<< parameters.build-type >>
+          cp package.json << parameters.build-name >>
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - << parameters.build-directory >>
+
+web-distribute:
+  parameters:
+    build-type:
+      default: 'mac-publish-production'
+      type: string
+    install-license:
+      default: false
+      type: boolean
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: Install dependencies
+        command: rm -rf node_modules && SKIP_POD_INSTALL=true npm ci
+    - when:
+        condition: << parameters.install-license >>
+        steps:
+          - run:
+              name: Add dmg-license
+              command: npm run install-dmg-license -w audius-client
+    - run:
+        name: setup
+        # https://github.com/nvm-sh/nvm#installing-and-updating
+        command: |
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+          echo 'export NVM_DIR="$HOME/.nvm"' >> $BASH_ENV
+          echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --install' >> $BASH_ENV
+          source $BASH_ENV
+          nvm install 14.20.1
+          nvm alias default 14.20.1
+    - run:
+        name: distribute
+        command: |
+          cd packages/web
+          npm run dist:<< parameters.build-type >>
+
+web-install-wrangler:
+  steps:
+    - run:
+        name: install wrangler
+        command: 'cd packages/web && npm install @cloudflare/wrangler'
+
+web-deploy-cloudflare:
+  parameters:
+    build-type:
+      default: 'production'
+      type: string
+    environment:
+      default: 'production'
+      type: string
+    copy-robots:
+      default: false
+      type: boolean
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - web-install-wrangler
+    - run:
+        name: Move sourcemaps
+        command: |
+          cd packages/web
+          mkdir -p sourcemaps/static/js
+          mv build-<< parameters.build-type >>/static/js/*.map sourcemaps/static/js
+    - run:
+        name: Set up workers site
+        command: |
+          cd packages/web/scripts/workers-site
+          npm i
+          cd ../../
+          mv build-<< parameters.build-type >> build
+    - run:
+        name: Copy robots.txt
+        command: |
+          cd packages/web
+          cp ./robots.txt build
+    - run:
+        name: Deploy to Cloudflare
+        command: |
+          cd packages/web
+          echo ${GA_ACCESS_TOKEN} | npx wrangler secret put GA_ACCESS_TOKEN --env << parameters.environment >>
+          npx wrangler publish --env << parameters.environment >>
+
+web-deploy-sourcemaps-s3:
+  steps:
+    - aws-cli/install
+    - attach_workspace:
+        at: ./
+    - run:
+        name: Deploy to S3
+        command: aws s3 sync packages/web/sourcemaps s3://sourcemaps.audius.co --cache-control max-age=604800

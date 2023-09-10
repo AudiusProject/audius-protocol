@@ -1,0 +1,39 @@
+.taskCompletionItem {
+  color: var(--static-white);
+  margin: 8px;
+  font-weight: var(--font-bold);
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  line-height: 16px;
+}
+
+@media screen and (max-width: 1200px) {
+  .taskCompletionItem {
+    margin: 3px;
+    font-size: var(--font-xs);
+  }
+}
+
+.completedItem {
+  text-decoration: line-through;
+  font-weight: var(--font-demi-bold);
+  opacity: 0.5;
+}
+
+.checkMark {
+  margin-right: 8px;
+}
+
+.iconWrapper {
+  height: 16px;
+  margin-top: -1px;
+}
+
+.incompleteCircle {
+  height: 16px;
+  width: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--static-white);
+  margin-right: 6px;
+}

@@ -1,0 +1,106 @@
+.header {
+  border-bottom: 1px solid var(--neutral-light-8);
+}
+
+.tabBodyHeader {
+  width: 100%;
+}
+
+.tabBodyHeader .headerWrapper {
+  background: var(--white);
+  text-align: left;
+  padding: 16px 28px;
+  box-shadow: 0 16px 20px -5px var(--table-shadow);
+}
+
+.title {
+  color: var(--secondary);
+  font-size: var(--font-xl);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.25px;
+  line-height: 25px;
+}
+
+.description {
+  margin-top: 6px;
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  letter-spacing: 0;
+  line-height: 23px;
+}
+
+.section {
+  margin-top: 24px;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0px 8px;
+}
+
+.section > *,
+.lifestyle > * {
+  margin: 4px;
+}
+
+.section > *:nth-child(5n + 1) {
+  flex-basis: 100%;
+}
+
+.section > *:nth-child(5n + 2),
+.section > *:nth-child(5n + 3),
+.section > *:nth-child(5n + 4),
+.section > *:nth-child(5n + 5) {
+  flex-basis: calc(50% - 8px);
+}
+
+.tripleHeaderSectionTenTile > *:nth-child(5n + 1),
+.tripleHeaderSectionTenTile > *:nth-child(5n + 2),
+.tripleHeaderSectionTenTile > *:nth-child(5n + 3),
+.tripleHeaderSectionTenTile > *:nth-child(5n + 8) {
+  flex-basis: 100%;
+}
+
+.tripleHeaderSectionTenTile > *:nth-child(5n + 4),
+.tripleHeaderSectionTenTile > *:nth-child(5n + 5),
+.tripleHeaderSectionTenTile > *:nth-child(5n + 6),
+.tripleHeaderSectionTenTile > *:nth-child(5n + 7),
+.tripleHeaderSectionTenTile > *:nth-child(5n + 9),
+.tripleHeaderSectionTenTile > *:nth-child(5n + 10) {
+  flex-basis: calc(50% - 8px);
+}
+
+.spinner {
+  height: 40px;
+  width: 40px;
+  margin: 0 auto;
+}
+
+.spinner g path {
+  stroke: var(--secondary) !important;
+}
+
+.tabContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: var(--header-padding-top);
+}
+
+.tabBar {
+  position: fixed;
+  top: 92px;
+  margin-top: 0px;
+  margin-top: env(safe-area-inset-top, 0px);
+  left: 0px;
+  right: 0px;
+  z-index: 10;
+}
+
+.pageContainer {
+  margin-top: 48px;
+}
+
+.lineupContainer {
+  padding: 24px 11px 12px;
+}

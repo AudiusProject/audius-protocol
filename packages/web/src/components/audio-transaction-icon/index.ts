@@ -1,0 +1,1 @@
+export { AudioTransactionIcon } from './AudioTransactionIcon'

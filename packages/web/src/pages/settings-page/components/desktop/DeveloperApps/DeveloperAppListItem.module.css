@@ -1,0 +1,43 @@
+.listItem {
+  display: flex;
+  align-items: center;
+  background-color: var(--neutral-light-10);
+  border-radius: var(--unit-1);
+  border: 1px solid var(--neutral-light-8);
+  gap: var(--unit-6);
+  padding: var(--unit-4) var(--unit-6);
+}
+
+.listItemIndex {
+  flex-grow: 0;
+  font-size: var(--font-m);
+  font-weight: var(--font-bold);
+  color: var(--neutral-light-2);
+}
+
+.listItemDivider {
+  margin: calc(var(--unit-4) * -1) 0;
+  flex-grow: 0;
+  border-width: 0px thin 0px 0px;
+  border-style: solid;
+  border-color: var(--neutral-light-8);
+  height: auto;
+  align-self: stretch;
+}
+
+.listItemAppName {
+  flex-grow: 1;
+  font-size: var(--font-m);
+  font-weight: var(--font-medium);
+  color: var(--neutral);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.listItemActions {
+  flex-grow: 0;
+}
+
+.listItemActionsIcon svg {
+  color: var(--neutral-light-4) !important;
+}

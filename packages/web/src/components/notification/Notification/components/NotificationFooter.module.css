@@ -1,0 +1,25 @@
+.root {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--unit-3);
+}
+.timeLabel {
+  color: var(--neutral-light-4);
+  font-size: var(--font-xs);
+  font-weight: var(--font-demi-bold);
+}
+
+.unreadPill {
+  background-color: var(--secondary);
+  border-radius: 36px;
+  color: var(--static-white);
+  font-size: var(--font-xs);
+  text-transform: uppercase;
+  line-height: 15px;
+  text-align: center;
+  font-weight: var(--font-bold);
+  width: 44px;
+  height: 19px;
+  padding: 2px 6px;
+}

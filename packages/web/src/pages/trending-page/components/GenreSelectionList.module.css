@@ -1,0 +1,50 @@
+.container {
+  width: 100%;
+  padding: 24px 44px 42px;
+}
+
+.searchBar {
+  height: 54px;
+}
+
+.searchIcon {
+  position: absolute;
+  right: 2px;
+}
+
+.genreButton {
+  background-color: rgba(1, 1, 1, 0);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 34px;
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-demi-bold);
+  border: 1px solid var(--neutral-light-2);
+  border-radius: 12px;
+  transition: all 0.25s;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transform: scale(1);
+  transition: all 0.1s ease-in-out;
+}
+
+.genreButton:active {
+  transform: scale(0.9);
+  transition: all 0s ease;
+}
+
+:not(.isMobile).genreButton:hover {
+  background-color: var(--secondary-light-2);
+  color: var(--static-white);
+  border: 1px solid var(--secondary-light-2);
+}
+
+.genreButton.selected {
+  background-color: var(--secondary);
+  border: 1px solid var(--secondary);
+  color: var(--darkmode-static-white);
+  transform: scale(1);
+  transition: all 0.1s ease-in-out;
+}

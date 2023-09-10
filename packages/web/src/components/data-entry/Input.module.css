@@ -1,0 +1,111 @@
+.input {
+  width: 100%;
+  position: relative;
+}
+
+.input > input {
+  -webkit-appearance: none;
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 6px;
+  outline: none;
+  padding-left: 18px;
+  background: none;
+  transition: border ease-in-out 0.1s;
+  font-weight: 500;
+  color: var(--neutral);
+}
+.input > input:-webkit-autofill {
+  -webkit-text-fill-color: var(--neutral);
+  box-shadow: 0 0 0px 1000px var(--neutral-light-9) inset;
+  -webkit-box-shadow: 0 0 0px 1000px var(--neutral-light-9) inset;
+}
+.input.shaded {
+  background-color: #e9e4f0;
+}
+.input.small > input,
+.input.small .placeholder {
+  height: 34px;
+  font-size: var(--font-s);
+}
+.input.medium > input,
+.input.medium .placeholder {
+  height: 50px;
+  font-size: var(--font-m);
+}
+.input.large > input,
+.input.large .placeholder {
+  height: 66px;
+  font-size: var(--font-xl);
+}
+
+.input.disabled {
+  cursor: default !important;
+  background-color: var(--neutral-light-9);
+}
+.input.disabled {
+  color: var(--neutral-light-4);
+}
+
+.input.error > input,
+.input.error .placeholder,
+.input.error.focused > input {
+  border-color: var(--accent-red);
+}
+.input.error:hover > input {
+  border-color: var(--accent-red-dark-1);
+}
+
+.input:hover > input {
+  border-color: var(--neutral-light-6);
+}
+.input.focused > input {
+  border-color: var(--secondary);
+}
+.input.elevatedPlaceholder.data > input {
+  padding-top: 20px;
+}
+.input {
+  background-color: var(--neutral-light-10);
+  border-radius: 6px;
+}
+
+.input > input::placeholder {
+  color: var(--neutral-light-4);
+}
+
+.placeholder {
+  position: absolute;
+  top: 17px;
+  left: 19px;
+  font-weight: var(--font-medium);
+  color: var(--neutral-light-4);
+  font-size: var(--font-s);
+  transition: all 0.3s ease;
+}
+
+:global(.placeholder.focus).placeholder {
+  /* Z-index of 2 here to be on top of password managers */
+  z-index: 2;
+  pointer-events: none;
+  color: var(--neutral-light-4);
+  font-size: 13px !important;
+  font-weight: var(--font-medium);
+  line-height: 12px;
+  transform: translate(0px, -10px);
+  padding: 0px;
+}
+
+.input.warning > input {
+  border-color: var(--accent-orange);
+}
+
+.characterCount {
+  position: absolute;
+  right: 16px;
+  top: 10px;
+  color: var(--accent-orange);
+  font-size: 12px;
+  font-weight: var(--font-bold);
+}

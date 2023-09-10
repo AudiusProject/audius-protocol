@@ -1,0 +1,179 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#
+#     https://docs.fastlane.tools/actions
+#
+# For a list of all available plugins, check out
+#
+#     https://docs.fastlane.tools/plugins/available-plugins
+#
+
+# Uncomment the line if you want fastlane to automatically update itself
+# update_fastlane
+
+require 'json'
+
+default_platform(:android)
+
+PROD_PACKAGE = 'co.audius.app'
+RC_PROD_PACKAGE = 'co.audius.app.releasecandidate'
+RC_STAGING_PACKAGE = 'co.audius.app.staging.releasecandidate'
+STAGING_PACKAGE = 'co.audius.app.staging'
+CODEPUSH_APP_NAME = 'Audius-Music/Audius-Android'
+CODEPUSH_STAGING_DEPLOYMENT = 'Staging'
+CODEPUSH_RC_DEPLOYMENT = 'ReleaseCandidate'
+CODEPUSH_PROD_DEPLOYMENT = 'Production'
+GRADLE_FILE_PATH = '../app/build.gradle'
+VERSION_NAME_REGEX = /versionName\s+"([\d\.]+)"/
+
+platform :android do
+  desc "Get the currently released app version name"
+  private_lane :getCurrentlyReleasedVersionName do |options|
+      version = google_play_track_release_names(
+        package_name: options[:package_name] ? options[:package_name] : 'co.audius.app',
+        track: options[:track] ? options[:track] : 'production'
+      ).map {|v| Gem::Version.new v}.max
+      version
+  end
+
+  desc "Get the version name in app build.gradle file"
+  private_lane :getVersionNameFromBuildFile do |options|
+      s = File.read(GRADLE_FILE_PATH)
+      versionName = Gem::Version.new s[VERSION_NAME_REGEX, 1]
+      versionName
+  end
+
+  lane :haltIfCodePushEligible do |options|
+    releasedVersion = getCurrentlyReleasedVersionName()
+    buildFileVersion = getVersionNameFromBuildFile()
+    if buildFileVersion <= releasedVersion
+      UI.message "Release will be through an over-the-air (Codepush) update, which can be triggered by approving the hold on the next job. Aborting full app release."
+      sh("circleci-agent step halt")
+    end
+  end  
+  
+  desc "If needed, upload a new version to the Google Play. Otherwise, release via CodePush."
+  lane :releaseCandidate do |options|
+      build_and_upload(package_name: RC_PROD_PACKAGE, track: options[:track])
+  end
+
+  lane :staging do |options|
+      build_and_upload(package_name: STAGING_PACKAGE, track: options[:track])
+  end
+
+  lane :stagingReleaseCandidate do |options|
+      build_and_upload(package_name: RC_STAGING_PACKAGE, track: options[:track])
+  end
+
+  lane :prod do |options|
+      build_and_upload(package_name: PROD_PACKAGE, track: options[:track])   
+  end
+
+  private_lane :build_and_upload do |options|
+      packageName = options[:package_name]
+      if packageName === PROD_PACKAGE
+        buildType = 'bundleRelease'
+        aab = './app/build/outputs/bundle/prodRelease/app-prod-release.aab'
+        codepushDeployment = CODEPUSH_PROD_DEPLOYMENT
+        remoteDirectory = 'audius-mobile'
+      elsif packageName === RC_PROD_PACKAGE
+        buildType = 'bundleReleaseCandidateRelease'
+        aab = './app/build/outputs/bundle/releaseCandidateRelease/app-releaseCandidate-release.aab'
+        codepushDeployment = CODEPUSH_RC_DEPLOYMENT
+        remoteDirectory = 'audius-mobile-releasecandidate'
+      elsif packageName === RC_STAGING_PACKAGE
+        buildType = 'bundleStagingReleaseCandidateRelease'
+        aab = './app/build/outputs/bundle/stagingReleaseCandidateRelease/app-stagingReleaseCandidate-release.aab'
+        codepushDeployment = CODEPUSH_RC_DEPLOYMENT
+        remoteDirectory = 'audius-mobile-staging-releasecandidate'
+      elsif packageName === STAGING_PACKAGE
+        buildType = 'bundleStagingRelease'
+        aab = './app/build/outputs/bundle/stagingRelease/app-staging-release.aab'
+        codepushDeployment = CODEPUSH_STAGING_DEPLOYMENT
+        remoteDirectory = 'audius-mobile-staging'
+      end
+      releasedVersion = getCurrentlyReleasedVersionName()
+      buildFileVersion = getVersionNameFromBuildFile()
+      packageJson = File.open "../../package.json"
+      packageJsonData = JSON.load packageJson
+
+      if buildFileVersion > releasedVersion
+        UI.message "Doing a full build and release (not over-the-air/Codepush)"
+        # Build app and release via play store
+
+        incrementVersionCode(package_name: packageName, track: options[:track])
+
+        # generating the release apk & bundle
+        sh("cd ../../../../ && echo \"yes\" | sdkmanager \"platforms;android-30\" && cd packages/mobile/android && ./gradlew #{buildType}")
+        
+        sh("cd ../../../../ && sudo pip install awscli")
+        sh("cd ../../../../ && aws s3 sync packages/mobile/android/app/build/outputs s3://#{remoteDirectory}/android --delete")
+        upload_to_play_store(
+          track: options[:track],
+          package_name: packageName,
+          aab: aab,
+          skip_upload_metadata: true,
+          skip_upload_changelogs: true,
+          skip_upload_images: true,
+          skip_upload_screenshots: true
+        )
+      elsif packageName != RC_STAGING_PACKAGE
+        # ^ Hacky - don't codepush to RC deployment if this lane is running for Staging RC because we assume we will codepush to RC deployment in the Prod RC job. I.e. avoid codepushing to RC deployment twice.
+        UI.message "Doing an over-the-air (Codepush) deployment"
+
+        sh("npm install --prefix=$HOME/.local --global appcenter-cli")
+        sh("appcenter login --token #{ENV['APPCENTER_CODEPUSH_API_KEY']}")
+        sh("cd ../../ && appcenter codepush release-react -a #{CODEPUSH_APP_NAME} -d #{codepushDeployment} -t #{releasedVersion.to_s} --disable-duplicate-release-error --description #{packageJsonData["version"]}")
+        sh("appcenter logout")
+      else
+        UI.message "Did not do a deployment in order to avoid pushing to Release Candidate Codepush deployment twice."
+      end
+  end
+  lane :incrementVersionCode do |options|
+      # Get the max existing version code
+      previousVersion = google_play_track_version_codes(
+        package_name: options[:package_name] ? options[:package_name] : 'co.audius.app',
+        track: options[:track] ? options[:track] : 'alpha'
+      ).max
+
+      # Increment the version code in build.gradle by 1
+      re = /versionCode\s+(\d+)/
+      path = GRADLE_FILE_PATH
+      s = File.read(path)
+      s[re, 1] = (previousVersion + 1).to_s
+      f = File.new(path, 'w')
+      f.write(s)
+      f.close
+  end
+
+  lane :incrementVersionName do |options|
+      # Get the max existing version name
+      previousVersionName = getCurrentlyReleasedVersionName(
+        package_name: options[:package_name] ? options[:package_name] : 'co.audius.app',
+        track: options[:track] ? options[:track] : 'alpha'
+      )
+
+      re = VERSION_NAME_REGEX
+      path = GRADLE_FILE_PATH
+      s = File.read(path)
+      versionName = Gem::Version.new s[re, 1]
+
+      # If the version specified in build.gradle is greater than
+      # the previous version name, there is no need to modify version name in build.gradle
+      if versionName <= previousVersionName
+        # Increment the patch version
+        # This is not strictly necessary but will allow the builds to be identified more easily
+        patchRegex = /\d+.\d+.(\d+)/
+        previousVersionNameString = previousVersionName.to_s
+        previousPatch = previousVersionNameString[patchRegex, 1]
+        previousVersionNameString[patchRegex, 1] = (previousPatch.to_i + 1).to_s
+        s[re, 1] = previousVersionNameString
+        f = File.new(path, 'w')
+        f.write(s)
+        f.close
+      end
+
+  end
+end

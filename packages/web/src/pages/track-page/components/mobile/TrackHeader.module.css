@@ -1,0 +1,266 @@
+.trackHeader {
+  --border-width: 1px;
+  padding: var(--unit-4);
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-4);
+  align-items: center;
+  background: var(--white);
+  border: var(--border-width) solid var(--neutral-light-8);
+  border-radius: var(--unit-2);
+  box-shadow: 0 0 1px 0 var(--tile-shadow-1), 0 1px 0 0 var(--tile-shadow-2),
+    0 2px 5px -2px var(--tile-shadow-3);
+}
+
+.borderOffset {
+  position: absolute;
+  top: calc(-1 * var(--border-width));
+  left: calc(-1 * var(--border-width));
+}
+
+.typeLabel {
+  height: 18px;
+  color: var(--neutral-light-4);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.coverArt {
+  height: 195px;
+  width: 195px;
+}
+
+.imageWrapper {
+  box-sizing: border-box;
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.title {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+  line-height: 25px;
+  text-align: center;
+}
+
+.verified {
+  margin-left: 8px;
+}
+
+.titleArtistSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--unit-3);
+}
+
+.buttonContainer {
+  width: 100%;
+}
+
+.shareButton {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Co-sign Info Label Section */
+.coSignInfo {
+  display: inline-flex;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.trackHeader > span {
+  width: 100%;
+}
+
+.withSectionDivider {
+  width: 100%;
+  padding-top: var(--unit-4);
+  border-top: 1px solid var(--neutral-light-9);
+}
+
+.description {
+  composes: withSectionDivider;
+  text-align: left;
+  white-space: pre-line;
+  width: 100%;
+}
+
+/* Moible Toast */
+.mobileToast {
+  top: 56px !important;
+  left: 0px !important;
+  right: 0px !important;
+  display: inline-flex;
+  justify-content: center;
+}
+
+/* Info Section */
+.infoSection {
+  display: flex;
+  gap: var(--unit-4);
+  flex-wrap: wrap;
+  width: 100%;
+}
+.infoFact {
+  flex: 1;
+  display: flex;
+  gap: var(--unit-2);
+  text-align: left;
+  width: 50%;
+}
+
+.infoLabel {
+  color: var(--neutral-light-5);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+}
+
+.infoValue {
+  color: var(--neutral);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-demi-bold);
+  line-height: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.infoValue div {
+  display: flex;
+  align-items: center;
+}
+
+.infoValue div :global(.emoji) {
+  margin: -4px 0px 0px 4px;
+}
+
+/* Download Buttons Container */
+.downloadButtonsContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Tags */
+.tags {
+  width: 100%;
+  display: inline-flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.tag {
+  margin: 4px;
+}
+
+/* Loading */
+
+.loadingSkeleton,
+.loadingSkeleton :global(.ant-skeleton-content) {
+  padding: 0 !important;
+}
+.loadingSkeleton :global(.ant-skeleton-paragraph) li {
+  border-radius: 4px;
+}
+
+.loadingSkeleton.loadingArtwork :global(.ant-skeleton-paragraph) li {
+  height: 195px !important;
+  width: 195px !important;
+}
+
+.loadingSkeleton.loadingTitle :global(.ant-skeleton-paragraph) li {
+  height: 24px;
+  width: 160px !important;
+}
+.loadingSkeleton.loadingName :global(.ant-skeleton-paragraph) li {
+  height: 24px;
+  width: 120px !important;
+}
+
+.loadingInfoSection {
+  width: 100%;
+}
+
+.loadingDescription {
+  margin-top: 8px;
+  width: 100%;
+}
+
+.loadingSkeleton.loadingDescription :global(.ant-skeleton-paragraph) li {
+  height: 24px;
+  width: 100% !important;
+  margin-bottom: 24px;
+}
+
+.premiumContentLabel {
+  display: flex;
+  align-items: center;
+  gap: var(--unit-2);
+}
+
+.premiumContentLabel svg {
+  width: calc(var(--unit) * 4.5);
+  height: calc(var(--unit) * 4.5);
+}
+
+.premiumContentLabel path {
+  fill: var(--text-subdued);
+}
+
+.premiumTrackSectionWrapper {
+  margin: 0;
+  background: var(--neutral-light-10);
+  width: 100%;
+}
+
+.premiumTrackSection {
+  flex-direction: column;
+  gap: var(--unit-6);
+}
+
+.premiumTrackSectionButton {
+  width: 100%;
+}
+
+.aiSection {
+  padding: 18px 0;
+}
+
+.aiSectionDescription {
+  text-align: left;
+  display: inline-block;
+}
+
+.aiSectionDescription h2 {
+  margin: 0;
+}
+
+.badgeAi {
+  background: linear-gradient(
+      180deg,
+      var(--ai-primary) 0%,
+      var(--ai-secondary) 100%
+    ),
+    var(--ai-primary);
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}

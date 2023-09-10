@@ -1,0 +1,17 @@
+.pageContainer {
+  overflow: hidden;
+}
+
+.lineupContainer {
+  padding: 16px 11px 12px;
+}
+
+.spinner {
+  height: 40px;
+  width: 40px;
+  margin: 0 auto;
+}
+
+.spinner g path {
+  stroke: var(--secondary) !important;
+}

@@ -1,0 +1,82 @@
+.stripeLogo path {
+  fill: #00aaf5;
+}
+.coinbaseLogo path {
+  fill: #0052ff;
+}
+
+.header {
+  gap: 8px;
+}
+
+.header .challengeIcon > i {
+  margin: auto;
+  width: 18px;
+  height: 18px;
+  margin-right: 2px;
+}
+
+.badge {
+  margin-left: 4px;
+}
+
+.flexHorizontal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.change {
+  color: var(--accent-green);
+}
+.change.negative {
+  color: var(--accent-orange);
+}
+
+.name {
+  align-items: center;
+  line-height: 1px;
+  display: flex;
+}
+
+.name:hover {
+  cursor: pointer;
+  color: var(--secondary);
+}
+
+.spinner {
+  width: 48px;
+  margin: 0 auto;
+}
+.spinnerSmall {
+  width: 16px;
+  margin: 0 auto;
+}
+.spinnerContainer {
+  min-height: 580px;
+  display: flex;
+  align-items: center;
+}
+
+.link {
+  transition: color var(--quick);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: inherit;
+}
+.link svg {
+  width: 1em;
+  height: 1em;
+}
+.link svg path {
+  transition: fill var(--quick);
+  fill: var(--neutral-light-4);
+}
+.link:hover {
+  color: var(--secondary);
+}
+.link:hover svg path {
+  fill: var(--secondary);
+}

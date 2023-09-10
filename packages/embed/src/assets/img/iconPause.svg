@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.2 (72643) - https://sketchapp.com -->
+    <title></title>
+    <desc>Created with Sketch.</desc>
+    <g id="Assets" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="assets" transform="translate(-847.000000, -615.000000)" fill="#CC0FE0">
+            <g id="icon/playbar/pause" transform="translate(847.000000, 615.000000)">
+                <path d="M16,32 C7.163444,32 0,24.836556 0,16 C0,7.163444 7.163444,0 16,0 C24.836556,0 32,7.163444 32,16 C32,24.836556 24.836556,32 16,32 Z M11,10 C10.4477153,10 10,10.4477153 10,11 L10,21 C10,21.5522847 10.4477153,22 11,22 L13,22 C13.5522847,22 14,21.5522847 14,21 L14,11 C14,10.4477153 13.5522847,10 13,10 L11,10 Z M19,10 C18.4477153,10 18,10.4477153 18,11 L18,21 C18,21.5522847 18.4477153,22 19,22 L21,22 C21.5522847,22 22,21.5522847 22,21 L22,11 C22,10.4477153 21.5522847,10 21,10 L19,10 Z" id="Combined-Shape"></path>
+            </g>
+        </g>
+    </g>
+</svg>

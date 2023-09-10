@@ -1,0 +1,113 @@
+.modalBody {
+  max-width: 768px;
+  width: 100%;
+}
+
+.title {
+  color: var(--secondary);
+  font-weight: var(--font-heavy);
+  font-size: var(--font-4xl);
+
+  user-select: none;
+  background-image: var(--page-header-gradient);
+
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  text-shadow: var(--page-header-text-shadow);
+  line-height: 46px;
+}
+
+.title i {
+  margin-left: 16px;
+}
+
+.content {
+  margin: 34px auto;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.artist {
+  margin-left: 24px;
+  margin-right: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 200px;
+}
+
+.imageWrapper {
+  height: 194px;
+  width: 194px;
+  box-sizing: border-box;
+  border: 2px solid var(--white);
+  box-shadow: 0 2px 15px -3px var(--image-shadow);
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.image {
+  background-size: cover !important;
+  background-color: var(--default-profile-picture-background);
+}
+
+.name {
+  margin-top: 11px;
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.2px;
+  line-height: 20px;
+  text-align: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.name span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.iconVerified {
+  margin-bottom: 1px;
+  margin-left: 4px;
+}
+
+.handle {
+  color: var(--neutral);
+  font-size: var(--font-m);
+  font-weight: var(--font-demi-bold);
+  letter-spacing: 0.2px;
+  line-height: 20px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.callToAction {
+  margin-top: 15px;
+  min-width: 430px;
+  margin-right: 45px;
+  display: flex;
+  flex-direction: column;
+}
+
+.text {
+  color: var(--neutral);
+  font-size: var(--font-l);
+  font-weight: var(--font-medium);
+  letter-spacing: 0;
+  line-height: 34px;
+  text-align: center;
+}
+
+.tweetButton {
+  margin: 50px auto 0px;
+}

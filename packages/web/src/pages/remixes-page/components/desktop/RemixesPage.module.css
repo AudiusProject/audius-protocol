@@ -1,0 +1,56 @@
+.header {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 161px;
+}
+
+.header h2 {
+  margin: unset;
+}
+
+.headerPrimary {
+  display: flex;
+  align-items: center;
+}
+
+.headerPrimary .iconRemix {
+  margin-right: 12px;
+}
+
+.iconRemix path {
+  fill: url(#linearGradient-1);
+}
+
+.iconRemix.matrix path {
+  fill: url(#matrixHeaderGradient);
+}
+
+.headerSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--neutral);
+  font-size: var(--font-xl);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.71px;
+  line-height: 25px;
+}
+
+.headerSecondary .iconVerified {
+  margin-left: 4px;
+}
+
+.headerSecondary .link {
+  cursor: pointer;
+  margin: 0px 4px;
+  color: var(--secondary);
+  transition: all 0.18s ease-in-out;
+  display: flex;
+  align-items: center;
+}
+
+.headerSecondary .link:hover {
+  color: var(--secondary-dark-2);
+  text-decoration: underline;
+}

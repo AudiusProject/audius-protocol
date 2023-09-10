@@ -1,0 +1,53 @@
+/* End of the lineup message */
+
+.endOfLineup {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  margin-top: 40px;
+  user-select: none;
+}
+
+.endOfLineupLogo {
+  height: 48px;
+}
+
+.endOfLineupLogo g path {
+  fill: var(--neutral-light-4);
+}
+
+.endTitle {
+  color: var(--neutral-light-5);
+  font-family: var(--font-family);
+  font-size: var(--font-xs);
+  font-weight: var(--font-heavy);
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+  margin-bottom: 9px;
+  margin-top: 16px;
+}
+
+.endDescriptionContainer {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+}
+
+.endDescription {
+  color: var(--neutral-light-4);
+  font-family: var(--font-family);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.09px;
+  text-align: center;
+  white-space: nowrap;
+  padding: 0px 20px;
+}
+
+.divider {
+  background-color: #e7e6eb;
+  border-top: 1px solid var(--neutral-light-7);
+  width: 100%;
+}

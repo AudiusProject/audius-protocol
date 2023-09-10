@@ -1,0 +1,45 @@
+.header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  line-height: 20px;
+}
+
+.preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--unit-2);
+}
+
+.titleIcon {
+  height: 22px;
+  width: 22px;
+}
+
+.isRemix {
+  margin-bottom: var(--unit-6);
+}
+
+.value {
+  display: inline-flex;
+  flex-shrink: 1;
+  gap: var(--unit-2);
+}
+
+.nftOwner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-2);
+}
+
+.nftArtwork {
+  height: 20px;
+  width: 20px;
+  border: 1px solid var(--neutral-light-9);
+  border-radius: 2px;
+}

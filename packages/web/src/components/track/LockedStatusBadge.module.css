@@ -1,0 +1,25 @@
+.container {
+  align-items: center;
+  background-color: var(--neutral-light-4);
+  border-radius: var(--unit-20);
+  display: flex;
+  height: var(--unit-4);
+  padding: var(--unit-half) var(--unit-2);
+}
+
+.unlocked.gated {
+  background-color: var(--accent-blue);
+}
+
+.unlocked.premium {
+  background-color: var(--special-light-green);
+}
+
+.icon {
+  width: 14px;
+  height: 14px;
+}
+
+.icon path {
+  fill: var(--static-white);
+}

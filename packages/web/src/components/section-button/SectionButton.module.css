@@ -1,0 +1,43 @@
+.container {
+  cursor: pointer;
+  border-radius: 4px;
+  background: var(--secondary);
+  transition: all 0.07s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+}
+
+.container.isMobile {
+  padding: 10px 60px;
+}
+
+.container:hover {
+  background: var(--secondary-dark-2);
+  transform: scale(1.03);
+}
+
+.container:active {
+  transform: scale(0.97);
+}
+
+.text {
+  color: var(--darkmode-static-white);
+  font-size: var(--font-xs);
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.43px;
+  line-height: 12px;
+  text-align: center;
+}
+
+.iconArrow {
+  margin-left: 2px;
+  height: 8px;
+  width: 8px;
+}
+
+.iconArrow path {
+  fill: var(--darkmode-static-white);
+}

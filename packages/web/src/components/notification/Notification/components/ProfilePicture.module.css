@@ -1,0 +1,17 @@
+.profilePictureWrapper {
+  height: var(--unit-10);
+  width: var(--unit-10);
+}
+
+.profilePicture {
+  border-radius: 50%;
+  border: 2px solid var(--white);
+  background-color: var(--default-profile-picture-background);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.profilePictureSkeleton {
+  border-radius: 50%;
+}

@@ -1,0 +1,25 @@
+.badge {
+  display: inline-block;
+  font-weight: var(--font-heavy);
+  font-size: var(--font-2xs);
+  border: 1px solid var(--static-white);
+  color: var(--static-white);
+  border-radius: 4px;
+  padding: 4px 8px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.badge:not(.mobile) {
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.2);
+}
+
+.badge:not(.mobile).list {
+  background: transparent;
+}
+
+.badge.mobile {
+  color: var(--neutral-light-4);
+  border-color: var(--neutral-light-4);
+}

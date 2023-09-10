@@ -1,0 +1,150 @@
+.artistChip {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  overflow: hidden;
+}
+.artistChip > div {
+  display: flex;
+}
+
+.profilePictureWrapper {
+  height: 72px;
+  width: 72px;
+  flex: 0 0 72px;
+}
+
+.profilePicture {
+  box-sizing: border-box;
+  height: 72px;
+  width: 72px;
+  flex: 0 0 72px;
+  border: 1px solid var(--neutral-light-8);
+  border-radius: 50%;
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--default-profile-picture-background);
+}
+.profilePicture:hover {
+  cursor: pointer;
+}
+.profilePictureSkeleton {
+  border-radius: 50%;
+}
+
+.text {
+  margin: 0px 8px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+
+  color: var(--neutral);
+  font-size: var(--font-s);
+  overflow: hidden;
+}
+.text > .identity {
+  margin-bottom: 8px;
+  display: flex;
+  cursor: pointer;
+  line-height: normal;
+}
+.text > .identity :global(.artistPopover) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.text > .identity :global(.artistPopover) span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.text > .identity .badge {
+  margin-left: 5px;
+  flex: 0 0 15px;
+}
+.text > .identity .name {
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-m);
+  margin-bottom: 4px;
+}
+.text > .identity .handle {
+  font-weight: var(--font-medium);
+  font-size: var(--font-s);
+}
+.text .icon {
+  margin-right: 4px;
+  width: 16px;
+  height: 16px;
+}
+.text .icon path {
+  fill: var(--neutral-light-4);
+}
+
+.followersContainer,
+.tipContainer {
+  display: flex;
+  align-items: center;
+}
+.followersContainer .followers,
+.tipContainer .amount {
+  display: flex;
+  align-items: center;
+  font-weight: var(--font-medium);
+  color: var(--neutral-light-4) !important;
+}
+.followersContainer .followers {
+  width: 136px !important;
+  margin-right: 8px;
+}
+.followersContainer .value,
+.tipContainer .value {
+  margin-right: 4px;
+  font-weight: var(--font-bold);
+}
+.followersContainer .followsYou {
+  box-shadow: none;
+  border: 1px solid var(--neutral-light-4);
+  color: var(--neutral-light-4);
+}
+
+.followersContainer .followsYou.darkMode {
+  box-shadow: none;
+  border: 1px solid var(--neutral-light-4);
+  color: var(--neutral-light-4);
+  background: none;
+}
+
+.tipContainer .rank {
+  margin-right: 24px;
+}
+.tipContainer .topSupporter,
+.tipContainer .supporter {
+  display: flex;
+  align-items: center;
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+}
+.tipContainer .topSupporter {
+  color: var(--secondary);
+}
+.tipContainer .topRankNumber {
+  font-weight: var(--font-bold);
+  margin-right: 4px;
+}
+.tipContainer .rankNumber {
+  font-weight: var(--font-bold);
+}
+.tipContainer .topSupporter .icon path {
+  fill: var(--secondary);
+}
+.tipContainer .supporter {
+  color: var(--neutral-light-4);
+}
+.tipContainer .amount {
+  font-size: var(--font-s);
+}
+.tipContainer {
+  margin-top: 8px;
+}

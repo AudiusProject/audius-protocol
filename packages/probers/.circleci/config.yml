@@ -1,0 +1,73 @@
+version: 2.1
+jobs:
+  download-dapp:
+    working_directory: ~/probers
+    docker:
+      - image: cimg/python:3.7.12-node
+    steps:
+      - checkout
+      - aws-cli/install
+      - run:
+          name: Download Dapp from S3
+          command: |
+            cd ../
+            aws s3 sync s3://staging.audius.co ./build-staging
+      - persist_to_workspace:
+          root: ../
+          paths:
+            - build-staging
+            - probers
+            - .cache/Cypress
+
+  coverage:
+    working_directory: ~/
+    docker:
+      - image: cimg/node:18.17-browsers
+    resource_class: large
+    steps:
+      - attach_workspace:
+          at: ./
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - probers-dependency-cache-{{ checksum "probers/package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - probers-dependency-cache-
+      - run:
+          name: install probers dependencies
+          command: |
+            cd probers
+            npm ci
+      - save_cache:
+          key: probers-dependency-cache-{{ checksum "probers/package.json" }}
+          paths:
+            - ./probers/node_modules
+      - run:
+          name: serve and run prober tests
+          command: |
+            npm install serve
+            node node_modules/serve/bin/serve.js -l 3001 -s build-staging &
+            cd probers
+            npm run cypress:run
+
+workflows:
+  version: 2
+  commit:
+    jobs:
+      - download-dapp
+      - coverage:
+          requires:
+            - download-dapp
+  hourly:
+    triggers:
+      - schedule:
+          cron: '17 * * * *'
+          filters:
+            branches:
+              only:
+                - none
+    jobs:
+      - download-dapp
+      - coverage:
+          requires:
+            - download-dapp

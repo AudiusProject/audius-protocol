@@ -1,0 +1,126 @@
+.container {
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: baseline;
+  width: 100%;
+  min-width: 780px;
+  height: 136px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.containerWithBar {
+  height: 129px;
+}
+
+.container.section {
+  margin-bottom: 16px;
+}
+
+.headerWrapper {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.bottomBarContainer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-width: 780px;
+}
+
+.bottomBar {
+  max-width: 1080px;
+  flex: 1;
+  margin: 0px 56px;
+}
+
+.header.main {
+  color: var(--secondary);
+  font-weight: var(--font-heavy);
+  font-size: var(--font-4xl);
+
+  user-select: none;
+  background-image: var(--page-header-gradient);
+
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  text-shadow: var(--page-header-text-shadow);
+  line-height: 46px;
+}
+
+/** Safari doesn't do a good job persisting the title font styles to nested content */
+.header.main > *,
+.header.main > * > * {
+  background-image: var(--page-header-gradient);
+
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  text-shadow: var(--page-header-text-shadow);
+}
+
+.header.mini {
+  /* Padding top to align baseline with main. */
+  padding-top: 12px;
+  color: var(--neutral-light-4);
+  font-size: var(--font-2xl);
+  font-weight: var(--font-heavy);
+  user-select: none;
+}
+
+.header.section {
+  display: inline-block;
+  color: var(--neutral);
+  font-size: var(--font-2xl);
+  font-weight: var(--font-bold);
+  text-shadow: 0 2px 6px 0 var(--neutral);
+}
+
+.header.page {
+  display: inline-block;
+  color: var(--neutral);
+  font-size: var(--font-2xl);
+  font-weight: var(--font-bold);
+  text-shadow: 0 2px 6px 0 var(--neutral);
+  background-image: var(--page-header-gradient);
+}
+
+.backButton {
+  margin: auto 24px auto 0;
+}
+
+.middleRow {
+  display: flex;
+  width: 100%;
+  margin: 0px 56px;
+  max-width: 1080px;
+  align-items: center;
+}
+
+.rightDecorator {
+  margin: 0px 0px 3px auto;
+}
+
+.maxWidthWrapper {
+  margin: auto 0px 12px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.maxWithWrapperWithBar {
+  /* Need to scoot header down in case of bottom bar */
+  margin: auto 0px 8px;
+}
+
+.secondary {
+  margin: auto 0px;
+}
+
+.topLeftWrapper {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 11;
+}

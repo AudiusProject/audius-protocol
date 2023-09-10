@@ -1,0 +1,1 @@
+export { GatedContentUploadPromptDrawer } from './GatedContentUploadPromptDrawer'

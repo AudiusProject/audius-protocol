@@ -180,3 +180,17 @@ docs/.env.production.local
 docs/npm-debug.log*
 docs/yarn-debug.log*
 docs/yarn-error.log*
+
+**/.hooks/*.local.json
+
+**/.hooks/*.local.json
+.log
+
+.yalc
+yalc.lock
+
+# ignored until ci has custom image with correct python version
+.python-version
+
+# Solana
+app-keypair.json

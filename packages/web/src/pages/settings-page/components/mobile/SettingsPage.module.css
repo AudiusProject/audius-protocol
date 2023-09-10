@@ -1,0 +1,68 @@
+.page {
+  padding: 0px 0px 14px !important;
+  background-color: var(--notification-background-active);
+  min-height: 100vh;
+}
+
+.pageBackground {
+  background-color: var(--notification-background-active);
+}
+
+.pageContent {
+  padding-bottom: 8px;
+}
+
+.bodyContainer {
+  width: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo {
+  width: 80%;
+  margin: 24px 0;
+}
+
+.logo img {
+  width: 100%;
+  max-height: 85px;
+}
+
+.account {
+  display: flex;
+  height: 52px;
+  align-items: center;
+}
+
+.profilePicture {
+  height: 52px;
+  width: 52px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;
+  background-color: var(--default-profile-picture-background);
+}
+
+.info {
+  margin-left: 16px;
+  text-align: left;
+  font-size: var(--font-m);
+  color: var(--neutral);
+}
+
+.name {
+  font-weight: var(--font-bold);
+  margin-bottom: 6px;
+}
+
+.handle {
+  font-weight: var(--font-medium);
+}
+
+.whiteTint {
+  filter: brightness(0) invert(1);
+}

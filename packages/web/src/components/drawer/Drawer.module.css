@@ -1,0 +1,82 @@
+.drawer {
+  z-index: 22;
+  position: fixed;
+  right: 0;
+  left: 0;
+  top: 100vh;
+  background: var(--white);
+  margin-bottom: 0px;
+  padding-top: 0px;
+
+  user-select: none;
+  touch-action: none;
+  border-radius: 40px 40px 0px 0px;
+  box-shadow: none;
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.fullDrawer {
+  top: 0px;
+  height: 110vh;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+.fullDrawer > div {
+  margin-top: env(safe-area-inset-top, 0px);
+  margin-bottom: 10vh;
+}
+
+.dismissContainer {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+}
+
+.dismissContainer path {
+  fill: var(--neutral-light-4);
+}
+
+.drawer.isOpen {
+  box-shadow: 0px -15px 50px -5px rgba(0, 0, 0, 0.15);
+}
+
+.background {
+  z-index: 21;
+  background-color: black;
+  position: fixed;
+  right: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
+}
+
+/*
+ * Fixes positioning on ios Safari due to the navigation
+ * bar that appears while scrolling up / down.
+ * When testing this, make sure to test Safari embedded inside Twitter.
+ */
+@supports (-webkit-overflow-scrolling: touch) {
+  .drawer:not(.fullDrawer).isOpen {
+    top: calc(100vh - 100px);
+  }
+  .drawer:not(.fullDrawer):not(.isOpen) {
+    top: calc(100vh + 100px);
+  }
+}
+
+.skirt {
+  position: absolute;
+  /* Need to provide a small overlap
+    between skirt and now playing,
+    otherwise we see a ~1px gap
+    between them when the drawer translates.
+    (Probably something to due with fractional
+    pixel translations/aliasing etc)
+  */
+  bottom: -799px;
+  left: 0;
+  right: 0;
+  background: var(--white);
+  height: 800px;
+}
