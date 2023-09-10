@@ -94,6 +94,7 @@ const sendTransactionWithLookupTable = async (
   const lookupTableAccount = (
     await connection.getAddressLookupTable(lookupTableAddress)
   ).value
+  console.log('REED got lookupTableAccount:', lookupTableAccount)
   if (!lookupTableAccount) {
     throw new Error(
       `Failed to get lookupTableAccount after waiting ${SLEEP_TIME} seconds`
