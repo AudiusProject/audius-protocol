@@ -47,15 +47,11 @@ export const isTokenAccount = async ({
   accountAddress: SolanaWalletAddress
   mint: MintName
 }) => {
-  try {
-    await getTokenAccountInfo({
-      tokenAccount: new PublicKey(accountAddress),
-      mint
-    })
-    return true
-  } catch (e) {
-    return false
-  }
+  const info = await getTokenAccountInfo({
+    tokenAccount: new PublicKey(accountAddress),
+    mint
+  })
+  return info !== null
 }
 
 /**
