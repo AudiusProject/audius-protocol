@@ -1,3 +1,7 @@
+# Root CircleCI configuration
+#
+# Configuration for individual packages lives .circleci/src/{commands,jobs,workflows}
+
 version: 2.1
 
 setup: true
