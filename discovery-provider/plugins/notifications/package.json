@@ -18,7 +18,7 @@
   "keywords": [],
   "author": "",
   "devDependencies": {
-    "@audius/sdk": "3.0.3-beta.77",
+    "@audius/sdk": "3.0.8-beta.10",
     "@jest/globals": "29.3.1",
     "@rmp135/sql-ts": "1.16.0",
     "@tsconfig/node16-strictest": "^1.0.4",

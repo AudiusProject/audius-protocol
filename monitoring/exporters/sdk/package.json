@@ -11,7 +11,7 @@
     "keywords": [],
     "author": "",
     "dependencies": {
-      "@audius/sdk": "0.0.32",
+      "@audius/sdk": "3.0.8-beta.10",
       "prom-client": "14.0.1",
       "web3": "1.7.5"
     },

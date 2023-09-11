@@ -51,7 +51,7 @@
     "verify": "concurrently \"npm:typecheck\" \"npm:lint:fix\""
   },
   "dependencies": {
-    "@audius/sdk": "3.0.8-beta.9",
+    "@audius/sdk": "3.0.8-beta.10",
     "@coinbase/cbpay-js": "1.2.0",
     "@craco/craco": "7.0.0-alpha.3",
     "@fingerprintjs/fingerprintjs-pro": "3.5.6",
