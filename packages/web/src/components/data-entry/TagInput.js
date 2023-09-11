@@ -180,15 +180,6 @@ class TagInput extends Component {
 
     const newTag = (
       <>
-        <input
-          aria-label={ariaLabel}
-          ref={this.newTagInputRef}
-          className={cn(styles.newTagInput, {
-            [styles.activeInput]: typingMode
-          })}
-          onKeyDown={this.onNewTagInputKeyPress}
-          onBlur={this.onNewTagInputBlur}
-        />
         {typingMode ? null : (
           <Tag
             className={cn(styles.tag, styles.newTag, styles.last)}
@@ -200,6 +191,15 @@ class TagInput extends Component {
             </div>
           </Tag>
         )}
+        <input
+          aria-label={ariaLabel}
+          ref={this.newTagInputRef}
+          className={cn(styles.newTagInput, {
+            [styles.activeInput]: typingMode
+          })}
+          onKeyDown={this.onNewTagInputKeyPress}
+          onBlur={this.onNewTagInputBlur}
+        />
       </>
     )
 

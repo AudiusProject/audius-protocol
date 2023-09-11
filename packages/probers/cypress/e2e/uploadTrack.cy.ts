@@ -2,8 +2,6 @@ import dayjs from 'dayjs'
 
 import aiAttribution from '../fixtures/aiAttribution.json'
 import remix from '../fixtures/remix.json'
-import user from '../fixtures/user.json'
-const base64Entropy = Buffer.from(user.entropy).toString('base64')
 const timestamp = dayjs().format('YYMMDD_HHmmss')
 
 describe('Upload', () => {
@@ -16,14 +14,14 @@ describe('Upload', () => {
   })
 
   it('user should be able to upload a single track', () => {
-    cy.visit(`trending?login=${base64Entropy}`)
-    cy.findByRole('link', { name: user.name }).should('exist')
+    cy.login()
     cy.findByRole('link', { name: /upload track/i }).click()
-
-    // Select track
     cy.findByRole('heading', { name: /upload your music/i, level: 1 }).should(
       'exist'
     )
+
+    // Select track
+
     cy.findByTestId('upload-dropzone').attachFile('track.mp3', {
       subjectType: 'drag-n-drop'
     })
@@ -31,7 +29,6 @@ describe('Upload', () => {
 
     // Complete track form
 
-    // // Add track artwork
     cy.findByRole('button', { name: /change artwork/i }).click()
 
     cy.findByTestId('upload-dropzone').attachFile('track-artwork.jpeg', {
@@ -131,7 +128,6 @@ describe('Upload', () => {
     cy.findByRole('dialog', { name: /attribution/i }).within(() => {
       cy.findByRole('textbox', { name: /isrc/i }).type('US-123-45-67890')
       cy.findByRole('textbox', { name: /iswc/i }).type('T-123456789-0')
-      // TODO test error message
       cy.findByRole('radiogroup', { name: /allow attribution/i }).within(() => {
         cy.findByRole('radio', { name: /allow attribution/i }).click()
       })
