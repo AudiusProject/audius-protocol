@@ -1,4 +1,6 @@
-import { Maybe, RendezvousHash, isNodeHealthy } from '../../../utils'
+import type { Maybe } from '../../../utils/types'
+import { isNodeHealthy } from '../../../utils/getNStorageNodes'
+import RendezvousHash from '../../../utils/rendezvous'
 import fetch from 'cross-fetch'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
