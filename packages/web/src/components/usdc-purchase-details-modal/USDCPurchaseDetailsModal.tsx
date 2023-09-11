@@ -175,7 +175,7 @@ const SaleModalContent = ({ purchaseDetails, onClose }: ContentProps) => {
         <ModalTitle
           iconClassName={styles.icon}
           icon={<Icon icon={IconCart} />}
-          title={messages.purchaseDetails}
+          title={messages.saleDetails}
         />
       </ModalHeader>
       <ModalContent className={styles.content}>
