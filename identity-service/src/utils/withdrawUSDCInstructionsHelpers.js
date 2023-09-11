@@ -12,6 +12,7 @@ const JUPITER_AGGREGATOR_V3_PROGRAM_ID =
 const CLOSE_ACCOUNT_INSTRUCTION = 9
 const FEE_PAYER_ACCOUNT_INDEX = 1
 const CREATE_TOKEN_ACCOUNT_INSTRUCTION_INDEX = 0
+const CREATE_TOKEN_ACCOUNT_OWNER_INDEX = 2
 const USER_BANK_TRANSFER_INDEX_START = 1
 const USER_BANK_TRANSFER_INDEX_END = 3
 const JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_INSTRUCTION_INDEX = 3
@@ -68,6 +69,10 @@ const checkCloseAccountInstruction = (instruction) => {
  * @returns true if validation passes
  */
 const checkJupiterSwapInstructions = (instructions) => {
+  const createAccountInstruction =
+    instructions[CREATE_TOKEN_ACCOUNT_INSTRUCTION_INDEX]
+  const associatedTokenAccountOwner = createAccountInstruction.keys[CREATE_TOKEN_ACCOUNT_OWNER_INDEX]
+
   // Check that the create associated token account instruction is correct
   const createAssociatedTokenAccountInstruction =
     instructions[JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_INSTRUCTION_INDEX]
@@ -88,7 +93,8 @@ const checkJupiterSwapInstructions = (instructions) => {
     ]
   const isCorrectFeePayer =
     feePayerKey.pubkey === tempHoldingAccountOwner.pubkey
-  if (!isCorrectFeePayer) {
+  const isCorrectAccountOwner = associatedTokenAccountOwner.pubkey === tempHoldingAccountOwner.pubkey
+  if (!isCorrectFeePayer || !isCorrectAccountOwner) {
     return false
   }
 
