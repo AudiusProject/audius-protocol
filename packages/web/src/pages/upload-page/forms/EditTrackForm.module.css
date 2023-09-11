@@ -40,3 +40,7 @@
   background: var(--background-surface-1);
   justify-content: space-between;
 }
+
+.previewButton {
+  width: fit-content;
+}
