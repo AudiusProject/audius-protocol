@@ -231,6 +231,7 @@ workflows:
             .* run-probers-workflow true
           requires:
             - generate-config
+            - init
           workspace_path: ../workspace
 
       - path-filtering/filter:
@@ -252,6 +253,7 @@ workflows:
             .* run-sdk-workflow true
           requires:
             - generate-config
+            - init
           workspace_path: ../workspace
 
       - path-filtering/filter:
@@ -268,6 +270,7 @@ workflows:
             .* run-probers-workflow false
           requires:
             - generate-config
+            - init
           workspace_path: ../workspace
 
   release-create-branch:
