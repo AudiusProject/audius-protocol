@@ -12,6 +12,7 @@ const JUPITER_AGGREGATOR_V3_PROGRAM_ID =
 const CLOSE_ACCOUNT_INSTRUCTION = 9
 const FEE_PAYER_ACCOUNT_INDEX = 1
 const CREATE_TOKEN_ACCOUNT_INSTRUCTION_INDEX = 0
+const CREATE_TOKEN_ACCOUNT_ASSOCIATED_TOKEN_ACCOUNT_INDEX = 1
 const CREATE_TOKEN_ACCOUNT_OWNER_INDEX = 2
 const USER_BANK_TRANSFER_INDEX_START = 1
 const USER_BANK_TRANSFER_INDEX_END = 3
@@ -24,6 +25,7 @@ const JUPITER_SET_TOKEN_LEDGER_TOKEN_ACCOUNT_INDEX = 1
 const JUPITER_SWAP_INSTRUCTION_INDEX = 5
 const JUPITER_SWAP_TEMP_HOLDING_ACCOUNT_OWNER_INDEX = 2
 const JUPITER_SWAP_TEMP_HOLDING_ACCOUNT_INDEX = 4
+const JUPITER_SWAP_RECIPIENT_ACCOUNT_INDEX = 6
 const JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_INSTRUCTION_INDEX = 6
 const JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_TEMP_HOLDING_ACCOUNT_INDEX = 0
 const JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_DESTINATION_INDEX = 1
@@ -72,6 +74,9 @@ const checkJupiterSwapInstructions = (instructions) => {
   const createAccountInstruction =
     instructions[CREATE_TOKEN_ACCOUNT_INSTRUCTION_INDEX]
   const associatedTokenAccountOwner = createAccountInstruction.keys[CREATE_TOKEN_ACCOUNT_OWNER_INDEX]
+  const associatedTokenAccount = createAccountInstruction.keys[
+    CREATE_TOKEN_ACCOUNT_ASSOCIATED_TOKEN_ACCOUNT_INDEX
+  ]
 
   // Check that the create associated token account instruction is correct
   const createAssociatedTokenAccountInstruction =
@@ -122,7 +127,9 @@ const checkJupiterSwapInstructions = (instructions) => {
   const isCorrectHoldingAccount =
     swapInstruction.keys[JUPITER_SWAP_TEMP_HOLDING_ACCOUNT_INDEX].pubkey ===
     tempHoldingAccount.pubkey
-  if (!isCorrectHoldingAccountOwner || !isCorrectHoldingAccount) {
+  const isCorrectRecipient =
+    swapInstruction.keys[JUPITER_SWAP_RECIPIENT_ACCOUNT_INDEX].pubkey === associatedTokenAccount.pubkey
+  if (!isCorrectHoldingAccountOwner || !isCorrectHoldingAccount || !isCorrectRecipient) {
     return false
   }
 
