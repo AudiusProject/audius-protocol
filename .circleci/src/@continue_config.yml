@@ -55,6 +55,9 @@ parameters:
   run-stems-workflow:
     type: boolean
     default: false
+  run-probers-workflow:
+    type: boolean
+    default: false
   run-embed-workflow:
     type: boolean
     default: false
