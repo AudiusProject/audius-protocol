@@ -486,6 +486,7 @@ const TrackTile = (props: CombinedProps) => {
             isDarkMode={darkMode}
             isMatrixMode={isMatrix}
             isTrack
+            trackId={trackId ?? undefined}
           />
         ) : null}
       </div>

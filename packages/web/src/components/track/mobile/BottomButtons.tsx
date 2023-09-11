@@ -26,6 +26,7 @@ type BottomButtonsProps = {
   isUnlisted?: boolean
   isShareHidden?: boolean
   isTrack?: boolean
+  trackId?: number
   doesUserHaveAccess?: boolean
   premiumConditions?: Nullable<PremiumConditions>
   premiumTrackStatus?: PremiumTrackStatus
@@ -62,6 +63,7 @@ const BottomButtons = (props: BottomButtonsProps) => {
           <PremiumConditionsPill
             premiumConditions={props.premiumConditions}
             unlocking={props.premiumTrackStatus === 'UNLOCKING'}
+            trackId={props.trackId}
           />
         </div>
         {moreButton}
