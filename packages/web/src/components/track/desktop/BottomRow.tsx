@@ -123,6 +123,7 @@ export const BottomRow = ({
         <PremiumConditionsPill
           premiumConditions={premiumConditions}
           unlocking={premiumTrackStatus === 'UNLOCKING'}
+          trackId={trackId}
         />
         <div>{rightActions}</div>
       </div>
