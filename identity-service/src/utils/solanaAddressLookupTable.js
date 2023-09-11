@@ -101,15 +101,49 @@ const sendTransactionWithLookupTable = async (
   }
 
   console.log('REED signatures:', signatures)
-  const txId = await sendV0Transaction(
+  const txId = 'asdf'
+  // const txId = await sendV0Transaction(
+  //   connection,
+  //   instructions,
+  //   feePayerAccount,
+  //   [lookupTableAccount],
+  //   signatures
+  // )
+  console.log(
+    `REED successfully sent swap transaction: https://explorer.solana.com/tx/${txId}`
+  )
+
+  const deactivateInstruction = AddressLookupTableProgram.deactivateLookupTable(
+    {
+      lookupTable: lookupTableAddress,
+      authority: feePayerAccount.publicKey
+    }
+  )
+  const deactivateTxId = await sendV0Transaction(
     connection,
-    instructions,
+    [deactivateInstruction],
     feePayerAccount,
     [lookupTableAccount],
     signatures
   )
   console.log(
-    `REED successfully sent swap transaction: https://explorer.solana.com/tx/${txId}`
+    `REED successfully sent deactivate transaction: https://explorer.solana.com/tx/${deactivateTxId}`
+  )
+  sleep(600)
+  const closeInstruction = AddressLookupTableProgram.closeLookupTable({
+    lookupTable: lookupTableAddress,
+    authority: feePayerAccount.publicKey,
+    recipient: feePayerAccount.publicKey
+  })
+  const closeTxId = await sendV0Transaction(
+    connection,
+    [closeInstruction],
+    feePayerAccount,
+    [lookupTableAccount],
+    signatures
+  )
+  console.log(
+    `REED successfully sent close transaction: https://explorer.solana.com/tx/${closeTxId}`
   )
   return txId
 }

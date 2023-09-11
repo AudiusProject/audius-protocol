@@ -152,8 +152,9 @@ solanaRouter.post(
     })
 
     if (error) {
+      // if the tx fails due to being too large, retry with v0 tx
       if (isTransactionTooLargeError(error)) {
-        await handleV0Tx(instructions, feePayerOverride, signatures)
+        return await handleV0Tx(instructions, feePayerOverride, signatures)
       }
       // if the tx fails, store it in redis with a 24 hour expiration
       await redis.setex(
