@@ -80,7 +80,9 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
           commercialUse: null,
           derivativeWorks: null
         },
-        stems: []
+        stems: [],
+        isrc: '',
+        iswc: ''
       }))
     }),
     [tracks]

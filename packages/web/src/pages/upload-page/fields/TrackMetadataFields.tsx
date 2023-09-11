@@ -48,6 +48,7 @@ export const TrackMetadataFields = () => {
       <div className={styles.description}>
         <TextAreaField
           name={getTrackFieldName(index, 'description')}
+          aria-label='description'
           className={styles.textArea}
           placeholder={messages.description}
           maxLength={1000}

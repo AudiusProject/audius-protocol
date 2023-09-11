@@ -21,7 +21,9 @@
     "cypress-file-upload": "^5.0.8",
     "cypress-wait-until": "^1.7.2",
     "dayjs": "^1.11.6",
-    "typescript": "^4.8.4"
+    "lodash": "4.17.21",
+    "typescript": "^4.8.4",
+    "web3": "4.1.1"
   },
   "standard": {
     "env": [
@@ -30,6 +32,7 @@
     "ignore": []
   },
   "devDependencies": {
+    "cypress-plugin-tab": "^1.0.5",
     "eslint": "8.19.0",
     "eslint-plugin-cypress": "2.12.1"
   }

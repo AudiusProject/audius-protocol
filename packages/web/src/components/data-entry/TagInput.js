@@ -147,7 +147,8 @@ class TagInput extends Component {
       layout,
       tags = this.state.tags,
       typingMode = this.state.typingMode,
-      flashExistingTag = this.state.flashExistingTag
+      flashExistingTag = this.state.flashExistingTag,
+      'aria-label': ariaLabel
     } = this.props
 
     const style = {
@@ -177,23 +178,29 @@ class TagInput extends Component {
       </Tag>
     ))
 
-    const newTag = typingMode ? (
-      <input
-        ref={this.newTagInputRef}
-        className={styles.newTagInput}
-        onKeyDown={this.onNewTagInputKeyPress}
-        onBlur={this.onNewTagInputBlur}
-      />
-    ) : (
-      <Tag
-        className={cn(styles.tag, styles.newTag, styles.last)}
-        onClick={this.setTypingMode}
-      >
-        {placeholder}
-        <div className={styles.tagIconWrapper}>
-          <IconSave className={styles.iconSave} />
-        </div>
-      </Tag>
+    const newTag = (
+      <>
+        <input
+          aria-label={ariaLabel}
+          ref={this.newTagInputRef}
+          className={cn(styles.newTagInput, {
+            [styles.activeInput]: typingMode
+          })}
+          onKeyDown={this.onNewTagInputKeyPress}
+          onBlur={this.onNewTagInputBlur}
+        />
+        {typingMode ? null : (
+          <Tag
+            className={cn(styles.tag, styles.newTag, styles.last)}
+            onClick={this.setTypingMode}
+          >
+            {placeholder}
+            <div className={styles.tagIconWrapper}>
+              <IconSave className={styles.iconSave} />
+            </div>
+          </Tag>
+        )}
+      </>
     )
 
     return (
