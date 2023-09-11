@@ -1,14 +1,17 @@
+import { useCallback } from 'react'
+
 import {
   useUSDCBalance,
   formatCurrencyBalance,
   BNUSDC,
-  formatUSDCWeiToFloorDollarNumber
+  formatUSDCWeiToFloorDollarNumber,
+  useWithdrawUSDCModal,
+  WithdrawUSDCModalPages
 } from '@audius/common'
 import BN from 'bn.js'
 import { useField } from 'formik'
 
 import { Divider } from 'components/divider'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Text } from 'components/typography'
 import {
   ADDRESS,
@@ -16,16 +19,19 @@ import {
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
 import { toHumanReadable } from 'utils/tokenInput'
 
+import styles from './Error.module.css'
 import { TextRow } from './TextRow'
-import styles from './TransferInProgress.module.css'
 
 const messages = {
   currentBalance: 'Current Balance',
   amountToWithdraw: 'Amount to Withdraw',
-  destinationAddress: 'Destination Address'
+  destinationAddress: 'Destination Address',
+  error: 'An error occurred during your transfer.',
+  tryAgain: 'Try Again?'
 }
 
-export const TransferInProgress = () => {
+export const Error = () => {
+  const { setData } = useWithdrawUSDCModal()
   const { data: balance } = useUSDCBalance()
   const balanceNumber = formatUSDCWeiToFloorDollarNumber(
     (balance ?? new BN(0)) as BNUSDC
@@ -34,6 +40,12 @@ export const TransferInProgress = () => {
 
   const [{ value: amountValue }] = useField(AMOUNT)
   const [{ value: addressValue }] = useField(ADDRESS)
+
+  const handleTryAgain = useCallback(() => {
+    setData({
+      page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS
+    })
+  }, [setData])
 
   return (
     <div className={styles.root}>
@@ -50,7 +62,21 @@ export const TransferInProgress = () => {
           {addressValue}
         </Text>
       </div>
-      <LoadingSpinner className={styles.spinner} />
+      <div className={styles.error}>
+        <Text size='xSmall' strength='default' color='accentRed'>
+          {messages.error}
+        </Text>
+        <Text
+          as='a'
+          className={styles.tryAgain}
+          size='xSmall'
+          strength='default'
+          color='secondary'
+          onClick={handleTryAgain}
+        >
+          {messages.tryAgain}
+        </Text>
+      </div>
     </div>
   )
 }
