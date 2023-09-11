@@ -679,7 +679,7 @@ export const audiusBackend = ({
       FeatureFlags.DISCOVERY_RELAY
     )
 
-    console.log({ useDiscoveryRelay }, `discovery relay${useDiscoveryRelay ? ' ' : ' not '}enabled`)
+    console.info({ useDiscoveryRelay }, `discovery relay${useDiscoveryRelay ? ' ' : ' not '}enabled`)
 
     try {
       audiusLibs = new AudiusLibs({
