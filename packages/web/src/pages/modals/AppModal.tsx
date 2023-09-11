@@ -19,8 +19,8 @@ export const AppModal = (props: AppModalProps) => {
   if (modalState === false) return null
 
   return (
-    // <Suspense fallback={null}>
-    <Modal />
-    // </Suspense>
+    <Suspense fallback={null}>
+      <Modal />
+    </Suspense>
   )
 }

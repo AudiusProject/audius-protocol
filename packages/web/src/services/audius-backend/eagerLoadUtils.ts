@@ -20,9 +20,17 @@ export const waitForLibsInit = async () => {
   // @ts-ignore
   if (window.audiusLibs) return
   // Add an event listener and resolve when that returns
-  return new Promise((resolve) => {
+  return new Promise<void>((resolve) => {
+    if (!window.Web3) {
+      import('web3').then((Web3) => {
+        window.Web3 = Web3
+        window.dispatchEvent(new CustomEvent('WEB3_LOADED'))
+      })
+    }
+    if (window.audiusLibs) {
+      resolve()
+    }
     // @ts-ignore
-    if (window.audiusLibs) resolve()
     window.addEventListener(LIBS_INITTED_EVENT, resolve)
   })
 }

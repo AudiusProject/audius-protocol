@@ -22,6 +22,12 @@ import { watchBackendErrors } from './errorSagas'
 import { getIsSettingUp, getIsSetup } from './selectors'
 const { getIsReachable } = reachabilitySelectors
 
+async function initWeb3() {
+  const Web3 = await import('web3')
+  window.Web3 = Web3
+  window.dispatchEvent(new CustomEvent('WEB3_LOADED'))
+}
+
 /**
  * Waits for the backend to be setup. Can be used as a blocking call in another saga,
  * For example:
@@ -33,6 +39,8 @@ const { getIsReachable } = reachabilitySelectors
 export function* waitForBackendSetup() {
   const isBackendSetup = yield* select((store) => store.backend.isSetup)
   const isReachable = yield* select(getIsReachable)
+  console.log('needing to init audius-backend!')
+
   if (!isBackendSetup && !isReachable) {
     yield* all([
       take(backendActions.SETUP_BACKEND_SUCCEEDED),
@@ -41,6 +49,7 @@ export function* waitForBackendSetup() {
   } else if (!isReachable) {
     yield* take(reachabilityActions.SET_REACHABLE)
   } else if (!isBackendSetup) {
+    yield* call(initWeb3)
     yield* take(backendActions.SETUP_BACKEND_SUCCEEDED)
   }
 }
