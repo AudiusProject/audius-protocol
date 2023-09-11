@@ -20,7 +20,7 @@ const allowedProgramIds = new Set([
   solanaClaimableTokenProgramAddress,
   solanaRewardsManagerProgramId,
   SECP256K1_PROGRAM_ID,
-  MEMO_PROGRAM_ID,
+  MEMO_PROGRAM_ID
 ])
 
 if (solanaAudiusAnchorDataProgramId) {

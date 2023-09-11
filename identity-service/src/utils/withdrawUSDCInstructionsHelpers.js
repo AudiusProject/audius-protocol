@@ -6,7 +6,8 @@ const { Keypair } = require('@solana/web3.js')
 const config = require('../config')
 const { isRelayAllowedProgram, getInstructionEnum } = require('./relayUtils')
 
-const JUPITER_AGGREGATOR_V3_PROGRAM_ID = 'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph'
+const JUPITER_AGGREGATOR_V3_PROGRAM_ID =
+  'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph'
 
 const CLOSE_ACCOUNT_INSTRUCTION = 9
 const FEE_PAYER_ACCOUNT_INDEX = 1
@@ -64,7 +65,7 @@ const checkCloseAccountInstruction = (instruction) => {
 const jupiterSwapProgramIds = new Set([
   JUPITER_AGGREGATOR_V3_PROGRAM_ID,
   ASSOCIATED_TOKEN_PROGRAM_ID.toBase58(),
-  TOKEN_PROGRAM_ID.toBase58(),
+  TOKEN_PROGRAM_ID.toBase58()
 ])
 
 /**
@@ -78,63 +79,72 @@ const checkJupiterSwapInstructions = (instructions) => {
     JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_INSTRUCTION_INDEX
   )
   console.log(JSON.stringify(jupiterInstructions, null, 2))
-  const areJupiterAllowedPrograms = jupiterInstructions
-    .every((instruction) => jupiterSwapProgramIds.has(instruction.programId))
+  const areJupiterAllowedPrograms = jupiterInstructions.every((instruction) =>
+    jupiterSwapProgramIds.has(instruction.programId)
+  )
   if (!areJupiterAllowedPrograms) {
     return false
   }
 
-  const createAssociatedTokenAccountInstruction = instructions[
-    JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_INSTRUCTION_INDEX
-  ]
-  const feePayerKey = createAssociatedTokenAccountInstruction.keys[
-    JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_FEE_PAYER_ACCOUNT_INDEX
-  ]
-  const tempHoldingAccount = createAssociatedTokenAccountInstruction.keys[
-    JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_TEMP_HOLDING_ACCOUNT_INDEX
-  ]
-  const tempHoldingAccountOwner = createAssociatedTokenAccountInstruction.keys[
-    JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_TEMP_HOLDING_ACCOUNT_OWNER_INDEX
-  ]
-  const isCorrectFeePayer = feePayerKey.pubkey === tempHoldingAccountOwner.pubkey
+  const createAssociatedTokenAccountInstruction =
+    instructions[JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_INSTRUCTION_INDEX]
+  const feePayerKey =
+    createAssociatedTokenAccountInstruction.keys[
+      JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_FEE_PAYER_ACCOUNT_INDEX
+    ]
+  const tempHoldingAccount =
+    createAssociatedTokenAccountInstruction.keys[
+      JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_TEMP_HOLDING_ACCOUNT_INDEX
+    ]
+  const tempHoldingAccountOwner =
+    createAssociatedTokenAccountInstruction.keys[
+      JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_TEMP_HOLDING_ACCOUNT_OWNER_INDEX
+    ]
+  const isCorrectFeePayer =
+    feePayerKey.pubkey === tempHoldingAccountOwner.pubkey
   if (!isCorrectFeePayer) {
     return false
   }
 
-  const setTokenLedgerInstruction = instructions[
-    JUPITER_SET_TOKEN_LEDGER_INSTRUCTION_INDEX
-  ]
-  const isCorrectTokenLedgerTokenAccount = setTokenLedgerInstruction.keys[
-    JUPITER_SET_TOKEN_LEDGER_TOKEN_ACCOUNT_INDEX
-  ].pubkey === tempHoldingAccount.pubkey
+  const setTokenLedgerInstruction =
+    instructions[JUPITER_SET_TOKEN_LEDGER_INSTRUCTION_INDEX]
+  const isCorrectTokenLedgerTokenAccount =
+    setTokenLedgerInstruction.keys[JUPITER_SET_TOKEN_LEDGER_TOKEN_ACCOUNT_INDEX]
+      .pubkey === tempHoldingAccount.pubkey
   if (!isCorrectTokenLedgerTokenAccount) {
     return false
   }
 
   const swapInstruction = instructions[JUPITER_SWAP_INSTRUCTION_INDEX]
-  const isCorrectHoldingAccountOwner = swapInstruction.keys[
-    JUPITER_SWAP_TEMP_HOLDING_ACCOUNT_OWNER_INDEX
-  ].pubkey === tempHoldingAccountOwner.pubkey
-  const isCorrectHoldingAccount = swapInstruction.keys[
-    JUPITER_SWAP_TEMP_HOLDING_ACCOUNT_INDEX
-  ].pubkey === tempHoldingAccount.pubkey
+  const isCorrectHoldingAccountOwner =
+    swapInstruction.keys[JUPITER_SWAP_TEMP_HOLDING_ACCOUNT_OWNER_INDEX]
+      .pubkey === tempHoldingAccountOwner.pubkey
+  const isCorrectHoldingAccount =
+    swapInstruction.keys[JUPITER_SWAP_TEMP_HOLDING_ACCOUNT_INDEX].pubkey ===
+    tempHoldingAccount.pubkey
   if (!isCorrectHoldingAccountOwner || !isCorrectHoldingAccount) {
     return false
   }
 
-  const closeAssociatedTokenAccountInstruction = instructions[
-    JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_INSTRUCTION_INDEX
-  ]
-  const isCorrectClosedAccount = closeAssociatedTokenAccountInstruction.keys[
-    JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_TEMP_HOLDING_ACCOUNT_INDEX
-  ].pubkey === tempHoldingAccount.pubkey
-  const isCorrectClosedAccountDestination = closeAssociatedTokenAccountInstruction.keys[
-    JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_DESTINATION_INDEX
-  ].pubkey === tempHoldingAccountOwner.pubkey
-  const isCorrectClosedAccountOwner = closeAssociatedTokenAccountInstruction.keys[
-    JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_TEMP_HOLDING_ACCOUNT_OWNER_INDEX
-  ].pubkey === tempHoldingAccountOwner.pubkey
-  if (!isCorrectClosedAccount || !isCorrectClosedAccountDestination || !isCorrectClosedAccountOwner) {
+  const closeAssociatedTokenAccountInstruction =
+    instructions[JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_INSTRUCTION_INDEX]
+  const isCorrectClosedAccount =
+    closeAssociatedTokenAccountInstruction.keys[
+      JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_TEMP_HOLDING_ACCOUNT_INDEX
+    ].pubkey === tempHoldingAccount.pubkey
+  const isCorrectClosedAccountDestination =
+    closeAssociatedTokenAccountInstruction.keys[
+      JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_DESTINATION_INDEX
+    ].pubkey === tempHoldingAccountOwner.pubkey
+  const isCorrectClosedAccountOwner =
+    closeAssociatedTokenAccountInstruction.keys[
+      JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_TEMP_HOLDING_ACCOUNT_OWNER_INDEX
+    ].pubkey === tempHoldingAccountOwner.pubkey
+  if (
+    !isCorrectClosedAccount ||
+    !isCorrectClosedAccountDestination ||
+    !isCorrectClosedAccountOwner
+  ) {
     return false
   }
 
