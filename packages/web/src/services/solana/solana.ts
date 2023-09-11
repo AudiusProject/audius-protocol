@@ -38,6 +38,27 @@ export const isSolWallet = async (destinationWallet: SolanaWalletAddress) => {
 }
 
 /**
+ * Checks if the given account address is an associated token account
+ */
+export const isTokenAccount = async ({
+  accountAddress,
+  mint
+}: {
+  accountAddress: SolanaWalletAddress
+  mint: MintName
+}) => {
+  try {
+    await getTokenAccountInfo({
+      tokenAccount: new PublicKey(accountAddress),
+      mint
+    })
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
+/**
  * Gets the current user's root solana account.
  */
 export const getRootSolanaAccount = async () => {
