@@ -143,7 +143,12 @@ jobs:
 
             ${CHANGELOG}"
             npm i --ignore-scripts
-            npm version patch -ws --include-workspace-root -m "${MESSAGE}"
+            npm version patch -ws --include-workspace-root --no-git-tag-version
+            git add .
+            git commit -m "${MESSAGE}"
+            VERSION=$(jq -r .version ./package.json)
+            git tag client-v${VERSION}
+            git push origin client-v${VERSION}
       - run:
           name: Create release branch
           command: |
