@@ -17,8 +17,6 @@ import { isElectron, isMobile } from 'utils/clientUtil'
 
 import { env } from '../env'
 
-import { getLibs } from './getLibs'
-
 declare global {
   interface Window {
     audiusLibs: AudiusLibs
@@ -38,7 +36,12 @@ export const audiusBackendInstance = audiusBackend({
   ethTokenAddress: process.env.REACT_APP_ETH_TOKEN_ADDRESS,
   getFeatureEnabled,
   getHostUrl: () => window.location.origin,
-  getLibs: () => getLibs(remoteConfigInstance),
+  getLibs: () =>
+    new Promise((resolve) => {
+      // setTimeout(() => {
+      //   import('@audius/sdk/dist/web-libs').then(resolve)
+      // }, 10000)
+    }),
   discoveryNodeSelectorService,
   getStorageNodeSelector,
   getWeb3Config: async (
@@ -125,15 +128,17 @@ export const audiusBackendInstance = audiusBackend({
   web3ProviderUrls: (process.env.REACT_APP_WEB3_PROVIDER_URL || '').split(','),
   waitForLibsInit,
   waitForWeb3: async () => {
-    if (!window.web3Loaded) {
-      await new Promise<void>((resolve) => {
-        const onLoad = () => {
-          window.removeEventListener('WEB3_LOADED', onLoad)
-          resolve()
-        }
-        window.addEventListener('WEB3_LOADED', onLoad)
-      })
-    }
+    const web3 = await import('web3')
+    window.Web3 = web3
+    // if (!window.web3Loaded) {
+    //   await new Promise<void>((resolve) => {
+    //     const onLoad = () => {
+    //       window.removeEventListener('WEB3_LOADED', onLoad)
+    //       resolve()
+    //     }
+    //     window.addEventListener('WEB3_LOADED', onLoad)
+    //   })
+    // }
   },
 
   withEagerOption,

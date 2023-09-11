@@ -49,6 +49,8 @@ import { getClient } from 'utils/clientUtil'
 
 import { AppModal } from './AppModal'
 
+// const ShareModal = lazy(() => import('components/share-modal'))
+
 const HCaptchaModal = lazy(
   () => import('pages/audio-rewards-page/components/modals/HCaptchaModal')
 )
@@ -97,7 +99,7 @@ const Modals = () => {
       {commonModals.map(([modalName, Modal]) => {
         return <AppModal key={modalName} name={modalName} modal={Modal} />
       })}
-      <EditTrackModal />
+      {/* <EditTrackModal /> */}
       <PasswordResetModal />
       <FirstUploadModal />
       <UnloadDialog />

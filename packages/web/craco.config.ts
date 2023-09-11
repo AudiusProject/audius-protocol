@@ -2,7 +2,6 @@ import path from 'path'
 
 import {
   Configuration,
-  ProvidePlugin,
   ResolvePluginInstance,
   SourceMapDevToolPlugin
 } from 'webpack'
@@ -19,6 +18,10 @@ type ModuleScopePlugin = ResolvePluginInstance & {
 
 function resolveModule(moduleName: string) {
   return path.resolve(`../../node_modules/${moduleName}`)
+}
+
+function resolveLocalModule(moduleName: string) {
+  return path.resolve(`./node_modules/${moduleName}`)
 }
 
 /**
@@ -39,11 +42,18 @@ const moduleResolutions = [
   'lodash'
 ]
 
+const localModuleResolutions = ['@audius/sdk']
+
 // These should match modules defined in resolve.alias, and need to be hotwired
 // into CRA's module-scope-plugin to take effect.
 function injectModulesToModuleScopePlugin(plugin: ModuleScopePlugin) {
   const modulePaths = moduleResolutions.map(resolveModule)
-  plugin.allowedPaths = [...plugin.allowedPaths, ...modulePaths]
+  const localModulPaths = localModuleResolutions.map(resolveLocalModule)
+  plugin.allowedPaths = [
+    ...plugin.allowedPaths,
+    ...modulePaths,
+    ...localModulPaths
+  ]
 }
 
 export default {
@@ -131,6 +141,13 @@ export default {
               (aliases, moduleName) => ({
                 ...aliases,
                 [moduleName]: resolveModule(moduleName)
+              }),
+              {}
+            ),
+            ...localModuleResolutions.reduce(
+              (aliases, moduleName) => ({
+                ...aliases,
+                [moduleName]: resolveLocalModule(moduleName)
               }),
               {}
             )

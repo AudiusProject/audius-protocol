@@ -186,14 +186,10 @@ const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
 
 const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 
-const UploadPage = lazyWithPreload(
-  () => import('pages/upload-page/UploadPage'),
-  0
-)
+const UploadPage = lazy(() => import('pages/upload-page/UploadPage'))
 const Modals = lazyWithPreload(() => import('./modals/Modals'), 0)
-const ConnectedMusicConfetti = lazyWithPreload(
-  () => import('components/music-confetti/ConnectedMusicConfetti'),
-  0
+const ConnectedMusicConfetti = lazy(() =>
+  import('components/music-confetti/ConnectedMusicConfetti')
 )
 
 export const MAIN_CONTENT_ID = 'mainContent'

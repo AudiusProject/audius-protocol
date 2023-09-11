@@ -1,4 +1,3 @@
-import { Metadata } from '@metaplex-foundation/mpl-token-metadata'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { Connection, PublicKey } from '@solana/web3.js'
 
@@ -91,6 +90,9 @@ export class SolanaClient {
           const chainMetadatas = await Promise.all(
             programAddresses.map(async (address) => {
               try {
+                const { Metadata } = await import(
+                  '@metaplex-foundation/mpl-token-metadata'
+                )
                 return await Metadata.fromAccountAddress(connection, address)
               } catch (e) {
                 return null
@@ -171,6 +173,10 @@ export class SolanaClient {
           this.metadataProgramIdPublicKey
         )
       )[0]
+
+      const { Metadata } = await import(
+        '@metaplex-foundation/mpl-token-metadata'
+      )
       const metadata = await Metadata.fromAccountAddress(
         this.connection,
         programAddress

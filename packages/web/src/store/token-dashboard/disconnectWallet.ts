@@ -1,6 +1,5 @@
 import { Chain } from '@audius/common'
 import { call } from 'typed-redux-saga'
-import { WalletLinkProvider } from 'walletlink'
 
 import {
   EthWalletConnection,
@@ -8,9 +7,14 @@ import {
   WalletConnection
 } from './types'
 
+async function initWalletLink() {
+  return await import('walletlink')
+}
+
 function* disconnectEthWallet(connection: EthWalletConnection) {
   const { provider } = connection
   try {
+    const { WalletLinkProvider } = yield* call(initWalletLink)
     if (provider?.currentProvider?.disconnect) {
       provider.currentProvider.disconnect()
     }
