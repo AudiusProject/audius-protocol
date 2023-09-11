@@ -5,7 +5,9 @@ import {
 import {
   HarmonyButton,
   HarmonyButtonType,
+  IconArrow,
   IconCart,
+  IconMessage,
   Modal,
   ModalContent,
   ModalFooter,
@@ -14,6 +16,7 @@ import {
 } from '@audius/stems'
 
 import { Icon } from 'components/Icon'
+import { DynamicTrackArtwork } from 'components/track/DynamicTrackArtwork'
 
 import styles from './USDCPurchaseDetailsModal.module.css'
 
@@ -47,12 +50,18 @@ const PurchaseModalContent = ({ purchaseDetails, onClose }: ContentProps) => {
           title={messages.purchaseDetails}
         />
       </ModalHeader>
-      <ModalContent className={styles.content}>{/* TODO */}</ModalContent>
+      <ModalContent className={styles.content}>
+        <div className={styles.trackRow}>
+          <div className={styles.detailSection}></div>
+          <DynamicTrackArtwork id={purchaseDetails.contentId} />
+        </div>
+      </ModalContent>
       <ModalFooter className={styles.footer}>
         <HarmonyButton
           className={styles.button}
           variant={HarmonyButtonType.GHOST}
           text={messages.visitTrack}
+          iconRight={IconArrow}
           onClick={onClickVisitTrack}
         />
         <HarmonyButton
@@ -79,6 +88,7 @@ const SaleModalContent = ({ purchaseDetails, onClose }: ContentProps) => {
       <ModalFooter className={styles.footer}>
         <HarmonyButton
           className={styles.button}
+          iconLeft={IconMessage}
           variant={HarmonyButtonType.GHOST}
           text={messages.messageBuyer}
           onClick={onClickMessageBuyer}
