@@ -147,8 +147,8 @@ jobs:
             git add .
             git commit -m "${MESSAGE}"
             VERSION=$(jq -r .version ./package.json)
-            git tag v${VERSION}
-            git push origin v${VERSION}
+            git tag client-v${VERSION}
+            git push origin client-v${VERSION}
       - run:
           name: Create release branch
           command: |
