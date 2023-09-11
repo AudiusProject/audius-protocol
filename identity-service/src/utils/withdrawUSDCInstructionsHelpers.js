@@ -73,15 +73,20 @@ const checkCloseAccountInstruction = (instruction) => {
 const checkJupiterSwapInstructions = (instructions) => {
   const createAccountInstruction =
     instructions[CREATE_TOKEN_ACCOUNT_INSTRUCTION_INDEX]
-  const associatedTokenAccountOwner = createAccountInstruction.keys[CREATE_TOKEN_ACCOUNT_OWNER_INDEX]
-  const associatedTokenAccount = createAccountInstruction.keys[
-    CREATE_TOKEN_ACCOUNT_ASSOCIATED_TOKEN_ACCOUNT_INDEX
-  ]
+  const associatedTokenAccountOwner =
+    createAccountInstruction.keys[CREATE_TOKEN_ACCOUNT_OWNER_INDEX]
+  const associatedTokenAccount =
+    createAccountInstruction.keys[
+      CREATE_TOKEN_ACCOUNT_ASSOCIATED_TOKEN_ACCOUNT_INDEX
+    ]
 
   // Check that the create associated token account instruction is correct
   const createAssociatedTokenAccountInstruction =
     instructions[JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_INSTRUCTION_INDEX]
-  if (createAssociatedTokenAccountInstruction.programId !== ASSOCIATED_TOKEN_PROGRAM_ID.toString()) {
+  if (
+    createAssociatedTokenAccountInstruction.programId !==
+    ASSOCIATED_TOKEN_PROGRAM_ID.toString()
+  ) {
     return false
   }
   const feePayerKey =
@@ -98,7 +103,8 @@ const checkJupiterSwapInstructions = (instructions) => {
     ]
   const isCorrectFeePayer =
     feePayerKey.pubkey === tempHoldingAccountOwner.pubkey
-  const isCorrectAccountOwner = associatedTokenAccountOwner.pubkey === tempHoldingAccountOwner.pubkey
+  const isCorrectAccountOwner =
+    associatedTokenAccountOwner.pubkey === tempHoldingAccountOwner.pubkey
   if (!isCorrectFeePayer || !isCorrectAccountOwner) {
     return false
   }
@@ -106,7 +112,9 @@ const checkJupiterSwapInstructions = (instructions) => {
   // Check that the set token ledger instruction is correct
   const setTokenLedgerInstruction =
     instructions[JUPITER_SET_TOKEN_LEDGER_INSTRUCTION_INDEX]
-  if (setTokenLedgerInstruction.programId !== JUPITER_AGGREGATOR_V3_PROGRAM_ID) {
+  if (
+    setTokenLedgerInstruction.programId !== JUPITER_AGGREGATOR_V3_PROGRAM_ID
+  ) {
     return false
   }
   const isCorrectTokenLedgerTokenAccount =
@@ -128,15 +136,23 @@ const checkJupiterSwapInstructions = (instructions) => {
     swapInstruction.keys[JUPITER_SWAP_TEMP_HOLDING_ACCOUNT_INDEX].pubkey ===
     tempHoldingAccount.pubkey
   const isCorrectRecipient =
-    swapInstruction.keys[JUPITER_SWAP_RECIPIENT_ACCOUNT_INDEX].pubkey === associatedTokenAccount.pubkey
-  if (!isCorrectHoldingAccountOwner || !isCorrectHoldingAccount || !isCorrectRecipient) {
+    swapInstruction.keys[JUPITER_SWAP_RECIPIENT_ACCOUNT_INDEX].pubkey ===
+    associatedTokenAccount.pubkey
+  if (
+    !isCorrectHoldingAccountOwner ||
+    !isCorrectHoldingAccount ||
+    !isCorrectRecipient
+  ) {
     return false
   }
 
   // Check that the close associated token account instruction is correct
   const closeAssociatedTokenAccountInstruction =
     instructions[JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_INSTRUCTION_INDEX]
-  if (closeAssociatedTokenAccountInstruction.programId !== TOKEN_PROGRAM_ID.toString()) {
+  if (
+    closeAssociatedTokenAccountInstruction.programId !==
+    TOKEN_PROGRAM_ID.toString()
+  ) {
     return false
   }
   const isCorrectClosedAccount =
