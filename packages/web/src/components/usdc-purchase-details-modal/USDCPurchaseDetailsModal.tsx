@@ -1,5 +1,9 @@
+import { useCallback } from 'react'
+
 import {
   USDCPurchaseDetails,
+  formatUSDCWeiToUSDString,
+  useGetTrackById,
   useUSDCPurchaseDetailsModal
 } from '@audius/common'
 import {
@@ -14,9 +18,14 @@ import {
   ModalHeader,
   ModalTitle
 } from '@audius/stems'
+import moment from 'moment'
 
 import { Icon } from 'components/Icon'
+import { Link } from 'components/link'
 import { DynamicTrackArtwork } from 'components/track/DynamicTrackArtwork'
+import { Text } from 'components/typography'
+import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
+import { useGoToRoute } from 'hooks/useGoToRoute'
 
 import styles from './USDCPurchaseDetailsModal.module.css'
 
@@ -39,8 +48,43 @@ type ContentProps = {
   onClose: () => void
 }
 
+const DetailSection = ({
+  children,
+  label
+}: {
+  children: React.ReactNode
+  label: string
+}) => (
+  <div className={styles.detailSection}>
+    <Text variant='label' size='large' color='neutralLight4'>
+      {label}
+    </Text>
+    {children}
+  </div>
+)
+
+const TrackLink = ({ id, onClick }: { id: number; onClick: () => void }) => {
+  const { data: track } = useGetTrackById({ id })
+  if (!track) return null
+  return (
+    <Link onClick={onClick} className={styles.link} to={track.permalink}>
+      <Text size='large' color='secondary'>
+        {track.title}
+      </Text>
+    </Link>
+  )
+}
+
 const PurchaseModalContent = ({ purchaseDetails, onClose }: ContentProps) => {
-  const onClickVisitTrack = () => {}
+  const goToRoute = useGoToRoute()
+  const { data: track } = useGetTrackById({ id: purchaseDetails.contentId })
+  const onClickVisitTrack = useCallback(() => {
+    if (track) {
+      onClose()
+      goToRoute(track.permalink)
+    }
+  }, [track, onClose, goToRoute])
+
   return (
     <>
       <ModalHeader>
@@ -52,9 +96,29 @@ const PurchaseModalContent = ({ purchaseDetails, onClose }: ContentProps) => {
       </ModalHeader>
       <ModalContent className={styles.content}>
         <div className={styles.trackRow}>
-          <div className={styles.detailSection}></div>
+          <DetailSection label={messages.track}>
+            <TrackLink onClick={onClose} id={purchaseDetails.contentId} />
+          </DetailSection>
           <DynamicTrackArtwork id={purchaseDetails.contentId} />
         </div>
+        <DetailSection label={messages.by}>
+          <Text size='large' color='secondary'>
+            <UserNameAndBadges
+              onNavigateAway={onClose}
+              userId={purchaseDetails.sellerUserId}
+            />
+          </Text>
+        </DetailSection>
+        <DetailSection label={messages.date}>
+          <Text size='large'>
+            {moment(purchaseDetails.createdAt).format('M/D/YY')}
+          </Text>
+        </DetailSection>
+        <DetailSection label={messages.cost}>
+          <Text size='large'>{`$${formatUSDCWeiToUSDString(
+            purchaseDetails.amount
+          )}`}</Text>
+        </DetailSection>
       </ModalContent>
       <ModalFooter className={styles.footer}>
         <HarmonyButton
@@ -73,6 +137,7 @@ const PurchaseModalContent = ({ purchaseDetails, onClose }: ContentProps) => {
     </>
   )
 }
+
 const SaleModalContent = ({ purchaseDetails, onClose }: ContentProps) => {
   const onClickMessageBuyer = () => {}
   return (
@@ -114,13 +179,7 @@ export const USDCPurchaseDetailsModal = () => {
     return null
   }
   return (
-    <Modal
-      bodyClassName={styles.modalBody}
-      isOpen={isOpen}
-      onClose={onClose}
-      onClosed={onClosed}
-      size={'small'}
-    >
+    <Modal isOpen={isOpen} onClose={onClose} onClosed={onClosed} size={'small'}>
       {variant === 'purchase' ? (
         <PurchaseModalContent
           purchaseDetails={purchaseDetails}

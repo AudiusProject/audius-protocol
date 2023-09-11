@@ -2,26 +2,23 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--unit-6);
+  gap: var(--unit-4);
 }
 
-.hint {
-  align-self: stretch;
+.trackRow {
+  align-items: center∂;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--unit-2);
+  width: 100%;
 }
 
-.hintContent {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  word-break: break-all;
-
-  /*
-    Clamp vertically
-    Ignore the webkit prefix, it's actually supported across browsers:
-    https://developer.mozilla.org/en-US/docs/Web/CSS/-webkit-line-clamp
-  */
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 20;
+.detailSection {
+  padding: var(--unit-2) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-2);
+  width: 100%;
 }
 
 .footer {

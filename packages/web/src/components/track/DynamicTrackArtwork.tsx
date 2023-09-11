@@ -1,5 +1,3 @@
-import { CSSProperties } from 'react'
-
 import {
   useGetTrackById,
   SquareSizes,
@@ -13,27 +11,32 @@ import { useTrackCoverArt2 } from 'hooks/useTrackCoverArt'
 
 import styles from './DynamicTrackArtwork.module.css'
 
+export enum DynamicTrackArtworkSize {
+  /** 40x40 */
+  SMALL = 'small',
+  /** 64x64 */
+  DEFAULT = 'default'
+}
+
 type DynamicTrackArtworkProps = {
   id: ID
   className?: string
-  /** Size of artwork in _grid units_ */
-  sizeUnits: number
+  size?: DynamicTrackArtworkSize
 }
 
 /** Loads artwork for a given track ID and applies an optional className */
 export const DynamicTrackArtwork = ({
   id,
   className,
-  sizeUnits
+  size = DynamicTrackArtworkSize.DEFAULT
 }: DynamicTrackArtworkProps) => {
   const { status, data: track } = useGetTrackById({ id })
   const image = useTrackCoverArt2(id, SquareSizes.SIZE_150_BY_150)
   const loading = statusIsNotFinalized(status) || !track
   return loading ? null : (
     <DynamicImage
-      wrapperClassName={cn(styles.container, className)}
+      wrapperClassName={cn(styles.container, styles[size], className)}
       image={image}
-      style={{ '--size-grid-units': sizeUnits } as CSSProperties}
     />
   )
 }
