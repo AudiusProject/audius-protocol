@@ -14,12 +14,17 @@
   display: flex;
   flex-direction: column;
   gap: var(--unit-2);
-  margin-bottom: var(--unit-6);
 }
 
-.spinner {
-  height: var(--unit-6);
-  width: var(--unit-6);
-  align-self: center;
-  margin: var(--unit-3);
+.error {
+  display: flex;
+  gap: var(--unit-1);
+}
+
+.tryAgain {
+  cursor: pointer;
+}
+
+.tryAgain:hover {
+  color: var(--secondary);
 }

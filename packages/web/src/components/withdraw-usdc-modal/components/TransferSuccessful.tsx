@@ -28,6 +28,7 @@ import { TextRow } from './TextRow'
 import styles from './TransferSuccessful.module.css'
 
 const messages = {
+  priorBalance: 'Prior Balance',
   newBalance: 'New Balance',
   amountWithdrawn: 'Amount Withdrawn',
   destinationAddress: 'Destination Address',
@@ -43,7 +44,11 @@ const openExplorer = (signature: string) => {
   )
 }
 
-export const TransferSuccessful = () => {
+export const TransferSuccessful = ({
+  priorBalanceCents
+}: {
+  priorBalanceCents: number
+}) => {
   const { data: balance } = useUSDCBalance()
   const { data: modalData } = useWithdrawUSDCModal()
   const balanceNumber = formatUSDCWeiToFloorDollarNumber(
@@ -58,15 +63,17 @@ export const TransferSuccessful = () => {
 
   return (
     <div className={styles.root}>
+      <TextRow
+        left={messages.priorBalance}
+        right={`$${toHumanReadable(priorBalanceCents)}`}
+      />
       <Divider style={{ margin: 0 }} />
       <TextRow
         left={messages.amountWithdrawn}
         right={`-$${toHumanReadable(amountValue)}`}
       />
       <Divider style={{ margin: 0 }} />
-      <div className={styles.newBalance}>
-        <TextRow left={messages.newBalance} right={`$${balanceFormatted}`} />
-      </div>
+      <TextRow left={messages.newBalance} right={`$${balanceFormatted}`} />
       <Divider style={{ margin: 0 }} />
       <div className={styles.destination}>
         <TextRow left={messages.destinationAddress} />

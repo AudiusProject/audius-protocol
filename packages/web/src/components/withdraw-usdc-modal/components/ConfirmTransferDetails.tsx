@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import { WithdrawUSDCModalPages, useWithdrawUSDCModal } from '@audius/common'
 import {
@@ -11,6 +11,7 @@ import {
 import { useField, useFormikContext } from 'formik'
 
 import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
+import { HelperText } from 'components/data-entry/HelperText'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
 import {
@@ -49,10 +50,14 @@ export const ConfirmTransferDetails = () => {
     setData({ page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS })
   }, [setData])
 
+  const [touchedContinue, setTouchedContinue] = useState(false)
   const handleContinue = useCallback(() => {
-    setData({ page: WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS })
-    submitForm()
-  }, [setData, submitForm])
+    setTouchedContinue(true)
+    if (!confirmError) {
+      setData({ page: WithdrawUSDCModalPages.TRANSFER_IN_PROGRESS })
+      submitForm()
+    }
+  }, [setData, submitForm, confirmError])
 
   return (
     <div className={styles.root}>
@@ -82,6 +87,9 @@ export const ConfirmTransferDetails = () => {
             {messages.haveCarefully}
           </Text>
         </div>
+        {touchedContinue && confirmError ? (
+          <HelperText error>{confirmError}</HelperText>
+        ) : null}
       </div>
       <div className={styles.buttons}>
         <HarmonyButton
@@ -96,7 +104,6 @@ export const ConfirmTransferDetails = () => {
           size={HarmonyButtonSize.DEFAULT}
           text={messages.confirm}
           onClick={handleContinue}
-          disabled={confirmError}
         />
       </div>
       <Hint
