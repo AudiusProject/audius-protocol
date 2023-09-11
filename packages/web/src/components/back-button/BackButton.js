@@ -1,20 +1,19 @@
-import cn from 'classnames'
+import { HarmonyPlainButton, HarmonyPlainButtonType } from '@audius/stems'
 import PropTypes from 'prop-types'
 
-import { ReactComponent as IconArrow } from 'assets/img/iconArrow.svg'
+import { ReactComponent as IconArrow } from 'assets/img/iconCaretLeft.svg'
 
 import styles from './BackButton.module.css'
 
 const BackButton = (props) => {
   return (
-    <div
-      className={cn(styles.backButton, props.className, {
-        [styles.light]: props.light
-      })}
+    <HarmonyPlainButton
+      className={styles.backButton}
+      variant={HarmonyPlainButtonType.SUBDUED}
+      iconLeft={IconArrow}
       onClick={props.onClickBack}
-    >
-      <IconArrow />
-    </div>
+      type='button'
+    />
   )
 }
 

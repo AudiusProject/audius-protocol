@@ -1,6 +1,7 @@
 .formContainer {
   width: 100%;
   background-color: var(--white);
+  min-width: 640px;
 
   border-radius: 8px;
   box-shadow: var(--shadow-far);
