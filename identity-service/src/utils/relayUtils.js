@@ -13,11 +13,14 @@ const solanaAudiusAnchorDataProgramId = config.get(
   'solanaAudiusAnchorDataProgramId'
 )
 
+const SECP256K1_PROGRAM_ID = 'KeccakSecp256k11111111111111111111111111111'
+const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
+
 const allowedProgramIds = new Set([
   solanaClaimableTokenProgramAddress,
   solanaRewardsManagerProgramId,
-  /* secp */ 'KeccakSecp256k11111111111111111111111111111',
-  /* memo */ 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
+  SECP256K1_PROGRAM_ID,
+  MEMO_PROGRAM_ID,
 ])
 
 if (solanaAudiusAnchorDataProgramId) {
