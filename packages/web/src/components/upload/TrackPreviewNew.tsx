@@ -69,14 +69,22 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
         {trackTitle}
         {fileExtension ? `.${fileExtension}` : null}
       </Text>
-      <Text className={styles.fileSizeText} size='small' color='neutralLight2'>
-        {numeral(fileSize).format('0.0 b')}
-      </Text>
-      <HarmonyPlainButton
-        iconRight={IconTrash}
-        onClick={onRemove}
-        className={styles.removeButton}
-      />
+      <div className={styles.sizeContainer}>
+        <Text
+          className={styles.fileSizeText}
+          size='small'
+          color='neutralLight2'
+        >
+          {numeral(fileSize).format('0.0 b')}
+        </Text>
+        <div className={styles.removeButtonContainer}>
+          <HarmonyPlainButton
+            iconRight={IconTrash}
+            onClick={onRemove}
+            className={styles.removeButton}
+          />
+        </div>
+      </div>
     </div>
   )
 }

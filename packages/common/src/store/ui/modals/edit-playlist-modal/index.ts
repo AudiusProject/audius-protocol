@@ -1,5 +1,6 @@
 import { ID } from 'models/Identifiers'
 import { Nullable } from 'utils/typeUtils'
+
 import { createModal } from '../createModal'
 
 export type FocusableFields = 'name' | 'description' | 'artwork'
@@ -10,7 +11,7 @@ export type EditPlaylistModalState = {
   isCollectionViewed?: boolean
 }
 
-const createPlaylistModal = createModal<EditPlaylistModalState>({
+const editPlaylistModal = createModal<EditPlaylistModalState>({
   reducerPath: 'EditPlaylist',
   initialState: {
     isOpen: false,
@@ -25,4 +26,4 @@ export const {
   hook: useEditPlaylistModal,
   actions: editPlaylistModalActions,
   reducer: editPlaylistModalReducer
-} = createPlaylistModal
+} = editPlaylistModal

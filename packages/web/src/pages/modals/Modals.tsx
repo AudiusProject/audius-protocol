@@ -35,6 +35,7 @@ import { TransactionDetailsModal } from 'components/transaction-details-modal'
 import UnfollowConfirmationModal from 'components/unfollow-confirmation-modal/UnfollowConfirmationModal'
 import UnloadDialog from 'components/unload-dialog/UnloadDialog'
 import { UploadConfirmationModal } from 'components/upload-confirmation-modal'
+import { USDCPurchaseDetailsModal } from 'components/usdc-purchase-details-modal/USDCPurchaseDetailsModal'
 import TierExplainerModal from 'components/user-badges/TierExplainerModal'
 import ConnectedUserListModal from 'components/user-list-modal/ConnectedUserListModal'
 import { WithdrawUSDCModal } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
@@ -81,7 +82,8 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   LeavingAudiusModal,
   CreateChatModal,
   InboxUnavailableModal,
-  WithdrawUSDCModal
+  WithdrawUSDCModal,
+  USDCPurchaseDetailsModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [

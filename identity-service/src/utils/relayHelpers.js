@@ -5,7 +5,6 @@ const {
 } = require('./withdrawUSDCInstructionsHelpers')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 const {
-  allowedProgramIds,
   solanaClaimableTokenProgramAddress,
   solanaMintAddress,
   solanaRewardsManager,

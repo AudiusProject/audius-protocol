@@ -9,10 +9,6 @@ import Toast from 'components/toast/Toast'
 
 import styles from './UploadArtwork.module.css'
 
-const messages = {
-  imageName: 'Artwork'
-}
-
 const UploadArtwork = (props) => {
   const [processing, setProcessing] = useState(false)
   const [showTip, setShowTip] = useState(false)
@@ -69,7 +65,6 @@ const UploadArtwork = (props) => {
           <ImageSelectionButton
             anchorRef={imageSelectionAnchorRef}
             defaultPopupOpen={props.defaultPopupOpen}
-            imageName={messages.imageName}
             hasImage={hasImage}
             error={props.imageProcessingError}
             onOpenPopup={props.onOpenPopup}
