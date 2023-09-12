@@ -7,11 +7,13 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "deploy": "npm run build && wrangler publish",
-    "preview": "vite preview"
+    "preview": "vite preview --port 80 --host",
+    "start": "http-server -p 80"
   },
   "dependencies": {
     "@audius/sdk": "3.0.8-beta.11",
     "@tanstack/react-query": "^4.10.3",
+    "http-server": "^14.1.1",
     "hashids": "^2.2.10",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -23,9 +25,9 @@
     "@cloudflare/workers-types": "^3.14.1",
     "@types/react": "^18.0.15",
     "@types/react-dom": "^18.0.6",
-    "@vitejs/plugin-react": "^2.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
     "typescript": "^4.6.4",
-    "vite": "^3.0.0",
+    "vite": "^4.0.0",
     "vite-node": "^0.24.1",
     "vite-plugin-node-polyfills": "^0.9.0",
     "wrangler": "^2.0.25"

@@ -20,5 +20,11 @@ export default defineConfig({
       // Whether to polyfill `node:` protocol imports.
       protocolImports: true,
     }),
-  ]
+  ],
+  // Base URL. Set to /healthz/ in Dockerfile, leave
+  // unset when deploying to cloudflare pages.
+  base: process.env.HEALTHZ_BASE_URL || "/",
+	build: {
+		outDir: process.env.HEALTHZ_BUILD_OUTPUT_DIR || "dist"
+	}
 })
