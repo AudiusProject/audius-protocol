@@ -1,3 +1,5 @@
+import { useCallback, MouseEvent } from 'react'
+
 import {
   formatPrice,
   isPremiumContentUSDCPurchaseGated,
@@ -5,13 +7,12 @@ import {
   premiumContentActions
 } from '@audius/common'
 import { HarmonyButton, HarmonyButtonSize, IconLock } from '@audius/stems'
+import { useDispatch } from 'react-redux'
 
+import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import styles from './PremiumConditionsPill.module.css'
-import { useCallback, MouseEvent } from 'react'
-import { useModalState } from 'common/hooks/useModalState'
-import { useDispatch } from 'react-redux'
 
 const { setPurchaseContentId } = premiumContentActions
 
