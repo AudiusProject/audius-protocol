@@ -5,14 +5,6 @@ module.exports = {
   },
   extends: ['audius'],
   settings: {
-    // Only modules resolved from these folders will be considered "external".
-    // If you are `npm link`ing from a directory not listed here you may run
-    // into linting issues
-    'import/external-module-folders': [
-      'node_modules',
-      'stems',
-      'audius-protocol'
-    ],
     'import/resolver': {
       // NOTE: sk - These aliases are required for the import/order rule.
       // We are using the typescript baseUrl to do absolute import paths

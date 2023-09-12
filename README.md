@@ -23,18 +23,18 @@ For further details on operating an Audius service, getting started with the Tok
 
 ## Apps
 
-| Name                                                      | Description                            |
-| --------------------------------------------------------- | -------------------------------------- |
-| [`web`](./packages/web)                                   | The Audius web and desktop application |
-| [`mobile`](./packages/mobile)                             | The Audius mobile application          |
+| Name                          | Description                            |
+| ----------------------------- | -------------------------------------- |
+| [`web`](./packages/web)       | The Audius web and desktop application |
+| [`mobile`](./packages/mobile) | The Audius mobile application          |
 
 ## Packages
 
-| Name                                                      | Description                            |
-| --------------------------------------------------------- | -------------------------------------- |
-| [`stems`](./packages/stems)                               | The Audius client component library    |
-| [`common`](./packages/common)                             | Shared code between web and mobile     |
-| [`eslint-config-audius`](./packages/eslint-config-audius) | Shared lint configuration              |
+| Name                                                      | Description                         |
+| --------------------------------------------------------- | ----------------------------------- |
+| [`stems`](./packages/stems)                               | The Audius client component library |
+| [`common`](./packages/common)                             | Shared code between web and mobile  |
+| [`eslint-config-audius`](./packages/eslint-config-audius) | Shared lint configuration           |
 
 ### Required Dependencies
 
@@ -117,33 +117,17 @@ npm run common
 npm run verify
 ```
 
-### Linking the audius sdk
-
-To develop with the Audius [sdk](https://github.com/AudiusProject/audius-protocol/tree/main/libs) alongside the client, clone the audius-protocol repository and run the following:
-
-```bash
-cd audius-protocol
-export PROTOCOL_DIR=$(pwd)
-```
-
-```bash
-cd audius-client
-npm run sdk:link
-npm run web:stage # or similar
-```
-
-
 ## Overview
 
 ### Audius Services
 
 These off-chain services are run by community members via the Audius staking system:
 
-| Service                                    | Description                                                                                                                                                   |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`creator-node`](mediorum)             | Maintains the availability of users' content via the Audius Storage Protocol, including user images and audio content. Also known as Content Node or mediorum. |
-| [`discovery-provider`](discovery-provider) | Indexes and stores the contents of the audius contracts on the Ethereum & Solana blockchains for clients to query via an API. Also known as Discovery Node.   |
-| [`identity-service`](identity-service)     | Stores encrypted auth ciphertexts and handles oauth artifacts                                                                                                 |
+| Service                                    | Description                                                                                                                                                    |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`creator-node`](mediorum)                 | Maintains the availability of users' content via the Audius Storage Protocol, including user images and audio content. Also known as Content Node or mediorum. |
+| [`discovery-provider`](discovery-provider) | Indexes and stores the contents of the audius contracts on the Ethereum & Solana blockchains for clients to query via an API. Also known as Discovery Node.    |
+| [`identity-service`](identity-service)     | Stores encrypted auth ciphertexts and handles oauth artifacts                                                                                                  |
 
 ### Smart Contracts & Programs
 
