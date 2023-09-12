@@ -11,6 +11,7 @@ import IconFavorite from 'app/assets/images/iconFavorite.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
 import { Button, Switch, Text } from 'app/components/core'
 import { useDrawer } from 'app/hooks/useDrawer'
+import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { setVisibility } from 'app/store/drawers/slice'
 import { requestDownloadAllFavorites } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
@@ -18,7 +19,6 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { HarmonyModalHeader } from '../core/HarmonyModalHeader'
 import { NativeDrawer } from '../drawer'
-import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 
 const useDrawerStyles = makeStyles(({ spacing, palette, typography }) => ({
   container: {
