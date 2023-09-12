@@ -150,7 +150,7 @@ export class CreatorNode {
   }
 
   async transcodeTrackPreview(metadata: TrackMetadata): Promise<TrackMetadata> {
-    if (!metadata.preview_start_seconds) {
+    if (metadata.preview_start_seconds == null) {
       throw new Error('No track preview start time specified')
     }
     if (!metadata.audio_upload_id) {
@@ -182,7 +182,7 @@ export class CreatorNode {
   ): Promise<TrackMetadata> {
     const updatedMetadata = { ...metadata }
     const audioUploadOpts: { [key: string]: string } = {}
-    if (updatedMetadata.preview_start_seconds) {
+    if (updatedMetadata.preview_start_seconds != null) {
       audioUploadOpts['previewStartSeconds'] =
         updatedMetadata.preview_start_seconds.toString()
     }
@@ -214,7 +214,7 @@ export class CreatorNode {
     updatedMetadata.track_segments = []
     updatedMetadata.duration = parseInt(audioResp.probe.format.duration, 10)
     updatedMetadata.track_cid = audioResp.results['320']
-    if (updatedMetadata.preview_start_seconds) {
+    if (updatedMetadata.preview_start_seconds != null) {
       const previewKey = `320_preview|${updatedMetadata.preview_start_seconds}`
       updatedMetadata.preview_cid = audioResp.results[previewKey]
     }
