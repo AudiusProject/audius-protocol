@@ -11,8 +11,11 @@ import {
   playerSelectors,
   QueueSource,
   getContext,
-  LibraryCategory
+  LibraryCategory,
+  SavedPageTabs,
+  purchaseContentActions
 } from '@audius/common'
+import { uniq } from 'lodash'
 import moment from 'moment'
 import { call, select, put, takeEvery } from 'redux-saga/effects'
 
@@ -28,8 +31,10 @@ const {
   getLocalTrackRepost,
   getSavedTracksLineupUid,
   getTrackSaves,
-  getSelectedCategoryLocalTrackAdds
+  getSelectedCategoryLocalTrackAdds,
+  getCategory
 } = savedPageSelectors
+const { purchaseConfirmed } = purchaseContentActions
 const { getTracks: getCacheTracks } = cacheTracksSelectors
 
 const getSavedTracks = (state) => state.pages.savedPage.tracks
@@ -63,7 +68,10 @@ function* getTracks({ offset, limit }) {
     {}
   )
 
-  const allSavedTrackIds = [...localLibraryAdditionsTrackIds, ...savedTrackIds]
+  const allSavedTrackIds = uniq([
+    ...localLibraryAdditionsTrackIds,
+    ...savedTrackIds
+  ])
   const allSavedTrackTimestamps = {
     ...localLibraryAdditionsTimestamps,
     ...savedTrackTimestamps
@@ -111,53 +119,75 @@ class SavedTracksSagas extends LineupSagas {
 
 // If a local save is being done and the user is on the saved page route, make sure to update the lineup.
 function* watchAddToLibrary() {
-  yield takeEvery([SAVE_TRACK, REPOST_TRACK], function* (action) {
-    const { trackId, type } = action
+  yield takeEvery(
+    [SAVE_TRACK, REPOST_TRACK, purchaseConfirmed.type],
+    function* (action) {
+      const { trackId, type } = action
+      const tracks = yield select(getCacheTracks, { ids: [trackId] })
 
-    const tracks = yield select(getCacheTracks, { ids: [trackId] })
-    const track = tracks[trackId]
-    if (track.has_current_user_saved) return
+      const track = tracks[trackId]
+      if (track.has_current_user_saved) return
 
-    const localSaveUid = makeUid(
-      Kind.TRACKS,
-      trackId,
-      savedTracksActions.prefix
-    )
-
-    const newEntry = {
-      uid: localSaveUid,
-      kind: Kind.TRACKS,
-      id: trackId,
-      dateSaved: moment().format()
-    }
-
-    yield put(
-      saveActions.addLocalTrack({
+      const localSaveUid = makeUid(
+        Kind.TRACKS,
         trackId,
-        uid: localSaveUid,
-        category:
-          type === SAVE_TRACK
-            ? LibraryCategory.Favorite
-            : LibraryCategory.Repost
-      })
-    )
-    yield put(savedTracksActions.add(newEntry, trackId, undefined, true))
+        savedTracksActions.prefix
+      )
 
-    const queueSource = yield select(getSource)
-    if (queueSource === QueueSource.SAVED_TRACKS) {
+      const newEntry = {
+        uid: localSaveUid,
+        kind: Kind.TRACKS,
+        id: trackId,
+        dateSaved: moment().format()
+      }
+
+      let relevantCategory
+      if (type === SAVE_TRACK) {
+        relevantCategory = LibraryCategory.Favorite
+      } else if (type === REPOST_TRACK) {
+        relevantCategory = LibraryCategory.Repost
+      } else {
+        relevantCategory = LibraryCategory.Purchase
+      }
       yield put(
-        queueActions.add({
-          entries: [
-            {
-              id: trackId,
-              uid: localSaveUid,
-              souce: savedTracksActions.prefix
-            }
-          ]
+        saveActions.addLocalTrack({
+          trackId,
+          uid: localSaveUid,
+          category: relevantCategory
         })
       )
+
+      const isTrackAlreadyInLineup = yield select(
+        (state, props) => {
+          const lineupUid = getSavedTracksLineupUid(state, props)
+          return lineupUid != null
+        },
+        { id: trackId }
+      )
+      const currentCategory = yield select(getCategory, {
+        currentTab: SavedPageTabs.TRACKS
+      })
+      const actionMatchesCurrentCategory = currentCategory === relevantCategory
+      if (actionMatchesCurrentCategory && !isTrackAlreadyInLineup) {
+        yield put(savedTracksActions.add(newEntry, trackId, undefined, true))
+
+        const queueSource = yield select(getSource)
+        if (queueSource === QueueSource.SAVED_TRACKS) {
+          yield put(
+            queueActions.add({
+              entries: [
+                {
+                  id: trackId,
+                  uid: localSaveUid,
+                  souce: savedTracksActions.prefix
+                }
+              ]
+            })
+          )
+        }
+      }
     }
-  })
+  )
 }
 
 function* watchRemoveFromLibrary() {
@@ -165,9 +195,12 @@ function* watchRemoveFromLibrary() {
     const { trackId, type } = action
     const removedTrackSelector =
       type === UNSAVE_TRACK ? getLocalTrackFavorite : getLocalTrackRepost
-    const removedTrackUid = yield select(removedTrackSelector, { id: trackId })
-    const playerUid = yield select(getPlayerUid)
-    const queueSource = yield select(getSource)
+    const removedTrackUid = yield select(removedTrackSelector, {
+      id: trackId
+    })
+    const currentCategory = yield select(getCategory, {
+      currentTab: SavedPageTabs.TRACKS
+    })
 
     yield put(
       saveActions.removeLocalTrack({
@@ -178,20 +211,30 @@ function* watchRemoveFromLibrary() {
             : LibraryCategory.Repost
       })
     )
-    if (removedTrackUid) {
-      yield put(savedTracksActions.remove(Kind.TRACKS, removedTrackUid))
-      if (
-        removedTrackUid !== playerUid &&
-        queueSource === QueueSource.SAVED_TRACKS
-      ) {
-        yield put(queueActions.remove({ uid: removedTrackUid }))
+
+    if (
+      (type === UNSAVE_TRACK && currentCategory === LibraryCategory.Favorite) ||
+      (type === UNDO_REPOST_TRACK && currentCategory === LibraryCategory.Repost)
+    ) {
+      const playerUid = yield select(getPlayerUid)
+      const queueSource = yield select(getSource)
+      if (removedTrackUid) {
+        yield put(savedTracksActions.remove(Kind.TRACKS, removedTrackUid))
+        if (
+          removedTrackUid !== playerUid &&
+          queueSource === QueueSource.SAVED_TRACKS
+        ) {
+          yield put(queueActions.remove({ uid: removedTrackUid }))
+        }
       }
-    }
-    const lineupSaveUid = yield select(getSavedTracksLineupUid, { id: trackId })
-    if (lineupSaveUid) {
-      yield put(savedTracksActions.remove(Kind.TRACKS, lineupSaveUid))
-      if (lineupSaveUid !== playerUid) {
-        yield put(queueActions.remove({ uid: lineupSaveUid }))
+      const lineupSaveUid = yield select(getSavedTracksLineupUid, {
+        id: trackId
+      })
+      if (lineupSaveUid) {
+        yield put(savedTracksActions.remove(Kind.TRACKS, lineupSaveUid))
+        if (lineupSaveUid !== playerUid) {
+          yield put(queueActions.remove({ uid: lineupSaveUid }))
+        }
       }
     }
   })
