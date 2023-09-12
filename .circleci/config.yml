@@ -193,6 +193,16 @@ workflows:
             contracts/.* run-contracts-workflow true
             contracts/.* run-integration-workflow true
             contracts/.* run-gcp-workflow true
+            .circleci/.* run-discovery-workflow true
+            .circleci/.* run-creator-workflow true
+            .circleci/.* run-identity-workflow true
+            .circleci/.* run-eth-contracts-workflow true
+            .circleci/.* run-contracts-workflow true
+            .circleci/.* run-sdk-workflow true
+            .circleci/.* run-web-workflow true
+            .circleci/.* run-mobile-workflow true
+            .circleci/.* run-stems-workflow true
+            .circleci/.* run-embed-workflow true
             .* run-release-workflow false
             packages/web/.* run-web-workflow true
             packages/mobile/.* run-mobile-workflow true
