@@ -51,7 +51,11 @@ export const ModalRadioItem = (props: ModalRadioItemProps) => {
   }, [radioGroup, isCollapsed, value, setIsCollapsed])
 
   return (
-    <label className={cn(styles.root, layoutStyles.col, layoutStyles.gap2)}>
+    <label
+      className={cn(styles.root, layoutStyles.col, layoutStyles.gap2, {
+        [styles.disabled]: disabled
+      })}
+    >
       <div className={cn(layoutStyles.row, layoutStyles.gap4)}>
         <RadioButton
           className={styles.radio}

@@ -1,39 +1,37 @@
 .backButton {
   height: 24px;
   width: 24px;
-  background-color: var(--neutral-light-5);
-
+  padding: 0;
+  margin-right: var(--unit-4);
   display: flex;
   align-items: center;
   justify-content: center;
-
-  border-radius: 50%;
-
-  transform: rotate(180deg);
-  transition: all 0.07s ease-in-out;
-  cursor: pointer;
-  user-select: none;
-}
-.backButton.light {
-  background-color: var(--neutral-light-6);
+  transition: 0.12s ease-out !important;
 }
 
-.backButton g path {
-  fill: var(--white);
-}
-
+/* TODO: KJ - Remove this once a Harmony icon button is created and does this */
 .backButton:hover {
-  background-color: var(--neutral-light-4);
-  transform: rotate(180deg) scale3d(1.04, 1.04, 1.04);
-}
-.backButton.light:hover {
-  background-color: var(--neutral-light-5);
+  transform: scale3d(1.11, 1.11, 1.11) !important;
 }
 
 .backButton:active {
-  background-color: var(--neutral-light-5);
-  transform: rotate(180deg) scale3d(0.95, 0.95, 0.95);
+  transform: scale3d(0.98, 0.98, 0.98) !important;
 }
-.backButton.light :active {
-  background-color: var(--neutral-light-6);
+
+.backButton svg {
+  height: 24px;
+  width: 24px;
+}
+
+.backButton path {
+  transition: 0.12s ease-out;
+  fill: var(--neutral-light-4);
+}
+
+.backButton:hover path {
+  fill: var(--neutral-light-6);
+}
+
+.backButton:active path {
+  fill: var(--neutral-dark-2);
 }

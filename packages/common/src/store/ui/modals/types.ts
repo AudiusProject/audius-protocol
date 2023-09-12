@@ -2,6 +2,7 @@ import { CreateChatModalState } from './create-chat-modal'
 import { BaseModalState } from './createModal'
 import { InboxUnavailableModalState } from './inbox-unavailable-modal'
 import { LeavingAudiusModalState } from './leaving-audius-modal'
+import { USDCPurchaseDetailsModalState } from './usdc-purchase-details-modal'
 import { WithdrawUSDCModalState } from './withdraw-usdc-modal'
 
 export type Modals =
@@ -47,6 +48,7 @@ export type Modals =
   | 'LeavingAudiusModal'
   | 'UploadConfirmation'
   | 'WithdrawUSDCModal'
+  | 'USDCPurchaseDetailsModal'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -57,6 +59,7 @@ export type StatefulModalsState = {
   InboxUnavailableModal: InboxUnavailableModalState
   LeavingAudiusModal: LeavingAudiusModalState
   WithdrawUSDCModal: WithdrawUSDCModalState
+  USDCPurchaseDetailsModal: USDCPurchaseDetailsModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

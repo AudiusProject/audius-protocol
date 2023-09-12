@@ -4,8 +4,11 @@ import {
   HarmonyButton,
   HarmonyButtonType,
   HarmonyPlainButton,
+  HarmonyPlainButtonType,
   IconArrow,
-  IconCaretRight
+  IconCaretRight,
+  IconPause,
+  IconPlay
 } from '@audius/stems'
 import cn from 'classnames'
 import { Form, Formik, FormikProps, useField } from 'formik'
@@ -18,7 +21,6 @@ import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { Text } from 'components/typography'
-import PreviewButton from 'components/upload/PreviewButton'
 import { UploadFormScrollContext } from 'pages/upload-page/UploadPageNew'
 
 import { AccessAndSaleField } from '../fields/AccessAndSaleField'
@@ -40,6 +42,7 @@ const messages = {
     `TRACK ${index} of ${total}`,
   prev: 'Prev',
   next: 'Next Track',
+  preview: 'Preview',
   navigationPrompt: {
     title: 'Discard upload?',
     body: "Are you sure you want to leave this page?\nAny changes you've made will be lost.",
@@ -146,8 +149,11 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
               <AccessAndSaleField isUpload />
               <AttributionField />
             </div>
-            <PreviewButton
-              playing={isPreviewPlaying}
+            <HarmonyPlainButton
+              className={styles.previewButton}
+              variant={HarmonyPlainButtonType.SUBDUED}
+              text={messages.preview}
+              iconLeft={isPreviewPlaying ? IconPause : IconPlay}
               onClick={() => {
                 togglePreview(values.tracks[trackIdx].preview, trackIdx)
               }}
