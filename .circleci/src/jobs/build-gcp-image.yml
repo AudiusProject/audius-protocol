@@ -31,7 +31,6 @@ steps:
         --machine-type=n2-custom-6-24576
         --boot-disk-size=160G
         --boot-disk-type=pd-ssd
-        --no-boot-disk-auto-delete
       steps:
         - gcp-checkout
         - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
