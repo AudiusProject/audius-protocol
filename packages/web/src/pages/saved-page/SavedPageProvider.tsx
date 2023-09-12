@@ -239,12 +239,11 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     trackMetadatas: SavedPageTrack[]
   ): [SavedPageTrack[], number] => {
     const { tracks } = this.props
-    const filterText = this.state.filterText
+    const filterText = this.state.filterText ?? ''
     const playingUid = this.getPlayingUid()
     const playingIndex = tracks.entries.findIndex(
       ({ uid }: any) => uid === playingUid
     )
-
     const filteredMetadata = this.formatMetadata(trackMetadatas).filter(
       (item) =>
         item.title?.toLowerCase().indexOf(filterText.toLowerCase()) > -1 ||
