@@ -1,6 +1,5 @@
 import type { SwapMode } from '@jup-ag/core'
 import {
-  TOKEN_PROGRAM_ID,
   createCloseAccountInstruction,
   createAssociatedTokenAccountInstruction
 } from '@solana/spl-token'

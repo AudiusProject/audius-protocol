@@ -11,10 +11,8 @@ import {
   formatUSDCWeiToFloorDollarNumber
 } from '@audius/common'
 import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  TOKEN_PROGRAM_ID,
-  getAssociatedTokenAddress,
-  createAssociatedTokenAccountInstruction
+  createAssociatedTokenAccountInstruction,
+  getAssociatedTokenAddressSync
 } from '@solana/spl-token'
 import {
   LAMPORTS_PER_SOL,
@@ -154,9 +152,7 @@ function* doWithdrawUSDC({
     if (!isTokenAccountAddress) {
       // First check that the destination actually exists and has enough lamports for rent
       const destinationTokenAccountPubkey = yield* call(
-        getAssociatedTokenAddress,
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-        TOKEN_PROGRAM_ID,
+        getAssociatedTokenAddressSync,
         libs.solanaWeb3Manager.mints.usdc,
         destinationPubkey
       )
@@ -266,9 +262,7 @@ function* doWithdrawUSDC({
     let destinationTokenAccount = destinationAddress
     if (!isTokenAccountAddress) {
       const destinationTokenAccountPubkey = yield* call(
-        [Token, Token.getAssociatedTokenAddress],
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-        TOKEN_PROGRAM_ID,
+        getAssociatedTokenAddressSync,
         libs.solanaWeb3Manager.mints.usdc,
         destinationPubkey
       )
@@ -292,7 +286,6 @@ function* doWithdrawUSDC({
         mint: 'usdc'
       }
     )
-
     // Relay the transfer so that the user doesn't need SOL if the account already exists
     const recentBlockhash = yield* call(getRecentBlockhash)
     const {
