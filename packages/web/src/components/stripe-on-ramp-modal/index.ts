@@ -1,1 +1,1 @@
-export * from './StripeOnRampModal'
+export { StripeOnRampModal as default } from './StripeOnRampModal'

@@ -39,21 +39,15 @@ const moduleResolutions = [
   '@solana/web3.js',
   'bn.js',
   'moment',
-  'lodash'
+  'lodash',
+  '@audius/sdk'
 ]
-
-const localModuleResolutions = ['@audius/sdk']
 
 // These should match modules defined in resolve.alias, and need to be hotwired
 // into CRA's module-scope-plugin to take effect.
 function injectModulesToModuleScopePlugin(plugin: ModuleScopePlugin) {
   const modulePaths = moduleResolutions.map(resolveModule)
-  const localModulPaths = localModuleResolutions.map(resolveLocalModule)
-  plugin.allowedPaths = [
-    ...plugin.allowedPaths,
-    ...modulePaths,
-    ...localModulPaths
-  ]
+  plugin.allowedPaths = [...plugin.allowedPaths, ...modulePaths]
 }
 
 export default {
@@ -141,13 +135,6 @@ export default {
               (aliases, moduleName) => ({
                 ...aliases,
                 [moduleName]: resolveModule(moduleName)
-              }),
-              {}
-            ),
-            ...localModuleResolutions.reduce(
-              (aliases, moduleName) => ({
-                ...aliases,
-                [moduleName]: resolveLocalModule(moduleName)
               }),
               {}
             )

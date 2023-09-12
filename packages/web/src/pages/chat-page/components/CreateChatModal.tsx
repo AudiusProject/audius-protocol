@@ -112,3 +112,5 @@ export const CreateChatModal = () => {
     </>
   )
 }
+
+export default CreateChatModal

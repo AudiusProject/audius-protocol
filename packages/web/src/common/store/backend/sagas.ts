@@ -23,7 +23,8 @@ import { getIsSettingUp, getIsSetup } from './selectors'
 const { getIsReachable } = reachabilitySelectors
 
 async function initWeb3() {
-  const Web3 = await import('web3')
+  console.log('initting web3 1?')
+  const Web3 = (await import('web3')).default
   window.Web3 = Web3
   window.dispatchEvent(new CustomEvent('WEB3_LOADED'))
 }

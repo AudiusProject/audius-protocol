@@ -613,12 +613,17 @@ export const audiusBackend = ({
   }
 
   async function setup() {
+    console.log('backend setting up')
     // Wait for web3 to load if necessary
     await waitForWeb3()
+    console.log('we waited for web3!')
     // Wait for optimizely to load if necessary
     await waitForRemoteConfig()
 
+    console.log('we waited for remote config!')
+
     const libsModule = await getLibs()
+    console.log('did we get libs mod?')
 
     AudiusLibs = libsModule.AudiusLibs
     BackendUtils = libsModule.Utils
@@ -724,11 +729,15 @@ export const audiusBackend = ({
         ),
         hedgehogConfig
       })
+
+      console.log('innitng libs!', audiusLibs)
       await audiusLibs.init()
+      console.log('got here?')
       onLibsInit(audiusLibs)
 
       sanityChecks(audiusLibs)
     } catch (err) {
+      console.log('actually an error :/')
       console.error(err)
       libsError = getErrorMessage(err)
     }
