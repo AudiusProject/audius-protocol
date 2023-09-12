@@ -1,4 +1,7 @@
+import { full } from '@audius/sdk'
 import { Moment } from 'moment'
+
+import { ValueOf } from 'utils/typeUtils'
 
 import {
   UID,
@@ -9,13 +12,63 @@ import {
   LineupTrack
 } from '../../../models'
 
+export const LIBRARY_TRACKS_CATEGORY_LS_KEY = 'libraryTracksCategory'
+
+export const LIBRARY_COLLECTIONS_CATEGORY_LS_KEY = 'libraryCollectionsCategory'
+
+export const LibraryCategory = full.GetUserLibraryTracksTypeEnum
+export type LibraryCategoryType = ValueOf<typeof LibraryCategory>
+
+export function isLibraryCategory(value: string): value is LibraryCategoryType {
+  return Object.values(LibraryCategory).includes(value as LibraryCategoryType)
+}
 export interface SavedPageState {
-  localSaves: { [id: number]: UID }
+  local: {
+    track: {
+      favorites: {
+        added: { [id: number]: UID }
+        removed: { [id: number]: UID }
+      }
+      reposts: {
+        added: { [id: number]: UID }
+        removed: { [id: number]: UID }
+      }
+      purchased: {
+        added: { [id: number]: UID }
+      }
+    }
+    album: {
+      favorites: {
+        added: ID[]
+        removed: ID[]
+      }
+      reposts: {
+        added: ID[]
+        removed: ID[]
+      }
+      purchased: {
+        added: ID[]
+      }
+    }
+    playlist: {
+      favorites: {
+        added: ID[]
+        removed: ID[]
+      }
+      reposts: {
+        added: ID[]
+        removed: ID[]
+      }
+    }
+  }
   tracks: LineupState<LineupTrack & { id: ID; dateSaved: string }>
-  saves: Favorite[]
+  trackSaves: Favorite[]
   hasReachedEnd: boolean
   initialFetch: boolean
   fetchingMore: boolean
+
+  tracksCategory: LibraryCategoryType
+  collectionsCategory: LibraryCategoryType
 }
 
 export enum SavedPageTabs {

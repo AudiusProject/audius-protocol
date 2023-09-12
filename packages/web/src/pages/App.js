@@ -92,6 +92,7 @@ import {
   EXPLORE_FEELING_LUCKY_PAGE,
   EXPLORE_MOOD_PLAYLISTS_PAGE,
   SAVED_PAGE,
+  LIBRARY_PAGE,
   HISTORY_PAGE,
   DASHBOARD_PAGE,
   AUDIO_PAGE,
@@ -705,7 +706,11 @@ class App extends Component {
                   )}
                 />
 
-                <Route exact path={SAVED_PAGE} component={SavedPage} />
+                <Route
+                  exact
+                  path={[SAVED_PAGE, LIBRARY_PAGE]}
+                  component={SavedPage}
+                />
                 <Route exact path={HISTORY_PAGE} component={HistoryPage} />
                 <DesktopRoute
                   exact
