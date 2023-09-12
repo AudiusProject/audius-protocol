@@ -58,7 +58,7 @@ steps:
       when: always
       shell: /tmp/bash.real
       command: |
-        gcloud compute instances delete --quiet --delete-disks=all "<< parameters.instance-name >>"
+        gcloud compute instances delete --quiet "<< parameters.instance-name >>"
         gcloud compute firewall-rules delete --quiet "<< parameters.instance-name >>"
 
         mv /bin/bash /tmp/bash.deleted
