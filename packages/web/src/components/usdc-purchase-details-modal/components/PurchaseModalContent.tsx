@@ -72,7 +72,7 @@ export const PurchaseModalContent = ({
         </DetailSection>
         <DetailSection label={messages.date}>
           <Text size='large'>
-            {moment(purchaseDetails.createdAt).format('M/D/YY')}
+            {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
           </Text>
         </DetailSection>
         <DetailSection label={messages.cost}>

@@ -71,7 +71,9 @@ export const USDCTransactionDetailsModal = () => {
         />
         <DetailSection
           label={messages.date}
-          value={moment(transactionDetails.transactionDate).format('M/D/YY')}
+          value={moment(transactionDetails.transactionDate).format(
+            'MMM DD, YYYY'
+          )}
         />
         <DetailSection
           label={messages.amountSent}
@@ -89,9 +91,7 @@ export const USDCTransactionDetailsModal = () => {
               </span>
             </ExternalLink>
           }
-          value={`${
-            '28d93jkg9diwoslwoeirkfhs83uj5h8dk2kd8vjhk289dks8vn2kd8wk' ?? '-'
-          }`}
+          value={`${transactionDetails.metadata ?? '-'}`}
         />
       </ModalContent>
       <ModalFooter className={styles.footer}>
