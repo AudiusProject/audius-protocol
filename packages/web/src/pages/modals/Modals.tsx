@@ -15,11 +15,9 @@ import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirma
 import DiscoveryNodeSelection from 'components/discovery-node-selection/DiscoveryNodeSelection'
 import { DuplicateAddConfirmationModal } from 'components/duplicate-add-confirmation-modal'
 import EditFolderModal from 'components/edit-folder-modal/EditFolderModal'
-import EditTrackModal from 'components/edit-track/EditTrackModal'
 import EmbedModal from 'components/embed-modal/EmbedModal'
 import { FeatureFlagOverrideModal } from 'components/feature-flag-override-modal'
 import FirstUploadModal from 'components/first-upload-modal/FirstUploadModal'
-import { InboxSettingsModal } from 'components/inbox-settings-modal/InboxSettingsModal'
 import { InboxUnavailableModal } from 'components/inbox-unavailable-modal/InboxUnavailableModal'
 import { LeavingAudiusModal } from 'components/leaving-audius-modal/LeavingAudiusModal'
 import { LockedContentModal } from 'components/locked-content-modal/LockedContentModal'
@@ -61,11 +59,19 @@ const TrendingRewardsModal = lazy(
   () => import('pages/audio-rewards-page/components/modals/TrendingRewards')
 )
 
+const EditTrackModal = lazy(
+  () => import('components/edit-track/EditTrackModal')
+)
+const InboxSettingsModal = lazy(
+  () => import('components/inbox-settings-modal/InboxSettingsModal')
+)
+
 const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   Share: ShareModal,
   VipDiscord: VipDiscordModal,
   EditFolder: EditFolderModal,
   EditPlaylist: EditPlaylistModal,
+  EditTrack: EditTrackModal,
   AddToPlaylist: AddToPlaylistModal,
   TiersExplainer: TierExplainerModal,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,

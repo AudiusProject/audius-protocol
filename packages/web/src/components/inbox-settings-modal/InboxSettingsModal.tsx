@@ -141,3 +141,5 @@ export const InboxSettingsModal = () => {
     </Modal>
   )
 }
+
+export default InboxSettingsModal

@@ -4,7 +4,6 @@ import { Nullable } from 'utils/typeUtils'
 import { createModal } from '../createModal'
 
 export type EditTrackModalState = {
-  isOpen: boolean
   trackId: Nullable<ID>
 }
 
