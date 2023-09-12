@@ -236,10 +236,7 @@ const SavedPage = ({
           playingIndex={playingIndex}
           scrollRef={mainContentRef}
           useLocalSort={allTracksFetched}
-          totalRowCount={Math.min(
-            dataSource.length,
-            account?.track_save_count ?? Infinity
-          )}
+          totalRowCount={dataSource.length}
           userId={account ? account.user_id : 0}
         />
       ),
