@@ -58,6 +58,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   VipDiscord: VipDiscordModal,
   AudioBreakdown: AudioBreakdownModal,
   EditFolder: EditFolderModal,
+  EditPlaylist: EditPlaylistModal,
   AddToPlaylist: AddToPlaylistModal,
   TiersExplainer: TierExplainerModal,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
@@ -107,7 +108,6 @@ const Modals = () => {
       {!isMobileClient && (
         <>
           <EmbedModal />
-          <EditPlaylistModal />
           <ConnectedUserListModal />
           <AppCTAModal />
 

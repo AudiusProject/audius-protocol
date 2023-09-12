@@ -9,14 +9,14 @@ import {
   newCollectionMetadata,
   ID,
   EditPlaylistValues,
-  useGeneratePlaylistArtwork
+  useGeneratePlaylistArtwork,
+  FocusableFields
 } from '@audius/common'
 
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
 import UploadArtwork from 'components/upload/UploadArtwork'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
-import { FocusableFields } from 'store/application/ui/editPlaylistModal/slice'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
 import { CreateActions, EditActions } from './FormActions'

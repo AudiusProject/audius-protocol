@@ -10,7 +10,8 @@ import {
   PlaylistLibraryKind,
   PlaylistLibraryID,
   shareModalUIActions,
-  ShareSource
+  ShareSource,
+  useEditPlaylistModal
 } from '@audius/common'
 import { PopupMenuItem } from '@audius/stems'
 import cn from 'classnames'
@@ -20,7 +21,6 @@ import { useToggle } from 'react-use'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Draggable } from 'components/dragndrop'
-import { open as openEditPlaylistModal } from 'store/application/ui/editPlaylistModal/slice'
 import {
   DragDropKind,
   selectDraggingKind,
@@ -92,17 +92,17 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
     setIsHovering(false)
   }, [])
 
+  const { onOpen } = useEditPlaylistModal()
+
   const handleEdit = useCallback(() => {
     if (typeof id === 'number') {
-      dispatch(
-        openEditPlaylistModal({
-          collectionId: id,
-          isCollectionViewed: isCollectionViewed?.isExact ?? false
-        })
-      )
+      onOpen({
+        collectionId: id,
+        isCollectionViewed: isCollectionViewed?.isExact ?? false
+      })
       record(make(Name.PLAYLIST_OPEN_EDIT_FROM_LIBRARY, {}))
     }
-  }, [dispatch, id, record, isCollectionViewed])
+  }, [id, onOpen, isCollectionViewed?.isExact, record])
 
   const handleShare = useCallback(() => {
     if (typeof id === 'number') {
