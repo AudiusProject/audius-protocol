@@ -144,9 +144,9 @@ The independent sets of smart contracts that power the on-chain aspects of the A
 Client-side libraries to provide a unified interface for interacting with the entire
 Audius protocol:
 
-| Library                                                                   | Description                                                                                                                           |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| [`libs`](https://github.com/AudiusProject/audius-protocol/tree/main/libs) | A complete javascript interface to the Audius smart contracts and Audius services: Identity Service, Discovery Provider, Creator Node |
+| Library                                                                            | Description                                                                                                                           |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| [`libs`](https://github.com/AudiusProject/audius-protocol/tree/main/packages/libs) | A complete javascript interface to the Audius smart contracts and Audius services: Identity Service, Discovery Provider, Creator Node |
 
 ## Development
 

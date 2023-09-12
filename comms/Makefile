@@ -43,6 +43,6 @@ build.push.fast::
 
 
 quicktype::
-	cp ../libs/src/sdk/api/chats/serverTypes.ts discovery/schema/schema.ts
+	cp ../packages/libs/src/sdk/api/chats/serverTypes.ts discovery/schema/schema.ts
 	npx quicktype@23.0.37 --package schema --out discovery/schema/schema.go --just-types-and-package discovery/schema/schema.ts
 	# gofmt -w discovery/schema/schema.go

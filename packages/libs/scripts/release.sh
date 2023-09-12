@@ -145,7 +145,7 @@ function cleanup () {
 
 # configuration
 STUB=@audius/sdk
-cd ${PROTOCOL_DIR}/libs
+cd ${PROTOCOL_DIR}/packages/libs
 
 # pull in main
 git-reset

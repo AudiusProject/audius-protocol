@@ -49,7 +49,7 @@ npm run truffle-migrate
 
 #### RUN TESTS #####
 
-cd ../libs/
+cd ../packages/libs/
 
 # Migrate data & eth contracts
 # - Copy contracts build dir + create config files

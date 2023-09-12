@@ -46,7 +46,7 @@ set -e
 npm run ganache
 npm run truffle-migrate
 
-cd ../libs/
+cd ../packages/libs/
 
 # Migrate data & eth contracts
 # - Copy contracts build dir + create config files

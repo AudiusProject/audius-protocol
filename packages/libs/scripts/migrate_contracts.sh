@@ -15,8 +15,8 @@ if [ -d "../eth-contracts/build/contracts" ]; then
   cd ../eth-contracts/
   echo "Writing eth-contracts config files"
   node_modules/.bin/truffle exec scripts/migrate-contracts.js
-  cp ../libs/scripts/AudiusClaimDistributor.json ../libs/src/eth-contracts/ABIs/AudiusClaimDistributor.json
-  cp ../libs/scripts/Wormhole.json ../libs/src/eth-contracts/ABIs/Wormhole.json
+  cp ../packages/libs/scripts/AudiusClaimDistributor.json ../packages/libs/src/eth-contracts/ABIs/AudiusClaimDistributor.json
+  cp ../packages/libs/scripts/Wormhole.json ../packages/libs/src/eth-contracts/ABIs/Wormhole.json
 else
   echo "INCORRECT REPOSITORY STRUCTURE. PLEASE FOLLOW README"
   exit 1
