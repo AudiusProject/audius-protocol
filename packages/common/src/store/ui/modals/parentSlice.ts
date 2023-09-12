@@ -22,6 +22,7 @@ export const initialState: BasicModalsState = {
   TrendingGenreSelection: { isOpen: false },
   SocialProof: { isOpen: false },
   EditFolder: { isOpen: false },
+  EditPlaylist: { isOpen: false },
   SignOutConfirmation: { isOpen: false },
   Overflow: { isOpen: false },
   AddToPlaylist: { isOpen: false },

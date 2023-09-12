@@ -1,5 +1,6 @@
 import { CreateChatModalState } from './create-chat-modal'
 import { BaseModalState } from './createModal'
+import { EditPlaylistModalState } from './edit-playlist-modal'
 import { InboxUnavailableModalState } from './inbox-unavailable-modal'
 import { LeavingAudiusModalState } from './leaving-audius-modal'
 import { USDCPurchaseDetailsModalState } from './usdc-purchase-details-modal'
@@ -25,6 +26,7 @@ export type Modals =
   | 'TrendingGenreSelection'
   | 'SocialProof'
   | 'EditFolder'
+  | 'EditPlaylist'
   | 'SignOutConfirmation'
   | 'Overflow'
   | 'AddToPlaylist'
@@ -56,6 +58,7 @@ export type BasicModalsState = {
 
 export type StatefulModalsState = {
   CreateChatModal: CreateChatModalState
+  EditPlaylist: EditPlaylistModalState
   InboxUnavailableModal: InboxUnavailableModalState
   LeavingAudiusModal: LeavingAudiusModalState
   WithdrawUSDCModal: WithdrawUSDCModalState
