@@ -1,17 +1,17 @@
 import { InAppAudioPurchaseMetadata } from '@audius/common'
 import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  Token,
-  TOKEN_PROGRAM_ID,
-  u64
+  TokenAccountNotFoundError,
+  createTransferCheckedInstruction,
+  getAccount,
+  getAssociatedTokenAddress
 } from '@solana/spl-token'
 import {
-  Keypair,
   LAMPORTS_PER_SOL,
   PublicKey,
   Transaction,
   TransactionInstruction
 } from '@solana/web3.js'
+import BN from 'bn.js'
 
 import { getLibs } from 'services/audius-libs'
 import { getSolanaConnection } from 'services/solana/solana'
@@ -47,20 +47,14 @@ export const getAssociatedTokenAccountInfo = async ({
   mintKey: PublicKey
 }) => {
   const connection = await getSolanaConnection()
-  const [associatedTokenAccountAddress] = await PublicKey.findProgramAddress(
-    [rootAccount.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mintKey.toBuffer()],
-    ASSOCIATED_TOKEN_PROGRAM_ID
-  )
-  const associatedToken = new Token(
-    connection,
+  const associatedTokenAccountAddress = await getAssociatedTokenAddress(
     mintKey,
-    TOKEN_PROGRAM_ID,
-    Keypair.generate()
+    rootAccount
   )
   try {
-    return await associatedToken.getAccountInfo(associatedTokenAccountAddress)
+    return await getAccount(connection, associatedTokenAccountAddress)
   } catch (e) {
-    if ((e as any).message === 'Failed to find account') {
+    if (e instanceof TokenAccountNotFoundError) {
       console.debug('No Token account exists for', mintKey.toString())
     } else {
       throw e
@@ -98,7 +92,7 @@ export const pollForAudioBalanceChange = async ({
   maxRetryCount = DEFAULT_MAX_RETRY_COUNT
 }: {
   tokenAccount: PublicKey
-  initialBalance?: u64
+  initialBalance?: BN
   retryDelayMs?: number
   maxRetryCount?: number
 }) => {
@@ -225,7 +219,7 @@ export const createTransferToUserBankTransaction = async ({
 }: {
   userBank: PublicKey
   fromAccount: PublicKey
-  amount: u64
+  amount: BN
   memo: string
 }) => {
   const libs = await getLibs()
@@ -245,13 +239,11 @@ export const createTransferToUserBankTransaction = async ({
     programId: MEMO_PROGRAM_ID,
     data: Buffer.from(memo)
   })
-  const transferInstruction = Token.createTransferCheckedInstruction(
-    TOKEN_PROGRAM_ID,
+  const transferInstruction = createTransferCheckedInstruction(
     associatedTokenAccount,
     mintPublicKey,
     userBank,
     fromAccount,
-    [],
     amount,
     8
   )

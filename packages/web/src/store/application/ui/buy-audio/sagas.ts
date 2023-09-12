@@ -32,7 +32,6 @@ import {
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import type { RouteInfo } from '@jup-ag/core'
-import { u64 } from '@solana/spl-token'
 import {
   Connection,
   Keypair,
@@ -50,7 +49,6 @@ import { isMobileWeb } from 'common/utils/isMobileWeb'
 import { track } from 'services/analytics'
 import {
   createTransferToUserBankTransaction,
-  getAssociatedTokenAccountInfo,
   getAssociatedTokenRentExemptionMinimum,
   getAudioAccount,
   getAudioAccountInfo,
@@ -58,7 +56,8 @@ import {
   pollForAudioBalanceChange,
   pollForNewTransaction,
   pollForSolBalanceChange,
-  saveUserBankTransactionMetadata
+  saveUserBankTransactionMetadata,
+  getAssociatedTokenAccountInfo
 } from 'services/audius-backend/BuyAudio'
 import { JupiterSingleton } from 'services/audius-backend/Jupiter'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
@@ -233,7 +232,7 @@ function* getTransactionFees({
         userBank,
         fromAccount: rootAccount,
         // eslint-disable-next-line new-cap
-        amount: new u64(JSBI.toNumber(route.outAmount)),
+        amount: new BN(JSBI.toNumber(route.outAmount)),
         // The provider here doesn't matter, we're not sending this transaction
         memo: MEMO_MESSAGES[OnRampProvider.COINBASE]
       }
@@ -711,8 +710,7 @@ function* swapStep({
   const beforeSwapAudioAccountInfo = yield* call(getAudioAccountInfo, {
     tokenAccount
   })
-  const beforeSwapAudioBalance =
-    beforeSwapAudioAccountInfo?.amount ?? new u64(0)
+  const beforeSwapAudioBalance = beforeSwapAudioAccountInfo?.amount ?? new BN(0)
 
   // Swap the SOL for AUDIO
   yield* put(swapStarted())
@@ -765,7 +763,7 @@ function* swapStep({
 
 type TransferStepParams = {
   rootAccount: Keypair
-  transferAmount: u64
+  transferAmount: BN
   transactionHandler: TransactionHandler
   provider: OnRampProvider
 }
@@ -950,7 +948,7 @@ function* doBuyAudio({
         surplusAudio: parseFloat(
           formatWei(
             convertWAudioToWei(
-              audioSwappedSpl.sub(new u64(desiredAudioAmount.amount))
+              audioSwappedSpl.sub(new BN(desiredAudioAmount.amount))
             )
           ).replaceAll(',', '')
         )
@@ -1121,10 +1119,10 @@ function* recoverPurchaseIfNecessary() {
       const audioAccountInfo = yield* call(getAudioAccountInfo, {
         tokenAccount
       })
-      const audioBalance = audioAccountInfo?.amount ?? new u64(0)
+      const audioBalance = audioAccountInfo?.amount ?? new BN(0)
 
       // If the user's root wallet has $AUDIO, that usually indicates a failed transfer
-      if (audioBalance.gt(new u64(0))) {
+      if (audioBalance.gt(new BN(0))) {
         // Check we can afford to transfer
         if (
           new BN(existingBalance)

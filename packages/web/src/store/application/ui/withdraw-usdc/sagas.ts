@@ -13,7 +13,8 @@ import {
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
-  Token
+  getAssociatedTokenAddress,
+  createAssociatedTokenAccountInstruction
 } from '@solana/spl-token'
 import {
   LAMPORTS_PER_SOL,
@@ -36,7 +37,6 @@ import {
   isValidSolAddress,
   getRootSolanaAccount,
   getSignatureForTransaction,
-  createAssociatedTokenAccountInstruction,
   getRecentBlockhash,
   ROOT_ACCOUNT_SIZE
 } from 'services/solana/solana'
@@ -154,7 +154,7 @@ function* doWithdrawUSDC({
     if (!isTokenAccountAddress) {
       // First check that the destination actually exists and has enough lamports for rent
       const destinationTokenAccountPubkey = yield* call(
-        [Token, Token.getAssociatedTokenAddress],
+        getAssociatedTokenAddress,
         ASSOCIATED_TOKEN_PROGRAM_ID,
         TOKEN_PROGRAM_ID,
         libs.solanaWeb3Manager.mints.usdc,
@@ -246,12 +246,10 @@ function* doWithdrawUSDC({
         const tx = new Transaction({ recentBlockhash: createRecentBlockhash })
         const createTokenAccountInstruction = yield* call(
           createAssociatedTokenAccountInstruction,
-          {
-            associatedTokenAccount: destinationTokenAccountPubkey,
-            owner: destinationPubkey,
-            mint: libs.solanaWeb3Manager.mints.usdc,
-            feePayer: rootSolanaAccount.publicKey
-          }
+          rootSolanaAccount.publicKey, // fee payer
+          destinationTokenAccountPubkey, // account to create
+          destinationPubkey, // owner
+          libs.solanaWeb3Manager.mints.usdc // mint
         )
         yield* call([tx, tx.add], createTokenAccountInstruction)
         yield* call(

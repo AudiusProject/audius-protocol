@@ -1,5 +1,9 @@
 import type { SwapMode } from '@jup-ag/core'
-import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import {
+  TOKEN_PROGRAM_ID,
+  createCloseAccountInstruction,
+  createAssociatedTokenAccountInstruction
+} from '@solana/spl-token'
 import {
   LAMPORTS_PER_SOL,
   PublicKey,
@@ -13,8 +17,7 @@ import {
   getRootSolanaAccount,
   getAssociatedTokenAccountRent,
   getTransferTransactionFee,
-  getUSDCAssociatedTokenAccount,
-  createAssociatedTokenAccountInstruction
+  getUSDCAssociatedTokenAccount
 } from 'services/solana/solana'
 
 // TODO: Grab from remote config
@@ -89,18 +92,16 @@ export const getSwapUSDCUserBankInstructions = async ({
       mint: 'usdc'
     })
 
-  const createInstruction = createAssociatedTokenAccountInstruction({
-    associatedTokenAccount: solanaUSDCAssociatedTokenAccount,
-    owner: solanaRootAccount.publicKey,
-    mint: libs.solanaWeb3Manager!.mints.usdc,
-    feePayer
-  })
-  const closeInstruction = Token.createCloseAccountInstruction(
-    TOKEN_PROGRAM_ID, //    programId
+  const createInstruction = createAssociatedTokenAccountInstruction(
+    feePayer, // fee payer
+    solanaUSDCAssociatedTokenAccount, // account to create
+    solanaRootAccount.publicKey, // owner
+    libs.solanaWeb3Manager!.mints.usdc // mint
+  )
+  const closeInstruction = createCloseAccountInstruction(
     solanaUSDCAssociatedTokenAccount, //  account to close
     feePayer, // fee destination
-    solanaRootAccount.publicKey, //  owner
-    [] //  multiSigners
+    solanaRootAccount.publicKey //  owner
   )
 
   return [
