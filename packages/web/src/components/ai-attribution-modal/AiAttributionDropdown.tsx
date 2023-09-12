@@ -67,6 +67,7 @@ export const AiAttributionDropdown = (props: AiAttributionDropdownProps) => {
 
   return (
     <DropdownInput
+      id='ai-attribution'
       menu={users}
       label='Find Users'
       size='large'

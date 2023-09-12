@@ -29,14 +29,16 @@ export const TrackInfo = (props: TrackInfoProps) => {
   return (
     <SelectedValue>
       <DynamicImage wrapperClassName={styles.artwork} image={image} />
-      <Text variant='body' strength='strong'>
-        {track.title}
-      </Text>
-      <Text variant='body' strength='strong' color='neutralLight2'>
-        {messages.by}
-      </Text>
-      <Text variant='body' strength='strong'>
-        {user.name}
+      <Text strength='strong'>
+        <Text variant='inherit' as='span'>
+          {track.title}
+        </Text>{' '}
+        <Text variant='inherit' as='span' color='neutralLight2'>
+          {messages.by}
+        </Text>{' '}
+        <Text variant='inherit' as='span'>
+          {user.name}
+        </Text>
       </Text>
       <UserBadges
         className={styles.iconVerified}

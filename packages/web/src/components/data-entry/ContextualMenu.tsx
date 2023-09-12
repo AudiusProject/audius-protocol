@@ -130,16 +130,12 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
     <Tile onClick={toggleMenu} className={styles.root} elevation='flat'>
       <div className={styles.header}>
         <div className={styles.title}>
-          <div>
-            <Text className={styles.title} variant='title' size='large'>
-              {label}
-            </Text>
-          </div>
-          <div>
-            <Icon icon={IconCaretRight} color='neutralLight4' />
-          </div>
+          <Text className={styles.title} variant='title' size='large'>
+            {label}
+          </Text>
+          <Icon icon={IconCaretRight} color='neutralLight4' />
         </div>
-        <Text>{description}</Text>
+        <Text className={styles.description}>{description}</Text>
       </div>
       {renderValue()}
       {error ? <HelperText error>{errorMessage}</HelperText> : null}

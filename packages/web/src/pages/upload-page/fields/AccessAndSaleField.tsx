@@ -521,11 +521,13 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-      {isRemix ? (
-        <HelpCallout className={styles.isRemix} content={messages.isRemix} />
-      ) : null}
+      {isRemix ? <HelpCallout content={messages.isRemix} /> : null}
       <Text>{messages.modalDescription}</Text>
-      <RadioButtonGroup {...availabilityField} onChange={handleChange}>
+      <RadioButtonGroup
+        {...availabilityField}
+        onChange={handleChange}
+        aria-label={messages.title}
+      >
         <ModalRadioItem
           icon={<IconVisibilityPublic className={styles.icon} />}
           label={messages.public}

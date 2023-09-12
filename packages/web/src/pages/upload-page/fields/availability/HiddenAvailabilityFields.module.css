@@ -1,11 +1,12 @@
 .root {
-  display: flex;
-  flex-direction: column;
-  gap: var(--unit-4);
   padding: var(--unit-4);
   background: var(--background-surface-1);
   border: 1px solid var(--border-strong);
   border-radius: var(--unit-2);
+}
+
+.legend {
+  margin-bottom: var(--unit-4);
 }
 
 .switchContainer {
