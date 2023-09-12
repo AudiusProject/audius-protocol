@@ -4,7 +4,8 @@ export enum WithdrawUSDCModalPages {
   ENTER_TRANSFER_DETAILS = 'enter_transfer_details',
   CONFIRM_TRANSFER_DETAILS = 'confirm_transfer_details',
   TRANSFER_IN_PROGRESS = 'transfer_in_progress',
-  TRANSFER_SUCCESSFUL = 'transfer_successful'
+  TRANSFER_SUCCESSFUL = 'transfer_successful',
+  ERROR = 'error'
 }
 
 export type WithdrawUSDCModalState = {

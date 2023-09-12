@@ -4,10 +4,6 @@
   gap: var(--unit-6);
 }
 
-.newBalance {
-  margin-top: var(--unit-12);
-}
-
 .destination {
   display: flex;
   flex-direction: column;
