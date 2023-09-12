@@ -18,6 +18,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { HarmonyModalHeader } from '../core/HarmonyModalHeader'
 import { NativeDrawer } from '../drawer'
+import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 
 const useDrawerStyles = makeStyles(({ spacing, palette, typography }) => ({
   container: {
@@ -139,6 +140,8 @@ export const OfflineListeningDrawer = () => {
     setIsFavoritesOn(value)
   }, [])
 
+  const isUSDCPurchasesEnabled = useIsUSDCEnabled()
+
   return (
     <NativeDrawer drawerName='OfflineListening'>
       <View style={styles.container}>
@@ -161,12 +164,14 @@ export const OfflineListeningDrawer = () => {
           value={false}
           disabled
         />
-        <OfflineListeningOptionToggle
-          title={`${messages.purchased} ${messages.comingSoonToggleSuffix}`}
-          icon={IconCart}
-          value={false}
-          disabled
-        />
+        {isUSDCPurchasesEnabled ? (
+          <OfflineListeningOptionToggle
+            title={`${messages.purchased} ${messages.comingSoonToggleSuffix}`}
+            icon={IconCart}
+            value={false}
+            disabled
+          />
+        ) : null}
         <Button
           title={messages.saveChanges}
           fullWidth
