@@ -20,10 +20,6 @@ function resolveModule(moduleName: string) {
   return path.resolve(`../../node_modules/${moduleName}`)
 }
 
-function resolveLocalModule(moduleName: string) {
-  return path.resolve(`./node_modules/${moduleName}`)
-}
-
 /**
  * List of modules to resolve to a single instance, which improves performance
  * and is a requirement for some packages that expect to be singletons.

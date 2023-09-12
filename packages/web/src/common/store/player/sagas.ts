@@ -37,7 +37,7 @@ import { waitForWrite } from 'utils/sagaHelpers'
 
 import errorSagas from './errorSagas'
 
-const { getUserId, getHasAccount } = accountSelectors
+const { getUserId } = accountSelectors
 const { setTrackPosition } = playbackPositionActions
 const { getTrackPosition } = playbackPositionSelectors
 
@@ -99,26 +99,21 @@ export function* watchPlay() {
         return
       }
 
+      yield* waitForWrite()
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       const apiClient = yield* getContext('apiClient')
 
       const encodedTrackId = encodeHashId(trackId)
 
       let queryParams: QueryParams = {}
-
-      const isLoggedIn = yield* select(getHasAccount)
-
-      if (isLoggedIn) {
-        yield* waitForWrite()
-        const premiumTrackSignatureMap = yield* select(
-          getPremiumTrackSignatureMap
-        )
-        const premiumContentSignature = premiumTrackSignatureMap[track.track_id]
-        queryParams = yield* call(getQueryParams, {
-          audiusBackendInstance,
-          premiumContentSignature
-        })
-      }
+      const premiumTrackSignatureMap = yield* select(
+        getPremiumTrackSignatureMap
+      )
+      const premiumContentSignature = premiumTrackSignatureMap[track.track_id]
+      queryParams = yield* call(getQueryParams, {
+        audiusBackendInstance,
+        premiumContentSignature
+      })
 
       let trackDuration = track.duration
 

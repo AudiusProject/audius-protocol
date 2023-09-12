@@ -112,7 +112,6 @@ const Modals = () => {
       {commonModals.map(([modalName, Modal]) => {
         return <AppModal key={modalName} name={modalName} modal={Modal} />
       })}
-      {/* <EditTrackModal /> */}
       <PasswordResetModal />
       <FirstUploadModal />
       <UnloadDialog />

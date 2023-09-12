@@ -36,10 +36,7 @@ export const audiusBackendInstance = audiusBackend({
   ethTokenAddress: process.env.REACT_APP_ETH_TOKEN_ADDRESS,
   getFeatureEnabled,
   getHostUrl: () => window.location.origin,
-  getLibs: async () => {
-    console.log('do we have web3?', window.Web3)
-    return await import('@audius/sdk/dist/web-libs')
-  },
+  getLibs: () => import('@audius/sdk/dist/web-libs'),
   discoveryNodeSelectorService,
   getStorageNodeSelector,
   getWeb3Config: async (
@@ -136,6 +133,7 @@ export const audiusBackendInstance = audiusBackend({
       })
     }
   },
+
   withEagerOption,
   wormholeConfig: {
     ethBridgeAddress: process.env.REACT_APP_ETH_BRIDGE_ADDRESS,

@@ -19,11 +19,9 @@ export const waitForLibsInit = async () => {
   // so do nothing
   if (window.audiusLibs) return
   // Add an event listener and resolve when that returns
-  return new Promise<void>((resolve) => {
-    if (window.audiusLibs) {
-      resolve()
-    }
+  return new Promise((resolve) => {
     // @ts-ignore
+    if (window.audiusLibs) resolve()
     window.addEventListener(LIBS_INITTED_EVENT, resolve)
   })
 }

@@ -724,15 +724,11 @@ export const audiusBackend = ({
         ),
         hedgehogConfig
       })
-
-      console.log('innitng libs!', audiusLibs)
       await audiusLibs.init()
-      console.log('got here?')
       onLibsInit(audiusLibs)
 
       sanityChecks(audiusLibs)
     } catch (err) {
-      console.log('actually an error :/')
       console.error(err)
       libsError = getErrorMessage(err)
     }
