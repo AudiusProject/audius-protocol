@@ -1,5 +1,5 @@
-# This is probably not the file you want to edit, you probably want to create/update
-# files in .circleci/{commands,jobs,workflows}
+# Root CircleCI configuration
+# Configuration for individual packages lives in .circleci/src/{commands,jobs,workflows}
 
 version: 2.1
 
@@ -10,10 +10,6 @@ orbs:
   path-filtering: circleci/path-filtering@0.1.1
 
 parameters:
-  # Run all workflows for branches that match this regex
-  run-all-workflows-branch-regex:
-    type: string
-    default: /(^main)|(^release.*)$/
   workflow:
     type: string
     default: "main"
@@ -143,7 +139,12 @@ jobs:
 
             ${CHANGELOG}"
             npm i --ignore-scripts
-            npm version patch -ws --include-workspace-root -m "${MESSAGE}"
+            npm version patch -ws --include-workspace-root --no-git-tag-version
+            git add .
+            git commit -m "${MESSAGE}"
+            VERSION=$(jq -r .version ./package.json)
+            git tag client-v${VERSION}
+            git push origin client-v${VERSION}
       - run:
           name: Create release branch
           command: |
@@ -163,7 +164,9 @@ workflows:
           name: trigger-relevant-workflows
           filters:
             branches:
-              ignore: << pipeline.parameters.run-all-workflows-branch-regex >>
+              ignore:
+                - main
+                - /^release.*$/
           base-revision: main
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
@@ -205,35 +208,6 @@ workflows:
             - init
           workspace_path: ../workspace
 
-      # Trigger all workflows for branches that match regex
-      - continuation/continue:
-          configuration_path: ../workspace/.circleci/continue_config.yml
-          name: trigger-all-workflows
-          filters:
-            branches:
-              only: << pipeline.parameters.run-all-workflows-branch-regex >>
-          parameters: '{
-            "run-web-workflow": true,
-            "run-mobile-workflow": true,
-            "run-stems-workflow": true,
-            "run-embed-workflow": true,
-            "run-gcp-workflow": "true",
-            "run-integration-workflow": "true",
-            "run-discovery-workflow": "true",
-            "run-creator-workflow": "true",
-            "run-identity-workflow": "true",
-            "run-eth-contracts-workflow": "true",
-            "run-contracts-workflow": "true",
-            "run-release-workflow": "false",
-            "run-sdk-workflow": "true",
-            }'
-          pre-steps:
-            - attach_workspace:
-                at: ../workspace
-          requires:
-            - generate-config
-            - init
-
       - path-filtering/filter:
           name: trigger-main-workflows
           filters:
@@ -257,6 +231,7 @@ workflows:
             .* run-probers-workflow true
           requires:
             - generate-config
+            - init
           workspace_path: ../workspace
 
       - path-filtering/filter:
@@ -278,6 +253,7 @@ workflows:
             .* run-sdk-workflow true
           requires:
             - generate-config
+            - init
           workspace_path: ../workspace
 
       - path-filtering/filter:
@@ -294,6 +270,7 @@ workflows:
             .* run-probers-workflow false
           requires:
             - generate-config
+            - init
           workspace_path: ../workspace
 
   release-create-branch:

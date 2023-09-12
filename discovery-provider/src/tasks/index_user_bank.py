@@ -610,6 +610,7 @@ def process_transfer_instruction(
             tx_metadata=str(receiver_account),
         )
         logger.debug(f"index_user_bank.py | Creating transfer sent {transfer_sent}")
+        session.add(transfer_sent)
     # If there are two userbanks to update, it was a transfer from user to user
     else:
         if is_audio:

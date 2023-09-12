@@ -27,7 +27,11 @@
   width: 24px;
 }
 
-.root:has(.input:disabled) .optionTitle {
+.root.disabled {
+  cursor: default;
+}
+
+.root.disabled .optionTitle {
   opacity: 0.5;
 }
 

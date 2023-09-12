@@ -44,7 +44,8 @@ export const initialState: BasicModalsState = {
   LeavingAudiusModal: { isOpen: false },
   InboxUnavailableModal: { isOpen: false },
   UploadConfirmation: { isOpen: false },
-  WithdrawUSDCModal: { isOpen: false }
+  WithdrawUSDCModal: { isOpen: false },
+  USDCPurchaseDetailsModal: { isOpen: false }
 }
 
 const slice = createSlice({

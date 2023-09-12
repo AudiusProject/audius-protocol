@@ -31,7 +31,7 @@ import {
   getFundDestinationTokenAccountFees
 } from 'services/solana/WithdrawUSDC'
 import {
-  isSolWallet,
+  isTokenAccount,
   getTokenAccountInfo,
   isValidSolAddress,
   getRootSolanaAccount,
@@ -146,12 +146,12 @@ function* doWithdrawUSDC({
     const destinationPubkey = new PublicKey(destinationAddress)
     const feePayerPubkey = new PublicKey(feePayer)
 
-    const isDestinationSolAddress = yield* call(
-      isSolWallet,
-      destinationAddress as SolanaWalletAddress
-    )
+    const isTokenAccountAddress = yield* call(isTokenAccount, {
+      accountAddress: destinationAddress as SolanaWalletAddress,
+      mint: 'usdc'
+    })
     // Destination is a sol address - check for associated token account
-    if (isDestinationSolAddress) {
+    if (!isTokenAccountAddress) {
       // First check that the destination actually exists and has enough lamports for rent
       const destinationTokenAccountPubkey = yield* call(
         [Token, Token.getAssociatedTokenAddress],
@@ -266,7 +266,7 @@ function* doWithdrawUSDC({
       }
     }
     let destinationTokenAccount = destinationAddress
-    if (isDestinationSolAddress) {
+    if (!isTokenAccountAddress) {
       const destinationTokenAccountPubkey = yield* call(
         [Token, Token.getAssociatedTokenAddress],
         ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -288,23 +288,31 @@ function* doWithdrawUSDC({
       ],
       {
         amount: withdrawalAmountWei,
-        feePayerKey: rootSolanaAccount.publicKey,
+        feePayerKey: feePayerPubkey,
         senderSolanaAddress: usdcUserBank,
         recipientSolanaAddress: destinationTokenAccount,
         mint: 'usdc'
       }
     )
+
+    // Relay the transfer so that the user doesn't need SOL if the account already exists
     const recentBlockhash = yield* call(getRecentBlockhash)
-    const tx = new Transaction({ recentBlockhash })
-    for (const inst of transferInstructions) {
-      yield* call([tx, tx.add], inst)
-    }
-    const transferSignature = yield* call(
-      sendAndConfirmTransaction,
-      libs.solanaWeb3Manager.connection,
-      tx,
-      [rootSolanaAccount]
+    const {
+      res: transferSignature,
+      error,
+      errorCode
+    } = yield* call(
+      [transactionHandler, transactionHandler.handleTransaction],
+      {
+        instructions: transferInstructions,
+        feePayerOverride: feePayerPubkey,
+        recentBlockhash,
+        skipPreflight: true
+      }
     )
+    if (!transferSignature || error) {
+      throw new Error(`Failed to transfer: [${errorCode}] ${error}`)
+    }
     console.debug(
       'Withdraw USDC - successfully transferred USDC - tx hash',
       transferSignature

@@ -198,7 +198,7 @@ export const ArtistDashboardPage = () => {
       contentClassName={styles.pageContainer}
       header={header}
     >
-      {!account || !balance || status === Status.LOADING ? (
+      {!account || !balance || !listenData || status === Status.LOADING ? (
         <LoadingSpinner className={styles.spinner} />
       ) : (
         <>
