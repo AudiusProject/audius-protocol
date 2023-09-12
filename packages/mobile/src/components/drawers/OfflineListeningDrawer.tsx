@@ -11,6 +11,7 @@ import IconFavorite from 'app/assets/images/iconFavorite.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
 import { Button, Switch, Text } from 'app/components/core'
 import { useDrawer } from 'app/hooks/useDrawer'
+import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { setVisibility } from 'app/store/drawers/slice'
 import { requestDownloadAllFavorites } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
@@ -139,6 +140,8 @@ export const OfflineListeningDrawer = () => {
     setIsFavoritesOn(value)
   }, [])
 
+  const isUSDCPurchasesEnabled = useIsUSDCEnabled()
+
   return (
     <NativeDrawer drawerName='OfflineListening'>
       <View style={styles.container}>
@@ -161,12 +164,14 @@ export const OfflineListeningDrawer = () => {
           value={false}
           disabled
         />
-        <OfflineListeningOptionToggle
-          title={`${messages.purchased} ${messages.comingSoonToggleSuffix}`}
-          icon={IconCart}
-          value={false}
-          disabled
-        />
+        {isUSDCPurchasesEnabled ? (
+          <OfflineListeningOptionToggle
+            title={`${messages.purchased} ${messages.comingSoonToggleSuffix}`}
+            icon={IconCart}
+            value={false}
+            disabled
+          />
+        ) : null}
         <Button
           title={messages.saveChanges}
           fullWidth
