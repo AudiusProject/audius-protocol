@@ -1,4 +1,6 @@
-import axios from 'axios'
+import FormData from 'form-data'
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
+
 import fetch from 'cross-fetch'
 import FormData from 'form-data'
 
@@ -122,27 +124,37 @@ export class Storage implements StorageService {
       file.name ?? 'blob'
     )
 
-    const contentNodeEndpoint = await this.storageNodeSelector.getSelectedNode()
-
-    if (!contentNodeEndpoint) {
-      throw new Error('No content node available for upload')
-    }
-
     // Using axios for now because it supports upload progress,
     // and Node doesn't support XmlHttpRequest
-    const response = await axios({
+    let response: AxiosResponse<any> | null = null
+    const request: AxiosRequestConfig = {
       method: 'post',
-      url: `${contentNodeEndpoint}/uploads`,
       maxContentLength: Infinity,
       data: formData,
       headers: formData.getBoundary
         ? {
-            'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
-          }
+          'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
+        }
         : undefined,
       onUploadProgress: (progressEvent) =>
         onProgress?.(progressEvent.loaded, progressEvent.total)
-    })
+    }
+
+    let lastErr
+    for (let selectedNode = await this.storageNodeSelector.getSelectedNode(); this.storageNodeSelector.triedSelectingAllNodes(); selectedNode = await this.storageNodeSelector.getSelectedNode(true)) {
+      request.url = `${selectedNode!}/uploads`
+      try {
+        response = await axios(request)
+      } catch (e: any) {
+        lastErr = e // keep trying other nodes
+      }
+    }
+
+    if (!response) {
+      const msg = `Error sending storagev2 upload request, tried all healthy storage nodes. Last error: ${lastErr}`
+      this.logger.error(msg)
+      throw new Error(msg)
+    }
 
     return await this.pollProcessingStatus(
       response.data[0].id,
@@ -199,8 +211,22 @@ export class Storage implements StorageService {
    * @returns the status, and the success or failed response if the job is complete
    */
   private async getProcessingStatus(id: string): Promise<UploadResponse> {
-    const contentNodeEndpoint = await this.storageNodeSelector.getSelectedNode()
-    const response = await fetch(`${contentNodeEndpoint}/uploads/${id}`)
-    return await response.json()
+    let lastErr
+    for (let selectedNode = await this.storageNodeSelector.getSelectedNode(); this.storageNodeSelector.triedSelectingAllNodes(); selectedNode = await this.storageNodeSelector.getSelectedNode(true)) {
+      try {
+        const response = await fetch(`${selectedNode}/uploads/${id}`)
+        if (response.ok) {
+          return await response.json()
+        } else {
+          lastErr = `HTTP error: ${response.status} ${response.statusText}, ${await response.text()}`
+        }
+      } catch (e: any) {
+        lastErr = e
+      }
+    }
+
+    const msg = `Error sending storagev2 uploads polling request, tried all healthy storage nodes. Last error: ${lastErr}`
+    this.logger.error(msg)
+    throw new Error(msg)
   }
 }

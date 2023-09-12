@@ -41,19 +41,19 @@ export type PlaylistMetadata = {
 export type ProgressCB = (
   progress:
     | {
-        art: {
-          upload?: { loaded: number; total: number }
-          transcode?: { decimal: number }
-          resize?: undefined
-        }
+      art: {
+        upload?: { loaded: number; total: number }
+        transcode?: { decimal: number }
+        resize?: undefined
       }
+    }
     | {
-        audio: {
-          upload?: { loaded: number; total: number }
-          transcode?: { decimal: number }
-          resize?: undefined
-        }
+      audio: {
+        upload?: { loaded: number; total: number }
+        transcode?: { decimal: number }
+        resize?: undefined
       }
+    }
 ) => void
 
 export type CreatorNodeConfig = {
@@ -236,15 +236,15 @@ export class CreatorNode {
     return await this.uploadFileV2(file, onProgress, 'audio', options)
   }
 
-  async uploadTrackCoverArtV2(file: File, onProgress: ProgressCB = () => {}) {
+  async uploadTrackCoverArtV2(file: File, onProgress: ProgressCB = () => { }) {
     return await this.uploadFileV2(file, onProgress, 'img_square')
   }
 
-  async uploadProfilePictureV2(file: File, onProgress: ProgressCB = () => {}) {
+  async uploadProfilePictureV2(file: File, onProgress: ProgressCB = () => { }) {
     return await this.uploadFileV2(file, onProgress, 'img_square')
   }
 
-  async uploadCoverPhotoV2(file: File, onProgress: ProgressCB = () => {}) {
+  async uploadCoverPhotoV2(file: File, onProgress: ProgressCB = () => { }) {
     return await this.uploadFileV2(file, onProgress, 'img_backdrop')
   }
 
@@ -392,33 +392,23 @@ export class CreatorNode {
   /* ------- INTERNAL FUNCTIONS ------- */
 
   /**
-   * Makes an axios request to this.creatorNodeEndpoint
+   * Makes an axios request to each storage node sequentially until 1 succeeds or all fail
    * @return response body
    */
   async _makeRequestV2(axiosRequestObj: AxiosRequestConfig) {
-    // TODO: This might want to have other error handling, request UUIDs, etc...
-    //       But I didn't want to pull in all the chaos and incompatiblity of the old _makeRequest
-    axiosRequestObj.baseURL = this.creatorNodeEndpoint
-    try {
-      return await axios(axiosRequestObj)
-    } catch (e: any) {
-      const wallet = this.userStateManager.getCurrentUser()?.wallet
-      const storageNodes = this.storageNodeSelector.getNodes(wallet ?? '')
-
-      for (const storageNode of storageNodes) {
-        try {
-          axiosRequestObj.baseURL = storageNode
-          return await axios(axiosRequestObj)
-        } catch (e) {
-          // continue
-        }
+    let lastErr
+    for (let selectedNode = await this.storageNodeSelector.getSelectedNode(); this.storageNodeSelector.triedSelectingAllNodes(); selectedNode = await this.storageNodeSelector.getSelectedNode(true)) {
+      axiosRequestObj.baseURL = selectedNode!
+      try {
+        return await axios(axiosRequestObj)
+      } catch (e: any) {
+        lastErr = e // keep trying other nodes
       }
-
-      const requestId = axiosRequestObj.headers['X-Request-ID']
-      const msg = `Error sending storagev2 request for X-Request-ID=${requestId}, tried all storage nodes: ${e}`
-      console.error(msg)
-      throw new Error(msg)
     }
+    const requestId = axiosRequestObj.headers['X-Request-ID']
+    const msg = `Error sending storagev2 request for X-Request-ID=${requestId}, tried all healthy storage nodes. Last error: ${lastErr}`
+    console.error(msg)
+    throw new Error(msg)
   }
 
   /**
@@ -457,7 +447,7 @@ export class CreatorNode {
   /**
    * Calls fn and then retries once after 500ms, again after 1500ms, and again after 4000ms
    */
-  async _retry3(fn: () => Promise<any>, onRetry = (_err: any) => {}) {
+  async _retry3(fn: () => Promise<any>, onRetry = (_err: any) => { }) {
     return await retry(fn, {
       minTimeout: 500,
       maxTimeout: 4000,
