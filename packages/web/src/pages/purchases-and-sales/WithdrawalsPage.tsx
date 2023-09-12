@@ -9,7 +9,8 @@ import {
   statusIsNotFinalized,
   useAllPaginatedQuery,
   useGetUSDCTransactions,
-  useGetUSDCTransactionsCount
+  useGetUSDCTransactionsCount,
+  useUSDCTransactionDetailsModal
 } from '@audius/common'
 import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
@@ -88,6 +89,8 @@ const RenderWithdrawalsPage = () => {
     useState<full.GetUSDCTransactionsSortDirectionEnum>(DEFAULT_SORT_DIRECTION)
   const { mainContentRef } = useContext(MainContentContext)
 
+  const { onOpen: openDetailsModal } = useUSDCTransactionDetailsModal()
+
   const {
     status: dataStatus,
     data: transactions,
@@ -129,10 +132,12 @@ const RenderWithdrawalsPage = () => {
     }
   }, [hasMore, loadMore])
 
-  const onClickRow = useCallback((txDetails: USDCTransactionDetails) => {
-    // https://linear.app/audius/issue/PAY-1757/[web]-click-to-view-purchasesale-details-in-table
-    // TODO: Show details modal on row click
-  }, [])
+  const onClickRow = useCallback(
+    (transactionDetails: USDCTransactionDetails) => {
+      openDetailsModal({ transactionDetails })
+    },
+    [openDetailsModal]
+  )
 
   const isEmpty = status === Status.SUCCESS && transactions.length === 0
   const isLoading = statusIsNotFinalized(status)

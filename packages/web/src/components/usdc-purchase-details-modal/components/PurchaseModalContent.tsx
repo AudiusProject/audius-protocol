@@ -51,7 +51,6 @@ export const PurchaseModalContent = ({
     <>
       <ModalHeader>
         <ModalTitle
-          iconClassName={styles.icon}
           icon={<Icon icon={IconCart} />}
           title={messages.purchaseDetails}
         />
