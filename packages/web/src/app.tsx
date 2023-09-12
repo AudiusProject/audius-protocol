@@ -24,7 +24,7 @@ import { reportToSentry } from './store/errors/reportToSentry'
 import './services/webVitals'
 import './index.css'
 
-const test: number = '12'
+const test: number = '123'
 
 const AudiusApp = () => {
   return (
