@@ -10,10 +10,6 @@
   gap: var(--unit-4);
 }
 
-.title {
-  line-height: 20px;
-}
-
 .switch :global(label) {
   width: 48px;
   height: 26px;

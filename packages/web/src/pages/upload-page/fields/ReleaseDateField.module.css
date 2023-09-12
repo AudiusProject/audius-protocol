@@ -63,6 +63,15 @@
   border-radius: 4px;
   width: 100%;
   padding: var(--unit-3) var(--unit-4);
+  transition: border ease-in-out 0.1s;
+}
+
+.datePicker:hover {
+  border: 1px solid var(--neutral-light-6);
+}
+
+.datePicker:focus-within {
+  border: 1px solid var(--secondary);
 }
 
 .datePicker :global(.DateInput_input) {

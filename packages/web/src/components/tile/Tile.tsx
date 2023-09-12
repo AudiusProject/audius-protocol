@@ -27,7 +27,8 @@ export const Tile = <
   const {
     children,
     size,
-    as: RootComponent = 'div',
+    onClick,
+    as: RootComponent = onClick ? 'button' : 'div',
     className,
     dogEar,
     elevation = 'near',
@@ -42,6 +43,8 @@ export const Tile = <
         styles[elevation],
         className
       )}
+      type={onClick ? 'button' : undefined}
+      onClick={onClick}
       {...other}
     >
       {dogEar ? (

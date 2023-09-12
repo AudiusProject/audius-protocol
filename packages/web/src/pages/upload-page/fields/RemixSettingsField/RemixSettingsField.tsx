@@ -5,8 +5,7 @@ import {
   ID,
   useGetTrackById,
   FieldVisibility,
-  Remix,
-  encodeHashId
+  Remix
 } from '@audius/common'
 import { get, set } from 'lodash'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -82,12 +81,7 @@ export const RemixSettingsField = () => {
 
       setRemixOf(
         isRemix && parentTrackId
-          ? {
-              tracks: [
-                // @ts-expect-error
-                { parent_track_id: encodeHashId(parentTrackId) } as Remix
-              ]
-            }
+          ? { tracks: [{ parent_track_id: parentTrackId } as Remix] }
           : null
       )
     },
