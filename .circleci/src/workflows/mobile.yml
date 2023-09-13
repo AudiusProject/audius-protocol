@@ -21,9 +21,9 @@ jobs:
       context: Audius Mobile Client
       requires:
         - mobile-init
-      filters:
-        branches:
-          only: /^main$/
+      # filters:
+      #   branches:
+      #     only: /^main$/
 
   - mobile-build-upload-releasecandidate-ios:
       context: Audius Mobile Client
