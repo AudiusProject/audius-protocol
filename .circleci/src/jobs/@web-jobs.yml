@@ -12,7 +12,7 @@ web-init:
 
     - restore_cache:
         keys:
-          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}-test
+          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
     - restore_cache:
         keys:
