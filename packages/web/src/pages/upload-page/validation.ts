@@ -117,6 +117,8 @@ export const TrackMetadataFormSchema = TrackMetadataSchema.refine(
 
 export type TrackMetadata = z.input<typeof TrackMetadataSchema>
 
+const CollectionTrackMetadataSchema = TrackMetadataSchema.pick({ title: true })
+
 const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
   z.object({
     artwork: z
@@ -143,7 +145,7 @@ const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
       tags: z.optional(z.string())
     }),
     is_album: z.literal(collectionType === 'album'),
-    tracks: z.array(TrackMetadataSchema)
+    tracks: z.array(z.object({ metadata: CollectionTrackMetadataSchema }))
   })
 
 export const PlaylistSchema = createCollectionSchema('playlist')
