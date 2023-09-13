@@ -89,7 +89,7 @@ export const PurchaseDetailsPage = ({
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
-  const isPurchased = stage !== PurchaseContentStage.FINISH
+  const isPurchased = stage === PurchaseContentStage.FINISH
   const { handle } = track.user
   const { permalink, title } = track
 

@@ -82,7 +82,7 @@ export const USDCPurchaseBuyerNotification = ({
       </NotificationText>
       <NotificationTwitterButton
         type='dynamic'
-        url={getEntityRoute(track)}
+        url={getEntityRoute(track, true)}
         handle={sellerUser.handle}
         shareData={handleShare}
       />
