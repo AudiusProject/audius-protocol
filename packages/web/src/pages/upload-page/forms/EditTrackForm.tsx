@@ -1,11 +1,8 @@
-import { useCallback, useContext, useMemo } from 'react'
+import { MutableRefObject, useCallback, useContext, useMemo } from 'react'
 
 import {
-  HarmonyButton,
-  HarmonyButtonType,
   HarmonyPlainButton,
   HarmonyPlainButtonType,
-  IconArrow,
   IconCaretRight,
   IconPause,
   IconPlay
@@ -53,6 +50,7 @@ const messages = {
 
 type EditTrackFormProps = {
   formState: TrackFormState
+  formRef: MutableRefObject<FormikProps<TrackEditFormValues> | null>
   onContinue: (formState: TrackFormState) => void
 }
 
@@ -61,7 +59,7 @@ const EditFormValidationSchema = z.object({
 })
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
-  const { formState, onContinue } = props
+  const { formState, formRef, onContinue } = props
   const { tracks } = formState
 
   // @ts-ignore - Slight differences in the sdk vs common track metadata types
@@ -108,6 +106,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
 
   return (
     <Formik<TrackEditFormValues>
+      innerRef={formRef}
       initialValues={initialValues}
       onSubmit={onSubmit}
       // @ts-expect-error issue with track types
@@ -166,17 +165,6 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
         </div>
         {isMultiTrack ? <MultiTrackSidebar /> : null}
       </div>
-      {!isMultiTrack ? (
-        <div className={styles.continue}>
-          <HarmonyButton
-            variant={HarmonyButtonType.PRIMARY}
-            text='Continue'
-            name='continue'
-            iconRight={IconArrow}
-            className={styles.continueButton}
-          />
-        </div>
-      ) : null}
     </Form>
   )
 }

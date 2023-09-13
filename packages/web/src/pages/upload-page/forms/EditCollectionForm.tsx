@@ -37,11 +37,12 @@ const messages = {
 
 type EditCollectionFormProps = {
   formState: CollectionFormState
+  formRef: MutableRefObject<FormikProps<TrackEditFormValues> | null>
   onContinue: (formState: CollectionFormState) => void
 }
 
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
-  const { formState, onContinue } = props
+  const { formState, formRef, onContinue } = props
   const { tracks, uploadType, metadata } = formState
 
   const initialValues: CollectionValues = {
@@ -81,6 +82,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
 
   return (
     <Formik
+      innerRef={formRef}
       initialValues={initialValues}
       onSubmit={handleSubmit}
       // @ts-ignore
