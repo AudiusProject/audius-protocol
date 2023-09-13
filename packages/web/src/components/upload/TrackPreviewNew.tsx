@@ -51,8 +51,6 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
     onRemove
   } = props
 
-  const fileExtension = fileType.split('/')[1] ?? null
-
   return (
     <div className={styles.trackPreviewNew}>
       {displayIndex ? (
@@ -67,7 +65,6 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
       />
       <Text className={styles.titleText} size='small'>
         {trackTitle}
-        {fileExtension ? `.${fileExtension}` : null}
       </Text>
       <div className={styles.sizeContainer}>
         <Text
