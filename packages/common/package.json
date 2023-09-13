@@ -27,7 +27,7 @@
     "url": "https://github.com/AudiusProject/audius-client/issues"
   },
   "dependencies": {
-    "@audius/sdk": "3.0.8-beta.10",
+    "@audius/sdk": "3.0.8-beta.13",
     "@fingerprintjs/fingerprintjs-pro": "3.5.6",
     "@metaplex-foundation/mpl-token-metadata": "2.5.2",
     "@optimizely/optimizely-sdk": "4.0.0",
@@ -70,8 +70,8 @@
   },
   "peerDependencies": {
     "@reduxjs/toolkit": "1.6.1",
-    "@solana/spl-token": "0.1.8",
-    "@solana/web3.js": "1.24.1",
+    "@solana/spl-token": "0.3.8",
+    "@solana/web3.js": "1.78.4",
     "react": "^18.2.0",
     "redux-saga": "1.1.3"
   }

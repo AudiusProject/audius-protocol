@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@amplitude/react-native": "2.6.0",
-    "@audius/sdk": "3.0.8-beta.10",
+    "@audius/sdk": "3.0.8-beta.13",
     "@fingerprintjs/fingerprintjs-pro-react-native": "2.0.0-test.2",
     "@gorhom/portal": "1.0.9",
     "@hcaptcha/react-native-hcaptcha": "1.3.4",
