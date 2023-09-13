@@ -10,7 +10,8 @@ import {
   getPathFromTrackUrl,
   makeUid,
   useGetTrackByPermalink,
-  useToggleTrack
+  useToggleTrack,
+  usePremiumContentAccess
 } from '@audius/common'
 import { useSelector } from 'react-redux'
 
@@ -35,6 +36,9 @@ export const ChatMessageTrack = ({
     },
     { disabled: !permalink }
   )
+  const { doesUserHaveAccess } = usePremiumContentAccess(track ?? null)
+  const isPreview =
+    !!track?.is_premium && !!track?.preview_cid && !doesUserHaveAccess
 
   const user = useMemo(() => (track ? { ...track.user } : null), [track])
 
@@ -60,6 +64,7 @@ export const ChatMessageTrack = ({
   const { togglePlay } = useToggleTrack({
     id: track?.track_id,
     uid,
+    isPreview,
     source: QueueSource.CHAT_TRACKS,
     recordAnalytics
   })

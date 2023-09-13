@@ -15,7 +15,8 @@ import {
   ChatMessageTileProps,
   cacheTracksActions,
   SquareSizes,
-  Name
+  Name,
+  usePremiumContentAccess
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -42,6 +43,10 @@ export const ChatMessageTrack = ({
     },
     { disabled: !permalink || !currentUserId }
   )
+
+  const { doesUserHaveAccess } = usePremiumContentAccess(track ?? null)
+  const isPreview =
+    !!track?.is_premium && !!track?.preview_cid && !doesUserHaveAccess
 
   const trackId = track?.track_id
 
@@ -71,6 +76,7 @@ export const ChatMessageTrack = ({
   const { togglePlay, isTrackPlaying } = useToggleTrack({
     id: track?.track_id,
     uid,
+    isPreview,
     source: QueueSource.CHAT_TRACKS,
     recordAnalytics
   })
