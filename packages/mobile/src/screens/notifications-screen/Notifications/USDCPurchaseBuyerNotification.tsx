@@ -21,6 +21,7 @@ import {
   UserNameLink,
   EntityLink
 } from '../Notification'
+import { getEntityRoute } from '../Notification/utils'
 
 const { getNotificationUsers, getNotificationEntity } = notificationsSelectors
 
@@ -29,12 +30,8 @@ const messages = {
   youJustPurchased: 'You just purchased ',
   from: ' from ',
   exclamation: '!',
-  twitterShare: (
-    trackTitle: string,
-    sellerHandle: string,
-    trackPermalink: string
-  ) =>
-    `I bought the track ${trackTitle} by ${sellerHandle} on Audius! #AudiusPremium https://audius.co${trackPermalink}`
+  twitterShare: (trackTitle: string, sellerHandle: string) =>
+    `I bought the track ${trackTitle} by ${sellerHandle} on Audius! #AudiusPremium`
 }
 type USDCPurchaseBuyerNotificationProps = {
   notification: USDCPurchaseBuyerNotificationType
@@ -55,11 +52,7 @@ export const USDCPurchaseBuyerNotification = ({
   const handleShare = useCallback(
     (sellerHandle: string) => {
       const trackTitle = track?.title || ''
-      const shareText = messages.twitterShare(
-        trackTitle,
-        sellerHandle,
-        track?.permalink || ''
-      )
+      const shareText = messages.twitterShare(trackTitle, sellerHandle)
       const analytics = make(
         Name.NOTIFICATIONS_CLICK_USDC_PURCHASE_TWITTER_SHARE,
         { text: shareText }
@@ -89,6 +82,7 @@ export const USDCPurchaseBuyerNotification = ({
       </NotificationText>
       <NotificationTwitterButton
         type='dynamic'
+        url={getEntityRoute(track)}
         handle={sellerUser.handle}
         shareData={handleShare}
       />
