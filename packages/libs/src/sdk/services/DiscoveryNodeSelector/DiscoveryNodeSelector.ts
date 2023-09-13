@@ -93,12 +93,12 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**
    * Reference to a setTimeout for removing services from the unhealthy list so they can be retried
    */
-  private unhealthyCleanupTimeout: NodeJS.Timeout | null = null
+  private unhealthyCleanupTimeout: number | null = null
 
   /**
    * Reference to a setTimeout for removing services from the backup list so they can be retried
    */
-  private backupCleanupTimeout: NodeJS.Timeout | null = null
+  private backupCleanupTimeout: number | null = null
 
   private reselectLock: boolean = false
 
@@ -129,9 +129,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     this.backupServices = {}
     this.selectedNode =
       this.config.initialSelectedNode &&
-        (!this.config.allowlist ||
-          this.config.allowlist?.has(this.config.initialSelectedNode)) &&
-        !this.config.blocklist?.has(this.config.initialSelectedNode)
+      (!this.config.allowlist ||
+        this.config.allowlist?.has(this.config.initialSelectedNode)) &&
+      !this.config.blocklist?.has(this.config.initialSelectedNode)
         ? this.config.initialSelectedNode
         : null
     this.eventEmitter =

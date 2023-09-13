@@ -104,8 +104,8 @@ export class ServiceSelection {
   backups: Record<string, Backup>
   totalAttempts: number
   decisionTree: Decision[]
-  unhealthyCleanupTimeout: NodeJS.Timeout | null = null
-  backupCleanupTimeout: NodeJS.Timeout | null = null
+  unhealthyCleanupTimeout: number | null = null
+  backupCleanupTimeout: number | null = null
 
   constructor({
     blacklist,

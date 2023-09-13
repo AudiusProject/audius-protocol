@@ -101,7 +101,7 @@
     "dayjs": "1.10.7",
     "electron-log": "3.0.9",
     "electron-updater": "4.3.5",
-    "eth-sig-util": "3.0.1",
+    "eth-sig-util": "2.5.4",
     "exif-parser": "0.1.12",
     "formik": "2.4.1",
     "fxa-common-password-list": "0.0.2",

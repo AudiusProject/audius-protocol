@@ -14,7 +14,7 @@
     "lint": "npm run lint -ws --if-present",
     "lint:fix": "npm run lint:fix -ws --if-present",
     "clean": "npm run clean:auto -w audius-mobile-client && npm run clean:modules",
-    "clean:modules": "rm -rf node_modules && rm -rf packages/*/node_modules packages/*/node_modules",
+    "clean:modules": "rm -rf node_modules && rm -rf packages/*/node_modules",
     "check-secrets": "sh ./scripts/check_secrets.sh",
     "verify": "npm run verify -ws --if-present",
     "WEB========================================": "",
@@ -72,6 +72,8 @@
   },
   "overrides": {
     "@types/react": "18.0.26",
+    "@types/bn.js": "5.1.0",
+    "ethereumjs-util": "7.1.4",
     "react-native-svg": "12.3.0",
     "redux": "4.1.1",
     "webpack": "5.88.2"

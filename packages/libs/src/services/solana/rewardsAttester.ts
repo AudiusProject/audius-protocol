@@ -93,7 +93,7 @@ export class AttestationDelayCalculator {
   allowedStalenessSec: number
   solanaPollingInterval: number
   logger: any
-  intervalHandle: NodeJS.Timer | null
+  intervalHandle: number | null
 
   private readonly blockOffset: number
 
