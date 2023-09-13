@@ -195,7 +195,7 @@ export const getTracksFromCollection = (
     .filter(Boolean) as EnhancedCollectionTrack[]
 }
 
-type EnhancedCollection = Collection & { user: User }
+export type EnhancedCollection = Collection & { user: User }
 export const getCollectionWithUser = (
   state: CommonState,
   props: { id?: ID }
