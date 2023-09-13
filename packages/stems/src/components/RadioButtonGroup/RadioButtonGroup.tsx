@@ -34,15 +34,13 @@ export const RadioButtonGroup = (props: RadioButtonGroupProps) => {
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       setValueState(e.target.value)
-      if (onChange) {
-        onChange(e)
-      }
+      onChange?.(e)
     },
     [setValueState, onChange]
   )
   return (
     <RadioGroupContext.Provider value={{ name, onChange: handleChange, value }}>
-      <div {...divProps} role={'radiogroup'}>
+      <div {...divProps} role='radiogroup'>
         {children}
       </div>
     </RadioGroupContext.Provider>

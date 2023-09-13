@@ -32,12 +32,8 @@ const messages = {
   youJustPurchased: 'You just purchased ',
   from: ' from ',
   exclamation: '!',
-  twitterShare: (
-    trackTitle: string,
-    sellerUsername: string,
-    trackPermalink: string
-  ) =>
-    `I bought the track ${trackTitle} by ${sellerUsername} on Audius! #AudiusPremium https://audius.co${trackPermalink}`
+  twitterShare: (trackTitle: string, sellerUsername: string) =>
+    `I bought the track ${trackTitle} by ${sellerUsername} on Audius! #AudiusPremium`
 }
 
 type USDCPurchaseBuyerNotificationProps = {
@@ -65,11 +61,7 @@ export const USDCPurchaseBuyerNotification = (
   const handleShare = useCallback(
     (sellerHandle: string) => {
       const trackTitle = track?.title || ''
-      const shareText = messages.twitterShare(
-        trackTitle,
-        sellerHandle,
-        track?.permalink || ''
-      )
+      const shareText = messages.twitterShare(trackTitle, sellerHandle)
       const analytics = make(
         Name.NOTIFICATIONS_CLICK_USDC_PURCHASE_TWITTER_SHARE,
         { text: shareText }
@@ -93,6 +85,7 @@ export const USDCPurchaseBuyerNotification = (
       </NotificationBody>
       <TwitterShareButton
         type='dynamic'
+        url={getEntityLink(track, true)}
         handle={sellerUser.handle}
         shareData={handleShare}
       />

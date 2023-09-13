@@ -113,6 +113,9 @@ export const SourceFilesField = () => {
     const stemsCategories =
       stemsValue?.map((stem) => stemCategoryFriendlyNames[stem.category]) ?? []
     values = [...values, ...stemsCategories]
+
+    if (values.length === 0) return null
+
     return (
       <SelectedValues>
         {values.map((value) => (

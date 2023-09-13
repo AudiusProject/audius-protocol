@@ -19,7 +19,7 @@ export const HelpCallout = ({
   contentClassName?: string
 }) => {
   return (
-    <div className={cn(styles.root, className)}>
+    <div className={cn(styles.root, className)} role='alert'>
       <div className={styles.icon}>{icon}</div>
       <div className={cn(styles.content, contentClassName)}>{content}</div>
     </div>

@@ -87,6 +87,7 @@
   align-items: center;
   border-top: 1px solid transparent;
   border-bottom: 1px solid transparent;
+  transition: var(--hover);
 }
 
 .trackPreviewNew:hover {
@@ -96,11 +97,11 @@
 }
 
 .trackPreviewNew:hover .fileSizeText {
-  display: none;
+  opacity: 0;
 }
 
 .trackPreviewNew:hover .removeButton {
-  display: flex;
+  opacity: 1;
 }
 
 .indexText {
@@ -116,13 +117,27 @@
   flex: 1 1 0;
 }
 
+.sizeContainer {
+  position: relative;
+  width: fit-content;
+}
+
 .fileSizeText {
-  display: flex;
+  opacity: 1;
+  transition: var(--hover);
+}
+
+.removeButtonContainer {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
 }
 
 .removeButton {
+  opacity: 0;
   color: var(--neutral-light-4);
-  display: none;
+  transition: var(--hover);
 }
 
 .removeButton svg {

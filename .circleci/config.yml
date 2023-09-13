@@ -171,14 +171,28 @@ workflows:
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
             discovery-provider/.* run-discovery-workflow true
+            discovery-provider/.* run-integration-workflow true
+            discovery-provider/.* run-gcp-workflow true
             comms/.* run-discovery-workflow true
+            comms/.* run-integration-workflow true
+            comms/.* run-gcp-workflow true
             mediorum/.* run-creator-workflow true
+            mediorum/.* run-integration-workflow true
+            mediorum/.* run-gcp-workflow true
             identity-service/.* run-identity-workflow true
+            identity-service/.* run-integration-workflow true
+            identity-service/.* run-gcp-workflow true
             libs/.* run-creator-workflow true
             libs/.* run-identity-workflow true
             libs/.* run-sdk-workflow true
+            libs/.* run-integration-workflow true
+            libs/.* run-gcp-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
+            eth-contracts/.* run-integration-workflow true
+            eth-contracts/.* run-gcp-workflow true
             contracts/.* run-contracts-workflow true
+            contracts/.* run-integration-workflow true
+            contracts/.* run-gcp-workflow true
             .circleci/.* run-discovery-workflow true
             .circleci/.* run-creator-workflow true
             .circleci/.* run-identity-workflow true
@@ -190,8 +204,6 @@ workflows:
             .circleci/.* run-stems-workflow true
             .circleci/.* run-embed-workflow true
             .* run-release-workflow false
-            .* run-gcp-workflow true
-            .* run-integration-workflow true
             packages/web/.* run-web-workflow true
             packages/mobile/.* run-mobile-workflow true
             packages/probers/.* run-web-workflow true

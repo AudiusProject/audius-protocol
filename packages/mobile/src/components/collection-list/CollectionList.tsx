@@ -46,7 +46,7 @@ const FullCollectionList = (props: FullCollectionListProps) => {
     collection,
     collectionIdsToNumTracks,
     showCreatePlaylistTile = false,
-    createPlaylistSource = CreatePlaylistSource.FAVORITES_PAGE,
+    createPlaylistSource = CreatePlaylistSource.LIBRARY_PAGE,
     createPlaylistTrackId,
     createPlaylistCallback,
     renderItem,
@@ -99,7 +99,7 @@ const CollectionIDList = (props: CollectionIdListProps) => {
   const {
     collectionIds,
     showCreatePlaylistTile = false,
-    createPlaylistSource = CreatePlaylistSource.FAVORITES_PAGE,
+    createPlaylistSource = CreatePlaylistSource.LIBRARY_PAGE,
     createPlaylistTrackId,
     createPlaylistCallback,
     ...other

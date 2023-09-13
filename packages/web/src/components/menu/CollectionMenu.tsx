@@ -5,7 +5,8 @@ import {
   FavoriteSource,
   RepostSource,
   cacheUsersSelectors,
-  collectionsSocialActions as socialActions
+  collectionsSocialActions as socialActions,
+  useEditPlaylistModal
 } from '@audius/common'
 import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
@@ -13,7 +14,6 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import * as embedModalActions from 'components/embed-modal/store/actions'
-import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
 import { AppState } from 'store/types'
 import { albumPage, collectionPage, profilePage } from 'utils/route'
 const { getUser } = cacheUsersSelectors
@@ -52,6 +52,8 @@ const messages = {
 }
 
 const CollectionMenu = (props: CollectionMenuProps) => {
+  const { onOpen } = useEditPlaylistModal()
+
   const getMenu = () => {
     const {
       type,
@@ -72,7 +74,6 @@ const CollectionMenu = (props: CollectionMenuProps) => {
       onShare,
       goToRoute,
       openEmbedModal,
-      editCollection,
       shareCollection,
       saveCollection,
       unsaveCollection,
@@ -122,7 +123,7 @@ const CollectionMenu = (props: CollectionMenuProps) => {
 
     const editCollectionMenuItem = {
       text: `Edit ${typeName}`,
-      onClick: () => editCollection(playlistId)
+      onClick: () => onOpen({ collectionId: playlistId })
     }
 
     const embedMenuItem = {
@@ -179,8 +180,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     goToRoute: (route: string) => dispatch(pushRoute(route)),
     shareCollection: (playlistId: PlaylistId) =>
       dispatch(socialActions.shareCollection(playlistId, ShareSource.OVERFLOW)),
-    editCollection: (collectionId: ID) =>
-      dispatch(openEditCollectionModal({ collectionId })),
     saveCollection: (playlistId: PlaylistId) =>
       dispatch(
         socialActions.saveCollection(playlistId, FavoriteSource.OVERFLOW)

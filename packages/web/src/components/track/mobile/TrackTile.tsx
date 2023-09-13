@@ -54,6 +54,7 @@ type ExtraProps = {
   isMatrix: boolean
   isPremium: boolean
   premiumConditions?: Nullable<PremiumConditions>
+  hasPreview?: boolean
   doesUserHaveAccess: boolean
 }
 
@@ -174,7 +175,8 @@ const TrackTile = (props: CombinedProps) => {
     isPlaying,
     isBuffering,
     variant,
-    containerClassName
+    containerClassName,
+    hasPreview = false
   } = props
 
   const hideShare: boolean = props.fieldVisibility
@@ -226,7 +228,7 @@ const TrackTile = (props: CombinedProps) => {
   const handleClick = useCallback(() => {
     if (showSkeleton) return
 
-    if (trackId && !doesUserHaveAccess) {
+    if (trackId && !doesUserHaveAccess && !hasPreview) {
       dispatch(setLockedContentId({ id: trackId }))
       setModalVisibility(true)
       return
@@ -240,6 +242,7 @@ const TrackTile = (props: CombinedProps) => {
     id,
     trackId,
     doesUserHaveAccess,
+    hasPreview,
     dispatch,
     setModalVisibility
   ])

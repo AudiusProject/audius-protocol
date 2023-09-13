@@ -68,13 +68,11 @@ export const SegmentedControl = <T extends string>(
         [styles.isMobile]: props.isMobile,
         [styles.disabled]: props.disabled
       })}
+      role='radiogroup'
+      aria-label={props.label}
+      aria-labelledby={props['aria-labelledby']}
     >
-      <animated.div
-        className={styles.tabBackground}
-        style={animatedProps}
-        role='radiogroup'
-        aria-label={props.label}
-      />
+      <animated.div className={styles.tabBackground} style={animatedProps} />
       {props.options.map((option, idx) => {
         return (
           <Fragment key={option.key}>
