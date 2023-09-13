@@ -51,8 +51,11 @@ export const EXPLORE_REMIXABLES_PAGE = '/explore/remixables'
 
 export const AUDIO_NFT_PLAYLIST_PAGE = '/:handle/audio-nft-playlist'
 
+// DEPRECATED - use /library instead.
 export const SAVED_PAGE = '/favorites'
 export const FAVORITES_PAGE = '/favorites'
+
+export const LIBRARY_PAGE = '/library'
 export const HISTORY_PAGE = '/history'
 export const DASHBOARD_PAGE = '/dashboard'
 export const AUDIO_PAGE = '/audio'
@@ -162,6 +165,7 @@ export const AUDIUS_API_LINK = 'https://audius.org/api'
 export const authenticatedRoutes = [
   FEED_PAGE,
   SAVED_PAGE,
+  LIBRARY_PAGE,
   HISTORY_PAGE,
   UPLOAD_PAGE,
   SETTINGS_PAGE,
@@ -200,6 +204,7 @@ export const orderedRoutes = [
   UPLOAD_PLAYLIST_PAGE,
   UPLOAD_PAGE,
   SAVED_PAGE,
+  LIBRARY_PAGE,
   HISTORY_PAGE,
   DASHBOARD_PAGE,
   AUDIO_PAGE,
@@ -232,6 +237,7 @@ export const staticRoutes = new Set([
   TRENDING_PAGE,
   EXPLORE_PAGE,
   SAVED_PAGE,
+  LIBRARY_PAGE,
   FAVORITES_PAGE,
   HISTORY_PAGE,
   DASHBOARD_PAGE,

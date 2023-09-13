@@ -31,7 +31,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
 import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
 import { Text } from 'components/typography'
-import { pushUniqueRoute } from 'utils/route'
+import { fullTrackPage, pushUniqueRoute } from 'utils/route'
 
 import { FormatPrice } from './FormatPrice'
 import { PayToUnlockInfo } from './PayToUnlockInfo'
@@ -47,10 +47,9 @@ const messages = {
   purchasing: 'Purchasing',
   purchaseSuccessful: 'Your Purchase Was Successful!',
   error: 'Your purchase was unsuccessful.',
-  // TODO: PAY-1723
   shareButtonContent: 'I just purchased a track on Audius!',
-  shareTwitterText: (trackTitle: string, handle: string, trackUrl: string) =>
-    `I bought the track ${trackTitle} by ${handle} on Audius! #AudiusPremium ${trackUrl}`,
+  shareTwitterText: (trackTitle: string, handle: string) =>
+    `I bought the track ${trackTitle} by ${handle} on Audius! #AudiusPremium`,
   viewTrack: 'View Track'
 }
 
@@ -109,13 +108,13 @@ export const PurchaseDetailsPage = ({
 
   const handleTwitterShare = useCallback(
     (handle: string) => {
-      const shareText = messages.shareTwitterText(title, handle, permalink)
+      const shareText = messages.shareTwitterText(title, handle)
       const analytics = make(Name.PURCHASE_CONTENT_TWITTER_SHARE, {
         text: shareText
       })
       return { shareText, analytics }
     },
-    [permalink, title]
+    [title]
   )
 
   if (!isPremiumContentUSDCPurchaseGated(track.premium_conditions)) {
@@ -169,6 +168,7 @@ export const PurchaseDetailsPage = ({
           <TwitterShareButton
             fullWidth
             type='dynamic'
+            url={fullTrackPage(permalink)}
             shareData={handleTwitterShare}
             handle={handle}
           />

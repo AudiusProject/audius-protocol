@@ -127,7 +127,8 @@ const ConnectedTrackTile = ({
     activity_timestamp,
     play_count,
     _co_sign,
-    duration
+    duration,
+    preview_cid
   } = trackWithFallback
 
   const { artist_pick_track_id, user_id, handle, name, is_verified } =
@@ -246,6 +247,7 @@ const ConnectedTrackTile = ({
       // Playback
       permalink={permalink}
       togglePlay={togglePlay}
+      hasPreview={!!preview_cid}
       isActive={uid === playingUid || isActive}
       isLoading={loading}
       isPlaying={uid === playingUid && isPlaying}

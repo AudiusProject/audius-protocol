@@ -154,6 +154,7 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
             <HarmonyPlainButton
               className={styles.previewButton}
               variant={HarmonyPlainButtonType.SUBDUED}
+              type='button'
               text={messages.preview}
               iconLeft={isPreviewPlaying ? IconPause : IconPlay}
               onClick={() => {
