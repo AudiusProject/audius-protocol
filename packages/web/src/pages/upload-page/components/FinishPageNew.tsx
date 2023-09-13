@@ -6,7 +6,8 @@ import {
   imageBlank as placeholderArt,
   Progress,
   ProgressStatus,
-  uploadSelectors
+  uploadSelectors,
+  UploadType
 } from '@audius/common'
 import {
   HarmonyPlainButton,
@@ -61,13 +62,21 @@ const ProgressIndicator = (props: { status?: ProgressStatus }) => {
 type UploadTrackItemProps = {
   index: number
   displayIndex?: boolean
+  displayArtwork?: boolean
   track: TrackForUpload
   trackProgress?: Progress
   hasError: boolean
 }
 
 const UploadTrackItem = (props: UploadTrackItemProps) => {
-  const { index, hasError, track, trackProgress, displayIndex = false } = props
+  const {
+    index,
+    hasError,
+    track,
+    trackProgress,
+    displayIndex = false,
+    displayArtwork = false
+  } = props
   // @ts-ignore - Artwork exists on track metadata object
   const artworkUrl = track.metadata.artwork.url
 
@@ -83,10 +92,12 @@ const UploadTrackItem = (props: UploadTrackItemProps) => {
         }
       />
       {displayIndex ? <Text size='small'>{index + 1}</Text> : null}
-      <DynamicImage
-        wrapperClassName={styles.trackItemArtwork}
-        image={artworkUrl || placeholderArt}
-      />
+      {displayArtwork ? (
+        <DynamicImage
+          wrapperClassName={styles.trackItemArtwork}
+          image={artworkUrl || placeholderArt}
+        />
+      ) : null}
       <Text size='small'>{track.metadata.title}</Text>
     </div>
   )
@@ -99,7 +110,7 @@ type FinishPageProps = {
 
 export const FinishPageNew = (props: FinishPageProps) => {
   const { formState, onContinue } = props
-  const { tracks } = formState
+  const { tracks, uploadType } = formState
   const accountUser = useSelector(getAccountUser)
   const upload = useSelector((state: CommonState) => state.upload)
   const user = useSelector(getAccountUser)
@@ -174,6 +185,10 @@ export const FinishPageNew = (props: FinishPageProps) => {
                 displayIndex={tracks.length > 1}
                 index={idx}
                 trackProgress={trackProgress}
+                displayArtwork={
+                  uploadType === UploadType.INDIVIDUAL_TRACK ||
+                  uploadType === UploadType.INDIVIDUAL_TRACKS
+                }
                 hasError={trackError !== undefined}
               />
             )
