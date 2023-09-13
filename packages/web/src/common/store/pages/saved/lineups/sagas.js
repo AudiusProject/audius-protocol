@@ -195,7 +195,7 @@ function* watchRemoveFromLibrary() {
     const { trackId, type } = action
     const removedTrackSelector =
       type === UNSAVE_TRACK ? getLocalTrackFavorite : getLocalTrackRepost
-    const removedTrackUid = yield select(removedTrackSelector, {
+    const localSaveUid = yield select(removedTrackSelector, {
       id: trackId
     })
     const currentCategory = yield select(getCategory, {
@@ -218,13 +218,13 @@ function* watchRemoveFromLibrary() {
     ) {
       const playerUid = yield select(getPlayerUid)
       const queueSource = yield select(getSource)
-      if (removedTrackUid) {
-        yield put(savedTracksActions.remove(Kind.TRACKS, removedTrackUid))
+      if (localSaveUid) {
+        yield put(savedTracksActions.remove(Kind.TRACKS, localSaveUid))
         if (
-          removedTrackUid !== playerUid &&
+          localSaveUid !== playerUid &&
           queueSource === QueueSource.SAVED_TRACKS
         ) {
-          yield put(queueActions.remove({ uid: removedTrackUid }))
+          yield put(queueActions.remove({ uid: localSaveUid }))
         }
       }
       const lineupSaveUid = yield select(getSavedTracksLineupUid, {
