@@ -208,10 +208,11 @@ def get_image_cids(user, upload_id, variants):
                 )
 
                 # Race requests in a new event loop
-                new_loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(new_loop)
-                resp = new_loop.run_until_complete(race_requests(urls, 0.5))
-                new_loop.close()
+                try:
+                    loop = asyncio.get_event_loop()
+                    resp = loop.run_until_complete(race_requests(urls, 0.5))
+                except RuntimeError:
+                    resp = asyncio.run(race_requests(urls, 0.5))
 
                 resp.raise_for_status()
                 image_cids = resp.json().get("results", {})
