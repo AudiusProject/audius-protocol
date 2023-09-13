@@ -60,7 +60,7 @@ export const SelectPageNew = (props: SelectPageProps) => {
 
       if (
         uploadType === UploadType.INDIVIDUAL_TRACK &&
-        selectedFiles.length + processedTracks.length > 1
+        tracks.length + processedTracks.length > 1
       ) {
         setUploadType(UploadType.INDIVIDUAL_TRACKS)
       }
