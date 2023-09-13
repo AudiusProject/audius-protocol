@@ -4,6 +4,7 @@ import {
   accountSelectors,
   CommonState,
   imageBlank as placeholderArt,
+  Name,
   Progress,
   ProgressStatus,
   uploadSelectors,
@@ -17,15 +18,16 @@ import {
   IconValidationCheck,
   ProgressBar
 } from '@audius/stems'
-import { push } from 'connected-react-router'
 import { round } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { make } from 'common/store/analytics/actions'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { Link } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { Tile } from 'components/tile'
 import { Text } from 'components/typography'
-import { profilePage } from 'utils/route'
+import { collectionPage, profilePage } from 'utils/route'
 
 import { CollectionFormState, TrackFormState, TrackForUpload } from '../types'
 
@@ -39,8 +41,11 @@ const messages = {
   uploadInProgress: 'Upload In Progress',
   uploadComplete: 'Upload Complete',
   uploadMore: 'Upload More',
+  finishingUpload: 'Finializing Upload',
   visitProfile: 'Visit Your Profile',
-  finishingUpload: 'Finializing Upload'
+  visitTrack: 'Visit Track Page',
+  visitAlbum: 'Visit Album Page',
+  visitPlaylist: 'Visit Playlist Page'
 }
 
 const ProgressIndicator = (props: { status?: ProgressStatus }) => {
@@ -75,13 +80,14 @@ const UploadTrackItem = (props: UploadTrackItemProps) => {
     track,
     trackProgress,
     displayIndex = false,
-    displayArtwork = false
+    displayArtwork = false,
+    ...otherProps
   } = props
   // @ts-ignore - Artwork exists on track metadata object
   const artworkUrl = track.metadata.artwork.url
 
   return (
-    <div className={styles.uploadTrackItem}>
+    <div className={styles.uploadTrackItem} {...otherProps}>
       <ProgressIndicator
         status={
           hasError
@@ -131,11 +137,54 @@ export const FinishPageNew = (props: FinishPageProps) => {
     onContinue()
   }, [onContinue])
 
-  const handleVisitProfileClick = useCallback(() => {
-    if (user) {
-      dispatch(push(profilePage(user.handle)))
+  const visitButtonText = useMemo(() => {
+    switch (uploadType) {
+      case UploadType.INDIVIDUAL_TRACK:
+        return messages.visitTrack
+      case UploadType.ALBUM:
+        return messages.visitAlbum
+      case UploadType.PLAYLIST:
+        return messages.visitPlaylist
+      default:
+        if (!upload.tracks || upload.tracks.length > 1) {
+          return messages.visitProfile
+        } else {
+          return messages.visitTrack
+        }
     }
-  }, [dispatch, user])
+  }, [upload.tracks, uploadType])
+
+  const visitButtonPath = useMemo(() => {
+    switch (uploadType) {
+      case UploadType.INDIVIDUAL_TRACK:
+        return upload.tracks![0].metadata.permalink
+      case UploadType.ALBUM:
+      case UploadType.PLAYLIST:
+        return collectionPage(
+          user!.handle,
+          upload.metadata?.playlist_name,
+          upload.completionId,
+          null,
+          uploadType === UploadType.ALBUM
+        )
+      default:
+        if (!upload.tracks || upload.tracks.length > 1) {
+          return profilePage(user!.handle)
+        } else {
+          return upload.tracks![0].metadata.permalink
+        }
+    }
+  }, [
+    upload.completionId,
+    upload.metadata?.playlist_name,
+    upload.tracks,
+    uploadType,
+    user
+  ])
+
+  const dispatchVisitEvent = useCallback(() => {
+    dispatch(make(Name.TRACK_UPLOAD_VIEW_TRACK_PAGE, { uploadType }))
+  }, [dispatch, uploadType])
 
   return (
     <div className={styles.page}>
@@ -201,11 +250,16 @@ export const FinishPageNew = (props: FinishPageProps) => {
               text={messages.uploadMore}
               iconLeft={IconUpload}
             />
-            <HarmonyPlainButton
-              onClick={handleVisitProfileClick}
-              text={messages.visitProfile}
-              iconRight={IconArrow}
-            />
+            <Link
+              to={visitButtonPath}
+              onClick={dispatchVisitEvent}
+              className={styles.visitLink}
+            >
+              <HarmonyPlainButton
+                text={visitButtonText}
+                iconRight={IconArrow}
+              />
+            </Link>
           </div>
         ) : null}
       </Tile>
