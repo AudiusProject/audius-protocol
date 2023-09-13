@@ -210,7 +210,7 @@ def get_image_cids(user, upload_id, variants):
                 # Race requests in a new event loop
                 new_loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(new_loop)
-                resp = new_loop.run_until_complete(race_requests(urls, 1))
+                resp = new_loop.run_until_complete(race_requests(urls, 0.5))
                 new_loop.close()
 
                 resp.raise_for_status()
