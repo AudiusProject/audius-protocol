@@ -90,6 +90,13 @@ func (ss *MediorumServer) canMajorityReachHost(host string) bool {
 }
 
 func (ss *MediorumServer) updateDiskAndDbStatus() {
+	dbSize, errStr := getDatabaseSize(ss.pgPool)
+	ss.databaseSize = dbSize
+	ss.dbSizeErr = errStr
+
+	uploadsCount, errStr := getUploadsCount(ss.crud.DB)
+	ss.uploadsCount = uploadsCount
+	ss.uploadsCountErr = errStr
 
 	// getDiskStatus returns the space occupied on the disk as a whole
 	legacyTotal, legacyFree, err := getDiskStatus("/file_storage")
@@ -123,14 +130,6 @@ func (ss *MediorumServer) updateDiskAndDbStatus() {
 	} else {
 		ss.mediorumDirUsed = bytesMediorum
 	}
-
-	dbSize, errStr := getDatabaseSize(ss.pgPool)
-	ss.databaseSize = dbSize
-	ss.dbSizeErr = errStr
-
-	uploadsCount, errStr := getUploadsCount(ss.crud.DB)
-	ss.uploadsCount = uploadsCount
-	ss.uploadsCountErr = errStr
 
 	status := diskStatus{
 		StoragePathSizeGB: ss.storagePathSize / (1 << 30),
