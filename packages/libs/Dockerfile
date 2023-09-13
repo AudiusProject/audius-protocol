@@ -3,7 +3,6 @@ RUN apt-get install make
 
 WORKDIR /app
 COPY package*.json ./
-COPY patches/* ./patches/
 RUN --mount=type=cache,target=/root/.npm npm install --loglevel verbose
 
 FROM node:18.17-alpine
