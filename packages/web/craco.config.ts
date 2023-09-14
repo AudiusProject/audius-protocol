@@ -88,10 +88,10 @@ export default {
           // Can't get ProvidePlugin to work even with a fully
           // specified path. Defining `process` and `Buffer` in
           // in index.tsx manually
-          // new ProvidePlugin({
-          //   process: 'process/browser',
-          //   Buffer: ['buffer', 'Buffer']
-          // }),
+          new ProvidePlugin({
+            // process: 'process/browser',
+            Buffer: ['buffer', 'Buffer']
+          }),
           ...(isProd
             ? [
                 new SourceMapDevToolPlugin({
