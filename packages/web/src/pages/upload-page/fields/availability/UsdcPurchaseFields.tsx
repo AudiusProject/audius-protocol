@@ -2,6 +2,7 @@ import {
   ChangeEventHandler,
   FocusEventHandler,
   useCallback,
+  useEffect,
   useState
 } from 'react'
 
@@ -12,6 +13,7 @@ import { TextField, TextFieldProps } from 'components/form-fields'
 import layoutStyles from 'components/layout/layout.module.css'
 import { Text } from 'components/typography'
 import {
+  fromHumanReadable,
   onTokenInputBlur,
   onTokenInputChange,
   toHumanReadable
@@ -96,6 +98,15 @@ const PriceField = (props: TrackAvailabilityFieldsProps) => {
   const [humanizedValue, setHumanizedValue] = useState(
     value ? toHumanReadable(value) : null
   )
+
+  useEffect(() => {
+    if (humanizedValue !== null) {
+      const dehumaizedValue = fromHumanReadable(humanizedValue)
+      if (value === undefined || dehumaizedValue !== value) {
+        setPrice(dehumaizedValue)
+      }
+    }
+  }, [value, humanizedValue, setPrice])
 
   const handlePriceChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
