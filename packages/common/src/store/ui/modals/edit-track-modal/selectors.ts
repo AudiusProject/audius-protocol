@@ -1,4 +1,5 @@
-import { StemTrack, cacheTracksSelectors } from '@audius/common'
+import { StemTrack } from 'models/Track'
+import { cacheTracksSelectors } from 'store/cache'
 import { CommonState } from 'store/commonStore'
 
 const { getTrack, getTracks } = cacheTracksSelectors
