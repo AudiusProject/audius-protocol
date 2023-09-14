@@ -1,4 +1,4 @@
-import { ComponentType } from 'react'
+import { ComponentType, Suspense } from 'react'
 
 import { Modals } from '@audius/common'
 
@@ -18,5 +18,9 @@ export const AppModal = (props: AppModalProps) => {
 
   if (modalState === false) return null
 
-  return <Modal />
+  return (
+    <Suspense fallback={null}>
+      <Modal />
+    </Suspense>
+  )
 }

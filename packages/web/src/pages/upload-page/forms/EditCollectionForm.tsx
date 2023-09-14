@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useContext } from 'react'
 
 import { UploadType } from '@audius/common'
 import { Form, Formik } from 'formik'
@@ -43,6 +43,7 @@ type EditCollectionFormProps = {
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { formState, onContinue } = props
   const { tracks, uploadType, metadata } = formState
+  const scrollToTop = useContext(UploadFormScrollContext)
 
   const initialValues: CollectionValues = {
     ...metadata,

@@ -1,4 +1,4 @@
-import { full } from '@audius/sdk'
+import type { full } from '@audius/sdk'
 
 import { createApi } from 'audius-query'
 import { ID, Kind, StringUSDC } from 'models'

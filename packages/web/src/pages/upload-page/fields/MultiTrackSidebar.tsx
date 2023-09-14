@@ -32,6 +32,7 @@ const messages = {
 }
 
 export const MultiTrackSidebar = () => {
+  const scrollToTop = useContext(UploadFormScrollContext)
   const { errors, submitCount } = useFormikContext<TrackEditFormValues>()
   return (
     <div className={styles.root}>
@@ -45,6 +46,7 @@ export const MultiTrackSidebar = () => {
           <TrackNavigator />
           <div className={styles.completeButton}>
             <HarmonyButton
+              onClick={scrollToTop}
               text={messages.complete}
               variant={HarmonyButtonType.PRIMARY}
               iconRight={IconUpload}

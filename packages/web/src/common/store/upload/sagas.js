@@ -486,7 +486,7 @@ export function* handleUploads({
     } = yield take(respChan)
 
     if (error) {
-      console.error('Worker errored')
+      console.error(`Worker errored: ${error}`)
       const index = idToTrackMap[originalId].index
 
       if (!isStem) {

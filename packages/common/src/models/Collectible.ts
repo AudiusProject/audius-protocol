@@ -1,4 +1,4 @@
-import { Metadata } from '@metaplex-foundation/mpl-token-metadata'
+import type { Metadata } from '@metaplex-foundation/mpl-token-metadata'
 
 import { Nullable } from '../utils/typeUtils'
 

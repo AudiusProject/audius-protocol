@@ -17,7 +17,8 @@ import {
   solanaSelectors,
   toastActions,
   confirmerActions,
-  confirmTransaction
+  confirmTransaction,
+  IntKeys
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { isEmpty } from 'lodash'
@@ -60,6 +61,7 @@ const getAccountUser = accountSelectors.getAccountUser
 const { toast } = toastActions
 
 const SIGN_UP_TIMEOUT_MILLIS = 20 /* min */ * 60 * 1000
+const DEFAULT_HANDLE_VERIFICATION_TIMEOUT_MILLIS = 5_000
 
 const messages = {
   incompleteAccount:
@@ -224,17 +226,48 @@ function* validateHandle(action) {
       false
     )
     const handleInUse = !isEmpty(user)
+    const handleCheckTimeout =
+      remoteConfigInstance.getRemoteVar(
+        IntKeys.HANDLE_VERIFICATION_TIMEOUT_MILLIS
+      ) ?? DEFAULT_HANDLE_VERIFICATION_TIMEOUT_MILLIS
 
     if (ENVIRONMENT === 'production') {
-      const [twitterUserQuery, instagramUser, tikTokUser] = yield all([
-        call(audiusBackendInstance.twitterHandle, handle),
-        call(audiusBackendInstance.instagramHandle, handle),
+      const results = yield all([
+        remoteConfigInstance.getFeatureEnabled(
+          FeatureFlags.VERIFY_HANDLE_WITH_TWITTER
+        )
+          ? race({
+              data: call(audiusBackendInstance.twitterHandle, handle),
+              timeout: delay(handleCheckTimeout)
+            })
+          : null,
+        remoteConfigInstance.getFeatureEnabled(
+          FeatureFlags.VERIFY_HANDLE_WITH_INSTAGRAM
+        )
+          ? race({
+              data: call(audiusBackendInstance.instagramHandle, handle),
+              timeout: delay(handleCheckTimeout)
+            })
+          : null,
         remoteConfigInstance.getFeatureEnabled(
           FeatureFlags.VERIFY_HANDLE_WITH_TIKTOK
         )
-          ? call(audiusBackendInstance.tiktokHandle, handle)
+          ? race({
+              data: call(audiusBackendInstance.tiktokHandle, handle),
+              timeout: delay(handleCheckTimeout)
+            })
           : null
       ])
+
+      const [twitterResult, instagramResult, tiktokResult] = results
+
+      const twitterUserQuery = twitterResult?.timeout
+        ? null
+        : twitterResult?.data
+      const instagramUser = instagramResult?.timeout
+        ? null
+        : instagramResult?.data
+      const tikTokUser = tiktokResult?.timeout ? null : tiktokResult?.data
 
       const handleCheckStatus = checkHandle(
         isOauthVerified,
