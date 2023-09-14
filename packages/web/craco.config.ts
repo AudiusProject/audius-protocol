@@ -2,6 +2,7 @@ import path from 'path'
 
 import {
   Configuration,
+  ProvidePlugin,
   ResolvePluginInstance,
   SourceMapDevToolPlugin
 } from 'webpack'
