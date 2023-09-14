@@ -11,6 +11,7 @@ from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
+from src.models.users.aggregate_user import AggregateUser
 from src.utils.get_all_other_nodes import get_node_endpoint
 from src.utils.redis_connection import get_redis
 
@@ -233,14 +234,15 @@ def get_user_slugs(session: Session, limit: int, offset: int):
     slugs = (
         # Handle, not handle_lc is the cannonical URL
         session.query(User.handle)
+        .join(AggregateUser, User.user_id == AggregateUser.user_id)
         .filter(
             User.is_current == True,
             User.is_deactivated == False,
-            # Filter on handle_lc for performance reasons
             User.handle_lc != None,
             User.is_available == True,
         )
-        .order_by(asc(User.user_id))
+        .filter(AggregateUser.follower_count >= 10)
+        .order_by(User.user_id.asc())
         .limit(limit)
         .offset(offset)
         .all()
