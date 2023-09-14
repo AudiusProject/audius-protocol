@@ -197,7 +197,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
         track.file,
         artwork,
         metadata,
-        updateProgress ? makeOnProgress(index) : (loaded, total) => { }
+        updateProgress ? makeOnProgress(index) : (loaded, total) => {}
       )
 
       // b/c we can't pass extra info (phase) into the confirmer fail call, we need to clean up here.
@@ -349,7 +349,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
           ? makeConfirmerSuccessForCollection
           : makeConfirmerSuccess)(id, index, updateProgress),
         isCollection ? makeConfirmerFailureCollection(id) : confirmerFailure,
-        () => { },
+        () => {},
         UPLOAD_TIMEOUT_MILLIS
       )
     )
@@ -979,7 +979,7 @@ function* uploadSingleTrack(track) {
         yield cancel(dispatcher)
         yield call(responseChan.put, { error: message })
       },
-      () => { },
+      () => {},
       UPLOAD_TIMEOUT_MILLIS
     )
   )
