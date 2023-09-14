@@ -121,6 +121,7 @@ const EditTrackModal = ({
           showHideTrackSectionInModal={false}
           onOpenArtworkPopup={onOpenArtworkPopup}
           onCloseArtworkPopup={onCloseArtworkPopup}
+          trackLength={metadata ? metadata.duration : null}
         />
         <div className={styles.buttons}>
           <div className={styles.buttonsLeft}>
