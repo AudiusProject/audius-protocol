@@ -93,12 +93,12 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**
    * Reference to a setTimeout for removing services from the unhealthy list so they can be retried
    */
-  private unhealthyCleanupTimeout: number | null = null
+  private unhealthyCleanupTimeout: NodeJS.Timeout | null = null
 
   /**
    * Reference to a setTimeout for removing services from the backup list so they can be retried
    */
-  private backupCleanupTimeout: number | null = null
+  private backupCleanupTimeout: NodeJS.Timeout | null = null
 
   private reselectLock: boolean = false
 
