@@ -38,4 +38,5 @@ export type SegmentedControlProps<T extends string> = {
    * The label for the radio group
    */
   label?: string
+  'aria-labelledby'?: string
 }

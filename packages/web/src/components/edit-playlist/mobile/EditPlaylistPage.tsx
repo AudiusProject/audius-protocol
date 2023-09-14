@@ -13,7 +13,8 @@ import {
   newCollectionMetadata,
   usePremiumContentAccessMap,
   EditPlaylistValues,
-  cacheCollectionsSelectors
+  cacheCollectionsSelectors,
+  useEditPlaylistModal
 } from '@audius/common'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -29,10 +30,9 @@ import TrackList from 'components/track/mobile/TrackList'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import useHasChangedRoute from 'hooks/useHasChangedRoute'
 import UploadStub from 'pages/profile-page/components/mobile/UploadStub'
-import { getCollectionId } from 'store/application/ui/editPlaylistModal/selectors'
-import { close } from 'store/application/ui/editPlaylistModal/slice'
 import { AppState } from 'store/types'
 import { resizeImage } from 'utils/imageProcessingUtil'
+import { useSelector } from 'utils/reducer'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './EditPlaylistPage.module.css'
@@ -64,17 +64,19 @@ const g = withNullGuard((props: EditPlaylistPageProps) => {
 })
 
 const EditPlaylistPage = g(
-  ({
-    close,
-    metadata,
-    tracks,
-    removeTrack,
-    editPlaylist,
-    orderPlaylist,
-    refreshLineup
-  }) => {
+  ({ removeTrack, editPlaylist, orderPlaylist, refreshLineup }) => {
+    const { data, onClose } = useEditPlaylistModal()
+    const { collectionId } = data
+
+    const metadata = useSelector((state) =>
+      getCollection(state, { id: collectionId })
+    )
+    const tracks = useSelector((state) =>
+      getCollectionTracksWithUsers(state, { id: collectionId ?? undefined })
+    )
+
     // Close the page if the route was changed
-    useHasChangedRoute(close)
+    useHasChangedRoute(onClose)
     const initialMetadata = {
       ...(metadata as Collection),
       artwork: { url: '' }
@@ -236,11 +238,11 @@ const EditPlaylistPage = g(
 
         editPlaylist(metadata.playlist_id, editPlaylistData)
 
-        close()
+        onClose()
       }
     }, [
       formFields,
-      close,
+      onClose,
       metadata,
       editPlaylist,
       hasReordered,
@@ -322,7 +324,7 @@ const EditPlaylistPage = g(
           />
         )
       }),
-      [close, formFields, onSave]
+      [formFields, onSave]
     )
 
     useTemporaryNavContext(setters)
@@ -432,17 +434,13 @@ const EditPlaylistPage = g(
 )
 
 function mapStateToProps(state: AppState) {
-  const collectionId = getCollectionId(state)!
   return {
-    metadata: getCollection(state, { id: collectionId }),
-    account: getAccountUser(state),
-    tracks: getCollectionTracksWithUsers(state, { id: collectionId })
+    account: getAccountUser(state)
   }
 }
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    close: () => dispatch(close()),
     editPlaylist: (id: ID, metadata: EditPlaylistValues) =>
       dispatch(editPlaylist(id, metadata)),
     orderPlaylist: (playlistId: ID, idsAndTimes: any) =>

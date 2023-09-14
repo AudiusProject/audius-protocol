@@ -2,21 +2,21 @@
 
 parameters:
   hosts:
-    description: "Hosts to deploy to"
+    description: 'Hosts to deploy to'
     type: string
   service:
-    description: "Service to deploy on hosts"
+    description: 'Service to deploy on hosts'
     type: string
   freeze:
-    description: "Whether to freeze and skip deploy"
+    description: 'Whether to freeze and skip deploy'
     type: string
-    default: "false"
+    default: 'false'
 machine:
   image: ubuntu-2004:202201-02
 steps:
   - when:
       condition:
-        matches: { pattern: "true", value: << parameters.freeze >> }
+        matches: { pattern: 'true', value: << parameters.freeze >> }
       steps:
         - run: circleci-agent step halt
   - run:
@@ -96,9 +96,9 @@ steps:
 
   - add_ssh_keys:
       fingerprints:
-        - "df:1a:e3:9b:57:58:24:34:fb:aa:c1:b2:0b:ec:c8:42" # ~/.ssh/audius_infrastructure
-        - "d1:28:d4:5e:ca:d9:bb:70:06:da:e0:f0:00:7c:d4:a3" # ~/.ssh/google_compute_engine
-        - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb" # github.com
+        - 'df:1a:e3:9b:57:58:24:34:fb:aa:c1:b2:0b:ec:c8:42' # ~/.ssh/audius_infrastructure
+        - 'd1:28:d4:5e:ca:d9:bb:70:06:da:e0:f0:00:7c:d4:a3' # ~/.ssh/google_compute_engine
+        - 'd0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb' # github.com
 
   - run:
       name: Configure SSH
@@ -110,6 +110,8 @@ steps:
       command: |
         set -x
         hosts=(<< parameters.hosts >>)
+        aggregated_messages=""
+
         for host in "${hosts[@]}"; do
           ssh "ubuntu@$host" -- audius-cli pull
           ssh "ubuntu@$host" -- audius-cli set-tag -y "$CIRCLE_SHA1"
@@ -126,6 +128,40 @@ steps:
           done
 
           if [[ "$healthy" == "false" ]]; then
-            exit 1
+            author=$(git log -n 1 --pretty=format:"%an <%ae>")
+            message="Deploy ${host} failed, dirty changes from: ${author}"
+            aggregated_messages="${aggregated_messages}${message}\n"
           fi
         done
+
+        echo "Aggregated messages: $aggregated_messages"
+        echo "export AGGREGATED_MESSAGES=\"$aggregated_messages\"" >> $BASH_ENV
+
+  - run:
+      name: Early exit if success
+      command: |
+        if [ -z "$AGGREGATE_MESSAGES" ]; then
+          circleci-agent step halt
+        fi
+
+  - slack/notify:
+      custom: |
+        {
+          "blocks": [
+            {
+              "type": "section",
+              "text": {
+                "text": "*Failed Deploy @ $CIRCLE_TAG*\n\n$AGGREGATED_MESSAGES"
+                "type": "mrkdwn"
+              },
+              "accessory": {
+                "type": "button",
+                "text": {
+                  "type": "plain_text",
+                  "text": "View Job"
+                },
+                "url": "$CIRCLE_BUILD_URL"
+              }
+            }
+          ]
+        }

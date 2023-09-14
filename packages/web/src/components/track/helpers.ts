@@ -30,6 +30,7 @@ export const getTrackWithFallback = (track: Track | null) => {
       is_premium: false,
       premium_conditions: null,
       premium_content_signature: null,
+      preview_cid: null,
       activity_timestamp: '',
       _co_sign: undefined,
       _cover_art_sizes: {

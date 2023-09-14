@@ -17,7 +17,7 @@ import {
   AiAttributionModal,
   AiAttributionButton
 } from 'components/ai-attribution-modal'
-import DatePicker from 'components/data-entry/DatePicker'
+// import DatePicker from 'components/data-entry/DatePicker'
 import DropdownInput from 'components/data-entry/DropdownInput'
 import Input from 'components/data-entry/Input'
 import LabeledInput from 'components/data-entry/LabeledInput'
@@ -477,7 +477,7 @@ const AdvancedForm = (props) => {
         <Divider label='' />
         <div className={styles.release}>
           <div className={styles.datePicker}>
-            <DatePicker
+            {/* <DatePicker
               defaultDate={
                 props.defaultFields.release_date ||
                 props.defaultFields.created_at
@@ -485,7 +485,7 @@ const AdvancedForm = (props) => {
               onDateChange={(value, invalid) =>
                 props.onChangeField('release_date', value, invalid)
               }
-            />
+            /> */}
           </div>
           {showAvailability && (
             <AccessAndSaleModalLegacy

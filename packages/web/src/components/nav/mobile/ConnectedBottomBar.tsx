@@ -20,9 +20,9 @@ import {
   FEED_PAGE,
   TRENDING_PAGE,
   EXPLORE_PAGE,
-  FAVORITES_PAGE,
   profilePage,
-  getPathname
+  getPathname,
+  LIBRARY_PAGE
 } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 const { setTab } = explorePageActions
@@ -44,7 +44,7 @@ const ConnectedBottomBar = ({
     FEED_PAGE,
     TRENDING_PAGE,
     EXPLORE_PAGE,
-    FAVORITES_PAGE,
+    LIBRARY_PAGE,
     userProfilePage
   ])
 
@@ -78,12 +78,12 @@ const ConnectedBottomBar = ({
     goToRoute(EXPLORE_PAGE)
   }, [goToRoute, resetExploreTab])
 
-  const goToFavorites = useCallback(() => {
+  const goToLibrary = useCallback(() => {
     resetExploreTab()
     if (!handle) {
       openSignOn()
     } else {
-      goToRoute(FAVORITES_PAGE)
+      goToRoute(LIBRARY_PAGE)
     }
   }, [goToRoute, handle, openSignOn, resetExploreTab])
 
@@ -103,7 +103,7 @@ const ConnectedBottomBar = ({
       onClickFeed={goToFeed}
       onClickTrending={goToTrending}
       onClickExplore={goToExplore}
-      onClickFavorites={goToFavorites}
+      onClickLibrary={goToLibrary}
       onClickProfile={goToProfile}
       isDarkMode={isDarkMode()}
       isMatrixMode={isMatrix()}

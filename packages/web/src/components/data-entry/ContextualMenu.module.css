@@ -15,15 +15,18 @@
 .header {
   display: flex;
   flex-direction: column;
+  width: 100%;
   gap: var(--unit-2);
 }
 
 .title {
-  display: inline-flex;
-  flex: 1;
-  flex-grow: 1;
+  display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.description {
+  text-align: left;
 }
 
 .value {

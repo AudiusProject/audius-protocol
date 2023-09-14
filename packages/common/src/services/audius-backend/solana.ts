@@ -1,4 +1,4 @@
-import { AudiusLibs } from '@audius/sdk'
+import type { AudiusLibs } from '@audius/sdk'
 import { AccountInfo, u64 } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'

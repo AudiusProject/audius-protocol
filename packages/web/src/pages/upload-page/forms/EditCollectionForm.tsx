@@ -56,7 +56,6 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
       mood: null,
       tags: ''
     },
-    // @ts-expect-error issues with track schema
     tracks: tracks.map((track) => ({ ...track, override: false }))
   }
 

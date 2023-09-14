@@ -5,7 +5,8 @@ export const externalLinkAllowList = new Set([
   'twitter.com',
   'x.com',
   'audius.co',
-  'discord.gg'
+  'discord.gg',
+  'solscan.io'
 ])
 
 export const isAllowedExternalLink = (link: string) => {

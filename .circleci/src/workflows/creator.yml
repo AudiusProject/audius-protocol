@@ -22,7 +22,9 @@ jobs:
       type: approval
   - deploy:
       name: deploy-prod-creator-node
-      context: open-vpn
+      context:
+        - open-vpn
+        - slack-secrets
       requires:
         - deploy-prod-creator-node-trigger
       hosts: >-
@@ -46,6 +48,7 @@ jobs:
       context:
         - open-vpn
         - build-freeze
+        - slack-secrets
       hosts: >-
         stage-creator-5
         stage-creator-6

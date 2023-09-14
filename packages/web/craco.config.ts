@@ -2,7 +2,6 @@ import path from 'path'
 
 import {
   Configuration,
-  ProvidePlugin,
   ResolvePluginInstance,
   SourceMapDevToolPlugin
 } from 'webpack'
@@ -36,7 +35,8 @@ const moduleResolutions = [
   '@solana/web3.js',
   'bn.js',
   'moment',
-  'lodash'
+  'lodash',
+  '@audius/sdk'
 ]
 
 // These should match modules defined in resolve.alias, and need to be hotwired

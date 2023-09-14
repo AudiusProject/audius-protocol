@@ -165,7 +165,9 @@ export const AccessAndSaleFormSchema = (trackLength: number) =>
         if (isPremiumContentUSDCPurchaseGated(formValues[PREMIUM_CONDITIONS])) {
           return (
             formValues[PREVIEW] === undefined ||
-            (formValues[PREVIEW] >= 0 && formValues[PREVIEW] < trackLength - 30)
+            (formValues[PREVIEW] >= 0 &&
+              formValues[PREVIEW] < trackLength - 30) ||
+            (trackLength <= 30 && formValues[PREVIEW] < trackLength)
           )
         }
         return true
@@ -521,11 +523,13 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-      {isRemix ? (
-        <HelpCallout className={styles.isRemix} content={messages.isRemix} />
-      ) : null}
+      {isRemix ? <HelpCallout content={messages.isRemix} /> : null}
       <Text>{messages.modalDescription}</Text>
-      <RadioButtonGroup {...availabilityField} onChange={handleChange}>
+      <RadioButtonGroup
+        {...availabilityField}
+        onChange={handleChange}
+        aria-label={messages.title}
+      >
         <ModalRadioItem
           icon={<IconVisibilityPublic className={styles.icon} />}
           label={messages.public}

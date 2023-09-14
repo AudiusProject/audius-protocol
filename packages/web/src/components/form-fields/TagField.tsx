@@ -27,6 +27,7 @@ export const TagField = (props: TagFieldProps) => {
   return (
     <TagInput
       tags={tagSet}
+      aria-label='tags'
       {...otherField}
       onChangeTags={handleChangeTags}
       {...other}

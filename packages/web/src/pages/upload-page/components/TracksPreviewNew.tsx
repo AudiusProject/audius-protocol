@@ -81,7 +81,7 @@ export const TracksPreviewNew = (props: TracksPreviewProps) => {
             index={i}
             displayIndex={tracks.length > 1}
             key={track.metadata.title + i}
-            trackTitle={track.metadata.title}
+            trackTitle={track.file.name}
             fileType={track.file.type}
             fileSize={track.file.size}
             onRemove={() => onRemove(i)}

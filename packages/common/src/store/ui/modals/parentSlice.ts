@@ -22,6 +22,8 @@ export const initialState: BasicModalsState = {
   TrendingGenreSelection: { isOpen: false },
   SocialProof: { isOpen: false },
   EditFolder: { isOpen: false },
+  EditPlaylist: { isOpen: false },
+  EditTrack: { isOpen: false },
   SignOutConfirmation: { isOpen: false },
   Overflow: { isOpen: false },
   AddToPlaylist: { isOpen: false },
@@ -44,7 +46,9 @@ export const initialState: BasicModalsState = {
   LeavingAudiusModal: { isOpen: false },
   InboxUnavailableModal: { isOpen: false },
   UploadConfirmation: { isOpen: false },
-  WithdrawUSDCModal: { isOpen: false }
+  WithdrawUSDCModal: { isOpen: false },
+  USDCPurchaseDetailsModal: { isOpen: false },
+  USDCTransactionDetailsModal: { isOpen: false }
 }
 
 const slice = createSlice({
