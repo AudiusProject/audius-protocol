@@ -121,6 +121,12 @@ services:
       service: relay
     <<: *common
 
+  sla-auditor:
+    extends:
+      file: docker-compose.pedalboard.yml
+      service: sla-auditor
+    <<: *common
+
 
   # Storage v2
 
