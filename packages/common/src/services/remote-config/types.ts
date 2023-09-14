@@ -157,7 +157,12 @@ export enum IntKeys {
   /**
    * Cache entry TTL to determine when a cache value should be overwritten with new instance
    */
-  CACHE_ENTRY_TTL = 'CACHE_ENTRY_TTL'
+  CACHE_ENTRY_TTL = 'CACHE_ENTRY_TTL',
+
+  /**
+   * Timeout for handle verification from socials.
+   */
+  HANDLE_VERIFICATION_TIMEOUT_MILLIS = 'HANDLE_VERIFICATION_TIMEOUT_MILLIS'
 }
 
 export enum BooleanKeys {
