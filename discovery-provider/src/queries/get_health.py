@@ -436,7 +436,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         errors.append("unhealthy reactions")
     if not delist_statuses_ok:
         errors.append("unhealthy delist statuses")
-    if health_results["chain_health"]["status"] == "Unhealthy":
+    chain_health = health_results["chain_health"]
+    if chain_health and chain_health["status"] == "Unhealthy":
         errors.append("unhealthy chain")
 
     is_unhealthy = (
