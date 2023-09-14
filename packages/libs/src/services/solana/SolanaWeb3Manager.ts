@@ -239,7 +239,10 @@ export class SolanaWeb3Manager {
     mint?: MintName
   } = {}) {
     const userbank = await this.deriveUserBank({ ethAddress, mint })
-    const tokenAccount = await this.getTokenAccountInfo(userbank.toString())
+    const tokenAccount = await this.getTokenAccountInfo(
+      userbank.toString(),
+      mint
+    )
     return !!tokenAccount
   }
 
@@ -289,7 +292,7 @@ export class SolanaWeb3Manager {
     | { error: string; errorCode: string | number | null }
     | {
         didExist: boolean
-        userbank: PublicKey
+        userbank: solanaWeb3.PublicKey
       }
   > {
     const didExist = await this.doesUserbankExist({ ethAddress, mint })
@@ -375,10 +378,15 @@ export class SolanaWeb3Manager {
    * Gets the info for a user bank/wAudio token account given a spl-token address.
    * If the address is not a valid token account, returns `null`
    */
-  async getTokenAccountInfo(solanaAddress: string) {
+  async getTokenAccountInfo(
+    solanaAddress: string,
+    mint: MintName = DEFAULT_MINT
+  ) {
     try {
       const res = await getTokenAccountInfo({
         tokenAccountAddressKey: new PublicKey(solanaAddress),
+        mintKey: this.mints[mint],
+        solanaTokenProgramKey: this.solanaTokenKey,
         connection: this.connection
       })
       return res
@@ -410,7 +418,7 @@ export class SolanaWeb3Manager {
 
       // Multiply by 10^10 to maintain same decimals as eth $AUDIO
       const decimals = AUDIO_DECMIALS - WAUDIO_DECMIALS
-      return tokenAccount.amount * BigInt('1'.padEnd(decimals + 1, '0'))
+      return tokenAccount.amount.mul(Utils.toBN('1'.padEnd(decimals + 1, '0')))
     } catch (e) {
       return null
     }
