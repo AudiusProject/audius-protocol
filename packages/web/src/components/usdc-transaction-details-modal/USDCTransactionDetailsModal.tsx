@@ -1,6 +1,7 @@
 import {
   formatUSDCWeiToUSDString,
-  useUSDCTransactionDetailsModal
+  useUSDCTransactionDetailsModal,
+  makeSolanaTransactionLink
 } from '@audius/common'
 import {
   HarmonyButton,
@@ -28,9 +29,6 @@ const messages = {
   withdrawal: 'Withdrawal',
   usdcWithdrawal: 'USDC Withdrawal'
 }
-
-const makeSolscanLink = (signature: string) =>
-  `https://solscan.io/tx/${signature}`
 
 const DetailSection = ({
   value,
@@ -83,7 +81,7 @@ export const USDCTransactionDetailsModal = () => {
           label={
             <ExternalLink
               variant='inherit'
-              to={makeSolscanLink(transactionDetails.signature)}
+              to={makeSolanaTransactionLink(transactionDetails.signature)}
             >
               <span className={styles.transactionLink}>
                 {messages.destinationWallet}

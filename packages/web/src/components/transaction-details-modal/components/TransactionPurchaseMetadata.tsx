@@ -1,7 +1,8 @@
 import {
   InAppAudioPurchaseMetadata,
   formatNumberString,
-  Nullable
+  Nullable,
+  makeSolanaTransactionLink
 } from '@audius/common'
 
 import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
@@ -48,7 +49,7 @@ export const TransactionPurchaseMetadata = ({
           metadata?.purchaseTransactionId ? (
             <a
               className={styles.link}
-              href={`https://explorer.solana.com/tx/${metadata.purchaseTransactionId}`}
+              href={makeSolanaTransactionLink(metadata.purchaseTransactionId)}
               target='_blank'
               title={messages.viewOnExplorer}
               rel='noreferrer'
@@ -73,7 +74,7 @@ export const TransactionPurchaseMetadata = ({
           metadata?.swapTransactionId ? (
             <a
               className={styles.link}
-              href={`https://explorer.solana.com/tx/${metadata.swapTransactionId}`}
+              href={makeSolanaTransactionLink(metadata.swapTransactionId)}
               target='_blank'
               title={messages.viewOnExplorer}
               rel='noreferrer'
