@@ -17,7 +17,7 @@
     "preset": "jest-presets/jest/node"
   },
   "dependencies": {
-    "@audius/sdk": "^3.0.8-beta.11",
+    "@audius/sdk": "^3.0.8-beta.13",
     "@types/compute-lcm": "^1.1.0",
     "axios": "^0.19.2",
     "body-parser": "^1.20.2",
