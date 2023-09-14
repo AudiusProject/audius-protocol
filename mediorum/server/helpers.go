@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"net/url"
 	"strconv"
 	"strings"
@@ -87,4 +88,25 @@ func rangeIsFirstByte(headerValue string) bool {
 		}
 	}
 	return false
+}
+
+func parseVariantSize(variant string) (w, h int, err error) {
+	// 150x150, 480x480, 1000x1000
+	// 640x, 2000x
+	variant = strings.ToLower(variant)
+	variant = strings.Replace(variant, ".jpg", "", 1)
+	switch variant {
+	case "150x150":
+		return 150, 150, nil
+	case "480x480":
+		return 480, 480, nil
+	case "1000x1000":
+		return 1000, 1000, nil
+	case "640x":
+		return 640, -1, nil
+	case "2000x":
+		return 2000, -1, nil
+
+	}
+	return 0, 0, errors.New("invalid size")
 }

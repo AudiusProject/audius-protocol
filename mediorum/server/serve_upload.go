@@ -17,7 +17,6 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"
-	"golang.org/x/exp/slices"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -34,23 +33,23 @@ type UploadsCache struct {
 	mu              *sync.RWMutex
 }
 
-func (uc *UploadsCache) Get(jobId, variant string) (cid string, hasVariant bool) {
+func (uc *UploadsCache) Get(jobId, variant string) (string, bool) {
 	uc.mu.RLock()
 	defer uc.mu.RUnlock()
 	if !uc.isBuilt {
-		return
+		return "", false
 	}
 
 	if compressedResults, ok := uc.jobIdToVariants[jobId]; ok {
-		if cid, ok = compressedResults[variant]; ok {
+		if cid, ok := compressedResults[variant]; ok {
 			if strings.HasPrefix(cid, string(uc.compressedChar)) {
 				cid = uc.prefix + cid[len(uc.compressedChar):]
 			}
-			hasVariant = true
+			return cid, true
 		}
 	}
 
-	return
+	return "", false
 }
 
 func (uc *UploadsCache) Set(jobId string, results map[string]string) {
@@ -327,6 +326,11 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 	// images are small enough to always serve all at once (no 206 range responses)
 	c.Request().Header.Del("Range")
+	c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=2592000, immutable")
+
+	ctx := c.Request().Context()
+	jobID := c.Param("jobID")
+	variant := c.Param("variant")
 
 	// if the client provided a filename, set it in the header to be auto-populated in download prompt
 	filenameForDownload := c.QueryParam("filename")
@@ -335,102 +339,102 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 		c.Response().Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, contentDisposition))
 	}
 
-	jobID := c.Param("jobID")
-	variant := c.Param("variant")
-	if cidutil.IsLegacyCID(jobID) {
-		// check if file is migrated first - it would have a single key and no upload object in the db
-		key := jobID + "/" + variant
-		startMigratedExists := time.Now()
-		exists, err := ss.bucket.Exists(c.Request().Context(), key)
-		c.Response().Header().Set("x-migrated-exists", fmt.Sprintf("%.2fs", time.Since(startMigratedExists).Seconds()))
-		if err != nil {
-			ss.logger.Warn("migrated blob exists check failed", "err", err)
-		} else if exists {
-			blob, err := ss.bucket.NewReader(c.Request().Context(), key, nil)
-			if err != nil {
-				return err
-			}
-			defer blob.Close()
-
-			blobData, err := io.ReadAll(blob)
-			if err != nil {
-				return err
-			}
-			return c.Blob(200, blob.ContentType(), blobData)
+	// 1. resolve ulid to upload cid
+	if _, err := ulid.Parse(jobID); err == nil {
+		var upload Upload
+		err := ss.crud.DB.First(&upload, "id = ?", jobID).Error
+		if err == nil {
+			// todo: cache this similar to redirectCache
+			jobID = upload.OrigFileCID
 		}
-
-		// check if file is migrated but on another host
-		startFindNode := time.Now()
-		host, err := ss.findNodeToServeBlob(key)
-		if err != nil {
-			c.Response().Header().Set("x-find-node-err", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
-			return err
-		} else if host != "" {
-			c.Response().Header().Set("x-find-node-success", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
-			dest := ss.replaceHost(c, host)
-			query := dest.Query()
-			query.Add("allow_unhealthy", "true") // we confirmed the node has it, so allow it to serve it even if unhealthy
-			dest.RawQuery = query.Encode()
-			return c.Redirect(302, dest.String())
-		} else {
-			c.Response().Header().Set("x-find-node-not-found", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
-			return c.String(404, fmt.Sprintf("no host found for %s/%s", jobID, variant))
-		}
-	} else {
-		// TODO: remove cache once metadata has only CIDs and no jobIds/variants, so then we won't need a db lookup
-		startCache := time.Now()
-		cid, ok := uploadsCache.Get(jobID, variant)
-
-		if !ok {
-			c.Response().Header().Set("x-cache-miss", fmt.Sprintf("%.2fs", time.Since(startCache).Seconds()))
-			startDb := time.Now()
-			var upload *Upload
-			err := ss.crud.DB.First(&upload, "id = ?", jobID).Error
-			if err != nil {
-				return err
-			}
-			cid, ok = upload.TranscodeResults[variant]
-			if !ok {
-				c.Response().Header().Set("x-db-miss", fmt.Sprintf("%.2fs", time.Since(startDb).Seconds()))
-
-				// since cultur3stake nodes can't talk to each other
-				// they might not get Upload crudr updates from each other
-				// so if one cultur3stake does transcode... sibiling might not get the updates
-				// so if this Upload doesn't have this variant... see if we can find a 200 from a different node
-				// TODO: crudr should gossip
-				if localOnly, _ := strconv.ParseBool(c.QueryParam("localOnly")); !localOnly {
-					healthyHosts := ss.findHealthyPeers(2 * time.Minute)
-					dest := ss.raceIsUrl2xx(*c.Request().URL, healthyHosts)
-					if dest != "" {
-						return c.Redirect(302, dest)
-					}
-
-					// try redirecting to unhealthy host as a last resort
-					unhealthyHosts := []string{}
-					for _, peer := range ss.Config.Peers {
-						if peer.Host != ss.Config.Self.Host && !slices.Contains(healthyHosts, peer.Host) {
-							unhealthyHosts = append(unhealthyHosts, peer.Host)
-						}
-					}
-					dest = ss.raceIsUrl2xx(*c.Request().URL, unhealthyHosts)
-					if dest != "" {
-						return c.Redirect(302, dest)
-					}
-				}
-
-				msg := fmt.Sprintf("variant %s not found for upload %s", variant, jobID)
-				return c.String(400, msg)
-			} else {
-				c.Response().Header().Set("x-db-hit", fmt.Sprintf("%.2fs %s", time.Since(startDb).Seconds(), cid))
-			}
-		} else {
-			c.Response().Header().Set("x-cache-hit", fmt.Sprintf("%.2fs %s", time.Since(startCache).Seconds(), cid))
-		}
-
-		c.SetParamNames("cid")
-		c.SetParamValues(cid)
-		return ss.getBlob(c)
 	}
+
+	// 2. if is ba ... serve variant
+	if strings.HasPrefix(jobID, "ba") {
+		baCid := jobID
+		variantStoragePath := cidutil.ImageVariantPath(baCid, variant)
+
+		// we already have this version
+		if blob, err := ss.bucket.NewReader(ctx, variantStoragePath, nil); err == nil {
+			http.ServeContent(c.Response(), c.Request(), variantStoragePath, blob.ModTime(), blob)
+			return blob.Close()
+		}
+
+		w, h, err := parseVariantSize(variant)
+		if err != nil {
+			return c.String(400, err.Error())
+		}
+
+		// we need to generate it
+		// ... get the cid
+		// ... create the variant
+		// ... store it at variantStoragePath
+		startDynamicResize := time.Now()
+		if host := ss.findNodeToServeBlob(baCid); host != "" {
+
+			err := ss.pullFileFromHost(host, baCid)
+			if err != nil {
+				return err
+			}
+
+			r, err := ss.bucket.NewReader(ctx, cidutil.ShardCID(baCid), nil)
+			if err != nil {
+				return err
+			}
+
+			resized, _, _ := Resized(".jpg", r, w, h, "fill")
+			w, _ := ss.bucket.NewWriter(ctx, variantStoragePath, nil)
+			io.Copy(w, resized)
+			w.Close()
+			r.Close()
+			c.Response().Header().Set("x-dynamic-resize-ok", fmt.Sprintf("%.2fs", time.Since(startDynamicResize).Seconds()))
+		} else {
+			c.Response().Header().Set("x-dynamic-resize-failure", fmt.Sprintf("%.2fs", time.Since(startDynamicResize).Seconds()))
+			return err
+		}
+
+		// ... serve it
+		if blob, err := ss.bucket.NewReader(ctx, variantStoragePath, nil); err == nil {
+			http.ServeContent(c.Response(), c.Request(), variantStoragePath, blob.ModTime(), blob)
+			return blob.Close()
+		}
+	}
+
+	// 3. if Qm ... serve legacy
+	if cidutil.IsLegacyCID(jobID) {
+
+		// storage path for Qm images is like:
+		// QmDirMultihash/150x150.jpg
+		// (no sharding)
+		key := jobID + "/" + variant
+
+		if blob, err := ss.bucket.NewReader(ctx, key, nil); err == nil {
+			http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
+			return blob.Close()
+		}
+
+		// pull blob from another host and store it at key
+		// keys like QmDirMultiHash/150x150.jpg works fine with findNodeToServeBlob
+		startFindNode := time.Now()
+		if host := ss.findNodeToServeBlob(key); host != "" {
+			err := ss.pullFileFromHost(host, key)
+			if err != nil {
+				return err
+			}
+
+			c.Response().Header().Set("x-find-node-success", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
+			if blob, err := ss.bucket.NewReader(ctx, key, nil); err == nil {
+				http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
+				return blob.Close()
+			}
+
+		} else {
+			c.Response().Header().Set("x-find-node-failure", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
+		}
+	}
+
+	msg := fmt.Sprintf("variant %s not found for upload %s", variant, jobID)
+	return c.String(400, msg)
 }
 
 // raceIsUrl200 tries batches of 5 hosts concurrently to find the first healthy host that returns a 200 instead of sequentially waiting for a 2s timeout from each host.

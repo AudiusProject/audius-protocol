@@ -98,3 +98,8 @@ func shardCIDV1(cid string) string {
 	shard := cid[len(cid)-5:]
 	return filepath.Join(shard, cid)
 }
+
+// /img/shard/orig_cid/150x150.jpg
+func ImageVariantPath(id, variant string) string {
+	return filepath.Join("img", shardCIDV1(id), variant)
+}
