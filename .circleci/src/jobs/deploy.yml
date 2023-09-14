@@ -127,8 +127,8 @@ steps:
           done
 
           if [[ "$healthy" == "false" ]]; then
-            author=$(git log -n 1 --pretty=format:"%an <%ae>")
-            message="Deploy ${host} failed, dirty changes from: ${author}"
+            url="https://github.com/AudiusProject/audius-protocol/commits/${CIRCLE_BRANCH}"
+            message="Deploy ${host} failed at:\n${url}"
             aggregated_messages="${aggregated_messages}${message}\n"
           fi
         done
