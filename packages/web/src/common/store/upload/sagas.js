@@ -15,6 +15,7 @@ import {
   uploadSelectors,
   confirmerActions,
   confirmTransaction,
+  LibraryCategory,
   reformatCollection
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'

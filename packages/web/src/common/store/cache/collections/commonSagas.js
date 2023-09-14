@@ -17,6 +17,7 @@ import {
   cacheTracksSelectors,
   removeNullable,
   confirmerActions,
+  LibraryCategory,
   confirmTransaction,
   reformatCollection,
   savedPageActions
