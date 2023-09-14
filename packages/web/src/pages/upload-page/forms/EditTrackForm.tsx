@@ -20,7 +20,7 @@ import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { Text } from 'components/typography'
 import { UploadFormScrollContext } from 'pages/upload-page/UploadPageNew'
 
-import { SubmitRowAnchored } from '../components/SubmitRowAnchored'
+import { AnchoredSubmitRow } from '../components/AnchoredSubmitRow'
 import { AccessAndSaleField } from '../fields/AccessAndSaleField'
 import { AttributionField } from '../fields/AttributionField'
 import { MultiTrackSidebar } from '../fields/MultiTrackSidebar'
@@ -164,7 +164,7 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
         </div>
         {isMultiTrack ? <MultiTrackSidebar /> : null}
       </div>
-      {!isMultiTrack ? <SubmitRowAnchored /> : null}
+      {!isMultiTrack ? <AnchoredSubmitRow /> : null}
     </Form>
   )
 }
