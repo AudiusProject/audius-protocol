@@ -141,22 +141,21 @@ export const LineupTile = ({
         />
       </View>
       {children}
-      {!isReadonly ? (
-        <LineupTileActionButtons
-          hasReposted={has_current_user_reposted}
-          hasSaved={has_current_user_saved}
-          isOwner={isOwner}
-          isShareHidden={hideShare}
-          isUnlisted={isUnlisted}
-          trackId={trackId}
-          premiumConditions={premiumConditions}
-          doesUserHaveAccess={doesUserHaveAccess}
-          onPressOverflow={onPressOverflow}
-          onPressRepost={onPressRepost}
-          onPressSave={onPressSave}
-          onPressShare={onPressShare}
-        />
-      ) : null}
+      <LineupTileActionButtons
+        hasReposted={has_current_user_reposted}
+        hasSaved={has_current_user_saved}
+        isOwner={isOwner}
+        isShareHidden={hideShare}
+        isUnlisted={isUnlisted}
+        readonly={isReadonly}
+        trackId={trackId}
+        premiumConditions={premiumConditions}
+        doesUserHaveAccess={doesUserHaveAccess}
+        onPressOverflow={onPressOverflow}
+        onPressRepost={onPressRepost}
+        onPressSave={onPressSave}
+        onPressShare={onPressShare}
+      />
     </LineupTileRoot>
   )
 }
