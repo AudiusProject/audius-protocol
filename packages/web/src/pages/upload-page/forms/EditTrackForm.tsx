@@ -121,6 +121,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
 const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
   const { values, dirty } = props
   const isMultiTrack = values.trackMetadatas.length > 1
+  const scrollToTop = useContext(UploadFormScrollContext)
   const trackIdx = values.trackMetadatasIndex
   const { playingPreviewIndex, togglePreview } =
     useContext(UploadPreviewContext)
@@ -174,6 +175,7 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
             name='continue'
             iconRight={IconArrow}
             className={styles.continueButton}
+            onClick={scrollToTop}
           />
         </div>
       ) : null}

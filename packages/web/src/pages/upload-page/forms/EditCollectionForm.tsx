@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useContext } from 'react'
 
 import { UploadType } from '@audius/common'
 import { HarmonyButton, IconUpload } from '@audius/stems'
@@ -15,6 +15,7 @@ import {
 import { Tile } from 'components/tile'
 import { Text } from 'components/typography'
 
+import { UploadFormScrollContext } from '../UploadPageNew'
 import { CollectionTrackFieldArray } from '../fields/CollectionTrackFieldArray'
 import { ReleaseDateField } from '../fields/ReleaseDateField'
 import { SelectGenreField } from '../fields/SelectGenreField'
@@ -43,6 +44,7 @@ type EditCollectionFormProps = {
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { formState, onContinue } = props
   const { tracks, uploadType, metadata } = formState
+  const scrollToTop = useContext(UploadFormScrollContext)
 
   const initialValues: CollectionValues = {
     ...metadata,
@@ -120,6 +122,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
         </Tile>
         <CollectionTrackFieldArray />
         <HarmonyButton
+          onClick={scrollToTop}
           text={messages.completeButton}
           iconLeft={IconUpload}
           type='submit'
