@@ -16,10 +16,11 @@ type FormScreenProps = ScreenProps & {
   onSubmit: () => void
   onReset: () => void
   errors?: Record<string, unknown>
+  goBackOnSubmit?: boolean
 }
 
-export const EditProfileFormScreen = (props: FormScreenProps) => {
-  const { children, onSubmit, onReset, errors, ...other } = props
+export const FormScreen = ({ children, ...props }: FormScreenProps) => {
+  const { onSubmit, onReset, errors, goBackOnSubmit, ...other } = props
 
   const navigation = useNavigation()
 
@@ -27,6 +28,13 @@ export const EditProfileFormScreen = (props: FormScreenProps) => {
     onReset()
     navigation.goBack()
   }, [navigation, onReset])
+
+  const handleSave = useCallback(() => {
+    onSubmit()
+    if (goBackOnSubmit) {
+      navigation.goBack()
+    }
+  }, [onSubmit, goBackOnSubmit, navigation])
 
   const topbarLeft = (
     <TextButton
@@ -40,14 +48,15 @@ export const EditProfileFormScreen = (props: FormScreenProps) => {
     <TextButton
       title={messages.save}
       variant='primary'
-      onPress={onSubmit}
+      onPress={handleSave}
       disabled={!isEmpty(errors)}
     />
   )
 
+  // TODO: add <ScreenContent> to usages of SafeAreaScreen
   return (
     <Screen
-      variant='white'
+      variant={'white'}
       topbarLeft={topbarLeft}
       topbarRight={topbarRight}
       {...other}
