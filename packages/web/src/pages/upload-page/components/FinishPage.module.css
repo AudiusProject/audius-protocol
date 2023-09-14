@@ -169,3 +169,7 @@
   height: 16px;
   width: 16px;
 }
+
+.visitLink:hover {
+  text-decoration: none !important;
+}

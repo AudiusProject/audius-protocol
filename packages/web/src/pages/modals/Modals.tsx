@@ -15,20 +15,15 @@ import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirma
 import DiscoveryNodeSelection from 'components/discovery-node-selection/DiscoveryNodeSelection'
 import { DuplicateAddConfirmationModal } from 'components/duplicate-add-confirmation-modal'
 import EditFolderModal from 'components/edit-folder-modal/EditFolderModal'
-import EditPlaylistModal from 'components/edit-playlist/desktop/EditPlaylistModal'
-import EditTrackModal from 'components/edit-track/EditTrackModal'
 import EmbedModal from 'components/embed-modal/EmbedModal'
 import { FeatureFlagOverrideModal } from 'components/feature-flag-override-modal'
 import FirstUploadModal from 'components/first-upload-modal/FirstUploadModal'
-import { InboxSettingsModal } from 'components/inbox-settings-modal/InboxSettingsModal'
 import { InboxUnavailableModal } from 'components/inbox-unavailable-modal/InboxUnavailableModal'
 import { LeavingAudiusModal } from 'components/leaving-audius-modal/LeavingAudiusModal'
 import { LockedContentModal } from 'components/locked-content-modal/LockedContentModal'
 import PasswordResetModal from 'components/password-reset/PasswordResetModal'
 import { PremiumContentPurchaseModal } from 'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
-import { ShareModal } from 'components/share-modal/ShareModal'
 import ShareSoundToTikTokModal from 'components/share-sound-to-tiktok-modal/ShareSoundToTikTokModal'
-import { StripeOnRampModal } from 'components/stripe-on-ramp-modal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
 import ConnectedMobileOverflowModal from 'components/track-overflow-modal/ConnectedMobileOverflowModal'
 import { TransactionDetailsModal } from 'components/transaction-details-modal'
@@ -36,29 +31,49 @@ import UnfollowConfirmationModal from 'components/unfollow-confirmation-modal/Un
 import UnloadDialog from 'components/unload-dialog/UnloadDialog'
 import { UploadConfirmationModal } from 'components/upload-confirmation-modal'
 import { USDCPurchaseDetailsModal } from 'components/usdc-purchase-details-modal/USDCPurchaseDetailsModal'
+import { USDCTransactionDetailsModal } from 'components/usdc-transaction-details-modal/USDCTransactionDetailsModal'
 import TierExplainerModal from 'components/user-badges/TierExplainerModal'
 import ConnectedUserListModal from 'components/user-list-modal/ConnectedUserListModal'
 import { WithdrawUSDCModal } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
-import AudioBreakdownModal from 'pages/audio-rewards-page/components/modals/AudioBreakdownModal'
 import ChallengeRewardsModal from 'pages/audio-rewards-page/components/modals/ChallengeRewards'
 import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
 import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
-import TrendingRewardsModal from 'pages/audio-rewards-page/components/modals/TrendingRewards'
 import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
-import { CreateChatModal } from 'pages/chat-page/components/CreateChatModal'
 import { getClient } from 'utils/clientUtil'
 
 import { AppModal } from './AppModal'
 
+const ShareModal = lazy(() => import('components/share-modal'))
+
+const EditPlaylistModal = lazy(
+  () => import('components/edit-playlist/desktop/EditPlaylistModal')
+)
 const HCaptchaModal = lazy(
   () => import('pages/audio-rewards-page/components/modals/HCaptchaModal')
+)
+const StripeOnRampModal = lazy(() => import('components/stripe-on-ramp-modal'))
+
+const CreateChatModal = lazy(
+  () => import('pages/chat-page/components/CreateChatModal')
+)
+
+const TrendingRewardsModal = lazy(
+  () => import('pages/audio-rewards-page/components/modals/TrendingRewards')
+)
+
+const EditTrackModal = lazy(
+  () => import('components/edit-track/EditTrackModal')
+)
+const InboxSettingsModal = lazy(
+  () => import('components/inbox-settings-modal/InboxSettingsModal')
 )
 
 const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   Share: ShareModal,
   VipDiscord: VipDiscordModal,
-  AudioBreakdown: AudioBreakdownModal,
   EditFolder: EditFolderModal,
+  EditPlaylist: EditPlaylistModal,
+  EditTrack: EditTrackModal,
   AddToPlaylist: AddToPlaylistModal,
   TiersExplainer: TierExplainerModal,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
@@ -82,7 +97,9 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   CreateChatModal,
   InboxUnavailableModal,
   WithdrawUSDCModal,
-  USDCPurchaseDetailsModal
+  StripeOnRamp: StripeOnRampModal,
+  USDCPurchaseDetailsModal,
+  USDCTransactionDetailsModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [
@@ -99,20 +116,16 @@ const Modals = () => {
       {commonModals.map(([modalName, Modal]) => {
         return <AppModal key={modalName} name={modalName} modal={Modal} />
       })}
-      <EditTrackModal />
       <PasswordResetModal />
       <FirstUploadModal />
       <UnloadDialog />
       <CollectibleDetailsModal />
-      <StripeOnRampModal />
 
       {!isMobileClient && (
         <>
           <EmbedModal />
-          <EditPlaylistModal />
           <ConnectedUserListModal />
           <AppCTAModal />
-
           {/* dev-mode hot-key modals */}
           <ConfirmerPreview />
           <DiscoveryNodeSelection />

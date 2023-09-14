@@ -93,6 +93,7 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
         <div className={styles.actions}>
           <HarmonyPlainButton
             variant={HarmonyPlainButtonType.SUBDUED}
+            type='button'
             text={messages.preview}
             iconLeft={isPreviewPlaying ? IconPause : IconPlay}
             onClick={() => {
@@ -101,6 +102,7 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
           />
           <HarmonyPlainButton
             variant={HarmonyPlainButtonType.SUBDUED}
+            type='button'
             text={messages.delete}
             iconLeft={IconTrash}
             onClick={handleRemove}

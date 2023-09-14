@@ -3,7 +3,8 @@ import {
   formatCurrencyBalance,
   BNUSDC,
   useWithdrawUSDCModal,
-  formatUSDCWeiToFloorDollarNumber
+  formatUSDCWeiToFloorDollarNumber,
+  makeSolanaTransactionLink
 } from '@audius/common'
 import {
   HarmonyPlainButton,
@@ -38,7 +39,7 @@ const messages = {
 
 const openExplorer = (signature: string) => {
   window.open(
-    `https://solscan.io/tx/${signature}`,
+    makeSolanaTransactionLink(signature),
     '_blank',
     'noreferrer,noopener'
   )

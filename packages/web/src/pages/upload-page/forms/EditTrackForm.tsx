@@ -83,7 +83,9 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
           commercialUse: null,
           derivativeWorks: null
         },
-        stems: []
+        stems: [],
+        isrc: '',
+        iswc: ''
       }))
     }),
     [tracks]
@@ -119,6 +121,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
 const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
   const { values, dirty } = props
   const isMultiTrack = values.trackMetadatas.length > 1
+  const scrollToTop = useContext(UploadFormScrollContext)
   const trackIdx = values.trackMetadatasIndex
   const { playingPreviewIndex, togglePreview } =
     useContext(UploadPreviewContext)
@@ -152,6 +155,7 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
             <HarmonyPlainButton
               className={styles.previewButton}
               variant={HarmonyPlainButtonType.SUBDUED}
+              type='button'
               text={messages.preview}
               iconLeft={isPreviewPlaying ? IconPause : IconPlay}
               onClick={() => {
@@ -171,6 +175,7 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
             name='continue'
             iconRight={IconArrow}
             className={styles.continueButton}
+            onClick={scrollToTop}
           />
         </div>
       ) : null}

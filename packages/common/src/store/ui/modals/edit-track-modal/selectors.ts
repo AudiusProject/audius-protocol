@@ -1,20 +1,20 @@
-import { StemTrack, cacheTracksSelectors } from '@audius/common'
+import { StemTrack } from 'models/Track'
+import { cacheTracksSelectors } from 'store/cache'
+import { CommonState } from 'store/commonStore'
 
-import { AppState } from 'store/types'
 const { getTrack, getTracks } = cacheTracksSelectors
 
-export const getBaseState = (state: AppState) =>
-  state.application.ui.editTrackModal
+export const getBaseState = (state: CommonState) => state.ui.modals.EditTrack
 
-export const getIsOpen = (state: AppState) => getBaseState(state).isOpen
-export const getTrackId = (state: AppState) => getBaseState(state).trackId
+export const getIsOpen = (state: CommonState) => getBaseState(state).isOpen
+export const getTrackId = (state: CommonState) => getBaseState(state).trackId
 
-export const getMetadata = (state: AppState) => {
+export const getMetadata = (state: CommonState) => {
   const trackId = getTrackId(state)
   return getTrack(state, { id: trackId })
 }
 
-export const getStems = (state: AppState) => {
+export const getStems = (state: CommonState) => {
   const trackId = getTrackId(state)
   if (!trackId) return []
 

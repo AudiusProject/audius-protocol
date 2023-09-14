@@ -1,8 +1,11 @@
 import { CreateChatModalState } from './create-chat-modal'
 import { BaseModalState } from './createModal'
+import { EditPlaylistModalState } from './edit-playlist-modal'
+import { EditTrackModalState } from './edit-track-modal'
 import { InboxUnavailableModalState } from './inbox-unavailable-modal'
 import { LeavingAudiusModalState } from './leaving-audius-modal'
 import { USDCPurchaseDetailsModalState } from './usdc-purchase-details-modal'
+import { USDCTransactionDetailsModalState } from './usdc-transaction-details-modal'
 import { WithdrawUSDCModalState } from './withdraw-usdc-modal'
 
 export type Modals =
@@ -25,6 +28,8 @@ export type Modals =
   | 'TrendingGenreSelection'
   | 'SocialProof'
   | 'EditFolder'
+  | 'EditPlaylist'
+  | 'EditTrack'
   | 'SignOutConfirmation'
   | 'Overflow'
   | 'AddToPlaylist'
@@ -49,6 +54,7 @@ export type Modals =
   | 'UploadConfirmation'
   | 'WithdrawUSDCModal'
   | 'USDCPurchaseDetailsModal'
+  | 'USDCTransactionDetailsModal'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -56,10 +62,13 @@ export type BasicModalsState = {
 
 export type StatefulModalsState = {
   CreateChatModal: CreateChatModalState
+  EditPlaylist: EditPlaylistModalState
+  EditTrack: EditTrackModalState
   InboxUnavailableModal: InboxUnavailableModalState
   LeavingAudiusModal: LeavingAudiusModalState
   WithdrawUSDCModal: WithdrawUSDCModalState
   USDCPurchaseDetailsModal: USDCPurchaseDetailsModalState
+  USDCTransactionDetailsModal: USDCTransactionDetailsModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { MouseEventHandler, useCallback } from 'react'
 
 import { UserMetadata, accountSelectors, useGetUserById } from '@audius/common'
 import { useSelector } from 'react-redux'
@@ -31,10 +31,14 @@ type UserNameAndBadgesProps =
 const UserNameAndBadgesImpl = (props: UserNameAndBadgesImplProps) => {
   const { user, onNavigateAway, classes } = props
   const goToRoute = useGoToRoute()
-  const goToProfile = useCallback(() => {
-    goToRoute(profilePage(user.handle))
-    onNavigateAway?.()
-  }, [goToRoute, onNavigateAway, user])
+  const handleClick: MouseEventHandler = useCallback(
+    (event) => {
+      event.stopPropagation()
+      goToRoute(profilePage(user.handle))
+      onNavigateAway?.()
+    },
+    [goToRoute, onNavigateAway, user]
+  )
   if (!user) {
     return null
   }
@@ -44,7 +48,7 @@ const UserNameAndBadgesImpl = (props: UserNameAndBadgesImplProps) => {
       component='span'
       onNavigateAway={onNavigateAway}
     >
-      <div className={styles.nameAndBadge} onClick={goToProfile}>
+      <div className={styles.nameAndBadge} onClick={handleClick}>
         <span className={classes?.name}>{user.name}</span>
         <UserBadges
           userId={user.user_id}

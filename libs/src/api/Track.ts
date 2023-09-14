@@ -505,7 +505,7 @@ export class Track extends Base {
     let updatedMetadata = { ...metadata }
 
     if (transcodePreview) {
-      if (!metadata.preview_start_seconds) {
+      if (metadata.preview_start_seconds == null) {
         throw new Error('No track preview start time specified')
       }
       if (!metadata.audio_upload_id) {

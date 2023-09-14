@@ -8,9 +8,9 @@ import {
 import moment from 'moment'
 
 import { Table } from 'components/table'
+import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 
 import { TrackNameWithArtwork } from './components/TrackNameWithArtwork'
-import { UserNameWithBadges } from './components/UserNameWithBadges'
 import { PurchaseCell, PurchaseRow } from './types'
 import { isEmptyPurchaseRow } from './utils'
 
@@ -66,7 +66,7 @@ const renderContentNameCell = (cellInfo: PurchaseCell) => {
 
 const renderArtistCell = (cellInfo: PurchaseCell) => {
   const { sellerUserId } = cellInfo.row.original
-  return <UserNameWithBadges userId={sellerUserId} />
+  return <UserNameAndBadges userId={sellerUserId} />
 }
 
 const renderDateCell = (cellInfo: PurchaseCell) => {

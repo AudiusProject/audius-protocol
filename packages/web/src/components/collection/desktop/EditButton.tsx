@@ -1,9 +1,7 @@
 import { useCallback } from 'react'
 
+import { useEditPlaylistModal } from '@audius/common'
 import { ButtonProps, ButtonType, IconPencil } from '@audius/stems'
-import { useDispatch } from 'react-redux'
-
-import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
 
 import { EntityActionButton } from '../../entity-page/EntityActionButton'
 
@@ -17,15 +15,12 @@ type EditButtonProps = Partial<ButtonProps> & {
 
 export const EditButton = (props: EditButtonProps) => {
   const { collectionId, ...other } = props
-  const dispatch = useDispatch()
 
-  const handleEdit = useCallback(
-    () =>
-      dispatch(
-        openEditCollectionModal({ collectionId, isCollectionViewed: true })
-      ),
-    [dispatch, collectionId]
-  )
+  const { onOpen } = useEditPlaylistModal()
+
+  const handleEdit = useCallback(() => {
+    onOpen({ collectionId, isCollectionViewed: true })
+  }, [collectionId, onOpen])
 
   return (
     <EntityActionButton

@@ -19,13 +19,13 @@ import {
   modalsActions,
   modalsSelectors,
   queueSelectors,
-  shareModalUIActions
+  shareModalUIActions,
+  useEditPlaylistModal
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { open } from 'store/application/ui/editPlaylistModal/slice'
 import { AppState } from 'store/types'
 import {
   collectibleDetailsPage,
@@ -91,7 +91,6 @@ const ConnectedMobileOverflowModal = ({
   saveCollection,
   unsaveCollection,
   addToPlaylist,
-  editPlaylist,
   deletePlaylist,
   publishPlaylist,
   visitTrackPage,
@@ -103,6 +102,7 @@ const ConnectedMobileOverflowModal = ({
   shareUser
 }: ConnectedMobileOverflowModalProps) => {
   // Create callbacks
+  const { onOpen: onOpenEditPlaylist } = useEditPlaylistModal()
   const {
     onRepost,
     onUnrepost,
@@ -177,7 +177,9 @@ const ConnectedMobileOverflowModal = ({
             ),
           onVisitCollectiblePage: () =>
             visitCollectiblePage(handle, id as string),
-          onEditPlaylist: isAlbum ? () => {} : () => editPlaylist(id as ID),
+          onEditPlaylist: isAlbum
+            ? () => {}
+            : () => onOpenEditPlaylist({ collectionId: id as ID }),
           onDeletePlaylist: isAlbum ? () => {} : () => deletePlaylist(id as ID),
           onPublishPlaylist: isAlbum
             ? () => {}
@@ -335,8 +337,6 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
       dispatch(saveCollection(collectionId, FavoriteSource.OVERFLOW)),
     unsaveCollection: (collectionId: ID) =>
       dispatch(unsaveCollection(collectionId, FavoriteSource.OVERFLOW)),
-    editPlaylist: (playlistId: ID) =>
-      dispatch(open({ collectionId: playlistId })),
     deletePlaylist: (playlistId: ID) =>
       dispatch(openDeletePlaylist({ playlistId })),
     publishPlaylist: (playlistId: ID) => dispatch(publishPlaylist(playlistId)),

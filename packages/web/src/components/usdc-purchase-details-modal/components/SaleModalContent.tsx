@@ -73,7 +73,6 @@ export const SaleModalContent = ({
     <>
       <ModalHeader>
         <ModalTitle
-          iconClassName={styles.icon}
           icon={<Icon icon={IconCart} />}
           title={messages.saleDetails}
         />
@@ -95,7 +94,7 @@ export const SaleModalContent = ({
         </DetailSection>
         <DetailSection label={messages.date}>
           <Text size='large'>
-            {moment(purchaseDetails.createdAt).format('M/D/YY')}
+            {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
           </Text>
         </DetailSection>
         <DetailSection label={messages.cost}>

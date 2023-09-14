@@ -1,9 +1,12 @@
 import { ChangeEvent, useCallback, useState } from 'react'
 
-import { formatSecondsAsText, formatDate } from '@audius/common'
+import {
+  formatSecondsAsText,
+  formatDate,
+  useEditPlaylistModal
+} from '@audius/common'
 import { IconHidden, IconPencil } from '@audius/stems'
 import cn from 'classnames'
-import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'
 import { Input } from 'components/input'
@@ -12,7 +15,6 @@ import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavori
 import Skeleton from 'components/skeleton/Skeleton'
 import InfoLabel from 'components/track/InfoLabel'
 import { UserGeneratedText } from 'components/user-generated-text'
-import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
 
 import { Artwork } from './Artwork'
 import { CollectionActionButtons } from './CollectionActionButtons'
@@ -56,7 +58,6 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
 
   const [artworkLoading, setIsArtworkLoading] = useState(true)
   const [filterText, setFilterText] = useState('')
-  const dispatch = useDispatch()
 
   const handleFilterChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -71,11 +72,11 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
     setIsArtworkLoading(false)
   }, [])
 
+  const { onOpen } = useEditPlaylistModal()
+
   const handleClickEditTitle = useCallback(() => {
-    dispatch(
-      openEditCollectionModal({ collectionId, initialFocusedField: 'name' })
-    )
-  }, [dispatch, collectionId])
+    onOpen({ collectionId, initialFocusedField: 'name' })
+  }, [onOpen, collectionId])
 
   const renderStatsRow = (isLoading: boolean) => {
     if (isLoading) return null

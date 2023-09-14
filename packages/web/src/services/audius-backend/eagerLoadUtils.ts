@@ -17,7 +17,6 @@ export const LIBS_INITTED_EVENT = 'LIBS_INITTED_EVENT'
 export const waitForLibsInit = async () => {
   // If libs is already defined, it has already loaded & initted
   // so do nothing
-  // @ts-ignore
   if (window.audiusLibs) return
   // Add an event listener and resolve when that returns
   return new Promise((resolve) => {

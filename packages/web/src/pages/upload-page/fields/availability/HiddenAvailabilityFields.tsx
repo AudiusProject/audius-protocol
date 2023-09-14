@@ -46,16 +46,18 @@ const unlistedTrackMetadataOrder = [
 export const HiddenAvailabilityFields = () => {
   return (
     <div className={styles.root}>
-      <Text variant='title'>{messages.title}</Text>
-      <div className={styles.switchContainer}>
-        {unlistedTrackMetadataOrder.map((fieldName) => {
-          return (
-            <AvailabilityToggleField key={fieldName} fieldName={fieldName} />
-          )
-        })}
-        {/* Dummy row for spacing consistency */}
-        <div className={styles.switchRow}></div>
-      </div>
+      <fieldset>
+        <Text variant='title' as='legend' className={styles.legend}>
+          {messages.title}
+        </Text>
+        <div className={styles.switchContainer}>
+          {unlistedTrackMetadataOrder.map((fieldName) => {
+            return (
+              <AvailabilityToggleField key={fieldName} fieldName={fieldName} />
+            )
+          })}
+        </div>
+      </fieldset>
     </div>
   )
 }
@@ -80,11 +82,11 @@ const AvailabilityToggleField = (props: AvailabilityToggleFieldProps) => {
     type: 'checkbox'
   })
   return (
-    <div className={styles.switchRow}>
+    <label className={styles.switchRow}>
       <Switch {...field} />
       <Text className={styles.switchLabel}>
         {messageByFieldName[fieldName]}
       </Text>
-    </div>
+    </label>
   )
 }

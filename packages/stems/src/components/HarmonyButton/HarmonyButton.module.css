@@ -23,6 +23,11 @@
   pointer-events: none;
 }
 
+.icon,
+.text {
+  z-index: 1;
+}
+
 /* === Sizes === */
 
 /* Small */

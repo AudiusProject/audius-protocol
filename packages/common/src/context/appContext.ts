@@ -1,6 +1,6 @@
 import { createContext, useContext } from 'react'
 
-import { StorageNodeSelectorService } from '@audius/sdk'
+import type { StorageNodeSelectorService } from '@audius/sdk'
 
 import { AnalyticsEvent, AllTrackingEvents } from 'models/Analytics'
 import { AudiusBackend } from 'services/audius-backend'

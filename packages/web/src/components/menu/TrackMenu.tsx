@@ -15,7 +15,8 @@ import {
   addToPlaylistUIActions,
   Genre,
   FeatureFlags,
-  CommonState
+  CommonState,
+  useEditTracktModal
 } from '@audius/common'
 import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
@@ -25,7 +26,6 @@ import { Dispatch } from 'redux'
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useFlag } from 'hooks/useRemoteConfig'
-import * as editTrackModalActions from 'store/application/ui/editTrackModal/actions'
 import { showSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/actions'
 import { AppState } from 'store/types'
 import { profilePage } from 'utils/route'
@@ -95,6 +95,7 @@ const TrackMenu = (props: TrackMenuProps) => {
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
+  const { onOpen } = useEditTracktModal()
   const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
@@ -125,7 +126,6 @@ const TrackMenu = (props: TrackMenuProps) => {
       isReposted,
       isUnlisted,
       openAddToPlaylistModal,
-      openEditTrackModal,
       openEmbedModal,
       repostTrack,
       saveTrack,
@@ -229,7 +229,7 @@ const TrackMenu = (props: TrackMenuProps) => {
 
     const editTrackMenuItem = {
       text: 'Edit Track',
-      onClick: () => openEditTrackModal(trackId)
+      onClick: () => onOpen({ trackId })
     }
 
     const embedMenuItem = {
@@ -317,8 +317,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     unsetArtistPick: () => dispatch(showSetAsArtistPickConfirmation()),
     openAddToPlaylistModal: (trackId: ID, title: string, isUnlisted: boolean) =>
       dispatch(openAddToPlaylist(trackId, title, isUnlisted)),
-    openEditTrackModal: (trackId: ID) =>
-      dispatch(editTrackModalActions.open(trackId)),
     openEmbedModal: (trackId: ID) =>
       dispatch(embedModalActions.open(trackId, PlayableType.TRACK))
   }

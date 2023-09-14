@@ -54,4 +54,5 @@
   display: flex;
   flex-direction: column;
   row-gap: var(--unit-2);
+  align-items: flex-start;
 }

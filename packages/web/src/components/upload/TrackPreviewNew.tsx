@@ -51,8 +51,6 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
     onRemove
   } = props
 
-  const fileExtension = fileType.split('/')[1] ?? null
-
   return (
     <div className={styles.trackPreviewNew}>
       {displayIndex ? (
@@ -67,16 +65,23 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
       />
       <Text className={styles.titleText} size='small'>
         {trackTitle}
-        {fileExtension ? `.${fileExtension}` : null}
       </Text>
-      <Text className={styles.fileSizeText} size='small' color='neutralLight2'>
-        {numeral(fileSize).format('0.0 b')}
-      </Text>
-      <HarmonyPlainButton
-        iconRight={IconTrash}
-        onClick={onRemove}
-        className={styles.removeButton}
-      />
+      <div className={styles.sizeContainer}>
+        <Text
+          className={styles.fileSizeText}
+          size='small'
+          color='neutralLight2'
+        >
+          {numeral(fileSize).format('0.0 b')}
+        </Text>
+        <div className={styles.removeButtonContainer}>
+          <HarmonyPlainButton
+            iconRight={IconTrash}
+            onClick={onRemove}
+            className={styles.removeButton}
+          />
+        </div>
+      </div>
     </div>
   )
 }

@@ -486,9 +486,7 @@ def update_user_associated_wallets(
                     blockhash=user_record.blockhash,
                 )
                 added_wallets.append(associated_wallet_entry)
-        is_updated_wallets = set(
-            [prev_wallet.wallet for prev_wallet in previous_wallets]
-        ) != set([wallet.wallet for wallet in added_wallets])
+        is_updated_wallets = set([prev_wallet.wallet for prev_wallet in previous_wallets]) != set([wallet.wallet for wallet in added_wallets])
 
         if is_updated_wallets:
             for wallet in added_wallets:

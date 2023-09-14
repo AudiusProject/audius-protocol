@@ -106,8 +106,8 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
           />
         </div>
         <PopupMenu
-          transformOrigin={{ horizontal: 'center', vertical: 'top' }}
-          anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
           items={menuItems}
           renderTrigger={(anchorRef, triggerPopup) => (
             <HarmonyButton

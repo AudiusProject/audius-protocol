@@ -6,7 +6,6 @@ import (
 	"log"
 	"mediorum/ethcontracts"
 	"mediorum/httputil"
-	"mediorum/radix/rserver"
 	"mediorum/registrar"
 	"mediorum/server"
 	"os"
@@ -42,14 +41,13 @@ func init() {
 
 func main() {
 	mediorumEnv := os.Getenv("MEDIORUM_ENV")
-	isRadixServer, _ := strconv.ParseBool(os.Getenv("AUDIUS_IS_RADIX_SERVER"))
 	slog.Info("starting", "MEDIORUM_ENV", mediorumEnv)
 
 	switch mediorumEnv {
 	case "prod":
-		startStagingOrProd(true, isRadixServer)
+		startStagingOrProd(true)
 	case "stage":
-		startStagingOrProd(false, isRadixServer)
+		startStagingOrProd(false)
 	case "single":
 		startDevInstance()
 	default:
@@ -57,7 +55,7 @@ func main() {
 	}
 }
 
-func startStagingOrProd(isProd, isRadixServer bool) {
+func startStagingOrProd(isProd bool) {
 	logger := slog.With("creatorNodeEndpoint", os.Getenv("creatorNodeEndpoint"))
 	g := registrar.NewAudiusApiGatewayStaging()
 	if isProd {
@@ -114,68 +112,40 @@ func startStagingOrProd(isProd, isRadixServer bool) {
 		logger.Warn("failed to parse MIGRATE_QM_CID_ITERS; defaulting to 0", "err", err)
 	}
 
-	if isRadixServer {
-		if os.Getenv("AUDIUS_RADIX_ENABLED") != "true" {
-			select {}
-		}
-
-		config := rserver.RadixConfig{
-			Self: server.Peer{
-				Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
-				Wallet: strings.ToLower(walletAddress),
-			},
-			Peers:      peers,
-			ListenPort: getenvWithDefault("AUDIUS_RADIX_PORT", "1989"),
-			PrivateKey: privateKeyHex,
-		}
-
-		rs, err := rserver.New(config)
-		if err != nil {
-			logger.Error("failed to create radix server", "err", err)
-			log.Fatal(err)
-		}
-
-		// TODO: handle peers list changing
-		// go refreshPeersAndSigners(rs, g)
-
-		rs.MustStart()
-	} else {
-		config := server.MediorumConfig{
-			Self: server.Peer{
-				Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
-				Wallet: strings.ToLower(walletAddress),
-			},
-			ListenPort:           "1991",
-			RadixListenPort:      getenvWithDefault("AUDIUS_RADIX_PORT", "1989"),
-			Peers:                peers,
-			Signers:              signers,
-			ReplicationFactor:    3,
-			PrivateKey:           privateKeyHex,
-			Dir:                  "/tmp/mediorum",
-			PostgresDSN:          os.Getenv("dbUrl"),
-			BlobStoreDSN:         os.Getenv("AUDIUS_STORAGE_DRIVER_URL"),
-			MoveFromBlobStoreDSN: os.Getenv("AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM"),
-			TrustedNotifierID:    trustedNotifierID,
-			SPID:                 spID,
-			SPOwnerWallet:        os.Getenv("spOwnerWallet"),
-			GitSHA:               os.Getenv("GIT_SHA"),
-			AudiusDockerCompose:  os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
-			AutoUpgradeEnabled:   os.Getenv("autoUpgradeEnabled") == "true",
-			StoreAll:             os.Getenv("STORE_ALL") == "true",
-			VersionJson:          GetVersionJson(),
-			MigrateQmCidIters:    migrateQmCidIters,
-		}
-
-		ss, err := server.New(config)
-		if err != nil {
-			logger.Error("failed to create server", "err", err)
-			log.Fatal(err)
-		}
-
-		go refreshPeersAndSigners(ss, g)
-
-		ss.MustStart()
+	config := server.MediorumConfig{
+		Self: server.Peer{
+			Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
+			Wallet: strings.ToLower(walletAddress),
+		},
+		ListenPort:           "1991",
+		Peers:                peers,
+		Signers:              signers,
+		ReplicationFactor:    3,
+		PrivateKey:           privateKeyHex,
+		Dir:                  "/tmp/mediorum",
+		PostgresDSN:          os.Getenv("dbUrl"),
+		BlobStoreDSN:         os.Getenv("AUDIUS_STORAGE_DRIVER_URL"),
+		MoveFromBlobStoreDSN: os.Getenv("AUDIUS_STORAGE_DRIVER_URL_MOVE_FROM"),
+		TrustedNotifierID:    trustedNotifierID,
+		SPID:                 spID,
+		SPOwnerWallet:        os.Getenv("spOwnerWallet"),
+		GitSHA:               os.Getenv("GIT_SHA"),
+		AudiusDockerCompose:  os.Getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA"),
+		AutoUpgradeEnabled:   os.Getenv("autoUpgradeEnabled") == "true",
+		StoreAll:             os.Getenv("STORE_ALL") == "true",
+		VersionJson:          GetVersionJson(),
+		MigrateQmCidIters:    migrateQmCidIters,
 	}
+
+	ss, err := server.New(config)
+	if err != nil {
+		logger.Error("failed to create server", "err", err)
+		log.Fatal(err)
+	}
+
+	go refreshPeersAndSigners(ss, g)
+
+	ss.MustStart()
 }
 
 func startDevInstance() {
