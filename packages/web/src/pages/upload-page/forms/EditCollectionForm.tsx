@@ -121,11 +121,6 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
           </div>
         </Tile>
         <CollectionTrackFieldArray />
-        <HarmonyButton
-          text={messages.completeButton}
-          iconLeft={IconUpload}
-          type='submit'
-        />
       </Form>
     </Formik>
   )

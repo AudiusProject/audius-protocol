@@ -1,9 +1,16 @@
 import { MutableRefObject } from 'react'
 
-import { HarmonyButton, HarmonyButtonType, IconUpload } from '@audius/stems'
+import {
+  HarmonyButton,
+  HarmonyButtonSize,
+  HarmonyButtonType,
+  IconUpload
+} from '@audius/stems'
 import { FormikProps } from 'formik'
 
 import { TrackEditFormValues } from '../types'
+
+import styles from './SubmitRowAnchored.module.css'
 
 const messages = {
   complete: 'Complete Upload'
@@ -17,10 +24,11 @@ export const SubmitRowAnchored = (props: SubmitRowAnchoredProps) => {
   const { formRef } = props
 
   return (
-    <div>
+    <div className={styles.root}>
       <HarmonyButton
         text={messages.complete}
         variant={HarmonyButtonType.PRIMARY}
+        size={HarmonyButtonSize.DEFAULT}
         iconRight={IconUpload}
         onClick={formRef.current?.handleSubmit}
       />
