@@ -1,4 +1,8 @@
-.root {
+.placeholder {
+  height: var(--play-bar-height);
+}
+
+.buttonRow {
   position: fixed;
   bottom: var(--play-bar-height);
   left: var(--nav-width);

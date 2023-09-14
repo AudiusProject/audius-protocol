@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { UploadType } from '@audius/common'
-import { HarmonyButton, IconUpload } from '@audius/stems'
 import { Form, Formik } from 'formik'
 import moment from 'moment'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -15,6 +14,7 @@ import {
 import { Tile } from 'components/tile'
 import { Text } from 'components/typography'
 
+import { SubmitRowAnchored } from '../components/SubmitRowAnchored'
 import { CollectionTrackFieldArray } from '../fields/CollectionTrackFieldArray'
 import { ReleaseDateField } from '../fields/ReleaseDateField'
 import { SelectGenreField } from '../fields/SelectGenreField'
@@ -37,12 +37,11 @@ const messages = {
 
 type EditCollectionFormProps = {
   formState: CollectionFormState
-  formRef: MutableRefObject<FormikProps<TrackEditFormValues> | null>
   onContinue: (formState: CollectionFormState) => void
 }
 
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
-  const { formState, formRef, onContinue } = props
+  const { formState, onContinue } = props
   const { tracks, uploadType, metadata } = formState
 
   const initialValues: CollectionValues = {
@@ -82,7 +81,6 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
 
   return (
     <Formik
-      innerRef={formRef}
       initialValues={initialValues}
       onSubmit={handleSubmit}
       // @ts-ignore
@@ -121,6 +119,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
           </div>
         </Tile>
         <CollectionTrackFieldArray />
+        <SubmitRowAnchored />
       </Form>
     </Formik>
   )

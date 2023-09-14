@@ -1,4 +1,4 @@
-import { MutableRefObject, useCallback, useContext, useMemo } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 
 import {
   HarmonyPlainButton,
@@ -20,6 +20,7 @@ import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { Text } from 'components/typography'
 import { UploadFormScrollContext } from 'pages/upload-page/UploadPageNew'
 
+import { SubmitRowAnchored } from '../components/SubmitRowAnchored'
 import { AccessAndSaleField } from '../fields/AccessAndSaleField'
 import { AttributionField } from '../fields/AttributionField'
 import { MultiTrackSidebar } from '../fields/MultiTrackSidebar'
@@ -50,7 +51,6 @@ const messages = {
 
 type EditTrackFormProps = {
   formState: TrackFormState
-  formRef: MutableRefObject<FormikProps<TrackEditFormValues> | null>
   onContinue: (formState: TrackFormState) => void
 }
 
@@ -59,7 +59,7 @@ const EditFormValidationSchema = z.object({
 })
 
 export const EditTrackForm = (props: EditTrackFormProps) => {
-  const { formState, formRef, onContinue } = props
+  const { formState, onContinue } = props
   const { tracks } = formState
 
   // @ts-ignore - Slight differences in the sdk vs common track metadata types
@@ -106,7 +106,6 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
 
   return (
     <Formik<TrackEditFormValues>
-      innerRef={formRef}
       initialValues={initialValues}
       onSubmit={onSubmit}
       // @ts-expect-error issue with track types
@@ -165,6 +164,7 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
         </div>
         {isMultiTrack ? <MultiTrackSidebar /> : null}
       </div>
+      {!isMultiTrack ? <SubmitRowAnchored /> : null}
     </Form>
   )
 }
