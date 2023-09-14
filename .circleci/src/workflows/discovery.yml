@@ -61,7 +61,9 @@ jobs:
       type: approval
   - deploy:
       name: deploy-prod-discovery-provider
-      context: open-vpn
+      context:
+        - open-vpn
+        - slack-secrets
       requires:
         - deploy-prod-discovery-provider-trigger
       hosts: >-
@@ -83,6 +85,7 @@ jobs:
       context:
         - open-vpn
         - build-freeze
+        - slack-secrets
       hosts: >-
         stage-discovery-4
         stage-discovery-1
