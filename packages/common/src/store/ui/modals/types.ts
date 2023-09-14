@@ -1,6 +1,7 @@
 import { CreateChatModalState } from './create-chat-modal'
 import { BaseModalState } from './createModal'
 import { EditPlaylistModalState } from './edit-playlist-modal'
+import { EditTrackModalState } from './edit-track-modal'
 import { InboxUnavailableModalState } from './inbox-unavailable-modal'
 import { LeavingAudiusModalState } from './leaving-audius-modal'
 import { USDCPurchaseDetailsModalState } from './usdc-purchase-details-modal'
@@ -28,6 +29,7 @@ export type Modals =
   | 'SocialProof'
   | 'EditFolder'
   | 'EditPlaylist'
+  | 'EditTrack'
   | 'SignOutConfirmation'
   | 'Overflow'
   | 'AddToPlaylist'
@@ -61,6 +63,7 @@ export type BasicModalsState = {
 export type StatefulModalsState = {
   CreateChatModal: CreateChatModalState
   EditPlaylist: EditPlaylistModalState
+  EditTrack: EditTrackModalState
   InboxUnavailableModal: InboxUnavailableModalState
   LeavingAudiusModal: LeavingAudiusModalState
   WithdrawUSDCModal: WithdrawUSDCModalState

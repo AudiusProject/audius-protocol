@@ -10,7 +10,12 @@ import Toast from 'components/toast/Toast'
 
 import styles from './VisualizerProvider.module.css'
 import { MountPlacement, ComponentPlacement } from 'components/types'
-import { playerSelectors, queueSelectors, themeSelectors } from '@audius/common'
+import {
+  Nullable,
+  playerSelectors,
+  queueSelectors,
+  themeSelectors
+} from '@audius/common'
 
 import { shouldShowDark } from 'utils/theme/theme'
 import { profilePage } from 'utils/route'
@@ -67,7 +72,7 @@ const Visualizer = ({
 }: VisualizerProps) => {
   const [toastText, setToastText] = useState('')
   // Used to fadeIn/Out the visualizer (opacity 0 -> 1) through a css class
-  const [fadeVisualizer, setFadeVisualizer] = useState(false)
+  const [fadeVisualizer, setFadeVisualizer] = useState<Nullable<Boolean>>(null)
   // Used to show/hide the visualizer (display: block/none) through a css class
   const [showVisualizer, setShowVisualizer] = useState(false)
 
@@ -87,9 +92,9 @@ const Visualizer = ({
     }
   }, [showVisualizer])
 
-  if (!webGLExists) {
-    return null
-  }
+  // if (!webGLExists) {
+  //   return null
+  // }
 
   // Update Colors
   useEffect(() => {
@@ -130,7 +135,7 @@ const Visualizer = ({
   // On Closing of visualizer -> fadeOut
   // Wait some time before removing the wrapper DOM element to allow time for fading out animation.
   useEffect(() => {
-    if (!fadeVisualizer) {
+    if (fadeVisualizer === false) {
       setTimeout(() => {
         setShowVisualizer(false)
         Visualizer1?.hide()
