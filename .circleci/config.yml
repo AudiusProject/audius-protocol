@@ -12,7 +12,7 @@ orbs:
 parameters:
   workflow:
     type: string
-    default: "main"
+    default: 'main'
 
 commands:
   create_concatenated_patch_file:
@@ -74,12 +74,14 @@ jobs:
             - ./packages/embed/node_modules
             - ./packages/stems/node_modules
             - ./packages/common/node_modules
+            - ./packages/libs/node_modules
 
       - save_cache:
           key: cache-{{ .Revision }}
           paths:
             - ./packages/stems/dist
             - ./packages/common/dist
+            - ./packages/libs/dist
 
   generate-release:
     working_directory: ~/audius-protocol
@@ -90,7 +92,7 @@ jobs:
       - checkout
       - add_ssh_keys:
           fingerprints:
-            - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb" # github.com
+            - 'd0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb' # github.com
       - run:
           name: Set git config
           command: |
@@ -277,7 +279,7 @@ workflows:
     when:
       and:
         - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ["release-create-branch", << pipeline.schedule.name >>]
+        - equal: ['release-create-branch', << pipeline.schedule.name >>]
     jobs:
       - generate-release
 
@@ -285,7 +287,6 @@ workflows:
     when:
       and:
         - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ["release-client-create-branch", << pipeline.schedule.name >>]
+        - equal: ['release-client-create-branch', << pipeline.schedule.name >>]
     jobs:
       - generate-client-release
-  

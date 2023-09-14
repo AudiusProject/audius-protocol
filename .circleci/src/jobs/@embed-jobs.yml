@@ -23,6 +23,8 @@ embed-init:
           - packages/embed/node_modules
           - packages/stems/node_modules
           - packages/stems/dist
+          - packages/libs/node_modules
+          - packages/libs/dist
 
 embed-build-staging:
   working_directory: ~/audius-protocol
