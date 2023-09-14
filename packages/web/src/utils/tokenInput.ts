@@ -34,3 +34,7 @@ export const onTokenInputBlur = (e: FocusEvent<HTMLInputElement>) => {
 export const toHumanReadable = (value: number) => {
   return (value / 100).toFixed(PRECISION)
 }
+
+export const fromHumanReadable = (value: string) => {
+  return parseFloat(value) * 100
+}
