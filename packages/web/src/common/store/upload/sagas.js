@@ -815,6 +815,13 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
             }
           })
         )
+        yield* put(
+          addLocalCollection({
+            collectionId: confirmedPlaylist.playlist_id,
+            isAlbum: confirmedPlaylist.is_album,
+            category: LibraryCategory.Favorite
+          })
+        )
         yield put(
           make(Name.TRACK_UPLOAD_COMPLETE_UPLOAD, {
             count: trackIds.length,

@@ -20,7 +20,9 @@ import {
   confirmerActions,
   confirmTransaction,
   RequestConfirmationError,
-  reformatCollection
+  reformatCollection,
+  savedPageActions,
+  LibraryCategory
 } from '@audius/common'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
@@ -31,6 +33,7 @@ import { collectionPage } from 'utils/route'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { getUnclaimedPlaylistId } from './utils/getUnclaimedPlaylistId'
+const { addLocalCollection } = savedPageActions
 
 const { requestConfirmation } = confirmerActions
 const { getAccountUser } = accountSelectors
@@ -134,6 +137,14 @@ function* optimisticallySavePlaylist(
       is_album: false,
       user: { id: user_id, handle },
       permalink: playlist?.permalink
+    })
+  )
+
+  yield* put(
+    addLocalCollection({
+      collectionId: playlistId,
+      isAlbum: false,
+      category: LibraryCategory.Favorite
     })
   )
 
