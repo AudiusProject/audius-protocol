@@ -29,6 +29,7 @@ export const LineupTile = ({
   coSign,
   duration,
   favoriteType,
+  hasPreview,
   hidePlays,
   hideShare,
   id,
@@ -80,13 +81,13 @@ export const LineupTile = ({
   })
 
   const handlePress = useCallback(() => {
-    if (trackId && !doesUserHaveAccess) {
+    if (trackId && !doesUserHaveAccess && !hasPreview) {
       dispatch(setLockedContentId({ id: trackId }))
       dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))
     } else {
       onPress?.()
     }
-  }, [trackId, doesUserHaveAccess, dispatch, onPress])
+  }, [trackId, doesUserHaveAccess, hasPreview, dispatch, onPress])
 
   const isLongFormContent =
     isTrack &&
