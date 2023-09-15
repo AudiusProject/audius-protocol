@@ -11,6 +11,7 @@
   text-align: center;
   user-select: none;
   white-space: nowrap;
+  transition: all var(--hover);
 }
 
 .button:focus {
@@ -20,7 +21,6 @@
 /* Only add hover styles on devices which support it */
 @media (hover: hover) {
   .button:not(.disabled):hover {
-    transition: all var(--hover);
     transform: scale(1.04);
   }
 }
