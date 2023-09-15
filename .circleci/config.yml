@@ -182,14 +182,14 @@ workflows:
             mediorum/.* run-creator-workflow true
             mediorum/.* run-integration-workflow true
             mediorum/.* run-gcp-workflow true
-            identity-service/.* run-identity-workflow true
-            identity-service/.* run-integration-workflow true
-            identity-service/.* run-gcp-workflow true
-            libs/.* run-creator-workflow true
-            libs/.* run-identity-workflow true
-            libs/.* run-sdk-workflow true
-            libs/.* run-integration-workflow true
-            libs/.* run-gcp-workflow true
+            packages/identity-service/.* run-identity-workflow true
+            packages/identity-service/.* run-integration-workflow true
+            packages/identity-service/.* run-gcp-workflow true
+            packages/libs/.* run-creator-workflow true
+            packages/libs/.* run-identity-workflow true
+            packages/libs/.* run-sdk-workflow true
+            packages/libs/.* run-integration-workflow true
+            packages/libs/.* run-gcp-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             eth-contracts/.* run-integration-workflow true
             eth-contracts/.* run-gcp-workflow true
