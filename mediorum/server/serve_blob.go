@@ -140,7 +140,11 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 			return nil
 		}
 
-		return c.Stream(200, blob.ContentType(), blob)
+		blobData, err := io.ReadAll(blob)
+		if err != nil {
+			return err
+		}
+		return c.Blob(200, blob.ContentType(), blobData)
 	}
 
 	// don't redirect if the client only wants to know if we have it (ie localOnly query param is true)
