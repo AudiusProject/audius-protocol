@@ -94,6 +94,7 @@ describe('Email Notifications', () => {
     const message = 'hi from user 1'
     const messageId = '1'
     const messageTimestamp = new Date(Date.now() - config.dmNotificationDelay)
+
     const chatId = '1'
     await createChat(discoveryDB, user1, user2, chatId, messageTimestamp)
     await insertMessage(
@@ -418,6 +419,9 @@ describe('Email Notifications', () => {
       message,
       messageTimestamp
     )
+
+    const now = new Date(Date.now())
+    console.log({ messageTimestamp, now })
 
     // User 1 saves user 2's track
     const notificationRow = {

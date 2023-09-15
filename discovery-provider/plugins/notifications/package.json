@@ -11,7 +11,7 @@
     "sql-ts": "ts-node scripts/sql-ts.ts",
     "start": "pm2-runtime build/src/main.js --restart-delay=3000 --node-args=\"--max-old-space-size=512\"",
     "test:watch": "jest --watchAll",
-    "test": "tsc && jest --runInBand --forceExit -- processEmailNotifications.test.ts",
+    "test": "tsc && jest --watchAll --runInBand --forceExit -- processEmailNotifications.test.ts",
     "test-push": "ts-node scripts/test-push-notification.ts",
     "typecheck": "tsc --noEmit"
   },
