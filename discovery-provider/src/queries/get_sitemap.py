@@ -11,6 +11,7 @@ from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
+from src.models.users.aggregate_user import AggregateUser
 from src.utils.get_all_other_nodes import get_node_endpoint
 from src.utils.redis_connection import get_redis
 
@@ -191,6 +192,8 @@ def get_track_slugs(session: Session, limit: int, offset: int):
         session.query(User.handle, TrackRoute.slug)
         .join(Track, TrackRoute.track_id == Track.track_id)
         .join(User, TrackRoute.owner_id == User.user_id)
+        .join(AggregateUser, User.user_id == AggregateUser.user_id)
+        .filter(AggregateUser.follower_count >= 10)
         .filter(
             Track.is_current == True,
             Track.stem_of == None,
@@ -213,6 +216,8 @@ def get_playlist_slugs(session: Session, limit: int, offset: int):
         session.query(User.handle, PlaylistRoute.slug, Playlist.is_album)
         .join(User, User.user_id == PlaylistRoute.owner_id)
         .join(Playlist, PlaylistRoute.playlist_id == Playlist.playlist_id)
+        .join(AggregateUser, User.user_id == AggregateUser.user_id)
+        .filter(AggregateUser.follower_count >= 10)
         .filter(
             User.is_current == True,
             PlaylistRoute.is_current == True,
@@ -233,6 +238,7 @@ def get_user_slugs(session: Session, limit: int, offset: int):
     slugs = (
         # Handle, not handle_lc is the cannonical URL
         session.query(User.handle)
+        .join(AggregateUser, User.user_id == AggregateUser.user_id)
         .filter(
             User.is_current == True,
             User.is_deactivated == False,
@@ -240,7 +246,8 @@ def get_user_slugs(session: Session, limit: int, offset: int):
             User.handle_lc != None,
             User.is_available == True,
         )
-        .order_by(asc(User.user_id))
+        .filter(AggregateUser.follower_count >= 10)
+        .order_by(User.user_id.asc())
         .limit(limit)
         .offset(offset)
         .all()
