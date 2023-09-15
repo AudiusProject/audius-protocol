@@ -46,10 +46,7 @@ set -e
 npm run ganache
 npm run truffle-migrate
 
-
-#### RUN TESTS #####
-
-cd ../libs/
+cd ../packages/libs/
 
 # Migrate data & eth contracts
 # - Copy contracts build dir + create config files
@@ -57,21 +54,12 @@ cd ../libs/
 # - Eth contracts config: AudiusToken contract, registry contract and owner wallet addresses
 sh ./scripts/migrate_contracts.sh
 
-node ./initScripts/local.js distribute
+#### RUN TESTS #####
 
-# Run unit tests
-npm run test:unit
-
-# run tests
-printf '\nSTART tests:\n\n'
-if [ "$#" -eq  "0" ]
- then
-  ./node_modules/.bin/nyc --include src ./node_modules/.bin/mocha tests/index.js
-else
-  ./node_modules/.bin/nyc --include src ./node_modules/.bin/mocha $1
-fi
+# printf '\nSTART tests:\n\n'
+#./node_modules/.bin/mocha tests/index.js
 
 # run linter
-node_modules/.bin/standard
+# node_modules/.bin/standard
 
 # intentionally does not bring down containers

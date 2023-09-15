@@ -5,18 +5,18 @@ steps:
 
   - restore_cache:
       keys:
-        - sdk-cache-{{ checksum "libs/package-lock.json" }}
+        - sdk-cache-{{ checksum "packages/libs/package-lock.json" }}
         - sdk-cache-
   - run:
       name: Install sdk
       command: |
-        cd libs
+        cd packages/libs
         npm install
         npm run build:sdk
   - save_cache:
-      key: sdk-cache-{{ checksum "libs/package-lock.json" }}
+      key: sdk-cache-{{ checksum "packages/libs/package-lock.json" }}
       paths:
-        - ./libs/node_modules
+        - ./packages/libs/node_modules
 
   - restore_cache:
       keys:

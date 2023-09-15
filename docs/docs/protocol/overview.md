@@ -32,17 +32,17 @@ For more details on the Audius architecture, see the [Audius protocol whitepaper
 
 ## Audius Services
 
-| Service          | Description                                                                                                        | GitHub                                                                                  |
-| :--------------- | :----------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
+| Service          | Description                                                                                                        | GitHub                                                                                |
+| :--------------- | :----------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ |
 | Content Node     | Maintains the availability of users' content on IPFS including user metadata, images, and audio content            | [Link](https://github.com/AudiusProject/audius-protocol/tree/main/creator-node)       |
 | Discovery Node   | Indexes and stores the contents of the Audius contracts on the Ethereum blockchain for clients to query via an API | [Link](https://github.com/AudiusProject/audius-protocol/tree/main/discovery-provider) |
 | Identity Service | Stores encrypted auth ciphertexts, does Twitter OAuth and relays transactions (pays gas) on behalf of users        | [Link](https://github.com/AudiusProject/audius-protocol/tree/main/identity-service)   |
 
 ## Audius Smart Contracts & Libs
 
-| Lib                                                                                           | Description                                                                                                                                          |
-| :-------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`libs`](https://github.com/AudiusProject/audius-protocol/tree/main/libs)                   | An easy interface to the distributed web and Audius services: Identity Service, Discovery Node \(discovery provider\), Content Node \(creator node\) |
+| Lib                                                                                         | Description                                                                                                                                          |
+| :------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`libs`](https://github.com/AudiusProject/audius-protocol/tree/main/packages/libs)          | An easy interface to the distributed web and Audius services: Identity Service, Discovery Node \(discovery provider\), Content Node \(creator node\) |
 | [`contracts`](https://github.com/AudiusProject/audius-protocol/tree/main/contracts)         | The smart contracts being developed for the Audius streaming protocol                                                                                |
 | [`eth-contracts`](https://github.com/AudiusProject/audius-protocol/tree/main/eth-contracts) | The Ethereum smart contracts being developed for the Audius streaming protocol                                                                       |
 

@@ -129,9 +129,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     this.backupServices = {}
     this.selectedNode =
       this.config.initialSelectedNode &&
-        (!this.config.allowlist ||
-          this.config.allowlist?.has(this.config.initialSelectedNode)) &&
-        !this.config.blocklist?.has(this.config.initialSelectedNode)
+      (!this.config.allowlist ||
+        this.config.allowlist?.has(this.config.initialSelectedNode)) &&
+      !this.config.blocklist?.has(this.config.initialSelectedNode)
         ? this.config.initialSelectedNode
         : null
     this.eventEmitter =

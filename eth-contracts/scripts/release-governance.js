@@ -1,4 +1,4 @@
-const { libs } = require('../../libs')
+const { libs } = require('../../packages/libs')
 const HDWalletProvider = require('@truffle/hdwallet-provider')
 const Web3 = require('web3')
 

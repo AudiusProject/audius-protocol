@@ -43,12 +43,11 @@ export class Web3Manager {
   userSuppliedHandle?: string
   discoveryProvider: Nullable<DiscoveryProvider>
 
-
   constructor({
     web3Config,
     identityService,
     hedgehog,
-    isServer = false,
+    isServer = false
   }: Web3ManagerConfig) {
     this.web3Config = web3Config
     this.isServer = isServer
@@ -243,7 +242,9 @@ export class Web3Manager {
       const response = await retry(
         async (bail) => {
           try {
-            const baseURL = this.useDiscoveryRelay() ? this.discoveryProvider?.discoveryProviderEndpoint : this.identityService?.identityServiceEndpoint
+            const baseURL = this.useDiscoveryRelay()
+              ? this.discoveryProvider?.discoveryProviderEndpoint
+              : this.identityService?.identityServiceEndpoint
             console.error(`relaying to base url ${baseURL}`)
             return await this.identityService?.relay(
               contractRegistryKey,
@@ -303,7 +304,7 @@ export class Web3Manager {
         ) as unknown as DecodedLog[]
         decoded.forEach((evt) => {
           const returnValues: Record<string, string> = {}
-          evt.events.forEach((arg) => {
+          evt.events.forEach((arg: { name: string; value: string }) => {
             returnValues[arg.name] = arg.value
           })
           const eventLog = { returnValues }

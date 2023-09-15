@@ -1,9 +1,11 @@
 import { EthWeb3Manager } from '../../services/ethWeb3Manager'
 import { EthContracts } from '../../services/ethContracts'
 import { IdentityService } from '../../services/identity'
-import { writeFile } from 'fs/promises'
+import { promises } from 'fs'
 import path from 'path'
 import type { ServicesConfig } from '../config/types'
+
+const { writeFile } = promises
 
 type EnvironmentConfig = {
   CLAIM_DISTRIBUTION_CONTRACT_ADDRESS: string
