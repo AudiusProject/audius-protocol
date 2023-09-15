@@ -1,3 +1,5 @@
+import type { ReactElement } from 'react'
+
 import {
   isPremiumContentUSDCPurchaseGated,
   type ID,
@@ -122,7 +124,7 @@ export const LineupTileActionButtons = ({
   const showPremiumAccessStatus = trackId && !doesUserHaveAccess
   const showLeftButtons = !showPremiumAccessStatus && !isUnlisted
 
-  let content
+  let content: ReactElement | null = null
   if (readonly) {
     if (isUSDCPurchase && showPremiumAccessStatus) {
       content = (
