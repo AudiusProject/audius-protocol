@@ -344,7 +344,7 @@ export async function processEmailNotifications(
     while (true) {
       const now = Date.now()
       if (now > timeout) return
-      logger.info(
+      console.log(
         `processEmailNotifications | gathering users for ${frequency} query ${startOffset} ${pageCount}`
       )
       const userRows: { blockchainUserId: number; email: string }[] =
@@ -359,7 +359,7 @@ export async function processEmailNotifications(
       if (userRows.length === 0) return // once we've reached the end of users for this query
       lastUser = userRows[userRows.length - 1].blockchainUserId
       if (lastUser === undefined) {
-        logger.info('no last user found')
+        console.log('no last user found')
         return
       }
       const emailUsers = userRows.reduce((acc, user) => {
@@ -367,13 +367,13 @@ export async function processEmailNotifications(
         return acc
       }, {} as EmailUsers)
       if (Object.keys(emailUsers).length == 0) {
-        logger.info(
+        console.log(
           `processEmailNotifications | No users to process. Exiting...`
         )
         return
       }
 
-      logger.info(
+      console.log(
         `processEmailNotifications | Beginning processing ${
           Object.keys(emailUsers).length
         } users at ${frequency} frequency`
@@ -495,7 +495,7 @@ const processGroupOfEmails = async (
     results.push(...chunkResults)
   }
 
-  logger.info(
+  console.log(
     {
       job: processEmailNotifications
     },
