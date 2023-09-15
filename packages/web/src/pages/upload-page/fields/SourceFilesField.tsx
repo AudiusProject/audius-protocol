@@ -152,7 +152,10 @@ const SourceFilesMenuFields = () => {
   const [{ value: stemsValue }, , { setValue: setStems }] =
     useField<StemUpload[]>(STEMS)
 
-  const invalidAudioFile = (name: string, reason: 'size' | 'type') => {
+  const invalidAudioFile = (
+    name: string,
+    reason: 'corrupted' | 'size' | 'type'
+  ) => {
     console.error('Invalid Audio File', { name, reason })
     // TODO: show file error
   }

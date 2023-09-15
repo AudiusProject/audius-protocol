@@ -17,7 +17,7 @@ import { UploadFormState } from '../types'
 import styles from './SelectPage.module.css'
 import { TracksPreviewNew } from './TracksPreviewNew'
 
-type ErrorType = { reason: 'size' | 'type' } | null
+type ErrorType = { reason: 'corrupted' | 'size' | 'type' } | null
 
 type SelectPageProps = {
   formState: UploadFormState
