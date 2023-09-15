@@ -214,9 +214,9 @@ def get_playlist_slugs(session: Session, limit: int, offset: int):
     slugs: List[Tuple[str, str, bool]] = (
         # Handle, not handle_lc is the cannonical URL
         session.query(User.handle, PlaylistRoute.slug, Playlist.is_album)
-        .join(AggregateUser, User.user_id == AggregateUser.user_id)
         .join(User, User.user_id == PlaylistRoute.owner_id)
         .join(Playlist, PlaylistRoute.playlist_id == Playlist.playlist_id)
+        .join(AggregateUser, User.user_id == AggregateUser.user_id)
         .filter(AggregateUser.follower_count >= 10)
         .filter(
             User.is_current == True,

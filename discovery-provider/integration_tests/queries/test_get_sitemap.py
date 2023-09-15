@@ -62,8 +62,11 @@ def test_get_sitemaps(mock_set_base_url, mock_get_client_base_url, app):
                 for i in range(10)
             ],
             "users": [{"user_id": i, "handle": f"user_{i}"} for i in range(20)],
+        }
+        test_aggregate_user_entities = {
             "aggregate_user": [{"user_id": i, "follower_count": 10} for i in range(20)]
         }
+        populate_mock_db(db, test_aggregate_user_entities)
 
         populate_mock_db(db, test_entities)
 
@@ -179,7 +182,10 @@ def test_get_sitemaps_correct_counts(mock_set_base_url, mock_get_client_base_url
             ],
             "users": [{"user_id": i, "handle": f"user_{i}"} for i in range(20)],
         }
-
+        test_aggregate_user_entities = {
+            "aggregate_user": [{"user_id": i, "follower_count": 10} for i in range(20)]
+        }
+        populate_mock_db(db, test_aggregate_user_entities)
         populate_mock_db(db, test_entities)
 
         with db.scoped_session() as session:
