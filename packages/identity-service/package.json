@@ -21,8 +21,7 @@
     "copyfiles": "cp ./src/notifications/browserPush/*.zip ./build/src/notifications/browserPush && cp -r ./src/notifications/browserPush/audius.pushpackage ./build/src/notifications/browserPush && cp -r ./src/notifications/emails ./build/src/notifications",
     "build": "tsc --project tsconfig.build.json && npm run copyfiles",
     "typecheck": "tsc",
-    "typecheck:watch": "tsc --watch",
-    "postinstall": "patch-package"
+    "typecheck:watch": "tsc --watch"
   },
   "dependencies": {
     "@amplitude/node": "1.9.2",

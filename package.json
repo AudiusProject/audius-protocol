@@ -13,7 +13,7 @@
     "install-packages": "SKIP_BUILD=true npm install",
     "lint:fix": "npm run lint:fix -ws --if-present",
     "lint": "npm run lint -ws --if-present",
-    "patch-package": "patch-package --patch-dir=packages/mobile/patches && patch-package --patch-dir=packages/web/patches",
+    "patch-package": "patch-package --patch-dir=packages/mobile/patches && patch-package --patch-dir=packages/web/patches && patch-package --patch-dir=packages/identity-service/patches",
     "postinstall": "bash ./scripts/postinstall.sh",
     "preinstall": "bash ./scripts/preinstall.sh",
     "verify": "npm run verify -ws --if-present",
