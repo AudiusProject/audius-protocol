@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"mediorum/cidutil"
 	"mime"
 	"net/http"
@@ -324,6 +325,9 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 }
 
 func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
+	// images are small enough to always serve all at once (no 206 range responses)
+	c.Request().Header.Del("Range")
+
 	// if the client provided a filename, set it in the header to be auto-populated in download prompt
 	filenameForDownload := c.QueryParam("filename")
 	if filenameForDownload != "" {
@@ -348,8 +352,11 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 			}
 			defer blob.Close()
 
-			http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
-			return nil
+			blobData, err := io.ReadAll(blob)
+			if err != nil {
+				return err
+			}
+			return c.Blob(200, blob.ContentType(), blobData)
 		}
 
 		// check if file is migrated but on another host
