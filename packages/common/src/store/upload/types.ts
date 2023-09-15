@@ -47,8 +47,14 @@ export enum ProgressStatus {
 
 export type Progress = {
   status: ProgressStatus
-  loaded: number
-  total: number
+  loaded?: number
+  total?: number
+  transcode?: number
+}
+
+export type ProgressState = {
+  art: Progress
+  audio: Progress
 }
 
 export interface UploadState {
@@ -57,7 +63,7 @@ export interface UploadState {
   metadata: Nullable<ExtendedCollectionMetadata>
   uploadType: Nullable<UploadType>
   uploading: boolean
-  uploadProgress: Nullable<Progress[]>
+  uploadProgress: Nullable<ProgressState[]>
   success: boolean
   error: boolean
   shouldReset: boolean
