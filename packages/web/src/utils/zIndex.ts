@@ -20,6 +20,8 @@ export enum zIndex {
   COLLECTIBLE_DETAILS_MODAL = 20,
   COLLECTIBLE_EMBED_VIEW_MODAL = 25,
 
+  UPLOAD_SUBMIT_BAR = 50,
+
   // Set to 1000 to account for nested modals inside, which take a higher z-index
   EDIT_TRACK_MODAL = 1000,
   CREATE_PLAYLIST_MODAL = 1000,

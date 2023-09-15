@@ -1,7 +1,6 @@
-import { useCallback, useContext } from 'react'
+import { useCallback } from 'react'
 
 import { UploadType } from '@audius/common'
-import { HarmonyButton, IconUpload } from '@audius/stems'
 import { Form, Formik } from 'formik'
 import moment from 'moment'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -15,7 +14,7 @@ import {
 import { Tile } from 'components/tile'
 import { Text } from 'components/typography'
 
-import { UploadFormScrollContext } from '../UploadPageNew'
+import { AnchoredSubmitRow } from '../components/AnchoredSubmitRow'
 import { CollectionTrackFieldArray } from '../fields/CollectionTrackFieldArray'
 import { ReleaseDateField } from '../fields/ReleaseDateField'
 import { SelectGenreField } from '../fields/SelectGenreField'
@@ -44,7 +43,6 @@ type EditCollectionFormProps = {
 export const EditCollectionForm = (props: EditCollectionFormProps) => {
   const { formState, onContinue } = props
   const { tracks, uploadType, metadata } = formState
-  const scrollToTop = useContext(UploadFormScrollContext)
 
   const initialValues: CollectionValues = {
     ...metadata,
@@ -121,12 +119,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
           </div>
         </Tile>
         <CollectionTrackFieldArray />
-        <HarmonyButton
-          onClick={scrollToTop}
-          text={messages.completeButton}
-          iconLeft={IconUpload}
-          type='submit'
-        />
+        <AnchoredSubmitRow />
       </Form>
     </Formik>
   )
