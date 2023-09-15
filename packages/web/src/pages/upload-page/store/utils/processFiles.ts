@@ -36,9 +36,16 @@ const createArtwork = async (selectedFiles: File[]) => {
 
 export const processFiles = (
   selectedFiles: File[],
-  handleInvalid: (fileName: string, errorType: 'size' | 'type') => void
+  handleInvalid: (
+    fileName: string,
+    errorType: 'corrupted' | 'size' | 'type'
+  ) => void
 ) => {
   return selectedFiles.map(async (file) => {
+    if (file.size <= 0) {
+      handleInvalid(file.name, 'corrupted')
+      return null
+    }
     if (file.size > ALLOWED_MAX_AUDIO_SIZE_BYTES) {
       handleInvalid(file.name, 'size')
       return null

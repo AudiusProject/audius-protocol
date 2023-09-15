@@ -3,10 +3,14 @@ import PropTypes from 'prop-types'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Spring } from 'react-spring/renderprops'
 
+import { Text } from 'components/typography'
+
 import styles from './InvalidFileType.module.css'
 
 const messages = {
   type: 'Unsupported File Type',
+  corrupted:
+    'File is corrupted. Please ensure it is playable and stored locally.',
   size: 'File Too Large (Max 250MB)'
 }
 
@@ -25,7 +29,14 @@ const InvalidFileType = (props) => {
             [props.className]: !!props.className
           })}
         >
-          {messages[props.reason]}
+          <Text
+            className={styles.message}
+            size='large'
+            strength='strong'
+            color='staticWhite'
+          >
+            {messages[props.reason]}
+          </Text>
         </div>
       )}
     </Spring>
