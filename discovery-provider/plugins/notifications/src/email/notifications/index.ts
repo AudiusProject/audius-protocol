@@ -178,7 +178,6 @@ const getNotifications = async (
   userIds: string[],
   remoteConfig: RemoteConfig
 ): Promise<EmailNotification[]> => {
-  // NOTE: Temp while testing DM notifs on staging
   const appNotificationsResp = await dnDb.raw(appNotificationsSql, {
     start_offset: startOffset,
     user_ids: [[userIds]]
