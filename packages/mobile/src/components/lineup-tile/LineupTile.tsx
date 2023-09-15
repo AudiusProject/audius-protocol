@@ -141,6 +141,7 @@ export const LineupTile = ({
         />
       </View>
       {children}
+
       <LineupTileActionButtons
         hasReposted={has_current_user_reposted}
         hasSaved={has_current_user_saved}
