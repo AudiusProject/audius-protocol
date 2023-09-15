@@ -21,13 +21,15 @@ import {
   mobileOverflowMenuUIActions,
   shareModalUIActions,
   RepostType,
-  playerSelectors
+  playerSelectors,
+  isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
 import { useNavigationState } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { TrackImage } from 'app/components/image/TrackImage'
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
+import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 
@@ -82,6 +84,7 @@ export const TrackTileComponent = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+  const isUSDCEnabled = useIsUSDCEnabled()
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const isOnArtistsTracksTab = useNavigationState((state) => {
@@ -106,8 +109,15 @@ export const TrackTileComponent = ({
     title,
     track_id,
     genre,
-    is_premium: isPremium
+    is_premium: isPremium,
+    premium_conditions,
+    preview_cid
   } = track
+
+  const hasPreview =
+    isUSDCEnabled &&
+    isPremiumContentUSDCPurchaseGated(premium_conditions) &&
+    !!preview_cid
 
   const renderImage = useCallback(
     (props: ImageProps) => (
@@ -216,6 +226,7 @@ export const TrackTileComponent = ({
       isPlayingUid={isPlayingUid}
       favoriteType={FavoriteType.TRACK}
       repostType={RepostType.TRACK}
+      hasPreview={hasPreview}
       hideShare={hideShare}
       hidePlays={hidePlays}
       id={track_id}

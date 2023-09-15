@@ -86,6 +86,9 @@ export type LineupTileProps = Omit<LineupItemProps, 'togglePlay'> & {
   /** The item (track or collection) */
   item: Track | Collection
 
+  /** Indicates that item has preview content available */
+  hasPreview?: boolean
+
   /** Function to call when tile is pressed */
   onPress?: () => void
 
