@@ -15,7 +15,9 @@ import {
   uploadSelectors,
   confirmerActions,
   confirmTransaction,
-  reformatCollection
+  LibraryCategory,
+  reformatCollection,
+  savedPageActions
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { range } from 'lodash'
@@ -50,6 +52,7 @@ import { adjustUserField } from '../cache/users/sagas'
 import { watchUploadErrors } from './errorSagas'
 
 const { getUser } = cacheUsersSelectors
+const { addLocalCollection } = savedPageActions
 const { getAccountUser, getUserHandle, getUserId } = accountSelectors
 const { getStems } = uploadSelectors
 
@@ -842,6 +845,13 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
               id: user.user_id,
               handle: user.handle
             }
+          })
+        )
+        yield* put(
+          addLocalCollection({
+            collectionId: confirmedPlaylist.playlist_id,
+            isAlbum: confirmedPlaylist.is_album,
+            category: LibraryCategory.Favorite
           })
         )
         yield put(

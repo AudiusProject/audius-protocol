@@ -17,8 +17,10 @@ import {
   cacheTracksSelectors,
   removeNullable,
   confirmerActions,
+  LibraryCategory,
   confirmTransaction,
-  reformatCollection
+  reformatCollection,
+  savedPageActions
 } from '@audius/common'
 import {
   all,
@@ -560,6 +562,13 @@ function* confirmDeleteAlbum(playlistId, trackIds, userId) {
           ),
           put(
             accountActions.removeAccountPlaylist({ collectionId: playlistId })
+          ),
+          put(
+            savedPageActions.removeLocalCollection({
+              collectionId: playlistId,
+              isAlbum: true,
+              category: LibraryCategory.Favorite
+            })
           )
         ])
 
@@ -612,6 +621,13 @@ function* confirmDeleteAlbum(playlistId, trackIds, userId) {
               isAlbum: playlist.is_album,
               user: { id: user.user_id, handle: user.handle }
             })
+          ),
+          put(
+            savedPageActions.addLocalCollection({
+              collectionId: playlist.playlist_id,
+              isAlbum: playlist.is_album,
+              category: LibraryCategory.Favorite
+            })
           )
         ])
         yield put(
@@ -644,6 +660,13 @@ function* confirmDeletePlaylist(userId, playlistId) {
           ),
           put(
             accountActions.removeAccountPlaylist({ collectionId: playlistId })
+          ),
+          put(
+            savedPageActions.removeLocalCollection({
+              collectionId: playlistId,
+              isAlbum: false,
+              category: LibraryCategory.Favorite
+            })
           )
         ])
 
@@ -688,6 +711,13 @@ function* confirmDeletePlaylist(userId, playlistId) {
               name: playlist.playlist_name,
               isAlbum: playlist.is_album,
               user: { id: user.user_id, handle: user.handle }
+            })
+          ),
+          put(
+            savedPageActions.addLocalCollection({
+              collectionId: playlist.playlist_id,
+              isAlbum: playlist.is_album,
+              category: LibraryCategory.Favorite
             })
           )
         ])
