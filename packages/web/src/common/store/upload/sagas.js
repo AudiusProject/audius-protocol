@@ -16,7 +16,8 @@ import {
   confirmerActions,
   confirmTransaction,
   LibraryCategory,
-  reformatCollection
+  reformatCollection,
+  savedPageActions
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { range } from 'lodash'
@@ -51,6 +52,7 @@ import { adjustUserField } from '../cache/users/sagas'
 import { watchUploadErrors } from './errorSagas'
 
 const { getUser } = cacheUsersSelectors
+const { addLocalCollection } = savedPageActions
 const { getAccountUser, getUserHandle, getUserId } = accountSelectors
 const { getStems } = uploadSelectors
 
