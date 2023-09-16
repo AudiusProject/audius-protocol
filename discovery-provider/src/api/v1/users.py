@@ -3,7 +3,7 @@ import json
 from typing import Optional
 
 from eth_account.messages import encode_defunct
-from flask import request
+from flask import Response, request
 from flask_restx import Namespace, Resource, fields, reqparse
 
 from src.api.v1.helpers import (
@@ -76,6 +76,12 @@ from src.api.v1.models.users import (
 from src.api.v1.models.wildcard_model import WildcardModel
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
+from src.queries.download_csv import (
+    DownloadPurchasesArgs,
+    DownloadSalesArgs,
+    download_purchases,
+    download_sales,
+)
 from src.queries.get_associated_user_id import get_associated_user_id
 from src.queries.get_associated_user_wallet import get_associated_user_wallet
 from src.queries.get_challenges import get_challenges
@@ -2183,6 +2189,29 @@ class FullPurchasesCount(Resource):
         return success_response(count)
 
 
+@full_ns.route("/<string:id>/purchases/download")
+class FullPurchasesDownload(Resource):
+    @full_ns.doc(
+        id="Download Purchases as CSV",
+        description="Downloads the purchases the user has made as a CSV file",
+        params={"id": "A User ID"},
+    )
+    @auth_middleware()
+    def get(self, id, authed_user_id=None):
+        decoded_id = decode_with_abort(id, full_ns)
+        if decoded_id != authed_user_id:
+            full_ns.abort(403)
+            return
+        args = DownloadPurchasesArgs(buyer_user_id=decoded_id)
+        purchases = download_purchases(args)
+        if purchases is None:
+            abort_not_found(id, full_ns)
+            return
+        response = Response(purchases, content_type="text/csv")
+        response.headers["Content-Disposition"] = "attachment; filename=purchases.csv"
+        return response
+
+
 @full_ns.route("/<string:id>/sales")
 class FullSales(Resource):
     @full_ns.doc(
@@ -2235,3 +2264,26 @@ class FullSalesCount(Resource):
         )
         count = get_usdc_purchases_count(args)
         return success_response(count)
+
+
+@full_ns.route("/<string:id>/sales/download")
+class FullSalesDownload(Resource):
+    @full_ns.doc(
+        id="Download Sales as CSV",
+        description="Downloads the sales the user has made as a CSV file",
+        params={"id": "A User ID"},
+    )
+    @auth_middleware()
+    def get(self, id, authed_user_id=None):
+        decoded_id = decode_with_abort(id, full_ns)
+        if decoded_id != authed_user_id:
+            full_ns.abort(403)
+            return
+        args = DownloadSalesArgs(seller_user_id=decoded_id)
+        sales = download_sales(args)
+        if sales is None:
+            abort_not_found(id, full_ns)
+            return
+        response = Response(sales, content_type="text/csv")
+        response.headers["Content-Disposition"] = "attachment; filename=sales.csv"
+        return response

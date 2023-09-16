@@ -20,6 +20,8 @@ class GetUSDCPurchasesCountArgs(TypedDict):
     buyer_user_id: Optional[int]
     content_ids: Optional[List[int]]
     content_type: Optional[PurchaseType]
+    sort_method: Optional[PurchaseSortMethod]
+    sort_direction: Optional[SortDirection]
 
 
 class GetUSDCPurchasesArgs(TypedDict):
