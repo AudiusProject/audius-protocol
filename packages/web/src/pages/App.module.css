@@ -23,6 +23,7 @@ body {
   --nav-width: 240px;
   --nav-width-minus-border: 239px;
   --mobile-min-width: 280px;
+  --play-bar-height: 88px;
   position: relative;
   width: 100%;
   height: 100%;

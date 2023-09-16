@@ -48,6 +48,8 @@ mobile-init:
           - packages/stems/dist
           - packages/common/node_modules
           - packages/common/dist
+          - packages/libs/node_modules
+          - packages/libs/dist
           - packages/mobile/.env.stage
           - packages/mobile/.env.prod
 

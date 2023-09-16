@@ -31,7 +31,6 @@
     "webpack-cli": "4.5.0"
   },
   "dependencies": {
-    "@audius/sdk": "3.0.8-beta.13",
     "amplitude-js": "8.11.1",
     "axios": "0.19.2",
     "classnames": "2.2.6",

@@ -288,8 +288,8 @@ const ImageSelectionPopup = ({
   return (
     <Popup
       anchorRef={anchorRef}
-      anchorOrigin={{ vertical: 'center', horizontal: 'right' }}
-      transformOrigin={{ vertical: 'center', horizontal: 'left' }}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      transformOrigin={{ vertical: 'top', horizontal: 'center' }}
       className={cn(styles.popup, className)}
       isVisible={isVisible}
       onClose={handleClose}

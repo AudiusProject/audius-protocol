@@ -15,7 +15,9 @@ import {
   uploadSelectors,
   confirmerActions,
   confirmTransaction,
-  reformatCollection
+  LibraryCategory,
+  reformatCollection,
+  savedPageActions
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { range } from 'lodash'
@@ -50,6 +52,7 @@ import { adjustUserField } from '../cache/users/sagas'
 import { watchUploadErrors } from './errorSagas'
 
 const { getUser } = cacheUsersSelectors
+const { addLocalCollection } = savedPageActions
 const { getAccountUser, getUserHandle, getUserId } = accountSelectors
 const { getStems } = uploadSelectors
 
@@ -155,15 +158,21 @@ function* uploadWorker(requestChan, respChan, progressChan) {
     // the loaded value may actually retreat. We don't want to show
     // this to the user, so only feed increasing vals of loaded into
     // progressChan
-    let maxLoaded = 0
+    const maxLoaded = { art: 0, audio: 0 }
 
-    return (loaded, total) => {
-      maxLoaded = Math.max(maxLoaded, loaded)
+    return (progress) => {
+      const key =
+        'audio' in progress ? 'audio' : 'art' in progress ? 'art' : null
+      const { upload, transcode } = progress[key]
+      const loaded = upload?.loaded
+      const total = upload?.total
+      maxLoaded[key] = loaded ? Math.max(maxLoaded[key], loaded) : undefined
       try {
         progressChan.put(
-          uploadActions.updateProgress(index, {
-            loaded: maxLoaded,
+          uploadActions.updateProgress(index, key, {
+            loaded: maxLoaded[key],
             total,
+            transcode: transcode?.decimal,
             status:
               loaded !== total
                 ? ProgressStatus.UPLOADING
@@ -197,7 +206,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
         track.file,
         artwork,
         metadata,
-        updateProgress ? makeOnProgress(index) : (loaded, total) => {}
+        updateProgress ? makeOnProgress(index) : (progress) => {}
       )
 
       // b/c we can't pass extra info (phase) into the confirmer fail call, we need to clean up here.
@@ -248,7 +257,13 @@ function* uploadWorker(requestChan, respChan, progressChan) {
       if (updateProgress) {
         yield put(
           progressChan,
-          uploadActions.updateProgress(index, {
+          uploadActions.updateProgress(index, 'art', {
+            status: ProgressStatus.COMPLETE
+          })
+        )
+        yield put(
+          progressChan,
+          uploadActions.updateProgress(index, 'audio', {
             status: ProgressStatus.COMPLETE
           })
         )
@@ -448,7 +463,16 @@ export function* handleUploads({
       const trackFile = tracks[i].track.file
       yield put(
         progressChan,
-        uploadActions.updateProgress(i, {
+        uploadActions.updateProgress(i, 'art', {
+          loaded: 0,
+          total: trackFile.size,
+          status: ProgressStatus.UPLOADING
+        })
+      )
+      yield put(
+        progressChan,
+
+        uploadActions.updateProgress(i, 'audio', {
           loaded: 0,
           total: trackFile.size,
           status: ProgressStatus.UPLOADING
@@ -486,7 +510,7 @@ export function* handleUploads({
     } = yield take(respChan)
 
     if (error) {
-      console.error('Worker errored')
+      console.error(`Worker errored: ${error}`)
       const index = idToTrackMap[originalId].index
 
       if (!isStem) {
@@ -630,14 +654,22 @@ export function* handleUploads({
         // Update all the progress
         if (!isStem) {
           yield all(
-            range(tracks.length).map((i) =>
-              put(
-                progressChan,
-                uploadActions.updateProgress(i, {
-                  status: ProgressStatus.COMPLETE
-                })
-              )
-            )
+            range(tracks.length).flatMap((i) => {
+              return [
+                put(
+                  progressChan,
+                  uploadActions.updateProgress(i, 'art', {
+                    status: ProgressStatus.COMPLETE
+                  })
+                ),
+                put(
+                  progressChan,
+                  uploadActions.updateProgress(i, 'audio', {
+                    status: ProgressStatus.COMPLETE
+                  })
+                )
+              ]
+            })
           )
         }
         returnVal = { trackIds }
@@ -815,6 +847,13 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
             }
           })
         )
+        yield* put(
+          addLocalCollection({
+            collectionId: confirmedPlaylist.playlist_id,
+            isAlbum: confirmedPlaylist.is_album,
+            category: LibraryCategory.Favorite
+          })
+        )
         yield put(
           make(Name.TRACK_UPLOAD_COMPLETE_UPLOAD, {
             count: trackIds.length,
@@ -914,6 +953,25 @@ function* uploadSingleTrack(track) {
   })
   yield put(recordEvent)
 
+  const onProgress = (progress) => {
+    const key = 'audio' in progress ? 'audio' : 'art' in progress ? 'art' : null
+    if (!key) return
+    const { upload, transcode } = progress[key]
+    const loaded = upload?.loaded
+    const total = upload?.total
+    progressChan.put(
+      uploadActions.updateProgress(0, key, {
+        loaded,
+        total,
+        transcode: transcode?.decimal,
+        status:
+          loaded !== total
+            ? ProgressStatus.UPLOADING
+            : ProgressStatus.PROCESSING
+      })
+    )
+  }
+
   yield put(
     confirmerActions.requestConfirmation(
       `${track.metadata.title}`,
@@ -923,18 +981,7 @@ function* uploadSingleTrack(track) {
           track.file,
           track.metadata.artwork.file,
           track.metadata,
-          (loaded, total) => {
-            progressChan.put(
-              uploadActions.updateProgress(0, {
-                loaded,
-                total,
-                status:
-                  loaded !== total
-                    ? ProgressStatus.UPLOADING
-                    : ProgressStatus.PROCESSING
-              })
-            )
-          }
+          onProgress
         )
 
         if (error) {
@@ -1018,7 +1065,14 @@ function* uploadSingleTrack(track) {
 
   // Finish up the upload
   progressChan.put(
-    uploadActions.updateProgress(0, { status: ProgressStatus.COMPLETE })
+    uploadActions.updateProgress(0, 'art', {
+      status: ProgressStatus.COMPLETE
+    })
+  )
+  progressChan.put(
+    uploadActions.updateProgress(0, 'audio', {
+      status: ProgressStatus.COMPLETE
+    })
   )
   yield put(
     uploadActions.uploadTracksSucceeded(confirmedTrack.track_id, [

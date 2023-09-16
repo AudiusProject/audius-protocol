@@ -35,7 +35,6 @@ import { BackendState } from '../common/store/backend/types'
 
 import { CookieBannerState } from './application/ui/cookieBanner/types'
 import { EditFolderModalState } from './application/ui/editFolderModal/slice'
-import EditTrackModalState from './application/ui/editTrackModal/types'
 import { NotificationsUIState } from './application/ui/notifications/notificationsUISlice'
 import { ScrollLockState } from './application/ui/scrollLock/types'
 import { SetAsArtistPickConfirmationState } from './application/ui/setAsArtistPickConfirmation/types'
@@ -67,7 +66,6 @@ export type AppState = CommonState & {
       changePassword: ChangePasswordState
       cookieBanner: CookieBannerState
       editFolderModal: EditFolderModalState
-      editTrackModal: EditTrackModalState
       embedModal: EmbedModalState
       firstUploadModal: FirstUploadModalState
       scrollLock: ScrollLockState

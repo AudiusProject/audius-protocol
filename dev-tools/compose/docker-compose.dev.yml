@@ -1,4 +1,4 @@
-version: "3.9"
+version: '3.9'
 
 services:
   ingress:
@@ -21,13 +21,13 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   build-audius-libs:
-    build: ${PROJECT_ROOT}/libs
+    build: ${PROJECT_ROOT}/packages/libs
     command: sh /tmp/dev-tools/startup/build-audius-libs.sh
     volumes:
       - audius-libs:/usr/src/app
       - poa-contracts-abis:/usr/src/data-contracts/ABIs
       - eth-contracts-abis:/usr/src/eth-contracts/ABIs
-      - ${PROJECT_ROOT}/libs/src:/usr/src/app/src
+      - ${PROJECT_ROOT}/packages/libs/src:/usr/src/app/src
       - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
     depends_on:
       poa-ganache:
@@ -43,27 +43,27 @@ services:
     build: ${PROJECT_ROOT}/dev-tools/commands
     command: sleep infinity
     environment:
-      ETH_TOKEN_ADDRESS: "${ETH_TOKEN_ADDRESS}"
-      ETH_REGISTRY_ADDRESS: "${ETH_REGISTRY_ADDRESS}"
-      ETH_PROVIDER_URL: "http://eth-ganache:8545"
-      ETH_OWNER_WALLET: "${ETH_OWNER_WALLET}"
+      ETH_TOKEN_ADDRESS: '${ETH_TOKEN_ADDRESS}'
+      ETH_REGISTRY_ADDRESS: '${ETH_REGISTRY_ADDRESS}'
+      ETH_PROVIDER_URL: 'http://eth-ganache:8545'
+      ETH_OWNER_WALLET: '${ETH_OWNER_WALLET}'
 
-      POA_REGISTRY_ADDRESS: "${POA_REGISTRY_ADDRESS}"
-      ENTITY_MANAGER_ADDRESS: "${ENTITY_MANAGER_ADDRESS}"
-      POA_PROVIDER_URL: "http://poa-ganache:8545"
+      POA_REGISTRY_ADDRESS: '${POA_REGISTRY_ADDRESS}'
+      ENTITY_MANAGER_ADDRESS: '${ENTITY_MANAGER_ADDRESS}'
+      POA_PROVIDER_URL: 'http://poa-ganache:8545'
 
-      SOLANA_ENDPOINT: "http://solana-test-validator:8899"
-      SOLANA_OWNER_SECRET_KEY: "${SOLANA_OWNER_SECRET_KEY}"
-      SOLANA_TOKEN_MINT_PUBLIC_KEY: "${SOLANA_TOKEN_MINT_PUBLIC_KEY}"
-      SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY: "${SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY}"
-      SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY: "${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}"
-      SOLANA_REWARD_MANAGER_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_PUBLIC_KEY}"
-      SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}"
-      SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}"
-      SOLANA_FEEPAYER_SECRET_KEY: "${SOLANA_FEEPAYER_SECRET_KEY}"
+      SOLANA_ENDPOINT: 'http://solana-test-validator:8899'
+      SOLANA_OWNER_SECRET_KEY: '${SOLANA_OWNER_SECRET_KEY}'
+      SOLANA_TOKEN_MINT_PUBLIC_KEY: '${SOLANA_TOKEN_MINT_PUBLIC_KEY}'
+      SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY: '${SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY}'
+      SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY: '${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}'
+      SOLANA_REWARD_MANAGER_PUBLIC_KEY: '${SOLANA_REWARD_MANAGER_PUBLIC_KEY}'
+      SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY: '${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}'
+      SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY: '${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}'
+      SOLANA_FEEPAYER_SECRET_KEY: '${SOLANA_FEEPAYER_SECRET_KEY}'
 
-      IDENTITY_SERVICE_URL: "http://identity-service:7000"
-      FALLBACK_CREATOR_NODE_URL: "http://creator-node:4000" # this should choose a random cn everytime this is run
+      IDENTITY_SERVICE_URL: 'http://identity-service:7000'
+      FALLBACK_CREATOR_NODE_URL: 'http://creator-node:4000' # this should choose a random cn everytime this is run
     volumes:
       - audius-libs:/usr/src/app/node_modules/@audius/sdk
       - ../commands/src:/usr/src/app/src

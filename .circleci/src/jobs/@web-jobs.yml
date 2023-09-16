@@ -48,6 +48,8 @@ web-init:
           - packages/stems/dist
           - packages/common/node_modules
           - packages/common/dist
+          - packages/libs/node_modules
+          - packages/libs/dist
 
 web-build-demo:
   working_directory: ~/audius-protocol

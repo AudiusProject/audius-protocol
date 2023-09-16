@@ -16,7 +16,7 @@
     "prepare:translations": "sh scripts/prepare-translations.sh"
   },
   "dependencies": {
-    "@audius/sdk": "file:../libs",
+    "@audius/sdk": "file:../packages/libs",
     "@docusaurus/core": "2.0.0-beta.20",
     "@docusaurus/preset-classic": "2.0.0-beta.20",
     "@docusaurus/theme-search-algolia": "2.0.0-beta.20",

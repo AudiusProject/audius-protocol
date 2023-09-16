@@ -21,7 +21,6 @@ import visualizer from 'pages/visualizer/store/slice'
 import appCTAModal from 'store/application/ui/app-cta-modal/slice'
 import cookieBanner from 'store/application/ui/cookieBanner/reducer'
 import editFolderModal from 'store/application/ui/editFolderModal/slice'
-import editTrackModal from 'store/application/ui/editTrackModal/reducer'
 import notifications from 'store/application/ui/notifications/notificationsUISlice'
 import scrollLock from 'store/application/ui/scrollLock/reducer'
 import setAsArtistPickConfirmation from 'store/application/ui/setAsArtistPickConfirmation/reducer'
@@ -68,7 +67,6 @@ const createRootReducer = (routeHistory: History) =>
         appCTAModal,
         cookieBanner,
         editFolderModal,
-        editTrackModal,
         embedModal,
         firstUploadModal,
         scrollLock,

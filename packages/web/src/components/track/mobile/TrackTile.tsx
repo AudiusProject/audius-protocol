@@ -471,26 +471,25 @@ const TrackTile = (props: CombinedProps) => {
               : null}
           </div>
         </div>
-        {!isReadonly ? (
-          <BottomButtons
-            hasSaved={props.hasCurrentUserSaved}
-            hasReposted={props.hasCurrentUserReposted}
-            toggleRepost={onToggleRepost}
-            toggleSave={onToggleSave}
-            onShare={onClickShare}
-            onClickOverflow={onClickOverflowMenu}
-            isOwner={isOwner}
-            isLoading={isLoading}
-            isUnlisted={isUnlisted}
-            doesUserHaveAccess={doesUserHaveAccess}
-            premiumConditions={premiumConditions}
-            premiumTrackStatus={premiumTrackStatus}
-            isShareHidden={hideShare}
-            isDarkMode={darkMode}
-            isMatrixMode={isMatrix}
-            isTrack
-          />
-        ) : null}
+        <BottomButtons
+          hasSaved={props.hasCurrentUserSaved}
+          hasReposted={props.hasCurrentUserReposted}
+          toggleRepost={onToggleRepost}
+          toggleSave={onToggleSave}
+          onShare={onClickShare}
+          onClickOverflow={onClickOverflowMenu}
+          isOwner={isOwner}
+          readonly={isReadonly}
+          isLoading={isLoading}
+          isUnlisted={isUnlisted}
+          doesUserHaveAccess={doesUserHaveAccess}
+          premiumConditions={premiumConditions}
+          premiumTrackStatus={premiumTrackStatus}
+          isShareHidden={hideShare}
+          isDarkMode={darkMode}
+          isMatrixMode={isMatrix}
+          isTrack
+        />
       </div>
     </div>
   )

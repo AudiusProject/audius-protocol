@@ -34,6 +34,7 @@ import CookieBanner from 'components/cookie-banner/CookieBanner'
 import { DevModeMananger } from 'components/dev-mode-manager/DevModeManager'
 import { HeaderContextConsumer } from 'components/header/mobile/HeaderContextProvider'
 import Konami from 'components/konami/Konami'
+import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
 import Navigator from 'components/nav/Navigator'
 import { NotificationPage } from 'components/notification'
 import PinnedTrackConfirmation from 'components/pin-track-confirmation/PinTrackConfirmation'
@@ -187,15 +188,8 @@ const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
 
 const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 
-const UploadPage = lazyWithPreload(
-  () => import('pages/upload-page/UploadPage'),
-  0
-)
+const UploadPage = lazy(() => import('pages/upload-page/UploadPage'))
 const Modals = lazyWithPreload(() => import('./modals/Modals'), 0)
-const ConnectedMusicConfetti = lazyWithPreload(
-  () => import('components/music-confetti/ConnectedMusicConfetti'),
-  0
-)
 
 export const MAIN_CONTENT_ID = 'mainContent'
 
@@ -945,9 +939,7 @@ class App extends Component {
           <Suspense fallback={null}>
             <Modals />
           </Suspense>
-          <Suspense fallback={null}>
-            <ConnectedMusicConfetti />
-          </Suspense>
+          <ConnectedMusicConfetti />
           <Suspense fallback={null}>
             <RewardClaimedToast />
           </Suspense>

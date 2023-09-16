@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"mediorum/cidutil"
 	"mime"
 	"net/http"
@@ -257,15 +258,12 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	// - some task queue stuff
 
 	uploads := make([]*Upload, len(files))
-	wg := sync.WaitGroup{}
-	wg.Add(len(files))
+	wg, _ := errgroup.WithContext(c.Request().Context())
 	for idx, formFile := range files {
 
 		idx := idx
 		formFile := formFile
-		go func() {
-			defer wg.Done()
-
+		wg.Go(func() error {
 			now := time.Now().UTC()
 			upload := &Upload{
 				ID:               ulid.Make().String(),
@@ -284,23 +282,28 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 			formFileCID, err := cidutil.ComputeFileHeaderCID(formFile)
 			if err != nil {
 				upload.Error = err.Error()
-				return
+				return err
 			}
 
 			upload.OrigFileCID = formFileCID
-			upload.FFProbe, _ = ffprobeUpload(formFile)
+			upload.FFProbe, err = ffprobeUpload(formFile)
+			if err != nil && upload.Template == JobTemplateAudio {
+				// fail audio upload if ffprobe fails
+				upload.Error = err.Error()
+				return err
+			}
 
 			// mirror to n peers
 			file, err := formFile.Open()
 			if err != nil {
 				upload.Error = err.Error()
-				return
+				return err
 			}
 
 			upload.Mirrors, err = ss.replicateFile(formFileCID, file)
 			if err != nil {
 				upload.Error = err.Error()
-				return
+				return err
 			}
 
 			ss.logger.Info("mirrored", "name", formFile.Filename, "uploadID", upload.ID, "cid", formFileCID, "mirrors", upload.Mirrors)
@@ -309,22 +312,22 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 				upload.TranscodeResults["original.jpg"] = formFileCID
 			}
 
-			err = ss.crud.Create(upload)
-			if err != nil {
-				ss.logger.Warn("create upload failed", "err", err)
-			}
-		}()
-	}
-	wg.Wait()
-
-	if c.QueryParam("redirect") != "" {
-		return c.Redirect(302, c.Request().Referer())
+			return ss.crud.Create(upload)
+		})
 	}
 
-	return c.JSON(200, uploads)
+	status := 200
+	if err := wg.Wait(); err != nil {
+		status = 422
+	}
+
+	return c.JSON(status, uploads)
 }
 
 func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
+	// images are small enough to always serve all at once (no 206 range responses)
+	c.Request().Header.Del("Range")
+
 	// if the client provided a filename, set it in the header to be auto-populated in download prompt
 	filenameForDownload := c.QueryParam("filename")
 	if filenameForDownload != "" {
@@ -349,8 +352,11 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 			}
 			defer blob.Close()
 
-			http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
-			return nil
+			blobData, err := io.ReadAll(blob)
+			if err != nil {
+				return err
+			}
+			return c.Blob(200, blob.ContentType(), blobData)
 		}
 
 		// check if file is migrated but on another host

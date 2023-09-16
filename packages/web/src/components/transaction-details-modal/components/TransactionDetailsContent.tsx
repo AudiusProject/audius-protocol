@@ -6,7 +6,8 @@ import {
   formatAudio,
   TransactionType,
   formatCapitalizeString,
-  ChallengeRewardID
+  ChallengeRewardID,
+  makeSolanaTransactionLink
 } from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -156,7 +157,7 @@ const dateAndMetadataBlocks = (transactionDetails: TransactionDetails) => {
             header={
               <a
                 className={styles.link}
-                href={`https://explorer.solana.com/address/${transactionDetails.metadata}`}
+                href={makeSolanaTransactionLink(transactionDetails.metadata)}
                 target='_blank'
                 title={transactionDetails.metadata}
                 rel='noreferrer'

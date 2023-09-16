@@ -2,7 +2,7 @@
   width: 100%;
   min-width: 320px;
   text-align: center;
-  height: 88px;
+  height: var(--play-bar-height);
   background: var(--neutral-light-10);
   user-select: none;
 }

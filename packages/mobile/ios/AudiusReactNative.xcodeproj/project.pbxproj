@@ -26,11 +26,6 @@
 		23C6F6592977C46F00F66384 /* trending_matrix.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6542977C46F00F66384 /* trending_matrix.riv */; };
 		23C6F65A2977C46F00F66384 /* notifications_matrix.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6552977C46F00F66384 /* notifications_matrix.riv */; };
 		23C6F65B2977C46F00F66384 /* feed_matrix.riv in Resources */ = {isa = PBXBuildFile; fileRef = 23C6F6562977C46F00F66384 /* feed_matrix.riv */; };
-		AA7D28012A68C20F008DF4D3 /* library_dark.riv in Resources */ = {isa = PBXBuildFile; fileRef = AA7D27FE2A68C20F008DF4D3 /* library_dark.riv */; };
-		AA7D28022A68C20F008DF4D3 /* library_matrix.riv in Resources */ = {isa = PBXBuildFile; fileRef = AA7D27FF2A68C20F008DF4D3 /* library_matrix.riv */; };
-		AA7D28032A68C20F008DF4D3 /* library_default.riv in Resources */ = {isa = PBXBuildFile; fileRef = AA7D28002A68C20F008DF4D3 /* library_default.riv */; };
-		B84EBFE7A8480433FB2462D9 /* libPods-AudiusReactNative.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 673EB20B90B4A9514D739B99 /* libPods-AudiusReactNative.a */; };
-		2FD70DEA0D63544E733CB96F /* libPods-AudiusReactNative.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DDFBD1F0A838E1F603A49CAD /* libPods-AudiusReactNative.a */; };
 		32FE1B49FE7E47B69CF28E06 /* AvenirNextLTPro-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = EA6D8E31A68B4451B423AFF0 /* AvenirNextLTPro-Bold.otf */; };
 		5983D8FED74747CCA45F8FC4 /* AvenirNextLTPro-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 33E11CC84EEA4109B8A1AE2C /* AvenirNextLTPro-Medium.otf */; };
 		7103C3ED2929C6B5002B9072 /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7103C3EC2929C6B5002B9072 /* BootSplash.storyboard */; };
@@ -44,6 +39,9 @@
 		83FB60B623A4351D00DC2238 /* main.jsbundle in Resources */ = {isa = PBXBuildFile; fileRef = 008F07F21AC5B25A0029DE68 /* main.jsbundle */; };
 		9204DC5D38C1495FA330CF12 /* AvenirNextLTPro-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 6F65A9A9BAD047FABD240C59 /* AvenirNextLTPro-Regular.otf */; };
 		9A21B5C22EF94A738EBABFED /* AvenirNextLTPro-Thin.otf in Resources */ = {isa = PBXBuildFile; fileRef = BAEB40775EC64F48AC1983F7 /* AvenirNextLTPro-Thin.otf */; };
+		AA7D28012A68C20F008DF4D3 /* library_dark.riv in Resources */ = {isa = PBXBuildFile; fileRef = AA7D27FE2A68C20F008DF4D3 /* library_dark.riv */; };
+		AA7D28022A68C20F008DF4D3 /* library_matrix.riv in Resources */ = {isa = PBXBuildFile; fileRef = AA7D27FF2A68C20F008DF4D3 /* library_matrix.riv */; };
+		AA7D28032A68C20F008DF4D3 /* library_default.riv in Resources */ = {isa = PBXBuildFile; fileRef = AA7D28002A68C20F008DF4D3 /* library_default.riv */; };
 		C48560F6F96345AC8C69506F /* AvenirNextLTPro-Heavy.otf in Resources */ = {isa = PBXBuildFile; fileRef = D40C2F0A0A4641D18D426558 /* AvenirNextLTPro-Heavy.otf */; };
 		CFE33B15004249189EB75CDC /* AvenirNextLTPro-UltLt.otf in Resources */ = {isa = PBXBuildFile; fileRef = D83DC634C3DC44B588896E10 /* AvenirNextLTPro-UltLt.otf */; };
 		D8A2EF3D01D8D06DFEF19F29 /* libPods-AudiusReactNative.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 622045C334F0F16E3CF4011F /* libPods-AudiusReactNative.a */; };
@@ -62,6 +60,7 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = AudiusReactNative/main.m; sourceTree = "<group>"; };
 		13B32CE523D2782A002F0526 /* AudiusReactNative-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AudiusReactNative-Bridging-Header.h"; sourceTree = "<group>"; };
 		13B32CE623D2782B002F0526 /* SampleSwiftFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleSwiftFile.swift; sourceTree = "<group>"; };
+		1FBFACF443D7D1D743A6B13A /* Pods-AudiusReactNative.releasecandidate.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AudiusReactNative.releasecandidate.xcconfig"; path = "Target Support Files/Pods-AudiusReactNative/Pods-AudiusReactNative.releasecandidate.xcconfig"; sourceTree = "<group>"; };
 		23B4E1CD297889CB00016FEE /* notifications_dark.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = notifications_dark.riv; path = Assets/notifications_dark.riv; sourceTree = "<group>"; };
 		23C6F63E2977C27A00F66384 /* explore_default.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = explore_default.riv; path = Assets/explore_default.riv; sourceTree = "<group>"; };
 		23C6F63F2977C27A00F66384 /* trending_default.riv */ = {isa = PBXFileReference; lastKnownFileType = file; name = trending_default.riv; path = Assets/trending_default.riv; sourceTree = "<group>"; };
@@ -234,9 +233,9 @@
 				80E769842E137A16D8B24B96 /* Pods-AudiusReactNative.debug.xcconfig */,
 				D8E305EA8939571531A6B48A /* Pods-AudiusReactNative.staging.debug.xcconfig */,
 				453FC09EC343ACA359EB312C /* Pods-AudiusReactNative.release.xcconfig */,
-				A97F9DDC66B0CD24826CB0A0 /* Pods-AudiusReactNative.releasecandidate.xcconfig */,
 				871B6984E1993EF6CFB9B5A5 /* Pods-AudiusReactNative.staging.release.xcconfig */,
 				CA27166AAEB892DEA975C5CF /* Pods-AudiusReactNative.staging.releasecandidate.xcconfig */,
+				1FBFACF443D7D1D743A6B13A /* Pods-AudiusReactNative.releasecandidate.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -769,7 +768,7 @@
 		};
 		9E85FA582913022900DF18A9 /* ReleaseCandidate */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A97F9DDC66B0CD24826CB0A0 /* Pods-AudiusReactNative.releasecandidate.xcconfig */;
+			baseConfigurationReference = 1FBFACF443D7D1D743A6B13A /* Pods-AudiusReactNative.releasecandidate.xcconfig */;
 			buildSettings = {
 				APP_DISPLAY_NAME = "RC - Prod (Audius)";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon.ReleaseCandidate;

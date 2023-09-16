@@ -83,8 +83,12 @@ export const uploadTrackFailed = () => {
   return { type: UPLOAD_TRACKS_FAILED }
 }
 
-export const updateProgress = (index: number, progress: Progress) => {
-  return { type: UPDATE_PROGRESS, index, progress }
+export const updateProgress = (
+  index: number,
+  key: 'audio' | 'art',
+  progress: Progress
+) => {
+  return { type: UPDATE_PROGRESS, index, key, progress }
 }
 
 export const reset = () => {

@@ -1,11 +1,8 @@
 import { useCallback, useContext, useMemo } from 'react'
 
 import {
-  HarmonyButton,
-  HarmonyButtonType,
   HarmonyPlainButton,
   HarmonyPlainButtonType,
-  IconArrow,
   IconCaretRight,
   IconPause,
   IconPlay
@@ -23,6 +20,7 @@ import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { Text } from 'components/typography'
 import { UploadFormScrollContext } from 'pages/upload-page/UploadPageNew'
 
+import { AnchoredSubmitRow } from '../components/AnchoredSubmitRow'
 import { AccessAndSaleField } from '../fields/AccessAndSaleField'
 import { AttributionField } from '../fields/AttributionField'
 import { MultiTrackSidebar } from '../fields/MultiTrackSidebar'
@@ -154,6 +152,7 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
             <HarmonyPlainButton
               className={styles.previewButton}
               variant={HarmonyPlainButtonType.SUBDUED}
+              type='button'
               text={messages.preview}
               iconLeft={isPreviewPlaying ? IconPause : IconPlay}
               onClick={() => {
@@ -165,17 +164,7 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
         </div>
         {isMultiTrack ? <MultiTrackSidebar /> : null}
       </div>
-      {!isMultiTrack ? (
-        <div className={styles.continue}>
-          <HarmonyButton
-            variant={HarmonyButtonType.PRIMARY}
-            text='Continue'
-            name='continue'
-            iconRight={IconArrow}
-            className={styles.continueButton}
-          />
-        </div>
-      ) : null}
+      {!isMultiTrack ? <AnchoredSubmitRow /> : null}
     </Form>
   )
 }

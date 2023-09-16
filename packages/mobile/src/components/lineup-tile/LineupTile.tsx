@@ -29,6 +29,7 @@ export const LineupTile = ({
   coSign,
   duration,
   favoriteType,
+  hasPreview,
   hidePlays,
   hideShare,
   id,
@@ -80,13 +81,13 @@ export const LineupTile = ({
   })
 
   const handlePress = useCallback(() => {
-    if (trackId && !doesUserHaveAccess) {
+    if (trackId && !doesUserHaveAccess && !hasPreview) {
       dispatch(setLockedContentId({ id: trackId }))
       dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))
     } else {
       onPress?.()
     }
-  }, [trackId, doesUserHaveAccess, dispatch, onPress])
+  }, [trackId, doesUserHaveAccess, hasPreview, dispatch, onPress])
 
   const isLongFormContent =
     isTrack &&
@@ -141,22 +142,22 @@ export const LineupTile = ({
         />
       </View>
       {children}
-      {!isReadonly ? (
-        <LineupTileActionButtons
-          hasReposted={has_current_user_reposted}
-          hasSaved={has_current_user_saved}
-          isOwner={isOwner}
-          isShareHidden={hideShare}
-          isUnlisted={isUnlisted}
-          trackId={trackId}
-          premiumConditions={premiumConditions}
-          doesUserHaveAccess={doesUserHaveAccess}
-          onPressOverflow={onPressOverflow}
-          onPressRepost={onPressRepost}
-          onPressSave={onPressSave}
-          onPressShare={onPressShare}
-        />
-      ) : null}
+
+      <LineupTileActionButtons
+        hasReposted={has_current_user_reposted}
+        hasSaved={has_current_user_saved}
+        isOwner={isOwner}
+        isShareHidden={hideShare}
+        isUnlisted={isUnlisted}
+        readonly={isReadonly}
+        trackId={trackId}
+        premiumConditions={premiumConditions}
+        doesUserHaveAccess={doesUserHaveAccess}
+        onPressOverflow={onPressOverflow}
+        onPressRepost={onPressRepost}
+        onPressSave={onPressSave}
+        onPressShare={onPressShare}
+      />
     </LineupTileRoot>
   )
 }

@@ -12,7 +12,12 @@ export const processTrackFile = async (
   trackFile: DocumentPickerResponse
 ): Promise<UploadTrack> => {
   const { name, size, fileCopyUri, uri, type } = trackFile
-  if (size && size > ALLOWED_MAX_AUDIO_SIZE_BYTES) {
+  if (!size || size <= 0) {
+    throw new Error(
+      'File is corrupted. Please ensure it is playable and stored locally.'
+    )
+  }
+  if (size > ALLOWED_MAX_AUDIO_SIZE_BYTES) {
     throw new Error('File too large')
   }
   // Check file extension (heuristic for failure)

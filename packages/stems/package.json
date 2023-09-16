@@ -29,7 +29,7 @@
     "parser": "babel-eslint"
   },
   "peerDependencies": {
-    "bn.js": "4.11.6",
+    "bn.js": "5.1.0",
     "classnames": "2.2.6",
     "lodash": "4.17.20",
     "moment": "2.24.0",
@@ -49,7 +49,7 @@
     "@storybook/react": "^6.4.19",
     "@svgr/rollup": "^4.3.2",
     "@svgr/webpack": "^5.5.0",
-    "@types/bn.js": "4.11.6",
+    "@types/bn.js": "5.1.0",
     "@types/classnames": "2.2.6",
     "@types/jest": "^24.0.18",
     "@types/lodash": "^4.14.161",
