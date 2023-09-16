@@ -7,7 +7,18 @@ from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
+from src.models.users.usdc_transactions_history import (
+    USDCTransactionMethod,
+    USDCTransactionsHistory,
+    USDCTransactionType,
+)
 from src.models.users.user import User
+from src.models.users.user_bank import USDCUserBankAccount
+from src.queries.query_helpers import (
+    SortDirection,
+    TransactionSortMethod,
+    paginate_query,
+)
 from src.utils.csv_writer import write_csv
 from src.utils.db_session import get_db_read_replica
 
@@ -18,6 +29,10 @@ class DownloadPurchasesArgs(TypedDict):
 
 class DownloadSalesArgs(TypedDict):
     seller_user_id: int
+
+
+class DownloadWithdrawalsArgs(TypedDict):
+    user_id: int
 
 
 # Get all purchases or sales for a given artist.
@@ -96,7 +111,7 @@ def get_link(content_type: PurchaseType, handle: str, slug: str):
 
 
 # Get cost of purchased content
-def get_cost(amount: str):
+def get_dollar_amount(amount: str):
     num_usdc_decimals = 6
     return int(amount) / 10 ** num_usdc_decimals
 
@@ -114,7 +129,7 @@ def download_purchases(args: DownloadPurchasesArgs):
         "link": get_link(result.content_type, result.seller_handle, result.slug),
         "artist": result.seller_name,
         "date": result.created_at,
-        "cost": get_cost(result.amount),
+        "cost": get_dollar_amount(result.amount),
     }, results))
 
     # Get results in CSV format
@@ -143,11 +158,45 @@ def download_sales(args: DownloadSalesArgs):
     contents = list(map(lambda result: {
         "title": result.content_title,
         "link": get_link(result.content_type, seller_handle, result.slug),
-        "purchased_by": result.buyer_name,
+        "purchased by": result.buyer_name,
         "date": result.created_at,
-        "cost": get_cost(result.amount),
+        "cost": get_dollar_amount(result.amount),
     }, results))
 
     # Get results in CSV format
     to_download = write_csv(contents)
     return to_download
+
+
+def download_withdrawals(args: DownloadWithdrawalsArgs):
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        # Get USDC withdrawals for user
+        results = (
+            session.query(USDCTransactionsHistory)
+            .select_from(User)
+            .filter(User.user_id == args["user_id"])
+            .filter(User.is_current == True)
+            .join(USDCUserBankAccount, USDCUserBankAccount.ethereum_address == User.wallet)
+            .join(
+                USDCTransactionsHistory,
+                USDCTransactionsHistory.user_bank == USDCUserBankAccount.bank_account,
+            )
+            .filter(
+                USDCTransactionsHistory.transaction_type == USDCTransactionType.transfer
+            )
+            .filter(USDCTransactionsHistory.method == USDCTransactionMethod.send)
+            .order_by(desc(USDCTransactionsHistory.transaction_created_at))
+            .all()
+        )
+
+        # Build list of dictionary results
+        contents = list(map(lambda result: {
+            "destination wallet": result.tx_metadata,
+            "date": result.transaction_created_at,
+            "amount": get_dollar_amount(result.change),
+        }, results))
+
+        # Get results in CSV format
+        to_download = write_csv(contents)
+        return to_download

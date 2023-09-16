@@ -9,6 +9,7 @@ from flask_restx import Namespace, Resource, fields, reqparse
 from src.api.v1.helpers import (
     DescriptiveArgument,
     abort_bad_request_param,
+    abort_forbidden,
     abort_not_found,
     add_auth_headers_to_parser,
     current_user_parser,
@@ -79,8 +80,10 @@ from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.queries.download_csv import (
     DownloadPurchasesArgs,
     DownloadSalesArgs,
+    DownloadWithdrawalsArgs,
     download_purchases,
     download_sales,
+    download_withdrawals,
 )
 from src.queries.get_associated_user_id import get_associated_user_id
 from src.queries.get_associated_user_wallet import get_associated_user_wallet
@@ -2200,13 +2203,9 @@ class FullPurchasesDownload(Resource):
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
         if decoded_id != authed_user_id:
-            full_ns.abort(403)
-            return
+            abort_forbidden()
         args = DownloadPurchasesArgs(buyer_user_id=decoded_id)
         purchases = download_purchases(args)
-        if purchases is None:
-            abort_not_found(id, full_ns)
-            return
         response = Response(purchases, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=purchases.csv"
         return response
@@ -2277,13 +2276,28 @@ class FullSalesDownload(Resource):
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
         if decoded_id != authed_user_id:
-            full_ns.abort(403)
-            return
+            abort_forbidden()
         args = DownloadSalesArgs(seller_user_id=decoded_id)
         sales = download_sales(args)
-        if sales is None:
-            abort_not_found(id, full_ns)
-            return
         response = Response(sales, content_type="text/csv")
         response.headers["Content-Disposition"] = "attachment; filename=sales.csv"
+        return response
+
+
+@full_ns.route("/<string:id>/withdrawals/download")
+class GetUSDCTransactionHistory(Resource):
+    @full_ns.doc(
+        id="""Download USDC Withdrawals as CSV""",
+        description="""Downloads the USDC withdrawals the user has made as a CSV file""",
+        params={"id": "A User ID"},
+    )
+    @auth_middleware()
+    def get(self, id, authed_user_id=None):
+        decoded_id = decode_with_abort(id, full_ns)
+        if decoded_id != authed_user_id:
+            abort_forbidden()
+        args = DownloadWithdrawalsArgs(user_id=decoded_id)
+        withdrawals = download_withdrawals(args)
+        response = Response(withdrawals, content_type="text/csv")
+        response.headers["Content-Disposition"] = "attachment; filename=withdrawals.csv"
         return response
