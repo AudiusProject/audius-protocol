@@ -12,7 +12,7 @@ docker...
 
 ## Regenerate sql-ts types
 
-npm run sql-ts
+See [schemadef](https://github.com/AudiusProject/audius-protocol/tree/main/sc)
 
 ## Sending a test sns push
 

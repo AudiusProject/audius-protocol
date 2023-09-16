@@ -1,9 +1,0 @@
-{
-  "client":"postgres",
-  "connection": {
-    "host": "",
-    "user": "",
-    "password": "",
-    "database" : ""
-  }
-}
