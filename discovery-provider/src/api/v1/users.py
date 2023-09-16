@@ -816,8 +816,7 @@ class UserTracksLibraryFull(Resource):
         args = user_tracks_library_parser.parse_args()
         decoded_id = decode_with_abort(id, ns)
         if authed_user_id != decoded_id:
-            full_ns.abort(403)
-            return
+            abort_forbidden(full_ns)
 
         offset = format_offset(args)
         limit = format_limit(args)
@@ -849,8 +848,7 @@ def get_user_collections(
     args = user_collections_library_parser.parse_args()
     decoded_id = decode_with_abort(id, ns)
     if authed_user_id != decoded_id:
-        full_ns.abort(403)
-        return
+        abort_forbidden(full_ns)
 
     offset = format_offset(args)
     limit = format_limit(args)
@@ -2151,8 +2149,7 @@ class FullPurchases(Resource):
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
         if decoded_id != authed_user_id:
-            full_ns.abort(403)
-            return
+            abort_forbidden(full_ns)
         args = purchases_and_sales_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
         offset = get_default_max(args.get("offset"), 0)
@@ -2182,8 +2179,7 @@ class FullPurchasesCount(Resource):
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
         if decoded_id != authed_user_id:
-            full_ns.abort(403)
-            return
+            abort_forbidden(full_ns)
         args = purchases_and_sales_count_parser.parse_args()
         args = GetUSDCPurchasesCountArgs(
             buyer_user_id=decoded_id,
@@ -2203,7 +2199,7 @@ class FullPurchasesDownload(Resource):
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
         if decoded_id != authed_user_id:
-            abort_forbidden()
+            abort_forbidden(full_ns)
         args = DownloadPurchasesArgs(buyer_user_id=decoded_id)
         purchases = download_purchases(args)
         response = Response(purchases, content_type="text/csv")
@@ -2224,8 +2220,7 @@ class FullSales(Resource):
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
         if decoded_id != authed_user_id:
-            full_ns.abort(403)
-            return
+            abort_forbidden(full_ns)
         args = purchases_and_sales_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
         offset = get_default_max(args.get("offset"), 0)
@@ -2255,8 +2250,7 @@ class FullSalesCount(Resource):
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
         if decoded_id != authed_user_id:
-            full_ns.abort(403)
-            return
+            abort_forbidden(full_ns)
         args = purchases_and_sales_count_parser.parse_args()
         args = GetUSDCPurchasesCountArgs(
             seller_user_id=decoded_id,
@@ -2276,7 +2270,7 @@ class FullSalesDownload(Resource):
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
         if decoded_id != authed_user_id:
-            abort_forbidden()
+            abort_forbidden(full_ns)
         args = DownloadSalesArgs(seller_user_id=decoded_id)
         sales = download_sales(args)
         response = Response(sales, content_type="text/csv")
@@ -2295,7 +2289,7 @@ class GetUSDCTransactionHistory(Resource):
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
         if decoded_id != authed_user_id:
-            abort_forbidden()
+            abort_forbidden(full_ns)
         args = DownloadWithdrawalsArgs(user_id=decoded_id)
         withdrawals = download_withdrawals(args)
         response = Response(withdrawals, content_type="text/csv")
