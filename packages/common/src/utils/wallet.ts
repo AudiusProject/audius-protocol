@@ -9,6 +9,7 @@ import {
   StringUSDC,
   StringWei
 } from 'models/Wallet'
+import { AmountObject } from 'store/ui'
 import {
   WEI,
   trimRightZeros,
@@ -122,6 +123,30 @@ export const convertJSBIToAmountObject = (amount: JSBI, decimals: number) => {
     amountString: amount.toString(),
     uiAmount: JSBI.toNumber(amount) / 10 ** decimals,
     uiAmountString
+  }
+}
+
+export const convertQuoteStringToAmountObject = (
+  amount: string,
+  decimals: number
+) => {
+  return {
+    amount: Number(BigInt(amount)),
+    amountString: amount,
+    uiAmount: Number(BigInt(amount)) / 10 ** decimals,
+    uiAmountString: (BigInt(amount) / BigInt(10 ** decimals)).toString()
+  }
+}
+
+export const convertBigIntToAmountObject = (
+  amount: bigint,
+  decimals: number
+): AmountObject => {
+  return {
+    amount: Number(amount),
+    amountString: amount.toString(),
+    uiAmount: Number(amount) / 10 ** decimals,
+    uiAmountString: (Number(amount) / 10 ** decimals).toString()
   }
 }
 

@@ -11,7 +11,6 @@ import {
   Transaction,
   TransactionInstruction
 } from '@solana/web3.js'
-import BN from 'bn.js'
 
 import { getLibs } from 'services/audius-libs'
 import { getSolanaConnection } from 'services/solana/solana'
@@ -92,25 +91,21 @@ export const pollForAudioBalanceChange = async ({
   maxRetryCount = DEFAULT_MAX_RETRY_COUNT
 }: {
   tokenAccount: PublicKey
-  initialBalance?: BN
+  initialBalance: bigint
   retryDelayMs?: number
   maxRetryCount?: number
 }) => {
   let retries = 0
   let tokenAccountInfo = await getAudioAccountInfo({ tokenAccount })
   while (
-    (!tokenAccountInfo ||
-      initialBalance === undefined ||
-      tokenAccountInfo.amount.eq(initialBalance)) &&
+    (!tokenAccountInfo || tokenAccountInfo.amount === initialBalance) &&
     retries++ < maxRetryCount
   ) {
     if (!tokenAccountInfo) {
       console.debug(
         `AUDIO account not found. Retrying... ${retries}/${maxRetryCount}`
       )
-    } else if (initialBalance === undefined) {
-      initialBalance = tokenAccountInfo.amount
-    } else if (tokenAccountInfo.amount.eq(initialBalance)) {
+    } else if (tokenAccountInfo.amount === initialBalance) {
       console.debug(
         `Polling AUDIO balance (${initialBalance} === ${tokenAccountInfo.amount}) [${retries}/${maxRetryCount}]`
       )
@@ -118,15 +113,11 @@ export const pollForAudioBalanceChange = async ({
     await delay(retryDelayMs)
     tokenAccountInfo = await getAudioAccountInfo({ tokenAccount })
   }
-  if (
-    tokenAccountInfo &&
-    initialBalance &&
-    !tokenAccountInfo.amount.eq(initialBalance)
-  ) {
+  if (tokenAccountInfo && tokenAccountInfo.amount !== initialBalance) {
     console.debug(
-      `AUDIO balance changed by ${tokenAccountInfo.amount.sub(
-        initialBalance
-      )} (${initialBalance} => ${tokenAccountInfo.amount})`
+      `AUDIO balance changed by ${
+        tokenAccountInfo.amount - initialBalance
+      } (${initialBalance} => ${tokenAccountInfo.amount})`
     )
     return tokenAccountInfo.amount
   }
@@ -219,7 +210,7 @@ export const createTransferToUserBankTransaction = async ({
 }: {
   userBank: PublicKey
   fromAccount: PublicKey
-  amount: BN
+  amount: bigint
   memo: string
 }) => {
   const libs = await getLibs()

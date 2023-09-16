@@ -1,4 +1,3 @@
-import type { SwapMode } from '@jup-ag/core'
 import {
   createCloseAccountInstruction,
   createAssociatedTokenAccountInstruction
@@ -26,9 +25,8 @@ const USDC_SLIPPAGE = 3
 export const getFundDestinationTokenAccountFees = async (
   account: PublicKey
 ) => {
-  // TODO: might have to pay rent for root sol account, see BuyAudio.ts
   const rent = await getAssociatedTokenAccountRent()
-  const fee = await getTransferTransactionFee(account)
+  const fee = (await getTransferTransactionFee(account)) ?? 0
   return (rent + fee) / LAMPORTS_PER_SOL
 }
 
@@ -57,33 +55,26 @@ export const getSwapUSDCUserBankInstructions = async ({
     outputTokenSymbol: 'SOL',
     inputAmount: amount,
     slippage: USDC_SLIPPAGE,
-    swapMode: 'ExactOut' as SwapMode,
+    swapMode: 'ExactOut',
     onlyDirectRoutes: true
   })
-  const usdcNeededAmount = quoteRoute.inputAmount
-  const swapRoute = await JupiterSingleton.getQuote({
+  const usdcNeededAmount = quoteRoute.inputAmount.amount
+  const swapQuote = await JupiterSingleton.getQuote({
     inputTokenSymbol: 'USDC',
     outputTokenSymbol: 'SOL',
-    inputAmount: usdcNeededAmount.uiAmount,
+    inputAmount: Number(BigInt(usdcNeededAmount)),
     slippage: USDC_SLIPPAGE,
-    swapMode: 'ExactIn' as SwapMode,
-    forceFetch: true,
+    swapMode: 'ExactIn',
     onlyDirectRoutes: true
   })
-  const exchangeInfo = await JupiterSingleton.exchange({
-    routeInfo: swapRoute.route,
-    userPublicKey: solanaRootAccount.publicKey,
-    feeAccount: feePayer
+  const swapInstructions = await JupiterSingleton.getSwapInstructions({
+    quote: swapQuote.quote,
+    userPublicKey: solanaRootAccount.publicKey
   })
-  const swapInstructions = [
-    ...(exchangeInfo.transactions.setupTransaction?.instructions ?? []),
-    ...exchangeInfo.transactions.swapTransaction.instructions,
-    ...(exchangeInfo.transactions.cleanupTransaction?.instructions ?? [])
-  ]
 
   const transferInstructions =
     await libs.solanaWeb3Manager!.createTransferInstructionsFromCurrentUser({
-      amount: new BN(usdcNeededAmount.uiAmount),
+      amount: new BN(usdcNeededAmount),
       feePayerKey: feePayer,
       senderSolanaAddress: usdcUserBank,
       recipientSolanaAddress: solanaUSDCAssociatedTokenAccount.toString(),

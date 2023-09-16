@@ -1,6 +1,6 @@
 import { SolanaWalletAddress, MintName, DEFAULT_MINT } from '@audius/common'
 import {
-  AccountInfo,
+  Account,
   getMinimumBalanceForRentExemptAccount,
   getAssociatedTokenAddressSync
 } from '@solana/spl-token'
@@ -14,6 +14,7 @@ import {
 import { getLibs } from 'services/audius-libs'
 
 export const ROOT_ACCOUNT_SIZE = 0 // Root account takes 0 bytes, but still pays rent!
+export const TRANSACTION_FEE_FALLBACK = 5000
 
 /**
  * Gets the solana connection from libs.
@@ -96,11 +97,10 @@ export const getTokenAccountInfo = async ({
 }: {
   tokenAccount: PublicKey
   mint?: MintName
-}): Promise<AccountInfo | null> => {
+}): Promise<Account | null> => {
   const libs = await getLibs()
   return await libs.solanaWeb3Manager!.getTokenAccountInfo(
-    tokenAccount.toString(),
-    mint
+    tokenAccount.toString()
   )
 }
 
@@ -120,9 +120,10 @@ export const getTransferTransactionFee = async (
 ) => {
   const connection = await getSolanaConnection()
   const recentBlockhash = await getRecentBlockhash()
-  const tx = new Transaction({ recentBlockhash })
+  const tx = new Transaction()
+  tx.recentBlockhash = recentBlockhash
   tx.feePayer = destinationPubkey
-  return await tx.getEstimatedFee(connection)
+  return (await tx.getEstimatedFee(connection)) ?? TRANSACTION_FEE_FALLBACK
 }
 
 /**
