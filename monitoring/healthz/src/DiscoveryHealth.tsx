@@ -3,7 +3,7 @@ import {
   useEnvironmentSelection,
 } from './components/EnvironmentSelector'
 import { SP, useServiceProviders } from './useServiceProviders'
-import { RelTime } from './misc'
+import { RelTime, timeSince, nanosToReadableDuration } from './misc'
 import './DiscoveryHealth.css'
 
 const bytesToGb = (bytes: number) => Math.floor(bytes / 10 ** 9)
@@ -123,6 +123,8 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     (health.lastSuccessfulRepair?.Counters?.under_replicated ?? 0) +
     (health.lastSuccessfulRepair?.Counters?.over_replicated ?? 0)
   const repairHealth = totalCIDsChecked ? (1 - (totalCIDsTriedRepair / (totalCIDsChecked))) * 100 : 0
+  // convert nanoseconds to Date
+
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
   const getPeers = (str: string | undefined) => {
@@ -193,7 +195,13 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
         </td>
       )}
       {isContent && (
-        <td>{`${repairHealth}% (${expectedContentSize} GB)`}</td>
+        <td>
+          {timeSince(health.lastSuccessfulRepair?.StartedAt) === null
+            ? "no data yet"
+            : `${nanosToReadableDuration(health.lastSuccessfulRepair?.Duration || 0)} to repair ${repairHealth}% of ${expectedContentSize} GB 
+          starting ${timeSince(health.lastSuccessfulRepair?.StartedAt)} ago`
+          }
+        </td>
       )}
       {isContent && (<td>{legacyDirUsed} GB</td>)}
       {isContent && (<td>{mediorumDirUsed} GB</td>)}
