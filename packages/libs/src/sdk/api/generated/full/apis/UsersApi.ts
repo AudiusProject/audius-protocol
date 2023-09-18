@@ -91,6 +91,27 @@ export interface BulkGetSubscribersViaJSONRequestRequest {
     ids: Array<string>;
 }
 
+export interface DownloadPurchasesAsCSVRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    userId?: string;
+}
+
+export interface DownloadSalesAsCSVRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    userId?: string;
+}
+
+export interface DownloadUSDCWithdrawalsAsCSVRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    userId?: string;
+}
+
 export interface GetAIAttributedTracksByUserHandleRequest {
     handle: string;
     offset?: number;
@@ -425,6 +446,159 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async bulkGetSubscribersViaJSONRequest(params: BulkGetSubscribersViaJSONRequestRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullBulkSubscribersResponse> {
         const response = await this.bulkGetSubscribersViaJSONRequestRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Downloads the purchases the user has made as a CSV file
+     */
+    async downloadPurchasesAsCSVRaw(params: DownloadPurchasesAsCSVRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Blob>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling downloadPurchasesAsCSV.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling downloadPurchasesAsCSV.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling downloadPurchasesAsCSV.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/purchases/download`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.BlobApiResponse(response);
+    }
+
+    /**
+     * Downloads the purchases the user has made as a CSV file
+     */
+    async downloadPurchasesAsCSV(params: DownloadPurchasesAsCSVRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Blob> {
+        const response = await this.downloadPurchasesAsCSVRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Downloads the sales the user has made as a CSV file
+     */
+    async downloadSalesAsCSVRaw(params: DownloadSalesAsCSVRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Blob>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling downloadSalesAsCSV.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling downloadSalesAsCSV.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling downloadSalesAsCSV.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/sales/download`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.BlobApiResponse(response);
+    }
+
+    /**
+     * Downloads the sales the user has made as a CSV file
+     */
+    async downloadSalesAsCSV(params: DownloadSalesAsCSVRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Blob> {
+        const response = await this.downloadSalesAsCSVRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Downloads the USDC withdrawals the user has made as a CSV file
+     */
+    async downloadUSDCWithdrawalsAsCSVRaw(params: DownloadUSDCWithdrawalsAsCSVRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Blob>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling downloadUSDCWithdrawalsAsCSV.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling downloadUSDCWithdrawalsAsCSV.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling downloadUSDCWithdrawalsAsCSV.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/withdrawals/download`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.BlobApiResponse(response);
+    }
+
+    /**
+     * Downloads the USDC withdrawals the user has made as a CSV file
+     */
+    async downloadUSDCWithdrawalsAsCSV(params: DownloadUSDCWithdrawalsAsCSVRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Blob> {
+        const response = await this.downloadUSDCWithdrawalsAsCSVRaw(params, initOverrides);
         return await response.value();
     }
 
