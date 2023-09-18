@@ -246,7 +246,7 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 
 	// get blobs that I should have (regardless of health of other nodes)
 	if isMine && !alreadyHave && ss.diskHasSpace() {
-		tracker.Counters["missing_is_mine"]++
+		tracker.Counters["missing_mine"]++
 		success := false
 		// loop preferredHosts (not preferredHealthyHosts) because pullFileFromHost can still give us a file even if we thought the host was unhealthy
 		for _, host := range preferredHosts {
@@ -255,10 +255,10 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 			}
 			err := ss.pullFileFromHost(host, cid)
 			if err != nil {
-				tracker.Counters["failed_pull"]++
+				tracker.Counters["failed_pull_mine"]++
 				logger.Error("pull failed (blob I should have)", "err", err, "host", host)
 			} else {
-				tracker.Counters["pulled"]++
+				tracker.Counters["pulled_mine"]++
 				logger.Info("pull OK (blob I should have)", "host", host)
 				success = true
 

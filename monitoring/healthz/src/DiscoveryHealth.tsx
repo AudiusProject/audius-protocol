@@ -119,7 +119,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const totalCIDsChecked = health.lastSuccessfulRepair?.Counters?.total_checked ?? 0
   const totalCIDsTriedRepair = (health.lastSuccessfulRepair?.Counters?.invalidCid ?? 0) +
     (health.lastSuccessfulRepair?.Counters?.read_failed ?? 0) +
-    (health.lastSuccessfulRepair?.Counters?.missing_is_mine ?? 0) +
+    (health.lastSuccessfulRepair?.Counters?.missing_mine ?? 0) +
     (health.lastSuccessfulRepair?.Counters?.under_replicated ?? 0) +
     (health.lastSuccessfulRepair?.Counters?.over_replicated ?? 0)
   const repairHealth = totalCIDsChecked ? (1 - (totalCIDsTriedRepair / (totalCIDsChecked))) * 100 : 0
