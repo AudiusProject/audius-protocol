@@ -433,8 +433,8 @@ describe('Email Notifications', () => {
     await insertNotifications(discoveryDB, [notificationRow])
 
     // Set last notification seen to two days ago
-    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
-    initNotificationSeenAt(discoveryDB, user2, twoDaysAgo)
+    const epochDate = new Date(0);
+    initNotificationSeenAt(discoveryDB, user2, epochDate)
 
     const expectedNotifications = [
       {
@@ -493,8 +493,8 @@ describe('Email Notifications', () => {
     await insertNotifications(discoveryDB, [notificationRow])
 
     // Set last notification seen to two days ago
-    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
-    initNotificationSeenAt(discoveryDB, user2, twoDaysAgo)
+    const epochDate = new Date(0);
+    initNotificationSeenAt(discoveryDB, user2, epochDate)
 
     const expectedNotifications = [
       {
