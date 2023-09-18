@@ -119,7 +119,7 @@ WITH latest_user_seen AS (
 )
 SELECT
   n.*,
-  unnest(n.user_ids) AS receiver_user_id
+  latest_user_seen.user_id AS receiver_user_id
 FROM (
   SELECT *
   FROM notification
