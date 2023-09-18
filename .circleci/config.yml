@@ -146,6 +146,7 @@ jobs:
 
             ${CHANGELOG}"
             git commit -m "${MESSAGE}"
+            git push -u origin main
             git tag client-v${VERSION}
             git push origin client-v${VERSION}
       - run:
