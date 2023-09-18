@@ -309,6 +309,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		})
 	})
 
+	routes.GET("/repair_log", ss.serveRepairLog)
+
 	routes.GET("/delist_status/track/:trackCid", ss.serveTrackDelistStatus)
 	routes.GET("/delist_status/user/:userId", ss.serveUserDelistStatus)
 	routes.POST("/delist_status/insert", ss.serveInsertDelistStatus, ss.requireBodySignedByOwner)

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/oklog/ulid/v2"
 	"gocloud.dev/blob"
 	"gocloud.dev/gcerrors"
 	"golang.org/x/exp/slices"
@@ -53,31 +54,66 @@ func (ss *MediorumServer) startRepairer() {
 	}
 }
 
+type RepairTracker struct {
+	ID         string
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+	FinishedAt *time.Time
+
+	TotalContentSize int64
+
+	Counters map[string]int ` gorm:"serializer:json"`
+
+	CleanupMode  bool
+	UploadCursor string
+	QmCursor     string
+}
+
 func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 	ctx := context.Background()
-	var expectedContentSize int64
+
+	// todo: load prior RepairTracker
+	var tracker *RepairTracker
+
+	saveTracker := func() {
+		if err := ss.crud.DB.Save(&tracker).Error; err != nil {
+			ss.logger.Error("failed to save repair tracker", "err", err)
+		}
+	}
+
+	// load prior wip tracker
+	if err := ss.crud.DB.First(&tracker, "finished_at IS NULL").Error; err != nil {
+		tracker = &RepairTracker{
+			ID:          ulid.Make().String(),
+			CreatedAt:   time.Now(),
+			Counters:    map[string]int{},
+			CleanupMode: cleanupMode,
+		}
+		saveTracker()
+	}
 
 	// scroll uploads and repair CIDs
 	// (later this can clean up "derivative" images if we make image resizing dynamic)
-	for uploadCursor := ""; ; {
+	for {
 		// abort if disk is filling up
 		if !ss.diskHasSpace() {
 			break
 		}
 
+		saveTracker()
+
 		var uploads []Upload
-		ss.crud.DB.Where("id > ?", uploadCursor).Order("id").Limit(5000).Find(&uploads)
+		ss.crud.DB.Where("id > ?", tracker.UploadCursor).Order("id").Limit(5000).Find(&uploads)
 		if len(uploads) == 0 {
 			break
 		}
 		for _, u := range uploads {
-			uploadCursor = u.ID
-			ss.repairCid(u.OrigFileCID, cleanupMode, &expectedContentSize)
+			tracker.UploadCursor = u.ID
+			ss.repairCid(u.OrigFileCID, tracker.CleanupMode, tracker)
 			for _, cid := range u.TranscodeResults {
-				ss.repairCid(cid, cleanupMode, &expectedContentSize)
+				ss.repairCid(cid, tracker.CleanupMode, tracker)
 			}
 		}
-
 	}
 
 	// scroll older qm_cids table and repair
@@ -86,6 +122,8 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 		if !ss.diskHasSpace() {
 			break
 		}
+
+		saveTracker()
 
 		var cidBatch []string
 		err := pgxscan.Select(ctx, ss.pgPool, &cidBatch,
@@ -103,15 +141,19 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 		}
 		for _, cid := range cidBatch {
 			cidCursor = cid
-			ss.repairCid(cid, cleanupMode, &expectedContentSize)
+			ss.repairCid(cid, tracker.CleanupMode, tracker)
 		}
 	}
 
-	ss.expectedContentSize = expectedContentSize
+	finished := time.Now()
+	tracker.FinishedAt = &finished
+	saveTracker()
+
 	return nil
 }
 
-func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedContentSize *int64) error {
+func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, tracker *RepairTracker) error {
+
 	ctx := context.Background()
 	logger := ss.logger.With("task", "repair", "cid", cid, "cleanup", cleanupMode)
 
@@ -130,14 +172,9 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedConten
 			attrs = &blob.Attributes{}
 		} else {
 			logger.Error("exist check failed", "err", err)
+			tracker.Counters["error"]++
 			return err
 		}
-	}
-
-	if alreadyHave {
-		// ss.radixSetHostHasCID(ss.Config.Self.Host, cid)
-	} else {
-		// ss.radixSetHostNotHasCID(ss.Config.Self.Host, cid)
 	}
 
 	// in cleanup mode do some extra checks:
@@ -147,6 +184,7 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedConten
 			err := cidutil.ValidateCID(cid, r)
 			r.Close()
 			if err != nil {
+				tracker.Counters["delete_corrupt"]++
 				logger.Error("deleting invalid CID", "err", err)
 				ss.bucket.Delete(ctx, key)
 				alreadyHave = false
@@ -155,7 +193,8 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedConten
 	}
 
 	if alreadyHave {
-		*expectedContentSize += attrs.Size
+		tracker.Counters["already_have"]++
+		tracker.TotalContentSize += attrs.Size
 	}
 
 	// get blobs that I should have (regardless of health of other nodes)
@@ -167,22 +206,18 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedConten
 				continue
 			}
 			err := ss.pullFileFromHost(host, cid)
-			if err != nil {
-				logger.Error("pull failed (blob I should have)", "err", err, "host", host)
-				// ss.radixSetHostNotHasCID(host, cid)
-			} else {
-				logger.Info("pull OK (blob I should have)", "host", host)
+			if err == nil {
 				success = true
 				break
 			}
 		}
 		if success {
-			// ss.radixSetHostHasCID(ss.Config.Self.Host, cid)
-			pulledAttrs, err := ss.bucket.Attributes(ctx, key)
-			if err != nil {
-				*expectedContentSize += pulledAttrs.Size
+			tracker.Counters["pull_ok"]++
+			if attrs, err := ss.bucket.Attributes(ctx, key); err == nil {
+				tracker.TotalContentSize += attrs.Size
 			}
 		} else {
+			tracker.Counters["pull_failed"]++
 			logger.Warn("failed to pull from any host", "hosts", preferredHosts)
 		}
 	}
@@ -198,7 +233,6 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedConten
 		for _, host := range preferredHealthyHosts {
 			if ss.hostHasBlob(host, cid) {
 				depth++
-				// ss.radixSetHostHasCID(host, cid)
 			}
 			if host == ss.Config.Self.Host {
 				break
@@ -212,10 +246,11 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedConten
 			err = ss.dropFromMyBucket(cid)
 			if err != nil {
 				logger.Error("delete failed", "err", err)
+				tracker.Counters["delete_over_replicated_failed"]++
 			} else {
 				logger.Info("delete OK")
-				// ss.radixSetHostNotHasCID(ss.Config.Self.Host, cid)
-				*expectedContentSize -= attrs.Size
+				tracker.Counters["delete_over_replicated_ok"]++
+				tracker.TotalContentSize -= attrs.Size
 			}
 		}
 	}
@@ -229,7 +264,6 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedConten
 		// loop preferredHosts (not preferredHealthyHosts) because hostHasBlob is the real source of truth for if a node can serve a blob (not our health info about the host, which could be outdated)
 		for _, host := range preferredHosts {
 			if ss.hostHasBlob(host, cid) {
-				// ss.radixSetHostHasCID(host, cid)
 				if host == ss.Config.Self.Host {
 					continue
 				}
@@ -237,8 +271,6 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedConten
 				if len(hasIt) == ss.Config.ReplicationFactor {
 					break
 				}
-			} else {
-				// ss.radixSetHostNotHasCID(host, cid)
 			}
 		}
 
@@ -247,21 +279,19 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedConten
 			success := false
 			for _, host := range hasIt {
 				err := ss.pullFileFromHost(host, cid)
-				if err != nil {
-					logger.Error("pull failed (under-replicated)", err, "host", host)
-				} else {
-					logger.Info("pull OK (under-replicated)", "host", host)
+				if err == nil {
 					success = true
 					break
 				}
 			}
 			if success {
-				pulledAttrs, err := ss.bucket.Attributes(ctx, key)
-				if err != nil {
-					*expectedContentSize += pulledAttrs.Size
+				if attrs, err := ss.bucket.Attributes(ctx, key); err == nil {
+					tracker.Counters["pull_under_replicated_ok"]++
+					tracker.TotalContentSize += attrs.Size
 				}
 			} else {
 				logger.Warn("failed to pull from any host", "hosts", preferredHosts)
+				tracker.Counters["pull_under_replicated_failed"]++
 			}
 		}
 	}

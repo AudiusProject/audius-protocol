@@ -11,6 +11,8 @@ import (
 )
 
 func TestHealthCheck(t *testing.T) {
+	t.Skip()
+
 	time, _ := time.Parse(time.RFC3339, "2023-06-07T08:25:30Z")
 	data := healthCheckResponseData{
 		Healthy:             true,

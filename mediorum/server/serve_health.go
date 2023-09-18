@@ -163,6 +163,15 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 	})
 }
 
+func (ss *MediorumServer) serveRepairLog(c echo.Context) error {
+	var trackers []RepairTracker
+	err := ss.crud.DB.Order("id desc").Limit(100).Find(&trackers).Error
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, trackers)
+}
+
 func (ss *MediorumServer) requireHealthy(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		allowUnhealthy, _ := strconv.ParseBool(c.QueryParam("allow_unhealthy"))

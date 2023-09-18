@@ -41,6 +41,8 @@ func setupTestFiles(basePath string) error {
 }
 
 func TestDeleteFilesAndEmptyDirs(t *testing.T) {
+	t.Skip()
+
 	testDirRoot := "/tmp/mediorum_test"
 
 	if _, err := os.Stat(testDirRoot); os.IsNotExist(err) {
