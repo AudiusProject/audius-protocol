@@ -163,7 +163,6 @@ export const getSignatureForTransaction = async ({
 }) => {
   const transaction = new Transaction({ recentBlockhash })
   transaction.add(...instructions)
-  console.debug('REED instructions', instructions)
   transaction.feePayer = feePayer
   transaction.partialSign(signer)
   return transaction.signatures.filter((s) => s.signature !== null)
