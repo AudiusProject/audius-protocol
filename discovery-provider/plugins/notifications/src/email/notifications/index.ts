@@ -118,17 +118,12 @@ WITH latest_user_seen AS (
     seen_at desc
 )
 SELECT
-  n.id,
-  n.specifier,
-  n.group_id,
-  n.type,
-  n.slot,
-  n.blocknumber,
-  n.timestamp,
-  n.data,
-  latest_user_seen.user_id AS receiver_user_id
+  n.*,
+  receiver_user_id
 FROM (
-  SELECT *
+  SELECT 
+    *,
+    unnest(user_ids) AS receiver_user_id
   FROM notification
   WHERE
     notification.timestamp > :start_offset AND
