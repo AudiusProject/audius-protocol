@@ -1,5 +1,5 @@
 .root {
-  max-width: 60%;
+  max-width: calc(50% - 16px);
   margin-right: 16px;
   display: flex;
   align-items: center;
