@@ -1,0 +1,82 @@
+[
+    {
+        "initiator": 2,
+        "metadata": {
+            "challenge_id": "profile-completion"
+        },
+        "slot": 112519136,
+        "type": "ChallengeReward"
+    },
+    {
+        "initiator": 4,
+        "metadata": {
+            "challenge_id": "connect-verified"
+        },
+        "slot": 114983339,
+        "type": "ChallengeReward"
+    },
+    {
+        "initiator": 6,
+        "metadata": {
+            "challenge_id": "referrals"
+        },
+        "slot": 114989028,
+        "type": "ChallengeReward"
+    },
+    {
+        "initiator": 6,
+        "metadata": {
+            "challenge_id": "ref-v"
+        },
+        "slot": 114989029,
+        "type": "ChallengeReward"
+    },
+    {
+        "initiator": 8,
+        "metadata": {
+            "challenge_id": "referred"
+        },
+        "slot": 114989029,
+        "type": "ChallengeReward"
+    },
+    {
+        "initiator": 10,
+        "metadata": {
+            "challenge_id": "track-upload"
+        },
+        "slot": 114838855,
+        "type": "ChallengeReward"
+    },
+    {
+        "initiator": 12,
+        "metadata": {
+            "challenge_id": "listen-streak"
+        },
+        "slot": 115118977,
+        "type": "ChallengeReward"
+    },
+    {
+        "initiator": 12,
+        "metadata": {
+            "challenge_id": "mobile-install"
+        },
+        "slot": 115118978,
+        "type": "ChallengeReward"
+    },
+    {
+        "initiator": 14,
+        "metadata": {
+            "challenge_id": "send-first-tip"
+        },
+        "slot": 115118979,
+        "type": "ChallengeReward"
+    },
+    {
+        "initiator": 16,
+        "metadata": {
+            "challenge_id": "first-playlist"
+        },
+        "slot": 115118980,
+        "type": "ChallengeReward"
+    }
+]
