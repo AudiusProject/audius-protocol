@@ -4,7 +4,7 @@ from typing import Optional
 
 from eth_account.messages import encode_defunct
 from flask import Response, request
-from flask_restx import Namespace, Resource, fields, reqparse
+from flask_restx import Namespace, Resource, SchemaModel, fields, reqparse
 
 from src.api.v1.helpers import (
     DescriptiveArgument,
@@ -2188,25 +2188,6 @@ class FullPurchasesCount(Resource):
         return success_response(count)
 
 
-@full_ns.route("/<string:id>/purchases/download")
-class FullPurchasesDownload(Resource):
-    @full_ns.doc(
-        id="Download Purchases as CSV",
-        description="Downloads the purchases the user has made as a CSV file",
-        params={"id": "A User ID"},
-    )
-    @auth_middleware()
-    def get(self, id, authed_user_id=None):
-        decoded_id = decode_with_abort(id, full_ns)
-        if decoded_id != authed_user_id:
-            abort_forbidden(full_ns)
-        args = DownloadPurchasesArgs(buyer_user_id=decoded_id)
-        purchases = download_purchases(args)
-        response = Response(purchases, content_type="text/csv")
-        response.headers["Content-Disposition"] = "attachment; filename=purchases.csv"
-        return response
-
-
 @full_ns.route("/<string:id>/sales")
 class FullSales(Resource):
     @full_ns.doc(
@@ -2259,6 +2240,34 @@ class FullSalesCount(Resource):
         return success_response(count)
 
 
+csv_download_parser = current_user_parser.copy()
+add_auth_headers_to_parser(csv_download_parser)
+
+file_model = full_ns.schema_model("file", {"type": "file"})
+
+
+@full_ns.route("/<string:id>/purchases/download")
+class FullPurchasesDownload(Resource):
+    @full_ns.doc(
+        id="Download Purchases as CSV",
+        description="Downloads the purchases the user has made as a CSV file",
+        params={"id": "A User ID"},
+    )
+    @full_ns.produces(["text/csv"])
+    @full_ns.expect(csv_download_parser)
+    @full_ns.marshal_with(file_model)
+    @auth_middleware()
+    def get(self, id, authed_user_id=None):
+        decoded_id = decode_with_abort(id, full_ns)
+        if decoded_id != authed_user_id:
+            abort_forbidden(full_ns)
+        args = DownloadPurchasesArgs(buyer_user_id=decoded_id)
+        purchases = download_purchases(args)
+        response = Response(purchases, content_type="text/csv")
+        response.headers["Content-Disposition"] = "attachment; filename=purchases.csv"
+        return response
+
+
 @full_ns.route("/<string:id>/sales/download")
 class FullSalesDownload(Resource):
     @full_ns.doc(
@@ -2266,6 +2275,9 @@ class FullSalesDownload(Resource):
         description="Downloads the sales the user has made as a CSV file",
         params={"id": "A User ID"},
     )
+    @full_ns.produces(["text/csv"])
+    @full_ns.expect(csv_download_parser)
+    @full_ns.marshal_with(file_model)
     @auth_middleware()
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
@@ -2279,12 +2291,15 @@ class FullSalesDownload(Resource):
 
 
 @full_ns.route("/<string:id>/withdrawals/download")
-class GetUSDCTransactionHistory(Resource):
+class FullWithdrawalsDownload(Resource):
     @full_ns.doc(
         id="""Download USDC Withdrawals as CSV""",
         description="""Downloads the USDC withdrawals the user has made as a CSV file""",
         params={"id": "A User ID"},
     )
+    @full_ns.produces(["text/csv"])
+    @full_ns.expect(csv_download_parser)
+    @full_ns.marshal_with(file_model)
     @auth_middleware()
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
