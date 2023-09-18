@@ -60,7 +60,7 @@ func dbMustDial(dbPath string) *gorm.DB {
 func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket, myHost string) {
 	// Migrate the schema
 	slog.Info("db: gorm automigrate")
-	err := crud.DB.AutoMigrate(&Upload{})
+	err := crud.DB.AutoMigrate(&Upload{}, &RepairTracker{})
 	if err != nil {
 		panic(err)
 	}
