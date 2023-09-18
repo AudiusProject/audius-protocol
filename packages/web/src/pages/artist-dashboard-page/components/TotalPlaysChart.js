@@ -1,6 +1,6 @@
 import { createRef, Component } from 'react'
 
-import { formatCount } from '@audius/common'
+import { Theme, formatCount } from '@audius/common'
 import moment from 'moment'
 import numeral from 'numeral'
 import PropTypes from 'prop-types'
@@ -30,9 +30,22 @@ const MONTHS = {
 
 const transformMonth = (monthShort) => MONTHS[monthShort]
 
-const getDataProps = ({ labels, values }, isMatrix) => {
-  const colorPrimary = isMatrix ? '#0CF10C' : '#CC0FE0'
-  const colorBackground = isMatrix ? '#184F17' : 'rgb(234, 197, 244)'
+const getDataProps = ({ labels, values }, theme) => {
+  let colorPrimary, colorBackground
+  switch (theme) {
+    case Theme.DARK:
+      colorPrimary = 'rgb(199, 75, 211)'
+      colorBackground = 'rgba(199, 75, 211, 0.5)'
+      break
+    case Theme.MATRIX:
+      colorPrimary = 'rgb(12, 241, 12)'
+      colorBackground = 'rgba(12, 241, 12, 0.5'
+      break
+    default:
+      colorPrimary = 'rgb(204, 15, 224)'
+      colorBackground = 'rgba(204, 15, 224, 0.5)'
+      break
+  }
   return {
     labels: [...labels],
     datasets: [
@@ -149,9 +162,8 @@ const getLineGraphOptions = (transformXValue) => ({
         <div class='totalPlaysTooltipContainer'>
           <div class='totalPlaysTooltipTitle'>${title}</div>
           <div class='totalPlaysTooltipLabelContainer'>
-            <div class='totalPlaysTooltipLabelText'>${
-              playCount + ' Plays'
-            }</div>
+            <div class='totalPlaysTooltipLabelText'>${playCount + ' Plays'
+        }</div>
           </div>
           <div class='totalPlaysTooptipCarrot'/>
         </div>`
@@ -229,7 +241,7 @@ export class TotalPlaysChart extends Component {
   }
 
   render() {
-    const { data, tracks, onSetTrackOption, onSetYearOption, isMatrix } =
+    const { data, tracks, onSetTrackOption, onSetYearOption, theme } =
       this.props
     const { chartSize, yearOptions } = this.state
 
@@ -240,7 +252,7 @@ export class TotalPlaysChart extends Component {
     }
     const yearsMenu = { items: yearOptions }
 
-    const lineData = getDataProps(data, isMatrix)
+    const lineData = getDataProps(data, theme)
     const lineGraphOptions = getLineGraphOptions(transformMonth)
 
     return (
@@ -321,8 +333,8 @@ TotalPlaysChart.defaultProps = {
   tracks: [],
   selectedTrack: -1,
   selectedYear: 'All Years',
-  onSetTrackOption: () => {},
-  onSetYearOption: () => {}
+  onSetTrackOption: () => { },
+  onSetYearOption: () => { }
 }
 
 export default TotalPlaysChart

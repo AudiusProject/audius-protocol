@@ -80,7 +80,7 @@ export const ArtistDashboardPage = () => {
   const { account, tracks, stats } = useSelector(makeGetDashboard())
   const listenData = useSelector(getDashboardListenData)
   const dashboardStatus = useSelector(getDashboardStatus)
-  const isMatrix = useSelector(getTheme) === Theme.MATRIX
+  const theme = useSelector(getTheme)
   const { data: balance, status: balanceStatus } = useUSDCBalance()
   const status = combineStatuses([dashboardStatus, balanceStatus])
 
@@ -159,7 +159,7 @@ export const ArtistDashboardPage = () => {
           <Suspense fallback={<div className={styles.chartFallback} />}>
             <TotalPlaysChart
               data={chartData}
-              isMatrix={isMatrix}
+              theme={theme}
               tracks={chartTracks}
               selectedTrack={selectedTrack}
               onSetYearOption={onSetYearOption}
@@ -182,7 +182,7 @@ export const ArtistDashboardPage = () => {
     )
   }, [
     account,
-    isMatrix,
+    theme,
     listenData,
     onClickRow,
     onSetYearOption,
