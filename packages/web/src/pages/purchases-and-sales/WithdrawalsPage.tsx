@@ -16,6 +16,7 @@ import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
+import { CSVDownloadButton } from 'components/csv-download-button/CSVDownloadButton'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import { useFlag } from 'hooks/useRemoteConfig'
