@@ -393,7 +393,6 @@ export class SolanaWeb3Manager {
   async getWAudioBalance(solanaAddress: string) {
     try {
       let tokenAccount = await this.getTokenAccountInfo(solanaAddress)
-
       // If the token account doesn't exist, check if solanaAddress is a root account
       // if so, derive the associated token account & check that balance
       if (!tokenAccount) {
