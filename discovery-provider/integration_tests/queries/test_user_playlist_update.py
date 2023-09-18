@@ -67,7 +67,6 @@ def test_user_playlist_update(app):
                 {"is_current": True, "user_id": 1, "playlist_id": 1, "seen_at": t1},
                 {"is_current": True, "user_id": 1, "playlist_id": 2, "seen_at": t2},
                 {"is_current": True, "user_id": 1, "playlist_id": 3, "seen_at": t3},
-                {"is_current": False, "user_id": 1, "playlist_id": 4, "seen_at": t1},
                 {"is_current": True, "user_id": 1, "playlist_id": 4, "seen_at": t1},
             ],
         }

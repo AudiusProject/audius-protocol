@@ -135,8 +135,16 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 			return c.NoContent(200)
 		}
 
-		http.ServeContent(c.Response(), c.Request(), cid, blob.ModTime(), blob)
-		return nil
+		if isAudioFile {
+			http.ServeContent(c.Response(), c.Request(), cid, blob.ModTime(), blob)
+			return nil
+		}
+
+		blobData, err := io.ReadAll(blob)
+		if err != nil {
+			return err
+		}
+		return c.Blob(200, blob.ContentType(), blobData)
 	}
 
 	// don't redirect if the client only wants to know if we have it (ie localOnly query param is true)
