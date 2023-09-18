@@ -107,9 +107,6 @@ type MediorumServer struct {
 	unreachablePeers []string
 	redirectCache    *imcache.Cache[string, string]
 
-	lastRepairCleanupComplete time.Time
-	lastRepairCleanupDuration time.Duration
-
 	StartedAt time.Time
 	Config    MediorumConfig
 
@@ -312,6 +309,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/delist_status/track/:trackCid", ss.serveTrackDelistStatus)
 	routes.GET("/delist_status/user/:userId", ss.serveUserDelistStatus)
 	routes.POST("/delist_status/insert", ss.serveInsertDelistStatus, ss.requireBodySignedByOwner)
+
+	routes.GET("/repair_logs", ss.serveRepairGos)
 
 	// -------------------
 	// internal
