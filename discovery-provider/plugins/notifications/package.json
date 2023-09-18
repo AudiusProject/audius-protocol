@@ -8,7 +8,6 @@
     "lint": "eslint ./src",
     "lint:fix": "npm run lint -- --fix",
     "pretty": "prettier --write .",
-    "sql-ts": "ts-node scripts/sql-ts.ts",
     "start": "pm2-runtime build/src/main.js --restart-delay=3000 --node-args=\"--max-old-space-size=512\"",
     "test:watch": "jest --watchAll",
     "test": "tsc && jest --runInBand --forceExit",
@@ -20,7 +19,6 @@
   "devDependencies": {
     "@audius/sdk": "3.0.8-beta.11",
     "@jest/globals": "29.3.1",
-    "@rmp135/sql-ts": "1.16.0",
     "@tsconfig/node16-strictest": "^1.0.4",
     "@types/express": "^4.17.17",
     "@types/jest": "29.2.5",
