@@ -142,7 +142,7 @@ jobs:
             npm version patch -ws --include-workspace-root --no-git-tag-version
             git add .
             VERSION=$(jq -r .version ./package.json)
-            MESSAGE="${VERSION}
+            MESSAGE="v${VERSION}
 
             ${CHANGELOG}"
             git commit -m "${MESSAGE}"
