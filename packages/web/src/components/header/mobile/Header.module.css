@@ -3,6 +3,8 @@
 }
 
 .container {
+  padding-left: var(--unit-3);
+  padding-right: var(--unit-3);
   position: fixed;
   width: 100%;
   top: 40px;
@@ -20,7 +22,6 @@
 }
 
 .title {
-  margin-left: 12px;
   font-weight: var(--font-heavy);
   font-size: 24px;
   line-height: normal;

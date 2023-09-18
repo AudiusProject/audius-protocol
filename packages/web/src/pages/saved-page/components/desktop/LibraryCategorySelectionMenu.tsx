@@ -45,10 +45,14 @@ const ALL_CATEGORIES = [
 
 const CATEGORIES_WITHOUT_PURCHASED = ALL_CATEGORIES.slice(0, -1)
 
-type LibraryCategorySelectionMenuProps = { currentTab: SavedPageTabs }
+type LibraryCategorySelectionMenuProps = {
+  currentTab: SavedPageTabs
+  variant?: 'desktop' | 'mobile'
+}
 
 export const LibraryCategorySelectionMenu = ({
-  currentTab
+  currentTab,
+  variant = 'desktop'
 }: LibraryCategorySelectionMenuProps) => {
   const dispatch = useDispatch()
   const selectedCategory = useSelector((state: CommonState) =>
@@ -69,9 +73,9 @@ export const LibraryCategorySelectionMenu = ({
       {categories.map((c) => (
         <HarmonySelectablePill
           role='radio'
-          size='large'
+          size={variant === 'mobile' ? 'default' : 'large'}
           aria-checked={selectedCategory === c.value ? 'true' : 'false'}
-          icon={c.icon}
+          icon={variant === 'mobile' ? undefined : c.icon}
           key={c.value}
           isSelected={selectedCategory === c.value}
           onClick={() => handleClick(c.value)}

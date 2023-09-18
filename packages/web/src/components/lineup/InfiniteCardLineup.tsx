@@ -11,12 +11,13 @@ import styles from './InfiniteCardLineup.module.css'
 type InfiniteLoadingProps = {
   hasMore: boolean
   loadMore: () => void
+  isLoadingMore?: boolean
 }
 
 export type InfiniteCardLineupProps = CardLineupProps & InfiniteLoadingProps
 
 export const InfiniteCardLineup = (props: InfiniteCardLineupProps) => {
-  const { hasMore, loadMore, ...lineupProps } = props
+  const { hasMore, loadMore, isLoadingMore, ...lineupProps } = props
   const scrollRef = useRef(null)
 
   const getNearestScrollParent = useCallback(() => {
@@ -34,14 +35,14 @@ export const InfiniteCardLineup = (props: InfiniteCardLineupProps) => {
         hasMore={hasMore}
         getScrollParent={getNearestScrollParent}
         loadMore={loadMore}
-        loader={
-          <LoadingSpinner key='loading-spinner' className={styles.spinner} />
-        }
         useWindow={false}
       >
         {React.createElement(CardLineup, lineupProps)}
       </InfiniteScroll>
       <div ref={scrollRef} />
+      {isLoadingMore ? (
+        <LoadingSpinner key='loading-spinner' className={styles.spinner} />
+      ) : null}
     </>
   )
 }

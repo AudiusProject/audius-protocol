@@ -253,18 +253,6 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     return [filteredMetadata, filteredIndex]
   }
 
-  getFilteredPlaylists = (
-    playlists: SavedPageCollection[]
-  ): SavedPageCollection[] => {
-    const filterText = this.state.filterText
-    return playlists.filter(
-      (item: SavedPageCollection) =>
-        item.playlist_name.toLowerCase().indexOf(filterText.toLowerCase()) >
-          -1 ||
-        item.ownerHandle.toLowerCase().indexOf(filterText.toLowerCase()) > -1
-    )
-  }
-
   onClickRow = (trackRecord: TrackRecord) => {
     const { playing, play, pause, record } = this.props
     const playingUid = this.getPlayingUid()
@@ -489,10 +477,8 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     const mobileProps = {
       playlistUpdates: this.props.playlistUpdates,
       updatePlaylistLastViewedAt: this.props.updatePlaylistLastViewedAt,
-
       onSave: this.onSave,
-      onTogglePlay: this.onTogglePlay,
-      getFilteredPlaylists: this.getFilteredPlaylists
+      onTogglePlay: this.onTogglePlay
     }
 
     const desktopProps = {

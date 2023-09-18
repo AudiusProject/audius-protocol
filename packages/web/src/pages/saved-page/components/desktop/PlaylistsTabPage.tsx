@@ -34,8 +34,9 @@ const messages = {
 
 export const PlaylistsTabPage = () => {
   const dispatch = useDispatch()
-  const { status, hasMore, fetchMore, collections } =
-    useCollectionsData('playlist')
+  const { status, hasMore, fetchMore, collections } = useCollectionsData({
+    collectionType: 'playlist'
+  })
   const emptyPlaylistsHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
       currentTab: SavedPageTabs.PLAYLISTS
@@ -50,6 +51,8 @@ export const PlaylistsTabPage = () => {
   })
 
   const noResults = !statusIsNotFinalized(status) && collections?.length === 0
+  const isLoadingInitial =
+    statusIsNotFinalized(status) && collections?.length === 0
 
   const handleCreatePlaylist = useCallback(() => {
     dispatch(
@@ -76,8 +79,7 @@ export const PlaylistsTabPage = () => {
     ]
   }, [collections, handleCreatePlaylist])
 
-  if (statusIsNotFinalized(status)) {
-    // TODO(nkang) - Confirm loading state UI
+  if (isLoadingInitial) {
     return <LoadingSpinner className={styles.spinner} />
   }
 
@@ -100,6 +102,7 @@ export const PlaylistsTabPage = () => {
       loadMore={fetchMore}
       cards={cards}
       cardsClassName={styles.cardsContainer}
+      isLoadingMore={statusIsNotFinalized(status)}
     />
   )
 }
