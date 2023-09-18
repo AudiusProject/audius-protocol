@@ -17,6 +17,7 @@ func (ss *MediorumServer) startRepairer() {
 	// loop forever
 	for i := 1; ; i++ {
 		// wait between 10 and 30 minutes between repair runs
+		// time.Sleep(time.Minute)
 		time.Sleep(time.Minute*10 + time.Minute*time.Duration(rand.Intn(20)))
 
 		// 10% percent of time... clean up over-replicated and pull under-replicated
@@ -72,7 +73,6 @@ type RepairTracker struct {
 func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 	ctx := context.Background()
 
-	// todo: load prior RepairTracker
 	var tracker *RepairTracker
 
 	saveTracker := func() {
@@ -81,8 +81,8 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 		}
 	}
 
-	// load prior wip tracker
-	if err := ss.crud.DB.First(&tracker, "finished_at IS NULL").Error; err != nil {
+	// load prior tracker
+	if err := ss.crud.DB.Order("id desc").First(&tracker, "finished_at IS NULL").Error; err != nil {
 		tracker = &RepairTracker{
 			ID:          ulid.Make().String(),
 			CreatedAt:   time.Now(),
@@ -103,7 +103,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 		saveTracker()
 
 		var uploads []Upload
-		ss.crud.DB.Where("id > ?", tracker.UploadCursor).Order("id").Limit(5000).Find(&uploads)
+		ss.crud.DB.Where("id > ?", tracker.UploadCursor).Order("id").Limit(100).Find(&uploads)
 		if len(uploads) == 0 {
 			break
 		}
@@ -117,7 +117,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 	}
 
 	// scroll older qm_cids table and repair
-	for cidCursor := ""; ; {
+	for {
 		// abort if disk is filling up
 		if !ss.diskHasSpace() {
 			break
@@ -131,7 +131,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 			 from qm_cids
 			 where key > $1
 			 order by key
-			 limit 5000`, cidCursor)
+			 limit 1000`, tracker.QmCursor)
 
 		if err != nil {
 			return err
@@ -140,7 +140,7 @@ func (ss *MediorumServer) runRepair(cleanupMode bool) error {
 			break
 		}
 		for _, cid := range cidBatch {
-			cidCursor = cid
+			tracker.QmCursor = cid
 			ss.repairCid(cid, tracker.CleanupMode, tracker)
 		}
 	}
