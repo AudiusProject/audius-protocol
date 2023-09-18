@@ -15,7 +15,7 @@ async function updateDbTypes() {
   }
   const tsString = await sqlts.toTypeScript(config, kpg as any)
   console.log(tsString)
-  writeFileSync(`${__dirname}/../src/types/db.ts`, tsString)
+  writeFileSync(`${__dirname}/schema.ts`, tsString)
   kpg.destroy()
 }
 
