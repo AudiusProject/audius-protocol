@@ -19,7 +19,8 @@ import {
   insertReaction,
   insertNotifications,
   insertNotificationEmails,
-  setUserEmailAndSettings
+  setUserEmailAndSettings,
+  initNotificationSeenAt
 } from '../utils/populateDB'
 import { RemoteConfig } from '../remoteConfig'
 
@@ -431,6 +432,10 @@ describe('Email Notifications', () => {
     }
     await insertNotifications(discoveryDB, [notificationRow])
 
+    // Set last notification seen to two days ago
+    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+    initNotificationSeenAt(discoveryDB, user2, twoDaysAgo)
+
     const expectedNotifications = [
       {
         receiver_user_id: user2,
@@ -486,6 +491,10 @@ describe('Email Notifications', () => {
       user_ids: [user2]
     }
     await insertNotifications(discoveryDB, [notificationRow])
+
+    // Set last notification seen to two days ago
+    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+    initNotificationSeenAt(discoveryDB, user2, twoDaysAgo)
 
     const expectedNotifications = [
       {
