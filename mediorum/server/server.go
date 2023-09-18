@@ -310,7 +310,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/delist_status/user/:userId", ss.serveUserDelistStatus)
 	routes.POST("/delist_status/insert", ss.serveInsertDelistStatus, ss.requireBodySignedByOwner)
 
-	routes.GET("/repair_logs", ss.serveRepairGos)
+	routes.GET("/repair_logs", ss.serveRepairLogs)
 
 	// -------------------
 	// internal
