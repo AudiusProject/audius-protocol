@@ -14,13 +14,11 @@ from src.models.users.usdc_transactions_history import (
 )
 from src.models.users.user import User
 from src.models.users.user_bank import USDCUserBankAccount
-from src.queries.query_helpers import (
-    SortDirection,
-    TransactionSortMethod,
-    paginate_query,
-)
+from src.utils.config import shared_config
 from src.utils.csv_writer import write_csv
 from src.utils.db_session import get_db_read_replica
+
+env = shared_config["discprov"]["env"]
 
 
 class DownloadPurchasesArgs(TypedDict):
@@ -103,11 +101,16 @@ def get_purchases_or_sales(user_id: int, is_purchases: bool):
 
 # Get link of purchased content
 def get_link(content_type: PurchaseType, handle: str, slug: str):
+    domain = ""
+    if env == "prod":
+        domain = "https://audius.co"
+    elif env == "stage":
+        domain = "https://staging.audius.co"
     if content_type == PurchaseType.playlist:
-        return f"/{handle}/playlist/{slug}"
+        return f"{domain}/{handle}/playlist/{slug}"
     if content_type == PurchaseType.album:
-        return f"/{handle}/album/{slug}"
-    return f"/{handle}/{slug}"
+        return f"{domain}/{handle}/album/{slug}"
+    return f"{domain}/{handle}/{slug}"
 
 
 # Get cost of purchased content
