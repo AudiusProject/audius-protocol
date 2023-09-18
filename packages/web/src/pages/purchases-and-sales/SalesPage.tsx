@@ -6,6 +6,7 @@ import {
   USDCPurchaseDetails,
   accountSelectors,
   combineStatuses,
+  encodeHashId,
   statusIsNotFinalized,
   useAllPaginatedQuery,
   useGetSales,
@@ -134,11 +135,22 @@ const RenderSalesPage = () => {
   const isEmpty = status === Status.SUCCESS && sales.length === 0
   const isLoading = statusIsNotFinalized(status)
 
+  const encodedUserId = encodeHashId(userId)
+  const downloadUrl = `https://staging.audius.co/v1/users/${encodedUserId}/sales/download`
+  // const downloadUrl = `/v1/users/${encodedUserId}/sales/download`
+
+  const header = (
+    <Header
+      primary={messages.headerText}
+      rightDecorator={<CSVDownloadButton url={downloadUrl} />}
+    />
+  )
+
   return (
     <Page
       title={messages.pageTitle}
       description={messages.pageDescription}
-      header={<Header primary={messages.headerText} />}
+      header={header}
     >
       <div className={styles.container}>
         {isEmpty ? (
