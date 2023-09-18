@@ -2,7 +2,7 @@ import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
 
 module.exports = {
   stories: ['../src/**/*.stories.tsx'],
-  // addons: ['@storybook/addon-essentials', '@storybook/addon-a11y'],
+  addons: ['@storybook/addon-essentials', '@storybook/addon-a11y'],
 
   framework: {
     name: '@storybook/react-webpack5',
