@@ -117,14 +117,16 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
   const expectedContentSize = bytesToGb(health.lastSuccessfulRepair?.ContentSize ?? 0)
   const totalCIDsChecked = health.lastSuccessfulRepair?.Counters?.total_checked ?? 0
-  const totalCIDsTriedRepair = (health.lastSuccessfulRepair?.Counters?.invalidCid ?? 0) +
-    (health.lastSuccessfulRepair?.Counters?.read_failed ?? 0) +
-    (health.lastSuccessfulRepair?.Counters?.missing_mine ?? 0) +
-    (health.lastSuccessfulRepair?.Counters?.under_replicated ?? 0) +
-    (health.lastSuccessfulRepair?.Counters?.over_replicated ?? 0)
-  const repairHealth = totalCIDsChecked ? (1 - (totalCIDsTriedRepair / (totalCIDsChecked))) * 100 : 0
-  // convert nanoseconds to Date
-
+  const totalCIDsTriedRepair =
+    (health.lastSuccessfulRepair?.Counters?.read_attrs_fail ?? 0) +
+    (health.lastSuccessfulRepair?.Counters?.read_blob_fail ?? 0) +
+    (health.lastSuccessfulRepair?.Counters?.delete_invalid_needed ?? 0) +
+    (health.lastSuccessfulRepair?.Counters?.pull_mine_needed ?? 0) +
+    (health.lastSuccessfulRepair?.Counters?.pull_under_replicated_needed ?? 0) +
+    (health.lastSuccessfulRepair?.Counters?.delete_over_replicated_needed ?? 0)
+  const repairHealth = totalCIDsChecked ?
+    truncateToTwoDecimals((1 - (totalCIDsTriedRepair / totalCIDsChecked)) * 100) :
+    0
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
   const getPeers = (str: string | undefined) => {
@@ -196,11 +198,14 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       )}
       {isContent && (
         <td>
-          {timeSince(health.lastSuccessfulRepair?.StartedAt) === null
-            ? "no data yet"
-            : `${nanosToReadableDuration(health.lastSuccessfulRepair?.Duration || 0)} to repair ${repairHealth}% of ${expectedContentSize} GB 
-          starting ${timeSince(health.lastSuccessfulRepair?.StartedAt)} ago`
-          }
+          <a href={sp.endpoint + '/internal/logs/repair'} target="_blank">
+            {timeSince(health.lastSuccessfulRepair?.StartedAt) === null
+              ? "awaiting completion"
+              : (<span><b>{repairHealth}%</b>
+                <span>{` (${nanosToReadableDuration(health.lastSuccessfulRepair?.Duration || 0)} to validate ${expectedContentSize} GB
+                  starting ${timeSince(new Date(health.lastSuccessfulRepair?.StartedAt))} ago)`}</span>
+              </span>)}
+          </a>
         </td>
       )}
       {isContent && (<td>{legacyDirUsed} GB</td>)}
@@ -230,4 +235,8 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       </td>
     </tr>
   )
+}
+
+function truncateToTwoDecimals(x: number) {
+  return Math.floor(x * 100) / 100
 }

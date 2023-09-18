@@ -96,11 +96,11 @@ func (ss *MediorumServer) startRepairer() {
 		logger.Info("repair starting")
 		err := ss.runRepair(&tracker)
 		if err != nil {
-			ss.lastSuccessfulRepair = tracker
 			logger.Error("repair failed", "err", err, "took", tracker.Duration)
 			tracker.AbortedReason = err.Error()
 		} else {
 			logger.Info("repair OK", "took", tracker.Duration)
+			ss.lastSuccessfulRepair = tracker
 		}
 		tracker.FinishedAt = time.Now()
 		saveTracker()
@@ -205,6 +205,7 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 			attrs = &blob.Attributes{}
 			alreadyHave = false
 		} else {
+			tracker.Counters["read_attrs_fail"]++
 			logger.Error("exist check failed", "err", err)
 			return err
 		}
@@ -217,7 +218,7 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 			errVal := cidutil.ValidateCID(cid, r)
 			errClose := r.Close()
 			if err != nil {
-				tracker.Counters["invalid_cid"]++
+				tracker.Counters["delete_invalid_needed"]++
 				logger.Error("deleting invalid CID", "err", errVal)
 				if errDel := ss.bucket.Delete(ctx, key); errDel == nil {
 					tracker.Counters["delete_invalid_success"]++
@@ -232,8 +233,7 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 				logger.Error("failed to close blob reader", "err", errClose)
 			}
 		} else {
-			tracker.Counters["read_failed"]++
-			tracker.Counters["failed_to_read"]++
+			tracker.Counters["read_blob_fail"]++
 			logger.Error("failed to read blob", "err", errRead)
 			return errRead
 		}
@@ -246,7 +246,7 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 
 	// get blobs that I should have (regardless of health of other nodes)
 	if isMine && !alreadyHave && ss.diskHasSpace() {
-		tracker.Counters["missing_mine"]++
+		tracker.Counters["pull_mine_needed"]++
 		success := false
 		// loop preferredHosts (not preferredHealthyHosts) because pullFileFromHost can still give us a file even if we thought the host was unhealthy
 		for _, host := range preferredHosts {
@@ -255,10 +255,10 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 			}
 			err := ss.pullFileFromHost(host, cid)
 			if err != nil {
-				tracker.Counters["failed_pull_mine"]++
+				tracker.Counters["pull_mine_fail"]++
 				logger.Error("pull failed (blob I should have)", "err", err, "host", host)
 			} else {
-				tracker.Counters["pulled_mine"]++
+				tracker.Counters["pull_mine_success"]++
 				logger.Info("pull OK (blob I should have)", "host", host)
 				success = true
 
@@ -295,7 +295,7 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 		// if i'm the first node that over-replicated, keep the file for a week as a buffer since a node ahead of me in the preferred order will likely be down temporarily at some point
 		wasReplicatedThisWeek := attrs.CreateTime.After(time.Now().Add(-24 * 7 * time.Hour))
 		if depth > ss.Config.ReplicationFactor+1 || depth == ss.Config.ReplicationFactor+1 && !wasReplicatedThisWeek {
-			tracker.Counters["over_replicated"]++
+			tracker.Counters["delete_over_replicated_needed"]++
 			logger.Info("deleting", "depth", depth, "hosts", preferredHosts, "healthyHosts", preferredHealthyHosts)
 			err = ss.dropFromMyBucket(cid)
 			if err != nil {
@@ -332,7 +332,7 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 
 		if len(hasIt) < ss.Config.ReplicationFactor {
 			// get it
-			tracker.Counters["under_replicated"]++
+			tracker.Counters["pull_under_replicated_needed"]++
 			success := false
 			for _, host := range hasIt {
 				err := ss.pullFileFromHost(host, cid)

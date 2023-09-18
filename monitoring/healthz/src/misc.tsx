@@ -22,6 +22,9 @@ export function RelTime({ date }: { date: Date | string }) {
 
 export function timeSince(date: Date) {
   if (!date || date.toString() === "0001-01-01T00:00:00Z") return null
+  if (typeof date == 'string') {
+    date = new Date(date)
+  }
   const now = new Date()
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
   return secondsToReadableDuration(seconds)
