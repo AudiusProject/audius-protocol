@@ -1,25 +1,15 @@
 export async function downloadFile({
   url,
-  data,
-  signature,
-  isAuthenticated = true
+  headers,
 }: {
   url: string
-  data: string
-  signature: string
-  isAuthenticated?: boolean
+  headers?: Record<string, string>
 }) {
   try {
-    const options = isAuthenticated
-      ? // maybe data and signature are generated within this function?
-        {
-          method: 'GET',
-          headers: {
-            'encoded-data-message': data,
-            'encoded-data-signature': signature
-          }
-        }
-      : { method: 'GET' }
+    let options: RequestInit = { method: 'GET' }
+    if (headers) {
+      options.headers = headers
+    }
     const response = await fetch(url, options)
     const blob = await response.blob()
     const blobUrl = window.URL.createObjectURL(blob)
