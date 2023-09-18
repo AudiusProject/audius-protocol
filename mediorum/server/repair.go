@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"errors"
-	"math/rand"
 	"mediorum/cidutil"
 	"net/http"
 	"strconv"
@@ -18,34 +17,40 @@ import (
 )
 
 type RepairTracker struct {
-	StartedAt         time.Time     `json:"started_at" gorm:"primaryKey;not null"`
-	CleanupMode       bool          `json:"cleanup_mode" gorm:"not null"`
-	CursorI           int           `json:"cursor_i" gorm:"not null"`
-	CursorUploadID    string        `json:"cursor_upload_id" gorm:"not null"`
-	CursorQmCID       string        `json:"cursor_qm_cid" gorm:"not null"`
-	NumCIDsChecked    int           `json:"num_cids_checked" gorm:"not null"`
-	NumCIDsReplicated int           `json:"num_cids_replicated" gorm:"not null"`
-	NumCIDsDeleted    int           `json:"num_cids_deleted" gorm:"not null"`
-	Duration          time.Duration `json:"duration" gorm:"not null"`
-	Complete          bool          `json:"complete" gorm:"not null"`
-	ContentSize       int64         `json:"content_size" gorm:"not null"`
-	AbortedReason     string        `json:"aborted_reason" gorm:"not null"`
+	StartedAt      time.Time `gorm:"primaryKey;not null"`
+	UpdatedAt      time.Time `gorm:"not null"`
+	FinishedAt     time.Time
+	CleanupMode    bool           `gorm:"not null"`
+	CursorI        int            `gorm:"not null"`
+	CursorUploadID string         `gorm:"not null"`
+	CursorQmCID    string         `gorm:"not null"`
+	Counters       map[string]int `gorm:"not null;serializer:json"`
+	ContentSize    int64          `gorm:"not null"`
+	Duration       time.Duration  `gorm:"not null"`
+	AbortedReason  string         `gorm:"not null"`
 }
 
 func (ss *MediorumServer) startRepairer() {
 	logger := ss.logger.With("task", "repair")
 
 	for {
-		// wait between 10 and 30 minutes between repair runs
-		time.Sleep(time.Minute*10 + time.Minute*time.Duration(rand.Intn(20)))
+		// wait a minute between runs
+		time.Sleep(time.Minute * 1)
 
 		// pick up where we left off from the last repair.go run, including if the server restarted in the middle of a run
-		tracker := RepairTracker{}
+		tracker := RepairTracker{
+			StartedAt:   time.Now(),
+			CleanupMode: true,
+			CursorI:     1,
+			Counters:    map[string]int{},
+		}
 		var lastRun RepairTracker
 		if err := ss.crud.DB.Order("started_at desc").First(&lastRun).Error; err == nil {
-			if lastRun.Complete || lastRun.AbortedReason != "" {
-				// if the last job was completed or aborted, run the next job
-				tracker.StartedAt = time.Now()
+			if lastRun.FinishedAt.IsZero() {
+				// resume previously interrupted job
+				tracker = lastRun
+			} else {
+				// run the next job
 				tracker.CursorI = lastRun.CursorI + 1
 
 				// 10% percent of time... clean up over-replicated and pull under-replicated
@@ -53,18 +58,8 @@ func (ss *MediorumServer) startRepairer() {
 					tracker.CursorI = 1
 				}
 				tracker.CleanupMode = tracker.CursorI == 1
-			} else {
-				// resume previously interrupted job
-				tracker = lastRun
 			}
 		} else {
-			// couldn't find a last, run so start from scratch
-			tracker = RepairTracker{
-				StartedAt:   time.Now(),
-				CleanupMode: true,
-				CursorI:     1,
-			}
-
 			if !errors.Is(err, gorm.ErrRecordNotFound) {
 				logger.Error("failed to get last repair.go run", "err", err)
 			}
@@ -72,6 +67,7 @@ func (ss *MediorumServer) startRepairer() {
 		logger := logger.With("run", tracker.CursorI, "cleanupMode", tracker.CleanupMode)
 
 		saveTracker := func() {
+			tracker.UpdatedAt = time.Now()
 			if err := ss.crud.DB.Save(tracker).Error; err != nil {
 				logger.Error("failed to save repair tracker", "err", err)
 			}
@@ -83,6 +79,7 @@ func (ss *MediorumServer) startRepairer() {
 				"R", ss.Config.ReplicationFactor,
 				"peers", len(healthyPeers))
 			tracker.AbortedReason = "NOT_ENOUGH_PEERS"
+			tracker.FinishedAt = time.Now()
 			saveTracker()
 			continue
 		}
@@ -91,6 +88,7 @@ func (ss *MediorumServer) startRepairer() {
 		if !ss.diskHasSpace() && !tracker.CleanupMode {
 			logger.Warn("disk has <200GB remaining and is not in cleanup mode. skipping repair")
 			tracker.AbortedReason = "DISK_FULL"
+			tracker.FinishedAt = time.Now()
 			saveTracker()
 			continue
 		}
@@ -98,20 +96,22 @@ func (ss *MediorumServer) startRepairer() {
 		logger.Info("repair starting")
 		err := ss.runRepair(&tracker)
 		if err != nil {
+			ss.lastSuccessfulRepair = tracker
 			logger.Error("repair failed", "err", err, "took", tracker.Duration)
 			tracker.AbortedReason = err.Error()
-			saveTracker()
 		} else {
 			logger.Info("repair OK", "took", tracker.Duration)
 		}
+		tracker.FinishedAt = time.Now()
+		saveTracker()
 	}
 }
 
 func (ss *MediorumServer) runRepair(tracker *RepairTracker) error {
 	ctx := context.Background()
-	var expectedContentSize int64
 
 	saveTracker := func() {
+		tracker.UpdatedAt = time.Now()
 		if err := ss.crud.DB.Save(tracker).Error; err != nil {
 			ss.logger.Error("failed to save tracker", "err", err)
 		}
@@ -130,7 +130,7 @@ func (ss *MediorumServer) runRepair(tracker *RepairTracker) error {
 		startIter := time.Now()
 
 		var uploads []Upload
-		if err := ss.crud.DB.Where("id > ?", tracker.CursorUploadID).Order("id").Limit(5000).Find(&uploads).Error; err != nil {
+		if err := ss.crud.DB.Where("id > ?", tracker.CursorUploadID).Order("id").Limit(1000).Find(&uploads).Error; err != nil {
 			return err
 		}
 		if len(uploads) == 0 {
@@ -138,15 +138,9 @@ func (ss *MediorumServer) runRepair(tracker *RepairTracker) error {
 		}
 		for _, u := range uploads {
 			tracker.CursorUploadID = u.ID
-			ss.repairCid(u.OrigFileCID, tracker.CleanupMode, &expectedContentSize)
+			ss.repairCid(u.OrigFileCID, tracker)
 			for _, cid := range u.TranscodeResults {
-				replicated, deleted, _ := ss.repairCid(cid, tracker.CleanupMode, &expectedContentSize)
-				tracker.NumCIDsChecked++
-				if replicated {
-					tracker.NumCIDsReplicated++
-				} else if deleted {
-					tracker.NumCIDsDeleted++
-				}
+				ss.repairCid(cid, tracker)
 			}
 		}
 
@@ -171,7 +165,7 @@ func (ss *MediorumServer) runRepair(tracker *RepairTracker) error {
 			 from qm_cids
 			 where key > $1
 			 order by key
-			 limit 5000`, tracker.CursorQmCID)
+			 limit 1000`, tracker.CursorQmCID)
 
 		if err != nil {
 			return err
@@ -181,27 +175,20 @@ func (ss *MediorumServer) runRepair(tracker *RepairTracker) error {
 		}
 		for _, cid := range cidBatch {
 			tracker.CursorQmCID = cid
-			replicated, deleted, _ := ss.repairCid(cid, tracker.CleanupMode, &expectedContentSize)
-			tracker.NumCIDsChecked++
-			if replicated {
-				tracker.NumCIDsReplicated++
-			} else if deleted {
-				tracker.NumCIDsDeleted++
-			}
+			ss.repairCid(cid, tracker)
 		}
 
 		tracker.Duration += time.Since(startIter)
 		saveTracker()
 	}
 
-	ss.expectedContentSize = expectedContentSize
-	tracker.ContentSize = expectedContentSize
 	return nil
 }
 
-func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedContentSize *int64) (replicated, deleted bool, err error) {
+func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
+	tracker.Counters["total_checked"]++
 	ctx := context.Background()
-	logger := ss.logger.With("task", "repair", "cid", cid, "cleanup", cleanupMode)
+	logger := ss.logger.With("task", "repair", "cid", cid, "cleanup", tracker.CleanupMode)
 
 	preferredHosts, isMine := ss.rendezvousAllHosts(cid)
 	preferredHealthyHosts, isMineHealthy := ss.rendezvousHealthyHosts(cid)
@@ -212,41 +199,54 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedConten
 	key := cidutil.ShardCID(cid)
 	alreadyHave := true
 	attrs := &blob.Attributes{}
-	attrs, err = ss.bucket.Attributes(ctx, key)
+	attrs, err := ss.bucket.Attributes(ctx, key)
 	if err != nil {
 		if gcerrors.Code(err) == gcerrors.NotFound {
 			attrs = &blob.Attributes{}
 			alreadyHave = false
 		} else {
 			logger.Error("exist check failed", "err", err)
-			return
+			return err
 		}
 	}
 
 	// in cleanup mode do some extra checks:
 	// - validate CID, delete if invalid (doesn't apply to Qm keys because their hash is not the CID)
-	if cleanupMode && alreadyHave && !cidutil.IsLegacyCID(cid) {
-		if r, errVal := ss.bucket.NewReader(ctx, key, nil); errVal == nil {
+	if tracker.CleanupMode && alreadyHave && !cidutil.IsLegacyCID(cid) {
+		if r, errRead := ss.bucket.NewReader(ctx, key, nil); errRead == nil {
 			errVal := cidutil.ValidateCID(cid, r)
-			r.Close()
+			errClose := r.Close()
 			if err != nil {
+				tracker.Counters["invalid_cid"]++
 				logger.Error("deleting invalid CID", "err", errVal)
 				if errDel := ss.bucket.Delete(ctx, key); errDel == nil {
-					deleted = true
+					tracker.Counters["delete_invalid_success"]++
 				} else {
+					tracker.Counters["delete_invalid_fail"]++
 					logger.Error("failed to delete invalid CID", "err", errDel)
 				}
-				return
+				return err
 			}
+
+			if errClose != nil {
+				logger.Error("failed to close blob reader", "err", errClose)
+			}
+		} else {
+			tracker.Counters["read_failed"]++
+			tracker.Counters["failed_to_read"]++
+			logger.Error("failed to read blob", "err", errRead)
+			return errRead
 		}
 	}
 
 	if alreadyHave {
-		*expectedContentSize += attrs.Size
+		tracker.Counters["already_have"]++
+		tracker.ContentSize += attrs.Size
 	}
 
 	// get blobs that I should have (regardless of health of other nodes)
 	if isMine && !alreadyHave && ss.diskHasSpace() {
+		tracker.Counters["missing_is_mine"]++
 		success := false
 		// loop preferredHosts (not preferredHealthyHosts) because pullFileFromHost can still give us a file even if we thought the host was unhealthy
 		for _, host := range preferredHosts {
@@ -255,22 +255,23 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedConten
 			}
 			err := ss.pullFileFromHost(host, cid)
 			if err != nil {
+				tracker.Counters["failed_pull"]++
 				logger.Error("pull failed (blob I should have)", "err", err, "host", host)
 			} else {
+				tracker.Counters["pulled"]++
 				logger.Info("pull OK (blob I should have)", "host", host)
 				success = true
-				break
+
+				pulledAttrs, errAttrs := ss.bucket.Attributes(ctx, key)
+				if errAttrs != nil {
+					tracker.ContentSize += pulledAttrs.Size
+				}
+				return nil
 			}
 		}
-		if success {
-			replicated = true
-			pulledAttrs, errAttrs := ss.bucket.Attributes(ctx, key)
-			if errAttrs != nil {
-				*expectedContentSize += pulledAttrs.Size
-			}
-			return
-		} else {
+		if !success {
 			logger.Warn("failed to pull from any host", "hosts", preferredHosts)
+			return errors.New("failed to pull from any host")
 		}
 	}
 
@@ -279,7 +280,7 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedConten
 	// if R+1 healthy nodes in front of me have it, I can safely delete.
 	// don't delete if we replicated the blob within the past 24 hours
 	wasReplicatedToday := attrs.CreateTime.After(time.Now().Add(-24 * time.Hour))
-	if cleanupMode && (!isMine || !isMineHealthy) && alreadyHave && !wasReplicatedToday {
+	if tracker.CleanupMode && (!isMine || !isMineHealthy) && alreadyHave && !wasReplicatedToday {
 		depth := 0
 		// loop preferredHealthyHosts (not preferredHosts) because we don't mind storing a blob a little while longer if it's not on enough healthy nodes
 		for _, host := range preferredHealthyHosts {
@@ -294,15 +295,18 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedConten
 		// if i'm the first node that over-replicated, keep the file for a week as a buffer since a node ahead of me in the preferred order will likely be down temporarily at some point
 		wasReplicatedThisWeek := attrs.CreateTime.After(time.Now().Add(-24 * 7 * time.Hour))
 		if depth > ss.Config.ReplicationFactor+1 || depth == ss.Config.ReplicationFactor+1 && !wasReplicatedThisWeek {
+			tracker.Counters["over_replicated"]++
 			logger.Info("deleting", "depth", depth, "hosts", preferredHosts, "healthyHosts", preferredHealthyHosts)
 			err = ss.dropFromMyBucket(cid)
 			if err != nil {
+				tracker.Counters["delete_over_replicated_fail"]++
 				logger.Error("delete failed", "err", err)
+				return err
 			} else {
+				tracker.Counters["delete_over_replicated_success"]++
 				logger.Info("delete OK")
-				*expectedContentSize -= attrs.Size
-				deleted = true
-				return
+				tracker.ContentSize -= attrs.Size
+				return nil
 			}
 		}
 	}
@@ -311,7 +315,7 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedConten
 	// even tho this blob isn't "mine"
 	// in cleanup mode the top N*2 healthy nodes will check to see if it's under-replicated
 	// and pull file if under-replicated
-	if cleanupMode && !isMine && !alreadyHave && myRank >= 0 && myRank < ss.Config.ReplicationFactor*2 && ss.diskHasSpace() {
+	if tracker.CleanupMode && !isMine && !alreadyHave && myRank >= 0 && myRank < ss.Config.ReplicationFactor*2 && ss.diskHasSpace() {
 		hasIt := []string{}
 		// loop preferredHosts (not preferredHealthyHosts) because hostHasBlob is the real source of truth for if a node can serve a blob (not our health info about the host, which could be outdated)
 		for _, host := range preferredHosts {
@@ -328,34 +332,35 @@ func (ss *MediorumServer) repairCid(cid string, cleanupMode bool, expectedConten
 
 		if len(hasIt) < ss.Config.ReplicationFactor {
 			// get it
+			tracker.Counters["under_replicated"]++
 			success := false
 			for _, host := range hasIt {
 				err := ss.pullFileFromHost(host, cid)
 				if err != nil {
+					tracker.Counters["pull_under_replicated_fail"]++
 					logger.Error("pull failed (under-replicated)", err, "host", host)
 				} else {
+					tracker.Counters["pull_under_replicated_success"]++
 					logger.Info("pull OK (under-replicated)", "host", host)
-					success = true
-					break
+
+					pulledAttrs, errAttrs := ss.bucket.Attributes(ctx, key)
+					if errAttrs != nil {
+						tracker.ContentSize += pulledAttrs.Size
+					}
+					return nil
 				}
 			}
-			if success {
-				pulledAttrs, errAttrs := ss.bucket.Attributes(ctx, key)
-				if errAttrs != nil {
-					*expectedContentSize += pulledAttrs.Size
-				}
-				replicated = true
-				return
-			} else {
-				logger.Warn("failed to pull from any host", "hosts", preferredHosts)
+			if !success {
+				logger.Warn("failed to pull under-replicated from any host", "hosts", preferredHosts)
+				return errors.New("failed to pull under-replicated from any host")
 			}
 		}
 	}
 
-	return
+	return nil
 }
 
-func (ss *MediorumServer) serveRepairLogs(c echo.Context) error {
+func (ss *MediorumServer) serveRepairLog(c echo.Context) error {
 	limitStr := c.QueryParam("limit")
 	if limitStr == "" {
 		limitStr = "1000"

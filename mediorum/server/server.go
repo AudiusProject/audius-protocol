@@ -93,9 +93,9 @@ type MediorumServer struct {
 	legacyDirUsed    uint64
 	mediorumDirUsed  uint64
 
-	databaseSize        uint64
-	dbSizeErr           string
-	expectedContentSize int64
+	databaseSize         uint64
+	dbSizeErr            string
+	lastSuccessfulRepair RepairTracker
 
 	uploadsCount    int64
 	uploadsCountErr string
@@ -310,8 +310,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/delist_status/user/:userId", ss.serveUserDelistStatus)
 	routes.POST("/delist_status/insert", ss.serveInsertDelistStatus, ss.requireBodySignedByOwner)
 
-	routes.GET("/repair_logs", ss.serveRepairLogs)
-
 	// -------------------
 	// internal
 	internalApi := routes.Group("/internal")
@@ -335,6 +333,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/metrics", ss.getMetrics)
 	internalApi.GET("/logs/partition-ops", ss.getPartitionOpsLog)
 	internalApi.GET("/logs/reaper", ss.getReaperLog)
+	internalApi.GET("/logs/repair", ss.serveRepairLog)
 
 	return ss, nil
 
@@ -354,6 +353,13 @@ func (ss *MediorumServer) MustStart() {
 
 	createUploadsCache()
 	go ss.buildUploadsCache()
+
+	var lastSuccessfulRepair RepairTracker
+	if err := ss.crud.DB.Where("finished_at is not null").Where("aborted_reason != ?", "").Order("started_at desc").First(&lastSuccessfulRepair).Error; err == nil {
+		ss.lastSuccessfulRepair = lastSuccessfulRepair
+	} else {
+		lastSuccessfulRepair = RepairTracker{Counters: map[string]int{}}
+	}
 
 	// for any background task that make authenticated peer requests
 	// only start if we have a valid registered wallet

@@ -34,7 +34,7 @@ export function DiscoveryHealth() {
             {isDiscovery && <th>Storage</th>}
             {isContent && <th>Storage (legacy)</th>}
             {isContent && <th>Storage (mediorum)</th>}
-            {isContent && <th>Expected Content Size (from repair.go)</th>}
+            {isContent && <th>Storage Health</th>}
             {isContent && <th>/file_storage</th>}
             {isContent && <th>/tmp/mediorum</th>}
             <th>DB Size</th>
@@ -115,7 +115,14 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const isBehind = health.block_difference > 5 ? 'is-behind' : ''
   const dbSize =
     bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
-  const expectedContentSize = bytesToGb(health.expectedContentSize)
+  const expectedContentSize = bytesToGb(health.lastSuccessfulRepair?.ContentSize ?? 0)
+  const totalCIDsChecked = health.lastSuccessfulRepair?.Counters?.total_checked ?? 0
+  const totalCIDsTriedRepair = (health.lastSuccessfulRepair?.Counters?.invalidCid ?? 0) +
+    (health.lastSuccessfulRepair?.Counters?.read_failed ?? 0) +
+    (health.lastSuccessfulRepair?.Counters?.missing_is_mine ?? 0) +
+    (health.lastSuccessfulRepair?.Counters?.under_replicated ?? 0) +
+    (health.lastSuccessfulRepair?.Counters?.over_replicated ?? 0)
+  const repairHealth = totalCIDsChecked ? (1 - (totalCIDsTriedRepair / (totalCIDsChecked))) * 100 : 0
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
   const getPeers = (str: string | undefined) => {
@@ -186,7 +193,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
         </td>
       )}
       {isContent && (
-        <td>{`${expectedContentSize} GB`}</td>
+        <td>{`${repairHealth}% (${expectedContentSize} GB)`}</td>
       )}
       {isContent && (<td>{legacyDirUsed} GB</td>)}
       {isContent && (<td>{mediorumDirUsed} GB</td>)}
