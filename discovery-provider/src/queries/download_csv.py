@@ -67,8 +67,7 @@ def get_purchases_or_sales(user_id: int, is_purchases: bool):
 
         # Include playlist titles
         playlists_query = (
-            query
-            .filter(
+            query.filter(
                 or_(
                     USDCPurchase.content_type == PurchaseType.playlist,
                     USDCPurchase.content_type == PurchaseType.album,
@@ -85,8 +84,7 @@ def get_purchases_or_sales(user_id: int, is_purchases: bool):
 
         # Include track titles
         tracks_query = (
-            query
-            .filter(USDCPurchase.content_type == PurchaseType.track)
+            query.filter(USDCPurchase.content_type == PurchaseType.track)
             .join(Track, Track.track_id == USDCPurchase.content_id)
             .join(TrackRoute, TrackRoute.track_id == USDCPurchase.content_id)
             .filter(Track.is_current == True)
@@ -96,7 +94,11 @@ def get_purchases_or_sales(user_id: int, is_purchases: bool):
             )
         )
 
-        return playlists_query.union(tracks_query).order_by(desc(USDCPurchase.created_at)).all()
+        return (
+            playlists_query.union(tracks_query)
+            .order_by(desc(USDCPurchase.created_at))
+            .all()
+        )
 
 
 # Get link of purchased content
@@ -116,7 +118,7 @@ def get_link(content_type: PurchaseType, handle: str, slug: str):
 # Get cost of purchased content
 def get_dollar_amount(amount: str):
     num_usdc_decimals = 6
-    return int(amount) / 10 ** num_usdc_decimals
+    return int(amount) / 10**num_usdc_decimals
 
 
 # Returns USDC purchases for a given user in a CSV format
@@ -127,13 +129,20 @@ def download_purchases(args: DownloadPurchasesArgs):
     results = get_purchases_or_sales(buyer_user_id, is_purchases=True)
 
     # Build list of dictionary results
-    contents = list(map(lambda result: {
-        "title": result.content_title,
-        "link": get_link(result.content_type, result.seller_handle, result.slug),
-        "artist": result.seller_name,
-        "date": result.created_at,
-        "cost": get_dollar_amount(result.amount),
-    }, results))
+    contents = list(
+        map(
+            lambda result: {
+                "title": result.content_title,
+                "link": get_link(
+                    result.content_type, result.seller_handle, result.slug
+                ),
+                "artist": result.seller_name,
+                "date": result.created_at,
+                "cost": get_dollar_amount(result.amount),
+            },
+            results,
+        )
+    )
 
     # Get results in CSV format
     to_download = write_csv(contents)
@@ -158,13 +167,18 @@ def download_sales(args: DownloadSalesArgs):
         )[0]
 
     # Build list of dictionary results
-    contents = list(map(lambda result: {
-        "title": result.content_title,
-        "link": get_link(result.content_type, seller_handle, result.slug),
-        "purchased by": result.buyer_name,
-        "date": result.created_at,
-        "cost": get_dollar_amount(result.amount),
-    }, results))
+    contents = list(
+        map(
+            lambda result: {
+                "title": result.content_title,
+                "link": get_link(result.content_type, seller_handle, result.slug),
+                "purchased by": result.buyer_name,
+                "date": result.created_at,
+                "cost": get_dollar_amount(result.amount),
+            },
+            results,
+        )
+    )
 
     # Get results in CSV format
     to_download = write_csv(contents)
@@ -180,7 +194,9 @@ def download_withdrawals(args: DownloadWithdrawalsArgs):
             .select_from(User)
             .filter(User.user_id == args["user_id"])
             .filter(User.is_current == True)
-            .join(USDCUserBankAccount, USDCUserBankAccount.ethereum_address == User.wallet)
+            .join(
+                USDCUserBankAccount, USDCUserBankAccount.ethereum_address == User.wallet
+            )
             .join(
                 USDCTransactionsHistory,
                 USDCTransactionsHistory.user_bank == USDCUserBankAccount.bank_account,
@@ -194,11 +210,16 @@ def download_withdrawals(args: DownloadWithdrawalsArgs):
         )
 
         # Build list of dictionary results
-        contents = list(map(lambda result: {
-            "destination wallet": result.tx_metadata,
-            "date": result.transaction_created_at,
-            "amount": get_dollar_amount(result.change),
-        }, results))
+        contents = list(
+            map(
+                lambda result: {
+                    "destination wallet": result.tx_metadata,
+                    "date": result.transaction_created_at,
+                    "amount": get_dollar_amount(result.change),
+                },
+                results,
+            )
+        )
 
         # Get results in CSV format
         to_download = write_csv(contents)
