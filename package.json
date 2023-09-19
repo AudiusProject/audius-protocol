@@ -71,7 +71,7 @@
     "wait-on": "6.0.1"
   },
   "dependencies": {
-    "@escape.tech/mookme": "2.2.0"
+    "@escape.tech/mookme": "2.4.1"
   },
   "overrides": {
     "@types/react": "18.0.26",
