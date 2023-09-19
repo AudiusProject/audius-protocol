@@ -8,7 +8,15 @@ import {
 } from 'react'
 
 import { ID, Kind } from '@audius/common'
+import { ReactComponent as IconCaretDown } from 'assets/img/iconCaretDownLine.svg'
+import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
+import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
+import { ReactComponent as IconCaretUp } from 'assets/img/iconCaretUpLine.svg'
 import cn from 'classnames'
+import { Draggable, Droppable } from 'components/dragndrop'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import Skeleton from 'components/skeleton/Skeleton'
+import Tooltip from 'components/tooltip/Tooltip'
 import { debounce, range } from 'lodash'
 import moment from 'moment'
 import {
@@ -26,15 +34,6 @@ import {
   InfiniteLoader,
   WindowScroller
 } from 'react-virtualized'
-
-import { ReactComponent as IconCaretDown } from 'assets/img/iconCaretDownLine.svg'
-import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
-import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
-import { ReactComponent as IconCaretUp } from 'assets/img/iconCaretUpLine.svg'
-import { Draggable, Droppable } from 'components/dragndrop'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import Skeleton from 'components/skeleton/Skeleton'
-import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './Table.module.css'
 
@@ -131,10 +130,17 @@ export const Table = ({
   scrollRef,
   showMoreLimit,
   tableClassName,
-  totalRowCount = 9999,
+  totalRowCount,
   useLocalSort = false,
   wrapperClassName
 }: TableProps) => {
+  useEffect(() => {
+    if (totalRowCount == null && isPaginated) {
+      console.error(
+        'Programming error - need to specify the `totalRowCount` if using paginated Table component (i.e .if `isPaginated` is `true`)'
+      )
+    }
+  }, [])
   const defaultColumn = useMemo(
     () => ({
       // Default resizing column props
@@ -152,6 +158,9 @@ export const Table = ({
   // Pagination page
   const [currentPage, setCurrentPage] = useState<number>(0)
   const maxPage = useMemo(() => {
+    if (totalRowCount == null) {
+      return 0
+    }
     return Math.floor(totalRowCount / pageSize)
   }, [pageSize, totalRowCount])
 
@@ -518,20 +527,14 @@ export const Table = ({
   // TODO: This is supposed to return a promise that resolves when the row data has been fetched.
   // It currently does not, but there are no issues with this currently so will fix if issues pop up
   const loadMoreRows = useCallback(
-    async ({
-      startIndex,
-      stopIndex
-    }: {
-      startIndex: number
-      stopIndex: number
-    }) => {
+    async ({ startIndex }: { startIndex: number }) => {
       if (!debouncedFetchMore) return null
       const offset = startIndex
-      const limit = stopIndex - startIndex + 1
+      const limit = fetchBatchSize
       debouncedFetchMore(offset, limit)
       return null
     },
-    [debouncedFetchMore]
+    [debouncedFetchMore, fetchBatchSize]
   )
 
   const isRowLoaded = useCallback(
@@ -658,7 +661,7 @@ export const Table = ({
       <InfiniteLoader
         isRowLoaded={isRowLoaded}
         loadMoreRows={loadMoreRows}
-        rowCount={totalRowCount}
+        rowCount={totalRowCount == null ? data.length : totalRowCount}
         threshold={fetchThreshold}
         minimumBatchSize={fetchBatchSize}
       >
@@ -702,7 +705,9 @@ export const Table = ({
                             ref={registerListChild}
                             overscanRowsCount={2}
                             rowCount={
-                              debouncedFetchMore ? totalRowCount : rows.length
+                              debouncedFetchMore && totalRowCount != null
+                                ? totalRowCount
+                                : rows.length
                             }
                             rowHeight={64}
                             rowRenderer={renderRow}
