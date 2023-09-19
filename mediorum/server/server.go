@@ -353,9 +353,6 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startTranscoder()
 
-	createUploadsCache()
-	go ss.buildUploadsCache()
-
 	var lastSuccessfulRepair RepairTracker
 	if err := ss.crud.DB.Where("finished_at is not null").Where("aborted_reason = ?", "").Order("started_at desc").First(&lastSuccessfulRepair).Error; err != nil {
 		lastSuccessfulRepair = RepairTracker{Counters: map[string]int{}}

@@ -1,18 +1,14 @@
 package server
 
 import (
-	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"io"
 	"mediorum/cidutil"
 	"mime"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -22,120 +18,7 @@ import (
 
 var (
 	filesFormFieldName = "files"
-	uploadsCache       *UploadsCache
 )
-
-type UploadsCache struct {
-	jobIdToVariants map[string]map[string]string
-	isBuilt         bool
-	compressedChar  string // char to replace "baeaaaiqse" with because all CIDs we have start with this
-	prefix          string // "baeaaaiqse"
-	mu              *sync.RWMutex
-}
-
-func (uc *UploadsCache) Get(jobId, variant string) (string, bool) {
-	uc.mu.RLock()
-	defer uc.mu.RUnlock()
-	if !uc.isBuilt {
-		return "", false
-	}
-
-	if compressedResults, ok := uc.jobIdToVariants[jobId]; ok {
-		if cid, ok := compressedResults[variant]; ok {
-			if strings.HasPrefix(cid, string(uc.compressedChar)) {
-				cid = uc.prefix + cid[len(uc.compressedChar):]
-			}
-			return cid, true
-		}
-	}
-
-	return "", false
-}
-
-func (uc *UploadsCache) Set(jobId string, results map[string]string) {
-	uc.mu.Lock()
-	defer uc.mu.Unlock()
-	compressedResults := make(map[string]string, len(results))
-	for k, v := range results {
-		// we only care about images
-		if strings.HasPrefix(k, "320") {
-			continue
-		}
-
-		if strings.HasPrefix(v, uc.prefix) {
-			compressedResults[k] = uc.compressedChar + v[len(uc.prefix):]
-		} else {
-			compressedResults[k] = v
-		}
-	}
-	uc.jobIdToVariants[jobId] = compressedResults
-}
-
-func createUploadsCache() {
-	uploadsCache = &UploadsCache{
-		jobIdToVariants: make(map[string]map[string]string),
-		isBuilt:         false,
-		compressedChar:  "`", // anything non-base32 will do
-		prefix:          "baeaaaiqse",
-		mu:              &sync.RWMutex{},
-	}
-}
-
-func (ss *MediorumServer) buildUploadsCache() {
-	start := time.Now()
-	ctx := context.Background()
-
-	conn, err := ss.pgPool.Acquire(ctx)
-	if err != nil {
-		ss.logger.Warn("error acquiring connection from pool to build uploads cache", "err", err)
-		return
-	}
-	defer conn.Release()
-
-	pageSize := 10000
-	lastID := ""
-
-	for {
-		query := `select id, transcode_results from uploads where id > $1 order by id limit $2`
-		rows, err := conn.Query(ctx, query, lastID, pageSize)
-		if err != nil {
-			ss.logger.Warn("error querying uploads table to build cache", "err", err)
-			return
-		}
-
-		var pageEmpty = true
-		for rows.Next() {
-			pageEmpty = false
-			var id string
-			var resultsJSON []byte
-
-			err := rows.Scan(&id, &resultsJSON)
-			if err != nil {
-				ss.logger.Warn("error scanning row while building uploads cache", "err", err)
-				return
-			}
-
-			results := make(map[string]string)
-			if err := json.Unmarshal(resultsJSON, &results); err != nil {
-				ss.logger.Warn("error unmarshaling results while building uploads cache", "err", err)
-				return
-			}
-
-			uploadsCache.Set(id, results)
-			lastID = id
-		}
-
-		if pageEmpty {
-			break
-		}
-	}
-
-	uploadsCache.mu.Lock()
-	uploadsCache.isBuilt = true
-	uploadsCache.mu.Unlock()
-	took := time.Since(start)
-	ss.logger.Info("uploads cache built", "took_minutes", took.Minutes())
-}
 
 func (ss *MediorumServer) getUpload(c echo.Context) error {
 	var upload *Upload
@@ -441,85 +324,4 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 
 	msg := fmt.Sprintf("variant %s not found for upload %s", variant, jobID)
 	return c.String(400, msg)
-}
-
-// raceIsUrl200 tries batches of 5 hosts concurrently to find the first healthy host that returns a 200 instead of sequentially waiting for a 2s timeout from each host.
-func (ss *MediorumServer) raceIsUrl2xx(url url.URL, hostsToRace []string) string {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	g, _ := errgroup.WithContext(ctx)
-	g.SetLimit(5)
-	destWith2xx := make(chan string, 1)
-
-	for _, host := range hostsToRace {
-		if host == ss.Config.Self.Host {
-			continue
-		}
-		h := host
-		g.Go(func() error {
-			if dest, is2xx := ss.isUrl2xx(url, h); is2xx {
-				// write to channel and cancel context to stop other goroutines, or stop if context was already canceled
-				select {
-				case destWith2xx <- dest:
-					cancel()
-				case <-ctx.Done():
-				}
-			}
-			return nil
-		})
-	}
-
-	go func() {
-		g.Wait()
-		close(destWith2xx)
-	}()
-
-	dest, ok := <-destWith2xx
-	if ok {
-		return dest
-	}
-	return ""
-}
-
-// isUrl200 checks if dest returns 2xx for hostString when not following redirects.
-func (ss *MediorumServer) isUrl2xx(dest url.URL, hostString string) (string, bool) {
-	noRedirectClient := &http.Client{
-		// without this option, we'll incorrectly think Node A has it when really Node A was telling us to redirect to Node B
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
-		Timeout: 2 * time.Second,
-	}
-
-	logger := ss.logger.With("redirect", "url", dest.String(), "host", hostString)
-
-	hostUrl, err := url.Parse(hostString)
-	if err != nil {
-		return "", false
-	}
-
-	dest.Host = hostUrl.Host
-	dest.Scheme = hostUrl.Scheme
-	query := dest.Query()
-	query.Add("localOnly", "true")
-	dest.RawQuery = query.Encode()
-
-	req, err := http.NewRequest("GET", dest.String(), nil)
-	if err != nil {
-		logger.Error("invalid url", "err", err)
-		return "", false
-	}
-	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
-
-	resp, err := noRedirectClient.Do(req)
-	if err != nil {
-		logger.Error("request failed", "err", err)
-		return "", false
-	}
-	resp.Body.Close()
-	if resp.StatusCode == 200 || resp.StatusCode == 204 || resp.StatusCode == 206 {
-		return dest.String(), true
-	}
-
-	return "", false
 }
