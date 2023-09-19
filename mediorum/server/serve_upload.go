@@ -13,6 +13,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"
+	"gocloud.dev/blob"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -209,12 +210,27 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 	// images are small enough to always serve all at once (no 206 range responses)
 	c.Request().Header.Del("Range")
-	c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=2592000, immutable")
 
 	ctx := c.Request().Context()
 	jobID := c.Param("jobID")
 	variant := c.Param("variant")
 	isOriginalJpg := variant == "original.jpg"
+
+	// helper function... only sets cache-control header on success
+	serveSuccessWithReader := func(blob *blob.Reader) error {
+		name := fmt.Sprintf("%s/%s", jobID, variant)
+		c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=2592000, immutable")
+		http.ServeContent(c.Response(), c.Request(), name, blob.ModTime(), blob)
+		return blob.Close()
+	}
+
+	serveSuccess := func(blobPath string) error {
+		if blob, err := ss.bucket.NewReader(ctx, blobPath, nil); err == nil {
+			return serveSuccessWithReader(blob)
+		} else {
+			return err
+		}
+	}
 
 	// if the client provided a filename, set it in the header to be auto-populated in download prompt
 	filenameForDownload := c.QueryParam("filename")
@@ -225,6 +241,7 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 
 	// 1. resolve ulid to upload cid
 	if cid, err := ss.getUploadOrigCID(jobID); err == nil {
+		c.Response().Header().Set("x-orig-cid", cid)
 		jobID = cid
 	}
 
@@ -245,10 +262,11 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 			return c.String(400, err.Error())
 		}
 
+		c.Response().Header().Set("x-variant-storage-path", variantStoragePath)
+
 		// we already have this version
 		if blob, err := ss.bucket.NewReader(ctx, variantStoragePath, nil); err == nil {
-			http.ServeContent(c.Response(), c.Request(), variantStoragePath, blob.ModTime(), blob)
-			return blob.Close()
+			return serveSuccessWithReader(blob)
 		}
 
 		// we need to generate it
@@ -278,15 +296,11 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 				c.Response().Header().Set("x-dynamic-resize-ok", fmt.Sprintf("%.2fs", time.Since(startDynamicResize).Seconds()))
 			}
 		} else {
-			c.Response().Header().Set("x-dynamic-resize-failure", fmt.Sprintf("%.2fs", time.Since(startDynamicResize).Seconds()))
-			return err
+			return c.String(400, fmt.Sprintf("unable to find cid: %s", baCid))
 		}
 
 		// ... serve it
-		if blob, err := ss.bucket.NewReader(ctx, variantStoragePath, nil); err == nil {
-			http.ServeContent(c.Response(), c.Request(), variantStoragePath, blob.ModTime(), blob)
-			return blob.Close()
-		}
+		return serveSuccess(variantStoragePath)
 	}
 
 	// 3. if Qm ... serve legacy
@@ -297,9 +311,11 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 		// (no sharding)
 		key := jobID + "/" + variant
 
+		c.Response().Header().Set("x-variant-storage-path", key)
+
+		// have it
 		if blob, err := ss.bucket.NewReader(ctx, key, nil); err == nil {
-			http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
-			return blob.Close()
+			return serveSuccessWithReader(blob)
 		}
 
 		// pull blob from another host and store it at key
@@ -312,10 +328,7 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 			}
 
 			c.Response().Header().Set("x-find-node-success", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
-			if blob, err := ss.bucket.NewReader(ctx, key, nil); err == nil {
-				http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
-				return blob.Close()
-			}
+			return serveSuccess(key)
 
 		} else {
 			c.Response().Header().Set("x-find-node-failure", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))

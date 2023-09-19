@@ -103,13 +103,12 @@ func (ss *MediorumServer) getUploadOrigCID(uploadId string) (string, error) {
 	}
 
 	var upload Upload
-	err = ss.crud.DB.First(&upload, "id = ?", uploadId).Error
-	if err != nil {
+	if err = ss.crud.DB.First(&upload, "id = ?", uploadId).Error; err == nil {
 		ss.uploadOrigCidCache.Set(uploadId, upload.OrigFileCID, imcache.WithDefaultExpiration())
 		return upload.OrigFileCID, nil
+	} else {
+		return "", err
 	}
-
-	return "", errors.New("unknown upload ID: " + uploadId)
 }
 
 func parseVariantSize(variant string) (w, h int, err error) {
