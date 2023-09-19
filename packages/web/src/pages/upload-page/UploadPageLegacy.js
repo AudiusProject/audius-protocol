@@ -244,13 +244,20 @@ class Upload extends Component {
   }
 
   publish = () => {
-    this.props.uploadTracks(
+    console.log(
+      'sup',
       this.state.tracks,
       this.state.metadata,
       this.state.uploadType,
       this.state.stems
     )
-    this.changePage(Pages.FINISH)
+    // this.props.uploadTracks(
+    //   this.state.tracks,
+    //   this.state.metadata,
+    //   this.state.uploadType,
+    //   this.state.stems
+    // )
+    // this.changePage(Pages.FINISH)
   }
 
   reset = () => {

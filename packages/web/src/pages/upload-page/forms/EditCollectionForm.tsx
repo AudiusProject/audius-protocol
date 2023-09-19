@@ -67,8 +67,17 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
         ...collectionMetadata
       } = values
 
+      console.log('tracks?', tracks, ignoredTrackDetails, {
+        ...collectionMetadata,
+        ...ignoredTrackDetails
+      })
+
       // @ts-expect-error more issues with tracks
-      onContinue({ uploadType, tracks, metadata: collectionMetadata })
+      onContinue({
+        uploadType,
+        tracks,
+        metadata: { ...collectionMetadata, ...ignoredTrackDetails }
+      })
     },
     [onContinue, uploadType]
   )
