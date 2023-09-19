@@ -40,4 +40,38 @@ func TestServeImage(t *testing.T) {
 		assert.Empty(t, resp.Header.Get("x-dynamic-resize-ok"))
 	}
 
+	// it should also have the orig
+	{
+		resp, err := http.Get(s1.Config.Self.Host + "/content/" + cid + "/original.jpg")
+		assert.NoError(t, err)
+		assert.Equal(t, 200, resp.StatusCode)
+		assert.Empty(t, resp.Header.Get("x-dynamic-resize-ok"))
+	}
+
+	// some alternate URLs we need to support??
+	{
+		resp, err := http.Get(s1.Config.Self.Host + "/content/" + cid)
+		assert.NoError(t, err)
+		assert.Equal(t, 200, resp.StatusCode)
+		assert.Empty(t, resp.Header.Get("x-dynamic-resize-ok"))
+	}
+
+	// some alternate URLs we need to support??
+	{
+		resp, err := http.Get(s1.Config.Self.Host + "/content/" + cid + ".jpg")
+		assert.NoError(t, err)
+		assert.Equal(t, 200, resp.StatusCode)
+		assert.Empty(t, resp.Header.Get("x-dynamic-resize-ok"))
+	}
+
+	// test with some Qm URLs
+	{
+		qmKey := "QmQSGUjVkSfGBJCU4dcPn3LC17ikQXbfikGbFUAzL5rcXt/150x150.jpg"
+		s2.replicateToMyBucket(qmKey, f)
+
+		resp, err := http.Get(s1.Config.Self.Host + "/content/" + qmKey)
+		assert.NoError(t, err)
+		assert.Equal(t, 200, resp.StatusCode)
+	}
+
 }

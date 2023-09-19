@@ -331,6 +331,7 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 	ctx := c.Request().Context()
 	jobID := c.Param("jobID")
 	variant := c.Param("variant")
+	isOriginalJpg := variant == "original.jpg"
 
 	// if the client provided a filename, set it in the header to be auto-populated in download prompt
 	filenameForDownload := c.QueryParam("filename")
@@ -340,29 +341,31 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 	}
 
 	// 1. resolve ulid to upload cid
-	if _, err := ulid.Parse(jobID); err == nil {
-		var upload Upload
-		err := ss.crud.DB.First(&upload, "id = ?", jobID).Error
-		if err == nil {
-			// todo: cache this similar to redirectCache
-			jobID = upload.OrigFileCID
-		}
+	if cid, err := ss.getUploadOrigCID(jobID); err == nil {
+		jobID = cid
 	}
 
 	// 2. if is ba ... serve variant
 	if strings.HasPrefix(jobID, "ba") {
 		baCid := jobID
-		variantStoragePath := cidutil.ImageVariantPath(baCid, variant)
+
+		var variantStoragePath string
+
+		// parse 150x150 dimensions
+		// while still allowing original.jpg
+		w, h, err := parseVariantSize(variant)
+		if err == nil {
+			variantStoragePath = cidutil.ImageVariantPath(baCid, variant)
+		} else if isOriginalJpg {
+			variantStoragePath = cidutil.ShardCID(baCid)
+		} else {
+			return c.String(400, err.Error())
+		}
 
 		// we already have this version
 		if blob, err := ss.bucket.NewReader(ctx, variantStoragePath, nil); err == nil {
 			http.ServeContent(c.Response(), c.Request(), variantStoragePath, blob.ModTime(), blob)
 			return blob.Close()
-		}
-
-		w, h, err := parseVariantSize(variant)
-		if err != nil {
-			return c.String(400, err.Error())
 		}
 
 		// we need to generate it
@@ -377,17 +380,20 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 				return err
 			}
 
-			r, err := ss.bucket.NewReader(ctx, cidutil.ShardCID(baCid), nil)
-			if err != nil {
-				return err
-			}
+			if !isOriginalJpg {
+				// dynamically create resized version
+				r, err := ss.bucket.NewReader(ctx, cidutil.ShardCID(baCid), nil)
+				if err != nil {
+					return err
+				}
 
-			resized, _, _ := Resized(".jpg", r, w, h, "fill")
-			w, _ := ss.bucket.NewWriter(ctx, variantStoragePath, nil)
-			io.Copy(w, resized)
-			w.Close()
-			r.Close()
-			c.Response().Header().Set("x-dynamic-resize-ok", fmt.Sprintf("%.2fs", time.Since(startDynamicResize).Seconds()))
+				resized, _, _ := Resized(".jpg", r, w, h, "fill")
+				w, _ := ss.bucket.NewWriter(ctx, variantStoragePath, nil)
+				io.Copy(w, resized)
+				w.Close()
+				r.Close()
+				c.Response().Header().Set("x-dynamic-resize-ok", fmt.Sprintf("%.2fs", time.Since(startDynamicResize).Seconds()))
+			}
 		} else {
 			c.Response().Header().Set("x-dynamic-resize-failure", fmt.Sprintf("%.2fs", time.Since(startDynamicResize).Seconds()))
 			return err

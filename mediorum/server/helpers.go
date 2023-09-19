@@ -6,7 +6,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/erni27/imcache"
 	"github.com/labstack/echo/v4"
+	"github.com/oklog/ulid/v2"
 )
 
 func apiPath(parts ...string) string {
@@ -88,6 +90,26 @@ func rangeIsFirstByte(headerValue string) bool {
 		}
 	}
 	return false
+}
+
+func (ss *MediorumServer) getUploadOrigCID(uploadId string) (string, error) {
+	_, err := ulid.Parse(uploadId)
+	if err != nil {
+		return "", err
+	}
+
+	if cid, ok := ss.uploadOrigCidCache.Get(uploadId); ok {
+		return cid, nil
+	}
+
+	var upload Upload
+	err = ss.crud.DB.First(&upload, "id = ?", uploadId).Error
+	if err != nil {
+		ss.uploadOrigCidCache.Set(uploadId, upload.OrigFileCID, imcache.WithDefaultExpiration())
+		return upload.OrigFileCID, nil
+	}
+
+	return "", errors.New("unknown upload ID: " + uploadId)
 }
 
 func parseVariantSize(variant string) (w, h int, err error) {
