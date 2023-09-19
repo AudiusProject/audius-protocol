@@ -45,9 +45,8 @@ type Crudr struct {
 	callbacks []func(op *Op, records interface{})
 }
 
-func New(selfHost string, myPrivateKey *ecdsa.PrivateKey, peerHosts []string, db *gorm.DB) *Crudr {
-	selfHost = httputil.RemoveTrailingSlash(strings.ToLower(selfHost))
-
+// create partitioned ops table if it does not exist
+func migrateOps(db *gorm.DB) error {
 	opDDL := `
 	CREATE TABLE IF NOT EXISTS ops (
 		"ulid" TEXT,
@@ -56,26 +55,47 @@ func New(selfHost string, myPrivateKey *ecdsa.PrivateKey, peerHosts []string, db
 		"table" TEXT,
 		"data" JSONB)
 		PARTITION BY HASH ("host");
+	
+	COMMIT;
 
-	DO $$
+	CREATE OR REPLACE FUNCTION create_partitions(min_i INTEGER, max_i INTEGER, total INTEGER)
+	RETURNS VOID AS
+	$$
 	DECLARE
-		i INTEGER;
-		partition_name TEXT;
+			i INTEGER;
+			partition_name TEXT;
 	BEGIN
-		FOR i IN 0..1008 LOOP -- 1009 partitions
-			partition_name := 'ops_' || i;
-			EXECUTE 'CREATE TABLE IF NOT EXISTS ' || partition_name || ' PARTITION OF ops FOR VALUES WITH (MODULUS 1009, REMAINDER ' || i || ');';
+			FOR i IN min_i..max_i LOOP
+					partition_name := 'ops_' || i;
+					EXECUTE 'CREATE TABLE IF NOT EXISTS ' || partition_name || ' PARTITION OF ops FOR VALUES WITH (MODULUS ' || total || ', REMAINDER ' || i || ');';
+					BEGIN
+							EXECUTE 'ALTER TABLE ' || partition_name || ' ADD PRIMARY KEY ("ulid");';
+							EXCEPTION WHEN invalid_table_definition THEN NULL;
+					END;
+			END LOOP;
+	END;
+	$$
+	LANGUAGE plpgsql;
 
-			BEGIN
-				EXECUTE 'ALTER TABLE ' || partition_name || ' ADD PRIMARY KEY ("ulid");';
-				EXCEPTION WHEN invalid_table_definition THEN NULL;
-			END;
-
-		END LOOP;
-	END $$;
+  -- migrate and commit partitions in chunks to avoid running out of memory
+	SELECT create_partitions(0, 200, 1009);
+	COMMIT;
+	SELECT create_partitions(201, 400, 1009);
+	COMMIT;
+	SELECT create_partitions(401, 600, 1009);
+	COMMIT;
+	SELECT create_partitions(601, 800, 1009);
+	COMMIT;
+	SELECT create_partitions(801, 1008, 1009);
+	COMMIT;
 	`
-	err := db.Exec(opDDL).Error
+	return db.Exec(opDDL).Error
+}
 
+func New(selfHost string, myPrivateKey *ecdsa.PrivateKey, peerHosts []string, db *gorm.DB) *Crudr {
+	selfHost = httputil.RemoveTrailingSlash(strings.ToLower(selfHost))
+
+	err := migrateOps(db)
 	if err != nil {
 		panic(err)
 	}
