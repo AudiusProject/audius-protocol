@@ -20,10 +20,10 @@ interface AppState {
     setUser: (token: DecodedUserToken) => void
 
     // xml file data
-    xmlRaw: string | null,
-    setRawXml: (raw: string) => void
     xmlParsed: any | null,
     setParsedXml: (parsed: any) => void
+    xmlRaw: string | null,
+    setRawXml: (raw: string) => void
 
     // validate
 
@@ -38,8 +38,8 @@ export const appStore = create<AppState>()(devtools((set) => ({
     user: null,
     setUser: (token) => set((_) => ({ user: token })),
 
+    xmlParsed: null,
+    setParsedXml: (parsed) => set((_) => ({ xmlParsed: parsed })),
     xmlRaw: null,
     setRawXml: (raw) => set((_) => ({ xmlRaw: raw })),
-    xmlParsed: null,
-    setParsedXml: (parsed) => set((_) => ({ xmlParsed: parsed }))
 })))
