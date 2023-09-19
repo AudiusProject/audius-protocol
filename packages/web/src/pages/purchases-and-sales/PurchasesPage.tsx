@@ -7,7 +7,6 @@ import {
   USDCPurchaseDetails,
   accountSelectors,
   combineStatuses,
-  encodeHashId,
   statusIsNotFinalized,
   useAllPaginatedQuery,
   useGetPurchases,
@@ -15,6 +14,12 @@ import {
   useUSDCPurchaseDetailsModal
 } from '@audius/common'
 import { full } from '@audius/sdk'
+import {
+  HarmonyButton,
+  HarmonyButtonSize,
+  HarmonyButtonType,
+  IconDownload
+} from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
@@ -23,6 +28,8 @@ import Page from 'components/page/Page'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { MainContentContext } from 'pages/MainContentContext'
 import NotFoundPage from 'pages/not-found-page/NotFoundPage'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { audiusSdk } from 'services/audius-sdk'
 import { useSelector } from 'utils/reducer'
 import { FEED_PAGE } from 'utils/route'
 
@@ -33,9 +40,6 @@ import {
   PurchasesTableSortMethod
 } from './PurchasesTable'
 import { NoTransactionsContent } from './components/NoTransactionsContent'
-import { HarmonyButton, HarmonyButtonSize, HarmonyButtonType, IconDownload } from '@audius/stems'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { audiusSdk } from 'services/audius-sdk'
 
 const { getUserId } = accountSelectors
 
