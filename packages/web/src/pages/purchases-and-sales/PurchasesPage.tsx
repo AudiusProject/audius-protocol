@@ -2,6 +2,7 @@ import { useCallback, useContext, useState } from 'react'
 
 import {
   FeatureFlags,
+  Id,
   Status,
   USDCPurchaseDetails,
   accountSelectors,
@@ -17,7 +18,6 @@ import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import { CSVDownloadButton } from 'components/csv-download-button/CSVDownloadButton'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -33,6 +33,9 @@ import {
   PurchasesTableSortMethod
 } from './PurchasesTable'
 import { NoTransactionsContent } from './components/NoTransactionsContent'
+import { HarmonyButton, HarmonyButtonSize, HarmonyButtonType, IconDownload } from '@audius/stems'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { audiusSdk } from 'services/audius-sdk'
 
 const { getUserId } = accountSelectors
 
@@ -42,7 +45,8 @@ const messages = {
   noPurchasesHeader: `You haven't bought anything yet.`,
   noPurchasesBody: 'Once you make a purchase, it will show up here.',
   findSongs: 'Find Songs',
-  headerText: 'Your Purchases'
+  headerText: 'Your Purchases',
+  downloadCSV: 'Download CSV'
 }
 
 const TRANSACTIONS_BATCH_SIZE = 50
@@ -140,14 +144,31 @@ const RenderPurchasesPage = () => {
   const isEmpty = status === Status.SUCCESS && purchases.length === 0
   const isLoading = statusIsNotFinalized(status)
 
-  const encodedUserId = encodeHashId(userId)
-  const downloadUrl = `https://staging.audius.co/v1/users/${encodedUserId}/sales/purchases`
-  // const downloadUrl = `/v1/users/${encodedUserId}/sales/purchases`
+  const downloadCSV = useCallback(async () => {
+    const sdk = await audiusSdk()
+    const { data: encodedDataMessage, signature: encodedDataSignature } =
+      await audiusBackendInstance.signDiscoveryNodeRequest()
+    const blob = await sdk.full.users.downloadPurchasesAsCSV({
+      id: Id.parse(userId!),
+      encodedDataMessage,
+      encodedDataSignature
+    })
+    const blobUrl = window.URL.createObjectURL(blob)
+    window.location.assign(blobUrl)
+  }, [userId])
 
   const header = (
     <Header
       primary={messages.headerText}
-      rightDecorator={<CSVDownloadButton url={downloadUrl} />}
+      rightDecorator={
+        <HarmonyButton
+          onClick={downloadCSV}
+          text={messages.downloadCSV}
+          variant={HarmonyButtonType.SECONDARY}
+          size={HarmonyButtonSize.SMALL}
+          iconLeft={IconDownload}
+        />
+      }
     />
   )
 
