@@ -40,7 +40,7 @@ const messages = {
   uploadInProgress: 'Upload In Progress',
   uploadComplete: 'Upload Complete',
   uploadMore: 'Upload More',
-  finishingUpload: 'Finializing Upload',
+  finishingUpload: 'Finalizing Upload',
   visitProfile: 'Visit Your Profile',
   visitTrack: 'Visit Track Page',
   visitAlbum: 'Visit Album Page',
