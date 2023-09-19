@@ -162,8 +162,9 @@ const getLineGraphOptions = (transformXValue) => ({
         <div class='totalPlaysTooltipContainer'>
           <div class='totalPlaysTooltipTitle'>${title}</div>
           <div class='totalPlaysTooltipLabelContainer'>
-            <div class='totalPlaysTooltipLabelText'>${playCount + ' Plays'
-        }</div>
+            <div class='totalPlaysTooltipLabelText'>${
+              playCount + ' Plays'
+            }</div>
           </div>
           <div class='totalPlaysTooptipCarrot'/>
         </div>`
@@ -333,8 +334,8 @@ TotalPlaysChart.defaultProps = {
   tracks: [],
   selectedTrack: -1,
   selectedYear: 'All Years',
-  onSetTrackOption: () => { },
-  onSetYearOption: () => { }
+  onSetTrackOption: () => {},
+  onSetYearOption: () => {}
 }
 
 export default TotalPlaysChart

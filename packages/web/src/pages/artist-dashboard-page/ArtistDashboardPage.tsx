@@ -2,7 +2,6 @@ import { useState, Suspense, ReactNode, useEffect, useCallback } from 'react'
 
 import {
   Status,
-  Theme,
   Track,
   formatCount,
   themeSelectors,
