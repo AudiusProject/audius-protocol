@@ -1,4 +1,4 @@
-import { createRef, Fragment, useState, useEffect, useRef } from 'react'
+import { createRef, Fragment, useState, useRef, useEffect } from 'react'
 
 import cn from 'classnames'
 import { mergeRefs } from 'react-merge-refs'
@@ -36,6 +36,14 @@ export const SegmentedControl = <T extends string>(
     polyfill: ResizeObserver
   })
 
+  const [forceRefresh, setForceRefresh] = useState(false)
+  useEffect(() => {
+    setTimeout(() => {
+      setForceRefresh(!forceRefresh)
+    }, props.forceRefreshAfterMs)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   useEffect(() => {
     let selectedRefIdx = props.options.findIndex(
       (option) => option.key === selectedOption
@@ -58,7 +66,9 @@ export const SegmentedControl = <T extends string>(
     setAnimatedProps,
     selected,
     optionRefs,
-    bounds
+    bounds,
+    // Additional deps
+    forceRefresh
   ])
 
   return (
