@@ -505,17 +505,20 @@ export class SolanaWeb3Manager {
    * @param params.type the type of the content, eg. "track"
    * @param params.blocknumber the blocknumber the content was last updated
    * @param params.splits map of address to USDC amount, used to split the price amoung several stakeholders
+   * @param params.extraAmount Extra amount in USDC wei to be distributed to the stakeholders
    * @returns the transaction signature and/or an error
    */
   async purchaseContent({
     id,
     type,
     blocknumber,
+    extraAmount = 0,
     splits
   }: {
     id: number
     type: 'track'
     splits: Record<string, number | BN>
+    extraAmount?: number | BN
     blocknumber: number
   }) {
     if (!this.web3Manager) {
@@ -531,8 +534,10 @@ export class SolanaWeb3Manager {
 
     const totalAmount = Object.values(splits).reduce<BN>(
       (sum, split) => (split instanceof BN ? sum.add(split) : sum.addn(split)),
-      new BN(0)
+      extraAmount instanceof BN ? extraAmount : new BN(extraAmount)
     )
+
+    console.log('total amount', totalAmount.toString())
 
     const senderEthAddress = this.web3Manager.getWalletAddress()
     const senderSolanaAddress = await getBankAccountAddress(

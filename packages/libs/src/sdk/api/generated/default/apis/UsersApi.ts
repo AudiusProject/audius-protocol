@@ -190,7 +190,8 @@ export interface VerifyIDTokenRequest {
  */
 export class UsersApi extends runtime.BaseAPI {
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the AI generated tracks attributed to a user using the user\'s handle
      */
     async getAIAttributedTracksByUserHandleRaw(params: GetAIAttributedTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
@@ -252,7 +253,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Get the apps that user has authorized to write to their account
      */
     async getAuthorizedAppsRaw(params: GetAuthorizedAppsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AuthorizedApps>> {
@@ -282,7 +284,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Get the User\'s ERC and SPL connected wallets
      */
     async getConnectedWalletsRaw(params: GetConnectedWalletsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ConnectedWalletsResponse>> {
@@ -312,7 +315,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the developer apps that the user owns
      */
     async getDeveloperAppsRaw(params: GetDeveloperAppsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DeveloperApps>> {
@@ -342,7 +346,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets a user\'s favorite tracks
      */
     async getFavoritesRaw(params: GetFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FavoritesResponse>> {
@@ -372,7 +377,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * All users that follow the provided user
      */
     async getFollowersRaw(params: GetFollowersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FollowersResponse>> {
@@ -414,7 +420,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * All users that the provided user follows
      */
     async getFollowingRaw(params: GetFollowingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FollowingResponse>> {
@@ -456,7 +463,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets a list of users that might be of interest to followers of this user.
      */
     async getRelatedUsersRaw(params: GetRelatedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RelatedArtistResponse>> {
@@ -498,7 +506,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the given user\'s reposts
      */
     async getRepostsRaw(params: GetRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Reposts>> {
@@ -540,7 +549,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * All users that subscribe to the provided user
      */
     async getSubscribersRaw(params: GetSubscribersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SubscribersResponse>> {
@@ -582,7 +592,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the supporters of the given user
      */
     async getSupportersRaw(params: GetSupportersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetSupporters>> {
@@ -620,7 +631,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the users that the given user supports
      */
     async getSupportingsRaw(params: GetSupportingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetSupporting>> {
@@ -658,7 +670,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the most used track tags by a user.
      * Fetch most used tags in a user\'s tracks
      */
@@ -698,7 +711,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the tracks created by a user using their user ID
      */
     async getTracksByUserRaw(params: GetTracksByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
@@ -760,7 +774,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets a single user by their user ID
      */
     async getUserRaw(params: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserResponse>> {
@@ -790,7 +805,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets a single user by their handle
      */
     async getUserByHandleRaw(params: GetUserByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserResponse>> {
@@ -824,7 +840,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets a User ID from an associated wallet address
      */
     async getUserIDFromWalletRaw(params: GetUserIDFromWalletRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserAssociatedWalletResponse>> {
@@ -858,7 +875,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Search for users that match the given query
      */
     async searchUsersRaw(params: SearchUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserSearch>> {
@@ -892,7 +910,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Verify if the given jwt ID token was signed by the subject (user) in the payload
      */
     async verifyIDTokenRaw(params: VerifyIDTokenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VerifyToken>> {
