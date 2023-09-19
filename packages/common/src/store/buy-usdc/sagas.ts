@@ -127,7 +127,7 @@ function* purchaseStep({
   return { newBalance }
 }
 
-async function* transferStep({
+function* transferStep({
   wallet,
   userBank,
   amount

@@ -1,4 +1,4 @@
-const audiusLibsWrapper = require('audiusLibsInstance')
+const audiusLibsWrapper = require('../audiusLibsInstance')
 const config = require('../config')
 const solanaRewardsManagerProgramId = config.get(
   'solanaRewardsManagerProgramId'
@@ -133,7 +133,7 @@ const isTransferToUserbank = async (instruction, walletAddress) => {
           ethAddress: walletAddress,
           mint: 'usdc'
         })
-      return derivedUserbank.toString() === receiverAccount
+      return derivedUserbank.toBase58() === receiverAccount
     }
   }
   return false

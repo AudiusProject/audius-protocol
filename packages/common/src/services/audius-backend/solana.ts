@@ -343,11 +343,11 @@ export const createTransferToUserBankTransaction = async (
   }
 ) => {
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const mintPublicKey = new PublicKey(libs.solanaWeb3Config.mintAddress)
+  const mintPublicKey = libs.solanaWeb3Manager!.mints[mint]
   const associatedTokenAccount = await findAssociatedTokenAddress(
     audiusBackendInstance,
     {
-      solanaAddress: wallet.toString(),
+      solanaAddress: wallet.publicKey.toBase58(),
       mint
     }
   )

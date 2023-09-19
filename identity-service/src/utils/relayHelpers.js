@@ -143,7 +143,7 @@ const isRelayAllowedInstruction = async (instruction, walletAddress) => {
         usdcAuthority
       )
     )
-  } else if (instruction.programId === TOKEN_PROGRAM_ID) {
+  } else if (instruction.programId === TOKEN_PROGRAM_ID.toBase58()) {
     return await isTransferToUserbank(instruction, walletAddress)
   } else if (isRelayAllowedProgram([instruction])) {
     // Authority check not necessary
