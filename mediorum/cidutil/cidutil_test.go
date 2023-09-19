@@ -1,6 +1,7 @@
 package cidutil
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -42,4 +43,13 @@ func TestIsLegacyCID(t *testing.T) {
 func TestShardCID(t *testing.T) {
 	assert.Equal(t, "2y2/QmP8Wuu1kN9iHBoBptB4UrTN3orna3Z6ZW2xevNkoE2y22", ShardCID(v0CID))
 	assert.Equal(t, "ru7u2/baeaaaiqsecffzabbj7utfkkmywbhlls46twtaq3fbvpbozvugl4bqszfru7u2", ShardCID(v1CID))
+
+	assert.Equal(t, "img/XK5X5/01HA2C60D80CYWZP3FWZZXK5X5/150x150", ImageVariantPath("01HA2C60D80CYWZP3FWZZXK5X5", "150x150"))
+
+}
+
+func TestEmptyCID(t *testing.T) {
+	cid, err := ComputeFileCID(bytes.NewReader([]byte{}))
+	assert.NoError(t, err)
+	assert.Equal(t, "baeaaaiqsedr3brcctd6byfe27p2mrglpxescplsb4rsjxe2muskzsg3ykk4fk", cid)
 }

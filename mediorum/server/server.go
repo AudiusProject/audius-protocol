@@ -102,10 +102,11 @@ type MediorumServer struct {
 
 	isSeeding bool
 
-	peerHealthsMutex sync.RWMutex
-	peerHealths      map[string]*PeerHealth
-	unreachablePeers []string
-	redirectCache    *imcache.Cache[string, string]
+	peerHealthsMutex   sync.RWMutex
+	peerHealths        map[string]*PeerHealth
+	unreachablePeers   []string
+	redirectCache      *imcache.Cache[string, string]
+	uploadOrigCidCache *imcache.Cache[string, string]
 
 	StartedAt time.Time
 	Config    MediorumConfig
@@ -259,8 +260,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		trustedNotifier: &trustedNotifier,
 		isSeeding:       config.Env == "stage" || config.Env == "prod",
 
-		peerHealths:   map[string]*PeerHealth{},
-		redirectCache: imcache.New[string, string](imcache.WithMaxEntriesOption[string, string](100_000)),
+		peerHealths:        map[string]*PeerHealth{},
+		redirectCache:      imcache.New[string, string](imcache.WithMaxEntriesOption[string, string](100_000)),
+		uploadOrigCidCache: imcache.New[string, string](imcache.WithMaxEntriesOption[string, string](100_000)),
 
 		StartedAt: time.Now().UTC(),
 		Config:    config,
@@ -350,9 +352,6 @@ func (ss *MediorumServer) MustStart() {
 	}()
 
 	go ss.startTranscoder()
-
-	createUploadsCache()
-	go ss.buildUploadsCache()
 
 	var lastSuccessfulRepair RepairTracker
 	if err := ss.crud.DB.Where("finished_at is not null").Where("aborted_reason = ?", "").Order("started_at desc").First(&lastSuccessfulRepair).Error; err != nil {
