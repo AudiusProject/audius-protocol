@@ -1,6 +1,11 @@
 import type { AudiusLibs } from '@audius/sdk'
-import { AccountInfo, u64 } from '@solana/spl-token'
-import { PublicKey } from '@solana/web3.js'
+import { AccountInfo, TOKEN_PROGRAM_ID, Token, u64 } from '@solana/spl-token'
+import {
+  Keypair,
+  PublicKey,
+  Transaction,
+  TransactionInstruction
+} from '@solana/web3.js'
 import BN from 'bn.js'
 
 import { AnalyticsEvent, Name, SolanaWalletAddress } from '../../models'
@@ -9,6 +14,15 @@ import { AudiusBackend } from './AudiusBackend'
 
 const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
+
+const MEMO_PROGRAM_ID = new PublicKey(
+  'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
+)
+
+const MINT_DECIMALS: Record<MintName, number> = {
+  audio: 8,
+  usdc: 6
+}
 
 // TODO: Import from libs https://linear.app/audius/issue/PAY-1750/export-mintname-and-default-mint-from-libs
 export type MintName = 'audio' | 'usdc'
@@ -24,6 +38,9 @@ const delay = (ms: number) =>
     setTimeout(resolve, ms)
   })
 
+/**
+ * Gets a Solana wallet derived from the user's Hedgehog wallet
+ */
 export const getRootSolanaAccount = async (
   audiusBackendInstance: AudiusBackend
 ) => {
@@ -33,13 +50,9 @@ export const getRootSolanaAccount = async (
   )
 }
 
-export const getCurrentUserWallet = async (
-  audiusBackendInstance: AudiusBackend
-) => {
-  const audiusLibs = await audiusBackendInstance.getAudiusLibs()
-  return await audiusLibs.Account!.getCurrentUser()?.wallet
-}
-
+/**
+ * Gets the Solana connection libs is currently using
+ */
 export const getSolanaConnection = async (
   audiusBackendInstance: AudiusBackend
 ) => {
@@ -47,6 +60,19 @@ export const getSolanaConnection = async (
     .connection
 }
 
+/**
+ * Gets the latest blockhash using the libs connection
+ */
+export const getRecentBlockhash = async (
+  audiusBackendInstance: AudiusBackend
+) => {
+  const connection = await getSolanaConnection(audiusBackendInstance)
+  return (await connection.getLatestBlockhash()).blockhash
+}
+
+/**
+ * Gets the token account information for a given address and Audius-relevant mint
+ */
 export const getTokenAccountInfo = async (
   audiusBackendInstance: AudiusBackend,
   {
@@ -208,6 +234,10 @@ export const createUserBankIfNeeded = async (
   }
 }
 
+/**
+ * Polls the given token account until its balance is different from initial balance or a timeoout.
+ * Throws an error if the balance doesn't change within the timeout.
+ */
 export const pollForBalanceChange = async (
   audiusBackendInstance: AudiusBackend,
   {
@@ -281,4 +311,95 @@ export const purchaseContent = async (
   return (
     await audiusBackendInstance.getAudiusLibs()
   ).solanaWeb3Manager!.purchaseContent(config)
+}
+
+export const findAssociatedTokenAddress = async (
+  audiusBackendInstance: AudiusBackend,
+  { solanaAddress, mint }: { solanaAddress: string; mint: MintName }
+) => {
+  return (
+    await audiusBackendInstance.getAudiusLibsTyped()
+  ).solanaWeb3Manager!.findAssociatedTokenAddress(solanaAddress, mint)
+}
+
+export const createTransferToUserBankTransaction = async (
+  audiusBackendInstance: AudiusBackend,
+  {
+    userBank,
+    wallet,
+    amount,
+    memo,
+    mint = 'audio',
+    recentBlockhash,
+    feePayer
+  }: {
+    userBank: PublicKey
+    wallet: Keypair
+    amount: u64
+    memo: string
+    mint?: MintName
+    feePayer?: PublicKey
+    recentBlockhash?: string
+  }
+) => {
+  const libs = await audiusBackendInstance.getAudiusLibsTyped()
+  const mintPublicKey = new PublicKey(libs.solanaWeb3Config.mintAddress)
+  const associatedTokenAccount = await findAssociatedTokenAddress(
+    audiusBackendInstance,
+    {
+      solanaAddress: wallet.toString(),
+      mint
+    }
+  )
+  // See: https://github.com/solana-labs/solana-program-library/blob/d6297495ea4dcc1bd48f3efdd6e3bbdaef25a495/memo/js/src/index.ts#L27
+  const memoInstruction = new TransactionInstruction({
+    keys: [
+      {
+        pubkey: wallet.publicKey,
+        isSigner: true,
+        isWritable: true
+      }
+    ],
+    programId: MEMO_PROGRAM_ID,
+    data: Buffer.from(memo)
+  })
+  const transferInstruction = Token.createTransferCheckedInstruction(
+    TOKEN_PROGRAM_ID,
+    associatedTokenAccount,
+    mintPublicKey,
+    userBank,
+    wallet.publicKey,
+    [],
+    amount,
+    MINT_DECIMALS[mint]
+  )
+  const tx = new Transaction({ recentBlockhash, feePayer })
+  tx.add(memoInstruction)
+  tx.add(transferInstruction)
+  return tx
+}
+
+/**
+ * Relays the given transaction using the libs transaction handler
+ */
+export const relayTransaction = async (
+  audiusBackendInstance: AudiusBackend,
+  { transaction }: { transaction: Transaction }
+) => {
+  const libs = await audiusBackendInstance.getAudiusLibsTyped()
+  const instructions = transaction.instructions
+  const signatures = transaction.signatures
+    .filter((s) => s.signature !== null)
+    .map((s) => ({
+      signature: s.signature!, // safe from filter
+      publicKey: s.publicKey.toString()
+    }))
+  const feePayerOverride = transaction.feePayer
+  const recentBlockhash = transaction.recentBlockhash
+  return await libs.solanaWeb3Manager!.transactionHandler.handleTransaction({
+    instructions,
+    recentBlockhash,
+    signatures,
+    feePayerOverride
+  })
 }
