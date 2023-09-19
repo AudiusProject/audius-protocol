@@ -162,7 +162,7 @@ export const FinishPageNew = (props: FinishPageProps) => {
   const visitButtonPath = useMemo(() => {
     switch (uploadType) {
       case UploadType.INDIVIDUAL_TRACK:
-        return upload.tracks![0].metadata.permalink
+        return upload.tracks?.[0].metadata.permalink
       case UploadType.ALBUM:
       case UploadType.PLAYLIST:
         return collectionPage(
