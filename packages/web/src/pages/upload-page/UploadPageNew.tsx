@@ -193,9 +193,7 @@ export const UploadPageNew = (props: UploadPageProps) => {
           formState.uploadType === UploadType.PLAYLIST
           ? formState.metadata
           : undefined,
-        tracks.length > 1
-          ? UploadType.INDIVIDUAL_TRACKS
-          : UploadType.INDIVIDUAL_TRACK,
+        formState.uploadType,
         trackStems
       )
     )
