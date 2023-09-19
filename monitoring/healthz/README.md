@@ -1,3 +1,4 @@
+# Audius healthz service and side-car
 # To run locally
 
 ```
@@ -7,7 +8,20 @@ npm i
 npm run dev
 ```
 
-# To deploy
+# To build docker image:
+
+Builds for both arm64 and amd64:
+
+```bash
+docker buildx build \
+  --platform linux/arm64,linux/amd64 \
+  --tag audius/healthz
+  --build-arg git_sha=$(git rev-parse HEAD) \
+  --push \
+  .
+```
+
+# To deploy to Cloudflare Pages
 
 Ensure you have cloudflare access.
 You will also need node v16.13.0.
