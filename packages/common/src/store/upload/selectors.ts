@@ -11,7 +11,7 @@ export const getIsUploading = (state: CommonState) => state.upload.uploading
 export const getShouldReset = (state: CommonState) => state.upload.shouldReset
 
 // Should sum to 1
-const UPLOAD_WEIGHT = 0.8
+const UPLOAD_WEIGHT = 0.5
 const TRANSCODE_WEIGHT = 1 - UPLOAD_WEIGHT
 
 // Should sum to 1

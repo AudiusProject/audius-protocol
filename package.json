@@ -1,5 +1,6 @@
 {
-  "version": "1.5.41",
+  "name": "root",
+  "version": "1.5.42",
   "workspaces": [
     "packages/*"
   ],

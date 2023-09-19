@@ -1,0 +1,18 @@
+{
+  "name": "sql-ts",
+  "private": true,
+  "version": "1.0.1",
+  "description": "",
+  "scripts": {
+    "start": "ts-node src/index.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@rmp135/sql-ts": "1.18.0",
+    "knex": "2.5.1",
+    "pg": "8.11.3"
+  },
+  "main": "src/index.ts",
+  "devDependencies": {}
+}

@@ -204,7 +204,9 @@ export const FinishPageNew = (props: FinishPageProps) => {
             </Text>
             <div className={styles.headerProgressInfo}>
               <Text variant='label' size='small'>
-                {fullUploadPercent === 100 && !uploadComplete
+                {uploadComplete
+                  ? '100%'
+                  : fullUploadPercent === 100 && !uploadComplete
                   ? messages.finishingUpload
                   : `${fullUploadPercent}%`}
               </Text>

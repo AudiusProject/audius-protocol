@@ -82,9 +82,12 @@ function* getTracks({ offset, limit }) {
       trackIds: allSavedTrackIds.filter((id) => id !== null)
     })
     const tracksMap = tracks.reduce((map, track) => {
-      track.dateSaved = allSavedTrackTimestamps[track.track_id]
+      const save = {
+        ...track,
+        dateSaved: allSavedTrackTimestamps[track.track_id]
+      }
 
-      map[track.track_id] = track
+      map[track.track_id] = save
       return map
     }, {})
     return allSavedTrackIds.map((id) =>
