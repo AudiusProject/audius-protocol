@@ -111,25 +111,10 @@ export const formatWei = (
   return formatNumberCommas(trimmed) as StringAudio
 }
 
-export const convertJSBIToAmountObject = (amount: JSBI, decimals: number) => {
-  const divisor = JSBI.BigInt(10 ** decimals)
-  const quotient = JSBI.divide(amount, divisor)
-  const remainder = JSBI.remainder(amount, divisor)
-  const uiAmountString = JSBI.greaterThan(remainder, JSBI.BigInt(0))
-    ? `${quotient.toString()}.${remainder.toString().padStart(decimals, '0')}`
-    : quotient.toString()
-  return {
-    amount: JSBI.toNumber(amount),
-    amountString: amount.toString(),
-    uiAmount: JSBI.toNumber(amount) / 10 ** decimals,
-    uiAmountString
-  }
-}
-
 export const convertQuoteStringToAmountObject = (
   amount: string,
   decimals: number
-) => {
+): AmountObject => {
   return {
     amount: Number(BigInt(amount)),
     amountString: amount,
