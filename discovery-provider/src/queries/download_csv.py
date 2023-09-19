@@ -15,7 +15,7 @@ from src.models.users.usdc_transactions_history import (
 from src.models.users.user import User
 from src.models.users.user_bank import USDCUserBankAccount
 from src.utils.config import shared_config
-from src.utils.csv_writer import write_csv
+from src.utils.csv_writer import write_csv_string
 from src.utils.db_session import get_db_read_replica
 
 env = shared_config["discprov"]["env"]
@@ -115,7 +115,7 @@ def get_link(content_type: PurchaseType, handle: str, slug: str):
     return f"{domain}/{handle}/{slug}"
 
 
-# Get cost of purchased content
+# Get value of purchased content
 def get_dollar_amount(amount: str):
     num_usdc_decimals = 6
     return int(amount) / 10**num_usdc_decimals
@@ -138,14 +138,14 @@ def download_purchases(args: DownloadPurchasesArgs):
                 ),
                 "artist": result.seller_name,
                 "date": result.created_at,
-                "cost": get_dollar_amount(result.amount),
+                "value": get_dollar_amount(result.amount),
             },
             results,
         )
     )
 
     # Get results in CSV format
-    to_download = write_csv(contents)
+    to_download = write_csv_string(contents)
     return to_download
 
 
@@ -174,14 +174,14 @@ def download_sales(args: DownloadSalesArgs):
                 "link": get_link(result.content_type, seller_handle, result.slug),
                 "purchased by": result.buyer_name,
                 "date": result.created_at,
-                "cost": get_dollar_amount(result.amount),
+                "value": get_dollar_amount(result.amount),
             },
             results,
         )
     )
 
     # Get results in CSV format
-    to_download = write_csv(contents)
+    to_download = write_csv_string(contents)
     return to_download
 
 
@@ -222,5 +222,5 @@ def download_withdrawals(args: DownloadWithdrawalsArgs):
         )
 
         # Get results in CSV format
-        to_download = write_csv(contents)
+        to_download = write_csv_string(contents)
         return to_download
