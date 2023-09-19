@@ -8,32 +8,33 @@ import {
 } from 'react'
 
 import { ID, Kind } from '@audius/common'
+import cn from 'classnames'
+import { debounce, range } from 'lodash'
+import moment from 'moment'
+import {
+  Cell,
+  Row,
+  TableRowProps,
+  useFlexLayout,
+  useResizeColumns,
+  useSortBy,
+  useTable
+} from 'react-table'
+import {
+  AutoSizer,
+  InfiniteLoader,
+  List,
+  WindowScroller
+} from 'react-virtualized'
+
 import { ReactComponent as IconCaretDown } from 'assets/img/iconCaretDownLine.svg'
 import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
 import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
 import { ReactComponent as IconCaretUp } from 'assets/img/iconCaretUpLine.svg'
-import cn from 'classnames'
 import { Draggable, Droppable } from 'components/dragndrop'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
-import { debounce, range } from 'lodash'
-import moment from 'moment'
-import {
-  useTable,
-  useSortBy,
-  useResizeColumns,
-  useFlexLayout,
-  Cell,
-  Row,
-  TableRowProps
-} from 'react-table'
-import {
-  AutoSizer,
-  List,
-  InfiniteLoader,
-  WindowScroller
-} from 'react-virtualized'
 
 import styles from './Table.module.css'
 
@@ -140,7 +141,7 @@ export const Table = ({
         'Programming error - need to specify the `totalRowCount` if using paginated Table component (i.e .if `isPaginated` is `true`)'
       )
     }
-  }, [])
+  }, [isPaginated, totalRowCount])
   const defaultColumn = useMemo(
     () => ({
       // Default resizing column props
@@ -661,7 +662,7 @@ export const Table = ({
       <InfiniteLoader
         isRowLoaded={isRowLoaded}
         loadMoreRows={loadMoreRows}
-        rowCount={totalRowCount == null ? data.length : totalRowCount}
+        rowCount={totalRowCount == null ? rows.length : totalRowCount}
         threshold={fetchThreshold}
         minimumBatchSize={fetchBatchSize}
       >
