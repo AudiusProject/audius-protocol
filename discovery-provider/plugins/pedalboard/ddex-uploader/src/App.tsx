@@ -1,30 +1,21 @@
-import { useEffect, useState } from 'react'
-import { FileUploader } from "react-drag-drop-files"
-import { JsonView, allExpanded, darkStyles } from 'react-json-view-lite';
-//@ts-ignore
-import XMLParser from "react-xml-parser"
 import './App.css'
-
-const fileTypes = ["XML"]
-const parser = new XMLParser()
+import { Ingest } from './Ingest'
+import { Listen } from './Listen'
+import { Login } from './Login'
+import { Upload } from './Upload'
+import { Validate } from './Validate'
+import { State, appStore } from './store'
 
 function App() {
-  // state
-  const [file, setFile] = useState<File | null>(null)
-  const [fileText, setFileText] = useState<any | null>(null)
-
-  // fx
-  const readFile = () => {
-    file?.text().then((txt) => setFileText(parser.parseFromString(txt)))
-    console.dir({ fileText })
-  }
-  useEffect(readFile, [file])
-
+  const appState = appStore((state) => state.appState)
   return (
     <>
       DDEX Uploader
-      <FileUploader handleChange={setFile} name="ddex-file" types={fileTypes} />
-      {fileText && <JsonView data={fileText} shouldExpandNode={allExpanded} style={darkStyles} />}
+      {appState === State.Login && <Login />}
+      {appState === State.Ingest && <Ingest />}
+      {appState === State.Validate && <Validate />}
+      {appState === State.Upload && <Upload />}
+      {appState === State.Listen && <Listen />}
     </>
   )
 }

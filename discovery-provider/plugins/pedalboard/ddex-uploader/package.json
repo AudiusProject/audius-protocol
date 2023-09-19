@@ -16,7 +16,8 @@
     "react-drag-drop-files": "^2.3.10",
     "react-json-view-lite": "^1.0.0",
     "react-xml-parser": "^1.1.8",
-    "web3": "^4.1.1"
+    "web3": "^4.1.1",
+    "zustand": "^4.4.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
