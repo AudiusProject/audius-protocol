@@ -537,8 +537,6 @@ export class SolanaWeb3Manager {
       extraAmount instanceof BN ? extraAmount : new BN(extraAmount)
     )
 
-    console.log('total amount', totalAmount.toString())
-
     const senderEthAddress = this.web3Manager.getWalletAddress()
     const senderSolanaAddress = await getBankAccountAddress(
       senderEthAddress,
