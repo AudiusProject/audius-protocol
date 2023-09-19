@@ -332,8 +332,9 @@ services:
       devNetworkCount: "5"
     healthcheck:
       test: ["CMD", "curl", "http://localhost:1991/health_check"]
-      interval: 30s
-      timeout: 60s
+      interval: 10s
+      start_period: 60s
+      timeout: 5s
     logging: *default-logging
     profiles:
       - mediorum
