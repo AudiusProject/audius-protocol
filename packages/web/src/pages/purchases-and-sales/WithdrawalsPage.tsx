@@ -156,7 +156,7 @@ const RenderWithdrawalsPage = () => {
     const sdk = await audiusSdk()
     const { data: encodedDataMessage, signature: encodedDataSignature } =
       await audiusBackendInstance.signDiscoveryNodeRequest()
-    const blob = await sdk.full.users.downloadUSDCWithdrawalsAsCSV({
+    const blob = await sdk.users.downloadUSDCWithdrawalsAsCSVBlob({
       id: Id.parse(userId!),
       encodedDataMessage,
       encodedDataSignature

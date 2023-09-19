@@ -147,7 +147,7 @@ const RenderSalesPage = () => {
     const sdk = await audiusSdk()
     const { data: encodedDataMessage, signature: encodedDataSignature } =
       await audiusBackendInstance.signDiscoveryNodeRequest()
-    const blob = await sdk.full.users.downloadSalesAsCSV({
+    const blob = await sdk.users.downloadSalesAsCSVBlob({
       id: Id.parse(userId!),
       encodedDataMessage,
       encodedDataSignature
