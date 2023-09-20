@@ -128,16 +128,13 @@ export const FinishPageNew = (props: FinishPageProps) => {
     if (!upload.uploadProgress || upload.uploading || !upload.success)
       return false
 
-    return (
-      upload.success &&
-      upload.uploadProgress.reduce((acc, progress) => {
-        return (
-          acc &&
-          progress.art.status === ProgressStatus.COMPLETE &&
-          progress.audio.status === ProgressStatus.COMPLETE
-        )
-      }, true)
-    )
+    return upload.uploadProgress.reduce((acc, progress) => {
+      return (
+        acc &&
+        progress.art.status === ProgressStatus.COMPLETE &&
+        progress.audio.status === ProgressStatus.COMPLETE
+      )
+    }, true)
   }, [upload])
 
   const handleUploadMoreClick = useCallback(() => {
