@@ -15,7 +15,11 @@ import { AudiusBackend } from './AudiusBackend'
 const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
 
-const MEMO_PROGRAM_ID = new PublicKey(
+/**
+ * Memo program V1
+ * https://github.com/solana-labs/solana-program-library/blob/7492e38b8577eef4defb5d02caadf82162887c68/memo/program/src/lib.rs#L16-L21
+ */
+export const MEMO_PROGRAM_ID = new PublicKey(
   'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
 )
 
