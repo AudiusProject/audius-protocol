@@ -189,11 +189,11 @@ export const UploadPageNew = (props: UploadPageProps) => {
       uploadTracks(
         // @ts-ignore - This has artwork on it
         tracks,
-        // NOTE: Need to add metadata for collections here for collection upload
-        undefined,
-        tracks.length > 1
-          ? UploadType.INDIVIDUAL_TRACKS
-          : UploadType.INDIVIDUAL_TRACK,
+        formState.uploadType === UploadType.ALBUM ||
+          formState.uploadType === UploadType.PLAYLIST
+          ? formState.metadata
+          : undefined,
+        formState.uploadType,
         trackStems
       )
     )
