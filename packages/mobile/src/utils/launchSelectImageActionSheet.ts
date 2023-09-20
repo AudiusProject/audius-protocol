@@ -1,54 +1,57 @@
-import type { Image } from '@audius/common'
 import { ActionSheetIOS, Alert, Platform } from 'react-native'
-import type {
-  Image as CropPickerImage,
-  Options
-} from 'react-native-image-crop-picker'
-import { openPicker, openCamera } from 'react-native-image-crop-picker'
+import type { ImageLibraryOptions, Asset } from 'react-native-image-picker'
+import { launchImageLibrary, launchCamera } from 'react-native-image-picker'
 
-import { store } from 'app/store'
+import type { Image } from 'app/types/image'
 
-import { selectSystemTheme } from './theme'
+const photoOptions: ImageLibraryOptions = {
+  includeBase64: true,
+  maxWidth: 1440,
+  mediaType: 'photo',
+  quality: 0.9
+}
 
 export const launchSelectImageActionSheet = (
-  onSelectImage: (image: Image) => void,
-  options: Options
+  callback: (image: Image, rawResponse: Asset) => void,
+  shareSheetTintColor: string
 ) => {
-  const theme = selectSystemTheme(store.getState())
-  const { primary, secondary } = theme
+  const handlePhoto = ({ assets }: { assets: Asset[] | undefined }) => {
+    const response = assets?.[0]
+    const selectedPhoto = !!response?.base64
 
-  const baseOptions: Options = {
-    cropping: true,
-    mediaType: 'photo',
-    includeBase64: true,
-    cropperActiveWidgetColor: secondary,
-    cropperStatusBarColor: secondary,
-    cropperToolbarColor: secondary,
-    cropperChooseColor: primary,
-    cropperCancelColor: secondary
-  }
-
-  const handleSelectImage = (image: CropPickerImage) => {
-    const { filename, mime, data } = image
-    const url = `data:${mime};base64,${data}`
-    return onSelectImage({
-      url,
-      file: { uri: url, name: filename ?? '', type: 'base64' }
-    })
+    if (selectedPhoto) {
+      const image = {
+        height: response.height ?? 0,
+        width: response.width ?? 0,
+        name: response.fileName ?? response.uri?.split('/').pop() ?? '',
+        size: response.fileSize ?? 0,
+        fileType: response.type ?? '',
+        url: response.uri ?? '',
+        file: `data:${response.type};base64,${response.base64}`,
+        type: 'base64' as const
+      }
+      callback(image, response)
+    }
   }
 
   const selectPhotoFromLibrary = () => {
-    openPicker({
-      ...baseOptions,
-      ...options
-    }).then(handleSelectImage)
+    launchImageLibrary(
+      {
+        ...photoOptions,
+        selectionLimit: 1
+      },
+      handlePhoto
+    )
   }
 
   const takePhoto = () => {
-    openCamera({
-      ...baseOptions,
-      ...options
-    }).then(handleSelectImage)
+    launchCamera(
+      {
+        ...photoOptions,
+        saveToPhotos: true
+      },
+      handlePhoto
+    )
   }
 
   if (Platform.OS === 'ios') {
@@ -56,7 +59,7 @@ export const launchSelectImageActionSheet = (
     ActionSheetIOS.showActionSheetWithOptions(
       {
         options: ['Cancel', 'Photo Library', 'Take Photo'],
-        tintColor: theme.secondary,
+        tintColor: shareSheetTintColor,
         cancelButtonIndex: 0
       },
       (buttonIndex) => {
@@ -76,12 +79,12 @@ export const launchSelectImageActionSheet = (
         {
           text: 'Photo Library',
           style: 'default',
-          onPress: selectPhotoFromLibrary
+          onPress: () => selectPhotoFromLibrary()
         },
         {
           text: 'Take Photo',
           style: 'default',
-          onPress: takePhoto
+          onPress: () => takePhoto()
         },
         {
           text: 'Cancel',
