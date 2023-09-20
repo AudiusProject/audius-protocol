@@ -3,9 +3,11 @@ import { SlashProposalParams } from "../proposal";
 import { Node } from "../audit";
 import * as knex from "knex";
 import { VERSION_DATA_TABLE_NAME, VersionData } from "../db";
+import BN from 'bn.js'
 
 const SLASH_AMOUNT = 3000;
-const SLASH_AMOUNT_WEI = SLASH_AMOUNT * 1_000_000_000_000_000_000;
+const WEI = new BN('1000000000000000000')
+const SLASH_AMOUNT_WEI = new BN(SLASH_AMOUNT).mul(WEI)
 const TIME_RANGE_MS = 24 * 60 * 60 * 1000;
 
 type AuditResponse = {
@@ -15,7 +17,8 @@ type AuditResponse = {
 
 const getVersionData = async (
   node: Node,
-  minVersions: { "discovery-node": string; "content-node": string }
+  minVersions: { "discovery-node": string; "content-node": string },
+  nodeType: "discovery-node" | "content-node"
 ): Promise<VersionData> => {
   try {
     // @ts-ignore: fetch defined in node 18
@@ -52,8 +55,8 @@ const getVersionData = async (
     console.log(`Caught error ${e} making request to ${node.endpoint}`);
     return {
       nodeEndpoint: node.endpoint,
-      nodeVersion: "",
-      minVersion: "",
+      nodeVersion: "N/A",
+      minVersion: minVersions[nodeType],
       owner: node.owner,
       ok: false,
     };
@@ -123,12 +126,17 @@ const audit = async (
 
 export const auditVersions = async (
   db: knex.Knex,
-  nodes: Node[],
+  discoveryNodes: Node[],
+  contentNodes: Node[],
   minVersions: { "discovery-node": string; "content-node": string }
 ) => {
-  const versionData = await Promise.all(
-    nodes.map(async (node) => getVersionData(node, minVersions))
+  const versionDataDiscovery = await Promise.all(
+    discoveryNodes.map(async (node) => getVersionData(node, minVersions, "discovery-node"))
   );
+  const versionDataContent = await Promise.all(
+    contentNodes.map(async (node) => getVersionData(node, minVersions, "content-node"))
+  );
+  const versionData = [...versionDataDiscovery, ...versionDataContent];
   await writeVersionData(db, versionData);
 
   const auditResponses = await Promise.all(
