@@ -99,6 +99,7 @@ const useOffsetScroll = () => {
     (node: HTMLDivElement, shouldReset?: boolean) => {
       if (node !== null) {
         if (shouldReset) {
+          // TS complains about setting height value to null, but null is actually a valid value for this and is used to unset the height value altogether.
           // @ts-expect-error
           node.style.height = null
           return
