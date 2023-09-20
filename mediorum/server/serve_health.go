@@ -67,11 +67,6 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		healthy = false
 	}
 
-	// consider unhealthy when seeding only if we're not registered - otherwise we're just waiting to be registered so we can start seeding
-	if ss.Config.WalletIsRegistered && ss.isSeeding {
-		healthy = false
-	}
-
 	blobStorePrefix, _, foundBlobStore := strings.Cut(ss.Config.BlobStoreDSN, "://")
 	if !foundBlobStore {
 		blobStorePrefix = ""
@@ -172,9 +167,6 @@ func (ss *MediorumServer) requireHealthy(next echo.HandlerFunc) echo.HandlerFunc
 		dbHealthy := ss.databaseSize > 0 && ss.dbSizeErr == "" && ss.uploadsCountErr == ""
 		if !dbHealthy {
 			return c.JSON(503, "database not healthy")
-		}
-		if ss.isSeeding {
-			return c.JSON(503, "seeding")
 		}
 
 		return next(c)
