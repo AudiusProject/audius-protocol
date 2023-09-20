@@ -200,11 +200,9 @@ export function decodeProposalCallData(proposal: Proposal) {
   )
   delete decoded['__length__']
 
-  const parsedCallData = Object.values(decoded).map((v: string) =>
-    v.replace(/0+$/, '')
-  )
+  const parsedCallData = Object.values(decoded)
   if (functionName === 'slash') {
-    parsedCallData[0] = weiAudToAud(new BN(parsedCallData[0])).toString()
+    parsedCallData[0] = new BN(parsedCallData[0]).toString() + '(wei)'
   }
   const joinedCallData = parsedCallData.join(',')
   return joinedCallData
