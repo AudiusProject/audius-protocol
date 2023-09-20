@@ -1,3 +1,4 @@
+import concurrent.futures
 import logging
 import os
 import time
@@ -246,7 +247,9 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         latest_indexed_block_hash = db_block_state["blockhash"]
 
     play_health_info = get_play_health_info(redis, plays_count_max_drift)
-    rewards_manager_health_info = get_rewards_manager_health_info(redis, rewards_manager_max_drift)
+    rewards_manager_health_info = get_rewards_manager_health_info(
+        redis, rewards_manager_max_drift
+    )
     user_bank_health_info = get_user_bank_health_info(redis, user_bank_max_drift)
     spl_audio_info = get_spl_audio_info(redis, spl_audio_max_drift)
     reactions_health_info = get_reactions_health_info(
@@ -427,7 +430,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     )
 
     if unhealthy_blocks:
-        errors.append("unhealthy blocks")
+        errors.append("unhealthy block diff")
     if unhealthy_challenges:
         errors.append("unhealthy challenges")
     if play_health_info["is_unhealthy"]:
@@ -439,6 +442,11 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     chain_health = health_results["chain_health"]
     if chain_health and chain_health["status"] == "Unhealthy":
         errors.append("unhealthy chain")
+
+    if verbose:
+        api_healthy, reason = is_api_healthy(url)
+        if not api_healthy:
+            errors.append(f"api unhealthy: {reason}")
 
     is_unhealthy = (
         unhealthy_blocks
@@ -738,3 +746,76 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
             )
 
     return latest_block_num, latest_block_hash
+
+
+def is_api_healthy(my_url):
+    if not my_url:
+        return True, ""
+
+    if "staging" in my_url:
+        user_search_term = "ray"
+        user_search_response_keyword = "ray"
+        track_id = "7eP5n"
+        track_response_keyword = "April"
+    else:
+        user_search_term = "Brownies"
+        user_search_response_keyword = "keeping you on your toes"
+        track_id = "D7KyD"
+        track_response_keyword = "live set at Brownies"
+
+    user_search_endpoint = f"{my_url}/v1/users/search?query={user_search_term}"
+    track_stream_endpoint = f"{my_url}/v1/tracks/{track_id}/stream"
+    track_search_endpoint = f"{my_url}/v1/tracks/{track_id}"
+    trending_endpoint = f"{my_url}/v1/tracks/trending"
+    urls = [
+        user_search_endpoint,
+        track_stream_endpoint,
+        track_search_endpoint,
+        trending_endpoint,
+    ]
+
+    def fetch_url(url):
+        try:
+            response = requests.get(url, timeout=1)
+            response.raise_for_status()
+            return response.text
+        except Exception as e:
+            return f"error getting {url}: {str(e)}"
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+        futures = {executor.submit(fetch_url, url): url for url in urls}
+
+    responses = {}
+    for future in concurrent.futures.as_completed(futures):
+        url = futures[future]
+        try:
+            response_text = future.result()
+            responses[url] = response_text
+        except Exception as e:
+            responses[url] = f"error getting {url}: {str(e)}"
+
+    errors = []
+    for url, response_text in responses.items():
+        if "error getting" in response_text:
+            errors.append(response_text)
+        else:
+            if (
+                url == user_search_endpoint
+                and user_search_response_keyword not in response_text
+            ):
+                errors.append(
+                    f"missing keyword '{user_search_response_keyword}' in response from {url}"
+                )
+            if (
+                url == track_search_endpoint
+                and track_response_keyword not in response_text
+            ):
+                errors.append(
+                    f"missing keyword '{track_response_keyword}' in response from {url}"
+                )
+            if url == trending_endpoint and "artwork" not in response_text:
+                errors.append(f"missing keyword 'artwork' in response from {url}")
+
+    if errors:
+        return False, ", ".join(errors)
+    return True, ""
