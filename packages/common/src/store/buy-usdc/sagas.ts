@@ -1,16 +1,21 @@
-import { PublicKey } from '@solana/web3.js'
-import BN from 'bn.js'
+import { Keypair, PublicKey } from '@solana/web3.js'
 import { takeLatest } from 'redux-saga/effects'
-import { call, put, race, take } from 'typed-redux-saga'
+import { call, put, race, select, take } from 'typed-redux-saga'
 
 import { Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
 import {
+  createTransferToUserBankTransaction,
+  findAssociatedTokenAddress,
+  getRecentBlockhash,
+  getRootSolanaAccount,
   getTokenAccountInfo,
-  pollForBalanceChange
+  pollForBalanceChange,
+  relayTransaction
 } from 'services/audius-backend/solana'
 import { IntKeys } from 'services/remote-config'
 import { getContext } from 'store/effects'
+import { getFeePayer } from 'store/solana/selectors'
 import { setVisibility } from 'store/ui/modals/parentSlice'
 import { initializeStripeModal } from 'store/ui/stripe-modal/slice'
 
@@ -44,7 +49,7 @@ function* getBuyUSDCRemoteConfig() {
 
 type PurchaseStepParams = {
   desiredAmount: number
-  tokenAccount: PublicKey
+  wallet: PublicKey
   provider: USDCOnRampProvider
   retryDelayMs?: number
   maxRetryCount?: number
@@ -52,13 +57,20 @@ type PurchaseStepParams = {
 
 function* purchaseStep({
   desiredAmount,
-  tokenAccount,
+  wallet,
   provider,
   retryDelayMs,
   maxRetryCount
 }: PurchaseStepParams) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const { track, make } = yield* getContext('analytics')
+
+  const tokenAccount = yield* call(
+    findAssociatedTokenAddress,
+    audiusBackendInstance,
+    { solanaAddress: wallet.toString(), mint: 'usdc' }
+  )
+
   const initialAccountInfo = yield* call(
     getTokenAccountInfo,
     audiusBackendInstance,
@@ -67,10 +79,7 @@ function* purchaseStep({
       tokenAccount
     }
   )
-  if (!initialAccountInfo) {
-    throw new Error('Could not get userbank account info')
-  }
-  const initialBalance = initialAccountInfo.amount
+  const initialBalance = initialAccountInfo?.amount ?? BigInt(0)
 
   yield* put(purchaseStarted())
 
@@ -103,18 +112,60 @@ function* purchaseStep({
   })
 
   // Check that we got the requested amount
-  const purchasedAmount = new BN(newBalance).sub(new BN(initialBalance))
-  if (purchasedAmount !== new BN(desiredAmount)) {
+  const purchasedAmount = newBalance - initialBalance
+  if (purchasedAmount !== BigInt(desiredAmount)) {
     console.warn(
-      `Warning: Purchase USDC amount differs from expected. Actual: ${new BN(
-        newBalance
-      )
-        .sub(new BN(initialBalance))
-        .toNumber()} Wei. Expected: ${desiredAmount / 100} USDC.`
+      `Warning: Purchase USDC amount differs from expected. Actual: ${
+        newBalance - initialBalance
+      } Wei. Expected: ${desiredAmount / 100} USDC.`
     )
   }
 
   return { newBalance }
+}
+
+function* transferStep({
+  wallet,
+  userBank,
+  amount
+}: {
+  wallet: Keypair
+  userBank: PublicKey
+  amount: bigint
+}) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const feePayer = yield* select(getFeePayer)
+  if (!feePayer) {
+    throw new Error('Missing feePayer unexpectedly')
+  }
+  const feePayerOverride = new PublicKey(feePayer)
+  const recentBlockhash = yield* call(getRecentBlockhash, audiusBackendInstance)
+
+  const transferTransaction = yield* call(
+    createTransferToUserBankTransaction,
+    audiusBackendInstance,
+    {
+      wallet,
+      userBank,
+      mint: 'usdc',
+      amount,
+      memo: 'In-App $USDC Purchase: Link by Stripe',
+      feePayer: feePayerOverride,
+      recentBlockhash
+    }
+  )
+  transferTransaction.partialSign(wallet)
+  console.debug(`Starting transfer transaction...`)
+  const { res, error } = yield* call(relayTransaction, audiusBackendInstance, {
+    transaction: transferTransaction
+  })
+  if (error) {
+    console.debug(
+      `Transfer transaction stringified: ${JSON.stringify(transferTransaction)}`
+    )
+    throw new Error(`Transfer transaction failed: ${error}`)
+  }
+  console.debug(`Transfer transaction succeeded: ${res}`)
 }
 
 function* doBuyUSDC({
@@ -125,8 +176,10 @@ function* doBuyUSDC({
 }: ReturnType<typeof onrampOpened>) {
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   const userBank = yield* getUSDCUserBank()
+  const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
   try {
     if (provider !== USDCOnRampProvider.STRIPE) {
@@ -138,7 +191,7 @@ function* doBuyUSDC({
         // stripe expects amount in dollars, not cents
         amount: (desiredAmount / 100).toString(),
         destinationCurrency: 'usdc',
-        destinationWallet: userBank.toString(),
+        destinationWallet: rootAccount.publicKey.toString(),
         onrampCanceled,
         onrampSucceeded
       })
@@ -152,8 +205,6 @@ function* doBuyUSDC({
       make({ eventName: Name.BUY_USDC_ON_RAMP_OPENED, provider })
     )
 
-    // Setup
-
     // Get config
     const { retryDelayMs, maxRetryCount } = yield* call(getBuyUSDCRemoteConfig)
 
@@ -163,7 +214,7 @@ function* doBuyUSDC({
     const { newBalance } = (yield* call(purchaseStep, {
       provider,
       desiredAmount,
-      tokenAccount: userBank,
+      wallet: rootAccount.publicKey,
       retryDelayMs,
       maxRetryCount
     }) as unknown as ReturnType<typeof purchaseStep>)!
@@ -172,6 +223,13 @@ function* doBuyUSDC({
     if (newBalance === undefined) {
       return
     }
+
+    // Transfer from the root wallet to the userbank
+    yield* call(transferStep, {
+      wallet: rootAccount,
+      userBank,
+      amount: newBalance
+    })
 
     yield* put(buyUSDCFlowSucceeded())
 

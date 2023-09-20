@@ -3,6 +3,7 @@ import { useContext } from 'react'
 import {
   CommonState,
   ID,
+  Kind,
   LibraryCategory,
   Lineup,
   QueueItem,
@@ -63,6 +64,7 @@ export type SavedPageProps = {
   description: string
   onFilterChange: (e: any) => void
   onSortChange: (method: string, direction: string) => void
+  hasReachedEnd: boolean
   isQueued: boolean
   playingUid: UID | null
   getFilteredData: (
@@ -111,6 +113,7 @@ const SavedPage = ({
   onFilterChange,
   onSortChange,
   allTracksFetched,
+  hasReachedEnd,
   filterText,
   onChangeTab,
   onClickRow,
@@ -135,9 +138,18 @@ const SavedPage = ({
     }
   })
 
+  const getTracksTableData = (): [SavedPageTrack[], number] => {
+    let [data, playingIndex] = getFilteredData(entries)
+    if (!hasReachedEnd) {
+      // Add in some empty rows to show user that more are loading in
+      data = data.concat(new Array(5).fill({ kind: Kind.EMPTY }))
+    }
+    return [data, playingIndex]
+  }
+
   const [dataSource, playingIndex] =
     status === Status.SUCCESS || entries.length
-      ? getFilteredData(entries)
+      ? getTracksTableData()
       : [[], -1]
 
   const isEmpty =
@@ -236,7 +248,7 @@ const SavedPage = ({
           playingIndex={playingIndex}
           scrollRef={mainContentRef}
           useLocalSort={allTracksFetched}
-          totalRowCount={dataSource.length}
+          fetchBatchSize={50}
           userId={account ? account.user_id : 0}
         />
       ),

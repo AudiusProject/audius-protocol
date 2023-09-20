@@ -3103,7 +3103,7 @@ export const audiusBackend = ({
       console.warn(`Failed to get waudio balance for address: ${address}`)
       return new BN('0')
     }
-    return waudioBalance
+    return new BN(waudioBalance.toString())
   }
 
   async function getAudioTransactionsCount() {

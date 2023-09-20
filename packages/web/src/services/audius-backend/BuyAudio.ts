@@ -1,12 +1,11 @@
-import { InAppAudioPurchaseMetadata } from '@audius/common'
+import { InAppAudioPurchaseMetadata, MEMO_PROGRAM_ID } from '@audius/common'
 import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  Token,
-  TOKEN_PROGRAM_ID,
-  u64
+  TokenAccountNotFoundError,
+  createTransferCheckedInstruction,
+  getAccount,
+  getAssociatedTokenAddress
 } from '@solana/spl-token'
 import {
-  Keypair,
   LAMPORTS_PER_SOL,
   PublicKey,
   Transaction,
@@ -20,10 +19,6 @@ const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
 
 const ATA_SIZE = 165 // Size allocated for an associated token account
-
-const MEMO_PROGRAM_ID = new PublicKey(
-  'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
-)
 
 const delay = (ms: number) =>
   new Promise((resolve, reject) => {
@@ -47,20 +42,14 @@ export const getAssociatedTokenAccountInfo = async ({
   mintKey: PublicKey
 }) => {
   const connection = await getSolanaConnection()
-  const [associatedTokenAccountAddress] = await PublicKey.findProgramAddress(
-    [rootAccount.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), mintKey.toBuffer()],
-    ASSOCIATED_TOKEN_PROGRAM_ID
-  )
-  const associatedToken = new Token(
-    connection,
+  const associatedTokenAccountAddress = await getAssociatedTokenAddress(
     mintKey,
-    TOKEN_PROGRAM_ID,
-    Keypair.generate()
+    rootAccount
   )
   try {
-    return await associatedToken.getAccountInfo(associatedTokenAccountAddress)
+    return await getAccount(connection, associatedTokenAccountAddress)
   } catch (e) {
-    if ((e as any).message === 'Failed to find account') {
+    if (e instanceof TokenAccountNotFoundError) {
       console.debug('No Token account exists for', mintKey.toString())
     } else {
       throw e
@@ -98,25 +87,21 @@ export const pollForAudioBalanceChange = async ({
   maxRetryCount = DEFAULT_MAX_RETRY_COUNT
 }: {
   tokenAccount: PublicKey
-  initialBalance?: u64
+  initialBalance: bigint
   retryDelayMs?: number
   maxRetryCount?: number
 }) => {
   let retries = 0
   let tokenAccountInfo = await getAudioAccountInfo({ tokenAccount })
   while (
-    (!tokenAccountInfo ||
-      initialBalance === undefined ||
-      tokenAccountInfo.amount.eq(initialBalance)) &&
+    (!tokenAccountInfo || tokenAccountInfo.amount === initialBalance) &&
     retries++ < maxRetryCount
   ) {
     if (!tokenAccountInfo) {
       console.debug(
         `AUDIO account not found. Retrying... ${retries}/${maxRetryCount}`
       )
-    } else if (initialBalance === undefined) {
-      initialBalance = tokenAccountInfo.amount
-    } else if (tokenAccountInfo.amount.eq(initialBalance)) {
+    } else if (tokenAccountInfo.amount === initialBalance) {
       console.debug(
         `Polling AUDIO balance (${initialBalance} === ${tokenAccountInfo.amount}) [${retries}/${maxRetryCount}]`
       )
@@ -124,15 +109,11 @@ export const pollForAudioBalanceChange = async ({
     await delay(retryDelayMs)
     tokenAccountInfo = await getAudioAccountInfo({ tokenAccount })
   }
-  if (
-    tokenAccountInfo &&
-    initialBalance &&
-    !tokenAccountInfo.amount.eq(initialBalance)
-  ) {
+  if (tokenAccountInfo && tokenAccountInfo.amount !== initialBalance) {
     console.debug(
-      `AUDIO balance changed by ${tokenAccountInfo.amount.sub(
-        initialBalance
-      )} (${initialBalance} => ${tokenAccountInfo.amount})`
+      `AUDIO balance changed by ${
+        tokenAccountInfo.amount - initialBalance
+      } (${initialBalance} => ${tokenAccountInfo.amount})`
     )
     return tokenAccountInfo.amount
   }
@@ -225,7 +206,7 @@ export const createTransferToUserBankTransaction = async ({
 }: {
   userBank: PublicKey
   fromAccount: PublicKey
-  amount: u64
+  amount: bigint
   memo: string
 }) => {
   const libs = await getLibs()
@@ -245,13 +226,11 @@ export const createTransferToUserBankTransaction = async ({
     programId: MEMO_PROGRAM_ID,
     data: Buffer.from(memo)
   })
-  const transferInstruction = Token.createTransferCheckedInstruction(
-    TOKEN_PROGRAM_ID,
+  const transferInstruction = createTransferCheckedInstruction(
     associatedTokenAccount,
     mintPublicKey,
     userBank,
     fromAccount,
-    [],
     amount,
     8
   )
