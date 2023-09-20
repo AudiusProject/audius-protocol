@@ -1,26 +1,44 @@
-# Uses separate stage for nodejs deps despite caching to avoid installing build tools
-FROM node:18.17 as builder
-RUN apt-get install make
+FROM node:18-alpine AS base
+ 
+FROM base AS builder
+
+RUN apk add --no-cache libc6-compat
+RUN apk update
+
 WORKDIR /app
-COPY package*.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci
+RUN npm install turbo --global
 
-FROM node:18.17-alpine
+COPY . .
+RUN turbo prune "--scope=identity-service" --docker
 
-WORKDIR /usr/src/app
+# INSTALL & BUILD
+FROM base AS installer
 
-RUN apk update && apk add rsyslog python3 python3-dev py3-pip curl bash
+WORKDIR /app
 
-COPY --from=builder /app/node_modules ./node_modules
+RUN npm install turbo --global
+RUN apk add --no-cache libc6-compat git
+RUN apk update
+RUN apk add --no-cache python3 py3-pip make g++ bash
+
+# First install dependencies (as they change less often)
+COPY .gitignore .gitignore
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/out/package-lock.json ./package-lock.json
+COPY --from=builder /app/scripts ./scripts
+
+RUN CI=true npm run install-packages
+
+# Build the project and its dependencies
+COPY --from=builder /app/out/full/ .
+COPY turbo.json turbo.json
+
+# Compile js code to typescript based on tsconfig.build.json
+RUN turbo run build --filter=identity-service
 
 # Add the wait script to the image
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait /usr/bin/wait
-COPY scripts/wait /usr/bin/wait
-
-COPY . .
-
-# Compile js code to typescript based on tsconfig.build.json
-RUN npm run build
+COPY packages/identity-service/scripts/wait /usr/bin/wait
 
 ARG git_sha
 

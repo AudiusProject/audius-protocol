@@ -13,10 +13,11 @@ services:
 
   identity-service:
     build:
-      context: ${PROJECT_ROOT}/packages/identity-service
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/packages/identity-service/Dockerfile
       args:
         git_sha: '${GIT_COMMIT}'
-    command: sh -c ". /tmp/dev-tools/startup/identity-service.sh && scripts/dev-server.sh"
+    command: sh -c ". /tmp/dev-tools/startup/identity-service.sh && packages/identity-service/scripts/dev-server.sh"
     ports:
       - '7000:7000'
       - '9229:9229'
@@ -69,7 +70,7 @@ services:
       solanaRewardsManagerTokenPDA: '${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}'
       solanaAudiusAnchorDataProgramId: '${SOLANA_AUDIUS_DATA_PUBLIC_KEY}'
     volumes:
-      - ${PROJECT_ROOT}/identity-service:/usr/src/app
+      - ${PROJECT_ROOT}/packages/identity-service:/usr/src/app
       - /usr/src/app/node_modules
       - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
       - audius-libs:/usr/src/audius-libs
