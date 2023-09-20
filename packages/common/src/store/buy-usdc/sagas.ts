@@ -1,5 +1,4 @@
 import { Keypair, PublicKey } from '@solana/web3.js'
-import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take } from 'typed-redux-saga'
 
@@ -80,7 +79,7 @@ function* purchaseStep({
       tokenAccount
     }
   )
-  const initialBalance = initialAccountInfo?.amount ?? new BN(0)
+  const initialBalance = initialAccountInfo?.amount ?? BigInt(0)
 
   yield* put(purchaseStarted())
 
@@ -113,14 +112,12 @@ function* purchaseStep({
   })
 
   // Check that we got the requested amount
-  const purchasedAmount = new BN(newBalance).sub(new BN(initialBalance))
-  if (purchasedAmount !== new BN(desiredAmount)) {
+  const purchasedAmount = newBalance - initialBalance
+  if (purchasedAmount !== BigInt(desiredAmount)) {
     console.warn(
-      `Warning: Purchase USDC amount differs from expected. Actual: ${new BN(
-        newBalance
-      )
-        .sub(new BN(initialBalance))
-        .toNumber()} Wei. Expected: ${desiredAmount / 100} USDC.`
+      `Warning: Purchase USDC amount differs from expected. Actual: ${
+        newBalance - initialBalance
+      } Wei. Expected: ${desiredAmount / 100} USDC.`
     )
   }
 
@@ -134,7 +131,7 @@ function* transferStep({
 }: {
   wallet: Keypair
   userBank: PublicKey
-  amount: BN
+  amount: bigint
 }) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const feePayer = yield* select(getFeePayer)

@@ -239,10 +239,7 @@ export class SolanaWeb3Manager {
     mint?: MintName
   } = {}) {
     const userbank = await this.deriveUserBank({ ethAddress, mint })
-    const tokenAccount = await this.getTokenAccountInfo(
-      userbank.toString(),
-      mint
-    )
+    const tokenAccount = await this.getTokenAccountInfo(userbank.toString())
     return !!tokenAccount
   }
 
@@ -292,7 +289,7 @@ export class SolanaWeb3Manager {
     | { error: string; errorCode: string | number | null }
     | {
         didExist: boolean
-        userbank: solanaWeb3.PublicKey
+        userbank: PublicKey
       }
   > {
     const didExist = await this.doesUserbankExist({ ethAddress, mint })
@@ -378,15 +375,10 @@ export class SolanaWeb3Manager {
    * Gets the info for a user bank/wAudio token account given a spl-token address.
    * If the address is not a valid token account, returns `null`
    */
-  async getTokenAccountInfo(
-    solanaAddress: string,
-    mint: MintName = DEFAULT_MINT
-  ) {
+  async getTokenAccountInfo(solanaAddress: string) {
     try {
       const res = await getTokenAccountInfo({
         tokenAccountAddressKey: new PublicKey(solanaAddress),
-        mintKey: this.mints[mint],
-        solanaTokenProgramKey: this.solanaTokenKey,
         connection: this.connection
       })
       return res
@@ -401,7 +393,6 @@ export class SolanaWeb3Manager {
   async getWAudioBalance(solanaAddress: string) {
     try {
       let tokenAccount = await this.getTokenAccountInfo(solanaAddress)
-
       // If the token account doesn't exist, check if solanaAddress is a root account
       // if so, derive the associated token account & check that balance
       if (!tokenAccount) {
@@ -418,7 +409,7 @@ export class SolanaWeb3Manager {
 
       // Multiply by 10^10 to maintain same decimals as eth $AUDIO
       const decimals = AUDIO_DECMIALS - WAUDIO_DECMIALS
-      return tokenAccount.amount.mul(Utils.toBN('1'.padEnd(decimals + 1, '0')))
+      return tokenAccount.amount * BigInt('1'.padEnd(decimals + 1, '0'))
     } catch (e) {
       return null
     }
@@ -505,17 +496,20 @@ export class SolanaWeb3Manager {
    * @param params.type the type of the content, eg. "track"
    * @param params.blocknumber the blocknumber the content was last updated
    * @param params.splits map of address to USDC amount, used to split the price amoung several stakeholders
+   * @param params.extraAmount Extra amount in USDC wei to be distributed to the stakeholders
    * @returns the transaction signature and/or an error
    */
   async purchaseContent({
     id,
     type,
     blocknumber,
+    extraAmount = 0,
     splits
   }: {
     id: number
     type: 'track'
     splits: Record<string, number | BN>
+    extraAmount?: number | BN
     blocknumber: number
   }) {
     if (!this.web3Manager) {
@@ -531,7 +525,7 @@ export class SolanaWeb3Manager {
 
     const totalAmount = Object.values(splits).reduce<BN>(
       (sum, split) => (split instanceof BN ? sum.add(split) : sum.addn(split)),
-      new BN(0)
+      extraAmount instanceof BN ? extraAmount : new BN(extraAmount)
     )
 
     const senderEthAddress = this.web3Manager.getWalletAddress()

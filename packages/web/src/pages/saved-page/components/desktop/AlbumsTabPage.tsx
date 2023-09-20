@@ -34,7 +34,7 @@ export const AlbumsTabPage = () => {
     hasMore,
     fetchMore,
     collections: albums
-  } = useCollectionsData('album')
+  } = useCollectionsData({ collectionType: 'album' })
   const emptyAlbumsHeader = useSelector((state: CommonState) => {
     const selectedCategory = getCategory(state, {
       currentTab: SavedPageTabs.ALBUMS
@@ -52,6 +52,8 @@ export const AlbumsTabPage = () => {
 
   const noResults = !statusIsNotFinalized(status) && albums?.length === 0
 
+  const isLoadingInitial = statusIsNotFinalized(status) && albums?.length === 0
+
   const cards = useMemo(() => {
     return albums?.map(({ playlist_id }, i) => {
       return (
@@ -60,8 +62,7 @@ export const AlbumsTabPage = () => {
     })
   }, [albums])
 
-  if (statusIsNotFinalized(status)) {
-    // TODO(nkang) - Confirm loading state UI
+  if (isLoadingInitial) {
     return <LoadingSpinner className={styles.spinner} />
   }
 
@@ -83,6 +84,7 @@ export const AlbumsTabPage = () => {
       loadMore={fetchMore}
       cards={cards}
       cardsClassName={styles.cardsContainer}
+      isLoadingMore={statusIsNotFinalized(status)}
     />
   )
 }

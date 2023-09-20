@@ -15,8 +15,8 @@ import IconInstagram from 'app/assets/images/iconInstagram.svg'
 import IconLink from 'app/assets/images/iconLink.svg'
 import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
-import { ScrollView } from 'app/components/core'
-import { EditProfileFormScreen } from 'app/components/form-screen'
+import { FormImageInput, FormTextInput, ScrollView } from 'app/components/core'
+import { FormScreen } from 'app/components/form-screen'
 import { useUserCoverImage } from 'app/components/image/UserCoverImage'
 import { useUserImage } from 'app/components/image/UserImage'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
@@ -24,8 +24,6 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import type { Image } from 'app/types/image'
 
-import { ProfileImageField } from './ProfileImageField'
-import { ProfileTextField } from './ProfileTextField'
 import type { ProfileValues, UpdatedProfile } from './types'
 
 const { getAccountUser } = accountSelectors
@@ -76,60 +74,53 @@ const EditProfileForm = (props: EditProfileFormProps) => {
     handleReset,
     isTwitterVerified,
     isInstagramVerified,
-    isTikTokVerified,
-    errors
+    isTikTokVerified
   } = props
   const styles = useStyles()
 
   return (
-    <EditProfileFormScreen
-      onReset={handleReset}
-      onSubmit={handleSubmit}
-      errors={errors}
-    >
-      <ProfileImageField
+    <FormScreen variant='white' onReset={handleReset} onSubmit={handleSubmit}>
+      <FormImageInput
         name='cover_photo'
         styles={{ imageContainer: styles.coverPhoto }}
-        imageOptions={{ height: 500, width: 2000, freeStyleCropEnabled: true }}
       />
-      <ProfileImageField
+      <FormImageInput
         name='profile_picture'
         styles={{
           root: styles.profilePicture,
           imageContainer: styles.profilePictureImageContainer,
           image: styles.profilePictureImage
         }}
-        imageOptions={{ height: 1000, width: 1000, cropperCircleOverlay: true }}
       />
       <ScrollView style={styles.textFields}>
-        <ProfileTextField isFirstInput name='name' label='Name' />
-        <ProfileTextField name='bio' label='Bio' multiline maxLength={256} />
-        <ProfileTextField name='location' label='Location' />
-        <ProfileTextField
+        <FormTextInput isFirstInput name='name' label='Name' />
+        <FormTextInput name='bio' label='Bio' multiline maxLength={256} />
+        <FormTextInput name='location' label='Location' />
+        <FormTextInput
           editable={!isTwitterVerified}
           name='twitter_handle'
           label='Twitter Handle'
           prefix='@'
           icon={IconTwitterBird}
         />
-        <ProfileTextField
+        <FormTextInput
           editable={!isInstagramVerified}
           name='instagram_handle'
           label='Instagram Handle'
           prefix='@'
           icon={IconInstagram}
         />
-        <ProfileTextField
+        <FormTextInput
           editable={!isTikTokVerified}
           name='tiktok_handle'
           label='TikTok Handle'
           prefix='@'
           icon={IconTikTokInverted}
         />
-        <ProfileTextField name='website' label='Website' icon={IconLink} />
-        <ProfileTextField name='donation' label='Donation' icon={IconDonate} />
+        <FormTextInput name='website' label='Website' icon={IconLink} />
+        <FormTextInput name='donation' label='Donation' icon={IconDonate} />
       </ScrollView>
-    </EditProfileFormScreen>
+    </FormScreen>
   )
 }
 

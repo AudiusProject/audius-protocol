@@ -22,7 +22,7 @@ export enum UnlistedTrackMetadataField {
   MOOD = 'mood',
   TAGS = 'tags',
   SHARE = 'share',
-  PLAYS = 'plays'
+  PLAY_COUNT = 'play_count'
 }
 
 export const defaultHiddenFields = {
@@ -39,7 +39,7 @@ const unlistedTrackMetadataOrder = [
   UnlistedTrackMetadataField.GENRE,
   UnlistedTrackMetadataField.SHARE,
   UnlistedTrackMetadataField.MOOD,
-  UnlistedTrackMetadataField.PLAYS,
+  UnlistedTrackMetadataField.PLAY_COUNT,
   UnlistedTrackMetadataField.TAGS
 ]
 
@@ -68,7 +68,7 @@ const messageByFieldName = {
   [UnlistedTrackMetadataField.MOOD]: messages.showMood,
   [UnlistedTrackMetadataField.TAGS]: messages.showTags,
   [UnlistedTrackMetadataField.SHARE]: messages.showShareButton,
-  [UnlistedTrackMetadataField.PLAYS]: messages.showPlayCount
+  [UnlistedTrackMetadataField.PLAY_COUNT]: messages.showPlayCount
 }
 
 type AvailabilityToggleFieldProps = {

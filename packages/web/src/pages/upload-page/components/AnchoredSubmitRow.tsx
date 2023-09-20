@@ -26,6 +26,7 @@ export const AnchoredSubmitRow = () => {
           size={HarmonyButtonSize.DEFAULT}
           iconRight={IconUpload}
           onClick={scrollToTop}
+          type='submit'
         />
       </div>
       <div className={styles.placeholder} />

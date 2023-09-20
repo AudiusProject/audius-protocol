@@ -179,21 +179,20 @@ export const UploadPageNew = (props: UploadPageProps) => {
   const handleUpload = useCallback(() => {
     if (!formState.tracks) return
     const { tracks } = formState
-    const trackStems = tracks.reduce((acc, track) => {
+    const trackStems = tracks.map((track) => {
       // @ts-ignore - This has stems in it sometimes
-      acc = [...acc, ...(track.metadata.stems ?? [])]
-      return acc
+      return track.metadata.stems ?? []
     }, [])
 
     dispatch(
       uploadTracks(
         // @ts-ignore - This has artwork on it
         tracks,
-        // NOTE: Need to add metadata for collections here for collection upload
-        undefined,
-        tracks.length > 1
-          ? UploadType.INDIVIDUAL_TRACKS
-          : UploadType.INDIVIDUAL_TRACK,
+        formState.uploadType === UploadType.ALBUM ||
+          formState.uploadType === UploadType.PLAYLIST
+          ? formState.metadata
+          : undefined,
+        formState.uploadType,
         trackStems
       )
     )

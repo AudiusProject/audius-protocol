@@ -6,7 +6,7 @@
   ],
   "private": true,
   "scripts": {
-    "build": "npm run build -w @audius/sdk && npm run build -w @audius/stems -w @audius/common",
+    "build": "npm run build -w @audius/sdk && npm run build -w @audius/stems -w @audius/common -w @audius/harmony",
     "check-secrets": "sh ./scripts/check_secrets.sh",
     "clean:modules": "rm -rf node_modules && rm -rf packages/*/node_modules",
     "clean": "npm run clean:auto -w audius-mobile-client && npm run clean:modules",
@@ -39,6 +39,8 @@
     "common": "npm run start -w @audius/common",
     "STEMS======================================": "",
     "stems": "npm run start -w @audius/stems",
+    "HARMONY====================================": "",
+    "harmony": "npm run start -w @audius/harmony",
     "SDK======================================": "",
     "sdk": "npm run start -w @audius/sdk"
   },
@@ -71,7 +73,7 @@
     "wait-on": "6.0.1"
   },
   "dependencies": {
-    "@escape.tech/mookme": "2.2.0"
+    "@escape.tech/mookme": "2.4.1"
   },
   "overrides": {
     "@types/react": "18.0.26",

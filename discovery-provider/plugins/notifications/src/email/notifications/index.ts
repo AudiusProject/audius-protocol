@@ -370,7 +370,7 @@ export async function processEmailNotifications(
       logger.info(
         `processEmailNotifications | Beginning processing ${
           Object.keys(emailUsers).length
-        } users at ${frequency} frequency`
+        } users at ${frequency} frequency ${pageOffset}`
       )
 
       await processGroupOfEmails(

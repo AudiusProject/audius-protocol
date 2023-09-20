@@ -61,6 +61,9 @@ parameters:
   run-embed-workflow:
     type: boolean
     default: false
+  run-harmony-workflow:
+    type: boolean
+    default: false
 
 # Can enable recurring probers against stage at some point
 # workflows:
