@@ -1,51 +1,34 @@
 import {
   JupiterTokenSymbol,
   TOKEN_LISTING_MAP,
-  convertJSBIToAmountObject
+  convertBigIntToAmountObject
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
-import type { Jupiter as JupiterInstance, SwapMode } from '@jup-ag/core'
-import { Cluster, Connection, PublicKey, Transaction } from '@solana/web3.js'
-import JSBI from 'jsbi'
+import { createJupiterApiClient, Instruction, QuoteResponse } from '@jup-ag/api'
+import { PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js'
 
-let _jup: JupiterInstance
+let _jup: ReturnType<typeof createJupiterApiClient>
 
-const SOLANA_CLUSTER_ENDPOINT = process.env.REACT_APP_SOLANA_CLUSTER_ENDPOINT
-const SOLANA_CLUSTER = process.env.REACT_APP_SOLANA_WEB3_CLUSTER
 const ERROR_CODE_INSUFFICIENT_FUNDS = 1 // Error code for when the swap fails due to insufficient funds in the wallet
 const ERROR_CODE_SLIPPAGE = 6000 // Error code for when the swap fails due to specified slippage being exceeded
 
-const getInstance = async () => {
+const getInstance = () => {
   if (!_jup) {
-    _jup = await initJupiter()
+    _jup = initJupiter()
   }
   return _jup
 }
 
-const initJupiter = async () => {
-  if (!SOLANA_CLUSTER_ENDPOINT) {
-    throw new Error('Solana Cluster Endpoint is not configured')
-  }
-  const connection = new Connection(SOLANA_CLUSTER_ENDPOINT, 'confirmed')
-  const cluster = (SOLANA_CLUSTER ?? 'mainnet-beta') as Cluster
+const initJupiter = () => {
   try {
-    const { Jupiter } = await import('@jup-ag/core')
-    return Jupiter.load({
-      connection,
-      cluster,
-      restrictIntermediateTokens: true,
-      wrapUnwrapSOL: true,
-      routeCacheDuration: 5_000 // 5 seconds
-    })
+    return createJupiterApiClient()
   } catch (e) {
-    console.error(
-      'Jupiter failed to initialize with RPC',
-      connection.rpcEndpoint,
-      e
-    )
+    console.error('Jupiter failed to initialize', e)
     throw e
   }
 }
+
+export type JupiterSwapMode = 'ExactIn' | 'ExactOut'
 
 /**
  * Gets a quote from Jupiter for an exchange from inputTokenSymbol => outputTokenSymbol
@@ -55,17 +38,15 @@ const getQuote = async ({
   inputTokenSymbol,
   outputTokenSymbol,
   inputAmount,
-  forceFetch,
   slippage,
-  swapMode = 'ExactIn' as SwapMode,
+  swapMode = 'ExactIn',
   onlyDirectRoutes = false
 }: {
   inputTokenSymbol: JupiterTokenSymbol
   outputTokenSymbol: JupiterTokenSymbol
   inputAmount: number
-  forceFetch?: boolean
   slippage: number
-  swapMode?: SwapMode
+  swapMode?: JupiterSwapMode
   onlyDirectRoutes?: boolean
 }) => {
   const inputToken = TOKEN_LISTING_MAP[inputTokenSymbol]
@@ -77,39 +58,95 @@ const getQuote = async ({
   }
   const amount =
     swapMode === 'ExactIn'
-      ? JSBI.BigInt(Math.ceil(inputAmount * 10 ** inputToken.decimals))
-      : JSBI.BigInt(Math.floor(inputAmount * 10 ** outputToken.decimals))
-  const jup = await getInstance()
-  const routes = await jup.computeRoutes({
-    inputMint: new PublicKey(inputToken.address),
-    outputMint: new PublicKey(outputToken.address),
+      ? Math.ceil(inputAmount * 10 ** inputToken.decimals)
+      : Math.floor(inputAmount * 10 ** outputToken.decimals)
+  const jup = getInstance()
+  const quote = await jup.quoteGet({
+    inputMint: inputToken.address,
+    outputMint: outputToken.address,
     amount,
-    slippage,
+    slippageBps: slippage, // make sure slippageBps = slippage
+    asLegacyTransaction: true,
     swapMode,
-    forceFetch,
     onlyDirectRoutes
   })
-  const bestRoute = routes.routesInfos[0]
 
-  const resultQuote = {
-    inputAmount: convertJSBIToAmountObject(
-      bestRoute.inAmount,
+  if (!quote) {
+    throw new Error('Failed to get Jupiter quote')
+  }
+
+  return {
+    inputAmount: convertBigIntToAmountObject(
+      BigInt(quote.inAmount),
       inputToken.decimals
     ),
-    outputAmount: convertJSBIToAmountObject(
-      bestRoute.outAmount,
+    outputAmount: convertBigIntToAmountObject(
+      BigInt(quote.outAmount),
       outputToken.decimals
     ),
-    route: bestRoute,
+    quote,
     inputTokenSymbol,
     outputTokenSymbol
   }
-  return resultQuote
 }
 
-const exchange: JupiterInstance['exchange'] = async (exchangeArgs) => {
-  const jup = await getInstance()
-  return await jup.exchange(exchangeArgs)
+const getSwapInstructions = async ({
+  quote,
+  userPublicKey
+}: {
+  quote: QuoteResponse
+  userPublicKey: PublicKey
+}) => {
+  const jup = getInstance()
+  const instructions = await jup.swapInstructionsPost({
+    swapRequest: {
+      quoteResponse: quote,
+      userPublicKey: userPublicKey.toString(),
+      asLegacyTransaction: true
+    }
+  })
+  const instructionsFlattened = [
+    instructions.tokenLedgerInstruction,
+    ...instructions.computeBudgetInstructions,
+    ...instructions.setupInstructions,
+    instructions.swapInstruction,
+    instructions.cleanupInstruction
+  ]
+    .filter((i): i is Instruction => i !== undefined)
+    .map((i) => {
+      return {
+        programId: new PublicKey(i.programId),
+        data: Buffer.from(i.data, 'base64'),
+        keys: i.accounts.map((a) => {
+          return {
+            pubkey: new PublicKey(a.pubkey),
+            isSigner: a.isSigner,
+            isWritable: a.isWritable
+          }
+        })
+      } as TransactionInstruction
+    })
+  return instructionsFlattened
+}
+
+const getSwapTransaction = async ({
+  quote,
+  userPublicKey
+}: {
+  quote: QuoteResponse
+  userPublicKey: PublicKey
+}) => {
+  const jup = getInstance()
+  const { swapTransaction } = await jup.swapPost({
+    swapRequest: {
+      quoteResponse: quote,
+      userPublicKey: userPublicKey.toString(),
+      asLegacyTransaction: true
+    }
+  })
+  const swapTransactionBuf = Buffer.from(swapTransaction, 'base64')
+  const transaction = Transaction.from(swapTransactionBuf)
+  return transaction
 }
 
 async function _sendTransaction({
@@ -151,55 +188,27 @@ async function _sendTransaction({
 }
 
 const executeExchange = async ({
-  setupTransaction,
-  swapTransaction,
-  cleanupTransaction,
+  transaction,
   feePayer,
   transactionHandler
 }: {
-  setupTransaction?: Transaction
-  swapTransaction: Transaction
-  cleanupTransaction?: Transaction
+  transaction: Transaction
   feePayer: PublicKey
   transactionHandler: TransactionHandler
 }) => {
-  let setupTransactionId: string | null | undefined
-  let swapTransactionId: string | null | undefined
-  let cleanupTransactionId: string | null | undefined
-  if (setupTransaction) {
-    const { res } = await _sendTransaction({
-      name: 'Setup',
-      transaction: setupTransaction,
-      feePayer,
-      transactionHandler
-    })
-    setupTransactionId = res
-  }
   // Wrap this in try/finally to ensure cleanup transaction runs, if applicable
-  try {
-    const { res } = await _sendTransaction({
-      name: 'Swap',
-      transaction: swapTransaction,
-      feePayer,
-      transactionHandler
-    })
-    swapTransactionId = res
-  } finally {
-    if (cleanupTransaction) {
-      const { res } = await _sendTransaction({
-        name: 'Cleanup',
-        transaction: cleanupTransaction,
-        feePayer,
-        transactionHandler
-      })
-      cleanupTransactionId = res
-    }
-  }
-  return { setupTransactionId, swapTransactionId, cleanupTransactionId }
+  const { res: txId } = await _sendTransaction({
+    name: 'Swap',
+    transaction,
+    feePayer,
+    transactionHandler
+  })
+  return txId
 }
 
 export const JupiterSingleton = {
   getQuote,
-  exchange,
+  getSwapInstructions,
+  getSwapTransaction,
   executeExchange
 }

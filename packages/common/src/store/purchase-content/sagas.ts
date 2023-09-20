@@ -165,7 +165,9 @@ function* doStartPurchaseContentFlow({
     const { amount: initialBalance } = tokenAccountInfo
 
     const priceBN = new BN(price).mul(BN_USDC_CENT_WEI)
-    const balanceNeeded: BNUSDC = priceBN.sub(initialBalance) as BNUSDC
+    const balanceNeeded: BNUSDC = priceBN.sub(
+      new BN(initialBalance.toString())
+    ) as BNUSDC
 
     // buy USDC if necessary
     if (balanceNeeded.gtn(0)) {

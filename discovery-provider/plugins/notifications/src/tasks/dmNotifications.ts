@@ -197,7 +197,7 @@ export async function sendDMNotifications(
 
     // Send push notifications
     for (const notification of notifications) {
-      await notification.processNotification({
+      notification.processNotification({
         isLiveEmailEnabled: false,
         isBrowserPushEnabled
       })

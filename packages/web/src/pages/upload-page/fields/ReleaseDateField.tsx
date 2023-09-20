@@ -21,10 +21,10 @@ const messages = {
     'Specify a release date (in the past) for your music. Release date will affect the order of content on your profile and is visible to users.'
 }
 
-const RELEASE_DATE = 'releaseDate'
+const RELEASE_DATE = 'release_date'
 
 export type ReleaseDateFormValues = {
-  [RELEASE_DATE]: moment.Moment
+  [RELEASE_DATE]: string | undefined
 }
 
 type ReleaseDateValue = SingleTrackEditValues[typeof RELEASE_DATE]
@@ -33,13 +33,14 @@ export const ReleaseDateField = () => {
   const [{ value }, , { setValue }] =
     useTrackField<ReleaseDateValue>(RELEASE_DATE)
 
-  const initialValues = useMemo(() => ({ [RELEASE_DATE]: value }), [value])
+  const initialValues = useMemo(
+    () => ({ [RELEASE_DATE]: value ?? undefined }),
+    [value]
+  )
 
   const onSubmit = useCallback(
     (values: ReleaseDateFormValues) => {
-      const date = new Date(values[RELEASE_DATE].toString())
-      // @ts-ignore - There are slight differences in the sdk and common track metadata types
-      setValue(date)
+      setValue(values[RELEASE_DATE] ?? null)
     },
     [setValue]
   )
@@ -47,13 +48,17 @@ export const ReleaseDateField = () => {
   const renderValue = useCallback(() => {
     return (
       <SelectedValue
-        label={moment(value).calendar().split(' at')[0]}
+        label={
+          moment(value ?? undefined)
+            .calendar()
+            .split(' at')[0]
+        }
         icon={IconCalendar}
       >
         <input
           className={styles.input}
           name={RELEASE_DATE}
-          value={moment(value).format('L')}
+          value={moment(value ?? undefined).format('L')}
           aria-readonly
           readOnly
         />

@@ -165,6 +165,7 @@ purchase = ns.model(
         "seller_user_id": fields.String(required=True),
         "buyer_user_id": fields.String(required=True),
         "amount": fields.String(required=True),
+        "extra_amount": fields.String(required=True),
         "content_type": StringEnumToLower(required=True, discriminator=True),
         "content_id": fields.String(required=True),
         "created_at": fields.String(required=True),

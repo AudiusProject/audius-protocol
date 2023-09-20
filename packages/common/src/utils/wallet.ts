@@ -1,5 +1,4 @@
 import BN from 'bn.js'
-import JSBI from 'jsbi'
 
 import {
   BNAudio,
@@ -9,6 +8,7 @@ import {
   StringUSDC,
   StringWei
 } from 'models/Wallet'
+import { AmountObject } from 'store/ui'
 import {
   WEI,
   trimRightZeros,
@@ -110,18 +110,22 @@ export const formatWei = (
   return formatNumberCommas(trimmed) as StringAudio
 }
 
-export const convertJSBIToAmountObject = (amount: JSBI, decimals: number) => {
-  const divisor = JSBI.BigInt(10 ** decimals)
-  const quotient = JSBI.divide(amount, divisor)
-  const remainder = JSBI.remainder(amount, divisor)
-  const uiAmountString = JSBI.greaterThan(remainder, JSBI.BigInt(0))
-    ? `${quotient.toString()}.${remainder.toString().padStart(decimals, '0')}`
-    : quotient.toString()
+const convertBigIntToUIString = (amount: bigint, decimals: number) => {
+  const str = amount.toString()
+  return `${str.substring(0, str.length - decimals)}.${str.substring(
+    str.length - decimals
+  )}`
+}
+
+export const convertBigIntToAmountObject = (
+  amount: bigint,
+  decimals: number
+): AmountObject => {
   return {
-    amount: JSBI.toNumber(amount),
+    amount: Number(amount),
     amountString: amount.toString(),
-    uiAmount: JSBI.toNumber(amount) / 10 ** decimals,
-    uiAmountString
+    uiAmount: Number(amount) / 10 ** decimals,
+    uiAmountString: convertBigIntToUIString(amount, decimals)
   }
 }
 

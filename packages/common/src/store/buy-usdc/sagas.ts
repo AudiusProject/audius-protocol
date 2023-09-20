@@ -1,5 +1,4 @@
 import { PublicKey } from '@solana/web3.js'
-import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, take } from 'typed-redux-saga'
 
@@ -103,14 +102,12 @@ function* purchaseStep({
   })
 
   // Check that we got the requested amount
-  const purchasedAmount = new BN(newBalance).sub(new BN(initialBalance))
-  if (purchasedAmount !== new BN(desiredAmount)) {
+  const purchasedAmount = newBalance - initialBalance
+  if (purchasedAmount !== BigInt(desiredAmount)) {
     console.warn(
-      `Warning: Purchase USDC amount differs from expected. Actual: ${new BN(
-        newBalance
-      )
-        .sub(new BN(initialBalance))
-        .toNumber()} Wei. Expected: ${desiredAmount / 100} USDC.`
+      `Warning: Purchase USDC amount differs from expected. Actual: ${
+        newBalance - initialBalance
+      } Wei. Expected: ${desiredAmount / 100} USDC.`
     )
   }
 

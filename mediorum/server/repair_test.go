@@ -55,6 +55,13 @@ func TestRepair(t *testing.T) {
 		OrigFileCID: cid,
 	})
 
+	// verify we can get it "manually"
+	{
+		u, err := testNetwork[1].peerGetUpload(ss.Config.Self.Host, "testing")
+		assert.NoError(t, err)
+		assert.Equal(t, cid, u.OrigFileCID)
+	}
+
 	// force sweep (since blob changes SkipBroadcast)
 	for _, s := range testNetwork {
 		s.crud.ForceSweep()

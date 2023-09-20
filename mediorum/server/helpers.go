@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/erni27/imcache"
 	"github.com/labstack/echo/v4"
@@ -93,8 +94,7 @@ func rangeIsFirstByte(headerValue string) bool {
 }
 
 func (ss *MediorumServer) getUploadOrigCID(uploadId string) (string, error) {
-	_, err := ulid.Parse(uploadId)
-	if err != nil {
+	if _, err := ulid.Parse(uploadId); err != nil {
 		return "", err
 	}
 
@@ -103,12 +103,21 @@ func (ss *MediorumServer) getUploadOrigCID(uploadId string) (string, error) {
 	}
 
 	var upload Upload
-	if err = ss.crud.DB.First(&upload, "id = ?", uploadId).Error; err == nil {
+	if err := ss.crud.DB.First(&upload, "id = ?", uploadId).Error; err == nil {
 		ss.uploadOrigCidCache.Set(uploadId, upload.OrigFileCID, imcache.WithDefaultExpiration())
 		return upload.OrigFileCID, nil
-	} else {
-		return "", err
 	}
+
+	// since still no gossip... we might not have upload record...
+	// try to get upload from healthy peers
+	for _, peerHost := range ss.findHealthyPeers(time.Hour) {
+		if upload, err := ss.peerGetUpload(peerHost, uploadId); err == nil {
+			ss.uploadOrigCidCache.Set(uploadId, upload.OrigFileCID, imcache.WithDefaultExpiration())
+			return upload.OrigFileCID, nil
+		}
+	}
+
+	return "", errors.New("unknown upload: " + uploadId)
 }
 
 func parseVariantSize(variant string) (w, h int, err error) {

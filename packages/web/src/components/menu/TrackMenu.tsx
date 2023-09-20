@@ -16,7 +16,7 @@ import {
   Genre,
   FeatureFlags,
   CommonState,
-  useEditTracktModal
+  useEditTrackModal
 } from '@audius/common'
 import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
@@ -95,7 +95,7 @@ const TrackMenu = (props: TrackMenuProps) => {
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
   const currentUserId = useSelector(getUserId)
-  const { onOpen } = useEditTracktModal()
+  const { onOpen } = useEditTrackModal()
   const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK

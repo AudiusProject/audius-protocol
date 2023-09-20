@@ -1,5 +1,5 @@
-import type { AudiusLibs } from '@audius/sdk'
-import { AccountInfo, u64 } from '@solana/spl-token'
+import { AudiusLibs } from '@audius/sdk'
+import { Account } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 
@@ -56,7 +56,7 @@ export const getTokenAccountInfo = async (
     mint?: MintName
     tokenAccount: PublicKey
   }
-): Promise<AccountInfo | null> => {
+): Promise<Account | null> => {
   return (
     await audiusBackendInstance.getAudiusLibs()
   ).solanaWeb3Manager!.getTokenAccountInfo(tokenAccount.toString(), mint)
@@ -114,7 +114,7 @@ function isCreateUserBankIfNeededError(
 export const getUserbankAccountInfo = async (
   audiusBackendInstance: AudiusBackend,
   { ethAddress: sourceEthAddress, mint = DEFAULT_MINT }: UserBankConfig = {}
-): Promise<AccountInfo | null> => {
+): Promise<Account | null> => {
   const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
   const ethAddress =
     sourceEthAddress ?? audiusLibs.Account!.getCurrentUser()?.wallet
@@ -218,7 +218,7 @@ export const pollForBalanceChange = async (
     maxRetryCount = DEFAULT_MAX_RETRY_COUNT
   }: {
     tokenAccount: PublicKey
-    initialBalance?: u64
+    initialBalance?: bigint
     mint?: MintName
     retryDelayMs?: number
     maxRetryCount?: number
@@ -233,7 +233,7 @@ export const pollForBalanceChange = async (
   while (
     (!tokenAccountInfo ||
       initialBalance === undefined ||
-      tokenAccountInfo.amount.eq(initialBalance)) &&
+      tokenAccountInfo.amount === initialBalance) &&
     retries++ < maxRetryCount
   ) {
     if (!tokenAccountInfo) {
@@ -242,7 +242,7 @@ export const pollForBalanceChange = async (
       )
     } else if (initialBalance === undefined) {
       initialBalance = tokenAccountInfo.amount
-    } else if (tokenAccountInfo.amount.eq(initialBalance)) {
+    } else if (tokenAccountInfo.amount === initialBalance) {
       console.debug(
         `Polling ${debugTokenName} balance (${initialBalance} === ${tokenAccountInfo.amount}) [${retries}/${maxRetryCount}]`
       )
@@ -256,12 +256,12 @@ export const pollForBalanceChange = async (
   if (
     tokenAccountInfo &&
     initialBalance &&
-    !tokenAccountInfo.amount.eq(initialBalance)
+    tokenAccountInfo.amount !== initialBalance
   ) {
     console.debug(
-      `${debugTokenName} balance changed by ${tokenAccountInfo.amount.sub(
-        initialBalance
-      )} (${initialBalance} => ${tokenAccountInfo.amount})`
+      `${debugTokenName} balance changed by ${
+        tokenAccountInfo.amount - initialBalance
+      } (${initialBalance} => ${tokenAccountInfo.amount})`
     )
     return tokenAccountInfo.amount
   }

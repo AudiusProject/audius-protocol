@@ -20,15 +20,13 @@ export const audit = async (app: App<SharedData>) => {
   const contentNodes: Node[] =
     (await libs.ServiceProvider?.listCreatorNodes()) ?? [];
 
-  const nodes = [...discoveryNodes, ...contentNodes];
-
   const minVersions: { "discovery-node": string; "content-node": string } =
     ((await libs.ethContracts?.getExpectedServiceVersions()) ?? {}) as {
       "discovery-node": string;
       "content-node": string;
     };
 
-  const proposals = await auditVersions(db, nodes, minVersions);
+  const proposals = await auditVersions(db, discoveryNodes, contentNodes, minVersions);
 
   for (const proposal of proposals) {
     await propose(app, proposal);

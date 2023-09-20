@@ -15,8 +15,8 @@ const UPLOAD_WEIGHT = 0.5
 const TRANSCODE_WEIGHT = 1 - UPLOAD_WEIGHT
 
 // Should sum to 1
-const ART_WEIGHT = 0.1
-const AUDIO_WEIGHT = 0.9
+const AUDIO_WEIGHT = 1
+const ART_WEIGHT = 0
 
 const getKeyUploadProgress = (state: CommonState, key: 'art' | 'audio') => {
   const uploadProgress = getUploadProgress(state)

@@ -3,7 +3,7 @@ import { Action, combineReducers, Reducer } from '@reduxjs/toolkit'
 import { createChatModalReducer } from './create-chat-modal'
 import { BaseModalState } from './createModal'
 import { editPlaylistModalReducer } from './edit-playlist-modal'
-import { editTracktModalReducer } from './edit-track-modal'
+import { editTrackModalReducer } from './edit-track-modal'
 import { inboxUnavailableModalReducer } from './inbox-unavailable-modal'
 import { leavingAudiusModalReducer } from './leaving-audius-modal'
 import parentReducer, { initialState } from './parentSlice'
@@ -28,7 +28,7 @@ const noOpReducers = Object.keys(initialState).reduce((prev, curr) => {
 const combinedReducers = combineReducers({
   ...noOpReducers,
   EditPlaylist: editPlaylistModalReducer,
-  EditTrack: editTracktModalReducer,
+  EditTrack: editTrackModalReducer,
   CreateChatModal: createChatModalReducer,
   InboxUnavailableModal: inboxUnavailableModalReducer,
   LeavingAudiusModal: leavingAudiusModalReducer,
