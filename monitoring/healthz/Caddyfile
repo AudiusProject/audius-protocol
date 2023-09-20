@@ -1,0 +1,2 @@
+:80
+reverse_proxy /healthz* :9559

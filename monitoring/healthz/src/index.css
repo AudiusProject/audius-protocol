@@ -62,8 +62,9 @@ body {
   background: var(--is-unhealthy-color);
 }
 
-table tr:hover td.is-unhealthy {
-  background: var(--is-unhealthy-hover-color);
+table tr:hover td.is-unhealthy,
+table tr.is-unhealthy:hover td {
+    background: var(--is-unhealthy-hover-color);
 }
 
 td.matrix-cell:hover {

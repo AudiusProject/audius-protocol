@@ -62,7 +62,9 @@ export function DiscoveryHealth() {
 }
 
 function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
-  const path = isContent ? '/health_check' : '/health_check?verbose=true&enforce_block_diff=true&healthy_block_diff=250&plays_count_max_drift=720'
+  // TODO(michelle): after all nodes updated, change this to
+  // const path = isContent ? '/health_check' : '/health_check?verbose=true&enforce_block_diff=true&healthy_block_diff=250&plays_count_max_drift=720'
+  const path = isContent ? '/health_check' : '/health_check?enforce_block_diff=true&healthy_block_diff=250'
   const { data, error } = useSWR(sp.endpoint + path, fetcher)
   const { data: ipCheck, error: ipCheckError } = useSWR(
     sp.endpoint + '/ip_check',
@@ -77,7 +79,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     return (
       <tr>
         <td>
-          <a href={sp.endpoint + '/health_check'} target="_blank">
+          <a href={sp.endpoint + path} target="_blank">
             {sp.endpoint.replace('https://', '')}
           </a>
         </td>
@@ -99,6 +101,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     }
   }
 
+  // TODO(michelle) after all nodes updated, change DN check to health.discovery_node_healthy
   const isHealthy = isContent ? health.healthy : !health.errors || (Array.isArray(health.errors) && health.errors.length === 0)
   const unreachablePeers = health.unreachablePeers?.join(', ')
 
@@ -153,7 +156,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   return (
     <tr className={isHealthy ? '' : 'is-unhealthy'}>
       <td>
-        <a href={sp.endpoint + '/health_check'} target="_blank">
+        <a href={sp.endpoint + path} target="_blank">
           {sp.endpoint.replace('https://', '')}
         </a>
       </td>
