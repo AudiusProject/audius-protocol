@@ -23,7 +23,8 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   value,
   showLabels = false,
   minWrapper: MinWrapper,
-  maxWrapper: MaxWrapper
+  maxWrapper: MaxWrapper,
+  ...other
 }: ProgressBarProps) => {
   const [sliderWidth, setSliderWidth] = useState(0)
 
@@ -46,6 +47,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
       className={cn(styles.container, { [className!]: !!className })}
       role='progressbar'
       aria-valuenow={percentage.toNumber()}
+      {...other}
     >
       <div
         className={cn(styles.slider, {

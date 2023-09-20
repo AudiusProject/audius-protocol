@@ -1,5 +1,4 @@
 import { Nullable, TrackMetadata, UploadType } from '@audius/common'
-import moment from 'moment'
 
 import { CollectionValues } from './validation'
 
@@ -32,7 +31,6 @@ export type UploadFormState =
   | InitialFormState
 
 export type SingleTrackEditValues = TrackMetadata & {
-  releaseDate: moment.Moment
   licenseType: {
     allowAttribution: Nullable<boolean>
     commercialUse: Nullable<boolean>

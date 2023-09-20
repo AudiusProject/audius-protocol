@@ -29,7 +29,10 @@ describe('Upload', () => {
 
     // Complete track form
 
-    cy.findByRole('button', { name: /change artwork/i }).click()
+    cy.findByRole('heading', { name: /complete your track/i, level: 1 }).should(
+      'exist'
+    )
+    cy.findByRole('button', { name: /change/i }).click()
 
     cy.findByTestId('upload-dropzone').attachFile('track-artwork.jpeg', {
       subjectType: 'drag-n-drop'
@@ -49,7 +52,6 @@ describe('Upload', () => {
       .type('tag1{enter}')
       .type('tag2')
       .tab()
-      .type('tag3,')
 
     cy.findByRole('textbox', { name: /description/i }).type('Test Description')
 
@@ -147,10 +149,65 @@ describe('Upload', () => {
       cy.findByRole('button', { name: /save/i }).click()
     })
 
-    cy.findByRole('button', { name: /continue/i }).click()
+    cy.findByRole('button', { name: /complete upload/i }).click()
 
-    // cy.findByRole('dialog', { name: /confirm upload/i }).within(() => {
-    //   cy.findByRole('button', { name: /upload/i }).click()
-    // })
+    cy.findByRole('dialog', { name: /confirm upload/i }).within(() => {
+      cy.findByRole('button', { name: /upload/i }).click()
+    })
+
+    cy.findByRole('heading', {
+      name: /uploading your track/i,
+      level: 1
+    }).should('exist')
+
+    cy.findByRole('main').within(() => {
+      cy.findByRole('progressbar', { name: /upload in progress/i }).should(
+        'have.attr',
+        'aria-valuenow',
+        '0'
+      )
+
+      cy.waitUntil(() => {
+        return cy
+          .findByRole('progressbar', { name: /upload in progress/i })
+          .then((progressbar) => {
+            return Number(progressbar.attr('aria-valuenow')) > 0
+          })
+      })
+
+      cy.waitUntil(
+        () => {
+          return cy
+            .findByRole('progressbar', { name: /upload in progress/i })
+            .then((progressbar) => {
+              return Number(progressbar.attr('aria-valuenow')) > 50
+            })
+        },
+        { timeout: 40000, interval: 1000 }
+      )
+
+      cy.waitUntil(
+        () => {
+          return cy
+            .findByRole('progressbar', { name: /upload in progress/i })
+            .then((progressbar) => {
+              return Number(progressbar.attr('aria-valuenow')) === 100
+            })
+        },
+        { timeout: 40000, interval: 1000 }
+      )
+    })
+
+    cy.findByText(/finalizing upload/i).should('exist')
+
+    cy.findByRole('heading', {
+      name: /your upload is complete/i,
+      level: 3,
+      timeout: 100000
+    }).should('exist')
+
+    cy.findByRole('link', { name: /visit track page/i }).click()
+
+    cy.findByRole('heading', { name: /track/i, level: 1 }).should('exist')
   })
 })
