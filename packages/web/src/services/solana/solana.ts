@@ -1,9 +1,8 @@
 import { SolanaWalletAddress, MintName, DEFAULT_MINT } from '@audius/common'
 import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  Token,
-  TOKEN_PROGRAM_ID,
-  AccountInfo
+  Account,
+  getMinimumBalanceForRentExemptAccount,
+  getAssociatedTokenAddressSync
 } from '@solana/spl-token'
 import {
   PublicKey,
@@ -15,6 +14,7 @@ import {
 import { getLibs } from 'services/audius-libs'
 
 export const ROOT_ACCOUNT_SIZE = 0 // Root account takes 0 bytes, but still pays rent!
+export const TRANSACTION_FEE_FALLBACK = 5000
 
 /**
  * Gets the solana connection from libs.
@@ -66,15 +66,9 @@ export const getRootSolanaAccount = async () => {
  * Checks whether the input address is a valid solana address.
  */
 export const isValidSolAddress = async (address: SolanaWalletAddress) => {
-  const libs = await getLibs()
-  const solanaweb3 = libs.solanaWeb3Manager!.solanaWeb3
-  if (!solanaweb3) {
-    console.error('No solana web3 found')
-    return false
-  }
   try {
     // @ts-ignore - need an unused variable to check if the destinationWallet is valid
-    const ignored = new solanaweb3.PublicKey(address)
+    const ignored = new PublicKey(address)
     return true
   } catch (err) {
     console.debug(err)
@@ -103,11 +97,10 @@ export const getTokenAccountInfo = async ({
 }: {
   tokenAccount: PublicKey
   mint?: MintName
-}): Promise<AccountInfo | null> => {
+}): Promise<Account | null> => {
   const libs = await getLibs()
   return await libs.solanaWeb3Manager!.getTokenAccountInfo(
-    tokenAccount.toString(),
-    mint
+    tokenAccount.toString()
   )
 }
 
@@ -127,9 +120,10 @@ export const getTransferTransactionFee = async (
 ) => {
   const connection = await getSolanaConnection()
   const recentBlockhash = await getRecentBlockhash()
-  const tx = new Transaction({ recentBlockhash })
+  const tx = new Transaction()
+  tx.recentBlockhash = recentBlockhash
   tx.feePayer = destinationPubkey
-  return await tx.getEstimatedFee(connection)
+  return (await tx.getEstimatedFee(connection)) ?? TRANSACTION_FEE_FALLBACK
 }
 
 /**
@@ -137,7 +131,7 @@ export const getTransferTransactionFee = async (
  */
 export const getAssociatedTokenAccountRent = async () => {
   const connection = await getSolanaConnection()
-  return await Token.getMinBalanceRentForExemptAccount(connection)
+  return await getMinimumBalanceForRentExemptAccount(connection)
 }
 
 /**
@@ -147,9 +141,7 @@ export const getUSDCAssociatedTokenAccount = async (
   solanaRootAccountPubkey: PublicKey
 ) => {
   const libs = await getLibs()
-  return await Token.getAssociatedTokenAddress(
-    ASSOCIATED_TOKEN_PROGRAM_ID,
-    TOKEN_PROGRAM_ID,
+  return getAssociatedTokenAddressSync(
     libs.solanaWeb3Manager!.mints.usdc,
     solanaRootAccountPubkey
   )
@@ -174,28 +166,4 @@ export const getSignatureForTransaction = async ({
   transaction.feePayer = feePayer
   transaction.partialSign(signer)
   return transaction.signatures.filter((s) => s.signature !== null)
-}
-
-/**
- * Creates an instruction for creating a new associated token account.
- */
-export const createAssociatedTokenAccountInstruction = ({
-  associatedTokenAccount,
-  owner,
-  mint,
-  feePayer
-}: {
-  associatedTokenAccount: PublicKey
-  owner: PublicKey
-  mint: PublicKey
-  feePayer: PublicKey
-}) => {
-  return Token.createAssociatedTokenAccountInstruction(
-    ASSOCIATED_TOKEN_PROGRAM_ID,
-    TOKEN_PROGRAM_ID,
-    mint,
-    associatedTokenAccount,
-    owner,
-    feePayer
-  )
 }
