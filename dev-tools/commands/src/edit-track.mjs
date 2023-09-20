@@ -32,7 +32,7 @@ program.command("edit-track")
         license: license || track.license,
         is_premium: premiumConditions ? true : track.is_premium,
         premium_conditions: premiumConditions ? JSON.parse(premiumConditions) : track.premium_conditions,
-        preview_start_seconds: parseInt(previewStartSeconds) || track.preview_start_seconds
+        preview_start_seconds: previewStartSeconds ? parseInt(previewStartSeconds) : track.preview_start_seconds
       }
 
       const transcodePreview = previewStartSeconds != null && track.preview_start_seconds != parseInt(previewStartSeconds)
