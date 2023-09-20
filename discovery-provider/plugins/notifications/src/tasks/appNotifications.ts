@@ -12,7 +12,7 @@ export async function sendAppNotifications(
       `Processing ${pending.appNotifications.length} app notifications`
     )
     
-    appNotificationsProcessor.process(pending.appNotifications)
+    await appNotificationsProcessor.process(pending.appNotifications)
     logger.info('Processed new app updates')
   }
 }
