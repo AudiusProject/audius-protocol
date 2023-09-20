@@ -11,7 +11,7 @@ import {
   stemsUploadSelectors,
   stemsUploadActions,
   editTrackModalSelectors,
-  useEditTracktModal
+  useEditTrackModal
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -51,7 +51,7 @@ const EditTrackModal = ({
   uploadStems,
   currentUploads
 }: EditTrackModalProps) => {
-  const { onClose } = useEditTracktModal()
+  const { onClose } = useEditTrackModal()
   const [isModalOpen, setIsModalOpen] = useState(false)
   useEffect(() => {
     // Delay opening the modal until after we have track metadata as well
