@@ -139,6 +139,11 @@ func (ss *MediorumServer) runRepair(tracker *RepairTracker) error {
 		for _, u := range uploads {
 			tracker.CursorUploadID = u.ID
 			ss.repairCid(u.OrigFileCID, tracker)
+			// images are resized dynamically
+			// so only consider audio TranscodeResults for repair
+			if u.Template != JobTemplateAudio {
+				continue
+			}
 			for _, cid := range u.TranscodeResults {
 				ss.repairCid(cid, tracker)
 			}
@@ -192,6 +197,11 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 
 	preferredHosts, isMine := ss.rendezvousAllHosts(cid)
 	preferredHealthyHosts, isMineHealthy := ss.rendezvousHealthyHosts(cid)
+
+	// fast path: do zero bucket ops if we know we don't care about this cid
+	if !tracker.CleanupMode && !isMineHealthy {
+		return nil
+	}
 
 	// use preferredHealthyHosts when determining my rank because we want to check if we're in the top N*2 healthy nodes not the top N*2 unhealthy nodes
 	myRank := slices.Index(preferredHealthyHosts, ss.Config.Self.Host)
