@@ -1,0 +1,14 @@
+diff --git a/node_modules/micro-aes-gcm/package.json b/node_modules/micro-aes-gcm/package.json
+index a26a463..7ab9c18 100644
+--- a/node_modules/micro-aes-gcm/package.json
++++ b/node_modules/micro-aes-gcm/package.json
+@@ -15,6 +15,9 @@
+     "siv.d.ts.map",
+     "siv.ts"
+   ],
++  "react-native": {
++    "crypto": "crypto"
++  },
+   "scripts": {
+     "build": "tsc",
+     "lint": "prettier --check index.ts",
