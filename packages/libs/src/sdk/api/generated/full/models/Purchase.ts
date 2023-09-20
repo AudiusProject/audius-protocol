@@ -58,6 +58,12 @@ export interface Purchase {
      * @type {string}
      * @memberof Purchase
      */
+    extraAmount: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Purchase
+     */
     contentType: string;
     /**
      * 
@@ -89,6 +95,7 @@ export function instanceOfPurchase(value: object): boolean {
     isInstance = isInstance && "sellerUserId" in value;
     isInstance = isInstance && "buyerUserId" in value;
     isInstance = isInstance && "amount" in value;
+    isInstance = isInstance && "extraAmount" in value;
     isInstance = isInstance && "contentType" in value;
     isInstance = isInstance && "contentId" in value;
     isInstance = isInstance && "createdAt" in value;
@@ -114,6 +121,7 @@ export function PurchaseFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'sellerUserId': json['seller_user_id'],
         'buyerUserId': json['buyer_user_id'],
         'amount': json['amount'],
+        'extraAmount': json['extra_amount'],
         'contentType': json['content_type'],
         'contentId': json['content_id'],
         'createdAt': json['created_at'],
@@ -135,6 +143,7 @@ export function PurchaseToJSON(value?: Purchase | null): any {
         'seller_user_id': value.sellerUserId,
         'buyer_user_id': value.buyerUserId,
         'amount': value.amount,
+        'extra_amount': value.extraAmount,
         'content_type': value.contentType,
         'content_id': value.contentId,
         'created_at': value.createdAt,
