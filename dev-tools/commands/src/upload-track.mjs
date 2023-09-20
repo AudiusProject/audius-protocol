@@ -157,8 +157,6 @@ program
             owner_id: audiusLibs.Account.getCurrentUser().user_id,
             cover_art: null,
             cover_art_sizes: null,
-            length: 0,
-            duration: 60, // TODO: get duration from track file locally
             title: trackTitle,
             tags: tags,
             genre:
@@ -180,6 +178,8 @@ program
             premium_conditions: parsedPremiumConditions,
             ai_attribution_user_id: null,
             preview_start_seconds: previewStartSeconds
+              ? parseInt(previewStartSeconds)
+              : null
           },
           () => null
         )
