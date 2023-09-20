@@ -101,6 +101,9 @@ func (ss *MediorumServer) startRepairer() {
 		} else {
 			logger.Info("repair OK", "took", tracker.Duration)
 			ss.lastSuccessfulRepair = tracker
+			if tracker.CleanupMode {
+				ss.lastSuccessfulCleanup = tracker
+			}
 		}
 		tracker.FinishedAt = time.Now()
 		saveTracker()
