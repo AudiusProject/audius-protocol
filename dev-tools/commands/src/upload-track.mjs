@@ -101,7 +101,7 @@ program.command("upload-track")
             ? JSON.parse(premiumConditions)
             : null,
           ai_attribution_user_id: null,
-          preview_start_seconds: previewStartSeconds,
+          preview_start_seconds: parseInt(previewStartSeconds),
         },
         () => null
       );
