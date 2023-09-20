@@ -497,7 +497,6 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   }
 }
 
-type LineupData = ReturnType<ReturnType<typeof makeGetTableMetadatas>>
 type AccountData = ReturnType<typeof getAccountWithNameSortedPlaylistsAndAlbums>
 let accountRef: AccountData
 
