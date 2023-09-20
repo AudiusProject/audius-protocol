@@ -53,6 +53,12 @@ export const getExecutionDelay = (state: AppState) =>
 
 // -------------------------------- Thunk Actions  --------------------------------
 
+// Filter proposals impacted by
+// https://blog.audius.co/article/audius-governance-takeover-post-mortem-7-23-22
+const filteredProposals = new Set([82, 83, 84, 85])
+filteredProposals.add(130) // Incorrect slash amount applied via sla-auditor
+filteredProposals.add(131) // Incorrect slash amount applied via sla-auditor
+
 export function fetchActiveProposals(): ThunkAction<
   void,
   AppState,
@@ -60,7 +66,8 @@ export function fetchActiveProposals(): ThunkAction<
   Action<string>
 > {
   return async (dispatch, getState, aud) => {
-    const proposalIds = await aud.Governance.getInProgressProposalIds()
+    let proposalIds = await aud.Governance.getInProgressProposalIds()
+    proposalIds = proposalIds.filter(p => filteredProposals.has(p))
     const proposals = (
       await Promise.all(
         proposalIds.map(async id => {
@@ -81,10 +88,6 @@ export function fetchActiveProposals(): ThunkAction<
     dispatch(setActiveProposals({ proposals }))
   }
 }
-
-// Filter proposals impacted by
-// https://blog.audius.co/article/audius-governance-takeover-post-mortem-7-23-22
-const filteredProposals = new Set([82, 83, 84, 85])
 
 export function fetchAllProposals(): ThunkAction<
   void,
