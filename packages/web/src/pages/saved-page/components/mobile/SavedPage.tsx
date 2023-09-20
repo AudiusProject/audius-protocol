@@ -44,13 +44,13 @@ import TrackList from 'components/track/mobile/TrackList'
 import { TrackItemAction } from 'components/track/mobile/TrackListItem'
 import { useGoToRoute } from 'hooks/useGoToRoute'
 import useTabs from 'hooks/useTabs/useTabs'
+import { useCollectionsData } from 'pages/saved-page/hooks/useCollectionsData'
 import { TRENDING_PAGE, collectionPage } from 'utils/route'
 
+import { LibraryCategorySelectionMenu } from '../desktop/LibraryCategorySelectionMenu'
 import { emptyStateMessages } from '../emptyStateMessages'
 import { formatCardSecondaryText } from '../utils'
 
-import { useCollectionsData } from 'pages/saved-page/hooks/useCollectionsData'
-import { LibraryCategorySelectionMenu } from '../desktop/LibraryCategorySelectionMenu'
 import NewPlaylistButton from './NewPlaylistButton'
 import styles from './SavedPage.module.css'
 
@@ -146,19 +146,27 @@ const useTabContainerRef = ({
     if (resultsLength === undefined && !isFilterActive) {
       setHasCompletedInitialLoad(false)
     }
+    // Disable exhaustive deps since the exclusions are deliberate - see above comment
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resultsLength, hasNoResults])
 
   useEffect(() => {
+    // When the length of the results list changes, or we switch from loading state to empty state or list state (and vice versa), recalculate the height of the container.
     if (containerRef.current) {
       contentRefCallback(containerRef.current)
     }
+    // Disable exhaustive deps since the exclusions are deliberate - see above comment
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resultsLength, hasNoResults])
 
   useEffect(() => {
+    // When the selected category (favorites/reposts/purchased/all) changes, recalculate the height of the container and scroll to the top.
     if (containerRef.current) {
       contentRefCallback(containerRef.current, true)
       window.scroll(0, SCROLL_HEIGHT)
     }
+    // Disable exhaustive deps since the exclusions are deliberate - see above comment
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory])
 
   return containerRef
@@ -229,8 +237,8 @@ const TracksLineup = ({
   })
 
   const contentRef = useTabContainerRef({
-    resultsLength: tracks.entries.length,
-    hasNoResults: tracks.entries.length === 0,
+    resultsLength: trackList.length,
+    hasNoResults: trackList.length === 0,
     currentTab: SavedPageTabs.TRACKS,
     isFilterActive: Boolean(filterText)
   })
@@ -238,7 +246,7 @@ const TracksLineup = ({
   const isLoadingInitial = statusIsNotFinalized(tracks.status)
   const shouldHideFilterInput = isLoadingInitial && !filterText
 
-  if (tracks.entries.length === 0 && !statusIsNotFinalized(tracks.status)) {
+  if (trackList.length === 0 && !statusIsNotFinalized(tracks.status)) {
     return (
       <div className={styles.tracksLineupContainer}>
         <EmptyTab
@@ -332,7 +340,7 @@ const CollectionCard = ({
         )
       )
     }
-  }, [collection, ownerHandle, goToRoute])
+  }, [collection, ownerHandle, onBeforeNavigate, record, hasUpdate, goToRoute])
 
   return collection ? (
     <Card

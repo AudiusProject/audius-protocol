@@ -9,7 +9,6 @@ import {
   PlaybackSource,
   SavedPageTabs as ProfileTabs,
   RepostSource,
-  SavedPageCollection,
   SavedPageTabs,
   SavedPageTrack,
   TrackRecord,
@@ -500,7 +499,6 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
 
 type LineupData = ReturnType<ReturnType<typeof makeGetTableMetadatas>>
 type AccountData = ReturnType<typeof getAccountWithNameSortedPlaylistsAndAlbums>
-let tracksRef: LineupData
 let accountRef: AccountData
 
 function makeMapStateToProps() {

@@ -533,6 +533,8 @@ const GestureSupportingBodyContainer = memo(
         setScrollContainerX(-1 * activeIndex * containerWidth, false)
         window.scrollTo(0, initialScrollOffset)
       }
+      // Disable exhaustive deps because we only need to run this if the active index has changed:
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeIndex, internalIndex])
 
     const isMovingLeft = (x: number) => x < -1 * containerWidth * activeIndex
@@ -1112,12 +1114,12 @@ const useTabs = ({
 
       // On mobile, onChangeComplete gets fired
       // when the animation finishes. On desktop, it's fired
-      // immedaitely
+      // immediately
       setActiveIndex(newIndex)
       !isMobile && onChangeComplete(activeIndex, newIndex)
       onTabClickCb && onTabClickCb(tabs[newIndex].label)
     },
-    [isMobile, isControlled, onChangeComplete, activeIndex]
+    [isControlled, isMobile, onChangeComplete, activeIndex, onTabClickCb, tabs]
   )
 
   const tabBarKey = tabs.map((t) => t.label).join('-')
