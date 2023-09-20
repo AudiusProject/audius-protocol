@@ -202,9 +202,9 @@ export default class Governance {
     queryStartBlock: number = QUERY_PROPOSAL_START_BLOCK
   ) {
     await this.aud.hasPermissions()
-    const proposals: ProposalId[] = await this.getContract().getInProgressProposals(
+    const proposals: ProposalId[] = (await this.getContract().getInProgressProposals(
       queryStartBlock
-    )
+    )).map((p: string) => parseInt(p))
     return proposals
   }
 

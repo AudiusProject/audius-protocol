@@ -67,7 +67,7 @@ export function fetchActiveProposals(): ThunkAction<
 > {
   return async (dispatch, getState, aud) => {
     let proposalIds = await aud.Governance.getInProgressProposalIds()
-    proposalIds = proposalIds.filter(p => filteredProposals.has(p))
+    proposalIds = proposalIds.filter(p => !filteredProposals.has(p))
     const proposals = (
       await Promise.all(
         proposalIds.map(async id => {
