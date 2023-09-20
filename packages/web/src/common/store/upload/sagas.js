@@ -76,6 +76,8 @@ const combineMetadata = (trackMetadata, collectionMetadata) => {
 
   if (!metadata.genre) metadata.genre = collectionMetadata.genre
   if (!metadata.mood) metadata.mood = collectionMetadata.mood
+  if (!metadata.release_date)
+    metadata.release_date = collectionMetadata.release_date
 
   if (collectionMetadata.tags) {
     if (!metadata.tags) {
