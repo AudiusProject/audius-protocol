@@ -112,5 +112,5 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.UPLOAD_REDESIGN_ENABLED]: false,
   [FeatureFlags.USDC_PURCHASES]: false,
   [FeatureFlags.NEW_PLAYLIST_ROUTES]: false,
-  [FeatureFlags.DISCOVERY_RELAY]: false,
+  [FeatureFlags.DISCOVERY_RELAY]: false
 }
