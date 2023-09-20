@@ -99,6 +99,7 @@ export class AudioPlayer {
       // where playing tracks quickly in succession breaks
       if (this.audio) {
         // Remove listeners first so src = '' does not throw an error
+        // @ts-ignore
         this.audio.removeAllListeners?.()
 
         this.audio.src = ''
