@@ -125,7 +125,9 @@ export const FinishPageNew = (props: FinishPageProps) => {
   const dispatch = useDispatch()
 
   const uploadComplete = useMemo(() => {
-    if (!upload.uploadProgress) return false
+    if (!upload.uploadProgress || upload.uploading || !upload.success)
+      return false
+
     return (
       upload.success &&
       upload.uploadProgress.reduce((acc, progress) => {
