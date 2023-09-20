@@ -115,12 +115,56 @@ jobs:
             mv /tmp/.version.json discovery-provider/.version.json
             git add discovery-provider/.version.json
 
+            # Escape double quotes in commit message and replace git log's platform-specific newlines with @@DELIM@@
+            GIT_DIFF=$(git log --pretty=format:'• %an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum discovery-provider identity-service comms | sed 's/"/\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/@@DELIM@@/g')
             git commit -m "Bump version to $NEW_VERSION"
 
             git branch "release-v$NEW_VERSION"
             git checkout "release-v$NEW_VERSION"
 
             git push --set-upstream origin main "release-v$NEW_VERSION"
+
+            # Slack has a limit of 3000 characters per block, so we need to split the diff into multiple blocks
+            max_lines=8
+            json_content="{ \"blocks\": ["
+            json_content+="{ \"type\": \"header\", \"text\": { \"type\": \"plain_text\", \"text\": \"New Protocol Release Branch (v0.4.9)\n\" } },"
+            json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"*These changes will be released to SPs at 11am PST:*\n\" } },"
+            line_count=0
+            block_content=""
+
+            # Use @@ as Internal Field Separator, so @@DELIM@@ effectively becomes the delimiter for us to build blocks
+            IFS='@@'
+            read -ra ADDR \<<< "$GIT_DIFF"
+            for line in "${ADDR[@]}"; do
+                if [[ $line == "DELIM" ]]; then
+                    continue
+                fi
+
+                block_content+="$line\n"
+                line_count=$((line_count+1))
+
+                if (( line_count == max_lines )); then
+                    json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"${block_content}\" } },"
+                    line_count=0
+                    block_content=""
+                fi
+            done
+
+            if (( line_count > 0 )); then
+                json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"${block_content}\" } },"
+            fi
+
+            json_content=${json_content%,}
+            json_content+="]}"
+            
+            # The next step of this job will read this file and send it to Slack
+            echo $json_content > /tmp/slack_message.json
+      - run:
+          name: Send Slack Daily Deploy Message
+          command: |
+            curl -f -X POST -H 'Content-type: application/json' \
+              --data @/tmp/slack_message.json \
+              $SLACK_DAILY_DEPLOY_WEBHOOK
 
   generate-client-release:
     working_directory: ~/audius-protocol
@@ -295,7 +339,8 @@ workflows:
         - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - equal: ['release-create-branch', << pipeline.schedule.name >>]
     jobs:
-      - generate-release
+      - generate-release:
+          context: slack-secrets
 
   release-client-create-branch:
     when:
