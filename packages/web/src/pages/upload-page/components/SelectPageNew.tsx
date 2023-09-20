@@ -17,7 +17,7 @@ import { UploadFormState } from '../types'
 import styles from './SelectPage.module.css'
 import { TracksPreviewNew } from './TracksPreviewNew'
 
-type ErrorType = { reason: 'size' | 'type' } | null
+type ErrorType = { reason: 'corrupted' | 'size' | 'type' } | null
 
 type SelectPageProps = {
   formState: UploadFormState
@@ -60,7 +60,7 @@ export const SelectPageNew = (props: SelectPageProps) => {
 
       if (
         uploadType === UploadType.INDIVIDUAL_TRACK &&
-        selectedFiles.length + processedTracks.length > 1
+        tracks.length + processedTracks.length > 1
       ) {
         setUploadType(UploadType.INDIVIDUAL_TRACKS)
       }

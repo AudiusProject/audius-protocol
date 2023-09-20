@@ -175,7 +175,6 @@ immutable_track_fields = immutable_fields | {
     "track_id",
     "owner_id",
     "track_cid",
-    "preview_cid",
     "duration",
     "is_available",
 }

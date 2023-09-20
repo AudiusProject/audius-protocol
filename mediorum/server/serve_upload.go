@@ -1,147 +1,31 @@
 package server
 
 import (
-	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
+	"io"
 	"mediorum/cidutil"
 	"mime"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"
-	"golang.org/x/exp/slices"
+	"gocloud.dev/blob"
 	"golang.org/x/sync/errgroup"
 )
 
 var (
 	filesFormFieldName = "files"
-	uploadsCache       *UploadsCache
 )
-
-type UploadsCache struct {
-	jobIdToVariants map[string]map[string]string
-	isBuilt         bool
-	compressedChar  string // char to replace "baeaaaiqse" with because all CIDs we have start with this
-	prefix          string // "baeaaaiqse"
-	mu              *sync.RWMutex
-}
-
-func (uc *UploadsCache) Get(jobId, variant string) (cid string, hasVariant bool) {
-	uc.mu.RLock()
-	defer uc.mu.RUnlock()
-	if !uc.isBuilt {
-		return
-	}
-
-	if compressedResults, ok := uc.jobIdToVariants[jobId]; ok {
-		if cid, ok = compressedResults[variant]; ok {
-			if strings.HasPrefix(cid, string(uc.compressedChar)) {
-				cid = uc.prefix + cid[len(uc.compressedChar):]
-			}
-			hasVariant = true
-		}
-	}
-
-	return
-}
-
-func (uc *UploadsCache) Set(jobId string, results map[string]string) {
-	uc.mu.Lock()
-	defer uc.mu.Unlock()
-	compressedResults := make(map[string]string, len(results))
-	for k, v := range results {
-		// we only care about images
-		if strings.HasPrefix(k, "320") {
-			continue
-		}
-
-		if strings.HasPrefix(v, uc.prefix) {
-			compressedResults[k] = uc.compressedChar + v[len(uc.prefix):]
-		} else {
-			compressedResults[k] = v
-		}
-	}
-	uc.jobIdToVariants[jobId] = compressedResults
-}
-
-func createUploadsCache() {
-	uploadsCache = &UploadsCache{
-		jobIdToVariants: make(map[string]map[string]string),
-		isBuilt:         false,
-		compressedChar:  "`", // anything non-base32 will do
-		prefix:          "baeaaaiqse",
-		mu:              &sync.RWMutex{},
-	}
-}
-
-func (ss *MediorumServer) buildUploadsCache() {
-	start := time.Now()
-	ctx := context.Background()
-
-	conn, err := ss.pgPool.Acquire(ctx)
-	if err != nil {
-		ss.logger.Warn("error acquiring connection from pool to build uploads cache", "err", err)
-		return
-	}
-	defer conn.Release()
-
-	pageSize := 10000
-	lastID := ""
-
-	for {
-		query := `select id, transcode_results from uploads where id > $1 order by id limit $2`
-		rows, err := conn.Query(ctx, query, lastID, pageSize)
-		if err != nil {
-			ss.logger.Warn("error querying uploads table to build cache", "err", err)
-			return
-		}
-
-		var pageEmpty = true
-		for rows.Next() {
-			pageEmpty = false
-			var id string
-			var resultsJSON []byte
-
-			err := rows.Scan(&id, &resultsJSON)
-			if err != nil {
-				ss.logger.Warn("error scanning row while building uploads cache", "err", err)
-				return
-			}
-
-			results := make(map[string]string)
-			if err := json.Unmarshal(resultsJSON, &results); err != nil {
-				ss.logger.Warn("error unmarshaling results while building uploads cache", "err", err)
-				return
-			}
-
-			uploadsCache.Set(id, results)
-			lastID = id
-		}
-
-		if pageEmpty {
-			break
-		}
-	}
-
-	uploadsCache.mu.Lock()
-	uploadsCache.isBuilt = true
-	uploadsCache.mu.Unlock()
-	took := time.Since(start)
-	ss.logger.Info("uploads cache built", "took_minutes", took.Minutes())
-}
 
 func (ss *MediorumServer) getUpload(c echo.Context) error {
 	var upload *Upload
 	err := ss.crud.DB.First(&upload, "id = ?", c.Param("id")).Error
 	if err != nil {
-		return err
+		return echo.NewHTTPError(404, err.Error())
 	}
 	if upload.Status == JobStatusError {
 		return c.JSON(422, upload)
@@ -257,15 +141,12 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	// - some task queue stuff
 
 	uploads := make([]*Upload, len(files))
-	wg := sync.WaitGroup{}
-	wg.Add(len(files))
+	wg, _ := errgroup.WithContext(c.Request().Context())
 	for idx, formFile := range files {
 
 		idx := idx
 		formFile := formFile
-		go func() {
-			defer wg.Done()
-
+		wg.Go(func() error {
 			now := time.Now().UTC()
 			upload := &Upload{
 				ID:               ulid.Make().String(),
@@ -284,23 +165,28 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 			formFileCID, err := cidutil.ComputeFileHeaderCID(formFile)
 			if err != nil {
 				upload.Error = err.Error()
-				return
+				return err
 			}
 
 			upload.OrigFileCID = formFileCID
-			upload.FFProbe, _ = ffprobeUpload(formFile)
+			upload.FFProbe, err = ffprobeUpload(formFile)
+			if err != nil && upload.Template == JobTemplateAudio {
+				// fail audio upload if ffprobe fails
+				upload.Error = err.Error()
+				return err
+			}
 
 			// mirror to n peers
 			file, err := formFile.Open()
 			if err != nil {
 				upload.Error = err.Error()
-				return
+				return err
 			}
 
 			upload.Mirrors, err = ss.replicateFile(formFileCID, file)
 			if err != nil {
 				upload.Error = err.Error()
-				return
+				return err
 			}
 
 			ss.logger.Info("mirrored", "name", formFile.Filename, "uploadID", upload.ID, "cid", formFileCID, "mirrors", upload.Mirrors)
@@ -309,22 +195,43 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 				upload.TranscodeResults["original.jpg"] = formFileCID
 			}
 
-			err = ss.crud.Create(upload)
-			if err != nil {
-				ss.logger.Warn("create upload failed", "err", err)
-			}
-		}()
-	}
-	wg.Wait()
-
-	if c.QueryParam("redirect") != "" {
-		return c.Redirect(302, c.Request().Referer())
+			return ss.crud.Create(upload)
+		})
 	}
 
-	return c.JSON(200, uploads)
+	status := 200
+	if err := wg.Wait(); err != nil {
+		status = 422
+	}
+
+	return c.JSON(status, uploads)
 }
 
 func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
+	// images are small enough to always serve all at once (no 206 range responses)
+	c.Request().Header.Del("Range")
+
+	ctx := c.Request().Context()
+	jobID := c.Param("jobID")
+	variant := c.Param("variant")
+	isOriginalJpg := variant == "original.jpg"
+
+	// helper function... only sets cache-control header on success
+	serveSuccessWithReader := func(blob *blob.Reader) error {
+		name := fmt.Sprintf("%s/%s", jobID, variant)
+		c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=2592000, immutable")
+		http.ServeContent(c.Response(), c.Request(), name, blob.ModTime(), blob)
+		return blob.Close()
+	}
+
+	serveSuccess := func(blobPath string) error {
+		if blob, err := ss.bucket.NewReader(ctx, blobPath, nil); err == nil {
+			return serveSuccessWithReader(blob)
+		} else {
+			return err
+		}
+	}
+
 	// if the client provided a filename, set it in the header to be auto-populated in download prompt
 	filenameForDownload := c.QueryParam("filename")
 	if filenameForDownload != "" {
@@ -332,178 +239,102 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 		c.Response().Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, contentDisposition))
 	}
 
-	jobID := c.Param("jobID")
-	variant := c.Param("variant")
+	// 1. resolve ulid to upload cid
+	if cid, err := ss.getUploadOrigCID(jobID); err == nil {
+		c.Response().Header().Set("x-orig-cid", cid)
+		jobID = cid
+	}
+
+	// 2. if is ba ... serve variant
+	if strings.HasPrefix(jobID, "ba") {
+		baCid := jobID
+
+		var variantStoragePath string
+
+		// parse 150x150 dimensions
+		// while still allowing original.jpg
+		w, h, err := parseVariantSize(variant)
+		if err == nil {
+			variantStoragePath = cidutil.ImageVariantPath(baCid, variant)
+		} else if isOriginalJpg {
+			variantStoragePath = cidutil.ShardCID(baCid)
+		} else {
+			return c.String(400, err.Error())
+		}
+
+		c.Response().Header().Set("x-variant-storage-path", variantStoragePath)
+
+		// we already have this version
+		if blob, err := ss.bucket.NewReader(ctx, variantStoragePath, nil); err == nil {
+			return serveSuccessWithReader(blob)
+		}
+
+		// we need to generate it
+		// ... get the cid
+		// ... create the variant
+		// ... store it at variantStoragePath
+		startDynamicResize := time.Now()
+		if host := ss.findNodeToServeBlob(baCid); host != "" {
+
+			err := ss.pullFileFromHost(host, baCid)
+			if err != nil {
+				return err
+			}
+
+			if !isOriginalJpg {
+				// dynamically create resized version
+				r, err := ss.bucket.NewReader(ctx, cidutil.ShardCID(baCid), nil)
+				if err != nil {
+					return err
+				}
+
+				resized, _, _ := Resized(".jpg", r, w, h, "fill")
+				w, _ := ss.bucket.NewWriter(ctx, variantStoragePath, nil)
+				io.Copy(w, resized)
+				w.Close()
+				r.Close()
+				c.Response().Header().Set("x-dynamic-resize-ok", fmt.Sprintf("%.2fs", time.Since(startDynamicResize).Seconds()))
+			}
+		} else {
+			return c.String(400, fmt.Sprintf("unable to find cid: %s", baCid))
+		}
+
+		// ... serve it
+		return serveSuccess(variantStoragePath)
+	}
+
+	// 3. if Qm ... serve legacy
 	if cidutil.IsLegacyCID(jobID) {
-		// check if file is migrated first - it would have a single key and no upload object in the db
+
+		// storage path for Qm images is like:
+		// QmDirMultihash/150x150.jpg
+		// (no sharding)
 		key := jobID + "/" + variant
-		startMigratedExists := time.Now()
-		exists, err := ss.bucket.Exists(c.Request().Context(), key)
-		c.Response().Header().Set("x-migrated-exists", fmt.Sprintf("%.2fs", time.Since(startMigratedExists).Seconds()))
-		if err != nil {
-			ss.logger.Warn("migrated blob exists check failed", "err", err)
-		} else if exists {
-			blob, err := ss.bucket.NewReader(c.Request().Context(), key, nil)
-			if err != nil {
-				return err
-			}
-			defer blob.Close()
 
-			http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
-			return nil
+		c.Response().Header().Set("x-variant-storage-path", key)
+
+		// have it
+		if blob, err := ss.bucket.NewReader(ctx, key, nil); err == nil {
+			return serveSuccessWithReader(blob)
 		}
 
-		// check if file is migrated but on another host
+		// pull blob from another host and store it at key
+		// keys like QmDirMultiHash/150x150.jpg works fine with findNodeToServeBlob
 		startFindNode := time.Now()
-		host, err := ss.findNodeToServeBlob(key)
-		if err != nil {
-			c.Response().Header().Set("x-find-node-err", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
-			return err
-		} else if host != "" {
-			c.Response().Header().Set("x-find-node-success", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
-			dest := ss.replaceHost(c, host)
-			query := dest.Query()
-			query.Add("allow_unhealthy", "true") // we confirmed the node has it, so allow it to serve it even if unhealthy
-			dest.RawQuery = query.Encode()
-			return c.Redirect(302, dest.String())
-		} else {
-			c.Response().Header().Set("x-find-node-not-found", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
-			return c.String(404, fmt.Sprintf("no host found for %s/%s", jobID, variant))
-		}
-	} else {
-		// TODO: remove cache once metadata has only CIDs and no jobIds/variants, so then we won't need a db lookup
-		startCache := time.Now()
-		cid, ok := uploadsCache.Get(jobID, variant)
-
-		if !ok {
-			c.Response().Header().Set("x-cache-miss", fmt.Sprintf("%.2fs", time.Since(startCache).Seconds()))
-			startDb := time.Now()
-			var upload *Upload
-			err := ss.crud.DB.First(&upload, "id = ?", jobID).Error
+		if host := ss.findNodeToServeBlob(key); host != "" {
+			err := ss.pullFileFromHost(host, key)
 			if err != nil {
 				return err
 			}
-			cid, ok = upload.TranscodeResults[variant]
-			if !ok {
-				c.Response().Header().Set("x-db-miss", fmt.Sprintf("%.2fs", time.Since(startDb).Seconds()))
 
-				// since cultur3stake nodes can't talk to each other
-				// they might not get Upload crudr updates from each other
-				// so if one cultur3stake does transcode... sibiling might not get the updates
-				// so if this Upload doesn't have this variant... see if we can find a 200 from a different node
-				// TODO: crudr should gossip
-				if localOnly, _ := strconv.ParseBool(c.QueryParam("localOnly")); !localOnly {
-					healthyHosts := ss.findHealthyPeers(2 * time.Minute)
-					dest := ss.raceIsUrl2xx(*c.Request().URL, healthyHosts)
-					if dest != "" {
-						return c.Redirect(302, dest)
-					}
+			c.Response().Header().Set("x-find-node-success", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
+			return serveSuccess(key)
 
-					// try redirecting to unhealthy host as a last resort
-					unhealthyHosts := []string{}
-					for _, peer := range ss.Config.Peers {
-						if peer.Host != ss.Config.Self.Host && !slices.Contains(healthyHosts, peer.Host) {
-							unhealthyHosts = append(unhealthyHosts, peer.Host)
-						}
-					}
-					dest = ss.raceIsUrl2xx(*c.Request().URL, unhealthyHosts)
-					if dest != "" {
-						return c.Redirect(302, dest)
-					}
-				}
-
-				msg := fmt.Sprintf("variant %s not found for upload %s", variant, jobID)
-				return c.String(400, msg)
-			} else {
-				c.Response().Header().Set("x-db-hit", fmt.Sprintf("%.2fs %s", time.Since(startDb).Seconds(), cid))
-			}
 		} else {
-			c.Response().Header().Set("x-cache-hit", fmt.Sprintf("%.2fs %s", time.Since(startCache).Seconds(), cid))
+			c.Response().Header().Set("x-find-node-failure", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
 		}
-
-		c.SetParamNames("cid")
-		c.SetParamValues(cid)
-		return ss.getBlob(c)
-	}
-}
-
-// raceIsUrl200 tries batches of 5 hosts concurrently to find the first healthy host that returns a 200 instead of sequentially waiting for a 2s timeout from each host.
-func (ss *MediorumServer) raceIsUrl2xx(url url.URL, hostsToRace []string) string {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	g, _ := errgroup.WithContext(ctx)
-	g.SetLimit(5)
-	destWith2xx := make(chan string, 1)
-
-	for _, host := range hostsToRace {
-		if host == ss.Config.Self.Host {
-			continue
-		}
-		h := host
-		g.Go(func() error {
-			if dest, is2xx := ss.isUrl2xx(url, h); is2xx {
-				// write to channel and cancel context to stop other goroutines, or stop if context was already canceled
-				select {
-				case destWith2xx <- dest:
-					cancel()
-				case <-ctx.Done():
-				}
-			}
-			return nil
-		})
 	}
 
-	go func() {
-		g.Wait()
-		close(destWith2xx)
-	}()
-
-	dest, ok := <-destWith2xx
-	if ok {
-		return dest
-	}
-	return ""
-}
-
-// isUrl200 checks if dest returns 2xx for hostString when not following redirects.
-func (ss *MediorumServer) isUrl2xx(dest url.URL, hostString string) (string, bool) {
-	noRedirectClient := &http.Client{
-		// without this option, we'll incorrectly think Node A has it when really Node A was telling us to redirect to Node B
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
-		Timeout: 2 * time.Second,
-	}
-
-	logger := ss.logger.With("redirect", "url", dest.String(), "host", hostString)
-
-	hostUrl, err := url.Parse(hostString)
-	if err != nil {
-		return "", false
-	}
-
-	dest.Host = hostUrl.Host
-	dest.Scheme = hostUrl.Scheme
-	query := dest.Query()
-	query.Add("localOnly", "true")
-	dest.RawQuery = query.Encode()
-
-	req, err := http.NewRequest("GET", dest.String(), nil)
-	if err != nil {
-		logger.Error("invalid url", "err", err)
-		return "", false
-	}
-	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
-
-	resp, err := noRedirectClient.Do(req)
-	if err != nil {
-		logger.Error("request failed", "err", err)
-		return "", false
-	}
-	resp.Body.Close()
-	if resp.StatusCode == 200 || resp.StatusCode == 204 || resp.StatusCode == 206 {
-		return dest.String(), true
-	}
-
-	return "", false
+	msg := fmt.Sprintf("variant %s not found for upload %s", variant, jobID)
+	return c.String(400, msg)
 }

@@ -48,7 +48,7 @@ export const AppTabsScreen = () => {
       <Tab.Screen name='feed' component={FeedTabScreen} />
       <Tab.Screen name='trending' component={TrendingTabScreen} />
       <Tab.Screen name='explore' component={ExploreTabScreen} />
-      <Tab.Screen name='favorites' component={FavoritesTabScreen} />
+      <Tab.Screen name='library' component={FavoritesTabScreen} />
       <Tab.Screen name='notifications' component={NotificationsTabScreen} />
     </Tab.Navigator>
   )

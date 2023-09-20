@@ -9,7 +9,9 @@ import {
   uuid,
   cacheTracksActions as cacheTrackActions,
   stemsUploadSelectors,
-  stemsUploadActions
+  stemsUploadActions,
+  editTrackModalSelectors,
+  useEditTrackModal
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -21,16 +23,11 @@ import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfir
 import { dropdownRows } from 'components/source-files-modal/SourceFilesModal'
 import EditTrackModalComponent from 'components/track/EditTrackModal'
 import { processFiles } from 'pages/upload-page/store/utils/processFiles'
-import * as editTrackModalActions from 'store/application/ui/editTrackModal/actions'
-import {
-  getMetadata,
-  getIsOpen,
-  getStems
-} from 'store/application/ui/editTrackModal/selectors'
 import { AppState } from 'store/types'
 import { FEED_PAGE, getPathname } from 'utils/route'
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
+const { getMetadata, getStems } = editTrackModalSelectors
 
 const messages = {
   deleteTrack: 'DELETE TRACK'
@@ -44,17 +41,16 @@ type EditTrackModalProps = OwnProps &
   RouteComponentProps
 
 const EditTrackModal = ({
-  isOpen,
   metadata,
   onEdit,
   onDelete,
-  close,
   goToRoute,
   history,
   stems,
   uploadStems,
   currentUploads
 }: EditTrackModalProps) => {
+  const { isOpen, onClose } = useEditTrackModal()
   const [isModalOpen, setIsModalOpen] = useState(false)
   useEffect(() => {
     // Delay opening the modal until after we have track metadata as well
@@ -81,7 +77,7 @@ const EditTrackModal = ({
       pendingDeletes.forEach((id) => onDelete(id))
       setPendingDeletes([])
     }
-    close()
+    onClose()
   }
   const onSelectDelete = () => {
     setShowDeleteConfirmation(true)
@@ -91,14 +87,14 @@ const EditTrackModal = ({
   const onCancel = () => {
     setPendingUploads([])
     setPendingDeletes([])
-    close()
+    onClose()
   }
 
   const onDeleteTrack = () => {
     if (!metadata) return
     onDelete(metadata.track_id)
     setShowDeleteConfirmation(false)
-    close()
+    onClose()
     const match = matchPath<{ name: string; handle: string }>(
       getPathname(history.location),
       {
@@ -218,7 +214,6 @@ function mapStateToProps(state: AppState) {
   const metadata = getMetadata(state)
   return {
     metadata,
-    isOpen: getIsOpen(state),
     stems: getStems(state),
     currentUploads: metadata?.track_id
       ? getCurrentUploads(state, metadata.track_id)
@@ -232,7 +227,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     onEdit: (trackId: ID, formFields: any) =>
       dispatch(cacheTrackActions.editTrack(trackId, formFields)),
     onDelete: (trackId: ID) => dispatch(cacheTrackActions.deleteTrack(trackId)),
-    close: () => dispatch(editTrackModalActions.close()),
     uploadStems: (parentId: ID, uploads: StemUploadWithFile[]) =>
       dispatch(startStemUploads({ parentId, uploads, batchUID: uuid() }))
   }

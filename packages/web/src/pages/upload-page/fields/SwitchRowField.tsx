@@ -32,17 +32,22 @@ export const SwitchRowField = (props: ToggleFieldProps) => {
       }
     : field.onChange
 
+  const inputId = `${name}-id`
+  const descriptionId = `${name}-description`
+
   return (
     <div className={styles.root}>
       <div className={styles.content}>
-        <Text className={styles.title} variant='title' size='large'>
+        <Text as='label' htmlFor={inputId} variant='title' size='large'>
           {header}
         </Text>
-        <Text>{description}</Text>
+        <Text id={descriptionId}>{description}</Text>
         {(inverted ? !field.checked : field.checked) ? children : null}
       </div>
       <Switch
         {...field}
+        id={inputId}
+        aria-describedby={descriptionId}
         checked={inverted ? !field.checked : field.checked}
         onChange={onChange}
         {...inputOverrides}

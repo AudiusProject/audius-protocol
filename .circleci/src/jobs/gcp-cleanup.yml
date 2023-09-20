@@ -6,7 +6,7 @@ steps:
   - run:
       name: Cleanup Instances
       command: |
-        old_instances=$(gcloud compute instances list --format="csv(name)[no-heading]" --filter="creationTimestamp < -P2H AND name~'circleci-.*'" --sort-by=creationTimestamp)
+        old_instances=$(gcloud compute instances list --format="csv(name)[no-heading]" --filter="creationTimestamp < -P1H AND name~'circleci-.*'" --sort-by=creationTimestamp)
         if [[ "$old_instances" != "" ]]; then
           echo "Deleting instances:" $old_instances
           gcloud compute instances delete --quiet $old_instances
@@ -22,7 +22,7 @@ steps:
   - run:
       name: Cleanup Firewall Rules
       command: |
-        old_firewalls=$(gcloud compute firewall-rules list --format="csv(name)[no-heading]" --filter="creationTimestamp < -P2H AND name~'circleci-.*'" --sort-by=creationTimestamp)
+        old_firewalls=$(gcloud compute firewall-rules list --format="csv(name)[no-heading]" --filter="creationTimestamp < -P1H AND name~'circleci-.*'" --sort-by=creationTimestamp)
         if [[ "$old_images" != "" ]]; then
           echo "Deleting firewalls:" $old_firewalls
           gcloud compute firewall-rules delete --quiet $old_firewalls

@@ -92,6 +92,10 @@ class AudiusLibsWrapper {
     this.audiusLibsInstance = audiusInstance
   }
 
+  /**
+   *
+   * @returns {AudiusLibs | null}
+   */
   getAudiusLibs() {
     return this.audiusLibsInstance
   }

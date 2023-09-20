@@ -22,7 +22,7 @@ export enum UnlistedTrackMetadataField {
   MOOD = 'mood',
   TAGS = 'tags',
   SHARE = 'share',
-  PLAYS = 'plays'
+  PLAY_COUNT = 'play_count'
 }
 
 export const defaultHiddenFields = {
@@ -39,23 +39,25 @@ const unlistedTrackMetadataOrder = [
   UnlistedTrackMetadataField.GENRE,
   UnlistedTrackMetadataField.SHARE,
   UnlistedTrackMetadataField.MOOD,
-  UnlistedTrackMetadataField.PLAYS,
+  UnlistedTrackMetadataField.PLAY_COUNT,
   UnlistedTrackMetadataField.TAGS
 ]
 
 export const HiddenAvailabilityFields = () => {
   return (
     <div className={styles.root}>
-      <Text variant='title'>{messages.title}</Text>
-      <div className={styles.switchContainer}>
-        {unlistedTrackMetadataOrder.map((fieldName) => {
-          return (
-            <AvailabilityToggleField key={fieldName} fieldName={fieldName} />
-          )
-        })}
-        {/* Dummy row for spacing consistency */}
-        <div className={styles.switchRow}></div>
-      </div>
+      <fieldset>
+        <Text variant='title' as='legend' className={styles.legend}>
+          {messages.title}
+        </Text>
+        <div className={styles.switchContainer}>
+          {unlistedTrackMetadataOrder.map((fieldName) => {
+            return (
+              <AvailabilityToggleField key={fieldName} fieldName={fieldName} />
+            )
+          })}
+        </div>
+      </fieldset>
     </div>
   )
 }
@@ -66,7 +68,7 @@ const messageByFieldName = {
   [UnlistedTrackMetadataField.MOOD]: messages.showMood,
   [UnlistedTrackMetadataField.TAGS]: messages.showTags,
   [UnlistedTrackMetadataField.SHARE]: messages.showShareButton,
-  [UnlistedTrackMetadataField.PLAYS]: messages.showPlayCount
+  [UnlistedTrackMetadataField.PLAY_COUNT]: messages.showPlayCount
 }
 
 type AvailabilityToggleFieldProps = {
@@ -80,11 +82,11 @@ const AvailabilityToggleField = (props: AvailabilityToggleFieldProps) => {
     type: 'checkbox'
   })
   return (
-    <div className={styles.switchRow}>
+    <label className={styles.switchRow}>
       <Switch {...field} />
       <Text className={styles.switchLabel}>
         {messageByFieldName[fieldName]}
       </Text>
-    </div>
+    </label>
   )
 }

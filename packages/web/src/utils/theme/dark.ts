@@ -123,8 +123,7 @@ const theme = {
   '--play-button-triangle': 'var(--static-white)',
   '--action-sheet-text': 'var(--secondary)',
   '--track-slider-rail': 'var(--neutral)',
-  '--track-slider-handle': 'var(--static-white)',
-  '--stat-tile-text': 'var(--secondary-dark-1)'
+  '--track-slider-handle': 'var(--static-white)'
 }
 
 export default theme

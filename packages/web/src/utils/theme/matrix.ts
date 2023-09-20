@@ -118,8 +118,7 @@ const theme = {
   '--track-slider-rail':
     'linear-gradient(294.99deg, #4FF069 -8.52%, #09BD51 118.66%)',
   '--track-slider-handle':
-    'linear-gradient(323.08deg, #4FF069 36.13%, #09BD51 133.51%)',
-  '--stat-tile-text': 'var(--secondary-dark-1)'
+    'linear-gradient(323.08deg, #4FF069 36.13%, #09BD51 133.51%)'
 }
 
 export default theme

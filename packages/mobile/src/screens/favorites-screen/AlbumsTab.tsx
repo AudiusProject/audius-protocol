@@ -1,6 +1,13 @@
 import { useCallback, useState } from 'react'
 
-import { reachabilitySelectors, statusIsNotFinalized } from '@audius/common'
+import type { CommonState } from '@audius/common'
+import {
+  SavedPageTabs,
+  reachabilitySelectors,
+  statusIsNotFinalized,
+  savedPageSelectors,
+  LibraryCategory
+} from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'
@@ -13,10 +20,15 @@ import { NoTracksPlaceholder } from './NoTracksPlaceholder'
 import { OfflineContentBanner } from './OfflineContentBanner'
 import { useCollectionsScreenData } from './useCollectionsScreenData'
 
+const { getCategory } = savedPageSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const messages = {
-  emptyTabText: "You haven't favorited any albums yet.",
+  emptyAlbumFavoritesText: "You haven't favorited any albums yet.",
+  emptyAlbumRepostsText: "You haven't reposted any albums yet.",
+  emptyAlbumPurchasedText: "You haven't purchased any albums yet.",
+  emptyAlbumAllText:
+    "You haven't favorited, reposted, or purchased any albums yet.",
   inputPlaceholder: 'Filter Albums'
 }
 
@@ -39,6 +51,21 @@ export const AlbumsTab = () => {
     }
   }, [isReachable, hasMore, fetchMore])
 
+  const emptyTabText = useSelector((state: CommonState) => {
+    const selectedCategory = getCategory(state, {
+      currentTab: SavedPageTabs.ALBUMS
+    })
+    if (selectedCategory === LibraryCategory.All) {
+      return messages.emptyAlbumAllText
+    } else if (selectedCategory === LibraryCategory.Favorite) {
+      return messages.emptyAlbumFavoritesText
+    } else if (selectedCategory === LibraryCategory.Purchase) {
+      return messages.emptyAlbumPurchasedText
+    } else {
+      return messages.emptyAlbumRepostsText
+    }
+  })
+
   const loadingSpinner = <LoadingMoreSpinner />
 
   return (
@@ -47,7 +74,7 @@ export const AlbumsTab = () => {
         !isReachable ? (
           <NoTracksPlaceholder />
         ) : (
-          <EmptyTileCTA message={messages.emptyTabText} />
+          <EmptyTileCTA message={emptyTabText} />
         )
       ) : (
         <>

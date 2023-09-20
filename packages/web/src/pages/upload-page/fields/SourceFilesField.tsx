@@ -29,13 +29,12 @@ import { processFiles } from '../store/utils/processFiles'
 
 import styles from './SourceFilesField.module.css'
 
-// NOTE: SDK uses camel casing for the fields within download
 const ALLOW_DOWNLOAD_BASE = 'is_downloadable'
-// const ALLOW_DOWNLOAD = 'download.is_downloadable'
-const ALLOW_DOWNLOAD = 'download.isDownloadable'
+const ALLOW_DOWNLOAD = 'download.is_downloadable'
 const FOLLOWER_GATED_BASE = 'requires_follow'
-// const FOLLOWER_GATED = 'download.requires_follow'
-const FOLLOWER_GATED = 'download.requiresFollow'
+const FOLLOWER_GATED = 'download.requires_follow'
+const CID_BASE = 'cid'
+const CID = 'download.cid'
 const STEMS = 'stems'
 
 const messages = {
@@ -71,7 +70,8 @@ export const SourceFilesField = () => {
     useTrackField<Download[typeof ALLOW_DOWNLOAD_BASE]>(ALLOW_DOWNLOAD)
   const [{ value: followerGatedValue }, , { setValue: setFollowerGatedValue }] =
     useTrackField<Download[typeof FOLLOWER_GATED_BASE]>(FOLLOWER_GATED)
-  // TODO: Stems value should be submitted outside tracks in uploadTracks
+  const [{ value: cid }, , { setValue: setCidValue }] =
+    useTrackField<Download[typeof CID_BASE]>(CID)
   const [{ value: stemsValue }, , { setValue: setStemsValue }] =
     useTrackField<StemUpload[]>(STEMS)
 
@@ -79,9 +79,10 @@ export const SourceFilesField = () => {
     const initialValues = {}
     set(initialValues, ALLOW_DOWNLOAD, allowDownloadValue)
     set(initialValues, FOLLOWER_GATED, followerGatedValue)
+    set(initialValues, CID, cid ?? null)
     set(initialValues, STEMS, stemsValue ?? [])
     return initialValues as SourceFilesFormValues
-  }, [allowDownloadValue, followerGatedValue, stemsValue])
+  }, [allowDownloadValue, followerGatedValue, stemsValue, cid])
 
   const handleSubmit = useCallback(
     (values: SourceFilesFormValues) => {
@@ -92,13 +93,15 @@ export const SourceFilesField = () => {
         get(values, FOLLOWER_GATED) ?? followerGatedValue ?? false
       )
       setStemsValue(get(values, STEMS))
+      setCidValue(null)
     },
     [
       allowDownloadValue,
       followerGatedValue,
       setAllowDownloadValue,
       setFollowerGatedValue,
-      setStemsValue
+      setStemsValue,
+      setCidValue
     ]
   )
 
@@ -113,6 +116,9 @@ export const SourceFilesField = () => {
     const stemsCategories =
       stemsValue?.map((stem) => stemCategoryFriendlyNames[stem.category]) ?? []
     values = [...values, ...stemsCategories]
+
+    if (values.length === 0) return null
+
     return (
       <SelectedValues>
         {values.map((value) => (
@@ -149,7 +155,10 @@ const SourceFilesMenuFields = () => {
   const [{ value: stemsValue }, , { setValue: setStems }] =
     useField<StemUpload[]>(STEMS)
 
-  const invalidAudioFile = (name: string, reason: 'size' | 'type') => {
+  const invalidAudioFile = (
+    name: string,
+    reason: 'corrupted' | 'size' | 'type'
+  ) => {
     console.error('Invalid Audio File', { name, reason })
     // TODO: show file error
   }

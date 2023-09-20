@@ -26,9 +26,6 @@ import (
 //go:embed delist_statuses.sql
 var delistStatusesDDL string
 
-//go:embed clean_up_unfindable_cids.sql
-var cleanUpUnfindableCIDsDDL string
-
 //go:embed drop_blobs.sql
 var dropBlobs string
 
@@ -48,8 +45,9 @@ func Migrate(db *sql.DB, gormDB *gorm.DB, bucket *blob.Bucket, myHost string) {
 	mustExec(db, mediorumMigrationTable)
 
 	migratePartitionOps(db, gormDB) // TODO: Remove after every node runs this
+
 	runMigration(db, delistStatusesDDL)
-	// runMigration(db, cleanUpUnfindableCIDsDDL) // TODO: Remove after every node runs this
+
 	// TODO: remove after this ran once on every node (when every node is >= v0.4.2)
 	migrateShardBucket(db, bucket)
 

@@ -8,7 +8,8 @@ from sqlalchemy import Integer, and_, bindparam, cast, desc, func, text
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import or_
 
-from src import api_helpers, exceptions
+from src import exceptions
+from src.api.v1 import helpers as v1Helpers
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
@@ -302,14 +303,14 @@ def populate_user_metadata(
         # Convert image cid to cids for each image size variant
         profile_cid = user.get("profile_picture_sizes")
         if profile_cid:
-            profile_cids = api_helpers.get_image_cids(
-                user, profile_cid, api_helpers.PROFILE_PICTURE_SIZES
+            profile_cids = v1Helpers.get_image_cids(
+                user, profile_cid, v1Helpers.PROFILE_PICTURE_SIZES
             )
             user["profile_picture_cids"] = profile_cids
         cover_cid = user.get("cover_photo_sizes")
         if cover_cid:
-            cover_cids = api_helpers.get_image_cids(
-                user, cover_cid, api_helpers.PROFILE_COVER_PHOTO_SIZES
+            cover_cids = v1Helpers.get_image_cids(
+                user, cover_cid, v1Helpers.PROFILE_COVER_PHOTO_SIZES
             )
             user["cover_photo_cids"] = cover_cids
 
@@ -514,8 +515,8 @@ def populate_track_metadata(
         # Convert cover art cid to cids for each image size variant
         cover_cid = track.get("cover_art_sizes")
         if cover_cid:
-            cover_cids = api_helpers.get_image_cids(
-                track["user"], cover_cid, api_helpers.COVER_ART_SIZES
+            cover_cids = v1Helpers.get_image_cids(
+                track["user"], cover_cid, v1Helpers.COVER_ART_SIZES
             )
             track["cover_art_cids"] = cover_cids
 
@@ -893,8 +894,8 @@ def populate_playlist_metadata(
         # Convert cover art cid to cids for each image size variant
         cover_cid = playlist.get("playlist_image_sizes_multihash")
         if cover_cid:
-            cover_cids = api_helpers.get_image_cids(
-                playlist["user"], cover_cid, api_helpers.COVER_ART_SIZES
+            cover_cids = v1Helpers.get_image_cids(
+                playlist["user"], cover_cid, v1Helpers.COVER_ART_SIZES
             )
             playlist["cover_art_cids"] = cover_cids
 

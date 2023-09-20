@@ -1,4 +1,4 @@
-import { full } from '@audius/sdk'
+import type { full } from '@audius/sdk'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { Status } from '../../../models/Status'

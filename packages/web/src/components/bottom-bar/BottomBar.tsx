@@ -4,15 +4,16 @@ import { useHistory } from 'react-router-dom'
 
 import { RouterContext } from 'components/animated-switch/RouterContextProvider'
 import ExploreButton from 'components/bottom-bar/buttons/ExploreButton'
-import FavoritesButton from 'components/bottom-bar/buttons/FavoritesButton'
 import FeedButton from 'components/bottom-bar/buttons/FeedButton'
+import LibraryButton from 'components/bottom-bar/buttons/LibraryButton'
 import ProfileButton from 'components/bottom-bar/buttons/ProfileButton'
 import TrendingButton from 'components/bottom-bar/buttons/TrendingButton'
 import {
   FEED_PAGE,
   TRENDING_PAGE,
   EXPLORE_PAGE,
-  FAVORITES_PAGE
+  FAVORITES_PAGE,
+  LIBRARY_PAGE
 } from 'utils/route'
 
 import styles from './BottomBar.module.css'
@@ -23,7 +24,7 @@ type Props = {
   onClickFeed: () => void
   onClickTrending: () => void
   onClickExplore: () => void
-  onClickFavorites: () => void
+  onClickLibrary: () => void
   onClickProfile: () => void
   isDarkMode: boolean
   isMatrixMode: boolean
@@ -35,7 +36,7 @@ const BottomBar = ({
   onClickFeed,
   onClickTrending,
   onClickExplore,
-  onClickFavorites,
+  onClickLibrary,
   onClickProfile,
   isDarkMode,
   isMatrixMode
@@ -88,11 +89,13 @@ const BottomBar = ({
         href={EXPLORE_PAGE}
         isMatrixMode={isMatrixMode}
       />
-      <FavoritesButton
-        isActive={tempCurrentPage === FAVORITES_PAGE}
+      <LibraryButton
+        isActive={
+          tempCurrentPage === FAVORITES_PAGE || tempCurrentPage === LIBRARY_PAGE
+        }
         darkMode={isDarkMode}
-        onClick={onClick(onClickFavorites, FAVORITES_PAGE)}
-        href={FAVORITES_PAGE}
+        onClick={onClick(onClickLibrary, LIBRARY_PAGE)}
+        href={LIBRARY_PAGE}
         isMatrixMode={isMatrixMode}
       />
       <ProfileButton

@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState, useCallback } from 'react';
+import { Suspense, useEffect, useState, useCallback, lazy } from 'react'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -23,7 +23,7 @@ export const NO_VISUALIZER_ROUTES = new Set([
 ])
 
 // Fetch the visualizer 1s after initial load
-const VisualizerProvider = lazyWithPreload(() => import('./VisualizerProvider'))
+const VisualizerProvider = lazy(() => import('./VisualizerProvider'))
 
 type VisualizerProps = {} & ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
@@ -33,12 +33,15 @@ const Visualizer = ({
   toggleVisibility,
   closeVisualizer
 }: VisualizerProps) => {
-  useEffect(() => {
-    // Begins preload when this component mounts
-    VisualizerProvider.preload()
-  }, [])
   const { location } = useHistory()
   const { pathname } = location
+  const [isLoaded, setIsLoaded] = useState(false)
+
+  useEffect(() => {
+    if (isVisible) {
+      setIsLoaded(true)
+    }
+  }, [isVisible])
 
   const onToggleVisibility = useCallback(() => {
     // Don't toggle in the case that we are on a route that disables the visualizer
@@ -56,11 +59,11 @@ const Visualizer = ({
     86 /* v */: onToggleVisibility
   })
 
-  return (
+  return isLoaded ? (
     <Suspense fallback={<div className={styles.fallback} />}>
       <VisualizerProvider isVisible={isVisible} onClose={onCloseVisualizer} />
     </Suspense>
-  )
+  ) : null
 }
 
 function mapStateToProps(state: AppState) {

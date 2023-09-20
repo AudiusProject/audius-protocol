@@ -1,12 +1,7 @@
 import { useCallback, useMemo } from 'react'
 
-import {
-  Nullable,
-  creativeCommons,
-  encodeHashId,
-  decodeHashId
-} from '@audius/common'
-import { IconRobot, SegmentedControl } from '@audius/stems'
+import { creativeCommons } from '@audius/common'
+import { IconRobot } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
 import { get, set } from 'lodash'
@@ -21,9 +16,9 @@ import {
   SelectedValue,
   SelectedValues
 } from 'components/data-entry/ContextualMenu'
-import { InputV2Variant } from 'components/data-entry/InputV2'
 import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
+import { SegmentedControlField } from 'components/form-fields/SegmentedControlField'
 import layoutStyles from 'components/layout/layout.module.css'
 import { Text } from 'components/typography'
 import { useTrackField } from 'pages/upload-page/hooks'
@@ -85,7 +80,6 @@ const messages = {
 
 const IS_AI_ATTRIBUTED = 'isAiAttribution'
 const AI_USER_ID = 'ai_attribution_user_id'
-const AI_USER_NUM_ID = 'ai_attribution_user_num_id'
 const ISRC = 'isrc'
 const ISWC = 'iswc'
 const LICENSE_TYPE = 'licenseType'
@@ -118,8 +112,7 @@ const iswcRegex = /^T-\d{9}-\d$/i
 const AttributionFormSchema = z
   .object({
     [IS_AI_ATTRIBUTED]: z.optional(z.boolean()),
-    [AI_USER_ID]: z.optional(z.string().nullable()),
-    [AI_USER_NUM_ID]: z.optional(z.number().nullable()),
+    [AI_USER_ID]: z.optional(z.number().nullable()),
     [ISRC]: z.optional(z.string().nullable()),
     [ISWC]: z.optional(z.string().nullable()),
     [ALLOW_ATTRIBUTION]: z.optional(z.boolean()),
@@ -142,9 +135,8 @@ const AttributionFormSchema = z
 export type AttributionFormValues = z.input<typeof AttributionFormSchema>
 
 export const AttributionField = () => {
-  const [{ value: aiUserId }, , { setValue: setAiUserId }] = useTrackField<
-    string | undefined
-  >(AI_USER_ID)
+  const [{ value: aiUserId }, , { setValue: setAiUserId }] =
+    useTrackField<SingleTrackEditValues[typeof AI_USER_ID]>(AI_USER_ID)
   const [{ value: isrcValue }, , { setValue: setIsrc }] =
     useTrackField<SingleTrackEditValues[typeof ISRC]>(ISRC)
   const [{ value: iswcValue }, , { setValue: setIswc }] =
@@ -165,11 +157,6 @@ export const AttributionField = () => {
   const initialValues = useMemo(() => {
     const initialValues = {}
     set(initialValues, AI_USER_ID, aiUserId)
-    set(
-      initialValues,
-      AI_USER_NUM_ID,
-      aiUserId ? decodeHashId(aiUserId) : undefined
-    )
     if (aiUserId) {
       set(initialValues, IS_AI_ATTRIBUTED, true)
     }
@@ -292,18 +279,9 @@ const AttributionModalFields = () => {
       name: AI_USER_ID,
       type: 'select'
     })
-  const [aiUserNumIdField, , { setValue: setAiUserNumId }] = useField({
-    name: AI_USER_NUM_ID
-  })
-  const [isrcField] = useField(ISRC)
-  const [iswcField] = useField(ISWC)
-
-  const [{ value: allowAttribution }, , { setValue: setAllowAttribution }] =
-    useField<boolean>(ALLOW_ATTRIBUTION)
-  const [{ value: commercialUse }, , { setValue: setCommercialUse }] =
-    useField<boolean>(COMMERCIAL_USE)
-  const [{ value: derivativeWorks }, , { setValue: setDerivateWorks }] =
-    useField<Nullable<boolean>>(DERIVATIVE_WORKS)
+  const [{ value: allowAttribution }] = useField<boolean>(ALLOW_ATTRIBUTION)
+  const [{ value: commercialUse }] = useField<boolean>(COMMERCIAL_USE)
+  const [{ value: derivativeWorks }] = useField<boolean>(DERIVATIVE_WORKS)
 
   const { licenseType, licenseDescription } = computeLicense(
     allowAttribution,
@@ -329,34 +307,30 @@ const AttributionModalFields = () => {
       >
         <AiAttributionDropdown
           {...aiUserIdField}
-          {...aiUserHelperFields}
           error={dropdownHasError}
           helperText={dropdownHasError && aiUserHelperFields.error}
-          value={aiUserNumIdField.value}
+          value={aiUserIdField.value}
           onSelect={(value: SingleTrackEditValues[typeof AI_USER_ID]) => {
-            setAiUserId(value ? encodeHashId(value) : null)
-            setAiUserNumId(value ?? null)
+            setAiUserId(value ?? null)
           }}
         />
       </SwitchRowField>
       <Divider />
       <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-        <Text variant='title' size='large'>
+        <Text variant='title' size='large' as='h3'>
           {`${messages.isrc.header} / ${messages.iswc.header}`}
         </Text>
         <span className={cn(layoutStyles.row, layoutStyles.gap6)}>
           <div className={styles.textFieldContainer}>
             <TextField
-              {...isrcField}
-              variant={InputV2Variant.ELEVATED_PLACEHOLDER}
+              name={ISRC}
               label={messages.isrc.header}
               placeholder={messages.isrc.placeholder}
             />
           </div>
           <div className={styles.textFieldContainer}>
             <TextField
-              {...iswcField}
-              variant={InputV2Variant.ELEVATED_PLACEHOLDER}
+              name={ISWC}
               label={messages.iswc.header}
               placeholder={messages.iswc.placeholder}
             />
@@ -365,7 +339,7 @@ const AttributionModalFields = () => {
       </div>
       <Divider />
       <div className={cn(layoutStyles.col, layoutStyles.gap6)}>
-        <Text variant='title' size='large'>
+        <Text variant='title' size='large' as='h3'>
           {messages.licenseType}
         </Text>
         <div className={styles.attributionCommercialRow}>
@@ -376,16 +350,19 @@ const AttributionModalFields = () => {
               layoutStyles.gap2
             )}
           >
-            <Text variant='title' size='medium'>
+            <Text
+              variant='title'
+              size='medium'
+              as='label'
+              id='allow-attribution'
+            >
               {messages.allowAttribution.header}
             </Text>
-            <SegmentedControl
-              // @ts-ignore boolean support works
-              selected={allowAttribution}
-              // @ts-ignore boolean support works
+            <SegmentedControlField
+              aria-labelledby='allow-attribution'
+              name={ALLOW_ATTRIBUTION}
               options={allowAttributionValues}
-              // @ts-ignore
-              onSelectOption={setAllowAttribution}
+              fullWidth
             />
           </div>
           <Divider className={styles.verticalDivider} type='vertical' />
@@ -399,39 +376,33 @@ const AttributionModalFields = () => {
               }
             )}
           >
-            <Text variant='title' size='medium'>
+            <Text variant='title' size='medium' as='label' id='commercial'>
               {messages.commercialUse.header}
             </Text>
-            <SegmentedControl
-              fullWidth
-              // @ts-ignore boolean support works
-              selected={commercialUse}
-              // @ts-ignore boolean support works
+            <SegmentedControlField
+              aria-labelledby='commercial'
+              name={COMMERCIAL_USE}
               options={commercialUseValues}
-              // @ts-ignore
-              onSelectOption={setCommercialUse}
               disabled={!allowAttribution}
+              fullWidth
             />
           </div>
         </div>
         <div className={cn(layoutStyles.col, layoutStyles.gap2)}>
           <Text
-            className={cn({
-              [styles.disabled]: !allowAttribution
-            })}
+            className={cn({ [styles.disabled]: !allowAttribution })}
             variant='title'
             size='medium'
+            as='label'
+            id='derivative-works'
           >
             {messages.derivativeWorks.header}
           </Text>
-          <SegmentedControl
+          <SegmentedControlField
+            aria-labelledby='derivative-works'
+            name={DERIVATIVE_WORKS}
             fullWidth
-            // @ts-ignore boolean support works
-            selected={derivativeWorks}
-            // @ts-ignore boolean support works
             options={derivativeWorksValues}
-            // @ts-ignore
-            onSelectOption={setDerivateWorks}
             disabled={!allowAttribution}
           />
         </div>
@@ -445,7 +416,7 @@ const AttributionModalFields = () => {
               ))}
             </div>
           ) : null}
-          <Text variant='title' size='medium'>
+          <Text variant='title' size='medium' as='h4'>
             {licenseType}
           </Text>
         </div>

@@ -23,7 +23,9 @@ jobs:
       type: approval
   - deploy:
       name: deploy-prod-identity-service
-      context: open-vpn
+      context:
+        - open-vpn
+        - slack-secrets
       requires:
         - deploy-prod-identity-service-trigger
       hosts: prod-identity
@@ -41,6 +43,7 @@ jobs:
       context:
         - open-vpn
         - build-freeze
+        - slack-secrets
       hosts: stage-identity
       service: identity-service
       freeze: $FREEZE_BUILD

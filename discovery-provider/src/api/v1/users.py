@@ -3,12 +3,13 @@ import json
 from typing import Optional
 
 from eth_account.messages import encode_defunct
-from flask import request
+from flask import Response, request
 from flask_restx import Namespace, Resource, fields, reqparse
 
 from src.api.v1.helpers import (
     DescriptiveArgument,
     abort_bad_request_param,
+    abort_forbidden,
     abort_not_found,
     add_auth_headers_to_parser,
     current_user_parser,
@@ -76,6 +77,14 @@ from src.api.v1.models.users import (
 from src.api.v1.models.wildcard_model import WildcardModel
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
+from src.queries.download_csv import (
+    DownloadPurchasesArgs,
+    DownloadSalesArgs,
+    DownloadWithdrawalsArgs,
+    download_purchases,
+    download_sales,
+    download_withdrawals,
+)
 from src.queries.get_associated_user_id import get_associated_user_id
 from src.queries.get_associated_user_wallet import get_associated_user_wallet
 from src.queries.get_challenges import get_challenges
@@ -807,8 +816,7 @@ class UserTracksLibraryFull(Resource):
         args = user_tracks_library_parser.parse_args()
         decoded_id = decode_with_abort(id, ns)
         if authed_user_id != decoded_id:
-            full_ns.abort(403)
-            return
+            abort_forbidden(full_ns)
 
         offset = format_offset(args)
         limit = format_limit(args)
@@ -840,8 +848,7 @@ def get_user_collections(
     args = user_collections_library_parser.parse_args()
     decoded_id = decode_with_abort(id, ns)
     if authed_user_id != decoded_id:
-        full_ns.abort(403)
-        return
+        abort_forbidden(full_ns)
 
     offset = format_offset(args)
     limit = format_limit(args)
@@ -2142,8 +2149,7 @@ class FullPurchases(Resource):
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
         if decoded_id != authed_user_id:
-            full_ns.abort(403)
-            return
+            abort_forbidden(full_ns)
         args = purchases_and_sales_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
         offset = get_default_max(args.get("offset"), 0)
@@ -2173,8 +2179,7 @@ class FullPurchasesCount(Resource):
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
         if decoded_id != authed_user_id:
-            full_ns.abort(403)
-            return
+            abort_forbidden(full_ns)
         args = purchases_and_sales_count_parser.parse_args()
         args = GetUSDCPurchasesCountArgs(
             buyer_user_id=decoded_id,
@@ -2196,8 +2201,7 @@ class FullSales(Resource):
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
         if decoded_id != authed_user_id:
-            full_ns.abort(403)
-            return
+            abort_forbidden(full_ns)
         args = purchases_and_sales_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
         offset = get_default_max(args.get("offset"), 0)
@@ -2227,11 +2231,77 @@ class FullSalesCount(Resource):
     def get(self, id, authed_user_id=None):
         decoded_id = decode_with_abort(id, full_ns)
         if decoded_id != authed_user_id:
-            full_ns.abort(403)
-            return
+            abort_forbidden(full_ns)
         args = purchases_and_sales_count_parser.parse_args()
         args = GetUSDCPurchasesCountArgs(
             seller_user_id=decoded_id,
         )
         count = get_usdc_purchases_count(args)
         return success_response(count)
+
+
+csv_download_parser = current_user_parser.copy()
+add_auth_headers_to_parser(csv_download_parser)
+
+
+@ns.route("/<string:id>/purchases/download")
+class FullPurchasesDownload(Resource):
+    @ns.doc(
+        id="Download Purchases as CSV",
+        description="Downloads the purchases the user has made as a CSV file",
+        params={"id": "A User ID"},
+    )
+    @ns.produces(["text/csv"])
+    @ns.expect(csv_download_parser)
+    @auth_middleware()
+    def get(self, id, authed_user_id=None):
+        decoded_id = decode_with_abort(id, ns)
+        if decoded_id != authed_user_id:
+            abort_forbidden(ns)
+        args = DownloadPurchasesArgs(buyer_user_id=decoded_id)
+        purchases = download_purchases(args)
+        response = Response(purchases, content_type="text/csv")
+        response.headers["Content-Disposition"] = "attachment; filename=purchases.csv"
+        return response
+
+
+@ns.route("/<string:id>/sales/download")
+class FullSalesDownload(Resource):
+    @ns.doc(
+        id="Download Sales as CSV",
+        description="Downloads the sales the user has made as a CSV file",
+        params={"id": "A User ID"},
+    )
+    @ns.produces(["text/csv"])
+    @ns.expect(csv_download_parser)
+    @auth_middleware()
+    def get(self, id, authed_user_id=None):
+        decoded_id = decode_with_abort(id, ns)
+        if decoded_id != authed_user_id:
+            abort_forbidden(ns)
+        args = DownloadSalesArgs(seller_user_id=decoded_id)
+        sales = download_sales(args)
+        response = Response(sales, content_type="text/csv")
+        response.headers["Content-Disposition"] = "attachment; filename=sales.csv"
+        return response
+
+
+@ns.route("/<string:id>/withdrawals/download")
+class FullWithdrawalsDownload(Resource):
+    @ns.doc(
+        id="""Download USDC Withdrawals as CSV""",
+        description="""Downloads the USDC withdrawals the user has made as a CSV file""",
+        params={"id": "A User ID"},
+    )
+    @ns.produces(["text/csv"])
+    @ns.expect(csv_download_parser)
+    @auth_middleware()
+    def get(self, id, authed_user_id=None):
+        decoded_id = decode_with_abort(id, ns)
+        if decoded_id != authed_user_id:
+            abort_forbidden(ns)
+        args = DownloadWithdrawalsArgs(user_id=decoded_id)
+        withdrawals = download_withdrawals(args)
+        response = Response(withdrawals, content_type="text/csv")
+        response.headers["Content-Disposition"] = "attachment; filename=withdrawals.csv"
+        return response

@@ -17,7 +17,7 @@ import { addOfflineEntries, requestDownloadAllFavorites } from '../slice'
 
 const { getUserId } = accountSelectors
 
-const { getLocalSaves } = savedPageSelectors
+const { getLocalTrackFavorites } = savedPageSelectors
 
 export function* requestDownloadAllFavoritesSaga() {
   yield* takeEvery(requestDownloadAllFavorites.type, downloadAllFavorites)
@@ -42,7 +42,7 @@ function* downloadAllFavorites() {
 
   // Add local saves
   const favorite_created_at = moment().format('YYYY-MM-DD HH:mm:ss')
-  const localSaves = yield* select(getLocalSaves)
+  const localSaves = yield* select(getLocalTrackFavorites)
   const localSavesToAdd: OfflineEntry[] = Object.keys(localSaves)
     .map((id) => parseInt(id, 10))
     .map((id) => ({

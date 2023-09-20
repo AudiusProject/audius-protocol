@@ -1,18 +1,20 @@
-import { useMemo } from 'react'
-
-import type { CollectionType } from '@audius/common'
+import type { CollectionType, CommonState } from '@audius/common'
 import {
-  Status,
-  statusIsNotFinalized,
+  removeNullable,
+  SavedPageTabs,
+  accountSelectors,
   cacheCollectionsSelectors,
-  filterCollections,
   reachabilitySelectors,
   shallowCompare,
-  useFetchedSavedCollections,
+  Status,
+  useAllPaginatedQuery,
+  useGetLibraryAlbums,
+  useGetLibraryPlaylists,
   useProxySelector,
-  useAccountAlbums,
-  useAccountPlaylists
+  savedPageSelectors,
+  filterCollections
 } from '@audius/common'
+import uniq from 'lodash/uniq'
 import { useSelector } from 'react-redux'
 
 import { useOfflineTracksStatus } from 'app/hooks/useOfflineTrackStatus'
@@ -24,7 +26,15 @@ import {
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 
 const { getIsReachable } = reachabilitySelectors
-const { getCollection } = cacheCollectionsSelectors
+const { getUserId } = accountSelectors
+const { getCollection, getCollectionWithUser } = cacheCollectionsSelectors
+const {
+  getCategory,
+  getSelectedCategoryLocalAlbumAdds,
+  getSelectedCategoryLocalAlbumRemovals,
+  getSelectedCategoryLocalPlaylistAdds,
+  getSelectedCategoryLocalPlaylistRemovals
+} = savedPageSelectors
 
 type UseCollectionsScreenDataConfig = {
   filterValue?: string
@@ -33,41 +43,74 @@ type UseCollectionsScreenDataConfig = {
 
 export const useCollectionsScreenData = ({
   collectionType,
-  filterValue = ''
+  filterValue
 }: UseCollectionsScreenDataConfig) => {
   const isDoneLoadingFromDisk = useSelector(getIsDoneLoadingFromDisk)
   const isReachable = useSelector(getIsReachable)
+  const selectedCategory = useSelector((state) =>
+    getCategory(state, {
+      currentTab:
+        collectionType === 'albums'
+          ? SavedPageTabs.ALBUMS
+          : SavedPageTabs.PLAYLISTS
+    })
+  )
+  const currentUserId = useSelector(getUserId)
   const offlineTracksStatus = useOfflineTracksStatus({ skipIfOnline: true })
 
-  const accountAlbums = useAccountAlbums()
-  const accountPlaylists = useAccountPlaylists()
+  const locallyAddedCollections = useSelector((state: CommonState) => {
+    const ids =
+      collectionType === 'albums'
+        ? getSelectedCategoryLocalAlbumAdds(state)
+        : getSelectedCategoryLocalPlaylistAdds(state)
+    return ids
+  })
 
-  const { data: unfilteredCollections, status: accountCollectionsStatus } =
-    collectionType === 'albums' ? accountAlbums : accountPlaylists
-
-  const collectionIds = useMemo(
-    () =>
-      filterCollections(unfilteredCollections, {
-        filterText: filterValue
-      }).map((c) => c.id),
-    [unfilteredCollections, filterValue]
-  )
+  const locallyRemovedCollections = useSelector((state: CommonState) => {
+    const ids =
+      collectionType === 'albums'
+        ? getSelectedCategoryLocalAlbumRemovals(state)
+        : getSelectedCategoryLocalPlaylistRemovals(state)
+    return new Set(ids)
+  })
 
   const {
-    data: fetchedCollectionIds,
-    fetchMore,
+    data: collectionsData,
+    status: fetchedStatus,
     hasMore,
-    status: fetchedStatus
-  } = useFetchedSavedCollections({
-    collectionIds,
-    type: collectionType,
-    pageSize: 20
-  })
+    isLoadingMore,
+    loadMore: fetchMore
+  } = useAllPaginatedQuery(
+    collectionType === 'albums' ? useGetLibraryAlbums : useGetLibraryPlaylists,
+    {
+      category: selectedCategory,
+      query: filterValue,
+      userId: currentUserId!
+    },
+    {
+      pageSize: 20,
+      disabled: currentUserId == null || !isReachable
+    }
+  )
+  const fetchedCollectionIds = collectionsData?.map((c) => c.playlist_id)
+
+  // TODO: Filter collections using `filterCollections` from Common if all loaded, or by changing fetch args if not all loaded
 
   const availableCollectionIds = useProxySelector(
     (state: AppState) => {
       if (isReachable) {
-        return fetchedCollectionIds
+        const filteredLocallyAddedCollectionIds = filterCollections(
+          locallyAddedCollections
+            .map((c) => getCollectionWithUser(state, { id: c }))
+            .filter(removeNullable),
+          { filterText: filterValue }
+        ).map((p) => p.playlist_id)
+        return uniq(
+          [
+            ...filteredLocallyAddedCollectionIds,
+            ...fetchedCollectionIds
+          ].filter((id) => !locallyRemovedCollections.has(id))
+        )
       }
 
       if (!isDoneLoadingFromDisk) {
@@ -117,15 +160,14 @@ export const useCollectionsScreenData = ({
     shallowCompare
   )
 
-  // Fetching won't be triggered if the user has no saved collections, so short-circuit to Success
-  const status =
-    !statusIsNotFinalized(accountCollectionsStatus) &&
-    unfilteredCollections.length === 0
-      ? Status.SUCCESS
-      : fetchedStatus
+  let status: Status
+  if (isReachable) {
+    status = hasMore || isLoadingMore ? Status.LOADING : fetchedStatus
+  } else {
+    status = isDoneLoadingFromDisk ? Status.SUCCESS : Status.LOADING
+  }
 
   return {
-    accountCollectionsStatus,
     collectionIds: availableCollectionIds,
     hasMore,
     fetchMore,

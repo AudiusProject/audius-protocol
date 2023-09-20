@@ -40,7 +40,8 @@ import {
   playerSelectors,
   queueSelectors,
   playlistUpdatesActions,
-  playlistUpdatesSelectors
+  playlistUpdatesSelectors,
+  editPlaylistModalActions
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
@@ -50,7 +51,6 @@ import { Dispatch } from 'redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
 import DeletedPage from 'pages/deleted-page/DeletedPage'
-import { open as openEditCollectionModal } from 'store/application/ui/editPlaylistModal/slice'
 import {
   setUsers,
   setVisibility
@@ -989,7 +989,10 @@ function mapDispatchToProps(dispatch: Dispatch) {
     setModalVisibility: () => dispatch(setVisibility(true)),
     onEditCollection: (collectionId: ID) =>
       dispatch(
-        openEditCollectionModal({ collectionId, isCollectionViewed: true })
+        editPlaylistModalActions.open({
+          collectionId,
+          isCollectionViewed: true
+        })
       ),
     updatePlaylistLastViewedAt: (playlistId: ID) =>
       dispatch(updatedPlaylistViewed({ playlistId }))

@@ -7,6 +7,7 @@ import {
 } from '@audius/common'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
+import { useThrottle } from 'react-use'
 
 import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
@@ -34,14 +35,16 @@ const messages = {
 
 export const RemixSettingsMenuFields = () => {
   const [{ value: trackUrl }] = useField(REMIX_LINK)
-  const permalink = getPathFromTrackUrl(trackUrl)
+  const permalink = useThrottle(getPathFromTrackUrl(trackUrl), 1000)
   const currentUserId = useSelector(getUserId)
+
   const { data: track } = useGetTrackByPermalink(
     { permalink, currentUserId },
     { disabled: !permalink }
   )
 
   const trackId = track?.track_id
+
   const [, , { setValue: setParentTrackId }] = useField('parentTrackId')
 
   useEffect(() => {

@@ -5,7 +5,8 @@ export const externalLinkAllowList = new Set([
   'twitter.com',
   'x.com',
   'audius.co',
-  'discord.gg'
+  'discord.gg',
+  'solscan.io'
 ])
 
 export const isAllowedExternalLink = (link: string) => {
@@ -16,4 +17,8 @@ export const isAllowedExternalLink = (link: string) => {
   } catch (e) {
     return false
   }
+}
+
+export const makeSolanaTransactionLink = (signature: string) => {
+  return `https://solscan.io/tx/${signature}`
 }

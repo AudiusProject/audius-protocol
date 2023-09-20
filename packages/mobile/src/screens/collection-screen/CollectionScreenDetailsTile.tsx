@@ -149,6 +149,8 @@ export const CollectionScreenDetailsTile = ({
   renderImage,
   trackCount: trackCountProp,
   isOwner,
+  hideOverflow,
+  hideRepost,
   ...detailsTileProps
 }: CollectionScreenDetailsTileProps) => {
   const styles = useStyles()
@@ -264,9 +266,9 @@ export const CollectionScreenDetailsTile = ({
       description={description}
       descriptionLinkPressSource='collection page'
       details={details}
-      hideOverflow={detailsTileProps.hideOverflow || !isReachable}
+      hideOverflow={hideOverflow || !isReachable}
       hideListenCount={true}
-      hideRepost={!isReachable}
+      hideRepost={hideRepost || !isReachable}
       isPlaying={isPlaying && isQueued}
       isPublished={!isPrivate || isPublishing}
       isPlaylist={!isAlbum}

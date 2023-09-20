@@ -19,49 +19,6 @@ const slice = createSlice({
   name: 'withdraw-usdc',
   initialState,
   reducers: {
-    setDestinationAddress: (
-      _state,
-      _action: PayloadAction<{
-        destinationAddress: string
-      }>
-    ) => {
-      // triggers saga
-    },
-    setDestinationAddressSucceeded: (
-      state,
-      action: PayloadAction<{
-        destinationAddress: string
-      }>
-    ) => {
-      state.destinationError = undefined
-      state.destinationAddress = action.payload.destinationAddress
-    },
-    setDestinationAddressFailed: (
-      state,
-      action: PayloadAction<{ error: Error }>
-    ) => {
-      state.destinationError = action.payload.error
-    },
-    setAmount: (
-      _state,
-      _action: PayloadAction<{
-        amount: number
-      }>
-    ) => {
-      // triggers saga
-    },
-    setAmountSucceeded: (
-      state,
-      action: PayloadAction<{
-        amount: number
-      }>
-    ) => {
-      state.amountError = undefined
-      state.amount = action.payload.amount
-    },
-    setAmountFailed: (state, action: PayloadAction<{ error: Error }>) => {
-      state.amountError = action.payload.error
-    },
     beginWithdrawUSDC: (
       state,
       _action: PayloadAction<{
@@ -85,12 +42,6 @@ const slice = createSlice({
 })
 
 export const {
-  setDestinationAddress,
-  setDestinationAddressSucceeded,
-  setDestinationAddressFailed,
-  setAmount,
-  setAmountSucceeded,
-  setAmountFailed,
   beginWithdrawUSDC,
   withdrawUSDCSucceeded,
   withdrawUSDCFailed,

@@ -1,3 +1,4 @@
+const audiusLibsWrapper = require('../audiusLibsInstance')
 const config = require('../config')
 const solanaRewardsManagerProgramId = config.get(
   'solanaRewardsManagerProgramId'
@@ -13,11 +14,14 @@ const solanaAudiusAnchorDataProgramId = config.get(
   'solanaAudiusAnchorDataProgramId'
 )
 
+const SECP256K1_PROGRAM_ID = 'KeccakSecp256k11111111111111111111111111111'
+const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
+
 const allowedProgramIds = new Set([
   solanaClaimableTokenProgramAddress,
   solanaRewardsManagerProgramId,
-  /* secp */ 'KeccakSecp256k11111111111111111111111111111',
-  /* memo */ 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
+  SECP256K1_PROGRAM_ID,
+  MEMO_PROGRAM_ID
 ])
 
 if (solanaAudiusAnchorDataProgramId) {
@@ -90,6 +94,51 @@ const getInstructionEnum = (instruction) => {
   return null
 }
 
+/**
+ * Map of instruction name to the enum used in the token program.
+ * Incomplete, but more entries can be found here:
+ * https://github.com/solana-labs/solana-program-library/blob/0a1cfdb90ccfa7745fd2aa35b1ad38ec8bcb6f88/token/program/src/instruction.rs#L523C15-L523C16
+ */
+const tokenInstructionEnum = /** @type {const} */ ({
+  transferChecked: 12
+})
+/**
+ * Map of account name to the index used in the token program's transfer_checked instruction
+ */
+const transferAccountIndices = /** @type {const} */ ({
+  sender: 0,
+  mint: 1,
+  receiver: 2,
+  authority: 3
+})
+
+/**
+ * Checks to see if the instruction is an allowed token transfer.
+ * Currently the only allowed transfers are to USDC userbanks
+ * @param {Instruction} instruction
+ * @param {string} walletAddress
+ * @returns true if the instruction is allowed
+ */
+const isTransferToUserbank = async (instruction, walletAddress) => {
+  if (
+    getInstructionEnum(instruction) === tokenInstructionEnum.transferChecked
+  ) {
+    const mint = instruction.keys[transferAccountIndices.mint].pubkey
+    const receiverAccount =
+      instruction.keys[transferAccountIndices.receiver].pubkey
+    if (mint === usdcMintAddress) {
+      const derivedUserbank = await audiusLibsWrapper
+        .getAudiusLibs()
+        .solanaWeb3Manager.deriveUserBank({
+          ethAddress: walletAddress,
+          mint: 'usdc'
+        })
+      return derivedUserbank.toBase58() === receiverAccount
+    }
+  }
+  return false
+}
+
 module.exports = {
   claimableTokenAuthorityIndices,
   rewardManagerBaseAccountIndices,
@@ -101,5 +150,6 @@ module.exports = {
   usdcMintAddress,
   allowedProgramIds,
   isRelayAllowedProgram,
-  getInstructionEnum
+  getInstructionEnum,
+  isTransferToUserbank
 }

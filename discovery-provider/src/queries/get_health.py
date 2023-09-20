@@ -193,6 +193,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     user_bank_max_drift = args.get("user_bank_max_drift")
     spl_audio_max_drift = args.get("spl_audio_max_drift")
 
+    errors = []
+
     # If healthy block diff is given in url and positive, override config value
     healthy_block_diff = (
         qs_healthy_block_diff
@@ -424,6 +426,20 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         and challenge_events_age_sec > challenge_events_age_max_drift
     )
 
+    if unhealthy_blocks:
+        errors.append("unhealthy blocks")
+    if unhealthy_challenges:
+        errors.append("unhealthy challenges")
+    if play_health_info["is_unhealthy"]:
+        errors.append("unhealthy plays")
+    if reactions_health_info["is_unhealthy"]:
+        errors.append("unhealthy reactions")
+    if not delist_statuses_ok:
+        errors.append("unhealthy delist statuses")
+    chain_health = health_results["chain_health"]
+    if chain_health and chain_health["status"] == "Unhealthy":
+        errors.append("unhealthy chain")
+
     is_unhealthy = (
         unhealthy_blocks
         or unhealthy_challenges
@@ -431,6 +447,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         or reactions_health_info["is_unhealthy"]
         or not delist_statuses_ok
     )
+
+    health_results["errors"] = errors
 
     return health_results, is_unhealthy
 

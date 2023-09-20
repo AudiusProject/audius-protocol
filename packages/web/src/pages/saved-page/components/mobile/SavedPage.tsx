@@ -3,28 +3,26 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
+  useRef,
   useState
 } from 'react'
 
 import {
-  filterCollections,
   CommonState,
   ID,
+  LibraryCategory,
   Lineup,
   Name,
   QueueItem,
-  SavedPageCollection,
   SavedPageTabs,
   SavedPageTrack,
-  Status,
   UID,
-  User,
   cacheCollectionsSelectors,
   cacheUsersSelectors,
-  useFetchedSavedCollections,
-  usePremiumContentAccessMap,
-  useAccountAlbums
+  savedPageSelectors,
+  statusIsNotFinalized,
+  useDebouncedCallback,
+  usePremiumContentAccessMap
 } from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
@@ -38,7 +36,6 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
-import CardLineup from 'components/lineup/CardLineup'
 import { InfiniteCardLineup } from 'components/lineup/InfiniteCardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
@@ -47,8 +44,11 @@ import TrackList from 'components/track/mobile/TrackList'
 import { TrackItemAction } from 'components/track/mobile/TrackListItem'
 import { useGoToRoute } from 'hooks/useGoToRoute'
 import useTabs from 'hooks/useTabs/useTabs'
+import { useCollectionsData } from 'pages/saved-page/hooks/useCollectionsData'
 import { TRENDING_PAGE, collectionPage } from 'utils/route'
 
+import { LibraryCategorySelectionMenu } from '../desktop/LibraryCategorySelectionMenu'
+import { emptyStateMessages } from '../emptyStateMessages'
 import { formatCardSecondaryText } from '../utils'
 
 import NewPlaylistButton from './NewPlaylistButton'
@@ -56,6 +56,7 @@ import styles from './SavedPage.module.css'
 
 const { getCollection } = cacheCollectionsSelectors
 const { getUser } = cacheUsersSelectors
+const { getCategory } = savedPageSelectors
 
 const emptyTabMessages = {
   afterSaved: "Once you have, this is where you'll find them!",
@@ -83,7 +84,7 @@ export const EmptyTab = (props: EmptyTabProps) => {
   )
 }
 
-const OFFSET_HEIGHT = 142
+const OFFSET_HEIGHT = 163
 const SCROLL_HEIGHT = 88
 
 /**
@@ -94,18 +95,82 @@ const SCROLL_HEIGHT = 88
  */
 const useOffsetScroll = () => {
   // Set the child's height base on it's content vs window height
-  const contentRefCallback = useCallback((node: HTMLDivElement) => {
-    if (node !== null) {
-      const contentHeight = (window as any).innerHeight - OFFSET_HEIGHT
-      const useContentHeight = contentHeight > node.scrollHeight
-      node.style.height = useContentHeight
-        ? `calc(${contentHeight}px + ${SCROLL_HEIGHT}px)`
-        : `${node.scrollHeight + SCROLL_HEIGHT}px`
-      window.scroll(0, SCROLL_HEIGHT)
-    }
-  }, [])
+  const contentRefCallback = useCallback(
+    (node: HTMLDivElement, shouldReset?: boolean) => {
+      if (node !== null) {
+        if (shouldReset) {
+          // TS complains about setting height value to null, but null is actually a valid value for this and is used to unset the height value altogether.
+          // @ts-expect-error
+          node.style.height = null
+          return
+        }
+        const contentHeight = (window as any).innerHeight - OFFSET_HEIGHT
+        const useContentHeight = contentHeight > node.scrollHeight
+        node.style.height = useContentHeight
+          ? `calc(${contentHeight}px + ${SCROLL_HEIGHT}px)`
+          : `${node.scrollHeight + SCROLL_HEIGHT}px`
+      }
+    },
+    []
+  )
 
   return contentRefCallback
+}
+
+const useTabContainerRef = ({
+  resultsLength,
+  hasNoResults,
+  currentTab,
+  isFilterActive
+}: {
+  resultsLength: number | undefined
+  hasNoResults: boolean
+  currentTab: SavedPageTabs
+  isFilterActive: boolean
+}) => {
+  const [hasCompletedInitialLoad, setHasCompletedInitialLoad] = useState(false)
+
+  const selectedCategory = useSelector((state: CommonState) =>
+    getCategory(state, {
+      currentTab
+    })
+  )
+  const containerRef = useRef(null)
+  const contentRefCallback = useOffsetScroll()
+
+  useEffect(() => {
+    // Scroll down past the filter input once the initial load is complete. If we don't do this, the scroll position won't end up in the right place.
+    if (!hasCompletedInitialLoad && resultsLength && !isFilterActive) {
+      window.scroll(0, SCROLL_HEIGHT)
+      return
+    }
+    if (resultsLength === undefined && !isFilterActive) {
+      setHasCompletedInitialLoad(false)
+    }
+    // Disable exhaustive deps since the exclusions are deliberate - see above comment
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resultsLength, hasNoResults])
+
+  useEffect(() => {
+    // When the length of the results list changes, or we switch from loading state to empty state or list state (and vice versa), recalculate the height of the container.
+    if (containerRef.current) {
+      contentRefCallback(containerRef.current)
+    }
+    // Disable exhaustive deps since the exclusions are deliberate - see above comment
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resultsLength, hasNoResults])
+
+  useEffect(() => {
+    // When the selected category (favorites/reposts/purchased/all) changes, recalculate the height of the container and scroll to the top.
+    if (containerRef.current) {
+      contentRefCallback(containerRef.current, true)
+      window.scroll(0, SCROLL_HEIGHT)
+    }
+    // Disable exhaustive deps since the exclusions are deliberate - see above comment
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory])
+
+  return containerRef
 }
 
 const TracksLineup = ({
@@ -155,94 +220,142 @@ const TracksLineup = ({
         isLocked
       }
     })
-  const contentRefCallback = useOffsetScroll()
+
+  const emptyTracksHeader = useSelector((state: CommonState) => {
+    const selectedCategory = getCategory(state, {
+      currentTab: SavedPageTabs.TRACKS
+    })
+
+    if (selectedCategory === LibraryCategory.All) {
+      return emptyStateMessages.emptyTrackAllHeader
+    } else if (selectedCategory === LibraryCategory.Favorite) {
+      return emptyStateMessages.emptyTrackFavoritesHeader
+    } else if (selectedCategory === LibraryCategory.Repost) {
+      return emptyStateMessages.emptyTrackRepostsHeader
+    } else {
+      return emptyStateMessages.emptyTrackPurchasedHeader
+    }
+  })
+
+  const contentRef = useTabContainerRef({
+    resultsLength: trackList.length,
+    hasNoResults: trackList.length === 0,
+    currentTab: SavedPageTabs.TRACKS,
+    isFilterActive: Boolean(filterText)
+  })
+
+  const isLoadingInitial = statusIsNotFinalized(tracks.status)
+  const shouldHideFilterInput = isLoadingInitial && !filterText
+
+  if (trackList.length === 0 && !statusIsNotFinalized(tracks.status)) {
+    return (
+      <div className={styles.tracksLineupContainer}>
+        <EmptyTab
+          message={
+            <>
+              {emptyTracksHeader}
+              <i className={cn('emoji', 'face-with-monocle', styles.emoji)} />
+            </>
+          }
+          onClick={goToTrending}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className={styles.tracksLineupContainer}>
-      {tracks.status !== Status.LOADING ? (
-        tracks.entries.length === 0 ? (
-          <EmptyTab
-            message={
-              <>
-                {messages.emptyTracks}
-                <i className={cn('emoji', 'face-with-monocle', styles.emoji)} />
-              </>
-            }
-            onClick={goToTrending}
-          />
-        ) : (
-          <div ref={contentRefCallback} className={styles.tabContainer}>
-            <div className={styles.searchContainer}>
-              <div className={styles.searchInnerContainer}>
-                <input
-                  placeholder={messages.filterTracks}
-                  onChange={onFilterChange}
-                  value={filterText}
-                />
-                <IconFilter className={styles.iconFilter} />
-              </div>
+      <div ref={contentRef} className={styles.tabContainer}>
+        {shouldHideFilterInput ? null : (
+          <div className={styles.searchContainer}>
+            <div className={styles.searchInnerContainer}>
+              <input
+                placeholder={messages.filterTracks}
+                onChange={onFilterChange}
+                value={filterText}
+              />
+              <IconFilter className={styles.iconFilter} />
             </div>
-            {trackList.length > 0 && (
-              <div className={styles.trackListContainer}>
-                <TrackList
-                  tracks={trackList}
-                  showDivider
-                  showBorder
-                  onSave={onSave}
-                  togglePlay={onTogglePlay}
-                  trackItemAction={TrackItemAction.Save}
-                />
-              </div>
-            )}
           </div>
-        )
-      ) : null}
+        )}
+        {isLoadingInitial ? (
+          <LoadingSpinner className={styles.spinner} />
+        ) : null}
+        {trackList.length > 0 && (
+          <div className={styles.trackListContainer}>
+            <TrackList
+              tracks={trackList}
+              showDivider
+              showBorder
+              onSave={onSave}
+              togglePlay={onTogglePlay}
+              trackItemAction={TrackItemAction.Save}
+            />
+          </div>
+        )}
+      </div>
     </div>
   )
 }
 
-type AlbumCardProps = {
-  albumId: ID
+type CollectionCardProps = {
+  collectionId: ID
+  hasUpdate?: boolean
+  onBeforeNavigate?: (id: number) => void
 }
 
-const AlbumCard = ({ albumId }: AlbumCardProps) => {
+const CollectionCard = ({
+  collectionId,
+  hasUpdate,
+  onBeforeNavigate
+}: CollectionCardProps) => {
+  const record = useRecord()
   const goToRoute = useGoToRoute()
-  const album = useSelector((state: CommonState) =>
-    getCollection(state, { id: albumId })
+  const collection = useSelector((state: CommonState) =>
+    getCollection(state, { id: collectionId })
   )
   const ownerHandle = useSelector((state: CommonState) => {
-    if (album == null) {
+    if (collection == null) {
       return ''
     }
-    const user = getUser(state, { id: album.playlist_owner_id })
+    const user = getUser(state, { id: collection.playlist_owner_id })
     return user?.handle ?? ''
   })
 
   const handleClick = useCallback(() => {
-    if (album && ownerHandle) {
+    if (collection && ownerHandle) {
+      onBeforeNavigate && onBeforeNavigate(collection.playlist_id)
+      record(
+        make(Name.PLAYLIST_LIBRARY_CLICKED, {
+          playlistId: collection.playlist_id,
+          hasUpdate: hasUpdate ?? false
+        })
+      )
       goToRoute(
         collectionPage(
           ownerHandle,
-          album.playlist_name,
-          album.playlist_id,
-          album.permalink,
+          collection.playlist_name,
+          collection.playlist_id,
+          collection.permalink,
           true
         )
       )
     }
-  }, [album, ownerHandle, goToRoute])
+  }, [collection, ownerHandle, onBeforeNavigate, record, hasUpdate, goToRoute])
 
-  return album ? (
+  return collection ? (
     <Card
-      key={album.playlist_id}
-      id={album.playlist_id}
-      userId={album.playlist_owner_id}
-      imageSize={album._cover_art_sizes}
-      primaryText={album.playlist_name}
+      key={collection.playlist_id}
+      id={collection.playlist_id}
+      userId={collection.playlist_owner_id}
+      imageSize={collection._cover_art_sizes}
+      primaryText={collection.playlist_name}
       secondaryText={formatCardSecondaryText(
-        album.save_count,
-        album.playlist_contents.track_ids.length
+        collection.save_count,
+        collection.playlist_contents.track_ids.length
       )}
       onClick={handleClick}
+      updateDot={hasUpdate}
     />
   ) : null
 }
@@ -250,40 +363,68 @@ const AlbumCard = ({ albumId }: AlbumCardProps) => {
 const AlbumCardLineup = () => {
   const goToRoute = useGoToRoute()
 
-  const { data: unfilteredAlbums, status: accountAlbumsStatus } =
-    useAccountAlbums()
   const [filterText, setFilterText] = useState('')
-  const filteredAlbumIds = useMemo(
-    () => filterCollections(unfilteredAlbums, { filterText }).map((a) => a.id),
-    [unfilteredAlbums, filterText]
-  )
-
   const {
-    data: fetchedAlbumIds,
+    status,
     hasMore,
-    fetchMore
-  } = useFetchedSavedCollections({
-    collectionIds: filteredAlbumIds,
-    type: 'albums',
-    pageSize: 20
+    fetchMore,
+    collections: albums
+  } = useCollectionsData({
+    collectionType: 'album',
+    filterValue: filterText || undefined
+  })
+  const albumIds = albums?.map((a) => a.playlist_id)
+
+  const emptyAlbumsHeader = useSelector((state: CommonState) => {
+    const selectedCategory = getCategory(state, {
+      currentTab: SavedPageTabs.ALBUMS
+    })
+
+    if (selectedCategory === LibraryCategory.All) {
+      return emptyStateMessages.emptyAlbumAllHeader
+    } else if (selectedCategory === LibraryCategory.Favorite) {
+      return emptyStateMessages.emptyAlbumFavoritesHeader
+    } else {
+      return emptyStateMessages.emptyAlbumRepostsHeader
+    }
   })
 
   const handleGoToTrending = useCallback(
     () => goToRoute(TRENDING_PAGE),
     [goToRoute]
   )
+  const debouncedSetFilter = useDebouncedCallback(
+    (value: string) => {
+      setFilterText(value)
+    },
+    [setFilterText],
+    300
+  )
+
   const handleFilterChange = ({
     target: { value }
-  }: React.ChangeEvent<HTMLInputElement>) => setFilterText(value)
+  }: React.ChangeEvent<HTMLInputElement>) => {
+    debouncedSetFilter(value)
+  }
 
-  const albumCards = fetchedAlbumIds.map((id) => {
-    return <AlbumCard key={id} albumId={id} />
+  const albumCards = albumIds?.map((id) => {
+    return <CollectionCard key={id} collectionId={id} />
   })
 
-  const contentRefCallback = useOffsetScroll()
-
   const noSavedAlbums =
-    accountAlbumsStatus === Status.SUCCESS && unfilteredAlbums.length === 0
+    !statusIsNotFinalized(status) && albumIds?.length === 0 && !filterText
+
+  const isLoadingInitial =
+    statusIsNotFinalized(status) && albumIds?.length === 0
+
+  const shouldHideFilterInput = isLoadingInitial && !filterText
+
+  const containerRef = useTabContainerRef({
+    resultsLength: albumIds?.length,
+    hasNoResults: noSavedAlbums,
+    currentTab: SavedPageTabs.ALBUMS,
+    isFilterActive: Boolean(filterText)
+  })
 
   return (
     <div className={styles.cardLineupContainer}>
@@ -291,34 +432,39 @@ const AlbumCardLineup = () => {
         <EmptyTab
           message={
             <>
-              {messages.emptyAlbums}
+              {emptyAlbumsHeader}
               <i className={cn('emoji', 'face-with-monocle', styles.emoji)} />
             </>
           }
           onClick={handleGoToTrending}
         />
       ) : (
-        <div ref={contentRefCallback} className={styles.tabContainer}>
-          <div className={styles.searchContainer}>
-            <div className={styles.searchInnerContainer}>
-              <input
-                placeholder={messages.filterAlbums}
-                onChange={handleFilterChange}
-                value={filterText}
-              />
-              <IconFilter className={styles.iconFilter} />
+        <div ref={containerRef} className={styles.tabContainer}>
+          {shouldHideFilterInput ? null : (
+            <div className={styles.searchContainer}>
+              <div className={styles.searchInnerContainer}>
+                <input
+                  placeholder={messages.filterAlbums}
+                  onChange={handleFilterChange}
+                />
+                <IconFilter className={styles.iconFilter} />
+              </div>
             </div>
-          </div>
-          {fetchedAlbumIds.length > 0 && (
+          )}
+          {isLoadingInitial ? (
+            <LoadingSpinner className={styles.spinner} />
+          ) : null}
+          {albumIds?.length > 0 ? (
             <div className={styles.cardsContainer}>
               <InfiniteCardLineup
                 hasMore={hasMore}
                 loadMore={fetchMore}
                 cardsClassName={styles.cardLineup}
                 cards={albumCards}
+                isLoadingMore={statusIsNotFinalized(status)}
               />
             </div>
-          )}
+          ) : null}
         </div>
       )}
     </div>
@@ -326,75 +472,90 @@ const AlbumCardLineup = () => {
 }
 
 const PlaylistCardLineup = ({
-  playlists,
   goToTrending,
-  onFilterChange,
-  filterText,
-  goToRoute,
-  getFilteredPlaylists,
   playlistUpdates,
   updatePlaylistLastViewedAt
 }: {
-  playlists: SavedPageCollection[]
   goToTrending: () => void
   onFilterChange: (e: any) => void
-  filterText: string
-  getFilteredPlaylists: (
-    playlists: SavedPageCollection[]
-  ) => SavedPageCollection[]
-  goToRoute: (route: string) => void
   playlistUpdates: number[]
   updatePlaylistLastViewedAt: (playlistId: number) => void
 }) => {
-  const record = useRecord()
+  const [filterText, setFilterText] = useState('')
 
-  const filteredPlaylists = getFilteredPlaylists(playlists || [])
-  const playlistCards = filteredPlaylists.map((playlist) => {
-    const hasUpdate = playlistUpdates.includes(playlist.playlist_id)
+  const {
+    status,
+    hasMore,
+    fetchMore,
+    collections: playlists
+  } = useCollectionsData({
+    collectionType: 'playlist',
+    filterValue: filterText || undefined
+  })
+
+  const debouncedSetFilter = useDebouncedCallback(
+    (value: string) => {
+      setFilterText(value)
+    },
+    [setFilterText],
+    300
+  )
+
+  const handleFilterChange = ({
+    target: { value }
+  }: React.ChangeEvent<HTMLInputElement>) => {
+    debouncedSetFilter(value)
+  }
+
+  const playlistIds = playlists?.map((p) => p.playlist_id)
+
+  const emptyPlaylistsHeader = useSelector((state: CommonState) => {
+    const selectedCategory = getCategory(state, {
+      currentTab: SavedPageTabs.PLAYLISTS
+    })
+
+    if (selectedCategory === LibraryCategory.All) {
+      return emptyStateMessages.emptyPlaylistAllHeader
+    } else if (selectedCategory === LibraryCategory.Favorite) {
+      return emptyStateMessages.emptyPlaylistFavoritesHeader
+    } else {
+      return emptyStateMessages.emptyPlaylistRepostsHeader
+    }
+  })
+  const noSavedPlaylists =
+    !statusIsNotFinalized(status) && playlistIds?.length === 0 && !filterText
+
+  const isLoadingInitial =
+    statusIsNotFinalized(status) && playlistIds?.length === 0
+
+  const shouldHideFilterInput = isLoadingInitial && !filterText
+
+  const playlistCards = playlistIds?.map((id) => {
     return (
-      <Card
-        key={playlist.playlist_id}
-        id={playlist.playlist_id}
-        userId={playlist.playlist_owner_id}
-        imageSize={playlist._cover_art_sizes}
-        primaryText={playlist.playlist_name}
-        secondaryText={formatCardSecondaryText(
-          playlist.save_count,
-          playlist.playlist_contents.track_ids.length
-        )}
-        onClick={() => {
-          goToRoute(
-            collectionPage(
-              playlist.ownerHandle,
-              playlist.playlist_name,
-              playlist.playlist_id,
-              playlist.permalink,
-              playlist.is_album
-            )
-          )
-          updatePlaylistLastViewedAt(playlist.playlist_id)
-          record(
-            make(Name.PLAYLIST_LIBRARY_CLICKED, {
-              playlistId: playlist.playlist_id,
-              hasUpdate
-            })
-          )
-        }}
-        updateDot={hasUpdate}
+      <CollectionCard
+        key={id}
+        collectionId={id}
+        hasUpdate={playlistUpdates.includes(id)}
+        onBeforeNavigate={updatePlaylistLastViewedAt}
       />
     )
   })
 
-  const contentRefCallback = useOffsetScroll()
+  const containerRef = useTabContainerRef({
+    resultsLength: playlistIds?.length,
+    hasNoResults: noSavedPlaylists,
+    currentTab: SavedPageTabs.PLAYLISTS,
+    isFilterActive: Boolean(filterText)
+  })
 
   return (
     <div className={styles.cardLineupContainer}>
-      {playlists.length === 0 ? (
+      {noSavedPlaylists ? (
         <>
           <EmptyTab
             message={
               <>
-                {messages.emptyPlaylists}
+                {emptyPlaylistsHeader}
                 <i className={cn('emoji', 'face-with-monocle', styles.emoji)} />
               </>
             }
@@ -403,23 +564,33 @@ const PlaylistCardLineup = ({
           <NewPlaylistButton />
         </>
       ) : (
-        <div ref={contentRefCallback} className={styles.tabContainer}>
-          <div className={styles.searchContainer}>
-            <div className={styles.searchInnerContainer}>
-              <input
-                placeholder={messages.filterPlaylists}
-                onChange={onFilterChange}
-                value={filterText}
-              />
-              <IconFilter className={styles.iconFilter} />
-            </div>
-          </div>
-          <NewPlaylistButton />
-          {filteredPlaylists.length > 0 && (
-            <div className={styles.cardsContainer}>
-              <CardLineup cards={playlistCards} />
+        <div ref={containerRef} className={styles.tabContainer}>
+          {shouldHideFilterInput ? null : (
+            <div className={styles.searchContainer}>
+              <div className={styles.searchInnerContainer}>
+                <input
+                  placeholder={messages.filterPlaylists}
+                  onChange={handleFilterChange}
+                />
+                <IconFilter className={styles.iconFilter} />
+              </div>
             </div>
           )}
+          <NewPlaylistButton />
+          {isLoadingInitial ? (
+            <LoadingSpinner className={styles.spinner} />
+          ) : null}
+          {playlistIds?.length > 0 ? (
+            <div className={styles.cardsContainer}>
+              <InfiniteCardLineup
+                hasMore={hasMore}
+                loadMore={fetchMore}
+                cardsClassName={styles.cardLineup}
+                cards={playlistCards}
+                isLoadingMore={statusIsNotFinalized(status)}
+              />
+            </div>
+          ) : null}
         </div>
       )}
     </div>
@@ -427,23 +598,25 @@ const PlaylistCardLineup = ({
 }
 
 const messages = {
-  emptyTracks: "You haven't favorited any tracks yet.",
-  emptyAlbums: "You haven't favorited any albums yet.",
-  emptyPlaylists: "You haven't favorited any playlists yet.",
   filterTracks: 'Filter Tracks',
   filterAlbums: 'Filter Albums',
-  filterPlaylists: 'Filter Playlists',
-  tracks: 'Tracks',
-  albums: 'Albums',
-  playlists: 'Playlists'
+  filterPlaylists: 'Filter Playlists'
 }
 
 const tabHeaders = [
-  { icon: <IconNote />, text: messages.tracks, label: SavedPageTabs.TRACKS },
-  { icon: <IconAlbum />, text: messages.albums, label: SavedPageTabs.ALBUMS },
+  {
+    icon: <IconNote />,
+    text: SavedPageTabs.TRACKS,
+    label: SavedPageTabs.TRACKS
+  },
+  {
+    icon: <IconAlbum />,
+    text: SavedPageTabs.ALBUMS,
+    label: SavedPageTabs.ALBUMS
+  },
   {
     icon: <IconPlaylists />,
-    text: messages.playlists,
+    text: SavedPageTabs.PLAYLISTS,
     label: SavedPageTabs.PLAYLISTS
   }
 ]
@@ -463,12 +636,6 @@ export type SavedPageProps = {
   formatCardSecondaryText: (saves: number, tracks: number) => string
   filterText: string
   initialOrder: UID[] | null
-  account:
-    | (User & {
-        albums: SavedPageCollection[]
-        playlists: SavedPageCollection[]
-      })
-    | undefined
   tracks: Lineup<SavedPageTrack>
   currentQueueItem: QueueItem
   playing: boolean
@@ -476,9 +643,6 @@ export type SavedPageProps = {
   fetchSavedTracks: () => void
   resetSavedTracks: () => void
   updateLineupOrder: (updatedOrderIndices: UID[]) => void
-  getFilteredPlaylists: (
-    playlists: SavedPageCollection[]
-  ) => SavedPageCollection[]
 
   goToRoute: (route: string) => void
   repostTrack: (trackId: ID) => void
@@ -489,12 +653,13 @@ export type SavedPageProps = {
   onReorderTracks: any
   playlistUpdates: number[]
   updatePlaylistLastViewedAt: (playlistId: number) => void
+  currentTab: SavedPageTabs
+  onChangeTab: (tab: SavedPageTabs) => void
 }
 
 const SavedPage = ({
   title,
   description,
-  account,
   playingUid,
   tracks,
   goToRoute,
@@ -502,15 +667,15 @@ const SavedPage = ({
   isQueued,
   onTogglePlay,
   getFilteredData,
-  getFilteredPlaylists,
   onFilterChange,
   filterText,
   onSave,
   playlistUpdates,
-  updatePlaylistLastViewedAt
+  updatePlaylistLastViewedAt,
+  currentTab,
+  onChangeTab
 }: SavedPageProps) => {
   useMainPageHeader()
-
   const queuedAndPlaying = playing && isQueued
 
   const goToTrending = () => goToRoute(TRENDING_PAGE)
@@ -530,27 +695,39 @@ const SavedPage = ({
     <AlbumCardLineup key='albumLineup' />,
     <PlaylistCardLineup
       key='playlistLineup'
-      getFilteredPlaylists={getFilteredPlaylists}
-      playlists={account ? account.playlists : []}
       goToTrending={goToTrending}
       onFilterChange={onFilterChange}
-      filterText={filterText}
-      goToRoute={goToRoute}
       playlistUpdates={playlistUpdates}
       updatePlaylistLastViewedAt={updatePlaylistLastViewedAt}
     />
   ]
+
+  const handleTabClick = useCallback(
+    (newTab: string) => {
+      onChangeTab(newTab as SavedPageTabs)
+    },
+    [onChangeTab]
+  )
   const { tabs, body } = useTabs({
     tabs: tabHeaders,
     elements,
-    initialScrollOffset: SCROLL_HEIGHT
+    initialScrollOffset: SCROLL_HEIGHT,
+    onTabClick: handleTabClick
   })
 
   const { setHeader } = useContext(HeaderContext)
   useEffect(() => {
     setHeader(
       <>
-        <Header className={styles.header} title={title} />
+        <Header className={styles.header} title={<span>{title}</span>}>
+          <div className={styles.categoryMenuWrapper}>
+            <LibraryCategorySelectionMenu
+              currentTab={currentTab}
+              variant='mobile'
+            />
+          </div>
+        </Header>
+
         <div className={styles.tabBar}>{tabs}</div>
       </>
     )
@@ -562,13 +739,9 @@ const SavedPage = ({
       description={description}
       containerClassName={styles.mobilePageContainer}
     >
-      {tracks.status === Status.LOADING ? (
-        <LoadingSpinner className={styles.spinner} />
-      ) : (
-        <div className={styles.tabContainer}>
-          <div className={styles.pageContainer}>{body}</div>
-        </div>
-      )}
+      <div className={styles.tabContainer}>
+        <div className={styles.pageContainer}>{body}</div>
+      </div>
     </MobilePageContainer>
   )
 }

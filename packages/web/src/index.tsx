@@ -1,11 +1,7 @@
-/* eslint-disable import/order */
-/* eslint-disable import/first */
-import { setupTracing } from './utils/tracer'
-setupTracing()
 import 'setimmediate'
 import { Buffer } from 'buffer'
-import process from 'process/browser'
 
+import process from 'process/browser'
 import { createRoot } from 'react-dom/client'
 
 import './index.css'

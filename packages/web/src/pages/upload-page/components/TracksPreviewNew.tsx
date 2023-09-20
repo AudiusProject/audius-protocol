@@ -67,6 +67,8 @@ export const TracksPreviewNew = (props: TracksPreviewProps) => {
             { key: String(UploadType.ALBUM), text: 'Album' },
             { key: String(UploadType.PLAYLIST), text: 'Playlist' }
           ]}
+          // Matches 0.18s entry animation
+          forceRefreshAfterMs={180}
         />
         <Text>{uploadDescriptions[props.uploadType]}</Text>
       </div>
@@ -81,7 +83,7 @@ export const TracksPreviewNew = (props: TracksPreviewProps) => {
             index={i}
             displayIndex={tracks.length > 1}
             key={track.metadata.title + i}
-            trackTitle={track.metadata.title}
+            trackTitle={track.file.name}
             fileType={track.file.type}
             fileSize={track.file.size}
             onRemove={() => onRemove(i)}

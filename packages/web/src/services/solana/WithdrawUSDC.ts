@@ -1,5 +1,7 @@
-import type { SwapMode } from '@jup-ag/core'
-import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token'
+import {
+  createCloseAccountInstruction,
+  createAssociatedTokenAccountInstruction
+} from '@solana/spl-token'
 import {
   LAMPORTS_PER_SOL,
   PublicKey,
@@ -13,8 +15,7 @@ import {
   getRootSolanaAccount,
   getAssociatedTokenAccountRent,
   getTransferTransactionFee,
-  getUSDCAssociatedTokenAccount,
-  createAssociatedTokenAccountInstruction
+  getUSDCAssociatedTokenAccount
 } from 'services/solana/solana'
 
 // TODO: Grab from remote config
@@ -24,7 +25,6 @@ const USDC_SLIPPAGE = 3
 export const getFundDestinationTokenAccountFees = async (
   account: PublicKey
 ) => {
-  // TODO: might have to pay rent for root sol account, see BuyAudio.ts
   const rent = await getAssociatedTokenAccountRent()
   const fee = await getTransferTransactionFee(account)
   return (rent + fee) / LAMPORTS_PER_SOL
@@ -55,33 +55,26 @@ export const getSwapUSDCUserBankInstructions = async ({
     outputTokenSymbol: 'SOL',
     inputAmount: amount,
     slippage: USDC_SLIPPAGE,
-    swapMode: 'ExactOut' as SwapMode,
+    swapMode: 'ExactOut',
     onlyDirectRoutes: true
   })
-  const usdcNeededAmount = quoteRoute.inputAmount
-  const swapRoute = await JupiterSingleton.getQuote({
+  const usdcNeededAmount = quoteRoute.inputAmount.amount
+  const swapQuote = await JupiterSingleton.getQuote({
     inputTokenSymbol: 'USDC',
     outputTokenSymbol: 'SOL',
-    inputAmount: usdcNeededAmount.uiAmount,
+    inputAmount: usdcNeededAmount,
     slippage: USDC_SLIPPAGE,
-    swapMode: 'ExactIn' as SwapMode,
-    forceFetch: true,
+    swapMode: 'ExactIn',
     onlyDirectRoutes: true
   })
-  const exchangeInfo = await JupiterSingleton.exchange({
-    routeInfo: swapRoute.route,
-    userPublicKey: solanaRootAccount.publicKey,
-    feeAccount: feePayer
+  const swapInstructions = await JupiterSingleton.getSwapInstructions({
+    quote: swapQuote.quote,
+    userPublicKey: solanaRootAccount.publicKey
   })
-  const swapInstructions = [
-    ...(exchangeInfo.transactions.setupTransaction?.instructions ?? []),
-    ...exchangeInfo.transactions.swapTransaction.instructions,
-    ...(exchangeInfo.transactions.cleanupTransaction?.instructions ?? [])
-  ]
 
   const transferInstructions =
     await libs.solanaWeb3Manager!.createTransferInstructionsFromCurrentUser({
-      amount: new BN(usdcNeededAmount.uiAmount),
+      amount: new BN(usdcNeededAmount),
       feePayerKey: feePayer,
       senderSolanaAddress: usdcUserBank,
       recipientSolanaAddress: solanaUSDCAssociatedTokenAccount.toString(),
@@ -89,18 +82,16 @@ export const getSwapUSDCUserBankInstructions = async ({
       mint: 'usdc'
     })
 
-  const createInstruction = createAssociatedTokenAccountInstruction({
-    associatedTokenAccount: solanaUSDCAssociatedTokenAccount,
-    owner: solanaRootAccount.publicKey,
-    mint: libs.solanaWeb3Manager!.mints.usdc,
-    feePayer
-  })
-  const closeInstruction = Token.createCloseAccountInstruction(
-    TOKEN_PROGRAM_ID, //    programId
+  const createInstruction = createAssociatedTokenAccountInstruction(
+    feePayer, // fee payer
+    solanaUSDCAssociatedTokenAccount, // account to create
+    solanaRootAccount.publicKey, // owner
+    libs.solanaWeb3Manager!.mints.usdc // mint
+  )
+  const closeInstruction = createCloseAccountInstruction(
     solanaUSDCAssociatedTokenAccount, //  account to close
     feePayer, // fee destination
-    solanaRootAccount.publicKey, //  owner
-    [] //  multiSigners
+    solanaRootAccount.publicKey //  owner
   )
 
   return [

@@ -83,7 +83,7 @@ class GetTransactionHistory(Resource):
         if authed_user_id is None:
             abort_unauthorized(full_user_ns)
         elif authed_user_id != user_id:
-            abort_forbidden()
+            abort_forbidden(full_user_ns)
         args = transaction_history_parser.parse_args()
         sort_method = args.get("sort_method", TransactionSortMethod.date)
         sort_direction = args.get("sort_direction", SortDirection.desc)
@@ -139,7 +139,7 @@ class GetTransactionHistoryCount(Resource):
         if authed_user_id is None:
             abort_unauthorized(full_user_ns)
         elif authed_user_id != user_id:
-            abort_forbidden()
+            abort_forbidden(full_user_ns)
         transactions_count = get_audio_transactions_history_count(authed_user_id)
         response = success_response(transactions_count)
         return response
@@ -204,7 +204,7 @@ class GetUSDCTransactionHistory(Resource):
         if authed_user_id is None:
             abort_unauthorized(full_user_ns)
         elif authed_user_id != user_id:
-            abort_forbidden()
+            abort_forbidden(full_user_ns)
         args = usdc_transaction_history_parser.parse_args()
         sort_method = args.get("sort_method", TransactionSortMethod.date)
         sort_direction = args.get("sort_direction", SortDirection.desc)
@@ -242,7 +242,7 @@ class GetUSDCTransactionHistoryCount(Resource):
         if authed_user_id is None:
             abort_unauthorized(full_user_ns)
         elif authed_user_id != user_id:
-            abort_forbidden()
+            abort_forbidden(full_user_ns)
         args = usdc_transaction_history_count_parser.parse_args()
         transactions_count = get_usdc_transactions_history_count(
             {

@@ -104,6 +104,9 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     height: '90%',
     justifyContent: 'center',
     ...flexRowCentered()
+  },
+  disclaimer: {
+    lineHeight: 20
   }
 }))
 
@@ -180,7 +183,7 @@ export const PremiumTrackPurchaseDrawer = () => {
                   </Text>
                   <LockedStatusBadge locked />
                 </View>
-                <Text>
+                <Text style={styles.disclaimer}>
                   {messages.disclaimer(
                     <Text colorValue={secondary} onPress={handleTermsPress}>
                       {messages.termsOfUse}

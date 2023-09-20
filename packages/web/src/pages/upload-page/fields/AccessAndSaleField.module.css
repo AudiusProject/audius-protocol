@@ -21,10 +21,6 @@
   width: 22px;
 }
 
-.isRemix {
-  margin-bottom: var(--unit-6);
-}
-
 .value {
   display: inline-flex;
   flex-shrink: 1;

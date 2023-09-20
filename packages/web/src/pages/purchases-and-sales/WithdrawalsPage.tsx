@@ -2,6 +2,7 @@ import { useCallback, useContext, useState } from 'react'
 
 import {
   FeatureFlags,
+  Id,
   Status,
   USDCTransactionDetails,
   accountSelectors,
@@ -9,9 +10,16 @@ import {
   statusIsNotFinalized,
   useAllPaginatedQuery,
   useGetUSDCTransactions,
-  useGetUSDCTransactionsCount
+  useGetUSDCTransactionsCount,
+  useUSDCTransactionDetailsModal
 } from '@audius/common'
 import { full } from '@audius/sdk'
+import {
+  HarmonyButton,
+  HarmonyButtonSize,
+  HarmonyButtonType,
+  IconDownload
+} from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
@@ -20,6 +28,8 @@ import Page from 'components/page/Page'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { MainContentContext } from 'pages/MainContentContext'
 import NotFoundPage from 'pages/not-found-page/NotFoundPage'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { audiusSdk } from 'services/audius-sdk'
 import { useSelector } from 'utils/reducer'
 import { DASHBOARD_PAGE } from 'utils/route'
 
@@ -39,7 +49,8 @@ const messages = {
   noWithdrawalsHeader: `You haven't made any withdrawals yet.`,
   noWithdrawalsBody: 'Once you complete a withdrawal, it will show up here.',
   backToDashboard: 'Back To Your Dashboard',
-  headerText: 'Withdrawal History'
+  headerText: 'Withdrawal History',
+  downloadCSV: 'Download CSV'
 }
 
 const TRANSACTIONS_BATCH_SIZE = 50
@@ -88,6 +99,8 @@ const RenderWithdrawalsPage = () => {
     useState<full.GetUSDCTransactionsSortDirectionEnum>(DEFAULT_SORT_DIRECTION)
   const { mainContentRef } = useContext(MainContentContext)
 
+  const { onOpen: openDetailsModal } = useUSDCTransactionDetailsModal()
+
   const {
     status: dataStatus,
     data: transactions,
@@ -129,19 +142,49 @@ const RenderWithdrawalsPage = () => {
     }
   }, [hasMore, loadMore])
 
-  const onClickRow = useCallback((txDetails: USDCTransactionDetails) => {
-    // https://linear.app/audius/issue/PAY-1757/[web]-click-to-view-purchasesale-details-in-table
-    // TODO: Show details modal on row click
-  }, [])
+  const onClickRow = useCallback(
+    (transactionDetails: USDCTransactionDetails) => {
+      openDetailsModal({ transactionDetails })
+    },
+    [openDetailsModal]
+  )
 
   const isEmpty = status === Status.SUCCESS && transactions.length === 0
   const isLoading = statusIsNotFinalized(status)
+
+  const downloadCSV = useCallback(async () => {
+    const sdk = await audiusSdk()
+    const { data: encodedDataMessage, signature: encodedDataSignature } =
+      await audiusBackendInstance.signDiscoveryNodeRequest()
+    const blob = await sdk.users.downloadUSDCWithdrawalsAsCSVBlob({
+      id: Id.parse(userId!),
+      encodedDataMessage,
+      encodedDataSignature
+    })
+    const blobUrl = window.URL.createObjectURL(blob)
+    window.location.assign(blobUrl)
+  }, [userId])
+
+  const header = (
+    <Header
+      primary={messages.headerText}
+      rightDecorator={
+        <HarmonyButton
+          onClick={downloadCSV}
+          text={messages.downloadCSV}
+          variant={HarmonyButtonType.SECONDARY}
+          size={HarmonyButtonSize.SMALL}
+          iconLeft={IconDownload}
+        />
+      }
+    />
+  )
 
   return (
     <Page
       title={messages.pageTitle}
       description={messages.pageDescription}
-      header={<Header primary={messages.headerText} />}
+      header={header}
     >
       <div className={styles.container}>
         {isEmpty ? (

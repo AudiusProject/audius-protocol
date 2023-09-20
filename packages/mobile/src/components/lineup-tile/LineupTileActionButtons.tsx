@@ -1,4 +1,11 @@
-import type { ID, Nullable, PremiumConditions } from '@audius/common'
+import type { ReactElement } from 'react'
+
+import {
+  isPremiumContentUSDCPurchaseGated,
+  type ID,
+  type Nullable,
+  type PremiumConditions
+} from '@audius/common'
 import { View } from 'react-native'
 
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
@@ -6,6 +13,7 @@ import IconShare from 'app/assets/images/iconShare.svg'
 import { IconButton } from 'app/components/core'
 import { FavoriteButton } from 'app/components/favorite-button'
 import { RepostButton } from 'app/components/repost-button'
+import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
 import { useThemeColors } from 'app/utils/theme'
@@ -14,6 +22,7 @@ import { LineupTileAccessStatus } from './LineupTileAccessStatus'
 
 type Props = {
   disabled?: boolean
+  readonly?: boolean
   hasReposted?: boolean
   hasSaved?: boolean
   isOwner?: boolean
@@ -59,6 +68,7 @@ export const LineupTileActionButtons = ({
   isUnlisted,
   trackId,
   doesUserHaveAccess = false,
+  readonly = false,
   premiumConditions,
   onPressOverflow,
   onPressRepost,
@@ -67,6 +77,9 @@ export const LineupTileActionButtons = ({
 }: Props) => {
   const { neutralLight4 } = useThemeColors()
   const styles = useStyles()
+  const isUSDCEnabled = useIsUSDCEnabled()
+  const isUSDCPurchase =
+    isUSDCEnabled && isPremiumContentUSDCPurchaseGated(premiumConditions)
 
   const repostButton = (
     <View style={[styles.button, styles.buttonMargin]}>
@@ -111,24 +124,40 @@ export const LineupTileActionButtons = ({
   const showPremiumAccessStatus = trackId && !doesUserHaveAccess
   const showLeftButtons = !showPremiumAccessStatus && !isUnlisted
 
-  return (
-    <View style={styles.bottomButtons}>
-      <View style={styles.leftButtons}>
-        {showPremiumAccessStatus && premiumConditions != null ? (
+  let content: ReactElement | null = null
+  if (readonly) {
+    if (isUSDCPurchase && showPremiumAccessStatus) {
+      content = (
+        <View style={styles.leftButtons}>
           <LineupTileAccessStatus
             trackId={trackId}
             premiumConditions={premiumConditions}
           />
-        ) : null}
-        {showLeftButtons && (
-          <>
-            {repostButton}
-            {favoriteButton}
-            {!isShareHidden && shareButton}
-          </>
-        )}
-      </View>
-      {moreButton}
-    </View>
-  )
+        </View>
+      )
+    }
+  } else {
+    content = (
+      <>
+        <View style={styles.leftButtons}>
+          {showPremiumAccessStatus && premiumConditions != null ? (
+            <LineupTileAccessStatus
+              trackId={trackId}
+              premiumConditions={premiumConditions}
+            />
+          ) : null}
+          {showLeftButtons && (
+            <>
+              {repostButton}
+              {favoriteButton}
+              {!isShareHidden && shareButton}
+            </>
+          )}
+        </View>
+        {moreButton}
+      </>
+    )
+  }
+
+  return content ? <View style={styles.bottomButtons}>{content}</View> : null
 }

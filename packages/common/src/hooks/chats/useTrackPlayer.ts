@@ -17,6 +17,7 @@ type RecordAnalytics = ({ name, id }: { name: TrackPlayback; id: ID }) => void
 type UseToggleTrack = {
   uid: Nullable<string>
   source: QueueSource
+  isPreview?: boolean
   recordAnalytics?: RecordAnalytics
   id?: Nullable<ID>
 }
@@ -34,11 +35,21 @@ export const usePlayTrack = (recordAnalytics?: RecordAnalytics) => {
   const playingUid = useSelector(getUid)
 
   const playTrack = useCallback(
-    ({ id, uid, entries }: { id?: ID; uid: string; entries: Queueable[] }) => {
+    ({
+      id,
+      uid,
+      isPreview,
+      entries
+    }: {
+      id?: ID
+      uid: string
+      isPreview?: boolean
+      entries: Queueable[]
+    }) => {
       if (playingUid !== uid) {
         dispatch(clear({}))
         dispatch(add({ entries }))
-        dispatch(play({ uid }))
+        dispatch(play({ uid, isPreview }))
       } else {
         dispatch(play({}))
       }
@@ -82,6 +93,7 @@ export const usePauseTrack = (recordAnalytics?: RecordAnalytics) => {
  * @typedef {Object} UseToggleTrackProps
  * @property {string} uid the uid of the track (nullable)
  * @property {string} source the queue source
+ * @property {boolean} isPreview whether the track is a preview
  * @property {Function} recordAnalytics the function that tracks the event
  * @property {number} id the id of the track (nullable and optional)
  */
@@ -107,6 +119,7 @@ export const usePauseTrack = (recordAnalytics?: RecordAnalytics) => {
 export const useToggleTrack = ({
   uid,
   source,
+  isPreview,
   recordAnalytics,
   id
 }: UseToggleTrack) => {
@@ -126,9 +139,14 @@ export const useToggleTrack = ({
     if (isTrackPlaying) {
       pauseTrack(id)
     } else {
-      playTrack({ id, uid, entries: [{ id, uid, source }] })
+      playTrack({
+        id,
+        uid,
+        isPreview,
+        entries: [{ id, uid, source, isPreview }]
+      })
     }
-  }, [playTrack, pauseTrack, isTrackPlaying, id, uid, source])
+  }, [playTrack, pauseTrack, isTrackPlaying, id, uid, isPreview, source])
 
   return { togglePlay, isTrackPlaying }
 }

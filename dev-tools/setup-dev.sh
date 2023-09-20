@@ -12,7 +12,7 @@ for dir in contracts eth-contracts identity-service libs; do
 done
 
 # Link libs
-cd $PROTOCOL_DIR/libs
+cd $PROTOCOL_DIR/packages/libs
 nvm use
 npm i
 npm run build

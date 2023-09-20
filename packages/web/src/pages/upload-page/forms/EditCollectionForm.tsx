@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { UploadType } from '@audius/common'
-import { HarmonyButton, IconUpload } from '@audius/stems'
 import { Form, Formik } from 'formik'
 import moment from 'moment'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -15,6 +14,7 @@ import {
 import { Tile } from 'components/tile'
 import { Text } from 'components/typography'
 
+import { AnchoredSubmitRow } from '../components/AnchoredSubmitRow'
 import { CollectionTrackFieldArray } from '../fields/CollectionTrackFieldArray'
 import { ReleaseDateField } from '../fields/ReleaseDateField'
 import { SelectGenreField } from '../fields/SelectGenreField'
@@ -50,13 +50,12 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
     artwork: null,
     playlist_name: '',
     description: '',
-    releaseDate: moment().startOf('day').toDate(),
+    release_date: moment().startOf('day').toDate(),
     trackDetails: {
       genre: null,
       mood: null,
       tags: ''
     },
-    // @ts-expect-error issues with track schema
     tracks: tracks.map((track) => ({ ...track, override: false }))
   }
 
@@ -68,8 +67,13 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
         ...collectionMetadata
       } = values
 
-      // @ts-expect-error more issues with tracks
-      onContinue({ uploadType, tracks, metadata: collectionMetadata })
+      onContinue({
+        uploadType,
+        // @ts-expect-error more issues with tracks
+        tracks,
+        // @ts-expect-error more issues with tracks
+        metadata: { ...collectionMetadata, ...ignoredTrackDetails }
+      })
     },
     [onContinue, uploadType]
   )
@@ -120,11 +124,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
           </div>
         </Tile>
         <CollectionTrackFieldArray />
-        <HarmonyButton
-          text={messages.completeButton}
-          iconLeft={IconUpload}
-          type='submit'
-        />
+        <AnchoredSubmitRow />
       </Form>
     </Formik>
   )

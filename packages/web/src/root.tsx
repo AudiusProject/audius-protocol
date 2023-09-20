@@ -6,7 +6,7 @@ import { localStorage } from 'services/local-storage'
 import { useIsMobile, isElectron } from 'utils/clientUtil'
 import { getPathname, HOME_PAGE, publicSiteRoutes } from 'utils/route'
 
-import Dapp from './app'
+const Dapp = lazy(() => import('./app'))
 
 const PublicSite = lazy(() => import('./pages/PublicSite'))
 
@@ -50,9 +50,9 @@ const Root = () => {
   }
 
   return (
-    <>
+    <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
       <Dapp />
-    </>
+    </Suspense>
   )
 }
 

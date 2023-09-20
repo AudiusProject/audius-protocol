@@ -42,7 +42,7 @@ type MenuFormProps = {
 
 const MenuForm = (props: MenuFormProps) => {
   const { isOpen, onClose, label, icon, menuFields } = props
-  const { resetForm } = useFormikContext()
+  const { handleSubmit, resetForm } = useFormikContext()
 
   const handleCancel = useCallback(() => {
     resetForm()
@@ -55,17 +55,18 @@ const MenuForm = (props: MenuFormProps) => {
         <ModalTitle title={label} icon={icon} />
       </ModalHeader>
       <ModalContent>
-        <Form>
-          {menuFields}
-          <ModalFooter>
-            <Button
-              type={ButtonType.PRIMARY}
-              text={messages.save}
-              buttonType='submit'
-            />
-          </ModalFooter>
-        </Form>
+        <Form>{menuFields}</Form>
       </ModalContent>
+      <ModalFooter>
+        <Button
+          onClick={() => {
+            handleSubmit()
+          }}
+          type={ButtonType.PRIMARY}
+          text={messages.save}
+          buttonType='submit'
+        />
+      </ModalFooter>
     </Modal>
   )
 }
@@ -130,16 +131,12 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
     <Tile onClick={toggleMenu} className={styles.root} elevation='flat'>
       <div className={styles.header}>
         <div className={styles.title}>
-          <div>
-            <Text className={styles.title} variant='title' size='large'>
-              {label}
-            </Text>
-          </div>
-          <div>
-            <Icon icon={IconCaretRight} color='neutralLight4' />
-          </div>
+          <Text className={styles.title} variant='title' size='large'>
+            {label}
+          </Text>
+          <Icon icon={IconCaretRight} color='neutralLight4' />
         </div>
-        <Text>{description}</Text>
+        <Text className={styles.description}>{description}</Text>
       </div>
       {renderValue()}
       {error ? <HelperText error>{errorMessage}</HelperText> : null}

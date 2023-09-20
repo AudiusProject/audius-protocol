@@ -35,69 +35,68 @@ const MoodSchema = z
   .nullable()
 
 // TODO: KJ - Need to update the schema in sdk and then import here
-const SdkTrackMetadataSchema = z.object({
-  aiAttributionUserId: z.optional(HashId),
-  description: z.optional(z.string().max(1000)),
-  download: z.optional(
-    z
-      .object({
-        cid: z.optional(z.string()),
-        isDownloadable: z.boolean(),
-        requiresFollow: z.boolean()
+const createSdkSchema = () =>
+  z.object({
+    ai_attribution_user_id: z.optional(z.number()).nullable(),
+    description: z.optional(z.string().max(1000)),
+    download: z.optional(
+      z
+        .object({
+          cid: z.string().nullable(),
+          is_downloadable: z.boolean(),
+          requires_follow: z.boolean()
+        })
+        .strict()
+        .nullable()
+    ),
+    field_visibility: z.optional(
+      z.object({
+        mood: z.optional(z.boolean()),
+        tags: z.optional(z.boolean()),
+        genre: z.optional(z.boolean()),
+        share: z.optional(z.boolean()),
+        play_count: z.optional(z.boolean()),
+        remixes: z.optional(z.boolean())
       })
-      .strict()
-      .nullable()
-  ),
-  fieldVisibility: z.optional(
-    z.object({
-      mood: z.optional(z.boolean()),
-      tags: z.optional(z.boolean()),
-      genre: z.optional(z.boolean()),
-      share: z.optional(z.boolean()),
-      playCount: z.optional(z.boolean()),
-      remixes: z.optional(z.boolean())
-    })
-  ),
-  genre: GenreSchema,
-  isPremium: z.optional(z.boolean()),
-  isrc: z.optional(z.string().nullable()),
-  isUnlisted: z.optional(z.boolean()),
-  iswc: z.optional(z.string().nullable()),
-  license: z.optional(z.string().nullable()),
-  mood: MoodSchema,
-  premiumConditions: z.optional(
-    z.union([
-      PremiumConditionsNFTCollection,
-      PremiumConditionsFollowUserId,
-      PremiumConditionsTipUserId
-    ])
-  ),
-  releaseDate: z.optional(
-    z.date().max(new Date(), { message: messages.invalidReleaseDateError })
-  ),
-  remixOf: z.optional(
-    z
-      .object({
-        tracks: z
-          .array(
-            z.object({
-              parentTrackId: HashId
-            })
-          )
-          .min(1)
-      })
-      .strict()
-  ),
-  tags: z.optional(z.string()),
-  title: z.string({
-    required_error: messages.track.titleRequiredError
-  }),
-  previewStartSeconds: z.optional(z.number()),
-  audioUploadId: z.optional(z.string()),
-  previewCid: z.optional(z.string())
-})
+    ),
+    genre: GenreSchema,
+    is_premium: z.optional(z.boolean()),
+    isrc: z.optional(z.string().nullable()),
+    is_unlisted: z.optional(z.boolean()),
+    iswc: z.optional(z.string().nullable()),
+    license: z.optional(z.string().nullable()),
+    mood: MoodSchema,
+    premiumConditions: z.optional(
+      z.union([
+        PremiumConditionsNFTCollection,
+        PremiumConditionsFollowUserId,
+        PremiumConditionsTipUserId
+      ])
+    ),
+    release_date: z.optional(z.string()).nullable(),
+    remixOf: z.optional(
+      z
+        .object({
+          tracks: z
+            .array(
+              z.object({
+                parentTrackId: HashId
+              })
+            )
+            .min(1)
+        })
+        .strict()
+    ),
+    tags: z.optional(z.string()),
+    title: z.string({
+      required_error: messages.track.titleRequiredError
+    }),
+    previewStartSeconds: z.optional(z.number()),
+    audioUploadId: z.optional(z.string()),
+    previewCid: z.optional(z.string())
+  })
 
-export const TrackMetadataSchema = SdkTrackMetadataSchema.merge(
+export const TrackMetadataSchema = createSdkSchema().merge(
   z.object({
     artwork: z
       .object({
@@ -117,6 +116,8 @@ export const TrackMetadataFormSchema = TrackMetadataSchema.refine(
 
 export type TrackMetadata = z.input<typeof TrackMetadataSchema>
 
+const CollectionTrackMetadataSchema = TrackMetadataSchema.pick({ title: true })
+
 const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
   z.object({
     artwork: z
@@ -132,7 +133,7 @@ const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
       required_error: messages[collectionType].nameRequiredError
     }),
     description: z.optional(z.string().max(1000)),
-    releaseDate: z.optional(
+    release_date: z.optional(
       z.coerce
         .date()
         .max(new Date(), { message: messages.invalidReleaseDateError })
@@ -143,7 +144,7 @@ const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
       tags: z.optional(z.string())
     }),
     is_album: z.literal(collectionType === 'album'),
-    tracks: z.array(TrackMetadataSchema)
+    tracks: z.array(z.object({ metadata: CollectionTrackMetadataSchema }))
   })
 
 export const PlaylistSchema = createCollectionSchema('playlist')

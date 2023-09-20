@@ -393,7 +393,7 @@ export const audiusBackend = ({
     const start = preloadImageTimer.start()
     const timeoutMs =
       getRemoteVar(IntKeys.IMAGE_QUICK_FETCH_TIMEOUT_MS) ?? undefined
-    let timeoutId: Nullable<number> = null
+    let timeoutId: Nullable<NodeJS.Timeout> = null
 
     try {
       const response = await Promise.race([
@@ -1081,7 +1081,8 @@ export const audiusBackend = ({
 
   async function updateTrack(
     _trackId: ID,
-    metadata: TrackMetadata & { artwork: { file: File } }
+    metadata: TrackMetadata & { artwork: { file: File } },
+    transcodePreview?: boolean
   ) {
     const cleanedMetadata = schemas.newTrackMetadata(metadata, true)
     if (metadata.artwork) {
@@ -1091,7 +1092,10 @@ export const audiusBackend = ({
       )
       cleanedMetadata.cover_art_sizes = resp.id
     }
-    return await audiusLibs.Track.updateTrackV2(cleanedMetadata)
+    return await audiusLibs.Track.updateTrackV2(
+      cleanedMetadata,
+      transcodePreview
+    )
   }
 
   // TODO(C-2719)
@@ -3099,7 +3103,7 @@ export const audiusBackend = ({
       console.warn(`Failed to get waudio balance for address: ${address}`)
       return new BN('0')
     }
-    return waudioBalance
+    return new BN(waudioBalance.toString())
   }
 
   async function getAudioTransactionsCount() {

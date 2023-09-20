@@ -1,6 +1,6 @@
 .root {
-  max-width: 60%;
-  margin-right: 16px;
+  max-width: calc(50% - var(--unit-4));
+  margin-right: var(--unit-4);
   display: flex;
   align-items: center;
 }

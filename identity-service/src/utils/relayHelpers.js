@@ -5,7 +5,6 @@ const {
 } = require('./withdrawUSDCInstructionsHelpers')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 const {
-  allowedProgramIds,
   solanaClaimableTokenProgramAddress,
   solanaMintAddress,
   solanaRewardsManager,
@@ -14,8 +13,10 @@ const {
   usdcMintAddress,
   claimableTokenAuthorityIndices,
   isRelayAllowedProgram,
-  getInstructionEnum
+  getInstructionEnum,
+  isTransferToUserbank
 } = require('./relayUtils')
+const { TOKEN_PROGRAM_ID } = require('@solana/spl-token')
 const SolanaUtils = libs.SolanaUtils
 
 const isSendInstruction = (instr) =>
@@ -51,7 +52,7 @@ const deriveClaimableTokenAuthority = async (mint) => {
   )[0].toString()
 }
 
-let claimableTokenAuthority = {}
+const claimableTokenAuthority = {}
 /**
  * Gets the authority account for the ClaimableToken program, using a cached value if possible
  * @param {string} mint the mint account
@@ -93,7 +94,6 @@ const getAccountIndex = (instruction, enumMap) => {
  */
 const checkAccountKey = (instruction, accountIndex, expectedAccount) => {
   if (accountIndex == null) {
-    console.log('null')
     return true
   } else if (
     instruction.keys &&
@@ -105,7 +105,6 @@ const checkAccountKey = (instruction, accountIndex, expectedAccount) => {
     )
     return instruction.keys[accountIndex].pubkey === expectedAccount
   }
-  console.log('false')
   return false
 }
 
@@ -114,9 +113,10 @@ const checkAccountKey = (instruction, accountIndex, expectedAccount) => {
  * Ensures we relay only for instructions relevant to our programs and base account
  *
  * @param {Instruction} instruction
+ * @param {string} walletAddress
  * @returns true if the program authority matches, false if it doesn't, and null if not applicable
  */
-const isRelayAllowedInstruction = async (instruction) => {
+const isRelayAllowedInstruction = async (instruction, walletAddress) => {
   if (instruction.programId === solanaRewardsManagerProgramId) {
     // DeleteSenderPublic doesn't have the authority passed in, so use base account instead.
     // Since we've just checked the program ID, this is sufficient as the authority
@@ -143,6 +143,8 @@ const isRelayAllowedInstruction = async (instruction) => {
         usdcAuthority
       )
     )
+  } else if (instruction.programId === TOKEN_PROGRAM_ID.toBase58()) {
+    return await isTransferToUserbank(instruction, walletAddress)
   } else if (isRelayAllowedProgram([instruction])) {
     // Authority check not necessary
     return null
@@ -152,13 +154,21 @@ const isRelayAllowedInstruction = async (instruction) => {
 }
 
 /**
- * Checks that all the given instructions have an allowed authority or base account (if applicable)
+ * Checks that all the given instructions have an allowed authority or base account (if applicable), or are otherwise allowed
  * @param {Instruction[]} instructions
- * @returns true if all the instructions have allowed authorities/base accounts
+ * @param {Object} optimizelyClient
+ * @param {string} walletAddress
+ * @returns true if all the instructions have allowed authorities/base accounts or are otherwise allowed
  */
-const areRelayAllowedInstructions = async (instructions, optimizelyClient) => {
+const areRelayAllowedInstructions = async (
+  instructions,
+  optimizelyClient,
+  walletAddress
+) => {
   const results = await Promise.all(
-    instructions.map((instruction) => isRelayAllowedInstruction(instruction))
+    instructions.map((instruction) =>
+      isRelayAllowedInstruction(instruction, walletAddress)
+    )
   )
   // Explicitly check for false - null means N/A and should be passing
   if (results.some((result) => result === false)) {

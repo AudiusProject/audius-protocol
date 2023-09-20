@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { Button, ButtonType, IconPencil } from '@audius/stems'
+import { Button, ButtonType, IconCamera } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import ReactDropzone from 'react-dropzone'
@@ -81,7 +81,7 @@ const ImageSelectionButton = ({
               [styles.hide]: showModal
             })}
             text={buttonText}
-            leftIcon={<IconPencil />}
+            rightIcon={<IconCamera />}
             type={ButtonType.WHITE}
             onClick={handleClick}
             buttonType='button'
@@ -110,7 +110,7 @@ const ImageSelectionButton = ({
                 [styles.hide]: hasImage
               })}
               text={buttonText}
-              leftIcon={<IconPencil />}
+              rightIcon={<IconCamera />}
               type={ButtonType.WHITE}
               onClick={handleClick}
               buttonType='button'
