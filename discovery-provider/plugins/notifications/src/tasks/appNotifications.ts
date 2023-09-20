@@ -11,9 +11,8 @@ export async function sendAppNotifications(
     logger.info(
       `Processing ${pending.appNotifications.length} app notifications`
     )
-    await Promise.all([
-      appNotificationsProcessor.process(pending.appNotifications)
-    ])
+    
+    appNotificationsProcessor.process(pending.appNotifications)
     logger.info('Processed new app updates')
   }
 }
