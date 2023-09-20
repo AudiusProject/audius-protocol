@@ -99,7 +99,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     }
   }
 
-  const isHealthy = isContent ? health.healthy : Array.isArray(health.errors) && health.errors.length === 0
+  const isHealthy = isContent ? health.healthy : !health.errors || (Array.isArray(health.errors) && health.errors.length === 0)
   const unreachablePeers = health.unreachablePeers?.join(', ')
 
   const isCompose = health.infra_setup || health.audiusContentInfraSetup
