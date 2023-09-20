@@ -1,4 +1,4 @@
-FROM node:16.18-slim
+FROM node:18.17-slim
 
 RUN apt update && apt install -y python3 make gcc g++
 
