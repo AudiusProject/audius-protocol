@@ -5,6 +5,7 @@ import {
   cacheCollectionsSelectors,
   CommonState,
   savedPageSelectors,
+  Status,
   useAllPaginatedQuery,
   useGetLibraryAlbums,
   useGetLibraryPlaylists
@@ -22,7 +23,15 @@ const {
 } = savedPageSelectors
 const { getCollections } = cacheCollectionsSelectors
 
-export const useCollectionsData = (collectionType: 'album' | 'playlist') => {
+type CollectionsDataParams = {
+  collectionType: 'album' | 'playlist'
+  filterValue?: string
+}
+
+export const useCollectionsData = ({
+  collectionType,
+  filterValue
+}: CollectionsDataParams) => {
   const currentUserId = useSelector(getUserId)
   const selectedCategory = useSelector(getCollectionsCategory)
 
@@ -47,13 +56,15 @@ export const useCollectionsData = (collectionType: 'album' | 'playlist') => {
 
   const {
     data: fetchedCollections,
-    status,
+    status: apiStatus,
+    isLoadingMore,
     hasMore,
     loadMore: fetchMore
   } = useAllPaginatedQuery(
     collectionType === 'album' ? useGetLibraryAlbums : useGetLibraryPlaylists,
     {
       userId: currentUserId!,
+      query: filterValue,
       category: selectedCategory
     },
     {
@@ -69,6 +80,8 @@ export const useCollectionsData = (collectionType: 'album' | 'playlist') => {
       'playlist_id'
     )
   }, [locallyAddedCollections, fetchedCollections, locallyRemovedCollections])
+
+  const status = isLoadingMore || hasMore ? Status.LOADING : apiStatus
 
   return {
     status,

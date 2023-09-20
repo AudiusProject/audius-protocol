@@ -153,8 +153,8 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	}
 
 	// redirect to it
-	host, err := ss.findNodeToServeBlob(cid)
-	if err == nil && host != "" {
+	host := ss.findNodeToServeBlob(cid)
+	if host != "" {
 		dest := ss.replaceHost(c, host)
 		query := dest.Query()
 		query.Add("allow_unhealthy", "true") // we confirmed the node has it, so allow it to serve it even if unhealthy
@@ -162,20 +162,16 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		return c.Redirect(302, dest.String())
 	}
 
-	if err != nil {
-		logger.Warn("error finding node to serve blob", "err", err)
-		return err
-	}
 	return c.String(404, "blob not found")
 }
 
-func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
+func (ss *MediorumServer) findNodeToServeBlob(key string) string {
 
 	// use cache if possible
 	if host, ok := ss.redirectCache.Get(key); ok {
 		// verify host is all good
 		if ss.hostHasBlob(host, key) {
-			return host, nil
+			return host
 		} else {
 			ss.redirectCache.Remove(key)
 		}
@@ -192,10 +188,10 @@ func (ss *MediorumServer) findNodeToServeBlob(key string) (string, error) {
 	winner := ss.raceHostHasBlob(key, hosts)
 	if winner != "" {
 		ss.redirectCache.Set(key, winner, imcache.WithDefaultExpiration())
-		return winner, nil
+		return winner
 	}
 
-	return "", nil
+	return ""
 }
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {

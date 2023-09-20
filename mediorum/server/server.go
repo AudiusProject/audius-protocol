@@ -22,6 +22,7 @@ import (
 	_ "embed"
 
 	"github.com/erni27/imcache"
+	"github.com/imroc/req/v3"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -83,6 +84,7 @@ type MediorumServer struct {
 	pgPool          *pgxpool.Pool
 	quit            chan os.Signal
 	trustedNotifier *ethcontracts.NotifierInfo
+	reqClient       *req.Client
 
 	// simplify
 	storagePathUsed  uint64
@@ -93,22 +95,20 @@ type MediorumServer struct {
 	legacyDirUsed    uint64
 	mediorumDirUsed  uint64
 
-	databaseSize        uint64
-	dbSizeErr           string
-	expectedContentSize int64
+	databaseSize         uint64
+	dbSizeErr            string
+	lastSuccessfulRepair RepairTracker
 
 	uploadsCount    int64
 	uploadsCountErr string
 
 	isSeeding bool
 
-	peerHealthsMutex sync.RWMutex
-	peerHealths      map[string]*PeerHealth
-	unreachablePeers []string
-	redirectCache    *imcache.Cache[string, string]
-
-	lastRepairCleanupComplete time.Time
-	lastRepairCleanupDuration time.Duration
+	peerHealthsMutex   sync.RWMutex
+	peerHealths        map[string]*PeerHealth
+	unreachablePeers   []string
+	redirectCache      *imcache.Cache[string, string]
+	uploadOrigCidCache *imcache.Cache[string, string]
 
 	StartedAt time.Time
 	Config    MediorumConfig
@@ -224,8 +224,12 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		peerHosts = append(peerHosts, peer.Host)
 	}
 	crud := crudr.New(config.Self.Host, config.privateKey, peerHosts, db)
-	dbPruneOldOps(db, config.Self.Host)
 	dbMigrate(crud, bucket, config.Self.Host)
+
+	// req.cool http client
+	reqClient := req.C().
+		SetUserAgent("mediorum " + config.Self.Host).
+		SetTimeout(5 * time.Second)
 
 	// Read trusted notifier endpoint from chain
 	var trustedNotifier ethcontracts.NotifierInfo
@@ -257,13 +261,15 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		bucket:          bucket,
 		crud:            crud,
 		pgPool:          pgPool,
+		reqClient:       reqClient,
 		logger:          logger,
 		quit:            make(chan os.Signal, 1),
 		trustedNotifier: &trustedNotifier,
 		isSeeding:       config.Env == "stage" || config.Env == "prod",
 
-		peerHealths:   map[string]*PeerHealth{},
-		redirectCache: imcache.New[string, string](imcache.WithMaxEntriesOption[string, string](100_000)),
+		peerHealths:        map[string]*PeerHealth{},
+		redirectCache:      imcache.New[string, string](imcache.WithMaxEntriesOption[string, string](50_000)),
+		uploadOrigCidCache: imcache.New[string, string](imcache.WithMaxEntriesOption[string, string](50_000)),
 
 		StartedAt: time.Now().UTC(),
 		Config:    config,
@@ -336,6 +342,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/metrics", ss.getMetrics)
 	internalApi.GET("/logs/partition-ops", ss.getPartitionOpsLog)
 	internalApi.GET("/logs/reaper", ss.getReaperLog)
+	internalApi.GET("/logs/repair", ss.serveRepairLog)
 
 	return ss, nil
 
@@ -353,8 +360,11 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startTranscoder()
 
-	createUploadsCache()
-	go ss.buildUploadsCache()
+	var lastSuccessfulRepair RepairTracker
+	if err := ss.crud.DB.Where("finished_at is not null").Where("aborted_reason = ?", "").Order("started_at desc").First(&lastSuccessfulRepair).Error; err != nil {
+		lastSuccessfulRepair = RepairTracker{Counters: map[string]int{}}
+	}
+	ss.lastSuccessfulRepair = lastSuccessfulRepair
 
 	// for any background task that make authenticated peer requests
 	// only start if we have a valid registered wallet

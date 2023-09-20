@@ -21,8 +21,8 @@ steps:
       command: |
         git clone --branch dev https://github.com/AudiusProject/audius-docker-compose.git audius-docker-compose
         cd audius-docker-compose
-        sed -i "s/{TAG:-.*}/{TAG:-$CIRCLE_SHA1}/" */docker-compose.yml
-        git add */docker-compose.yml
+        sed -i "s/{TAG:-.*}/{TAG:-$CIRCLE_SHA1}/" */docker-compose.*.yml
+        git add */docker-compose.*.yml
         git commit -m "Update tag to $CIRCLE_SHA1"
         git push origin dev
 

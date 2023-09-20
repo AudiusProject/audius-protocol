@@ -128,7 +128,7 @@ export class Processor {
           this.lastDailyEmailSent < moment.utc().subtract(1, 'days'))
       ) {
         logger.info('Processing daily emails...')
-        await processEmailNotifications(
+        processEmailNotifications(
           this.discoveryDB,
           this.identityDB,
           'daily',
@@ -143,7 +143,8 @@ export class Processor {
           this.lastWeeklyEmailSent < moment.utc().subtract(7, 'days'))
       ) {
         logger.info('Processing weekly emails')
-        await processEmailNotifications(
+        // fire and forget so other notifs can process
+        processEmailNotifications(
           this.discoveryDB,
           this.identityDB,
           'weekly',
