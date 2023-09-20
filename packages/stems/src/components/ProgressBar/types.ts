@@ -12,4 +12,5 @@ export type ProgressBarProps = {
   showLabels?: boolean
   minWrapper?: React.ComponentType<{ value: ProgressValue }>
   maxWrapper?: React.ComponentType<{ value: ProgressValue }>
+  'aria-labelledby'?: string
 }
