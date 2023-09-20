@@ -162,7 +162,7 @@ export const FinishPageNew = (props: FinishPageProps) => {
   const visitButtonPath = useMemo(() => {
     switch (uploadType) {
       case UploadType.INDIVIDUAL_TRACK:
-        return upload.tracks![0].metadata.permalink
+        return upload.tracks?.[0].metadata.permalink
       case UploadType.ALBUM:
       case UploadType.PLAYLIST:
         return collectionPage(
@@ -176,7 +176,7 @@ export const FinishPageNew = (props: FinishPageProps) => {
         if (!upload.tracks || upload.tracks.length > 1) {
           return profilePage(user!.handle)
         } else {
-          return upload.tracks![0].metadata.permalink
+          return upload.tracks?.[0].metadata.permalink
         }
     }
   }, [
@@ -250,7 +250,7 @@ export const FinishPageNew = (props: FinishPageProps) => {
             )
           })}
         </div>
-        {uploadComplete ? (
+        {uploadComplete && visitButtonPath ? (
           <div className={styles.uploadFooter}>
             <HarmonyPlainButton
               onClick={handleUploadMoreClick}
