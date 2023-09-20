@@ -74,7 +74,7 @@ func (ss *MediorumServer) startRepairer() {
 		}
 
 		// check that network is valid (should have more peers than replication factor)
-		if healthyPeers := ss.findHealthyPeers(5 * time.Minute); len(healthyPeers) < ss.Config.ReplicationFactor {
+		if healthyPeers := ss.findHealthyPeers(time.Hour); len(healthyPeers) < ss.Config.ReplicationFactor {
 			logger.Warn("not enough healthy peers to run repair",
 				"R", ss.Config.ReplicationFactor,
 				"peers", len(healthyPeers))
