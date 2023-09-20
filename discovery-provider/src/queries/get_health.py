@@ -80,11 +80,6 @@ def get_elapsed_time_redis(redis, redis_key):
     return elapsed_time_in_sec
 
 
-def get_backfilled_cid_data(redis):
-    backfilled_cid_data = redis.get("backfilled_cid_data")
-    return backfilled_cid_data.decode() if backfilled_cid_data else False
-
-
 # Returns DB block state & diff
 def _get_db_block_state():
     db = db_session.get_db_read_replica()
@@ -316,8 +311,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     discovery_nodes = get_all_other_nodes.get_all_other_discovery_nodes_cached(redis)
     content_nodes = get_all_other_nodes.get_all_healthy_content_nodes_cached(redis)
     final_poa_block = helpers.get_final_poa_block()
-    backfilled_cid_data = get_backfilled_cid_data(redis)
-    delist_statuses_ok = get_delist_statuses_ok()
     health_results = {
         "web": {
             "blocknumber": latest_block_num,
@@ -353,8 +346,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "latest_indexed_block_num": latest_indexed_block_num,
         "final_poa_block": final_poa_block,
         "network": {"discovery_nodes": discovery_nodes, "content_nodes": content_nodes},
-        "backfilled_cid_data": backfilled_cid_data,
-        "delist_statuses_ok": delist_statuses_ok,
     }
 
     if os.getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA") is not None:
@@ -437,8 +428,11 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         errors.append("unhealthy plays")
     if reactions_health_info["is_unhealthy"]:
         errors.append("unhealthy reactions")
+
+    delist_statuses_ok = get_delist_statuses_ok()
     if not delist_statuses_ok:
         errors.append("unhealthy delist statuses")
+
     chain_health = health_results["chain_health"]
     if chain_health and chain_health["status"] == "Unhealthy":
         errors.append("unhealthy chain")
@@ -545,6 +539,7 @@ def get_play_health_info(
 
     # If unhealthy sol plays, this will be overwritten
     time_diff_general = sol_play_info["time_diff"]
+    oldest_unarchived_play = None
 
     if is_unhealthy_sol_plays or not plays_count_max_drift:
         # Calculate time diff from now to latest play
