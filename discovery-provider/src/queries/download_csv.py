@@ -116,9 +116,9 @@ def get_link(content_type: PurchaseType, handle: str, slug: str):
 
 
 # Get value of purchased content
-def get_dollar_amount(amount: str):
-    num_usdc_decimals = 6
-    return int(amount) / 10**num_usdc_decimals
+def get_dollar_amount(amount: str, is_cents=False):
+    num_decimals = 4 if is_cents else 6
+    return int(amount) / 10**num_decimals
 
 
 # Returns USDC purchases for a given user in a CSV format
@@ -215,7 +215,7 @@ def download_withdrawals(args: DownloadWithdrawalsArgs):
                 lambda result: {
                     "destination wallet": result.tx_metadata,
                     "date": result.transaction_created_at,
-                    "amount": get_dollar_amount(result.change),
+                    "amount": get_dollar_amount(result.change, is_cents=True),
                 },
                 results,
             )
