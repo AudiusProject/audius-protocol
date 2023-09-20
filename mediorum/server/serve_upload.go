@@ -25,7 +25,7 @@ func (ss *MediorumServer) getUpload(c echo.Context) error {
 	var upload *Upload
 	err := ss.crud.DB.First(&upload, "id = ?", c.Param("id")).Error
 	if err != nil {
-		return err
+		return echo.NewHTTPError(404, err.Error())
 	}
 	if upload.Status == JobStatusError {
 		return c.JSON(422, upload)

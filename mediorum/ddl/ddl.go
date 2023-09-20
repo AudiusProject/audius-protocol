@@ -53,11 +53,6 @@ func Migrate(db *sql.DB, gormDB *gorm.DB, bucket *blob.Bucket, myHost string) {
 
 	runMigration(db, dropBlobs)
 
-	// do a one time reset of ops cursor
-	// after enabling gossip of ops
-	// to ensure every node has full history
-	runMigration(db, `truncate cursors`)
-
 	schedulePartitionOpsMigration(db, myHost) // TODO: Remove after every node runs the partition ops migration
 }
 
