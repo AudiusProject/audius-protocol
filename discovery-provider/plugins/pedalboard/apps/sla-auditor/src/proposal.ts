@@ -1,8 +1,9 @@
 import App from "basekit/src/app";
 import { SharedData } from "./config";
+import BN from 'bn.js'
 
 export type SlashProposalParams = {
-  amountWei: number;
+  amountWei: BN;
   title: string;
   description: string;
   owner: string;
@@ -24,7 +25,7 @@ export const propose = async (
   const functionSignature = "slash(uint256,address)";
 
   const callData = [
-    `${web3.utils.utf8ToHex(params.amountWei.toString())}`,
+    params.amountWei.toString(),
     params.owner,
   ];
 
@@ -58,5 +59,15 @@ export const propose = async (
       description: params.description,
     });
     console.log(`Created proposal: ${proposalId}`);
+  } else {
+    console.log('=======DRY RUN=======')
+    console.log({
+      targetContractRegistryKey,
+      callValue,
+      functionSignature,
+      callData,
+      name: params.title,
+      description: params.description,
+    })
   }
 };
