@@ -271,6 +271,7 @@ export const pollForBalanceChange = async (
 export type PurchaseContentArgs = {
   id: number
   blocknumber: number
+  extraAmount?: number | BN
   type: 'track'
   splits: Record<string, number | BN>
 }

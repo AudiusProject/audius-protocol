@@ -13,6 +13,8 @@ type PurchaseContentState = {
   stage: PurchaseContentStage
   contentType: ContentType
   contentId: ID
+  /** Pay extra amount in cents */
+  extraAmount?: number
   error?: Error
   onSuccess?: OnSuccess
 }
@@ -20,6 +22,7 @@ type PurchaseContentState = {
 const initialState: PurchaseContentState = {
   contentType: ContentType.TRACK,
   contentId: -1,
+  extraAmount: undefined,
   error: undefined,
   stage: PurchaseContentStage.START
 }
@@ -31,6 +34,7 @@ const slice = createSlice({
     startPurchaseContentFlow: (
       state,
       action: PayloadAction<{
+        extraAmount?: number
         contentId: ID
         contentType?: ContentType
         onSuccess?: OnSuccess
@@ -38,6 +42,7 @@ const slice = createSlice({
     ) => {
       state.stage = PurchaseContentStage.START
       state.error = undefined
+      state.extraAmount = action.payload.extraAmount
       state.contentId = action.payload.contentId
       state.contentType = action.payload.contentType ?? ContentType.TRACK
       state.onSuccess = action.payload.onSuccess
