@@ -26,7 +26,7 @@ export const getFundDestinationTokenAccountFees = async (
   account: PublicKey
 ) => {
   const rent = await getAssociatedTokenAccountRent()
-  const fee = (await getTransferTransactionFee(account)) ?? 0
+  const fee = await getTransferTransactionFee(account)
   return (rent + fee) / LAMPORTS_PER_SOL
 }
 
@@ -62,7 +62,7 @@ export const getSwapUSDCUserBankInstructions = async ({
   const swapQuote = await JupiterSingleton.getQuote({
     inputTokenSymbol: 'USDC',
     outputTokenSymbol: 'SOL',
-    inputAmount: Number(BigInt(usdcNeededAmount)),
+    inputAmount: usdcNeededAmount,
     slippage: USDC_SLIPPAGE,
     swapMode: 'ExactIn',
     onlyDirectRoutes: true

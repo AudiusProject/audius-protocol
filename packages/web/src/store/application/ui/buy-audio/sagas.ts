@@ -664,9 +664,7 @@ function* swapStep({
   // Check that we get the desired AUDIO from the quote
   const audioAdjusted = convertBigIntToAmountObject(
     BigInt(
-      Math.floor(
-        (Number(BigInt(quote.quote.outAmount)) * 100 - slippage) / 100.0
-      )
+      Math.floor((Number(quote.quote.outAmount) * 100 - slippage) / 100.0)
     ),
     TOKEN_LISTING_MAP.AUDIO.decimals
   )

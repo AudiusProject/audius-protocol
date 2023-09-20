@@ -1,5 +1,4 @@
 import BN from 'bn.js'
-import JSBI from 'jsbi'
 
 import {
   BNAudio,
@@ -111,16 +110,11 @@ export const formatWei = (
   return formatNumberCommas(trimmed) as StringAudio
 }
 
-export const convertQuoteStringToAmountObject = (
-  amount: string,
-  decimals: number
-): AmountObject => {
-  return {
-    amount: Number(BigInt(amount)),
-    amountString: amount,
-    uiAmount: Number(BigInt(amount)) / 10 ** decimals,
-    uiAmountString: (BigInt(amount) / BigInt(10 ** decimals)).toString()
-  }
+const convertBigIntToUIString = (amount: bigint, decimals: number) => {
+  const str = amount.toString()
+  return `${str.substring(0, str.length - decimals)}.${str.substring(
+    str.length - decimals
+  )}`
 }
 
 export const convertBigIntToAmountObject = (
@@ -131,7 +125,7 @@ export const convertBigIntToAmountObject = (
     amount: Number(amount),
     amountString: amount.toString(),
     uiAmount: Number(amount) / 10 ** decimals,
-    uiAmountString: (Number(amount) / 10 ** decimals).toString()
+    uiAmountString: convertBigIntToUIString(amount, decimals)
   }
 }
 

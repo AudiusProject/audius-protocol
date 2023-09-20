@@ -1,7 +1,7 @@
 import {
   JupiterTokenSymbol,
   TOKEN_LISTING_MAP,
-  convertQuoteStringToAmountObject
+  convertBigIntToAmountObject
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import { createJupiterApiClient, Instruction, QuoteResponse } from '@jup-ag/api'
@@ -76,12 +76,12 @@ const getQuote = async ({
   }
 
   return {
-    inputAmount: convertQuoteStringToAmountObject(
-      quote.inAmount,
+    inputAmount: convertBigIntToAmountObject(
+      BigInt(quote.inAmount),
       inputToken.decimals
     ),
-    outputAmount: convertQuoteStringToAmountObject(
-      quote.outAmount,
+    outputAmount: convertBigIntToAmountObject(
+      BigInt(quote.outAmount),
       outputToken.decimals
     ),
     quote,
