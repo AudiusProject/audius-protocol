@@ -22,14 +22,19 @@ program
       program.error('Track is not purchaseable')
     }
 
-    const parsedExtraAmount = Number.parseInt(extraAmountCents)
+    let extraAmount
+    if (extraAmountCents) {
+      const parsedExtraAmount = Number.parseInt(extraAmountCents)
+      if (!Number.isFinite(parsedExtraAmount) || parsedExtraAmount <= 0) {
+        program.error(`Invalid extra amount: ${extraAmountCents}`)
+      }
+      extraAmount = parsedExtraAmount * 10 ** 4
+    }
 
     try {
       const response = await audiusLibs.solanaWeb3Manager.purchaseContent({
         id: trackId,
-        extraAmount: Number.isFinite(parsedExtraAmount)
-          ? parsedExtraAmount * 10 ** 4
-          : 0,
+        extraAmount,
         type: 'track',
         blocknumber: track.blocknumber,
         splits: track.premium_conditions.usdc_purchase.splits

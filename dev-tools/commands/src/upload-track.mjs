@@ -39,8 +39,11 @@ const getPremiumConditions = async ({
   price: priceString,
   audiusLibs
 }) => {
-  const price = Number.parseInt(priceString)
-  if (Number.isInteger(price) && price > 0) {
+  if (priceString) {
+    const price = Number.parseInt(priceString)
+    if (!Number.isFinite(price) || price <= 0) {
+      throw new Error(`Invalid price "${priceString}"`)
+    }
     const { userbank } =
       await audiusLibs.solanaWeb3Manager.createUserBankIfNeeded({
         mint: 'usdc'
