@@ -765,12 +765,12 @@ def is_api_healthy(my_url):
 
     user_search_endpoint = f"{my_url}/v1/users/search?query={user_search_term}"
     track_stream_endpoint = f"{my_url}/v1/tracks/{track_id}/stream"
-    track_search_endpoint = f"{my_url}/v1/tracks/{track_id}"
+    track_endpoint = f"{my_url}/v1/tracks/{track_id}"
     trending_endpoint = f"{my_url}/v1/tracks/trending"
     urls = [
         user_search_endpoint,
         track_stream_endpoint,
-        track_search_endpoint,
+        track_endpoint,
         trending_endpoint,
     ]
 
@@ -807,7 +807,7 @@ def is_api_healthy(my_url):
                     f"missing keyword '{user_search_response_keyword}' in response from {url}"
                 )
             if (
-                url == track_search_endpoint
+                url == track_endpoint
                 and track_response_keyword not in response_text
             ):
                 errors.append(
