@@ -62,7 +62,8 @@ export function DiscoveryHealth() {
 }
 
 function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
-  const { data, error } = useSWR(sp.endpoint + '/health_check', fetcher)
+  const path = isContent ? '/health_check' : '/health_check?verbose=true&enforce_block_diff=true&healthy_block_diff=250&plays_count_max_drift=720'
+  const { data, error } = useSWR(sp.endpoint + path, fetcher)
   const { data: ipCheck, error: ipCheckError } = useSWR(
     sp.endpoint + '/ip_check',
     fetcher
@@ -97,6 +98,8 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       }
     }
   }
+
+  const isHealthy = isContent ? health.healthy : Array.isArray(health.errors) && health.errors.length === 0
   const unreachablePeers = health.unreachablePeers?.join(', ')
 
   const isCompose = health.infra_setup || health.audiusContentInfraSetup
@@ -112,7 +115,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const mediorumPercent = mediorumUsed / mediorumSize
   const legacyDirUsed = bytesToGb(health.legacyDirUsed)
   const mediorumDirUsed = bytesToGb(health.mediorumDirUsed)
-  const isBehind = health.block_difference > 5 ? 'is-behind' : ''
+  const isBehind = health.block_difference > 5 ? 'is-unhealthy' : ''
   const dbSize =
     bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
   const expectedContentSize = bytesToGb(health.lastSuccessfulRepair?.ContentSize ?? 0)
@@ -148,7 +151,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     health.chain_health?.entries['node-health'].description
 
   return (
-    <tr>
+    <tr className={isHealthy ? '' : 'is-unhealthy'}>
       <td>
         <a href={sp.endpoint + '/health_check'} target="_blank">
           {sp.endpoint.replace('https://', '')}
