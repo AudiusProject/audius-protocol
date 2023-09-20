@@ -3,7 +3,8 @@ import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
 import {
   AppEmailNotification,
   CreatePlaylistNotification,
-  CreateTrackNotification
+  CreateTrackNotification,
+  RequiresRetry
 } from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
@@ -17,6 +18,7 @@ import {
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
+import { RemoteConfig } from '../../remoteConfig'
 
 type CreateNotificationRow = Omit<NotificationRow, 'data'> & {
   data: CreateTrackNotification | CreatePlaylistNotification
@@ -26,6 +28,7 @@ type Track = {
   track_id: number
   title: string
   owner_id: number
+  premium_conditions: object
 }
 
 type Playlist = {
@@ -64,10 +67,12 @@ export class Create extends BaseNotification<CreateNotificationRow> {
 
   async processNotification({
     isLiveEmailEnabled,
-    isBrowserPushEnabled
+    isBrowserPushEnabled,
+    getIsPushNotificationEnabled
   }: {
     isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
+    getIsPushNotificationEnabled: (type: string) => boolean
   }) {
     let ownerId: number | undefined
     let description: string
@@ -76,7 +81,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
 
     if (this.trackId) {
       const trackRes: Track[] = await this.dnDB
-        .select('track_id', 'title', 'owner_id')
+        .select('track_id', 'title', 'owner_id', 'premium_conditions')
         .from<TrackRow>('tracks')
         .where('is_current', true)
         .whereIn('track_id', [this.trackId])
@@ -128,6 +133,23 @@ export class Create extends BaseNotification<CreateNotificationRow> {
       : null
 
     const entityId = this.trackId ?? this.playlistId
+
+    // Filters
+    if (!entityType || !entityId) {
+      throw new Error('Missing entity')
+    }
+
+    if (track) {
+      const areUSDCSellerNotificationsEnabled = getIsPushNotificationEnabled(
+        'usdc_purchase_seller'
+      )
+      if (
+        areUSDCSellerNotificationsEnabled &&
+        'usdc_purchase' in track.premium_conditions
+      ) {
+        throw new RequiresRetry('USDC purchase not enabled')
+      }
+    }
 
     const validReceiverUserIds = this.receiverUserIds.filter(
       (userId) => !(users?.[userId]?.isDeactivated ?? true)
@@ -235,6 +257,9 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     let user
     if (this.trackId) {
       const track = resources.tracks[this.trackId]
+      if ('usdc_purchase' in track.premium_conditions) {
+        return null
+      }
       entity = {
         ...track,
         type: EntityType.Track,

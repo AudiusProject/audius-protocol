@@ -277,3 +277,10 @@ export type NotificationData =
   | TrendingTrackNotification
   | TrendingUndergroundNotification
   | TrendingPlaylistNotification
+
+export class RequiresRetry extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'RequiresRetry'
+  }
+}

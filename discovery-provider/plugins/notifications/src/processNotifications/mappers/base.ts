@@ -2,6 +2,7 @@ import { Knex } from 'knex'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { PlaylistRow, TrackRow, UserRow } from '../../types/dn'
 import { EntityType } from '../../email/notifications/types'
+import { RemoteConfig } from '../../remoteConfig'
 
 type UserBasicInfo = {
   user_id: number
@@ -120,6 +121,7 @@ export abstract class BaseNotification<Type> {
   async processNotification(params: {
     isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
+    getIsPushNotificationEnabled: (type: string) => boolean
   }) {
     // handles live processing of notification. this includes: mobile push, browser push, and live emails
     return
