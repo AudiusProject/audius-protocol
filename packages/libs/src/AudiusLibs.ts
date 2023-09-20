@@ -545,7 +545,7 @@ export class AudiusLibs {
       if (this.web3Config && this.useDiscoveryRelay) {
         const web3Manager = this.web3Manager
         if (web3Manager === undefined || web3Manager === null) {
-          console.warn("useDiscoveryRelay is set to true but web3Manager is not configured")
+          console.info("useDiscoveryRelay is set to true but web3Manager is not configured")
         } else {
           this.web3Manager?.setDiscoveryProvider(this.discoveryProvider)
         }
