@@ -56,7 +56,7 @@ export const FormScreen = ({ children, ...props }: FormScreenProps) => {
   // TODO: add <ScreenContent> to usages of SafeAreaScreen
   return (
     <Screen
-      variant={'white'}
+      variant='white'
       topbarLeft={topbarLeft}
       topbarRight={topbarRight}
       {...other}
