@@ -197,7 +197,7 @@ export const FinishPageNew = (props: FinishPageProps) => {
       <Tile className={styles.uploadProgress} elevation='mid'>
         <div className={styles.uploadHeader}>
           <div className={styles.headerInfo}>
-            <Text variant='label' size='small'>
+            <Text id='upload-progress' variant='label' size='small'>
               {uploadComplete
                 ? messages.uploadComplete
                 : messages.uploadInProgress}
@@ -223,6 +223,7 @@ export const FinishPageNew = (props: FinishPageProps) => {
           </div>
           {!uploadComplete ? (
             <ProgressBar
+              aria-labelledby='upload-progress'
               sliderClassName={styles.uploadProgressBar}
               value={fullUploadPercent}
             />

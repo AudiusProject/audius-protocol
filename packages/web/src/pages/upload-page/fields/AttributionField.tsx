@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import { creativeCommons, encodeHashId, decodeHashId } from '@audius/common'
+import { creativeCommons } from '@audius/common'
 import { IconRobot } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
@@ -80,7 +80,6 @@ const messages = {
 
 const IS_AI_ATTRIBUTED = 'isAiAttribution'
 const AI_USER_ID = 'ai_attribution_user_id'
-const AI_USER_NUM_ID = 'ai_attribution_user_num_id'
 const ISRC = 'isrc'
 const ISWC = 'iswc'
 const LICENSE_TYPE = 'licenseType'
@@ -113,8 +112,7 @@ const iswcRegex = /^T-\d{9}-\d$/i
 const AttributionFormSchema = z
   .object({
     [IS_AI_ATTRIBUTED]: z.optional(z.boolean()),
-    [AI_USER_ID]: z.optional(z.string().nullable()),
-    [AI_USER_NUM_ID]: z.optional(z.number().nullable()),
+    [AI_USER_ID]: z.optional(z.number().nullable()),
     [ISRC]: z.optional(z.string().nullable()),
     [ISWC]: z.optional(z.string().nullable()),
     [ALLOW_ATTRIBUTION]: z.optional(z.boolean()),
@@ -137,9 +135,8 @@ const AttributionFormSchema = z
 export type AttributionFormValues = z.input<typeof AttributionFormSchema>
 
 export const AttributionField = () => {
-  const [{ value: aiUserId }, , { setValue: setAiUserId }] = useTrackField<
-    string | undefined
-  >(AI_USER_ID)
+  const [{ value: aiUserId }, , { setValue: setAiUserId }] =
+    useTrackField<SingleTrackEditValues[typeof AI_USER_ID]>(AI_USER_ID)
   const [{ value: isrcValue }, , { setValue: setIsrc }] =
     useTrackField<SingleTrackEditValues[typeof ISRC]>(ISRC)
   const [{ value: iswcValue }, , { setValue: setIswc }] =
@@ -160,11 +157,6 @@ export const AttributionField = () => {
   const initialValues = useMemo(() => {
     const initialValues = {}
     set(initialValues, AI_USER_ID, aiUserId)
-    set(
-      initialValues,
-      AI_USER_NUM_ID,
-      aiUserId ? decodeHashId(aiUserId) : undefined
-    )
     if (aiUserId) {
       set(initialValues, IS_AI_ATTRIBUTED, true)
     }
@@ -287,9 +279,6 @@ const AttributionModalFields = () => {
       name: AI_USER_ID,
       type: 'select'
     })
-  const [aiUserNumIdField, , { setValue: setAiUserNumId }] = useField({
-    name: AI_USER_NUM_ID
-  })
   const [{ value: allowAttribution }] = useField<boolean>(ALLOW_ATTRIBUTION)
   const [{ value: commercialUse }] = useField<boolean>(COMMERCIAL_USE)
   const [{ value: derivativeWorks }] = useField<boolean>(DERIVATIVE_WORKS)
@@ -318,13 +307,11 @@ const AttributionModalFields = () => {
       >
         <AiAttributionDropdown
           {...aiUserIdField}
-          {...aiUserHelperFields}
           error={dropdownHasError}
           helperText={dropdownHasError && aiUserHelperFields.error}
-          value={aiUserNumIdField.value}
+          value={aiUserIdField.value}
           onSelect={(value: SingleTrackEditValues[typeof AI_USER_ID]) => {
-            setAiUserId(value ? encodeHashId(value) : null)
-            setAiUserNumId(value ?? null)
+            setAiUserId(value ?? null)
           }}
         />
       </SwitchRowField>

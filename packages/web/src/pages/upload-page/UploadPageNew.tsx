@@ -179,10 +179,9 @@ export const UploadPageNew = (props: UploadPageProps) => {
   const handleUpload = useCallback(() => {
     if (!formState.tracks) return
     const { tracks } = formState
-    const trackStems = tracks.reduce((acc, track) => {
+    const trackStems = tracks.map((track) => {
       // @ts-ignore - This has stems in it sometimes
-      acc = [...acc, ...(track.metadata.stems ?? [])]
-      return acc
+      return track.metadata.stems ?? []
     }, [])
 
     dispatch(
