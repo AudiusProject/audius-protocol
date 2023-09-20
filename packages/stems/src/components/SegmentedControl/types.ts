@@ -39,4 +39,9 @@ export type SegmentedControlProps<T extends string> = {
    */
   label?: string
   'aria-labelledby'?: string
+
+  /**
+   * A hack to allow shifting animations to settle before recalculating the tab width
+   */
+  forceRefreshAfterMs?: number
 }

@@ -291,8 +291,10 @@ export const ShareDrawer = () => {
         titleIcon={IconShare}
         styles={{ row: styles.row }}
       >
-        {content?.type !== 'playlist' || content?.playlist?.is_private ? (
-          <Text style={styles.titleHelperText} fontSize={'large'}>
+        {content?.type === 'playlist' &&
+        content.playlist.is_private &&
+        isOwner ? (
+          <Text style={styles.titleHelperText} fontSize='large'>
             {messages.hiddenPlaylistShareHelperText}
           </Text>
         ) : null}

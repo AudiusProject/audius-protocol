@@ -20,7 +20,7 @@ export const CollectionTrackFieldArray = () => {
           }}
         >
           <Droppable droppableId='tracks'>
-            {(provided, snapshot) => (
+            {(provided) => (
               <div {...provided.droppableProps} ref={provided.innerRef}>
                 {tracks.map((track, index) => (
                   <Draggable
@@ -28,7 +28,7 @@ export const CollectionTrackFieldArray = () => {
                     draggableId={track.file.name}
                     index={index}
                   >
-                    {(provided, snapshot) => (
+                    {(provided) => (
                       <div
                         ref={provided.innerRef}
                         {...provided.draggableProps}
