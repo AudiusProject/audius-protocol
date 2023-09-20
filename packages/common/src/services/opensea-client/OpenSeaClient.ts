@@ -112,9 +112,10 @@ export class OpenSeaClient {
     wallets: string[],
     limit = OPENSEA_NUM_ASSETS_LIMIT
   ): Promise<OpenSeaAssetExtended[]> {
-    return allSettled(
-      wallets.map((wallet) => this.getCollectiblesForWallet(wallet, limit))
-    ).then((results) =>
+    const x = wallets.map((wallet) =>
+      this.getCollectiblesForWallet(wallet, limit)
+    )
+    return allSettled(x).then((results) =>
       results
         .map((result, i) => ({ result, wallet: wallets[i] }))
         .filter(({ result }) => result.status === 'fulfilled')
