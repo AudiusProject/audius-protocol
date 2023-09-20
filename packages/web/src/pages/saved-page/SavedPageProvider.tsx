@@ -1,37 +1,36 @@
 import { ComponentType, PureComponent } from 'react'
 
 import {
-  ID,
-  UID,
-  RepostSource,
   FavoriteSource,
-  PlaybackSource,
+  ID,
+  LibraryCategoryType,
+  LineupTrack,
   Name,
-  accountSelectors,
-  accountActions,
-  lineupSelectors,
-  savedPageTracksLineupActions as tracksActions,
-  savedPageActions as saveActions,
-  savedPageSelectors,
+  PlaybackSource,
   SavedPageTabs as ProfileTabs,
+  RepostSource,
+  SavedPageCollection,
+  SavedPageTabs,
   SavedPageTrack,
   TrackRecord,
-  SavedPageCollection,
-  tracksSocialActions as socialActions,
+  UID,
+  accountActions,
+  accountSelectors,
+  lineupSelectors,
   playerSelectors,
-  queueSelectors,
-  Kind,
-  LineupTrack,
   playlistUpdatesActions,
   playlistUpdatesSelectors,
-  LibraryCategoryType,
-  SavedPageTabs
+  queueSelectors,
+  savedPageActions as saveActions,
+  savedPageSelectors,
+  tracksSocialActions as socialActions,
+  savedPageTracksLineupActions as tracksActions
 } from '@audius/common'
 import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { debounce, isEqual } from 'lodash'
 import { connect } from 'react-redux'
-import { withRouter, RouteComponentProps } from 'react-router-dom'
+import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { TrackEvent, make } from 'common/store/analytics/actions'
@@ -148,17 +147,15 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   componentDidUpdate(prevProps: SavedPageProps) {
     const { tracksCategory: prevTracksCategory } = prevProps
     const { tracks, tracksCategory } = this.props
-    const allTracksFetched = tracks.entries.every(
-      (track) => track.kind === Kind.TRACKS
-    )
+    const hasReachedEnd = this.props.hasReachedEnd
 
     if (
-      allTracksFetched &&
+      hasReachedEnd &&
       !this.state.allTracksFetched &&
       !this.state.filterText
     ) {
       this.setState({ allTracksFetched: true })
-    } else if (!allTracksFetched && this.state.allTracksFetched) {
+    } else if (!hasReachedEnd && this.state.allTracksFetched) {
       this.setState({ allTracksFetched: false })
     }
 
@@ -499,6 +496,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     }
 
     const desktopProps = {
+      hasReachedEnd: this.props.hasReachedEnd,
       onClickRow: this.onClickRow,
       onClickSave: this.onClickSave,
       onClickTrackName: this.onClickTrackName,
