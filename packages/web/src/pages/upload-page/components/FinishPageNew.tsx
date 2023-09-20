@@ -125,17 +125,16 @@ export const FinishPageNew = (props: FinishPageProps) => {
   const dispatch = useDispatch()
 
   const uploadComplete = useMemo(() => {
-    if (!upload.uploadProgress) return false
-    return (
-      upload.success &&
-      upload.uploadProgress.reduce((acc, progress) => {
-        return (
-          acc &&
-          progress.art.status === ProgressStatus.COMPLETE &&
-          progress.audio.status === ProgressStatus.COMPLETE
-        )
-      }, true)
-    )
+    if (!upload.uploadProgress || upload.uploading || !upload.success)
+      return false
+
+    return upload.uploadProgress.reduce((acc, progress) => {
+      return (
+        acc &&
+        progress.art.status === ProgressStatus.COMPLETE &&
+        progress.audio.status === ProgressStatus.COMPLETE
+      )
+    }, true)
   }, [upload])
 
   const handleUploadMoreClick = useCallback(() => {
