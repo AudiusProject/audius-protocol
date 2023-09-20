@@ -71,7 +71,6 @@ export const SourceFilesField = () => {
     useTrackField<Download[typeof ALLOW_DOWNLOAD_BASE]>(ALLOW_DOWNLOAD)
   const [{ value: followerGatedValue }, , { setValue: setFollowerGatedValue }] =
     useTrackField<Download[typeof FOLLOWER_GATED_BASE]>(FOLLOWER_GATED)
-  // TODO: Stems value should be submitted outside tracks in uploadTracks
   const [{ value: stemsValue }, , { setValue: setStemsValue }] =
     useTrackField<StemUpload[]>(STEMS)
 
