@@ -43,8 +43,6 @@ const Visualizer = ({
     }
   }, [isVisible])
 
-  console.log({ isVisible })
-
   const onToggleVisibility = useCallback(() => {
     // Don't toggle in the case that we are on a route that disables the visualizer
     if (NO_VISUALIZER_ROUTES.has(pathname)) return

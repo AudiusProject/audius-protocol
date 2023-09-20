@@ -20,12 +20,23 @@ export function RelTime({ date }: { date: Date | string }) {
   )
 }
 
-function timeSince(date: Date) {
+export function timeSince(date: Date) {
+  if (!date || date.toString() === "0001-01-01T00:00:00Z") return null
+  if (typeof date == 'string') {
+    date = new Date(date)
+  }
   const now = new Date()
-  var seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+  return secondsToReadableDuration(seconds)
+}
 
+export function nanosToReadableDuration(nanos: number) {
+  const seconds = nanos / 1e9  // Convert nanoseconds to seconds
+  return secondsToReadableDuration(seconds)
+}
+
+function secondsToReadableDuration(seconds: number) {
   var interval = seconds / 31536000
-
   if (interval > 1) {
     return Math.floor(interval) + ' years'
   }

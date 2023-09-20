@@ -11,7 +11,7 @@ import {
   stemsUploadSelectors,
   stemsUploadActions,
   editTrackModalSelectors,
-  useEditTracktModal
+  useEditTrackModal
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -27,7 +27,7 @@ import { AppState } from 'store/types'
 import { FEED_PAGE, getPathname } from 'utils/route'
 const { startStemUploads } = stemsUploadActions
 const { getCurrentUploads } = stemsUploadSelectors
-const { getMetadata, getIsOpen, getStems } = editTrackModalSelectors
+const { getMetadata, getStems } = editTrackModalSelectors
 
 const messages = {
   deleteTrack: 'DELETE TRACK'
@@ -41,7 +41,6 @@ type EditTrackModalProps = OwnProps &
   RouteComponentProps
 
 const EditTrackModal = ({
-  isOpen,
   metadata,
   onEdit,
   onDelete,
@@ -51,7 +50,7 @@ const EditTrackModal = ({
   uploadStems,
   currentUploads
 }: EditTrackModalProps) => {
-  const { onClose } = useEditTracktModal()
+  const { isOpen, onClose } = useEditTrackModal()
   const [isModalOpen, setIsModalOpen] = useState(false)
   useEffect(() => {
     // Delay opening the modal until after we have track metadata as well
@@ -215,7 +214,6 @@ function mapStateToProps(state: AppState) {
   const metadata = getMetadata(state)
   return {
     metadata,
-    isOpen: getIsOpen(state),
     stems: getStems(state),
     currentUploads: metadata?.track_id
       ? getCurrentUploads(state, metadata.track_id)

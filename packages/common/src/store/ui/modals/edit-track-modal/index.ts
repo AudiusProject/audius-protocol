@@ -8,7 +8,7 @@ export type EditTrackModalState = {
 }
 
 const editTrackModal = createModal<EditTrackModalState>({
-  reducerPath: 'EditPlaylist',
+  reducerPath: 'EditTrack',
   initialState: {
     isOpen: false,
     trackId: null
@@ -17,9 +17,9 @@ const editTrackModal = createModal<EditTrackModalState>({
 })
 
 export const {
-  hook: useEditTracktModal,
-  actions: editTracktModalActions,
-  reducer: editTracktModalReducer
+  hook: useEditTrackModal,
+  actions: editTrackModalActions,
+  reducer: editTrackModalReducer
 } = editTrackModal
 
 export * as editTrackModalSelectors from './selectors'

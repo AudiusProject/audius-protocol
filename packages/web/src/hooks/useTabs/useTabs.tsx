@@ -519,19 +519,23 @@ const GestureSupportingBodyContainer = memo(
     // we've clicked a new tab or finished a gesture,
     // begin animations and track the index delta.
     // We have to track the delta as opposed to the last seen
-    const newIndexDelta = activeIndex - internalIndex
-    if (newIndexDelta !== getIndexDelta()) {
-      // If newIndexDelta !== 0, that means we're starting a
-      // new transition from a tab click, so remember it
-      // for onRest.
-      if (newIndexDelta !== 0) {
-        setTransitionInfo({ from: internalIndex, to: activeIndex })
-        setIsOngoingAnimation(true)
+    useEffect(() => {
+      const newIndexDelta = activeIndex - internalIndex
+      if (newIndexDelta !== getIndexDelta()) {
+        // If newIndexDelta !== 0, that means we're starting a
+        // new transition from a tab click, so remember it
+        // for onRest.
+        if (newIndexDelta !== 0) {
+          setTransitionInfo({ from: internalIndex, to: activeIndex })
+          setIsOngoingAnimation(true)
+        }
+        setIndexDelta(newIndexDelta)
+        setScrollContainerX(-1 * activeIndex * containerWidth, false)
+        window.scrollTo(0, initialScrollOffset)
       }
-      setIndexDelta(newIndexDelta)
-      setScrollContainerX(-1 * activeIndex * containerWidth, false)
-      window.scrollTo(0, initialScrollOffset)
-    }
+      // Disable exhaustive deps because we only need to run this if the active index has changed:
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeIndex, internalIndex])
 
     const isMovingLeft = (x: number) => x < -1 * containerWidth * activeIndex
 
@@ -902,6 +906,7 @@ export const useTabRecalculator = (): TabRecalculator => {
 type UseTabsArguments = {
   tabs: TabHeader[]
   elements: ReactNode[]
+  onTabClick?: (label: string) => void
   didChangeTabsFrom?: (label: string, to: string) => void
   bodyClassName?: string
   elementClassName?: string
@@ -965,6 +970,7 @@ const useTabs = ({
   elements,
   didChangeTabsFrom,
   didTransitionCallback,
+  onTabClick: onTabClickCb,
   selectedTabLabel,
   initialTab,
   useFullWidthTransitions,
@@ -1108,11 +1114,12 @@ const useTabs = ({
 
       // On mobile, onChangeComplete gets fired
       // when the animation finishes. On desktop, it's fired
-      // immedaitely
+      // immediately
       setActiveIndex(newIndex)
       !isMobile && onChangeComplete(activeIndex, newIndex)
+      onTabClickCb && onTabClickCb(tabs[newIndex].label)
     },
-    [isMobile, isControlled, onChangeComplete, activeIndex]
+    [isControlled, isMobile, onChangeComplete, activeIndex, onTabClickCb, tabs]
   )
 
   const tabBarKey = tabs.map((t) => t.label).join('-')

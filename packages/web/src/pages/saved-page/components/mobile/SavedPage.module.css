@@ -4,12 +4,20 @@
 
 .header {
   border-bottom: 1px solid var(--neutral-light-8);
+  flex-wrap: wrap;
+  height: 76px;
+}
+
+.categoryMenuWrapper {
+  flex-grow: 1;
+  overflow-x: scroll;
+  width: 100%;
 }
 
 .spinner {
   height: 40px;
   width: 40px;
-  margin: 200px auto 0;
+  margin: var(--unit-18) auto 0;
 }
 
 .spinner g path {
@@ -20,12 +28,12 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  margin-top: 30px;
+  margin-top: 40px;
 }
 
 .tabBar {
   position: fixed;
-  top: 92px;
+  top: 116px;
   margin-top: 0px;
   margin-top: env(safe-area-inset-top, 0px);
   left: 0px;
@@ -119,7 +127,7 @@
 
 /* Empty Tab */
 .emptyTab {
-  margin: 38px 11px 8px;
+  margin: 126px 11px 8px;
   padding: 34px 24px 32px;
   border: 1px solid var(--neutral-light-8);
   border-radius: 6px;

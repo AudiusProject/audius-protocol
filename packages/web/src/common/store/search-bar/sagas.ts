@@ -2,7 +2,8 @@ import {
   Name,
   accountSelectors,
   getContext,
-  removeNullable
+  removeNullable,
+  FeatureFlags
 } from '@audius/common'
 import { flatMap, zip } from 'lodash'
 import {
@@ -34,7 +35,14 @@ export function* getSearchResults(searchText: string) {
   yield* waitForRead()
 
   const apiClient = yield* getContext('apiClient')
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+
   const userId = yield* select(getUserId)
+
+  const isUSDCEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.USDC_PURCHASES
+  )
 
   let results
   if (searchText in searchMultiMap) {
@@ -70,9 +78,13 @@ export function* getSearchResults(searchText: string) {
 
   const { tracks, albums, playlists, users } = results
   const checkedUsers = users.filter((u) => !u.is_deactivated)
-  const checkedTracks = tracks.filter(
-    (t) => !t.is_delete && !t.user.is_deactivated
-  )
+  const checkedTracks = tracks.filter((t) => {
+    return (
+      !t.is_delete &&
+      !t.user.is_deactivated &&
+      (isUSDCEnabled || !('usdc_purchase' in (t.premium_conditions || {})))
+    )
+  })
   const checkedPlaylists = playlists.filter((p) => !p.user?.is_deactivated)
   const checkedAlbums = albums.filter((a) => !a.user?.is_deactivated)
   return {

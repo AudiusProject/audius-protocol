@@ -184,6 +184,10 @@ async def race_requests(urls, timeout):
 # Get cids corresponding to each transcoded variant for the given upload_id.
 # Cache upload_id -> cids mappings.
 def get_image_cids(user, upload_id, variants):
+    # skip resolution step
+    # we want to use upload_id/variant.jpg
+    # after: https://github.com/AudiusProject/audius-protocol/pull/6043
+    return {}
     if not upload_id:
         return {}
     try:

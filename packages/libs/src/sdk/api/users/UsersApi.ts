@@ -1,5 +1,5 @@
 import snakecaseKeys from 'snakecase-keys'
-import type { AuthService, StorageService } from '../../services'
+import type { AuthService, DiscoveryNodeSelectorService, StorageService } from '../../services'
 import {
   Action,
   EntityManagerService,
@@ -9,7 +9,11 @@ import {
 import { parseParams } from '../../utils/parseParams'
 import { retry3 } from '../../utils/retry'
 import {
+  BASE_PATH,
   Configuration,
+  DownloadPurchasesAsCSVRequest,
+  DownloadSalesAsCSVRequest,
+  DownloadUSDCWithdrawalsAsCSVRequest,
   UsersApi as GeneratedUsersApi
 } from '../generated/default'
 import {
@@ -25,10 +29,12 @@ import {
   UpdateProfileSchema
 } from './types'
 import type { LoggerService } from '../../services/Logger'
+import * as runtime from '../generated/default/runtime'
 
 export class UsersApi extends GeneratedUsersApi {
   constructor(
     configuration: Configuration,
+    private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
     private readonly auth: AuthService,
@@ -187,5 +193,122 @@ export class UsersApi extends GeneratedUsersApi {
       auth: this.auth,
       ...advancedOptions
     })
+  }
+
+  /**
+   * Downloads the sales the user has made as a CSV file
+   */
+  async downloadSalesAsCSVBlob(params: DownloadSalesAsCSVRequest): Promise<Blob> {
+    if (params.id === null || params.id === undefined) {
+      throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling downloadSalesAsCSV.');
+    }
+
+    if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+        throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling downloadSalesAsCSV.');
+    }
+
+    if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+        throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling downloadSalesAsCSV.');
+    }
+
+    const queryParameters: any = {};
+
+    if (params.userId !== undefined) {
+        queryParameters['user_id'] = params.userId;
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+        headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+    }
+
+    if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+        headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+    }
+
+    const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
+    const path = `/users/{id}/sales/download`.replace(`{${"id"}}`, encodeURIComponent(String(params.id)))
+    const url = `${host}${BASE_PATH}${path}`
+    const response = await fetch(url, { method: 'GET', headers: headerParameters })
+    return response.blob()
+  }
+
+  /**
+   * Downloads the purchases the user has made as a CSV file
+   */
+  async downloadPurchasesAsCSVBlob(params: DownloadPurchasesAsCSVRequest): Promise<Blob> {
+    if (params.id === null || params.id === undefined) {
+      throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling downloadPurchasesAsCSV.');
+    }
+
+    if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+        throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling downloadPurchasesAsCSV.');
+    }
+
+    if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+        throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling downloadPurchasesAsCSV.');
+    }
+
+    const queryParameters: any = {};
+
+    if (params.userId !== undefined) {
+        queryParameters['user_id'] = params.userId;
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+        headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+    }
+
+    if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+        headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+    }
+
+    const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
+    const path = `/users/{id}/purchases/download`.replace(`{${"id"}}`, encodeURIComponent(String(params.id)))
+    const url = `${host}${BASE_PATH}${path}`
+    const response = await fetch(url, { method: 'GET', headers: headerParameters })
+    return response.blob()
+  }
+
+  /**
+   * Downloads the USDC withdrawals the user has made as a CSV file
+   */
+  async downloadUSDCWithdrawalsAsCSVBlob(params: DownloadUSDCWithdrawalsAsCSVRequest): Promise<Blob> {
+    if (params.id === null || params.id === undefined) {
+      throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling downloadUSDCWithdrawalsAsCSV.');
+    }
+
+    if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+        throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling downloadUSDCWithdrawalsAsCSV.');
+    }
+
+    if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+        throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling downloadUSDCWithdrawalsAsCSV.');
+    }
+
+    const queryParameters: any = {};
+
+    if (params.userId !== undefined) {
+        queryParameters['user_id'] = params.userId;
+    }
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+        headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+    }
+
+    if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+        headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+    }
+
+    const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
+    const path = `/users/{id}/withdrawals/download`.replace(`{${"id"}}`, encodeURIComponent(String(params.id)))
+    const url = `${host}${BASE_PATH}${path}`
+    const response = await fetch(url, { method: 'GET', headers: headerParameters })
+    return response.blob()
   }
 }

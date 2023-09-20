@@ -1,6 +1,20 @@
 -- Drop is_current from any primary keys or indices with is_current
 -- Improves performance and storage utilization
 BEGIN;
+SELECT pg_cancel_backend(pid) FROM pg_stat_activity WHERE state = 'active' and pid <> pg_backend_pid();
+
+LOCK TABLE grants IN ACCESS EXCLUSIVE MODE;
+LOCK TABLE users IN ACCESS EXCLUSIVE MODE;
+LOCK TABLE playlist_seen IN ACCESS EXCLUSIVE MODE;
+LOCK TABLE subscriptions IN ACCESS EXCLUSIVE MODE;
+LOCK TABLE tracks IN ACCESS EXCLUSIVE MODE;
+LOCK TABLE follows IN ACCESS EXCLUSIVE MODE;
+LOCK TABLE saves IN ACCESS EXCLUSIVE MODE;
+LOCK TABLE developer_apps IN ACCESS EXCLUSIVE MODE;
+LOCK TABLE playlists IN ACCESS EXCLUSIVE MODE;
+LOCK TABLE user_events IN ACCESS EXCLUSIVE MODE;
+LOCK TABLE associated_wallets IN ACCESS EXCLUSIVE MODE;
+LOCK TABLE playlist_routes IN ACCESS EXCLUSIVE MODE;
 
 DO $$ 
 DECLARE

@@ -1,11 +1,15 @@
 package server
 
 import (
+	"errors"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/erni27/imcache"
 	"github.com/labstack/echo/v4"
+	"github.com/oklog/ulid/v2"
 )
 
 func apiPath(parts ...string) string {
@@ -87,4 +91,52 @@ func rangeIsFirstByte(headerValue string) bool {
 		}
 	}
 	return false
+}
+
+func (ss *MediorumServer) getUploadOrigCID(uploadId string) (string, error) {
+	if _, err := ulid.Parse(uploadId); err != nil {
+		return "", err
+	}
+
+	if cid, ok := ss.uploadOrigCidCache.Get(uploadId); ok {
+		return cid, nil
+	}
+
+	var upload Upload
+	if err := ss.crud.DB.First(&upload, "id = ?", uploadId).Error; err == nil {
+		ss.uploadOrigCidCache.Set(uploadId, upload.OrigFileCID, imcache.WithDefaultExpiration())
+		return upload.OrigFileCID, nil
+	}
+
+	// since still no gossip... we might not have upload record...
+	// try to get upload from healthy peers
+	for _, peerHost := range ss.findHealthyPeers(time.Hour) {
+		if upload, err := ss.peerGetUpload(peerHost, uploadId); err == nil {
+			ss.uploadOrigCidCache.Set(uploadId, upload.OrigFileCID, imcache.WithDefaultExpiration())
+			return upload.OrigFileCID, nil
+		}
+	}
+
+	return "", errors.New("unknown upload: " + uploadId)
+}
+
+func parseVariantSize(variant string) (w, h int, err error) {
+	// 150x150, 480x480, 1000x1000
+	// 640x, 2000x
+	variant = strings.ToLower(variant)
+	variant = strings.Replace(variant, ".jpg", "", 1)
+	switch variant {
+	case "150x150":
+		return 150, 150, nil
+	case "480x480":
+		return 480, 480, nil
+	case "1000x1000":
+		return 1000, 1000, nil
+	case "640x":
+		return 640, -1, nil
+	case "2000x":
+		return 2000, -1, nil
+
+	}
+	return 0, 0, errors.New("invalid size")
 }
