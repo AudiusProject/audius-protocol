@@ -1040,8 +1040,7 @@ function* recoverPurchaseIfNecessary() {
     // Should only occur as the result of a previously failed Swap
     if (
       exchangableBalance > BigInt(0) &&
-      // $AUDIO has 8 decimals
-      estimatedAudio > BigInt(1 * 10 ** 8)
+      estimatedAudio > BigInt(1 * 10 ** TOKEN_LISTING_MAP.AUDIO.decimals)
     ) {
       yield* put(
         make(Name.BUY_AUDIO_RECOVERY_OPENED, {
