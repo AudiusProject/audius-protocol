@@ -145,7 +145,7 @@ export class AppNotificationsProcessor {
         const isLiveEmailEnabled = this.getIsLiveEmailEnabled()
         const isBrowserPushEnabled = this.getIsBrowserPushEnabled()
         try {
-          notification.processNotification({
+          await notification.processNotification({
             isLiveEmailEnabled,
             isBrowserPushEnabled
           })
