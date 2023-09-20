@@ -67,11 +67,6 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		healthy = false
 	}
 
-	// consider unhealthy when seeding only if we're not registered - otherwise we're just waiting to be registered so we can start seeding
-	if ss.Config.WalletIsRegistered {
-		healthy = false
-	}
-
 	blobStorePrefix, _, foundBlobStore := strings.Cut(ss.Config.BlobStoreDSN, "://")
 	if !foundBlobStore {
 		blobStorePrefix = ""
