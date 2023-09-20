@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +20,7 @@ func TestServeImage(t *testing.T) {
 
 	f.Seek(0, 0)
 
-	s1, s2 := testNetwork[0], testNetwork[1]
+	s1, s2, s3, s4 := testNetwork[0], testNetwork[1], testNetwork[2], testNetwork[3]
 
 	s2.replicateToMyBucket(cid, f)
 
@@ -70,6 +71,38 @@ func TestServeImage(t *testing.T) {
 		s2.replicateToMyBucket(qmKey, f)
 
 		resp, err := http.Get(s1.Config.Self.Host + "/content/" + qmKey)
+		assert.NoError(t, err)
+		assert.Equal(t, 200, resp.StatusCode)
+	}
+
+	// via upload ID
+	{
+		someUlid := ulid.Make().String()
+
+		// only s3 has upload record
+		err := s3.crud.DB.Create(&Upload{
+			ID:          someUlid,
+			OrigFileCID: cid,
+		}).Error
+		assert.NoError(t, err)
+
+		// can get upload from s3
+		{
+			u, err := s1.peerGetUpload(s3.Config.Self.Host, someUlid)
+			assert.NoError(t, err)
+			assert.Equal(t, someUlid, u.ID)
+		}
+
+		// can not get upload from s4
+		{
+			u, err := s1.peerGetUpload(s4.Config.Self.Host, someUlid)
+			assert.Error(t, err)
+			assert.Nil(t, u)
+		}
+
+		// s4 doesn't have upload record
+		// but will get it because getUploadOrigCID will find upload record if needed
+		resp, err := http.Get(s4.Config.Self.Host + "/content/" + someUlid + "/150x150.jpg")
 		assert.NoError(t, err)
 		assert.Equal(t, 200, resp.StatusCode)
 	}
