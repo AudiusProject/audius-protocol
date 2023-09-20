@@ -148,17 +148,15 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
   componentDidUpdate(prevProps: SavedPageProps) {
     const { tracksCategory: prevTracksCategory } = prevProps
     const { tracks, tracksCategory } = this.props
-    const allTracksFetched = tracks.entries.every(
-      (track) => track.kind === Kind.TRACKS
-    )
+    const hasReachedEnd = this.props.hasReachedEnd
 
     if (
-      allTracksFetched &&
+      hasReachedEnd &&
       !this.state.allTracksFetched &&
       !this.state.filterText
     ) {
       this.setState({ allTracksFetched: true })
-    } else if (!allTracksFetched && this.state.allTracksFetched) {
+    } else if (!hasReachedEnd && this.state.allTracksFetched) {
       this.setState({ allTracksFetched: false })
     }
 
@@ -499,6 +497,7 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
     }
 
     const desktopProps = {
+      hasReachedEnd: this.props.hasReachedEnd,
       onClickRow: this.onClickRow,
       onClickSave: this.onClickSave,
       onClickTrackName: this.onClickTrackName,
