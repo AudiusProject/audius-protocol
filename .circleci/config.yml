@@ -74,6 +74,7 @@ jobs:
             - ./packages/probers/node_modules
             - ./packages/embed/node_modules
             - ./packages/stems/node_modules
+            - ./packages/harmony/node_modules
             - ./packages/common/node_modules
             - ./packages/libs/node_modules
 
@@ -81,6 +82,7 @@ jobs:
           key: cache-{{ .Revision }}
           paths:
             - ./packages/stems/dist
+            - ./packages/harmony/dist
             - ./packages/common/dist
             - ./packages/libs/dist
 
@@ -260,6 +262,8 @@ workflows:
             packages/common/.* run-mobile-workflow true
             packages/stems/.* run-stems-workflow true
             packages/stems/.* run-web-workflow true
+            packages/harmony/.* run-harmony-workflow true
+            packages/harmony/.* run-web-workflow true
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
             packages/eslint-config-audius/.* run-stems-workflow true
@@ -327,6 +331,7 @@ workflows:
             .* run-web-workflow true
             .* run-mobile-workflow true
             .* run-stems-workflow true
+            .* run-harmony-workflow true
             .* run-probers-workflow false
           requires:
             - generate-config
