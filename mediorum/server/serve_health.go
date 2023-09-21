@@ -40,6 +40,7 @@ type healthCheckResponseData struct {
 	DatabaseSize            uint64                     `json:"databaseSize"`     // bytes
 	DbSizeErr               string                     `json:"dbSizeErr"`
 	LastSuccessfulRepair    RepairTracker              `json:"lastSuccessfulRepair"`
+	LastSuccessfulCleanup   RepairTracker              `json:"lastSuccessfulCleanup"`
 	UploadsCount            int64                      `json:"uploadsCount"`
 	UploadsCountErr         string                     `json:"uploadsCountErr"`
 	AutoUpgradeEnabled      bool                       `json:"autoUpgradeEnabled"`
@@ -101,6 +102,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		DatabaseSize:            ss.databaseSize,
 		DbSizeErr:               ss.dbSizeErr,
 		LastSuccessfulRepair:    ss.lastSuccessfulRepair,
+		LastSuccessfulCleanup:   ss.lastSuccessfulCleanup,
 		UploadsCount:            ss.uploadsCount,
 		UploadsCountErr:         ss.uploadsCountErr,
 		AutoUpgradeEnabled:      ss.Config.AutoUpgradeEnabled,

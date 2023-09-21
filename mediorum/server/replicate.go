@@ -139,21 +139,9 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 
 // hostHasBlob is a "quick check" that a host has a blob (used for checking host has blob before redirecting to it).
 func (ss *MediorumServer) hostHasBlob(host, key string) bool {
-	client := http.Client{
-		Timeout: 2 * time.Second,
-	}
 	u := apiPath(host, fmt.Sprintf("internal/blobs/info/%s", url.PathEscape(key)))
-	req, err := http.NewRequest("GET", u, nil)
-	if err != nil {
-		return false
-	}
-	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
-	has, err := client.Do(req)
-	if err != nil {
-		return false
-	}
-	defer has.Body.Close()
-	return has.StatusCode == 200
+	resp, err := ss.reqClient.R().Get(u)
+	return err == nil && resp.StatusCode == 200
 }
 
 // raceHostHasBlob tries batches of 5 hosts concurrently to find the first healthy host with the key instead of sequentially waiting for a 2s timeout from each host.

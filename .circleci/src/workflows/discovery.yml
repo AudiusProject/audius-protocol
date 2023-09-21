@@ -87,6 +87,7 @@ jobs:
         - build-freeze
         - slack-secrets
       hosts: >-
+        prod-sandbox-discovery-1
         stage-discovery-4
         stage-discovery-1
         stage-discovery-2
@@ -94,3 +95,11 @@ jobs:
         stage-discovery-5
       service: discovery
       freeze: $FREEZE_BUILD
+
+  - test-discovery-api:
+      name: test-discovery-api
+      requires:
+          - push-discovery-provider
+      filters:
+        branches:
+          only: main

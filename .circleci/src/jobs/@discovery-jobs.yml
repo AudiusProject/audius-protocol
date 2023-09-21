@@ -34,3 +34,12 @@ lint-discovery:
         command: |
           cd discovery
           mypy .
+
+test-discovery-api:
+  working_directory: ~/audius-protocol
+  executor: newman/postman-newman-docker
+  steps:
+    - checkout
+    - newman/newman-run:
+        collection: ./discovery-provider/api-tests/Discovery\ API\ Tests.postman_collection.json
+        environment: ./discovery-provider/api-tests/Test\ Sandbox.postman_environment.json

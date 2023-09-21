@@ -95,9 +95,10 @@ type MediorumServer struct {
 	legacyDirUsed    uint64
 	mediorumDirUsed  uint64
 
-	databaseSize         uint64
-	dbSizeErr            string
-	lastSuccessfulRepair RepairTracker
+	databaseSize          uint64
+	dbSizeErr             string
+	lastSuccessfulRepair  RepairTracker
+	lastSuccessfulCleanup RepairTracker
 
 	uploadsCount    int64
 	uploadsCountErr string
@@ -288,6 +289,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	})
 
 	// public: uploads
+	routes.GET("/uploads", ss.serveUploadList)
 	routes.GET("/uploads/:id", ss.getUpload, ss.requireHealthy)
 	routes.POST("/uploads/:id", ss.updateUpload, ss.requireHealthy, ss.requireUserSignature)
 	routes.POST("/uploads", ss.postUpload, ss.requireHealthy)
@@ -361,10 +363,29 @@ func (ss *MediorumServer) MustStart() {
 	go ss.startTranscoder()
 
 	var lastSuccessfulRepair RepairTracker
-	if err := ss.crud.DB.Where("finished_at is not null").Where("aborted_reason = ?", "").Order("started_at desc").First(&lastSuccessfulRepair).Error; err != nil {
+	err := ss.crud.DB.
+		Where("finished_at is not null").
+		Where("finished_at != '0001-01-01 00:00:00+00'").
+		Where("aborted_reason = ?", "").
+		Order("started_at desc").
+		First(&lastSuccessfulRepair).Error
+	if err != nil {
 		lastSuccessfulRepair = RepairTracker{Counters: map[string]int{}}
 	}
 	ss.lastSuccessfulRepair = lastSuccessfulRepair
+
+	var lastSuccessfulCleanup RepairTracker
+	err = ss.crud.DB.
+		Where("finished_at is not null").
+		Where("finished_at != '0001-01-01 00:00:00+00'").
+		Where("aborted_reason = ?", "").
+		Where("cleanup_mode = true").
+		Order("started_at desc").
+		First(&lastSuccessfulCleanup).Error
+	if err != nil {
+		lastSuccessfulCleanup = RepairTracker{Counters: map[string]int{}}
+	}
+	ss.lastSuccessfulCleanup = lastSuccessfulCleanup
 
 	// for any background task that make authenticated peer requests
 	// only start if we have a valid registered wallet
