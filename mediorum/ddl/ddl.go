@@ -53,6 +53,8 @@ func Migrate(db *sql.DB, gormDB *gorm.DB, bucket *blob.Bucket, myHost string) {
 
 	runMigration(db, dropBlobs)
 
+	runMigration(db, `create index if not exists uploads_ts_idx on uploads(created_at, transcoded_at)`)
+
 	schedulePartitionOpsMigration(db, myHost) // TODO: Remove after every node runs the partition ops migration
 }
 
