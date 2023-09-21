@@ -50,8 +50,6 @@ jobs:
     docker:
       - image: cimg/node:18.17
     resource_class: large
-    context:
-      - vercel
     steps:
       - checkout
 
@@ -212,6 +210,8 @@ workflows:
     jobs:
       - generate-config
       - init
+          context:
+            - vercel
       - path-filtering/filter:
           name: trigger-relevant-workflows
           filters:
