@@ -18,7 +18,6 @@ import {
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
 import { disableDeviceArns } from '../../utils/disableArnEndpoint'
-import { RemoteConfig } from '../../remoteConfig'
 
 type CreateNotificationRow = Omit<NotificationRow, 'data'> & {
   data: CreateTrackNotification | CreatePlaylistNotification
@@ -144,8 +143,8 @@ export class Create extends BaseNotification<CreateNotificationRow> {
         'usdc_purchase_seller'
       )
       if (
-        areUSDCSellerNotificationsEnabled &&
-        'usdc_purchase' in track.premium_conditions
+        !areUSDCSellerNotificationsEnabled &&
+        'usdc_purchase' in (track.premium_conditions || {})
       ) {
         throw new RequiresRetry('USDC purchase not enabled')
       }
@@ -257,7 +256,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     let user
     if (this.trackId) {
       const track = resources.tracks[this.trackId]
-      if ('usdc_purchase' in track.premium_conditions) {
+      if ('usdc_purchase' in (track.premium_conditions || {})) {
         return null
       }
       entity = {

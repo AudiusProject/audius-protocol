@@ -2,7 +2,6 @@ import { Knex } from 'knex'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { PlaylistRow, TrackRow, UserRow } from '../../types/dn'
 import { EntityType } from '../../email/notifications/types'
-import { RemoteConfig } from '../../remoteConfig'
 
 type UserBasicInfo = {
   user_id: number
