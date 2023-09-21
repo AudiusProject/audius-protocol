@@ -2,7 +2,7 @@
   "name": "@audius/common",
   "version": "1.5.42",
   "description": "Common utilities and store for web and mobile.",
-  "private": "true",
+  "private": true,
   "author": "Audius",
   "homepage": "https://github.com/AudiusProject/audius-client#readme",
   "license": "",
@@ -27,6 +27,7 @@
     "url": "https://github.com/AudiusProject/audius-client/issues"
   },
   "dependencies": {
+    "@audius/sdk": "*",
     "@fingerprintjs/fingerprintjs-pro": "3.5.6",
     "@metaplex-foundation/mpl-token-metadata": "2.5.2",
     "@optimizely/optimizely-sdk": "4.0.0",

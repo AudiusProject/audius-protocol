@@ -194,3 +194,6 @@ yalc.lock
 
 # Solana
 app-keypair.json
+
+# Turborepo
+.turbo
