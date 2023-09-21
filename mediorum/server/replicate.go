@@ -144,12 +144,12 @@ func (ss *MediorumServer) hostHasBlob(host, key string) bool {
 	return err == nil && resp.StatusCode == 200
 }
 
-// raceHostHasBlob tries batches of 5 hosts concurrently to find the first healthy host with the key instead of sequentially waiting for a 2s timeout from each host.
+// raceHostHasBlob tries batches of several hosts concurrently to find the first healthy host with the key instead of sequentially waiting for a 2s timeout from each host.
 func (ss *MediorumServer) raceHostHasBlob(key string, hostsWithKey []string) string {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	g, _ := errgroup.WithContext(ctx)
-	g.SetLimit(5)
+	g.SetLimit(3)
 	hostWithKeyCh := make(chan string, 1)
 
 	for _, host := range hostsWithKey {
