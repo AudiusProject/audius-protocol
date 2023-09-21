@@ -796,26 +796,29 @@ def is_api_healthy(my_url):
                 responses[url] = f"error getting {url}: {str(e)}"
         return responses
 
-    responses = asyncio.run(request_all(urls))
-
     errors = []
-    for url, response_text in responses.items():
-        if "error getting" in response_text:
-            errors.append(response_text)
-        else:
-            if (
-                url == user_search_endpoint
-                and user_search_response_keyword not in response_text
-            ):
-                errors.append(
-                    f"missing keyword '{user_search_response_keyword}' in response from {url}"
-                )
-            if url == track_endpoint and track_response_keyword not in response_text:
-                errors.append(
-                    f"missing keyword '{track_response_keyword}' in response from {url}"
-                )
-            if url == trending_endpoint and "artwork" not in response_text:
-                errors.append(f"missing keyword 'artwork' in response from {url}")
+    try:
+        responses = asyncio.run(request_all(urls))
+
+        for url, response_text in responses.items():
+            if "error getting" in response_text:
+                errors.append(response_text)
+            else:
+                if (
+                    url == user_search_endpoint
+                    and user_search_response_keyword not in response_text
+                ):
+                    errors.append(
+                        f"missing keyword '{user_search_response_keyword}' in response from {url}"
+                    )
+                if url == track_endpoint and track_response_keyword not in response_text:
+                    errors.append(
+                        f"missing keyword '{track_response_keyword}' in response from {url}"
+                    )
+                if url == trending_endpoint and "artwork" not in response_text:
+                    errors.append(f"missing keyword 'artwork' in response from {url}")
+    except Exception as e:
+        logger.error(f"Could not check api health: {e}")
 
     if errors:
         return False, ", ".join(errors)
