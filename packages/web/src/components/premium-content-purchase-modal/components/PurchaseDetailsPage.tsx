@@ -23,7 +23,9 @@ import {
   IconCheck,
   IconError
 } from '@audius/stems'
+import { Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
@@ -34,9 +36,17 @@ import { Text } from 'components/typography'
 import { fullTrackPage, pushUniqueRoute } from 'utils/route'
 
 import { FormatPrice } from './FormatPrice'
+import { PayExtraForm } from './PayExtraForm'
 import { PayToUnlockInfo } from './PayToUnlockInfo'
 import styles from './PurchaseDetailsPage.module.css'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
+import {
+  AMOUNT_PRESET,
+  CUSTOM_AMOUNT,
+  payExtraAmountPresetValues
+} from './constants'
+import { PayExtraPreset } from './types'
+import { PurchaseContentSchema, PurchaseContentValues } from './validation'
 
 const { startPurchaseContentFlow } = purchaseContentActions
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
@@ -93,16 +103,36 @@ export const PurchaseDetailsPage = ({
   const { handle } = track.user
   const { permalink, title } = track
 
-  const onClickBuy = useCallback(() => {
-    if (isUnlocking) return
+  const handleSubmit = useCallback(
+    ({ customAmount, amountPreset }: PurchaseContentValues) => {
+      if (isUnlocking) return
 
-    dispatch(
-      startPurchaseContentFlow({
-        contentId: track.track_id,
-        contentType: ContentType.TRACK
-      })
-    )
-  }, [isUnlocking, dispatch, track.track_id])
+      let extraAmount = 0
+      switch (amountPreset) {
+        case PayExtraPreset.LOW:
+        case PayExtraPreset.MEDIUM:
+        case PayExtraPreset.HIGH:
+          extraAmount = payExtraAmountPresetValues[amountPreset]
+          break
+        case PayExtraPreset.CUSTOM:
+          extraAmount = customAmount
+          break
+        default:
+          break
+      }
+
+      // TODO: Use submitting flag?
+
+      dispatch(
+        startPurchaseContentFlow({
+          extraAmount,
+          contentId: track.track_id,
+          contentType: ContentType.TRACK
+        })
+      )
+    },
+    [isUnlocking, dispatch, track.track_id]
+  )
 
   useNavigateOnSuccess(track, stage)
 
@@ -144,55 +174,65 @@ export const PurchaseDetailsPage = ({
   )
 
   return (
-    <div className={styles.container}>
-      <LockedTrackDetailsTile
-        // TODO: Remove this cast once typing is correct
-        // https://linear.app/audius/issue/C-2899/fix-typing-for-computed-properties
-        track={track as unknown as Track}
-        owner={track.user}
-      />
-      <PurchaseSummaryTable
-        {...purchaseSummaryValues}
-        isPurchased={isPurchased}
-      />
-      {isPurchased ? (
-        <>
-          <div className={styles.purchaseSuccessfulContainer}>
-            <div className={styles.completionCheck}>
-              <Icon icon={IconCheck} size='xxSmall' color='white' />
+    <Formik
+      initialValues={{
+        [CUSTOM_AMOUNT]: 0,
+        [AMOUNT_PRESET]: PayExtraPreset.NONE
+      }}
+      validationSchema={toFormikValidationSchema(PurchaseContentSchema)}
+      onSubmit={handleSubmit}
+    >
+      <div className={styles.container}>
+        <LockedTrackDetailsTile
+          // TODO: Remove this cast once typing is correct
+          // https://linear.app/audius/issue/C-2899/fix-typing-for-computed-properties
+          track={track as unknown as Track}
+          owner={track.user}
+        />
+        <PayExtraForm amountPresets={payExtraAmountPresetValues} />
+        <PurchaseSummaryTable
+          {...purchaseSummaryValues}
+          isPurchased={isPurchased}
+        />
+        {isPurchased ? (
+          <>
+            <div className={styles.purchaseSuccessfulContainer}>
+              <div className={styles.completionCheck}>
+                <Icon icon={IconCheck} size='xxSmall' color='white' />
+              </div>
+              <Text variant='heading' size='small'>
+                {messages.purchaseSuccessful}
+              </Text>
             </div>
-            <Text variant='heading' size='small'>
-              {messages.purchaseSuccessful}
-            </Text>
-          </div>
-          <TwitterShareButton
-            fullWidth
-            type='dynamic'
-            url={fullTrackPage(permalink)}
-            shareData={handleTwitterShare}
-            handle={handle}
-          />
-          <HarmonyPlainButton
-            onClick={onViewTrackClicked}
-            iconRight={IconCaretRight}
-            variant={HarmonyPlainButtonType.SUBDUED}
-            size={HarmonyPlainButtonSize.LARGE}
-            text={messages.viewTrack}
-          />
-        </>
-      ) : (
-        <>
-          <PayToUnlockInfo />
-          <HarmonyButton
-            disabled={isUnlocking}
-            color='specialLightGreen'
-            onClick={onClickBuy}
-            text={textContent}
-            fullWidth
-          />
-        </>
-      )}
-      {error ? <ContentPurchaseError /> : null}
-    </div>
+            <TwitterShareButton
+              fullWidth
+              type='dynamic'
+              url={fullTrackPage(permalink)}
+              shareData={handleTwitterShare}
+              handle={handle}
+            />
+            <HarmonyPlainButton
+              onClick={onViewTrackClicked}
+              iconRight={IconCaretRight}
+              variant={HarmonyPlainButtonType.SUBDUED}
+              size={HarmonyPlainButtonSize.LARGE}
+              text={messages.viewTrack}
+            />
+          </>
+        ) : (
+          <>
+            <PayToUnlockInfo />
+            <HarmonyButton
+              disabled={isUnlocking}
+              color='specialLightGreen'
+              type='submit'
+              text={textContent}
+              fullWidth
+            />
+          </>
+        )}
+        {error ? <ContentPurchaseError /> : null}
+      </div>
+    </Formik>
   )
 }
