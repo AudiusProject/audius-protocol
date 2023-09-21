@@ -289,6 +289,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	})
 
 	// public: uploads
+	routes.GET("/uploads", ss.serveUploadList)
 	routes.GET("/uploads/:id", ss.getUpload, ss.requireHealthy)
 	routes.POST("/uploads/:id", ss.updateUpload, ss.requireHealthy, ss.requireUserSignature)
 	routes.POST("/uploads", ss.postUpload, ss.requireHealthy)

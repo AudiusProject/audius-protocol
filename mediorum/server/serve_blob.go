@@ -12,6 +12,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/erni27/imcache"
@@ -23,6 +24,27 @@ import (
 func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
 	cid := c.Param("cid")
 	preferred, _ := ss.rendezvousAllHosts(cid)
+
+	// if ?sniff=1 to actually find the hosts that have it
+
+	if sniff, _ := strconv.ParseBool(c.QueryParam("sniff")); sniff {
+		wg := sync.WaitGroup{}
+		wg.Add(len(preferred))
+		for idx, host := range preferred {
+			idx := idx
+			host := host
+			go func() {
+				if ss.hostHasBlob(host, cid) {
+					preferred[idx] = " Y " + preferred[idx]
+				} else {
+					preferred[idx] = "   " + preferred[idx]
+				}
+				wg.Done()
+			}()
+		}
+		wg.Wait()
+	}
+
 	return c.JSON(200, map[string]any{
 		"cid":       cid,
 		"preferred": preferred,

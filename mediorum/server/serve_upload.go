@@ -33,6 +33,18 @@ func (ss *MediorumServer) getUpload(c echo.Context) error {
 	return c.JSON(200, upload)
 }
 
+func (ss *MediorumServer) serveUploadList(c echo.Context) error {
+	afterCursor, _ := time.Parse(time.RFC3339Nano, c.QueryParam("after"))
+	var uploads []Upload
+	err := ss.crud.DB.
+		Where("created_at > ? or transcoded_at > ?", afterCursor, afterCursor).
+		Order(`created_at, transcoded_at`).Limit(1000).Find(&uploads).Error
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, uploads)
+}
+
 type UpdateUploadBody struct {
 	PreviewStartSeconds string `json:"previewStartSeconds"`
 }
