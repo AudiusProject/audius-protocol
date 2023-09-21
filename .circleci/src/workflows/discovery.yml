@@ -99,7 +99,7 @@ jobs:
   - test-discovery-api:
       name: test-discovery-api
       requires:
-          - push-discovery-provider
+        - push-discovery
       filters:
         branches:
           only: main
