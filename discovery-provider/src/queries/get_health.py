@@ -1,4 +1,4 @@
-import concurrent.futures
+import asyncio
 import logging
 import os
 import time
@@ -451,6 +451,10 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     )
 
     health_results["errors"] = errors
+    if errors:
+        health_results["discovery_provider_healthy"] = False
+    else:
+        health_results["discovery_provider_healthy"] = True
 
     return health_results, is_unhealthy
 
@@ -769,25 +773,33 @@ def is_api_healthy(my_url):
         trending_endpoint,
     ]
 
-    def fetch_url(url):
+    async def fetch_url(url):
         try:
-            response = requests.get(url, timeout=1)
+            loop = asyncio.get_event_loop()
+            future = loop.run_in_executor(None, requests.get, url)
+            response = await future
             response.raise_for_status()
             return response.text
         except Exception as e:
             return f"error getting {url}: {str(e)}"
 
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-        futures = {executor.submit(fetch_url, url): url for url in urls}
+    async def request_all(urls):
+        responses = {}
+        tasks = [
+            asyncio.create_task(fetch_url(url), name=f"fetch:{url}") for url in urls
+        ]
+        done, _ = await asyncio.wait(
+            tasks, return_when=asyncio.ALL_COMPLETED, timeout=0.5
+        )
+        for task in done:
+            url = task.get_name().removeprefix("fetch:")
+            try:
+                responses[url] = task.result()
+            except Exception as e:
+                responses[url] = f"error getting {url}: {str(e)}"
+        return responses
 
-    responses = {}
-    for future in concurrent.futures.as_completed(futures):
-        url = futures[future]
-        try:
-            response_text = future.result()
-            responses[url] = response_text
-        except Exception as e:
-            responses[url] = f"error getting {url}: {str(e)}"
+    responses = asyncio.run(request_all(urls))
 
     errors = []
     for url, response_text in responses.items():
@@ -801,10 +813,7 @@ def is_api_healthy(my_url):
                 errors.append(
                     f"missing keyword '{user_search_response_keyword}' in response from {url}"
                 )
-            if (
-                url == track_endpoint
-                and track_response_keyword not in response_text
-            ):
+            if url == track_endpoint and track_response_keyword not in response_text:
                 errors.append(
                     f"missing keyword '{track_response_keyword}' in response from {url}"
                 )
