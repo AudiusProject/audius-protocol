@@ -17,7 +17,7 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/identity-service/Dockerfile
       args:
         git_sha: '${GIT_COMMIT}'
-    command: sh -c ". /tmp/dev-tools/startup/identity-service.sh && packages/identity-service/scripts/dev-server.sh"
+    command: sh -c ". /tmp/dev-tools/startup/identity-service.sh && scripts/dev-server.sh"
     ports:
       - '7000:7000'
       - '9229:9229'

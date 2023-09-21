@@ -19,7 +19,7 @@ WORKDIR /app
 RUN npm install turbo --global
 RUN apk add --no-cache libc6-compat git
 RUN apk update
-RUN apk add --no-cache python3 py3-pip make g++ bash
+RUN apk add --no-cache python3 py3-pip make g++ curl bash
 
 # First install dependencies (as they change less often)
 COPY .gitignore .gitignore
@@ -34,6 +34,7 @@ COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json
 
 # Compile js code to typescript based on tsconfig.build.json
+# TODO: Don't need to build identity if running in dev mode with ts-node-dev
 RUN turbo run build --filter=identity-service
 
 # Add the wait script to the image
@@ -49,4 +50,5 @@ EXPOSE 7000
 HEALTHCHECK --interval=5s --timeout=5s --start-period=15m --retries=12 \
     CMD curl -f http://localhost:7000/health_check || exit 1
 
+WORKDIR /app/packages/identity-service
 CMD ["bash", "scripts/start.sh"]
