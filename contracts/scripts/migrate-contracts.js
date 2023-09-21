@@ -16,7 +16,7 @@ const os = require('os');
 const truffle_dev_config = artifacts.options['_values']['networks']['development']
 
 const AudiusLibs = 'libs'
-const AudiusDiscoveryNode = 'discovery-provider'
+const AudiusDiscoveryNode = 'discovery'
 const AudiusIdentityService = 'identity-service'
 const AudiusCreatorNode = 'mediorum'
 const AudiusDataContracts = 'contracts'

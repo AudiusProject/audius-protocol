@@ -1,10 +1,10 @@
 when: << pipeline.parameters.run-release-workflow >>
 jobs:
   - push-docker-image:
-      name: push-discovery-provider
+      name: push-discovery
       context: [GCP, dockerhub]
-      instance-name: circleci-push-discovery-provider-$CIRCLE_BUILD_NUM
-      service: discovery-provider
+      instance-name: circleci-push-discovery-$CIRCLE_BUILD_NUM
+      service: discovery
   - push-docker-image:
       name: push-mediorum
       context: [GCP, dockerhub]
@@ -48,7 +48,7 @@ jobs:
   - release-audius-docker-compose-trigger:
       requires:
         - push-mediorum
-        - push-discovery-provider
+        - push-discovery
         - push-identity-service
       filters:
         branches:

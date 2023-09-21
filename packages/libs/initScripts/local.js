@@ -16,7 +16,7 @@ const { getClaimInfo, fundNewClaim } = require('./helpers/claim')
 const { getEthContractAccounts } = require('./helpers/utils')
 
 // Directories within the audius-protocol repository used for development
-const serviceDirectoryList = ['discovery-provider', 'mediorum']
+const serviceDirectoryList = ['discovery', 'mediorum']
 const discProvEndpoint1 = 'http://dn1_web-server_1:5000'
 const discProvEndpoint2 = 'http://dn2_web-server_1:5001'
 const creatorNodeEndpoint1 = 'http://cn1_creator-node_1:4000'
@@ -135,7 +135,7 @@ const run = async () => {
       case 'configure-discprov-wallet': {
         const serviceCount = args[3]
         if (serviceCount === undefined) throw new Error('configure-discprov-wallet requires a service # as the second arg')
-        const workspace = '../discovery-provider/compose/env'
+        const workspace = '../discovery/compose/env'
         const { templatePath, writePath } = await getEnvConfigPathsForDiscoveryNode({ workspace, serviceCount })
         await _configureDiscProv(ethAccounts, parseInt(serviceCount), templatePath, writePath)
         break

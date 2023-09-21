@@ -9,6 +9,6 @@ steps:
       name: Update github release
       command: |
         CN_VERSION="$(jq -r .version mediorum/.version.json)"
-        DP_VERSION="$(jq -r .version discovery-provider/.version.json)"
+        DP_VERSION="$(jq -r .version discovery/.version.json)"
         gh release edit "@audius/creator-node@$CN_VERSION" --draft=false
-        gh release edit "@audius/discovery-provider@$DP_VERSION" --draft=false
+        gh release edit "@audius/discovery@$DP_VERSION" --draft=false

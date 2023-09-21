@@ -4,7 +4,7 @@ services:
   app-template:
     container_name: app-template
     build:
-      context: ${PROJECT_ROOT}/discovery-provider/plugins/pedalboard
+      context: ${PROJECT_ROOT}/discovery/plugins/pedalboard
       dockerfile: ./docker/Dockerfile
       args:
         app_name: app-template
@@ -15,7 +15,7 @@ services:
   trending-challenge-rewards:
     container_name: trending-challenge-rewards
     build:
-      context: ${PROJECT_ROOT}/discovery-provider/plugins/pedalboard
+      context: ${PROJECT_ROOT}/discovery/plugins/pedalboard
       dockerfile: ./docker/Dockerfile
       args:
         app_name: trending-challenge-rewards
@@ -26,7 +26,7 @@ services:
   relay:
     container_name: relay
     build:
-      context: ${PROJECT_ROOT}/discovery-provider/plugins/pedalboard
+      context: ${PROJECT_ROOT}/discovery/plugins/pedalboard
       dockerfile: ./docker/Dockerfile
       args:
         app_name: relay
@@ -36,7 +36,7 @@ services:
   sla-auditor:
     container_name: sla-auditor
     build:
-      context: ${PROJECT_ROOT}/discovery-provider/plugins/pedalboard
+      context: ${PROJECT_ROOT}/discovery/plugins/pedalboard
       dockerfile: ./docker/Dockerfile
       args:
         app_name: sla-auditor

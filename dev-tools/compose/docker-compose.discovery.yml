@@ -2,9 +2,9 @@
 version: "3.9"
 
 services:
-  discovery-provider-notifications:
+  discovery-notifications:
     build:
-      context: ${PROJECT_ROOT}/discovery-provider/plugins/notifications
+      context: ${PROJECT_ROOT}/discovery/plugins/notifications
       args:
         git_sha: "${GIT_COMMIT}"
     environment:
@@ -12,12 +12,12 @@ services:
       DN_DB_URL: "postgresql://postgres:postgres@db:5432/discovery_provider_1"
       IDENTITY_DB_URL: "postgresql://postgres:postgres@db:5432/identity_service"
     volumes:
-      - ${PROJECT_ROOT}/discovery-provider/plugins/notifications:/notifications
+      - ${PROJECT_ROOT}/discovery/plugins/notifications:/notifications
       - /notifications/node_modules
     depends_on:
       comms:
         condition: service_completed_successfully
-      discovery-provider:
+      discovery:
         condition: service_healthy
       identity-service:
         condition: service_healthy
@@ -42,7 +42,7 @@ services:
       db:
         condition: service_healthy
 
-  discovery-provider-elasticsearch:
+  discovery-elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
     environment:
       discovery.type: single-node
@@ -66,15 +66,15 @@ services:
     profiles:
       - elasticsearch
 
-  discovery-provider:
+  discovery:
     build:
-      context: ${PROJECT_ROOT}/discovery-provider
+      context: ${PROJECT_ROOT}/discovery
       args:
         git_sha: "${GIT_COMMIT}"
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
     env_file: .env # used by the startup script
     environment:
-      # Other env vars are set in the startup script (dev-tools/startup/discovery-provider.sh)
+      # Other env vars are set in the startup script (dev-tools/startup/discovery.sh)
       PYTHONPYCACHEPREFIX: /tmp/pycache
 
       audius_web3_host: "http://poa-ganache:8545"
@@ -98,12 +98,12 @@ services:
       audius_discprov_dev_mode: "true"
       audius_discprov_loglevel: "debug"
     volumes:
-      - ${PROJECT_ROOT}/discovery-provider/alembic:/audius-discovery-provider/alembic
-      - ${PROJECT_ROOT}/discovery-provider/solana-tx-parser:/audius-discovery-provider/solana-tx-parser
-      - ${PROJECT_ROOT}/discovery-provider/src:/audius-discovery-provider/src
-      - poa-contracts-abis:/audius-discovery-provider/build/contracts
-      - eth-contracts-abis:/audius-discovery-provider/build/eth-contracts
-      - solana-programs-idl:/audius-discovery-provider/idl
+      - ${PROJECT_ROOT}/discovery/alembic:/audius-discovery/alembic
+      - ${PROJECT_ROOT}/discovery/solana-tx-parser:/audius-discovery/solana-tx-parser
+      - ${PROJECT_ROOT}/discovery/src:/audius-discovery/src
+      - poa-contracts-abis:/audius-discovery/build/contracts
+      - eth-contracts-abis:/audius-discovery/build/eth-contracts
+      - solana-programs-idl:/audius-discovery/idl
       - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
     depends_on:
       db:
@@ -114,7 +114,7 @@ services:
         condition: service_healthy
       solana-test-validator:
         condition: service_healthy
-      discovery-provider-elasticsearch:
+      discovery-elasticsearch:
         condition: "${ELASTICSEARCH_CONDITION}"
     deploy:
       mode: replicated

@@ -14,7 +14,7 @@ steps:
       name: Generate Changelog
       command: |
         if [[ "$(gh release list --exclude-drafts)" == "" ]]; then
-          touch /tmp/creator-node-changelog /tmp/discovery-provider-changelog
+          touch /tmp/creator-node-changelog /tmp/discovery-changelog
           exit
         fi
 
@@ -29,8 +29,8 @@ steps:
             "creator-node")
               directories="mediorum"
               ;;
-            "discovery-provider")
-              directories="discovery-provider comms"
+            "discovery")
+              directories="discovery comms"
               ;;
             *)
               directories="$service"
@@ -43,11 +43,11 @@ steps:
 
 
         generate-changelog creator-node | tee /tmp/creator-node-changelog
-        generate-changelog discovery-provider | tee /tmp/discovery-provider-changelog
+        generate-changelog discovery | tee /tmp/discovery-changelog
   - run:
       name: Make github draft release
       command: |
         CN_VERSION="$(jq -r .version mediorum/.version.json)"
-        DP_VERSION="$(jq -r .version discovery-provider/.version.json)"
+        DP_VERSION="$(jq -r .version discovery/.version.json)"
         gh release create -d --target "$CIRCLE_SHA1" -F /tmp/creator-node-changelog "@audius/creator-node@$CN_VERSION"
-        gh release create -d --target "$CIRCLE_SHA1" -F /tmp/discovery-provider-changelog "@audius/discovery-provider@$DP_VERSION"
+        gh release create -d --target "$CIRCLE_SHA1" -F /tmp/discovery-changelog "@audius/discovery@$DP_VERSION"

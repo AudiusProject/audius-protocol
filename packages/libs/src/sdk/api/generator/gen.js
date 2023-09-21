@@ -5,11 +5,10 @@ const program = new commander.Command()
 
 const spawnOpenAPIGenerator = (openApiGeneratorArgs) => {
   console.log('Running OpenAPI Generator:')
-  const fullCmd = `docker run --add-host=audius-protocol-discovery-provider-1:host-gateway --rm -v "${
-    process.env.PWD
-  }:/local" openapitools/openapi-generator-cli ${openApiGeneratorArgs.join(
-    ' '
-  )}`
+  const fullCmd = `docker run --add-host=audius-protocol-discovery-1:host-gateway --rm -v "${process.env.PWD
+    }:/local" openapitools/openapi-generator-cli ${openApiGeneratorArgs.join(
+      ' '
+    )}`
   console.log(fullCmd)
   const openApiGeneratorCLI = exec(fullCmd, (error, stdout, stderr) => {
     if (error) {
@@ -30,7 +29,7 @@ const generate = ({ env, apiVersion, apiFlavor, generator }) => {
   // Setup args
   let baseURL = ''
   if (env === 'dev') {
-    baseURL = 'http://audius-protocol-discovery-provider-1'
+    baseURL = 'http://audius-protocol-discovery-1'
   } else if (env === 'stage') {
     // Hardcode a stage DN, it doesn't matter
     baseURL = 'https://discoveryprovider.staging.audius.co'

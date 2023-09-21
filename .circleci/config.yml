@@ -104,7 +104,7 @@ jobs:
       - run:
           name: Create branch
           command: |
-            OLD_VERSION=$(jq -r .version discovery-provider/.version.json)
+            OLD_VERSION=$(jq -r .version discovery/.version.json)
             NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
 
             git checkout main
@@ -113,12 +113,12 @@ jobs:
             mv /tmp/.version.json mediorum/.version.json
             git add mediorum/.version.json
 
-            jq --arg version "$NEW_VERSION" '.version=$version' discovery-provider/.version.json > /tmp/.version.json
-            mv /tmp/.version.json discovery-provider/.version.json
-            git add discovery-provider/.version.json
+            jq --arg version "$NEW_VERSION" '.version=$version' discovery/.version.json > /tmp/.version.json
+            mv /tmp/.version.json discovery/.version.json
+            git add discovery/.version.json
 
             # Escape double quotes in commit message and replace git log's platform-specific newlines with @@DELIM@@
-            GIT_DIFF=$(git log --pretty=format:'• %an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum discovery-provider identity-service comms | sed 's/"/\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/@@DELIM@@/g')
+            GIT_DIFF=$(git log --pretty=format:'• %an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum discovery identity-service comms | sed 's/"/\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/@@DELIM@@/g')
             git commit -m "Bump version to $NEW_VERSION"
 
             git branch "release-v$NEW_VERSION"
@@ -158,7 +158,7 @@ jobs:
 
             json_content=${json_content%,}
             json_content+="]}"
-            
+
             # The next step of this job will read this file and send it to Slack
             echo $json_content > /tmp/slack_message.json
       - run:
@@ -220,9 +220,9 @@ workflows:
           base-revision: main
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
-            discovery-provider/.* run-discovery-workflow true
-            discovery-provider/.* run-integration-workflow true
-            discovery-provider/.* run-gcp-workflow true
+            discovery/.* run-discovery-workflow true
+            discovery/.* run-integration-workflow true
+            discovery/.* run-gcp-workflow true
             comms/.* run-discovery-workflow true
             comms/.* run-integration-workflow true
             comms/.* run-gcp-workflow true

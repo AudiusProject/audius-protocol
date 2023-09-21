@@ -35,7 +35,7 @@ Pour plus de détails sur l'architecture Audius, voir le [ White Paper sur le pr
 | Service                                                                                               | Description                                                                                                                                 |
 |:----------------------------------------------------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`Nœud de contenu`](https://github.com/AudiusProject/audius-protocol/tree/main/creator-node)        | Maintenir la disponibilité du contenu des utilisateurs sur IPFS, y compris les métadonnées des utilisateurs, les images et le contenu audio |
-| [`Noeud-Découverte`](https://github.com/AudiusProject/audius-protocol/tree/main/discovery-provider) | Indexe et stocke le contenu des contrats Audius sur la blockchain Ethereum pour que les clients puissent les interroger via une API         |
+| [`Noeud-Découverte`](https://github.com/AudiusProject/audius-protocol/tree/main/discovery) | Indexe et stocke le contenu des contrats Audius sur la blockchain Ethereum pour que les clients puissent les interroger via une API         |
 | [`Identité-Service`](https://github.com/AudiusProject/audius-protocol/tree/main/identity-service)   | Stocke les cryptogrammes d'authentification, effectue Twitter OAuth et relaie les transactions (paie le gas) au nom des utilisateurs        |
 
 ## Contrats Intelligents Audius & Libs

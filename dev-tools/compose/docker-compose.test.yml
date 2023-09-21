@@ -164,12 +164,12 @@ services:
       - ${PROJECT_ROOT}/eth-contracts:/usr/src/app
       - /usr/src/app/node_modules
 
-  # discovery-provider
+  # discovery
 
-  discovery-provider-elasticsearch:
+  discovery-elasticsearch:
     extends:
       file: docker-compose.yml
-      service: discovery-provider-elasticsearch
+      service: discovery-elasticsearch
     deploy:
       mode: global
       replicas: 1 # Override default replicas
@@ -177,7 +177,7 @@ services:
       - tests
       - discovery
 
-  discovery-provider-db:
+  discovery-db:
     image: postgres:11.4
     user: postgres
     command: postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
@@ -195,7 +195,7 @@ services:
       - tests
       - discovery
 
-  discovery-provider-redis:
+  discovery-redis:
     image: redis:7.0
     healthcheck:
       test: ["CMD", "redis-cli", "PING"]
@@ -209,15 +209,15 @@ services:
       - tests
       - discovery
 
-  test-discovery-provider-migrations:
+  test-discovery-migrations:
     extends:
       file: docker-compose.yml
-      service: discovery-provider
+      service: discovery
     command: sh -c "./scripts/run-migrations.sh"
     environment:
-      audius_db_url: "postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider"
+      audius_db_url: "postgresql://postgres:postgres@discovery-db:5432/discovery_provider"
     depends_on:
-      discovery-provider-db:
+      discovery-db:
         condition: service_healthy
     logging: *default-logging
     deploy:
@@ -227,29 +227,29 @@ services:
       - tests
       - notifications
 
-  test-discovery-provider:
+  test-discovery:
     extends:
       file: docker-compose.yml
-      service: discovery-provider
+      service: discovery
     entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; pytest "$$@")' -
     command: ""
     environment:
-      audius_db_url: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"
-      audius_db_url_read_replica: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"
+      audius_db_url: "postgresql+psycopg2://postgres:postgres@discovery-db:5432/discovery_provider"
+      audius_db_url_read_replica: "postgresql+psycopg2://postgres:postgres@discovery-db:5432/discovery_provider"
 
-      audius_redis_url: "redis://discovery-provider-redis:6379/00"
+      audius_redis_url: "redis://discovery-redis:6379/00"
 
-      audius_elasticsearch_url: "http://discovery-provider-elasticsearch:9200"
+      audius_elasticsearch_url: "http://discovery-elasticsearch:9200"
       audius_elasticsearch_run_indexer: "true"
     volumes:
-      - ${PROJECT_ROOT}/discovery-provider:/audius-discovery-provider
-      - /audius-discovery-provider/es-indexer/node_modules
+      - ${PROJECT_ROOT}/discovery:/audius-discovery
+      - /audius-discovery/es-indexer/node_modules
     depends_on:
-      discovery-provider-elasticsearch:
+      discovery-elasticsearch:
         condition: service_healthy
-      discovery-provider-db:
+      discovery-db:
         condition: service_healthy
-      discovery-provider-redis:
+      discovery-redis:
         condition: service_healthy
     logging: *default-logging
     deploy:
@@ -260,26 +260,26 @@ services:
       - elasticsearch
       - discovery
 
-  test-discovery-provider-notifications:
+  test-discovery-notifications:
     build:
-      context: ${PROJECT_ROOT}/discovery-provider/plugins/notifications
+      context: ${PROJECT_ROOT}/discovery/plugins/notifications
       dockerfile: Dockerfile
     entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; npm run test "$$@")' -
     environment:
-      AUDIUS_REDIS_URL: "redis://discovery-provider-redis:6379/00"
-      DN_DB_URL: "postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider"
+      AUDIUS_REDIS_URL: "redis://discovery-redis:6379/00"
+      DN_DB_URL: "postgresql://postgres:postgres@discovery-db:5432/discovery_provider"
       IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/identity_service"
     volumes:
-      - ${PROJECT_ROOT}/discovery-provider/plugins/notifications:/notifications
+      - ${PROJECT_ROOT}/discovery/plugins/notifications:/notifications
       - /notifications/node_modules
     depends_on:
-      test-discovery-provider-migrations:
+      test-discovery-migrations:
         condition: service_completed_successfully
       test-comms-migrations:
         condition: service_completed_successfully
       test-identity-service-migrations:
         condition: service_completed_successfully
-      discovery-provider-redis:
+      discovery-redis:
         condition: service_healthy
     logging: *default-logging
     deploy:
@@ -297,9 +297,9 @@ services:
       dockerfile: Dockerfile
     command: discovery-migrations
     environment:
-      audius_db_url: "postgres://postgres:postgres@discovery-provider-db:5432/discovery_provider?sslmode=disable"
+      audius_db_url: "postgres://postgres:postgres@discovery-db:5432/discovery_provider?sslmode=disable"
     depends_on:
-      test-discovery-provider-migrations:
+      test-discovery-migrations:
         condition: service_completed_successfully
     logging: *default-logging
     profiles:

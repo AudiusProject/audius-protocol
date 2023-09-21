@@ -1,15 +1,15 @@
 when: << pipeline.parameters.run-discovery-workflow >>
 jobs:
   - push-docker-image:
-      name: push-discovery-provider
+      name: push-discovery
       context: [GCP, dockerhub]
-      instance-name: circleci-push-discovery-provider-$CIRCLE_BUILD_NUM
-      service: discovery-provider
+      instance-name: circleci-push-discovery-$CIRCLE_BUILD_NUM
+      service: discovery
   - push-docker-image:
-      name: push-discovery-provider-notifications
+      name: push-discovery-notifications
       context: [GCP, dockerhub]
-      instance-name: circleci-push-discovery-provider-notifications-$CIRCLE_BUILD_NUM
-      service: discovery-provider-notifications
+      instance-name: circleci-push-discovery-notifications-$CIRCLE_BUILD_NUM
+      service: discovery-notifications
   - push-docker-image:
       name: push-pedalboard-trending-challenge-rewards
       context: [GCP, dockerhub]
@@ -31,53 +31,53 @@ jobs:
       instance-name: circleci-push-comms-$CIRCLE_BUILD_NUM
       service: comms
 
-  - lint-discovery-provider:
-      name: lint-discovery-provider
+  - lint-discovery:
+      name: lint-discovery
 
   - test:
-      name: test-discovery-provider
+      name: test-discovery
       context: GCP
-      instance-name: circleci-test-discovery-provider-$CIRCLE_BUILD_NUM
-      service: discovery-provider
+      instance-name: circleci-test-discovery-$CIRCLE_BUILD_NUM
+      service: discovery
       requires:
-        - lint-discovery-provider
+        - lint-discovery
   - test:
-      name: test-discovery-provider-notifications
+      name: test-discovery-notifications
       context: GCP
-      instance-name: circleci-test-discovery-provider-notifications-$CIRCLE_BUILD_NUM
-      service: discovery-provider-notifications
+      instance-name: circleci-test-discovery-notifications-$CIRCLE_BUILD_NUM
+      service: discovery-notifications
       requires:
-        - lint-discovery-provider
+        - lint-discovery
 
   # Release
-  - deploy-prod-discovery-provider-trigger:
+  - deploy-prod-discovery-trigger:
       requires:
-        - test-discovery-provider
-        - push-discovery-provider
+        - test-discovery
+        - push-discovery
         - push-comms
       filters:
         branches:
           only: /^release.*$/
       type: approval
   - deploy:
-      name: deploy-prod-discovery-provider
+      name: deploy-prod-discovery
       context:
         - open-vpn
         - slack-secrets
       requires:
-        - deploy-prod-discovery-provider-trigger
+        - deploy-prod-discovery-trigger
       hosts: >-
         prod-discovery-1
         prod-discovery-2
         prod-discovery-3
-      service: discovery-provider
+      service: discovery
 
   # Main deploy
   - deploy:
-      name: deploy-stage-discovery-provider
+      name: deploy-stage-discovery
       requires:
-        - test-discovery-provider
-        - push-discovery-provider
+        - test-discovery
+        - push-discovery
         - push-comms
       filters:
         branches:
@@ -92,5 +92,5 @@ jobs:
         stage-discovery-2
         stage-discovery-3
         stage-discovery-5
-      service: discovery-provider
+      service: discovery
       freeze: $FREEZE_BUILD
