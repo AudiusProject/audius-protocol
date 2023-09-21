@@ -1,4 +1,4 @@
-import { InAppAudioPurchaseMetadata } from '@audius/common'
+import { InAppAudioPurchaseMetadata, MEMO_PROGRAM_ID } from '@audius/common'
 import {
   TokenAccountNotFoundError,
   createTransferCheckedInstruction,
@@ -19,10 +19,6 @@ const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
 
 const ATA_SIZE = 165 // Size allocated for an associated token account
-
-const MEMO_PROGRAM_ID = new PublicKey(
-  'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
-)
 
 const delay = (ms: number) =>
   new Promise((resolve, reject) => {

@@ -164,6 +164,9 @@ function* confirmEditTrack(
   yield waitForWrite()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const apiClient = yield getContext('apiClient')
+  const transcodePreview =
+    formFields.preview_start_seconds !== null &&
+    currentTrack.preview_start_seconds !== formFields.preview_start_seconds
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
@@ -171,7 +174,8 @@ function* confirmEditTrack(
         const { blockHash, blockNumber } = yield call(
           audiusBackendInstance.updateTrack,
           trackId,
-          { ...formFields }
+          { ...formFields },
+          transcodePreview
         )
 
         const confirmed = yield call(confirmTransaction, blockHash, blockNumber)

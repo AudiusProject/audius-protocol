@@ -142,7 +142,8 @@
                 "$ref": "#/definitions/PremiumConditionsTipUserId"
               }
             ]
-          }
+          },
+          "default": null
         },
         "is_playlist_upload": {
           "type": "boolean",
@@ -166,7 +167,6 @@
         "is_unlisted",
         "isrc",
         "iswc",
-        "length",
         "license",
         "mood",
         "release_date",
