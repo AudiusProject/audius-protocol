@@ -53,38 +53,38 @@ jobs:
     steps:
       - checkout
 
-      # - create_concatenated_patch_file:
-      #     filename: combined-patch-file.txt
+      - create_concatenated_patch_file:
+          filename: combined-patch-file.txt
 
-      # - restore_cache:
-      #     keys:
-      #       - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+      - restore_cache:
+          keys:
+            - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
-      # - run:
-      #     name: Install dependencies
-      #     command: |
-      #       npm ci
+      - run:
+          name: Install dependencies
+          command: |
+            npm ci
 
-      # - save_cache:
-      #     key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
-      #     paths:
-      #       - ./node_modules
-      #       - ./packages/web/node_modules
-      #       - ./packages/mobile/node_modules
-      #       - ./packages/probers/node_modules
-      #       - ./packages/embed/node_modules
-      #       - ./packages/stems/node_modules
-      #       - ./packages/harmony/node_modules
-      #       - ./packages/common/node_modules
-      #       - ./packages/libs/node_modules
+      - save_cache:
+          key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+          paths:
+            - ./node_modules
+            - ./packages/web/node_modules
+            - ./packages/mobile/node_modules
+            - ./packages/probers/node_modules
+            - ./packages/embed/node_modules
+            - ./packages/stems/node_modules
+            - ./packages/harmony/node_modules
+            - ./packages/common/node_modules
+            - ./packages/libs/node_modules
 
-      # - save_cache:
-      #     key: cache-{{ .Revision }}
-      #     paths:
-      #       - ./packages/stems/dist
-      #       - ./packages/harmony/dist
-      #       - ./packages/common/dist
-      #       - ./packages/libs/dist
+      - save_cache:
+          key: cache-{{ .Revision }}
+          paths:
+            - ./packages/stems/dist
+            - ./packages/harmony/dist
+            - ./packages/common/dist
+            - ./packages/libs/dist
 
   generate-release:
     working_directory: ~/audius-protocol

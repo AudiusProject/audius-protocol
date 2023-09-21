@@ -87,6 +87,7 @@ jobs:
         - build-freeze
         - slack-secrets
       hosts: >-
+        prod-sandbox-discovery-1
         stage-discovery-4
         stage-discovery-1
         stage-discovery-2
@@ -99,3 +100,6 @@ jobs:
       name: test-discovery-api
       requires:
           - push-discovery-provider
+      filters:
+        branches:
+          only: main
