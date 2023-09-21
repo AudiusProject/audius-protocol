@@ -7,7 +7,6 @@ type PremiumContentState = {
   premiumTrackSignatureMap: { [id: ID]: Nullable<PremiumContentSignature> }
   statusMap: { [id: ID]: PremiumTrackStatus }
   lockedContentId: Nullable<ID>
-  purchaseContentId: Nullable<ID>
   followeeIds: ID[]
   tippedUserIds: ID[]
 }
@@ -16,7 +15,6 @@ const initialState: PremiumContentState = {
   premiumTrackSignatureMap: {},
   statusMap: {},
   lockedContentId: null,
-  purchaseContentId: null,
   followeeIds: [],
   tippedUserIds: []
 }
@@ -83,12 +81,6 @@ const slice = createSlice({
     },
     resetLockedContentId: (state) => {
       state.lockedContentId = null
-    },
-    setPurchaseContentId: (state, action: PayloadAction<IdPayload>) => {
-      state.purchaseContentId = action.payload.id
-    },
-    resetPurchaseContentId: (state) => {
-      state.purchaseContentId = null
     },
     addFolloweeId: (state, action: PayloadAction<IdPayload>) => {
       state.followeeIds.push(action.payload.id)

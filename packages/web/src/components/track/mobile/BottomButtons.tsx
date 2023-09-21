@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { MouseEvent, memo } from 'react'
 
 import {
   Nullable,
@@ -26,13 +26,13 @@ type BottomButtonsProps = {
   toggleRepost: () => void
   onClickOverflow: () => void
   onShare: () => void
+  onClickPremiumPill?: (e: MouseEvent) => void
   isLoading: boolean
   isOwner: boolean
   isDarkMode: boolean
   isUnlisted?: boolean
   isShareHidden?: boolean
   isTrack?: boolean
-  trackId?: number
   doesUserHaveAccess?: boolean
   readonly?: boolean
   premiumConditions?: Nullable<PremiumConditions>
@@ -79,7 +79,7 @@ const BottomButtons = (props: BottomButtonsProps) => {
           <PremiumConditionsPill
             premiumConditions={props.premiumConditions}
             unlocking={props.premiumTrackStatus === 'UNLOCKING'}
-            trackId={props.trackId}
+            onClick={props.onClickPremiumPill}
           />
         </div>
         {props.readonly ? null : moreButton}

@@ -10,7 +10,8 @@ import {
   formatLineupTileDuration,
   Genre,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentUSDCPurchaseGated,
+  usePremiumContentPurchaseModal
 } from '@audius/common'
 import { IconCrown, IconHidden, IconTrending } from '@audius/stems'
 import cn from 'classnames'
@@ -185,6 +186,8 @@ const TrackTile = (props: CombinedProps) => {
 
   const dispatch = useDispatch()
   const [, setModalVisibility] = useModalState('LockedContent')
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
   const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
   const trackId = isPremium ? id : null
   const premiumTrackStatus = trackId
@@ -211,6 +214,16 @@ const TrackTile = (props: CombinedProps) => {
   const onClickOverflowMenu = useCallback(
     () => onClickOverflow && onClickOverflow(id),
     [onClickOverflow, id]
+  )
+
+  const onClickPremiumPill = useCallback(
+    (e: MouseEvent) => {
+      if (isPurchase && trackId) {
+        e.stopPropagation()
+        openPremiumContentPurchaseModal({ contentId: trackId })
+      }
+    },
+    [isPurchase, trackId, openPremiumContentPurchaseModal]
   )
 
   const [artworkLoaded, setArtworkLoaded] = useState(false)
@@ -478,6 +491,7 @@ const TrackTile = (props: CombinedProps) => {
           toggleSave={onToggleSave}
           onShare={onClickShare}
           onClickOverflow={onClickOverflowMenu}
+          onClickPremiumPill={onClickPremiumPill}
           isOwner={isOwner}
           readonly={isReadonly}
           isLoading={isLoading}
@@ -489,7 +503,6 @@ const TrackTile = (props: CombinedProps) => {
           isDarkMode={darkMode}
           isMatrixMode={isMatrix}
           isTrack
-          trackId={trackId ?? undefined}
         />
       </div>
     </div>

@@ -9,9 +9,6 @@ export const getPremiumTrackStatusMap = (state: CommonState) =>
 export const getLockedContentId = (state: CommonState) =>
   state.premiumContent.lockedContentId
 
-export const getPurchaseContentId = (state: CommonState) =>
-  state.premiumContent.purchaseContentId
-
 export const getFolloweeIds = (state: CommonState) =>
   state.premiumContent.followeeIds
 
