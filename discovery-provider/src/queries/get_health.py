@@ -451,10 +451,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     )
 
     health_results["errors"] = errors
-    if errors:
-        health_results["discovery_provider_healthy"] = False
-    else:
-        health_results["discovery_provider_healthy"] = True
+    health_results["discovery_provider_healthy"] = not errors
 
     return health_results, is_unhealthy
 
