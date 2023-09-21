@@ -17,6 +17,8 @@ require 'json'
 
 default_platform(:android)
 
+ENV['SUPPLY_UPLOAD_MAX_RETRIES']='5'
+
 PROD_PACKAGE = 'co.audius.app'
 RC_PROD_PACKAGE = 'co.audius.app.releasecandidate'
 RC_STAGING_PACKAGE = 'co.audius.app.staging.releasecandidate'
