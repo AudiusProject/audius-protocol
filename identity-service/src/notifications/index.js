@@ -32,8 +32,6 @@ const processNotifications = require('./processNotifications/index.js')
 const sendNotifications = require('./sendNotifications/index.js')
 const audiusLibsWrapper = require('../audiusLibsInstance')
 
-const NOTIFICATION_ANNOUNCEMENTS_INTERVAL_SEC = 30 * 1000
-
 const NOTIFICATION_JOB_LAST_SUCCESS_KEY = 'notifications:last-success'
 const NOTIFICATION_SOLANA_JOB_LAST_SUCCESS_KEY =
   'notifications:solana:last-success'
@@ -75,32 +73,6 @@ class NotificationProcessor {
         defaultJobOptions
       }
     )
-    this.emailQueue = new Bull(`email-queue-${Date.now()}`, {
-      redis: {
-        port: config.get('redisPort'),
-        host: config.get('redisHost')
-      },
-      defaultJobOptions
-    })
-    this.announcementQueue = new Bull(`announcement-queue-${Date.now()}`, {
-      redis: {
-        port: config.get('redisPort'),
-        host: config.get('redisHost')
-      },
-      defaultJobOptions
-    })
-    this.downloadEmailQueue = new Bull(`download-email-queue-${Date.now()}`, {
-      redis: {
-        port: config.get('redisPort'),
-        host: config.get('redisHost')
-      },
-      defaultJobOptions
-    })
-    if (errorHandler) {
-      this.errorHandler = errorHandler
-    } else {
-      this.errorHandler = () => null
-    }
   }
 
   /**
@@ -271,29 +243,6 @@ class NotificationProcessor {
       }
     })
 
-    // Email notification queue
-    this.emailQueue.process(async (job) => {
-      logger.info('processEmailNotifications')
-      let error = null
-      try {
-        await processEmailNotifications(expressApp, audiusLibs)
-        await this.redis.set(
-          NOTIFICATION_EMAILS_JOB_LAST_SUCCESS_KEY,
-          new Date().toISOString()
-        )
-      } catch (e) {
-        error = e
-        logger.error(
-          `processEmailNotifications - Problem with processing emails: ${e}`
-        )
-        this.errorHandler(e)
-      }
-      await this.emailQueue.add(
-        { type: unreadEmailJobType },
-        { jobId: `${unreadEmailJobType}:${Date.now()}` }
-      )
-    })
-
     // Download Email notification queue
     this.downloadEmailQueue.process(async (job) => {
       logger.debug('processDownloadEmails')
@@ -314,33 +263,6 @@ class NotificationProcessor {
       await this.downloadEmailQueue.add(
         { type: downloadEmailJobType },
         { jobId: `${downloadEmailJobType}:${Date.now()}` }
-      )
-    })
-
-    // Announcement push notifications queue
-    this.announcementQueue.process(async (job) => {
-      logger.info('pushAnnouncementNotifications')
-      let error = null
-      try {
-        await pushAnnouncementNotifications()
-        await this.redis.set(
-          NOTIFICATION_ANNOUNCEMENTS_JOB_LAST_SUCCESS_KEY,
-          new Date().toISOString()
-        )
-      } catch (e) {
-        error = e
-        logger.error(
-          `pushAnnouncementNotifications - Problem with processing announcements: ${e}`
-        )
-        this.errorHandler(e)
-      }
-      // Delay 30s
-      await new Promise((resolve) =>
-        setTimeout(resolve, NOTIFICATION_ANNOUNCEMENTS_INTERVAL_SEC)
-      )
-      await this.announcementQueue.add(
-        { type: announcementJobType },
-        { jobId: `${announcementJobType}:${Date.now()}` }
       )
     })
 
@@ -432,7 +354,8 @@ class NotificationProcessor {
     notifications = notifications.filter((n) => n.blocknumber >= latestBlock)
 
     logger.info(
-      `notifications main indexAll job - query notifications from discovery node complete in ${Date.now() - time
+      `notifications main indexAll job - query notifications from discovery node complete in ${
+        Date.now() - time
       }ms`
     )
     time = Date.now()
@@ -446,7 +369,8 @@ class NotificationProcessor {
       // Insert the notifications into the DB to make it easy for users to query for their grouped notifications
       await processNotifications(notifications, tx, optimizelyClient)
       logger.info(
-        `notifications main indexAll job - processNotifications complete in ${Date.now() - time
+        `notifications main indexAll job - processNotifications complete in ${
+          Date.now() - time
         }ms`
       )
       time = Date.now()
@@ -454,7 +378,8 @@ class NotificationProcessor {
       // Fetch additional metadata from DP, query for the user's notification settings, and send push notifications (mobile/browser)
       await sendNotifications(audiusLibs, notifications, tx, optimizelyClient)
       logger.info(
-        `notifications main indexAll job - sendNotifications complete in ${Date.now() - time
+        `notifications main indexAll job - sendNotifications complete in ${
+          Date.now() - time
         }ms`
       )
       time = Date.now()
@@ -468,7 +393,8 @@ class NotificationProcessor {
         tx
       )
       logger.info(
-        `notifications main indexAll job - indexMilestones complete in ${Date.now() - time
+        `notifications main indexAll job - indexMilestones complete in ${
+          Date.now() - time
         }ms`
       )
       time = Date.now()
@@ -476,7 +402,8 @@ class NotificationProcessor {
       // Commit
       await tx.commit()
       logger.info(
-        `notifications main indexAll job - dbCommit complete in ${Date.now() - time
+        `notifications main indexAll job - dbCommit complete in ${
+          Date.now() - time
         }ms`
       )
       time = Date.now()
@@ -487,7 +414,8 @@ class NotificationProcessor {
         optimizelyClient
       )
       logger.info(
-        `notifications main indexAll job - drainPublishedMessages complete - processed ${numProcessedNotifs} notifs in ${Date.now() - time
+        `notifications main indexAll job - drainPublishedMessages complete - processed ${numProcessedNotifs} notifs in ${
+          Date.now() - time
         }ms`
       )
 
@@ -547,7 +475,8 @@ class NotificationProcessor {
     notifications = notifications.filter((n) => n.slot >= latestSlot)
 
     logger.info(
-      `${logLabel} - query solana notifications from discovery node complete in ${Date.now() - time
+      `${logLabel} - query solana notifications from discovery node complete in ${
+        Date.now() - time
       }ms`
     )
     time = Date.now()
@@ -589,7 +518,8 @@ class NotificationProcessor {
         optimizelyClient
       )
       logger.info(
-        `${logLabel} - drainPublishedSolanaMessages complete - processed ${numProcessedNotifs} notifs in ${Date.now() - time
+        `${logLabel} - drainPublishedSolanaMessages complete - processed ${numProcessedNotifs} notifs in ${
+          Date.now() - time
         }ms`
       )
 
@@ -644,7 +574,8 @@ async function filterOutAbusiveUsers(notifications) {
     return !isInitiatorAbusive && !isUserEntityAbusive
   })
   logger.info(
-    `notifications | index.js | Filtered out ${notifications.length - result.length
+    `notifications | index.js | Filtered out ${
+      notifications.length - result.length
     } bad initiators out of ${notifications.length} total.`
   )
   return result
