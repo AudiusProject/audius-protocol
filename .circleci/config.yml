@@ -53,38 +53,38 @@ jobs:
     steps:
       - checkout
 
-      - create_concatenated_patch_file:
-          filename: combined-patch-file.txt
+      # - create_concatenated_patch_file:
+      #     filename: combined-patch-file.txt
 
-      - restore_cache:
-          keys:
-            - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+      # - restore_cache:
+      #     keys:
+      #       - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
-      - run:
-          name: Install dependencies
-          command: |
-            npm ci
+      # - run:
+      #     name: Install dependencies
+      #     command: |
+      #       npm ci
 
-      - save_cache:
-          key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
-          paths:
-            - ./node_modules
-            - ./packages/web/node_modules
-            - ./packages/mobile/node_modules
-            - ./packages/probers/node_modules
-            - ./packages/embed/node_modules
-            - ./packages/stems/node_modules
-            - ./packages/harmony/node_modules
-            - ./packages/common/node_modules
-            - ./packages/libs/node_modules
+      # - save_cache:
+      #     key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+      #     paths:
+      #       - ./node_modules
+      #       - ./packages/web/node_modules
+      #       - ./packages/mobile/node_modules
+      #       - ./packages/probers/node_modules
+      #       - ./packages/embed/node_modules
+      #       - ./packages/stems/node_modules
+      #       - ./packages/harmony/node_modules
+      #       - ./packages/common/node_modules
+      #       - ./packages/libs/node_modules
 
-      - save_cache:
-          key: cache-{{ .Revision }}
-          paths:
-            - ./packages/stems/dist
-            - ./packages/harmony/dist
-            - ./packages/common/dist
-            - ./packages/libs/dist
+      # - save_cache:
+      #     key: cache-{{ .Revision }}
+      #     paths:
+      #       - ./packages/stems/dist
+      #       - ./packages/harmony/dist
+      #       - ./packages/common/dist
+      #       - ./packages/libs/dist
 
   generate-release:
     working_directory: ~/audius-protocol
@@ -118,7 +118,7 @@ jobs:
             git add discovery-provider/.version.json
 
             # Escape double quotes in commit message and replace git log's platform-specific newlines with @@DELIM@@
-            GIT_DIFF=$(git log --pretty=format:'• %an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum discovery-provider identity-service comms | sed 's/"/\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/@@DELIM@@/g')
+            GIT_DIFF=$(git log --pretty=format:'• %an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum discovery-provider identity-service comms | sed 's/"/\\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/@@DELIM@@/g')
             git commit -m "Bump version to $NEW_VERSION"
 
             git branch "release-v$NEW_VERSION"
@@ -129,7 +129,7 @@ jobs:
             # Slack has a limit of 3000 characters per block, so we need to split the diff into multiple blocks
             max_lines=8
             json_content="{ \"blocks\": ["
-            json_content+="{ \"type\": \"header\", \"text\": { \"type\": \"plain_text\", \"text\": \"New Protocol Release Branch (v0.4.9)\n\" } },"
+            json_content+="{ \"type\": \"header\", \"text\": { \"type\": \"plain_text\", \"text\": \"New Protocol Release Branch (v$NEW_VERSION)\n\" } },"
             json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"*These changes will be released to SPs at 11am PST:*\n\" } },"
             line_count=0
             block_content=""
@@ -161,6 +161,7 @@ jobs:
             
             # The next step of this job will read this file and send it to Slack
             echo $json_content > /tmp/slack_message.json
+            echo "Text to send to slack: $json_content"
       - run:
           name: Send Slack Daily Deploy Message
           command: |

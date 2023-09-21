@@ -96,9 +96,6 @@ jobs:
       freeze: $FREEZE_BUILD
 
   - test-discovery-api:
-    executor: newman/postman-newman-docker
-    steps:
-      - checkout
-      - newman/newman-run:
-          collection: ./discovery-provider/Discovery API Tests.postman_collection.json
-          environment: ./discovery-provider/api-tests/Test Sandbox.postman_environment.jsonci
+      name: test-discovery-api
+      requires:
+          - push-discovery-provider
