@@ -209,7 +209,7 @@ workflows:
         equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
       - generate-config
-      - init
+      - init:
           context:
             - vercel
       - path-filtering/filter:
