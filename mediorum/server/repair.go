@@ -31,12 +31,12 @@ type RepairTracker struct {
 }
 
 func (ss *MediorumServer) startRepairer() {
+	// wait a minute on startup to determine healthy peers
+	time.Sleep(time.Minute * 1)
+
 	logger := ss.logger.With("task", "repair")
 
 	for {
-		// wait a minute between runs
-		time.Sleep(time.Minute * 1)
-
 		// pick up where we left off from the last repair.go run, including if the server restarted in the middle of a run
 		tracker := RepairTracker{
 			StartedAt:   time.Now(),
@@ -107,6 +107,9 @@ func (ss *MediorumServer) startRepairer() {
 		}
 		tracker.FinishedAt = time.Now()
 		saveTracker()
+
+		// wait 10 minutes before running again
+		time.Sleep(time.Minute * 10)
 	}
 }
 
@@ -194,7 +197,6 @@ func (ss *MediorumServer) runRepair(tracker *RepairTracker) error {
 }
 
 func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
-	tracker.Counters["total_checked"]++
 	ctx := context.Background()
 	logger := ss.logger.With("task", "repair", "cid", cid, "cleanup", tracker.CleanupMode)
 
@@ -205,6 +207,8 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 	if !tracker.CleanupMode && !isMineHealthy {
 		return nil
 	}
+
+	tracker.Counters["total_checked"]++
 
 	// use preferredHealthyHosts when determining my rank because we want to check if we're in the top N*2 healthy nodes not the top N*2 unhealthy nodes
 	myRank := slices.Index(preferredHealthyHosts, ss.Config.Self.Host)
@@ -293,7 +297,7 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 	// if R+1 healthy nodes in front of me have it, I can safely delete.
 	// don't delete if we replicated the blob within the past 24 hours
 	wasReplicatedToday := attrs.CreateTime.After(time.Now().Add(-24 * time.Hour))
-	if tracker.CleanupMode && (!isMine || !isMineHealthy) && alreadyHave && !wasReplicatedToday {
+	if tracker.CleanupMode && !isMineHealthy && alreadyHave && !wasReplicatedToday {
 		depth := 0
 		// loop preferredHealthyHosts (not preferredHosts) because we don't mind storing a blob a little while longer if it's not on enough healthy nodes
 		for _, host := range preferredHealthyHosts {
