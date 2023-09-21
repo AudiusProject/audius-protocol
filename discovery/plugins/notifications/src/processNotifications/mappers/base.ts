@@ -120,6 +120,7 @@ export abstract class BaseNotification<Type> {
   async processNotification(params: {
     isLiveEmailEnabled: boolean
     isBrowserPushEnabled: boolean
+    getIsPushNotificationEnabled: (type: string) => boolean
   }) {
     // handles live processing of notification. this includes: mobile push, browser push, and live emails
     return
