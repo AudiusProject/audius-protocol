@@ -42,6 +42,7 @@ type TrackResource = {
   owner_id: number
   cover_art: string
   cover_art_sizes: string
+  premium_conditions: object
   creator_node_endpoint: string
   slug: string
   ownerName: string
@@ -167,6 +168,7 @@ export const fetchResources = async (
       'tracks.title',
       'tracks.owner_id',
       'tracks.cover_art_sizes',
+      'tracks.premium_conditions',
       { ownerName: 'users.name' },
       'users.creator_node_endpoint',
       'track_routes.slug'
@@ -275,12 +277,14 @@ const getNotificationProps = async (
   }, {})
 
   const resources = await fetchResources(dnDB, identityDB, idsToFetch)
-  return mappedNotifications.map((n) =>
-    n.formatEmailProps(
-      resources,
-      mappedAdditionalNotifications[n?.notification?.group_id]
+  return mappedNotifications
+    .map((n) =>
+      n.formatEmailProps(
+        resources,
+        mappedAdditionalNotifications[n?.notification?.group_id]
+      )
     )
-  )
+    .filter(Boolean)
 }
 
 const getEmailTitle = (frequency: EmailFrequency, userEmail: string) => {

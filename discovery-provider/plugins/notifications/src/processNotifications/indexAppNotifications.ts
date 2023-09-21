@@ -27,6 +27,10 @@ import {
   RemoteConfig
 } from '../remoteConfig'
 import { Timer } from '../utils/timer'
+import { getRedisConnection } from '../utils/redisConnection'
+import { RequiresRetry } from '../types/notifications'
+
+const NOTIFICATION_RETRY_QUEUE_REDIS_KEY = 'notification_retry'
 
 export type NotificationProcessor =
   | Follow
@@ -114,8 +118,14 @@ export class AppNotificationsProcessor {
     return Boolean(isEnabled)
   }
 
+  /**
+   * Processes an array of notification rows, delivering them incrementally.
+   */
   async process(notifications: NotificationRow[]) {
     if (notifications.length == 0) return
+
+    const redis = await getRedisConnection()
+
     logger.info(`Processing ${notifications.length} push notifications`)
     const timer = new Timer('Processing notifications duration')
     const blocknumber = notifications[0].blocknumber
@@ -129,6 +139,7 @@ export class AppNotificationsProcessor {
       processed: 0,
       errored: 0,
       skipped: 0,
+      needsRetry: 0,
       blocknumber,
       blockhash
     }
@@ -147,18 +158,28 @@ export class AppNotificationsProcessor {
         try {
           await notification.processNotification({
             isLiveEmailEnabled,
-            isBrowserPushEnabled
+            isBrowserPushEnabled,
+            getIsPushNotificationEnabled: this.getIsPushNotificationEnabled
           })
           status.processed += 1
         } catch (e) {
-          logger.error(
-            {
-              type: notification.notification.type,
-              message: e.message
-            },
-            `Error processing push notification`
-          )
-          status.errored += 1
+          if (e instanceof RequiresRetry) {
+            status.needsRetry += 1
+            // enqueue in redis
+            redis.lPush(
+              NOTIFICATION_RETRY_QUEUE_REDIS_KEY,
+              JSON.stringify(notification.notification)
+            )
+          } else {
+            logger.error(
+              {
+                type: notification.notification.type,
+                message: e.message
+              },
+              `Error processing push notification`
+            )
+            status.errored += 1
+          }
         }
       } else {
         status.skipped += 1
@@ -175,5 +196,22 @@ export class AppNotificationsProcessor {
       },
       `Done processing push notifications`
     )
+  }
+
+  /**
+   * Reprocesses the queued notifications in redis that are in need retry
+   */
+  async reprocess() {
+    const redis = await getRedisConnection()
+    // Get all notifications in redis
+    const notificationsStrings = await redis.lRange(
+      NOTIFICATION_RETRY_QUEUE_REDIS_KEY,
+      0,
+      -1
+    )
+    const notifications: NotificationRow[] = notificationsStrings.map((n) =>
+      JSON.parse(n)
+    )
+    await this.process(notifications)
   }
 }
