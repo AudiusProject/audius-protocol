@@ -94,3 +94,11 @@ jobs:
         stage-discovery-5
       service: discovery-provider
       freeze: $FREEZE_BUILD
+
+  - test-discovery-api:
+    executor: newman/postman-newman-docker
+    steps:
+      - checkout
+      - newman/newman-run:
+          collection: ./discovery-provider/Discovery API Tests.postman_collection.json
+          environment: ./discovery-provider/api-tests/Test Sandbox.postman_environment.jsonci
