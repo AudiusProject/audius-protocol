@@ -148,6 +148,7 @@ class Playlist(Resource):
             playlist_id=playlist_id,
         )
         response = success_response([playlist] if playlist else [])
+        raise Exception("hi")
         return response
 
 
