@@ -8,7 +8,8 @@ import {
   TOKEN_LISTING_MAP,
   getUserbankAccountInfo,
   BNUSDC,
-  formatUSDCWeiToFloorDollarNumber
+  formatUSDCWeiToFloorDollarNumber,
+  userApiActions
 } from '@audius/common'
 import {
   createAssociatedTokenAccountInstruction,
@@ -244,6 +245,10 @@ function* doWithdrawUSDC({
     )
     yield* call(onSuccess, transferSignature)
     yield* put(withdrawUSDCSucceeded())
+
+    // clear the withdrawals so next query will fetch from source
+    // @ts-ignore
+    yield* put(userApiActions.resetGetUSDCTransactions())
   } catch (e: unknown) {
     console.error('Withdraw USDC failed', e)
     const reportToSentry = yield* getContext('reportToSentry')
