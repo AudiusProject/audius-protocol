@@ -7,3 +7,17 @@ create_concatenated_patch_file:
     - run:
         name: Combine patch-files to single file
         command: ls -d -- packages/*/patches/*.patch | xargs cat > << parameters.filename >>
+
+  create_package_cache_key:
+    description: 'Create a cache for a package, e.g. @audius/sdk'
+    parameters:
+      package:
+        type: string
+      dir:
+        type: string
+      filename:
+        type: string
+    steps:
+      - run: tar -cf - << parameters.dir >> | md5sum > << parameters.filename >>
+      - run: npx turbo prune --scope=<< parameters.package >> --out-dir ./turbo-out/<< parameters.package >>
+      - run: cat turbo-out/<< parameters.package >>/package-lock.json >> << parameters.filename >>

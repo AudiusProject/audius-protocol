@@ -18,6 +18,15 @@ web-init:
         keys:
           - cache-{{ .Revision }}
 
+    - create_package_cache_key:
+        filename: libs-cache-key.txt
+        package: '@audius/sdk'
+        dir: packages/libs
+
+    - restore_cache:
+        keys:
+          - cache-{{ checksum "libs-cache-key.txt" }}
+
     - common-lint
 
     - run:

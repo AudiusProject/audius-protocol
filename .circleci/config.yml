@@ -24,6 +24,19 @@ commands:
       - run:
           name: Combine patch-files to single file
           command: ls -d -- packages/*/patches/*.patch | xargs cat > << parameters.filename >>
+  create_package_cache_key:
+    description: 'Create a cache for a package, e.g. @audius/sdk'
+    parameters:
+      package:
+        type: string
+      dir:
+        type: string
+      filename:
+        type: string
+    steps:
+      - run: tar -cf - << parameters.dir >> | md5sum > << parameters.filename >>
+      - run: npx turbo prune --scope=<< parameters.package >> --out-dir ./turbo-out/<< parameters.package >>
+      - run: cat turbo-out/<< parameters.package >>/package-lock.json >> << parameters.filename >>
 
 jobs:
   # Generate the CircleCI continue_config.yml from .circleci/src
@@ -84,6 +97,23 @@ jobs:
             - ./packages/stems/dist
             - ./packages/harmony/dist
             - ./packages/common/dist
+            - ./packages/libs/dist
+
+      - save_cache:
+          key: cache-{{ .Revision }}
+          paths:
+            - ./packages/stems/dist
+            - ./packages/harmony/dist
+            - ./packages/common/dist
+
+      - create_package_cache_key:
+          filename: libs-cache-key.txt
+          package: '@audius/sdk'
+          dir: packages/libs
+
+      - save_cache:
+          key: cache-{{ checksum "libs-cache-key.txt" }}
+          paths:
             - ./packages/libs/dist
 
   generate-release:
@@ -158,7 +188,7 @@ jobs:
 
             json_content=${json_content%,}
             json_content+="]}"
-            
+
             # The next step of this job will read this file and send it to Slack
             echo $json_content > /tmp/slack_message.json
       - run:
