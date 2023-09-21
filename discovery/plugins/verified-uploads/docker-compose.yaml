@@ -1,0 +1,26 @@
+version: "3"
+services:
+  verified_uploads:
+    container_name: "verified_uploads"
+    restart: always
+    volumes:
+      - .env:/verified_uploads/.env
+    image: audius/verified_uploads
+    build:
+      context: "."
+    networks:
+      - dn-network
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+    ports:
+      - "6000:6000"
+
+networks:
+  dn-network:
+    name: discovery_discovery-network
+    external: true

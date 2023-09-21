@@ -35,7 +35,7 @@ Para obtener más información sobre la arquitectura de Audius, consulte el [Whi
 | Servicio                                                                                                      | Descripción                                                                                                                                   |
 |:------------------------------------------------------------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`Nodo de contenido`](https://github.com/AudiusProject/audius-protocol/tree/main/creator-node)              | Mantiene la disponibilidad del contenido de los usuarios en IPFS incluyendo metadatos de usuario, imágenes y contenido de audio               |
-| [`Nodo de descubrimiento`](https://github.com/AudiusProject/audius-protocol/tree/main/discovery-provider)   | Indexa y almacena el contenido de los contratos de Audius en el blockchain de Ethereum para que los clientes lo consulten a través de una API |
+| [`Nodo de descubrimiento`](https://github.com/AudiusProject/audius-protocol/tree/main/discovery)   | Indexa y almacena el contenido de los contratos de Audius en el blockchain de Ethereum para que los clientes lo consulten a través de una API |
 | [`Servicio de identificación`](https://github.com/AudiusProject/audius-protocol/tree/main/identity-service) | Guarda cifrados de cifrado de autor, hace Twitter OAuth y transmite transacciones (paga gas) en nombre de los usuarios                        |
 
 ## Contratos inteligentes de Audius & librerías

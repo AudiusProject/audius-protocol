@@ -41,7 +41,7 @@ export const initializeAudiusLibs = async (handle) => {
     }),
     discoveryProviderConfig: {
       discoveryNodeSelector: new DiscoveryNodeSelector({
-        initialSelectedNode: "http://audius-protocol-discovery-provider-1",
+        initialSelectedNode: "http://audius-protocol-discovery-1",
       }),
     },
     creatorNodeConfig: AudiusLibs.configCreatorNode(

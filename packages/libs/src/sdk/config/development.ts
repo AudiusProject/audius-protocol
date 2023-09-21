@@ -7,7 +7,7 @@ import type { ServicesConfig } from './types'
 export const servicesConfig: ServicesConfig = {
   "minVersion": "0.0.0",
   "discoveryNodes": [
-    "http://audius-protocol-discovery-provider-1"
+    "http://audius-protocol-discovery-1"
   ],
   "storageNodes": [
     {

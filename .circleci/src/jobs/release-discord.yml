@@ -6,7 +6,7 @@ steps:
   - run:
       name: Discord Release
       command: |
-        export VERSION="$(jq -r .version discovery-provider/.version.json)"
+        export VERSION="$(jq -r .version discovery/.version.json)"
         curl -d '{
           "content": "New service version ('"${VERSION}"') is out now!\n\n• [New compose files](<https://github.com/AudiusProject/audius-docker-compose>)\n• [Changelogs](<https://github.com/AudiusProject/audius-protocol/releases>)\n• [Governance Proposals](<https://dashboard.audius.org/#/governance>) (2 days of voting left)",
           "embeds": null,

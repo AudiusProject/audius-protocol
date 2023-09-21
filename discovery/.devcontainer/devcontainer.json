@@ -1,0 +1,23 @@
+{
+	"name": "test-discovery",
+	"dockerComposeFile": [
+		"../docker-compose.test.yml"
+	],
+	"service": "test-discovery",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	"features": {
+		"ghcr.io/devcontainers/features/python:1": {}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-python.isort",
+        "ms-python.black-formatter",
+        "EditorConfig.EditorConfig",
+        "esbenp.prettier-vscode"
+      ]
+		}
+	}
+}

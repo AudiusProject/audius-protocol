@@ -70,17 +70,17 @@ audius-compose prune
 
 Get service logs
 ```
-audius-compose logs discovery-provider-1 # get name from `docker ps`
+audius-compose logs discovery-1 # get name from `docker ps`
 ```
 
 Set environment variables
 ```
-audius-compose set-env discovery-provider-1 audius_discprov_url https://discoveryprovider.testing.com/
+audius-compose set-env discovery-1 audius_discprov_url https://discoveryprovider.testing.com/
 ```
 
 Load environment variables
 ```
-audius-compose load-env discovery-provider prod
+audius-compose load-env discovery prod
 ```
 
 # Development
@@ -98,8 +98,8 @@ audius-compose load-env discovery-provider prod
 * `audius-compose connect` allows you to access containers via hostname by appending hostnames to your `/etc/hosts` (one-time operation unless you change container names or add a new service)
 * This `/etc/hosts` change tells your browser (or CURL, or whatever) to go to `127.0.0.1`
 * The `ingress` container listens on `127.0.0.1` for port 80 and redirects every request to the desired container based on hostname
-  * For example, if you request `audius-protocol-discovery-provider-1/health_check`, the `ingress` container sees the hostname as `audius-protocol-discovery-provider-1` and directs it to the Discovery Node's container and port. This removes the need for you as the dev (or any application code except ingress) to ever worry about port numbers
-* The `extra_hosts` config that gets added to every service in `docker-compose.yml` is what allows this to happen from within containers. For example, the `extra_hosts` line that says `- "audius-protocol-discovery-provider-1:host-gateway"` tells every container, "When you see the hostname "audius-protocol-discovery-provider-1", resolve it using the machine's (not the container's) localhost (i.e., "host-gateway"). Your machine's localhost knows to direct "audius-protocol-discovery-provider-1" to 127.0.0.1:80 (thanks to `audius-compose connect`), where the nginx `ingress` container will be listening and will direct the request to the Discovery Node container
+  * For example, if you request `audius-protocol-discovery-1/health_check`, the `ingress` container sees the hostname as `audius-protocol-discovery-1` and directs it to the Discovery Node's container and port. This removes the need for you as the dev (or any application code except ingress) to ever worry about port numbers
+* The `extra_hosts` config that gets added to every service in `docker-compose.yml` is what allows this to happen from within containers. For example, the `extra_hosts` line that says `- "audius-protocol-discovery-1:host-gateway"` tells every container, "When you see the hostname "audius-protocol-discovery-1", resolve it using the machine's (not the container's) localhost (i.e., "host-gateway"). Your machine's localhost knows to direct "audius-protocol-discovery-1" to 127.0.0.1:80 (thanks to `audius-compose connect`), where the nginx `ingress` container will be listening and will direct the request to the Discovery Node container
 
 ## Adding a service
 1. Configure the service in its own .yml file, either using an existing one (e.g., use `docker-compose.discovery.yml` if it's a Discovery-related service) or by creating a new one
@@ -107,7 +107,7 @@ audius-compose load-env discovery-provider prod
       ```
       service-name:
         build:
-            context: <service_directory containing Dockerfile (e.g., discovery-provider)>
+            context: <service_directory containing Dockerfile (e.g., discovery)>
       ```
 2. Add that service to the top-level `docker-compose.yml` file using the extends syntax, and then add `<<: *common`. Example:
     ```

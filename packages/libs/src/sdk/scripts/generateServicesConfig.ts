@@ -50,7 +50,7 @@ const envConfigs: Record<'staging' | 'production', EnvironmentConfig> = {
 
 const devConfig: ServicesConfig = {
   minVersion: '0.0.0',
-  discoveryNodes: ['http://audius-protocol-discovery-provider-1'],
+  discoveryNodes: ['http://audius-protocol-discovery-1'],
   storageNodes: [
     {
       delegateOwnerWallet: '0x0D38e653eC28bdea5A2296fD5940aaB2D0B8875c',

@@ -49,7 +49,7 @@ const port = 3100;
 // Test/develop sdk functionality here
 
 const discoveryNodeSelector = new DiscoveryNodeSelector({
-  initialSelectedNode: "http://audius-protocol-discovery-provider-1",
+  initialSelectedNode: "http://audius-protocol-discovery-1",
 });
 
 const logger = new Logger({ logLevel: "info" });

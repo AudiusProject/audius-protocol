@@ -202,15 +202,15 @@ func startDevCluster() {
 	network := devNetwork(hostNameTemplate, devNetworkCount)
 	signers := []server.Peer{
 		{
-			Host:   "audius-protocol-discovery-provider-1",
+			Host:   "audius-protocol-discovery-1",
 			Wallet: "0x73EB6d82CFB20bA669e9c178b718d770C49BB52f",
 		},
 		{
-			Host:   "audius-protocol-discovery-provider-2",
+			Host:   "audius-protocol-discovery-2",
 			Wallet: "0x9D8E5fAc117b15DaCED7C326Ae009dFE857621f1",
 		},
 		{
-			Host:   "audius-protocol-discovery-provider-3",
+			Host:   "audius-protocol-discovery-3",
 			Wallet: "0x982a8CbE734cb8c29A6a7E02a3B0e4512148F6F9",
 		},
 	}

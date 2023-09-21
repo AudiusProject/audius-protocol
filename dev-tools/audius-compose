@@ -16,7 +16,7 @@ import solders.keypair
 LOCALHOSTS = """
 127.0.0.1       ingress \
 audius-protocol-comms-discovery-1 audius-protocol-comms-discovery-2 audius-protocol-comms-discovery-3 audius-protocol-comms-discovery-4 audius-protocol-comms-discovery-5 \
-audius-protocol-discovery-provider-1 audius-protocol-discovery-provider-2 audius-protocol-discovery-provider-3 \
+audius-protocol-discovery-1 audius-protocol-discovery-2 audius-protocol-discovery-3 \
 audius-protocol-creator-node-1 audius-protocol-creator-node-2 audius-protocol-creator-node-3 \
 audius-protocol-identity-service-1 \
 audius-protocol-solana-test-validator-1 \
@@ -70,7 +70,7 @@ def get_git_commit(protocol_dir):
 # TODO: Maybe clean up later to handle comms config (currently using explicit env vars in docker-compose.comms.yml)
 def generate_env(
     protocol_dir,
-    discovery_provider_replicas,
+    discovery_replicas,
     elasticsearch_replicas,
 ):
     config = {}
@@ -83,14 +83,14 @@ def generate_env(
 
     env["GIT_COMMIT"] = get_git_commit(protocol_dir)
 
-    env["DISCOVERY_PROVIDER_REPLICAS"] = str(discovery_provider_replicas)
+    env["DISCOVERY_REPLICAS"] = str(discovery_replicas)
 
     env["CONTENT_NODE_VERSION"] = json.loads(
         (protocol_dir / "mediorum/.version.json").read_text(),
     )["version"]
 
     env["DISCOVERY_NODE_VERSION"] = json.loads(
-        (protocol_dir / "discovery-provider/.version.json").read_text(),
+        (protocol_dir / "discovery/.version.json").read_text(),
     )["version"]
 
     env["ELASTICSEARCH_REPLICAS"] = str(elasticsearch_replicas)
@@ -187,21 +187,21 @@ def cli(ctx, protocol_dir):
 
 
 @cli.command()
-@click.option("-d", "--discovery-provider-replicas", default=1, type=int)
+@click.option("-d", "--discovery-replicas", default=1, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-a", "--args", type=str, multiple=True)
 @click.argument("services", nargs=-1)
 @click.pass_obj
 def build(
     protocol_dir,
-    discovery_provider_replicas,
+    discovery_replicas,
     elasticsearch_replicas,
     args,
     services,
 ):
     generate_env(
         protocol_dir,
-        discovery_provider_replicas,
+        discovery_replicas,
         elasticsearch_replicas,
     )
 
@@ -242,7 +242,7 @@ def build(
 @click.pass_context
 def push(ctx, services):
     protocol_dir = ctx.obj
-    services = services or ["mediorum", "discovery-provider", "identity-service"]
+    services = services or ["mediorum", "discovery", "identity-service"]
 
     git_commit = get_git_commit(protocol_dir)
 
@@ -326,7 +326,7 @@ def load_env(protocol_dir, service, environment):
 
 
 @cli.command()
-@click.option("-d", "--discovery-provider-replicas", default=1, type=int)
+@click.option("-d", "--discovery-replicas", default=1, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=1, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
 @click.option("-o", "--anti-abuse-oracle", is_flag=True)
@@ -348,7 +348,7 @@ def load_env(protocol_dir, service, environment):
 @click.pass_obj
 def up(
     protocol_dir,
-    discovery_provider_replicas,
+    discovery_replicas,
     elasticsearch_replicas,
     block_explorer,
     anti_abuse_oracle,
@@ -360,7 +360,7 @@ def up(
 ):
     generate_env(
         protocol_dir,
-        discovery_provider_replicas,
+        discovery_replicas,
         elasticsearch_replicas,
     )
 
@@ -618,14 +618,14 @@ def ps(protocol_dir):
                     ports[publisher["PublishedPort"]] = publisher["TargetPort"]
 
         if service["Service"] in [
-            "discovery-provider",
-            "discovery-provider-elasticsearch",
+            "discovery",
+            "discovery-elasticsearch",
         ]:
             replica = int(service["Name"].split("-")[-1])
-        if service["Service"] == "discovery-provider":
+        if service["Service"] == "discovery":
             name = f"{service['Service']}-{replica}"
             ports[5000 + replica - 1] = 5000
-        if service["Service"] == "discovery-provider-elasticsearch":
+        if service["Service"] == "discovery-elasticsearch":
             name = f"{service['Service']}-{replica}"
 
         ports = sorted(ports.items())
