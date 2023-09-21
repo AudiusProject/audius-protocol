@@ -118,4 +118,4 @@ services:
         condition: "${ELASTICSEARCH_CONDITION}"
     deploy:
       mode: replicated
-      replicas: "${DISCOVERY_PROVIDER_REPLICAS}"
+      replicas: "${DISCOVERY_REPLICAS}"

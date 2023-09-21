@@ -70,7 +70,7 @@ def get_git_commit(protocol_dir):
 # TODO: Maybe clean up later to handle comms config (currently using explicit env vars in docker-compose.comms.yml)
 def generate_env(
     protocol_dir,
-    discovery_provider_replicas,
+    discovery_replicas,
     elasticsearch_replicas,
 ):
     config = {}
@@ -83,7 +83,7 @@ def generate_env(
 
     env["GIT_COMMIT"] = get_git_commit(protocol_dir)
 
-    env["DISCOVERY_PROVIDER_REPLICAS"] = str(discovery_provider_replicas)
+    env["DISCOVERY_REPLICAS"] = str(discovery_replicas)
 
     env["CONTENT_NODE_VERSION"] = json.loads(
         (protocol_dir / "mediorum/.version.json").read_text(),
@@ -194,14 +194,14 @@ def cli(ctx, protocol_dir):
 @click.pass_obj
 def build(
     protocol_dir,
-    discovery_provider_replicas,
+    discovery_replicas,
     elasticsearch_replicas,
     args,
     services,
 ):
     generate_env(
         protocol_dir,
-        discovery_provider_replicas,
+        discovery_replicas,
         elasticsearch_replicas,
     )
 
@@ -348,7 +348,7 @@ def load_env(protocol_dir, service, environment):
 @click.pass_obj
 def up(
     protocol_dir,
-    discovery_provider_replicas,
+    discovery_replicas,
     elasticsearch_replicas,
     block_explorer,
     anti_abuse_oracle,
@@ -360,7 +360,7 @@ def up(
 ):
     generate_env(
         protocol_dir,
-        discovery_provider_replicas,
+        discovery_replicas,
         elasticsearch_replicas,
     )
 
