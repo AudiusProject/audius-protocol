@@ -63,6 +63,7 @@ import {
 import { JupiterSingleton } from 'services/audius-backend/Jupiter'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {
+  TRANSACTION_FEE_FALLBACK,
   getRootAccountRentExemptionMinimum,
   getRootSolanaAccount,
   getSolanaConnection,
@@ -252,13 +253,12 @@ function* getTransactionFees({
       (yield* call(
         [transferTransaction, transferTransaction.getEstimatedFee],
         connection
-      )) ?? 5000
+      )) ?? TRANSACTION_FEE_FALLBACK
 
     // Calculate fees for swap transaction (v0 transaction)
     const lookupTableAccounts: AddressLookupTableAccount[] = []
     // Need to use for loop instead of forEach to properly await async calls
-    for (let i = 0; i < lookupTableAddresses.length; i++) {
-      const address = lookupTableAddresses[i]
+    for (const address of lookupTableAddresses) {
       if (address === undefined) continue
       const lookupTableAccount = yield* call(
         [connection, connection.getAddressLookupTable],
@@ -279,7 +279,7 @@ function* getTransactionFees({
     }).compileToV0Message(lookupTableAccounts)
     transactionFees +=
       (yield* call([connection, connection.getFeeForMessage], message)).value ??
-      5000
+      TRANSACTION_FEE_FALLBACK
 
     yield* put(cacheTransactionFees({ transactionFees }))
   }

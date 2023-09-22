@@ -207,8 +207,7 @@ export class TransactionHandler {
       // Use v0 transaction if lookup table addresses were supplied
       const lookupTableAccounts: AddressLookupTableAccount[] = []
       // Need to use for loop instead of forEach to properly await async calls
-      for (let i = 0; i < lookupTableAddresses.length; i++) {
-        const address = lookupTableAddresses[i]
+      for (const address of lookupTableAddresses) {
         if (address === undefined) continue
         const lookupTableAccount = await this.connection.getAddressLookupTable(
           new PublicKey(address)
