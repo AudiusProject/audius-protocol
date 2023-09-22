@@ -12,7 +12,7 @@ jobs:
       instance-name: circleci-test-identity-service-$CIRCLE_BUILD_NUM
       service: identity-service
 
-   # Deploy audius-protocol `main` branch (stage)
+  # Deploy audius-protocol `main` branch (stage)
   - deploy-stage-nodes:
       name: deploy-stage-identity-service
       requires:
