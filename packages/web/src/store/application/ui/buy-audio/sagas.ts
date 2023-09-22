@@ -63,8 +63,10 @@ import {
 import { JupiterSingleton } from 'services/audius-backend/Jupiter'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {
+  getRecentBlockhash,
   getRootAccountRentExemptionMinimum,
   getRootSolanaAccount,
+  getSignatureForV0Transaction,
   getSolanaConnection,
   getTransferTransactionFee
 } from 'services/solana/solana'
@@ -725,11 +727,22 @@ function* swapStep({
     }
   )
 
+  const recentBlockhash = yield* call(getRecentBlockhash)
+  // const signatures = yield* call(getSignatureForV0Transaction, {
+  //   instructions: swapInstructions,
+  //   signer: rootAccount,
+  //   feePayer: rootAccount.publicKey,
+  //   recentBlockhash,
+  //   lookupTableAddresses
+  // })
+
   const txId = yield* call(JupiterSingleton.executeExchange, {
     instructions: swapInstructions,
     feePayer: rootAccount.publicKey,
     transactionHandler,
+    // signatures,
     lookupTableAddresses
+    // recentBlockhash
   })
 
   // Write transaction details to local storage
