@@ -88,15 +88,6 @@ jobs:
       context: github
       requires:
         - deploy-foundation-nodes-trigger
-  - deploy:
-      name: deploy-prod-identity-service
-      context:
-        - open-vpn
-        - slack-secrets
-      requires:
-        - deploy-foundation-nodes-trigger
-      hosts: prod-identity
-      service: identity-service
   - release-audius-docker-compose-trigger:
       requires:
         - deploy-foundation-nodes

@@ -49,8 +49,30 @@ jobs:
       requires:
         - lint-discovery-provider
 
+  # Deploy audius-protocol `main` branch (stage)
+  - deploy-stage-nodes:
+      name: deploy-stage-discovery-provider
+      requires:
+        - lint-discovery-provider
+        - test-discovery-provider
+        - test-discovery-provider-notifications
+        - push-discovery-provider
+        - push-discovery-provider-notifications
+        - push-pedalboard-trending-challenge-rewards
+        - push-pedalboard-relay
+        - push-pedalboard-sla-auditor
+        - push-comms
+      filters:
+        branches:
+          only: main
+      context: github
+      service: discovery-provider
+
+  # Test for API regressions after deploying to stage
   - test-discovery-api:
       name: test-discovery-api
+      requires:
+        - deploy-stage-discovery-provider
       filters:
         branches:
           only: main

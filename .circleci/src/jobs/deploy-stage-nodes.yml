@@ -1,4 +1,7 @@
-when: << pipeline.parameters.deploy-stage-nodes >>
+parameters:
+  service:
+    description: 'Service to deploy (creator-node discovery-provider, identity-service)'
+    type: string
 resource_class: small
 docker:
   - image: cimg/base:2023.01
@@ -22,7 +25,10 @@ steps:
       command: |
         git clone --branch stage https://github.com/AudiusProject/audius-docker-compose.git audius-docker-compose
         cd audius-docker-compose
-        sed -i "s/{TAG:-.*}/{TAG:-$CIRCLE_SHA1}/" */docker-compose*.yml
+        sed -i "s/{TAG:-.*}/{TAG:-$CIRCLE_SHA1}/" $service/docker-compose/*.yml
         git add */docker-compose*.yml
-        git commit -m "Update tag to $CIRCLE_SHA1"
+        git commit -m "Update tag to $CIRCLE_SHA1 for $service"
         git push origin stage
+  - run:
+      name: Wait for 2 minutes for staging nodes to auto-upgrade
+      command: sleep 120

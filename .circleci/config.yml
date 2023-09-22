@@ -193,7 +193,8 @@ jobs:
       - run:
           name: Approve the deployments
           command: |
-            {
+            (
+              set -e
               # Find latest release version
               git clone https://github.com/AudiusProject/audius-protocol.git
               cd audius-protocol
@@ -238,7 +239,7 @@ jobs:
                   # Record approval for the Slack message
                   echo "<${job_url}|release-v$VERSION>" > /tmp/job_url.txt
               fi
-            } || true  # catch errors so we can send a Slack message in the next step
+            ) || true  # catch errors so we can send a Slack message in the next step
       - run:
           name: Notify Slack
           command: |
@@ -298,7 +299,8 @@ jobs:
                 $SLACK_DAILY_DEPLOY_WEBHOOK
             }
 
-            {
+            (
+              set -e
               # Find latest version
               git clone https://github.com/AudiusProject/audius-protocol.git
               cd audius-protocol
@@ -344,7 +346,7 @@ jobs:
                   echo "Didn't find job"
                   exit 1
               fi
-            } || handle_error
+            ) || handle_error
 
   generate-client-release:
     working_directory: ~/audius-protocol
@@ -460,7 +462,8 @@ workflows:
           mapping: |
             .* run-gcp-workflow true
             .* run-integration-workflow true
-            .* deploy-stage-nodes true
+            .* run-creator-workflow true
+            .* run-discovery-workflow true
             .* run-identity-workflow true
             .* run-eth-contracts-workflow true
             .* run-contracts-workflow true
