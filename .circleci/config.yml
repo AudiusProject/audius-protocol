@@ -226,14 +226,14 @@ jobs:
               # Fetch the "deploy-prod-foundation-nodes-trigger" job
               job_id=$(curl --request GET \
                 "https://circleci.com/api/v2/workflow/$workflow_id/job" \
-                --header "Circle-Token: $CIRCLE_DAILY_DEPLOY_API_TOKEN" | jq -r '.items[] | select(.name=="deploy-prod-foundation-nodes-trigger" and .status=="on_hold") | .id')
+                --header "Circle-Token: $CIRCLE_DAILY_DEPLOY_API_TOKEN" | jq -r '.items[] | select(.name=="deploy-foundation-nodes-trigger" and .status=="on_hold") | .id')
 
               # If we found the job, approve it automatically
               if [ ! -z "$job_id" ]; then
                   echo "Approving job with id=$job_id"
                   job_url="https://app.circleci.com/pipelines/gh/AudiusProject/audius-protocol/$pipeline_number/workflows/$workflow_id"
-                  curl -X POST \
-                    https://circleci.com/api/v2/workflow/$workflow_id/approve/$job_id
+                  curl --request POST \
+                    "https://circleci.com/api/v2/workflow/$workflow_id/approve/$job_id" \
                     --header "Circle-Token: $CIRCLE_DAILY_DEPLOY_API_TOKEN"
                   
                   # Record approval for the Slack message
@@ -243,7 +243,7 @@ jobs:
       - run:
           name: Notify Slack
           command: |
-              job_url=$(cat /tmp/job_url.txt)
+              job_url=$(cat /tmp/job_url.txt) || true
               json_content="{ \"blocks\": ["
 
               if [[ -z "$job_url" ]]; then
