@@ -163,3 +163,4 @@ export const {
   useGetSalesCount
 } = purchasesApi.hooks
 export const purchasesApiReducer = purchasesApi.reducer
+export const purchasesApiActions = purchasesApi.actions
