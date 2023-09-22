@@ -52,10 +52,95 @@ describe('Create Notification', () => {
     ])
     await new Promise((resolve) => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
-    expect(pending?.appNotifications).toHaveLength(1)
     // Assert single pending
+    expect(pending?.appNotifications).toHaveLength(1)
+
+    // Enable all the notifications
+    processor.appNotificationsProcessor.getIsPushNotificationEnabled = () =>
+      true
     await processor.appNotificationsProcessor.process(pending.appNotifications)
 
+    expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+      {
+        type: 'ios',
+        targetARN: 'arn:2',
+        badgeCount: 1
+      },
+      {
+        title: 'New Artist Update',
+        body: `user_1 released a new track`,
+        data: {
+          id: 'timestamp:1589373217:group_id:create:track:user_id:1',
+          type: 'UserSubscription',
+          entityIds: [10],
+          userId: 1,
+          entityType: 'Track'
+        }
+      }
+    )
+  })
+
+  test('Process push notification for create usdc purchase track', async () => {
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
+    await createSubscription(processor.discoveryDB, [
+      { subscriber_id: 2, user_id: 1 }
+    ])
+    await createTracks(processor.discoveryDB, [
+      {
+        track_id: 10,
+        owner_id: 1,
+        premium_conditions: {
+          usdc_purchase: {
+            price: 100,
+            splits: {
+              '8q8MSG4cdyDLoDXRGBLQugA6oHtQmbCtVVV1aEuPdYTj': 1000000
+            }
+          }
+        }
+      }
+    ])
+
+    await insertMobileSettings(processor.identityDB, [
+      { userId: 1 },
+      { userId: 2 }
+    ])
+    await insertMobileDevices(processor.identityDB, [
+      { userId: 1 },
+      { userId: 2 }
+    ])
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    const pending = processor.listener.takePending()
+    // Assert single pending
+    expect(pending?.appNotifications).toHaveLength(1)
+
+    processor.appNotificationsProcessor.getIsPushNotificationEnabled = (
+      type: string
+    ) => (type === 'usdc_purchase_seller' ? false : true)
+    await processor.appNotificationsProcessor.process(pending.appNotifications)
+
+    expect(sendPushNotificationSpy).not.toHaveBeenCalledWith(
+      {
+        type: 'ios',
+        targetARN: 'arn:2',
+        badgeCount: 1
+      },
+      {
+        title: 'New Artist Update',
+        body: `user_1 released a new track`,
+        data: {
+          id: 'timestamp:1589373217:group_id:create:track:user_id:1',
+          type: 'UserSubscription',
+          entityIds: [10],
+          userId: 1,
+          entityType: 'Track'
+        }
+      }
+    )
+
+    // Enable all the notifications
+    processor.appNotificationsProcessor.getIsPushNotificationEnabled = () =>
+      true
+    await processor.appNotificationsProcessor.reprocess()
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
       {
         type: 'ios',

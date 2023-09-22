@@ -2,7 +2,9 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mediorum/cidutil"
@@ -12,10 +14,12 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/erni27/imcache"
 	"github.com/labstack/echo/v4"
+	"gocloud.dev/blob"
 	"gocloud.dev/gcerrors"
 	"golang.org/x/exp/slices"
 )
@@ -23,9 +27,68 @@ import (
 func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
 	cid := c.Param("cid")
 	preferred, _ := ss.rendezvousAllHosts(cid)
+
+	// if ?sniff=1 to actually find the hosts that have it
+
+	type HostAttr struct {
+		Host           string
+		Attr           *blob.Attributes
+		RendezvousRank int
+	}
+	var attrs []HostAttr
+
+	if sniff, _ := strconv.ParseBool(c.QueryParam("sniff")); sniff {
+		mu := sync.Mutex{}
+		wg := sync.WaitGroup{}
+		wg.Add(len(preferred))
+
+		for idx, host := range preferred {
+			idx := idx
+			host := host
+			go func() {
+				if attr, err := ss.hostGetBlobInfo(host, cid); err == nil {
+					mu.Lock()
+					attrs = append(attrs, HostAttr{
+						Host:           host,
+						Attr:           attr,
+						RendezvousRank: idx + 1,
+					})
+					mu.Unlock()
+				}
+				wg.Done()
+			}()
+		}
+		wg.Wait()
+
+		slices.SortFunc(attrs, func(a, b HostAttr) int {
+			// prefer larger size
+			if a.Attr.Size > b.Attr.Size {
+				return -1
+			} else if a.Attr.Size < b.Attr.Size {
+				return 1
+			}
+
+			// equal size? prefer lower RendezvousRank
+			if a.RendezvousRank < b.RendezvousRank {
+				return -1
+			}
+			return 1
+		})
+
+		if fix, _ := strconv.ParseBool(c.QueryParam("fix")); fix {
+			if len(attrs) > 0 {
+				best := attrs[0]
+				if err := ss.pullFileFromHost(best.Host, cid); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
 	return c.JSON(200, map[string]any{
 		"cid":       cid,
 		"preferred": preferred,
+		"sniff":     attrs,
 	})
 }
 
@@ -153,7 +216,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	}
 
 	// redirect to it
-	host := ss.findNodeToServeBlob(cid)
+	host := ss.findNodeToServeBlob(ctx, cid)
 	if host != "" {
 		dest := ss.replaceHost(c, host)
 		query := dest.Query()
@@ -165,7 +228,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	return c.String(404, "blob not found")
 }
 
-func (ss *MediorumServer) findNodeToServeBlob(key string) string {
+func (ss *MediorumServer) findNodeToServeBlob(ctx context.Context, key string) string {
 
 	// use cache if possible
 	if host, ok := ss.redirectCache.Get(key); ok {
@@ -177,21 +240,30 @@ func (ss *MediorumServer) findNodeToServeBlob(key string) string {
 		}
 	}
 
-	// just race all hosts
-	hosts := make([]string, 0, len(ss.Config.Peers))
-	for _, p := range ss.Config.Peers {
-		if p.Host != ss.Config.Self.Host {
-			hosts = append(hosts, p.Host)
+	// try hosts to find blob
+	hosts, _ := ss.rendezvousAllHosts(key)
+	for _, h := range hosts {
+		if ss.hostHasBlob(h, key) {
+			ss.redirectCache.Set(key, h, imcache.WithDefaultExpiration())
+			return h
 		}
 	}
 
-	winner := ss.raceHostHasBlob(key, hosts)
-	if winner != "" {
-		ss.redirectCache.Set(key, winner, imcache.WithDefaultExpiration())
-		return winner
+	return ""
+}
+
+func (ss *MediorumServer) findAndPullBlob(ctx context.Context, key string) (string, error) {
+	// start := time.Now()
+
+	hosts, _ := ss.rendezvousAllHosts(key)
+	for _, host := range hosts {
+		err := ss.pullFileFromHost(host, key)
+		if err == nil {
+			return host, nil
+		}
 	}
 
-	return ""
+	return "", errors.New("no host found with " + key)
 }
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {

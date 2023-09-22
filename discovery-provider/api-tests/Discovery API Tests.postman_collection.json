@@ -1,0 +1,296 @@
+{
+	"info": {
+		"_postman_id": "37569e63-ecbc-4560-a996-3764d18828ae",
+		"name": "Discovery API Tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28733713",
+		"_collection_link": "https://universal-escape-508405.postman.co/workspace/Audius-Workspace~0a6b2ea4-68e8-4507-8c1b-124114436ef5/collection/28733713-37569e63-ecbc-4560-a996-3764d18828ae?action=share&source=collection_link&creator=28733713"
+	},
+	"item": [
+		{
+			"name": "Get User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{test_base_url}}/v1/users/nlGNe",
+					"host": [
+						"{{test_base_url}}"
+					],
+					"path": [
+						"v1",
+						"users",
+						"nlGNe"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Trending",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{test_base_url}}/v1/full/tracks/trending?time=week&limit=11&offset=0",
+					"host": [
+						"{{test_base_url}}"
+					],
+					"path": [
+						"v1",
+						"full",
+						"tracks",
+						"trending"
+					],
+					"query": [
+						{
+							"key": "time",
+							"value": "week"
+						},
+						{
+							"key": "limit",
+							"value": "11"
+						},
+						{
+							"key": "offset",
+							"value": "0"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Playlist",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{test_base_url}}/v1/playlists/DOPRl",
+					"host": [
+						"{{test_base_url}}"
+					],
+					"path": [
+						"v1",
+						"playlists",
+						"DOPRl"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Track",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{test_base_url}}/v1/tracks/D7KyD",
+					"host": [
+						"{{test_base_url}}"
+					],
+					"path": [
+						"v1",
+						"tracks",
+						"D7KyD"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Tips",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{test_base_url}}/v1/tips",
+					"host": [
+						"{{test_base_url}}"
+					],
+					"path": [
+						"v1",
+						"tips"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Bulk Tracks",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{test_base_url}}/v1/tracks?permalink=/TeamBandL/paauer-|-baauer-b2b-party-favor-|-bl-block-party-la-live-set-725&app_name=EXAMPLEAPP",
+					"host": [
+						"{{test_base_url}}"
+					],
+					"path": [
+						"v1",
+						"tracks"
+					],
+					"query": [
+						{
+							"key": "permalink",
+							"value": "/TeamBandL/paauer-|-baauer-b2b-party-favor-|-bl-block-party-la-live-set-725"
+						},
+						{
+							"key": "app_name",
+							"value": "EXAMPLEAPP"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// In the pre-request script of the request",
+					"",
+					"// Set the base URL based on the selected environment",
+					"const controlUrlHost = pm.environment.get('control_base_url');",
+					"let controlRequestCopy = pm.request.clone();",
+					"let controlRequestUrl = controlRequestCopy.url;",
+					"controlRequestUrl.host = controlUrlHost;",
+					"const controlRequestString = controlRequestUrl.toString();",
+					"",
+					"pm.sendRequest(controlRequestString, function (error, controlResponse) {",
+					"    if (error) {",
+					"        throw new Error(\"pre-requesite failed with \" + JSON.stringify(error));",
+					"    }",
+					"    // Capture the control sandbox response data and latency time",
+					"    pm.environment.set('control_response', controlResponse.json());",
+					"    pm.environment.set('control_latency', controlResponse.responseTime);",
+					"});",
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"",
+					"// Retrieve the control sandbox response data and latency time",
+					"const controlResponseData = pm.environment.get('control_response');",
+					"const controlLatency = pm.environment.get('control_latency');",
+					"const testBaseUrl = pm.environment.get('test_base_url');",
+					"// Compare testResponseData with controlResponseData",
+					"// You can implement your custom logic for comparison here",
+					"",
+					"",
+					"// Function to flatten a nested JSON object",
+					"function flattenJsonObject(obj, parentKey = '') {",
+					"    let result = {};",
+					"",
+					"    for (const key in obj) {",
+					"        if (obj.hasOwnProperty(key)) {",
+					"            const newKey = parentKey ? `${parentKey}.${key}` : key;",
+					"            if (typeof obj[key] === 'object') {",
+					"                // Recursively flatten nested objects",
+					"                const nestedFlatten = flattenJsonObject(obj[key], newKey);",
+					"                result = { ...result, ...nestedFlatten };",
+					"            } else {",
+					"                result[newKey] = obj[key];",
+					"            }",
+					"        }",
+					"    }",
+					"",
+					"    return result;",
+					"}",
+					"",
+					"// Flatten both expected and actual JSON objects",
+					"const flattenedExpected = flattenJsonObject(controlResponseData.data);",
+					"const flattenedActual = flattenJsonObject(pm.response.json().data);",
+					"",
+					"// Function to calculate the similarity percentage between two flattened objects",
+					"function calculateSimilarityPercentage(expected, actual) {",
+					"    let matchingFields = 0;",
+					"    let totalFields = 0;",
+					"",
+					"    // Iterate over each field in the expected flattened object",
+					"    for (const key in expected) {",
+					"        if (expected.hasOwnProperty(key)) {",
+					"            totalFields++;",
+					"",
+					"            const expectedValue = expected[key];",
+					"            const actualValue = actual[key];",
+					"",
+					"            if (expectedValue === actualValue) {",
+					"                matchingFields++;",
+					"            } else {",
+					"                console.log(`${key}: expected [${expectedValue}] - actual [${actualValue}]`)",
+					"            }",
+					"        }",
+					"    }",
+					"",
+					"    // Calculate the similarity percentage",
+					"    const similarityPercentage = (matchingFields / totalFields) * 100;",
+					"    return similarityPercentage;",
+					"}",
+					"",
+					"// Calculate the similarity percentage for the flattened objects",
+					"const similarityPercentage = calculateSimilarityPercentage(flattenedExpected, flattenedActual);",
+					"",
+					"",
+					"pm.test(\"Check JSON similarity\", function () {",
+					"    const similarityThreshold = parseFloat(pm.environment.get(\"similarity_threshold\"))",
+					"    pm.expect(similarityPercentage).to.be.at.least(similarityThreshold);",
+					"});",
+					"",
+					"pm.test('Latency is Acceptable', function () {",
+					"    let maxLatencyThreshold = (controlLatency + pm.environment.get('latency_threshold_buffer')) * (1 + pm.environment.get('latency_threshold_percentage'));",
+					"    let adjustedTestLatency = pm.response.responseTime;",
+					"    pm.expect(adjustedTestLatency).to.be.below(maxLatencyThreshold)",
+					"",
+					"});",
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "test_base_url",
+			"value": "http://35.209.86.3:5000"
+		}
+	]
+}

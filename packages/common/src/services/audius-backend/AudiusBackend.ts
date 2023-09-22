@@ -675,6 +675,15 @@ export const audiusBackend = ({
       monitoringCallbacks.contentNode
     )
 
+    const useDiscoveryRelay = await getFeatureEnabled(
+      FeatureFlags.DISCOVERY_RELAY
+    )
+
+    console.info(
+      { useDiscoveryRelay },
+      `discovery relay${useDiscoveryRelay ? ' ' : ' not '}enabled`
+    )
+
     try {
       audiusLibs = new AudiusLibs({
         localStorage,
@@ -722,10 +731,16 @@ export const audiusBackend = ({
         preferHigherPatchForSecondaries: await getFeatureEnabled(
           FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES
         ),
-        hedgehogConfig
+        hedgehogConfig,
+        useDiscoveryRelay
       })
       await audiusLibs.init()
       onLibsInit(audiusLibs)
+
+      if (useDiscoveryRelay) {
+        // libs not respecting the flag, mod web3 manager manually
+        audiusLibs.web3Manager.discoveryProvider = audiusLibs.discoveryProvider
+      }
 
       sanityChecks(audiusLibs)
     } catch (err) {
