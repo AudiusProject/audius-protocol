@@ -333,7 +333,6 @@ jobs:
 
                   # Build Slack message
                   json_content="{ \"blocks\": ["
-                  json_content+="{ \"type\": \"header\", \"text\": { \"type\": \"plain_text\", \"text\": \"Awaiting approval for SPs\n\" } },"
                   json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"<$job_url|release-v$VERSION> is ready to approve for SPs!\n\" } }"
                   json_content+="]}"
                   echo "Text to send to slack: $json_content"

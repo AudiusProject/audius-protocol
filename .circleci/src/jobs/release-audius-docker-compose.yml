@@ -19,7 +19,9 @@ steps:
   - run:
       name: Merge foundation into main branch
       command: |
-        git fetch
+        git clone https://github.com/AudiusProject/audius-docker-compose.git
+        cd audius-docker-compose
         git checkout main
-        git merge foundation --no-edit
+        git fetch
+        git merge origin/foundation --no-edit
         git push origin main
