@@ -4,7 +4,7 @@ import { useField } from 'formik'
 import { PriceField } from 'components/form-fields/PriceField'
 import { Text } from 'components/typography'
 
-import styles from './PayExtraForm.module.css'
+import styles from './PayExtraFormSection.module.css'
 import { AMOUNT_PRESET, CUSTOM_AMOUNT } from './constants'
 import { PayExtraAmountPresetValues, PayExtraPreset } from './types'
 
@@ -16,11 +16,13 @@ const messages = {
 
 const formatPillAmount = (val: number) => `$${Math.floor(val / 100)}`
 
-export type PayExtraFormProps = {
+export type PayExtraFormSectionProps = {
   amountPresets: PayExtraAmountPresetValues
 }
 
-export const PayExtraForm = ({ amountPresets }: PayExtraFormProps) => {
+export const PayExtraFormSection = ({
+  amountPresets
+}: PayExtraFormSectionProps) => {
   const [{ value: preset }, , { setValue: setPreset }] = useField(AMOUNT_PRESET)
 
   const handleClickPreset = (newPreset: PayExtraPreset) => {

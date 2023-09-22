@@ -15,7 +15,7 @@ import { Icon } from 'components/Icon'
 import { Text } from 'components/typography'
 
 import styles from './PremiumContentPurchaseModal.module.css'
-import { PurchaseDetailsPage } from './components/PurchaseDetailsPage'
+import { PurchaseContentForm } from './components/PurchaseContentForm'
 
 const { getPurchaseContentId } = premiumContentSelectors
 
@@ -68,7 +68,7 @@ export const PremiumContentPurchaseModal = () => {
       </ModalHeader>
       <ModalContent>
         {track ? (
-          <PurchaseDetailsPage
+          <PurchaseContentForm
             track={track}
             currentBalance={balance}
             onViewTrackClicked={handleClose}
