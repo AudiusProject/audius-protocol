@@ -30,7 +30,8 @@ func TestServeImage(t *testing.T) {
 		resp, err := http.Get(s1.Config.Self.Host + "/content/" + cid + "/150x150.jpg")
 		assert.NoError(t, err)
 		assert.Equal(t, 200, resp.StatusCode)
-		assert.NotEmpty(t, resp.Header.Get("x-dynamic-resize-ok"))
+		assert.NotEmpty(t, resp.Header.Get("x-fetch-ok"))
+		assert.NotEmpty(t, resp.Header.Get("x-resize-ok"))
 	}
 
 	// the second time it should have the variant on disk
@@ -38,7 +39,7 @@ func TestServeImage(t *testing.T) {
 		resp, err := http.Get(s1.Config.Self.Host + "/content/" + cid + "/150x150.jpg")
 		assert.NoError(t, err)
 		assert.Equal(t, 200, resp.StatusCode)
-		assert.Empty(t, resp.Header.Get("x-dynamic-resize-ok"))
+		assert.Empty(t, resp.Header.Get("x-resize-ok"))
 	}
 
 	// it should also have the orig
@@ -46,7 +47,7 @@ func TestServeImage(t *testing.T) {
 		resp, err := http.Get(s1.Config.Self.Host + "/content/" + cid + "/original.jpg")
 		assert.NoError(t, err)
 		assert.Equal(t, 200, resp.StatusCode)
-		assert.Empty(t, resp.Header.Get("x-dynamic-resize-ok"))
+		assert.Empty(t, resp.Header.Get("x-resize-ok"))
 	}
 
 	// some alternate URLs we need to support??
@@ -54,7 +55,7 @@ func TestServeImage(t *testing.T) {
 		resp, err := http.Get(s1.Config.Self.Host + "/content/" + cid)
 		assert.NoError(t, err)
 		assert.Equal(t, 200, resp.StatusCode)
-		assert.Empty(t, resp.Header.Get("x-dynamic-resize-ok"))
+		assert.Empty(t, resp.Header.Get("x-resize-ok"))
 	}
 
 	// some alternate URLs we need to support??
@@ -62,7 +63,7 @@ func TestServeImage(t *testing.T) {
 		resp, err := http.Get(s1.Config.Self.Host + "/content/" + cid + ".jpg")
 		assert.NoError(t, err)
 		assert.Equal(t, 200, resp.StatusCode)
-		assert.Empty(t, resp.Header.Get("x-dynamic-resize-ok"))
+		assert.Empty(t, resp.Header.Get("x-resize-ok"))
 	}
 
 	// test with some Qm URLs

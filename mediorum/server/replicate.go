@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"gocloud.dev/blob"
-	"golang.org/x/sync/errgroup"
 )
 
 func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]string, error) {
@@ -150,44 +149,6 @@ func (ss *MediorumServer) hostGetBlobInfo(host, key string) (*blob.Attributes, e
 		return nil, fmt.Errorf("%s %s", u, resp.Status)
 	}
 	return attr, nil
-}
-
-// raceHostHasBlob tries batches of several hosts concurrently to find the first healthy host with the key instead of sequentially waiting for a 2s timeout from each host.
-func (ss *MediorumServer) raceHostHasBlob(key string, hostsWithKey []string) string {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	g, _ := errgroup.WithContext(ctx)
-	g.SetLimit(3)
-	hostWithKeyCh := make(chan string, 1)
-
-	for _, host := range hostsWithKey {
-		if host == ss.Config.Self.Host {
-			continue
-		}
-		h := host
-		g.Go(func() error {
-			if ss.hostHasBlob(h, key) {
-				// write to channel and cancel context to stop other goroutines, or stop if context was already canceled
-				select {
-				case hostWithKeyCh <- h:
-					cancel()
-				case <-ctx.Done():
-				}
-			}
-			return nil
-		})
-	}
-
-	go func() {
-		g.Wait()
-		close(hostWithKeyCh)
-	}()
-
-	host, ok := <-hostWithKeyCh
-	if ok {
-		return host
-	}
-	return ""
 }
 
 func (ss *MediorumServer) pullFileFromHost(host, cid string) error {

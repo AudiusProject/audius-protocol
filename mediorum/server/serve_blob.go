@@ -2,7 +2,9 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mediorum/cidutil"
@@ -15,7 +17,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/erni27/imcache"
 	"github.com/labstack/echo/v4"
 	"gocloud.dev/blob"
 	"gocloud.dev/gcerrors"
@@ -214,7 +215,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	}
 
 	// redirect to it
-	host := ss.findNodeToServeBlob(cid)
+	host := ss.findNodeToServeBlob(ctx, cid)
 	if host != "" {
 		dest := ss.replaceHost(c, host)
 		query := dest.Query()
@@ -226,7 +227,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	return c.String(404, "blob not found")
 }
 
-func (ss *MediorumServer) findNodeToServeBlob(key string) string {
+func (ss *MediorumServer) findNodeToServeBlob(ctx context.Context, key string) string {
 
 	// use cache if possible
 	if host, ok := ss.redirectCache.Get(key); ok {
@@ -238,21 +239,29 @@ func (ss *MediorumServer) findNodeToServeBlob(key string) string {
 		}
 	}
 
-	// just race all hosts
-	hosts := make([]string, 0, len(ss.Config.Peers))
-	for _, p := range ss.Config.Peers {
-		if p.Host != ss.Config.Self.Host {
-			hosts = append(hosts, p.Host)
+	// try hosts to find blob
+	hosts, _ := ss.rendezvousAllHosts(key)
+	for _, h := range hosts {
+		if ss.hostHasBlob(h, key) {
+			return h
 		}
 	}
 
-	winner := ss.raceHostHasBlob(key, hosts)
-	if winner != "" {
-		ss.redirectCache.Set(key, winner, imcache.WithDefaultExpiration())
-		return winner
+	return ""
+}
+
+func (ss *MediorumServer) findAndPullBlob(ctx context.Context, key string) (string, error) {
+	// start := time.Now()
+
+	hosts, _ := ss.rendezvousAllHosts(key)
+	for _, host := range hosts {
+		err := ss.pullFileFromHost(host, key)
+		if err == nil {
+			return host, nil
+		}
 	}
 
-	return ""
+	return "", errors.New("no host found with " + key)
 }
 
 func (ss *MediorumServer) logTrackListen(c echo.Context) {
