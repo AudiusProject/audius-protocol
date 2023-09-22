@@ -727,22 +727,11 @@ function* swapStep({
     }
   )
 
-  const recentBlockhash = yield* call(getRecentBlockhash)
-  // const signatures = yield* call(getSignatureForV0Transaction, {
-  //   instructions: swapInstructions,
-  //   signer: rootAccount,
-  //   feePayer: rootAccount.publicKey,
-  //   recentBlockhash,
-  //   lookupTableAddresses
-  // })
-
   const txId = yield* call(JupiterSingleton.executeExchange, {
     instructions: swapInstructions,
     feePayer: rootAccount.publicKey,
     transactionHandler,
-    // signatures,
     lookupTableAddresses
-    // recentBlockhash
   })
 
   // Write transaction details to local storage

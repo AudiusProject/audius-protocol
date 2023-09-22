@@ -213,7 +213,7 @@ const isUSDCWithdrawalTransaction = (instructions) => {
     USER_BANK_TRANSFER_INDEX_END
   )
   validations.push(isRelayAllowedProgram(transferInstructions))
-  validations.push(checkJupiterSwapInstructions(instructions))
+  // validations.push(checkJupiterSwapInstructions(instructions))
   validations.push(checkCreateAccountMatchesClose(instructions))
   validations.push(
     checkCloseAccountInstruction(instructions[instructions.length - 1])

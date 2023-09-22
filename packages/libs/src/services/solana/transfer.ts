@@ -291,7 +291,7 @@ export const createTransferInstructions = async ({
   const transferDataInstr = Uint8Array.of(1, ...ethAddressArr)
   const transferInstruction = new TransactionInstruction({
     keys: accounts,
-    programId: claimableTokenProgramKey.toString() as unknown as PublicKey,
+    programId: new PublicKey(claimableTokenProgramKey.toString()),
     data: Buffer.from(transferDataInstr)
   })
 
