@@ -17,9 +17,9 @@ steps:
         git config --global user.email "audius-infra@audius.co"
         git config --global user.name "audius-infra"
   - run:
-      name: Merge foundation into main branch
+      name: Merge stage into foundation branch
       command: |
         git fetch
-        git checkout main
-        git merge foundation --no-edit
-        git push origin main
+        git checkout foundation
+        git merge stage --no-edit
+        git push origin foundation
