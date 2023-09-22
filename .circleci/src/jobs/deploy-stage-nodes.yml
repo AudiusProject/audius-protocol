@@ -1,3 +1,4 @@
+when: << pipeline.parameters.deploy-stage-nodes >>
 resource_class: small
 docker:
   - image: cimg/base:2023.01
@@ -17,11 +18,11 @@ steps:
         git config --global user.email "audius-infra@audius.co"
         git config --global user.name "audius-infra"
   - run:
-      name: Update tag in audius-docker-compose
+      name: Update tag in audius-docker-compose stage branch
       command: |
         git clone --branch stage https://github.com/AudiusProject/audius-docker-compose.git audius-docker-compose
         cd audius-docker-compose
-        sed -i "s/{TAG:-.*}/{TAG:-$CIRCLE_SHA1}/" */docker-compose.*.yml
-        git add */docker-compose.*.yml
+        sed -i "s/{TAG:-.*}/{TAG:-$CIRCLE_SHA1}/" */docker-compose*.yml
+        git add */docker-compose*.yml
         git commit -m "Update tag to $CIRCLE_SHA1"
         git push origin stage
