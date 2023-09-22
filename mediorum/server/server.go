@@ -362,11 +362,10 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startTranscoder()
 
+	zeroTime := time.Time{}
 	var lastSuccessfulRepair RepairTracker
 	err := ss.crud.DB.
-		Where("finished_at is not null").
-		Where("finished_at != '0001-01-01 00:00:00+00'").
-		Where("aborted_reason = ?", "").
+		Where("finished_at is not null and finished_at != ? and aborted_reason = ?", zeroTime, "").
 		Order("started_at desc").
 		First(&lastSuccessfulRepair).Error
 	if err != nil {
@@ -376,10 +375,7 @@ func (ss *MediorumServer) MustStart() {
 
 	var lastSuccessfulCleanup RepairTracker
 	err = ss.crud.DB.
-		Where("finished_at is not null").
-		Where("finished_at != '0001-01-01 00:00:00+00'").
-		Where("aborted_reason = ?", "").
-		Where("cleanup_mode = true").
+		Where("finished_at is not null and finished_at != ? and aborted_reason = ? and cleanup_mode = true", zeroTime, "").
 		Order("started_at desc").
 		First(&lastSuccessfulCleanup).Error
 	if err != nil {
