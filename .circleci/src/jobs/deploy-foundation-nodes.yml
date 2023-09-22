@@ -17,11 +17,11 @@ steps:
         git config --global user.email "audius-infra@audius.co"
         git config --global user.name "audius-infra"
   - run:
-      name: Merge foundation into main branch
+      name: Merge stage into foundation branch
       command: |
         git clone https://github.com/AudiusProject/audius-docker-compose.git
         cd audius-docker-compose
-        git checkout main
+        git checkout foundation
         git fetch
-        git merge origin/foundation --no-edit
-        git push origin main
+        git merge origin/stage --no-edit
+        git push origin foundation
