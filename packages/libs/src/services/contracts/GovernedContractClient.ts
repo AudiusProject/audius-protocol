@@ -2,8 +2,8 @@ import type { ContractABI, Logger } from '../../utils'
 import type { GovernanceClient } from '../ethContracts/GovernanceClient'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
 import type { Web3Manager } from '../web3Manager'
-import type { GetRegistryAddress } from './ContractClient'
 
+import type { GetRegistryAddress } from './ContractClient'
 import { ContractClient } from './ContractClient'
 
 /**

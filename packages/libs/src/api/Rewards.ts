@@ -1,15 +1,16 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
+import BN from 'bn.js'
 import { sampleSize } from 'lodash'
 
-import { Base, BaseConstructorArgs, Services } from './base'
-import BN from 'bn.js'
-import { RewardsManagerError } from '../services/solana/errors'
 import { WAUDIO_DECMIALS } from '../constants'
-import { Utils } from '../utils/utils'
-import type { ServiceProvider } from './ServiceProvider'
-import type { Logger, Nullable } from '../utils'
-import type { AttestationMeta } from '../services/solana/rewards'
 import type { DiscoveryProvider } from '../services/discoveryProvider'
+import { RewardsManagerError } from '../services/solana/errors'
+import type { AttestationMeta } from '../services/solana/rewards'
+import type { Logger, Nullable } from '../utils'
+import { Utils } from '../utils/utils'
+
+import type { ServiceProvider } from './ServiceProvider'
+import { Base, BaseConstructorArgs, Services } from './base'
 
 const { decodeHashId } = Utils
 

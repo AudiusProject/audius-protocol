@@ -1,7 +1,8 @@
 import type { Middleware } from '../../api/generated/default'
-import type { DeepPartial } from '../../utils/deepPartial'
 import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
+import type { DeepPartial } from '../../utils/deepPartial'
 import type { LoggerService } from '../Logger'
+
 import type { HealthCheckThresholds } from './healthCheckTypes'
 
 export type Decision = {

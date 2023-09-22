@@ -1,5 +1,6 @@
-import { needsRecoveryEmail } from './needsRecoveryEmail'
 import type { AudiusLibs } from '../AudiusLibs'
+
+import { needsRecoveryEmail } from './needsRecoveryEmail'
 
 // Checks to run at startup to ensure a user is in a good state.
 export class SanityChecks {

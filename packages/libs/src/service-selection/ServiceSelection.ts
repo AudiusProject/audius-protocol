@@ -1,4 +1,6 @@
+import type { AxiosResponse } from 'axios'
 import { sampleSize } from 'lodash'
+
 import {
   raceRequests,
   allRequests,
@@ -7,8 +9,8 @@ import {
   Service,
   Maybe
 } from '../utils'
+
 import { DECISION_TREE_STATE } from './constants'
-import type { AxiosResponse } from 'axios'
 
 function isVerbose(service: Service): service is ServiceWithEndpoint {
   return typeof service !== 'string'

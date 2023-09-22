@@ -1,14 +1,14 @@
 import type { AbiItem } from 'web3-utils'
-import type { Logger } from '../../utils'
 
-// load classes wrapping contracts
-import { EntityManagerClient } from './EntityManagerClient'
-import type { Web3Manager } from '../web3Manager'
+import { abi as EntityManagerABI } from '../../data-contracts/ABIs/EntityManager.json'
+import type { Logger } from '../../utils'
 import type {
   ContractClient,
   GetRegistryAddress
 } from '../contracts/ContractClient'
-import { abi as EntityManagerABI } from '../../data-contracts/ABIs/EntityManager.json'
+import type { Web3Manager } from '../web3Manager'
+
+import { EntityManagerClient } from './EntityManagerClient'
 
 export class AudiusContracts {
   web3Manager: Web3Manager

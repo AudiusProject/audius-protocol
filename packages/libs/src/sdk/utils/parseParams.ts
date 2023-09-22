@@ -1,7 +1,7 @@
 import type { ZodError, z } from 'zod'
 
 export class ParseRequestError extends Error {
-  override name: 'ParseRequestError' = 'ParseRequestError'
+  override name = 'ParseRequestError' as const
   constructor(public method: string, public innerError: ZodError) {
     super(`'${method}' => ${innerError.message}`)
   }

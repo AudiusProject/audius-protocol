@@ -1,12 +1,13 @@
+import retry from 'async-retry'
+import axios, { ResponseType } from 'axios'
 import urlJoin from 'proper-url-join'
 
-import axios, { ResponseType } from 'axios'
-import { Base, BaseConstructorArgs, Services } from './base'
-import { raceRequests } from '../utils/network'
-import retry from 'async-retry'
-import type { Users } from './Users'
 import type { Nullable } from '../utils'
+import { raceRequests } from '../utils/network'
+
 import type { ServiceProvider } from './ServiceProvider'
+import type { Users } from './Users'
+import { Base, BaseConstructorArgs, Services } from './base'
 
 /**
  * Downloads a file using an element in the DOM

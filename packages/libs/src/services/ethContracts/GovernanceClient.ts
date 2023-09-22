@@ -1,9 +1,11 @@
-import { ContractClient, GetRegistryAddress } from '../contracts/ContractClient'
+import type { EventLog } from 'web3-core'
+
 import { ContractABI, ContractMethod, Logger, Utils } from '../../utils'
+import { ContractClient, GetRegistryAddress } from '../contracts/ContractClient'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
+
 import type { AudiusTokenClient } from './AudiusTokenClient'
 import type { StakingProxyClient } from './StakingProxyClient'
-import type { EventLog } from 'web3-core'
 
 type ProposalTxn = {
   proposalId: string
@@ -223,7 +225,7 @@ export class GovernanceClient extends ContractClient {
   }) {
     const argumentTypes = functionSignature
       .match(/.*\((?<args>.*)\)/)
-      ?.groups?.['args']?.split(',')
+      ?.groups?.args?.split(',')
     const encodedCallData = this.abiEncode(argumentTypes as string[], callData)
 
     const method = await this.getMethod(
@@ -236,7 +238,7 @@ export class GovernanceClient extends ContractClient {
       description
     )
     const tx = await this.web3Manager.sendTransaction(method)
-    const id = tx.events?.['ProposalSubmitted']?.returnValues?._proposalId
+    const id = tx.events?.ProposalSubmitted?.returnValues?._proposalId
     if (id) {
       return id
     }

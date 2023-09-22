@@ -1,6 +1,7 @@
-import type { EntityManagerConfigInternal } from './types'
 import { productionConfig } from '../../config'
 import { Logger } from '../Logger'
+
+import type { EntityManagerConfigInternal } from './types'
 
 export const defaultEntityManagerConfig: EntityManagerConfigInternal = {
   contractAddress: productionConfig.entityManagerContractAddress,
