@@ -68,6 +68,7 @@ jobs:
       - save_cache:
           key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
           paths:
+            - ~/.npm
             - ./node_modules
             - ./packages/web/node_modules
             - ./packages/mobile/node_modules
@@ -167,7 +168,7 @@ jobs:
             curl -f -X POST -H 'Content-type: application/json' \
               --data @/tmp/slack_message.json \
               $SLACK_DAILY_DEPLOY_WEBHOOK
-  
+
   approve-deployment-holds:
     resource_class: small
     docker:
@@ -243,23 +244,23 @@ jobs:
       - run:
           name: Notify Slack
           command: |
-              job_url=$(cat /tmp/job_url.txt)
-              json_content="{ \"blocks\": ["
+            job_url=$(cat /tmp/job_url.txt)
+            json_content="{ \"blocks\": ["
 
-              if [[ -z "$job_url" ]]; then
-                  # If we couldn't find the deploy trigger job on hold, send the failure message
-                  json_content+="{ \"type\": \"section\","
-                  json_content+=" \"text\": { \"type\": \"mrkdwn\", \"text\": \"I tried to deploy today's release to foundation nodes but have failed miserably :( please investigate\" } }"
-              else
-                  # If we approved the job, send the success message
-                  json_content+="{ \"type\": \"section\","
-                  json_content+=" \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deploying $job_url to foundation nodes... Please watch for issues and approve the release for SPs when ready (I'll remind you in 2 hours at noon PST).\" } }"
-              fi
+            if [[ -z "$job_url" ]]; then
+                # If we couldn't find the deploy trigger job on hold, send the failure message
+                json_content+="{ \"type\": \"section\","
+                json_content+=" \"text\": { \"type\": \"mrkdwn\", \"text\": \"I tried to deploy today's release to foundation nodes but have failed miserably :( please investigate\" } }"
+            else
+                # If we approved the job, send the success message
+                json_content+="{ \"type\": \"section\","
+                json_content+=" \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deploying $job_url to foundation nodes... Please watch for issues and approve the release for SPs when ready (I'll remind you in 2 hours at noon PST).\" } }"
+            fi
 
-              json_content+="]}"
-              curl -f -X POST -H 'Content-type: application/json' \
-                --data "$json_content" \
-                $SLACK_DAILY_DEPLOY_WEBHOOK
+            json_content+="]}"
+            curl -f -X POST -H 'Content-type: application/json' \
+              --data "$json_content" \
+              $SLACK_DAILY_DEPLOY_WEBHOOK
 
   notify-sp-release-job:
     resource_class: small
@@ -525,12 +526,13 @@ workflows:
     jobs:
       - generate-release:
           context: slack-secrets
-  
+
   auto-approve-foundation-deploy:
     when:
       and:
         - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ['auto-approve-foundation-deploy', << pipeline.schedule.name >>]
+        - equal:
+            ['auto-approve-foundation-deploy', << pipeline.schedule.name >>]
     jobs:
       - approve-deployment-holds:
           context: [slack-secrets, circle-daily-deploy-secrets]
