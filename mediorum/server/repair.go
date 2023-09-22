@@ -299,7 +299,7 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 	// wasReplicatedToday := attrs.CreateTime.After(time.Now().Add(-24 * time.Hour))
 	wasReplicatedThisWeek := attrs.CreateTime.After(time.Now().Add(-24 * 7 * time.Hour))
 
-	if tracker.CleanupMode && alreadyHave && myRank > ss.Config.ReplicationFactor*3 && !wasReplicatedThisWeek {
+	if !ss.Config.StoreAll && tracker.CleanupMode && alreadyHave && myRank > ss.Config.ReplicationFactor*3 && !wasReplicatedThisWeek {
 		// depth := 0
 		// // loop preferredHealthyHosts (not preferredHosts) because we don't mind storing a blob a little while longer if it's not on enough healthy nodes
 		// for _, host := range preferredHealthyHosts {

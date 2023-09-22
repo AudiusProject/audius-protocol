@@ -117,19 +117,19 @@ func (ss *MediorumServer) updateDiskAndDbStatus() {
 	}
 
 	// what is the specific size of leagacy vs v2 content directories
-	bytesLegacy, err := getStorageUsed("/file_storage")
-	if err != nil {
-		slog.Error("Error getting /file_storage bytes used", "err", err)
-	} else {
-		ss.legacyDirUsed = bytesLegacy
-	}
+	// bytesLegacy, err := getStorageUsed("/file_storage")
+	// if err != nil {
+	// 	slog.Error("Error getting /file_storage bytes used", "err", err)
+	// } else {
+	// 	ss.legacyDirUsed = bytesLegacy
+	// }
 
-	bytesMediorum, err := getStorageUsed(ss.Config.Dir)
-	if err != nil {
-		slog.Error(fmt.Sprintf("Error getting %s bytes used", ss.Config.Dir), "err", err)
-	} else {
-		ss.mediorumDirUsed = bytesMediorum
-	}
+	// bytesMediorum, err := getStorageUsed(ss.Config.Dir)
+	// if err != nil {
+	// 	slog.Error(fmt.Sprintf("Error getting %s bytes used", ss.Config.Dir), "err", err)
+	// } else {
+	// 	ss.mediorumDirUsed = bytesMediorum
+	// }
 
 	status := diskStatus{
 		StoragePathSizeGB: ss.storagePathSize / (1 << 30),
