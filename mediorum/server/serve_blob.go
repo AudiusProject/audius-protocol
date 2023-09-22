@@ -17,6 +17,7 @@ import (
 
 	"github.com/erni27/imcache"
 	"github.com/labstack/echo/v4"
+	"gocloud.dev/blob"
 	"gocloud.dev/gcerrors"
 	"golang.org/x/exp/slices"
 )
@@ -27,27 +28,65 @@ func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
 
 	// if ?sniff=1 to actually find the hosts that have it
 
+	type HostAttr struct {
+		Host           string
+		Attr           *blob.Attributes
+		RendezvousRank int
+	}
+	var attrs []HostAttr
+
 	if sniff, _ := strconv.ParseBool(c.QueryParam("sniff")); sniff {
+		mu := sync.Mutex{}
 		wg := sync.WaitGroup{}
 		wg.Add(len(preferred))
+
 		for idx, host := range preferred {
 			idx := idx
 			host := host
 			go func() {
-				if ss.hostHasBlob(host, cid) {
-					preferred[idx] = " Y " + preferred[idx]
-				} else {
-					preferred[idx] = "   " + preferred[idx]
+				if attr, err := ss.hostGetBlobInfo(host, cid); err == nil {
+					mu.Lock()
+					attrs = append(attrs, HostAttr{
+						Host:           host,
+						Attr:           attr,
+						RendezvousRank: idx + 1,
+					})
+					mu.Unlock()
 				}
 				wg.Done()
 			}()
 		}
 		wg.Wait()
+
+		slices.SortFunc(attrs, func(a, b HostAttr) int {
+			// prefer larger size
+			if a.Attr.Size > b.Attr.Size {
+				return -1
+			} else if a.Attr.Size < b.Attr.Size {
+				return 1
+			}
+
+			// equal size? prefer lower RendezvousRank
+			if a.RendezvousRank < b.RendezvousRank {
+				return -1
+			}
+			return 1
+		})
+
+		if fix, _ := strconv.ParseBool(c.QueryParam("fix")); fix {
+			if len(attrs) > 0 {
+				best := attrs[0]
+				if err := ss.pullFileFromHost(best.Host, cid); err != nil {
+					return err
+				}
+			}
+		}
 	}
 
 	return c.JSON(200, map[string]any{
 		"cid":       cid,
 		"preferred": preferred,
+		"sniff":     attrs,
 	})
 }
 

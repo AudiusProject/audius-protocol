@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"gocloud.dev/blob"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -48,22 +49,17 @@ func (ss *MediorumServer) replicateToMyBucket(fileName string, file io.Reader) e
 	logger.Info("replicateToMyBucket")
 	key := cidutil.ShardCID(fileName)
 
-	// already have?
-	alreadyHave, _ := ss.bucket.Exists(ctx, key)
-	if !alreadyHave {
-		w, err := ss.bucket.NewWriter(ctx, key, nil)
-		if err != nil {
-			return err
-		}
-		defer w.Close()
-
-		_, err = io.Copy(w, file)
-		if err != nil {
-			return err
-		}
+	w, err := ss.bucket.NewWriter(ctx, key, nil)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	_, err = io.Copy(w, file)
+	if err != nil {
+		return err
+	}
+
+	return w.Close()
 }
 
 func (ss *MediorumServer) dropFromMyBucket(fileName string) error {
@@ -139,9 +135,21 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 
 // hostHasBlob is a "quick check" that a host has a blob (used for checking host has blob before redirecting to it).
 func (ss *MediorumServer) hostHasBlob(host, key string) bool {
+	attr, err := ss.hostGetBlobInfo(host, key)
+	return err == nil && attr != nil
+}
+
+func (ss *MediorumServer) hostGetBlobInfo(host, key string) (*blob.Attributes, error) {
+	var attr *blob.Attributes
 	u := apiPath(host, fmt.Sprintf("internal/blobs/info/%s", url.PathEscape(key)))
-	resp, err := ss.reqClient.R().Get(u)
-	return err == nil && resp.StatusCode == 200
+	resp, err := ss.reqClient.R().SetSuccessResult(&attr).Get(u)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("%s %s", u, resp.Status)
+	}
+	return attr, nil
 }
 
 // raceHostHasBlob tries batches of several hosts concurrently to find the first healthy host with the key instead of sequentially waiting for a 2s timeout from each host.
