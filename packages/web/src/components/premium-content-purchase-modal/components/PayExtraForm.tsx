@@ -10,7 +10,8 @@ import { PayExtraAmountPresetValues, PayExtraPreset } from './types'
 
 const messages = {
   payExtra: 'Pay Extra',
-  customAmount: 'Custom Amount'
+  customAmount: 'Custom Amount',
+  placeholder: 'Enter a value'
 }
 
 const formatPillAmount = (val: number) => `$${Math.floor(val / 100)}`
@@ -59,7 +60,11 @@ export const PayExtraForm = ({ amountPresets }: PayExtraFormProps) => {
         />
       </div>
       {preset === PayExtraPreset.CUSTOM ? (
-        <PriceField label={messages.customAmount} name={CUSTOM_AMOUNT} />
+        <PriceField
+          placeholder={messages.placeholder}
+          label={messages.customAmount}
+          name={CUSTOM_AMOUNT}
+        />
       ) : null}
     </div>
   )

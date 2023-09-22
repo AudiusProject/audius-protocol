@@ -23,7 +23,7 @@ import {
   IconCheck,
   IconError
 } from '@audius/stems'
-import { Formik } from 'formik'
+import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -103,6 +103,11 @@ export const PurchaseDetailsPage = ({
   const { handle } = track.user
   const { permalink, title } = track
 
+  const initialValues: PurchaseContentValues = {
+    [CUSTOM_AMOUNT]: undefined,
+    [AMOUNT_PRESET]: PayExtraPreset.NONE
+  }
+
   const handleSubmit = useCallback(
     ({ customAmount, amountPreset }: PurchaseContentValues) => {
       if (isUnlocking) return
@@ -115,6 +120,10 @@ export const PurchaseDetailsPage = ({
           extraAmount = payExtraAmountPresetValues[amountPreset]
           break
         case PayExtraPreset.CUSTOM:
+          if (!customAmount) {
+            console.error('Unexpected missing custom amount')
+            return
+          }
           extraAmount = customAmount
           break
         default:
@@ -173,29 +182,27 @@ export const PurchaseDetailsPage = ({
     messages.buy
   )
 
+  // TODO: Figure out why price validation doesn't run/show up on the input
+  // TODO: Fix width on preset buttons
   return (
     <Formik
-      initialValues={{
-        [CUSTOM_AMOUNT]: 0,
-        [AMOUNT_PRESET]: PayExtraPreset.NONE
-      }}
+      initialValues={initialValues}
       validationSchema={toFormikValidationSchema(PurchaseContentSchema)}
       onSubmit={handleSubmit}
     >
-      <div className={styles.container}>
+      <Form className={styles.container}>
         <LockedTrackDetailsTile
           // TODO: Remove this cast once typing is correct
           // https://linear.app/audius/issue/C-2899/fix-typing-for-computed-properties
           track={track as unknown as Track}
           owner={track.user}
         />
-        <PayExtraForm amountPresets={payExtraAmountPresetValues} />
-        <PurchaseSummaryTable
-          {...purchaseSummaryValues}
-          isPurchased={isPurchased}
-        />
         {isPurchased ? (
           <>
+            <PurchaseSummaryTable
+              {...purchaseSummaryValues}
+              isPurchased={isPurchased}
+            />
             <div className={styles.purchaseSuccessfulContainer}>
               <div className={styles.completionCheck}>
                 <Icon icon={IconCheck} size='xxSmall' color='white' />
@@ -221,6 +228,11 @@ export const PurchaseDetailsPage = ({
           </>
         ) : (
           <>
+            <PayExtraForm amountPresets={payExtraAmountPresetValues} />
+            <PurchaseSummaryTable
+              {...purchaseSummaryValues}
+              isPurchased={isPurchased}
+            />
             <PayToUnlockInfo />
             <HarmonyButton
               disabled={isUnlocking}
@@ -232,7 +244,7 @@ export const PurchaseDetailsPage = ({
           </>
         )}
         {error ? <ContentPurchaseError /> : null}
-      </div>
+      </Form>
     </Formik>
   )
 }
