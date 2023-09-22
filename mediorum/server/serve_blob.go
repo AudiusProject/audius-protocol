@@ -17,6 +17,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/erni27/imcache"
 	"github.com/labstack/echo/v4"
 	"gocloud.dev/blob"
 	"gocloud.dev/gcerrors"
@@ -243,6 +244,7 @@ func (ss *MediorumServer) findNodeToServeBlob(ctx context.Context, key string) s
 	hosts, _ := ss.rendezvousAllHosts(key)
 	for _, h := range hosts {
 		if ss.hostHasBlob(h, key) {
+			ss.redirectCache.Set(key, h, imcache.WithDefaultExpiration())
 			return h
 		}
 	}

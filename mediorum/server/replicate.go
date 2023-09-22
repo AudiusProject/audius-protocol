@@ -85,12 +85,6 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 		Timeout: 30 * time.Second,
 	}
 
-	// first check if target already has it...
-	if ss.hostHasBlob(peer, fileName) {
-		ss.logger.Info(peer + " already has " + fileName)
-		return nil
-	}
-
 	r, w := io.Pipe()
 	m := multipart.NewWriter(w)
 	errChan := make(chan error)
