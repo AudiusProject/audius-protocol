@@ -23,11 +23,11 @@ begin
         users_row.user_id,
         'usdc_withdrawal:' || users_row.user_id,
         json_build_object(
-          'user_id': users_row.user_id,
-          'user_bank': new.user_bank,
-          'signature': new.signature,
-          'change': new.change,
-          'balance': new.balance
+          'user_id', users_row.user_id,
+          'user_bank', new.user_bank,
+          'signature', new.signature,
+          'change', new.change,
+          'balance', new.balance
         )
       )
       on conflict do nothing;
@@ -40,7 +40,7 @@ begin
         return null;
 
 end;
-$$ langauge plpgsql;
+$$ language plpgsql;
 
 do $$ begin
   create trigger on_usdc_withdrawal
