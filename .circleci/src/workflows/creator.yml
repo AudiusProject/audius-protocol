@@ -10,3 +10,15 @@ jobs:
       context: GCP
       instance-name: circleci-test-mediorum-$CIRCLE_BUILD_NUM
       service: mediorum
+  
+  # Deploy audius-protocol `main` branch (stage)
+  - deploy-stage-nodes:
+      name: deploy-stage-creator-node
+      requires:
+        - test-mediorum
+        - push-mediorum
+      filters:
+        branches:
+          only: main
+      context: github
+      service: creator-node

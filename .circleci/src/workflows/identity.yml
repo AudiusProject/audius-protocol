@@ -13,7 +13,7 @@ jobs:
       service: identity-service
 
   # Deploy audius-protocol `main` branch (stage)
-  - deploy:
+  - deploy-stage-nodes:
       name: deploy-stage-identity-service
       requires:
         - test-identity-service
@@ -21,10 +21,5 @@ jobs:
       filters:
         branches:
           only: main
-      context:
-        - open-vpn
-        - build-freeze
-        - slack-secrets
-      hosts: stage-identity
+      context: github
       service: identity-service
-      freeze: $FREEZE_BUILD
