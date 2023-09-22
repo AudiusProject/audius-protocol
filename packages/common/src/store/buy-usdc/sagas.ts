@@ -1,6 +1,6 @@
 import { Keypair, PublicKey } from '@solana/web3.js'
 import { takeLatest } from 'redux-saga/effects'
-import { call, put, race, select, take } from 'typed-redux-saga'
+import { call, put, race, select, take, delay } from 'typed-redux-saga'
 
 import { Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
@@ -127,11 +127,15 @@ function* purchaseStep({
 function* transferStep({
   wallet,
   userBank,
-  amount
+  amount,
+  maxRetryCount = 3,
+  retryDelayMs = 1000
 }: {
   wallet: Keypair
   userBank: PublicKey
   amount: bigint
+  maxRetryCount?: number
+  retryDelayMs?: number
 }) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const feePayer = yield* select(getFeePayer)
@@ -141,31 +145,51 @@ function* transferStep({
   const feePayerOverride = new PublicKey(feePayer)
   const recentBlockhash = yield* call(getRecentBlockhash, audiusBackendInstance)
 
-  const transferTransaction = yield* call(
-    createTransferToUserBankTransaction,
-    audiusBackendInstance,
-    {
-      wallet,
-      userBank,
-      mint: 'usdc',
-      amount,
-      memo: 'In-App $USDC Purchase: Link by Stripe',
-      feePayer: feePayerOverride,
-      recentBlockhash
-    }
-  )
-  transferTransaction.partialSign(wallet)
-  console.debug(`Starting transfer transaction...`)
-  const { res, error } = yield* call(relayTransaction, audiusBackendInstance, {
-    transaction: transferTransaction
-  })
-  if (error) {
-    console.debug(
-      `Transfer transaction stringified: ${JSON.stringify(transferTransaction)}`
+  let retries = 0
+  let shouldRetry = true
+  do {
+    const transferTransaction = yield* call(
+      createTransferToUserBankTransaction,
+      audiusBackendInstance,
+      {
+        wallet,
+        userBank,
+        mint: 'usdc',
+        amount,
+        memo: 'In-App $USDC Purchase: Link by Stripe',
+        feePayer: feePayerOverride,
+        recentBlockhash
+      }
     )
-    throw new Error(`Transfer transaction failed: ${error}`)
-  }
-  console.debug(`Transfer transaction succeeded: ${res}`)
+    transferTransaction.partialSign(wallet)
+
+    console.debug(`Starting transfer transaction...`)
+    const { res, error } = yield* call(
+      relayTransaction,
+      audiusBackendInstance,
+      {
+        transaction: transferTransaction
+      }
+    )
+
+    shouldRetry = !!error && retries++ < maxRetryCount
+
+    if (!shouldRetry && error) {
+      console.debug(
+        `Transfer transaction stringified: ${JSON.stringify(
+          transferTransaction!
+        )}`
+      )
+      throw new Error(`Transfer transaction failed: ${error}`)
+    }
+
+    if (res) {
+      console.debug(`Transfer transaction succeeded: ${res}`)
+      return
+    }
+
+    yield* delay(retryDelayMs)
+  } while (shouldRetry)
 }
 
 function* doBuyUSDC({
