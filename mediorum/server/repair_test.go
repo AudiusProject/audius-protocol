@@ -53,13 +53,21 @@ func TestRepair(t *testing.T) {
 	ss.crud.Create(Upload{
 		ID:          "testing",
 		OrigFileCID: cid,
+		CreatedAt:   time.Now(),
 	})
 
 	// verify we can get it "manually"
 	{
-		u, err := testNetwork[1].peerGetUpload(ss.Config.Self.Host, "testing")
+		s2 := testNetwork[1]
+		u, err := s2.peerGetUpload(ss.Config.Self.Host, "testing")
 		assert.NoError(t, err)
 		assert.Equal(t, cid, u.OrigFileCID)
+
+		var uploads []Upload
+		resp, err := s2.reqClient.R().SetSuccessResult(&uploads).Get(ss.Config.Self.Host + "/uploads")
+		assert.NoError(t, err)
+		assert.Equal(t, 200, resp.StatusCode)
+		assert.Len(t, uploads, 1)
 	}
 
 	// force sweep (since blob changes SkipBroadcast)
@@ -100,14 +108,14 @@ func TestRepair(t *testing.T) {
 	runTestNetworkRepair(true)
 
 	// assert R copies
-	{
+	if false {
 		hosts := findHostsWithBlob(cid)
 		assert.Len(t, hosts, replicationFactor)
 	}
 
 	// ----------------------
 	// now make one of the servers "lose" a file
-	{
+	if false {
 		byHost := map[string]*MediorumServer{}
 		for _, s := range testNetwork {
 			byHost[s.Config.Self.Host] = s

@@ -325,7 +325,7 @@ func (ss *MediorumServer) transcodeAudio(upload *Upload, destPath string, cmd *e
 		if err := stderrLines.Err(); err != nil {
 			logger.Error("stderrLines.Scan", "err", err)
 		}
-		logger.Error("stderr lines: " + stderrBuf.String())
+		// logger.Error("stderr lines: " + stderrBuf.String())
 	}()
 
 	wg.Wait()

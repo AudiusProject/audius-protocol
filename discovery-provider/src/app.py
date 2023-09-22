@@ -419,7 +419,7 @@ def configure_celery(celery, test_config=None):
             },
             "cache_current_nodes": {
                 "task": "cache_current_nodes",
-                "schedule": timedelta(minutes=1),
+                "schedule": timedelta(minutes=2),
             },
             "cache_entity_counts": {
                 "task": "cache_entity_counts",

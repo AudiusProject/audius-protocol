@@ -49,48 +49,8 @@ jobs:
       requires:
         - lint-discovery-provider
 
-  # Release
-  - deploy-prod-discovery-provider-trigger:
-      requires:
-        - test-discovery-provider
-        - push-discovery-provider
-        - push-comms
-      filters:
-        branches:
-          only: /^release.*$/
-      type: approval
-  - deploy:
-      name: deploy-prod-discovery-provider
-      context:
-        - open-vpn
-        - slack-secrets
-      requires:
-        - deploy-prod-discovery-provider-trigger
-      hosts: >-
-        prod-discovery-1
-        prod-discovery-2
-        prod-discovery-3
-      service: discovery-provider
-
-  # Main deploy
-  - deploy:
-      name: deploy-stage-discovery-provider
-      requires:
-        - test-discovery-provider
-        - push-discovery-provider
-        - push-comms
+  - test-discovery-api:
+      name: test-discovery-api
       filters:
         branches:
           only: main
-      context:
-        - open-vpn
-        - build-freeze
-        - slack-secrets
-      hosts: >-
-        stage-discovery-4
-        stage-discovery-1
-        stage-discovery-2
-        stage-discovery-3
-        stage-discovery-5
-      service: discovery-provider
-      freeze: $FREEZE_BUILD

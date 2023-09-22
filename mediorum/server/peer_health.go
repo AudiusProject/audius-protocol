@@ -27,7 +27,7 @@ func (ss *MediorumServer) startHealthPoller() {
 				if peer.Host == ss.Config.Self.Host {
 					return
 				}
-				req, err := http.NewRequest("GET", peer.ApiPath("/health_check"), nil)
+				req, err := http.NewRequest("GET", apiPath(peer.Host, "/health_check"), nil)
 				if err != nil {
 					return
 				}
@@ -87,7 +87,7 @@ func (ss *MediorumServer) startHealthPoller() {
 		if i < 5 {
 			time.Sleep(time.Second)
 		} else {
-			time.Sleep(time.Second * 30)
+			time.Sleep(time.Minute * 2)
 		}
 	}
 }
@@ -147,6 +147,9 @@ func (ss *MediorumServer) getReachableByMajorityButNotByHost(host string) []stri
 }
 
 func (ss *MediorumServer) findHealthyPeers(aliveInLast time.Duration) []string {
+	if aliveInLast < (time.Minute * 5) {
+		panic("aliveInLast should be > 5 minutes")
+	}
 	result := []string{}
 	ss.peerHealthsMutex.RLock()
 	defer ss.peerHealthsMutex.RUnlock()

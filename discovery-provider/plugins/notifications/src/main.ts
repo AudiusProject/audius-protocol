@@ -115,7 +115,12 @@ export class Processor {
     logger.info('processing events')
     this.isRunning = true
     while (this.isRunning) {
+      logger.info('Processing app notifications (new)')
       await sendAppNotifications(this.listener, this.appNotificationsProcessor)
+      logger.info('Processing app notifications (needs reprocessing)')
+      await this.appNotificationsProcessor.reprocess()
+
+      logger.info('Processing DM notifications')
       await sendDMNotifications(
         this.discoveryDB,
         this.identityDB,
