@@ -189,15 +189,13 @@ const executeExchange = async ({
   feePayer,
   transactionHandler,
   lookupTableAddresses = [],
-  signatures = [],
-  recentBlockhash
+  signatures = []
 }: {
   instructions: TransactionInstruction[]
   feePayer: PublicKey
   transactionHandler: TransactionHandler
   lookupTableAddresses?: string[]
   signatures?: { publicKey: string; signature: Buffer }[]
-  recentBlockhash?: string
 }) => {
   const { res: txId } = await _sendTransaction({
     name: 'Swap',
