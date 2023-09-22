@@ -1,20 +1,45 @@
 when: << pipeline.parameters.run-release-workflow >>
 jobs:
   - push-docker-image:
-      name: push-discovery-provider
+      name: push-identity-service
       context: [GCP, dockerhub]
-      instance-name: circleci-push-discovery-provider-$CIRCLE_BUILD_NUM
-      service: discovery-provider
+      instance-name: circleci-push-identity-service-$CIRCLE_BUILD_NUM
+      service: identity-service
   - push-docker-image:
       name: push-mediorum
       context: [GCP, dockerhub]
       instance-name: circleci-push-mediorum-$CIRCLE_BUILD_NUM
       service: mediorum
   - push-docker-image:
-      name: push-identity-service
+      name: push-discovery-provider
       context: [GCP, dockerhub]
-      instance-name: circleci-push-identity-service-$CIRCLE_BUILD_NUM
-      service: identity-service
+      instance-name: circleci-push-discovery-provider-$CIRCLE_BUILD_NUM
+      service: discovery-provider
+  - push-docker-image:
+      name: push-discovery-provider-notifications
+      context: [GCP, dockerhub]
+      instance-name: circleci-push-discovery-provider-notifications-$CIRCLE_BUILD_NUM
+      service: discovery-provider-notifications
+  - push-docker-image:
+      name: push-pedalboard-trending-challenge-rewards
+      context: [GCP, dockerhub]
+      instance-name: circleci-push-pedalboard-trending-challenge-rewards-$CIRCLE_BUILD_NUM
+      service: trending-challenge-rewards
+  - push-docker-image:
+      name: push-pedalboard-relay
+      context: [GCP, dockerhub]
+      instance-name: circleci-push-pedalboard-relay-$CIRCLE_BUILD_NUM
+      service: relay
+  - push-docker-image:
+      name: push-pedalboard-sla-auditor
+      context: [GCP, dockerhub]
+      instance-name: circleci-push-pedalboard-sla-auditor-$CIRCLE_BUILD_NUM
+      service: sla-auditor
+  - push-docker-image:
+      name: push-comms
+      context: [GCP, dockerhub]
+      instance-name: circleci-push-comms-$CIRCLE_BUILD_NUM
+      service: comms
 
   - release-github-draft-trigger:
       filters:
@@ -45,11 +70,36 @@ jobs:
       requires:
         - release-governance-trigger
 
-  - release-audius-docker-compose-trigger:
+  - deploy-foundation-nodes-trigger:
       requires:
+        - push-identity-service
         - push-mediorum
         - push-discovery-provider
-        - push-identity-service
+        - push-discovery-provider-notifications
+        - push-pedalboard-trending-challenge-rewards
+        - push-pedalboard-relay
+        - push-pedalboard-sla-auditor
+        - push-comms
+      filters:
+        branches:
+          only: /^release.*$/
+      type: approval
+  - deploy-foundation-nodes:
+      context: github
+      requires:
+        - deploy-foundation-nodes-trigger
+  - deploy:
+      name: deploy-prod-identity-service
+      context:
+        - open-vpn
+        - slack-secrets
+      requires:
+        - deploy-foundation-nodes-trigger
+      hosts: prod-identity
+      service: identity-service
+  - release-audius-docker-compose-trigger:
+      requires:
+        - deploy-foundation-nodes
       filters:
         branches:
           only: /^release.*$/
