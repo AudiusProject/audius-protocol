@@ -1,5 +1,12 @@
-import Web3 from '../../LibsWeb3'
+import type { Hedgehog } from '@audius/hedgehog'
+import retry from 'async-retry'
+import type { AxiosError } from 'axios'
+import { Transaction as EthereumTx } from 'ethereumjs-tx'
+import type Wallet from 'ethereumjs-wallet'
 import type Web3Type from 'web3'
+import type { TransactionReceipt } from 'web3-core'
+
+import Web3 from '../../LibsWeb3'
 import {
   MultiProvider,
   estimateGas,
@@ -7,13 +14,7 @@ import {
   Maybe,
   Nullable
 } from '../../utils'
-import { Transaction as EthereumTx } from 'ethereumjs-tx'
-import retry from 'async-retry'
 import type { IdentityService, RelayTransaction } from '../identity'
-import type { Hedgehog } from '@audius/hedgehog'
-import type { AxiosError } from 'axios'
-import type Wallet from 'ethereumjs-wallet'
-import type { TransactionReceipt } from 'web3-core'
 
 const MIN_GAS_PRICE = Math.pow(10, 9) // 1 GWei, ETH minimum allowed gas price
 const HIGH_GAS_PRICE = 250 * MIN_GAS_PRICE // 250 GWei
@@ -144,7 +145,7 @@ export class EthWeb3Manager {
           retries: txRetries,
           onRetry: (err) => {
             if (err) {
-              console.log(
+              console.info(
                 // eslint-disable-next-line @typescript-eslint/no-base-to-string -- TODO
                 `libs ethWeb3Manager transaction send retry error : ${err}`
               )
@@ -160,7 +161,7 @@ export class EthWeb3Manager {
     return await contractMethod.send({
       from: this.ownerWallet,
       gas: gasLimit,
-      gasPrice: gasPrice
+      gasPrice
     })
   }
 
@@ -219,7 +220,7 @@ export class EthWeb3Manager {
         retries: txRetries,
         onRetry: (err) => {
           if (err) {
-            console.log(
+            console.info(
               // eslint-disable-next-line @typescript-eslint/no-base-to-string -- TODO
               `libs ethWeb3Manager transaction relay retry error : ${err}`
             )

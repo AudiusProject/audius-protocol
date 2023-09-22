@@ -7,14 +7,16 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction
 } from '@solana/web3.js'
-import { serialize } from 'borsh'
-import { getBankAccountAddress } from './userBank'
 import BN from 'bn.js'
+import { serialize } from 'borsh'
+
+import type { Logger, Nullable } from '../../utils'
+import type { IdentityService } from '../identity'
+
 import { SolanaUtils } from './SolanaUtils'
 import { RewardsManagerError } from './errors'
 import type { TransactionHandler } from './transactionHandler'
-import type { Logger, Nullable } from '../../utils'
-import type { IdentityService } from '../identity'
+import { getBankAccountAddress } from './userBank'
 
 // Various prefixes used for rewards
 const SENDER_SEED_PREFIX = 'S_'

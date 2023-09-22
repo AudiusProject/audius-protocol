@@ -1,5 +1,5 @@
-import { z } from 'zod'
 import * as fileType from 'file-type'
+import { z } from 'zod'
 
 let fileTypeBrowser: any
 if (typeof window !== 'undefined' && window) {

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+
 import { decodeHashId } from '../utils/hashId'
 
 export const HashId = z.string().transform<number>((data: string, context) => {

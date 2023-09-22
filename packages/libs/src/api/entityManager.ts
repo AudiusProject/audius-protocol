@@ -1,10 +1,11 @@
-import { Base, Services } from './base'
 import type { PlaylistMetadata } from '../services/creatorNode'
 import {
   Action,
   EntityType
 } from '../services/dataContracts/EntityManagerClient'
 import { Utils } from '../utils'
+
+import { Base, Services } from './base'
 
 export type EntityManagerSuccessResponse = {
   blockHash: string
@@ -151,7 +152,7 @@ export class EntityManager extends Base {
         data: metadata
       })
       return await this.manageEntity({
-        userId: userId,
+        userId,
         entityType,
         entityId: playlist.playlist_id,
         action: createAction,

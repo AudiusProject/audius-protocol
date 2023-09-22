@@ -1,4 +1,9 @@
+import fetch from 'cross-fetch'
 import semver from 'semver'
+
+import type { CommsResponse } from '../../../legacy'
+
+import { DISCOVERY_SERVICE_NAME } from './constants'
 import {
   ApiHealthResponseData,
   FlaskFullResponse,
@@ -8,9 +13,6 @@ import {
   HealthCheckStatusReason,
   HealthCheckThresholds
 } from './healthCheckTypes'
-import { DISCOVERY_SERVICE_NAME } from './constants'
-import fetch from 'cross-fetch'
-import type { CommsResponse } from '../../../legacy'
 
 export const isFullFlaskResponse = (
   data: ApiHealthResponseData

@@ -1,12 +1,25 @@
 import snakecaseKeys from 'snakecase-keys'
-import { BASE_PATH, RequiredError } from '../generated/default/runtime'
 
+import type { EntityManagerService, AuthService } from '../../services'
+import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector'
+import {
+  Action,
+  EntityType,
+  AdvancedOptions
+} from '../../services/EntityManager/types'
+import type { LoggerService } from '../../services/Logger'
+import type { StorageService } from '../../services/Storage'
+import { encodeHashId } from '../../utils/hashId'
+import { parseParams } from '../../utils/parseParams'
+import { retry3 } from '../../utils/retry'
 import {
   Configuration,
   StreamTrackRequest,
   TracksApi as GeneratedTracksApi
 } from '../generated/default'
-import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector'
+import { BASE_PATH, RequiredError } from '../generated/default/runtime'
+
+import { TrackUploadHelper } from './TrackUploadHelper'
 import {
   createUpdateTrackSchema,
   createUploadTrackSchema,
@@ -23,18 +36,6 @@ import {
   UpdateTrackRequest,
   UploadTrackRequest
 } from './types'
-import type { StorageService } from '../../services/Storage'
-import { retry3 } from '../../utils/retry'
-import type { EntityManagerService, AuthService } from '../../services'
-import {
-  Action,
-  EntityType,
-  AdvancedOptions
-} from '../../services/EntityManager/types'
-import { parseParams } from '../../utils/parseParams'
-import { TrackUploadHelper } from './TrackUploadHelper'
-import { encodeHashId } from '../../utils/hashId'
-import type { LoggerService } from '../../services/Logger'
 
 // Extend that new class
 export class TracksApi extends GeneratedTracksApi {
@@ -96,7 +97,7 @@ export class TracksApi extends GeneratedTracksApi {
     )
     const uploadOptions: { [key: string]: string } = {}
     if (metadata.previewStartSeconds) {
-      uploadOptions['previewStartSeconds'] =
+      uploadOptions.previewStartSeconds =
         metadata.previewStartSeconds.toString()
     }
 

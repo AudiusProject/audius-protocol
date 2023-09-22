@@ -1,7 +1,8 @@
-import { Utils } from './utils'
-import { BN, ecsign, toBuffer } from 'ethereumjs-util'
 import { pack } from '@ethersproject/solidity'
+import { BN, ecsign, toBuffer } from 'ethereumjs-util'
 import type Web3 from 'web3'
+
+import { Utils } from './utils'
 
 export const sign = (digest: any, privateKey: Buffer) => {
   const buffer = toBuffer(digest)

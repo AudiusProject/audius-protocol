@@ -1,24 +1,23 @@
 import type { Hedgehog } from '@audius/hedgehog'
-import type { EthContracts } from '../ethContracts'
-import type { ContractReceipt } from 'ethers'
-import type { EthWeb3Manager } from '../ethWeb3Manager'
-import type { IdentityService, RelayTransactionData } from '../identity'
-import type { SolanaWeb3Manager } from '../solana'
-
-import bs58 from 'bs58'
-import { BN, toBuffer } from 'ethereumjs-util'
-import { zeroPad } from 'ethers/lib/utils'
-import { providers } from 'ethers/lib/index'
 import wormholeSDK, { ChainId } from '@certusone/wormhole-sdk'
-
-import { SolanaUtils, wAudioFromWeiAudio } from '../solana'
-import { Utils, sign, getTransferTokensDigest, Nullable } from '../../utils'
+import type { GetSignedVAAResponse } from '@certusone/wormhole-sdk/lib/cjs/proto/publicrpc/v1/publicrpc'
 import type {
   RpcResponseAndContext,
   SignatureResult,
   Transaction
 } from '@solana/web3.js'
-import type { GetSignedVAAResponse } from '@certusone/wormhole-sdk/lib/cjs/proto/publicrpc/v1/publicrpc'
+import bs58 from 'bs58'
+import { BN, toBuffer } from 'ethereumjs-util'
+import type { ContractReceipt } from 'ethers'
+import { providers } from 'ethers/lib/index'
+import { zeroPad } from 'ethers/lib/utils'
+
+import { Utils, sign, getTransferTokensDigest, Nullable } from '../../utils'
+import type { EthContracts } from '../ethContracts'
+import type { EthWeb3Manager } from '../ethWeb3Manager'
+import type { IdentityService, RelayTransactionData } from '../identity'
+import type { SolanaWeb3Manager } from '../solana'
+import { SolanaUtils, wAudioFromWeiAudio } from '../solana'
 
 export type WormholeConfig = {
   rpcHosts: string[]

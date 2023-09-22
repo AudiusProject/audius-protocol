@@ -1,4 +1,5 @@
 import type BN from 'bn.js'
+
 import { ContractClient } from '../contracts/ContractClient'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
 

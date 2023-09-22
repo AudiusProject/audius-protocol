@@ -7,6 +7,7 @@ import type { LoggerService } from '../../services/Logger'
 import { parseParams } from '../../utils/parseParams'
 import type { Configuration } from '../generated/default'
 import { PlaylistsApi } from '../playlists/PlaylistsApi'
+
 import {
   createUpdateAlbumSchema,
   createUploadAlbumSchema,

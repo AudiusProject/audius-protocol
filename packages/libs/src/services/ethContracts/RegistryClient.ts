@@ -1,7 +1,8 @@
-import { Utils } from '../../utils'
-import type { AbiItem } from 'web3-utils'
 import type Web3 from 'web3'
 import type { Contract } from 'web3-eth-contract'
+import type { AbiItem } from 'web3-utils'
+
+import { Utils } from '../../utils'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
 
 export class RegistryClient {

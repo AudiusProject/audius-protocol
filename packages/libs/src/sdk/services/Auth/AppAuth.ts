@@ -1,4 +1,5 @@
 import { EIP712TypedData, MessageData, signTypedData } from 'eth-sig-util'
+
 import type { AuthService } from './types'
 
 /**

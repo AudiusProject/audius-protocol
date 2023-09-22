@@ -1,48 +1,45 @@
-import type { provider } from 'web3-core'
+import type { Hedgehog as HedgehogBase } from '@audius/hedgehog'
+import { Keypair } from '@solana/web3.js'
 import type { Merge } from 'type-fest'
+import type { provider } from 'web3-core'
 
-import { EthWeb3Config, EthWeb3Manager } from './services/ethWeb3Manager'
-
-import { version } from './version'
-import { Web3Config, Web3Manager } from './services/web3Manager'
+import Web3 from './LibsWeb3'
+import { Account } from './api/Account'
+import { File } from './api/File'
+import { Notifications } from './api/Notifications'
+import { Playlists } from './api/Playlist'
+import { Reactions } from './api/Reactions'
+import { Rewards } from './api/Rewards'
+import { ServiceProvider } from './api/ServiceProvider'
+import { Track } from './api/Track'
+import { Users } from './api/Users'
+import type { BaseConstructorArgs } from './api/base'
+import { EntityManager } from './api/entityManager'
+import { AudiusABIDecoder } from './services/ABIDecoder'
+import { Comstock } from './services/comstock'
+import { CreatorNode, CreatorNodeConfig } from './services/creatorNode'
+import { AudiusContracts } from './services/dataContracts'
+import {
+  DiscoveryProvider,
+  DiscoveryProviderConfig
+} from './services/discoveryProvider'
 import { EthContracts } from './services/ethContracts'
+import { EthWeb3Config, EthWeb3Manager } from './services/ethWeb3Manager'
+import { Hedgehog, HedgehogConfig } from './services/hedgehog'
+import { IdentityService } from './services/identity'
+import { Schemas, SchemaValidator } from './services/schemaValidator'
 import {
   SolanaWeb3Manager,
   SolanaUtils,
   SolanaWeb3Config
 } from './services/solana'
-import { AudiusContracts } from './services/dataContracts'
-import { IdentityService } from './services/identity'
-import { Comstock } from './services/comstock'
-import { Hedgehog, HedgehogConfig } from './services/hedgehog'
-import type { Hedgehog as HedgehogBase } from '@audius/hedgehog'
-import { CreatorNode, CreatorNodeConfig } from './services/creatorNode'
-import {
-  DiscoveryProvider,
-  DiscoveryProviderConfig
-} from './services/discoveryProvider'
+import type { MonitoringCallbacks } from './services/types'
+import { Web3Config, Web3Manager } from './services/web3Manager'
 import { Wormhole, WormholeConfig } from './services/wormhole'
-import { AudiusABIDecoder } from './services/ABIDecoder'
-import { Schemas, SchemaValidator } from './services/schemaValidator'
 import { UserStateManager } from './userStateManager'
 import { Utils, Nullable, Logger, getNStorageNodes } from './utils'
-import { ServiceProvider } from './api/ServiceProvider'
-
-import { Account } from './api/Account'
-import { Users } from './api/Users'
-import { Track } from './api/Track'
-import { Playlists } from './api/Playlist'
-import { File } from './api/File'
-import { Rewards } from './api/Rewards'
-import { Reactions } from './api/Reactions'
-import { Notifications } from './api/Notifications'
-import Web3 from './LibsWeb3'
-
-import { Keypair } from '@solana/web3.js'
 import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
-import type { BaseConstructorArgs } from './api/base'
-import type { MonitoringCallbacks } from './services/types'
-import { EntityManager } from './api/entityManager'
+import { version } from './version'
 
 type LibsIdentityServiceConfig = {
   url: string
@@ -361,7 +358,7 @@ export class AudiusLibs {
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true,
     localStorage = getPlatformLocalStorage(),
-    useDiscoveryRelay = false,
+    useDiscoveryRelay = false
   }: AudiusLibsConfig) {
     // set version
 
@@ -545,7 +542,9 @@ export class AudiusLibs {
       if (this.web3Config && this.useDiscoveryRelay) {
         const web3Manager = this.web3Manager
         if (web3Manager === undefined || web3Manager === null) {
-          console.info("useDiscoveryRelay is set to true but web3Manager is not configured")
+          console.info(
+            'useDiscoveryRelay is set to true but web3Manager is not configured'
+          )
         } else {
           this.web3Manager?.setDiscoveryProvider(this.discoveryProvider)
         }

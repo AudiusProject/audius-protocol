@@ -1,14 +1,15 @@
+import type { EIP712TypedData } from 'eth-sig-util'
 import { rest } from 'msw'
-import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
 import { setupServer } from 'msw/node'
 
-import type { AuthService } from '../Auth/types'
-import type { EIP712TypedData } from 'eth-sig-util'
-import { EntityManager } from './EntityManager'
 import { developmentConfig } from '../../config'
-import { Action, EntityType } from './types'
 import Web3 from '../../utils/web3'
+import type { AuthService } from '../Auth/types'
+import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
 import { Logger } from '../Logger'
+
+import { EntityManager } from './EntityManager'
+import { Action, EntityType } from './types'
 
 const userWallet = '0xc0ffee254729296a45a3885639AC7E10F9d54979'
 

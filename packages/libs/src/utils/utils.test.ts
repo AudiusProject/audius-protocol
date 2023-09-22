@@ -1,4 +1,5 @@
 import assert from 'assert'
+
 import { Utils } from './utils'
 
 describe('utils', () => {

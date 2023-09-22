@@ -1,8 +1,10 @@
 import { callbackify, promisify } from 'util'
-import Web3 from '../LibsWeb3'
+
 import { shuffle } from 'lodash'
 import type { HttpProvider, AbstractProvider } from 'web3-core'
 import type { JsonRpcPayload } from 'web3-core-helpers'
+
+import Web3 from '../LibsWeb3'
 
 const getSendMethod = (provider: HttpProvider | AbstractProvider) => {
   if ('sendAsync' in provider) {
@@ -63,7 +65,7 @@ export class MultiProvider extends Web3.providers.HttpProvider {
         const result = await send(payload)
         return result
       } catch (e) {
-        console.log(e)
+        console.info(e)
       }
     }
 

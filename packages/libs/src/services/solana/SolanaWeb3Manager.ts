@@ -1,3 +1,4 @@
+import splToken from '@solana/spl-token'
 import solanaWeb3, {
   Connection,
   Keypair,
@@ -6,19 +7,13 @@ import solanaWeb3, {
   TransactionInstruction
 } from '@solana/web3.js'
 import BN from 'bn.js'
-import splToken from '@solana/spl-token'
 
-import { createTransferInstructions, transferWAudioBalance } from './transfer'
-import { getBankAccountAddress, createUserBankFrom } from './userBank'
-import {
-  createAssociatedTokenAccount,
-  getTokenAccountInfo,
-  findAssociatedTokenAddress
-} from './tokenAccount'
-import { wAudioFromWeiAudio } from './wAudio'
+import { AUDIO_DECMIALS, WAUDIO_DECMIALS } from '../../constants'
 import { Logger, Nullable, Utils } from '../../utils'
+import type { IdentityService } from '../identity'
+import type { Web3Manager } from '../web3Manager'
+
 import { SolanaUtils } from './SolanaUtils'
-import { TransactionHandler } from './transactionHandler'
 import {
   submitAttestations,
   evaluateAttestations,
@@ -27,9 +22,15 @@ import {
   SubmitAttestationsConfig as SubmitAttestationsBaseConfig,
   CreateSenderParams as CreateSenderBaseParams
 } from './rewards'
-import { AUDIO_DECMIALS, WAUDIO_DECMIALS } from '../../constants'
-import type { IdentityService } from '../identity'
-import type { Web3Manager } from '../web3Manager'
+import {
+  createAssociatedTokenAccount,
+  getTokenAccountInfo,
+  findAssociatedTokenAddress
+} from './tokenAccount'
+import { TransactionHandler } from './transactionHandler'
+import { createTransferInstructions, transferWAudioBalance } from './transfer'
+import { getBankAccountAddress, createUserBankFrom } from './userBank'
+import { wAudioFromWeiAudio } from './wAudio'
 
 type EvaluateChallengeAttestationsConfig = {
   challengeId: string
