@@ -158,7 +158,7 @@ jobs:
 
             json_content=${json_content%,}
             json_content+="]}"
-            
+
             # The next step of this job will read this file and send it to Slack
             echo $json_content > /tmp/slack_message.json
             echo "Text to send to slack: $json_content"
@@ -233,11 +233,6 @@ workflows:
             identity-service/.* run-identity-workflow true
             identity-service/.* run-integration-workflow true
             identity-service/.* run-gcp-workflow true
-            libs/.* run-creator-workflow true
-            libs/.* run-identity-workflow true
-            libs/.* run-sdk-workflow true
-            libs/.* run-integration-workflow true
-            libs/.* run-gcp-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             eth-contracts/.* run-integration-workflow true
             eth-contracts/.* run-gcp-workflow true
@@ -268,6 +263,11 @@ workflows:
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
             packages/eslint-config-audius/.* run-stems-workflow true
+            packages/libs/.* run-creator-workflow true
+            packages/libs/.* run-identity-workflow true
+            packages/libs/.* run-sdk-workflow true
+            packages/libs/.* run-integration-workflow true
+            packages/libs/.* run-gcp-workflow true
           requires:
             - generate-config
             - init
@@ -289,7 +289,7 @@ workflows:
             .* run-eth-contracts-workflow true
             .* run-contracts-workflow true
             .* run-release-workflow false
-            libs/.* run-sdk-workflow true
+            .* run-sdk-workflow true
             .* run-web-workflow true
             .* run-mobile-workflow true
             .* run-stems-workflow true
