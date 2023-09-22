@@ -211,7 +211,7 @@ workflows:
       - generate-config
       - init:
           context:
-            - vercel
+            - Vercel
       - path-filtering/filter:
           name: trigger-relevant-workflows
           filters:
