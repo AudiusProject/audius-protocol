@@ -8,7 +8,10 @@ import {
   PublicKey,
   Transaction,
   TransactionInstruction,
-  Keypair
+  Keypair,
+  VersionedTransaction,
+  AddressLookupTableAccount,
+  TransactionMessage
 } from '@solana/web3.js'
 
 import { getLibs } from 'services/audius-libs'
@@ -161,9 +164,49 @@ export const getSignatureForTransaction = async ({
   feePayer: PublicKey
   recentBlockhash: string
 }) => {
-  const transaction = new Transaction({ recentBlockhash })
+  const transaction = new Transaction()
+  transaction.recentBlockhash = recentBlockhash
   transaction.add(...instructions)
   transaction.feePayer = feePayer
   transaction.partialSign(signer)
   return transaction.signatures.filter((s) => s.signature !== null)
+}
+
+export const getSignatureForV0Transaction = async ({
+  instructions,
+  signer,
+  feePayer,
+  recentBlockhash,
+  lookupTableAddresses
+}: {
+  instructions: TransactionInstruction[]
+  signer: Keypair
+  feePayer: PublicKey
+  recentBlockhash: string
+  lookupTableAddresses: string[]
+}) => {
+  const connection = await getSolanaConnection()
+  const lookupTableAccounts: AddressLookupTableAccount[] = []
+  lookupTableAddresses.forEach(async (address) => {
+    const lookupTableAccount = await connection.getAddressLookupTable(
+      new PublicKey(address)
+    )
+    if (lookupTableAccount.value !== null)
+      lookupTableAccounts.push(lookupTableAccount.value)
+  })
+  const message = new TransactionMessage({
+    payerKey: feePayer,
+    recentBlockhash,
+    instructions
+  }).compileToV0Message(lookupTableAccounts)
+  const transaction = new VersionedTransaction(message)
+  transaction.sign([signer])
+  const sigs = transaction.signatures
+  console.debug('REED sigs:', sigs)
+  return transaction.signatures.map((s) => {
+    return {
+      publicKey: feePayer.toString(),
+      signature: Buffer.from(s)
+    }
+  })
 }

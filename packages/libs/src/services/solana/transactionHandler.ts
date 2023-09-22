@@ -231,9 +231,10 @@ export class TransactionHandler {
         instructions
       }).compileToV0Message(lookupTableAccounts)
       const tx = new VersionedTransaction(message)
+      tx.sign([feePayerAccount])
       if (Array.isArray(signatures)) {
         signatures.forEach(({ publicKey, signature }) => {
-          tx.addSignature(new PublicKey(publicKey), signature)
+          tx.addSignature(new PublicKey(publicKey), new Uint8Array(signature))
         })
       }
       rawTransaction = tx.serialize()

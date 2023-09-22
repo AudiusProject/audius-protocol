@@ -142,20 +142,26 @@ async function _sendTransaction({
   instructions,
   feePayer,
   transactionHandler,
-  lookupTableAddresses
+  lookupTableAddresses,
+  signatures = [],
+  recentBlockhash
 }: {
   name: string
   instructions: TransactionInstruction[]
   feePayer: PublicKey
   transactionHandler: TransactionHandler
   lookupTableAddresses: string[]
+  signatures?: { publicKey: string; signature: Buffer }[]
+  recentBlockhash?: string
 }) {
   console.debug(`Exchange: starting ${name} transaction...`)
   const result = await transactionHandler.handleTransaction({
     instructions,
     feePayerOverride: feePayer,
-    skipPreflight: true,
+    // skipPreflight: true,
     lookupTableAddresses,
+    signatures,
+    recentBlockhash,
     errorMapping: {
       fromErrorCode: (errorCode) => {
         if (errorCode === ERROR_CODE_SLIPPAGE) {
@@ -182,19 +188,24 @@ const executeExchange = async ({
   instructions,
   feePayer,
   transactionHandler,
-  lookupTableAddresses = []
+  lookupTableAddresses = [],
+  signatures = [],
+  recentBlockhash
 }: {
   instructions: TransactionInstruction[]
   feePayer: PublicKey
   transactionHandler: TransactionHandler
   lookupTableAddresses?: string[]
+  signatures?: { publicKey: string; signature: Buffer }[]
+  recentBlockhash?: string
 }) => {
   const { res: txId } = await _sendTransaction({
     name: 'Swap',
     instructions,
     feePayer,
     transactionHandler,
-    lookupTableAddresses
+    lookupTableAddresses,
+    signatures
   })
   return txId
 }
