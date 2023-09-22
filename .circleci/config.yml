@@ -63,12 +63,11 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            npm ci
+            [[ -d node_modules ]] || npm ci
 
       - save_cache:
           key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
           paths:
-            - ~/.npm
             - ./node_modules
             - ./packages/web/node_modules
             - ./packages/mobile/node_modules
