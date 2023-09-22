@@ -34,18 +34,21 @@ export const PayExtraForm = ({ amountPresets }: PayExtraFormProps) => {
       <div className={styles.pillContainer}>
         <div className={styles.presetContainer}>
           <HarmonySelectablePill
+            className={styles.presetPill}
             isSelected={preset === PayExtraPreset.LOW}
             label={formatPillAmount(amountPresets[0])}
             size='large'
             onClick={() => handleClickPreset(PayExtraPreset.LOW)}
           />
           <HarmonySelectablePill
+            className={styles.presetPill}
             isSelected={preset === PayExtraPreset.MEDIUM}
             label={formatPillAmount(amountPresets[1])}
             size='large'
             onClick={() => handleClickPreset(PayExtraPreset.MEDIUM)}
           />
           <HarmonySelectablePill
+            className={styles.presetPill}
             isSelected={preset === PayExtraPreset.HIGH}
             label={formatPillAmount(amountPresets[2])}
             size='large'
@@ -53,6 +56,7 @@ export const PayExtraForm = ({ amountPresets }: PayExtraFormProps) => {
           />
         </div>
         <HarmonySelectablePill
+          className={styles.customAmountPill}
           isSelected={preset === PayExtraPreset.CUSTOM}
           label={messages.customAmount}
           size='large'

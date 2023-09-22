@@ -17,8 +17,13 @@
 .presetContainer {
   display: flex;
   gap: var(--unit-2);
+  width: 100%;
 }
 
-.customAmountButton {
+.presetPill {
+  flex-grow: 1;
+}
+
+.customAmountPill {
   width: 100%;
 }
