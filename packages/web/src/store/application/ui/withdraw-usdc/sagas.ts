@@ -247,8 +247,7 @@ function* doWithdrawUSDC({
     yield* put(withdrawUSDCSucceeded())
 
     // clear the withdrawals so next query will fetch from source
-    // @ts-ignore
-    yield* put(userApiActions.resetGetUSDCTransactions())
+    yield* put(userApiActions.resetGetUSDCTransactions!())
   } catch (e: unknown) {
     console.error('Withdraw USDC failed', e)
     const reportToSentry = yield* getContext('reportToSentry')

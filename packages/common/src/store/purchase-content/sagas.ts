@@ -234,8 +234,7 @@ function* doStartPurchaseContentFlow({
     }
 
     // clear the purchases so next query will fetch from source
-    // @ts-ignore
-    yield* put(purchasesApiActions.resetGetPurchases())
+    yield* put(purchasesApiActions.resetGetPurchases!())
 
     // finish
     yield* put(purchaseConfirmed())
