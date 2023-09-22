@@ -1,13 +1,14 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
+import type BN from 'bn.js'
+import type Wallet from 'ethereumjs-wallet'
+import type { TransactionReceipt } from 'web3-core'
+
 import { AuthHeaders } from '../../constants'
-import { uuid } from '../../utils/uuid'
 import type { Nullable } from '../../utils'
+import { uuid } from '../../utils/uuid'
+import type { Web3Manager } from '../web3Manager'
 
 import { getTrackListens, TimeFrame } from './requests'
-import type { Web3Manager } from '../web3Manager'
-import type { TransactionReceipt } from 'web3-core'
-import type Wallet from 'ethereumjs-wallet'
-import type BN from 'bn.js'
 
 type Data = Record<string, unknown>
 
@@ -158,7 +159,7 @@ export class IdentityService {
       url: '/users/check',
       method: 'get',
       params: {
-        email: email
+        email
       }
     })
   }
@@ -292,7 +293,7 @@ export class IdentityService {
       return await this._makeRequest({
         url: '/twitter/handle_lookup',
         method: 'get',
-        params: { handle: handle }
+        params: { handle }
       })
     } else {
       throw new Error('No handle passed into function lookupTwitterHandle')
@@ -603,7 +604,8 @@ export class IdentityService {
   /* ------- INTERNAL FUNCTIONS ------- */
 
   async _makeRequest<T = unknown>(axiosRequestObj: AxiosRequestConfig) {
-    axiosRequestObj.baseURL = axiosRequestObj.baseURL || this.identityServiceEndpoint
+    axiosRequestObj.baseURL =
+      axiosRequestObj.baseURL || this.identityServiceEndpoint
 
     const requestId = uuid()
     axiosRequestObj.headers = {

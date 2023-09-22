@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 
-import type { Nullable } from '../../utils'
 import type { ResponseType } from 'axios'
+
+import type { Nullable } from '../../utils'
 
 export const getUsers = (
   limit = 100,
@@ -22,7 +23,7 @@ export const getUsers = (
     include_incomplete?: boolean
   }
 
-  const queryParams: QueryParams = { limit: limit, offset: offset }
+  const queryParams: QueryParams = { limit, offset }
   if (handle) {
     queryParams.handle = handle
   }
@@ -68,7 +69,7 @@ export const getTracks = (
     with_users?: boolean
   }
 
-  const queryParams: QueryParams = { limit: limit, offset: offset }
+  const queryParams: QueryParams = { limit, offset }
 
   if (idsArray) {
     if (!Array.isArray(idsArray)) {
@@ -315,7 +316,7 @@ export const getTrackRepostIntersectionUsers = (
     endpoint: 'users',
     urlParams:
       '/intersection/repost/track/' + repostTrackId + '/' + followerUserId,
-    queryParams: { limit: limit, offset: offset }
+    queryParams: { limit, offset }
   }
 }
 
@@ -332,7 +333,7 @@ export const getPlaylistRepostIntersectionUsers = (
       repostPlaylistId +
       '/' +
       followerUserId,
-    queryParams: { limit: limit, offset: offset }
+    queryParams: { limit, offset }
   }
 }
 
@@ -344,7 +345,7 @@ export const getFollowersForUser = (
   return {
     endpoint: 'users',
     urlParams: '/followers/' + followeeUserId,
-    queryParams: { limit: limit, offset: offset }
+    queryParams: { limit, offset }
   }
 }
 
@@ -356,7 +357,7 @@ export const getFolloweesForUser = (
   return {
     endpoint: 'users',
     urlParams: '/followees/' + followerUserId,
-    queryParams: { limit: limit, offset: offset }
+    queryParams: { limit, offset }
   }
 }
 
@@ -368,7 +369,7 @@ export const getRepostersForTrack = (
   return {
     endpoint: 'users',
     urlParams: '/reposts/track/' + repostTrackId,
-    queryParams: { limit: limit, offset: offset }
+    queryParams: { limit, offset }
   }
 }
 
@@ -380,7 +381,7 @@ export const getRepostersForPlaylist = (
   return {
     endpoint: 'users',
     urlParams: '/reposts/playlist/' + repostPlaylistId,
-    queryParams: { limit: limit, offset: offset }
+    queryParams: { limit, offset }
   }
 }
 
@@ -392,7 +393,7 @@ export const getSaversForTrack = (
   return {
     endpoint: 'users',
     urlParams: '/saves/track/' + saveTrackId,
-    queryParams: { limit: limit, offset: offset }
+    queryParams: { limit, offset }
   }
 }
 
@@ -404,7 +405,7 @@ export const getSaversForPlaylist = (
   return {
     endpoint: 'users',
     urlParams: '/saves/playlist/' + savePlaylistId,
-    queryParams: { limit: limit, offset: offset }
+    queryParams: { limit, offset }
   }
 }
 
@@ -423,7 +424,7 @@ export const searchFull = (
 export const searchAutocomplete = (text: string, limit = 100, offset = 0) => {
   return {
     endpoint: 'search/autocomplete',
-    queryParams: { query: text, limit: limit, offset: offset }
+    queryParams: { query: text, limit, offset }
   }
 }
 
@@ -453,21 +454,21 @@ export const getSavedPlaylists = (
 ) => {
   return {
     endpoint: 'saves/playlists',
-    queryParams: { limit: limit, offset: offset, with_users: withUsers }
+    queryParams: { limit, offset, with_users: withUsers }
   }
 }
 
 export const getSavedAlbums = (limit = 100, offset = 0, withUsers = false) => {
   return {
     endpoint: 'saves/albums',
-    queryParams: { limit: limit, offset: offset, with_users: withUsers }
+    queryParams: { limit, offset, with_users: withUsers }
   }
 }
 
 export const getSavedTracks = (limit = 100, offset = 0, withUsers = false) => {
   return {
     endpoint: 'saves/tracks',
-    queryParams: { limit: limit, offset: offset, with_users: withUsers }
+    queryParams: { limit, offset, with_users: withUsers }
   }
 }
 
@@ -787,7 +788,7 @@ export const verifyToken = (token: string) => {
   return {
     endpoint: '/v1/users/verify_token',
     queryParams: {
-      token: token
+      token
     }
   }
 }

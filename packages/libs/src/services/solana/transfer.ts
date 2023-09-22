@@ -8,11 +8,12 @@ import {
   Connection
 } from '@solana/web3.js'
 import BN from 'bn.js'
-import type { TransactionHandler } from './transactionHandler'
 import { deserialize, serialize } from 'borsh'
-import { SolanaUtils } from './SolanaUtils'
 import secp256k1 from 'secp256k1'
+
+import { SolanaUtils } from './SolanaUtils'
 import { ClaimableProgramError } from './errors'
+import type { TransactionHandler } from './transactionHandler'
 
 const encoder = new TextEncoder()
 

@@ -1,18 +1,21 @@
-import { Auth } from '../../services/Auth/Auth'
-import { beforeAll, expect, jest } from '@jest/globals'
-import { Configuration } from '../generated/default'
-import { PlaylistsApi as GeneratedPlaylistsApi } from '../generated/default/apis/PlaylistsApi'
-import { EntityManager } from '../../services/EntityManager'
-import { PlaylistsApi } from './PlaylistsApi'
-import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
-import { StorageNodeSelector } from '../../services/StorageNodeSelector'
-import { Storage } from '../../services/Storage'
-import { TrackUploadHelper } from '../tracks/TrackUploadHelper'
-import { Mood } from '../../types/Mood'
-import { Genre } from '../../types/Genre'
-import { Logger } from '../../services/Logger'
 import fs from 'fs'
 import path from 'path'
+
+import { beforeAll, expect, jest } from '@jest/globals'
+
+import { Auth } from '../../services/Auth/Auth'
+import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
+import { EntityManager } from '../../services/EntityManager'
+import { Logger } from '../../services/Logger'
+import { Storage } from '../../services/Storage'
+import { StorageNodeSelector } from '../../services/StorageNodeSelector'
+import { Genre } from '../../types/Genre'
+import { Mood } from '../../types/Mood'
+import { Configuration } from '../generated/default'
+import { PlaylistsApi as GeneratedPlaylistsApi } from '../generated/default/apis/PlaylistsApi'
+import { TrackUploadHelper } from '../tracks/TrackUploadHelper'
+
+import { PlaylistsApi } from './PlaylistsApi'
 
 const wavFile = fs.readFileSync(
   path.resolve(__dirname, '../../test/wav-file.wav')

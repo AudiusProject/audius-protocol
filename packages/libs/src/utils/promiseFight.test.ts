@@ -1,5 +1,6 @@
-import { promiseFight } from './promiseFight'
 import assert from 'assert'
+
+import { promiseFight } from './promiseFight'
 
 /**
  * A promise that either resolves or rejects. If it resolves,

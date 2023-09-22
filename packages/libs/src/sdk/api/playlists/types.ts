@@ -1,9 +1,10 @@
 import { z } from 'zod'
+
 import { AudioFile, ImageFile } from '../../types/File'
+import { Genre } from '../../types/Genre'
 import { HashId } from '../../types/HashId'
 import { Mood } from '../../types/Mood'
 import { createUploadTrackMetadataSchema } from '../tracks/types'
-import { Genre } from '../../types/Genre'
 
 const CreatePlaylistMetadataSchema = z
   .object({

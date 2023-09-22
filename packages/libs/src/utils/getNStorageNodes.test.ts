@@ -1,6 +1,8 @@
-import type { StorageNode } from './getNStorageNodes'
 import assert from 'assert'
+
 import nock from 'nock'
+
+import type { StorageNode } from './getNStorageNodes'
 import { isNodeHealthy, getNStorageNodes } from './getNStorageNodes'
 
 const sampleNodes: StorageNode[] = [

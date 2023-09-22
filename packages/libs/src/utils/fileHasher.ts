@@ -1,11 +1,7 @@
-import {
-  ImportCandidate,
-  importer,
-  UserImporterOptions
-} from 'ipfs-unixfs-importer'
 import fs from 'fs'
-import { promisify } from 'util'
 import { Stream } from 'stream'
+import { promisify } from 'util'
+
 import type { Blockstore, Options } from 'interface-blockstore'
 import type {
   AwaitIterable,
@@ -14,6 +10,11 @@ import type {
   Query,
   KeyQuery
 } from 'interface-store'
+import {
+  ImportCandidate,
+  importer,
+  UserImporterOptions
+} from 'ipfs-unixfs-importer'
 import { CID } from 'multiformats/cid'
 import * as json from 'multiformats/codecs/json'
 import { sha256 } from 'multiformats/hashes/sha2'

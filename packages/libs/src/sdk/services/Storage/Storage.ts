@@ -1,8 +1,22 @@
-import FormData from 'form-data'
 import axios from 'axios'
-
 import fetch from 'cross-fetch'
+import FormData from 'form-data'
+
+import { isNodeFile } from '../../types/File'
+import type { CrossPlatformFile as File } from '../../types/File'
+import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { wait } from '../../utils/wait'
+import type { AuthService } from '../Auth'
+import { sortObjectKeys } from '../Auth/utils'
+import type { LoggerService } from '../Logger'
+import type { StorageNodeSelectorService } from '../StorageNodeSelector'
+
+import {
+  defaultStorageServiceConfig,
+  MAX_IMAGE_RESIZE_TIMEOUT_MS,
+  MAX_TRACK_TRANSCODE_TIMEOUT,
+  POLL_STATUS_INTERVAL
+} from './constants'
 import type {
   FileTemplate,
   ProgressCB,
@@ -11,19 +25,6 @@ import type {
   StorageServiceConfigInternal,
   UploadResponse
 } from './types'
-import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
-import {
-  defaultStorageServiceConfig,
-  MAX_IMAGE_RESIZE_TIMEOUT_MS,
-  MAX_TRACK_TRANSCODE_TIMEOUT,
-  POLL_STATUS_INTERVAL
-} from './constants'
-import type { StorageNodeSelectorService } from '../StorageNodeSelector'
-import { sortObjectKeys } from '../Auth/utils'
-import type { AuthService } from '../Auth'
-import { isNodeFile } from '../../types/File'
-import type { CrossPlatformFile as File } from '../../types/File'
-import type { LoggerService } from '../Logger'
 
 export class Storage implements StorageService {
   /**
@@ -78,7 +79,7 @@ export class Storage implements StorageService {
       method: 'post',
       url: `${contentNodeEndpoint}/uploads/${uploadId}`,
       maxContentLength: Infinity,
-      data: data,
+      data,
       params: { signature: JSON.stringify(signatureEnvelope) }
     })
 

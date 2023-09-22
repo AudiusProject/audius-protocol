@@ -1,8 +1,10 @@
 import type BN from 'bn.js'
+
 import { ContractABI, Logger, Utils } from '../../utils'
 import type { GetRegistryAddress } from '../contracts/ContractClient'
 import { GovernedContractClient } from '../contracts/GovernedContractClient'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
+
 import type { AudiusTokenClient } from './AudiusTokenClient'
 import type { GovernanceClient } from './GovernanceClient'
 import type { StakingProxyClient } from './StakingProxyClient'
@@ -46,7 +48,7 @@ export class DelegateManagerClient extends GovernedContractClient {
     const method = await this.getMethod('delegateStake', targetSP, amount)
     const tx = await this.web3Manager.sendTransaction(method)
 
-    const returnValues = tx.events?.['IncreaseDelegatedStake']?.returnValues
+    const returnValues = tx.events?.IncreaseDelegatedStake?.returnValues
 
     return {
       txReceipt: tx,
@@ -77,9 +79,9 @@ export class DelegateManagerClient extends GovernedContractClient {
 
     return events.map((event) => ({
       blockNumber: parseInt(event.blockNumber as unknown as string),
-      delegator: event.returnValues['_delegator'],
-      increaseAmount: Utils.toBN(event.returnValues['_increaseAmount']),
-      serviceProvider: event.returnValues['_serviceProvider']
+      delegator: event.returnValues._delegator,
+      increaseAmount: Utils.toBN(event.returnValues._increaseAmount),
+      serviceProvider: event.returnValues._serviceProvider
     }))
   }
 
@@ -106,9 +108,9 @@ export class DelegateManagerClient extends GovernedContractClient {
     )
     return events.map((event) => ({
       blockNumber: parseInt(event.blockNumber as unknown as string),
-      delegator: event.returnValues['_delegator'],
-      amount: Utils.toBN(event.returnValues['_amount']),
-      serviceProvider: event.returnValues['_serviceProvider']
+      delegator: event.returnValues._delegator,
+      amount: Utils.toBN(event.returnValues._amount),
+      serviceProvider: event.returnValues._serviceProvider
     }))
   }
 
@@ -133,10 +135,10 @@ export class DelegateManagerClient extends GovernedContractClient {
 
     return events.map((event) => ({
       blockNumber: parseInt(event.blockNumber as unknown as string),
-      lockupExpiryBlock: parseInt(event.returnValues['_lockupExpiryBlock']),
-      delegator: event.returnValues['_delegator'],
-      amount: Utils.toBN(event.returnValues['_amount']),
-      serviceProvider: event.returnValues['_serviceProvider']
+      lockupExpiryBlock: parseInt(event.returnValues._lockupExpiryBlock),
+      delegator: event.returnValues._delegator,
+      amount: Utils.toBN(event.returnValues._amount),
+      serviceProvider: event.returnValues._serviceProvider
     }))
   }
 
@@ -164,9 +166,9 @@ export class DelegateManagerClient extends GovernedContractClient {
 
     return events.map((event) => ({
       blockNumber: parseInt(event.blockNumber as unknown as string),
-      delegator: event.returnValues['_delegator'],
-      amount: Utils.toBN(event.returnValues['_amount']),
-      serviceProvider: event.returnValues['_serviceProvider']
+      delegator: event.returnValues._delegator,
+      amount: Utils.toBN(event.returnValues._amount),
+      serviceProvider: event.returnValues._serviceProvider
     }))
   }
 
@@ -186,9 +188,9 @@ export class DelegateManagerClient extends GovernedContractClient {
     })
     return events.map((event) => ({
       blockNumber: parseInt(event.blockNumber as unknown as string),
-      claimer: event.returnValues['_claimer'],
-      rewards: Utils.toBN(event.returnValues['_rewards']),
-      newTotal: Utils.toBN(event.returnValues['_newTotal'])
+      claimer: event.returnValues._claimer,
+      rewards: Utils.toBN(event.returnValues._rewards),
+      newTotal: Utils.toBN(event.returnValues._newTotal)
     }))
   }
 
@@ -208,9 +210,9 @@ export class DelegateManagerClient extends GovernedContractClient {
     })
     return events.map((event) => ({
       blockNumber: parseInt(event.blockNumber as unknown as string),
-      target: event.returnValues['_target'],
-      amount: Utils.toBN(event.returnValues['_amount']),
-      newTotal: Utils.toBN(event.returnValues['_newTotal'])
+      target: event.returnValues._target,
+      amount: Utils.toBN(event.returnValues._amount),
+      newTotal: Utils.toBN(event.returnValues._newTotal)
     }))
   }
 
@@ -230,9 +232,9 @@ export class DelegateManagerClient extends GovernedContractClient {
     })
     return events.map((event) => ({
       blockNumber: parseInt(event.blockNumber as unknown as string),
-      serviceProvider: event.returnValues['_serviceProvider'],
-      delegator: event.returnValues['_delegator'],
-      unstakedAmount: Utils.toBN(event.returnValues['_unstakedAmount'])
+      serviceProvider: event.returnValues._serviceProvider,
+      delegator: event.returnValues._delegator,
+      unstakedAmount: Utils.toBN(event.returnValues._unstakedAmount)
     }))
   }
 
@@ -256,7 +258,7 @@ export class DelegateManagerClient extends GovernedContractClient {
     const tx = await this.web3Manager.sendTransaction(method)
 
     const returnValues =
-      tx.events?.['UndelegateStakeRequestEvaluated']?.returnValues
+      tx.events?.UndelegateStakeRequestEvaluated?.returnValues
 
     return {
       txReceipt: tx,
@@ -300,7 +302,7 @@ export class DelegateManagerClient extends GovernedContractClient {
     )
     const tx = await this.web3Manager.sendTransaction(method)
     const returnValues =
-      tx.events?.['RemoveDelegatorRequestEvaluated']?.returnValues
+      tx.events?.RemoveDelegatorRequestEvaluated?.returnValues
     return {
       txReceipt: tx,
       delegator: returnValues._delegator,

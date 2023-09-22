@@ -1,8 +1,9 @@
-import { EthWeb3Manager } from '../../services/ethWeb3Manager'
-import { EthContracts } from '../../services/ethContracts'
-import { IdentityService } from '../../services/identity'
 import { promises } from 'fs'
 import path from 'path'
+
+import { EthContracts } from '../../services/ethContracts'
+import { EthWeb3Manager } from '../../services/ethWeb3Manager'
+import { IdentityService } from '../../services/identity'
 import type { ServicesConfig } from '../config/types'
 
 const { writeFile } = promises

@@ -1,9 +1,10 @@
+import { expect, describe, test } from '@jest/globals'
+
+import { HealthCheckStatus } from './healthCheckTypes'
 import {
   parseApiHealthStatusReason,
   parseHealthStatusReason
 } from './healthChecks'
-import { HealthCheckStatus } from './healthCheckTypes'
-import { expect, describe, test } from '@jest/globals'
 
 describe('health_check', () => {
   test('no data is unhealthy', () => {

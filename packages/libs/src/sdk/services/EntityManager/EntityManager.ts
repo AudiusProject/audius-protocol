@@ -1,15 +1,16 @@
-import type { TransactionReceipt } from 'web3-core'
-import Web3 from '../../utils/web3'
-import type Web3Type from 'web3'
-import type { AbiItem } from 'web3-utils'
 import fetch, { Headers } from 'cross-fetch'
-
-// TODO: move into sdk?
-import * as signatureSchemas from '../../../data-contracts/signatureSchemas'
-import { abi as EntityManagerABI } from '../../../data-contracts/ABIs/EntityManager.json'
-
-import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
+import type Web3Type from 'web3'
+import type { TransactionReceipt } from 'web3-core'
 import type { Contract } from 'web3-eth-contract'
+import type { AbiItem } from 'web3-utils'
+
+import { abi as EntityManagerABI } from '../../../data-contracts/ABIs/EntityManager.json'
+import * as signatureSchemas from '../../../data-contracts/signatureSchemas'
+import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
+import Web3 from '../../utils/web3'
+import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
+import type { LoggerService } from '../Logger'
+
 import {
   CONFIRMATION_POLLING_INTERVAL,
   CONFIRMATION_TIMEOUT,
@@ -23,8 +24,6 @@ import {
   EntityManagerService,
   ManageEntityOptions
 } from './types'
-import type { LoggerService } from '../Logger'
-import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 
 export class EntityManager implements EntityManagerService {
   /**

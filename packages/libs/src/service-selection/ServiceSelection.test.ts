@@ -1,8 +1,11 @@
-import { ServiceSelection } from './ServiceSelection'
-import nock from 'nock'
 import assert from 'assert'
-import { Utils } from '../utils'
+
 import type { AxiosResponse } from 'axios'
+import nock from 'nock'
+
+import { Utils } from '../utils'
+
+import { ServiceSelection } from './ServiceSelection'
 
 describe('ServiceSelection', () => {
   it('prefers a healthy service', async () => {

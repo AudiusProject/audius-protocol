@@ -5,9 +5,9 @@ import axios, {
 } from 'axios'
 import semver from 'semver'
 
-import { Utils } from './utils'
 import { promiseFight } from './promiseFight'
 import type { Nullable } from './types'
+import { Utils } from './utils'
 
 export type ServiceName = string
 export interface ServiceWithEndpoint {

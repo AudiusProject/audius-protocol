@@ -1,4 +1,3 @@
-import { SolanaUtils } from './SolanaUtils'
 import {
   Transaction,
   PublicKey,
@@ -6,8 +5,11 @@ import {
   Keypair,
   TransactionInstruction
 } from '@solana/web3.js'
-import type { IdentityService, RelayTransactionData } from '../identity'
+
 import type { Logger, Nullable } from '../../utils'
+import type { IdentityService, RelayTransactionData } from '../identity'
+
+import { SolanaUtils } from './SolanaUtils'
 
 type HandleTransactionParams = {
   instructions: TransactionInstruction[]

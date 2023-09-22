@@ -1,9 +1,17 @@
+import type { AxiosResponse } from 'axios'
+import semver from 'semver'
+
 import {
   Backup,
   Decision,
   ServiceSelection,
   ServiceSelectionConfig
 } from '../../service-selection'
+import type { Maybe, Nullable } from '../../utils'
+import type { LocalStorage } from '../../utils/localStorage'
+import { EthContracts, isVersionAtLeastSameMajorMinor } from '../ethContracts'
+import type { MonitoringCallbacks } from '../types'
+
 import {
   DISCOVERY_PROVIDER_TIMESTAMP,
   DISCOVERY_SERVICE_NAME,
@@ -11,12 +19,6 @@ import {
   DISCOVERY_PROVIDER_RESELECT_TIMEOUT,
   REGRESSED_MODE_TIMEOUT
 } from './constants'
-import semver from 'semver'
-import { EthContracts, isVersionAtLeastSameMajorMinor } from '../ethContracts'
-import type { AxiosResponse } from 'axios'
-import type { Maybe, Nullable } from '../../utils'
-import type { LocalStorage } from '../../utils/localStorage'
-import type { MonitoringCallbacks } from '../types'
 
 const PREVIOUS_VERSIONS_TO_CHECK = 5
 

@@ -1,5 +1,7 @@
 import assert from 'assert'
+
 import type Web3Type from 'web3'
+
 import Web3 from '../LibsWeb3'
 
 const web3Instance = new Web3()
