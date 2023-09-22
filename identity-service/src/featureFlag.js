@@ -13,7 +13,8 @@ const FEATURE_FLAGS = Object.freeze({
   SUPPORTER_DETHRONED_PUSH_NOTIFS_ENABLED:
     'supporter_dethroned_push_notifs_enabled',
   READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED:
-    'read_subscribers_from_discovery_enabled'
+    'read_subscribers_from_discovery_enabled',
+  USDC_PURCHASES: 'usdc_purchases'
 })
 
 // Default values for feature flags while optimizely has not loaded
@@ -29,7 +30,8 @@ const DEFAULTS = Object.freeze({
   [FEATURE_FLAGS.BLOCK_ABUSE_ON_RELAY]: false,
   [FEATURE_FLAGS.TIPPING_ENABLED]: false,
   [FEATURE_FLAGS.SUPPORTER_DETHRONED_PUSH_NOTIFS_ENABLED]: false,
-  [FEATURE_FLAGS.READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED]: false
+  [FEATURE_FLAGS.READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED]: false,
+  [FEATURE_FLAGS.USDC_PURCHASES]: false
 })
 
 /**
