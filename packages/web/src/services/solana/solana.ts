@@ -201,6 +201,13 @@ export const getSignatureForV0Transaction = async ({
   }).compileToV0Message(lookupTableAccounts)
   const transaction = new VersionedTransaction(message)
   transaction.sign([signer])
+  instructions.forEach((instruction) => {
+    const filtered = instruction.keys?.filter((k) => k.isSigner)
+    filtered.forEach((f) => {
+      console.debug('REED instruction signers:', f.pubkey?.toString())
+    })
+  })
+  console.debug('REED transaction in client:', transaction)
   const ret = transaction.signatures
     .filter((s) => !s.every((i) => i === 0)) // Filter sigs that are all 0s
     .map((s) => {

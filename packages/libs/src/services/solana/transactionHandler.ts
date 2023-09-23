@@ -233,7 +233,16 @@ export class TransactionHandler {
         instructions
       }).compileToV0Message(lookupTableAccounts)
       const tx = new VersionedTransaction(message)
+      instructions.forEach((instruction) => {
+        const filtered = instruction.keys?.filter((k) => k.isSigner)
+        filtered.forEach((f) => {
+          console.debug('REED instruction signers:', f.pubkey?.toString())
+        })
+      })
+      console.debug('REED sigs in tx handler: ', signatures)
+      console.debug('REED transaction in tx handler before sign: ', tx)
       tx.sign([feePayerAccount])
+      console.debug('REED transaction in tx handler after sign: ', tx)
       if (Array.isArray(signatures)) {
         signatures.forEach(({ publicKey, signature }) => {
           tx.addSignature(new PublicKey(publicKey), new Uint8Array(signature))
