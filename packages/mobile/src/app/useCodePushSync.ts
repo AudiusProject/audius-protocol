@@ -5,7 +5,7 @@ import { useEffectOnce } from 'react-use'
 
 import { useEnterForeground } from 'app/hooks/useAppState'
 
-export const useSyncCodepush = () => {
+export const useCodePushSync = () => {
   const [
     isPendingMandatoryCodePushUpdate,
     setIsPendingMandatoryCodePushUpdate
