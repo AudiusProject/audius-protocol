@@ -5,7 +5,7 @@ import {
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import { createJupiterApiClient, Instruction, QuoteResponse } from '@jup-ag/api'
-import { PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js'
+import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
 let _jup: ReturnType<typeof createJupiterApiClient>
 
@@ -66,7 +66,6 @@ const getQuote = async ({
     outputMint: outputToken.address,
     amount,
     slippageBps: slippage, // make sure slippageBps = slippage
-    asLegacyTransaction: true,
     swapMode,
     onlyDirectRoutes
   })
@@ -98,19 +97,25 @@ const getSwapInstructions = async ({
   userPublicKey: PublicKey
 }) => {
   const jup = getInstance()
-  const instructions = await jup.swapInstructionsPost({
+  const {
+    tokenLedgerInstruction,
+    computeBudgetInstructions,
+    setupInstructions,
+    swapInstruction,
+    cleanupInstruction,
+    addressLookupTableAddresses
+  } = await jup.swapInstructionsPost({
     swapRequest: {
       quoteResponse: quote,
-      userPublicKey: userPublicKey.toString(),
-      asLegacyTransaction: true
+      userPublicKey: userPublicKey.toString()
     }
   })
   const instructionsFlattened = [
-    instructions.tokenLedgerInstruction,
-    ...instructions.computeBudgetInstructions,
-    ...instructions.setupInstructions,
-    instructions.swapInstruction,
-    instructions.cleanupInstruction
+    tokenLedgerInstruction,
+    ...computeBudgetInstructions,
+    ...setupInstructions,
+    swapInstruction,
+    cleanupInstruction
   ]
     .filter((i): i is Instruction => i !== undefined)
     .map((i) => {
@@ -126,45 +131,31 @@ const getSwapInstructions = async ({
         })
       } as TransactionInstruction
     })
-  return instructionsFlattened
-}
-
-const getSwapTransaction = async ({
-  quote,
-  userPublicKey
-}: {
-  quote: QuoteResponse
-  userPublicKey: PublicKey
-}) => {
-  const jup = getInstance()
-  const { swapTransaction } = await jup.swapPost({
-    swapRequest: {
-      quoteResponse: quote,
-      userPublicKey: userPublicKey.toString(),
-      asLegacyTransaction: true
-    }
-  })
-  const swapTransactionBuf = Buffer.from(swapTransaction, 'base64')
-  const transaction = Transaction.from(swapTransactionBuf)
-  return transaction
+  return {
+    instructions: instructionsFlattened,
+    lookupTableAddresses: addressLookupTableAddresses
+  }
 }
 
 async function _sendTransaction({
   name,
-  transaction,
+  instructions,
   feePayer,
-  transactionHandler
+  transactionHandler,
+  lookupTableAddresses
 }: {
   name: string
-  transaction: Transaction
+  instructions: TransactionInstruction[]
   feePayer: PublicKey
   transactionHandler: TransactionHandler
+  lookupTableAddresses: string[]
 }) {
   console.debug(`Exchange: starting ${name} transaction...`)
   const result = await transactionHandler.handleTransaction({
-    instructions: transaction.instructions,
+    instructions,
     feePayerOverride: feePayer,
     skipPreflight: true,
+    lookupTableAddresses,
     errorMapping: {
       fromErrorCode: (errorCode) => {
         if (errorCode === ERROR_CODE_SLIPPAGE) {
@@ -178,8 +169,8 @@ async function _sendTransaction({
   })
   if (result.error) {
     console.debug(
-      `Exchange: ${name} transaction stringified:`,
-      JSON.stringify(transaction)
+      `Exchange: ${name} instructions stringified:`,
+      JSON.stringify(instructions)
     )
     throw new Error(`${name} transaction failed: ${result.error}`)
   }
@@ -188,20 +179,22 @@ async function _sendTransaction({
 }
 
 const executeExchange = async ({
-  transaction,
+  instructions,
   feePayer,
-  transactionHandler
+  transactionHandler,
+  lookupTableAddresses = []
 }: {
-  transaction: Transaction
+  instructions: TransactionInstruction[]
   feePayer: PublicKey
   transactionHandler: TransactionHandler
+  lookupTableAddresses?: string[]
 }) => {
-  // Wrap this in try/finally to ensure cleanup transaction runs, if applicable
   const { res: txId } = await _sendTransaction({
     name: 'Swap',
-    transaction,
+    instructions,
     feePayer,
-    transactionHandler
+    transactionHandler,
+    lookupTableAddresses
   })
   return txId
 }
@@ -209,6 +202,5 @@ const executeExchange = async ({
 export const JupiterSingleton = {
   getQuote,
   getSwapInstructions,
-  getSwapTransaction,
   executeExchange
 }
