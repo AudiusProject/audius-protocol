@@ -144,6 +144,14 @@ const RenderSalesPage = () => {
   const isLoading = statusIsNotFinalized(status)
 
   const downloadCSV = useCallback(async () => {
+    const getFilename = () => {
+      const today = new Date()
+      const year = today.getFullYear()
+      const month = today.getMonth() + 1
+      const day = today.getDate()
+      const date = `${year}-${month}-${day}`
+      return `sales_${date}.csv`
+    }
     const sdk = await audiusSdk()
     const { data: encodedDataMessage, signature: encodedDataSignature } =
       await audiusBackendInstance.signDiscoveryNodeRequest()
@@ -153,7 +161,11 @@ const RenderSalesPage = () => {
       encodedDataSignature
     })
     const blobUrl = window.URL.createObjectURL(blob)
-    window.location.assign(blobUrl)
+    const a = document.createElement('a')
+    a.href = blobUrl
+    a.download = getFilename()
+    a.click()
+    window.URL.revokeObjectURL(blobUrl)
   }, [userId])
 
   const header = (
