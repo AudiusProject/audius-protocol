@@ -30,6 +30,7 @@ import { MainContentContext } from 'pages/MainContentContext'
 import NotFoundPage from 'pages/not-found-page/NotFoundPage'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
+import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
 import { FEED_PAGE } from 'utils/route'
 
@@ -149,14 +150,6 @@ const RenderPurchasesPage = () => {
   const isLoading = statusIsNotFinalized(status)
 
   const downloadCSV = useCallback(async () => {
-    const getFilename = () => {
-      const today = new Date()
-      const year = today.getFullYear()
-      const month = today.getMonth() + 1
-      const day = today.getDate()
-      const date = `${year}-${month}-${day}`
-      return `purchases_${date}.csv`
-    }
     const sdk = await audiusSdk()
     const { data: encodedDataMessage, signature: encodedDataSignature } =
       await audiusBackendInstance.signDiscoveryNodeRequest()
@@ -168,7 +161,7 @@ const RenderPurchasesPage = () => {
     const blobUrl = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = blobUrl
-    a.download = getFilename()
+    a.download = `purchases_${formatToday()}.csv`
     a.click()
     window.URL.revokeObjectURL(blobUrl)
   }, [userId])
