@@ -13,12 +13,12 @@ import {
   isPremiumContentUSDCPurchaseGated,
   Nullable,
   PremiumConditions,
-  premiumContentActions,
   premiumContentSelectors,
   removeNullable,
   tippingActions,
   User,
-  usersSocialActions as socialActions
+  usersSocialActions as socialActions,
+  usePremiumContentPurchaseModal
 } from '@audius/common'
 import {
   Button,
@@ -51,7 +51,6 @@ import { LockedStatusBadge } from './LockedStatusBadge'
 
 const { getUsers } = cacheUsersSelectors
 const { beginTip } = tippingActions
-const { setPurchaseContentId } = premiumContentActions
 const { getPremiumTrackStatusMap } = premiumContentSelectors
 const { getAccountUser } = accountSelectors
 
@@ -120,7 +119,8 @@ const LockedPremiumTrackSection = ({
   const dispatch = useDispatch()
   const [lockedContentModalVisibility, setLockedContentModalVisibility] =
     useModalState('LockedContent')
-  const [, setPurchaseModalVisibility] = useModalState('PremiumContentPurchase')
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
   const source = lockedContentModalVisibility
     ? 'howToUnlockModal'
     : 'howToUnlockTrackPage'
@@ -132,17 +132,15 @@ const LockedPremiumTrackSection = ({
     isPremiumContentUSDCPurchaseGated(premiumConditions)
 
   const handlePurchase = useCallback(() => {
-    dispatch(setPurchaseContentId({ id: trackId }))
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
     }
-    setPurchaseModalVisibility(true)
+    openPremiumContentPurchaseModal({ contentId: trackId })
   }, [
     trackId,
     lockedContentModalVisibility,
-    setPurchaseModalVisibility,
-    setLockedContentModalVisibility,
-    dispatch
+    openPremiumContentPurchaseModal,
+    setLockedContentModalVisibility
   ])
 
   const handleSendTip = useCallback(() => {

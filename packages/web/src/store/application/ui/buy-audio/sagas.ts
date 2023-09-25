@@ -33,7 +33,6 @@ import {
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import { QuoteResponse } from '@jup-ag/api'
 import {
-  AddressLookupTableAccount,
   Connection,
   Keypair,
   LAMPORTS_PER_SOL,
@@ -63,11 +62,10 @@ import {
 import { JupiterSingleton } from 'services/audius-backend/Jupiter'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {
+  TRANSACTION_FEE_FALLBACK,
   getLookupTableAccountsForAddresses,
-  getRecentBlockhash,
   getRootAccountRentExemptionMinimum,
   getRootSolanaAccount,
-  getSignatureForV0Transaction,
   getSolanaConnection,
   getTransferTransactionFee
 } from 'services/solana/solana'
@@ -255,7 +253,7 @@ function* getTransactionFees({
       (yield* call(
         [transferTransaction, transferTransaction.getEstimatedFee],
         connection
-      )) ?? 5000
+      )) ?? TRANSACTION_FEE_FALLBACK
 
     // Calculate fees for swap transaction (v0 transaction)
     const lookupTableAccounts = yield* call(
@@ -275,7 +273,7 @@ function* getTransactionFees({
     }).compileToV0Message(lookupTableAccounts)
     transactionFees +=
       (yield* call([connection, connection.getFeeForMessage], message)).value ??
-      5000
+      TRANSACTION_FEE_FALLBACK
 
     yield* put(cacheTransactionFees({ transactionFees }))
   }

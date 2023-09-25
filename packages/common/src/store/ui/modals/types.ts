@@ -4,6 +4,7 @@ import { EditPlaylistModalState } from './edit-playlist-modal'
 import { EditTrackModalState } from './edit-track-modal'
 import { InboxUnavailableModalState } from './inbox-unavailable-modal'
 import { LeavingAudiusModalState } from './leaving-audius-modal'
+import { PremiumContentPurchaseModalState } from './premium-content-purchase-modal'
 import { USDCPurchaseDetailsModalState } from './usdc-purchase-details-modal'
 import { USDCTransactionDetailsModalState } from './usdc-transaction-details-modal'
 import { WithdrawUSDCModalState } from './withdraw-usdc-modal'
@@ -47,7 +48,7 @@ export type Modals =
   | 'PublishPlaylistConfirmation'
   | 'AiAttributionSettings'
   | 'DuplicateAddConfirmation'
-  | 'PremiumContentPurchase'
+  | 'PremiumContentPurchaseModal'
   | 'CreateChatModal'
   | 'InboxUnavailableModal'
   | 'LeavingAudiusModal'
@@ -69,6 +70,7 @@ export type StatefulModalsState = {
   WithdrawUSDCModal: WithdrawUSDCModalState
   USDCPurchaseDetailsModal: USDCPurchaseDetailsModalState
   USDCTransactionDetailsModal: USDCTransactionDetailsModalState
+  PremiumContentPurchaseModal: PremiumContentPurchaseModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState

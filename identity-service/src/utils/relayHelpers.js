@@ -113,7 +113,7 @@ const checkAccountKey = (instruction, accountIndex, expectedAccount) => {
  * Ensures we relay only for instructions relevant to our programs and base account
  *
  * @param {Instruction} instruction
- * @param {string} walletAddress
+ * @param {string | undefined} walletAddress
  * @returns true if the program authority matches, false if it doesn't, and null if not applicable
  */
 const isRelayAllowedInstruction = async (instruction, walletAddress) => {
