@@ -245,9 +245,11 @@ export class TransactionHandler {
       console.debug('REED transaction in tx handler after sign: ', tx)
       if (Array.isArray(signatures)) {
         signatures.forEach(({ publicKey, signature }) => {
+          console.debug('REED signature Uint8Array', new Uint8Array(signature))
           tx.addSignature(new PublicKey(publicKey), new Uint8Array(signature))
         })
       }
+      console.debug('REED transaction in tx handler after addSignature: ', tx)
       rawTransaction = tx.serialize()
     } else {
       // Otherwise send a legacy transaction
