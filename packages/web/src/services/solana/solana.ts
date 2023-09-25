@@ -11,7 +11,8 @@ import {
   Keypair,
   VersionedTransaction,
   AddressLookupTableAccount,
-  TransactionMessage
+  TransactionMessage,
+  Connection
 } from '@solana/web3.js'
 
 import { getLibs } from 'services/audius-libs'
@@ -173,26 +174,32 @@ export const getSignatureForTransaction = async ({
 }
 
 export const getSignatureForV0Transaction = async ({
+  connection,
   instructions,
   signer,
   feePayer,
   recentBlockhash,
   lookupTableAddresses
 }: {
+  connection: Connection
   instructions: TransactionInstruction[]
   signer: Keypair
   feePayer: PublicKey
   recentBlockhash: string
   lookupTableAddresses: string[]
 }) => {
-  const connection = await getSolanaConnection()
-  const lookupTableAccounts: AddressLookupTableAccount[] = []
-  lookupTableAddresses.forEach(async (address) => {
-    const lookupTableAccount = await connection.getAddressLookupTable(
-      new PublicKey(address)
-    )
-    if (lookupTableAccount.value !== null)
-      lookupTableAccounts.push(lookupTableAccount.value)
+  const lookupTableAccounts = await getLookupTableAccountsForAddresses({
+    connection,
+    lookupTableAddresses
+  })
+  if (lookupTableAccounts === null) {
+    return null
+  }
+  instructions.forEach((instruction) => {
+    const filtered = instruction.keys?.filter((k) => k.isSigner)
+    filtered.forEach((f) => {
+      console.debug('REED instruction signers:', f.pubkey?.toString())
+    })
   })
   const message = new TransactionMessage({
     payerKey: feePayer,
@@ -200,15 +207,9 @@ export const getSignatureForV0Transaction = async ({
     instructions
   }).compileToV0Message(lookupTableAccounts)
   const transaction = new VersionedTransaction(message)
-  transaction.sign([signer])
-  instructions.forEach((instruction) => {
-    const filtered = instruction.keys?.filter((k) => k.isSigner)
-    filtered.forEach((f) => {
-      console.debug('REED instruction signers:', f.pubkey?.toString())
-    })
-  })
   console.debug('REED transaction in client:', transaction)
-  const ret = transaction.signatures
+  transaction.sign([signer])
+  return transaction.signatures
     .filter((s) => !s.every((i) => i === 0)) // Filter sigs that are all 0s
     .map((s) => {
       // Map to the format expected by relay
@@ -217,6 +218,29 @@ export const getSignatureForV0Transaction = async ({
         signature: Buffer.from(s)
       }
     })
-  console.debug('REED sigs ret:', ret)
-  return ret
+}
+
+export const getLookupTableAccountsForAddresses = async ({
+  connection,
+  lookupTableAddresses
+}: {
+  connection: Connection
+  lookupTableAddresses: string[]
+}) => {
+  const lookupTableAccounts: AddressLookupTableAccount[] = []
+  // Need to use for loop instead of forEach to properly await async calls
+  for (const address of lookupTableAddresses) {
+    if (address === undefined) continue
+    const lookupTableAccount = await connection.getAddressLookupTable(
+      new PublicKey(address)
+    )
+    if (lookupTableAccount.value !== null) {
+      lookupTableAccounts.push(lookupTableAccount.value)
+    } else {
+      // Abort if a lookup table account is missing because the resulting transaction
+      // might be too large
+      return null
+    }
+  }
+  return lookupTableAccounts
 }

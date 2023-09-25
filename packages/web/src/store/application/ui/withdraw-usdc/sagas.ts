@@ -142,13 +142,16 @@ ReturnType<typeof beginWithdrawUSDC>) {
             feePayerPubkey.toBase58()
           )
           const signature = yield* call(getSignatureForV0Transaction, {
+            connection,
             instructions: swapInstructions,
             signer: rootSolanaAccount,
             feePayer: feePayerPubkey,
             recentBlockhash: swapRecentBlockhash,
             lookupTableAddresses
           })
-
+          if (signature === null) {
+            throw new Error('Failed to get signature for swap transaction')
+          }
           console.debug('REED signature in saga', signature)
           // Send swap instructions to relay
           const { res: swapRes, error: swapError } = yield* call(
