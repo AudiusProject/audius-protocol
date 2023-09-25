@@ -161,7 +161,7 @@ const RenderPurchasesPage = () => {
     const blobUrl = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = blobUrl
-    a.download = `purchases_${formatToday()}.csv`
+    a.download = `audius_purchases_${formatToday()}.csv`
     a.click()
     window.URL.revokeObjectURL(blobUrl)
   }, [userId])

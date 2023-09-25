@@ -165,7 +165,7 @@ const RenderWithdrawalsPage = () => {
     const blobUrl = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = blobUrl
-    a.download = `withdrawals_${formatToday()}.csv`
+    a.download = `audius_withdrawals_${formatToday()}.csv`
     a.click()
     window.URL.revokeObjectURL(blobUrl)
   }, [userId])

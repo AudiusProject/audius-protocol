@@ -156,7 +156,7 @@ const RenderSalesPage = () => {
     const blobUrl = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = blobUrl
-    a.download = `sales_${formatToday()}.csv`
+    a.download = `audius_sales_${formatToday()}.csv`
     a.click()
     window.URL.revokeObjectURL(blobUrl)
   }, [userId])
