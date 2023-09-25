@@ -327,7 +327,7 @@ function* recoverPurchaseIfNecessary() {
     yield* call(
       track,
       make({
-        eventName: Name.BUY_USDC_RECOVERY_STARTED,
+        eventName: Name.BUY_USDC_RECOVERY_IN_PROGRESS,
         userBank: userBank.toBase58()
       })
     )

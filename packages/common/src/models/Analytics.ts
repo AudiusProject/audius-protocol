@@ -324,7 +324,7 @@ export enum Name {
   BUY_USDC_ON_RAMP_SUCCESS = 'Buy USDC: On Ramp Success',
   BUY_USDC_SUCCESS = 'Buy USDC: Success',
   BUY_USDC_FAILURE = 'Buy USDC: Failure',
-  BUY_USDC_RECOVERY_STARTED = 'Buy USDC: Recovery Started',
+  BUY_USDC_RECOVERY_IN_PROGRESS = 'Buy USDC: Recovery In Progress',
   BUY_USDC_RECOVERY_SUCCESS = 'Buy USDC: Recovery Success',
   BUY_USDC_RECOVERY_FAILURE = 'Buy USDC: Recovery Failure',
 
@@ -1577,8 +1577,8 @@ type BuyUSDCFailure = {
   error: string
 }
 
-type BuyUSDCRecoveryStarted = {
-  eventName: Name.BUY_USDC_RECOVERY_STARTED
+type BuyUSDCRecoveryInProgress = {
+  eventName: Name.BUY_USDC_RECOVERY_IN_PROGRESS
   userBank: string
 }
 
@@ -1935,7 +1935,7 @@ export type AllTrackingEvents =
   | BuyUSDCOnRampCanceled
   | BuyUSDCSuccess
   | BuyUSDCFailure
-  | BuyUSDCRecoveryStarted
+  | BuyUSDCRecoveryInProgress
   | BuyUSDCRecoverySuccess
   | BuyUSDCRecoveryFailure
   | PurchaseContentStarted
