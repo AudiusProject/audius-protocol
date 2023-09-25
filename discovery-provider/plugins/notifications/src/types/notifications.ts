@@ -247,6 +247,13 @@ export type USDCPurchaseSellerNotification = {
   content_id: number
 }
 
+export type USDCWithdrawalNotification = {
+  user_id: number
+  signature: string
+  change: number
+  receiver_account: string
+}
+
 export type NotificationData =
   | DMNotification
   | DMReactionNotification

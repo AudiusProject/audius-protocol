@@ -30,7 +30,8 @@ import {
   TrendingTrackNotification,
   TrendingUndergroundNotification,
   TrendingPlaylistNotification,
-  USDCPurchaseBuyerNotification
+  USDCPurchaseBuyerNotification,
+  USDCWithdrawalNotification
 } from '../../types/notifications'
 import { Follow } from './follow'
 import { Repost } from './repost'
@@ -168,6 +169,11 @@ const mapNotification = (
       identityDb,
       usdcPurchaseBuyerNotification
     )
+  } else if (notification.type == 'usdc_withdrawal') {
+    const usdcWithdrawalNotification = notification as NotificationRow & {
+      data: USDCWithdrawalNotification
+    }
+    return new 
   } else if (notification.type == 'track_added_to_playlist') {
     const addTrackToPlaylistNotification = notification as NotificationRow & {
       data: AddTrackToPlaylistNotification

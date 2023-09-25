@@ -27,7 +27,8 @@ begin
           'user_bank', new.user_bank,
           'signature', new.signature,
           'change', new.change,
-          'balance', new.balance
+          'balance', new.balance,
+          'receiver_account', new.tx_metadata
         )
       )
       on conflict do nothing;

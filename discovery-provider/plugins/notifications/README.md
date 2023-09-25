@@ -4,11 +4,9 @@
 
 ## Summary
 
-The Notifications Plugin is designed to send push notifications...
+The Notifications Plugin is designed to send push notifications
 
 ## How To Run
-
-docker...
 
 ## Regenerate sql-ts types
 
