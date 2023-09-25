@@ -20,12 +20,28 @@ import history from 'utils/history'
 
 import { store } from './store/configureStore'
 import { reportToSentry } from './store/errors/reportToSentry'
-
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { httpBatchLink } from '@trpc/client';
+import { useState } from 'react';
+import { trpc } from './trpc';
 import './services/webVitals'
 import './index.css'
 
 const AudiusApp = () => {
+  const [queryClient] = useState(() => new QueryClient());
+  const [trpcClient] = useState(() =>
+    trpc.createClient({
+      links: [
+        httpBatchLink({
+          url: 'http://localhost:2022',
+        }),
+      ],
+    }),
+  );
+
   return (
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+    <QueryClientProvider client={queryClient}>
     <Provider store={store}>
       <AudiusQueryContext.Provider
         value={{
@@ -65,6 +81,8 @@ const AudiusApp = () => {
         </ConnectedRouter>
       </AudiusQueryContext.Provider>
     </Provider>
+    </QueryClientProvider>
+    </trpc.Provider>
   )
 }
 
