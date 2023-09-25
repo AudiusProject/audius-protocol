@@ -255,6 +255,7 @@ export const PurchaseContentForm = (props: PurchaseContentFormProps) => {
       dispatch(
         startPurchaseContentFlow({
           extraAmount,
+          extraAmountPreset: amountPreset,
           contentId: track.track_id,
           contentType: ContentType.TRACK
         })
