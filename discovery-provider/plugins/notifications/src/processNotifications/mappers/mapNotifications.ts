@@ -58,6 +58,7 @@ import { TrendingUnderground } from './trendingUnderground'
 import { TrendingPlaylist } from './trendingPlaylist'
 import { USDCPurchaseSeller } from './usdcPurchaseSeller'
 import { USDCPurchaseBuyer } from './usdcPurchaseBuyer'
+import { USDCWithdrawal } from './usdcWithdrawal'
 
 export const mapNotifications = (
   notifications: (NotificationRow | EmailNotification)[],
@@ -173,7 +174,7 @@ const mapNotification = (
     const usdcWithdrawalNotification = notification as NotificationRow & {
       data: USDCWithdrawalNotification
     }
-    return new 
+    return new USDCWithdrawal(dnDb, identityDb, usdcWithdrawalNotification)
   } else if (notification.type == 'track_added_to_playlist') {
     const addTrackToPlaylistNotification = notification as NotificationRow & {
       data: AddTrackToPlaylistNotification

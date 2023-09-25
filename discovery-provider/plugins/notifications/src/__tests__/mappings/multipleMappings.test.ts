@@ -15,7 +15,7 @@ import {
 
 import { AppEmailNotification } from '../../types/notifications'
 import { renderEmail } from '../../email/notifications/renderEmail'
-import { RepostType } from '../../types/dn'
+import { reposttype } from '../../types/dn'
 import { EntityType } from '../../email/notifications/types'
 
 describe('Multiple Mappings Notification', () => {
@@ -44,7 +44,7 @@ describe('Multiple Mappings Notification', () => {
       {
         user_id: 2,
         repost_item_id: 10,
-        repost_type: RepostType.track
+        repost_type: reposttype.track
       }
     ])
 
@@ -110,7 +110,7 @@ describe('Multiple Mappings Notification', () => {
       {
         user_id: 2,
         repost_item_id: 10,
-        repost_type: RepostType.track
+        repost_type: reposttype.track
       }
     ])
 

@@ -7,7 +7,10 @@ import {
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
-import { sendNotificationEmail } from '../../email/notifications/sendEmail'
+import {
+  sendNotificationEmail,
+  sendTransactionalEmail
+} from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
@@ -17,13 +20,18 @@ import { capitalize } from 'lodash'
 import { sendBrowserNotification } from '../../web'
 import { EntityType } from '../../email/notifications/types'
 import { formatUSDCWeiToUSDString } from '../../utils/format'
+import { email } from '../../email/notifications/preRendered/sale'
 
 type USDCPurchaseSellerRow = Omit<NotificationRow, 'data'> & {
   data: USDCPurchaseSellerNotification
 }
 
 const title = 'Track Sold'
-const body = (buyerUsername: string, purchasedTrackName: string, price: string): string =>
+const body = (
+  buyerUsername: string,
+  purchasedTrackName: string,
+  price: string
+): string =>
   `Congrats, ${capitalize(
     buyerUsername
   )} just bought your track ${purchasedTrackName} for $${price}!`
@@ -32,6 +40,8 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
   buyerUserId: number
   amount: string
   contentId: number
+  extraAmount: string
+  totalAmount: string
 
   constructor(
     dnDB: Knex,
@@ -42,6 +52,14 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
     const userIds: number[] = this.notification.user_ids!
     this.amount = formatUSDCWeiToUSDString(
       this.notification.data.amount.toString()
+    )
+    this.extraAmount = formatUSDCWeiToUSDString(
+      this.notification.data.extra_amount.toString()
+    )
+    this.totalAmount = formatUSDCWeiToUSDString(
+      (
+        this.notification.data.amount + this.notification.data.extra_amount
+      ).toString()
     )
     this.buyerUserId = this.notification.data.buyer_user_id
     this.notificationReceiverUserId = this.notification.data.seller_user_id
@@ -74,6 +92,7 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
       purchasedTrackName = (tracks[this.contentId] as { title: string }).title
     }
     const buyerUsername = users[this.buyerUserId]?.name
+    const sellerUsername = users[this.notificationReceiverUserId]?.name
     const price = this.amount
 
     await sendBrowserNotification(
@@ -144,6 +163,21 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
         identityDb: this.identityDB
       })
     }
+
+    await sendTransactionalEmail({
+      email: userNotificationSettings.getUserEmail(
+        this.notificationReceiverUserId
+      ),
+      html: email({
+        purchaserName: buyerUsername,
+        artistName: sellerUsername,
+        trackTitle: purchasedTrackName,
+        price: this.amount,
+        payExtra: this.extraAmount,
+        total: this.totalAmount
+      }),
+      subject: 'Your Track Has Been Purchased'
+    })
   }
 
   getResourcesForEmail(): ResourceIds {

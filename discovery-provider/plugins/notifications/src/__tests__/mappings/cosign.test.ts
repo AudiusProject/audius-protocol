@@ -18,7 +18,7 @@ import {
   CosignRemixNotification
 } from '../../types/notifications'
 import { renderEmail } from '../../email/notifications/renderEmail'
-import { RepostType } from '../../types/dn'
+import { reposttype } from '../../types/dn'
 
 describe('Cosign Notification', () => {
   let processor: Processor
@@ -54,7 +54,7 @@ describe('Cosign Notification', () => {
       {
         user_id: 1,
         repost_item_id: 20,
-        repost_type: RepostType.track
+        repost_type: reposttype.track
       }
     ])
 

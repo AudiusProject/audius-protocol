@@ -102,6 +102,26 @@ export const sendNotificationEmail = async ({
   }
 }
 
+export const sendTransactionalEmail = async ({ email, html, subject }) => {
+  try {
+    logger.debug(`SendTransactionalEmail | ${email}, ${subject}`)
+    const emailParams = {
+      from: 'Audius <team@audius.co>',
+      to: `${email}`,
+      html,
+      subject,
+      asm: {
+        groupId: 23583 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
+      }
+    }
+    await sendEmail(emailParams)
+    return true
+  } catch (e) {
+    logger.error(`Error in sendTransactionalEmail ${e.stack}`)
+    return false
+  }
+}
+
 export const sendEmail = async (emailParams: MailDataRequired) => {
   const sg = getSendgrid()
   if (sg !== null) {
