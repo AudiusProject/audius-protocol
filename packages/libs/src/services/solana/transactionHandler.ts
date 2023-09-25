@@ -209,12 +209,7 @@ export class TransactionHandler {
       // Use v0 transaction if lookup table addresses were supplied
       const lookupTableAccounts: AddressLookupTableAccount[] = []
       // Need to use for loop instead of forEach to properly await async calls
-<<<<<<< HEAD
-      for (let i = 0; i < lookupTableAddresses.length; i++) {
-        const address = lookupTableAddresses[i]
-=======
       for (const address of lookupTableAddresses) {
->>>>>>> origin/main
         if (address === undefined) continue
         const lookupTableAccount = await this.connection.getAddressLookupTable(
           new PublicKey(address)
@@ -237,7 +232,6 @@ export class TransactionHandler {
         instructions
       }).compileToV0Message(lookupTableAccounts)
       const tx = new VersionedTransaction(message)
-<<<<<<< HEAD
       instructions.forEach((instruction) => {
         const filtered = instruction.keys?.filter((k) => k.isSigner)
         filtered.forEach((f) => {
@@ -255,14 +249,6 @@ export class TransactionHandler {
         })
       }
       logger.error('REED transaction in tx handler after addSignature: ', tx)
-=======
-      tx.sign([feePayerAccount])
-      if (Array.isArray(signatures)) {
-        signatures.forEach(({ publicKey, signature }) => {
-          tx.addSignature(new PublicKey(publicKey), signature)
-        })
-      }
->>>>>>> origin/main
       rawTransaction = tx.serialize()
     } else {
       // Otherwise send a legacy transaction
