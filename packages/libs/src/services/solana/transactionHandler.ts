@@ -236,20 +236,20 @@ export class TransactionHandler {
       instructions.forEach((instruction) => {
         const filtered = instruction.keys?.filter((k) => k.isSigner)
         filtered.forEach((f) => {
-          console.debug('REED instruction signers:', f.pubkey?.toString())
+          logger.error('REED instruction signers:', f.pubkey?.toString())
         })
       })
-      console.debug('REED sigs in tx handler: ', signatures)
-      console.debug('REED transaction in tx handler before sign: ', tx)
+      logger.error('REED sigs in tx handler: ', signatures)
+      logger.error('REED transaction in tx handler before sign: ', tx)
       tx.sign([feePayerAccount])
-      console.debug('REED transaction in tx handler after sign: ', tx)
+      logger.error('REED transaction in tx handler after sign: ', tx)
       if (Array.isArray(signatures)) {
         signatures.forEach(({ publicKey, signature }) => {
-          console.debug('REED signature Uint8Array', new Uint8Array(signature))
+          logger.error('REED signature Uint8Array', new Uint8Array(signature))
           tx.addSignature(new PublicKey(publicKey), new Uint8Array(signature))
         })
       }
-      console.debug('REED transaction in tx handler after addSignature: ', tx)
+      logger.error('REED transaction in tx handler after addSignature: ', tx)
       rawTransaction = tx.serialize()
     } else {
       // Otherwise send a legacy transaction
