@@ -63,6 +63,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
+            [[ ! -d node_modules ]] || npm run postinstall
             [[ -d node_modules ]] || npm ci
 
       - save_cache:
