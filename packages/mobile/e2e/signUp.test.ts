@@ -1,6 +1,6 @@
 import { device, expect, by } from 'detox'
 
-describe.skip('Sign up', () => {
+describe('Sign up', () => {
   beforeAll(async () => {
     await device.launchApp()
   })
