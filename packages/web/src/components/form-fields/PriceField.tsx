@@ -29,9 +29,9 @@ export const PriceField = (props: TextFieldProps) => {
 
   useEffect(() => {
     if (humanizedValue !== null) {
-      const dehumaizedValue = fromHumanReadable(humanizedValue)
-      if (value === undefined || dehumaizedValue !== value) {
-        setPrice(dehumaizedValue)
+      const dehumanizedValue = fromHumanReadable(humanizedValue)
+      if (value === undefined || dehumanizedValue !== value) {
+        setPrice(dehumanizedValue)
       }
     }
   }, [value, humanizedValue, setPrice])

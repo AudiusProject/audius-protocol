@@ -251,7 +251,6 @@ export const PurchaseContentForm = (props: PurchaseContentFormProps) => {
       if (isUnlocking) return
 
       const extraAmount = getExtraAmount(amountPreset, customAmount)
-      // TODO: Use submitting flag?
 
       dispatch(
         startPurchaseContentFlow({
