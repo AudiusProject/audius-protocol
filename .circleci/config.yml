@@ -402,7 +402,6 @@ workflows:
         equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
       - generate-config
-      - generate-release
       - init:
           context:
             - Vercel
@@ -466,7 +465,6 @@ workflows:
           requires:
             - generate-config
             - init
-            - generate-release
           workspace_path: ../workspace
 
       - path-filtering/filter:
