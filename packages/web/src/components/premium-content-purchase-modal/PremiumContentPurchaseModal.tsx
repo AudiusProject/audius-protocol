@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   useGetTrackById,
   usePremiumContentPurchaseModal,
   useUSDCBalance,
-  buyUSDCActions
+  buyUSDCActions,
+  buyUSDCSelectors
 } from '@audius/common'
 import { IconCart, Modal, ModalContent, ModalHeader } from '@audius/stems'
 import { useDispatch } from 'react-redux'
@@ -14,8 +15,10 @@ import { Text } from 'components/typography'
 
 import styles from './PremiumContentPurchaseModal.module.css'
 import { PurchaseContentForm } from './components/PurchaseContentForm'
+import { useSelector } from 'react-redux'
 
-const { startRecoveryIfNecessary } = buyUSDCActions
+const { startRecoveryIfNecessary, recoveryStatusChanged } = buyUSDCActions
+const { getRecoveryStatus } = buyUSDCSelectors
 
 const messages = {
   completePurchase: 'Complete Purchase'
@@ -30,13 +33,14 @@ export const PremiumContentPurchaseModal = () => {
     data: { contentId: trackId }
   } = usePremiumContentPurchaseModal()
 
-  const { data: balance } = useUSDCBalance()
+  const { data: balance, refresh } = useUSDCBalance()
   const { data: track } = useGetTrackById(
     { id: trackId! },
     { disabled: !trackId }
   )
 
   const [shouldAttemptRecovery, setShouldAttemptRecovery] = useState(true)
+  const recoveryStatus = useSelector(getRecoveryStatus)
 
   useEffect(() => {
     if (trackId && shouldAttemptRecovery) {
@@ -45,10 +49,21 @@ export const PremiumContentPurchaseModal = () => {
     }
   }, [trackId, shouldAttemptRecovery, dispatch])
 
+  useEffect(() => {
+    if (recoveryStatus === 'success') {
+      refresh()
+    }
+  }, [recoveryStatus, refresh])
+
+  const handleClose = useCallback(() => {
+    dispatch(recoveryStatusChanged({ status: 'idle' }))
+    onClose()
+  }, [onClose])
+
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       onClosed={onClosed}
       bodyClassName={styles.modal}
       dismissOnClickOutside

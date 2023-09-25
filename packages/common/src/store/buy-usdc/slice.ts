@@ -14,12 +14,15 @@ type OnSuccess = {
   message?: string
 }
 
+type RecoveryStatus = 'idle' | 'in-progress' | 'success' | 'failure'
+
 type BuyUSDCState = {
   stage: BuyUSDCStage
   error?: Error
   provider: USDCOnRampProvider
   onSuccess?: OnSuccess
   stripeSessionStatus?: StripeSessionStatus
+  recoveryStatus?: RecoveryStatus
 }
 
 const initialState: BuyUSDCState = {
@@ -68,8 +71,14 @@ const slice = createSlice({
       state.stripeSessionStatus = action.payload.status
     },
     startRecoveryIfNecessary: () => {
-      // triggers saga
-    }
+      // triggers sagas
+    },
+    recoveryStatusChanged: (
+      state,
+      action: PayloadAction<{ status: RecoveryStatus }>
+    ) => {
+      state.recoveryStatus = action.payload.status
+    },
   }
 })
 
@@ -81,7 +90,8 @@ export const {
   onrampSucceeded,
   onrampCanceled,
   stripeSessionStatusChanged,
-  startRecoveryIfNecessary
+  startRecoveryIfNecessary,
+  recoveryStatusChanged
 } = slice.actions
 
 export default slice.reducer

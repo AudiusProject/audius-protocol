@@ -34,7 +34,8 @@ import {
   onrampOpened,
   purchaseStarted,
   onrampSucceeded,
-  startRecoveryIfNecessary
+  startRecoveryIfNecessary,
+  recoveryStatusChanged
 } from './slice'
 import { USDCOnRampProvider } from './types'
 import { getUSDCUserBank } from './utils'
@@ -321,6 +322,8 @@ function* recoverPurchaseIfNecessary() {
       return
     }
 
+    // Transfer all USDC from the from the root wallet to the user bank
+    yield* put(recoveryStatusChanged({ status: 'in-progress' }))
     yield* call(
       track,
       make({
@@ -328,14 +331,13 @@ function* recoverPurchaseIfNecessary() {
         userBank: userBank.toBase58()
       })
     )
-
-    // Transfer all USDC from the from the root wallet to the user bank
     yield* call(transferStep, {
       wallet: rootAccount,
       userBank,
       amount
     })
 
+    yield* put(recoveryStatusChanged({ status: 'success' }))
     yield* call(
       track,
       make({
@@ -344,6 +346,7 @@ function* recoverPurchaseIfNecessary() {
       })
     )
   } catch (e) {
+    yield* put(recoveryStatusChanged({ status: 'failure' }))
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
       error: e as Error,
