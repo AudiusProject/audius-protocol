@@ -17,36 +17,48 @@ export const isContentPurchaseInProgress = (stage: PurchaseContentStage) => {
 }
 
 type PurchaseSummaryValues = {
+  /** The final amount due to cover the purchase */
   amountDue: number
+  /** The portion of the purchase being covered by existing balance */
   existingBalance: number | undefined
+  /** The price of the content */
   basePrice: number
-  artistCut: number
+  /** The extra amount requested by the user */
+  extraAmount?: number
 }
 
-export const getPurchaseSummaryValues = (
-  price: number,
+type GetPurchaseSummaryValuesArgs = {
+  price: number
   currentBalance: Nullable<BNUSDC>
-): PurchaseSummaryValues => {
-  let amountDue = price
-  let existingBalance
-  const priceBN = new BN(price).mul(BN_USDC_CENT_WEI)
-  const balance = currentBalance ?? zeroBalance()
+  extraAmount?: number
+}
 
-  if (balance.gte(priceBN)) {
+export const getPurchaseSummaryValues = ({
+  price,
+  currentBalance,
+  extraAmount
+}: GetPurchaseSummaryValuesArgs): PurchaseSummaryValues => {
+  let amountDue = price + (extraAmount ?? 0)
+  let existingBalance
+  const balanceBN =
+    currentBalance && currentBalance.gt(BN_USDC_CENT_WEI)
+      ? currentBalance
+      : zeroBalance()
+  const amountDueBN = new BN(amountDue).mul(BN_USDC_CENT_WEI)
+
+  if (balanceBN.gte(amountDueBN)) {
     amountDue = 0
-    existingBalance = price
-  }
-  // Only count the balance if it's greater than 1 cent
-  else if (balance.gt(BN_USDC_CENT_WEI)) {
+    existingBalance = amountDue
+  } else {
     // Note: Rounding amount due *up* to nearest cent for cases where the balance
     // is between cents so that we aren't advertising *lower* than what the user
     // will have to pay.
-    const diff = priceBN.sub(balance)
+    const diff = amountDueBN.sub(balanceBN)
     amountDue = ceilingBNUSDCToNearestCent(diff as BNUSDC)
       .div(BN_USDC_CENT_WEI)
       .toNumber()
-    existingBalance = price - amountDue
+    existingBalance = balanceBN.div(BN_USDC_CENT_WEI).toNumber()
   }
 
-  return { amountDue, existingBalance, basePrice: price, artistCut: price }
+  return { amountDue, existingBalance, basePrice: price, extraAmount }
 }

@@ -27,6 +27,7 @@ export const HarmonySelectablePill = forwardRef<
         },
         className
       )}
+      type='button'
       ref={ref}
       {...restProps}
     >
