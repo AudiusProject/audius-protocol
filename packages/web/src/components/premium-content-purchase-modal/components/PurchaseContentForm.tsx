@@ -2,19 +2,19 @@ import { useCallback, useEffect } from 'react'
 
 import {
   BNUSDC,
-  getPurchaseSummaryValues,
-  ContentType,
-  isContentPurchaseInProgress,
   isPremiumContentUSDCPurchaseGated,
-  purchaseContentActions,
-  purchaseContentSelectors,
   PurchaseContentStage,
   Track,
   UserTrackMetadata,
   Name,
   Nullable,
   PremiumConditionsUSDCPurchase,
-  formatPrice
+  formatPrice,
+  usePurchaseContentFormState,
+  usePurchaseSummaryValues,
+  PurchaseContentFormState,
+  payExtraAmountPresetValues,
+  PurchaseContentSchema
 } from '@audius/common'
 import {
   HarmonyButton,
@@ -25,8 +25,8 @@ import {
   IconCheck,
   IconError
 } from '@audius/stems'
-import { Form, Formik, useField } from 'formik'
-import { useDispatch, useSelector } from 'react-redux'
+import { Form, Formik } from 'formik'
+import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { make } from 'common/store/analytics/actions'
@@ -41,17 +41,6 @@ import { PayExtraFormSection } from './PayExtraFormSection'
 import { PayToUnlockInfo } from './PayToUnlockInfo'
 import styles from './PurchaseContentForm.module.css'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
-import {
-  AMOUNT_PRESET,
-  CUSTOM_AMOUNT,
-  payExtraAmountPresetValues
-} from './constants'
-import { PayExtraPreset } from './types'
-import { PurchaseContentSchema, PurchaseContentValues } from './validation'
-
-const { startPurchaseContentFlow } = purchaseContentActions
-const { getPurchaseContentFlowStage, getPurchaseContentError } =
-  purchaseContentSelectors
 
 const messages = {
   buy: 'Buy',
@@ -74,9 +63,10 @@ type PurchasableTrackMetadata = UserTrackMetadata & {
   premium_conditions: PremiumConditionsUSDCPurchase
 }
 
-type RenderFormProps = PurchaseContentFormProps & {
-  track: PurchasableTrackMetadata
-}
+type RenderFormProps = PurchaseContentFormState &
+  PurchaseContentFormProps & {
+    track: PurchasableTrackMetadata
+  }
 
 const useNavigateOnSuccess = (
   track: UserTrackMetadata,
@@ -99,23 +89,6 @@ const ContentPurchaseError = () => {
   )
 }
 
-const getExtraAmount = (amountPreset: PayExtraPreset, customAmount = 0) => {
-  let extraAmount = 0
-  switch (amountPreset) {
-    case PayExtraPreset.LOW:
-    case PayExtraPreset.MEDIUM:
-    case PayExtraPreset.HIGH:
-      extraAmount = payExtraAmountPresetValues[amountPreset]
-      break
-    case PayExtraPreset.CUSTOM:
-      extraAmount = Number.isFinite(customAmount) ? customAmount : 0
-      break
-    default:
-      break
-  }
-  return extraAmount
-}
-
 const isTrackPurchasable = (
   track: UserTrackMetadata
 ): track is PurchasableTrackMetadata =>
@@ -125,16 +98,14 @@ const isTrackPurchasable = (
 const RenderForm = ({
   currentBalance,
   track,
-  onViewTrackClicked
+  onViewTrackClicked,
+  stage,
+  error,
+  isUnlocking
 }: RenderFormProps) => {
-  const stage = useSelector(getPurchaseContentFlowStage)
-  const error = useSelector(getPurchaseContentError)
-  const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const isPurchased = stage === PurchaseContentStage.FINISH
   const { handle } = track.user
   const { permalink, title } = track
-  const [{ value: customAmount }] = useField(CUSTOM_AMOUNT)
-  const [{ value: extraAmountPreset }] = useField(AMOUNT_PRESET)
 
   const handleTwitterShare = useCallback(
     (handle: string) => {
@@ -148,14 +119,8 @@ const RenderForm = ({
   )
 
   const { price } = track.premium_conditions.usdc_purchase
-  const extraAmount = getExtraAmount(extraAmountPreset, customAmount)
 
-  const purchaseSummaryValues = getPurchaseSummaryValues({
-    // Passing undefined for the None case so that the row doesn't render.
-    // In other cases, the user may have input 0 and we want to show the row
-    // to reflect that until they explicitly select no preset
-    extraAmount:
-      extraAmountPreset === PayExtraPreset.NONE ? undefined : extraAmount,
+  const purchaseSummaryValues = usePurchaseSummaryValues({
     price,
     currentBalance
   })
@@ -236,35 +201,10 @@ const RenderForm = ({
 
 export const PurchaseContentForm = (props: PurchaseContentFormProps) => {
   const { track, ...formProps } = props
-  const dispatch = useDispatch()
-  const stage = useSelector(getPurchaseContentFlowStage)
-  const error = useSelector(getPurchaseContentError)
-  const isUnlocking = !error && isContentPurchaseInProgress(stage)
 
-  const initialValues: PurchaseContentValues = {
-    [CUSTOM_AMOUNT]: undefined,
-    [AMOUNT_PRESET]: PayExtraPreset.NONE
-  }
+  const state = usePurchaseContentFormState({ track })
 
-  const handleSubmit = useCallback(
-    ({ customAmount, amountPreset }: PurchaseContentValues) => {
-      if (isUnlocking) return
-
-      const extraAmount = getExtraAmount(amountPreset, customAmount)
-
-      dispatch(
-        startPurchaseContentFlow({
-          extraAmount,
-          extraAmountPreset: amountPreset,
-          contentId: track.track_id,
-          contentType: ContentType.TRACK
-        })
-      )
-    },
-    [isUnlocking, dispatch, track.track_id]
-  )
-
-  useNavigateOnSuccess(track, stage)
+  useNavigateOnSuccess(track, state.stage)
 
   if (!isTrackPurchasable(track)) {
     console.error(
@@ -275,11 +215,11 @@ export const PurchaseContentForm = (props: PurchaseContentFormProps) => {
 
   return (
     <Formik
-      initialValues={initialValues}
+      initialValues={state.initialValues}
       validationSchema={toFormikValidationSchema(PurchaseContentSchema)}
-      onSubmit={handleSubmit}
+      onSubmit={state.handleConfirmPurchase}
     >
-      <RenderForm {...formProps} track={track} />
+      <RenderForm {...formProps} {...state} track={track} />
     </Formik>
   )
 }
