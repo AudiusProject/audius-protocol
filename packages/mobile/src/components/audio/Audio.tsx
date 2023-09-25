@@ -68,6 +68,8 @@ import {
   OfflineDownloadStatus
 } from 'app/store/offline-downloads/slice'
 
+import { useSavePodcastProgress } from './useSavePodcastProgress'
+
 const { getUserId } = accountSelectors
 const { getUsers } = cacheUsersSelectors
 const { getTracks } = cacheTracksSelectors
@@ -743,6 +745,8 @@ export const Audio = () => {
   useEffect(() => {
     handlePlaybackRateChange()
   }, [handlePlaybackRateChange, playbackRate])
+
+  useSavePodcastProgress()
 
   return null
 }
