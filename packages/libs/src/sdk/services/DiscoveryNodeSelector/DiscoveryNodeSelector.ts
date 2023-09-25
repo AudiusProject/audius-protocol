@@ -20,7 +20,8 @@ import { ApiHealthResponseData, HealthCheckStatus } from './healthCheckTypes'
 import {
   parseApiHealthStatusReason,
   getDiscoveryNodeHealthCheck,
-  isFullFlaskResponse
+  isFullFlaskResponse,
+  getDiscoveryNodeRelayHealthCheck
 } from './healthChecks'
 import {
   BackupHealthData,
@@ -121,6 +122,8 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
 
   private readonly logger: LoggerService
 
+  private readonly useDiscoveryRelay: boolean
+
   constructor(config?: DiscoveryNodeSelectorServiceConfig) {
     this.config = mergeConfigWithDefaults(
       config,
@@ -152,6 +155,8 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     this.logger = this.config.logger.createPrefixedLogger(
       '[discovery-node-selector]'
     )
+
+    this.useDiscoveryRelay = config?.useDiscoveryRelay || false
   }
 
   /**
@@ -417,6 +422,24 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         timeoutMs: this.config.requestTimeout,
         healthCheckThresholds: this.config.healthCheckThresholds
       })
+
+      if (this.useDiscoveryRelay) {
+        const relayHealthResponse = await getDiscoveryNodeRelayHealthCheck({ endpoint, timeoutMs: this.config.requestTimeout })
+        const relayStatus = relayHealthResponse.status
+        if (relayStatus === undefined) {
+          const relayError = `${endpoint}/relay/health does not contain .status field in body`
+          this.logger.debug(relayError)
+          this.unhealthyServices.add(endpoint)
+          throw new Error(relayError)
+        }
+        if (relayStatus !== "up") {
+          const relayError = `${endpoint}/relay/health is not up` 
+          this.logger.debug(relayError)
+          this.unhealthyServices.add(endpoint)
+          throw new Error(relayError)
+        }
+      }
+
       if (health !== HealthCheckStatus.HEALTHY) {
         if (reason?.toLowerCase().includes('aborted')) {
           // Ignore aborted requests

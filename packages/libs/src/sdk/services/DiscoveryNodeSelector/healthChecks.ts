@@ -13,6 +13,7 @@ import {
   HealthCheckStatusReason,
   HealthCheckThresholds
 } from './healthCheckTypes'
+import { number, string } from 'zod'
 
 export const isFullFlaskResponse = (
   data: ApiHealthResponseData
@@ -232,4 +233,29 @@ export const getDiscoveryNodeHealthCheck = async ({
       data: null
     }
   }
+}
+
+export const getDiscoveryNodeRelayHealthCheck = async ({
+  endpoint,
+  timeoutMs
+}: {
+  endpoint: string
+  timeoutMs?: number
+}): Promise<{ status: string }> => {
+  const timeoutPromises = []
+    if (timeoutMs !== undefined) {
+    const timeoutPromise = new Promise<never>((_resolve, reject) =>
+      setTimeout(() => reject(new Error('timeout')), timeoutMs)
+    )
+    timeoutPromises.push(timeoutPromise)
+  }
+
+  const relayHealthUrl = `${endpoint}/relay/health`
+
+  const response = await fetch(relayHealthUrl, {})
+  if (!response.ok) {
+    throw new Error(response.statusText)
+  }
+  const json = await response.json()
+  return json
 }

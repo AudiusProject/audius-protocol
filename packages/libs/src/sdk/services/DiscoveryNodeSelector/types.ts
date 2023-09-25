@@ -81,6 +81,11 @@ export type DiscoveryNodeSelectorServiceConfigInternal = {
    * Logger service, defaults to console logging
    */
   logger: LoggerService
+
+  /**
+   * Configuration for if discovery relay should be used.
+   */
+  useDiscoveryRelay: boolean
 }
 
 export type DiscoveryNodeSelectorServiceConfig =
