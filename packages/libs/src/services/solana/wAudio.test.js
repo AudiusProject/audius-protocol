@@ -1,5 +1,6 @@
-const BN = require('bn.js')
 const assert = require('assert')
+
+const BN = require('bn.js')
 
 const { wAudioFromWeiAudio } = require('./wAudio')
 

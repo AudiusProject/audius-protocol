@@ -11,6 +11,7 @@ import {
   getTokenAccountInfo,
   purchaseContent
 } from 'services/audius-backend/solana'
+import { purchasesApiActions } from 'src/api'
 import { accountSelectors } from 'store/account'
 import {
   buyUSDCFlowFailed,
@@ -129,7 +130,12 @@ function* pollForPurchaseConfirmation({
 }
 
 function* doStartPurchaseContentFlow({
-  payload: { contentId, contentType = ContentType.TRACK }
+  payload: {
+    extraAmount,
+    extraAmountPreset,
+    contentId,
+    contentType = ContentType.TRACK
+  }
 }: ReturnType<typeof startPurchaseContentFlow>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const reportToSentry = yield* getContext('reportToSentry')
@@ -138,7 +144,13 @@ function* doStartPurchaseContentFlow({
   // Record start
   yield* call(
     track,
-    make({ eventName: Name.PURCHASE_CONTENT_STARTED, contentId, contentType })
+    make({
+      eventName: Name.PURCHASE_CONTENT_STARTED,
+      extraAmount,
+      extraAmountPreset,
+      contentId,
+      contentType
+    })
   )
 
   try {
@@ -165,7 +177,10 @@ function* doStartPurchaseContentFlow({
     const { amount: initialBalance } = tokenAccountInfo
 
     const priceBN = new BN(price).mul(BN_USDC_CENT_WEI)
-    const balanceNeeded: BNUSDC = priceBN.sub(initialBalance) as BNUSDC
+    const extraAmountBN = new BN(extraAmount ?? 0).mul(BN_USDC_CENT_WEI)
+    const balanceNeeded: BNUSDC = priceBN
+      .add(extraAmountBN)
+      .sub(new BN(initialBalance.toString())) as BNUSDC
 
     // buy USDC if necessary
     if (balanceNeeded.gtn(0)) {
@@ -210,6 +225,7 @@ function* doStartPurchaseContentFlow({
     yield* call(purchaseContent, audiusBackendInstance, {
       id: contentId,
       blocknumber,
+      extraAmount: extraAmountBN,
       splits,
       type: 'track'
     })
@@ -222,6 +238,9 @@ function* doStartPurchaseContentFlow({
     if (contentType === ContentType.TRACK) {
       yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
     }
+
+    // clear the purchases so next query will fetch from source
+    yield* put(purchasesApiActions.resetGetPurchases!())
 
     // finish
     yield* put(purchaseConfirmed())

@@ -1,48 +1,47 @@
-import type { provider } from 'web3-core'
-import Web3 from './LibsWeb3'
-import { version } from './version'
-import { Hedgehog, HedgehogConfig } from './services/hedgehog'
 import type { Hedgehog as HedgehogBase } from '@audius/hedgehog'
+import { Keypair } from '@solana/web3.js'
+import type { provider } from 'web3-core'
+
+import Web3 from './LibsWeb3'
+import { Account } from './api/Account'
+import { File } from './api/File'
+import { Notifications } from './api/Notifications'
+import { Playlists } from './api/Playlist'
+import { Reactions } from './api/Reactions'
+import { Rewards } from './api/Rewards'
+import { ServiceProvider } from './api/ServiceProvider'
+import { Track } from './api/Track'
+import { Users } from './api/Users'
+import type { BaseConstructorArgs } from './api/base'
+import { EntityManager } from './api/entityManager'
+import { Comstock } from './services/comstock'
 import { CreatorNode, CreatorNodeConfig } from './services/creatorNode'
+import { AudiusContracts } from './services/dataContracts'
 import {
   DiscoveryProvider,
   DiscoveryProviderConfig
 } from './services/discoveryProvider'
-import { Schemas, SchemaValidator } from './services/schemaValidator'
-import { UserStateManager } from './userStateManager'
-import type { Logger, Nullable } from './utils'
-import { Utils, getNStorageNodes } from './utils'
-
-import { Keypair } from '@solana/web3.js'
-
-import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
-import { Web3Config, Web3Manager } from './services/web3Manager'
-import { EthWeb3Config, EthWeb3Manager } from './services/ethWeb3Manager'
-import { Comstock } from './services/comstock'
-import { IdentityService } from './services/identity'
 import { EthContracts } from './services/ethContracts'
+import { EthWeb3Config, EthWeb3Manager } from './services/ethWeb3Manager'
+import { Hedgehog, HedgehogConfig } from './services/hedgehog'
+import { IdentityService } from './services/identity'
+import { Schemas, SchemaValidator } from './services/schemaValidator'
 import {
   SolanaWeb3Manager,
   SolanaUtils,
   SolanaWeb3Config
 } from './services/solana'
-import { AudiusContracts } from './services/dataContracts'
-import { Account } from './api/Account'
-import { Users } from './api/Users'
-import { Track } from './api/Track'
-import { Playlists } from './api/Playlist'
-import { Rewards } from './api/Rewards'
-import { Reactions } from './api/Reactions'
-import { Notifications } from './api/Notifications'
-import { File } from './api/File'
-import { ServiceProvider } from './api/ServiceProvider'
-import type { BaseConstructorArgs } from './api/base'
 import type { MonitoringCallbacks } from './services/types'
-import { EntityManager } from './api/entityManager'
+import { Web3Config, Web3Manager } from './services/web3Manager'
 import {
   ProxyWormhole,
   ProxyWormholeConfig
 } from './services/wormhole/ProxyWormhole'
+import { UserStateManager } from './userStateManager'
+import { Utils, getNStorageNodes } from './utils'
+import type { Logger, Nullable } from './utils'
+import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
+import { version } from './version'
 
 type LibsIdentityServiceConfig = {
   url: string

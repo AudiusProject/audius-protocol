@@ -141,6 +141,9 @@ mobile-prepare-android:
         paths:
           - packages/mobile/android/vendor/bundle
     - run:
+        name: update fastlane
+        command: cd packages/mobile/android && bundle update fastlane
+    - run:
         name: fetch app fastlane json config to upload to play store
         command: |
           echo "$FASTLANE_PLAYSTORE_JSON" > packages/mobile/android/app/api.txt

@@ -1,14 +1,17 @@
-import { Auth } from '../../services/Auth/Auth'
-import { beforeAll, expect, jest } from '@jest/globals'
-import { Configuration } from '../generated/default'
-import { EntityManager } from '../../services/EntityManager'
-import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
-import { StorageNodeSelector } from '../../services/StorageNodeSelector'
-import { Storage } from '../../services/Storage'
-import { UsersApi } from './UsersApi'
-import { Logger } from '../../services/Logger'
 import fs from 'fs'
 import path from 'path'
+
+import { beforeAll, expect, jest } from '@jest/globals'
+
+import { Auth } from '../../services/Auth/Auth'
+import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
+import { EntityManager } from '../../services/EntityManager'
+import { Logger } from '../../services/Logger'
+import { Storage } from '../../services/Storage'
+import { StorageNodeSelector } from '../../services/StorageNodeSelector'
+import { Configuration } from '../generated/default'
+
+import { UsersApi } from './UsersApi'
 
 const pngFile = fs.readFileSync(
   path.resolve(__dirname, '../../test/png-file.png')
@@ -55,6 +58,7 @@ describe('UsersApi', () => {
   beforeAll(() => {
     users = new UsersApi(
       new Configuration(),
+      discoveryNodeSelector,
       new Storage({ storageNodeSelector, logger: new Logger() }),
       new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
       auth,

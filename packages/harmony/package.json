@@ -1,0 +1,30 @@
+{
+  "name": "@audius/harmony",
+  "version": "0.0.1",
+  "description": "Audius Design System Component Library",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "scripts": {
+    "build": "rollup -c",
+    "start": "rollup -c -w",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src --ext=ts,tsx",
+    "lint:fix": "npm run lint -- --fix"
+  },
+  "author": "KJ Shanks",
+  "license": "ISC",
+  "devDependencies": {
+    "@svgr/rollup": "4.3.3",
+    "eslint": "8.19.0",
+    "postcss-custom-properties": "9.2.0",
+    "rollup": "1.32.1",
+    "rollup-plugin-babel": "4.4.0",
+    "rollup-plugin-copy": "3.5.0",
+    "rollup-plugin-node-resolve": "5.2.0",
+    "rollup-plugin-peer-deps-external": "2.2.4",
+    "rollup-plugin-postcss": "2.9.0",
+    "rollup-plugin-typescript2": "0.24.3",
+    "rollup-plugin-url": "2.2.4",
+    "typescript": "4.9.4"
+  }
+}

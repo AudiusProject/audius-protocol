@@ -50,7 +50,7 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
     artwork: null,
     playlist_name: '',
     description: '',
-    releaseDate: moment().startOf('day').toDate(),
+    release_date: moment().startOf('day').toDate(),
     trackDetails: {
       genre: null,
       mood: null,
@@ -67,8 +67,13 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
         ...collectionMetadata
       } = values
 
-      // @ts-expect-error more issues with tracks
-      onContinue({ uploadType, tracks, metadata: collectionMetadata })
+      onContinue({
+        uploadType,
+        // @ts-expect-error more issues with tracks
+        tracks,
+        // @ts-expect-error more issues with tracks
+        metadata: { ...collectionMetadata, ...ignoredTrackDetails }
+      })
     },
     [onContinue, uploadType]
   )

@@ -1,5 +1,6 @@
 import {
   Action,
+  CaseReducerActions,
   CreateSliceOptions,
   Draft,
   PayloadAction,
@@ -19,6 +20,7 @@ export type DefaultEndpointDefinitions = {
 
 export type Api<EndpointDefinitions extends DefaultEndpointDefinitions> = {
   reducer: Reducer<any, Action>
+  actions: CaseReducerActions<any>
   hooks: {
     [Property in keyof EndpointDefinitions as `use${Capitalize<
       string & Property
@@ -110,6 +112,7 @@ export type FetchSucceededAction = PayloadAction<
     nonNormalizedData: any
   }
 >
+export type FetchResetAction = PayloadAction<FetchBaseAction & {}>
 
 export type ApiState = {
   [key: string]: PerEndpointState<any>

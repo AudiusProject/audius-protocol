@@ -18,9 +18,14 @@ func setupTestNetwork(replicationFactor, serverCount int) []*MediorumServer {
 	network := []Peer{}
 	servers := []*MediorumServer{}
 
+	dbUrlTemplate := os.Getenv("dbUrlTemplate")
+	if dbUrlTemplate == "" {
+		dbUrlTemplate = "postgres://postgres:example@localhost:5454/m%d"
+	}
+
 	for i := 1; i <= serverCount; i++ {
 		network = append(network, Peer{
-			Host:   fmt.Sprintf("http://127.0.0.1:%d", 1980+i),
+			Host:	fmt.Sprintf("http://127.0.0.1:%d", 1980+i),
 			Wallet: fmt.Sprintf("0xWallet%d", i), // todo keypair stuff
 		})
 	}
@@ -32,8 +37,8 @@ func setupTestNetwork(replicationFactor, serverCount int) []*MediorumServer {
 			Self:              peer,
 			Peers:             network,
 			ReplicationFactor: replicationFactor,
-			Dir:               fmt.Sprintf("/tmp/mediorum_test/%s", peer.Wallet),
-			PostgresDSN:       fmt.Sprintf("postgres://postgres:example@localhost:5454/m%d", idx+1),
+			Dir:               fmt.Sprintf("%s/%s", testBaseDir, peer.Wallet),
+			PostgresDSN:       fmt.Sprintf(dbUrlTemplate, idx+1),
 			VersionJson: VersionJson{
 				Version: "0.0.0",
 				Service: "content-node",
@@ -51,7 +56,7 @@ func setupTestNetwork(replicationFactor, serverCount int) []*MediorumServer {
 	}
 
 	// give each server time to startup + health check
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second)
 	log.Printf("started %d servers", serverCount)
 
 	return servers

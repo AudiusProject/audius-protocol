@@ -37,32 +37,32 @@ const MoodSchema = z
 // TODO: KJ - Need to update the schema in sdk and then import here
 const createSdkSchema = () =>
   z.object({
-    aiAttributionUserId: z.optional(HashId),
+    ai_attribution_user_id: z.optional(z.number()).nullable(),
     description: z.optional(z.string().max(1000)),
     download: z.optional(
       z
         .object({
-          cid: z.optional(z.string()),
-          isDownloadable: z.boolean(),
-          requiresFollow: z.boolean()
+          cid: z.string().nullable(),
+          is_downloadable: z.boolean(),
+          requires_follow: z.boolean()
         })
         .strict()
         .nullable()
     ),
-    fieldVisibility: z.optional(
+    field_visibility: z.optional(
       z.object({
         mood: z.optional(z.boolean()),
         tags: z.optional(z.boolean()),
         genre: z.optional(z.boolean()),
         share: z.optional(z.boolean()),
-        playCount: z.optional(z.boolean()),
+        play_count: z.optional(z.boolean()),
         remixes: z.optional(z.boolean())
       })
     ),
     genre: GenreSchema,
-    isPremium: z.optional(z.boolean()),
+    is_premium: z.optional(z.boolean()),
     isrc: z.optional(z.string().nullable()),
-    isUnlisted: z.optional(z.boolean()),
+    is_unlisted: z.optional(z.boolean()),
     iswc: z.optional(z.string().nullable()),
     license: z.optional(z.string().nullable()),
     mood: MoodSchema,
@@ -73,9 +73,7 @@ const createSdkSchema = () =>
         PremiumConditionsTipUserId
       ])
     ),
-    releaseDate: z.optional(
-      z.date().max(new Date(), { message: messages.invalidReleaseDateError })
-    ),
+    release_date: z.optional(z.string()).nullable(),
     remixOf: z.optional(
       z
         .object({
@@ -135,7 +133,7 @@ const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
       required_error: messages[collectionType].nameRequiredError
     }),
     description: z.optional(z.string().max(1000)),
-    releaseDate: z.optional(
+    release_date: z.optional(
       z.coerce
         .date()
         .max(new Date(), { message: messages.invalidReleaseDateError })

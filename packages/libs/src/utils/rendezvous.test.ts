@@ -1,4 +1,5 @@
 import assert from 'assert'
+
 import { RendezvousHash } from './rendezvous'
 
 describe('RendezvousHash', () => {

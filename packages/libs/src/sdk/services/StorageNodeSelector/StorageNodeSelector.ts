@@ -1,19 +1,21 @@
-import type { Maybe } from '../../../utils/types'
+import fetch from 'cross-fetch'
+
 import { isNodeHealthy } from '../../../utils/getNStorageNodes'
 import RendezvousHash from '../../../utils/rendezvous'
-import fetch from 'cross-fetch'
+import type { Maybe } from '../../../utils/types'
+import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
+import type { AuthService } from '../Auth'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
-import type { AuthService } from '../Auth'
+import type { LoggerService } from '../Logger'
+
+import { defaultStorageNodeSelectorConfig } from './constants'
 import type {
   StorageNode,
   StorageNodeSelectorConfig,
   StorageNodeSelectorConfigInternal,
   StorageNodeSelectorService
 } from './types'
-import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
-import { defaultStorageNodeSelectorConfig } from './constants'
-import type { LoggerService } from '../Logger'
 
 const DISCOVERY_RESPONSE_TIMEOUT = 15000
 

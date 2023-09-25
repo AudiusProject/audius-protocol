@@ -65,7 +65,6 @@ func (ss *MediorumServer) startTranscoder() {
 			return
 		}
 		for _, upload := range *uploads {
-			uploadsCache.Set(upload.ID, upload.TranscodeResults)
 			// only the first mirror transcodes
 			if upload.Status == JobStatusNew && slices.Index(upload.Mirrors, myHost) == 0 {
 				ss.logger.Info("got transcode job", "id", upload.ID)
@@ -86,7 +85,6 @@ func (ss *MediorumServer) startTranscoder() {
 			return
 		}
 		for _, upload := range *uploads {
-			uploadsCache.Set(upload.ID, upload.TranscodeResults)
 			if upload.Status == JobStatusRetranscode {
 				if upload.TranscodedMirrors == nil {
 					ss.logger.Warn("missing full transcoded mp3 data in retranscode job. skipping", "id", upload.ID)
@@ -327,7 +325,7 @@ func (ss *MediorumServer) transcodeAudio(upload *Upload, destPath string, cmd *e
 		if err := stderrLines.Err(); err != nil {
 			logger.Error("stderrLines.Scan", "err", err)
 		}
-		logger.Error("stderr lines: " + stderrBuf.String())
+		// logger.Error("stderr lines: " + stderrBuf.String())
 	}()
 
 	wg.Wait()
@@ -512,7 +510,6 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 
 			variantName := fmt.Sprintf("%dx%[1]d.jpg", targetBox)
 			upload.TranscodeResults[variantName] = resultHash
-			uploadsCache.Set(upload.ID, upload.TranscodeResults)
 		}
 
 	case JobTemplateImgBackdrop:
@@ -533,7 +530,6 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 
 			variantName := fmt.Sprintf("%dx.jpg", targetWidth)
 			upload.TranscodeResults[variantName] = resultHash
-			uploadsCache.Set(upload.ID, upload.TranscodeResults)
 		}
 
 	case JobTemplateAudio, "":

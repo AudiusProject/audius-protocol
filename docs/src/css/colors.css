@@ -75,7 +75,6 @@
   --action-sheet-text: var(--secondary);
   --track-slider-rail: var(--neutral);
   --track-slider-handle: var(--static-white);
-  --stat-tile-text: #c675ff;
 }
 
 :root {

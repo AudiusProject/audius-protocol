@@ -20,6 +20,7 @@ class USDCPurchase(Base, RepresentableMixin):
     seller_user_id = Column(Integer, nullable=False, index=True)
     buyer_user_id = Column(Integer, nullable=False, index=True)
     amount = Column(BigInteger, nullable=False)
+    extra_amount = Column(BigInteger, nullable=False, server_default=text("0"))
     content_type = Column(Enum(PurchaseType), nullable=False, index=True)
     content_id = Column(Integer, nullable=False)
 

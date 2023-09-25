@@ -454,6 +454,19 @@ export const insertNotifications = async (
     .into('notification')
 }
 
+export const initNotificationSeenAt = async (
+  db: Knex,
+  userId: number,
+  seenAt: Date
+) => {
+  await db
+    .insert({
+      user_id: userId,
+      seen_at: seenAt
+    })
+    .into('notification_seen')
+}
+
 type CreateNotificationEmail = Pick<
   NotificationEmailRow,
   'emailFrequency' | 'timestamp' | 'userId'

@@ -675,6 +675,15 @@ export const audiusBackend = ({
       monitoringCallbacks.contentNode
     )
 
+    const useDiscoveryRelay = await getFeatureEnabled(
+      FeatureFlags.DISCOVERY_RELAY
+    )
+
+    console.info(
+      { useDiscoveryRelay },
+      `discovery relay${useDiscoveryRelay ? ' ' : ' not '}enabled`
+    )
+
     try {
       audiusLibs = new AudiusLibs({
         localStorage,
@@ -722,10 +731,16 @@ export const audiusBackend = ({
         preferHigherPatchForSecondaries: await getFeatureEnabled(
           FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES
         ),
-        hedgehogConfig
+        hedgehogConfig,
+        useDiscoveryRelay
       })
       await audiusLibs.init()
       onLibsInit(audiusLibs)
+
+      if (useDiscoveryRelay) {
+        // libs not respecting the flag, mod web3 manager manually
+        audiusLibs.web3Manager.discoveryProvider = audiusLibs.discoveryProvider
+      }
 
       sanityChecks(audiusLibs)
     } catch (err) {
@@ -1081,7 +1096,8 @@ export const audiusBackend = ({
 
   async function updateTrack(
     _trackId: ID,
-    metadata: TrackMetadata & { artwork: { file: File } }
+    metadata: TrackMetadata & { artwork: { file: File } },
+    transcodePreview?: boolean
   ) {
     const cleanedMetadata = schemas.newTrackMetadata(metadata, true)
     if (metadata.artwork) {
@@ -1091,7 +1107,10 @@ export const audiusBackend = ({
       )
       cleanedMetadata.cover_art_sizes = resp.id
     }
-    return await audiusLibs.Track.updateTrackV2(cleanedMetadata)
+    return await audiusLibs.Track.updateTrackV2(
+      cleanedMetadata,
+      transcodePreview
+    )
   }
 
   // TODO(C-2719)
@@ -3099,7 +3118,7 @@ export const audiusBackend = ({
       console.warn(`Failed to get waudio balance for address: ${address}`)
       return new BN('0')
     }
-    return waudioBalance
+    return new BN(waudioBalance.toString())
   }
 
   async function getAudioTransactionsCount() {

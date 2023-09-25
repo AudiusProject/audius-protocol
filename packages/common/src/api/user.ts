@@ -115,3 +115,4 @@ export const {
   useGetUSDCTransactionsCount
 } = userApi.hooks
 export const userApiReducer = userApi.reducer
+export const userApiActions = userApi.actions

@@ -46,7 +46,7 @@ export class WalletClient {
   async getCurrentWAudioBalance(): Promise<BNWei> {
     try {
       const balance = await this.audiusBackendInstance.getWAudioBalance()
-      return balance as BNWei
+      return new BN(balance.toString()) as BNWei
     } catch (err) {
       console.error(err)
       return BN_ZERO

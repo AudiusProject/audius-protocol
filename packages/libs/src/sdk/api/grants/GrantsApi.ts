@@ -1,8 +1,7 @@
-import type { Configuration } from '../generated/default'
-
 import type { AuthService, EntityManagerService } from '../../services'
-
 import { Action, EntityType } from '../../services/EntityManager/types'
+import { parseParams } from '../../utils/parseParams'
+import type { Configuration } from '../generated/default'
 
 import {
   CreateGrantRequest,
@@ -10,9 +9,9 @@ import {
   RevokeGrantRequest,
   RevokeGrantSchema
 } from './types'
-import { parseParams } from '../../utils/parseParams'
 
 export class GrantsApi {
+  // eslint-disable-next-line no-useless-constructor
   constructor(
     _config: Configuration,
     private readonly entityManager: EntityManagerService,

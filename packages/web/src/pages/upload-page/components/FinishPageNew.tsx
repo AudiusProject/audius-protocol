@@ -40,7 +40,7 @@ const messages = {
   uploadInProgress: 'Upload In Progress',
   uploadComplete: 'Upload Complete',
   uploadMore: 'Upload More',
-  finishingUpload: 'Finializing Upload',
+  finishingUpload: 'Finalizing Upload',
   visitProfile: 'Visit Your Profile',
   visitTrack: 'Visit Track Page',
   visitAlbum: 'Visit Album Page',
@@ -125,17 +125,16 @@ export const FinishPageNew = (props: FinishPageProps) => {
   const dispatch = useDispatch()
 
   const uploadComplete = useMemo(() => {
-    if (!upload.uploadProgress) return false
-    return (
-      upload.success &&
-      upload.uploadProgress.reduce((acc, progress) => {
-        return (
-          acc &&
-          progress.art.status === ProgressStatus.COMPLETE &&
-          progress.audio.status === ProgressStatus.COMPLETE
-        )
-      }, true)
-    )
+    if (!upload.uploadProgress || upload.uploading || !upload.success)
+      return false
+
+    return upload.uploadProgress.reduce((acc, progress) => {
+      return (
+        acc &&
+        progress.art.status === ProgressStatus.COMPLETE &&
+        progress.audio.status === ProgressStatus.COMPLETE
+      )
+    }, true)
   }, [upload])
 
   const handleUploadMoreClick = useCallback(() => {
@@ -162,7 +161,7 @@ export const FinishPageNew = (props: FinishPageProps) => {
   const visitButtonPath = useMemo(() => {
     switch (uploadType) {
       case UploadType.INDIVIDUAL_TRACK:
-        return upload.tracks![0].metadata.permalink
+        return upload.tracks?.[0].metadata.permalink
       case UploadType.ALBUM:
       case UploadType.PLAYLIST:
         return collectionPage(
@@ -176,7 +175,7 @@ export const FinishPageNew = (props: FinishPageProps) => {
         if (!upload.tracks || upload.tracks.length > 1) {
           return profilePage(user!.handle)
         } else {
-          return upload.tracks![0].metadata.permalink
+          return upload.tracks?.[0].metadata.permalink
         }
     }
   }, [
@@ -197,14 +196,16 @@ export const FinishPageNew = (props: FinishPageProps) => {
       <Tile className={styles.uploadProgress} elevation='mid'>
         <div className={styles.uploadHeader}>
           <div className={styles.headerInfo}>
-            <Text variant='label' size='small'>
+            <Text id='upload-progress' variant='label' size='small'>
               {uploadComplete
                 ? messages.uploadComplete
                 : messages.uploadInProgress}
             </Text>
             <div className={styles.headerProgressInfo}>
               <Text variant='label' size='small'>
-                {fullUploadPercent === 100 && !uploadComplete
+                {uploadComplete
+                  ? '100%'
+                  : fullUploadPercent === 100 && !uploadComplete
                   ? messages.finishingUpload
                   : `${fullUploadPercent}%`}
               </Text>
@@ -221,6 +222,7 @@ export const FinishPageNew = (props: FinishPageProps) => {
           </div>
           {!uploadComplete ? (
             <ProgressBar
+              aria-labelledby='upload-progress'
               sliderClassName={styles.uploadProgressBar}
               value={fullUploadPercent}
             />
@@ -248,7 +250,7 @@ export const FinishPageNew = (props: FinishPageProps) => {
             )
           })}
         </div>
-        {uploadComplete ? (
+        {uploadComplete && visitButtonPath ? (
           <div className={styles.uploadFooter}>
             <HarmonyPlainButton
               onClick={handleUploadMoreClick}

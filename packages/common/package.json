@@ -1,6 +1,6 @@
 {
   "name": "@audius/common",
-  "version": "1.5.41",
+  "version": "1.5.43",
   "description": "Common utilities and store for web and mobile.",
   "private": true,
   "author": "Audius",
@@ -35,7 +35,6 @@
     "dayjs": "1.10.7",
     "hashids": "2.2.1",
     "immer": "9.0.1",
-    "jsbi": "4.3.0",
     "lodash": "4.17.21",
     "moment": "2.24.0",
     "normalizr": "^3.6.2",
@@ -70,8 +69,8 @@
   },
   "peerDependencies": {
     "@reduxjs/toolkit": "1.6.1",
-    "@solana/spl-token": "0.1.8",
-    "@solana/web3.js": "1.24.1",
+    "@solana/spl-token": "0.3.8",
+    "@solana/web3.js": "1.78.4",
     "react": "^18.2.0",
     "redux-saga": "1.1.3"
   }

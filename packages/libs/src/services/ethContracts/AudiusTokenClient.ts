@@ -1,8 +1,9 @@
+import type BN from 'bn.js'
 import type Web3 from 'web3'
-import type { EthWeb3Manager } from '../ethWeb3Manager'
 import type { Contract } from 'web3-eth-contract'
 import type { AbiItem } from 'web3-utils'
-import type BN from 'bn.js'
+
+import type { EthWeb3Manager } from '../ethWeb3Manager'
 
 export class AudiusTokenClient {
   ethWeb3Manager: EthWeb3Manager

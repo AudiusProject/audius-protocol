@@ -115,7 +115,12 @@ export class Processor {
     logger.info('processing events')
     this.isRunning = true
     while (this.isRunning) {
+      logger.info('Processing app notifications (new)')
       await sendAppNotifications(this.listener, this.appNotificationsProcessor)
+      logger.info('Processing app notifications (needs reprocessing)')
+      await this.appNotificationsProcessor.reprocess()
+
+      logger.info('Processing DM notifications')
       await sendDMNotifications(
         this.discoveryDB,
         this.identityDB,
@@ -128,7 +133,7 @@ export class Processor {
           this.lastDailyEmailSent < moment.utc().subtract(1, 'days'))
       ) {
         logger.info('Processing daily emails...')
-        await processEmailNotifications(
+        processEmailNotifications(
           this.discoveryDB,
           this.identityDB,
           'daily',
@@ -143,7 +148,8 @@ export class Processor {
           this.lastWeeklyEmailSent < moment.utc().subtract(7, 'days'))
       ) {
         logger.info('Processing weekly emails')
-        await processEmailNotifications(
+        // fire and forget so other notifs can process
+        processEmailNotifications(
           this.discoveryDB,
           this.identityDB,
           'weekly',

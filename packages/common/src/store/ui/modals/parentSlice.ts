@@ -41,7 +41,7 @@ export const initialState: BasicModalsState = {
   ProfileActions: { isOpen: false },
   PublishPlaylistConfirmation: { isOpen: false },
   AiAttributionSettings: { isOpen: false },
-  PremiumContentPurchase: { isOpen: false },
+  PremiumContentPurchaseModal: { isOpen: false },
   CreateChatModal: { isOpen: false },
   LeavingAudiusModal: { isOpen: false },
   InboxUnavailableModal: { isOpen: false },

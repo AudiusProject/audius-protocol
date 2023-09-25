@@ -1,13 +1,14 @@
-import waitForExpect from 'wait-for-expect'
+import type { EIP712TypedData } from 'eth-sig-util'
 import { rest } from 'msw'
-import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
-import { StorageNodeSelector } from './StorageNodeSelector'
-import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
 import { setupServer } from 'msw/node'
+import waitForExpect from 'wait-for-expect'
 
 import type { AuthService } from '../Auth/types'
-import type { EIP712TypedData } from 'eth-sig-util'
+import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
+import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
 import { Logger } from '../Logger'
+
+import { StorageNodeSelector } from './StorageNodeSelector'
 
 const storageNodeA = {
   endpoint: 'https://node-a.audius.co',

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 
-import type { Image as ImageType } from '@audius/common'
 import {
   Animated,
   TouchableOpacity,
@@ -10,6 +9,7 @@ import {
 } from 'react-native'
 
 import NoPicture from 'app/assets/images/noPicture.png'
+import type { Image as ImageType } from 'app/types/image'
 
 const styles = StyleSheet.create({
   profilePicEmpty: {

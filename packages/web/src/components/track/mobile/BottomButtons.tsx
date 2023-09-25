@@ -1,6 +1,11 @@
-import { memo } from 'react'
+import { MouseEvent, memo } from 'react'
 
-import { Nullable, PremiumConditions, PremiumTrackStatus } from '@audius/common'
+import {
+  Nullable,
+  PremiumConditions,
+  PremiumTrackStatus,
+  isPremiumContentUSDCPurchaseGated
+} from '@audius/common'
 import cn from 'classnames'
 
 import FavoriteButton from 'components/alt-button/FavoriteButton'
@@ -8,6 +13,7 @@ import MoreButton from 'components/alt-button/MoreButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import ShareButton from 'components/alt-button/ShareButton'
 import typeStyles from 'components/typography/typography.module.css'
+import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 
 import { PremiumConditionsPill } from '../PremiumConditionsPill'
 
@@ -20,6 +26,7 @@ type BottomButtonsProps = {
   toggleRepost: () => void
   onClickOverflow: () => void
   onShare: () => void
+  onClickPremiumPill?: (e: MouseEvent) => void
   isLoading: boolean
   isOwner: boolean
   isDarkMode: boolean
@@ -27,12 +34,22 @@ type BottomButtonsProps = {
   isShareHidden?: boolean
   isTrack?: boolean
   doesUserHaveAccess?: boolean
+  readonly?: boolean
   premiumConditions?: Nullable<PremiumConditions>
   premiumTrackStatus?: PremiumTrackStatus
   isMatrixMode: boolean
 }
 
 const BottomButtons = (props: BottomButtonsProps) => {
+  const isUSDCEnabled = useIsUSDCEnabled()
+  const isUSDCPurchase =
+    isUSDCEnabled && isPremiumContentUSDCPurchaseGated(props.premiumConditions)
+
+  // Readonly variant only renders content for locked USDC tracks
+  if (!!props.readonly && (!isUSDCPurchase || props.doesUserHaveAccess)) {
+    return null
+  }
+
   const moreButton = (
     <MoreButton
       wrapperClassName={styles.button}
@@ -62,9 +79,10 @@ const BottomButtons = (props: BottomButtonsProps) => {
           <PremiumConditionsPill
             premiumConditions={props.premiumConditions}
             unlocking={props.premiumTrackStatus === 'UNLOCKING'}
+            onClick={props.onClickPremiumPill}
           />
         </div>
-        {moreButton}
+        {props.readonly ? null : moreButton}
       </div>
     )
   }

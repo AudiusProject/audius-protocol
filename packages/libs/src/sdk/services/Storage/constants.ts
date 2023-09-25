@@ -1,4 +1,5 @@
 import { Logger } from '../Logger'
+
 import type { StorageServiceConfigInternal } from './types'
 
 export const defaultStorageServiceConfig: StorageServiceConfigInternal = {

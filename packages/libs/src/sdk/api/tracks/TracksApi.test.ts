@@ -1,17 +1,20 @@
-import { TracksApi } from './TracksApi'
-import { Auth } from '../../services/Auth/Auth'
-import { beforeAll, expect, jest } from '@jest/globals'
-import { Configuration } from '../generated/default'
-import { Genre } from '../../types/Genre'
-import { Mood } from '../../types/Mood'
-import { EntityManager } from '../../services/EntityManager'
-import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
-import { StorageNodeSelector } from '../../services/StorageNodeSelector'
-import { Storage } from '../../services/Storage'
-import { TrackUploadHelper } from './TrackUploadHelper'
-import { Logger } from '../../services/Logger'
 import fs from 'fs'
 import path from 'path'
+
+import { beforeAll, expect, jest } from '@jest/globals'
+
+import { Auth } from '../../services/Auth/Auth'
+import { DiscoveryNodeSelector } from '../../services/DiscoveryNodeSelector'
+import { EntityManager } from '../../services/EntityManager'
+import { Logger } from '../../services/Logger'
+import { Storage } from '../../services/Storage'
+import { StorageNodeSelector } from '../../services/StorageNodeSelector'
+import { Genre } from '../../types/Genre'
+import { Mood } from '../../types/Mood'
+import { Configuration } from '../generated/default'
+
+import { TrackUploadHelper } from './TrackUploadHelper'
+import { TracksApi } from './TracksApi'
 
 const wavFile = fs.readFileSync(
   path.resolve(__dirname, '../../test/wav-file.wav')

@@ -1,23 +1,24 @@
 const { exec } = require('child_process')
+
 const commander = require('commander')
 
 const program = new commander.Command()
 
 const spawnOpenAPIGenerator = (openApiGeneratorArgs) => {
-  console.log('Running OpenAPI Generator:')
+  console.info('Running OpenAPI Generator:')
   const fullCmd = `docker run --add-host=audius-protocol-discovery-provider-1:host-gateway --rm -v "${
     process.env.PWD
   }:/local" openapitools/openapi-generator-cli ${openApiGeneratorArgs.join(
     ' '
   )}`
-  console.log(fullCmd)
+  console.info(fullCmd)
   const openApiGeneratorCLI = exec(fullCmd, (error, stdout, stderr) => {
     if (error) {
       console.error(`exec error: ${error}`)
       return
     }
     if (stdout) {
-      console.log(`stdout: ${stdout}`)
+      console.info(`stdout: ${stdout}`)
     }
     if (stderr) {
       console.error(`stderr: ${stderr}`)

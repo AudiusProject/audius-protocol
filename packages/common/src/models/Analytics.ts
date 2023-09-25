@@ -1576,6 +1576,8 @@ type BuyUSDCFailure = {
 
 type PurchaseContentStarted = {
   eventName: Name.PURCHASE_CONTENT_STARTED
+  extraAmount?: number
+  extraAmountPreset?: string
   contentId: number
   contentType: string
 }

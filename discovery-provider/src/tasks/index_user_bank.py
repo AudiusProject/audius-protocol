@@ -345,12 +345,18 @@ def index_purchase(
     timestamp: datetime,
     tx_sig: str,
 ):
+    # Detect "pay extra" amount (difference between sender's balance change and price
+    # of the content)
+    extra_amount = max(
+        0, -(balance_changes[sender_account]["change"]) - purchase_metadata["price"]
+    )
     usdc_purchase = USDCPurchase(
         slot=slot,
         signature=tx_sig,
         seller_user_id=receiver_user_id,
         buyer_user_id=sender_user_id,
         amount=purchase_metadata["price"],
+        extra_amount=extra_amount,
         content_type=purchase_metadata["type"],
         content_id=purchase_metadata["id"],
     )

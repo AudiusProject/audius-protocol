@@ -1,9 +1,12 @@
-import nock from 'nock'
 import assert from 'assert'
+
+import nock from 'nock'
+import { LocalStorage } from 'node-localstorage'
+
+import type { EthContracts } from '../ethContracts'
+
 import { DiscoveryProviderSelection } from './DiscoveryProviderSelection'
 import { DISCOVERY_PROVIDER_TIMESTAMP } from './constants'
-import type { EthContracts } from '../ethContracts'
-import { LocalStorage } from 'node-localstorage'
 
 const mockEthContracts = (
   urls: string[],

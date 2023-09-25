@@ -1,13 +1,18 @@
-import { SolanaUtils } from './SolanaUtils'
 import {
   Transaction,
   PublicKey,
   Connection,
   Keypair,
-  TransactionInstruction
+  TransactionInstruction,
+  TransactionMessage,
+  AddressLookupTableAccount,
+  VersionedTransaction
 } from '@solana/web3.js'
-import type { IdentityService, RelayTransactionData } from '../identity'
+
 import type { Logger, Nullable } from '../../utils'
+import type { IdentityService, RelayTransactionData } from '../identity'
+
+import { SolanaUtils } from './SolanaUtils'
 
 type HandleTransactionParams = {
   instructions: TransactionInstruction[]
@@ -18,6 +23,7 @@ type HandleTransactionParams = {
   feePayerOverride?: Nullable<PublicKey>
   sendBlockhash?: boolean
   signatures?: Nullable<Array<{ publicKey: string; signature: Buffer }>>
+  lookupTableAddresses?: string[]
   retry?: boolean
 }
 
@@ -79,6 +85,7 @@ export class TransactionHandler {
     feePayerOverride = null,
     sendBlockhash = false,
     signatures = null,
+    lookupTableAddresses = [],
     retry = true
   }: HandleTransactionParams) {
     let result: {
@@ -104,6 +111,7 @@ export class TransactionHandler {
         skipPreflight,
         feePayerOverride,
         signatures,
+        lookupTableAddresses,
         retry
       )
     }
@@ -163,6 +171,7 @@ export class TransactionHandler {
     skipPreflight: boolean | null,
     feePayerOverride: Nullable<PublicKey> = null,
     signatures: Array<{ publicKey: string; signature: Buffer }> | null = null,
+    lookupTableAddresses: string[],
     retry = true
   ) {
     const feePayerKeypairOverride = (() => {
@@ -189,44 +198,63 @@ export class TransactionHandler {
     }
 
     // Get blockhash
-
     recentBlockhash =
       recentBlockhash ??
       (await this.connection.getLatestBlockhash('confirmed')).blockhash
+    let rawTransaction: Buffer | Uint8Array
 
-    // Construct the txn
-
-    const tx = new Transaction({ recentBlockhash })
-    instructions.forEach((i) => tx.add(i))
-    tx.feePayer = feePayerAccount.publicKey
-    tx.sign(feePayerAccount)
-
-    if (Array.isArray(signatures)) {
-      signatures.forEach(({ publicKey, signature }) => {
-        tx.addSignature(new PublicKey(publicKey), signature)
-      })
-    }
-
-    let rawTransaction: Buffer
-    try {
+    // Branch on whether to send a legacy or v0 transaction. Some duplicated code
+    // unfortunately due to type errors, eg `add` does not exist on VersionedTransaction.
+    if (lookupTableAddresses.length > 0) {
+      // Use v0 transaction if lookup table addresses were supplied
+      const lookupTableAccounts: AddressLookupTableAccount[] = []
+      // Need to use for loop instead of forEach to properly await async calls
+      for (const address of lookupTableAddresses) {
+        if (address === undefined) continue
+        const lookupTableAccount = await this.connection.getAddressLookupTable(
+          new PublicKey(address)
+        )
+        if (lookupTableAccount.value !== null) {
+          lookupTableAccounts.push(lookupTableAccount.value)
+        } else {
+          // Abort if a lookup table account is missing because the resulting transaction
+          // might be too large
+          return {
+            res: null,
+            error: `Missing lookup table account for address ${address}`,
+            errorCode: null
+          }
+        }
+      }
+      const message = new TransactionMessage({
+        payerKey: feePayerAccount.publicKey,
+        recentBlockhash,
+        instructions
+      }).compileToV0Message(lookupTableAccounts)
+      const tx = new VersionedTransaction(message)
+      tx.sign([feePayerAccount])
+      if (Array.isArray(signatures)) {
+        signatures.forEach(({ publicKey, signature }) => {
+          tx.addSignature(new PublicKey(publicKey), signature)
+        })
+      }
       rawTransaction = tx.serialize()
-    } catch (e) {
-      logger.warn(`transactionHandler: transaction serialization failed: ${e}`)
-      let errorCode = null
-      let error = null
-      if (e instanceof Error) {
-        error = e.message
-        errorCode = this._parseSolanaErrorCode(error)
+    } else {
+      // Otherwise send a legacy transaction
+      const tx = new Transaction()
+      tx.recentBlockhash = recentBlockhash
+      instructions.forEach((i) => tx.add(i))
+      tx.feePayer = feePayerAccount.publicKey
+      tx.sign(feePayerAccount)
+      if (Array.isArray(signatures)) {
+        signatures.forEach(({ publicKey, signature }) => {
+          tx.addSignature(new PublicKey(publicKey), signature)
+        })
       }
-      return {
-        res: null,
-        error,
-        errorCode
-      }
+      rawTransaction = tx.serialize()
     }
 
     // Send the txn
-
     const sendRawTransaction = async () => {
       return await this.connection.sendRawTransaction(rawTransaction, {
         skipPreflight:

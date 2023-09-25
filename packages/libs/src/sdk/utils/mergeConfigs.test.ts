@@ -1,5 +1,6 @@
-import { mergeConfigWithDefaults } from './mergeConfigs'
 import { expect, describe, test } from '@jest/globals'
+
+import { mergeConfigWithDefaults } from './mergeConfigs'
 
 describe('merge configs', () => {
   test("doesn't merge arrays", () => {

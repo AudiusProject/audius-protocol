@@ -20,14 +20,17 @@ import (
 	"time"
 
 	_ "embed"
+	_ "net/http/pprof"
 
 	"github.com/erni27/imcache"
+	"github.com/imroc/req/v3"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gocloud.dev/blob"
-	_ "gocloud.dev/blob/fileblob"
 	"golang.org/x/exp/slog"
+
+	_ "gocloud.dev/blob/fileblob"
 )
 
 type Peer struct {
@@ -38,12 +41,6 @@ type Peer struct {
 type VersionJson struct {
 	Version string `json:"version"`
 	Service string `json:"service"`
-}
-
-func (p Peer) ApiPath(parts ...string) string {
-	// todo: remove this method, just use apiPath helper everywhere
-	parts = append([]string{p.Host}, parts...)
-	return apiPath(parts...)
 }
 
 type MediorumConfig struct {
@@ -83,6 +80,7 @@ type MediorumServer struct {
 	pgPool          *pgxpool.Pool
 	quit            chan os.Signal
 	trustedNotifier *ethcontracts.NotifierInfo
+	reqClient       *req.Client
 
 	// simplify
 	storagePathUsed  uint64
@@ -93,22 +91,21 @@ type MediorumServer struct {
 	legacyDirUsed    uint64
 	mediorumDirUsed  uint64
 
-	databaseSize        uint64
-	dbSizeErr           string
-	expectedContentSize int64
+	databaseSize          uint64
+	dbSizeErr             string
+	lastSuccessfulRepair  RepairTracker
+	lastSuccessfulCleanup RepairTracker
 
 	uploadsCount    int64
 	uploadsCountErr string
 
 	isSeeding bool
 
-	peerHealthsMutex sync.RWMutex
-	peerHealths      map[string]*PeerHealth
-	unreachablePeers []string
-	redirectCache    *imcache.Cache[string, string]
-
-	lastRepairCleanupComplete time.Time
-	lastRepairCleanupDuration time.Duration
+	peerHealthsMutex   sync.RWMutex
+	peerHealths        map[string]*PeerHealth
+	unreachablePeers   []string
+	redirectCache      *imcache.Cache[string, string]
+	uploadOrigCidCache *imcache.Cache[string, string]
 
 	StartedAt time.Time
 	Config    MediorumConfig
@@ -224,8 +221,12 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		peerHosts = append(peerHosts, peer.Host)
 	}
 	crud := crudr.New(config.Self.Host, config.privateKey, peerHosts, db)
-	dbPruneOldOps(db, config.Self.Host)
 	dbMigrate(crud, bucket, config.Self.Host)
+
+	// req.cool http client
+	reqClient := req.C().
+		SetUserAgent("mediorum " + config.Self.Host).
+		SetTimeout(5 * time.Second)
 
 	// Read trusted notifier endpoint from chain
 	var trustedNotifier ethcontracts.NotifierInfo
@@ -245,34 +246,31 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	echoServer.HideBanner = true
 	echoServer.Debug = true
 
-	// echoServer is the root server
-	// it mostly exists to serve the catch all reverse proxy rule at the end
-	// most routes and middleware should be added to the `routes` group
-	// mostly don't add CORS middleware here as it will break reverse proxy at the end
 	echoServer.Use(middleware.Recover())
 	echoServer.Use(middleware.Logger())
+	echoServer.Use(middleware.CORS())
+	echoServer.Use(middleware.Gzip())
 
 	ss := &MediorumServer{
 		echo:            echoServer,
 		bucket:          bucket,
 		crud:            crud,
 		pgPool:          pgPool,
+		reqClient:       reqClient,
 		logger:          logger,
 		quit:            make(chan os.Signal, 1),
 		trustedNotifier: &trustedNotifier,
 		isSeeding:       config.Env == "stage" || config.Env == "prod",
 
-		peerHealths:   map[string]*PeerHealth{},
-		redirectCache: imcache.New[string, string](imcache.WithMaxEntriesOption[string, string](100_000)),
+		peerHealths:        map[string]*PeerHealth{},
+		redirectCache:      imcache.New[string, string](imcache.WithMaxEntriesOption[string, string](50_000)),
+		uploadOrigCidCache: imcache.New[string, string](imcache.WithMaxEntriesOption[string, string](50_000)),
 
 		StartedAt: time.Now().UTC(),
 		Config:    config,
 	}
 
-	// routes holds all of our handled routes
-	// and related middleware like CORS
 	routes := echoServer.Group(apiBasePath)
-	routes.Use(middleware.CORS())
 
 	routes.GET("", func(c echo.Context) error {
 		return c.Redirect(http.StatusMovedPermanently, "/health_check")
@@ -282,6 +280,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	})
 
 	// public: uploads
+	routes.GET("/uploads", ss.serveUploadList)
 	routes.GET("/uploads/:id", ss.getUpload, ss.requireHealthy)
 	routes.POST("/uploads/:id", ss.updateUpload, ss.requireHealthy, ss.requireUserSignature)
 	routes.POST("/uploads", ss.postUpload, ss.requireHealthy)
@@ -336,12 +335,18 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/metrics", ss.getMetrics)
 	internalApi.GET("/logs/partition-ops", ss.getPartitionOpsLog)
 	internalApi.GET("/logs/reaper", ss.getReaperLog)
+	internalApi.GET("/logs/repair", ss.serveRepairLog)
 
 	return ss, nil
 
 }
 
 func (ss *MediorumServer) MustStart() {
+
+	// start pprof server
+	go func() {
+		log.Println(http.ListenAndServe(":6060", nil))
+	}()
 
 	// start server
 	go func() {
@@ -353,8 +358,26 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startTranscoder()
 
-	createUploadsCache()
-	go ss.buildUploadsCache()
+	zeroTime := time.Time{}
+	var lastSuccessfulRepair RepairTracker
+	err := ss.crud.DB.
+		Where("finished_at is not null and finished_at != ? and aborted_reason = ?", zeroTime, "").
+		Order("started_at desc").
+		First(&lastSuccessfulRepair).Error
+	if err != nil {
+		lastSuccessfulRepair = RepairTracker{Counters: map[string]int{}}
+	}
+	ss.lastSuccessfulRepair = lastSuccessfulRepair
+
+	var lastSuccessfulCleanup RepairTracker
+	err = ss.crud.DB.
+		Where("finished_at is not null and finished_at != ? and aborted_reason = ? and cleanup_mode = true", zeroTime, "").
+		Order("started_at desc").
+		First(&lastSuccessfulCleanup).Error
+	if err != nil {
+		lastSuccessfulCleanup = RepairTracker{Counters: map[string]int{}}
+	}
+	ss.lastSuccessfulCleanup = lastSuccessfulCleanup
 
 	// for any background task that make authenticated peer requests
 	// only start if we have a valid registered wallet
@@ -383,7 +406,7 @@ func (ss *MediorumServer) MustStart() {
 	go ss.monitorPeerReachability()
 
 	// signals
-	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(ss.quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	<-ss.quit
 	close(ss.quit)
 
@@ -391,7 +414,7 @@ func (ss *MediorumServer) MustStart() {
 }
 
 func (ss *MediorumServer) Stop() {
-	ss.logger.Debug("stopping")
+	ss.logger.Info("stopping")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -408,7 +431,7 @@ func (ss *MediorumServer) Stop() {
 
 	// todo: stop transcode worker + repairer too
 
-	ss.logger.Debug("bye")
+	ss.logger.Info("bye")
 
 }
 

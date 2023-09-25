@@ -71,6 +71,27 @@ import {
     VerifyTokenToJSON,
 } from '../models';
 
+export interface DownloadPurchasesAsCSVRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    userId?: string;
+}
+
+export interface DownloadSalesAsCSVRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    userId?: string;
+}
+
+export interface DownloadUSDCWithdrawalsAsCSVRequest {
+    id: string;
+    encodedDataMessage: string;
+    encodedDataSignature: string;
+    userId?: string;
+}
+
 export interface GetAIAttributedTracksByUserHandleRequest {
     handle: string;
     offset?: number;
@@ -190,7 +211,158 @@ export interface VerifyIDTokenRequest {
  */
 export class UsersApi extends runtime.BaseAPI {
 
-    /** @hidden
+    /**
+     * @hidden
+     * Downloads the purchases the user has made as a CSV file
+     */
+    async downloadPurchasesAsCSVRaw(params: DownloadPurchasesAsCSVRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling downloadPurchasesAsCSV.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling downloadPurchasesAsCSV.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling downloadPurchasesAsCSV.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/purchases/download`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Downloads the purchases the user has made as a CSV file
+     */
+    async downloadPurchasesAsCSV(params: DownloadPurchasesAsCSVRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.downloadPurchasesAsCSVRaw(params, initOverrides);
+    }
+
+    /**
+     * @hidden
+     * Downloads the sales the user has made as a CSV file
+     */
+    async downloadSalesAsCSVRaw(params: DownloadSalesAsCSVRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling downloadSalesAsCSV.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling downloadSalesAsCSV.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling downloadSalesAsCSV.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/sales/download`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Downloads the sales the user has made as a CSV file
+     */
+    async downloadSalesAsCSV(params: DownloadSalesAsCSVRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.downloadSalesAsCSVRaw(params, initOverrides);
+    }
+
+    /**
+     * @hidden
+     * Downloads the USDC withdrawals the user has made as a CSV file
+     */
+    async downloadUSDCWithdrawalsAsCSVRaw(params: DownloadUSDCWithdrawalsAsCSVRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (params.id === null || params.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter params.id was null or undefined when calling downloadUSDCWithdrawalsAsCSV.');
+        }
+
+        if (params.encodedDataMessage === null || params.encodedDataMessage === undefined) {
+            throw new runtime.RequiredError('encodedDataMessage','Required parameter params.encodedDataMessage was null or undefined when calling downloadUSDCWithdrawalsAsCSV.');
+        }
+
+        if (params.encodedDataSignature === null || params.encodedDataSignature === undefined) {
+            throw new runtime.RequiredError('encodedDataSignature','Required parameter params.encodedDataSignature was null or undefined when calling downloadUSDCWithdrawalsAsCSV.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (params.encodedDataMessage !== undefined && params.encodedDataMessage !== null) {
+            headerParameters['Encoded-Data-Message'] = String(params.encodedDataMessage);
+        }
+
+        if (params.encodedDataSignature !== undefined && params.encodedDataSignature !== null) {
+            headerParameters['Encoded-Data-Signature'] = String(params.encodedDataSignature);
+        }
+
+        const response = await this.request({
+            path: `/users/{id}/withdrawals/download`.replace(`{${"id"}}`, encodeURIComponent(String(params.id))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Downloads the USDC withdrawals the user has made as a CSV file
+     */
+    async downloadUSDCWithdrawalsAsCSV(params: DownloadUSDCWithdrawalsAsCSVRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.downloadUSDCWithdrawalsAsCSVRaw(params, initOverrides);
+    }
+
+    /**
+     * @hidden
      * Gets the AI generated tracks attributed to a user using the user\'s handle
      */
     async getAIAttributedTracksByUserHandleRaw(params: GetAIAttributedTracksByUserHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
@@ -252,7 +424,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Get the apps that user has authorized to write to their account
      */
     async getAuthorizedAppsRaw(params: GetAuthorizedAppsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AuthorizedApps>> {
@@ -282,7 +455,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Get the User\'s ERC and SPL connected wallets
      */
     async getConnectedWalletsRaw(params: GetConnectedWalletsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ConnectedWalletsResponse>> {
@@ -312,7 +486,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the developer apps that the user owns
      */
     async getDeveloperAppsRaw(params: GetDeveloperAppsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DeveloperApps>> {
@@ -342,7 +517,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets a user\'s favorite tracks
      */
     async getFavoritesRaw(params: GetFavoritesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FavoritesResponse>> {
@@ -372,7 +548,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * All users that follow the provided user
      */
     async getFollowersRaw(params: GetFollowersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FollowersResponse>> {
@@ -414,7 +591,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * All users that the provided user follows
      */
     async getFollowingRaw(params: GetFollowingRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FollowingResponse>> {
@@ -456,7 +634,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets a list of users that might be of interest to followers of this user.
      */
     async getRelatedUsersRaw(params: GetRelatedUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RelatedArtistResponse>> {
@@ -498,7 +677,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the given user\'s reposts
      */
     async getRepostsRaw(params: GetRepostsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Reposts>> {
@@ -540,7 +720,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * All users that subscribe to the provided user
      */
     async getSubscribersRaw(params: GetSubscribersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SubscribersResponse>> {
@@ -582,7 +763,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the supporters of the given user
      */
     async getSupportersRaw(params: GetSupportersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetSupporters>> {
@@ -620,7 +802,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the users that the given user supports
      */
     async getSupportingsRaw(params: GetSupportingsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetSupporting>> {
@@ -658,7 +841,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the most used track tags by a user.
      * Fetch most used tags in a user\'s tracks
      */
@@ -698,7 +882,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets the tracks created by a user using their user ID
      */
     async getTracksByUserRaw(params: GetTracksByUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
@@ -760,7 +945,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets a single user by their user ID
      */
     async getUserRaw(params: GetUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserResponse>> {
@@ -790,7 +976,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets a single user by their handle
      */
     async getUserByHandleRaw(params: GetUserByHandleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserResponse>> {
@@ -824,7 +1011,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Gets a User ID from an associated wallet address
      */
     async getUserIDFromWalletRaw(params: GetUserIDFromWalletRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserAssociatedWalletResponse>> {
@@ -858,7 +1046,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Search for users that match the given query
      */
     async searchUsersRaw(params: SearchUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserSearch>> {
@@ -892,7 +1081,8 @@ export class UsersApi extends runtime.BaseAPI {
         return await response.value();
     }
 
-    /** @hidden
+    /**
+     * @hidden
      * Verify if the given jwt ID token was signed by the subject (user) in the payload
      */
     async verifyIDTokenRaw(params: VerifyIDTokenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VerifyToken>> {

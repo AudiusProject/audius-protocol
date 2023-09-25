@@ -8,12 +8,12 @@ import {
   TOKEN_LISTING_MAP,
   getUserbankAccountInfo,
   BNUSDC,
-  formatUSDCWeiToFloorDollarNumber
+  formatUSDCWeiToFloorDollarNumber,
+  userApiActions
 } from '@audius/common'
 import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  TOKEN_PROGRAM_ID,
-  Token
+  createAssociatedTokenAccountInstruction,
+  getAssociatedTokenAddressSync
 } from '@solana/spl-token'
 import {
   LAMPORTS_PER_SOL,
@@ -33,82 +33,15 @@ import {
 import {
   isTokenAccount,
   getTokenAccountInfo,
-  isValidSolAddress,
   getRootSolanaAccount,
   getSignatureForTransaction,
-  createAssociatedTokenAccountInstruction,
   getRecentBlockhash,
   ROOT_ACCOUNT_SIZE
 } from 'services/solana/solana'
 
-const {
-  beginWithdrawUSDC,
-  setAmount,
-  setAmountFailed,
-  setAmountSucceeded,
-  setDestinationAddress,
-  setDestinationAddressFailed,
-  setDestinationAddressSucceeded,
-  withdrawUSDCFailed,
-  withdrawUSDCSucceeded
-} = withdrawUSDCActions
+const { beginWithdrawUSDC, withdrawUSDCFailed, withdrawUSDCSucceeded } =
+  withdrawUSDCActions
 const { getFeePayer } = solanaSelectors
-
-function* doSetAmount({ payload: { amount } }: ReturnType<typeof setAmount>) {
-  try {
-    const amountBN = new BN(amount)
-    if (amountBN.lte(new BN(0))) {
-      throw new Error('Please enter a valid amount')
-    }
-    // get user bank
-    const userBank = yield* call(getUSDCUserBank)
-    const tokenAccountInfo = yield* call(getTokenAccountInfo, {
-      tokenAccount: userBank,
-      mint: 'usdc'
-    })
-    if (!tokenAccountInfo) {
-      throw new Error('Failed to fetch USDC token account info')
-    }
-    if (tokenAccountInfo.amount.gt(amountBN)) {
-      throw new Error(
-        `Your USDC wallet does not have enough funds to cover this transaction.`
-      )
-    }
-    yield* put(setAmountSucceeded({ amount }))
-  } catch (e: unknown) {
-    const reportToSentry = yield* getContext('reportToSentry')
-    reportToSentry({
-      level: ErrorLevel.Error,
-      error: e as Error
-    })
-    yield* put(setAmountFailed({ error: e as Error }))
-  }
-}
-
-function* doSetDestinationAddress({
-  payload: { destinationAddress }
-}: ReturnType<typeof setDestinationAddress>) {
-  try {
-    if (!destinationAddress) {
-      throw new Error('Please enter a destination address')
-    }
-    const isValidAddress = yield* call(
-      isValidSolAddress,
-      destinationAddress as SolanaWalletAddress
-    )
-    if (!isValidAddress) {
-      throw new Error('A valid Solana USDC wallet address is required.')
-    }
-    yield* put(setDestinationAddressSucceeded({ destinationAddress }))
-  } catch (e: unknown) {
-    const reportToSentry = yield* getContext('reportToSentry')
-    reportToSentry({
-      level: ErrorLevel.Error,
-      error: e as Error
-    })
-    yield* put(setDestinationAddressFailed({ error: e as Error }))
-  }
-}
 
 /**
  * Handles all logic for withdrawing USDC to a given destination. Expects amount in dollars.
@@ -154,9 +87,7 @@ function* doWithdrawUSDC({
     if (!isTokenAccountAddress) {
       // First check that the destination actually exists and has enough lamports for rent
       const destinationTokenAccountPubkey = yield* call(
-        [Token, Token.getAssociatedTokenAddress],
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-        TOKEN_PROGRAM_ID,
+        getAssociatedTokenAddressSync,
         libs.solanaWeb3Manager.mints.usdc,
         destinationPubkey
       )
@@ -193,13 +124,11 @@ function* doWithdrawUSDC({
               feeAmount - (existingBalance - rootSolanaAccountRent)
             }`
           )
-          const swapInstructions = yield* call(
-            getSwapUSDCUserBankInstructions,
-            {
+          const { instructions: swapInstructions, lookupTableAddresses } =
+            yield* call(getSwapUSDCUserBankInstructions, {
               amount: feeAmount - existingBalance,
               feePayer: feePayerPubkey
-            }
-          )
+            })
           const swapRecentBlockhash = yield* call(getRecentBlockhash)
           const signatureWithPubkey = yield* call(getSignatureForTransaction, {
             instructions: swapInstructions,
@@ -218,7 +147,8 @@ function* doWithdrawUSDC({
                 signature: s.signature!,
                 publicKey: s.publicKey.toString()
               })),
-              recentBlockhash: swapRecentBlockhash
+              recentBlockhash: swapRecentBlockhash,
+              lookupTableAddresses
             }
           )
           if (swapError) {
@@ -243,15 +173,14 @@ function* doWithdrawUSDC({
 
         // Then create and fund the destination associated token account
         const createRecentBlockhash = yield* call(getRecentBlockhash)
-        const tx = new Transaction({ recentBlockhash: createRecentBlockhash })
+        const tx = new Transaction()
+        tx.recentBlockhash = createRecentBlockhash
         const createTokenAccountInstruction = yield* call(
           createAssociatedTokenAccountInstruction,
-          {
-            associatedTokenAccount: destinationTokenAccountPubkey,
-            owner: destinationPubkey,
-            mint: libs.solanaWeb3Manager.mints.usdc,
-            feePayer: rootSolanaAccount.publicKey
-          }
+          rootSolanaAccount.publicKey, // fee payer
+          destinationTokenAccountPubkey, // account to create
+          destinationPubkey, // owner
+          libs.solanaWeb3Manager.mints.usdc // mint
         )
         yield* call([tx, tx.add], createTokenAccountInstruction)
         yield* call(
@@ -268,9 +197,7 @@ function* doWithdrawUSDC({
     let destinationTokenAccount = destinationAddress
     if (!isTokenAccountAddress) {
       const destinationTokenAccountPubkey = yield* call(
-        [Token, Token.getAssociatedTokenAddress],
-        ASSOCIATED_TOKEN_PROGRAM_ID,
-        TOKEN_PROGRAM_ID,
+        getAssociatedTokenAddressSync,
         libs.solanaWeb3Manager.mints.usdc,
         destinationPubkey
       )
@@ -294,7 +221,6 @@ function* doWithdrawUSDC({
         mint: 'usdc'
       }
     )
-
     // Relay the transfer so that the user doesn't need SOL if the account already exists
     const recentBlockhash = yield* call(getRecentBlockhash)
     const {
@@ -319,6 +245,9 @@ function* doWithdrawUSDC({
     )
     yield* call(onSuccess, transferSignature)
     yield* put(withdrawUSDCSucceeded())
+
+    // clear the withdrawals so next query will fetch from source
+    yield* put(userApiActions.resetGetUSDCTransactions!())
   } catch (e: unknown) {
     console.error('Withdraw USDC failed', e)
     const reportToSentry = yield* getContext('reportToSentry')
@@ -330,18 +259,10 @@ function* doWithdrawUSDC({
   }
 }
 
-function* watchSetAmount() {
-  yield takeLatest(setAmount, doSetAmount)
-}
-
-function* watchSetDestinationAddress() {
-  yield takeLatest(setDestinationAddress, doSetDestinationAddress)
-}
-
 function* watchBeginWithdrawUSDC() {
   yield takeLatest(beginWithdrawUSDC, doWithdrawUSDC)
 }
 
 export default function sagas() {
-  return [watchSetAmount, watchSetDestinationAddress, watchBeginWithdrawUSDC]
+  return [watchBeginWithdrawUSDC]
 }

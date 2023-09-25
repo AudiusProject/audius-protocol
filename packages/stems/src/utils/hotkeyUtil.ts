@@ -56,14 +56,14 @@ function fireHotkey(
       let satisfiedOr = true
       if (or) {
         satisfiedOr = false
-        or.forEach(modifier => {
+        or.forEach((modifier) => {
           if (isModifierPressed(modifier as ModifierKeys, e)) satisfiedOr = true
         })
       }
 
       let satisfiedAnd = true
       if (and) {
-        and.forEach(modifier => {
+        and.forEach((modifier) => {
           if (!isModifierPressed(modifier, e)) satisfiedAnd = false
         })
       }

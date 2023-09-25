@@ -7,7 +7,6 @@
   justify-content: flex-start;
   align-items: center;
   cursor: pointer;
-  margin-right: 12px;
   padding: 0px 12px;
   transition: background 0.17s ease-in-out;
 }

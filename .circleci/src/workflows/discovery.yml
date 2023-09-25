@@ -49,48 +49,30 @@ jobs:
       requires:
         - lint-discovery-provider
 
-  # Release
-  - deploy-prod-discovery-provider-trigger:
-      requires:
-        - test-discovery-provider
-        - push-discovery-provider
-        - push-comms
-      filters:
-        branches:
-          only: /^release.*$/
-      type: approval
-  - deploy:
-      name: deploy-prod-discovery-provider
-      context:
-        - open-vpn
-        - slack-secrets
-      requires:
-        - deploy-prod-discovery-provider-trigger
-      hosts: >-
-        prod-discovery-1
-        prod-discovery-2
-        prod-discovery-3
-      service: discovery-provider
-
-  # Main deploy
-  - deploy:
+  # Deploy audius-protocol `main` branch (stage)
+  - deploy-stage-nodes:
       name: deploy-stage-discovery-provider
       requires:
+        - lint-discovery-provider
         - test-discovery-provider
+        - test-discovery-provider-notifications
         - push-discovery-provider
+        - push-discovery-provider-notifications
+        - push-pedalboard-trending-challenge-rewards
+        - push-pedalboard-relay
+        - push-pedalboard-sla-auditor
         - push-comms
       filters:
         branches:
           only: main
-      context:
-        - open-vpn
-        - build-freeze
-        - slack-secrets
-      hosts: >-
-        stage-discovery-4
-        stage-discovery-1
-        stage-discovery-2
-        stage-discovery-3
-        stage-discovery-5
+      context: github
       service: discovery-provider
-      freeze: $FREEZE_BUILD
+
+  # Test for API regressions after deploying to stage
+  - test-discovery-api:
+      name: test-discovery-api
+      requires:
+        - deploy-stage-discovery-provider
+      filters:
+        branches:
+          only: main

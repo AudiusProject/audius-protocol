@@ -4,7 +4,7 @@ import {
   Name,
   getContext,
   walletActions,
-  convertJSBIToAmountObject,
+  convertBigIntToAmountObject,
   convertWAudioToWei,
   formatWei,
   weiToString,
@@ -31,17 +31,17 @@ import {
   convertWeiToWAudio
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
-import type { RouteInfo } from '@jup-ag/core'
-import { u64 } from '@solana/spl-token'
+import { QuoteResponse } from '@jup-ag/api'
 import {
+  AddressLookupTableAccount,
   Connection,
   Keypair,
   LAMPORTS_PER_SOL,
-  PublicKey
+  PublicKey,
+  TransactionMessage
 } from '@solana/web3.js'
 import BN from 'bn.js'
 import dayjs from 'dayjs'
-import JSBI from 'jsbi'
 import { takeLatest, takeLeading } from 'redux-saga/effects'
 import { call, select, put, take, race, fork } from 'typed-redux-saga'
 
@@ -50,7 +50,6 @@ import { isMobileWeb } from 'common/utils/isMobileWeb'
 import { track } from 'services/analytics'
 import {
   createTransferToUserBankTransaction,
-  getAssociatedTokenAccountInfo,
   getAssociatedTokenRentExemptionMinimum,
   getAudioAccount,
   getAudioAccountInfo,
@@ -58,11 +57,13 @@ import {
   pollForAudioBalanceChange,
   pollForNewTransaction,
   pollForSolBalanceChange,
-  saveUserBankTransactionMetadata
+  saveUserBankTransactionMetadata,
+  getAssociatedTokenAccountInfo
 } from 'services/audius-backend/BuyAudio'
 import { JupiterSingleton } from 'services/audius-backend/Jupiter'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {
+  TRANSACTION_FEE_FALLBACK,
   getRootAccountRentExemptionMinimum,
   getRootSolanaAccount,
   getSolanaConnection,
@@ -123,9 +124,7 @@ const PROVIDER_METHOD_MAP: Record<
 type BuyAudioLocalStorageState = {
   transactionDetailsArgs: {
     purchaseTransactionId?: string
-    setupTransactionId?: string
     swapTransactionId?: string
-    cleanupTransactionId?: string
     transferTransactionId?: string
     estimatedUSD?: string
     purchasedLamports?: string
@@ -167,18 +166,18 @@ function* getLocalStorageStateWithFallback(): Generator<
  * @returns the total amount of lamports necessary for all ATA creation rent fees in a swap and transfer
  */
 function* getAssociatedAccountCreationFees({
-  route,
+  quote,
   rootAccount,
   feesCache
 }: {
-  route: RouteInfo
+  quote: QuoteResponse
   rootAccount: PublicKey
   feesCache: ReturnType<typeof getFeesCache>
 }) {
-  const mintKeysSet = new Set<PublicKey>()
-  for (const marketInfo of route.marketInfos) {
-    mintKeysSet.add(marketInfo.inputMint)
-    mintKeysSet.add(marketInfo.outputMint)
+  const mintKeysSet = new Set<string>()
+  for (const route of quote.routePlan) {
+    mintKeysSet.add(route.swapInfo.inputMint)
+    mintKeysSet.add(route.swapInfo.outputMint)
   }
   const minRentForATA = yield* call(getAssociatedTokenRentExemptionMinimum)
   let accountCreationFees = 0
@@ -189,7 +188,7 @@ function* getAssociatedAccountCreationFees({
     } else if (exists === undefined) {
       const accountInfo = yield* call(getAssociatedTokenAccountInfo, {
         rootAccount,
-        mintKey
+        mintKey: new PublicKey(mintKey)
       })
       yield* put(
         cacheAssociatedTokenAccount({
@@ -210,22 +209,21 @@ function* getAssociatedAccountCreationFees({
  * @returns the total amount of lamports necessary for all transaction fees in a swap and transfer
  */
 function* getTransactionFees({
-  route,
+  quote,
   rootAccount,
   feesCache
 }: {
-  route: RouteInfo
+  quote: QuoteResponse
   rootAccount: PublicKey
   feesCache: ReturnType<typeof getFeesCache>
 }) {
   let transactionFees = feesCache?.transactionFees ?? 0
   if (!transactionFees) {
-    const {
-      transactions: { setupTransaction, swapTransaction, cleanupTransaction }
-    } = yield* call(JupiterSingleton.exchange, {
-      routeInfo: route,
-      userPublicKey: rootAccount
-    })
+    const { instructions: swapInstructions, lookupTableAddresses } =
+      yield* call(JupiterSingleton.getSwapInstructions, {
+        quote,
+        userPublicKey: rootAccount
+      })
     const userBank = yield* call(deriveUserBankPubkey, audiusBackendInstance)
     const transferTransaction = yield* call(
       createTransferToUserBankTransaction,
@@ -233,42 +231,56 @@ function* getTransactionFees({
         userBank,
         fromAccount: rootAccount,
         // eslint-disable-next-line new-cap
-        amount: new u64(JSBI.toNumber(route.outAmount)),
+        amount: BigInt(quote.outAmount),
         // The provider here doesn't matter, we're not sending this transaction
         memo: MEMO_MESSAGES[OnRampProvider.COINBASE]
       }
     )
     const connection = yield* call(getSolanaConnection)
+
+    // Calculate fees for transfer transaction (legacy transaction)
     const latestBlockhashResult = yield* call(
       [connection, connection.getLatestBlockhash],
       'finalized'
     )
-    const names = ['Setup', 'Swap', 'Cleanup', 'Transfer']
-    let i = 0
-    for (const transaction of [
-      setupTransaction,
-      swapTransaction,
-      cleanupTransaction,
-      transferTransaction
-    ]) {
-      if (transaction) {
-        if (!transaction.recentBlockhash) {
-          transaction.recentBlockhash = latestBlockhashResult.blockhash
-        }
-        if (!transaction.feePayer) {
-          transaction.feePayer = rootAccount
-        }
-        const fee = yield* call(
-          [transaction, transaction.getEstimatedFee],
-          connection
-        )
-        console.debug(
-          `Fee for "${names[i]}" transaction: ${fee ?? 5000} Lamports`
-        )
-        transactionFees += fee ?? 5000 // For some reason, swap transactions don't have fee estimates??
-      }
-      i++
+    if (!transferTransaction.recentBlockhash) {
+      transferTransaction.recentBlockhash = latestBlockhashResult.blockhash
     }
+    if (!transferTransaction.feePayer) {
+      transferTransaction.feePayer = rootAccount
+    }
+    transactionFees +=
+      (yield* call(
+        [transferTransaction, transferTransaction.getEstimatedFee],
+        connection
+      )) ?? TRANSACTION_FEE_FALLBACK
+
+    // Calculate fees for swap transaction (v0 transaction)
+    const lookupTableAccounts: AddressLookupTableAccount[] = []
+    // Need to use for loop instead of forEach to properly await async calls
+    for (const address of lookupTableAddresses) {
+      if (address === undefined) continue
+      const lookupTableAccount = yield* call(
+        [connection, connection.getAddressLookupTable],
+        new PublicKey(address)
+      )
+      if (lookupTableAccount.value !== null) {
+        lookupTableAccounts.push(lookupTableAccount.value)
+      } else {
+        // Abort if a lookup table account is missing because the resulting transaction
+        // might be too large
+        throw new Error(`Missing lookup table account for ${address}`)
+      }
+    }
+    const message = new TransactionMessage({
+      payerKey: rootAccount,
+      recentBlockhash: latestBlockhashResult.blockhash,
+      instructions: swapInstructions
+    }).compileToV0Message(lookupTableAccounts)
+    transactionFees +=
+      (yield* call([connection, connection.getFeeForMessage], message)).value ??
+      TRANSACTION_FEE_FALLBACK
+
     yield* put(cacheTransactionFees({ transactionFees }))
   }
   return transactionFees
@@ -278,7 +290,7 @@ function* getTransactionFees({
  * Calculates all the fees required for executing a swap and transfer by doing a "dry-run"
  * @returns the transaction fees and ATA creation fees (in lamports)
  */
-function* getSwapFees({ route }: { route: RouteInfo }) {
+function* getSwapFees({ quote }: { quote: QuoteResponse }) {
   const feesCache = yield* select(getFeesCache)
   const rootAccount = yield* call(getRootSolanaAccount)
 
@@ -293,12 +305,12 @@ function* getSwapFees({ route }: { route: RouteInfo }) {
 
   const associatedAccountCreationFees = yield* call(
     getAssociatedAccountCreationFees,
-    { rootAccount: rootAccount.publicKey, route, feesCache }
+    { rootAccount: rootAccount.publicKey, quote, feesCache }
   )
 
   const transactionFees = yield* call(getTransactionFees, {
     rootAccount: rootAccount.publicKey,
-    route,
+    quote,
     feesCache
   })
   console.debug(
@@ -319,9 +331,8 @@ function* getSwapFees({ route }: { route: RouteInfo }) {
     rootAccountMinBalance,
     transactionFees,
     associatedAccountCreationFees,
-    totalFees: new BN(rootAccountMinBalance)
-      .add(new BN(transactionFees))
-      .add(new BN(associatedAccountCreationFees))
+    totalFees:
+      rootAccountMinBalance + transactionFees + associatedAccountCreationFees
   }
 }
 
@@ -422,7 +433,7 @@ function* getAudioPurchaseInfo({
       rootAccountMinBalance,
       associatedAccountCreationFees,
       transactionFees
-    } = yield* call(getSwapFees, { route: quote.route })
+    } = yield* call(getSwapFees, { quote: quote.quote })
 
     // Get existing solana balance
     const existingBalance = yield* call(
@@ -431,20 +442,20 @@ function* getAudioPurchaseInfo({
       'finalized'
     )
 
-    const estimatedLamports = BN.max(
-      new BN(inSol)
-        .add(new BN(associatedAccountCreationFees))
-        .add(new BN(transactionFees))
-        .add(new BN(rootAccountMinBalance))
-        .sub(new BN(existingBalance)),
-      new BN(0)
+    const estimatedLamports = Math.max(
+      inSol +
+        associatedAccountCreationFees +
+        transactionFees +
+        rootAccountMinBalance +
+        existingBalance,
+      0
     )
 
     // Get SOL => USDC quote to estimate $USD cost
     const quoteUSD = yield* call(JupiterSingleton.getQuote, {
       inputTokenSymbol: 'SOL',
       outputTokenSymbol: 'USDC',
-      inputAmount: estimatedLamports.toNumber() / LAMPORTS_PER_SOL,
+      inputAmount: estimatedLamports / LAMPORTS_PER_SOL,
       slippage: 0
     })
 
@@ -460,20 +471,20 @@ Fees: ${
         LAMPORTS_PER_SOL
       } SOL
 Existing Balance: ${existingBalance / LAMPORTS_PER_SOL} SOL
-Total: ${estimatedLamports.toNumber() / LAMPORTS_PER_SOL} SOL ($${
+Total: ${estimatedLamports / LAMPORTS_PER_SOL} SOL ($${
         quoteUSD.outputAmount.uiAmountString
       } USDC)`
     )
 
     yield* put(
       calculateAudioPurchaseInfoSucceeded({
-        estimatedSOL: convertJSBIToAmountObject(
-          JSBI.BigInt(estimatedLamports),
+        estimatedSOL: convertBigIntToAmountObject(
+          BigInt(estimatedLamports),
           TOKEN_LISTING_MAP.SOL.decimals
         ),
         estimatedUSD: quoteUSD.outputAmount,
-        desiredAudioAmount: convertJSBIToAmountObject(
-          JSBI.BigInt(
+        desiredAudioAmount: convertBigIntToAmountObject(
+          BigInt(
             Math.ceil(audioAmount * 10 ** TOKEN_LISTING_MAP.AUDIO.decimals)
           ),
           TOKEN_LISTING_MAP.AUDIO.decimals
@@ -490,9 +501,7 @@ function* populateAndSaveTransactionDetails() {
   const [, localStorageState] = yield* getLocalStorageStateWithFallback()
   const {
     purchaseTransactionId,
-    setupTransactionId,
     swapTransactionId,
-    cleanupTransactionId,
     transferTransactionId,
     estimatedUSD,
     purchasedLamports,
@@ -523,9 +532,7 @@ function* populateAndSaveTransactionDetails() {
   const transactionMetadata = {
     discriminator: TransactionMetadataType.PURCHASE_SOL_AUDIO_SWAP,
     purchaseTransactionId: purchaseTransactionId ?? '',
-    setupTransactionId,
     swapTransactionId: swapTransactionId ?? '',
-    cleanupTransactionId,
     usd: estimatedUSD ?? '',
     sol: purchasedSOL,
     audio: purchasedAUDIO
@@ -629,12 +636,11 @@ function* purchaseStep({
   })
 
   // Check that we got the requested SOL
-  const purchasedLamports = new BN(newBalance).sub(new BN(initialBalance))
-  if (purchasedLamports !== new BN(estimatedSOL.amount)) {
+  const purchasedLamports = newBalance - initialBalance
+  if (purchasedLamports !== estimatedSOL.amount) {
     console.warn(
       `Warning: Purchase SOL amount differs from expected. Actual: ${
-        new BN(newBalance).sub(new BN(initialBalance)).toNumber() /
-        LAMPORTS_PER_SOL
+        (newBalance - initialBalance) / LAMPORTS_PER_SOL
       } SOL. Expected: ${estimatedSOL.uiAmountString} SOL.`
     )
   }
@@ -654,7 +660,7 @@ function* purchaseStep({
 }
 
 type SwapStepParams = {
-  exchangeAmount: BN
+  exchangeAmount: bigint
   desiredAudioAmount?: AmountObject
   rootAccount: Keypair
   transactionHandler: TransactionHandler
@@ -680,24 +686,20 @@ function* swapStep({
   const quote = yield* call(JupiterSingleton.getQuote, {
     inputTokenSymbol: 'SOL',
     outputTokenSymbol: 'AUDIO',
-    inputAmount: exchangeAmount.toNumber() / LAMPORTS_PER_SOL,
+    inputAmount: Number(exchangeAmount) / LAMPORTS_PER_SOL,
     slippage
   })
 
   // Check that we get the desired AUDIO from the quote
-  const audioAdjusted = convertJSBIToAmountObject(
-    JSBI.BigInt(
-      Math.floor(
-        (JSBI.toNumber(quote.route.outAmount) * (100 - slippage)) / 100.0
-      )
+  const audioAdjusted = convertBigIntToAmountObject(
+    BigInt(
+      Math.floor((Number(quote.quote.outAmount) * 100 - slippage) / 100.0)
     ),
     TOKEN_LISTING_MAP.AUDIO.decimals
   )
   if (
-    desiredAudioAmount &&
-    new BN(desiredAudioAmount.amountString).gt(
-      new BN(audioAdjusted.amountString)
-    )
+    desiredAudioAmount !== undefined &&
+    desiredAudioAmount.amount > audioAdjusted.amount
   ) {
     console.warn(
       `Warning: Purchase AUDIO amount may be lower than expected. Actual min: ${audioAdjusted.uiAmountString} AUDIO. Expected min: ${desiredAudioAmount.uiAmountString} AUDIO`
@@ -711,31 +713,29 @@ function* swapStep({
   const beforeSwapAudioAccountInfo = yield* call(getAudioAccountInfo, {
     tokenAccount
   })
-  const beforeSwapAudioBalance =
-    beforeSwapAudioAccountInfo?.amount ?? new u64(0)
+  const beforeSwapAudioBalance = beforeSwapAudioAccountInfo?.amount ?? BigInt(0)
 
   // Swap the SOL for AUDIO
   yield* put(swapStarted())
-  const { transactions } = yield* call(JupiterSingleton.exchange, {
-    routeInfo: quote.route,
-    userPublicKey: rootAccount.publicKey
+  const { instructions: swapInstructions, lookupTableAddresses } = yield* call(
+    JupiterSingleton.getSwapInstructions,
+    {
+      quote: quote.quote,
+      userPublicKey: rootAccount.publicKey
+    }
+  )
+
+  const txId = yield* call(JupiterSingleton.executeExchange, {
+    instructions: swapInstructions,
+    feePayer: rootAccount.publicKey,
+    transactionHandler,
+    lookupTableAddresses
   })
-  const { setupTransactionId, swapTransactionId, cleanupTransactionId } =
-    yield* call(JupiterSingleton.executeExchange, {
-      ...transactions,
-      feePayer: rootAccount.publicKey,
-      transactionHandler
-    })
 
   // Write transaction details to local storage
   const [audiusLocalStorage, localStorageState] =
     yield* getLocalStorageStateWithFallback()
-  localStorageState.transactionDetailsArgs.setupTransactionId =
-    setupTransactionId ?? undefined
-  localStorageState.transactionDetailsArgs.swapTransactionId =
-    swapTransactionId ?? undefined
-  localStorageState.transactionDetailsArgs.cleanupTransactionId =
-    cleanupTransactionId ?? undefined
+  localStorageState.transactionDetailsArgs.swapTransactionId = txId ?? undefined
   yield* call(
     [audiusLocalStorage, audiusLocalStorage.setJSONValue],
     BUY_AUDIO_LOCAL_STORAGE_KEY,
@@ -756,16 +756,14 @@ function* swapStep({
     maxRetryCount
   })
   return {
-    setupTransactionId,
-    swapTransactionId,
-    cleanupTransactionId,
+    swapTransactionId: txId,
     audioSwappedSpl
   }
 }
 
 type TransferStepParams = {
   rootAccount: Keypair
-  transferAmount: u64
+  transferAmount: bigint
   transactionHandler: TransactionHandler
   provider: OnRampProvider
 }
@@ -800,7 +798,9 @@ function* transferStep({
     )
     throw new Error(`Transfer transaction failed: ${transferError}`)
   }
-  const audioTransferredWei = convertWAudioToWei(transferAmount)
+  const audioTransferredWei = convertWAudioToWei(
+    new BN(transferAmount.toString())
+  )
 
   // Write transaction details to local storage
   const [audiusLocalStorage, localStorageState] =
@@ -912,15 +912,15 @@ function* doBuyAudio({
       inputAmount: newBalance / LAMPORTS_PER_SOL,
       slippage
     })
-    const { totalFees } = yield* call(getSwapFees, { route: quote.route })
-    const exchangeAmount = new BN(newBalance).sub(totalFees)
+    const { totalFees } = yield* call(getSwapFees, { quote: quote.quote })
+    const exchangeAmount = newBalance - totalFees
     console.debug(
-      `Exchanging ${exchangeAmount.toNumber() / LAMPORTS_PER_SOL} SOL to AUDIO`
+      `Exchanging ${exchangeAmount / LAMPORTS_PER_SOL} SOL to AUDIO`
     )
 
     // STEP TWO: Swap to $AUDIO
     const { audioSwappedSpl } = yield* call(swapStep, {
-      exchangeAmount,
+      exchangeAmount: BigInt(exchangeAmount),
       desiredAudioAmount,
       rootAccount,
       transactionHandler,
@@ -943,14 +943,16 @@ function* doBuyAudio({
     yield* put(
       make(Name.BUY_AUDIO_SUCCESS, {
         provider,
-        requestedAudio: desiredAudioAmount.uiAmount,
+        requestedAudio: desiredAudioAmount,
         actualAudio: parseFloat(
           formatWei(audioTransferredWei).replaceAll(',', '')
         ),
         surplusAudio: parseFloat(
           formatWei(
             convertWAudioToWei(
-              audioSwappedSpl.sub(new u64(desiredAudioAmount.amount))
+              new BN(
+                (audioSwappedSpl - BigInt(desiredAudioAmount.amount)).toString()
+              )
             )
           ).replaceAll(',', '')
         )
@@ -968,7 +970,7 @@ function* doBuyAudio({
       make(Name.BUY_AUDIO_FAILURE, {
         provider,
         stage,
-        requestedAudio: desiredAudioAmount.uiAmount,
+        requestedAudio: desiredAudioAmount.uiAmountString,
         name: 'BuyAudio failed',
         error: (e as Error).message
       })
@@ -1055,26 +1057,25 @@ function* recoverPurchaseIfNecessary() {
       slippage
     })
     const { totalFees, rootAccountMinBalance } = yield* call(getSwapFees, {
-      route: quote.route
+      quote: quote.quote
     })
 
     // Subtract fees and rent to see how much SOL is available to exchange
-    const exchangableBalance = new BN(existingBalance).sub(totalFees)
+    const exchangableBalance = BigInt(existingBalance - totalFees)
 
     // Use proportion to guesstimate an $AUDIO quote for the exchangeable balance
     const estimatedAudio =
       existingBalance > 0
-        ? exchangableBalance
-            .mul(new BN(quote.outputAmount.amountString))
-            .div(new BN(existingBalance))
-        : new BN(0)
+        ? (BigInt(exchangableBalance) * BigInt(quote.outputAmount.amount)) /
+          BigInt(existingBalance)
+        : BigInt(0)
 
     // Check if there's a non-zero exchangeble amount of SOL and at least one $AUDIO would be output
     // Should only occur as the result of a previously failed Swap
     if (
-      exchangableBalance.gt(new BN(0)) &&
+      exchangableBalance > BigInt(0) &&
       // $AUDIO has 8 decimals
-      estimatedAudio.gt(new BN('1'.padEnd(9, '0')))
+      estimatedAudio > BigInt(1 * 10 ** 8)
     ) {
       yield* put(
         make(Name.BUY_AUDIO_RECOVERY_OPENED, {
@@ -1087,7 +1088,7 @@ function* recoverPurchaseIfNecessary() {
         `Found existing SOL balance of ${
           existingBalance / LAMPORTS_PER_SOL
         } SOL, converting ${
-          exchangableBalance.toNumber() / LAMPORTS_PER_SOL
+          Number(exchangableBalance) / LAMPORTS_PER_SOL
         } SOL to AUDIO... (~${estimatedAudio.toString()} $AUDIO SPL)`
       )
 
@@ -1121,16 +1122,12 @@ function* recoverPurchaseIfNecessary() {
       const audioAccountInfo = yield* call(getAudioAccountInfo, {
         tokenAccount
       })
-      const audioBalance = audioAccountInfo?.amount ?? new u64(0)
+      const audioBalance = audioAccountInfo?.amount ?? BigInt(0)
 
       // If the user's root wallet has $AUDIO, that usually indicates a failed transfer
-      if (audioBalance.gt(new u64(0))) {
+      if (audioBalance > BigInt(0)) {
         // Check we can afford to transfer
-        if (
-          new BN(existingBalance)
-            .sub(new BN(rootAccountMinBalance))
-            .gt(new BN(0))
-        ) {
+        if (existingBalance - rootAccountMinBalance > 0) {
           yield* put(
             make(Name.BUY_AUDIO_RECOVERY_OPENED, {
               provider,

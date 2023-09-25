@@ -12,18 +12,18 @@ import cn from 'classnames'
 import { debounce, range } from 'lodash'
 import moment from 'moment'
 import {
-  useTable,
-  useSortBy,
-  useResizeColumns,
-  useFlexLayout,
   Cell,
   Row,
-  TableRowProps
+  TableRowProps,
+  useFlexLayout,
+  useResizeColumns,
+  useSortBy,
+  useTable
 } from 'react-table'
 import {
   AutoSizer,
-  List,
   InfiniteLoader,
+  List,
   WindowScroller
 } from 'react-virtualized'
 
@@ -131,10 +131,17 @@ export const Table = ({
   scrollRef,
   showMoreLimit,
   tableClassName,
-  totalRowCount = 9999,
+  totalRowCount,
   useLocalSort = false,
   wrapperClassName
 }: TableProps) => {
+  useEffect(() => {
+    if (totalRowCount == null && isPaginated) {
+      console.error(
+        'Programming error - need to specify the `totalRowCount` if using paginated Table component (i.e .if `isPaginated` is `true`)'
+      )
+    }
+  }, [isPaginated, totalRowCount])
   const defaultColumn = useMemo(
     () => ({
       // Default resizing column props
@@ -152,6 +159,9 @@ export const Table = ({
   // Pagination page
   const [currentPage, setCurrentPage] = useState<number>(0)
   const maxPage = useMemo(() => {
+    if (totalRowCount == null) {
+      return 0
+    }
     return Math.floor(totalRowCount / pageSize)
   }, [pageSize, totalRowCount])
 
@@ -518,20 +528,14 @@ export const Table = ({
   // TODO: This is supposed to return a promise that resolves when the row data has been fetched.
   // It currently does not, but there are no issues with this currently so will fix if issues pop up
   const loadMoreRows = useCallback(
-    async ({
-      startIndex,
-      stopIndex
-    }: {
-      startIndex: number
-      stopIndex: number
-    }) => {
+    async ({ startIndex }: { startIndex: number }) => {
       if (!debouncedFetchMore) return null
       const offset = startIndex
-      const limit = stopIndex - startIndex + 1
+      const limit = fetchBatchSize
       debouncedFetchMore(offset, limit)
       return null
     },
-    [debouncedFetchMore]
+    [debouncedFetchMore, fetchBatchSize]
   )
 
   const isRowLoaded = useCallback(
@@ -658,7 +662,7 @@ export const Table = ({
       <InfiniteLoader
         isRowLoaded={isRowLoaded}
         loadMoreRows={loadMoreRows}
-        rowCount={totalRowCount}
+        rowCount={totalRowCount == null ? rows.length : totalRowCount}
         threshold={fetchThreshold}
         minimumBatchSize={fetchBatchSize}
       >
@@ -702,7 +706,9 @@ export const Table = ({
                             ref={registerListChild}
                             overscanRowsCount={2}
                             rowCount={
-                              debouncedFetchMore ? totalRowCount : rows.length
+                              debouncedFetchMore && totalRowCount != null
+                                ? totalRowCount
+                                : rows.length
                             }
                             rowHeight={64}
                             rowRenderer={renderRow}
