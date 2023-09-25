@@ -9,7 +9,7 @@ begin
     from users
     join usdc_user_bank_accounts
       on users.wallet = usdc_user_bank_accounts.ethereum_address
-    where usdc_user_bank_accounts.user_bank = new.user_bank;    
+    where usdc_user_bank_accounts.bank_account = new.user_bank;    
 
     -- Insert the new notification
     insert into notification
