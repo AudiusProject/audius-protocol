@@ -66,6 +66,9 @@ const slice = createSlice({
       action: PayloadAction<{ status: StripeSessionStatus }>
     ) => {
       state.stripeSessionStatus = action.payload.status
+    },
+    startRecoveryIfNecessary: () => {
+      // triggers saga
     }
   }
 })
@@ -77,7 +80,8 @@ export const {
   purchaseStarted,
   onrampSucceeded,
   onrampCanceled,
-  stripeSessionStatusChanged
+  stripeSessionStatusChanged,
+  startRecoveryIfNecessary
 } = slice.actions
 
 export default slice.reducer

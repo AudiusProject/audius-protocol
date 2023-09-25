@@ -1,6 +1,6 @@
 import { Keypair, PublicKey } from '@solana/web3.js'
 import { takeLatest } from 'redux-saga/effects'
-import { call, put, race, select, take, delay } from 'typed-redux-saga'
+import { call, put, race, select, take, delay, takeLeading } from 'typed-redux-saga'
 
 import { Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
@@ -25,7 +25,8 @@ import {
   onrampCanceled,
   onrampOpened,
   purchaseStarted,
-  onrampSucceeded
+  onrampSucceeded,
+  startRecoveryIfNecessary
 } from './slice'
 import { USDCOnRampProvider } from './types'
 import { getUSDCUserBank } from './utils'
@@ -285,10 +286,83 @@ function* doBuyUSDC({
   }
 }
 
+function* recoverPurchaseIfNecessary() {
+  const reportToSentry = yield* getContext('reportToSentry')
+  const { track, make } = yield* getContext('analytics')
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+
+  try {
+    const userBank = yield* getUSDCUserBank()
+    const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
+
+    const usdcTokenAccount = yield* call(
+      findAssociatedTokenAddress,
+      audiusBackendInstance,
+      { solanaAddress: rootAccount.publicKey.toString(), mint: 'usdc' }
+    )
+    const accountInfo = yield* call(
+      getTokenAccountInfo,
+      audiusBackendInstance,
+      {
+        mint: 'usdc',
+        tokenAccount: usdcTokenAccount
+      }
+    )
+    const amount = accountInfo?.amount ?? BigInt(0)
+    if (amount === BigInt(0)) {
+      return
+    }
+
+    yield* call(
+      track,
+      make({
+        eventName: Name.BUY_USDC_RECOVERY_STARTED,
+        userBank: userBank.toBase58()
+      })
+    )
+
+    // Transfer all USDC from the from the root wallet to the user bank
+    yield* call(transferStep, {
+      wallet: rootAccount,
+      userBank,
+      amount
+    })
+
+    yield* call(
+      track,
+      make({
+        eventName: Name.BUY_USDC_RECOVERY_SUCCESS,
+        userBank: userBank.toBase58()
+      })
+    )
+  } catch (e) {
+    yield* call(reportToSentry, {
+      level: ErrorLevel.Error,
+      error: e as Error,
+    })
+    yield* call(
+      track,
+      make({
+        eventName: Name.BUY_USDC_RECOVERY_FAILURE,
+        error: (e as Error).message
+      })
+    )
+  }
+}
+
 function* watchOnRampOpened() {
   yield takeLatest(onrampOpened, doBuyUSDC)
 }
 
+function* watchRecovery() {
+  // Use takeLeading since:
+  // 1) We don't want to run more than one recovery flow at a time (so not takeEvery)
+  // 2) We don't need to interrupt if already running (so not takeLatest)
+  // 3) We do want to be able to trigger more than one time per session in case of same-session failures (so not take)
+  yield takeLeading(startRecoveryIfNecessary, recoverPurchaseIfNecessary)
+}
+
+
 export default function sagas() {
-  return [watchOnRampOpened]
+  return [watchOnRampOpened, watchRecovery]
 }

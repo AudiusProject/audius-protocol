@@ -1,7 +1,8 @@
 import {
   useGetTrackById,
   usePremiumContentPurchaseModal,
-  useUSDCBalance
+  useUSDCBalance,
+  buyUSDCActions
 } from '@audius/common'
 import { IconCart, Modal, ModalContent, ModalHeader } from '@audius/stems'
 
@@ -10,12 +11,17 @@ import { Text } from 'components/typography'
 
 import styles from './PremiumContentPurchaseModal.module.css'
 import { PurchaseContentForm } from './components/PurchaseContentForm'
+import { useEffect, useState } from 'react'
+import { useDispatch } from 'react-redux'
+
+const { startRecoveryIfNecessary } = buyUSDCActions
 
 const messages = {
   completePurchase: 'Complete Purchase'
 }
 
 export const PremiumContentPurchaseModal = () => {
+  const dispatch = useDispatch()
   const {
     isOpen,
     onClose,
@@ -28,6 +34,15 @@ export const PremiumContentPurchaseModal = () => {
     { id: trackId! },
     { disabled: !trackId }
   )
+
+  const [shouldAttemptRecovery, setShouldAttemptRecovery] = useState(true)
+
+  useEffect(() => {
+    if (trackId && shouldAttemptRecovery) {
+      dispatch(startRecoveryIfNecessary)
+      setShouldAttemptRecovery(false)
+    }
+  }, [trackId, shouldAttemptRecovery])
 
   return (
     <Modal
