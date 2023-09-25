@@ -1,6 +1,14 @@
 import { Keypair, PublicKey } from '@solana/web3.js'
 import { takeLatest } from 'redux-saga/effects'
-import { call, put, race, select, take, delay, takeLeading } from 'typed-redux-saga'
+import {
+  call,
+  put,
+  race,
+  select,
+  take,
+  delay,
+  takeLeading
+} from 'typed-redux-saga'
 
 import { Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
@@ -361,7 +369,6 @@ function* watchRecovery() {
   // 3) We do want to be able to trigger more than one time per session in case of same-session failures (so not take)
   yield takeLeading(startRecoveryIfNecessary, recoverPurchaseIfNecessary)
 }
-
 
 export default function sagas() {
   return [watchOnRampOpened, watchRecovery]

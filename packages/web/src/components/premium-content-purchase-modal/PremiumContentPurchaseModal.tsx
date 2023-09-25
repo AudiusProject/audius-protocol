@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 import {
   useGetTrackById,
   usePremiumContentPurchaseModal,
@@ -5,14 +7,13 @@ import {
   buyUSDCActions
 } from '@audius/common'
 import { IconCart, Modal, ModalContent, ModalHeader } from '@audius/stems'
+import { useDispatch } from 'react-redux'
 
 import { Icon } from 'components/Icon'
 import { Text } from 'components/typography'
 
 import styles from './PremiumContentPurchaseModal.module.css'
 import { PurchaseContentForm } from './components/PurchaseContentForm'
-import { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
 
 const { startRecoveryIfNecessary } = buyUSDCActions
 
@@ -42,7 +43,7 @@ export const PremiumContentPurchaseModal = () => {
       dispatch(startRecoveryIfNecessary)
       setShouldAttemptRecovery(false)
     }
-  }, [trackId, shouldAttemptRecovery])
+  }, [trackId, shouldAttemptRecovery, dispatch])
 
   return (
     <Modal
