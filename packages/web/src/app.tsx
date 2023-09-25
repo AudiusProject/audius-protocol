@@ -20,68 +20,68 @@ import history from 'utils/history'
 
 import { store } from './store/configureStore'
 import { reportToSentry } from './store/errors/reportToSentry'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { httpBatchLink } from '@trpc/client';
-import { useState } from 'react';
-import { trpc } from './trpc';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { httpBatchLink } from '@trpc/client'
+import { useState } from 'react'
+import { trpc } from './trpc'
 import './services/webVitals'
 import './index.css'
 
 const AudiusApp = () => {
-  const [queryClient] = useState(() => new QueryClient());
+  const [queryClient] = useState(() => new QueryClient())
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
         httpBatchLink({
-          url: 'http://localhost:2022',
-        }),
-      ],
-    }),
-  );
+          url: 'http://localhost:2022/api/trpc'
+        })
+      ]
+    })
+  )
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
-    <QueryClientProvider client={queryClient}>
-    <Provider store={store}>
-      <AudiusQueryContext.Provider
-        value={{
-          apiClient,
-          audiusBackend: audiusBackendInstance,
-          audiusSdk,
-          dispatch: store.dispatch,
-          reportToSentry
-        }}
-      >
-        <ConnectedRouter history={history}>
-          <LastLocationProvider>
-            <AppProviders>
-              <MainContentContext.Consumer>
-                {({ mainContentRef }) => (
-                  <Switch>
-                    <Route path='/error'>
-                      <SomethingWrong />
-                    </Route>
-                    <Route
-                      exact
-                      path={'/oauth/auth'}
-                      component={OAuthLoginPage}
-                    />
-                    <Route path='/'>
-                      <AppErrorBoundary>
-                        <CoinbasePayButtonProvider>
-                          <App mainContentRef={mainContentRef} />
-                        </CoinbasePayButtonProvider>
-                      </AppErrorBoundary>
-                    </Route>
-                  </Switch>
-                )}
-              </MainContentContext.Consumer>
-            </AppProviders>
-          </LastLocationProvider>
-        </ConnectedRouter>
-      </AudiusQueryContext.Provider>
-    </Provider>
-    </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <Provider store={store}>
+          <AudiusQueryContext.Provider
+            value={{
+              apiClient,
+              audiusBackend: audiusBackendInstance,
+              audiusSdk,
+              dispatch: store.dispatch,
+              reportToSentry
+            }}
+          >
+            <ConnectedRouter history={history}>
+              <LastLocationProvider>
+                <AppProviders>
+                  <MainContentContext.Consumer>
+                    {({ mainContentRef }) => (
+                      <Switch>
+                        <Route path='/error'>
+                          <SomethingWrong />
+                        </Route>
+                        <Route
+                          exact
+                          path={'/oauth/auth'}
+                          component={OAuthLoginPage}
+                        />
+                        <Route path='/'>
+                          <AppErrorBoundary>
+                            <CoinbasePayButtonProvider>
+                              <App mainContentRef={mainContentRef} />
+                            </CoinbasePayButtonProvider>
+                          </AppErrorBoundary>
+                        </Route>
+                      </Switch>
+                    )}
+                  </MainContentContext.Consumer>
+                </AppProviders>
+              </LastLocationProvider>
+            </ConnectedRouter>
+          </AudiusQueryContext.Provider>
+        </Provider>
+      </QueryClientProvider>
     </trpc.Provider>
   )
 }
