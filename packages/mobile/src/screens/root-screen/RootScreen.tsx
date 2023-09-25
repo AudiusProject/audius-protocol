@@ -10,9 +10,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { useCodePushSync } from 'app/app/useCodePushSync'
 import useAppState from 'app/hooks/useAppState'
 import { useUpdateRequired } from 'app/hooks/useUpdateRequired'
+import { useSyncCodePush } from 'app/screens/root-screen/useSyncCodePush'
 import { SignOnScreen } from 'app/screens/signon'
 import { SplashScreen } from 'app/screens/splash-screen'
 import {
@@ -37,7 +37,7 @@ const Stack = createNativeStackNavigator()
  * based on if the user is authed
  */
 export const RootScreen = () => {
-  const { isPendingMandatoryCodePushUpdate } = useCodePushSync()
+  const { isPendingMandatoryCodePushUpdate } = useSyncCodePush()
   const { updateRequired } = useUpdateRequired()
   const dispatch = useDispatch()
   const accountStatus = useSelector(getAccountStatus)
