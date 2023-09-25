@@ -37,8 +37,6 @@ export function DiscoveryHealth() {
             {isContent && <th>Last Non-Cleanup Repair</th>}
             {isContent && <th>Last Cleanup</th>}
             {isContent && <th>Cleanup (checked, pulled, deleted)</th>}
-            {isContent && <th>/file_storage</th>}
-            {isContent && <th>/tmp/mediorum</th>}
             <th>DB Size</th>
             <th>Your IP</th>
             {isDiscovery && <th>ACDC Health</th>}
@@ -118,8 +116,6 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const mediorumUsed = bytesToGb(health.mediorumPathUsed)
   const mediorumSize = bytesToGb(health.mediorumPathSize)
   const mediorumPercent = mediorumUsed / mediorumSize
-  const legacyDirUsed = bytesToGb(health.legacyDirUsed)
-  const mediorumDirUsed = bytesToGb(health.mediorumDirUsed)
   const isBehind = health.block_difference > 5 ? 'is-unhealthy' : ''
   const dbSize =
     bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
@@ -221,8 +217,6 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           </a>
         </td>
       )}
-      {isContent && (<td>{legacyDirUsed} GB</td>)}
-      {isContent && (<td>{mediorumDirUsed} GB</td>)}
       <td>{`${dbSize} GB`}</td>
       <td>{`${yourIp}`}</td>
       {!isContent && (<td>{health.chain_health?.status}</td>)}
