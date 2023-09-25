@@ -78,7 +78,7 @@ const slice = createSlice({
       action: PayloadAction<{ status: RecoveryStatus }>
     ) => {
       state.recoveryStatus = action.payload.status
-    },
+    }
   }
 })
 

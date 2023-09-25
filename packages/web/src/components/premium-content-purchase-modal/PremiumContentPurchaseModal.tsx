@@ -8,14 +8,13 @@ import {
   buyUSDCSelectors
 } from '@audius/common'
 import { IconCart, Modal, ModalContent, ModalHeader } from '@audius/stems'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { Icon } from 'components/Icon'
 import { Text } from 'components/typography'
 
 import styles from './PremiumContentPurchaseModal.module.css'
 import { PurchaseContentForm } from './components/PurchaseContentForm'
-import { useSelector } from 'react-redux'
 
 const { startRecoveryIfNecessary, recoveryStatusChanged } = buyUSDCActions
 const { getRecoveryStatus } = buyUSDCSelectors
@@ -58,7 +57,7 @@ export const PremiumContentPurchaseModal = () => {
   const handleClose = useCallback(() => {
     dispatch(recoveryStatusChanged({ status: 'idle' }))
     onClose()
-  }, [onClose])
+  }, [dispatch, onClose])
 
   return (
     <Modal

@@ -349,7 +349,7 @@ function* recoverPurchaseIfNecessary() {
     yield* put(recoveryStatusChanged({ status: 'failure' }))
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
-      error: e as Error,
+      error: e as Error
     })
     yield* call(
       track,
