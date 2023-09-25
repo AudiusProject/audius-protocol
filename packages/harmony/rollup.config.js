@@ -1,7 +1,6 @@
 import svgr from '@svgr/rollup'
 import postcssCustomProperties from 'postcss-custom-properties'
-// import copy from 'rollup-plugin-copy'
-import resolve from 'rollup-plugin-node-resolve'
+import copy from 'rollup-plugin-copy'
 import external from 'rollup-plugin-peer-deps-external'
 import postcss from 'rollup-plugin-postcss'
 import rollupTypescript from 'rollup-plugin-typescript2'
@@ -27,11 +26,10 @@ export default {
         postcssCustomProperties({
           // Preserve var names so they can be overridden
           preserve: true,
-          // TODO: KJ - Update these later
           importFrom: [
-            // 'src/assets/styles/colors.css',
-            // 'src/assets/styles/tokens.css',
-            // 'src/assets/styles/spacing.css',
+            'src/assets/styles/colors.css',
+            'src/assets/styles/tokens.css',
+            'src/assets/styles/fonts.css'
           ]
         })
       ],
@@ -41,13 +39,12 @@ export default {
     }),
     url(),
     svgr(),
-    resolve(),
     rollupTypescript({
       clean: true,
       typescript
     }),
-    // copy({
-    //   targets: [{ src: 'src/assets/fonts/avenir.css', dest: 'dist' }]
-    // })
+    copy({
+      targets: [{ src: 'src/assets/fonts/avenir.css', dest: 'dist' }]
+    })
   ]
 }
