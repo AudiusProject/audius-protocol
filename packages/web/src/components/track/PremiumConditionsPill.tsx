@@ -1,10 +1,11 @@
+import type { MouseEvent } from 'react'
+
 import {
   formatPrice,
   isPremiumContentUSDCPurchaseGated,
   PremiumConditions
 } from '@audius/common'
-import { IconLock } from '@audius/stems'
-import cn from 'classnames'
+import { HarmonyButton, HarmonyButtonSize, IconLock } from '@audius/stems'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
@@ -17,10 +18,12 @@ const messages = {
 
 export const PremiumConditionsPill = ({
   premiumConditions,
-  unlocking
+  unlocking,
+  onClick
 }: {
   premiumConditions: PremiumConditions
   unlocking: boolean
+  onClick?: (e: MouseEvent) => void
 }) => {
   const isPurchase = isPremiumContentUSDCPurchaseGated(premiumConditions)
   const icon = unlocking ? (
@@ -39,12 +42,14 @@ export const PremiumConditionsPill = ({
       : messages.locked
   }
 
-  const colorStyle = isPurchase ? styles.premiumContent : styles.gatedContent
-
   return (
-    <div className={cn(styles.container, colorStyle)}>
-      {icon}
-      {message}
-    </div>
+    <HarmonyButton
+      className={styles.button}
+      size={HarmonyButtonSize.SMALL}
+      onClick={onClick}
+      color={isPurchase ? 'specialLightGreen' : 'accentBlue'}
+      icon={icon}
+      text={message}
+    />
   )
 }

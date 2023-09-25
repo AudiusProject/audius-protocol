@@ -130,7 +130,12 @@ function* pollForPurchaseConfirmation({
 }
 
 function* doStartPurchaseContentFlow({
-  payload: { extraAmount, contentId, contentType = ContentType.TRACK }
+  payload: {
+    extraAmount,
+    extraAmountPreset,
+    contentId,
+    contentType = ContentType.TRACK
+  }
 }: ReturnType<typeof startPurchaseContentFlow>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const reportToSentry = yield* getContext('reportToSentry')
@@ -142,6 +147,7 @@ function* doStartPurchaseContentFlow({
     make({
       eventName: Name.PURCHASE_CONTENT_STARTED,
       extraAmount,
+      extraAmountPreset,
       contentId,
       contentType
     })

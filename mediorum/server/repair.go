@@ -95,6 +95,7 @@ func (ss *MediorumServer) startRepairer() {
 
 		logger.Info("repair starting")
 		err := ss.runRepair(&tracker)
+		tracker.FinishedAt = time.Now()
 		if err != nil {
 			logger.Error("repair failed", "err", err, "took", tracker.Duration)
 			tracker.AbortedReason = err.Error()
@@ -105,7 +106,6 @@ func (ss *MediorumServer) startRepairer() {
 				ss.lastSuccessfulCleanup = tracker
 			}
 		}
-		tracker.FinishedAt = time.Now()
 		saveTracker()
 
 		// wait 10 minutes before running again

@@ -63,7 +63,7 @@ solanaRouter.post(
     const isRelayAllowed = await areRelayAllowedInstructions(
       instructions,
       optimizelyClient,
-      req.user.walletAddress
+      req.user?.walletAddress
     )
     if (!isRelayAllowed) {
       return errorResponseServerError(`Invalid relay instructions`, {
