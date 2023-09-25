@@ -1,8 +1,10 @@
 import { pick } from 'lodash'
-import { Base, BaseConstructorArgs, Services } from './base'
-import { Nullable, UserMetadata, Utils } from '../utils'
-import type { ServiceProvider } from './ServiceProvider'
+
 import { EntityManagerClient } from '../services/dataContracts/EntityManagerClient'
+import { Nullable, UserMetadata, Utils } from '../utils'
+
+import type { ServiceProvider } from './ServiceProvider'
+import { Base, BaseConstructorArgs, Services } from './base'
 
 // User metadata fields that are required on the metadata object and can have
 // null or non-null values
@@ -516,7 +518,6 @@ export class Users extends Base {
       throw new Error(errorMsg)
     }
   }
-
 
   async _waitForDiscoveryToIndexUser(
     userId: number,

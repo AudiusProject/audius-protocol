@@ -1,10 +1,12 @@
-import { ProviderSelection } from './ProviderSelection'
-import { Web3Manager } from '../web3Manager'
 import retry from 'async-retry'
-import type { ContractABI, Nullable, Logger } from '../../utils'
-import type { Contract } from 'web3-eth-contract'
 import type { HttpProvider } from 'web3-core'
+import type { Contract } from 'web3-eth-contract'
+
+import type { ContractABI, Nullable, Logger } from '../../utils'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
+import { Web3Manager } from '../web3Manager'
+
+import { ProviderSelection } from './ProviderSelection'
 
 const CONTRACT_INITIALIZING_INTERVAL = 100
 const CONTRACT_INITIALIZING_TIMEOUT = 10000

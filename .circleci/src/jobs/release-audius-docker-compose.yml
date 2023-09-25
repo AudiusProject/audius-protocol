@@ -17,17 +17,11 @@ steps:
         git config --global user.email "audius-infra@audius.co"
         git config --global user.name "audius-infra"
   - run:
-      name: Update tag in audius-docker-compose
+      name: Merge foundation into main branch
       command: |
-        git clone --branch dev https://github.com/AudiusProject/audius-docker-compose.git audius-docker-compose
+        git clone https://github.com/AudiusProject/audius-docker-compose.git
         cd audius-docker-compose
-        sed -i "s/{TAG:-.*}/{TAG:-$CIRCLE_SHA1}/" */docker-compose.*.yml
-        git add */docker-compose.*.yml
-        git commit -m "Update tag to $CIRCLE_SHA1"
-        git push origin dev
-
-        # Merge dev into main and push
-        git fetch
         git checkout main
-        git merge dev --no-edit
+        git fetch
+        git merge origin/foundation --no-edit
         git push origin main

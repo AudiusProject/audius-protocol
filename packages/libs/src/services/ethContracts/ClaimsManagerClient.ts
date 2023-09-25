@@ -93,10 +93,10 @@ export class ClaimsManagerClient extends ContractClient {
     })
     return events.map((event) => ({
       blockNumber: parseInt(event.blockNumber as unknown as string),
-      claimer: event.returnValues['_claimer'],
-      rewards: Utils.toBN(event.returnValues['_rewards']),
-      oldTotal: Utils.toBN(event.returnValues['_oldTotal']),
-      newTotal: Utils.toBN(event.returnValues['_newTotal'])
+      claimer: event.returnValues._claimer,
+      rewards: Utils.toBN(event.returnValues._rewards),
+      oldTotal: Utils.toBN(event.returnValues._oldTotal),
+      newTotal: Utils.toBN(event.returnValues._newTotal)
     }))
   }
 }

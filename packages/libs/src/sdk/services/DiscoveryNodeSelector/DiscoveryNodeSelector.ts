@@ -1,19 +1,27 @@
-import semver from 'semver'
+import EventEmitter from 'events'
+
 import sampleSize from 'lodash/sampleSize'
-import { ApiHealthResponseData, HealthCheckStatus } from './healthCheckTypes'
-import {
-  parseApiHealthStatusReason,
-  getDiscoveryNodeHealthCheck,
-  isFullFlaskResponse
-} from './healthChecks'
-import { promiseAny } from '../../utils/promiseAny'
-import { defaultDiscoveryNodeSelectorConfig } from './constants'
+import { AbortController as AbortControllerPolyfill } from 'node-abort-controller'
+import semver from 'semver'
+import type TypedEventEmitter from 'typed-emitter'
+
 import type {
   ErrorContext,
   Middleware,
   RequestContext,
   ResponseContext
 } from '../../api/generated/default'
+import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
+import { promiseAny } from '../../utils/promiseAny'
+import type { LoggerService } from '../Logger'
+
+import { defaultDiscoveryNodeSelectorConfig } from './constants'
+import { ApiHealthResponseData, HealthCheckStatus } from './healthCheckTypes'
+import {
+  parseApiHealthStatusReason,
+  getDiscoveryNodeHealthCheck,
+  isFullFlaskResponse
+} from './healthChecks'
 import {
   BackupHealthData,
   Backup,
@@ -24,11 +32,6 @@ import {
   DiscoveryNodeSelectorServiceConfigInternal,
   ServiceSelectionEvents
 } from './types'
-import type TypedEventEmitter from 'typed-emitter'
-import EventEmitter from 'events'
-import { AbortController as AbortControllerPolyfill } from 'node-abort-controller'
-import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
-import type { LoggerService } from '../Logger'
 
 const getPathFromUrl = (url: string) => {
   const pathRegex = /^([a-z]+:\/\/)?(?:www\.)?([^/]+)?(.*)$/

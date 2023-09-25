@@ -116,10 +116,14 @@ const transferAccountIndices = /** @type {const} */ ({
  * Checks to see if the instruction is an allowed token transfer.
  * Currently the only allowed transfers are to USDC userbanks
  * @param {Instruction} instruction
- * @param {string} walletAddress
+ * @param {string | undefined} walletAddress
  * @returns true if the instruction is allowed
  */
 const isTransferToUserbank = async (instruction, walletAddress) => {
+  if (!walletAddress) {
+    // Without the wallet address of the calling user, we can't derive their userbank
+    return false
+  }
   if (
     getInstructionEnum(instruction) === tokenInstructionEnum.transferChecked
   ) {

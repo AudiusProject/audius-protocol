@@ -6,11 +6,10 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 
 const messages = {
   summary: 'Summary',
-  artistCut: 'Artist Cut',
-  audiusCut: 'Audius Cut',
-  alwaysZero: 'Always $0',
+  payExtra: 'Pay Extra',
+  premiumTrack: 'Premium Track',
   existingBalance: 'Existing Balance',
-  youPay: 'You Pay',
+  total: 'Total',
   youPaid: 'You Paid',
   price: (price: string) => `$${price}`,
   subtractPrice: (price: string) => `-$${price}`
@@ -39,10 +38,6 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   summaryTitle: {
     letterSpacing: 1
   },
-  finalPriceContainer: {
-    flexDirection: 'row',
-    gap: spacing(2)
-  },
   strikeThrough: {
     textDecorationLine: 'line-through'
   }
@@ -50,7 +45,7 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 
 type PurchaseSummaryTableProps = {
   amountDue: number
-  artistCut: number
+  extraAmount?: number
   basePrice: number
   existingBalance?: number
   isPurchaseSuccessful: boolean
@@ -58,13 +53,12 @@ type PurchaseSummaryTableProps = {
 
 export const PurchaseSummaryTable = ({
   amountDue,
-  artistCut,
+  extraAmount,
   basePrice,
   existingBalance,
   isPurchaseSuccessful
 }: PurchaseSummaryTableProps) => {
   const styles = useStyles()
-  const amountDueFormatted = formatPrice(amountDue)
 
   return (
     <>
@@ -79,13 +73,15 @@ export const PurchaseSummaryTable = ({
           </Text>
         </View>
         <View style={styles.summaryRow}>
-          <Text>{messages.artistCut}</Text>
-          <Text>{messages.price(formatPrice(artistCut))}</Text>
+          <Text>{messages.premiumTrack}</Text>
+          <Text>{messages.price(formatPrice(basePrice))}</Text>
         </View>
-        <View style={styles.summaryRow}>
-          <Text>{messages.audiusCut}</Text>
-          <Text>{messages.alwaysZero}</Text>
-        </View>
+        {extraAmount ? (
+          <View style={styles.summaryRow}>
+            <Text>{messages.payExtra}</Text>
+            <Text>{messages.price(formatPrice(extraAmount))}</Text>
+          </View>
+        ) : null}
         {existingBalance ? (
           <View style={styles.summaryRow}>
             <Text>{messages.existingBalance}</Text>
@@ -94,28 +90,11 @@ export const PurchaseSummaryTable = ({
         ) : null}
         <View style={[styles.summaryRow, styles.lastRow, styles.greyRow]}>
           <Text weight='bold'>
-            {isPurchaseSuccessful ? messages.youPaid : messages.youPay}
+            {isPurchaseSuccessful ? messages.youPaid : messages.total}
           </Text>
-          <View style={styles.finalPriceContainer}>
-            {existingBalance ? (
-              <>
-                <Text
-                  weight='bold'
-                  color='secondary'
-                  style={styles.strikeThrough}
-                >
-                  {messages.price(formatPrice(basePrice))}
-                </Text>
-                <Text weight='bold' color='secondary'>
-                  {messages.price(amountDueFormatted)}
-                </Text>
-              </>
-            ) : (
-              <Text weight='bold' color='secondary'>
-                {messages.price(amountDueFormatted)}
-              </Text>
-            )}
-          </View>
+          <Text weight='bold' color='secondary'>
+            {messages.price(formatPrice(amountDue))}
+          </Text>
         </View>
       </View>
     </>

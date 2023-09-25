@@ -5,24 +5,22 @@ import axios, {
   Method,
   ResponseType
 } from 'axios'
-
-import { CollectionMetadata, Nullable, User, Utils } from '../../utils'
-
-import { DEFAULT_UNHEALTHY_BLOCK_DIFF, REQUEST_TIMEOUT_MS } from './constants'
-
-import * as Requests from './requests'
-
+import fetch from 'cross-fetch'
 import urlJoin, { PathArg } from 'proper-url-join'
+import type { TransactionReceipt } from 'web3-core'
+
+import { DiscoveryNodeSelector, FetchError, Middleware } from '../../sdk'
+import type { CurrentUser, UserStateManager } from '../../userStateManager'
+import { CollectionMetadata, Nullable, User, Utils } from '../../utils'
+import type { EthContracts } from '../ethContracts'
+import type { Web3Manager } from '../web3Manager'
+
 import {
   DiscoveryProviderSelection,
   DiscoveryProviderSelectionConfig
 } from './DiscoveryProviderSelection'
-import type { CurrentUser, UserStateManager } from '../../userStateManager'
-import type { EthContracts } from '../ethContracts'
-import type { Web3Manager } from '../web3Manager'
-import { DiscoveryNodeSelector, FetchError, Middleware } from '../../sdk'
-import fetch from 'cross-fetch'
-import type { TransactionReceipt } from 'web3-core'
+import { DEFAULT_UNHEALTHY_BLOCK_DIFF, REQUEST_TIMEOUT_MS } from './constants'
+import * as Requests from './requests'
 
 const MAX_MAKE_REQUEST_RETRY_COUNT = 5
 const MAX_MAKE_REQUEST_RETRIES_WITH_404 = 2
@@ -95,14 +93,14 @@ type DiscoveryNodeChallenge = {
 }
 
 export type DiscoveryRelayBody = {
-  contractRegistryKey?: string | null;
-  contractAddress?: string | null;
-  senderAddress?: string | null;
-  encodedABI?: string | null;
-  gasLimit?: number | null;
-  handle?: string | null;
-  nethermindContractAddress?: string | null;
-  nethermindEncodedAbi?: string | null;
+  contractRegistryKey?: string | null
+  contractAddress?: string | null
+  senderAddress?: string | null
+  encodedABI?: string | null
+  gasLimit?: number | null
+  handle?: string | null
+  nethermindContractAddress?: string | null
+  nethermindEncodedAbi?: string | null
 }
 
 /**
@@ -176,8 +174,8 @@ export class DiscoveryProvider {
         selectionCallback,
         monitoringCallbacks,
         requestTimeout: selectionRequestTimeout,
-        unhealthySlotDiffPlays: unhealthySlotDiffPlays,
-        localStorage: localStorage,
+        unhealthySlotDiffPlays,
+        localStorage,
         unhealthyBlockDiff: this.unhealthyBlockDiff
       },
       this.ethContracts
@@ -1080,7 +1078,9 @@ export class DiscoveryProvider {
     )
   }
 
-  async relay(data: DiscoveryRelayBody): Promise<{ receipt: TransactionReceipt } | null | undefined> {
+  async relay(
+    data: DiscoveryRelayBody
+  ): Promise<{ receipt: TransactionReceipt } | null | undefined> {
     const req = {
       endpoint: 'relay',
       method: 'post',
@@ -1170,6 +1170,7 @@ export class DiscoveryProvider {
       }
       if (resp && resp.status === 404) {
         // We have 404'd. Throw that error message back out
+        // eslint-disable-next-line no-throw-literal
         throw { ...errData, status: '404' }
       }
 
@@ -1589,7 +1590,7 @@ export class DiscoveryProvider {
     const timeout = requestObj.timeout ?? this.selectionRequestTimeout
     let axiosRequest: AxiosRequestConfig = {
       url: requestUrl,
-      headers: headers,
+      headers,
       method: requestObj.method ?? 'get',
       responseType: requestObj.responseType ?? 'json',
       timeout

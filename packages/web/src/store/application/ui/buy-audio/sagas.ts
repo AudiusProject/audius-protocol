@@ -33,10 +33,12 @@ import {
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import { QuoteResponse } from '@jup-ag/api'
 import {
+  AddressLookupTableAccount,
   Connection,
   Keypair,
   LAMPORTS_PER_SOL,
-  PublicKey
+  PublicKey,
+  TransactionMessage
 } from '@solana/web3.js'
 import BN from 'bn.js'
 import dayjs from 'dayjs'
@@ -61,6 +63,7 @@ import {
 import { JupiterSingleton } from 'services/audius-backend/Jupiter'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {
+  TRANSACTION_FEE_FALLBACK,
   getRootAccountRentExemptionMinimum,
   getRootSolanaAccount,
   getSolanaConnection,
@@ -216,10 +219,11 @@ function* getTransactionFees({
 }) {
   let transactionFees = feesCache?.transactionFees ?? 0
   if (!transactionFees) {
-    const swapTransaction = yield* call(JupiterSingleton.getSwapTransaction, {
-      quote,
-      userPublicKey: rootAccount
-    })
+    const { instructions: swapInstructions, lookupTableAddresses } =
+      yield* call(JupiterSingleton.getSwapInstructions, {
+        quote,
+        userPublicKey: rootAccount
+      })
     const userBank = yield* call(deriveUserBankPubkey, audiusBackendInstance)
     const transferTransaction = yield* call(
       createTransferToUserBankTransaction,
@@ -233,25 +237,50 @@ function* getTransactionFees({
       }
     )
     const connection = yield* call(getSolanaConnection)
+
+    // Calculate fees for transfer transaction (legacy transaction)
     const latestBlockhashResult = yield* call(
       [connection, connection.getLatestBlockhash],
       'finalized'
     )
-    for (const transaction of [swapTransaction, transferTransaction]) {
-      if (transaction) {
-        if (!transaction.recentBlockhash) {
-          transaction.recentBlockhash = latestBlockhashResult.blockhash
-        }
-        if (!transaction.feePayer) {
-          transaction.feePayer = rootAccount
-        }
-        const fee = yield* call(
-          [transaction, transaction.getEstimatedFee],
-          connection
-        )
-        transactionFees += fee ?? 5000 // For some reason, swap transactions don't have fee estimates??
+    if (!transferTransaction.recentBlockhash) {
+      transferTransaction.recentBlockhash = latestBlockhashResult.blockhash
+    }
+    if (!transferTransaction.feePayer) {
+      transferTransaction.feePayer = rootAccount
+    }
+    transactionFees +=
+      (yield* call(
+        [transferTransaction, transferTransaction.getEstimatedFee],
+        connection
+      )) ?? TRANSACTION_FEE_FALLBACK
+
+    // Calculate fees for swap transaction (v0 transaction)
+    const lookupTableAccounts: AddressLookupTableAccount[] = []
+    // Need to use for loop instead of forEach to properly await async calls
+    for (const address of lookupTableAddresses) {
+      if (address === undefined) continue
+      const lookupTableAccount = yield* call(
+        [connection, connection.getAddressLookupTable],
+        new PublicKey(address)
+      )
+      if (lookupTableAccount.value !== null) {
+        lookupTableAccounts.push(lookupTableAccount.value)
+      } else {
+        // Abort if a lookup table account is missing because the resulting transaction
+        // might be too large
+        throw new Error(`Missing lookup table account for ${address}`)
       }
     }
+    const message = new TransactionMessage({
+      payerKey: rootAccount,
+      recentBlockhash: latestBlockhashResult.blockhash,
+      instructions: swapInstructions
+    }).compileToV0Message(lookupTableAccounts)
+    transactionFees +=
+      (yield* call([connection, connection.getFeeForMessage], message)).value ??
+      TRANSACTION_FEE_FALLBACK
+
     yield* put(cacheTransactionFees({ transactionFees }))
   }
   return transactionFees
@@ -688,14 +717,19 @@ function* swapStep({
 
   // Swap the SOL for AUDIO
   yield* put(swapStarted())
-  const transaction = yield* call(JupiterSingleton.getSwapTransaction, {
-    quote: quote.quote,
-    userPublicKey: rootAccount.publicKey
-  })
+  const { instructions: swapInstructions, lookupTableAddresses } = yield* call(
+    JupiterSingleton.getSwapInstructions,
+    {
+      quote: quote.quote,
+      userPublicKey: rootAccount.publicKey
+    }
+  )
+
   const txId = yield* call(JupiterSingleton.executeExchange, {
-    transaction,
+    instructions: swapInstructions,
     feePayer: rootAccount.publicKey,
-    transactionHandler
+    transactionHandler,
+    lookupTableAddresses
   })
 
   // Write transaction details to local storage

@@ -276,40 +276,41 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 
 		c.Response().Header().Set("x-variant-storage-path", variantStoragePath)
 
-		// we already have this version
+		// we already have the resized version
 		if blob, err := ss.bucket.NewReader(ctx, variantStoragePath, nil); err == nil {
 			return serveSuccessWithReader(blob)
 		}
 
-		// we need to generate it
-		// ... get the cid
-		// ... create the variant
-		// ... store it at variantStoragePath
-		startDynamicResize := time.Now()
-		if host := ss.findNodeToServeBlob(baCid); host != "" {
+		// open the orig for resizing
+		origReader, err := ss.bucket.NewReader(ctx, cidutil.ShardCID(baCid), nil)
 
-			err := ss.pullFileFromHost(host, baCid)
+		// if we don't have orig, fetch from network
+		if err != nil {
+			startFetch := time.Now()
+			host, err := ss.findAndPullBlob(ctx, baCid)
+			if err != nil {
+				return c.String(404, err.Error())
+			}
+
+			c.Response().Header().Set("x-fetch-host", host)
+			c.Response().Header().Set("x-fetch-ok", fmt.Sprintf("%.2fs", time.Since(startFetch).Seconds()))
+
+			origReader, err = ss.bucket.NewReader(ctx, cidutil.ShardCID(baCid), nil)
 			if err != nil {
 				return err
 			}
-
-			if !isOriginalJpg {
-				// dynamically create resized version
-				r, err := ss.bucket.NewReader(ctx, cidutil.ShardCID(baCid), nil)
-				if err != nil {
-					return err
-				}
-
-				resized, _, _ := Resized(".jpg", r, w, h, "fill")
-				w, _ := ss.bucket.NewWriter(ctx, variantStoragePath, nil)
-				io.Copy(w, resized)
-				w.Close()
-				r.Close()
-				c.Response().Header().Set("x-dynamic-resize-ok", fmt.Sprintf("%.2fs", time.Since(startDynamicResize).Seconds()))
-			}
-		} else {
-			return c.String(400, fmt.Sprintf("unable to find cid: %s", baCid))
 		}
+
+		// do resize if not original.jpg
+		if !isOriginalJpg {
+			resizeStart := time.Now()
+			resized, _, _ := Resized(".jpg", origReader, w, h, "fill")
+			w, _ := ss.bucket.NewWriter(ctx, variantStoragePath, nil)
+			io.Copy(w, resized)
+			w.Close()
+			c.Response().Header().Set("x-resize-ok", fmt.Sprintf("%.2fs", time.Since(resizeStart).Seconds()))
+		}
+		origReader.Close()
 
 		// ... serve it
 		return serveSuccess(variantStoragePath)
@@ -332,19 +333,15 @@ func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
 
 		// pull blob from another host and store it at key
 		// keys like QmDirMultiHash/150x150.jpg works fine with findNodeToServeBlob
-		startFindNode := time.Now()
-		if host := ss.findNodeToServeBlob(key); host != "" {
-			err := ss.pullFileFromHost(host, key)
-			if err != nil {
-				return err
-			}
-
-			c.Response().Header().Set("x-find-node-success", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
-			return serveSuccess(key)
-
-		} else {
-			c.Response().Header().Set("x-find-node-failure", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
+		startFetch := time.Now()
+		host, err := ss.findAndPullBlob(ctx, key)
+		if err != nil {
+			return c.String(404, err.Error())
 		}
+
+		c.Response().Header().Set("x-fetch-host", host)
+		c.Response().Header().Set("x-fetch-ok", fmt.Sprintf("%.2fs", time.Since(startFetch).Seconds()))
+		return serveSuccess(key)
 	}
 
 	msg := fmt.Sprintf("variant %s not found for upload %s", variant, jobID)

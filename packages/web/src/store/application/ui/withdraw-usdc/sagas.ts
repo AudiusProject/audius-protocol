@@ -8,7 +8,8 @@ import {
   TOKEN_LISTING_MAP,
   getUserbankAccountInfo,
   BNUSDC,
-  formatUSDCWeiToFloorDollarNumber
+  formatUSDCWeiToFloorDollarNumber,
+  userApiActions
 } from '@audius/common'
 import {
   createAssociatedTokenAccountInstruction,
@@ -123,13 +124,11 @@ function* doWithdrawUSDC({
               feeAmount - (existingBalance - rootSolanaAccountRent)
             }`
           )
-          const swapInstructions = yield* call(
-            getSwapUSDCUserBankInstructions,
-            {
+          const { instructions: swapInstructions, lookupTableAddresses } =
+            yield* call(getSwapUSDCUserBankInstructions, {
               amount: feeAmount - existingBalance,
               feePayer: feePayerPubkey
-            }
-          )
+            })
           const swapRecentBlockhash = yield* call(getRecentBlockhash)
           const signatureWithPubkey = yield* call(getSignatureForTransaction, {
             instructions: swapInstructions,
@@ -148,7 +147,8 @@ function* doWithdrawUSDC({
                 signature: s.signature!,
                 publicKey: s.publicKey.toString()
               })),
-              recentBlockhash: swapRecentBlockhash
+              recentBlockhash: swapRecentBlockhash,
+              lookupTableAddresses
             }
           )
           if (swapError) {
@@ -173,7 +173,8 @@ function* doWithdrawUSDC({
 
         // Then create and fund the destination associated token account
         const createRecentBlockhash = yield* call(getRecentBlockhash)
-        const tx = new Transaction({ recentBlockhash: createRecentBlockhash })
+        const tx = new Transaction()
+        tx.recentBlockhash = createRecentBlockhash
         const createTokenAccountInstruction = yield* call(
           createAssociatedTokenAccountInstruction,
           rootSolanaAccount.publicKey, // fee payer
@@ -244,6 +245,9 @@ function* doWithdrawUSDC({
     )
     yield* call(onSuccess, transferSignature)
     yield* put(withdrawUSDCSucceeded())
+
+    // clear the withdrawals so next query will fetch from source
+    yield* put(userApiActions.resetGetUSDCTransactions!())
   } catch (e: unknown) {
     console.error('Withdraw USDC failed', e)
     const reportToSentry = yield* getContext('reportToSentry')

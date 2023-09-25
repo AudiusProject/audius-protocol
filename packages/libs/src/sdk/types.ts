@@ -3,9 +3,9 @@ import { z } from 'zod'
 import type { AuthService } from './services/Auth'
 import type { DiscoveryNodeSelectorService } from './services/DiscoveryNodeSelector'
 import type { EntityManagerService } from './services/EntityManager'
+import type { LoggerService } from './services/Logger'
 import type { StorageService } from './services/Storage'
 import type { StorageNodeSelectorService } from './services/StorageNodeSelector'
-import type { LoggerService } from './services/Logger'
 
 export type ServicesContainer = {
   /**

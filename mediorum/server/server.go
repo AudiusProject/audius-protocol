@@ -20,6 +20,7 @@ import (
 	"time"
 
 	_ "embed"
+	_ "net/http/pprof"
 
 	"github.com/erni27/imcache"
 	"github.com/imroc/req/v3"
@@ -27,8 +28,9 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gocloud.dev/blob"
-	_ "gocloud.dev/blob/fileblob"
 	"golang.org/x/exp/slog"
+
+	_ "gocloud.dev/blob/fileblob"
 )
 
 type Peer struct {
@@ -39,12 +41,6 @@ type Peer struct {
 type VersionJson struct {
 	Version string `json:"version"`
 	Service string `json:"service"`
-}
-
-func (p Peer) ApiPath(parts ...string) string {
-	// todo: remove this method, just use apiPath helper everywhere
-	parts = append([]string{p.Host}, parts...)
-	return apiPath(parts...)
 }
 
 type MediorumConfig struct {
@@ -250,12 +246,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	echoServer.HideBanner = true
 	echoServer.Debug = true
 
-	// echoServer is the root server
-	// it mostly exists to serve the catch all reverse proxy rule at the end
-	// most routes and middleware should be added to the `routes` group
-	// mostly don't add CORS middleware here as it will break reverse proxy at the end
 	echoServer.Use(middleware.Recover())
 	echoServer.Use(middleware.Logger())
+	echoServer.Use(middleware.CORS())
+	echoServer.Use(middleware.Gzip())
 
 	ss := &MediorumServer{
 		echo:            echoServer,
@@ -276,10 +270,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		Config:    config,
 	}
 
-	// routes holds all of our handled routes
-	// and related middleware like CORS
 	routes := echoServer.Group(apiBasePath)
-	routes.Use(middleware.CORS())
 
 	routes.GET("", func(c echo.Context) error {
 		return c.Redirect(http.StatusMovedPermanently, "/health_check")
@@ -352,6 +343,11 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 func (ss *MediorumServer) MustStart() {
 
+	// start pprof server
+	go func() {
+		log.Println(http.ListenAndServe(":6060", nil))
+	}()
+
 	// start server
 	go func() {
 		err := ss.echo.Start(":" + ss.Config.ListenPort)
@@ -362,11 +358,10 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startTranscoder()
 
+	zeroTime := time.Time{}
 	var lastSuccessfulRepair RepairTracker
 	err := ss.crud.DB.
-		Where("finished_at is not null").
-		Where("finished_at != '0001-01-01 00:00:00+00'").
-		Where("aborted_reason = ?", "").
+		Where("finished_at is not null and finished_at != ? and aborted_reason = ?", zeroTime, "").
 		Order("started_at desc").
 		First(&lastSuccessfulRepair).Error
 	if err != nil {
@@ -376,10 +371,7 @@ func (ss *MediorumServer) MustStart() {
 
 	var lastSuccessfulCleanup RepairTracker
 	err = ss.crud.DB.
-		Where("finished_at is not null").
-		Where("finished_at != '0001-01-01 00:00:00+00'").
-		Where("aborted_reason = ?", "").
-		Where("cleanup_mode = true").
+		Where("finished_at is not null and finished_at != ? and aborted_reason = ? and cleanup_mode = true", zeroTime, "").
 		Order("started_at desc").
 		First(&lastSuccessfulCleanup).Error
 	if err != nil {
@@ -414,7 +406,7 @@ func (ss *MediorumServer) MustStart() {
 	go ss.monitorPeerReachability()
 
 	// signals
-	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(ss.quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	<-ss.quit
 	close(ss.quit)
 
@@ -422,7 +414,7 @@ func (ss *MediorumServer) MustStart() {
 }
 
 func (ss *MediorumServer) Stop() {
-	ss.logger.Debug("stopping")
+	ss.logger.Info("stopping")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -439,7 +431,7 @@ func (ss *MediorumServer) Stop() {
 
 	// todo: stop transcode worker + repairer too
 
-	ss.logger.Debug("bye")
+	ss.logger.Info("bye")
 
 }
 

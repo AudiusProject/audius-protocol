@@ -1,11 +1,11 @@
-import type { TransactionReceipt } from 'web3-core'
 import sigUtil from 'eth-sig-util'
 import { Buffer as SafeBuffer } from 'safe-buffer'
+import type { TransactionReceipt } from 'web3-core'
 
-import { ContractClient } from '../contracts/ContractClient'
 import * as signatureSchemas from '../../data-contracts/signatureSchemas'
-import type { Web3Manager } from '../web3Manager'
 import type { TrackMetadata, UserMetadata } from '../../utils'
+import { ContractClient } from '../contracts/ContractClient'
+import type { Web3Manager } from '../web3Manager'
 
 export enum Action {
   CREATE = 'Create',

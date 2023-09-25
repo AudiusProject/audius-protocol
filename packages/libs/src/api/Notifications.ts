@@ -1,10 +1,12 @@
 import type { TransactionReceipt } from 'web3-core'
-import { Base, BaseConstructorArgs, Services } from './base'
+
 import {
   Action,
   EntityType
 } from '../services/dataContracts/EntityManagerClient'
 import type { GetUserNotificationsParams } from '../services/discoveryProvider/requests'
+
+import { Base, BaseConstructorArgs, Services } from './base'
 
 type AnnouncementData = {}
 

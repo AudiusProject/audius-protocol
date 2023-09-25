@@ -1,15 +1,16 @@
+import type { Hedgehog } from '@audius/hedgehog'
+
 import type { Comstock } from '../services/comstock'
 import type { CreatorNode } from '../services/creatorNode'
 import type { AudiusContracts } from '../services/dataContracts'
 import type { DiscoveryProvider } from '../services/discoveryProvider'
 import type { EthContracts } from '../services/ethContracts'
 import type { EthWeb3Manager } from '../services/ethWeb3Manager'
-import type { Hedgehog } from '@audius/hedgehog'
 import type { IdentityService } from '../services/identity'
 import type { SolanaWeb3Manager } from '../services/solana'
 import type { Web3Manager } from '../services/web3Manager'
-import type { UserStateManager } from '../userStateManager'
 import type { Wormhole } from '../services/wormhole'
+import type { UserStateManager } from '../userStateManager'
 
 export const Services = Object.freeze({
   IDENTITY_SERVICE: 'Identity Service',

@@ -12,27 +12,8 @@ jobs:
       instance-name: circleci-test-identity-service-$CIRCLE_BUILD_NUM
       service: identity-service
 
-  # Release
-  - deploy-prod-identity-service-trigger:
-      requires:
-        - test-identity-service
-        - push-identity-service
-      filters:
-        branches:
-          only: /^release.*$/
-      type: approval
-  - deploy:
-      name: deploy-prod-identity-service
-      context:
-        - open-vpn
-        - slack-secrets
-      requires:
-        - deploy-prod-identity-service-trigger
-      hosts: prod-identity
-      service: identity-service
-
-  # Main deploy
-  - deploy:
+  # Deploy audius-protocol `main` branch (stage)
+  - deploy-stage-nodes:
       name: deploy-stage-identity-service
       requires:
         - test-identity-service
@@ -40,10 +21,5 @@ jobs:
       filters:
         branches:
           only: main
-      context:
-        - open-vpn
-        - build-freeze
-        - slack-secrets
-      hosts: stage-identity
+      context: github
       service: identity-service
-      freeze: $FREEZE_BUILD

@@ -1,5 +1,6 @@
-import type { AuthService } from '../Auth'
 import type { TransactionReceipt } from 'web3-core'
+
+import type { AuthService } from '../Auth'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { LoggerService } from '../Logger'
 

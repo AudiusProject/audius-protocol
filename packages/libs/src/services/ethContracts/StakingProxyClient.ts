@@ -1,8 +1,10 @@
+import type BN from 'bn.js'
+
 import type { ContractABI, Logger } from '../../utils'
 import { ContractClient, GetRegistryAddress } from '../contracts/ContractClient'
 import type { EthWeb3Manager } from '../ethWeb3Manager'
+
 import type { AudiusTokenClient } from './AudiusTokenClient'
-import type BN from 'bn.js'
 
 export class StakingProxyClient extends ContractClient {
   audiusTokenClient: AudiusTokenClient

@@ -40,7 +40,10 @@ export const getSwapUSDCUserBankInstructions = async ({
 }: {
   amount: number
   feePayer: PublicKey
-}): Promise<TransactionInstruction[]> => {
+}): Promise<{
+  instructions: TransactionInstruction[]
+  lookupTableAddresses: string[]
+}> => {
   const libs = await getLibs()
 
   const solanaRootAccount = await getRootSolanaAccount()
@@ -67,10 +70,11 @@ export const getSwapUSDCUserBankInstructions = async ({
     swapMode: 'ExactIn',
     onlyDirectRoutes: true
   })
-  const swapInstructions = await JupiterSingleton.getSwapInstructions({
-    quote: swapQuote.quote,
-    userPublicKey: solanaRootAccount.publicKey
-  })
+  const { instructions: swapInstructions, lookupTableAddresses } =
+    await JupiterSingleton.getSwapInstructions({
+      quote: swapQuote.quote,
+      userPublicKey: solanaRootAccount.publicKey
+    })
 
   const transferInstructions =
     await libs.solanaWeb3Manager!.createTransferInstructionsFromCurrentUser({
@@ -94,10 +98,13 @@ export const getSwapUSDCUserBankInstructions = async ({
     solanaRootAccount.publicKey //  owner
   )
 
-  return [
-    createInstruction,
-    ...transferInstructions,
-    ...swapInstructions,
-    closeInstruction
-  ]
+  return {
+    instructions: [
+      createInstruction,
+      ...transferInstructions,
+      ...swapInstructions,
+      closeInstruction
+    ],
+    lookupTableAddresses
+  }
 }

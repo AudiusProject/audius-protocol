@@ -1,13 +1,12 @@
 import type { Hedgehog } from '@audius/hedgehog'
-import type { EthContracts } from '../ethContracts'
-import type { EthWeb3Manager } from '../ethWeb3Manager'
-import type { IdentityService } from '../identity'
-import type { SolanaWeb3Manager } from '../solana'
-
 import bs58 from 'bs58'
 import { BN, toBuffer } from 'ethereumjs-util'
 
 import { Utils, sign, getTransferTokensDigest, Nullable } from '../../utils'
+import type { EthContracts } from '../ethContracts'
+import type { EthWeb3Manager } from '../ethWeb3Manager'
+import type { IdentityService } from '../identity'
+import type { SolanaWeb3Manager } from '../solana'
 
 export type ProxyWormholeConfig = {}
 

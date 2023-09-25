@@ -27,7 +27,7 @@ func (ss *MediorumServer) startHealthPoller() {
 				if peer.Host == ss.Config.Self.Host {
 					return
 				}
-				req, err := http.NewRequest("GET", peer.ApiPath("/health_check"), nil)
+				req, err := http.NewRequest("GET", apiPath(peer.Host, "/health_check"), nil)
 				if err != nil {
 					return
 				}

@@ -1,12 +1,14 @@
-import { setupServer } from 'msw/node'
+import fetch, { Response } from 'cross-fetch'
 import { rest } from 'msw'
+import { setupServer } from 'msw/node'
+
+import type { FetchParams } from '../../api/generated/default'
+
 import { DiscoveryNodeSelector } from './DiscoveryNodeSelector'
 import type {
   ApiHealthResponseData,
   HealthCheckResponseData
 } from './healthCheckTypes'
-import fetch, { Response } from 'cross-fetch'
-import type { FetchParams } from '../../api/generated/default'
 
 // jest.mock('./healthChecks', () => ({
 //   getHealthCheck: jest.fn(() => ({}))
@@ -334,12 +336,12 @@ describe('discoveryNodeSelector', () => {
       const middleware = selector.createMiddleware()
       expect(middleware.pre).not.toBeUndefined()
       const result = await middleware.pre!({
-        fetch: fetch,
+        fetch,
         url: '/v1/full/tracks',
         init: {}
       })
       expect(result).not.toBeUndefined()
-      expect((result as FetchParams).url.startsWith(HEALTHY_NODE))
+      expect((result as FetchParams).url.startsWith(HEALTHY_NODE)).toBe(true)
     })
 
     test('reselects if request succeeds but node fell behind', async () => {
@@ -367,12 +369,12 @@ describe('discoveryNodeSelector', () => {
         }
       }
       await middleware.post!({
-        fetch: fetch,
+        fetch,
         url: `${BEHIND_BLOCKDIFF_NODE}/v1/full/tracks`,
         init: {},
         response: new Response(JSON.stringify(data))
       })
-      expect(changeHandler).toBeCalledWith(HEALTHY_NODE)
+      expect(changeHandler).toHaveBeenCalledWith(HEALTHY_NODE)
     })
 
     test("doesn't reselect if behind but was already behind", async () => {
@@ -402,12 +404,12 @@ describe('discoveryNodeSelector', () => {
         }
       }
       await middleware.post!({
-        fetch: fetch,
+        fetch,
         url: `${BEHIND_BLOCKDIFF_NODE}/v1/full/tracks`,
         init: {},
         response: new Response(JSON.stringify(data))
       })
-      expect(changeHandler).not.toBeCalled()
+      expect(changeHandler).not.toHaveBeenCalled()
     })
 
     test('reselects if request fails and node fell behind', async () => {
@@ -444,13 +446,13 @@ describe('discoveryNodeSelector', () => {
       )
 
       const actualResponse = await middleware.post!({
-        fetch: fetch,
+        fetch,
         url: `${BEHIND_BLOCKDIFF_NODE}/v1/full/tracks`,
         init: {},
         response: response as Response
       })
       expect(actualResponse?.ok).toBe(true)
-      expect(changeHandler).toBeCalledWith(HEALTHY_NODE)
+      expect(changeHandler).toHaveBeenCalledWith(HEALTHY_NODE)
     })
 
     test('reselects if request fails and node unhealthy', async () => {
@@ -486,13 +488,13 @@ describe('discoveryNodeSelector', () => {
       )
 
       const actualResponse = await middleware.post!({
-        fetch: fetch,
+        fetch,
         url: `${UNHEALTHY_NODE}/v1/full/tracks`,
         init: {},
         response: response as Response
       })
       expect(actualResponse?.ok).toBe(true)
-      expect(changeHandler).toBeCalledWith(HEALTHY_NODE)
+      expect(changeHandler).toHaveBeenCalledWith(HEALTHY_NODE)
     })
 
     test("doesn't reselect if request fails but node is healthy", async () => {
@@ -518,12 +520,12 @@ describe('discoveryNodeSelector', () => {
       }
 
       await middleware.post!({
-        fetch: fetch,
+        fetch,
         url: `${HEALTHY_NODE}/v1/full/tracks`,
         init: {},
         response: response as Response
       })
-      expect(changeHandler).not.toBeCalled()
+      expect(changeHandler).not.toHaveBeenCalled()
     })
 
     test('resets isBehind when request shows the node is caught up', async () => {
@@ -553,7 +555,7 @@ describe('discoveryNodeSelector', () => {
         }
       }
       await middleware.post!({
-        fetch: fetch,
+        fetch,
         url: `${BEHIND_BLOCKDIFF_NODE}/v1/full/tracks`,
         init: {},
         response: new Response(JSON.stringify(data))

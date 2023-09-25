@@ -1,11 +1,11 @@
 import abiDecoder from 'abi-decoder'
-import type { AbiItem, AbiInput } from 'web3-utils'
-import type { Log } from 'web3-core'
 import sigUtil from 'eth-sig-util'
+import type { Log } from 'web3-core'
+import type { AbiItem, AbiInput } from 'web3-utils'
 
-import RegistryABI from '../../data-contracts/ABIs/Registry.json'
 import DiscoverProviderFactoryABI from '../../data-contracts/ABIs/DiscoveryProviderFactory.json'
 import EntityManagerABI from '../../data-contracts/ABIs/EntityManager.json'
+import RegistryABI from '../../data-contracts/ABIs/Registry.json'
 import { generators } from '../../data-contracts/signatureSchemas'
 
 const abiMap: Record<string, AbiItem[]> = {}

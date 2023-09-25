@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { MouseEvent, memo, useCallback } from 'react'
 
 import {
   formatCount,
@@ -9,7 +9,8 @@ import {
   Genre,
   CommonState,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentUSDCPurchaseGated,
+  usePremiumContentPurchaseModal
 } from '@audius/common'
 import { IconCheck, IconCrown, IconHidden, ProgressBar } from '@audius/stems'
 import cn from 'classnames'
@@ -157,7 +158,18 @@ const TrackTile = ({
   const isLongFormContent =
     genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
 
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
   const isPurchase = isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const onClickPremiumPill = useCallback(
+    (e: MouseEvent) => {
+      if (isPurchase && trackId) {
+        e.stopPropagation()
+        openPremiumContentPurchaseModal({ contentId: trackId })
+      }
+    },
+    [isPurchase, trackId, openPremiumContentPurchaseModal]
+  )
 
   const getDurationText = () => {
     if (!duration) {
@@ -383,6 +395,7 @@ const TrackTile = ({
           onClickRepost={onClickRepost}
           onClickFavorite={onClickFavorite}
           onClickShare={onClickShare}
+          onClickPremiumPill={onClickPremiumPill}
           premiumConditions={premiumConditions}
           isTrack={isTrack}
           trackId={trackId}

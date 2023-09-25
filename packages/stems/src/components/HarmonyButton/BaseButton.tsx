@@ -55,6 +55,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
         )}
         disabled={disabled}
         ref={ref}
+        type='button'
         style={{
           minWidth: minWidth && isTextVisible ? `${minWidth}px` : 'unset',
           ...style

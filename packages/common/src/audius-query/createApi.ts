@@ -40,7 +40,8 @@ import {
   PerEndpointState,
   PerKeyState,
   SliceConfig,
-  QueryHookResults
+  QueryHookResults,
+  FetchResetAction
 } from './types'
 import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
 
@@ -78,6 +79,7 @@ export const createApi = <
   }
 
   api.reducer = slice.reducer
+  api.actions = slice.actions
   api.util = {
     updateQueryData:
       (endpointName, fetchArgs, updateRecipe) =>
@@ -138,6 +140,12 @@ const addEndpointToSlice = <NormalizedData>(
       scopedState.status = Status.SUCCESS
       scopedState.nonNormalizedData = nonNormalizedData
       state[endpointName][key] = scopedState
+    },
+    [`reset${capitalize(endpointName)}`]: (
+      state: ApiState,
+      _action: FetchResetAction
+    ) => {
+      state[endpointName] = {}
     }
   }
 }

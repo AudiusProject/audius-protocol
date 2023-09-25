@@ -11,6 +11,7 @@ import {
   getTokenAccountInfo,
   purchaseContent
 } from 'services/audius-backend/solana'
+import { purchasesApiActions } from 'src/api'
 import { accountSelectors } from 'store/account'
 import {
   buyUSDCFlowFailed,
@@ -129,7 +130,12 @@ function* pollForPurchaseConfirmation({
 }
 
 function* doStartPurchaseContentFlow({
-  payload: { extraAmount, contentId, contentType = ContentType.TRACK }
+  payload: {
+    extraAmount,
+    extraAmountPreset,
+    contentId,
+    contentType = ContentType.TRACK
+  }
 }: ReturnType<typeof startPurchaseContentFlow>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const reportToSentry = yield* getContext('reportToSentry')
@@ -141,6 +147,7 @@ function* doStartPurchaseContentFlow({
     make({
       eventName: Name.PURCHASE_CONTENT_STARTED,
       extraAmount,
+      extraAmountPreset,
       contentId,
       contentType
     })
@@ -231,6 +238,9 @@ function* doStartPurchaseContentFlow({
     if (contentType === ContentType.TRACK) {
       yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
     }
+
+    // clear the purchases so next query will fetch from source
+    yield* put(purchasesApiActions.resetGetPurchases!())
 
     // finish
     yield* put(purchaseConfirmed())

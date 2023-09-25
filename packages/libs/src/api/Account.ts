@@ -1,11 +1,13 @@
-import { Base, BaseConstructorArgs, Services } from './base'
-import { Nullable, UserMetadata, Utils } from '../utils'
-import { AuthHeaders } from '../constants'
-import { getPermitDigest, sign } from '../utils/signatures'
 import { PublicKey } from '@solana/web3.js'
-import type { Users } from './Users'
-import type { ServiceProvider } from './ServiceProvider'
 import type { BN } from 'ethereumjs-util'
+
+import { AuthHeaders } from '../constants'
+import { Nullable, UserMetadata, Utils } from '../utils'
+import { getPermitDigest, sign } from '../utils/signatures'
+
+import type { ServiceProvider } from './ServiceProvider'
+import type { Users } from './Users'
+import { Base, BaseConstructorArgs, Services } from './base'
 
 export class Account extends Base {
   User: Users
@@ -566,7 +568,7 @@ export class Account extends Base {
       name,
       tokenAddress,
       chainId,
-      { owner: owner, spender: relayerAddress, value: amount },
+      { owner, spender: relayerAddress, value: amount },
       nonce,
       deadline
     )

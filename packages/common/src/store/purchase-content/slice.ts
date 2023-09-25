@@ -15,6 +15,8 @@ type PurchaseContentState = {
   contentId: ID
   /** Pay extra amount in cents */
   extraAmount?: number
+  /** Used for analytics */
+  extraAmountPreset?: string
   error?: Error
   onSuccess?: OnSuccess
 }
@@ -23,6 +25,7 @@ const initialState: PurchaseContentState = {
   contentType: ContentType.TRACK,
   contentId: -1,
   extraAmount: undefined,
+  extraAmountPreset: undefined,
   error: undefined,
   stage: PurchaseContentStage.START
 }
@@ -35,6 +38,7 @@ const slice = createSlice({
       state,
       action: PayloadAction<{
         extraAmount?: number
+        extraAmountPreset?: string
         contentId: ID
         contentType?: ContentType
         onSuccess?: OnSuccess
@@ -43,6 +47,7 @@ const slice = createSlice({
       state.stage = PurchaseContentStage.START
       state.error = undefined
       state.extraAmount = action.payload.extraAmount
+      state.extraAmountPreset = action.payload.extraAmountPreset
       state.contentId = action.payload.contentId
       state.contentType = action.payload.contentType ?? ContentType.TRACK
       state.onSuccess = action.payload.onSuccess

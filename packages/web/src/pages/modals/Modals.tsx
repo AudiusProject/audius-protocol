@@ -92,7 +92,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   BrowserPushPermissionConfirmation: BrowserPushConfirmationModal,
   ShareSoundToTikTok: ShareSoundToTikTokModal,
   AiAttributionSettings: AiAttributionSettingsModal,
-  PremiumContentPurchase: PremiumContentPurchaseModal,
+  PremiumContentPurchaseModal,
   LeavingAudiusModal,
   CreateChatModal,
   InboxUnavailableModal,

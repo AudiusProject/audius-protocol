@@ -321,6 +321,7 @@ services:
       - ${PROJECT_ROOT}/mediorum/.initdb:/docker-entrypoint-initdb.d
     profiles:
       - mediorum
+      - mediorum-unittests
 
   mediorum:
     build:
@@ -355,6 +356,21 @@ services:
       - mediorum
     depends_on:
       mediorum:
+        condition: service_healthy
+
+  test-mediorum-unittests:
+    build:
+      context: ${PROJECT_ROOT}/mediorum
+      dockerfile: Dockerfile.unittests
+    logging: *default-logging
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; go test ./... -count 1 -timeout 60s "$$@")' -
+    environment:
+      dbUrlTemplate: "postgres://postgres:example@mediorum-db:5432/m%d"
+      dbUrl: "postgres://postgres:example@mediorum-db:5432/m1"
+    profiles:
+      - mediorum-unittests
+    depends_on:
+      mediorum-db:
         condition: service_healthy
 
   # identity-service

@@ -1,4 +1,4 @@
-import { ReactNode, useCallback } from 'react'
+import { MouseEvent, ReactNode, useCallback } from 'react'
 
 import {
   FieldVisibility,
@@ -49,6 +49,7 @@ type BottomRowProps = {
   onClickRepost: (e?: any) => void
   onClickFavorite: (e?: any) => void
   onClickShare: (e?: any) => void
+  onClickPremiumPill?: (e: MouseEvent) => void
 }
 
 export const BottomRow = ({
@@ -70,7 +71,8 @@ export const BottomRow = ({
   premiumConditions,
   onClickRepost,
   onClickFavorite,
-  onClickShare
+  onClickShare,
+  onClickPremiumPill
 }: BottomRowProps) => {
   const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
   const premiumTrackStatus = trackId && premiumTrackStatusMap[trackId]
@@ -123,6 +125,7 @@ export const BottomRow = ({
         <PremiumConditionsPill
           premiumConditions={premiumConditions}
           unlocking={premiumTrackStatus === 'UNLOCKING'}
+          onClick={onClickPremiumPill}
         />
         <div>{rightActions}</div>
       </div>

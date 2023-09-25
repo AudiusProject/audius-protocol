@@ -1,6 +1,6 @@
 {
   "name": "embed",
-  "version": "1.5.42",
+  "version": "1.5.43",
   "scripts": {
     "dev": "preact watch --no-sw --template src/template.html",
     "start:dev": "env-cmd -f .env.dev env-cmd -f .env.local npm run -s dev",
@@ -31,6 +31,7 @@
     "webpack-cli": "4.5.0"
   },
   "dependencies": {
+    "@audius/sdk": "*",
     "amplitude-js": "8.11.1",
     "axios": "0.19.2",
     "classnames": "2.2.6",

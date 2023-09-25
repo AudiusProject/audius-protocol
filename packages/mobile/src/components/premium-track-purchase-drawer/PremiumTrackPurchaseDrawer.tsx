@@ -146,7 +146,10 @@ export const PremiumTrackPurchaseDrawer = () => {
     return null
 
   const price = premiumConditions.usdc_purchase.price
-  const purchaseSummaryValues = getPurchaseSummaryValues(price, currentBalance)
+  const purchaseSummaryValues = getPurchaseSummaryValues({
+    price,
+    currentBalance
+  })
 
   return (
     <NativeDrawer
