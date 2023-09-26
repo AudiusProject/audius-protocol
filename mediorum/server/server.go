@@ -88,8 +88,6 @@ type MediorumServer struct {
 	mediorumPathUsed uint64
 	mediorumPathSize uint64
 	mediorumPathFree uint64
-	legacyDirUsed    uint64
-	mediorumDirUsed  uint64
 
 	databaseSize          uint64
 	dbSizeErr             string
@@ -416,7 +414,7 @@ func (ss *MediorumServer) MustStart() {
 func (ss *MediorumServer) Stop() {
 	ss.logger.Info("stopping")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
 	if err := ss.echo.Shutdown(ctx); err != nil {

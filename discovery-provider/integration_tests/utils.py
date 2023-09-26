@@ -34,9 +34,14 @@ from src.models.users.aggregate_user import AggregateUser
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
 from src.models.users.supporter_rank_up import SupporterRankUp
 from src.models.users.usdc_purchase import USDCPurchase
+from src.models.users.usdc_transactions_history import (
+    USDCTransactionMethod,
+    USDCTransactionsHistory,
+    USDCTransactionType,
+)
 from src.models.users.user import User
 from src.models.users.user_balance_change import UserBalanceChange
-from src.models.users.user_bank import UserBankAccount, UserBankTx
+from src.models.users.user_bank import USDCUserBankAccount, UserBankAccount, UserBankTx
 from src.models.users.user_listening_history import UserListeningHistory
 from src.models.users.user_tip import UserTip
 from src.tasks.aggregates import get_latest_blocknumber
@@ -133,6 +138,7 @@ def populate_mock_db(db, entities, block_offset=None):
         user_listening_history = entities.get("user_listening_history", [])
         hourly_play_counts = entities.get("hourly_play_counts", [])
         user_bank_accounts = entities.get("user_bank_accounts", [])
+        usdc_user_bank_accounts = entities.get("usdc_user_bank_accounts", [])
         associated_wallets = entities.get("associated_wallets", [])
         reactions = entities.get("reactions", [])
         user_bank_txs = entities.get("user_bank_txs", [])
@@ -146,6 +152,7 @@ def populate_mock_db(db, entities, block_offset=None):
         user_balance_changes = entities.get("user_balance_changes", [])
         usdc_purchases = entities.get("usdc_purchases", [])
         cid_datas = entities.get("cid_datas", [])
+        usdc_transactions_history = entities.get("usdc_transactions_history", [])
 
         num_blocks = max(
             len(tracks),
@@ -517,6 +524,14 @@ def populate_mock_db(db, entities, block_offset=None):
                 created_at=user_bank_account.get("created_at", datetime.now()),
             )
             session.add(bank)
+        for i, usdc_user_bank_account in enumerate(usdc_user_bank_accounts):
+            bank = USDCUserBankAccount(
+                signature=usdc_user_bank_account.get("signature", "fake_signature"),
+                ethereum_address=usdc_user_bank_account.get("ethereum_address", ""),
+                bank_account=usdc_user_bank_account.get("bank_account", ""),
+                created_at=usdc_user_bank_account.get("created_at", datetime.now()),
+            )
+            session.add(bank)
         for i, associated_wallet in enumerate(associated_wallets):
             wallet = AssociatedWallet(
                 blockhash=associated_wallet.get("blockhash", hex(i + block_offset)),
@@ -595,7 +610,7 @@ def populate_mock_db(db, entities, block_offset=None):
             )
             session.add(ps)
         for i, notification in enumerate(notifications):
-            ns = Notification(
+            n = Notification(
                 user_ids=notification.get("user_ids", []),
                 blocknumber=notification.get("blocknumber", i),
                 timestamp=notification.get("timestamp", datetime.now()),
@@ -604,7 +619,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 specifier=notification.get("specifier", str(i)),
                 data=notification.get("data", {}),
             )
-            session.add(ns)
+            session.add(n)
         for i, notification_seen in enumerate(notification_seens):
             ns = NotificationSeen(
                 user_id=notification_seen.get("user_id", i),
@@ -614,7 +629,7 @@ def populate_mock_db(db, entities, block_offset=None):
             )
             session.add(ns)
         for i, balance_change in enumerate(user_balance_changes):
-            ns = UserBalanceChange(
+            change = UserBalanceChange(
                 user_id=balance_change.get("user_id", i),
                 blocknumber=balance_change.get("blocknumber", i),
                 current_balance=balance_change.get("current_balance", 0),
@@ -622,9 +637,9 @@ def populate_mock_db(db, entities, block_offset=None):
                 created_at=balance_change.get("created_at", datetime.now()),
                 updated_at=balance_change.get("updated_at", datetime.now()),
             )
-            session.add(ns)
+            session.add(change)
         for i, usdc_purchase in enumerate(usdc_purchases):
-            ns = USDCPurchase(
+            purchase = USDCPurchase(
                 slot=usdc_purchase.get("slot", i),
                 signature=usdc_purchase.get("signature", "fake_signature"),
                 buyer_user_id=usdc_purchase.get("buyer_user_id", 1),
@@ -635,13 +650,32 @@ def populate_mock_db(db, entities, block_offset=None):
                 created_at=usdc_purchase.get("created_at", datetime.now()),
                 updated_at=usdc_purchase.get("updated_at", datetime.now()),
             )
-            session.add(ns)
+            session.add(purchase)
         for i, cid_data in enumerate(cid_datas):
-            ns = CIDData(
+            data = CIDData(
                 cid=cid_data.get("cid", "fake_cid"),
                 type=cid_data.get("type", "user"),
                 data=cid_data.get("data", {}),
             )
-            session.add(ns)
+            session.add(data)
+        for i, usdc_transaction in enumerate(usdc_transactions_history):
+            transaction = USDCTransactionsHistory(
+                user_bank=usdc_transaction.get("user_bank"),
+                slot=usdc_transaction.get("slot", i),
+                signature=usdc_transaction.get("signature", "fake_signature"),
+                transaction_type=usdc_transaction.get(
+                    "transaction_type", USDCTransactionType.transfer
+                ),
+                method=usdc_transaction.get("method", USDCTransactionMethod.send),
+                created_at=usdc_transaction.get("created_at", datetime.now()),
+                updated_at=usdc_transaction.get("updated_at", datetime.now()),
+                transaction_created_at=usdc_transaction.get(
+                    "transaction_created_at", datetime.now()
+                ),
+                change=usdc_transaction.get("change", 0),
+                balance=usdc_transaction.get("balance", 0),
+                tx_metadata=usdc_transaction.get("tx_metadata"),
+            )
+            session.add(transaction)
 
         session.commit()

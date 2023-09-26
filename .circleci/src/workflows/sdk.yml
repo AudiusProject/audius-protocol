@@ -43,7 +43,7 @@ jobs:
         - release-audius-sdk-trigger
       sdk-release-commit: $CIRCLE_SHA1
       sdk-release-version: patch
-      sdk-release-preid: ""
+      sdk-release-preid: ''
       context:
         - Audius Client
         - slack-secrets

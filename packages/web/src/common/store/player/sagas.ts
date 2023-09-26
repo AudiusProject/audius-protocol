@@ -418,6 +418,8 @@ function watchAudio(audio: HTMLAudioElement) {
  * Poll for whether a track has been listened to.
  */
 function* recordListenWorker() {
+  const isNativeMobile = yield* getContext('isNativeMobile')
+  if (isNativeMobile) return
   // Store the last seen play counter to make sure we only record
   // a listen for each "unique" track play. Using an id here wouldn't
   // be enough because the user might have "repeat single" mode turned on.

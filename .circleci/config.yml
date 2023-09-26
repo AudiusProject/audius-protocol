@@ -119,8 +119,7 @@ jobs:
             mv /tmp/.version.json discovery-provider/.version.json
             git add discovery-provider/.version.json
 
-            # Escape double quotes in commit message and replace git log's platform-specific newlines with @@DELIM@@
-            GIT_DIFF=$(git log --pretty=format:'• %an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum discovery-provider identity-service comms | sed 's/"/\\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/@@DELIM@@/g')
+            GIT_DIFF=$(git log --pretty=format:'%an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum discovery-provider identity-service comms | sed 's/"/\\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/=DELIM@/g')
             git commit -m "Bump version to $NEW_VERSION"
 
             git branch "release-v$NEW_VERSION"
@@ -135,21 +134,37 @@ jobs:
             line_count=0
             block_content=""
 
-            # Use @@ as Internal Field Separator, so @@DELIM@@ effectively becomes the delimiter for us to build blocks
-            IFS='@@'
+            # Use =DELIM@ as a delimiter to split the diff into lines (so set Internal Field Separator to "@")
+            buffer=""
+            IFS="@"
             read -ra ADDR \<<< "$GIT_DIFF"
             for line in "${ADDR[@]}"; do
-                if [[ $line == "DELIM" ]]; then
-                    continue
-                fi
+                line="${buffer}${line}"
 
-                block_content+="$line\n"
-                line_count=$((line_count+1))
+                # If the current line ends with "=DELIM", then it's a complete line, so process it and reset buffer
+                if [ "${line: -6}" = "=DELIM" ]; then
+                    line="${line%=DELIM}"
+                    buffer=""
 
-                if (( line_count == max_lines )); then
-                    json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"${block_content}\" } },"
-                    line_count=0
-                    block_content=""
+                    # Try to replace the author with a Slack mention (use author's name without hyphens or spaces because sh env doesn't allow that)
+                    author_name=$(echo "$line" | awk -F ' - ' '{print $1}')
+                    env_key_name="SLACK_ID_FOR_GH_$(echo $author_name | tr ' ' '_' | tr '-' '_' | tr '[:upper:]' '[:lower:]')"
+                    env_var_value=$(eval echo \$$env_key_name)
+                    if [ ! -z "$env_var_value" ]; then
+                        line=$(echo "$line" | sed "s/$author_name/<@$env_var_value>/")
+                    fi
+
+                    block_content+="• $line\n"
+                    line_count=$((line_count+1))
+
+                    if (( line_count == max_lines )); then
+                        json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"${block_content}\" } },"
+                        line_count=0
+                        block_content=""
+                    fi
+                else
+                    # Otherwise, store the current line in the buffer and wait for the next iteration
+                    buffer+="${line}@"
                 fi
             done
 
@@ -160,14 +175,10 @@ jobs:
             json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"\n*These changes will be auto-deployed to foundation nodes in 2 hours (10am PST).* Set \`HALT_AUTO_DEPLOY\`=\`true\` <https://app.circleci.com/settings/organization/github/AudiusProject/contexts/4be7f5c8-cadb-4deb-b66e-318867a6960b|here> if needed.\n\" } }"
             json_content+="]}"
 
-            # The next step of this job will read this file and send it to Slack
-            echo $json_content > /tmp/slack_message.json
-            echo "Text to send to slack: $json_content"
-      - run:
-          name: Send Slack Daily Deploy Message
-          command: |
+            # Send Slack daily deploy message
+            echo "Sending message to Slack: $json_content"
             curl -f -X POST -H 'Content-type: application/json' \
-              --data @/tmp/slack_message.json \
+              --data "$json_content" \
               $SLACK_DAILY_DEPLOY_WEBHOOK
 
   approve-deployment-holds:

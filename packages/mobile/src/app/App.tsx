@@ -38,7 +38,6 @@ import { AppContextProvider } from './AppContextProvider'
 import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
 import { ThemeProvider } from './ThemeProvider'
-import { useSyncCodepush } from './useSyncCodepush'
 
 Sentry.init({
   dsn: Config.SENTRY_DSN
@@ -64,8 +63,6 @@ const Modals = () => {
 }
 
 const App = () => {
-  const { isPendingMandatoryCodePushUpdate } = useSyncCodepush()
-
   // Reset libs so that we get a clean app start
   useEffectOnce(() => {
     setLibs(null)
@@ -101,11 +98,7 @@ const App = () => {
                       <NavigationContainer>
                         <Toasts />
                         <Airplay />
-                        <RootScreen
-                          isPendingMandatoryCodePushUpdate={
-                            isPendingMandatoryCodePushUpdate
-                          }
-                        />
+                        <RootScreen />
                         <Drawers />
                         <Modals />
                         <Audio />
