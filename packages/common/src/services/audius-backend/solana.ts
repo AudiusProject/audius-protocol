@@ -289,7 +289,7 @@ export const pollForBalanceChange = async (
   }
   if (
     tokenAccountInfo &&
-    initialBalance &&
+    initialBalance !== undefined &&
     tokenAccountInfo.amount !== initialBalance
   ) {
     console.debug(

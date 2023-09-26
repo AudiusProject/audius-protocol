@@ -10,23 +10,21 @@ const authMiddleware = require('../authMiddleware')
 const captchaMiddleware = require('../captchaMiddleware')
 const config = require('../config')
 
-sendgridClient.setApiKey(config.get('sendgridEmailValidationKey'))
+const BOUNCER_BASE_URL = 'https://api.usebouncer.com/v1.1/email/verify'
+
+const bouncerApiKey = config.get('bouncerEmailValidationKey')
 
 const isEmailDeliverable = async (email, logger) => {
-  const data = {
-    email,
-    source: 'signup'
-  }
-
-  const request = {
-    url: '/v3/validations/email',
-    method: 'POST',
-    body: data
-  }
-
   try {
-    const [_, body] = await sendgridClient.request(request)
-    return body.result.verdict !== 'Invalid'
+    const res = await axios.get(
+      `${BOUNCER_BASE_URL}?email=${encodeURIComponent(email)}`,
+      {
+        headers: {
+          'x-api-key': bouncerApiKey
+        }
+      }
+    )
+    return res?.data?.status === 'undeliverable'
   } catch (err) {
     // Couldn't figure out if delivable, so say it was
     logger.error(`Unable to validate email for ${email}`, err)
