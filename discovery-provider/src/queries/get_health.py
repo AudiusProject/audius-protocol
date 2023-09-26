@@ -121,6 +121,13 @@ def _get_relay_health():
     return relay_res
 
 
+def _is_relay_healthy(relay_health_res):
+    relay_status = relay_health_res["status"]
+    is_unhealthy = relay_status == "up"
+    relay_health_res["is_unhealthy"] = is_unhealthy
+    return is_unhealthy
+
+
 def _get_chain_health():
     try:
         health_res = requests.get(LOCAL_RPC + "/health")
@@ -388,7 +395,11 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
 
     health_results["chain_health"] = _get_chain_health()
 
-    health_results["relay"] = _get_relay_health()
+    relay_health = _get_relay_health()
+    health_results["relay"] = relay_health
+
+    if not _is_relay_healthy():
+        errors.append("relay unhealthy")
 
     if verbose:
         # Elasticsearch health
