@@ -38,7 +38,6 @@ import { AppContextProvider } from './AppContextProvider'
 import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
 import { ThemeProvider } from './ThemeProvider'
-import { Primitives } from './Tmp'
 
 Sentry.init({
   dsn: Config.SENTRY_DSN
@@ -96,8 +95,7 @@ const App = () => {
                 <WalletConnectProvider>
                   <PortalProvider>
                     <ErrorBoundary>
-                      <Primitives />
-                      {/* <NavigationContainer>
+                      <NavigationContainer>
                         <Toasts />
                         <Airplay />
                         <RootScreen />
@@ -108,7 +106,7 @@ const App = () => {
                         <NotificationReminder />
                         <RateCtaReminder />
                         <PortalHost name='ChatReactionsPortal' />
-                      </NavigationContainer> */}
+                      </NavigationContainer>
                     </ErrorBoundary>
                   </PortalProvider>
                 </WalletConnectProvider>
