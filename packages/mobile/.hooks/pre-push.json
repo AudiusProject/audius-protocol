@@ -1,12 +1,12 @@
 {
-    "steps": [
-      {
-        "name": "typecheck",
-        "command": "npm run typecheck"
-      },
-      {
-        "name": "lint",
-        "command": "npm run lint"
-      }
-    ]
-  }
+  "steps": [
+    {
+      "name": "typecheck",
+      "command": "turbo run typecheck"
+    },
+    {
+      "name": "lint",
+      "command": "turbo run lint"
+    }
+  ]
+}

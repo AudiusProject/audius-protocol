@@ -2,15 +2,15 @@
   "steps": [
     {
       "name": "typecheck",
-      "command": "npm run typecheck"
+      "command": "turbo run typecheck"
     },
     {
       "name": "lint",
-      "command": "npm run lint"
+      "command": "turbo run lint"
     },
     {
       "name": "style lint",
-      "command": "npm run stylelint"
+      "command": "turbo run stylelint"
     }
   ]
 }
