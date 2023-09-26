@@ -76,7 +76,8 @@ function git-reset () {
 function bump-version () {
     (
         # Patch the version
-        VERSION=$(npm version ${RELEASE_VERSION} --preid=${PREID})
+        npm version ${RELEASE_VERSION} --preid=${PREID}
+        VERSION=$(jq -r '.version' package.json)
         tmp=$(mktemp)
         jq ". += {audius: {releaseSHA: \"${GIT_COMMIT}\"}}" package.json > "$tmp" \
             && mv "$tmp" package.json
