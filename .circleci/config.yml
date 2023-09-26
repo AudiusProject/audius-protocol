@@ -531,10 +531,10 @@ workflows:
           workspace_path: ../workspace
 
   gcp-cleanup:
-    when:
-      and:
-        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ['gcp-cleanup', << pipeline.schedule.name >>]
+    # when:
+    #   and:
+    #     - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+    #     - equal: ['gcp-cleanup', << pipeline.schedule.name >>]
     jobs:
       - generate-config
       - continuation/continue:
