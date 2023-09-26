@@ -464,6 +464,9 @@ workflows:
             packages/libs/.* run-sdk-workflow true
             packages/libs/.* run-integration-workflow true
             packages/libs/.* run-gcp-workflow true
+            packages/libs/.* run-web-workflow true
+            packages/libs/.* run-mobile-workflow true
+            packages/libs/.* run-embed-workflow true
           requires:
             - generate-config
             - init
@@ -486,11 +489,19 @@ workflows:
             .* run-contracts-workflow true
             .* run-release-workflow false
             .* run-sdk-workflow true
-            .* run-web-workflow true
-            .* run-mobile-workflow true
             .* run-stems-workflow true
             .* run-harmony-workflow true
             .* run-probers-workflow true
+            .circleci/.* run-web-workflow true
+            .circleci/.* run-mobile-workflow true
+            packages/common/.* run-web-workflow true
+            packages/common/.* run-mobile-workflow true
+            packages/eslint-config-audius/.* run-web-workflow true
+            packages/eslint-config-audius/.* run-mobile-workflow true
+            packages/libs/.* run-web-workflow true
+            packages/libs/.* run-mobile-workflow true
+            packages/mobile/.* run-mobile-workflow true
+            packages/web/.* run-web-workflow true
           requires:
             - generate-config
             - init
