@@ -14,9 +14,9 @@ jobs:
 
   # Prerelease from main
   - release-audius-sdk:
-      requires:
-        - test-audius-libs
-        - test-audius-sdk
+      # requires:
+      #   - test-audius-libs
+      #   - test-audius-sdk
       name: release-audius-sdk-prerelease
       # filters:
       #   branches:
