@@ -407,7 +407,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   private async checkRelayHealth(endpoint: string, opts?: RequestInit): Promise<boolean> {
     if (this.useDiscoveryRelay) {
         const relayHealthResponse = await getDiscoveryNodeRelayHealthCheck({ endpoint, opts })
-        this.logger.info({ relayHealthResponse, endpoint }, "response from relay")
+        this.logger.debug({ relayHealthResponse, endpoint }, "response from relay")
         const relayError = relayHealthResponse.error
         if (relayError) {
           const relayError = `${endpoint}/relay/health returned an error`
@@ -447,8 +447,6 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         timeoutMs: this.config.requestTimeout,
         healthCheckThresholds: this.config.healthCheckThresholds
       })
-
-      this.logger.info("healthy endpoint selection")
 
       const relayHealthy = await this.checkRelayHealth(endpoint, { signal: abortController.signal })
       if (!relayHealthy) {
