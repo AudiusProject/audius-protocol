@@ -29,7 +29,7 @@ const messages = {
   sent: 'You successfully sent a tip of',
   to: 'to',
   twitterShare: (senderHandle: string, uiAmount: number) =>
-    `I just tipped ${senderHandle} ${uiAmount} $AUDIO on @AudiusProject #Audius #AUDIOTip`
+    `I just tipped ${senderHandle} ${uiAmount} $AUDIO on @audius #Audius #AUDIOTip`
 }
 
 type TipSentNotificationProps = {

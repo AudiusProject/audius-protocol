@@ -23,7 +23,7 @@ const messages = {
     ' for being referred! Invite your friends to join to earn more!',
   challengeCompleteText: ' for completing this challenge!',
   twitterShareText:
-    'I earned $AUDIO for completing challenges on @AudiusProject #AudioRewards'
+    'I earned $AUDIO for completing challenges on @audius #AudioRewards'
 }
 
 const challengeInfoMap: Partial<

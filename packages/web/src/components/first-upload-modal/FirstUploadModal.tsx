@@ -34,7 +34,7 @@ const messages = {
   shareButton: 'Share With Your Fans',
   // Note: twitter auto appends the link to the text
   tweet:
-    'I just joined @AudiusProject and uploaded my first track! Check out my profile here: '
+    'I just joined @audius and uploaded my first track! Check out my profile here: '
 }
 
 const Title = () => {
