@@ -134,7 +134,7 @@ function* watchAddToLibrary() {
         return
       }
 
-      let trackId =
+      const trackId =
         type === purchaseConfirmed.type ? action.contentId : action.trackId
       const tracks = yield select(getCacheTracks, { ids: [trackId] })
 
