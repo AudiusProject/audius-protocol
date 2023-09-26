@@ -530,6 +530,22 @@ workflows:
             - init
           workspace_path: ../workspace
 
+  gcp-cleanup:
+    when:
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ['gcp-cleanup', << pipeline.schedule.name >>]
+    jobs:
+      - generate-config
+      - continuation/continue:
+          configuration_path: ../workspace/.circleci/continue_config.yml
+          name: run-gcp-cleanup
+          parameters: '{
+            "run-gcp-cleanup": true,
+            }'
+          requires:
+            - generate-config
+
   release-create-branch:
     when:
       and:

@@ -1,5 +1,4 @@
-when:
-  equal: ["gcp-cleanup", << pipeline.parameters.workflow >>]
+when: << pipeline.parameters.run-gcp-workflow >>
 jobs:
   - gcp-cleanup:
       context: GCP
