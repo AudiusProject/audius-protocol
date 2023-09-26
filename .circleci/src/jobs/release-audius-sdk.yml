@@ -23,8 +23,7 @@ steps:
       filename: combined-patch-file.txt
 
   - restore_cache:
-      keys:
-        key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+      key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
   # - run:
   #     name: Release
