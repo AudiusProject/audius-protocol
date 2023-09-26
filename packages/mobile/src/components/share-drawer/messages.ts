@@ -23,13 +23,13 @@ export const messages = {
   shareSheet: 'More...',
   toast: (asset: ShareType) => `Copied Link to ${shareTypeMap[asset]}`,
   trackShareText: (title: string, handle: string) =>
-    `Check out ${title} by ${handle} on @AudiusProject #Audius`,
+    `Check out ${title} by ${handle} on @audius #Audius`,
   profileShareText: (handle: string) =>
-    `Check out ${handle} on @AudiusProject #Audius`,
+    `Check out ${handle} on @audius #Audius`,
   albumShareText: (albumName: string, handle: string) =>
-    `Check out ${albumName} by ${handle} @AudiusProject #Audius`,
+    `Check out ${albumName} by ${handle} @audius #Audius`,
   playlistShareText: (playlistName: string, handle: string) =>
-    `Check out ${playlistName} by ${handle} @AudiusProject #Audius`,
+    `Check out ${playlistName} by ${handle} @audius #Audius`,
   loadingStoryModalTitle: 'Generating Story',
   loadingInstagramStorySubtitle: 'Preparing to open Instagram',
   loadingSnapchatSubtitle: 'Preparing to open Snapchat',

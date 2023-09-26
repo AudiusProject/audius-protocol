@@ -414,7 +414,7 @@ func (ss *MediorumServer) MustStart() {
 func (ss *MediorumServer) Stop() {
 	ss.logger.Info("stopping")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
 	if err := ss.echo.Shutdown(ctx); err != nil {

@@ -28,7 +28,7 @@ const messages = {
   accessInfo:
     'You now have access to exclusive features & a shiny new badge by your name.',
   twitterShareText: (label: string, icon: string) =>
-    `I've reached ${label} Tier on @AudiusProject! Check out the shiny new badge next to my name ${icon}`
+    `I've reached ${label} Tier on @audius! Check out the shiny new badge next to my name ${icon}`
 }
 
 const tierInfoMap = {

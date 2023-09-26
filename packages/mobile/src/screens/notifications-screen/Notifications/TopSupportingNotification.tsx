@@ -19,7 +19,7 @@ const messages = {
   supporter: 'Top Supporter',
   // NOTE: Send tip -> Send $AUDIO change
   twitterShare: (handle: string, rank: number, ios: boolean) =>
-    `I'm now ${handle}'s #${rank} Top Supporter on @AudiusProject #Audius $AUDIO${
+    `I'm now ${handle}'s #${rank} Top Supporter on @audius #Audius $AUDIO${
       ios ? '' : ' #AUDIOTip'
     }`
 }
