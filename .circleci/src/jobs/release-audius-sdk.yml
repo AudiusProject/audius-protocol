@@ -25,8 +25,8 @@ steps:
   - restore_cache:
       key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
-  # - run:
-  #     name: Release
-  #     command: |
-  #       export PROTOCOL_DIR=$PWD
-  #       packages/libs/scripts/release.sh << parameters.sdk-release-commit >> << parameters.sdk-release-version >> << parameters.sdk-release-preid >>
+  - run:
+      name: Release
+      command: |
+        export PROTOCOL_DIR=$PWD
+        packages/libs/scripts/release.sh << parameters.sdk-release-commit >> << parameters.sdk-release-version >> << parameters.sdk-release-preid >>
