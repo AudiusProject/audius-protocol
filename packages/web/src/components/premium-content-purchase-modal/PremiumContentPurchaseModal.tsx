@@ -1,14 +1,17 @@
-import { useCallback, useEffect } from 'react'
+import { useEffect } from 'react'
 
 import {
-  ContentType,
+  BNUSDC,
+  Nullable,
+  PurchasableTrackMetadata,
+  PurchaseContentSchema,
   PurchaseContentStage,
   Track,
-  isContentPurchaseInProgress,
-  purchaseContentActions,
-  purchaseContentSelectors,
+  isTrackPurchasable,
   useGetTrackById,
-  usePremiumContentPurchaseModal
+  usePremiumContentPurchaseModal,
+  usePurchaseContentFormState,
+  useUSDCBalance
 } from '@audius/common'
 import {
   IconCart,
@@ -18,7 +21,7 @@ import {
   ModalHeader
 } from '@audius/stems'
 import { Formik } from 'formik'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Icon } from 'components/Icon'
@@ -30,31 +33,80 @@ import { pushUniqueRoute } from 'utils/route'
 import styles from './PremiumContentPurchaseModal.module.css'
 import { PurchaseContentFormFields } from './components/PurchaseContentFormFields'
 import { PurchaseContentFormFooter } from './components/PurchaseContentFormFooter'
-import { CUSTOM_AMOUNT, AMOUNT_PRESET } from './components/constants'
-import { PayExtraPreset } from './components/types'
-import {
-  PurchaseContentSchema,
-  PurchaseContentValues
-} from './components/validation'
-import { getExtraAmount } from './hooks'
 
 const messages = {
   completePurchase: 'Complete Purchase'
 }
-const { startPurchaseContentFlow } = purchaseContentActions
-const { getPurchaseContentFlowStage, getPurchaseContentError } =
-  purchaseContentSelectors
+
+const RenderForm = ({
+  currentBalance,
+  onClose,
+  track
+}: {
+  currentBalance: Nullable<BNUSDC>
+  onClose: () => void
+  track: PurchasableTrackMetadata
+}) => {
+  const dispatch = useDispatch()
+  const { handleConfirmPurchase, error, initialValues, isUnlocking, stage } =
+    usePurchaseContentFormState({ track })
+  const isPurchased = stage === PurchaseContentStage.FINISH
+
+  // Navigate to track on successful purchase behind the modal
+  useEffect(() => {
+    if (stage === PurchaseContentStage.FINISH && track) {
+      dispatch(pushUniqueRoute(track.permalink))
+    }
+  }, [stage, track, dispatch])
+
+  return (
+    <Formik
+      initialValues={initialValues}
+      validationSchema={toFormikValidationSchema(PurchaseContentSchema)}
+      onSubmit={handleConfirmPurchase}
+    >
+      <ModalForm>
+        <ModalHeader onClose={onClose} showDismissButton>
+          <Text
+            variant='label'
+            color='neutralLight2'
+            size='xLarge'
+            strength='strong'
+            className={styles.title}
+          >
+            <Icon size='large' icon={IconCart} />
+            {messages.completePurchase}
+          </Text>
+        </ModalHeader>
+        <ModalContent className={styles.content}>
+          {track ? (
+            <>
+              <LockedTrackDetailsTile
+                track={track as unknown as Track}
+                owner={track.user}
+              />
+              <PurchaseContentFormFields
+                price={track.premium_conditions.usdc_purchase.price}
+                currentBalance={currentBalance}
+                isPurchased={isPurchased}
+              />
+            </>
+          ) : null}
+        </ModalContent>
+        <ModalFooter className={styles.footer}>
+          {track ? (
+            <PurchaseContentFormFooter
+              track={track}
+              onViewTrackClicked={onClose}
+            />
+          ) : null}
+        </ModalFooter>
+      </ModalForm>
+    </Formik>
+  )
+}
 
 export const PremiumContentPurchaseModal = () => {
-  const dispatch = useDispatch()
-  const stage = useSelector(getPurchaseContentFlowStage)
-  const error = useSelector(getPurchaseContentError)
-  const isUnlocking = !error && isContentPurchaseInProgress(stage)
-
-  const initialValues: PurchaseContentValues = {
-    [CUSTOM_AMOUNT]: undefined,
-    [AMOUNT_PRESET]: PayExtraPreset.NONE
-  }
   const {
     isOpen,
     onClose,
@@ -67,30 +119,13 @@ export const PremiumContentPurchaseModal = () => {
     { disabled: !trackId }
   )
 
-  const handleSubmit = useCallback(
-    ({ customAmount, amountPreset }: PurchaseContentValues) => {
-      if (isUnlocking || !track?.track_id) return
+  const { data: currentBalance } = useUSDCBalance()
 
-      const extraAmount = getExtraAmount(amountPreset, customAmount)
+  const isValidTrack = track && isTrackPurchasable(track)
 
-      dispatch(
-        startPurchaseContentFlow({
-          extraAmount,
-          extraAmountPreset: amountPreset,
-          contentId: track?.track_id,
-          contentType: ContentType.TRACK
-        })
-      )
-    },
-    [isUnlocking, dispatch, track?.track_id]
-  )
-
-  // Navigate to track on successful purchase behind the modal
-  useEffect(() => {
-    if (stage === PurchaseContentStage.FINISH && track) {
-      dispatch(pushUniqueRoute(track.permalink))
-    }
-  }, [stage, track, dispatch])
+  if (track && !isValidTrack) {
+    console.error('PremiumContentPurchaseModal: Track is not purchasable')
+  }
 
   return (
     <Modal
@@ -100,45 +135,13 @@ export const PremiumContentPurchaseModal = () => {
       bodyClassName={styles.modal}
       dismissOnClickOutside
     >
-      <Formik
-        initialValues={initialValues}
-        validationSchema={toFormikValidationSchema(PurchaseContentSchema)}
-        onSubmit={handleSubmit}
-      >
-        <ModalForm>
-          <ModalHeader onClose={onClose} showDismissButton>
-            <Text
-              variant='label'
-              color='neutralLight2'
-              size='xLarge'
-              strength='strong'
-              className={styles.title}
-            >
-              <Icon size='large' icon={IconCart} />
-              {messages.completePurchase}
-            </Text>
-          </ModalHeader>
-          <ModalContent className={styles.content}>
-            {track ? (
-              <>
-                <LockedTrackDetailsTile
-                  track={track as unknown as Track}
-                  owner={track.user}
-                />
-                <PurchaseContentFormFields track={track} />
-              </>
-            ) : null}
-          </ModalContent>
-          <ModalFooter className={styles.footer}>
-            {track ? (
-              <PurchaseContentFormFooter
-                track={track}
-                onViewTrackClicked={onClose}
-              />
-            ) : null}
-          </ModalFooter>
-        </ModalForm>
-      </Formik>
+      {isValidTrack ? (
+        <RenderForm
+          currentBalance={currentBalance}
+          track={track}
+          onClose={onClose}
+        />
+      ) : null}
     </Modal>
   )
 }

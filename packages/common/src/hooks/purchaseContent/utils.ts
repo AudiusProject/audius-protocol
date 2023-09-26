@@ -1,5 +1,10 @@
+import {
+  UserTrackMetadata,
+  isPremiumContentUSDCPurchaseGated
+} from 'models/Track'
+
 import { payExtraAmountPresetValues } from './constants'
-import { PayExtraPreset } from './types'
+import { PayExtraPreset, PurchasableTrackMetadata } from './types'
 
 export const getExtraAmount = (
   amountPreset: PayExtraPreset,
@@ -20,3 +25,8 @@ export const getExtraAmount = (
   }
   return extraAmount
 }
+
+export const isTrackPurchasable = (
+  track: UserTrackMetadata
+): track is PurchasableTrackMetadata =>
+  isPremiumContentUSDCPurchaseGated(track.premium_conditions)

@@ -1,36 +1,36 @@
 import {
-  PurchaseContentStage,
-  UserTrackMetadata,
-  purchaseContentSelectors
+  BNUSDC,
+  Nullable,
+  payExtraAmountPresetValues,
+  usePurchaseSummaryValues
 } from '@audius/common'
 import { IconCheck } from '@audius/stems'
-import { useSelector } from 'react-redux'
 
 import { Icon } from 'components/Icon'
 import { Text } from 'components/typography'
-
-import { usePurchaseSummaryValues } from '../hooks'
 
 import { PayExtraFormSection } from './PayExtraFormSection'
 import { PayToUnlockInfo } from './PayToUnlockInfo'
 import styles from './PurchaseContentFormFields.module.css'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
-import { payExtraAmountPresetValues } from './constants'
 
 const messages = {
   purchaseSuccessful: 'Your Purchase Was Successful!'
 }
 
-const { getPurchaseContentFlowStage } = purchaseContentSelectors
-
 export const PurchaseContentFormFields = ({
-  track
+  price,
+  isPurchased,
+  currentBalance
 }: {
-  track: Pick<UserTrackMetadata, 'premium_conditions'>
+  currentBalance: Nullable<BNUSDC>
+  price: number
+  isPurchased: boolean
 }) => {
-  const stage = useSelector(getPurchaseContentFlowStage)
-  const isPurchased = stage === PurchaseContentStage.FINISH
-  const purchaseSummaryValues = usePurchaseSummaryValues(track)
+  const purchaseSummaryValues = usePurchaseSummaryValues({
+    currentBalance,
+    price
+  })
   if (!purchaseSummaryValues) {
     return null
   }

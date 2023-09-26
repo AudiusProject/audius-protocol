@@ -25,7 +25,6 @@ export const usePurchaseContentFormState = ({
   track: UserTrackMetadata
 }) => {
   const dispatch = useDispatch()
-
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
