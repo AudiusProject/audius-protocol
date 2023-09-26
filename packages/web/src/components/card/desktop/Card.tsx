@@ -74,6 +74,7 @@ export type CardProps = {
   playlistId?: number
   isReposted?: boolean
   isSaved?: boolean
+  permalink?: string
   index?: number
   isLoading?: boolean
   setDidLoad?: (index: number) => void
@@ -156,6 +157,7 @@ const Card = ({
   playlistId,
   isPublic = true,
   playlistName,
+  permalink,
   primaryText,
   secondaryText,
   size,
@@ -216,6 +218,7 @@ const Card = ({
           variant={isPlaylist ? 'playlist' : 'album'}
           playlistId={playlistId}
           playlistName={playlistName}
+          permalink={href}
           containerStyles={styles.actionContainer}
           currentUserReposted={isReposted}
           currentUserSaved={isSaved}

@@ -74,6 +74,7 @@ const CollectionMenu = (props: CollectionMenuProps) => {
       onShare,
       goToRoute,
       openEmbedModal,
+      permalink,
       shareCollection,
       saveCollection,
       unsaveCollection,
@@ -83,7 +84,7 @@ const CollectionMenu = (props: CollectionMenuProps) => {
       extraMenuItems
     } = props
 
-    const routePage = type === 'album' ? albumPage : collectionPage
+    const routePage = collectionPage
     const shareMenuItem = {
       text: 'Share',
       onClick: () => {
@@ -118,7 +119,7 @@ const CollectionMenu = (props: CollectionMenuProps) => {
 
     const playlistPageMenuItem = {
       text: `Visit ${typeName} Page`,
-      onClick: () => goToRoute(routePage(handle, playlistName, playlistId))
+      onClick: () => goToRoute(routePage(handle, playlistName, playlistId, permalink))
     }
 
     const editCollectionMenuItem = {
