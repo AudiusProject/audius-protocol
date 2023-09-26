@@ -1,13 +1,79 @@
-import { FlatList, View } from 'react-native'
+import { Theme, themeActions, themeSelectors } from '@audius/common'
+import { SectionList, View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
-import { Text, Tile } from 'app/components/core'
+import { Divider, SegmentedControl, Text, Tile } from 'app/components/core'
+import { makeStyles } from 'app/styles'
+import { useThemeVariant } from 'app/utils/theme'
 
+import type { Primitives } from './primitives'
 import { primitives } from './primitives'
+
+const { setTheme } = themeActions
+const { getTheme } = themeSelectors
+
+const useStyles = makeStyles(({ spacing, palette }) => ({
+  root: {
+    gap: spacing(4),
+    padding: spacing(4),
+    backgroundColor: palette.white
+  },
+  header: {
+    gap: spacing(4)
+  },
+  sectionHeader: {
+    backgroundColor: palette.white,
+    paddingVertical: spacing(3)
+  },
+  sectionRow: {
+    gap: spacing(3)
+  },
+  swatches: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    columnGap: spacing(2),
+    rowGap: spacing(4),
+    flexWrap: 'wrap'
+  },
+  swatch: {
+    overflow: 'hidden',
+    height: spacing(33),
+    width: spacing(24)
+  },
+  swatch2: {
+    height: spacing(33) + 12,
+    width: spacing(24) + 12
+  },
+  swatchColor: {
+    flex: 1,
+    borderBottomColor: palette.neutralLight7,
+    borderBottomWidth: 1
+  },
+  swatchText: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: spacing(2),
+    gap: spacing(1)
+  },
+  divider: {
+    marginVertical: spacing(8)
+  }
+}))
 
 const messages = {
   title: 'Primitives',
   description:
-    'Primitives include all the Audius colors. They gave a numeric name to our HEX values and are organized from lightest to darkest.'
+    'Primitives include all the Audius colors. They gave a numeric name to our HEX values and are organized from lightest to darkest.',
+  staticDescription:
+    'Static colors remain the same across all appearance modes: Day, Dark, and Matrix.',
+  primaryDescription:
+    'Primary is our brand color. It is used across our interface to represent elements with the highest importance. It defines the overall look and feel of Audius.',
+  secondaryDescription:
+    'Secondary colors are use in components such as pills, alerts and labels. These secondary colors are used for secondary actions, while the primary color(s) should take precedence.',
+  neutralDescription:
+    'Neutral is the foundation of the Audius color system. Almost everything in our designs - text form fields, backgrounds, dividers - are usually neutral.',
+  specialDescription:
+    'Special is a unique bucket of primitive accent, success, warning, gradient, and background colors.'
 }
 
 type ColorSwatchProps = {
@@ -15,13 +81,36 @@ type ColorSwatchProps = {
   hex: string
 }
 
+const PaletteSegmentedControl = () => {
+  const dispatch = useDispatch()
+  const theme = useSelector(getTheme)
+
+  return (
+    <SegmentedControl
+      fullWidth
+      options={[
+        { key: Theme.DEFAULT, text: 'Day' },
+        { key: Theme.DARK, text: 'Dark' },
+        { key: Theme.MATRIX, text: 'Matrix' }
+      ]}
+      onSelectOption={(theme: Theme) => {
+        dispatch(setTheme({ theme }))
+      }}
+      defaultSelected={theme ?? Theme.DEFAULT}
+    />
+  )
+}
+
 function ColorSwatch(props: ColorSwatchProps) {
+  const styles = useStyles()
   const { title, hex } = props
   return (
-    <Tile>
-      <View style={{ backgroundColor: hex, height: '50%' }} />
-      <View>
-        <Text>{title}</Text>
+    <Tile style={styles.swatch2} styles={{ content: styles.swatch }}>
+      <View style={[styles.swatchColor, { backgroundColor: hex }]} />
+      <View style={styles.swatchText}>
+        <Text weight='demiBold' textTransform='capitalize'>
+          {title}
+        </Text>
         <Text>{hex}</Text>
       </View>
     </Tile>
@@ -29,19 +118,19 @@ function ColorSwatch(props: ColorSwatchProps) {
 }
 
 type ColorRowProps = {
-  title: string
   description: string
-  colors: Record<string, string>
+  colors: Primitives[keyof Primitives]
 }
 
 function ColorRow(props: ColorRowProps) {
-  const { title, description, colors } = props
+  const { description, colors } = props
+  const styles = useStyles()
   const colorKeys = Object.keys(colors)
+
   return (
-    <View>
-      <Text>{title}</Text>
+    <View style={styles.sectionRow}>
       <Text>{description}</Text>
-      <View>
+      <View style={styles.swatches}>
         {colorKeys.map((colorKey) => (
           <ColorSwatch key={colorKey} title={colorKey} hex={colors[colorKey]} />
         ))}
@@ -50,53 +139,97 @@ function ColorRow(props: ColorRowProps) {
   )
 }
 
-function Primitives() {
-  const dayPrimitives = primitives.day
+function Primitivess() {
+  const theme = useThemeVariant()
+  const themeToHarmonyTheme = {
+    [Theme.DEFAULT]: 'day',
+    [Theme.AUTO]: 'day',
+    [Theme.DARK]: 'dark',
+    [Theme.MATRIX]: 'matrix'
+  }
+  const styles = useStyles()
+  const themedPrimitives = primitives[themeToHarmonyTheme[theme]]
   const rows = [
     {
       title: 'Static',
-      description:
-        'Static colors remain the same across all appearance modes: Day, Dark, and Matrix.',
-      colors: dayPrimitives.static
+      data: [
+        {
+          description: messages.staticDescription,
+          colors: themedPrimitives.static
+        }
+      ]
     },
     {
       title: 'Primary',
-      description:
-        'Primary is our brand color. It is used across our interface to represent elements with the highest importance. It defines the overall look and feel of Audius.',
-      colors: dayPrimitives.primary
+      data: [
+        {
+          description: messages.primaryDescription,
+          colors: themedPrimitives.primary
+        }
+      ]
     },
     {
       title: 'Secondary',
-      description:
-        'Secondary colors are use in components such as pills, alerts and labels. These secondary colors are used for secondary actions, while the primary color(s) should take precedence.',
-      colors: dayPrimitives.secondary
+      data: [
+        {
+          description: messages.secondaryDescription,
+          colors: themedPrimitives.secondary
+        }
+      ]
     },
     {
       title: 'Neutral',
-      description:
-        'Secondary colors are use in components such as pills, alerts and labels. These secondary colors are used for secondary actions, while the primary color(s) should take precedence.',
-      colors: dayPrimitives.neutral
+      data: [
+        {
+          description: messages.neutralDescription,
+          colors: themedPrimitives.neutral
+        }
+      ]
     },
     {
       title: 'Special',
-      description:
-        'Special is a unique bucket of primitive accent, success, warning, gradient, and background colors.',
-      colors: dayPrimitives.special
+      data: [
+        {
+          description: messages.specialDescription,
+          colors: themedPrimitives.special
+        }
+      ]
     }
   ]
 
   return (
-    <View>
-      <Text>{messages.title}</Text>
-      <Text>{messages.description}</Text>
-      <FlatList data={rows} renderItem={({ item }) => <ColorRow {...item} />} />
+    <View style={styles.root}>
+      <SectionList
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <Text fontSize='xxxxl' weight='bold'>
+              {messages.title}
+            </Text>
+            <Text fontSize='large'>{messages.description}</Text>
+            <Divider />
+            <PaletteSegmentedControl />
+          </View>
+        }
+        // @ts-ignore
+        sections={rows}
+        renderSectionHeader={({ section: { title } }) => (
+          <View style={styles.sectionHeader}>
+            <Text fontSize='xl' weight='demiBold'>
+              {title}
+            </Text>
+          </View>
+        )}
+        renderItem={({ item }) => <ColorRow {...item} />}
+        ItemSeparatorComponent={() => <Divider style={styles.divider} />}
+        stickySectionHeadersEnabled
+      />
     </View>
   )
 }
 
 const PrimitivesMeta = {
   title: 'Foundation/Color/Primitives',
-  component: Primitives
+  component: Primitivess
 }
 
 export default PrimitivesMeta

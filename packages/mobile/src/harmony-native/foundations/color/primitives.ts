@@ -150,7 +150,6 @@ export const primitives: Record<Theme, Primitives> = {
       gradient: 'linear-gradient(315deg, #7652CC 0%, #B05CE6 100%)'
     }
   },
-
   matrix: {
     static: {
       white: '#FFFFFF',
