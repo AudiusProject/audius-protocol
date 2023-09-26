@@ -263,7 +263,7 @@ ActionsTab.propTypes = {
   trackId: PropTypes.number,
   playlistName: PropTypes.string,
   playlistId: PropTypes.number,
-  permalink: PropTypes.string,
+  permalink: PropTypes.string
 }
 
 ActionsTab.defaultProps = {
