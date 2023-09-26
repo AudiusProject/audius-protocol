@@ -223,8 +223,6 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           </a>
         </td>
       )}
-      {isContent && (<td>{legacyDirUsed} GB</td>)}
-      {isContent && (<td>{mediorumDirUsed} GB</td>)}
       <td>{`${relayStatus || "down" }`}</td>
       <td>{`${dbSize} GB`}</td>
       <td>{`${yourIp}`}</td>
