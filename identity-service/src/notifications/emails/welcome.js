@@ -771,7 +771,7 @@ const getWelcomeEmail = ({ name, copyrightYear }) => {
                   <table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
                   <tr><td align="left" valign="top" class="outf14" style="font-size: large;">
                     <div>
-                      <a style="text-decoration: none;" href="https://twitter.com/AudiusProject" target="_blank">
+                      <a style="text-decoration: none;" href="https://twitter.com/audius" target="_blank">
                         <!--[if (gte mso 9)|(IE)]>
                         <table width="41" border="0" cellspacing="0" cellpadding="0" style="width: 41px;">
                         <tr><td>

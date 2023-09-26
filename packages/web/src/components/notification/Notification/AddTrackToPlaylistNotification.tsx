@@ -35,7 +35,7 @@ const messages = {
     track: Track,
     playlist: CollectionEntity
   ) =>
-    `My track ${track.title} was added to the playlist ${playlist.playlist_name} by ${handle} on @audiusproject! #Audius`
+    `My track ${track.title} was added to the playlist ${playlist.playlist_name} by ${handle} on @audius! #Audius`
 }
 
 type AddTrackToPlaylistNotificationProps = {
