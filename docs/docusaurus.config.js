@@ -135,7 +135,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
                 },
                 {
                   label: "Twitter",
-                  href: "https://twitter.com/AudiusProject",
+                  href: "https://twitter.com/audius",
                 },
               ],
             },
