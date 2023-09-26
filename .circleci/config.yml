@@ -402,9 +402,7 @@ workflows:
       - continuation/continue:
           configuration_path: ../workspace/.circleci/continue_config.yml
           name: run-gcp-cleanup
-          parameters: '{
-            "run-gcp-cleanup": true,
-            }'
+          parameters: '{ "run-gcp-cleanup": true }'
           pre-steps:
             - attach_workspace:
                 at: ../workspace
