@@ -1,6 +1,8 @@
 import {
   BNUSDC,
   Nullable,
+  PurchaseContentFormState,
+  PurchaseContentStage,
   payExtraAmountPresetValues,
   usePurchaseSummaryValues
 } from '@audius/common'
@@ -19,21 +21,11 @@ const messages = {
 }
 
 export const PurchaseContentFormFields = ({
-  price,
-  isPurchased,
-  currentBalance
-}: {
-  currentBalance: Nullable<BNUSDC>
-  price: number
-  isPurchased: boolean
-}) => {
-  const purchaseSummaryValues = usePurchaseSummaryValues({
-    currentBalance,
-    price
-  })
-  if (!purchaseSummaryValues) {
-    return null
-  }
+  purchaseSummaryValues,
+  stage
+}: PurchaseContentFormState) => {
+  const isPurchased = stage === PurchaseContentStage.FINISH
+
   if (isPurchased) {
     return (
       <>

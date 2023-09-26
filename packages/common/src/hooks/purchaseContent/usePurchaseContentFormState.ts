@@ -1,63 +1,44 @@
-import { useCallback } from 'react'
+import { useSelector } from 'react-redux'
 
-import { useDispatch, useSelector } from 'react-redux'
-
-import { UserTrackMetadata } from 'models/Track'
+import { useUSDCBalance } from 'hooks/useUSDCBalance'
 import {
-  ContentType,
   isContentPurchaseInProgress,
-  purchaseContentActions,
   purchaseContentSelectors
 } from 'store/purchase-content'
 
-import { AMOUNT_PRESET, CUSTOM_AMOUNT } from './constants'
-import { PayExtraPreset } from './types'
-import { getExtraAmount } from './utils'
-import { PurchaseContentValues } from './validation'
+import { PurchasableTrackMetadata } from './types'
+import { usePurchaseSummaryValues } from './usePurchaseSummaryValues'
 
-const { startPurchaseContentFlow } = purchaseContentActions
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
 
 export const usePurchaseContentFormState = ({
   track
 }: {
-  track: UserTrackMetadata
+  track: PurchasableTrackMetadata
 }) => {
-  const dispatch = useDispatch()
+  const {
+    premium_conditions: {
+      usdc_purchase: { price }
+    }
+  } = track
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
 
-  const initialValues: PurchaseContentValues = {
-    [CUSTOM_AMOUNT]: undefined,
-    [AMOUNT_PRESET]: PayExtraPreset.NONE
-  }
+  const { data: currentBalance } = useUSDCBalance()
 
-  const handleConfirmPurchase = useCallback(
-    ({ customAmount, amountPreset }: PurchaseContentValues) => {
-      if (isUnlocking) return
-
-      const extraAmount = getExtraAmount(amountPreset, customAmount)
-
-      dispatch(
-        startPurchaseContentFlow({
-          extraAmount,
-          extraAmountPreset: amountPreset,
-          contentId: track.track_id,
-          contentType: ContentType.TRACK
-        })
-      )
-    },
-    [isUnlocking, dispatch, track.track_id]
-  )
+  const purchaseSummaryValues = usePurchaseSummaryValues({
+    price,
+    currentBalance
+  })
 
   return {
+    track,
     stage,
     error,
     isUnlocking,
-    initialValues,
-    handleConfirmPurchase
+    purchaseSummaryValues
   }
 }
 

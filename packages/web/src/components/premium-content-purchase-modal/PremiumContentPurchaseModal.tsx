@@ -4,14 +4,13 @@ import {
   BNUSDC,
   Nullable,
   PurchasableTrackMetadata,
-  PurchaseContentSchema,
   PurchaseContentStage,
   Track,
   isTrackPurchasable,
   useGetTrackById,
   usePremiumContentPurchaseModal,
-  usePurchaseContentFormState,
-  useUSDCBalance
+  usePurchaseContentFormConfiguration,
+  usePurchaseContentFormState
 } from '@audius/common'
 import {
   IconCart,
@@ -22,7 +21,6 @@ import {
 } from '@audius/stems'
 import { Formik } from 'formik'
 import { useDispatch } from 'react-redux'
-import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Icon } from 'components/Icon'
 import { ModalForm } from 'components/modal-form/ModalForm'
@@ -39,7 +37,6 @@ const messages = {
 }
 
 const RenderForm = ({
-  currentBalance,
   onClose,
   track
 }: {
@@ -48,61 +45,46 @@ const RenderForm = ({
   track: PurchasableTrackMetadata
 }) => {
   const dispatch = useDispatch()
-  const { handleConfirmPurchase, error, initialValues, isUnlocking, stage } =
-    usePurchaseContentFormState({ track })
-  const isPurchased = stage === PurchaseContentStage.FINISH
+  const state = usePurchaseContentFormState({ track })
 
   // Navigate to track on successful purchase behind the modal
   useEffect(() => {
-    if (stage === PurchaseContentStage.FINISH && track) {
+    if (state.stage === PurchaseContentStage.FINISH && track) {
       dispatch(pushUniqueRoute(track.permalink))
     }
-  }, [stage, track, dispatch])
+  }, [state.stage, track, dispatch])
 
   return (
-    <Formik
-      initialValues={initialValues}
-      validationSchema={toFormikValidationSchema(PurchaseContentSchema)}
-      onSubmit={handleConfirmPurchase}
-    >
-      <ModalForm>
-        <ModalHeader onClose={onClose} showDismissButton>
-          <Text
-            variant='label'
-            color='neutralLight2'
-            size='xLarge'
-            strength='strong'
-            className={styles.title}
-          >
-            <Icon size='large' icon={IconCart} />
-            {messages.completePurchase}
-          </Text>
-        </ModalHeader>
-        <ModalContent className={styles.content}>
-          {track ? (
-            <>
-              <LockedTrackDetailsTile
-                track={track as unknown as Track}
-                owner={track.user}
-              />
-              <PurchaseContentFormFields
-                price={track.premium_conditions.usdc_purchase.price}
-                currentBalance={currentBalance}
-                isPurchased={isPurchased}
-              />
-            </>
-          ) : null}
-        </ModalContent>
-        <ModalFooter className={styles.footer}>
-          {track ? (
-            <PurchaseContentFormFooter
-              track={track}
-              onViewTrackClicked={onClose}
+    <ModalForm>
+      <ModalHeader onClose={onClose} showDismissButton>
+        <Text
+          variant='label'
+          color='neutralLight2'
+          size='xLarge'
+          strength='strong'
+          className={styles.title}
+        >
+          <Icon size='large' icon={IconCart} />
+          {messages.completePurchase}
+        </Text>
+      </ModalHeader>
+      <ModalContent className={styles.content}>
+        {track ? (
+          <>
+            <LockedTrackDetailsTile
+              track={track as unknown as Track}
+              owner={track.user}
             />
-          ) : null}
-        </ModalFooter>
-      </ModalForm>
-    </Formik>
+            <PurchaseContentFormFields {...state} />
+          </>
+        ) : null}
+      </ModalContent>
+      <ModalFooter className={styles.footer}>
+        {track ? (
+          <PurchaseContentFormFooter {...state} onViewTrackClicked={onClose} />
+        ) : null}
+      </ModalFooter>
+    </ModalForm>
   )
 }
 
@@ -119,7 +101,8 @@ export const PremiumContentPurchaseModal = () => {
     { disabled: !trackId }
   )
 
-  const { data: currentBalance } = useUSDCBalance()
+  const { initialValues, validationSchema, onSubmit } =
+    usePurchaseContentFormConfiguration({ track })
 
   const isValidTrack = track && isTrackPurchasable(track)
 
@@ -136,11 +119,13 @@ export const PremiumContentPurchaseModal = () => {
       dismissOnClickOutside
     >
       {isValidTrack ? (
-        <RenderForm
-          currentBalance={currentBalance}
-          track={track}
-          onClose={onClose}
-        />
+        <Formik
+          initialValues={initialValues}
+          validationSchema={validationSchema}
+          onSubmit={onSubmit}
+        >
+          <RenderForm track={track} onClose={onClose} />
+        </Formik>
       ) : null}
     </Modal>
   )
