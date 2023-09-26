@@ -442,6 +442,7 @@ workflows:
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
             .circleci/.* run-stems-workflow true
+            .circleci/.* run-harmony-workflow true
             .circleci/.* run-embed-workflow true
             .* run-release-workflow false
             packages/web/.* run-web-workflow true
@@ -457,6 +458,7 @@ workflows:
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
             packages/eslint-config-audius/.* run-stems-workflow true
+            packages/eslint-config-audius/.* run-harmony-workflow true
             packages/libs/.* run-creator-workflow true
             packages/libs/.* run-identity-workflow true
             packages/libs/.* run-sdk-workflow true
@@ -487,6 +489,7 @@ workflows:
             .* run-web-workflow true
             .* run-mobile-workflow true
             .* run-stems-workflow true
+            .* run-harmony-workflow true
             .* run-probers-workflow true
           requires:
             - generate-config
