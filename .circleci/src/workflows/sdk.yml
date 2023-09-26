@@ -18,9 +18,9 @@ jobs:
         - test-audius-libs
         - test-audius-sdk
       name: release-audius-sdk-prerelease
-      filters:
-        branches:
-          only: /^main$/
+      # filters:
+      #   branches:
+      #     only: /^main$/
       sdk-release-commit: $CIRCLE_SHA1
       sdk-release-version: prerelease
       sdk-release-preid: beta
@@ -43,7 +43,7 @@ jobs:
         - release-audius-sdk-trigger
       sdk-release-commit: $CIRCLE_SHA1
       sdk-release-version: patch
-      sdk-release-preid: ""
+      sdk-release-preid: ''
       context:
         - Audius Client
         - slack-secrets
