@@ -4,7 +4,7 @@ In staking tokens and operating a service, you agree to adhere to meeting the Se
 
 ## 1. Minimum Version Guarantee
 
-Audius protocol adheres to semantic versioning. Optional auto-upgrade tooling is provided for discrentionary use to make compliance easy. https://github.com/AudiusProject/audius-docker-compose#upgrading
+Audius protocol adheres to semantic versioning. Optional auto-upgrade tooling is provided for discretionary use to make compliance easy. https://github.com/AudiusProject/audius-docker-compose#upgrading
 
 Ratified in governance vote: https://dashboard.audius.org/#/governance/proposal/128
 
