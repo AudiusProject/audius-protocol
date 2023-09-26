@@ -1,0 +1,21 @@
+/* Semantic Token Definitions */
+:root {
+  /* Text */
+  --text-heading: var(--gradient);
+  --text-default: var(--neutral);
+  --text-subdued: var(--n-400);
+  --text-disabled: var(--n-150);
+
+  /* Background */
+  --bg-default: var(--background);
+  --bg-surface-1: var(--n-25);
+  --bg-surface-2: var(--n-100);
+  --bg-white: var(--white);
+
+  /* Border */
+  --border-default: var(--n-100);
+  --border-strong: var(--n-150);
+
+  /* Focus */
+  --focus: var(--secondary);
+}

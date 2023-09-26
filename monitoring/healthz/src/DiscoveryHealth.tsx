@@ -122,8 +122,6 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const mediorumUsed = bytesToGb(health.mediorumPathUsed)
   const mediorumSize = bytesToGb(health.mediorumPathSize)
   const mediorumPercent = mediorumUsed / mediorumSize
-  const legacyDirUsed = bytesToGb(health.legacyDirUsed)
-  const mediorumDirUsed = bytesToGb(health.mediorumDirUsed)
   const isBehind = health.block_difference > 5 ? 'is-unhealthy' : ''
   const dbSize =
     bytesToGb(health.database_size) || bytesToGb(health.databaseSize)

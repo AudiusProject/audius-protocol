@@ -88,8 +88,6 @@ type MediorumServer struct {
 	mediorumPathUsed uint64
 	mediorumPathSize uint64
 	mediorumPathFree uint64
-	legacyDirUsed    uint64
-	mediorumDirUsed  uint64
 
 	databaseSize          uint64
 	dbSizeErr             string
