@@ -1,6 +1,10 @@
 import '@audius/stems/dist/stems.css'
 
+import { useState } from 'react'
+
 import { AudiusQueryContext } from '@audius/common'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { httpBatchLink } from '@trpc/client'
 import { ConnectedRouter } from 'connected-react-router'
 import { Provider } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
@@ -11,6 +15,7 @@ import App from 'pages/App'
 import { AppErrorBoundary } from 'pages/AppErrorBoundary'
 import AppProviders from 'pages/AppProviders'
 import { MainContentContext } from 'pages/MainContentContext'
+import DemoTrpcPage from 'pages/demo-trpc/DemoTrpcPage'
 import { OAuthLoginPage } from 'pages/oauth-login-page/OAuthLoginPage'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
 import { apiClient } from 'services/audius-api-client'
@@ -20,13 +25,10 @@ import history from 'utils/history'
 
 import { store } from './store/configureStore'
 import { reportToSentry } from './store/errors/reportToSentry'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { httpBatchLink } from '@trpc/client'
-import { useState } from 'react'
 import { trpc } from './trpc'
+
 import './services/webVitals'
 import './index.css'
-import DemoTrpcPage from 'pages/demo-trpc/DemoTrpcPage'
 
 const AudiusApp = () => {
   const [queryClient] = useState(() => new QueryClient())
