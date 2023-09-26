@@ -64,7 +64,13 @@ const slice = createSlice({
     purchaseSucceeded: (state) => {
       state.stage = PurchaseContentStage.CONFIRMING_PURCHASE
     },
-    purchaseConfirmed: (state) => {
+    purchaseConfirmed: (
+      state,
+      _action: PayloadAction<{
+        contentType: ContentType
+        contentId: ID
+      }>
+    ) => {
       state.stage = PurchaseContentStage.FINISH
     },
     purchaseContentFlowFailed: (state) => {
