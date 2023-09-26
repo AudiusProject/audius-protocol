@@ -13,7 +13,6 @@ import {
   buyUSDCActions,
   buyUSDCSelectors
 } from '@audius/common'
-import { useDispatch, useSelector } from 'react-redux'
 import {
   IconCart,
   Modal,
@@ -22,6 +21,7 @@ import {
   ModalHeader
 } from '@audius/stems'
 import { Formik } from 'formik'
+import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Icon } from 'components/Icon'
