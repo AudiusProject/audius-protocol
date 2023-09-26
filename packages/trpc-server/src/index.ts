@@ -3,6 +3,7 @@
  * On a bigger app, you will probably want to split this file up into multiple files.
  */
 import { initTRPC } from '@trpc/server'
+import { createContext, publicProcedure, router } from './trpc'
 import { createExpressMiddleware } from '@trpc/server/adapters/express'
 import cors from 'cors'
 import express from 'express'
@@ -13,32 +14,24 @@ import {
   createOpenApiExpressMiddleware,
   generateOpenApiDocument
 } from 'trpc-openapi'
+import { userRouter } from './routers/user-router'
 
 const app = express()
 app.use(cors())
 
-const t = initTRPC.meta<OpenApiMeta>().create()
-
-const publicProcedure = t.procedure
-const router = t.router
-
 const appRouter = router({
-  greeting: publicProcedure
-    .meta({
-      openapi: { method: 'GET', path: '/say-hello', tags: ['greeting'] }
-    })
-    .input(z.object({ name: z.string() }))
-    .output(z.object({ greeting: z.string() }))
-    .query(({ input }) => {
-      return { greeting: `Hello ${input.name}!` }
-    }),
-  bye: publicProcedure
-    .meta({ openapi: { method: 'GET', path: '/say-bye', tags: ['greeting'] } })
-    .input(z.object({ name: z.string() }))
-    .output(z.object({ greeting: z.string() }))
-    .query(({ input }) => {
-      return { greeting: `Goodbye ${input.name}!` }
-    })
+  version: publicProcedure.query(() => {
+    return {
+      version: '0.0.2'
+    }
+  }),
+
+  // trending: trendingRouter,
+  // tracks: trackRouter,
+  users: userRouter
+  // playlists: playlistRouter,
+  // me: meRouter,
+  // search: searchRouter
 })
 
 // export only the type definition of the API
@@ -46,9 +39,15 @@ const appRouter = router({
 export type AppRouter = typeof appRouter
 
 // Handle incoming tRPC requests
-app.use('/api/trpc', createExpressMiddleware({ router: appRouter }))
+app.use(
+  '/api/trpc',
+  createExpressMiddleware({ router: appRouter, createContext })
+)
 // Handle incoming OpenAPI requests
-app.use('/api', createOpenApiExpressMiddleware({ router: appRouter }))
+app.use(
+  '/api',
+  createOpenApiExpressMiddleware({ router: appRouter, createContext })
+)
 
 // Generate OpenAPI schema document
 export const openApiDocument = generateOpenApiDocument(appRouter, {
@@ -56,8 +55,8 @@ export const openApiDocument = generateOpenApiDocument(appRouter, {
   description: 'OpenAPI compliant REST API built using tRPC with Express',
   version: '1.0.0',
   baseUrl: 'http://localhost:2022/api',
-  docsUrl: 'https://docs.audius.co',
-  tags: ['greeting']
+  docsUrl: 'https://docs.audius.co'
+  // tags: ['greeting']
 })
 
 // Serve Swagger UI with our OpenAPI schema
