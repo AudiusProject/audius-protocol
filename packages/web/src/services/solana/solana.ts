@@ -208,13 +208,25 @@ export const getSignatureForV0Transaction = async ({
   }).compileToV0Message(lookupTableAccounts)
   const transaction = new VersionedTransaction(message)
   console.debug('REED transaction in client:', transaction)
+  console.debug(
+    'REED transaction signer in client:',
+    signer.publicKey.toString()
+  )
+  console.debug(
+    'REED transaction sigs in client BEFORE:',
+    transaction.signatures
+  )
   transaction.sign([signer])
+  console.debug(
+    'REED transaction sigs in client AFTER:',
+    transaction.signatures
+  )
   return transaction.signatures
     .filter((s) => !s.every((i) => i === 0)) // Filter sigs that are all 0s
     .map((s) => {
       // Map to the format expected by relay
       return {
-        publicKey: feePayer.toString(),
+        publicKey: signer.publicKey.toString(),
         signature: Buffer.from(s)
       }
     })
