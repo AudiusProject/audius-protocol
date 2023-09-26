@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Repost Notification Render a single email 1`] = `
+exports[`USDC Purchase Buyer Render a single email 1`] = `
 "<html><div><div>
           <!--[if gte mso 15]>
             <xml>

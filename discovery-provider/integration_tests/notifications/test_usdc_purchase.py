@@ -72,6 +72,7 @@ def test_usdc_purchase_notification(app):
             "buyer_user_id": 1,
             "seller_user_id": 2,
             "amount": 1000,
+            "extra_amount": 0,
             "content_id": 100,
         }
         assert buyer_notifications[0].slot == 4
