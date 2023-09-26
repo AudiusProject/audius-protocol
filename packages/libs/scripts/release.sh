@@ -107,7 +107,7 @@ function merge-bump () {
         git pull
 
         # squash branch commit
-        git merge --squash ${STUB}-${VERSION} || exit 1
+        git merge --squash '${STUB}-${VERSION}' || exit 1
         git commit -m "$(commit-message)" || exit 1
 
         # tag release
