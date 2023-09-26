@@ -245,14 +245,12 @@ export const getDiscoveryNodeRelayHealthCheck = async ({
   const relayHealthUrl = `${endpoint}/relay/health`
 
   try {
-      return await retry3(async () => {
-        const response = await fetch(relayHealthUrl, opts)
-        if (!response.ok) {
-          return { error: await response.text() }
-        }
-        const json = await response.json()
-        return json
-  })
+      const response = await fetch(relayHealthUrl, opts)
+      if (!response.ok) {
+        return { error: await response.text() }
+      }
+      const json = await response.json()
+      return json
   } catch (e) {
     return { error: e }
   }
