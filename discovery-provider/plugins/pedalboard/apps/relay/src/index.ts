@@ -25,17 +25,18 @@ export const discoveryDb = initializeDiscoveryDb(
 export let web3: providers.JsonRpcProvider;
 export let wallets: WalletManager;
 
-const initAsyncConfig = async () => {
+const main = async () => {
   // async config
   const connectedWeb3 = await connectWeb3(config);
   web3 = connectedWeb3.web3;
   config.acdcChainId = connectedWeb3.chainId.toString();
   wallets = new WalletManager(web3);
+
+  // start webserver after async config
+  const { serverHost, serverPort } = config;
+  app.listen(serverPort, serverHost, () =>
+    logger.info({ serverHost, serverPort }, "server initialized")
+  );
 };
 
-initAsyncConfig().catch(logger.error.bind(logger));
-
-const { serverHost, serverPort } = config;
-app.listen(serverPort, serverHost, () =>
-  logger.info({ serverHost, serverPort }, "server initialized")
-);
+main().catch(logger.error.bind(logger));
