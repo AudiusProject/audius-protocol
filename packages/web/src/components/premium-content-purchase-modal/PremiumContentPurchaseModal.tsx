@@ -41,7 +41,7 @@ import {
 } from './components/validation'
 import { getExtraAmount } from './hooks'
 
-const { startRecoveryIfNecessary, recoveryStatusChanged } = buyUSDCActions
+const { startRecoveryIfNecessary, cleanup } = buyUSDCActions
 const { getRecoveryStatus } = buyUSDCSelectors
 
 const messages = {
@@ -91,7 +91,7 @@ export const PremiumContentPurchaseModal = () => {
   }, [recoveryStatus, refresh])
 
   const handleClose = useCallback(() => {
-    dispatch(recoveryStatusChanged({ status: 'idle' }))
+    dispatch(cleanup())
     onClose()
   }, [dispatch, onClose])
 

@@ -22,12 +22,13 @@ type BuyUSDCState = {
   provider: USDCOnRampProvider
   onSuccess?: OnSuccess
   stripeSessionStatus?: StripeSessionStatus
-  recoveryStatus?: RecoveryStatus
+  recoveryStatus: RecoveryStatus
 }
 
 const initialState: BuyUSDCState = {
   provider: USDCOnRampProvider.UNKNOWN,
-  stage: BuyUSDCStage.START
+  stage: BuyUSDCStage.START,
+  recoveryStatus: 'idle'
 }
 
 const slice = createSlice({
@@ -78,7 +79,8 @@ const slice = createSlice({
       action: PayloadAction<{ status: RecoveryStatus }>
     ) => {
       state.recoveryStatus = action.payload.status
-    }
+    },
+    cleanup: () => initialState
   }
 })
 
@@ -91,7 +93,8 @@ export const {
   onrampCanceled,
   stripeSessionStatusChanged,
   startRecoveryIfNecessary,
-  recoveryStatusChanged
+  recoveryStatusChanged,
+  cleanup
 } = slice.actions
 
 export default slice.reducer

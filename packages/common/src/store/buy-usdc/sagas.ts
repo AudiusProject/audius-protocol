@@ -322,13 +322,15 @@ function* recoverPurchaseIfNecessary() {
       return
     }
 
+    const userBankAddress = userBank.toBase58()
+
     // Transfer all USDC from the from the root wallet to the user bank
     yield* put(recoveryStatusChanged({ status: 'in-progress' }))
     yield* call(
       track,
       make({
         eventName: Name.BUY_USDC_RECOVERY_IN_PROGRESS,
-        userBank: userBank.toBase58()
+        userBank: userBankAddress
       })
     )
     yield* call(transferStep, {
@@ -342,7 +344,7 @@ function* recoverPurchaseIfNecessary() {
       track,
       make({
         eventName: Name.BUY_USDC_RECOVERY_SUCCESS,
-        userBank: userBank.toBase58()
+        userBank: userBankAddress
       })
     )
   } catch (e) {
