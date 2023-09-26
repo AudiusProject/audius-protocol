@@ -119,7 +119,7 @@ const CollectionMenu = (props: CollectionMenuProps) => {
 
     const playlistPageMenuItem = {
       text: `Visit ${typeName} Page`,
-      onClick: () => goToRoute(routePage(handle, playlistName, playlistId, permalink))
+      onClick: () => goToRoute(routePage(handle, playlistName, playlistId, permalink, type === 'album'))
     }
 
     const editCollectionMenuItem = {
