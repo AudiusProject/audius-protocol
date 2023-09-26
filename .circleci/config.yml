@@ -396,7 +396,7 @@ jobs:
             git push -u origin release-client-v${VERSION}
 
 workflows:
-  gcp-cleanup:
+  trigger-gcp-cleanup:
     jobs:
       - generate-config
       - continuation/continue:
