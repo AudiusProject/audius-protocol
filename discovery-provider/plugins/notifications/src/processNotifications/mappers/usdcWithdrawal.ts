@@ -19,12 +19,16 @@ export class USDCWithdrawal extends BaseNotification<USDCWithdrawalRow> {
 
   constructor(dnDB: Knex, identityDB: Knex, notification: USDCWithdrawalRow) {
     super(dnDB, identityDB, notification)
-    const userIds: number[] = this.notification.user_ids!
-    this.userId = userIds[0]
-    // Change is not an absolute value and for a transfer out will always be negative
-    this.amount = -1 * this.notification.data.change
-    this.receiverAccount = this.notification.data.receiver_account
-    this.signature = this.notification.data.signature
+    try {
+      const userIds: number[] = this.notification.user_ids!
+      this.userId = userIds[0]
+      // Change is not an absolute value and for a transfer out will always be negative
+      this.amount = -1 * this.notification.data.change
+      this.receiverAccount = this.notification.data.receiver_account
+      this.signature = this.notification.data.signature
+    } catch (e) {
+      logger.error('Unable to initialize USDCWithdrawal notification', e)
+    }
   }
 
   async processNotification() {

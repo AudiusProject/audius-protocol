@@ -8,6 +8,10 @@ The Notifications Plugin is designed to send push notifications
 
 ## How To Run
 
+```
+audius-compose up discovery-provider-notifications
+```
+
 ## Regenerate sql-ts types
 
 See [sql-ts](https://github.com/AudiusProject/audius-protocol/tree/main/packages/sql-ts)

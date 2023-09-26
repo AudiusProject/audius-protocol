@@ -55,6 +55,7 @@ def test_usdc_withdrawal_notification(app):
             "signature": "4HMtqP6k5ugi5jhCQo5CpqKzjxREhsZ4QTE2XDo48v4JBaDjS4kWXo7EixucKEFkwHxF9j3Qzp2ZjLdGpN4FRQVt",
             "change": -100,
             "balance": 100,
+            "receiver_account": None,
         }
 
 
