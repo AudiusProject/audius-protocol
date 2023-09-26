@@ -27,7 +27,7 @@ const messages = {
   supportOnTwitter: 'Share your support on Twitter!',
   shareToTwitter: 'Share to Twitter',
   twitterCopyPrefix: 'I just tipped ',
-  twitterCopySuffix: ' $AUDIO on @AudiusProject #Audius #AUDIOTip'
+  twitterCopySuffix: ' $AUDIO on @audius #Audius #AUDIOTip'
 }
 
 export const TipSent = () => {

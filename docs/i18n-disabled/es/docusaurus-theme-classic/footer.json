@@ -25,7 +25,7 @@
   },
   "link.item.label.Twitter": {
     "message": "Twitter",
-    "description": "The label of footer link with label=Twitter linking to https://twitter.com/AudiusProject"
+    "description": "The label of footer link with label=Twitter linking to https://twitter.com/audius"
   },
   "link.item.label.GitHub": {
     "message": "GitHub",

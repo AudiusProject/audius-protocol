@@ -29,7 +29,7 @@ const messages = {
   is: 'is',
   trending: 'on Underground Trending right now!',
   twitterShareText: (entityTitle: string) =>
-    `My track ${entityTitle} made it to the top of underground trending on @AudiusProject! Check it out! #Audius #AudiusTrending `
+    `My track ${entityTitle} made it to the top of underground trending on @audius! Check it out! #Audius #AudiusTrending `
 }
 
 type TrendingUndergroundNotificationProps = {

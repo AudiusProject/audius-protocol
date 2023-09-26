@@ -28,7 +28,7 @@ const messages = {
   title: 'New remix of your track',
   by: 'by',
   shareTwitterText: (track: TrackEntity, handle: string) =>
-    `New remix of ${track.title} by ${handle} on @AudiusProject #Audius`
+    `New remix of ${track.title} by ${handle} on @audius #Audius`
 }
 
 type RemixCreateNotificationProps = {
