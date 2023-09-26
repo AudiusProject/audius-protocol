@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import {
   ContentType,
@@ -74,15 +74,13 @@ export const PremiumContentPurchaseModal = () => {
     { disabled: !trackId }
   )
 
-  const [shouldAttemptRecovery, setShouldAttemptRecovery] = useState(true)
   const recoveryStatus = useSelector(getRecoveryStatus)
 
   useEffect(() => {
-    if (trackId && shouldAttemptRecovery) {
+    if (trackId) {
       dispatch(startRecoveryIfNecessary)
-      setShouldAttemptRecovery(false)
     }
-  }, [trackId, shouldAttemptRecovery, dispatch])
+  }, [trackId, dispatch])
 
   useEffect(() => {
     if (recoveryStatus === 'success') {
