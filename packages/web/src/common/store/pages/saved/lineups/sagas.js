@@ -13,7 +13,8 @@ import {
   getContext,
   LibraryCategory,
   SavedPageTabs,
-  purchaseContentActions
+  purchaseContentActions,
+  ContentType
 } from '@audius/common'
 import { uniq } from 'lodash'
 import moment from 'moment'
@@ -125,7 +126,16 @@ function* watchAddToLibrary() {
   yield takeEvery(
     [SAVE_TRACK, REPOST_TRACK, purchaseConfirmed.type],
     function* (action) {
-      const { trackId, type } = action
+      const { type } = action
+      if (
+        type === purchaseConfirmed.type &&
+        action.contentType !== ContentType.TRACK
+      ) {
+        return
+      }
+
+      let trackId =
+        type === purchaseConfirmed.type ? action.contentId : action.trackId
       const tracks = yield select(getCacheTracks, { ids: [trackId] })
 
       const track = tracks[trackId]
