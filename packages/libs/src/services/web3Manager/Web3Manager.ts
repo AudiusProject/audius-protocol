@@ -247,6 +247,7 @@ export class Web3Manager {
             const baseURL = this.useDiscoveryRelay()
               ? this.discoveryProvider?.discoveryProviderEndpoint
               : this.identityService?.identityServiceEndpoint
+            console.error(`relaying to base url ${baseURL}`)
             return await this.identityService?.relay(
               contractRegistryKey,
               contractAddress,

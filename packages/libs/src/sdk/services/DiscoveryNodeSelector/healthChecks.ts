@@ -13,7 +13,6 @@ import {
   HealthCheckStatusReason,
   HealthCheckThresholds
 } from './healthCheckTypes'
-import { retry3 } from '../../utils/retry'
 
 export const isFullFlaskResponse = (
   data: ApiHealthResponseData
@@ -232,26 +231,5 @@ export const getDiscoveryNodeHealthCheck = async ({
       reason: (e as Error)?.message,
       data: null
     }
-  }
-}
-
-export const getDiscoveryNodeRelayHealthCheck = async ({
-  endpoint,
-  opts
-}: {
-  endpoint: string,
-  opts?: RequestInit
-}): Promise<{ status?: string, error?: any }> => {
-  const relayHealthUrl = `${endpoint}/relay/health`
-
-  try {
-      const response = await fetch(relayHealthUrl, opts)
-      if (!response.ok) {
-        return { error: await response.text() }
-      }
-      const json = await response.json()
-      return json
-  } catch (e) {
-    return { error: e }
   }
 }

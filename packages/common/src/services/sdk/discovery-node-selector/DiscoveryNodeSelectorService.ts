@@ -8,7 +8,6 @@ import {
 import { Env } from '../../env'
 import {
   BooleanKeys,
-  FeatureFlags,
   IntKeys,
   RemoteConfigInstance,
   StringKeys
@@ -38,7 +37,7 @@ export class DiscoveryNodeSelectorService {
   }
 
   private async makeDiscoveryNodeSelector() {
-    const { getRemoteVar, waitForRemoteConfig, getFeatureEnabled } = this.remoteConfigInstance
+    const { getRemoteVar, waitForRemoteConfig } = this.remoteConfigInstance
 
     await waitForRemoteConfig()
 
@@ -66,17 +65,12 @@ export class DiscoveryNodeSelectorService {
     const requestTimeout =
       getRemoteVar(IntKeys.DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS) ?? undefined
 
-    const useDiscoveryRelay = getFeatureEnabled(
-      FeatureFlags.DISCOVERY_RELAY
-    )
-
     const dnSelector = new DiscoveryNodeSelector({
       healthCheckThresholds,
       blocklist,
       requestTimeout,
       bootstrapServices: discoveryNodes,
-      initialSelectedNode: this.initialSelectedNode,
-      useDiscoveryRelay
+      initialSelectedNode: this.initialSelectedNode
     })
     if (this.onChange) {
       dnSelector.addEventListener('change', this.onChange)

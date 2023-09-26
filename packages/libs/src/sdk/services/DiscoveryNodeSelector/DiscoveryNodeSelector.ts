@@ -20,8 +20,7 @@ import { ApiHealthResponseData, HealthCheckStatus } from './healthCheckTypes'
 import {
   parseApiHealthStatusReason,
   getDiscoveryNodeHealthCheck,
-  isFullFlaskResponse,
-  getDiscoveryNodeRelayHealthCheck
+  isFullFlaskResponse
 } from './healthChecks'
 import {
   BackupHealthData,
@@ -122,8 +121,6 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
 
   private readonly logger: LoggerService
 
-  private readonly useDiscoveryRelay: boolean
-
   constructor(config?: DiscoveryNodeSelectorServiceConfig) {
     this.config = mergeConfigWithDefaults(
       config,
@@ -155,8 +152,6 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     this.logger = this.config.logger.createPrefixedLogger(
       '[discovery-node-selector]'
     )
-
-    this.useDiscoveryRelay = config?.useDiscoveryRelay || false
   }
 
   /**
@@ -404,31 +399,6 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     }
   }
 
-  private async checkRelayHealth(endpoint: string, opts?: RequestInit): Promise<boolean> {
-    if (this.useDiscoveryRelay) {
-        const relayHealthResponse = await getDiscoveryNodeRelayHealthCheck({ endpoint, opts })
-        this.logger.debug({ relayHealthResponse, endpoint }, "response from relay")
-        const relayError = relayHealthResponse.error
-        if (relayError) {
-          const relayError = `${endpoint}/relay/health returned an error`
-          this.logger.warn(relayError)
-          return false
-        }
-        const relayStatus = relayHealthResponse.status
-        if (relayStatus === undefined) {
-          const relayError = `${endpoint}/relay/health does not contain .status field in body`
-          this.logger.warn(relayError)
-          return false
-        }
-        if (relayStatus !== "up") {
-          const relayError = `${endpoint}/relay/health is not up` 
-          this.logger.warn(relayError)
-          return false
-        }
-    }
-    return true
-  }
-
   /**
    * Checks to see if any of the endpoints are healthy, returning the first one that is.
    * Cancels the remaining promises.
@@ -447,12 +417,6 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         timeoutMs: this.config.requestTimeout,
         healthCheckThresholds: this.config.healthCheckThresholds
       })
-
-      const relayHealthy = await this.checkRelayHealth(endpoint, { signal: abortController.signal })
-      if (!relayHealthy) {
-        throw new Error(`${endpoint} ${health}: relay unhealthy`)
-      }
-
       if (health !== HealthCheckStatus.HEALTHY) {
         if (reason?.toLowerCase().includes('aborted')) {
           // Ignore aborted requests
