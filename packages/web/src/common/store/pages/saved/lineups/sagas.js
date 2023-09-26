@@ -139,7 +139,9 @@ function* watchAddToLibrary() {
       const tracks = yield select(getCacheTracks, { ids: [trackId] })
 
       const track = tracks[trackId]
-      if (track.has_current_user_saved) return
+      if (track.has_current_user_saved && type === SAVE_TRACK) {
+        return
+      }
 
       const localSaveUid = makeUid(
         Kind.TRACKS,
