@@ -49,7 +49,9 @@ try {
 
 const getStories = () => {
   return {
-    '../src/harmony-native/Link.Stories.tsx': require('../src/harmony-native/Link/Link.stories.tsx')
+    // '../src/harmony-native/Primitives.stories.tsx': require('../src/harmony-native/primitives.stories.tsx'),
+    '../src/harmony-native/Primitives.stories.tsx': require('../src/harmony-native/foundations/color/primitives.stories.tsx')
+    // '../src/harmony-native/Link.Stories.tsx': require('../src/harmony-native/Link/Link.stories.tsx')
   }
 }
 
