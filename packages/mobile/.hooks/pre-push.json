@@ -2,11 +2,11 @@
   "steps": [
     {
       "name": "typecheck",
-      "command": "turbo run typecheck"
+      "command": "npm run typecheck -w audius-mobile-client"
     },
     {
       "name": "lint",
-      "command": "turbo run lint"
+      "command": "npm run lint -w audius-mobile-client"
     }
   ]
 }
