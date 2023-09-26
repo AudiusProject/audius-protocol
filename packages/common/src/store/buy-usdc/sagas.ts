@@ -1,4 +1,5 @@
 import { Keypair, PublicKey } from '@solana/web3.js'
+import retry from 'async-retry'
 import { takeLatest } from 'redux-saga/effects'
 import {
   call,
@@ -6,7 +7,7 @@ import {
   race,
   select,
   take,
-  delay,
+  // delay,
   takeLeading
 } from 'typed-redux-saga'
 
@@ -155,51 +156,52 @@ function* transferStep({
   const feePayerOverride = new PublicKey(feePayer)
   const recentBlockhash = yield* call(getRecentBlockhash, audiusBackendInstance)
 
-  let retries = 0
-  let shouldRetry = true
-  do {
-    const transferTransaction = yield* call(
-      createTransferToUserBankTransaction,
-      audiusBackendInstance,
-      {
-        wallet,
-        userBank,
-        mint: 'usdc',
-        amount,
-        memo: 'In-App $USDC Purchase: Link by Stripe',
-        feePayer: feePayerOverride,
-        recentBlockhash
-      }
-    )
-    transferTransaction.partialSign(wallet)
+  yield* call(
+    retry,
+    async () => {
+      const transferTransaction = await createTransferToUserBankTransaction(
+        audiusBackendInstance,
+        {
+          wallet,
+          userBank,
+          mint: 'usdc',
+          amount,
+          memo: 'In-App $USDC Purchase: Link by Stripe',
+          feePayer: feePayerOverride,
+          recentBlockhash
+        }
+      )
+      transferTransaction.partialSign(wallet)
 
-    console.debug(`Starting transfer transaction...`)
-    const { res, error } = yield* call(
-      relayTransaction,
-      audiusBackendInstance,
-      {
+      console.debug(`Starting transfer transaction...`)
+      const { res, error } = await relayTransaction(audiusBackendInstance, {
         transaction: transferTransaction
+      })
+
+      if (res) {
+        console.debug(`Transfer transaction succeeded: ${res}`)
+        return
       }
-    )
 
-    shouldRetry = !!error && retries++ < maxRetryCount
-
-    if (!shouldRetry && error) {
       console.debug(
         `Transfer transaction stringified: ${JSON.stringify(
-          transferTransaction!
+          transferTransaction
         )}`
       )
-      throw new Error(`Transfer transaction failed: ${error}`)
+      // Throw to retry
+      throw new Error(error ?? 'Unknown USDC user bank transfer error')
+    },
+    {
+      minTimeout: retryDelayMs,
+      retries: maxRetryCount,
+      factor: 1,
+      onRetry: (e: Error, attempt: number) => {
+        console.error(
+          `Got error transferring USDC to user bank: ${e}. Attempt ${attempt}. Retrying...`
+        )
+      }
     }
-
-    if (res) {
-      console.debug(`Transfer transaction succeeded: ${res}`)
-      return
-    }
-
-    yield* delay(retryDelayMs)
-  } while (shouldRetry)
+  )
 }
 
 function* doBuyUSDC({
