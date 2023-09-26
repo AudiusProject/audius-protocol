@@ -404,6 +404,31 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     }
   }
 
+  private async checkRelayHealth(endpoint: string, opts?: RequestInit): Promise<boolean> {
+    if (this.useDiscoveryRelay) {
+        const relayHealthResponse = await getDiscoveryNodeRelayHealthCheck({ endpoint, opts })
+        this.logger.info({ relayHealthResponse, endpoint }, "response from relay")
+        const relayError = relayHealthResponse.error
+        if (relayError) {
+          const relayError = `${endpoint}/relay/health returned an error`
+          this.logger.warn(relayError)
+          return false
+        }
+        const relayStatus = relayHealthResponse.status
+        if (relayStatus === undefined) {
+          const relayError = `${endpoint}/relay/health does not contain .status field in body`
+          this.logger.warn(relayError)
+          return false
+        }
+        if (relayStatus !== "up") {
+          const relayError = `${endpoint}/relay/health is not up` 
+          this.logger.warn(relayError)
+          return false
+        }
+    }
+    return true
+  }
+
   /**
    * Checks to see if any of the endpoints are healthy, returning the first one that is.
    * Cancels the remaining promises.
@@ -423,21 +448,11 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         healthCheckThresholds: this.config.healthCheckThresholds
       })
 
-      if (this.useDiscoveryRelay) {
-        const relayHealthResponse = await getDiscoveryNodeRelayHealthCheck({ endpoint, timeoutMs: this.config.requestTimeout })
-        const relayStatus = relayHealthResponse.status
-        if (relayStatus === undefined) {
-          const relayError = `${endpoint}/relay/health does not contain .status field in body`
-          this.logger.debug(relayError)
-          this.unhealthyServices.add(endpoint)
-          throw new Error(relayError)
-        }
-        if (relayStatus !== "up") {
-          const relayError = `${endpoint}/relay/health is not up` 
-          this.logger.debug(relayError)
-          this.unhealthyServices.add(endpoint)
-          throw new Error(relayError)
-        }
+      this.logger.info("healthy endpoint selection")
+
+      const relayHealthy = await this.checkRelayHealth(endpoint, { signal: abortController.signal })
+      if (!relayHealthy) {
+        throw new Error(`${endpoint} ${health}: relay unhealthy`)
       }
 
       if (health !== HealthCheckStatus.HEALTHY) {

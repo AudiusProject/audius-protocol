@@ -39,6 +39,7 @@ export function DiscoveryHealth() {
             {isContent && <th>Cleanup (checked, pulled, deleted)</th>}
             {isContent && <th>/file_storage</th>}
             {isContent && <th>/tmp/mediorum</th>}
+            <th>Relay</th>
             <th>DB Size</th>
             <th>Your IP</th>
             {isDiscovery && <th>ACDC Health</th>}
@@ -67,7 +68,9 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   // TODO(michelle): after all nodes updated, change this to
   // const path = isContent ? '/health_check' : '/health_check?verbose=true&enforce_block_diff=true&healthy_block_diff=250&plays_count_max_drift=720'
   const path = isContent ? '/health_check' : '/health_check?enforce_block_diff=true&healthy_block_diff=250'
+  const relayPath = '/relay/health'
   const { data, error } = useSWR(sp.endpoint + path, fetcher)
+  const { data: relayHealth, error: relayHealthError } = useSWR(sp.endpoint + relayPath, fetcher)
   const { data: ipCheck, error: ipCheckError } = useSWR(
     sp.endpoint + '/ip_check',
     fetcher
@@ -76,6 +79,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
 
   const health = data?.data
   const yourIp = ipCheck?.data
+  const relayStatus = relayHealth?.status
 
   if (!health || !yourIp)
     return (
@@ -223,6 +227,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       )}
       {isContent && (<td>{legacyDirUsed} GB</td>)}
       {isContent && (<td>{mediorumDirUsed} GB</td>)}
+      <td>{`${relayStatus || "down" }`}</td>
       <td>{`${dbSize} GB`}</td>
       <td>{`${yourIp}`}</td>
       {!isContent && (<td>{health.chain_health?.status}</td>)}

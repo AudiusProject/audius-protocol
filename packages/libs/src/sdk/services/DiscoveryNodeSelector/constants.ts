@@ -23,5 +23,6 @@ export const defaultDiscoveryNodeSelectorConfig: DiscoveryNodeSelectorServiceCon
       maxBlockDiff: 15
     },
     bootstrapServices: productionConfig.discoveryNodes,
-    logger: new Logger()
+    logger: new Logger(),
+    useDiscoveryRelay: false
   }

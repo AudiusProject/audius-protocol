@@ -13,7 +13,7 @@ import {
   HealthCheckStatusReason,
   HealthCheckThresholds
 } from './healthCheckTypes'
-import { number, string } from 'zod'
+import { retry3 } from '../../utils/retry'
 
 export const isFullFlaskResponse = (
   data: ApiHealthResponseData
@@ -237,25 +237,23 @@ export const getDiscoveryNodeHealthCheck = async ({
 
 export const getDiscoveryNodeRelayHealthCheck = async ({
   endpoint,
-  timeoutMs
+  opts
 }: {
-  endpoint: string
-  timeoutMs?: number
-}): Promise<{ status: string }> => {
-  const timeoutPromises = []
-    if (timeoutMs !== undefined) {
-    const timeoutPromise = new Promise<never>((_resolve, reject) =>
-      setTimeout(() => reject(new Error('timeout')), timeoutMs)
-    )
-    timeoutPromises.push(timeoutPromise)
-  }
-
+  endpoint: string,
+  opts?: RequestInit
+}): Promise<{ status?: string, error?: any }> => {
   const relayHealthUrl = `${endpoint}/relay/health`
 
-  const response = await fetch(relayHealthUrl, {})
-  if (!response.ok) {
-    throw new Error(response.statusText)
+  try {
+      return await retry3(async () => {
+        const response = await fetch(relayHealthUrl, opts)
+        if (!response.ok) {
+          return { error: await response.text() }
+        }
+        const json = await response.json()
+        return json
+  })
+  } catch (e) {
+    return { error: e }
   }
-  const json = await response.json()
-  return json
 }
