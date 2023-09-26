@@ -1,0 +1,92 @@
+import { Meta, ColorPalette, ColorItem } from '@storybook/blocks'
+import { themeColorsMap } from './colors'
+
+export const theme = themeColorsMap['day']
+
+<Meta title="Colors" />
+
+<ColorPalette>
+  <ColorItem 
+    title="Static" 
+    subtitle="theme.static" 
+    colors={{
+      white: theme.static.white,
+      primary: theme.static.primary
+    }} 
+  />
+  <ColorItem 
+    title="Primary" 
+    subtitle="theme.primary" 
+    colors={{
+      primary: theme.primary.primary,
+    }}
+  />
+  <ColorItem 
+    colors={{
+      'p-100': theme.primary['p-100'],
+      'p-200': theme.primary['p-200'],
+      'p-300': theme.primary['p-300'],
+      'p-400': theme.primary['p-400'],
+      'p-500': theme.primary['p-500']
+    }}
+  />
+  <ColorItem 
+    title="Secondary" 
+    subtitle="theme.secondary" 
+    colors={{
+      secondary: theme.secondary.secondary,
+    }} 
+  />
+  <ColorItem 
+    colors={{
+      's-100': theme.secondary['s-100'],
+      's-200': theme.secondary['s-200'],
+      's-300': theme.secondary['s-300'],
+      's-400': theme.secondary['s-400'],
+      's-500': theme.secondary['s-500']
+    }}
+  />
+  <ColorItem 
+    title="Neutral" 
+    subtitle="theme.neutral" 
+    colors={{
+      neutral: theme.neutral.neutral,
+    }} 
+  />
+  <ColorItem 
+    colors={{
+      'n-25': theme.neutral['n-25'],
+      'n-50': theme.neutral['n-50'],
+      'n-100': theme.neutral['n-100'],
+      'n-150': theme.neutral['n-150'],
+      'n-200': theme.neutral['n-200'],
+      'n-300': theme.neutral['n-300'],
+      'n-400': theme.neutral['n-400'],
+      'n-500': theme.neutral['n-500'],
+      'n-600': theme.neutral['n-600'],
+      'n-700': theme.neutral['n-700'],
+      'n-800': theme.neutral['n-800'],
+      'n-900': theme.neutral['n-900'],
+      'n-950': theme.neutral['n-950']
+    }} 
+  />
+  <ColorItem 
+    title="Special" 
+    subtitle="theme.special" 
+    colors={{
+      white: theme.special.white,
+      background: theme.special.background,
+      blue: theme.special.blue,
+      orange: theme.special.orange,
+      red: theme.special.red,
+      'dark-red': theme.special['dark-red'],
+      green: theme.special.green,
+      'light-green': theme.special['light-green']
+    }} 
+  />
+  <ColorItem 
+    colors={{
+      gradient: theme.special.gradient
+    }}
+  />
+</ColorPalette>

@@ -176,6 +176,7 @@ import { PurchasesPage, SalesPage } from './purchases-and-sales'
 import { WithdrawalsPage } from './purchases-and-sales/WithdrawalsPage'
 import SettingsPage from './settings-page/SettingsPage'
 import { SubPage } from './settings-page/components/mobile/SettingsPage'
+import { SignInPage } from './sign-in-page'
 import SmartCollectionPage from './smart-collection/SmartCollectionPage'
 import SupportingPage from './supporting-page/SupportingPage'
 import TopSupportersPage from './top-supporters-page/TopSupportersPage'
@@ -410,7 +411,13 @@ class App extends Component {
   }
 
   render() {
-    const { theme, incrementScroll, decrementScroll, userHandle } = this.props
+    const {
+      theme,
+      incrementScroll,
+      decrementScroll,
+      userHandle,
+      isSignInRedesignEnabled
+    } = this.props
 
     const {
       showWebUpdateBanner,
@@ -496,12 +503,13 @@ class App extends Component {
                   render={(props) => <FbSharePage />}
                 />
 
-                <Route
-                  exact
-                  path={SIGN_IN_PAGE}
-                  isMobile={isMobileClient}
-                  render={() => <SignOn signIn initialPage={initialPage} />}
-                />
+                <Route exact path={SIGN_IN_PAGE} isMobile={isMobileClient}>
+                  {isSignInRedesignEnabled ? (
+                    <SignInPage />
+                  ) : (
+                    <SignOn signIn initialPage={initialPage} />
+                  )}
+                </Route>
                 <Route
                   exact
                   path={SIGN_UP_PAGE}
@@ -969,7 +977,8 @@ const mapStateToProps = (state) => ({
   signOnStatus: getSignOnStatus(state),
   theme: getTheme(state),
   showCookieBanner: getShowCookieBanner(state),
-  isChatEnabled: getFeatureEnabled(FeatureFlags.CHAT_ENABLED)
+  isChatEnabled: getFeatureEnabled(FeatureFlags.CHAT_ENABLED),
+  isSignInRedesignEnabled: getFeatureEnabled(FeatureFlags.SIGN_UP_REDESIGN)
 })
 
 const mapDispatchToProps = (dispatch) => ({

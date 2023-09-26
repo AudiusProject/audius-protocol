@@ -62,8 +62,10 @@ jobs:
 
       - run:
           name: Install dependencies
+          # If node_modules exists in cache, run postinstall. Otherwise, run npm ci
           command: |
-            npm ci
+            [[ ! -d node_modules ]] || npm run postinstall
+            [[ -d node_modules ]] || npm ci
 
       - save_cache:
           key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
@@ -117,8 +119,7 @@ jobs:
             mv /tmp/.version.json discovery-provider/.version.json
             git add discovery-provider/.version.json
 
-            # Escape double quotes in commit message and replace git log's platform-specific newlines with @@DELIM@@
-            GIT_DIFF=$(git log --pretty=format:'• %an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum discovery-provider identity-service comms | sed 's/"/\\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/@@DELIM@@/g')
+            GIT_DIFF=$(git log --pretty=format:'%an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum discovery-provider identity-service comms | sed 's/"/\\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/=DELIM@/g')
             git commit -m "Bump version to $NEW_VERSION"
 
             git branch "release-v$NEW_VERSION"
@@ -133,21 +134,37 @@ jobs:
             line_count=0
             block_content=""
 
-            # Use @@ as Internal Field Separator, so @@DELIM@@ effectively becomes the delimiter for us to build blocks
-            IFS='@@'
+            # Use =DELIM@ as a delimiter to split the diff into lines (so set Internal Field Separator to "@")
+            buffer=""
+            IFS="@"
             read -ra ADDR \<<< "$GIT_DIFF"
             for line in "${ADDR[@]}"; do
-                if [[ $line == "DELIM" ]]; then
-                    continue
-                fi
+                line="${buffer}${line}"
 
-                block_content+="$line\n"
-                line_count=$((line_count+1))
+                # If the current line ends with "=DELIM", then it's a complete line, so process it and reset buffer
+                if [ "${line: -6}" = "=DELIM" ]; then
+                    line="${line%=DELIM}"
+                    buffer=""
 
-                if (( line_count == max_lines )); then
-                    json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"${block_content}\" } },"
-                    line_count=0
-                    block_content=""
+                    # Try to replace the author with a Slack mention (use author's name without hyphens or spaces because sh env doesn't allow that)
+                    author_name=$(echo "$line" | awk -F ' - ' '{print $1}')
+                    env_key_name="SLACK_ID_FOR_GH_$(echo $author_name | tr ' ' '_' | tr '-' '_' | tr '[:upper:]' '[:lower:]')"
+                    env_var_value=$(eval echo \$$env_key_name)
+                    if [ ! -z "$env_var_value" ]; then
+                        line=$(echo "$line" | sed "s/$author_name/<@$env_var_value>/")
+                    fi
+
+                    block_content+="• $line\n"
+                    line_count=$((line_count+1))
+
+                    if (( line_count == max_lines )); then
+                        json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"${block_content}\" } },"
+                        line_count=0
+                        block_content=""
+                    fi
+                else
+                    # Otherwise, store the current line in the buffer and wait for the next iteration
+                    buffer+="${line}@"
                 fi
             done
 
@@ -158,16 +175,12 @@ jobs:
             json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"\n*These changes will be auto-deployed to foundation nodes in 2 hours (10am PST).* Set \`HALT_AUTO_DEPLOY\`=\`true\` <https://app.circleci.com/settings/organization/github/AudiusProject/contexts/4be7f5c8-cadb-4deb-b66e-318867a6960b|here> if needed.\n\" } }"
             json_content+="]}"
 
-            # The next step of this job will read this file and send it to Slack
-            echo $json_content > /tmp/slack_message.json
-            echo "Text to send to slack: $json_content"
-      - run:
-          name: Send Slack Daily Deploy Message
-          command: |
+            # Send Slack daily deploy message
+            echo "Sending message to Slack: $json_content"
             curl -f -X POST -H 'Content-type: application/json' \
-              --data @/tmp/slack_message.json \
+              --data "$json_content" \
               $SLACK_DAILY_DEPLOY_WEBHOOK
-  
+
   approve-deployment-holds:
     resource_class: small
     docker:
@@ -226,14 +239,14 @@ jobs:
               # Fetch the "deploy-prod-foundation-nodes-trigger" job
               job_id=$(curl --request GET \
                 "https://circleci.com/api/v2/workflow/$workflow_id/job" \
-                --header "Circle-Token: $CIRCLE_DAILY_DEPLOY_API_TOKEN" | jq -r '.items[] | select(.name=="deploy-prod-foundation-nodes-trigger" and .status=="on_hold") | .id')
+                --header "Circle-Token: $CIRCLE_DAILY_DEPLOY_API_TOKEN" | jq -r '.items[] | select(.name=="deploy-foundation-nodes-trigger" and .status=="on_hold") | .id')
 
               # If we found the job, approve it automatically
               if [ ! -z "$job_id" ]; then
                   echo "Approving job with id=$job_id"
                   job_url="https://app.circleci.com/pipelines/gh/AudiusProject/audius-protocol/$pipeline_number/workflows/$workflow_id"
-                  curl -X POST \
-                    https://circleci.com/api/v2/workflow/$workflow_id/approve/$job_id
+                  curl --request POST \
+                    "https://circleci.com/api/v2/workflow/$workflow_id/approve/$job_id" \
                     --header "Circle-Token: $CIRCLE_DAILY_DEPLOY_API_TOKEN"
                   
                   # Record approval for the Slack message
@@ -243,23 +256,23 @@ jobs:
       - run:
           name: Notify Slack
           command: |
-              job_url=$(cat /tmp/job_url.txt)
-              json_content="{ \"blocks\": ["
+            job_url=$(cat /tmp/job_url.txt) || true
+            json_content="{ \"blocks\": ["
 
-              if [[ -z "$job_url" ]]; then
-                  # If we couldn't find the deploy trigger job on hold, send the failure message
-                  json_content+="{ \"type\": \"section\","
-                  json_content+=" \"text\": { \"type\": \"mrkdwn\", \"text\": \"I tried to deploy today's release to foundation nodes but have failed miserably :( please investigate\" } }"
-              else
-                  # If we approved the job, send the success message
-                  json_content+="{ \"type\": \"section\","
-                  json_content+=" \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deploying $job_url to foundation nodes... Please watch for issues and approve the release for SPs when ready (I'll remind you in 2 hours at noon PST).\" } }"
-              fi
+            if [[ -z "$job_url" ]]; then
+                # If we couldn't find the deploy trigger job on hold, send the failure message
+                json_content+="{ \"type\": \"section\","
+                json_content+=" \"text\": { \"type\": \"mrkdwn\", \"text\": \"I tried to deploy today's release to foundation nodes but have failed miserably :( please investigate\" } }"
+            else
+                # If we approved the job, send the success message
+                json_content+="{ \"type\": \"section\","
+                json_content+=" \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deploying $job_url to foundation nodes... Please watch for issues and approve the release for SPs when ready (I'll remind you in 2 hours at noon PST).\" } }"
+            fi
 
-              json_content+="]}"
-              curl -f -X POST -H 'Content-type: application/json' \
-                --data "$json_content" \
-                $SLACK_DAILY_DEPLOY_WEBHOOK
+            json_content+="]}"
+            curl -f -X POST -H 'Content-type: application/json' \
+              --data "$json_content" \
+              $SLACK_DAILY_DEPLOY_WEBHOOK
 
   notify-sp-release-job:
     resource_class: small
@@ -525,12 +538,13 @@ workflows:
     jobs:
       - generate-release:
           context: slack-secrets
-  
+
   auto-approve-foundation-deploy:
     when:
       and:
         - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ['auto-approve-foundation-deploy', << pipeline.schedule.name >>]
+        - equal:
+            ['auto-approve-foundation-deploy', << pipeline.schedule.name >>]
     jobs:
       - approve-deployment-holds:
           context: [slack-secrets, circle-daily-deploy-secrets]

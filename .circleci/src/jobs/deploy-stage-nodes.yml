@@ -25,9 +25,9 @@ steps:
       command: |
         git clone --branch stage https://github.com/AudiusProject/audius-docker-compose.git audius-docker-compose
         cd audius-docker-compose
-        sed -i "s/{TAG:-.*}/{TAG:-$CIRCLE_SHA1}/" $service/docker-compose/*.yml
+        sed -i "s/{TAG:-.*}/{TAG:-$CIRCLE_SHA1}/" << parameters.service >>/docker-compose*.yml
         git add */docker-compose*.yml
-        git commit -m "Update tag to $CIRCLE_SHA1 for $service"
+        git commit -m "Update tag to $CIRCLE_SHA1 for << parameters.service >>"
         git push origin stage
   - run:
       name: Wait for 2 minutes for staging nodes to auto-upgrade
