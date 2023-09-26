@@ -35,8 +35,11 @@ const getClientAliases = () => {
 
 module.exports = (async () => {
   const {
-    resolver: { sourceExts, assetExts }
+    resolver: { sourceExts, assetExts, resolverMainFields }
   } = await getDefaultConfig()
+
+  resolverMainFields.unshift('sbmodern')
+
   return {
     transformer: {
       getTransformOptions: async () => ({
@@ -92,7 +95,8 @@ module.exports = (async () => {
           }
         }
         return context.resolveRequest(context, moduleName, platform)
-      }
+      },
+      resolverMainFields
     },
     maxWorkers: 2
   }
