@@ -70,10 +70,10 @@ services:
       solanaRewardsManagerTokenPDA: '${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}'
       solanaAudiusAnchorDataProgramId: '${SOLANA_AUDIUS_DATA_PUBLIC_KEY}'
     volumes:
-      - ${PROJECT_ROOT}/packages/identity-service:/usr/src/app
-      - /usr/src/app/node_modules
+      - ${PROJECT_ROOT}/packages/identity-service:/app/packages/identity-service
+      - /app/node_modules
       - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
-      - audius-libs:/usr/src/audius-libs
+      - audius-libs:/node-modules/@audius/sdk
     depends_on:
       db:
         condition: service_healthy

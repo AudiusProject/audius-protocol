@@ -1,5 +1,6 @@
 FROM node:18-alpine AS base
  
+# PRUNE DEPENDENCIES
 FROM base AS builder
 
 RUN apk add --no-cache libc6-compat
@@ -9,17 +10,15 @@ WORKDIR /app
 RUN npm install turbo --global
 
 COPY . .
-RUN turbo prune "--scope=identity-service" --docker
+RUN turbo prune --scope=identity-service --docker
 
 # INSTALL & BUILD
 FROM base AS installer
 
 WORKDIR /app
 
-RUN npm install turbo --global
-RUN apk add --no-cache libc6-compat git
+RUN apk add --no-cache python3 py3-pip make g++ curl bash libc6-compat
 RUN apk update
-RUN apk add --no-cache python3 py3-pip make g++ curl bash
 
 # First install dependencies (as they change less often)
 COPY .gitignore .gitignore
@@ -33,9 +32,9 @@ RUN CI=true npm run install-packages
 COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json
 
-# Compile js code to typescript based on tsconfig.build.json
 # TODO: Don't need to build identity if running in dev mode with ts-node-dev
-RUN turbo run build --filter=identity-service
+# TODO: Also may not need to build sdk bc of build-audius-libs container
+RUN npx turbo run build --filter=identity-service
 
 # Add the wait script to the image
 # Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait /usr/bin/wait

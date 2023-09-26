@@ -21,13 +21,15 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   build-audius-libs:
-    build: ${PROJECT_ROOT}/packages/libs
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/packages/libs/Dockerfile
     command: sh /tmp/dev-tools/startup/build-audius-libs.sh
     volumes:
-      - audius-libs:/usr/src/app
-      - poa-contracts-abis:/usr/src/data-contracts/ABIs
-      - eth-contracts-abis:/usr/src/eth-contracts/ABIs
-      - ${PROJECT_ROOT}/packages/libs/src:/usr/src/app/src
+      - audius-libs:/app/packages/libs
+      - poa-contracts-abis:/app/packages/libs/data-contracts/ABIs
+      - eth-contracts-abis:/app/packages/libs/eth-contracts/ABIs
+      - ${PROJECT_ROOT}/packages/libs/src:/app/packages/libs/src
       - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
     depends_on:
       poa-ganache:
