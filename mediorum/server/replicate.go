@@ -82,7 +82,7 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 	}
 
 	client := http.Client{
-		Timeout: 30 * time.Second,
+		Timeout: time.Minute,
 	}
 
 	r, w := io.Pipe()
@@ -150,7 +150,7 @@ func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
 		return errors.New("should not pull blob from self")
 	}
 	client := http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: time.Minute,
 	}
 	u := apiPath(host, "internal/blobs", url.PathEscape(cid))
 
