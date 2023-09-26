@@ -26,6 +26,7 @@ import { useState } from 'react'
 import { trpc } from './trpc'
 import './services/webVitals'
 import './index.css'
+import DemoTrpcPage from 'pages/demo-trpc/DemoTrpcPage'
 
 const AudiusApp = () => {
   const [queryClient] = useState(() => new QueryClient())
@@ -66,6 +67,9 @@ const AudiusApp = () => {
                           path={'/oauth/auth'}
                           component={OAuthLoginPage}
                         />
+                        <Route path='/demo/trpc'>
+                          <DemoTrpcPage />
+                        </Route>
                         <Route path='/'>
                           <AppErrorBoundary>
                             <CoinbasePayButtonProvider>

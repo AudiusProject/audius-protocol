@@ -10,11 +10,15 @@ import { publicProcedure, router } from '../trpc'
 import { TRPCError } from '@trpc/server'
 
 export const userRouter = router({
-  get: publicProcedure
+  get: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
+    return ctx.loaders.userLoader.load(parseInt(input))
+  }),
+
+  getMany: publicProcedure
     .meta({
       openapi: {
         method: 'GET',
-        path: '/users/get',
+        path: '/users/getMany',
         tags: ['users'],
         summary: 'Get users by id'
       }
