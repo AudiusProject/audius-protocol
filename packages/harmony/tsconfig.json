@@ -15,6 +15,7 @@
     ],
     "exactOptionalPropertyTypes": false,
     "declaration": true,
+    "baseUrl": "./src",
     "outDir": "build",
     "declarationDir": "./",
     "noPropertyAccessFromIndexSignature": false

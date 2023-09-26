@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   accountSelectors,
   chatActions,
+  FeatureFlags,
   playerActions,
   Status
 } from '@audius/common'
@@ -11,6 +12,7 @@ import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
 import { useDispatch, useSelector } from 'react-redux'
 
 import useAppState from 'app/hooks/useAppState'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useUpdateRequired } from 'app/hooks/useUpdateRequired'
 import { useSyncCodePush } from 'app/screens/root-screen/useSyncCodePush'
 import { SignOnScreen } from 'app/screens/signon'
@@ -22,6 +24,8 @@ import {
 import { enterBackground, enterForeground } from 'app/store/lifecycle/actions'
 
 import { AppDrawerScreen } from '../app-drawer-screen'
+import { SignInScreen } from '../sign-in-screen'
+import { SignUpScreen } from '../sign-up-screen'
 
 import { StatusBar } from './StatusBar'
 
@@ -44,6 +48,9 @@ export const RootScreen = () => {
   const showHomeStack = useSelector(getHasCompletedAccount)
   const [isLoaded, setIsLoaded] = useState(false)
   const [isSplashScreenDismissed, setIsSplashScreenDismissed] = useState(false)
+  const { isEnabled: isSignUpRedesignEnabled } = useFeatureFlag(
+    FeatureFlags.SIGN_UP_REDESIGN
+  )
 
   useAppState(
     () => dispatch(enterForeground()),
@@ -103,6 +110,11 @@ export const RootScreen = () => {
             />
           ) : showHomeStack ? (
             <Stack.Screen name='HomeStack' component={AppDrawerScreen} />
+          ) : isSignUpRedesignEnabled ? (
+            <Stack.Group>
+              <Stack.Screen name='SignUp' component={SignUpScreen} />
+              <Stack.Screen name='SignIn' component={SignInScreen} />
+            </Stack.Group>
           ) : (
             <Stack.Screen name='SignOnStack' component={SignOnScreen} />
           )}

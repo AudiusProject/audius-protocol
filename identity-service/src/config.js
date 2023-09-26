@@ -344,10 +344,10 @@ const config = convict({
     env: 'sendgridApiKey',
     default: ''
   },
-  sendgridEmailValidationKey: {
-    doc: 'Sendgrid API key used to validate emails',
+  bouncerEmailValidationKey: {
+    doc: 'Bouncer API key used to validate emails',
     format: String,
-    env: 'sendgridEmailValidationKey',
+    env: 'bouncerEmailValidationKey',
     default: ''
   },
   // loaded through contract-config.json, if an env variable declared, env var takes precendence
