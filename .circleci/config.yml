@@ -405,6 +405,9 @@ workflows:
           parameters: '{
             "run-gcp-cleanup": true,
             }'
+          pre-steps:
+            - attach_workspace:
+                at: ../workspace
           requires:
             - generate-config
 
