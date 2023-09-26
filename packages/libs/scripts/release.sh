@@ -77,7 +77,7 @@ function bump-version () {
     (
         # Patch the version
         npm version ${RELEASE_VERSION} --preid=${PREID}
-        VERSION=$(jq -r '.version' package.json)
+        VERSION=v$(jq -r '.version' package.json)
         tmp=$(mktemp)
         jq ". += {audius: {releaseSHA: \"${GIT_COMMIT}\"}}" package.json > "$tmp" \
             && mv "$tmp" package.json
@@ -107,7 +107,7 @@ function merge-bump () {
         git pull
 
         # squash branch commit
-        git merge --squash '${STUB}-${VERSION}' || exit 1
+        git merge --squash ${STUB}-${VERSION} || exit 1
         git commit -m "$(commit-message)" || exit 1
 
         # tag release
