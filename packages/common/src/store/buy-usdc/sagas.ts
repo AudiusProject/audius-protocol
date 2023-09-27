@@ -1,6 +1,15 @@
 import { Keypair, PublicKey } from '@solana/web3.js'
+import retry from 'async-retry'
 import { takeLatest } from 'redux-saga/effects'
-import { call, put, race, select, take } from 'typed-redux-saga'
+import {
+  call,
+  put,
+  race,
+  select,
+  take,
+  // delay,
+  takeLeading
+} from 'typed-redux-saga'
 
 import { Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
@@ -25,7 +34,9 @@ import {
   onrampCanceled,
   onrampOpened,
   purchaseStarted,
-  onrampSucceeded
+  onrampSucceeded,
+  startRecoveryIfNecessary,
+  recoveryStatusChanged
 } from './slice'
 import { USDCOnRampProvider } from './types'
 import { getUSDCUserBank } from './utils'
@@ -127,11 +138,15 @@ function* purchaseStep({
 function* transferStep({
   wallet,
   userBank,
-  amount
+  amount,
+  maxRetryCount = 3,
+  retryDelayMs = 1000
 }: {
   wallet: Keypair
   userBank: PublicKey
   amount: bigint
+  maxRetryCount?: number
+  retryDelayMs?: number
 }) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const feePayer = yield* select(getFeePayer)
@@ -141,31 +156,52 @@ function* transferStep({
   const feePayerOverride = new PublicKey(feePayer)
   const recentBlockhash = yield* call(getRecentBlockhash, audiusBackendInstance)
 
-  const transferTransaction = yield* call(
-    createTransferToUserBankTransaction,
-    audiusBackendInstance,
+  yield* call(
+    retry,
+    async () => {
+      const transferTransaction = await createTransferToUserBankTransaction(
+        audiusBackendInstance,
+        {
+          wallet,
+          userBank,
+          mint: 'usdc',
+          amount,
+          memo: 'In-App $USDC Purchase: Link by Stripe',
+          feePayer: feePayerOverride,
+          recentBlockhash
+        }
+      )
+      transferTransaction.partialSign(wallet)
+
+      console.debug(`Starting transfer transaction...`)
+      const { res, error } = await relayTransaction(audiusBackendInstance, {
+        transaction: transferTransaction
+      })
+
+      if (res) {
+        console.debug(`Transfer transaction succeeded: ${res}`)
+        return
+      }
+
+      console.debug(
+        `Transfer transaction stringified: ${JSON.stringify(
+          transferTransaction
+        )}`
+      )
+      // Throw to retry
+      throw new Error(error ?? 'Unknown USDC user bank transfer error')
+    },
     {
-      wallet,
-      userBank,
-      mint: 'usdc',
-      amount,
-      memo: 'In-App $USDC Purchase: Link by Stripe',
-      feePayer: feePayerOverride,
-      recentBlockhash
+      minTimeout: retryDelayMs,
+      retries: maxRetryCount,
+      factor: 1,
+      onRetry: (e: Error, attempt: number) => {
+        console.error(
+          `Got error transferring USDC to user bank: ${e}. Attempt ${attempt}. Retrying...`
+        )
+      }
     }
   )
-  transferTransaction.partialSign(wallet)
-  console.debug(`Starting transfer transaction...`)
-  const { res, error } = yield* call(relayTransaction, audiusBackendInstance, {
-    transaction: transferTransaction
-  })
-  if (error) {
-    console.debug(
-      `Transfer transaction stringified: ${JSON.stringify(transferTransaction)}`
-    )
-    throw new Error(`Transfer transaction failed: ${error}`)
-  }
-  console.debug(`Transfer transaction succeeded: ${res}`)
 }
 
 function* doBuyUSDC({
@@ -261,10 +297,86 @@ function* doBuyUSDC({
   }
 }
 
+function* recoverPurchaseIfNecessary() {
+  const reportToSentry = yield* getContext('reportToSentry')
+  const { track, make } = yield* getContext('analytics')
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+
+  try {
+    const userBank = yield* getUSDCUserBank()
+    const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
+
+    const usdcTokenAccount = yield* call(
+      findAssociatedTokenAddress,
+      audiusBackendInstance,
+      { solanaAddress: rootAccount.publicKey.toString(), mint: 'usdc' }
+    )
+    const accountInfo = yield* call(
+      getTokenAccountInfo,
+      audiusBackendInstance,
+      {
+        mint: 'usdc',
+        tokenAccount: usdcTokenAccount
+      }
+    )
+    const amount = accountInfo?.amount ?? BigInt(0)
+    if (amount === BigInt(0)) {
+      return
+    }
+
+    const userBankAddress = userBank.toBase58()
+
+    // Transfer all USDC from the from the root wallet to the user bank
+    yield* put(recoveryStatusChanged({ status: 'in-progress' }))
+    yield* call(
+      track,
+      make({
+        eventName: Name.BUY_USDC_RECOVERY_IN_PROGRESS,
+        userBank: userBankAddress
+      })
+    )
+    yield* call(transferStep, {
+      wallet: rootAccount,
+      userBank,
+      amount
+    })
+
+    yield* put(recoveryStatusChanged({ status: 'success' }))
+    yield* call(
+      track,
+      make({
+        eventName: Name.BUY_USDC_RECOVERY_SUCCESS,
+        userBank: userBankAddress
+      })
+    )
+  } catch (e) {
+    yield* put(recoveryStatusChanged({ status: 'failure' }))
+    yield* call(reportToSentry, {
+      level: ErrorLevel.Error,
+      error: e as Error
+    })
+    yield* call(
+      track,
+      make({
+        eventName: Name.BUY_USDC_RECOVERY_FAILURE,
+        error: (e as Error).message
+      })
+    )
+  }
+}
+
 function* watchOnRampOpened() {
   yield takeLatest(onrampOpened, doBuyUSDC)
 }
 
+function* watchRecovery() {
+  // Use takeLeading since:
+  // 1) We don't want to run more than one recovery flow at a time (so not takeEvery)
+  // 2) We don't need to interrupt if already running (so not takeLatest)
+  // 3) We do want to be able to trigger more than one time per session in case of same-session failures (so not take)
+  yield takeLeading(startRecoveryIfNecessary, recoverPurchaseIfNecessary)
+}
+
 export default function sagas() {
-  return [watchOnRampOpened]
+  return [watchOnRampOpened, watchRecovery]
 }

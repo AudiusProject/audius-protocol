@@ -8,7 +8,10 @@ import {
   purchaseContentActions,
   purchaseContentSelectors,
   useGetTrackById,
-  usePremiumContentPurchaseModal
+  usePremiumContentPurchaseModal,
+  useUSDCBalance,
+  buyUSDCActions,
+  buyUSDCSelectors
 } from '@audius/common'
 import {
   IconCart,
@@ -38,6 +41,9 @@ import {
 } from './components/validation'
 import { getExtraAmount } from './hooks'
 
+const { startRecoveryIfNecessary, cleanup } = buyUSDCActions
+const { getRecoveryStatus } = buyUSDCSelectors
+
 const messages = {
   completePurchase: 'Complete Purchase'
 }
@@ -62,10 +68,30 @@ export const PremiumContentPurchaseModal = () => {
     data: { contentId: trackId }
   } = usePremiumContentPurchaseModal()
 
+  const { refresh } = useUSDCBalance()
   const { data: track } = useGetTrackById(
     { id: trackId! },
     { disabled: !trackId }
   )
+
+  const recoveryStatus = useSelector(getRecoveryStatus)
+
+  useEffect(() => {
+    if (trackId) {
+      dispatch(startRecoveryIfNecessary)
+    }
+  }, [trackId, dispatch])
+
+  useEffect(() => {
+    if (recoveryStatus === 'success') {
+      refresh()
+    }
+  }, [recoveryStatus, refresh])
+
+  const handleClose = useCallback(() => {
+    dispatch(cleanup())
+    onClose()
+  }, [dispatch, onClose])
 
   const handleSubmit = useCallback(
     ({ customAmount, amountPreset }: PurchaseContentValues) => {
@@ -95,7 +121,7 @@ export const PremiumContentPurchaseModal = () => {
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       onClosed={onClosed}
       bodyClassName={styles.modal}
       dismissOnClickOutside

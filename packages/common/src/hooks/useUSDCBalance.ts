@@ -31,22 +31,23 @@ export const useUSDCBalance = () => {
     [dispatch]
   )
 
-  useEffect(() => {
-    const fetch = async () => {
-      setStatus(Status.LOADING)
-      try {
-        const account = await getUserbankAccountInfo(audiusBackend, {
-          mint: 'usdc'
-        })
-        const balance = (account?.amount ?? new BN(0)) as BNUSDC
-        setData(balance)
-        setStatus(Status.SUCCESS)
-      } catch (e) {
-        setStatus(Status.ERROR)
-      }
+  const refresh = useCallback(async () => {
+    setStatus(Status.LOADING)
+    try {
+      const account = await getUserbankAccountInfo(audiusBackend, {
+        mint: 'usdc'
+      })
+      const balance = (account?.amount ?? new BN(0)) as BNUSDC
+      setData(balance)
+      setStatus(Status.SUCCESS)
+    } catch (e) {
+      setStatus(Status.ERROR)
     }
-    fetch()
   }, [audiusBackend, setData])
 
-  return { status, data }
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+
+  return { status, data, refresh }
 }
