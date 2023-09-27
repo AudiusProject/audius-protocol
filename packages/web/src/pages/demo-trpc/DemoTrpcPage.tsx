@@ -1,4 +1,4 @@
-import { trpc } from '../../trpc'
+import { trpc } from '../../services/trpc'
 
 export default function DemoTrpcPage() {
   return (

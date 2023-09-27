@@ -25,7 +25,7 @@ import history from 'utils/history'
 
 import { store } from './store/configureStore'
 import { reportToSentry } from './store/errors/reportToSentry'
-import { trpc } from './trpc'
+import { trpc } from './services/trpc'
 
 import './services/webVitals'
 import './index.css'
