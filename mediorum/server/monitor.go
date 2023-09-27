@@ -50,11 +50,13 @@ func (ss *MediorumServer) monitorPeerReachability() {
 		}
 
 		// check if each unreachable node was also unreachable last time we checked (so we ignore temporary downtime from restarts/updates)
+		failsPeerReachability := false
 		for _, unreachable := range unreachablePeers {
 			if slices.Contains(ss.unreachablePeers, unreachable) {
 				// we can't reach this peer. self-mark unhealthy if >50% of other nodes can
 				if ss.canMajorityReachHost(unreachable) {
-					// TODO: self-mark unhealthy after nodes upgrade to expose reachable peers
+					// TODO: we can self-mark unhealthy if we want to enforce peer reachability
+					failsPeerReachability = true
 					break
 				}
 			}
@@ -62,6 +64,7 @@ func (ss *MediorumServer) monitorPeerReachability() {
 
 		ss.peerHealthsMutex.Lock()
 		ss.unreachablePeers = unreachablePeers
+		ss.failsPeerReachability = failsPeerReachability
 		ss.peerHealthsMutex.Unlock()
 	}
 }
