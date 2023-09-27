@@ -1,0 +1,19 @@
+
+FROM node:18-alpine AS base
+
+# Everything is mounted into the container, see docker-compose.identity.yml
+
+ARG git_sha
+
+ENV GIT_SHA=$git_sha
+
+RUN apk add --no-cache curl
+RUN apk update
+
+EXPOSE 7000
+
+HEALTHCHECK --interval=5s --timeout=5s --start-period=15m --retries=12 \
+    CMD curl -f http://localhost:7000/health_check || exit 1
+
+WORKDIR /app/packages/identity-service
+CMD npx ts-node-dev --respawn src/index.ts
