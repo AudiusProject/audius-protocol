@@ -106,10 +106,10 @@ jobs:
       - run:
           name: Create branch
           command: |
+            git checkout main
+
             OLD_VERSION=$(jq -r .version discovery-provider/.version.json)
             NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
-
-            git checkout main
 
             jq --arg version "$NEW_VERSION" '.version=$version' mediorum/.version.json > /tmp/.version.json
             mv /tmp/.version.json mediorum/.version.json
@@ -120,6 +120,13 @@ jobs:
             git add discovery-provider/.version.json
 
             GIT_DIFF=$(git log --pretty=format:'%an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum discovery-provider identity-service comms monitoring/healthz | sed 's/"/\\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/=DELIM@/g')
+
+            # Ensure GIT_DIFF ends with the delimiter so the final commit is included
+            if [ ! -z "$GIT_DIFF" ] && [ "${GIT_DIFF: -7}" != "=DELIM@" ]; then
+                GIT_DIFF="${GIT_DIFF}=DELIM@"
+            fi
+            echo "GIT_DIFF: $GIT_DIFF"
+
             git commit -m "Bump version to $NEW_VERSION"
 
             git branch "release-v$NEW_VERSION"
