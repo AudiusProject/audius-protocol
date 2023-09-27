@@ -9,6 +9,7 @@ import { getUserbankAccountInfo } from 'services/index'
 import { useAppContext } from 'src/context/appContext'
 import { getUSDCBalance } from 'store/wallet/selectors'
 import { setUSDCBalance } from 'store/wallet/slice'
+import { getRecoveryStatus } from 'store/buy-usdc/selectors'
 
 /**
  * On mount, fetches the USDC balance for the current user and stores it
@@ -22,7 +23,8 @@ export const useUSDCBalance = () => {
   const { audiusBackend } = useAppContext()
   const dispatch = useDispatch()
 
-  const [status, setStatus] = useState(Status.IDLE)
+  const [balanceStatus, setBalanceStatus] = useState(Status.IDLE)
+  const recoveryStatus = useSelector(getRecoveryStatus)
   const data = useSelector(getUSDCBalance)
   const setData = useCallback(
     (balance: BNUSDC) => {
@@ -32,16 +34,16 @@ export const useUSDCBalance = () => {
   )
 
   const refresh = useCallback(async () => {
-    setStatus(Status.LOADING)
+    setBalanceStatus(Status.LOADING)
     try {
       const account = await getUserbankAccountInfo(audiusBackend, {
         mint: 'usdc'
       })
       const balance = (account?.amount ?? new BN(0)) as BNUSDC
       setData(balance)
-      setStatus(Status.SUCCESS)
+      setBalanceStatus(Status.SUCCESS)
     } catch (e) {
-      setStatus(Status.ERROR)
+      setBalanceStatus(Status.ERROR)
     }
   }, [audiusBackend, setData])
 
@@ -49,5 +51,5 @@ export const useUSDCBalance = () => {
     refresh()
   }, [refresh])
 
-  return { status, data, refresh }
+  return { balanceStatus, recoveryStatus, data, refresh }
 }
