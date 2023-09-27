@@ -54,5 +54,7 @@ services:
         app_name: trpc-server
         git_sha: '${GIT_COMMIT}'
     restart: always
+    ports:
+      - 2022:2022
     profiles:
       - pedalboard
