@@ -194,9 +194,9 @@ export const email = ({
 										</div>
 										<!--[if (gte mso 9)|(IE)]>
 										</td>
-										<td valign="middle" width="126" style="width: 126px">
+										<td valign="middle" width="300" style="width: 300px">
 										<![endif]-->
-										<div style="display: inline-block; vertical-align: middle; width: 126px;">
+										<div style="display: inline-block; vertical-align: middle; width: 300px;">
 											<table width="100%" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
 											<tr><td align="left" valign="top" class="outf14" style="font-size: large;">
 												<div>
@@ -205,10 +205,10 @@ export const email = ({
 														<div>
 															<div>
 																<!--[if (gte mso 9)|(IE)]>
-																<table width="126" border="0" cellspacing="0" cellpadding="0" style="width: 126px;">
+																<table width="300" border="0" cellspacing="0" cellpadding="0" style="width: 300px;">
 																<tr><td>
 																<![endif]-->
-																<table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 126px;">
+																<table border="0" cellspacing="0" cellpadding="0" width="100%" style="max-width: 300px;">
 																<tr><td align="left" valign="middle" style="padding: 8px 0px;">
 																	<div>
 																		<div style="line-height: 24px;">
@@ -399,7 +399,7 @@ export const email = ({
 																	<tr><td align="left">
 																		<div>
 																			<div style="line-height: 20px;">
-																				<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 16px; color: #7e1bcc;">&#0036${total}</span>
+																				<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 16px; color: #7e1bcc;">$${total}</span>
 																			</div>
 																		</div>
 																	</td></tr>

@@ -22,6 +22,7 @@ import { EntityType } from '../../email/notifications/types'
 import { formatUSDCWeiToUSDString } from '../../utils/format'
 import { email } from '../../email/notifications/preRendered/sale'
 import { logger } from '../../logger'
+import { getContentNode, getHostname } from '../../utils/env'
 
 type USDCPurchaseSellerRow = Omit<NotificationRow, 'data'> & {
   data: USDCPurchaseSellerNotification
@@ -176,11 +177,11 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
       ),
       html: email({
         purchaserName: buyerUsername,
-        purchaserLink: `https://audius.co/${buyerHandle}`,
+        purchaserLink: `${getHostname()}/${buyerHandle}`,
         artistName: sellerUsername,
         trackTitle: purchasedTrackName,
-        trackLink: `https://audius.co/${sellerHandle}/${track.slug}`,
-        trackImage: `https://creatornode.audius.co/${track.cover_art_sizes}/480x480.jpg`,
+        trackLink: `${getHostname()}/${sellerHandle}/${track.slug}`,
+        trackImage: `${getContentNode()}/content/${track.cover_art_sizes}/480x480.jpg`,
         price: this.amount,
         payExtra: this.extraAmount,
         total: this.totalAmount
