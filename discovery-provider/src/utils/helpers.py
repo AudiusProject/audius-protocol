@@ -377,7 +377,7 @@ def sanitize_slug(title, record_id, collision_id=0):
     sanitized_title = unicodedata.normalize("NFC", sanitized_title)
     # Strip out invalid characters
     sanitized_title = re.sub(
-        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|\’|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\{|\}|\"|~",
+        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|\’|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.|\{|\}|\"|~",
         "",
         sanitized_title,
     )
