@@ -7,8 +7,7 @@ import {
   isTrackPurchasable,
   useGetTrackById,
   usePremiumContentPurchaseModal,
-  usePurchaseContentFormConfiguration,
-  usePurchaseContentFormState
+  usePurchaseContentFormConfiguration
 } from '@audius/common'
 import {
   IconCart,
@@ -19,6 +18,7 @@ import {
 } from '@audius/stems'
 import { Formik } from 'formik'
 import { useDispatch } from 'react-redux'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Icon } from 'components/Icon'
 import { ModalForm } from 'components/modal-form/ModalForm'
@@ -29,6 +29,7 @@ import { pushUniqueRoute } from 'utils/route'
 import styles from './PremiumContentPurchaseModal.module.css'
 import { PurchaseContentFormFields } from './components/PurchaseContentFormFields'
 import { PurchaseContentFormFooter } from './components/PurchaseContentFormFooter'
+import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState'
 
 const messages = {
   completePurchase: 'Complete Purchase'
@@ -128,15 +129,13 @@ export const PremiumContentPurchaseModal = () => {
       bodyClassName={styles.modal}
       dismissOnClickOutside
     >
-      {isValidTrack ? (
-        <Formik
-          initialValues={initialValues}
-          validationSchema={validationSchema}
-          onSubmit={onSubmit}
-        >
-          <RenderForm track={track} onClose={onClose} />
-        </Formik>
-      ) : null}
+      <Formik
+        initialValues={initialValues}
+        validationSchema={toFormikValidationSchema(validationSchema)}
+        onSubmit={onSubmit}
+      >
+        {isValidTrack ? <RenderForm track={track} onClose={onClose} /> : null}
+      </Formik>
     </Modal>
   )
 }

@@ -1,5 +1,4 @@
 import {
-  PurchaseContentFormState,
   PurchaseContentStage,
   payExtraAmountPresetValues
 } from '@audius/common'
@@ -7,6 +6,8 @@ import { IconCheck } from '@audius/stems'
 
 import { Icon } from 'components/Icon'
 import { Text } from 'components/typography'
+
+import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
 
 import { PayExtraFormSection } from './PayExtraFormSection'
 import { PayToUnlockInfo } from './PayToUnlockInfo'

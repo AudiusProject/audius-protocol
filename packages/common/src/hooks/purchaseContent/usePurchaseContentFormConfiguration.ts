@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import { useDispatch, useSelector } from 'react-redux'
-import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { UserTrackMetadata } from 'models/Track'
 import {
@@ -56,7 +55,7 @@ export const usePurchaseContentFormConfiguration = ({
 
   return {
     initialValues,
-    validationSchema: toFormikValidationSchema(PurchaseContentSchema),
+    validationSchema: PurchaseContentSchema,
     onSubmit
   }
 }

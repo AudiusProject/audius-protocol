@@ -3,7 +3,6 @@ import { useCallback } from 'react'
 import {
   Name,
   PurchasableTrackMetadata,
-  PurchaseContentFormState,
   PurchaseContentStage,
   formatPrice
 } from '@audius/common'
@@ -22,6 +21,8 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
 import { Text } from 'components/typography'
 import { fullTrackPage } from 'utils/route'
+
+import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
 
 import styles from './PurchaseContentFormFooter.module.css'
 
