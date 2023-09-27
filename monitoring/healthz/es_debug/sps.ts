@@ -1,6 +1,6 @@
-import { theGraphFetcher } from '../src/useServiceProviders'
+import { apiGatewayFetcher } from '../src/useServiceProviders'
 
-theGraphFetcher('prod', 'discovery-node').then((sps) => {
+apiGatewayFetcher('prod', 'discovery').then((sps) => {
   for (let sp of sps) {
     console.log(sp.endpoint)
   }

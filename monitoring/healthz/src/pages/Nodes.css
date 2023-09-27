@@ -3,6 +3,8 @@
   --unreachable-background-color: #ffffff;
   --unreachable-border-color: #e0e0e0;
   --unreachable-shadow-color: rgba(0, 0, 0, 0.1);
+  --is-unhealthy-color: #fff0f0;
+  --is-unhealthy-hover-color: rgba(255, 200, 200, 0.4);
 }
 
 /* Dark mode */
@@ -11,6 +13,8 @@
     --unreachable-background-color: #1a1a1a;
     --unreachable-border-color: #333333;
     --unreachable-shadow-color: rgba(255, 255, 255, 0.1);
+    --is-unhealthy-color: #440000;
+    --is-unhealthy-hover-color: rgba(255, 50, 50, 0.4);
   }
 }
 
@@ -19,7 +23,7 @@
 }
 
 .unreachable-peers div {
-  visibility: hidden;
+  display: none;
   position: absolute;
   background-color: var(--unreachable-background-color);
   border: 1px solid var(--unreachable-border-color);
@@ -28,10 +32,20 @@
   border-radius: 4px;
   z-index: 10;
   top: 30px;
-  left: 30px;
+  right: 30px;
   font-size: 0.9em;
+  white-space: normal;
 }
 
 .unreachable-peers:hover div {
-  visibility: visible;
+  display: block;
+}
+
+.is-unhealthy {
+  background: var(--is-unhealthy-color);
+}
+
+table tr:hover td.is-unhealthy,
+table tr.is-unhealthy:hover td {
+  background: var(--is-unhealthy-hover-color);
 }
