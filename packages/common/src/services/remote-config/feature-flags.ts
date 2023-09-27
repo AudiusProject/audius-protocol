@@ -48,7 +48,9 @@ export enum FeatureFlags {
   UPLOAD_REDESIGN_ENABLED = 'upload_redesign_enabled',
   USDC_PURCHASES = 'usdc_purchases',
   NEW_PLAYLIST_ROUTES = 'new_playlist_routes',
-  DISCOVERY_RELAY = 'discovery_relay'
+  DISCOVERY_RELAY = 'discovery_relay',
+  SIGN_UP_REDESIGN = 'sign_up_redesign',
+  FEATURE_FLAG_ACCESS = 'feature_flag_access'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -112,5 +114,7 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.UPLOAD_REDESIGN_ENABLED]: false,
   [FeatureFlags.USDC_PURCHASES]: false,
   [FeatureFlags.NEW_PLAYLIST_ROUTES]: false,
-  [FeatureFlags.DISCOVERY_RELAY]: false
+  [FeatureFlags.DISCOVERY_RELAY]: false,
+  [FeatureFlags.SIGN_UP_REDESIGN]: false,
+  [FeatureFlags.FEATURE_FLAG_ACCESS]: false
 }

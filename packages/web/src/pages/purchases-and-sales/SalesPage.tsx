@@ -30,6 +30,7 @@ import { MainContentContext } from 'pages/MainContentContext'
 import NotFoundPage from 'pages/not-found-page/NotFoundPage'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
+import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
 import { UPLOAD_PAGE } from 'utils/route'
 
@@ -153,7 +154,11 @@ const RenderSalesPage = () => {
       encodedDataSignature
     })
     const blobUrl = window.URL.createObjectURL(blob)
-    window.location.assign(blobUrl)
+    const a = document.createElement('a')
+    a.href = blobUrl
+    a.download = `audius_sales_${formatToday()}.csv`
+    a.click()
+    window.URL.revokeObjectURL(blobUrl)
   }, [userId])
 
   const header = (
@@ -166,6 +171,7 @@ const RenderSalesPage = () => {
           variant={HarmonyButtonType.SECONDARY}
           size={HarmonyButtonSize.SMALL}
           iconLeft={IconDownload}
+          disabled={isLoading || isEmpty}
         />
       }
     />

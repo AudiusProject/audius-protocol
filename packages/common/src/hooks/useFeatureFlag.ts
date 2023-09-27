@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+
+import { useAsync } from 'react-use'
 
 import { FeatureFlags, RemoteConfigInstance } from '../services'
 
@@ -56,8 +58,8 @@ export const createUseFeatureFlagHook =
     useHasConfigLoaded
   }: {
     remoteConfigInstance: RemoteConfigInstance
-    getLocalStorageItem?: (key: string) => string | null
-    setLocalStorageItem?: (key: string, value: string | null) => void
+    getLocalStorageItem?: (key: string) => Promise<string | null>
+    setLocalStorageItem?: (key: string, value: string | null) => Promise<void>
     useHasAccount: () => boolean
     useHasConfigLoaded: () => boolean
   }) =>
@@ -71,12 +73,13 @@ export const createUseFeatureFlagHook =
       remoteConfigInstance
     )
 
-    const setOverride = (value: OverrideSetting) => {
-      setLocalStorageItem?.(overrideKey, value)
+    const setOverride = async (value: OverrideSetting) => {
+      await setLocalStorageItem?.(overrideKey, value)
     }
-    const isEnabled = useMemo(
-      () => {
-        const override = getLocalStorageItem?.(overrideKey) as OverrideSetting
+
+    const { value: isEnabled, loading } = useAsync(
+      async () => {
+        const override = await getLocalStorageItem?.(overrideKey)
         if (override === 'enabled') return true
         if (override === 'disabled') return false
 
@@ -86,5 +89,7 @@ export const createUseFeatureFlagHook =
       // eslint-disable-next-line
       [flag, shouldRecompute]
     )
-    return { isLoaded: configLoaded, isEnabled, setOverride }
+
+    const isLoaded = configLoaded && isEnabled !== undefined && !loading
+    return { isLoaded, isEnabled, setOverride }
   }

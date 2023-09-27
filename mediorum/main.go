@@ -120,7 +120,7 @@ func startStagingOrProd(isProd bool) {
 		ListenPort:           "1991",
 		Peers:                peers,
 		Signers:              signers,
-		ReplicationFactor:    3,
+		ReplicationFactor:    5,
 		PrivateKey:           privateKeyHex,
 		Dir:                  "/tmp/mediorum",
 		PostgresDSN:          os.Getenv("dbUrl"),

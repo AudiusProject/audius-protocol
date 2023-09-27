@@ -10,3 +10,6 @@ export const getOnSuccess = (state: CommonState) => state.buyUSDC.onSuccess
 
 export const getStripeSessionStatus = (state: CommonState) =>
   state.buyUSDC.stripeSessionStatus
+
+export const getRecoveryStatus = (state: CommonState) =>
+  state.buyUSDC.recoveryStatus

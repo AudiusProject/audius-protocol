@@ -236,6 +236,7 @@ export type USDCPurchaseBuyerNotification = {
   buyer_user_id: number
   seller_user_id: number
   amount: number
+  extra_amount: number
   content_id: number
 }
 
@@ -244,7 +245,15 @@ export type USDCPurchaseSellerNotification = {
   buyer_user_id: number
   seller_user_id: number
   amount: number
+  extra_amount: number
   content_id: number
+}
+
+export type USDCWithdrawalNotification = {
+  user_id: number
+  signature: string
+  change: number
+  receiver_account: string
 }
 
 export type NotificationData =

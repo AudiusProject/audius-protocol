@@ -133,11 +133,7 @@ const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
       required_error: messages[collectionType].nameRequiredError
     }),
     description: z.optional(z.string().max(1000)),
-    release_date: z.optional(
-      z.coerce
-        .date()
-        .max(new Date(), { message: messages.invalidReleaseDateError })
-    ),
+    release_date: z.optional(z.string()).nullable(),
     trackDetails: z.object({
       genre: GenreSchema,
       mood: MoodSchema,

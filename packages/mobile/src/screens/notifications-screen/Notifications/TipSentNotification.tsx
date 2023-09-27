@@ -33,7 +33,7 @@ const messages = {
   twitterShare: (senderHandle: string, uiAmount: number, ios: boolean) =>
     `I just ${
       ios ? 'tipped' : 'sent'
-    } ${senderHandle} ${uiAmount} $AUDIO on @AudiusProject #Audius ${
+    } ${senderHandle} ${uiAmount} $AUDIO on @audius #Audius ${
       ios ? '$#AUDIO' : '#AUDIOTip'
     }`
 }

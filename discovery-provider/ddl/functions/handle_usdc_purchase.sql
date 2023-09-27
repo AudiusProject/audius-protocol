@@ -17,6 +17,7 @@ begin
                 'buyer_user_id', new.buyer_user_id,
                 'seller_user_id', new.seller_user_id,
                 'amount', new.amount,
+                'extra_amount', new.extra_amount,
                 'content_id', new.content_id
               )
           ),
@@ -32,6 +33,7 @@ begin
                 'buyer_user_id', new.buyer_user_id,
                 'seller_user_id', new.seller_user_id,
                 'amount', new.amount,
+                'extra_amount', new.extra_amount,
                 'content_id', new.content_id
             )
           )

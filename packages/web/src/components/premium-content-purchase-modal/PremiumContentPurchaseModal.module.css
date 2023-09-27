@@ -8,3 +8,16 @@
   gap: var(--unit-2);
   justify-content: center;
 }
+
+.content > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-6);
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-6);
+  padding: 0 var(--unit-6) var(--unit-6);
+}

@@ -2,15 +2,15 @@
   "steps": [
     {
       "name": "typecheck",
-      "command": "npm run typecheck"
+      "command": "npm run typecheck -w audius-client"
     },
     {
       "name": "lint",
-      "command": "npm run lint"
+      "command": "npm run lint -w audius-client"
     },
     {
       "name": "style lint",
-      "command": "npm run stylelint"
+      "command": "npm run stylelint -w audius-client"
     }
   ]
 }

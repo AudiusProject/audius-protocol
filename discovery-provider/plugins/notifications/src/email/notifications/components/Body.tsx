@@ -70,7 +70,9 @@ const snippetMap = {
   },
   ['save'](notification) {
     const [user] = notification.users
-    return `${user.name} favorited your ${notification.entity.type.toLowerCase()} ${
+    return `${
+      user.name
+    } favorited your ${notification.entity.type.toLowerCase()} ${
       notification.entity.name
     }`
   },

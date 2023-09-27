@@ -97,7 +97,11 @@ export const getUsers = (users) => {
     return (
       <>
         <HighlightText text={firstUser.name} />
-        <BodyText text={` and ${userCount.toLocaleString()} other${users.length > 2 ? 's' : ''}`} />
+        <BodyText
+          text={` and ${userCount.toLocaleString()} other${
+            users.length > 2 ? 's' : ''
+          }`}
+        />
       </>
     )
   }
@@ -107,50 +111,67 @@ export const getUsers = (users) => {
 export const getEntity = (entity) => {
   if (entity.type === EntityType.Track) {
     return (
-      <> <BodyText text={'track '} /><HighlightText text={entity.name} /> </>
+      <>
+        {' '}
+        <BodyText text={'track '} />
+        <HighlightText text={entity.name} />{' '}
+      </>
     )
   } else if (entity.type === EntityType.Album) {
     return (
-      <> <BodyText text={'album '} /><HighlightText text={entity.name} /> </>
+      <>
+        {' '}
+        <BodyText text={'album '} />
+        <HighlightText text={entity.name} />{' '}
+      </>
     )
   } else if (entity.type === EntityType.Playlist) {
     return (
-      <> <BodyText text={'playlist '} /><HighlightText text={entity.name} /> </>
+      <>
+        {' '}
+        <BodyText text={'playlist '} />
+        <HighlightText text={entity.name} />{' '}
+      </>
     )
   }
 }
 
 const notificationMap = {
-  [NotificationType.Favorite.base] (notification) {
+  [NotificationType.Favorite.base](notification) {
     const user = getUsers(notification.users)
     const entity = getEntity(notification.entity)
     return (
       <span className={'notificationText'}>
-        {user}<BodyText text={` favorited your `} />{entity}
+        {user}
+        <BodyText text={` favorited your `} />
+        {entity}
       </span>
     )
   },
-  [NotificationType.Repost.base] (notification) {
+  [NotificationType.Repost.base](notification) {
     const user = getUsers(notification.users)
     const entity = getEntity(notification.entity)
     return (
       <span className={'notificationText'}>
-        {user}<BodyText text={` reposted your `} />{entity}
+        {user}
+        <BodyText text={` reposted your `} />
+        {entity}
       </span>
     )
   },
-  [NotificationType.Follow] (notification) {
+  [NotificationType.Follow](notification) {
     const user = getUsers(notification.users)
     return (
       <span className={'notificationText'}>
-        {user}<BodyText text={` followed you`} />
+        {user}
+        <BodyText text={` followed you`} />
       </span>
     )
   },
-  [NotificationType.Announcement] (notification) {
+  [NotificationType.Announcement](notification) {
     return <BodyText className={'notificationText'} text={notification.text} />
   },
-  [NotificationType.Milestone] (notification) {
+  [NotificationType.Milestone](notification) {
     if (notification.entity) {
       const entity = notification.entity.type.toLowerCase()
       const highlight = notification.entity.name
@@ -159,16 +180,23 @@ const notificationMap = {
         <span className={'notificationText'}>
           <BodyText text={`Your ${entity} `} />
           <HighlightText text={highlight} />
-          <BodyText text={` has reached over ${count.toLocaleString()} ${notification.achievement}s`} />
+          <BodyText
+            text={` has reached over ${count.toLocaleString()} ${
+              notification.achievement
+            }s`}
+          />
         </span>
       )
     } else {
       return (
-        <BodyText className={'notificationText'} text={`You have reached over ${notification.value} Followers `} />
+        <BodyText
+          className={'notificationText'}
+          text={`You have reached over ${notification.value} Followers `}
+        />
       )
     }
   },
-  [NotificationType.TrendingTrack] (notification) {
+  [NotificationType.TrendingTrack](notification) {
     const highlight = notification.entity.title
     const rank = notification.rank
     const rankSuffix = getRankSuffix(rank)
@@ -180,24 +208,32 @@ const notificationMap = {
       </span>
     )
   },
-  [NotificationType.UserSubscription] (notification) {
+  [NotificationType.UserSubscription](notification) {
     const [user] = notification.users
-    if (notification.entity.type === NotificationType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
+    if (
+      notification.entity.type === NotificationType.Track &&
+      !isNaN(notification.entity.count) &&
+      notification.entity.count > 1
+    ) {
       return (
         <span className={'notificationText'}>
           <HighlightText text={user.name} />
-          <BodyText text={` released ${notification.entity.count} new ${notification.entity.type}`} />
+          <BodyText
+            text={` released ${notification.entity.count} new ${notification.entity.type}`}
+          />
         </span>
       )
     }
     return (
       <span className={'notificationText'}>
         <HighlightText text={user.name} />
-        <BodyText text={` released a new ${notification.entity.type} ${notification.entity.name}`} />
+        <BodyText
+          text={` released a new ${notification.entity.type} ${notification.entity.name}`}
+        />
       </span>
     )
   },
-  [NotificationType.RemixCreate] (notification) {
+  [NotificationType.RemixCreate](notification) {
     const { remixUser, remixTrack, parentTrackUser, parentTrack } = notification
     return (
       <span className={'notificationText'}>
@@ -207,9 +243,11 @@ const notificationMap = {
       </span>
     )
   },
-  [NotificationType.RemixCosign] (notification) {
+  [NotificationType.RemixCosign](notification) {
     const { parentTrackUser, parentTracks } = notification
-    const parentTrack = parentTracks.find(t => t.owner_id === parentTrackUser.user_id)
+    const parentTrack = parentTracks.find(
+      (t) => t.owner_id === parentTrackUser.user_id
+    )
     return (
       <span className={'notificationText'}>
         <HighlightText text={parentTrackUser.name} />
@@ -218,7 +256,7 @@ const notificationMap = {
       </span>
     )
   },
-  [NotificationType.ChallengeReward] (notification) {
+  [NotificationType.ChallengeReward](notification) {
     const { rewardAmount } = notification
     const { title, icon } = challengeRewardsConfig[notification.challengeId]
     let bodyText
@@ -228,22 +266,20 @@ const notificationMap = {
       bodyText = `You’ve earned ${rewardAmount} $AUDIO for completing this challenge!`
     }
     return (
-          <span className={'notificationText'}>
-            <table
-              cellspacing='0'
-              cellpadding='0'
-              style={{ marginBottom: '4px' }}
-            >
-              <tr>
-                  <td>{icon}</td>
-                  <td><HighlightText text={title} /></td>
-            </tr>
-          </table>
+      <span className={'notificationText'}>
+        <table cellspacing='0' cellpadding='0' style={{ marginBottom: '4px' }}>
+          <tr>
+            <td>{icon}</td>
+            <td>
+              <HighlightText text={title} />
+            </td>
+          </tr>
+        </table>
         <BodyText text={bodyText} />
       </span>
     )
   },
-  [NotificationType.AddTrackToPlaylist] (notification) {
+  [NotificationType.AddTrackToPlaylist](notification) {
     return (
       <span className={'notificationText'}>
         <HighlightText text={notification.playlistOwner.name} />
@@ -254,7 +290,7 @@ const notificationMap = {
       </span>
     )
   },
-  [NotificationType.Reaction] (notification) {
+  [NotificationType.Reaction](notification) {
     return (
       <span className={'notificationText'}>
         <HighlightText text={capitalize(notification.reactingUser.name)} />
@@ -264,7 +300,7 @@ const notificationMap = {
       </span>
     )
   },
-  [NotificationType.SupporterRankUp] (notification) {
+  [NotificationType.SupporterRankUp](notification) {
     return (
       <span className={'notificationText'}>
         <HighlightText text={capitalize(notification.sendingUser.name)} />
@@ -274,7 +310,7 @@ const notificationMap = {
       </span>
     )
   },
-  [NotificationType.SupportingRankUp] (notification) {
+  [NotificationType.SupportingRankUp](notification) {
     return (
       <span className={'notificationText'}>
         <BodyText text={`You're now `} />
@@ -285,7 +321,7 @@ const notificationMap = {
       </span>
     )
   },
-  [NotificationType.TipReceive] (notification) {
+  [NotificationType.TipReceive](notification) {
     return (
       <span className={'notificationText'}>
         <HighlightText text={capitalize(notification.sendingUser.name)} />
@@ -314,7 +350,7 @@ const getTitle = (notification) => {
         </span>
       )
     }
-    default: 
+    default:
       return null
   }
 }
@@ -329,7 +365,7 @@ const getTrackMessage = (notification) => {
         </span>
       )
     }
-    default: 
+    default:
       return null
   }
 }
@@ -341,51 +377,57 @@ export const getTrackLink = (track) => {
 const getTwitter = (notification) => {
   switch (notification.type) {
     case NotificationType.RemixCreate: {
-      const { parentTrack, parentTrackUser, remixUser, remixTrack } = notification
-      const twitterHandle = parentTrackUser.twitterHandle 
+      const { parentTrack, parentTrackUser, remixUser, remixTrack } =
+        notification
+      const twitterHandle = parentTrackUser.twitterHandle
         ? `@${parentTrackUser.twitterHandle}`
         : parentTrackUser.name
-      const text = `New remix of ${parentTrack.title} by ${twitterHandle} on @AudiusProject #Audius`
+      const text = `New remix of ${parentTrack.title} by ${twitterHandle} on @audius #Audius`
       const url = getTrackLink(remixTrack)
       return {
         message: 'Share With Your Friends',
-        href: `http://twitter.com/share?url=${encodeURIComponent(url)
-          }&text=${encodeURIComponent(text)}`
+        href: `http://twitter.com/share?url=${encodeURIComponent(
+          url
+        )}&text=${encodeURIComponent(text)}`
       }
     }
     case NotificationType.RemixCosign: {
       const { parentTracks, parentTrackUser, remixTrack } = notification
-      const parentTrack = parentTracks.find(t => t.owner_id === parentTrackUser.user_id)
+      const parentTrack = parentTracks.find(
+        (t) => t.owner_id === parentTrackUser.user_id
+      )
       const url = getTrackLink(remixTrack)
-      const twitterHandle = parentTrackUser.twitterHandle 
+      const twitterHandle = parentTrackUser.twitterHandle
         ? `@${parentTrackUser.twitterHandle}`
         : parentTrackUser.name
-      const text = `My remix of ${parentTrack.title} was Co-Signed by ${twitterHandle} on @AudiusProject #Audius`
+      const text = `My remix of ${parentTrack.title} was Co-Signed by ${twitterHandle} on @audius #Audius`
       return {
         message: 'Share With Your Friends',
-        href: `http://twitter.com/share?url=${encodeURIComponent(url)
-          }&text=${encodeURIComponent(text)}`
+        href: `http://twitter.com/share?url=${encodeURIComponent(
+          url
+        )}&text=${encodeURIComponent(text)}`
       }
     }
     case NotificationType.TrendingTrack: {
       const { rank, entity } = notification
       const url = getTrackLink(entity)
       const rankSuffix = getRankSuffix(rank)
-      const text = `My track ${entity.title} is trending ${rank}${rankSuffix} on @AudiusProject! #AudiusTrending #Audius`
+      const text = `My track ${entity.title} is trending ${rank}${rankSuffix} on @audius! #AudiusTrending #Audius`
       return {
         message: 'Share this Milestone',
-        href: `http://twitter.com/share?url=${encodeURIComponent(url)
-          }&text=${encodeURIComponent(text)}`
+        href: `http://twitter.com/share?url=${encodeURIComponent(
+          url
+        )}&text=${encodeURIComponent(text)}`
       }
     }
     case NotificationType.ChallengeReward: {
-      const text = `I earned $AUDIO for completing challenges on @AudiusProject #AudioRewards`
+      const text = `I earned $AUDIO for completing challenges on @audius #AudioRewards`
       return {
         message: 'Share this with your fans',
         href: `http://twitter.com/share?text=${encodeURIComponent(text)}`
       }
     }
-    default: 
+    default:
       return null
   }
 }

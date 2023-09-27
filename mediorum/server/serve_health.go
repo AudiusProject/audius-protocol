@@ -35,8 +35,6 @@ type healthCheckResponseData struct {
 	StoragePathSize         uint64                     `json:"storagePathSize"`  // bytes
 	MediorumPathUsed        uint64                     `json:"mediorumPathUsed"` // bytes
 	MediorumPathSize        uint64                     `json:"mediorumPathSize"` // bytes
-	LegacyDirUsed           uint64                     `json:"legacyDirUsed"`    // bytes
-	MediorumDirUsed         uint64                     `json:"mediorumDirUsed"`  // bytes
 	DatabaseSize            uint64                     `json:"databaseSize"`     // bytes
 	DbSizeErr               string                     `json:"dbSizeErr"`
 	LastSuccessfulRepair    RepairTracker              `json:"lastSuccessfulRepair"`
@@ -97,8 +95,6 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		StoragePathSize:         ss.storagePathSize,
 		MediorumPathUsed:        ss.mediorumPathUsed,
 		MediorumPathSize:        ss.mediorumPathSize,
-		LegacyDirUsed:           ss.legacyDirUsed,
-		MediorumDirUsed:         ss.mediorumDirUsed,
 		DatabaseSize:            ss.databaseSize,
 		DbSizeErr:               ss.dbSizeErr,
 		LastSuccessfulRepair:    ss.lastSuccessfulRepair,
