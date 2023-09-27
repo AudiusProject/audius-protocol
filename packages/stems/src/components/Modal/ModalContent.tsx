@@ -1,8 +1,11 @@
+import { useContext } from 'react'
+
 import cn from 'classnames'
 
 import { Scrollbar } from 'components/Scrollbar'
 
 import styles from './ModalContent.module.css'
+import { ModalContext } from './ModalContext'
 import { ModalContentProps } from './types'
 
 /**
@@ -13,8 +16,10 @@ export const ModalContent = ({
   children,
   ...props
 }: ModalContentProps) => {
+  const { isDoneOpening } = useContext(ModalContext)
   return (
     <Scrollbar
+      isHidden={!isDoneOpening}
       className={cn(styles.modalContentContainer, className)}
       {...props}
     >
