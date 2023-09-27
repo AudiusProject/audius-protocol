@@ -101,6 +101,7 @@ export class TransactionHandler {
         feePayerOverride,
         sendBlockhash,
         signatures,
+        lookupTableAddresses,
         retry
       )
     } else {
@@ -128,6 +129,7 @@ export class TransactionHandler {
     feePayerOverride: Nullable<PublicKey> = null,
     sendBlockhash: boolean,
     signatures: Array<{ publicKey: string; signature: Buffer }> | null,
+    lookupTableAddresses: string[] = [],
     retry: boolean
   ) {
     const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
@@ -138,6 +140,7 @@ export class TransactionHandler {
       skipPreflight:
         skipPreflight === null ? this.skipPreflight : skipPreflight,
       feePayerOverride: feePayerOverride ? feePayerOverride.toString() : null,
+      lookupTableAddresses,
       retry
     }
 
@@ -221,7 +224,7 @@ export class TransactionHandler {
           // might be too large
           return {
             res: null,
-            error: `Missing lookup table account for address ${address}`,
+            error: `transactionHandler: Missing lookup table account for address ${address}`,
             errorCode: null
           }
         }
@@ -233,11 +236,29 @@ export class TransactionHandler {
       }).compileToV0Message(lookupTableAccounts)
       const tx = new VersionedTransaction(message)
       tx.sign([feePayerAccount])
+      instructions.forEach((instruction) => {
+        const filtered = instruction.keys?.filter((k) => k.isSigner)
+        filtered.forEach((f) => {
+          logger.info(
+            'transactionHandler: instruction signers:',
+            f.pubkey?.toString()
+          )
+        })
+      })
+      logger.info('transactionHandler: sigs: ', signatures)
+      logger.info('transactionHandler: transaction before sign: ', tx)
+      tx.sign([feePayerAccount])
+      logger.info('transactionHandler: transaction after sign: ', tx)
       if (Array.isArray(signatures)) {
         signatures.forEach(({ publicKey, signature }) => {
-          tx.addSignature(new PublicKey(publicKey), signature)
+          logger.info(
+            'transactionHandler: signature Uint8Array',
+            new Uint8Array(signature)
+          )
+          tx.addSignature(new PublicKey(publicKey), new Uint8Array(signature))
         })
       }
+      logger.info('transactionHandler: transaction after addSignature: ', tx)
       rawTransaction = tx.serialize()
     } else {
       // Otherwise send a legacy transaction

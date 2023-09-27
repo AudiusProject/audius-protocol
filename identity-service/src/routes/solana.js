@@ -56,7 +56,8 @@ solanaRouter.post(
       feePayerOverride,
       signatures = [],
       retry = true,
-      recentBlockhash
+      recentBlockhash,
+      lookupTableAddresses = []
     } = req.body
 
     // Allowed relay checks
@@ -122,6 +123,7 @@ solanaRouter.post(
       instructions,
       skipPreflight,
       feePayerOverride,
+      lookupTableAddresses,
       retry
     })
 

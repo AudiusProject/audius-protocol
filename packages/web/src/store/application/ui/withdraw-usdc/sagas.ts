@@ -11,6 +11,7 @@ import {
   formatUSDCWeiToFloorDollarNumber,
   userApiActions
 } from '@audius/common'
+import { TransactionHandler } from '@audius/sdk/dist/core'
 import {
   createAssociatedTokenAccountInstruction,
   getAssociatedTokenAddressSync
@@ -34,9 +35,9 @@ import {
   isTokenAccount,
   getTokenAccountInfo,
   getRootSolanaAccount,
-  getSignatureForTransaction,
   getRecentBlockhash,
-  ROOT_ACCOUNT_SIZE
+  ROOT_ACCOUNT_SIZE,
+  getSignatureForV0Transaction
 } from 'services/solana/solana'
 
 const { beginWithdrawUSDC, withdrawUSDCFailed, withdrawUSDCSucceeded } =
@@ -47,14 +48,17 @@ const { getFeePayer } = solanaSelectors
  * Handles all logic for withdrawing USDC to a given destination. Expects amount in dollars.
  */
 function* doWithdrawUSDC({
-  payload: { amount, destinationAddress, onSuccess }
-}: ReturnType<typeof beginWithdrawUSDC>) {
+  payload
+}: // payload: { amount, destinationAddress, onSuccess }
+ReturnType<typeof beginWithdrawUSDC>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   try {
     const libs = yield* call(getLibs)
     if (!libs.solanaWeb3Manager) {
       throw new Error('Failed to get solana web3 manager')
     }
+    const destinationAddress = 'CErgJZRnppXpZ8EF9jpBcCcy3eFVdxfMnV6Px8kcyejJ'
+    const amount = 0.5
     // Assume destinationAddress and amount have already been validated
     if (!destinationAddress || !amount) {
       throw new Error('Please enter a valid destination address and amount')
@@ -66,15 +70,15 @@ function* doWithdrawUSDC({
     if (feePayer === null) {
       throw new Error('Fee payer not set')
     }
-    const transactionHandler = libs.solanaWeb3Manager.transactionHandler
     const connection = libs.solanaWeb3Manager.connection
     if (!connection) {
       throw new Error('Failed to get connection')
     }
-    const rootSolanaAccount = yield* call(getRootSolanaAccount)
+    const transactionHandler = libs.solanaWeb3Manager.transactionHandler
     if (!transactionHandler) {
       throw new Error('Failed to get transaction handler')
     }
+    const rootSolanaAccount = yield* call(getRootSolanaAccount)
 
     const destinationPubkey = new PublicKey(destinationAddress)
     const feePayerPubkey = new PublicKey(feePayer)
@@ -130,23 +134,45 @@ function* doWithdrawUSDC({
               feePayer: feePayerPubkey
             })
           const swapRecentBlockhash = yield* call(getRecentBlockhash)
-          const signatureWithPubkey = yield* call(getSignatureForTransaction, {
+          console.debug(
+            'doWithdrawUSDC saga: swapInstructions',
+            swapInstructions
+          )
+          swapInstructions.forEach((instruction, i) => {
+            if (i === 3) {
+              console.debug(
+                'doWithdrawUSDC saga: instruction programid at index',
+                i,
+                instruction.programId.toString()
+              )
+              instruction.keys.forEach((key, j) => {
+                console.debug(
+                  'doWithdrawUSDC saga: instruction key index',
+                  j,
+                  key.pubkey.toString()
+                )
+              })
+            }
+          })
+          const signature = yield* call(getSignatureForV0Transaction, {
+            connection,
             instructions: swapInstructions,
             signer: rootSolanaAccount,
             feePayer: feePayerPubkey,
-            recentBlockhash: swapRecentBlockhash
+            recentBlockhash: swapRecentBlockhash,
+            lookupTableAddresses
           })
+          if (signature === null) {
+            throw new Error('Failed to get signature for swap transaction')
+          }
           // Send swap instructions to relay
           const { res: swapRes, error: swapError } = yield* call(
             [transactionHandler, transactionHandler.handleTransaction],
             {
               instructions: swapInstructions,
               feePayerOverride: feePayerPubkey,
-              skipPreflight: false,
-              signatures: signatureWithPubkey.map((s) => ({
-                signature: s.signature!,
-                publicKey: s.publicKey.toString()
-              })),
+              skipPreflight: true,
+              signatures: signature,
               recentBlockhash: swapRecentBlockhash,
               lookupTableAddresses
             }
@@ -232,8 +258,8 @@ function* doWithdrawUSDC({
       {
         instructions: transferInstructions,
         feePayerOverride: feePayerPubkey,
-        recentBlockhash,
-        skipPreflight: true
+        recentBlockhash
+        // skipPreflight: true
       }
     )
     if (!transferSignature || error) {

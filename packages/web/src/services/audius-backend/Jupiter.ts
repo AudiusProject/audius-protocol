@@ -91,11 +91,18 @@ const getQuote = async ({
 
 const getSwapInstructions = async ({
   quote,
-  userPublicKey
+  userPublicKey,
+  feePayer
 }: {
   quote: QuoteResponse
   userPublicKey: PublicKey
+  feePayer: PublicKey
 }) => {
+  console.debug(
+    'Jupiter getSwapInstructions: userPublicKey:',
+    userPublicKey.toString()
+  )
+  console.debug('Jupiter getSwapInstructions: feePayer:', feePayer.toString())
   const jup = getInstance()
   const {
     tokenLedgerInstruction,
@@ -107,9 +114,27 @@ const getSwapInstructions = async ({
   } = await jup.swapInstructionsPost({
     swapRequest: {
       quoteResponse: quote,
-      userPublicKey: userPublicKey.toString()
+      userPublicKey: feePayer.toString(),
+      destinationTokenAccount: userPublicKey.toString()
     }
   })
+  console.debug(
+    'Jupiter getSwapInstructions: tokenLedgerInstruction',
+    tokenLedgerInstruction
+  )
+  console.debug(
+    'Jupiter getSwapInstructions: computeBudgetInstructions',
+    computeBudgetInstructions
+  )
+  console.debug(
+    'Jupiter getSwapInstructions: setupInstructions',
+    setupInstructions
+  )
+  console.debug('Jupiter getSwapInstructions: swapInstruction', swapInstruction)
+  console.debug(
+    'Jupiter getSwapInstructions: cleanupInstruction',
+    cleanupInstruction
+  )
   const instructionsFlattened = [
     tokenLedgerInstruction,
     ...computeBudgetInstructions,
@@ -142,20 +167,26 @@ async function _sendTransaction({
   instructions,
   feePayer,
   transactionHandler,
-  lookupTableAddresses
+  lookupTableAddresses,
+  signatures = [],
+  recentBlockhash
 }: {
   name: string
   instructions: TransactionInstruction[]
   feePayer: PublicKey
   transactionHandler: TransactionHandler
   lookupTableAddresses: string[]
+  signatures?: { publicKey: string; signature: Buffer }[]
+  recentBlockhash?: string
 }) {
   console.debug(`Exchange: starting ${name} transaction...`)
   const result = await transactionHandler.handleTransaction({
     instructions,
     feePayerOverride: feePayer,
-    skipPreflight: true,
+    // skipPreflight: true,
     lookupTableAddresses,
+    signatures,
+    recentBlockhash,
     errorMapping: {
       fromErrorCode: (errorCode) => {
         if (errorCode === ERROR_CODE_SLIPPAGE) {
@@ -182,19 +213,22 @@ const executeExchange = async ({
   instructions,
   feePayer,
   transactionHandler,
-  lookupTableAddresses = []
+  lookupTableAddresses = [],
+  signatures = []
 }: {
   instructions: TransactionInstruction[]
   feePayer: PublicKey
   transactionHandler: TransactionHandler
   lookupTableAddresses?: string[]
+  signatures?: { publicKey: string; signature: Buffer }[]
 }) => {
   const { res: txId } = await _sendTransaction({
     name: 'Swap',
     instructions,
     feePayer,
     transactionHandler,
-    lookupTableAddresses
+    lookupTableAddresses,
+    signatures
   })
   return txId
 }

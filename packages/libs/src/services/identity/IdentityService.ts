@@ -41,6 +41,7 @@ export type RelayTransactionData = {
   skipPreflight?: boolean
   feePayerOverride?: string | null
   signatures?: Array<{ publicKey: string; signature: Buffer }> | null
+  lookupTableAddresses?: string[]
   retry?: boolean
   recentBlockhash?: string
 }

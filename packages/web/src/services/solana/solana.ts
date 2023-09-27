@@ -8,7 +8,11 @@ import {
   PublicKey,
   Transaction,
   TransactionInstruction,
-  Keypair
+  Keypair,
+  VersionedTransaction,
+  AddressLookupTableAccount,
+  TransactionMessage,
+  Connection
 } from '@solana/web3.js'
 
 import { getLibs } from 'services/audius-libs'
@@ -109,7 +113,12 @@ export const getTokenAccountInfo = async ({
  */
 export const getRecentBlockhash = async () => {
   const connection = await getSolanaConnection()
-  return (await connection.getLatestBlockhash()).blockhash
+  return (
+    await connection.getLatestBlockhash({
+      commitment: 'processed'
+      // minContextSlot: 0
+    })
+  ).blockhash
 }
 
 /**
@@ -161,9 +170,94 @@ export const getSignatureForTransaction = async ({
   feePayer: PublicKey
   recentBlockhash: string
 }) => {
-  const transaction = new Transaction({ recentBlockhash })
+  const transaction = new Transaction()
+  transaction.recentBlockhash = recentBlockhash
   transaction.add(...instructions)
   transaction.feePayer = feePayer
   transaction.partialSign(signer)
   return transaction.signatures.filter((s) => s.signature !== null)
+}
+
+export const getSignatureForV0Transaction = async ({
+  connection,
+  instructions,
+  signer,
+  feePayer,
+  recentBlockhash,
+  lookupTableAddresses
+}: {
+  connection: Connection
+  instructions: TransactionInstruction[]
+  signer: Keypair
+  feePayer: PublicKey
+  recentBlockhash: string
+  lookupTableAddresses: string[]
+}) => {
+  const lookupTableAccounts = await getLookupTableAccountsForAddresses({
+    connection,
+    lookupTableAddresses
+  })
+  if (lookupTableAccounts === null) {
+    return null
+  }
+  instructions.forEach((instruction) => {
+    const filtered = instruction.keys?.filter((k) => k.isSigner)
+    filtered.forEach((f) => {
+      console.debug('REED instruction signers:', f.pubkey?.toString())
+    })
+  })
+  const message = new TransactionMessage({
+    payerKey: feePayer,
+    recentBlockhash,
+    instructions
+  }).compileToV0Message(lookupTableAccounts)
+  const transaction = new VersionedTransaction(message)
+  console.debug('REED transaction in client:', transaction)
+  console.debug(
+    'REED transaction signer in client:',
+    signer.publicKey.toString()
+  )
+  console.debug(
+    'REED transaction sigs in client BEFORE:',
+    transaction.signatures
+  )
+  transaction.sign([signer])
+  console.debug(
+    'REED transaction sigs in client AFTER:',
+    transaction.signatures
+  )
+  return transaction.signatures
+    .filter((s) => !s.every((i) => i === 0)) // Filter sigs that are all 0s
+    .map((s) => {
+      // Map to the format expected by relay
+      return {
+        publicKey: signer.publicKey.toString(),
+        signature: Buffer.from(s)
+      }
+    })
+}
+
+export const getLookupTableAccountsForAddresses = async ({
+  connection,
+  lookupTableAddresses
+}: {
+  connection: Connection
+  lookupTableAddresses: string[]
+}) => {
+  const lookupTableAccounts: AddressLookupTableAccount[] = []
+  // Need to use for loop instead of forEach to properly await async calls
+  for (const address of lookupTableAddresses) {
+    if (address === undefined) continue
+    const lookupTableAccount = await connection.getAddressLookupTable(
+      new PublicKey(address)
+    )
+    if (lookupTableAccount.value !== null) {
+      lookupTableAccounts.push(lookupTableAccount.value)
+    } else {
+      // Abort if a lookup table account is missing because the resulting transaction
+      // might be too large
+      return null
+    }
+  }
+  return lookupTableAccounts
 }

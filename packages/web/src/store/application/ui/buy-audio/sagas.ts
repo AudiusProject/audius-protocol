@@ -64,8 +64,11 @@ import { JupiterSingleton } from 'services/audius-backend/Jupiter'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {
   TRANSACTION_FEE_FALLBACK,
+  getLookupTableAccountsForAddresses,
+  getRecentBlockhash,
   getRootAccountRentExemptionMinimum,
   getRootSolanaAccount,
+  getSignatureForV0Transaction,
   getSolanaConnection,
   getTransferTransactionFee
 } from 'services/solana/solana'
@@ -256,21 +259,15 @@ function* getTransactionFees({
       )) ?? TRANSACTION_FEE_FALLBACK
 
     // Calculate fees for swap transaction (v0 transaction)
-    const lookupTableAccounts: AddressLookupTableAccount[] = []
-    // Need to use for loop instead of forEach to properly await async calls
-    for (const address of lookupTableAddresses) {
-      if (address === undefined) continue
-      const lookupTableAccount = yield* call(
-        [connection, connection.getAddressLookupTable],
-        new PublicKey(address)
-      )
-      if (lookupTableAccount.value !== null) {
-        lookupTableAccounts.push(lookupTableAccount.value)
-      } else {
-        // Abort if a lookup table account is missing because the resulting transaction
-        // might be too large
-        throw new Error(`Missing lookup table account for ${address}`)
+    const lookupTableAccounts = yield* call(
+      getLookupTableAccountsForAddresses,
+      {
+        connection,
+        lookupTableAddresses
       }
+    )
+    if (lookupTableAccounts === null) {
+      throw new Error('Failed to get lookup table accounts')
     }
     const message = new TransactionMessage({
       payerKey: rootAccount,

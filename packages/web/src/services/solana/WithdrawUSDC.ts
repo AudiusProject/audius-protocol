@@ -73,7 +73,8 @@ export const getSwapUSDCUserBankInstructions = async ({
   const { instructions: swapInstructions, lookupTableAddresses } =
     await JupiterSingleton.getSwapInstructions({
       quote: swapQuote.quote,
-      userPublicKey: solanaRootAccount.publicKey
+      userPublicKey: solanaRootAccount.publicKey,
+      feePayer
     })
 
   const transferInstructions =
