@@ -37,8 +37,6 @@ export function DiscoveryHealth() {
             {isContent && <th>Last Non-Cleanup Repair</th>}
             {isContent && <th>Last Cleanup</th>}
             {isContent && <th>Cleanup (checked, pulled, deleted)</th>}
-            {isContent && <th>/file_storage</th>}
-            {isContent && <th>/tmp/mediorum</th>}
             <th>Relay</th>
             <th>DB Size</th>
             <th>Your IP</th>
