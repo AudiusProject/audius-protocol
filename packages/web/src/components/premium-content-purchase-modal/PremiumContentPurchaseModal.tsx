@@ -10,8 +10,7 @@ import {
   useGetTrackById,
   usePremiumContentPurchaseModal,
   useUSDCBalance,
-  buyUSDCActions,
-  buyUSDCSelectors
+  buyUSDCActions
 } from '@audius/common'
 import {
   IconCart,
@@ -42,7 +41,6 @@ import {
 import { getExtraAmount } from './hooks'
 
 const { startRecoveryIfNecessary, cleanup } = buyUSDCActions
-const { getRecoveryStatus } = buyUSDCSelectors
 
 const messages = {
   completePurchase: 'Complete Purchase'
@@ -68,13 +66,11 @@ export const PremiumContentPurchaseModal = () => {
     data: { contentId: trackId }
   } = usePremiumContentPurchaseModal()
 
-  const { refresh } = useUSDCBalance()
+  const { recoveryStatus, refresh } = useUSDCBalance()
   const { data: track } = useGetTrackById(
     { id: trackId! },
     { disabled: !trackId }
   )
-
-  const recoveryStatus = useSelector(getRecoveryStatus)
 
   useEffect(() => {
     if (trackId) {
@@ -82,6 +78,7 @@ export const PremiumContentPurchaseModal = () => {
     }
   }, [trackId, dispatch])
 
+  // Refresh the USDC balance if successful recovery
   useEffect(() => {
     if (recoveryStatus === 'success') {
       refresh()
