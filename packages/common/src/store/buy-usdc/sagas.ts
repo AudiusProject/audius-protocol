@@ -377,6 +377,14 @@ function* watchRecovery() {
   yield takeLeading(startRecoveryIfNecessary, recoverPurchaseIfNecessary)
 }
 
+/**
+ * If the user closed the page or encountered an error in the BuyAudio flow, retry on refresh/next session.
+ * Gate on local storage existing for the previous purchase attempt to reduce RPC load.
+ */
+function* recoverOnPageLoad() {
+  yield* put(startRecoveryIfNecessary())
+}
+
 export default function sagas() {
-  return [watchOnRampOpened, watchRecovery]
+  return [watchOnRampOpened, watchRecovery, recoverOnPageLoad]
 }
