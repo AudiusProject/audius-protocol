@@ -398,7 +398,7 @@ export const email = ({
 															<div>
 																<div>
 																	<table border="0" cellspacing="0" cellpadding="0" width="100%">
-																	<tr><td align="left">
+																	<tr><td align="right">
 																		<div>
 																			<div style="line-height: 20px;">
 																				<span style="font-family: 'Avenir Next LT Pro', sans-serif; font-weight: bold; font-size: 16px; color: #7e1bcc;">$${total}</span>
