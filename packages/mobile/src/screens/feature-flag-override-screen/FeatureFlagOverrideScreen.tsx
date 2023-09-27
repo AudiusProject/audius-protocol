@@ -36,7 +36,10 @@ const getOverrideSetting = async (flag: string) => {
 
 const setOverrideSetting = async (flag: string, val: OverrideSetting) => {
   const flagKey = `${FEATURE_FLAG_OVERRIDE_KEY}:${flag}`
-  if (val === null) return localStorage.removeItem(flagKey)
+  if (val === null) {
+    return await AsyncStorage.removeItem(flagKey)
+  }
+
   await AsyncStorage.setItem(flagKey, val)
 }
 
@@ -77,7 +80,7 @@ const FeatureFlagRow = (props: FeatureFlagRowProps) => {
       <SettingsRowContent>
         {loading ? null : (
           <SegmentedControl
-            selected={value}
+            defaultSelected={value}
             options={options}
             onSelectOption={handleSelectOption}
             fullWidth
@@ -98,6 +101,7 @@ const FeatureFlagScreen = () => {
 
   return (
     <Screen
+      variant='secondary'
       title={messages.title}
       topbarLeft={
         <TopBarIconButton icon={IconRemove} onPress={navigation.goBack} />
