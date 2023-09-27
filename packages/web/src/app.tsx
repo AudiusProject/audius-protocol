@@ -23,9 +23,9 @@ import { audiusBackendInstance } from 'services/audius-backend/audius-backend-in
 import { audiusSdk } from 'services/audius-sdk/audiusSdk'
 import history from 'utils/history'
 
+import { trpc } from './services/trpc'
 import { store } from './store/configureStore'
 import { reportToSentry } from './store/errors/reportToSentry'
-import { trpc } from './services/trpc'
 
 import './services/webVitals'
 import './index.css'
