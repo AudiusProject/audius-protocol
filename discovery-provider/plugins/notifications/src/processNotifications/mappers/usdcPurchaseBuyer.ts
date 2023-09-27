@@ -21,6 +21,7 @@ import { sendBrowserNotification } from '../../web'
 import { EntityType } from '../../email/notifications/types'
 import { formatUSDCWeiToUSDString } from '../../utils/format'
 import { email } from '../../email/notifications/preRendered/purchase'
+import { logger } from '../../logger'
 
 type USDCPurchaseBuyerRow = Omit<NotificationRow, 'data'> & {
   data: USDCPurchaseBuyerNotification
@@ -29,7 +30,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
   notificationReceiverUserId: number
   sellerUserId: number
   amount: string
-  content_id: number
+  contentId: number
   extraAmount: string
   totalAmount: string
 
@@ -53,7 +54,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
     )
     this.sellerUserId = this.notification.data.seller_user_id
     this.notificationReceiverUserId = this.notification.data.buyer_user_id
-    this.content_id = this.notification.data.content_id
+    this.contentId = this.notification.data.content_id
   }
 
   async processNotification({
@@ -76,11 +77,14 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
       [this.notificationReceiverUserId, this.sellerUserId]
     )
 
-    const tracks = await this.fetchEntities([this.content_id], EntityType.Track)
-    let purchasedTrackName
-    if ('title' in tracks[this.content_id]) {
-      purchasedTrackName = (tracks[this.content_id] as { title: string }).title
+    const tracks = await this.fetchEntities([this.contentId], EntityType.Track)
+    const track = tracks[this.contentId]
+    if (!('title' in track)) {
+      logger.error(`Missing title in track ${track}`)
+      return
     }
+
+    const purchasedTrackName = track.title
     const sellerUsername = users[this.sellerUserId]?.name
     const purchaserUsername = users[this.notificationReceiverUserId]?.name
 
@@ -166,6 +170,8 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
         purchaserName: purchaserUsername,
         artistName: sellerUsername,
         trackTitle: purchasedTrackName,
+        trackLink: `https://audius.co${track.permalink}`,
+        trackImage: `https://creatornode.audius.co/${track.cover_art_sizes}/480x480.jpg`,
         price: this.amount,
         payExtra: this.extraAmount,
         total: this.totalAmount
@@ -176,7 +182,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
 
   getResourcesForEmail(): ResourceIds {
     const tracks = new Set<number>()
-    tracks.add(this.content_id)
+    tracks.add(this.contentId)
     return {
       users: new Set([this.notificationReceiverUserId, this.sellerUserId]),
       tracks
@@ -185,7 +191,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
 
   formatEmailProps(resources: Resources) {
     const user = resources.users[this.sellerUserId]
-    const track = resources.tracks[this.content_id]
+    const track = resources.tracks[this.contentId]
     const entity = {
       type: EntityType.Track,
       name: track.title,

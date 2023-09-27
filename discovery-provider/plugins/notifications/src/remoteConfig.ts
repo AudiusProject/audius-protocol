@@ -31,7 +31,7 @@ export enum MappingVariable {
   PushUSDCPurchaseSeller = 'push_usdc_purchase_seller',
   PushAnnouncement = 'push_announcement',
   PushReaction = 'push_reaction',
-  PushUSDCWithdrawal = 'usdc_withdrawal'
+  PushUSDCWithdrawal = 'push_usdc_withdrawal'
 }
 
 export const NotificationsEmailPlugin = 'notification_email_plugin'

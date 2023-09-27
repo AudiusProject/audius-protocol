@@ -21,6 +21,7 @@ import { sendBrowserNotification } from '../../web'
 import { EntityType } from '../../email/notifications/types'
 import { formatUSDCWeiToUSDString } from '../../utils/format'
 import { email } from '../../email/notifications/preRendered/sale'
+import { logger } from '../../logger'
 
 type USDCPurchaseSellerRow = Omit<NotificationRow, 'data'> & {
   data: USDCPurchaseSellerNotification
@@ -87,11 +88,15 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
     )
 
     const tracks = await this.fetchEntities([this.contentId], EntityType.Track)
-    let purchasedTrackName
-    if ('title' in tracks[this.contentId]) {
-      purchasedTrackName = (tracks[this.contentId] as { title: string }).title
+    const track = tracks[this.contentId]
+    if (!('title' in track)) {
+      logger.error(`Missing title in track ${track}`)
+      return
     }
+
+    const purchasedTrackName = track.title
     const buyerUsername = users[this.buyerUserId]?.name
+    const buyerHandle = users[this.buyerUserId]?.handle
     const sellerUsername = users[this.notificationReceiverUserId]?.name
     const price = this.amount
 
@@ -170,8 +175,11 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
       ),
       html: email({
         purchaserName: buyerUsername,
+        purchaserLink: `https://audius.co/${buyerHandle}`,
         artistName: sellerUsername,
         trackTitle: purchasedTrackName,
+        trackLink: `https://audius.co${track.permalink}`,
+        trackImage: `https://creatornode.audius.co/${track.cover_art_sizes}/480x480.jpg`,
         price: this.amount,
         payExtra: this.extraAmount,
         total: this.totalAmount

@@ -223,6 +223,7 @@ export const email = ({
 													<tr><td align="center" style="padding: 0px 4px;">
 														<div>
 															<div>
+                                <a href="https://apps.apple.com/us/app/audius-music/id1491270519" target="_blank">
 																<!--[if (gte mso 9)|(IE)]>
 																<table width="112" border="0" cellspacing="0" cellpadding="0" style="width: 112px;">
 																<tr><td>
@@ -238,6 +239,7 @@ export const email = ({
 																</td></tr>
 																</table>
 																<![endif]-->
+                              </a>
 															</div>
 														</div>
 													</td></tr>
@@ -258,6 +260,7 @@ export const email = ({
 													<tr><td align="center" style="padding: 0px 4px;">
 														<div>
 															<div>
+                                <a href="https://play.google.com/store/apps/details?id=co.audius.app" target="_blank">
 																<!--[if (gte mso 9)|(IE)]>
 																<table width="122" border="0" cellspacing="0" cellpadding="0" style="width: 122px;">
 																<tr><td>
@@ -273,6 +276,7 @@ export const email = ({
 																</td></tr>
 																</table>
 																<![endif]-->
+                                </a>
 															</div>
 														</div>
 													</td></tr>
@@ -301,6 +305,7 @@ export const email = ({
 													<tr><td align="center" style="padding: 0px 9px;">
 														<div>
 															<div>
+                                <a href="https://www.instagram.com/audiusmusic" target="_blank">
 																<!--[if (gte mso 9)|(IE)]>
 																<table width="42" border="0" cellspacing="0" cellpadding="0" style="width: 42px;">
 																<tr><td>
@@ -316,6 +321,7 @@ export const email = ({
 																</td></tr>
 																</table>
 																<![endif]-->
+                                </a>
 															</div>
 														</div>
 													</td></tr>
@@ -336,6 +342,7 @@ export const email = ({
 													<tr><td align="center" style="padding: 0px 9px;">
 														<div>
 															<div>
+                                <a href="https://twitter.com/audius" target="_blank">
 																<!--[if (gte mso 9)|(IE)]>
 																<table width="41" border="0" cellspacing="0" cellpadding="0" style="width: 41px;">
 																<tr><td>
@@ -351,6 +358,7 @@ export const email = ({
 																</td></tr>
 																</table>
 																<![endif]-->
+                                </a>
 															</div>
 														</div>
 													</td></tr>
@@ -371,6 +379,7 @@ export const email = ({
 													<tr><td align="center" style="padding: 0px 9px;">
 														<div>
 															<div>
+                                <a href="https://t.me/Audius" target="_blank">
 																<!--[if (gte mso 9)|(IE)]>
 																<table width="42" border="0" cellspacing="0" cellpadding="0" style="width: 42px;">
 																<tr><td>
@@ -386,6 +395,7 @@ export const email = ({
 																</td></tr>
 																</table>
 																<![endif]-->
+                                </a>
 															</div>
 														</div>
 													</td></tr>
@@ -406,6 +416,7 @@ export const email = ({
 													<tr><td align="center" style="padding: 0px 9px;">
 														<div>
 															<div>
+                                <a href="https://discord.com/invite/audius" target="_blank">
 																<!--[if (gte mso 9)|(IE)]>
 																<table width="42" border="0" cellspacing="0" cellpadding="0" style="width: 42px;">
 																<tr><td>
@@ -421,6 +432,7 @@ export const email = ({
 																</td></tr>
 																</table>
 																<![endif]-->
+                                </a>
 															</div>
 														</div>
 													</td></tr>
