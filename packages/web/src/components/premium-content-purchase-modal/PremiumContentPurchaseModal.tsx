@@ -1,8 +1,6 @@
 import { useEffect } from 'react'
 
 import {
-  BNUSDC,
-  Nullable,
   PurchasableTrackMetadata,
   PurchaseContentStage,
   Track,
@@ -40,19 +38,25 @@ const RenderForm = ({
   onClose,
   track
 }: {
-  currentBalance: Nullable<BNUSDC>
   onClose: () => void
   track: PurchasableTrackMetadata
 }) => {
   const dispatch = useDispatch()
-  const state = usePurchaseContentFormState({ track })
+  const {
+    permalink,
+    premium_conditions: {
+      usdc_purchase: { price }
+    }
+  } = track
+  const state = usePurchaseContentFormState({ price })
+  const { error, isUnlocking, purchaseSummaryValues, stage } = state
 
   // Navigate to track on successful purchase behind the modal
   useEffect(() => {
-    if (state.stage === PurchaseContentStage.FINISH && track) {
-      dispatch(pushUniqueRoute(track.permalink))
+    if (stage === PurchaseContentStage.FINISH && permalink) {
+      dispatch(pushUniqueRoute(permalink))
     }
-  }, [state.stage, track, dispatch])
+  }, [stage, permalink, dispatch])
 
   return (
     <ModalForm>
@@ -69,20 +73,26 @@ const RenderForm = ({
         </Text>
       </ModalHeader>
       <ModalContent className={styles.content}>
-        {track ? (
-          <>
-            <LockedTrackDetailsTile
-              track={track as unknown as Track}
-              owner={track.user}
-            />
-            <PurchaseContentFormFields {...state} />
-          </>
-        ) : null}
+        <>
+          <LockedTrackDetailsTile
+            track={track as unknown as Track}
+            owner={track.user}
+          />
+          <PurchaseContentFormFields
+            stage={stage}
+            purchaseSummaryValues={purchaseSummaryValues}
+          />
+        </>
       </ModalContent>
       <ModalFooter className={styles.footer}>
-        {track ? (
-          <PurchaseContentFormFooter {...state} onViewTrackClicked={onClose} />
-        ) : null}
+        <PurchaseContentFormFooter
+          error={error}
+          isUnlocking={isUnlocking}
+          onViewTrackClicked={onClose}
+          purchaseSummaryValues={purchaseSummaryValues}
+          stage={stage}
+          track={track}
+        />
       </ModalFooter>
     </ModalForm>
   )

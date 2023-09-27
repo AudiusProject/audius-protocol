@@ -6,22 +6,12 @@ import {
   purchaseContentSelectors
 } from 'store/purchase-content'
 
-import { PurchasableTrackMetadata } from './types'
 import { usePurchaseSummaryValues } from './usePurchaseSummaryValues'
 
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
 
-export const usePurchaseContentFormState = ({
-  track
-}: {
-  track: PurchasableTrackMetadata
-}) => {
-  const {
-    premium_conditions: {
-      usdc_purchase: { price }
-    }
-  } = track
+export const usePurchaseContentFormState = ({ price }: { price: number }) => {
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
@@ -34,7 +24,6 @@ export const usePurchaseContentFormState = ({
   })
 
   return {
-    track,
     stage,
     error,
     isUnlocking,

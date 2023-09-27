@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import {
   Name,
+  PurchasableTrackMetadata,
   PurchaseContentFormState,
   PurchaseContentStage,
   formatPrice
@@ -56,6 +57,14 @@ const getButtonContent = (isUnlocking: boolean, amountDue: number) =>
     messages.buy
   )
 
+type PurchaseContentFormFooterProps = Pick<
+  PurchaseContentFormState,
+  'error' | 'isUnlocking' | 'purchaseSummaryValues' | 'stage'
+> & {
+  track: PurchasableTrackMetadata
+  onViewTrackClicked: () => void
+}
+
 export const PurchaseContentFormFooter = ({
   error,
   track,
@@ -63,9 +72,7 @@ export const PurchaseContentFormFooter = ({
   purchaseSummaryValues,
   stage,
   onViewTrackClicked
-}: PurchaseContentFormState & {
-  onViewTrackClicked: () => void
-}) => {
+}: PurchaseContentFormFooterProps) => {
   const {
     title,
     permalink,

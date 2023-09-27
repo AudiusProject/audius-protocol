@@ -1,10 +1,7 @@
 import {
-  BNUSDC,
-  Nullable,
   PurchaseContentFormState,
   PurchaseContentStage,
-  payExtraAmountPresetValues,
-  usePurchaseSummaryValues
+  payExtraAmountPresetValues
 } from '@audius/common'
 import { IconCheck } from '@audius/stems'
 
@@ -20,10 +17,15 @@ const messages = {
   purchaseSuccessful: 'Your Purchase Was Successful!'
 }
 
+type PurchaseContentFormFieldsProps = Pick<
+  PurchaseContentFormState,
+  'purchaseSummaryValues' | 'stage'
+>
+
 export const PurchaseContentFormFields = ({
   purchaseSummaryValues,
   stage
-}: PurchaseContentFormState) => {
+}: PurchaseContentFormFieldsProps) => {
   const isPurchased = stage === PurchaseContentStage.FINISH
 
   if (isPurchased) {

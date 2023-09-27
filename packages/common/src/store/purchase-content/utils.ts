@@ -47,8 +47,8 @@ export const getPurchaseSummaryValues = ({
   const amountDueBN = new BN(amountDue).mul(BN_USDC_CENT_WEI)
 
   if (balanceBN.gte(amountDueBN)) {
-    amountDue = 0
     existingBalance = amountDue
+    amountDue = 0
   } else {
     // Note: Rounding amount due *up* to nearest cent for cases where the balance
     // is between cents so that we aren't advertising *lower* than what the user
