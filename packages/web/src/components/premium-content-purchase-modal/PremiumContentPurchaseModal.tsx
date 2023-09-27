@@ -143,13 +143,15 @@ export const PremiumContentPurchaseModal = () => {
       bodyClassName={styles.modal}
       dismissOnClickOutside
     >
-      <Formik
-        initialValues={initialValues}
-        validationSchema={toFormikValidationSchema(validationSchema)}
-        onSubmit={onSubmit}
-      >
-        {isValidTrack ? <RenderForm track={track} onClose={onClose} /> : null}
-      </Formik>
+      {isValidTrack ? (
+        <Formik
+          initialValues={initialValues}
+          validationSchema={toFormikValidationSchema(validationSchema)}
+          onSubmit={onSubmit}
+        >
+          <RenderForm track={track} onClose={onClose} />
+        </Formik>
+      ) : null}
     </Modal>
   )
 }
