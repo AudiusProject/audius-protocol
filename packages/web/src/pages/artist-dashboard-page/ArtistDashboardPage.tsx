@@ -7,7 +7,8 @@ import {
   themeSelectors,
   FeatureFlags,
   combineStatuses,
-  useUSDCBalance
+  useUSDCBalance,
+  buyUSDCActions
 } from '@audius/common'
 import cn from 'classnames'
 import { each } from 'lodash'
@@ -37,7 +38,10 @@ import {
   makeGetDashboard
 } from './store/selectors'
 import { fetch, reset, fetchListenData } from './store/slice'
+
 const { getTheme } = themeSelectors
+
+const { cleanup } = buyUSDCActions
 
 const TotalPlaysChart = lazyWithPreload(
   () => import('./components/TotalPlaysChart')
@@ -80,10 +84,18 @@ export const ArtistDashboardPage = () => {
   const listenData = useSelector(getDashboardListenData)
   const dashboardStatus = useSelector(getDashboardStatus)
   const theme = useSelector(getTheme)
-  const { data: balance, status: balanceStatus } = useUSDCBalance()
+  const { data: balance, balanceStatus, recoveryStatus, refresh } = useUSDCBalance()
   const status = combineStatuses([dashboardStatus, balanceStatus])
 
   const header = <Header primary='Dashboard' />
+
+  // Refresh the USDC balance if successful recovery
+  useEffect(() => {
+    if (recoveryStatus === 'success') {
+      refresh()
+      dispatch(cleanup())
+    }
+  }, [recoveryStatus, refresh])
 
   useEffect(() => {
     dispatch(fetch({ offset: 0, limit: tablePageSize }))
