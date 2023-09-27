@@ -19,7 +19,7 @@ type PlaylistInfo = {
 type TrackInfo = {
   track_id: number
   title: string
-  permalink: string
+  slug: string
   cover_art_sizes: string
 }
 
@@ -40,11 +40,13 @@ export abstract class BaseNotification<Type> {
         const res: Array<{
           track_id: number
           title: string
-          permalink: string
           cover_art_sizes:string
+          slug: string
         }> = await this.dnDB
-          .select('track_id', 'title', 'permalink', 'cover_art_sizes')
+          .select('tracks.track_id', 'tracks.title', 'tracks.cover_art_sizes', 'track_routes.slug')
           .from<TrackRow>('tracks')
+          .join('track_routes', 'tracks.track_id', 'track_routes.track_id')
+          .where('track_routes.is_current', true)
           .where('is_current', true)
           .whereIn(
             'track_id',

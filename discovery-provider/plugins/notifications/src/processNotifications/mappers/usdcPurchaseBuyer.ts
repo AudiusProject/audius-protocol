@@ -86,6 +86,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
 
     const purchasedTrackName = track.title
     const sellerUsername = users[this.sellerUserId]?.name
+    const sellerHandle = users[this.sellerUserId]?.handle
     const purchaserUsername = users[this.notificationReceiverUserId]?.name
 
     const title = 'Purchase Successful'
@@ -170,7 +171,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
         purchaserName: purchaserUsername,
         artistName: sellerUsername,
         trackTitle: purchasedTrackName,
-        trackLink: `https://audius.co${track.permalink}`,
+        trackLink: `https://audius.co/${sellerHandle}/${track.slug}`,
         trackImage: `https://creatornode.audius.co/${track.cover_art_sizes}/480x480.jpg`,
         price: this.amount,
         payExtra: this.extraAmount,

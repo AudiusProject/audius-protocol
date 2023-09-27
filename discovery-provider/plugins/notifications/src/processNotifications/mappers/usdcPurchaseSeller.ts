@@ -98,6 +98,7 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
     const buyerUsername = users[this.buyerUserId]?.name
     const buyerHandle = users[this.buyerUserId]?.handle
     const sellerUsername = users[this.notificationReceiverUserId]?.name
+    const sellerHandle = users[this.notificationReceiverUserId]?.handle
     const price = this.amount
 
     await sendBrowserNotification(
@@ -178,7 +179,7 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
         purchaserLink: `https://audius.co/${buyerHandle}`,
         artistName: sellerUsername,
         trackTitle: purchasedTrackName,
-        trackLink: `https://audius.co${track.permalink}`,
+        trackLink: `https://audius.co/${sellerHandle}/${track.slug}`,
         trackImage: `https://creatornode.audius.co/${track.cover_art_sizes}/480x480.jpg`,
         price: this.amount,
         payExtra: this.extraAmount,
