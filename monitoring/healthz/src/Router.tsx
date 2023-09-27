@@ -20,7 +20,7 @@ import { Fragment } from 'react'
 import { Disclosure, Popover, Transition } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
-const healthzUrl = new URL('./healthz.svg', import.meta.url).href
+const healthzUrl = new URL('./images/healthz.svg', import.meta.url).href
 
 const routeList: RouteObject[] = [
   {
@@ -131,22 +131,27 @@ function Layout() {
         leaveTo="opacity-0 translate-y-1"
       >
         <Popover.Panel className="absolute left-1/2 z-10 mt-5 flex w-screen max-w-max -translate-x-1/2 px-4">
-          <div className="w-screen max-w-sm flex-auto rounded-3xl bg-white dark:bg-gray-800 p-4 text-sm leading-6 shadow-lg ring-1 ring-gray-900/5">
-            {utils.map((item) => (
-              <div key={item.name} className={classNames(
-                item.href.slice(1) === selected
-                  ? 'bg-gray-50 dark:bg-gray-700'
-                  : 'hover:bg-gray-50 dark:hover:bg-gray-600',
-                "relative rounded-lg p-4"
-              )}>
-                <Link to={item.href} className="font-semibold text-gray-900 dark:text-gray-200">
-                  {item.name}
-                  <span className="absolute inset-0" />
-                </Link>
-                <p className="mt-1 text-gray-600 dark:text-gray-400">{item.description}</p>
-              </div>
-            ))}
-          </div>
+          {({ close }) => (
+            <div
+              className="w-screen max-w-sm flex-auto rounded-3xl bg-white dark:bg-gray-800 p-4 text-sm leading-6 shadow-lg ring-1 ring-gray-900/5"
+              onClick={() => close()}
+            >
+              {utils.map((item) => (
+                <div key={item.name} className={classNames(
+                  item.href.slice(1) === selected
+                    ? 'bg-gray-50 dark:bg-gray-700'
+                    : 'hover:bg-gray-50 dark:hover:bg-gray-600',
+                  "relative rounded-lg p-4"
+                )}>
+                  <Link to={item.href} className="font-semibold text-gray-900 dark:text-gray-200">
+                    {item.name}
+                    <span className="absolute inset-0" />
+                  </Link>
+                  <p className="mt-1 text-gray-600 dark:text-gray-400">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </Popover.Panel>
       </Transition>
     </Popover>
@@ -175,22 +180,27 @@ function Layout() {
         leaveTo="opacity-0 translate-y-1"
       >
         <Popover.Panel className="absolute left-1/2 z-10 mt-5 flex w-screen max-w-max -translate-x-1/2 px-4">
-          <div className="w-screen max-w-sm flex-auto rounded-3xl bg-white dark:bg-gray-800 p-4 text-sm leading-6 shadow-lg ring-1 ring-gray-900/5">
-            {views.map((item) => (
-              <div key={item.name} className={classNames(
-                item.href.slice(1) === selected
-                  ? 'bg-gray-50 dark:bg-gray-700'
-                  : 'hover:bg-gray-50 dark:hover:bg-gray-600',
-                "relative rounded-lg p-4"
-              )}>
-                <Link to={item.href} className="font-semibold text-gray-900 dark:text-gray-200">
-                  {item.name}
-                  <span className="absolute inset-0" />
-                </Link>
-                <p className="mt-1 text-gray-600 dark:text-gray-400">{item.description}</p>
-              </div>
-            ))}
-          </div>
+          {({ close }) => (
+            <div
+              className="w-screen max-w-sm flex-auto rounded-3xl bg-white dark:bg-gray-800 p-4 text-sm leading-6 shadow-lg ring-1 ring-gray-900/5"
+              onClick={() => close()}
+            >
+              {views.map((item) => (
+                <div key={item.name} className={classNames(
+                  item.href.slice(1) === selected
+                    ? 'bg-gray-50 dark:bg-gray-700'
+                    : 'hover:bg-gray-50 dark:hover:bg-gray-600',
+                  "relative rounded-lg p-4"
+                )}>
+                  <Link to={item.href} className="font-semibold text-gray-900 dark:text-gray-200">
+                    {item.name}
+                    <span className="absolute inset-0" />
+                  </Link>
+                  <p className="mt-1 text-gray-600 dark:text-gray-400">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </Popover.Panel>
       </Transition>
     </Popover>
@@ -207,7 +217,7 @@ function Layout() {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <img
-                        className="h-8 w-8"
+                        className="h-8 w-8 filter invert"
                         src={healthzUrl}
                         alt="Healthz"
                       />

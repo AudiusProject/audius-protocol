@@ -6,11 +6,11 @@ import {
 import { SP, useServiceProviders } from '../useServiceProviders'
 import { RelTime, timeSince, nanosToReadableDuration } from '../misc'
 import './Nodes.css'
-const autoUpgradeSvg = new URL('../auto_upgrade.svg', import.meta.url).href
-const dockerSvg = new URL('../docker.svg', import.meta.url).href
-const fileBackendSvg = new URL('../file_disk.svg', import.meta.url).href
-const gcpBackendSvg = new URL('../gcp.svg', import.meta.url).href
-const awsBackendSvg = new URL('../aws.svg', import.meta.url).href
+const autoUpgradeSvg = new URL('../images/auto_upgrade.svg', import.meta.url).href
+const dockerSvg = new URL('../images/docker.svg', import.meta.url).href
+const fileBackendSvg = new URL('../images/file_disk.svg', import.meta.url).href
+const gcpBackendSvg = new URL('../images/gcp.svg', import.meta.url).href
+const awsBackendIco = new URL('../images/aws.ico', import.meta.url).href
 
 const bytesToGb = (bytes: number) => Math.floor(bytes / 10 ** 9)
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
@@ -230,7 +230,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
             total={totalMediorumSize}
           />
           <div className="mt-3 flex">
-            {getStorageBackendIcon(health.blobStorePrefix)} <span className="w-[10px]" /> {health.blobStorePrefix === 'file' ? <span>{mediorumDiskSize - mediorumDiskUsed} GB</span> : <span>&infin;</span>} <span className="w-[5px]" /> available
+            {getStorageBackendIcon(health.blobStorePrefix)} <span className="w-[10px]" /> {health.blobStorePrefix === 'file' ? <span>{mediorumDiskSize - mediorumDiskUsed} GB</span> : <span>&infin;</span>} <span className="w-[4px]" /> available
           </div>
         </td>
       )}
@@ -304,7 +304,7 @@ const getStorageBackendIcon = (storageBackend: string) => {
         <span className="h-5 w-5 flex-shrink-0">
           <img
             className="h-5 w-5 dark:filter dark:invert"
-            src={awsBackendSvg}
+            src={awsBackendIco}
             alt="AWS"
           />
         </span>
@@ -331,7 +331,7 @@ const ProgressBar = ({ validStorage, extraStorage, total }: { validStorage: numb
     <div className="min-w-[200px] relative">
       <div className="h-6 bg-gray-300 relative rounded-3xl">
         {greenWidth !== false && <span className={`h-6 block absolute bg-green-400 ${greenWidth === 100 ? 'rounded-3xl' : 'rounded-l-3xl'}`} style={{ width: `${greenWidth}%` }}></span>}
-        {greenWidth !== false && redWidth !== false && <span className={`h-6 block absolute bg-red-400 ${greenWidth + redWidth > 99.9 ? 'rounded-r-3xl' : ''}`} style={{ width: `${redWidth}%`, marginLeft: `${greenWidth}%` }}></span>}
+        {greenWidth !== false && redWidth !== false && <span className={`h-6 block absolute bg-orange-400 ${greenWidth + redWidth > 99.9 ? 'rounded-r-3xl' : ''}`} style={{ width: `${redWidth}%`, marginLeft: `${greenWidth}%` }}></span>}
       </div>
       <div className="absolute top-0 text-xs w-full h-full text-center flex items-center">
         <span className="w-full">{validStorage} GB valid, {extraStorage} GB extra</span>

@@ -22,7 +22,7 @@ export function DiscoveryPlugins() {
   if (error) return <div className="text-red-600">error</div>
   if (!sps) return null
   return (
-    <div className="p-5 bg-white dark:bg-gray-800">
+    <div className="p-5 mt-8 bg-white dark:bg-gray-800">
       <h2 className="text-2xl font-semibold mb-4 text-black dark:text-white">Plugins</h2>
       <div className="overflow-x-auto">
         <table className="table-auto w-full border-collapse border dark:border-gray-700">
