@@ -73,8 +73,8 @@ export const createUseFeatureFlagHook =
       remoteConfigInstance
     )
 
-    const setOverride = (value: OverrideSetting) => {
-      setLocalStorageItem?.(overrideKey, value)
+    const setOverride = async (value: OverrideSetting) => {
+      await setLocalStorageItem?.(overrideKey, value)
     }
 
     const { value: isEnabled, loading } = useAsync(
