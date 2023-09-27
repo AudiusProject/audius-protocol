@@ -19,8 +19,7 @@ import { getContext } from 'store/effects'
 import { getFeePayer } from 'store/solana/selectors'
 import { setVisibility } from 'store/ui/modals/parentSlice'
 import { initializeStripeModal } from 'store/ui/stripe-modal/slice'
-
-import { waitForFeePayer } from '..'
+import { waitForValue } from 'utils'
 
 import {
   buyUSDCFlowFailed,
@@ -297,7 +296,7 @@ function* recoverPurchaseIfNecessary() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   try {
-    yield* call(waitForFeePayer)
+    yield* call(waitForValue, getFeePayer)
     const userBank = yield* getUSDCUserBank()
     const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
