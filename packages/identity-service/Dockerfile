@@ -25,6 +25,7 @@ COPY .gitignore .gitignore
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/package-lock.json ./package-lock.json
 COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/packages/identity-service/patches ./packages/identity-service/patches
 
 RUN CI=true npm run install-packages
 
