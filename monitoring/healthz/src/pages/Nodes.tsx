@@ -303,7 +303,7 @@ const getStorageBackendIcon = (storageBackend: string) => {
       return (
         <span className="h-5 w-5 flex-shrink-0">
           <img
-            className="h-5 w-5 dark:filter dark:invert"
+            className="h-5 w-5"
             src={awsBackendIco}
             alt="AWS"
           />
