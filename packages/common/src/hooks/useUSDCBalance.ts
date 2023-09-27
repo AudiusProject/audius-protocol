@@ -51,12 +51,5 @@ export const useUSDCBalance = () => {
     refresh()
   }, [refresh])
 
-  // Refresh balance on successful recovery
-  useEffect(() => {
-    if (recoveryStatus === 'success') {
-      refresh()
-    }
-  }, [recoveryStatus, refresh])
-
   return { balanceStatus, recoveryStatus, data, refresh }
 }

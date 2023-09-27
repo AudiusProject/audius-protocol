@@ -14,7 +14,6 @@ import {
   isContentPurchaseInProgress,
   ContentType
 } from '@audius/common'
-import { Formik } from 'formik'
 import { Linking, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -178,72 +177,69 @@ export const PremiumTrackPurchaseDrawer = () => {
           <LoadingSpinner />
         </View>
       ) : (
-        <Formik onSubmit={handleConfirmPurchase}>
-          {({ values, handleSubmit }) => (
-            <View style={styles.drawer}>
-              <View style={styles.titleContainer}>
-                <IconCart fill={neutralLight2} />
-                <Text style={styles.title}>{messages.title}</Text>
-              </View>
-              <TrackDetailsTile trackId={track.track_id} />
-              <PurchaseSummaryTable
-                {...purchaseSummaryValues}
-                isPurchaseSuccessful={isPurchaseSuccessful}
-              />
-              {isPurchaseSuccessful ? (
-                <PurchaseSuccess track={track} />
-              ) : (
-                <>
-                  <View>
-                    <View style={styles.payToUnlockTitleContainer}>
-                      <Text
-                        weight='heavy'
-                        textTransform='uppercase'
-                        fontSize='small'
-                      >
-                        {messages.payToUnlock}
-                      </Text>
-                      <LockedStatusBadge locked />
-                    </View>
-                    <Text style={styles.disclaimer}>
-                      {messages.disclaimer(
-                        <Text colorValue={secondary} onPress={handleTermsPress}>
-                          {messages.termsOfUse}
-                        </Text>
-                      )}
-                    </Text>
-                  </View>
-                  <Button
-                    disabled={isPurchasing}
-                    title={
-                      isLoading
-                        ? messages.purchasing
-                        : messages.buy(formatPrice(price))
-                    }
-                    variant={'primary'}
-                    size='large'
-                    color={specialLightGreen}
-                    iconPosition='left'
-                    icon={isLoading ? LoadingSpinner : undefined}
-                    fullWidth
-                  />
-                </>
-              )}
-              {error ? (
-                <View style={styles.errorContainer}>
-                  <IconError
-                    fill={accentRed}
-                    width={spacing(5)}
-                    height={spacing(5)}
-                  />
-                  <Text weight='medium' colorValue={accentRed}>
-                    {messages.error}
+        <View style={styles.drawer}>
+          <View style={styles.titleContainer}>
+            <IconCart fill={neutralLight2} />
+            <Text style={styles.title}>{messages.title}</Text>
+          </View>
+          <TrackDetailsTile trackId={track.track_id} />
+          <PurchaseSummaryTable
+            {...purchaseSummaryValues}
+            isPurchaseSuccessful={isPurchaseSuccessful}
+          />
+          {isPurchaseSuccessful ? (
+            <PurchaseSuccess track={track} />
+          ) : (
+            <>
+              <View>
+                <View style={styles.payToUnlockTitleContainer}>
+                  <Text
+                    weight='heavy'
+                    textTransform='uppercase'
+                    fontSize='small'
+                  >
+                    {messages.payToUnlock}
                   </Text>
+                  <LockedStatusBadge locked />
                 </View>
-              ) : null}
-            </View>
+                <Text style={styles.disclaimer}>
+                  {messages.disclaimer(
+                    <Text colorValue={secondary} onPress={handleTermsPress}>
+                      {messages.termsOfUse}
+                    </Text>
+                  )}
+                </Text>
+              </View>
+              <Button
+                onPress={handleConfirmPurchase}
+                disabled={isPurchasing}
+                title={
+                  isLoading
+                    ? messages.purchasing
+                    : messages.buy(formatPrice(price))
+                }
+                variant={'primary'}
+                size='large'
+                color={specialLightGreen}
+                iconPosition='left'
+                icon={isLoading ? LoadingSpinner : undefined}
+                fullWidth
+              />
+            </>
           )}
-        </Formik>
+          {error ? (
+            <View style={styles.errorContainer}>
+              <IconError
+                fill={accentRed}
+                width={spacing(5)}
+                height={spacing(5)}
+              />
+              <Text weight='medium' colorValue={accentRed}>
+                {messages.error}
+              </Text>
+            </View>
+          ) : null}
+        </View>
       )}
     </NativeDrawer>
   )
