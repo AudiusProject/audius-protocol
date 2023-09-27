@@ -14,6 +14,7 @@ import { HOME_PAGE, ERROR_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import styles from './SomethingWrong.module.css'
+import { Greeting } from 'components/greetings'
 
 const messages = {
   body1: 'We’re experiencing heavy load!',
@@ -54,6 +55,7 @@ export const SomethingWrong = () => {
         [styles.isMobile]: isMobile
       })}
     >
+      <Greeting />
       <div
         className={styles.content}
         style={{

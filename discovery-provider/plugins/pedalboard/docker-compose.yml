@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 services:
   app-template:
@@ -47,6 +47,18 @@ services:
       dockerfile: ./docker/Dockerfile
       args:
         app_name: relay
+    restart: always
+    command: npm run dev
+    env_file:
+      - .env
+
+  trpc-server:
+    container_name: trpc-server
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
+      args:
+        app_name: trpc-server
     restart: always
     command: npm run dev
     env_file:

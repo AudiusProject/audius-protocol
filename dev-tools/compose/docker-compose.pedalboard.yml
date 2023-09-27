@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 services:
   app-template:
@@ -30,7 +30,7 @@ services:
       dockerfile: ./docker/Dockerfile
       args:
         app_name: relay
-        git_sha: "${GIT_COMMIT}"
+        git_sha: '${GIT_COMMIT}'
     restart: always
 
   sla-auditor:
@@ -40,7 +40,19 @@ services:
       dockerfile: ./docker/Dockerfile
       args:
         app_name: sla-auditor
-        git_sha: "${GIT_COMMIT}"
+        git_sha: '${GIT_COMMIT}'
+    restart: always
+    profiles:
+      - pedalboard
+
+  trpc-server:
+    container_name: trpc-server
+    build:
+      context: ${PROJECT_ROOT}/discovery-provider/plugins/pedalboard
+      dockerfile: ./docker/Dockerfile
+      args:
+        app_name: trpc-server
+        git_sha: '${GIT_COMMIT}'
     restart: always
     profiles:
       - pedalboard
