@@ -128,7 +128,7 @@ export class USDCPurchaseBuyer extends BaseNotification<USDCPurchaseBuyerRow> {
                   this.notification.group_id
                 }`,
                 type: 'USDCPurchaseBuyer',
-                entityId: this.content_id
+                entityId: this.contentId
               }
             }
           )
