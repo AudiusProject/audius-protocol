@@ -32,7 +32,6 @@ export const useUSDCBalance = () => {
   )
 
   const refresh = useCallback(async () => {
-    if (status === Status.LOADING) return
     setStatus(Status.LOADING)
     try {
       const account = await getUserbankAccountInfo(audiusBackend, {
@@ -44,7 +43,7 @@ export const useUSDCBalance = () => {
     } catch (e) {
       setStatus(Status.ERROR)
     }
-  }, [status, audiusBackend, setData])
+  }, [audiusBackend, setData])
 
   useEffect(() => {
     refresh()
