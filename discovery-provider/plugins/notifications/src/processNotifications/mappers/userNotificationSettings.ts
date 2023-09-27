@@ -133,7 +133,8 @@ export class UserNotificationSettings {
         `Not sending push notification: receiver ${receiverUserId} is abusive`
       )
     }
-    const receiverHasDevices = (this.mobile?.[receiverUserId]?.devices ?? []).length > 0
+    const receiverHasDevices =
+      (this.mobile?.[receiverUserId]?.devices ?? []).length > 0
     if (!receiverHasDevices) {
       logger.info(
         `Not sending push notification: receiver ${receiverUserId} has no devices`
