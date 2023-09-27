@@ -22,7 +22,6 @@ services:
 
   audius-cmd:
     build: ${PROJECT_ROOT}/dev-tools/commands
-    command: sleep infinity
     environment:
       ETH_TOKEN_ADDRESS: '${ETH_TOKEN_ADDRESS}'
       ETH_REGISTRY_ADDRESS: '${ETH_REGISTRY_ADDRESS}'
@@ -46,8 +45,6 @@ services:
       IDENTITY_SERVICE_URL: 'http://identity-service:7000'
       FALLBACK_CREATOR_NODE_URL: 'http://creator-node:4000' # this should choose a random cn everytime this is run
     volumes:
-      - audius-libs:/usr/src/app/node_modules/@audius/sdk
-      - ../commands/src:/usr/src/app/src
-      - ../commands/test:/usr/src/app/test
+      - ${PROJECT_ROOT}:/app
     deploy:
       mode: global

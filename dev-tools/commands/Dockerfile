@@ -1,10 +1,10 @@
-FROM node:18.17
+FROM node:18-alpine AS base
 
-WORKDIR /usr/src/app
+# Everything is mounted into the container, see docker-compose.dev.yml
 
-RUN apt update && apt install -y ffmpeg
+RUN apk add --no-cache ffmpeg
+RUN apk update
 
-COPY package*.json .
-RUN --mount=type=cache,target=/root/.npm npm install --loglevel info
+WORKDIR /app/dev-tools/commands
 
-COPY . .
+CMD sleep infinity
