@@ -7,7 +7,6 @@ import {
   race,
   select,
   take,
-  // delay,
   takeLeading
 } from 'typed-redux-saga'
 
@@ -40,6 +39,7 @@ import {
 } from './slice'
 import { USDCOnRampProvider } from './types'
 import { getUSDCUserBank } from './utils'
+import { waitForFeePayer } from '..'
 
 // TODO: Configurable min/max usdc purchase amounts?
 function* getBuyUSDCRemoteConfig() {
@@ -303,6 +303,7 @@ function* recoverPurchaseIfNecessary() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
 
   try {
+    yield* call(waitForFeePayer)
     const userBank = yield* getUSDCUserBank()
     const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
@@ -374,7 +375,7 @@ function* watchRecovery() {
   // 1) We don't want to run more than one recovery flow at a time (so not takeEvery)
   // 2) We don't need to interrupt if already running (so not takeLatest)
   // 3) We do want to be able to trigger more than one time per session in case of same-session failures (so not take)
-  yield takeLeading(startRecoveryIfNecessary, recoverPurchaseIfNecessary)
+  yield* takeLeading(startRecoveryIfNecessary, recoverPurchaseIfNecessary)
 }
 
 /**
@@ -382,7 +383,7 @@ function* watchRecovery() {
  * Gate on local storage existing for the previous purchase attempt to reduce RPC load.
  */
 function* recoverOnPageLoad() {
-  yield* put(startRecoveryIfNecessary())
+  yield* call(recoverPurchaseIfNecessary)
 }
 
 export default function sagas() {

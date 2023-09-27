@@ -1,8 +1,9 @@
-import { put, call } from 'typed-redux-saga'
+import { put, call, take, select } from 'typed-redux-saga'
 
 import { getContext } from '../effects'
 
 import { setFeePayer } from './slice'
+import { getFeePayer } from './selectors'
 
 function* watchForFeePayer() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -19,6 +20,13 @@ function* watchForFeePayer() {
     console.error('Could not get fee payer.')
   } else {
     yield put(setFeePayer({ feePayer: feePayer as string }))
+  }
+}
+
+export function* waitForFeePayer() {
+  const feePayer = yield* select(getFeePayer)
+  if (!feePayer) {
+    yield* take(setFeePayer)
   }
 }
 

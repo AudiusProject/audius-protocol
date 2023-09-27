@@ -1,3 +1,3 @@
 export * as solanaSelectors from './selectors'
 export { default as solanaReducer, actions as solanaActions } from './slice'
-export { sagas as solanaSagas } from './sagas'
+export { sagas as solanaSagas, waitForFeePayer } from './sagas'
