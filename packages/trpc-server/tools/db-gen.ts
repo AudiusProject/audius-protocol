@@ -2,10 +2,7 @@ import Knex from 'knex'
 import sqlts from '@rmp135/sql-ts'
 import { writeFileSync } from 'fs'
 
-const connectionString =
-  process.env.audius_db_url ||
-  'postgres://postgres:postgres@34.72.186.34/audius_discovery'
-
+const connectionString = process.env.audius_db_url
 const kpg = Knex({
   client: 'pg',
   connection: connectionString

@@ -8,9 +8,7 @@ import {
   UserRow
 } from './db-tables'
 
-const connectionString =
-  process.env.audius_db_url ||
-  'postgres://postgres:postgres@34.72.186.34/audius_discovery'
+const connectionString = process.env.audius_db_url || ''
 
 export const sql = postgres(connectionString, {
   transform: postgres.camel,
