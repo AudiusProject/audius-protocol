@@ -128,7 +128,7 @@ export const PremiumTrackPurchaseDrawer = () => {
     { id: trackId },
     { disabled: !trackId }
   )
-  const { data: currentBalance, status: balanceStatus } = useUSDCBalance()
+  const { data: currentBalance, balanceStatus } = useUSDCBalance()
   const error = useSelector(getPurchaseContentError)
   const stage = useSelector(getPurchaseContentFlowStage)
   const isPurchasing = isContentPurchaseInProgress(stage)

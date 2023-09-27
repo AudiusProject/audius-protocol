@@ -30,7 +30,7 @@ const messages = {
   reacted: 'reacted',
   react: 'reacted to your tip of ',
   twitterShare: (handle: string) =>
-    `I got a thanks from ${handle} for tipping them $AUDIO on @audiusproject! #Audius #AUDIOTip`
+    `I got a thanks from ${handle} for tipping them $AUDIO on @audius! #Audius #AUDIOTip`
 }
 
 type TipReactionNotificationProps = {

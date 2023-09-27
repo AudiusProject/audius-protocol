@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import {
   PurchasableTrackMetadata,
@@ -7,7 +7,8 @@ import {
   isTrackPurchasable,
   useGetTrackById,
   usePremiumContentPurchaseModal,
-  usePurchaseContentFormConfiguration
+  usePurchaseContentFormConfiguration,
+  buyUSDCActions
 } from '@audius/common'
 import {
   IconCart,
@@ -31,6 +32,9 @@ import { PurchaseContentFormFields } from './components/PurchaseContentFormField
 import { PurchaseContentFormFooter } from './components/PurchaseContentFormFooter'
 import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState'
 
+const { startRecoveryIfNecessary, cleanup: cleanupUSDCRecovery } =
+  buyUSDCActions
+
 const messages = {
   completePurchase: 'Complete Purchase'
 }
@@ -52,6 +56,16 @@ const RenderForm = ({
   const state = usePurchaseContentFormState({ price })
   const { error, isUnlocking, purchaseSummaryValues, stage } = state
 
+  // Attempt recovery once on re-mount of the form
+  useEffect(() => {
+    dispatch(startRecoveryIfNecessary)
+  }, [dispatch])
+
+  const handleClose = useCallback(() => {
+    dispatch(cleanupUSDCRecovery())
+    onClose()
+  }, [dispatch, onClose])
+
   // Navigate to track on successful purchase behind the modal
   useEffect(() => {
     if (stage === PurchaseContentStage.FINISH && permalink) {
@@ -61,7 +75,7 @@ const RenderForm = ({
 
   return (
     <ModalForm>
-      <ModalHeader onClose={onClose} showDismissButton>
+      <ModalHeader onClose={handleClose} showDismissButton>
         <Text
           variant='label'
           color='neutralLight2'

@@ -6,6 +6,7 @@ import { EntityType } from '../../email/notifications/types'
 type UserBasicInfo = {
   user_id: number
   name: string
+  handle: string
   is_deactivated: boolean
 }
 
@@ -18,6 +19,8 @@ type PlaylistInfo = {
 type TrackInfo = {
   track_id: number
   title: string
+  slug: string
+  cover_art_sizes: string
 }
 
 export abstract class BaseNotification<Type> {
@@ -34,12 +37,19 @@ export abstract class BaseNotification<Type> {
   async fetchEntities(entityIds: number[], entityType: string) {
     switch (entityType) {
       case EntityType.Track: {
-        const res: Array<{ track_id: number; title: string }> = await this.dnDB
-          .select('track_id', 'title')
+        const res: Array<{
+          track_id: number
+          title: string
+          cover_art_sizes:string
+          slug: string
+        }> = await this.dnDB
+          .select('tracks.track_id', 'tracks.title', 'tracks.cover_art_sizes', 'track_routes.slug')
           .from<TrackRow>('tracks')
-          .where('is_current', true)
+          .join('track_routes', 'tracks.track_id', 'track_routes.track_id')
+          .where('track_routes.is_current', true)
+          .where('tracks.is_current', true)
           .whereIn(
-            'track_id',
+            'tracks.track_id',
             entityIds.map((id) => id.toString())
           )
         return res.reduce<Record<number, TrackInfo>>(
@@ -81,9 +91,10 @@ export abstract class BaseNotification<Type> {
     const res: Array<{
       user_id: number
       name: string
+      handle: string
       is_deactivated: boolean
     }> = await this.dnDB
-      .select('user_id', 'name', 'is_deactivated')
+      .select('user_id', 'name', 'handle', 'is_deactivated')
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn(

@@ -77,7 +77,7 @@ const getShareTextUrl = async (
       const { title, permalink } = upload.tracks[0].metadata
       const url = fullUrl ? fullTrackPage(permalink) : permalink
       return {
-        text: `Check out my new track, ${title} on @AudiusProject #Audius`,
+        text: `Check out my new track, ${title} on @audius #Audius`,
         url
       }
     }
@@ -100,14 +100,14 @@ const getShareTextUrl = async (
       else twitterHandle = `@${twitterHandle}`
 
       return {
-        text: `Check out my new remix of ${parentTrack.title} by ${twitterHandle} on @AudiusProject #Audius`,
+        text: `Check out my new remix of ${parentTrack.title} by ${twitterHandle} on @audius #Audius`,
         url
       }
     }
     case 'Tracks': {
       const getPage = fullUrl ? fullProfilePage : profilePage
       const url = getPage(user.handle)
-      return { text: `Check out my new tracks on @AudiusProject #Audius`, url }
+      return { text: `Check out my new tracks on @audius #Audius`, url }
     }
     case 'Album': {
       const { metadata, completionId } = upload
@@ -117,7 +117,7 @@ const getShareTextUrl = async (
       const getPage = fullUrl ? fullCollectionPage : collectionPage
       const url = getPage(user.handle, title, completionId, permalink, is_album)
       return {
-        text: `Check out my new album, ${title} on @AudiusProject #Audius`,
+        text: `Check out my new album, ${title} on @audius #Audius`,
         url
       }
     }
@@ -129,7 +129,7 @@ const getShareTextUrl = async (
       const getPage = fullUrl ? fullCollectionPage : collectionPage
       const url = getPage(user.handle, title, completionId, permalink, is_album)
       return {
-        text: `Check out my new playlist, ${title} on @AudiusProject #Audius`,
+        text: `Check out my new playlist, ${title} on @audius #Audius`,
         url
       }
     }

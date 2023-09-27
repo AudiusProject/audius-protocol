@@ -4,6 +4,7 @@ import {
   accountSelectors,
   remoteConfigSelectors
 } from '@audius/common'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSelector } from 'react-redux'
 
 import { remoteConfigInstance } from 'app/services/remote-config/remote-config-instance'
@@ -13,7 +14,9 @@ const { getAccountUser } = accountSelectors
 export const useFeatureFlag = createUseFeatureFlagHook({
   remoteConfigInstance,
   useHasAccount: () => !!useSelector(getAccountUser),
-  useHasConfigLoaded: () => !!useSelector(isRemoteConfigLoaded)
+  useHasConfigLoaded: () => !!useSelector(isRemoteConfigLoaded),
+  setLocalStorageItem: AsyncStorage.setItem,
+  getLocalStorageItem: AsyncStorage.getItem
 })
 
 export const useRemoteVar = createUseRemoteVarHook({

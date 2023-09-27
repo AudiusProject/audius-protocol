@@ -17,7 +17,7 @@ import {
 
 import { AppEmailNotification } from '../../types/notifications'
 import { renderEmail } from '../../email/notifications/renderEmail'
-import { RepostType } from '../../types/dn'
+import { reposttype } from '../../types/dn'
 import { EntityType } from '../../email/notifications/types'
 
 describe('Repost Notification', () => {
@@ -47,7 +47,7 @@ describe('Repost Notification', () => {
       {
         user_id: 2,
         repost_item_id: 10,
-        repost_type: RepostType.track
+        repost_type: reposttype.track
       }
     ])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
@@ -66,7 +66,7 @@ describe('Repost Notification', () => {
       {
         user_id: 2,
         repost_item_id: 10,
-        repost_type: RepostType.track
+        repost_type: reposttype.track
       }
     ])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
@@ -120,7 +120,7 @@ describe('Repost Notification', () => {
       {
         user_id: 2,
         repost_item_id: 20,
-        repost_type: RepostType.playlist
+        repost_type: reposttype.playlist
       }
     ])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
@@ -158,7 +158,7 @@ describe('Repost Notification', () => {
       {
         user_id: 2,
         repost_item_id: 30,
-        repost_type: RepostType.playlist
+        repost_type: reposttype.playlist
       }
     ])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
@@ -194,7 +194,7 @@ describe('Repost Notification', () => {
       {
         user_id: 2,
         repost_item_id: 10,
-        repost_type: RepostType.track
+        repost_type: reposttype.track
       }
     ])
 
@@ -237,10 +237,10 @@ describe('Repost Notification', () => {
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
 
     await createReposts(processor.discoveryDB, [
-      { user_id: 2, repost_item_id: 10, repost_type: RepostType.track },
-      { user_id: 3, repost_item_id: 10, repost_type: RepostType.track },
-      { user_id: 4, repost_item_id: 10, repost_type: RepostType.track },
-      { user_id: 5, repost_item_id: 10, repost_type: RepostType.track }
+      { user_id: 2, repost_item_id: 10, repost_type: reposttype.track },
+      { user_id: 3, repost_item_id: 10, repost_type: reposttype.track },
+      { user_id: 4, repost_item_id: 10, repost_type: reposttype.track },
+      { user_id: 5, repost_item_id: 10, repost_type: reposttype.track }
     ])
 
     const notifications: AppEmailNotification[] = Array.from(

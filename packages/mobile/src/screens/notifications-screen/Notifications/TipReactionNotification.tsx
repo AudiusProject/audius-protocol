@@ -39,7 +39,7 @@ const messages = {
   twitterShare: (handle: string, ios: boolean) =>
     `I got a thanks from ${handle} for ${
       ios ? 'sending' : 'tipping'
-    } them $AUDIO on @audiusproject! #Audius ${ios ? '#AUDIO' : '#AUDIOTip'}`
+    } them $AUDIO on @audius! #Audius ${ios ? '#AUDIO' : '#AUDIOTip'}`
 }
 
 const useStyles = makeStyles(() => ({

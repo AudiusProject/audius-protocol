@@ -7,6 +7,7 @@ import user from '../fixtures/user.json'
 const base64Entropy = Buffer.from(user.entropy).toString('base64')
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Cypress {
     interface Chainable {
       /**

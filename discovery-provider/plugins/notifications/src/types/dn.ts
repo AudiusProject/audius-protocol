@@ -92,6 +92,9 @@ export interface AggregateUserTipRow {
   receiver_user_id: number
   sender_user_id: number
 }
+export interface AlembicVersionRow {
+  version_num: string
+}
 export interface AppNameMetricRow {
   application_name: string
   count: number
@@ -146,12 +149,6 @@ export interface BlockRow {
   number?: number | null
   parenthash?: string | null
 }
-export interface BlocksCopyRow {
-  blockhash: string
-  is_current?: boolean | null
-  number?: number | null
-  parenthash?: string | null
-}
 export interface ChallengeDisbursementRow {
   amount: string
   challenge_id: string
@@ -181,12 +178,18 @@ export interface ChallengeRow {
   id: string
   starting_block?: number | null
   step_count?: number | null
-  type: ChallengeType
+  type: challengetype
 }
 export interface ChatRow {
   chat_id: string
   created_at: Date
+  last_message?: string | null
   last_message_at: Date
+}
+export interface ChatBanRow {
+  is_banned: boolean
+  updated_at: Date
+  user_id: number
 }
 export interface ChatBlockedUserRow {
   blockee_user_id: number
@@ -196,6 +199,7 @@ export interface ChatBlockedUserRow {
 export interface ChatMemberRow {
   chat_id: string
   cleared_history_at?: Date | null
+  created_at: Date
   invite_code: string
   invited_by_user_id: number
   last_active_at?: Date | null
@@ -218,7 +222,32 @@ export interface ChatMessageReactionRow {
 }
 export interface ChatPermissionRow {
   permits?: string | null
+  updated_at?: Date
   user_id: number
+}
+export interface CidDataRow {
+  cid: string
+  data?: any | null
+  type?: string | null
+}
+export interface DelistStatusCursorRow {
+  created_at: Date
+  entity: delist_entity
+  host: string
+}
+export interface DeveloperAppRow {
+  address: string
+  blockhash?: string | null
+  blocknumber?: number | null
+  created_at: Date
+  description?: string | null
+  is_current: boolean
+  is_delete?: boolean
+  is_personal_access?: boolean
+  name: string
+  txhash: string
+  updated_at: Date
+  user_id?: number | null
 }
 export interface EthBlockRow {
   created_at?: Date
@@ -235,6 +264,18 @@ export interface FollowRow {
   is_delete: boolean
   slot?: number | null
   txhash?: string
+}
+export interface GrantRow {
+  blockhash?: string | null
+  blocknumber?: number | null
+  created_at: Date
+  grantee_address: string
+  is_approved?: boolean
+  is_current: boolean
+  is_revoked?: boolean
+  txhash: string
+  updated_at: Date
+  user_id: number
 }
 export interface HourlyPlayCountRow {
   hourly_timestamp: Date
@@ -258,19 +299,18 @@ export interface NotificationRow {
   data?: any | null
   group_id: string
   id?: number
-  notification_group_id?: number | null
   slot?: number | null
   specifier: string
   timestamp: Date
   type: string
+  type_v2?: string | null
   user_ids?: any | null
 }
-export interface NotificationGroupRow {
+export interface NotificationSeenRow {
+  blockhash?: string | null
   blocknumber?: number | null
-  id?: number
-  notification_id?: number | null
-  slot?: number | null
-  timestamp: Date
+  seen_at: Date
+  txhash?: string | null
   user_id: number
 }
 export interface PgStatStatementRow {
@@ -278,25 +318,13 @@ export interface PgStatStatementRow {
   blk_write_time?: number | null
   calls?: string | null
   dbid?: any | null
-  jit_emission_count?: string | null
-  jit_emission_time?: number | null
-  jit_functions?: string | null
-  jit_generation_time?: number | null
-  jit_inlining_count?: string | null
-  jit_inlining_time?: number | null
-  jit_optimization_count?: string | null
-  jit_optimization_time?: number | null
   local_blks_dirtied?: string | null
   local_blks_hit?: string | null
   local_blks_read?: string | null
   local_blks_written?: string | null
-  max_exec_time?: number | null
-  max_plan_time?: number | null
-  mean_exec_time?: number | null
-  mean_plan_time?: number | null
-  min_exec_time?: number | null
-  min_plan_time?: number | null
-  plans?: string | null
+  max_time?: number | null
+  mean_time?: number | null
+  min_time?: number | null
   query?: string | null
   queryid?: string | null
   rows?: string | null
@@ -304,23 +332,11 @@ export interface PgStatStatementRow {
   shared_blks_hit?: string | null
   shared_blks_read?: string | null
   shared_blks_written?: string | null
-  stddev_exec_time?: number | null
-  stddev_plan_time?: number | null
-  temp_blk_read_time?: number | null
-  temp_blk_write_time?: number | null
+  stddev_time?: number | null
   temp_blks_read?: string | null
   temp_blks_written?: string | null
-  toplevel?: boolean | null
-  total_exec_time?: number | null
-  total_plan_time?: number | null
+  total_time?: number | null
   userid?: any | null
-  wal_bytes?: string | null
-  wal_fpi?: string | null
-  wal_records?: string | null
-}
-export interface PgStatStatementsInfoRow {
-  dealloc?: string | null
-  stats_reset?: Date | null
 }
 export interface PlaylistRouteRow {
   blockhash: string
@@ -333,6 +349,15 @@ export interface PlaylistRouteRow {
   title_slug: string
   txhash: string
 }
+export interface PlaylistSeenRow {
+  blockhash?: string | null
+  blocknumber?: number | null
+  is_current: boolean
+  playlist_id: number
+  seen_at: Date
+  txhash?: string | null
+  user_id: number
+}
 export interface PlaylistRow {
   blockhash?: string | null
   blocknumber?: number | null
@@ -341,6 +366,7 @@ export interface PlaylistRow {
   is_album: boolean
   is_current: boolean
   is_delete: boolean
+  is_image_autogenerated?: boolean
   is_private: boolean
   last_added_to?: Date | null
   metadata_multihash?: string | null
@@ -362,17 +388,6 @@ export interface PlayRow {
   id?: number
   play_item_id: number
   region?: string | null
-  signature?: string | null
-  slot?: number | null
-  source?: string | null
-  updated_at?: Date
-  user_id?: number | null
-}
-export interface PlaysArchiveRow {
-  archived_at?: Date | null
-  created_at?: Date
-  id: number
-  play_item_id: number
   signature?: string | null
   slot?: number | null
   source?: string | null
@@ -405,12 +420,16 @@ export interface RepostRow {
   created_at: Date
   is_current: boolean
   is_delete: boolean
-  is_repost_of_repost: boolean | false
+  is_repost_of_repost?: boolean
   repost_item_id: number
-  repost_type: RepostType
+  repost_type: reposttype
   slot?: number | null
   txhash?: string
   user_id: number
+}
+export interface RevertBlockRow {
+  blocknumber: number
+  prev_records: any
 }
 export interface RewardManagerTxRow {
   created_at: Date
@@ -455,11 +474,23 @@ export interface RouteMetricsTrailingWeekRow {
   count?: string | null
   unique_count?: string | null
 }
+export interface RpcCursorRow {
+  relayed_at: Date
+  relayed_by: string
+}
+export interface RpcErrorRow {
+  error_count?: number
+  error_text: string
+  last_attempt: Date
+  rpc_log_json: any
+  sig: string
+}
 export interface RpcLogRow {
-  from_wallet?: string | null
-  jetstream_sequence: number
-  jetstream_timestamp: Date
-  rpc: object
+  applied_at: Date
+  from_wallet: string
+  relayed_at: Date
+  relayed_by: string
+  rpc: Object
   sig: string
 }
 export interface SaveRow {
@@ -468,9 +499,9 @@ export interface SaveRow {
   created_at: Date
   is_current: boolean
   is_delete: boolean
-  is_save_of_repost: boolean | false
+  is_save_of_repost?: boolean
   save_item_id: number
-  save_type: SaveType
+  save_type: savetype
   slot?: number | null
   txhash?: string
   user_id: number
@@ -478,12 +509,17 @@ export interface SaveRow {
 export interface SchemaMigrationRow {
   version: string
 }
+export interface SchemaVersionRow {
+  applied_at?: Date
+  file_name: string
+  md5?: string | null
+}
 export interface SkippedTransactionRow {
   blockhash: string
   blocknumber: number
   created_at?: Date
   id?: number
-  level?: SkippedTransactionLevel
+  level?: skippedtransactionlevel
   txhash: string
   updated_at?: Date
 }
@@ -524,6 +560,22 @@ export interface TagTrackUserRow {
   tag?: string | null
   track_id?: number | null
 }
+export interface TrackDelistStatuseRow {
+  created_at: Date
+  delisted: boolean
+  owner_id: number
+  reason: delist_track_reason
+  track_cid: string
+  track_id: number
+}
+export interface TrackPriceHistoryRow {
+  block_timestamp: Date
+  blocknumber: number
+  created_at?: Date
+  splits: any
+  total_price_cents: string
+  track_id: number
+}
 export interface TrackRouteRow {
   blockhash: string
   blocknumber: number
@@ -545,6 +597,8 @@ export interface TrackTrendingScoreRow {
   version: string
 }
 export interface TrackRow {
+  ai_attribution_user_id?: number | null
+  audio_upload_id?: string | null
   blockhash?: string | null
   blocknumber?: number | null
   cover_art?: string | null
@@ -554,22 +608,25 @@ export interface TrackRow {
   credits_splits?: string | null
   description?: string | null
   download?: any | null
+  duration?: number | null
   field_visibility?: any | null
   file_type?: string | null
   genre?: string | null
   is_available?: boolean
   is_current: boolean
   is_delete: boolean
+  is_playlist_upload?: boolean
   is_premium?: boolean
   is_unlisted?: boolean
   isrc?: string | null
   iswc?: string | null
-  length?: number | null
   license?: string | null
   metadata_multihash?: string | null
   mood?: string | null
   owner_id: number
   premium_conditions?: any | null
+  preview_cid?: string | null
+  preview_start_seconds?: number | null
   release_date?: string | null
   remix_of?: any | null
   route_id?: string | null
@@ -577,6 +634,7 @@ export interface TrackRow {
   stem_of?: any | null
   tags?: string | null
   title?: string | null
+  track_cid?: string | null
   track_id: number
   track_segments: any
   txhash?: string
@@ -606,32 +664,36 @@ export interface TrendingResultRow {
   version: string
   week: Date
 }
-export interface USDCPurchaseRow {
-  slot?: number | null
-  signature: string
-  seller_user_id: number
+export interface UsdcPurchaseRow {
+  amount: string
+  extra_amount: string
   buyer_user_id: number
-  amount: number
-  content_type: string
   content_id: number
-  created_at: Date
-  updated_at: Date
+  content_type: usdc_purchase_content_type
+  created_at?: Date
+  seller_user_id: number
+  signature: string
+  slot: number
+  updated_at?: Date
 }
-export interface UrsmContentNodeRow {
-  blockhash?: string | null
-  blocknumber?: number | null
-  cnode_sp_id: number
-  created_at: Date
-  delegate_owner_wallet: string
-  endpoint?: string | null
-  is_current: boolean
-  owner_wallet: string
-  proposer_1_delegate_owner_wallet: string
-  proposer_2_delegate_owner_wallet: string
-  proposer_3_delegate_owner_wallet: string
-  proposer_sp_ids: any
-  slot?: number | null
-  txhash?: string
+export interface UsdcTransactionsHistoryRow {
+  balance: string
+  change: string
+  created_at?: Date
+  method: string
+  signature: string
+  slot: number
+  transaction_created_at: Date
+  transaction_type: string
+  tx_metadata?: string | null
+  updated_at?: Date
+  user_bank: string
+}
+export interface UsdcUserBankAccountRow {
+  bank_account: string
+  created_at?: Date
+  ethereum_address: string
+  signature: string
 }
 export interface UserBalanceChangeRow {
   blocknumber: number
@@ -674,6 +736,12 @@ export interface UserChallengeRow {
   specifier: string
   user_id: number
 }
+export interface UserDelistStatuseRow {
+  created_at: Date
+  delisted: boolean
+  reason: delist_user_reason
+  user_id: number
+}
 export interface UserEventRow {
   blockhash?: string | null
   blocknumber?: number | null
@@ -688,6 +756,10 @@ export interface UserListeningHistoryRow {
   listening_history: any
   user_id?: number
 }
+export interface UserPubkeyRow {
+  pubkey_base64: string
+  user_id: number
+}
 export interface UserTipRow {
   amount: string
   created_at?: Date
@@ -698,6 +770,7 @@ export interface UserTipRow {
   updated_at?: Date
 }
 export interface UserRow {
+  allow_ai_attribution?: boolean
   artist_pick_track_id?: number | null
   bio?: string | null
   blockhash?: string | null
@@ -709,9 +782,10 @@ export interface UserRow {
   handle?: string | null
   handle_lc?: string | null
   has_collectibles?: boolean
+  is_available?: boolean
   is_current: boolean
   is_deactivated?: boolean
-  is_available?: boolean
+  is_storage_v2?: boolean
   is_verified?: boolean
   location?: string | null
   metadata_multihash?: string | null
@@ -734,21 +808,40 @@ export enum wallet_chain {
   'eth' = 'eth',
   'sol' = 'sol'
 }
-export enum SkippedTransactionLevel {
+export enum usdc_purchase_content_type {
+  'track' = 'track',
+  'playlist' = 'playlist',
+  'album' = 'album'
+}
+export enum skippedtransactionlevel {
   'node' = 'node',
   'network' = 'network'
 }
-export enum SaveType {
+export enum savetype {
   'track' = 'track',
   'playlist' = 'playlist',
   'album' = 'album'
 }
-export enum RepostType {
+export enum reposttype {
   'track' = 'track',
   'playlist' = 'playlist',
   'album' = 'album'
 }
-export enum ChallengeType {
+export enum delist_user_reason {
+  'STRIKE_THRESHOLD' = 'STRIKE_THRESHOLD',
+  'COPYRIGHT_SCHOOL' = 'COPYRIGHT_SCHOOL',
+  'MANUAL' = 'MANUAL'
+}
+export enum delist_track_reason {
+  'DMCA' = 'DMCA',
+  'ACR' = 'ACR',
+  'MANUAL' = 'MANUAL'
+}
+export enum delist_entity {
+  'TRACKS' = 'TRACKS',
+  'USERS' = 'USERS'
+}
+export enum challengetype {
   'boolean' = 'boolean',
   'numeric' = 'numeric',
   'aggregate' = 'aggregate',

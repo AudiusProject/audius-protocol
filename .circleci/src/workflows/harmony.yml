@@ -1,0 +1,16 @@
+when: << pipeline.parameters.run-harmony-workflow >>
+jobs:
+  - harmony-init
+  - harmony-build-storybook:
+      requires:
+        - harmony-init
+      filters:
+        branches:
+          only: /^main$/
+  - harmony-deploy-storybook:
+      context: Audius Client
+      requires:
+        - harmony-build-storybook
+      filters:
+        branches:
+          only: /^main$/

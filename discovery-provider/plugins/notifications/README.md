@@ -4,11 +4,13 @@
 
 ## Summary
 
-The Notifications Plugin is designed to send push notifications...
+The Notifications Plugin is designed to send push notifications
 
 ## How To Run
 
-docker...
+```
+audius-compose up discovery-provider-notifications
+```
 
 ## Regenerate sql-ts types
 

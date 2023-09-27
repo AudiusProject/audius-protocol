@@ -328,7 +328,7 @@ export async function processEmailNotifications(
       1000
     )
     let pageOffset = 0
-    let lastUser: number = 0
+    let lastUser = 0
 
     // timeout settings since we run an infinite loop
     const time = Date.now()
