@@ -12,8 +12,8 @@ const getAccountUser = accountSelectors.getAccountUser
 
 export const useFlag = createUseFeatureFlagHook({
   remoteConfigInstance,
-  getLocalStorageItem: (key: string) => window.localStorage.getItem(key),
-  setLocalStorageItem: (key: string, value: string | null) => {
+  getLocalStorageItem: async (key: string) => window.localStorage.getItem(key),
+  setLocalStorageItem: async (key: string, value: string | null) => {
     if (value === null) return window.localStorage.removeItem(key)
     window.localStorage.setItem(key, value)
   },
