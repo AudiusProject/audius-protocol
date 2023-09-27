@@ -47,9 +47,9 @@ export abstract class BaseNotification<Type> {
           .from<TrackRow>('tracks')
           .join('track_routes', 'tracks.track_id', 'track_routes.track_id')
           .where('track_routes.is_current', true)
-          .where('is_current', true)
+          .where('tracks.is_current', true)
           .whereIn(
-            'track_id',
+            'tracks.track_id',
             entityIds.map((id) => id.toString())
           )
         return res.reduce<Record<number, TrackInfo>>(
