@@ -33,8 +33,6 @@ RUN CI=true npm run install-packages
 COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json
 
-# TODO: Don't need to build identity if running in dev mode with ts-node-dev
-# TODO: Also may not need to build sdk bc of build-audius-libs container
 RUN npx turbo run build --filter=identity-service
 
 # Add the wait script to the image
