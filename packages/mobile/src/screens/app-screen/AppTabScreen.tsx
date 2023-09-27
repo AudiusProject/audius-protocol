@@ -117,8 +117,6 @@ export type AppTabScreenParamList = {
     chatId: string
     presetMessage?: string
   }
-  // TODO this should move to a "root param list"
-  SignIn: undefined
 }
 
 const forFade = ({ current }) => ({
