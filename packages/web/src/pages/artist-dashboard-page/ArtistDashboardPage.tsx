@@ -84,7 +84,12 @@ export const ArtistDashboardPage = () => {
   const listenData = useSelector(getDashboardListenData)
   const dashboardStatus = useSelector(getDashboardStatus)
   const theme = useSelector(getTheme)
-  const { data: balance, balanceStatus, recoveryStatus, refresh } = useUSDCBalance()
+  const {
+    data: balance,
+    balanceStatus,
+    recoveryStatus,
+    refresh
+  } = useUSDCBalance()
   const status = combineStatuses([dashboardStatus, balanceStatus])
 
   const header = <Header primary='Dashboard' />
@@ -95,7 +100,7 @@ export const ArtistDashboardPage = () => {
       refresh()
       dispatch(cleanup())
     }
-  }, [recoveryStatus, refresh])
+  }, [recoveryStatus, refresh, dispatch])
 
   useEffect(() => {
     dispatch(fetch({ offset: 0, limit: tablePageSize }))

@@ -10,8 +10,7 @@ import {
   useGetTrackById,
   usePremiumContentPurchaseModal,
   useUSDCBalance,
-  buyUSDCActions,
-  buyUSDCSelectors
+  buyUSDCActions
 } from '@audius/common'
 import {
   IconCart,

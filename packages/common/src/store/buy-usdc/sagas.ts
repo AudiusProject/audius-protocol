@@ -1,14 +1,7 @@
 import { Keypair, PublicKey } from '@solana/web3.js'
 import retry from 'async-retry'
 import { takeLatest } from 'redux-saga/effects'
-import {
-  call,
-  put,
-  race,
-  select,
-  take,
-  takeLeading
-} from 'typed-redux-saga'
+import { call, put, race, select, take, takeLeading } from 'typed-redux-saga'
 
 import { Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
@@ -27,6 +20,8 @@ import { getFeePayer } from 'store/solana/selectors'
 import { setVisibility } from 'store/ui/modals/parentSlice'
 import { initializeStripeModal } from 'store/ui/stripe-modal/slice'
 
+import { waitForFeePayer } from '..'
+
 import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
@@ -39,7 +34,6 @@ import {
 } from './slice'
 import { USDCOnRampProvider } from './types'
 import { getUSDCUserBank } from './utils'
-import { waitForFeePayer } from '..'
 
 // TODO: Configurable min/max usdc purchase amounts?
 function* getBuyUSDCRemoteConfig() {

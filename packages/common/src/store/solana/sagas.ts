@@ -2,8 +2,8 @@ import { put, call, take, select } from 'typed-redux-saga'
 
 import { getContext } from '../effects'
 
-import { setFeePayer } from './slice'
 import { getFeePayer } from './selectors'
+import { setFeePayer } from './slice'
 
 function* watchForFeePayer() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')

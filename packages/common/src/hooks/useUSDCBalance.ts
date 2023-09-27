@@ -7,9 +7,9 @@ import { Status } from 'models/Status'
 import { BNUSDC, StringUSDC } from 'models/Wallet'
 import { getUserbankAccountInfo } from 'services/index'
 import { useAppContext } from 'src/context/appContext'
+import { getRecoveryStatus } from 'store/buy-usdc/selectors'
 import { getUSDCBalance } from 'store/wallet/selectors'
 import { setUSDCBalance } from 'store/wallet/slice'
-import { getRecoveryStatus } from 'store/buy-usdc/selectors'
 
 /**
  * On mount, fetches the USDC balance for the current user and stores it
