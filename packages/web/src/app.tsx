@@ -4,7 +4,6 @@ import { useState } from 'react'
 
 import { AudiusQueryContext } from '@audius/common'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { httpBatchLink } from '@trpc/client'
 import { ConnectedRouter } from 'connected-react-router'
 import { Provider } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
@@ -23,24 +22,16 @@ import { audiusBackendInstance } from 'services/audius-backend/audius-backend-in
 import { audiusSdk } from 'services/audius-sdk/audiusSdk'
 import history from 'utils/history'
 
-import { getTrpcEndpoint, trpc } from './services/trpc'
+import { createAudiusTRPCClient, trpc } from './services/trpc'
 import { store } from './store/configureStore'
 import { reportToSentry } from './store/errors/reportToSentry'
 
-import './services/webVitals'
 import './index.css'
+import './services/webVitals'
 
 const AudiusApp = () => {
   const [queryClient] = useState(() => new QueryClient())
-  const [trpcClient] = useState(() =>
-    trpc.createClient({
-      links: [
-        httpBatchLink({
-          url: getTrpcEndpoint()
-        })
-      ]
-    })
-  )
+  const [trpcClient] = useState(() => createAudiusTRPCClient())
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
