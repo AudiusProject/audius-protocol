@@ -150,7 +150,7 @@ def generate_env(
     if prod:
         env["IDENTITY_DOCKERCOMPOSE"] = "docker-compose.identity.prod.yml"
     else:
-        env["IDENTITY_DOCKERCOMPOSE"] = "docker-compose.identity.yml"
+        env["IDENTITY_DOCKERCOMPOSE"] = "docker-compose.identity.dev.yml"
 
     for key, value in config.get("extra-env", {}).items():
         env[key] = value
@@ -193,19 +193,23 @@ def cli(ctx, protocol_dir):
 @click.option("-d", "--discovery-provider-replicas", default=1, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-a", "--args", type=str, multiple=True)
+@click.option(
+    "--prod",
+    is_flag=True,
+    help="Use production containers which have all dependencies built in",
+)
 @click.argument("services", nargs=-1)
 @click.pass_obj
 def build(
     protocol_dir,
     discovery_provider_replicas,
     elasticsearch_replicas,
+    prod,
     args,
     services,
 ):
     generate_env(
-        protocol_dir,
-        discovery_provider_replicas,
-        elasticsearch_replicas,
+        protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod
     )
 
     proc = subprocess.run(
@@ -348,7 +352,6 @@ def load_env(protocol_dir, service, environment):
 @click.option("--comms", is_flag=True, help="Bring up comms/dms containers")
 @click.option("-a", "--args", type=str, multiple=True)
 @click.option(
-    "-o",
     "--prod",
     is_flag=True,
     help="Use production containers which have all dependencies built in",
