@@ -39,11 +39,16 @@
 }
 
 .trackImageWrapper {
+  width: 124px;
   height: 124px;
 }
 
 .trackImage {
   border-radius: 4px;
+}
+
+.trackTextWrapper {
+  flex: 1;
 }
 
 .by {
