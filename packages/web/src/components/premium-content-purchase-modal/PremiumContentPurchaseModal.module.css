@@ -2,6 +2,12 @@
   width: 720px;
 }
 
+.modalHeader.mobile {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
 .title {
   align-items: center;
   display: flex;
