@@ -11,7 +11,14 @@ import { TRPCError } from '@trpc/server'
 
 export const userRouter = router({
   get: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
-    return ctx.loaders.userLoader.load(parseInt(input))
+    const user = await ctx.loaders.userLoader.load(parseInt(input))
+    if (!user) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: `user ${input} not found`
+      })
+    }
+    return user
   }),
 
   getMany: publicProcedure
@@ -64,21 +71,6 @@ export const userRouter = router({
     })
     return rows[0]
   }),
-
-  myRelation: publicProcedure
-    .meta({
-      openapi: {
-        method: 'GET',
-        path: '/users/relationship',
-        tags: ['users'],
-        summary: 'Get bi-directional follow relationship'
-      }
-    })
-    .input(z.object({ id: z.number() }))
-    .output(z.object({ followed: z.boolean(), followsMe: z.boolean() }))
-    .query(async ({ ctx, input }) => {
-      return ctx.loaders.userRelationLoader.load(input.id)
-    }),
 
   tipsSent: publicProcedure.input(z.number()).query(async ({ ctx, input }) => {
     return sql<AggregateUserTipRow[]>`

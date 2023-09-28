@@ -23,7 +23,7 @@ import { audiusBackendInstance } from 'services/audius-backend/audius-backend-in
 import { audiusSdk } from 'services/audius-sdk/audiusSdk'
 import history from 'utils/history'
 
-import { trpc } from './services/trpc'
+import { getTrpcEndpoint, trpc } from './services/trpc'
 import { store } from './store/configureStore'
 import { reportToSentry } from './store/errors/reportToSentry'
 
@@ -36,7 +36,7 @@ const AudiusApp = () => {
     trpc.createClient({
       links: [
         httpBatchLink({
-          url: 'http://localhost:2022/api/trpc'
+          url: getTrpcEndpoint()
         })
       ]
     })

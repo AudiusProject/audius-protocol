@@ -10,6 +10,11 @@ import {
 
 const connectionString = process.env.audius_db_url || ''
 
+if (!connectionString) {
+  console.log('audius_db_url is required')
+  process.exit(1)
+}
+
 export const sql = postgres(connectionString, {
   transform: postgres.camel,
   debug: (conn, query, args) => {
