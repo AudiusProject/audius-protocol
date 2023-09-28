@@ -1,15 +1,13 @@
-/* TODO: KJ - Update this later */
 /**
  * Audius Type System
  *
  * When using, ensure that the Avenir Next LT Pro font-face is available.
  */
-
 :root,
 root {
-  --font-family: 'Avenir Next LT Pro', 'Helvetica Neue', Helvetica, Arial,
-    sans-serif !important;
+  --font-family: 'Avenir Next LT Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
+  /* Font Sizes */
   --font-2xs: 10px;
   --font-xs: 12px;
   --font-s: 14px;
@@ -17,18 +15,31 @@ root {
   --font-l: 18px;
   --font-xl: 20px;
   --font-2xl: 24px;
-  --font-3xl: 32px;
-  --font-4xl: 36px;
-  --font-5xl: 40px;
+  --font-3xl: 28px;
+  --font-4xl: 32px;
+  --font-5xl: 36px;
+  --font-6xl: 42px;
+  --font-7xl: 56px;
+  --font-8xl: 72px;
+  --font-9xl: 96px;
 
+  /* Line Heights */
+  --line-height-xs: 12px;
+  --line-height-s: 16px;
+  --line-height-m: 20px;
+  --line-height-l: 24px;
+  --line-height-xl: 32px;
+  --line-height-2xl: 40px;
+  --line-height-3xl: 52px;
+  --line-height-4xl: 68px;
+  --line-height-5xl: 88px;
+  --line-height-6xl: 120px;
+
+  /* Font Weights */
   --font-ultra-light: 100;
   --font-regular: 400;
   --font-medium: 500;
   --font-demi-bold: 600;
   --font-bold: 700;
   --font-heavy: 900;
-}
-
-body * {
-  font-family: var(--font-family) !important;
 }
