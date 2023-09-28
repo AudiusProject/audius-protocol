@@ -51,12 +51,6 @@ const stiff = {
   friction: 40
 }
 
-const fast = {
-  mass: 1,
-  tension: 300,
-  friction: 40
-}
-
 // Interpolates a single y-value into a string translate3d
 const interpY = (y: number) => `translate3d(0, ${y}px, 0)`
 
