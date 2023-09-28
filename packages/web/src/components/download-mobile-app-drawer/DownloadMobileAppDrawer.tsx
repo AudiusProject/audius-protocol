@@ -38,10 +38,10 @@ type DownloadMobileAppDrawerProps = {
   onClose: () => void
 }
 
-export const DownloadMobileAppDrawer = ({
-  isOpen,
-  onClose
-}: DownloadMobileAppDrawerProps) => {
+export const DownloadMobileAppDrawer = (
+  props: DownloadMobileAppDrawerProps
+) => {
+  const { isOpen, onClose } = props
   const goToAppStore = useCallback(() => {
     switch (getMobileOS()) {
       case MobileOS.IOS:
