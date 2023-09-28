@@ -7,4 +7,4 @@ export {
   TextSize,
   TextVariant,
   TextStrength
-} from './components/typography/Text'
+} from './components'

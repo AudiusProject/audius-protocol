@@ -1,14 +1,14 @@
-import { Text } from 'components/typography/Text'
+import { Text } from 'components'
 
-import styles from './ColorTile.module.css'
+import styles from './ColorSwatch.module.css'
 
-type ColorTileProps = {
+type ColorSwatchProps = {
   name?: string
   desc?: string
   color: string
 }
 
-export const ColorTile = ({ color, desc, name }: ColorTileProps) => {
+export const ColorSwatch = ({ color, desc, name }: ColorSwatchProps) => {
   return (
     <div className={styles.tile}>
       <div className={styles.tileColor} style={{ background: color }} />

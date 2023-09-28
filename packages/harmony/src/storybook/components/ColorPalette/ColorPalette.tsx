@@ -1,7 +1,9 @@
-import { Text } from 'components/typography/Text'
+import { Fragment } from 'react'
+
+import { Text } from 'components'
 import { Theme, ThemeColors, themeColorsMap } from 'storybook/colors'
 
-import { ColorTile } from '../ColorTile'
+import { ColorSwatch } from '../ColorSwatch'
 
 import styles from './ColorPalette.module.css'
 
@@ -30,6 +32,40 @@ type ColorPaletteProps = {
   theme?: Theme
 }
 
+type ThemeKey = keyof ThemeColors
+type RowColors = typeof themeColorsMap[Theme][ThemeKey]
+
+type ColorRowProps = {
+  themeKey: ThemeKey
+  colors: RowColors
+}
+
+const ColorRow = ({ colors, themeKey }: ColorRowProps) => {
+  const colorNames = Object.keys(colors)
+
+  return (
+    <section className={styles.colorSection}>
+      <div className={styles.colorSectionInfo}>
+        <Text variant='body' strength='strong'>
+          {messages[themeKey]}
+        </Text>
+        <Text variant='body' strength='weak'>
+          {messages[`${themeKey}Desc`]}
+        </Text>
+      </div>
+      <div className={styles.colorTileContainer}>
+        {colorNames.map((name) => (
+          <ColorSwatch
+            key={`colorTile-${name}`}
+            name={name}
+            color={colors[name as keyof typeof colors]}
+          />
+        ))}
+      </div>
+    </section>
+  )
+}
+
 export const ColorPalette = ({ theme = 'day' }: ColorPaletteProps) => {
   const colors = themeColorsMap[theme]
   const themeKeys = Object.keys(colors)
@@ -43,35 +79,13 @@ export const ColorPalette = ({ theme = 'day' }: ColorPaletteProps) => {
         {messages.description}
       </Text>
       {themeKeys.map((key) => {
-        const sectionColors = colors[key as keyof ThemeColors]
-        const sectionColorsNames = Object.keys(sectionColors)
+        const themeKey = key as keyof ThemeColors
 
         return (
-          <>
+          <Fragment key={themeKey}>
             <div className={styles.divider} />
-            <section className={styles.colorSection}>
-              <div className={styles.colorSectionInfo}>
-                <Text variant='body' strength='strong'>
-                  {/* @ts-ignore */}
-                  {messages[key]}
-                </Text>
-                <Text variant='body' strength='weak'>
-                  {/* @ts-ignore */}
-                  {messages[`${key}Desc`]}
-                </Text>
-              </div>
-              <div className={styles.colorTileContainer}>
-                {sectionColorsNames.map((name) => (
-                  <ColorTile
-                    key={`colorTile-${name}`}
-                    name={name}
-                    // @ts-ignore
-                    color={sectionColors[name]}
-                  />
-                ))}
-              </div>
-            </section>
-          </>
+            <ColorRow themeKey={themeKey} colors={colors[themeKey]} />
+          </Fragment>
         )
       })}
     </div>

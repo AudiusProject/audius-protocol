@@ -1,1 +1,0 @@
-export { ColorTile } from './ColorTile'
