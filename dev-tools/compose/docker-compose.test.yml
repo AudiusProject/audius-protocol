@@ -422,7 +422,7 @@ services:
       service: identity-service
     build:
       context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/packages/identity-service/Dockerfile
+      dockerfile: ${PROJECT_ROOT}/packages/identity-service/Dockerfile.prod
     entrypoint: sh -c '[ ! "$$1" = "test" ] && echo $$(ls) && sleep inf || (shift; npx mocha "$$@")' -
     command: ''
     environment:
