@@ -140,8 +140,8 @@ describe('USDC Purchase Buyer', () => {
         data: {
           buyer_user_id: 2,
           seller_user_id: 1,
-          amount: '1000',
-          extra_amount: '0',
+          amount: 1000,
+          extra_amount: 0,
           content_id: 10
         },
         user_ids: [2],
