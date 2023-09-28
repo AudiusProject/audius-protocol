@@ -398,6 +398,7 @@ class UsdcPurchaseSellerNotification(TypedDict):
     buyer_user_id: int
     seller_user_id: int
     amount: int
+    extra_amount: int
 
 
 class UsdcPurchaseBuyerNotification(TypedDict):
@@ -406,6 +407,7 @@ class UsdcPurchaseBuyerNotification(TypedDict):
     buyer_user_id: int
     seller_user_id: int
     amount: int
+    extra_amount: int
 
 
 class AnnouncementNotification(TypedDict):
