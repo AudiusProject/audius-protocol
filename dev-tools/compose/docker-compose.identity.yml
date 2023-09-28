@@ -68,8 +68,6 @@ services:
       solanaRewardsManagerProgramPDA: '${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}'
       solanaRewardsManagerTokenPDA: '${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}'
       solanaAudiusAnchorDataProgramId: '${SOLANA_AUDIUS_DATA_PUBLIC_KEY}'
-    volumes:
-      - ${PROJECT_ROOT}:/app
     depends_on:
       db:
         condition: service_healthy
