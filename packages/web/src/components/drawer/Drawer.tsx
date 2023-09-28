@@ -1,4 +1,11 @@
-import { useEffect, useCallback, useRef, ReactNode, useState } from 'react'
+import {
+  useEffect,
+  useCallback,
+  useRef,
+  ReactNode,
+  useState,
+  RefObject
+} from 'react'
 
 import { useInstanceVar } from '@audius/common'
 import { IconRemove } from '@audius/stems'
@@ -61,6 +68,12 @@ export type DrawerProps = {
   isFullscreen?: boolean
 }
 
+const getHeight = (contentRef: RefObject<HTMLDivElement>) => {
+  if (!contentRef.current) return 0
+
+  return contentRef.current.getBoundingClientRect().height
+}
+
 const DraggableDrawer = ({
   isOpen,
   children,
@@ -71,12 +84,6 @@ const DraggableDrawer = ({
 
   const contentRef = useRef<HTMLDivElement>(null)
 
-  const getHeight = useCallback(() => {
-    if (!contentRef.current) return 0
-
-    return contentRef.current.getBoundingClientRect().height
-  }, [contentRef])
-
   // Stores the initial translation of the drawer
   const [initialTranslation] = useInstanceVar(0)
   // Stores the last transition
@@ -86,7 +93,7 @@ const DraggableDrawer = ({
 
   const [drawerSlideProps, setDrawerSlideProps] = useSpring(() => ({
     to: {
-      y: -1 * getHeight()
+      y: -1 * getHeight(contentRef)
     },
     config: wobble,
     onFrame(frame: any) {
@@ -112,7 +119,7 @@ const DraggableDrawer = ({
     setIsBackgroundVisible(true)
     setDrawerSlideProps({
       to: {
-        y: -1 * getHeight()
+        y: -1 * getHeight(contentRef)
       },
       immediate: false,
       config: wobble,
@@ -136,8 +143,7 @@ const DraggableDrawer = ({
     setDrawerSlideProps,
     setContentFadeProps,
     setBackgroundOpacityProps,
-    setIsBackgroundVisible,
-    getHeight
+    setIsBackgroundVisible
   ])
 
   const close = useCallback(() => {
@@ -175,7 +181,8 @@ const DraggableDrawer = ({
   // Handle the "controlled" component
   useEffect(() => {
     if (isOpen) {
-      open()
+      // Ensure that our drawer knows the height of its inner contents
+      setImmediate(open)
     }
   }, [open, isOpen])
 
@@ -185,20 +192,6 @@ const DraggableDrawer = ({
     }
   }, [shouldClose, close])
 
-  useEffect(() => {
-    // Toggle drawer if isOpen
-    if (isOpen) {
-      const drawerY = -1 * getHeight()
-      setDrawerSlideProps({
-        to: {
-          y: drawerY
-        },
-        immediate: false,
-        config: fast
-      })
-    }
-  }, [isOpen, setDrawerSlideProps, getHeight])
-
   const bind = useDrag(
     ({
       last,
@@ -207,7 +200,7 @@ const DraggableDrawer = ({
       movement: [, my],
       memo = currentTranslation()
     }) => {
-      const height = getHeight()
+      const height = getHeight(contentRef)
 
       let newY = memo + my
 
