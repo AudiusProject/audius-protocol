@@ -137,8 +137,14 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
 
   let totalMediorumUsed: number | '?' = '?'
   if (health.blobStorePrefix === 'file') totalMediorumUsed = mediorumDiskUsed
-  else if (typeof lastCleanupSize === 'number') totalMediorumUsed = lastCleanupSize
-  else if (typeof lastRepairSize === 'number') totalMediorumUsed = lastRepairSize
+  else {
+    // Use the last "full" repair.go run because it would've checked the most files
+    if (typeof lastCleanupSize === 'number') totalMediorumUsed = lastCleanupSize
+    else if (typeof lastRepairSize === 'number') totalMediorumUsed = lastRepairSize
+
+    // But it's possible the last normal repair.go run added more files
+    if (lastRepairSize > lastCleanupSize) totalMediorumUsed = lastRepairSize
+  }
 
   // 4TB artificial limit for cloud backends
   const totalMediorumSize = mediorumDiskSize && health.blobStorePrefix === 'file' ? mediorumDiskSize : 4000
@@ -320,21 +326,11 @@ const getStorageBackendIcon = (storageBackend: string) => {
 
 const ProgressBar = ({ progress, total }: { progress: number; total: number }) => {
   const progressPercent = (progress / Math.max(total, 4000)) * 100
-  // const missingCapacity = ((4000 - total) / 4000) * 100
 
   return (
     <div className="min-w-[200px] relative">
-      <div className="h-5 bg-gray-400 relative rounded-3xl">
+      <div className="h-5 bg-gray-300 relative rounded-3xl">
         <span className={`h-5 block absolute bg-purple-300 ${progressPercent >= 99.999 ? 'rounded-3xl' : 'rounded-l-3xl'}`} style={{ width: `${progressPercent}%` }}></span>
-        {/* {missingCapacity > 0 && missingCapacity > 2 &&
-          <span
-            className={`h-5 block absolute right-0 bg-repeat-y rounded-r-3xl`}
-            style={{
-              width: `${missingCapacity}%`,
-              marginLeft: `${progressPercent}%`,
-              backgroundImage: `repeating-linear-gradient(-45deg, gray, gray 2px, transparent 1px, transparent 6px)`
-            }}>
-          </span>} */}
       </div>
     </div>
   )
