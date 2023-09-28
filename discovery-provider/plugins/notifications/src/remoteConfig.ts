@@ -30,7 +30,8 @@ export enum MappingVariable {
   PushUSDCPurchaseBuyer = 'push_usdc_purchase_buyer',
   PushUSDCPurchaseSeller = 'push_usdc_purchase_seller',
   PushAnnouncement = 'push_announcement',
-  PushReaction = 'push_reaction'
+  PushReaction = 'push_reaction',
+  PushUSDCWithdrawal = 'push_usdc_withdrawal'
 }
 
 export const NotificationsEmailPlugin = 'notification_email_plugin'
@@ -70,7 +71,8 @@ const defaultMappingVariable = {
   [MappingVariable.PushTrendingUnderground]: false,
   [MappingVariable.PushTrendingPlaylist]: false,
   [MappingVariable.PushAnnouncement]: false,
-  [MappingVariable.PushReaction]: false
+  [MappingVariable.PushReaction]: false,
+  [MappingVariable.PushUSDCWithdrawal]: false
 }
 
 export const BrowserPushPlugin = 'browser_push_plugin'

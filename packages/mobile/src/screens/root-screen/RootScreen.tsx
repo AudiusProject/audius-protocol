@@ -36,6 +36,11 @@ const { reset } = playerActions
 
 const Stack = createNativeStackNavigator()
 
+export type RootScreenParamList = {
+  SignUp: undefined
+  SignIn: undefined
+}
+
 /**
  * The top level navigator. Switches between sign on screens and main tab navigator
  * based on if the user is authed

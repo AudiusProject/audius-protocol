@@ -1,3 +1,10 @@
-import './assets/styles/fonts.css'
-import './assets/styles/colors.css'
-import './assets/styles/tokens.css'
+import './assets/styles/main.css'
+
+export {
+  Text,
+  TextProps,
+  TextColor,
+  TextSize,
+  TextVariant,
+  TextStrength
+} from './components'

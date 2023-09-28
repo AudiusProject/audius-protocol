@@ -51,7 +51,8 @@ export function* getSearchResults(searchText: string) {
         currentUserId: userId,
         query,
         limit: 3,
-        offset: 0
+        offset: 0,
+        includePurchaseable: isUSDCEnabled
       })
     )
     const allSearchResults = yield* all(searches)
@@ -72,18 +73,15 @@ export function* getSearchResults(searchText: string) {
       currentUserId: userId,
       query: searchText,
       limit: 3,
-      offset: 0
+      offset: 0,
+      includePurchaseable: isUSDCEnabled
     })
   }
 
   const { tracks, albums, playlists, users } = results
   const checkedUsers = users.filter((u) => !u.is_deactivated)
   const checkedTracks = tracks.filter((t) => {
-    return (
-      !t.is_delete &&
-      !t.user.is_deactivated &&
-      (isUSDCEnabled || !('usdc_purchase' in (t.premium_conditions || {})))
-    )
+    return !t.is_delete && !t.user.is_deactivated
   })
   const checkedPlaylists = playlists.filter((p) => !p.user?.is_deactivated)
   const checkedAlbums = albums.filter((a) => !a.user?.is_deactivated)

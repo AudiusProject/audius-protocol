@@ -152,9 +152,10 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
   const id = useMemo(() => modalKey || uniqueId('modal-'), [modalKey])
   const titleId = `${id}-title` || ariaLabelledbyProp
   const subtitleId = `${id}-subtitle` || ariaDescribedbyProp
+  const [isDoneOpening, setIsDoneOpening] = useState(false)
   const modalContextValue = useMemo(() => {
-    return { titleId, subtitleId, onClose }
-  }, [titleId, subtitleId, onClose])
+    return { titleId, subtitleId, onClose, isDoneOpening }
+  }, [titleId, subtitleId, onClose, isDoneOpening])
 
   const onTouchMove = useCallback(
     (e: any) => {
@@ -193,13 +194,24 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
 
   const transition = useTransition(isOpen, null, {
     from: { transform: 'scale(0)', opacity: 0 },
-    enter: { transform: 'scale(1)', opacity: 1 },
+    // @ts-ignore function is a valid value for enter, but the types don't acknowledge that
+    enter:
+      (item: boolean) =>
+      async (
+        next: (props: { transform: string; opacity: number }) => Promise<void>
+      ) => {
+        await next({ transform: 'scale(1)', opacity: 1 })
+        if (item) {
+          setImmediate(() => setIsDoneOpening(true))
+        }
+      },
     leave: { transform: 'scale(0)', opacity: 0 },
     unique: true,
     config: standard,
     onDestroyed: () => {
       if (!isOpen) {
         setIsDestroyed(false)
+        setIsDoneOpening(false)
         if (onClosed) {
           onClosed()
         }

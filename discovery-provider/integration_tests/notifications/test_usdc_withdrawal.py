@@ -46,7 +46,10 @@ def test_usdc_withdrawal_notification(app):
         notification = notifications[0]
         assert notification.user_ids == [1]
         assert notification.specifier == "1"
-        assert notification.group_id == "usdc_withdrawal:1"
+        assert (
+            notification.group_id
+            == "usdc_withdrawal:1signature:4HMtqP6k5ugi5jhCQo5CpqKzjxREhsZ4QTE2XDo48v4JBaDjS4kWXo7EixucKEFkwHxF9j3Qzp2ZjLdGpN4FRQVt"
+        )
         assert notification.slot == 4
 
         assert notification.data == {
@@ -55,6 +58,7 @@ def test_usdc_withdrawal_notification(app):
             "signature": "4HMtqP6k5ugi5jhCQo5CpqKzjxREhsZ4QTE2XDo48v4JBaDjS4kWXo7EixucKEFkwHxF9j3Qzp2ZjLdGpN4FRQVt",
             "change": -100,
             "balance": 100,
+            "receiver_account": None,
         }
 
 

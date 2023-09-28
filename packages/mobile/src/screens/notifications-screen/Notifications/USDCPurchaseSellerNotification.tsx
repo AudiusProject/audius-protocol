@@ -2,12 +2,14 @@ import { useCallback } from 'react'
 
 import type {
   Nullable,
+  StringUSDC,
   TrackEntity,
   USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType
 } from '@audius/common'
 import {
   formatUSDCWeiToUSDString,
-  notificationsSelectors
+  notificationsSelectors,
+  stringUSDCToBN
 } from '@audius/common'
 import { useSelector } from 'react-redux'
 
@@ -27,8 +29,8 @@ const { getNotificationUsers, getNotificationEntity } = notificationsSelectors
 
 const messages = {
   title: 'Track Sold',
-  congrats: 'Congrats, ',
-  justBoughtYourTrack: ' just bought your track ',
+  congrats: 'Congrats,',
+  justBoughtYourTrack: 'just bought your track',
   for: ' for ',
   exclamation: '!'
 }
@@ -49,7 +51,7 @@ export const USDCPurchaseSellerNotification = (
     getNotificationUsers(state, notification, 1)
   )
   const buyerUser = notificationUsers ? notificationUsers[0] : null
-  const { amount } = notification
+  const { amount, extraAmount } = notification
 
   const handlePress = useCallback(() => {
     if (track) {
@@ -66,7 +68,11 @@ export const USDCPurchaseSellerNotification = (
       <NotificationText>
         {messages.congrats} <UserNameLink user={buyerUser} />{' '}
         {messages.justBoughtYourTrack} <EntityLink entity={track} /> for $
-        {formatUSDCWeiToUSDString(amount)}
+        {formatUSDCWeiToUSDString(
+          stringUSDCToBN(amount)
+            .add(stringUSDCToBN(extraAmount))
+            .toString() as StringUSDC
+        )}
         {messages.exclamation}
       </NotificationText>
     </NotificationTile>

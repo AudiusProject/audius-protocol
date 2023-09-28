@@ -521,6 +521,8 @@ PODS:
     - RCTTypeSafety
     - React-Core
     - ReactCommon/turbomodule/core
+  - react-native-slider (4.4.3):
+    - React-Core
   - react-native-tiktok (1.1.1):
     - React-Core
     - TikTokOpenSDK (= 5.0.0)
@@ -811,6 +813,7 @@ DEPENDENCIES:
   - react-native-randombytes (from `../../../node_modules/react-native-randombytes`)
   - react-native-restart (from `../../../node_modules/react-native-restart`)
   - react-native-safe-area-context (from `../../../node_modules/react-native-safe-area-context`)
+  - "react-native-slider (from `../../../node_modules/@react-native-community/slider`)"
   - react-native-tiktok (from `../../../node_modules/react-native-tiktok`)
   - react-native-track-player (from `../../../node_modules/react-native-track-player`)
   - react-native-version-number (from `../../../node_modules/react-native-version-number`)
@@ -996,6 +999,8 @@ EXTERNAL SOURCES:
     :path: "../../../node_modules/react-native-restart"
   react-native-safe-area-context:
     :path: "../../../node_modules/react-native-safe-area-context"
+  react-native-slider:
+    :path: "../../../node_modules/@react-native-community/slider"
   react-native-tiktok:
     :path: "../../../node_modules/react-native-tiktok"
   react-native-track-player:
@@ -1164,6 +1169,7 @@ SPEC CHECKSUMS:
   react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-restart: 45c8dca02491980f2958595333cbccd6877cb57e
   react-native-safe-area-context: 99b24a0c5acd0d5dcac2b1a7f18c49ea317be99a
+  react-native-slider: 1cdd6ba29675df21f30544253bf7351d3c2d68c4
   react-native-tiktok: b3d7f50aff5b52a660169ef828768c67d59855d3
   react-native-track-player: 0c26d981b5097910486cbbeb6d8f5352d41be069
   react-native-version-number: b415bbec6a13f2df62bf978e85bc0d699462f37f

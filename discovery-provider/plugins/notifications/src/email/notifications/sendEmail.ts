@@ -7,8 +7,11 @@ import { MailDataRequired } from '@sendgrid/mail'
 import { Knex } from 'knex'
 import {
   EmailFrequency,
-  UserNotificationSettings
 } from '../../processNotifications/mappers/userNotificationSettings'
+
+// id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
+const NOTIFICATION_EMAIL_UNSUBSCRIBE_GROUP_ID = 19141
+const TRANSACTIONAL_EMAIL_UNSUBSCRIBE_GROUP_ID = 23583
 
 // Sendgrid object
 
@@ -78,7 +81,7 @@ export const sendNotificationEmail = async ({
       html: notifHtml,
       subject: emailSubject,
       asm: {
-        groupId: 19141 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
+        groupId: NOTIFICATION_EMAIL_UNSUBSCRIBE_GROUP_ID 
       }
     }
 
@@ -98,6 +101,26 @@ export const sendNotificationEmail = async ({
     return true
   } catch (e) {
     logger.error(`Error in renderAndSendNotificationEmail ${e.stack}`)
+    return false
+  }
+}
+
+export const sendTransactionalEmail = async ({ email, html, subject }) => {
+  try {
+    logger.debug(`SendTransactionalEmail | ${email}, ${subject}`)
+    const emailParams = {
+      from: 'Audius <team@audius.co>',
+      to: `${email}`,
+      html,
+      subject,
+      asm: {
+        groupId: TRANSACTIONAL_EMAIL_UNSUBSCRIBE_GROUP_ID
+      }
+    }
+    await sendEmail(emailParams)
+    return true
+  } catch (e) {
+    logger.error(`Error in sendTransactionalEmail ${e.stack}`)
     return false
   }
 }

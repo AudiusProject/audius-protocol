@@ -44,6 +44,10 @@ export const stringWeiToBN = (stringWei: StringWei): BNWei => {
   return new BN(stringWei) as BNWei
 }
 
+export const stringUSDCToBN = (stringUSDC: StringUSDC): BNUSDC => {
+  return new BN(stringUSDC) as BNUSDC
+}
+
 export const stringAudioToBN = (stringAudio: StringAudio): BNAudio => {
   return new BN(stringAudio) as BNAudio
 }

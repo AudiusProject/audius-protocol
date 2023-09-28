@@ -14,15 +14,18 @@ orbs:
 parameters:
   workflow:
     type: string
-    default: "main"
+    default: 'main'
 
   run-gcp-workflow:
     type: boolean
-    default: true
+    default: false
+  run-gcp-cleanup:
+    type: boolean
+    default: false
 
   run-integration-workflow:
     type: boolean
-    default: true
+    default: false
 
   run-identity-workflow:
     type: boolean
@@ -65,7 +68,6 @@ parameters:
   run-harmony-workflow:
     type: boolean
     default: false
-
 # Can enable recurring probers against stage at some point
 # workflows:
 #   version: 2.1

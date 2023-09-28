@@ -1,12 +1,12 @@
 {
-    "steps": [
-      {
-        "name": "typecheck",
-        "command": "npm run typecheck"
-      },
-      {
-        "name": "lint",
-        "command": "npm run lint"
-      }
-    ]
-  }
+  "steps": [
+    {
+      "name": "typecheck",
+      "command": "npm run typecheck -w audius-mobile-client"
+    },
+    {
+      "name": "lint",
+      "command": "npm run lint -w audius-mobile-client"
+    }
+  ]
+}

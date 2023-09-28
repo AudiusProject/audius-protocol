@@ -35,8 +35,11 @@ const getClientAliases = () => {
 
 module.exports = (async () => {
   const {
-    resolver: { sourceExts, assetExts }
+    resolver: { sourceExts, assetExts, resolverMainFields }
   } = await getDefaultConfig()
+
+  resolverMainFields.unshift('sbmodern')
+
   return {
     transformer: {
       getTransformOptions: async () => ({
@@ -60,6 +63,7 @@ module.exports = (async () => {
         ...require('node-libs-react-native'),
         // Alias for 'src' to allow for absolute paths
         app: path.resolve(__dirname, 'src'),
+        '@audius/harmony-native': path.resolve(__dirname, 'src/harmony-native'),
 
         // The following imports are needed for @audius/common
         // and audius-client to compile correctly
@@ -92,7 +96,8 @@ module.exports = (async () => {
           }
         }
         return context.resolveRequest(context, moduleName, platform)
-      }
+      },
+      resolverMainFields
     },
     maxWorkers: 2
   }

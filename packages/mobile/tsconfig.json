@@ -4,6 +4,7 @@
     // Remove "dom" when no longer dependent on audius-client
     "lib": ["dom", "es2019"],
     "paths": {
+      "@audius/harmony-native": ["./src/harmony-native/index.ts"],
       "app/*": ["./src/*"],
       // Remove these when no longer dependent on audius-client
       "audio/*": ["../../node_modules/audius-client/src/audio/*"],

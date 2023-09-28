@@ -1,6 +1,6 @@
 import Hashids from 'hashids'
 
-// // hasher to decode / encode IDs
+// hasher to decode / encode IDs
 const hasher = new Hashids('azowernasdfoia', 5)
 
 export function encodeId(id: number | string) {
@@ -12,7 +12,7 @@ export function decodeId(id: string) {
   return hasher.decode(id)
 }
 
-// // helper functions for content node images
+// helper functions for content node images
 export function buildImageUrls(user: any, cid: string, size: string) {
   if (!user || !user.creator_node_endpoint || !cid) return ''
 

@@ -94,6 +94,8 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
 }))
 
 export type TextInputProps = RNTextInputProps & {
+  // Needed to set up accessibility
+  id?: string
   label?: string
   /**
    * Default icon to show at the right side of the input
@@ -130,6 +132,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
     const innerInputRef = useRef<RNTextInput>()
 
     const {
+      id,
       style,
       styles: stylesProp,
       label,
@@ -288,6 +291,7 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
               ]}
             >
               <Animated.Text
+                nativeID={id}
                 style={[
                   styles.labelText,
                   stylesProp?.labelText,
@@ -313,6 +317,8 @@ export const TextInput = forwardRef<RNTextInput, TextInputProps>(
           <RNTextInput
             ref={mergeRefs([innerInputRef, ref])}
             style={[styles.input, stylesProp?.input]}
+            accessibilityLabel={Platform.OS === 'ios' ? label : undefined}
+            accessibilityLabelledBy={Platform.OS === 'android' ? id : undefined}
             underlineColorAndroid='transparent'
             autoComplete='off'
             autoCorrect={autoCorrect}

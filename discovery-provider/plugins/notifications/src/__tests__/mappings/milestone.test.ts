@@ -15,7 +15,7 @@ import {
   resetTests
 } from '../../utils/populateDB'
 
-import { RepostType, SaveType } from '../../types/dn'
+import { reposttype, savetype } from '../../types/dn'
 import {
   AppEmailNotification,
   FollowerMilestoneNotification,
@@ -133,7 +133,7 @@ describe('Milestone Notification', () => {
     await createReposts(
       processor.discoveryDB,
       new Array(10).fill(null).map((_, ind) => ({
-        repost_type: RepostType.track,
+        repost_type: reposttype.track,
         repost_item_id: 2,
         user_id: ind + 2
       }))
@@ -184,7 +184,7 @@ describe('Milestone Notification', () => {
     await createReposts(
       processor.discoveryDB,
       new Array(60).fill(null).map((_, ind) => ({
-        repost_type: RepostType.track,
+        repost_type: reposttype.track,
         repost_item_id: 2,
         user_id: ind + 2
       }))
@@ -230,7 +230,7 @@ describe('Milestone Notification', () => {
     await createReposts(
       processor.discoveryDB,
       new Array(10).fill(null).map((_, ind) => ({
-        repost_type: RepostType.playlist,
+        repost_type: reposttype.playlist,
         repost_item_id: 32,
         user_id: ind + 2
       }))
@@ -283,7 +283,7 @@ describe('Milestone Notification', () => {
     await createReposts(
       processor.discoveryDB,
       new Array(10).fill(null).map((_, ind) => ({
-        repost_type: RepostType.playlist,
+        repost_type: reposttype.playlist,
         repost_item_id: 32,
         user_id: ind + 2
       }))
@@ -327,7 +327,7 @@ describe('Milestone Notification', () => {
     await createSaves(
       processor.discoveryDB,
       new Array(10).fill(null).map((_, ind) => ({
-        save_type: SaveType.track,
+        save_type: savetype.track,
         save_item_id: 2,
         user_id: ind + 2
       }))
@@ -378,7 +378,7 @@ describe('Milestone Notification', () => {
     await createSaves(
       processor.discoveryDB,
       new Array(50).fill(null).map((_, ind) => ({
-        save_type: SaveType.track,
+        save_type: savetype.track,
         save_item_id: 2,
         user_id: ind + 2
       }))
@@ -424,7 +424,7 @@ describe('Milestone Notification', () => {
     await createSaves(
       processor.discoveryDB,
       new Array(10).fill(null).map((_, ind) => ({
-        save_type: SaveType.playlist,
+        save_type: savetype.playlist,
         save_item_id: 32,
         user_id: ind + 2
       }))
@@ -477,7 +477,7 @@ describe('Milestone Notification', () => {
     await createSaves(
       processor.discoveryDB,
       new Array(10).fill(null).map((_, ind) => ({
-        save_type: SaveType.playlist,
+        save_type: savetype.playlist,
         save_item_id: 32,
         user_id: ind + 2
       }))

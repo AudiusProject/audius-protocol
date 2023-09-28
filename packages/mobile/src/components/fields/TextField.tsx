@@ -35,6 +35,7 @@ export const TextField = (props: TextFieldProps) => {
     required,
     style,
     styles: stylesProp,
+    id,
     ...other
   } = props
 
@@ -55,6 +56,7 @@ export const TextField = (props: TextFieldProps) => {
         onChangeText={onChange(name)}
         onBlur={onBlur(name)}
         returnKeyType='done'
+        id={id ?? name}
         {...other}
       />
       {error && touched ? <InputErrorMessage message={error} /> : null}

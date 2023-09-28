@@ -27,7 +27,7 @@ const { getNotificationUsers, getNotificationEntity } = notificationsSelectors
 
 const messages = {
   title: 'Purchase Successful',
-  youJustPurchased: 'You just purchased ',
+  youJustPurchased: 'You just purchased',
   from: ' from ',
   exclamation: '!',
   twitterShare: (trackTitle: string, sellerHandle: string) =>
