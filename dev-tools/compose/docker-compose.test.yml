@@ -417,6 +417,9 @@ services:
       - notifications
 
   test-identity-service:
+    extends:
+      file: docker-compose.yml
+      service: identity-service
     build:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/packages/identity-service/Dockerfile
