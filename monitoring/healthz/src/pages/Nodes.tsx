@@ -140,12 +140,8 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   else if (typeof lastCleanupSize === 'number') totalMediorumUsed = lastCleanupSize
   else if (typeof lastRepairSize === 'number') totalMediorumUsed = lastRepairSize
 
-  // Storage used beyond files that mediorum is supposed to have (i.e., not files that have a hash where the node is in the top R rendezvous)
-  const extraMediorumUsed = typeof totalMediorumUsed === 'number' && typeof lastRepairSize === 'number' ? totalMediorumUsed - lastRepairSize : '?'
-
-  let totalMediorumSize: number | '?' = health.blobStorePrefix === 'file' ? mediorumDiskSize : '?'
-  if (totalMediorumSize === '?' && typeof lastCleanupSize === 'number') totalMediorumSize = lastCleanupSize
-  if (totalMediorumSize === '?' && typeof lastRepairSize === 'number') totalMediorumSize = lastRepairSize
+  // 4TB artificial limit for cloud backends
+  const totalMediorumSize = mediorumDiskSize && health.blobStorePrefix === 'file' ? mediorumDiskSize : 4000
 
   const isBehind = health.block_difference > 5 ? 'is-unhealthy' : ''
   const dbSize =
@@ -225,12 +221,11 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       {isContent && (
         <td className="whitespace-nowrap px-3 py-5 text-sm">
           <ProgressBar
-            validStorage={lastRepairSize}
-            extraStorage={extraMediorumUsed}
+            progress={totalMediorumUsed === '?' ? 0 : totalMediorumUsed}
             total={totalMediorumSize}
           />
           <div className="mt-3 flex">
-            {getStorageBackendIcon(health.blobStorePrefix)} <span className="w-[10px]" /> {health.blobStorePrefix === 'file' ? <span>{mediorumDiskSize - mediorumDiskUsed} GB</span> : <span>&infin;</span>} <span className="w-[4px]" /> available
+            {getStorageBackendIcon(health.blobStorePrefix)} <span className="w-[10px]" /> {totalMediorumUsed} / {totalMediorumSize} GB
           </div>
         </td>
       )}
@@ -323,18 +318,23 @@ const getStorageBackendIcon = (storageBackend: string) => {
   }
 }
 
-const ProgressBar = ({ validStorage, extraStorage, total }: { validStorage: number | '?'; extraStorage: number | '?'; total: number | '?' }) => {
-  const greenWidth = typeof validStorage === 'number' && typeof total === 'number' && (validStorage / total) * 100
-  const redWidth = typeof extraStorage === 'number' && typeof total === 'number' && (extraStorage / total) * 100
+const ProgressBar = ({ progress, total }: { progress: number; total: number }) => {
+  const progressPercent = (progress / Math.max(total, 4000)) * 100
+  // const missingCapacity = ((4000 - total) / 4000) * 100
 
   return (
     <div className="min-w-[200px] relative">
-      <div className="h-6 bg-gray-300 relative rounded-3xl">
-        {greenWidth !== false && <span className={`h-6 block absolute bg-green-400 ${greenWidth === 100 ? 'rounded-3xl' : 'rounded-l-3xl'}`} style={{ width: `${greenWidth}%` }}></span>}
-        {greenWidth !== false && redWidth !== false && <span className={`h-6 block absolute bg-orange-400 ${greenWidth + redWidth > 99.9 ? 'rounded-r-3xl' : ''}`} style={{ width: `${redWidth}%`, marginLeft: `${greenWidth}%` }}></span>}
-      </div>
-      <div className="absolute top-0 text-xs w-full h-full text-center flex items-center">
-        <span className="w-full">{validStorage} GB valid, {extraStorage} GB extra</span>
+      <div className="h-5 bg-gray-400 relative rounded-3xl">
+        <span className={`h-5 block absolute bg-purple-300 ${progressPercent >= 99.999 ? 'rounded-3xl' : 'rounded-l-3xl'}`} style={{ width: `${progressPercent}%` }}></span>
+        {/* {missingCapacity > 0 && missingCapacity > 2 &&
+          <span
+            className={`h-5 block absolute right-0 bg-repeat-y rounded-r-3xl`}
+            style={{
+              width: `${missingCapacity}%`,
+              marginLeft: `${progressPercent}%`,
+              backgroundImage: `repeating-linear-gradient(-45deg, gray, gray 2px, transparent 1px, transparent 6px)`
+            }}>
+          </span>} */}
       </div>
     </div>
   )
