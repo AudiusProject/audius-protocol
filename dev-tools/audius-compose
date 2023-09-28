@@ -69,9 +69,7 @@ def get_git_commit(protocol_dir):
 
 # TODO: Maybe clean up later to handle comms config (currently using explicit env vars in docker-compose.comms.yml)
 def generate_env(
-    protocol_dir,
-    discovery_provider_replicas,
-    elasticsearch_replicas,
+    protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod
 ):
     config = {}
     if (protocol_dir / "dev-tools/config.json").exists():
@@ -148,6 +146,11 @@ def generate_env(
         if key.startswith("AAO_WALLET_") and key.endswith("_ADDRESS"):
             aao_wallets.append(value)
     env["AAO_WALLET_ADDRESSES"] = ",".join(aao_wallets)
+
+    if prod:
+        env["IDENTITY_DOCKERCOMPOSE"] = "docker-compose.identity.prod.yml"
+    else:
+        env["IDENTITY_DOCKERCOMPOSE"] = "docker-compose.identity.yml"
 
     for key, value in config.get("extra-env", {}).items():
         env[key] = value
@@ -344,6 +347,12 @@ def load_env(protocol_dir, service, environment):
 )
 @click.option("--comms", is_flag=True, help="Bring up comms/dms containers")
 @click.option("-a", "--args", type=str, multiple=True)
+@click.option(
+    "-o",
+    "--prod",
+    is_flag=True,
+    help="Use production containers which have all dependencies built in",
+)
 @click.argument("services", nargs=-1)
 @click.pass_obj
 def up(
@@ -356,12 +365,11 @@ def up(
     pedalboard,
     comms,
     args,
+    prod,
     services,
 ):
     generate_env(
-        protocol_dir,
-        discovery_provider_replicas,
-        elasticsearch_replicas,
+        protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod
     )
 
     AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))

@@ -401,7 +401,7 @@ services:
 
   test-identity-service-migrations:
     extends:
-      file: docker-compose.yml
+      file: docker-compose.identity.prod.yml
       service: identity-service
     command: sh -c "npm run db:migrate"
     environment:
@@ -418,7 +418,7 @@ services:
 
   test-identity-service:
     extends:
-      file: docker-compose.yml
+      file: docker-compose.identity.prod.yml
       service: identity-service
     build:
       context: ${PROJECT_ROOT}
@@ -428,7 +428,6 @@ services:
     environment:
       isTestRun: 'true'
       environment: 'test'
-    volumes: []
     profiles:
       - tests
       - identity

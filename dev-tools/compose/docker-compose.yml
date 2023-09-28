@@ -65,13 +65,13 @@ services:
 
   identity-service-redis:
     extends:
-      file: docker-compose.identity.yml
+      file: ${IDENTITY_DOCKERCOMPOSE:-docker-compose.identity.yml}
       service: identity-service-redis
     <<: *common
 
   identity-service:
     extends:
-      file: docker-compose.identity.yml
+      file: ${IDENTITY_DOCKERCOMPOSE:-docker-compose.identity.yml}
       service: identity-service
     <<: *common
 

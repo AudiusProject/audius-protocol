@@ -38,4 +38,4 @@ steps:
         - run:
             name: audius-cmd test
             no_output_timeout: 15m
-            command: . ~/.profile; IDENTITY_DOCKERFILE=/packages/identity-service/Dockerfile audius-compose up && audius-cmd test
+            command: . ~/.profile; audius-compose up --prod && audius-cmd test
