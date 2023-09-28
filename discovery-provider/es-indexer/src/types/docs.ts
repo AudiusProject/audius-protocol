@@ -50,6 +50,7 @@ export type TrackDoc = TrackRow & {
   favorite_count: number
   play_count: any // todo: is it a string or number?  pg returns string
   downloadable: boolean
+  purchaseable: boolean
   user: EntityUserDoc
   duration: number
 }
