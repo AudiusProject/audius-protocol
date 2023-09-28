@@ -265,8 +265,20 @@ function _M.validate_nethermind_rpc_request ()
 
     local data = ngx.req.get_body_data()
     if data then
-        local body = cjson.decode(data)
-        is_ok = utils.starts_with(body.method, "eth_") or utils.starts_with(body.method, "net_")
+        local success, body = pcall(cjson.decode, data)
+        if not success then
+            -- Try decoding as an array
+            success, body = pcall(cjson.decode, "[" .. data .. "]")
+        end
+        if not success then
+            ngx.exit(400)
+        end
+
+        local is_array = type(body) == "table" and body[1] ~= nil
+        local method = is_array and body[1].method or body.method
+
+        -- Check if the method starts with "eth_" or "net_"
+        local is_ok = utils.starts_with(method, "eth_") or utils.starts_with(method, "net_")
 
         if not is_ok then
             ngx.exit(405)
