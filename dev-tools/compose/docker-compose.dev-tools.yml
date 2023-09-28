@@ -45,6 +45,8 @@ services:
       IDENTITY_SERVICE_URL: 'http://identity-service:7000'
       FALLBACK_CREATOR_NODE_URL: 'http://creator-node:4000' # this should choose a random cn everytime this is run
     volumes:
-      - ${PROJECT_ROOT}:/app
+      - ${PROJECT_ROOT}/packages/libs:/app/node_modules/@audius/sdk
+      - ../commands/src:/app/src
+      - ../commands/test:/app/test
     deploy:
       mode: global
