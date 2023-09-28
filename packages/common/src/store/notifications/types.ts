@@ -248,6 +248,7 @@ export type DiscoveryUSDCPurchaseNotificationAction = {
   seller_user_id: string
   buyer_user_id: string
   amount: StringUSDC
+  extra_amount: StringUSDC
 }
 
 export type TrendingRange = 'week' | 'month' | 'year'
@@ -892,6 +893,7 @@ export type USDCPurchaseSellerNotification = BaseNotification & {
   userIds: ID[]
   entityType: string
   amount: StringUSDC
+  extraAmount: StringUSDC
 }
 
 export type USDCPurchaseBuyerNotification = BaseNotification & {

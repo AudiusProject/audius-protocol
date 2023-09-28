@@ -100,7 +100,7 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
     const buyerHandle = users[this.buyerUserId]?.handle
     const sellerUsername = users[this.notificationReceiverUserId]?.name
     const sellerHandle = users[this.notificationReceiverUserId]?.handle
-    const price = this.amount
+    const price = this.totalAmount
 
     await sendBrowserNotification(
       isBrowserPushEnabled,
@@ -210,8 +210,7 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
     return {
       type: this.notification.type,
       users: [user],
-      // TODO : convert this amount w/ right precision
-      amount: this.amount,
+      amount: this.totalAmount,
       entity
     }
   }
