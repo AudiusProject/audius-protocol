@@ -1,6 +1,5 @@
 import type { PayExtraAmountPresetValues } from '@audius/common'
 import { AMOUNT_PRESET, CUSTOM_AMOUNT, PayExtraPreset } from '@audius/common'
-import { PriceField } from 'components/form-fields/PriceField'
 import { useField } from 'formik'
 import { View } from 'react-native'
 
@@ -8,8 +7,9 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 
 import { HarmonySelectablePill } from '../core/HarmonySelectablePill'
 import { Text } from '../core/Text'
+import { PriceField } from '../fields/PriceField'
 
-const useStyles = makeStyles(({ spacing, palette, typography }) => ({
+const useStyles = makeStyles(({ spacing }) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
@@ -50,6 +50,7 @@ export const PayExtraFormSection = ({
   amountPresets
 }: PayExtraFormSectionProps) => {
   const [{ value: preset }, , { setValue: setPreset }] = useField(AMOUNT_PRESET)
+  const [{ value: customAmount }] = useField(CUSTOM_AMOUNT)
   const styles = useStyles()
 
   const handleClickPreset = (newPreset: PayExtraPreset) => {
@@ -63,18 +64,21 @@ export const PayExtraFormSection = ({
       <View style={styles.pillContainer}>
         <View style={styles.presetContainer}>
           <HarmonySelectablePill
+            size='large'
             style={styles.pill}
             isSelected={preset === PayExtraPreset.LOW}
             label={formatPillAmount(amountPresets[PayExtraPreset.LOW])}
             onPress={() => handleClickPreset(PayExtraPreset.LOW)}
           />
           <HarmonySelectablePill
+            size='large'
             style={styles.pill}
             isSelected={preset === PayExtraPreset.MEDIUM}
             label={formatPillAmount(amountPresets[PayExtraPreset.MEDIUM])}
             onPress={() => handleClickPreset(PayExtraPreset.MEDIUM)}
           />
           <HarmonySelectablePill
+            size='large'
             style={styles.pill}
             isSelected={preset === PayExtraPreset.HIGH}
             label={formatPillAmount(amountPresets[PayExtraPreset.HIGH])}
@@ -82,19 +86,22 @@ export const PayExtraFormSection = ({
           />
         </View>
         <HarmonySelectablePill
+          size='large'
           style={styles.pill}
           isSelected={preset === PayExtraPreset.CUSTOM}
           label={messages.customAmount}
           onPress={() => handleClickPreset(PayExtraPreset.CUSTOM)}
         />
       </View>
-      {/* {preset === PayExtraPreset.CUSTOM ? (
+      {preset === PayExtraPreset.CUSTOM ? (
         <PriceField
-          placeholder={messages.placeholder}
-          label={messages.customAmount}
           name={CUSTOM_AMOUNT}
+          label={messages.customAmount}
+          value={String(customAmount)}
+          placeholder={messages.placeholder}
+          noGutter
         />
-      ) : null} */}
+      ) : null}
     </View>
   )
 }

@@ -29,11 +29,7 @@ import {
   ADDRESS,
   AMOUNT
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
-import {
-  PRECISION,
-  onTokenInputBlur,
-  onTokenInputChange
-} from 'utils/tokenInput'
+import { PRECISION, onTokenInputBlur, onTokenInputChange } from 'utils/decimal'
 
 import styles from './EnterTransferDetails.module.css'
 import { Hint } from './Hint'

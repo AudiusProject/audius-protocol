@@ -17,7 +17,7 @@ import {
   ADDRESS,
   AMOUNT
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
-import { toHumanReadable } from 'utils/tokenInput'
+import { toHumanReadable } from 'utils/decimal'
 
 import styles from './Error.module.css'
 import { TextRow } from './TextRow'

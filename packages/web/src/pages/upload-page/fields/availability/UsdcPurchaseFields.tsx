@@ -17,7 +17,7 @@ import {
   onTokenInputBlur,
   onTokenInputChange,
   toHumanReadable
-} from 'utils/tokenInput'
+} from 'utils/decimal'
 
 import { PREVIEW, PRICE } from '../AccessAndSaleField'
 

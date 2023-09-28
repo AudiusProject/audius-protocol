@@ -19,7 +19,7 @@ import {
   AMOUNT,
   CONFIRM
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
-import { toHumanReadable } from 'utils/tokenInput'
+import { toHumanReadable } from 'utils/decimal'
 
 import styles from './ConfirmTransferDetails.module.css'
 import { Hint } from './Hint'
