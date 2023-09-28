@@ -44,6 +44,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         is_delete: { type: 'boolean' },
         is_unlisted: { type: 'boolean' },
         downloadable: { type: 'boolean' },
+        purchaseable: { type: 'boolean' },
 
         // saves
         saved_by: { type: 'keyword' },
@@ -94,6 +95,10 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
     -- etl tracks
     select 
       tracks.*,
+      case when "premium_conditions"->>'usdc_purchase'
+        is not null then true
+        else false
+      end as purchaseable,
       (tracks.download->>'is_downloadable')::boolean as downloadable,
       coalesce(aggregate_plays.count, 0) as play_count,
   

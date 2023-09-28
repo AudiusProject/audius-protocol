@@ -28,6 +28,7 @@ def search_es_full(args: dict):
     search_type = args.get("kind", "all")
     only_downloadable = args.get("only_downloadable")
     is_auto_complete = args.get("is_auto_complete")
+    include_purchaseable = args.get("include_purchaseable")
     do_tracks = search_type == "all" or search_type == "tracks"
     do_users = search_type == "all" or search_type == "users"
     do_playlists = search_type == "all" or search_type == "playlists"
@@ -50,6 +51,7 @@ def search_es_full(args: dict):
                     current_user_id=current_user_id,
                     must_saved=False,
                     only_downloadable=only_downloadable,
+                    include_purchaseable=include_purchaseable,
                 ),
             ]
         )
@@ -64,6 +66,7 @@ def search_es_full(args: dict):
                         current_user_id=current_user_id,
                         must_saved=True,
                         only_downloadable=only_downloadable,
+                        include_purchaseable=include_purchaseable,
                     ),
                 ]
             )
@@ -369,6 +372,7 @@ def track_dsl(
     current_user_id,
     must_saved=False,
     only_downloadable=False,
+    include_purchaseable=False,
 ):
     dsl = {
         "must": [
@@ -394,6 +398,9 @@ def track_dsl(
 
     if only_downloadable:
         dsl["must"].append({"term": {"downloadable": {"value": True}}})
+
+    if not include_purchaseable:
+        dsl["must_not"].append({"term": {"purchaseable": {"value": True}}})
 
     personalize_dsl(dsl, current_user_id, must_saved)
     return default_function_score(dsl, "repost_count")
