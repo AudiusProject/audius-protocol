@@ -14,7 +14,7 @@ services:
   identity-service:
     build:
       context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/packages/identity-service/Dockerfile.dev
+      dockerfile: ${PROJECT_ROOT}${IDENTITY_DOCKERFILE:/packages/identity-service/Dockerfile.dev}
       args:
         git_sha: '${GIT_COMMIT}'
     ports:
