@@ -29,6 +29,7 @@ def get_trending(args, strategy):
         "exclude_premium": args.get(
             "exclude_premium", SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS
         ),
+        "usdc_purchase_only": False,
     }
 
     # decode and add user_id if necessary
