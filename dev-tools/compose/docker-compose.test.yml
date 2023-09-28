@@ -428,6 +428,7 @@ services:
     environment:
       isTestRun: 'true'
       environment: 'test'
+    volumes: []
     profiles:
       - tests
       - identity

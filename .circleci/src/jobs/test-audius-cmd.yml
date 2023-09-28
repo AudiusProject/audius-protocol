@@ -35,7 +35,6 @@ steps:
       steps:
         - gcp-checkout
         - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
-        - run: npm ci
         - run:
             name: audius-cmd test
             no_output_timeout: 15m

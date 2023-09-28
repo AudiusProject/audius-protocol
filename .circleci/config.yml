@@ -119,7 +119,7 @@ jobs:
             mv /tmp/.version.json discovery-provider/.version.json
             git add discovery-provider/.version.json
 
-            GIT_DIFF=$(git log --pretty=format:'%an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum discovery-provider identity-service comms | sed 's/"/\\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/=DELIM@/g')
+            GIT_DIFF=$(git log --pretty=format:'%an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum discovery-provider packages/identity-service comms | sed 's/"/\\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/=DELIM@/g')
             git commit -m "Bump version to $NEW_VERSION"
 
             git branch "release-v$NEW_VERSION"
