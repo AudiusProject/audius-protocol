@@ -1,6 +1,6 @@
 FROM node:18-alpine AS base
 
-RUN apk add --no-cache ffmpeg
+RUN apk add --no-cache ffmpeg bash
 RUN apk update
 
 WORKDIR /app/dev-tools/commands
