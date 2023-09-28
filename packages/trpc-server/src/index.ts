@@ -11,6 +11,8 @@ import {
 import { userRouter } from './routers/user-router'
 import { createContext, publicProcedure, router } from './trpc'
 import { meRouter } from './routers/me-router'
+import { trackRouter } from './routers/track-router'
+import { playlistRouter } from './routers/playlist-router'
 
 const app = express()
 app.use(cors())
@@ -19,6 +21,8 @@ app.use(cors())
 const appRouter = router({
   me: meRouter,
   users: userRouter,
+  tracks: trackRouter,
+  playlists: playlistRouter,
 
   version: publicProcedure.query(() => ({
     version: '0.0.2'

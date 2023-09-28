@@ -41,5 +41,5 @@ export function storeCurrentUserId(val: string) {
 
 export function loadCurrentUserId() {
   const val = localStorage.getItem('current_user_id')
-  return val || '1'
+  return val || ''
 }
