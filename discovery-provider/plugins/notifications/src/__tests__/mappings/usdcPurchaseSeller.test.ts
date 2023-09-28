@@ -17,9 +17,9 @@ import {
 
 import { AppEmailNotification } from '../../types/notifications'
 import { renderEmail } from '../../email/notifications/renderEmail'
-import { RepostType } from '../../types/dn'
+import { usdc_purchase_content_type } from '../../types/dn'
 
-describe('Repost Notification', () => {
+describe('USDC Purchase Seller', () => {
   let processor: Processor
 
   const sendPushNotificationSpy = jest
@@ -33,6 +33,10 @@ describe('Repost Notification', () => {
   const sendBrowserNotificationSpy = jest
     .spyOn(web, 'sendBrowserNotification')
     .mockImplementation(() => Promise.resolve(3))
+
+  const sendTransactionalEmailSpy = jest
+    .spyOn(sendEmailFns, 'sendTransactionalEmail')
+    .mockImplementation(() => Promise.resolve(true))
 
   beforeEach(async () => {
     const setup = await setupTest()
@@ -50,9 +54,10 @@ describe('Repost Notification', () => {
       {
         seller_user_id: 1,
         buyer_user_id: 2,
-        content_type: RepostType.track,
+        content_type: usdc_purchase_content_type.track,
         content_id: 10,
-        amount: 1000000
+        amount: '1000000',
+        extra_amount: '0'
       }
     ])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
@@ -105,6 +110,11 @@ describe('Repost Notification', () => {
       title,
       body
     )
+    expect(sendTransactionalEmailSpy).toHaveBeenCalledWith({
+      email: 'user_1@gmail.com',
+      html: expect.anything(),
+      subject: 'Your Track Has Been Purchased'
+    })
   })
 
   test('Render a single email', async () => {
@@ -114,9 +124,10 @@ describe('Repost Notification', () => {
       {
         seller_user_id: 1,
         buyer_user_id: 2,
-        content_type: RepostType.track,
+        content_type: usdc_purchase_content_type.track,
         content_id: 10,
-        amount: 1000000
+        amount: '1000000',
+        extra_amount: '0'
       }
     ])
 
@@ -130,7 +141,8 @@ describe('Repost Notification', () => {
         data: {
           buyer_user_id: 2,
           seller_user_id: 1,
-          amount: 1000000,
+          amount: '1000000',
+          extra_amount: '0',
           content_id: 10
         },
         user_ids: [1],

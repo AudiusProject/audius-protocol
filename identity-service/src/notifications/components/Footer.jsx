@@ -17,7 +17,7 @@ const InstagramLink = () => (
 )
 
 const TwitterLink = () => (
-  <a href='https://twitter.com/AudiusProject'>
+  <a href='https://twitter.com/audius'>
     <img
       src='https://download.audius.co/static-resources/email/iconTwitter.png'
       alt='twitter'
@@ -72,7 +72,11 @@ const Unsubscribe = () => (
     }}
   >
     {'Tired of seeing these emails? '}
-    <a href='https://audius.co/settings' class='utilityLink' style={{ textDecorationColor: '#858199' }}>
+    <a
+      href='https://audius.co/settings'
+      class='utilityLink'
+      style={{ textDecorationColor: '#858199' }}
+    >
       <span style={{ color: '#858199' }}>
         {'Update your notification preferences'}
       </span>
@@ -83,16 +87,28 @@ const Unsubscribe = () => (
 
 const Footer = (props) => {
   return (
-    <table border='0' cellpadding='0' cellspacing='0' style={{ margin: '0px auto', height: 'auto', paddingBotton: '25px' }}>
+    <table
+      border='0'
+      cellpadding='0'
+      cellspacing='0'
+      style={{ margin: '0px auto', height: 'auto', paddingBotton: '25px' }}
+    >
       <tr>
-        <td valign='center' id='socialBar' style={{ textAlign: 'center', padding: '25px 0px 20px' }}>
+        <td
+          valign='center'
+          id='socialBar'
+          style={{ textAlign: 'center', padding: '25px 0px 20px' }}
+        >
           <InstagramLink />
           <TwitterLink />
           <DiscordLink />
         </td>
       </tr>
       <tr>
-        <td valign='center' style={{ textAlign: 'center', padding: '0px 0px 8px', margin: '0px' }}>
+        <td
+          valign='center'
+          style={{ textAlign: 'center', padding: '0px 0px 8px', margin: '0px' }}
+        >
           <MadeWithLove />
         </td>
       </tr>
@@ -110,10 +126,7 @@ const Footer = (props) => {
         </td>
       </tr>
       <tr>
-        <td
-          valign='top'
-          id='utilityBar'
-        >
+        <td valign='top' id='utilityBar'>
           <Unsubscribe />
         </td>
       </tr>

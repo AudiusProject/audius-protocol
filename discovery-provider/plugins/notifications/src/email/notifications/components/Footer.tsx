@@ -17,7 +17,7 @@ const InstagramLink = () => (
 )
 
 const TwitterLink = () => (
-  <a href="https://twitter.com/AudiusProject">
+  <a href="https://twitter.com/audius">
     <img
       src="https://download.audius.co/static-resources/email/iconTwitter.png"
       alt="twitter"

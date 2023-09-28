@@ -23,7 +23,7 @@ type SaveOfRepostNotificationRow = Omit<NotificationRow, 'data'> & {
 export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> {
   receiverUserId: number
   saveOfRepostItemId: number
-  saveOfRepostType: EntityType
+  saveOfreposttype: EntityType
   saveOfRepostUserId: number
 
   constructor(
@@ -35,7 +35,7 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
     const userIds: number[] = this.notification.user_ids!
     this.receiverUserId = userIds[0]
     this.saveOfRepostItemId = this.notification.data.save_of_repost_item_id
-    this.saveOfRepostType = this.notification.data.type
+    this.saveOfreposttype = this.notification.data.type
     this.saveOfRepostUserId = this.notification.data.user_id
   }
 
@@ -76,7 +76,7 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
     let entityName
     const entityId = this.saveOfRepostItemId
 
-    if (this.saveOfRepostType === EntityType.Track) {
+    if (this.saveOfreposttype === EntityType.Track) {
       const res: Array<{ track_id: number; title: string }> = await this.dnDB
         .select('track_id', 'title')
         .from<TrackRow>('tracks')
@@ -191,7 +191,7 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
   getResourcesForEmail(): ResourceIds {
     const tracks = new Set<number>()
     const playlists = new Set<number>()
-    if (this.saveOfRepostType === EntityType.Track) {
+    if (this.saveOfreposttype === EntityType.Track) {
       tracks.add(this.saveOfRepostItemId)
     } else {
       playlists.add(this.saveOfRepostItemId)
@@ -207,7 +207,7 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
   formatEmailProps(resources: Resources) {
     const user = resources.users[this.saveOfRepostUserId]
     let entity
-    if (this.saveOfRepostType === EntityType.Track) {
+    if (this.saveOfreposttype === EntityType.Track) {
       const track = resources.tracks[this.saveOfRepostItemId]
       entity = {
         type: EntityType.Track,

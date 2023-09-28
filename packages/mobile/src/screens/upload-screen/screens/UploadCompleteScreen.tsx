@@ -39,7 +39,7 @@ const messages = {
   complete: 'Upload Complete',
   share: 'Spread the word and share it with your fans!',
   twitterShareText: (title: string) =>
-    `Check out my new track, ${title} on @AudiusProject #Audius`,
+    `Check out my new track, ${title} on @audius #Audius`,
   copyLink: 'Copy Link',
   linkCopied: 'Link Copied!',
   shareToast: 'Copied Link to Track',

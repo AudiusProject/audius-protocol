@@ -243,7 +243,7 @@ function* doStartPurchaseContentFlow({
     yield* put(purchasesApiActions.resetGetPurchases!())
 
     // finish
-    yield* put(purchaseConfirmed())
+    yield* put(purchaseConfirmed({ contentId, contentType }))
 
     yield* call(
       track,

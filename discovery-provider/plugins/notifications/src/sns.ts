@@ -117,7 +117,9 @@ type Device = {
 }
 type Message = { title: string; body: string; data: object }
 
-export type SendPushNotificationResult<T extends boolean> = T extends true ? { endpointDisabled: true, arn: string } : { endpointDisabled: false }
+export type SendPushNotificationResult<T extends boolean> = T extends true
+  ? { endpointDisabled: true; arn: string }
+  : { endpointDisabled: false }
 
 export const sendPushNotification = async (
   device: Device,
@@ -143,15 +145,13 @@ export const sendPushNotification = async (
       })
     }
   } catch (e) {
-      if (
-        e &&
-        e.code &&
-        (e.code === 'EndpointDisabled' || e.code === 'InvalidParameter')
-      ) {
-        return  { endpointDisabled: true, arn: device.targetARN }
+    if (
+      e &&
+      e.code &&
+      (e.code === 'EndpointDisabled' || e.code === 'InvalidParameter')
+    ) {
+      return { endpointDisabled: true, arn: device.targetARN }
     }
   }
-return { endpointDisabled: false }
+  return { endpointDisabled: false }
 }
-
-

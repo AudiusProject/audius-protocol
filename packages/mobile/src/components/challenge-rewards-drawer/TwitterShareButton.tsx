@@ -28,7 +28,7 @@ const renderIcon = () => (
 const messages = {
   buttonTitleFriends: 'Share Invite With Your Friends',
   buttonTitleFans: 'Share Invite With Your Fans',
-  twitterCopy: `Come support me on @audiusproject! Use my link and we both earn $AUDIO when you sign up.\n\n #audius #audiorewards\n\n`
+  twitterCopy: `Come support me on @audius! Use my link and we both earn $AUDIO when you sign up.\n\n #audius #audiorewards\n\n`
 }
 
 export const TwitterShareButton = ({

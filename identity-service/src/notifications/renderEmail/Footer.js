@@ -35,7 +35,7 @@ const TwitterLink = function TwitterLink() {
   return /* #__PURE__ */ _react.default.createElement(
     'a',
     {
-      href: 'https://twitter.com/AudiusProject'
+      href: 'https://twitter.com/audius'
     },
     /* #__PURE__ */ _react.default.createElement('img', {
       src: 'https://download.audius.co/static-resources/email/iconTwitter.png',

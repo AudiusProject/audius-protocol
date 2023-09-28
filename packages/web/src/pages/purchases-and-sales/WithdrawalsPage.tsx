@@ -180,6 +180,7 @@ const RenderWithdrawalsPage = () => {
           variant={HarmonyButtonType.SECONDARY}
           size={HarmonyButtonSize.SMALL}
           iconLeft={IconDownload}
+          disabled={isLoading || isEmpty}
         />
       }
     />

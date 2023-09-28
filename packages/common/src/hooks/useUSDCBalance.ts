@@ -7,6 +7,7 @@ import { Status } from 'models/Status'
 import { BNUSDC, StringUSDC } from 'models/Wallet'
 import { getUserbankAccountInfo } from 'services/index'
 import { useAppContext } from 'src/context/appContext'
+import { getRecoveryStatus } from 'store/buy-usdc/selectors'
 import { getUSDCBalance } from 'store/wallet/selectors'
 import { setUSDCBalance } from 'store/wallet/slice'
 
@@ -22,7 +23,8 @@ export const useUSDCBalance = () => {
   const { audiusBackend } = useAppContext()
   const dispatch = useDispatch()
 
-  const [status, setStatus] = useState(Status.IDLE)
+  const [balanceStatus, setBalanceStatus] = useState(Status.IDLE)
+  const recoveryStatus = useSelector(getRecoveryStatus)
   const data = useSelector(getUSDCBalance)
   const setData = useCallback(
     (balance: BNUSDC) => {
@@ -31,22 +33,23 @@ export const useUSDCBalance = () => {
     [dispatch]
   )
 
-  useEffect(() => {
-    const fetch = async () => {
-      setStatus(Status.LOADING)
-      try {
-        const account = await getUserbankAccountInfo(audiusBackend, {
-          mint: 'usdc'
-        })
-        const balance = (account?.amount ?? new BN(0)) as BNUSDC
-        setData(balance)
-        setStatus(Status.SUCCESS)
-      } catch (e) {
-        setStatus(Status.ERROR)
-      }
+  const refresh = useCallback(async () => {
+    setBalanceStatus(Status.LOADING)
+    try {
+      const account = await getUserbankAccountInfo(audiusBackend, {
+        mint: 'usdc'
+      })
+      const balance = (account?.amount ?? new BN(0)) as BNUSDC
+      setData(balance)
+      setBalanceStatus(Status.SUCCESS)
+    } catch (e) {
+      setBalanceStatus(Status.ERROR)
     }
-    fetch()
   }, [audiusBackend, setData])
 
-  return { status, data }
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+
+  return { balanceStatus, recoveryStatus, data, refresh }
 }

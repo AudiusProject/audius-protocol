@@ -21,13 +21,14 @@ begin
         new.created_at,
         'usdc_withdrawal',
         users_row.user_id,
-        'usdc_withdrawal:' || users_row.user_id,
+        'usdc_withdrawal:' || users_row.user_id || 'signature:' || new.signature,
         json_build_object(
           'user_id', users_row.user_id,
           'user_bank', new.user_bank,
           'signature', new.signature,
           'change', new.change,
-          'balance', new.balance
+          'balance', new.balance,
+          'receiver_account', new.tx_metadata
         )
       )
       on conflict do nothing;

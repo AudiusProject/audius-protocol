@@ -1,0 +1,28 @@
+/**
+ * Audius Sizing/Spacing Options
+ *
+ * We operate on a 4px unit grid. CSS files should prefer to use sizing variables
+ * defined in this file rather than establishing their own sizings, particularly
+ * for margin/padding spacing.
+ */
+:root,
+root {
+  --unit: 4px;
+
+  --unit-1: 4px;
+  --unit-2: 8px;
+  --unit-3: 12px;
+  --unit-4: 16px;
+  --unit-5: 24px;
+  --unit-6: 32px;
+  --unit-7: 40px;
+  --unit-8: 48px;
+  --unit-9: 56px;
+  --unit-10: 64px;
+  --unit-11: 72px;
+  --unit-12: 80px;
+  --unit-13: 96px;
+  --unit-14: 112px;
+  --unit-15: 144px;
+  --unit-16: 160px;
+}

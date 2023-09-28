@@ -2,7 +2,7 @@ import express, { Express } from 'express'
 
 import { Server as HttpServer } from 'http'
 import { router as healthCheckRouter } from './routes/healthCheck'
-import { router as memStatsRouter } from "./routes/memStats"
+import { router as memStatsRouter } from './routes/memStats'
 
 const DEFAULT_PORT = 6000
 

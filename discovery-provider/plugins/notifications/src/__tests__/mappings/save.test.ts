@@ -15,7 +15,7 @@ import {
 
 import { AppEmailNotification } from '../../types/notifications'
 import { renderEmail } from '../../email/notifications/renderEmail'
-import { SaveType } from '../../types/dn'
+import { savetype } from '../../types/dn'
 import { EntityType } from '../../email/notifications/types'
 
 describe('Save Notification', () => {
@@ -41,7 +41,7 @@ describe('Save Notification', () => {
       {
         user_id: 2,
         save_item_id: 10,
-        save_type: SaveType.track
+        save_type: savetype.track
       }
     ])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
@@ -79,7 +79,7 @@ describe('Save Notification', () => {
       {
         user_id: 2,
         save_item_id: 20,
-        save_type: SaveType.playlist
+        save_type: savetype.playlist
       }
     ])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
@@ -117,7 +117,7 @@ describe('Save Notification', () => {
       {
         user_id: 2,
         save_item_id: 30,
-        save_type: SaveType.playlist
+        save_type: savetype.playlist
       }
     ])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
@@ -153,7 +153,7 @@ describe('Save Notification', () => {
       {
         user_id: 2,
         save_item_id: 10,
-        save_type: SaveType.track
+        save_type: savetype.track
       }
     ])
 
@@ -196,10 +196,10 @@ describe('Save Notification', () => {
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
 
     await createSaves(processor.discoveryDB, [
-      { user_id: 2, save_item_id: 10, save_type: SaveType.track },
-      { user_id: 3, save_item_id: 10, save_type: SaveType.track },
-      { user_id: 4, save_item_id: 10, save_type: SaveType.track },
-      { user_id: 5, save_item_id: 10, save_type: SaveType.track }
+      { user_id: 2, save_item_id: 10, save_type: savetype.track },
+      { user_id: 3, save_item_id: 10, save_type: savetype.track },
+      { user_id: 4, save_item_id: 10, save_type: savetype.track },
+      { user_id: 5, save_item_id: 10, save_type: savetype.track }
     ])
 
     const notifications: AppEmailNotification[] = Array.from(

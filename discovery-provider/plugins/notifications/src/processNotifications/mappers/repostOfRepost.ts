@@ -23,7 +23,7 @@ type RepostOfRepostNotificationRow = Omit<NotificationRow, 'data'> & {
 export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationRow> {
   receiverUserId: number
   repostOfRepostItemId: number
-  repostOfRepostType: EntityType
+  repostOfreposttype: EntityType
   repostOfRepostUserId: number
 
   constructor(
@@ -35,7 +35,7 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
     const userIds: number[] = this.notification.user_ids!
     this.receiverUserId = userIds[0]
     this.repostOfRepostItemId = this.notification.data.repost_of_repost_item_id
-    this.repostOfRepostType = this.notification.data.type
+    this.repostOfreposttype = this.notification.data.type
     this.repostOfRepostUserId = this.notification.data.user_id
   }
 
@@ -76,7 +76,7 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
     let entityName
     const entityId = this.repostOfRepostItemId
 
-    if (this.repostOfRepostType === EntityType.Track) {
+    if (this.repostOfreposttype === EntityType.Track) {
       const res: Array<{ track_id: number; title: string }> = await this.dnDB
         .select('track_id', 'title')
         .from<TrackRow>('tracks')
@@ -191,7 +191,7 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
   getResourcesForEmail(): ResourceIds {
     const tracks = new Set<number>()
     const playlists = new Set<number>()
-    if (this.repostOfRepostType === EntityType.Track) {
+    if (this.repostOfreposttype === EntityType.Track) {
       tracks.add(this.repostOfRepostItemId)
     } else {
       playlists.add(this.repostOfRepostItemId)
@@ -207,7 +207,7 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
   formatEmailProps(resources: Resources) {
     const user = resources.users[this.repostOfRepostUserId]
     let entity
-    if (this.repostOfRepostType === EntityType.Track) {
+    if (this.repostOfreposttype === EntityType.Track) {
       const track = resources.tracks[this.repostOfRepostItemId]
       entity = {
         type: EntityType.Track,

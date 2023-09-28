@@ -16,7 +16,9 @@ import {
   RewardManagerTxRow,
   SubscriptionRow,
   SupporterRankUpRow,
-  USDCPurchaseRow
+  UsdcPurchaseRow,
+  UsdcTransactionsHistoryRow,
+  UsdcUserBankAccountRow
 } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
 import {
@@ -335,10 +337,10 @@ export const insertFollows = async (db: Knex, follows: CreateFollow[]) => {
 }
 
 type CreateUSDCPurchase = Pick<
-  USDCPurchaseRow,
+  UsdcPurchaseRow,
   'buyer_user_id' | 'seller_user_id'
 > &
-  Partial<USDCPurchaseRow>
+  Partial<UsdcPurchaseRow>
 export const createUSDCPurchase = async (
   db: Knex,
   usdcPurchases: CreateUSDCPurchase[]
@@ -355,6 +357,25 @@ export const createUSDCPurchase = async (
     .into('usdc_purchases')
 }
 
+type CreateUSDCTransaction = Pick<UsdcTransactionsHistoryRow, 'user_bank'> &
+  Partial<UsdcTransactionsHistoryRow>
+export const CreateUSDCTransaction = async (
+  db: Knex,
+  usdcTransactions: CreateUSDCTransaction[]
+) => {
+  await db
+    .insert(
+      usdcTransactions.map((usdcTransaction) => ({
+        created_at: new Date(Date.now()),
+        transaction_created_at: new Date(Date.now()),
+        slot: '4',
+        signature: 'fake_signature',
+        ...usdcTransaction
+      }))
+    )
+    .into('usdc_transactions_history')
+}
+
 type CreateUserBank = Pick<
   UserBankAccountRow,
   'signature' | 'ethereum_address' | 'bank_account'
@@ -363,12 +384,31 @@ type CreateUserBank = Pick<
 export const createUserBank = async (db: Knex, userBanks: CreateUserBank[]) => {
   await db
     .insert(
-      userBanks.map((userBlock) => ({
+      userBanks.map((userBank) => ({
         created_at: new Date(Date.now()),
-        ...userBlock
+        ...userBank
       }))
     )
     .into('user_bank_accounts')
+}
+
+type CreateUSDCUserBank = Pick<
+  UsdcUserBankAccountRow,
+  'signature' | 'ethereum_address' | 'bank_account'
+> &
+  Partial<UsdcUserBankAccountRow>
+export const createUSDCUserBank = async (
+  db: Knex,
+  usdcUserbanks: CreateUSDCUserBank[]
+) => {
+  await db
+    .insert(
+      usdcUserbanks.map((userBank) => ({
+        created_at: new Date(Date.now()),
+        ...userBank
+      }))
+    )
+    .into('usdc_user_bank_accounts')
 }
 
 type CreateUserBankTx = Partial<UserBankTxRow>

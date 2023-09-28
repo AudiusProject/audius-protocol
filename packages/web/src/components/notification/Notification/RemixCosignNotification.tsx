@@ -30,7 +30,7 @@ const messages = {
   title: 'Remix Co-sign',
   cosign: 'Co-signed your Remix of',
   shareTwitterText: (trackTitle: string, handle: string) =>
-    `My remix of ${trackTitle} was Co-Signed by ${handle} on @AudiusProject #Audius`
+    `My remix of ${trackTitle} was Co-Signed by ${handle} on @audius #Audius`
 }
 
 type RemixCosignNotificationProps = {
