@@ -56,7 +56,7 @@ export const prepareLoaders = (myId: number | undefined) => ({
     }
   ),
 
-  actionLoader: function (kind: string) {
+  actionLoaderForKind: function (kind: string) {
     return new DataLoader<number, TrackRelationResult>(async (ids) => {
       // so much save / repost + playlist / album pain
       // action_log fixes this

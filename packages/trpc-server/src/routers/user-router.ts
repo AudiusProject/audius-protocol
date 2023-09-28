@@ -1,13 +1,13 @@
+import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import {
-  selectTracksCamel,
   selectPlaylistsCamel,
+  selectTracksCamel,
   selectUsersCamel,
   sql
 } from '../db'
-import { UserRow, AggregateUserRow, AggregateUserTipRow } from '../db-tables'
+import { AggregateUserTipRow } from '../db-tables'
 import { publicProcedure, router } from '../trpc'
-import { TRPCError } from '@trpc/server'
 
 export const userRouter = router({
   get: publicProcedure.input(z.string()).query(async ({ ctx, input }) => {
@@ -20,27 +20,6 @@ export const userRouter = router({
     }
     return user
   }),
-
-  getMany: publicProcedure
-    .meta({
-      openapi: {
-        method: 'GET',
-        path: '/users/getMany',
-        tags: ['users'],
-        summary: 'Get users by id'
-      }
-    })
-    .input(
-      z.object({
-        id: z.string()
-      })
-    )
-    .output(z.array(z.any()))
-    .query(async ({ ctx, input }) => {
-      const ids = input.id.split(',').map((x) => parseInt(x) || 0)
-      const hits = await ctx.loaders.userLoader.loadMany(ids)
-      return hits
-    }),
 
   getTrackIds: publicProcedure.input(z.number()).query(async ({ input }) => {
     return selectTracksCamel({
@@ -64,7 +43,9 @@ export const userRouter = router({
       return rows.map((r) => r.playlistId)
     }),
 
-  // todo: should not return full User records
+  // todo: should be a "resolve to ID"
+  // instead of returning full object, return ID that client can then fetch
+  // for cache coherence
   byHandle: publicProcedure.input(z.string()).query(async ({ input }) => {
     const rows = await selectUsersCamel({
       handle: input

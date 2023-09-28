@@ -148,9 +148,12 @@ function FollowedIndicator({ theirId }: UserRelationshipParams) {
 
 function Track({ id }: { id: string }) {
   const { data: track } = trpc.tracks.get.useQuery(id)
-  const { data: user } = trpc.users.get.useQuery(track?.ownerId.toString()!, {
-    enabled: !!track?.ownerId
-  })
+  const { data: user } = trpc.users.get.useQuery(
+    track?.ownerId.toString() || '',
+    {
+      enabled: !!track?.ownerId
+    }
+  )
   if (!track || !user) return null
   return (
     <div style={cardStyle}>
@@ -175,14 +178,14 @@ function Track({ id }: { id: string }) {
 function Playlist({ id }: { id: string }) {
   const { data: playlist } = trpc.playlists.get.useQuery(id)
   const { data: user } = trpc.users.get.useQuery(
-    playlist?.playlistOwnerId.toString()!,
+    playlist?.playlistOwnerId.toString() || '',
     {
       enabled: !!playlist?.playlistOwnerId
     }
   )
 
   // get track ids
-  let trackIds = useMemo(() => playlistTrackIds(playlist), [playlist])
+  const trackIds = useMemo(() => playlistTrackIds(playlist), [playlist])
 
   if (!playlist || !user) return null
   return (
@@ -221,9 +224,12 @@ function Playlist({ id }: { id: string }) {
 
 function PlaylistTrack({ idx, id }: { idx: number; id: string }) {
   const { data: track } = trpc.tracks.get.useQuery(id)
-  const { data: user } = trpc.users.get.useQuery(track?.ownerId.toString()!, {
-    enabled: !!track?.ownerId
-  })
+  const { data: user } = trpc.users.get.useQuery(
+    track?.ownerId.toString() || '',
+    {
+      enabled: !!track?.ownerId
+    }
+  )
   if (!track || !user) return null
   return (
     <div

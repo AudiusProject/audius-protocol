@@ -16,6 +16,8 @@ export const meRouter = router({
       })
     )
     .query(async ({ ctx, input }) => {
-      return ctx.loaders.actionLoader(input.kind).load(parseInt(input.id))
+      return ctx.loaders
+        .actionLoaderForKind(input.kind)
+        .load(parseInt(input.id))
     })
 })
