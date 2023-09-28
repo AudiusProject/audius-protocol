@@ -1,23 +1,49 @@
-import { Button, ButtonType } from '@audius/stems'
-import { Link } from 'react-router-dom'
+import { useCallback } from 'react'
 
-import { SIGN_UP_PAGE } from 'utils/route'
+import { HarmonyButton } from '@audius/stems'
+import { Form, Formik } from 'formik'
+import { useDispatch } from 'react-redux'
+
+import { signIn } from 'common/store/pages/signon/actions'
+import { TextField } from 'components/form-fields'
 
 const messages = {
   header: 'Sign Into Audius',
-  createAccount: 'Create An Account'
+  emailLabel: 'Email',
+  passwordLabel: 'Password',
+  signIn: 'Sign In'
+}
+
+type SignInValues = {
+  email: string
+  password: string
+}
+
+const initialValues = {
+  email: '',
+  password: ''
 }
 
 export const SignInPage = () => {
+  const dispatch = useDispatch()
+  const handleSubmit = useCallback(
+    (values: SignInValues) => {
+      const { email, password } = values
+      dispatch(signIn(email, password))
+    },
+    [dispatch]
+  )
+
   return (
     <div>
       <h1>{messages.header}</h1>
-      <Button
-        type={ButtonType.COMMON}
-        text={messages.createAccount}
-        as={Link}
-        to={SIGN_UP_PAGE}
-      ></Button>
+      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+        <Form>
+          <TextField name='email' label={messages.emailLabel} />
+          <TextField name='password' label={messages.passwordLabel} />
+          <HarmonyButton text={messages.signIn} type='submit' />
+        </Form>
+      </Formik>
     </div>
   )
 }
