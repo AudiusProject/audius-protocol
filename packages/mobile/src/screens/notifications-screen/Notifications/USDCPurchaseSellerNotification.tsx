@@ -27,8 +27,8 @@ const { getNotificationUsers, getNotificationEntity } = notificationsSelectors
 
 const messages = {
   title: 'Track Sold',
-  congrats: 'Congrats, ',
-  justBoughtYourTrack: ' just bought your track ',
+  congrats: 'Congrats,',
+  justBoughtYourTrack: 'just bought your track',
   for: ' for ',
   exclamation: '!'
 }
