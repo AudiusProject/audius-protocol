@@ -1,21 +1,20 @@
 import { useCallback, type ReactNode } from 'react'
 
+import type { PurchasableTrackMetadata } from '@audius/common'
 import {
-  formatPrice,
-  isPremiumContentUSDCPurchaseGated,
-  useGetTrackById,
-  purchaseContentSelectors,
-  purchaseContentActions,
   PurchaseContentStage,
-  combineStatuses,
-  useUSDCBalance,
-  getPurchaseSummaryValues,
+  formatPrice,
+  isTrackPurchasable,
+  payExtraAmountPresetValues,
+  purchaseContentActions,
   statusIsNotFinalized,
-  isContentPurchaseInProgress,
-  ContentType
+  useGetTrackById,
+  usePurchaseContentFormConfiguration
 } from '@audius/common'
+import { Formik, useFormikContext } from 'formik'
 import { Linking, View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import IconCart from 'app/assets/images/iconCart.svg'
 import IconError from 'app/assets/images/iconError.svg'
@@ -30,13 +29,10 @@ import { useThemeColors } from 'app/utils/theme'
 import LoadingSpinner from '../loading-spinner/LoadingSpinner'
 import { TrackDetailsTile } from '../track-details-tile'
 
+import { PayExtraFormSection } from './PayExtraFormSection'
 import { PurchaseSuccess } from './PurchaseSuccess'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
-
-const { getPurchaseContentError, getPurchaseContentFlowStage } =
-  purchaseContentSelectors
-
-const { startPurchaseContentFlow } = purchaseContentActions
+import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState'
 
 const PREMIUM_TRACK_PURCHASE_MODAL_NAME = 'PremiumTrackPurchase'
 
@@ -115,10 +111,90 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   }
 }))
 
-export const PremiumTrackPurchaseDrawer = () => {
+const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
   const styles = useStyles()
   const { specialLightGreen, neutralLight2, accentRed, secondary } =
     useThemeColors()
+
+  const { submitForm } = useFormikContext()
+
+  const {
+    premium_conditions: {
+      usdc_purchase: { price }
+    }
+  } = track
+
+  const { stage, error, isUnlocking, purchaseSummaryValues } =
+    usePurchaseContentFormState({ price })
+
+  const isPurchaseSuccessful = stage === PurchaseContentStage.FINISH
+
+  const handleTermsPress = useCallback(() => {
+    Linking.openURL('https://audius.co/legal/terms-of-use')
+  }, [])
+
+  return (
+    <View style={styles.drawer}>
+      <View style={styles.titleContainer}>
+        <IconCart fill={neutralLight2} />
+        <Text style={styles.title}>{messages.title}</Text>
+      </View>
+      <TrackDetailsTile trackId={track.track_id} />
+      <PayExtraFormSection amountPresets={payExtraAmountPresetValues} />
+      <PurchaseSummaryTable
+        {...purchaseSummaryValues}
+        isPurchaseSuccessful={isPurchaseSuccessful}
+      />
+      {isPurchaseSuccessful ? (
+        <PurchaseSuccess track={track} />
+      ) : (
+        <>
+          <View>
+            <View style={styles.payToUnlockTitleContainer}>
+              <Text weight='heavy' textTransform='uppercase' fontSize='small'>
+                {messages.payToUnlock}
+              </Text>
+              <LockedStatusBadge locked />
+            </View>
+            <Text style={styles.disclaimer}>
+              {messages.disclaimer(
+                <Text colorValue={secondary} onPress={handleTermsPress}>
+                  {messages.termsOfUse}
+                </Text>
+              )}
+            </Text>
+          </View>
+          <Button
+            onPress={submitForm}
+            disabled={isUnlocking}
+            title={
+              isUnlocking
+                ? messages.purchasing
+                : messages.buy(formatPrice(price))
+            }
+            variant={'primary'}
+            size='large'
+            color={specialLightGreen}
+            iconPosition='left'
+            icon={isUnlocking ? LoadingSpinner : undefined}
+            fullWidth
+          />
+        </>
+      )}
+      {error ? (
+        <View style={styles.errorContainer}>
+          <IconError fill={accentRed} width={spacing(5)} height={spacing(5)} />
+          <Text weight='medium' colorValue={accentRed}>
+            {messages.error}
+          </Text>
+        </View>
+      ) : null}
+    </View>
+  )
+}
+
+export const PremiumTrackPurchaseDrawer = () => {
+  const styles = useStyles()
   const dispatch = useDispatch()
   const isUSDCEnabled = useIsUSDCEnabled()
   const { data } = useDrawer('PremiumTrackPurchase')
@@ -127,45 +203,17 @@ export const PremiumTrackPurchaseDrawer = () => {
     { id: trackId },
     { disabled: !trackId }
   )
-  const { data: currentBalance, balanceStatus } = useUSDCBalance()
-  const error = useSelector(getPurchaseContentError)
-  const stage = useSelector(getPurchaseContentFlowStage)
-  const isPurchasing = isContentPurchaseInProgress(stage)
-  const isPurchaseSuccessful = stage === PurchaseContentStage.FINISH
-  const { premium_conditions: premiumConditions } = track ?? {}
-  const isLoading = statusIsNotFinalized(
-    combineStatuses([trackStatus, balanceStatus])
-  )
 
-  const handleConfirmPurchase = useCallback(() => {
-    dispatch(
-      startPurchaseContentFlow({
-        contentId: trackId,
-        contentType: ContentType.TRACK
-      })
-    )
-  }, [dispatch, trackId])
+  const isLoading = statusIsNotFinalized(trackStatus)
+
+  const { initialValues, onSubmit, validationSchema } =
+    usePurchaseContentFormConfiguration({ track })
 
   const handleClosed = useCallback(() => {
     dispatch(purchaseContentActions.cleanup())
   }, [dispatch])
 
-  const handleTermsPress = useCallback(() => {
-    Linking.openURL('https://audius.co/legal/terms-of-use')
-  }, [])
-
-  if (
-    !track ||
-    !isPremiumContentUSDCPurchaseGated(premiumConditions) ||
-    !isUSDCEnabled
-  )
-    return null
-
-  const price = premiumConditions.usdc_purchase.price
-  const purchaseSummaryValues = getPurchaseSummaryValues({
-    price,
-    currentBalance
-  })
+  if (!track || !isTrackPurchasable(track) || !isUSDCEnabled) return null
 
   return (
     <NativeDrawer
@@ -177,69 +225,13 @@ export const PremiumTrackPurchaseDrawer = () => {
           <LoadingSpinner />
         </View>
       ) : (
-        <View style={styles.drawer}>
-          <View style={styles.titleContainer}>
-            <IconCart fill={neutralLight2} />
-            <Text style={styles.title}>{messages.title}</Text>
-          </View>
-          <TrackDetailsTile trackId={track.track_id} />
-          <PurchaseSummaryTable
-            {...purchaseSummaryValues}
-            isPurchaseSuccessful={isPurchaseSuccessful}
-          />
-          {isPurchaseSuccessful ? (
-            <PurchaseSuccess track={track} />
-          ) : (
-            <>
-              <View>
-                <View style={styles.payToUnlockTitleContainer}>
-                  <Text
-                    weight='heavy'
-                    textTransform='uppercase'
-                    fontSize='small'
-                  >
-                    {messages.payToUnlock}
-                  </Text>
-                  <LockedStatusBadge locked />
-                </View>
-                <Text style={styles.disclaimer}>
-                  {messages.disclaimer(
-                    <Text colorValue={secondary} onPress={handleTermsPress}>
-                      {messages.termsOfUse}
-                    </Text>
-                  )}
-                </Text>
-              </View>
-              <Button
-                onPress={handleConfirmPurchase}
-                disabled={isPurchasing}
-                title={
-                  isLoading
-                    ? messages.purchasing
-                    : messages.buy(formatPrice(price))
-                }
-                variant={'primary'}
-                size='large'
-                color={specialLightGreen}
-                iconPosition='left'
-                icon={isLoading ? LoadingSpinner : undefined}
-                fullWidth
-              />
-            </>
-          )}
-          {error ? (
-            <View style={styles.errorContainer}>
-              <IconError
-                fill={accentRed}
-                width={spacing(5)}
-                height={spacing(5)}
-              />
-              <Text weight='medium' colorValue={accentRed}>
-                {messages.error}
-              </Text>
-            </View>
-          ) : null}
-        </View>
+        <Formik
+          initialValues={initialValues}
+          validationSchema={toFormikValidationSchema(validationSchema)}
+          onSubmit={onSubmit}
+        >
+          <RenderForm track={track} />
+        </Formik>
       )}
     </NativeDrawer>
   )
