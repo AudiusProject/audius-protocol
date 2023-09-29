@@ -15,7 +15,7 @@ export const initializeDiscoveryDb = (connectionString) => {
 }
 
 // GLOBAL db handles
-dotenv.config()
+dotenv.config({ path: './plugins.env' })
 
 export const dp_db = initializeDiscoveryDb()
 
