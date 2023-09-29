@@ -21,6 +21,11 @@ jobs:
       instance-name: circleci-push-discovery-provider-notifications-$CIRCLE_BUILD_NUM
       service: discovery-provider-notifications
   - push-docker-image:
+    name: push-verified-notifications
+    context: [GCP, dockerhub]
+    instance-name: circleci-push-verified-notifications-$CIRCLE_BUILD_NUM
+    service: verified-notifications
+  - push-docker-image:
       name: push-pedalboard-trending-challenge-rewards
       context: [GCP, dockerhub]
       instance-name: circleci-push-pedalboard-trending-challenge-rewards-$CIRCLE_BUILD_NUM

@@ -26,6 +26,11 @@ jobs:
       instance-name: circleci-push-pedalboard-sla-auditor-$CIRCLE_BUILD_NUM
       service: sla-auditor
   - push-docker-image:
+    name: push-pedalboard-verified-notifications
+    context: [GCP, dockerhub]
+    instance-name: circleci-push-pedalboard-verified-notifications-$CIRCLE_BUILD_NUM
+    service: verified-notifications
+  - push-docker-image:
       name: push-comms
       context: [GCP, dockerhub]
       instance-name: circleci-push-comms-$CIRCLE_BUILD_NUM
@@ -61,6 +66,7 @@ jobs:
         - push-pedalboard-trending-challenge-rewards
         - push-pedalboard-relay
         - push-pedalboard-sla-auditor
+        - push-pedalboard-verified-notifications
         - push-comms
       filters:
         branches:
