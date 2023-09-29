@@ -156,7 +156,7 @@ const createRouter = () => {
         })
 
         if (error) {
-          req.logger.error('Error in solana transaction:', error)
+          req.logger.error('Error in Solana transaction:', error)
           const errorString = `Something caused the Solana transaction to fail`
           return errorResponseServerError(errorString, { errorCode, error })
         }
