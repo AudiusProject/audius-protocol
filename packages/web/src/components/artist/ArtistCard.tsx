@@ -25,9 +25,11 @@ type ArtistCardProps = {
 
 export const ArtistCard = (props: ArtistCardProps) => {
   const { userId: user_id, onNavigateAway } = props
-  const followData = trpc.me.userRelationship.useQuery({ theirId: user_id.toString() })
-  const followed =  followData.data?.followed || false
-  const followsMe =  followData.data?.followsMe || false
+  const followData = trpc.me.userRelationship.useQuery({
+    theirId: user_id.toString()
+  })
+  const followed = followData.data?.followed || false
+  const followsMe = followData.data?.followsMe || false
   const { data } = trpc.users.get.useQuery(user_id.toString())
   const dispatch = useDispatch()
   const isArtist = parseInt(data?.trackCount || '0') > 0
@@ -100,7 +102,10 @@ export const ArtistCard = (props: ArtistCardProps) => {
         </div>
         <div className={styles.contentContainer}>
           <div>
-            <ArtistSupporting userId={user_id} onNavigateAway={onNavigateAway} />
+            <ArtistSupporting
+              userId={user_id}
+              onNavigateAway={onNavigateAway}
+            />
             <div className={styles.description}>{bio}</div>
             <FollowButton
               className={styles.followButton}

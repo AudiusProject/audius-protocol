@@ -42,7 +42,13 @@ type ArtistSupportingProps = {
   onNavigateAway?: () => void
 }
 
-type supportingTipMap = { [key : string]: { amount: string, receiverUserId: number, senderUserId: number } }
+type supportingTipMap = {
+  [key: string]: {
+    amount: string
+    receiverUserId: number
+    senderUserId: number
+  }
+}
 
 export const ArtistSupporting = (props: ArtistSupportingProps) => {
   const { onNavigateAway, userId } = props
@@ -50,19 +56,25 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
   const { data } = trpc.users.tipsSent.useQuery(userId)
 
   const supportingMap = useSelector(getOptimisticSupporting)
-  const supportingTipMap: supportingTipMap = data?.reduce((accumulatedTipMap, tip) => {
-    accumulatedTipMap[tip.receiverUserId] = tip
-    return accumulatedTipMap
-  }, {} as supportingTipMap ) || {}
-  const hasNotPreviouslyFetchedSupportingForArtist = supportingTipMap === undefined
+  const supportingTipMap: supportingTipMap =
+    data?.reduce((accumulatedTipMap, tip) => {
+      accumulatedTipMap[tip.receiverUserId] = tip
+      return accumulatedTipMap
+    }, {} as supportingTipMap) || {}
+  const hasNotPreviouslyFetchedSupportingForArtist =
+    supportingTipMap === undefined
   const supportingForArtist = supportingTipMap ?? {}
   const supportingForArtistIds = Object.keys(
     supportingForArtist
   ) as unknown as ID[]
   const rankedSupportingList = supportingForArtistIds
     .sort((k1, k2) => {
-      const amount1BN = stringWeiToBN(supportingForArtist[k1].amount as StringWei)
-      const amount2BN = stringWeiToBN(supportingForArtist[k2].amount as StringWei)
+      const amount1BN = stringWeiToBN(
+        supportingForArtist[k1].amount as StringWei
+      )
+      const amount2BN = stringWeiToBN(
+        supportingForArtist[k2].amount as StringWei
+      )
       return amount1BN.gte(amount2BN) ? -1 : 1
     })
     .map((k) => supportingForArtist[k])

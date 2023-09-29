@@ -9,7 +9,10 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useCoverPhoto, useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
-import { useProfilePicture, useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import {
+  useProfilePicture,
+  useUserProfilePicture
+} from 'hooks/useUserProfilePicture'
 import { profilePage } from 'utils/route'
 
 import styles from './ArtistCardCover.module.css'
@@ -30,7 +33,7 @@ type TRPCUser = {
   handleLc?: string | null
   hasCollectibles?: boolean
   isAvailable?: boolean
-  isCurrent?: boolean;
+  isCurrent?: boolean
   isDeactivated?: boolean
   isStorageV2?: boolean
   isVerified?: boolean
@@ -66,7 +69,7 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
     name,
     handle,
     coverPhotoSizes: _cover_photo_sizes,
-    profilePictureSizes: _profile_picture_sizes,
+    profilePictureSizes: _profile_picture_sizes
   } = artist
   const dispatch = useDispatch()
 
