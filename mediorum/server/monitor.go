@@ -3,20 +3,74 @@ package server
 import (
 	"context"
 	"errors"
+	"mediorum/crudr"
+	"net/http"
+	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/labstack/echo/v4"
 	"golang.org/x/exp/slices"
 	"golang.org/x/exp/slog"
 	"gorm.io/gorm"
 )
 
-type diskStatus struct {
-	StoragePathSizeGB uint64    `json:"storagePathSizeGB"`
-	StoragePathUsedGB uint64    `json:"storagePathUsedGB"`
-	DatabaseSizeGB    uint64    `json:"databaseSizeGB"`
-	Clock             time.Time `json:"clock"`
+type StorageAndDbSize struct {
+	LoggedAt         time.Time `gorm:"primaryKey;not null"`
+	Host             string    `gorm:"primaryKey;not null"`
+	StorageBackend   string    `gorm:"not null"`
+	DbUsed           uint64    `gorm:"not null"`
+	MediorumDiskUsed uint64    `gorm:"not null"`
+	MediorumDiskSize uint64    `gorm:"not null"`
+	LastRepairSize   int64     `gorm:"not null"`
+	LastCleanupSize  int64     `gorm:"not null"`
+}
+
+func (ss *MediorumServer) recordStorageAndDbSize() {
+	record := func() {
+		// only do this once every 6 hours, even if the server restarts
+		var lastStatus StorageAndDbSize
+		err := ss.crud.DB.WithContext(context.Background()).
+			Where("host = ?", ss.Config.Self.Host).
+			Order("logged_at desc").
+			First(&lastStatus).
+			Error
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			slog.Error("Error getting last storage and db size", "err", err)
+			return
+		}
+		if lastStatus.LoggedAt.After(time.Now().Add(-6 * time.Hour)) {
+			return
+		}
+
+		blobStorePrefix, _, foundBlobStore := strings.Cut(ss.Config.BlobStoreDSN, "://")
+		if !foundBlobStore {
+			blobStorePrefix = ""
+		}
+		status := StorageAndDbSize{
+			LoggedAt:         time.Now(),
+			Host:             ss.Config.Self.Host,
+			StorageBackend:   blobStorePrefix,
+			DbUsed:           ss.databaseSize,
+			MediorumDiskUsed: ss.mediorumPathUsed,
+			MediorumDiskSize: ss.mediorumPathSize,
+			LastRepairSize:   ss.lastSuccessfulRepair.ContentSize,
+			LastCleanupSize:  ss.lastSuccessfulCleanup.ContentSize,
+		}
+
+		err = ss.crud.Create(&status, crudr.WithSkipBroadcast())
+		if err != nil {
+			slog.Error("Error recording storage and db sizes", "err", err)
+		}
+	}
+
+	record()
+	ticker := time.NewTicker(6*time.Hour + time.Minute)
+	for range ticker.C {
+		record()
+	}
 }
 
 func (ss *MediorumServer) monitorDiskAndDbStatus() {
@@ -25,6 +79,10 @@ func (ss *MediorumServer) monitorDiskAndDbStatus() {
 		ss.updateDiskAndDbStatus()
 		time.Sleep(time.Minute)
 	}
+
+	// persist the sizes in the db and let crudr share them with other nodes
+	go ss.recordStorageAndDbSize()
+
 	ticker := time.NewTicker(10 * time.Minute)
 	for range ticker.C {
 		ss.updateDiskAndDbStatus()
@@ -92,15 +150,6 @@ func (ss *MediorumServer) updateDiskAndDbStatus() {
 	ss.uploadsCount = uploadsCount
 	ss.uploadsCountErr = errStr
 
-	// getDiskStatus returns the space occupied on the disk as a whole
-	legacyTotal, legacyFree, err := getDiskStatus("/file_storage")
-	if err == nil {
-		ss.storagePathUsed = legacyTotal - legacyFree
-		ss.storagePathSize = legacyTotal
-	} else {
-		slog.Error("Error getting legacy disk status", "err", err)
-	}
-
 	mediorumTotal, mediorumFree, err := getDiskStatus(ss.Config.Dir)
 	if err == nil {
 		ss.mediorumPathFree = mediorumFree
@@ -109,20 +158,6 @@ func (ss *MediorumServer) updateDiskAndDbStatus() {
 	} else {
 		slog.Error("Error getting mediorum disk status", "err", err)
 	}
-
-	status := diskStatus{
-		StoragePathSizeGB: ss.storagePathSize / (1 << 30),
-		StoragePathUsedGB: ss.storagePathUsed / (1 << 30),
-		DatabaseSizeGB:    ss.databaseSize / (1 << 30),
-		Clock:             nearest5MinSinceEpoch(),
-	}
-	ss.logger.Info("updateDiskAndDbStatus", "diskStatus", status)
-}
-
-func nearest5MinSinceEpoch() time.Time {
-	secondsSinceEpoch := time.Now().Unix()
-	rounded := (secondsSinceEpoch + 150) / 300 * 300
-	return time.Unix(rounded, 0)
 }
 
 func getDiskStatus(path string) (total uint64, free uint64, err error) {
@@ -165,4 +200,44 @@ func getUploadsCount(db *gorm.DB) (count int64, errStr string) {
 	}
 
 	return
+}
+
+func (ss *MediorumServer) serveStorageAndDbLogs(c echo.Context) error {
+	limitStr := c.QueryParam("limit")
+	if limitStr == "" {
+		limitStr = "1000"
+	}
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		return c.String(http.StatusBadRequest, "Invalid limit value")
+	}
+	if limit > 1000 {
+		limit = 1000
+	}
+
+	loggedBeforeStr := c.QueryParam("before")
+	var loggedBefore time.Time
+	if loggedBeforeStr != "" {
+		loggedBefore, err = time.Parse(time.RFC3339Nano, loggedBeforeStr)
+		if err != nil {
+			return c.String(http.StatusBadRequest, "Invalid time format. Use RFC3339Nano or leave blank.")
+		}
+	}
+	dbQuery := ss.crud.DB.Order("logged_at desc").Limit(limit)
+	if !loggedBefore.IsZero() {
+		dbQuery = dbQuery.Where("logged_at < ?", loggedBefore)
+	}
+
+	host := c.QueryParam("host")
+	if host == "" {
+		host = ss.Config.Self.Host
+	}
+	dbQuery = dbQuery.Where("host = ?", host)
+
+	var logs []StorageAndDbSize
+	if err := dbQuery.Find(&logs).Error; err != nil {
+		return c.String(http.StatusInternalServerError, "DB query failed: "+err.Error())
+	}
+
+	return c.JSON(http.StatusOK, logs)
 }

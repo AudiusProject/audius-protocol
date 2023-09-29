@@ -83,8 +83,6 @@ type MediorumServer struct {
 	reqClient       *req.Client
 
 	// simplify
-	storagePathUsed  uint64
-	storagePathSize  uint64
 	mediorumPathUsed uint64
 	mediorumPathSize uint64
 	mediorumPathFree uint64
@@ -334,6 +332,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/logs/partition-ops", ss.getPartitionOpsLog)
 	internalApi.GET("/logs/reaper", ss.getReaperLog)
 	internalApi.GET("/logs/repair", ss.serveRepairLog)
+	internalApi.GET("/logs/storageAndDb", ss.serveStorageAndDbLogs)
 
 	return ss, nil
 
