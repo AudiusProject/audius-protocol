@@ -22,8 +22,10 @@ const messages = {
   dollars: '$'
 }
 
-// TODO: Figure out why onBlur breaks when the value is invalid
-
+/** Implements a Formik field for entering a price, including default dollar sign
+ * adornment and conversion logic to/from human readable price. Internal value is stored
+ * as an integer number of cents.
+ */
 export const PriceField = (props: TextFieldProps) => {
   const [{ value }, , { setValue: setPrice }] = useField<number>(props.name)
   const [humanizedValue, setHumanizedValue] = useState(
