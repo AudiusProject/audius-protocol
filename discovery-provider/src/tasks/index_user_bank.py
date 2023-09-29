@@ -655,7 +655,7 @@ def process_transfer_instruction(
             )
             if purchase_metadata is None:
                 logger.error(
-                    "index_user_bank.py | Found purchase evnt but purchase_metadata is None"
+                    "index_user_bank.py | Found purchase event but purchase_metadata is None"
                 )
                 return
             for _ in range(amount):
