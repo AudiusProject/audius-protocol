@@ -8,8 +8,8 @@ import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
-import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { useCoverPhoto, useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
+import { useProfilePicture, useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { profilePage } from 'utils/route'
 
 import styles from './ArtistCardCover.module.css'
@@ -17,44 +17,41 @@ import styles from './ArtistCardCover.module.css'
 const gradient = `linear-gradient(180deg, rgba(0, 0, 0, 0.001) 0%, rgba(0, 0, 0, 0.005) 67.71%, rgba(0, 0, 0, 0.15) 79.17%, rgba(0, 0, 0, 0.25) 100%)`
 
 type TRPCUser = {
-  allowAiAttribution: boolean
-  artistPickTrackId: number | null
-  bio: string | null
-  blockhash: string | null
-  blocknumber: number | null
-  coverPhoto: string | null
-  coverPhotoSizes: string | null
-  createdAt: Date
-  creatorNodeEndpoint: string | null
-  handle: string
-  handleLc: string | null
-  hasCollectibles: boolean
-  isAvailable: boolean
-  isCurrent: boolean;
-  isDeactivated: boolean
-  isStorageV2: boolean
-  isVerified: boolean
-  location: string | null
-  metadataMultihash: string | null
-  name: string | null
-  playlistLibrary: any | null
-  primaryId: number | null
-  profilePicture: string | null
-  profilePictureSizes: string | null
-  replicaSetUpdateSigner: string | null
-  secondaryIds: any | null
-  slot: number | null
-  txhash: string
-  updatedAt: Date
-  userAuthorityAccount: string | null
-  userId: number;
-  userStorageAccount: string | null
-  wallet: string | null
+  allowAiAttribution?: boolean | null
+  artistPickTrackId?: number | null | undefined
+  bio?: string | null
+  blockhash?: string | null
+  blocknumber?: number | null
+  coverPhoto?: string | null
+  coverPhotoSizes?: string | null
+  createdAt?: string
+  creatorNodeEndpoint?: string | null
+  handle?: string | null | undefined
+  handleLc?: string | null
+  hasCollectibles?: boolean
+  isAvailable?: boolean
+  isCurrent?: boolean;
+  isDeactivated?: boolean
+  isStorageV2?: boolean
+  isVerified?: boolean
+  location?: string | null
+  metadataMultihash?: string | null
+  name?: string | null
+  primaryId?: number | null
+  profilePicture?: string | null
+  profilePictureSizes?: string | null
+  replicaSetUpdateSigner?: string | null
+  slot?: number | null
+  txhash?: string
+  updatedAt?: string
+  userAuthorityAccount?: string | null
+  userId?: number | null
+  userStorageAccount?: string | null
+  wallet?: string | null
 }
 
 type ArtistCoverProps = {
-  artist: User
-  // artist: TRPCUser | null
+  artist: TRPCUser | undefined
   isArtist: boolean
   onNavigateAway?: () => void
   followsMe: boolean
@@ -63,33 +60,25 @@ type ArtistCoverProps = {
 export const ArtistCardCover = (props: ArtistCoverProps) => {
   const { isArtist, artist, onNavigateAway, followsMe } = props
   if (!artist) return <></>
+
   const {
-    user_id,
+    userId: user_id,
     name,
     handle,
-    _cover_photo_sizes,
-    _profile_picture_sizes,
+    coverPhotoSizes: _cover_photo_sizes,
+    profilePictureSizes: _profile_picture_sizes,
   } = artist
-
-  // const {
-  //   userId: user_id,
-  //   name,
-  //   handle,
-  //   coverPhotoSizes: _cover_photo_sizes,
-  //   profilePictureSizes: _profile_picture_sizes,
-  //   // does_follow_current_user
-  // } = artist
   const dispatch = useDispatch()
 
-  const coverPhoto = useUserCoverPhoto(
-    user_id,
-    _cover_photo_sizes,
-    WidthSizes.SIZE_640
+  const coverPhoto = useCoverPhoto(
+    user_id || 0,
+    WidthSizes.SIZE_640,
+    _cover_photo_sizes || ''
   )
-  const profilePicture = useUserProfilePicture(
-    user_id,
-    _profile_picture_sizes,
-    SquareSizes.SIZE_150_BY_150
+  const profilePicture = useProfilePicture(
+    user_id || 0,
+    SquareSizes.SIZE_150_BY_150,
+    _profile_picture_sizes || ''
   )
 
   const darkenedCoverPhoto = `${gradient}, url(${coverPhoto})`
@@ -98,7 +87,7 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
     if (onNavigateAway) {
       onNavigateAway()
     }
-    dispatch(push(profilePage(handle)))
+    dispatch(push(profilePage(handle || '')))
   }, [dispatch, handle, onNavigateAway])
 
   return (
@@ -122,7 +111,7 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
               {name}
             </div>
             <UserBadges
-              userId={user_id}
+              userId={user_id || 0}
               badgeSize={14}
               className={styles.iconVerified}
               useSVGTiers

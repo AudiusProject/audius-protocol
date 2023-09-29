@@ -81,7 +81,7 @@ export const ArtistPopover = ({
   const content =
     creator && userId !== creator.user_id ? (
       <ArtistCard
-        artist={creator}
+        userId={creator.user_id}
         onNavigateAway={() => {
           setIsPopupVisible(false)
           onNavigateAway?.()

@@ -19,22 +19,16 @@ const { followUser, unfollowUser } = usersSocialActions
 const { setNotificationSubscription } = profilePageActions
 
 type ArtistCardProps = {
-  artist: User
+  userId: number
   onNavigateAway: () => void
 }
 
 export const ArtistCard = (props: ArtistCardProps) => {
-  const { artist, onNavigateAway } = props
-  const {
-    user_id,
-  } = artist
+  const { userId: user_id, onNavigateAway } = props
   const followData = trpc.me.userRelationship.useQuery({ theirId: user_id.toString() })
   const followed =  followData.data?.followed || false
   const followsMe =  followData.data?.followsMe || false
   const { data } = trpc.users.get.useQuery(user_id.toString())
-  console.log(user_id)
-  console.log('dataaa', data)
-  console.log('artisttt ', artist)
   const dispatch = useDispatch()
   const isArtist = parseInt(data?.trackCount || '0') > 0
   const track_count = parseInt(data?.trackCount || '0')
@@ -91,7 +85,7 @@ export const ArtistCard = (props: ArtistCardProps) => {
     <div className={styles.popoverContainer} onClick={handleClick}>
       <div className={styles.artistCardContainer}>
         <ArtistCardCover
-          artist={artist}
+          artist={data}
           isArtist={isArtist}
           onNavigateAway={onNavigateAway}
           followsMe={followsMe}
