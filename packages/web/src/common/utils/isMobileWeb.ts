@@ -19,5 +19,9 @@ export const isMobileWeb = () => {
   // iPad iOS 13
   if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
     check = true
+
+  if (navigator.userAgent === 'probers' && window.innerWidth < 300) {
+    check = true
+  }
   return check
 }

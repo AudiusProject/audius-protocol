@@ -85,12 +85,13 @@ type AppRedirectPopoverProps = {
  * page in the mobile app, or redirects to the app store
  * if no app is installed.
  */
-export const AppRedirectPopover = ({
-  incrementScroll,
-  decrementScroll,
-  onBeforeClickApp = () => {},
-  onBeforeClickDismissed = () => {}
-}: AppRedirectPopoverProps) => {
+export const AppRedirectPopover = (props: AppRedirectPopoverProps) => {
+  const {
+    incrementScroll,
+    decrementScroll,
+    onBeforeClickApp = () => {},
+    onBeforeClickDismissed = () => {}
+  } = props
   const [isDismissed, setIsDismissed] = useSessionStorage(
     'app-redirect-popover',
     false
@@ -105,7 +106,8 @@ export const AppRedirectPopover = ({
     !matchPath(window.location.pathname, { path: '/', exact: true }) &&
     animDelay &&
     !isDismissed &&
-    isMobile()
+    isMobile() &&
+    !(navigator.userAgent === 'probers')
 
   useEffect(() => {
     shouldShow && incrementScroll()
