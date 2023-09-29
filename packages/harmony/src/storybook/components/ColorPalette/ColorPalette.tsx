@@ -68,26 +68,22 @@ const ColorRow = ({ colors, themeKey }: ColorRowProps) => {
 
 export const ColorPalette = ({ theme = 'day' }: ColorPaletteProps) => {
   const colors = themeColorsMap[theme]
-  const themeKeys = Object.keys(colors)
+  const themeKeys = Object.keys(colors) as ThemeKey[]
 
   return (
     <div className={styles.paletteContainer}>
-      <Text variant='display' size='xLarge'>
+      <Text variant='display' size='xl'>
         {messages.title}
       </Text>
-      <Text variant='body' size='large'>
+      <Text variant='body' size='l'>
         {messages.description}
       </Text>
-      {themeKeys.map((key) => {
-        const themeKey = key as keyof ThemeColors
-
-        return (
-          <Fragment key={themeKey}>
-            <div className={styles.divider} />
-            <ColorRow themeKey={themeKey} colors={colors[themeKey]} />
-          </Fragment>
-        )
-      })}
+      {themeKeys.map((key) => (
+        <Fragment key={key}>
+          <div className={styles.divider} />
+          <ColorRow themeKey={key} colors={colors[key]} />
+        </Fragment>
+      ))}
     </div>
   )
 }
