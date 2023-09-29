@@ -9,7 +9,8 @@ import {
   tippingActions,
   userListActions,
   SUPPORTING_USER_LIST_TAG as SUPPORTING_TAG,
-  MAX_ARTIST_HOVER_TOP_SUPPORTING
+  MAX_ARTIST_HOVER_TOP_SUPPORTING,
+  StringWei
 } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
@@ -37,45 +38,43 @@ const messages = {
 }
 
 type ArtistSupportingProps = {
-  artist: User
+  userId: number
   onNavigateAway?: () => void
 }
+
+type supportingTipMap = { [key : string]: { amount: string, receiverUserId: number, senderUserId: number } }
+
 export const ArtistSupporting = (props: ArtistSupportingProps) => {
-  const { artist, onNavigateAway } = props
-  const { user_id, supporting_count } = artist
+  const { onNavigateAway, userId } = props
   const dispatch = useDispatch()
-  const { data } = trpc.users.tipsSent.useQuery(user_id)
+  const { data } = trpc.users.tipsSent.useQuery(userId)
   console.log('artist supporting dataa ', data)
 
-  const supportingMap = useSelector(getOptimisticSupporting)
-  const supportingForArtist2: { [key : string]: Object } = data?.reduce((accumulatedTipMap, tip) => {
+  const supportingTipMap: supportingTipMap = data?.reduce((accumulatedTipMap, tip) => {
     accumulatedTipMap[tip.receiverUserId] = tip
     return accumulatedTipMap
-  }, {} as { [key : string]: Object } ) || {}
-  console.log('supporting 4 artist 2222: ', supportingForArtist2)
-  const hasNotPreviouslyFetchedSupportingForArtist =
-    supportingMap[user_id] === undefined
-  // to do - replace this with supporting for artist 2 
-  const supportingForArtist = supportingMap[user_id] ?? {}
+  }, {} as supportingTipMap ) || {}
+  const hasNotPreviouslyFetchedSupportingForArtist = supportingTipMap === undefined
+  const supportingForArtist = supportingTipMap ?? {}
   console.log('supporting for artisttt ' , supportingForArtist)
   const supportingForArtistIds = Object.keys(
     supportingForArtist
   ) as unknown as ID[]
   const rankedSupportingList = supportingForArtistIds
     .sort((k1, k2) => {
-      const amount1BN = stringWeiToBN(supportingForArtist[k1].amount)
-      const amount2BN = stringWeiToBN(supportingForArtist[k2].amount)
+      const amount1BN = stringWeiToBN(supportingForArtist[k1].amount as StringWei)
+      const amount2BN = stringWeiToBN(supportingForArtist[k2].amount as StringWei)
       return amount1BN.gte(amount2BN) ? -1 : 1
     })
     .map((k) => supportingForArtist[k])
 
   const rankedSupporting = useSelector((state) => {
     const usersMap = getUsers(state, {
-      ids: rankedSupportingList.map((supporting) => supporting.receiver_id)
+      ids: rankedSupportingList.map((supporting) => supporting.receiverUserId)
     })
     return rankedSupportingList
-      .sort((s1, s2) => s1.rank - s2.rank)
-      .map((s) => usersMap[s.receiver_id])
+      .sort((s1, s2) => parseInt(s1.amount) - parseInt(s2.amount))
+      .map((s) => usersMap[s.receiverUserId])
       .filter(Boolean)
   })
 
@@ -85,9 +84,9 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
    */
   useEffect(() => {
     if (hasNotPreviouslyFetchedSupportingForArtist) {
-      dispatch(fetchSupportingForUser({ userId: user_id }))
+      dispatch(fetchSupportingForUser({ userId: userId }))
     }
-  }, [dispatch, hasNotPreviouslyFetchedSupportingForArtist, user_id])
+  }, [dispatch, hasNotPreviouslyFetchedSupportingForArtist, userId])
 
   const handleClick = useCallback(() => {
     /**
@@ -104,7 +103,7 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
       setUsers({
         userListType: UserListType.SUPPORTING,
         entityType: UserListEntityType.USER,
-        id: user_id
+        id: userId
       })
     )
     dispatch(loadMore(SUPPORTING_TAG))
@@ -118,7 +117,7 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
     if (onNavigateAway) {
       onNavigateAway()
     }
-  }, [dispatch, user_id, onNavigateAway])
+  }, [dispatch, userId, onNavigateAway])
 
   return rankedSupportingList.length > 0 ? (
     <div className={styles.supportingContainer} onClick={handleClick}>
@@ -130,13 +129,13 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
       <UserProfilePictureList
         limit={MAX_ARTIST_HOVER_TOP_SUPPORTING}
         users={rankedSupporting}
-        totalUserCount={supporting_count}
+        totalUserCount={data?.length || 0}
         disableProfileClick
         disablePopover
         profilePictureClassname={styles.profilePictureWrapper}
       />
     </div>
-  ) : supporting_count > 0 ? (
+  ) : (data?.length || 0) > 0 ? (
     <div className={styles.emptyContainer} />
   ) : null
 }

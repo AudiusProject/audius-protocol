@@ -106,7 +106,7 @@ export const ArtistCard = (props: ArtistCardProps) => {
         </div>
         <div className={styles.contentContainer}>
           <div>
-            <ArtistSupporting artist={artist} onNavigateAway={onNavigateAway} />
+            <ArtistSupporting userId={user_id} onNavigateAway={onNavigateAway} />
             <div className={styles.description}>{bio}</div>
             <FollowButton
               className={styles.followButton}
