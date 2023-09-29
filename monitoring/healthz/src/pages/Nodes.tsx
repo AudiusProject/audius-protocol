@@ -238,12 +238,18 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
       </td>
       {isContent && (
         <td className="whitespace-nowrap px-3 py-5 text-sm">
-          <StorageProgressBar
-            progress={totalMediorumUsed === '?' ? 0 : totalMediorumUsed}
-          />
-          <div className="mt-3 flex">
-            {getStorageBackendIcon(health.blobStorePrefix)} <span className="w-[10px]" /> {totalMediorumUsed} / {totalMediorumSize} GB
-          </div>
+          <a
+            href={`${sp.endpoint}/internal/logs/storageAndDb`}
+            target="_blank"
+            className="text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400"
+          >
+            <StorageProgressBar
+              progress={totalMediorumUsed === '?' ? 0 : totalMediorumUsed}
+            />
+            <div className="mt-3 flex">
+              {getStorageBackendIcon(health.blobStorePrefix)} <span className="w-[10px]" /> {totalMediorumUsed} / {totalMediorumSize} GB
+            </div>
+          </a>
         </td>
       )}
       {isContent && (
