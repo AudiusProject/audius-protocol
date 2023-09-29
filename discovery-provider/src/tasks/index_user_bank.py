@@ -38,6 +38,7 @@ from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
     TX_SIGNATURES_RESIZE_LENGTH,
+    USDC_DECIMALS,
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import (
@@ -649,6 +650,30 @@ def process_transfer_instruction(
                 timestamp=timestamp,
                 tx_sig=tx_sig,
             )
+            amount = int(
+                round(balance_changes[receiver_account]["change"]) / 10**USDC_DECIMALS
+            )
+            if purchase_metadata is None:
+                logger.error(
+                    "index_user_bank.py | Found purchase evnt but purchase_metadata is None"
+                )
+                return
+            for _ in range(amount):
+                challenge_event_bus.dispatch(
+                    ChallengeEvent.audio_matching_buyer,
+                    slot,
+                    sender_user_id,
+                    {"track_id": purchase_metadata["id"]},
+                )
+                challenge_event_bus.dispatch(
+                    ChallengeEvent.audio_matching_seller,
+                    slot,
+                    receiver_user_id,
+                    {
+                        "track_id": purchase_metadata["id"],
+                        "sender_user_id": sender_user_id,
+                    },
+                )
 
 
 class CreateTokenAccount(TypedDict):

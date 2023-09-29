@@ -6,6 +6,10 @@ from typing import Any, DefaultDict, Dict, List, Optional, Tuple, TypedDict
 
 from sqlalchemy.orm.session import Session
 
+from src.challenges.audio_matching_challenge import (
+    audio_matching_buyer_challenge_manager,
+    audio_matching_seller_challenge_manager,
+)
 from src.challenges.challenge import ChallengeManager, EventMetadata
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.connect_verified_challenge import connect_verified_challenge_manager
@@ -240,6 +244,12 @@ def setup_challenge_bus():
     bus.register_listener(ChallengeEvent.send_tip, send_first_tip_challenge_manager)
     bus.register_listener(
         ChallengeEvent.first_playlist, first_playlist_challenge_manager
+    )
+    bus.register_listener(
+        ChallengeEvent.audio_matching_buyer, audio_matching_buyer_challenge_manager
+    )
+    bus.register_listener(
+        ChallengeEvent.audio_matching_seller, audio_matching_seller_challenge_manager
     )
 
     return bus
