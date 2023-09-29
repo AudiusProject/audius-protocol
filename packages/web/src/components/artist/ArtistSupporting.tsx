@@ -48,17 +48,14 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
   const { onNavigateAway, userId } = props
   const dispatch = useDispatch()
   const { data } = trpc.users.tipsSent.useQuery(userId)
-  console.log('artist supporting dataa ', data)
 
   const supportingMap = useSelector(getOptimisticSupporting)
-  console.log('supporting for artist origgg, ', supportingMap[userId])
   const supportingTipMap: supportingTipMap = data?.reduce((accumulatedTipMap, tip) => {
     accumulatedTipMap[tip.receiverUserId] = tip
     return accumulatedTipMap
   }, {} as supportingTipMap ) || {}
   const hasNotPreviouslyFetchedSupportingForArtist = supportingTipMap === undefined
   const supportingForArtist = supportingTipMap ?? {}
-  console.log('supporting for artisttt ' , supportingForArtist)
   const supportingForArtistIds = Object.keys(
     supportingForArtist
   ) as unknown as ID[]
