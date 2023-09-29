@@ -10,14 +10,29 @@ const {
 const { getFeePayerKeypair } = require('../solana-client')
 const {
   isSendInstruction,
-  areRelayAllowedInstructions,
-  doesUserHaveSocialProof
+  doesUserHaveSocialProof,
+  validateRelayInstructions
 } = require('../utils/relayHelpers')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 
 const { PublicKey, TransactionInstruction } = require('@solana/web3.js')
 
 const solanaRouter = express.Router()
+
+/**
+ * @typedef {{
+ *    programId: string
+ *    keys: {
+ *      isWritable: boolean
+ *      isSigner: boolean
+ *      pubkey: string
+ *    }[]
+ *    data: {
+ *      type: 'Buffer'
+ *      data: Uint8Array
+ *    }
+ * }} RelayInstruction
+ */
 
 // Check that an instruction has all the necessary data
 const isValidInstruction = (instr) => {
@@ -56,16 +71,17 @@ solanaRouter.post(
       feePayerOverride,
       signatures = [],
       retry = true,
-      recentBlockhash
+      recentBlockhash,
+      lookupTableAddresses = []
     } = req.body
 
     // Allowed relay checks
-    const isRelayAllowed = await areRelayAllowedInstructions(
+    const invalidInstructions = await validateRelayInstructions(
       instructions,
-      optimizelyClient,
       req.user?.walletAddress
     )
-    if (!isRelayAllowed) {
+    if (invalidInstructions.length > 0) {
+      req.logger.error('Invalid relay instructions', invalidInstructions)
       return errorResponseServerError(`Invalid relay instructions`, {
         error: `Invalid relay instructions`
       })
@@ -122,6 +138,7 @@ solanaRouter.post(
       instructions,
       skipPreflight,
       feePayerOverride,
+      lookupTableAddresses,
       retry
     })
 

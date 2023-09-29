@@ -1,7 +1,11 @@
 const models = require('../models')
 const { libs } = require('@audius/sdk')
 const {
-  isUSDCWithdrawalTransaction
+  checkJupiterSwapInstruction,
+  findMatchingCloseTokenAccountInstruction,
+  isCreateAssociatedTokenAccountInstruction,
+  isJupiterInstruction,
+  checkCreateTokenAccountMint
 } = require('./withdrawUSDCInstructionsHelpers')
 const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 const {
@@ -18,6 +22,10 @@ const {
 } = require('./relayUtils')
 const { TOKEN_PROGRAM_ID } = require('@solana/spl-token')
 const SolanaUtils = libs.SolanaUtils
+
+/**
+ * @typedef {import('routes/solana').RelayInstruction} RelayInstruction
+ */
 
 const isSendInstruction = (instr) =>
   instr.length &&
@@ -67,7 +75,7 @@ const getClaimableTokenAuthority = async (mint) => {
 
 /**
  * Returns the index of the requested account by mapping the instruction enum to the index via enum map
- * @param {Instruction} instruction
+ * @param {RelayInstruction} instruction
  * @param {Record<number, number | null>} enumMap the mapping of the instruction enum to the relevant account index
  * @returns {number | null} the index of the account of interest for that instruction type, or null
  */
@@ -87,7 +95,7 @@ const getAccountIndex = (instruction, enumMap) => {
  * Checks that the instruction's account at the accountIndex matches the expected account
  * Also passes if accountIndex is null, and fails if account index is outside the range of keys
  *
- * @param {Instruction} instruction
+ * @param {RelayInstruction} instruction
  * @param {number} accountIndex
  * @param {string} expectedAccount
  * @returns true if the account matches, or if the accountIndex is null
@@ -100,9 +108,6 @@ const checkAccountKey = (instruction, accountIndex, expectedAccount) => {
     accountIndex >= 0 &&
     accountIndex < instruction.keys.length
   ) {
-    console.log(
-      `${instruction.keys[accountIndex].pubkey} === ${expectedAccount}`
-    )
     return instruction.keys[accountIndex].pubkey === expectedAccount
   }
   return false
@@ -112,7 +117,7 @@ const checkAccountKey = (instruction, accountIndex, expectedAccount) => {
  * Checks the authority being used for the relayed instruction, if applicable
  * Ensures we relay only for instructions relevant to our programs and base account
  *
- * @param {Instruction} instruction
+ * @param {RelayInstruction} instruction
  * @param {string | undefined} walletAddress
  * @returns true if the program authority matches, false if it doesn't, and null if not applicable
  */
@@ -147,42 +152,53 @@ const isRelayAllowedInstruction = async (instruction, walletAddress) => {
     return await isTransferToUserbank(instruction, walletAddress)
   } else if (isRelayAllowedProgram([instruction])) {
     // Authority check not necessary
-    return null
+    return true
   }
   // Not allowed program
   return false
 }
 
 /**
- * Checks that all the given instructions have an allowed authority or base account (if applicable), or are otherwise allowed
- * @param {Instruction[]} instructions
- * @param {Object} optimizelyClient
- * @param {string} walletAddress
- * @returns true if all the instructions have allowed authorities/base accounts or are otherwise allowed
+ * Checks that all the instructions are allowed to be relayed.
+ * This includes checking for:
+ * - Correct authority or base account for use on our programs
+ * - Allowed program IDs for third party programs
+ * - Authentication for transfers to userbanks or Jupiter USDC=>SOL swaps
+ * @param {RelayInstruction[]} instructions The instructions to check
+ * @param {string} walletAddress the wallet address if the user is authenticated
+ * @returns a list of instruction indices that failed validation
  */
-const areRelayAllowedInstructions = async (
-  instructions,
-  optimizelyClient,
-  walletAddress
-) => {
-  const results = await Promise.all(
-    instructions.map((instruction) =>
-      isRelayAllowedInstruction(instruction, walletAddress)
-    )
-  )
-  // Explicitly check for false - null means N/A and should be passing
-  if (results.some((result) => result === false)) {
-    // Special case for USDC withdraw transactions
-    if (getFeatureFlag(optimizelyClient, FEATURE_FLAGS.USDC_PURCHASES)) {
-      return isUSDCWithdrawalTransaction(instructions)
+const validateRelayInstructions = async (instructions, walletAddress) => {
+  /**
+   * Defaults every instruction to false
+   * @type {boolean[]}
+   */
+  const validations = new Array(instructions.length).fill(false)
+  for (let i = 0; i < instructions.length; i++) {
+    const instruction = instructions[i]
+    if (isCreateAssociatedTokenAccountInstruction(instruction)) {
+      const isMintAllowed = checkCreateTokenAccountMint(instruction)
+      const matchingCloseInstructionIndex =
+        findMatchingCloseTokenAccountInstruction(i, instructions)
+      if (isMintAllowed && matchingCloseInstructionIndex > -1) {
+        validations[i] = true
+        validations[matchingCloseInstructionIndex] = true
+      }
+    } else if (isJupiterInstruction(instruction)) {
+      validations[i] =
+        walletAddress && checkJupiterSwapInstruction(i, instructions)
+    } else if (await isRelayAllowedInstruction(instruction, walletAddress)) {
+      validations[i] = true
     }
-    return false
   }
-  return true
+  return validations
+    .map((isValid, index) => ({ index, isValid }))
+    .filter((v) => v.isValid === false)
+    .map((v) => v.index)
 }
 
 module.exports = {
   isSendInstruction,
   doesUserHaveSocialProof,
-  areRelayAllowedInstructions
+  validateRelayInstructions
 }

@@ -29,10 +29,7 @@ if (solanaAudiusAnchorDataProgramId) {
 }
 
 /**
- * @typedef Instruction
- * @property {string} programId
- * @property {{data: number[], type: string}} data
- * @property {{pubkey: string, isSigner: boolean, isWriteable: boolean}[]} keys
+ * @typedef {import('routes/solana').RelayInstruction} RelayInstruction
  */
 
 /**
@@ -66,7 +63,7 @@ const claimableTokenAuthorityIndices = {
 
 /**
  * Checks that each instruction is from a set of allowed programs.
- * @param {Instruction[]} instructions to check
+ * @param {RelayInstruction[]} instructions to check
  * @returns true if every instruction is from an allowed program
  */
 const isRelayAllowedProgram = (instructions) => {
@@ -80,7 +77,7 @@ const isRelayAllowedProgram = (instructions) => {
 
 /**
  * Gets the enum identifier of the instruction as determined by the first element of the data buffer
- * @param {Instruction} instruction
+ * @param {RelayInstruction} instruction
  * @returns the enum value of the given instruction
  */
 const getInstructionEnum = (instruction) => {
@@ -115,15 +112,11 @@ const transferAccountIndices = /** @type {const} */ ({
 /**
  * Checks to see if the instruction is an allowed token transfer.
  * Currently the only allowed transfers are to USDC userbanks
- * @param {Instruction} instruction
- * @param {string | undefined} walletAddress
+ * @param {RelayInstruction} instruction
+ * @param {string} walletAddress
  * @returns true if the instruction is allowed
  */
 const isTransferToUserbank = async (instruction, walletAddress) => {
-  if (!walletAddress) {
-    // Without the wallet address of the calling user, we can't derive their userbank
-    return false
-  }
   if (
     getInstructionEnum(instruction) === tokenInstructionEnum.transferChecked
   ) {

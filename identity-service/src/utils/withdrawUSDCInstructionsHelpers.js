@@ -1,227 +1,139 @@
 const {
   ASSOCIATED_TOKEN_PROGRAM_ID,
-  TOKEN_PROGRAM_ID
+  TOKEN_PROGRAM_ID,
+  NATIVE_MINT
 } = require('@solana/spl-token')
-const { Keypair } = require('@solana/web3.js')
 const config = require('../config')
-const { isRelayAllowedProgram, getInstructionEnum } = require('./relayUtils')
+const { getInstructionEnum, usdcMintAddress } = require('./relayUtils')
 
-const JUPITER_AGGREGATOR_V3_PROGRAM_ID =
-  'JUP3c2Uh3WA4Ng34tw6kPd2G4C5BB21Xo36Je1s32Ph'
+const JUPITER_AGGREGATOR_V6_PROGRAM_ID =
+  'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
 
-const CLOSE_ACCOUNT_INSTRUCTION = 9
-const FEE_PAYER_ACCOUNT_INDEX = 1
-const CREATE_TOKEN_ACCOUNT_INSTRUCTION_INDEX = 0
-const CREATE_TOKEN_ACCOUNT_ASSOCIATED_TOKEN_ACCOUNT_INDEX = 1
-const CREATE_TOKEN_ACCOUNT_OWNER_INDEX = 2
-const USER_BANK_TRANSFER_INDEX_START = 1
-const USER_BANK_TRANSFER_INDEX_END = 3
-const JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_INSTRUCTION_INDEX = 3
-const JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_FEE_PAYER_ACCOUNT_INDEX = 0
-const JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_TEMP_HOLDING_ACCOUNT_INDEX = 1
-const JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_TEMP_HOLDING_ACCOUNT_OWNER_INDEX = 2
-const JUPITER_SET_TOKEN_LEDGER_INSTRUCTION_INDEX = 4
-const JUPITER_SET_TOKEN_LEDGER_TOKEN_ACCOUNT_INDEX = 1
-const JUPITER_SWAP_INSTRUCTION_INDEX = 5
-const JUPITER_SWAP_TEMP_HOLDING_ACCOUNT_OWNER_INDEX = 2
-const JUPITER_SWAP_TEMP_HOLDING_ACCOUNT_INDEX = 4
-const JUPITER_SWAP_RECIPIENT_ACCOUNT_INDEX = 6
-const JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_INSTRUCTION_INDEX = 6
-const JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_TEMP_HOLDING_ACCOUNT_INDEX = 0
-const JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_DESTINATION_INDEX = 1
-const JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_TEMP_HOLDING_ACCOUNT_OWNER_INDEX = 2
-const ACCOUNT_TO_CREATE_INDEX = 1
-const ACCOUNT_TO_CLOSE_INDEX = 0
+const CLOSE_ASSOCIATED_TOKEN_ACCOUNT_INSTRUCTION_ENUM = 9
+const CREATE_ASSOCIATED_TOKEN_ACCOUNT_IDEMPOTENT_INSTRUCTION_ENUM = 1
 
 /**
- * Checks that the instruction is a create account instruction for an associated token account.
- * @param {Instruction} instruction to check
- * @returns true if validation passes
+ * @typedef {import('routes/solana').RelayInstruction} RelayInstruction
  */
-const checkCreateAccountInstruction = (instruction) => {
-  return (
-    instruction.programId === ASSOCIATED_TOKEN_PROGRAM_ID.toString() &&
-    getInstructionEnum(instruction) === null
+
+const allowedMints = [NATIVE_MINT.toBase58(), usdcMintAddress]
+
+const WithdrawInstructionIndex = {
+  CREATE_TOKEN_ATA: 0,
+  SECP: 1,
+  USERBANK_TRANSFER: 2,
+  CREATE_WSOL_ATA: 3,
+  SWAP: 4,
+  CLOSE_WSOL_ATA: 5,
+  CREATE_WSOL_ATA_2: 6,
+  CLOSE_WSOL_ATA_2: 7,
+  CLOSE_TOKEN_ATA: 8
+}
+
+const JupiterSwapAccountIndex = {
+  USER_ACCOUNT: 2,
+  USER_TOKEN_ACCOUNT: 3,
+  TEMP_RECIPIENT_TOKEN_ACCOUNT: 4,
+  TEMP_SENDER_TOKEN_ACCOUNT: 5,
+  DESTINATION_TOKEN_ACCOUNT: 6,
+  USER_TOKEN_MINT: 7,
+  DESTINATION_TOKEN_MINT: 8
+}
+
+const CreateTokenAccountIndex = {
+  PAYER: 0,
+  TOKEN_ACCOUNT: 1,
+  OWNER: 2,
+  MINT: 3
+}
+
+const CloseAccountIndex = {
+  TOKEN_ACCOUNT: 0,
+  DESTINATION: 1,
+  OWNER: 2
+}
+
+/**
+ * Checks that the instruction is a createAssociatedTokenAccount instruction.
+ * @param {RelayInstruction} instruction Instruction to check.
+ * @returns true if the instruction is a createAssociatedTokenAccount instruction
+ */
+const isCreateAssociatedTokenAccountInstruction = (instruction) =>
+  instruction.programId === ASSOCIATED_TOKEN_PROGRAM_ID.toBase58() &&
+  (getInstructionEnum(instruction) === null ||
+    getInstructionEnum(instruction) ===
+      CREATE_ASSOCIATED_TOKEN_ACCOUNT_IDEMPOTENT_INSTRUCTION_ENUM)
+
+/**
+ * Checks that the instruction is a closeAssociatedTokenAccount instruction.
+ * @param {RelayInstruction} instruction Instruction to check.
+ * @returns true if the instruction is a closeAssociatedTokenAccount instruction
+ */
+const isCloseAssociatedTokenAccountInstruction = (instruction) =>
+  instruction.programId === TOKEN_PROGRAM_ID.toBase58() &&
+  getInstructionEnum(instruction) ===
+    CLOSE_ASSOCIATED_TOKEN_ACCOUNT_INSTRUCTION_ENUM
+
+/**
+ * Checks that the instruction is a Jupiter program instruction
+ * @param {RelayInstruction} instruction Instruction to check.
+ * @returnstrue if the instruction is for the Jupiter program
+ */
+const isJupiterInstruction = (instruction) =>
+  instruction.programId === JUPITER_AGGREGATOR_V6_PROGRAM_ID
+
+/**
+ * Checks that the token account creation is for a valid mint
+ * @param {RelayInstruction} instruction Instruction to check.
+ * @returns true if the mint is for wSOL or USDC
+ */
+const checkCreateTokenAccountMint = (instruction) =>
+  allowedMints.includes(instruction.keys[CreateTokenAccountIndex.MINT].pubkey)
+
+/**
+ * Finds a matching closeAssociatedTokenAccount instruction for the given createAssociatedTokenAccount instruction
+ * @param {number} createInstructionIndex the index of the createTokenAccountInstruction in instructions
+ * @param {RelayInstruction[]} instructions the list of instructions in the transaction
+ * @returns the index of the matching closeTokenAccountInstruction
+ */
+const findMatchingCloseTokenAccountInstruction = (
+  createInstructionIndex,
+  instructions
+) => {
+  const createInstruction = instructions[createInstructionIndex]
+  return instructions.findIndex(
+    (instr) =>
+      isCloseAssociatedTokenAccountInstruction(instr) &&
+      instr.keys[CloseAccountIndex.TOKEN_ACCOUNT].pubkey ===
+        createInstruction.keys[CreateTokenAccountIndex.TOKEN_ACCOUNT].pubkey &&
+      instr.keys[CloseAccountIndex.DESTINATION].pubkey ===
+        createInstruction.keys[CreateTokenAccountIndex.PAYER].pubkey
   )
 }
 
 /**
- * @param {Instruction} instruction to check
- * @returns true if validation passes
+ * Checks if the Jupiter swap is relayable. Only relay swaps of
+ * @param {number} swapInstructionIndex
+ * @param {RelayInstruction[]} instructions
+ * @returns whether the Jupiter instruction is valid
  */
-const checkCloseAccountInstruction = (instruction) => {
-  const feePayerKeypairs = config.get('solanaFeePayerWallets')
-  const feePayerPubkeys = feePayerKeypairs.map((wallet) =>
-    Keypair.fromSecretKey(
-      Uint8Array.from(wallet.privateKey)
-    ).publicKey.toString()
-  )
-  const isCloseInstruction =
-    instruction.programId === TOKEN_PROGRAM_ID.toString() &&
-    getInstructionEnum(instruction) === CLOSE_ACCOUNT_INSTRUCTION
-  const isFeePayerReimbursed = feePayerPubkeys.includes(
-    instruction.keys[FEE_PAYER_ACCOUNT_INDEX].pubkey
-  )
-  return isCloseInstruction && isFeePayerReimbursed
-}
+const checkJupiterSwapInstruction = (swapInstructionIndex, instructions) => {
+  const sendMint = usdcMintAddress
+  const destMint = NATIVE_MINT.toBase58()
+  const instr = instructions[swapInstructionIndex]
+  const validSourceMint =
+    instr.keys[JupiterSwapAccountIndex.USER_TOKEN_MINT].pubkey === sendMint
+  const validDestinationMint =
+    instr.keys[JupiterSwapAccountIndex.DESTINATION_TOKEN_MINT].pubkey ===
+    destMint
 
-/**
- * Checks that the instructions are allowed for usdc -> sol jupiter swap.
- * @param {Instruction[]} instructions to check
- * @returns true if validation passes
- */
-const checkJupiterSwapInstructions = (instructions) => {
-  const createAccountInstruction =
-    instructions[CREATE_TOKEN_ACCOUNT_INSTRUCTION_INDEX]
-  const associatedTokenAccountOwner =
-    createAccountInstruction.keys[CREATE_TOKEN_ACCOUNT_OWNER_INDEX]
-  const associatedTokenAccount =
-    createAccountInstruction.keys[
-      CREATE_TOKEN_ACCOUNT_ASSOCIATED_TOKEN_ACCOUNT_INDEX
-    ]
-
-  // Check that the create associated token account instruction is correct
-  const createAssociatedTokenAccountInstruction =
-    instructions[JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_INSTRUCTION_INDEX]
-  if (
-    createAssociatedTokenAccountInstruction.programId !==
-    ASSOCIATED_TOKEN_PROGRAM_ID.toString()
-  ) {
-    return false
-  }
-  const feePayerKey =
-    createAssociatedTokenAccountInstruction.keys[
-      JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_FEE_PAYER_ACCOUNT_INDEX
-    ]
-  const tempHoldingAccount =
-    createAssociatedTokenAccountInstruction.keys[
-      JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_TEMP_HOLDING_ACCOUNT_INDEX
-    ]
-  const tempHoldingAccountOwner =
-    createAssociatedTokenAccountInstruction.keys[
-      JUPITER_CREATE_ASSOCIATED_TOKEN_ACCOUNT_TEMP_HOLDING_ACCOUNT_OWNER_INDEX
-    ]
-  const isCorrectFeePayer =
-    feePayerKey.pubkey === tempHoldingAccountOwner.pubkey
-  const isCorrectAccountOwner =
-    associatedTokenAccountOwner.pubkey === tempHoldingAccountOwner.pubkey
-  if (!isCorrectFeePayer || !isCorrectAccountOwner) {
-    return false
-  }
-
-  // Check that the set token ledger instruction is correct
-  const setTokenLedgerInstruction =
-    instructions[JUPITER_SET_TOKEN_LEDGER_INSTRUCTION_INDEX]
-  if (
-    setTokenLedgerInstruction.programId !== JUPITER_AGGREGATOR_V3_PROGRAM_ID
-  ) {
-    return false
-  }
-  const isCorrectTokenLedgerTokenAccount =
-    setTokenLedgerInstruction.keys[JUPITER_SET_TOKEN_LEDGER_TOKEN_ACCOUNT_INDEX]
-      .pubkey === tempHoldingAccount.pubkey
-  if (!isCorrectTokenLedgerTokenAccount) {
-    return false
-  }
-
-  // Check that the swap instruction is correct
-  const swapInstruction = instructions[JUPITER_SWAP_INSTRUCTION_INDEX]
-  if (swapInstruction.programId !== JUPITER_AGGREGATOR_V3_PROGRAM_ID) {
-    return false
-  }
-  const isCorrectHoldingAccountOwner =
-    swapInstruction.keys[JUPITER_SWAP_TEMP_HOLDING_ACCOUNT_OWNER_INDEX]
-      .pubkey === tempHoldingAccountOwner.pubkey
-  const isCorrectHoldingAccount =
-    swapInstruction.keys[JUPITER_SWAP_TEMP_HOLDING_ACCOUNT_INDEX].pubkey ===
-    tempHoldingAccount.pubkey
-  const isCorrectRecipient =
-    swapInstruction.keys[JUPITER_SWAP_RECIPIENT_ACCOUNT_INDEX].pubkey ===
-    associatedTokenAccount.pubkey
-  if (
-    !isCorrectHoldingAccountOwner ||
-    !isCorrectHoldingAccount ||
-    !isCorrectRecipient
-  ) {
-    return false
-  }
-
-  // Check that the close associated token account instruction is correct
-  const closeAssociatedTokenAccountInstruction =
-    instructions[JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_INSTRUCTION_INDEX]
-  if (
-    closeAssociatedTokenAccountInstruction.programId !==
-    TOKEN_PROGRAM_ID.toString()
-  ) {
-    return false
-  }
-  const isCorrectClosedAccount =
-    closeAssociatedTokenAccountInstruction.keys[
-      JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_TEMP_HOLDING_ACCOUNT_INDEX
-    ].pubkey === tempHoldingAccount.pubkey
-  const isCorrectClosedAccountDestination =
-    closeAssociatedTokenAccountInstruction.keys[
-      JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_DESTINATION_INDEX
-    ].pubkey === tempHoldingAccountOwner.pubkey
-  const isCorrectClosedAccountOwner =
-    closeAssociatedTokenAccountInstruction.keys[
-      JUPITER_CLOSE_ASSOCIATED_TOKEN_ACCOUNT_TEMP_HOLDING_ACCOUNT_OWNER_INDEX
-    ].pubkey === tempHoldingAccountOwner.pubkey
-  if (
-    !isCorrectClosedAccount ||
-    !isCorrectClosedAccountDestination ||
-    !isCorrectClosedAccountOwner
-  ) {
-    return false
-  }
-
-  return true
-}
-
-/**
- * Checks that the account to create in the create account instruction matches the account to close
- * in the close instruction.
- * @param {Instruction[]} instructions to check
- * @returns true if validation passes
- */
-const checkCreateAccountMatchesClose = (instructions) => {
-  const createAccountInstruction =
-    instructions[CREATE_TOKEN_ACCOUNT_INSTRUCTION_INDEX]
-  const closeAccountInstruction = instructions[instructions.length - 1]
-  return (
-    createAccountInstruction.keys[ACCOUNT_TO_CREATE_INDEX].pubkey ===
-    closeAccountInstruction.keys[ACCOUNT_TO_CLOSE_INDEX].pubkey
-  )
-}
-
-/**
- * Checks if the given instructions are a USDC withdrawal swap transaction. This is a special case
- * where a USDC associated token account is created, used for swapping USDC for SOL, and then closed.
- * @param {Instruction[]} instructions to check
- * @returns true if validation passes
- */
-const isUSDCWithdrawalTransaction = (instructions) => {
-  if (!instructions.length) return false
-  const validations = []
-  validations.push(
-    checkCreateAccountInstruction(
-      instructions[CREATE_TOKEN_ACCOUNT_INSTRUCTION_INDEX]
-    )
-  )
-  const transferInstructions = instructions.slice(
-    USER_BANK_TRANSFER_INDEX_START,
-    USER_BANK_TRANSFER_INDEX_END
-  )
-  validations.push(isRelayAllowedProgram(transferInstructions))
-  validations.push(checkJupiterSwapInstructions(instructions))
-  validations.push(checkCreateAccountMatchesClose(instructions))
-  validations.push(
-    checkCloseAccountInstruction(instructions[instructions.length - 1])
-  )
-
-  return validations.every((validation) => validation)
+  return validSourceMint && validDestinationMint
 }
 
 module.exports = {
-  isUSDCWithdrawalTransaction
+  isJupiterInstruction,
+  checkJupiterSwapInstruction,
+  findMatchingCloseTokenAccountInstruction,
+  isCreateAssociatedTokenAccountInstruction,
+  checkCreateTokenAccountMint
 }
