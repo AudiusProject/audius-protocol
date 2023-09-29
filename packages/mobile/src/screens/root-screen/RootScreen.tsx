@@ -25,7 +25,7 @@ import { enterBackground, enterForeground } from 'app/store/lifecycle/actions'
 
 import { AppDrawerScreen } from '../app-drawer-screen'
 import { SignInScreen } from '../sign-in-screen'
-import { SignUpScreen } from '../sign-up-screen'
+import { SignUpRootScreen } from '../sign-up-screen'
 
 import { StatusBar } from './StatusBar'
 
@@ -117,7 +117,7 @@ export const RootScreen = () => {
             <Stack.Screen name='HomeStack' component={AppDrawerScreen} />
           ) : isSignUpRedesignEnabled ? (
             <Stack.Group>
-              <Stack.Screen name='SignUp' component={SignUpScreen} />
+              <Stack.Screen name='SignUp' component={SignUpRootScreen} />
               <Stack.Screen name='SignIn' component={SignInScreen} />
             </Stack.Group>
           ) : (

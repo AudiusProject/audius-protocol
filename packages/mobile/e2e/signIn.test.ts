@@ -1,27 +1,7 @@
 import { device, expect, by } from 'detox'
-import type { Role as RNRole } from 'react-native'
 
 import { email, password } from './fixtures/user.json'
-
-type Role = 'textbox' | RNRole
-
-type ByRoleOptions = {
-  name: string | RegExp
-}
-
-function byRole(role: Role, options: ByRoleOptions) {
-  const { name } = options
-  switch (role) {
-    case 'textbox':
-      return element(by.label(name)).atIndex(1)
-    case 'heading':
-      return element(by.label(name))
-    case 'button':
-      return element(by.traits(['button']).withDescendant(by.label(name)))
-    default:
-      return element(by.traits([role]).and(by.label(name)))
-  }
-}
+import { byRole } from './matchers'
 
 describe('Sign in', () => {
   beforeAll(async () => {

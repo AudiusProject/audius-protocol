@@ -21,7 +21,7 @@ const meta: Meta<typeof Text> = {
     },
     size: {
       control: { type: 'radio' },
-      options: ['xLarge', 'large', 'medium', 'small', 'xSmall']
+      options: ['xl', 'l', 'm', 's', 'xs']
     },
     color: {
       control: { type: 'radio' },
@@ -43,8 +43,32 @@ export const Body: Story = {
   }
 }
 
-export const Heading: Story = {
+export const Disabled: Story = {
   args: {
-    variant: 'heading'
+    variant: 'body',
+    color: 'disabled'
+  }
+}
+
+export const StrongDisplay: Story = {
+  args: {
+    variant: 'display',
+    color: 'heading',
+    strength: 'strong',
+    size: 's'
+  }
+}
+
+export const LargeTitle: Story = {
+  args: {
+    variant: 'title',
+    size: 'l'
+  }
+}
+
+export const SubduedLabel: Story = {
+  args: {
+    variant: 'label',
+    color: 'subdued'
   }
 }

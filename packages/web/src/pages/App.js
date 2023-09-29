@@ -177,6 +177,7 @@ import { WithdrawalsPage } from './purchases-and-sales/WithdrawalsPage'
 import SettingsPage from './settings-page/SettingsPage'
 import { SubPage } from './settings-page/components/mobile/SettingsPage'
 import { SignInPage } from './sign-in-page'
+import { SignUpPage } from './sign-up-page'
 import SmartCollectionPage from './smart-collection/SmartCollectionPage'
 import SupportingPage from './supporting-page/SupportingPage'
 import TopSupportersPage from './top-supporters-page/TopSupportersPage'
@@ -510,14 +511,14 @@ class App extends Component {
                     <SignOn signIn initialPage={initialPage} />
                   )}
                 </Route>
-                <Route
-                  exact
-                  path={SIGN_UP_PAGE}
-                  isMobile={isMobileClient}
-                  render={() => (
+                <Route exact path={SIGN_UP_PAGE} isMobile={isMobileClient}>
+                  (
+                  {isSignInRedesignEnabled ? (
+                    <SignUpPage />
+                  ) : (
                     <SignOn signIn={false} initialPage={initialPage} />
                   )}
-                />
+                </Route>
                 <Route
                   exact
                   path={FEED_PAGE}

@@ -1,3 +1,9 @@
+import {
+  AMOUNT_PRESET,
+  CUSTOM_AMOUNT,
+  PayExtraAmountPresetValues,
+  PayExtraPreset
+} from '@audius/common'
 import { HarmonySelectablePill } from '@audius/stems'
 import { useField } from 'formik'
 
@@ -5,8 +11,6 @@ import { PriceField } from 'components/form-fields/PriceField'
 import { Text } from 'components/typography'
 
 import styles from './PayExtraFormSection.module.css'
-import { AMOUNT_PRESET, CUSTOM_AMOUNT } from './constants'
-import { PayExtraAmountPresetValues, PayExtraPreset } from './types'
 
 const messages = {
   payExtra: 'Pay Extra',

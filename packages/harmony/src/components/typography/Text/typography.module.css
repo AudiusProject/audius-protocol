@@ -1,5 +1,5 @@
 /* These classes map to the Harmony typography styles. They are organized into category+size variants
- * (ex. Title/Large is titleLarge). Using a variant on its own will apply the 'Default' font weight.
+ * (ex. titleXl). Using a variant on its own will apply the 'Default' font weight.
  * Some categories have additional weight variants ('Light' or 'Strong'). Those
  * can be applied _in addition_ to the base class when needed.
  * Example usage:
@@ -9,10 +9,10 @@
 
  export const Component = () => (
     <>
-      <p className={cn(typeStyles.title, typeStyles.titleMedium)}>
+      <p className={cn(typeStyles.title, typeStyles.titleM)}>
         I am the title in a default weight
       </p>
-      <p className={cn(typeStyles.body, typeStyles.bodyMedium, typeStyles.bodyStrong)}>
+      <p className={cn(typeStyles.body, typeStyles.bodyM, typeStyles.bodyStrong)}>
         I am the body copy and I am bold and important!
       </p>
     </>
@@ -49,25 +49,25 @@
 }
 
 /* 96 / 120 */
-.displayXLarge {
+.displayXl {
   font-size: var(--font-9xl);
   line-height: var(--line-height-6xl);
 }
 
 /* 72 / 88 */
-.displayLarge {
+.displayL {
   font-size: var(--font-8xl);
   line-height: var(--line-height-5xl);
 }
 
 /* 56 / 68 */
-.displayMedium {
+.displayM {
   font-size: var(--font-7xl);
   line-height: var(--line-height-4xl);
 }
 
 /* 42 / 52 */
-.displaySmall {
+.displayS {
   font-size: var(--font-6xl);
   line-height: var(--line-height-3xl);
 }
@@ -82,26 +82,26 @@
 }
 
 /* 36 / 40 */
-.headingXLarge {
+.headingXl {
   font-size: var(--font-5xl);
   line-height: var(--line-height-2xl);
 }
 
 /* 28 / 32 */
-.headingLarge {
+.headingL {
   font-size: var(--font-3xl);
   line-height: var(--line-height-xl);
 }
 
 /* 24 / 32 */
-.headingMedium {
+.headingM {
   font-size: var(--font-2xl);
   line-height: var(--line-height-xl);
 }
 
 /* 20 / 24 */
-.headingSmall {
-  font-size: var(--unit-5);
+.headingS {
+  font-size: var(--font-xl);
   line-height: var(--line-height-l);
 }
 
@@ -119,25 +119,25 @@
 }
 
 /* 18 / 24 */
-.titleLarge {
+.titleL {
   font-size: var(--font-l);
   line-height: var(--line-height-l);
 }
 
 /* 16 / 20 */
-.titleMedium {
+.titleM {
   font-size: var(--font-m);
   line-height: var(--line-height-m);
 }
 
 /* 14 / 16 */
-.titleSmall {
+.titleS {
   font-size: var(--font-s);
   line-height: var(--line-height-s);
 }
 
 /* 12 / 16 */
-.titleXSmall {
+.titleXs {
   font-size: var(--font-xs);
   line-height: var(--line-height-s);
 }
@@ -158,31 +158,31 @@
 }
 
 /* 20 / 24 */
-.labelXLarge {
+.labelXl {
   font-size: var(--font-xl);
   line-height: var(--line-height-l);
 }
 
 /* 16 / 16 */
-.labelLarge {
+.labelL {
   font-size: var(--font-m);
   line-height: var(--line-height-s);
 }
 
 /* 14 / 16 */
-.labelMedium {
+.labelM {
   font-size: var(--font-s);
   line-height: var(--line-height-s);
 }
 
 /* 12 /12 */
-.labelSmall {
+.labelS {
   font-size: var(--font-xs);
   line-height: var(--line-height-xs);
 }
 
 /* 10 / 12 */
-.labelXSmall {
+.labelXs {
   font-size: var(--font-2xs);
   line-height: var(--line-height-xs);
 }
@@ -201,25 +201,25 @@
 }
 
 /* 18 / 24 */
-.bodyLarge {
+.bodyL {
   font-size: var(--font-l);
   line-height: var(--line-height-l);
 }
 
 /* 16 / 20 */
-.bodyMedium {
+.bodyM {
   font-size: var(--font-m);
   line-height: var(--line-height-m);
 }
 
 /* 14 / 20 */
-.bodySmall {
+.bodyS {
   font-size: var(--font-s);
   line-height: var(--line-height-m);
 }
 
 /* 12 / 16 */
-.bodyXSmall {
+.bodyXs {
   font-size: var(--font-xs);
   line-height: var(--line-height-s);
 }
