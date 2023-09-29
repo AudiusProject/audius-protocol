@@ -10,13 +10,8 @@ import {
   usePurchaseContentFormConfiguration,
   buyUSDCActions
 } from '@audius/common'
-import {
-  IconCart,
-  Modal,
-  ModalContent,
-  ModalFooter,
-  ModalHeader
-} from '@audius/stems'
+import { IconCart, ModalContent, ModalFooter, ModalHeader } from '@audius/stems'
+import cn from 'classnames'
 import { Formik } from 'formik'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -25,6 +20,8 @@ import { Icon } from 'components/Icon'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
 import { Text } from 'components/typography'
+import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
+import { isMobile } from 'utils/clientUtil'
 import { pushUniqueRoute } from 'utils/route'
 
 import styles from './PremiumContentPurchaseModal.module.css'
@@ -73,9 +70,15 @@ const RenderForm = ({
     }
   }, [stage, permalink, dispatch])
 
+  const mobile = isMobile()
+
   return (
     <ModalForm>
-      <ModalHeader onClose={handleClose} showDismissButton>
+      <ModalHeader
+        className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
+        onClose={handleClose}
+        showDismissButton={!mobile}
+      >
         <Text
           variant='label'
           color='neutralLight2'
@@ -136,11 +139,13 @@ export const PremiumContentPurchaseModal = () => {
   }
 
   return (
-    <Modal
+    <ModalDrawer
       isOpen={isOpen}
       onClose={onClose}
       onClosed={onClosed}
       bodyClassName={styles.modal}
+      isFullscreen
+      useGradientTitle={false}
       dismissOnClickOutside
     >
       {isValidTrack ? (
@@ -152,6 +157,6 @@ export const PremiumContentPurchaseModal = () => {
           <RenderForm track={track} onClose={onClose} />
         </Formik>
       ) : null}
-    </Modal>
+    </ModalDrawer>
   )
 }
