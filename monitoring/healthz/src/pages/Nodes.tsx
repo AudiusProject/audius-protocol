@@ -86,7 +86,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           </a>
         </td>
         {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Node Health */}
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Block diff */}
+        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Block Diff */}
         <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td> {/* Version */}
         {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Storage */}
         {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Last Non-Cleanup Repair */}
