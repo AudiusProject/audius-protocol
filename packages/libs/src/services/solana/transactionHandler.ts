@@ -20,7 +20,7 @@ type HandleTransactionParams = {
   recentBlockhash?: Nullable<string>
   logger?: Logger
   skipPreflight?: Nullable<boolean>
-  feePayerOverride?: Nullable<PublicKey>
+  feePayerOverride?: Nullable<PublicKey | string>
   sendBlockhash?: boolean
   signatures?: Nullable<Array<{ publicKey: string; signature: Buffer }>>
   lookupTableAddresses?: string[]
@@ -126,7 +126,7 @@ export class TransactionHandler {
     instructions: TransactionInstruction[],
     recentBlockhash: string | null,
     skipPreflight: boolean | null,
-    feePayerOverride: Nullable<PublicKey> = null,
+    feePayerOverride: Nullable<PublicKey | string> = null,
     sendBlockhash: boolean,
     signatures: Array<{ publicKey: string; signature: Buffer }> | null,
     lookupTableAddresses: string[],
@@ -172,7 +172,7 @@ export class TransactionHandler {
     recentBlockhash: string | null,
     logger: Logger,
     skipPreflight: boolean | null,
-    feePayerOverride: Nullable<PublicKey> = null,
+    feePayerOverride: Nullable<PublicKey | string> = null,
     signatures: Array<{ publicKey: string; signature: Buffer }> | null = null,
     lookupTableAddresses: string[],
     retry = true
