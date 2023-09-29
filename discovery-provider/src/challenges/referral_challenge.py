@@ -22,7 +22,7 @@ def does_user_exist_with_verification_status(
         session.query(User.user_id)
         .filter(
             User.user_id == user_id,
-            User.is_current == True,
+            bool(User.is_current),
             User.is_verified == is_verified,
         )
         .one_or_none()
