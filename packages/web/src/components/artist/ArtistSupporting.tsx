@@ -50,6 +50,8 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
   const { data } = trpc.users.tipsSent.useQuery(userId)
   console.log('artist supporting dataa ', data)
 
+  const supportingMap = useSelector(getOptimisticSupporting)
+  console.log('supporting for artist origgg, ', supportingMap[userId])
   const supportingTipMap: supportingTipMap = data?.reduce((accumulatedTipMap, tip) => {
     accumulatedTipMap[tip.receiverUserId] = tip
     return accumulatedTipMap
@@ -73,7 +75,7 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
       ids: rankedSupportingList.map((supporting) => supporting.receiverUserId)
     })
     return rankedSupportingList
-      .sort((s1, s2) => parseInt(s1.amount) - parseInt(s2.amount))
+      .sort((s1, s2) => parseInt(s2.amount) - parseInt(s1.amount))
       .map((s) => usersMap[s.receiverUserId])
       .filter(Boolean)
   })
