@@ -1,3 +1,5 @@
+import { PremiumConditionsUSDCPurchase, UserTrackMetadata } from 'models/Track'
+
 /** Denotes the 3 preset amounts to show on the form, values are in cents. */
 export type PayExtraAmountPresetValues = {
   [PayExtraPreset.LOW]: number
@@ -11,4 +13,8 @@ export enum PayExtraPreset {
   HIGH = 'high',
   CUSTOM = 'custom',
   NONE = 'none'
+}
+
+export type PurchasableTrackMetadata = UserTrackMetadata & {
+  premium_conditions: PremiumConditionsUSDCPurchase
 }
