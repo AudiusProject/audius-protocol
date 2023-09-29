@@ -7,7 +7,6 @@ const {
   isJupiterInstruction,
   checkCreateTokenAccountMint
 } = require('./withdrawUSDCInstructionsHelpers')
-const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 const {
   solanaClaimableTokenProgramAddress,
   solanaMintAddress,
