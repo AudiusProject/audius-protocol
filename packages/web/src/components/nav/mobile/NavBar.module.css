@@ -170,6 +170,9 @@
 }
 
 .signUpButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 66px;
   padding: 0;
   border: none;

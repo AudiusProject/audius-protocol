@@ -167,8 +167,9 @@ export const WithdrawUSDCModal = () => {
             [CONFIRM]: false
           }}
           validationSchema={toFormikValidationSchema(
-            WithdrawUSDCFormSchema(balance?.toNumber() ?? 0)
+            WithdrawUSDCFormSchema(balanceNumberCents)
           )}
+          validateOnChange
           onSubmit={handleSubmit}
         >
           {formPage}

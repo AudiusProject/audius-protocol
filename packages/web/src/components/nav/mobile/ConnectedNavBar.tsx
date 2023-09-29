@@ -13,7 +13,6 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
-import { openSignOn } from 'common/store/pages/signon/actions'
 import {
   RouterContext,
   SlideDirection
@@ -35,7 +34,6 @@ const ConnectedNavBar = ({
   goToRoute,
   account,
   accountStatus,
-  openSignOn,
   history,
   searchStatus,
   notificationCount,
@@ -68,8 +66,7 @@ const ConnectedNavBar = ({
 
   const signUp = useCallback(() => {
     setStackReset(true)
-    setImmediate(() => openSignOn(false))
-  }, [openSignOn, setStackReset])
+  }, [setStackReset])
 
   const goToAudioPage = useCallback(() => {
     setStackReset(true)
@@ -104,7 +101,6 @@ function mapStateToProps(state: AppState) {
 
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
-    openSignOn: (signIn: boolean) => dispatch(openSignOn(signIn)),
     goToRoute: (route: string) => dispatch(pushRoute(route)),
     goBack: () => dispatch(goBack())
   }

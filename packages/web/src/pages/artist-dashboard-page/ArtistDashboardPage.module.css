@@ -14,6 +14,7 @@
   flex-direction: row;
   gap: var(--unit-8);
   align-items: stretch;
+  flex-wrap: wrap;
 }
 
 .topSection > * {

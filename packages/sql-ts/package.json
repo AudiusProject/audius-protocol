@@ -1,5 +1,5 @@
 {
-  "name": "sql-ts",
+  "name": "@audius/sql-ts",
   "private": true,
   "version": "1.0.2",
   "description": "",
