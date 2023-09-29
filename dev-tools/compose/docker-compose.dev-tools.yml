@@ -21,7 +21,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   audius-cmd:
-    build: ${PROJECT_ROOT}/dev-tools/commands
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/packages/commands/Dockerfile
     environment:
       ETH_TOKEN_ADDRESS: '${ETH_TOKEN_ADDRESS}'
       ETH_REGISTRY_ADDRESS: '${ETH_REGISTRY_ADDRESS}'
@@ -44,9 +46,5 @@ services:
 
       IDENTITY_SERVICE_URL: 'http://identity-service:7000'
       FALLBACK_CREATOR_NODE_URL: 'http://creator-node:4000' # this should choose a random cn everytime this is run
-    volumes:
-      - ${PROJECT_ROOT}/packages/libs:/usr/src/app/node_modules/@audius/sdk
-      - ../commands/src:/usr/src/app/src
-      - ../commands/test:/usr/src/app/test
     deploy:
       mode: global
