@@ -14,7 +14,6 @@ import {
   successResponse
 } from '../../apiHelpers'
 
-import crypto from 'crypto'
 import { assertRelayAllowedInstructions } from './solanaRelayChecks'
 import { getFeePayerKeypair } from '../../solana-client'
 
