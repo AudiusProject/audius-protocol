@@ -23,7 +23,7 @@ import {
   decodeClaimableTokenInstruction,
   isTransferClaimableTokenInstruction
 } from './instructions/claimableToken'
-import { decodeRewardsManagerInstruction } from './instructions/rewardsManager'
+import { decodeRewardManagerInstruction } from './instructions/rewardManager'
 import config from '../../config'
 
 const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
@@ -150,7 +150,7 @@ const assertAllowedRewardsManagerProgramInstruction = (
   instructionIndex: number,
   instruction: TransactionInstruction
 ) => {
-  const decodedInstruction = decodeRewardsManagerInstruction(instruction)
+  const decodedInstruction = decodeRewardManagerInstruction(instruction)
   const rewardManager = decodedInstruction.keys.rewardManager.pubkey.toBase58()
   if (rewardManager !== REWARD_MANAGER) {
     throw new InvalidRelayInstructionError(

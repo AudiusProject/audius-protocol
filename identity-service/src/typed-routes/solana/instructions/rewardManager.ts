@@ -2,7 +2,7 @@ import { AccountMeta, PublicKey, TransactionInstruction } from '@solana/web3.js'
 import { deserialize } from 'borsh'
 import { decodeEthereumWallet } from './utils'
 
-enum RewardsManagerInstruction {
+enum RewardManagerInstruction {
   Init = 0,
   ChangeManagerAccount = 1,
   CreateSender = 2,
@@ -25,7 +25,7 @@ type DecodedSubmitAttestationsInstruction = {
     sysvarInstructions: AccountMeta
     systemProgramId: AccountMeta
   }
-  data: { instruction: RewardsManagerInstruction; transferId: string }
+  data: { instruction: RewardManagerInstruction; transferId: string }
 }
 
 class SubmitAttestationInstructionData {
@@ -71,7 +71,7 @@ const decodeSubmitAttestationInstruction = ({
     systemProgramId
   },
   data: {
-    instruction: RewardsManagerInstruction.SubmitAttestation,
+    instruction: RewardManagerInstruction.SubmitAttestation,
     transferId: (
       deserialize(
         submitAttestationInstructionSchema,
@@ -98,7 +98,7 @@ type DecodedEvaluateAttestationsInstruction = {
     systemProgramId: AccountMeta
   }
   data: {
-    instruction: RewardsManagerInstruction
+    instruction: RewardManagerInstruction
     amount: bigint
     id: string
     ethRecipient: string
@@ -179,7 +179,7 @@ const decodeEvaluateAttestationsInstruction = ({
       systemProgramId
     },
     data: {
-      instruction: RewardsManagerInstruction.EvaluateAttestations,
+      instruction: RewardManagerInstruction.EvaluateAttestations,
       amount: instructionData.amount,
       id: instructionData.id,
       ethRecipient: decodeEthereumWallet(
@@ -202,7 +202,7 @@ type DecodedCreateSenderPublicInstruction = {
     existingSenders: AccountMeta[]
   }
   data: {
-    instruction: RewardsManagerInstruction.CreateSenderPublic
+    instruction: RewardManagerInstruction.CreateSenderPublic
     ethAddress: string
     operator: string
   }
@@ -269,7 +269,7 @@ const decodeCreateSenderPublicInstruction = ({
       existingSenders
     },
     data: {
-      instruction: RewardsManagerInstruction.CreateSenderPublic,
+      instruction: RewardManagerInstruction.CreateSenderPublic,
       ethAddress: decodeEthereumWallet(
         Buffer.from(instructionData.eth_address)
       ),
@@ -288,7 +288,7 @@ type DecodedDeleteSenderPublicInstruction = {
     existingSenders: AccountMeta[]
   }
   data: {
-    instruction: RewardsManagerInstruction.DeleteSenderPublic
+    instruction: RewardManagerInstruction.DeleteSenderPublic
   }
 }
 const decodeDeleteSenderPublicInstruction = ({
@@ -310,7 +310,7 @@ const decodeDeleteSenderPublicInstruction = ({
     existingSenders
   },
   data: {
-    instruction: RewardsManagerInstruction.DeleteSenderPublic
+    instruction: RewardManagerInstruction.DeleteSenderPublic
   }
 })
 
@@ -320,24 +320,24 @@ type DecodedRewardManagerInstruction =
   | DecodedSubmitAttestationsInstruction
   | DecodedEvaluateAttestationsInstruction
 
-export const decodeRewardsManagerInstruction = (
+export const decodeRewardManagerInstruction = (
   instruction: TransactionInstruction
 ): DecodedRewardManagerInstruction => {
   switch (instruction.data[0]) {
-    case RewardsManagerInstruction.Init:
-    case RewardsManagerInstruction.ChangeManagerAccount:
-    case RewardsManagerInstruction.CreateSender:
-    case RewardsManagerInstruction.DeleteSender:
+    case RewardManagerInstruction.Init:
+    case RewardManagerInstruction.ChangeManagerAccount:
+    case RewardManagerInstruction.CreateSender:
+    case RewardManagerInstruction.DeleteSender:
       throw new Error('Not Implemented')
-    case RewardsManagerInstruction.CreateSenderPublic:
+    case RewardManagerInstruction.CreateSenderPublic:
       return decodeCreateSenderPublicInstruction(instruction)
-    case RewardsManagerInstruction.DeleteSenderPublic:
+    case RewardManagerInstruction.DeleteSenderPublic:
       return decodeDeleteSenderPublicInstruction(instruction)
-    case RewardsManagerInstruction.SubmitAttestation:
+    case RewardManagerInstruction.SubmitAttestation:
       return decodeSubmitAttestationInstruction(instruction)
-    case RewardsManagerInstruction.EvaluateAttestations:
+    case RewardManagerInstruction.EvaluateAttestations:
       return decodeEvaluateAttestationsInstruction(instruction)
     default:
-      throw new Error('Invalid RewardsManager Instruction')
+      throw new Error('Invalid RewardManager Instruction')
   }
 }
