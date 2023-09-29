@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { SquareSizes, WidthSizes, User } from '@audius/common'
+import { SquareSizes, WidthSizes } from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
@@ -8,53 +8,17 @@ import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useCoverPhoto, useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
-import {
-  useProfilePicture,
-  useUserProfilePicture
-} from 'hooks/useUserProfilePicture'
+import { useCoverPhoto } from 'hooks/useUserCoverPhoto'
+import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { profilePage } from 'utils/route'
 
 import styles from './ArtistCardCover.module.css'
+import { GetUserOutput } from 'services/trpc'
 
 const gradient = `linear-gradient(180deg, rgba(0, 0, 0, 0.001) 0%, rgba(0, 0, 0, 0.005) 67.71%, rgba(0, 0, 0, 0.15) 79.17%, rgba(0, 0, 0, 0.25) 100%)`
 
-type TRPCUser = {
-  allowAiAttribution?: boolean | null
-  artistPickTrackId?: number | null | undefined
-  bio?: string | null
-  blockhash?: string | null
-  blocknumber?: number | null
-  coverPhoto?: string | null
-  coverPhotoSizes?: string | null
-  createdAt?: string
-  creatorNodeEndpoint?: string | null
-  handle?: string | null | undefined
-  handleLc?: string | null
-  hasCollectibles?: boolean
-  isAvailable?: boolean
-  isCurrent?: boolean
-  isDeactivated?: boolean
-  isStorageV2?: boolean
-  isVerified?: boolean
-  location?: string | null
-  metadataMultihash?: string | null
-  name?: string | null
-  primaryId?: number | null
-  profilePicture?: string | null
-  profilePictureSizes?: string | null
-  replicaSetUpdateSigner?: string | null
-  slot?: number | null
-  txhash?: string
-  updatedAt?: string
-  userAuthorityAccount?: string | null
-  userId?: number | null
-  userStorageAccount?: string | null
-  wallet?: string | null
-}
-
 type ArtistCoverProps = {
-  artist: TRPCUser | undefined
+  artist: GetUserOutput | undefined
   isArtist: boolean
   onNavigateAway?: () => void
   followsMe: boolean

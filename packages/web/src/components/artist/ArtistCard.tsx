@@ -2,7 +2,6 @@ import { MouseEventHandler, useCallback, useMemo } from 'react'
 
 import {
   FollowSource,
-  User,
   profilePageActions,
   usersSocialActions
 } from '@audius/common'
@@ -10,11 +9,12 @@ import { useDispatch } from 'react-redux'
 
 import { FollowButton } from 'components/follow-button/FollowButton'
 import Stats, { StatProps } from 'components/stats/Stats'
+import { trpc } from 'services/trpc'
 
 import styles from './ArtistCard.module.css'
 import { ArtistCardCover } from './ArtistCardCover'
 import { ArtistSupporting } from './ArtistSupporting'
-import { trpc } from 'services/trpc'
+
 const { followUser, unfollowUser } = usersSocialActions
 const { setNotificationSubscription } = profilePageActions
 

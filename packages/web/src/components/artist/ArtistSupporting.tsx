@@ -17,6 +17,8 @@ import { useDispatch } from 'react-redux'
 import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
 import { UserProfilePictureList } from 'components/notification/Notification/components/UserProfilePictureList'
+import { trpc } from 'services/trpc'
+
 import {
   setUsers,
   setVisibility
@@ -27,7 +29,7 @@ import {
 } from 'store/application/ui/userListModal/types'
 
 import styles from './ArtistSupporting.module.css'
-import { trpc } from 'services/trpc'
+
 const { loadMore, reset } = userListActions
 const { getUsers } = cacheUsersSelectors
 const { getOptimisticSupporting } = tippingSelectors
@@ -55,7 +57,6 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
   const dispatch = useDispatch()
   const { data } = trpc.users.tipsSent.useQuery(userId)
 
-  const supportingMap = useSelector(getOptimisticSupporting)
   const supportingTipMap: supportingTipMap =
     data?.reduce((accumulatedTipMap, tip) => {
       accumulatedTipMap[tip.receiverUserId] = tip

@@ -1,5 +1,6 @@
 import type { AppRouter } from '@audius/trpc-server'
 import { createTRPCReact, httpBatchLink } from '@trpc/react-query'
+import { inferRouterInputs, inferRouterOutputs } from "@trpc/server"
 
 export const trpc = createTRPCReact<AppRouter>()
 
@@ -43,3 +44,8 @@ export function loadCurrentUserId() {
   const val = localStorage.getItem('current_user_id')
   return val || ''
 }
+
+export type RouterInput = inferRouterInputs<AppRouter>
+export type RouterOutput = inferRouterOutputs<AppRouter>
+
+export type GetUserOutput = NonNullable<RouterOutput["users"]["get"]>
