@@ -44,3 +44,13 @@ services:
     restart: always
     profiles:
       - pedalboard
+
+  verified_notifications:
+    container_name: verified_notifications
+    build:
+      context: ${PROJECT_ROOT}/discovery-provider/plugins/pedalboard
+      dockerfile: ./apps/verified-notifications/Dockerfile
+      args:
+        app_name: verified_notifications
+        git_sha: "${GIT_COMMIT}"
+    restart: always
