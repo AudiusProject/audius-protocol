@@ -15,7 +15,7 @@ export const Text = forwardRef(function Text<
     children,
     variant,
     strength = 'default',
-    size = 'medium',
+    size = 'm',
     color,
     tag,
     innerRef,
