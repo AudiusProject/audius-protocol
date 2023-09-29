@@ -20,26 +20,6 @@ type DecodedCreateClaimableTokenAccountInstruction = {
   data: { instruction: ClaimableTokenInstruction; ethereumAddress: string }
 }
 
-type DecodedTransferClaimableTokenInstruction = {
-  programId: PublicKey
-  keys: {
-    payer: AccountMeta
-    sourceUserbank: AccountMeta
-    destination: AccountMeta
-    nonce: AccountMeta
-    authority: AccountMeta
-    rent: AccountMeta
-    sysvarInstructions: AccountMeta
-    systemProgramId: AccountMeta
-    tokenProgramId: AccountMeta
-  }
-  data: { instruction: ClaimableTokenInstruction; ethereumAddress: string }
-}
-
-type DecodedClaimableTokenInstruction =
-  | DecodedCreateClaimableTokenAccountInstruction
-  | DecodedTransferClaimableTokenInstruction
-
 const decodeCreateClaimableTokenAccountInstruction = ({
   programId,
   keys: [
@@ -68,6 +48,22 @@ const decodeCreateClaimableTokenAccountInstruction = ({
     ethereumAddress: decodeEthereumWallet(data)
   }
 })
+
+type DecodedTransferClaimableTokenInstruction = {
+  programId: PublicKey
+  keys: {
+    payer: AccountMeta
+    sourceUserbank: AccountMeta
+    destination: AccountMeta
+    nonce: AccountMeta
+    authority: AccountMeta
+    rent: AccountMeta
+    sysvarInstructions: AccountMeta
+    systemProgramId: AccountMeta
+    tokenProgramId: AccountMeta
+  }
+  data: { instruction: ClaimableTokenInstruction; ethereumAddress: string }
+}
 
 const decodeTransferClaimableTokenInstruction = ({
   programId,
@@ -101,6 +97,10 @@ const decodeTransferClaimableTokenInstruction = ({
     ethereumAddress: decodeEthereumWallet(data)
   }
 })
+
+type DecodedClaimableTokenInstruction =
+  | DecodedCreateClaimableTokenAccountInstruction
+  | DecodedTransferClaimableTokenInstruction
 
 export const decodeClaimableTokenInstruction = (
   instruction: TransactionInstruction
