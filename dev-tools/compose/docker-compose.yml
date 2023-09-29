@@ -135,10 +135,10 @@ services:
       service: sla-auditor
     <<: *common
 
-  verified_notifications:
+  verified-notifications:
     extends:
       file: docker-compose.pedalboard.yml
-      service: verified_notifications
+      service: verified-notifications
     <<: *common
 
 
