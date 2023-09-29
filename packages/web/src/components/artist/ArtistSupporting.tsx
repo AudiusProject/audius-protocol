@@ -26,6 +26,7 @@ import {
 } from 'store/application/ui/userListModal/types'
 
 import styles from './ArtistSupporting.module.css'
+import { trpc } from 'services/trpc'
 const { loadMore, reset } = userListActions
 const { getUsers } = cacheUsersSelectors
 const { getOptimisticSupporting } = tippingSelectors
@@ -43,11 +44,20 @@ export const ArtistSupporting = (props: ArtistSupportingProps) => {
   const { artist, onNavigateAway } = props
   const { user_id, supporting_count } = artist
   const dispatch = useDispatch()
+  const { data } = trpc.users.tipsSent.useQuery(user_id)
+  console.log('artist supporting dataa ', data)
 
   const supportingMap = useSelector(getOptimisticSupporting)
+  const supportingForArtist2: { [key : string]: Object } = data?.reduce((accumulatedTipMap, tip) => {
+    accumulatedTipMap[tip.receiverUserId] = tip
+    return accumulatedTipMap
+  }, {} as { [key : string]: Object } ) || {}
+  console.log('supporting 4 artist 2222: ', supportingForArtist2)
   const hasNotPreviouslyFetchedSupportingForArtist =
     supportingMap[user_id] === undefined
+  // to do - replace this with supporting for artist 2 
   const supportingForArtist = supportingMap[user_id] ?? {}
+  console.log('supporting for artisttt ' , supportingForArtist)
   const supportingForArtistIds = Object.keys(
     supportingForArtist
   ) as unknown as ID[]

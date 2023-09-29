@@ -14,6 +14,7 @@ import Stats, { StatProps } from 'components/stats/Stats'
 import styles from './ArtistCard.module.css'
 import { ArtistCardCover } from './ArtistCardCover'
 import { ArtistSupporting } from './ArtistSupporting'
+import { trpc } from 'services/trpc'
 const { followUser, unfollowUser } = usersSocialActions
 const { setNotificationSubscription } = profilePageActions
 
@@ -26,16 +27,21 @@ export const ArtistCard = (props: ArtistCardProps) => {
   const { artist, onNavigateAway } = props
   const {
     user_id,
-    bio,
-    track_count,
-    playlist_count,
-    follower_count,
-    followee_count,
-    does_current_user_follow
   } = artist
-
+  const followData = trpc.me.userRelationship.useQuery({ theirId: user_id.toString() })
+  const followed =  followData.data?.followed || false
+  const followsMe =  followData.data?.followsMe || false
+  const { data } = trpc.users.get.useQuery(user_id.toString())
+  console.log(user_id)
+  console.log('dataaa', data)
+  console.log('artisttt ', artist)
   const dispatch = useDispatch()
-  const isArtist = track_count > 0
+  const isArtist = parseInt(data?.trackCount || '0') > 0
+  const track_count = parseInt(data?.trackCount || '0')
+  const playlist_count = parseInt(data?.playlistCount || '0')
+  const follower_count = parseInt(data?.followerCount || '0')
+  const followee_count = parseInt(data?.followingCount || '0')
+  const bio = data?.bio || ''
 
   const handleClick: MouseEventHandler = useCallback((event) => {
     event.stopPropagation()
@@ -88,6 +94,7 @@ export const ArtistCard = (props: ArtistCardProps) => {
           artist={artist}
           isArtist={isArtist}
           onNavigateAway={onNavigateAway}
+          followsMe={followsMe}
         />
         <div className={styles.artistStatsContainer}>
           <Stats
@@ -103,7 +110,7 @@ export const ArtistCard = (props: ArtistCardProps) => {
             <div className={styles.description}>{bio}</div>
             <FollowButton
               className={styles.followButton}
-              following={does_current_user_follow}
+              following={followed}
               onFollow={handleFollow}
               onUnfollow={handleUnfollow}
               stopPropagation
