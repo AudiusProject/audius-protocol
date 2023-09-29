@@ -53,6 +53,7 @@ type healthCheckResponseData struct {
 	TrustedNotifierID       int                        `json:"trustedNotifierId"`
 	PeerHealths             map[string]*PeerHealth     `json:"peerHealths"`
 	UnreachablePeers        []string                   `json:"unreachablePeers"`
+	FailsPeerReachability   bool                       `json:"failsPeerReachability"`
 	StoreAll                bool                       `json:"storeAll"`
 }
 
@@ -110,6 +111,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		TrustedNotifierID:       ss.Config.TrustedNotifierID,
 		PeerHealths:             ss.peerHealths,
 		UnreachablePeers:        ss.unreachablePeers,
+		FailsPeerReachability:   ss.failsPeerReachability,
 		Signers:                 ss.Config.Signers,
 		StoreAll:                ss.Config.StoreAll,
 	}

@@ -11,6 +11,7 @@ import { Button, ButtonType, Popup, SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
+import { useWindowSize } from 'react-use'
 
 import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
 import { Dropzone } from 'components/upload/Dropzone'
@@ -234,6 +235,7 @@ const ImageSelectionPopup = ({
 }) => {
   const { mainContentRef } = useContext(MainContentContext)
   const [page, setPage] = useState(messages.uploadYourOwn)
+  const windowSize = useWindowSize()
   const {
     collectibles,
     collectibleList,
@@ -285,11 +287,19 @@ const ImageSelectionPopup = ({
     })
   }
 
+  let anchorOrigin = { vertical: 'bottom', horizontal: 'center' }
+  let transformOrigin = { vertical: 'top', horizontal: 'center' }
+
+  if (windowSize.width >= 1000 || windowSize.height < 820) {
+    anchorOrigin = { vertical: 'center', horizontal: 'left' }
+    transformOrigin = { vertical: 'center', horizontal: 'right' }
+  }
+
   return (
     <Popup
       anchorRef={anchorRef}
-      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+      anchorOrigin={anchorOrigin}
+      transformOrigin={transformOrigin}
       className={cn(styles.popup, className)}
       isVisible={isVisible}
       onClose={handleClose}

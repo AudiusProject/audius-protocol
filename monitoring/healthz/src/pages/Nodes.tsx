@@ -121,6 +121,7 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
   // TODO(michelle) after all nodes updated, change DN check to health.discovery_node_healthy
   const isHealthy = isContent ? health.healthy : !health.errors || (Array.isArray(health.errors) && health.errors.length === 0)
   const unreachablePeers = health.unreachablePeers?.join(', ')
+  const peerReachabilityClass = health?.failsPeerReachability ? 'is-unhealthy' : ''
 
   const composeSha =
     health['audius-docker-compose'] || health['audiusDockerCompose']
@@ -286,7 +287,7 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
       </td>)}
       {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{metrics?.uploads}</td>}
       {isContent && (
-        <td className="whitespace-nowrap px-3 py-5 text-sm unreachable-peers">
+        <td className={`whitespace-nowrap px-3 py-5 text-sm unreachable-peers ${peerReachabilityClass}`}>
           {healthyPeers2m}
           {unreachablePeers && <div>{`Can't reach: ${unreachablePeers}`}</div>}
         </td>
