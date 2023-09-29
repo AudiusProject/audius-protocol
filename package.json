@@ -17,6 +17,7 @@
     "patch-package": "patch-package --patch-dir=packages/mobile/patches && patch-package --patch-dir=packages/web/patches",
     "postinstall": "bash ./scripts/postinstall.sh",
     "preinstall": "bash ./scripts/preinstall.sh",
+    "turbo-link": "turbo login && turbo link",
     "verify": "turbo run verify",
     "WEB========================================": "",
     "web:dev": "turbo run start:dev --filter=audius-client",
