@@ -26,10 +26,10 @@ jobs:
       instance-name: circleci-push-pedalboard-sla-auditor-$CIRCLE_BUILD_NUM
       service: sla-auditor
   - push-docker-image:
-    name: push-pedalboard-verified-notifications
-    context: [GCP, dockerhub]
-    instance-name: circleci-push-pedalboard-verified-notifications-$CIRCLE_BUILD_NUM
-    service: verified-notifications
+      name: push-pedalboard-verified-notifications
+      context: [GCP, dockerhub]
+      instance-name: circleci-push-pedalboard-verified-notifications-$CIRCLE_BUILD_NUM
+      service: verified-notifications
   - push-docker-image:
       name: push-comms
       context: [GCP, dockerhub]
