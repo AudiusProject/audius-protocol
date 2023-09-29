@@ -12,6 +12,11 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "basekit": "^0.0.0"
+    "@slack/web-api": "^6.9.0",
+    "axios": "^1.5.1",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "knex": "^2.5.1",
+    "pg": "^8.11.3"
   }
 }

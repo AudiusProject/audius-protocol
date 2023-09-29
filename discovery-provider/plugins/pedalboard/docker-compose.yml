@@ -52,13 +52,13 @@ services:
     env_file:
       - .env
 
-  verified_notifications:
-    container_name: verified_notifications
+  verified-notifications:
+    container_name: verified-notifications
     build:
       context: .
       dockerfile: ./apps/verified-notifications/Dockerfile
       args:
-        app_name: verified_notifications
+        app_name: verified-notifications
     restart: always
     command: npm run start
     env_file:

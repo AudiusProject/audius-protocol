@@ -48,8 +48,8 @@ services:
   verified-notifications:
     container_name: verified-notifications
     build:
-      context: ${PROJECT_ROOT}/discovery-provider/plugins/pedalboard
-      dockerfile: ./apps/verified-notifications/Dockerfile
+      context: ${PROJECT_ROOT}/discovery-provider/plugins/pedalboard/apps/verified-notifications
+      dockerfile: ./Dockerfile
       args:
         app_name: verified-notifications
         git_sha: "${GIT_COMMIT}"
