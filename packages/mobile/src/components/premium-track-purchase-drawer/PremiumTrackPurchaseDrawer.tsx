@@ -122,7 +122,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
   const { submitForm, resetForm } = useFormikContext()
 
   // Reset form on track change
-  useEffect(() => resetForm, [track.track_id])
+  useEffect(() => resetForm, [track.track_id, resetForm])
 
   const {
     premium_conditions: {
