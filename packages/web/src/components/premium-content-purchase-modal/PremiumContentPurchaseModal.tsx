@@ -53,8 +53,8 @@ const RenderForm = ({
       usdc_purchase: { price }
     }
   } = track
-  const state = usePurchaseContentFormState({ price })
-  const { error, isUnlocking, purchaseSummaryValues, stage } = state
+  const { error, isUnlocking, purchaseSummaryValues, stage } =
+    usePurchaseContentFormState({ price })
 
   // Attempt recovery once on re-mount of the form
   useEffect(() => {

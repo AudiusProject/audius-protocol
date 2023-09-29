@@ -1,4 +1,4 @@
-import { useCallback, type ReactNode } from 'react'
+import { useCallback, type ReactNode, useEffect } from 'react'
 
 import type { PurchasableTrackMetadata } from '@audius/common'
 import {
@@ -116,7 +116,10 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
   const { specialLightGreen, neutralLight2, accentRed, secondary } =
     useThemeColors()
 
-  const { submitForm } = useFormikContext()
+  const { submitForm, resetForm } = useFormikContext()
+
+  // Reset form on track change
+  useEffect(() => resetForm, [track.track_id])
 
   const {
     premium_conditions: {
