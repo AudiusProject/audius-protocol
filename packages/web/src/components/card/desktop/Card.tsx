@@ -216,6 +216,7 @@ const Card = ({
           variant={isPlaylist ? 'playlist' : 'album'}
           playlistId={playlistId}
           playlistName={playlistName}
+          permalink={href}
           containerStyles={styles.actionContainer}
           currentUserReposted={isReposted}
           currentUserSaved={isSaved}

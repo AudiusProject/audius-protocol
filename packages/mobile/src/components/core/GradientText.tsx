@@ -35,12 +35,7 @@ export const GradientText = (props: GradientTextProps) => {
         start={{ x: 1, y: 1 }}
         end={{ x: 0, y: 0 }}
       >
-        <Text
-          style={[style, { opacity: 0 }]}
-          weight='heavy'
-          {...other}
-          accessibilityElementsHidden
-        >
+        <Text style={[style, { opacity: 0 }]} weight='heavy' {...other}>
           {children}
         </Text>
       </LinearGradient>

@@ -45,7 +45,7 @@ export const PurchaseSummaryTable = ({
           <span>{messages.price(formatPrice(extraAmount))}</span>
         </div>
       ) : null}
-      {existingBalance ? (
+      {existingBalance != null ? (
         <div className={styles.row}>
           <span>{messages.existingBalance}</span>
           <span>{`-${messages.price(formatPrice(existingBalance))}`}</span>

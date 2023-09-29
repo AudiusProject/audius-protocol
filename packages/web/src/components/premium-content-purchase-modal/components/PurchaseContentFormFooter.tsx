@@ -2,21 +2,18 @@ import { useCallback } from 'react'
 
 import {
   Name,
+  PurchasableTrackMetadata,
   PurchaseContentStage,
-  UserTrackMetadata,
-  formatPrice,
-  isContentPurchaseInProgress,
-  purchaseContentSelectors
+  formatPrice
 } from '@audius/common'
 import {
-  HarmonyPlainButton,
-  IconCaretRight,
-  HarmonyPlainButtonType,
-  HarmonyPlainButtonSize,
   HarmonyButton,
+  HarmonyPlainButton,
+  HarmonyPlainButtonSize,
+  HarmonyPlainButtonType,
+  IconCaretRight,
   IconError
 } from '@audius/stems'
-import { useSelector } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
@@ -25,12 +22,9 @@ import { TwitterShareButton } from 'components/twitter-share-button/TwitterShare
 import { Text } from 'components/typography'
 import { fullTrackPage } from 'utils/route'
 
-import { usePurchaseSummaryValues } from '../hooks'
+import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
 
 import styles from './PurchaseContentFormFooter.module.css'
-
-const { getPurchaseContentFlowStage, getPurchaseContentError } =
-  purchaseContentSelectors
 
 const messages = {
   buy: 'Buy',
@@ -64,26 +58,28 @@ const getButtonContent = (isUnlocking: boolean, amountDue: number) =>
     messages.buy
   )
 
-export const PurchaseContentFormFooter = ({
-  track,
-  onViewTrackClicked
-}: {
-  track: UserTrackMetadata
+type PurchaseContentFormFooterProps = Pick<
+  PurchaseContentFormState,
+  'error' | 'isUnlocking' | 'purchaseSummaryValues' | 'stage'
+> & {
+  track: PurchasableTrackMetadata
   onViewTrackClicked: () => void
-}) => {
+}
+
+export const PurchaseContentFormFooter = ({
+  error,
+  track,
+  isUnlocking,
+  purchaseSummaryValues,
+  stage,
+  onViewTrackClicked
+}: PurchaseContentFormFooterProps) => {
   const {
     title,
     permalink,
     user: { handle }
   } = track
-
-  const stage = useSelector(getPurchaseContentFlowStage)
-  const error = useSelector(getPurchaseContentError)
   const isPurchased = stage === PurchaseContentStage.FINISH
-  const isUnlocking = !error && isContentPurchaseInProgress(stage)
-
-  const purchaseSummaryValues = usePurchaseSummaryValues(track)
-
   const handleTwitterShare = useCallback(
     (handle: string) => {
       const shareText = messages.shareTwitterText(title, handle)
@@ -94,10 +90,6 @@ export const PurchaseContentFormFooter = ({
     },
     [title]
   )
-
-  if (!purchaseSummaryValues) {
-    return null
-  }
 
   const { amountDue } = purchaseSummaryValues
   if (isPurchased) {

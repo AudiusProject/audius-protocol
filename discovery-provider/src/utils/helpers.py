@@ -10,9 +10,9 @@ import unicodedata
 from functools import reduce
 from json.encoder import JSONEncoder
 from typing import List, Optional, TypedDict, cast
-import psutil
 
 import base58
+import psutil
 import requests
 from flask import g, request
 from hashids import Hashids
@@ -166,7 +166,7 @@ class CustomJsonFormatter(JsonFormatter):
             # Get memory usage
             process = psutil.Process()
             memory_info = process.memory_info()
-            rss = memory_info.rss / (1024 ** 2)  # Resident Set Size in MB
+            rss = memory_info.rss / (1024**2)  # Resident Set Size in MB
 
             # Include CPU and memory usage in log record
             record.cpu = cpu_percent

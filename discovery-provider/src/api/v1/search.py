@@ -53,6 +53,7 @@ class FullSearch(Resource):
             "limit": limit,
             "offset": offset,
             "only_downloadable": False,
+            "include_purchaseable": args.get("includePurchaseable", False),
         }
         resp = search(search_args)
         return success_response(resp)
@@ -93,6 +94,7 @@ class FullSearchAutocomplete(Resource):
             "limit": limit,
             "offset": offset,
             "only_downloadable": False,
+            "include_purchaseable": args.get("includePurchaseable", False),
         }
         resp = search(search_args)
         return success_response(resp)
