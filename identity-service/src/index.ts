@@ -1,6 +1,6 @@
 'use strict'
 
-import solanaRouter from './typed-routes/solana/solanaRelay'
+import { solanaRouter } from './typed-routes/solana/solanaRelay'
 
 // Import libs before anything else becaues it takes a very long time to load.
 // Once it's imported once, it'll be in the cache and subsequent imports will be ~instant.
@@ -26,7 +26,7 @@ const start = async () => {
   const port = config.get('port')
   const app = new App(port)
   // TODO: Move this into App once it's typed
-  app.express.use('/solana2', solanaRouter)
+  app.express.use('/solana', solanaRouter)
   const { server } = await app.init()
 
   // when app terminates, close down any open DB connections gracefully

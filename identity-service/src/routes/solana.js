@@ -168,5 +168,5 @@ solanaRouter.get(
 )
 
 module.exports = function (app) {
-  app.use('/solana', solanaRouter)
+  app.use('/solana-legacy', solanaRouter)
 }

@@ -258,7 +258,18 @@ const assertAllowedJupiterProgramInstruction = (
     )
   }
 }
-
+/**
+ * Checks each of the instructions to make sure it's something we want to relay.
+ * The main goals of the checks are to ensure the feePayer isn't abused.
+ * Major checks include:
+ * - Checking the caller is interacting with our deployed versions of the programs
+ * - Checking the caller isn't creating token accounts that can be rent-drained
+ * - Checking the caller isn't interacting with non-Audius related programs
+ * @param instructions the instructions to check
+ * @param user the user, if signed in
+ * @param socialProofEnabled if social proof is enabled
+ * @throws {InvalidRelayInstructionError} if the instruction isn't supported
+ */
 export const assertRelayAllowedInstructions = async (
   instructions: TransactionInstruction[],
   user?: { walletAddress?: string; blockchainUserId: number; handle: string },
