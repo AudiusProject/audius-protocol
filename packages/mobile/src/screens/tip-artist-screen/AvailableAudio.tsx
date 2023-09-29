@@ -6,7 +6,9 @@ import { useSelector } from 'react-redux'
 
 import TokenBadgeNoTier from 'app/assets/images/tokenBadgeNoTier.png'
 import { Text } from 'app/components/core'
+import Skeleton from 'app/components/skeleton'
 import { makeStyles } from 'app/styles'
+
 const { getAccountBalance } = walletSelectors
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
@@ -40,7 +42,7 @@ const messages = {
 }
 
 export const AvailableAudio = () => {
-  const accountBalance = useSelector(getAccountBalance) ?? new BN(0)
+  const accountBalance = useSelector(getAccountBalance)
   const styles = useStyles()
 
   return (
@@ -50,9 +52,13 @@ export const AvailableAudio = () => {
           {messages.available}
         </Text>
         <Image style={styles.audioToken} source={TokenBadgeNoTier} />
-        <Text variant='body' style={styles.text}>
-          {formatWei(accountBalance as BNWei, true, 0)}
-        </Text>
+        {accountBalance == null ? (
+          <Skeleton width={24} height={13} />
+        ) : (
+          <Text variant='body' style={styles.text}>
+            {formatWei(accountBalance as BNWei, true, 0)}
+          </Text>
+        )}
       </View>
       <Text variant='body2' color='neutralLight4'>
         {Platform.OS === 'ios' ? messages.disclaimerAlt : messages.disclaimer}

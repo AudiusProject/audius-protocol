@@ -79,6 +79,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   TiersExplainer: TierExplainerModal,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
   DuplicateAddConfirmation: DuplicateAddConfirmationModal,
+  AudioBreakdown: AudioBreakdownModal,
   UploadConfirmation: UploadConfirmationModal,
   BuyAudio: BuyAudioModal,
   AudioBreakdown: AudioBreakdownModal,

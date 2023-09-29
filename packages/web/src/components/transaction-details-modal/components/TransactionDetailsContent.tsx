@@ -241,9 +241,12 @@ export const TransactionDetailsContent = ({
               {formatAudio(transactionDetails.change)}
             </span>
           </Block>
-          <Block header={messages.balance}>
-            {formatAudio(transactionDetails.balance, 2)}
-          </Block>
+          {/* If user's balance is still loading or failed to load, don't show it. */}
+          {transactionDetails.balance == null ? null : (
+            <Block header={messages.balance}>
+              {formatAudio(transactionDetails.balance, 2)}
+            </Block>
+          )}
         </BlockContainer>
       )}
     </>

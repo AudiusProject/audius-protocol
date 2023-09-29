@@ -19,6 +19,18 @@
   background: var(--page-header-gradient);
   padding: 24px;
 }
+.spinner {
+  width: var(--unit-20);
+  height: var(--unit-20);
+  margin: 0 auto;
+  padding-top: var(--unit-2);
+  padding-bottom: var(--unit-2);
+}
+
+.spinner g path {
+  stroke: rgba(255, 255, 255, 0.75);
+}
+
 .balanceAmount {
   font-weight: 800;
   font-size: 96px;
@@ -38,7 +50,7 @@
   text-align: center;
   letter-spacing: 1px;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.75);
   text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
 }
 .iconInfo {
@@ -51,7 +63,7 @@
   cursor: pointer;
 }
 .iconInfo path {
-  fill: rgba(255, 255, 255, 0.4);
+  fill: rgba(255, 255, 255, 0.75);
 }
 
 .container {

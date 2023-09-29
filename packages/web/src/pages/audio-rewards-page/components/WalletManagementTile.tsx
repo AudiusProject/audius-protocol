@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useContext, useEffect, useMemo } from 'react'
 
 import {
   BNWei,
@@ -28,8 +28,10 @@ import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useModalState } from 'common/hooks/useModalState'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
 import { CollapsibleContent } from 'components/collapsible-content'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobileConnectWalletsDrawer from 'components/mobile-connect-wallets-drawer/MobileConnectWalletsDrawer'
 import { OnRampButton } from 'components/on-ramp-button/OnRampButton'
+import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { getLocation } from 'services/Location'
@@ -45,7 +47,11 @@ import styles from './WalletManagementTile.module.css'
 const { getHasAssociatedWallets } = tokenDashboardPageSelectors
 const { pressReceive, pressSend, pressConnectWallets } =
   tokenDashboardPageActions
-const { getAccountBalance, getAccountTotalBalance } = walletSelectors
+const {
+  getAccountBalance,
+  getAccountTotalBalance,
+  getTotalBalanceLoadDidFail
+} = walletSelectors
 const { startBuyAudioFlow } = buyAudioActions
 
 const messages = {
@@ -76,7 +82,7 @@ const messages = {
 
 const AdvancedWalletActions = () => {
   const balance = useSelector(getAccountBalance) ?? (new BN(0) as BNWei)
-  const hasBalance = balance && !balance.isZero()
+  const hasBalance = balance != null && !balance.isZero()
   const dispatch = useDispatch()
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
 
@@ -302,6 +308,8 @@ const useOnRampProviderInfo = () => {
 export const WalletManagementTile = () => {
   const totalBalance = useSelector(getAccountTotalBalance)
   const hasMultipleWallets = useSelector(getHasAssociatedWallets)
+  const balanceLoadDidFail = useSelector(getTotalBalanceLoadDidFail)
+  const { toast } = useContext(ToastContext)
   const [, setOpen] = useModalState('AudioBreakdown')
 
   const onRampProviders = useOnRampProviderInfo()
@@ -322,14 +330,27 @@ export const WalletManagementTile = () => {
     setOpen(true)
   }, [setOpen])
 
+  useEffect(() => {
+    if (balanceLoadDidFail) {
+      toast(
+        'Could not load your $AUDIO balance. Please try again later.',
+        10000
+      )
+    }
+  }, [balanceLoadDidFail, toast])
+
   return (
     <div className={styles.walletManagementTile}>
       <div className={styles.balanceContainer}>
-        <TokenHoverTooltip balance={totalBalance}>
-          <div className={styles.balanceAmount}>
-            {formatWei(totalBalance, true, 0)}
-          </div>
-        </TokenHoverTooltip>
+        {totalBalance == null ? (
+          <LoadingSpinner className={styles.spinner} />
+        ) : (
+          <TokenHoverTooltip balance={totalBalance}>
+            <div className={styles.balanceAmount}>
+              {formatWei(totalBalance, true, 0)}
+            </div>
+          </TokenHoverTooltip>
+        )}
         <div className={styles.balance}>
           {hasMultipleWallets ? (
             <div onClick={onClickOpen}>
