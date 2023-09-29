@@ -2,10 +2,8 @@ import { useCallback, useEffect } from 'react'
 
 import {
   ID,
-  User,
   stringWeiToBN,
   cacheUsersSelectors,
-  tippingSelectors,
   tippingActions,
   userListActions,
   SUPPORTING_USER_LIST_TAG as SUPPORTING_TAG,
@@ -18,7 +16,6 @@ import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
 import { UserProfilePictureList } from 'components/notification/Notification/components/UserProfilePictureList'
 import { trpc } from 'services/trpc'
-
 import {
   setUsers,
   setVisibility
@@ -32,7 +29,6 @@ import styles from './ArtistSupporting.module.css'
 
 const { loadMore, reset } = userListActions
 const { getUsers } = cacheUsersSelectors
-const { getOptimisticSupporting } = tippingSelectors
 const { fetchSupportingForUser } = tippingActions
 
 const messages = {
