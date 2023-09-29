@@ -76,12 +76,10 @@ solanaRouter.post(
     } = req.body
 
     // Allowed relay checks
-    const invalidInstructions = await validateRelayInstructions(
-      instructions,
-      req.user?.walletAddress
-    )
-    if (invalidInstructions.length > 0) {
-      req.logger.error('Invalid relay instructions', invalidInstructions)
+    try {
+      await validateRelayInstructions(instructions, req.user?.walletAddress)
+    } catch (e) {
+      req.logger.error('Solana Relay Error:', e)
       return errorResponseServerError(`Invalid relay instructions`, {
         error: `Invalid relay instructions`
       })

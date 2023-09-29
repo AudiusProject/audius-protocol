@@ -90,71 +90,16 @@ const getAccountIndex = (instruction, enumMap) => {
   return null
 }
 
-/**
- * Checks that the instruction's account at the accountIndex matches the expected account
- * Also passes if accountIndex is null, and fails if account index is outside the range of keys
- *
- * @param {RelayInstruction} instruction
- * @param {number} accountIndex
- * @param {string} expectedAccount
- * @returns true if the account matches, or if the accountIndex is null
- */
-const checkAccountKey = (instruction, accountIndex, expectedAccount) => {
-  if (accountIndex == null) {
-    return true
-  } else if (
-    instruction.keys &&
-    accountIndex >= 0 &&
-    accountIndex < instruction.keys.length
-  ) {
-    return instruction.keys[accountIndex].pubkey === expectedAccount
+class InvalidRelayInstructionError extends Error {
+  /**
+   * @param {number} instructionIndex
+   * @param {string} message
+   */
+  constructor(instructionIndex, message) {
+    super(`Instruction ${instructionIndex}: ${message}`)
+    this.name = 'InvalidRelayInstructionError'
+    this.instructionIndex = instructionIndex
   }
-  return false
-}
-
-/**
- * Checks the authority being used for the relayed instruction, if applicable
- * Ensures we relay only for instructions relevant to our programs and base account
- *
- * @param {RelayInstruction} instruction
- * @param {string | undefined} walletAddress
- * @returns true if the program authority matches, false if it doesn't, and null if not applicable
- */
-const isRelayAllowedInstruction = async (instruction, walletAddress) => {
-  if (instruction.programId === solanaRewardsManagerProgramId) {
-    // DeleteSenderPublic doesn't have the authority passed in, so use base account instead.
-    // Since we've just checked the program ID, this is sufficient as the authority
-    // is derived from the base account and program ID
-    return checkAccountKey(
-      instruction,
-      getAccountIndex(instruction, rewardManagerBaseAccountIndices),
-      solanaRewardsManager
-    )
-  } else if (instruction.programId === solanaClaimableTokenProgramAddress) {
-    const audioAuthority = await getClaimableTokenAuthority(solanaMintAddress)
-    const usdcAuthority = await getClaimableTokenAuthority(usdcMintAddress)
-    // Claimable token does not include the base account for the Transfer instruction
-    // but does include the authority.
-    return (
-      checkAccountKey(
-        instruction,
-        getAccountIndex(instruction, claimableTokenAuthorityIndices),
-        audioAuthority
-      ) ||
-      checkAccountKey(
-        instruction,
-        getAccountIndex(instruction, claimableTokenAuthorityIndices),
-        usdcAuthority
-      )
-    )
-  } else if (instruction.programId === TOKEN_PROGRAM_ID.toBase58()) {
-    return await isTransferToUserbank(instruction, walletAddress)
-  } else if (isRelayAllowedProgram([instruction])) {
-    // Authority check not necessary
-    return true
-  }
-  // Not allowed program
-  return false
 }
 
 /**
@@ -163,37 +108,95 @@ const isRelayAllowedInstruction = async (instruction, walletAddress) => {
  * - Correct authority or base account for use on our programs
  * - Allowed program IDs for third party programs
  * - Authentication for transfers to userbanks or Jupiter USDC=>SOL swaps
- * @param {RelayInstruction[]} instructions The instructions to check
- * @param {string | undefined} walletAddress the wallet address if the user is authenticated
- * @returns a list of instruction indices that failed validation
+ * @throws {InvalidRelayInstructionError} errors on first validation failure
  */
 const validateRelayInstructions = async (instructions, walletAddress) => {
-  /**
-   * Defaults every instruction to false
-   * @type {boolean[]}
-   */
-  const validations = new Array(instructions.length).fill(false)
   for (let i = 0; i < instructions.length; i++) {
     const instruction = instructions[i]
     if (isCreateAssociatedTokenAccountInstruction(instruction)) {
       const isMintAllowed = checkCreateTokenAccountMint(instruction)
       const matchingCloseInstructionIndex =
         findMatchingCloseTokenAccountInstruction(i, instructions)
-      if (isMintAllowed && matchingCloseInstructionIndex > -1) {
-        validations[i] = true
-        validations[matchingCloseInstructionIndex] = true
+      if (!isMintAllowed) {
+        throw new InvalidRelayInstructionError(
+          i,
+          `Specified mint not allowed for create token account`
+        )
+      } else if (matchingCloseInstructionIndex === -1) {
+        throw new InvalidRelayInstructionError(
+          i,
+          `Create token account instruction is missing matching close instruction`
+        )
       }
     } else if (isJupiterInstruction(instruction)) {
-      validations[i] =
-        !!walletAddress && checkJupiterSwapInstruction(i, instructions)
-    } else if (await isRelayAllowedInstruction(instruction, walletAddress)) {
-      validations[i] = true
+      if (!walletAddress) {
+        throw new InvalidRelayInstructionError(
+          i,
+          `Authentication required for swap instruction`
+        )
+      } else if (!checkJupiterSwapInstruction(i, instructions)) {
+        throw new InvalidRelayInstructionError(
+          i,
+          `Invalid mints used in swap instruction`
+        )
+      }
+    } else if (instruction.programId === solanaRewardsManagerProgramId) {
+      // DeleteSenderPublic doesn't have the authority passed in, so use base account instead.
+      // Since we've just checked the program ID, this is sufficient as the authority
+      // is derived from the base account and program ID
+      const expectedBaseAccount = solanaRewardsManager
+      const baseAccountIndex = getAccountIndex(
+        instruction,
+        rewardManagerBaseAccountIndices
+      )
+      const actualBaseAccount = instruction.keys[baseAccountIndex]?.pubkey
+      if (
+        baseAccountIndex !== null &&
+        actualBaseAccount !== expectedBaseAccount
+      ) {
+        throw new InvalidRelayInstructionError(
+          i,
+          `Invalid Rewards Manager Base Account: ${actualBaseAccount}`
+        )
+      }
+    } else if (instruction.programId === solanaClaimableTokenProgramAddress) {
+      const expectedAudioAuthority = await getClaimableTokenAuthority(
+        solanaMintAddress
+      )
+      const expectedUsdcAuthority = await getClaimableTokenAuthority(
+        usdcMintAddress
+      )
+      const authorityIndex = getAccountIndex(
+        instruction,
+        claimableTokenAuthorityIndices
+      )
+      const actualAuthority = instruction.keys[authorityIndex]?.pubkey
+      // Claimable token does not include the base account for the Transfer instruction
+      // but does include the authority.
+      if (
+        authorityIndex !== null &&
+        actualAuthority !== expectedAudioAuthority &&
+        actualAuthority !== expectedUsdcAuthority
+      ) {
+        throw new InvalidRelayInstructionError(
+          i,
+          `Unexpected Claimable Token Authority: ${actualAuthority}`
+        )
+      }
+    } else if (instruction.programId === TOKEN_PROGRAM_ID.toBase58()) {
+      if (!(await isTransferToUserbank(instruction, walletAddress))) {
+        throw new InvalidRelayInstructionError(
+          i,
+          `Token program instruction not allowed`
+        )
+      }
+    } else if (!isRelayAllowedProgram([instruction])) {
+      throw new InvalidRelayInstructionError(
+        i,
+        `Not an allowed program: ${instruction.programId}`
+      )
     }
   }
-  return validations
-    .map((isValid, index) => ({ index, isValid }))
-    .filter((v) => v.isValid === false)
-    .map((v) => v.index)
 }
 
 module.exports = {
