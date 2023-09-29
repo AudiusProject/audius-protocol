@@ -51,7 +51,7 @@ export default function DemoTrpcPage() {
             marginLeft: 10
           }}
         >
-          <button onClick={() => setOffset(Math.max(offset - pageSize, 0))}>
+          <button onClick={() => setOffset(Math.max(offset - pageSize, 1))}>
             prev
           </button>
           {offset}
