@@ -10,10 +10,13 @@ const {
   createUserBankInstruction,
   garbageProgramInstructions,
   garbageCreateSenderInstructions,
-  createSenderInstructions
+  createSenderInstructions,
+  withdrawSwapRelayRequest,
+  unclosedTokenAccountInstructions
 } = require('../lib/instructionMocks')
 const relayHelpers = require('../../src/utils/relayHelpers')
-const relayUtils = require('../../src/utils/relayUtils')
+const { isRelayAllowedProgram } = require('../../src/utils/relayUtils')
+const { validateRelayInstructions, isSendInstruction } = relayHelpers
 
 const solanaClaimableTokenProgramAddress = config.get(
   'solanaClaimableTokenProgramAddress'
@@ -22,46 +25,68 @@ const solanaRewardsManagerProgramId = config.get(
   'solanaRewardsManagerProgramId'
 )
 
-describe('test Solana util functions', function () {
-  it('isSendInstruction', function () {
-    assert(relayHelpers.isSendInstruction(sendInstruction))
-    assert(!relayHelpers.isSendInstruction(createUserBankInstruction))
+describe('Solana Relay checks', function () {
+  it('knows the difference between claimable token transfers and creations', function () {
+    assert(isSendInstruction(sendInstruction))
+    assert(!isSendInstruction(createUserBankInstruction))
   })
 
-  it('isRelayAllowedProgram', function () {
+  it('allows known program ids and rejects others', function () {
     assert(
-      relayUtils.isRelayAllowedProgram([
-        { programId: solanaClaimableTokenProgramAddress }
-      ])
+      isRelayAllowedProgram([{ programId: solanaClaimableTokenProgramAddress }])
     )
     assert(
-      relayUtils.isRelayAllowedProgram([
-        { programId: solanaRewardsManagerProgramId }
-      ])
+      isRelayAllowedProgram([{ programId: solanaRewardsManagerProgramId }])
     )
 
-    assert(!relayUtils.isRelayAllowedProgram([{ programId: 'wrong' }]))
+    assert(!isRelayAllowedProgram([{ programId: 'wrong' }]))
     assert(
-      !relayUtils.isRelayAllowedProgram([
+      !isRelayAllowedProgram([
         { programId: solanaRewardsManagerProgramId },
         { programId: 'wrong' }
       ])
     )
 
-    assert(relayUtils.isRelayAllowedProgram(sendInstruction))
-    assert(relayUtils.isRelayAllowedProgram(createUserBankInstruction))
-    assert(!relayUtils.isRelayAllowedProgram(garbageProgramInstructions))
+    assert(isRelayAllowedProgram(sendInstruction))
+    assert(isRelayAllowedProgram(createUserBankInstruction))
+    assert(!isRelayAllowedProgram(garbageProgramInstructions))
   })
 
-  it('isRelayAlllowedInstruction', async function () {
-    assert(
-      await relayHelpers.areRelayAllowedInstructions(createSenderInstructions)
+  it('allows valid createSender instructions', async function () {
+    const invalidInstructions = await validateRelayInstructions(
+      createSenderInstructions
     )
-    assert(
-      !(await relayHelpers.areRelayAllowedInstructions(
-        garbageCreateSenderInstructions
-      ))
+    assert(invalidInstructions.length === 0)
+  })
+
+  it('rejects createSender instructions with bad authority', async function () {
+    const invalidInstructions = await validateRelayInstructions(
+      garbageCreateSenderInstructions
     )
+    assert(invalidInstructions.length > 0)
+  })
+
+  it('allows relaying withdraw swaps when authenticated', async function () {
+    const invalidInstructions = await validateRelayInstructions(
+      withdrawSwapRelayRequest.instructions,
+      'some-wallet-address'
+    )
+    console.error(invalidInstructions)
+    assert(invalidInstructions.length === 0)
+  })
+
+  it('rejects relaying withdraw swaps when not authenticated', async function () {
+    const invalidInstructions = await validateRelayInstructions(
+      withdrawSwapRelayRequest.instructions
+    )
+    assert(invalidInstructions.length > 0)
+  })
+
+  it("disallows creating token accounts that aren't closed", async function () {
+    const invalidInstructions = await validateRelayInstructions(
+      unclosedTokenAccountInstructions
+    )
+    assert(invalidInstructions.length > 0)
   })
 })
 

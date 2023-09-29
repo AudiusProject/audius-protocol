@@ -164,7 +164,7 @@ const isRelayAllowedInstruction = async (instruction, walletAddress) => {
  * - Allowed program IDs for third party programs
  * - Authentication for transfers to userbanks or Jupiter USDC=>SOL swaps
  * @param {RelayInstruction[]} instructions The instructions to check
- * @param {string} walletAddress the wallet address if the user is authenticated
+ * @param {string | undefined} walletAddress the wallet address if the user is authenticated
  * @returns a list of instruction indices that failed validation
  */
 const validateRelayInstructions = async (instructions, walletAddress) => {
@@ -185,7 +185,7 @@ const validateRelayInstructions = async (instructions, walletAddress) => {
       }
     } else if (isJupiterInstruction(instruction)) {
       validations[i] =
-        walletAddress && checkJupiterSwapInstruction(i, instructions)
+        !!walletAddress && checkJupiterSwapInstruction(i, instructions)
     } else if (await isRelayAllowedInstruction(instruction, walletAddress)) {
       validations[i] = true
     }
