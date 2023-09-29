@@ -78,7 +78,6 @@ const createRouter = () => {
     '/relay',
     parameterizedAuthMiddleware({ shouldRespondBadRequest: false }),
     handleResponse(<RequestHandler<any, any, RelayRequestBody>>(async (req) => {
-      const redis = req.app.get('redis')
       const libs: AudiusLibs = req.app.get('audiusLibs')
       const logger = req.logger
       try {
@@ -157,18 +156,8 @@ const createRouter = () => {
         })
 
         if (error) {
-          const reqBodySHA = crypto
-            .createHash('sha256')
-            .update(JSON.stringify({ instructions: instructionsJSON }))
-            .digest('hex')
-          // if the tx fails, store it in redis with a 24 hour expiration
-          await redis.setex(
-            `solanaFailedTx:${reqBodySHA}`,
-            60 /* seconds */ * 60 /* minutes */ * 24 /* hours */,
-            JSON.stringify(req.body)
-          )
-          req.logger.error('Error in solana transaction:', error, reqBodySHA)
-          const errorString = `Something caused the solana transaction to fail for payload ${reqBodySHA}`
+          req.logger.error('Error in solana transaction:', error)
+          const errorString = `Something caused the Solana transaction to fail`
           return errorResponseServerError(errorString, { errorCode, error })
         }
         return successResponse({ transactionSignature })
