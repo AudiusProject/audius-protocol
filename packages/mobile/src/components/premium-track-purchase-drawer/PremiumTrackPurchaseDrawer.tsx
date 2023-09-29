@@ -111,6 +111,9 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   }
 }))
 
+// The bulk of the form rendering is in a nested component because we want access
+// to the FormikContext, which can only be used in a component which is a descendant
+// of the `<Formik />` component
 const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
   const styles = useStyles()
   const { specialLightGreen, neutralLight2, accentRed, secondary } =
