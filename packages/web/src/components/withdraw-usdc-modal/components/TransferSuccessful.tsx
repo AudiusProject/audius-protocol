@@ -4,7 +4,8 @@ import {
   BNUSDC,
   useWithdrawUSDCModal,
   formatUSDCWeiToFloorDollarNumber,
-  makeSolanaTransactionLink
+  makeSolanaTransactionLink,
+  decimalIntegerToHumanReadable
 } from '@audius/common'
 import {
   HarmonyPlainButton,
@@ -23,7 +24,6 @@ import {
   ADDRESS,
   AMOUNT
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
-import { toHumanReadable } from 'utils/decimal'
 
 import { TextRow } from './TextRow'
 import styles from './TransferSuccessful.module.css'
@@ -66,12 +66,12 @@ export const TransferSuccessful = ({
     <div className={styles.root}>
       <TextRow
         left={messages.priorBalance}
-        right={`$${toHumanReadable(priorBalanceCents)}`}
+        right={`$${decimalIntegerToHumanReadable(priorBalanceCents)}`}
       />
       <Divider style={{ margin: 0 }} />
       <TextRow
         left={messages.amountWithdrawn}
-        right={`-$${toHumanReadable(amountValue)}`}
+        right={`-$${decimalIntegerToHumanReadable(amountValue)}`}
       />
       <Divider style={{ margin: 0 }} />
       <TextRow left={messages.newBalance} right={`$${balanceFormatted}`} />
