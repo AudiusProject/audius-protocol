@@ -179,7 +179,8 @@ const assertAllowedClaimableTokenProgramInstruction = async (
   }
 
   // Ensure user has social proof before withdrawing
-  // TODO: Ensure this doesn't affect tipping
+  // Currently disabled and removed from the relay flow
+  // TODO: Fix this so that tipping is unaffected
   if (
     socialProofEnabled &&
     isTransferClaimableTokenInstruction(decodedInstruction)
@@ -190,6 +191,8 @@ const assertAllowedClaimableTokenProgramInstruction = async (
         'Claimable Token Transfer requires authentication'
       )
     }
+    // TODO: Get user ID from userbank from Discovery using libs to check that token account is a user bank
+    // const destination = decodedInstruction.keys.destination.pubkey.toBase58()
     const { blockchainUserId } = user
     const twitterUser = await (models as unknown as any).TwitterUser.findOne({
       where: {

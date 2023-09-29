@@ -25,7 +25,7 @@ type DecodedTransferClaimableTokenInstruction = {
   keys: {
     payer: AccountMeta
     sourceUserbank: AccountMeta
-    destinationUserbank: AccountMeta
+    destination: AccountMeta
     nonce: AccountMeta
     authority: AccountMeta
     rent: AccountMeta
@@ -74,7 +74,7 @@ const decodeTransferClaimableTokenInstruction = ({
   keys: [
     payer,
     sourceUserbank,
-    destinationUserbank,
+    destination,
     nonce,
     authority,
     rent,
@@ -88,7 +88,7 @@ const decodeTransferClaimableTokenInstruction = ({
   keys: {
     payer,
     sourceUserbank,
-    destinationUserbank,
+    destination,
     nonce,
     authority,
     rent,

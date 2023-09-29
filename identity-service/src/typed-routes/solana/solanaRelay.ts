@@ -80,22 +80,6 @@ const createRouter = () => {
       const libs: AudiusLibs = req.app.get('audiusLibs')
       const logger = req.logger
       try {
-        // Check to see if social proof is required for claimable token transfers
-        // Note: Currently would affect tipping
-        let optimizelyClient
-        let socialProofEnabled = false
-        try {
-          optimizelyClient = req.app.get('optimizelyClient')
-          socialProofEnabled = getFeatureFlag(
-            optimizelyClient,
-            FEATURE_FLAGS.SOCIAL_PROOF_TO_SEND_AUDIO_ENABLED
-          )
-        } catch (error) {
-          logger.error(
-            `Failed to retrieve optimizely feature flag for socialProofRequiredToSend: ${error}`
-          )
-        }
-
         const {
           instructions: instructionsJSON = [],
           skipPreflight,
@@ -128,11 +112,7 @@ const createRouter = () => {
         })
 
         // Check that the instructions are allowed for relay
-        await assertRelayAllowedInstructions(
-          instructions,
-          req.user,
-          socialProofEnabled
-        )
+        await assertRelayAllowedInstructions(instructions, req.user)
 
         // Send transaction using transaction handler
         const transactionHandler = libs.solanaWeb3Manager!.transactionHandler
