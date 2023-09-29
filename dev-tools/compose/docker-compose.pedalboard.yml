@@ -45,12 +45,12 @@ services:
     profiles:
       - pedalboard
 
-  verified_notifications:
-    container_name: verified_notifications
+  verified-notifications:
+    container_name: verified-notifications
     build:
       context: ${PROJECT_ROOT}/discovery-provider/plugins/pedalboard
       dockerfile: ./apps/verified-notifications/Dockerfile
       args:
-        app_name: verified_notifications
+        app_name: verified-notifications
         git_sha: "${GIT_COMMIT}"
     restart: always
