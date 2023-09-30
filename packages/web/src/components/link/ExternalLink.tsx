@@ -12,10 +12,17 @@ import { Link, LinkProps } from './Link'
 
 type ExternalLinkProps = LinkProps & {
   source?: 'profile page' | 'track page' | 'collection page'
+  showWarningIfNotAllowed?: boolean
 }
 
 export const ExternalLink = (props: ExternalLinkProps) => {
-  const { to, onClick, source, ...other } = props
+  const {
+    to,
+    onClick,
+    source,
+    showWarningIfNotAllowed = true,
+    ...other
+  } = props
 
   const record = useRecord()
   const { onOpen: openLeavingAudiusModal } = useLeavingAudiusModal()
@@ -32,12 +39,23 @@ export const ExternalLink = (props: ExternalLinkProps) => {
           })
         )
       }
-      if (typeof to === 'string' && !isAllowedExternalLink(to)) {
+      if (
+        typeof to === 'string' &&
+        showWarningIfNotAllowed &&
+        !isAllowedExternalLink(to)
+      ) {
         event.preventDefault()
         openLeavingAudiusModal({ link: to as string })
       }
     },
-    [onClick, record, source, openLeavingAudiusModal, to]
+    [
+      onClick,
+      record,
+      source,
+      openLeavingAudiusModal,
+      to,
+      showWarningIfNotAllowed
+    ]
   )
 
   return (

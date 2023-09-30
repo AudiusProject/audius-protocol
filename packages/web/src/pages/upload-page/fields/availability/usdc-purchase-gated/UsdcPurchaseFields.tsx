@@ -19,7 +19,7 @@ import {
   toHumanReadable
 } from 'utils/tokenInput'
 
-import { PREVIEW, PRICE } from '../AccessAndSaleField'
+import { PREVIEW, PRICE } from '../../AccessAndSaleField'
 
 import styles from './UsdcPurchaseFields.module.css'
 
