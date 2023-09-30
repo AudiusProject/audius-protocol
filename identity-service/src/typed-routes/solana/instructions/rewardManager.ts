@@ -1,6 +1,7 @@
+import { cstr, struct, u8 } from '@solana/buffer-layout'
+import { u64 } from '@solana/buffer-layout-utils'
 import { AccountMeta, PublicKey, TransactionInstruction } from '@solana/web3.js'
-import { deserialize } from 'borsh'
-import { decodeEthereumWallet } from './utils'
+import { ethAddress } from './utils'
 
 enum RewardManagerInstruction {
   Init = 0,
@@ -28,22 +29,15 @@ type DecodedSubmitAttestationsInstruction = {
   data: { instruction: RewardManagerInstruction; transferId: string }
 }
 
-class SubmitAttestationInstructionData {
-  id: string
-  constructor({ transferId }: { transferId: string }) {
-    this.id = transferId
-  }
+type SubmitAttestationInstructionData = {
+  instruction: RewardManagerInstruction
+  transferId: string
 }
-
-const submitAttestationInstructionSchema = new Map([
-  [
-    SubmitAttestationInstructionData,
-    {
-      kind: 'struct',
-      fields: [['id', 'string']]
-    }
-  ]
-])
+const submitAttestationInstructionData =
+  struct<SubmitAttestationInstructionData>([
+    u8('instruction'),
+    cstr('transferId')
+  ])
 
 const decodeSubmitAttestationInstruction = ({
   programId,
@@ -70,17 +64,15 @@ const decodeSubmitAttestationInstruction = ({
     sysvarInstructions,
     systemProgramId
   },
-  data: {
-    instruction: RewardManagerInstruction.SubmitAttestation,
-    transferId: (
-      deserialize(
-        submitAttestationInstructionSchema,
-        SubmitAttestationInstructionData,
-        data.slice(1)
-      ) as SubmitAttestationInstructionData
-    ).id
-  }
+  data: submitAttestationInstructionData.decode(data)
 })
+
+type EvaluateAttestationsInstructionData = {
+  instruction: RewardManagerInstruction
+  amount: bigint
+  id: string
+  ethRecipient: string
+}
 
 type DecodedEvaluateAttestationsInstruction = {
   programId: PublicKey
@@ -97,49 +89,16 @@ type DecodedEvaluateAttestationsInstruction = {
     tokenProgramId: AccountMeta
     systemProgramId: AccountMeta
   }
-  data: {
-    instruction: RewardManagerInstruction
-    amount: bigint
-    id: string
-    ethRecipient: string
-  }
+  data: EvaluateAttestationsInstructionData
 }
 
-type EvaluateAttestationsInstructionDataConfig = {
-  amount: bigint
-  id: string
-  ethRecipient: Uint8Array
-}
-
-class EvaluateAttestationsInstructionData {
-  amount: bigint
-  id: string
-  eth_recipient: Uint8Array
-
-  constructor({
-    amount,
-    id,
-    ethRecipient
-  }: EvaluateAttestationsInstructionDataConfig) {
-    this.amount = amount
-    this.id = id
-    this.eth_recipient = ethRecipient
-  }
-}
-
-const evaluateAttestationsInstructionSchema = new Map([
-  [
-    EvaluateAttestationsInstructionData,
-    {
-      kind: 'struct',
-      fields: [
-        ['amount', 'u64'],
-        ['id', 'string'],
-        ['eth_recipient', [20]]
-      ]
-    }
-  ]
-])
+const evaluateAttestationsInstructionData =
+  struct<EvaluateAttestationsInstructionData>([
+    u8('instruction'),
+    u64('amount'),
+    cstr('id'),
+    ethAddress('ethRecipient')
+  ])
 
 const decodeEvaluateAttestationsInstruction = ({
   programId,
@@ -157,36 +116,28 @@ const decodeEvaluateAttestationsInstruction = ({
     systemProgramId
   ],
   data
-}: TransactionInstruction): DecodedEvaluateAttestationsInstruction => {
-  const instructionData: EvaluateAttestationsInstructionData = deserialize(
-    evaluateAttestationsInstructionSchema,
-    EvaluateAttestationsInstructionData,
-    data
-  )
-  return {
-    programId,
-    keys: {
-      verifiedMessages,
-      rewardManager,
-      authority,
-      rewardManagerTokenSource,
-      receiverUserbank,
-      transferAccount,
-      antiAbuse,
-      payer,
-      rent,
-      tokenProgramId,
-      systemProgramId
-    },
-    data: {
-      instruction: RewardManagerInstruction.EvaluateAttestations,
-      amount: instructionData.amount,
-      id: instructionData.id,
-      ethRecipient: decodeEthereumWallet(
-        Buffer.from(instructionData.eth_recipient)
-      )
-    }
-  }
+}: TransactionInstruction): DecodedEvaluateAttestationsInstruction => ({
+  programId,
+  keys: {
+    verifiedMessages,
+    rewardManager,
+    authority,
+    rewardManagerTokenSource,
+    receiverUserbank,
+    transferAccount,
+    antiAbuse,
+    payer,
+    rent,
+    tokenProgramId,
+    systemProgramId
+  },
+  data: evaluateAttestationsInstructionData.decode(data)
+})
+
+type CreateSenderPublicInstructionData = {
+  instruction: RewardManagerInstruction
+  ethAddress: string
+  operator: string
 }
 
 type DecodedCreateSenderPublicInstruction = {
@@ -201,41 +152,15 @@ type DecodedCreateSenderPublicInstruction = {
     systemProgramId: AccountMeta
     existingSenders: AccountMeta[]
   }
-  data: {
-    instruction: RewardManagerInstruction.CreateSenderPublic
-    ethAddress: string
-    operator: string
-  }
+  data: CreateSenderPublicInstructionData
 }
 
-class CreateSenderPublicInstructionData {
-  eth_address: Uint8Array
-  operator: Uint8Array
-
-  constructor({
-    ethAddress,
-    operator
-  }: {
-    ethAddress: Uint8Array
-    operator: Uint8Array
-  }) {
-    this.eth_address = ethAddress
-    this.operator = operator
-  }
-}
-
-const createSenderPublicInstructionSchema = new Map([
-  [
-    CreateSenderPublicInstructionData,
-    {
-      kind: 'struct',
-      fields: [
-        ['eth_address', [20]],
-        ['operator', [20]]
-      ]
-    }
-  ]
-])
+const CreateSenderPublicInstructionData =
+  struct<CreateSenderPublicInstructionData>([
+    u8('instruction'),
+    ethAddress('ethAddress'),
+    cstr('operator')
+  ])
 
 const decodeCreateSenderPublicInstruction = ({
   programId,
@@ -250,33 +175,20 @@ const decodeCreateSenderPublicInstruction = ({
     ...existingSenders
   ],
   data
-}: TransactionInstruction): DecodedCreateSenderPublicInstruction => {
-  const instructionData: CreateSenderPublicInstructionData = deserialize(
-    createSenderPublicInstructionSchema,
-    CreateSenderPublicInstructionData,
-    data.slice(1)
-  )
-  return {
-    programId,
-    keys: {
-      rewardManager,
-      authority,
-      payer,
-      sender,
-      sysvarInstructions,
-      rent,
-      systemProgramId,
-      existingSenders
-    },
-    data: {
-      instruction: RewardManagerInstruction.CreateSenderPublic,
-      ethAddress: decodeEthereumWallet(
-        Buffer.from(instructionData.eth_address)
-      ),
-      operator: decodeEthereumWallet(Buffer.from(instructionData.operator))
-    }
-  }
-}
+}: TransactionInstruction): DecodedCreateSenderPublicInstruction => ({
+  programId,
+  keys: {
+    rewardManager,
+    authority,
+    payer,
+    sender,
+    sysvarInstructions,
+    rent,
+    systemProgramId,
+    existingSenders
+  },
+  data: CreateSenderPublicInstructionData.decode(data)
+})
 
 type DecodedDeleteSenderPublicInstruction = {
   programId: PublicKey
