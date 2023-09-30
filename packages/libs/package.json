@@ -1,6 +1,6 @@
 {
   "name": "@audius/sdk",
-  "version": "3.0.10-beta.26",
+  "version": "3.0.10",
   "audius": {
     "releaseSHA": "a1749867b2514888ca6f58a3a366d23ef8b5c5b8"
   },
