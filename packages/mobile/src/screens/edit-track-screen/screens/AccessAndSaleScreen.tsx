@@ -86,6 +86,9 @@ export const AccessAndSaleScreen = () => {
   const { isEnabled: isUsdcEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
+  const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES_UPLOAD
+  )
 
   const { ethCollectionMap, solCollectionMap } = useSelector(
     getSupportedUserCollections
@@ -151,7 +154,11 @@ export const AccessAndSaleScreen = () => {
   const data: ListSelectionData[] = [
     { label: publicAvailability, value: publicAvailability },
     isUsdcEnabled
-      ? { label: premiumAvailability, value: premiumAvailability }
+      ? {
+          label: premiumAvailability,
+          value: premiumAvailability,
+          disabled: true
+        }
       : null,
     {
       label: specialAccessAvailability,
@@ -163,7 +170,11 @@ export const AccessAndSaleScreen = () => {
       value: collectibleGatedAvailability,
       disabled: noCollectibleGate
     },
-    { label: hiddenAvailability, value: hiddenAvailability, disabled: noHidden }
+    {
+      label: hiddenAvailability,
+      value: hiddenAvailability,
+      disabled: !isUsdcUploadEnabled
+    }
   ].filter(removeNullable)
 
   const items = {
@@ -178,6 +189,8 @@ export const AccessAndSaleScreen = () => {
     items[premiumAvailability] = (
       <PremiumRadioField
         selected={availability === TrackAvailabilityType.USDC_PURCHASE}
+        // disabled={!isUsdcUploadEnabled}
+        disabledContent={!isUsdcUploadEnabled}
       />
     )
   }
