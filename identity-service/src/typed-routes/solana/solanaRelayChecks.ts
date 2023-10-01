@@ -18,12 +18,12 @@ import {
   decodeAssociatedTokenAccountInstruction,
   isCreateAssociatedTokenAccountInstruction,
   isCreateAssociatedTokenAccountIdempotentInstruction
-} from './instructions/associatedToken'
+} from './programs/associatedToken'
 import {
   decodeClaimableTokenInstruction,
   isTransferClaimableTokenInstruction
-} from './instructions/claimableToken'
-import { decodeRewardManagerInstruction } from './instructions/rewardManager'
+} from './programs/claimable-tokens'
+import { decodeRewardManagerInstruction } from './programs/reward-manager'
 import config from '../../config'
 
 const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
