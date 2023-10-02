@@ -404,53 +404,53 @@ describe('Solana Relay', function () {
         'invalid reward manager for evaluateAttestations'
       )
     })
-  })
 
-  it('should not allow non-public instructions', async function () {
-    await assertThrows(
-      async () =>
-        assertRelayAllowedInstructions([
-          new TransactionInstruction({
-            programId: REWARD_MANAGER_PROGRAM_ID,
-            keys: [],
-            data: Buffer.from([RewardManagerInstruction.Init])
-          })
-        ]),
-      'reward manager init'
-    )
-    await assertThrows(
-      async () =>
-        assertRelayAllowedInstructions([
-          new TransactionInstruction({
-            programId: REWARD_MANAGER_PROGRAM_ID,
-            keys: [],
-            data: Buffer.from([RewardManagerInstruction.ChangeManagerAccount])
-          })
-        ]),
-      'reward manager change manager account'
-    )
-    await assertThrows(
-      async () =>
-        assertRelayAllowedInstructions([
-          new TransactionInstruction({
-            programId: REWARD_MANAGER_PROGRAM_ID,
-            keys: [],
-            data: Buffer.from([RewardManagerInstruction.CreateSender])
-          })
-        ]),
-      'non public create sender'
-    )
-    await assertThrows(
-      async () =>
-        assertRelayAllowedInstructions([
-          new TransactionInstruction({
-            programId: REWARD_MANAGER_PROGRAM_ID,
-            keys: [],
-            data: Buffer.from([RewardManagerInstruction.DeleteSender])
-          })
-        ]),
-      'non public delete sender'
-    )
+    it('should not allow non-public instructions', async function () {
+      await assertThrows(
+        async () =>
+          assertRelayAllowedInstructions([
+            new TransactionInstruction({
+              programId: REWARD_MANAGER_PROGRAM_ID,
+              keys: [],
+              data: Buffer.from([RewardManagerInstruction.Init])
+            })
+          ]),
+        'reward manager init'
+      )
+      await assertThrows(
+        async () =>
+          assertRelayAllowedInstructions([
+            new TransactionInstruction({
+              programId: REWARD_MANAGER_PROGRAM_ID,
+              keys: [],
+              data: Buffer.from([RewardManagerInstruction.ChangeManagerAccount])
+            })
+          ]),
+        'reward manager change manager account'
+      )
+      await assertThrows(
+        async () =>
+          assertRelayAllowedInstructions([
+            new TransactionInstruction({
+              programId: REWARD_MANAGER_PROGRAM_ID,
+              keys: [],
+              data: Buffer.from([RewardManagerInstruction.CreateSender])
+            })
+          ]),
+        'non public create sender'
+      )
+      await assertThrows(
+        async () =>
+          assertRelayAllowedInstructions([
+            new TransactionInstruction({
+              programId: REWARD_MANAGER_PROGRAM_ID,
+              keys: [],
+              data: Buffer.from([RewardManagerInstruction.DeleteSender])
+            })
+          ]),
+        'non public delete sender'
+      )
+    })
   })
 
   describe('Claimable Tokens Program', function () {
