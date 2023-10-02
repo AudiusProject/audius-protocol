@@ -43,5 +43,5 @@ steps:
             name: Docker login
             command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
         - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
-        - run: . ~/.profile; audius-compose build "<< parameters.service >>"
+        - run: . ~/.profile; audius-compose build --prod "<< parameters.service >>"
         - run: . ~/.profile; audius-compose push "<< parameters.service >>"

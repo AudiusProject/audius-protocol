@@ -1,4 +1,4 @@
-FROM node:18.17-alpine as base
+FROM node:18-alpine AS base
 
 # PRUNE DEPENDENCIES
 FROM base AS builder
@@ -10,16 +10,17 @@ WORKDIR /app
 RUN npm install turbo --global
 
 COPY . .
-RUN turbo prune --scope=@audius/sdk --docker
+RUN turbo prune --scope=@audius/commands --docker
 
 # INSTALL & BUILD
 FROM base AS installer
 
 WORKDIR /app
 
-RUN apk add --no-cache python3 py3-pip make g++ bash libc6-compat
+RUN apk add --no-cache python3 py3-pip make g++ curl bash libc6-compat ffmpeg
 RUN apk update
 
+# First install dependencies (as they change less often)
 COPY .gitignore .gitignore
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/package-lock.json ./package-lock.json
@@ -31,9 +32,7 @@ RUN CI=true npm run install-packages
 COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json
 
-RUN npx turbo run build --filter=@audius/sdk
+RUN npx turbo run build --filter=@audius/commands
 
-ARG git_sha
-ENV GIT_SHA=$git_sha
-
-WORKDIR /app/packages/libs
+WORKDIR /app/packages/commands
+CMD sleep infinity
