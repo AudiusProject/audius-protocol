@@ -7,7 +7,12 @@ import {
   createInitializeAccountInstruction,
   createTransferCheckedInstruction
 } from '@solana/spl-token'
-import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
+import {
+  Keypair,
+  PublicKey,
+  Secp256k1Program,
+  TransactionInstruction
+} from '@solana/web3.js'
 import assert from 'assert'
 import { assertRelayAllowedInstructions } from '../../src/typed-routes/solana/solanaRelayChecks'
 import config from '../../src/config'
@@ -32,6 +37,10 @@ const REWARD_MANAGER_PROGRAM_ID = new PublicKey(
 )
 const REWARD_MANAGER_ACCOUNT = new PublicKey(
   config.get('solanaRewardsManagerProgramPDA')
+)
+
+const MEMO_PROGRAM_ID = new PublicKey(
+  'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
 )
 
 const usdcMintKey = new PublicKey(config.get('solanaUSDCMintAddress'))
@@ -759,6 +768,33 @@ describe('Solana Relay', function () {
             walletAddress: 'something'
           }),
         'Invalid mints for swap'
+      )
+    })
+  })
+
+  describe('Other Programs', function () {
+    it('allows memo and SECP instructions', async function () {
+      await assertRelayAllowedInstructions([
+        new TransactionInstruction({ programId: MEMO_PROGRAM_ID, keys: [] }),
+        Secp256k1Program.createInstructionWithEthAddress({
+          ethAddress: '0xe42b199d864489387bf64262874fc6472bcbc151',
+          message: Buffer.from('some message', 'utf-8'),
+          signature: Buffer.alloc(64),
+          recoveryId: 0
+        })
+      ])
+    })
+
+    it('does not allow other random programs', async function () {
+      await assertThrows(
+        async () =>
+          assertRelayAllowedInstructions([
+            new TransactionInstruction({
+              programId: getRandomPublicKey(),
+              keys: []
+            })
+          ]),
+        'random program'
       )
     })
   })
