@@ -225,6 +225,7 @@ def make_generate_unpopulated_trending(
     time_range: str,
     strategy: BaseTrendingStrategy,
     exclude_premium: bool,
+    limit: int
 ):
     """Wraps a call to `generate_unpopulated_trending` for use in `use_redis_cache`, which
     expects to be passed a function with no arguments."""
@@ -237,6 +238,7 @@ def make_generate_unpopulated_trending(
                 time_range=time_range,
                 strategy=strategy,
                 exclude_premium=exclude_premium,
+                limit=limit
             )
         return generate_unpopulated_trending(
             session=session,
@@ -244,6 +246,7 @@ def make_generate_unpopulated_trending(
             time_range=time_range,
             strategy=strategy,
             exclude_premium=exclude_premium,
+            limit=limit
         )
 
     return wrapped

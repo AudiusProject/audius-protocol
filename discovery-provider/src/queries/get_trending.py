@@ -24,7 +24,7 @@ def get_trending(args, strategy):
         "time": time,
         "genre": args.get("genre", None),
         "with_users": True,
-        "limit": TRENDING_LIMIT,
+        "limit": format_limit(args, TRENDING_LIMIT),
         "offset": 0,
         "exclude_premium": args.get(
             "exclude_premium", SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS
