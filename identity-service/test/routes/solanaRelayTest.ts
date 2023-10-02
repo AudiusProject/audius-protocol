@@ -69,7 +69,7 @@ const assertThrows = async (fn: CallableFunction, message = '') => {
 }
 
 describe('Solana Relay', function () {
-  describe('Associated Token Account Program Checks', function () {
+  describe('Associated Token Account Program', function () {
     it('should allow create token account with matching close for valid mints', async function () {
       const payer = getRandomPublicKey()
       const associatedToken = getRandomPublicKey()
@@ -184,7 +184,7 @@ describe('Solana Relay', function () {
     })
   })
 
-  describe('Token Program Checks', function () {
+  describe('Token Program', function () {
     it('should allow close instructions', async function () {
       const payer = getRandomPublicKey()
       const associatedToken = getRandomPublicKey()
@@ -274,7 +274,7 @@ describe('Solana Relay', function () {
     })
   })
 
-  describe('Reward Manager Program Checks', function () {
+  describe('Reward Manager Program', function () {
     it('should allow public instructions with valid reward manager', async function () {
       const transferId = 'some:id:thing'
       const senderEthAddress = '0x1dc3070311552fce47e06db9f4f1328187f14c85'
@@ -453,7 +453,7 @@ describe('Solana Relay', function () {
     )
   })
 
-  describe('Claimable Tokens Program Checks', function () {
+  describe('Claimable Tokens Program', function () {
     it('should allow claimable token program instructions with valid authority', async function () {
       const wallet = '0xe42b199d864489387bf64262874fc6472bcbc151'
       const payer = getRandomPublicKey()
