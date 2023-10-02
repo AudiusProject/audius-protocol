@@ -59,6 +59,11 @@ const audioClaimableTokenAuthority = PublicKey.findProgramAddressSync(
 const getRandomPublicKey = () => Keypair.generate().publicKey
 
 describe('Solana Relay', function () {
+  // Init libs before tests
+  this.beforeAll(async function () {
+    await audiusLibsWrapper.init()
+  })
+
   describe('Associated Token Account Program', function () {
     it('should allow create token account with matching close for valid mints', async function () {
       const payer = getRandomPublicKey()
@@ -195,7 +200,6 @@ describe('Solana Relay', function () {
     })
 
     it('should allow USDC transfers to userbanks', async function () {
-      await audiusLibsWrapper.init()
       const libs = await audiusLibsWrapper.getAudiusLibsAsync()
       const wallet = libs.web3Manager!.getWalletAddress()
       const userbank = await libs.solanaWeb3Manager!.deriveUserBank({
@@ -222,7 +226,6 @@ describe('Solana Relay', function () {
     })
 
     it('should not allow transfers to non-userbanks', async function () {
-      await audiusLibsWrapper.init()
       const libs = await audiusLibsWrapper.getAudiusLibsAsync()
       const wallet = libs.web3Manager!.getWalletAddress()
 
