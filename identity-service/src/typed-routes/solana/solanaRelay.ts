@@ -112,8 +112,8 @@ const createRouter = () => {
           })),
           instructions,
           skipPreflight,
-          // @ts-ignore TODO: This will be fixed when SDK updates
-          feePayerOverride,
+          feePayerOverride: new PublicKey(feePayerOverride),
+          // @ts-ignore-next-line TODO: this type will exist when libs updates
           lookupTableAddresses,
           retry
         })

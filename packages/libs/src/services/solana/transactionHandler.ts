@@ -126,7 +126,7 @@ export class TransactionHandler {
     instructions: TransactionInstruction[],
     recentBlockhash: string | null,
     skipPreflight: boolean | null,
-    feePayerOverride: Nullable<PublicKey | string> = null,
+    feePayerOverride: Nullable<PublicKey> = null,
     sendBlockhash: boolean,
     signatures: Array<{ publicKey: string; signature: Buffer }> | null,
     lookupTableAddresses: string[],
