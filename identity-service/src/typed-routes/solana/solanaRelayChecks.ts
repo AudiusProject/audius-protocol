@@ -198,6 +198,7 @@ const assertAllowedClaimableTokenProgramInstruction = async (
   // Ensure user has social proof before withdrawing
   // Currently disabled and removed from the relay flow
   // TODO: Fix this so that tipping is unaffected
+  // https://linear.app/audius/issue/PAY-1941/clean-up-or-re-add-social-proof
   if (
     socialProofEnabled &&
     isTransferClaimableTokenInstruction(decodedInstruction)
@@ -208,8 +209,6 @@ const assertAllowedClaimableTokenProgramInstruction = async (
         'Claimable Token Transfer requires authentication'
       )
     }
-    // TODO: Get user ID from userbank from Discovery using libs to check that token account is a user bank
-    // const destination = decodedInstruction.keys.destination.pubkey.toBase58()
     const { blockchainUserId } = user
     const twitterUser = await (models as unknown as any).TwitterUser.findOne({
       where: {
