@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
 
 import { HarmonyButton, HarmonyButtonType } from '@audius/stems'
-import Form from 'antd/lib/form/Form'
-import { Formik } from 'formik'
+import { Formik, Form } from 'formik'
 import { useDispatch } from 'react-redux'
 
 import { setValueField } from 'common/store/pages/signon/actions'

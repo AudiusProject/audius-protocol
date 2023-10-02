@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 
+import type { Nullable } from '@audius/common'
 import { useField } from 'formik'
 import type { ImageStyle, ViewStyle } from 'react-native'
 import { Animated, Pressable, View } from 'react-native'
@@ -52,7 +53,9 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   }
 }))
 
-type FormImageInputProps = {
+type ImageValue = Nullable<{ file: any; url: string }>
+
+type ImageFieldProps = {
   isProcessing?: boolean
   name: string
 } & StylesProps<{
@@ -61,37 +64,32 @@ type FormImageInputProps = {
   image?: ImageStyle
 }>
 
-export const FormImageInput = ({
-  isProcessing,
-  name,
-  styles: stylesProp,
-  style
-}: FormImageInputProps) => {
+export const ImageField = (props: ImageFieldProps) => {
+  const { isProcessing, name, styles: stylesProp, style } = props
   const styles = useStyles()
   const [isLoading, setIsLoading] = useState(false)
-  const [{ value }, , { setValue }] = useField(name)
+  const [{ value }, , { setValue }] = useField<ImageValue>(name)
 
-  const { url } = value
+  const url = value?.url
 
   const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.9)
 
   const handlePress = useCallback(() => {
     const handleImageSelected = (_image: Image, rawResponse: Asset) => {
       setValue({
-        url: rawResponse.uri,
+        url: rawResponse.uri!,
         file: {
           uri: rawResponse.uri,
           name: rawResponse.fileName,
           type: rawResponse.type
-        },
-        source: 'original'
+        }
       })
       setIsLoading(true)
     }
     launchSelectImageActionSheet(handleImageSelected, styles.shareSheet.color)
   }, [setValue, styles.shareSheet.color])
 
-  const isDefaultImage = /imageCoverPhotoBlank/.test(url)
+  const isDefaultImage = url && /imageCoverPhotoBlank/.test(url)
 
   const source = useMemo(
     () => ({ uri: isDefaultImage ? `https://audius.co/${url}` : url }),
