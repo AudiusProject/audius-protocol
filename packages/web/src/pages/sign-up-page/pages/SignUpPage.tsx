@@ -2,17 +2,24 @@ import { useCallback } from 'react'
 
 import { HarmonyButton, HarmonyButtonType } from '@audius/stems'
 import { Form, Formik } from 'formik'
-import { useDispatch, useSelector } from 'react-redux'
 
-import { setValueField } from 'common/store/pages/signon/actions'
-import { getEmailField } from 'common/store/pages/signon/selectors'
 import { TextField } from 'components/form-fields'
 
+import { CreatePasswordState } from './CreatePasswordPage'
+
 const messages = {
-  emailHeader: 'Sign Up For Audius',
+  header: 'Sign Up For Audius',
   emailLabel: 'Email',
-  signUp: 'Sign Up Free',
-  passwordHeader: 'Create Your Password'
+  signUp: 'Sign Up Free'
+}
+
+export type SignUpState = {
+  stage: 'sign-up'
+  email?: string
+}
+
+export type SignUpPageProps = {
+  onNext: (state: CreatePasswordState) => void
 }
 
 const initialValues = {
@@ -23,22 +30,21 @@ type SignUpEmailValues = {
   email: string
 }
 
-export const SignUpPage = () => {
-  const dispatch = useDispatch()
-  const { value: isEmailSubmitted } = useSelector(getEmailField)
+export const SignUpPage = (props: SignUpPageProps) => {
+  const { onNext } = props
 
   const handleSubmit = useCallback(
     (values: SignUpEmailValues) => {
       const { email } = values
-      dispatch(setValueField('email', email))
+      onNext({ stage: 'create-password', params: { email } })
     },
-    [dispatch]
+    [onNext]
   )
 
-  const emailForm = (
+  return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
       <Form>
-        <h1>{messages.emailHeader}</h1>
+        <h1>{messages.header}</h1>
         <TextField name='email' label={messages.emailLabel} />
         <HarmonyButton
           variant={HarmonyButtonType.PRIMARY}
@@ -47,14 +53,5 @@ export const SignUpPage = () => {
         />
       </Form>
     </Formik>
-  )
-
-  const passwordForm = <h1>{messages.passwordHeader}</h1>
-
-  return (
-    <div>
-      {!isEmailSubmitted ? emailForm : null}
-      {isEmailSubmitted ? passwordForm : null}
-    </div>
   )
 }

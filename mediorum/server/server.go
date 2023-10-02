@@ -391,6 +391,8 @@ func (ss *MediorumServer) MustStart() {
 
 		go ss.pollForSeedingCompletion()
 
+		go ss.startUploadScroller()
+
 	} else {
 		go func() {
 			for range time.Tick(10 * time.Second) {
