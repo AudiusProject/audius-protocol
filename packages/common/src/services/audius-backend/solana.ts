@@ -451,7 +451,10 @@ export const relayVersionedTransaction = async (
     skipPreflight
   })
 }
-
+/**
+ * Helper that gets the lookup table accounts (that is, the account holding the lookup table,
+ * not the accounts _in_ the lookup table) from their addresses.
+ */
 export const getLookupTableAccounts = async (
   audiusBackendInstance: AudiusBackend,
   { lookupTableAddresses }: { lookupTableAddresses: string[] }
