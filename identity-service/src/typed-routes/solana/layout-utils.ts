@@ -1,4 +1,11 @@
-import { Blob, Layout, blob } from '@solana/buffer-layout'
+import {
+  Blob,
+  Layout,
+  blob,
+  struct,
+  u32,
+  uint8ArrayToBuffer
+} from '@solana/buffer-layout'
 
 /**
  * Wrapper that makes Ethereum wallet addresses encoded and decoded as 20 byte blobs
@@ -6,7 +13,7 @@ import { Blob, Layout, blob } from '@solana/buffer-layout'
 export class EthereumAddress extends Layout<string> {
   private blob: Blob
   constructor(property?: string) {
-    super(-1, property)
+    super(20, property)
     this.blob = blob(20, property)
   }
 
@@ -41,5 +48,45 @@ export class EthereumAddress extends Layout<string> {
   }
 }
 
+/**
+ * Wrapper that encodes strings the way Borsh does, with the length prepended
+ */
+export class BorshString extends Layout<string> {
+  constructor(maxLength: number, property?: string) {
+    super(u32().span + maxLength, property)
+  }
+
+  getSpan(b: Uint8Array, offset = 0): number {
+    if (!b) {
+      return this.span
+    }
+    const length = u32().decode(b, offset)
+    return u32().span + length
+  }
+
+  decode(b: Uint8Array, offset = 0): string {
+    const length = u32().decode(b, offset)
+    const value = blob(length).decode(b, offset + u32().span)
+    return uint8ArrayToBuffer(value).toString('utf-8')
+  }
+
+  encode(src: string, b: Uint8Array, offset: number): number {
+    const srcb = Buffer.from(src, 'utf-8')
+    if (srcb.length > this.span) {
+      throw new RangeError('text exceeds maxLength')
+    }
+    if (offset + srcb.length > b.length) {
+      throw new RangeError('text length exceeds buffer')
+    }
+    return (
+      u32().encode(srcb.length, b, offset) +
+      blob(srcb.length).encode(srcb, b, offset + u32().span)
+    )
+  }
+}
+
 /** Factory for EthereumAddress layouts */
 export const ethAddress = (property?: string) => new EthereumAddress(property)
+/** Factory for BorshString layouts */
+export const borshString = (maxLength: number, property?: string) =>
+  new BorshString(maxLength, property)

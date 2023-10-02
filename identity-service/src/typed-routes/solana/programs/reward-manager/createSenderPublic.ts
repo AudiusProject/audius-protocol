@@ -1,12 +1,69 @@
-import { struct, u8, cstr } from '@solana/buffer-layout'
-import { PublicKey, AccountMeta, TransactionInstruction } from '@solana/web3.js'
+import { struct, u8 } from '@solana/buffer-layout'
+import {
+  PublicKey,
+  AccountMeta,
+  TransactionInstruction,
+  SYSVAR_INSTRUCTIONS_PUBKEY,
+  SYSVAR_RENT_PUBKEY,
+  SystemProgram
+} from '@solana/web3.js'
 import { ethAddress } from '../../layout-utils'
-import { RewardManagerInstruction } from './constants'
+import {
+  REWARD_MANAGER_PROGRAM_ID,
+  RewardManagerInstruction
+} from './constants'
 
 type CreateSenderPublicInstructionData = {
   instruction: RewardManagerInstruction
-  ethAddress: string
-  operator: string
+  senderEthAddress: string
+  operatorEthAddress: string
+}
+
+const CreateSenderPublicInstructionData =
+  struct<CreateSenderPublicInstructionData>([
+    u8('instruction'),
+    ethAddress('senderEthAddress'),
+    ethAddress('operatorEthAddress')
+  ])
+
+export const createSenderPublicInstruction = (
+  senderEthAddress: string,
+  operatorEthAddress: string,
+  rewardManager: PublicKey,
+  authority: PublicKey,
+  payer: PublicKey,
+  sender: PublicKey,
+  existingSenders: PublicKey[],
+  rewardManagerProgramId: PublicKey = REWARD_MANAGER_PROGRAM_ID
+) => {
+  const data = Buffer.alloc(CreateSenderPublicInstructionData.span)
+  CreateSenderPublicInstructionData.encode(
+    {
+      instruction: RewardManagerInstruction.CreateSenderPublic,
+      senderEthAddress,
+      operatorEthAddress
+    },
+    data
+  )
+  const keys = [
+    { pubkey: rewardManager, isSigner: false, isWritable: false },
+    { pubkey: authority, isSigner: false, isWritable: false },
+    { pubkey: payer, isSigner: true, isWritable: true },
+    { pubkey: sender, isSigner: false, isWritable: true },
+    { pubkey: SYSVAR_INSTRUCTIONS_PUBKEY, isSigner: false, isWritable: false },
+    { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    ...existingSenders.map((pubkey) => ({
+      pubkey,
+      isSigner: false,
+      isWritable: false
+    }))
+  ]
+  return new TransactionInstruction({
+    programId: rewardManagerProgramId,
+    keys,
+    data
+  })
 }
 
 export type DecodedCreateSenderPublicInstruction = {
@@ -23,13 +80,6 @@ export type DecodedCreateSenderPublicInstruction = {
   }
   data: CreateSenderPublicInstructionData
 }
-
-const CreateSenderPublicInstructionData =
-  struct<CreateSenderPublicInstructionData>([
-    u8('instruction'),
-    ethAddress('ethAddress'),
-    cstr('operator')
-  ])
 
 export const decodeCreateSenderPublicInstruction = ({
   programId,
