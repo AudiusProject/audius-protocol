@@ -2,11 +2,9 @@ import type { AudiusLibs } from '@audius/sdk'
 import { parameterizedAuthMiddleware } from '../../authMiddleware'
 import express, { RequestHandler } from 'express'
 import { Keypair, PublicKey, TransactionInstruction } from '@solana/web3.js'
-import type Logger from 'bunyan'
 
 import { InvalidRelayInstructionError } from './InvalidRelayInstructionError'
 
-import { FEATURE_FLAGS, getFeatureFlag } from '../../featureFlag'
 import {
   errorResponseBadRequest,
   errorResponseServerError,
@@ -37,20 +35,6 @@ type RelayRequestBody = {
   retry: boolean
   recentBlockhash: string
   lookupTableAddresses: string[]
-}
-
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
-  namespace Express {
-    interface Request {
-      user?: {
-        walletAddress?: string
-        handle: string
-        blockchainUserId: number
-      }
-      logger: Logger
-    }
-  }
 }
 
 const isMalformedInstruction = (instr: TransactionInstructionJSON) =>
