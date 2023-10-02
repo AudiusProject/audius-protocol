@@ -1,6 +1,6 @@
 FROM node:18-alpine AS base
 
-# Everything is mounted into the container, see docker-compose.identity.yml
+# Everything is mounted into the container, see docker-compose.identity.dev.yml
 
 ARG git_sha
 

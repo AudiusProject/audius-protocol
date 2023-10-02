@@ -32,7 +32,7 @@ services:
   ingress:
     # Nginx ingress for all hostnames. Change nginx_ingress.conf to add more hostnames / routes
     extends:
-      file: docker-compose.dev-tools.yml
+      file: ${DEVTOOLS_DOCKERCOMPOSE:-docker-compose.dev-tools.dev.yml}
       service: ingress
     <<: *common
 
@@ -57,7 +57,7 @@ services:
 
   audius-cmd:
     extends:
-      file: docker-compose.dev-tools.yml
+      file: ${DEVTOOLS_DOCKERCOMPOSE:-docker-compose.dev-tools.dev.yml}
       service: audius-cmd
     <<: *common
 

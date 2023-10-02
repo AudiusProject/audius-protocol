@@ -23,7 +23,7 @@ services:
   audius-cmd:
     build:
       context: ${PROJECT_ROOT}
-      dockerfile: ${PROJECT_ROOT}/packages/commands/Dockerfile
+      dockerfile: ${PROJECT_ROOT}/packages/commands/Dockerfile.prod
     environment:
       ETH_TOKEN_ADDRESS: '${ETH_TOKEN_ADDRESS}'
       ETH_REGISTRY_ADDRESS: '${ETH_REGISTRY_ADDRESS}'
