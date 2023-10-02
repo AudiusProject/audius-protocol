@@ -115,7 +115,7 @@ export const RootScreen = () => {
             />
           ) : showHomeStack ? (
             <Stack.Screen name='HomeStack' component={AppDrawerScreen} />
-          ) : !isSignUpRedesignEnabled ? (
+          ) : isSignUpRedesignEnabled ? (
             <Stack.Group>
               <Stack.Screen name='SignUp' component={SignUpRootScreen} />
               <Stack.Screen name='SignIn' component={SignInScreen} />
