@@ -38,7 +38,6 @@ from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
     TX_SIGNATURES_RESIZE_LENGTH,
-    USDC_DECIMALS,
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import (
