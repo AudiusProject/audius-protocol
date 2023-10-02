@@ -1,3 +1,5 @@
+import './routes/solanaRelayTest'
+
 require('./expressAppTest')
 require('./authenticationTest')
 require('./relayTest')
