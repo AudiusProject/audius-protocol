@@ -250,7 +250,7 @@ const JupiterSharedSwapAccountIndex = {
   PLATFORM_FEE_ACCOUNT: 9,
   TOKEN_2022_PROGRAM: 10
 }
-const assertAllowedJupiterProgramInstruction = (
+const assertAllowedJupiterProgramInstruction = async (
   instructionIndex: number,
   instruction: TransactionInstruction,
   wallet?: string
@@ -269,16 +269,35 @@ const assertAllowedJupiterProgramInstruction = (
     instruction.keys[
       JupiterSharedSwapAccountIndex.DESTINATION_MINT
     ].pubkey.toBase58()
+  const userWallet =
+    instruction.keys[
+      JupiterSharedSwapAccountIndex.USER_TRANSFER_AUTHORITY
+    ].pubkey.toBase58()
+
+  // Only allow swaps from USDC
   if (sourceMint !== usdcMintAddress) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
       `Invalid source mint: ${sourceMint}`
     )
   }
+
+  // Only allow swaps to SOL
   if (destinationMint !== NATIVE_MINT.toBase58()) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
       `Invalid destination mint: ${destinationMint}`
+    )
+  }
+
+  // Don't allow swaps on the feepayers
+  const feePayerAddresses = (
+    await audiusLibsWrapper.getAudiusLibsAsync()
+  ).solanaWeb3Config.feePayerKeypairs?.map((kp) => kp.publicKey.toBase58())
+  if (feePayerAddresses?.includes(userWallet)) {
+    throw new InvalidRelayInstructionError(
+      instructionIndex,
+      `Invalid transfer authority: ${userWallet}`
     )
   }
 }
@@ -335,7 +354,7 @@ export const assertRelayAllowedInstructions = async (
         )
         break
       case JUPITER_AGGREGATOR_V6_PROGRAM_ID:
-        assertAllowedJupiterProgramInstruction(
+        await assertAllowedJupiterProgramInstruction(
           i,
           instruction,
           options?.user?.walletAddress

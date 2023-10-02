@@ -791,6 +791,88 @@ describe('Solana Relay', function () {
         'Invalid mints for swap'
       )
     })
+
+    it('should not allow Jupiter sharedAccountsRoute swaps using the fee payer', async function () {
+      const JUPITER_AGGREGATOR_V6_PROGRAM_ID = new PublicKey(
+        'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
+      )
+      const programAuthority = getRandomPublicKey()
+      const userTransferAuthority = (
+        await audiusLibsWrapper.getAudiusLibsAsync()
+      ).solanaWeb3Config.feePayerKeypairs?.[0].publicKey
+      assert(!!userTransferAuthority, 'Missing feepayer')
+      const sourceTokenAccount = getRandomPublicKey()
+      const programSourceTokenAccount = getRandomPublicKey()
+      const programDestinationTokenAccount = getRandomPublicKey()
+      const destinationTokenAccount = getRandomPublicKey()
+      const instructions = [
+        new TransactionInstruction({
+          programId: JUPITER_AGGREGATOR_V6_PROGRAM_ID,
+          data: Buffer.from([
+            193, 32, 155, 51, 65, 214, 156, 129, 2, 1, 0, 0, 0, 3, 100, 0, 1,
+            92, 161, 0, 0, 0, 0, 0, 0, 236, 52, 31, 0, 0, 0, 0, 0, 3, 0, 0
+          ]),
+          keys: [
+            {
+              pubkey: TOKEN_PROGRAM_ID,
+              isSigner: false,
+              isWritable: false
+            },
+            {
+              pubkey: programAuthority,
+              isSigner: false,
+              isWritable: false
+            },
+            {
+              pubkey: userTransferAuthority,
+              isSigner: true,
+              isWritable: true
+            },
+            {
+              pubkey: sourceTokenAccount,
+              isSigner: false,
+              isWritable: true
+            },
+            {
+              pubkey: programSourceTokenAccount,
+              isSigner: false,
+              isWritable: true
+            },
+            {
+              pubkey: programDestinationTokenAccount,
+              isSigner: false,
+              isWritable: true
+            },
+            {
+              pubkey: destinationTokenAccount,
+              isSigner: false,
+              isWritable: true
+            },
+            {
+              pubkey: usdcMintKey,
+              isSigner: false,
+              isWritable: false
+            },
+            {
+              pubkey: NATIVE_MINT,
+              isSigner: false,
+              isWritable: false
+            }
+          ]
+        })
+      ]
+
+      await assert.rejects(
+        async () =>
+          assertRelayAllowedInstructions(instructions, {
+            user: {
+              walletAddress: 'something'
+            }
+          }),
+        InvalidRelayInstructionError,
+        'Invalid user transfer authority'
+      )
+    })
   })
 
   describe('Other Programs', function () {
