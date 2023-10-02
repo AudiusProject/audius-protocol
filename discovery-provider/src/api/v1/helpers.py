@@ -816,7 +816,7 @@ full_search_parser.add_argument(
 full_search_parser.add_argument(
     "includePurchaseable",
     required=False,
-    type=bool,
+    type=str,
     description="Whether or not to include purchaseable content",
 )
 

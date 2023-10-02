@@ -1,4 +1,5 @@
 @import './reset.css';
+@import '../fonts/avenir.css';
 @import './fonts.css';
 @import './spacing.css';
 @import './colors.css';
@@ -8,8 +9,9 @@
 
 #root *,
 body * {
+  position: relative;
   box-sizing: border-box;
-  font-family: var(--font-family) !important;
+  font-family: var(--font-family);
   font-size: var(--font-s);
   font-weight: var(--font-medium);
 }

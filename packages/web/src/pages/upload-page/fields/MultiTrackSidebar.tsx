@@ -50,6 +50,7 @@ export const MultiTrackSidebar = () => {
               text={messages.complete}
               variant={HarmonyButtonType.PRIMARY}
               iconRight={IconUpload}
+              type='submit'
               fullWidth
             />
           </div>

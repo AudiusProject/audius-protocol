@@ -44,14 +44,28 @@ describe('Sign up', () => {
     await assertOnSignUp()
   })
 
-  it.only('should create an account', async () => {
+  it('should create an account', async () => {
     const testUser = generateTestUser()
-    const { email } = testUser
+    const { email, password } = testUser
     await byRole('textbox', { name: /email/i }).typeText(email)
     await byRole('button', { name: /sign up free/i }).tap()
 
     await expect(
       byRole('heading', { name: /create your password/i })
     ).toBeVisible()
+
+    await expect(
+      byText(/create a password that's secure and easy to remember! .*/i)
+    ).toBeVisible()
+
+    await expect(byText(/your email/i)).toBeVisible()
+
+    await expect(byText(email)).toBeVisible()
+
+    await byRole('textbox', { name: /^password/i }).typeText(password)
+    await byRole('textbox', { name: /confirm password/i }).typeText(password)
+    await byRole('button', { name: /continue/i }).tap()
+
+    await expect(byRole('heading', { name: /pick your handle/i })).toBeVisible()
   })
 })

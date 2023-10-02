@@ -24,7 +24,7 @@ export type TextStrength = 'weak' | 'default' | 'strong'
 
 export type TextColor = 'heading' | 'default' | 'subdued' | 'disabled'
 
-export type TextSize = 'xLarge' | 'large' | 'medium' | 'small' | 'xSmall'
+export type TextSize = 'xl' | 'l' | 'm' | 's' | 'xs'
 
 export type TextVariant = 'display' | 'heading' | 'title' | 'label' | 'body'
 export type VariantSizeTagMap = Partial<Record<TextSize, ElementType>>
