@@ -333,7 +333,7 @@ const ProfileHeader = ({
               </div>
               <div className={styles.artistHandleWrapper}>
                 <div className={styles.artistHandle}>{handle}</div>
-                {doesFollowCurrentUser ? <FollowsYouBadge /> : null}
+                <FollowsYouBadge userId={userId} />
               </div>
             </div>
             <div className={styles.right}>

@@ -110,7 +110,7 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
               [styles.hide]: !isArtist || loading || isDeactivated
             })}
           />
-          {!isDeactivated && (
+          {!isDeactivated && userId && (
             <>
               <EditableName
                 className={editMode ? styles.editableName : null}
@@ -122,7 +122,7 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
               />
               <div className={styles.handleWrapper}>
                 <h2 className={styles.handle}>{handle}</h2>
-                {doesFollowCurrentUser ? <FollowsYouBadge /> : null}
+                <FollowsYouBadge userId={userId} />
               </div>
             </>
           )}

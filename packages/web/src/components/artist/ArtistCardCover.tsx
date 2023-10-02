@@ -87,7 +87,7 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
               className={styles.artistHandle}
               onClick={handleClickUser}
             >{`@${handle}`}</div>
-            {does_follow_current_user ? <FollowsYouBadge /> : null}
+            <FollowsYouBadge userId={user_id} />
           </div>
         </div>
       </div>
