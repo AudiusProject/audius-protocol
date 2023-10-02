@@ -1,4 +1,4 @@
-version: '3.9'
+version: "3.9"
 
 # TODO: Run nethermind in a container called `chain` like https://github.com/AudiusProject/audius-docker-compose/blob/main/discovery-provider/docker-compose.yml#L247
 # This has never existed locally but seems to break discovery indexing when signing up now (was previously working)
@@ -6,23 +6,23 @@ version: '3.9'
 x-common: &common
   logging:
     options:
-      max-size: '50m'
-      max-file: '3'
+      max-size: "50m"
+      max-file: "3"
     driver: json-file
   extra_hosts:
     # Allows the containers can talk to each other via their hostnames routed through nginx
-    - 'audius-protocol-comms-discovery-1:host-gateway'
-    - 'audius-protocol-comms-discovery-2:host-gateway'
-    - 'audius-protocol-comms-discovery-3:host-gateway'
-    - 'audius-protocol-creator-node-1:host-gateway'
-    - 'audius-protocol-creator-node-2:host-gateway'
-    - 'audius-protocol-creator-node-3:host-gateway'
-    - 'audius-protocol-discovery-provider-1:host-gateway'
-    - 'audius-protocol-identity-service-1:host-gateway'
-    - 'audius-protocol-solana-test-validator-1:host-gateway'
-    - 'audius-protocol-eth-ganache-1:host-gateway'
-    - 'audius-protocol-poa-ganache-1:host-gateway'
-    - 'audius-protocol-pedalboard:host-gateway'
+    - "audius-protocol-comms-discovery-1:host-gateway"
+    - "audius-protocol-comms-discovery-2:host-gateway"
+    - "audius-protocol-comms-discovery-3:host-gateway"
+    - "audius-protocol-creator-node-1:host-gateway"
+    - "audius-protocol-creator-node-2:host-gateway"
+    - "audius-protocol-creator-node-3:host-gateway"
+    - "audius-protocol-discovery-provider-1:host-gateway"
+    - "audius-protocol-identity-service-1:host-gateway"
+    - "audius-protocol-solana-test-validator-1:host-gateway"
+    - "audius-protocol-eth-ganache-1:host-gateway"
+    - "audius-protocol-poa-ganache-1:host-gateway"
+    - "audius-protocol-pedalboard:host-gateway"
   deploy:
     resources:
       limits:
@@ -32,7 +32,7 @@ services:
   ingress:
     # Nginx ingress for all hostnames. Change nginx_ingress.conf to add more hostnames / routes
     extends:
-      file: ${DEVTOOLS_DOCKERCOMPOSE:-docker-compose.dev-tools.dev.yml}
+      file: docker-compose.dev.yml
       service: ingress
     <<: *common
 
@@ -43,21 +43,27 @@ services:
       - 5432:5432
       - 5454:5432
     environment:
-      PGUSER: 'postgres'
-      POSTGRES_PASSWORD: 'postgres'
+      PGUSER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
     volumes:
       - ../startup/initdb:/docker-entrypoint-initdb.d
       - postgresdata:/var/lib/postgresql/data
     <<: *common
     healthcheck:
       # identity_service is the last db to be created in init-db.sql
-      test: ['CMD', 'pg_isready', '--dbname', 'identity_service']
+      test: [ "CMD", "pg_isready", "--dbname", "identity_service" ]
       interval: 10s
       timeout: 5s
 
+  build-audius-libs:
+    extends:
+      file: docker-compose.dev.yml
+      service: build-audius-libs
+    <<: *common
+
   audius-cmd:
     extends:
-      file: ${DEVTOOLS_DOCKERCOMPOSE:-docker-compose.dev-tools.dev.yml}
+      file: docker-compose.dev.yml
       service: audius-cmd
     <<: *common
 
@@ -65,13 +71,13 @@ services:
 
   identity-service-redis:
     extends:
-      file: ${IDENTITY_DOCKERCOMPOSE:-docker-compose.identity.dev.yml}
+      file: docker-compose.identity.yml
       service: identity-service-redis
     <<: *common
 
   identity-service:
     extends:
-      file: ${IDENTITY_DOCKERCOMPOSE:-docker-compose.identity.dev.yml}
+      file: docker-compose.identity.yml
       service: identity-service
     <<: *common
 
@@ -129,6 +135,7 @@ services:
       service: sla-auditor
     <<: *common
 
+
   # Storage v2
 
   mediorum:
@@ -181,7 +188,7 @@ services:
       file: docker-compose.blockchain.yml
       service: solana-test-validator
     <<: *common
-
+  
   solana-test-validator-build:
     extends:
       file: docker-compose.blockchain.yml

@@ -200,6 +200,3 @@ app-keypair.json
 
 # CI
 combined-patch-file.txt
-
-# Identity
-packages/identity-service/emailCache

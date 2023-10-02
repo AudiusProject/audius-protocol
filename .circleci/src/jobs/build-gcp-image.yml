@@ -39,7 +39,7 @@ steps:
             command: |
               . ~/.profile
               cd audius-protocol
-              audius-compose build --prod
+              audius-compose build
               audius-compose pull
               audius-compose prune -y
   - run:

@@ -13,9 +13,9 @@
   "author": "Audius",
   "license": "Apache-2.0",
   "dependencies": {
-    "@audius/sdk": "*",
     "@solana/spl-token": "0.3.8",
     "@solana/web3.js": "1.78.4",
+    "@audius/sdk": "file:../../packages/libs",
     "bn.js": "^5.2.1",
     "chalk": "^5.0.1",
     "commander": "^9.4.0"
@@ -23,6 +23,6 @@
   "devDependencies": {
     "bats": "^1.8.2",
     "bats-assert": "^2.0.0",
-    "bats-support": "0.3.0"
+    "bats-support": "git+https://github.com/ztombol/bats-support.git#v0.2.0"
   }
 }
