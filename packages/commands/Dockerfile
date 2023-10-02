@@ -28,8 +28,11 @@ COPY --from=builder /app/scripts ./scripts
 
 RUN CI=true npm run install-packages
 
-# Copy the rest of the code
+# Build the project and its dependencies
 COPY --from=builder /app/out/full/ .
+COPY turbo.json turbo.json
+
+RUN npx turbo run build --filter=@audius/commands
 
 WORKDIR /app/packages/commands
 CMD sleep infinity
