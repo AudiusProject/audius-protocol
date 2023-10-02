@@ -312,6 +312,17 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.POST("/delist_status/insert", ss.serveInsertDelistStatus, ss.requireBodySignedByOwner)
 
 	// -------------------
+	// healthz
+	healthzUrl, err := url.Parse("http://healthz")
+	if err != nil {
+		log.Fatal("Invalid healthz URL: ", err)
+	}
+	healthz := routes.Group("/healthz")
+	healthz.Use(middleware.Proxy(middleware.NewRandomBalancer([]*middleware.ProxyTarget{
+		{ URL: healthzUrl },
+	})))
+
+	// -------------------
 	// internal
 	internalApi := routes.Group("/internal")
 
