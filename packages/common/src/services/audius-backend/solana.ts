@@ -1,10 +1,13 @@
 import { AudiusLibs } from '@audius/sdk'
 import { Account, createTransferCheckedInstruction } from '@solana/spl-token'
 import {
+  AddressLookupTableAccount,
   Keypair,
   PublicKey,
   Transaction,
-  TransactionInstruction
+  TransactionInstruction,
+  TransactionMessage,
+  VersionedTransaction
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
@@ -14,6 +17,8 @@ import { AudiusBackend } from './AudiusBackend'
 
 const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
+
+const PLACEHOLDER_SIGNATURE = Buffer.from(new Array(64).fill(0))
 
 /**
  * Memo program V1
@@ -387,7 +392,10 @@ export const createTransferToUserBankTransaction = async (
  */
 export const relayTransaction = async (
   audiusBackendInstance: AudiusBackend,
-  { transaction }: { transaction: Transaction }
+  {
+    transaction,
+    skipPreflight
+  }: { transaction: Transaction; skipPreflight?: boolean }
 ) => {
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
   const instructions = transaction.instructions
@@ -403,6 +411,67 @@ export const relayTransaction = async (
     instructions,
     recentBlockhash,
     signatures,
-    feePayerOverride
+    feePayerOverride,
+    skipPreflight
   })
+}
+
+/**
+ * Relays the given versioned transaction using the libs transaction handler
+ */
+export const relayVersionedTransaction = async (
+  audiusBackendInstance: AudiusBackend,
+  {
+    transaction,
+    addressLookupTableAccounts,
+    skipPreflight
+  }: {
+    transaction: VersionedTransaction
+    addressLookupTableAccounts: AddressLookupTableAccount[]
+    skipPreflight?: boolean
+  }
+) => {
+  const libs = await audiusBackendInstance.getAudiusLibsTyped()
+  const decompiledMessage = TransactionMessage.decompile(transaction.message, {
+    addressLookupTableAccounts
+  })
+  const signatures = transaction.message.staticAccountKeys
+    .slice(0, transaction.message.header.numRequiredSignatures)
+    .map((publicKey, index) => ({
+      publicKey: publicKey.toBase58(),
+      signature: Buffer.from(transaction.signatures[index])
+    }))
+    .filter((meta) => !meta.signature.equals(PLACEHOLDER_SIGNATURE))
+  return await libs.solanaWeb3Manager!.transactionHandler.handleTransaction({
+    instructions: decompiledMessage.instructions,
+    recentBlockhash: decompiledMessage.recentBlockhash,
+    signatures,
+    feePayerOverride: decompiledMessage.payerKey,
+    lookupTableAddresses: addressLookupTableAccounts.map((lut) =>
+      lut.key.toBase58()
+    ),
+    skipPreflight
+  })
+}
+/**
+ * Helper that gets the lookup table accounts (that is, the account holding the lookup table,
+ * not the accounts _in_ the lookup table) from their addresses.
+ */
+export const getLookupTableAccounts = async (
+  audiusBackendInstance: AudiusBackend,
+  { lookupTableAddresses }: { lookupTableAddresses: string[] }
+) => {
+  const libs = await audiusBackendInstance.getAudiusLibsTyped()
+  const connection = libs.solanaWeb3Manager!.connection
+  return await Promise.all(
+    lookupTableAddresses.map(async (address) => {
+      const account = await connection.getAddressLookupTable(
+        new PublicKey(address)
+      )
+      if (account.value == null) {
+        throw new Error(`Couldn't find lookup table ${address}`)
+      }
+      return account.value
+    })
+  )
 }
