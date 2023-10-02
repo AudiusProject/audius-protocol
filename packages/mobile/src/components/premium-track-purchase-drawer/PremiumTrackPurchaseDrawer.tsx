@@ -10,14 +10,16 @@ import {
   combineStatuses,
   useUSDCBalance,
   getPurchaseSummaryValues,
-  statusIsNotFinalized
+  statusIsNotFinalized,
+  isContentPurchaseInProgress,
+  ContentType
 } from '@audius/common'
 import { Linking, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconCart from 'app/assets/images/iconCart.svg'
 import IconError from 'app/assets/images/iconError.svg'
-import { LockedStatusBadge, Text } from 'app/components/core'
+import { Button, LockedStatusBadge, Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
@@ -30,14 +32,16 @@ import { TrackDetailsTile } from '../track-details-tile'
 
 import { PurchaseSuccess } from './PurchaseSuccess'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
-import { StripePurchaseConfirmationButton } from './StripePurchaseConfirmationButton'
 
 const { getPurchaseContentError, getPurchaseContentFlowStage } =
   purchaseContentSelectors
 
+const { startPurchaseContentFlow } = purchaseContentActions
+
 const PREMIUM_TRACK_PURCHASE_MODAL_NAME = 'PremiumTrackPurchase'
 
 const messages = {
+  buy: (price: string) => `Buy $${price}`,
   title: 'Complete Purchase',
   summary: 'Summary',
   artistCut: 'Artist Cut',
@@ -47,6 +51,7 @@ const messages = {
   youPaid: 'You Paid',
   price: (price: string) => `$${price}`,
   payToUnlock: 'Pay-To-Unlock',
+  purchasing: 'Purchasing',
   disclaimer: (termsOfUse: ReactNode) => (
     <>
       {'By clicking on "Buy", you agree to our '}
@@ -112,7 +117,8 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 
 export const PremiumTrackPurchaseDrawer = () => {
   const styles = useStyles()
-  const { neutralLight2, accentRed, secondary } = useThemeColors()
+  const { specialLightGreen, neutralLight2, accentRed, secondary } =
+    useThemeColors()
   const dispatch = useDispatch()
   const isUSDCEnabled = useIsUSDCEnabled()
   const { data } = useDrawer('PremiumTrackPurchase')
@@ -121,14 +127,24 @@ export const PremiumTrackPurchaseDrawer = () => {
     { id: trackId },
     { disabled: !trackId }
   )
-  const { data: currentBalance, status: balanceStatus } = useUSDCBalance()
+  const { data: currentBalance, balanceStatus } = useUSDCBalance()
   const error = useSelector(getPurchaseContentError)
   const stage = useSelector(getPurchaseContentFlowStage)
+  const isPurchasing = isContentPurchaseInProgress(stage)
   const isPurchaseSuccessful = stage === PurchaseContentStage.FINISH
   const { premium_conditions: premiumConditions } = track ?? {}
   const isLoading = statusIsNotFinalized(
     combineStatuses([trackStatus, balanceStatus])
   )
+
+  const handleConfirmPurchase = useCallback(() => {
+    dispatch(
+      startPurchaseContentFlow({
+        contentId: trackId,
+        contentType: ContentType.TRACK
+      })
+    )
+  }, [dispatch, trackId])
 
   const handleClosed = useCallback(() => {
     dispatch(purchaseContentActions.cleanup())
@@ -194,9 +210,20 @@ export const PremiumTrackPurchaseDrawer = () => {
                   )}
                 </Text>
               </View>
-              <StripePurchaseConfirmationButton
-                trackId={track.track_id}
-                price={formatPrice(price)}
+              <Button
+                onPress={handleConfirmPurchase}
+                disabled={isPurchasing}
+                title={
+                  isLoading
+                    ? messages.purchasing
+                    : messages.buy(formatPrice(price))
+                }
+                variant={'primary'}
+                size='large'
+                color={specialLightGreen}
+                iconPosition='left'
+                icon={isLoading ? LoadingSpinner : undefined}
+                fullWidth
               />
             </>
           )}

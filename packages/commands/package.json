@@ -1,0 +1,28 @@
+{
+  "name": "@audius/commands",
+  "version": "1.0.0",
+  "description": "Collection of command useful for debugging audius-protocol",
+  "main": "src/index.mjs",
+  "bin": {
+    "audius-cmd": "src/index.mjs"
+  },
+  "scripts": {
+    "audius-cmd": "node src/index.mjs",
+    "test": "bats test"
+  },
+  "author": "Audius",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@audius/sdk": "*",
+    "@solana/spl-token": "0.3.8",
+    "@solana/web3.js": "1.78.4",
+    "bn.js": "^5.2.1",
+    "chalk": "^5.0.1",
+    "commander": "^9.4.0"
+  },
+  "devDependencies": {
+    "bats": "^1.8.2",
+    "bats-assert": "^2.0.0",
+    "bats-support": "0.3.0"
+  }
+}

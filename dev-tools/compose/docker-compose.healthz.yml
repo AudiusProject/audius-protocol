@@ -1,0 +1,8 @@
+version: "3.9"
+
+services:
+  healthz:
+    build:
+      context: ${PROJECT_ROOT}/monitoring/healthz
+    deploy:
+      mode: global

@@ -5,7 +5,8 @@ import {
   searchResultsPageTracksLineupActions as tracksLineupActions,
   SearchKind,
   processAndCacheUsers,
-  removeNullable
+  removeNullable,
+  FeatureFlags
 } from '@audius/common'
 import { flatMap, zip } from 'lodash'
 import {
@@ -103,6 +104,11 @@ const searchMultiMap = {
 
 export function* getSearchResults(searchText, kind, limit, offset) {
   yield waitForRead()
+  const getFeatureEnabled = yield getContext('getFeatureEnabled')
+  const isUSDCEnabled = yield call(
+    getFeatureEnabled,
+    FeatureFlags.USDC_PURCHASES
+  )
 
   const apiClient = yield getContext('apiClient')
   const userId = yield select(getUserId)
@@ -114,7 +120,8 @@ export function* getSearchResults(searchText, kind, limit, offset) {
         query,
         kind,
         limit,
-        offset
+        offset,
+        includePurchaseable: isUSDCEnabled
       })
     )
     const allSearchResults = yield all(searches)
@@ -136,7 +143,8 @@ export function* getSearchResults(searchText, kind, limit, offset) {
       query: searchText,
       kind,
       limit,
-      offset
+      offset,
+      includePurchaseable: isUSDCEnabled
     })
   }
   const { tracks, albums, playlists, users } = results

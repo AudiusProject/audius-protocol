@@ -1,10 +1,10 @@
 import useSWR from 'swr'
 
 const prodEndpoint =
-  'https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-mainnet'
+  'https://api.audius.co'
 
 const stagingEndpoint =
-  'https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-goerli'
+  'https://api.staging.audius.co'
 
 const gql = `
 query ServiceProviders($type: String) {
@@ -32,42 +32,35 @@ export type SP = {
   discoveryHealth?: any
 }
 
-export function theGraphFetcher(
+export function apiGatewayFetcher(
   env: string,
-  type: 'content-node' | 'discovery-node'
+  type: 'content' | 'discovery'
 ) {
-  return fetch(env == 'staging' ? stagingEndpoint : prodEndpoint, {
-    method: 'POST',
-    body: JSON.stringify({
-      query: gql,
-      variables: {
-        type,
-      },
-    }),
-  }).then(async (resp) => {
-    const data = await resp.json()
-    const sps = data.data.serviceNodes as SP[]
+  return fetch(`${env == 'staging' ? stagingEndpoint : prodEndpoint}/${type}/verbose`)
+    .then(async (resp) => {
+      const data = await resp.json()
+      const sps = data.data as SP[]
 
-    const hostSortKey = (sp: SP) =>
-      new URL(sp.endpoint).hostname.split('.').reverse().join('.')
+      const hostSortKey = (sp: SP) =>
+        new URL(sp.endpoint).hostname.split('.').reverse().join('.')
 
-    // useful for finding duplicate wallets:
-    // const hostSortKey = (sp: SP) => sp.delegateOwnerWallet
+      // useful for finding duplicate wallets:
+      // const hostSortKey = (sp: SP) => sp.delegateOwnerWallet
 
-    sps.sort((a, b) => (hostSortKey(a) < hostSortKey(b) ? -1 : 1))
-    // console.log(sps)
-    return sps
-  })
+      sps.sort((a, b) => (hostSortKey(a) < hostSortKey(b) ? -1 : 1))
+      // console.log(sps)
+      return sps
+    })
 }
 
 export function useServiceProviders(
   env: string,
-  type: 'content-node' | 'discovery-node'
+  type: 'content' | 'discovery'
 ) {
   const { data: sps, error } = useSWR<SP[]>([env, type], async () => {
-    const sps = await theGraphFetcher(env, type)
+    const sps = await apiGatewayFetcher(env, type)
     const shouldIncludeUnregistered =
-      env !== 'prod' && type === 'discovery-node'
+      env !== 'prod' && type === 'discovery'
     if (shouldIncludeUnregistered) {
       sps.push(...unregisteredStageNodes())
       hostSort(sps)
@@ -78,11 +71,11 @@ export function useServiceProviders(
 }
 
 export function useDiscoveryProviders() {
-  return useServiceProviders('prod', 'discovery-node')
+  return useServiceProviders('prod', 'discovery')
 }
 
 export function useContentProviders() {
-  return useServiceProviders('prod', 'content-node')
+  return useServiceProviders('prod', 'content')
 }
 
 export function hostSort(sps: SP[]) {

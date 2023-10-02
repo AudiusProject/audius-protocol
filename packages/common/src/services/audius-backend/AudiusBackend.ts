@@ -2204,12 +2204,14 @@ export const audiusBackend = ({
       let entityId = 0
       let entityType = Entity.Track
       let amount = '' as StringUSDC
+      let extraAmount = '' as StringUSDC
       const userIds = notification.actions
         .map((action) => {
           const data = action.data
           entityId = decodeHashId(data.content_id) as number
           entityType = Entity.Track
           amount = data.amount
+          extraAmount = data.extra_amount
           return decodeHashId(data.buyer_user_id)
         })
         .filter(removeNullable)
@@ -2219,6 +2221,7 @@ export const audiusBackend = ({
         entityId,
         entityType,
         amount,
+        extraAmount,
         ...formatBaseNotification(notification)
       }
     } else if (notification.type === 'usdc_purchase_buyer') {

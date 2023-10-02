@@ -1,3 +1,5 @@
+import { email, password, name, handle } from '../fixtures/user.json'
+
 function assertOnSignInPage() {
   cy.findByRole('heading', { name: /sign into audius/i, level: 1 }).should(
     'exist'
@@ -6,30 +8,41 @@ function assertOnSignInPage() {
 
 describe('Sign In', () => {
   beforeEach(() => {
-    localStorage.setItem('FeatureFlagOverride:sign_in_redesign', 'enabled')
+    localStorage.setItem('FeatureFlagOverride:sign_up_redesign', 'enabled')
   })
 
-  it('user should be able to sign in from trending screen', () => {
+  it('can navigate to sign-in from trending screen', () => {
     cy.visit('trending')
     cy.findByText(/have an account\?/i).should('exist')
     cy.findByRole('link', { name: /sign in/i }).click()
     assertOnSignInPage()
   })
 
-  it('user shuld be able to navigate directly to sign in page', () => {
+  it('/signin goes to sign-in', () => {
     cy.visit('signin')
     assertOnSignInPage()
   })
 
-  it('user should be able to sign in from the sign up page', () => {
+  it('can navigate to sign-in from sign-up', () => {
     cy.visit('signup')
     cy.findByRole('button', { name: /have an account\? sign in/i }).click()
     assertOnSignInPage()
   })
 
-  it('user should be able to create an account instead', () => {
+  it('can sign in', () => {
     cy.visit('signin')
-    cy.findByRole('link', { name: /create an account/i }).click()
-    cy.findByText(/sign up for audius/i).should('exist')
+    assertOnSignInPage()
+    cy.findByRole('textbox', { name: /email/i }).type(email)
+    cy.findByRole('textbox', { name: /password/i }).type(password)
+    cy.findByRole('button', { name: /sign in/i }).click()
+
+    cy.findByRole('heading', {
+      name: /your feed/i,
+      level: 1,
+      timeout: 20000
+    }).should('exist')
+
+    cy.findByText(name).should('exist')
+    cy.findByText(`@${handle}`).should('exist')
   })
 })

@@ -8,6 +8,7 @@ from src.api.v1.helpers import (
     full_search_parser,
     get_current_user_id,
     make_full_response,
+    parse_bool_param,
     success_response,
 )
 from src.api.v1.models.search import search_model
@@ -43,6 +44,7 @@ class FullSearch(Resource):
         offset = format_offset(args)
         limit = format_limit(args)
         current_user_id = get_current_user_id(args)
+        include_purchaseable = parse_bool_param(args.get("includePurchaseable"))
 
         search_args = {
             "is_auto_complete": False,
@@ -53,6 +55,7 @@ class FullSearch(Resource):
             "limit": limit,
             "offset": offset,
             "only_downloadable": False,
+            "include_purchaseable": include_purchaseable,
         }
         resp = search(search_args)
         return success_response(resp)
@@ -83,6 +86,7 @@ class FullSearchAutocomplete(Resource):
         offset = format_offset(args)
         limit = format_limit(args)
         current_user_id = get_current_user_id(args)
+        include_purchaseable = parse_bool_param(args.get("includePurchaseable"))
 
         search_args = {
             "is_auto_complete": True,
@@ -93,6 +97,7 @@ class FullSearchAutocomplete(Resource):
             "limit": limit,
             "offset": offset,
             "only_downloadable": False,
+            "include_purchaseable": include_purchaseable,
         }
         resp = search(search_args)
         return success_response(resp)

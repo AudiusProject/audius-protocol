@@ -26,11 +26,7 @@ export default {
         postcssCustomProperties({
           // Preserve var names so they can be overridden
           preserve: true,
-          importFrom: [
-            'src/assets/styles/colors.css',
-            'src/assets/styles/tokens.css',
-            'src/assets/styles/fonts.css'
-          ]
+          importFrom: ['src/assets/styles/main.css']
         })
       ],
       minimize: true,

@@ -183,6 +183,7 @@ export class ActionsTab extends PureComponent {
       userHandle,
       playlistId,
       playlistName,
+      permalink,
       trackId,
       trackTitle,
       currentUserSaved,
@@ -214,6 +215,7 @@ export class ActionsTab extends PureComponent {
       overflowMenu.menu.includeAddToPlaylist = false
       overflowMenu.menu.isPublic = isPublic
       overflowMenu.menu.includeEdit = includeEdit
+      overflowMenu.menu.permalink = permalink
     }
 
     return (
@@ -260,7 +262,8 @@ ActionsTab.propTypes = {
   trackTitle: PropTypes.string,
   trackId: PropTypes.number,
   playlistName: PropTypes.string,
-  playlistId: PropTypes.number
+  playlistId: PropTypes.number,
+  permalink: PropTypes.string
 }
 
 ActionsTab.defaultProps = {

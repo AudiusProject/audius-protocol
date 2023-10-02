@@ -99,11 +99,12 @@ type MediorumServer struct {
 
 	isSeeding bool
 
-	peerHealthsMutex   sync.RWMutex
-	peerHealths        map[string]*PeerHealth
-	unreachablePeers   []string
-	redirectCache      *imcache.Cache[string, string]
-	uploadOrigCidCache *imcache.Cache[string, string]
+	peerHealthsMutex      sync.RWMutex
+	peerHealths           map[string]*PeerHealth
+	unreachablePeers      []string
+	redirectCache         *imcache.Cache[string, string]
+	uploadOrigCidCache    *imcache.Cache[string, string]
+	failsPeerReachability bool
 
 	StartedAt time.Time
 	Config    MediorumConfig
@@ -321,10 +322,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation, cidutil.UnescapeCidParam)
 	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo, cidutil.UnescapeCidParam)
 
-	// TODO: remove
-	internalApi.GET("/blobs/:cid/location", ss.getBlobLocation, cidutil.UnescapeCidParam)
-	internalApi.GET("/blobs/:cid/info", ss.getBlobInfo, cidutil.UnescapeCidParam)
-
 	// internal: blobs between peers
 	internalApi.GET("/blobs/:cid", ss.serveInternalBlobPull, cidutil.UnescapeCidParam, middleware.BasicAuth(ss.checkBasicAuth))
 	internalApi.POST("/blobs", ss.postBlob, middleware.BasicAuth(ss.checkBasicAuth))
@@ -334,6 +331,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/logs/partition-ops", ss.getPartitionOpsLog)
 	internalApi.GET("/logs/reaper", ss.getReaperLog)
 	internalApi.GET("/logs/repair", ss.serveRepairLog)
+
+	// internal: testing
+	internalApi.GET("/proxy_health_check", ss.proxyHealthCheck)
 
 	return ss, nil
 
@@ -390,6 +390,8 @@ func (ss *MediorumServer) MustStart() {
 		go ss.startPollingDelistStatuses()
 
 		go ss.pollForSeedingCompletion()
+
+		go ss.startUploadScroller()
 
 	} else {
 		go func() {
