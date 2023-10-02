@@ -45,13 +45,18 @@ const claimableTokenAuthorities = [audioMintAddress, usdcMintAddress].reduce(
   (acc, mint) => ({
     ...acc,
     [mint]: PublicKey.findProgramAddressSync(
-      [new PublicKey(usdcMintAddress).toBytes().slice(0, 32)],
+      [new PublicKey(mint).toBytes().slice(0, 32)],
       new PublicKey(CLAIMABLE_TOKEN_PROGRAM_ID)
     )[0]
   }),
   {} as Record<string, PublicKey>
 )
 
+/**
+ * Only allow the createTokenAccount instruction of the Associated Token
+ * Account program, provided it has matching close instructions.
+ * Close instructions are on the Token Programand are not validated here.
+ */
 const assertAllowedAssociatedTokenAccountProgramInstruction = (
   instructionIndex: number,
   instruction: TransactionInstruction,
@@ -115,6 +120,10 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = (
   }
 }
 
+/**
+ * Allow normal transfers provided they are into userbanks, and allow
+ * close account instructions.
+ */
 const assertAllowedTokenProgramInstruction = async (
   instructionIndex: number,
   instruction: TransactionInstruction,
@@ -146,6 +155,10 @@ const assertAllowedTokenProgramInstruction = async (
   }
 }
 
+/**
+ * Checks that the Reward Manager account on the Reward Manager program
+ * matches the one in use on our deployed program.
+ */
 const assertAllowedRewardsManagerProgramInstruction = (
   instructionIndex: number,
   instruction: TransactionInstruction
@@ -160,10 +173,14 @@ const assertAllowedRewardsManagerProgramInstruction = (
   }
 }
 
+/**
+ * Checks that the claimable token authority matches the one in use on our
+ * deployed program. Optionally also check the user's social proof for transfers.
+ */
 const assertAllowedClaimableTokenProgramInstruction = async (
   instructionIndex: number,
   instruction: TransactionInstruction,
-  user?: { blockchainUserId: number; handle: string },
+  user?: { blockchainUserId?: number; handle?: string },
   socialProofEnabled = false
 ) => {
   const decodedInstruction = decodeClaimableTokenInstruction(instruction)
@@ -218,18 +235,21 @@ const assertAllowedClaimableTokenProgramInstruction = async (
 }
 
 /**
- * Indexes of various accounts in a Jupiter swap instruction.
- * Educated guesses only, based on experience.
- * Only the mints are used currently.
+ * Indexes of various accounts in a Jupiter V6 sharedAccountsRoute instruction.
+ * https://github.com/jup-ag/jupiter-cpi/blob/main/idl.json
  */
-const JupiterSwapAccountIndex = {
-  USER_ACCOUNT: 2,
-  USER_TOKEN_ACCOUNT: 3,
-  TEMP_RECIPIENT_TOKEN_ACCOUNT: 4,
-  TEMP_SENDER_TOKEN_ACCOUNT: 5,
+const JupiterSharedSwapAccountIndex = {
+  TOKEN_PROGRAM: 0,
+  PROGRAM_AUTHORITY: 1,
+  USER_TRANSFER_AUTHORITY: 2,
+  SOURCE_TOKEN_ACCOUNT: 3,
+  PROGRAM_SOURCE_TOKEN_ACCOUNT: 4,
+  PROGRAM_DESTINATION_TOKEN_ACCOUNT: 5,
   DESTINATION_TOKEN_ACCOUNT: 6,
-  USER_TOKEN_MINT: 7,
-  DESTINATION_TOKEN_MINT: 8
+  SOURCE_MINT: 7,
+  DESTINATION_MINT: 8,
+  PLATFORM_FEE_ACCOUNT: 9,
+  TOKEN_2022_PROGRAM: 10
 }
 const assertAllowedJupiterProgramInstruction = (
   instructionIndex: number,
@@ -243,10 +263,12 @@ const assertAllowedJupiterProgramInstruction = (
     )
   }
   const sourceMint =
-    instruction.keys[JupiterSwapAccountIndex.USER_TOKEN_MINT].pubkey.toBase58()
+    instruction.keys[
+      JupiterSharedSwapAccountIndex.SOURCE_MINT
+    ].pubkey.toBase58()
   const destinationMint =
     instruction.keys[
-      JupiterSwapAccountIndex.DESTINATION_TOKEN_MINT
+      JupiterSharedSwapAccountIndex.DESTINATION_MINT
     ].pubkey.toBase58()
   if (sourceMint !== usdcMintAddress) {
     throw new InvalidRelayInstructionError(
@@ -275,7 +297,7 @@ const assertAllowedJupiterProgramInstruction = (
  */
 export const assertRelayAllowedInstructions = async (
   instructions: TransactionInstruction[],
-  user?: { walletAddress?: string; blockchainUserId: number; handle: string },
+  user?: { walletAddress?: string; blockchainUserId?: number; handle?: string },
   socialProofEnabled = false
 ) => {
   for (let i = 0; i < instructions.length; i++) {
