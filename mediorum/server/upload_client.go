@@ -16,12 +16,13 @@ func (ss *MediorumServer) startUploadScroller() {
 				continue
 			}
 
-			uploadCursor := &UploadCursor{
-				Host: peer.Host,
-			}
-
 			// load prior cursor for host
-			ss.crud.DB.First(&uploadCursor, "host = ?", peer.Host)
+			var uploadCursor *UploadCursor
+			if ss.crud.DB.First(&uploadCursor, "host = ?", peer.Host).Error != nil {
+				uploadCursor = &UploadCursor{
+					Host: peer.Host,
+				}
+			}
 			logger := ss.logger.With("task", "upload_scroll", "host", peer.Host, "after", uploadCursor.After)
 
 			// fetch uploads from host
@@ -44,12 +45,13 @@ func (ss *MediorumServer) startUploadScroller() {
 
 			var overwrites []*Upload
 			for _, upload := range uploads {
-				// get existing upload
-				var existing *Upload
-				ss.crud.DB.First(&existing, "id = ?", upload.ID)
 
-				overwrite := existing == nil || (existing.Status != JobStatusDone && upload.Status == JobStatusDone) || existing.TranscodedAt.Before(upload.TranscodedAt)
-				if overwrite {
+				// get existing upload
+				var existing Upload
+				err := ss.crud.DB.First(&existing, "id = ?", upload.ID).Error
+
+				// if not exists or is old, overwrite
+				if err != nil || existing.TranscodedAt.Before(upload.TranscodedAt) {
 					overwrites = append(overwrites, upload)
 				}
 
@@ -72,7 +74,7 @@ func (ss *MediorumServer) startUploadScroller() {
 
 		}
 
-		time.Sleep(time.Minute * 2)
+		time.Sleep(time.Minute * 5)
 	}
 
 }
