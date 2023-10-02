@@ -112,7 +112,7 @@ const createRouter = () => {
         })
 
         // Check that the instructions are allowed for relay
-        await assertRelayAllowedInstructions(instructions, req.user)
+        await assertRelayAllowedInstructions(instructions, { user: req.user })
 
         // Send transaction using transaction handler
         const transactionHandler = libs.solanaWeb3Manager!.transactionHandler

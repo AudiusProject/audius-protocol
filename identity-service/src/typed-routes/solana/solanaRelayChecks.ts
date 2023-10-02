@@ -296,8 +296,14 @@ const assertAllowedJupiterProgramInstruction = (
  */
 export const assertRelayAllowedInstructions = async (
   instructions: TransactionInstruction[],
-  user?: { walletAddress?: string; blockchainUserId?: number; handle?: string },
-  socialProofEnabled = false
+  options?: {
+    user?: {
+      walletAddress?: string
+      blockchainUserId?: number
+      handle?: string
+    }
+    socialProofEnabled?: boolean
+  }
 ) => {
   for (let i = 0; i < instructions.length; i++) {
     const instruction = instructions[i]
@@ -313,7 +319,7 @@ export const assertRelayAllowedInstructions = async (
         await assertAllowedTokenProgramInstruction(
           i,
           instruction,
-          user?.walletAddress
+          options?.user?.walletAddress
         )
         break
       case REWARDS_MANAGER_PROGRAM_ID:
@@ -323,15 +329,15 @@ export const assertRelayAllowedInstructions = async (
         await assertAllowedClaimableTokenProgramInstruction(
           i,
           instruction,
-          user,
-          socialProofEnabled
+          options?.user,
+          options?.socialProofEnabled
         )
         break
       case JUPITER_AGGREGATOR_V6_PROGRAM_ID:
         assertAllowedJupiterProgramInstruction(
           i,
           instruction,
-          user?.walletAddress
+          options?.user?.walletAddress
         )
         break
       case Secp256k1Program.programId.toBase58():

@@ -215,7 +215,9 @@ describe('Solana Relay', function () {
         )
       ]
       await assertRelayAllowedInstructions(instructions, {
-        walletAddress: wallet
+        user: {
+          walletAddress: wallet
+        }
       })
     })
 
@@ -247,7 +249,9 @@ describe('Solana Relay', function () {
       await assert.rejects(
         async () =>
           assertRelayAllowedInstructions(instructions, {
-            walletAddress: wallet
+            user: {
+              walletAddress: wallet
+            }
           }),
         InvalidRelayInstructionError,
         'Transfer not to userbank'
@@ -629,7 +633,9 @@ describe('Solana Relay', function () {
       ]
 
       await assertRelayAllowedInstructions(instructions, {
-        walletAddress: 'something'
+        user: {
+          walletAddress: 'something'
+        }
       })
     })
 
@@ -777,7 +783,9 @@ describe('Solana Relay', function () {
       await assert.rejects(
         async () =>
           assertRelayAllowedInstructions(instructions, {
-            walletAddress: 'something'
+            user: {
+              walletAddress: 'something'
+            }
           }),
         InvalidRelayInstructionError,
         'Invalid mints for swap'
