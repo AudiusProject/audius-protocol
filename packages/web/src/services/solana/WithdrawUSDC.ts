@@ -41,7 +41,7 @@ export const getFundDestinationTokenAccountFees = async (
 
 /**
  * Creates instructions to swap from a user bank token into the given wallet as SOL.
- * These instructions are allowed in relay because every created token account is closed.
+ * These instructions are allowed in relay because every created token account is closed in the same transaction.
  */
 export const createSwapUserbankToSolInstructions = async ({
   mint,
@@ -153,7 +153,7 @@ export const createSwapUserbankToSolInstructions = async ({
     wallet //  owner
   )
 
-  // 8. Close the temporary token account on the wallet and return the rent to the feepayer
+  // 9. Close the temporary token account on the wallet and return the rent to the feepayer
   const closeTemporaryTokenAccountInstruction = createCloseAccountInstruction(
     walletTokenAccount, //  account to close
     feePayer, // fee destination

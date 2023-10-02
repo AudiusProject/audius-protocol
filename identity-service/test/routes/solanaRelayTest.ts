@@ -467,7 +467,7 @@ describe('Solana Relay', function () {
 
   describe('Claimable Tokens Program', function () {
     it('should allow claimable token program instructions with valid authority', async function () {
-      // Dummy eth addresse to make the encoder happy
+      // Dummy eth address to make the encoder happy
       const wallet = '0xe42b199d864489387bf64262874fc6472bcbc151'
       const payer = getRandomPublicKey()
       const mint = getRandomPublicKey()

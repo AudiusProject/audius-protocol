@@ -292,7 +292,7 @@ export const createTransferInstructions = async ({
   const transferDataInstr = Uint8Array.of(1, ...ethAddressArr)
   const transferInstruction = new TransactionInstruction({
     keys: accounts,
-    programId: new PublicKey(claimableTokenProgramKey.toString()),
+    programId: claimableTokenProgramKey,
     data: Buffer.from(transferDataInstr)
   })
 

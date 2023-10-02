@@ -282,6 +282,7 @@ const assertAllowedJupiterProgramInstruction = (
     )
   }
 }
+
 /**
  * Checks each of the instructions to make sure it's something we want to relay.
  * The main goals of the checks are to ensure the feePayer isn't abused.
