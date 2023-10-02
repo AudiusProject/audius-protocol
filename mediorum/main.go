@@ -57,9 +57,9 @@ func main() {
 
 func startStagingOrProd(isProd bool) {
 	logger := slog.With("creatorNodeEndpoint", os.Getenv("creatorNodeEndpoint"))
-	g := registrar.NewAudiusApiGatewayStaging()
+	g := registrar.NewMultiStaging()
 	if isProd {
-		g = registrar.NewAudiusApiGatewayProd()
+		g = registrar.NewMultiProd()
 	}
 
 	var peers, signers []server.Peer

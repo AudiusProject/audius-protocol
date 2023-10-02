@@ -81,7 +81,7 @@ export const LockedTrackDetailsTile = ({
           <DogEar type={dogEarType} />
         </div>
       ) : null}
-      <div>
+      <div className={styles.trackTextWrapper}>
         <div
           className={cn(styles.premiumContentLabel, {
             [styles.usdcContentLabel]: isUSDCPurchaseGated
