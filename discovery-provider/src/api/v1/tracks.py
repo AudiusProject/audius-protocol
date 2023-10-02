@@ -9,6 +9,8 @@ import requests
 from flask import redirect
 from flask.globals import request
 from flask_restx import Namespace, Resource, fields, inputs, marshal, reqparse
+from src.utils.structured_logger import StructuredLogger, log_duration
+logger = StructuredLogger(__name__)
 
 from src.api.v1.helpers import (
     DescriptiveArgument,
@@ -665,6 +667,7 @@ class FullTrending(Resource):
     @ns.doc()
     @full_ns.expect(full_trending_parser)
     @full_ns.marshal_with(full_tracks_response)
+    @log_duration(logger)
     def get(self, version):
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS

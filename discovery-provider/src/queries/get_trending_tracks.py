@@ -24,6 +24,9 @@ from src.utils.redis_cache import use_redis_cache
 
 TRENDING_LIMIT = 100
 TRENDING_TTL_SEC = 30 * 60
+import time as clock
+from src.utils.structured_logger import StructuredLogger, log_duration
+logger = StructuredLogger(__name__)
 
 
 def make_trending_cache_key(
@@ -215,20 +218,21 @@ def generate_unpopulated_trending_from_mat_views(
     # Get unpopulated metadata
     track_ids = [track_id[0] for track_id in trending_track_ids]
     tracks = get_unpopulated_tracks(session, track_ids, exclude_premium=exclude_premium)
-
+    logger.info(f"asdf mat views limit {limit}")
     return (tracks, track_ids)
 
-
+@log_duration(logger)
 def make_generate_unpopulated_trending(
     session: Session,
     genre: Optional[str],
     time_range: str,
     strategy: BaseTrendingStrategy,
     exclude_premium: bool,
+    limit: int
 ):
     """Wraps a call to `generate_unpopulated_trending` for use in `use_redis_cache`, which
     expects to be passed a function with no arguments."""
-
+    logger.info(f"asdf limit {limit} {strategy.use_mat_view}")
     def wrapped():
         if strategy.use_mat_view:
             return generate_unpopulated_trending_from_mat_views(
@@ -237,6 +241,7 @@ def make_generate_unpopulated_trending(
                 time_range=time_range,
                 strategy=strategy,
                 exclude_premium=exclude_premium,
+                limit=limit
             )
         return generate_unpopulated_trending(
             session=session,
@@ -244,6 +249,7 @@ def make_generate_unpopulated_trending(
             time_range=time_range,
             strategy=strategy,
             exclude_premium=exclude_premium,
+            limit=limit
         )
 
     return wrapped
@@ -266,11 +272,13 @@ def get_trending_tracks(args: GetTrendingTracksArgs, strategy: BaseTrendingStrat
 def _get_trending_tracks_with_session(
     session: Session, args: GetTrendingTracksArgs, strategy: BaseTrendingStrategy
 ):
-    current_user_id, genre, time, exclude_premium = (
+    checkpoint_time = clock.time()
+    current_user_id, genre, time, exclude_premium, limit = (
         args.get("current_user_id"),
         args.get("genre"),
         args.get("time", "week"),
         args.get("exclude_premium", SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS),
+        args.get("limit")
     )
     time_range = "week" if time not in ["week", "month", "year", "allTime"] else time
     key = make_trending_cache_key(time_range, genre, strategy.version)
@@ -286,15 +294,20 @@ def _get_trending_tracks_with_session(
             time_range=time_range,
             strategy=strategy,
             exclude_premium=exclude_premium,
+            limit=limit
         ),
     )
-
+    logger.info(f"asdf unpopulated trending completed {clock.time() - checkpoint_time}")
+    checkpoint_time = clock.time()
     # populate track metadata
     tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
     tracks_map = {track["track_id"]: track for track in tracks}
+    logger.info(f"asdf populate_track_metadata completed {clock.time() - checkpoint_time}")
+    checkpoint_time = clock.time()
 
     # Re-sort the populated tracks b/c it loses sort order in sql query
     sorted_tracks = [tracks_map[track_id] for track_id in track_ids]
 
     add_users_to_tracks(session, tracks, current_user_id)
+    logger.info(f"asdf add_users_to_tracks completed {clock.time() - checkpoint_time}")
     return sorted_tracks

@@ -32,7 +32,9 @@ from src.queries.get_unpopulated_users import get_unpopulated_users
 from src.trending_strategies.trending_type_and_version import TrendingVersion
 from src.utils import helpers, redis_connection
 
-logger = logging.getLogger(__name__)
+from src.utils.structured_logger import StructuredLogger, log_duration
+import time
+logger = StructuredLogger(__name__)
 
 redis = redis_connection.get_redis()
 
@@ -159,9 +161,11 @@ class LibraryFilterType(str, enum.Enum):
 # given list of user ids and corresponding users, populates each user object with:
 #   track_count, playlist_count, album_count, follower_count, followee_count, repost_count, supporter_count, supporting_count
 #   if current_user_id available, populates does_current_user_follow, followee_follows, does_current_user_subscribe
+@log_duration(logger)
 def populate_user_metadata(
     session, user_ids, users, current_user_id, with_track_save_count=False
 ):
+    checkpoint_time = time.time()
     aggregate_user = (
         session.query(
             AggregateUser.user_id,
@@ -178,12 +182,16 @@ def populate_user_metadata(
         .filter(AggregateUser.user_id.in_(user_ids))
         .all()
     )
-
+    logger.info(f"asdf got aggregate users completed {time.time() - checkpoint_time}")
+    checkpoint_time = time.time()
     # build a dict of user (eth) wallet -> user bank
     user_banks = session.query(
         UserBankAccount.ethereum_address, UserBankAccount.bank_account
     ).filter(UserBankAccount.ethereum_address.in_(user["wallet"] for user in users))
     user_banks_dict = dict(user_banks)
+
+    logger.info(f"asdf got user banks completed {time.time() - checkpoint_time}")
+    checkpoint_time = time.time()
 
     # build dict of user id --> track/playlist/album/follower/followee/repost/track save/supporting/supporter counts
     count_dict = {
@@ -223,6 +231,8 @@ def populate_user_metadata(
         .group_by(Track.owner_id)
         .all()
     )
+    logger.info(f"asdf got track owner completed {time.time() - checkpoint_time}")
+    checkpoint_time = time.time()
     track_blocknumber_dict = dict(track_blocknumbers)
 
     follows_current_user_set = set()
@@ -249,6 +259,9 @@ def populate_user_metadata(
             )
             .all()
         )
+        logger.info(f"asdf got follows completed {time.time() - checkpoint_time}")
+        checkpoint_time = time.time()
+
         for follower_id, following_id in current_user_follow_rows:
             if follower_id == current_user_id:
                 current_user_followed_user_ids[following_id] = True
@@ -268,6 +281,8 @@ def populate_user_metadata(
         )
         for subscription in current_user_subscribed_rows:
             current_user_subscribed_user_ids[subscription.user_id] = True
+        logger.info(f"asdf got subscriptions completed {time.time() - checkpoint_time}")
+        checkpoint_time = time.time()
 
         # build dict of user id --> followee follow count
         current_user_followees = (
@@ -291,11 +306,15 @@ def populate_user_metadata(
             .group_by(Follow.followee_user_id)
             .all()
         )
+        logger.info(f"asdf got followee completed {time.time() - checkpoint_time}")
+        checkpoint_time = time.time() 
         current_user_followee_follow_count_dict = dict(
             current_user_followee_follow_counts
         )
 
     balance_dict = get_balances(session, redis, user_ids)
+    logger.info(f"asdf got balances completed {time.time() - checkpoint_time}")
+    checkpoint_time = time.time()
 
     for user in users:
         user_id = user["user_id"]
@@ -380,6 +399,8 @@ def populate_user_metadata(
         user[response_name_constants.does_follow_current_user] = (
             user_id in follows_current_user_set
         )
+    logger.info(f"asdf formatted users completed {time.time() - checkpoint_time}")
+    checkpoint_time = time.time()
 
     return users
 
@@ -395,7 +416,7 @@ def get_track_play_count_dict(session, track_ids):
         """
     )
     query = query.bindparams(bindparam("ids", expanding=True))
-
+    logger.info(f"asdf track play counts ids {track_ids}")
     track_play_counts = session.execute(query, {"ids": track_ids}).fetchall()
     track_play_dict = dict(track_play_counts)
     return track_play_dict
@@ -406,9 +427,11 @@ def get_track_play_count_dict(session, track_ids):
 #   if remix: remix users, has_remix_author_reposted, has_remix_author_saved
 #   if current_user_id available, populates followee_reposts, has_current_user_reposted, has_current_user_saved
 #   if current_user_id available and track is premium and user has access, populates premium_content_signature
+@log_duration(logger)
 def populate_track_metadata(
     session, track_ids, tracks, current_user_id, track_has_aggregates=False
 ):
+    checkpoint_time = time.time()
     if not track_has_aggregates:
         # build dict of track id --> repost count
         counts = (
@@ -422,6 +445,9 @@ def populate_track_metadata(
             )
             .all()
         )
+        logger.info(f"asdf got aggregate_track completed {time.time() - checkpoint_time}")
+        checkpoint_time = time.time()
+        remixes = get_track_remix_metadata(session, tracks, current_user_id)
 
         count_dict = {
             track_id: {
@@ -432,8 +458,11 @@ def populate_track_metadata(
         }
 
         play_count_dict = get_track_play_count_dict(session, track_ids)
-
-    remixes = get_track_remix_metadata(session, tracks, current_user_id)
+        logger.info(f"asdf got track play count completed {time.time() - checkpoint_time}")
+        checkpoint_time = time.time()
+        remixes = get_track_remix_metadata(session, tracks, current_user_id)
+        logger.info(f"asdf got track remix completed {time.time() - checkpoint_time}")
+        checkpoint_time = time.time()
 
     user_reposted_track_dict = {}
     user_saved_track_dict = {}
@@ -453,6 +482,8 @@ def populate_track_metadata(
             .all()
         )
         user_reposted_track_dict = {repost[0]: True for repost in user_reposted}
+        logger.info(f"asdf got reposts completed {time.time() - checkpoint_time}")
+        checkpoint_time = time.time()
 
         # has current user saved any of requested track ids
         user_saved_tracks_query = (
@@ -467,6 +498,8 @@ def populate_track_metadata(
             .all()
         )
         user_saved_track_dict = {save[0]: True for save in user_saved_tracks_query}
+        logger.info(f"asdf got saves completed {time.time() - checkpoint_time}")
+        checkpoint_time = time.time()
 
         # Get current user's followees.
         followees = session.query(Follow.followee_user_id).filter(
@@ -474,6 +507,8 @@ def populate_track_metadata(
             Follow.is_current == True,
             Follow.is_delete == False,
         )
+        logger.info(f"asdf got followees {time.time() - checkpoint_time}")
+        checkpoint_time = time.time()
 
         # build dict of track id --> followee reposts
         followee_track_reposts = session.query(Repost).filter(
@@ -490,6 +525,8 @@ def populate_track_metadata(
             followee_track_repost_dict[track_repost["repost_item_id"]].append(
                 track_repost
             )
+        logger.info(f"asdf got followee reposts {time.time() - checkpoint_time}")
+        checkpoint_time = time.time()
 
         # Build dict of track id --> followee saves.
         followee_track_saves = session.query(Save).filter(
@@ -504,10 +541,14 @@ def populate_track_metadata(
             if track_save["save_item_id"] not in followee_track_save_dict:
                 followee_track_save_dict[track_save["save_item_id"]] = []
             followee_track_save_dict[track_save["save_item_id"]].append(track_save)
+        logger.info(f"asdf got followee saves {time.time() - checkpoint_time}")
+        checkpoint_time = time.time()
 
         # has current user unlocked premium tracks
         # if so, also populate corresponding signatures
         _populate_premium_track_metadata(session, tracks, current_user_id)
+        logger.info(f"asdf got populate premium track metadata {time.time() - checkpoint_time}")
+        checkpoint_time = time.time()
 
     for track in tracks:
         track_id = track["track_id"]
@@ -568,6 +609,8 @@ def populate_track_metadata(
                         remix_track.update(remixes[track["track_id"]][parent_track_id])
         else:
             track[response_name_constants.remix_of] = None
+    logger.info(f"asdf got populated tracks metadata {time.time() - checkpoint_time}")
+    checkpoint_time = time.time()
 
     return tracks
 
@@ -1342,6 +1385,7 @@ def filter_to_playlist_mood(session, mood, query, correlation):
     return query.filter(mood_exists_query.exists())
 
 
+@log_duration(logger)
 def add_users_to_tracks(session, tracks, current_user_id=None):
     """
     Fetches the owners for the tracks and adds them to the track dict under the key 'user'
@@ -1373,5 +1417,5 @@ def add_users_to_tracks(session, tracks, current_user_id=None):
             track["user"] = user
         else:
             track["user"] = {}
-
+    logger.info(f"asdf added users to tracks {tracks}")
     return tracks
