@@ -99,10 +99,11 @@ web-test-staging:
     - browser-tools/install-browser-tools:
         chrome-version: 116.0.5845.96 # TODO: remove when chromedriver downloads are fixed
     - cypress/install:
-        install-command: 'cd packages/probers && npx cypress install'
+        install-command: 'npx cypress install'
         install-browsers: false
+        working-directory: packages/probers
     - cypress/run-tests:
-        cypress-command: 'cd packages/probers && npx cypress run --browser chrome'
+        cypress-command: 'npx cypress run --browser chrome'
         start-command: 'npx serve -l 3001 -s packages/web/build-staging'
         working-directory: packages/probers
 
