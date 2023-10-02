@@ -53,13 +53,13 @@ steps:
       name: Record Success
       shell: /tmp/bash.real
       command: touch /tmp/success
-  - run:
-      name: Delete GCP resources
-      when: always
-      shell: /tmp/bash.real
-      command: |
-        gcloud compute instances delete --quiet "<< parameters.instance-name >>"
-        gcloud compute firewall-rules delete --quiet "<< parameters.instance-name >>"
+  # - run:
+  #     name: Delete GCP resources
+  #     when: always
+  #     shell: /tmp/bash.real
+  #     command: |
+  #       gcloud compute instances delete --quiet "<< parameters.instance-name >>"
+  #       gcloud compute firewall-rules delete --quiet "<< parameters.instance-name >>"
 
-        mv /bin/bash /tmp/bash.deleted
-        mv /tmp/bash.real /bin/bash
+  #       mv /bin/bash /tmp/bash.deleted
+  #       mv /tmp/bash.real /bin/bash
