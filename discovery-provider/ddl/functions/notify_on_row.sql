@@ -6,9 +6,9 @@ create or replace function on_new_row() returns trigger as $$
 begin
   case TG_TABLE_NAME
     when 'tracks' then
-      PERFORM pg_notify(TG_TABLE_NAME, json_build_object('track_id', new.track_id)::text);
+      PERFORM pg_notify(TG_TABLE_NAME, json_build_object('track_id', new.track_id, 'updated_at', new.updated_at, 'created_at', new.created_at, 'blocknumber', new.blocknumber)::text);
     when 'users' then
-      PERFORM pg_notify(TG_TABLE_NAME, json_build_object('user_id', new.user_id)::text);
+      PERFORM pg_notify(TG_TABLE_NAME, json_build_object('user_id', new.user_id, 'blocknumber', new.blocknumber)::text);
     when 'playlists' then
       PERFORM pg_notify(TG_TABLE_NAME, json_build_object('playlist_id', new.playlist_id)::text);
     else
