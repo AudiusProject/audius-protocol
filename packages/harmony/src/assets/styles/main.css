@@ -6,12 +6,3 @@
 @import './tokens.css';
 @import './border-radius.css';
 @import './shadows.css';
-
-#root *,
-body * {
-  position: relative;
-  box-sizing: border-box;
-  font-family: var(--font-family);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
-}
