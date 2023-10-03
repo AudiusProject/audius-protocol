@@ -14,7 +14,10 @@ export const isOldUpload = (uploadDate) => {
 }
 
 export default async ({ track_id, updated_at, created_at }) => {
-  const isUpload = updated_at === created_at
+  const isUpload =
+    updated_at === created_at &&
+    updated_at !== undefined &&
+    created_at !== undefined
   if (!isUpload) return
 
   const trackId = track_id
