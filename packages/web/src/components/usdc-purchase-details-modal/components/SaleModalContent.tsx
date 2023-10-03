@@ -4,7 +4,6 @@ import {
   CommonState,
   chatActions,
   chatSelectors,
-  formatUSDCWeiToUSDString,
   useInboxUnavailableModal
 } from '@audius/common'
 import {
@@ -27,6 +26,7 @@ import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBa
 
 import { DetailSection } from './DetailSection'
 import { TrackLink } from './TrackLink'
+import { TransactionSummary } from './TransactionSummary'
 import styles from './styles.module.css'
 import { ContentProps } from './types'
 
@@ -34,7 +34,6 @@ const { getCanCreateChat } = chatSelectors
 const { createChat } = chatActions
 
 const messages = {
-  cost: 'Cost',
   date: 'Date',
   done: 'Done',
   messageBuyer: 'Message Buyer',
@@ -97,11 +96,7 @@ export const SaleModalContent = ({
             {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
           </Text>
         </DetailSection>
-        <DetailSection label={messages.cost}>
-          <Text size='large'>{`$${formatUSDCWeiToUSDString(
-            purchaseDetails.amount
-          )}`}</Text>
-        </DetailSection>
+        <TransactionSummary transaction={purchaseDetails} />
       </ModalContent>
       <ModalFooter className={styles.footer}>
         <HarmonyButton
