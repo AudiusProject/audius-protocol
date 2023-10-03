@@ -1,6 +1,10 @@
 import { ImageField } from 'app/components/fields'
 import { makeStyles } from 'app/styles'
 
+const messages = {
+  label: 'Profile Picture'
+}
+
 const name = 'profile_picture'
 
 const useStyles = makeStyles(({ palette }) => ({
@@ -33,6 +37,7 @@ export const ProfilePictureField = () => {
   return (
     <ImageField
       name={name}
+      label={messages.label}
       styles={{
         root: styles.profilePicture,
         imageContainer: styles.profilePictureImageContainer,

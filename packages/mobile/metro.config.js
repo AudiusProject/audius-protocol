@@ -38,6 +38,9 @@ module.exports = (async () => {
     resolver: { sourceExts, assetExts, resolverMainFields }
   } = await getDefaultConfig()
 
+  const defaultSourceExts = [...sourceExts, 'svg', 'cjs']
+  console.log('working?', process.env.RN_SRC_EXT)
+
   resolverMainFields.unshift('sbmodern')
 
   return {
@@ -58,7 +61,9 @@ module.exports = (async () => {
     ],
     resolver: {
       assetExts: assetExts.filter((ext) => ext !== 'svg'),
-      sourceExts: [...sourceExts, 'svg', 'cjs'],
+      sourceExts: process.env.RN_SRC_EXT
+        ? process.env.RN_SRC_EXT.split(',').concat(defaultSourceExts)
+        : defaultSourceExts,
       extraNodeModules: {
         ...require('node-libs-react-native'),
         // Alias for 'src' to allow for absolute paths
