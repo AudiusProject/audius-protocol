@@ -9,7 +9,7 @@ import { makeStyles } from 'app/styles'
 import type { SvgProps } from 'app/types/svg'
 import { useColor } from 'app/utils/theme'
 
-export type DrawerHeaderProps = {
+type DrawerHeaderProps = {
   onClose: () => void
   title?: ReactNode
   titleIcon?: ComponentType<SvgProps>

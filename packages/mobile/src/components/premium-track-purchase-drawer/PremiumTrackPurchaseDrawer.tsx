@@ -271,8 +271,6 @@ export const PremiumTrackPurchaseDrawer = () => {
     <NativeDrawer
       drawerStyle={styles.drawer}
       drawerHeader={PremiumTrackPurchaseDrawerHeader}
-      // title={messages.title}
-      // titleIcon={IconCart}
       drawerName={PREMIUM_TRACK_PURCHASE_MODAL_NAME}
       onClosed={handleClosed}
       isGestureSupported={false}
