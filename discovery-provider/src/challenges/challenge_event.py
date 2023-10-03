@@ -20,3 +20,5 @@ class ChallengeEvent(str, enum.Enum):
     trending_playlist = "trending_playlist"
     send_tip = "send_tip"  # Fired for sender
     first_playlist = "first_playlist"
+    audio_matching_buyer = "audio_matching_buyer"
+    audio_matching_seller = "audio_matching_seller"
