@@ -8,7 +8,8 @@ import {
   useGetTrackById,
   usePremiumContentPurchaseModal,
   usePurchaseContentFormConfiguration,
-  buyUSDCActions
+  buyUSDCActions,
+  purchaseContentActions
 } from '@audius/common'
 import { IconCart, ModalContent, ModalFooter, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
@@ -31,6 +32,7 @@ import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState
 
 const { startRecoveryIfNecessary, cleanup: cleanupUSDCRecovery } =
   buyUSDCActions
+const { cleanup } = purchaseContentActions
 
 const messages = {
   completePurchase: 'Complete Purchase'
@@ -117,6 +119,7 @@ const RenderForm = ({
 }
 
 export const PremiumContentPurchaseModal = () => {
+  const dispatch = useDispatch()
   const {
     isOpen,
     onClose,
@@ -132,6 +135,11 @@ export const PremiumContentPurchaseModal = () => {
   const { initialValues, validationSchema, onSubmit } =
     usePurchaseContentFormConfiguration({ track })
 
+  const handleClose = useCallback(() => {
+    dispatch(cleanup())
+    onClose()
+  }, [dispatch, onClose])
+
   const isValidTrack = track && isTrackPurchasable(track)
 
   if (track && !isValidTrack) {
@@ -141,7 +149,7 @@ export const PremiumContentPurchaseModal = () => {
   return (
     <ModalDrawer
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       onClosed={onClosed}
       bodyClassName={styles.modal}
       isFullscreen
