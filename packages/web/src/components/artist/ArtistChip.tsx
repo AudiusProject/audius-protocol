@@ -152,10 +152,7 @@ const ArtistChip = ({
         </div>
         {customChips || (
           <>
-            <ArtistChipFollowers
-              followerCount={followers}
-              doesFollowCurrentUser={!!doesFollowCurrentUser}
-            />
+            <ArtistChipFollowers userId={userId} followerCount={followers} />
             {showSupportFor ? (
               <ArtistChipSupportFor
                 artistId={user.user_id}

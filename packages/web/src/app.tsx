@@ -28,58 +28,66 @@ import { reportToSentry } from './store/errors/reportToSentry'
 
 import './index.css'
 import './services/webVitals'
+import { accountSelectors } from '@audius/common'
+import { useSelector } from 'react-redux'
 
-const AudiusApp = () => {
+const AudiusTrpcProvider = ({ children }: { children: React.ReactNode }) => {
+  const currentUserId = useSelector(accountSelectors.getUserId)
   const [queryClient] = useState(() => new QueryClient())
-  const [trpcClient] = useState(() => createAudiusTRPCClient())
-
+  const [trpcClient] = useState(() => createAudiusTRPCClient(currentUserId))
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>
-        <Provider store={store}>
-          <AudiusQueryContext.Provider
-            value={{
-              apiClient,
-              audiusBackend: audiusBackendInstance,
-              audiusSdk,
-              dispatch: store.dispatch,
-              reportToSentry
-            }}
-          >
-            <ConnectedRouter history={history}>
-              <LastLocationProvider>
-                <AppProviders>
-                  <MainContentContext.Consumer>
-                    {({ mainContentRef }) => (
-                      <Switch>
-                        <Route path='/error'>
-                          <SomethingWrong />
-                        </Route>
-                        <Route
-                          exact
-                          path={'/oauth/auth'}
-                          component={OAuthLoginPage}
-                        />
-                        <Route path='/demo/trpc'>
-                          <DemoTrpcPage />
-                        </Route>
-                        <Route path='/'>
-                          <AppErrorBoundary>
-                            <CoinbasePayButtonProvider>
-                              <App mainContentRef={mainContentRef} />
-                            </CoinbasePayButtonProvider>
-                          </AppErrorBoundary>
-                        </Route>
-                      </Switch>
-                    )}
-                  </MainContentContext.Consumer>
-                </AppProviders>
-              </LastLocationProvider>
-            </ConnectedRouter>
-          </AudiusQueryContext.Provider>
-        </Provider>
-      </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </trpc.Provider>
+  )
+}
+
+const AudiusApp = () => {
+  return (
+    <Provider store={store}>
+      <AudiusTrpcProvider>
+        <AudiusQueryContext.Provider
+          value={{
+            apiClient,
+            audiusBackend: audiusBackendInstance,
+            audiusSdk,
+            dispatch: store.dispatch,
+            reportToSentry
+          }}
+        >
+          <ConnectedRouter history={history}>
+            <LastLocationProvider>
+              <AppProviders>
+                <MainContentContext.Consumer>
+                  {({ mainContentRef }) => (
+                    <Switch>
+                      <Route path='/error'>
+                        <SomethingWrong />
+                      </Route>
+                      <Route
+                        exact
+                        path={'/oauth/auth'}
+                        component={OAuthLoginPage}
+                      />
+                      <Route path='/demo/trpc'>
+                        <DemoTrpcPage />
+                      </Route>
+                      <Route path='/'>
+                        <AppErrorBoundary>
+                          <CoinbasePayButtonProvider>
+                            <App mainContentRef={mainContentRef} />
+                          </CoinbasePayButtonProvider>
+                        </AppErrorBoundary>
+                      </Route>
+                    </Switch>
+                  )}
+                </MainContentContext.Consumer>
+              </AppProviders>
+            </LastLocationProvider>
+          </ConnectedRouter>
+        </AudiusQueryContext.Provider>
+      </AudiusTrpcProvider>
+    </Provider>
   )
 }
 

@@ -1,27 +1,15 @@
 import { CSSProperties, useMemo, useState } from 'react'
 
-import {
-  loadCurrentUserId,
-  storeCurrentUserId,
-  trpc
-} from '../../services/trpc'
+import { trpc } from '../../services/trpc'
 
 // ==================== Page ====================
 
 export default function DemoTrpcPage() {
   const pageSize = 50
   const [offset, setOffset] = useState(1)
-  const [myId, setMyId] = useState(() => loadCurrentUserId())
   const utils = trpc.useContext()
 
   const idRange = Array.from(Array(pageSize).keys()).map((i) => i + offset)
-
-  function updateMyId(val: string) {
-    storeCurrentUserId(val)
-    setMyId(val)
-    // force tRPC to reload all "me" stuff
-    utils.me.invalidate()
-  }
 
   return (
     <div style={{ padding: 0 }}>
@@ -35,14 +23,6 @@ export default function DemoTrpcPage() {
         }}
       >
         <div style={{ fontWeight: 900 }}>tRPC demo</div>
-        <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-          User ID
-          <input
-            type='number'
-            value={myId}
-            onChange={(e) => updateMyId(e.target.value)}
-          />
-        </div>
         <div
           style={{
             display: 'flex',
