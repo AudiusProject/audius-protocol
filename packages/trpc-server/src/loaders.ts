@@ -8,7 +8,7 @@ import {
   selectUsersCamel,
   sql
 } from './db'
-import { FollowRow } from './db-tables'
+import { FollowRow, SubscriptionRow } from './db-tables'
 
 export const prepareLoaders = (myId: number | undefined) => ({
   // bulk load user by id
@@ -34,24 +34,37 @@ export const prepareLoaders = (myId: number | undefined) => ({
     async (ids) => {
       const outboundIds = new Set()
       const inboundIds = new Set()
+      const subscribedIds = new Set()
 
       if (myId) {
-        const rows = await sql<FollowRow[]>`
+        const [followRows, subscribeRows] = await Promise.all([
+          sql<FollowRow[]>`
           select follower_user_id, followee_user_id
           from follows
           where (follower_user_id = ${myId} and followee_user_id in ${sql(ids)})
             or (follower_user_id in ${sql(ids)}) and followee_user_id = ${myId}
-        `
-        for (const row of rows) {
+          `,
+
+          sql<SubscriptionRow[]>`
+          select user_id from subscriptions
+          where user_id in ${sql(ids)} and subscriber_id = ${myId}`
+        ])
+
+        for (const row of followRows) {
           row.followerUserId == myId
             ? outboundIds.add(row.followeeUserId)
             : inboundIds.add(row.followerUserId)
+        }
+
+        for (const row of subscribeRows) {
+          subscribedIds.add(row.userId)
         }
       }
 
       return ids.map((id) => ({
         followed: outboundIds.has(id),
-        followsMe: inboundIds.has(id)
+        followsMe: inboundIds.has(id),
+        subscribed: subscribedIds.has(id)
       }))
     }
   ),
