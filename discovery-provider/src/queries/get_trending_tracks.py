@@ -254,6 +254,8 @@ class GetTrendingTracksArgs(TypedDict, total=False):
     genre: Optional[str]
     time: str
     exclude_premium: bool
+    limit: int
+    offset: int
 
 
 def get_trending_tracks(args: GetTrendingTracksArgs, strategy: BaseTrendingStrategy):
