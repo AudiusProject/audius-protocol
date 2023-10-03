@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node ./src/index.js",
     "build": "npm install",
-    "hotreload": "nodemon ./src/index.js",
+    "dev": "nodemon ./src/index.js",
     "test": "node ./src/handlers/test.js"
   },
   "author": "alec@audius.co",

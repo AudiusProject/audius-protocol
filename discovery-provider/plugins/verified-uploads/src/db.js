@@ -70,7 +70,7 @@ const db = knex({
   acquireConnectionTimeout: 120000
 })
 
-const initializeTriggers = async () => {
+export const initializeTriggers = async () => {
   await db.raw(trigger)
 
   await Promise.all([
@@ -88,10 +88,12 @@ const initializeTriggers = async () => {
   ])
 }
 
-const listenForVerifiedNotifs = async (onMsg) => {
+export const listenForVerifiedNotifs = async (onMsg) => {
   const connection = await db.client.acquireConnection()
   connection.query('LISTEN verified_activity')
-  connection.on('notification', onMsg)
+  connection.on('notification', (msg) => {
+    onMsg(msg)
+  })
   // never ending promise so the listen stays alive
   await new Promise(() => {})
 }
