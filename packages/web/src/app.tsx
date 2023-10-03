@@ -2,10 +2,10 @@ import '@audius/stems/dist/stems.css'
 
 import { useState } from 'react'
 
-import { AudiusQueryContext } from '@audius/common'
+import { AudiusQueryContext, accountSelectors } from '@audius/common'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ConnectedRouter } from 'connected-react-router'
-import { Provider } from 'react-redux'
+import { Provider, useSelector } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
 import { LastLocationProvider } from 'react-router-last-location'
 
@@ -28,8 +28,6 @@ import { reportToSentry } from './store/errors/reportToSentry'
 
 import './index.css'
 import './services/webVitals'
-import { accountSelectors } from '@audius/common'
-import { useSelector } from 'react-redux'
 
 const AudiusTrpcProvider = ({ children }: { children: React.ReactNode }) => {
   const currentUserId = useSelector(accountSelectors.getUserId)

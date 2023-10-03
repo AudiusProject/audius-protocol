@@ -7,7 +7,6 @@ import { trpc } from '../../services/trpc'
 export default function DemoTrpcPage() {
   const pageSize = 50
   const [offset, setOffset] = useState(1)
-  const utils = trpc.useContext()
 
   const idRange = Array.from(Array(pageSize).keys()).map((i) => i + offset)
 

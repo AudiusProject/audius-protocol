@@ -18,7 +18,6 @@ type ProfileWrappingProps = {
   profilePictureSizes: Nullable<ProfilePictureSizes>
   updatedProfilePicture: { error: boolean; url: string }
   hasProfilePicture: boolean
-  doesFollowCurrentUser: boolean
   isOwner: boolean
   isArtist: boolean
   editMode: boolean
@@ -60,7 +59,6 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
     profilePictureSizes,
     updatedProfilePicture,
     hasProfilePicture,
-    doesFollowCurrentUser,
     isOwner,
     isArtist,
     editMode,

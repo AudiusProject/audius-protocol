@@ -1,8 +1,9 @@
+import { ID } from '@audius/common'
+
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { trpc } from 'services/trpc'
 
 import styles from './FollowsYouBadge.module.css'
-import { trpc } from 'services/trpc'
-import { ID } from '@audius/common'
 
 const messages = {
   followsYou: 'Follows You'
