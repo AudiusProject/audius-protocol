@@ -194,6 +194,8 @@ export type DrawerProps = {
    */
   drawerStyle?: ViewStyle
 
+  drawerHeader?: ComponentType<{ onClose: () => void }>
+
   translationAnim?: Animated.Value
 }
 
@@ -261,6 +263,7 @@ export const Drawer: DrawerComponent = ({
   shouldCloseToInitialOffset,
   shouldHaveRoundedBordersAtInitialOffset = false,
   zIndex = 5,
+  drawerHeader,
   drawerStyle,
   shouldShowShadow = true,
   shouldAnimateShadow,

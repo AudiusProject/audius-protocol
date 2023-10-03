@@ -12,7 +12,7 @@ import {
   usePurchaseContentFormConfiguration
 } from '@audius/common'
 import { Formik, useFormikContext } from 'formik'
-import { Linking, View } from 'react-native'
+import { Linking, View, ScrollView } from 'react-native'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -63,17 +63,30 @@ const messages = {
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   drawer: {
-    paddingTop: spacing(6),
-    paddingHorizontal: spacing(4),
-    paddingBottom: spacing(8),
-    gap: spacing(6),
+    flex: 1,
     backgroundColor: palette.white
   },
+  formContainer: {
+    flex: 1,
+    paddingHorizontal: spacing(4)
+  },
+  formContentContainer: {
+    borderTopWidth: 1,
+    borderTopColor: palette.neutralLight8,
+    paddingVertical: spacing(6),
+    gap: spacing(4)
+  },
+  formActions: {
+    flex: 0,
+    paddingTop: spacing(4),
+    paddingBottom: spacing(6),
+    columnGap: spacing(4)
+  },
   titleContainer: {
-    ...flexRowCentered(),
-    gap: spacing(2),
-    marginBottom: spacing(2),
-    alignSelf: 'center'
+    // padding: undefined,
+    // paddingHorizontal: spacing(8),
+    paddingTop: spacing(6),
+    paddingBottom: spacing(4)
   },
   title: {
     fontSize: typography.fontSize.xl,
@@ -140,21 +153,17 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
   }, [])
 
   return (
-    <View style={styles.drawer}>
-      <View style={styles.titleContainer}>
-        <IconCart fill={neutralLight2} />
-        <Text style={styles.title}>{messages.title}</Text>
-      </View>
-      <TrackDetailsTile trackId={track.track_id} />
-      <PayExtraFormSection amountPresets={payExtraAmountPresetValues} />
-      <PurchaseSummaryTable
-        {...purchaseSummaryValues}
-        isPurchaseSuccessful={isPurchaseSuccessful}
-      />
-      {isPurchaseSuccessful ? (
-        <PurchaseSuccess track={track} />
-      ) : (
-        <>
+    <>
+      <ScrollView contentContainerStyle={styles.formContentContainer}>
+        <TrackDetailsTile trackId={track.track_id} />
+        <PayExtraFormSection amountPresets={payExtraAmountPresetValues} />
+        <PurchaseSummaryTable
+          {...purchaseSummaryValues}
+          isPurchaseSuccessful={isPurchaseSuccessful}
+        />
+        {isPurchaseSuccessful ? (
+          <PurchaseSuccess track={track} />
+        ) : (
           <View>
             <View style={styles.payToUnlockTitleContainer}>
               <Text weight='heavy' textTransform='uppercase' fontSize='small'>
@@ -170,32 +179,36 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
               )}
             </Text>
           </View>
-          <Button
-            onPress={submitForm}
-            disabled={isUnlocking}
-            title={
-              isUnlocking
-                ? messages.purchasing
-                : messages.buy(formatPrice(price))
-            }
-            variant={'primary'}
-            size='large'
-            color={specialLightGreen}
-            iconPosition='left'
-            icon={isUnlocking ? LoadingSpinner : undefined}
-            fullWidth
-          />
-        </>
-      )}
-      {error ? (
-        <View style={styles.errorContainer}>
-          <IconError fill={accentRed} width={spacing(5)} height={spacing(5)} />
-          <Text weight='medium' colorValue={accentRed}>
-            {messages.error}
-          </Text>
-        </View>
-      ) : null}
-    </View>
+        )}
+      </ScrollView>
+      <View style={styles.formActions}>
+        {error ? (
+          <View style={styles.errorContainer}>
+            <IconError
+              fill={accentRed}
+              width={spacing(5)}
+              height={spacing(5)}
+            />
+            <Text weight='medium' colorValue={accentRed}>
+              {messages.error}
+            </Text>
+          </View>
+        ) : null}
+        <Button
+          onPress={submitForm}
+          disabled={isUnlocking}
+          title={
+            isUnlocking ? messages.purchasing : messages.buy(formatPrice(price))
+          }
+          variant={'primary'}
+          size='large'
+          color={specialLightGreen}
+          iconPosition='left'
+          icon={isUnlocking ? LoadingSpinner : undefined}
+          fullWidth
+        />
+      </View>
+    </>
   )
 }
 
@@ -223,21 +236,28 @@ export const PremiumTrackPurchaseDrawer = () => {
 
   return (
     <NativeDrawer
+      // drawerStyle={styles.drawer}
+      title={messages.title}
+      titleIcon={IconCart}
       drawerName={PREMIUM_TRACK_PURCHASE_MODAL_NAME}
       onClosed={handleClosed}
+      isGestureSupported={false}
+      isFullscreen
     >
       {isLoading ? (
         <View style={styles.spinnerContainer}>
           <LoadingSpinner />
         </View>
       ) : (
-        <Formik
-          initialValues={initialValues}
-          validationSchema={toFormikValidationSchema(validationSchema)}
-          onSubmit={onSubmit}
-        >
-          <RenderForm track={track} />
-        </Formik>
+        <View style={styles.formContainer}>
+          <Formik
+            initialValues={initialValues}
+            validationSchema={toFormikValidationSchema(validationSchema)}
+            onSubmit={onSubmit}
+          >
+            <RenderForm track={track} />
+          </Formik>
+        </View>
       )}
     </NativeDrawer>
   )
