@@ -40,7 +40,8 @@ import {
   PROVOKING_PLAYLISTS,
   INTIMATE_PLAYLISTS,
   ExploreCollection,
-  ExploreMoodCollection
+  ExploreMoodCollection,
+  PREMIUM_TRACKS
 } from 'pages/explore-page/collections'
 import {
   collectionPage,
@@ -163,7 +164,11 @@ const ExplorePage = ({
             gradient={t.gradient}
             shadow={t.shadow}
             // @ts-ignore
-            icon={<Icon />}
+            icon={<Icon
+              className={t.title === PREMIUM_TRACKS.title
+                ? styles.premiumTracksBackgroundIcon
+                : undefined}
+            />}
             goToRoute={goToRoute}
             isIncentivized={t.incentivized}
           />
@@ -251,7 +256,7 @@ const ExplorePage = ({
         title={messages.justForYou}
         description={messages.justForYouDescription}
       >
-        <div className={cn(styles.section, styles.tripleHeaderSectionTenTile)}>
+        <div className={cn(styles.section, styles.quadrupleHeaderSectionElevenTile)}>
           {justForYouTiles}
         </div>
       </TabBodyHeader>,

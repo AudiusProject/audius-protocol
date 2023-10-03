@@ -36,7 +36,8 @@ import {
   UPBEAT_PLAYLISTS,
   INTENSE_PLAYLISTS,
   PROVOKING_PLAYLISTS,
-  INTIMATE_PLAYLISTS
+  INTIMATE_PLAYLISTS,
+  PREMIUM_TRACKS
 } from 'pages/explore-page/collections'
 import { BASE_URL, EXPLORE_PAGE, stripBaseUrl } from 'utils/route'
 
@@ -56,6 +57,7 @@ reposts, and follows. Refreshes often so if you like a track, favorite it.`,
 }
 
 export const justForYou = [
+  PREMIUM_TRACKS,
   TRENDING_PLAYLISTS,
   TRENDING_UNDERGROUND,
   HEAVY_ROTATION,
@@ -126,7 +128,7 @@ const ExplorePage = ({
       <Section
         title={messages.justForYou}
         subtitle={messages.justForYouSubtitle}
-        layout={Layout.TWO_COLUMN_DYNAMIC_WITH_DOUBLE_LEADING_ELEMENT}
+        layout={Layout.TWO_COLUMN_DYNAMIC_WITH_LEADING_ELEMENT}
       >
         {justForYou.map((i) => {
           const title =
@@ -144,6 +146,11 @@ const ExplorePage = ({
               }
               // @ts-ignore
               backgroundIcon={<Icon />}
+              backgroundIconClassName={
+                title === PREMIUM_TRACKS.title
+                  ? styles.premiumTracksBackgroundIcon
+                  : undefined
+              }
               onClick={() => onClickCard(i.link)}
               isIncentivized={!!i.incentivized}
               sensitivity={i.cardSensitivity}

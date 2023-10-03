@@ -111,7 +111,8 @@ const FULL_ENDPOINT_MAP = {
   getSupporters: (userId: OpaqueID) => `/users/${userId}/supporters`,
   getTips: '/tips',
   getPremiumContentSignatures: (userId: OpaqueID) =>
-    `/tracks/${userId}/nft-gated-signatures`
+    `/tracks/${userId}/nft-gated-signatures`,
+  getPremiumTracks: '/tracks/usdc-purchase'
 }
 
 const ENDPOINT_MAP = {
@@ -259,6 +260,12 @@ type GetUserAiTracksByHandleArgs = {
   offset?: number
   limit?: number
   getUnlisted: boolean
+}
+
+type GetPremiumTracksArgs = {
+  currentUserId: Nullable<ID>
+  offset?: number
+  limit?: number
 }
 
 type GetRelatedArtistsArgs = PaginationArgs & {
@@ -1127,6 +1134,32 @@ export class AudiusAPIClient {
       true,
       PathType.VersionFullPath,
       headers
+    )
+
+    if (!response) return []
+
+    const adapted = response.data.map(adapter.makeTrack).filter(removeNullable)
+    return adapted
+  }
+
+  async getPremiumTracks({
+    currentUserId,
+    limit,
+    offset
+  }: GetPremiumTracksArgs) {
+    this._assertInitialized()
+    const encodedCurrentUserId = encodeHashId(currentUserId)
+    const params = {
+      user_id: encodedCurrentUserId || undefined,
+      limit,
+      offset
+    }
+
+    const response = await this._getResponse<APIResponse<APITrack[]>>(
+      FULL_ENDPOINT_MAP.getPremiumTracks,
+      params,
+      true,
+      PathType.VersionFullPath
     )
 
     if (!response) return []
