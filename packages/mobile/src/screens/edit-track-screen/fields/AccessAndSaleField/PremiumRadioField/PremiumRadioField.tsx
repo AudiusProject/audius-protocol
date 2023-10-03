@@ -114,7 +114,7 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
         </Link>
       </View>
     )
-  }, [])
+  }, [styles.link, styles.waitlist])
 
   return (
     <View style={styles.root}>
