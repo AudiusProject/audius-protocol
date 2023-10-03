@@ -39,7 +39,7 @@ const messages = {
   },
   dollars: '$',
   usdc: '(USDC)',
-  seconds: 'Seconds'
+  seconds: '(Seconds)'
 }
 
 export enum UsdcPurchaseType {

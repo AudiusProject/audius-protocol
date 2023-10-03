@@ -1,18 +1,13 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 from sqlalchemy.orm.session import Session
 
-from src.challenges.challenge import (
-    ChallengeManager,
-    ChallengeUpdater,
-    FullEventMetadata,
-    UserChallenge,
-)
+from src.challenges.challenge import ChallengeManager, ChallengeUpdater
 from src.models.users.user import User
 
 
-def generate_referral_specifier(user_id: int, extra: Dict) -> str:
-    return f"{user_id}=>{extra['referred_user_id']}"
+def generate_audio_matching_specifier(user_id: int, extra: Dict) -> str:
+    return f"{user_id}=>{extra['track_id']}"
 
 
 def does_user_exist_with_verification_status(
@@ -30,9 +25,9 @@ def does_user_exist_with_verification_status(
     return bool(user)
 
 
-class ReferralChallengeUpdater(ChallengeUpdater):
+class AudioMatchingBuyerChallengeUpdater(ChallengeUpdater):
     def generate_specifier(self, user_id: int, extra: Dict) -> str:
-        return generate_referral_specifier(user_id, extra)
+        return generate_audio_matching_specifier(user_id, extra)
 
     def should_create_new_challenge(
         self, session, event: str, user_id: int, extra: Dict
@@ -43,9 +38,9 @@ class ReferralChallengeUpdater(ChallengeUpdater):
         return does_user_exist_with_verification_status(session, user_id, False)
 
 
-class VerifiedReferralChallengeUpdater(ChallengeUpdater):
+class AudioMatchingSellerChallengeUpdater(ChallengeUpdater):
     def generate_specifier(self, user_id: int, extra: Dict) -> str:
-        return generate_referral_specifier(user_id, extra)
+        return generate_audio_matching_specifier(extra["sender_user_id"], extra)
 
     def should_create_new_challenge(
         self, session, event: str, user_id: int, extra: Dict
@@ -56,23 +51,9 @@ class VerifiedReferralChallengeUpdater(ChallengeUpdater):
         return does_user_exist_with_verification_status(session, user_id, True)
 
 
-class ReferredChallengeUpdater(ChallengeUpdater):
-    def update_user_challenges(
-        self,
-        session: Session,
-        event: str,
-        user_challenges: List[UserChallenge],
-        step_count: Optional[int],
-        event_metadatas: List[FullEventMetadata],
-        starting_block: Optional[int],
-    ):
-        for user_challenge in user_challenges:
-            user_challenge.is_complete = True
-
-
-referral_challenge_manager = ChallengeManager("referrals", ReferralChallengeUpdater())
-verified_referral_challenge_manager = ChallengeManager(
-    "ref-v", VerifiedReferralChallengeUpdater()
+audio_matching_buyer_challenge_manager = ChallengeManager(
+    "b", AudioMatchingBuyerChallengeUpdater()
 )
-
-referred_challenge_manager = ChallengeManager("referred", ReferredChallengeUpdater())
+audio_matching_seller_challenge_manager = ChallengeManager(
+    "s", AudioMatchingSellerChallengeUpdater()
+)
