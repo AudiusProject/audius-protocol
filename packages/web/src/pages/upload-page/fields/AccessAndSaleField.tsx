@@ -47,13 +47,13 @@ import {
   SpecialAccessFields,
   SpecialAccessType
 } from '../fields/availability/SpecialAccessFields'
-import { UsdcPurchaseFields } from '../fields/availability/UsdcPurchaseFields'
 import { useIndexedField, useTrackField } from '../hooks'
 import { SingleTrackEditValues } from '../types'
 
 import styles from './AccessAndSaleField.module.css'
 import { REMIX_OF } from './RemixSettingsField'
 import { CollectibleGatedRadioField } from './availability/collectible-gated/CollectibleGatedRadioField'
+import { UsdcPurchaseGatedRadioField } from './availability/usdc-purchase-gated/UsdcPurchaseGatedRadioField'
 const { getUserId } = accountSelectors
 
 const messages = {
@@ -68,9 +68,6 @@ const messages = {
   public: 'Public (Free to Stream)',
   publicSubtitle:
     'Public tracks are visible to all users and appear throughout Audius.',
-  usdcPurchase: 'Premium (Pay-to-Unlock)',
-  usdcPurchaseSubtitle:
-    'Unlockable by purchase, these tracks are visible to everyone but only playable by users who have paid for access.',
   specialAccess: 'Special Access',
   specialAccessSubtitle:
     'Special Access tracks are only available to users who meet certain criteria, such as following the artist.',
@@ -444,11 +441,6 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     name: AVAILABILITY_TYPE
   })
 
-  const noUsdcPurchase =
-    !isUpload &&
-    !isPremiumContentUSDCPurchaseGated(initialPremiumConditions) &&
-    !isInitiallyUnlisted
-
   const noSpecialAccess =
     !isUpload &&
     !isPremiumContentFollowGated(initialPremiumConditions) &&
@@ -538,13 +530,10 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           value={TrackAvailabilityType.PUBLIC}
         />
         {isUsdcEnabled ? (
-          <ModalRadioItem
-            icon={<IconCart />}
-            label={messages.usdcPurchase}
-            description={messages.usdcPurchaseSubtitle}
-            value={TrackAvailabilityType.USDC_PURCHASE}
-            disabled={noUsdcPurchase}
-            checkedContent={<UsdcPurchaseFields disabled={noUsdcPurchase} />}
+          <UsdcPurchaseGatedRadioField
+            isUpload={isUpload}
+            initialPremiumConditions={initialPremiumConditions}
+            isInitiallyUnlisted={isInitiallyUnlisted}
           />
         ) : null}
 

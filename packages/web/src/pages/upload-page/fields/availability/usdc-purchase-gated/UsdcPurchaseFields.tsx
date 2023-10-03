@@ -19,7 +19,7 @@ import { TextField, TextFieldProps } from 'components/form-fields'
 import layoutStyles from 'components/layout/layout.module.css'
 import { Text } from 'components/typography'
 
-import { PREVIEW, PRICE } from '../AccessAndSaleField'
+import { PREVIEW, PRICE } from '../../AccessAndSaleField'
 
 import styles from './UsdcPurchaseFields.module.css'
 
