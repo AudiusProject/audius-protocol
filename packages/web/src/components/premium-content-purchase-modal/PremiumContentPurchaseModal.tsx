@@ -8,7 +8,8 @@ import {
   useGetTrackById,
   usePremiumContentPurchaseModal,
   usePurchaseContentFormConfiguration,
-  buyUSDCActions
+  buyUSDCActions,
+  purchaseContentActions
 } from '@audius/common'
 import { IconCart, ModalContent, ModalFooter, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
@@ -31,6 +32,7 @@ import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState
 
 const { startRecoveryIfNecessary, cleanup: cleanupUSDCRecovery } =
   buyUSDCActions
+const { cleanup } = purchaseContentActions
 
 const messages = {
   completePurchase: 'Complete Purchase'
@@ -64,6 +66,7 @@ const RenderForm = ({
   const handleClose = useCallback(() => {
     dispatch(cleanupUSDCRecovery())
     onClose()
+    dispatch(cleanup())
   }, [dispatch, onClose])
 
   // Navigate to track on successful purchase behind the modal
