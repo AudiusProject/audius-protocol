@@ -7,7 +7,10 @@ import { makeStyles } from 'app/styles'
 
 import type { FieldProps } from '../../screens/edit-track-screen/fields/types'
 
-export type TextFieldProps = FieldProps & TextInputProps
+export type TextFieldProps = FieldProps &
+  TextInputProps & {
+    noGutter?: boolean
+  }
 
 const useStyles = makeStyles(({ spacing, typography }) => ({
   root: {
@@ -31,6 +34,7 @@ const useStyles = makeStyles(({ spacing, typography }) => ({
 export const TextField = (props: TextFieldProps) => {
   const {
     name,
+    noGutter,
     label: labelProp,
     required,
     style,
@@ -44,7 +48,7 @@ export const TextField = (props: TextFieldProps) => {
   const label = required ? `${labelProp} *` : labelProp
 
   return (
-    <View style={[styles.root, style]}>
+    <View style={[noGutter ? undefined : styles.root, style]}>
       <TextInput
         label={label}
         styles={{
