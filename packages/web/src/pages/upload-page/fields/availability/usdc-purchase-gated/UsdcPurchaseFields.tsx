@@ -6,18 +6,18 @@ import {
   useState
 } from 'react'
 
+import {
+  decimalIntegerFromHumanReadable,
+  decimalIntegerToHumanReadable,
+  filterDecimalString,
+  padDecimalValue
+} from '@audius/common'
 import cn from 'classnames'
 import { useField } from 'formik'
 
 import { TextField, TextFieldProps } from 'components/form-fields'
 import layoutStyles from 'components/layout/layout.module.css'
 import { Text } from 'components/typography'
-import {
-  fromHumanReadable,
-  onTokenInputBlur,
-  onTokenInputChange,
-  toHumanReadable
-} from 'utils/tokenInput'
 
 import { PREVIEW, PRICE } from '../../AccessAndSaleField'
 
@@ -39,7 +39,7 @@ const messages = {
   },
   dollars: '$',
   usdc: '(USDC)',
-  seconds: 'Seconds'
+  seconds: '(Seconds)'
 }
 
 export enum UsdcPurchaseType {
@@ -96,12 +96,12 @@ const PriceField = (props: TrackAvailabilityFieldsProps) => {
   const { disabled } = props
   const [{ value }, , { setValue: setPrice }] = useField<number>(PRICE)
   const [humanizedValue, setHumanizedValue] = useState(
-    value ? toHumanReadable(value) : null
+    value ? decimalIntegerToHumanReadable(value) : null
   )
 
   useEffect(() => {
     if (humanizedValue !== null) {
-      const dehumaizedValue = fromHumanReadable(humanizedValue)
+      const dehumaizedValue = decimalIntegerFromHumanReadable(humanizedValue)
       if (value === undefined || dehumaizedValue !== value) {
         setPrice(dehumaizedValue)
       }
@@ -110,7 +110,7 @@ const PriceField = (props: TrackAvailabilityFieldsProps) => {
 
   const handlePriceChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      const { human, value } = onTokenInputChange(e)
+      const { human, value } = filterDecimalString(e.target.value)
       setHumanizedValue(human)
       setPrice(value)
     },
@@ -119,7 +119,7 @@ const PriceField = (props: TrackAvailabilityFieldsProps) => {
 
   const handlePriceBlur: FocusEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      setHumanizedValue(onTokenInputBlur(e))
+      setHumanizedValue(padDecimalValue(e.target.value))
     },
     []
   )

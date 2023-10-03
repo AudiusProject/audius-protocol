@@ -14,6 +14,7 @@ from src.models.users.usdc_transactions_history import (
 )
 from src.models.users.user import User
 from src.models.users.user_bank import USDCUserBankAccount
+from src.solana.constants import USDC_DECIMALS
 from src.utils.config import shared_config
 from src.utils.csv_writer import write_csv_string
 from src.utils.db_session import get_db_read_replica
@@ -117,8 +118,7 @@ def get_link(content_type: PurchaseType, handle: str, slug: str):
 
 # Get value of purchased content
 def get_dollar_amount(amount: str):
-    num_decimals = 6
-    return int(amount) / 10**num_decimals
+    return int(amount) / 10**USDC_DECIMALS
 
 
 # Returns USDC purchases for a given user in a CSV format
