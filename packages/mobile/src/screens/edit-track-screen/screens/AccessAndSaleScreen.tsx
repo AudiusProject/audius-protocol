@@ -189,7 +189,7 @@ export const AccessAndSaleScreen = () => {
     items[premiumAvailability] = (
       <PremiumRadioField
         selected={availability === TrackAvailabilityType.USDC_PURCHASE}
-        // disabled={!isUsdcUploadEnabled}
+        disabled={!isUsdcUploadEnabled}
         disabledContent={!isUsdcUploadEnabled}
       />
     )

@@ -54,7 +54,7 @@ export const UsdcPurchaseGatedRadioField = (
         className={styles.link}
         to={WAITLIST_TYPEFORM}
         target='_blank'
-        showWarningIfNotAllowed={false}
+        showWarning={false}
       >
         {messages.join}
       </ExternalLink>
