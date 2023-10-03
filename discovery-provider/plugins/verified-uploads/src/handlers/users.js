@@ -5,9 +5,10 @@ import axios from 'axios'
 import { getPreviousState } from './utils.js'
 
 dotenv.config()
-const { IDENTITY_URL, USERS_SLACK_CHANNEL } = process.env
+const { audius_discprov_identity_service_url, USERS_SLACK_CHANNEL } =
+  process.env
 const social_handle_url = (handle) =>
-  `${IDENTITY_URL}/social_handles?handle=${handle}`
+  `${audius_discprov_identity_service_url}/social_handles?handle=${handle}`
 
 // TODO: send blocknumber through pg trigger
 export default async ({ user_id, blocknumber }) => {
@@ -23,10 +24,13 @@ export default async ({ user_id, blocknumber }) => {
     db: dp_db
   })
 
-  // user create
-  if (old === undefined) return
+  console.log({ user_id, blocknumber })
 
-  if (current.is_verified !== old.is_verified) {
+  const verifiedOnCreate = old === undefined && current.is_verified
+
+  if (!verifiedOnCreate) return
+
+  if (current.is_verified !== old.is_verified || verifiedOnCreate) {
     const is_verified = current.is_verified
     const handle = current.handle
 

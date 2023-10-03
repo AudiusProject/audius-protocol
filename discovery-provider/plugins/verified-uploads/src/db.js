@@ -15,8 +15,8 @@ const DB = async (url) => {
 
 // GLOBAL db handles
 dotenv.config()
-const { DISCOVERY_DB_URL } = process.env
-export const dp_db = await DB(DISCOVERY_DB_URL).catch(console.error)
+const { audius_db_url } = process.env
+export const dp_db = await DB(audius_db_url).catch(console.error)
 
 const shouldToggleOff = (topic) => {
   const { TOGGLE_OFF } = process.env
