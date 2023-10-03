@@ -10,6 +10,7 @@ import (
 	"mediorum/ethcontracts"
 	"mediorum/persistence"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/signal"
@@ -313,14 +314,13 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// -------------------
 	// healthz
+	healthz := routes.Group("/healthz")
 	healthzUrl, err := url.Parse("http://healthz")
 	if err != nil {
 		log.Fatal("Invalid healthz URL: ", err)
 	}
-	healthz := routes.Group("/healthz")
-	healthz.Use(middleware.Proxy(middleware.NewRandomBalancer([]*middleware.ProxyTarget{
-		{ URL: healthzUrl },
-	})))
+	healthzProxy := httputil.NewSingleHostReverseProxy(healthzUrl)
+	healthz.Any("*", echo.WrapHandler(healthzProxy))
 
 	// -------------------
 	// internal
