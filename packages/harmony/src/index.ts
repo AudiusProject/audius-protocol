@@ -1,10 +1,10 @@
-import './assets/styles/reset.css'
-import './assets/fonts/avenir.css'
-import './assets/styles/fonts.css'
-import './assets/styles/spacing.css'
-import './assets/styles/colors.css'
-import './assets/styles/tokens.css'
-import './assets/styles/border-radius.css'
-import './assets/styles/shadows.css'
+import './assets/styles/main.css'
 
-export * from './components'
+export {
+  Text,
+  TextProps,
+  TextColor,
+  TextSize,
+  TextVariant,
+  TextStrength
+} from './components'
