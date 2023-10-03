@@ -32,14 +32,25 @@ const EditTrackSchema = Yup.object().shape({
   }).nullable(),
   duration: Yup.number(),
   preview_start_seconds: Yup.number()
-    .max(
-      (Yup.ref('duration') as unknown as number) > 30
-        ? (Yup.ref('duration') as unknown as number) - 30
-        : 0,
-      (Yup.ref('duration') as unknown as number)
-        ? 'Preview must start at least 30 seconds before the end of the track.'
-        : 'Preview must start at 0 since the track is less than 30 seconds'
-    )
+    .test('isValidPreviewStart', '', function (value: number) {
+      const duration = this.resolve(Yup.ref('duration')) as unknown as number
+      // If duration is NaN, validation passes because we were
+      // unable to generate a preview
+      if (isNaN(duration)) return true
+      if (duration > 30 && value > duration - 30) {
+        return this.createError({
+          message:
+            'Preview must start at least 30 seconds before the end of the track.'
+        })
+      }
+      if (duration <= 30 && value !== 0) {
+        return this.createError({
+          message:
+            'Preview must start at 0 since the track is less than 30 seconds.'
+        })
+      }
+      return true
+    })
     .nullable()
 })
 

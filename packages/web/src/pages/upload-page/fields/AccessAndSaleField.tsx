@@ -165,6 +165,7 @@ export const AccessAndSaleFormSchema = (trackLength: number) =>
         if (isPremiumContentUSDCPurchaseGated(formValues[PREMIUM_CONDITIONS])) {
           return (
             formValues[PREVIEW] === undefined ||
+            isNaN(trackLength) ||
             (formValues[PREVIEW] >= 0 &&
               formValues[PREVIEW] < trackLength - 30) ||
             (trackLength <= 30 && formValues[PREVIEW] < trackLength)
