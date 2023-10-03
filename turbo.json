@@ -12,6 +12,10 @@
       "dependsOn": ["^build"],
       "outputMode": "new-only"
     },
+    "@audius/compose#start": {
+      "dependsOn": ["^build"],
+      "outputMode": "new-only"
+    },
     "audius-client#start:dev": {
       "dependsOn": ["^build"],
       "cache": false,

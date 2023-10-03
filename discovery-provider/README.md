@@ -32,10 +32,11 @@ audius-compose test discovery-provider src/api/v1/api_unit_test.py
 # Run the testing container to attach your own tester
 audius-compose test up discovery-provider
 docker exec -it audius-protocol-test-test-discovery-provider-1 pytest
-# To use the vscode tester,
-# Open the command palette and select Dev Containers: Attach to Running Container
+# To use the vscode tester, open the command palette
+# and select Dev Containers: Attach to Running Container.
 # Navigate to the test you want to run and run it!
 ```
+[Install the Dev Containers extension for VSCode](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
 
 ## Linting
 

@@ -8,7 +8,7 @@ import {
   selectUsersCamel,
   sql
 } from './db'
-import { FollowRow } from './db-tables'
+import { FollowRow, SubscriptionRow } from './db-tables'
 
 export const prepareLoaders = (myId: number | undefined) => ({
   // bulk load user by id
@@ -34,24 +34,41 @@ export const prepareLoaders = (myId: number | undefined) => ({
     async (ids) => {
       const outboundIds = new Set()
       const inboundIds = new Set()
+      const subscribedIds = new Set()
 
       if (myId) {
-        const rows = await sql<FollowRow[]>`
+        const [followRows, subscribeRows] = await Promise.all([
+          sql<FollowRow[]>`
           select follower_user_id, followee_user_id
           from follows
-          where (follower_user_id = ${myId} and followee_user_id in ${sql(ids)})
-            or (follower_user_id in ${sql(ids)}) and followee_user_id = ${myId}
-        `
-        for (const row of rows) {
+          where is_delete = false
+            and (follower_user_id = ${myId} and followee_user_id in ${sql(ids)})
+             or (follower_user_id in ${sql(ids)}) and followee_user_id = ${myId}
+          `,
+
+          sql<SubscriptionRow[]>`
+          select user_id
+          from subscriptions
+          where is_delete = false
+            and user_id in ${sql(ids)}
+            and subscriber_id = ${myId}`
+        ])
+
+        for (const row of followRows) {
           row.followerUserId == myId
             ? outboundIds.add(row.followeeUserId)
             : inboundIds.add(row.followerUserId)
+        }
+
+        for (const row of subscribeRows) {
+          subscribedIds.add(row.userId)
         }
       }
 
       return ids.map((id) => ({
         followed: outboundIds.has(id),
-        followsMe: inboundIds.has(id)
+        followsMe: inboundIds.has(id),
+        subscribed: subscribedIds.has(id)
       }))
     }
   ),
@@ -70,14 +87,16 @@ export const prepareLoaders = (myId: number | undefined) => ({
           sql<HasID[]>`
           select save_item_id id
           from saves
-          where user_id = ${myId}
+          where is_delete = false
+          and user_id = ${myId}
           and save_type in ${sql(kinds)} and save_item_id in ${sql(ids)};`,
 
           sql<HasID[]>`
           select repost_item_id id
           from reposts
-          where user_id = ${myId}
-          and repost_type in ${sql(kinds)} and repost_item_id in ${sql(ids)};`
+          where is_delete = false
+            and user_id = ${myId}
+            and repost_type in ${sql(kinds)} and repost_item_id in ${sql(ids)};`
         ])
 
         for (const row of savedRows) {

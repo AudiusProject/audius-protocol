@@ -1,4 +1,4 @@
-import { formatCount } from '@audius/common'
+import { ID, formatCount } from '@audius/common'
 import cn from 'classnames'
 
 import { ReactComponent as IconUser } from 'assets/img/iconUser.svg'
@@ -13,12 +13,12 @@ const messages = {
 }
 
 type ArtistChipFollowersProps = {
+  userId: ID
   followerCount: number
-  doesFollowCurrentUser: boolean
 }
 export const ArtistChipFollowers = ({
-  followerCount,
-  doesFollowCurrentUser
+  userId,
+  followerCount
 }: ArtistChipFollowersProps) => {
   const darkMode = isDarkMode()
   return (
@@ -32,12 +32,11 @@ export const ArtistChipFollowers = ({
             : `${messages.followers}`}
         </span>
       </div>
-      {doesFollowCurrentUser ? (
-        <FollowsYouBadge
-          variant='list'
-          className={cn(styles.followsYou, { [styles.darkMode]: darkMode })}
-        />
-      ) : null}
+      <FollowsYouBadge
+        userId={userId}
+        variant='list'
+        className={cn(styles.followsYou, { [styles.darkMode]: darkMode })}
+      />
     </div>
   )
 }

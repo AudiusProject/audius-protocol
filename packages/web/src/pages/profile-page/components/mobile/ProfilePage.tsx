@@ -675,7 +675,6 @@ const ProfilePage = g(
             trackCount={profile.track_count}
             followerCount={profile.follower_count}
             followingCount={profile.followee_count}
-            doesFollowCurrentUser={!!profile.does_follow_current_user}
             setFollowingUserId={setFollowingUserId}
             setFollowersUserId={setFollowersUserId}
             twitterHandle={twitterHandle}

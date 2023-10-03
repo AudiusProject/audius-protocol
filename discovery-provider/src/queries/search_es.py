@@ -175,7 +175,7 @@ def search_tags_es(q: str, kind="all", current_user_id=None, limit=10, offset=0)
             "query": {
                 "bool": {
                     "must": [{"match": {fieldname: {"query": q}}}],
-                    "must_not": [],
+                    "must_not": [{"term": {"purchaseable": {"value": True}}}],
                     "should": [],
                 }
             },

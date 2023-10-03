@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.5.43",
+  "version": "1.5.44",
   "workspaces": [
     "packages/*"
   ],
@@ -14,9 +14,10 @@
     "install-packages": "SKIP_BUILD=true npm install",
     "lint:fix": "turbo run lint:fix",
     "lint": "turbo run lint",
-    "patch-package": "patch-package --patch-dir=packages/mobile/patches && patch-package --patch-dir=packages/web/patches",
+    "patch-package": "patch-package --patch-dir=packages/mobile/patches && patch-package --patch-dir=packages/web/patches && patch-package --patch-dir=packages/identity-service/patches",
     "postinstall": "bash ./scripts/postinstall.sh",
     "preinstall": "bash ./scripts/preinstall.sh",
+    "turbo-link": "turbo login && turbo link",
     "verify": "turbo run verify",
     "WEB========================================": "",
     "web:dev": "turbo run start:dev --filter=audius-client",
@@ -42,7 +43,9 @@
     "HARMONY====================================": "",
     "harmony": "turbo run start --filter=@audius/harmony",
     "SDK======================================": "",
-    "sdk": "turbo run start --filter=@audius/sdk"
+    "sdk": "turbo run start --filter=@audius/sdk",
+    "PROTOCOL======================================": "",
+    "protocol": "turbo run start --filter=@audius/compose"
   },
   "devDependencies": {
     "@types/keyv": "4.2.0",
