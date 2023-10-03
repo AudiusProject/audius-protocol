@@ -11,7 +11,6 @@ from src.models.indexing.block import Block
 from src.models.rewards.challenge import Challenge
 from src.models.rewards.user_challenge import UserChallenge
 from src.models.users.user import User
-from src.models.users.user_events import UserEvent
 from src.utils.config import shared_config
 from src.utils.db_session import get_db
 from src.utils.redis_connection import get_redis
