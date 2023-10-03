@@ -1,7 +1,10 @@
-import { initializeTriggers, listenForVerifiedNotifs } from './db.js'
-import { rootHandler } from './handlers/index.js'
-import { consume, queueMessage } from './handlers/queue.js'
+import { initializeTriggers, listenForTrackUploads } from './db.js'
+import { consume, queueMessage } from './queue.js'
 import { Server } from './server/index.js'
+import dotenv from 'dotenv'
+import { handleTracks } from './tracks.js'
+
+dotenv.config()
 
 const main = async () => {
   const server = new Server()
@@ -9,9 +12,25 @@ const main = async () => {
 
   await initializeTriggers()
   await Promise.all([
-    listenForVerifiedNotifs(queueMessage),
-    consume(rootHandler)
+    listenForTrackUploads(queueMessage),
+    consume(handlerRouter)
   ])
+}
+
+const handlerRouter = (msg) => {
+  const { payload } = msg
+  const message = JSON.parse(payload)
+  const { entity } = message
+  switch (entity) {
+    case 'tracks':
+      handleTracks(message)
+      return
+    case 'users':
+      console.log('received a potential verification of a user')
+      return
+    default:
+      console.warn('unhandled msg')
+  }
 }
 
 main().catch(console.error)
