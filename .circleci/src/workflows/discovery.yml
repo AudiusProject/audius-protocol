@@ -30,6 +30,11 @@ jobs:
       context: [GCP, dockerhub]
       instance-name: circleci-push-comms-$CIRCLE_BUILD_NUM
       service: comms
+  - push-docker-image:
+      name: push-trpc
+      context: [GCP, dockerhub]
+      instance-name: circleci-push-trpc-$CIRCLE_BUILD_NUM
+      service: trpc
 
   - lint-discovery-provider:
       name: lint-discovery-provider
@@ -62,6 +67,7 @@ jobs:
         - push-pedalboard-relay
         - push-pedalboard-sla-auditor
         - push-comms
+        - push-trpc
       filters:
         branches:
           only: main

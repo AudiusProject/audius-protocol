@@ -1,7 +1,7 @@
-import { ID } from '@audius/common'
-
+import { ID, accountSelectors } from '@audius/common'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { trpc } from 'services/trpc'
+import { useSelector } from 'react-redux'
 
 import styles from './FollowsYouBadge.module.css'
 
@@ -21,9 +21,15 @@ const FollowsYouBadge = ({
   className = '',
   variant = 'standard'
 }: FollowsYouBadgeProps) => {
-  const { data } = trpc.me.userRelationship.useQuery({
-    theirId: userId.toString()
-  })
+  const currentUserId = useSelector(accountSelectors.getUserId)
+  const { data } = trpc.me.userRelationship.useQuery(
+    {
+      theirId: userId.toString()
+    },
+    {
+      enabled: !!currentUserId
+    }
+  )
   const wm = useWithMobileStyle(styles.mobile)
 
   if (!data?.followsMe) return null
