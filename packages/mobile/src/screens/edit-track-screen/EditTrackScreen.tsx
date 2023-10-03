@@ -30,13 +30,13 @@ const EditTrackSchema = Yup.object().shape({
         .max(9999.99, 'Price must be less than $9999.99.')
     }).nullable()
   }).nullable(),
-  duration: Yup.number(),
+  duration: Yup.number().nullable(),
   preview_start_seconds: Yup.number()
     .test('isValidPreviewStart', '', function (value: number) {
       const duration = this.resolve(Yup.ref('duration')) as unknown as number
       // If duration is NaN, validation passes because we were
-      // unable to generate a browser-side preview to get duration
-      if (isNaN(duration)) return true
+      // unable to get duration from a track
+      if (isNaN(duration) || duration === null) return true
       if (duration > 30 && value > duration - 30) {
         return this.createError({
           message:
