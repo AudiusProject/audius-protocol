@@ -26,7 +26,3 @@
 .row:last-child {
   background: var(--background-surface-1);
 }
-
-.finalPrice {
-  color: var(--focus);
-}

@@ -1,11 +1,9 @@
 import { formatPrice } from '@audius/common'
 
-import { Text } from 'components/typography'
-
-import styles from './PurchaseSummaryTable.module.css'
+import { SummaryTable, SummaryTableItem } from 'components/summary-table'
 
 const messages = {
-  summary: 'Summary',
+  summary: 'Transaction Summary',
   premiumTrack: 'Premium Track',
   existingBalance: 'Existing USDC Balance',
   payExtra: 'Pay Extra',
@@ -30,33 +28,37 @@ export const PurchaseSummaryTable = ({
   existingBalance,
   isPurchased
 }: PurchaseSummaryTableProps) => {
+  const items: SummaryTableItem[] = [
+    {
+      id: 'premiumTrack',
+      label: messages.premiumTrack,
+      value: messages.price(formatPrice(basePrice))
+    }
+  ]
+  if (extraAmount != null) {
+    items.push({
+      id: 'payExtra',
+      label: messages.payExtra,
+      value: messages.price(formatPrice(extraAmount))
+    })
+  }
+  if (existingBalance != null) {
+    items.push({
+      id: 'existingBalance',
+      label: messages.existingBalance,
+      value: `-${messages.price(formatPrice(existingBalance))}`
+    })
+  }
+
   return (
-    <Text className={styles.container}>
-      <Text className={styles.row} variant='label' size='large'>
-        {messages.summary}
-      </Text>
-      <div className={styles.row}>
-        <span>{messages.premiumTrack}</span>
-        <span>{messages.price(formatPrice(basePrice))}</span>
-      </div>
-      {extraAmount != null ? (
-        <div className={styles.row}>
-          <span>{messages.payExtra}</span>
-          <span>{messages.price(formatPrice(extraAmount))}</span>
-        </div>
-      ) : null}
-      {existingBalance != null ? (
-        <div className={styles.row}>
-          <span>{messages.existingBalance}</span>
-          <span>{`-${messages.price(formatPrice(existingBalance))}`}</span>
-        </div>
-      ) : null}
-      <Text className={styles.row} variant='title'>
-        <span>{isPurchased ? messages.youPaid : messages.total}</span>
-        <span className={styles.finalPrice}>
-          {messages.price(formatPrice(amountDue))}
-        </span>
-      </Text>
-    </Text>
+    <SummaryTable
+      items={items}
+      title={messages.summary}
+      summaryItem={{
+        id: 'total',
+        label: isPurchased ? messages.youPaid : messages.total,
+        value: messages.price(formatPrice(amountDue))
+      }}
+    />
   )
 }
