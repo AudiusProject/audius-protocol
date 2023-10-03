@@ -1587,6 +1587,11 @@ export class DiscoveryProvider {
       headers['X-User-ID'] = currentUserId as unknown as string
     }
 
+    // x-trpc-hint is used by the python server to skip expensive fields
+    // e.g. 1 might allow us to skip computing does_current_user_follow, does_current_user_subscribe, does_follow_current_user
+    // increment this number when adding tRPC data loading to client that allows us to skip more fields
+    headers['x-trpc-hint'] = '0'
+
     const timeout = requestObj.timeout ?? this.selectionRequestTimeout
     let axiosRequest: AxiosRequestConfig = {
       url: requestUrl,

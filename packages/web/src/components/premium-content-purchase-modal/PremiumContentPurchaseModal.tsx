@@ -8,7 +8,8 @@ import {
   useGetTrackById,
   usePremiumContentPurchaseModal,
   usePurchaseContentFormConfiguration,
-  buyUSDCActions
+  buyUSDCActions,
+  purchaseContentActions
 } from '@audius/common'
 import { IconCart, ModalContent, ModalFooter, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
@@ -31,11 +32,15 @@ import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState
 
 const { startRecoveryIfNecessary, cleanup: cleanupUSDCRecovery } =
   buyUSDCActions
+const { cleanup } = purchaseContentActions
 
 const messages = {
   completePurchase: 'Complete Purchase'
 }
 
+// The bulk of the form rendering is in a nested component because we want access
+// to the FormikContext, which can only be used in a component which is a descendant
+// of the `<Formik />` component
 const RenderForm = ({
   onClose,
   track
@@ -50,8 +55,8 @@ const RenderForm = ({
       usdc_purchase: { price }
     }
   } = track
-  const state = usePurchaseContentFormState({ price })
-  const { error, isUnlocking, purchaseSummaryValues, stage } = state
+  const { error, isUnlocking, purchaseSummaryValues, stage } =
+    usePurchaseContentFormState({ price })
 
   // Attempt recovery once on re-mount of the form
   useEffect(() => {
@@ -61,6 +66,7 @@ const RenderForm = ({
   const handleClose = useCallback(() => {
     dispatch(cleanupUSDCRecovery())
     onClose()
+    dispatch(cleanup())
   }, [dispatch, onClose])
 
   // Navigate to track on successful purchase behind the modal

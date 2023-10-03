@@ -69,9 +69,7 @@ def get_git_commit(protocol_dir):
 
 # TODO: Maybe clean up later to handle comms config (currently using explicit env vars in docker-compose.comms.yml)
 def generate_env(
-    protocol_dir,
-    discovery_provider_replicas,
-    elasticsearch_replicas,
+    protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod=False
 ):
     config = {}
     if (protocol_dir / "dev-tools/config.json").exists():
@@ -149,6 +147,13 @@ def generate_env(
             aao_wallets.append(value)
     env["AAO_WALLET_ADDRESSES"] = ",".join(aao_wallets)
 
+    if prod:
+        env["IDENTITY_DOCKERCOMPOSE"] = "docker-compose.identity.prod.yml"
+        env["DEVTOOLS_DOCKERCOMPOSE"] = "docker-compose.dev-tools.prod.yml"
+    else:
+        env["IDENTITY_DOCKERCOMPOSE"] = "docker-compose.identity.dev.yml"
+        env["DEVTOOLS_DOCKERCOMPOSE"] = "docker-compose.dev-tools.dev.yml"
+
     for key, value in config.get("extra-env", {}).items():
         env[key] = value
 
@@ -190,19 +195,23 @@ def cli(ctx, protocol_dir):
 @click.option("-d", "--discovery-provider-replicas", default=1, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-a", "--args", type=str, multiple=True)
+@click.option(
+    "--prod",
+    is_flag=True,
+    help="Use production containers which have all dependencies built in",
+)
 @click.argument("services", nargs=-1)
 @click.pass_obj
 def build(
     protocol_dir,
     discovery_provider_replicas,
     elasticsearch_replicas,
+    prod,
     args,
     services,
 ):
     generate_env(
-        protocol_dir,
-        discovery_provider_replicas,
-        elasticsearch_replicas,
+        protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod
     )
 
     proc = subprocess.run(
@@ -344,6 +353,11 @@ def load_env(protocol_dir, service, environment):
 )
 @click.option("--comms", is_flag=True, help="Bring up comms/dms containers")
 @click.option("-a", "--args", type=str, multiple=True)
+@click.option(
+    "--prod",
+    is_flag=True,
+    help="Use production containers which have all dependencies built in",
+)
 @click.argument("services", nargs=-1)
 @click.pass_obj
 def up(
@@ -356,12 +370,11 @@ def up(
     pedalboard,
     comms,
     args,
+    prod,
     services,
 ):
     generate_env(
-        protocol_dir,
-        discovery_provider_replicas,
-        elasticsearch_replicas,
+        protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod
     )
 
     AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))

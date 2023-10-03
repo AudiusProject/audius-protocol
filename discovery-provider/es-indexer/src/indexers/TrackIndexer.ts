@@ -124,8 +124,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         select user_id 
         from reposts
         where
-          is_current = true
-          and is_delete = false
+          is_delete = false
           and repost_type = 'track' 
           and repost_item_id = track_id
         order by created_at desc
@@ -135,8 +134,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         select user_id 
         from saves
         where
-          is_current = true
-          and is_delete = false
+          is_delete = false
           and save_type = 'track' 
           and save_item_id = track_id
         order by created_at desc
@@ -146,19 +144,18 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
       join users on owner_id = user_id 
       left join aggregate_user on users.user_id = aggregate_user.user_id
       left join aggregate_plays on tracks.track_id = aggregate_plays.play_item_id
-    WHERE tracks.is_current = true 
-      AND users.is_current = true
+    WHERE 1=1 
     `
   }
 
   checkpointSql(checkpoint: BlocknumberCheckpoint): string {
     return `
     and track_id in (
-      select track_id from tracks where is_current and blocknumber >= ${checkpoint.tracks}
+      select track_id from tracks where blocknumber >= ${checkpoint.tracks}
       union
-      select save_item_id from saves where is_current and save_type = 'track' and blocknumber >= ${checkpoint.saves}
+      select save_item_id from saves where save_type = 'track' and blocknumber >= ${checkpoint.saves}
       union
-      select repost_item_id from reposts where is_current and repost_type = 'track' and blocknumber >= ${checkpoint.reposts}
+      select repost_item_id from reposts where repost_type = 'track' and blocknumber >= ${checkpoint.reposts}
       union
       select play_item_id FROM plays WHERE created_at > NOW() - INTERVAL '10 minutes'
     )

@@ -100,8 +100,7 @@ const ArtistChip = ({
     name,
     handle,
     _profile_picture_sizes: profilePictureSizes,
-    follower_count: followers,
-    does_follow_current_user: doesFollowCurrentUser
+    follower_count: followers
   } = user
 
   const profilePicture = useUserProfilePicture(
@@ -152,10 +151,7 @@ const ArtistChip = ({
         </div>
         {customChips || (
           <>
-            <ArtistChipFollowers
-              followerCount={followers}
-              doesFollowCurrentUser={!!doesFollowCurrentUser}
-            />
+            <ArtistChipFollowers userId={userId} followerCount={followers} />
             {showSupportFor ? (
               <ArtistChipSupportFor
                 artistId={user.user_id}

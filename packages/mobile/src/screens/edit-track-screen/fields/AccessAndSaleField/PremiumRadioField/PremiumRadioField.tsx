@@ -1,9 +1,11 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { Dimensions, View } from 'react-native'
 
 import IconCart from 'app/assets/images/iconCart.svg'
-import { Text } from 'app/components/core'
+import IconStars from 'app/assets/images/iconStars.svg'
+import { Link, Tag, Text } from 'app/components/core'
+import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
@@ -13,6 +15,8 @@ import type { TrackAvailabilitySelectionProps } from '../../../components/types'
 import { TrackPreviewField } from './TrackPreviewField'
 import { TrackPriceField } from './TrackPriceField'
 
+const WAITLIST_TYPEFORM = 'https://example.com'
+
 type PremiumRadioFieldProps = TrackAvailabilitySelectionProps
 
 const screenWidth = Dimensions.get('screen').width
@@ -20,7 +24,11 @@ const screenWidth = Dimensions.get('screen').width
 const messages = {
   title: 'Premium (Pay to Unlock)',
   description:
-    'Unlockable by purchase, these tracks are visible to everyone but only playable by users who have paid for access.'
+    'Unlockable by purchase, these tracks are visible to everyone but only playable by users who have paid for access.',
+  waitlist:
+    'Start selling your music on Audius today! Limited access beta now available.',
+  join: 'Join the Waitlist',
+  comingSoon: 'Coming Soon'
 }
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -51,6 +59,16 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   subtitle: {
     color: palette.neutral
+  },
+  waitlist: {
+    gap: spacing(3),
+    alignItems: 'flex-start'
+  },
+  link: {
+    color: palette.secondary
+  },
+  comingSoon: {
+    alignSelf: 'flex-start'
   }
 }))
 
@@ -87,6 +105,17 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
     }
   }, [selected, setTrackAvailabilityFields])
 
+  const renderHelpCalloutContent = useCallback(() => {
+    return (
+      <View style={styles.waitlist}>
+        <Text>{messages.waitlist}</Text>
+        <Link url={WAITLIST_TYPEFORM}>
+          <Text style={styles.link}>{messages.join}</Text>
+        </Link>
+      </View>
+    )
+  }, [styles.link, styles.waitlist])
+
   return (
     <View style={styles.root}>
       <View style={styles.titleContainer}>
@@ -100,6 +129,16 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
           {messages.description}
         </Text>
       </View>
+      {disabled ? (
+        <>
+          <Tag style={styles.comingSoon}>{messages.comingSoon}</Tag>
+          <HelpCallout
+            icon={IconStars}
+            style={styles.waitlist}
+            content={renderHelpCalloutContent()}
+          />
+        </>
+      ) : null}
       {selected ? (
         <>
           <TrackPriceField />

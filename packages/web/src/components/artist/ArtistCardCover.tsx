@@ -25,14 +25,8 @@ type ArtistCoverProps = {
 export const ArtistCardCover = (props: ArtistCoverProps) => {
   const { isArtist, artist, onNavigateAway } = props
 
-  const {
-    user_id,
-    name,
-    handle,
-    _cover_photo_sizes,
-    _profile_picture_sizes,
-    does_follow_current_user
-  } = artist
+  const { user_id, name, handle, _cover_photo_sizes, _profile_picture_sizes } =
+    artist
   const dispatch = useDispatch()
 
   const coverPhoto = useUserCoverPhoto(
@@ -87,7 +81,7 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
               className={styles.artistHandle}
               onClick={handleClickUser}
             >{`@${handle}`}</div>
-            {does_follow_current_user ? <FollowsYouBadge /> : null}
+            <FollowsYouBadge userId={user_id} />
           </div>
         </div>
       </div>

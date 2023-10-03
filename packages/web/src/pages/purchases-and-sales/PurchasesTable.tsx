@@ -5,6 +5,7 @@ import {
   USDCContentPurchaseType,
   USDCPurchaseDetails
 } from '@audius/common'
+import BN from 'bn.js'
 import moment from 'moment'
 
 import { Table } from 'components/table'
@@ -76,7 +77,8 @@ const renderDateCell = (cellInfo: PurchaseCell) => {
 
 const renderValueCell = (cellInfo: PurchaseCell) => {
   const transaction = cellInfo.row.original
-  return `$${formatUSDCWeiToUSDString(transaction.amount)}`
+  const total = new BN(transaction.amount).add(new BN(transaction.extraAmount))
+  return `$${formatUSDCWeiToUSDString(total)}`
 }
 
 // Columns

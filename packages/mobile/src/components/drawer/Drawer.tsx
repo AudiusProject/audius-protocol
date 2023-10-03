@@ -194,6 +194,11 @@ export type DrawerProps = {
    */
   drawerStyle?: ViewStyle
 
+  /**
+   * Optional replacement component for the drawer header
+   */
+  drawerHeader?: ComponentType<{ onClose: () => void }>
+
   translationAnim?: Animated.Value
 }
 
@@ -261,6 +266,7 @@ export const Drawer: DrawerComponent = ({
   shouldCloseToInitialOffset,
   shouldHaveRoundedBordersAtInitialOffset = false,
   zIndex = 5,
+  drawerHeader: CustomDrawerHeader,
   drawerStyle,
   shouldShowShadow = true,
   shouldAnimateShadow,
@@ -654,13 +660,17 @@ export const Drawer: DrawerComponent = ({
         }}
         {...edgeProps}
       >
-        <DrawerHeader
-          onClose={onClose}
-          title={title}
-          titleIcon={titleIcon}
-          titleImage={titleImage}
-          isFullscreen={isFullscreen}
-        />
+        {CustomDrawerHeader ? (
+          <CustomDrawerHeader onClose={onClose} />
+        ) : (
+          <DrawerHeader
+            onClose={onClose}
+            title={title}
+            titleIcon={titleIcon}
+            titleImage={titleImage}
+            isFullscreen={isFullscreen}
+          />
+        )}
         {children}
       </ViewComponent>
     )

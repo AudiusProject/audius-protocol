@@ -1,8 +1,8 @@
 .root {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--unit-4);
-  padding: var(--unit-2) var(--unit-4);
+  padding: var(--unit-3) var(--unit-4);
   background: var(--neutral-light-9);
   border: 1px solid var(--neutral-light-7);
   border-radius: var(--unit-2);

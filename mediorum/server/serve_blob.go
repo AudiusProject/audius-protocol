@@ -24,7 +24,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
+func (ss *MediorumServer) serveBlobLocation(c echo.Context) error {
 	cid := c.Param("cid")
 	preferred, _ := ss.rendezvousAllHosts(cid)
 
@@ -92,7 +92,7 @@ func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
 	})
 }
 
-func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
+func (ss *MediorumServer) serveBlobInfo(c echo.Context) error {
 	ctx := c.Request().Context()
 	cid := c.Param("cid")
 	key := cidutil.ShardCID(cid)
@@ -129,7 +129,7 @@ func (ss *MediorumServer) ensureNotDelisted(next echo.HandlerFunc) echo.HandlerF
 	}
 }
 
-func (ss *MediorumServer) getBlob(c echo.Context) error {
+func (ss *MediorumServer) serveBlob(c echo.Context) error {
 	ctx := c.Request().Context()
 	cid := c.Param("cid")
 
@@ -388,7 +388,7 @@ func (s *MediorumServer) requireRegisteredSignature(next echo.HandlerFunc) echo.
 	}
 }
 
-func (ss *MediorumServer) serveInternalBlobPull(c echo.Context) error {
+func (ss *MediorumServer) serveInternalBlobGET(c echo.Context) error {
 	ctx := c.Request().Context()
 	cid := c.Param("cid")
 	key := cidutil.ShardCID(cid)
@@ -402,7 +402,7 @@ func (ss *MediorumServer) serveInternalBlobPull(c echo.Context) error {
 	return c.Stream(200, blob.ContentType(), blob)
 }
 
-func (ss *MediorumServer) postBlob(c echo.Context) error {
+func (ss *MediorumServer) serveInternalBlobPOST(c echo.Context) error {
 	if !ss.diskHasSpace() {
 		return c.String(http.StatusServiceUnavailable, "disk is too full to accept new blobs")
 	}

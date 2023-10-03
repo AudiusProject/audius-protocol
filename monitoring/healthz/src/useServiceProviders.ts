@@ -36,7 +36,7 @@ export function apiGatewayFetcher(
   env: string,
   type: 'content' | 'discovery'
 ) {
-  return fetch(`${env == 'staging' ? stagingEndpoint : prodEndpoint}/${type}/verbose`)
+  return fetch(`${env == 'staging' ? stagingEndpoint : prodEndpoint}/${type}/verbose?all=true`)
     .then(async (resp) => {
       const data = await resp.json()
       const sps = data.data as SP[]

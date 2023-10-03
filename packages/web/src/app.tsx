@@ -1,11 +1,12 @@
 import '@audius/stems/dist/stems.css'
+import '@audius/harmony/dist/harmony.css'
 
 import { useState } from 'react'
 
-import { AudiusQueryContext } from '@audius/common'
+import { AudiusQueryContext, accountSelectors } from '@audius/common'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ConnectedRouter } from 'connected-react-router'
-import { Provider } from 'react-redux'
+import { Provider, useSelector } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
 import { LastLocationProvider } from 'react-router-last-location'
 
@@ -29,57 +30,63 @@ import { reportToSentry } from './store/errors/reportToSentry'
 import './index.css'
 import './services/webVitals'
 
-const AudiusApp = () => {
+const AudiusTrpcProvider = ({ children }: { children: React.ReactNode }) => {
+  const currentUserId = useSelector(accountSelectors.getUserId)
   const [queryClient] = useState(() => new QueryClient())
-  const [trpcClient] = useState(() => createAudiusTRPCClient())
-
+  const [trpcClient] = useState(() => createAudiusTRPCClient(currentUserId))
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>
-        <Provider store={store}>
-          <AudiusQueryContext.Provider
-            value={{
-              apiClient,
-              audiusBackend: audiusBackendInstance,
-              audiusSdk,
-              dispatch: store.dispatch,
-              reportToSentry
-            }}
-          >
-            <ConnectedRouter history={history}>
-              <LastLocationProvider>
-                <AppProviders>
-                  <MainContentContext.Consumer>
-                    {({ mainContentRef }) => (
-                      <Switch>
-                        <Route path='/error'>
-                          <SomethingWrong />
-                        </Route>
-                        <Route
-                          exact
-                          path={'/oauth/auth'}
-                          component={OAuthLoginPage}
-                        />
-                        <Route path='/demo/trpc'>
-                          <DemoTrpcPage />
-                        </Route>
-                        <Route path='/'>
-                          <AppErrorBoundary>
-                            <CoinbasePayButtonProvider>
-                              <App mainContentRef={mainContentRef} />
-                            </CoinbasePayButtonProvider>
-                          </AppErrorBoundary>
-                        </Route>
-                      </Switch>
-                    )}
-                  </MainContentContext.Consumer>
-                </AppProviders>
-              </LastLocationProvider>
-            </ConnectedRouter>
-          </AudiusQueryContext.Provider>
-        </Provider>
-      </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </trpc.Provider>
+  )
+}
+
+const AudiusApp = () => {
+  return (
+    <Provider store={store}>
+      <AudiusTrpcProvider>
+        <AudiusQueryContext.Provider
+          value={{
+            apiClient,
+            audiusBackend: audiusBackendInstance,
+            audiusSdk,
+            dispatch: store.dispatch,
+            reportToSentry
+          }}
+        >
+          <ConnectedRouter history={history}>
+            <LastLocationProvider>
+              <AppProviders>
+                <MainContentContext.Consumer>
+                  {({ mainContentRef }) => (
+                    <Switch>
+                      <Route path='/error'>
+                        <SomethingWrong />
+                      </Route>
+                      <Route
+                        exact
+                        path={'/oauth/auth'}
+                        component={OAuthLoginPage}
+                      />
+                      <Route path='/demo/trpc'>
+                        <DemoTrpcPage />
+                      </Route>
+                      <Route path='/'>
+                        <AppErrorBoundary>
+                          <CoinbasePayButtonProvider>
+                            <App mainContentRef={mainContentRef} />
+                          </CoinbasePayButtonProvider>
+                        </AppErrorBoundary>
+                      </Route>
+                    </Switch>
+                  )}
+                </MainContentContext.Consumer>
+              </AppProviders>
+            </LastLocationProvider>
+          </ConnectedRouter>
+        </AudiusQueryContext.Provider>
+      </AudiusTrpcProvider>
+    </Provider>
   )
 }
 
