@@ -95,7 +95,6 @@ type ProfileHeaderProps = {
   setFollowersUserId: (id: ID) => void
   followingCount: number
   setFollowingUserId: (id: ID) => void
-  doesFollowCurrentUser: boolean
   twitterHandle: string
   instagramHandle: string
   tikTokHandle: string
@@ -142,7 +141,6 @@ const ProfileHeader = ({
   trackCount,
   followerCount,
   followingCount,
-  doesFollowCurrentUser,
   twitterHandle,
   instagramHandle,
   tikTokHandle,
