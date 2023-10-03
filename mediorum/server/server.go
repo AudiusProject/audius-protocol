@@ -10,6 +10,7 @@ import (
 	"mediorum/ethcontracts"
 	"mediorum/persistence"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/signal"
@@ -314,6 +315,16 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/delist_status/track/:trackCid", ss.serveTrackDelistStatus)
 	routes.GET("/delist_status/user/:userId", ss.serveUserDelistStatus)
 	routes.POST("/delist_status/insert", ss.serveInsertDelistStatus, ss.requireBodySignedByOwner)
+
+	// -------------------
+	// healthz
+	healthz := routes.Group("/healthz")
+	healthzUrl, err := url.Parse("http://healthz")
+	if err != nil {
+		log.Fatal("Invalid healthz URL: ", err)
+	}
+	healthzProxy := httputil.NewSingleHostReverseProxy(healthzUrl)
+	healthz.Any("*", echo.WrapHandler(healthzProxy))
 
 	// -------------------
 	// internal
