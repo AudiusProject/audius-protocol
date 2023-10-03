@@ -23,13 +23,13 @@ export default async ({ user_id, blocknumber }) => {
     db: dp_db
   })
 
-  // TODO: check for undefined
+  // user create
+  if (old === undefined) return
 
   if (current.is_verified !== old.is_verified) {
     const is_verified = current.is_verified
     const handle = current.handle
 
-    // GET https://identityservice.staging.audius.co/social_handles?handle=totallynotalec
     const { data } = await axios
       .get(social_handle_url(handle))
       .catch(console.error)
