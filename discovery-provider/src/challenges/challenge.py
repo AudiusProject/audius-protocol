@@ -117,6 +117,7 @@ class ChallengeManager:
     _step_count: Optional[int]
     _challenge_type: ChallengeType
     _is_active: bool
+    _amount: int
 
     def __init__(self, challenge_id: str, updater: ChallengeUpdater):
         self.challenge_id = challenge_id
@@ -206,9 +207,7 @@ class ChallengeManager:
                 # Get *all* UserChallenges per user
                 user_ids = list({e["user_id"] for e in event_metadatas})
                 all_user_challenges: List[Tuple[int, int]] = (
-                    session.query(
-                        UserChallenge.user_id, func.count(UserChallenge.specifier)
-                    )
+                    session.query(UserChallenge.user_id, func.sum(UserChallenge.amount))
                     .filter(
                         UserChallenge.challenge_id == self.challenge_id,
                         UserChallenge.user_id.in_(user_ids),
@@ -223,6 +222,7 @@ class ChallengeManager:
                         new_user_challenges_specifiers[user_id]
                     )
                     if self._step_count and completion_count >= self._step_count:
+                        logger.info
                         continue
                     if not self._updater.should_create_new_challenge(
                         session,
@@ -240,11 +240,11 @@ class ChallengeManager:
 
             new_user_challenges = [
                 self._create_new_user_challenge(
-                    metadata["user_id"], metadata["specifier"]
+                    metadata["user_id"], metadata["specifier"], metadata["extra"]
                 )
                 for metadata in to_create_metadata
             ]
-            logger.warning(f"new challenges ${new_user_challenges}")
+            logger.warning(f"ChallengeManager: New challenges ${new_user_challenges}")
 
             # Get the other challenges to update (the ones in progress)
             in_progress_challenges = [
@@ -348,8 +348,9 @@ class ChallengeManager:
         self._challenge_type = challenge.type
         self._did_init = True
         self._is_active = challenge.active
+        self._amount = challenge.amount
 
-    def _create_new_user_challenge(self, user_id: int, specifier: str):
+    def _create_new_user_challenge(self, user_id: int, specifier: str, extra: Dict):
         return UserChallenge(
             challenge_id=self.challenge_id,
             user_id=user_id,
@@ -358,4 +359,5 @@ class ChallengeManager:
                 self._challenge_type == ChallengeType.aggregate
             ),  # Aggregates are made in completed state
             current_step_count=0,
+            amount=extra.get("amount", self._amount),
         )
