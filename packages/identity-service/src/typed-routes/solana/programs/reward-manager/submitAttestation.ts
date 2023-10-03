@@ -1,4 +1,4 @@
-import { LayoutObject, struct, u8, utf8 } from '@solana/buffer-layout'
+import { struct, u8 } from '@solana/buffer-layout'
 import {
   PublicKey,
   AccountMeta,
@@ -11,7 +11,7 @@ import {
   REWARD_MANAGER_PROGRAM_ID,
   RewardManagerInstruction
 } from './constants'
-import { borshString } from '../../../../typed-routes/solana/layout-utils'
+import { borshString } from '../../layout-utils'
 
 type SubmitAttestationInstructionData = {
   instruction: RewardManagerInstruction
