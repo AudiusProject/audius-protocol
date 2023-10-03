@@ -31,7 +31,7 @@ export abstract class BaseIndexer<RowType> {
   }
 
   baseSelect() {
-    return `select * from ${this.tableName} where is_current `
+    return `select * from ${this.tableName} where 1=1 `
   }
 
   async createIndex({ drop }: { drop: boolean }) {

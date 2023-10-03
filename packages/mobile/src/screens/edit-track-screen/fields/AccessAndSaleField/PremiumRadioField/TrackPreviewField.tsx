@@ -12,7 +12,7 @@ const messages = {
     'A 30 second preview will be generated. Specify a starting timestamp below.',
   label: 'Start Time',
   placeholder: 'Start Time',
-  seconds: 'Seconds'
+  seconds: '(Seconds)'
 }
 
 export const TrackPreviewField = () => {

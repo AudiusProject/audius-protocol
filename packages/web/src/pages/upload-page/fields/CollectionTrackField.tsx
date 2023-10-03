@@ -4,8 +4,6 @@ import {
   HarmonyPlainButton,
   HarmonyPlainButtonType,
   IconDrag,
-  IconPause,
-  IconPlay,
   IconTrash
 } from '@audius/stems'
 import { useField } from 'formik'
@@ -16,6 +14,7 @@ import { SwitchField } from 'components/form-fields/SwitchField'
 import { Tile } from 'components/tile'
 import { Text } from 'components/typography'
 
+import { PreviewButton } from '../components/PreviewButton'
 import { SelectGenreField } from '../fields/SelectGenreField'
 import { SelectMoodField } from '../fields/SelectMoodField'
 import { TrackNameField } from '../fields/TrackNameField'
@@ -26,7 +25,6 @@ import styles from './CollectionTrackField.module.css'
 
 const messages = {
   overrideLabel: 'Override details for this track',
-  preview: 'Preview',
   delete: 'Delete'
 }
 
@@ -38,8 +36,7 @@ type CollectionTrackFieldProps = {
 
 export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
   const { disableDelete = false, index, remove } = props
-  const { playingPreviewIndex, togglePreview, stopPreview } =
-    useContext(UploadPreviewContext)
+  const { playingPreviewIndex, stopPreview } = useContext(UploadPreviewContext)
   const [{ value: track }] = useField<CollectionTrackForUpload>(
     `tracks.${index}`
   )
@@ -91,15 +88,7 @@ export const CollectionTrackField = (props: CollectionTrackFieldProps) => {
           <Text>{messages.overrideLabel}</Text>
         </div>
         <div className={styles.actions}>
-          <HarmonyPlainButton
-            variant={HarmonyPlainButtonType.SUBDUED}
-            type='button'
-            text={messages.preview}
-            iconLeft={isPreviewPlaying ? IconPause : IconPlay}
-            onClick={() => {
-              togglePreview(track.preview, index)
-            }}
-          />
+          <PreviewButton index={index} />
           <HarmonyPlainButton
             variant={HarmonyPlainButtonType.SUBDUED}
             type='button'

@@ -62,13 +62,13 @@ func dbMustDial(dbPath string) *gorm.DB {
 func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket, myHost string) {
 	// Migrate the schema
 	slog.Info("db: gorm automigrate")
-	err := crud.DB.AutoMigrate(&Upload{}, &UploadCursor{}, &RepairTracker{})
+	err := crud.DB.AutoMigrate(&Upload{}, &RepairTracker{}, &UploadCursor{}, &StorageAndDbSize{})
 	if err != nil {
 		panic(err)
 	}
 
 	// register any models to be managed by crudr
-	crud.RegisterModels(&Upload{})
+	crud.RegisterModels(&Upload{}, &StorageAndDbSize{})
 
 	sqlDb, _ := crud.DB.DB()
 	gormDB := crud.DB

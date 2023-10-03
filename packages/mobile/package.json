@@ -92,7 +92,7 @@
     "deprecated-react-native-prop-types": "4.0.0",
     "expo-crypto": "9.2.0",
     "ffmpeg-kit-react-native": "4.5.2",
-    "formik": "2.2.9",
+    "formik": "2.4.1",
     "fxa-common-password-list": "0.0.4",
     "jimp": "0.14.0",
     "linkifyjs": "4.1.0",
@@ -170,7 +170,8 @@
     "tweetnacl": "1.0.3",
     "type-fest": "2.16.0",
     "typed-redux-saga": "1.3.1",
-    "yup": "0.32.11"
+    "yup": "0.32.11",
+    "zod-formik-adapter": "1.2.0"
   },
   "optionalDependencies": {
     "ios-deploy": "1.11.4"

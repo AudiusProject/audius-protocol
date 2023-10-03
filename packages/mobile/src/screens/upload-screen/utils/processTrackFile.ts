@@ -5,8 +5,33 @@ import {
   ALLOWED_MAX_AUDIO_SIZE_BYTES,
   newTrackMetadata
 } from '@audius/common'
+import { FFprobeKit } from 'ffmpeg-kit-react-native'
 import type { DocumentPickerResponse } from 'react-native-document-picker'
-import TrackPlayer from 'react-native-track-player'
+
+const getAudioDuration = async (filePath: string): Promise<number | null> => {
+  try {
+    const session = await FFprobeKit.execute(
+      `-v error -show_entries format=duration -of json "${decodeURIComponent(
+        filePath
+      )}"`
+    )
+    const returnCode = await session.getReturnCode()
+
+    if (returnCode.isValueSuccess()) {
+      const output = await session.getOutput()
+      const jsonOutput = JSON.parse(output)
+      const duration = parseFloat(jsonOutput?.format?.duration)
+
+      if (!isNaN(duration)) {
+        return duration
+      }
+    }
+    return null
+  } catch (error) {
+    console.error('Error probing audio file:', error)
+    return null
+  }
+}
 
 export const processTrackFile = async (
   trackFile: DocumentPickerResponse
@@ -34,16 +59,7 @@ export const processTrackFile = async (
     throw new Error('File must be an audio file')
   }
 
-  await TrackPlayer.add(
-    {
-      id: 'uploadTrack',
-      url: fileCopyUri ?? uri
-    },
-    0
-  )
-
-  const duration = await TrackPlayer.getDuration()
-
+  const duration = await getAudioDuration(fileCopyUri ?? uri)
   const title = name?.replace(/\.[^/.]+$/, '') ?? null // strip file extension
 
   return {

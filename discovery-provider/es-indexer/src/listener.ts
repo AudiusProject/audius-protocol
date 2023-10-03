@@ -10,7 +10,17 @@ import {
 } from './types/db'
 import { Client } from 'pg'
 import { logger } from './logger'
-import { LISTEN_TABLES } from './setup'
+
+export const LISTEN_TABLES = [
+  'aggregate_plays',
+  'aggregate_user',
+  'follows',
+  'playlists',
+  'reposts',
+  'saves',
+  'tracks',
+  'users',
+]
 
 export class PendingUpdates {
   userIds: Set<number> = new Set()

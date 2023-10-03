@@ -22,7 +22,6 @@ type ArtistCoverProps = {
   name: string
   handle: string
   isArtist: boolean
-  doesFollowCurrentUser: boolean
   onNameClick: () => void
   coverPhotoSizes: CoverPhotoSizes
   profilePictureSizes: ProfilePictureSizes
@@ -33,7 +32,6 @@ export const ArtistCover = ({
   name,
   handle,
   isArtist,
-  doesFollowCurrentUser,
   onNameClick,
   profilePictureSizes,
   coverPhotoSizes
@@ -82,7 +80,7 @@ export const ArtistCover = ({
               className={styles.artistHandle}
               onClick={onNameClick}
             >{`@${handle}`}</div>
-            {doesFollowCurrentUser ? <FollowsYouBadge /> : null}
+            <FollowsYouBadge userId={userId} />
           </div>
         </div>
       </div>

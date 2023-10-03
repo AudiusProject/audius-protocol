@@ -254,6 +254,8 @@ class GetTrendingTracksArgs(TypedDict, total=False):
     genre: Optional[str]
     time: str
     exclude_premium: bool
+    limit: int
+    offset: int
 
 
 def get_trending_tracks(args: GetTrendingTracksArgs, strategy: BaseTrendingStrategy):
@@ -266,11 +268,13 @@ def get_trending_tracks(args: GetTrendingTracksArgs, strategy: BaseTrendingStrat
 def _get_trending_tracks_with_session(
     session: Session, args: GetTrendingTracksArgs, strategy: BaseTrendingStrategy
 ):
-    current_user_id, genre, time, exclude_premium = (
+    current_user_id, genre, time, exclude_premium, limit, offset = (
         args.get("current_user_id"),
         args.get("genre"),
         args.get("time", "week"),
         args.get("exclude_premium", SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS),
+        args.get("limit", TRENDING_LIMIT),
+        args.get("offset", 0)
     )
     time_range = "week" if time not in ["week", "month", "year", "allTime"] else time
     key = make_trending_cache_key(time_range, genre, strategy.version)
@@ -288,7 +292,8 @@ def _get_trending_tracks_with_session(
             exclude_premium=exclude_premium,
         ),
     )
-
+    tracks = tracks[offset : limit + offset]
+    track_ids = track_ids[offset : limit + offset]
     # populate track metadata
     tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
     tracks_map = {track["track_id"]: track for track in tracks}
