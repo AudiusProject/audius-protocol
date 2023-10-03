@@ -63,6 +63,7 @@ const RenderForm = ({
   const handleClose = useCallback(() => {
     dispatch(cleanupUSDCRecovery())
     onClose()
+    dispatch(cleanup())
   }, [dispatch, onClose])
 
   // Navigate to track on successful purchase behind the modal
@@ -119,7 +120,6 @@ const RenderForm = ({
 }
 
 export const PremiumContentPurchaseModal = () => {
-  const dispatch = useDispatch()
   const {
     isOpen,
     onClose,
@@ -135,11 +135,6 @@ export const PremiumContentPurchaseModal = () => {
   const { initialValues, validationSchema, onSubmit } =
     usePurchaseContentFormConfiguration({ track })
 
-  const handleClose = useCallback(() => {
-    dispatch(cleanup())
-    onClose()
-  }, [dispatch, onClose])
-
   const isValidTrack = track && isTrackPurchasable(track)
 
   if (track && !isValidTrack) {
@@ -149,7 +144,7 @@ export const PremiumContentPurchaseModal = () => {
   return (
     <ModalDrawer
       isOpen={isOpen}
-      onClose={handleClose}
+      onClose={onClose}
       onClosed={onClosed}
       bodyClassName={styles.modal}
       isFullscreen
