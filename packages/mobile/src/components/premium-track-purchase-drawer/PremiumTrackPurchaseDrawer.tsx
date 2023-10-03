@@ -12,11 +12,12 @@ import {
   usePurchaseContentFormConfiguration
 } from '@audius/common'
 import { Formik, useFormikContext } from 'formik'
-import { Linking, View, ScrollView } from 'react-native'
+import { Linking, View, ScrollView, TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import IconCart from 'app/assets/images/iconCart.svg'
+import IconCloseAlt from 'app/assets/images/iconCloseAlt.svg'
 import IconError from 'app/assets/images/iconError.svg'
 import { Button, LockedStatusBadge, Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
@@ -63,16 +64,12 @@ const messages = {
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   drawer: {
-    flex: 1,
-    backgroundColor: palette.white
-  },
-  formContainer: {
-    flex: 1,
     paddingHorizontal: spacing(4)
   },
+  formContainer: {
+    flex: 1
+  },
   formContentContainer: {
-    borderTopWidth: 1,
-    borderTopColor: palette.neutralLight8,
     paddingVertical: spacing(6),
     gap: spacing(4)
   },
@@ -82,18 +79,22 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     paddingBottom: spacing(6),
     columnGap: spacing(4)
   },
-  titleContainer: {
-    // padding: undefined,
-    // paddingHorizontal: spacing(8),
-    paddingTop: spacing(6),
-    paddingBottom: spacing(4)
+  headerContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: palette.neutralLight8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingVertical: spacing(4)
   },
-  title: {
-    fontSize: typography.fontSize.xl,
-    fontFamily: typography.fontByWeight.heavy,
-    color: palette.neutralLight2,
-    textTransform: 'uppercase',
-    lineHeight: typography.fontSize.xl * 1.25
+  titleContainer: {
+    ...flexRowCentered(),
+    gap: spacing(2),
+    flexDirection: 'row',
+    flex: 1,
+    justifyContent: 'center',
+    // Matches close icon width
+    paddingRight: spacing(6)
   },
   trackTileContainer: {
     ...flexRowCentered(),
@@ -124,13 +125,45 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   }
 }))
 
+const PremiumTrackPurchaseDrawerHeader = ({
+  onClose
+}: {
+  onClose: () => void
+}) => {
+  const styles = useStyles()
+  const { neutralLight2, neutralLight4 } = useThemeColors()
+  return (
+    <View style={styles.headerContainer}>
+      <TouchableOpacity activeOpacity={0.7} onPress={onClose}>
+        <IconCloseAlt
+          width={spacing(6)}
+          height={spacing(6)}
+          fill={neutralLight4}
+        />
+      </TouchableOpacity>
+      <View style={styles.titleContainer}>
+        <IconCart width={spacing(6)} height={spacing(6)} fill={neutralLight2} />
+        <Text
+          variant='label'
+          fontSize='large'
+          color='neutralLight2'
+          weight='heavy'
+          textTransform='uppercase'
+          noGutter
+        >
+          {messages.title}
+        </Text>
+      </View>
+    </View>
+  )
+}
+
 // The bulk of the form rendering is in a nested component because we want access
 // to the FormikContext, which can only be used in a component which is a descendant
 // of the `<Formik />` component
 const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
   const styles = useStyles()
-  const { specialLightGreen, neutralLight2, accentRed, secondary } =
-    useThemeColors()
+  const { specialLightGreen, accentRed, secondary } = useThemeColors()
 
   const { submitForm, resetForm } = useFormikContext()
 
@@ -236,9 +269,10 @@ export const PremiumTrackPurchaseDrawer = () => {
 
   return (
     <NativeDrawer
-      // drawerStyle={styles.drawer}
-      title={messages.title}
-      titleIcon={IconCart}
+      drawerStyle={styles.drawer}
+      drawerHeader={PremiumTrackPurchaseDrawerHeader}
+      // title={messages.title}
+      // titleIcon={IconCart}
       drawerName={PREMIUM_TRACK_PURCHASE_MODAL_NAME}
       onClosed={handleClosed}
       isGestureSupported={false}
