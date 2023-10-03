@@ -15,11 +15,6 @@ declare global {
        * @example cy.login()
        */
       login(): Chainable<JQuery<HTMLElement>>
-      /**
-       * Custom command to visit url from mobile device.
-       * @example cy.visitMobile('trending')
-       */
-      visitMobile(url: string): Chainable<JQuery<HTMLElement>>
     }
   }
 }
@@ -27,13 +22,4 @@ declare global {
 Cypress.Commands.add('login', () => {
   cy.visit(`trending?login=${base64Entropy}`)
   cy.findByRole('link', { name: user.name }).should('exist')
-})
-
-Cypress.Commands.add('visitMobile', (url) => {
-  cy.visit(url, {
-    headers: {
-      'user-agent':
-        'Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1'
-    }
-  })
 })

@@ -25,6 +25,7 @@ export const SelectGenreField = (props: SelectGenreFieldProps) => {
       mount='parent'
       menu={menu}
       size='large'
+      isRequired
       {...props}
     />
   )

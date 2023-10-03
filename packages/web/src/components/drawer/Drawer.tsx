@@ -323,9 +323,11 @@ const FullscreenDrawer = ({ children, isOpen, onClose }: DrawerProps) => {
   const drawerRef = useRef<HTMLDivElement | null>(null)
   // Lock to prevent double scrollbars
   useEffect(() => {
-    if (drawerRef.current && isOpen) {
-      disableBodyScroll(drawerRef.current)
-    }
+    setImmediate(() => {
+      if (drawerRef.current && isOpen) {
+        disableBodyScroll(drawerRef.current)
+      }
+    })
     return () => {
       clearAllBodyScrollLocks()
     }

@@ -34,6 +34,7 @@ export default function Nodes() {
               <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">
                 Host
               </th>
+              {isDiscovery && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">Node Health</th>}
               {isDiscovery && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">Block Diff</th>}
               <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">Version</th>
               {isContent && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">Storage</th>}
@@ -65,9 +66,7 @@ export default function Nodes() {
 }
 
 function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
-  // TODO(michelle): after all nodes updated, change this to
-  // const path = isContent ? '/health_check' : '/health_check?verbose=true&enforce_block_diff=true&healthy_block_diff=250&plays_count_max_drift=720'
-  const path = isContent ? '/health_check' : '/health_check?enforce_block_diff=true&healthy_block_diff=250'
+  const path = isContent ? '/health_check' : '/health_check?enforce_block_diff=true&healthy_block_diff=250&plays_count_max_drift=720'
   const { data, error } = useSWR(sp.endpoint + path, fetcher)
   const { data: ipCheck, error: ipCheckError } = useSWR(
     sp.endpoint + '/ip_check',
@@ -86,7 +85,8 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
             {sp.endpoint.replace('https://', '')}
           </a>
         </td>
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Block diff */}
+        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Node Health */}
+        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Block Diff */}
         <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td> {/* Version */}
         {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Storage */}
         {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Last Non-Cleanup Repair */}
@@ -120,8 +120,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     }
   }
 
-  // TODO(michelle) after all nodes updated, change DN check to health.discovery_node_healthy
-  const isHealthy = isContent ? health.healthy : !health.errors || (Array.isArray(health.errors) && health.errors.length === 0)
+  const isHealthy = isContent ? health.healthy : health.discovery_provider_healthy
   const unreachablePeers = health.unreachablePeers?.join(', ')
   const peerReachabilityClass = health?.failsPeerReachability ? 'is-unhealthy' : ''
 
@@ -180,6 +179,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           {sp.endpoint.replace('https://', '')}
         </a>
       </td>
+      {!isContent && (<td className="whitespace-nowrap px-3 py-5 text-sm">{`${isHealthy ? 'Healthy' : 'Unhealthy: ' + health.errors}`}</td>)}
       {!isContent && <td className={isBehind}>{health.block_difference}</td>}
       <td className="whitespace-nowrap px-3 py-5 text-sm flex flex-col">
         <div className="flex items-center">

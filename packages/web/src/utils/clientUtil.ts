@@ -27,7 +27,7 @@ export const isMobile = () => {
   if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
     check = true
 
-  if (navigator.userAgent === 'probers' && window.innerWidth < 300) {
+  if (navigator.userAgent === 'probers' && window.innerWidth < 500) {
     check = true
   }
   return check
