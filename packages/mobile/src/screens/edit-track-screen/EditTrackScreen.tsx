@@ -35,7 +35,7 @@ const EditTrackSchema = Yup.object().shape({
     .test('isValidPreviewStart', '', function (value: number) {
       const duration = this.resolve(Yup.ref('duration')) as unknown as number
       // If duration is NaN, validation passes because we were
-      // unable to generate a preview
+      // unable to generate a browser-side preview to get duration
       if (isNaN(duration)) return true
       if (duration > 30 && value > duration - 30) {
         return this.createError({
