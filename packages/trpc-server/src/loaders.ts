@@ -41,13 +41,17 @@ export const prepareLoaders = (myId: number | undefined) => ({
           sql<FollowRow[]>`
           select follower_user_id, followee_user_id
           from follows
-          where (follower_user_id = ${myId} and followee_user_id in ${sql(ids)})
-            or (follower_user_id in ${sql(ids)}) and followee_user_id = ${myId}
+          where is_delete = false
+            and (follower_user_id = ${myId} and followee_user_id in ${sql(ids)})
+             or (follower_user_id in ${sql(ids)}) and followee_user_id = ${myId}
           `,
 
           sql<SubscriptionRow[]>`
-          select user_id from subscriptions
-          where user_id in ${sql(ids)} and subscriber_id = ${myId}`
+          select user_id
+          from subscriptions
+          where is_delete = false
+            and user_id in ${sql(ids)}
+            and subscriber_id = ${myId}`
         ])
 
         for (const row of followRows) {
@@ -83,14 +87,16 @@ export const prepareLoaders = (myId: number | undefined) => ({
           sql<HasID[]>`
           select save_item_id id
           from saves
-          where user_id = ${myId}
+          where is_delete = false
+          and user_id = ${myId}
           and save_type in ${sql(kinds)} and save_item_id in ${sql(ids)};`,
 
           sql<HasID[]>`
           select repost_item_id id
           from reposts
-          where user_id = ${myId}
-          and repost_type in ${sql(kinds)} and repost_item_id in ${sql(ids)};`
+          where is_delete = false
+            and user_id = ${myId}
+            and repost_type in ${sql(kinds)} and repost_item_id in ${sql(ids)};`
         ])
 
         for (const row of savedRows) {
