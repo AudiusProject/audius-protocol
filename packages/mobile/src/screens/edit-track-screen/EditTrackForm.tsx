@@ -93,58 +93,60 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   }, [dirty, navigation, dispatch])
 
   return (
-    <FormScreen
-      title={title}
-      icon={IconUpload}
-      topbarLeft={
-        <TopBarIconButton
-          icon={IconCaretLeft}
-          style={styles.backButton}
-          onPress={handlePressBack}
-        />
-      }
-      bottomSection={
-        <>
-          {hasErrors ? (
-            <InputErrorMessage
-              message={messages.fixErrors}
-              style={styles.errorText}
-            />
-          ) : null}
-          <Button
-            variant='primary'
-            size='large'
-            icon={IconArrow}
-            fullWidth
-            title={doneText}
-            onPress={() => {
-              handleSubmit()
-            }}
-            disabled={isSubmitting || hasErrors}
+    <>
+      <FormScreen
+        title={title}
+        icon={IconUpload}
+        topbarLeft={
+          <TopBarIconButton
+            icon={IconCaretLeft}
+            style={styles.backButton}
+            onPress={handlePressBack}
           />
+        }
+        bottomSection={
+          <>
+            {hasErrors ? (
+              <InputErrorMessage
+                message={messages.fixErrors}
+                style={styles.errorText}
+              />
+            ) : null}
+            <Button
+              variant='primary'
+              size='large'
+              icon={IconArrow}
+              fullWidth
+              title={doneText}
+              onPress={() => {
+                handleSubmit()
+              }}
+              disabled={isSubmitting || hasErrors}
+            />
+          </>
+        }
+      >
+        <>
+          <KeyboardAwareScrollView>
+            <Tile style={styles.tile}>
+              <PickArtworkField name='artwork' />
+              <TextField name='title' label={messages.trackName} required />
+              <SubmenuList>
+                <SelectGenreField />
+                <SelectMoodField />
+              </SubmenuList>
+              <TagField />
+              <DescriptionField />
+              <SubmenuList removeBottomDivider>
+                <AccessAndSaleField />
+                <RemixSettingsField />
+                <AdvancedOptionsField />
+              </SubmenuList>
+            </Tile>
+          </KeyboardAwareScrollView>
         </>
-      }
-    >
-      <>
-        <KeyboardAwareScrollView>
-          <Tile style={styles.tile}>
-            <PickArtworkField name='artwork' />
-            <TextField name='title' label={messages.trackName} required />
-            <SubmenuList>
-              <SelectGenreField />
-              <SelectMoodField />
-            </SubmenuList>
-            <TagField />
-            <DescriptionField />
-            <SubmenuList removeBottomDivider>
-              <AccessAndSaleField />
-              <RemixSettingsField />
-              <AdvancedOptionsField />
-            </SubmenuList>
-          </Tile>
-        </KeyboardAwareScrollView>
-        <CancelEditTrackDrawer />
-      </>
-    </FormScreen>
+      </FormScreen>
+      <CancelEditTrackDrawer />
+    </>
   )
 }
