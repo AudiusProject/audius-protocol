@@ -1,7 +1,7 @@
 import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 
-import type { IconComponent } from 'components/icon/types'
-import type { ColorValue } from 'types/colors'
+import type { IconComponent } from '../../components/typography/Icons/types'
+import type { ColorValue } from '../../types/colors'
 
 export enum HarmonyButtonType {
   PRIMARY = 'primary',

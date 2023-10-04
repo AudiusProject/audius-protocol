@@ -2,8 +2,8 @@ import { forwardRef } from 'react'
 
 import cn from 'classnames'
 
-import type { CSSCustomProperties } from 'types/styles'
-import { toCSSVariableName } from 'utils/styles'
+import type { CSSCustomProperties } from '../../types/styles'
+import { toCSSVariableName } from '../../utils/styles'
 
 import { BaseButton } from './BaseButton'
 import styles from './HarmonyButton.module.css'

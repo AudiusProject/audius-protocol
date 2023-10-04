@@ -1,6 +1,6 @@
-import { Story } from '@storybook/react'
+import type { Story } from '@storybook/react'
 
-import * as Icons from 'components/Icons'
+import * as Icons from '../../components/typography/Icons'
 
 import { HarmonyPlainButton } from './HarmonyPlainButton'
 import {

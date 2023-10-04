@@ -2,7 +2,7 @@ import { forwardRef } from 'react'
 
 import cn from 'classnames'
 
-import { useMediaQueryListener } from 'hooks/useMediaQueryListener'
+import { useMediaQueryListener } from '../../hooks/useMediaQueryListener'
 
 import baseStyles from './BaseButton.module.css'
 import type { BaseButtonProps } from './types'
