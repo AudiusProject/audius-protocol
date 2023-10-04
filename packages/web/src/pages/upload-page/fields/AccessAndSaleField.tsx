@@ -96,7 +96,7 @@ const messages = {
   },
   errors: {
     price: {
-      tooLow: 'Price must be at least $0.99.',
+      tooLow: 'Price must be at least $1.00.',
       tooHigh: 'Price must be less than $9999.99.'
     },
     preview: {
@@ -139,7 +139,7 @@ export const AccessAndSaleFormSchema = (trackLength: number) =>
               price: z
                 .number()
                 .lte(999999, messages.errors.price.tooHigh)
-                .gte(99, messages.errors.price.tooLow)
+                .gte(100, messages.errors.price.tooLow)
             })
           )
         })

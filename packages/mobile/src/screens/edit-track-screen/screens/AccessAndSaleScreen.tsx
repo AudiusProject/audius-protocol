@@ -157,7 +157,7 @@ export const AccessAndSaleScreen = () => {
       ? {
           label: premiumAvailability,
           value: premiumAvailability,
-          disabled: true
+          disabled: !isUsdcUploadEnabled
         }
       : null,
     {
@@ -173,7 +173,7 @@ export const AccessAndSaleScreen = () => {
     {
       label: hiddenAvailability,
       value: hiddenAvailability,
-      disabled: !isUsdcUploadEnabled
+      disabled: noHidden
     }
   ].filter(removeNullable)
 

@@ -37,6 +37,7 @@ export const TRENDING_PAGE = '/trending'
 export const TRENDING_PLAYLISTS_PAGE_LEGACY = '/trending/playlists'
 
 export const EXPLORE_PAGE = '/explore'
+export const EXPLORE_PREMIUM_TRACKS_PAGE = '/explore/premium-tracks'
 export const EXPLORE_HEAVY_ROTATION_PAGE = '/explore/heavy-rotation'
 export const EXPLORE_LET_THEM_DJ_PAGE = '/explore/let-them-dj'
 export const EXPLORE_BEST_NEW_RELEASES_PAGE = '/explore/best-new-releases'

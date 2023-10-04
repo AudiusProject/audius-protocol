@@ -43,10 +43,3 @@ root {
   --font-bold: 700;
   --font-heavy: 900;
 }
-
-#root *,
-body * {
-  font-family: var(--font-family);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
-}

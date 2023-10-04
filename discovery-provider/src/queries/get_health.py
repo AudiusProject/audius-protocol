@@ -51,6 +51,7 @@ from src.utils.redis_constants import (
 from src.utils.web3_provider import get_web3
 
 LOCAL_RPC = "http://chain:8545"
+RELAY_PLUGIN = "http://relay:6001/relay"
 
 
 logger = logging.getLogger(__name__)
@@ -112,6 +113,19 @@ def _get_query_insights():
     )
 
     return query_insights, False
+
+
+def _get_relay_health():
+    relay_health = requests.get(RELAY_PLUGIN + "/health")
+    relay_res = relay_health.json()
+    return relay_res
+
+
+def _is_relay_healthy(relay_health_res):
+    relay_status = relay_health_res["status"]
+    is_healthy = relay_status == "up"
+    relay_health_res["is_unhealthy"] = not is_healthy
+    return is_healthy
 
 
 def _get_chain_health():
@@ -380,6 +394,12 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         health_results["meets_min_requirements"] = True
 
     health_results["chain_health"] = _get_chain_health()
+
+    relay_health = _get_relay_health()
+    if not _is_relay_healthy(relay_health):
+        errors.append("relay unhealthy")
+
+    health_results["relay"] = relay_health
 
     if verbose:
         # Elasticsearch health
@@ -811,7 +831,10 @@ def is_api_healthy(my_url):
                     errors.append(
                         f"missing keyword '{user_search_response_keyword}' in response from {url}"
                     )
-                if url == track_endpoint and track_response_keyword not in response_text:
+                if (
+                    url == track_endpoint
+                    and track_response_keyword not in response_text
+                ):
                     errors.append(
                         f"missing keyword '{track_response_keyword}' in response from {url}"
                     )

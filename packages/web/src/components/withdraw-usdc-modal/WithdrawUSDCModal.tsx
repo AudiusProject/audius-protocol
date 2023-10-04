@@ -51,11 +51,14 @@ export const ADDRESS = 'address'
 export const CONFIRM = 'confirm'
 
 const WithdrawUSDCFormSchema = (userBalance: number) => {
+  let amount = z.number().lte(userBalance, messages.errors.insufficientBalance)
+  if (userBalance !== 0) {
+    // If user has no balance, don't validate minimum, the form will just be disabled
+    amount = amount.gte(1, messages.errors.amountTooLow)
+  }
+
   return z.object({
-    [AMOUNT]: z
-      .number()
-      .lte(userBalance, messages.errors.insufficientBalance)
-      .gte(1, messages.errors.amountTooLow),
+    [AMOUNT]: amount,
     [ADDRESS]: z
       .string()
       .refine(

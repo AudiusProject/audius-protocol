@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { modalsActions } from '@audius/common'
+import { modalsActions, purchaseContentActions } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
@@ -15,6 +15,7 @@ import { AppDrawer } from '../drawer/AppDrawer'
 import { StripeOnrampEmbed } from './StripeOnrampEmbed'
 
 const { setVisibility } = modalsActions
+const { cleanup } = purchaseContentActions
 
 export const MODAL_NAME = 'StripeOnRamp'
 
@@ -36,6 +37,7 @@ export const StripeOnrampDrawer = () => {
 
   const handleClose = useCallback(() => {
     dispatch(setVisibility({ modal: MODAL_NAME, visible: 'closing' }))
+    dispatch(cleanup())
   }, [dispatch])
 
   return (

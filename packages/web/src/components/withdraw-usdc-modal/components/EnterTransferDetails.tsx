@@ -135,7 +135,7 @@ export const EnterTransferDetails = () => {
         size={HarmonyButtonSize.DEFAULT}
         fullWidth
         text={messages.continue}
-        disabled={amountError || addressError || !address}
+        disabled={amountError || addressError || !address || balance?.isZero()}
         onClick={handleContinue}
       />
       <Hint

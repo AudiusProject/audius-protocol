@@ -48,7 +48,7 @@ export const useLineupProps = ({
   const dispatch = useDispatch()
 
   // Create memoized selectors
-  const getPlaylistTrendingLineup = useMemo(
+  const getLineup = useMemo(
     () => makeGetLineupMetadatas(getLineupSelector),
     [getLineupSelector]
   )
@@ -57,7 +57,7 @@ export const useLineupProps = ({
 
   // Selectors
   const currentQueueItem = useSelector(getCurrentQueueItem)
-  const lineup = useSelector(getPlaylistTrendingLineup)
+  const lineup = useSelector(getLineup)
   const isPlaying = useSelector(getPlaying)
   const isBuffering = useSelector(getBuffering)
 

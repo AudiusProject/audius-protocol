@@ -42,6 +42,10 @@ from src.queries.get_latest_entities import get_latest_entities
 from src.queries.get_premium_track_signatures import (
     get_nft_gated_premium_track_signatures,
 )
+from src.queries.get_premium_tracks import (
+    DEFAULT_PREMIUM_TRACKS_LIMIT,
+    get_full_usdc_purchase_tracks,
+)
 from src.queries.get_random_tracks import get_random_tracks
 from src.queries.get_recommended_tracks import (
     DEFAULT_RECOMMENDED_LIMIT,
@@ -655,14 +659,14 @@ class Trending(Resource):
     doc={
         "get": {
             "id": """Get Trending Tracks With Version""",
-            "description": """Gets the top 100 trending (most popular tracks on Audius using a given trending strategy version""",
+            "description": """Gets the top 100 trending (most popular) tracks on Audius using a given trending strategy version""",
             "params": {"version": "The strategy version of trending to use"},
         }
     },
 )
 class FullTrending(Resource):
     @record_metrics
-    @ns.doc()
+    @full_ns.doc()
     @full_ns.expect(full_trending_parser)
     @full_ns.marshal_with(full_tracks_response)
     def get(self, version):
@@ -1331,6 +1335,56 @@ track_signatures_parser.add_argument(
     type=str,
     action="append",
 )
+
+
+full_usdc_purchase_tracks_parser = full_trending_parser.copy()
+
+
+@full_ns.route(
+    "/usdc-purchase",
+    defaults={"version": DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS].name},
+    strict_slashes=False,
+    doc={
+        "get": {
+            "id": """Get Trending USDC Purchase Tracks""",
+            "description": """Gets the top trending (most popular) USDC purchase tracks on Audius""",
+            "responses": {200: "Success", 400: "Bad request", 500: "Server error"},
+        }
+    },
+)
+@full_ns.route(
+    "/usdc-purchase/<string:version>",
+    doc={
+        "get": {
+            "id": """Get Trending USDC Purchase Tracks With Version""",
+            "description": """Gets the top trending (most popular) USDC purchase tracks on Audius using a given trending strategy version""",
+            "params": {"version": "The strategy version of trending to use"},
+        }
+    },
+)
+class FullUSDCPurchaseTracks(Resource):
+    @record_metrics
+    @full_ns.doc()
+    @full_ns.expect(full_usdc_purchase_tracks_parser)
+    @full_ns.marshal_with(full_tracks_response)
+    def get(self, version):
+        trending_track_versions = trending_strategy_factory.get_versions_for_type(
+            TrendingType.TRACKS
+        ).keys()
+        version_list = list(
+            filter(lambda v: v.name == version, trending_track_versions)
+        )
+        if not version_list:
+            abort_bad_path_param("version", full_ns)
+
+        args = full_usdc_purchase_tracks_parser.parse_args()
+        limit = format_limit(args, default_limit=DEFAULT_PREMIUM_TRACKS_LIMIT)
+        args["limit"] = max(TRENDING_LIMIT, limit)
+        strategy = trending_strategy_factory.get_strategy(
+            TrendingType.TRACKS, version_list[0]
+        )
+        full_premium_tracks = get_full_usdc_purchase_tracks(request, args, strategy)
+        return success_response(full_premium_tracks[:limit])
 
 
 @full_ns.route("/<string:user_id>/nft-gated-signatures")

@@ -3,14 +3,13 @@ import { createTRPCReact, httpBatchLink } from '@trpc/react-query'
 
 export const trpc = createTRPCReact<AppRouter>()
 
-// this is a hook
-export function createAudiusTRPCClient(currentUserId: number | null) {
+export function createAudiusTrpcClient(currentUserId: number | null) {
   return trpc.createClient({
     links: [
       httpBatchLink({
         url: getTrpcEndpoint(),
         maxURLLength: 2083,
-        headers(op) {
+        headers() {
           if (!currentUserId) return {}
           return {
             'x-current-user-id': '' + currentUserId

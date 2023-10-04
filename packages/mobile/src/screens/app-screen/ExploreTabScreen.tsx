@@ -16,6 +16,7 @@ import {
 } from 'app/screens/explore-screen/smartCollections'
 import {
   LetThemDJScreen,
+  PremiumTracksScreen,
   TopAlbumsScreen,
   TrendingPlaylistsScreen,
   TrendingUndergroundScreen
@@ -36,6 +37,7 @@ export type ExploreTabScreenParamList = AppTabScreenParamList & {
   BestNewReleases: undefined
   Remixables: undefined
   // Collection Screens
+  PremiumTracks: undefined
   TrendingUnderground: undefined
   LetThemDJ: undefined
   TopAlbums: undefined
@@ -69,6 +71,7 @@ export const ExploreTabScreen =
   createAppTabScreenStack<ExploreTabScreenParamList>((Stack) => (
     <>
       <Stack.Screen name='Explore' component={ExploreScreen} />
+      <Stack.Screen name='PremiumTracks' component={PremiumTracksScreen} />
       <Stack.Screen name='LetThemDJ' component={LetThemDJScreen} />
       <Stack.Screen name='TopAlbums' component={TopAlbumsScreen} />
       <Stack.Screen
