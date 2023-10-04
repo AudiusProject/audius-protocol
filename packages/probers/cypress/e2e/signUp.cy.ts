@@ -70,7 +70,7 @@ describe('Sign Up', () => {
 
     it('should create an account', () => {
       const testUser = generateTestUser()
-      const { email, password } = testUser
+      const { email, password, handle } = testUser
       cy.visit('signup')
       cy.findByRole('textbox', { name: /email/i }).type(email)
       cy.findByRole('button', { name: /sign up free/i }).click()
@@ -82,6 +82,30 @@ describe('Sign Up', () => {
       cy.findByRole('button', { name: /continue/i }).click()
 
       cy.findByRole('heading', { name: /pick your handle/i }).should('exist')
+      cy.findByText(/this is how others find and tag you/i).should('exist')
+      cy.findByRole('textbox', { name: /handle/i }).type(handle)
+      cy.findByRole('button', { name: /continue/i }).click()
+
+      cy.findByRole('heading', { name: /finish your profile/i }).should('exist')
+      cy.findByText(
+        /your photos & display name is how others see you./i
+      ).should('exist')
+
+      cy.findByTestId('cover_photo-dropzone').attachFile('cover-photo.jpeg', {
+        subjectType: 'drag-n-drop'
+      })
+
+      cy.findByTestId('profile_picture-dropzone').attachFile(
+        'profile-picture.jpeg',
+        {
+          subjectType: 'drag-n-drop'
+        }
+      )
+
+      cy.findByRole('textbox', { name: /display name/i }).type(handle)
+      cy.findByRole('button', { name: /continue/i }).click()
+
+      cy.findByRole('heading', { name: /select your genres/i }).should('exist')
     })
   })
 
@@ -117,7 +141,7 @@ describe('Sign Up', () => {
 
     it('should create an account', () => {
       const testUser = generateTestUser()
-      const { email, password } = testUser
+      const { email, password, handle } = testUser
       cy.visit('signup')
       cy.findByRole('textbox', { name: /email/i }).type(email)
       cy.findByRole('button', { name: /sign up free/i }).click()
@@ -129,6 +153,16 @@ describe('Sign Up', () => {
       cy.findByRole('button', { name: /continue/i }).click()
 
       cy.findByRole('heading', { name: /pick your handle/i }).should('exist')
+      cy.findByText(/this is how others find and tag you/i).should('exist')
+      cy.findByRole('textbox', { name: /handle/i }).type(handle)
+      cy.findByRole('button', { name: /continue/i })
+
+      cy.findByRole('heading', { name: /finish your profile/i }).should('exist')
+      cy.findByText(
+        /your photos & display name is how others see you./i
+      ).should('exist')
+      cy.findByRole('textbox', { name: /display name/i }).type(handle)
+      cy.findByRole('button', { name: /continue/i })
     })
   })
 })

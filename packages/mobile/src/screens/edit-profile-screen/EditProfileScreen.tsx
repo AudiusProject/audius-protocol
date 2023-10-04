@@ -15,7 +15,8 @@ import IconInstagram from 'app/assets/images/iconInstagram.svg'
 import IconLink from 'app/assets/images/iconLink.svg'
 import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
-import { FormImageInput, FormTextInput, ScrollView } from 'app/components/core'
+import { FormTextInput, ScrollView } from 'app/components/core'
+import { ImageField } from 'app/components/fields'
 import { FormScreen } from 'app/components/form-screen'
 import { useUserCoverImage } from 'app/components/image/UserCoverImage'
 import { useUserImage } from 'app/components/image/UserImage'
@@ -80,11 +81,11 @@ const EditProfileForm = (props: EditProfileFormProps) => {
 
   return (
     <FormScreen variant='white' onReset={handleReset} onSubmit={handleSubmit}>
-      <FormImageInput
+      <ImageField
         name='cover_photo'
         styles={{ imageContainer: styles.coverPhoto }}
       />
-      <FormImageInput
+      <ImageField
         name='profile_picture'
         styles={{
           root: styles.profilePicture,

@@ -22,7 +22,8 @@ const messages = {
 }
 
 const initialValues = {
-  email: ''
+  email: '',
+  cover_photo: null
 }
 
 type SignUpEmailValues = {
