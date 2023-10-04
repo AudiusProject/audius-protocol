@@ -123,6 +123,11 @@
       src="https://experiments.audius.co/datafiles/%REACT_APP_OPTIMIZELY_KEY%.json/tag.js">
     </script>
     <!-- end Optimizely -->
+
+    <script type="text/javascript">
+      localStorage.setItem('FeatureFlagOverride:usdc_purchases', 'enabled')
+      localStorage.setItem('FeatureFlagOverride:usdc_purchases_upload', 'enabled')
+    </script>
   </head>
   <body>
     <noscript>
