@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
+import { getHasCompletedAccount } from 'audius-client/src/common/store/pages/signon/selectors'
 import { checkNotifications, RESULTS } from 'react-native-permissions'
 import { useDispatch, useSelector } from 'react-redux'
 

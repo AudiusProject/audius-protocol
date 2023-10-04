@@ -1,9 +1,9 @@
-import { make } from 'common/store/analytics/actions'
-import { SIGN_UP_SUCCEEDED } from 'common/store/pages/signon/actions'
 import {
   getEmailField,
   getHandleField
-} from 'common/store/pages/signon/selectors'
+} from 'audius-client/src/common/store/pages/signon/selectors'
+import { make } from 'common/store/analytics/actions'
+import { SIGN_UP_SUCCEEDED } from 'common/store/pages/signon/actions'
 import { takeEvery, put, select } from 'typed-redux-saga'
 
 import { EventNames } from 'app/types/analytics'

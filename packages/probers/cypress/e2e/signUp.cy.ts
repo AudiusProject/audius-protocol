@@ -70,7 +70,7 @@ describe('Sign Up', () => {
 
     it('should create an account', () => {
       const testUser = generateTestUser()
-      const { email, password, handle } = testUser
+      const { email, password, handle, name } = testUser
       cy.visit('signup')
       cy.findByRole('textbox', { name: /email/i }).type(email)
       cy.findByRole('button', { name: /sign up free/i }).click()
@@ -102,10 +102,36 @@ describe('Sign Up', () => {
         }
       )
 
-      cy.findByRole('textbox', { name: /display name/i }).type(handle)
+      cy.findByRole('textbox', { name: /display name/i }).type(name)
       cy.findByRole('button', { name: /continue/i }).click()
 
       cy.findByRole('heading', { name: /select your genres/i }).should('exist')
+      cy.findByText(/start by picking some of your favorite genres./i).should(
+        'exist'
+      )
+
+      cy.findByText(name).should('exist')
+      cy.findByText(handle).should('exist')
+
+      const genres = [/^acoustic/i, /^pop/i, /^lo-fi/i, /^electronic/i]
+
+      for (const genre of genres) {
+        cy.findByRole('checkbox', { name: genre }).check()
+      }
+
+      cy.findByRole('button', { name: /continue/i }).click()
+
+      cy.findByRole('heading', {
+        name: /follow at least 3 artists/i,
+        level: 1
+      }).should('exist')
+      cy.findByText(/curate your feed with tracks uploaded/i).should('exist')
+
+      cy.findByRole('radio', { name: /featured/i }).should('be.checked')
+
+      for (const genre of genres) {
+        cy.findByRole('radio', { name: genre }).should('exist')
+      }
     })
   })
 

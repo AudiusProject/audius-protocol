@@ -49,12 +49,15 @@ const SignOn = ({
 
   useEffect(() => {
     // Check for referrer before redirecting if signed in to support retroactive referrals
+    // @ts-ignore
     const referrerHandle = new URLSearchParams(location.search).get('ref')
     if (referrerHandle) {
+      // @ts-ignore
       fetchReferrer(referrerHandle)
     }
 
     if (isInitialRender && hasAccount) {
+      // @ts-ignore
       replaceRoute(TRENDING_PAGE)
     }
   }, [isInitialRender, hasAccount, location, fetchReferrer, replaceRoute])
@@ -88,4 +91,5 @@ function mapDispatchToProps(dispatch: Dispatch) {
   }
 }
 
+// @ts-ignore
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(SignOn))

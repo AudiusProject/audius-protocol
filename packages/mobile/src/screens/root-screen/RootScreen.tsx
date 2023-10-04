@@ -8,7 +8,7 @@ import {
   Status
 } from '@audius/common'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
+import { getHasCompletedAccount } from 'audius-client/src/common/store/pages/signon/selectors'
 import { useDispatch, useSelector } from 'react-redux'
 
 import useAppState from 'app/hooks/useAppState'

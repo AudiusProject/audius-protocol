@@ -1,10 +1,10 @@
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import * as signOnActions from 'common/store/pages/signon/actions'
 import {
   getEmailField,
   getHandleField,
   getFollowArtists
-} from 'common/store/pages/signon/selectors'
+} from 'audius-client/src/common/store/pages/signon/selectors'
+import * as signOnActions from 'common/store/pages/signon/actions'
 import type {
   FollowArtists,
   EditableField

@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { FeatureFlags } from '@audius/common'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
+import { getHasCompletedAccount } from 'audius-client/src/common/store/pages/signon/selectors'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 

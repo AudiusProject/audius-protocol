@@ -159,6 +159,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
     if (this.state.initialPage) {
       this.props.goToRoute(TRENDING_PAGE)
     } else if (this.props.routeOnExit) {
+      // @ts-ignore
       this.props.goToRoute(this.props.routeOnExit)
     } else {
       // Go back a route
@@ -485,6 +486,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
       return <Children {...childProps} {...mobileProps} />
     } else {
       const Children = this.props.children as ComponentType<DesktopSignOnProps>
+      // @ts-ignore
       return <Children {...childProps} {...desktopProps} />
     }
   }

@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 
 import type { ID } from '@audius/common'
-import { addFollowArtists } from 'common/store/pages/signon/actions'
 import {
   getFollowIds,
   getSuggestedFollowIds
-} from 'common/store/pages/signon/selectors'
+} from 'audius-client/src/common/store/pages/signon/selectors'
+import { addFollowArtists } from 'common/store/pages/signon/actions'
 import { sampleSize } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 

@@ -3,11 +3,11 @@ import { useCallback, useEffect, useState } from 'react'
 import type { Name } from '@audius/common'
 import { BooleanKeys } from '@audius/common'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
-import * as signOnActions from 'common/store/pages/signon/actions'
 import {
   getEmailField,
   getHandleField
-} from 'common/store/pages/signon/selectors'
+} from 'audius-client/src/common/store/pages/signon/selectors'
+import * as signOnActions from 'common/store/pages/signon/actions'
 import { EditingStatus } from 'common/store/pages/signon/types'
 import type { EditableField } from 'common/store/pages/signon/types'
 import { Animated, View, TouchableOpacity } from 'react-native'

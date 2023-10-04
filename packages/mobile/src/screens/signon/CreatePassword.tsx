@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { getEmailField } from 'audius-client/src/common/store/pages/signon/selectors'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { getEmailField } from 'common/store/pages/signon/selectors'
 import type { EditableField } from 'common/store/pages/signon/types'
 import commonPasswordList from 'fxa-common-password-list'
 import {
