@@ -231,6 +231,7 @@ const ConnectedPlaylistTile = ({
       record
     ]
   )
+
   const href = isLoading
     ? ''
     : collectionPage(handle, title, id, permalink, isAlbum)

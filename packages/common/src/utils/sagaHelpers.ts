@@ -119,6 +119,9 @@ export function* doEvery(
   return chan
 }
 
+/**
+ * Waits for account to finish loading, whether it fails or succeeds.
+ */
 export function* waitForAccount() {
   yield* call(
     waitForValue,

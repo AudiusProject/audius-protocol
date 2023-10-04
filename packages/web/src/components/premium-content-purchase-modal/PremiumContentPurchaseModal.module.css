@@ -2,6 +2,12 @@
   width: 720px;
 }
 
+.modalHeader.mobile {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
 .title {
   align-items: center;
   display: flex;
@@ -9,7 +15,7 @@
   justify-content: center;
 }
 
-.content > div {
+.content > div:first-child {
   display: flex;
   flex-direction: column;
   gap: var(--unit-6);

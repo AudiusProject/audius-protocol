@@ -17,9 +17,8 @@ export const ColorSwatch = ({ color, desc, name }: ColorSwatchProps) => {
           <Text
             className={styles.infoText}
             variant='body'
-            size='xSmall'
+            size='xs'
             color='default'
-            strength='strong'
           >
             {name}
           </Text>
@@ -28,7 +27,7 @@ export const ColorSwatch = ({ color, desc, name }: ColorSwatchProps) => {
           <Text
             className={styles.infoText}
             variant='body'
-            size='xSmall'
+            size='xs'
             color='default'
             strength='weak'
           >
@@ -38,7 +37,7 @@ export const ColorSwatch = ({ color, desc, name }: ColorSwatchProps) => {
         <Text
           className={styles.infoText}
           variant='body'
-          size='xSmall'
+          size='xs'
           color='default'
           strength='weak'
         >

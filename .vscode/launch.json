@@ -10,7 +10,7 @@
       "request": "attach",
       "port": 9229,
       "address": "localhost",
-      "localRoot": "${workspaceFolder}/identity-service/",
+      "localRoot": "${workspaceFolder}/packages/identity-service/",
       "remoteRoot": "/usr/src/app",
       "protocol": "inspector"
     },

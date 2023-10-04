@@ -44,6 +44,10 @@ export const stringWeiToBN = (stringWei: StringWei): BNWei => {
   return new BN(stringWei) as BNWei
 }
 
+export const stringUSDCToBN = (stringUSDC: StringUSDC): BNUSDC => {
+  return new BN(stringUSDC) as BNUSDC
+}
+
 export const stringAudioToBN = (stringAudio: StringAudio): BNAudio => {
   return new BN(stringAudio) as BNAudio
 }
@@ -158,10 +162,16 @@ export const floorBNUSDCToNearestCent = (value: BNUSDC): BNUSDC => {
 }
 
 /** Formats a USDC wei string (full precision) to a fixed string suitable for
-display as a dollar amount. Note: will lose precision by rounding _up_ to nearest cent */
-export const formatUSDCWeiToUSDString = (amount: StringUSDC, precision = 2) => {
+display as a dollar amount. Note: will lose precision by rounding _up_ to nearest
+cent and will drop negative signs
+*/
+export const formatUSDCWeiToUSDString = (
+  amount: StringUSDC | BN,
+  precision = 2
+) => {
+  const amountBN = BN.isBN(amount) ? amount : new BN(amount)
   // remove negative sign if present.
-  const amountPos = amount.replace('-', '')
+  const amountPos = amountBN.abs()
   // Since we only need two digits of precision, we will multiply up by 1000
   // with BN, divide by $1 Wei, ceiling up to the nearest cent,
   //  and then convert to JS number and divide back down before formatting to

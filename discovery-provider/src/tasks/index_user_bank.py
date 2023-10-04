@@ -649,6 +649,30 @@ def process_transfer_instruction(
                 timestamp=timestamp,
                 tx_sig=tx_sig,
             )
+            if purchase_metadata is None:
+                logger.error(
+                    "index_user_bank.py | Found purchase event but purchase_metadata is None"
+                )
+                return
+            # amount = int(
+            #     round(balance_changes[receiver_account]["change"]) / 10**USDC_DECIMALS
+            # )
+            # for _ in range(amount):
+            #     challenge_event_bus.dispatch(
+            #         ChallengeEvent.audio_matching_buyer,
+            #         slot,
+            #         sender_user_id,
+            #         {"track_id": purchase_metadata["id"]},
+            #     )
+            #     challenge_event_bus.dispatch(
+            #         ChallengeEvent.audio_matching_seller,
+            #         slot,
+            #         receiver_user_id,
+            #         {
+            #             "track_id": purchase_metadata["id"],
+            #             "sender_user_id": sender_user_id,
+            #         },
+            #     )
 
 
 class CreateTokenAccount(TypedDict):

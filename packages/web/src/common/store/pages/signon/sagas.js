@@ -513,14 +513,15 @@ function* signUp() {
 }
 
 function* signIn(action) {
+  const { email, password } = action
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield call(waitForRead)
   try {
     const signOn = yield select(getSignOn)
     const signInResponse = yield call(
       audiusBackendInstance.signIn,
-      signOn.email.value,
-      signOn.password.value
+      email ?? signOn.email.value,
+      password ?? signOn.password.value
     )
     if (
       !signInResponse.error &&
@@ -741,7 +742,6 @@ function* watchConfigureMetaMask() {
 function* watchFollowArtists() {
   while (
     yield all([
-      take(signOnActions.SIGN_UP_SUCCEEDED),
       take(accountActions.fetchAccountSucceeded.type),
       take(signOnActions.FOLLOW_ARTISTS)
     ])

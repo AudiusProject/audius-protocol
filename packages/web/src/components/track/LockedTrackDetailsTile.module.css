@@ -47,6 +47,10 @@
   border-radius: 4px;
 }
 
+.trackTextWrapper {
+  flex: 1;
+}
+
 .by {
   font-weight: var(--font-bold);
   color: var(--neutral-light-4);

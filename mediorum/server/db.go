@@ -40,10 +40,13 @@ type Upload struct {
 	// UpldateULID - this is the last ULID that change this thing
 }
 
+type UploadCursor struct {
+	Host  string `gorm:"primaryKey"`
+	After time.Time
+}
+
 func dbMustDial(dbPath string) *gorm.DB {
-	db, err := gorm.Open(postgres.Open(dbPath), &gorm.Config{
-		SkipDefaultTransaction: true,
-	})
+	db, err := gorm.Open(postgres.Open(dbPath), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
@@ -59,13 +62,13 @@ func dbMustDial(dbPath string) *gorm.DB {
 func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket, myHost string) {
 	// Migrate the schema
 	slog.Info("db: gorm automigrate")
-	err := crud.DB.AutoMigrate(&Upload{}, &RepairTracker{})
+	err := crud.DB.AutoMigrate(&Upload{}, &RepairTracker{}, &UploadCursor{}, &StorageAndDbSize{})
 	if err != nil {
 		panic(err)
 	}
 
 	// register any models to be managed by crudr
-	crud.RegisterModels(&Upload{})
+	crud.RegisterModels(&Upload{}, &StorageAndDbSize{})
 
 	sqlDb, _ := crud.DB.DB()
 	gormDB := crud.DB

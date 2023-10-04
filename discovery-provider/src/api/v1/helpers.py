@@ -813,6 +813,12 @@ full_search_parser.add_argument(
     choices=("all", "users", "tracks", "playlists", "albums"),
     description="The type of response, one of: all, users, tracks, playlists, or albums",
 )
+full_search_parser.add_argument(
+    "includePurchaseable",
+    required=False,
+    type=str,
+    description="Whether or not to include purchaseable content",
+)
 
 verify_token_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
 verify_token_parser.add_argument("token", required=True, description="JWT to verify")

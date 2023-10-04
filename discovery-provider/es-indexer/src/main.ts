@@ -6,7 +6,6 @@ import { TrackIndexer } from './indexers/TrackIndexer'
 import { UserIndexer } from './indexers/UserIndexer'
 import { PendingUpdates, startListener, takePending } from './listener'
 import { logger } from './logger'
-import { setupTriggers } from './setup'
 import {
   ensureSaneCluterSettings,
   getBlocknumberCheckpoints,
@@ -54,7 +53,6 @@ async function start() {
   )
 
   // setup postgres trigger + listeners
-  await setupTriggers()
   await startListener()
 
   // backfill since last run

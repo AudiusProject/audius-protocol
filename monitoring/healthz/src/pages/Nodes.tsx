@@ -31,44 +31,42 @@ export default function Nodes() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">
+              <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">
                 Host
               </th>
-              {isDiscovery && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">Block Diff</th>}
-              <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">Version</th>
-              {isContent && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">Storage</th>}
-              {isContent && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">Last Non-Cleanup Repair</th>}
-              {isContent && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">Last Cleanup</th>}
-              {isContent && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">Cleanup (checked, pulled, deleted)</th>}
+              {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Node Health</th>}
+              {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Block Diff</th>}
+              <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Version</th>
+              {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Storage</th>}
+              {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Fast Repair (checked, pulled, deleted)</th>}
+              {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Full Repair (checked, pulled, deleted)</th>}
               {isDiscovery && <th scope = "col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200" >Relay</th>}
-              <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">DB Size</th>
-              <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">Your IP</th>
-              {isDiscovery && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">ACDC Health</th>}
-              {isDiscovery && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">Is Signer</th>}
-              {isDiscovery && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">Peers</th>}
-              {isDiscovery && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">Producing</th>}
-              {isDiscovery && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">ACDC Block</th>}
-              {isDiscovery && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">ACDC Block Hash</th>}
-              {isContent && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">Started</th>}
-              {isContent && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">Uploads</th>}
-              {isContent && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200">Healthy Peers {'<'}2m</th>}
-            </tr>
-          </thead>
+              <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">DB Size</th>
+              <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Your IP</th>
+              {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">ACDC Health</th>}
+              {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Is Signer</th>}
+              {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Peers</th>}
+              {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Producing</th>}
+              {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">ACDC Block</th>}
+              {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">ACDC Block Hash</th>}
+              {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Started</th>}
+              {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Uploads</th>}
+              {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Healthy Peers {'<'}2m</th>}
+            </tr >
+          </thead >
           <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
             {sps.map((sp) => (
-              <HealthRow key={sp.endpoint} isContent={isContent} sp={sp} />
+              <HealthRow key={sp.endpoint} isContent={isContent} sp={sp} isStaging={env === 'staging'} />
             ))}
           </tbody>
-        </table>
-      </div>
-    </div>
+        </table >
+      </div >
+    </div >
   )
 }
 
-function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
-  // TODO(michelle): after all nodes updated, change this to
-  // const path = isContent ? '/health_check' : '/health_check?verbose=true&enforce_block_diff=true&healthy_block_diff=250&plays_count_max_drift=720'
-  const path = isContent ? '/health_check' : '/health_check?enforce_block_diff=true&healthy_block_diff=250'
+function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, isStaging: boolean }) {
+  const path = isContent ? '/health_check' : '/health_check?enforce_block_diff=true&healthy_block_diff=250&plays_count_max_drift=720'
   const { data, error } = useSWR(sp.endpoint + path, fetcher)
   const { data: ipCheck, error: ipCheckError } = useSWR(
     sp.endpoint + '/ip_check',
@@ -83,18 +81,18 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
 
   if (!health || !yourIp)
     return (
-      <tr>
+      <tr className="is-unhealthy">
         <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">
           <a href={sp.endpoint + path} target="_blank">
             {sp.endpoint.replace('https://', '')}
           </a>
         </td>
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Block diff */}
+        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Node Health */}
+        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Block Diff */}
         <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td> {/* Version */}
         {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Storage */}
-        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Last Non-Cleanup Repair */}
-        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Last Cleanup */}
-        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Cleanup (checked, pulled, deleted) */}
+        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Fast Repair (checked, pulled, deleted) */}
+        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Full Repair (checked, pulled, deleted) */}
         {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{relayHealthError || ipCheckError ? 'error' : 'loading'}</td>} {/* Relay */}
         <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td> {/* DB Size */}
         <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td> {/* Your IP */}
@@ -124,9 +122,9 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     }
   }
 
-  // TODO(michelle) after all nodes updated, change DN check to health.discovery_node_healthy
-  const isHealthy = isContent ? health.healthy : !health.errors || (Array.isArray(health.errors) && health.errors.length === 0)
+  const isHealthy = isContent ? health.healthy : health.discovery_provider_healthy
   const unreachablePeers = health.unreachablePeers?.join(', ')
+  const peerReachabilityClass = health?.failsPeerReachability ? 'is-unhealthy' : ''
 
   const composeSha =
     health['audius-docker-compose'] || health['audiusDockerCompose']
@@ -141,15 +139,18 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
 
   let totalMediorumUsed: number | '?' = '?'
   if (health.blobStorePrefix === 'file') totalMediorumUsed = mediorumDiskUsed
-  else if (typeof lastCleanupSize === 'number') totalMediorumUsed = lastCleanupSize
-  else if (typeof lastRepairSize === 'number') totalMediorumUsed = lastRepairSize
+  else {
+    // Use the last "full" repair.go run because it would've checked the most files
+    if (typeof lastCleanupSize === 'number') totalMediorumUsed = lastCleanupSize
+    else if (typeof lastRepairSize === 'number') totalMediorumUsed = lastRepairSize
 
-  // Storage used beyond files that mediorum is supposed to have (i.e., not files that have a hash where the node is in the top R rendezvous)
-  const extraMediorumUsed = typeof totalMediorumUsed === 'number' && typeof lastRepairSize === 'number' ? totalMediorumUsed - lastRepairSize : '?'
+    // But it's possible the last normal repair.go run added more files
+    if (lastRepairSize > lastCleanupSize) totalMediorumUsed = lastRepairSize
+  }
 
-  let totalMediorumSize: number | '?' = health.blobStorePrefix === 'file' ? mediorumDiskSize : '?'
-  if (totalMediorumSize === '?' && typeof lastCleanupSize === 'number') totalMediorumSize = lastCleanupSize
-  if (totalMediorumSize === '?' && typeof lastRepairSize === 'number') totalMediorumSize = lastRepairSize
+  // 4TB artificial limit for cloud backends
+  const MAX_STORAGE_SIZE = isStaging ? 400 : 4000
+  const totalMediorumSize = mediorumDiskSize && health.blobStorePrefix === 'file' ? mediorumDiskSize : MAX_STORAGE_SIZE
 
   const isBehind = health.block_difference > 5 ? 'is-unhealthy' : ''
   const dbSize =
@@ -174,6 +175,18 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
   const chainDescription: string =
     health.chain_health?.entries['node-health'].description
 
+  const StorageProgressBar = ({ progress }: { progress: number }) => {
+    const progressPercent = (progress / MAX_STORAGE_SIZE) * 100
+
+    return (
+      <div className="min-w-[200px] relative">
+        <div className="h-5 bg-gray-300 relative rounded-3xl">
+          <span className={`h-5 block absolute bg-purple-500 ${progressPercent >= 99.999 ? 'rounded-3xl' : 'rounded-l-3xl'}`} style={{ width: `${progressPercent}%` }}></span>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <tr className={isHealthy ? '' : 'is-unhealthy'}>
       <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">
@@ -181,6 +194,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           {sp.endpoint.replace('https://', '')}
         </a>
       </td>
+      {!isContent && (<td className="whitespace-nowrap px-3 py-5 text-sm">{`${isHealthy ? 'Healthy' : 'Unhealthy: ' + health.errors}`}</td>)}
       {!isContent && <td className={isBehind}>{health.block_difference}</td>}
       <td className="whitespace-nowrap px-3 py-5 text-sm flex flex-col">
         <div className="flex items-center">
@@ -228,23 +242,30 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       </td>
       {isContent && (
         <td className="whitespace-nowrap px-3 py-5 text-sm">
-          <ProgressBar
-            validStorage={lastRepairSize}
-            extraStorage={extraMediorumUsed}
-            total={totalMediorumSize}
-          />
-          <div className="mt-3 flex">
-            {getStorageBackendIcon(health.blobStorePrefix)} <span className="w-[10px]" /> {health.blobStorePrefix === 'file' ? <span>{mediorumDiskSize - mediorumDiskUsed} GB</span> : <span>&infin;</span>} <span className="w-[4px]" /> available
-          </div>
+          <a
+            href={`${sp.endpoint}/internal/logs/storageAndDb`}
+            target="_blank"
+            className="text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400"
+          >
+            <StorageProgressBar
+              progress={totalMediorumUsed === '?' ? 0 : totalMediorumUsed}
+            />
+            <div className="mt-3 flex">
+              {getStorageBackendIcon(health.blobStorePrefix)} <span className="w-[10px]" /> {totalMediorumUsed} / {totalMediorumSize} GB
+            </div>
+          </a>
         </td>
       )}
       {isContent && (
         <td className="whitespace-nowrap px-3 py-5 text-sm">
           <a href={sp.endpoint + '/internal/logs/repair'} target="_blank" className="text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400">
-            {timeSince(health.lastSuccessfulRepair?.FinishedAt) === null
+            {timeSince(health.lastSuccessfulRepair?.FinishedAt) === null || health.lastSuccessfulRepair.CleanupMode
               ? "repairing..."
               : (
-                <span>done <RelTime date={new Date(health.lastSuccessfulRepair.FinishedAt)} />{`, took ${nanosToReadableDuration(health.lastSuccessfulRepair.Duration || 0)}, checked ${prettyNumber(health.lastSuccessfulRepair.Counters?.total_checked || 0)} files`}</span>)}
+                <>
+                  <span>{`(${prettyNumber(health.lastSuccessfulRepair?.Counters?.total_checked ?? 0)}, ${prettyNumber((health.lastSuccessfulRepair?.Counters?.pull_mine_needed ?? 0) + (health.lastSuccessfulRepair?.Counters?.pull_under_replicated_needed ?? 0))}, ${prettyNumber(health.lastSuccessfulRepair?.Counters?.delete_over_replicated_needed ?? 0)})`}</span>
+                  <div className="mt-2">done <RelTime date={new Date(health.lastSuccessfulRepair.FinishedAt)} />{`, took ${nanosToReadableDuration(health.lastSuccessfulRepair?.Duration || 0)}`}</div>
+                </>)}
           </a>
         </td>
       )}
@@ -254,16 +275,10 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
             {timeSince(health.lastSuccessfulCleanup?.FinishedAt) === null
               ? "repairing..."
               : (
-                <span>done <RelTime date={new Date(health.lastSuccessfulCleanup.FinishedAt)} />{`, took ${nanosToReadableDuration(health.lastSuccessfulCleanup?.Duration || 0)}`}</span>)}
-          </a>
-        </td>
-      )}
-      {isContent && (
-        <td className="whitespace-nowrap px-3 py-5 text-sm">
-          <a href={sp.endpoint + '/internal/logs/repair'} target="_blank" className="text-gray-900 dark:text-gray-200 hover:text-blue-500 dark:hover:text-blue-400">
-            {timeSince(health.lastSuccessfulCleanup?.FinishedAt) === null
-              ? "repairing..."
-              : (<span>{`(${prettyNumber(health.lastSuccessfulCleanup?.Counters?.total_checked ?? 0)}, ${prettyNumber((health.lastSuccessfulCleanup?.Counters?.pull_mine_needed ?? 0) + (health.lastSuccessfulCleanup?.Counters?.pull_under_replicated_needed ?? 0))}, ${prettyNumber(health.lastSuccessfulCleanup?.Counters?.delete_over_replicated_needed ?? 0)})`}</span>)}
+                <>
+                  <span>{`(${prettyNumber(health.lastSuccessfulCleanup?.Counters?.total_checked ?? 0)}, ${prettyNumber((health.lastSuccessfulCleanup?.Counters?.pull_mine_needed ?? 0) + (health.lastSuccessfulCleanup?.Counters?.pull_under_replicated_needed ?? 0))}, ${prettyNumber(health.lastSuccessfulCleanup?.Counters?.delete_over_replicated_needed ?? 0)})`}</span>
+                  <div className="mt-2">done <RelTime date={new Date(health.lastSuccessfulCleanup.FinishedAt)} />{`, took ${nanosToReadableDuration(health.lastSuccessfulCleanup?.Duration || 0)}`}</div>
+                </>)}
           </a>
         </td>
       )}
@@ -283,7 +298,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       </td>)}
       {isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{metrics?.uploads}</td>}
       {isContent && (
-        <td className="whitespace-nowrap px-3 py-5 text-sm unreachable-peers">
+        <td className={`whitespace-nowrap px-3 py-5 text-sm unreachable-peers ${peerReachabilityClass}`}>
           {healthyPeers2m}
           {unreachablePeers && <div>{`Can't reach: ${unreachablePeers}`}</div>}
         </td>
@@ -326,23 +341,6 @@ const getStorageBackendIcon = (storageBackend: string) => {
         </span>
       )
   }
-}
-
-const ProgressBar = ({ validStorage, extraStorage, total }: { validStorage: number | '?'; extraStorage: number | '?'; total: number | '?' }) => {
-  const greenWidth = typeof validStorage === 'number' && typeof total === 'number' && (validStorage / total) * 100
-  const redWidth = typeof extraStorage === 'number' && typeof total === 'number' && (extraStorage / total) * 100
-
-  return (
-    <div className="min-w-[200px] relative">
-      <div className="h-6 bg-gray-300 relative rounded-3xl">
-        {greenWidth !== false && <span className={`h-6 block absolute bg-green-400 ${greenWidth === 100 ? 'rounded-3xl' : 'rounded-l-3xl'}`} style={{ width: `${greenWidth}%` }}></span>}
-        {greenWidth !== false && redWidth !== false && <span className={`h-6 block absolute bg-orange-400 ${greenWidth + redWidth > 99.9 ? 'rounded-r-3xl' : ''}`} style={{ width: `${redWidth}%`, marginLeft: `${greenWidth}%` }}></span>}
-      </div>
-      <div className="absolute top-0 text-xs w-full h-full text-center flex items-center">
-        <span className="w-full">{validStorage} GB valid, {extraStorage} GB extra</span>
-      </div>
-    </div>
-  )
 }
 
 const prettyNumber = (num: number) => {

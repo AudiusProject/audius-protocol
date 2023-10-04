@@ -2,34 +2,34 @@ import type { TextVariant, VariantSizeTagMap } from './types'
 
 export const variantTagMap: Record<TextVariant, VariantSizeTagMap> = {
   display: {
-    xLarge: 'h1',
-    large: 'h1',
-    medium: 'h1',
-    small: 'h1'
+    xl: 'h1',
+    l: 'h1',
+    m: 'h1',
+    s: 'h1'
   },
   heading: {
-    xLarge: 'h1',
-    large: 'h2',
-    medium: 'h3',
-    small: 'h4'
+    xl: 'h1',
+    l: 'h2',
+    m: 'h3',
+    s: 'h4'
   },
   title: {
-    large: 'p',
-    medium: 'p',
-    small: 'p',
-    xSmall: 'p'
+    l: 'p',
+    m: 'p',
+    s: 'p',
+    xs: 'p'
   },
   label: {
-    xLarge: 'label',
-    large: 'label',
-    medium: 'label',
-    small: 'label',
-    xSmall: 'label'
+    xl: 'label',
+    l: 'label',
+    m: 'label',
+    s: 'label',
+    xs: 'label'
   },
   body: {
-    large: 'p',
-    medium: 'p',
-    small: 'p',
-    xSmall: 'p'
+    l: 'p',
+    m: 'p',
+    s: 'p',
+    xs: 'p'
   }
 }

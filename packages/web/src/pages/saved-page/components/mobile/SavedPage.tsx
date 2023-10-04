@@ -731,7 +731,7 @@ const SavedPage = ({
         <div className={styles.tabBar}>{tabs}</div>
       </>
     )
-  }, [title, setHeader, tabs])
+  }, [title, setHeader, tabs, currentTab])
 
   return (
     <MobilePageContainer

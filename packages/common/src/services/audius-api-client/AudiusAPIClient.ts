@@ -339,6 +339,7 @@ type GetSearchArgs = {
   kind?: SearchKind
   limit?: number
   offset?: number
+  includePurchaseable?: boolean
 }
 
 type TrendingIdsResponse = {
@@ -1350,7 +1351,8 @@ export class AudiusAPIClient {
     query,
     kind,
     offset,
-    limit
+    limit,
+    includePurchaseable
   }: GetSearchArgs) {
     this._assertInitialized()
     const encodedUserId = encodeHashId(currentUserId)
@@ -1359,7 +1361,8 @@ export class AudiusAPIClient {
       query,
       kind,
       offset,
-      limit
+      limit,
+      includePurchaseable
     }
 
     const searchResponse =
@@ -1377,7 +1380,8 @@ export class AudiusAPIClient {
     query,
     kind,
     offset,
-    limit
+    limit,
+    includePurchaseable
   }: GetSearchArgs) {
     this._assertInitialized()
     const encodedUserId = encodeHashId(currentUserId)
@@ -1386,7 +1390,8 @@ export class AudiusAPIClient {
       query,
       kind,
       offset,
-      limit
+      limit,
+      includePurchaseable
     }
 
     const searchResponse =

@@ -57,7 +57,7 @@ export const CollectibleGatedRadioField = (
       label={messages.collectibleGated}
       value={TrackAvailabilityType.COLLECTIBLE_GATED}
       disabled={disabled}
-      hintText={disabled ? messages.noCollectibles : undefined}
+      hintContent={disabled ? messages.noCollectibles : undefined}
       description={
         <CollectibleGatedDescription
           hasCollectibles={hasCollectibles}

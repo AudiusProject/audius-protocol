@@ -42,6 +42,12 @@ def setup_search(app_module):
             blockhash=hex(3),
             number=3,
             parenthash="0x03",
+            is_current=False,
+        ),
+        Block(
+            blockhash=hex(4),
+            number=4,
+            parenthash="0x04",
             is_current=True,
         ),
     ]
@@ -93,6 +99,28 @@ def setup_search(app_module):
             is_unlisted=False,
             title="xyz",
             download={"cid": None, "is_downloadable": True, "requires_follow": False},
+        ),
+        Track(
+            blockhash=hex(4),
+            blocknumber=4,
+            track_id=4,
+            is_current=True,
+            is_delete=False,
+            owner_id=1,
+            route_id="",
+            track_segments=[],
+            genre="",
+            updated_at=now,
+            created_at=now,
+            is_unlisted=False,
+            title="the track 4",
+            download={"cid": None, "is_downloadable": True, "requires_follow": False},
+            premium_conditions={
+                "usdc_purchase": {
+                    "price": 100,
+                    "splits": {"4hbyJjqpWAbarjCQhY8YSeptZz1WYSS88DGqG4BteE3v": 1000000},
+                }
+            },
         ),
     ]
 
@@ -326,6 +354,26 @@ def test_get_downloadable_tracks(app_module):
 
     assert len(es_res["tracks"]) == 1
     assert len(es_res["saved_tracks"]) == 0
+
+
+def test_get_tracks_with_purchases(app_module):
+    """Tests we get results with purchaseable tracks"""
+
+    search_args = {
+        "is_auto_complete": True,
+        "kind": "tracks",
+        "query": "the track",
+        "current_user_id": None,
+        "with_users": True,
+        "limit": 10,
+        "offset": 0,
+        "only_downloadable": False,
+        "include_purchaseable": True,
+    }
+    es_res = search_es_full(search_args)
+
+    assert len(es_res["tracks"]) == 3
+    assert es_res["tracks"][2]["track_id"] == 4
 
 
 def test_get_external_users(app_module):
