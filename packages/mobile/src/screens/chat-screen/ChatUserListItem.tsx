@@ -255,6 +255,7 @@ export const ChatUserListItem = ({
                   </View>
                 )}
               </View>
+              {/* todo: use trpc */}
               {user.does_follow_current_user && canCreateChat ? (
                 <Text
                   fontSize='xxs'

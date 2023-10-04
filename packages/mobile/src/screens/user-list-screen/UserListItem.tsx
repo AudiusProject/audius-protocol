@@ -74,8 +74,7 @@ type UserListItemProps = {
 
 export const UserListItem = (props: UserListItemProps) => {
   const { tag, user } = props
-  const { user_id, handle, name, follower_count, does_follow_current_user } =
-    user
+  const { user_id, handle, name, follower_count } = user
   const currentUserId = useSelector(getUserId)
   const styles = useStyles()
   const navigation = useNavigation()
@@ -118,7 +117,7 @@ export const UserListItem = (props: UserListItemProps) => {
                   {messages.followers(follower_count)}
                 </Text>
               </View>
-              {does_follow_current_user ? <FollowsYouChip /> : null}
+              <FollowsYouChip userId={user.user_id} />
             </View>
             {tag === 'SUPPORTING' ? <SupportingInfo user={user} /> : null}
             {tag === 'TOP SUPPORTERS' ? <SupporterInfo user={user} /> : null}

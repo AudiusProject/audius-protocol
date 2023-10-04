@@ -10,7 +10,7 @@ export function createAudiusTRPCClient(currentUserId: number | null) {
       httpBatchLink({
         url: getTrpcEndpoint(),
         maxURLLength: 2083,
-        headers(op) {
+        headers() {
           if (!currentUserId) return {}
           return {
             'x-current-user-id': '' + currentUserId
