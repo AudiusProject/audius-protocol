@@ -324,9 +324,10 @@ services:
       dbUrlTemplate: 'postgres://postgres:example@mediorum-db:5432/m%d'
       devNetworkCount: '5'
     healthcheck:
-      test: ['CMD', 'curl', 'http://localhost:1991/health_check']
-      interval: 3s
-      timeout: 3s
+      test: ["CMD", "curl", "http://localhost:1991/health_check"]
+      interval: 10s
+      start_period: 60s
+      timeout: 5s
     logging: *default-logging
     profiles:
       - mediorum

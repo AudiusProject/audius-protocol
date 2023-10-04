@@ -71,10 +71,9 @@ func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket, myHost string) {
 	crud.RegisterModels(&Upload{}, &StorageAndDbSize{})
 
 	sqlDb, _ := crud.DB.DB()
-	gormDB := crud.DB
 
 	slog.Info("db: ddl migrate")
-	ddl.Migrate(sqlDb, gormDB, bucket, myHost)
+	ddl.Migrate(sqlDb, bucket, myHost)
 
 	slog.Info("db: migrate done")
 
