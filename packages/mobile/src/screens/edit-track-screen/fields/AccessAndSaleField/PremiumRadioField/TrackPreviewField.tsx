@@ -25,7 +25,7 @@ export const TrackPreviewField = () => {
       value={String(value)}
       keyboardType='number-pad'
       label={messages.label}
-      endAdornment={<Text>{messages.seconds}</Text>}
+      endAdornment={<Text color='neutralLight2' weight='bold'>{messages.seconds}</Text>}
     />
   )
 }
