@@ -1,3 +1,4 @@
+import { extractMessageHeader } from "./ernParser";
 import { appStore } from "./store";
 
 const parser = new DOMParser()
@@ -6,8 +7,12 @@ export const Validate = () => {
     const xml = appStore((state) => state.xmlRaw)!
     const xmlDoc = parser.parseFromString(xml, "text/xml")
 
+    const messageHeader = extractMessageHeader(xmlDoc)
+
     return (<div>
         Validation Page
-        <div>{xmlDoc.getElementsByTagName("MessageHeader")[0].getElementsByTagName("MessageId")[0].childNodes[0].nodeValue}</div>
+        <div>{Object.entries(messageHeader).map(([key, value]) => {
+          return (<div><strong>{key}:</strong> {value}</div>)
+        })}</div>
     </div>)
 }
