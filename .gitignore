@@ -181,6 +181,8 @@ docs/npm-debug.log*
 docs/yarn-debug.log*
 docs/yarn-error.log*
 
+**/local-storage/
+
 **/.hooks/*.local.json
 
 **/.hooks/*.local.json
