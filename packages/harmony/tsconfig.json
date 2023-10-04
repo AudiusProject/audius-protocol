@@ -9,11 +9,6 @@
     "jsx": "react-jsx",
     "resolveJsonModule": true,
     "moduleResolution": "node",
-    "typeRoots": [
-      "./types",
-      "./node_modules/@types",
-      "../../../node_modules/@types"
-    ],
     "exactOptionalPropertyTypes": false,
     "declaration": true,
     "baseUrl": "./src",
