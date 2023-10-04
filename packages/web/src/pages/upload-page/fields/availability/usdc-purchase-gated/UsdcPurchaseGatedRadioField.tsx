@@ -70,7 +70,7 @@ export const UsdcPurchaseGatedRadioField = (
       disabled={disabled}
       hintIcon={<IconStars />}
       hintContent={disabled ? helpContent : undefined}
-      tag={messages.comingSoon}
+      tag={disabled ? messages.comingSoon : undefined}
       checkedContent={<UsdcPurchaseFields disabled={disabled} />}
     />
   )
