@@ -43,6 +43,7 @@ import { BASE_URL, EXPLORE_PAGE, stripBaseUrl } from 'utils/route'
 
 import styles from './ExplorePage.module.css'
 import Section, { Layout } from './Section'
+import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 
 const messages = {
   featuredPlaylists: 'Playlists We Love Right Now',
@@ -97,6 +98,12 @@ const ExplorePage = ({
   status,
   goToRoute
 }: ExplorePageProps) => {
+  const isUSDCPurchasesEnabled = useIsUSDCEnabled()
+  const justForYouTiles = justForYou
+    .filter(tile => {
+      const isPremiumTracksTile = tile.variant === ExploreCollectionsVariant.DIRECT_LINK && tile.title === PREMIUM_TRACKS.title
+      return !isPremiumTracksTile || isUSDCPurchasesEnabled
+    })
   const { isLoading: isLoadingPlaylist, setDidLoad: setDidLoadPlaylist } =
     useOrderedLoad(playlists.length)
   const { isLoading: isLoadingProfiles, setDidLoad: setDidLoadProfile } =
@@ -130,7 +137,7 @@ const ExplorePage = ({
         subtitle={messages.justForYouSubtitle}
         layout={Layout.TWO_COLUMN_DYNAMIC_WITH_LEADING_ELEMENT}
       >
-        {justForYou.map((i) => {
+        {justForYouTiles.map((i) => {
           const title =
             i.variant === CollectionVariant.SMART ? i.playlist_name : i.title
           const subtitle =

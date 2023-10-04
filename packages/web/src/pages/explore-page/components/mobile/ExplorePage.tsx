@@ -16,7 +16,8 @@ import {
   explorePageActions,
   ExplorePageTabs as ExploreTabs,
   ExploreCollectionsVariant,
-  explorePageSelectors
+  explorePageSelectors,
+  removeNullable
 } from '@audius/common'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
@@ -54,6 +55,7 @@ import { justForYou } from '../desktop/ExplorePage'
 
 import ColorTile from './ColorTile'
 import styles from './ExplorePage.module.css'
+import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 const { getTab } = explorePageSelectors
 const { setTab } = explorePageActions
 
@@ -137,8 +139,13 @@ const ExplorePage = ({
 }: ExplorePageProps) => {
   useMainPageHeader()
 
+  const isUSDCPurchasesEnabled = useIsUSDCEnabled()
   const justForYouTiles = justForYou.map(
     (t: SmartCollection | ExploreCollection) => {
+      const isPremiumTracksTile = t.variant === ExploreCollectionsVariant.DIRECT_LINK && t.title === PREMIUM_TRACKS.title
+      if (!isUSDCPurchasesEnabled && isPremiumTracksTile) {
+        return null
+      }
       const Icon = t.icon ? t.icon : Fragment
       if (t.variant === CollectionVariant.SMART) {
         return (
@@ -176,6 +183,7 @@ const ExplorePage = ({
       }
     }
   )
+    .filter(removeNullable)
 
   const lifestyleTiles = lifestyle.map((t: ExploreMoodCollection) => {
     return (

@@ -24,6 +24,8 @@ import {
   REMIXABLES,
   FEELING_LUCKY
 } from '../../smartCollections'
+import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
+import { ExploreCollectionsVariant } from '@audius/common'
 
 const messages = {
   infoHeader: 'Just For You',
@@ -85,11 +87,17 @@ export const ForYouTab = () => {
     })
   })
 
+  const isUSDCPurchasesEnabled = useIsUSDCEnabled()
+  const filteredTiles = tiles.filter(tile => {
+    const isPremiumTracksTile = tile.variant === ExploreCollectionsVariant.DIRECT_LINK && tile.title === PREMIUM_TRACKS.title
+    return !isPremiumTracksTile || isUSDCPurchasesEnabled
+  })
+
   return (
     <ScrollView style={styles.tabContainer} ref={scrollViewRef}>
       <TabInfo header={messages.infoHeader} text={messages.infoText} />
       <View style={styles.contentContainer}>
-        {tiles.map((tile, idx) => (
+        {filteredTiles.map((tile, idx) => (
           <ColorTile
             style={[
               styles.tile,
