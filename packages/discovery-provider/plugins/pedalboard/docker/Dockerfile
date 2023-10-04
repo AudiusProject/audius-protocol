@@ -26,15 +26,16 @@ WORKDIR /app
 RUN npm install turbo --global
 RUN apk add --no-cache libc6-compat git
 RUN apk update
-RUN apk add --no-cache python3 py3-pip make g++
+RUN apk add --no-cache python3 py3-pip make g++ bash
 
 # First install dependencies (as they change less often)
 COPY .gitignore .gitignore
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/package-lock.json ./package-lock.json
+COPY --from=builder /app/scripts ./scripts
 
 RUN echo "installing deps for ${APP_NAME}"
-RUN npm install
+RUN CI=true npm run install-packages
 
 # Build the app
 # Copy the rest of the code and run
