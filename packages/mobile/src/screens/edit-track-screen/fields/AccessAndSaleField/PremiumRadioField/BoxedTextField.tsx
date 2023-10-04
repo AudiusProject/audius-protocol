@@ -19,18 +19,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   textInput: {
     backgroundColor: palette.white
-  },
-  test: {
-    flex: 1,
-    color: palette.neutral,
-    minWidth: 40,
-    flexGrow: 1,
-    // Needed for android
-    paddingTop: 0,
-    paddingBottom: 0,
-    fontSize: typography.fontSize.large,
-    fontFamily: typography.fontByWeight.demiBold,
-    lineHeight: 20
   }
 }))
 
