@@ -3,7 +3,11 @@ import { useCallback, useState } from 'react'
 import {
   WithdrawUSDCModalPages,
   decimalIntegerToHumanReadable,
-  useWithdrawUSDCModal
+  useWithdrawUSDCModal,
+  useUSDCBalance,
+  formatUSDCWeiToFloorDollarNumber,
+  BNUSDC,
+  formatCurrencyBalance
 } from '@audius/common'
 import {
   HarmonyButton,
@@ -12,6 +16,7 @@ import {
   IconQuestionCircle,
   Switch
 } from '@audius/stems'
+import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
 
 import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
@@ -29,6 +34,7 @@ import { Hint } from './Hint'
 import { TextRow } from './TextRow'
 
 const messages = {
+  currentBalance: 'Current Balance',
   amountToWithdraw: 'Amount to Withdraw',
   destinationAddress: 'Destination Address',
   review: 'Review Details Carefully',
@@ -49,6 +55,12 @@ export const ConfirmTransferDetails = () => {
   const [{ value: addressValue }] = useField(ADDRESS)
   const [confirmField, { error: confirmError }] = useField(CONFIRM)
 
+  const { data: balance } = useUSDCBalance()
+  const balanceNumber = formatUSDCWeiToFloorDollarNumber(
+    (balance ?? new BN(0)) as BNUSDC
+  )
+  const balanceFormatted = formatCurrencyBalance(balanceNumber)
+
   const handleGoBack = useCallback(() => {
     setData({ page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS })
   }, [setData])
@@ -64,6 +76,8 @@ export const ConfirmTransferDetails = () => {
 
   return (
     <div className={styles.root}>
+      <TextRow left={messages.currentBalance} right={`$${balanceFormatted}`} />
+      <Divider style={{ margin: 0 }} />
       <div className={styles.amount}>
         <TextRow
           left={messages.amountToWithdraw}
