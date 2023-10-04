@@ -742,7 +742,6 @@ function* watchConfigureMetaMask() {
 function* watchFollowArtists() {
   while (
     yield all([
-      take(signOnActions.SIGN_UP_SUCCEEDED),
       take(accountActions.fetchAccountSucceeded.type),
       take(signOnActions.FOLLOW_ARTISTS)
     ])
