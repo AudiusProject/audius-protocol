@@ -3,7 +3,7 @@ import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 import type { IconComponent } from '../../components/typography/Icons/types'
 import type { ColorValue } from '../../types/colors'
 
-export enum HarmonyButtonType {
+export enum ButtonType {
   PRIMARY = 'primary',
   SECONDARY = 'secondary',
   TERTIARY = 'tertiary',
@@ -11,7 +11,7 @@ export enum HarmonyButtonType {
   GHOST = 'ghost'
 }
 
-export enum HarmonyButtonSize {
+export enum ButtonSize {
   SMALL = 'small',
   DEFAULT = 'default',
   LARGE = 'large'
@@ -67,7 +67,7 @@ export type BaseButtonProps = {
   styles: BaseButtonStyles
 } & HTMLButtonProps
 
-export type HarmonyButtonProps = {
+export type ButtonProps = {
   /**
    * Override the color of the button, only valid for the `PRIMARY` variant
    */
@@ -76,33 +76,33 @@ export type HarmonyButtonProps = {
   /**
    * The type of the button
    */
-  variant?: HarmonyButtonType
+  variant?: ButtonType
 
   /**
    * The button size
    */
-  size?: HarmonyButtonSize
+  size?: ButtonSize
 } & Omit<BaseButtonProps, 'styles'>
 
-export enum HarmonyPlainButtonType {
+export enum PlainButtonType {
   DEFAULT = 'default',
   SUBDUED = 'subdued',
   INVERTED = 'inverted'
 }
 
-export enum HarmonyPlainButtonSize {
+export enum PlainButtonSize {
   DEFAULT = 'default',
   LARGE = 'large'
 }
 
-export type HarmonyPlainButtonProps = {
+export type PlainButtonProps = {
   /**
    * The type of the button
    */
-  variant?: HarmonyPlainButtonType
+  variant?: PlainButtonType
 
   /**
    * The button size
    */
-  size?: HarmonyPlainButtonSize
+  size?: PlainButtonSize
 } & Omit<BaseButtonProps, 'styles'>

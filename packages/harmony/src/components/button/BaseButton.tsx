@@ -9,7 +9,7 @@ import type { BaseButtonProps } from './types'
 
 /**
  * Base component for Harmony buttons. Not intended to be used directly. Use
- * `HarmonyButton` or `HarmonyPlainButton`.
+ * `Button` or `PlainButton`.
  */
 export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
   function BaseButton(props, ref) {

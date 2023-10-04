@@ -1,10 +1,10 @@
-export { HarmonyButton } from './HarmonyButton'
-export { HarmonyPlainButton } from './HarmonyPlainButton'
+export { Button } from './Button'
+export { PlainButton } from './PlainButton'
 export {
-  HarmonyButtonProps,
-  HarmonyButtonType,
-  HarmonyButtonSize,
-  HarmonyPlainButtonProps,
-  HarmonyPlainButtonSize,
-  HarmonyPlainButtonType
+  ButtonProps,
+  ButtonType,
+  ButtonSize,
+  PlainButtonProps,
+  PlainButtonSize,
+  PlainButtonType
 } from './types'

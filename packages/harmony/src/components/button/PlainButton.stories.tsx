@@ -1,28 +1,24 @@
 import type { Story } from '@storybook/react'
 
-import * as Icons from '../../components/typography/Icons'
+import * as Icons from '../typography/Icons'
 
-import { HarmonyPlainButton } from './HarmonyPlainButton'
-import {
-  HarmonyPlainButtonProps,
-  HarmonyPlainButtonSize,
-  HarmonyPlainButtonType
-} from './types'
+import { PlainButton } from './PlainButton'
+import { PlainButtonProps, PlainButtonSize, PlainButtonType } from './types'
 
 export default {
-  component: HarmonyPlainButton,
-  title: 'Components/HarmonyPlainButton',
+  component: PlainButton,
+  title: 'Components/PlainButton',
   argTypes: { onClick: { action: 'clicked' } }
 }
 
-const baseProps: HarmonyPlainButtonProps = {
+const baseProps: PlainButtonProps = {
   iconLeft: Icons.IconCampfire,
   iconRight: Icons.IconCampfire,
   text: 'Click Me'
 }
 
 type StoryArgs = {
-  props: Partial<HarmonyPlainButtonProps>
+  props: Partial<PlainButtonProps>
   dark?: boolean
 }
 
@@ -39,27 +35,19 @@ const Template: Story<StoryArgs> = ({ dark = false, props }) => (
     }}
   >
     <div style={{ alignItems: 'center', display: 'flex', gap: '16px' }}>
-      <HarmonyPlainButton
-        {...baseProps}
-        size={HarmonyPlainButtonSize.DEFAULT}
-        {...props}
-      />
-      <HarmonyPlainButton
-        {...baseProps}
-        size={HarmonyPlainButtonSize.LARGE}
-        {...props}
-      />
+      <PlainButton {...baseProps} size={PlainButtonSize.DEFAULT} {...props} />
+      <PlainButton {...baseProps} size={PlainButtonSize.LARGE} {...props} />
     </div>
     <div style={{ alignItems: 'center', display: 'flex', gap: '16px' }}>
-      <HarmonyPlainButton
+      <PlainButton
         {...baseProps}
-        size={HarmonyPlainButtonSize.DEFAULT}
+        size={PlainButtonSize.DEFAULT}
         {...props}
         disabled
       />
-      <HarmonyPlainButton
+      <PlainButton
         {...baseProps}
-        size={HarmonyPlainButtonSize.LARGE}
+        size={PlainButtonSize.LARGE}
         {...props}
         disabled
       />
@@ -72,11 +60,11 @@ export const Default = Template.bind({})
 
 // Subdued
 export const Subdued = Template.bind({})
-Subdued.args = { props: { variant: HarmonyPlainButtonType.SUBDUED } }
+Subdued.args = { props: { variant: PlainButtonType.SUBDUED } }
 
 // Inverted
 export const Inverted = Template.bind({})
 Inverted.args = {
   dark: true,
-  props: { variant: HarmonyPlainButtonType.INVERTED }
+  props: { variant: PlainButtonType.INVERTED }
 }

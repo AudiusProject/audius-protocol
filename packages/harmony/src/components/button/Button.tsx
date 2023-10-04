@@ -6,49 +6,37 @@ import type { CSSCustomProperties } from '../../types/styles'
 import { toCSSVariableName } from '../../utils/styles'
 
 import { BaseButton } from './BaseButton'
-import styles from './HarmonyButton.module.css'
-import {
-  HarmonyButtonProps,
-  HarmonyButtonSize,
-  HarmonyButtonType
-} from './types'
+import styles from './Button.module.css'
+import { ButtonProps, ButtonSize, ButtonType } from './types'
 
-const SIZE_STYLE_MAP: { [k in HarmonyButtonSize]: [string, string, string] } = {
-  [HarmonyButtonSize.SMALL]: [
-    styles.buttonSmall,
-    styles.iconSmall,
-    styles.textSmall
-  ],
-  [HarmonyButtonSize.DEFAULT]: [
+const SIZE_STYLE_MAP: { [k in ButtonSize]: [string, string, string] } = {
+  [ButtonSize.SMALL]: [styles.buttonSmall, styles.iconSmall, styles.textSmall],
+  [ButtonSize.DEFAULT]: [
     styles.buttonDefault,
     styles.iconDefault,
     styles.textDefault
   ],
-  [HarmonyButtonSize.LARGE]: [
-    styles.buttonLarge,
-    styles.iconLarge,
-    styles.textLarge
-  ]
+  [ButtonSize.LARGE]: [styles.buttonLarge, styles.iconLarge, styles.textLarge]
 }
 
-const TYPE_STYLE_MAP: { [k in HarmonyButtonType]: string } = {
-  [HarmonyButtonType.PRIMARY]: styles.primary,
-  [HarmonyButtonType.SECONDARY]: styles.secondary,
-  [HarmonyButtonType.TERTIARY]: styles.tertiary,
-  [HarmonyButtonType.DESTRUCTIVE]: styles.destructive,
-  [HarmonyButtonType.GHOST]: styles.ghost
+const TYPE_STYLE_MAP: { [k in ButtonType]: string } = {
+  [ButtonType.PRIMARY]: styles.primary,
+  [ButtonType.SECONDARY]: styles.secondary,
+  [ButtonType.TERTIARY]: styles.tertiary,
+  [ButtonType.DESTRUCTIVE]: styles.destructive,
+  [ButtonType.GHOST]: styles.ghost
 }
 
 /**
  * A common Button component. Includes a few variants and options to
  * include and position icons.
  */
-export const HarmonyButton = forwardRef<HTMLButtonElement, HarmonyButtonProps>(
-  function HarmonyButton(props, ref) {
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  function Button(props, ref) {
     const {
       color,
-      variant = HarmonyButtonType.PRIMARY,
-      size = HarmonyButtonSize.DEFAULT,
+      variant = ButtonType.PRIMARY,
+      size = ButtonSize.DEFAULT,
       disabled,
       ...baseProps
     } = props
