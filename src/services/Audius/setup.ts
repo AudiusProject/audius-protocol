@@ -22,7 +22,8 @@ const identityServiceEndpoint = import.meta.env.VITE_IDENTITY_SERVICE_ENDPOINT
 const registryAddress = import.meta.env.VITE_REGISTRY_ADDRESS
 const ethRegistryAddress = import.meta.env.VITE_ETH_REGISTRY_ADDRESS
 const ethTokenAddress = import.meta.env.VITE_ETH_TOKEN_ADDRESS
-const claimDistributionContractAddress = import.meta.env.VITE_CLAIM_DISTRIBUTION_CONTRACT_ADDRESS
+const claimDistributionContractAddress = import.meta.env
+  .VITE_CLAIM_DISTRIBUTION_CONTRACT_ADDRESS
 const wormholeContractAddress = import.meta.env.VITE_WORMHOLE_CONTRACT_ADDRESS
 const entityManagerAddress = import.meta.env.VITE_ENTITY_MANAGER_ADDRESS
 
@@ -39,14 +40,13 @@ const SOLANA_TOKEN_ADDRESS = import.meta.env.VITE_SOLANA_TOKEN_PROGRAM_ADDRESS
 const CLAIMABLE_TOKEN_PDA = import.meta.env.VITE_CLAIMABLE_TOKEN_PDA
 const SOLANA_FEE_PAYER_ADDRESS = import.meta.env.VITE_SOLANA_FEE_PAYER_ADDRESS
 
-const CLAIMABLE_TOKEN_PROGRAM_ADDRESS =
-  import.meta.env.VITE_CLAIMABLE_TOKEN_PROGRAM_ADDRESS
-const REWARDS_MANAGER_PROGRAM_ID =
-  import.meta.env.VITE_REWARDS_MANAGER_PROGRAM_ID
-const REWARDS_MANAGER_PROGRAM_PDA =
-  import.meta.env.VITE_REWARDS_MANAGER_PROGRAM_PDA
-const REWARDS_MANAGER_TOKEN_PDA =
-  import.meta.env.VITE_REWARDS_MANAGER_TOKEN_PDA
+const CLAIMABLE_TOKEN_PROGRAM_ADDRESS = import.meta.env
+  .VITE_CLAIMABLE_TOKEN_PROGRAM_ADDRESS
+const REWARDS_MANAGER_PROGRAM_ID = import.meta.env
+  .VITE_REWARDS_MANAGER_PROGRAM_ID
+const REWARDS_MANAGER_PROGRAM_PDA = import.meta.env
+  .VITE_REWARDS_MANAGER_PROGRAM_PDA
+const REWARDS_MANAGER_TOKEN_PDA = import.meta.env.VITE_REWARDS_MANAGER_TOKEN_PDA
 
 export const IS_PRODUCTION =
   import.meta.env.VITE_ETH_NETWORK_ID &&
@@ -156,7 +156,7 @@ const configureReadOnlyLibs = async () => {
     ethProviderUrl!,
     ethOwnerWallet!,
     claimDistributionContractAddress!,
-    wormholeContractAddress!,
+    wormholeContractAddress!
   )
   // @ts-ignore
   const solanaWeb3Config = AudiusLibs.configSolanaWeb3({
@@ -194,19 +194,19 @@ const configureReadOnlyLibs = async () => {
 
 const configWeb3 = async (web3Provider: any, networkId: string) => {
   const web3Instance = await Utils.configureWeb3(web3Provider, networkId, false)
-    if (!web3Instance) {
-      throw new Error('External web3 incorrectly configured')
+  if (!web3Instance) {
+    throw new Error('External web3 incorrectly configured')
+  }
+  const wallets = await web3Instance.eth.getAccounts()
+  return {
+    registryAddress,
+    entityManagerAddress,
+    useExternalWeb3: true,
+    externalWeb3Config: {
+      web3: web3Instance,
+      ownerWallet: wallets[0]
     }
-    const wallets = await web3Instance.eth.getAccounts()
-    return {
-      registryAddress,
-      entityManagerAddress,
-      useExternalWeb3: true,
-      externalWeb3Config: {
-        web3: web3Instance,
-        ownerWallet: wallets[0]
-      }
-    }
+  }
 }
 
 const configureLibsWithAccount = async () => {
@@ -219,13 +219,18 @@ const configureLibsWithAccount = async () => {
   //   //  window.ethereum.networkVersion,
   //   ethNetworkId!
   // )
-  let configuredMetamaskWeb3 = await configWeb3([window.ethereum], ethNetworkId!)
+  let configuredMetamaskWeb3 = await configWeb3(
+    [window.ethereum],
+    ethNetworkId!
+  )
   console.log(configuredMetamaskWeb3)
 
   let metamaskAccounts: any = await new Promise(resolve => {
-    configuredMetamaskWeb3.externalWeb3Config.web3.eth.getAccounts((...args: any) => {
-      resolve(args[1])
-    })
+    configuredMetamaskWeb3.externalWeb3Config.web3.eth.getAccounts(
+      (...args: any) => {
+        resolve(args[1])
+      }
+    )
   })
   let metamaskAccount = metamaskAccounts[0]
 

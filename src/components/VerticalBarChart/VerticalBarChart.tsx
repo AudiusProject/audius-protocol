@@ -2,7 +2,10 @@ import Loading from '../../components/Loading'
 import Paper from '../../components/Paper'
 import React from 'react'
 import { Bar } from 'react-chartjs-2'
-import { formatShortNumber, formatShortNumberWithDecimal } from '../../utils/format'
+import {
+  formatShortNumber,
+  formatShortNumberWithDecimal
+} from '../../utils/format'
 import { IconCrown } from '@audius/stems'
 // Custom draw fn
 import '../../components/BarChart/draw'

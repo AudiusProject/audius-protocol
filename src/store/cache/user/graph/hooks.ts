@@ -7,7 +7,10 @@ import { AppState } from '../../../../store/types'
 import { setLoading, setUsers } from '../slice'
 import { useEffect, useState } from 'react'
 import { FullUser, UsersData, UsersVars, UserData, UserVars } from './types'
-import { getGraphAPI, useGraphQuery as useQuery } from '../../../../store/api/hooks'
+import {
+  getGraphAPI,
+  useGraphQuery as useQuery
+} from '../../../../store/api/hooks'
 import { formatUser } from './formatter'
 import { GET_USERS, GET_USER } from './queries'
 

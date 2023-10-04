@@ -80,7 +80,7 @@ function registerAudiusService(
       }
 
       setStatus(Status.Success)
-    } catch (err: any) {
+    } catch (err) {
       setStatus(Status.Failure)
       setError(err.message)
     }

@@ -7,7 +7,10 @@ import BN from 'bn.js'
 import { Status, Address } from '../../types'
 import Audius from '../../services/Audius'
 import { AppState } from '../../store/types'
-import { getAccountWallet, fetchPendingTransactions } from '../../store/account/hooks'
+import {
+  getAccountWallet,
+  fetchPendingTransactions
+} from '../../store/account/hooks'
 
 export function undelegateAudiusStake(
   address: Address,

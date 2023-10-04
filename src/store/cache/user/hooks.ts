@@ -28,7 +28,9 @@ import {
 } from '../contentNode/hooks'
 import { useAccountUser } from '../../../store/account/hooks'
 import { GetPendingDecreaseStakeRequestResponse } from '../../../services/Audius/service-provider/types'
-import getActiveStake, { getTotalActiveDelegatedStake } from '../../../utils/activeStake'
+import getActiveStake, {
+  getTotalActiveDelegatedStake
+} from '../../../utils/activeStake'
 import {
   useUser as useGraphUser,
   useUsers as useGraphUsers

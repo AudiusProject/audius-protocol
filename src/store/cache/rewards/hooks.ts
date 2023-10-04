@@ -15,7 +15,10 @@ import {
 } from '../../../store/cache/claims/hooks'
 import { useEthBlockNumber } from '../../../store/cache/protocol/hooks'
 import { useUsers } from '../../../store/cache/user/hooks'
-import { fetchWeeklyRewards, setWeeklyRewards } from '../../../store/cache/rewards/slice'
+import {
+  fetchWeeklyRewards,
+  setWeeklyRewards
+} from '../../../store/cache/rewards/slice'
 import { getRewardForClaimBlock } from './helpers'
 
 // -------------------------------- Selectors  --------------------------------

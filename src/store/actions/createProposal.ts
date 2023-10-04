@@ -33,7 +33,7 @@ function createAudiusProposal(
       await dispatch(fetchActiveProposals())
 
       setStatus(Status.Success)
-    } catch (err: any) {
+    } catch (err) {
       setStatus(Status.Failure)
       setError(err.message)
     }

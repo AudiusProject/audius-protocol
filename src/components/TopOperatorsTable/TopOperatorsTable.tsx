@@ -9,7 +9,9 @@ import { useUsers } from '../../store/cache/user/hooks'
 import { Address, Operator, SortUser, Status } from '../../types'
 import { usePushRoute } from '../../utils/effects'
 import { useIsMobile } from '../../utils/hooks'
-import getActiveStake, { getTotalActiveDelegatedStake } from '../../utils/activeStake'
+import getActiveStake, {
+  getTotalActiveDelegatedStake
+} from '../../utils/activeStake'
 import BN from 'bn.js'
 import DisplayAudio from '../../components/DisplayAudio'
 import UserImage from '../../components/UserImage'

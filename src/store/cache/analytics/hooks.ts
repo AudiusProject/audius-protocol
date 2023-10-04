@@ -125,10 +125,10 @@ async function fetchRoutesTimeSeries(bucket: Bucket) {
   let metric: TimeSeriesRecord[] = []
   try {
     const bucketSize = BUCKET_GRANULARITY_MAP[bucket]
-    metric = await fetchWithLibs({
+    metric = (await fetchWithLibs({
       endpoint: `v1/metrics/aggregates/routes/${bucket}`,
       queryParams: { bucket_size: bucketSize }
-    }) as any
+    })) as any
   } catch (e) {
     console.error(e)
     error = true
@@ -160,10 +160,10 @@ async function fetchTimeSeries(
   let metric: TimeSeriesRecord[] = []
   try {
     const bucketSize = BUCKET_GRANULARITY_MAP[bucket]
-    const data = await fetchWithLibs({
+    const data = (await fetchWithLibs({
       endpoint: `v1/metrics/${route}`,
       queryParams: { bucket_size: bucketSize, start_time: startTime }
-    }) as any
+    })) as any
     metric = data.reverse()
   } catch (e) {
     console.error(e)
@@ -256,9 +256,9 @@ export function fetchTotalStaked(
 }
 
 const getTrailingAPI = async () => {
-  const data = await fetchWithLibs({
+  const data = (await fetchWithLibs({
     endpoint: 'v1/metrics/aggregates/routes/trailing/month'
-  }) as any
+  })) as any
   return {
     total_count: data?.total_count ?? 0,
     unique_count: data?.unique_count ?? 0,
@@ -346,10 +346,10 @@ export function fetchTrailingTopGenres(
     await aud.awaitSetup()
     try {
       const startTime = getStartTime(bucket)
-      const data = await fetchWithLibs({
+      const data = (await fetchWithLibs({
         endpoint: 'v1/metrics/genres',
         queryParams: { start_time: startTime }
-      }) as any
+      })) as any
 
       const agg: CountRecord = {
         Electronic: 0

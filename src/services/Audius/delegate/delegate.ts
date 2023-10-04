@@ -1,6 +1,12 @@
 import { AudiusClient } from '../AudiusClient'
 import BN from 'bn.js'
-import { Address, Amount, BlockNumber, TxReceipt, Permission } from '../../../types'
+import {
+  Address,
+  Amount,
+  BlockNumber,
+  TxReceipt,
+  Permission
+} from '../../../types'
 import {
   DelegateClaimEvent,
   DelegateDecreaseStakeEvent,
