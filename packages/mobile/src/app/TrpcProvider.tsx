@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react'
 
-import { accountSelectors, createAudiusTRPCClient, trpc } from '@audius/common'
+import { accountSelectors, createAudiusTrpcClient, trpc } from '@audius/common'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 
@@ -12,7 +12,7 @@ export const AudiusTrpcProvider = ({
   const currentUserId = useSelector(accountSelectors.getUserId)
   const [queryClient] = useState(() => new QueryClient())
   const trpcClient = useMemo(
-    () => createAudiusTRPCClient(currentUserId),
+    () => createAudiusTrpcClient(currentUserId),
     [currentUserId]
   )
   return (

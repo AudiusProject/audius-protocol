@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react'
 import {
   AudiusQueryContext,
   accountSelectors,
-  createAudiusTRPCClient,
+  createAudiusTrpcClient,
   trpc
 } from '@audius/common'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -37,7 +37,7 @@ const AudiusTrpcProvider = ({ children }: { children: React.ReactNode }) => {
   const currentUserId = useSelector(accountSelectors.getUserId)
   const [queryClient] = useState(() => new QueryClient())
   const trpcClient = useMemo(
-    () => createAudiusTRPCClient(currentUserId),
+    () => createAudiusTrpcClient(currentUserId),
     [currentUserId]
   )
   return (
