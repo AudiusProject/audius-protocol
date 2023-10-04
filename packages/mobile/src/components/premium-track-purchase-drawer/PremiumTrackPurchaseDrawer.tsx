@@ -63,19 +63,18 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
-  drawer: {
-    paddingHorizontal: spacing(4)
-  },
   formContainer: {
     flex: 1
   },
   formContentContainer: {
+    paddingHorizontal: spacing(4),
     paddingVertical: spacing(6),
     gap: spacing(4)
   },
   formActions: {
     flex: 0,
     paddingTop: spacing(4),
+    paddingHorizontal: spacing(4),
     paddingBottom: spacing(6),
     columnGap: spacing(4)
   },
@@ -85,7 +84,7 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    paddingVertical: spacing(4)
+    padding: spacing(4)
   },
   titleContainer: {
     ...flexRowCentered(),
@@ -269,7 +268,6 @@ export const PremiumTrackPurchaseDrawer = () => {
 
   return (
     <NativeDrawer
-      drawerStyle={styles.drawer}
       drawerHeader={PremiumTrackPurchaseDrawerHeader}
       drawerName={PREMIUM_TRACK_PURCHASE_MODAL_NAME}
       onClosed={handleClosed}

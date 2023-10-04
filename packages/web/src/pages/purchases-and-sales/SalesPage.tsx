@@ -49,7 +49,7 @@ const messages = {
   pageDescription: 'View your sales history',
   noSalesHeader: `You haven't sold anything yet.`,
   noSalesBody: 'Once you make a sale, it will show up here.',
-  upload: 'Upload',
+  upload: 'Upload Track',
   headerText: 'Your Sales',
   downloadCSV: 'Download CSV'
 }

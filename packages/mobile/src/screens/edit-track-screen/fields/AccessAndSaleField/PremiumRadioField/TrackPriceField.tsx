@@ -25,7 +25,7 @@ export const TrackPriceField = () => {
       description={messages.description}
       name={TRACK_PRICE}
       value={String(value)}
-      keyboardType='number-pad'
+      keyboardType='numeric'
       label={messages.label}
       placeholder={messages.placeholder}
       startAdornment={

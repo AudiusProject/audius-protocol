@@ -87,7 +87,8 @@ export const {
   purchaseSucceeded,
   purchaseConfirmed,
   purchaseCanceled,
-  purchaseContentFlowFailed
+  purchaseContentFlowFailed,
+  cleanup
 } = slice.actions
 
 export default slice.reducer
