@@ -1,5 +1,4 @@
 import '@audius/stems/dist/stems.css'
-import '@audius/harmony/dist/harmony.css'
 
 import { useState } from 'react'
 
