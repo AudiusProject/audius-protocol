@@ -36,4 +36,4 @@ class Challenge(Base, RepresentableMixin):
     # will be ignord.
     starting_block = Column(Integer)
     # Reward amount per challenge completed (for aggregate challenges)
-    amount = Column(Integer)
+    amount = Column(String, nullable=False)

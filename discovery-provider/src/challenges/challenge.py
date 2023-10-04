@@ -347,7 +347,7 @@ class ChallengeManager:
         self._challenge_type = challenge.type
         self._did_init = True
         self._is_active = challenge.active
-        self._amount = challenge.amount
+        self._amount = int(challenge.amount)
 
     def _create_new_user_challenge(self, user_id: int, specifier: str, extra: Dict):
         return UserChallenge(

@@ -2,7 +2,7 @@
   {
     "id": "profile-completion",
     "type": "numeric",
-    "amount": "1",
+    "amount": 1,
     "active": true,
     "step_count": 7,
     "starting_block": 0
@@ -10,7 +10,7 @@
   {
     "id": "listen-streak",
     "type": "numeric",
-    "amount": "1",
+    "amount": 1,
     "active": true,
     "step_count": 7,
     "starting_block": 116023891
@@ -18,7 +18,7 @@
   {
     "id": "track-upload",
     "type": "numeric",
-    "amount": "1",
+    "amount": 1,
     "active": true,
     "step_count": 3,
     "starting_block": 25346436
@@ -26,7 +26,7 @@
   {
     "id": "referrals",
     "type": "aggregate",
-    "amount": "1",
+    "amount": 1,
     "active": true,
     "step_count": 5,
     "starting_block": 25346436
@@ -34,7 +34,7 @@
   {
     "id": "ref-v",
     "type": "aggregate",
-    "amount": "1",
+    "amount": 1,
     "active": true,
     "step_count": 5000,
     "starting_block": 25346436
@@ -42,42 +42,42 @@
   {
     "id": "referred",
     "type": "boolean",
-    "amount": "1",
+    "amount": 1,
     "active": true,
     "starting_block": 25346436
   },
   {
     "id": "connect-verified",
     "type": "boolean",
-    "amount": "5",
+    "amount": 5,
     "active": true,
     "starting_block": 0
   },
   {
     "id": "mobile-install",
     "type": "boolean",
-    "amount": "1",
+    "amount": 1,
     "active": true,
     "starting_block": 25346436
   },
   {
     "id": "tt",
     "type": "trending",
-    "amount": "100",
+    "amount": 100,
     "active": true,
     "starting_block": 25346436
   },
   {
     "id": "tut",
     "type": "trending",
-    "amount": "100",
+    "amount": 100,
     "active": true,
     "starting_block": 25346436
   },
   {
     "id": "tp",
     "type": "trending",
-    "amount": "100",
+    "amount": 100,
     "active": true,
     "starting_block": 25346436
   },

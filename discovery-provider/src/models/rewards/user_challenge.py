@@ -18,6 +18,6 @@ class UserChallenge(Base, RepresentableMixin):
     is_complete = Column(Boolean, nullable=False)
     current_step_count = Column(Integer)
     completed_blocknumber = Column(Integer)
-    amount = Column(Integer)
+    amount = Column(Integer, nullable=False)
 
     challenge = relationship("Challenge")  # type: ignore
