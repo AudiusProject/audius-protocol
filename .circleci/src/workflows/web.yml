@@ -101,21 +101,27 @@ jobs:
 
   # Distribute staging desktop binaries.
   - web-dist-mac-staging:
-      context: Audius Client
+      context:
+        - Audius Client
+        - Vercel
       requires:
         - web-build-staging
       filters:
         branches:
           only: /(^main)$/
   - web-dist-win-staging:
-      context: Audius Client
+      context:
+        - Audius Client
+        - Vercel
       requires:
         - web-build-staging
       filters:
         branches:
           only: /(^main)$/
   - web-dist-linux-staging:
-      context: Audius Client
+      context:
+        - Audius Client
+        - Vercel
       requires:
         - web-build-staging
       filters:
@@ -131,7 +137,9 @@ jobs:
         branches:
           only: /(^release.*)$/
   - web-dist-mac-production:
-      context: Audius Client
+      context:
+        - Audius Client
+        - Vercel
       requires:
         - web-hold-dist-mac-production
       filters:
@@ -145,7 +153,9 @@ jobs:
         branches:
           only: /(^release.*)$/
   - web-dist-win-production:
-      context: Audius Client
+      context:
+        - Audius Client
+        - Vercel
       requires:
         - web-hold-dist-win-production
       filters:
@@ -159,7 +169,9 @@ jobs:
         branches:
           only: /(^release.*)$/
   - web-dist-linux-production:
-      context: Audius Client
+      context:
+        - Audius Client
+        - Vercel
       requires:
         - web-hold-dist-linux-production
       filters:
