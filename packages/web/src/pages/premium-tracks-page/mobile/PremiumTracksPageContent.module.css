@@ -1,0 +1,4 @@
+.container {
+  padding: var(--unit-3) var(--unit-3) 0;
+  width: 100%;
+}

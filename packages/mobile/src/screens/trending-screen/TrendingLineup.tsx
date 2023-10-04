@@ -72,7 +72,7 @@ export const TrendingLineup = (props: TrendingLineupProps) => {
   const handleLoadMore = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
       dispatch(trendingActions.fetchLineupMetadatas(offset, limit, overwrite))
-      track(make({ eventName: Name.FEED_PAGINATE, offset, limit }))
+      track(make({ eventName: Name.TRENDING_PAGINATE, offset, limit }))
     },
     [dispatch, trendingActions]
   )
