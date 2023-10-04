@@ -1,6 +1,7 @@
 import { ComponentType, SVGProps } from 'react'
 
 import { ExploreCollectionsVariant } from '@audius/common'
+import { IconCart } from '@audius/stems'
 
 import { ReactComponent as IconCassette } from 'assets/img/iconCassette.svg'
 import { ReactComponent as IconExploreDJ } from 'assets/img/iconExploreDJ.svg'
@@ -8,6 +9,7 @@ import { ReactComponent as IconExploreTopAlbums } from 'assets/img/iconExploreTo
 import { ReactComponent as IconExploreTopPlaylists } from 'assets/img/iconExploreTopPlaylists.svg'
 import {
   EXPLORE_LET_THEM_DJ_PAGE,
+  EXPLORE_PREMIUM_TRACKS_PAGE,
   EXPLORE_TOP_ALBUMS_PAGE,
   exploreMoodPlaylistsPage,
   TRENDING_PLAYLISTS_PAGE,
@@ -33,6 +35,17 @@ export type ExploreMoodCollection = ExploreCollection & {
 
 // How much full width cards move
 const WIDE_CARD_SENSITIVTY = 0.04
+
+export const PREMIUM_TRACKS: ExploreCollection = {
+  variant: ExploreCollectionsVariant.DIRECT_LINK,
+  title: 'Premium Tracks',
+  subtitle: 'Explore premium music available to purchase.',
+  gradient: 'linear-gradient(95deg, #13C65A 0%, #16A653 100%)',
+  shadow: 'rgba(196,81,193,0.35)',
+  icon: IconCart,
+  link: EXPLORE_PREMIUM_TRACKS_PAGE,
+  cardSensitivity: WIDE_CARD_SENSITIVTY
+}
 
 export const LET_THEM_DJ: ExploreCollection = {
   variant: ExploreCollectionsVariant.LET_THEM_DJ,

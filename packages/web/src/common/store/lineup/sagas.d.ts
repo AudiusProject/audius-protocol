@@ -9,7 +9,7 @@ export class LineupSagas {
   constructor(
     prefix: string,
     actions: LineupBaseActions,
-    feedSelector: (store: any) => LineupState<any>,
+    lineupSelector: (store: any) => LineupState<any>,
     getTracks: (config: {
       offset: number
       limit: number

@@ -150,7 +150,8 @@ import {
   PROFILE_PAGE_AI_ATTRIBUTED_TRACKS,
   PURCHASES_PAGE,
   SALES_PAGE,
-  WITHDRAWALS_PAGE
+  WITHDRAWALS_PAGE,
+  EXPLORE_PREMIUM_TRACKS_PAGE
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
@@ -172,6 +173,7 @@ import ExploreCollectionsPage from './explore-page/ExploreCollectionsPage'
 import { FbSharePage } from './fb-share-page/FbSharePage'
 import FollowersPage from './followers-page/FollowersPage'
 import FollowingPage from './following-page/FollowingPage'
+import { PremiumTracksPage } from './premium-tracks-page/PremiumTracksPage'
 import { PurchasesPage, SalesPage } from './purchases-and-sales'
 import { WithdrawalsPage } from './purchases-and-sales/WithdrawalsPage'
 import SettingsPage from './settings-page/SettingsPage'
@@ -596,6 +598,15 @@ class App extends Component {
                   exact
                   path={AUDIO_NFT_PLAYLIST_PAGE}
                   render={() => <CollectiblesPlaylistPage />}
+                />
+                <Route
+                  exact
+                  path={EXPLORE_PREMIUM_TRACKS_PAGE}
+                  render={() => (
+                    <PremiumTracksPage
+                      containerRef={this.props.mainContentRef.current}
+                    />
+                  )}
                 />
                 <Route
                   exact

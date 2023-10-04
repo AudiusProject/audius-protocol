@@ -99,6 +99,8 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   // pages/trending-page/store/lineups/trending/sagas.ts
   // pages/trending-underground-page/store/lineups/tracks/sagas.ts
   // pages/trending-underground-page/store/sagas.ts
+  // pages/premium-tracks/sagas.ts
+  // pages/premium-tracks/lineups/tracks/sagas.ts
   // pages/smart-collection/store/sagas.ts
   // store/application/ui/theme/sagas.ts
   // pages/search-page/store/sagas.ts

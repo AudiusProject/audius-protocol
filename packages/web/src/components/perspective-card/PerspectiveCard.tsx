@@ -13,6 +13,7 @@ type PerspectiveCardProps = {
   backgroundGradient?: string
   shadowColor?: string
   backgroundIcon?: ReactNode | JSX.Element
+  backgroundIconClassName?: string
   children?: JSX.Element | JSX.Element[]
   className?: string
   isDisabled?: boolean
@@ -26,6 +27,7 @@ const PerspectiveCard = ({
   backgroundGradient,
   shadowColor,
   backgroundIcon,
+  backgroundIconClassName,
   children,
   className,
   isDisabled,
@@ -68,7 +70,9 @@ const PerspectiveCard = ({
             </div>
           ) : null}
           {children}
-          <div className={styles.backgroundIcon}>{backgroundIcon}</div>
+          <div className={cn(styles.backgroundIcon, backgroundIconClassName)}>
+            {backgroundIcon}
+          </div>
         </div>
       </animated.div>
     </div>
