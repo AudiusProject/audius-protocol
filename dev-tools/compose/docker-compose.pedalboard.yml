@@ -1,11 +1,11 @@
-version: "3"
+version: '3'
 
 services:
   app-template:
     container_name: app-template
     build:
-      context: ${PROJECT_ROOT}/discovery-provider/plugins/pedalboard
-      dockerfile: ./docker/Dockerfile
+      context: ${PROJECT_ROOT}
+      file: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile
       args:
         app_name: app-template
     restart: always
@@ -15,8 +15,8 @@ services:
   trending-challenge-rewards:
     container_name: trending-challenge-rewards
     build:
-      context: ${PROJECT_ROOT}/discovery-provider/plugins/pedalboard
-      dockerfile: ./docker/Dockerfile
+      context: ${PROJECT_ROOT}
+      file: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile
       args:
         app_name: trending-challenge-rewards
     restart: always
@@ -26,21 +26,21 @@ services:
   relay:
     container_name: relay
     build:
-      context: ${PROJECT_ROOT}/discovery-provider/plugins/pedalboard
-      dockerfile: ./docker/Dockerfile
+      context: ${PROJECT_ROOT}
+      file: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile
       args:
         app_name: relay
-        git_sha: "${GIT_COMMIT}"
+        git_sha: '${GIT_COMMIT}'
     restart: always
 
   sla-auditor:
     container_name: sla-auditor
     build:
-      context: ${PROJECT_ROOT}/discovery-provider/plugins/pedalboard
-      dockerfile: ./docker/Dockerfile
+      context: ${PROJECT_ROOT}
+      file: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile
       args:
         app_name: sla-auditor
-        git_sha: "${GIT_COMMIT}"
+        git_sha: '${GIT_COMMIT}'
     restart: always
     profiles:
       - pedalboard

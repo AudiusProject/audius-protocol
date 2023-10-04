@@ -14,11 +14,16 @@
     "preset": "jest-presets/jest/node"
   },
   "dependencies": {
+    "@audius/sdk": "*",
+    "@slack/bolt": "^3.13.1",
+    "@slack/web-api": "^6.8.1",
+    "ascii-table3": "^0.8.2",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "logger": "*",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "ts-results": "^3.3.0"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.0",

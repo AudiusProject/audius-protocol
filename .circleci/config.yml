@@ -108,18 +108,18 @@ jobs:
           command: |
             git checkout main
 
-            OLD_VERSION=$(jq -r .version discovery-provider/.version.json)
+            OLD_VERSION=$(jq -r .version packages/discovery-provider/.version.json)
             NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
 
             jq --arg version "$NEW_VERSION" '.version=$version' mediorum/.version.json > /tmp/.version.json
             mv /tmp/.version.json mediorum/.version.json
             git add mediorum/.version.json
 
-            jq --arg version "$NEW_VERSION" '.version=$version' discovery-provider/.version.json > /tmp/.version.json
-            mv /tmp/.version.json discovery-provider/.version.json
-            git add discovery-provider/.version.json
+            jq --arg version "$NEW_VERSION" '.version=$version' packages/discovery-provider/.version.json > /tmp/.version.json
+            mv /tmp/.version.json packages/discovery-provider/.version.json
+            git add packages/discovery-provider/.version.json
 
-            GIT_DIFF=$(git log --pretty=format:'%an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum discovery-provider packages/identity-service comms monitoring/healthz | sed 's/"/\\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/=DELIM@/g')
+            GIT_DIFF=$(git log --pretty=format:'%an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum packages/discovery-provider packages/identity-service comms monitoring/healthz | sed 's/"/\\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/=DELIM@/g')
 
             # Ensure GIT_DIFF ends with the delimiter so the final commit is included
             if [ ! -z "$GIT_DIFF" ] && [ "${GIT_DIFF: -7}" != "=DELIM@" ]; then
@@ -219,7 +219,7 @@ jobs:
               git clone https://github.com/AudiusProject/audius-protocol.git
               cd audius-protocol
               git fetch --all
-              VERSION=$(jq -r .version discovery-provider/.version.json)
+              VERSION=$(jq -r .version packages/discovery-provider/.version.json)
               cd ..
               echo "Running against protocol version: $VERSION"
 
@@ -325,7 +325,7 @@ jobs:
               git clone https://github.com/AudiusProject/audius-protocol.git
               cd audius-protocol
               git fetch --all
-              VERSION=$(jq -r .version discovery-provider/.version.json)
+              VERSION=$(jq -r .version packages/discovery-provider/.version.json)
               cd ..
               
               # Get the pipeline for the most recent commit on the release branch
@@ -422,8 +422,6 @@ workflows:
           base-revision: main
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
-            discovery-provider/.* run-discovery-workflow true
-            discovery-provider/.* run-gcp-workflow true
             comms/.* run-discovery-workflow true
             comms/.* run-gcp-workflow true
             mediorum/.* run-creator-workflow true
@@ -448,6 +446,8 @@ workflows:
             .circleci/.* run-embed-workflow true
             .* run-release-workflow false
             .* run-integration-workflow true
+            packages/discovery-provider/.* run-discovery-workflow true
+            packages/discovery-provider/.* run-gcp-workflow true
             packages/web/.* run-web-workflow true
             packages/mobile/.* run-mobile-workflow true
             packages/probers/.* run-web-workflow true

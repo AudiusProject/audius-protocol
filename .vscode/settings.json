@@ -7,11 +7,14 @@
   "python.languageServer": "Pylance",
   "python.linting.enabled": true,
   "python.linting.flake8Enabled": true,
-  "python.linting.flake8Args": ["--config", "discovery-provider/setup.cfg"],
+  "python.linting.flake8Args": [
+    "--config",
+    "packages/discovery-provider/setup.cfg"
+  ],
   "python.linting.lintOnSave": true,
   "python.linting.mypyEnabled": true,
-  "isort.args": ["--settings-path", "discovery-provider/setup.cfg"],
-  "mypy.configFile": "discovery-provider/setup.cfg",
+  "isort.args": ["--settings-path", "packages/discovery-provider/setup.cfg"],
+  "mypy.configFile": "packages/discovery-provider/setup.cfg",
   "mypy.runUsingActiveInterpreter": true,
   "python.analysis.indexing": true,
   "python.testing.pytestEnabled": true,
@@ -23,7 +26,7 @@
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
   "editor.find.addExtraSpaceOnTop": false,
-  "eslint.workingDirectories": [{ "pattern": "./packages/*/"}],
+  "eslint.workingDirectories": [{ "pattern": "./packages/*/" }],
   "editor.codeActionsOnSave": {
     "source.fixAll": true
   },

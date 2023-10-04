@@ -24,8 +24,8 @@ function cd_eth_contracts_repo {
 
 function cd_discprov_repo {
   # Navigate to discovery provider repository
-  if [ -d "../discovery-provider" ]; then
-    cd ../discovery-provider/
+  if [ -d "../packages/discovery-provider" ]; then
+    cd ../packages/discovery-provider/
     pwd
   else
     echo "INCORRECT REPOSITORY STRUCTURE. PLEASE FOLLOW README"

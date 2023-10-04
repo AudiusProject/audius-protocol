@@ -15,7 +15,7 @@ Here is what I do:
 * spin up a "sandbox" production machine using --seed option in audius-docker-compose
   wait for everything to be indexed.
 
-* edit `discovery-provider/docker-compose.yml` to expose ES port 9200:
+* edit `packages/discovery-provider/docker-compose.yml` to expose ES port 9200:
 
         +    ports:
         +      - "9200:9200"

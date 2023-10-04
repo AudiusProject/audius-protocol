@@ -88,7 +88,7 @@ def generate_env(
     )["version"]
 
     env["DISCOVERY_NODE_VERSION"] = json.loads(
-        (protocol_dir / "discovery-provider/.version.json").read_text(),
+        (protocol_dir / "packages/discovery-provider/.version.json").read_text(),
     )["version"]
 
     env["ELASTICSEARCH_REPLICAS"] = str(elasticsearch_replicas)

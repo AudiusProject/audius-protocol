@@ -234,7 +234,7 @@ services:
       audius_elasticsearch_url: 'http://discovery-provider-elasticsearch:9200'
       audius_elasticsearch_run_indexer: 'true'
     volumes:
-      - ${PROJECT_ROOT}/discovery-provider:/audius-discovery-provider
+      - ${PROJECT_ROOT}/packages/discovery-provider:/audius-discovery-provider
       - /audius-discovery-provider/es-indexer/node_modules
     depends_on:
       discovery-provider-elasticsearch:
@@ -254,7 +254,7 @@ services:
 
   test-discovery-provider-notifications:
     build:
-      context: ${PROJECT_ROOT}/discovery-provider/plugins/notifications
+      context: ${PROJECT_ROOT}/packages/discovery-provider/plugins/notifications
       dockerfile: Dockerfile
     entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; npm run test "$$@")' -
     environment:
@@ -262,7 +262,7 @@ services:
       DN_DB_URL: 'postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider'
       IDENTITY_DB_URL: 'postgresql://postgres:postgres@identity-service-db:5432/identity_service'
     volumes:
-      - ${PROJECT_ROOT}/discovery-provider/plugins/notifications:/notifications
+      - ${PROJECT_ROOT}/packages/discovery-provider/plugins/notifications:/notifications
       - /notifications/node_modules
     depends_on:
       test-discovery-provider-migrations:

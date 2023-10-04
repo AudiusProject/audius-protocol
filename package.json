@@ -2,7 +2,9 @@
   "name": "root",
   "version": "1.5.44",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "packages/discovery-provider/plugins/pedalboard/apps/*",
+    "packages/discovery-provider/plugins/pedalboard/packages/*"
   ],
   "private": true,
   "scripts": {
@@ -45,7 +47,9 @@
     "SDK======================================": "",
     "sdk": "turbo run start --filter=@audius/sdk",
     "PROTOCOL======================================": "",
-    "protocol": "turbo run start --filter=@audius/compose"
+    "protocol": "turbo run start --filter=@audius/compose",
+    "DISCOVERY======================================": "",
+    "build:pedalboard": "turbo run build --filter='./packages/discovery-provider/plugins/pedalboard/apps/*' --filter='./packages/discovery-provider/plugins/pedalboard/packages/*'"
   },
   "devDependencies": {
     "@types/keyv": "4.2.0",
