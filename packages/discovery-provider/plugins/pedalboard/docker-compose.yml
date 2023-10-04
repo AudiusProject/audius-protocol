@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 services:
   app-template:
@@ -8,6 +8,8 @@ services:
       dockerfile: ./docker/Dockerfile
       args:
         app_name: app-template
+        TURBO_TEAM: '${TURBO_TEAM}'
+        TURBO_TOKEN: '${TURBO_TOKEN}'
     restart: always
     command: npm run dev
     env_file:
@@ -20,6 +22,8 @@ services:
       dockerfile: ./docker/Dockerfile
       args:
         app_name: trending-challenge-rewards
+        TURBO_TEAM: '${TURBO_TEAM}'
+        TURBO_TOKEN: '${TURBO_TOKEN}'
     restart: always
     command: npm run dev
     env_file:
@@ -32,6 +36,8 @@ services:
       dockerfile: ./docker/Dockerfile
       args:
         app_name: sla-auditor
+        TURBO_TEAM: '${TURBO_TEAM}'
+        TURBO_TOKEN: '${TURBO_TOKEN}'
     restart: always
     command: npm run dev
     volumes:
@@ -47,6 +53,8 @@ services:
       dockerfile: ./docker/Dockerfile
       args:
         app_name: relay
+        TURBO_TEAM: '${TURBO_TEAM}'
+        TURBO_TOKEN: '${TURBO_TOKEN}'
     restart: always
     command: npm run dev
     env_file:

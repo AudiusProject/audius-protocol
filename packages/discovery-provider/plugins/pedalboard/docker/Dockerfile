@@ -2,6 +2,12 @@ FROM node:18-alpine AS base
 
 ARG app_name
 
+ARG TURBO_TEAM
+ENV TURBO_TEAM=$TURBO_TEAM
+ 
+ARG TURBO_TOKEN
+ENV TURBO_TOKEN=$TURBO_TOKEN
+
 # set as env so we dont have to reset arg after multistage build
 ENV APP_NAME=${app_name}
 

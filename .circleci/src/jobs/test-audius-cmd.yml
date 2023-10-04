@@ -32,6 +32,7 @@ steps:
         --machine-type=n2-custom-6-24576
         --boot-disk-size=160G
         --boot-disk-type=pd-ssd
+      pass-env: TURBO_TEAM TURBO_TOKEN
       steps:
         - gcp-checkout
         - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
