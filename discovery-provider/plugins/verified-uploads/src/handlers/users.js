@@ -42,6 +42,8 @@ export default async ({ user_id, blocknumber }) => {
       .get(social_handle_url(handle))
       .catch(console.error)
 
+    console.log({ data })
+
     const { twitterVerified, instagramVerified, tikTokVerified } = data
 
     let source = 'unknown'
