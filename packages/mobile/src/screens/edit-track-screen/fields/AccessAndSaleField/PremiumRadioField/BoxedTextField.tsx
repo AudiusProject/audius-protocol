@@ -4,7 +4,7 @@ import { Text } from 'app/components/core'
 import { TextField, type TextFieldProps } from 'app/components/fields'
 import { makeStyles } from 'app/styles'
 
-const useStyles = makeStyles(({ spacing, palette, typography }) => ({
+const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
     padding: spacing(4),
     gap: spacing(4),
