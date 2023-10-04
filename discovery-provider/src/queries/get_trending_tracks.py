@@ -334,11 +334,24 @@ def _get_trending_tracks_with_session(
     time_range = "week" if time not in ["week", "month", "year", "allTime"] else time
     key = make_trending_cache_key(time_range, genre, strategy.version)
 
+    # Add a suffix to the key if usdc_purchase_only is true.
+    # This is so that we can cache both the regular trending and the usdc purchase trending
+    # and not return wrong tracks when usdc_purchase_only is true, which is used by
+    # the "Explore" Premium Tracks page which uses.
+    # Ideally, we want to decouple the logic for "Explore" Premium Tracks page from the Trending page,
+    # even if there may be a decent amount of repeated code.
+    # Otherwise, we are running into adding complexity to the already complex trending logic.
+    # But for now, we will just use the same logic and cache the results separately.
+    if usdc_purchase_only:
+        key += ":usdc_purchase_only"
+    # The index_trending task runs every 10 seconds, so we set the TTL to 10 seconds
+    ttl_sec = 10 if usdc_purchase_only else None
+
     # Will try to hit cached trending from task, falling back
     # to generating it here if necessary and storing it with no TTL
     (tracks, track_ids) = use_redis_cache(
         key,
-        None,
+        ttl_sec,
         make_generate_unpopulated_trending(
             session=session,
             genre=genre,
