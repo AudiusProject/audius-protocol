@@ -157,7 +157,7 @@ def cache_trusted_notifier_discrepancies_vars(redis_mock):
     redis_mock.set(TRACK_DELIST_DISCREPANCIES_KEY, "[]")
 
 
-def test_get_health(web3_mock, redis_mock, db_mock):
+def test_get_health(web3_mock, redis_mock, db_mock, mock_requests):
     """Tests that the health check returns db data"""
 
     # Set up web3 eth
@@ -200,7 +200,7 @@ def test_get_health(web3_mock, redis_mock, db_mock):
     assert "service" in health_results
 
 
-def test_get_health_using_redis(web3_mock, redis_mock, db_mock):
+def test_get_health_using_redis(web3_mock, redis_mock, db_mock, mock_requests):
     """Tests that the health check returns redis data first"""
 
     # Set up web3 eth
@@ -248,7 +248,7 @@ def test_get_health_using_redis(web3_mock, redis_mock, db_mock):
     assert "service" in health_results
 
 
-def test_get_health_partial_redis(web3_mock, redis_mock, db_mock):
+def test_get_health_partial_redis(web3_mock, redis_mock, db_mock, mock_requests):
     """Tests that the health check returns db data if redis data is only partial"""
 
     # Set up web3 eth
@@ -294,7 +294,9 @@ def test_get_health_partial_redis(web3_mock, redis_mock, db_mock):
     assert "service" in health_results
 
 
-def test_get_health_with_invalid_db_state(web3_mock, redis_mock, db_mock):
+def test_get_health_with_invalid_db_state(
+    web3_mock, redis_mock, db_mock, mock_requests
+):
     """Tests that the health check can handle an invalid block in the db"""
 
     # Set up web3 eth
@@ -336,7 +338,7 @@ def test_get_health_with_invalid_db_state(web3_mock, redis_mock, db_mock):
     assert "service" in health_results
 
 
-def test_get_health_skip_redis(web3_mock, redis_mock, db_mock):
+def test_get_health_skip_redis(web3_mock, redis_mock, db_mock, mock_requests):
     """Tests that the health check skips returning redis data first if explicitly disabled"""
 
     # Set up web3 eth
@@ -385,7 +387,9 @@ def test_get_health_skip_redis(web3_mock, redis_mock, db_mock):
 
 
 @patch("src.utils.helpers.get_final_poa_block", return_value=5)
-def test_get_health_skip_redis_with_final_poa_block(_, web3_mock, redis_mock, db_mock):
+def test_get_health_skip_redis_with_final_poa_block(
+    _, web3_mock, redis_mock, db_mock, mock_requests
+):
     """Tests that the health check takes note of the latest chain block correctly"""
 
     # Set up web3 eth
@@ -423,7 +427,9 @@ def test_get_health_skip_redis_with_final_poa_block(_, web3_mock, redis_mock, db
     assert health_results["block_difference"] == 1
 
 
-def test_get_health_unhealthy_block_difference(web3_mock, redis_mock, db_mock):
+def test_get_health_unhealthy_block_difference(
+    web3_mock, redis_mock, db_mock, mock_requests
+):
     """Tests that the health check an unhealthy block difference"""
 
     # Set up web3 eth
@@ -465,7 +471,9 @@ def test_get_health_unhealthy_block_difference(web3_mock, redis_mock, db_mock):
     assert "service" in health_results
 
 
-def test_get_health_with_monitors(web3_mock, redis_mock, db_mock, get_monitors_mock):
+def test_get_health_with_monitors(
+    web3_mock, redis_mock, db_mock, get_monitors_mock, mock_requests
+):
     """Tests that the health check returns monitor data"""
     get_monitors_mock.return_value = {
         "database_connections": 2,
@@ -513,7 +521,9 @@ def test_get_health_with_monitors(web3_mock, redis_mock, db_mock, get_monitors_m
     assert health_results["number_of_cpus"] == os.cpu_count()
 
 
-def test_get_health_verbose(web3_mock, redis_mock, db_mock, get_monitors_mock):
+def test_get_health_verbose(
+    web3_mock, redis_mock, db_mock, get_monitors_mock, mock_requests
+):
     """Tests that the health check returns verbose db stats"""
     get_monitors_mock.return_value = {
         "database_connections": 2,
@@ -587,7 +597,9 @@ def test_get_health_verbose(web3_mock, redis_mock, db_mock, get_monitors_mock):
     assert "service" in health_results
 
 
-def test_get_health_challenge_events_max_drift(web3_mock, redis_mock, db_mock):
+def test_get_health_challenge_events_max_drift(
+    web3_mock, redis_mock, db_mock, mock_requests
+):
     """Tests that the health check honors an unhealthy challenge events drift"""
 
     # Set up web3 eth

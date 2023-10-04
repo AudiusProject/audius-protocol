@@ -10,6 +10,7 @@ import (
 	"mediorum/ethcontracts"
 	"mediorum/persistence"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/signal"
@@ -83,8 +84,6 @@ type MediorumServer struct {
 	reqClient       *req.Client
 
 	// simplify
-	storagePathUsed  uint64
-	storagePathSize  uint64
 	mediorumPathUsed uint64
 	mediorumPathSize uint64
 	mediorumPathFree uint64
@@ -316,6 +315,16 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.POST("/delist_status/insert", ss.serveInsertDelistStatus, ss.requireBodySignedByOwner)
 
 	// -------------------
+	// healthz
+	healthz := routes.Group("/healthz")
+	healthzUrl, err := url.Parse("http://healthz")
+	if err != nil {
+		log.Fatal("Invalid healthz URL: ", err)
+	}
+	healthzProxy := httputil.NewSingleHostReverseProxy(healthzUrl)
+	healthz.Any("*", echo.WrapHandler(healthzProxy))
+
+	// -------------------
 	// internal
 	internalApi := routes.Group("/internal")
 
@@ -335,6 +344,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/logs/partition-ops", ss.getPartitionOpsLog)
 	internalApi.GET("/logs/reaper", ss.getReaperLog)
 	internalApi.GET("/logs/repair", ss.serveRepairLog)
+	internalApi.GET("/logs/storageAndDb", ss.serveStorageAndDbLogs)
 
 	// internal: testing
 	internalApi.GET("/proxy_health_check", ss.proxyHealthCheck)

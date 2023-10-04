@@ -23,6 +23,7 @@ def get_recommended_tracks(args, strategy):
         "limit": args.get("limit"),
         "offset": 0,
         "exclude_premium": True,
+        "usdc_purchase_only": False,
     }
 
     # decode and add user_id if necessary

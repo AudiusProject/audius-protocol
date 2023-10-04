@@ -24,11 +24,12 @@ def get_trending(args, strategy):
         "time": time,
         "genre": args.get("genre", None),
         "with_users": True,
-        "limit": TRENDING_LIMIT,
-        "offset": 0,
+        "limit": format_limit(args, TRENDING_LIMIT),
+        "offset": format_offset(args),
         "exclude_premium": args.get(
             "exclude_premium", SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS
         ),
+        "usdc_purchase_only": False,
     }
 
     # decode and add user_id if necessary
@@ -41,8 +42,6 @@ def get_trending(args, strategy):
 
 
 def get_full_trending(request, args, strategy):
-    offset = format_offset(args)
-    limit = format_limit(args, TRENDING_LIMIT)
     key = get_trending_cache_key(to_dict(request.args), request.path)
 
     # Attempt to use the cached tracks list
@@ -52,5 +51,4 @@ def get_full_trending(request, args, strategy):
         full_trending = use_redis_cache(
             key, TRENDING_TTL_SEC, lambda: get_trending(args, strategy)
         )
-    trending_tracks = full_trending[offset : limit + offset]
-    return trending_tracks
+    return full_trending

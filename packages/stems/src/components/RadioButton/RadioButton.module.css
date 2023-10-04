@@ -6,6 +6,10 @@
   cursor: pointer;
 }
 
+.root.disabled .input {
+  cursor: default;
+}
+
 .root {
   position: relative;
   width: var(--unit-6);

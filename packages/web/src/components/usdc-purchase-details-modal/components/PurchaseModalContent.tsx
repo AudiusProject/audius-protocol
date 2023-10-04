@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { useGetTrackById, formatUSDCWeiToUSDString } from '@audius/common'
+import { useGetTrackById } from '@audius/common'
 import {
   ModalHeader,
   ModalTitle,
@@ -21,12 +21,12 @@ import { useGoToRoute } from 'hooks/useGoToRoute'
 
 import { DetailSection } from './DetailSection'
 import { TrackLink } from './TrackLink'
+import { TransactionSummary } from './TransactionSummary'
 import styles from './styles.module.css'
 import { ContentProps } from './types'
 
 const messages = {
   by: 'By',
-  cost: 'Cost',
   date: 'Date',
   done: 'Done',
   purchaseDetails: 'Purchase Details',
@@ -75,11 +75,7 @@ export const PurchaseModalContent = ({
             {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
           </Text>
         </DetailSection>
-        <DetailSection label={messages.cost}>
-          <Text size='large'>{`$${formatUSDCWeiToUSDString(
-            purchaseDetails.amount
-          )}`}</Text>
-        </DetailSection>
+        <TransactionSummary transaction={purchaseDetails} />
       </ModalContent>
       <ModalFooter className={styles.footer}>
         <HarmonyButton

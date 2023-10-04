@@ -59,6 +59,7 @@ export type DrawerProps = {
   children: ReactNode
   shouldClose?: boolean
   onClose?: () => void
+  onClosed?: () => void
   isFullscreen?: boolean
 }
 
@@ -319,7 +320,12 @@ const interpolateBorderRadius = (r: number) => {
   return `${r2}px ${r2}px 0px 0px`
 }
 
-const FullscreenDrawer = ({ children, isOpen, onClose }: DrawerProps) => {
+const FullscreenDrawer = ({
+  children,
+  isOpen,
+  onClose,
+  onClosed
+}: DrawerProps) => {
   const drawerRef = useRef<HTMLDivElement | null>(null)
   // Lock to prevent double scrollbars
   useEffect(() => {
@@ -348,7 +354,12 @@ const FullscreenDrawer = ({ children, isOpen, onClose }: DrawerProps) => {
       y: 1,
       borderRadius: 40
     },
-    config: slowWobble
+    config: slowWobble,
+    onDestroyed: () => {
+      if (!isOpen && onClosed) {
+        onClosed()
+      }
+    }
   })
   return (
     <Portal>

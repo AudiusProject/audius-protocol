@@ -43,6 +43,7 @@ export type RelayTransactionData = {
   signatures?: Array<{ publicKey: string; signature: Buffer }> | null
   retry?: boolean
   recentBlockhash?: string
+  lookupTableAddresses?: string[]
 }
 
 type AttestationResult = {

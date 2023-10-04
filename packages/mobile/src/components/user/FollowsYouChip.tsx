@@ -1,4 +1,7 @@
+import type { ID } from '@audius/common'
+import { accountSelectors, trpc } from '@audius/common'
 import { View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
@@ -20,8 +23,18 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   }
 }))
 
-export const FollowsYouChip = () => {
+export const FollowsYouChip = ({ userId }: { userId: ID }) => {
   const styles = useStyles()
+  const currentUserId = useSelector(accountSelectors.getUserId)
+  const { data } = trpc.me.userRelationship.useQuery(
+    {
+      theirId: userId.toString()
+    },
+    {
+      enabled: !!currentUserId
+    }
+  )
+  if (!data?.followsMe) return null
   return (
     <View style={styles.followsYou}>
       <Text

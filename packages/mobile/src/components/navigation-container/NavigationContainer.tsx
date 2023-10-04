@@ -129,6 +129,7 @@ const NavigationContainer = (props: NavigationContainerProps) => {
                       initialRouteName: 'Explore',
                       screens: {
                         Explore: 'explore',
+                        PremiumTracks: 'explore/premium-tracks',
                         TrendingPlaylists: 'explore/playlists',
                         TrendingUnderground: 'explore/underground',
                         LetThemDJ: 'explore/let-them-dj',

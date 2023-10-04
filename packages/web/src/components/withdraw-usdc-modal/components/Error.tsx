@@ -6,7 +6,8 @@ import {
   BNUSDC,
   formatUSDCWeiToFloorDollarNumber,
   useWithdrawUSDCModal,
-  WithdrawUSDCModalPages
+  WithdrawUSDCModalPages,
+  decimalIntegerToHumanReadable
 } from '@audius/common'
 import BN from 'bn.js'
 import { useField } from 'formik'
@@ -17,7 +18,6 @@ import {
   ADDRESS,
   AMOUNT
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
-import { toHumanReadable } from 'utils/tokenInput'
 
 import styles from './Error.module.css'
 import { TextRow } from './TextRow'
@@ -53,7 +53,7 @@ export const Error = () => {
       <Divider style={{ margin: 0 }} />
       <TextRow
         left={messages.amountToWithdraw}
-        right={`-$${toHumanReadable(amountValue)}`}
+        right={`-$${decimalIntegerToHumanReadable(amountValue)}`}
       />
       <Divider style={{ margin: 0 }} />
       <div className={styles.destination}>

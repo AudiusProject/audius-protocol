@@ -22,6 +22,10 @@
   gap: var(--unit-2);
 }
 
+.tag {
+  margin-left: auto;
+}
+
 .input {
   height: 24px;
   width: 24px;

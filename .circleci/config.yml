@@ -502,6 +502,8 @@ workflows:
             packages/eslint-config-audius/.* run-mobile-workflow true
             packages/libs/.* run-web-workflow true
             packages/libs/.* run-mobile-workflow true
+            packages/harmony/.* run-web-workflow true
+            packages/harmony/.* run-mobile-workflow true
             packages/mobile/.* run-mobile-workflow true
             packages/web/.* run-web-workflow true
           requires:

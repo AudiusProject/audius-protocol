@@ -1,8 +1,10 @@
 import { ActionSheetIOS, Alert, Platform } from 'react-native'
 import type { ImageLibraryOptions, Asset } from 'react-native-image-picker'
-import { launchImageLibrary, launchCamera } from 'react-native-image-picker'
+import { launchCamera } from 'react-native-image-picker'
 
 import type { Image } from 'app/types/image'
+
+import launchImageLibrary from './launchImageLibrary'
 
 const photoOptions: ImageLibraryOptions = {
   includeBase64: true,
@@ -13,7 +15,8 @@ const photoOptions: ImageLibraryOptions = {
 
 export const launchSelectImageActionSheet = (
   callback: (image: Image, rawResponse: Asset) => void,
-  shareSheetTintColor: string
+  shareSheetTintColor: string,
+  name?: string
 ) => {
   const handlePhoto = ({ assets }: { assets: Asset[] | undefined }) => {
     const response = assets?.[0]
@@ -38,7 +41,9 @@ export const launchSelectImageActionSheet = (
     launchImageLibrary(
       {
         ...photoOptions,
-        selectionLimit: 1
+        selectionLimit: 1,
+        // @ts-ignore this is for mocked version
+        name
       },
       handlePhoto
     )

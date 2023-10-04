@@ -9,9 +9,9 @@ const TRACK_PRICE = 'premium_conditions.usdc_purchase.price'
 const messages = {
   title: 'Set a Price',
   description:
-    'Set the price fans must pay to unlock this track (minimum price of $0.99)',
+    'Set the price fans must pay to unlock this track (minimum price of $1.00)',
   label: 'Cost to Unlock',
-  placeholder: '0.99',
+  placeholder: '1.00',
   dollars: '$',
   usdc: '(USDC)'
 }
@@ -25,7 +25,7 @@ export const TrackPriceField = () => {
       description={messages.description}
       name={TRACK_PRICE}
       value={String(value)}
-      keyboardType='number-pad'
+      keyboardType='numeric'
       label={messages.label}
       placeholder={messages.placeholder}
       startAdornment={

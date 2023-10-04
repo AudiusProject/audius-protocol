@@ -1,0 +1,42 @@
+import type { Meta, StoryObj } from '@storybook/react'
+
+import { IconHeart } from 'components/typography/Icons'
+
+import { SelectablePill } from './SelectablePill'
+
+const meta: Meta<typeof SelectablePill> = {
+  title: 'Components/SelectablePill',
+  component: SelectablePill
+}
+
+export default meta
+
+type Story = StoryObj<typeof SelectablePill>
+
+export const Default: Story = {
+  args: {
+    label: 'Option'
+  }
+}
+
+export const Large: Story = {
+  args: {
+    label: 'Option',
+    size: 'large'
+  }
+}
+
+export const WithIcon: Story = {
+  args: {
+    label: 'Option',
+    icon: IconHeart
+  }
+}
+
+export const LargeWithIcon: Story = {
+  args: {
+    label: 'Option',
+    size: 'large',
+    icon: IconHeart
+  }
+}

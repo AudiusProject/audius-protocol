@@ -42,6 +42,15 @@ services:
       db:
         condition: service_healthy
 
+  trpc:
+    build:
+      context: ${PROJECT_ROOT}/packages/trpc-server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+
   discovery-provider-elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
     environment:

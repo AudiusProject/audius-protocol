@@ -232,10 +232,12 @@ export const TracksTableContainer = ({
             placeholder={messages.filterInputPlacehoder}
             prefix={<IconSearch />}
             suffix={
-              <IconClose
-                className={styles.close}
-                onClick={() => setFilterText('')}
-              />
+              filterText ? (
+                <IconClose
+                  className={styles.close}
+                  onClick={() => setFilterText('')}
+                />
+              ) : null
             }
             size='default'
             onChange={handleFilterChange}

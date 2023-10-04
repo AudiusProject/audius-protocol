@@ -128,8 +128,7 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
           select user_id 
           from reposts
           where
-            is_current = true
-            and is_delete = false
+            is_delete = false
             and repost_type != 'track'::reposttype
             and repost_item_id = playlist_id
             order by created_at desc
@@ -139,8 +138,7 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
           select user_id 
           from saves
           where
-            is_current = true
-            and is_delete = false
+            is_delete = false
             and save_type != 'track'::savetype
             and save_item_id = playlist_id
             order by created_at desc
@@ -149,9 +147,7 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
       from playlists 
       join users on playlist_owner_id = user_id
       left join aggregate_user on users.user_id = aggregate_user.user_id
-      where 
-        playlists.is_current
-        AND users.is_current
+      where 1=1 
     `
   }
 
@@ -165,11 +161,11 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
 
     return `
       and playlist_id in (
-        select playlist_id from playlists where is_current and blocknumber >= ${checkpoint.playlists}
+        select playlist_id from playlists where blocknumber >= ${checkpoint.playlists}
         union
-        select save_item_id from saves where is_current and save_type in ('playlist', 'album') and blocknumber >= ${checkpoint.saves}
+        select save_item_id from saves where save_type in ('playlist', 'album') and blocknumber >= ${checkpoint.saves}
         union
-        select repost_item_id from reposts where is_current and repost_type in ('playlist', 'album') and blocknumber >= ${checkpoint.reposts}
+        select repost_item_id from reposts where repost_type in ('playlist', 'album') and blocknumber >= ${checkpoint.reposts}
       )`
   }
 
@@ -241,9 +237,8 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
       left join aggregate_track using (track_id)
       left join aggregate_plays on tracks.track_id = aggregate_plays.play_item_id
       where 
-        is_current 
-        and not is_delete 
-        and not is_unlisted 
+        is_delete = false
+        and is_unlisted = false
         and track_id in (${idList})`
     const allTracks = await pg.query(q)
     for (let t of allTracks.rows) {

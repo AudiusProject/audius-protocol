@@ -44,9 +44,9 @@ describe('Sign up', () => {
     await assertOnSignUp()
   })
 
-  it('should create an account', async () => {
+  it.only('should create an account', async () => {
     const testUser = generateTestUser()
-    const { email, password } = testUser
+    const { email, password, handle, name } = testUser
     await byRole('textbox', { name: /email/i }).typeText(email)
     await byRole('button', { name: /sign up free/i }).tap()
 
@@ -67,5 +67,33 @@ describe('Sign up', () => {
     await byRole('button', { name: /continue/i }).tap()
 
     await expect(byRole('heading', { name: /pick your handle/i })).toBeVisible()
+    await expect(
+      byText(/this is how others find and tag you. .*/i)
+    ).toBeVisible()
+
+    await byRole('textbox', { name: /handle/i }).typeText(handle)
+    await byRole('button', { name: /continue/i }).tap()
+    await expect(
+      byRole('heading', { name: /finish your profile/i })
+    ).toBeVisible()
+
+    await expect(
+      byText(/your photos & display name is how others see you. .*/i)
+    ).toBeVisible()
+
+    await byRole('button', {
+      name: /select cover photo/i,
+      labelOnly: true
+    }).tap()
+    await byText(/photo library/i).tap()
+
+    await byRole('button', {
+      name: /select profile picture/i,
+      labelOnly: true
+    }).tap()
+    await byText(/photo library/i).tap()
+
+    await byRole('textbox', { name: /display name/i }).typeText(name)
+    await byRole('button', { name: /continue/i }).tap()
   })
 })
