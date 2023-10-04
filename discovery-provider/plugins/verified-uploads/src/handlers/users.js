@@ -1,3 +1,4 @@
+import retry from 'async-retry'
 import { dp_db } from '../db.js'
 import { slack } from '../slack.js'
 import dotenv from 'dotenv'
@@ -38,9 +39,24 @@ export default async ({ user_id, blocknumber }) => {
     const is_verified = current.is_verified
     const handle = current.handle
 
-    const { data } = await axios
-      .get(social_handle_url(handle))
-      .catch(console.error)
+    const data = await retry(
+      async (_) => {
+        const { data } = await axios
+          .get(social_handle_url(handle))
+          .catch(console.error)
+
+        if (Object.keys(data).length === 0) {
+          // wait for identity to load
+          await new Promise((resolve) => {
+            setTimeout(resolve, 1000)
+          })
+          throw new Error('social handles not in identity yet')
+        }
+
+        return data
+      },
+      { retries: 5 }
+    )
 
     console.log({ data })
 
