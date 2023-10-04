@@ -139,7 +139,7 @@ export const AccessAndSaleFormSchema = (trackLength: number) =>
               price: z
                 .number()
                 .lte(999999, messages.errors.price.tooHigh)
-                .gte(99, messages.errors.price.tooLow)
+                .gte(100, messages.errors.price.tooLow)
             })
           )
         })

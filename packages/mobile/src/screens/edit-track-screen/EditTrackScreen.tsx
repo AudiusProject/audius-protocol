@@ -26,7 +26,7 @@ const EditTrackSchema = Yup.object().shape({
     usdc_purchase: Yup.object({
       price: Yup.number()
         .positive()
-        .min(1.00, 'Price must be at least $1.00.')
+        .min(1, 'Price must be at least $1.00.')
         .max(9999.99, 'Price must be less than $9999.99.')
     }).nullable()
   }).nullable(),
