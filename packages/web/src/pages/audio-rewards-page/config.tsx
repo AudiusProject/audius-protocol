@@ -150,6 +150,22 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
       complete: linkButtonMap.firstPlaylist
     }
   },
+  s: {
+    icon: <i className='emoji large treble-clef' />,
+    modalButtonInfo: {
+      incomplete: linkButtonMap.firstPlaylist,
+      inProgress: linkButtonMap.firstPlaylist,
+      complete: linkButtonMap.firstPlaylist
+    }
+  },
+  b: {
+    icon: <i className='emoji large treble-clef' />,
+    modalButtonInfo: {
+      incomplete: linkButtonMap.firstPlaylist,
+      inProgress: linkButtonMap.firstPlaylist,
+      complete: linkButtonMap.firstPlaylist
+    }
+  },
   'trending-playlist': {
     icon: <i className='emoji large arrow-curve-up' />
   },

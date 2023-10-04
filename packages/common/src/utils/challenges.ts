@@ -118,6 +118,22 @@ export const challengeRewardsConfig: Record<
     progressLabel: 'Not Earned',
     panelButtonText: 'Discover Some Tracks'
   },
+  s: {
+    id: 's',
+    title: 'Audio Matching Seller',
+    description: (_) => 'CA$H',
+    fullDescription: () => 'Make dough',
+    progressLabel: 'Not Earned',
+    panelButtonText: 'Get $$'
+  },
+  b: {
+    id: 'b',
+    title: 'Audio Matching Buyer',
+    description: (_) => 'CA$H',
+    fullDescription: () => 'Make dough',
+    progressLabel: 'Not Earned',
+    panelButtonText: 'Get $$'
+  },
   'trending-playlist': {
     id: 'trending-playlist',
     title: 'Top 5 Trending Playlists',
