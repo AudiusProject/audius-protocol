@@ -222,7 +222,6 @@ class ChallengeManager:
                         new_user_challenges_specifiers[user_id]
                     )
                     if self._step_count and completion_count >= self._step_count:
-                        logger.info
                         continue
                     if not self._updater.should_create_new_challenge(
                         session,
