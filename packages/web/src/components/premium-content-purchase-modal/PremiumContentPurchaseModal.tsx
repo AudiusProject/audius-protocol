@@ -9,12 +9,14 @@ import {
   usePremiumContentPurchaseModal,
   usePurchaseContentFormConfiguration,
   buyUSDCActions,
-  purchaseContentActions
+  purchaseContentActions,
+  purchaseContentSelectors,
+  isContentPurchaseInProgress
 } from '@audius/common'
 import { IconCart, ModalContent, ModalFooter, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
-import { Formik } from 'formik'
-import { useDispatch } from 'react-redux'
+import { Formik, useFormikContext } from 'formik'
+import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Icon } from 'components/Icon'
@@ -33,6 +35,8 @@ import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState
 const { startRecoveryIfNecessary, cleanup: cleanupUSDCRecovery } =
   buyUSDCActions
 const { cleanup } = purchaseContentActions
+const { getPurchaseContentFlowStage, getPurchaseContentError } =
+  purchaseContentSelectors
 
 const messages = {
   completePurchase: 'Complete Purchase'
@@ -58,16 +62,10 @@ const RenderForm = ({
   const { error, isUnlocking, purchaseSummaryValues, stage } =
     usePurchaseContentFormState({ price })
 
-  // Attempt recovery once on re-mount of the form
-  useEffect(() => {
-    dispatch(startRecoveryIfNecessary)
-  }, [dispatch])
+  const { resetForm } = useFormikContext()
 
-  const handleClose = useCallback(() => {
-    dispatch(cleanupUSDCRecovery())
-    onClose()
-    dispatch(cleanup())
-  }, [dispatch, onClose])
+  // Reset form on track change
+  useEffect(() => resetForm, [track.track_id, resetForm])
 
   // Navigate to track on successful purchase behind the modal
   useEffect(() => {
@@ -82,7 +80,7 @@ const RenderForm = ({
     <ModalForm>
       <ModalHeader
         className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
-        onClose={handleClose}
+        onClose={onClose}
         showDismissButton={!mobile}
       >
         <Text
@@ -123,12 +121,16 @@ const RenderForm = ({
 }
 
 export const PremiumContentPurchaseModal = () => {
+  const dispatch = useDispatch()
   const {
     isOpen,
     onClose,
     onClosed,
     data: { contentId: trackId }
   } = usePremiumContentPurchaseModal()
+  const stage = useSelector(getPurchaseContentFlowStage)
+  const error = useSelector(getPurchaseContentError)
+  const isUnlocking = !error && isContentPurchaseInProgress(stage)
 
   const { data: track } = useGetTrackById(
     { id: trackId! },
@@ -140,6 +142,24 @@ export const PremiumContentPurchaseModal = () => {
 
   const isValidTrack = track && isTrackPurchasable(track)
 
+  // Attempt recovery once on re-mount of the form
+  useEffect(() => {
+    dispatch(startRecoveryIfNecessary)
+  }, [dispatch])
+
+  const handleClose = useCallback(() => {
+    // Don't allow closing if we're in the middle of a purchase
+    if (!isUnlocking) {
+      onClose()
+    }
+  }, [isUnlocking, onClose])
+
+  const handleClosed = useCallback(() => {
+    onClosed()
+    dispatch(cleanup())
+    dispatch(cleanupUSDCRecovery())
+  }, [onClosed, dispatch])
+
   if (track && !isValidTrack) {
     console.error('PremiumContentPurchaseModal: Track is not purchasable')
   }
@@ -147,8 +167,8 @@ export const PremiumContentPurchaseModal = () => {
   return (
     <ModalDrawer
       isOpen={isOpen}
-      onClose={onClose}
-      onClosed={onClosed}
+      onClose={handleClose}
+      onClosed={handleClosed}
       bodyClassName={styles.modal}
       isFullscreen
       useGradientTitle={false}
@@ -160,7 +180,7 @@ export const PremiumContentPurchaseModal = () => {
           validationSchema={toFormikValidationSchema(validationSchema)}
           onSubmit={onSubmit}
         >
-          <RenderForm track={track} onClose={onClose} />
+          <RenderForm track={track} onClose={handleClose} />
         </Formik>
       ) : null}
     </ModalDrawer>

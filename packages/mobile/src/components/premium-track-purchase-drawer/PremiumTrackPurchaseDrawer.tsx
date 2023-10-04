@@ -4,16 +4,18 @@ import type { PurchasableTrackMetadata } from '@audius/common'
 import {
   PurchaseContentStage,
   formatPrice,
+  isContentPurchaseInProgress,
   isTrackPurchasable,
   payExtraAmountPresetValues,
   purchaseContentActions,
+  purchaseContentSelectors,
   statusIsNotFinalized,
   useGetTrackById,
   usePurchaseContentFormConfiguration
 } from '@audius/common'
 import { Formik, useFormikContext } from 'formik'
 import { Linking, View, ScrollView, TouchableOpacity } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import IconCart from 'app/assets/images/iconCart.svg'
@@ -34,6 +36,9 @@ import { PayExtraFormSection } from './PayExtraFormSection'
 import { PurchaseSuccess } from './PurchaseSuccess'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
 import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState'
+
+const { getPurchaseContentFlowStage, getPurchaseContentError } =
+  purchaseContentSelectors
 
 const PREMIUM_TRACK_PURCHASE_MODAL_NAME = 'PremiumTrackPurchase'
 
@@ -188,7 +193,9 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
     <>
       <ScrollView contentContainerStyle={styles.formContentContainer}>
         <TrackDetailsTile trackId={track.track_id} />
-        <PayExtraFormSection amountPresets={payExtraAmountPresetValues} />
+        {isPurchaseSuccessful ? null : (
+          <PayExtraFormSection amountPresets={payExtraAmountPresetValues} />
+        )}
         <PurchaseSummaryTable
           {...purchaseSummaryValues}
           isPurchaseSuccessful={isPurchaseSuccessful}
@@ -213,33 +220,37 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
           </View>
         )}
       </ScrollView>
-      <View style={styles.formActions}>
-        {error ? (
-          <View style={styles.errorContainer}>
-            <IconError
-              fill={accentRed}
-              width={spacing(5)}
-              height={spacing(5)}
-            />
-            <Text weight='medium' colorValue={accentRed}>
-              {messages.error}
-            </Text>
-          </View>
-        ) : null}
-        <Button
-          onPress={submitForm}
-          disabled={isUnlocking}
-          title={
-            isUnlocking ? messages.purchasing : messages.buy(formatPrice(price))
-          }
-          variant={'primary'}
-          size='large'
-          color={specialLightGreen}
-          iconPosition='left'
-          icon={isUnlocking ? LoadingSpinner : undefined}
-          fullWidth
-        />
-      </View>
+      {isPurchaseSuccessful ? null : (
+        <View style={styles.formActions}>
+          {error ? (
+            <View style={styles.errorContainer}>
+              <IconError
+                fill={accentRed}
+                width={spacing(5)}
+                height={spacing(5)}
+              />
+              <Text weight='medium' colorValue={accentRed}>
+                {messages.error}
+              </Text>
+            </View>
+          ) : null}
+          <Button
+            onPress={submitForm}
+            disabled={isUnlocking}
+            title={
+              isUnlocking
+                ? messages.purchasing
+                : messages.buy(formatPrice(price))
+            }
+            variant={'primary'}
+            size='large'
+            color={specialLightGreen}
+            iconPosition='left'
+            icon={isUnlocking ? LoadingSpinner : undefined}
+            fullWidth
+          />
+        </View>
+      )}
     </>
   )
 }
@@ -254,6 +265,9 @@ export const PremiumTrackPurchaseDrawer = () => {
     { id: trackId },
     { disabled: !trackId }
   )
+  const stage = useSelector(getPurchaseContentFlowStage)
+  const error = useSelector(getPurchaseContentError)
+  const isUnlocking = !error && isContentPurchaseInProgress(stage)
 
   const isLoading = statusIsNotFinalized(trackStatus)
 
@@ -268,6 +282,7 @@ export const PremiumTrackPurchaseDrawer = () => {
 
   return (
     <NativeDrawer
+      blockClose={isUnlocking}
       drawerHeader={PremiumTrackPurchaseDrawerHeader}
       drawerName={PREMIUM_TRACK_PURCHASE_MODAL_NAME}
       onClosed={handleClosed}
