@@ -12,12 +12,13 @@ const social_handle_url = (handle) =>
 
 // TODO: send blocknumber through pg trigger
 export default async ({ user_id, blocknumber }) => {
+  console.log({ user_id, blocknumber })
   if (blocknumber === undefined) {
     console.warn('no block number returned')
     return
   }
   const current = await dp_db('users')
-    .select('handle', 'is_verified') // get this block number
+    .select('handle', 'is_verified')
     .where('user_id', '=', user_id)
     .first()
     .catch(console.error)
@@ -27,6 +28,8 @@ export default async ({ user_id, blocknumber }) => {
     blocknumber,
     db: dp_db
   })
+
+  console.log({ old, current })
 
   // user create
   if (old === undefined) return
