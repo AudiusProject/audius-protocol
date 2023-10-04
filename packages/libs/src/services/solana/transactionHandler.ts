@@ -20,7 +20,7 @@ type HandleTransactionParams = {
   recentBlockhash?: Nullable<string>
   logger?: Logger
   skipPreflight?: Nullable<boolean>
-  feePayerOverride?: Nullable<PublicKey | string>
+  feePayerOverride?: Nullable<PublicKey>
   sendBlockhash?: boolean
   signatures?: Nullable<Array<{ publicKey: string; signature: Buffer }>>
   lookupTableAddresses?: string[]
