@@ -43,7 +43,7 @@ test-discovery-api:
     - run:
         name: Run API Tests
         command: |
-          # Run your API tests but ignore any errors
+          # Run API tests but ignore any errors
           set +e
           newman run ./discovery-provider/api-tests/Discovery\ API\ Tests.postman_collection.json --environment ./discovery-provider/api-tests/Test\ Sandbox.postman_environment.json
           set -e
