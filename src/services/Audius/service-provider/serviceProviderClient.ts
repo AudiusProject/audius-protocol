@@ -10,7 +10,7 @@ import {
   Node,
   Permission,
   Wallet
-} from 'types'
+} from '../../../types'
 import {
   GetDecreasedStakeCancelledEventsResponse,
   GetDecreasedStakeEvaluatedEventsResponse,

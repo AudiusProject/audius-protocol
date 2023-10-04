@@ -2,13 +2,13 @@ import React, { useCallback, useEffect } from 'react'
 import clsx from 'clsx'
 import { Spring } from 'react-spring/renderprops'
 import { IconArrowWhite } from '@audius/stems'
-import { usePushRoute, useBackRoute } from 'utils/effects'
-import { useLastPage } from 'store/pageHistory/hooks'
+import { usePushRoute, useBackRoute } from '../../utils/effects'
+import { useLastPage } from '../../store/pageHistory/hooks'
 
 import desktopStyles from './Page.module.css'
 import mobileStyles from './PageMobile.module.css'
-import { createStyles } from 'utils/mobile'
-import { useIsMobile } from 'utils/hooks'
+import { createStyles } from '../../utils/mobile'
+import { useIsMobile } from '../../utils/hooks'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 

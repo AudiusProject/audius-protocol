@@ -1,10 +1,10 @@
 import React from 'react'
 
 import styles from './APILeaderboard.module.css'
-import Page from 'components/Page'
-import { API, API_TITLE } from 'utils/routes'
-import RewardsCTABanner from 'components/RewardsCTABanner'
-import TopAPITable from 'components/TopAPITable'
+import Page from '../../components/Page'
+import { API, API_TITLE } from '../../utils/routes'
+import RewardsCTABanner from '../../components/RewardsCTABanner'
+import TopAPITable from '../../components/TopAPITable'
 
 const messages = {
   title: 'API Leaderboard',

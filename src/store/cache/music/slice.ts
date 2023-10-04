@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Album, Playlist, Track } from 'types'
+import { Album, Playlist, Track } from '../../../types'
 
 export type State = {
   topTracks: Track[] | null | MusicError

@@ -2,8 +2,8 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
 
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
+import Audius from '../../../services/Audius'
+import { AppState } from '../../../store/types'
 import {
   setActiveProposals,
   setAllProposals,
@@ -12,13 +12,13 @@ import {
   setVotingPeriod
 } from './slice'
 import { useEffect } from 'react'
-import { Proposal, ProposalEvent, Outcome } from 'types'
+import { Proposal, ProposalEvent, Outcome } from '../../../types'
 import {
   useTotalStaked,
   useDispatchBasedOnBlockNumber,
   useTimeRemaining,
   useEthBlockNumber
-} from 'store/cache/protocol/hooks'
+} from '../../../store/cache/protocol/hooks'
 
 // -------------------------------- Selectors  --------------------------------
 export const getActiveProposals = (state: AppState) =>

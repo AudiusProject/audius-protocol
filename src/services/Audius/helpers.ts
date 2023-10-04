@@ -1,10 +1,9 @@
-import { Utils } from '@audius/libs'
-import { formatNumber, formatAudString } from 'utils/format'
+import { Utils } from '@audius/sdk/dist/legacy.js'
+import { formatNumber, formatAudString } from '../../utils/format'
 import AudiusClient from './AudiusClient'
-import { Permission, BigNumber, Proposal } from 'types'
-import { fetchWithTimeout } from 'utils/fetch'
+import { Permission, BigNumber, Proposal } from '../../types'
+import { fetchWithTimeout } from '../../utils/fetch'
 import BN from 'bn.js'
-import { weiAudToAud } from 'utils/numeric'
 
 // Helpers
 export async function hasPermissions(
@@ -182,7 +181,7 @@ export async function getContentNodeMetadata(
 
 export function decodeCallData(types: string[], callData: string) {
   // TODO: Like methods above and throughout, move to better pattern
-  const web3 = window.audiusLibs.ethWeb3Manager.web3
+  const web3 = window.audiusLibs.ethWeb3Manager!.web3
   return web3.eth.abi.decodeParameters(types, callData)
 }
 

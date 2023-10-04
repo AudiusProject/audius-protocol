@@ -2,11 +2,11 @@ import { useState, useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
-import { getAccountWallet, fetchPendingTransactions } from 'store/account/hooks'
+import { getAccountWallet, fetchPendingTransactions } from '../../store/account/hooks'
 
-import { Status, Address } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
+import { Status, Address } from '../../types'
+import Audius from '../../services/Audius'
+import { AppState } from '../../store/types'
 
 function removeAudiusDelegator(
   serviceProvider: Address,

@@ -1,7 +1,7 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { useQuery } from '@apollo/client'
 import { setDidError } from './slice'
-import { AppState } from 'store/types'
+import { AppState } from '../../store/types'
 
 // -------------------------------- Selectors  --------------------------------
 export const getGraphAPI = (state: AppState) => state.api

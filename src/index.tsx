@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 
 import App from './App'
 
+import 'setimmediate'
 import 'simplebar-react/dist/simplebar.min.css'
 import '@audius/stems/dist/avenir.css'
 import '@audius/stems/dist/stems.css'

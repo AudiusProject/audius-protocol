@@ -1,4 +1,4 @@
-import { Proposal, VoteEvent } from 'types'
+import { Proposal, VoteEvent } from '../../../types'
 
 /**
  * Raw unformatted Proposal returned over the wire.

@@ -1,9 +1,9 @@
-import BarChart from 'components/BarChart'
+import BarChart from '../../components/BarChart'
 import React, { useCallback, useState } from 'react'
-import { useTopApps } from 'store/cache/analytics/hooks'
-import { Bucket, MetricError } from 'store/cache/analytics/slice'
-import { usePushRoute } from 'utils/effects'
-import { API } from 'utils/routes'
+import { useTopApps } from '../../store/cache/analytics/hooks'
+import { Bucket, MetricError } from '../../store/cache/analytics/slice'
+import { usePushRoute } from '../../utils/effects'
+import { API } from '../../utils/routes'
 
 const DISPLAY_APP_COUNT = 8
 

@@ -2,12 +2,12 @@ import React, { useCallback, useState } from 'react'
 import BN from 'bn.js'
 import clsx from 'clsx'
 
-import Tooltip, { Position } from 'components/Tooltip'
-import AudiusClient from 'services/Audius'
-import { formatShortAud, formatWei, formatWeiNumber } from 'utils/format'
+import Tooltip, { Position } from '../../components/Tooltip'
+import AudiusClient from '../../services/Audius'
+import { formatShortAud, formatWei, formatWeiNumber } from '../../utils/format'
 
 import styles from './DisplayAudio.module.css'
-import copyToClipboard from 'utils/copyToClipboard'
+import copyToClipboard from '../../utils/copyToClipboard'
 
 type OwnProps = {
   className?: string

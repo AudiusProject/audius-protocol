@@ -4,8 +4,8 @@ import { Action } from 'redux'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
+import Audius from '../../../services/Audius'
+import { AppState } from '../../../store/types'
 import {
   setApiCalls,
   setTotalStaked,
@@ -19,10 +19,8 @@ import {
   MetricError
 } from './slice'
 import { useEffect, useState } from 'react'
-import { DiscoveryProvider } from 'types'
-import { useDiscoveryProviders } from '../discoveryProvider/hooks'
 import { useAverageBlockTime, useEthBlockNumber } from '../protocol/hooks'
-import { weiAudToAud } from 'utils/numeric'
+import { weiAudToAud } from '../../../utils/numeric'
 import { ELECTRONIC_SUB_GENRES } from './genres'
 import { fetchWithLibs } from '../../../utils/fetch'
 dayjs.extend(duration)
@@ -130,7 +128,7 @@ async function fetchRoutesTimeSeries(bucket: Bucket) {
     metric = await fetchWithLibs({
       endpoint: `v1/metrics/aggregates/routes/${bucket}`,
       queryParams: { bucket_size: bucketSize }
-    })
+    }) as any
   } catch (e) {
     console.error(e)
     error = true
@@ -165,7 +163,7 @@ async function fetchTimeSeries(
     const data = await fetchWithLibs({
       endpoint: `v1/metrics/${route}`,
       queryParams: { bucket_size: bucketSize, start_time: startTime }
-    })
+    }) as any
     metric = data.reverse()
   } catch (e) {
     console.error(e)
@@ -260,7 +258,7 @@ export function fetchTotalStaked(
 const getTrailingAPI = async () => {
   const data = await fetchWithLibs({
     endpoint: 'v1/metrics/aggregates/routes/trailing/month'
-  })
+  }) as any
   return {
     total_count: data?.total_count ?? 0,
     unique_count: data?.unique_count ?? 0,
@@ -351,7 +349,7 @@ export function fetchTrailingTopGenres(
       const data = await fetchWithLibs({
         endpoint: 'v1/metrics/genres',
         queryParams: { start_time: startTime }
-      })
+      }) as any
 
       const agg: CountRecord = {
         Electronic: 0

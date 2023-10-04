@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-const gqlBackupUri = process.env.REACT_APP_GQL_BACKUP_URI
+const gqlBackupUri = import.meta.env.VITE_GQL_BACKUP_URI
 
 export type State = {
   didError: boolean

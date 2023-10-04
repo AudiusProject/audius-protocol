@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react'
 import clsx from 'clsx'
-import Paper from 'components/Paper'
-import Loading from 'components/Loading'
+import Paper from '../../components/Paper'
+import Loading from '../../components/Loading'
 
 import styles from './Table.module.css'
-import Error from 'components/Error'
+import Error from '../../components/Error'
 
 type TableProps = {
   className?: string

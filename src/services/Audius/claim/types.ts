@@ -1,4 +1,4 @@
-import { Address } from 'types'
+import { Address } from '../../../types'
 import BN from 'bn.js'
 
 export type GetClaimProcessedResponse = {

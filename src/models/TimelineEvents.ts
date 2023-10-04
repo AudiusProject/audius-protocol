@@ -1,16 +1,16 @@
-import { Address, ProposalEvent, VoteEvent } from 'types'
+import { Address, ProposalEvent, VoteEvent } from '../types'
 import BN from 'bn.js'
 import {
   GetRegisteredServiceProviderEventsResponse,
   GetDeregisteredServiceProviderEventsResponse,
   GetIncreasedStakeEventResponse
 } from '../services/Audius/service-provider/types'
-import { GetIncreaseDelegateStakeEventsResponse } from 'services/Audius/delegate/types'
+import { GetIncreaseDelegateStakeEventsResponse } from '../services/Audius/delegate/types'
 import {
   GetClaimEventsResponse,
   GetDelegatorRemovedEventsResponse,
   GetSlashEventsResponse
-} from 'services/Audius/delegate/types'
+} from '../services/Audius/delegate/types'
 import { GetClaimProcessedResponse } from '../services/Audius/claim/types'
 
 /* ServiceProvider Events */

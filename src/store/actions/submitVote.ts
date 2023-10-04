@@ -3,11 +3,11 @@ import { useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
 
-import { Status, Vote } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
-import { fetchVotes } from 'store/cache/votes/hooks'
-import { fetchProposal } from 'store/cache/proposals/hooks'
+import { Status, Vote } from '../../types'
+import Audius from '../../services/Audius'
+import { AppState } from '../../store/types'
+import { fetchVotes } from '../../store/cache/votes/hooks'
+import { fetchProposal } from '../../store/cache/proposals/hooks'
 
 function submitAudiusVote(
   proposalId: number,

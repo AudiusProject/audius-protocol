@@ -61,7 +61,7 @@ const pinFromFs = async (cid) => {
       name: `Dashboard build ${env} ${cid} - ${new Date().toISOString()}`
     }
   }
-  const sourcePath = '/home/circleci/protocol-dashboard/build'
+  const sourcePath = '/home/circleci/protocol-dashboard/dist'
   try {
     const result = await pinata.pinFromFS(sourcePath, options)
     console.log(result);

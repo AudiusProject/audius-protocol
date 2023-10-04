@@ -1,9 +1,9 @@
 import numeral from 'numeral'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
-import { Utils } from '@audius/libs'
-import { Address, BigNumber } from 'types'
-import AudiusClient from 'services/Audius'
+import { Utils } from '@audius/sdk/dist/legacy.js'
+import { Address, BigNumber } from '../types'
+import AudiusClient from '../services/Audius'
 import { TICKER } from './consts'
 import BN from 'bn.js'
 
@@ -63,7 +63,7 @@ export const formatShortWallet = (wallet: Address) => {
  * @param {BN} num
  */
 export const formatAud = (amount: BigNumber | null) => {
-  if (!Utils.isBN(amount)) return ''
+  if (!Utils.isBN(amount as any)) return ''
   let aud = (amount as BigNumber)
     .div(Utils.toBN('1000000000000000000'))
     .toString()
@@ -72,13 +72,13 @@ export const formatAud = (amount: BigNumber | null) => {
 }
 
 export const formatWeiNumber = (amount: BigNumber | null) => {
-  if (!Utils.isBN(amount)) return ''
+  if (!Utils.isBN(amount as any)) return ''
   let aud = formatNumberCommas(AudiusClient.getAud(amount as BigNumber))
   return aud
 }
 
 export const formatWei = (amount: BigNumber | null) => {
-  if (!Utils.isBN(amount)) return ''
+  if (!Utils.isBN(amount as any)) return ''
   let aud = formatNumberCommas(AudiusClient.getAud(amount as BigNumber))
   return `${aud} ${TICKER}`
 }

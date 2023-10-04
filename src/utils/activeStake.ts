@@ -1,5 +1,5 @@
-import { Utils } from '@audius/libs'
-import { Operator, User } from 'types'
+import { Utils } from '@audius/sdk/dist/legacy.js'
+import { Operator, User } from '../types'
 import BN from 'bn.js'
 
 /**

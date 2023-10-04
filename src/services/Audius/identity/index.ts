@@ -1,7 +1,7 @@
 import { AudiusClient } from '../AudiusClient'
 
 import BN from 'bn.js'
-import { Address } from 'types'
+import { Address } from '../../../types'
 
 export default class Identity {
   public aud: AudiusClient

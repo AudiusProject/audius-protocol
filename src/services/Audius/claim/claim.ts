@@ -1,7 +1,7 @@
 import { AudiusClient } from '../AudiusClient'
 import BN from 'bn.js'
-import { BlockNumber, Address } from 'types'
-import { ClaimProcessedEvent } from 'models/TimelineEvents'
+import { BlockNumber, Address } from '../../../types'
+import { ClaimProcessedEvent } from '../../../models/TimelineEvents'
 import { GetClaimProcessedResponse } from './types'
 
 export default class Claim {

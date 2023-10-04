@@ -1,25 +1,25 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import clsx from 'clsx'
-import { ButtonType } from 'components/Button'
+import { ButtonType } from '../../components/Button'
 import BN from 'bn.js'
 
-import AudiusClient from 'services/Audius'
-import Modal from 'components/Modal'
-import Button from 'components/Button'
-import ValueSlider from 'components/ValueSlider'
-import TextField from 'components/TextField'
+import AudiusClient from '../../services/Audius'
+import Modal from '../../components/Modal'
+import Button from '../../components/Button'
+import ValueSlider from '../../components/ValueSlider'
+import TextField from '../../components/TextField'
 import styles from './UpdateDelegationModal.module.css'
-import { Status, Address } from 'types'
-import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+import { Status, Address } from '../../types'
+import { checkWeiNumber, parseWeiNumber } from '../../utils/numeric'
 import ConfirmTransactionModal, {
   OldStake,
   NewStake
-} from 'components/ConfirmTransactionModal'
-import { TICKER } from 'utils/consts'
-import { useModalControls } from 'utils/hooks'
-import { useUserDelegation } from 'store/actions/userDelegation'
-import useUpdateDelegation from 'store/actions/updateDelegation'
-import DisplayAudio from 'components/DisplayAudio'
+} from '../../components/ConfirmTransactionModal'
+import { TICKER } from '../../utils/consts'
+import { useModalControls } from '../../utils/hooks'
+import { useUserDelegation } from '../../store/actions/userDelegation'
+import useUpdateDelegation from '../../store/actions/updateDelegation'
+import DisplayAudio from '../../components/DisplayAudio'
 
 const messages = {
   increaseTitle: 'Increase Delegation',
@@ -66,7 +66,7 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
     (value: string) => {
       setStakingAmount(value)
       if (checkWeiNumber(value)) {
-        setStakingBN(parseWeiNumber(value))
+        setStakingBN(parseWeiNumber(value)!)
       }
     },
     [setStakingAmount, setStakingBN]

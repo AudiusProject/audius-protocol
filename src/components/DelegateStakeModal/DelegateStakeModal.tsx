@@ -1,25 +1,25 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import clsx from 'clsx'
-import { Utils } from '@audius/libs'
+import { Utils } from '@audius/sdk/dist/legacy.js'
 import { ButtonType } from '@audius/stems'
 
-import { useDelegateStake } from 'store/actions/delegateStake'
-import { useUserDelegation } from 'store/actions/userDelegation'
-import AudiusClient from 'services/Audius'
-import Modal from 'components/Modal'
-import Button from 'components/Button'
-import ValueSlider from 'components/ValueSlider'
-import TextField from 'components/TextField'
+import { useDelegateStake } from '../../store/actions/delegateStake'
+import { useUserDelegation } from '../../store/actions/userDelegation'
+import AudiusClient from '../../services/Audius'
+import Modal from '../../components/Modal'
+import Button from '../../components/Button'
+import ValueSlider from '../../components/ValueSlider'
+import TextField from '../../components/TextField'
 import styles from './DelegateStakeModal.module.css'
-import { Status, Address } from 'types'
-import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+import { Status, Address } from '../../types'
+import { checkWeiNumber, parseWeiNumber } from '../../utils/numeric'
 import ConfirmTransactionModal, {
   Delegating,
   ToOperator
-} from 'components/ConfirmTransactionModal'
-import { useModalControls } from 'utils/hooks'
-import { formatShortWallet } from 'utils/format'
-import { TICKER } from 'utils/consts'
+} from '../../components/ConfirmTransactionModal'
+import { useModalControls } from '../../utils/hooks'
+import { formatShortWallet } from '../../utils/format'
+import { TICKER } from '../../utils/consts'
 
 const messages = {
   title: 'Delegate to Operator',
@@ -63,7 +63,7 @@ const DelegateStakeModal: React.FC<DelegateStakeModalProps> = ({
     (value: string) => {
       setStakingAmount(value)
       if (checkWeiNumber(value)) {
-        setStakingBN(parseWeiNumber(value))
+        setStakingBN(parseWeiNumber(value)!)
       }
     },
     [setStakingAmount]

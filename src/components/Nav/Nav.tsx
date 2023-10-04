@@ -5,9 +5,9 @@ import { push as pushRoute } from 'connected-react-router'
 import { matchPath } from 'react-router-dom'
 import clsx from 'clsx'
 
-import { AppState } from 'store/types'
+import { AppState } from '../../store/types'
 import styles from './Nav.module.css'
-import * as routes from 'utils/routes'
+import * as routes from '../../utils/routes'
 import { Button, ButtonType } from '@audius/stems'
 import { useLocation } from 'react-router-dom'
 

@@ -1,28 +1,28 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import clsx from 'clsx'
 import BN from 'bn.js'
-import { Utils } from '@audius/libs'
+import { Utils } from '@audius/sdk/dist/legacy.js'
 import { TabSlider, ButtonType } from '@audius/stems'
 
-import { useRegisterService } from 'store/actions/registerService'
-import { useServiceInfo } from 'store/cache/protocol/hooks'
-import AudiusClient from 'services/Audius'
-import Modal from 'components/Modal'
-import Button from 'components/Button'
-import ValueSlider from 'components/ValueSlider'
-import TextField from 'components/TextField'
+import { useRegisterService } from '../../store/actions/registerService'
+import { useServiceInfo } from '../../store/cache/protocol/hooks'
+import AudiusClient from '../../services/Audius'
+import Modal from '../../components/Modal'
+import Button from '../../components/Button'
+import ValueSlider from '../../components/ValueSlider'
+import TextField from '../../components/TextField'
 import styles from './RegisterServiceModal.module.css'
-import { ServiceType, Status } from 'types'
-import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+import { ServiceType, Status } from '../../types'
+import { checkWeiNumber, parseWeiNumber } from '../../utils/numeric'
 import ConfirmTransactionModal, {
   OperatorStaking,
   NewService
-} from 'components/ConfirmTransactionModal'
-import { useAccountUser, useAccount } from 'store/account/hooks'
-import { formatShortWallet } from 'utils/format'
-import { TICKER } from 'utils/consts'
-import { useModalControls } from 'utils/hooks'
-import getActiveStake from 'utils/activeStake'
+} from '../../components/ConfirmTransactionModal'
+import { useAccountUser, useAccount } from '../../store/account/hooks'
+import { formatShortWallet } from '../../utils/format'
+import { TICKER } from '../../utils/consts'
+import { useModalControls } from '../../utils/hooks'
+import getActiveStake from '../../utils/activeStake'
 
 const messages = {
   staking: `Staking Amount ${TICKER}`,
@@ -125,7 +125,7 @@ const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
     if (isOpen && selectedServiceInfo && calculatedMinStakeRef.current) {
       setStakingBN(calculatedMinStakeRef.current)
       const amount = AudiusClient.getAud(
-        Utils.toBN(calculatedMinStakeRef.current)
+        Utils.toBN(calculatedMinStakeRef.current as any)
       )
       setStakingAmount(amount.toString())
     }
@@ -150,7 +150,7 @@ const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
     (value: string) => {
       setStakingAmount(value)
       if (checkWeiNumber(value)) {
-        setStakingBN(parseWeiNumber(value))
+        setStakingBN(parseWeiNumber(value)!)
       }
     },
     [setStakingAmount]

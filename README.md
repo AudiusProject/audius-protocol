@@ -14,6 +14,5 @@ To start:
 2. Run the Application `npm run start:<environment>`
 
 To Deploy:
-Build the application using `npm run build` and serve the static `build` folder as a simple page app  
-ex. `serve -s build`
+Build the application using `npm run build:prod` and serve the static `dist` folder as a simple page app via `npm run serve`
  

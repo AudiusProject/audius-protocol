@@ -1,7 +1,7 @@
-import AudiusClient from 'services/Audius'
+import AudiusClient from '../services/Audius'
 import useTotalStaked from './useTotalStaked'
-import { useFundsPerRound } from 'store/cache/claims/hooks'
-import { Status } from 'types'
+import { useFundsPerRound } from '../store/cache/claims/hooks'
+import { Status } from '../types'
 
 export const useWeeklyRewardRate = () => {
   const fundsPerRound = useFundsPerRound()

@@ -2,42 +2,42 @@ import React, { useEffect, useMemo } from 'react'
 import clsx from 'clsx'
 import { RouteComponentProps } from 'react-router'
 import { matchPath } from 'react-router-dom'
-import { Utils } from '@audius/libs'
+import { Utils } from '@audius/sdk/dist/legacy.js'
 
-import Page from 'components/Page'
-import Delegate from 'components/Delegate'
-import Timeline from 'components/Timeline'
-import StakingStat from 'components/StakingStat'
-import UserStakedStat from 'components/UserStakedStat'
-import DiscoveryTable from 'components/DiscoveryTable'
-import ContentTable from 'components/ContentTable'
-import DelegatorsTable from 'components/DelegatorsTable'
-import DelegatesTable from 'components/DelegatesTable'
-import UserInfo from 'components/UserInfo'
-import ManageService from 'components/ManageService'
+import Page from '../../components/Page'
+import Delegate from '../../components/Delegate'
+import Timeline from '../../components/Timeline'
+import StakingStat from '../../components/StakingStat'
+import UserStakedStat from '../../components/UserStakedStat'
+import DiscoveryTable from '../../components/DiscoveryTable'
+import ContentTable from '../../components/ContentTable'
+import DelegatorsTable from '../../components/DelegatorsTable'
+import DelegatesTable from '../../components/DelegatesTable'
+import UserInfo from '../../components/UserInfo'
+import ManageService from '../../components/ManageService'
 
 import {
   useUser,
   useTotalDelegates,
   useUserDelegates,
   useActiveInboundDelegation
-} from 'store/cache/user/hooks'
-import { Status, User, Operator } from 'types'
-import { useAccount } from 'store/account/hooks'
+} from '../../store/cache/user/hooks'
+import { Status, User, Operator } from '../../types'
+import { useAccount } from '../../store/account/hooks'
 import {
   SERVICES_ACCOUNT_USER,
   SERVICES_TITLE,
   SERVICES,
   operatorPage,
   accountPage
-} from 'utils/routes'
-import { useReplaceRoute } from 'utils/effects'
+} from '../../utils/routes'
+import { useReplaceRoute } from '../../utils/effects'
 
 import desktopStyles from './User.module.css'
 import mobileStyles from './UserMobile.module.css'
-import { createStyles } from 'utils/mobile'
-import getActiveStake from 'utils/activeStake'
-import DelegationStatsChip from 'components/DelegationStatsChip/DelegationStatsChip'
+import { createStyles } from '../../utils/mobile'
+import getActiveStake from '../../utils/activeStake'
+import DelegationStatsChip from '../../components/DelegationStatsChip/DelegationStatsChip'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 

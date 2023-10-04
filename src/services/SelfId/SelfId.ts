@@ -1,5 +1,5 @@
-import { Address } from 'types'
-import { getRandomDefaultImage } from 'utils/identicon'
+import { Address } from '../../types'
+import { getRandomDefaultImage } from '../../utils/identicon'
 import { Core } from '@self.id/core'
 import { IdxUser } from './types'
 

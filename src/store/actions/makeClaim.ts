@@ -2,11 +2,11 @@ import { useState, useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
-import { fetchPendingClaim } from 'store/cache/claims/hooks'
-import { Status, Address } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
-import { fetchUser } from 'store/cache/user/hooks'
+import { fetchPendingClaim } from '../../store/cache/claims/hooks'
+import { Status, Address } from '../../types'
+import Audius from '../../services/Audius'
+import { AppState } from '../../store/types'
+import { fetchUser } from '../../store/cache/user/hooks'
 
 function claimAudiusRewards(
   wallet: Address,

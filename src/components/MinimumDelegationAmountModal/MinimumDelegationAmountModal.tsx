@@ -2,19 +2,19 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { ButtonType } from '@audius/stems'
 import BN from 'bn.js'
 
-import { useUpdateMinimumDelegationAmount } from 'store/actions/updateMinimumDelegationAmount'
-import Modal from 'components/Modal'
-import Button from 'components/Button'
-import TextField from 'components/TextField'
+import { useUpdateMinimumDelegationAmount } from '../../store/actions/updateMinimumDelegationAmount'
+import Modal from '../../components/Modal'
+import Button from '../../components/Button'
+import TextField from '../../components/TextField'
 import styles from './MinimumDelegationAmountModal.module.css'
-import { Status } from 'types'
+import { Status } from '../../types'
 import ConfirmTransactionModal, {
   StandaloneBox
-} from 'components/ConfirmTransactionModal'
-import { useModalControls } from 'utils/hooks'
-import DisplayAudio from 'components/DisplayAudio'
-import { TICKER } from 'utils/consts'
-import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
+} from '../../components/ConfirmTransactionModal'
+import { useModalControls } from '../../utils/hooks'
+import DisplayAudio from '../../components/DisplayAudio'
+import { TICKER } from '../../utils/consts'
+import { checkWeiNumber, parseWeiNumber } from '../../utils/numeric'
 
 const messages = {
   title: 'Minimum Delegation Amount',
@@ -44,7 +44,7 @@ const MinimumDelegationAmountModal: React.FC<MinimumDelegationAmountModalProps> 
     (value: string) => {
       setMinDelegation(value)
       if (checkWeiNumber(value)) {
-        setMinDelegationBN(parseWeiNumber(value))
+        setMinDelegationBN(parseWeiNumber(value)!)
       }
     },
     [setMinDelegation, setMinDelegationBN]

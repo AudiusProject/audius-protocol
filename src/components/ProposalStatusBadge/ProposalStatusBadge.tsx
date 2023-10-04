@@ -1,7 +1,7 @@
 import React from 'react'
 import styles from './ProposalStatusBadge.module.css'
 import clsx from 'clsx'
-import { Outcome } from 'types'
+import { Outcome } from '../../types'
 
 const messages = {
   open: 'open',

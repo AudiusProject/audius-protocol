@@ -3,11 +3,11 @@ import { useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
 
-import { Status, ServiceType, Address } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
-import { getDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
-import { getContentNode } from 'store/cache/contentNode/hooks'
+import { Status, ServiceType, Address } from '../../types'
+import Audius from '../../services/Audius'
+import { AppState } from '../../store/types'
+import { getDiscoveryProvider } from '../../store/cache/discoveryProvider/hooks'
+import { getContentNode } from '../../store/cache/contentNode/hooks'
 
 function modifyAudiusService(
   serviceType: ServiceType,

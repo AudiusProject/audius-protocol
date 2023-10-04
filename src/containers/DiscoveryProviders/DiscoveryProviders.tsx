@@ -1,9 +1,9 @@
 import React from 'react'
 
 import styles from './DiscoveryProviders.module.css'
-import Page from 'components/Page'
-import DiscoveryTable from 'components/DiscoveryTable'
-import { SERVICES, SERVICES_TITLE } from 'utils/routes'
+import Page from '../../components/Page'
+import DiscoveryTable from '../../components/DiscoveryTable'
+import { SERVICES, SERVICES_TITLE } from '../../utils/routes'
 
 const messages = {
   title: 'Discovery Nodes'

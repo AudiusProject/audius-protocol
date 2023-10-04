@@ -1,7 +1,7 @@
 import BN from 'bn.js'
 import { AudiusClient } from '../AudiusClient'
 
-import { Address, BlockNumber } from 'types'
+import { Address, BlockNumber } from '../../../types'
 
 export default class Staking {
   aud: AudiusClient

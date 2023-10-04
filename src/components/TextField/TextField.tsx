@@ -60,6 +60,7 @@ const TextField: React.FC<TextFieldProps> = ({
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       let value = e.target.value
       if (isNumeric) {
+        // @ts-ignore
         value = value.replaceAll(',', '')
       }
       setInputValue(value)

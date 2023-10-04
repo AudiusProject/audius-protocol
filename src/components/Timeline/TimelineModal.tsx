@@ -3,9 +3,9 @@ import clsx from 'clsx'
 import SimpleBar from 'simplebar-react'
 
 import styles from './TimelineModal.module.css'
-import Modal from 'components/Modal'
+import Modal from '../../components/Modal'
 import TimelineEvent from './TimelineEvent'
-import { TimelineEvent as TimelineEventType } from 'models/TimelineEvents'
+import { TimelineEvent as TimelineEventType } from '../../models/TimelineEvents'
 
 const messages = {
   title: 'Timeline'

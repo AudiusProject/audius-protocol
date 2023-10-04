@@ -1,8 +1,8 @@
 import React from 'react'
 
-import Page from 'components/Page'
-import TopAddressesTable from 'components/TopAddressesTable'
-import { SERVICES_TITLE, SERVICES } from 'utils/routes'
+import Page from '../../components/Page'
+import TopAddressesTable from '../../components/TopAddressesTable'
+import { SERVICES_TITLE, SERVICES } from '../../utils/routes'
 
 const messages = {
   title: 'ALL USERS'

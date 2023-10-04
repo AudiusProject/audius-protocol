@@ -1,16 +1,16 @@
 import React from 'react'
 import clsx from 'clsx'
 
-import Page from 'components/Page'
-import ManageService from 'components/ManageService'
-import DiscoveryTable from 'components/DiscoveryTable'
-import ContentTable from 'components/ContentTable'
-import TopOperatorsTable from 'components/TopOperatorsTable'
-import { useAccount } from 'store/account/hooks'
+import Page from '../../components/Page'
+import ManageService from '../../components/ManageService'
+import DiscoveryTable from '../../components/DiscoveryTable'
+import ContentTable from '../../components/ContentTable'
+import TopOperatorsTable from '../../components/TopOperatorsTable'
+import { useAccount } from '../../store/account/hooks'
 
 import desktopStyles from './Services.module.css'
 import mobileStyles from './ServicesMobile.module.css'
-import { createStyles } from 'utils/mobile'
+import { createStyles } from '../../utils/mobile'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 

@@ -3,11 +3,11 @@ import { useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
 
-import { Status, BigNumber } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
-import { fetchPendingTransactions, getAccountWallet } from 'store/account/hooks'
-import { fetchUser } from 'store/cache/user/hooks'
+import { Status, BigNumber } from '../../types'
+import Audius from '../../services/Audius'
+import { AppState } from '../../store/types'
+import { fetchPendingTransactions, getAccountWallet } from '../../store/account/hooks'
+import { fetchUser } from '../../store/cache/user/hooks'
 
 function increaseAudiusStake(
   stakingAmount: BigNumber,

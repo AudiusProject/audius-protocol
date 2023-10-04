@@ -1,11 +1,11 @@
-import Audius from 'services/Audius'
+import Audius from '../../../services/Audius'
 import { useSelector, useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
-import AppState from 'store/types'
-import { Playlist, Track } from 'types'
+import AppState from '../../../store/types'
+import { Playlist, Track } from '../../../types'
 import { useEffect, useState } from 'react'
-import imageBlank from 'assets/img/imageBlank2x.png'
+import imageBlank from '../../../assets/img/imageBlank2x.png'
 import {
   MusicError,
   setTopAlbums,
@@ -14,7 +14,7 @@ import {
 } from './slice'
 import { fetchWithLibs } from '../../../utils/fetch'
 
-const AUDIUS_URL = process.env.REACT_APP_AUDIUS_URL
+const AUDIUS_URL = import.meta.env.VITE_AUDIUS_URL
 
 // -------------------------------- Selectors  ---------------------------------
 
@@ -37,7 +37,7 @@ export function fetchTopTracks(): ThunkAction<
       const data = await fetchWithLibs({
         endpoint: '/v1/tracks/trending',
         queryParams: { limit: 4 }
-      })
+      }) as any
       const tracks: Track[] = data.slice(0, 4).map((d: any) => ({
         title: d.title,
         handle: d.user.handle,
@@ -65,7 +65,7 @@ export function fetchTopPlaylists(): ThunkAction<
       const limit = 5
       const data = await fetchWithLibs({
         endpoint: '/v1/full/playlists/trending'
-      })
+      }) as any
       const playlists: Playlist[] = data.slice(0, limit).map((d: any) => ({
         title: d.playlist_name,
         handle: d.user.handle,
@@ -93,7 +93,7 @@ export function fetchTopAlbums(): ThunkAction<
       const data = await fetchWithLibs({
         endpoint: '/v1/full/playlists/top',
         queryParams: { type: 'album', limit: 5 }
-      })
+      }) as any
       const albums: Playlist[] = data.map((d: any) => ({
         title: d.playlist_name,
         handle: d.user.handle,

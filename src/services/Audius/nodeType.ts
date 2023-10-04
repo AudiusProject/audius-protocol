@@ -1,6 +1,6 @@
 import { AudiusClient } from './AudiusClient'
 
-import { ServiceType, Version, BigNumber } from 'types'
+import { ServiceType, Version, BigNumber } from '../../types'
 
 export type GetValidServiceTypesResponse = Array<ServiceType>
 export type GetServiceTypeInfoResponse = {

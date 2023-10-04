@@ -1,21 +1,21 @@
 import React, { useCallback } from 'react'
 import clsx from 'clsx'
 
-import { Outcome, Proposal as ProposalType, Vote } from 'types'
-import VoteMeter from 'components/VoteMeter'
-import ProposalStatusBadge from 'components/ProposalStatusBadge'
-import { usePushRoute } from 'utils/effects'
-import { proposalPage } from 'utils/routes'
-import { leftPadZero, getHumanReadableTime, getDate } from 'utils/format'
+import { Outcome, Proposal as ProposalType, Vote } from '../../types'
+import VoteMeter from '../../components/VoteMeter'
+import ProposalStatusBadge from '../../components/ProposalStatusBadge'
+import { usePushRoute } from '../../utils/effects'
+import { proposalPage } from '../../utils/routes'
+import { leftPadZero, getHumanReadableTime, getDate } from '../../utils/format'
 import {
   useExecutionDelayTimeRemaining,
   useGetInProgressProposalSubstate,
   useProposalMilestoneBlocks,
   useProposalTimeRemaining
-} from 'store/cache/proposals/hooks'
-import ProposalStatusChip from 'components/ProposalStatusChip'
-import Voted from 'components/Voted'
-import { createStyles } from 'utils/mobile'
+} from '../../store/cache/proposals/hooks'
+import ProposalStatusChip from '../../components/ProposalStatusChip'
+import Voted from '../../components/Voted'
+import { createStyles } from '../../utils/mobile'
 
 import desktopStyles from './Proposal.module.css'
 import mobileStyles from './ProposalMobile.module.css'

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { DiscoveryProvider, Status } from 'types'
+import { DiscoveryProvider, Status } from '../../../types'
 
 export type State = {
   nodes: { [spId: number]: DiscoveryProvider }

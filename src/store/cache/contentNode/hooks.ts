@@ -11,9 +11,9 @@ import {
   SortNode,
   ServiceType,
   ContentNode
-} from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
+} from '../../../types'
+import Audius from '../../../services/Audius'
+import { AppState } from '../../../store/types'
 import { setLoading, setNodes, setTotal } from './slice'
 import { useEffect } from 'react'
 

@@ -1,7 +1,7 @@
-import Tooltip from 'components/Tooltip'
+import Tooltip from '../../components/Tooltip'
 import React from 'react'
 import clsx from 'clsx'
-import { ReactComponent as IconUhOh } from 'assets/img/uhOh.svg'
+import IconUhOh from '../../assets/img/uhOh.svg?react'
 
 import styles from './Error.module.css'
 

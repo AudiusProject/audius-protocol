@@ -1,6 +1,6 @@
 import BN from 'bn.js'
-import AudiusClient from 'services/Audius'
-import { User, Operator, Address } from 'types'
+import AudiusClient from '../../../services/Audius'
+import { User, Operator, Address } from '../../../types'
 
 const DEPLOYER_CUT_BASE = new BN('100')
 

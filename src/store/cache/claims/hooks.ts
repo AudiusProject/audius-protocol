@@ -2,16 +2,16 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
 
-import { Address, Status } from 'types'
-import Audius from 'services/Audius'
-import { AppState } from 'store/types'
+import { Address, Status } from '../../../types'
+import Audius from '../../../services/Audius'
+import { AppState } from '../../../store/types'
 import { useEffect } from 'react'
 
 import {
   fetchClaim,
   setClaim,
   setClaimMetadata as setMetadata
-} from 'store/cache/claims/slice'
+} from '../../../store/cache/claims/slice'
 
 // -------------------------------- Selectors  --------------------------------
 export const getPendingClaim = (wallet: Address) => (state: AppState) =>
