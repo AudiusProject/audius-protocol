@@ -39,7 +39,6 @@ module.exports = (async () => {
   } = await getDefaultConfig()
 
   const defaultSourceExts = [...sourceExts, 'svg', 'cjs']
-  console.log('working?', process.env.RN_SRC_EXT)
 
   resolverMainFields.unshift('sbmodern')
 

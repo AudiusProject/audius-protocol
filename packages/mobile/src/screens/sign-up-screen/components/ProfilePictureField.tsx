@@ -19,6 +19,7 @@ const useStyles = makeStyles(({ palette }) => ({
     borderStyle: 'solid',
     borderColor: palette.white,
     backgroundColor: palette.neutralLight4,
+    // this is so the profile picture overlays above the cover-photo
     zIndex: 100,
     overflow: 'hidden'
   },
