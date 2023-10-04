@@ -20,7 +20,7 @@
     "@audius/sdk": "*",
     "@types/compute-lcm": "^1.1.0",
     "axios": "^0.19.2",
-    "basekit": "^0.0.0",
+    "basekit": "*",
     "body-parser": "^1.20.2",
     "compute-lcm": "^1.1.2",
     "cors": "^2.8.5",
