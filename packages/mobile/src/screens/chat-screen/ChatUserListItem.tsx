@@ -7,7 +7,8 @@ import {
   ChatPermissionAction,
   cacheUsersSelectors,
   formatCount,
-  useInboxUnavailableModal
+  useInboxUnavailableModal,
+  trpc
 } from '@audius/common'
 import { useSelector } from 'audius-client/src/common/hooks/useSelector'
 import { View, TouchableOpacity, Keyboard } from 'react-native'
@@ -161,6 +162,15 @@ export const ChatUserListItem = ({
   )
   const { onOpen: openInboxUnavailableDrawer } = useInboxUnavailableModal()
 
+  const { data: relationship } = trpc.me.userRelationship.useQuery(
+    {
+      theirId: userId.toString()
+    },
+    {
+      enabled: !!currentUserId
+    }
+  )
+
   const handlePress = useCallback(() => {
     if (user?.user_id) {
       Keyboard.dismiss()
@@ -255,8 +265,7 @@ export const ChatUserListItem = ({
                   </View>
                 )}
               </View>
-              {/* todo: use trpc */}
-              {user.does_follow_current_user && canCreateChat ? (
+              {relationship?.followsMe && canCreateChat ? (
                 <Text
                   fontSize='xxs'
                   weight='heavy'
