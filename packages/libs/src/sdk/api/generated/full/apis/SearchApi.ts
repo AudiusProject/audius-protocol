@@ -32,6 +32,7 @@ export interface SearchRequest {
     limit?: number;
     userId?: string;
     kind?: SearchKindEnum;
+    includePurchaseable?: string;
 }
 
 export interface SearchAutocompleteRequest {
@@ -40,6 +41,7 @@ export interface SearchAutocompleteRequest {
     limit?: number;
     userId?: string;
     kind?: SearchAutocompleteKindEnum;
+    includePurchaseable?: string;
 }
 
 /**
@@ -76,6 +78,10 @@ export class SearchApi extends runtime.BaseAPI {
 
         if (params.kind !== undefined) {
             queryParameters['kind'] = params.kind;
+        }
+
+        if (params.includePurchaseable !== undefined) {
+            queryParameters['includePurchaseable'] = params.includePurchaseable;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -128,6 +134,10 @@ export class SearchApi extends runtime.BaseAPI {
 
         if (params.kind !== undefined) {
             queryParameters['kind'] = params.kind;
+        }
+
+        if (params.includePurchaseable !== undefined) {
+            queryParameters['includePurchaseable'] = params.includePurchaseable;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
