@@ -1,6 +1,5 @@
-// import type { libs as AudiusLibsType } from '@audius/sdk'
 import { AudiusClient } from './AudiusClient'
-import { libs as AudiusLibs, type libs as AudiusLibsType, Utils } from '@audius/sdk/dist/legacy.js'
+import { libs as AudiusLibs, Utils } from '@audius/sdk/dist/legacy.js'
 
 declare global {
   interface Window {
@@ -8,7 +7,6 @@ declare global {
     Audius: any
     Utils: any
     Web3: any
-    // audiusLibs: AudiusLibsType
     web3: any
     ethereum: any
     dataWeb3: any
