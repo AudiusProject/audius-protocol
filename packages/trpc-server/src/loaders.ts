@@ -127,6 +127,7 @@ function mapRowsUsingKey(keyName: string, rows: any[], keys: readonly any[]) {
 export type UserRelationResult = {
   followed: boolean
   followsMe: boolean
+  subscribed: boolean
 }
 
 export type TrackRelationResult = {

@@ -3,17 +3,12 @@ import { publicProcedure, router } from '../trpc'
 
 export const meRouter = router({
   userRelationship: publicProcedure
-    .input(
-      z.union([
-        // prefer calling with single argument
-        z.string(),
-        // todo: remove this when client no longer using the theirId argument
-        z.object({ theirId: z.string() })
-      ])
-    )
+    .input(z.object({ theirId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const theirId = typeof input == 'string' ? input : input.theirId
-      return ctx.loaders.userRelationLoader.load(parseInt(theirId))
+      const result = await ctx.loaders.userRelationLoader.load(
+        parseInt(input.theirId)
+      )
+      return result
     }),
 
   actions: publicProcedure
