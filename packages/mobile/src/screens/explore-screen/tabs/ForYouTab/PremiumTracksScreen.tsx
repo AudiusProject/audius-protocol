@@ -3,7 +3,7 @@ import {
   premiumTracksPageLineupSelectors,
   lineupSelectors
 } from '@audius/common'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
@@ -19,18 +19,17 @@ const messages = {
 
 export const PremiumTracksScreen = () => {
   const dispatch = useDispatch()
-  const lineup = useSelector(getPremiumTracksLineup)
   const loadMore = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
       dispatch(premiumTracksPageLineupActions.fetchLineupMetadatas(offset, limit, overwrite))
-  }, [])
+  }, [dispatch])
   return (
     <Screen>
       <ScreenHeader text={messages.header} />
       <ScreenContent>
         <Lineup
           loadMore={loadMore}
-          lineup={lineup}
+          lineupSelector={getPremiumTracksLineup}
           actions={premiumTracksPageLineupActions}
           selfLoad
           pullToRefresh
