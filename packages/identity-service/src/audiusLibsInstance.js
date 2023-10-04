@@ -102,6 +102,7 @@ class AudiusLibsWrapper {
 
   /**
    * Async getter for libs. Resolves when libs is initialized.
+   * @returns {Promise<AudiusLibs>}
    */
   async getAudiusLibsAsync() {
     if (this.audiusLibsInstance) {
