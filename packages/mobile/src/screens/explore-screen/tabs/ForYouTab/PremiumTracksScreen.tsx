@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import {
   premiumTracksPageLineupActions,
   premiumTracksPageLineupSelectors,
@@ -7,7 +9,6 @@ import { useDispatch } from 'react-redux'
 
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
-import { useCallback } from 'react'
 const { makeGetLineupMetadatas } = lineupSelectors
 const { getLineup } = premiumTracksPageLineupSelectors
 
@@ -21,8 +22,16 @@ export const PremiumTracksScreen = () => {
   const dispatch = useDispatch()
   const loadMore = useCallback(
     (offset: number, limit: number, overwrite: boolean) => {
-      dispatch(premiumTracksPageLineupActions.fetchLineupMetadatas(offset, limit, overwrite))
-  }, [dispatch])
+      dispatch(
+        premiumTracksPageLineupActions.fetchLineupMetadatas(
+          offset,
+          limit,
+          overwrite
+        )
+      )
+    },
+    [dispatch]
+  )
   return (
     <Screen>
       <ScreenHeader text={messages.header} />

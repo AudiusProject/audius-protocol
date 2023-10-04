@@ -1,9 +1,11 @@
 import { useRef } from 'react'
 
+import { ExploreCollectionsVariant } from '@audius/common'
 import { View } from 'react-native'
 
 import type { ScrollViewElement } from 'app/components/core'
 import { ScrollView } from 'app/components/core'
+import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { makeStyles } from 'app/styles'
 
@@ -24,8 +26,6 @@ import {
   REMIXABLES,
   FEELING_LUCKY
 } from '../../smartCollections'
-import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
-import { ExploreCollectionsVariant } from '@audius/common'
 
 const messages = {
   infoHeader: 'Just For You',
@@ -88,8 +88,10 @@ export const ForYouTab = () => {
   })
 
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
-  const filteredTiles = tiles.filter(tile => {
-    const isPremiumTracksTile = tile.variant === ExploreCollectionsVariant.DIRECT_LINK && tile.title === PREMIUM_TRACKS.title
+  const filteredTiles = tiles.filter((tile) => {
+    const isPremiumTracksTile =
+      tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
+      tile.title === PREMIUM_TRACKS.title
     return !isPremiumTracksTile || isUSDCPurchasesEnabled
   })
 

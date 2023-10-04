@@ -4,7 +4,7 @@
   margin-left: -16px;
 }
 
-.cardsContainer>* {
+.cardsContainer > * {
   margin: 6px;
 }
 
@@ -12,7 +12,7 @@
   margin: 0 auto;
 }
 
-.loadingSpinner>div {
+.loadingSpinner > div {
   display: flex;
   align-items: center;
   justify-content: center;

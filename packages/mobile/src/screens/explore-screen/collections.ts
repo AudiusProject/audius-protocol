@@ -8,11 +8,11 @@ import EmojiFire from 'app/assets/images/emojis/fire.png'
 import EmojiHeartWithArrow from 'app/assets/images/emojis/heart-with-arrow.png'
 import EmojiRaisedHands from 'app/assets/images/emojis/person-raising-both-hands-in-celebration.png'
 import EmojiThinkingFace from 'app/assets/images/emojis/thinking-face.png'
+import IconCart from 'app/assets/images/iconCart.svg'
 import IconCassette from 'app/assets/images/iconCassette.svg'
 import IconExploreDJ from 'app/assets/images/iconExploreDJ.svg'
 import IconExploreTopAlbums from 'app/assets/images/iconExploreTopAlbums.svg'
 import IconExploreTopPlaylists from 'app/assets/images/iconExploreTopPlaylists.svg'
-import IconCart from 'app/assets/images/iconCart.svg'
 
 import type { ExploreCollectionsVariant } from './types'
 

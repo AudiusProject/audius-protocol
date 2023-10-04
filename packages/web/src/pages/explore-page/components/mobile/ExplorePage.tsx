@@ -33,6 +33,7 @@ import CardLineup from 'components/lineup/CardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useMainPageHeader } from 'components/nav/store/context'
+import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import useTabs from 'hooks/useTabs/useTabs'
 import {
   CHILL_PLAYLISTS,
@@ -55,7 +56,6 @@ import { justForYou } from '../desktop/ExplorePage'
 
 import ColorTile from './ColorTile'
 import styles from './ExplorePage.module.css'
-import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 const { getTab } = explorePageSelectors
 const { setTab } = explorePageActions
 
@@ -140,9 +140,11 @@ const ExplorePage = ({
   useMainPageHeader()
 
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
-  const justForYouTiles = justForYou.map(
-    (t: SmartCollection | ExploreCollection) => {
-      const isPremiumTracksTile = t.variant === ExploreCollectionsVariant.DIRECT_LINK && t.title === PREMIUM_TRACKS.title
+  const justForYouTiles = justForYou
+    .map((t: SmartCollection | ExploreCollection) => {
+      const isPremiumTracksTile =
+        t.variant === ExploreCollectionsVariant.DIRECT_LINK &&
+        t.title === PREMIUM_TRACKS.title
       if (!isUSDCPurchasesEnabled && isPremiumTracksTile) {
         return null
       }
@@ -171,18 +173,21 @@ const ExplorePage = ({
             gradient={t.gradient}
             shadow={t.shadow}
             // @ts-ignore
-            icon={<Icon
-              className={t.title === PREMIUM_TRACKS.title
-                ? styles.premiumTracksBackgroundIcon
-                : undefined}
-            />}
+            icon={
+              <Icon
+                className={
+                  t.title === PREMIUM_TRACKS.title
+                    ? styles.premiumTracksBackgroundIcon
+                    : undefined
+                }
+              />
+            }
             goToRoute={goToRoute}
             isIncentivized={t.incentivized}
           />
         )
       }
-    }
-  )
+    })
     .filter(removeNullable)
 
   const lifestyleTiles = lifestyle.map((t: ExploreMoodCollection) => {
@@ -264,7 +269,12 @@ const ExplorePage = ({
         title={messages.justForYou}
         description={messages.justForYouDescription}
       >
-        <div className={cn(styles.section, styles.quadrupleHeaderSectionElevenTile)}>
+        <div
+          className={cn(
+            styles.section,
+            styles.quadrupleHeaderSectionElevenTile
+          )}
+        >
           {justForYouTiles}
         </div>
       </TabBodyHeader>,

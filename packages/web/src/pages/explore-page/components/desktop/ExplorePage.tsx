@@ -26,6 +26,7 @@ import PerspectiveCard, {
   TextInterior,
   EmojiInterior
 } from 'components/perspective-card/PerspectiveCard'
+import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
 import {
   LET_THEM_DJ,
@@ -43,7 +44,6 @@ import { BASE_URL, EXPLORE_PAGE, stripBaseUrl } from 'utils/route'
 
 import styles from './ExplorePage.module.css'
 import Section, { Layout } from './Section'
-import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 
 const messages = {
   featuredPlaylists: 'Playlists We Love Right Now',
@@ -99,11 +99,12 @@ const ExplorePage = ({
   goToRoute
 }: ExplorePageProps) => {
   const isUSDCPurchasesEnabled = useIsUSDCEnabled()
-  const justForYouTiles = justForYou
-    .filter(tile => {
-      const isPremiumTracksTile = tile.variant === ExploreCollectionsVariant.DIRECT_LINK && tile.title === PREMIUM_TRACKS.title
-      return !isPremiumTracksTile || isUSDCPurchasesEnabled
-    })
+  const justForYouTiles = justForYou.filter((tile) => {
+    const isPremiumTracksTile =
+      tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
+      tile.title === PREMIUM_TRACKS.title
+    return !isPremiumTracksTile || isUSDCPurchasesEnabled
+  })
   const { isLoading: isLoadingPlaylist, setDidLoad: setDidLoadPlaylist } =
     useOrderedLoad(playlists.length)
   const { isLoading: isLoadingProfiles, setDidLoad: setDidLoadProfile } =
