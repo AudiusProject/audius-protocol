@@ -15,4 +15,4 @@ HEALTHCHECK --interval=5s --timeout=5s --start-period=15m --retries=12 \
     CMD curl -f http://localhost:7000/health_check || exit 1
 
 WORKDIR /app/packages/identity-service
-CMD npx ts-node-dev --respawn src/index.ts
+CMD npm run start
