@@ -4,4 +4,5 @@ export type SignUpScreenParamList = {
   SignUp: undefined
   CreatePassword: CreatePasswordParams
   PickHandle: undefined
+  FinishProfile: undefined
 }

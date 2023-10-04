@@ -514,7 +514,6 @@ class App extends Component {
                   )}
                 </Route>
                 <Route exact path={SIGN_UP_PAGE} isMobile={isMobileClient}>
-                  (
                   {isSignInRedesignEnabled ? (
                     <SignUpRootPage />
                   ) : (
