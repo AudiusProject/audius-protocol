@@ -11,7 +11,8 @@ import {
   LET_THEM_DJ,
   TRENDING_PLAYLISTS,
   TRENDING_UNDERGROUND,
-  TOP_ALBUMS
+  TOP_ALBUMS,
+  PREMIUM_TRACKS
 } from '../../collections'
 import { ColorTile } from '../../components/ColorTile'
 import { TabInfo } from '../../components/TabInfo'
@@ -55,6 +56,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 const tiles = [
+  PREMIUM_TRACKS,
   TRENDING_PLAYLISTS,
   TRENDING_UNDERGROUND,
   HEAVY_ROTATION,
@@ -67,9 +69,9 @@ const tiles = [
   FEELING_LUCKY
 ]
 
-const tenTileLayout = {
-  halfTiles: [3, 4, 5, 6, 8, 9],
-  leftHalfTiles: [3, 5, 8]
+const elevenTileLayout = {
+  halfTiles: [4, 5, 6, 7, 9, 10],
+  leftHalfTiles: [4, 6, 9]
 }
 
 export const ForYouTab = () => {
@@ -91,8 +93,8 @@ export const ForYouTab = () => {
           <ColorTile
             style={[
               styles.tile,
-              tenTileLayout.halfTiles.includes(idx) && styles.halfTile,
-              tenTileLayout.leftHalfTiles.includes(idx) && styles.rightMargin
+              elevenTileLayout.halfTiles.includes(idx) && styles.halfTile,
+              elevenTileLayout.leftHalfTiles.includes(idx) && styles.rightMargin
             ]}
             key={tile.title}
             {...tile}

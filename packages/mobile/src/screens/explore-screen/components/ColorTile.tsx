@@ -21,6 +21,7 @@ import { font, makeStyles } from 'app/styles'
 
 import type { CollectionScreen, MoodScreen } from '../collections'
 import type { SmartCollectionScreen } from '../smartCollections'
+import { useColor } from 'app/utils/theme'
 
 type ColorTileProps = {
   style?: StyleProp<ViewStyle>
@@ -132,6 +133,7 @@ export const ColorTile = ({
   isIncentivized
 }: ColorTileProps) => {
   const styles = useStyles()
+  const white = useColor('white')
   const navigation = useNavigation<ExploreTabScreenParamList>()
   const {
     scale,
@@ -180,7 +182,7 @@ export const ColorTile = ({
             )}
             {Icon && (
               <View style={styles.icon}>
-                <Icon style={styles.iconSvg} height={260} width={260} />
+                <Icon style={styles.iconSvg} height={260} width={260} fill={white} />
               </View>
             )}
           </View>

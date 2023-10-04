@@ -12,10 +12,12 @@ import IconCassette from 'app/assets/images/iconCassette.svg'
 import IconExploreDJ from 'app/assets/images/iconExploreDJ.svg'
 import IconExploreTopAlbums from 'app/assets/images/iconExploreTopAlbums.svg'
 import IconExploreTopPlaylists from 'app/assets/images/iconExploreTopPlaylists.svg'
+import IconCart from 'app/assets/images/iconCart.svg'
 
 import type { ExploreCollectionsVariant } from './types'
 
 export type CollectionScreen =
+  | 'PremiumTracks'
   | 'LetThemDJ'
   | 'TopAlbums'
   | 'TrendingPlaylists'
@@ -47,6 +49,18 @@ export type ExploreMoodCollection = ExploreCollection & {
 }
 
 // Just For You Collections
+export const PREMIUM_TRACKS: ExploreCollection = {
+  variant: 'Direct Link',
+  title: 'Premium Tracks',
+  screen: 'PremiumTracks',
+  description: 'Explore premium music available to purchase.',
+  gradientColors: ['#13C65A', '#16A653'],
+  gradientAngle: 135,
+  shadowColor: 'rgba(196,81,193)',
+  shadowOpacity: 0.25,
+  icon: IconCart
+}
+
 export const LET_THEM_DJ: ExploreCollection = {
   variant: 'Let Them DJ',
   title: 'Let Them DJ',
