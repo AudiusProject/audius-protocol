@@ -21,6 +21,7 @@ const ModalDrawer = (props: ModalDrawerProps) => {
       <Drawer
         isOpen={props.isOpen}
         onClose={props.onClose}
+        onClosed={props.onClosed}
         isFullscreen={
           props.isFullscreen === undefined ? true : props.isFullscreen
         }
@@ -47,6 +48,7 @@ const ModalDrawer = (props: ModalDrawerProps) => {
     <Modal
       isOpen={props.isOpen}
       onClose={props.onClose}
+      onClosed={props.onClosed}
       showTitleHeader={props.showTitleHeader}
       showDismissButton={props.showDismissButton}
       dismissOnClickOutside={props.dismissOnClickOutside}
