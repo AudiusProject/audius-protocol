@@ -52,12 +52,14 @@ import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
 const { addEntries } = cacheActions
 
 const defaultRetryConfig: RetryConfig = {
-  retries: 3
+  retries: 2
 }
 
 const isNonRetryableError = (e: unknown) => {
+  // Don't retry user-level errors other than 404
   if (e instanceof ResponseError) {
-    return [400, 401, 403].includes(e.response.status)
+    const { status } = e.response
+    return status >= 400 && status < 500 && status !== 404
   }
   return false
 }

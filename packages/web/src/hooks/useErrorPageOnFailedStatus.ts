@@ -12,6 +12,8 @@ import { useNavigateToPage } from './useNavigateToPage'
  * resetting of the fetch state on mount (typically through the `force` option
  * of `useQuery`). Otherwise, the user will be immediately redirected back to the
  * error page if they hit 'Try Again'.
+ * This hook will not report an error to Sentry. It's expected that whatever flow
+ * generated the Status will already have reported an error.
  */
 export const useErrorPageOnFailedStatus = (status: Status) => {
   const navigate = useNavigateToPage()
