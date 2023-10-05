@@ -6,7 +6,9 @@ jobs:
       service: mediorum
       filters:
         branches:
-          only: main
+          only: 
+            - main
+            - '/release-v\d+\.\d+\.\d+/'
   - test:
       name: test-mediorum
       context: GCP

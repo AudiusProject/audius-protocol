@@ -6,49 +6,63 @@ jobs:
       service: discovery-provider
       filters:
         branches:
-          only: main
+          only: 
+            - main
+            - '/release-v\d+\.\d+\.\d+/'
   - push-docker-image:
       name: push-discovery-provider-notifications
       context: [GCP, dockerhub]
       service: discovery-provider-notifications
       filters:
         branches:
-          only: main
+          only: 
+            - main
+            - '/release-v\d+\.\d+\.\d+/'
   - push-docker-image:
       name: push-pedalboard-trending-challenge-rewards
       context: [GCP, dockerhub]
       service: trending-challenge-rewards
       filters:
         branches:
-          only: main
+          only: 
+            - main
+            - '/release-v\d+\.\d+\.\d+/'
   - push-docker-image:
       name: push-pedalboard-relay
       context: [GCP, dockerhub]
       service: relay
       filters:
         branches:
-          only: main
+          only: 
+            - main
+            - '/release-v\d+\.\d+\.\d+/'
   - push-docker-image:
       name: push-pedalboard-sla-auditor
       context: [GCP, dockerhub]
       service: sla-auditor
       filters:
         branches:
-          only: main
+          only: 
+            - main
+            - '/release-v\d+\.\d+\.\d+/'
   - push-docker-image:
       name: push-comms
       context: [GCP, dockerhub]
       service: comms
       filters:
         branches:
-          only: main
+          only: 
+            - main
+            - '/release-v\d+\.\d+\.\d+/'
   - push-docker-image:
       name: push-trpc
       context: [GCP, dockerhub]
       service: trpc
       filters:
         branches:
-          only: main
+          only: 
+            - main
+            - '/release-v\d+\.\d+\.\d+/'
 
   - lint-discovery-provider:
       name: lint-discovery-provider
