@@ -1,12 +1,11 @@
 /**
  * Audius Box Shadow Options 
- *
  */
 :root,
 root {
-  --shadow-near: 0px 2px 4px 0px rgba(0, 0, 0, 0.08), 0px 0px 6px 0px rgba(0, 0, 0, 0.02);
-  --shadow-mid: 0px 4px 8px 0px rgba(0, 0, 0, 0.06), 0px 0px 4px 0px rgba(0, 0, 0, 0.04);
-  --shadow-far: 0px 8px 16px 0px rgba(0, 0, 0, 0.08), 0px 0px 4px 0px rgba(0, 0, 0, 0.04);
+  --harmony-shadow-near: 0px 2px 4px 0px rgba(0, 0, 0, 0.08), 0px 0px 6px 0px rgba(0, 0, 0, 0.02);
+  --harmony-shadow-mid: 0px 4px 8px 0px rgba(0, 0, 0, 0.06), 0px 0px 4px 0px rgba(0, 0, 0, 0.04);
+  --harmony-shadow-far: 0px 8px 16px 0px rgba(0, 0, 0, 0.08), 0px 0px 4px 0px rgba(0, 0, 0, 0.04);
 
-  --drop-shadow: drop-shadow(0px 1.3401784896850586px 8px rgba(0, 0, 0, 0.20)) drop-shadow(0px 6px 15px rgba(0, 0, 0, 0.10));
+  --harmony-drop-shadow: drop-shadow(0px 1.3401784896850586px 8px rgba(0, 0, 0, 0.20)) drop-shadow(0px 6px 15px rgba(0, 0, 0, 0.10));
 }
