@@ -3,22 +3,19 @@ import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
 import BN from 'bn.js'
 
-import { Address, User, Operator, Status } from '../../../types'
-import Audius from '../../../services/Audius'
-import { AppState } from '../../../store/types'
+import { Address, User, Operator, Status } from 'types'
+import Audius from 'services/Audius'
+import { AppState } from 'store/types'
 import { useEffect } from 'react'
 
 import {
   useFundsPerRound,
   useLastFundedBlock,
   usePendingClaim
-} from '../../../store/cache/claims/hooks'
-import { useEthBlockNumber } from '../../../store/cache/protocol/hooks'
-import { useUsers } from '../../../store/cache/user/hooks'
-import {
-  fetchWeeklyRewards,
-  setWeeklyRewards
-} from '../../../store/cache/rewards/slice'
+} from 'store/cache/claims/hooks'
+import { useEthBlockNumber } from 'store/cache/protocol/hooks'
+import { useUsers } from 'store/cache/user/hooks'
+import { fetchWeeklyRewards, setWeeklyRewards } from 'store/cache/rewards/slice'
 import { getRewardForClaimBlock } from './helpers'
 
 // -------------------------------- Selectors  --------------------------------

@@ -3,23 +3,23 @@ import { Utils } from '@audius/sdk/dist/legacy.js'
 import clsx from 'clsx'
 import { ButtonType } from '@audius/stems'
 
-import { useUpdateStake } from '../../store/actions/updateStake'
-import { useAccountUser } from '../../store/account/hooks'
-import AudiusClient from '../../services/Audius'
-import Modal from '../../components/Modal'
-import Button from '../../components/Button'
-import ValueSlider from '../../components/ValueSlider'
-import TextField from '../../components/TextField'
+import { useUpdateStake } from 'store/actions/updateStake'
+import { useAccountUser } from 'store/account/hooks'
+import AudiusClient from 'services/Audius'
+import Modal from 'components/Modal'
+import Button from 'components/Button'
+import ValueSlider from 'components/ValueSlider'
+import TextField from 'components/TextField'
 import styles from './UpdateStakeModal.module.css'
-import { Status, Operator } from '../../types'
-import { checkWeiNumber, parseWeiNumber } from '../../utils/numeric'
+import { Status, Operator } from 'types'
+import { checkWeiNumber, parseWeiNumber } from 'utils/numeric'
 import ConfirmTransactionModal, {
   OldStake,
   NewStake
-} from '../../components/ConfirmTransactionModal'
-import { TICKER } from '../../utils/consts'
-import { Position } from '../../components/Tooltip'
-import DisplayAudio from '../../components/DisplayAudio'
+} from 'components/ConfirmTransactionModal'
+import { TICKER } from 'utils/consts'
+import { Position } from 'components/Tooltip'
+import DisplayAudio from 'components/DisplayAudio'
 
 const messages = {
   increaseTitle: 'Increase Stake',

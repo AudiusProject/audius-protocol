@@ -1,11 +1,11 @@
 import React, { useCallback } from 'react'
-import { usePushRoute } from '../../utils/effects'
+import { usePushRoute } from 'utils/effects'
 
-import { ContentNode, Address, Status } from '../../types'
-import { SERVICES_CONTENT, contentNodePage } from '../../utils/routes'
+import { ContentNode, Address, Status } from 'types'
+import { SERVICES_CONTENT, contentNodePage } from 'utils/routes'
 
-import ServiceTable from '../../components/ServiceTable'
-import { useContentNodes } from '../../store/cache/contentNode/hooks'
+import ServiceTable from 'components/ServiceTable'
+import { useContentNodes } from 'store/cache/contentNode/hooks'
 
 const messages = {
   title: 'Content Nodes',

@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Status, User, Operator } from '../../../types'
+import { Status, User, Operator } from 'types'
 
 export type State = {
   accounts: { [wallet: string]: User | Operator }

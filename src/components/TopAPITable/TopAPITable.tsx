@@ -1,12 +1,12 @@
 import React from 'react'
 import clsx from 'clsx'
 import styles from './TopAPITable.module.css'
-import Table from '../../components/Table'
-import { formatNumberCommas } from '../../utils/format'
+import Table from 'components/Table'
+import { formatNumberCommas } from 'utils/format'
 import { IconCrown } from '@audius/stems'
-import { useTopApps } from '../../store/cache/analytics/hooks'
-import { Bucket, MetricError } from '../../store/cache/analytics/slice'
-import { useIsMobile } from '../../utils/hooks'
+import { useTopApps } from 'store/cache/analytics/hooks'
+import { Bucket, MetricError } from 'store/cache/analytics/slice'
+import { useIsMobile } from 'utils/hooks'
 
 const messages = {
   title: 'Top 3rd Party API Apps by Total Requests',

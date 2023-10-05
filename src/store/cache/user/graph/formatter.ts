@@ -1,6 +1,6 @@
 import BN from 'bn.js'
-import { User, ServiceType, Operator, ServiceProvider } from '../../../../types'
-import Audius from '../../../../services/Audius'
+import { User, ServiceType, Operator, ServiceProvider } from 'types'
+import Audius from 'services/Audius'
 import { FullUser } from './types'
 
 export const formatUser = async (

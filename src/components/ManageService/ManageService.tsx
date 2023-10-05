@@ -3,24 +3,24 @@ import { Utils } from '@audius/sdk/dist/legacy.js'
 import BN from 'bn.js'
 import clsx from 'clsx'
 import styles from './ManageService.module.css'
-import DisplayAudio from '../../components/DisplayAudio'
-import Paper from '../../components/Paper'
-import UpdateStakeModal from '../../components/UpdateStakeModal'
-import RegisterServiceModal from '../../components/RegisterServiceModal'
-import OperatorCutModal from '../../components/OperatorCutModal'
-import MinimumDelegationAmountModal from '../../components/MinimumDelegationAmountModal'
-import TransactionStatus from '../../components/TransactionStatus'
+import DisplayAudio from 'components/DisplayAudio'
+import Paper from 'components/Paper'
+import UpdateStakeModal from 'components/UpdateStakeModal'
+import RegisterServiceModal from 'components/RegisterServiceModal'
+import OperatorCutModal from 'components/OperatorCutModal'
+import MinimumDelegationAmountModal from 'components/MinimumDelegationAmountModal'
+import TransactionStatus from 'components/TransactionStatus'
 import {
   useAccount,
   useAccountUser,
   useHasPendingDecreaseStakeTx
-} from '../../store/account/hooks'
-import { usePendingClaim } from '../../store/cache/claims/hooks'
-import { Address, Status, Operator } from '../../types'
-import { useModalControls } from '../../utils/hooks'
-import { accountPage } from '../../utils/routes'
+} from 'store/account/hooks'
+import { usePendingClaim } from 'store/cache/claims/hooks'
+import { Address, Status, Operator } from 'types'
+import { useModalControls } from 'utils/hooks'
+import { accountPage } from 'utils/routes'
 
-import Button, { ButtonType } from '../../components/Button'
+import Button, { ButtonType } from 'components/Button'
 import {
   IconArrowWhite,
   IconValidationCheck,
@@ -28,15 +28,15 @@ import {
   IconMinimum,
   IconDeployerCut
 } from '@audius/stems'
-import { usePushRoute } from '../../utils/effects'
-import { TICKER } from '../../utils/consts'
-import { useMakeClaim } from '../../store/actions/makeClaim'
+import { usePushRoute } from 'utils/effects'
+import { TICKER } from 'utils/consts'
+import { useMakeClaim } from 'store/actions/makeClaim'
 import ConfirmTransactionModal, {
   StandaloneBox
-} from '../../components/ConfirmTransactionModal'
-import DelegatesModal from '../../components/DelegatesModal'
-import DelegatorsModal from '../../components/DelegatorsModal'
-import Loading from '../../components/Loading'
+} from 'components/ConfirmTransactionModal'
+import DelegatesModal from 'components/DelegatesModal'
+import DelegatorsModal from 'components/DelegatorsModal'
+import Loading from 'components/Loading'
 
 const messages = {
   title: 'Manage Your Account & Services',

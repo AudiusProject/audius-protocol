@@ -1,21 +1,19 @@
 import React, { useCallback } from 'react'
 import clsx from 'clsx'
-import { SERVICES_SERVICE_PROVIDERS, accountPage } from '../../utils/routes'
+import { SERVICES_SERVICE_PROVIDERS, accountPage } from 'utils/routes'
 
 import styles from './TopOperatorsTable.module.css'
-import Table from '../../components/Table'
+import Table from 'components/Table'
 
-import { useUsers } from '../../store/cache/user/hooks'
-import { Address, Operator, SortUser, Status } from '../../types'
-import { usePushRoute } from '../../utils/effects'
-import { useIsMobile } from '../../utils/hooks'
-import getActiveStake, {
-  getTotalActiveDelegatedStake
-} from '../../utils/activeStake'
+import { useUsers } from 'store/cache/user/hooks'
+import { Address, Operator, SortUser, Status } from 'types'
+import { usePushRoute } from 'utils/effects'
+import { useIsMobile } from 'utils/hooks'
+import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
 import BN from 'bn.js'
-import DisplayAudio from '../../components/DisplayAudio'
-import UserImage from '../../components/UserImage'
-import UserName from '../../components/UserName'
+import DisplayAudio from 'components/DisplayAudio'
+import UserImage from 'components/UserImage'
+import UserName from 'components/UserName'
 
 const messages = {
   topAddresses: 'Top Service Operators by Active Stake',

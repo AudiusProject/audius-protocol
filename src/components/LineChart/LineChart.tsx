@@ -1,18 +1,18 @@
-import Dropdown from '../../components/Dropdown'
-import Error from '../../components/Error'
-import Loading from '../../components/Loading'
-import Paper from '../../components/Paper'
+import Dropdown from 'components/Dropdown'
+import Error from 'components/Error'
+import Loading from 'components/Loading'
+import Paper from 'components/Paper'
 import React from 'react'
 import { Line } from 'react-chartjs-2'
-import { formatBucketText } from '../../store/cache/analytics/hooks'
-import { Bucket } from '../../store/cache/analytics/slice'
+import { formatBucketText } from 'store/cache/analytics/hooks'
+import { Bucket } from 'store/cache/analytics/slice'
 import {
   formatNumber,
   formatShortNumberWithDecimal,
   getShortDate,
   getShortMonth
-} from '../../utils/format'
-import { createStyles } from '../../utils/mobile'
+} from 'utils/format'
+import { createStyles } from 'utils/mobile'
 
 import desktopStyles from './LineChart.module.css'
 import mobileStyles from './LineChartMobile.module.css'

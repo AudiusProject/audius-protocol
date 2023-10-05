@@ -1,10 +1,10 @@
 import React, { ReactNode } from 'react'
 
-import Paper from '../../components/Paper'
+import Paper from 'components/Paper'
 import styles from './Bounds.module.css'
-import { Address } from '../../types'
-import DisplayAudio from '../../components/DisplayAudio'
-import { useUser } from '../../store/cache/user/hooks'
+import { Address } from 'types'
+import DisplayAudio from 'components/DisplayAudio'
+import { useUser } from 'store/cache/user/hooks'
 
 const messages = {
   minimumTotalStake: 'Min Allowed Stake',

@@ -1,9 +1,9 @@
 import React from 'react'
 
 import styles from './ContentNodes.module.css'
-import Page from '../../components/Page'
-import ContentTable from '../../components/ContentTable'
-import { SERVICES_TITLE, SERVICES } from '../../utils/routes'
+import Page from 'components/Page'
+import ContentTable from 'components/ContentTable'
+import { SERVICES_TITLE, SERVICES } from 'utils/routes'
 
 const messages = {
   title: 'Content Nodes'

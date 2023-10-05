@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { VoteEvent, Vote } from '../../../types'
+import { VoteEvent, Vote } from 'types'
 
 export type State = {
   // All votes, mapping from proposalId => VoteEvents[]

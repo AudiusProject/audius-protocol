@@ -1,8 +1,8 @@
 import React from 'react'
 
-import Page from '../../components/Page'
-import TopOperatorsTable from '../../components/TopOperatorsTable'
-import { SERVICES_TITLE, SERVICES } from '../../utils/routes'
+import Page from 'components/Page'
+import TopOperatorsTable from 'components/TopOperatorsTable'
+import { SERVICES_TITLE, SERVICES } from 'utils/routes'
 
 const messages = {
   title: 'ALL SERVICE OPERATORS'

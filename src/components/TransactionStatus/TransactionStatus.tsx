@@ -2,26 +2,26 @@ import React, { useCallback, useEffect, ReactNode } from 'react'
 import clsx from 'clsx'
 
 import styles from './TransactionStatus.module.css'
-import Button, { ButtonType } from '../../components/Button'
+import Button, { ButtonType } from 'components/Button'
 import { IconRemove, IconCheck } from '@audius/stems'
-import Loading from '../../components/Loading'
-import { usePendingTransactions } from '../../store/account/hooks'
-import { useCancelTransaction } from '../../store/actions/cancelTransaction'
+import Loading from 'components/Loading'
+import { usePendingTransactions } from 'store/account/hooks'
+import { useCancelTransaction } from 'store/actions/cancelTransaction'
 import {
   Status,
   DelayedPendingTransaction,
   PendingTransactionName
-} from '../../types'
-import { useEthBlockNumber } from '../../store/cache/protocol/hooks'
-import { useModalControls } from '../../utils/hooks'
+} from 'types'
+import { useEthBlockNumber } from 'store/cache/protocol/hooks'
+import { useModalControls } from 'utils/hooks'
 import ConfirmTransactionModal, {
   StandaloneBox
-} from '../../components/ConfirmTransactionModal'
-import { useSubmitTransaction } from '../../store/actions/submitTransaction'
-import AudiusClient from '../../services/Audius'
-import { TICKER } from '../../utils/consts'
-import { getHumanReadableTime } from '../../utils/format'
-import { useTimeRemaining } from '../../store/cache/protocol/hooks'
+} from 'components/ConfirmTransactionModal'
+import { useSubmitTransaction } from 'store/actions/submitTransaction'
+import AudiusClient from 'services/Audius'
+import { TICKER } from 'utils/consts'
+import { getHumanReadableTime } from 'utils/format'
+import { useTimeRemaining } from 'store/cache/protocol/hooks'
 
 const messages = {
   ready: 'Ready',

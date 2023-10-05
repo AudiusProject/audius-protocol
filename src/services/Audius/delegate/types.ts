@@ -1,5 +1,5 @@
 import BN from 'bn.js'
-import { Address, BlockNumber } from '../../../types'
+import { Address, BlockNumber } from 'types'
 
 export type UndelegateStakeResponse = {
   delegator: Address

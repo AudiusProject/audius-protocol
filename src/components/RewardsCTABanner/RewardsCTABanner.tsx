@@ -1,10 +1,10 @@
 import React from 'react'
 import clsx from 'clsx'
 
-import Paper from '../../components/Paper'
+import Paper from 'components/Paper'
 import styles from './RewardsCTABanner.module.css'
-import { useIsMobile, useModalControls } from '../../utils/hooks'
-import AudioRewardsModal from '../../components/AudioRewardsModal'
+import { useIsMobile, useModalControls } from 'utils/hooks'
+import AudioRewardsModal from 'components/AudioRewardsModal'
 import { IconArrow, IconCrown } from '@audius/stems'
 
 const messages = {

@@ -4,8 +4,8 @@ import { Action } from 'redux'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
 
-import Audius from '../../../services/Audius'
-import { AppState } from '../../../store/types'
+import Audius from 'services/Audius'
+import { AppState } from 'store/types'
 import {
   setApiCalls,
   setTotalStaked,
@@ -20,9 +20,9 @@ import {
 } from './slice'
 import { useEffect, useState } from 'react'
 import { useAverageBlockTime, useEthBlockNumber } from '../protocol/hooks'
-import { weiAudToAud } from '../../../utils/numeric'
+import { weiAudToAud } from 'utils/numeric'
 import { ELECTRONIC_SUB_GENRES } from './genres'
-import { fetchWithLibs } from '../../../utils/fetch'
+import { fetchWithLibs } from 'utils/fetch'
 dayjs.extend(duration)
 
 const MONTH_IN_MS = dayjs.duration({ months: 1 }).asMilliseconds()

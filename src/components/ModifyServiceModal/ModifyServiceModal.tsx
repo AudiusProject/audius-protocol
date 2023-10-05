@@ -1,15 +1,15 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import Modal from '../../components/Modal'
-import Button, { ButtonType } from '../../components/Button'
-import TextField from '../../components/TextField'
+import Modal from 'components/Modal'
+import Button, { ButtonType } from 'components/Button'
+import TextField from 'components/TextField'
 import styles from './ModifyServiceModal.module.css'
-import { ServiceType, Status, Address } from '../../types'
-import { useModifyService } from '../../store/actions/modifyService'
+import { ServiceType, Status, Address } from 'types'
+import { useModifyService } from 'store/actions/modifyService'
 import ConfirmTransactionModal, {
   StandaloneBox
-} from '../../components/ConfirmTransactionModal'
-import DeregisterServiceModal from '../../components/DeregisterServiceModal'
-import { useModalControls } from '../../utils/hooks'
+} from 'components/ConfirmTransactionModal'
+import DeregisterServiceModal from 'components/DeregisterServiceModal'
+import { useModalControls } from 'utils/hooks'
 
 const messages = {
   title: 'Modify Service',

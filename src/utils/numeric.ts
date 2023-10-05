@@ -1,6 +1,6 @@
 import BN from 'bn.js'
 import { Utils } from '@audius/sdk/dist/legacy.js'
-import AudiusClient from '../services/Audius'
+import AudiusClient from 'services/Audius'
 
 export const WEI = new BN('1000000000000000000')
 

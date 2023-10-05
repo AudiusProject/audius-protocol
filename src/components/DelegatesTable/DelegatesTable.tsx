@@ -1,18 +1,18 @@
 import React, { useCallback } from 'react'
 import clsx from 'clsx'
-import { usePushRoute } from '../../utils/effects'
+import { usePushRoute } from 'utils/effects'
 
-import { accountPage } from '../../utils/routes'
-import { useDelegates } from '../../store/cache/user/hooks'
-import { useModalControls } from '../../utils/hooks'
-import Table from '../../components/Table'
+import { accountPage } from 'utils/routes'
+import { useDelegates } from 'store/cache/user/hooks'
+import { useModalControls } from 'utils/hooks'
+import Table from 'components/Table'
 import styles from './DelegatesTable.module.css'
-import { Delegate, Address } from '../../types'
-import DelegatesModal from '../../components/DelegatesModal'
-import DisplayAudio from '../../components/DisplayAudio'
+import { Delegate, Address } from 'types'
+import DelegatesModal from 'components/DelegatesModal'
+import DisplayAudio from 'components/DisplayAudio'
 import BN from 'bn.js'
-import UserImage from '../../components/UserImage'
-import UserName from '../../components/UserName'
+import UserImage from 'components/UserImage'
+import UserName from 'components/UserName'
 
 const messages = {
   title: 'Delegates',

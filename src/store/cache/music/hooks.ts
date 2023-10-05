@@ -1,18 +1,18 @@
-import Audius from '../../../services/Audius'
+import Audius from 'services/Audius'
 import { useSelector, useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
-import AppState from '../../../store/types'
-import { Playlist, Track } from '../../../types'
+import AppState from 'store/types'
+import { Playlist, Track } from 'types'
 import { useEffect, useState } from 'react'
-import imageBlank from '../../../assets/img/imageBlank2x.png'
+import imageBlank from 'assets/img/imageBlank2x.png'
 import {
   MusicError,
   setTopAlbums,
   setTopPlaylists,
   setTopTracks
 } from './slice'
-import { fetchWithLibs } from '../../../utils/fetch'
+import { fetchWithLibs } from 'utils/fetch'
 
 const AUDIUS_URL = import.meta.env.VITE_AUDIUS_URL
 

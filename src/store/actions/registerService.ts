@@ -3,13 +3,13 @@ import { useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
 
-import { Status, ServiceType, BigNumber, Address } from '../../types'
-import Audius from '../../services/Audius'
-import { AppState } from '../../store/types'
-import { getAccountWallet } from '../../store/account/hooks'
-import { fetchUser } from '../../store/cache/user/hooks'
-import { getDiscoveryProvider } from '../../store/cache/discoveryProvider/hooks'
-import { getContentNode } from '../../store/cache/contentNode/hooks'
+import { Status, ServiceType, BigNumber, Address } from 'types'
+import Audius from 'services/Audius'
+import { AppState } from 'store/types'
+import { getAccountWallet } from 'store/account/hooks'
+import { fetchUser } from 'store/cache/user/hooks'
+import { getDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
+import { getContentNode } from 'store/cache/contentNode/hooks'
 
 function registerAudiusService(
   serviceType: ServiceType,

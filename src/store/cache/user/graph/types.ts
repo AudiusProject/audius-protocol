@@ -1,4 +1,4 @@
-import { Vote } from '../../../../types'
+import { Vote } from 'types'
 
 export interface FullUser {
   id: string

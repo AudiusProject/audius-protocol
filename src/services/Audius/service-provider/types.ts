@@ -5,7 +5,7 @@ import {
   ServiceType,
   TokenApproveReceipt,
   TxReceipt
-} from '../../../types'
+} from 'types'
 import BN from 'bn.js'
 
 export type NodeList = Array<Node>

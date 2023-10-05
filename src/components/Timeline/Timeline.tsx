@@ -4,15 +4,15 @@ import { connect } from 'react-redux'
 import { push as pushRoute } from 'connected-react-router'
 import clsx from 'clsx'
 
-import { AppState } from '../../store/types'
+import { AppState } from 'store/types'
 
 import styles from './Timeline.module.css'
-import Paper from '../../components/Paper'
+import Paper from 'components/Paper'
 import TimelineEvent from './TimelineEvent'
-import { TimelineType, useTimeline } from '../../store/cache/timeline/hooks'
-import { Address } from '../../types'
-import Loading from '../../components/Loading'
-import { useModalControls } from '../../utils/hooks'
+import { TimelineType, useTimeline } from 'store/cache/timeline/hooks'
+import { Address } from 'types'
+import Loading from 'components/Loading'
+import { useModalControls } from 'utils/hooks'
 import TimelineModal from './TimelineModal'
 
 const messages = {

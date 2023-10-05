@@ -2,8 +2,8 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
 
-import Audius from '../../../services/Audius'
-import { AppState } from '../../../store/types'
+import Audius from 'services/Audius'
+import { AppState } from 'store/types'
 import {
   setTotalStaked,
   setDelgator,
@@ -12,8 +12,8 @@ import {
   setAverageBlockTime
 } from './slice'
 import { useEffect, useState, useRef } from 'react'
-import { ServiceType, Block } from '../../../types'
-import AudiusClient from '../../../services/Audius'
+import { ServiceType, Block } from 'types'
+import AudiusClient from 'services/Audius'
 
 // -------------------------------- Selectors  --------------------------------
 export const getTotalStaked = (state: AppState) =>

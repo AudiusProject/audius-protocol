@@ -3,10 +3,10 @@ import { useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
 
-import { PendingTransactionName, Status, Address } from '../../types'
-import Audius from '../../services/Audius'
-import { AppState } from '../../store/types'
-import { fetchPendingTransactions } from '../../store/account/hooks'
+import { PendingTransactionName, Status, Address } from 'types'
+import Audius from 'services/Audius'
+import { AppState } from 'store/types'
+import { fetchPendingTransactions } from 'store/account/hooks'
 
 function cancelDecreaseStake(
   setStatus: (status: Status) => void,

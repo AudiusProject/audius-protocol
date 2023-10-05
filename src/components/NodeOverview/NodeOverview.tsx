@@ -1,16 +1,16 @@
 import React from 'react'
 import clsx from 'clsx'
 
-import Paper from '../../components/Paper'
-import Button from '../../components/Button'
-import ModifyServiceModal from '../../components/ModifyServiceModal'
+import Paper from 'components/Paper'
+import Button from 'components/Button'
+import ModifyServiceModal from 'components/ModifyServiceModal'
 import { ButtonType, IconPencil } from '@audius/stems'
-import { ServiceType, Address } from '../../types'
-import { useModalControls } from '../../utils/hooks'
+import { ServiceType, Address } from 'types'
+import { useModalControls } from 'utils/hooks'
 
 import desktopStyles from './NodeOverview.module.css'
 import mobileStyles from './NodeOverviewMobile.module.css'
-import { createStyles } from '../../utils/mobile'
+import { createStyles } from 'utils/mobile'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { Address, Status, DelayedPendingTransaction } from '../../types'
+import { Address, Status, DelayedPendingTransaction } from 'types'
 
 export type State = {
   loggedIn: boolean

@@ -29,6 +29,21 @@ export default defineConfig({
       protocolImports: true,
     }),
   ],
+
+  resolve: {
+    alias: {
+      components: "/src/components",
+      containers: "/src/containers",
+      services: "/src/services",
+      utils: "/src/utils",
+      store: "/src/store",
+      hooks: "/src/hooks",
+      models: "/src/models",
+      types: "/src/types",
+      assets: "/src/assets",
+    },
+  },
+
   build: {
     commonjsOptions: {
       transformMixedEsModules: true,

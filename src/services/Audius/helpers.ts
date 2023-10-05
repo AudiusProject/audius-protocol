@@ -1,8 +1,8 @@
 import { Utils } from '@audius/sdk/dist/legacy.js'
-import { formatNumber, formatAudString } from '../../utils/format'
+import { formatNumber, formatAudString } from 'utils/format'
 import AudiusClient from './AudiusClient'
-import { Permission, BigNumber, Proposal } from '../../types'
-import { fetchWithTimeout } from '../../utils/fetch'
+import { Permission, BigNumber, Proposal } from 'types'
+import { fetchWithTimeout } from 'utils/fetch'
 import BN from 'bn.js'
 
 // Helpers

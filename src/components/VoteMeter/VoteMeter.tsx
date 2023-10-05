@@ -1,12 +1,12 @@
 import React, { CSSProperties } from 'react'
 import BN from 'bn.js'
-import { fraction } from '../../utils/numeric'
-import { TICKER } from '../../utils/consts'
+import { fraction } from 'utils/numeric'
+import { TICKER } from 'utils/consts'
 
 import desktopStyles from './VoteMeter.module.css'
 import mobileStyles from './VoteMeterMobile.module.css'
-import { createStyles } from '../../utils/mobile'
-import DisplayAudio from '../../components/DisplayAudio'
+import { createStyles } from 'utils/mobile'
+import DisplayAudio from 'components/DisplayAudio'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 

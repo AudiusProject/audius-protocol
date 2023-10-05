@@ -3,10 +3,10 @@ import { useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
 
-import { Status } from '../../types'
-import Audius from '../../services/Audius'
-import { AppState } from '../../store/types'
-import { fetchActiveProposals } from '../../store/cache/proposals/hooks'
+import { Status } from 'types'
+import Audius from 'services/Audius'
+import { AppState } from 'store/types'
+import { fetchActiveProposals } from 'store/cache/proposals/hooks'
 
 function createAudiusProposal(
   targetContractName: string,

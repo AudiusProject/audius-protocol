@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
-import Modal from '../../components/Modal'
-import Button, { ButtonType } from '../../components/Button'
+import Modal from 'components/Modal'
+import Button, { ButtonType } from 'components/Button'
 import styles from './ConnectMetaMaskModal.module.css'
 
 const messages = {

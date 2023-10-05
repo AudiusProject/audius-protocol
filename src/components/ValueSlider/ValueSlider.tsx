@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react'
 import clsx from 'clsx'
 import styles from './ValueSlider.module.css'
-import AudiusClient from '../../services/Audius'
-import { BigNumber } from '../../types'
-import { Position } from '../../components/Tooltip'
-import DisplayAudio from '../../components/DisplayAudio'
+import AudiusClient from 'services/Audius'
+import { BigNumber } from 'types'
+import { Position } from 'components/Tooltip'
+import DisplayAudio from 'components/DisplayAudio'
 
 const messages = {
   min: 'MIN',

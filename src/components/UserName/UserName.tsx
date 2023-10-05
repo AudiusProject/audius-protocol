@@ -1,8 +1,8 @@
 import clsx from 'clsx'
 import React, { useEffect } from 'react'
-import { useUserProfile } from '../../store/cache/user/hooks'
-import { Address } from '../../types'
-import { formatShortWallet } from '../../utils/format'
+import { useUserProfile } from 'store/cache/user/hooks'
+import { Address } from 'types'
+import { formatShortWallet } from 'utils/format'
 
 import styles from './UserName.module.css'
 

@@ -1,37 +1,37 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Utils } from '@audius/sdk/dist/legacy.js'
 
-import Paper from '../../components/Paper'
-import VoteMeter from '../../components/VoteMeter'
-import ProposalStatusBadge from '../../components/ProposalStatusBadge'
-import { Proposal, Outcome, Vote, Address, Status } from '../../types'
-import Button, { ButtonType } from '../../components/Button'
-import { leftPadZero, getDate, getHumanReadableTime } from '../../utils/format'
-import IconThumbUp from '../../assets/img/iconThumbUp.svg?react'
-import IconThumbDown from '../../assets/img/iconThumbDown.svg?react'
-import ConfirmTransactionModal from '../../components/ConfirmTransactionModal'
-import { useSubmitVote } from '../../store/actions/submitVote'
-import { useExecuteProposal } from '../../store/actions/executeProposal'
-import { StandaloneBox } from '../../components/ConfirmTransactionModal/ConfirmTransactionModal'
-import Loading from '../../components/Loading'
-import DisplayAudio from '../../components/DisplayAudio'
+import Paper from 'components/Paper'
+import VoteMeter from 'components/VoteMeter'
+import ProposalStatusBadge from 'components/ProposalStatusBadge'
+import { Proposal, Outcome, Vote, Address, Status } from 'types'
+import Button, { ButtonType } from 'components/Button'
+import { leftPadZero, getDate, getHumanReadableTime } from 'utils/format'
+import IconThumbUp from 'assets/img/iconThumbUp.svg?react'
+import IconThumbDown from 'assets/img/iconThumbDown.svg?react'
+import ConfirmTransactionModal from 'components/ConfirmTransactionModal'
+import { useSubmitVote } from 'store/actions/submitVote'
+import { useExecuteProposal } from 'store/actions/executeProposal'
+import { StandaloneBox } from 'components/ConfirmTransactionModal/ConfirmTransactionModal'
+import Loading from 'components/Loading'
+import DisplayAudio from 'components/DisplayAudio'
 import {
   useProposalTimeRemaining,
   useAmountAbstained,
   useGetInProgressProposalSubstate,
   useProposalMilestoneBlocks,
   useExecutionDelayTimeRemaining
-} from '../../store/cache/proposals/hooks'
-import { useAccountUser } from '../../store/account/hooks'
-import { Position } from '../../components/Tooltip'
-import { createStyles } from '../../utils/mobile'
+} from 'store/cache/proposals/hooks'
+import { useAccountUser } from 'store/account/hooks'
+import { Position } from 'components/Tooltip'
+import { createStyles } from 'utils/mobile'
 import { IconCheck, IconRemove } from '@audius/stems'
 
 import desktopStyles from './ProposalHero.module.css'
 import mobileStyles from './ProposalHeroMobile.module.css'
-import getActiveStake from '../../utils/activeStake'
+import getActiveStake from 'utils/activeStake'
 import clsx from 'clsx'
-import UserImage from '../../components/UserImage'
+import UserImage from 'components/UserImage'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 

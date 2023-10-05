@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { Proposal, Outcome } from '../../../types'
+import { Proposal, Outcome } from 'types'
 
 export type State = {
   // Ordered array of active proposals

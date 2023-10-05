@@ -1,11 +1,11 @@
 import React, { useCallback } from 'react'
 
-import { useTopApps } from '../../store/cache/analytics/hooks'
-import { Bucket, MetricError } from '../../store/cache/analytics/slice'
-import VerticalBarChart from '../../components/VerticalBarChart'
-import { usePushRoute } from '../../utils/effects'
-import { API_LEADERBOARD } from '../../utils/routes'
-import { useIsMobile } from '../../utils/hooks'
+import { useTopApps } from 'store/cache/analytics/hooks'
+import { Bucket, MetricError } from 'store/cache/analytics/slice'
+import VerticalBarChart from 'components/VerticalBarChart'
+import { usePushRoute } from 'utils/effects'
+import { API_LEADERBOARD } from 'utils/routes'
+import { useIsMobile } from 'utils/hooks'
 
 type OwnProps = {
   className?: string

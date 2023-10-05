@@ -1,5 +1,5 @@
 import AudiusClient from './AudiusClient'
-import { Address } from '../../types'
+import { Address } from 'types'
 
 /**
  * Wrapper functions for libs

@@ -2,11 +2,11 @@ import { useSelector, useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
 
-import Audius from '../../../services/Audius'
-import { AppState } from '../../../store/types'
+import Audius from 'services/Audius'
+import { AppState } from 'store/types'
 import { useEffect } from 'react'
 import { setVotes, setUserVote } from './slice'
-import { Vote, VoteEvent } from '../../../types'
+import { Vote, VoteEvent } from 'types'
 import { useDispatchBasedOnBlockNumber } from '../protocol/hooks'
 
 // -------------------------------- Selectors  --------------------------------

@@ -1,7 +1,7 @@
-import LineChart from '../../components/LineChart'
+import LineChart from 'components/LineChart'
 import React, { useState } from 'react'
-import { useTotalStaked } from '../../store/cache/analytics/hooks'
-import { Bucket, MetricError } from '../../store/cache/analytics/slice'
+import { useTotalStaked } from 'store/cache/analytics/hooks'
+import { Bucket, MetricError } from 'store/cache/analytics/slice'
 
 type OwnProps = {}
 

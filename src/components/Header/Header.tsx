@@ -1,17 +1,17 @@
 import React, { useState } from 'react'
 import clsx from 'clsx'
 
-import AppBar from '../../components/AppBar'
-import Nav from '../../components/Nav'
-import { useInit } from '../../store/cache/protocol/hooks'
-import { useIsMobile } from '../../utils/hooks'
+import AppBar from 'components/AppBar'
+import Nav from 'components/Nav'
+import { useInit } from 'store/cache/protocol/hooks'
+import { useIsMobile } from 'utils/hooks'
 import { IconKebabHorizontal } from '@audius/stems'
 
 import desktopStyles from './Header.module.css'
 import mobileStyles from './HeaderMobile.module.css'
-import { createStyles } from '../../utils/mobile'
-import MobileNav from '../../components/MobileNav'
-import useRerouteLegacy from '../../hooks/useRerouteLegacy'
+import { createStyles } from 'utils/mobile'
+import MobileNav from 'components/MobileNav'
+import useRerouteLegacy from 'hooks/useRerouteLegacy'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 

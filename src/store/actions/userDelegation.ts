@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Utils } from '@audius/sdk/dist/legacy.js'
-import { useUser } from '../../store/cache/user/hooks'
-import { Address, BigNumber, Status, Operator } from '../../types'
+import { useUser } from 'store/cache/user/hooks'
+import { Address, BigNumber, Status, Operator } from 'types'
 
 export const useUserDelegation = (wallet: Address) => {
   const [status, setStatus] = useState<undefined | Status>()

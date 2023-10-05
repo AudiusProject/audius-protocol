@@ -1,7 +1,7 @@
 import React from 'react'
 
 import styles from './NotFound.module.css'
-import Page from '../../components/Page'
+import Page from 'components/Page'
 
 const messages = {
   title: 'Not Found'

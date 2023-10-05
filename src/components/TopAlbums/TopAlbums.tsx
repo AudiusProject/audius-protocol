@@ -1,9 +1,9 @@
-import Error from '../../components/Error'
-import Loading from '../../components/Loading'
-import Paper from '../../components/Paper'
+import Error from 'components/Error'
+import Loading from 'components/Loading'
+import Paper from 'components/Paper'
 import React, { useCallback } from 'react'
-import { useTopAlbums } from '../../store/cache/music/hooks'
-import { MusicError } from '../../store/cache/music/slice'
+import { useTopAlbums } from 'store/cache/music/hooks'
+import { MusicError } from 'store/cache/music/slice'
 import styles from './TopAlbums.module.css'
 
 const messages = {

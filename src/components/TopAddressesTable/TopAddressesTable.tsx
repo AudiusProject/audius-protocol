@@ -1,21 +1,21 @@
 import React, { useCallback } from 'react'
 import clsx from 'clsx'
 import BN from 'bn.js'
-import Audius from '../../services/Audius'
-import { SERVICES_USERS, accountPage } from '../../utils/routes'
+import Audius from 'services/Audius'
+import { SERVICES_USERS, accountPage } from 'utils/routes'
 
 import styles from './TopAddressesTable.module.css'
-import Table from '../../components/Table'
-import { formatWeight } from '../../utils/format'
+import Table from 'components/Table'
+import { formatWeight } from 'utils/format'
 
-import { useUsers } from '../../store/cache/user/hooks'
-import { Address, SortUser, Status } from '../../types'
-import { usePushRoute } from '../../utils/effects'
-import { useIsMobile } from '../../utils/hooks'
-import getActiveStake from '../../utils/activeStake'
-import DisplayAudio from '../../components/DisplayAudio'
-import UserImage from '../../components/UserImage'
-import UserName from '../../components/UserName'
+import { useUsers } from 'store/cache/user/hooks'
+import { Address, SortUser, Status } from 'types'
+import { usePushRoute } from 'utils/effects'
+import { useIsMobile } from 'utils/hooks'
+import getActiveStake from 'utils/activeStake'
+import DisplayAudio from 'components/DisplayAudio'
+import UserImage from 'components/UserImage'
+import UserName from 'components/UserName'
 
 const messages = {
   topAddresses: 'Top Addresses by Voting Weight',

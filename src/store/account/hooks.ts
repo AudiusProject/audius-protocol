@@ -8,9 +8,9 @@ import {
   Address,
   DelayedPendingTransaction,
   PendingTransactionName
-} from '../../types'
-import Audius from '../../services/Audius'
-import { AppState } from '../../store/types'
+} from 'types'
+import Audius from 'services/Audius'
+import { AppState } from 'store/types'
 import {
   setLoading,
   setAccount,
@@ -18,7 +18,7 @@ import {
   setPendingTransactions
 } from './slice'
 import { useEffect } from 'react'
-import { getUser, fetchUser } from '../../store/cache/user/hooks'
+import { getUser, fetchUser } from 'store/cache/user/hooks'
 
 // -------------------------------- Selectors  --------------------------------
 export const getIsLoggedIn = (state: AppState) => state.account.loggedIn

@@ -4,13 +4,13 @@ import { connect } from 'react-redux'
 import { push as pushRoute } from 'connected-react-router'
 import { matchPath } from 'react-router-dom'
 import clsx from 'clsx'
-import Logo from '../../assets/img/audiusLogoHorizontal.svg?react'
+import Logo from 'assets/img/audiusLogoHorizontal.svg?react'
 
-import { AppState } from '../../store/types'
+import { AppState } from 'store/types'
 import styles from './MobileNav.module.css'
-import * as routes from '../../utils/routes'
+import * as routes from 'utils/routes'
 import { Button, ButtonType, IconRemove } from '@audius/stems'
-import useOpenLink from '../../hooks/useOpenLink'
+import useOpenLink from 'hooks/useOpenLink'
 
 const messages = {
   launchApp: 'LAUNCH THE APP',

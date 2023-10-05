@@ -1,21 +1,21 @@
 import React from 'react'
 import { RouteComponentProps } from 'react-router'
 import { matchPath } from 'react-router-dom'
-import NodeOverview from '../../components/NodeOverview'
-import { useDiscoveryProvider } from '../../store/cache/discoveryProvider/hooks'
-import { useContentNode } from '../../store/cache/contentNode/hooks'
-import { useAccount } from '../../store/account/hooks'
+import NodeOverview from 'components/NodeOverview'
+import { useDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
+import { useContentNode } from 'store/cache/contentNode/hooks'
+import { useAccount } from 'store/account/hooks'
 
 import styles from './Node.module.css'
-import Page from '../../components/Page'
-import { Status, Address, ServiceType } from '../../types'
-import { usePushRoute } from '../../utils/effects'
+import Page from 'components/Page'
+import { Status, Address, ServiceType } from 'types'
+import { usePushRoute } from 'utils/effects'
 import {
   SERVICES_DISCOVERY_PROVIDER_NODE,
   SERVICES_TITLE,
   SERVICES,
   NOT_FOUND
-} from '../../utils/routes'
+} from 'utils/routes'
 
 const messages = {
   title: 'SERVICE',

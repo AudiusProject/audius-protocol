@@ -1,16 +1,13 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
-import { Status, User, Operator } from '../../../../types'
-import Audius from '../../../../services/Audius'
-import { AppState } from '../../../../store/types'
+import { Status, User, Operator } from 'types'
+import Audius from 'services/Audius'
+import { AppState } from 'store/types'
 import { setLoading, setUsers } from '../slice'
 import { useEffect, useState } from 'react'
 import { FullUser, UsersData, UsersVars, UserData, UserVars } from './types'
-import {
-  getGraphAPI,
-  useGraphQuery as useQuery
-} from '../../../../store/api/hooks'
+import { getGraphAPI, useGraphQuery as useQuery } from 'store/api/hooks'
 import { formatUser } from './formatter'
 import { GET_USERS, GET_USER } from './queries'
 

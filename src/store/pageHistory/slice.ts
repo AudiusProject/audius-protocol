@@ -1,5 +1,5 @@
 import { LOCATION_CHANGE } from 'connected-react-router'
-import { getPageTitleFromRoute } from '../../utils/routes'
+import { getPageTitleFromRoute } from 'utils/routes'
 
 export type State = {
   pageTitles: Array<string>

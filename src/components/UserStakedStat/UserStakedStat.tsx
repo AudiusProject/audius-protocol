@@ -2,13 +2,13 @@ import React from 'react'
 import BN from 'bn.js'
 import clsx from 'clsx'
 
-import Paper from '../../components/Paper'
+import Paper from 'components/Paper'
 import styles from './UserStakedStat.module.css'
-import { Status } from '../../types'
-import { TICKER } from '../../utils/consts'
-import { Address } from '../../types'
-import Loading from '../../components/Loading'
-import DisplayAudio from '../../components/DisplayAudio'
+import { Status } from 'types'
+import { TICKER } from 'utils/consts'
+import { Address } from 'types'
+import Loading from 'components/Loading'
+import DisplayAudio from 'components/DisplayAudio'
 
 const messages = {
   delegated: `DELEGATED`

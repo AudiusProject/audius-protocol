@@ -3,15 +3,15 @@ import clsx from 'clsx'
 import SimpleBar from 'simplebar-react'
 import BN from 'bn.js'
 
-import AudiusClient from '../../services/Audius'
+import AudiusClient from 'services/Audius'
 import { IconArrow, ButtonType } from '@audius/stems'
-import Modal from '../../components/Modal'
-import Button from '../../components/Button'
+import Modal from 'components/Modal'
+import Button from 'components/Button'
 import styles from './ConfirmTransactionModal.module.css'
-import { BigNumber, ServiceType, Address, Status } from '../../types'
-import Loading from '../../components/Loading'
-import { TICKER } from '../../utils/consts'
-import UserImage from '../../components/UserImage'
+import { BigNumber, ServiceType, Address, Status } from 'types'
+import Loading from 'components/Loading'
+import { TICKER } from 'utils/consts'
+import UserImage from 'components/UserImage'
 
 const messages = {
   title: 'Confirm Transaction',

@@ -1,9 +1,9 @@
 import React from 'react'
 
-import Stat from '../../components/Stat'
-import { useTrailingApiCalls } from '../../store/cache/analytics/hooks'
-import { Bucket, MetricError } from '../../store/cache/analytics/slice'
-import { formatNumber } from '../../utils/format'
+import Stat from 'components/Stat'
+import { useTrailingApiCalls } from 'store/cache/analytics/hooks'
+import { Bucket, MetricError } from 'store/cache/analytics/slice'
+import { formatNumber } from 'utils/format'
 
 const messages = {
   label: 'UNIQUE USERS THIS MONTH'

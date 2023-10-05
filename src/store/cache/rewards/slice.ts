@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import BN from 'bn.js'
-import { Status, Address } from '../../../types'
+import { Status, Address } from 'types'
 
 export type State = {
   users: {

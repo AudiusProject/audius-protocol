@@ -13,9 +13,9 @@ import {
   Operator,
   Delegate,
   ServiceProvider
-} from '../../../types'
-import Audius from '../../../services/Audius'
-import { AppState } from '../../../store/types'
+} from 'types'
+import Audius from 'services/Audius'
+import { AppState } from 'store/types'
 import { setLoading, setUsers, setUserProfile } from './slice'
 import { useEffect } from 'react'
 import {
@@ -26,16 +26,14 @@ import {
   getFilteredNodes as getCNNodes,
   fetchContentNodes
 } from '../contentNode/hooks'
-import { useAccountUser } from '../../../store/account/hooks'
-import { GetPendingDecreaseStakeRequestResponse } from '../../../services/Audius/service-provider/types'
-import getActiveStake, {
-  getTotalActiveDelegatedStake
-} from '../../../utils/activeStake'
+import { useAccountUser } from 'store/account/hooks'
+import { GetPendingDecreaseStakeRequestResponse } from 'services/Audius/service-provider/types'
+import getActiveStake, { getTotalActiveDelegatedStake } from 'utils/activeStake'
 import {
   useUser as useGraphUser,
   useUsers as useGraphUsers
 } from './graph/hooks'
-import { getUserProfile } from '../../../services/SelfId'
+import { getUserProfile } from 'services/SelfId'
 
 type UseUsersProp = {
   sortBy?: SortUser

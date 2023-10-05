@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux'
-import { AppState } from '../../store/types'
+import { AppState } from 'store/types'
 
 // -------------------------------- Selectors --------------------------------
 export const getPageTitle = (state: AppState) => state.pageHistory.pageTitles

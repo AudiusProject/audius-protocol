@@ -1,7 +1,7 @@
 import React from 'react'
 import SimpleBar from 'simplebar-react'
 import styles from './ModalTable.module.css'
-import Modal from '../../components/Modal'
+import Modal from 'components/Modal'
 
 type OwnProps = {
   title: string

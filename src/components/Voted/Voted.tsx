@@ -1,9 +1,9 @@
 import React from 'react'
 import clsx from 'clsx'
 import styles from './Voted.module.css'
-import IconThumbUp from '../../assets/img/iconThumbUp.svg?react'
-import IconThumbDown from '../../assets/img/iconThumbDown.svg?react'
-import { Vote } from '../../types'
+import IconThumbUp from 'assets/img/iconThumbUp.svg?react'
+import IconThumbDown from 'assets/img/iconThumbDown.svg?react'
+import { Vote } from 'types'
 
 const messages = {
   for: 'Voted For',

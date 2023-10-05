@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import React, { useEffect, useState } from 'react'
-import { useUserProfile } from '../../store/cache/user/hooks'
-import { Address } from '../../types'
+import { useUserProfile } from 'store/cache/user/hooks'
+import { Address } from 'types'
 
 import styles from './UserImage.module.css'
 

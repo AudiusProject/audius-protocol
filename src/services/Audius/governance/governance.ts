@@ -11,12 +11,12 @@ import {
   VoteEvent,
   Permission,
   ProposalEvent
-} from '../../../types'
+} from 'types'
 import {
   GovernanceProposalEvent,
   GovernanceVoteEvent,
   GovernanceVoteUpdateEvent
-} from '../../../models/TimelineEvents'
+} from 'models/TimelineEvents'
 import { RawProposal, RawVoteEvent } from './types'
 
 // NOTE: Temporary fix- Set the start query block so that the getPastEvent does not error

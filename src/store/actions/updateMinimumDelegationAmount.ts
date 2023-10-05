@@ -3,12 +3,12 @@ import { useState, useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
-import { getAccountWallet } from '../../store/account/hooks'
-import { fetchUser } from '../../store/cache/user/hooks'
+import { getAccountWallet } from 'store/account/hooks'
+import { fetchUser } from 'store/cache/user/hooks'
 
-import { Status } from '../../types'
-import Audius from '../../services/Audius'
-import { AppState } from '../../store/types'
+import { Status } from 'types'
+import Audius from 'services/Audius'
+import { AppState } from 'store/types'
 
 function updateMinimumDelegationAmount(
   amount: BN,
