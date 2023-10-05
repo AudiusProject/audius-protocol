@@ -72,6 +72,7 @@ def setup_challenges(app):
                 specifier="1",
                 is_complete=False,
                 current_step_count=1,
+                amount=5,
             ),
             UserChallenge(
                 challenge_id="test_challenge_1",
@@ -80,12 +81,14 @@ def setup_challenges(app):
                 is_complete=True,
                 current_step_count=3,
                 completed_blocknumber=100,
+                amount=5,
             ),
             UserChallenge(
                 challenge_id="test_challenge_2",
                 user_id=3,
                 specifier="3",
                 is_complete=False,
+                amount=5,
             ),
             UserChallenge(
                 challenge_id="test_challenge_2",
@@ -93,6 +96,7 @@ def setup_challenges(app):
                 specifier="4",
                 is_complete=True,
                 completed_blocknumber=102,
+                amount=5,
             ),
             UserChallenge(
                 challenge_id="test_challenge_2",
@@ -100,6 +104,7 @@ def setup_challenges(app):
                 specifier="5",
                 is_complete=True,
                 completed_blocknumber=102,
+                amount=5,
             ),
             UserChallenge(
                 challenge_id="test_challenge_3",
@@ -107,6 +112,7 @@ def setup_challenges(app):
                 specifier="6",
                 is_complete=True,
                 completed_blocknumber=100,
+                amount=5,
             ),
         ]
 

@@ -34,12 +34,12 @@ export const Text = forwardRef(
       variant ? (camelCase(`${variant} ${size}`) as TextClass) : '',
       variant ? (camelCase(`${variant} ${strength}`) as TextClass) : '',
       color ? (camelCase(`color ${color}`) as TextClass) : ''
-    ].map((cn) => styles[cn])
+    ].map((cn) => styles[cn as TextClass])
 
     return (
       <Tag
         ref={innerRef ?? ref}
-        className={cn(...variantClassNames, className)}
+        className={cn(styles.text, ...variantClassNames, className)}
         style={style}
         {...otherProps}
       >

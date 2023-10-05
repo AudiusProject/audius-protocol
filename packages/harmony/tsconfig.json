@@ -4,22 +4,19 @@
     "lib": ["ES2020", "dom"],
     "module": "esnext",
     "checkJs": false,
+    "plugins": [{ "name": "typescript-plugin-css-modules" }],
     "allowJs": false,
     "jsx": "react-jsx",
     "resolveJsonModule": true,
     "moduleResolution": "node",
-    "typeRoots": [
-      "./types",
-      "./node_modules/@types",
-      "../../node_modules/@types"
-    ],
     "exactOptionalPropertyTypes": false,
     "declaration": true,
     "baseUrl": "./src",
     "outDir": "build",
     "declarationDir": "./",
-    "noPropertyAccessFromIndexSignature": false
+    "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": false
   },
-  "exclude": ["dist, build"],
-  "include": ["src/**/*"]
+  "include": ["src"],
+  "exclude": ["node_modules", "build", "dist", "rollup.config.js"],
 }

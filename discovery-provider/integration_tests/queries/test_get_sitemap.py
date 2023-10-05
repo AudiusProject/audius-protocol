@@ -22,15 +22,13 @@ from src.utils.db_session import get_db
 logger = logging.getLogger(__name__)
 
 
-@mock.patch("src.queries.get_sitemap.get_client_base_url")
-@mock.patch("src.queries.get_sitemap.set_base_url")
-def test_get_sitemaps(mock_set_base_url, mock_get_client_base_url, app):
+@mock.patch("src.queries.get_sitemap.get_base_url")
+def test_get_sitemaps(mock_get_base_url, app):
     """Tests that get sitemap works"""
     with app.app_context():
         db = get_db()
 
-        mock_set_base_url.return_value = "https://discoveryprovider.audius.co"
-        mock_get_client_base_url.return_value = "https://audius.co"
+        mock_get_base_url.return_value = "https://audius.co"
 
         test_entities = {
             "playlists": [
@@ -81,21 +79,21 @@ def test_get_sitemaps(mock_set_base_url, mock_get_client_base_url, app):
             track_root = get_track_root(session, 3)
             assert (
                 track_root
-                == b'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/track/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/track/2.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/track/3.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/track/4.xml</loc>\n  </sitemap>\n</sitemapindex>\n'
+                == b'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://audius.co/sitemaps/track/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://audius.co/sitemaps/track/2.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://audius.co/sitemaps/track/3.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://audius.co/sitemaps/track/4.xml</loc>\n  </sitemap>\n</sitemapindex>\n'
             )
 
             # Validate that there are 6 playlist sitemaps -  10 total playlist / 2 user per sitemap = 5
             playlist_root = get_playlist_root(session, 2)
             assert (
                 playlist_root
-                == b'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/2.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/3.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/4.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/5.xml</loc>\n  </sitemap>\n</sitemapindex>\n'
+                == b'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://audius.co/sitemaps/playlist/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://audius.co/sitemaps/playlist/2.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://audius.co/sitemaps/playlist/3.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://audius.co/sitemaps/playlist/4.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://audius.co/sitemaps/playlist/5.xml</loc>\n  </sitemap>\n</sitemapindex>\n'
             )
 
             # Validate that there are 2 user sitemaps -  20 total user / 12 user per sitemap = 2
             user_root = get_user_root(session, 12)
             assert (
                 user_root
-                == b'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/user/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/user/2.xml</loc>\n  </sitemap>\n</sitemapindex>\n'
+                == b'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://audius.co/sitemaps/user/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://audius.co/sitemaps/user/2.xml</loc>\n  </sitemap>\n</sitemapindex>\n'
             )
 
             # Validate that returns 6 track slugs
@@ -141,15 +139,13 @@ def test_get_sitemaps(mock_set_base_url, mock_get_client_base_url, app):
             )
 
 
-@mock.patch("src.queries.get_sitemap.get_client_base_url")
-@mock.patch("src.queries.get_sitemap.set_base_url")
-def test_get_sitemaps_correct_counts(mock_set_base_url, mock_get_client_base_url, app):
+@mock.patch("src.queries.get_sitemap.get_base_url")
+def test_get_sitemaps_correct_counts(mock_get_base_url, app):
     """Tests that counts are correct"""
     with app.app_context():
         db = get_db()
 
-        mock_set_base_url.return_value = "https://discoveryprovider.audius.co"
-        mock_get_client_base_url.return_value = "https://audius.co"
+        mock_get_base_url.return_value = "https://audius.co"
 
         test_entities = {
             "playlists": [
