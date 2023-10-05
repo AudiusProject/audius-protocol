@@ -75,20 +75,20 @@
   },
   {
     "id": "b",
-    "name": "$AUDIO_MATCHING_BUYER",
+    "name": "AUDIO_MATCHING_BUYER",
     "type": "aggregate",
     "amount": 1,
     "active": true,
-    "step_count": 10,
+    "step_count": 2147483647,
     "starting_block": 0
   },
   {
     "id": "s",
-    "name": "$AUDIO_MATCHING_SELLER",
+    "name": "AUDIO_MATCHING_SELLER",
     "type": "aggregate",
     "amount": 1,
     "active": true,
-    "step_count": 10,
+    "step_count": 2147483647,
     "starting_block": 0
   }
 ]
