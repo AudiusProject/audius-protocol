@@ -65,7 +65,7 @@ from src.queries.get_track_stream_info import get_track_stream_info
 from src.queries.get_track_stream_signature import get_track_stream_signature
 from src.queries.get_tracks import RouteArgs, get_tracks
 from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
-from src.queries.get_trending import get_full_trending, get_trending
+from src.queries.get_trending import get_trending
 from src.queries.get_trending_ids import get_trending_ids
 from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
 from src.queries.get_unclaimed_id import get_unclaimed_id
@@ -683,7 +683,7 @@ class FullTrending(Resource):
         strategy = trending_strategy_factory.get_strategy(
             TrendingType.TRACKS, version_list[0]
         )
-        trending_tracks = get_full_trending(request, args, strategy)
+        trending_tracks = get_trending(args, strategy)
         return success_response(trending_tracks)
 
 
