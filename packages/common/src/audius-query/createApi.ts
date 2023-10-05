@@ -1,6 +1,8 @@
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 
+import { ResponseError } from '@audius/sdk'
 import { CaseReducerActions, createSlice } from '@reduxjs/toolkit'
+import retry from 'async-retry'
 import { produce } from 'immer'
 import { isEqual, mapValues } from 'lodash'
 import { denormalize, normalize } from 'normalizr'
@@ -10,7 +12,7 @@ import { Dispatch } from 'redux'
 import { CollectionMetadata, UserCollectionMetadata } from 'models/Collection'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { Kind } from 'models/Kind'
-import { Status } from 'models/Status'
+import { Status, statusIsNotFinalized } from 'models/Status'
 import { UserMetadata } from 'models/User'
 import { getCollection } from 'store/cache/collections/selectors'
 import { reformatCollection } from 'store/cache/collections/utils/reformatCollection'
@@ -41,11 +43,33 @@ import {
   PerKeyState,
   SliceConfig,
   QueryHookResults,
-  FetchResetAction
+  FetchResetAction,
+  RetryConfig
 } from './types'
 import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
 
 const { addEntries } = cacheActions
+
+const defaultRetryConfig: RetryConfig = {
+  retries: 3
+}
+
+const isNonRetryableError = (e: unknown) => {
+  if (e instanceof ResponseError) {
+    return [400, 401, 403].includes(e.response.status)
+  }
+  return false
+}
+
+/** Helper hook which will return the passed value on first render and a default
+ * value on subsequent renders. Both values default to `false`.
+ */
+const useBooleanOnce = ({ initialValue = false, defaultValue = false }) => {
+  const ref = useRef(initialValue)
+  const value = ref.current
+  ref.current = defaultValue
+  return value
+}
 
 export const createApi = <
   EndpointDefinitions extends DefaultEndpointDefinitions
@@ -279,7 +303,23 @@ const fetchData = async <Args, Data>(
 
     endpoint.onQueryStarted?.(fetchArgs, { dispatch })
 
-    const apiData = await endpoint.fetch(fetchArgs, context)
+    // If endpoint config specifies retries wrap the fetch
+    // and return a single error at the end if all retries fail
+    const apiData = endpoint.options.retry
+      ? await retry(
+          async (bail) => {
+            try {
+              return endpoint.fetch(fetchArgs, context)
+            } catch (e) {
+              if (isNonRetryableError(e)) {
+                bail(new Error(`Non-retryable error: ${e}`))
+              }
+              return null
+            }
+          },
+          { ...defaultRetryConfig, ...endpoint.options.retryConfig }
+        )
+      : await endpoint.fetch(fetchArgs, context)
     if (apiData == null) {
       throw new Error('Remote data not found')
     }
@@ -356,6 +396,10 @@ const buildEndpointHooks = <
     hookOptions?: QueryHookOptions
   ): QueryHookResults<Data> => {
     const dispatch = useDispatch()
+    const force = useBooleanOnce({
+      initialValue: hookOptions?.force,
+      defaultValue: false
+    })
     const queryState = useQueryState(
       fetchArgs,
       reducerPath,
@@ -363,8 +407,14 @@ const buildEndpointHooks = <
       endpoint
     )
 
+    // If `force` and we aren't already idle/loading, ignore queryState and force a fetch
+    const state =
+      force && queryState?.status && !statusIsNotFinalized(queryState.status)
+        ? null
+        : queryState
+
     const { nonNormalizedData, status, errorMessage, isInitialValue } =
-      queryState ?? {
+      state ?? {
         nonNormalizedData: null,
         status: Status.IDLE
       }

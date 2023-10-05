@@ -25,6 +25,7 @@ import { useDispatch } from 'react-redux'
 
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
+import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { MainContentContext } from 'pages/MainContentContext'
 import NotFoundPage from 'pages/not-found-page/NotFoundPage'
@@ -111,12 +112,17 @@ const RenderSalesPage = () => {
   } = useAllPaginatedQuery(
     useGetSales,
     { userId, sortMethod, sortDirection },
-    { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE }
+    { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE, force: true }
   )
 
-  const { status: countStatus, data: count } = useGetSalesCount({ userId })
+  const { status: countStatus, data: count } = useGetSalesCount(
+    { userId },
+    { force: true }
+  )
 
   const status = combineStatuses([dataStatus, countStatus])
+
+  useErrorPageOnFailedStatus(status)
 
   // TODO: Should fetch users before rendering the table
 

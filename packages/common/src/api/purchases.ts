@@ -82,7 +82,7 @@ const purchasesApi = createApi({
         )
         return purchases
       },
-      options: {}
+      options: { retry: true }
     },
     getPurchasesCount: {
       fetch: async (
@@ -100,7 +100,7 @@ const purchasesApi = createApi({
         })
         return data ?? 0
       },
-      options: {}
+      options: { retry: true }
     },
     getSales: {
       fetch: async (
@@ -141,7 +141,7 @@ const purchasesApi = createApi({
         )
         return purchases
       },
-      options: {}
+      options: { retry: true }
     },
     getSalesCount: {
       fetch: async (
@@ -159,7 +159,7 @@ const purchasesApi = createApi({
         })
         return data ?? 0
       },
-      options: {}
+      options: { retry: true }
     }
   }
 })
