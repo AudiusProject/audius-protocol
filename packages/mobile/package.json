@@ -29,6 +29,8 @@
     "codepush-android-history:rc": "appcenter codepush deployment history -a Audius-Music/Audius-Android ReleaseCandidate",
     "codepush-android-history:staging": "appcenter codepush deployment history -a Audius-Music/Audius-Android Staging",
     "start": "react-native start",
+    "start:e2e": "RN_SRC_EXT=e2e.ts react-native start",
+    "start:storybook": "RN_STORYBOOK=true react-native start",
     "test": "jest",
     "test:e2e": "detox test --configuration ios.sim.debug signUp.test.ts",
     "upgrade": "react-native upgrade",
