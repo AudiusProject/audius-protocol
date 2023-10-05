@@ -1,17 +1,37 @@
-import { CSSProperties, useMemo, useState } from 'react'
+import { CSSProperties, Suspense, useMemo, useState } from 'react'
 
-import { trpc } from '@audius/common'
+import { accountSelectors, trpc } from '@audius/common'
+import { RouterInput } from '@audius/trpc-server'
+import { create } from 'zustand'
+import { useSelector } from 'react-redux'
+
+// ==================== Store ====================
+
+type SocialQuery = RouterInput['users']['listUserIds']
+
+interface SocialModalState {
+  socialQuery: SocialQuery | undefined
+  showSocialModal: (q: SocialQuery | undefined) => void
+}
+
+export const useSocialModal = create<SocialModalState>()((set) => ({
+  socialQuery: undefined,
+  showSocialModal: (socialQuery) =>
+    set((state) => {
+      return { socialQuery }
+    })
+}))
 
 // ==================== Page ====================
 
 export default function DemoTrpcPage() {
-  const pageSize = 50
+  const pageSize = 20
   const [offset, setOffset] = useState(1)
 
   const idRange = Array.from(Array(pageSize).keys()).map((i) => i + offset)
 
   return (
-    <div style={{ padding: 0 }}>
+    <div style={{ padding: 0, width: '100%' }}>
       <div
         style={{
           display: 'flex',
@@ -37,24 +57,135 @@ export default function DemoTrpcPage() {
           <button onClick={() => setOffset(offset + pageSize)}>next</button>
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 20, padding: 10 }}>
-        <div>
-          <div style={{ fontWeight: 900 }}>Users</div>
-          {idRange.map((k) => (
-            <User key={k} id={k.toString()} />
-          ))}
+
+      <UserListModal />
+
+      <Suspense fallback={<Loading />}>
+        <CurrentUserIndicator />
+
+        <div style={{ display: 'flex', gap: 20, padding: 10 }}>
+          <div style={stackStyle}>
+            <div style={{ fontWeight: 900 }}>Users</div>
+            {idRange.map((k) => (
+              <User key={k} id={k.toString()} />
+            ))}
+          </div>
+          <div style={stackStyle}>
+            <div style={{ fontWeight: 900 }}>Tracks</div>
+            {idRange.map((k) => (
+              <Track key={k} id={k.toString()} />
+            ))}
+          </div>
+          <div style={stackStyle}>
+            <div style={{ fontWeight: 900 }}>Playlists</div>
+            {idRange.map((k) => (
+              <Playlist key={k} id={k.toString()} />
+            ))}
+          </div>
         </div>
-        <div>
-          <div style={{ fontWeight: 900 }}>Tracks</div>
-          {idRange.map((k) => (
-            <Track key={k} id={k.toString()} />
-          ))}
+      </Suspense>
+    </div>
+  )
+}
+
+9
+function CurrentUserIndicator() {
+  const currentUserId = useSelector(accountSelectors.getUserId)
+  if (!currentUserId) return null
+  return (
+    <User
+      style={{
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        background: 'lightyellow'
+      }}
+      id={currentUserId.toString()}
+    />
+  )
+}
+
+function UserListModal() {
+  const limit = 20
+  const state = useSocialModal()
+  const fetcher = trpc.users.listUserIds.useInfiniteQuery(
+    { ...state.socialQuery!, limit },
+    {
+      enabled: !!state.socialQuery,
+      getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.ids.length === limit) {
+          const val = allPages.reduce((acc, page) => acc + page.ids.length, 0)
+          return val
+        }
+      }
+    }
+  )
+  if (!state.socialQuery) return null
+
+  // @ts-ignore
+  return (
+    <div>
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0,0,0,0.5)',
+          zIndex: 1
+        }}
+        onClick={() => state.showSocialModal(undefined)}
+      ></div>
+      <div
+        style={{
+          position: 'fixed',
+          top: 100,
+          bottom: 100,
+          left: '50%',
+          width: 500,
+          overflow: 'auto',
+          marginLeft: -250,
+          background: 'white',
+          zIndex: 2,
+          padding: 10
+        }}
+      >
+        <div
+          style={{
+            padding: 10,
+            background: 'purple',
+            color: 'white',
+            marginBottom: 10
+          }}
+        >
+          {state.socialQuery.verb}
         </div>
-        <div>
-          <div style={{ fontWeight: 900 }}>Playlists</div>
-          {idRange.map((k) => (
-            <Playlist key={k} id={k.toString()} />
-          ))}
+
+        {fetcher.data?.pages.map((page, idx) => (
+          <div key={idx}>
+            <Suspense fallback={<Loading />}>
+              {page.ids.map((id) => (
+                <User
+                  key={id}
+                  id={id.toString()}
+                  style={{
+                    boxShadow: 'none',
+                    border: 'none',
+                    borderBottom: '1px solid #aaa'
+                  }}
+                />
+              ))}
+            </Suspense>
+          </div>
+        ))}
+
+        {fetcher.isFetching ? <Loading /> : null}
+
+        <div style={{ padding: 20, textAlign: 'center' }}>
+          {fetcher.hasNextPage && !fetcher.isFetching ? (
+            <button onClick={() => fetcher.fetchNextPage()}>more</button>
+          ) : null}
         </div>
       </div>
     </div>
@@ -75,7 +206,6 @@ const cardStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: 10,
-  marginBottom: 15,
 
   padding: 10,
   background: 'white',
@@ -83,21 +213,44 @@ const cardStyle: CSSProperties = {
   boxShadow: '4px 4px #aaa'
 }
 
+const stackStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 15
+}
+
 // ==================== User stuff ====================
 
-function User({ id }: { id: string }) {
-  const { data } = trpc.users.get.useQuery(id)
+function User({ id, style }: { id: string; style?: CSSProperties }) {
+  const { data } = trpc.users.get.useQuery(id, {
+    suspense: true
+  })
   if (!data) return null
   return (
-    <div style={cardStyle}>
+    <div style={{ ...cardStyle, ...style }}>
       <CidImage cid={data.profilePictureSizes || data.profilePicture} />
       <div style={{ flexGrow: 1 }}>
         <div style={{ fontSize: 24, fontWeight: 900 }}>{data.name}</div>
         <div style={{ fontSize: 18, color: 'purple' }}>@{data.handle}</div>
+        <div style={{ display: 'flex', fontSize: 10, color: '#555', gap: 5 }}>
+          <SocialCount
+            verb='follow'
+            kind='user'
+            id={id}
+            count={parseInt(data.followerCount || '0')}
+          />
+          <SocialCount
+            verb='followedBy'
+            kind='user'
+            id={id}
+            count={parseInt(data.followingCount || '0')}
+          />
+        </div>
       </div>
-      <div style={{ display: 'flex', gap: 2 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <FollowsYouIndicator theirId={id} />
         <FollowedIndicator theirId={id} />
+        <MututalFollows theirId={id} suspense={false} />
       </div>
     </div>
   )
@@ -105,32 +258,54 @@ function User({ id }: { id: string }) {
 
 type UserRelationshipParams = {
   theirId: string
+  suspense?: boolean
 }
 
-function FollowsYouIndicator({ theirId }: UserRelationshipParams) {
-  const { data } = trpc.me.userRelationship.useQuery({
-    theirId
-  })
+function FollowsYouIndicator({
+  theirId,
+  suspense = true
+}: UserRelationshipParams) {
+  const { data } = trpc.me.userRelationship.useQuery({ theirId }, { suspense })
   if (!data?.followsMe) return null
   return <div style={tagStyle}>Follows You</div>
 }
 
-function FollowedIndicator({ theirId }: UserRelationshipParams) {
-  const { data } = trpc.me.userRelationship.useQuery({
-    theirId
-  })
+function FollowedIndicator({
+  theirId,
+  suspense = true
+}: UserRelationshipParams) {
+  const { data } = trpc.me.userRelationship.useQuery({ theirId }, { suspense })
   if (!data?.followed) return null
   return <div style={tagStyle}>Followed</div>
+}
+
+function MututalFollows({ theirId, suspense = true }: UserRelationshipParams) {
+  const { showSocialModal: showUsersWho } = useSocialModal()
+  const { data } = trpc.users.listUserIds.useQuery(
+    { verb: 'mutualFollows', kind: 'user', id: theirId },
+    { suspense }
+  )
+
+  const showMutuals = () => {
+    showUsersWho({ verb: 'mutualFollows', kind: 'user', id: theirId })
+  }
+  if (!data?.count) return null
+  return (
+    <div style={tagStyle} onClick={showMutuals}>
+      {data.count} mutuals
+    </div>
+  )
 }
 
 // ==================== Track stuff ====================
 
 function Track({ id }: { id: string }) {
-  const { data: track } = trpc.tracks.get.useQuery(id)
+  const { data: track } = trpc.tracks.get.useQuery(id, { suspense: true })
   const { data: user } = trpc.users.get.useQuery(
     track?.ownerId.toString() || '',
     {
-      enabled: !!track?.ownerId
+      enabled: !!track?.ownerId,
+      suspense: true
     }
   )
   if (!track || !user) return null
@@ -143,6 +318,20 @@ function Track({ id }: { id: string }) {
         <div style={{ fontSize: 18, color: 'purple' }}>
           by {user.name || user.handle}
         </div>
+        <div style={{ display: 'flex', fontSize: 10, color: '#555', gap: 5 }}>
+          <SocialCount
+            verb='reposted'
+            kind='track'
+            id={id}
+            count={track.repostCount}
+          />
+          <SocialCount
+            verb='saved'
+            kind='track'
+            id={id}
+            count={track.saveCount}
+          />
+        </div>
       </div>
       <div style={{ display: 'flex', gap: 2 }}>
         <SaveIndicator kind='track' id={id} />
@@ -152,14 +341,25 @@ function Track({ id }: { id: string }) {
   )
 }
 
+function SocialCount(props: SocialQuery & { count?: number | null }) {
+  const userModal = useSocialModal()
+  if (!props.count) return null
+  return (
+    <div onClick={() => userModal.showSocialModal(props)}>
+      {props.count} {props.verb}
+    </div>
+  )
+}
+
 // ==================== Playlist stuff ====================
 
 function Playlist({ id }: { id: string }) {
-  const { data: playlist } = trpc.playlists.get.useQuery(id)
+  const { data: playlist } = trpc.playlists.get.useQuery(id, { suspense: true })
   const { data: user } = trpc.users.get.useQuery(
     playlist?.playlistOwnerId.toString() || '',
     {
-      enabled: !!playlist?.playlistOwnerId
+      enabled: !!playlist?.playlistOwnerId,
+      suspense: true
     }
   )
 
@@ -185,6 +385,21 @@ function Playlist({ id }: { id: string }) {
           <div style={{ fontSize: 18, color: 'purple' }}>
             by {user.name || user.handle}
           </div>
+
+          <div style={{ display: 'flex', fontSize: 10, color: '#555', gap: 5 }}>
+            <SocialCount
+              verb='reposted'
+              kind='playlist'
+              id={id}
+              count={playlist.repostCount}
+            />
+            <SocialCount
+              verb='saved'
+              kind='playlist'
+              id={id}
+              count={playlist.saveCount}
+            />
+          </div>
         </div>
         <div style={{ display: 'flex', gap: 2 }}>
           <SaveIndicator kind='playlist' id={id} />
@@ -202,14 +417,17 @@ function Playlist({ id }: { id: string }) {
 }
 
 function PlaylistTrack({ idx, id }: { idx: number; id: string }) {
-  const { data: track } = trpc.tracks.get.useQuery(id)
+  const { data: track } = trpc.tracks.get.useQuery(id, {
+    suspense: true
+  })
   const { data: user } = trpc.users.get.useQuery(
     track?.ownerId.toString() || '',
     {
-      enabled: !!track?.ownerId
+      enabled: !!track?.ownerId,
+      suspense: true
     }
   )
-  if (!track || !user) return null
+  if (!user || !track) return null
   return (
     <div
       style={{
@@ -226,8 +444,8 @@ function PlaylistTrack({ idx, id }: { idx: number; id: string }) {
         <span style={{ color: 'purple' }}>by {user.name || user.handle}</span>
       </div>
       <div style={{ display: 'flex', gap: 2 }}>
-        <SaveIndicator kind='track' id={id} />
-        <RepostIndicator kind='track' id={id} />
+        <SaveIndicator kind='track' id={id} suspense={false} />
+        <RepostIndicator kind='track' id={id} suspense={false} />
       </div>
     </div>
   )
@@ -253,16 +471,17 @@ export function playlistTrackIds(playlist: any) {
 type SaveRepostParams = {
   kind: 'track' | 'playlist'
   id: string
+  suspense?: boolean
 }
 
-function SaveIndicator({ kind, id }: SaveRepostParams) {
-  const { data } = trpc.me.actions.useQuery({ kind, id })
+function SaveIndicator({ kind, id, suspense = true }: SaveRepostParams) {
+  const { data } = trpc.me.actions.useQuery({ kind, id }, { suspense })
   if (!data?.saved) return null
   return <div style={tagStyle}>Saved</div>
 }
 
-function RepostIndicator({ kind, id }: SaveRepostParams) {
-  const { data } = trpc.me.actions.useQuery({ kind, id })
+function RepostIndicator({ kind, id, suspense = true }: SaveRepostParams) {
+  const { data } = trpc.me.actions.useQuery({ kind, id }, { suspense })
   if (!data?.reposted) return null
   return <div style={tagStyle}>Reposted</div>
 }
@@ -294,4 +513,20 @@ function CidImage({
       : 'https://creatornode2.audius.co'
 
   return <img src={`${host}/content/${cid}/150x150.jpg`} style={styleProps} />
+}
+
+function Loading() {
+  return (
+    <div
+      style={{
+        textAlign: 'center',
+        fontSize: 48,
+        padding: 50,
+        color: '#aaa',
+        textTransform: 'uppercase'
+      }}
+    >
+      Loading
+    </div>
+  )
 }

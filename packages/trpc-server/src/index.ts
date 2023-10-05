@@ -13,6 +13,7 @@ import { createContext, publicProcedure, router } from './trpc'
 import { meRouter } from './routers/me-router'
 import { trackRouter } from './routers/track-router'
 import { playlistRouter } from './routers/playlist-router'
+import { inferRouterInputs, inferRouterOutputs } from '@trpc/server'
 
 const app = express()
 app.use(cors())
@@ -30,6 +31,9 @@ const appRouter = router({
 })
 
 export type AppRouter = typeof appRouter
+
+export type RouterInput = inferRouterInputs<AppRouter>
+export type RouterOutput = inferRouterOutputs<AppRouter>
 
 // endpoints
 app.use('/trpc', createExpressMiddleware({ router: appRouter, createContext }))
