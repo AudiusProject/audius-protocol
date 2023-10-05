@@ -22,10 +22,11 @@ def _get_usdc_purchase_tracks(args, strategy):
     # Decode user_id if necessary
     current_user_id = args.get("user_id")
     current_user_id = decode_string_id(current_user_id) if current_user_id else None
-    limit = format_limit(args, DEFAULT_PREMIUM_TRACKS_LIMIT),
-    offset = format_offset(args),
-    time_range = args.get("time", "week"),
-    genre = args.get("genre", None),
+    limit = format_limit(args, DEFAULT_PREMIUM_TRACKS_LIMIT)
+    offset = format_offset(args)
+    time = args.get("time", "week")
+    time_range = "week" if time not in ["week", "month", "year", "allTime"] else time
+    genre = args.get("genre", None)
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
