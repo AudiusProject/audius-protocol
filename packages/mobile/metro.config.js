@@ -40,7 +40,9 @@ module.exports = (async () => {
 
   const defaultSourceExts = [...sourceExts, 'svg', 'cjs']
 
-  resolverMainFields.unshift('sbmodern')
+  if (process.env.RN_STORYBOOK) {
+    resolverMainFields.unshift('sbmodern')
+  }
 
   return {
     transformer: {
@@ -101,7 +103,9 @@ module.exports = (async () => {
         }
         return context.resolveRequest(context, moduleName, platform)
       },
-      resolverMainFields
+      resolverMainFields: process.env.RN_STORYBOOK
+        ? resolverMainFields
+        : undefined
     },
     maxWorkers: 2
   }
