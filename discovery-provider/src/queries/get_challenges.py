@@ -29,7 +29,7 @@ def rollup_aggregates(
     user_challenges: List[UserChallenge], parent_challenge: Challenge
 ) -> ChallengeResponse:
     num_complete = reduce(
-        lambda acc, cur: cast(int, acc) + 1 if cur.is_complete else acc,
+        lambda acc, cur: cast(int, acc) + cur.amount if cur.is_complete else acc,
         user_challenges,
         0,
     )
