@@ -11,7 +11,7 @@ lint-discovery-provider:
     - run:
         name: Install Python dependencies
         command: |
-          cd discovery-provider
+          cd packages/discovery-provider
           pip install -r requirements.txt
 
     - save_cache:
