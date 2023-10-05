@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"mediorum/httputil"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -45,9 +47,33 @@ type Crudr struct {
 	callbacks []func(op *Op, records interface{})
 }
 
+func migrateOpsPartition(db *gorm.DB, partitionName string, modulus int, remainder int) error {
+	sql := fmt.Sprintf(`
+		DO $$ 
+		DECLARE 
+		    _partition_name text := '%s'; 
+		    _modulus integer := %d;
+		    _remainder integer := %d;
+		BEGIN 
+		    EXECUTE format('CREATE TABLE IF NOT EXISTS %%I PARTITION OF ops FOR VALUES WITH (MODULUS %%s, REMAINDER %%s);', _partition_name, _modulus, _remainder);
+		    
+		    BEGIN
+		        EXECUTE format('ALTER TABLE %%I ADD PRIMARY KEY ("ulid");', _partition_name);
+		    EXCEPTION WHEN invalid_table_definition THEN 
+		        NULL;
+		    END;
+		END $$;
+	`, partitionName, modulus, remainder)
+
+	return db.Exec(sql).Error
+}
+
 // create partitioned ops table if it does not exist
 func migrateOps(db *gorm.DB) error {
+	// create ops
 	opDDL := `
+  BEGIN;
+
 	CREATE TABLE IF NOT EXISTS ops (
 		"ulid" TEXT,
 		"host" TEXT,
@@ -57,39 +83,33 @@ func migrateOps(db *gorm.DB) error {
 		PARTITION BY HASH ("host");
 	
 	COMMIT;
-
-	CREATE OR REPLACE FUNCTION create_partitions(min_i INTEGER, max_i INTEGER, total INTEGER)
-	RETURNS VOID AS
-	$$
-	DECLARE
-			i INTEGER;
-			partition_name TEXT;
-	BEGIN
-			FOR i IN min_i..max_i LOOP
-					partition_name := 'ops_' || i;
-					EXECUTE 'CREATE TABLE IF NOT EXISTS ' || partition_name || ' PARTITION OF ops FOR VALUES WITH (MODULUS ' || total || ', REMAINDER ' || i || ');';
-					BEGIN
-							EXECUTE 'ALTER TABLE ' || partition_name || ' ADD PRIMARY KEY ("ulid");';
-							EXCEPTION WHEN invalid_table_definition THEN NULL;
-					END;
-			END LOOP;
-	END;
-	$$
-	LANGUAGE plpgsql;
-
-  -- migrate and commit partitions in chunks to avoid running out of memory
-	SELECT create_partitions(0, 200, 1009);
-	COMMIT;
-	SELECT create_partitions(201, 400, 1009);
-	COMMIT;
-	SELECT create_partitions(401, 600, 1009);
-	COMMIT;
-	SELECT create_partitions(601, 800, 1009);
-	COMMIT;
-	SELECT create_partitions(801, 1008, 1009);
-	COMMIT;
 	`
-	return db.Exec(opDDL).Error
+	err := db.Exec(opDDL).Error
+	if err != nil {
+		return err
+	}
+
+	// create partitions
+	totalPartitions := 1009
+	for i := 0; i < totalPartitions; i++ {
+		tx := db.Begin()
+		if tx.Error != nil {
+			log.Fatal(tx.Error)
+		}
+
+		partitionName := "ops_" + strconv.Itoa(i)
+		if err := migrateOpsPartition(tx, partitionName, totalPartitions, i); err != nil {
+			tx.Rollback()
+			slog.Error(fmt.Sprintf("Could not create partition %s", partitionName), "err", err)
+			return err
+		}
+
+		if err := tx.Commit().Error; err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func New(selfHost string, myPrivateKey *ecdsa.PrivateKey, peerHosts []string, db *gorm.DB) *Crudr {
@@ -100,7 +120,6 @@ func New(selfHost string, myPrivateKey *ecdsa.PrivateKey, peerHosts []string, db
 		panic(err)
 	}
 
-	// todo: combine with above
 	err = db.AutoMigrate(&Cursor{})
 	if err != nil {
 		panic(err)
