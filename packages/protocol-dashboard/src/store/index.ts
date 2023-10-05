@@ -14,20 +14,20 @@ import { routerMiddleware } from 'connected-react-router'
 import { History } from 'history'
 import Audius from 'services/Audius'
 import thunk from 'redux-thunk'
-import discoveryProvider from 'store/cache/discoveryProvider/slice'
-import contentNode from 'store/cache/contentNode/slice'
-import protocol from 'store/cache/protocol/slice'
-import user from 'store/cache/user/slice'
-import proposals from 'store/cache/proposals/slice'
-import votes from 'store/cache/votes/slice'
-import rewards from 'store/cache/rewards/slice'
-import timeline from 'store/cache/timeline/slice'
-import claims from 'store/cache/claims/slice'
-import analytics from 'store/cache/analytics/slice'
-import music from 'store/cache/music/slice'
-import account from 'store/account/slice'
-import pageHistory from 'store/pageHistory/slice'
-import api from 'store/api/slice'
+import discoveryProvider from './cache/discoveryProvider/slice'
+import contentNode from './cache/contentNode/slice'
+import protocol from './cache/protocol/slice'
+import user from './cache/user/slice'
+import proposals from './cache/proposals/slice'
+import votes from './cache/votes/slice'
+import rewards from './cache/rewards/slice'
+import timeline from './cache/timeline/slice'
+import claims from './cache/claims/slice'
+import analytics from './cache/analytics/slice'
+import music from './cache/music/slice'
+import account from './account/slice'
+import pageHistory from './pageHistory/slice'
+import api from './api/slice'
 
 declare global {
   interface Window {
@@ -38,8 +38,8 @@ declare global {
   }
 }
 
-const gqlUri = process.env.REACT_APP_GQL_URI
-const gqlBackupUri = process.env.REACT_APP_GQL_BACKUP_URI
+const gqlUri = import.meta.env.VITE_GQL_URI
+const gqlBackupUri = import.meta.env.VITE_GQL_BACKUP_URI
 
 export const client = new ApolloClient({
   uri: gqlUri,

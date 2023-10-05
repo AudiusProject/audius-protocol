@@ -1,4 +1,4 @@
-@import '~assets/styles/colors.css';
+@import './colors.css';
 
 #root *, body * {
   font-family: var(--font-family);

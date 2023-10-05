@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { Utils } from '@audius/libs'
+import { Utils } from '@audius/sdk/dist/legacy.js'
 import BN from 'bn.js'
 import clsx from 'clsx'
 import styles from './ManageService.module.css'

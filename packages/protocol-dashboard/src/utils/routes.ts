@@ -56,7 +56,7 @@ export const NOT_FOUND = '/404'
 // External Routes
 export const AUDIUS_API_URL = 'https://audius.org/api'
 export const AUDIUS_DAPP_URL =
-  process.env.REACT_APP_AUDIUS_URL || 'https://audius.co'
+  import.meta.env.VITE_AUDIUS_URL || 'https://audius.co'
 
 // Get Routes
 export const accountPage = (address: string) => {

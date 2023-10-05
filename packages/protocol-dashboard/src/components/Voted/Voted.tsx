@@ -1,8 +1,8 @@
 import React from 'react'
 import clsx from 'clsx'
 import styles from './Voted.module.css'
-import { ReactComponent as IconThumbUp } from 'assets/img/iconThumbUp.svg'
-import { ReactComponent as IconThumbDown } from 'assets/img/iconThumbDown.svg'
+import IconThumbUp from 'assets/img/iconThumbUp.svg?react'
+import IconThumbDown from 'assets/img/iconThumbDown.svg?react'
 import { Vote } from 'types'
 
 const messages = {

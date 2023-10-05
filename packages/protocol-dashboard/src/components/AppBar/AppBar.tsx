@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react'
 import Button from 'components/Button'
 import { Position } from 'components/Tooltip'
 import ConnectMetaMaskModal from 'components/ConnectMetaMaskModal'
-import { ReactComponent as Logo } from 'assets/img/audiusLogoHorizontal.svg'
+import Logo from 'assets/img/audiusLogoHorizontal.svg?react'
 import { useAccount } from 'store/account/hooks'
 import { useUser } from 'store/cache/user/hooks'
 import { Address } from 'types'
@@ -20,7 +20,7 @@ import DisplayAudio from 'components/DisplayAudio'
 import UserImage from 'components/UserImage'
 import useOpenLink from 'hooks/useOpenLink'
 import getActiveStake from 'utils/activeStake'
-import { Utils } from '@audius/libs'
+import { Utils } from '@audius/sdk/dist/legacy.js'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 

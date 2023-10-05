@@ -1,8 +1,8 @@
 import numeral from 'numeral'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
-import { Utils } from '@audius/libs'
-import { Address, BigNumber } from 'types'
+import { Utils } from '@audius/sdk/dist/legacy.js'
+import { Address } from 'types'
 import AudiusClient from 'services/Audius'
 import { TICKER } from './consts'
 import BN from 'bn.js'
@@ -60,26 +60,24 @@ export const formatShortWallet = (wallet: Address) => {
 
 /**
  * Format a BN to the shortened $audio currency
- * @param {BN} num
+ * @param {BN} amount
  */
-export const formatAud = (amount: BigNumber | null) => {
-  if (!Utils.isBN(amount)) return ''
-  let aud = (amount as BigNumber)
-    .div(Utils.toBN('1000000000000000000'))
-    .toString()
+export const formatAud = (amount: BN | null) => {
+  if (!Utils.isBN(amount as any)) return ''
+  let aud = (amount as BN).div(Utils.toBN('1000000000000000000')).toString()
   aud = numeral(aud).format('0,0')
   return aud
 }
 
-export const formatWeiNumber = (amount: BigNumber | null) => {
-  if (!Utils.isBN(amount)) return ''
-  let aud = formatNumberCommas(AudiusClient.getAud(amount as BigNumber))
+export const formatWeiNumber = (amount: BN | null) => {
+  if (!Utils.isBN(amount as any)) return ''
+  let aud = formatNumberCommas(AudiusClient.getAud(amount as BN))
   return aud
 }
 
-export const formatWei = (amount: BigNumber | null) => {
-  if (!Utils.isBN(amount)) return ''
-  let aud = formatNumberCommas(AudiusClient.getAud(amount as BigNumber))
+export const formatWei = (amount: BN | null) => {
+  if (!Utils.isBN(amount as any)) return ''
+  let aud = formatNumberCommas(AudiusClient.getAud(amount as BN))
   return `${aud} ${TICKER}`
 }
 
@@ -99,7 +97,7 @@ export const leftPadZero = (number: number, desiredLength: number) => {
   return number.toString().padStart(desiredLength, '0')
 }
 
-export const formatShortAud = (amount: BigNumber | null) => {
+export const formatShortAud = (amount: BN | null) => {
   if (!amount) return ''
   let aud = amount.div(Utils.toBN('1000000000000000000')).toNumber()
   if (aud >= 1000) {

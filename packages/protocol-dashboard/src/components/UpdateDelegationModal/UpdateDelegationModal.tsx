@@ -66,7 +66,7 @@ const UpdateDelegationModal: React.FC<UpdateDelegationModalProps> = ({
     (value: string) => {
       setStakingAmount(value)
       if (checkWeiNumber(value)) {
-        setStakingBN(parseWeiNumber(value))
+        setStakingBN(parseWeiNumber(value)!)
       }
     },
     [setStakingAmount, setStakingBN]
