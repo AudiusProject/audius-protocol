@@ -27,6 +27,9 @@ from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
 DEFAULT_EVENT = ""
+AGGREGATE_CHALLENGES_AMOUNT = 5
+AGGREGATE_CHALLENGE_1_STEP_COUNT = 3
+AGGREGATE_CHALLENGE_2_3_STEP_COUNT = 2
 
 
 class DefaultUpdater(ChallengeUpdater):
@@ -120,21 +123,21 @@ def setup_db(session):
             type=ChallengeType.aggregate,
             active=True,
             amount="5",
-            step_count=3,
+            step_count=AGGREGATE_CHALLENGE_1_STEP_COUNT * AGGREGATE_CHALLENGES_AMOUNT,
         ),
         Challenge(
             id="aggregate_challenge_2",
             type=ChallengeType.aggregate,
             active=True,
             amount="5",
-            step_count=2,
+            step_count=AGGREGATE_CHALLENGE_2_3_STEP_COUNT * AGGREGATE_CHALLENGES_AMOUNT,
         ),
         Challenge(
             id="aggregate_challenge_3",
             type=ChallengeType.aggregate,
             active=True,
             amount="5",
-            step_count=2,
+            step_count=AGGREGATE_CHALLENGE_2_3_STEP_COUNT * AGGREGATE_CHALLENGES_AMOUNT,
         ),
         Challenge(
             id="trending_1", type=ChallengeType.trending, active=True, amount="5"
@@ -153,6 +156,7 @@ def setup_db(session):
             user_id=1,
             specifier="1",
             is_complete=True,
+            amount=5,
         ),
         # Did finish the second challenge, did not disburse
         UserChallenge(
@@ -160,6 +164,7 @@ def setup_db(session):
             user_id=1,
             specifier="1",
             is_complete=True,
+            amount=5,
         ),
         # Did not finish challenge 3
         UserChallenge(
@@ -167,6 +172,7 @@ def setup_db(session):
             user_id=1,
             specifier="1",
             is_complete=False,
+            amount=5,
         ),
         # Inactive challenge
         UserChallenge(
@@ -174,12 +180,14 @@ def setup_db(session):
             user_id=1,
             specifier="1",
             is_complete=True,
+            amount=5,
         ),
         UserChallenge(
             challenge_id="aggregate_challenge_1",
             user_id=1,
             specifier="1-2",  # compound specifiers, like if user1 invites user2
             is_complete=True,
+            amount=AGGREGATE_CHALLENGES_AMOUNT,
         ),
         # Ensure that a non-complete user-challenge isn't counted towards
         # aggregate challenge score
@@ -188,18 +196,21 @@ def setup_db(session):
             user_id=1,
             specifier="1-3",
             is_complete=False,
+            amount=AGGREGATE_CHALLENGES_AMOUNT,
         ),
         UserChallenge(
             challenge_id="aggregate_challenge_2",
             user_id=1,
             specifier="1-2",
             is_complete=True,
+            amount=AGGREGATE_CHALLENGES_AMOUNT,
         ),
         UserChallenge(
             challenge_id="aggregate_challenge_2",
             user_id=1,
             specifier="1-3",
             is_complete=True,
+            amount=AGGREGATE_CHALLENGES_AMOUNT,
         ),
         # Trending 1 should be finished and included
         UserChallenge(
@@ -207,6 +218,7 @@ def setup_db(session):
             user_id=1,
             specifier="06-01-2020",
             is_complete=True,
+            amount=5,
         ),
         # Trending 2 should not be included
         UserChallenge(
@@ -214,6 +226,7 @@ def setup_db(session):
             user_id=1,
             specifier="06-01-2020",
             is_complete=False,
+            amount=5,
         ),
     ]
     disbursements = [
@@ -318,8 +331,11 @@ def test_get_challenges(app):
             )  # This field doesn't matter since we can't roll up disbursions
             assert chal_agg_1["is_active"]
             assert chal_agg_1["is_complete"] == False
-            assert chal_agg_1["current_step_count"] == 1
-            assert chal_agg_1["max_steps"] == 3
+            assert chal_agg_1["current_step_count"] == 5
+            assert (
+                chal_agg_1["max_steps"]
+                == AGGREGATE_CHALLENGE_1_STEP_COUNT * AGGREGATE_CHALLENGES_AMOUNT
+            )
 
             # aggregate challenge with 2 completions, FULLY complete
             chal_agg_2 = res_map["aggregate_challenge_2"]
@@ -328,8 +344,11 @@ def test_get_challenges(app):
             )  # This field doesn't matter since we can't roll up disbursions
             assert chal_agg_2["is_active"]
             assert chal_agg_2["is_complete"] == True
-            assert chal_agg_2["current_step_count"] == 2
-            assert chal_agg_2["max_steps"] == 2
+            assert chal_agg_2["current_step_count"] == 10
+            assert (
+                chal_agg_2["max_steps"]
+                == AGGREGATE_CHALLENGE_2_3_STEP_COUNT * AGGREGATE_CHALLENGES_AMOUNT
+            )
 
             # aggregate challenge with no completions
             chal_agg_3 = res_map["aggregate_challenge_3"]
@@ -339,7 +358,10 @@ def test_get_challenges(app):
             assert chal_agg_3["is_active"]
             assert chal_agg_3["is_complete"] == False
             assert chal_agg_3["current_step_count"] == 0
-            assert chal_agg_3["max_steps"] == 2
+            assert (
+                chal_agg_3["max_steps"]
+                == AGGREGATE_CHALLENGE_2_3_STEP_COUNT * AGGREGATE_CHALLENGES_AMOUNT
+            )
 
             # complete trending challenge
             chal_trend_1 = res_map["trending_1"]
@@ -400,6 +422,7 @@ def setup_extra_metadata_test(session):
             specifier="1",
             is_complete=False,
             current_step_count=5,
+            amount=5,
         ),
     ]
 
@@ -574,6 +597,7 @@ def setup_listen_streak_challenge(session):
             specifier="1",
             is_complete=False,
             current_step_count=5,
+            amount=1,
         ),
         UserChallenge(
             challenge_id="listen-streak",
@@ -581,6 +605,7 @@ def setup_listen_streak_challenge(session):
             specifier="2",
             is_complete=False,
             current_step_count=5,
+            amount=1,
         ),
     ]
 
