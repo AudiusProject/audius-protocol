@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { getGenres } from 'audius-client/src/common/store/pages/signon/selectors'
+import { getGenres } from 'common/store/pages/signon/selectors'
 import { Pressable, View } from 'react-native'
 import { useSelector } from 'react-redux'
 

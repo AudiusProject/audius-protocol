@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 
 import { GENRES, convertGenreLabelToValue } from '@audius/common'
-import { setField } from 'audius-client/src/common/store/pages/signon/actions'
+import { setField } from 'common/store/pages/signon/actions'
 import {
   getHandleField,
   getNameField
-} from 'audius-client/src/common/store/pages/signon/selectors'
+} from 'common/store/pages/signon/selectors'
 import { Formik } from 'formik'
 import { Pressable, ScrollView, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

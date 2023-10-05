@@ -3,12 +3,12 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { accountSelectors } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import * as signOnActions from 'common/store/pages/signon/actions'
 import {
   getPasswordField,
   getEmailField,
   getStatus
-} from 'audius-client/src/common/store/pages/signon/selectors'
-import * as signOnActions from 'common/store/pages/signon/actions'
+} from 'common/store/pages/signon/selectors'
 import type { EditableField } from 'common/store/pages/signon/types'
 import querystring from 'query-string'
 import {

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { Status, accountSelectors, BooleanKeys } from '@audius/common'
-import { getHandleField } from 'audius-client/src/common/store/pages/signon/selectors'
 import * as signOnActions from 'common/store/pages/signon/actions'
+import { getHandleField } from 'common/store/pages/signon/selectors'
 import type { EditableField } from 'common/store/pages/signon/types'
 import { EditingStatus } from 'common/store/pages/signon/types'
 import { Image, View } from 'react-native'

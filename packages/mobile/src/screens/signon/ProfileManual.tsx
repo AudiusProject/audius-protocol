@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import * as signOnActions from 'common/store/pages/signon/actions'
 import {
   getEmailField,
   getHandleField,
   getNameField,
   getProfileImageField,
   getIsVerified
-} from 'audius-client/src/common/store/pages/signon/selectors'
-import * as signOnActions from 'common/store/pages/signon/actions'
+} from 'common/store/pages/signon/selectors'
 import { EditingStatus } from 'common/store/pages/signon/types'
 import {
   Animated,

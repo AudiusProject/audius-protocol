@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { setValueField } from 'audius-client/src/common/store/pages/signon/actions'
+import { setValueField } from 'common/store/pages/signon/actions'
 import { Formik } from 'formik'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
