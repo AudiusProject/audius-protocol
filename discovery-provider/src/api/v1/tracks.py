@@ -42,10 +42,7 @@ from src.queries.get_latest_entities import get_latest_entities
 from src.queries.get_premium_track_signatures import (
     get_nft_gated_premium_track_signatures,
 )
-from src.queries.get_premium_tracks import (
-    DEFAULT_PREMIUM_TRACKS_LIMIT,
-    get_full_usdc_purchase_tracks,
-)
+from src.queries.get_premium_tracks import get_full_usdc_purchase_tracks
 from src.queries.get_random_tracks import get_random_tracks
 from src.queries.get_recommended_tracks import (
     DEFAULT_RECOMMENDED_LIMIT,
@@ -1378,13 +1375,11 @@ class FullUSDCPurchaseTracks(Resource):
             abort_bad_path_param("version", full_ns)
 
         args = full_usdc_purchase_tracks_parser.parse_args()
-        limit = format_limit(args, default_limit=DEFAULT_PREMIUM_TRACKS_LIMIT)
-        args["limit"] = max(TRENDING_LIMIT, limit)
         strategy = trending_strategy_factory.get_strategy(
             TrendingType.TRACKS, version_list[0]
         )
         full_premium_tracks = get_full_usdc_purchase_tracks(request, args, strategy)
-        return success_response(full_premium_tracks[:limit])
+        return success_response(full_premium_tracks)
 
 
 @full_ns.route("/<string:user_id>/nft-gated-signatures")

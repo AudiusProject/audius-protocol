@@ -1,13 +1,13 @@
 import logging  # pylint: disable=C0302
 
-from src.api.v1.helpers import extend_track, to_dict
+from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
 from src.queries.get_trending_tracks import TRENDING_TTL_SEC, get_trending_tracks
 from src.utils.helpers import decode_string_id
 from src.utils.redis_cache import get_trending_cache_key, use_redis_cache
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_PREMIUM_TRACKS_LIMIT = 50
+DEFAULT_PREMIUM_TRACKS_LIMIT = 100
 
 
 def get_usdc_purchase_tracks(args, strategy):
@@ -16,8 +16,8 @@ def get_usdc_purchase_tracks(args, strategy):
     args = {
         "time": args.get("time", "week"),
         "genre": args.get("genre", None),
-        "limit": args.get("limit"),
-        "offset": 0,
+        "limit": format_limit(args, DEFAULT_PREMIUM_TRACKS_LIMIT),
+        "offset": format_offset(args),
         "exclude_premium": False,
         "usdc_purchase_only": True,
         "with_users": True,
