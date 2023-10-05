@@ -4,7 +4,7 @@ jobs:
   init:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/ruby:2.6-node
+      - image: cimg/ruby:2.6-node
 
     steps:
       - checkout
@@ -38,16 +38,16 @@ jobs:
 
   build-staging:
     working_directory: ~/protocol-dashboard
-    resource_class: large
+    resource_class: xlarge
     docker:
-      - image: circleci/ruby:2.6-node
+      - image: cimg/ruby:2.6-node
     steps:
       - checkout
       - attach_workspace:
           at: ./
       - run:
           name: build
-          command: CI=false npm run build:stage
+          command: npm run build:stage
       - run:
           name: armada bundle
           command: |
@@ -80,7 +80,7 @@ jobs:
   deploy-staging:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/ruby:2.6-node
+      - image: cimg/ruby:2.6-node
     steps:
       - attach_workspace:
           at: ./
@@ -96,15 +96,15 @@ jobs:
   build-prod:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/ruby:2.6-node
-    resource_class: large
+      - image: cimg/ruby:2.6-node
+    resource_class: xlarge
     steps:
       - checkout
       - attach_workspace:
           at: ./
       - run:
           name: build
-          command: CI=false npm run build:prod
+          command: npm run build:prod
       - run:
           name: zip dist
           command: zip -r dist.zip ./dist
@@ -133,7 +133,7 @@ jobs:
   update-prod-ga-build:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/ruby:2.6-node
+      - image: cimg/ruby:2.6-node
     steps:
       - attach_workspace:
           at: ./
@@ -162,7 +162,7 @@ jobs:
   update-prod-records:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/ruby:2.6-node
+      - image: cimg/ruby:2.6-node
     steps:
       - attach_workspace:
           at: ./
