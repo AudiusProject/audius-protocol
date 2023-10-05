@@ -11,7 +11,7 @@
   text-align: center;
   user-select: none;
   white-space: nowrap;
-  transition: all var(--hover);
+  transition: all var(--harmony-hover);
 }
 
 .button:focus {
@@ -26,7 +26,7 @@
 }
 
 .button:not(.disabled):active {
-  transition: all var(--press);
+  transition: all var(--harmony-press);
   transform: scale(0.98);
 }
 

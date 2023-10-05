@@ -1,6 +1,6 @@
 /* ===Base Styles=== */
 .button {
-  --text-color: var(--text-default);
+  --text-color: var(--harmony-text-default);
   background: transparent;
   border: none;
   color: var(--text-color);
@@ -10,68 +10,68 @@
 
 /* Default */
 .buttonDefault {
-  gap: var(--unit-1);
-  height: var(--unit-4);
+  gap: var(--harmony-unit-1);
+  height: var(--harmony-unit-4);
 }
 
 .iconDefault {
-  width: var(--unit-4);
-  height: var(--unit-4);
+  width: var(--harmony-unit-4);
+  height: var(--harmony-unit-4);
 }
 
 .textDefault {
-  font-size: var(--font-s);
-  font-weight: var(--font-bold);
-  line-height: var(--unit-4);
+  font-size: var(--harmony-font-s);
+  font-weight: var(--harmony-font-bold);
+  line-height: var(--harmony-unit-4);
 }
 
 /* Large */
 .buttonLarge {
-  gap: var(--unit-2);
-  height: var(--unit-5);
+  gap: var(--harmony-unit-2);
+  height: var(--harmony-unit-5);
 }
 
 .iconLarge {
-  width: var(--unit-5);
-  height: var(--unit-5);
+  width: var(--harmony-unit-5);
+  height: var(--harmony-unit-5);
 }
 
 .textLarge {
-  font-size: var(--font-l);
-  font-weight: var(--font-bold);
-  line-height: calc(4.5 * var(--unit-5));
+  font-size: var(--harmony-font-l);
+  font-weight: var(--harmony-font-bold);
+  line-height: calc(4.5 * var(--harmony-unit-5));
 }
 
 /* === Color Variants === */
 
 /* Default */
 .default {
-  --text-color: var(--text-default);
+  --text-color: var(--harmony-text-default);
 }
 
 .default:hover {
-  --text-color: var(--secondary);
+  --text-color: var(--harmony-secondary);
 }
 
 .default:active {
-  --text-color: var(--secondary-dark-2)
+  --text-color: var(--harmony-s-500)
 }
 
 /* Subdued */
 .subdued {
-  --text-color: var(--text-subdued);
+  --text-color: var(--harmony-text-subdued);
 }
 
 .subdued:hover {
-  --text-color: var(--secondary);
+  --text-color: var(--harmony-secondary);
 }
 .subdued:active {
-  --text-color: var(--secondary-dark-2);
+  --text-color: var(--harmony-s-500);
 }
 
 /* Inverted */
 .inverted {
-  --text-color: var(--static-white);
+  --text-color: var(--harmony-static-white);
 }
 .inverted:hover {
   opacity: 0.8;
@@ -86,5 +86,5 @@
 }
 
 .subdued.disabled {
-  --text-color: var(--text-default);
+  --text-color: var(--harmony-text-default);
 }
