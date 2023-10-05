@@ -11,7 +11,10 @@ import {
   BNUSDC,
   useWithdrawUSDCModal,
   WithdrawUSDCModalPages,
-  formatUSDCWeiToFloorDollarNumber
+  formatUSDCWeiToFloorDollarNumber,
+  filterDecimalString,
+  padDecimalValue,
+  decimalIntegerToHumanReadable
 } from '@audius/common'
 import {
   HarmonyButton,
@@ -29,11 +32,6 @@ import {
   ADDRESS,
   AMOUNT
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
-import {
-  PRECISION,
-  onTokenInputBlur,
-  onTokenInputChange
-} from 'utils/tokenInput'
 
 import styles from './EnterTransferDetails.module.css'
 import { Hint } from './Hint'
@@ -69,11 +67,11 @@ export const EnterTransferDetails = () => {
     { setValue: setAmount, setTouched: setAmountTouched }
   ] = useField(AMOUNT)
   const [humanizedValue, setHumanizedValue] = useState(
-    ((value || balanceNumber) / 100).toFixed(PRECISION)
+    decimalIntegerToHumanReadable(value || balanceNumber)
   )
   const handleAmountChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      const { human, value } = onTokenInputChange(e)
+      const { human, value } = filterDecimalString(e.target.value)
       setHumanizedValue(human)
       setAmount(value)
     },
@@ -81,7 +79,7 @@ export const EnterTransferDetails = () => {
   )
   const handleAmountBlur: FocusEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      setHumanizedValue(onTokenInputBlur(e))
+      setHumanizedValue(padDecimalValue(e.target.value))
       setAmountTouched(true)
     },
     [setHumanizedValue, setAmountTouched]
@@ -137,7 +135,7 @@ export const EnterTransferDetails = () => {
         size={HarmonyButtonSize.DEFAULT}
         fullWidth
         text={messages.continue}
-        disabled={amountError || addressError || !address}
+        disabled={amountError || addressError || !address || balance?.isZero()}
         onClick={handleContinue}
       />
       <Hint

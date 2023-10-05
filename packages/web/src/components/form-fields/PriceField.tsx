@@ -6,14 +6,13 @@ import {
   FocusEventHandler
 } from 'react'
 
-import { useField } from 'formik'
-
 import {
-  toHumanReadable,
-  fromHumanReadable,
-  onTokenInputChange,
-  onTokenInputBlur
-} from 'utils/tokenInput'
+  decimalIntegerFromHumanReadable,
+  decimalIntegerToHumanReadable,
+  filterDecimalString,
+  padDecimalValue
+} from '@audius/common'
+import { useField } from 'formik'
 
 import { TextField, TextFieldProps } from './TextField'
 
@@ -24,12 +23,12 @@ const messages = {
 export const PriceField = (props: TextFieldProps) => {
   const [{ value }, , { setValue: setPrice }] = useField<number>(props.name)
   const [humanizedValue, setHumanizedValue] = useState(
-    value ? toHumanReadable(value) : null
+    value ? decimalIntegerToHumanReadable(value) : null
   )
 
   useEffect(() => {
     if (humanizedValue !== null) {
-      const dehumanizedValue = fromHumanReadable(humanizedValue)
+      const dehumanizedValue = decimalIntegerFromHumanReadable(humanizedValue)
       if (value === undefined || dehumanizedValue !== value) {
         setPrice(dehumanizedValue)
       }
@@ -38,7 +37,7 @@ export const PriceField = (props: TextFieldProps) => {
 
   const handlePriceChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      const { human, value } = onTokenInputChange(e)
+      const { human, value } = filterDecimalString(e.target.value)
       setHumanizedValue(human)
       setPrice(value)
     },
@@ -47,7 +46,7 @@ export const PriceField = (props: TextFieldProps) => {
 
   const handlePriceBlur: FocusEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      setHumanizedValue(onTokenInputBlur(e))
+      setHumanizedValue(padDecimalValue(e.target.value))
     },
     []
   )

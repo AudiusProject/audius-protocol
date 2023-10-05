@@ -101,6 +101,7 @@ export class TransactionHandler {
         feePayerOverride,
         sendBlockhash,
         signatures,
+        lookupTableAddresses,
         retry
       )
     } else {
@@ -128,6 +129,7 @@ export class TransactionHandler {
     feePayerOverride: Nullable<PublicKey> = null,
     sendBlockhash: boolean,
     signatures: Array<{ publicKey: string; signature: Buffer }> | null,
+    lookupTableAddresses: string[],
     retry: boolean
   ) {
     const relayable = instructions.map(SolanaUtils.prepareInstructionForRelay)
@@ -138,6 +140,7 @@ export class TransactionHandler {
       skipPreflight:
         skipPreflight === null ? this.skipPreflight : skipPreflight,
       feePayerOverride: feePayerOverride ? feePayerOverride.toString() : null,
+      lookupTableAddresses,
       retry
     }
 
@@ -169,7 +172,7 @@ export class TransactionHandler {
     recentBlockhash: string | null,
     logger: Logger,
     skipPreflight: boolean | null,
-    feePayerOverride: Nullable<PublicKey> = null,
+    feePayerOverride: Nullable<PublicKey | string> = null,
     signatures: Array<{ publicKey: string; signature: Buffer }> | null = null,
     lookupTableAddresses: string[],
     retry = true

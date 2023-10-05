@@ -1,10 +1,7 @@
 import { Utils } from '../../utils'
 import { ContractClient } from '../contracts/ContractClient'
-import type { EthWeb3Manager } from '../ethWeb3Manager'
 
 export class ClaimsManagerClient extends ContractClient {
-  // @ts-expect-error defined in ContractClient
-  override web3Manager: EthWeb3Manager
   /* ------- GETTERS ------- */
 
   // Get the duration of a funding round in blocks

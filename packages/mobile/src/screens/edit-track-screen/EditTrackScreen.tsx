@@ -26,20 +26,31 @@ const EditTrackSchema = Yup.object().shape({
     usdc_purchase: Yup.object({
       price: Yup.number()
         .positive()
-        .min(0.99, 'Price must be at least $0.99.')
+        .min(1, 'Price must be at least $1.00.')
         .max(9999.99, 'Price must be less than $9999.99.')
     }).nullable()
   }).nullable(),
-  duration: Yup.number(),
+  duration: Yup.number().nullable(),
   preview_start_seconds: Yup.number()
-    .max(
-      (Yup.ref('duration') as unknown as number) > 30
-        ? (Yup.ref('duration') as unknown as number) - 30
-        : 0,
-      (Yup.ref('duration') as unknown as number)
-        ? 'Preview must start at least 30 seconds before the end of the track.'
-        : 'Preview must start at 0 since the track is less than 30 seconds'
-    )
+    .test('isValidPreviewStart', '', function (value: number) {
+      const duration = this.resolve(Yup.ref('duration')) as unknown as number
+      // If duration is NaN, validation passes because we were
+      // unable to get duration from a track
+      if (isNaN(duration) || duration === null) return true
+      if (duration > 30 && value > duration - 30) {
+        return this.createError({
+          message:
+            'Preview must start at least 30 seconds before the end of the track.'
+        })
+      }
+      if (duration <= 30 && value !== 0) {
+        return this.createError({
+          message:
+            'Preview must start at 0 since the track is less than 30 seconds.'
+        })
+      }
+      return true
+    })
     .nullable()
 })
 

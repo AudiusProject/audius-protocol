@@ -529,5 +529,6 @@ def configure_celery(celery, test_config=None):
 
     celery.finalize()
 
-    # Start main indexer
+    # Start tasks that should fire upon startup
+    celery.send_task("cache_entity_counts")
     celery.send_task("index_nethermind")

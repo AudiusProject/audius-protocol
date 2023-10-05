@@ -45,8 +45,6 @@ const Section = ({
       className={cn(styles.section, className, {
         [styles.twoColumnDynamicWithLeadingElement]:
           layout === Layout.TWO_COLUMN_DYNAMIC_WITH_LEADING_ELEMENT,
-        [styles.twoColumnDynamicWithDoubleLeadingElementTenTile]:
-          layout === Layout.TWO_COLUMN_DYNAMIC_WITH_DOUBLE_LEADING_ELEMENT,
         [styles.expandable]: expandable,
         [styles.expanded]: isExpanded
       })}

@@ -93,21 +93,20 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
       left join aggregate_user on users.user_id = aggregate_user.user_id
       left join user_balances on users.user_id = user_balances.user_id
       left join user_bank_accounts on users.wallet = user_bank_accounts.ethereum_address
-    where 
-      is_current = true
+    where 1=1 
     `
   }
 
   checkpointSql(checkpoint: BlocknumberCheckpoint): string {
     return `
       and users.user_id in (
-        select user_id from users where is_current and blocknumber >= ${checkpoint.users}
+        select user_id from users where blocknumber >= ${checkpoint.users}
         union
-        select follower_user_id from follows where is_current and blocknumber >= ${checkpoint.users}
+        select follower_user_id from follows where blocknumber >= ${checkpoint.users}
         union
-        select followee_user_id from follows where is_current and blocknumber >= ${checkpoint.users}
+        select followee_user_id from follows where blocknumber >= ${checkpoint.users}
         union
-        select owner_id from tracks where is_current and blocknumber >= ${checkpoint.tracks}
+        select owner_id from tracks where blocknumber >= ${checkpoint.tracks}
       )
     `
   }
@@ -143,8 +142,7 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
         follower_user_id,
         followee_user_id 
       from follows
-      where is_current = true
-        and is_delete = false
+      where is_delete = false
         and follower_user_id in (${idList})
       order by created_at desc
     `
@@ -166,8 +164,7 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
         subscriber_id,
         user_id 
       from subscriptions
-      where is_current = true
-        and is_delete = false
+      where is_delete = false
         and subscriber_id in (${idList})
       order by created_at desc
     `

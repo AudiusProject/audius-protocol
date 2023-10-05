@@ -38,6 +38,7 @@ import { AppContextProvider } from './AppContextProvider'
 import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
 import { ThemeProvider } from './ThemeProvider'
+import { AudiusTrpcProvider } from './TrpcProvider'
 
 Sentry.init({
   dsn: Config.SENTRY_DSN
@@ -81,38 +82,40 @@ const App = () => {
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <FlipperAsyncStorage />
         <Provider store={store}>
-          <AudiusQueryContext.Provider
-            value={{
-              apiClient,
-              audiusSdk,
-              audiusBackend: audiusBackendInstance,
-              dispatch: store.dispatch,
-              reportToSentry
-            }}
-          >
-            <PersistGate loading={null} persistor={persistor}>
-              <ThemeProvider>
-                <WalletConnectProvider>
-                  <PortalProvider>
-                    <ErrorBoundary>
-                      <NavigationContainer>
-                        <Toasts />
-                        <Airplay />
-                        <RootScreen />
-                        <Drawers />
-                        <Modals />
-                        <Audio />
-                        <OAuth />
-                        <NotificationReminder />
-                        <RateCtaReminder />
-                        <PortalHost name='ChatReactionsPortal' />
-                      </NavigationContainer>
-                    </ErrorBoundary>
-                  </PortalProvider>
-                </WalletConnectProvider>
-              </ThemeProvider>
-            </PersistGate>
-          </AudiusQueryContext.Provider>
+          <AudiusTrpcProvider>
+            <AudiusQueryContext.Provider
+              value={{
+                apiClient,
+                audiusSdk,
+                audiusBackend: audiusBackendInstance,
+                dispatch: store.dispatch,
+                reportToSentry
+              }}
+            >
+              <PersistGate loading={null} persistor={persistor}>
+                <ThemeProvider>
+                  <WalletConnectProvider>
+                    <PortalProvider>
+                      <ErrorBoundary>
+                        <NavigationContainer>
+                          <Toasts />
+                          <Airplay />
+                          <RootScreen />
+                          <Drawers />
+                          <Modals />
+                          <Audio />
+                          <OAuth />
+                          <NotificationReminder />
+                          <RateCtaReminder />
+                          <PortalHost name='ChatReactionsPortal' />
+                        </NavigationContainer>
+                      </ErrorBoundary>
+                    </PortalProvider>
+                  </WalletConnectProvider>
+                </ThemeProvider>
+              </PersistGate>
+            </AudiusQueryContext.Provider>
+          </AudiusTrpcProvider>
         </Provider>
       </SafeAreaProvider>
     </AppContextProvider>

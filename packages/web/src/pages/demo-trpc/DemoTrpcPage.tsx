@@ -1,6 +1,6 @@
 import { CSSProperties, useMemo, useState } from 'react'
 
-import { trpc } from '../../services/trpc'
+import { trpc } from '@audius/common'
 
 // ==================== Page ====================
 

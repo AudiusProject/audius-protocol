@@ -125,12 +125,10 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
     'name',
     'handle',
     'does_current_user_follow',
-    'does_follow_current_user',
     'is_verified'
   ])
 
-  const { name, handle, does_current_user_follow, does_follow_current_user } =
-    profile
+  const { name, handle, does_current_user_follow } = profile
 
   const isOwner =
     params.handle === 'accountUser' ||
@@ -188,7 +186,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
               @{handle}
             </Text>
           </View>
-          {does_follow_current_user ? <FollowsYouChip /> : null}
+          <FollowsYouChip userId={profile.user_id} />
         </View>
       </View>
     </View>

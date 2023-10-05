@@ -68,7 +68,7 @@ class App {
   async init() {
     let server
     await this.getAudiusAnnouncements()
-    logger.info("identity init")
+    logger.info('identity init')
 
     /**
      * From the cluster docs - https://nodejs.org/docs/latest-v14.x/api/cluster.html#cluster_cluster

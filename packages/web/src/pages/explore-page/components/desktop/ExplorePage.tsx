@@ -26,6 +26,7 @@ import PerspectiveCard, {
   TextInterior,
   EmojiInterior
 } from 'components/perspective-card/PerspectiveCard'
+import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import { useOrderedLoad } from 'hooks/useOrderedLoad'
 import {
   LET_THEM_DJ,
@@ -36,7 +37,8 @@ import {
   UPBEAT_PLAYLISTS,
   INTENSE_PLAYLISTS,
   PROVOKING_PLAYLISTS,
-  INTIMATE_PLAYLISTS
+  INTIMATE_PLAYLISTS,
+  PREMIUM_TRACKS
 } from 'pages/explore-page/collections'
 import { BASE_URL, EXPLORE_PAGE, stripBaseUrl } from 'utils/route'
 
@@ -56,6 +58,7 @@ reposts, and follows. Refreshes often so if you like a track, favorite it.`,
 }
 
 export const justForYou = [
+  PREMIUM_TRACKS,
   TRENDING_PLAYLISTS,
   TRENDING_UNDERGROUND,
   HEAVY_ROTATION,
@@ -95,6 +98,13 @@ const ExplorePage = ({
   status,
   goToRoute
 }: ExplorePageProps) => {
+  const isUSDCPurchasesEnabled = useIsUSDCEnabled()
+  const justForYouTiles = justForYou.filter((tile) => {
+    const isPremiumTracksTile =
+      tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
+      tile.title === PREMIUM_TRACKS.title
+    return !isPremiumTracksTile || isUSDCPurchasesEnabled
+  })
   const { isLoading: isLoadingPlaylist, setDidLoad: setDidLoadPlaylist } =
     useOrderedLoad(playlists.length)
   const { isLoading: isLoadingProfiles, setDidLoad: setDidLoadProfile } =
@@ -126,9 +136,9 @@ const ExplorePage = ({
       <Section
         title={messages.justForYou}
         subtitle={messages.justForYouSubtitle}
-        layout={Layout.TWO_COLUMN_DYNAMIC_WITH_DOUBLE_LEADING_ELEMENT}
+        layout={Layout.TWO_COLUMN_DYNAMIC_WITH_LEADING_ELEMENT}
       >
-        {justForYou.map((i) => {
+        {justForYouTiles.map((i) => {
           const title =
             i.variant === CollectionVariant.SMART ? i.playlist_name : i.title
           const subtitle =
@@ -144,6 +154,11 @@ const ExplorePage = ({
               }
               // @ts-ignore
               backgroundIcon={<Icon />}
+              backgroundIconClassName={
+                title === PREMIUM_TRACKS.title
+                  ? styles.premiumTracksBackgroundIcon
+                  : undefined
+              }
               onClick={() => onClickCard(i.link)}
               isIncentivized={!!i.incentivized}
               sensitivity={i.cardSensitivity}

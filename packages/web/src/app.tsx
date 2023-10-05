@@ -1,8 +1,14 @@
 import '@audius/stems/dist/stems.css'
+import '@audius/harmony/dist/harmony.css'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
-import { AudiusQueryContext, accountSelectors } from '@audius/common'
+import {
+  AudiusQueryContext,
+  accountSelectors,
+  createAudiusTrpcClient,
+  trpc
+} from '@audius/common'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ConnectedRouter } from 'connected-react-router'
 import { Provider, useSelector } from 'react-redux'
@@ -22,7 +28,6 @@ import { audiusBackendInstance } from 'services/audius-backend/audius-backend-in
 import { audiusSdk } from 'services/audius-sdk/audiusSdk'
 import history from 'utils/history'
 
-import { createAudiusTRPCClient, trpc } from './services/trpc'
 import { store } from './store/configureStore'
 import { reportToSentry } from './store/errors/reportToSentry'
 
@@ -32,7 +37,10 @@ import './services/webVitals'
 const AudiusTrpcProvider = ({ children }: { children: React.ReactNode }) => {
   const currentUserId = useSelector(accountSelectors.getUserId)
   const [queryClient] = useState(() => new QueryClient())
-  const [trpcClient] = useState(() => createAudiusTRPCClient(currentUserId))
+  const trpcClient = useMemo(
+    () => createAudiusTrpcClient(currentUserId),
+    [currentUserId]
+  )
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

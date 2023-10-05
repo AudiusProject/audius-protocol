@@ -3,6 +3,7 @@
   width: 100%;
   margin-left: -16px;
 }
+
 .cardsContainer > * {
   margin: 6px;
 }
@@ -24,4 +25,11 @@
 
 .loadingSpinner g path {
   stroke: var(--neutral-light-3) !important;
+}
+
+.premiumTracksBackgroundIcon {
+  width: 220px;
+  height: 200px;
+  right: 0 !important;
+  top: 0 !important;
 }

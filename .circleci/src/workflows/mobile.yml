@@ -41,13 +41,13 @@ jobs:
         branches:
           only: /(^release.*)$/
 
-  - mobile-build-production-ios:
-      context: Audius Mobile Client
-      requires:
-        - mobile-init
-      filters:
-        branches:
-          only: /^main$/
+  # - mobile-build-production-ios:
+  #     context: Audius Mobile Client
+  #     requires:
+  #       - mobile-init
+  #     filters:
+  #       branches:
+  #         only: /^main$/
 
   - mobile-build-upload-production-ios-if-full-release:
       context: Audius Mobile Client
@@ -105,13 +105,13 @@ jobs:
         branches:
           only: /(^release.*)$/
 
-  - mobile-build-production-android:
-      context: Audius Mobile Client
-      requires:
-        - mobile-init
-      filters:
-        branches:
-          only: /^main$/
+  # - mobile-build-production-android:
+  #     context: Audius Mobile Client
+  #     requires:
+  #       - mobile-init
+  #     filters:
+  #       branches:
+  #         only: /^main$/
 
   - mobile-build-upload-production-android-if-full-release:
       context: Audius Mobile Client

@@ -35,6 +35,7 @@ import { USDCTransactionDetailsModal } from 'components/usdc-transaction-details
 import TierExplainerModal from 'components/user-badges/TierExplainerModal'
 import ConnectedUserListModal from 'components/user-list-modal/ConnectedUserListModal'
 import { WithdrawUSDCModal } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
+import AudioBreakdownModal from 'pages/audio-rewards-page/components/modals/AudioBreakdownModal'
 import ChallengeRewardsModal from 'pages/audio-rewards-page/components/modals/ChallengeRewards'
 import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
 import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
@@ -80,6 +81,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   DuplicateAddConfirmation: DuplicateAddConfirmationModal,
   UploadConfirmation: UploadConfirmationModal,
   BuyAudio: BuyAudioModal,
+  AudioBreakdown: AudioBreakdownModal,
   BuyAudioRecovery: BuyAudioRecoveryModal,
   TransactionDetails: TransactionDetailsModal,
   InboxSettings: InboxSettingsModal,

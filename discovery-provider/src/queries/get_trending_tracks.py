@@ -45,6 +45,7 @@ def generate_unpopulated_trending(
     strategy,
     exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
     exclude_collectible_gated=SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
+    usdc_purchase_only=False,
     limit=TRENDING_LIMIT,
 ):
     # We use limit * 2 here to apply a soft limit so that
@@ -59,9 +60,29 @@ def generate_unpopulated_trending(
         for track in trending_tracks["listen_counts"]
     ]
 
+    # If usdc_purchase_only is true, then filter out track ids belonging to
+    # non-USDC purchase tracks before applying the limit.
+    if usdc_purchase_only:
+        ids = [track["track_id"] for track in track_scores]
+        usdc_purchase_track_ids = (
+            session.query(Track.track_id)
+            .filter(
+                Track.track_id.in_(ids),
+                Track.is_current == True,
+                Track.is_delete == False,
+                Track.stem_of == None,
+                Track.is_premium == True,
+                text("CAST(premium_conditions AS TEXT) LIKE '%usdc_purchase%'"),
+            )
+            .all()
+        )
+        usdc_purchase_track_id_set = set(map(lambda t: t[0], usdc_purchase_track_ids))
+        track_scores = list(
+            filter(lambda t: t["track_id"] in usdc_purchase_track_id_set, track_scores)
+        )
     # If exclude_premium is true, then filter out track ids
     # belonging to premium tracks before applying the limit.
-    if exclude_premium:
+    elif exclude_premium:
         ids = [track["track_id"] for track in track_scores]
         non_premium_track_ids = (
             session.query(Track.track_id)
@@ -125,6 +146,7 @@ def generate_unpopulated_trending_from_mat_views(
     strategy,
     exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
     exclude_collectible_gated=SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
+    usdc_purchase_only=False,
     limit=TRENDING_LIMIT,
 ):
     # use all time instead of year for version EJ57D
@@ -146,9 +168,37 @@ def generate_unpopulated_trending_from_mat_views(
             TrackTrendingScore.genre == genre
         )
 
+    # If usdc_purchase_only is true, then filter out track ids belonging to
+    # non-USDC purchase tracks before applying the limit.
+    if usdc_purchase_only:
+        trending_track_ids_subquery = trending_track_ids_query.subquery()
+        trending_track_ids = (
+            session.query(
+                trending_track_ids_subquery.c.track_id,
+                trending_track_ids_subquery.c.score,
+                Track.track_id,
+            )
+            .join(
+                trending_track_ids_subquery,
+                Track.track_id == trending_track_ids_subquery.c.track_id,
+            )
+            .filter(
+                Track.is_current == True,
+                Track.is_delete == False,
+                Track.stem_of == None,
+                Track.is_premium == True,
+                text("CAST(premium_conditions AS TEXT) LIKE '%usdc_purchase%'"),
+            )
+            .order_by(
+                desc(trending_track_ids_subquery.c.score),
+                desc(trending_track_ids_subquery.c.track_id),
+            )
+            .limit(limit)
+            .all()
+        )
     # If exclude_premium is true, then filter out track ids belonging to
     # premium tracks before applying the limit.
-    if exclude_premium:
+    elif exclude_premium:
         trending_track_ids_subquery = trending_track_ids_query.subquery()
         trending_track_ids = (
             session.query(
@@ -225,6 +275,7 @@ def make_generate_unpopulated_trending(
     time_range: str,
     strategy: BaseTrendingStrategy,
     exclude_premium: bool,
+    usdc_purchase_only: bool,
 ):
     """Wraps a call to `generate_unpopulated_trending` for use in `use_redis_cache`, which
     expects to be passed a function with no arguments."""
@@ -237,6 +288,7 @@ def make_generate_unpopulated_trending(
                 time_range=time_range,
                 strategy=strategy,
                 exclude_premium=exclude_premium,
+                usdc_purchase_only=usdc_purchase_only,
             )
         return generate_unpopulated_trending(
             session=session,
@@ -244,6 +296,7 @@ def make_generate_unpopulated_trending(
             time_range=time_range,
             strategy=strategy,
             exclude_premium=exclude_premium,
+            usdc_purchase_only=usdc_purchase_only,
         )
 
     return wrapped
@@ -254,6 +307,9 @@ class GetTrendingTracksArgs(TypedDict, total=False):
     genre: Optional[str]
     time: str
     exclude_premium: bool
+    usdc_purchase_only: bool
+    limit: int
+    offset: int
 
 
 def get_trending_tracks(args: GetTrendingTracksArgs, strategy: BaseTrendingStrategy):
@@ -266,11 +322,14 @@ def get_trending_tracks(args: GetTrendingTracksArgs, strategy: BaseTrendingStrat
 def _get_trending_tracks_with_session(
     session: Session, args: GetTrendingTracksArgs, strategy: BaseTrendingStrategy
 ):
-    current_user_id, genre, time, exclude_premium = (
+    current_user_id, genre, time, exclude_premium, usdc_purchase_only, limit, offset = (
         args.get("current_user_id"),
         args.get("genre"),
         args.get("time", "week"),
         args.get("exclude_premium", SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS),
+        args.get("usdc_purchase_only", False),
+        args.get("limit", TRENDING_LIMIT),
+        args.get("offset", 0)
     )
     time_range = "week" if time not in ["week", "month", "year", "allTime"] else time
     key = make_trending_cache_key(time_range, genre, strategy.version)
@@ -286,9 +345,11 @@ def _get_trending_tracks_with_session(
             time_range=time_range,
             strategy=strategy,
             exclude_premium=exclude_premium,
+            usdc_purchase_only=usdc_purchase_only,
         ),
     )
-
+    tracks = tracks[offset : limit + offset]
+    track_ids = track_ids[offset : limit + offset]
     # populate track metadata
     tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
     tracks_map = {track["track_id"]: track for track in tracks}

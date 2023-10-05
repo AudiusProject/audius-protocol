@@ -1,9 +1,11 @@
 import { useRef } from 'react'
 
+import { ExploreCollectionsVariant } from '@audius/common'
 import { View } from 'react-native'
 
 import type { ScrollViewElement } from 'app/components/core'
 import { ScrollView } from 'app/components/core'
+import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { makeStyles } from 'app/styles'
 
@@ -11,7 +13,8 @@ import {
   LET_THEM_DJ,
   TRENDING_PLAYLISTS,
   TRENDING_UNDERGROUND,
-  TOP_ALBUMS
+  TOP_ALBUMS,
+  PREMIUM_TRACKS
 } from '../../collections'
 import { ColorTile } from '../../components/ColorTile'
 import { TabInfo } from '../../components/TabInfo'
@@ -55,6 +58,7 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 const tiles = [
+  PREMIUM_TRACKS,
   TRENDING_PLAYLISTS,
   TRENDING_UNDERGROUND,
   HEAVY_ROTATION,
@@ -67,9 +71,9 @@ const tiles = [
   FEELING_LUCKY
 ]
 
-const tenTileLayout = {
-  halfTiles: [3, 4, 5, 6, 8, 9],
-  leftHalfTiles: [3, 5, 8]
+const elevenTileLayout = {
+  halfTiles: [4, 5, 6, 7, 9, 10],
+  leftHalfTiles: [4, 6, 9]
 }
 
 export const ForYouTab = () => {
@@ -83,16 +87,24 @@ export const ForYouTab = () => {
     })
   })
 
+  const isUSDCPurchasesEnabled = useIsUSDCEnabled()
+  const filteredTiles = tiles.filter((tile) => {
+    const isPremiumTracksTile =
+      tile.variant === ExploreCollectionsVariant.DIRECT_LINK &&
+      tile.title === PREMIUM_TRACKS.title
+    return !isPremiumTracksTile || isUSDCPurchasesEnabled
+  })
+
   return (
     <ScrollView style={styles.tabContainer} ref={scrollViewRef}>
       <TabInfo header={messages.infoHeader} text={messages.infoText} />
       <View style={styles.contentContainer}>
-        {tiles.map((tile, idx) => (
+        {filteredTiles.map((tile, idx) => (
           <ColorTile
             style={[
               styles.tile,
-              tenTileLayout.halfTiles.includes(idx) && styles.halfTile,
-              tenTileLayout.leftHalfTiles.includes(idx) && styles.rightMargin
+              elevenTileLayout.halfTiles.includes(idx) && styles.halfTile,
+              elevenTileLayout.leftHalfTiles.includes(idx) && styles.rightMargin
             ]}
             key={tile.title}
             {...tile}

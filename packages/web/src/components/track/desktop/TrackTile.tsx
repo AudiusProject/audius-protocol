@@ -172,7 +172,7 @@ const TrackTile = ({
   )
 
   const getDurationText = () => {
-    if (!duration) {
+    if (duration === null || duration === undefined) {
       return ''
     } else if (
       isLongFormContent &&
@@ -354,7 +354,7 @@ const TrackTile = ({
                 {messages.hiddenTrack}
               </div>
             ) : null}
-            {!isLoading && duration ? (
+            {!isLoading && duration !== null && duration !== undefined ? (
               <div className={styles.duration}>{getDurationText()}</div>
             ) : null}
           </div>

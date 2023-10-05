@@ -50,18 +50,7 @@ const messages = {
   premium: 'Premium',
   specialAccess: 'Special Access',
   collectibleGated: 'Collectible Gated',
-  hidden: 'Hidden',
-  errors: {
-    price: {
-      tooLow: 'Price must be at least $0.99',
-      tooHigh: 'Price must be less than $9999.99'
-    },
-    preview: {
-      tooEarly: 'Preview must start during the track',
-      tooLate:
-        'Preview must start at least 30 seconds before the end of the track'
-    }
-  }
+  hidden: 'Hidden'
 }
 
 type AccessAndSaleModalLegacyProps = {

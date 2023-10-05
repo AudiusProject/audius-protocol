@@ -39,6 +39,7 @@ import explorePageReducer from './pages/explore/slice'
 import feed from './pages/feed/reducer'
 import { FeedPageState } from './pages/feed/types'
 import historyPageReducer from './pages/history-page/reducer'
+import premiumTracks from './pages/premium-tracks/slice'
 import profileReducer from './pages/profile/reducer'
 import { ProfilePageState } from './pages/profile/types'
 import remixes from './pages/remixes/slice'
@@ -240,7 +241,8 @@ export const reducers = () => ({
     trendingPlaylists,
     trendingUnderground,
     settings,
-    remixes
+    remixes,
+    premiumTracks
   }),
 
   // Solana
@@ -365,6 +367,7 @@ export type CommonState = {
     trendingPlaylists: ReturnType<typeof trendingPlaylists>
     trendingUnderground: ReturnType<typeof trendingUnderground>
     remixes: ReturnType<typeof remixes>
+    premiumTracks: ReturnType<typeof premiumTracks>
   }
   solana: ReturnType<typeof solanaReducer>
 

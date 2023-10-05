@@ -21,13 +21,21 @@ type GetPurchaseListArgs = {
 }
 
 const parsePurchase = (purchase: full.Purchase): USDCPurchaseDetails => {
-  const { contentId, contentType, amount, buyerUserId, sellerUserId, ...rest } =
-    purchase
+  const {
+    contentId,
+    contentType,
+    extraAmount,
+    amount,
+    buyerUserId,
+    sellerUserId,
+    ...rest
+  } = purchase
   return {
     ...rest,
     contentType: contentType as USDCContentPurchaseType,
     contentId: HashId.parse(contentId),
     amount: amount as StringUSDC,
+    extraAmount: extraAmount as StringUSDC,
     buyerUserId: HashId.parse(buyerUserId),
     sellerUserId: HashId.parse(sellerUserId)
   }

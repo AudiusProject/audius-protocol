@@ -86,7 +86,7 @@ export const processFiles = (
       )
     }
     const audio = new Audio()
-    // @ts-ignore
+    // @ts-ignore preview is present on `file` in the browser context
     audio.src = file.preview
     return {
       file,

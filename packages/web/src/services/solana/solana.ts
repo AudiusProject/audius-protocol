@@ -4,17 +4,12 @@ import {
   getMinimumBalanceForRentExemptAccount,
   getAssociatedTokenAddressSync
 } from '@solana/spl-token'
-import {
-  PublicKey,
-  Transaction,
-  TransactionInstruction,
-  Keypair
-} from '@solana/web3.js'
+import { PublicKey, Transaction, Keypair } from '@solana/web3.js'
 
 import { getLibs } from 'services/audius-libs'
 
 export const ROOT_ACCOUNT_SIZE = 0 // Root account takes 0 bytes, but still pays rent!
-export const TRANSACTION_FEE_FALLBACK = 5000
+export const TRANSACTION_FEE_FALLBACK = 10000
 
 /**
  * Gets the solana connection from libs.
@@ -145,25 +140,4 @@ export const getUSDCAssociatedTokenAccount = async (
     libs.solanaWeb3Manager!.mints.usdc,
     solanaRootAccountPubkey
   )
-}
-
-/**
- * Signs a set of instructions with the supplied signer and fee payer.
- */
-export const getSignatureForTransaction = async ({
-  instructions,
-  signer,
-  feePayer,
-  recentBlockhash
-}: {
-  instructions: TransactionInstruction[]
-  signer: Keypair
-  feePayer: PublicKey
-  recentBlockhash: string
-}) => {
-  const transaction = new Transaction({ recentBlockhash })
-  transaction.add(...instructions)
-  transaction.feePayer = feePayer
-  transaction.partialSign(signer)
-  return transaction.signatures.filter((s) => s.signature !== null)
 }

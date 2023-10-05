@@ -8,7 +8,9 @@ import {
 } from 'store/reachability/sagas'
 
 /**
- * Required for all writes
+ * Required for all writes.
+ * NOTE: This does not ensure that the account exists. If the account is required
+ * for your operation, call `ensureLoggedIn` or an equivalent after calling `waitForWrite`.
  */
 export function* waitForWrite() {
   yield* call(waitForBackendSetup)
