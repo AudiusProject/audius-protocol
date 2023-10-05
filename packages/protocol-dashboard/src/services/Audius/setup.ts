@@ -1,5 +1,5 @@
 import { AudiusClient } from './AudiusClient'
-import audius, { Utils } from '@audius/libs'
+import { libs as AudiusLibs, Utils } from '@audius/sdk/dist/legacy.js'
 
 declare global {
   interface Window {
@@ -7,7 +7,6 @@ declare global {
     Audius: any
     Utils: any
     Web3: any
-    audiusLibs: any
     web3: any
     ethereum: any
     dataWeb3: any
@@ -19,62 +18,43 @@ declare global {
 const Web3 = window.Web3
 window.Utils = Utils
 
-const identityServiceEndpoint = process.env.REACT_APP_IDENTITY_SERVICE_ENDPOINT
-const ethRegistryAddress = process.env.REACT_APP_ETH_REGISTRY_ADDRESS
-const ethTokenAddress = process.env.REACT_APP_ETH_TOKEN_ADDRESS
+const identityServiceEndpoint = import.meta.env.VITE_IDENTITY_SERVICE_ENDPOINT
+const registryAddress = import.meta.env.VITE_REGISTRY_ADDRESS
+const ethRegistryAddress = import.meta.env.VITE_ETH_REGISTRY_ADDRESS
+const ethTokenAddress = import.meta.env.VITE_ETH_TOKEN_ADDRESS
+const claimDistributionContractAddress = import.meta.env
+  .VITE_CLAIM_DISTRIBUTION_CONTRACT_ADDRESS
+const wormholeContractAddress = import.meta.env.VITE_WORMHOLE_CONTRACT_ADDRESS
+const entityManagerAddress = import.meta.env.VITE_ENTITY_MANAGER_ADDRESS
 
 const ethProviderUrl =
-  process.env.REACT_APP_ETH_PROVIDER_URL || 'ws://localhost:8546'
+  import.meta.env.VITE_ETH_PROVIDER_URL || 'ws://localhost:8546' // probably a better fallback is http://audius-protocol-eth-ganache-1
 
-const ethOwnerWallet = process.env.REACT_APP_ETH_OWNER_WALLET
-const ethNetworkId = process.env.REACT_APP_ETH_NETWORK_ID
+const ethOwnerWallet = import.meta.env.VITE_ETH_OWNER_WALLET
+const ethNetworkId = import.meta.env.VITE_ETH_NETWORK_ID
 
-const SOLANA_CLUSTER_ENDPOINT = process.env.REACT_APP_SOLANA_CLUSTER_ENDPOINT
-const WAUDIO_MINT_ADDRESS = process.env.REACT_APP_WAUDIO_MINT_ADDRESS
-const SOLANA_TOKEN_ADDRESS = process.env.REACT_APP_SOLANA_TOKEN_PROGRAM_ADDRESS
-const CLAIMABLE_TOKEN_PDA = process.env.REACT_APP_CLAIMABLE_TOKEN_PDA
-const SOLANA_FEE_PAYER_ADDRESS = process.env.REACT_APP_SOLANA_FEE_PAYER_ADDRESS
+const SOLANA_CLUSTER_ENDPOINT = import.meta.env.VITE_SOLANA_CLUSTER_ENDPOINT
+const WAUDIO_MINT_ADDRESS = import.meta.env.VITE_WAUDIO_MINT_ADDRESS
+const USDC_MINT_ADDRESS = import.meta.env.VITE_USDC_MINT_ADDRESS
+const SOLANA_TOKEN_ADDRESS = import.meta.env.VITE_SOLANA_TOKEN_PROGRAM_ADDRESS
+const CLAIMABLE_TOKEN_PDA = import.meta.env.VITE_CLAIMABLE_TOKEN_PDA
+const SOLANA_FEE_PAYER_ADDRESS = import.meta.env.VITE_SOLANA_FEE_PAYER_ADDRESS
 
-const CLAIMABLE_TOKEN_PROGRAM_ADDRESS =
-  process.env.REACT_APP_CLAIMABLE_TOKEN_PROGRAM_ADDRESS
-const REWARDS_MANAGER_PROGRAM_ID =
-  process.env.REACT_APP_REWARDS_MANAGER_PROGRAM_ID
-const REWARDS_MANAGER_PROGRAM_PDA =
-  process.env.REACT_APP_REWARDS_MANAGER_PROGRAM_PDA
-const REWARDS_MANAGER_TOKEN_PDA =
-  process.env.REACT_APP_REWARDS_MANAGER_TOKEN_PDA
+const CLAIMABLE_TOKEN_PROGRAM_ADDRESS = import.meta.env
+  .VITE_CLAIMABLE_TOKEN_PROGRAM_ADDRESS
+const REWARDS_MANAGER_PROGRAM_ID = import.meta.env
+  .VITE_REWARDS_MANAGER_PROGRAM_ID
+const REWARDS_MANAGER_PROGRAM_PDA = import.meta.env
+  .VITE_REWARDS_MANAGER_PROGRAM_PDA
+const REWARDS_MANAGER_TOKEN_PDA = import.meta.env.VITE_REWARDS_MANAGER_TOKEN_PDA
 
 export const IS_PRODUCTION =
-  process.env.REACT_APP_ETH_NETWORK_ID &&
-  process.env.REACT_APP_ETH_NETWORK_ID === '1'
+  import.meta.env.VITE_ETH_NETWORK_ID &&
+  import.meta.env.VITE_ETH_NETWORK_ID === '1'
 
 const IS_STAGING =
-  process.env.REACT_APP_ETH_NETWORK_ID &&
-  process.env.REACT_APP_ETH_NETWORK_ID === '3'
-
-const DISCOVERY_NODE_ALLOW_LIST = IS_PRODUCTION
-  ? new Set([
-      'https://discoveryprovider.audius7.prod-us-west-2.staked.cloud',
-      'https://discoveryprovider.audius1.prod-us-west-2.staked.cloud',
-      'https://discoveryprovider.audius4.prod-us-west-2.staked.cloud',
-      'https://discoveryprovider.audius2.prod-us-west-2.staked.cloud',
-      'https://discovery-au-01.audius.openplayer.org',
-      'https://dn-usa.audius.metadata.fyi',
-      'https://discoveryprovider.audius6.prod-us-west-2.staked.cloud',
-      'https://dn-jpn.audius.metadata.fyi',
-      'https://dn1.monophonic.digital',
-      'https://discoveryprovider.audius3.prod-us-west-2.staked.cloud',
-      'https://audius-discovery-1.altego.net',
-      'https://discoveryprovider.audius.prod-us-west-2.staked.cloud',
-      'https://discoveryprovider.audius.co',
-      'https://discoveryprovider.audius5.prod-us-west-2.staked.cloud',
-      'https://audius-discovery-2.altego.net',
-      'https://discoveryprovider2.audius.co',
-      'https://audius-dp.johannesburg.creatorseed.com',
-      'https://discoveryprovider3.audius.co',
-      'https://dn2.monophonic.digital'
-    ])
-  : undefined
+  import.meta.env.VITE_ETH_NETWORK_ID &&
+  import.meta.env.VITE_ETH_NETWORK_ID === '3'
 
 // Used to prevent two callbacks from firing triggering reload
 let willReload = false
@@ -169,58 +149,88 @@ export async function setup(this: AudiusClient): Promise<void> {
 }
 
 const configureReadOnlyLibs = async () => {
-  const ethWeb3Config = audius.configEthWeb3(
-    ethTokenAddress,
-    ethRegistryAddress,
-    ethProviderUrl,
-    ethOwnerWallet
+  // @ts-ignore
+  const ethWeb3Config = AudiusLibs.configEthWeb3(
+    ethTokenAddress!,
+    ethRegistryAddress!,
+    ethProviderUrl!,
+    ethOwnerWallet!,
+    claimDistributionContractAddress!,
+    wormholeContractAddress!
   )
-  const solanaWeb3Config = audius.configSolanaWeb3({
-    solanaClusterEndpoint: SOLANA_CLUSTER_ENDPOINT,
-    mintAddress: WAUDIO_MINT_ADDRESS,
-    solanaTokenAddress: SOLANA_TOKEN_ADDRESS,
-    claimableTokenPDA: CLAIMABLE_TOKEN_PDA,
-    feePayerAddress: SOLANA_FEE_PAYER_ADDRESS,
-    claimableTokenProgramAddress: CLAIMABLE_TOKEN_PROGRAM_ADDRESS,
-    rewardsManagerProgramId: REWARDS_MANAGER_PROGRAM_ID,
-    rewardsManagerProgramPDA: REWARDS_MANAGER_PROGRAM_PDA,
-    rewardsManagerTokenPDA: REWARDS_MANAGER_TOKEN_PDA,
+  // @ts-ignore
+  const solanaWeb3Config = AudiusLibs.configSolanaWeb3({
+    claimableTokenPDA: CLAIMABLE_TOKEN_PDA!,
+    solanaClusterEndpoint: SOLANA_CLUSTER_ENDPOINT!,
+    mintAddress: WAUDIO_MINT_ADDRESS!,
+    usdcMintAddress: USDC_MINT_ADDRESS!,
+    solanaTokenAddress: SOLANA_TOKEN_ADDRESS!,
+    // @ts-ignore
+    feePayerAddress: SOLANA_FEE_PAYER_ADDRESS!,
+    claimableTokenProgramAddress: CLAIMABLE_TOKEN_PROGRAM_ADDRESS!,
+    rewardsManagerProgramId: REWARDS_MANAGER_PROGRAM_ID!,
+    rewardsManagerProgramPDA: REWARDS_MANAGER_PROGRAM_PDA!,
+    rewardsManagerTokenPDA: REWARDS_MANAGER_TOKEN_PDA!,
     useRelay: true
   })
-  const discoveryProviderConfig = audius.configDiscoveryProvider(
-    DISCOVERY_NODE_ALLOW_LIST
-  )
 
-  const identityServiceConfig = audius.configIdentityService(
-    identityServiceEndpoint
-  )
+  const identityServiceConfig = {
+    url: identityServiceEndpoint
+  }
 
-  let audiusLibsConfig = {
+  const audiusLibsConfig = {
     ethWeb3Config,
     solanaWeb3Config,
-    discoveryProviderConfig,
     identityServiceConfig,
+    discoveryProviderConfig: {},
     isServer: false,
     isDebug: !IS_PRODUCTION && !IS_STAGING
   }
-  const libs = new audius(audiusLibsConfig)
+  // @ts-ignore
+  const libs = new AudiusLibs(audiusLibsConfig)
   await libs.init()
   return libs
 }
 
+const configWeb3 = async (web3Provider: any, networkId: string) => {
+  const web3Instance = await Utils.configureWeb3(web3Provider, networkId, false)
+  if (!web3Instance) {
+    throw new Error('External web3 incorrectly configured')
+  }
+  const wallets = await web3Instance.eth.getAccounts()
+  return {
+    registryAddress,
+    entityManagerAddress,
+    useExternalWeb3: true,
+    externalWeb3Config: {
+      web3: web3Instance,
+      ownerWallet: wallets[0]
+    }
+  }
+}
+
 const configureLibsWithAccount = async () => {
-  let configuredMetamaskWeb3 = await Utils.configureWeb3(
-    window.web3.currentProvider,
-    // Pass network version here for ethNetworkId. Libs uses an out of date network check
-    window.ethereum.networkVersion,
-    false
+  // @ts-ignore
+  // let configuredMetamaskWeb3 = await AudiusLibs.configExternalWeb3(
+  //   registryAddress!,
+  //   // window.web3.currentProvider,
+  //   [window.ethereum],
+  //    // Pass network version here for ethNetworkId. Libs uses an out of date network check
+  //   //  window.ethereum.networkVersion,
+  //   ethNetworkId!
+  // )
+  let configuredMetamaskWeb3 = await configWeb3(
+    [window.ethereum],
+    ethNetworkId!
   )
   console.log(configuredMetamaskWeb3)
 
   let metamaskAccounts: any = await new Promise(resolve => {
-    configuredMetamaskWeb3.eth.getAccounts((...args: any) => {
-      resolve(args[1])
-    })
+    configuredMetamaskWeb3.externalWeb3Config.web3.eth.getAccounts(
+      (...args: any) => {
+        resolve(args[1])
+      }
+    )
   })
   let metamaskAccount = metamaskAccounts[0]
 
@@ -228,35 +238,47 @@ const configureLibsWithAccount = async () => {
   if (!metamaskAccount) {
     return null
   }
-  let audiusLibsConfig = {
-    ethWeb3Config: audius.configEthWeb3(
-      ethTokenAddress,
-      ethRegistryAddress,
-      configuredMetamaskWeb3,
-      metamaskAccount
+
+  // @ts-ignore
+  const ethWeb3Config = AudiusLibs.configEthWeb3(
+    ethTokenAddress!,
+    ethRegistryAddress!,
+    configuredMetamaskWeb3.externalWeb3Config.web3,
+    metamaskAccount,
+    claimDistributionContractAddress!,
+    wormholeContractAddress!
+  )
+
+  // @ts-ignore
+  const solanaWeb3Config = AudiusLibs.configSolanaWeb3({
+    claimableTokenPDA: CLAIMABLE_TOKEN_PDA!,
+    solanaClusterEndpoint: SOLANA_CLUSTER_ENDPOINT!,
+    mintAddress: WAUDIO_MINT_ADDRESS!,
+    usdcMintAddress: USDC_MINT_ADDRESS!,
+    solanaTokenAddress: SOLANA_TOKEN_ADDRESS!,
+    // @ts-ignore
+    feePayerAddress: SOLANA_FEE_PAYER_ADDRESS!,
+    claimableTokenProgramAddress: CLAIMABLE_TOKEN_PROGRAM_ADDRESS!,
+    rewardsManagerProgramId: REWARDS_MANAGER_PROGRAM_ID!,
+    rewardsManagerProgramPDA: REWARDS_MANAGER_PROGRAM_PDA!,
+    rewardsManagerTokenPDA: REWARDS_MANAGER_TOKEN_PDA!,
+    useRelay: true
+  })
+
+  const audiusLibsConfig = {
+    web3Config: configuredMetamaskWeb3,
+    ethWeb3Config,
+    solanaWeb3Config,
+    // @ts-ignore
+    identityServiceConfig: AudiusLibs.configIdentityService(
+      identityServiceEndpoint!
     ),
-    solanaWeb3Config: audius.configSolanaWeb3({
-      solanaClusterEndpoint: SOLANA_CLUSTER_ENDPOINT,
-      mintAddress: WAUDIO_MINT_ADDRESS,
-      solanaTokenAddress: SOLANA_TOKEN_ADDRESS,
-      claimableTokenPDA: CLAIMABLE_TOKEN_PDA,
-      feePayerAddress: SOLANA_FEE_PAYER_ADDRESS,
-      claimableTokenProgramAddress: CLAIMABLE_TOKEN_PROGRAM_ADDRESS,
-      rewardsManagerProgramId: REWARDS_MANAGER_PROGRAM_ID,
-      rewardsManagerProgramPDA: REWARDS_MANAGER_PROGRAM_PDA,
-      rewardsManagerTokenPDA: REWARDS_MANAGER_TOKEN_PDA,
-      useRelay: true
-    }),
-    discoveryProviderConfig: audius.configDiscoveryProvider(
-      DISCOVERY_NODE_ALLOW_LIST
-    ),
-    identityServiceConfig: audius.configIdentityService(
-      identityServiceEndpoint
-    ),
+    discoveryProviderConfig: {},
     isServer: false,
     isDebug: !IS_PRODUCTION && !IS_STAGING
   }
-  const libs = new audius(audiusLibsConfig)
+  // @ts-ignore
+  const libs = new AudiusLibs(audiusLibsConfig)
   await libs.init()
   return libs
 }

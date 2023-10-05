@@ -189,7 +189,7 @@ export const useBlock = (blockNumber: number) => {
   useEffect(() => {
     const fetchBlock = async () => {
       // TODO: Move this window dependency out
-      const web3 = window.audiusLibs.ethWeb3Manager.web3
+      const web3 = window.audiusLibs.ethWeb3Manager!.web3
       const b = await web3.eth.getBlock(blockNumber)
       setBlock(b)
     }

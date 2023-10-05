@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import clsx from 'clsx'
-import { Utils } from '@audius/libs'
+import { Utils } from '@audius/sdk/dist/legacy.js'
 import { ButtonType } from '@audius/stems'
 
 import { useDelegateStake } from 'store/actions/delegateStake'
@@ -63,7 +63,7 @@ const DelegateStakeModal: React.FC<DelegateStakeModalProps> = ({
     (value: string) => {
       setStakingAmount(value)
       if (checkWeiNumber(value)) {
-        setStakingBN(parseWeiNumber(value))
+        setStakingBN(parseWeiNumber(value)!)
       }
     },
     [setStakingAmount]

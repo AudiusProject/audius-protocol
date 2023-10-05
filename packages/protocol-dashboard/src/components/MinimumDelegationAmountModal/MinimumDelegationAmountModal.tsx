@@ -44,7 +44,7 @@ const MinimumDelegationAmountModal: React.FC<MinimumDelegationAmountModalProps> 
     (value: string) => {
       setMinDelegation(value)
       if (checkWeiNumber(value)) {
-        setMinDelegationBN(parseWeiNumber(value))
+        setMinDelegationBN(parseWeiNumber(value)!)
       }
     },
     [setMinDelegation, setMinDelegationBN]

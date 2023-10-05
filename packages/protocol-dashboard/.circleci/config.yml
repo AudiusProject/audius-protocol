@@ -4,7 +4,7 @@ jobs:
   init:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/ruby:2.6-node
+      - image: cimg/ruby:2.6-node
 
     steps:
       - checkout
@@ -38,21 +38,21 @@ jobs:
 
   build-staging:
     working_directory: ~/protocol-dashboard
-    resource_class: large
+    resource_class: xlarge
     docker:
-      - image: circleci/ruby:2.6-node
+      - image: cimg/ruby:2.6-node
     steps:
       - checkout
       - attach_workspace:
           at: ./
       - run:
           name: build
-          command: CI=false npm run build:stage
+          command: npm run build:stage
       - run:
           name: armada bundle
           command: |
             timestamp=$(date +%s)
-            filename="$(npx armada-cli bundle create build${timestamp} build)"
+            filename="$(npx armada-cli bundle create dist${timestamp} dist)"
             hash="$(npx armada-cli bundle checksum $filename)"
             echo "export FILENAME='$filename'" >> tmp.env
             echo "export HASH='$hash'" >> tmp.env
@@ -80,7 +80,7 @@ jobs:
   deploy-staging:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/ruby:2.6-node
+      - image: cimg/ruby:2.6-node
     steps:
       - attach_workspace:
           at: ./
@@ -96,18 +96,18 @@ jobs:
   build-prod:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/ruby:2.6-node
-    resource_class: large
+      - image: cimg/ruby:2.6-node
+    resource_class: xlarge
     steps:
       - checkout
       - attach_workspace:
           at: ./
       - run:
           name: build
-          command: CI=false npm run build:prod
+          command: npm run build:prod
       - run:
-          name: zip build
-          command: zip -r build.zip ./build
+          name: zip dist
+          command: zip -r dist.zip ./dist
       - persist_to_workspace:
           root: ./
           paths:
@@ -126,14 +126,14 @@ jobs:
       - run:
           name: Deploy to S3
           command: |
-            aws s3 sync build s3://dashboard.audius.org --delete --cache-control max-age=604800
+            aws s3 sync dist s3://dashboard.audius.org --delete --cache-control max-age=604800
             aws s3 cp s3://dashboard.audius.org/index.html s3://dashboard.audius.org/index.html --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --metadata-directive REPLACE --acl public-read
-            aws s3 cp build.zip s3://dashboard.audius.org/build.zip --cache-control max-age=0
+            aws s3 cp dist.zip s3://dashboard.audius.org/dist.zip --cache-control max-age=0
 
   update-prod-ga-build:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/ruby:2.6-node
+      - image: cimg/ruby:2.6-node
     steps:
       - attach_workspace:
           at: ./
@@ -162,7 +162,7 @@ jobs:
   update-prod-records:
     working_directory: ~/protocol-dashboard
     docker:
-      - image: circleci/ruby:2.6-node
+      - image: cimg/ruby:2.6-node
     steps:
       - attach_workspace:
           at: ./

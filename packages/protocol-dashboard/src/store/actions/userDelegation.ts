@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Utils } from '@audius/libs'
+import { Utils } from '@audius/sdk/dist/legacy.js'
 import { useUser } from 'store/cache/user/hooks'
 import { Address, BigNumber, Status, Operator } from 'types'
 

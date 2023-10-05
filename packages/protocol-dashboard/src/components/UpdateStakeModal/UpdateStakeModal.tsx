@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import { Utils } from '@audius/libs'
+import { Utils } from '@audius/sdk/dist/legacy.js'
 import clsx from 'clsx'
 import { ButtonType } from '@audius/stems'
 
@@ -88,7 +88,7 @@ const IncreaseStakeModal: React.FC<IncreaseStakeModalProps> = ({
     (value: string) => {
       setStakingAmount(value)
       if (checkWeiNumber(value)) {
-        setStakingBN(parseWeiNumber(value))
+        setStakingBN(parseWeiNumber(value)!)
       }
     },
     [setStakingAmount, setStakingBN]
