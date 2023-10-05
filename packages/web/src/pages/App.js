@@ -474,7 +474,6 @@ class App extends Component {
           {this.props.showCookieBanner ? <CookieBanner /> : null}
           <Notice />
           <Navigator />
-          {/* <div className={styles.draggableArea} /> */}
           <div
             ref={this.props.mainContentRef}
             id={MAIN_CONTENT_ID}
