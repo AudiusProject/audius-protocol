@@ -21,7 +21,6 @@ const errorSagas = createErrorSagas<CollectionErrors>({
     cacheCollectionsActions.DELETE_PLAYLIST_FAILED,
     cacheCollectionsActions.PUBLISH_PLAYLIST_FAILED
   ],
-  getShouldRedirect: () => false,
   getShouldReport: () => true,
   getAdditionalInfo: (action: CollectionErrors) => ({
     error: action.error,

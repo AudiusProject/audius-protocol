@@ -13,7 +13,6 @@ const errorSagas = createErrorSagas<TrackRepostErrors>({
     socialTrackActions.UNSAVE_TRACK_FAILED,
     socialTrackActions.SAVE_TRACK_FAILED
   ],
-  getShouldRedirect: () => false,
   getShouldReport: () => true,
   getAdditionalInfo: (action: TrackRepostErrors) => ({
     error: action.error,

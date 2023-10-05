@@ -8,7 +8,6 @@ function* handleError(action: any) {
   yield put(
     errorActions.handleError({
       message: action.type,
-      shouldRedirect: true,
       shouldReport: true,
       additionalInfo: { error: action.error }
     })

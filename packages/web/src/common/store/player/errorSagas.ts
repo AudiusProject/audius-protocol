@@ -8,7 +8,6 @@ type PlayerErrors = ReturnType<typeof error>
 
 const errorSagas = createErrorSagas<PlayerErrors>({
   errorTypes: [error.type],
-  getShouldRedirect: () => false,
   getShouldReport: () => true,
   getAdditionalInfo: (action: any) => ({
     error: action.error,

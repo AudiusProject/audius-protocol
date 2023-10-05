@@ -11,7 +11,6 @@ const errorSagas = createErrorSagas<Errors>({
     actions.BROWSER_PUSH_NOTIFICATION_FAILED,
     actions.GET_NOTIFICATION_SETTINGS_FAILED
   ],
-  getShouldRedirect: () => false,
   getShouldReport: () => true,
   getAdditionalInfo: (action: Errors) => ({ ...action })
 })
