@@ -11,12 +11,12 @@ from web3 import Web3
 from src.models.indexing.block import Block
 from src.models.notifications.notification import Notification
 from src.models.tracks.track import Track
-from src.queries.get_trending_tracks import (
-    _get_trending_tracks_with_session,
+from src.queries.generate_unpopulated_trending import (
     generate_unpopulated_trending,
     generate_unpopulated_trending_from_mat_views,
     make_trending_cache_key,
 )
+from src.queries.get_trending_tracks import _get_trending_tracks_with_session
 from src.queries.get_underground_trending import (
     _get_underground_trending_with_session,
     make_get_unpopulated_tracks,
@@ -177,7 +177,7 @@ def get_top_trending_to_notify(db):
     with db.scoped_session() as session:
         trending_tracks = _get_trending_tracks_with_session(
             session,
-            {"time": "week", "exclude_premium": True, "usdc_purchase_only": False},
+            {"time": "week", "exclude_premium": True},
             trending_strategy_factory.get_strategy(TrendingType.TRACKS),
         )
         top_trending = trending_tracks[:NOTIFICATIONS_TRACK_LIMIT]
