@@ -31,6 +31,7 @@ export enum zIndex {
   // Web3 wallet connect modal
   MUSIC_CONFETTI = 10000,
   WEB3_WALLET_CONNECT_MODAL = 10001,
+  MODAL_OVERFLOW_MENU_POPUP = 10001,
 
   ARTIST_POPOVER_POPUP = 20000,
 
@@ -38,7 +39,7 @@ export enum zIndex {
 
   FEATURE_FLAG_OVERRIDE_MODAL = 30000,
 
-  MODAL_OVERFLOW_MENU_POPUP = 10001
+  SOMETHING_WRONG_PAGE = 40000
 }
 
 export default zIndex

@@ -9,6 +9,7 @@ import { UiErrorCode } from 'store/errors/actions'
 import { getIsErrorPageOpen, getUiErrorCode } from 'store/errors/selectors'
 import { useIsMobile } from 'utils/clientUtil'
 import { isDarkMode, isMatrix } from 'utils/theme/theme'
+import zIndex from 'utils/zIndex'
 
 import styles from './SomethingWrong.module.css'
 
@@ -40,6 +41,9 @@ export const SomethingWrong = () => {
       className={cn(styles.somethingWrong, {
         [styles.isMobile]: isMobile
       })}
+      style={{
+        zIndex: zIndex.SOMETHING_WRONG_PAGE
+      }}
     >
       <div
         className={styles.content}
