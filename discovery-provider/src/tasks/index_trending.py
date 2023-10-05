@@ -11,10 +11,10 @@ from web3 import Web3
 from src.models.indexing.block import Block
 from src.models.notifications.notification import Notification
 from src.models.tracks.track import Track
-from src.queries.generate_unpopulated_trending import (
+from src.queries.generate_unpopulated_trending_tracks import (
     generate_unpopulated_trending,
     generate_unpopulated_trending_from_mat_views,
-    make_trending_cache_key,
+    make_trending_tracks_cache_key,
 )
 from src.queries.get_trending_tracks import _get_trending_tracks_with_session
 from src.queries.get_underground_trending import (
@@ -125,7 +125,7 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
                             time_range=time_range,
                             strategy=strategy,
                         )
-                    key = make_trending_cache_key(time_range, genre, version)
+                    key = make_trending_tracks_cache_key(time_range, genre, version)
                     set_json_cached_key(redis, key, res)
                     cache_end_time = time.time()
                     total_time = cache_end_time - cache_start_time

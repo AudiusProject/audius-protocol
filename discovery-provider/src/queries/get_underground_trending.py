@@ -17,7 +17,9 @@ from src.premium_content.premium_content_constants import (
     SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
     SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
 )
-from src.queries.generate_unpopulated_trending import make_trending_cache_key
+from src.queries.generate_unpopulated_trending_tracks import (
+    make_trending_tracks_cache_key,
+)
 from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
@@ -74,7 +76,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
     qr = score_params["qr"]
     xf = score_params["xf"]
     pt = score_params["pt"]
-    trending_key = make_trending_cache_key("week", None, strategy.version)
+    trending_key = make_trending_tracks_cache_key("week", None, strategy.version)
     track_ids = []
     old_trending = get_json_cached_key(redis_instance, trending_key)
     if old_trending:

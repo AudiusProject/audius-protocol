@@ -5,9 +5,9 @@ from sqlalchemy.orm.session import Session
 from src.premium_content.premium_content_constants import (
     SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
 )
-from src.queries.generate_unpopulated_trending import (
+from src.queries.generate_unpopulated_trending_tracks import (
     make_generate_unpopulated_trending,
-    make_trending_cache_key,
+    make_trending_tracks_cache_key,
 )
 from src.queries.query_helpers import add_users_to_tracks, populate_track_metadata
 from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
@@ -46,7 +46,7 @@ def _get_trending_tracks_with_session(
         args.get("offset", 0)
     )
     time_range = "week" if time not in ["week", "month", "year", "allTime"] else time
-    key = make_trending_cache_key(time_range, genre, strategy.version)
+    key = make_trending_tracks_cache_key(time_range, genre, strategy.version)
 
     # Will try to hit cached trending from task, falling back
     # to generating it here if necessary and storing it with no TTL

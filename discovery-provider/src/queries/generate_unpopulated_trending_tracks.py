@@ -24,7 +24,7 @@ from src.trending_strategies.trending_type_and_version import (
 logger = logging.getLogger(__name__)
 
 
-def make_trending_cache_key(
+def make_trending_tracks_cache_key(
     time_range, genre, version=DEFAULT_TRENDING_VERSIONS[TrendingType.TRACKS]
 ):
     """Makes a cache key resembling `generated-trending:week:electronic`"""

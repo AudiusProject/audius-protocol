@@ -4,7 +4,9 @@ from sqlalchemy import asc
 
 from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
-from src.queries.generate_unpopulated_trending import make_trending_cache_key
+from src.queries.generate_unpopulated_trending_tracks import (
+    make_trending_tracks_cache_key,
+)
 from src.tasks.index_trending import (
     get_top_trending_to_notify,
     index_trending_notifications,
@@ -34,7 +36,7 @@ def test_index_trending_notification(app):
         trending_strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS)
         # Test that if there are no prev notifications, all trending in top are generated
 
-        trending_key = make_trending_cache_key("week", None, trending_strategy.version)
+        trending_key = make_trending_tracks_cache_key("week", None, trending_strategy.version)
         trending_tracks = [
             {
                 "track_id": i,

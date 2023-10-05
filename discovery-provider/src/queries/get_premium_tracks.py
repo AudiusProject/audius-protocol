@@ -1,9 +1,9 @@
 import logging  # pylint: disable=C0302
 
 from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
-from src.queries.generate_unpopulated_trending import (
+from src.queries.generate_unpopulated_trending_tracks import (
     make_generate_unpopulated_trending,
-    make_trending_cache_key,
+    make_trending_tracks_cache_key,
 )
 from src.queries.get_trending_tracks import TRENDING_TTL_SEC
 from src.queries.query_helpers import add_users_to_tracks, populate_track_metadata
@@ -29,7 +29,7 @@ def _get_usdc_purchase_tracks(args, strategy):
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        key = make_trending_cache_key(time_range, genre, strategy.version)
+        key = make_trending_tracks_cache_key(time_range, genre, strategy.version)
         key += ":usdc_purchase_only"
 
         # The index_trending task runs every 10 seconds, so we set the TTL to 10 seconds
