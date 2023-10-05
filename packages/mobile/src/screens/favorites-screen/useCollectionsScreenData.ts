@@ -117,7 +117,12 @@ export const useCollectionsScreenData = ({
         return []
       }
 
-      return fetchedCollectionIds.filter((collectionId) => {
+      const offlineCollectionsStatus = getOfflineCollectionsStatus(state)
+      const offlineCollectionIds = Object.keys(offlineCollectionsStatus).filter(
+        (k) => offlineCollectionsStatus[k] !== OfflineDownloadStatus.INACTIVE
+      )
+      return offlineCollectionIds.filter((stringId) => {
+        const collectionId = Number(stringId)
         const collection = getCollection(state, { id: collectionId })
         if (collection == null) {
           console.error(
@@ -125,30 +130,21 @@ export const useCollectionsScreenData = ({
           )
           return false
         }
-
-        if (!isReachable) {
-          const offlineCollectionsStatus = getOfflineCollectionsStatus(state)
-          const trackIds =
-            collection.playlist_contents.track_ids.map(
-              (trackData) => trackData.track
-            ) ?? []
-          const collectionDownloadStatus =
-            offlineCollectionsStatus[collection.playlist_id]
-          // Don't show a playlist in Offline Mode if it has at least one track but none of the tracks have been downloaded yet OR if it is not marked for download
-          return (
-            Boolean(collectionDownloadStatus) &&
-            collectionDownloadStatus !== OfflineDownloadStatus.INACTIVE &&
-            (trackIds.length === 0 ||
-              trackIds.some((t) => {
-                return (
-                  offlineTracksStatus &&
-                  offlineTracksStatus[t.toString()] ===
-                    OfflineDownloadStatus.SUCCESS
-                )
-              }))
-          )
-        }
-        return true
+        const trackIds =
+          collection.playlist_contents.track_ids.map(
+            (trackData) => trackData.track
+          ) ?? []
+        // Don't show a playlist in Offline Mode if it has at least one track but none of the tracks have been downloaded yet OR if it is not marked for download
+        return (
+          trackIds.length === 0 ||
+          trackIds.some((t) => {
+            return (
+              offlineTracksStatus &&
+              offlineTracksStatus[t.toString()] ===
+                OfflineDownloadStatus.SUCCESS
+            )
+          })
+        )
       })
     },
     [
