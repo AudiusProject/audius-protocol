@@ -8,7 +8,6 @@ const { Lock } = require('../redis')
 
 const ENVIRONMENT = config.get('environment')
 const DEFAULT_GAS_LIMIT = config.get('defaultGasLimit')
-const GANACHE_GAS_PRICE = config.get('ganacheGasPrice')
 
 // L1 relayer wallets
 const ethRelayerWallets = config.get('ethRelayerWallets') // { publicKey, privateKey }
@@ -70,12 +69,6 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
   req.logger.info(
     `L1 txRelay - selected relayerPublicWallet=${selectedEthRelayerWallet.publicKey}`
   )
-  const ethGasPriceInfo = await getProdGasInfo(req.app.get('redis'), req.logger)
-
-  // Select the 'fast' gas price
-  let ethRelayGasPrice = ethGasPriceInfo[config.get('ethRelayerProdGasTier')]
-  ethRelayGasPrice =
-    ethRelayGasPrice * parseFloat(config.get('ethGasMultiplier'))
 
   let resp
   try {
@@ -88,7 +81,6 @@ const sendEthTransaction = async (req, txProps, reqBodySHA) => {
       '0x00',
       ethWeb3,
       req.logger,
-      ethRelayGasPrice,
       gasLimit,
       encodedABI
     )
@@ -129,7 +121,6 @@ const createAndSendEthTransaction = async (
   value,
   web3,
   logger,
-  gasPrice,
   gasLimit = null,
   data = null
 ) => {
@@ -144,7 +135,6 @@ const createAndSendEthTransaction = async (
   const nonce = await web3.eth.getTransactionCount(address)
   let txParams = {
     nonce: web3.utils.toHex(nonce),
-    gasPrice,
     gasLimit: gasLimit ? web3.utils.numberToHex(gasLimit) : DEFAULT_GAS_LIMIT,
     to: receiverAddress,
     value: web3.utils.toHex(value)
@@ -157,67 +147,11 @@ const createAndSendEthTransaction = async (
   tx.sign(privateKeyBuffer)
   const signedTx = '0x' + tx.serialize().toString('hex')
   logger.info(
-    `L1 txRelay - sending a transaction for sender ${
-      sender.publicKey
-    } to ${receiverAddress}, gasPrice ${parseInt(
-      gasPrice,
-      16
-    )}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`
+    `L1 txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`
   )
   const receipt = await web3.eth.sendSignedTransaction(signedTx)
 
   return { txHash: receipt.transactionHash, txParams }
-}
-
-// Query mainnet ethereum gas prices
-/*
-  Sample call:https://data-api.defipulse.com/api/v1/egs/api/ethgasAPI.json?api-key=some_key
-*/
-const getProdGasInfo = async (redis, logger) => {
-  if (ENVIRONMENT === 'development') {
-    return {
-      fastGweiHex: GANACHE_GAS_PRICE,
-      averageGweiHex: GANACHE_GAS_PRICE,
-      fastestGweiHex: GANACHE_GAS_PRICE
-    }
-  }
-  const prodGasPriceKey = 'eth-gas-prod-price-info'
-  let gasInfo = await redis.get(prodGasPriceKey)
-  if (!gasInfo) {
-    logger.info(`Redis cache miss, querying remote`)
-    let prodGasInfo
-    const defiPulseKey = config.get('defiPulseApiKey')
-    if (defiPulseKey !== '') {
-      logger.info(`L1 txRelay querying ethGas with apiKey`)
-      prodGasInfo = await axios({
-        method: 'get',
-        url: `https://data-api.defipulse.com/api/v1/egs/api/ethgasAPI.json?api-key=${defiPulseKey}`
-      })
-    } else {
-      prodGasInfo = await axios({
-        method: 'get',
-        url: 'https://ethgasstation.info/api/ethgasAPI.json'
-      })
-    }
-    const { fast, fastest, safeLow, average } = prodGasInfo.data
-    gasInfo = { fast, fastest, safeLow, average }
-    // Convert returned values into gwei to be used during relay and cache
-    // Must divide by 10 to get gwei price (Math.pow(10, 9) -> Math.pow(10, 8))
-    // https://docs.ethgasstation.info/gas-price
-    gasInfo.fastGwei = parseInt(gasInfo.fast) * Math.pow(10, 8)
-    gasInfo.fastestGwei = parseInt(gasInfo.fastest) * Math.pow(10, 8)
-    gasInfo.averageGwei = parseInt(gasInfo.average) * Math.pow(10, 8)
-    gasInfo.fastGweiHex = ethWeb3.utils.numberToHex(gasInfo.fastGwei)
-    gasInfo.fastestGweiHex = ethWeb3.utils.numberToHex(gasInfo.fastestGwei)
-    gasInfo.averageGweiHex = ethWeb3.utils.numberToHex(gasInfo.averageGwei)
-    gasInfo.cachedResponse = false
-    redis.set(prodGasPriceKey, JSON.stringify(gasInfo), 'EX', 30)
-    logger.info(`L1 txRelay - Updated gasInfo: ${JSON.stringify(gasInfo)}`)
-  } else {
-    gasInfo = JSON.parse(gasInfo)
-    gasInfo.cachedResponse = true
-  }
-  return gasInfo
 }
 
 /**
@@ -271,6 +205,5 @@ module.exports = {
   sendEthTransaction,
   queryEthRelayerWallet,
   getEthRelayerFunds,
-  getProdGasInfo,
   generateETHWalletLockKey
 }
