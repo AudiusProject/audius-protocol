@@ -3,6 +3,7 @@
   "compilerOptions": {
     "lib": ["ES2020", "dom"],
     "module": "esnext",
+    "sourceMap": true,
     "checkJs": false,
     "plugins": [{ "name": "typescript-plugin-css-modules" }],
     "allowJs": false,
@@ -11,6 +12,7 @@
     "moduleResolution": "node",
     "exactOptionalPropertyTypes": false,
     "declaration": true,
+    "declarationMap": true,
     "baseUrl": "./src",
     "outDir": "build",
     "declarationDir": "./",

@@ -6,12 +6,8 @@ import {
   savedPageSelectors,
   SavedPageTabs
 } from '@audius/common'
-import {
-  HarmonySelectablePill,
-  IconHeart,
-  IconCart,
-  IconRepost
-} from '@audius/stems'
+import { SelectablePill } from '@audius/harmony'
+import { IconHeart, IconCart, IconRepost } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
@@ -71,7 +67,7 @@ export const LibraryCategorySelectionMenu = ({
   return (
     <div role='radiogroup' className={styles.container}>
       {categories.map((c) => (
-        <HarmonySelectablePill
+        <SelectablePill
           role='radio'
           size={variant === 'mobile' ? 'default' : 'large'}
           aria-checked={selectedCategory === c.value ? 'true' : 'false'}
