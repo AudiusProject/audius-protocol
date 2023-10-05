@@ -18,9 +18,10 @@ from src.premium_content.premium_content_constants import (
     SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
 )
 from src.queries.generate_unpopulated_trending_tracks import (
+    TRENDING_TRACKS_LIMIT,
+    TRENDING_TRACKS_TTL_SEC,
     make_trending_tracks_cache_key,
 )
-from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
     get_karma,
@@ -281,7 +282,7 @@ def _get_underground_trending(args: GetUndergroundTrendingTrackArgs, strategy):
 
 
 def get_underground_trending(request, args, strategy):
-    offset, limit = format_offset(args), format_limit(args, TRENDING_LIMIT)
+    offset, limit = format_offset(args), format_limit(args, TRENDING_TRACKS_LIMIT)
     current_user_id = args.get("user_id")
     args = {"limit": limit, "offset": offset}
 
@@ -297,7 +298,7 @@ def get_underground_trending(request, args, strategy):
         # no args so we get the full list of tracks.
         key = get_trending_cache_key(to_dict(request.args), request.path)
         trending = use_redis_cache(
-            key, TRENDING_TTL_SEC, lambda: _get_underground_trending({}, strategy)
+            key, TRENDING_TRACKS_TTL_SEC, lambda: _get_underground_trending({}, strategy)
         )
         trending = trending[offset : limit + offset]
     return trending

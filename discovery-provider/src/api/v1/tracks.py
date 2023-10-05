@@ -37,6 +37,10 @@ from src.api.v1.helpers import (
     trending_parser_paginated,
 )
 from src.api.v1.models.users import user_model_full
+from src.queries.generate_unpopulated_trending_tracks import (
+    TRENDING_TRACKS_LIMIT,
+    TRENDING_TRACKS_TTL_SEC,
+)
 from src.queries.get_feed import get_feed
 from src.queries.get_latest_entities import get_latest_entities
 from src.queries.get_premium_track_signatures import (
@@ -64,7 +68,6 @@ from src.queries.get_tracks import RouteArgs, get_tracks
 from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
 from src.queries.get_trending import get_trending
 from src.queries.get_trending_ids import get_trending_ids
-from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
 from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.queries.get_underground_trending import get_underground_trending
 from src.queries.search_queries import SearchKind, search
@@ -619,7 +622,7 @@ class Trending(Resource):
     @record_metrics
     @ns.expect(trending_parser)
     @ns.marshal_with(tracks_response)
-    @cache(ttl_sec=TRENDING_TTL_SEC)
+    @cache(ttl_sec=TRENDING_TRACKS_TTL_SEC)
     def get(self, version):
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS
@@ -788,7 +791,7 @@ class RecommendedTrack(Resource):
     @record_metrics
     @ns.expect(recommended_track_parser)
     @ns.marshal_with(tracks_response)
-    @cache(ttl_sec=TRENDING_TTL_SEC)
+    @cache(ttl_sec=TRENDING_TRACKS_TTL_SEC)
     def get(self, version):
         trending_track_versions = trending_strategy_factory.get_versions_for_type(
             TrendingType.TRACKS
@@ -801,7 +804,7 @@ class RecommendedTrack(Resource):
 
         args = recommended_track_parser.parse_args()
         limit = format_limit(args, default_limit=DEFAULT_RECOMMENDED_LIMIT)
-        args["limit"] = max(TRENDING_LIMIT, limit)
+        args["limit"] = max(TRENDING_TRACKS_LIMIT, limit)
         args["exclude_premium"] = True
         strategy = trending_strategy_factory.get_strategy(
             TrendingType.TRACKS, version_list[0]
@@ -853,7 +856,7 @@ class FullRecommendedTracks(Resource):
 
         args = full_recommended_track_parser.parse_args()
         limit = format_limit(args, default_limit=DEFAULT_RECOMMENDED_LIMIT)
-        args["limit"] = max(TRENDING_LIMIT, limit)
+        args["limit"] = max(TRENDING_TRACKS_LIMIT, limit)
         strategy = trending_strategy_factory.get_strategy(
             TrendingType.TRACKS, version_list[0]
         )

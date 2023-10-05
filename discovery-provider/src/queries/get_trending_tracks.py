@@ -6,6 +6,7 @@ from src.premium_content.premium_content_constants import (
     SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
 )
 from src.queries.generate_unpopulated_trending_tracks import (
+    TRENDING_TRACKS_LIMIT,
     make_generate_unpopulated_trending,
     make_trending_tracks_cache_key,
 )
@@ -13,9 +14,6 @@ from src.queries.query_helpers import add_users_to_tracks, populate_track_metada
 from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_cache import use_redis_cache
-
-TRENDING_LIMIT = 100
-TRENDING_TTL_SEC = 30 * 60
 
 
 class GetTrendingTracksArgs(TypedDict, total=False):
@@ -42,7 +40,7 @@ def _get_trending_tracks_with_session(
         args.get("genre"),
         args.get("time", "week"),
         args.get("exclude_premium", SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS),
-        args.get("limit", TRENDING_LIMIT),
+        args.get("limit", TRENDING_TRACKS_LIMIT),
         args.get("offset", 0)
     )
     time_range = "week" if time not in ["week", "month", "year", "allTime"] else time

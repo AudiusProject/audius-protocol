@@ -11,7 +11,6 @@ from src.premium_content.premium_content_constants import (
     SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
     SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
 )
-from src.queries.get_trending_tracks import TRENDING_LIMIT
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.tasks.generate_trending import generate_trending
 from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
@@ -22,6 +21,9 @@ from src.trending_strategies.trending_type_and_version import (
 )
 
 logger = logging.getLogger(__name__)
+
+TRENDING_TRACKS_LIMIT = 100
+TRENDING_TRACKS_TTL_SEC = 30 * 60
 
 
 def make_trending_tracks_cache_key(
@@ -44,7 +46,7 @@ def generate_unpopulated_trending(
     exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
     exclude_collectible_gated=SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
     usdc_purchase_only=False,
-    limit=TRENDING_LIMIT,
+    limit=TRENDING_TRACKS_LIMIT,
 ):
     # We use limit * 2 here to apply a soft limit so that
     # when we later filter out premium or collectible gated tracks,
@@ -145,7 +147,7 @@ def generate_unpopulated_trending_from_mat_views(
     exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
     exclude_collectible_gated=SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
     usdc_purchase_only=False,
-    limit=TRENDING_LIMIT,
+    limit=TRENDING_TRACKS_LIMIT,
 ):
     # use all time instead of year for version EJ57D
     if strategy.version == TrendingVersion.EJ57D and time_range == "year":

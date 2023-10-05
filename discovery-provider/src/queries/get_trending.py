@@ -4,10 +4,8 @@ from src.api.v1.helpers import extend_track, format_limit, format_offset
 from src.premium_content.premium_content_constants import (
     SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
 )
-from src.queries.get_trending_tracks import (
-    TRENDING_LIMIT,
-    get_trending_tracks,
-)
+from src.queries.generate_unpopulated_trending_tracks import TRENDING_TRACKS_LIMIT
+from src.queries.get_trending_tracks import get_trending_tracks
 from src.utils.helpers import decode_string_id  # pylint: disable=C0302
 
 logger = logging.getLogger(__name__)
@@ -22,7 +20,7 @@ def get_trending(args, strategy):
         "time": time,
         "genre": args.get("genre", None),
         "with_users": True,
-        "limit": format_limit(args, TRENDING_LIMIT),
+        "limit": format_limit(args, TRENDING_TRACKS_LIMIT),
         "offset": format_offset(args),
         "exclude_premium": args.get(
             "exclude_premium", SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS
