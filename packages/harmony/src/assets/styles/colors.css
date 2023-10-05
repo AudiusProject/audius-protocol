@@ -6,6 +6,7 @@
 :root {
   /* Static Colors */
   --harmony-static-white: #FFFFFF;
+  --harmony-static-black: #000000;
   --harmony-static-primary: #CC0FE0;
 
   /* Default Theme (Day Theme) */
