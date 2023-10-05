@@ -24,7 +24,6 @@
   },
   "react-native": "./dist/index.native.js",
   "scripts": {
-    "init-local": "ts-node initScripts/local.js",
     "test:sdk": "./node_modules/.bin/jest --coverage=false",
     "test:sdk:browser": "./node_modules/.bin/jest --env jsdom",
     "test": "./scripts/test.sh",
