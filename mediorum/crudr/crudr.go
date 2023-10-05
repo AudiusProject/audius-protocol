@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"mediorum/httputil"
 	"reflect"
 	"strconv"
@@ -92,19 +91,9 @@ func migrateOps(db *gorm.DB) error {
 	// create partitions
 	totalPartitions := 1009
 	for i := 0; i < totalPartitions; i++ {
-		tx := db.Begin()
-		if tx.Error != nil {
-			log.Fatal(tx.Error)
-		}
-
 		partitionName := "ops_" + strconv.Itoa(i)
-		if err := migrateOpsPartition(tx, partitionName, totalPartitions, i); err != nil {
-			tx.Rollback()
+		if err := migrateOpsPartition(db, partitionName, totalPartitions, i); err != nil {
 			slog.Error(fmt.Sprintf("Could not create partition %s", partitionName), "err", err)
-			return err
-		}
-
-		if err := tx.Commit().Error; err != nil {
 			return err
 		}
 	}
