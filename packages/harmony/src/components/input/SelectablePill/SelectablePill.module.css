@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--unit-1);
-  height: var(--unit-5);
+  height: var(--unit-6);
   padding: 0 var(--unit-3);
   background-color: var(--white);
   color: var(--text-subdued);
@@ -15,7 +15,7 @@
 }
 
 .large {
-  height: var(--unit-6);
+  height: var(--unit-8);
   padding: 0 var(--unit-4);
   color: var(--text-default);
   box-shadow: var(--shadow-near);

@@ -12,13 +12,13 @@ const baseProps: PlainButtonProps = {
 }
 
 type StoryArgs = {
-  props: PlainButtonProps
+  props: Partial<PlainButtonProps>
   dark?: boolean
 }
 
 const meta: Meta<StoryArgs> = {
   title: 'Components/PlainButton',
-  component: ({ props }) => <PlainButton {...props} />,
+  component: ({ props }) => <PlainButton {...baseProps} {...props} />,
   render: ({ dark, props }) => (
     <div
       style={{
@@ -55,13 +55,15 @@ const meta: Meta<StoryArgs> = {
 
 export default meta
 
-type Story = StoryObj<typeof PlainButton>
+type Story = StoryObj<StoryArgs>
 
 // Default
 export const Default: Story = {}
 
 // Subdued
-export const Subdued = { args: { props: { variant: PlainButtonType.SUBDUED } } }
+export const Subdued: Story = {
+  args: { props: { variant: PlainButtonType.SUBDUED } }
+}
 
 // Inverted
 export const Inverted = {
