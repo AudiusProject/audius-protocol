@@ -18,6 +18,10 @@ export function byRole(role: Role, options: ByRoleOptions) {
       return labelOnly
         ? element(by.traits(['button']).and(by.label(name)))
         : element(by.traits(['button']).withDescendant(by.label(name)))
+    case 'checkbox':
+      return element(by.id(name))
+    case 'radio':
+      return element(by.id(name))
     default:
       return element(by.traits([role]).and(by.label(name)))
   }

@@ -1,13 +1,17 @@
 import { useCallback } from 'react'
 
+import { setValueField } from 'common/store/pages/signon/actions'
 import { Formik } from 'formik'
 import { View } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import { Button, Text } from 'app/components/core'
 import { TextField } from 'app/components/fields'
+import { useNavigation } from 'app/hooks/useNavigation'
 
 import { CoverPhotoField } from '../components/CoverPhotoField'
 import { ProfilePictureField } from '../components/ProfilePictureField'
+import type { SignUpScreenParamList } from '../types'
 
 const messages = {
   header: 'Finish Your Profile',
@@ -28,7 +32,17 @@ type FinishProfileValues = {
 }
 
 export const FinishProfileScreen = () => {
-  const handleSubmit = useCallback((values: FinishProfileValues) => {}, [])
+  const navigation = useNavigation<SignUpScreenParamList>()
+  const dispatch = useDispatch()
+
+  const handleSubmit = useCallback(
+    (values: FinishProfileValues) => {
+      const { displayName } = values
+      dispatch(setValueField('name', displayName))
+      navigation.navigate('SelectGenre')
+    },
+    [dispatch, navigation]
+  )
 
   return (
     <View>
