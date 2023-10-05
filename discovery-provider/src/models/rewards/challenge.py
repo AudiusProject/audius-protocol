@@ -35,5 +35,3 @@ class Challenge(Base, RepresentableMixin):
     # if set, events emitted prior to the starting_block
     # will be ignord.
     starting_block = Column(Integer)
-    # Reward amount per challenge completed (for aggregate challenges)
-    amount = Column(String, nullable=False)

@@ -3,12 +3,7 @@ begin;
 ALTER TABLE
     user_challenges
 ADD
-    COLUMN IF NOT EXISTS amount INT DEFAULT 0;
-
-commit;
-
-
-begin;
+    COLUMN IF NOT EXISTS amount INT NOT NULL DEFAULT 0;
 
 UPDATE
     user_challenges 
@@ -87,15 +82,5 @@ UPDATE
     SET amount = 2
     WHERE amount IS NULL
     AND challenge_id = 'first-playlist';
-
-commit;
-
-
-begin;
-
-ALTER TABLE
-    user_challenges
-ALTER
-    COLUMN amount SET NOT NULL;
 
 commit;
