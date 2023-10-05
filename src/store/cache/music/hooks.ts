@@ -12,9 +12,9 @@ import {
   setTopPlaylists,
   setTopTracks
 } from './slice'
-import { fetchWithLibs } from '../../../utils/fetch'
+import { fetchWithLibs } from 'utils/fetch'
 
-const AUDIUS_URL = process.env.REACT_APP_AUDIUS_URL
+const AUDIUS_URL = import.meta.env.VITE_AUDIUS_URL
 
 // -------------------------------- Selectors  ---------------------------------
 
@@ -34,10 +34,10 @@ export function fetchTopTracks(): ThunkAction<
   return async (dispatch, _, aud) => {
     try {
       await aud.awaitSetup()
-      const data = await fetchWithLibs({
+      const data = (await fetchWithLibs({
         endpoint: '/v1/tracks/trending',
         queryParams: { limit: 4 }
-      })
+      })) as any
       const tracks: Track[] = data.slice(0, 4).map((d: any) => ({
         title: d.title,
         handle: d.user.handle,
@@ -63,9 +63,9 @@ export function fetchTopPlaylists(): ThunkAction<
     try {
       await aud.awaitSetup()
       const limit = 5
-      const data = await fetchWithLibs({
+      const data = (await fetchWithLibs({
         endpoint: '/v1/full/playlists/trending'
-      })
+      })) as any
       const playlists: Playlist[] = data.slice(0, limit).map((d: any) => ({
         title: d.playlist_name,
         handle: d.user.handle,
@@ -90,10 +90,10 @@ export function fetchTopAlbums(): ThunkAction<
   return async (dispatch, _, aud) => {
     try {
       await aud.awaitSetup()
-      const data = await fetchWithLibs({
+      const data = (await fetchWithLibs({
         endpoint: '/v1/full/playlists/top',
         queryParams: { type: 'album', limit: 5 }
-      })
+      })) as any
       const albums: Playlist[] = data.map((d: any) => ({
         title: d.playlist_name,
         handle: d.user.handle,

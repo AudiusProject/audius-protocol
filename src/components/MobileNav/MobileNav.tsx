@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import { push as pushRoute } from 'connected-react-router'
 import { matchPath } from 'react-router-dom'
 import clsx from 'clsx'
-import { ReactComponent as Logo } from 'assets/img/audiusLogoHorizontal.svg'
+import Logo from 'assets/img/audiusLogoHorizontal.svg?react'
 
 import { AppState } from 'store/types'
 import styles from './MobileNav.module.css'

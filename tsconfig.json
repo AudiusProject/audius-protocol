@@ -1,35 +1,43 @@
 {
   "compilerOptions": {
-    "baseUrl": "src",
-    "target": "es5",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
     "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "esnext",
-    "moduleResolution": "node",
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react",
-    "typeRoots": [
-      "./types",
-      "./node_modules/@types"
-    ],
-    "noFallthroughCasesInSwitch": true
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+
+    "types": ["vite/client", "vite-plugin-svgr/client"],
+
+    "paths": {
+      "components/*": ["./src/components/*"],
+      "containers/*": ["./src/containers/*"],
+      "services/*": ["./src/services/*"],
+      "utils/*": ["./src/utils/*"],
+      "store/*": ["./src/store/*"],
+      "hooks/*": ["./src/hooks/*"],
+      "models/*": ["./src/models/*"],
+      "types": ["./src/types"],
+      "assets/*": ["./src/assets/*"],
+    }
   },
-  "include": [
-    "src"
-  ],
+  "include": ["src"],
   "exclude": [
     "node_modules",
     "typings"
-  ]
+  ],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

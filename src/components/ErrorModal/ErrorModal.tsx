@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React from 'react'
 import SimpleBar from 'simplebar-react'
 import { ButtonType } from '@audius/stems'
 

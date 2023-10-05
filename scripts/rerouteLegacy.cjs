@@ -6,19 +6,19 @@ let getContent = (baseUrl, path) => `
   <meta http-equiv="refresh" content="0;URL=${baseUrl}/#/${path}" />
 </head>
 <body>
-  <p>This page has ben moved to <a href="${baseUrl}/#/${path}">${baseUrl}/#/${path}</a></p>
+  <p>This page has been moved to <a href="${baseUrl}/#/${path}">${baseUrl}/#/${path}</a></p>
 </body>`
 
-const BUILD_PATH = './build'
+const BUILD_PATH = './dist'
 
 const redirectPaths = [
   'analytics',
   'governance',
   'services',
-  'services/discovery-node',
-  'services/content-node',
-  'services/service-providers',
-  'services/users',
+  './services/discovery-node',
+  './services/content-node',
+  './services/service-providers',
+  './services/users',
   'api',
   'api/leaderboard'
 ] 

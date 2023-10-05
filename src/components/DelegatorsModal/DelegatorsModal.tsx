@@ -4,7 +4,7 @@ import { useModalControls } from 'utils/hooks'
 import BN from 'bn.js'
 
 import { useDelegators } from 'store/cache/user/hooks'
-import { ReactComponent as TrashIcon } from 'assets/img/iconTrash.svg'
+import TrashIcon from 'assets/img/iconTrash.svg?react'
 
 import styles from './DelegatorsModal.module.css'
 import { Address, Delegate, Status } from 'types'

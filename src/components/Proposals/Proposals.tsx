@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import clsx from 'clsx'
-import { Utils } from '@audius/libs'
+import { Utils } from '@audius/sdk/dist/legacy.js'
 
 import { useProposals } from 'store/cache/proposals/hooks'
 import Paper from 'components/Paper'

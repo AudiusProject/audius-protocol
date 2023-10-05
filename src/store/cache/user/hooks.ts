@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { ThunkAction } from 'redux-thunk'
 import { Action } from 'redux'
-import { Utils } from '@audius/libs'
+import { Utils } from '@audius/sdk/dist/legacy.js'
 import BN from 'bn.js'
 import {
   Address,

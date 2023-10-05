@@ -1,6 +1,6 @@
 import BN from 'bn.js'
-import { GetPendingUndelegateRequestResponse } from 'services/Audius/delegate/types'
-import { GetPendingDecreaseStakeRequestResponse } from 'services/Audius/service-provider/types'
+import { GetPendingUndelegateRequestResponse } from './services/Audius/delegate/types'
+import { GetPendingDecreaseStakeRequestResponse } from './services/Audius/service-provider/types'
 
 export type Version = string
 export type Address = string

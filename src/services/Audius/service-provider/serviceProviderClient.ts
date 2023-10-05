@@ -33,7 +33,7 @@ import {
   ServiceProviderDeregisteredEvent,
   ServiceProviderIncreaseStakeEvent,
   ServiceProviderRegisteredEvent
-} from '../../../models/TimelineEvents'
+} from 'models/TimelineEvents'
 
 export default class ServiceProviderClient {
   aud: AudiusClient

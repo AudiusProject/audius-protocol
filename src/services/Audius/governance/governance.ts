@@ -1,5 +1,4 @@
 import { AudiusClient } from '../AudiusClient'
-import { AudiusABIDecoder } from '@audius/libs'
 
 import BN from 'bn.js'
 
@@ -12,7 +11,7 @@ import {
   VoteEvent,
   Permission,
   ProposalEvent
-} from '../../../types'
+} from 'types'
 import {
   GovernanceProposalEvent,
   GovernanceVoteEvent,
@@ -22,7 +21,7 @@ import { RawProposal, RawVoteEvent } from './types'
 
 // NOTE: Temporary fix- Set the start query block so that the getPastEvent does not error
 const QUERY_PROPOSAL_START_BLOCK = parseInt(
-  process.env.REACT_APP_QUERY_PROPOSAL_START_BLOCK || '0'
+  import.meta.env.VITE_QUERY_PROPOSAL_START_BLOCK || '0'
 )
 
 export default class Governance {
