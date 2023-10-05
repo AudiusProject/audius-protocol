@@ -1,9 +1,5 @@
-import { Name, toastActions } from '@audius/common'
-import { push as pushRoute } from 'connected-react-router'
+import { toastActions } from '@audius/common'
 import { takeEvery, put } from 'redux-saga/effects'
-
-import { make } from 'common/store/analytics/actions'
-import { ERROR_PAGE } from 'utils/route'
 
 import * as errorActions from './actions'
 import { reportToSentry } from './reportToSentry'
@@ -20,19 +16,6 @@ function* handleError(action: errorActions.HandleErrorAction) {
     })
   }
 
-  if (action.shouldRedirect) {
-    const redirectRoute = action.redirectRoute ?? ERROR_PAGE
-    if (redirectRoute === ERROR_PAGE) {
-      yield put(
-        make(Name.ERROR_PAGE, {
-          error: action.message,
-          name: action.name,
-          route: window.location.pathname
-        })
-      )
-    }
-    yield put(pushRoute(redirectRoute))
-  }
   if (action.shouldToast) {
     yield put(toast({ content: action.message }))
   }

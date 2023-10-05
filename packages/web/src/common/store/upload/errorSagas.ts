@@ -33,8 +33,6 @@ type UploadErrorActions = {
 }
 
 function* handleUploadError(action: UploadErrorActions) {
-  const shouldRedirect = !errorsWithoutRedirect.has(action.type)
-
   // Append extra info depending on the action type
   const extras: {
     error?: string
@@ -59,7 +57,6 @@ function* handleUploadError(action: UploadErrorActions) {
   yield put(
     errorActions.handleError({
       message: action.type,
-      shouldRedirect,
       shouldReport: true,
       additionalInfo: extras
     })

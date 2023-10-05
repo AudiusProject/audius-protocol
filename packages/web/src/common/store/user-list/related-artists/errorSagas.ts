@@ -11,7 +11,6 @@ export function* handleRelatedArtistsError(action: HandleRelatedArtistsError) {
   yield put(
     errorActions.handleError({
       message: action.type,
-      shouldRedirect: true,
       shouldReport: true,
       additionalInfo: {
         errorMessage: action.error,

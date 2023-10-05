@@ -19,7 +19,6 @@ import {
   reformatCollection,
   savedPageActions
 } from '@audius/common'
-import { push as pushRoute } from 'connected-react-router'
 import { range } from 'lodash'
 import { channel, buffers } from 'redux-saga'
 import {
@@ -43,7 +42,7 @@ import {
   reportResultEvents
 } from 'common/store/upload/sagaHelpers'
 import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'
-import { ERROR_PAGE } from 'utils/route'
+import * as errorActions from 'store/errors/actions'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { processAndCacheTracks } from '../cache/tracks/utils'
@@ -208,7 +207,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
         track.file,
         artwork,
         metadata,
-        updateProgress ? makeOnProgress(index) : (progress) => {}
+        updateProgress ? makeOnProgress(index) : (progress) => { }
       )
 
       // b/c we can't pass extra info (phase) into the confirmer fail call, we need to clean up here.
@@ -366,7 +365,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
           ? makeConfirmerSuccessForCollection
           : makeConfirmerSuccess)(id, index, updateProgress),
         isCollection ? makeConfirmerFailureCollection(id) : confirmerFailure,
-        () => {},
+        () => { },
         UPLOAD_TIMEOUT_MILLIS
       )
     )
@@ -645,7 +644,7 @@ export function* handleUploads({
             console.debug('Something went wrong deleting orphaned tracks')
           }
           // Now navigate them to something went wrong
-          yield put(pushRoute(ERROR_PAGE))
+          yield put(errorActions.openErrorPage())
         } else {
           yield put(uploadActions.addTrackToChainError(error))
         }
@@ -885,7 +884,7 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
         } catch (err) {
           console.debug(`Could not delete all tracks: ${err}`)
         }
-        yield put(pushRoute(ERROR_PAGE))
+        yield put(errorActions.openErrorPage())
       }
     )
   )
@@ -1028,7 +1027,7 @@ function* uploadSingleTrack(track) {
         yield cancel(dispatcher)
         yield call(responseChan.put, { error: message })
       },
-      () => {},
+      () => { },
       UPLOAD_TIMEOUT_MILLIS
     )
   )
