@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"mediorum/httputil"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -45,26 +46,69 @@ type Crudr struct {
 	callbacks []func(op *Op, records interface{})
 }
 
+func migrateOpsPartition(db *gorm.DB, partitionName string, modulus int, remainder int) error {
+	sql := fmt.Sprintf(`
+		DO $$ 
+		DECLARE 
+		    _partition_name text := '%s'; 
+		    _modulus integer := %d;
+		    _remainder integer := %d;
+		BEGIN 
+		    EXECUTE format('CREATE TABLE IF NOT EXISTS %%I PARTITION OF ops FOR VALUES WITH (MODULUS %%s, REMAINDER %%s);', _partition_name, _modulus, _remainder);
+		    
+		    BEGIN
+		        EXECUTE format('ALTER TABLE %%I ADD PRIMARY KEY ("ulid");', _partition_name);
+		    EXCEPTION WHEN invalid_table_definition THEN 
+		        NULL;
+		    END;
+		END $$;
+	`, partitionName, modulus, remainder)
+
+	return db.Exec(sql).Error
+}
+
+// create partitioned ops table if it does not exist
+func migrateOps(db *gorm.DB) error {
+	// create ops
+	opDDL := `
+  BEGIN;
+
+	CREATE TABLE IF NOT EXISTS ops (
+		"ulid" TEXT,
+		"host" TEXT,
+		"action" TEXT,
+		"table" TEXT,
+		"data" JSONB)
+		PARTITION BY HASH ("host");
+	
+	COMMIT;
+	`
+	err := db.Exec(opDDL).Error
+	if err != nil {
+		return err
+	}
+
+	// create partitions
+	totalPartitions := 1009
+	for i := 0; i < totalPartitions; i++ {
+		partitionName := "ops_" + strconv.Itoa(i)
+		if err := migrateOpsPartition(db, partitionName, totalPartitions, i); err != nil {
+			slog.Error(fmt.Sprintf("Could not create partition %s", partitionName), "err", err)
+			return err
+		}
+	}
+
+	return nil
+}
+
 func New(selfHost string, myPrivateKey *ecdsa.PrivateKey, peerHosts []string, db *gorm.DB) *Crudr {
 	selfHost = httputil.RemoveTrailingSlash(strings.ToLower(selfHost))
 
-	// TODO: change to partitioned schema after all nodes have migrated
-	opDDL := `
-	create table if not exists ops (
-		ulid text primary key,
-		host text not null,
-		action text not null,
-		"table" text not null,
-		data json
-	);
-	`
-	err := db.Exec(opDDL).Error
-
+	err := migrateOps(db)
 	if err != nil {
 		panic(err)
 	}
 
-	// todo: combine with above
 	err = db.AutoMigrate(&Cursor{})
 	if err != nil {
 		panic(err)

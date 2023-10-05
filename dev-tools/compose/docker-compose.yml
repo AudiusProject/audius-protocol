@@ -38,6 +38,8 @@ services:
 
   db:
     image: postgres
+    shm_size: 2g
+    command: postgres -c shared_buffers=2GB
     restart: unless-stopped
     ports:
       - 5432:5432

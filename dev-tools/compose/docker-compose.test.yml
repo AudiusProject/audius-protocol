@@ -302,6 +302,8 @@ services:
 
   mediorum-db:
     image: postgres:11.4
+    shm_size: 5g
+    command: postgres -c shared_buffers=5GB
     environment:
       POSTGRES_PASSWORD: example
     healthcheck:
@@ -324,9 +326,10 @@ services:
       dbUrlTemplate: 'postgres://postgres:example@mediorum-db:5432/m%d'
       devNetworkCount: '5'
     healthcheck:
-      test: ['CMD', 'curl', 'http://localhost:1991/health_check']
-      interval: 3s
-      timeout: 3s
+      test: ["CMD", "curl", "http://localhost:1991/health_check"]
+      interval: 10s
+      start_period: 60s
+      timeout: 5s
     logging: *default-logging
     profiles:
       - mediorum
@@ -358,7 +361,7 @@ services:
     entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; go test ./... -count 1 -timeout 60s "$$@")' -
     environment:
       dbUrlTemplate: 'postgres://postgres:example@mediorum-db:5432/m%d'
-      dbUrl: 'postgres://postgres:example@mediorum-db:5432/m1'
+      dbUrl: 'postgres://postgres:example@mediorum-db:5432/mediorum_test'
     profiles:
       - mediorum-unittests
     depends_on:

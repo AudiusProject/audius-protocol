@@ -1,9 +1,10 @@
 package crudr
 
 import (
+	"os"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"os"
 )
 
 func SetupTestDB() *gorm.DB {
