@@ -97,6 +97,7 @@
   },
   {
     "id": "b",
+    "name": "$AUDIO_MATCHING_BUYER",
     "type": "aggregate",
     "amount": 1,
     "active": true,
@@ -105,6 +106,7 @@
   },
   {
     "id": "s",
+    "name": "$AUDIO_MATCHING_SELLER",
     "type": "aggregate",
     "amount": 1,
     "active": true,
