@@ -19,7 +19,7 @@ type NativeDrawerProps = SetOptional<DrawerProps, 'isOpen' | 'onClose'> & {
  */
 export const NativeDrawer = (props: NativeDrawerProps) => {
   const {
-    blockClose = true,
+    blockClose = false,
     drawerName,
     onClose: onCloseProp,
     ...other
