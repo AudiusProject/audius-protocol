@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { ResponseError } from '@audius/sdk'
 import { CaseReducerActions, createSlice } from '@reduxjs/toolkit'
@@ -9,6 +9,7 @@ import { denormalize, normalize } from 'normalizr'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { useBooleanOnce } from 'hooks/useBooleanOnce'
 import { CollectionMetadata, UserCollectionMetadata } from 'models/Collection'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { Kind } from 'models/Kind'
@@ -59,16 +60,6 @@ const isNonRetryableError = (e: unknown) => {
     return [400, 401, 403].includes(e.response.status)
   }
   return false
-}
-
-/** Helper hook which will return the passed value on first render and a default
- * value on subsequent renders. Both values default to `false`.
- */
-const useBooleanOnce = ({ initialValue = false, defaultValue = false }) => {
-  const ref = useRef(initialValue)
-  const value = ref.current
-  ref.current = defaultValue
-  return value
 }
 
 export const createApi = <
