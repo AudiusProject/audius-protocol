@@ -1,4 +1,5 @@
 import logging
+import os
 import urllib.parse
 from typing import List, Tuple
 
@@ -10,13 +11,14 @@ from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
-from src.models.users.user import User
 from src.models.users.aggregate_user import AggregateUser
-from src.utils.get_all_other_nodes import get_node_endpoint
+from src.models.users.user import User
 from src.utils.redis_connection import get_redis
 
 logger = logging.getLogger(__name__)
 redis = get_redis()
+
+env = os.getenv("audius_discprov_env")
 
 max_track_count_redis_key = "max_track_count"
 max_playlist_count_redis_key = "max_playlist_count"
@@ -30,23 +32,18 @@ root_site_maps_routes = [
 ]
 
 
-def get_client_base_url():
-    return "https://audius.co"
-
-
-def set_base_url():
-    endpoint = get_node_endpoint()
-    return endpoint
+def get_base_url():
+    return "https://staging.audius.co" if env == "stage" else "https://audius.co"
 
 
 def create_client_url(route):
-    client_base = get_client_base_url()
+    client_base = get_base_url()
     safe_route = urllib.parse.quote(route)
     return f"{client_base}/{safe_route}"
 
 
 def create_xml_url(route):
-    self_base = set_base_url()
+    self_base = get_base_url()
     safe_route = urllib.parse.quote(route)
     return f"{self_base}/{safe_route}"
 
@@ -109,12 +106,14 @@ def get_max_track_count(session: Session) -> int:
         session.query(User.handle, TrackRoute.slug)
         .join(Track, TrackRoute.track_id == Track.track_id)
         .join(User, TrackRoute.owner_id == User.user_id)
+        .join(AggregateUser, User.user_id == AggregateUser.user_id)
         .filter(
             Track.is_current == True,
             Track.stem_of == None,
             Track.is_available == True,
             User.is_current == True,
             TrackRoute.is_current == True,
+            AggregateUser.follower_count >= 10,
         )
         .count()
     )
@@ -128,12 +127,14 @@ def get_max_user_count(session: Session) -> int:
     """
     cnt = (
         session.query(User.user_id)
+        .join(AggregateUser, User.user_id == AggregateUser.user_id)
         .filter(
             User.is_current == True,
             User.is_deactivated == False,
             # Filter on handle_lc for performance reasons
             User.handle_lc != None,
             User.is_available == True,
+            AggregateUser.follower_count >= 10,
         )
         .count()
     )
@@ -149,11 +150,13 @@ def get_max_playlist_count(session: Session) -> int:
         session.query(User.handle, PlaylistRoute.slug, Playlist.is_album)
         .join(User, User.user_id == PlaylistRoute.owner_id)
         .join(Playlist, PlaylistRoute.playlist_id == Playlist.playlist_id)
+        .join(AggregateUser, User.user_id == AggregateUser.user_id)
         .filter(
             User.is_current == True,
             PlaylistRoute.is_current == True,
             Playlist.is_current == True,
             Playlist.is_private == False,
+            AggregateUser.follower_count >= 10,
         )
         .count()
     )
