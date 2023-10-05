@@ -1,15 +1,9 @@
-import type { Story } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/react'
 
 import * as Icons from '../typography/Icons'
 
 import { PlainButton } from './PlainButton'
 import { PlainButtonProps, PlainButtonSize, PlainButtonType } from './types'
-
-export default {
-  component: PlainButton,
-  title: 'Components/PlainButton',
-  argTypes: { onClick: { action: 'clicked' } }
-}
 
 const baseProps: PlainButtonProps = {
   iconLeft: Icons.IconCampfire,
@@ -18,53 +12,61 @@ const baseProps: PlainButtonProps = {
 }
 
 type StoryArgs = {
-  props: Partial<PlainButtonProps>
+  props: PlainButtonProps
   dark?: boolean
 }
 
-const Template: Story<StoryArgs> = ({ dark = false, props }) => (
-  <div
-    style={{
-      background: dark ? '#878787' : undefined,
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '16px',
-      padding: '16px',
-      justifyContent: 'center',
-      alignItems: 'flex-start'
-    }}
-  >
-    <div style={{ alignItems: 'center', display: 'flex', gap: '16px' }}>
-      <PlainButton {...baseProps} size={PlainButtonSize.DEFAULT} {...props} />
-      <PlainButton {...baseProps} size={PlainButtonSize.LARGE} {...props} />
+const meta: Meta<StoryArgs> = {
+  title: 'Components/PlainButton',
+  component: ({ props }) => <PlainButton {...props} />,
+  render: ({ dark, props }) => (
+    <div
+      style={{
+        background: dark ? '#878787' : undefined,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+        padding: '16px',
+        justifyContent: 'center',
+        alignItems: 'flex-start'
+      }}
+    >
+      <div style={{ alignItems: 'center', display: 'flex', gap: '16px' }}>
+        <PlainButton {...baseProps} size={PlainButtonSize.DEFAULT} {...props} />
+        <PlainButton {...baseProps} size={PlainButtonSize.LARGE} {...props} />
+      </div>
+      <div style={{ alignItems: 'center', display: 'flex', gap: '16px' }}>
+        <PlainButton
+          {...baseProps}
+          size={PlainButtonSize.DEFAULT}
+          {...props}
+          disabled
+        />
+        <PlainButton
+          {...baseProps}
+          size={PlainButtonSize.LARGE}
+          {...props}
+          disabled
+        />
+      </div>
     </div>
-    <div style={{ alignItems: 'center', display: 'flex', gap: '16px' }}>
-      <PlainButton
-        {...baseProps}
-        size={PlainButtonSize.DEFAULT}
-        {...props}
-        disabled
-      />
-      <PlainButton
-        {...baseProps}
-        size={PlainButtonSize.LARGE}
-        {...props}
-        disabled
-      />
-    </div>
-  </div>
-)
+  )
+}
+
+export default meta
+
+type Story = StoryObj<typeof PlainButton>
 
 // Default
-export const Default = Template.bind({})
+export const Default: Story = {}
 
 // Subdued
-export const Subdued = Template.bind({})
-Subdued.args = { props: { variant: PlainButtonType.SUBDUED } }
+export const Subdued = { args: { props: { variant: PlainButtonType.SUBDUED } } }
 
 // Inverted
-export const Inverted = Template.bind({})
-Inverted.args = {
-  dark: true,
-  props: { variant: PlainButtonType.INVERTED }
+export const Inverted = {
+  args: {
+    dark: true,
+    props: { variant: PlainButtonType.INVERTED }
+  }
 }
