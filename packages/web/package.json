@@ -75,7 +75,7 @@
     "@solana/web3.js": "1.78.4",
     "@stripe/crypto": "0.0.4",
     "@stripe/stripe-js": "1.54.1",
-    "@tanstack/react-query": "^4.18.0",
+    "@tanstack/react-query": "4.35.7",
     "@trpc/client": "^10.38.4",
     "@trpc/react-query": "^10.38.4",
     "@types/react-dates": "21.8.3",
@@ -176,7 +176,7 @@
     "webpack-bundle-analyzer": "4.9.0",
     "yup": "1.2.0",
     "zod-formik-adapter": "1.2.0",
-    "zustand": "^4.4.3"
+    "zustand": "4.4.3"
   },
   "main": "src/electron.js",
   "build": {

@@ -2,8 +2,8 @@ import { CSSProperties, Suspense, useMemo, useState } from 'react'
 
 import { accountSelectors, trpc } from '@audius/common'
 import { RouterInput } from '@audius/trpc-server'
-import { create } from 'zustand'
 import { useSelector } from 'react-redux'
+import { create } from 'zustand'
 
 // ==================== Store ====================
 
@@ -88,7 +88,6 @@ export default function DemoTrpcPage() {
   )
 }
 
-9
 function CurrentUserIndicator() {
   const currentUserId = useSelector(accountSelectors.getUserId)
   if (!currentUserId) return null
@@ -280,18 +279,16 @@ function FollowedIndicator({
 }
 
 function MututalFollows({ theirId, suspense = true }: UserRelationshipParams) {
-  const { showSocialModal: showUsersWho } = useSocialModal()
-  const { data } = trpc.users.listUserIds.useQuery(
-    { verb: 'mutualFollows', kind: 'user', id: theirId },
-    { suspense }
-  )
-
-  const showMutuals = () => {
-    showUsersWho({ verb: 'mutualFollows', kind: 'user', id: theirId })
+  const socialQuery: SocialQuery = {
+    verb: 'mutualFollows',
+    kind: 'user',
+    id: theirId
   }
+  const { showSocialModal } = useSocialModal()
+  const { data } = trpc.users.listUserIds.useQuery(socialQuery, { suspense })
   if (!data?.count) return null
   return (
-    <div style={tagStyle} onClick={showMutuals}>
+    <div style={tagStyle} onClick={() => showSocialModal(socialQuery)}>
       {data.count} mutuals
     </div>
   )

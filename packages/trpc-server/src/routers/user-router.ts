@@ -85,7 +85,10 @@ export const userRouter = router({
         kind: z.enum(['user', 'track', 'playlist']),
         id: z.string(),
         limit: z.number().default(20),
-        cursor: z.number().default(0)
+        // tRPC says cursor can be a number,
+        // but inferred type on client wants a string...
+        // so use a string here since it's ok either way
+        cursor: z.string().default('0')
       })
     )
     .output(
