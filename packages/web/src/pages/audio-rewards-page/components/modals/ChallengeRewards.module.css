@@ -97,9 +97,10 @@
 }
 
 .progressReward {
-  padding: 16px 32px;
+  padding: var(--unit-4) var(--unit-6);
   text-align: center;
   border-left: 1px solid var(--neutral-light-8);
+  max-width: 200px;
 }
 .progressReward.mobile {
   padding: 0 16px;
@@ -332,6 +333,12 @@
   font-weight: var(--font-demi-bold);
   line-height: 1.2;
   text-align: center;
+}
+
+.rewardAmount {
+  background: var(--page-header-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .verifiedChallenge {

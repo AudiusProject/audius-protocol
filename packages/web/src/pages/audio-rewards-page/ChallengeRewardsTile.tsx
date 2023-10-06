@@ -11,7 +11,8 @@ import {
   audioRewardsPageActions,
   ChallengeRewardsModalType,
   audioRewardsPageSelectors,
-  makeChallengeSortComparator
+  makeChallengeSortComparator,
+  isAudioMatchingChallenge
 } from '@audius/common'
 import {
   ProgressBar,
@@ -87,6 +88,12 @@ const RewardPanel = ({
   let progressLabelFilled: string
   if (shouldShowCompleted) {
     progressLabelFilled = messages.completeLabel
+  } else if (isAudioMatchingChallenge(id)) {
+    if (needsDisbursement) {
+      progressLabelFilled = messages.readyToClaim
+    } else {
+      progressLabelFilled = progressLabel ?? ''
+    }
   } else if (challenge?.challenge_type === 'aggregate') {
     // Count down
     progressLabelFilled = fillString(
@@ -143,9 +150,7 @@ const RewardPanel = ({
       </div>
       <div className={wm(styles.rewardPanelBottom)}>
         <div className={wm(styles.rewardProgress)}>
-          {shouldShowCompleted && (
-            <IconCheck className={wm(styles.iconCheck)} />
-          )}
+          {needsDisbursement && <IconCheck className={wm(styles.iconCheck)} />}
           <p className={styles.rewardProgressLabel}>{progressLabelFilled}</p>
           {shouldShowProgressBar && (
             <ProgressBar
