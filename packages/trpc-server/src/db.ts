@@ -18,7 +18,7 @@ if (!connectionString) {
 export const sql = postgres(connectionString, {
   transform: postgres.camel,
   debug: (conn, query, args) => {
-    console.log(query.replace(/\s+/g, ' '), args)
+    // console.log(query.replace(/\s+/g, ' '), args)
   },
   types: {
     bigint: {
