@@ -3,47 +3,38 @@ jobs:
   - push-docker-image:
       name: push-identity-service
       context: [GCP, dockerhub]
-      instance-name: circleci-push-identity-service-$CIRCLE_BUILD_NUM
       service: identity-service
   - push-docker-image:
       name: push-mediorum
       context: [GCP, dockerhub]
-      instance-name: circleci-push-mediorum-$CIRCLE_BUILD_NUM
       service: mediorum
   - push-docker-image:
       name: push-discovery-provider
       context: [GCP, dockerhub]
-      instance-name: circleci-push-discovery-provider-$CIRCLE_BUILD_NUM
       service: discovery-provider
   - push-docker-image:
       name: push-discovery-provider-notifications
       context: [GCP, dockerhub]
-      instance-name: circleci-push-discovery-provider-notifications-$CIRCLE_BUILD_NUM
       service: discovery-provider-notifications
   - push-docker-image:
       name: push-pedalboard-trending-challenge-rewards
       context: [GCP, dockerhub]
-      instance-name: circleci-push-pedalboard-trending-challenge-rewards-$CIRCLE_BUILD_NUM
       service: trending-challenge-rewards
   - push-docker-image:
       name: push-pedalboard-relay
       context: [GCP, dockerhub]
-      instance-name: circleci-push-pedalboard-relay-$CIRCLE_BUILD_NUM
       service: relay
   - push-docker-image:
       name: push-pedalboard-sla-auditor
       context: [GCP, dockerhub]
-      instance-name: circleci-push-pedalboard-sla-auditor-$CIRCLE_BUILD_NUM
       service: sla-auditor
   - push-docker-image:
       name: push-comms
       context: [GCP, dockerhub]
-      instance-name: circleci-push-comms-$CIRCLE_BUILD_NUM
       service: comms
   - push-docker-image:
       name: push-trpc
       context: [GCP, dockerhub]
-      instance-name: circleci-push-comms-$CIRCLE_BUILD_NUM
       service: trpc
 
   - release-github-draft-trigger:

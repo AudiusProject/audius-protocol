@@ -3,38 +3,52 @@ jobs:
   - push-docker-image:
       name: push-discovery-provider
       context: [GCP, dockerhub]
-      instance-name: circleci-push-discovery-provider-$CIRCLE_BUILD_NUM
       service: discovery-provider
+      filters:
+        branches:
+          only: main
   - push-docker-image:
       name: push-discovery-provider-notifications
       context: [GCP, dockerhub]
-      instance-name: circleci-push-discovery-provider-notifications-$CIRCLE_BUILD_NUM
       service: discovery-provider-notifications
+      filters:
+        branches:
+          only: main
   - push-docker-image:
       name: push-pedalboard-trending-challenge-rewards
       context: [GCP, dockerhub]
-      instance-name: circleci-push-pedalboard-trending-challenge-rewards-$CIRCLE_BUILD_NUM
       service: trending-challenge-rewards
+      filters:
+        branches:
+          only: main
   - push-docker-image:
       name: push-pedalboard-relay
       context: [GCP, dockerhub]
-      instance-name: circleci-push-pedalboard-relay-$CIRCLE_BUILD_NUM
       service: relay
+      filters:
+        branches:
+          only: main
   - push-docker-image:
       name: push-pedalboard-sla-auditor
       context: [GCP, dockerhub]
-      instance-name: circleci-push-pedalboard-sla-auditor-$CIRCLE_BUILD_NUM
       service: sla-auditor
+      filters:
+        branches:
+          only: main
   - push-docker-image:
       name: push-comms
       context: [GCP, dockerhub]
-      instance-name: circleci-push-comms-$CIRCLE_BUILD_NUM
       service: comms
+      filters:
+        branches:
+          only: main
   - push-docker-image:
       name: push-trpc
       context: [GCP, dockerhub]
-      instance-name: circleci-push-trpc-$CIRCLE_BUILD_NUM
       service: trpc
+      filters:
+        branches:
+          only: main
 
   - lint-discovery-provider:
       name: lint-discovery-provider
@@ -42,14 +56,12 @@ jobs:
   - test:
       name: test-discovery-provider
       context: GCP
-      instance-name: circleci-test-discovery-provider-$CIRCLE_BUILD_NUM
       service: discovery-provider
       requires:
         - lint-discovery-provider
   - test:
       name: test-discovery-provider-notifications
       context: GCP
-      instance-name: circleci-test-discovery-provider-notifications-$CIRCLE_BUILD_NUM
       service: discovery-provider-notifications
       requires:
         - lint-discovery-provider

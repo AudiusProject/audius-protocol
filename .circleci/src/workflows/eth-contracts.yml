@@ -3,5 +3,4 @@ jobs:
   - test:
       name: test-eth-contracts
       context: GCP
-      instance-name: circleci-test-eth-contracts-$CIRCLE_BUILD_NUM
       service: eth-contracts

@@ -3,13 +3,11 @@ jobs:
   - test:
       name: test-audius-libs
       context: GCP
-      instance-name: circleci-test-audius-libs-$CIRCLE_BUILD_NUM
       service: audius-libs
 
   - test:
       name: test-audius-sdk
       context: GCP
-      instance-name: circleci-test-audius-libs-$CIRCLE_BUILD_NUM
       service: audius-sdk
 
   # Patch via trigger
