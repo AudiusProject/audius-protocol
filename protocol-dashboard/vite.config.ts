@@ -11,7 +11,9 @@ export default defineConfig({
     react(),
     wasm(),
     topLevelAwait(),
-    tsconfigPaths(),
+    tsconfigPaths({
+      root: 'protocol-dashboard'
+    }),
     svgr(),
     
     nodePolyfills({
