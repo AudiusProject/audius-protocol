@@ -59,9 +59,9 @@
     "prettier:write": "npm run prettier:base -- --write \"src/**/*.{ts,tsx}\"",
     "pull-dev-accounts": "node ./scripts/pullDevAccounts.js",
     "advance-blocks": "node ./scripts/advanceBlocks.js",
-    "update-build:dev": "node ./scripts/updateBuild.js dev",
-    "update-build:stage": "node ./scripts/updateBuild.js stage",
-    "update-build:prod": "node ./scripts/updateBuild.js prod"
+    "update-build:dev": "node ./scripts/updateBuild.cjs dev",
+    "update-build:stage": "node ./scripts/updateBuild.cjs stage",
+    "update-build:prod": "node ./scripts/updateBuild.cjs prod"
   },
   "eslintConfig": {
     "extends": "react-app"
