@@ -1,22 +1,21 @@
 import logging  # pylint: disable=C0302
 
-from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
+from src.api.v1.helpers import extend_track, format_limit, format_offset
 from src.queries.generate_unpopulated_trending_tracks import (
-    TRENDING_TRACKS_TTL_SEC,
     make_generate_unpopulated_trending,
     make_trending_tracks_cache_key,
 )
 from src.queries.query_helpers import add_users_to_tracks, populate_track_metadata
 from src.utils.db_session import get_db_read_replica
 from src.utils.helpers import decode_string_id
-from src.utils.redis_cache import get_trending_cache_key, use_redis_cache
+from src.utils.redis_cache import use_redis_cache
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_PREMIUM_TRACKS_LIMIT = 100
 
 
-def _get_usdc_purchase_tracks(args, strategy):
+def get_usdc_purchase_tracks(args, strategy):
     """Gets USDC purchase tracks from trending by getting the currently cached tracks and then populating them."""
 
     # Decode user_id if necessary
@@ -65,15 +64,3 @@ def _get_usdc_purchase_tracks(args, strategy):
         add_users_to_tracks(session, tracks, current_user_id)
 
         return list(map(extend_track, sorted_tracks))
-
-
-def get_full_usdc_purchase_tracks(request, args, strategy):
-    # Attempt to use the cached tracks list
-    if args["user_id"] is not None:
-        full_usdc_purchase_tracks = _get_usdc_purchase_tracks(args, strategy)
-    else:
-        key = get_trending_cache_key(to_dict(request.args), request.path)
-        full_usdc_purchase_tracks = use_redis_cache(
-            key, TRENDING_TRACKS_TTL_SEC, lambda: _get_usdc_purchase_tracks(args, strategy)
-        )
-    return full_usdc_purchase_tracks

@@ -46,7 +46,7 @@ from src.queries.get_latest_entities import get_latest_entities
 from src.queries.get_premium_track_signatures import (
     get_nft_gated_premium_track_signatures,
 )
-from src.queries.get_premium_tracks import get_full_usdc_purchase_tracks
+from src.queries.get_premium_tracks import get_usdc_purchase_tracks
 from src.queries.get_random_tracks import get_random_tracks
 from src.queries.get_recommended_tracks import (
     DEFAULT_RECOMMENDED_LIMIT,
@@ -1381,8 +1381,8 @@ class FullUSDCPurchaseTracks(Resource):
         strategy = trending_strategy_factory.get_strategy(
             TrendingType.TRACKS, version_list[0]
         )
-        full_premium_tracks = get_full_usdc_purchase_tracks(request, args, strategy)
-        return success_response(full_premium_tracks)
+        premium_tracks = get_usdc_purchase_tracks(args, strategy)
+        return success_response(premium_tracks)
 
 
 @full_ns.route("/<string:user_id>/nft-gated-signatures")
