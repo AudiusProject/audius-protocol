@@ -7,11 +7,10 @@ import {
 
 import {
   useUSDCBalance,
-  formatCurrencyBalance,
   BNUSDC,
   useWithdrawUSDCModal,
   WithdrawUSDCModalPages,
-  formatUSDCWeiToFloorDollarNumber,
+  formatUSDCWeiToFloorCentsNumber,
   filterDecimalString,
   padDecimalValue,
   decimalIntegerToHumanReadable
@@ -56,10 +55,10 @@ export const EnterTransferDetails = () => {
   const { data: balance } = useUSDCBalance()
   const { setData } = useWithdrawUSDCModal()
 
-  const balanceNumber = formatUSDCWeiToFloorDollarNumber(
+  const balanceNumber = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
-  const balanceFormatted = formatCurrencyBalance(balanceNumber)
+  const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
 
   const [
     { value },
