@@ -121,31 +121,32 @@ export const useCollectionsScreenData = ({
       const offlineCollectionIds = Object.keys(offlineCollectionsStatus).filter(
         (k) => offlineCollectionsStatus[k] === OfflineDownloadStatus.SUCCESS
       )
-      return offlineCollectionIds.filter((stringId) => {
-        const collectionId = Number(stringId)
-        const collection = getCollection(state, { id: collectionId })
-        if (collection == null) {
-          console.error(
-            `Unexpected missing fetched collection: ${collectionId}`
-          )
-          return false
-        }
-        const trackIds =
-          collection.playlist_contents.track_ids.map(
-            (trackData) => trackData.track
-          ) ?? []
-        // Don't show a playlist in Offline Mode if it has at least one track but none of the tracks have been downloaded yet OR if it is not marked for download
-        return (
-          trackIds.length === 0 ||
-          trackIds.some((t) => {
-            return (
-              offlineTracksStatus &&
-              offlineTracksStatus[t.toString()] ===
-                OfflineDownloadStatus.SUCCESS
+      return offlineCollectionIds
+        .map((stringId) => Number(stringId))
+        .filter((collectionId) => {
+          const collection = getCollection(state, { id: collectionId })
+          if (collection == null) {
+            console.error(
+              `Unexpected missing fetched collection: ${collectionId}`
             )
-          })
-        )
-      })
+            return false
+          }
+          const trackIds =
+            collection.playlist_contents.track_ids.map(
+              (trackData) => trackData.track
+            ) ?? []
+          // Don't show a playlist in Offline Mode if it has at least one track but none of the tracks have been downloaded yet OR if it is not marked for download
+          return (
+            trackIds.length === 0 ||
+            trackIds.some((t) => {
+              return (
+                offlineTracksStatus &&
+                offlineTracksStatus[t.toString()] ===
+                  OfflineDownloadStatus.SUCCESS
+              )
+            })
+          )
+        })
     },
     [
       fetchedCollectionIds,
