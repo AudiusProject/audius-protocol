@@ -6,6 +6,7 @@ import { logger } from './../../logger'
 import { sendTransactionalEmail } from '../../email/notifications/sendEmail'
 import { buildUserNotificationSettings } from './userNotificationSettings'
 import { email } from '../../email/notifications/preRendered/withdrawal'
+import { formatUSDCWeiToUSDString } from '../../utils/format'
 
 type USDCWithdrawalRow = Omit<NotificationRow, 'data'> & {
   data: USDCWithdrawalNotification
@@ -13,7 +14,7 @@ type USDCWithdrawalRow = Omit<NotificationRow, 'data'> & {
 
 export class USDCWithdrawal extends BaseNotification<USDCWithdrawalRow> {
   userId: number
-  amount: number
+  amount: string
   receiverAccount: string
   signature: string
 
@@ -23,7 +24,9 @@ export class USDCWithdrawal extends BaseNotification<USDCWithdrawalRow> {
       const userIds: number[] = this.notification.user_ids!
       this.userId = userIds[0]
       // Change is not an absolute value and for a transfer out will always be negative
-      this.amount = -1 * this.notification.data.change
+      this.amount = formatUSDCWeiToUSDString(
+        (-1 * this.notification.data.change).toString()
+      )
       this.receiverAccount = this.notification.data.receiver_account
       this.signature = this.notification.data.signature
     } catch (e) {
