@@ -14,7 +14,7 @@ try {
   console.log(solConfigFile)
 
   const remoteHost = import.meta.env.AUDIUS_REMOTE_DEV_HOST
-  const localhost = 'localhost'
+  const localhost = '0.0.0.0'
   const useRemoteHost =
     remoteHost && process.argv.length > 2 && process.argv[2] == 'remote'
   const host = useRemoteHost ? remoteHost : localhost

@@ -21,7 +21,7 @@ if (env !== 'dev' && env !== 'stage' && env !== 'prod') {
 
 const config = {
   dev: {
-    gaEndpoint: 'http://localhost:9001'
+    gaEndpoint: 'http://0.0.0.0:9001'
   },
   stage: {
     gaEndpoint: 'https://general-admission.staging.audius.co'
