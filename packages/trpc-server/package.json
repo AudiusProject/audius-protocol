@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "DEBUG=* tsx watch src/index.ts",
+    "dev": "DEBUG=audius:* tsx watch src/index.ts",
     "db:gen": "tsx ./tools/db-gen.ts",
     "start": "tsx src/index.ts"
   },
@@ -22,6 +22,7 @@
     "zod": "3.22.2"
   },
   "devDependencies": {
+    "@rmp135/sql-ts": "^1.18.0",
     "@types/cors": "^2.8.13",
     "@types/node": "^18.16.16",
     "@types/swagger-ui-express": "^4.1.4",

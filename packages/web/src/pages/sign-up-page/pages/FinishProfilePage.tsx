@@ -3,7 +3,9 @@ import { useCallback } from 'react'
 import { Nullable } from '@audius/common'
 import { HarmonyButton } from '@audius/stems'
 import { Formik, Form } from 'formik'
+import { useDispatch } from 'react-redux'
 
+import { setValueField } from 'common/store/pages/signon/actions'
 import { TextField } from 'components/form-fields'
 
 import { CoverPhotoField } from '../components/CoverPhotoField'
@@ -41,11 +43,15 @@ const initialValues = {
 
 export const FinishProfilePage = (props: FinishProfilePageProps) => {
   const { onNext } = props
+  const dispatch = useDispatch()
+
   const handleSubmit = useCallback(
     (values: FinishProfileValues) => {
+      const { displayName } = values
+      dispatch(setValueField('name', displayName))
       onNext({ stage: 'select-genre' })
     },
-    [onNext]
+    [dispatch, onNext]
   )
 
   return (

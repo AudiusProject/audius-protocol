@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
   SolanaWalletAddress,
@@ -14,7 +14,7 @@ import {
 } from '@audius/common'
 import { Modal, ModalContent, ModalHeader } from '@audius/stems'
 import BN from 'bn.js'
-import { Formik } from 'formik'
+import { Formik, FormikProps } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -31,7 +31,7 @@ import { Error } from './components/Error'
 import { TransferInProgress } from './components/TransferInProgress'
 import { TransferSuccessful } from './components/TransferSuccessful'
 
-const { beginWithdrawUSDC } = withdrawUSDCActions
+const { beginWithdrawUSDC, cleanup } = withdrawUSDCActions
 const { getWithdrawStatus } = withdrawUSDCSelectors
 
 const messages = {
@@ -142,12 +142,26 @@ export const WithdrawUSDCModal = () => {
       break
   }
 
+  const formRef = useRef<
+    FormikProps<{
+      amount: number
+      address: string
+      confirm: boolean
+    }>
+  >(null)
+
+  const handleOnClosed = useCallback(() => {
+    dispatch(cleanup())
+    onClosed()
+    formRef.current?.resetForm()
+  }, [dispatch, onClosed, formRef])
+
   return (
     <Modal
       size='medium'
       isOpen={isOpen}
       onClose={onClose}
-      onClosed={onClosed}
+      onClosed={handleOnClosed}
       bodyClassName={styles.modal}
     >
       <ModalHeader onClose={onClose}>
@@ -164,6 +178,7 @@ export const WithdrawUSDCModal = () => {
       </ModalHeader>
       <ModalContent>
         <Formik
+          innerRef={formRef}
           initialValues={{
             [AMOUNT]: balanceNumberCents,
             [ADDRESS]: '',

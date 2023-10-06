@@ -35,7 +35,7 @@ export const artistCategories = [
 export type FollowArtists = {
   selectedCategory: FollowArtistsCategory
   categories: {
-    [key in keyof typeof FollowArtistsCategory]?: ID[]
+    [key in FollowArtistsCategory]?: ID[]
   }
   selectedUserIds: ID[]
 }
@@ -45,6 +45,7 @@ export default interface SignOnPageState {
   name: EditableField
   password: EditableField
   handle: EditableField
+  genres: string[]
   verified: boolean
   useMetaMask: boolean
   accountReady: boolean
@@ -58,6 +59,13 @@ export default interface SignOnPageState {
   status: EditingStatus
   toastText: string | null
   followArtists: FollowArtists
+  isMobileSignOnVisible: boolean
+  routeOnCompletion: boolean
+  startedSignUpProcess: boolean
+  finishedSignUpProcess: boolean
+  routeOnExit: boolean
+  page: number
+  referrer: string
 }
 
 export type { SignOnPageState }

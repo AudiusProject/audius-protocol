@@ -2,7 +2,8 @@
   "name": "@audius/harmony",
   "version": "0.0.2",
   "description": "Audius Design System Component Library",
-  "main": "dist/index.js",
+  "main": "dist/index.es.js",
+  "types": "dist/index.d.ts",
   "module": "dist/index.es.js",
   "jsnext:main": "dist/index.es.js",
   "files": [

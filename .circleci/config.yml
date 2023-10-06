@@ -423,16 +423,11 @@ workflows:
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
             comms/.* run-discovery-workflow true
-            comms/.* run-gcp-workflow true
             mediorum/.* run-creator-workflow true
-            mediorum/.* run-gcp-workflow true
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
-            packages/identity-service/.* run-gcp-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
-            eth-contracts/.* run-gcp-workflow true
             contracts/.* run-contracts-workflow true
-            contracts/.* run-gcp-workflow true
             .circleci/.* run-discovery-workflow true
             .circleci/.* run-creator-workflow true
             .circleci/.* run-identity-workflow true
@@ -465,7 +460,6 @@ workflows:
             packages/libs/.* run-creator-workflow true
             packages/libs/.* run-identity-workflow true
             packages/libs/.* run-sdk-workflow true
-            packages/libs/.* run-gcp-workflow true
             packages/libs/.* run-web-workflow true
             packages/libs/.* run-mobile-workflow true
             packages/libs/.* run-embed-workflow true
@@ -482,7 +476,6 @@ workflows:
           base-revision: main~1
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
-            .* run-gcp-workflow true
             .* run-integration-workflow true
             .* run-creator-workflow true
             .* run-discovery-workflow true
@@ -519,7 +512,6 @@ workflows:
           base-revision: main
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
-            .* run-gcp-workflow true
             .* run-integration-workflow true
             .* run-eth-contracts-workflow true
             .* run-contracts-workflow true

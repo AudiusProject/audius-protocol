@@ -118,6 +118,26 @@ export const challengeRewardsConfig: Record<
     progressLabel: 'Not Earned',
     panelButtonText: 'Discover Some Tracks'
   },
+  s: {
+    id: 's',
+    title: 'Sell to Earn',
+    description: (_) =>
+      'Receive 1 additional $AUDIO for each dollar earned from sales.',
+    fullDescription: () =>
+      'Receive 1 additional $AUDIO for each dollar earned from sales.',
+    progressLabel: 'No Recent Activity',
+    panelButtonText: 'View Details'
+  },
+  b: {
+    id: 'b',
+    title: 'Buy to Earn',
+    description: (_) =>
+      'Receive 1 additional $AUDIO for each dollar earned from purchases.',
+    fullDescription: () =>
+      'Receive 1 additional $AUDIO for each dollar earned from purchases.',
+    progressLabel: 'No Recent Activity',
+    panelButtonText: 'View Details'
+  },
   'trending-playlist': {
     id: 'trending-playlist',
     title: 'Top 5 Trending Playlists',
@@ -201,4 +221,8 @@ export const makeOptimisticChallengeSortComparator = (
     }
     return 0
   }
+}
+
+export const isAudioMatchingChallenge = (challenge: ChallengeRewardID) => {
+  return challenge === 's' || challenge === 'b'
 }

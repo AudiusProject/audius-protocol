@@ -246,8 +246,13 @@ def build(
 
 @cli.command()
 @click.argument("services", nargs=-1)
+@click.option(
+    "--prod",
+    is_flag=True,
+    help="Use production containers which have all dependencies built in",
+)
 @click.pass_context
-def push(ctx, services):
+def push(ctx, services, prod):
     protocol_dir = ctx.obj
     services = services or ["mediorum", "discovery-provider", "identity-service"]
 
@@ -257,7 +262,7 @@ def push(ctx, services):
         raise click.ClickException("Failed to get git commit")
 
     # this is building w/o cache every time
-    ctx.invoke(build, services=services)
+    ctx.invoke(build, services=services, prod=prod)
 
     try:
         for service in services:

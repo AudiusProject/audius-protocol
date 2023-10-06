@@ -4,6 +4,7 @@ import type { ImageSourcePropType } from 'react-native'
 import { Platform } from 'react-native'
 
 import BallotBoxTick from 'app/assets/images/emojis/ballot-box-tick.png'
+import Cart from 'app/assets/images/emojis/cart.png'
 import BarChart from 'app/assets/images/emojis/chart-bar.png'
 import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
 import Gear from 'app/assets/images/emojis/gear.png'
@@ -171,6 +172,20 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
       icon: BarChart,
       buttonInfo: {
         renderIcon: (color) => <IconCheck fill={color} />,
+        iconPosition: 'right'
+      }
+    },
+    b: {
+      icon: Cart,
+      buttonInfo: {
+        renderIcon: (color) => <IconArrow fill={color} />,
+        iconPosition: 'right'
+      }
+    },
+    s: {
+      icon: Cart,
+      buttonInfo: {
+        renderIcon: (color) => <IconArrow fill={color} />,
         iconPosition: 'right'
       }
     }

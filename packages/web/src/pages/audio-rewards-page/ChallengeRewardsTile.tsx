@@ -11,7 +11,8 @@ import {
   audioRewardsPageActions,
   ChallengeRewardsModalType,
   audioRewardsPageSelectors,
-  makeChallengeSortComparator
+  makeChallengeSortComparator,
+  isAudioMatchingChallenge
 } from '@audius/common'
 import {
   ProgressBar,
@@ -25,6 +26,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { useIsAudioMatchingChallengesEnabled } from 'hooks/useIsAudioMatchingChallengesEnabled'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
@@ -86,6 +88,12 @@ const RewardPanel = ({
   let progressLabelFilled: string
   if (shouldShowCompleted) {
     progressLabelFilled = messages.completeLabel
+  } else if (isAudioMatchingChallenge(id)) {
+    if (needsDisbursement) {
+      progressLabelFilled = messages.readyToClaim
+    } else {
+      progressLabelFilled = progressLabel ?? ''
+    }
   } else if (challenge?.challenge_type === 'aggregate') {
     // Count down
     progressLabelFilled = fillString(
@@ -142,9 +150,7 @@ const RewardPanel = ({
       </div>
       <div className={wm(styles.rewardPanelBottom)}>
         <div className={wm(styles.rewardProgress)}>
-          {shouldShowCompleted && (
-            <IconCheck className={wm(styles.iconCheck)} />
-          )}
+          {needsDisbursement && <IconCheck className={wm(styles.iconCheck)} />}
           <p className={styles.rewardProgressLabel}>{progressLabelFilled}</p>
           {shouldShowProgressBar && (
             <ProgressBar
@@ -184,7 +190,9 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   'profile-completion',
   'referred',
   'send-first-tip',
-  'first-playlist'
+  'first-playlist',
+  's', // $AUDIO matching seller
+  'b' // $AUDIO matching buyer
 ])
 
 /** Pulls rewards from remoteconfig */
@@ -206,10 +214,15 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   const userChallengesLoading = useSelector(getUserChallengesLoading)
   const userChallenges = useSelector(getUserChallenges)
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
+  const isAudioMatchingChallengesEnabled = useIsAudioMatchingChallengesEnabled()
 
   // The referred challenge only needs a tile if the user was referred
   const hideReferredTile = !userChallenges.referred?.is_complete
-  const rewardIds = useRewardIds({ referred: hideReferredTile })
+  const rewardIds = useRewardIds({
+    referred: hideReferredTile,
+    b: !isAudioMatchingChallengesEnabled,
+    s: !isAudioMatchingChallengesEnabled
+  })
 
   useEffect(() => {
     if (!userChallengesLoading && !haveChallengesLoaded) {

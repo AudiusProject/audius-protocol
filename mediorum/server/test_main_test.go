@@ -25,7 +25,7 @@ func setupTestNetwork(replicationFactor, serverCount int) []*MediorumServer {
 
 	for i := 1; i <= serverCount; i++ {
 		network = append(network, Peer{
-			Host:	fmt.Sprintf("http://127.0.0.1:%d", 1980+i),
+			Host:   fmt.Sprintf("http://127.0.0.1:%d", 1980+i),
 			Wallet: fmt.Sprintf("0xWallet%d", i), // todo keypair stuff
 		})
 	}
@@ -64,7 +64,7 @@ func setupTestNetwork(replicationFactor, serverCount int) []*MediorumServer {
 }
 
 func TestMain(m *testing.M) {
-	testNetwork = setupTestNetwork(5, 9)
+	testNetwork = setupTestNetwork(5, 5)
 
 	exitVal := m.Run()
 	// todo: tear down testNetwork

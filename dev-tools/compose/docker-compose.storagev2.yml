@@ -43,6 +43,6 @@ services:
           'curl --fail http://localhost:1991/health_check || exit 1'
         ]
       interval: 10s
-      start_period: 30s
+      start_period: 60s
       timeout: 5s
       retries: 20

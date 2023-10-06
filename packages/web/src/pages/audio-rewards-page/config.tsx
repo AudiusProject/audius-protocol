@@ -14,7 +14,8 @@ import {
   TRENDING_PAGE,
   UPLOAD_PAGE,
   EXPLORE_PAGE,
-  LIBRARY_PAGE
+  LIBRARY_PAGE,
+  EXPLORE_PREMIUM_TRACKS_PAGE
 } from 'utils/route'
 
 type LinkButtonType =
@@ -24,6 +25,8 @@ type LinkButtonType =
   | 'trendingTracks'
   | 'sendFirstTip'
   | 'firstPlaylist'
+  | 's'
+  | 'b'
 type LinkButtonInfo = {
   label: string
   leftIcon: ReactNode | null
@@ -77,6 +80,18 @@ const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
     leftIcon: null,
     rightIcon: <IconArrow />,
     link: () => EXPLORE_PAGE
+  },
+  s: {
+    label: 'View Premium Tracks',
+    leftIcon: null,
+    rightIcon: <IconArrow />,
+    link: () => EXPLORE_PREMIUM_TRACKS_PAGE
+  },
+  b: {
+    label: 'View Premium Tracks',
+    leftIcon: null,
+    rightIcon: <IconArrow />,
+    link: () => EXPLORE_PREMIUM_TRACKS_PAGE
   }
 }
 
@@ -144,6 +159,22 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
   },
   'first-playlist': {
     icon: <i className='emoji large treble-clef' />,
+    modalButtonInfo: {
+      incomplete: linkButtonMap.firstPlaylist,
+      inProgress: linkButtonMap.firstPlaylist,
+      complete: linkButtonMap.firstPlaylist
+    }
+  },
+  s: {
+    icon: <i className='emoji large cart' />,
+    modalButtonInfo: {
+      incomplete: linkButtonMap.firstPlaylist,
+      inProgress: linkButtonMap.firstPlaylist,
+      complete: linkButtonMap.firstPlaylist
+    }
+  },
+  b: {
+    icon: <i className='emoji large cart' />,
     modalButtonInfo: {
       incomplete: linkButtonMap.firstPlaylist,
       inProgress: linkButtonMap.firstPlaylist,

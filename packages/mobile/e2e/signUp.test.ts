@@ -44,9 +44,10 @@ describe('Sign up', () => {
     await assertOnSignUp()
   })
 
-  it.only('should create an account', async () => {
+  it('should create an account', async () => {
     const testUser = generateTestUser()
     const { email, password, handle, name } = testUser
+
     await byRole('textbox', { name: /email/i }).typeText(email)
     await byRole('button', { name: /sign up free/i }).tap()
 
@@ -95,5 +96,39 @@ describe('Sign up', () => {
 
     await byRole('textbox', { name: /display name/i }).typeText(name)
     await byRole('button', { name: /continue/i }).tap()
+
+    await expect(
+      byRole('heading', { name: /select your genres/i })
+    ).toBeVisible()
+    await expect(
+      byText(/start by picking some of your favorite genres./i)
+    ).toBeVisible()
+
+    const genres = [/^acoustic/i, /^pop/i, /^lo-fi/i, /^electronic/i]
+
+    for (const genre of genres) {
+      await byRole('checkbox', { name: genre }).tap()
+      await expect(byRole('checkbox', { name: genre })).toHaveValue(
+        'checkbox, checked'
+      )
+    }
+
+    await element(by.id('genreScrollView')).scrollTo('bottom')
+    await byRole('button', { name: /continue/i }).tap()
+
+    await expect(
+      byRole('heading', { name: /follow at least 3 artists/i })
+    ).toBeVisible()
+    await expect(
+      byText(/curate your feed with tracks uploaded .*/i)
+    ).toBeVisible()
+
+    expect(byRole('radio', { name: /featured/i })).toHaveValue(
+      'radio button, checked'
+    )
+
+    for (const genre of genres) {
+      expect(byRole('radio', { name: genre })).toBeVisible()
+    }
   })
 })
