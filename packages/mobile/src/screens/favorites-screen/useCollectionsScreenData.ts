@@ -119,7 +119,7 @@ export const useCollectionsScreenData = ({
 
       const offlineCollectionsStatus = getOfflineCollectionsStatus(state)
       const offlineCollectionIds = Object.keys(offlineCollectionsStatus).filter(
-        (k) => offlineCollectionsStatus[k] !== OfflineDownloadStatus.INACTIVE
+        (k) => offlineCollectionsStatus[k] === OfflineDownloadStatus.SUCCESS
       )
       return offlineCollectionIds.filter((stringId) => {
         const collectionId = Number(stringId)
