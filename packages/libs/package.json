@@ -1,8 +1,8 @@
 {
   "name": "@audius/sdk",
-  "version": "3.0.11-beta.13",
+  "version": "3.0.11-beta.21",
   "audius": {
-    "releaseSHA": "b9a71cb4b641dd0b07214f7703b2fb0313e6b903"
+    "releaseSHA": "949a60db4b019706777d4bdbf679e29f06ef2b40"
   },
   "description": "Audius SDK",
   "keywords": [
@@ -24,7 +24,6 @@
   },
   "react-native": "./dist/index.native.js",
   "scripts": {
-    "init-local": "ts-node initScripts/local.js",
     "test:sdk": "./node_modules/.bin/jest --coverage=false",
     "test:sdk:browser": "./node_modules/.bin/jest --env jsdom",
     "test": "./scripts/test.sh",

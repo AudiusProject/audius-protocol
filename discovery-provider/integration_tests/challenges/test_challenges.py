@@ -22,6 +22,9 @@ from src.utils.redis_connection import get_redis
 
 logger = logging.getLogger(__name__)
 
+AGGREGATE_CHALLENGE_REWARD_AMOUNT = 5
+AGGREGATE_CHALLENGE_STEP_COUNT = 5
+
 
 def setup_challenges(app):
     with app.app_context():
@@ -45,8 +48,9 @@ def setup_challenges(app):
             Challenge(
                 id="test_challenge_3",
                 type=ChallengeType.aggregate,
-                amount="5",
-                step_count=5,
+                amount=str(AGGREGATE_CHALLENGE_REWARD_AMOUNT),
+                step_count=AGGREGATE_CHALLENGE_REWARD_AMOUNT
+                * AGGREGATE_CHALLENGE_STEP_COUNT,
                 active=True,
                 starting_block=100,
             ),
@@ -66,6 +70,7 @@ def setup_challenges(app):
                 specifier="1",
                 is_complete=False,
                 current_step_count=1,
+                amount=5,
             ),
             UserChallenge(
                 challenge_id="test_challenge_1",
@@ -74,6 +79,7 @@ def setup_challenges(app):
                 is_complete=True,
                 current_step_count=3,
                 completed_blocknumber=100,
+                amount=5,
             ),
             UserChallenge(
                 challenge_id="test_challenge_1",
@@ -81,12 +87,14 @@ def setup_challenges(app):
                 specifier="3",
                 current_step_count=2,
                 is_complete=False,
+                amount=5,
             ),
             UserChallenge(
                 challenge_id="test_challenge_2",
                 user_id=4,
                 specifier="4",
                 is_complete=True,
+                amount=5,
             ),
             UserChallenge(
                 challenge_id="test_challenge_1",
@@ -94,6 +102,7 @@ def setup_challenges(app):
                 specifier="5",
                 is_complete=False,
                 current_step_count=2,
+                amount=5,
             ),
         ]
 
@@ -157,6 +166,7 @@ def test_handle_event(app):
             "is_complete": False,
             "current_step_count": 1,
             "completed_blocknumber": None,
+            "amount": 5,
         }
         assert model_to_dictionary(actual) == expected
 
@@ -191,6 +201,7 @@ def test_handle_event(app):
                 "is_complete": False,
                 "current_step_count": 2,
                 "completed_blocknumber": None,
+                "amount": 5,
             },
             # Should be unchanged b/c it was already complete
             {
@@ -200,6 +211,7 @@ def test_handle_event(app):
                 "is_complete": True,
                 "current_step_count": 3,
                 "completed_blocknumber": 100,
+                "amount": 5,
             },
             # Should be newly complete
             {
@@ -209,6 +221,7 @@ def test_handle_event(app):
                 "is_complete": True,
                 "current_step_count": 3,
                 "completed_blocknumber": 100,
+                "amount": 5,
             },
             # Should be untouched bc user 5 wasn't included
             {
@@ -218,6 +231,7 @@ def test_handle_event(app):
                 "is_complete": False,
                 "current_step_count": 2,
                 "completed_blocknumber": None,
+                "amount": 5,
             },
             # Should have created a brand new user 6
             {
@@ -227,6 +241,7 @@ def test_handle_event(app):
                 "is_complete": False,
                 "current_step_count": 1,
                 "completed_blocknumber": None,
+                "amount": 5,
             },
         ]
         assert expected == res_dicts
@@ -290,9 +305,11 @@ def test_aggregates(app):
         bus.flush()
         bus.process_events(session)
         state = agg_challenge.get_user_challenge_state(session, ["1-4"])
+        state = agg_challenge.get_user_challenge_state(session, ["1-4"])
         assert len(state) == 1
 
         # - If we've maxed the # of challenges, don't create any more
+        # (AGGREGATE_CHALLENGE_STEP_COUNT = 5)
         bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 5})
         bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 6})
         bus.flush()
@@ -308,11 +325,11 @@ def test_aggregates(app):
                 .all()
             )
 
-        assert len(get_user_challenges()) == 5
+        assert len(get_user_challenges()) == AGGREGATE_CHALLENGE_STEP_COUNT
         bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 7})
         bus.flush()
         bus.process_events(session)
-        assert len(get_user_challenges()) == 5
+        assert len(get_user_challenges()) == AGGREGATE_CHALLENGE_STEP_COUNT
 
         # Test get_challenges
         res = get_challenges(1, False, session, bus)

@@ -19,8 +19,9 @@ import { select, all } from 'redux-saga/effects'
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
-import { getFollowIds } from 'common/store/pages/signon/selectors'
 import { waitForRead } from 'utils/sagaHelpers'
+
+import { getFollowIds } from '../../signon/selectors'
 const { getFeedFilter } = feedPageSelectors
 const getAccountUser = accountSelectors.getAccountUser
 

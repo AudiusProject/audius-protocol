@@ -8,13 +8,13 @@ import {
 } from '@audius/common'
 import backend from 'audius-client/src/common/store/backend/reducer'
 import type { BackendState } from 'audius-client/src/common/store/backend/types'
-import signOnReducer from 'audius-client/src/common/store/pages/signon/reducer'
+import searchBar from 'audius-client/src/common/store/search-bar/reducer'
+import type { SearchBarState } from 'audius-client/src/common/store/search-bar/types'
+import signOnReducer from 'common/store/pages/signon/reducer'
 import type {
   SignOnPageState,
   SignOnPageReducer
-} from 'audius-client/src/common/store/pages/signon/types'
-import searchBar from 'audius-client/src/common/store/search-bar/reducer'
-import type { SearchBarState } from 'audius-client/src/common/store/search-bar/types'
+} from 'common/store/pages/signon/types'
 import RNRestart from 'react-native-restart'
 import type { Store } from 'redux'
 import { createStore, combineReducers, applyMiddleware } from 'redux'

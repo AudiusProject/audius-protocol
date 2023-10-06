@@ -2,7 +2,9 @@ import { useCallback } from 'react'
 
 import { HarmonyButton } from '@audius/stems'
 import { Formik, Form } from 'formik'
+import { useDispatch } from 'react-redux'
 
+import { setValueField } from 'common/store/pages/signon/actions'
 import { TextField } from 'components/form-fields'
 
 import { FinishProfileState } from './FinishProfilePage'
@@ -33,11 +35,15 @@ type PickHandlePageProps = {
 
 export const PickHandlePage = (props: PickHandlePageProps) => {
   const { onNext } = props
+  const dispatch = useDispatch()
+
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
+      const { handle } = values
+      dispatch(setValueField('handle', handle))
       onNext({ stage: 'finish-profile' })
     },
-    [onNext]
+    [dispatch, onNext]
   )
 
   return (

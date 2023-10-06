@@ -16,9 +16,6 @@ parameters:
     type: string
     default: 'main'
 
-  run-gcp-workflow:
-    type: boolean
-    default: false
   run-gcp-cleanup:
     type: boolean
     default: false

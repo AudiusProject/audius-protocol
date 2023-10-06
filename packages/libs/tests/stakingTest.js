@@ -1,16 +1,19 @@
 const assert = require('assert')
-const nock = require('nock')
-const helpers = require('./helpers')
+
 const { time } = require('@openzeppelin/test-helpers')
+const nock = require('nock')
+
+const helpers = require('./helpers')
 
 // const audiusConfig = helpers.audiusLibsConfig
 const { getRandomLocalhost, audiusInstance: audius0 } = helpers
 const initializeLibConfig = helpers.initializeLibConfig
 const ethContractsConfig = require('../src/eth-contracts/config.json')
 const { AudiusLibs } = require('../src/AudiusLibs')
-const { convertAudsToWeiBN } = require('../initScripts/helpers/utils')
+
 const { initial } = require('lodash')
-const { deregisterSPEndpoint } = require('./helpers')
+
+const { deregisterSPEndpoint, convertAudsToWeiBN } = require('./helpers')
 
 let token
 let ownerWallet
@@ -39,8 +42,7 @@ const assertThrows = async (
   // assert.fail() for some reason does not have its error string printed 🤷
   assert(
     false,
-    `Expected "${expectedErrorCode}"${
-      expectedReason ? ` (with reason: "${expectedReason}")` : ''
+    `Expected "${expectedErrorCode}"${expectedReason ? ` (with reason: "${expectedReason}")` : ''
     } but it did not fail`
   )
 }
@@ -55,7 +57,7 @@ const assertRevert = async (blockOrPromise, expectedReason) => {
 }
 
 describe('Staking tests', () => {
-  let testServiceType = 'discovery-provider'
+  const testServiceType = 'discovery-provider'
 
   before(async function () {
     await audius0.init()
@@ -78,7 +80,7 @@ describe('Staking tests', () => {
     sp2 = accounts[2]
 
     // Initialize more lib instances
-    let libsConfig1 = await initializeLibConfig(sp1)
+    const libsConfig1 = await initializeLibConfig(sp1)
     assert(
       ethContractsConfig.ownerWallet !== libsConfig1.ownerWallet,
       'New wallet addr'
@@ -86,7 +88,7 @@ describe('Staking tests', () => {
     audius1 = new AudiusLibs(libsConfig1)
     await audius1.init()
 
-    let libsConfig2 = await initializeLibConfig(accounts[2])
+    const libsConfig2 = await initializeLibConfig(accounts[2])
     assert(
       ethContractsConfig.ownerWallet !== libsConfig2.ownerWallet,
       'New wallet addr'
@@ -106,13 +108,13 @@ describe('Staking tests', () => {
   })
 
   it('initial staking contract state', async function () {
-    let tokenAddr = await audius0.ethContracts.StakingProxyClient.token()
+    const tokenAddr = await audius0.ethContracts.StakingProxyClient.token()
     assert(
       token.contractAddress,
       tokenAddr,
       'Expect correct token address from staking proxy'
     )
-    let supportsHistory =
+    const supportsHistory =
       await audius0.ethContracts.StakingProxyClient.supportsHistory()
     assert.equal(supportsHistory, true, 'History support required')
     assert.equal(
@@ -155,11 +157,12 @@ describe('Staking tests', () => {
       )
 
       // Register
-      let tx = await audius1.ethContracts.ServiceProviderFactoryClient.register(
-        testServiceType,
-        testEndpt,
-        defaultStake
-      )
+      const tx =
+        await audius1.ethContracts.ServiceProviderFactoryClient.register(
+          testServiceType,
+          testEndpt,
+          defaultStake
+        )
     })
 
     afterEach(async () => {
@@ -178,10 +181,10 @@ describe('Staking tests', () => {
     })
 
     it('increases service provider stake', async function () {
-      let preIncreaseBalance = await token.balanceOf(sp1)
-      let preIncreaseStake =
+      const preIncreaseBalance = await token.balanceOf(sp1)
+      const preIncreaseStake =
         await audius1.ethContracts.StakingProxyClient.totalStakedFor(sp1)
-      let tx =
+      const tx =
         await audius1.ethContracts.ServiceProviderFactoryClient.increaseStake(
           defaultStake
         )
@@ -282,11 +285,12 @@ describe('Staking tests', () => {
       )
 
       // Register
-      let tx = await audius1.ethContracts.ServiceProviderFactoryClient.register(
-        testServiceType,
-        testEndpt,
-        defaultStake
-      )
+      const tx =
+        await audius1.ethContracts.ServiceProviderFactoryClient.register(
+          testServiceType,
+          testEndpt,
+          defaultStake
+        )
     })
 
     it('deregisters service provider + recover stake', async function () {

@@ -9,6 +9,10 @@ import {
   FinishProfileState
 } from './pages/FinishProfilePage'
 import { PickHandlePage, PickHandleState } from './pages/PickHandlePage'
+import {
+  SelectArtistsPage,
+  SelectArtistsState
+} from './pages/SelectArtistsPage'
 import { SelectGenrePage, SelectGenreState } from './pages/SelectGenrePage'
 import { SignUpPage, SignUpState } from './pages/SignUpPage'
 
@@ -18,6 +22,7 @@ type SignUpRootState =
   | PickHandleState
   | FinishProfileState
   | SelectGenreState
+  | SelectArtistsState
 
 export const SignUpRootPage = () => {
   const [signUpState, setSignUpState] = useState<SignUpRootState>({
@@ -42,7 +47,10 @@ export const SignUpRootPage = () => {
       {signUpState.stage === 'finish-profile' ? (
         <FinishProfilePage onNext={setSignUpState} />
       ) : null}
-      {signUpState.stage === 'select-genre' ? <SelectGenrePage /> : null}
+      {signUpState.stage === 'select-genre' ? (
+        <SelectGenrePage onNext={setSignUpState} />
+      ) : null}
+      {signUpState.stage === 'select-artists' ? <SelectArtistsPage /> : null}
     </div>
   )
 }
