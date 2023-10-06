@@ -1,13 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import type {
-  CommonState,
-  ID,
-  Nullable,
-  Track,
-  UID,
-  User
-} from '@audius/common'
+import type { ID, Nullable, Track, UID, User } from '@audius/common'
 import {
   FavoriteSource,
   LibraryCategory,
@@ -224,7 +217,6 @@ export const TracksTab = () => {
   }, [])
 
   const loadingSpinner = <LoadingMoreSpinner />
-  console.log(isLoading, filteredTrackUids, filterValue, 'beepy')
   return (
     <VirtualizedScrollView>
       {!isLoading && filteredTrackUids.length === 0 && !filterValue ? (
