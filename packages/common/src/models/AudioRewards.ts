@@ -26,6 +26,8 @@ export type ChallengeRewardID =
   | 'profile-completion'
   | 'send-first-tip'
   | 'first-playlist'
+  | 's' // $AUDIO matching seller
+  | 'b' // $AUDIO matching buyer
   | 'trending-track'
   | 'trending-playlist'
   | 'top-api'

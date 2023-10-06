@@ -1,7 +1,9 @@
 import { useCallback } from 'react'
 
+import { setValueField } from 'common/store/pages/signon/actions'
 import { Formik } from 'formik'
 import { View } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 import { Button, Text } from 'app/components/core'
 import { TextField } from 'app/components/fields'
@@ -27,12 +29,15 @@ type PickHandleValues = {
 
 export const PickHandleScreen = () => {
   const navigation = useNavigation<SignUpScreenParamList>()
+  const dispatch = useDispatch()
 
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
+      const { handle } = values
+      dispatch(setValueField('handle', handle))
       navigation.navigate('FinishProfile')
     },
-    [navigation]
+    [dispatch, navigation]
   )
 
   return (

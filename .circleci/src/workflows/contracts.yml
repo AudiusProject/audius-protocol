@@ -3,5 +3,4 @@ jobs:
   - test:
       name: test-contracts
       context: GCP
-      instance-name: circleci-test-contracts-$CIRCLE_BUILD_NUM
       service: contracts

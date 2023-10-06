@@ -5,4 +5,6 @@ export type SignUpScreenParamList = {
   CreatePassword: CreatePasswordParams
   PickHandle: undefined
   FinishProfile: undefined
+  SelectGenre: undefined
+  SelectArtists: undefined
 }

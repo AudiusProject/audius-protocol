@@ -18,7 +18,7 @@ import {
 } from '@audius/common'
 import { RouterState } from 'connected-react-router'
 
-import signOnReducer from 'common/store/pages/signon/reducer'
+import SignOnPageState from 'common/store/pages/signon/types'
 import { SearchAiBarState } from 'common/store/search-ai-bar/types'
 import { SearchBarState } from 'common/store/search-bar/types'
 import { EmbedModalState } from 'components/embed-modal/store/types'
@@ -48,7 +48,7 @@ export type AppState = CommonState & {
 
   searchBar: SearchBarState
   searchAiBar: SearchAiBarState
-  signOn: ReturnType<typeof signOnReducer>
+  signOn: SignOnPageState
 
   // Config
   reachability: ReachabilityState

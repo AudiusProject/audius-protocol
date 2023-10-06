@@ -3,17 +3,17 @@ jobs:
   - push-docker-image:
       name: push-mediorum
       context: [GCP, dockerhub]
-      instance-name: circleci-push-mediorum-$CIRCLE_BUILD_NUM
       service: mediorum
+      filters:
+        branches:
+          only: main
   - test:
       name: test-mediorum
       context: GCP
-      instance-name: circleci-test-mediorum-$CIRCLE_BUILD_NUM
       service: mediorum
   - test:
       name: test-mediorum-unittests
       context: GCP
-      instance-name: circleci-test-mediorum-unittests-$CIRCLE_BUILD_NUM
       service: mediorum-unittests
   
   # Deploy audius-protocol `main` branch (stage)
@@ -21,6 +21,7 @@ jobs:
       name: deploy-stage-creator-node
       requires:
         - test-mediorum
+        - test-mediorum-unittests
         - push-mediorum
       filters:
         branches:

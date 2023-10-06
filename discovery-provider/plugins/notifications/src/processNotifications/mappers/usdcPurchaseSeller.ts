@@ -51,7 +51,6 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
     notification: USDCPurchaseSellerRow
   ) {
     super(dnDB, identityDB, notification)
-    const userIds: number[] = this.notification.user_ids!
     this.amount = formatUSDCWeiToUSDString(
       this.notification.data.amount.toString()
     )
@@ -181,7 +180,9 @@ export class USDCPurchaseSeller extends BaseNotification<USDCPurchaseSellerRow> 
         artistName: sellerUsername,
         trackTitle: purchasedTrackName,
         trackLink: `${getHostname()}/${sellerHandle}/${track.slug}`,
-        trackImage: `${getContentNode()}/content/${track.cover_art_sizes}/480x480.jpg`,
+        trackImage: `${getContentNode()}/content/${
+          track.cover_art_sizes
+        }/480x480.jpg`,
         price: this.amount,
         payExtra: this.extraAmount,
         total: this.totalAmount

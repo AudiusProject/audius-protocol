@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { useAsync } from 'react-use'
+import { useEffectOnce } from 'react-use'
+
+import { Maybe } from 'utils/typeUtils'
 
 import { FeatureFlags, RemoteConfigInstance } from '../services'
 
@@ -73,23 +75,39 @@ export const createUseFeatureFlagHook =
       remoteConfigInstance
     )
 
-    const setOverride = async (value: OverrideSetting) => {
-      await setLocalStorageItem?.(overrideKey, value)
-    }
-
-    const { value: isEnabled, loading } = useAsync(
-      async () => {
-        const override = await getLocalStorageItem?.(overrideKey)
-        if (override === 'enabled') return true
-        if (override === 'disabled') return false
-
-        return remoteConfigInstance.getFeatureEnabled(flag, fallbackFlag)
-      },
-      // We want configLoaded and shouldRecompute to trigger refreshes of the memo
-      // eslint-disable-next-line
-      [flag, shouldRecompute]
+    const isEnabled = useMemo(
+      () => remoteConfigInstance.getFeatureEnabled(flag, fallbackFlag),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [flag, fallbackFlag, shouldRecompute]
     )
 
-    const isLoaded = configLoaded && isEnabled !== undefined && !loading
-    return { isLoaded, isEnabled, setOverride }
+    const setOverride = useCallback(
+      async (value: OverrideSetting) => {
+        await setLocalStorageItem?.(overrideKey, value)
+      },
+      [overrideKey]
+    )
+
+    const [isLocallyEnabled, setIsLocallyOverriden] = useState<Maybe<boolean>>()
+
+    useEffectOnce(() => {
+      const getOverride = async () => {
+        const override = await getLocalStorageItem?.(overrideKey)
+        if (override === 'enabled') {
+          setIsLocallyOverriden(true)
+        }
+        if (override === 'disabled') {
+          setIsLocallyOverriden(false)
+        }
+
+        return undefined
+      }
+      getOverride()
+    })
+
+    return {
+      isLoaded: configLoaded,
+      isEnabled: isLocallyEnabled ?? isEnabled,
+      setOverride
+    }
   }
