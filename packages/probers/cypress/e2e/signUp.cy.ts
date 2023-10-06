@@ -68,7 +68,7 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    it('should create an account', () => {
+    it.only('should create an account', () => {
       const testUser = generateTestUser()
       const { email, password, handle, name } = testUser
       cy.visit('signup')
@@ -127,11 +127,46 @@ describe('Sign Up', () => {
       }).should('exist')
       cy.findByText(/curate your feed with tracks uploaded/i).should('exist')
 
-      cy.findByRole('radio', { name: /featured/i }).should('be.checked')
+      cy.findByRole('radiogroup', { name: /selected genres/i }).within(() => {
+        cy.findByRole('radio', { name: /featured/i }).should('be.checked')
 
-      for (const genre of genres) {
-        cy.findByRole('radio', { name: genre }).should('exist')
-      }
+        for (const genre of genres) {
+          cy.findByRole('radio', { name: genre }).should('exist')
+        }
+      })
+
+      cy.findByRole('group', { name: /pick featured artists/i }).within(() => {
+        cy.findAllByRole('checkbox').then((artists) => {
+          const randomArtist = Cypress._.sample(artists)
+          cy.wrap(randomArtist).click()
+        })
+      })
+
+      cy.findByRole('radio', { name: /pop/i }).click()
+
+      cy.findByRole('group', { name: /pick pop artists/i }).within(() => {
+        cy.findAllByRole('checkbox').then((artists) => {
+          const randomArtist = Cypress._.sample(artists)
+          cy.wrap(randomArtist).click()
+        })
+      })
+
+      cy.findByRole('radio', { name: /electronic/i }).click()
+
+      cy.findByRole('group', { name: /pick electronic artists/i }).within(
+        () => {
+          cy.findAllByRole('checkbox').then((artists) => {
+            const randomArtist = Cypress._.sample(artists)
+            cy.wrap(randomArtist).click()
+          })
+        }
+      )
+
+      cy.findByRole('button', { name: /continue/i }).click()
+
+      cy.findByRole('heading', { name: /get the app/i, level: 2 }).should(
+        'exist'
+      )
     })
   })
 

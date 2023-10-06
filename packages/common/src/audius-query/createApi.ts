@@ -163,15 +163,15 @@ const useQueryState = <Args, Data>(
       )
     }
 
-    if (!fetchArgs) return null
-
-    const key = getKeyFromFetchArgs(fetchArgs)
-
     const endpointState: PerEndpointState<any> =
       state.api[reducerPath][endpointName]
 
+    if (!fetchArgs) return endpointState.default
+
+    const key = getKeyFromFetchArgs(fetchArgs)
+
     // Retrieve data from cache if lookup args provided
-    if (!endpointState[key]) {
+    if (key && !endpointState[key]) {
       if (
         !(
           endpoint.options?.idArgKey ||
@@ -284,7 +284,7 @@ const fetchData = async <Args, Data>(
       throw new Error('Remote data not found')
     }
 
-    let data: any
+    let data: Data
     if (endpoint.options.schemaKey) {
       const { entities, result } = normalize(
         { [endpoint.options.schemaKey]: apiData },
@@ -320,6 +320,7 @@ const fetchData = async <Args, Data>(
     )
 
     endpoint.onQuerySuccess?.(data, fetchArgs, { dispatch })
+    return apiData
   } catch (e) {
     context.reportToSentry({
       error: e as Error,
@@ -336,6 +337,7 @@ const fetchData = async <Args, Data>(
         errorMessage: getErrorMessage(e)
       }) as FetchErrorAction
     )
+    return undefined
   }
 }
 

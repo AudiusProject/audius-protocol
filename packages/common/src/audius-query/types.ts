@@ -56,10 +56,7 @@ export type Api<EndpointDefinitions extends DefaultEndpointDefinitions> = {
    * Allows for pre-fetching of related data into the cache. Does not return the data.
    */
   fetch: {
-    [Property in keyof EndpointDefinitions]: (
-      fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0],
-      context: AudiusQueryContextType
-    ) => Promise<void>
+    [Property in keyof EndpointDefinitions]: EndpointDefinitions[Property]['fetch']
   }
 }
 

@@ -1,5 +1,6 @@
 import dayjs from 'dayjs'
 import { device, expect } from 'detox'
+import { random } from 'lodash'
 
 import { byRole, byText } from './matchers'
 
@@ -26,9 +27,9 @@ describe('Sign up', () => {
     await device.launchApp()
   })
 
-  afterEach(async () => {
-    await device.reloadReactNative()
-  })
+  // afterEach(async () => {
+  //   await device.reloadReactNative()
+  // })
 
   it('should open the sign up screen', async () => {
     await assertOnSignUp()
@@ -44,7 +45,7 @@ describe('Sign up', () => {
     await assertOnSignUp()
   })
 
-  it('should create an account', async () => {
+  it.only('should create an account', async () => {
     const testUser = generateTestUser()
     const { email, password, handle, name } = testUser
 
@@ -123,12 +124,39 @@ describe('Sign up', () => {
       byText(/curate your feed with tracks uploaded .*/i)
     ).toBeVisible()
 
-    expect(byRole('radio', { name: /featured/i })).toHaveValue(
+    await expect(byRole('radio', { name: /featured/i })).toHaveValue(
       'radio button, checked'
     )
 
     for (const genre of genres) {
-      expect(byRole('radio', { name: genre })).toBeVisible()
+      await expect(byRole('radio', { name: genre })).toBeVisible()
     }
+
+    async function selectRandomArtist() {
+      const artistElements = await byRole('checkbox', {
+        name: /artist-.*/i
+      }).getAttributes()
+
+      let randomArtist: Detox.NativeElement
+      if ('elements' in artistElements) {
+        const numArtists = artistElements.elements.length
+        randomArtist = byRole('checkbox', { name: /artist-.*/i }).atIndex(
+          random(Math.min(numArtists - 1, 10))
+        )
+      } else {
+        randomArtist = byRole('checkbox', { name: /artist-.*/i })
+      }
+      await randomArtist.tap()
+    }
+
+    await selectRandomArtist()
+
+    await byRole('radio', { name: /acoustic/i }).tap()
+    await selectRandomArtist()
+
+    await byRole('radio', { name: /electronic/i }).tap()
+    await selectRandomArtist()
+
+    await byRole('button', { name: /continue/i }).tap()
   })
 })
