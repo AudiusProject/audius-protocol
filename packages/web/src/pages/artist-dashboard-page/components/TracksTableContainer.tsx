@@ -1,9 +1,9 @@
 import { useState, useCallback, useMemo } from 'react'
 
 import { Status, User, Track } from '@audius/common'
+import { SelectablePill } from '@audius/harmony'
 import {
   IconHidden,
-  HarmonySelectablePill,
   IconVisibilityPublic,
   IconCart,
   IconSpecialAccess,
@@ -158,7 +158,7 @@ export const TracksTableContainer = ({
       <div className={styles.header}>
         <div className={styles.pills}>
           {!hasOnlyOneSection ? (
-            <HarmonySelectablePill
+            <SelectablePill
               isSelected={selectedPill === Pills.ALL}
               label={messages.all}
               size='large'
@@ -166,7 +166,7 @@ export const TracksTableContainer = ({
             />
           ) : null}
           {pub.length > 0 ? (
-            <HarmonySelectablePill
+            <SelectablePill
               isSelected={selectedPill === Pills.PUBLIC}
               label={
                 messages.public +
@@ -178,7 +178,7 @@ export const TracksTableContainer = ({
             />
           ) : null}
           {premium.length > 0 ? (
-            <HarmonySelectablePill
+            <SelectablePill
               isSelected={selectedPill === Pills.PREMIUM}
               label={
                 messages.premium +
@@ -190,7 +190,7 @@ export const TracksTableContainer = ({
             />
           ) : null}
           {specialAccess.length > 0 ? (
-            <HarmonySelectablePill
+            <SelectablePill
               isSelected={selectedPill === Pills.SPECIAL_ACCESS}
               label={
                 messages.specialAcess +
@@ -202,7 +202,7 @@ export const TracksTableContainer = ({
             />
           ) : null}
           {gated.length > 0 ? (
-            <HarmonySelectablePill
+            <SelectablePill
               isSelected={selectedPill === Pills.GATED}
               label={
                 messages.gated +
@@ -214,7 +214,7 @@ export const TracksTableContainer = ({
             />
           ) : null}
           {hidden.length > 0 ? (
-            <HarmonySelectablePill
+            <SelectablePill
               isSelected={selectedPill === Pills.HIDDEN}
               label={
                 messages.hidden +

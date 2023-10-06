@@ -1,7 +1,10 @@
+import { useEffect } from 'react'
+
 import {
   premiumTracksPageLineupActions,
   premiumTracksPageLineupSelectors
 } from '@audius/common'
+import { useDispatch } from 'react-redux'
 
 import EndOfLineup from 'components/lineup/EndOfLineup'
 import Lineup from 'components/lineup/Lineup'
@@ -27,6 +30,15 @@ const usePremiumTracksLineup = (containerRef: HTMLElement) => {
   })
 }
 
+const useLineupReset = () => {
+  const dispatch = useDispatch()
+  useEffect(() => {
+    return () => {
+      dispatch(premiumTracksPageLineupActions.reset())
+    }
+  }, [dispatch])
+}
+
 type PremiumTracksPageProps = {
   containerRef: HTMLElement
 }
@@ -37,6 +49,9 @@ export const PremiumTracksPage = ({ containerRef }: PremiumTracksPageProps) => {
   const Content = isMobile
     ? MobilePremiumTracksPageContent
     : DesktopPremiumTracksPageContent
+
+  useLineupReset()
+
   const renderLineup = () => {
     return (
       <Lineup

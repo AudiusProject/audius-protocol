@@ -240,7 +240,7 @@ def make_get_unpopulated_playlists(session, time_range, strategy):
     return wrapped
 
 
-def make_trending_cache_key(
+def make_trending_playlists_cache_key(
     time_range, version=DEFAULT_TRENDING_VERSIONS[TrendingType.PLAYLISTS]
 ):
     version_name = (
@@ -267,7 +267,7 @@ def _get_trending_playlists_with_session(
     with_tracks = args.get("with_tracks", False)
     time = args.get("time")
     limit, offset = args.get("limit"), args.get("offset")
-    key = make_trending_cache_key(time, strategy.version)
+    key = make_trending_playlists_cache_key(time, strategy.version)
 
     # Get unpopulated playlists,
     # cached if it exists.
