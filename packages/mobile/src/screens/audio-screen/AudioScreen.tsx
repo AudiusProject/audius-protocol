@@ -60,7 +60,6 @@ const LEARN_MORE_LINK = 'https://blog.audius.co/article/community-meet-audio'
 const messages = {
   title: '$AUDIO & Rewards',
   audio: '$AUDIO',
-  totalAudio: 'Total $AUDIO',
   send: 'Send $AUDIO',
   receive: 'Receive $AUDIO',
   manageWallet: 'Manage Wallets',
@@ -265,7 +264,7 @@ export const AudioScreen = () => {
         <View style={styles.audioInfo}>
           {hasMultipleWallets ? (
             <>
-              <Text style={styles.audioText}>{messages.totalAudio}</Text>
+              <Text style={styles.audioText}>{messages.audio}</Text>
               <IconInfo height={16} width={16} fill={'rgba(255,255,255,0.5)'} />
             </>
           ) : (

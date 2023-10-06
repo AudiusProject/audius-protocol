@@ -1,6 +1,5 @@
 import type { BNWei } from '@audius/common'
 import { formatWei, walletSelectors } from '@audius/common'
-import BN from 'bn.js'
 import { Image, Platform, View } from 'react-native'
 import { useSelector } from 'react-redux'
 

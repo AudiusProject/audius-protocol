@@ -60,7 +60,6 @@ const messages = {
   transactionsLabel: 'View Transactions',
   audio: '$AUDIO',
   manageWallets: 'Manage Wallets',
-  totalAudio: 'Total $AUDIO',
   buyAudio: 'Buy $AUDIO',
   buyAudioSubheader:
     'Buy $Audio tokens to unlock VIP tiers, earn badges, and tip artists',
@@ -354,7 +353,7 @@ export const WalletManagementTile = () => {
         <div className={styles.balance}>
           {hasMultipleWallets ? (
             <div onClick={onClickOpen}>
-              {messages.totalAudio}
+              {messages.audio}
               <IconInfo className={styles.iconInfo} />
             </div>
           ) : (
