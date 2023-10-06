@@ -173,6 +173,20 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
         renderIcon: (color) => <IconCheck fill={color} />,
         iconPosition: 'right'
       }
+    },
+    b: {
+      icon: BarChart,
+      buttonInfo: {
+        renderIcon: (color) => <IconCheck fill={color} />,
+        iconPosition: 'right'
+      }
+    },
+    s: {
+      icon: BarChart,
+      buttonInfo: {
+        renderIcon: (color) => <IconCheck fill={color} />,
+        iconPosition: 'right'
+      }
     }
   }
 
