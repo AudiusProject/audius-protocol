@@ -148,11 +148,9 @@ def generate_env(
     env["AAO_WALLET_ADDRESSES"] = ",".join(aao_wallets)
 
     if prod:
-        env["IDENTITY_DOCKERCOMPOSE"] = "docker-compose.identity.prod.yml"
-        env["DEVTOOLS_DOCKERCOMPOSE"] = "docker-compose.dev-tools.prod.yml"
+        env["DOCKERCOMPOSE_ENV_TYPE"] = "prod"
     else:
-        env["IDENTITY_DOCKERCOMPOSE"] = "docker-compose.identity.dev.yml"
-        env["DEVTOOLS_DOCKERCOMPOSE"] = "docker-compose.dev-tools.dev.yml"
+        env["DOCKERCOMPOSE_ENV_TYPE"] = "dev"
 
     for key, value in config.get("extra-env", {}).items():
         env[key] = value

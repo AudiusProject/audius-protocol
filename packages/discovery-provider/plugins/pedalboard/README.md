@@ -18,8 +18,8 @@ To create a new application copy and paste the [app-template](./apps/app-templat
 At this time of writing this is what it looks like:
 
 ```
-import { log } from "logger";
-import App from "basekit/src/app";
+import { log } from "@pedalboard/logger";
+import App from "@pedalboard/basekit/src/app";
 import moment from "moment";
 
 type SharedData = {};

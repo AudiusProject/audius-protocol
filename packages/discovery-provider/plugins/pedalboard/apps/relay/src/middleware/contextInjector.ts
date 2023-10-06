@@ -1,19 +1,19 @@
-import { Users } from "storage/src";
-import { ValidatedRelayRequest } from "../types/relay";
+import { Users } from '@pedalboard/storage'
+import { ValidatedRelayRequest } from '../types/relay'
 
 /** Context built by the context injector that can be referenced later in the request (via response object). */
 export interface RequestContext {
-  startTime: Date;
-  recoveredSigner: Users;
-  ip: string;
-  requestId: string;
-  validatedRelayRequest: ValidatedRelayRequest;
+  startTime: Date
+  recoveredSigner: Users
+  ip: string
+  requestId: string
+  validatedRelayRequest: ValidatedRelayRequest
 }
 
 declare global {
   namespace Express {
     interface Locals {
-      ctx: RequestContext;
+      ctx: RequestContext
     }
   }
 }

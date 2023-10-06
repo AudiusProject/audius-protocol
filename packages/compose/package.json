@@ -6,7 +6,10 @@
     "start": "audius-compose up"
   },
   "dependencies": {
-    "@audius/sdk": "*"
+    "@audius/sdk": "*",
+    "@pedalboard/relay": "*",
+    "@pedalboard/sla-auditor": "*",
+    "@pedalboard/trending-challenge-rewards": "*"
   },
   "license": "ISC"
 }

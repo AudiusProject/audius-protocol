@@ -1,5 +1,5 @@
 {
-  "name": "app-template",
+  "name": "@pedalboard/app-template",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -7,17 +7,19 @@
     "clean": "rm -rf dist",
     "dev": "nodemon --exec \"node -r esbuild-register ./src/index.ts\" -e .ts",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\"",
-    "start": "node -r esbuild-register ./src/index.ts",
+    "start": "node ./dist/index.js",
     "test": "jest --detectOpenHandles"
   },
   "jest": {
     "preset": "jest-presets/jest/node"
   },
   "dependencies": {
+    "@pedalboard/basekit": "*",
+    "@pedalboard/logger": "*",
+    "@pedalboard/storage": "*",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "logger": "*",
     "morgan": "^1.10.0"
   },
   "devDependencies": {

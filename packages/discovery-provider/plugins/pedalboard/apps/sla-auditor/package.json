@@ -1,5 +1,5 @@
 {
-  "name": "sla-auditor",
+  "name": "@pedalboard/sla-auditor",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -8,7 +8,7 @@
     "dev": "ts-node-dev --respawn ./src/index.ts",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\"",
-    "start": "node -r esbuild-register ./src/index.ts",
+    "start": "node ./dist/index.js",
     "test": "jest --detectOpenHandles"
   },
   "jest": {
@@ -16,17 +16,17 @@
   },
   "dependencies": {
     "@audius/sdk": "*",
+    "@pedalboard/basekit": "*",
+    "@pedalboard/logger": "*",
+    "@pedalboard/storage": "*",
     "@truffle/hdwallet-provider": "^1.7.0",
-    "basekit": "*",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dotenv": "^16.1.4",
     "express": "^4.17.1",
     "knex": "^2.4.2",
-    "logger": "*",
     "morgan": "^1.10.0",
     "semver": "^7.5.3",
-    "storage": "*",
     "ts-results": "^3.3.0"
   },
   "devDependencies": {

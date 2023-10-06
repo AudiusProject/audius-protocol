@@ -1,5 +1,5 @@
 {
-  "name": "trending-challenge-rewards",
+  "name": "@pedalboard/trending-challenge-rewards",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -7,7 +7,7 @@
     "clean": "rm -rf dist",
     "dev": "nodemon --exec \"node -r esbuild-register ./src/index.ts\" -e .ts",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\"",
-    "start": "node -r esbuild-register ./src/index.ts",
+    "start": "node ./dist/index.js",
     "test": "jest --detectOpenHandles"
   },
   "jest": {
@@ -15,19 +15,19 @@
   },
   "dependencies": {
     "@audius/sdk": "*",
+    "@pedalboard/basekit": "*",
+    "@pedalboard/logger": "*",
+    "@pedalboard/storage": "*",
     "@slack/bolt": "^3.13.1",
     "@slack/web-api": "^6.8.1",
     "ascii-table3": "^0.8.2",
-    "basekit": "*",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dotenv": "^16.1.4",
     "express": "^4.17.1",
     "knex": "^2.4.2",
-    "logger": "*",
     "moment": "^2.29.4",
     "morgan": "^1.10.0",
-    "storage": "*",
     "ts-results": "^3.3.0"
   },
   "devDependencies": {

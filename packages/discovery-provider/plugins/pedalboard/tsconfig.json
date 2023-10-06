@@ -16,17 +16,12 @@
     "skipLibCheck": true,
     "strict": true,
     "types": ["node"],
-    "baseUrl": ".",
-    "paths": {
-      "@pedalboard/storage": ["./packages/storage/src/*"],
-      "@pedalboard/basekit": ["./packages/basekit/src/*"],
-      "@pedalboard/logger": ["./packages/logger/src/*"]
-    }
+    "baseUrl": "."
   },
   "references": [
-    { "path": "./packages/storage"},
-    { "path": "./packages/basekit"},
-    { "path": "./packages/logger"}
+    { "path": "./packages/storage" },
+    { "path": "./packages/basekit" },
+    { "path": "./packages/logger" }
   ],
   "exclude": ["node_modules"]
 }

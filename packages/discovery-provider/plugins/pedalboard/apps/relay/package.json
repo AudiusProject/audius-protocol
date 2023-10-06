@@ -1,5 +1,5 @@
 {
-  "name": "relay",
+  "name": "@pedalboard/relay",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,7 +10,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\"",
     "sandbox": "npx ts-node ./src/scripts/sandbox.ts",
-    "start": "node -r esbuild-register ./src/index.ts",
+    "start": "node ./dist/index.js",
     "test": "jest --detectOpenHandles"
   },
   "jest": {
@@ -18,9 +18,11 @@
   },
   "dependencies": {
     "@audius/sdk": "*",
+    "@pedalboard/basekit": "*",
+    "@pedalboard/logger": "*",
+    "@pedalboard/storage": "*",
     "@types/compute-lcm": "^1.1.0",
     "axios": "^0.19.2",
-    "basekit": "*",
     "body-parser": "^1.20.2",
     "compute-lcm": "^1.1.2",
     "cors": "^2.8.5",
@@ -30,11 +32,9 @@
     "ethers": "^5.7.0",
     "express": "^4.18.2",
     "http-status-codes": "^2.2.0",
-    "logger": "*",
     "morgan": "^1.10.0",
     "pino": "^8.14.1",
     "rate-limiter-flexible": "^2.4.1",
-    "storage": "^0.0.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
