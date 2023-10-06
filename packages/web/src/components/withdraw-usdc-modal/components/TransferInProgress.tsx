@@ -1,8 +1,7 @@
 import {
   useUSDCBalance,
-  formatCurrencyBalance,
   BNUSDC,
-  formatUSDCWeiToFloorDollarNumber,
+  formatUSDCWeiToFloorCentsNumber,
   decimalIntegerToHumanReadable
 } from '@audius/common'
 import BN from 'bn.js'
@@ -27,10 +26,10 @@ const messages = {
 
 export const TransferInProgress = () => {
   const { data: balance } = useUSDCBalance()
-  const balanceNumber = formatUSDCWeiToFloorDollarNumber(
+  const balanceNumber = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
-  const balanceFormatted = formatCurrencyBalance(balanceNumber)
+  const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
 
   const [{ value: amountValue }] = useField(AMOUNT)
   const [{ value: addressValue }] = useField(ADDRESS)
