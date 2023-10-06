@@ -1,11 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import type { ID, Nullable, Track, UID, User } from '@audius/common'
+import type {
+  CommonState,
+  ID,
+  Nullable,
+  Track,
+  UID,
+  User
+} from '@audius/common'
 import {
-  LibraryCategory,
-  SavedPageTabs,
   FavoriteSource,
+  LibraryCategory,
   PlaybackSource,
+  SavedPageTabs,
   Status,
   cacheTracksSelectors,
   cacheUsersSelectors,
@@ -25,6 +32,7 @@ import { FilterInput } from 'app/components/filter-input'
 import { TrackList } from 'app/components/track-list'
 import type { TrackMetadata } from 'app/components/track-list/types'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
+import { getIsDoneLoadingFromDisk } from 'app/store/offline-downloads/selectors'
 import { makeStyles } from 'app/styles'
 
 import { LoadingMoreSpinner } from './LoadingMoreSpinner'
@@ -83,7 +91,15 @@ export const TracksTab = () => {
   const selectedCategory = useSelector((state) =>
     getCategory(state, { currentTab: SavedPageTabs.TRACKS })
   )
-  const savedTracksStatus = useSelector(getSavedTracksStatus)
+  const savedTracksStatus = useSelector((state) => {
+    const onlineSavedTracksStatus = getSavedTracksStatus(state)
+    const isDoneLoadingFromDisk = getIsDoneLoadingFromDisk(state)
+    const offlineSavedTracksStatus = isDoneLoadingFromDisk
+      ? Status.SUCCESS
+      : Status.LOADING
+    return isReachable ? onlineSavedTracksStatus : offlineSavedTracksStatus
+  })
+
   const initialFetch = useSelector(getInitialFetchStatus)
   const isFetchingMore = useSelector(getIsFetchingMore)
   const saves = useSelector(getTrackSaves)
@@ -208,7 +224,7 @@ export const TracksTab = () => {
   }, [])
 
   const loadingSpinner = <LoadingMoreSpinner />
-
+  console.log(isLoading, filteredTrackUids, filterValue, 'beepy')
   return (
     <VirtualizedScrollView>
       {!isLoading && filteredTrackUids.length === 0 && !filterValue ? (
