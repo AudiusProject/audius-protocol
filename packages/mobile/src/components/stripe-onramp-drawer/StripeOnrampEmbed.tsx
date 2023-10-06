@@ -19,10 +19,11 @@ const STRIPE_PUBLISHABLE_KEY = env.REACT_APP_STRIPE_CLIENT_PUBLISHABLE_KEY
 const useStyles = makeStyles(() => ({
   root: {
     display: 'flex',
-    height: '85%'
+    flex: 1,
+    height: '100%'
   },
   spinnerContainer: {
-    height: '85%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center'
   }
@@ -52,6 +53,15 @@ export const StripeOnrampEmbed = () => {
       dispatch(cancelStripeOnramp())
     },
     [dispatch]
+  )
+
+  const renderLoadingSpinner = useCallback(
+    () => (
+      <View style={styles.spinnerContainer}>
+        <LoadingSpinner />
+      </View>
+    ),
+    [styles]
   )
 
   const html = `
@@ -96,14 +106,14 @@ export const StripeOnrampEmbed = () => {
       {clientSecret ? (
         <WebView
           source={{ html }}
+          startInLoadingState={true}
+          renderLoading={renderLoadingSpinner}
           scrollEnabled={false}
           onError={handleError}
           onMessage={handleSessionUpdate}
         />
       ) : (
-        <View style={styles.spinnerContainer}>
-          <LoadingSpinner />
-        </View>
+        renderLoadingSpinner()
       )}
     </View>
   )

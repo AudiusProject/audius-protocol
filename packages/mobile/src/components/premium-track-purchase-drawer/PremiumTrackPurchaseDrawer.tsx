@@ -89,7 +89,9 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    padding: spacing(4)
+    height: spacing(10),
+    paddingHorizontal: spacing(4),
+    paddingBottom: spacing(4)
   },
   titleContainer: {
     ...flexRowCentered(),
