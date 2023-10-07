@@ -147,5 +147,6 @@
       "src/notifications/components/*",
       "src/notifications/renderEmail/*"
     ]
-  }
+  },
+  "version": "0.0.1"
 }
