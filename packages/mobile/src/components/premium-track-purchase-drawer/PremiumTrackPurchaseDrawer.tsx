@@ -25,6 +25,7 @@ import { Button, LockedStatusBadge, Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -167,6 +168,7 @@ const PremiumTrackPurchaseDrawerHeader = ({
 // to the FormikContext, which can only be used in a component which is a descendant
 // of the `<Formik />` component
 const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
+  const navigation = useNavigation()
   const styles = useStyles()
   const { specialLightGreen, accentRed, secondary } = useThemeColors()
 
@@ -185,6 +187,13 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
     usePurchaseContentFormState({ price })
 
   const isPurchaseSuccessful = stage === PurchaseContentStage.FINISH
+
+  // Navigate to track screen in the background if purchase is successful
+  useEffect(() => {
+    if (isPurchaseSuccessful) {
+      navigation.navigate('Track', { id: track.track_id })
+    }
+  }, [isPurchaseSuccessful, navigation, track.track_id])
 
   const handleTermsPress = useCallback(() => {
     Linking.openURL('https://audius.co/legal/terms-of-use')

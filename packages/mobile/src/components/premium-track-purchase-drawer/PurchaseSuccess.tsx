@@ -3,8 +3,10 @@ import { useCallback } from 'react'
 import type { UserTrackMetadata } from '@audius/common'
 import { View } from 'react-native'
 
+import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import IconVerified from 'app/assets/images/iconVerified.svg'
-import { Text } from 'app/components/core'
+import { Button, Text } from 'app/components/core'
+import { useDrawer } from 'app/hooks/useDrawer'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { EventNames } from 'app/types/analytics'
@@ -16,10 +18,11 @@ import { TwitterButton } from '../twitter-button'
 const messages = {
   success: 'Your purchase was successful!',
   shareTwitterText: (trackTitle: string, handle: string) =>
-    `I bought the track ${trackTitle} by ${handle} on Audius! #AudiusPremium`
+    `I bought the track ${trackTitle} by ${handle} on Audius! #AudiusPremium`,
+  viewTrack: 'View Track'
 }
 
-const useStyles = makeStyles(({ spacing, typography, palette }) => ({
+const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
     paddingTop: spacing(2),
     gap: spacing(9),
@@ -29,12 +32,22 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     ...flexRowCentered(),
     alignSelf: 'center',
     gap: spacing(2)
+  },
+  viewTrack: {
+    borderWidth: 0
+  },
+  viewTrackText: {
+    color: palette.neutralLight4
+  },
+  viewTrackIcon: {
+    color: palette.neutralLight4
   }
 }))
 
 export const PurchaseSuccess = ({ track }: { track: UserTrackMetadata }) => {
   const styles = useStyles()
   const { specialGreen, staticWhite } = useThemeColors()
+  const { onClose } = useDrawer('PremiumTrackPurchase')
   const { handle } = track.user
   const { title } = track
   const link = getTrackRoute(track, true)
@@ -71,6 +84,19 @@ export const PurchaseSuccess = ({ track }: { track: UserTrackMetadata }) => {
         shareData={handleTwitterShare}
         handle={handle}
         size='large'
+      />
+      <Button
+        onPress={onClose}
+        title={messages.viewTrack}
+        variant='commonAlt'
+        styles={{
+          root: styles.viewTrack,
+          text: styles.viewTrackText,
+          // @ts-ignore icon has ViewStyle prop for some reason, which does not understand the 'color' property
+          icon: styles.viewTrackIcon
+        }}
+        size='large'
+        icon={IconCaretRight}
       />
     </View>
   )
