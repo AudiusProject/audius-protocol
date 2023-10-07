@@ -132,12 +132,12 @@ const createAndSendEthTransaction = async (
       `L1 txRelay - Invalid relayerPublicKey found. Expected ${sender.publicKey.toLowerCase()}, found ${address}`
     )
   }
-  const gasPrice = await web3.eth.gasPrice()
+  const gasPrice = await web3.eth.getGasPrice()
   const nonce = await web3.eth.getTransactionCount(address)
   let txParams = {
     nonce: web3.utils.toHex(nonce),
     gasLimit: gasLimit ? web3.utils.numberToHex(gasLimit) : DEFAULT_GAS_LIMIT,
-    gasPrice,
+    gasPrice: web3.utils.numberToHex(gasPrice),
     to: receiverAddress,
     value: web3.utils.toHex(value)
   }
