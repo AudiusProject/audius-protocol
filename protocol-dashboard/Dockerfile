@@ -15,7 +15,7 @@ RUN apt update && \
 ENV WORKDIR /app
 WORKDIR ${WORKDIR}
 
-COPY .env* .prettierrc.json configureLocalEnv.js index.html package.json package-lock.json tsconfig.json tsconfig.node.json vite.config.ts .
+COPY .env* configureLocalEnv.js index.html package.json package-lock.json tsconfig.json tsconfig.node.json vite.config.ts .
 ADD src ./src
 ADD public ./public
 ADD scripts ./scripts
