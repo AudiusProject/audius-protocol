@@ -5,6 +5,7 @@ services:
     container_name: protocol-dashboard
     build:
       context: ${PROJECT_ROOT}/protocol-dashboard
+    command: ["npm", "run", "start:stage"]
     ports:
       - 5173:5173
     deploy:

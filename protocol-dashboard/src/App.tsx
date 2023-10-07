@@ -28,7 +28,7 @@ import Proposal from 'containers/Proposal'
 import { createStyles } from 'utils/mobile'
 import { getDidGraphError } from 'store/api/hooks'
 const styles = createStyles({ desktopStyles, mobileStyles })
-const history = createHashHistory()
+const history = createHashHistory({ basename: import.meta.env.VITE_DASHBOARD_BASE_URL || '/' })
 const store = createStore(history)
 
 const Root = () => (

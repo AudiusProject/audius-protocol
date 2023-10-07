@@ -23,5 +23,3 @@ ADD types ./types
 
 ENV DASHBOARD_BASE_URL="/protocol-dashboard/"
 RUN npm install --legacy-peer-deps
-
-CMD npm run start:stage

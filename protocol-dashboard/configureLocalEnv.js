@@ -19,6 +19,7 @@ try {
     remoteHost && process.argv.length > 2 && process.argv[2] == 'remote'
   const host = useRemoteHost ? remoteHost : localhost
 
+  const VITE_DASHBOARD_BASE_URL = process.env.DASHBOARD_BASE_URL || '/'
   const VITE_ENVIRONMENT = 'development'
   const VITE_CONTENT_NODE = `http://${host}:4000`
   const VITE_DISCOVERY_PROVIDER = `http://${host}:5000`
@@ -59,6 +60,7 @@ try {
   const contents = `
   # DO NOT MODIFY. SEE /scripts/configureLocalEnv.sh
   
+  VITE_DASHBOARD_BASE_URL=${VITE_DASHBOARD_BASE_URL}
   VITE_ENVIRONMENT=${VITE_ENVIRONMENT}
   
   VITE_DISCOVERY_PROVIDER=${VITE_DISCOVERY_PROVIDER}
