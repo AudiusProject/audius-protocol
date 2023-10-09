@@ -43,13 +43,13 @@ export const StripeOnrampEmbed = () => {
           event.nativeEvent.data
         ) as OnrampSessionResult
 
-        if (!status) {
-          console.error('Unexpected empty Stripe session status')
-        } else if (status === 'error') {
-          console.error('Received Stripe session error')
-          dispatch(cancelStripeOnramp())
-        } else {
-          dispatch(stripeSessionStatusChanged({ status }))
+        if (status) {
+          if (status === 'error') {
+            console.error('Received Stripe session error')
+            dispatch(cancelStripeOnramp())
+          } else {
+            dispatch(stripeSessionStatusChanged({ status }))
+          }
         }
       } catch (e) {
         console.error(`Failed to parse Stripe session update: ${e}`)
