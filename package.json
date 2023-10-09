@@ -67,7 +67,6 @@
     "eslint-plugin-react": "7.31.10",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-standard": "4.1.0",
-    "lerna": "^7.3.0",
     "npm-check-updates": "16.4.1",
     "patch-package": "6.5.1",
     "prettier": "2.7.1",
