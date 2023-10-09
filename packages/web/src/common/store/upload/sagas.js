@@ -929,7 +929,6 @@ function* recordGatedTracks(tracks) {
 }
 
 function* uploadSingleTrack(track) {
-  console.log('upload single track commence')
   yield waitForWrite()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const apiClient = yield getContext('apiClient')
