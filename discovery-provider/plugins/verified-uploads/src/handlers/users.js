@@ -29,10 +29,10 @@ export default async ({ user_id, blocknumber }) => {
     db: dp_db
   })
 
-  // user create
-  if (old === undefined) return
+  const user_became_verified = current.is_verified !== old.is_verified
+  const new_user_is_verified = old === undefined && current.is_verified
 
-  if (current.is_verified !== old.is_verified) {
+  if (user_became_verified || new_user_is_verified) {
     const is_verified = current.is_verified
     const handle = current.handle
 
