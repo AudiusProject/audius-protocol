@@ -656,6 +656,7 @@ def process_transfer_instruction(
                 )
                 return
 
+            # TODO: Remove on launch: https://linear.app/audius/issue/PAY-1987/remove-check-to-only-disburse-dollaraudio-matching-challenges-in-non
             env = shared_config["discprov"]["env"]
             if env != "prod":
                 amount = int(
