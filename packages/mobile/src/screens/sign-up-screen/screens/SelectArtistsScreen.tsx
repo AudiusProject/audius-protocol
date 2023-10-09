@@ -14,6 +14,8 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { Button, Text } from 'app/components/core'
 
+import { ArtistTile } from '../components/ArtistTile'
+
 const messages = {
   header: 'Follow At Least 3 Artists',
   description:
@@ -86,41 +88,15 @@ export const SelectArtistsScreen = () => {
         })}
       </View>
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        {({ values, setValues, handleSubmit }) => {
-          const { artists: selectedArtists } = values
+        {({ handleSubmit }) => {
           return (
             <View>
               <View>
                 {isLoading
                   ? null
-                  : artists?.map((user) => {
-                      const { user_id, name } = user
-                      const checked = selectedArtists.includes(user_id)
-
-                      const handleChange = () => {
-                        const newArtists = checked
-                          ? selectedArtists.filter((value) => value !== user_id)
-                          : [user_id, ...selectedArtists]
-
-                        setValues({ artists: newArtists })
-                      }
-
-                      return (
-                        <Pressable
-                          key={user_id}
-                          testID={`artist-${name}`}
-                          accessibilityRole='checkbox'
-                          accessibilityState={{ checked }}
-                          accessibilityLiveRegion='polite'
-                          onPress={handleChange}
-                          style={{
-                            backgroundColor: checked ? 'purple' : undefined
-                          }}
-                        >
-                          <Text>{name}</Text>
-                        </Pressable>
-                      )
-                    })}
+                  : artists?.map((user) => (
+                      <ArtistTile key={user.user_id} user={user} />
+                    ))}
               </View>
               <Button
                 title={messages.continue}

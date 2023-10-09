@@ -68,7 +68,7 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    it.only('should create an account', () => {
+    it('should create an account', () => {
       const testUser = generateTestUser()
       const { email, password, handle, name } = testUser
       cy.visit('signup')

@@ -27,9 +27,9 @@ describe('Sign up', () => {
     await device.launchApp()
   })
 
-  // afterEach(async () => {
-  //   await device.reloadReactNative()
-  // })
+  afterEach(async () => {
+    await device.reloadReactNative()
+  })
 
   it('should open the sign up screen', async () => {
     await assertOnSignUp()
@@ -45,7 +45,7 @@ describe('Sign up', () => {
     await assertOnSignUp()
   })
 
-  it.only('should create an account', async () => {
+  it('should create an account', async () => {
     const testUser = generateTestUser()
     const { email, password, handle, name } = testUser
 
