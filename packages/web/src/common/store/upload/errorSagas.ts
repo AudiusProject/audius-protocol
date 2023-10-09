@@ -5,6 +5,22 @@ import * as errorActions from 'store/errors/actions'
 
 const BYTES_PER_MB = 1000 * 1000
 
+const errorsWithoutRedirect = new Set([
+  // Multitrack shouldn't redirect b/c
+  // some tracks are better than none
+  uploadActions.MULTI_TRACK_TIMEOUT_ERROR,
+  uploadActions.MULTI_TRACK_UPLOAD_ERROR,
+
+  // Associate requires track cleanup
+  uploadActions.COLLECTION_ASSOCIATE_TRACKS_ERROR,
+
+  // Playlist errors require
+  // track & possibly playlist cleanup
+  uploadActions.COLLECTION_CREATE_PLAYLIST_ID_EXISTS_ERROR,
+  uploadActions.COLLECTION_CREATE_PLAYLIST_NO_ID_ERROR,
+  uploadActions.COLLECTION_POLL_PLAYLIST_TIMEOUT_ERROR
+])
+
 // TODO: This definition should live in Upload Actions
 // once we've settled on a pattern for defining actions in TS
 type UploadErrorActions = {
@@ -17,6 +33,8 @@ type UploadErrorActions = {
 }
 
 function* handleUploadError(action: UploadErrorActions) {
+  const shouldRedirect = !errorsWithoutRedirect.has(action.type)
+
   // Append extra info depending on the action type
   const extras: {
     error?: string
@@ -41,6 +59,7 @@ function* handleUploadError(action: UploadErrorActions) {
   yield put(
     errorActions.handleError({
       message: action.type,
+      shouldRedirect,
       shouldReport: true,
       additionalInfo: extras
     })

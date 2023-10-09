@@ -12,6 +12,7 @@ const errorSagas = createErrorSagas<CollectionErrors>({
     socialCollectionActions.SAVE_COLLECTION_FAILED,
     socialCollectionActions.UNSAVE_COLLECTION_FAILED
   ],
+  getShouldRedirect: () => false,
   getShouldReport: () => true,
   getAdditionalInfo: (action: CollectionErrors) => ({
     error: action.error,

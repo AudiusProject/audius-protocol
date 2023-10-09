@@ -11,6 +11,7 @@ export function* handleFollowersError(action: handleTopSupportersError) {
   yield put(
     errorActions.handleError({
       message: action.type,
+      shouldRedirect: true,
       shouldReport: true,
       additionalInfo: {
         errorMessage: action.error,

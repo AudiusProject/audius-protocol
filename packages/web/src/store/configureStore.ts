@@ -36,7 +36,13 @@ const onSagaError = (
   console.error(
     `Caught saga error: ${error} ${JSON.stringify(errorInfo, null, 4)}`
   )
-  store.dispatch(errorActions.openErrorPage())
+  store.dispatch(
+    errorActions.handleError({
+      name: 'Caught Saga Error',
+      message: error.message,
+      shouldRedirect: true
+    })
+  )
   const additionalInfo = {
     ...errorInfo,
     route: window.location.pathname

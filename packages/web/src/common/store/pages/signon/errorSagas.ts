@@ -4,6 +4,15 @@ import * as errorActions from 'store/errors/actions'
 
 import * as signOnActions from './actions'
 
+const noRedirectSet = new Set([
+  // Social failures are not fatal
+  signOnActions.SET_TWITTER_PROFILE_ERROR,
+  signOnActions.SET_INSTAGRAM_PROFILE_ERROR,
+  signOnActions.SET_TIKTOK_PROFILE_ERROR,
+  // Sign in errors are never fatal
+  signOnActions.SIGN_IN_FAILED
+])
+
 function* handleSignOnError(
   action: ReturnType<
     typeof signOnActions.signUpFailed | typeof signOnActions.signInFailed
@@ -11,6 +20,9 @@ function* handleSignOnError(
 ) {
   const SIGN_UP_ERROR_PREFIX = 'SIGN_ON/SIGN_UP_ERROR_'
   const SIGN_IN_ERROR_PREFIX = 'SIGN_ON/SIGN_IN_ERROR_'
+
+  // Determine whether the error should redirect to /error and whether it should report it.
+  const shouldRedirect = !noRedirectSet.has(action.type)
 
   const shouldReport = 'shouldReport' in action ? action.shouldReport : true
 
@@ -33,6 +45,7 @@ function* handleSignOnError(
   yield put(
     errorActions.handleError({
       message,
+      shouldRedirect,
       shouldReport,
       shouldToast,
       additionalInfo: { errorMessage: action.error },

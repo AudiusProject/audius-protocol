@@ -17,6 +17,9 @@ export type HandleErrorAction = {
   name?: string
   message: string
   shouldReport: boolean
+  shouldRedirect: boolean
+  // by default the handler redirects to the error page if
+  // shouldRedirect is true unless a redirectRoute is passed in
   shouldToast?: boolean
 
   additionalInfo?: AdditionalErrorReportInfo
@@ -29,6 +32,7 @@ export type OpenErrorPageAction = {
 }
 
 type HandleErrorArgs = {
+  shouldRedirect: boolean
   shouldReport?: boolean
   shouldToast?: boolean
   message: string
@@ -39,6 +43,7 @@ export const handleError = ({
   name,
   message,
   shouldReport = true,
+  shouldRedirect,
   shouldToast,
   additionalInfo = {},
   level,
@@ -47,6 +52,7 @@ export const handleError = ({
   type: HANDLE_ERROR,
   name,
   message,
+  shouldRedirect,
   shouldReport,
   shouldToast,
   additionalInfo,

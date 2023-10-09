@@ -207,7 +207,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
         track.file,
         artwork,
         metadata,
-        updateProgress ? makeOnProgress(index) : (progress) => {}
+        updateProgress ? makeOnProgress(index) : (progress) => { }
       )
 
       // b/c we can't pass extra info (phase) into the confirmer fail call, we need to clean up here.
@@ -365,7 +365,7 @@ function* uploadWorker(requestChan, respChan, progressChan) {
           ? makeConfirmerSuccessForCollection
           : makeConfirmerSuccess)(id, index, updateProgress),
         isCollection ? makeConfirmerFailureCollection(id) : confirmerFailure,
-        () => {},
+        () => { },
         UPLOAD_TIMEOUT_MILLIS
       )
     )
@@ -644,7 +644,13 @@ export function* handleUploads({
             console.debug('Something went wrong deleting orphaned tracks')
           }
           // Now navigate them to something went wrong
-          yield put(errorActions.openErrorPage())
+          yield put(
+            errorActions.handleError({
+              name: 'Registering Tracks Error',
+              message: 'Something went wrong registering tracks!',
+              shouldRedirect: true
+            })
+          )
         } else {
           yield put(uploadActions.addTrackToChainError(error))
         }
@@ -884,7 +890,13 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
         } catch (err) {
           console.debug(`Could not delete all tracks: ${err}`)
         }
-        yield put(errorActions.openErrorPage())
+        yield put(
+          errorActions.handleError({
+            name: 'Create Playlist Error',
+            message: 'Create playlist call failed',
+            shouldRedirect: true
+          })
+        )
       }
     )
   )
@@ -1027,7 +1039,7 @@ function* uploadSingleTrack(track) {
         yield cancel(dispatcher)
         yield call(responseChan.put, { error: message })
       },
-      () => {},
+      () => { },
       UPLOAD_TIMEOUT_MILLIS
     )
   )

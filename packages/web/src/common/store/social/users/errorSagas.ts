@@ -13,6 +13,7 @@ const errorSagas = createErrorSagas<UserErrors>({
     socialUserActions.SUBSCRIBE_USER_FAILED,
     socialUserActions.UNSUBSCRIBE_USER_FAILED
   ],
+  getShouldRedirect: () => false,
   getShouldReport: () => true,
   getAdditionalInfo: (action: UserErrors) => ({
     error: action.error,

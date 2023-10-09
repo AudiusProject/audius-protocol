@@ -11,6 +11,7 @@ export function* handleRepostError(action: ErrorActions) {
   yield put(
     errorActions.handleError({
       message: action.type,
+      shouldRedirect: true,
       shouldReport: true,
       additionalInfo: {
         errorMessage: action.error,

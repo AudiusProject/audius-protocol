@@ -16,8 +16,14 @@ function* handleError(action: errorActions.HandleErrorAction) {
     })
   }
 
+  // Toast error at the top of the page
   if (action.shouldToast) {
     yield put(toast({ content: action.message }))
+  }
+
+  // Show full screen Something Wrong error, requiring full app refresh/restart
+  if (action.shouldRedirect) {
+    yield put(errorActions.openErrorPage())
   }
 }
 

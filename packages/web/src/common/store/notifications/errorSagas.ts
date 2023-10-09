@@ -9,14 +9,22 @@ import * as errorActions from 'store/errors/actions'
 
 const { fetchNotificationsFailed } = notificationsActions
 
+const noRedirectSet = new Set([
+  // Failed to fetch notifications
+  fetchNotificationsFailed.type
+])
+
 type ErrorAction = FetchNotificationsFailedAction
 
 function* handleFetchNotificationError(action: ErrorAction) {
   const { message, shouldReport = true } = action.payload
   // Determine whether the error should redirect to /error and whether it should report it.
+  const shouldRedirect = !noRedirectSet.has(action.type)
+
   yield put(
     errorActions.handleError({
       message: action.type,
+      shouldRedirect,
       shouldReport,
       additionalInfo: { errorMessage: message },
       level: ErrorLevel.Warning

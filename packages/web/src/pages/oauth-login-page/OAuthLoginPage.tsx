@@ -342,7 +342,13 @@ export const OAuthLoginPage = () => {
         account,
         userEmail,
         onError: () => {
-          dispatch(errorActions.openErrorPage())
+          dispatch(
+            errorActions.handleError({
+              name: 'Form OAuth Response Error',
+              message: 'Form OAuth Response Error',
+              shouldRedirect: true
+            })
+          )
         }
       })
       if (jwt == null) {
@@ -392,11 +398,11 @@ export const OAuthLoginPage = () => {
       responseMode,
       setAndLogGeneralSubmitError,
       state,
-      history,
       userEmail,
       apiKey,
       appName,
-      scope
+      scope,
+      dispatch
     ]
   )
 
@@ -416,7 +422,13 @@ export const OAuthLoginPage = () => {
         if (e instanceof Error) {
           reportToSentry({ level: ErrorLevel.Error, error: e })
         }
-        dispatch(errorActions.openErrorPage())
+        dispatch(
+          errorActions.handleError({
+            name: 'Get Is App Authorized',
+            message: 'Get Is App Authorized',
+            shouldRedirect: true
+          })
+        )
         return
       }
       setUserAlreadyWriteAuthorized(appAlreadyAuthorized)
@@ -440,7 +452,13 @@ export const OAuthLoginPage = () => {
         email = await audiusBackendInstance.getUserEmail()
       } catch {
         setUserEmail(null)
-        dispatch(errorActions.openErrorPage())
+        dispatch(
+          errorActions.handleError({
+            name: 'Get User Email',
+            message: 'Get User Email',
+            shouldRedirect: true
+          })
+        )
         return
       }
       setUserEmail(email)
