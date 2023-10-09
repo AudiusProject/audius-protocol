@@ -34,8 +34,8 @@ mobile-prepare-ios:
     - attach_workspace:
         at: ./
     - run:
-        name: install cocoapods
-        command: cd packages/mobile/ios && sudo gem install cocoapods:1.12.0
+        name: install gems
+        command: cd packages/mobile/ios && sudo bundle update --bundler && bundle install
     - run:
         name: copy bundle
         command: cd packages/mobile && npm run bundle:ios
