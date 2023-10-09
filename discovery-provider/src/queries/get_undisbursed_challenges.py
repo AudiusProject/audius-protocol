@@ -19,13 +19,16 @@ class UndisbursedChallengeResponse(TypedDict):
 
 
 def to_challenge_response(
-    user_challenge: UserChallenge, challenge: Challenge, handle: str, wallet: str
+    user_challenge: UserChallenge,
+    challenge: Challenge,
+    handle: str,
+    wallet: str,
 ) -> UndisbursedChallengeResponse:
     return {
         "challenge_id": challenge.id,
         "user_id": user_challenge.user_id,
         "specifier": user_challenge.specifier,
-        "amount": challenge.amount,
+        "amount": str(user_challenge.amount),
         "completed_blocknumber": user_challenge.completed_blocknumber,
         "handle": handle,
         "wallet": wallet,
