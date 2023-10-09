@@ -1,12 +1,14 @@
 {
   "name": "probers",
-  "version": "1.5.44",
+  "version": "1.5.45",
   "description": "Automated client tests",
   "scripts": {
     "cypress:open": "cypress open",
     "cypress:open-stage": "cypress open --env configFile=stage",
+    "cypress:open-rc-stage": "cypress open --env configFile=rc-stage",
     "cypress:run": "cypress run",
     "cypress:run-stage": "cypress run --env configFile=stage",
+    "cypress:run-rc-stage": "cypress run --env configFile=rc-stage",
     "test:target": "env-cmd -f .env jest --runInBand",
     "test": "npm run cypress:run",
     "test:ci": "npm run cypress:run",
