@@ -63,17 +63,16 @@
 }
 
 /* Center Logo */
-.centerLogo {
+.leftLogo {
   flex-grow: 1;
   display: flex;
-  justify-content: center;
   align-items: center;
   padding-right: 12px;
 }
 
 .horizontalLogo {
   cursor: pointer;
-  max-width: 182px;
+  max-width: 132px;
 }
 
 .horizontalLogo {
@@ -89,8 +88,94 @@
 .linkContainer {
   display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
+  gap: 32px;
   color: var(--static-white);
+}
+
+.resources {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.resourcesIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.resourcesIcon path {
+  fill: var(--static-white);
+}
+
+.resourcesMenu {
+  display: inline-flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-border-strong, #E7E6EB);
+  background: var(--background-bg-white, #FFF);
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.08), 0px 0px 4px 0px rgba(0, 0, 0, 0.04);
+  min-width: 618px;
+  max-width: 618px;
+}
+
+.menuItemContainer {
+  display: flex;
+  gap: 16px;
+  width: 288px;
+  padding: 16px;
+  cursor: pointer;
+  border-radius: 6px;
+  border: 1px solid var(--static-white);
+}
+
+.menuItemContainer:hover {
+  background: var(--neutral-light-9);
+  border: 1px solid var(--neutral-light-7);
+}
+
+.menuItemContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.menuItemTitle {
+  font-weight: 700;
+}
+
+.menuItemSubtitle {
+  font-weight: 500;
+}
+
+.menuItemIcon path {
+  fill: var(--secondary);
+}
+
+.menuItemIconStroke path {
+  fill: none;
+  stroke: var(--secondary);
+}
+
+.popupWrapper {
+  position: fixed;
+}
+
+.popup {
+  border-radius: 12px !important;
+  border: 1px solid var(--neutral-light-7) !important;
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.08), 0px 0px 4px 0px rgba(0, 0, 0, 0.04) !important;
+  padding: 0 !important;
+  user-select: none !important;
+  transform: translateX(16px) !important;
 }
 
 .rightLink {
@@ -120,7 +205,7 @@
   color: var(--static-secondary);
 }
 
-.startListening {
+.signUp {
   cursor: pointer;
   user-select: none;
   display: flex;
@@ -132,37 +217,35 @@
   letter-spacing: 0.2px;
   text-align: center;
   padding: 11px 26px 10px;
-  border-radius: 6px;
+  border-radius: 4px;
   background-color: var(--static-white);
-  box-shadow: 0 5px 20px -1px rgba(25, 0, 96, 0.5);
   transform: scale3d(1, 1, 1);
   transition: all 0.15s ease-in-out;
 }
 
-.startListening:hover {
+.signUp:hover {
   transform: scale3d(1.03, 1.03, 1.03);
   background-color: #f7f7f7;
   box-shadow: 0 10px 20px -1px rgba(25, 0, 96, 0.5);
 }
 
-.startListening:active {
+.signUp:active {
   transform: scale3d(0.99, 0.99, 0.99);
   background-color: #f2f2f2;
   box-shadow: 0 0 2px -1px rgba(25, 0, 96, 0.5);
 }
 
-.invertColors .startListening {
-  color: var(--static-white);
-  background-color: var(--static-primary);
-  box-shadow: 0 5px 20px -2px rgba(253, 0, 254, 0.5);
+.invertColors .signUp {
+  border: 1px solid var(--neutral-light-7);
 }
 
-.invertColors .startListening:hover {
+.invertColors .signUp:hover {
+  color: var(--static-white);
   background-color: #dc19f0;
   box-shadow: 0 10px 20px -2px rgba(253, 0, 254, 0.5);
 }
 
-.invertColors .startListening:active {
+.invertColors .signUp:active {
   background-color: #ba02ce;
   box-shadow: 0 0 2px -2px rgba(253, 0, 254, 0.5);
 }

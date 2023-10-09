@@ -1,7 +1,8 @@
 import {
   IconInstagram,
   IconTwitterBird,
-  IconDiscord
+  IconDiscord2,
+  IconTelegram
 } from '@audius/stems'
 import cn from 'classnames'
 
@@ -19,7 +20,8 @@ import {
   DOWNLOAD_LINK,
   AUDIUS_HELP_LINK,
   AUDIUS_ORG,
-  AUDIUS_MERCH_LINK
+  AUDIUS_MERCH_LINK,
+  AUDIUS_TELEGRAM_LINK
 } from 'utils/route'
 
 import styles from './Footer.module.css'
@@ -83,8 +85,13 @@ const socialLinks = [
   },
   {
     text: 'Discord',
-    Icon: IconDiscord,
+    Icon: IconDiscord2,
     link: AUDIUS_DISCORD_LINK
+  },
+  {
+    text: 'Telegram',
+    Icon: IconTelegram,
+    link: AUDIUS_TELEGRAM_LINK
   }
 ]
 
