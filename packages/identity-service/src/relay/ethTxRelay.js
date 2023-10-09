@@ -1,5 +1,5 @@
 const EthereumWallet = require('ethereumjs-wallet')
-const EthereumTx = require('ethereumjs-tx')
+const { Transaction } = require('ethereumjs-tx')
 const axios = require('axios')
 const config = require('../config')
 const { ethWeb3 } = require('../web3')
@@ -132,10 +132,12 @@ const createAndSendEthTransaction = async (
       `L1 txRelay - Invalid relayerPublicKey found. Expected ${sender.publicKey.toLowerCase()}, found ${address}`
     )
   }
+  const gasPrice = await web3.eth.getGasPrice()
   const nonce = await web3.eth.getTransactionCount(address)
   let txParams = {
     nonce: web3.utils.toHex(nonce),
     gasLimit: gasLimit ? web3.utils.numberToHex(gasLimit) : DEFAULT_GAS_LIMIT,
+    gasPrice: web3.utils.numberToHex(gasPrice),
     to: receiverAddress,
     value: web3.utils.toHex(value)
   }
@@ -143,11 +145,11 @@ const createAndSendEthTransaction = async (
   if (data) {
     txParams = { ...txParams, data }
   }
-  const tx = new EthereumTx(txParams)
+  const tx = new Transaction(txParams)
   tx.sign(privateKeyBuffer)
   const signedTx = '0x' + tx.serialize().toString('hex')
   logger.info(
-    `L1 txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`
+    `L1 txRelay - sending a transaction for sender ${sender.publicKey} to ${receiverAddress}, gasLimit ${txParams.gasLimit}, nonce ${nonce}`
   )
   const receipt = await web3.eth.sendSignedTransaction(signedTx)
 
