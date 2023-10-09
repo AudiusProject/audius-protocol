@@ -442,7 +442,6 @@ workflows:
             .* run-release-workflow false
             .* run-integration-workflow true
             packages/discovery-provider/.* run-discovery-workflow true
-            packages/discovery-provider/.* run-gcp-workflow true
             packages/web/.* run-web-workflow true
             packages/mobile/.* run-mobile-workflow true
             packages/probers/.* run-web-workflow true
