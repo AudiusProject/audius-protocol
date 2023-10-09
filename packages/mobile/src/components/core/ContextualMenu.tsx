@@ -74,7 +74,7 @@ export const ContextualMenu = (props: ContextualMenuProps) => {
   const navigation = useNavigation()
 
   const handlePress = useCallback(() => {
-    navigation.push(menuScreenName)
+    navigation.navigate(menuScreenName)
   }, [navigation, menuScreenName])
 
   const defaultRenderValue = (value: string | string[]) => {
