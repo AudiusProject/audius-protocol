@@ -1,6 +1,6 @@
 {
   "name": "@audius/harmony",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Audius Design System Component Library",
   "main": "dist/index.es.js",
   "types": "dist/index.d.ts",

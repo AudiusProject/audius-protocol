@@ -1,5 +1,5 @@
 const EthereumWallet = require('ethereumjs-wallet')
-const EthereumTx = require('ethereumjs-tx')
+const { Transaction } = require('ethereumjs-tx')
 const Accounts = require('web3-eth-accounts')
 
 const models = require('../models')
@@ -554,7 +554,7 @@ const createAndSendTransaction = async (
     txParams = { ...txParams, data }
   }
 
-  const tx = new EthereumTx(txParams)
+  const tx = new Transaction(txParams)
   tx.sign(privateKeyBuffer)
   const signedTx = '0x' + tx.serialize().toString('hex')
   logger.info(

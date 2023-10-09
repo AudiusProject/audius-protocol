@@ -12,14 +12,15 @@ import {
   audioRewardsPageActions,
   audioRewardsPageSelectors,
   modalsActions,
-  makeOptimisticChallengeSortComparator
+  makeOptimisticChallengeSortComparator,
+  FeatureFlags
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import LoadingSpinner from 'app/components/loading-spinner'
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { getChallengeConfig } from 'app/utils/challenges'
 
@@ -41,7 +42,9 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   'profile-completion',
   'referred',
   'send-first-tip',
-  'first-playlist'
+  'first-playlist',
+  'b', // $AUDIO matching buyer
+  's' // $AUDIO matching seller
 ])
 
 /** Pulls rewards from remoteconfig */
@@ -70,6 +73,9 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const ChallengeRewards = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
+  const { isEnabled: isAudioMatchingChallengesEnabled } = useFeatureFlag(
+    FeatureFlags.AUDIO_MATCHING_CHALLENGES
+  )
 
   const userChallengesLoading = useSelector(getUserChallengesLoading)
   const userChallenges = useSelector(getUserChallenges)
@@ -80,7 +86,11 @@ export const ChallengeRewards = () => {
 
   // The referred challenge only needs a tile if the user was referred
   const hideReferredTile = !userChallenges.referred?.is_complete
-  const rewardIds = useRewardIds({ referred: hideReferredTile })
+  const rewardIds = useRewardIds({
+    referred: hideReferredTile,
+    b: !isAudioMatchingChallengesEnabled,
+    s: !isAudioMatchingChallengesEnabled
+  })
 
   useEffect(() => {
     if (!userChallengesLoading && !haveChallengesLoaded) {

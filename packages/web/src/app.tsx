@@ -66,26 +66,26 @@ const AudiusApp = () => {
               <AppProviders>
                 <MainContentContext.Consumer>
                   {({ mainContentRef }) => (
-                    <Switch>
-                      <Route path='/error'>
-                        <SomethingWrong />
-                      </Route>
-                      <Route
-                        exact
-                        path={'/oauth/auth'}
-                        component={OAuthLoginPage}
-                      />
-                      <Route path='/demo/trpc'>
-                        <DemoTrpcPage />
-                      </Route>
-                      <Route path='/'>
-                        <AppErrorBoundary>
-                          <CoinbasePayButtonProvider>
-                            <App mainContentRef={mainContentRef} />
-                          </CoinbasePayButtonProvider>
-                        </AppErrorBoundary>
-                      </Route>
-                    </Switch>
+                    <>
+                      <SomethingWrong />
+                      <Switch>
+                        <Route
+                          exact
+                          path={'/oauth/auth'}
+                          component={OAuthLoginPage}
+                        />
+                        <Route path='/demo/trpc'>
+                          <DemoTrpcPage />
+                        </Route>
+                        <Route path='/'>
+                          <AppErrorBoundary>
+                            <CoinbasePayButtonProvider>
+                              <App mainContentRef={mainContentRef} />
+                            </CoinbasePayButtonProvider>
+                          </AppErrorBoundary>
+                        </Route>
+                      </Switch>
+                    </>
                   )}
                 </MainContentContext.Consumer>
               </AppProviders>

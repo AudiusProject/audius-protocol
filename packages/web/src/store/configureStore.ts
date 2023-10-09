@@ -1,7 +1,7 @@
-import { chatMiddleware, ErrorLevel } from '@audius/common'
+import { chatMiddleware, ErrorLevel, Name } from '@audius/common'
 import { composeWithDevToolsLogOnlyInProduction } from '@redux-devtools/extension'
 import * as Sentry from '@sentry/browser'
-import { routerMiddleware, push as pushRoute } from 'connected-react-router'
+import { routerMiddleware } from 'connected-react-router'
 import { createStore, applyMiddleware, Action, Store } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 import createSentryMiddleware from 'redux-sentry-middleware'
@@ -9,12 +9,12 @@ import thunk from 'redux-thunk'
 
 import { track as amplitudeTrack } from 'services/analytics/amplitude'
 import { audiusSdk } from 'services/audius-sdk'
+import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import createRootReducer from 'store/reducers'
 import rootSaga from 'store/sagas'
 import history from 'utils/history'
 import logger from 'utils/logger'
-import { ERROR_PAGE } from 'utils/route'
 
 import { storeContext } from './storeContext'
 import { AppState } from './types'
@@ -36,7 +36,13 @@ const onSagaError = (
   console.error(
     `Caught saga error: ${error} ${JSON.stringify(errorInfo, null, 4)}`
   )
-  store.dispatch(pushRoute(ERROR_PAGE))
+  store.dispatch(
+    errorActions.handleError({
+      name: 'Caught Saga Error',
+      message: error.message,
+      shouldRedirect: true
+    })
+  )
   const additionalInfo = {
     ...errorInfo,
     route: window.location.pathname
@@ -47,7 +53,7 @@ const onSagaError = (
     error,
     additionalInfo
   })
-  amplitudeTrack(ERROR_PAGE, additionalInfo)
+  amplitudeTrack(Name.ERROR_PAGE, additionalInfo)
 }
 
 // Can't send up the entire Redux state b/c it's too fat
