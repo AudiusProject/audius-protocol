@@ -129,7 +129,7 @@ const RenderWithdrawalsPage = () => {
   )
 
   const status = combineStatuses([dataStatus, countStatus])
-  useErrorPageOnFailedStatus(status)
+  useErrorPageOnFailedStatus({ status })
 
   const onSort = useCallback(
     (

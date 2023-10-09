@@ -31,7 +31,7 @@ export type OpenErrorPageAction = {
   type: typeof OPEN_ERROR_PAGE
 }
 
-type HandleErrorArgs = {
+export type HandleErrorArgs = {
   shouldRedirect: boolean
   shouldReport?: boolean
   shouldToast?: boolean

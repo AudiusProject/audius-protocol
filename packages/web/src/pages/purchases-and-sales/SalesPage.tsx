@@ -122,7 +122,7 @@ const RenderSalesPage = () => {
 
   const status = combineStatuses([dataStatus, countStatus])
 
-  useErrorPageOnFailedStatus(status)
+  useErrorPageOnFailedStatus({ status })
 
   // TODO: Should fetch users before rendering the table
 

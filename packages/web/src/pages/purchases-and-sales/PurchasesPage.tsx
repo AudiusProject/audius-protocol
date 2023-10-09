@@ -143,7 +143,7 @@ const RenderPurchasesPage = () => {
     }
   }, [hasMore, loadMore])
 
-  useErrorPageOnFailedStatus(status)
+  useErrorPageOnFailedStatus({ status })
 
   const onClickRow = useCallback(
     (purchaseDetails: USDCPurchaseDetails) => {

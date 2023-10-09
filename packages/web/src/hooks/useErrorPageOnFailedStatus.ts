@@ -1,25 +1,34 @@
 import { useEffect } from 'react'
 
 import { Status } from '@audius/common'
+import { useDispatch } from 'react-redux'
 
-import { ERROR_PAGE } from 'utils/route'
+import { HandleErrorArgs, handleError } from 'store/errors/actions'
 
-import { useNavigateToPage } from './useNavigateToPage'
+type UseErrorPageOnFailedStatusProps = {
+  status: Status
+  options?: HandleErrorArgs
+}
 
-/** Automatically navigates to the `/error` route if the provided status is
- * `Status.ERROR`. NOTE: If the status passed to this hook is derived from an
- * `audius-query` data fetching hook, the page using this hook needs to support
- * resetting of the fetch state on mount (typically through the `force` option
- * of `useQuery`). Otherwise, the user will be immediately redirected back to the
- * error page if they hit 'Try Again'.
- * This hook will not report an error to Sentry. It's expected that whatever flow
- * generated the Status will already have reported an error.
+/** Automatically shows the error overlay when a given status trnsitions to ERROR.
+ * Accepts args to be passed to the handleError action for customizing error
+ * message, reporting, etc.
  */
-export const useErrorPageOnFailedStatus = (status: Status) => {
-  const navigate = useNavigateToPage()
+export const useErrorPageOnFailedStatus = ({
+  status,
+  options
+}: UseErrorPageOnFailedStatusProps) => {
+  const dispatch = useDispatch()
   useEffect(() => {
     if (status === Status.ERROR) {
-      navigate(ERROR_PAGE)
+      dispatch(
+        handleError({
+          message: 'Status: Failed',
+          shouldReport: false,
+          shouldRedirect: true,
+          ...options
+        })
+      )
     }
-  }, [status, navigate])
+  }, [status, options, dispatch])
 }
