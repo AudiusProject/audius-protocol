@@ -1,8 +1,13 @@
 import { useCallback } from 'react'
 
-import { modalsActions, purchaseContentActions } from '@audius/common'
+import {
+  modalsActions,
+  purchaseContentActions,
+  stripeModalUIActions,
+  stripeModalUISelectors
+} from '@audius/common'
 import { TouchableOpacity, View } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconCloseAlt from 'app/assets/images/iconCloseAlt.svg'
 import { makeStyles } from 'app/styles'
@@ -14,19 +19,17 @@ import { AppDrawer } from '../drawer/AppDrawer'
 
 import { StripeOnrampEmbed } from './StripeOnrampEmbed'
 
-const { setVisibility } = modalsActions
 const { cleanup } = purchaseContentActions
+const { cancelStripeOnramp } = stripeModalUIActions
+const { getStripeModalState } = stripeModalUISelectors
 
 export const MODAL_NAME = 'StripeOnRamp'
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
-  root: {
-    paddingTop: spacing(4)
-  },
   headerContainer: {
     borderBottomWidth: 1,
     borderBottomColor: palette.neutralLight8,
-    height: spacing(10),
+    height: spacing(12),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
@@ -62,19 +65,18 @@ const StripeOnrampDrawerHeader = ({ onClose }: { onClose: () => void }) => {
 export const StripeOnrampDrawer = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
+  const { stripeSessionStatus } = useSelector(getStripeModalState)
 
   const handleClose = useCallback(() => {
-    dispatch(setVisibility({ modal: MODAL_NAME, visible: 'closing' }))
-    dispatch(cleanup())
+    dispatch(cancelStripeOnramp())
   }, [dispatch])
 
   return (
     <AppDrawer
-      block
+      blockClose={stripeSessionStatus === 'fulfillment_processing'}
       drawerHeader={StripeOnrampDrawerHeader}
       zIndex={zIndex.STRIPE_ONRAMP_DRAWER}
       modalName={MODAL_NAME}
-      drawerStyle={styles.root}
       isGestureSupported={false}
       isFullscreen
       onClose={handleClose}

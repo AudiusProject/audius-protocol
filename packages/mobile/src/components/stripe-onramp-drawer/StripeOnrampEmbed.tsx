@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { stripeModalUISelectors, stripeModalUIActions } from '@audius/common'
+import type { OnrampSessionResult } from '@stripe/crypto'
 import { View } from 'react-native'
 import { WebView } from 'react-native-webview'
 import { useDispatch, useSelector } from 'react-redux'
@@ -37,10 +38,21 @@ export const StripeOnrampEmbed = () => {
 
   const handleSessionUpdate = useCallback(
     (event) => {
-      if (event?.payload?.session?.status) {
-        dispatch(
-          stripeSessionStatusChanged({ status: event.payload.session.status })
-        )
+      try {
+        const { status } = JSON.parse(
+          event.nativeEvent.data
+        ) as OnrampSessionResult
+
+        if (!status) {
+          console.error('Unexpected empty Stripe session status')
+        } else if (status === 'error') {
+          console.error('Received Stripe session error')
+          dispatch(cancelStripeOnramp())
+        } else {
+          dispatch(stripeSessionStatusChanged({ status }))
+        }
+      } catch (e) {
+        console.error(`Failed to parse Stripe session update: ${e}`)
       }
     },
     [dispatch]
@@ -79,7 +91,7 @@ export const StripeOnrampEmbed = () => {
     <div id="onramp-element" />
     <script type="text/javascript">
       const handleSessionUpdate = (event) => {
-        window.ReactNativeWebView.postMessage(event)
+        window.ReactNativeWebView.postMessage(JSON.stringify(event.payload.session))
       }
       try {
         const onramp = new window.StripeOnramp("${STRIPE_PUBLISHABLE_KEY}")
