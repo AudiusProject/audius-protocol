@@ -11,7 +11,6 @@ import {
   getTokenAccountInfo,
   purchaseContent
 } from 'services/audius-backend/solana'
-import { purchasesApiActions } from 'src/api'
 import { accountSelectors } from 'store/account'
 import {
   buyUSDCFlowFailed,
@@ -238,9 +237,6 @@ function* doStartPurchaseContentFlow({
     if (contentType === ContentType.TRACK) {
       yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
     }
-
-    // clear the purchases so next query will fetch from source
-    yield* put(purchasesApiActions.resetGetPurchases!())
 
     // finish
     yield* put(purchaseConfirmed({ contentId, contentType }))
