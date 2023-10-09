@@ -25,6 +25,7 @@ import { useDispatch } from 'react-redux'
 
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
+import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { MainContentContext } from 'pages/MainContentContext'
 import NotFoundPage from 'pages/not-found-page/NotFoundPage'
@@ -116,15 +117,19 @@ const RenderWithdrawalsPage = () => {
       type: full.GetUSDCTransactionsTypeEnum.Transfer,
       method: full.GetUSDCTransactionsMethodEnum.Send
     },
-    { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE }
+    { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE, force: true }
   )
-  const { status: countStatus, data: count } = useGetUSDCTransactionsCount({
-    userId,
-    type: full.GetUSDCTransactionsTypeEnum.Transfer,
-    method: full.GetUSDCTransactionsMethodEnum.Send
-  })
+  const { status: countStatus, data: count } = useGetUSDCTransactionsCount(
+    {
+      userId,
+      type: full.GetUSDCTransactionsTypeEnum.Transfer,
+      method: full.GetUSDCTransactionsMethodEnum.Send
+    },
+    { force: true }
+  )
 
   const status = combineStatuses([dataStatus, countStatus])
+  useErrorPageOnFailedStatus({ status })
 
   const onSort = useCallback(
     (
