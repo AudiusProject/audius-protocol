@@ -1,47 +1,17 @@
 parameters:
-  instance-name:
-    description: 'Name of gcp instance to use for pushing'
-    type: string
   service:
     description: 'Service to push'
     type: string
-resource_class: small
-docker:
-  - image: google/cloud-sdk:412.0.0-slim
+resource_class: large
+machine:
+  image: ubuntu-2204:current
+  docker_layer_caching: true
 steps:
-  - gcp-auth
+  - checkout:
+      path: '~/audius-protocol'
+  - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
   - run:
-      name: Choose GCP Image
-      command: |
-        # Image Preference:
-        #   1. GCP image built for this commit
-        #   2. Latest audius-protocol GCP image
-        #   3. debian-11
-
-        IMAGE_FLAG=""  # Default is debian-11
-        if gcloud compute images describe 'audius-protocol-<< pipeline.git.revision >>' &>/dev/null; then
-          IMAGE_FLAG='--image=audius-protocol-<< pipeline.git.revision >>'
-        elif gcloud compute images describe-from-family audius-protocol &>/dev/null; then
-          IMAGE_FLAG="--image-family=audius-protocol"
-        fi
-
-        echo "export IMAGE_FLAG='$IMAGE_FLAG'" >> "$BASH_ENV"
-  - gcp-run:
-      instance-name: '<< parameters.instance-name >>'
-      create-instance-args: >-
-        $IMAGE_FLAG
-        --preemptible
-        --tags=circleci
-        --machine-type=n2-standard-4
-        --boot-disk-size=160G
-        --boot-disk-type=pd-ssd
-      pass-env: DOCKERHUB_PASS DOCKERHUB_USERNAME
-      steps:
-        - gcp-checkout
-        - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
-        - run:
-            name: Docker login
-            command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-        - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
-        - run: . ~/.profile; audius-compose build --prod "<< parameters.service >>"
-        - run: . ~/.profile; audius-compose push "<< parameters.service >>"
+      name: Docker login
+      command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  - run: . ~/.profile; audius-compose build --prod "<< parameters.service >>"
+  - run: . ~/.profile; audius-compose push --prod "<< parameters.service >>"

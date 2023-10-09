@@ -38,11 +38,7 @@ module.exports = (async () => {
     resolver: { sourceExts, assetExts, resolverMainFields }
   } = await getDefaultConfig()
 
-  const defaultSourceExts = [...sourceExts, 'svg', 'cjs']
-
-  resolverMainFields.unshift('sbmodern')
-
-  return {
+  const config = {
     transformer: {
       getTransformOptions: async () => ({
         transform: {
@@ -60,9 +56,7 @@ module.exports = (async () => {
     ],
     resolver: {
       assetExts: assetExts.filter((ext) => ext !== 'svg'),
-      sourceExts: process.env.RN_SRC_EXT
-        ? process.env.RN_SRC_EXT.split(',').concat(defaultSourceExts)
-        : defaultSourceExts,
+      sourceExts: [...sourceExts, 'svg', 'cjs'],
       extraNodeModules: {
         ...require('node-libs-react-native'),
         // Alias for 'src' to allow for absolute paths
@@ -100,9 +94,18 @@ module.exports = (async () => {
           }
         }
         return context.resolveRequest(context, moduleName, platform)
-      },
-      resolverMainFields
+      }
     },
     maxWorkers: 2
   }
+
+  if (process.env.RN_STORYBOOK) {
+    resolverMainFields.unshift('sbmodern')
+    config.resolver.resolverMainFields = resolverMainFields
+  }
+
+  if (process.env.RN_E2E)
+    config.resolver.sourceExts = ['e2e.ts', ...config.resolver.sourceExts]
+
+  return config
 })()

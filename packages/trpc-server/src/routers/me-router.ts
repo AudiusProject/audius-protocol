@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import { publicProcedure, router } from '../trpc'
+import { AggregateUserRow } from '../db-tables'
+import { sql } from '../db'
 
 export const meRouter = router({
   userRelationship: publicProcedure

@@ -5,9 +5,8 @@ import {
   decimalIntegerToHumanReadable,
   useWithdrawUSDCModal,
   useUSDCBalance,
-  formatUSDCWeiToFloorDollarNumber,
-  BNUSDC,
-  formatCurrencyBalance
+  formatUSDCWeiToFloorCentsNumber,
+  BNUSDC
 } from '@audius/common'
 import {
   HarmonyButton,
@@ -56,10 +55,10 @@ export const ConfirmTransferDetails = () => {
   const [confirmField, { error: confirmError }] = useField(CONFIRM)
 
   const { data: balance } = useUSDCBalance()
-  const balanceNumber = formatUSDCWeiToFloorDollarNumber(
+  const balanceNumber = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
-  const balanceFormatted = formatCurrencyBalance(balanceNumber)
+  const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
 
   const handleGoBack = useCallback(() => {
     setData({ page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS })

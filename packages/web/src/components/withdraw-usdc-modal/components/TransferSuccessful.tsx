@@ -1,11 +1,11 @@
 import {
   useUSDCBalance,
-  formatCurrencyBalance,
   BNUSDC,
   useWithdrawUSDCModal,
-  formatUSDCWeiToFloorDollarNumber,
+  formatUSDCWeiToFloorCentsNumber,
   makeSolanaTransactionLink,
-  decimalIntegerToHumanReadable
+  decimalIntegerToHumanReadable,
+  Status
 } from '@audius/common'
 import {
   HarmonyPlainButton,
@@ -50,12 +50,12 @@ export const TransferSuccessful = ({
 }: {
   priorBalanceCents: number
 }) => {
-  const { data: balance } = useUSDCBalance()
+  const { data: balance, balanceStatus } = useUSDCBalance()
   const { data: modalData } = useWithdrawUSDCModal()
-  const balanceNumber = formatUSDCWeiToFloorDollarNumber(
+  const balanceNumber = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
-  const balanceFormatted = formatCurrencyBalance(balanceNumber)
+  const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
 
   const [{ value: amountValue }] = useField(AMOUNT)
   const [{ value: addressValue }] = useField(ADDRESS)
@@ -74,7 +74,12 @@ export const TransferSuccessful = ({
         right={`-$${decimalIntegerToHumanReadable(amountValue)}`}
       />
       <Divider style={{ margin: 0 }} />
-      <TextRow left={messages.newBalance} right={`$${balanceFormatted}`} />
+      <TextRow
+        left={messages.newBalance}
+        right={
+          balanceStatus === Status.SUCCESS ? `$${balanceFormatted}` : undefined
+        }
+      />
       <Divider style={{ margin: 0 }} />
       <div className={styles.destination}>
         <TextRow left={messages.destinationAddress} />

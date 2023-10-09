@@ -82,7 +82,7 @@ export const SET_REFERRER = 'SIGN_ON/SET_REFERRER'
  * @param field the field to be set
  * @param value the value to be set
  */
-export function setValueField(field: string, value: string) {
+export function setValueField(field: string, value: string | string[]) {
   return { type: SET_VALUE_FIELD, field, value }
 }
 

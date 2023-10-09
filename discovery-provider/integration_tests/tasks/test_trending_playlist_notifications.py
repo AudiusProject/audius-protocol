@@ -5,7 +5,7 @@ from sqlalchemy import asc
 from integration_tests.utils import populate_mock_db
 from src.models.notifications.notification import Notification
 from src.models.playlists.playlist import Playlist
-from src.queries.get_trending_playlists import make_trending_cache_key
+from src.queries.get_trending_playlists import make_trending_playlists_cache_key
 from src.tasks.cache_trending_playlists import index_trending_playlist_notifications
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
@@ -25,7 +25,7 @@ def cache_trending_playlists_mock(db, playlist_ids: list[int]) -> None:
     redis = get_redis()
     trending_strategy_factory = TrendingStrategyFactory()
     trending_strategy = trending_strategy_factory.get_strategy(TrendingType.PLAYLISTS)
-    trending_key = make_trending_cache_key("week", trending_strategy.version)
+    trending_key = make_trending_playlists_cache_key("week", trending_strategy.version)
 
     with db.scoped_session() as session:
         trending_playlists = (

@@ -97,7 +97,7 @@ def enqueue_trending_challenges(
                 TrendingType.TRACKS, version
             )
             top_tracks = _get_trending_tracks_with_session(
-                session, {"time": time_range, "exclude_premium": True, "usdc_purchase_only": False}, strategy
+                session, {"time": time_range, "exclude_premium": True}, strategy
             )
             top_tracks = top_tracks[:TRENDING_LIMIT]
             dispatch_trending_challenges(

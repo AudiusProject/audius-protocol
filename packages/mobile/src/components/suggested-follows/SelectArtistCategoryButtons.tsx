@@ -1,4 +1,4 @@
-import { artistCategories } from 'audius-client/src/common/store/pages/signon/types'
+import { artistCategories } from 'common/store/pages/signon/types'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 

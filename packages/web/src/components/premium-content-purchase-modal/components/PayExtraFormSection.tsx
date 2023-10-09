@@ -4,7 +4,7 @@ import {
   PayExtraAmountPresetValues,
   PayExtraPreset
 } from '@audius/common'
-import { HarmonySelectablePill } from '@audius/stems'
+import { SelectablePill } from '@audius/harmony'
 import { useField } from 'formik'
 
 import { PriceField } from 'components/form-fields/PriceField'
@@ -39,7 +39,7 @@ export const PayExtraFormSection = ({
       </Text>
       <div className={styles.pillContainer}>
         <div className={styles.presetContainer}>
-          <HarmonySelectablePill
+          <SelectablePill
             className={styles.presetPill}
             isSelected={preset === PayExtraPreset.LOW}
             label={formatPillAmount(amountPresets[PayExtraPreset.LOW])}
@@ -47,7 +47,7 @@ export const PayExtraFormSection = ({
             type='button'
             onClick={() => handleClickPreset(PayExtraPreset.LOW)}
           />
-          <HarmonySelectablePill
+          <SelectablePill
             className={styles.presetPill}
             isSelected={preset === PayExtraPreset.MEDIUM}
             label={formatPillAmount(amountPresets[PayExtraPreset.MEDIUM])}
@@ -55,7 +55,7 @@ export const PayExtraFormSection = ({
             type='button'
             onClick={() => handleClickPreset(PayExtraPreset.MEDIUM)}
           />
-          <HarmonySelectablePill
+          <SelectablePill
             className={styles.presetPill}
             isSelected={preset === PayExtraPreset.HIGH}
             label={formatPillAmount(amountPresets[PayExtraPreset.HIGH])}
@@ -64,7 +64,7 @@ export const PayExtraFormSection = ({
             onClick={() => handleClickPreset(PayExtraPreset.HIGH)}
           />
         </div>
-        <HarmonySelectablePill
+        <SelectablePill
           className={styles.customAmountPill}
           isSelected={preset === PayExtraPreset.CUSTOM}
           label={messages.customAmount}

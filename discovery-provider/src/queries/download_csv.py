@@ -45,6 +45,7 @@ def get_purchases_or_sales(user_id: int, is_purchases: bool):
                     USDCPurchase.content_type.label("content_type"),
                     USDCPurchase.created_at.label("created_at"),
                     USDCPurchase.amount.label("amount"),
+                    USDCPurchase.extra_amount.label("extra_amount"),
                     User.handle.label("seller_handle"),
                     User.name.label("seller_name"),
                 )
@@ -59,6 +60,7 @@ def get_purchases_or_sales(user_id: int, is_purchases: bool):
                     USDCPurchase.content_type.label("content_type"),
                     USDCPurchase.created_at.label("created_at"),
                     USDCPurchase.amount.label("amount"),
+                    USDCPurchase.extra_amount.label("extra_amount"),
                     User.name.label("buyer_name"),
                 )
                 .join(User, User.user_id == USDCPurchase.buyer_user_id)
@@ -139,6 +141,7 @@ def download_purchases(args: DownloadPurchasesArgs):
                 "artist": result.seller_name,
                 "date": result.created_at,
                 "value": get_dollar_amount(result.amount),
+                "pay extra": get_dollar_amount(result.extra_amount),
             },
             results,
         )
@@ -175,6 +178,7 @@ def download_sales(args: DownloadSalesArgs):
                 "purchased by": result.buyer_name,
                 "date": result.created_at,
                 "value": get_dollar_amount(result.amount),
+                "pay extra": get_dollar_amount(result.extra_amount),
             },
             results,
         )

@@ -49,6 +49,6 @@ def test_create_new_challenges(app):
             updated_challenge = list(filter(lambda c: c.id == challenge.id, challenges))
             assert updated_challenge
             assert updated_challenge[0].active == old_active
-            assert updated_challenge[0].amount == old_amount
+            assert updated_challenge[0].amount == int(old_amount)
             assert updated_challenge[0].step_count == old_step_count
             assert updated_challenge[0].starting_block == old_starting_block

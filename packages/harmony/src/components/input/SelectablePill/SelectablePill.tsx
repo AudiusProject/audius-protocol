@@ -27,8 +27,8 @@ export const SelectablePill = forwardRef<
         className={cn(
           styles.pill,
           {
-            [styles.large!]: size === 'large',
-            [styles.selected!]: isSelected
+            [styles.large]: size === 'large',
+            [styles.selected]: isSelected
           },
           className
         )}

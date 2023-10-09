@@ -5,7 +5,7 @@ export const email = ({
   signature
 }: {
   name: string
-  amount: number
+  amount: string
   wallet: string
   signature: string
 }) => {
