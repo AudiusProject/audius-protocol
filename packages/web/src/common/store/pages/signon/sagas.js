@@ -44,7 +44,7 @@ import { UiErrorCode } from 'store/errors/actions'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { isValidEmailString } from 'utils/email'
 import { restrictedHandles } from 'utils/restrictedHandles'
-import { ERROR_PAGE, FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
+import { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import * as signOnActions from './actions'
@@ -237,25 +237,25 @@ function* validateHandle(action) {
           FeatureFlags.VERIFY_HANDLE_WITH_TWITTER
         )
           ? race({
-              data: call(audiusBackendInstance.twitterHandle, handle),
-              timeout: delay(handleCheckTimeout)
-            })
+            data: call(audiusBackendInstance.twitterHandle, handle),
+            timeout: delay(handleCheckTimeout)
+          })
           : null,
         remoteConfigInstance.getFeatureEnabled(
           FeatureFlags.VERIFY_HANDLE_WITH_INSTAGRAM
         )
           ? race({
-              data: call(audiusBackendInstance.instagramHandle, handle),
-              timeout: delay(handleCheckTimeout)
-            })
+            data: call(audiusBackendInstance.instagramHandle, handle),
+            timeout: delay(handleCheckTimeout)
+          })
           : null,
         remoteConfigInstance.getFeatureEnabled(
           FeatureFlags.VERIFY_HANDLE_WITH_TIKTOK
         )
           ? race({
-              data: call(audiusBackendInstance.tiktokHandle, handle),
-              timeout: delay(handleCheckTimeout)
-            })
+            data: call(audiusBackendInstance.tiktokHandle, handle),
+            timeout: delay(handleCheckTimeout)
+          })
           : null
       ])
 
@@ -389,7 +389,6 @@ function* signUp() {
           const params = {
             error,
             phase,
-            redirectRoute: rateLimited ? SIGN_UP_PAGE : ERROR_PAGE,
             shouldReport: !rateLimited && !blocked,
             shouldToast: rateLimited
           }
@@ -433,7 +432,7 @@ function* signUp() {
           !signOn.useMetaMask &&
           signOn.instagramId &&
           handle.toLowerCase() ===
-            (signOn.instagramScreenName || '').toLowerCase()
+          (signOn.instagramScreenName || '').toLowerCase()
         ) {
           const { error } = yield call(
             audiusBackendInstance.associateInstagramAccount,
@@ -506,7 +505,7 @@ function* signUp() {
           yield put(signOnActions.signUpTimeout())
         }
       },
-      () => {},
+      () => { },
       SIGN_UP_TIMEOUT_MILLIS
     )
   )
