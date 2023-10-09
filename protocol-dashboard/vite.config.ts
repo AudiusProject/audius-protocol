@@ -49,7 +49,7 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
   },
-  // Base URL. Set to /protocol-dashboard/ in Dockerfile.
+  // Base URL. Set to /dashboard/ in Dockerfile.
   // When deploying to cloudflare pages: leave unset in Dockerfile
   // and comment out VITE_DASHBOARD_BASE_URL in .env* files.
   base: process.env.DASHBOARD_BASE_URL || '/',

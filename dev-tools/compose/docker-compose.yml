@@ -87,10 +87,10 @@ services:
 
   # Protocol dashboard
   
-  protocol-dashboard:
+  dashboard:
     extends: 
       file: docker-compose.protocol-dashboard.yml
-      service: protocol-dashboard
+      service: dashboard
     <<: *common
 
   # Discovery

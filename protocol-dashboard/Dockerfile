@@ -21,5 +21,5 @@ ADD public ./public
 ADD scripts ./scripts
 ADD types ./types
 
-ENV DASHBOARD_BASE_URL="/protocol-dashboard/"
+ENV DASHBOARD_BASE_URL="/dashboard/"
 RUN npm install --legacy-peer-deps

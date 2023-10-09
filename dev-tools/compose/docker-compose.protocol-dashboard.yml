@@ -1,8 +1,8 @@
 version: "3.9"
 
 services:
-  protocol-dashboard:
-    container_name: protocol-dashboard
+  dashboard:
+    container_name: dashboard
     build:
       context: ${PROJECT_ROOT}/protocol-dashboard
     command: ["npm", "run", "start:stage"]
