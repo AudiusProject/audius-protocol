@@ -1,11 +1,6 @@
 import { useCallback } from 'react'
 
-import {
-  modalsActions,
-  purchaseContentActions,
-  stripeModalUIActions,
-  stripeModalUISelectors
-} from '@audius/common'
+import { stripeModalUIActions, stripeModalUISelectors } from '@audius/common'
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -19,7 +14,6 @@ import { AppDrawer } from '../drawer/AppDrawer'
 
 import { StripeOnrampEmbed } from './StripeOnrampEmbed'
 
-const { cleanup } = purchaseContentActions
 const { cancelStripeOnramp } = stripeModalUIActions
 const { getStripeModalState } = stripeModalUISelectors
 
