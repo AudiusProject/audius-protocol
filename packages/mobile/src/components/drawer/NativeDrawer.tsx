@@ -9,7 +9,6 @@ import type { DrawerProps } from './Drawer'
 import Drawer from './Drawer'
 
 type NativeDrawerProps = SetOptional<DrawerProps, 'isOpen' | 'onClose'> & {
-  blockClose?: boolean
   drawerName: DrawerName
 }
 
@@ -18,20 +17,14 @@ type NativeDrawerProps = SetOptional<DrawerProps, 'isOpen' | 'onClose'> & {
  * opening and closing.
  */
 export const NativeDrawer = (props: NativeDrawerProps) => {
-  const {
-    blockClose = false,
-    drawerName,
-    onClose: onCloseProp,
-    ...other
-  } = props
+  const { drawerName, onClose: onCloseProp, ...other } = props
 
   const { isOpen, onClose, onClosed, visibleState } = useDrawer(drawerName)
 
   const handleClose = useCallback(() => {
-    if (blockClose) return
     onCloseProp?.()
     onClose()
-  }, [blockClose, onCloseProp, onClose])
+  }, [onCloseProp, onClose])
 
   if (visibleState === false) return null
 
