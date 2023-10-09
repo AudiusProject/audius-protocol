@@ -40,7 +40,7 @@ export default function Nodes() {
               {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Storage</th>}
               {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Fast Repair (checked, pulled, deleted)</th>}
               {isContent && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Full Repair (checked, pulled, deleted)</th>}
-              {isDiscovery && <th scope = "col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200" >Relay</th>}
+              {isDiscovery && <th scope="col" className="px-4 py-2 text-center text-sm font-medium text-gray-700 dark:text-gray-200" >Relay</th>}
               <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">DB Size</th>
               <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">Your IP</th>
               {isDiscovery && <th scope="col" className="px-4 py-2 text-left text-sm font-medium text-gray-700 dark:text-gray-200">ACDC Health</th>}
@@ -67,7 +67,7 @@ export default function Nodes() {
 
 function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, isStaging: boolean }) {
   const path = isContent ? '/health_check' : '/health_check?enforce_block_diff=true&healthy_block_diff=250&plays_count_max_drift=720'
-  const { data, error } = useSWR(sp.endpoint + path, fetcher)
+  const { data, error: dataError } = useSWR(sp.endpoint + path, fetcher)
   const { data: ipCheck, error: ipCheckError } = useSWR(
     sp.endpoint + '/ip_check',
     fetcher
@@ -81,30 +81,30 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
 
   if (!health || !yourIp)
     return (
-      <tr className="is-unhealthy">
+      <tr className={dataError || ipCheckError ? 'is-unhealthy' : ''}>
         <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">
           <a href={sp.endpoint + path} target="_blank">
             {sp.endpoint.replace('https://', '')}
           </a>
         </td>
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Node Health */}
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Block Diff */}
-        <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td> {/* Version */}
-        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Storage */}
-        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Fast Repair (checked, pulled, deleted) */}
-        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Full Repair (checked, pulled, deleted) */}
+        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Node Health */}
+        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Block Diff */}
+        <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td> {/* Version */}
+        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Storage */}
+        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Fast Repair (checked, pulled, deleted) */}
+        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Full Repair (checked, pulled, deleted) */}
         {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{relayHealthError || ipCheckError ? 'error' : 'loading'}</td>} {/* Relay */}
-        <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td> {/* DB Size */}
-        <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td> {/* Your IP */}
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* ACDC Health */}
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Is Signer */}
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Peers */}
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Producing */}
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* ACDC Block */}
-        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* ACDC Block Hash */}
-        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Started */}
-        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Uploads */}
-        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{error || ipCheckError ? 'error' : 'loading'}</td>} {/* Healthy Peers */}
+        <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td> {/* DB Size */}
+        <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td> {/* Your IP */}
+        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* ACDC Health */}
+        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Is Signer */}
+        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Peers */}
+        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Producing */}
+        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* ACDC Block */}
+        {!isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* ACDC Block Hash */}
+        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Started */}
+        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Uploads */}
+        {isContent && <td className="whitespace-nowrap py-5 pl-4 pr-3 text-sm">{dataError || ipCheckError ? 'error' : 'loading'}</td>} {/* Healthy Peers */}
       </tr>
     )
 
@@ -282,7 +282,7 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
           </a>
         </td>
       )}
-      {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{`${relayStatus || "down" }`}</td>}
+      {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{`${relayStatus || "down"}`}</td>}
       <td className="whitespace-nowrap px-3 py-5 text-sm">{`${dbSize} GB`}</td>
       <td className="whitespace-nowrap px-3 py-5 text-sm">{`${yourIp}`}</td>
       {!isContent && (<td className="whitespace-nowrap px-3 py-5 text-sm">{health.chain_health?.status}</td>)}
