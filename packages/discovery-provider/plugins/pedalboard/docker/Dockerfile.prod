@@ -50,6 +50,6 @@ WORKDIR /app
 
 COPY --from=installer /app .
 
-WORKDIR /app/apps/${APP_NAME}
+WORKDIR /app/packages/discovery-provider/plugins/pedalboard/apps/${APP_NAME}
 
 CMD npm run start
