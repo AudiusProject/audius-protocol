@@ -31,7 +31,8 @@ import {
   fork,
   cancel,
   all,
-  getContext
+  getContext,
+  delay
 } from 'redux-saga/effects'
 
 import { make } from 'common/store/analytics/actions'
@@ -791,6 +792,10 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
             `Could not confirm playlist creation for playlist id ${playlistId}`
           )
         }
+
+        // await indexing
+        yield delay(1500)
+
         return (yield call(audiusBackendInstance.getPlaylists, userId, [
           playlistId
         ]))[0]
@@ -924,6 +929,7 @@ function* recordGatedTracks(tracks) {
 }
 
 function* uploadSingleTrack(track) {
+  console.log('upload single track commence')
   yield waitForWrite()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const apiClient = yield getContext('apiClient')
@@ -998,6 +1004,10 @@ function* uploadSingleTrack(track) {
         if (!confirmed) {
           throw new Error(`Could not confirm upload single track ${trackId}`)
         }
+
+        // getting track immediately after acdc confirms
+        // can 404 because it's not indexed yet
+        yield delay(1500)
 
         return yield apiClient.getTrack({
           id: trackId,
@@ -1076,6 +1086,7 @@ function* uploadSingleTrack(track) {
       status: ProgressStatus.COMPLETE
     })
   )
+
   yield put(
     uploadActions.uploadTracksSucceeded(confirmedTrack.track_id, [
       confirmedTrack
