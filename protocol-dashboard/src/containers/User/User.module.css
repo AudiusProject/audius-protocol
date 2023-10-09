@@ -1,0 +1,124 @@
+.userInfoRow {
+  display: inline-flex;
+  align-items: stretch;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.userInfoRow > div {
+  margin-right: 16px;
+}
+
+.userInfoRow > div:last-child {
+  margin-right: 0px;
+}
+
+/* User Info Tile */
+.userInfo {
+  position: relative;
+  flex: 1;
+  padding: 24px 0px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  height: 200px;
+  box-sizing: border-box;
+}
+
+/* Timeline */
+.timeline {
+  margin-bottom: 16px;
+}
+
+
+/* Rank */
+.rankContainer {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rankLabel {
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  text-align: right;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+
+  color: #777C96;
+}
+
+.rankValue {
+  font-family: var(--font-family);
+  font-style: normal;
+  font-weight: var(--font-bold);
+  font-size: var(--font-xl);
+
+  color: #BEC5E0;
+}
+
+.userImg {
+  height: 88px;
+  width: 88px;
+  border-radius: 50%;
+  margin-bottom: 8px;
+}
+
+.userName,
+.userWallet {
+  font-family: var(--font-family);
+  font-weight: var(--font-regular);
+  text-align: center;
+
+  color: #BEC5E0;
+  margin-bottom: 8px
+}
+
+.userName {
+  font-size: var(--font-2xl);
+}
+
+
+.userWallet {
+  font-size: var(--font-s);
+}
+
+.manageService {
+  margin-bottom: 16px;
+}
+
+/* Service Tables */
+.serviceContainer {
+  display: inline-flex;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.delegatorsContainer {
+  margin-bottom: 16px;
+}
+
+.delegatesContainer {
+  margin-bottom: 16px;
+}
+
+.delegateContainer {
+  margin-bottom: 16px;
+}
+
+.serviceTable {
+  width: 100%;
+  flex: 1;
+}
+
+.rightSpacing {
+  margin-right: 8px;
+}
+
+.leftSpacing {
+  margin-left: 8px;
+}

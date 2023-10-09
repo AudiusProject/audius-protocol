@@ -8,6 +8,7 @@ import {
   ThunkAction,
   ThunkDispatch
 } from '@reduxjs/toolkit'
+import AsyncRetry from 'async-retry'
 import { Dispatch } from 'redux'
 
 import { Kind, Status } from 'models'
@@ -67,12 +68,16 @@ export type CreateApiConfig = {
 
 export type SliceConfig = CreateSliceOptions<any, any, any>
 
+export type RetryConfig = AsyncRetry.Options
+
 type EndpointOptions = {
   idArgKey?: string
   idListArgKey?: string
   permalinkArgKey?: string
   schemaKey?: string
   kind?: Kind
+  retry?: boolean
+  retryConfig?: RetryConfig
   type?: 'query' | 'mutation'
 }
 
@@ -127,6 +132,8 @@ export type QueryHookOptions = {
   disabled?: boolean
   shallow?: boolean
   debug?: boolean
+  /** Force a fetch on first render of this hook instance (if a fetch is not already in progress) */
+  force?: boolean
 }
 
 export type QueryHookResults<Data> = {

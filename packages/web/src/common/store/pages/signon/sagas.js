@@ -44,7 +44,7 @@ import { UiErrorCode } from 'store/errors/actions'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { isValidEmailString } from 'utils/email'
 import { restrictedHandles } from 'utils/restrictedHandles'
-import { ERROR_PAGE, FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
+import { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import * as signOnActions from './actions'
@@ -389,7 +389,6 @@ function* signUp() {
           const params = {
             error,
             phase,
-            redirectRoute: rateLimited ? SIGN_UP_PAGE : ERROR_PAGE,
             shouldReport: !rateLimited && !blocked,
             shouldToast: rateLimited
           }

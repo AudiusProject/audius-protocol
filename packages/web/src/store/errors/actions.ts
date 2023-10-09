@@ -4,9 +4,8 @@ import {
   ErrorLevel
 } from '@audius/common'
 
-import { ERROR_PAGE } from 'utils/route'
-
 export const HANDLE_ERROR = 'ERROR/HANDLE_ERROR'
+export const OPEN_ERROR_PAGE = 'ERROR/OPEN_ERROR_PAGE'
 
 export enum UiErrorCode {
   UNKNOWN,
@@ -17,11 +16,10 @@ export type HandleErrorAction = {
   type: typeof HANDLE_ERROR
   name?: string
   message: string
+  shouldReport: boolean
   shouldRedirect: boolean
   // by default the handler redirects to the error page if
   // shouldRedirect is true unless a redirectRoute is passed in
-  redirectRoute?: string
-  shouldReport: boolean
   shouldToast?: boolean
 
   additionalInfo?: AdditionalErrorReportInfo
@@ -29,11 +27,12 @@ export type HandleErrorAction = {
   uiErrorCode: UiErrorCode
 }
 
-type HandleActions = HandleErrorAction
+export type OpenErrorPageAction = {
+  type: typeof OPEN_ERROR_PAGE
+}
 
-type HandleErrorArgs = {
+export type HandleErrorArgs = {
   shouldRedirect: boolean
-  redirectRoute?: string
   shouldReport?: boolean
   shouldToast?: boolean
   message: string
@@ -43,22 +42,24 @@ type HandleErrorArgs = {
 export const handleError = ({
   name,
   message,
-  shouldRedirect,
-  redirectRoute = ERROR_PAGE,
   shouldReport = true,
+  shouldRedirect,
   shouldToast,
   additionalInfo = {},
   level,
   uiErrorCode = UiErrorCode.UNKNOWN
-}: HandleErrorArgs): HandleActions => ({
+}: HandleErrorArgs): HandleErrorAction => ({
   type: HANDLE_ERROR,
   name,
   message,
   shouldRedirect,
-  redirectRoute,
   shouldReport,
   shouldToast,
   additionalInfo,
   level,
   uiErrorCode
+})
+
+export const openErrorPage = (): OpenErrorPageAction => ({
+  type: OPEN_ERROR_PAGE
 })

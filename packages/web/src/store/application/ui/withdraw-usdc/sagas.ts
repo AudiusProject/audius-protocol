@@ -8,7 +8,6 @@ import {
   TOKEN_LISTING_MAP,
   getUserbankAccountInfo,
   BNUSDC,
-  userApiActions,
   relayVersionedTransaction,
   relayTransaction,
   formatUSDCWeiToFloorCentsNumber
@@ -301,9 +300,6 @@ function* doWithdrawUSDC({
     })
     yield* call(onSuccess, transactionSignature)
     yield* put(withdrawUSDCSucceeded())
-
-    // clear the withdrawals so next query will fetch from source
-    yield* put(userApiActions.resetGetUSDCTransactions!())
   } catch (e: unknown) {
     console.error('Withdraw USDC failed', e)
     const reportToSentry = yield* getContext('reportToSentry')

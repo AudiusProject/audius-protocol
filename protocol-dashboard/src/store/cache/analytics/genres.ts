@@ -1,0 +1,22 @@
+export const ELECTRONIC_SUB_GENRES = new Set([
+  'Techno',
+  'Trap',
+  'House',
+  'Tech House',
+  'Deep House',
+  'Disco',
+  'Electro',
+  'Jungle',
+  'Progressive House',
+  'Hardstyle',
+  'Glitch Hop',
+  'Trance',
+  'Future Bass',
+  'Future House',
+  'Tropical House',
+  'Downtempo',
+  'Drum & Bass',
+  'Dubstep',
+  'Jersey Club',
+  'Vaporwave'
+])

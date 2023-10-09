@@ -2,7 +2,6 @@ import { getLookupTableAccounts, getRecentBlockhash } from '@audius/common'
 import { MintName } from '@audius/sdk'
 import {
   createCloseAccountInstruction,
-  createAssociatedTokenAccountInstruction,
   NATIVE_MINT,
   createAssociatedTokenAccountIdempotentInstruction,
   getAssociatedTokenAddressSync
@@ -71,7 +70,7 @@ export const createSwapUserbankToSolInstructions = async ({
 
   // 1. Create a temporary token account on the wallet
   const createTemporaryTokenAccountInstruction =
-    createAssociatedTokenAccountInstruction(
+    createAssociatedTokenAccountIdempotentInstruction(
       feePayer, // fee payer
       walletTokenAccount, // account to create
       wallet, // owner

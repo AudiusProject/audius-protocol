@@ -69,7 +69,6 @@ export const HOME_PAGE = '/'
 export const NOT_FOUND_PAGE = '/404'
 export const SIGN_IN_PAGE = '/signin'
 export const SIGN_UP_PAGE = '/signup'
-export const ERROR_PAGE = '/error'
 export const OAUTH_LOGIN_PAGE = '/oauth/auth'
 export const NOTIFICATION_PAGE = '/notifications'
 export const APP_REDIRECT = '/app-redirect'
@@ -189,7 +188,6 @@ export const publicSiteRoutes = [
 
 // ordered list of routes the App attempts to match in increasing order of route selectivity
 export const orderedRoutes = [
-  ERROR_PAGE,
   SIGN_IN_PAGE,
   SIGN_UP_PAGE,
   FEED_PAGE,
@@ -253,7 +251,6 @@ export const staticRoutes = new Set([
   EMPTY_PAGE,
   SIGN_IN_PAGE,
   SIGN_UP_PAGE,
-  ERROR_PAGE,
   NOTIFICATION_PAGE,
   APP_REDIRECT,
   REPOSTING_USERS_ROUTE,

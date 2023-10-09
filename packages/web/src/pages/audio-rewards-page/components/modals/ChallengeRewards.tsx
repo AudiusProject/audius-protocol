@@ -11,7 +11,8 @@ import {
   audioRewardsPageSelectors,
   getAAOErrorEmojis,
   musicConfettiActions,
-  challengeRewardsConfig
+  challengeRewardsConfig,
+  isAudioMatchingChallenge
 } from '@audius/common'
 import {
   Button,
@@ -34,6 +35,7 @@ import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
+import { Text } from 'components/typography'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getChallengeConfig } from 'pages/audio-rewards-page/config'
 import { isMobile } from 'utils/clientUtil'
@@ -73,6 +75,8 @@ export const useRewardsModalType = (): [
 }
 const inviteLink = getCopyableLink('/signup?ref=%0')
 const messages = {
+  audio: '$AUDIO',
+  everyDollarSpent: ' Every Dollar Spent',
   copyLabel: 'Copy to Clipboard',
   copiedLabel: 'Copied to Clipboard',
   inviteLabel: 'Copy Invite to Clipboard',
@@ -249,9 +253,18 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 
   const progressReward = (
     <div className={wm(styles.progressReward)}>
-      <h3>Reward</h3>
-      <h2>{formatNumberCommas(challenge?.totalAmount ?? '')}</h2>
-      <h4>$AUDIO</h4>
+      <Text variant='heading'>Reward</Text>
+      <Text variant='display' className={styles.rewardAmount}>
+        {isAudioMatchingChallenge(modalType)
+          ? formatNumberCommas(challenge?.amount ?? '')
+          : formatNumberCommas(challenge?.totalAmount ?? '')}
+      </Text>
+      <Text variant='heading'>
+        {messages.audio +
+          (isAudioMatchingChallenge(modalType)
+            ? messages.everyDollarSpent
+            : '')}
+      </Text>
     </div>
   )
 

@@ -1,0 +1,41 @@
+.statBar {
+  margin-bottom: 16px;
+  margin-left: -8px;
+  margin-right: -8px;
+  display: flex;
+  align-items: center;
+}
+
+.statBar > * {
+  flex-grow: 1;
+  margin-left: 8px;
+  margin-right: 8px;
+}
+
+.big {
+  margin-bottom: 16px;
+  min-height: 550px;  
+  display: flex;
+  flex-direction: column;
+}
+
+.big > * {
+  flex-grow: 1;
+}
+
+.medium {
+  margin-bottom: 16px;
+}
+
+.section {
+  margin-bottom: 16px;
+  display: flex;
+  margin-left: -8px;
+  margin-right: -8px;
+}
+
+.section > * {
+  width: 50%;
+  margin: 0 8px;
+  min-height: 340px;
+}

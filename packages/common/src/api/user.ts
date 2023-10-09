@@ -89,7 +89,7 @@ const userApi = createApi({
 
         return data.map(parseTransaction)
       },
-      options: {}
+      options: { retry: true }
     },
     getUSDCTransactionsCount: {
       fetch: async (
@@ -112,7 +112,7 @@ const userApi = createApi({
         })
         return data ?? 0
       },
-      options: {}
+      options: { retry: true }
     }
   }
 })
