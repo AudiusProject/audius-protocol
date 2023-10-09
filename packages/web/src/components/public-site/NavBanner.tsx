@@ -1,39 +1,50 @@
 import { useState, useEffect, useCallback } from 'react'
 
 import {
-  IconExplore,
-  IconTrending,
-  IconCampfire,
-  IconKebabHorizontal
+  IconBlog,
+  IconCaretDown2,
+  IconDownloadQueued,
+  IconFoundation,
+  IconKebabHorizontal,
+  IconMerch,
+  IconSupport,
+  PopupMenu,
+  PopupMenuItem,
 } from '@audius/stems'
 import cn from 'classnames'
 
 import HorizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
 import {
-  AUDIUS_LISTENING_LINK,
-  AUDIUS_HOT_AND_NEW,
-  AUDIUS_EXPLORE_LINK,
-  AUDIUS_ORG,
   AUDIUS_BLOG_LINK,
-  DOWNLOAD_START_LINK
+  AUDIUS_LISTENING_LINK,
+  AUDIUS_MERCH_LINK,
+  AUDIUS_ORG,
+  AUDIUS_SIGN_UP_LINK,
+  DOWNLOAD_LINK
 } from 'utils/route'
 import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
 import styles from './NavBanner.module.css'
 import { handleClickRoute } from './handleClickRoute'
+import zIndex from 'utils/zIndex'
 
 const DESKTOP_NAV_BANNER_MIN_WIDTH = 1170
 const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia(
   `(max-width: ${DESKTOP_NAV_BANNER_MIN_WIDTH}px)`
 )
 const messages = {
-  explore: 'Explore',
-  trending: 'Trending',
-  hotAndNew: 'Hot & New',
-  token: 'Token',
-  blog: 'Blog',
-  download: 'Download',
-  startListening: 'Start Listening'
+  resources: 'Resources',
+  signUp: 'Sign Up',
+  help: 'Help & Support',
+  helpDescription: 'Answers and Resources to help you make the most of Audius Music.',
+  download: 'Download the App',
+  downloadDescription: 'Download the apps for desktop and mobile devices.',
+  blog: 'Read the Blog',
+  blogDescription: 'Check out the latest updates to the Audius Blog.',
+  oaf: 'Open Audio Foundation',
+  oafDescription: 'Learn more about the $AUDIO and the Open Audio Foundation.',
+  merch: 'Merch Store',
+  merchDescription: 'Shop official limited edition merch.'
 }
 
 type NavBannerProps = {
@@ -60,27 +71,8 @@ const NavBanner = (props: NavBannerProps) => {
     AUDIUS_LISTENING_LINK,
     props.setRenderPublicSite
   )
-  const onClickExplore = handleClickRoute(
-    AUDIUS_EXPLORE_LINK,
-    props.setRenderPublicSite
-  )
-  const onClickTrending = handleClickRoute(
-    AUDIUS_LISTENING_LINK,
-    props.setRenderPublicSite
-  )
-  const onClickHotAndNew = handleClickRoute(
-    AUDIUS_HOT_AND_NEW,
-    props.setRenderPublicSite
-  )
-  const onClickToken = handleClickRoute(AUDIUS_ORG, props.setRenderPublicSite)
-
-  const onClickBlog = handleClickRoute(
-    AUDIUS_BLOG_LINK,
-    props.setRenderPublicSite
-  )
-
-  const onClickDownload = handleClickRoute(
-    DOWNLOAD_START_LINK,
+  const onClickSignUp = handleClickRoute(
+    AUDIUS_SIGN_UP_LINK,
     props.setRenderPublicSite
   )
 
@@ -90,6 +82,60 @@ const NavBanner = (props: NavBannerProps) => {
     return () => window.removeEventListener('scroll', setScrolling)
   }, [setScrolling])
 
+  const menuItems: PopupMenuItem[] = [
+    {
+      text: messages.help,
+      subtext: messages.helpDescription,
+      onClick: handleClickRoute(
+        AUDIUS_MERCH_LINK,
+        props.setRenderPublicSite
+      ),
+      icon: <IconSupport />,
+      iconClassName: styles.menuItemIcon
+    },
+    {
+      text: messages.download,
+      subtext: messages.downloadDescription,
+      onClick: handleClickRoute(
+        DOWNLOAD_LINK,
+        props.setRenderPublicSite
+      ),
+      icon: <IconDownloadQueued />,
+      iconClassName: styles.menuItemIcon
+    },
+    {
+      text: messages.blog,
+      subtext: messages.blogDescription,
+      className: styles.rewardsMenuItem,
+      onClick: handleClickRoute(
+        AUDIUS_BLOG_LINK,
+        props.setRenderPublicSite
+      ),
+      icon: <IconBlog />,
+      iconClassName: styles.menuItemIconStroke
+    },
+    {
+      text: messages.oaf,
+      subtext: messages.oafDescription,
+      onClick: handleClickRoute(
+        AUDIUS_ORG,
+        props.setRenderPublicSite
+      ),
+      icon: <IconFoundation />,
+      iconClassName: styles.menuItemIcon
+    },
+    {
+      text: messages.merch,
+      subtext: messages.merchDescription,
+      onClick: handleClickRoute(
+        AUDIUS_MERCH_LINK,
+        props.setRenderPublicSite
+      ),
+      icon: <IconMerch />,
+      iconClassName: styles.menuItemIconStroke
+    }
+  ]
+
   if (props.isMobile || isNarrow) {
     return (
       <div
@@ -98,20 +144,16 @@ const NavBanner = (props: NavBannerProps) => {
           [styles.invertColors]: isScrolling || props.invertColors
         })}
       >
-        <IconKebabHorizontal
-          className={styles.kebabMenu}
-          onClick={props.openNavScreen}
-        />
-        <div className={styles.centerLogo}>
+        <div className={styles.leftLogo}>
           <img
             src={HorizontalLogo}
             className={styles.horizontalLogo}
             alt='Audius Logo'
           />
         </div>
-        <IconTrending
-          className={styles.trendingIcon}
-          onClick={onClickTrending}
+        <IconKebabHorizontal
+          className={styles.kebabMenu}
+          onClick={props.openNavScreen}
         />
       </div>
     )
@@ -125,33 +167,7 @@ const NavBanner = (props: NavBannerProps) => {
       })}
     >
       <div className={styles.contentContainer}>
-        <div className={styles.iconContainer}>
-          <a
-            className={styles.iconLink}
-            onClick={onClickExplore}
-            href={AUDIUS_EXPLORE_LINK}
-          >
-            <IconExplore className={styles.linkIcon} />
-            <h3 className={styles.iconLinkText}>{messages.explore}</h3>
-          </a>
-          <a
-            className={styles.iconLink}
-            onClick={onClickTrending}
-            href={AUDIUS_LISTENING_LINK}
-          >
-            <IconTrending className={styles.linkIcon} />
-            <h3 className={styles.iconLinkText}>{messages.trending}</h3>
-          </a>
-          <a
-            className={styles.iconLink}
-            onClick={onClickHotAndNew}
-            href={AUDIUS_HOT_AND_NEW}
-          >
-            <IconCampfire className={styles.linkIcon} />
-            <h3 className={styles.iconLinkText}>{messages.hotAndNew}</h3>
-          </a>
-        </div>
-        <div className={styles.centerLogo}>
+        <div className={styles.leftLogo}>
           <img
             alt='Audius Logo'
             src={HorizontalLogo}
@@ -160,17 +176,49 @@ const NavBanner = (props: NavBannerProps) => {
           />
         </div>
         <div className={styles.linkContainer}>
-          <div onClick={onClickBlog} className={styles.rightLink}>
-            {messages.blog}
-          </div>
-          <div onClick={onClickToken} className={styles.rightLink}>
-            {messages.token}
-          </div>
-          <div onClick={onClickDownload} className={styles.rightLink}>
-            {messages.download}
-          </div>
-          <div onClick={onClickTrending} className={styles.startListening}>
-            {messages.startListening}
+          <PopupMenu
+            renderMenu={() => {
+              return (
+                <div className={styles.resourcesMenu}>
+                  {menuItems.map((item, i) => (
+                    <div
+                      key={`resources-menu-item-${i}`}
+                      className={styles.menuItemContainer}
+                      onClick={item.onClick}
+                    >
+                      <div className={item.iconClassName}>{item.icon}</div>
+                      <div className={styles.menuItemContent}>
+                        <p className={styles.menuItemTitle}>{item.text}</p>
+                        <p className={styles.menuItemSubtitle}>{item.subtext}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            }}
+            items={menuItems}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+            renderTrigger={(anchorRef, triggerPopup) => {
+              return (
+                <div
+                  className={styles.resources}
+                  ref={anchorRef}
+                  onClick={() => triggerPopup()}
+                  onMouseEnter={() => triggerPopup(true)}
+                >
+                  {messages.resources}
+                  <IconCaretDown2 className={styles.resourcesIcon} />
+                </div>
+              )
+            }}
+            zIndex={zIndex.NAV_BANNER_POPUP}
+            wrapperClassName={styles.popupWrapper}
+            className={styles.popup}
+            dismissOnMouseLeave
+          />
+          <div onClick={onClickSignUp} className={styles.signUp}>
+            {messages.signUp}
           </div>
         </div>
       </div>
