@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Tuple
 
+import pytz
 from eth_keys import keys
 from eth_utils.conversions import to_bytes
 from hexbytes import HexBytes
@@ -30,6 +31,9 @@ REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
 REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = None
 if REWARDS_MANAGER_ACCOUNT:
     REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = Pubkey.from_string(REWARDS_MANAGER_ACCOUNT)
+COOLDOWN_CHALLENGE_IDS = ["s", "b"]
+COOLDOWN_DAYS = 7
+DATETIME_FORMAT_STRING = "%Y-%m-%d %H:%M:%S.%f+00"
 
 
 class Attestation:
@@ -87,6 +91,7 @@ MISSING_CHALLENGES = "MISSING_CHALLENGES"
 INVALID_INPUT = "INVALID_INPUT"
 USER_NOT_FOUND = "USER_NOT_FOUND"
 POOL_EXHAUSTED = "POOL_EXHAUSTED"
+WAIT_FOR_COOLDOWN = "WAIT_FOR_COOLDOWN"
 
 
 class AttestationError(Exception):
@@ -162,10 +167,14 @@ def get_attestation(
         raise AttestationError(CHALLENGE_INCOMPLETE)
     if disbursement:
         raise AttestationError(ALREADY_DISBURSED)
-
+    now_utc = datetime.now(pytz.UTC)
+    if challenge_id in COOLDOWN_CHALLENGE_IDS:
+        time_passed = now_utc - user_challenge.created_at
+        if time_passed.days < COOLDOWN_DAYS:
+            raise AttestationError(WAIT_FOR_COOLDOWN)
     if challenge.weekly_pool:
         disbursed_amount = get_disbursed_challenges_amount(
-            session, challenge.id, get_weekly_pool_window_start(datetime.now())
+            session, challenge.id, get_weekly_pool_window_start(now_utc)
         )
         if disbursed_amount + user_challenge.amount > challenge.weekly_pool:
             raise AttestationError(POOL_EXHAUSTED)

@@ -312,6 +312,9 @@ function* claimChallengeRewardAsync(
           case FailureReason.CHALLENGE_INCOMPLETE:
             yield put(claimChallengeRewardFailed())
             break
+          case FailureReason.WAIT_FOR_COOLDOWN:
+            yield put(claimChallengeRewardFailed())
+            break
           case FailureReason.UNKNOWN_ERROR:
           default:
             // If there is an AAO error code, then the AAO must have
