@@ -6,6 +6,7 @@ import { favoritesApiReducer } from './favorites'
 import { libraryApiReducer } from './library'
 import { purchasesApiReducer } from './purchases'
 import { relatedArtistsApiReducer } from './relatedArtists'
+import { topArtistsApiReducer } from './topArtists'
 import { trackApiReducer } from './track'
 import { trendingApiReducer } from './trending'
 import { userApiReducer } from './user'
@@ -19,5 +20,6 @@ export default combineReducers({
   favoritesApi: favoritesApiReducer,
   trendingApi: trendingApiReducer,
   libraryApi: libraryApiReducer,
-  purchasesApi: purchasesApiReducer
+  purchasesApi: purchasesApiReducer,
+  topArtistsApi: topArtistsApiReducer
 })

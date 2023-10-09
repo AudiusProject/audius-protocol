@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { AppCtaPage, AppCtaState } from './pages/AppCtaPage'
 import {
   CreatePasswordPage,
   CreatePasswordState
@@ -23,6 +24,7 @@ type SignUpRootState =
   | FinishProfileState
   | SelectGenreState
   | SelectArtistsState
+  | AppCtaState
 
 export const SignUpRootPage = () => {
   const [signUpState, setSignUpState] = useState<SignUpRootState>({
@@ -50,7 +52,10 @@ export const SignUpRootPage = () => {
       {signUpState.stage === 'select-genre' ? (
         <SelectGenrePage onNext={setSignUpState} />
       ) : null}
-      {signUpState.stage === 'select-artists' ? <SelectArtistsPage /> : null}
+      {signUpState.stage === 'select-artists' ? (
+        <SelectArtistsPage onNext={setSignUpState} />
+      ) : null}
+      {signUpState.stage === 'app-cta' ? <AppCtaPage /> : null}
     </div>
   )
 }

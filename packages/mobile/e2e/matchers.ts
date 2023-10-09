@@ -7,10 +7,14 @@ type ByRoleOptions = {
   labelOnly?: boolean
 }
 
-export function byRole(role: Role, options: ByRoleOptions) {
+export function byRole(
+  role: Role,
+  options: ByRoleOptions
+): Detox.IndexableNativeElement {
   const { name, labelOnly } = options
   switch (role) {
     case 'textbox':
+      // @ts-ignore -- technically not an indexable native element
       return element(by.label(name)).atIndex(1)
     case 'heading':
       return element(by.label(name))
