@@ -64,7 +64,12 @@ else
         [ -e /var/celerybeat-schedule ] && rm /var/celerybeat-schedule
         [ -e /var/celerybeat.pid ] && rm /var/celerybeat.pid
         audius_service=beat celery -A src.worker.celery beat --schedule=/var/celerybeat-schedule --pidfile=/var/celerybeat.pid --loglevel WARNING 2>&1 | tee >(logger -t beat) &
-        audius_service=worker celery -A src.worker.celery worker --max-memory-per-child 300000 --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
+        # start worker dedicated to indexing ACDC
+        audius_service=index_nethermind_worker celery -A src.worker.celery worker -Q index_nethermind --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t index_nethermind_worker) &
+
+        # start other workers with remaining CPUs
+        audius_service=worker celery -A src.worker.celery worker --max-memory-per-child 300000 --loglevel $audius_discprov_loglevel --concurrency=$(($(nproc) - 1)) 2>&1 | tee >(logger -t worker) &
+
     fi
 fi
 
