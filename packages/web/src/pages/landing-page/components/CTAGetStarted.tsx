@@ -1,36 +1,33 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 
-import { IconArrow } from '@audius/stems'
+import { IconCaretRight } from '@audius/stems'
 import cn from 'classnames'
 import { Parallax } from 'react-scroll-parallax'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useChain, useTrail, animated } from 'react-spring'
 
-import appImg from 'assets/img/publicSite/AudiusAppAlt@2x.png'
 import hqAudio from 'assets/img/publicSite/HQ-Audio@1x.jpg'
 import { handleClickRoute } from 'components/public-site/handleClickRoute'
 import { AUDIUS_LISTENING_LINK } from 'utils/route'
 import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
-import styles from './CTAListening.module.css'
+import styles from './CTAGetStarted.module.css'
 
 const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia('(max-width: 1150px)')
 
 const messages = {
-  title1: '320kbps Streaming For Free',
-  title2: 'The way your music should be heard.',
-  cta: 'Start Uploading Today'
+  title: 'Elevate Your Artistry, Amplify Your Reach.',
+  cta: 'Get Started'
 }
 
-const title1Items = messages.title1.split(' ')
-const title2Items = messages.title2.split(' ')
+const titleItems = messages.title.split(' ')
 
-type CTAListeningProps = {
+type CTAGetStartedProps = {
   isMobile: boolean
   setRenderPublicSite: (shouldRender: boolean) => void
 }
 
-const CTAListening = (props: CTAListeningProps) => {
+const CTAGetStarted = (props: CTAGetStartedProps) => {
   const isNarrow = useMatchesBreakpoint({
     initialValue: props.isMobile,
     mediaQuery: MOBILE_WIDTH_MEDIA_QUERY
@@ -49,27 +46,18 @@ const CTAListening = (props: CTAListeningProps) => {
     return false
   }, [setHasViewed])
 
-  const firstTitleRef = useRef()
-  const secTitleRef = useRef()
+  const titleRef = useRef()
 
-  const trail = useTrail(title1Items.length, {
+  const titleSpring = useTrail(titleItems.length, {
     // @ts-ignore
-    ref: firstTitleRef,
-    config: { mass: 5, tension: 2000, friction: 200 },
-    to: { opacity: 1, x: 0 },
-    from: { opacity: 0, x: 80 }
-  })
-
-  const secondTitle = useTrail(title2Items.length, {
-    // @ts-ignore
-    ref: secTitleRef,
+    ref: titleRef,
     config: { mass: 3, tension: 2000, friction: 200 },
     to: { opacity: 1, x: 0 },
     from: { opacity: 0, x: 80 }
   })
 
   // @ts-ignore
-  useChain(hasViewed ? [firstTitleRef, secTitleRef] : [], [0, 0.8])
+  useChain(hasViewed ? [titleRef] : [], [0, 0.8])
 
   useEffect(() => {
     refInView()
@@ -91,19 +79,7 @@ const CTAListening = (props: CTAListeningProps) => {
           </Parallax>
         </div>
         <div className={styles.textContent}>
-          <div className={styles.appImgContainer}>
-            <img
-              src={appImg}
-              className={styles.appImg}
-              alt='Audius mobile app'
-            />
-          </div>
-          <div className={styles.titlesContainer}>
-            <div className={styles.title}>
-              <div className={styles.title1}>{messages.title1}</div>
-              <div className={styles.title2}>{messages.title2}</div>
-            </div>
-          </div>
+          <div className={styles.title}>{messages.title}</div>
           <button
             onClick={handleClickRoute(
               AUDIUS_LISTENING_LINK,
@@ -112,7 +88,7 @@ const CTAListening = (props: CTAListeningProps) => {
             className={styles.ctaButton}
           >
             {messages.cta}
-            <IconArrow className={styles.arrowRight} />
+            <IconCaretRight className={styles.iconCaretRight} />
           </button>
         </div>
       </div>
@@ -122,36 +98,14 @@ const CTAListening = (props: CTAListeningProps) => {
   return (
     <div ref={containerRef} className={styles.container}>
       <div className={styles.content}>
-        <div className={styles.appImgContainer}>
-          <img src={appImg} className={styles.appImg} alt='Audius mobile app' />
-        </div>
         <div className={styles.textContent}>
-          <div className={styles.title}>
-            <h3 className={styles.title1}>
-              {trail.map(({ x, wordYPosition, ...rest }: any, index: any) => (
-                <animated.span
-                  key={title1Items[index]}
-                  className={cn(styles.textAnimateTitle1)}
-                  style={{
-                    ...rest,
-                    transform: x.interpolate(
-                      (x: number) => `translate3d(0,${x}px,0)`
-                    )
-                  }}
-                >
-                  <animated.div className={styles.word}>
-                    {' '}
-                    {title1Items[index]}{' '}
-                  </animated.div>
-                </animated.span>
-              ))}
-            </h3>
-            <h3 className={styles.title2}>
-              {secondTitle.map(
+          <div className={styles.titleContainer}>
+            <h3 className={styles.title}>
+              {titleSpring.map(
                 ({ x, wordYPosition, ...rest }: any, index: number) => (
                   <animated.span
-                    key={title2Items[index]}
-                    className={cn(cn(styles.textAnimateTitle2))}
+                    key={titleItems[index]}
+                    className={cn(cn(styles.textAnimateTitle))}
                     style={{
                       ...rest,
                       transform: x.interpolate(
@@ -163,7 +117,7 @@ const CTAListening = (props: CTAListeningProps) => {
                       className={cn(styles.word, styles.coloredTitleWord)}
                     >
                       {' '}
-                      {title2Items[index]}{' '}
+                      {titleItems[index]}{' '}
                     </animated.div>
                   </animated.span>
                 )
@@ -178,7 +132,7 @@ const CTAListening = (props: CTAListeningProps) => {
             className={styles.ctaButton}
           >
             {messages.cta}
-            <IconArrow className={styles.arrowRight} />
+            <IconCaretRight className={styles.iconCaretRight} />
           </button>
         </div>
       </div>
@@ -196,4 +150,4 @@ const CTAListening = (props: CTAListeningProps) => {
   )
 }
 
-export default CTAListening
+export default CTAGetStarted

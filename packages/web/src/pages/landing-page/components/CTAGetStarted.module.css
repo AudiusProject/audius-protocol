@@ -6,6 +6,7 @@
   overflow: hidden;
   display: flex;
   justify-content: center;
+  box-shadow: 0px 10px 50px -2px rgba(53, 5, 152, 0.25);
 }
 
 .content {
@@ -15,7 +16,7 @@
   align-items: center;
   z-index: 5;
   box-shadow: 0px 10px 50px -2px rgba(53, 5, 152, 0.25);
-  padding: 100px;
+  padding: 144px 168px;
   background: linear-gradient(
       180deg,
       rgba(0, 0, 0, 0.25) 0%,
@@ -24,51 +25,26 @@
     linear-gradient(0deg, rgba(175, 0, 255, 0.5), rgba(175, 0, 255, 0.5));
 }
 
-.appImg {
-  z-index: 5;
-  max-width: 542px;
-}
-
-.appImgContainer {
-  z-index: 5;
-  margin-right: 40px;
-}
-
 .textContent {
-  max-width: 700px;
   position: relative;
   z-index: 5;
 }
 
-.title {
+.titleContainer {
   color: #ffffff;
-  font-size: 64px;
-  font-weight: 800;
-  line-height: 86px;
+  font-size: 72px;
+  font-weight: 700;
+  line-height: 88px;
   text-shadow: 0 5px 20px rgba(25, 0, 96, 0.5);
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
-.title1 {
-  display: inline-flex;
-  font-size: 24px;
-  line-height: 32px;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-}
-
-.title2 {
+.title {
   flex-wrap: wrap;
   display: inline-flex;
 }
 
-.textAnimateTitle1 {
-  margin-right: 14px;
-  overflow: hidden;
-  display: inline-flex;
-}
-
-.textAnimateTitle2 {
+.textAnimateTitle {
   margin-right: 18px;
   overflow: hidden;
   display: inline-flex;
@@ -77,9 +53,9 @@
 .ctaButton {
   user-select: none;
   cursor: pointer;
-  padding: 16px 40px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 29px;
+  border-radius: 4px;
   background-color: #ffffff;
   box-shadow: 0 5px 20px -1px rgba(25, 0, 96, 0.5);
   display: inline-flex;
@@ -94,6 +70,7 @@
   text-align: center;
   transition: all 0.15s ease-in-out;
   transform: scale3d(1, 1, 1);
+  max-width: 176px;
 }
 
 .ctaButton:hover {
@@ -108,10 +85,10 @@
   box-shadow: 0 0 2px -1px rgba(25, 0, 96, 0.5);
 }
 
-.arrowRight {
+.iconCaretRight {
   margin-left: 4px;
-  height: 24px;
-  width: 24px;
+  height: 20px;
+  width: 20px;
 }
 
 .background {
@@ -135,6 +112,7 @@
   position: relative;
   overflow: hidden;
   width: 100%;
+  box-shadow: 0px 10px 50px -2px rgba(53, 5, 152, 0.25);
 }
 
 .mobileBgImage {
@@ -155,8 +133,10 @@
 }
 
 .mobileContainer .textContent {
+  display: flex;
+  flex-direction: column;
   max-width: unset;
-  padding: 24px 24px 48px 24px;
+  padding: 48px;
   background: linear-gradient(
       180deg,
       rgba(0, 0, 0, 0.25) 0%,
@@ -165,36 +145,22 @@
     linear-gradient(0deg, rgba(175, 0, 255, 0.5), rgba(175, 0, 255, 0.5));
 }
 
-@media (min-width: 510px) {
-  .mobileContainer .textContent,
-  .mobileContainer .titlesContainer {
-    text-align: center;
-  }
+.mobileContainer .ctaButton {
+  font-size: 18px;
 }
 
-.mobileContainer .titlesContainer {
+.mobileContainer .titleContainer {
   max-width: 700px;
   margin: 0 auto;
 }
 
 .mobileContainer .title {
   color: #ffffff;
-  font-size: 34px;
+  font-size: 36px;
   font-weight: 700;
-  line-height: 42px;
+  line-height: 40px;
   text-shadow: 0 5px 20px rgba(25, 0, 96, 0.5);
-  margin-bottom: 24px;
-}
-
-.mobileContainer .title1 {
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 20px;
-}
-
-.title2 {
-  flex-wrap: wrap;
-  display: inline-flex;
+  margin-bottom: 32px;
 }
 
 .bgContainer {
@@ -219,15 +185,4 @@
   position: relative;
   width: 100%;
   height: 100%;
-}
-
-.mobileContainer .appImg {
-  max-width: 308px;
-}
-
-.mobileContainer .appImgContainer {
-  margin-right: unset;
-  margin-top: 48px;
-  display: flex;
-  justify-content: center;
 }
