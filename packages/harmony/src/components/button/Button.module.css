@@ -137,17 +137,16 @@
 
 /* Tertiary */
 .tertiary {
-  --button-color: var(--harmony-border-strong);
-  --text-color: var(--harmony-secondary);
+  --button-color: var(--harmony-n-300);
+  --text-color: var(--harmony-text-default);
   background: var(--harmony-static-white);
 }
 .tertiary:hover {
-  --text-color: var(--harmony-secondary);
   box-shadow: var(--harmony-shadow-mid);
 }
 .tertiary:active {
-  --overlay-color: var(--harmony-static-black);
-  --overlay-opacity: 0.2;
+  background-color: var(--harmony-n-50);
+  box-shadow: none;
 }
 
 /* Destructive */
@@ -181,11 +180,19 @@
 }
 
 /* Disabled states */
+.disabled {
+  box-shadow: none;
+}
+
 .primary.disabled,
 .secondary.disabled {
   --button-color: var(--harmony-n-150);
   --text-color: var(--harmony-static-white);
   background-color: var(--harmony-n-150);
+}
+
+.tertiary.disabled {
+  opacity: 0.45;
 }
 
 /* Plain */
