@@ -14,6 +14,7 @@
     },
     "@audius/compose#start": {
       "dependsOn": ["^build"],
+      "cache": false,
       "outputMode": "new-only"
     },
     "audius-client#start:dev": {
