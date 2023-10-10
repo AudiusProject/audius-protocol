@@ -502,6 +502,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 active=challenge_meta.get("active", True),
                 step_count=challenge_meta.get("step_count", None),
                 starting_block=challenge_meta.get("starting_block", None),
+                weekly_pool=challenge_meta.get("weekly_pool", None),
             )
             session.add(challenge)
         for i, user_challenge_meta in enumerate(user_challenges):
@@ -514,6 +515,7 @@ def populate_mock_db(db, entities, block_offset=None):
                     "completed_blocknumber", 1 + block_offset
                 ),
                 current_step_count=user_challenge_meta.get("current_step_count", None),
+                amount=user_challenge_meta.get("amount", None),
             )
             session.add(user_challenge)
         for i, user_bank_account in enumerate(user_bank_accounts):
@@ -596,6 +598,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 signature=challenge_disbursement.get("signature", str(i)),
                 slot=challenge_disbursement.get("slot", i),
                 amount=challenge_disbursement.get("amount", i),
+                created_at=challenge_disbursement.get("created_at", datetime.now()),
             )
             session.add(cb)
         for i, playlist_seen in enumerate(playlist_seens):

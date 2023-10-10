@@ -8,8 +8,11 @@ from solders.pubkey import Pubkey
 from web3 import Web3
 
 from integration_tests.queries.test_get_challenges import setup_db
+from integration_tests.utils import populate_mock_db
+from src.models.rewards.challenge import ChallengeType
 from src.queries.get_attestation import (
     ADD_SENDER_MESSAGE_PREFIX,
+    POOL_EXHAUSTED,
     REWARDS_MANAGER_ACCOUNT,
     Attestation,
     AttestationError,
@@ -121,6 +124,149 @@ def test_get_attestation(app):
                     oracle_address="wrong_oracle_address",
                     specifier="1",
                 )
+
+
+def test_get_attestation_weekly_pool_exhausted(app):
+    with app.app_context():
+        db = get_db()
+
+    entities = {
+        "users": [
+            {"user_id": 1, "wallet": "0x38C68fF3926bf4E68289672F75ee1543117dDAAA"},
+            {"user_id": 2, "wallet": "0x38C68fF3926bf4E68289672F75ee1543117dD9B3"},
+            {"user_id": 3, "wallet": "0xDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEF"},
+        ],
+        "challenges": [
+            {
+                "id": "not-exhausted",
+                "type": ChallengeType.numeric,
+                "active": True,
+                "amount": 5,
+                "weekly_pool": 10,
+            },
+            {
+                "id": "exhausted",
+                "type": ChallengeType.numeric,
+                "active": True,
+                "amount": 10,
+                "weekly_pool": 20,
+            },
+        ],
+        "user_challenges": [
+            {
+                "challenge_id": "not-exhausted",
+                "user_id": 1,
+                "specifier": "1",
+                "is_complete": True,
+                "amount": 5,
+            },
+            {
+                "challenge_id": "not-exhausted",
+                "user_id": 2,
+                "specifier": "2",
+                "is_complete": True,
+                "amount": 5,
+            },
+            {
+                "challenge_id": "exhausted",
+                "user_id": 1,
+                "specifier": "1",
+                "is_complete": True,
+                "amount": 10,
+            },
+            {
+                "challenge_id": "exhausted",
+                "user_id": 2,
+                "specifier": "2",
+                "is_complete": True,
+                "amount": 10,
+            },
+            # User 3 has completed challenge `exhausted` but will not be able to disburse
+            {
+                "challenge_id": "exhausted",
+                "user_id": 3,
+                "specifier": "3",
+                "is_complete": True,
+                "amount": 10,
+            },
+        ],
+        "challenge_disbursements": [
+            {
+                "challenge_id": "not-exhausted",
+                "specifier": "1",
+                "user_id": 1,
+                "amount": "5",
+            },
+            {
+                "challenge_id": "exhausted",
+                "specifier": "1",
+                "user_id": 1,
+                "amount": "10",
+            },
+            {
+                "challenge_id": "exhausted",
+                "specifier": "2",
+                "user_id": 2,
+                "amount": "10",
+            },
+        ],
+    }
+    populate_mock_db(db, entities)
+    with db.scoped_session() as session:
+        oracle_address = "0x32a10e91820fd10366AC363eD0DEa40B2e598D22"
+        redis_handle.set(oracle_addresses_key, oracle_address)
+
+        delegate_owner_wallet, signature = get_attestation(
+            session,
+            user_id=2,
+            challenge_id="not-exhausted",
+            oracle_address=oracle_address,
+            specifier="2",
+        )
+
+        attestation = Attestation(
+            amount="5",
+            oracle_address=oracle_address,
+            user_address="0x38C68fF3926bf4E68289672F75ee1543117dD9B3",
+            challenge_id="not-exhausted",
+            challenge_specifier="2",
+        )
+
+        # User 2 should still be able to disburse the non-exhausted challenge
+
+        # confirm the attestation is what we think it should be
+        config_owner_wallet = shared_config["delegate"]["owner_wallet"]
+        config_private_key = shared_config["delegate"]["private_key"]
+
+        # Ensure we returned the correct owner wallet
+        assert delegate_owner_wallet == config_owner_wallet
+
+        # Ensure we can derive the owner wallet from the signed stringified attestation
+        attestation_bytes = attestation.get_attestation_bytes()
+        to_sign_hash = Web3.keccak(attestation_bytes)
+        private_key = keys.PrivateKey(HexBytes(config_private_key))
+        public_key = keys.PublicKey.from_private(private_key)
+        signture_bytes = to_bytes(hexstr=signature)
+        msg_signature = keys.Signature(signature_bytes=signture_bytes, vrs=None)
+
+        recovered_pubkey = public_key.recover_from_msg_hash(
+            message_hash=to_sign_hash, signature=msg_signature
+        )
+
+        assert (
+            Web3.to_checksum_address(recovered_pubkey.to_address())
+            == config_owner_wallet
+        )
+
+        with pytest.raises(AttestationError) as e:
+            get_attestation(
+                session,
+                user_id=3,
+                challenge_id="exhausted",
+                oracle_address=oracle_address,
+                specifier="3",
+            )
+        assert str(e.value) == POOL_EXHAUSTED
 
 
 @pytest.fixture
