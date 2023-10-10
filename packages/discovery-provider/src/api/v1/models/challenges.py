@@ -30,3 +30,17 @@ create_sender_attestation = ns.model(
         "attestation": fields.String(required=True),
     },
 )
+
+challenge_info = ns.model(
+    "challenge_info",
+    {
+        "challenge_id": fields.String(required=True),
+        "type": fields.String(required=True),
+        "amount": fields.String(required=True),
+        "active": fields.Boolean(required=True),
+        "step_count": fields.Integer(required=True),
+        "starting_block": fields.Integer(required=False),
+        "weekly_pool": fields.String(required=False),
+        "weekly_pool_remaining": fields.String(required=False),
+    },
+)

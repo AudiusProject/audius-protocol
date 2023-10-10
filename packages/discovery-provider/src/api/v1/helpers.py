@@ -877,6 +877,10 @@ def success_response(entity):
     return api_helpers.success_response(entity, 200, False)
 
 
+def error_response(error):
+    return api_helpers.error_response(error)
+
+
 DEFAULT_LIMIT = 100
 MIN_LIMIT = 1
 MAX_LIMIT = 500
