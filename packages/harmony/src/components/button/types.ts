@@ -75,6 +75,11 @@ export type ButtonProps = {
   color?: ColorValue
 
   /**
+   * Override the color of the button using any hex color, only valid for the `PRIMARY` variant
+   */
+  hexColor?: `#${string}`
+
+  /**
    * The type of the button
    */
   variant?: ButtonType

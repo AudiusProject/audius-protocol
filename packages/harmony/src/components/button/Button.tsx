@@ -36,6 +36,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   function Button(props, ref) {
     const {
       color,
+      hexColor,
       variant = ButtonType.PRIMARY,
       size = ButtonSize.DEFAULT,
       disabled,
@@ -44,7 +45,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const style: CSSCustomProperties = {
       '--button-color':
-        !disabled && color ? `var(${toCSSVariableName(color)})` : undefined
+        !disabled && hexColor
+          ? hexColor
+          : color
+          ? `var(${toCSSVariableName(color)})`
+          : undefined
     }
 
     const [buttonSizeClass, iconSizeClass, textSizeClass] = SIZE_STYLE_MAP[size]

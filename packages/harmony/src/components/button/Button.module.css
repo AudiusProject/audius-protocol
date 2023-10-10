@@ -213,6 +213,7 @@
   --button-color: var(--harmony-n-150);
   --text-color: var(--harmony-static-white);
   background-color: var(--harmony-n-150);
+  border-color: var(--harmony-n-150);
 }
 
 .tertiary.disabled {

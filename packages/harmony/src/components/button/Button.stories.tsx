@@ -46,7 +46,7 @@ type Story = StoryObj<typeof Button>
 export const Primary: Story = {}
 
 // Primary w/ color
-export const PrimaryWithColor: Story = { args: { color: 'blue' } }
+export const PrimaryWithColor: Story = { args: { hexColor: '#13C65A' } }
 
 // Secondary
 export const Secondary: Story = { args: { variant: ButtonType.SECONDARY } }
