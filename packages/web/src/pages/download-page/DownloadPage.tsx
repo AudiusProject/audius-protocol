@@ -12,7 +12,7 @@ import { ReactComponent as IconDownloadMobile } from 'assets/img/publicSite/down
 import { CookieBanner } from 'components/cookie-banner/CookieBanner'
 import Footer from 'components/public-site/Footer'
 import NavBanner from 'components/public-site/NavBanner'
-import CTASignUp from 'pages/landing-page/components/CTASignUp'
+import CTAStartListening from 'pages/landing-page/components/CTAStartListening'
 import DownloadApp from 'services/download-app/DownloadApp'
 import { getIOSAppLink } from 'utils/appLinks'
 import { getOS } from 'utils/clientUtil'
@@ -182,7 +182,7 @@ const DownloadPage = (props: DownloadPageProps) => {
               </div>
             </div>
           </div>
-          <CTASignUp
+          <CTAStartListening
             isMobile={props.isMobile}
             setRenderPublicSite={props.setRenderPublicSite}
           />
