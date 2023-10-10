@@ -1,0 +1,36 @@
+.statBar {
+  display: flex;
+  flex-direction: column;
+}
+
+.statBar > * {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.topRow {
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.logo {
+  width: 180px;
+  height: 46px;
+  margin-bottom: 24px;
+}
+
+.logo path {
+  fill: var(--static-white);
+}
+
+.wtfIs {
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 39px;
+  color: var(--static-white);
+}

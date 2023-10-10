@@ -51,6 +51,14 @@ const userApi = createApi({
         schemaKey: 'user'
       }
     },
+    getUsersByIds: {
+      fetch: async (args: { ids: ID[] }, context) => {
+        const { ids } = args
+        const { audiusBackend } = context
+        return await audiusBackend.getCreators(ids)
+      },
+      options: { idListArgKey: 'ids', kind: Kind.USERS, schemaKey: 'users' }
+    },
     getUSDCTransactions: {
       fetch: async (
         {
@@ -111,8 +119,10 @@ const userApi = createApi({
 
 export const {
   useGetUserById,
+  useGetUsersByIds,
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount
 } = userApi.hooks
 export const userApiReducer = userApi.reducer
+export const userApiFetch = userApi.fetch
 export const userApiActions = userApi.actions

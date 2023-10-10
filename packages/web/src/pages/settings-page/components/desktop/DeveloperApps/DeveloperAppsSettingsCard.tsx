@@ -11,7 +11,7 @@ import { DeveloperAppsSettingsModal } from './DeveloperAppsSettingsModal'
 
 const messages = {
   title: 'Create App',
-  description: 'Create your own app using the Audius API',
+  description: 'Create your own app using the Audius API.',
   buttonText: 'Manage Your Apps'
 }
 

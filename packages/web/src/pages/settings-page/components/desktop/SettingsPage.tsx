@@ -80,7 +80,6 @@ const messages = {
   darkModeAuto: 'Auto',
   matrixMode: '🕳 🐇 Matrix',
   changePassword: 'Change Password',
-  changePasswordDescription: 'Change the password to your Audius account',
   signOut: 'Sign Out',
 
   aiGeneratedCardTitle: 'AI Generated music',
@@ -107,7 +106,7 @@ const messages = {
     'Verify your Audius profile by linking a verified account from Twitter, Instagram, or TikTok.',
   desktopAppCardDescription:
     'For the best experience, we reccomend downloading the Audius Desktop App.',
-  purchasesCardDescription: 'Review your purchased content',
+  purchasesCardDescription: 'Review your purchased content.',
 
   aiGeneratedEnabled: 'Enabled',
   aiGeneratedButtonText: 'AI Generated Music Settings',
@@ -398,7 +397,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
         <SettingsCard
           icon={<IconSettings />}
           title={messages.changePassword}
-          description={messages.changePasswordDescription}
+          description={messages.changePasswordCardDescription}
         >
           <Button
             onClick={openChangePasswordModal}

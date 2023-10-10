@@ -1,21 +1,67 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
+import {
+  useGetTopArtistsInGenre,
+  type ID,
+  useGetFeaturedArtists,
+  Status
+} from '@audius/common'
+import { addFollowArtists } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
+import { Formik } from 'formik'
 import { Pressable, View } from 'react-native'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
-import { Text } from 'app/components/core'
+import { Button, Text } from 'app/components/core'
+
+import { ArtistTile } from '../components/ArtistTile'
 
 const messages = {
   header: 'Follow At Least 3 Artists',
   description:
     'Curate your feed with tracks uploaded or reposted by anyone you follow. Click the artist’s photo to preview their music.',
+  genresLabel: 'Selected genres',
   continue: 'Continue'
+}
+
+type SelectArtistsValues = {
+  artists: ID[]
+}
+
+const initialValues: SelectArtistsValues = {
+  artists: []
 }
 
 export const SelectArtistsScreen = () => {
   const genres = useSelector((state: any) => ['Featured', ...getGenres(state)])
   const [currentGenre, setCurrentGenre] = useState('Featured')
+  const dispatch = useDispatch()
+
+  const handleSubmit = useCallback(
+    (values: SelectArtistsValues) => {
+      const { artists } = values
+      dispatch(addFollowArtists(artists))
+    },
+    [dispatch]
+  )
+
+  const isFeaturedArtists = currentGenre === 'Featured'
+
+  const { data: topArtists, status: topArtistsStatus } =
+    useGetTopArtistsInGenre(
+      { genre: currentGenre },
+      { disabled: isFeaturedArtists }
+    )
+
+  const { data: featuredArtists, status: featuredArtistsStatus } =
+    useGetFeaturedArtists(undefined, {
+      disabled: !isFeaturedArtists
+    })
+
+  const artists = isFeaturedArtists ? featuredArtists : topArtists
+  const isLoading =
+    (isFeaturedArtists ? topArtistsStatus : featuredArtistsStatus) ===
+    Status.LOADING
 
   return (
     <View>
@@ -41,6 +87,25 @@ export const SelectArtistsScreen = () => {
           )
         })}
       </View>
+      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+        {({ handleSubmit }) => {
+          return (
+            <View>
+              <View>
+                {isLoading
+                  ? null
+                  : artists?.map((user) => (
+                      <ArtistTile key={user.user_id} user={user} />
+                    ))}
+              </View>
+              <Button
+                title={messages.continue}
+                onPress={() => handleSubmit()}
+              />
+            </View>
+          )
+        }}
+      </Formik>
     </View>
   )
 }

@@ -1,0 +1,34 @@
+.userInfoRow {
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.userInfoTile {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.serviceContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.serviceTable {
+  margin-bottom: 16px;
+}
+
+.rightSpacing {
+  margin-right: 0;
+}
+
+.leftSpacing {
+  margin-left: 0;
+}
+
+.stakingStat,
+.delegationState {
+  margin-top: 16px;
+}
