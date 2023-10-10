@@ -33,24 +33,25 @@ mobile-prepare-ios:
     - checkout
     - attach_workspace:
         at: ./
-    - run:
-        name: install cocoapods
-        command: sudo gem install cocoapods:1.12.0
-    - run:
-        name: copy bundle
-        command: cd packages/mobile && npm run bundle:ios
-    - run:
-        name: Install Sentry CLI
-        command: |
-          curl -sL https://sentry.io/get-cli/ | bash
-          echo export SENTRY_BINARY=/usr/local/bin/sentry-cli >> "$BASH_ENV"
     - restore_cache:
-        key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
+        key: 1-gems-{{ checksum "packages/mobile/ios/Gemfile.lock" }}
+    - run:
+        name: install gems
+        command: |
+          cd packages/mobile/ios
+          sudo bundle update --bundler
+          bundle check || bundle install --path vendor/bundle
+    - save_cache:
+        key: 1-gems-{{ checksum "packages/mobile/ios/Gemfile.lock" }}
+        paths:
+          - packages/mobile/ios/vendor/bundle
     - run:
         name: Symlink react-native
         command: |
           ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native
           ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native
+    - restore_cache:
+        key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
     - run:
         name: install pods
         command: |
@@ -61,18 +62,16 @@ mobile-prepare-ios:
         paths:
           - packages/mobile/ios/pods
     - run:
-        name: update bundler
-        command: sudo gem install bundler:1.17.3
-    - restore_cache:
-        key: 1-gems-{{ checksum "packages/mobile/ios/Gemfile.lock" }}
-    - run: cd packages/mobile/ios && (bundle check || bundle install --path vendor/bundle)
-    - save_cache:
-        key: 1-gems-{{ checksum "packages/mobile/ios/Gemfile.lock" }}
-        paths:
-          - packages/mobile/ios/vendor/bundle
+        name: Install Sentry CLI
+        command: |
+          curl -sL https://sentry.io/get-cli/ | bash
+          echo export SENTRY_BINARY=/usr/local/bin/sentry-cli >> "$BASH_ENV"
+    - run:
+        name: create bundle
+        command: cd packages/mobile && npm run bundle:ios
     - run:
         name: update fastlane
-        command: cd packages/mobile/ios && bundle update fastlane
+        command: cd packages/mobile/ios && sudo bundle update fastlane
 
 # Build ios app
 mobile-build-ios:
@@ -142,7 +141,7 @@ mobile-prepare-android:
           - packages/mobile/android/vendor/bundle
     - run:
         name: update fastlane
-        command: cd packages/mobile/android && bundle update fastlane
+        command: cd packages/mobile/android && sudo bundle update fastlane
     - run:
         name: fetch app fastlane json config to upload to play store
         command: |
