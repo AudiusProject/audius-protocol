@@ -49,7 +49,7 @@
     "start:dev": "npm run configure-local-env && ./node_modules/.bin/env-cmd -f .env.dev.local npm start",
     "start:stage": "./node_modules/.bin/env-cmd -f .env.stage npm start",
     "start:prod": "./node_modules/.bin/env-cmd -f .env.prod npm start",
-    "build": "NODE_OPTIONS=--max_old_space_size=8192 tsc && vite build",
+    "build": "NODE_OPTIONS=--max_old_space_size=8192 tsc -p ./tsconfig.node.json && vite build",
     "build:stage": "./node_modules/.bin/env-cmd -f .env.stage npm run build && node ./scripts/rerouteLegacy.cjs stage",
     "build:prod": "./node_modules/.bin/env-cmd -f .env.prod npm run build && node ./scripts/rerouteLegacy.cjs",
     "lint": "npm run prettier:check",
