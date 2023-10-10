@@ -12,13 +12,20 @@ const { getHasAccount } = accountSelectors
 
 export const useAuthenticatedCallback = <T extends (...args: any) => any>(
   callback: T,
-  deps: any[]
+  deps: any[],
+  stopPropagation = false
 ) => {
   const isSignedIn = useSelector(getHasAccount)
   const dispatch = useDispatch()
 
   return useCallback(
     (...args: Parameters<T>) => {
+      if (stopPropagation) {
+        // In the case we are clicking something that expects to
+        // propagate clicks, don't propagate
+        ;(args[0] as MouseEvent)?.stopPropagation()
+      }
+
       if (!isSignedIn) {
         dispatch(openSignOn(/** signIn */ false))
         dispatch(showRequiresAccountModal())
