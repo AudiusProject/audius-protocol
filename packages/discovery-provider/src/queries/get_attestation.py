@@ -187,7 +187,7 @@ def get_attestation(
     user_address = str(user_eth_address[0])
 
     attestation = Attestation(
-        amount=challenge.amount,
+        amount=str(user_challenge.amount),
         oracle_address=oracle_address,
         user_address=user_address,
         challenge_id=challenge.id,
