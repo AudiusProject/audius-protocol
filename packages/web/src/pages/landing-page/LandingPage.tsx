@@ -12,7 +12,7 @@ import { getPathname } from 'utils/route'
 
 import styles from './LandingPage.module.css'
 import WhoUsesAudius from './components/WhoUsesAudius'
-import CTAListening from './components/CTAListening'
+import CTAGetStarted from './components/CTAGetStarted'
 import CTASignUp from './components/CTASignUp'
 import Description from './components/Description'
 import FeaturedContent from './components/FeaturedContent'
@@ -112,7 +112,7 @@ const LandingPage = (props: LandingPageProps) => {
         <WhoUsesAudius isMobile={props.isMobile} />
         <PlatformFeatures isMobile={props.isMobile} />
         <ArtistInvestors isMobile={props.isMobile} />
-        <CTAListening
+        <CTAGetStarted
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
         />
