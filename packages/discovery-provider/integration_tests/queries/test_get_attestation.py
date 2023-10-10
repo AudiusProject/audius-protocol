@@ -199,19 +199,19 @@ def test_get_attestation_weekly_pool_exhausted(app):
                 "challenge_id": "not-exhausted",
                 "specifier": "1",
                 "user_id": 1,
-                "amount": "5",
+                "amount": "500000000",
             },
             {
                 "challenge_id": "exhausted",
                 "specifier": "1",
                 "user_id": 1,
-                "amount": "10",
+                "amount": "1000000000",
             },
             {
                 "challenge_id": "exhausted",
                 "specifier": "2",
                 "user_id": 2,
-                "amount": "10",
+                "amount": "1000000000",
             },
         ],
     }
