@@ -12,6 +12,7 @@ class ChallengeDisbursement(Base, RepresentableMixin):
     specifier = Column(String, primary_key=True, nullable=False)
     signature = Column(String, nullable=False)
     slot = Column(Integer, nullable=False, index=True)
+    # Amount specified in WAUDIO_DECIMALS (10^8).
     amount = Column(String, nullable=False)
     created_at = Column(
         DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP"), index=True
