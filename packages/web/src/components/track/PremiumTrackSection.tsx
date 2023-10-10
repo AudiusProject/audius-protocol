@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import {
-  accountSelectors,
   cacheUsersSelectors,
   Chain,
   FollowSource,
@@ -135,7 +134,6 @@ const LockedPremiumTrackSection = ({
     }
     openPremiumContentPurchaseModal({ contentId: trackId })
   }, [
-    dispatch,
     trackId,
     lockedContentModalVisibility,
     openPremiumContentPurchaseModal,
