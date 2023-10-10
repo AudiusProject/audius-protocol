@@ -45,7 +45,7 @@
     "SDK======================================": "",
     "sdk": "turbo run start --filter=@audius/sdk",
     "PROTOCOL======================================": "",
-    "protocol": "AUDIUS_CMD=$1 turbo run start --filter=@audius/compose"
+    "protocol": "turbo run start --filter=@audius/compose --"
   },
   "devDependencies": {
     "@types/keyv": "4.2.0",
