@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "private": true,
   "scripts": {
-    "start": "audius-compose up"
+    "start": "node -e \"const cmd = process.env.AUDIUS_CMD || 'up'; require('child_process').execSync('audius-compose ' + cmd, { stdio: 'inherit' });\""
   },
   "dependencies": {
     "@audius/sdk": "*"
