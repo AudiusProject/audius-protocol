@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest.mock import patch
 
 import pytest
@@ -18,6 +19,7 @@ from src.queries.get_attestation import (
     AttestationError,
     get_attestation,
     get_create_sender_attestation,
+    get_weekly_pool_window_start,
 )
 from src.tasks.index_oracles import oracle_addresses_key
 from src.utils.config import shared_config
@@ -26,6 +28,9 @@ from src.utils.redis_connection import get_redis
 
 REDIS_URL = shared_config["redis"]["url"]
 redis_handle = get_redis()
+
+
+DUMMY_ORACLE_ADDRESS = "0x32a10e91820fd10366AC363eD0DEa40B2e598D22"
 
 
 def test_get_attestation(app):
@@ -40,7 +45,7 @@ def test_get_attestation(app):
             # - Challenge not finished
             # - No disbursement
             # - Invalid oracle
-            oracle_address = "0x32a10e91820fd10366AC363eD0DEa40B2e598D22"
+            oracle_address = DUMMY_ORACLE_ADDRESS
             redis_handle.set(oracle_addresses_key, oracle_address)
 
             delegate_owner_wallet, signature = get_attestation(
@@ -54,6 +59,7 @@ def test_get_attestation(app):
             attestation = Attestation(
                 amount="5",
                 oracle_address=oracle_address,
+                # Wallet from user 2 in setup_db
                 user_address="0x38C68fF3926bf4E68289672F75ee1543117dD9B3",
                 challenge_id="boolean_challenge_2",
                 challenge_specifier="1",
@@ -213,7 +219,7 @@ def test_get_attestation_weekly_pool_exhausted(app):
     }
     populate_mock_db(db, entities)
     with db.scoped_session() as session:
-        oracle_address = "0x32a10e91820fd10366AC363eD0DEa40B2e598D22"
+        oracle_address = DUMMY_ORACLE_ADDRESS
         redis_handle.set(oracle_addresses_key, oracle_address)
 
         delegate_owner_wallet, signature = get_attestation(
@@ -227,7 +233,7 @@ def test_get_attestation_weekly_pool_exhausted(app):
         attestation = Attestation(
             amount="5",
             oracle_address=oracle_address,
-            user_address="0x38C68fF3926bf4E68289672F75ee1543117dD9B3",
+            user_address=entities["users"][1]["wallet"],
             challenge_id="not-exhausted",
             challenge_specifier="2",
         )

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import BigInteger, cast, func
 from sqlalchemy.orm import Session
@@ -21,3 +21,10 @@ def get_disbursed_challenges_amount(
         .scalar()
     )
     return amount_disbursed
+
+
+def get_weekly_pool_window_start(now):
+    monday_before_4pm_utc = now.weekday() == 0 and now.hour < 16
+    prev_monday = now - timedelta(days=7 if monday_before_4pm_utc else now.weekday())
+    prev_monday = prev_monday.replace(hour=16, minute=0, second=0, microsecond=0)
+    return prev_monday
