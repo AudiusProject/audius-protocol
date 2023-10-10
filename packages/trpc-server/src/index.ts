@@ -14,6 +14,7 @@ import { meRouter } from './routers/me-router'
 import { trackRouter } from './routers/track-router'
 import { playlistRouter } from './routers/playlist-router'
 import { inferRouterInputs, inferRouterOutputs } from '@trpc/server'
+import { searchRouter } from './routers/search-router'
 
 const app = express()
 app.use(cors())
@@ -24,6 +25,7 @@ const appRouter = router({
   users: userRouter,
   tracks: trackRouter,
   playlists: playlistRouter,
+  search: searchRouter,
 
   version: publicProcedure.query(() => ({
     version: '0.0.2'

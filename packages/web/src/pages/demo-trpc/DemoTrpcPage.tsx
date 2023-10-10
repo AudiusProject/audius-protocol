@@ -1,8 +1,9 @@
-import { CSSProperties, Suspense, useMemo, useState } from 'react'
+import { CSSProperties, Suspense, useMemo } from 'react'
 
 import { accountSelectors, trpc } from '@audius/common'
 import { RouterInput } from '@audius/trpc-server'
 import { useSelector } from 'react-redux'
+import { useHistory, useLocation } from 'react-router-dom'
 import { create } from 'zustand'
 
 // ==================== Store ====================
@@ -24,11 +25,29 @@ export const useSocialModal = create<SocialModalState>()((set) => ({
 
 // ==================== Page ====================
 
-export default function DemoTrpcPage() {
-  const pageSize = 20
-  const [offset, setOffset] = useState(1)
+const pageSize = 10
 
-  const idRange = Array.from(Array(pageSize).keys()).map((i) => i + offset)
+export default function DemoTrpcPage() {
+  const history = useHistory()
+  const query = useQuery()
+  const q = query.get('q') || ''
+  const offset = parseInt(query.get('offset') || '0')
+
+  const resp = trpc.search.suggest.useQuery(
+    {
+      q,
+      limit: pageSize,
+      cursor: offset
+    },
+    { enabled: !!q }
+  )
+
+  function setQueryParam(name: string, value: string | number) {
+    query.set(name, value.toString())
+    // reset pagination when query changes
+    if (name === 'q') query.set('offset', '0')
+    history.replace('?' + query.toString())
+  }
 
   return (
     <div style={{ padding: 0, width: '100%' }}>
@@ -42,6 +61,11 @@ export default function DemoTrpcPage() {
         }}
       >
         <div style={{ fontWeight: 900 }}>tRPC demo</div>
+        <input
+          value={q}
+          onChange={(e) => setQueryParam('q', e.target.value)}
+          placeholder='search'
+        />
         <div
           style={{
             display: 'flex',
@@ -50,40 +74,50 @@ export default function DemoTrpcPage() {
             marginLeft: 10
           }}
         >
-          <button onClick={() => setOffset(Math.max(offset - pageSize, 1))}>
+          <button
+            onClick={() =>
+              setQueryParam('offset', Math.max(+offset - pageSize, 0))
+            }
+          >
             prev
           </button>
           {offset}
-          <button onClick={() => setOffset(offset + pageSize)}>next</button>
+          <button onClick={() => setQueryParam('offset', offset + pageSize)}>
+            next
+          </button>
         </div>
       </div>
 
       <UserListModal />
 
-      <Suspense fallback={<Loading />}>
-        <CurrentUserIndicator />
+      <CurrentUserIndicator />
 
-        <div style={{ display: 'flex', gap: 20, padding: 10 }}>
-          <div style={stackStyle}>
-            <div style={{ fontWeight: 900 }}>Users</div>
-            {idRange.map((k) => (
-              <User key={k} id={k.toString()} />
-            ))}
-          </div>
-          <div style={stackStyle}>
-            <div style={{ fontWeight: 900 }}>Tracks</div>
-            {idRange.map((k) => (
-              <Track key={k} id={k.toString()} />
-            ))}
-          </div>
-          <div style={stackStyle}>
-            <div style={{ fontWeight: 900 }}>Playlists</div>
-            {idRange.map((k) => (
-              <Playlist key={k} id={k.toString()} />
-            ))}
-          </div>
+      <div style={{ display: 'flex', gap: 20, padding: 10 }}>
+        <div style={stackStyle}>
+          <div style={{ fontWeight: 900 }}>Users</div>
+          {resp.data?.users.map((k) => (
+            <Suspense key={k} fallback={<CardSkeleton />}>
+              <UserCardTrpc key={k} id={k.toString()} />
+            </Suspense>
+          ))}
         </div>
-      </Suspense>
+        <div style={stackStyle}>
+          <div style={{ fontWeight: 900 }}>Tracks</div>
+          {resp.data?.tracks.map((k) => (
+            <Suspense key={k} fallback={<CardSkeleton />}>
+              <TrackCardTrpc key={k} id={k.toString()} />
+            </Suspense>
+          ))}
+        </div>
+        <div style={stackStyle}>
+          <div style={{ fontWeight: 900 }}>Playlists</div>
+          {resp.data?.playlists.map((k) => (
+            <Suspense key={k} fallback={<CardSkeleton />}>
+              <PlaylistCardTrpc key={k} id={k.toString()} />
+            </Suspense>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }
@@ -92,7 +126,7 @@ function CurrentUserIndicator() {
   const currentUserId = useSelector(accountSelectors.getUserId)
   if (!currentUserId) return null
   return (
-    <User
+    <UserCardTrpc
       style={{
         position: 'absolute',
         top: 10,
@@ -100,6 +134,7 @@ function CurrentUserIndicator() {
         background: 'lightyellow'
       }}
       id={currentUserId.toString()}
+      suspense={false}
     />
   )
 }
@@ -163,9 +198,9 @@ function UserListModal() {
 
         {fetcher.data?.pages.map((page, idx) => (
           <div key={idx}>
-            <Suspense fallback={<Loading />}>
+            <Suspense fallback={<CardSkeleton />}>
               {page.ids.map((id) => (
-                <User
+                <UserCardTrpc
                   key={id}
                   id={id.toString()}
                   style={{
@@ -179,7 +214,7 @@ function UserListModal() {
           </div>
         ))}
 
-        {fetcher.isFetching ? <Loading /> : null}
+        {fetcher.isFetching ? <CardSkeleton /> : null}
 
         <div style={{ padding: 20, textAlign: 'center' }}>
           {fetcher.hasNextPage && !fetcher.isFetching ? (
@@ -205,11 +240,18 @@ const cardStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: 10,
-
-  padding: 10,
   background: 'white',
+  padding: 10
+}
+
+const shadowStyle: CSSProperties = {
   border: '1px solid #333',
   boxShadow: '4px 4px #aaa'
+}
+
+const cardWithShadowStyle: CSSProperties = {
+  ...cardStyle,
+  ...shadowStyle
 }
 
 const stackStyle: CSSProperties = {
@@ -220,13 +262,19 @@ const stackStyle: CSSProperties = {
 
 // ==================== User stuff ====================
 
-function User({ id, style }: { id: string; style?: CSSProperties }) {
-  const { data } = trpc.users.get.useQuery(id, {
-    suspense: true
-  })
+export function UserCardTrpc({
+  id,
+  style,
+  suspense = true
+}: {
+  id: string
+  style?: CSSProperties
+  suspense?: boolean
+}) {
+  const { data } = trpc.users.get.useQuery(id, { suspense })
   if (!data) return null
   return (
-    <div style={{ ...cardStyle, ...style }}>
+    <div style={{ ...cardWithShadowStyle, ...style }}>
       <CidImage cid={data.profilePictureSizes || data.profilePicture} />
       <div style={{ flexGrow: 1 }}>
         <div style={{ fontSize: 24, fontWeight: 900 }}>{data.name}</div>
@@ -285,7 +333,12 @@ function MututalFollows({ theirId, suspense = true }: UserRelationshipParams) {
     id: theirId
   }
   const { showSocialModal } = useSocialModal()
-  const { data } = trpc.users.listUserIds.useQuery(socialQuery, { suspense })
+
+  // SocialQuery cursor field causes problems here...
+  // maybe upgrading some trpc thing along the way could let us remove any
+  const { data } = trpc.users.listUserIds.useQuery(socialQuery as any, {
+    suspense
+  })
   if (!data?.count) return null
   return (
     <div style={tagStyle} onClick={() => showSocialModal(socialQuery)}>
@@ -296,7 +349,7 @@ function MututalFollows({ theirId, suspense = true }: UserRelationshipParams) {
 
 // ==================== Track stuff ====================
 
-function Track({ id }: { id: string }) {
+export function TrackCardTrpc({ id }: { id: string }) {
   const { data: track } = trpc.tracks.get.useQuery(id, { suspense: true })
   const { data: user } = trpc.users.get.useQuery(
     track?.ownerId.toString() || '',
@@ -307,7 +360,7 @@ function Track({ id }: { id: string }) {
   )
   if (!track || !user) return null
   return (
-    <div style={cardStyle}>
+    <div style={cardWithShadowStyle}>
       <CidImage cid={track.coverArtSizes || track.coverArt} />
 
       <div style={{ flexGrow: 1 }}>
@@ -350,7 +403,7 @@ function SocialCount(props: SocialQuery & { count?: number | null }) {
 
 // ==================== Playlist stuff ====================
 
-function Playlist({ id }: { id: string }) {
+export function PlaylistCardTrpc({ id }: { id: string }) {
   const { data: playlist } = trpc.playlists.get.useQuery(id, { suspense: true })
   const { data: user } = trpc.users.get.useQuery(
     playlist?.playlistOwnerId.toString() || '',
@@ -365,7 +418,7 @@ function Playlist({ id }: { id: string }) {
 
   if (!playlist || !user) return null
   return (
-    <div style={{ ...cardStyle, display: 'block', padding: 0 }}>
+    <div style={{ ...cardWithShadowStyle, display: 'block', padding: 0 }}>
       <div
         style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 10 }}
       >
@@ -415,7 +468,7 @@ function Playlist({ id }: { id: string }) {
 
 function PlaylistTrack({ idx, id }: { idx: number; id: string }) {
   const { data: track } = trpc.tracks.get.useQuery(id, {
-    suspense: true
+    suspense: false
   })
   const { data: user } = trpc.users.get.useQuery(
     track?.ownerId.toString() || '',
@@ -424,7 +477,12 @@ function PlaylistTrack({ idx, id }: { idx: number; id: string }) {
       suspense: true
     }
   )
-  if (!user || !track) return null
+  if (!user || !track)
+    return (
+      <div style={{ padding: '8px 10px', borderTop: '1px solid #ccc' }}>
+        <div style={{ background: '#ddd', height: 16, width: 180 }} />
+      </div>
+    )
   return (
     <div
       style={{
@@ -512,18 +570,22 @@ function CidImage({
   return <img src={`${host}/content/${cid}/150x150.jpg`} style={styleProps} />
 }
 
-function Loading() {
+function CardSkeleton() {
   return (
-    <div
-      style={{
-        textAlign: 'center',
-        fontSize: 48,
-        padding: 50,
-        color: '#aaa',
-        textTransform: 'uppercase'
-      }}
-    >
-      Loading
+    <div style={cardStyle}>
+      <div style={{ background: '#ddd', width: 75, height: 75 }} />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ background: '#ddd', height: 18, width: 200 }} />
+        <div style={{ background: '#ddd', height: 16, width: 100 }} />
+        <div style={{ background: '#ddd', height: 10, width: 75 }} />
+      </div>
     </div>
   )
+}
+
+// == misc ==
+
+function useQuery() {
+  const { search } = useLocation()
+  return useMemo(() => new URLSearchParams(search), [search])
 }
