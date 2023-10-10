@@ -92,6 +92,9 @@ services:
     build:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/packages/libs/Dockerfile
+    args:
+      TURBO_TEAM: '${TURBO_TEAM}'
+      TURBO_TOKEN: '${TURBO_TOKEN}'
     # TODO: also run integration test current blocker is that integration tests
     # use config.json which was removed with the addition of audius-compose
     entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test:unit)' -
@@ -105,6 +108,9 @@ services:
     build:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/packages/libs/Dockerfile
+    args:
+      TURBO_TEAM: '${TURBO_TEAM}'
+      TURBO_TOKEN: '${TURBO_TOKEN}'
     entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test:sdk)' -
     logging: *default-logging
     deploy:
@@ -325,7 +331,7 @@ services:
       dbUrlTemplate: 'postgres://postgres:example@mediorum-db:5432/m%d'
       devNetworkCount: '5'
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:1991/health_check"]
+      test: ['CMD', 'curl', 'http://localhost:1991/health_check']
       interval: 10s
       start_period: 60s
       timeout: 5s
