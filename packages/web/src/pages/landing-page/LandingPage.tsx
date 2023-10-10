@@ -20,6 +20,7 @@ import Hero from './components/Hero'
 import JoinTheCommunity from './components/JoinTheCommunity'
 import PlatformFeatures from './components/PlatformFeatures'
 import PlatformTagline from './components/PlatformTagline'
+import ArtistInvestors from './components/ArtistInvestors'
 
 const FANBURST_UTM_SOURCE = 'utm_source=fanburst'
 
@@ -110,6 +111,7 @@ const LandingPage = (props: LandingPageProps) => {
         <Description isMobile={props.isMobile} />
         <WhoUsesAudius isMobile={props.isMobile} />
         <PlatformFeatures isMobile={props.isMobile} />
+        <ArtistInvestors isMobile={props.isMobile} />
         <CTAListening
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
