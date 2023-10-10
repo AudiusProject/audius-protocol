@@ -13,7 +13,7 @@ import { getPathname } from 'utils/route'
 import styles from './LandingPage.module.css'
 import WhoUsesAudius from './components/WhoUsesAudius'
 import CTAGetStarted from './components/CTAGetStarted'
-import CTASignUp from './components/CTASignUp'
+import CTAStartListening from './components/CTAStartListening'
 import Description from './components/Description'
 import FeaturedContent from './components/FeaturedContent'
 import Hero from './components/Hero'
@@ -123,7 +123,7 @@ const LandingPage = (props: LandingPageProps) => {
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
         />
-        <CTASignUp
+        <CTAStartListening
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
         />

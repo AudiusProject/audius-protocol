@@ -1,4 +1,3 @@
-import { IconArrow } from '@audius/stems'
 import { Parallax } from 'react-scroll-parallax'
 
 import footerBackgroundMobile from 'assets/img/publicSite/Footer-Background-mobile@2x.jpg'
@@ -6,21 +5,22 @@ import footerBackground from 'assets/img/publicSite/Footer-Background@2x.jpg'
 import footerForeground from 'assets/img/publicSite/Footer-Foreground@2x.png'
 import dots2x from 'assets/img/publicSite/dots@2x.jpg'
 import { handleClickRoute } from 'components/public-site/handleClickRoute'
-import { AUDIUS_SIGN_UP_LINK } from 'utils/route'
+import { AUDIUS_LISTENING_LINK } from 'utils/route'
+import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
 
-import styles from './CTASignUp.module.css'
+import styles from './CTAStartListening.module.css'
 
 const messages = {
-  title: 'Experience the Freedom',
-  cta: 'Sign Up Free'
+  title: 'Artists Deserve More',
+  cta: 'Start Listening'
 }
 
-type CTASignUpProps = {
+type CTAStartListeningProps = {
   isMobile: boolean
   setRenderPublicSite: (shouldRender: boolean) => void
 }
 
-const CTASignUp = (props: CTASignUpProps) => {
+const CTAStartListening = (props: CTAStartListeningProps) => {
   if (props.isMobile) {
     return (
       <div className={styles.mobileContainer}>
@@ -42,13 +42,13 @@ const CTASignUp = (props: CTASignUpProps) => {
         <div className={styles.title}>{messages.title}</div>
         <div
           onClick={handleClickRoute(
-            AUDIUS_SIGN_UP_LINK,
+            AUDIUS_LISTENING_LINK,
             props.setRenderPublicSite
           )}
           className={styles.ctaButton}
         >
           {messages.cta}
-          <IconArrow className={styles.arrowRight} />
+          <IconCaretRight className={styles.iconCaretRight} />
         </div>
       </div>
     )
@@ -60,13 +60,13 @@ const CTASignUp = (props: CTASignUpProps) => {
         <div className={styles.title}>{messages.title}</div>
         <button
           onClick={handleClickRoute(
-            AUDIUS_SIGN_UP_LINK,
+            AUDIUS_LISTENING_LINK,
             props.setRenderPublicSite
           )}
           className={styles.ctaButton}
         >
           {messages.cta}
-          <IconArrow className={styles.arrowRight} />
+          <IconCaretRight className={styles.iconCaretRight} />
         </button>
         <div
           className={styles.footerForeground}
@@ -94,4 +94,4 @@ const CTASignUp = (props: CTASignUpProps) => {
   )
 }
 
-export default CTASignUp
+export default CTAStartListening
