@@ -1,4 +1,3 @@
-from datetime import datetime
 from unittest.mock import patch
 
 import pytest
@@ -19,7 +18,6 @@ from src.queries.get_attestation import (
     AttestationError,
     get_attestation,
     get_create_sender_attestation,
-    get_weekly_pool_window_start,
 )
 from src.tasks.index_oracles import oracle_addresses_key
 from src.utils.config import shared_config
