@@ -1,0 +1,11 @@
+FROM node:18-alpine AS base
+
+# Everything is mounted into the container, see docker-compose.dev.yml
+
+ARG app_name
+
+ENV APP_NAME=${app_name}
+
+WORKDIR /app/packages/discovery-provider/plugins/pedalboard/apps/${APP_NAME}
+
+CMD npm run start

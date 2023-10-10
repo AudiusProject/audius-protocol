@@ -6,7 +6,10 @@
     "start": "cmd=\"${*:2:-up}\" && audius-compose $cmd"
   },
   "dependencies": {
-    "@audius/sdk": "*"
+    "@audius/sdk": "*",
+    "@pedalboard/relay": "*",
+    "@pedalboard/sla-auditor": "*",
+    "@pedalboard/trending-challenge-rewards": "*"
   },
   "license": "ISC"
 }

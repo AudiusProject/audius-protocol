@@ -32,7 +32,7 @@ services:
   ingress:
     # Nginx ingress for all hostnames. Change nginx_ingress.conf to add more hostnames / routes
     extends:
-      file: ${DEVTOOLS_DOCKERCOMPOSE:-docker-compose.dev-tools.dev.yml}
+      file: docker-compose.dev-tools.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: ingress
     <<: *common
 
@@ -59,7 +59,7 @@ services:
 
   audius-cmd:
     extends:
-      file: ${DEVTOOLS_DOCKERCOMPOSE:-docker-compose.dev-tools.dev.yml}
+      file: docker-compose.dev-tools.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: audius-cmd
     <<: *common
 
@@ -67,13 +67,13 @@ services:
 
   identity-service-redis:
     extends:
-      file: ${IDENTITY_DOCKERCOMPOSE:-docker-compose.identity.dev.yml}
+      file: docker-compose.identity.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: identity-service-redis
     <<: *common
 
   identity-service:
     extends:
-      file: ${IDENTITY_DOCKERCOMPOSE:-docker-compose.identity.dev.yml}
+      file: docker-compose.identity.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: identity-service
     <<: *common
 
@@ -122,19 +122,19 @@ services:
   # Pedalboard (plugins)
   trending-challenge-rewards:
     extends:
-      file: docker-compose.pedalboard.yml
+      file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: trending-challenge-rewards
     <<: *common
 
   relay:
     extends:
-      file: docker-compose.pedalboard.yml
+      file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: relay
     <<: *common
 
   sla-auditor:
     extends:
-      file: docker-compose.pedalboard.yml
+      file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: sla-auditor
     <<: *common
 

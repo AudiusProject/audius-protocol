@@ -73,6 +73,10 @@
     },
     "lint": {},
     "lint:fix": {},
-    "verify": {}
+    "verify": {},
+    "test": {
+      "outputs": ["coverage/**"],
+      "dependsOn": []
+    }
   }
 }
