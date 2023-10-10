@@ -37,7 +37,10 @@ mobile-prepare-ios:
         key: 1-gems-{{ checksum "packages/mobile/ios/Gemfile.lock" }}
     - run:
         name: install gems
-        command: cd packages/mobile/ios && (bundle check || bundle install --path vendor/bundle)
+        command: |
+          cd packages/mobile/ios
+          sudo bundle update --bundler
+          bundle check || bundle install --path vendor/bundle
     - save_cache:
         key: 1-gems-{{ checksum "packages/mobile/ios/Gemfile.lock" }}
         paths:
