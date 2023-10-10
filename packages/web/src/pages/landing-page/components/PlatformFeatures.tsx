@@ -5,13 +5,11 @@ import cn from 'classnames'
 import { useSpring, animated } from 'react-spring'
 
 import crowdImg from 'assets/img/publicSite/ImgCrowd.jpg'
-import { ReactComponent as IconAudio } from 'assets/img/publicSite/iconAudio.svg'
-import { ReactComponent as IconFree } from 'assets/img/publicSite/iconFree.svg'
-import { ReactComponent as IconRemix } from 'assets/img/publicSite/iconRemix.svg'
 import useHasViewed from 'hooks/useHasViewed'
 import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
 import styles from './PlatformFeatures.module.css'
+import { IconCart, IconAllTime, IconUserGroup } from '@audius/stems'
 
 const DESKTOP_NAV_BANNER_MIN_WIDTH = 1170
 const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia(
@@ -19,9 +17,9 @@ const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia(
 )
 
 const messages = {
-  title: 'Audius Listens to Artists',
+  title: ' Empowering Features for Artists',
   subTitle:
-    'Audius listens to the needs of artists and fans - not just corporations & major labels'
+    'Take control of your music with the growing list of artist-centric features on Audius.'
 }
 
 type FeatureProps = {
@@ -33,34 +31,32 @@ type FeatureProps = {
 
 const features: Array<Omit<FeatureProps, 'iconPosition'>> = [
   {
-    title: 'HQ AUDIO',
-    description:
-      'Audius offers crystal clear streaming at 320kbps! The highest quality sound from any free music platform.',
-    icon: <IconAudio className={styles.featureIcon} />
+    title: 'Earn On Your Terms',
+    description: 'You set the price, and earn bonus $AUDIO for every sale.',
+    icon: (
+      <div className={styles.featureIconContainer}>
+        <IconCart className={styles.cartIcon} />
+      </div>
+    )
   },
   {
-    title: 'FREE FOREVER',
+    title: 'Grow Your Fanbase',
     description:
-      'Unlimited uploads, metrics, dashboards, and more - All free forever, no strings attached.',
-    icon: <IconFree className={styles.featureIcon} />
+      'A robust, rabid community of millions of tastemakers are ready for your best.',
+    icon: (
+      <div className={styles.featureIconContainer}>
+        <IconUserGroup className={styles.fanbaseIcon} />
+      </div>
+    )
   },
   {
-    title: 'EXCLUSIVE CONTENT',
-    description: (
-      <>
-        {`Your fans can download stems and find remixes of your tracks right from
-        the track page. `}
-        <a
-          href='https://twitter.com/audius/status/1272614652623519744?s=20'
-          rel='noopener noreferrer'
-          target='_blank'
-        >
-          Run your own contest
-        </a>
-        .
-      </>
-    ),
-    icon: <IconRemix className={styles.featureIcon} />
+    title: 'Free Unlimited Uploads & No Ads',
+    description: 'Free to use, with no limitations on uploads and a completely ad-free experience.',
+    icon: (
+      <div className={styles.featureIconContainer}>
+        <IconAllTime className={styles.allTimeIcon} />
+      </div>
+    )
   }
 ]
 
@@ -103,27 +99,46 @@ const PlatformFeatures = (props: PlatformFeaturesProps) => {
       })}
     >
       <div className={styles.content} ref={refInView}>
-        <div className={styles.animateTitleContainer}>
-          <animated.div
-            style={{
-              opacity: textStyles.opacity,
-              transform: textStyles.x.interpolate(
-                (x) => `translate3d(0,${x}px,0)`
-              )
-            }}
-          >
-            <div className={styles.header}>
-              <h3 className={styles.title}>{messages.title}</h3>
-              <h4 className={styles.subTitle}>{messages.subTitle}</h4>
-            </div>
-          </animated.div>
-        </div>
+        {!props.isMobile ? (
+          <div className={styles.animateTitleContainer}>
+            <animated.div
+              style={{
+                opacity: textStyles.opacity,
+                transform: textStyles.x.interpolate(
+                  (x) => `translate3d(0,${x}px,0)`
+                )
+              }}
+            >
+              <div className={styles.header}>
+                <h3 className={styles.title}>{messages.title}</h3>
+                <h4 className={styles.subTitle}>{messages.subTitle}</h4>
+              </div>
+            </animated.div>
+          </div>
+        ) : null}
         <div className={styles.body}>
           <img
             src={crowdImg}
             className={styles.crowdImg}
             alt='DJ performing in front of crowd'
           />
+          {props.isMobile ? (
+          <div className={styles.animateTitleContainer}>
+            <animated.div
+              style={{
+                opacity: textStyles.opacity,
+                transform: textStyles.x.interpolate(
+                  (x) => `translate3d(0,${x}px,0)`
+                )
+              }}
+            >
+              <div className={styles.header}>
+                <h3 className={styles.title}>{messages.title}</h3>
+                <h4 className={styles.subTitle}>{messages.subTitle}</h4>
+              </div>
+            </animated.div>
+          </div>
+        ) : null}
           <div className={styles.features}>
             {features.map((feature) => (
               <Feature
