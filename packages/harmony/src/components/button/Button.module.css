@@ -209,13 +209,15 @@
 }
 
 .primary.disabled,
-.secondary.disabled {
+.secondary.disabled,
+.destructiveSecondary.disabled {
   --button-color: var(--harmony-n-150);
   --text-color: var(--harmony-static-white);
   background-color: var(--harmony-n-150);
   border-color: var(--harmony-n-150);
 }
 
+.destructive.disabled,
 .tertiary.disabled {
   opacity: 0.45;
 }
