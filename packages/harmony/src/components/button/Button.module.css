@@ -7,6 +7,8 @@
   border: 1px solid var(--button-color);
   border-radius: var(--harmony-unit-1);
   color: var(--text-color);
+  background-color: var(--button-color);
+  box-shadow: var(--harmony-shadow-near);
 }
 
 /* Overlay used for hover/press styling */
@@ -98,15 +100,12 @@
   --text-color: var(--harmony-static-white);
   --button-color: var(--harmony-primary);
   background: var(--button-color);
-  box-shadow: var(--harmony-shadow-near);
 }
-
 .primary:hover {
   --overlay-color: var(--harmony-static-white);
   --overlay-opacity: 0.1;
   box-shadow: var(--harmony-shadow-mid);
 }
-
 .primary:active {
   --overlay-color: var(--harmony-static-black);
   --overlay-opacity: 0.2;
@@ -119,14 +118,21 @@
   --text-color: var(--harmony-text-default);
   background: transparent;
 }
-
 .secondary:hover {
   --button-color: var(--harmony-primary);
-  --text-color: var(--harmony-primary);
+  --text-color: var(--harmony-static-white);
+  background-color: var(--button-color);
+  --overlay-color: var(--harmony-static-white);
+  --overlay-opacity: 0.1;
+  box-shadow: var(--harmony-shadow-mid);
 }
 .secondary:active {
-  --button-color: var(--harmony-p-500);
-  --text-color: var(--harmony-p-500);
+  --button-color: var(--harmony-primary);
+  --text-color: var(--harmony-static-white);
+  background-color: var(--button-color);
+  --overlay-color: var(--harmony-static-black);
+  --overlay-opacity: 0.2;
+  box-shadow: none;
 }
 
 /* Tertiary */
@@ -175,9 +181,11 @@
 }
 
 /* Disabled states */
-.primary.disabled {
+.primary.disabled,
+.secondary.disabled {
   --button-color: var(--harmony-n-150);
-  --text-color: var(--harmony-text-default);
+  --text-color: var(--harmony-static-white);
+  background-color: var(--harmony-n-150);
 }
 
 /* Plain */
@@ -189,11 +197,4 @@
   border-radius: 0;
   padding: 0;
   height: 100%;
-}
-
-.secondary.disabled,
-.tertiary.disabled,
-.destructive.disabled,
-.ghost.disabled {
-  opacity: 0.45;
 }
