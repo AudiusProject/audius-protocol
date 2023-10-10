@@ -153,17 +153,40 @@
 /* Destructive */
 .destructive {
   --button-color: var(--harmony-red);
-  --text-color: var(--harmony-red);
-  background: transparent;
+  --text-color: var(--harmony-static-white);
 }
 .destructive:hover {
-  --text-color: var(--harmony-static-white);
-  background: var(--button-color);
+  --overlay-color: var(--harmony-static-white);
+  --overlay-opacity: 0.1;
+  box-shadow: var(--harmony-shadow-mid);
 }
 .destructive:active {
-  --button-color: var(--harmony-dark-red);
+  --overlay-color: var(--harmony-static-black);
+  --overlay-opacity: 0.2;
+  box-shadow: none;
+}
+
+/* Destructive Secondary */
+.destructiveSecondary {
+  --button-color: var(--harmony-n-300);
+    --text-color: var(--harmony-text-default);
+    background: transparent;
+    box-shadow: none;
+}
+.destructiveSecondary:hover {
+  --button-color: var(--harmony-red);
   --text-color: var(--harmony-static-white);
-  background: var(--button-color);
+  --overlay-color: var(--harmony-static-white);
+  --overlay-opacity: 0.1;
+  background-color: var(--button-color);
+  box-shadow: var(--harmony-shadow-mid);
+}
+.destructiveSecondary:active {
+  --button-color: var(--harmony-red);
+  --text-color: var(--harmony-static-white);  --overlay-color: var(--harmony-static-black);
+  --overlay-opacity: 0.2;
+  background-color: var(--button-color);
+  box-shadow: none;
 }
 
 /* Ghost */

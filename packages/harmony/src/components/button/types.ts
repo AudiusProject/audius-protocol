@@ -8,6 +8,7 @@ export enum ButtonType {
   SECONDARY = 'secondary',
   TERTIARY = 'tertiary',
   DESTRUCTIVE = 'destructive',
+  DESTRUCTIVE_SECONDARY = 'destructive_secondary',
   GHOST = 'ghost'
 }
 
