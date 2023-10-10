@@ -18,32 +18,32 @@ def test_get_disbursed_challenges_amount(app):
                 "challenge_id": "profile-completion",
                 "specifier": "1",
                 "user_id": 1,
-                "amount": "5",
+                "amount": "500000000",
             },
             {
                 "challenge_id": "profile-completion",
                 "specifier": "2",
                 "user_id": 2,
-                "amount": "10",
+                "amount": "1000000000",
             },
             {
                 "challenge_id": "profile-completion",
                 "specifier": "3",
                 "user_id": 3,
-                "amount": "20",
+                "amount": "2000000000",
                 "created_at": datetime.now() - timedelta(days=8),
             },
             {
                 "challenge_id": "listen-streak",
                 "specifier": "1",
                 "user_id": 1,
-                "amount": "4",
+                "amount": "400000000",
             },
             {
                 "challenge_id": "listen-streak",
                 "specifier": "2",
                 "user_id": 2,
-                "amount": "12",
+                "amount": "1200000000",
             },
         ],
     }
@@ -53,6 +53,28 @@ def test_get_disbursed_challenges_amount(app):
             session, "profile-completion", datetime.now() - timedelta(days=7)
         )
         assert amount_disbursed == 15
+
+
+def test_get_disbursed_challenges_amount_invalid(app):
+    with app.app_context():
+        db = get_db()
+
+    entities = {
+        "challenge_disbursements": [
+            {
+                "challenge_id": "profile-completion",
+                "specifier": "1",
+                "user_id": 1,
+                "amount": "500000000",
+            },
+        ],
+    }
+    populate_mock_db(db, entities)
+    with db.scoped_session() as session:
+        amount_disbursed = get_disbursed_challenges_amount(
+            session, "invalid", datetime.now() - timedelta(days=7)
+        )
+        assert amount_disbursed == 0
 
 
 def test_get_weekly_pool_window_start():

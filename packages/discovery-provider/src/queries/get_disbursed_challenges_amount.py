@@ -4,6 +4,7 @@ from sqlalchemy import BigInteger, cast, func
 from sqlalchemy.orm import Session
 
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
+from src.solana.constants import WAUDIO_DECIMALS
 
 
 def get_disbursed_challenges_amount(
@@ -20,7 +21,9 @@ def get_disbursed_challenges_amount(
         )
         .scalar()
     )
-    return amount_disbursed
+    if not amount_disbursed:
+        return 0
+    return amount_disbursed / 10**WAUDIO_DECIMALS
 
 
 def get_weekly_pool_window_start(now):
