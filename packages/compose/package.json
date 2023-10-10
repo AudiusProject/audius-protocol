@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "private": true,
   "scripts": {
-    "start": "cmd=\"${*:2:-up}\" && audius-compose $cmd"
+    "start": "./start.sh"
   },
   "dependencies": {
     "@audius/sdk": "*",
