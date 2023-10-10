@@ -117,6 +117,7 @@
   --button-color: var(--harmony-n-300);
   --text-color: var(--harmony-text-default);
   background: transparent;
+  box-shadow: none;
 }
 .secondary:hover {
   --button-color: var(--harmony-primary);
