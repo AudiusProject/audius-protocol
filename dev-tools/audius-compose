@@ -22,7 +22,8 @@ audius-protocol-identity-service-1 \
 audius-protocol-solana-test-validator-1 \
 audius-protocol-eth-ganache-1 \
 audius-protocol-poa-ganache-1 \
-audius-protocol-pedalboard
+audius-protocol-pedalboard \
+audius-protocol-anti-abuse-oracle-1
 """
 
 
