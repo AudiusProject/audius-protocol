@@ -10,20 +10,21 @@ import { handleClickRoute } from 'components/public-site/handleClickRoute'
 import useCardWeight from 'hooks/useCardWeight'
 import useHasViewed from 'hooks/useHasViewed'
 import { AUDIUS_MERCH_LINK, AUDIUS_REMIX_CONTESTS_LINK } from 'utils/route'
+import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
 
-import styles from './JoinTheCommunity.module.css'
+import styles from './CaseStudies.module.css'
 
 const messages = {
-  title: 'Join The Community',
-  subTitle:
-    'The Audius community is full of up-and-coming DJs & producers looking to give back to the music scene'
+  title: 'Case Studies',
+  subTitle: 'The Results Speak For Themselves',
+  readMore: 'Read More'
 }
 
 const cards = [
   {
-    title: 'Remix Contests',
+    title: 'Remix Competitions',
     description:
-      'Take part in the hottest new remix competitions on Audius and dive in to explore the best our community has to offer.',
+      'Lorem ipsum dolor sit amet consectetur. Elit nunc sit semper mattis aliquet erat ac ut. Ultrices sodales.',
     image: imgRemix,
     backgroundGradient:
       'radial-gradient(97.53% 194.75% at 3.62% 8.88%, #00F0FF 0%, #EB00FF 67.71%, #8F00FF 100%)',
@@ -32,8 +33,8 @@ const cards = [
     link: AUDIUS_REMIX_CONTESTS_LINK
   },
   {
-    title: 'Merch Store',
-    description: 'Represent the revolution in music.',
+    title: 'Success Stories',
+    description: 'Lorem ipsum dolor sit amet consectetur. Elit nunc sit semper mattis aliquet erat ac ut. Ultrices sodales.',
     image: imgMerch,
     backgroundGradient:
       'radial-gradient(97.53% 194.75% at 3.62% 8.88%, #8F00FF 0%, #00F0FF 100%)',
@@ -84,19 +85,22 @@ const Card = (props: CardProps) => {
         <div className={cn(styles.cardContent)}>
           <div className={styles.cardTitle}>{props.title}</div>
           <div className={styles.cardDescription}>{props.description}</div>
-          <button className={styles.cardButton}>{props.cta}</button>
+          <button className={styles.cardButton}>
+            <span>{messages.readMore}</span>
+            <IconCaretRight className={styles.cardIcon} />
+          </button>
         </div>
       </animated.div>
     </div>
   )
 }
 
-type JoinTheCommmunityProps = {
+type CaseStudiesProps = {
   isMobile: boolean
   setRenderPublicSite: (shouldRender: boolean) => void
 }
 
-const JoinTheCommmunity = (props: JoinTheCommmunityProps) => {
+const CaseStudies = (props: CaseStudiesProps) => {
   // Animate in the title and subtitle text
   const [hasViewed, refInView] = useHasViewed(0.8)
 
@@ -124,7 +128,10 @@ const JoinTheCommmunity = (props: JoinTheCommmunityProps) => {
             <div className={cn(styles.mobileCardBG)}>
               <div className={styles.cardTitle}>{card.title}</div>
               <div className={styles.cardDescription}>{card.description}</div>
-              <button className={styles.cardButton}>{card.cta}</button>
+              <button className={styles.cardButton}>
+                <span>{messages.readMore}</span>
+                <IconCaretRight className={styles.cardIcon} />
+              </button>
             </div>
           </div>
         ))}
@@ -144,10 +151,8 @@ const JoinTheCommmunity = (props: JoinTheCommmunityProps) => {
               )
             }}
           >
-            <div className={styles.header}>
-              <div className={styles.title}>{messages.title}</div>
-              <div className={styles.subTitle}>{messages.subTitle}</div>
-            </div>
+            <div className={styles.title}>{messages.title}</div>
+            <div className={styles.subTitle}>{messages.subTitle}</div>
           </animated.div>
         </div>
         <div className={styles.cardsContainer}>
@@ -164,4 +169,4 @@ const JoinTheCommmunity = (props: JoinTheCommmunityProps) => {
   )
 }
 
-export default JoinTheCommmunity
+export default CaseStudies

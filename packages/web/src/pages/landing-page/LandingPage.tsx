@@ -17,9 +17,8 @@ import CTASignUp from './components/CTASignUp'
 import Description from './components/Description'
 import FeaturedContent from './components/FeaturedContent'
 import Hero from './components/Hero'
-import JoinTheCommunity from './components/JoinTheCommunity'
+import CaseStudies from './components/CaseStudies'
 import PlatformFeatures from './components/PlatformFeatures'
-import PlatformTagline from './components/PlatformTagline'
 import ArtistInvestors from './components/ArtistInvestors'
 
 const FANBURST_UTM_SOURCE = 'utm_source=fanburst'
@@ -120,8 +119,7 @@ const LandingPage = (props: LandingPageProps) => {
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
         />
-        <PlatformTagline isMobile={props.isMobile} />
-        <JoinTheCommunity
+        <CaseStudies
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
         />
