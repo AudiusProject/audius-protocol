@@ -1,6 +1,6 @@
 .container {
   flex-shrink: 0;
-  margin: 44px 0px 100px;
+  margin: 320px 0 200px;
   padding-left: 100px;
   padding-right: 100px;
   width: 100%;
@@ -30,42 +30,26 @@
 }
 
 :global(#landingPage) .title {
-  font-family: 'Avenir Next LT Pro Condensed' !important;
+  font-family: 'Avenir Next LT Pro' !important;
 }
 
 .title {
   color: #7e1bcc;
-  font-size: 48px;
+  font-size: 56px;
   font-weight: 900;
-  line-height: 56px;
+  line-height: 68px;
   width: 100%;
-  text-transform: uppercase;
+  text-align: center;
 }
 
 .subTitle {
   color: #858199;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 500;
-  line-height: 34px;
+  line-height: 32px;
   width: 100%;
-}
-
-.dotsBackgroundContainer {
-  position: absolute;
-  top: -69px;
-  left: -152px;
-  z-index: 0;
-}
-
-.dotsBackground {
-  height: 505px;
-  width: 611px;
-  position: absolute;
-  background-repeat: repeat;
-  background-size: 500px 201px;
-  top: -460px;
-  left: -152px;
-  z-index: 0;
+  text-align: center;
+  margin-bottom: 36px;
 }
 
 .cardMoveContainer {
@@ -78,6 +62,7 @@
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
+  gap: 24px;
   width: 100%;
   margin: -34px 0 0 -60px;
   width: calc(100% + 60px);
@@ -88,14 +73,14 @@
 .artistContainer {
   display: inline-flex;
   flex-direction: column;
-  margin: 34px 0 0 60px;
 }
 
 .artistImageWrapper {
   border-radius: 50%;
-  height: 200px;
-  width: 200px;
+  height: 192px;
+  width: 192px;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .artistImage {
@@ -105,11 +90,12 @@
 
 .artistName {
   color: #858199;
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 500;
   line-height: 25px;
   text-align: center;
   margin: 18px auto 0px;
+  cursor: pointer;
 }
 
 .byArtistName {
@@ -124,7 +110,7 @@
 .animateTitleContainer {
   overflow: hidden;
   width: 100%;
-  margin-bottom: 48px;
+  margin-bottom: 36px;
 }
 
 /* Mobile */
@@ -135,13 +121,13 @@
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 120px;
+  margin-bottom: 56px;
 }
 
 .mobileContainer .title {
   z-index: 1;
-  font-size: 40px;
-  line-height: 48px;
+  font-size: 32px;
+  line-height: 40px;
   text-align: center;
 }
 
@@ -150,8 +136,9 @@
   max-width: 300px;
   font-size: 18px;
   font-weight: 500;
-  line-height: 30px;
+  line-height: 24px;
   text-align: center;
+  margin-bottom: 16px;
 }
 
 .mobileContainer .artistsContainer {
@@ -159,47 +146,15 @@
   max-width: 400px;
   z-index: 1;
   display: inline-flex;
-  margin-top: 64px;
   align-items: center;
   flex-wrap: wrap;
   justify-content: center;
-}
-
-.mobileContainer .artistCard {
-  margin: 0px 12px 16px;
-}
-
-.mobileContainer .overflowArtistCard {
-  display: inline-block;
-  overflow: hidden;
-  height: 125px;
-  width: 125px;
-  border-radius: 50%;
-  border: solid 4px #ffffff;
-}
-
-.mobileContainer .overflowArtistCard:not(:first-child) {
-  margin-left: -53px;
-}
-
-.mobileContainer .overflowArtistsContainer {
-  max-width: 400px;
-  justify-content: center;
-}
-
-.mobileContainer .overflowArtistsText {
-  color: #7e1bcc;
-  font-weight: 500;
-  font-size: 18px;
-  line-height: 22px;
-  margin-top: 6px;
-  text-transform: uppercase;
-  text-align: center;
+  gap: 24px;
 }
 
 .mobileContainer .artistImageWrapper {
-  width: 150px;
-  height: 150px;
+  width: 120px;
+  height: 120px;
   margin-bottom: 8px;
 }
 
@@ -210,15 +165,4 @@
   line-height: 19px;
   text-align: center;
   margin: 0px auto;
-}
-
-.mobileContainer .dotsBackground {
-  height: 505px;
-  width: 611px;
-  position: absolute;
-  background-repeat: repeat;
-  background-size: 500px 201px;
-  top: 140px;
-  left: -152px;
-  z-index: 0;
 }
