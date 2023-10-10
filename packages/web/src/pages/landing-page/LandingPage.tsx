@@ -11,7 +11,7 @@ import { shouldShowCookieBanner, dismissCookieBanner } from 'utils/gdpr'
 import { getPathname } from 'utils/route'
 
 import styles from './LandingPage.module.css'
-import ArtistTestimonials from './components/ArtistTestimonials'
+import WhoUsesAudius from './components/WhoUsesAudius'
 import CTAListening from './components/CTAListening'
 import CTASignUp from './components/CTASignUp'
 import Description from './components/Description'
@@ -108,7 +108,7 @@ const LandingPage = (props: LandingPageProps) => {
           setRenderPublicSite={props.setRenderPublicSite}
         />
         <Description isMobile={props.isMobile} />
-        <ArtistTestimonials isMobile={props.isMobile} />
+        <WhoUsesAudius isMobile={props.isMobile} />
         <PlatformFeatures isMobile={props.isMobile} />
         <CTAListening
           isMobile={props.isMobile}
