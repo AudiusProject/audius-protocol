@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, DateTime, Integer, String, text
 
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
@@ -13,3 +13,6 @@ class ChallengeDisbursement(Base, RepresentableMixin):
     signature = Column(String, nullable=False)
     slot = Column(Integer, nullable=False, index=True)
     amount = Column(String, nullable=False)
+    created_at = Column(
+        DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP"), index=True
+    )

@@ -80,7 +80,8 @@
     "amount": 1,
     "active": true,
     "step_count": 2147483647,
-    "starting_block": 0
+    "starting_block": 0,
+    "weekly_pool": 20000
   },
   {
     "id": "s",
@@ -89,6 +90,7 @@
     "amount": 1,
     "active": true,
     "step_count": 2147483647,
-    "starting_block": 0
+    "starting_block": 0,
+    "weekly_pool": 20000
   }
 ]

@@ -35,3 +35,5 @@ class Challenge(Base, RepresentableMixin):
     # if set, events emitted prior to the starting_block
     # will be ignord.
     starting_block = Column(Integer)
+    # Optional field to support challenges with a weekly pool
+    weekly_pool = Column(Integer)
