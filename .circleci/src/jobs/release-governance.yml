@@ -35,7 +35,7 @@ steps:
   - run:
       name: Governance Release
       command: |
-        export RELEASE_VERSION="$(jq -r .version discovery-provider/.version.json)"
+        export RELEASE_VERSION="$(jq -r .version packages/discovery-provider/.version.json)"
         export RELEASE_HASH="<< pipeline.git.revision >>"
         export ADDITIONAL_NOTES=""
 
