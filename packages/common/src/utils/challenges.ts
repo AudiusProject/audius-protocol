@@ -6,6 +6,11 @@ import {
 
 import { formatNumberCommas } from './formatUtil'
 
+export enum ChallengeName {
+  AudioMatchingBuy = 'b',
+  AudioMatchingSell = 's'
+}
+
 export type ChallengeRewardsInfo = {
   id: ChallengeRewardID
   title: string
@@ -118,8 +123,8 @@ export const challengeRewardsConfig: Record<
     progressLabel: 'Not Earned',
     panelButtonText: 'Discover Some Tracks'
   },
-  s: {
-    id: 's',
+  [ChallengeName.AudioMatchingSell]: {
+    id: ChallengeName.AudioMatchingSell,
     title: 'Sell to Earn',
     description: (_) =>
       'Receive 1 additional $AUDIO for each dollar earned from sales.',
@@ -128,13 +133,13 @@ export const challengeRewardsConfig: Record<
     progressLabel: 'No Recent Activity',
     panelButtonText: 'View Details'
   },
-  b: {
-    id: 'b',
-    title: 'Buy to Earn',
+  [ChallengeName.AudioMatchingBuy]: {
+    id: ChallengeName.AudioMatchingBuy,
+    title: 'Spend to Earn',
     description: (_) =>
-      'Receive 1 additional $AUDIO for each dollar earned from purchases.',
+      'Earn 1 $AUDIO for each dollar you spend on premium tracks.',
     fullDescription: () =>
-      'Receive 1 additional $AUDIO for each dollar earned from purchases.',
+      'Earn 1 $AUDIO for each dollar you spend on premium tracks.',
     progressLabel: 'No Recent Activity',
     panelButtonText: 'View Details'
   },
@@ -224,5 +229,8 @@ export const makeOptimisticChallengeSortComparator = (
 }
 
 export const isAudioMatchingChallenge = (challenge: ChallengeRewardID) => {
-  return challenge === 's' || challenge === 'b'
+  return (
+    challenge === ChallengeName.AudioMatchingSell ||
+    challenge === ChallengeName.AudioMatchingBuy
+  )
 }
