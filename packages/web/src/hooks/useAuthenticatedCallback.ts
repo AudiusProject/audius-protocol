@@ -10,28 +10,57 @@ import {
 import { useSelector } from 'utils/reducer'
 const { getHasAccount } = accountSelectors
 
+/**
+ * Like useCallback but designed to be used to redirect unauthenticated users
+ * to sign in/up in the case they are not logged in.
+ * @param callback
+ * @param deps
+ */
 export const useAuthenticatedCallback = <T extends (...args: any) => any>(
   callback: T,
-  deps: any[],
-  stopPropagation = false
+  deps: any[]
 ) => {
   const isSignedIn = useSelector(getHasAccount)
   const dispatch = useDispatch()
 
   return useCallback(
     (...args: Parameters<T>) => {
-      if (stopPropagation) {
-        // In the case we are clicking something that expects to
-        // propagate clicks, don't propagate
-        ;(args[0] as MouseEvent)?.stopPropagation()
-      }
-
       if (!isSignedIn) {
         dispatch(openSignOn(/** signIn */ false))
         dispatch(showRequiresAccountModal())
       } else {
         // eslint-disable-next-line n/no-callback-literal
         return callback(...args)
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [isSignedIn, dispatch, ...deps]
+  )
+}
+
+/**
+ * Like useAuthenticatedCallback but designed to be used for click handlers so that
+ * clicks are not propagated.
+ * @param callback
+ * @param deps
+ */
+export const useAuthenticatedClickCallback = <T extends (e: MouseEvent) => any>(
+  callback: T,
+  deps: any[]
+) => {
+  const isSignedIn = useSelector(getHasAccount)
+  const dispatch = useDispatch()
+
+  return useCallback(
+    (e: MouseEvent) => {
+      e.stopPropagation()
+
+      if (!isSignedIn) {
+        dispatch(openSignOn(/** signIn */ false))
+        dispatch(showRequiresAccountModal())
+      } else {
+        // eslint-disable-next-line n/no-callback-literal
+        return callback(e)
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
