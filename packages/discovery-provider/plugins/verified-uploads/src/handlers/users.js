@@ -36,41 +36,44 @@ export default async ({ user_id, blocknumber }) => {
     const is_verified = current.is_verified
     const handle = current.handle
 
-    const data = await retry(
-      async (_) => {
-        const { data } = await axios
-          .get(social_handle_url(handle))
-          .catch(console.error)
+    let source: str
+    try {
+      const data = await retry(
+        async (_) => {
+          const { data } = await axios
+            .get(social_handle_url(handle))
+            .catch(console.error)
 
-        if (Object.keys(data).length === 0) {
-          // wait for identity to load
-          await new Promise((resolve) => {
-            setTimeout(resolve, 1000)
-          })
-          throw new Error('social handles not in identity yet')
-        }
+          if (Object.keys(data).length === 0) {
+            // wait for identity to load
+            await new Promise((resolve) => {
+              setTimeout(resolve, 5000)
+            })
+            throw new Error('social handles not in identity yet')
+          }
 
-        return data
-      },
-      { retries: 5 }
-    )
+          return data
+        },
+        { retries: 100 }
+      )
+      const { twitterVerified, instagramVerified, tikTokVerified } = data
 
-    const { twitterVerified, instagramVerified, tikTokVerified } = data
-
-    let source = 'unknown'
-    if (twitterVerified) {
-      source = 'twitter'
+      if (twitterVerified) {
+        source = 'twitter'
+      }
+      if (instagramVerified) {
+        source = 'instagram'
+      }
+      if (tikTokVerified) {
+        source = 'tiktok'
+      }
+    } catch (e) {
+      source = "could not figure out source!"
+      console.error(e)
     }
-    if (instagramVerified) {
-      source = 'instagram'
-    }
-    if (tikTokVerified) {
-      source = 'tiktok'
-    }
 
-    const header = `User *${handle}* ${
-      is_verified ? 'is now' : 'is no longer'
-    } verified via ${source}!`
+    const header = `User *${handle}* ${is_verified ? 'is now' : 'is no longer'
+      } verified via ${source}!`
 
     const body = {
       userId: user_id,
