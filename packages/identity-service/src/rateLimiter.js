@@ -180,7 +180,7 @@ const getRateLimiterMiddleware = () => {
 
 const getEntityManagerActionKey = (encodedABI) => {
   const decodedABI = decodeABI(encodedABI)
-  let key = decodedABI.action + decodedABI.entityType
+  const key = decodedABI.action + decodedABI.entityType
   return key
 }
 
@@ -253,13 +253,13 @@ const getRelayRateLimiterMiddleware = () => {
       })
       const allowlist = config.get('allowlistPublicKeyFromRelay')
       if (req.user) {
-        limit = limit['owner']
+        limit = limit.owner
         req.isFromApp = false
       } else {
         if (allowlist && allowlist.includes(signer)) {
-          limit = limit['allowlist']
+          limit = limit.allowlist
         } else {
-          limit = limit['app']
+          limit = limit.app
         }
         req.isFromApp = true
       }
