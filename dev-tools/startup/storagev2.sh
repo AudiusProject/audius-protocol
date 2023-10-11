@@ -21,4 +21,4 @@ if [ ! -f "/data/registered" ]; then
     touch /data/registered
 fi
 
-exec mediorum
+exec air
