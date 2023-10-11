@@ -101,11 +101,11 @@ const detectAbuse = async (user, reqIP, abbreviated = false) => {
 
     // Perform abuse check conditional on environment
     ;({
-        appliedRules,
-        blockedFromRelay,
-        blockedFromNotifications,
-        blockedFromEmails
-      } = await getAbuseData(user.handle, reqIP, abbreviated))
+      appliedRules,
+      blockedFromRelay,
+      blockedFromNotifications,
+      blockedFromEmails
+    } = await getAbuseData(user.handle, reqIP, abbreviated))
     logger.info(
       `detectAbuse: got info for user id ${user.blockchainUserId} handle ${
         user.handle
