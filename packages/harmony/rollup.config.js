@@ -33,6 +33,7 @@ export default {
             'src/assets/styles/spacing.css',
             'src/assets/styles/colors.css',
             'src/assets/styles/tokens.css',
+            'src/assets/styles/animations.css',
             'src/assets/styles/border-radius.css',
             'src/assets/styles/shadows.css'
           ]

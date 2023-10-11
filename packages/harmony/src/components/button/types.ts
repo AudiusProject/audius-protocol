@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef, ReactNode } from 'react'
+import type { ComponentPropsWithoutRef } from 'react'
 
 import type { IconComponent } from '../../components/typography/Icons/types'
 import type { ColorValue } from '../../types/colors'
