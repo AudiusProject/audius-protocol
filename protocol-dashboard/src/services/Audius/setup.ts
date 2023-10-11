@@ -28,7 +28,7 @@ const wormholeContractAddress = import.meta.env.VITE_WORMHOLE_CONTRACT_ADDRESS
 const entityManagerAddress = import.meta.env.VITE_ENTITY_MANAGER_ADDRESS
 
 const ethProviderUrl =
-  import.meta.env.VITE_ETH_PROVIDER_URL || 'ws://localhost:8546' // probably a better fallback is http://audius-protocol-eth-ganache-1
+  import.meta.env.VITE_ETH_PROVIDER_URL || 'ws://0.0.0.0:8546' // probably a better fallback is http://audius-protocol-eth-ganache-1
 
 const ethOwnerWallet = import.meta.env.VITE_ETH_OWNER_WALLET
 const ethNetworkId = import.meta.env.VITE_ETH_NETWORK_ID
