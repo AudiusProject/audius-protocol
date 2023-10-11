@@ -186,20 +186,6 @@
   box-shadow: none;
 }
 
-/* Ghost */
-.ghost {
-  --button-color: var(--harmony-n-300);
-  --text-color: var(--harmony-text-default);
-  background: transparent;
-}
-.ghost:hover {
-  --button-color: var(--harmony-neutral);
-}
-.ghost:active {
-  --button-color: var(--harmony-n-300);
-  background: var(--harmony-bg-surface-2);
-}
-
 /* Disabled states */
 .disabled {
   box-shadow: none;

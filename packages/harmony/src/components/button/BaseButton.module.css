@@ -27,8 +27,8 @@
 }
 
 .button:not(.disabled):active {
-  transition: all var(--harmony-press);
   transform: scale(0.98);
+  transition: all var(--harmony-press);
 }
 
 .button.disabled {

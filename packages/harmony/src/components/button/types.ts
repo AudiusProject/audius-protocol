@@ -8,8 +8,7 @@ export enum ButtonType {
   SECONDARY = 'secondary',
   TERTIARY = 'tertiary',
   DESTRUCTIVE = 'destructive',
-  DESTRUCTIVE_SECONDARY = 'destructive_secondary',
-  GHOST = 'ghost'
+  DESTRUCTIVE_SECONDARY = 'destructive_secondary'
 }
 
 export enum ButtonSize {
@@ -33,7 +32,7 @@ export type BaseButtonProps = {
   /**
    * The text of the button
    */
-  text: ReactNode
+  text?: string
 
   /**
    * Optional icon element to include on the left side of the button
