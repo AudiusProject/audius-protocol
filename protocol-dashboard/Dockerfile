@@ -15,11 +15,12 @@ RUN apt update && \
 ENV WORKDIR /app
 WORKDIR ${WORKDIR}
 
-COPY .env* configureLocalEnv.js index.html package.json package-lock.json tsconfig.json tsconfig.node.json vite.config.ts .
+COPY .env* index.html package.json package-lock.json tsconfig.json tsconfig.node.json vite.config.ts .
 ADD src ./src
 ADD public ./public
 ADD scripts ./scripts
 ADD types ./types
+ADD configure-envs ./configure-envs
 
 ENV DASHBOARD_BASE_URL="/dashboard/"
 RUN npm install --legacy-peer-deps

@@ -14,5 +14,5 @@ To start:
 2. Run the Application `npm run start:<environment>`
 
 To Deploy:
-Comment out VITE_DASHBOARD_BASE_URL in .env.prod and/or .env.stage. Make sure the DASHBOARD_BASE_URL env var is unset on the machine you are deploying on. Build the application using `npm run build:prod` and serve the static `dist` folder as a simple page app via `npm run serve`
+Make sure the DASHBOARD_BASE_URL env var is unset on the machine you are deploying on. Build the application using `npm run build:prod` and serve the static `dist` folder as a simple page app via `npm run serve`
  

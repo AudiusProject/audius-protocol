@@ -21,6 +21,8 @@ eth-contracts-ganache-accounts.json
 .env.dev.local
 .env.test.local
 .env.production.local
+.env.staging.local
+.env.prod.local
 
 npm-debug.log*
 yarn-debug.log*
