@@ -26,6 +26,7 @@ try {
 
   const VITE_DASHBOARD_BASE_URL = process.env.DASHBOARD_BASE_URL || '/'
   envString += `\nVITE_DASHBOARD_BASE_URL=${VITE_DASHBOARD_BASE_URL}`
+  console.log(`Protocol dashboard base path: ${VITE_DASHBOARD_BASE_URL}`)
 
   const configuredEnv = path.join(__dirname, '..', CONFIGURED_ENV)
   fs.writeFile(configuredEnv, envString, err => {
