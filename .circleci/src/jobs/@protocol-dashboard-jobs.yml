@@ -16,9 +16,9 @@ protocol-dashboard-init:
           - dependency-cache-
 
     - run:
-      command: |
-        cd protocol-dashboard
-        npm ci
+        command: |
+          cd protocol-dashboard
+          npm ci
 
     - save_cache:
         key: dependency-cache-{{ checksum "protocol-dashboard/package.json" }}
