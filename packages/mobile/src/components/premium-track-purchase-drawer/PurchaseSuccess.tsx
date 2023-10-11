@@ -38,15 +38,12 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   viewTrackText: {
     color: palette.neutralLight4
-  },
-  viewTrackIcon: {
-    color: palette.neutralLight4
   }
 }))
 
 export const PurchaseSuccess = ({ track }: { track: UserTrackMetadata }) => {
   const styles = useStyles()
-  const { specialGreen, staticWhite } = useThemeColors()
+  const { specialGreen, staticWhite, neutralLight4 } = useThemeColors()
   const { onClose } = useDrawer('PremiumTrackPurchase')
   const { handle } = track.user
   const { title } = track
@@ -91,10 +88,9 @@ export const PurchaseSuccess = ({ track }: { track: UserTrackMetadata }) => {
         variant='commonAlt'
         styles={{
           root: styles.viewTrack,
-          text: styles.viewTrackText,
-          // @ts-ignore icon has ViewStyle prop for some reason, which does not understand the 'color' property
-          icon: styles.viewTrackIcon
+          text: styles.viewTrackText
         }}
+        IconProps={{ width: 20, height: 20, fill: neutralLight4 }}
         size='large'
         icon={IconCaretRight}
       />
