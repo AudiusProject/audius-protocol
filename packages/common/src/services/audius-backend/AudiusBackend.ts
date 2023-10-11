@@ -2908,12 +2908,12 @@ export const audiusBackend = ({
   /**
    * Make a request to fetch the eth AUDIO balance of the the user
    * @params {bool} bustCache
-   * @returns {Promise<BN>} balance
+   * @returns {Promise<BN | null>} balance or null if failed to fetch balance
    */
   async function getBalance(bustCache = false) {
     await waitForLibsInit()
     const wallet = audiusLibs.web3Manager.getWalletAddress()
-    if (!wallet) return
+    if (!wallet) return null
 
     try {
       const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
@@ -2927,6 +2927,7 @@ export const audiusBackend = ({
       return balance
     } catch (e) {
       console.error(e)
+      reportError({ error: e as Error })
       return null
     }
   }
@@ -2943,13 +2944,13 @@ export const audiusBackend = ({
       const ownerWAudioBalance =
         await audiusLibs.solanaWeb3Manager.getWAudioBalance(userBank)
       if (!ownerWAudioBalance) {
-        console.error('Failed to fetch account waudio balance')
-        return new BN('0')
+        throw new Error('Failed to fetch account waudio balance')
       }
       return ownerWAudioBalance
     } catch (e) {
       console.error(e)
-      return new BN('0')
+      reportError({ error: e as Error })
+      return null
     }
   }
 
@@ -2968,14 +2969,14 @@ export const audiusBackend = ({
    * Make a request to fetch the balance, staked and delegated total of the wallet address
    * @params {string} address The wallet address to fetch the balance for
    * @params {bool} bustCache
-   * @returns {Promise<BN>} balance
+   * @returns {Promise<BN | null>} balance or null if error
    */
   async function getAddressTotalStakedBalance(
     address: string,
     bustCache = false
   ) {
     await waitForLibsInit()
-    if (!address) return
+    if (!address) return null
 
     try {
       const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
@@ -2997,6 +2998,7 @@ export const audiusBackend = ({
 
       return balance.add(delegatedBalance).add(stakedBalance)
     } catch (e) {
+      reportError({ error: e as Error })
       console.error(e)
       return null
     }
@@ -3110,16 +3112,20 @@ export const audiusBackend = ({
   /**
    * Fetches the SPL WAUDIO balance for the user's solana wallet address
    * @param {string} The solana wallet address
-   * @returns {Promise<BN>}
+   * @returns {Promise<BN | null>} Returns the balance, or null if error
    */
   async function getAddressWAudioBalance(address: string) {
     await waitForLibsInit()
     const waudioBalance = await audiusLibs.solanaWeb3Manager.getWAudioBalance(
       address
     )
-    if (!waudioBalance) {
+    if (waudioBalance == null) {
       console.warn(`Failed to get waudio balance for address: ${address}`)
-      return new BN('0')
+      reportError({
+        error: new Error('Failed to get wAudio balance for address'),
+        additionalInfo: { address }
+      })
+      return null
     }
     return new BN(waudioBalance.toString())
   }
