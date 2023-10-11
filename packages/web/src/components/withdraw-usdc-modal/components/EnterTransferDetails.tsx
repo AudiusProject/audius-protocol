@@ -15,13 +15,7 @@ import {
   padDecimalValue,
   decimalIntegerToHumanReadable
 } from '@audius/common'
-import { Button, ButtonType } from '@audius/harmony'
-import {
-  HarmonyButton,
-  HarmonyButtonSize,
-  HarmonyButtonType,
-  IconQuestionCircle
-} from '@audius/stems'
+import { Button, ButtonType, IconQuestionCircle } from '@audius/harmony'
 import BN from 'bn.js'
 import { useField } from 'formik'
 
