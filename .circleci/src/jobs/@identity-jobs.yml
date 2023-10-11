@@ -18,7 +18,7 @@ identity-init:
 
     - run:
         name: verify
-        command: cd packages/mobile && npm run verify
+        command: npx turbo run verify --filter=identity-service
 
     - persist_to_workspace:
         root: ./
