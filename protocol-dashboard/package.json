@@ -42,9 +42,9 @@
   },
   "scripts": {
     "publish-scripts": "./scripts/publishScripts.sh",
-    "configure-local-env": "node ./configure-envs/configureLocalEnv.js",
-    "configure-stage-env": "node ./configure-envs/configureEnv.cjs stage",
-    "configure-prod-env": "node ./configure-envs/configureEnv.cjs prod",
+    "configure-local-env": "node ./scripts/configureEnv.js dev",
+    "configure-stage-env": "node ./scripts/configureEnv.cjs stage",
+    "configure-prod-env": "node ./scripts/configureEnv.cjs prod",
     "start": "vite",
     "serve": "vite preview",
     "start:dev:cloud": "npm run configure-local-env remote && ./node_modules/.bin/env-cmd -f .env.dev.local npm start",
