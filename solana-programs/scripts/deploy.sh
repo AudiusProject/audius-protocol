@@ -219,6 +219,20 @@ audius-reward-manager-cli init \
     --token-mint "$(solana address -k $token_keypair)"
 echo
 
+echo "Creating sender for DN1..."
+audius-reward-manager-cli create-sender \
+    --eth-operator-address 0x73EB6d82CFB20bA669e9c178b718d770C49BB52f \
+    --eth-sender-address 0x73EB6d82CFB20bA669e9c178b718d770C49BB52f \
+    --reward-manager DJPzVothq58SmkpRb1ATn5ddN2Rpv1j2TcGvM3XsHf1c
+echo
+
+echo "Creating sender for aao..."
+audius-reward-manager-cli create-sender \
+    --eth-operator-address 0xF0D5BC18421fa04D0a2A2ef540ba5A9f04014BE3 \
+    --eth-sender-address 0xF0D5BC18421fa04D0a2A2ef540ba5A9f04014BE3  \
+    --reward-manager DJPzVothq58SmkpRb1ATn5ddN2Rpv1j2TcGvM3XsHf1c
+echo
+
 echo "Transferring wAUDIO to reward manager..."
 spl-token transfer \
     "$(solana address -k $token_keypair)" \

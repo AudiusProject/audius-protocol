@@ -93,9 +93,9 @@ def get_all_nodes(service_type: bytes) -> Tuple[List[str], List[str]]:
             wallet = node_info[3]
             if wallet != shared_config["delegate"]["owner_wallet"]:
                 endpoint = node_info[1]
-                if is_fqdn(endpoint):
-                    all_other_nodes.append(endpoint)
-                    all_other_wallets.append(wallet)
+                # if is_fqdn(endpoint):
+                all_other_nodes.append(endpoint)
+                all_other_wallets.append(wallet)
         except Exception as e:
             logger.error(
                 f"get_all_other_nodes.py | ERROR in fetching node info {node_info} generated {e}"

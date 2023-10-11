@@ -44,6 +44,7 @@ async function userHandleMiddleware(req, res, next) {
 
     let user = await models.User.findOne({ where: { handle } })
     if (!user) {
+      console.debug('id_signals DID NOT find user')
       const discprovUser = await queryDiscprovForWalletAddressAndUserId(handle)
       const { wallet: walletAddress, user_id: blockchainUserId } = discprovUser
       const userForWallet = await models.User.findOne({

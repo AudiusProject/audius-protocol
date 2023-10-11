@@ -9,6 +9,9 @@ export audius_enable_rsyslog=false
 
 export audius_discprov_url="http://audius-protocol-discovery-provider-${replica}"
 
+echo "REED"
+echo ${audius_discprov_url}
+
 export audius_delegate_owner_wallet=$(printenv "DP${replica}_DELEGATE_OWNER_ADDRESS")
 export audius_delegate_private_key=$(printenv "DP${replica}_DELEGATE_OWNER_PRIVATE_KEY")
 
@@ -19,4 +22,5 @@ if nslookup "$elasticsearch_host" >/dev/null 2>&1; then
 fi
 
 # Run register script in background as it waits for the node to be healthy
-./scripts/register.py &
+echo "REED running register script"
+# python3 ./scripts/register.py

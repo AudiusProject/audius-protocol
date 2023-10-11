@@ -196,6 +196,10 @@ export async function submitAttestations({
     )
   )
 
+  console.debug(
+    'REED tokenAmount in oracle attestation',
+    tokenAmount.toString()
+  )
   const encodedOracleMessage = SolanaUtils.constructAttestation(
     recipientEthAddress,
     tokenAmount,

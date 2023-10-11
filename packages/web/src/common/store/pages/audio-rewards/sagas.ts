@@ -131,9 +131,10 @@ const getClaimingConfig = (
   remoteConfigInstance: RemoteConfigInstance,
   env: Env
 ) => {
-  const quorumSize = remoteConfigInstance.getRemoteVar(
-    IntKeys.ATTESTATION_QUORUM_SIZE
-  )
+  // const quorumSize = remoteConfigInstance.getRemoteVar(
+  //   IntKeys.ATTESTATION_QUORUM_SIZE
+  // )
+  const quorumSize = 2
   const maxClaimRetries = remoteConfigInstance.getRemoteVar(
     IntKeys.MAX_CLAIM_RETRIES
   )
