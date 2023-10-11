@@ -1,0 +1,41 @@
+machine:
+  image: ubuntu-2204:current
+resource_class: large
+steps:
+  - run:
+      name: checkout dot-slash-audius
+      command: git clone --branch phelpsdb-circleci-dot-slash git@github.com:AudiusProject/dot-slash-audius.git ~/dot-slash-audius
+  - run:
+      name: build dot-slash-audius
+      command: cd ~/dot-slash-audius && make build-docker-ci
+  - run:
+      name: populate config
+      command: |
+        mkdir ~/.audius
+        echo "creatorNodeEndpoint=https://localhost" >> ~/.audius/creator.conf
+        echo "delegateOwnerWallet=$delegateOwnerWallet" >> ~/.audius/creator.conf
+        echo "delegatePrivateKey=$delegatePrivateKey" >> ~/.audius/creator.conf
+        echo "spOwnerWallet=$spOwnerWallet" >> ~/.audius/creator.conf
+        echo "audius_discprov_url=https://localhost" >> ~/.audius/discovery.conf
+        echo "audius_delegate_owner_wallet=$audius_delegate_owner_wallet" >> ~/.audius/discovery.conf
+        echo "audius_delegate_private_key=$audius_delegate_private_key" >> ~/.audius/discovery.conf
+  - run:
+      name: start audius nodes
+      command: |
+        cd ~/dot-slash-audius 
+        ./audius -c ~/.audius/creator.conf -t ci --local
+        # Disabled temporarily
+        # ./audius -c ~/.audius/discovery.conf -t ci --local --port 8080 --tls 8081
+  - run:
+      name: check audius node health
+      command: |
+        timeout=0
+        while [ "$(curl -sko /dev/null -w "%{http_code}" https://localhost/health_check)" = 502 ] && [ "$timeout" -lt 60 ]; do 
+          sleep 3
+          ((timeout=timeout+3))
+        done
+
+        cresult="$(curl -Lkv https://localhost/health_check | jq '.data.healthy')"
+        # dresult="$(curl -Lkv https://localhost:8081/health_check | jq '.data.healthy')"
+        [ "$cresult" = true ] || [ "$cresult" = false ]
+        # [ "$dresult" = true ] || [ "$dresult" = false ]

@@ -85,6 +85,13 @@ jobs:
       context: github
       requires:
         - deploy-foundation-nodes-trigger
+  - test-dot-slash:
+      context: dot-slash-audius
+      requires:
+        - deploy-foundation-nodes
+      filters:
+        branches:
+          only: /^release.*$/
   - release-audius-docker-compose-trigger:
       requires:
         - deploy-foundation-nodes

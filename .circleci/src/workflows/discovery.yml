@@ -1,5 +1,9 @@
 when: << pipeline.parameters.run-discovery-workflow >>
 jobs:
+  # Will be deleted, here for testing PR only.
+  - test-dot-slash:
+      context: dot-slash-audius
+
   - push-docker-image:
       name: push-discovery-provider
       context: [Vercel, dockerhub]
