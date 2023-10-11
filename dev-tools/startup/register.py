@@ -22,14 +22,16 @@ def main(replica):
     )
 
     serviceProviderFactory = w3.eth.contract(
-        address=registry.functions.getContract(b"ServiceProviderFactory").call(),
+        address=registry.functions.getContract(
+            b"ServiceProviderFactory".ljust(32, b"\0")
+        ).call(),
         abi=json.loads(
             (ETH_CONTRACTS_ABI_DIR / "ServiceProviderFactory.json").read_text()
         )["abi"],
     )
 
     staking = w3.eth.contract(
-        address=registry.functions.getContract(b"StakingProxy").call(),
+        address=registry.functions.getContract(b"StakingProxy".ljust(32, b"\0")).call(),
         abi=json.loads((ETH_CONTRACTS_ABI_DIR / "Staking.json").read_text())["abi"],
     )
 
@@ -47,7 +49,7 @@ def main(replica):
 
     try:
         serviceProviderFactory.functions.register(
-            b"content-node",
+            b"content-node".ljust(32, b"\0"),
             f"http://audius-protocol-creator-node-{replica}",
             200000 * (10 ** token.functions.decimals().call()),
             delegateOwnerWallet,
