@@ -13,7 +13,6 @@ const ethTxRelay = require('./relay/ethTxRelay')
 const { runMigrations } = require('./migrationManager')
 const audiusLibsWrapper = require('./audiusLibsInstance')
 
-const NotificationProcessor = require('./notifications/index.js')
 const { generateWalletLockKey } = require('./relay/txRelay.js')
 const { generateETHWalletLockKey } = require('./relay/ethTxRelay.js')
 
@@ -45,17 +44,6 @@ class App {
     this.optimizelyPromise = null
     this.optimizelyClientInstance = this.configureOptimizely()
 
-    // Async job configuration
-    this.notificationProcessor = new NotificationProcessor({
-      errorHandler: (error) => {
-        try {
-          return Sentry.captureException(error)
-        } catch (sentryError) {
-          logger.error(`Received error from Sentry ${sentryError}`)
-        }
-      }
-    })
-
     // Note: The order of the following functions is IMPORTANT, as it sets the functions
     // that process a request in the order applied
     this.expressSettings()
@@ -67,7 +55,6 @@ class App {
 
   async init() {
     let server
-    await this.getAudiusAnnouncements()
     logger.info('identity init')
 
     /**
@@ -76,7 +63,7 @@ class App {
      * the user will sometimes want to launch a cluster of Node.js processes to handle the load.
      * The cluster module allows easy creation of child processes that all share server ports."
      *
-     * We have the master node in the cluster run migrations and start notifications processor
+     * We have the master node in the cluster run migrations and start workers.
      * The workers start express server processes
      */
     if (cluster.isMaster) {
@@ -110,7 +97,6 @@ class App {
         })
 
         const audiusInstance = await this.configureAudiusInstance()
-        cluster.fork({ WORKER_TYPE: 'notifications' })
 
         await this.configureRewardsAttester(audiusInstance)
         await this.configureDiscoveryNodeRegistration(audiusInstance)
@@ -147,27 +133,18 @@ class App {
       // if it's not the master worker in the cluster
       const audiusInstance = await this.configureAudiusInstance()
       await this.configureReporter()
+      await new Promise((resolve) => {
+        server = this.express.listen(this.port, resolve)
+      })
+      server.setTimeout(config.get('setTimeout'))
+      server.timeout = config.get('timeout')
+      server.keepAliveTimeout = config.get('keepAliveTimeout')
+      server.headersTimeout = config.get('headersTimeout')
 
-      if (process.env.WORKER_TYPE === 'notifications') {
-        await this.notificationProcessor.init(
-          audiusInstance,
-          this.express,
-          this.redisClient
-        )
-      } else {
-        await new Promise((resolve) => {
-          server = this.express.listen(this.port, resolve)
-        })
-        server.setTimeout(config.get('setTimeout'))
-        server.timeout = config.get('timeout')
-        server.keepAliveTimeout = config.get('keepAliveTimeout')
-        server.headersTimeout = config.get('headersTimeout')
+      this.express.set('redis', this.redisClient)
 
-        this.express.set('redis', this.redisClient)
-
-        logger.info(`Listening on port ${this.port}...`)
-        return { app: this.express, server }
-      }
+      logger.info(`Listening on port ${this.port}...`)
+      return { app: this.express, server }
     }
   }
 
@@ -419,20 +396,6 @@ class App {
       sendResponse(req, res, errorResponseServerError('Internal server error'))
     }
     this.express.use(errorHandler)
-  }
-
-  async getAudiusAnnouncements() {
-    try {
-      const { announcements, announcementMap } = await fetchAnnouncements()
-      this.express.set('announcements', announcements)
-      this.express.set('announcementMap', announcementMap)
-    } catch (err) {
-      const audiusNotificationUrl = config.get('audiusNotificationUrl')
-      logger.error(
-        `Error, unable to get audius announcements from ${audiusNotificationUrl} \n [Err]:`,
-        err
-      )
-    }
   }
 }
 
