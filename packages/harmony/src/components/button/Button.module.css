@@ -36,8 +36,7 @@
 .buttonSmall {
   gap: var(--harmony-unit-1);
   height: var(--harmony-unit-8);
-  padding-left: var(--harmony-unit-3);
-  padding-right: var(--harmony-unit-3);
+  padding-inline: var(--harmony-unit-3);
 }
 
 .iconSmall {
@@ -56,8 +55,7 @@
 .buttonDefault {
   gap: var(--harmony-unit-2);
   height: var(--harmony-unit-12);
-  padding-left: var(--harmony-unit-6);
-  padding-right: var(--harmony-unit-6);
+  padding-inline: var(--harmony-unit-6);
 }
 
 .iconDefault {
@@ -76,8 +74,7 @@
 .buttonLarge {
   gap: var(--harmony-unit-2);
   height: var(--harmony-unit-15);
-  padding-left: var(--harmony-unit-6);
-  padding-right: var(--harmony-unit-6);
+  padding-inline: var(--harmony-unit-6);
 }
 
 .iconLarge {
