@@ -1,0 +1,15 @@
+.container {
+  border: 5px solid rgba(0,0,0,0);
+  border-top: 5px solid #5A5E78;
+  border-right: 5px solid #5A5E78;
+  border-left: 5px solid #5A5E78;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

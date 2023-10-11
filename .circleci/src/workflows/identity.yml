@@ -1,17 +1,24 @@
 when: << pipeline.parameters.run-identity-workflow >>
 jobs:
+  - identity-init:
+      context: Vercel
+
   - push-docker-image:
       name: push-identity-service
-      context: [GCP, dockerhub]
+      context: [Vercel, dockerhub]
       service: identity-service
+      requires:
+        - identity-init
       filters:
         branches:
           only: main
 
   - test:
       name: test-identity-service
-      context: GCP
+      context: Vercel
       service: identity-service
+      requires:
+        - identity-init
 
   # Deploy audius-protocol `main` branch (stage)
   - deploy-stage-nodes:

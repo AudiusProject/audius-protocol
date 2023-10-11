@@ -22,7 +22,8 @@ audius-protocol-identity-service-1 \
 audius-protocol-solana-test-validator-1 \
 audius-protocol-eth-ganache-1 \
 audius-protocol-poa-ganache-1 \
-audius-protocol-pedalboard
+audius-protocol-pedalboard \
+audius-protocol-anti-abuse-oracle-1
 """
 
 
@@ -88,7 +89,7 @@ def generate_env(
     )["version"]
 
     env["DISCOVERY_NODE_VERSION"] = json.loads(
-        (protocol_dir / "discovery-provider/.version.json").read_text(),
+        (protocol_dir / "packages/discovery-provider/.version.json").read_text(),
     )["version"]
 
     env["ELASTICSEARCH_REPLICAS"] = str(elasticsearch_replicas)
@@ -148,11 +149,9 @@ def generate_env(
     env["AAO_WALLET_ADDRESSES"] = ",".join(aao_wallets)
 
     if prod:
-        env["IDENTITY_DOCKERCOMPOSE"] = "docker-compose.identity.prod.yml"
-        env["DEVTOOLS_DOCKERCOMPOSE"] = "docker-compose.dev-tools.prod.yml"
+        env["DOCKERCOMPOSE_ENV_TYPE"] = "prod"
     else:
-        env["IDENTITY_DOCKERCOMPOSE"] = "docker-compose.identity.dev.yml"
-        env["DEVTOOLS_DOCKERCOMPOSE"] = "docker-compose.dev-tools.dev.yml"
+        env["DOCKERCOMPOSE_ENV_TYPE"] = "dev"
 
     for key, value in config.get("extra-env", {}).items():
         env[key] = value

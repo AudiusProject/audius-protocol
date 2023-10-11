@@ -92,6 +92,9 @@ services:
     build:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/packages/libs/Dockerfile
+      args:
+        TURBO_TEAM: '${TURBO_TEAM}'
+        TURBO_TOKEN: '${TURBO_TOKEN}'
     # TODO: also run integration test current blocker is that integration tests
     # use config.json which was removed with the addition of audius-compose
     entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test:unit)' -
@@ -105,6 +108,9 @@ services:
     build:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/packages/libs/Dockerfile
+      args:
+        TURBO_TEAM: '${TURBO_TEAM}'
+        TURBO_TOKEN: '${TURBO_TOKEN}'
     entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test:sdk)' -
     logging: *default-logging
     deploy:
@@ -233,7 +239,7 @@ services:
       audius_elasticsearch_url: 'http://discovery-provider-elasticsearch:9200'
       audius_elasticsearch_run_indexer: 'true'
     volumes:
-      - ${PROJECT_ROOT}/discovery-provider:/audius-discovery-provider
+      - ${PROJECT_ROOT}/packages/discovery-provider:/audius-discovery-provider
       - /audius-discovery-provider/es-indexer/node_modules
     depends_on:
       discovery-provider-elasticsearch:
@@ -253,7 +259,7 @@ services:
 
   test-discovery-provider-notifications:
     build:
-      context: ${PROJECT_ROOT}/discovery-provider/plugins/notifications
+      context: ${PROJECT_ROOT}/packages/discovery-provider/plugins/notifications
       dockerfile: Dockerfile
     entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; npm run test "$$@")' -
     environment:
@@ -261,7 +267,7 @@ services:
       DN_DB_URL: 'postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider'
       IDENTITY_DB_URL: 'postgresql://postgres:postgres@identity-service-db:5432/identity_service'
     volumes:
-      - ${PROJECT_ROOT}/discovery-provider/plugins/notifications:/notifications
+      - ${PROJECT_ROOT}/packages/discovery-provider/plugins/notifications:/notifications
       - /notifications/node_modules
     depends_on:
       test-discovery-provider-migrations:
@@ -325,7 +331,7 @@ services:
       dbUrlTemplate: 'postgres://postgres:example@mediorum-db:5432/m%d'
       devNetworkCount: '5'
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:1991/health_check"]
+      test: ['CMD', 'curl', 'http://localhost:1991/health_check']
       interval: 10s
       start_period: 60s
       timeout: 5s

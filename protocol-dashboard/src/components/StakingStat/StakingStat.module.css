@@ -1,0 +1,42 @@
+/* Stats Container */
+
+.delegatesContainer {
+  padding: 15px 0px 8px;
+}
+
+.lastStat {
+  padding: 0px 17px 0px;
+}
+
+
+.delegatesDivider {
+  margin: 8px 0px;
+}
+
+.delegatedContainer {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.delegatedLabel {
+  font-family: Avenir Next LT Pro;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: #777C96;
+}
+
+.delegatedValue {
+  margin-top: 1px;
+  font-family: Avenir Next LT Pro;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  line-height: 17px;
+  text-align: right;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: #BEC5E0;
+}

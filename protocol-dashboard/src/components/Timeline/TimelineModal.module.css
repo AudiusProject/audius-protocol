@@ -1,0 +1,32 @@
+.title {
+  margin: 0px;
+  padding: 28px 32px;
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-xl);
+  color: #BEC5E0;
+}
+
+.modalEvent {}
+ 
+.headerClassName {
+  border-bottom: none !important;
+}
+
+.timelineContainer {
+  padding-bottom: 0px !important;
+}
+
+.scrollable {
+  min-height: 0;
+  height: 100%;
+  max-height: 620px;
+  width: calc(100% + 48px);
+  box-sizing: border-box;
+}
+
+.scrollable :global(.simplebar-scrollbar) {
+  width: 6px;
+  border-radius: 4px;
+  opacity: 0.5;
+}

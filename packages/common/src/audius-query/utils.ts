@@ -11,6 +11,7 @@ export function capitalize(str: string) {
 }
 
 export const getKeyFromFetchArgs = (fetchArgs: any) => {
+  if (fetchArgs === undefined) return 'default'
   return JSON.stringify(fetchArgs)
 }
 

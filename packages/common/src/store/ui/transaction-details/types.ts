@@ -46,7 +46,7 @@ export type TransactionDetails =
         | TransactionMethod.RECEIVE
       date: string
       change: StringAudio
-      balance: StringAudio
+      balance: StringAudio | null
       metadata?: Nullable<InAppAudioPurchaseMetadata>
     }
   | {
@@ -55,7 +55,7 @@ export type TransactionDetails =
       method: TransactionMethod.SEND | TransactionMethod.RECEIVE
       date: string
       change: StringAudio
-      balance: StringAudio
+      balance: StringAudio | null
       metadata: string
     }
   | {
@@ -66,7 +66,7 @@ export type TransactionDetails =
       method: TransactionMethod.RECEIVE
       date: string
       change: StringAudio
-      balance: StringAudio
+      balance: StringAudio | null
       metadata: string
     }
 

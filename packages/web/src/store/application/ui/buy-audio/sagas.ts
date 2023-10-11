@@ -543,7 +543,10 @@ function* populateAndSaveTransactionDetails() {
     transactionType: TransactionType.PURCHASE,
     method:
       PROVIDER_METHOD_MAP[localStorageState.provider ?? OnRampProvider.UNKNOWN],
-    balance: convertWeiToWAudio(postAUDIOBalanceWei).toString(),
+    balance:
+      postAUDIOBalanceWei != null
+        ? convertWeiToWAudio(postAUDIOBalanceWei).toString()
+        : null,
     change: purchasedAudioWei
       ? convertWeiToWAudio(new BN(purchasedAudioWei)).toString()
       : '',

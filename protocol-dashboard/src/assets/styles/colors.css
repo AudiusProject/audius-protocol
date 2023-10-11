@@ -1,0 +1,40 @@
+/**
+ * Audius Color Palette
+ *
+ */
+:root {
+  --background: #242438;
+
+  --primary: #C74BD3;
+  --primary-dark-1: #C556D4;
+  --primary-dark-2: #C563D6;
+  --primary-light-1: #B748C6;
+  --primary-light-2: #A945B9;
+
+  --secondary: #9147CC;
+  --secondary-transparent: rgba(126, 27, 204, 0.85);
+  --secondary-dark-1: #975ACD;
+  --secondary-dark-2: #9A60CF;
+  --secondary-light-1: #8244B8;
+  --secondary-light-2: #7440A4;
+
+  --neutral: #BEC5E0;
+  --neutral-dark-1: #C4CAE1;
+  --neutral-dark-2: #CBD1E3;
+  --neutral-dark-3: #E0E6FA;
+  --neutral-light-1: #A2A8C2;
+  --neutral-light-2: #9399B3;
+  --neutral-light-3: #868AA4;
+  --neutral-light-4: #777C96;
+  --neutral-light-5: #696D88;
+  --neutral-light-6: #5A5E78;
+  --neutral-light-7: #4E4F6A;
+  --neutral-light-8: #3F415B;
+  --neutral-light-9: #393A54;
+  --neutral-light-10: #35364F;
+  --white: #32334D;
+  --static-white: #ffffff;
+  --darkmode-static-white: #ffffff;
+
+  --skeleton: #393A54;
+}

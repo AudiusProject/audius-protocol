@@ -14,6 +14,7 @@
     },
     "@audius/compose#start": {
       "dependsOn": ["^build"],
+      "cache": false,
       "outputMode": "new-only"
     },
     "audius-client#start:dev": {
@@ -70,8 +71,18 @@
       "persistent": true,
       "outputMode": "new-only"
     },
-    "lint": {},
-    "lint:fix": {},
-    "verify": {}
+    "lint": {
+      "outputMode": "new-only"
+    },
+    "lint:fix": {
+      "outputMode": "new-only"
+    },
+    "verify": {
+      "outputMode": "new-only"
+    },
+    "test": {
+      "outputs": ["coverage/**"],
+      "dependsOn": []
+    }
   }
 }

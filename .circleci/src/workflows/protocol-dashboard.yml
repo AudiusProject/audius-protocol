@@ -1,0 +1,76 @@
+when: << pipeline.parameters.run-protocol-dashboard-workflow >>
+jobs:
+  - protocol-dashboard-init
+  - push-docker-image:
+      name: push-protocol-dashboard
+      context: [Vercel, dockerhub]
+      service: dashboard
+      filters:
+        branches:
+          only: /^main$/
+  - protocol-dashboard-build-staging:
+      requires:
+        - protocol-dashboard-init
+  - protocol-dashboard-pin-staging:
+      context:
+        - Audius Client
+      requires:
+        - protocol-dashboard-build-staging
+      filters:
+        branches:
+          only: /^main$/
+  - protocol-dashboard-deploy-staging:
+      context:
+        - Armada
+      requires:
+        - protocol-dashboard-pin-staging
+      filters:
+        branches:
+          only: /^main$/
+  - protocol-dashboard-build-prod:
+      requires:
+        - protocol-dashboard-init
+  - protocol-dashboard-hold-deploy-prod:
+      type: approval
+      requires:
+        - protocol-dashboard-build-prod
+      filters:
+        branches:
+          only: /^main$/
+  - protocol-dashboard-deploy-prod:
+      context: Audius Client
+      requires:
+        - protocol-dashboard-hold-deploy-prod
+      filters:
+        branches:
+          only: /^main$/
+  - protocol-dashboard-update-prod-ga-build:
+      context: Pinata
+      requires:
+        - protocol-dashboard-deploy-prod
+      filters:
+        branches:
+          only: /^main$/
+  - protocol-dashboard-publish-prod-build-cids:
+      context: Audius Client
+      requires:
+        - protocol-dashboard-update-prod-ga-build
+      filters:
+        branches:
+          only: /^main$/
+  - protocol-dashboard-hold-update-prod-records:
+      type: approval
+      requires:
+        - protocol-dashboard-update-prod-ga-build
+      filters:
+        branches:
+          only: /^main$/
+  - protocol-dashboard-update-prod-records:
+      context:
+        - Audius Client
+        - Cloudflare API
+      requires:
+        - protocol-dashboard-hold-update-prod-records
+      filters:
+        branches:
+          only: /^main$/

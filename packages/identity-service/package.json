@@ -9,7 +9,7 @@
   "author": "",
   "license": "Apache-2.0",
   "scripts": {
-    "start": "npx ts-node-dev --respawn --files src/index.ts",
+    "start": "npx ts-node-dev --respawn --transpile-only src/index.ts",
     "render:email": "rimraf src/notifications/renderEmail && babel src/notifications/components/ -d src/notifications/renderEmail",
     "db:migrate": "node src/migrationManager.js",
     "test": "./scripts/run-tests.sh",
@@ -21,7 +21,8 @@
     "copyfiles": "cp ./src/notifications/browserPush/*.zip ./build/src/notifications/browserPush && cp -r ./src/notifications/browserPush/audius.pushpackage ./build/src/notifications/browserPush && cp -r ./src/notifications/emails ./build/src/notifications",
     "build": "tsc --project tsconfig.build.json && npm run copyfiles",
     "typecheck": "tsc",
-    "typecheck:watch": "tsc --watch"
+    "typecheck:watch": "tsc --watch",
+    "verify": "concurrently \"npm:typecheck\" \"npm:lint\""
   },
   "dependencies": {
     "@amplitude/node": "1.9.2",

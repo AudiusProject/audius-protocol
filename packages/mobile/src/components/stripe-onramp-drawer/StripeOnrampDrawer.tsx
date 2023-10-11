@@ -1,27 +1,37 @@
 import { useCallback } from 'react'
 
-import { modalsActions, purchaseContentActions } from '@audius/common'
-import { View } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { stripeModalUIActions, stripeModalUISelectors } from '@audius/common'
+import { TouchableOpacity, View } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
 
-import IconRemove from 'app/assets/images/iconRemove.svg'
+import IconCloseAlt from 'app/assets/images/iconCloseAlt.svg'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
-import { useColor } from 'app/utils/theme'
+import { useThemeColors } from 'app/utils/theme'
 import { zIndex } from 'app/utils/zIndex'
 
 import { AppDrawer } from '../drawer/AppDrawer'
 
 import { StripeOnrampEmbed } from './StripeOnrampEmbed'
 
-const { setVisibility } = modalsActions
-const { cleanup } = purchaseContentActions
+const { cancelStripeOnramp } = stripeModalUIActions
+const { getStripeModalState } = stripeModalUISelectors
 
 export const MODAL_NAME = 'StripeOnRamp'
 
-const useStyles = makeStyles(({ spacing }) => ({
-  root: {
-    paddingTop: spacing(4)
+const useStyles = makeStyles(({ spacing, palette }) => ({
+  headerContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: palette.neutralLight8,
+    height: spacing(12),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingHorizontal: spacing(4)
+  },
+  contentContainer: {
+    paddingTop: spacing(6),
+    flex: 1
   },
   exitContainer: {
     justifyContent: 'flex-start',
@@ -30,31 +40,44 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
+const StripeOnrampDrawerHeader = ({ onClose }: { onClose: () => void }) => {
+  const styles = useStyles()
+  const { neutralLight4 } = useThemeColors()
+  return (
+    <View style={styles.headerContainer}>
+      <TouchableOpacity activeOpacity={0.7} onPress={onClose}>
+        <IconCloseAlt
+          width={spacing(6)}
+          height={spacing(6)}
+          fill={neutralLight4}
+        />
+      </TouchableOpacity>
+    </View>
+  )
+}
+
 export const StripeOnrampDrawer = () => {
   const styles = useStyles()
-  const neutralLight4 = useColor('neutralLight4')
   const dispatch = useDispatch()
+  const { stripeSessionStatus } = useSelector(getStripeModalState)
 
   const handleClose = useCallback(() => {
-    dispatch(setVisibility({ modal: MODAL_NAME, visible: 'closing' }))
-    dispatch(cleanup())
+    dispatch(cancelStripeOnramp())
   }, [dispatch])
 
   return (
     <AppDrawer
+      blockClose={stripeSessionStatus === 'fulfillment_processing'}
+      drawerHeader={StripeOnrampDrawerHeader}
       zIndex={zIndex.STRIPE_ONRAMP_DRAWER}
       modalName={MODAL_NAME}
-      drawerStyle={styles.root}
+      isGestureSupported={false}
+      isFullscreen
+      onClose={handleClose}
     >
-      <View style={styles.exitContainer}>
-        <IconRemove
-          fill={neutralLight4}
-          width={spacing(6)}
-          height={spacing(6)}
-          onPress={handleClose}
-        />
+      <View style={styles.contentContainer}>
+        <StripeOnrampEmbed />
       </View>
-      <StripeOnrampEmbed />
     </AppDrawer>
   )
 }
