@@ -34,6 +34,8 @@ const { getFeatureFlag, FEATURE_FLAGS } = require('./featureFlag')
 const { setupRewardsAttester } = require('./utils/configureAttester')
 const { startRegistrationQueue } = require('./solanaNodeRegistration')
 
+console.log('test')
+
 class App {
   constructor(port) {
     this.port = port
