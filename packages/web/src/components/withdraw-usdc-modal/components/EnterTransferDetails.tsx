@@ -15,6 +15,7 @@ import {
   padDecimalValue,
   decimalIntegerToHumanReadable
 } from '@audius/common'
+import { Button, ButtonType } from '@audius/harmony'
 import {
   HarmonyButton,
   HarmonyButtonSize,
@@ -129,12 +130,13 @@ export const EnterTransferDetails = () => {
           placeholder=''
         />
       </div>
-      <HarmonyButton
-        variant={HarmonyButtonType.SECONDARY}
-        size={HarmonyButtonSize.DEFAULT}
+      <Button
+        variant={ButtonType.SECONDARY}
         fullWidth
         text={messages.continue}
-        disabled={amountError || addressError || !address || balance?.isZero()}
+        disabled={
+          !!(amountError || addressError || !address || balance?.isZero())
+        }
         onClick={handleContinue}
       />
       <Hint

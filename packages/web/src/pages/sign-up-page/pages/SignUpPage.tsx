@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { HarmonyButton, HarmonyButtonType } from '@audius/stems'
+import { Button, ButtonType } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 
 import { TextField } from 'components/form-fields'
@@ -46,8 +46,8 @@ export const SignUpPage = (props: SignUpPageProps) => {
       <Form>
         <h1>{messages.header}</h1>
         <TextField name='email' label={messages.emailLabel} />
-        <HarmonyButton
-          variant={HarmonyButtonType.PRIMARY}
+        <Button
+          variant={ButtonType.PRIMARY}
           text={messages.signUp}
           type='submit'
         />

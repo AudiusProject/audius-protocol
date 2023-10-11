@@ -1,12 +1,8 @@
 import { MouseEvent, useCallback, useContext } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common'
-import {
-  HarmonyButton,
-  HarmonyButtonType,
-  IconError,
-  IconUpload
-} from '@audius/stems'
+import { Button, ButtonType } from '@audius/harmony'
+import { IconError, IconUpload } from '@audius/stems'
 import cn from 'classnames'
 import { useField, useFormikContext } from 'formik'
 import { isEmpty } from 'lodash'
@@ -45,10 +41,10 @@ export const MultiTrackSidebar = () => {
         <div className={cn(styles.body, layoutStyles.col, layoutStyles.gap2)}>
           <TrackNavigator />
           <div className={styles.completeButton}>
-            <HarmonyButton
+            <Button
               onClick={scrollToTop}
               text={messages.complete}
-              variant={HarmonyButtonType.PRIMARY}
+              variant={ButtonType.PRIMARY}
               iconRight={IconUpload}
               type='submit'
               fullWidth

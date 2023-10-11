@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { HarmonyButton, HarmonyButtonType } from '@audius/stems'
+import { Button, ButtonType } from '@audius/harmony'
 import { Formik, Form } from 'formik'
 import { useDispatch } from 'react-redux'
 
@@ -72,8 +72,8 @@ export const CreatePasswordPage = (props: CreatePasswordPageProps) => {
             name='confirmPassword'
             label={messages.confirmPasswordLabel}
           />
-          <HarmonyButton
-            variant={HarmonyButtonType.PRIMARY}
+          <Button
+            variant={ButtonType.PRIMARY}
             text={messages.continue}
             type='submit'
           />
