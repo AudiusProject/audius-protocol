@@ -25,7 +25,7 @@ const messages = {
 
 export const WalletActions = ({ className }: { className?: string }) => {
   const balance = useSelector(getAccountBalance) ?? (new BN(0) as BNWei)
-  const hasBalance = balance && !balance.isZero()
+  const hasBalance = balance != null && !balance.isZero()
   const dispatch = useDispatch()
 
   const onClickReceive = () => dispatch(pressReceive())

@@ -99,9 +99,10 @@ module.exports = function (app) {
 
       try {
         // pseudo-upsert without sequlize magic
-        const userSettings = await models.UserNotificationMobileSettings.findOne({
-          where: { userId }
-        })
+        const userSettings =
+          await models.UserNotificationMobileSettings.findOne({
+            where: { userId }
+          })
         if (userSettings) {
           await userSettings.update({ ...settings })
         } else {
