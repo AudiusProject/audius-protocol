@@ -82,7 +82,6 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   AudioBreakdown: AudioBreakdownModal,
   UploadConfirmation: UploadConfirmationModal,
   BuyAudio: BuyAudioModal,
-  AudioBreakdown: AudioBreakdownModal,
   BuyAudioRecovery: BuyAudioRecoveryModal,
   TransactionDetails: TransactionDetailsModal,
   InboxSettings: InboxSettingsModal,
