@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { MouseEvent as ReactMouseEvent, useCallback } from 'react'
 
 import { accountSelectors } from '@audius/common'
 import { useDispatch } from 'react-redux'
@@ -44,7 +44,9 @@ export const useAuthenticatedCallback = <T extends (...args: any) => any>(
  * @param callback
  * @param deps
  */
-export const useAuthenticatedClickCallback = <T extends (e: MouseEvent) => any>(
+export const useAuthenticatedClickCallback = <
+  T extends (e: ReactMouseEvent<Element, MouseEvent>) => any
+>(
   callback: T,
   deps: any[]
 ) => {
@@ -52,7 +54,7 @@ export const useAuthenticatedClickCallback = <T extends (e: MouseEvent) => any>(
   const dispatch = useDispatch()
 
   return useCallback(
-    (e: MouseEvent) => {
+    (e: ReactMouseEvent<Element, MouseEvent>) => {
       e.stopPropagation()
 
       if (!isSignedIn) {
