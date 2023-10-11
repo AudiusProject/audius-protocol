@@ -1,4 +1,4 @@
 when: << pipeline.parameters.run-integration-workflow >>
 jobs:
   - test-audius-cmd:
-      context: GCP
+      context: Vercel
