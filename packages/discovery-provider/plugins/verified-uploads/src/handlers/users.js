@@ -36,7 +36,7 @@ export default async ({ user_id, blocknumber }) => {
     const is_verified = current.is_verified
     const handle = current.handle
 
-    let source: str
+    let source
     try {
       const data = await retry(
         async (_) => {
@@ -68,12 +68,13 @@ export default async ({ user_id, blocknumber }) => {
         source = 'tiktok'
       }
     } catch (e) {
-      source = "could not figure out source!"
+      source = 'could not figure out source!'
       console.error(e)
     }
 
-    const header = `User *${handle}* ${is_verified ? 'is now' : 'is no longer'
-      } verified via ${source}!`
+    const header = `User *${handle}* ${
+      is_verified ? 'is now' : 'is no longer'
+    } verified via ${source}!`
 
     const body = {
       userId: user_id,
