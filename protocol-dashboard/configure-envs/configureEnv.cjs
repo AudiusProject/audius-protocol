@@ -3,6 +3,8 @@ const path = require('path')
 const dotenv = require('dotenv')
 require('dotenv').config()
 
+// TODO: clean up configureLocalEnv.js and combine with this file
+
 if (!process.argv[2] || !process.argv[2] === 'stage' || !process.argv[2] === 'prod') {
   console.error('Please provide desired environment (stage or prod) as an argument.')
   process.exit(1)

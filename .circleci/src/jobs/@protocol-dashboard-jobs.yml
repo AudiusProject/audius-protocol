@@ -1,40 +1,45 @@
 protocol-dashboard-init:
-  working_directory: ~/audius-protocol/protocol-dashboard
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/ruby:2.6-node
 
   steps:
     - checkout
 
-    - run: echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > ~/.npmrc
+    - run: echo "//registry.npmjs.org/:_authToken=${NPM_AUTH_TOKEN}" > protocol-dashboard/.npmrc
 
     # Download and cache dependencies
     - restore_cache:
         keys:
-          - dependency-cache-{{ checksum "package.json" }}
+          - dependency-cache-{{ checksum "protocol-dashboard/package.json" }}
           # fallback to using the latest cache if no exact match is found
           - dependency-cache-
 
-    - run: npm ci
+    - run:
+      command: |
+        cd protocol-dashboard
+        npm ci
 
     - save_cache:
-        key: dependency-cache-{{ checksum "package.json" }}
+        key: dependency-cache-{{ checksum "protocol-dashboard/package.json" }}
         paths:
-          - ./node_modules
+          - protocol-dashboard/node_modules
 
     # Lint
     - run:
         name: lint
-        command: npm run lint
+        command: |
+          cd protocol-dashboard
+          npm run lint
 
     # Persist node modules
     - persist_to_workspace:
         root: ./
         paths:
-          - node_modules
+          - protocol-dashboard/node_modules
 
 protocol-dashboard-build-staging:
-  working_directory: ~/audius-protocol/protocol-dashboard
+  working_directory: ~/audius-protocol
   resource_class: xlarge
   docker:
     - image: cimg/ruby:2.6-node
@@ -44,7 +49,9 @@ protocol-dashboard-build-staging:
         at: ./
     - run:
         name: build
-        command: npm run build:stage
+        command: |
+          cd protocol-dashboard
+          npm run build:stage
     - run:
         name: armada bundle
         command: |
@@ -56,10 +63,10 @@ protocol-dashboard-build-staging:
     - persist_to_workspace:
         root: ./
         paths:
-          - ./*
+          - protocol-dashboard/*
 
 protocol-dashboard-pin-staging:
-  working_directory: ~/audius-protocol/protocol-dashboard
+  working_directory: ~/audius-protocol
   docker:
     - image: circleci/python:2.7-jessie
   steps:
@@ -71,11 +78,12 @@ protocol-dashboard-pin-staging:
     - run:
         name: deploy to s3
         command: |
+          cd protocol-dashboard
           source tmp.env
           aws s3 cp ${FILENAME} s3://dashboard.staging.audius.org/${FILENAME} --cache-control max-age=0
 
 protocol-dashboard-deploy-staging:
-  working_directory: ~/audius-protocol/protocol-dashboard
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/ruby:2.6-node
   steps:
@@ -87,11 +95,12 @@ protocol-dashboard-deploy-staging:
     - run:
         name: armada publish
         command: |
+          cd protocol-dashboard
           source tmp.env
           npx armada-cli project publish 0x3ad8aa4f87544323a9d1e5dd902f40c356527a7955687113db5f9a85ad579dc1 https://s3.us-west-1.amazonaws.com/dashboard.staging.audius.org/${FILENAME} ${HASH} --key=${ARMADA_ADMIN_PRIVATE_KEY}
 
 protocol-dashboard-build-prod:
-  working_directory: ~/audius-protocol/protocol-dashboard
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/ruby:2.6-node
   resource_class: xlarge
@@ -101,17 +110,21 @@ protocol-dashboard-build-prod:
         at: ./
     - run:
         name: build
-        command: npm run build:prod
+        command: |
+          cd protocol-dashboard
+          npm run build:prod
     - run:
         name: zip dist
-        command: zip -r dist.zip ./dist
+        command: |
+          cd protocol-dashboard
+          zip -r dist.zip ./dist
     - persist_to_workspace:
         root: ./
         paths:
-          - ./*
+          - protocol-dashboard/*
 
 protocol-dashboard-deploy-prod:
-  working_directory: ~/audius-protocol/protocol-dashboard
+  working_directory: ~/audius-protocol
   docker:
     - image: circleci/python:2.7-jessie
   steps:
@@ -123,12 +136,13 @@ protocol-dashboard-deploy-prod:
     - run:
         name: Deploy to S3
         command: |
+          cd protocol-dashboard
           aws s3 sync dist s3://dashboard.audius.org --delete --cache-control max-age=604800
           aws s3 cp s3://dashboard.audius.org/index.html s3://dashboard.audius.org/index.html --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type text/html --metadata-directive REPLACE --acl public-read
           aws s3 cp dist.zip s3://dashboard.audius.org/dist.zip --cache-control max-age=0
 
 protocol-dashboard-update-prod-ga-build:
-  working_directory: ~/audius-protocol/protocol-dashboard
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/ruby:2.6-node
   steps:
@@ -136,14 +150,16 @@ protocol-dashboard-update-prod-ga-build:
         at: ./
     - run:
         name: update build in ga
-        command: npm run update-build:prod
+        command: |
+          cd protocol-dashboard
+          npm run update-build:prod
     - persist_to_workspace:
         root: ./
         paths:
-          - ./build_cid.txt
+          - protocol-dashboard/build_cid.txt
 
 protocol-dashboard-publish-prod-build-cids:
-  working_directory: ~/audius-protocol/protocol-dashboard
+  working_directory: ~/audius-protocol
   docker:
     - image: circleci/python:2.7-jessie
   steps:
@@ -154,10 +170,12 @@ protocol-dashboard-publish-prod-build-cids:
         at: ./
     - run:
         name: Push to S3
-        command: aws s3 cp build_cid.txt s3://dashboard.audius.org/build_cid.txt
+        command: |
+          cd protocol-dashboard
+          aws s3 cp build_cid.txt s3://dashboard.audius.org/build_cid.txt
 
 protocol-dashboard-update-prod-records:
-  working_directory: ~/audius-protocol/protocol-dashboard
+  working_directory: ~/audius-protocol
   docker:
     - image: cimg/ruby:2.6-node
   steps:
@@ -166,6 +184,7 @@ protocol-dashboard-update-prod-records:
     - run:
         name: Update Cloudflare records
         command: |
+          cd protocol-dashboard
           DNS_NAME=_dnslink.dashboard.audius.org
           CID=$(cat ./build_cid.txt)
           curl -X PUT "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE}/dns_records/${CLOUDFLARE_PROD_DASHBOARD_DNS_ID}" \
