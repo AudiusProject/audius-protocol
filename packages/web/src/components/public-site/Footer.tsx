@@ -1,5 +1,4 @@
 import {
-  IconArrow,
   IconInstagram,
   IconTwitterBird,
   IconDiscord
@@ -12,17 +11,15 @@ import {
   AUDIUS_TWITTER_LINK,
   AUDIUS_INSTAMGRAM_LINK,
   AUDIUS_DISCORD_LINK,
-  AUDIUS_TEAM_LINK,
   AUDIUS_PRESS_LINK,
   PRIVACY_POLICY,
   TERMS_OF_SERVICE,
   AUDIUS_LISTENING_LINK,
-  AUDIUS_HOT_AND_NEW,
-  AUDIUS_EXPLORE_LINK,
   AUDIUS_BLOG_LINK,
-  AUDIUS_REMIX_CONTESTS_LINK,
-  AUDIUS_DOCS_LINK,
-  DOWNLOAD_LINK
+  DOWNLOAD_LINK,
+  AUDIUS_HELP_LINK,
+  AUDIUS_ORG,
+  AUDIUS_MERCH_LINK
 } from 'utils/route'
 
 import styles from './Footer.module.css'
@@ -30,82 +27,73 @@ import { handleClickRoute } from './handleClickRoute'
 
 const bottomLinks = [
   {
-    text: 'Privacy Policy',
-    link: PRIVACY_POLICY
-  },
-  {
     text: 'Terms of Service',
     link: TERMS_OF_SERVICE
+  },
+  {
+    text: 'Privacy Policy',
+    link: PRIVACY_POLICY
   }
 ]
 
-const siteLinkRows = [
-  [
-    {
-      text: 'Trending',
-      link: AUDIUS_LISTENING_LINK
-    },
-    {
-      text: 'Explore',
-      link: AUDIUS_EXPLORE_LINK
-    },
-    {
-      text: 'Hot & New',
-      link: AUDIUS_HOT_AND_NEW
-    }
-  ],
-  [
-    {
-      text: 'Blog',
-      link: AUDIUS_BLOG_LINK
-    },
-    {
-      text: 'Remixes',
-      link: AUDIUS_REMIX_CONTESTS_LINK
-    },
-    {
-      text: 'Team',
-      link: AUDIUS_TEAM_LINK
-    }
-  ],
-  [
-    {
-      text: 'Brand',
-      link: AUDIUS_PRESS_LINK
-    },
-    {
-      text: 'Docs',
-      link: AUDIUS_DOCS_LINK
-    },
-    {
-      text: 'Download App',
-      link: DOWNLOAD_LINK
-    }
-  ]
+const productAndSupportLinks = [
+  {
+    text: 'Audius Music',
+    link: AUDIUS_LISTENING_LINK
+  },
+  {
+    text: 'Download',
+    link: DOWNLOAD_LINK
+  },
+  {
+    text: 'Support',
+    link: AUDIUS_HELP_LINK
+  }
+]
+
+const resourcesLinks = [
+  {
+    text: 'The Blog',
+    link: AUDIUS_BLOG_LINK
+  },
+  {
+    text: 'Merch Store',
+    link: AUDIUS_MERCH_LINK
+  },
+  {
+    text: 'Brand / Press',
+    link: AUDIUS_PRESS_LINK
+  },
+  {
+    text: 'Open Audio Foundation',
+    link: AUDIUS_ORG
+  }
 ]
 
 const socialLinks = [
   {
+    text: 'Instagram',
     Icon: IconInstagram,
     link: AUDIUS_INSTAMGRAM_LINK
   },
   {
+    text: 'Twitter',
     Icon: IconTwitterBird,
     link: AUDIUS_TWITTER_LINK
   },
   {
+    text: 'Discord',
     Icon: IconDiscord,
     link: AUDIUS_DISCORD_LINK
   }
 ]
 
 const messages = {
-  startListening: 'Start Listening',
   copyright: (year: number | string) =>
-    `© ${year} Audius, Inc. All Rights Reserved.`,
-  madeWith: 'Made with',
-  love: '♥︎',
-  location: 'in SF & LA'
+    `© ${year} Audius Music. All rights reserved.`,
+  product: 'Product',
+  resources: 'Resources',
+  socials: 'Socials',
 }
 
 type FooterProps = {
@@ -131,45 +119,61 @@ const Footer = (props: FooterProps) => {
               props.setRenderPublicSite
             )}
           />
-          <button
-            onClick={handleClickRoute(
-              AUDIUS_LISTENING_LINK,
-              props.setRenderPublicSite
-            )}
-            className={styles.startListeningButton}
-          >
-            {messages.startListening}
-            <IconArrow className={styles.arrowRight} />
-          </button>
+          <div className={styles.siteLinksContainer}>
+            <div className={styles.siteLinksColumnContainer}>
+              <p className={styles.siteLinksColumnTitle}>{messages.product}</p>
+              {productAndSupportLinks.map((link) => (
+                <a
+                  key={link.text}
+                  href={link.link}
+                  onClick={handleClickRoute(
+                    link.link,
+                    props.setRenderPublicSite
+                  )}
+                  className={cn(styles.siteLink, styles.link)}
+                >
+                  {link.text}
+                </a>
+              ))}
+            </div>
+            <div className={styles.siteLinksColumnContainer}>
+              <p className={styles.siteLinksColumnTitle}>{messages.resources}</p>
+              {resourcesLinks.map((link) => (
+                <a
+                  key={link.text}
+                  href={link.link}
+                  onClick={handleClickRoute(
+                    link.link,
+                    props.setRenderPublicSite
+                  )}
+                  className={cn(styles.siteLink, styles.link)}
+                >
+                  {link.text}
+                </a>
+              ))}
+            </div>
+            <div className={styles.siteLinksColumnContainer}>
+              <p className={styles.siteLinksColumnTitle}>{messages.socials}</p>
+              {socialLinks.map(({ Icon, link, text }, idx) => (
+                <a
+                  key={idx}
+                  onClick={handleClickRoute(link, props.setRenderPublicSite)}
+                  href={link}
+                  className={styles.socialIconLinkContainer}
+                >
+                  <Icon className={styles.socialIconLink} />
+                  {text}
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
         <div className={styles.divider}></div>
         <div className={styles.linksContainer}>
-          <div className={styles.siteLinksContainer}>
-            {siteLinkRows.map((sitelinks, idx) => (
-              <div className={styles.siteLinksRowContainer} key={idx}>
-                {sitelinks.map((siteLink) => (
-                  <a
-                    key={siteLink.text}
-                    href={siteLink.link}
-                    onClick={handleClickRoute(
-                      siteLink.link,
-                      props.setRenderPublicSite
-                    )}
-                    className={cn(styles.siteLink, styles.link)}
-                  >
-                    {siteLink.text}
-                  </a>
-                ))}
-              </div>
-            ))}
-          </div>
           <div className={styles.rightsContainer}>
-            <div>{messages.copyright(new Date().getFullYear())}</div>
-            <div className={styles.madeWithLoveContainer}>
-              <span>{messages.madeWith}</span>
-              <span className={styles.heart}>{messages.love}</span>
-              <span>{messages.location}</span>
-            </div>
+            {!props.isMobile ? (
+              <div>{messages.copyright(new Date().getFullYear())}</div>
+            ) : null}
             <div className={styles.bottomLinks}>
               {bottomLinks.map(({ text, link }) => (
                 <a
@@ -182,18 +186,9 @@ const Footer = (props: FooterProps) => {
                 </a>
               ))}
             </div>
-          </div>
-          <div className={styles.socialLinks}>
-            {socialLinks.map(({ Icon, link }, idx) => (
-              <a
-                key={idx}
-                onClick={handleClickRoute(link, props.setRenderPublicSite)}
-                href={link}
-                className={styles.socialIconLinkContainer}
-              >
-                <Icon className={styles.socialIconLink} />
-              </a>
-            ))}
+            {props.isMobile ? (
+              <div>{messages.copyright(new Date().getFullYear())}</div>
+            ) : null}
           </div>
         </div>
       </div>
