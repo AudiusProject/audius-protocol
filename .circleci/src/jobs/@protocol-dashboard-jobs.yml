@@ -34,7 +34,7 @@ protocol-dashboard-init:
           - node_modules
 
 protocol-dashboard-build-staging:
-  working_directory: ~/protocol-dashboard
+  working_directory: ~/audius-protocol/protocol-dashboard
   resource_class: xlarge
   docker:
     - image: cimg/ruby:2.6-node
@@ -59,7 +59,7 @@ protocol-dashboard-build-staging:
           - ./*
 
 protocol-dashboard-pin-staging:
-  working_directory: ~/protocol-dashboard
+  working_directory: ~/audius-protocol/protocol-dashboard
   docker:
     - image: circleci/python:2.7-jessie
   steps:
@@ -75,7 +75,7 @@ protocol-dashboard-pin-staging:
           aws s3 cp ${FILENAME} s3://dashboard.staging.audius.org/${FILENAME} --cache-control max-age=0
 
 protocol-dashboard-deploy-staging:
-  working_directory: ~/protocol-dashboard
+  working_directory: ~/audius-protocol/protocol-dashboard
   docker:
     - image: cimg/ruby:2.6-node
   steps:
@@ -91,7 +91,7 @@ protocol-dashboard-deploy-staging:
           npx armada-cli project publish 0x3ad8aa4f87544323a9d1e5dd902f40c356527a7955687113db5f9a85ad579dc1 https://s3.us-west-1.amazonaws.com/dashboard.staging.audius.org/${FILENAME} ${HASH} --key=${ARMADA_ADMIN_PRIVATE_KEY}
 
 protocol-dashboard-build-prod:
-  working_directory: ~/protocol-dashboard
+  working_directory: ~/audius-protocol/protocol-dashboard
   docker:
     - image: cimg/ruby:2.6-node
   resource_class: xlarge
@@ -111,7 +111,7 @@ protocol-dashboard-build-prod:
           - ./*
 
 protocol-dashboard-deploy-prod:
-  working_directory: ~/protocol-dashboard
+  working_directory: ~/audius-protocol/protocol-dashboard
   docker:
     - image: circleci/python:2.7-jessie
   steps:
@@ -128,7 +128,7 @@ protocol-dashboard-deploy-prod:
           aws s3 cp dist.zip s3://dashboard.audius.org/dist.zip --cache-control max-age=0
 
 protocol-dashboard-update-prod-ga-build:
-  working_directory: ~/protocol-dashboard
+  working_directory: ~/audius-protocol/protocol-dashboard
   docker:
     - image: cimg/ruby:2.6-node
   steps:
@@ -143,7 +143,7 @@ protocol-dashboard-update-prod-ga-build:
           - ./build_cid.txt
 
 protocol-dashboard-publish-prod-build-cids:
-  working_directory: ~/protocol-dashboard
+  working_directory: ~/audius-protocol/protocol-dashboard
   docker:
     - image: circleci/python:2.7-jessie
   steps:
@@ -157,7 +157,7 @@ protocol-dashboard-publish-prod-build-cids:
         command: aws s3 cp build_cid.txt s3://dashboard.audius.org/build_cid.txt
 
 protocol-dashboard-update-prod-records:
-  working_directory: ~/protocol-dashboard
+  working_directory: ~/audius-protocol/protocol-dashboard
   docker:
     - image: cimg/ruby:2.6-node
   steps:
