@@ -11,7 +11,6 @@ import desktopStyles from './Header.module.css'
 import mobileStyles from './HeaderMobile.module.css'
 import { createStyles } from 'utils/mobile'
 import MobileNav from 'components/MobileNav'
-import useRerouteLegacy from 'hooks/useRerouteLegacy'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -23,8 +22,6 @@ const Header: React.FC<HeaderProps> = ({ className }) => {
   useInit()
   const isMobile = useIsMobile()
   const [showMobileNav, setShowMobileNav] = useState(false)
-
-  useRerouteLegacy()
 
   return (
     <div className={clsx(styles.container, { [className!]: !!className })}>

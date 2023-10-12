@@ -20,7 +20,6 @@ COPY --from=builder /app/mediorum /bin/mediorum
 COPY --from=builder /app/mediorum-cmd /bin/mediorum-cmd
 
 # ARGs can be optionally defined with --build-arg while doing docker build eg in CI and then set to env vars
-# (copied from creator-node Dockerfile)
 ARG git_sha
 ENV GIT_SHA=$git_sha
 

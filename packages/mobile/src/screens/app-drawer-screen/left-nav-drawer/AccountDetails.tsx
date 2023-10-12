@@ -1,17 +1,19 @@
-import { useCallback, useContext } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 
-import type { User } from '@audius/common'
+import type { User, BNWei } from '@audius/common'
 import {
   formatWei,
   walletSelectors,
   accountSelectors,
   useSelectTierInfo
 } from '@audius/common'
+import BN from 'bn.js'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { IconAudioBadge } from 'app/components/audio-rewards'
 import { Text } from 'app/components/core'
+import { Skeleton } from 'app/components/skeleton'
 import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
 import { makeStyles } from 'app/styles'
@@ -62,13 +64,33 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
+/**
+ * Pulls balances from account and wallet selectors. Will prefer the wallet
+ * balance once it has loaded. Otherwise, will return the account balance if
+ * available. Falls back to 0 if neither wallet or account balance are available.
+ */
+const useTotalBalanceWithFallback = () => {
+  const account = useSelector(getAccountUser)
+  const walletTotalBalance = useSelector(getAccountTotalBalance)
+
+  return useMemo(() => {
+    if (walletTotalBalance != null) {
+      return walletTotalBalance
+    } else if (account?.total_balance != null) {
+      return new BN(account.total_balance) as BNWei
+    }
+
+    return null
+  }, [account, walletTotalBalance])
+}
+
 export const AccountDetails = () => {
   const { drawerHelpers } = useContext(AppDrawerContext)
   const styles = useStyles()
   const accountUser = useSelector(getAccountUser) as User
   const { user_id, name, handle } = accountUser
   const { tier } = useSelectTierInfo(user_id)
-  const totalBalance = useSelector(getAccountTotalBalance)
+  const totalBalance = useTotalBalanceWithFallback()
 
   const navigation = useAppDrawerNavigation()
 
@@ -113,9 +135,13 @@ export const AccountDetails = () => {
           height={spacing(7)}
           width={spacing(7)}
         />
-        <Text fontSize='large' weight='heavy'>
-          {formatWei(totalBalance, true, 0)}
-        </Text>
+        {totalBalance == null ? (
+          <Skeleton height={18} width={25} />
+        ) : (
+          <Text fontSize='large' weight='heavy'>
+            {formatWei(totalBalance, true, 0)}
+          </Text>
+        )}
       </TouchableOpacity>
     </View>
   )

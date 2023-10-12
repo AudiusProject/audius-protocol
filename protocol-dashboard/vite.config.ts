@@ -7,12 +7,13 @@ import wasm from 'vite-plugin-wasm'
 import topLevelAwait from 'vite-plugin-top-level-await'
 
 export default defineConfig({
-  base: './',
   plugins: [
     react(),
     wasm(),
     topLevelAwait(),
-    tsconfigPaths(),
+    tsconfigPaths({
+      root: 'protocol-dashboard'
+    }),
     svgr(),
     
     nodePolyfills({
@@ -45,6 +46,12 @@ export default defineConfig({
     },
   },
 
+  server: {
+    host: "0.0.0.0",
+  },
+  // Base URL. Set to /dashboard/ in Dockerfile.
+  // When deploying: leave DASHBOARD_BASE_URL unset
+  base: process.env.DASHBOARD_BASE_URL || '/',
   build: {
     commonjsOptions: {
       transformMixedEsModules: true,

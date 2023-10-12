@@ -1,7 +1,6 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Tuple
 
-import pytz
 from eth_keys import keys
 from eth_utils.conversions import to_bytes
 from hexbytes import HexBytes
@@ -14,7 +13,10 @@ from src.models.rewards.challenge import Challenge
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.user_challenge import UserChallenge
 from src.models.users.user import User
-from src.queries.get_disbursed_challenges_amount import get_disbursed_challenges_amount
+from src.queries.get_disbursed_challenges_amount import (
+    get_disbursed_challenges_amount,
+    get_weekly_pool_window_start,
+)
 from src.solana.constants import WAUDIO_DECIMALS
 from src.tasks.index_oracles import (
     get_oracle_addresses_from_chain,
@@ -162,12 +164,8 @@ def get_attestation(
         raise AttestationError(ALREADY_DISBURSED)
 
     if challenge.weekly_pool:
-        now = datetime.now(pytz.timezone("US/Pacific"))
-        monday_before_9am = now.weekday() == 0 and now.hour < 9
-        prev_monday = now - timedelta(days=7 if monday_before_9am else now.weekday())
-        prev_monday = prev_monday.replace(hour=9, minute=0, second=0, microsecond=0)
         disbursed_amount = get_disbursed_challenges_amount(
-            session, challenge.id, prev_monday
+            session, challenge.id, get_weekly_pool_window_start(datetime.now())
         )
         if disbursed_amount + user_challenge.amount > challenge.weekly_pool:
             raise AttestationError(POOL_EXHAUSTED)
@@ -187,7 +185,7 @@ def get_attestation(
     user_address = str(user_eth_address[0])
 
     attestation = Attestation(
-        amount=challenge.amount,
+        amount=str(user_challenge.amount),
         oracle_address=oracle_address,
         user_address=user_address,
         challenge_id=challenge.id,

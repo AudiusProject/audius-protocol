@@ -217,7 +217,6 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
         email,
         handle
       } = this.props.fields
-      this.props.followArtists(selectedUserIds)
       this.props.recordCompleteFollow(
         selectedUserIds.join('|'),
         selectedUserIds.length,
@@ -561,8 +560,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     nextPage: (isMobile: boolean) => dispatch(signOnAction.nextPage(isMobile)),
     previousPage: () => dispatch(signOnAction.previousPage()),
     goToPage: (page: Pages) => dispatch(signOnAction.goToPage(page)),
-    followArtists: (userIds: ID[]) =>
-      dispatch(signOnAction.followArtists(userIds)),
     addFollows: (userIds: ID[]) =>
       dispatch(signOnAction.addFollowArtists(userIds)),
     removeFollows: (userIds: ID[]) =>

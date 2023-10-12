@@ -7,6 +7,7 @@ import {
   getUSDCUserBank,
   isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
+import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { range } from 'lodash'
 import { all, call, put, select } from 'typed-redux-saga'
@@ -15,6 +16,8 @@ import { make } from 'common/store/analytics/actions'
 import { TrackForUpload } from 'pages/upload-page/types'
 import { waitForWrite } from 'utils/sagaHelpers'
 const { getAccountUser } = accountSelectors
+
+const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT
 
 export function* reportResultEvents({
   numSuccess,
@@ -72,7 +75,12 @@ export function* processTracksForUpload(tracks: TrackForUpload[]) {
 
   const ownerAccount = yield* select(getAccountUser)
   const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
-  const ownerUserbank = yield* getUSDCUserBank(wallet)
+
+  // TODO: Figure out how to support USDC properly in dev.
+  let ownerUserbank: PublicKey
+  if (ENVIRONMENT !== 'development') {
+    ownerUserbank = yield* getUSDCUserBank(wallet)
+  }
 
   tracks.forEach((track) => {
     const premium_conditions = track.metadata.premium_conditions
@@ -82,7 +90,7 @@ export function* processTracksForUpload(tracks: TrackForUpload[]) {
       premium_conditions.usdc_purchase = {
         price: priceCents,
         splits: {
-          [ownerUserbank.toString()]: priceWei
+          [ownerUserbank?.toString() ?? '']: priceWei
         }
       }
     }

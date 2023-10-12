@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Provider, useSelector } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
 import { Switch, Route } from 'react-router'
-import { createHashHistory } from 'history'
+import { createBrowserHistory } from 'history'
 
 import Header from 'components/Header'
 import Home from 'containers/Home'
@@ -28,7 +28,9 @@ import Proposal from 'containers/Proposal'
 import { createStyles } from 'utils/mobile'
 import { getDidGraphError } from 'store/api/hooks'
 const styles = createStyles({ desktopStyles, mobileStyles })
-const history = createHashHistory()
+const history = createBrowserHistory({
+  basename: import.meta.env.VITE_DASHBOARD_BASE_URL || '/'
+})
 const store = createStore(history)
 
 const Root = () => (

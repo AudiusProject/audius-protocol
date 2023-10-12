@@ -2,12 +2,12 @@ when: << pipeline.parameters.run-sdk-workflow >>
 jobs:
   - test:
       name: test-audius-libs
-      context: GCP
+      context: Vercel
       service: audius-libs
 
   - test:
       name: test-audius-sdk
-      context: GCP
+      context: Vercel
       service: audius-sdk
 
   # Patch via trigger

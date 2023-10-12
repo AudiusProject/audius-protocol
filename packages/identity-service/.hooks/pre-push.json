@@ -1,0 +1,12 @@
+{
+  "steps": [
+    {
+      "name": "typecheck",
+      "command": "npm run typecheck -w identity-service"
+    },
+    {
+      "name": "lint",
+      "command": "npm run lint -w identity-service"
+    }
+  ]
+}
