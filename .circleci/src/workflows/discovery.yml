@@ -49,6 +49,13 @@ jobs:
       filters:
         branches:
           only: main
+  - push-docker-image:
+      name: push-protocol-dashboard
+      context: [Vercel, dockerhub]
+      service: dashboard
+      filters:
+        branches:
+          only: /^main$/
 
   - lint-discovery-provider:
       name: lint-discovery-provider
