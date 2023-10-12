@@ -8,6 +8,10 @@ const config: StorybookConfig = {
     name: '@storybook/react-webpack5',
     options: {}
   },
+  babel: (options) => ({
+    ...options,
+    presets: [...(options?.presets ?? []), '@emotion/babel-preset-css-prop'],
+  }),
   docs: {
     autodocs: true,
     // autodocs: 'tag',
