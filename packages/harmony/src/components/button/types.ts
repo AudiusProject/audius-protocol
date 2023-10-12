@@ -7,8 +7,7 @@ export enum ButtonType {
   PRIMARY = 'primary',
   SECONDARY = 'secondary',
   TERTIARY = 'tertiary',
-  DESTRUCTIVE = 'destructive',
-  DESTRUCTIVE_SECONDARY = 'destructive_secondary'
+  DESTRUCTIVE = 'destructive'
 }
 
 export enum ButtonSize {

@@ -82,8 +82,3 @@ export const Tertiary: Story = { args: { variant: ButtonType.TERTIARY } }
 
 // Destructive
 export const Destructive: Story = { args: { variant: ButtonType.DESTRUCTIVE } }
-
-// Destructive Secondary
-export const DestructiveSecondary: Story = {
-  args: { variant: ButtonType.DESTRUCTIVE_SECONDARY }
-}

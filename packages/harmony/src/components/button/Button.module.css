@@ -153,27 +153,11 @@
 /* Destructive */
 .destructive {
   --button-color: var(--harmony-red);
-  --text-color: var(--harmony-static-white);
-}
-.destructive:hover {
-  --overlay-color: var(--harmony-static-white);
-  --overlay-opacity: 0.1;
-  box-shadow: var(--harmony-shadow-mid);
-}
-.destructive:active {
-  --overlay-color: var(--harmony-static-black);
-  --overlay-opacity: 0.2;
+  --text-color: var(--harmony-red);
+  background: transparent;
   box-shadow: none;
 }
-
-/* Destructive Secondary */
-.destructiveSecondary {
-  --button-color: var(--harmony-n-300);
-    --text-color: var(--harmony-text-default);
-    background: transparent;
-    box-shadow: none;
-}
-.destructiveSecondary:hover {
+.destructive:hover {
   --button-color: var(--harmony-red);
   --text-color: var(--harmony-static-white);
   --overlay-color: var(--harmony-static-white);
@@ -181,7 +165,7 @@
   background-color: var(--button-color);
   box-shadow: var(--harmony-shadow-mid);
 }
-.destructiveSecondary:active {
+.destructive:active {
   --button-color: var(--harmony-red);
   --text-color: var(--harmony-static-white);  --overlay-color: var(--harmony-static-black);
   --overlay-opacity: 0.2;
@@ -195,8 +179,7 @@
 }
 
 .primary.disabled,
-.secondary.disabled,
-.destructiveSecondary.disabled {
+.secondary.disabled {
   --button-color: var(--harmony-n-150);
   --text-color: var(--harmony-static-white);
   background-color: var(--harmony-n-150);

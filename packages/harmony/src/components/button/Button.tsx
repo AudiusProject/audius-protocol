@@ -35,8 +35,7 @@ const TYPE_STYLE_MAP: { [k in ButtonType]: string } = {
   [ButtonType.PRIMARY]: styles.primary,
   [ButtonType.SECONDARY]: styles.secondary,
   [ButtonType.TERTIARY]: styles.tertiary,
-  [ButtonType.DESTRUCTIVE]: styles.destructive,
-  [ButtonType.DESTRUCTIVE_SECONDARY]: styles.destructiveSecondary
+  [ButtonType.DESTRUCTIVE]: styles.destructive
 }
 
 /**
