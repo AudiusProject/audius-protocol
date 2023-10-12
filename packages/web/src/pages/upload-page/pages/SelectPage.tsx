@@ -11,11 +11,11 @@ import cn from 'classnames'
 import { Dropzone } from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
 
+import { TracksPreview } from '../components/TracksPreview'
 import { processFiles } from '../store/utils/processFiles'
 import { UploadFormState } from '../types'
 
 import styles from './SelectPage.module.css'
-import { TracksPreview } from './TracksPreviewNew'
 
 type ErrorType = { reason: 'corrupted' | 'size' | 'type' } | null
 

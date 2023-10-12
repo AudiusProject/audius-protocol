@@ -12,9 +12,9 @@ import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 
 import styles from './UploadPage.module.css'
-import { FinishPageNew } from './components/FinishPageNew'
-import SelectPageNew from './components/SelectPageNew'
 import { EditPage } from './pages/EditPage'
+import { FinishPage } from './pages/FinishPage'
+import SelectPageNew from './pages/SelectPage'
 import { UploadFormState } from './types'
 import { UploadPreviewContextProvider } from './utils/uploadPreviewContext'
 
@@ -139,7 +139,7 @@ export const UploadPage = (props: UploadPageProps) => {
     case Phase.FINISH:
       if (formState.uploadType !== undefined) {
         page = (
-          <FinishPageNew
+          <FinishPage
             formState={formState}
             onContinue={() => {
               setFormState({

@@ -28,7 +28,7 @@ type ShareBannerProps = {
   user: User
 }
 
-export const ShareBannerNew = (props: ShareBannerProps) => {
+export const ShareBanner = (props: ShareBannerProps) => {
   const { user } = props
   const dispatch = useDispatch()
   const { toast } = useContext(ToastContext)
