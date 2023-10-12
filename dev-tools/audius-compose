@@ -364,7 +364,9 @@ def load_env(protocol_dir, service, environment):
 )
 @click.argument("services", nargs=-1)
 @click.pass_obj
+@click.pass_context
 def up(
+    ctx,
     protocol_dir,
     discovery_provider_replicas,
     elasticsearch_replicas,
@@ -383,6 +385,7 @@ def up(
 
     AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))
 
+    ctx.invoke(pull)
     sys.exit(
         subprocess.run(
             [
