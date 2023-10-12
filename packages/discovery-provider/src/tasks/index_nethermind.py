@@ -364,11 +364,12 @@ def index_next_block(
             )
         try:
             # Every 100 blocks, poll and apply delist statuses from trusted notifier
+            # Wait 1s for this to complete
             if next_block["number"] % 100 == 0:
                 celery.send_task(
                     "update_delist_statuses",
                     kwargs={"current_block_timestamp": next_block["timestamp"]},
-                )
+                ).get(timeout=1)
         except Exception as e:
             # Do not throw error, as this should not stop indexing
             logger.error(

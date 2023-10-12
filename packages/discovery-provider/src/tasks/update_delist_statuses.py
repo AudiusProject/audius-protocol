@@ -481,7 +481,7 @@ def revert_delist_status_cursors(self, reverted_cursor_timestamp: float):
         )
 
 
-@celery.task(name="update_delist_statuses", bind=True)
+@celery.task(name="update_delist_statuses", bind=True, soft_time_limit=1, time_limit=2)
 @save_duration_metric(metric_group="celery_task")
 @log_duration(logger)
 def update_delist_statuses(self, current_block_timestamp: int) -> None:
