@@ -32,7 +32,6 @@ REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = None
 if REWARDS_MANAGER_ACCOUNT:
     REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = Pubkey.from_string(REWARDS_MANAGER_ACCOUNT)
 COOLDOWN_CHALLENGE_IDS = ["s", "b"]
-COOLDOWN_DAYS = 7
 DATETIME_FORMAT_STRING = "%Y-%m-%d %H:%M:%S.%f+00"
 
 
@@ -168,9 +167,9 @@ def get_attestation(
     if disbursement:
         raise AttestationError(ALREADY_DISBURSED)
     now_utc = datetime.now(pytz.UTC)
-    if challenge_id in COOLDOWN_CHALLENGE_IDS:
+    if challenge_id in COOLDOWN_CHALLENGE_IDS and challenge.cooldown_days:
         time_passed = now_utc - user_challenge.created_at
-        if time_passed.days < COOLDOWN_DAYS:
+        if time_passed.days < challenge.cooldown_days:
             raise AttestationError(WAIT_FOR_COOLDOWN)
     if challenge.weekly_pool:
         disbursed_amount = get_disbursed_challenges_amount(

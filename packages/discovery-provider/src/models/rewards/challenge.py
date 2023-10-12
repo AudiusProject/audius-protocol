@@ -37,3 +37,5 @@ class Challenge(Base, RepresentableMixin):
     starting_block = Column(Integer)
     # Optional field to support challenges with a weekly pool
     weekly_pool = Column(Integer)
+    # Number of days to wait before a user can complete the challenge
+    cooldown_days = Column(Integer)
