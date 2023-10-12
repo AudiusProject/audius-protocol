@@ -28,6 +28,7 @@ type LinkButtonType =
   | 'firstPlaylist'
   | ChallengeName.AudioMatchingSell
   | ChallengeName.AudioMatchingBuy
+
 type LinkButtonInfo = {
   label: string
   leftIcon: ReactNode | null

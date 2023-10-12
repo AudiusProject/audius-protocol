@@ -1,21 +1,20 @@
 import {
   ChallengeRewardID,
   UserChallenge,
-  OptimisticUserChallenge
+  OptimisticUserChallenge,
+  ChallengeName
 } from '../models'
 
 import { formatNumberCommas } from './formatUtil'
-
-export enum ChallengeName {
-  AudioMatchingBuy = 'b',
-  AudioMatchingSell = 's'
-}
 
 export type ChallengeRewardsInfo = {
   id: ChallengeRewardID
   title: string
   description: (amount: OptimisticUserChallenge | undefined) => string
   fullDescription?: (amount: OptimisticUserChallenge | undefined) => string
+  fullDescriptionSubtext?: (
+    amount: OptimisticUserChallenge | undefined
+  ) => string
   progressLabel?: string
   remainingLabel?: string
   panelButtonText: string
@@ -228,7 +227,11 @@ export const makeOptimisticChallengeSortComparator = (
   }
 }
 
-export const isAudioMatchingChallenge = (challenge: ChallengeRewardID) => {
+export const isAudioMatchingChallenge = (
+  challenge: ChallengeRewardID
+): challenge is
+  | ChallengeName.AudioMatchingSell
+  | ChallengeName.AudioMatchingBuy => {
   return (
     challenge === ChallengeName.AudioMatchingSell ||
     challenge === ChallengeName.AudioMatchingBuy

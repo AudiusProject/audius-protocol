@@ -35,7 +35,6 @@ import Toast from 'components/toast/Toast'
 import { ToastContext } from 'components/toast/ToastContext'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'
-import { Text } from 'components/typography'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getChallengeConfig } from 'pages/audio-rewards-page/config'
 import { isMobile } from 'utils/clientUtil'
@@ -43,10 +42,14 @@ import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import { CLAIM_REWARD_TOAST_TIMEOUT_MILLIS } from 'utils/constants'
 import { openTwitterLink } from 'utils/tweet'
 
-import PurpleBox from '../PurpleBox'
+import PurpleBox from '../../PurpleBox'
+import ModalDrawer from '../ModalDrawer'
 
-import styles from './ChallengeRewards.module.css'
-import ModalDrawer from './ModalDrawer'
+import { AudioMatchingRewardsModalContent } from './AudioMatchingRewardsModalContent'
+import { ProgressDescription } from './ProgressDescription'
+import { ProgressReward } from './ProgressReward'
+import styles from './styles.module.css'
+
 const { show: showConfetti } = musicConfettiActions
 const { getAAOErrorCode, getChallengeRewardsModalType, getClaimStatus } =
   audioRewardsPageSelectors
@@ -236,36 +239,26 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   }, [buttonLink, dispatch, dismissModal])
 
   const progressDescription = (
-    <div className={wm(styles.progressDescription)}>
-      <h3>
-        {isVerifiedChallenge ? (
+    <ProgressDescription
+      label={
+        isVerifiedChallenge ? (
           <div className={styles.verifiedChallenge}>
             <IconVerified />
             {messages.verifiedChallenge}
           </div>
         ) : (
           'Task'
-        )}
-      </h3>
-      <p>{fullDescription?.(challenge)}</p>
-    </div>
+        )
+      }
+      description={fullDescription?.(challenge)}
+    />
   )
 
   const progressReward = (
-    <div className={wm(styles.progressReward)}>
-      <Text variant='heading'>Reward</Text>
-      <Text variant='display' className={styles.rewardAmount}>
-        {isAudioMatchingChallenge(modalType)
-          ? formatNumberCommas(challenge?.amount ?? '')
-          : formatNumberCommas(challenge?.totalAmount ?? '')}
-      </Text>
-      <Text variant='heading'>
-        {messages.audio +
-          (isAudioMatchingChallenge(modalType)
-            ? messages.everyDollarSpent
-            : '')}
-      </Text>
-    </div>
+    <ProgressReward
+      amount={formatNumberCommas(challenge?.totalAmount ?? '')}
+      subtext={messages.audio}
+    />
   )
 
   const progressStatusLabel = (
@@ -370,7 +363,12 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     return <>{messages.claimError}</>
   }
 
-  return (
+  return isAudioMatchingChallenge(modalType) ? (
+    <AudioMatchingRewardsModalContent
+      challenge={challenge}
+      challengeName={modalType}
+    />
+  ) : (
     <div className={wm(styles.container)}>
       {displayMobileContent ? (
         <>
@@ -514,5 +512,3 @@ export const ChallengeRewardsModal = () => {
     </ModalDrawer>
   )
 }
-
-export default ChallengeRewardsModal

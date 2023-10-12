@@ -1,3 +1,4 @@
+/*  */
 .container {
   display: flex;
   flex-direction: column;
@@ -83,13 +84,13 @@
 }
 
 .progressDescription {
+  display: flex;
+  flex-direction: column;
   flex: 1 1 0;
-  padding: 16px 24px;
-  font-weight: var(--font-bold);
+  gap: var(--unit-3);
+  padding: var(--unit-4) var(--unit-6);
 }
-.progressDescription p {
-  line-height: 20px;
-}
+
 .progressDescription.mobile {
   width: 100%;
   padding: 0px 20px;
@@ -397,4 +398,19 @@
 }
 .buttonSpacer {
   width: 10px;
+}
+
+/* Audio matching styles */
+.audioMatchingDescription {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-3);
+}
+.audioMatchingTotalContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid var(--border-strong);
+  padding: var(--unit-4) var(--unit-6);
+  background-color: var(--background-surface-2);
 }
