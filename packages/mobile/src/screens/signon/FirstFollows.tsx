@@ -38,7 +38,6 @@ const FirstFollows = (props: FirstFollowsProps) => {
 
   const handleArtistsSelected = () => {
     dispatch(signOnActions.finishSignUp())
-    dispatch(signOnActions.followArtists(followArtists.selectedUserIds))
 
     track(
       make({
