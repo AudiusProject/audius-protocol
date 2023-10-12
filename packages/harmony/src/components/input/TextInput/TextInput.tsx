@@ -14,7 +14,11 @@ export enum TextInputSize {
   DEFAULT = 'default'
 }
 
-export type TextInputProps = Omit<ComponentPropsWithoutRef<'input'>, 'size'> & {
+export type TextInputProps = Omit<
+  ComponentPropsWithoutRef<'input'>,
+  // Omitting required purely for storybook docs
+  'size' | 'required'
+> & {
   /**
    * Input sizes. NOTE: small inputs will not show the label
    * @default default
@@ -22,7 +26,6 @@ export type TextInputProps = Omit<ComponentPropsWithoutRef<'input'>, 'size'> & {
   size?: TextInputSize
   /**
    * Show a "x/Max" text displaying number of characters allowed
-   * @default false
    */
   showMaxLength?: boolean
   /**
@@ -66,6 +69,10 @@ export type TextInputProps = Omit<ComponentPropsWithoutRef<'input'>, 'size'> & {
    * Floating text on the righthand side of the input
    */
   endIcon?: IconComponent
+  /**
+   * Required or not. Will add an * to the label if required
+   */
+  required?: boolean
 }
 
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
@@ -130,7 +137,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       [styles.required]: required
     }
 
-    const input = (
+    const inputRender = (
       <div className={cn(styles.inputRow, layoutStyles.row)}>
         <div className={cn(layoutStyles.row, styles.inputContainer)}>
           {startAdornmentText ? (
@@ -176,10 +183,10 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
               >
                 {label}
               </Text>
-              {input}
+              {inputRender}
             </label>
           ) : (
-            input
+            inputRender
           )}
 
           {showMaxLength && (
