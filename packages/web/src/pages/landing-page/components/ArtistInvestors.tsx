@@ -1,11 +1,11 @@
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
-import artistKatyPerry from 'assets/img/publicSite/ImgArtistKatyPerry.jpg'
-import artistNas from 'assets/img/publicSite/ImgArtistNas.jpg'
-import artistJasonDerulo from 'assets/img/publicSite/ImgArtistJasonDerulo.jpg'
-import artistTheChainsmokers from 'assets/img/publicSite/ImgArtistTheChainsmokers.jpg'
-import artistPushaT from 'assets/img/publicSite/ImgArtistPushaT.svg'
+import investorKatyPerry from 'assets/img/publicSite/Investor-Katy-Perry.webp'
+import investorNas from 'assets/img/publicSite/Investor-Nas.webp'
+import investorJasonDerulo from 'assets/img/publicSite/Investor-Jason-Derulo.webp'
+import investorTheChainsmokers from 'assets/img/publicSite/Investor-The-Chainsmokers.webp'
+import investorPushaT from 'assets/img/publicSite/Investor-Pusha-T.webp'
 import useHasViewed from 'hooks/useHasViewed'
 import cn from 'classnames'
 
@@ -55,27 +55,27 @@ const artists = [
   {
     name: 'Katy Perry',
     handle: 'katyperry',
-    imageUrl: artistKatyPerry
+    imageUrl: investorKatyPerry
   },
   {
     name: 'Nas',
     handle: 'nas',
-    imageUrl: artistNas
+    imageUrl: investorNas
   },
   {
     name: 'Jason Derulo',
     handle: 'jasonderulo',
-    imageUrl: artistJasonDerulo
+    imageUrl: investorJasonDerulo
   },
   {
     name: 'The Chainsmokers',
     handle: 'thechainsmokers',
-    imageUrl: artistTheChainsmokers
+    imageUrl: investorTheChainsmokers
   },
   {
     name: 'Pusha T',
     handle: 'pushat',
-    imageUrl: artistPushaT
+    imageUrl: investorPushaT
   }
 ]
 
