@@ -42,7 +42,7 @@ export const PurchaseSummaryTable = ({
       value: messages.price(formatPrice(extraAmount))
     })
   }
-  if (existingBalance != null) {
+  if (!isNullOrUndefined(existingBalance)) {
     items.push({
       id: 'existingBalance',
       label: messages.existingBalance,

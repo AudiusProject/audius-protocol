@@ -28,7 +28,8 @@ import {
   LocalStorage,
   solanaSelectors,
   deriveUserBankPubkey,
-  convertWeiToWAudio
+  convertWeiToWAudio,
+  isNullOrUndefined
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import { QuoteResponse } from '@jup-ag/api'
@@ -543,10 +544,9 @@ function* populateAndSaveTransactionDetails() {
     transactionType: TransactionType.PURCHASE,
     method:
       PROVIDER_METHOD_MAP[localStorageState.provider ?? OnRampProvider.UNKNOWN],
-    balance:
-      postAUDIOBalanceWei != null
-        ? convertWeiToWAudio(postAUDIOBalanceWei).toString()
-        : null,
+    balance: !isNullOrUndefined(postAUDIOBalanceWei)
+      ? convertWeiToWAudio(postAUDIOBalanceWei).toString()
+      : null,
     change: purchasedAudioWei
       ? convertWeiToWAudio(new BN(purchasedAudioWei)).toString()
       : '',

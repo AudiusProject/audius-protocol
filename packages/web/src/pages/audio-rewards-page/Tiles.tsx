@@ -4,7 +4,8 @@ import {
   formatWei,
   tokenDashboardPageActions,
   tokenDashboardPageSelectors,
-  walletSelectors
+  walletSelectors,
+  isNullOrUndefined
 } from '@audius/common'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import cn from 'classnames'
@@ -64,7 +65,7 @@ export const BalanceTile = ({ className }: { className?: string }) => {
   return (
     <Tile className={wm(styles.balanceTile, className)}>
       <>
-        {totalBalance == null ? (
+        {isNullOrUndefined(totalBalance) ? (
           <LoadingSpinner className={styles.spinner} />
         ) : (
           <TokenHoverTooltip balance={totalBalance}>
@@ -90,7 +91,7 @@ export const BalanceTile = ({ className }: { className?: string }) => {
 
 export const WalletTile = ({ className }: { className?: string }) => {
   const balance = useSelector(getAccountBalance)
-  const hasBalance = balance != null && !balance.isZero()
+  const hasBalance = !isNullOrUndefined(balance) && !balance.isZero()
   const dispatch = useDispatch()
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
 
