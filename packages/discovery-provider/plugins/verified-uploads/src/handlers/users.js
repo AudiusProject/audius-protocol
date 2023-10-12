@@ -48,6 +48,14 @@ export default async ({ user_id, blocknumber }) => {
   const existing_user_became_verified =
     user_currently_verified !== existing_user_previously_unverified
 
+  console.log({
+    user_id,
+    existing_user_became_verified,
+    new_user_is_verified,
+    is_new_user,
+    is_existing_user
+  })
+
   if (existing_user_became_verified || new_user_is_verified) {
     const is_verified = current.is_verified
     const handle = current.handle
