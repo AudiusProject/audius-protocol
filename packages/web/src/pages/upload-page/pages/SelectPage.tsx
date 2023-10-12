@@ -11,11 +11,11 @@ import cn from 'classnames'
 import { Dropzone } from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
 
+import { TracksPreview } from '../components/TracksPreview'
 import { processFiles } from '../store/utils/processFiles'
 import { UploadFormState } from '../types'
 
 import styles from './SelectPage.module.css'
-import { TracksPreviewNew } from './TracksPreviewNew'
 
 type ErrorType = { reason: 'corrupted' | 'size' | 'type' } | null
 
@@ -118,7 +118,7 @@ export const SelectPageNew = (props: SelectPageProps) => {
           })}
         >
           {tracks.length > 0 ? (
-            <TracksPreviewNew
+            <TracksPreview
               tracks={tracks}
               uploadType={uploadType}
               onRemove={onRemoveTrack}

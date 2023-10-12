@@ -7,7 +7,7 @@ import {
   IconUpload
 } from '@audius/stems'
 
-import { UploadFormScrollContext } from '../UploadPageNew'
+import { UploadFormScrollContext } from '../UploadPage'
 
 import styles from './AnchoredSubmitRow.module.css'
 

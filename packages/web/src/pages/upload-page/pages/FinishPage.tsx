@@ -28,10 +28,10 @@ import { Tile } from 'components/tile'
 import { Text } from 'components/typography'
 import { collectionPage, profilePage } from 'utils/route'
 
+import { ShareBanner } from '../components/ShareBanner'
 import { CollectionFormState, TrackFormState, TrackForUpload } from '../types'
 
 import styles from './FinishPage.module.css'
-import { ShareBannerNew } from './ShareBannerNew'
 
 const { getAccountUser } = accountSelectors
 const { getCombinedUploadPercentage } = uploadSelectors
@@ -115,7 +115,7 @@ type FinishPageProps = {
   onContinue: () => void
 }
 
-export const FinishPageNew = (props: FinishPageProps) => {
+export const FinishPage = (props: FinishPageProps) => {
   const { formState, onContinue } = props
   const { tracks, uploadType } = formState
   const accountUser = useSelector(getAccountUser)
@@ -192,7 +192,7 @@ export const FinishPageNew = (props: FinishPageProps) => {
 
   return (
     <div className={styles.page}>
-      {uploadComplete ? <ShareBannerNew user={accountUser!} /> : null}
+      {uploadComplete ? <ShareBanner user={accountUser!} /> : null}
       <Tile className={styles.uploadProgress} elevation='mid'>
         <div className={styles.uploadHeader}>
           <div className={styles.headerInfo}>
