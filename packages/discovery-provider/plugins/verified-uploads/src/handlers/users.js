@@ -107,7 +107,7 @@ export default async ({ user_id, blocknumber }) => {
       source
     }
 
-    console.log({ to_slack: body }, 'sending to slack')
+    console.log({ to_slack: body }, 'user verification')
     await slack.sendMsg(USERS_SLACK_CHANNEL, header, body).catch(console.error)
   }
 }
