@@ -61,7 +61,10 @@ export class WalletClient {
     // At this point we know we have transfered ERC $AUDIO into the wormhole,
     // but we don't know if we've received SPL $AUDIO back yet, so poll
     await new Promise((resolve, reject) => {
-      const rejectTimeout = setTimeout(reject, /* one hour */ 1000 * 60 * 60)
+      const rejectTimeout = setTimeout(() => {
+        console.error('Unable to confirm transfer: timeout')
+        reject(new Error('Unable to confirm transfer: timeout'))
+      }, /* one hour */ 1000 * 60 * 60)
       setInterval(() => {
         this.getCurrentWAudioBalance().then((currentWAudioBalance) => {
           if (currentWAudioBalance !== initialWAudioBalance) {
