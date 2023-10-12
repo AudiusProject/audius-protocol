@@ -36,7 +36,7 @@ export default async ({ user_id, blocknumber }) => {
     const is_verified = current.is_verified
     const handle = current.handle
 
-    let source: str
+    let source
     try {
       const data = await retry(
         async (_) => {
