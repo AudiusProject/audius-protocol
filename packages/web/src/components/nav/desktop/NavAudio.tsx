@@ -80,7 +80,10 @@ const useTotalBalanceWithFallback = () => {
   return useMemo(() => {
     if (!isNullOrUndefined(walletTotalBalance)) {
       return walletTotalBalance
-    } else if (!isNullOrUndefined(account?.total_balance)) {
+    } else if (
+      !isNullOrUndefined(account) &&
+      !isNullOrUndefined(account.total_balance)
+    ) {
       return new BN(account.total_balance) as BNWei
     }
 
