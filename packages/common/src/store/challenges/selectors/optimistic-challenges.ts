@@ -9,6 +9,7 @@ import { removeNullable } from 'utils/typeUtils'
 import {
   ChallengeRewardID,
   OptimisticUserChallenge,
+  SpecifierMap,
   UserChallenge,
   UserChallengeState
 } from '../../../models/AudioRewards'
@@ -109,7 +110,14 @@ const toOptimisticChallenge = (
         ? totalAmount
         : 0
       : undisbursed.reduce<number>((acc, val) => acc + val.amount, 0)
-  const undisbursedSpecifiers = undisbursed.map((c) => c.specifier)
+
+  const undisbursedSpecifiers: SpecifierMap<number> = undisbursed.reduce(
+    (acc, c) => {
+      acc[c.specifier] = c.amount
+      return acc
+    },
+    {} as SpecifierMap<number>
+  )
 
   return {
     ...challengeOverridden,

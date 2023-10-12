@@ -2,5 +2,5 @@ when: << pipeline.parameters.run-eth-contracts-workflow >>
 jobs:
   - test:
       name: test-eth-contracts
-      context: Vercel
+      context: GCP
       service: eth-contracts

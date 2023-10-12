@@ -10,7 +10,8 @@ import {
   walletSelectors,
   walletActions,
   getTierAndNumberForBalance,
-  modalsActions
+  modalsActions,
+  isNullOrUndefined
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { Image, Linking, View } from 'react-native'
@@ -250,7 +251,7 @@ export const AudioScreen = () => {
         onPress={hasMultipleWallets ? handlePressWalletInfo : undefined}
       >
         <View style={styles.audioAmountContainer}>
-          {totalBalance == null ? (
+          {isNullOrUndefined(totalBalance) ? (
             <LoadingSpinner
               fill={'rgba(255, 255, 255, 0.75)'}
               style={styles.spinner}

@@ -9,7 +9,8 @@ import {
   audioRewardsPageSelectors,
   walletSelectors,
   useSelectTierInfo,
-  useAccountHasClaimableRewards
+  useAccountHasClaimableRewards,
+  isNullOrUndefined
 } from '@audius/common'
 import BN from 'bn.js'
 import cn from 'classnames'
@@ -77,9 +78,12 @@ const useTotalBalanceWithFallback = () => {
   const walletTotalBalance = useSelector(getAccountTotalBalance)
 
   return useMemo(() => {
-    if (walletTotalBalance != null) {
+    if (!isNullOrUndefined(walletTotalBalance)) {
       return walletTotalBalance
-    } else if (account?.total_balance != null) {
+    } else if (
+      !isNullOrUndefined(account) &&
+      !isNullOrUndefined(account.total_balance)
+    ) {
       return new BN(account.total_balance) as BNWei
     }
 
@@ -94,8 +98,9 @@ const NavAudio = () => {
   const navigate = useNavigateToPage()
 
   const totalBalance = useTotalBalanceWithFallback()
-  const positiveTotalBalance =
-    totalBalance != null ? totalBalance.gt(new BN(0)) : false
+  const positiveTotalBalance = !isNullOrUndefined(totalBalance)
+    ? totalBalance.gt(new BN(0))
+    : false
 
   // we only show the audio balance and respective badge when there is an account
   // so below null-coalescing is okay
@@ -147,7 +152,7 @@ const NavAudio = () => {
         ) : (
           <img alt='no tier' src={IconNoTierBadge} width='16' height='16' />
         )}
-        {totalBalance == null ? (
+        {isNullOrUndefined(totalBalance) ? (
           <Skeleton width='30px' height='14px' className={styles.skeleton} />
         ) : (
           <span className={styles.audioAmount}>

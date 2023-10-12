@@ -80,7 +80,8 @@ import {
   decodeHashId,
   Timer,
   Nullable,
-  removeNullable
+  removeNullable,
+  isNullOrUndefined
 } from '../../utils'
 import type { DiscoveryNodeSelectorService } from '../sdk/discovery-node-selector'
 
@@ -2943,7 +2944,7 @@ export const audiusBackend = ({
       const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
       const ownerWAudioBalance =
         await audiusLibs.solanaWeb3Manager.getWAudioBalance(userBank)
-      if (!ownerWAudioBalance) {
+      if (isNullOrUndefined(ownerWAudioBalance)) {
         throw new Error('Failed to fetch account waudio balance')
       }
       return ownerWAudioBalance
@@ -3119,7 +3120,7 @@ export const audiusBackend = ({
     const waudioBalance = await audiusLibs.solanaWeb3Manager.getWAudioBalance(
       address
     )
-    if (waudioBalance == null) {
+    if (isNullOrUndefined(waudioBalance)) {
       console.warn(`Failed to get waudio balance for address: ${address}`)
       reportError({
         error: new Error('Failed to get wAudio balance for address'),
@@ -3159,19 +3160,21 @@ export const audiusBackend = ({
     handle,
     recipientEthAddress,
     oracleEthAddress,
-    amount,
     quorumSize,
     endpoints,
     AAOEndpoint,
     parallelization,
     feePayerOverride
   }: {
-    challenges: { challenge_id: ChallengeRewardID; specifier: string }[]
+    challenges: {
+      challenge_id: ChallengeRewardID
+      specifier: string
+      amount: number
+    }[]
     userId: ID
     handle: string
     recipientEthAddress: string
     oracleEthAddress: string
-    amount: number
     quorumSize: number
     endpoints: string[]
     AAOEndpoint: string
@@ -3204,7 +3207,7 @@ export const audiusBackend = ({
       })
 
       const res = await attester.processChallenges(
-        challenges.map(({ specifier, challenge_id: challengeId }) => ({
+        challenges.map(({ specifier, challenge_id: challengeId, amount }) => ({
           specifier,
           challengeId,
           userId: encodedUserId,

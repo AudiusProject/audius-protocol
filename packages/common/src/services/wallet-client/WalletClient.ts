@@ -7,6 +7,7 @@ import {
   StringWei,
   WalletAddress
 } from 'models/Wallet'
+import { isNullOrUndefined } from 'utils/typeUtils'
 import { stringWeiToBN } from 'utils/wallet'
 
 import { AudiusAPIClient } from '../audius-api-client'
@@ -32,14 +33,22 @@ export class WalletClient {
   }
 
   /** Get user's current ETH Audio balance. Returns null on failure. */
-  async getCurrentBalance(_bustCache = false): Promise<BNWei | null> {
-    return null
+  async getCurrentBalance(bustCache = false): Promise<BNWei | null> {
+    try {
+      const balance = await this.audiusBackendInstance.getBalance(bustCache)
+      return balance as BNWei
+    } catch (err) {
+      console.error(err)
+      return null
+    }
   }
 
   /** Get user's current SOL Audio balance. Returns null on failure. */
   async getCurrentWAudioBalance(): Promise<BNWei | null> {
     const balance = await this.audiusBackendInstance.getWAudioBalance()
-    return (balance == null ? null : new BN(balance.toString())) as BNWei | null
+    return (
+      isNullOrUndefined(balance) ? null : new BN(balance.toString())
+    ) as BNWei | null
   }
 
   async getAssociatedTokenAccountInfo(address: string) {
@@ -54,7 +63,7 @@ export class WalletClient {
 
   async transferTokensFromEthToSol(): Promise<void> {
     const balance = await this.audiusBackendInstance.getBalance(true)
-    if (balance != null && balance.gt(new BN('0'))) {
+    if (!isNullOrUndefined(balance) && balance.gt(new BN('0'))) {
       await this.audiusBackendInstance.transferAudioToWAudio(balance)
     }
   }
@@ -84,7 +93,7 @@ export class WalletClient {
         )
       ])
 
-      if (balances.some((b) => b == null)) {
+      if (balances.some((b) => isNullOrUndefined(b))) {
         throw new Error(
           'Unable to fetch balance for one or more associated wallets.'
         )

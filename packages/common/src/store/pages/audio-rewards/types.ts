@@ -1,4 +1,4 @@
-import { UserChallenge, ChallengeRewardID, Specifier } from '../../../models'
+import { UserChallenge, ChallengeRewardID, SpecifierMap } from '../../../models'
 
 export type TrendingRewardsModalType = 'tracks' | 'playlists' | 'underground'
 export type ChallengeRewardsModalType = ChallengeRewardID
@@ -13,7 +13,7 @@ export type ClaimState =
 
 export type AudioRewardsClaim = {
   challengeId: ChallengeRewardID
-  specifiers: Specifier[]
+  specifiers: SpecifierMap<number>
   amount: number
 }
 

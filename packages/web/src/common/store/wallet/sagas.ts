@@ -16,7 +16,8 @@ import {
   ErrorLevel,
   createUserBankIfNeeded,
   solanaSelectors,
-  SolanaWalletAddress
+  SolanaWalletAddress,
+  isNullOrUndefined
 } from '@audius/common'
 import type { AudiusLibs } from '@audius/sdk'
 import BN from 'bn.js'
@@ -87,7 +88,7 @@ function* sendAsync({
     'getCurrentWAudioBalance'
   ])
 
-  if (waudioWeiAmount == null) {
+  if (isNullOrUndefined(waudioWeiAmount)) {
     yield* put(sendFailed({ error: 'Failed to fetch current wAudio balance.' }))
     return
   }
@@ -230,7 +231,7 @@ function* fetchBalanceAsync() {
       call([walletClient, 'getCurrentWAudioBalance'])
     ])
 
-    if (currentEthAudioWeiBalance == null) {
+    if (isNullOrUndefined(currentEthAudioWeiBalance)) {
       console.warn(
         "Failed to fetch and set user's balance - error getting ETH Audio balance."
       )
@@ -248,7 +249,7 @@ function* fetchBalanceAsync() {
       account.user_id,
       /* bustCache */ localBalanceChange
     )
-    if (associatedWalletBalance == null) {
+    if (isNullOrUndefined(associatedWalletBalance)) {
       console.warn(
         "Failed to fetch and set user's *total* balance - error getting connected/associated wallet(s) balance."
       )
@@ -260,7 +261,7 @@ function* fetchBalanceAsync() {
     }
 
     if (useSolAudio) {
-      if (currentSolAudioWeiBalance == null) {
+      if (isNullOrUndefined(currentSolAudioWeiBalance)) {
         console.warn(
           "Failed to fetch and set user's balance - error getting SOL wAudio balance."
         )
@@ -277,10 +278,9 @@ function* fetchBalanceAsync() {
         currentSolAudioWeiBalance!
       ) as BNWei
 
-      const totalBalance =
-        associatedWalletBalance == null
-          ? undefined
-          : weiToString(audioWeiBalance.add(associatedWalletBalance) as BNWei)
+      const totalBalance = isNullOrUndefined(associatedWalletBalance)
+        ? undefined
+        : weiToString(audioWeiBalance.add(associatedWalletBalance) as BNWei)
       yield* put(
         setBalance({
           balance: weiToString(audioWeiBalance),
@@ -288,12 +288,11 @@ function* fetchBalanceAsync() {
         })
       )
     } else {
-      const totalBalance =
-        associatedWalletBalance == null
-          ? undefined
-          : weiToString(
-              currentEthAudioWeiBalance.add(associatedWalletBalance) as BNWei
-            )
+      const totalBalance = isNullOrUndefined(associatedWalletBalance)
+        ? undefined
+        : weiToString(
+            currentEthAudioWeiBalance.add(associatedWalletBalance) as BNWei
+          )
       yield* put(
         setBalance({
           balance: weiToString(currentEthAudioWeiBalance),

@@ -1,4 +1,4 @@
-import { formatPrice } from '@audius/common'
+import { formatPrice, isNullOrUndefined } from '@audius/common'
 
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
 
@@ -42,7 +42,7 @@ export const PurchaseSummaryTable = ({
       value: messages.price(formatPrice(extraAmount))
     })
   }
-  if (existingBalance != null) {
+  if (!isNullOrUndefined(existingBalance)) {
     items.push({
       id: 'existingBalance',
       label: messages.existingBalance,

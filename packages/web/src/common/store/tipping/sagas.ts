@@ -32,7 +32,8 @@ import {
   solanaSelectors,
   createUserBankIfNeeded,
   SolanaWalletAddress,
-  chatActions
+  chatActions,
+  isNullOrUndefined
 } from '@audius/common'
 import { PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
@@ -324,7 +325,7 @@ function* sendTipAsync() {
   }
 
   const weiBNBalance = yield* select(getAccountBalance)
-  if (weiBNBalance == null) {
+  if (isNullOrUndefined(weiBNBalance)) {
     throw new Error('$AUDIO balance not yet loaded or failed to load')
   }
 
@@ -351,7 +352,7 @@ function* sendTipAsync() {
       'getCurrentWAudioBalance'
     ])
 
-    if (waudioWeiAmount == null) {
+    if (isNullOrUndefined(waudioWeiAmount)) {
       throw new Error('Failed to retrieve current wAudio balance')
     }
 
