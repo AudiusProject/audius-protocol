@@ -39,7 +39,8 @@
   padding-inline: var(--harmony-unit-3);
 }
 
-.iconSmall {
+.iconSmall,
+.spinnerSmall {
   width: var(--harmony-unit-4);
   height: var(--harmony-unit-4);
 }
@@ -58,7 +59,8 @@
   padding-inline: var(--harmony-unit-6);
 }
 
-.iconDefault {
+.iconDefault,
+.spinnerDefault {
   width: var(--harmony-unit-5);
   height: var(--harmony-unit-5);
 }
@@ -77,7 +79,8 @@
   padding-inline: var(--harmony-unit-6);
 }
 
-.iconLarge {
+.iconLarge,
+.spinnerLarge {
   width: var(--harmony-unit-6);
   height: var(--harmony-unit-6);
 }

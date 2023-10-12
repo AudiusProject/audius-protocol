@@ -9,15 +9,27 @@ import { BaseButton } from './BaseButton'
 import styles from './Button.module.css'
 import { ButtonProps, ButtonSize, ButtonType } from './types'
 
-const SIZE_STYLE_MAP: { [k in ButtonSize]: [string, string, string] } = {
-  [ButtonSize.SMALL]: [styles.buttonSmall, styles.iconSmall, styles.textSmall],
-  [ButtonSize.DEFAULT]: [
-    styles.buttonDefault,
-    styles.iconDefault,
-    styles.textDefault
-  ],
-  [ButtonSize.LARGE]: [styles.buttonLarge, styles.iconLarge, styles.textLarge]
-}
+const SIZE_STYLE_MAP: { [k in ButtonSize]: [string, string, string, string] } =
+  {
+    [ButtonSize.SMALL]: [
+      styles.buttonSmall,
+      styles.iconSmall,
+      styles.textSmall,
+      styles.spinnerSmall
+    ],
+    [ButtonSize.DEFAULT]: [
+      styles.buttonDefault,
+      styles.iconDefault,
+      styles.textDefault,
+      styles.spinnerSmall
+    ],
+    [ButtonSize.LARGE]: [
+      styles.buttonLarge,
+      styles.iconLarge,
+      styles.textLarge,
+      styles.spinnerLarge
+    ]
+  }
 
 const TYPE_STYLE_MAP: { [k in ButtonType]: string } = {
   [ButtonType.PRIMARY]: styles.primary,
@@ -41,31 +53,34 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       ...baseProps
     } = props
+    const isDisabled = disabled || baseProps.isLoading
 
     const style: CSSCustomProperties = {
       '--button-color':
-        !disabled && hexColor
+        !isDisabled && hexColor
           ? hexColor
           : color
           ? `var(${toCSSVariableName(color)})`
           : undefined
     }
 
-    const [buttonSizeClass, iconSizeClass, textSizeClass] = SIZE_STYLE_MAP[size]
+    const [buttonSizeClass, iconSizeClass, textSizeClass, spinnerSizeClass] =
+      SIZE_STYLE_MAP[size]
 
     return (
       <BaseButton
         ref={ref}
-        disabled={disabled}
+        disabled={isDisabled}
         styles={{
           button: cn(
             styles.button,
             TYPE_STYLE_MAP[variant],
-            { [styles.disabled]: disabled },
+            { [styles.disabled]: isDisabled },
             buttonSizeClass
           ),
           icon: cn(styles.icon, iconSizeClass),
-          text: cn(styles.text, textSizeClass)
+          text: cn(styles.text, textSizeClass),
+          spinner: cn(styles.spinner, spinnerSizeClass)
         }}
         style={style}
         {...baseProps}
