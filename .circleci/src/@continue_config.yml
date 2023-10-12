@@ -65,9 +65,6 @@ parameters:
   run-harmony-workflow:
     type: boolean
     default: false
-  run-protocol-workflow:
-    type: boolean
-    default: false
   run-protocol-dashboard-workflow:
     type: boolean
     default: false

@@ -1,9 +1,0 @@
-when: << pipeline.parameters.run-protocol-workflow >>
-jobs:
-  - push-docker-image:
-      name: push-protocol-dashboard
-      context: [Vercel, dockerhub]
-      service: dashboard
-      filters:
-        branches:
-          only: /^main$/
