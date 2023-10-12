@@ -201,6 +201,18 @@ const ProfileChecks = () => {
   )
 }
 
+const getErrorMessage = (aaoErrorCode?: number) => {
+  if (aaoErrorCode !== undefined) {
+    return (
+      <>
+        {messages.claimErrorAAO}
+        {getAAOErrorEmojis(aaoErrorCode)}
+      </>
+    )
+  }
+  return <>{messages.claimError}</>
+}
+
 type BodyProps = {
   dismissModal: () => void
 }
@@ -351,20 +363,17 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     [userHandle]
   )
 
-  const getErrorMessage = () => {
-    if (aaoErrorCode !== undefined) {
-      return (
-        <>
-          {messages.claimErrorAAO}
-          {getAAOErrorEmojis(aaoErrorCode)}
-        </>
-      )
-    }
-    return <>{messages.claimError}</>
-  }
+  const errorContent =
+    claimStatus === ClaimStatus.ERROR ? (
+      <div className={styles.claimError}>{getErrorMessage(aaoErrorCode)}</div>
+    ) : null
 
   return isAudioMatchingChallenge(modalType) ? (
     <AudioMatchingRewardsModalContent
+      errorContent={errorContent}
+      onNavigateAway={dismissModal}
+      onClaimRewardClicked={onClaimRewardClicked}
+      claimInProgress={claimInProgress}
       challenge={challenge}
       challengeName={modalType}
     />
@@ -469,9 +478,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
           </div>
         ) : null}
       </div>
-      {claimStatus === ClaimStatus.ERROR && (
-        <div className={styles.claimError}>{getErrorMessage()}</div>
-      )}
+      {errorContent}
     </div>
   )
 }

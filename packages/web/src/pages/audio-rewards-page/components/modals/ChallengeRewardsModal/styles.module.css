@@ -11,6 +11,7 @@
   line-height: 60px;
   background: var(--page-header-gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 .container h3 {
@@ -339,6 +340,7 @@
 .rewardAmount {
   background: var(--page-header-gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -401,6 +403,12 @@
 }
 
 /* Audio matching styles */
+.audioMatchingContainer {
+  gap: var(--unit-8);
+}
+.audioMatchingContainer.mobile {
+  gap: var(--unit-6);
+}
 .audioMatchingDescription {
   display: flex;
   flex-direction: column;
