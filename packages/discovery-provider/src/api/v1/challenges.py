@@ -226,6 +226,9 @@ class ChallengeInfo(Resource):
         """
         args = challenge_info_parser.parse_args(strict=True)
         weekly_pool_min_amount = args.get("weekly_pool_min_amount", None)
+        weekly_pool_min_amount = (
+            int(weekly_pool_min_amount) if weekly_pool_min_amount else None
+        )
         try:
             db = get_db_read_replica()
             with db.scoped_session() as session:
@@ -245,7 +248,11 @@ class ChallengeInfo(Resource):
                     "weekly_pool": challenge.weekly_pool,
                     "weekly_pool_remaining": weekly_pool_remaining,
                 }
-                if weekly_pool_remaining < weekly_pool_min_amount:
+                if (
+                    weekly_pool_min_amount
+                    and challenge.weekly_pool
+                    and weekly_pool_remaining < weekly_pool_min_amount
+                ):
                     return error_response(res)
                 return success_response(res)
         except Exception as e:

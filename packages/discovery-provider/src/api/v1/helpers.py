@@ -874,11 +874,12 @@ notifications_parser.add_argument(
 
 
 def success_response(entity):
-    return api_helpers.success_response(entity, 200, False)
+    return api_helpers.success_response(entity, status=200, to_json=False)
 
 
 def error_response(error):
-    return api_helpers.error_response(error)
+    # This is not really a success, but we care about getting the error data back in the same shape
+    return api_helpers.success_response(error, status=500, to_json=False)
 
 
 DEFAULT_LIMIT = 100
