@@ -52,7 +52,7 @@ export const SignInPage = () => {
         as={Link}
         to={SIGN_UP_PAGE}
         type={ButtonType.COMMON}
-        title={messages.createAccount}
+        text={messages.createAccount}
       />
     </div>
   )

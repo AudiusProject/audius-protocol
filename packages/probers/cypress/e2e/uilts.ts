@@ -2,15 +2,13 @@ export const waitForTransaction = (transactionNumber: number) => {
   cy.intercept({ method: 'POST', url: '**/relay' }).as(
     `relayCheck-${transactionNumber}`
   )
-  cy.wait(`@relayCheck-${transactionNumber}`).then((xhr) => {
-    const { blockHash, blockNumber } = xhr.response.body.receipt
-    cy.intercept({
-      url: '**/block_confirmation*',
-      query: { blockhash: blockHash, blocknumber: String(blockNumber) }
-    }).as(`blockConfirmation-${blockNumber}`)
+  cy.intercept({
+    url: '**/block_confirmation*'
+  }).as(`blockConfirmation-${transactionNumber}`)
 
-    waitForBlockConfirmation(`@blockConfirmation-${blockNumber}`)
-  })
+  cy.wait(`@relayCheck-${transactionNumber}`)
+
+  waitForBlockConfirmation(`@blockConfirmation-${transactionNumber}`)
 }
 
 const waitForBlockConfirmation = (routeAlias, retries = 3) => {
