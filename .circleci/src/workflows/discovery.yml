@@ -2,49 +2,49 @@ when: << pipeline.parameters.run-discovery-workflow >>
 jobs:
   - push-docker-image:
       name: push-discovery-provider
-      context: [Vercel, dockerhub]
+      context: [GCP, dockerhub]
       service: discovery-provider
       filters:
         branches:
           only: main
   - push-docker-image:
       name: push-discovery-provider-notifications
-      context: [Vercel, dockerhub]
+      context: [GCP, dockerhub]
       service: discovery-provider-notifications
       filters:
         branches:
           only: main
   - push-docker-image:
       name: push-pedalboard-trending-challenge-rewards
-      context: [Vercel, dockerhub]
+      context: [GCP, dockerhub]
       service: trending-challenge-rewards
       filters:
         branches:
           only: main
   - push-docker-image:
       name: push-pedalboard-relay
-      context: [Vercel, dockerhub]
+      context: [GCP, dockerhub]
       service: relay
       filters:
         branches:
           only: main
   - push-docker-image:
       name: push-pedalboard-sla-auditor
-      context: [Vercel, dockerhub]
+      context: [GCP, dockerhub]
       service: sla-auditor
       filters:
         branches:
           only: main
   - push-docker-image:
       name: push-comms
-      context: [Vercel, dockerhub]
+      context: [GCP, dockerhub]
       service: comms
       filters:
         branches:
           only: main
   - push-docker-image:
       name: push-trpc
-      context: [Vercel, dockerhub]
+      context: [GCP, dockerhub]
       service: trpc
       filters:
         branches:
@@ -62,13 +62,13 @@ jobs:
 
   - test:
       name: test-discovery-provider
-      context: Vercel
+      context: GCP
       service: discovery-provider
       requires:
         - lint-discovery-provider
   - test:
       name: test-discovery-provider-notifications
-      context: Vercel
+      context: GCP
       service: discovery-provider-notifications
       requires:
         - lint-discovery-provider
