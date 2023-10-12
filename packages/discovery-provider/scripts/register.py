@@ -3,6 +3,7 @@
 import json
 import os
 import pathlib
+import subprocess
 import urllib.parse
 import urllib.request
 
@@ -22,6 +23,45 @@ def health_check(discprov_url):
         )
     except (ConnectionError, urllib.error.URLError, json.JSONDecodeError):
         return False
+
+
+def run_bash_script(script_path, *args):
+    try:
+        # Construct the command, including the script and its arguments
+        command = [script_path] + list(args)
+
+        # Run the command using subprocess
+        process = subprocess.Popen(
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        )
+
+        # Wait for the script to complete
+        stdout, stderr = process.communicate()
+
+        # Check the return code to determine success or failure
+        return_code = process.returncode
+
+        if return_code == 0:
+            # The script executed successfully
+            return True, stdout
+        else:
+            # The script encountered an error
+            return False, stderr
+    except Exception as e:
+        # Handle any exceptions, such as file not found
+        return False, str(e)
+
+
+# Example usage:
+script_path = "/path/to/your/script.sh"
+arguments = ["arg1", "arg2"]
+
+success, output = run_bash_script(script_path, *arguments)
+
+if success:
+    print("Script executed successfully. Output:\n", output)
+else:
+    print("Script execution failed. Error:\n", output)
 
 
 def main():
@@ -65,6 +105,20 @@ def main():
         200000 * (10 ** token.functions.decimals().call()),
         os.getenv("audius_delegate_owner_wallet"),
     ).transact()
+
+    # Create rewards manager sender for this DN
+    print("Creating rewards manager sender for this DN")
+    run_bash_script(
+        "audius-reward-manager-cli",
+        "create-sender",
+        "--eth-operator-address",
+        os.getenv("DP1_DELEGATE_OWNER_ADDRESS"),
+        "--eth-sender-address",
+        os.getenv("DP1_DELEGATE_OWNER_ADDRESS"),
+        "--reward-manager",
+        "SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY",
+    )
+    print("Rewards manager sender created")
 
 
 if __name__ == "__main__":
