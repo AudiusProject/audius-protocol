@@ -22,7 +22,7 @@ export type TextProps<TextComponentType extends ElementType = 'p'> =
 
 export type TextStrength = 'weak' | 'default' | 'strong'
 
-export type TextColor = 'heading' | 'default' | 'subdued' | 'disabled'
+export type TextColor = 'heading' | 'default' | 'subdued' | 'disabled' | 'error'
 
 export type TextSize = 'xl' | 'l' | 'm' | 's' | 'xs'
 
