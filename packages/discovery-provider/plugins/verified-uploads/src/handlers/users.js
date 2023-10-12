@@ -29,11 +29,26 @@ export default async ({ user_id, blocknumber }) => {
     db: dp_db
   })
 
-  const user_became_verified =
-    current !== undefined && current.is_verified !== old.is_verified
-  const new_user_is_verified = old === undefined && current.is_verified
+  console.log({ current, old, user_id, blocknumber })
 
-  if (user_became_verified || new_user_is_verified) {
+  if (current === undefined) {
+    console.warn(
+      { user_id, blocknumber },
+      'user does not have a current record'
+    )
+    return
+  }
+
+  const is_new_user = old === undefined
+  const new_user_is_verified = is_new_user && current.is_verified
+  const is_existing_user = !is_new_user
+  const existing_user_previously_unverified =
+    is_existing_user && old.is_verified === false
+  const user_currently_verified = current.is_verified === true
+  const existing_user_became_verified =
+    user_currently_verified !== existing_user_previously_unverified
+
+  if (existing_user_became_verified || new_user_is_verified) {
     const is_verified = current.is_verified
     const handle = current.handle
 
