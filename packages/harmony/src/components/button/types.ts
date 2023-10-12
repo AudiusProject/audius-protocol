@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef, ReactNode } from 'react'
+import type { ComponentPropsWithoutRef } from 'react'
 
 import type { IconComponent } from '../../components/typography/Icons/types'
 import type { ColorValue } from '../../types/colors'
@@ -8,7 +8,7 @@ export enum ButtonType {
   SECONDARY = 'secondary',
   TERTIARY = 'tertiary',
   DESTRUCTIVE = 'destructive',
-  GHOST = 'ghost'
+  DESTRUCTIVE_SECONDARY = 'destructive_secondary'
 }
 
 export enum ButtonSize {
@@ -32,7 +32,7 @@ export type BaseButtonProps = {
   /**
    * The text of the button
    */
-  text: ReactNode
+  text?: string
 
   /**
    * Optional icon element to include on the left side of the button
@@ -72,6 +72,11 @@ export type ButtonProps = {
    * Override the color of the button, only valid for the `PRIMARY` variant
    */
   color?: ColorValue
+
+  /**
+   * Override the color of the button using any hex color, only valid for the `PRIMARY` variant
+   */
+  hexColor?: `#${string}`
 
   /**
    * The type of the button

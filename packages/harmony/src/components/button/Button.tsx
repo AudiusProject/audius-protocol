@@ -24,7 +24,7 @@ const TYPE_STYLE_MAP: { [k in ButtonType]: string } = {
   [ButtonType.SECONDARY]: styles.secondary,
   [ButtonType.TERTIARY]: styles.tertiary,
   [ButtonType.DESTRUCTIVE]: styles.destructive,
-  [ButtonType.GHOST]: styles.ghost
+  [ButtonType.DESTRUCTIVE_SECONDARY]: styles.destructiveSecondary
 }
 
 /**
@@ -35,6 +35,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   function Button(props, ref) {
     const {
       color,
+      hexColor,
       variant = ButtonType.PRIMARY,
       size = ButtonSize.DEFAULT,
       disabled,
@@ -43,7 +44,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const style: CSSCustomProperties = {
       '--button-color':
-        !disabled && color ? `var(${toCSSVariableName(color)})` : undefined
+        !disabled && hexColor
+          ? hexColor
+          : color
+          ? `var(${toCSSVariableName(color)})`
+          : undefined
     }
 
     const [buttonSizeClass, iconSizeClass, textSizeClass] = SIZE_STYLE_MAP[size]
