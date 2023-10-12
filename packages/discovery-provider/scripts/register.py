@@ -57,8 +57,6 @@ def main():
 
     # Wait for health check to pass
     discprov_url = os.getenv("audius_discprov_url")
-    while not health_check(discprov_url):
-        time.sleep(1)
 
     token.functions.approve(
         staking.address,
