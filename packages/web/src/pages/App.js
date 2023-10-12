@@ -192,7 +192,7 @@ const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
 
 const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 
-const UploadPage = lazy(() => import('pages/upload-page/UploadPage'))
+const UploadPage = lazy(() => import('pages/upload-page'))
 const Modals = lazyWithPreload(() => import('./modals/Modals'), 0)
 
 export const MAIN_CONTENT_ID = 'mainContent'

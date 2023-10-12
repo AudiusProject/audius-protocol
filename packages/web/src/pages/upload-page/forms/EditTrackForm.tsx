@@ -12,7 +12,7 @@ import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { Text } from 'components/typography'
-import { UploadFormScrollContext } from 'pages/upload-page/UploadPageNew'
+import { UploadFormScrollContext } from 'pages/upload-page/UploadPage'
 
 import { AnchoredSubmitRow } from '../components/AnchoredSubmitRow'
 import { PreviewButton } from '../components/PreviewButton'
