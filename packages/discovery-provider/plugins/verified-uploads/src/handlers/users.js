@@ -46,7 +46,7 @@ export default async ({ user_id, blocknumber }) => {
     is_existing_user && old.is_verified === false
   const user_currently_verified = current.is_verified === true
   const existing_user_became_verified =
-    user_currently_verified !== existing_user_previously_unverified
+    user_currently_verified && existing_user_previously_unverified
 
   console.log({
     user_id,
