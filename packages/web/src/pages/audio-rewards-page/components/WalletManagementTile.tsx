@@ -11,7 +11,8 @@ import {
   FeatureFlags,
   StringKeys,
   Client,
-  Location
+  Location,
+  isNullOrUndefined
 } from '@audius/common'
 import { Button, ButtonType, IconInfo } from '@audius/stems'
 import BN from 'bn.js'
@@ -81,7 +82,7 @@ const messages = {
 
 const AdvancedWalletActions = () => {
   const balance = useSelector(getAccountBalance) ?? (new BN(0) as BNWei)
-  const hasBalance = balance != null && !balance.isZero()
+  const hasBalance = !isNullOrUndefined(balance) && !balance.isZero()
   const dispatch = useDispatch()
   const [, openTransferDrawer] = useModalState('TransferAudioMobileWarning')
 
@@ -341,7 +342,7 @@ export const WalletManagementTile = () => {
   return (
     <div className={styles.walletManagementTile}>
       <div className={styles.balanceContainer}>
-        {totalBalance == null ? (
+        {isNullOrUndefined(totalBalance) ? (
           <LoadingSpinner className={styles.spinner} />
         ) : (
           <TokenHoverTooltip balance={totalBalance}>

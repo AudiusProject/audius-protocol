@@ -20,8 +20,8 @@
   padding: 24px;
 }
 .spinner {
-  width: var(--unit-6);
-  height: var(--unit-6);
+  width: var(--unit-11);
+  height: var(--unit-11);
   margin: 0 auto;
   padding-top: var(--unit-2);
   padding-bottom: var(--unit-2);

@@ -1,6 +1,5 @@
 const EthereumWallet = require('ethereumjs-wallet')
 const { Transaction } = require('ethereumjs-tx')
-const axios = require('axios')
 const config = require('../config')
 const { ethWeb3 } = require('../web3')
 const { logger } = require('../logging')
