@@ -12,9 +12,6 @@ export type ChallengeRewardsInfo = {
   title: string
   description: (amount: OptimisticUserChallenge | undefined) => string
   fullDescription?: (amount: OptimisticUserChallenge | undefined) => string
-  fullDescriptionSubtext?: (
-    amount: OptimisticUserChallenge | undefined
-  ) => string
   progressLabel?: string
   remainingLabel?: string
   panelButtonText: string
