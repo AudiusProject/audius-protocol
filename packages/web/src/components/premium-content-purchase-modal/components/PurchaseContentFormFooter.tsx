@@ -6,8 +6,8 @@ import {
   PurchaseContentStage,
   formatPrice
 } from '@audius/common'
+import { Button } from '@audius/harmony'
 import {
-  HarmonyButton,
   HarmonyPlainButton,
   HarmonyPlainButtonSize,
   HarmonyPlainButtonType,
@@ -17,7 +17,6 @@ import {
 
 import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
 import { Text } from 'components/typography'
 import { fullTrackPage } from 'utils/route'
@@ -46,17 +45,12 @@ const ContentPurchaseError = () => {
   )
 }
 
-const getButtonContent = (isUnlocking: boolean, amountDue: number) =>
-  isUnlocking ? (
-    <div className={styles.purchaseButtonText}>
-      <LoadingSpinner className={styles.spinner} />
-      <span>{messages.purchasing}</span>
-    </div>
-  ) : amountDue > 0 ? (
-    `${messages.buy} $${formatPrice(amountDue)}`
-  ) : (
-    messages.buy
-  )
+const getButtonText = (isUnlocking: boolean, amountDue: number) =>
+  isUnlocking
+    ? messages.purchasing
+    : amountDue > 0
+    ? `${messages.buy} $${formatPrice(amountDue)}`
+    : messages.buy
 
 type PurchaseContentFormFooterProps = Pick<
   PurchaseContentFormState,
@@ -116,11 +110,12 @@ export const PurchaseContentFormFooter = ({
 
   return (
     <>
-      <HarmonyButton
+      <Button
         disabled={isUnlocking}
-        color='specialLightGreen'
+        color='lightGreen'
         type='submit'
-        text={getButtonContent(isUnlocking, amountDue)}
+        isLoading={isUnlocking}
+        text={getButtonText(isUnlocking, amountDue)}
         fullWidth
       />
       {error ? <ContentPurchaseError /> : null}
