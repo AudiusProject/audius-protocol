@@ -72,6 +72,7 @@ const ClaimInProgressSpinner = () => (
   <LoadingSpinner className={styles.spinner} />
 )
 
+/** Implements custom ChallengeRewardsContent for the $AUDIO matching challenges */
 export const AudioMatchingRewardsModalContent = ({
   challenge,
   challengeName,
@@ -166,52 +167,6 @@ export const AudioMatchingRewardsModalContent = ({
         />
       )}
       {errorContent}
-
-      {/* {buttonLink && challenge?.state !== 'completed' && (
-        <Button
-          className={wm(cn(styles.button, styles.buttonLink))}
-          type={ButtonType.PRIMARY_ALT}
-          text={buttonInfo?.label}
-          onClick={goToRoute}
-          leftIcon={buttonInfo?.leftIcon}
-          rightIcon={buttonInfo?.rightIcon}
-        />
-      )}
-      <div className={wm(styles.claimRewardWrapper)}>
-        {audioToClaim > 0 ? (
-          <>
-            <div className={styles.claimRewardAmountLabel}>
-              {`${audioToClaim} ${messages.claimAmountLabel}`}
-            </div>
-            <Button
-              text={messages.claimYourReward}
-              className={wm(styles.button)}
-              type={
-                claimInProgress ? ButtonType.DISABLED : ButtonType.PRIMARY_ALT
-              }
-              isDisabled={claimInProgress}
-              rightIcon={
-                claimInProgress ? (
-                  <LoadingSpinner className={styles.spinner} />
-                ) : (
-                  <IconCheck />
-                )
-              }
-              onClick={onClaimRewardClicked}
-            />
-          </>
-        ) : null}
-        {audioClaimedSoFar > 0 && challenge?.state !== 'disbursed' ? (
-          <div className={styles.claimRewardClaimedAmountLabel}>
-            {`(${formatNumberCommas(audioClaimedSoFar)} ${
-              messages.claimedSoFar
-            })`}
-          </div>
-        ) : null}
-      </div>
-      {claimStatus === ClaimStatus.ERROR && (
-        <div className={styles.claimError}>{getErrorMessage()}</div>
-      )} */}
     </div>
   )
 }

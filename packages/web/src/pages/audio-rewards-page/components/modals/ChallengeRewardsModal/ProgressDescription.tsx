@@ -7,10 +7,12 @@ import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import styles from './styles.module.css'
 
 const messages = {
-  task: 'Task',
-  verifiedChallenge: 'Verified Challenge'
+  task: 'Task'
 }
 
+/** Renders the description section for an audio challenge modal. A default label
+ * is rendered if none is provided.
+ */
 export const ProgressDescription = ({
   description,
   label = messages.task

@@ -8,7 +8,7 @@ const messages = {
   reward: 'Reward'
 }
 
-/** Displays the box containing the amount of audio to be earned from the challenge */
+/** Renders the box containing the amount of audio to be earned from the challenge */
 export const ProgressReward = ({
   amount,
   subtext
