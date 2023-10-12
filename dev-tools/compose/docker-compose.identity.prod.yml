@@ -22,8 +22,6 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/identity-service/Dockerfile.prod
       args:
         git_sha: '${GIT_COMMIT}'
-        TURBO_TEAM: '${TURBO_TEAM}'
-        TURBO_TOKEN: '${TURBO_TOKEN}'
     ports:
       - '7000:7000'
       - '9229:9229'

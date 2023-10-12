@@ -70,7 +70,7 @@ function* saga() {
 
 const testClaim: AudioRewardsClaim = {
   challengeId: 'connect-verified',
-  specifiers: ['1'],
+  specifiers: { '1': 10 },
   amount: 10
 }
 const testUser = {

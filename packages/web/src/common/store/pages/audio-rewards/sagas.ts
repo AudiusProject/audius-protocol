@@ -131,9 +131,15 @@ const getClaimingConfig = (
   remoteConfigInstance: RemoteConfigInstance,
   env: Env
 ) => {
-  const quorumSize = remoteConfigInstance.getRemoteVar(
-    IntKeys.ATTESTATION_QUORUM_SIZE
-  )
+  const { ENVIRONMENT } = env
+  let quorumSize
+  if (ENVIRONMENT === 'development') {
+    quorumSize = 2
+  } else {
+    quorumSize = remoteConfigInstance.getRemoteVar(
+      IntKeys.ATTESTATION_QUORUM_SIZE
+    )
+  }
   const maxClaimRetries = remoteConfigInstance.getRemoteVar(
     IntKeys.MAX_CLAIM_RETRIES
   )
@@ -250,10 +256,13 @@ function* claimChallengeRewardAsync(
   }
   let aaoErrorCode
   try {
-    const challenges = specifiers.map((specifier) => ({
-      challenge_id: challengeId,
-      specifier
-    }))
+    const challenges = Object.entries(specifiers).map(
+      ([specifier, amount]) => ({
+        challenge_id: challengeId,
+        specifier,
+        amount
+      })
+    )
 
     const response: { error?: string; aaoErrorCode?: number } = yield* call(
       audiusBackendInstance.submitAndEvaluateAttestations,
@@ -263,7 +272,6 @@ function* claimChallengeRewardAsync(
         handle: currentUser.handle,
         recipientEthAddress: currentUser.wallet,
         oracleEthAddress,
-        amount,
         quorumSize,
         endpoints,
         AAOEndpoint,
@@ -316,7 +324,7 @@ function* claimChallengeRewardAsync(
 
             // If this was an aggregate challenges with multiple specifiers,
             // then libs handles the retries and we shouldn't retry here.
-            if (specifiers.length > 1) {
+            if (specifiers.size > 1) {
               yield put(claimChallengeRewardFailed())
               break
             }

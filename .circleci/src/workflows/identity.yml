@@ -5,7 +5,7 @@ jobs:
 
   - push-docker-image:
       name: push-identity-service
-      context: [Vercel, dockerhub]
+      context: [GCP, dockerhub]
       service: identity-service
       requires:
         - identity-init
@@ -15,7 +15,7 @@ jobs:
 
   - test:
       name: test-identity-service
-      context: Vercel
+      context: GCP
       service: identity-service
       requires:
         - identity-init

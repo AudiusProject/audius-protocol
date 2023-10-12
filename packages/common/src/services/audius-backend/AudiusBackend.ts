@@ -3159,19 +3159,21 @@ export const audiusBackend = ({
     handle,
     recipientEthAddress,
     oracleEthAddress,
-    amount,
     quorumSize,
     endpoints,
     AAOEndpoint,
     parallelization,
     feePayerOverride
   }: {
-    challenges: { challenge_id: ChallengeRewardID; specifier: string }[]
+    challenges: {
+      challenge_id: ChallengeRewardID
+      specifier: string
+      amount: number
+    }[]
     userId: ID
     handle: string
     recipientEthAddress: string
     oracleEthAddress: string
-    amount: number
     quorumSize: number
     endpoints: string[]
     AAOEndpoint: string
@@ -3204,7 +3206,7 @@ export const audiusBackend = ({
       })
 
       const res = await attester.processChallenges(
-        challenges.map(({ specifier, challenge_id: challengeId }) => ({
+        challenges.map(({ specifier, challenge_id: challengeId, amount }) => ({
           specifier,
           challengeId,
           userId: encodedUserId,

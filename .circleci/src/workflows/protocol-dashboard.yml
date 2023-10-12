@@ -1,13 +1,6 @@
 when: << pipeline.parameters.run-protocol-dashboard-workflow >>
 jobs:
   - protocol-dashboard-init
-  - push-docker-image:
-      name: push-protocol-dashboard
-      context: [Vercel, dockerhub]
-      service: dashboard
-      filters:
-        branches:
-          only: /^main$/
   - protocol-dashboard-build-staging:
       requires:
         - protocol-dashboard-init
