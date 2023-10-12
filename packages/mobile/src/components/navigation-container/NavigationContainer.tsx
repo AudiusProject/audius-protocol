@@ -2,12 +2,17 @@ import type { ReactNode } from 'react'
 import { useRef } from 'react'
 
 import { accountSelectors, decodeHashId } from '@audius/common'
-import type { NavigationState, PartialState } from '@react-navigation/native'
+import type {
+  LinkingOptions,
+  NavigationState,
+  PartialState
+} from '@react-navigation/native'
 import {
   getStateFromPath,
   NavigationContainer as RNNavigationContainer,
   createNavigationContainerRef
 } from '@react-navigation/native'
+import queryString from 'query-string'
 import { useSelector } from 'react-redux'
 
 import { AppTabNavigationProvider } from 'app/screens/app-screen'
@@ -78,7 +83,7 @@ const NavigationContainer = (props: NavigationContainerProps) => {
 
   const routeNameRef = useRef<string>()
 
-  const linking = {
+  const linking: LinkingOptions<{}> = {
     prefixes: [
       'audius://',
       'https://audius.co',
@@ -183,6 +188,9 @@ const NavigationContainer = (props: NavigationContainerProps) => {
               }
             }
           }
+        },
+        ResetPassword: {
+          path: 'reset-password'
         }
       }
     },
@@ -256,6 +264,13 @@ const NavigationContainer = (props: NavigationContainerProps) => {
             id
           }
         })
+      }
+
+      const { query } = queryString.parseUrl(path)
+      const { login, warning } = query
+
+      if (login && warning) {
+        path = queryString.stringifyUrl({ url: '/reset-password', query })
       }
 
       if (path.match(`^/${account?.handle}(/|$)`)) {
