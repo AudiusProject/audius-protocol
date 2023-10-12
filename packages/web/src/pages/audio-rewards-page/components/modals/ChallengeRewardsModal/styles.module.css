@@ -301,12 +301,12 @@
   margin-right: 16px;
 }
 
-.claimRewardWrapper .spinner {
+.spinner {
   width: 24px;
   height: 24px;
 }
 
-.claimRewardWrapper .spinner svg path {
+.spinner svg path {
   fill: var(--white);
   stroke: var(--white);
   stroke-width: 6px;

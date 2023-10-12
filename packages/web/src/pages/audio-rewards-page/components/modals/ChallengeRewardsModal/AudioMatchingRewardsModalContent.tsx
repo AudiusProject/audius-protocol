@@ -6,15 +6,15 @@ import {
   challengeRewardsConfig,
   formatNumberCommas
 } from '@audius/common'
+import { IconArrowRight, IconCloudUpload, Text } from '@audius/harmony'
 import {
-  Button,
-  ButtonType,
-  IconArrowRight,
-  IconCloudUpload,
-  Text
-} from '@audius/harmony'
+  HarmonyButton,
+  HarmonyButtonProps,
+  HarmonyButtonType
+} from '@audius/stems'
 import cn from 'classnames'
 
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { isMobile } from 'utils/clientUtil'
@@ -66,6 +66,11 @@ const ctaButtonProps: {
     text: messages.uploadTrack
   }
 }
+
+// TODO: Migrate to @audius/harmony Button and pass `isLoading`
+const ClaimInProgressSpinner = () => (
+  <LoadingSpinner className={styles.spinner} />
+)
 
 export const AudioMatchingRewardsModalContent = ({
   challenge,
@@ -143,19 +148,18 @@ export const AudioMatchingRewardsModalContent = ({
         </div>
       )}
       {challenge?.claimableAmount && challenge.claimableAmount > 0 ? (
-        <Button
+        <HarmonyButton
           fullWidth
-          iconRight={IconArrowRight}
-          isLoading={claimInProgress}
-          isDisabled={claimInProgress}
+          iconRight={claimInProgress ? ClaimInProgressSpinner : IconArrowRight}
+          disabled={claimInProgress}
           text={messages.claimAudio(
             formatNumberCommas(challenge.claimableAmount)
           )}
           onClick={onClaimRewardClicked}
         />
       ) : (
-        <Button
-          variant={ButtonType.SECONDARY}
+        <HarmonyButton
+          variant={HarmonyButtonType.SECONDARY}
           fullWidth
           {...ctaButtonProps[challengeName]}
           onClick={handleClickCTA}
