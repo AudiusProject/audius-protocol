@@ -53,10 +53,24 @@ export class WalletClient {
   }
 
   async transferTokensFromEthToSol(): Promise<void> {
-    const balance = await this.audiusBackendInstance.getBalance(true)
-    if (balance != null && balance.gt(new BN('0'))) {
-      await this.audiusBackendInstance.transferAudioToWAudio(balance)
+    const initialWAudioBalance = await this.getCurrentWAudioBalance()
+    const ercAudioBalance = await this.audiusBackendInstance.getBalance(true)
+    if (ercAudioBalance != null && ercAudioBalance.gt(new BN('0'))) {
+      await this.audiusBackendInstance.transferAudioToWAudio(ercAudioBalance)
     }
+    // At this point we know we have transfered ERC $AUDIO into the wormhole,
+    // but we don't know if we've received SPL $AUDIO back yet, so poll
+    await new Promise((resolve, reject) => {
+      const rejectTimeout = setTimeout(reject, /* one hour */ 1000 * 60 * 60)
+      setInterval(() => {
+        this.getCurrentWAudioBalance().then((currentWAudioBalance) => {
+          if (currentWAudioBalance !== initialWAudioBalance) {
+            clearTimeout(rejectTimeout)
+            resolve(currentWAudioBalance)
+          }
+        })
+      }, 5000)
+    })
   }
 
   /** Get total balance of external wallets connected to the user's account. Returns null on failure. */
