@@ -6,7 +6,7 @@ import { Parallax } from 'react-scroll-parallax'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useChain, useTrail, animated } from 'react-spring'
 
-import hqAudio from 'assets/img/publicSite/HQ-Audio@1x.jpg'
+import capshunBg from 'assets/img/publicSite/CapshunBG.webp'
 import { handleClickRoute } from 'components/public-site/handleClickRoute'
 import { AUDIUS_LISTENING_LINK } from 'utils/route'
 import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
@@ -73,7 +73,7 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
           <Parallax className={cn(styles.mobileBgImage)} translateY={[-100, 0]}>
             <img
               className={styles.mobileBackground}
-              src={hqAudio}
+              src={capshunBg}
               alt='Audius Audio Set'
             />
           </Parallax>
@@ -141,7 +141,7 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
         <Parallax className={cn(styles.bgParallax)} translateY={[-100, 20]}>
           <img
             className={styles.background}
-            src={hqAudio}
+            src={capshunBg}
             alt='Audius Audio Set'
           />
         </Parallax>
