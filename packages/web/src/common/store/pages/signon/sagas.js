@@ -498,6 +498,7 @@ function* signUp() {
         yield put(signOnActions.signUpSucceeded())
         yield put(signOnActions.sendWelcomeEmail(name))
         yield call(fetchAccountAsync, { isSignUp: true })
+        yield put(signOnActions.followArtists())
       },
       function* ({ timeout }) {
         if (timeout) {
@@ -739,14 +740,7 @@ function* watchConfigureMetaMask() {
 }
 
 function* watchFollowArtists() {
-  while (
-    yield all([
-      take(accountActions.fetchAccountSucceeded.type),
-      take(signOnActions.FOLLOW_ARTISTS)
-    ])
-  ) {
-    yield call(followArtists)
-  }
+  yield takeLatest(signOnActions.FOLLOW_ARTISTS, followArtists)
 }
 
 function* watchShowToast() {
