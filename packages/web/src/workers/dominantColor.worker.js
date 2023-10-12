@@ -9,10 +9,6 @@ export default () => {
   // #CDC8C8, which works out to a luminance of 201.
   const LUMINANCE_THRESHOLD = 201
 
-  const script = `/scripts/jimp.min.js`
-  // eslint-disable-next-line
-  importWorkerScript(script)
-
   const clampedRGBColor = (rgbString /* string of 'r,g,b' */) => {
     const rgb = rgbString.split(',').map((x) => parseInt(x, 10))
     const r = rgb[0]
@@ -123,8 +119,8 @@ export default () => {
   const calculateEuclideanDistance = (c1, c2) => {
     return Math.sqrt(
       Math.pow(c1.r - c2.r, 2) +
-        Math.pow(c1.g - c2.g, 2) +
-        Math.pow(c1.b - c2.b, 2)
+      Math.pow(c1.g - c2.g, 2) +
+      Math.pow(c1.b - c2.b, 2)
     )
   }
 

@@ -7,20 +7,21 @@ export default class WebWorker {
    * Initializes a web worker for performing async tasks.
    * @param {file} workerFile The web worker code, which is turned into a string an exec'd.
    * @param {?boolean} terminateOnResult Whether or not to terminate the worker on gathering the result.
+   * @param {?Array<file>} dependencies Optional array of file dependencies they worker needs
    * Note: Workers are non-trivial to spin up, so leaving commonly used workers running can be useful.
    */
-  constructor(workerFile, terminateOnResult = true) {
+  constructor(workerFile, terminateOnResult = true, dependencies = []) {
     const code = workerFile.toString()
+    const dependencyCode = dependencies.map((d) => `${d.toString()};`).join()
     const blob = new Blob([
       `
+      ${dependencyCode};
       const importWorkerScript = ${importWorkScriptCode}
       const code = ${code}
       code()
     `
     ])
-    if (typeof Worker !== 'undefined') {
-      this.worker = new Worker(URL.createObjectURL(blob))
-    }
+    this.worker = new Worker(URL.createObjectURL(blob))
     this.terminateOnResult = terminateOnResult
   }
 
