@@ -6,11 +6,13 @@ import {
   useWithdrawUSDCModal
 } from '@audius/common'
 import {
-  IconKebabHorizontal,
-  IconQuestionCircle,
+  Button,
+  ButtonType,
   IconWithdraw,
-  HarmonyButton,
-  HarmonyButtonType,
+  IconKebabHorizontal,
+  IconQuestionCircle
+} from '@audius/harmony'
+import {
   PopupMenu,
   PopupMenuItem,
   HarmonyPlainButton,
@@ -93,8 +95,8 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
       </div>
       <div className={styles.withdrawContainer}>
         <div className={styles.withdrawButton}>
-          <HarmonyButton
-            variant={HarmonyButtonType.SECONDARY}
+          <Button
+            variant={ButtonType.SECONDARY}
             text={messages.withdraw}
             fullWidth
             iconLeft={IconWithdraw}
@@ -110,9 +112,9 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
           items={menuItems}
           renderTrigger={(anchorRef, triggerPopup) => (
-            <HarmonyButton
+            <Button
               ref={anchorRef}
-              variant={HarmonyButtonType.SECONDARY}
+              variant={ButtonType.SECONDARY}
               iconLeft={IconKebabHorizontal}
               onClick={triggerPopup}
             />

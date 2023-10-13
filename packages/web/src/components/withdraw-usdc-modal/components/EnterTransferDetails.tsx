@@ -15,12 +15,7 @@ import {
   padDecimalValue,
   decimalIntegerToHumanReadable
 } from '@audius/common'
-import {
-  HarmonyButton,
-  HarmonyButtonSize,
-  HarmonyButtonType,
-  IconQuestionCircle
-} from '@audius/stems'
+import { Button, ButtonType, IconQuestionCircle } from '@audius/harmony'
 import BN from 'bn.js'
 import { useField } from 'formik'
 
@@ -129,12 +124,13 @@ export const EnterTransferDetails = () => {
           placeholder=''
         />
       </div>
-      <HarmonyButton
-        variant={HarmonyButtonType.SECONDARY}
-        size={HarmonyButtonSize.DEFAULT}
+      <Button
+        variant={ButtonType.SECONDARY}
         fullWidth
         text={messages.continue}
-        disabled={amountError || addressError || !address || balance?.isZero()}
+        disabled={
+          !!(amountError || addressError || !address || balance?.isZero())
+        }
         onClick={handleContinue}
       />
       <Hint
