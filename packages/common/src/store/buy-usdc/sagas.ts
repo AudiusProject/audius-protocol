@@ -33,6 +33,7 @@ import {
 } from './slice'
 import { USDCOnRampProvider } from './types'
 import { getUSDCUserBank } from './utils'
+import { getAccountUser } from 'store/account/selectors'
 
 // TODO: Configurable min/max usdc purchase amounts?
 function* getBuyUSDCRemoteConfig() {
@@ -291,6 +292,9 @@ function* doBuyUSDC({
 }
 
 function* recoverPurchaseIfNecessary() {
+  const user = yield* select(getAccountUser)
+  if (!user) return
+
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
