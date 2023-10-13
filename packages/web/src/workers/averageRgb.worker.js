@@ -2,6 +2,10 @@
 const DEFAULT_RGB = { r: 13, g: 16, b: 18 }
 
 export default () => {
+  const script = '/scripts/jimp.min.js'
+  // eslint-disable-next-line
+  importWorkerScript(script)
+
   /**
    * Returns the average RGB of an image to be used for backgrounds/shading, etc.
    * @param {string} key identifies this computation
@@ -25,12 +29,12 @@ export default () => {
         rgb.g = Math.floor(rgb.g / count)
         rgb.b = Math.floor(rgb.b / count)
         // eslint-disable-next-line
-        postMessage({ key, result: rgb })
+        postMessage({key, result: rgb})
       })
       .catch((err) => {
         console.error(imageUrl, err)
         // eslint-disable-next-line
-        postMessage({ key, result: DEFAULT_RGB })
+        postMessage({key, result: DEFAULT_RGB})
       })
   }
 

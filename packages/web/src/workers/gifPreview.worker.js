@@ -1,6 +1,10 @@
 /* globals Jimp */
 
 export default () => {
+  const script = '/scripts/jimp.min.js'
+  // eslint-disable-next-line
+  importWorkerScript(script)
+
   /**
    * Returns a jpeg of a gif
    * @param {string} key identifies this computation
