@@ -307,12 +307,16 @@ def test_aggregates(app):
         )
         # - Multiple events with the same user_id but diff specifiers get created
         bus.register_listener(TEST_EVENT, agg_challenge)
-        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 2})
-        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 3})
+        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 2, "amount": 4})
+        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 3, "amount": 6})
         bus.flush()
         bus.process_events(session)
         state = agg_challenge.get_user_challenge_state(session, ["1-2", "1-3"])
         assert len(state) == 2
+        # Test different amounts for the same challenge
+        assert state[0].amount == 4
+        assert state[1].amount == 6
+
         # Also make sure the thing is incomplete
         res = get_challenges(1, False, session, bus)
         agg_chal = {c["challenge_id"]: c for c in res}["test_challenge_3"]
@@ -327,13 +331,6 @@ def test_aggregates(app):
         state = agg_challenge.get_user_challenge_state(session, ["1-4"])
         assert len(state) == 1
 
-        # - If we've maxed the # of challenges, don't create any more
-        # (AGGREGATE_CHALLENGE_STEP_COUNT = 5)
-        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 5})
-        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 6})
-        bus.flush()
-        bus.process_events(session)
-
         def get_user_challenges():
             return (
                 session.query(UserChallenge)
@@ -344,6 +341,12 @@ def test_aggregates(app):
                 .all()
             )
 
+        # - If we've maxed the # of challenges, don't create any more
+        # (AGGREGATE_CHALLENGE_STEP_COUNT = 5)
+        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 5})
+        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 6})
+        bus.flush()
+        bus.process_events(session)
         assert len(get_user_challenges()) == AGGREGATE_CHALLENGE_STEP_COUNT
         bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 7})
         bus.flush()
