@@ -52,7 +52,7 @@ export enum FailureReason {
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
   // Unknown AAO error
   AAO_ATTESTATION_UNKNOWN_RESPONSE = 'AAO_ATTESTATION_UNKNOWN_RESPONSE',
-  // Need to wait for 7-day cooldown period
+  // Need to wait for cooldown period
   WAIT_FOR_COOLDOWN = 'WAIT_FOR_COOLDOWN'
 }
 
