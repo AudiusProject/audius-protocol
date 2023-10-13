@@ -59,7 +59,9 @@ export enum FailureReason {
   // An unknown error has occurred
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
   // Unknown AAO error
-  AAO_ATTESTATION_UNKNOWN_RESPONSE = 'AAO_ATTESTATION_UNKNOWN_RESPONSE'
+  AAO_ATTESTATION_UNKNOWN_RESPONSE = 'AAO_ATTESTATION_UNKNOWN_RESPONSE',
+  // Need to wait for cooldown period
+  WAIT_FOR_COOLDOWN = 'WAIT_FOR_COOLDOWN'
 }
 
 export type FlowUIOpenEvent = {

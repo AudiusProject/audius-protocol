@@ -81,7 +81,8 @@
     "active": true,
     "step_count": 2147483647,
     "starting_block": 0,
-    "weekly_pool": 25000
+    "weekly_pool": 25000,
+    "cooldown_days": 7
   },
   {
     "id": "s",
@@ -91,6 +92,7 @@
     "active": true,
     "step_count": 2147483647,
     "starting_block": 0,
-    "weekly_pool": 25000
+    "weekly_pool": 25000,
+    "cooldown_days": 7
   }
 ]

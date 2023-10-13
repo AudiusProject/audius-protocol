@@ -1,8 +1,10 @@
 import logging
 from abc import ABC
 from collections import defaultdict
+from datetime import datetime
 from typing import Dict, List, Optional, Set, Tuple, TypedDict, cast
 
+import pytz
 from sqlalchemy import func
 from sqlalchemy.orm.session import Session
 
@@ -359,4 +361,5 @@ class ChallengeManager:
             ),  # Aggregates are made in completed state
             current_step_count=0,
             amount=extra.get("amount", self._amount),
+            created_at=datetime.now(pytz.UTC),
         )
