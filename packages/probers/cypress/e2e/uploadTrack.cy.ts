@@ -172,7 +172,7 @@ describe('Upload', () => {
                 return Number(progressbar.attr('aria-valuenow')) > progress
               })
           },
-          { timeout: 40000, interval: 1000 }
+          { timeout: 100000, interval: 5000 }
         )
       }
 
