@@ -34,7 +34,6 @@ export type HistoryPageProps = {
   playing: boolean
   isEmpty: boolean
   loading: boolean
-  onToggleSave: (isSaved: boolean, trackId: ID) => void
   onTogglePlay: (uid: UID, trackId: ID) => void
   currentQueueItem: any
   goToRoute: (route: string) => void
@@ -49,7 +48,6 @@ const HistoryPage = ({
   loading,
   goToRoute,
   onTogglePlay,
-  onToggleSave,
   currentQueueItem
 }: HistoryPageProps) => {
   // Set Header Nav
@@ -119,7 +117,6 @@ const HistoryPage = ({
               itemClassName={styles.itemClassName}
               showDivider
               showBorder
-              onSave={onToggleSave}
               togglePlay={onTogglePlay}
               trackItemAction={TrackItemAction.Overflow}
             />
