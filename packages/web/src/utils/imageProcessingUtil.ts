@@ -4,18 +4,13 @@ import dominantColorWorkerFile from 'workers/dominantColor.worker.js'
 import generatePlaylistArtworkWorkerFile from 'workers/generatePlaylistArtwork.worker.js'
 import gifPreviewWorkerFile from 'workers/gifPreview.worker.js'
 import resizeImageWorkerFile from 'workers/resizeImage.worker.js'
-// @ts-ignore - jimp is a raw-loaded to have workers called directly with it.
-import jimp from 'workers/utils/jimp.min.workerscript'
 
-const averageRgbWorker = new WebWorker(averageRgbWorkerFile, false, [jimp])
-const dominantColorWorker = new WebWorker(dominantColorWorkerFile, false, [
-  jimp
-])
-const gifPreviewWorker = new WebWorker(gifPreviewWorkerFile, false, [jimp])
+const averageRgbWorker = new WebWorker(averageRgbWorkerFile, false)
+const dominantColorWorker = new WebWorker(dominantColorWorkerFile, false)
+const gifPreviewWorker = new WebWorker(gifPreviewWorkerFile, false)
 const generatePlaylistArtworkWorker = new WebWorker(
   generatePlaylistArtworkWorkerFile,
-  false,
-  [jimp]
+  false
 )
 
 export const ALLOWED_IMAGE_FILE_TYPES = [
@@ -37,7 +32,7 @@ export const resizeImage = async (
     throw new Error('invalid file type')
   }
   const imageUrlBlob = URL.createObjectURL(imageFile)
-  const worker = new WebWorker(resizeImageWorkerFile, true, [jimp])
+  const worker = new WebWorker(resizeImageWorkerFile)
   worker.call({ imageUrl: imageUrlBlob, maxWidth, square }, key)
   return worker.getResult()
 }
