@@ -23,7 +23,7 @@ import {
   decodeClaimableTokenInstruction,
   isTransferClaimableTokenInstruction,
   decodeRewardManagerInstruction
-} from '@audius/solana-programs-ts'
+} from '@audius/spl'
 import config from '../../config'
 
 const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'

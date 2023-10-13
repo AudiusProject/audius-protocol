@@ -1,4 +1,4 @@
-# `@audius/solana-programs-ts`
+# `@audius/spl`
 
 A Typescript package for creating and decoding Solana `TransactionInstruction`s for the Audius [Solana Programs](../../solana-programs/).
 

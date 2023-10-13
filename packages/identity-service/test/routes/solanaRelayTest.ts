@@ -24,7 +24,7 @@ import {
   createSenderPublicInstruction,
   createSubmitAttestationInstruction,
   RewardManagerInstruction
-} from '@audius/solana-programs-ts'
+} from '@audius/spl'
 import { InvalidRelayInstructionError } from '../../src/typed-routes/solana/InvalidRelayInstructionError'
 
 const CLAIMABLE_TOKEN_PROGRAM_ID = new PublicKey(

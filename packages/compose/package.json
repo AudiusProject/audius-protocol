@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@audius/sdk": "*",
-    "@audius/solana-programs-ts": "*",
+    "@audius/spl": "*",
     "@pedalboard/relay": "*",
     "@pedalboard/sla-auditor": "*",
     "@pedalboard/trending-challenge-rewards": "*"
