@@ -144,7 +144,7 @@ export const themeColorsMap: Record<Theme, ThemeColors> = {
       blue: '#58B9F4',
       orange: '#EFA947',
       red: '#F9344C',
-      darkRed: '#BB0218',
+      darkRed: '#C43047',
       green: '#6CDF44',
       lightGreen: '#13C65A',
       gradient: 'linear-gradient(315deg, #7652CC 0%, #B05CE6 100%)'

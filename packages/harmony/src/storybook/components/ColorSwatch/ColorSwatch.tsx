@@ -1,6 +1,6 @@
-import { Box, Flex, Text } from 'components'
+import styled from '@emotion/styled'
 
-import styles from './ColorSwatch.module.css'
+import { Box, Flex, Text } from 'components'
 
 type ColorSwatchProps = {
   name?: string
@@ -8,48 +8,42 @@ type ColorSwatchProps = {
   color: string
 }
 
+const Swatch = styled(Flex)({
+  flex: '1 1 96px',
+  maxWidth: '112px',
+  background: 'var(--harmony-bg-white)',
+  overflow: 'hidden'
+})
+
+const TileColor = styled(Box)({
+  height: 'var(--harmony-unit-16)',
+  borderBottom: '1px solid var(--harmony-border-strong)'
+})
+
+const InfoText = styled(Text)({
+  textTransform: 'capitalize',
+  lineHeight: 'var(--harmony-line-height-xs)'
+})
+
 export const ColorSwatch = ({ color, desc, name }: ColorSwatchProps) => {
   return (
-    <Flex
-      className={styles.tile}
-      direction='column'
-      gap='s'
-      border='strong'
-      borderRadius='xl'
-    >
-      <Box className={styles.tileColor} style={{ background: color }} />
+    <Swatch direction='column' gap='s' border='strong' borderRadius='xl'>
+      <TileColor style={{ background: color }} />
       <Flex direction='column' gap='xs' p='s'>
         {name ? (
-          <Text
-            className={styles.infoText}
-            variant='body'
-            size='xs'
-            color='default'
-          >
+          <InfoText variant='body' size='xs' color='default'>
             {name}
-          </Text>
+          </InfoText>
         ) : null}
         {desc ? (
-          <Text
-            className={styles.infoText}
-            variant='body'
-            size='xs'
-            color='default'
-            strength='weak'
-          >
+          <InfoText variant='body' size='xs' color='default' strength='weak'>
             {desc}
-          </Text>
+          </InfoText>
         ) : null}
-        <Text
-          className={styles.infoText}
-          variant='body'
-          size='xs'
-          color='default'
-          strength='weak'
-        >
+        <InfoText variant='body' size='xs' color='default' strength='weak'>
           {color}
-        </Text>
+        </InfoText>
       </Flex>
-    </Flex>
+    </Swatch>
   )
 }
