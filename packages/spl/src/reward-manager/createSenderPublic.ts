@@ -7,7 +7,9 @@ import {
   SYSVAR_RENT_PUBKEY,
   SystemProgram
 } from '@solana/web3.js'
-import { ethAddress } from '../../layout-utils'
+
+import { ethAddress } from '../layout-utils'
+
 import {
   REWARD_MANAGER_PROGRAM_ID,
   RewardManagerInstruction
@@ -19,7 +21,7 @@ type CreateSenderPublicInstructionData = {
   operatorEthAddress: string
 }
 
-const CreateSenderPublicInstructionData =
+const createSenderPublicInstructionData =
   struct<CreateSenderPublicInstructionData>([
     u8('instruction'),
     ethAddress('senderEthAddress'),
@@ -36,8 +38,8 @@ export const createSenderPublicInstruction = (
   existingSenders: PublicKey[],
   rewardManagerProgramId: PublicKey = REWARD_MANAGER_PROGRAM_ID
 ) => {
-  const data = Buffer.alloc(CreateSenderPublicInstructionData.span)
-  CreateSenderPublicInstructionData.encode(
+  const data = Buffer.alloc(createSenderPublicInstructionData.span)
+  createSenderPublicInstructionData.encode(
     {
       instruction: RewardManagerInstruction.CreateSenderPublic,
       senderEthAddress,
@@ -106,5 +108,5 @@ export const decodeCreateSenderPublicInstruction = ({
     systemProgramId,
     existingSenders
   },
-  data: CreateSenderPublicInstructionData.decode(data)
+  data: createSenderPublicInstructionData.decode(data)
 })

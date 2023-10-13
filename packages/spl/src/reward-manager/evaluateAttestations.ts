@@ -1,5 +1,6 @@
-import { struct, u8, cstr } from '@solana/buffer-layout'
+import { struct, u8 } from '@solana/buffer-layout'
 import { u64 } from '@solana/buffer-layout-utils'
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import {
   PublicKey,
   AccountMeta,
@@ -7,12 +8,13 @@ import {
   SYSVAR_RENT_PUBKEY,
   SystemProgram
 } from '@solana/web3.js'
-import { borshString, ethAddress } from '../../layout-utils'
+
+import { borshString, ethAddress } from '../layout-utils'
+
 import {
   REWARD_MANAGER_PROGRAM_ID,
   RewardManagerInstruction
 } from './constants'
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 
 type EvaluateAttestationsInstructionData = {
   instruction: RewardManagerInstruction
