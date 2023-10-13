@@ -18,7 +18,7 @@ jobs:
           path: '~/audius-protocol'
       - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
       - run:
-          name: test run "<< parameters.service >>"
+          name: test run  "<< parameters.service >>"
           no_output_timeout: 20m
           command: . ~/.profile; audius-compose test run "<< parameters.service >>"
 
