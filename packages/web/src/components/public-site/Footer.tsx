@@ -38,21 +38,6 @@ const bottomLinks = [
   }
 ]
 
-const productAndSupportLinks = [
-  {
-    text: 'Audius Music',
-    link: AUDIUS_LISTENING_LINK
-  },
-  {
-    text: 'Download',
-    link: DOWNLOAD_LINK
-  },
-  {
-    text: 'Support',
-    link: AUDIUS_HELP_LINK
-  }
-]
-
 const resourcesLinks = [
   {
     text: 'The Blog',
@@ -129,19 +114,29 @@ const Footer = (props: FooterProps) => {
           <div className={styles.siteLinksContainer}>
             <div className={styles.siteLinksColumnContainer}>
               <p className={styles.siteLinksColumnTitle}>{messages.product}</p>
-              {productAndSupportLinks.map((link) => (
-                <a
-                  key={link.text}
-                  href={link.link}
-                  onClick={handleClickRoute(
-                    link.link,
-                    props.setRenderPublicSite
-                  )}
-                  className={cn(styles.siteLink, styles.link)}
-                >
-                  {link.text}
-                </a>
-              ))}
+              <a
+                onClick={handleClickRoute(
+                  AUDIUS_LISTENING_LINK,
+                  props.setRenderPublicSite
+                )}
+                className={cn(styles.siteLink, styles.link)}
+              >
+                Audius Music
+              </a>
+              <a
+                href={DOWNLOAD_LINK}
+                target='_blank'
+                className={cn(styles.siteLink, styles.link)}
+              >
+                Download
+              </a>
+              <a
+                href={AUDIUS_HELP_LINK}
+                target='_blank'
+                className={cn(styles.siteLink, styles.link)}
+              >
+                Support
+              </a>
             </div>
             <div className={styles.siteLinksColumnContainer}>
               <p className={styles.siteLinksColumnTitle}>{messages.resources}</p>
@@ -149,10 +144,7 @@ const Footer = (props: FooterProps) => {
                 <a
                   key={link.text}
                   href={link.link}
-                  onClick={handleClickRoute(
-                    link.link,
-                    props.setRenderPublicSite
-                  )}
+                  target='_blank'
                   className={cn(styles.siteLink, styles.link)}
                 >
                   {link.text}
@@ -164,8 +156,8 @@ const Footer = (props: FooterProps) => {
               {socialLinks.map(({ Icon, link, text }, idx) => (
                 <a
                   key={idx}
-                  onClick={handleClickRoute(link, props.setRenderPublicSite)}
                   href={link}
+                  target='_blank'
                   className={styles.socialIconLinkContainer}
                 >
                   <Icon className={styles.socialIconLink} />
