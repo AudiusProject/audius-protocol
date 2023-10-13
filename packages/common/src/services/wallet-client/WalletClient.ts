@@ -80,7 +80,11 @@ export class WalletClient {
       }, /* one hour */ 1000 * 60 * 60)
       setInterval(() => {
         this.getCurrentWAudioBalance().then((currentWAudioBalance) => {
-          if (currentWAudioBalance !== initialWAudioBalance) {
+          if (
+            currentWAudioBalance &&
+            initialWAudioBalance &&
+            !currentWAudioBalance.eq(initialWAudioBalance)
+          ) {
             clearTimeout(rejectTimeout)
             resolve(currentWAudioBalance)
           }
