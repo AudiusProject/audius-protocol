@@ -26,6 +26,7 @@ import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
 import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk/audiusSdk'
+import { env } from 'services/env'
 import history from 'utils/history'
 
 import { store } from './store/configureStore'
@@ -58,7 +59,9 @@ const AudiusApp = () => {
             audiusBackend: audiusBackendInstance,
             audiusSdk,
             dispatch: store.dispatch,
-            reportToSentry
+            reportToSentry,
+            env,
+            fetch
           }}
         >
           <ConnectedRouter history={history}>
@@ -66,26 +69,26 @@ const AudiusApp = () => {
               <AppProviders>
                 <MainContentContext.Consumer>
                   {({ mainContentRef }) => (
-                    <Switch>
-                      <Route path='/error'>
-                        <SomethingWrong />
-                      </Route>
-                      <Route
-                        exact
-                        path={'/oauth/auth'}
-                        component={OAuthLoginPage}
-                      />
-                      <Route path='/demo/trpc'>
-                        <DemoTrpcPage />
-                      </Route>
-                      <Route path='/'>
-                        <AppErrorBoundary>
-                          <CoinbasePayButtonProvider>
-                            <App mainContentRef={mainContentRef} />
-                          </CoinbasePayButtonProvider>
-                        </AppErrorBoundary>
-                      </Route>
-                    </Switch>
+                    <>
+                      <SomethingWrong />
+                      <Switch>
+                        <Route
+                          exact
+                          path={'/oauth/auth'}
+                          component={OAuthLoginPage}
+                        />
+                        <Route path='/demo/trpc'>
+                          <DemoTrpcPage />
+                        </Route>
+                        <Route path='/'>
+                          <AppErrorBoundary>
+                            <CoinbasePayButtonProvider>
+                              <App mainContentRef={mainContentRef} />
+                            </CoinbasePayButtonProvider>
+                          </AppErrorBoundary>
+                        </Route>
+                      </Switch>
+                    </>
                   )}
                 </MainContentContext.Consumer>
               </AppProviders>

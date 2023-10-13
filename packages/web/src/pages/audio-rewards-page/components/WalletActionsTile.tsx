@@ -1,5 +1,6 @@
 import {
   BNWei,
+  isNullOrUndefined,
   tokenDashboardPageActions,
   walletSelectors
 } from '@audius/common'
@@ -25,7 +26,7 @@ const messages = {
 
 export const WalletActions = ({ className }: { className?: string }) => {
   const balance = useSelector(getAccountBalance) ?? (new BN(0) as BNWei)
-  const hasBalance = balance && !balance.isZero()
+  const hasBalance = !isNullOrUndefined(balance) && !balance.isZero()
   const dispatch = useDispatch()
 
   const onClickReceive = () => dispatch(pressReceive())

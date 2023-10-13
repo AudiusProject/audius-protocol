@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
+    <title>iconRegisterService</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Guide" transform="translate(-492.000000, -759.000000)">
+            <g id="iconRegisterService" transform="translate(492.000000, 759.000000)">
+                <rect id="bound" x="0" y="0" width="32" height="32"></rect>
+                <path d="M9.67003766,30.681142 L9.15811973,11.0018538 C9.14787698,10.6080989 9.29292431,10.2261155 9.56193614,9.93839959 L13.8857161,5.31399291 C14.451503,4.70886758 15.4007149,4.67697748 16.0058402,5.24276439 C16.0303738,5.26570309 16.05413,5.28945932 16.0770687,5.31399291 L20.4250482,9.96428171 C20.6796214,10.236555 20.8237003,10.5938591 20.8292081,10.9665653 L21.1196414,30.6199714 C21.1318824,31.4483081 20.4703061,32.1297309 19.6419694,32.1419719 C19.6345819,32.142081 19.6271936,32.1421356 19.6198052,32.1421356 L11.1695304,32.1421356 C10.3562972,32.1421356 9.69118517,31.4941002 9.67003766,30.681142 Z" id="Path-11" fill="#C9D3FB" fill-rule="evenodd" transform="translate(15.142136, 18.142136) rotate(-135.000000) translate(-15.142136, -18.142136) "></path>
+            </g>
+        </g>
+    </g>
+</svg>

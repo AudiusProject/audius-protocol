@@ -1,34 +1,13 @@
 .paletteContainer {
-  display: flex;
-  flex-direction: column;
-  gap: var(--harmony-unit-12);
   max-width: 1080px;
   margin: auto;
-  padding-inline: var(--harmony-unit-12);
-}
-
-/* TODO: KJ - Turn this into its own component */
-.divider {
-  height: 1px;
-  background-color: var(--harmony-border-strong);
-}
-
-.colorSection {
-  display: flex;
-  gap: var(--harmony-unit-24);
+  padding-inline: var(--harmony-unit-8);
 }
 
 .colorSectionInfo {
   flex: 0 0 400px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--harmony-unit-4);
 }
 
 .colorTileContainer {
   flex: 1 1 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--harmony-unit-2);
-  align-items: flex-start;
 }

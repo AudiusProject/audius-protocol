@@ -1,28 +1,16 @@
 .tile {
   flex: 1 1 96px;
   max-width: 112px;
-  display: flex;
-  flex-direction: column;
-  gap: var(--harmony-unit-2);
-  border-radius: var(--harmony-border-radius-xl);
-  border: 1px solid var(--harmony-border-strong);
   background: var(--harmony-bg-white);
   overflow: hidden;
 }
 
-.tileColor {
-  height: 64px;
+.tile .tileColor {
+  height: var(--harmony-unit-16);
   border-bottom: 1px solid var(--harmony-border-strong);
 }
 
-.tileInfo {
-  display: flex;
-  flex-direction: column;
-  gap: var(--harmony-unit);
-  padding: var(--harmony-unit-2);
-}
-
-.infoText {
+.tile .infoText {
   text-transform: capitalize;
-  line-height: var(--line-height-xs);
+  line-height: var(--harmony-line-height-xs);
 }

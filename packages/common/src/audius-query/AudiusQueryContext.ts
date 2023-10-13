@@ -4,7 +4,7 @@ import type { AudiusSdk } from '@audius/sdk'
 import type { Dispatch } from 'redux'
 
 import type { AudiusAPIClient } from 'services/audius-api-client'
-import { AudiusBackend } from 'services/index'
+import { AudiusBackend, Env } from 'services/index'
 
 import { ReportToSentryArgs } from '../models'
 
@@ -14,6 +14,8 @@ export type AudiusQueryContextType = {
   audiusBackend: AudiusBackend
   dispatch: Dispatch
   reportToSentry: (args: ReportToSentryArgs) => void
+  env: Env
+  fetch: typeof fetch
 }
 
 export const AudiusQueryContext = createContext<AudiusQueryContextType | null>(

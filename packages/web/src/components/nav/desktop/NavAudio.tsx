@@ -9,7 +9,8 @@ import {
   audioRewardsPageSelectors,
   walletSelectors,
   useSelectTierInfo,
-  useAccountHasClaimableRewards
+  useAccountHasClaimableRewards,
+  isNullOrUndefined
 } from '@audius/common'
 import BN from 'bn.js'
 import cn from 'classnames'
@@ -18,6 +19,7 @@ import { animated, Transition } from 'react-spring/renderprops'
 
 import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
 import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
+import Skeleton from 'components/skeleton/Skeleton'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
@@ -73,18 +75,20 @@ const RewardsActionBubble = ({
  */
 const useTotalBalanceWithFallback = () => {
   const account = useSelector(getAccountUser)
-  const balanceLoading = useSelector(getAccountBalanceLoading)
   const walletTotalBalance = useSelector(getAccountTotalBalance)
 
   return useMemo(() => {
-    if (!balanceLoading) {
+    if (!isNullOrUndefined(walletTotalBalance)) {
       return walletTotalBalance
-    } else if (account?.total_balance != null) {
+    } else if (
+      !isNullOrUndefined(account) &&
+      !isNullOrUndefined(account.total_balance)
+    ) {
       return new BN(account.total_balance) as BNWei
     }
 
-    return new BN(0) as BNWei
-  }, [account, balanceLoading, walletTotalBalance])
+    return null
+  }, [account, walletTotalBalance])
 }
 
 const NavAudio = () => {
@@ -94,7 +98,9 @@ const NavAudio = () => {
   const navigate = useNavigateToPage()
 
   const totalBalance = useTotalBalanceWithFallback()
-  const positiveTotalBalance = totalBalance.gt(new BN(0))
+  const positiveTotalBalance = !isNullOrUndefined(totalBalance)
+    ? totalBalance.gt(new BN(0))
+    : false
 
   // we only show the audio balance and respective badge when there is an account
   // so below null-coalescing is okay
@@ -146,9 +152,13 @@ const NavAudio = () => {
         ) : (
           <img alt='no tier' src={IconNoTierBadge} width='16' height='16' />
         )}
-        <span className={styles.audioAmount}>
-          {formatWei(totalBalance!, true, 0)}
-        </span>
+        {isNullOrUndefined(totalBalance) ? (
+          <Skeleton width='30px' height='14px' className={styles.skeleton} />
+        ) : (
+          <span className={styles.audioAmount}>
+            {formatWei(totalBalance, true, 0)}
+          </span>
+        )}
       </div>
       <div className={styles.bubbleContainer}>
         <Transition

@@ -1,0 +1,54 @@
+.container {
+  background-color: rgba(0,0,0,.3);
+  box-sizing: border-box;
+}
+
+.container .bodyClassName {
+  background: #32334D;
+  border-radius: 12px;
+  padding-left: 24px !important;
+  padding-right: 24px !important;
+  padding: 24px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: 720px;
+}
+
+.header {
+  border-bottom: 1ps solid #3F415B;
+  display: inline-flex;
+  width: 100%;
+  justify-content: center;
+  align-content: flex-start;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #3F415B;
+}
+
+.title, .titleRight {
+  font-family: var(--font-family);
+  font-style: normal;
+  font-weight: var(--font-bold);
+  font-size: var(--font-xl);
+  text-align: center;
+  color: #BEC5E0;
+}
+
+.titleRight {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+}
+
+.close {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  height: 24px;
+  width: 24px;
+  cursor: pointer;
+}
+
+.close path {
+  fill: #BEC5E0;
+}

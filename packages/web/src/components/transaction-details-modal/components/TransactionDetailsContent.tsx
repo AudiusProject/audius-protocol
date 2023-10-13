@@ -7,7 +7,8 @@ import {
   TransactionType,
   formatCapitalizeString,
   ChallengeRewardID,
-  makeSolanaTransactionLink
+  makeSolanaTransactionLink,
+  isNullOrUndefined
 } from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -241,9 +242,12 @@ export const TransactionDetailsContent = ({
               {formatAudio(transactionDetails.change)}
             </span>
           </Block>
-          <Block header={messages.balance}>
-            {formatAudio(transactionDetails.balance, 2)}
-          </Block>
+          {/* If user's balance is still loading or failed to load, don't show it. */}
+          {isNullOrUndefined(transactionDetails.balance) ? null : (
+            <Block header={messages.balance}>
+              {formatAudio(transactionDetails.balance, 2)}
+            </Block>
+          )}
         </BlockContainer>
       )}
     </>

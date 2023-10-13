@@ -1,0 +1,30 @@
+.badge {
+  display: inline;
+  font-weight: var(--font-bold);
+  font-size: var(--font-xs);
+  line-height: 12px;
+
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.open {
+  color: var(--static-white);
+  border: 1px solid var(--static-white);
+}
+
+.passed {
+  color: #6BCF63;
+  border: 1px solid #6BCF63;
+}
+
+.failed {
+  color: var(--neutral-light-4);
+  border: 1px solid var(--neutral-light-4);
+}
+
+.pending {
+  color: #E8AB57;
+  border: 1px solid #E8AB57;
+}

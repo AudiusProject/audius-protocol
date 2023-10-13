@@ -3,17 +3,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ID, Nullable, Track, UID, User } from '@audius/common'
 import {
   LibraryCategory,
-  SavedPageTabs,
-  FavoriteSource,
   PlaybackSource,
+  SavedPageTabs,
   Status,
   cacheTracksSelectors,
   cacheUsersSelectors,
   reachabilitySelectors,
   savedPageActions,
   savedPageSelectors,
-  savedPageTracksLineupActions as tracksActions,
-  tracksSocialActions
+  savedPageTracksLineupActions as tracksActions
 } from '@audius/common'
 import { debounce, isEqual } from 'lodash'
 import Animated, { Layout } from 'react-native-reanimated'
@@ -25,6 +23,7 @@ import { FilterInput } from 'app/components/filter-input'
 import { TrackList } from 'app/components/track-list'
 import type { TrackMetadata } from 'app/components/track-list/types'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
+import { getIsDoneLoadingFromDisk } from 'app/store/offline-downloads/selectors'
 import { makeStyles } from 'app/styles'
 
 import { LoadingMoreSpinner } from './LoadingMoreSpinner'
@@ -32,7 +31,6 @@ import { NoTracksPlaceholder } from './NoTracksPlaceholder'
 import { OfflineContentBanner } from './OfflineContentBanner'
 import { useFavoritesLineup } from './useFavoritesLineup'
 
-const { saveTrack, unsaveTrack } = tracksSocialActions
 const { fetchSaves: fetchSavesAction, fetchMoreSaves } = savedPageActions
 const {
   getTrackSaves,
@@ -83,7 +81,15 @@ export const TracksTab = () => {
   const selectedCategory = useSelector((state) =>
     getCategory(state, { currentTab: SavedPageTabs.TRACKS })
   )
-  const savedTracksStatus = useSelector(getSavedTracksStatus)
+  const savedTracksStatus = useSelector((state) => {
+    const onlineSavedTracksStatus = getSavedTracksStatus(state)
+    const isDoneLoadingFromDisk = getIsDoneLoadingFromDisk(state)
+    const offlineSavedTracksStatus = isDoneLoadingFromDisk
+      ? Status.SUCCESS
+      : Status.LOADING
+    return isReachable ? onlineSavedTracksStatus : offlineSavedTracksStatus
+  })
+
   const initialFetch = useSelector(getInitialFetchStatus)
   const isFetchingMore = useSelector(getIsFetchingMore)
   const saves = useSelector(getTrackSaves)
@@ -187,15 +193,6 @@ export const TracksTab = () => {
     })
   }, isEqual)
 
-  const onToggleSave = useCallback(
-    (isSaved: boolean, trackId: ID) => {
-      if (trackId === undefined) return
-      const action = isSaved ? unsaveTrack : saveTrack
-      dispatch(action(trackId, FavoriteSource.LIBRARY_PAGE))
-    },
-    [dispatch]
-  )
-
   const togglePlay = useCallback(
     (uid: UID, id: ID) => {
       dispatch(tracksActions.togglePlay(uid, id, PlaybackSource.LIBRARY_PAGE))
@@ -208,7 +205,6 @@ export const TracksTab = () => {
   }, [])
 
   const loadingSpinner = <LoadingMoreSpinner />
-
   return (
     <VirtualizedScrollView>
       {!isLoading && filteredTrackUids.length === 0 && !filterValue ? (
@@ -237,10 +233,9 @@ export const TracksTab = () => {
                     hideArt
                     onEndReached={handleMoreFetchSaves}
                     onEndReachedThreshold={1.5}
-                    onSave={onToggleSave}
                     showDivider
                     togglePlay={togglePlay}
-                    trackItemAction='save'
+                    trackItemAction='overflow'
                     uids={filteredTrackUids}
                   />
                 </Tile>

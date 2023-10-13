@@ -16,7 +16,8 @@ import {
   ErrorLevel,
   createUserBankIfNeeded,
   solanaSelectors,
-  SolanaWalletAddress
+  SolanaWalletAddress,
+  isNullOrUndefined
 } from '@audius/common'
 import type { AudiusLibs } from '@audius/sdk'
 import BN from 'bn.js'
@@ -33,6 +34,7 @@ const ATA_SIZE = 165 // Size allocated for an associated token account
 
 const {
   getBalance,
+  setBalanceError,
   setBalance,
   send,
   sendSucceeded,
@@ -81,10 +83,16 @@ function* sendAsync({
   const accountBalance = yield* select(getAccountBalance)
   const weiBNBalance = accountBalance ?? (new BN('0') as BNWei)
 
-  const waudioWeiAmount: BNWei = yield* call([
+  const waudioWeiAmount: BNWei | null = yield* call([
     walletClient,
     'getCurrentWAudioBalance'
   ])
+
+  if (isNullOrUndefined(waudioWeiAmount)) {
+    yield* put(sendFailed({ error: 'Failed to fetch current wAudio balance.' }))
+    return
+  }
+
   if (
     chain === Chain.Eth &&
     (!weiBNBalance || !weiBNBalance.gte(weiBNAmount))
@@ -210,6 +218,11 @@ function* fetchBalanceAsync() {
     const localBalanceChange: ReturnType<typeof getLocalBalanceDidChange> =
       yield* select(getLocalBalanceDidChange)
 
+    const useSolAudio = yield* call(
+      getFeatureEnabled,
+      FeatureFlags.ENABLE_SPL_AUDIO
+    )
+
     const [currentEthAudioWeiBalance, currentSolAudioWeiBalance] = yield* all([
       call(
         [walletClient, 'getCurrentBalance'],
@@ -218,36 +231,72 @@ function* fetchBalanceAsync() {
       call([walletClient, 'getCurrentWAudioBalance'])
     ])
 
-    const associatedWalletBalance: BNWei = yield* call(
+    if (isNullOrUndefined(currentEthAudioWeiBalance)) {
+      console.warn(
+        "Failed to fetch and set user's balance - error getting ETH Audio balance."
+      )
+      yield* put(
+        setBalanceError({
+          balanceLoadDidFail: true,
+          totalBalanceLoadDidFail: true
+        })
+      )
+      return
+    }
+
+    const associatedWalletBalance: BNWei | null = yield* call(
       [walletClient, 'getAssociatedWalletBalance'],
       account.user_id,
       /* bustCache */ localBalanceChange
     )
+    if (isNullOrUndefined(associatedWalletBalance)) {
+      console.warn(
+        "Failed to fetch and set user's *total* balance - error getting connected/associated wallet(s) balance."
+      )
+      yield* put(
+        setBalanceError({
+          totalBalanceLoadDidFail: true
+        })
+      )
+    }
 
-    const audioWeiBalance = currentEthAudioWeiBalance.add(
-      currentSolAudioWeiBalance
-    ) as BNWei
-
-    const useSolAudio = yield* call(
-      getFeatureEnabled,
-      FeatureFlags.ENABLE_SPL_AUDIO
-    )
     if (useSolAudio) {
-      const totalBalance = audioWeiBalance.add(associatedWalletBalance) as BNWei
+      if (isNullOrUndefined(currentSolAudioWeiBalance)) {
+        console.warn(
+          "Failed to fetch and set user's balance - error getting SOL wAudio balance."
+        )
+        yield* put(
+          setBalanceError({
+            balanceLoadDidFail: true,
+            totalBalanceLoadDidFail: true
+          })
+        )
+        return
+      }
+
+      const audioWeiBalance = currentEthAudioWeiBalance.add(
+        currentSolAudioWeiBalance!
+      ) as BNWei
+
+      const totalBalance = isNullOrUndefined(associatedWalletBalance)
+        ? undefined
+        : weiToString(audioWeiBalance.add(associatedWalletBalance) as BNWei)
       yield* put(
         setBalance({
           balance: weiToString(audioWeiBalance),
-          totalBalance: weiToString(totalBalance)
+          totalBalance
         })
       )
     } else {
-      const totalBalance = currentEthAudioWeiBalance.add(
-        associatedWalletBalance
-      ) as BNWei
+      const totalBalance = isNullOrUndefined(associatedWalletBalance)
+        ? undefined
+        : weiToString(
+            currentEthAudioWeiBalance.add(associatedWalletBalance) as BNWei
+          )
       yield* put(
         setBalance({
           balance: weiToString(currentEthAudioWeiBalance),
-          totalBalance: weiToString(totalBalance)
+          totalBalance
         })
       )
     }

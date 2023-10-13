@@ -1,0 +1,6 @@
+.stat {
+  background: -webkit-linear-gradient(315deg, #7652CC 2.04%, #B05CE6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline;
+}

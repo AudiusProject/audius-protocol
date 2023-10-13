@@ -1,0 +1,80 @@
+.amountHeader {
+  width: 100%;
+  text-align: right;
+}
+
+.rowContainer {
+  height: 79px;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+}
+
+.rowCol {
+
+}
+
+.colImg {
+  height: 56px;
+  width: 56px;
+  border-radius: 50%;
+  margin-right: 24px;
+}
+
+.colAddress {
+  font-family: var(--font-family);
+  font-style: normal;
+  font-weight: var(--font-regular);
+  font-size: var(--font-m);
+  
+  color: #BEC5E0;
+  flex: 1;
+}
+
+.colAmount {
+
+}
+
+/* Modal props */
+.modalRow {
+  padding: 0px 24px;
+  border-bottom: 1px solid #3F415B;
+  cursor: pointer;
+}
+
+.modalRow:last-child {
+  border-bottom: none;
+}
+
+.modalRow:hover,
+.modalRow:active {
+  background: #393A54;
+}
+
+.trashIconContainer {
+  cursor: pointer;
+  height: 36px;
+  width: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: #4E4F6A;
+  box-shadow: 0px 5px 5px rgba(36, 36, 56, 0.15);
+  border-radius: 8px;
+  margin-left: 16px;
+}
+
+.trashIcon {
+  height: 20px;
+  width: 20px;
+}
+
+/*  */
+.subtext {
+  margin-top: 4px;
+  font-weight: 500;
+  font-size: var(--font-l);
+  text-align: center;
+  color: #BEC5E0;
+}

@@ -1,5 +1,7 @@
 CREATE DATABASE discovery_provider;
 CREATE DATABASE discovery_provider_1;
+CREATE DATABASE discovery_provider_2;
+CREATE DATABASE discovery_provider_3;
 
 CREATE DATABASE creator_node_1;
 CREATE DATABASE creator_node_2;

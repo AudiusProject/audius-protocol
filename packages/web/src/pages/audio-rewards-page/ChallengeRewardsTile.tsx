@@ -10,6 +10,7 @@ import {
   challengesSelectors,
   audioRewardsPageActions,
   ChallengeRewardsModalType,
+  ChallengeName,
   audioRewardsPageSelectors,
   makeChallengeSortComparator,
   isAudioMatchingChallenge
@@ -191,8 +192,8 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   'referred',
   'send-first-tip',
   'first-playlist',
-  's', // $AUDIO matching seller
-  'b' // $AUDIO matching buyer
+  ChallengeName.AudioMatchingSell, // $AUDIO matching seller
+  ChallengeName.AudioMatchingBuy // $AUDIO matching buyer
 ])
 
 /** Pulls rewards from remoteconfig */

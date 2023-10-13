@@ -7,11 +7,11 @@ sidebar_position: 2
 
 ## Database
 
-The discovery node uses PostgreSQL. Our Postgres database is managed through [SQLAlchemy](https://www.sqlalchemy.org/), an object relational mapper and [Alembic](http://alembic.zzzcomputing.com/en/latest/index.html), a lightweight database migration tool. The data models are defined in [src/models.py](https://github.com/AudiusProject/audius-protocol/blob/main/discovery-provider/src/models.py) which is used by alembic to automatically generate the migrations under [alembic/versions](https://github.com/AudiusProject/audius-protocol/tree/main/discovery-provider/alembic/versions). You can find the connection defined between alembic and our data models in [alembic/env.py](https://github.com/AudiusProject/audius-discovery-provider/blob/develop/alembic/env.py)
+The discovery node uses PostgreSQL. Our Postgres database is managed through [SQLAlchemy](https://www.sqlalchemy.org/), an object relational mapper and [Alembic](http://alembic.zzzcomputing.com/en/latest/index.html), a lightweight database migration tool. The data models are defined in [src/models.py](https://github.com/AudiusProject/audius-protocol/blob/main/packages/discovery-provider/src/models.py) which is used by alembic to automatically generate the migrations under [alembic/versions](https://github.com/AudiusProject/audius-protocol/tree/main/packages/discovery-provider/alembic/versions). You can find the connection defined between alembic and our data models in [alembic/env.py](https://github.com/AudiusProject/audius-protocol/tree/main/packages/discovery-provider/alembic/env.py)
 
 ## Flask
 
-The discovery node web server serves as the entrypoint for reading data through the audius protocol. All queries are returned as JSON objects parsed from SQLAlchemy query resultsn, and can be found in [src/queries](https://github.com/AudiusProject/audius-protocol/tree/main/discovery-provider/src/queries). Some examples of queries include user-specific feeds, track data, playlist data, etc.
+The discovery node web server serves as the entrypoint for reading data through the audius protocol. All queries are returned as JSON objects parsed from SQLAlchemy query resultsn, and can be found in [src/queries](https://github.com/AudiusProject/audius-protocol/tree/main/packages/discovery-provider/src/queries). Some examples of queries include user-specific feeds, track data, playlist data, etc.
 
 ## Celery
 
@@ -28,15 +28,15 @@ Celery worker is the component that actually runs tasks.
 The primary driver of data availability on audius is the 'index_blocks' celery task.
 What happens when 'index_blocks' is actually executed? The celery task does the following operations:
 
-1. Check whether the latest block is different than the last processed block in the ‘blocks’ table. If so, an array of blocks is generated from the last blockhash present in our database up to the latest block number specified by the block indexing window. 
-    - block indexing window is equivalent to the maximum number of blocks to be processed in a single indexing operation
-2. Traverse over each block in the block array produced after the above step. 
+1. Check whether the latest block is different than the last processed block in the ‘blocks’ table. If so, an array of blocks is generated from the last blockhash present in our database up to the latest block number specified by the block indexing window.
+   - block indexing window is equivalent to the maximum number of blocks to be processed in a single indexing operation
+2. Traverse over each block in the block array produced after the above step.
 
-    In each block, check if any transactions relevant to the audius smart contracts are present. If present, we retrieve specific event information from the associated transaction hash - examples include creator and track metadata. To do so, the discovery node *must* be aware of both the contract ABIs as well as each contract's address - these are shipped with each discovery node image. 
+   In each block, check if any transactions relevant to the audius smart contracts are present. If present, we retrieve specific event information from the associated transaction hash - examples include creator and track metadata. To do so, the discovery node _must_ be aware of both the contract ABIs as well as each contract's address - these are shipped with each discovery node image.
 
-3. Given operations from audius contracts in a given block, the task updates the corresponding table in the database. Certain index operations require a metadata fetch from decentralized storage (Audius Storage Protocol). Metadata formats can be found [here](https://github.com/AudiusProject/audius-protocol/blob/main/discovery-provider/src/tasks/metadata.py).
+3. Given operations from audius contracts in a given block, the task updates the corresponding table in the database. Certain index operations require a metadata fetch from decentralized storage (Audius Storage Protocol). Metadata formats can be found [here](https://github.com/AudiusProject/audius-protocol/blob/main/packages/discovery-provider/src/tasks/metadata.py).
 
-*Why index blocks instead of using event filters?*
+_Why index blocks instead of using event filters?_
 
 This is a great question - the main reason we have chosen to index blocks in this manner is to handle cases of false progress and rollback. Each indexing task opens a fresh database session, which means DB transactions can be reverted at a block level - while rollback handling for the discovery node has yet to be implemented, block-level indexing will be immediately useful when it becomes necessary.
 
@@ -56,4 +56,4 @@ We use Redis for several things in the discovery node
 
 Elastic Search is used denormalize data and support certain quries (Feed, Search, Related Artists, etc.). Elastic Search data is populated and kept up to date by database triggers that live on the Postgres database.
 
-ETL code for the Elastic Search layer is found in the [es-indexer](https://github.com/AudiusProject/audius-protocol/tree/main/discovery-provider/es-indexer).
+ETL code for the Elastic Search layer is found in the [es-indexer](https://github.com/AudiusProject/audius-protocol/tree/main/packages/discovery-provider/es-indexer).

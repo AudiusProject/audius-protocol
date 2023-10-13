@@ -82,7 +82,8 @@
     - **`permalinkArgKey`** - `fetchArgs[permalinkArgKey]` must contain the permalink of the entity
     - **`idListArgKey`** - works like `idArgKey` but for endpoints that return a list entities
     - **`type`** - by default endpoint additions are viewed as "queries" ie methods that fetch data. Specifying `type: 'mutation'` tells audius-query you are implementing a method that will write data to the server.
-
+    - **`retry`** - enables retries for the endpoint. The fetch function will automatically be called multiple times, with the final error bubbling up if all retries are exhausted. Fetches resulting in `400`, `401`, and `403` are never retried.
+    - **`retryConfig`** - Overrides the default retry config for advanced use cases. The options are passed directly to [`async-retry`](https://github.com/vercel/async-retry).
 
 1.  Export the query hook
 
@@ -262,13 +263,13 @@ const purchasesApi = createApi({
 
 Note that in the above code, we're simply issuing a fetch for the related tracks, which will be inserted into the cache, before returning our original data. This is merely a performance optimization.
 
-
 ## Query Hook options
 
 Query Hooks accept an options object as the optional second argument
 
 - `disabled` - prevents calling the remote fetch function while disabled is false. This is useful if some arguments may not be loaded yet
 - `shallow` - skips pulling subentities out of the cache. (e.g. get a track but not the full user inside `track.user`). Omitted subentities will be replaced by id references.
+- `force` - forces a fetch to occur when the hook instance renders for the first time. This is useful for data which should be re-fetched when a user navigates away from and back to a page.
 
 ## Cacheing
 

@@ -25,6 +25,7 @@ import { RootScreen } from 'app/screens/root-screen'
 import { WalletConnectProvider } from 'app/screens/wallet-connect'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
+import { env } from 'app/services/env'
 import { setLibs } from 'app/services/libs'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { persistor, store } from 'app/store'
@@ -89,7 +90,9 @@ const App = () => {
                 audiusSdk,
                 audiusBackend: audiusBackendInstance,
                 dispatch: store.dispatch,
-                reportToSentry
+                reportToSentry,
+                env,
+                fetch
               }}
             >
               <PersistGate loading={null} persistor={persistor}>

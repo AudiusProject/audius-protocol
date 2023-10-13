@@ -3,10 +3,13 @@
   "version": "1.0.1",
   "private": true,
   "scripts": {
-    "start": "audius-compose up"
+    "start": "./start.sh"
   },
   "dependencies": {
-    "@audius/sdk": "*"
+    "@audius/sdk": "*",
+    "@pedalboard/relay": "*",
+    "@pedalboard/sla-auditor": "*",
+    "@pedalboard/trending-challenge-rewards": "*"
   },
   "license": "ISC"
 }

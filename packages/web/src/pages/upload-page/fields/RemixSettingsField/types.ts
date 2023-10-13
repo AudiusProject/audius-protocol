@@ -15,7 +15,7 @@ export const RemixSettingsFieldSchema = z
     [SHOW_REMIXES]: z.optional(z.boolean()),
     [IS_REMIX]: z.boolean(),
     [REMIX_LINK]: z.optional(z.string()),
-    parentTrackId: z.number().nullable()
+    parentTrackId: z.optional(z.number())
   })
   .refine((form) => !form[IS_REMIX] || form.parentTrackId, {
     message: messages.remixLinkError,

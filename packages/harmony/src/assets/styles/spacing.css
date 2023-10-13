@@ -7,8 +7,12 @@
  */
 :root,
 root {
+  /* --- Base Unit Variables --- */
   --harmony-unit: 4px;
+  --harmony-unit-half: 2px;
+  --harmony-negative-unit: -4px;
 
+  /* --- 4*n Unit Variables --- */
   --harmony-unit-1: 4px;
   --harmony-unit-2: 8px;
   --harmony-unit-3: 12px;
@@ -33,8 +37,14 @@ root {
   --harmony-unit-22: 88px;
   --harmony-unit-23: 92px;
   --harmony-unit-24: 96px;
-  
-  --harmony-unit-half: 2px;
-  --harmony-negative-unit: -4px;
-  --harmony-negative-unit-2: -8px;
+
+  /* --- Spacing Variables --- */
+  --harmony-spacing-xs: 4px;
+  --harmony-spacing-s: 8px;
+  --harmony-spacing-m: 12px;
+  --harmony-spacing-l: 16px;
+  --harmony-spacing-xl: 24px;
+  --harmony-spacing-2xl: 32px;
+  --harmony-spacing-3xl: 48px;
+  --harmony-spacing-4xl: 64px;
 }

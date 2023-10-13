@@ -1,0 +1,84 @@
+.container {
+  flex: 1;
+  min-width: 227px;
+  padding: 16px 16px 16px 32px;
+  display: inline-flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.header {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.serviceType {
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-2xl);
+
+  color: #BEC5E0;
+}
+
+.deregistered {
+  font-family: var(--font-family);
+  font-style: normal;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  line-height: 17px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #F15064;
+  margin-left: 22px;
+}
+
+.version {
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #777C96;
+  margin-left: 24px;
+}
+
+.descriptor {
+  margin-bottom: 24px;
+}
+
+.descriptor:last-child {
+  margin-bottom: 0px;
+}
+
+.label {
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  line-height: 17px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+
+  color: #777C96;
+  margin-bottom: 8px;
+}
+
+.value {
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-xl);
+
+  color: #BEC5E0;
+}
+
+.modifyBtn {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.modifyBtnText {
+  text-transform: uppercase;
+}
