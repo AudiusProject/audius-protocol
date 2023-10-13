@@ -325,7 +325,7 @@ function* claimChallengeRewardAsync(
 
             // If this was an aggregate challenges with multiple specifiers,
             // then libs handles the retries and we shouldn't retry here.
-            if (specifiers.size > 1) {
+            if (specifiers.length > 1) {
               yield put(claimChallengeRewardFailed())
               break
             }
