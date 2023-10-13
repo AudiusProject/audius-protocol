@@ -256,13 +256,11 @@ function* claimChallengeRewardAsync(
   }
   let aaoErrorCode
   try {
-    const challenges = Object.entries(specifiers).map(
-      ([specifier, amount]) => ({
-        challenge_id: challengeId,
-        specifier,
-        amount
-      })
-    )
+    const challenges = specifiers.map(({ specifier, amount }) => ({
+      challenge_id: challengeId,
+      specifier,
+      amount
+    }))
 
     const response: { error?: string; aaoErrorCode?: number } = yield* call(
       audiusBackendInstance.submitAndEvaluateAttestations,
