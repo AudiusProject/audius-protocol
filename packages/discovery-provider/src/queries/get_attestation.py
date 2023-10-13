@@ -31,7 +31,6 @@ REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
 REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = None
 if REWARDS_MANAGER_ACCOUNT:
     REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = Pubkey.from_string(REWARDS_MANAGER_ACCOUNT)
-COOLDOWN_CHALLENGE_IDS = ["s", "b"]
 DATETIME_FORMAT_STRING = "%Y-%m-%d %H:%M:%S.%f+00"
 
 
@@ -167,7 +166,7 @@ def get_attestation(
     if disbursement:
         raise AttestationError(ALREADY_DISBURSED)
     now_utc = datetime.now(pytz.UTC)
-    if challenge_id in COOLDOWN_CHALLENGE_IDS and challenge.cooldown_days:
+    if challenge.cooldown_days:
         time_passed = now_utc - user_challenge.created_at
         if time_passed.days < challenge.cooldown_days:
             raise AttestationError(WAIT_FOR_COOLDOWN)
