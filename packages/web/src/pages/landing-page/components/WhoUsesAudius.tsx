@@ -1,23 +1,25 @@
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
+import { useCallback } from 'react'
+
 import { useSpring, animated } from 'react-spring'
 
+import artistAluna from 'assets/img/publicSite/Artist-Aluna.webp'
 import artistDeadmau5 from 'assets/img/publicSite/Artist-Deadmau5.webp'
+import artistKennyBeats from 'assets/img/publicSite/Artist-Kenny-Beats.webp'
+import artistLoloZouai from 'assets/img/publicSite/Artist-Lolo-Zouai.webp'
 import artistRezz from 'assets/img/publicSite/Artist-Rezz.webp'
+import artistRuss from 'assets/img/publicSite/Artist-Russ.webp'
 import artistSkrillex from 'assets/img/publicSite/Artist-Skrillex.webp'
 import artistSteveAoki from 'assets/img/publicSite/Artist-Steve-Aoki.webp'
 import artistZedd from 'assets/img/publicSite/Artist-Zedd.webp'
-import artistKennyBeats from 'assets/img/publicSite/Artist-Kenny-Beats.webp'
-import artistRuss from 'assets/img/publicSite/Artist-Russ.webp'
-import artistAluna from 'assets/img/publicSite/Artist-Aluna.webp'
-import artistLoloZouai from 'assets/img/publicSite/Artist-Lolo-Zouai.webp'
 import useHasViewed from 'hooks/useHasViewed'
 
 import styles from './WhoUsesAudius.module.css'
-import { useCallback } from 'react'
 
 const messages = {
   title: 'Who Uses Audius?',
-  subtitle: 'Thousands of artists across dozens of genres—including electronic, hip-hop, and more—use Audius to forge unparalleled connections with fans.'
+  subtitle:
+    'Thousands of artists across dozens of genres—including electronic, hip-hop, and more—use Audius to forge unparalleled connections with fans.'
 }
 
 type AristProps = {
@@ -29,7 +31,10 @@ type AristProps = {
 
 const Artist = (props: AristProps) => {
   return (
-    <div className={styles.cardMoveContainer} onClick={() => props.goToArtist(props.handle)}>
+    <div
+      className={styles.cardMoveContainer}
+      onClick={() => props.goToArtist(props.handle)}
+    >
       <div className={styles.artistContainer}>
         <div className={styles.artistImageWrapper}>
           <animated.img src={props.imageUrl} className={styles.artistImage} />
@@ -42,7 +47,10 @@ const Artist = (props: AristProps) => {
 
 const MobileArtist = (props: AristProps) => {
   return (
-    <div className={styles.artistCard} onClick={() => props.goToArtist(props.handle)}>
+    <div
+      className={styles.artistCard}
+      onClick={() => props.goToArtist(props.handle)}
+    >
       <div className={styles.artistImageWrapper}>
         <img
           src={props.imageUrl}
@@ -127,7 +135,11 @@ const WhoUsesAudius = (props: WhoUsesAudiusProps) => {
         <h3 className={styles.subTitle}>{messages.subtitle}</h3>
         <div className={styles.artistsContainer}>
           {artists.map((artist, i) => (
-            <MobileArtist key={artist.handle} {...artist} goToArtist={goToArtist} />
+            <MobileArtist
+              key={artist.handle}
+              {...artist}
+              goToArtist={goToArtist}
+            />
           ))}
         </div>
       </div>

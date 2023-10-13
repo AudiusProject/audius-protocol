@@ -1,5 +1,6 @@
 import { ReactNode } from 'react'
 
+import { IconCart, IconAllTime, IconUserGroup } from '@audius/stems'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
@@ -9,7 +10,6 @@ import useHasViewed from 'hooks/useHasViewed'
 import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
 import styles from './PlatformFeatures.module.css'
-import { IconCart, IconAllTime, IconUserGroup } from '@audius/stems'
 
 const DESKTOP_NAV_BANNER_MIN_WIDTH = 1170
 const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia(
@@ -51,7 +51,8 @@ const features: Array<Omit<FeatureProps, 'iconPosition'>> = [
   },
   {
     title: 'Free Unlimited Uploads & No Ads',
-    description: 'Free to use, with no limitations on uploads and a completely ad-free experience.',
+    description:
+      'Free to use, with no limitations on uploads and a completely ad-free experience.',
     icon: (
       <div className={styles.featureIconContainer}>
         <IconAllTime className={styles.allTimeIcon} />
@@ -123,22 +124,22 @@ const PlatformFeatures = (props: PlatformFeaturesProps) => {
             alt='DJ performing in front of crowd'
           />
           {props.isMobile ? (
-          <div className={styles.animateTitleContainer}>
-            <animated.div
-              style={{
-                opacity: textStyles.opacity,
-                transform: textStyles.x.interpolate(
-                  (x) => `translate3d(0,${x}px,0)`
-                )
-              }}
-            >
-              <div className={styles.header}>
-                <h3 className={styles.title}>{messages.title}</h3>
-                <h4 className={styles.subTitle}>{messages.subTitle}</h4>
-              </div>
-            </animated.div>
-          </div>
-        ) : null}
+            <div className={styles.animateTitleContainer}>
+              <animated.div
+                style={{
+                  opacity: textStyles.opacity,
+                  transform: textStyles.x.interpolate(
+                    (x) => `translate3d(0,${x}px,0)`
+                  )
+                }}
+              >
+                <div className={styles.header}>
+                  <h3 className={styles.title}>{messages.title}</h3>
+                  <h4 className={styles.subTitle}>{messages.subTitle}</h4>
+                </div>
+              </animated.div>
+            </div>
+          ) : null}
           <div className={styles.features}>
             {features.map((feature) => (
               <Feature

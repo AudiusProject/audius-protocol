@@ -85,7 +85,7 @@ const messages = {
     `© ${year} Audius Music. All rights reserved.`,
   product: 'Product',
   resources: 'Resources',
-  socials: 'Socials',
+  socials: 'Socials'
 }
 
 type FooterProps = {
@@ -127,6 +127,7 @@ const Footer = (props: FooterProps) => {
                 href={DOWNLOAD_LINK}
                 target='_blank'
                 className={cn(styles.siteLink, styles.link)}
+                rel='noreferrer'
               >
                 Download
               </a>
@@ -134,18 +135,22 @@ const Footer = (props: FooterProps) => {
                 href={AUDIUS_HELP_LINK}
                 target='_blank'
                 className={cn(styles.siteLink, styles.link)}
+                rel='noreferrer'
               >
                 Support
               </a>
             </div>
             <div className={styles.siteLinksColumnContainer}>
-              <p className={styles.siteLinksColumnTitle}>{messages.resources}</p>
+              <p className={styles.siteLinksColumnTitle}>
+                {messages.resources}
+              </p>
               {resourcesLinks.map((link) => (
                 <a
                   key={link.text}
                   href={link.link}
                   target='_blank'
                   className={cn(styles.siteLink, styles.link)}
+                  rel='noreferrer'
                 >
                   {link.text}
                 </a>
@@ -159,6 +164,7 @@ const Footer = (props: FooterProps) => {
                   href={link}
                   target='_blank'
                   className={styles.socialIconLinkContainer}
+                  rel='noreferrer'
                 >
                   <Icon className={styles.socialIconLink} />
                   {text}

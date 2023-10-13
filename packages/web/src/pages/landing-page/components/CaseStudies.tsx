@@ -4,13 +4,13 @@ import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
+import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
 import imgMerch from 'assets/img/publicSite/ImgMerch.jpg'
 import imgRemix from 'assets/img/publicSite/ImgRemix.jpg'
 import { handleClickRoute } from 'components/public-site/handleClickRoute'
 import useCardWeight from 'hooks/useCardWeight'
 import useHasViewed from 'hooks/useHasViewed'
 import { AUDIUS_MERCH_LINK, AUDIUS_REMIX_CONTESTS_LINK } from 'utils/route'
-import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
 
 import styles from './CaseStudies.module.css'
 
@@ -34,7 +34,8 @@ const cards = [
   },
   {
     title: 'Success Stories',
-    description: 'Lorem ipsum dolor sit amet consectetur. Elit nunc sit semper mattis aliquet erat ac ut. Ultrices sodales.',
+    description:
+      'Lorem ipsum dolor sit amet consectetur. Elit nunc sit semper mattis aliquet erat ac ut. Ultrices sodales.',
     image: imgMerch,
     backgroundGradient:
       'radial-gradient(97.53% 194.75% at 3.62% 8.88%, #8F00FF 0%, #00F0FF 100%)',

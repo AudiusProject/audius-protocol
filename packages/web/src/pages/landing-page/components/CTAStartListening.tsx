@@ -1,12 +1,12 @@
 import { Parallax } from 'react-scroll-parallax'
 
+import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
 import footerBackgroundMobile from 'assets/img/publicSite/Footer-Background-mobile@2x.jpg'
 import footerBackground from 'assets/img/publicSite/Footer-Background@2x.jpg'
 import footerForeground from 'assets/img/publicSite/Footer-Foreground@2x.png'
 import dots2x from 'assets/img/publicSite/dots@2x.jpg'
 import { handleClickRoute } from 'components/public-site/handleClickRoute'
 import { AUDIUS_LISTENING_LINK } from 'utils/route'
-import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
 
 import styles from './CTAStartListening.module.css'
 

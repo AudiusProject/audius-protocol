@@ -32,7 +32,7 @@
 }
 
 .content {
-  background: linear-gradient(119deg, #5200FF 1%, #9E00FF 99%);
+  background: linear-gradient(119deg, #5200ff 1%, #9e00ff 99%);
   position: absolute;
   z-index: 2000;
   height: 100vh;

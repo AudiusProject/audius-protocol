@@ -14,7 +14,7 @@ const messages = {
   title1: 'A New Model',
   title2: 'Artist Owned & Controlled',
   description:
-    "Step into the future with Audius, where we're rewriting the rules of the music industry. Designed by artists, for artists, Audius is not just a platform but a movement. Navigate your creative journey on your terms. In the music industry, connections make the difference, and Audius is where those connections happen. Join us in shaping the next chapter of music history.",
+    "Step into the future with Audius, where we're rewriting the rules of the music industry. Designed by artists, for artists, Audius is not just a platform but a movement. Navigate your creative journey on your terms. In the music industry, connections make the difference, and Audius is where those connections happen. Join us in shaping the next chapter of music history."
 }
 
 const title1Items = messages.title1.split(' ')

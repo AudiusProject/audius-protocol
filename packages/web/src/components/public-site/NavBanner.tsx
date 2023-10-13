@@ -9,7 +9,7 @@ import {
   IconMerch,
   IconSupport,
   PopupMenu,
-  PopupMenuItem,
+  PopupMenuItem
 } from '@audius/stems'
 import cn from 'classnames'
 
@@ -23,10 +23,10 @@ import {
   DOWNLOAD_LINK
 } from 'utils/route'
 import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
+import zIndex from 'utils/zIndex'
 
 import styles from './NavBanner.module.css'
 import { handleClickRoute } from './handleClickRoute'
-import zIndex from 'utils/zIndex'
 
 const DESKTOP_NAV_BANNER_MIN_WIDTH = 1170
 const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia(
@@ -36,7 +36,8 @@ const messages = {
   resources: 'Resources',
   signUp: 'Sign Up',
   help: 'Help & Support',
-  helpDescription: 'Answers and Resources to help you make the most of Audius Music.',
+  helpDescription:
+    'Answers and Resources to help you make the most of Audius Music.',
   download: 'Download the App',
   downloadDescription: 'Download the apps for desktop and mobile devices.',
   blog: 'Read the Blog',
@@ -86,20 +87,14 @@ const NavBanner = (props: NavBannerProps) => {
     {
       text: messages.help,
       subtext: messages.helpDescription,
-      onClick: handleClickRoute(
-        AUDIUS_MERCH_LINK,
-        props.setRenderPublicSite
-      ),
+      onClick: handleClickRoute(AUDIUS_MERCH_LINK, props.setRenderPublicSite),
       icon: <IconSupport />,
       iconClassName: styles.menuItemIcon
     },
     {
       text: messages.download,
       subtext: messages.downloadDescription,
-      onClick: handleClickRoute(
-        DOWNLOAD_LINK,
-        props.setRenderPublicSite
-      ),
+      onClick: handleClickRoute(DOWNLOAD_LINK, props.setRenderPublicSite),
       icon: <IconDownloadQueued />,
       iconClassName: styles.menuItemIcon
     },
@@ -107,30 +102,21 @@ const NavBanner = (props: NavBannerProps) => {
       text: messages.blog,
       subtext: messages.blogDescription,
       className: styles.rewardsMenuItem,
-      onClick: handleClickRoute(
-        AUDIUS_BLOG_LINK,
-        props.setRenderPublicSite
-      ),
+      onClick: handleClickRoute(AUDIUS_BLOG_LINK, props.setRenderPublicSite),
       icon: <IconBlog />,
       iconClassName: styles.menuItemIconStroke
     },
     {
       text: messages.oaf,
       subtext: messages.oafDescription,
-      onClick: handleClickRoute(
-        AUDIUS_ORG,
-        props.setRenderPublicSite
-      ),
+      onClick: handleClickRoute(AUDIUS_ORG, props.setRenderPublicSite),
       icon: <IconFoundation />,
       iconClassName: styles.menuItemIcon
     },
     {
       text: messages.merch,
       subtext: messages.merchDescription,
-      onClick: handleClickRoute(
-        AUDIUS_MERCH_LINK,
-        props.setRenderPublicSite
-      ),
+      onClick: handleClickRoute(AUDIUS_MERCH_LINK, props.setRenderPublicSite),
       icon: <IconMerch />,
       iconClassName: styles.menuItemIconStroke
     }
@@ -189,7 +175,9 @@ const NavBanner = (props: NavBannerProps) => {
                       <div className={item.iconClassName}>{item.icon}</div>
                       <div className={styles.menuItemContent}>
                         <p className={styles.menuItemTitle}>{item.text}</p>
-                        <p className={styles.menuItemSubtitle}>{item.subtext}</p>
+                        <p className={styles.menuItemSubtitle}>
+                          {item.subtext}
+                        </p>
                       </div>
                     </div>
                   ))}

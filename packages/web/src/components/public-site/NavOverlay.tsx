@@ -27,7 +27,7 @@ import {
   AUDIUS_SIGN_UP_LINK,
   AUDIUS_TELEGRAM_LINK,
   AUDIUS_TWITTER_LINK,
-  DOWNLOAD_START_LINK,
+  DOWNLOAD_START_LINK
 } from 'utils/route'
 
 import styles from './NavOverlay.module.css'
@@ -74,12 +74,20 @@ const dappLinks = [
   },
   {
     text: messages.readTheBlog,
-    icon: <IconBlog className={cn(styles.dappLinkIcon, styles.dappLinkIconStroke)} />,
+    icon: (
+      <IconBlog
+        className={cn(styles.dappLinkIcon, styles.dappLinkIconStroke)}
+      />
+    ),
     link: AUDIUS_BLOG_LINK
   },
   {
     text: messages.merchStore,
-    icon: <IconMerch className={cn(styles.dappLinkIcon, styles.dappLinkIconStroke)} />,
+    icon: (
+      <IconMerch
+        className={cn(styles.dappLinkIcon, styles.dappLinkIconStroke)}
+      />
+    ),
     link: AUDIUS_MERCH_LINK
   },
   {
@@ -178,10 +186,7 @@ const NavOverlay = (props: NavOverlayProps) => {
             ))}
           </div>
           <div className={styles.signUpButtonContainer}>
-            <button
-              className={styles.signUpButton}
-              onClick={onSignUp}
-            >
+            <button className={styles.signUpButton} onClick={onSignUp}>
               {messages.signUp}
             </button>
           </div>

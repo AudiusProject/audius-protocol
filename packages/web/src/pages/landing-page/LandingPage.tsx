@@ -11,15 +11,15 @@ import { shouldShowCookieBanner, dismissCookieBanner } from 'utils/gdpr'
 import { getPathname } from 'utils/route'
 
 import styles from './LandingPage.module.css'
-import WhoUsesAudius from './components/WhoUsesAudius'
+import ArtistInvestors from './components/ArtistInvestors'
 import CTAGetStarted from './components/CTAGetStarted'
 import CTAStartListening from './components/CTAStartListening'
+import CaseStudies from './components/CaseStudies'
 import Description from './components/Description'
 import FeaturedContent from './components/FeaturedContent'
 import Hero from './components/Hero'
-import CaseStudies from './components/CaseStudies'
 import PlatformFeatures from './components/PlatformFeatures'
-import ArtistInvestors from './components/ArtistInvestors'
+import WhoUsesAudius from './components/WhoUsesAudius'
 
 const FANBURST_UTM_SOURCE = 'utm_source=fanburst'
 

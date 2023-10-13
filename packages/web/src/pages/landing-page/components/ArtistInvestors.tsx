@@ -1,13 +1,13 @@
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
+import cn from 'classnames'
 import { useSpring, animated } from 'react-spring'
 
+import investorJasonDerulo from 'assets/img/publicSite/Investor-Jason-Derulo.webp'
 import investorKatyPerry from 'assets/img/publicSite/Investor-Katy-Perry.webp'
 import investorNas from 'assets/img/publicSite/Investor-Nas.webp'
-import investorJasonDerulo from 'assets/img/publicSite/Investor-Jason-Derulo.webp'
-import investorTheChainsmokers from 'assets/img/publicSite/Investor-The-Chainsmokers.webp'
 import investorPushaT from 'assets/img/publicSite/Investor-Pusha-T.webp'
+import investorTheChainsmokers from 'assets/img/publicSite/Investor-The-Chainsmokers.webp'
 import useHasViewed from 'hooks/useHasViewed'
-import cn from 'classnames'
 
 import styles from './ArtistInvestors.module.css'
 
@@ -102,7 +102,9 @@ const ArtistInvestors = (props: ArtistInvestorsProps) => {
             <MobileArtist key={artist.handle} {...artist} />
           ))}
         </div>
-        <h3 className={cn(styles.subTitle, styles.manyMore)}>{messages.manyMore}</h3>
+        <h3 className={cn(styles.subTitle, styles.manyMore)}>
+          {messages.manyMore}
+        </h3>
       </div>
     )
   }

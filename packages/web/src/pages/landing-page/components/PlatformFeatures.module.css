@@ -91,8 +91,10 @@
   height: 52px;
   padding: 10px;
   border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.10);
-  box-shadow: -3.73333px 3.73333px 3.73333px 0px rgba(255, 255, 255, 0.08) inset, 3.73333px -3.73333px 3.73333px 0px rgba(96, 21, 155, 0.08) inset, 0px 4px 6px -2px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: -3.73333px 3.73333px 3.73333px 0px rgba(255, 255, 255, 0.08) inset,
+    3.73333px -3.73333px 3.73333px 0px rgba(96, 21, 155, 0.08) inset,
+    0px 4px 6px -2px rgba(0, 0, 0, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -104,15 +106,15 @@
 }
 
 .featureIconContainer:has(.cartIcon) {
-  background: #AA4AF5;
+  background: #aa4af5;
 }
 
 .featureIconContainer:has(.fanbaseIcon) {
-  background: #F54AE4;
+  background: #f54ae4;
 }
 
 .featureIconContainer:has(.allTimeIcon) {
-  background: #4AB8F5;
+  background: #4ab8f5;
 }
 
 .featureText {
