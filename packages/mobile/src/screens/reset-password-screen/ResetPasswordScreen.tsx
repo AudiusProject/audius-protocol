@@ -7,13 +7,14 @@ import { useNavigation, useRoute } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { View } from 'react-native'
 import RNRestart from 'react-native-restart'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import IconRemove from 'app/assets/images/iconRemove.svg'
 import { ModalScreen, Screen, Text } from 'app/components/core'
 import { EnterPassword } from 'app/components/enter-password'
 import { ENTROPY_KEY } from 'app/constants/storage-keys'
+import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 
 import { TopBarIconButton } from '../app-screen'
@@ -24,7 +25,8 @@ const messages = {
   title: 'Reset Your Password',
   description:
     'Create a password that is secure and easy to remember. Write it down or use a password manager.',
-  resetButton: 'Submit'
+  resetButton: 'Submit',
+  error: 'Unable to reset password...'
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -41,12 +43,12 @@ const Stack = createNativeStackNavigator()
 
 const ResetPasswordScreen = () => {
   const styles = useStyles()
-  const dispatch = useDispatch()
   const { params } = useRoute<RouteProp<RootScreenParamList, 'ResetPassword'>>()
   const { login, email } = params
   const navigation = useNavigation<NavigationProp<RootScreenParamList>>()
   const isSignedIn = useSelector(getHasAccount)
   const [resetStatus, setResetStatus] = useState(Status.IDLE)
+  const { toast } = useToast()
 
   useAsync(async () => {
     await AsyncStorage.setItem(ENTROPY_KEY, atob(login))
@@ -75,8 +77,10 @@ const ResetPasswordScreen = () => {
   useEffect(() => {
     if (status === Status.SUCCESS) {
       RNRestart.Restart()
+    } else if (status === Status.ERROR) {
+      toast({ content: messages.error })
     }
-  }, [status, dispatch])
+  }, [status, toast])
 
   return (
     <Screen
