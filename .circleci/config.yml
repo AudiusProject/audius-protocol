@@ -181,7 +181,12 @@ jobs:
                 json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"${block_content}\" } },"
             fi
 
-            json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"\n*These changes will be auto-deployed to foundation nodes in 2 hours (10am PST).* Set \`HALT_AUTO_DEPLOY\`=\`true\` <https://app.circleci.com/settings/organization/github/AudiusProject/contexts/4be7f5c8-cadb-4deb-b66e-318867a6960b|here> if needed.\n\" } }"
+            day=$(date +%u) # 1=Monday, 7=Sunday
+            hour_msg="2 hours (10am PST)"
+            if [ "$day" -eq 5 ]; then  # Foundation deploy on Friday (5) is 1 hour later
+              hour_msg="3 hours (11am PST)"
+            fi
+            json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"\n*These changes will be auto-deployed to foundation nodes in $hour_msg.* Set \`HALT_AUTO_DEPLOY\`=\`true\` <https://app.circleci.com/settings/organization/github/AudiusProject/contexts/4be7f5c8-cadb-4deb-b66e-318867a6960b|here> if needed.\n\" } }"
             json_content+="]}"
 
             # Send Slack daily deploy message
@@ -275,7 +280,12 @@ jobs:
             else
                 # If we approved the job, send the success message
                 json_content+="{ \"type\": \"section\","
-                json_content+=" \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deploying $job_url to foundation nodes... Please watch for issues and approve the release for SPs when ready (I'll remind you in 2 hours at noon PST).\" } }"
+                day=$(date +%u) # 1=Monday, 7=Sunday
+                hour_msg="2 hours"
+                if [ "$day" -eq 5 ]; then  # Foundation deploy on Friday (5) is 1 hour later
+                  hour_msg="1 hour"
+                fi
+                json_content+=" \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deploying $job_url to foundation nodes... Please watch for issues and approve the release for SPs when ready (I'll remind you in $hour_msg at noon PST).\" } }"
             fi
 
             json_content+="]}"
@@ -411,6 +421,7 @@ workflows:
         equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
       - generate-config
+      - generate-release
       - init:
           context:
             - Vercel
@@ -470,6 +481,7 @@ workflows:
           requires:
             - generate-config
             - init
+            - generate-release
           workspace_path: ../workspace
 
       - path-filtering/filter:
