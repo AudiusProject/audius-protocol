@@ -7,11 +7,13 @@ import {
   SYSVAR_INSTRUCTIONS_PUBKEY,
   SystemProgram
 } from '@solana/web3.js'
+
+import { borshString } from '../layout-utils'
+
 import {
   REWARD_MANAGER_PROGRAM_ID,
   RewardManagerInstruction
 } from './constants'
-import { borshString } from '../../layout-utils'
 
 type SubmitAttestationInstructionData = {
   instruction: RewardManagerInstruction

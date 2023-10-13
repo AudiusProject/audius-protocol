@@ -1,4 +1,5 @@
 import { PublicKey, AccountMeta, TransactionInstruction } from '@solana/web3.js'
+
 import { RewardManagerInstruction } from './constants'
 
 export type DecodedDeleteSenderPublicInstruction = {

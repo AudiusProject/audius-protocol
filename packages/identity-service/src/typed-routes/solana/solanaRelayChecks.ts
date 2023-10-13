@@ -21,9 +21,9 @@ import {
 } from './programs/associatedToken'
 import {
   decodeClaimableTokenInstruction,
-  isTransferClaimableTokenInstruction
-} from './programs/claimable-tokens'
-import { decodeRewardManagerInstruction } from './programs/reward-manager'
+  isTransferClaimableTokenInstruction,
+  decodeRewardManagerInstruction
+} from '@audius/spl'
 import config from '../../config'
 
 const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
