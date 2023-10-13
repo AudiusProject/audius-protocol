@@ -119,7 +119,7 @@ export type UserChallengeState =
   | 'completed'
   | 'disbursed'
 
-export type SpecifierMap<T> = Record<Specifier, T>
+export type SpecifierWithAmount = { specifier: string; amount: number }
 
 /**
  * A User Challenge that has been updated by the client to optimistically include any updates
@@ -132,5 +132,5 @@ export type OptimisticUserChallenge = Omit<
   state: UserChallengeState
   totalAmount: number
   claimableAmount: number
-  undisbursedSpecifiers: SpecifierMap<number>
+  undisbursedSpecifiers: SpecifierWithAmount[]
 }

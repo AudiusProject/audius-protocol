@@ -4,7 +4,7 @@ import {
   UserChallenge,
   ChallengeRewardID,
   Specifier,
-  SpecifierMap
+  SpecifierWithAmount
 } from '../../../models'
 
 import {
@@ -95,7 +95,7 @@ const slice = createSlice({
       state,
       action: PayloadAction<{
         challengeId: ChallengeRewardID
-        specifiers: SpecifierMap<number>
+        specifiers: SpecifierWithAmount[]
       }>
     ) => {
       const { challengeId, specifiers } = action.payload
@@ -110,7 +110,7 @@ const slice = createSlice({
       if (userChallenge.challenge_type === 'aggregate') {
         state.disbursedChallenges[challengeId] = ([] as string[]).concat(
           state.disbursedChallenges[challengeId] ?? [],
-          Object.entries(specifiers).map(([s, _]) => s)
+          specifiers.map((s) => s.specifier)
         )
         // All completed challenges that are disbursed are fully disbursed
         if (userChallenge?.is_complete) {
