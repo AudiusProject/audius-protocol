@@ -78,6 +78,7 @@ services:
   discovery-provider:
     build:
       context: ${PROJECT_ROOT}/packages/discovery-provider
+      dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/Dockerfile.prod
       args:
         git_sha: '${GIT_COMMIT}'
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
