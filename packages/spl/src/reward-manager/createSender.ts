@@ -65,6 +65,7 @@ export type DecodedCreateSenderInstruction = {
   programId: PublicKey
   keys: {
     rewardManager: AccountMeta
+    owner: AccountMeta
     authority: AccountMeta
     payer: AccountMeta
     sender: AccountMeta
@@ -76,12 +77,13 @@ export type DecodedCreateSenderInstruction = {
 
 export const decodeCreateSenderInstruction = ({
   programId,
-  keys: [rewardManager, authority, payer, sender, systemProgramId, rent],
+  keys: [rewardManager, owner, authority, payer, sender, systemProgramId, rent],
   data
 }: TransactionInstruction): DecodedCreateSenderInstruction => ({
   programId,
   keys: {
     rewardManager,
+    owner,
     authority,
     payer,
     sender,
