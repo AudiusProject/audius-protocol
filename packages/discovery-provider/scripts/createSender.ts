@@ -1,4 +1,4 @@
-import { createSenderInstruction, ethAddress } from '@audius/solana-programs-ts'
+import { createSenderInstruction, ethAddress } from '@audius/spl'
 
 import {
   VersionedTransaction,
