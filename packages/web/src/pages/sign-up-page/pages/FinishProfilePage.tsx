@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { Nullable } from '@audius/common'
-import { HarmonyButton } from '@audius/stems'
+import { Button } from '@audius/harmony'
 import { Formik, Form } from 'formik'
 import { useDispatch } from 'react-redux'
 
@@ -64,7 +64,7 @@ export const FinishProfilePage = (props: FinishProfilePageProps) => {
           <CoverPhotoField />
           <ProfilePictureField />
           <TextField name='displayName' label={messages.displayName} />
-          <HarmonyButton type='submit' text={messages.continue} />
+          <Button type='submit' text={messages.continue} />
         </Form>
       </Formik>
     </div>

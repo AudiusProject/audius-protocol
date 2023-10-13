@@ -70,6 +70,7 @@ function* fetchSplWalletInfo(wallets: string[]) {
 }
 
 function* fetchAccountAssociatedWallets() {
+  // TODO C-3163 - Add loading state for fetching associated wallets
   yield* waitForRead()
   const apiClient = yield* getContext('apiClient')
   const accountUserId = yield* select(getUserId)

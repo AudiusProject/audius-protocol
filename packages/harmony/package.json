@@ -24,6 +24,8 @@
     "@babel/preset-env": "7.22.15",
     "@babel/preset-react": "7.22.15",
     "@babel/preset-typescript": "7.22.15",
+    "@emotion/babel-plugin": "^11.11.0",
+    "@emotion/babel-preset-css-prop": "^11.11.0",
     "@storybook/addon-a11y": "7.4.0",
     "@storybook/addon-actions": "7.4.2",
     "@storybook/addon-essentials": "7.4.2",
@@ -55,6 +57,7 @@
     "rollup": "1.32.1",
     "rollup-plugin-babel": "4.4.0",
     "rollup-plugin-copy": "3.5.0",
+    "rollup-plugin-json": "^4.0.0",
     "rollup-plugin-node-resolve": "5.2.0",
     "rollup-plugin-peer-deps-external": "2.2.4",
     "rollup-plugin-postcss": "2.9.0",
@@ -68,7 +71,10 @@
     "webpack": "4.46.0"
   },
   "dependencies": {
+    "@emotion/react": "11.11.1",
+    "@emotion/styled": "11.11.0",
     "classnames": "2.2.6",
+    "react-lottie": "1.2.3",
     "react-merge-refs": "2.0.1",
     "react-perfect-scrollbar": "1.5.8",
     "react-use": "15.3.8",

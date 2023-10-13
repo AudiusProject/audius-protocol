@@ -44,6 +44,7 @@ const ConnectWalletsBody = ({ className }: ConnectWalletsBodyProps) => {
     connectedEthWallets: ethWallets,
     connectedSolWallets: solWallets
   } = useSelector(getAssociatedWallets)
+  // TODO C-3163 - Add loading state for loading associated wallets. Currently behaves as if you have no associated wallets until loading is finished.
   const removeWallets = useSelector(getRemoveWallet)
   const numConnectedWallets =
     (ethWallets?.length ?? 0) + (solWallets?.length ?? 0)

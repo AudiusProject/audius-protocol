@@ -32,7 +32,8 @@ import {
   solanaSelectors,
   createUserBankIfNeeded,
   SolanaWalletAddress,
-  chatActions
+  chatActions,
+  isNullOrUndefined
 } from '@audius/common'
 import { PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
@@ -323,9 +324,10 @@ function* sendTipAsync() {
     return
   }
 
-  const weiBNBalance =
-    (yield* select(getAccountBalance)) ?? (new BN('0') as BNWei)
-  const waudioWeiAmount = yield* call([walletClient, 'getCurrentWAudioBalance'])
+  const weiBNBalance = yield* select(getAccountBalance)
+  if (isNullOrUndefined(weiBNBalance)) {
+    throw new Error('$AUDIO balance not yet loaded or failed to load')
+  }
 
   if (weiBNAmount.gt(weiBNBalance)) {
     const errorMessage = 'Not enough $AUDIO'
@@ -344,6 +346,15 @@ function* sendTipAsync() {
         source
       })
     )
+
+    const waudioWeiAmount = yield* call([
+      walletClient,
+      'getCurrentWAudioBalance'
+    ])
+
+    if (isNullOrUndefined(waudioWeiAmount)) {
+      throw new Error('Failed to retrieve current wAudio balance')
+    }
 
     // If transferring spl wrapped audio and there are insufficent funds with only the
     // user bank balance, transfer all eth AUDIO to spl wrapped audio

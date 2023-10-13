@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Tuple
 
 import pytz
@@ -14,7 +14,10 @@ from src.models.rewards.challenge import Challenge
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.user_challenge import UserChallenge
 from src.models.users.user import User
-from src.queries.get_disbursed_challenges_amount import get_disbursed_challenges_amount
+from src.queries.get_disbursed_challenges_amount import (
+    get_disbursed_challenges_amount,
+    get_weekly_pool_window_start,
+)
 from src.solana.constants import WAUDIO_DECIMALS
 from src.tasks.index_oracles import (
     get_oracle_addresses_from_chain,
@@ -28,6 +31,7 @@ REWARDS_MANAGER_ACCOUNT = shared_config["solana"]["rewards_manager_account"]
 REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = None
 if REWARDS_MANAGER_ACCOUNT:
     REWARDS_MANAGER_ACCOUNT_PUBLIC_KEY = Pubkey.from_string(REWARDS_MANAGER_ACCOUNT)
+DATETIME_FORMAT_STRING = "%Y-%m-%d %H:%M:%S.%f+00"
 
 
 class Attestation:
@@ -85,6 +89,7 @@ MISSING_CHALLENGES = "MISSING_CHALLENGES"
 INVALID_INPUT = "INVALID_INPUT"
 USER_NOT_FOUND = "USER_NOT_FOUND"
 POOL_EXHAUSTED = "POOL_EXHAUSTED"
+WAIT_FOR_COOLDOWN = "WAIT_FOR_COOLDOWN"
 
 
 class AttestationError(Exception):
@@ -160,14 +165,14 @@ def get_attestation(
         raise AttestationError(CHALLENGE_INCOMPLETE)
     if disbursement:
         raise AttestationError(ALREADY_DISBURSED)
-
+    now_utc = datetime.now(pytz.UTC)
+    if challenge.cooldown_days:
+        time_passed = now_utc - user_challenge.created_at
+        if time_passed.days < challenge.cooldown_days:
+            raise AttestationError(WAIT_FOR_COOLDOWN)
     if challenge.weekly_pool:
-        now = datetime.now(pytz.timezone("US/Pacific"))
-        monday_before_9am = now.weekday() == 0 and now.hour < 9
-        prev_monday = now - timedelta(days=7 if monday_before_9am else now.weekday())
-        prev_monday = prev_monday.replace(hour=9, minute=0, second=0, microsecond=0)
         disbursed_amount = get_disbursed_challenges_amount(
-            session, challenge.id, prev_monday
+            session, challenge.id, get_weekly_pool_window_start(now_utc)
         )
         if disbursed_amount + user_challenge.amount > challenge.weekly_pool:
             raise AttestationError(POOL_EXHAUSTED)

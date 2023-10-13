@@ -53,6 +53,9 @@ export const LinkedWallets = () => {
     connectedEthWallets = [],
     connectedSolWallets
   } = useSelector(getAssociatedWallets)
+
+  // TODO C-3163 - Add loading state for loading associated wallets. Currently behaves as if you have no associated wallets until loading is finished.
+
   const removeWallets = useSelector(getRemoveWallet)
 
   const ethWallets =

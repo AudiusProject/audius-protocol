@@ -30,6 +30,22 @@
   transition: color 0.07s ease-in-out;
 }
 
+.skeleton {
+  /* Hacky way to add left margin without making the Rewards Action Bubble div break onto the next line. */
+  position: relative;
+  left: var(--unit-1);
+  background-color: var(--neutral-light-8);
+  background-image: linear-gradient(
+    90deg,
+    var(--neutral-light-8) 0%,
+    var(--neutral-light-8) 32%,
+    var(--neutral-light-7) 46%,
+    var(--neutral-light-7) 54%,
+    var(--neutral-light-8) 68%,
+    var(--neutral-light-8) 100%
+  );
+}
+
 .hasBalance .audioAmount:hover {
   color: var(--neutral-light-3);
 }

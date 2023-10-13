@@ -79,6 +79,7 @@ jobs:
             - ./packages/harmony/node_modules
             - ./packages/common/node_modules
             - ./packages/libs/node_modules
+            - ./packages/identity-service/node_modules
 
       - save_cache:
           key: cache-{{ .Revision }}
@@ -87,6 +88,7 @@ jobs:
             - ./packages/harmony/dist
             - ./packages/common/dist
             - ./packages/libs/dist
+            - ./packages/spl/dist
 
   generate-release:
     working_directory: ~/audius-protocol
@@ -427,11 +429,13 @@ workflows:
             packages/identity-service/.* run-identity-workflow true
             packages/identity-service/.* run-integration-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
+            protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
             .circleci/.* run-discovery-workflow true
             .circleci/.* run-creator-workflow true
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
+            .circleci/.* run-protocol-dashboard-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
@@ -458,6 +462,7 @@ workflows:
             packages/eslint-config-audius/.* run-harmony-workflow true
             packages/libs/.* run-creator-workflow true
             packages/libs/.* run-identity-workflow true
+            packages/libs/.* run-protocol-dashboard-workflow true
             packages/libs/.* run-sdk-workflow true
             packages/libs/.* run-web-workflow true
             packages/libs/.* run-mobile-workflow true
@@ -498,6 +503,7 @@ workflows:
             packages/harmony/.* run-mobile-workflow true
             packages/mobile/.* run-mobile-workflow true
             packages/web/.* run-web-workflow true
+            protocol-dashboard/.* run-protocol-dashboard-workflow true
           requires:
             - generate-config
             - init

@@ -104,16 +104,23 @@ export const ChallengeRewardsDrawerProvider = () => {
   const AAOEndpoint = useRemoteVar(StringKeys.ORACLE_ENDPOINT)
   const hasConfig = (oracleEthAddress && AAOEndpoint && quorumSize > 0) || true
   const onClaim = useCallback(() => {
-    dispatch(
-      claimChallengeReward({
-        claim: {
-          challengeId: modalType,
-          specifiers: [challenge?.specifier ?? ''],
-          amount: challenge?.amount ?? 0
-        },
-        retryOnFailure: true
-      })
-    )
+    if (challenge) {
+      dispatch(
+        claimChallengeReward({
+          claim: {
+            challengeId: modalType,
+            specifiers: [
+              {
+                specifier: challenge.specifier,
+                amount: challenge.amount
+              }
+            ],
+            amount: challenge?.claimableAmount ?? 0
+          },
+          retryOnFailure: true
+        })
+      )
+    }
   }, [dispatch, modalType, challenge])
 
   useEffect(() => {

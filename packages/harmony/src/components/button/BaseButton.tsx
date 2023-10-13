@@ -2,6 +2,8 @@ import { forwardRef } from 'react'
 
 import cn from 'classnames'
 
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+
 import { useMediaQueryListener } from '../../hooks/useMediaQueryListener'
 
 import baseStyles from './BaseButton.module.css'
@@ -18,6 +20,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       iconLeft: LeftIconComponent,
       iconRight: RightIconComponent,
       disabled,
+      isLoading,
       widthToHideText,
       minWidth,
       className,
@@ -48,12 +51,12 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
           baseStyles.button,
           styles.button,
           {
-            [baseStyles.disabled]: disabled,
+            [baseStyles.disabled]: disabled || isLoading,
             [baseStyles.fullWidth]: fullWidth
           },
           className
         )}
-        disabled={disabled}
+        disabled={disabled || isLoading}
         ref={ref}
         type='button'
         style={{
@@ -62,7 +65,9 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
         }}
         {...other}
       >
-        {LeftIconComponent ? (
+        {isLoading ? (
+          <LoadingSpinner className={(baseStyles.spinner, styles.spinner)} />
+        ) : LeftIconComponent ? (
           <LeftIconComponent className={cn(baseStyles.icon, styles.icon)} />
         ) : null}
         {isTextVisible ? (

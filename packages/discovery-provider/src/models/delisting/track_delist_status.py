@@ -9,7 +9,11 @@ from src.models.model_utils import RepresentableMixin
 class DelistTrackReason(str, enum.Enum):
     DMCA = "DMCA"
     ACR = "ACR"
-    MANUAL = "MANUAL"
+    MANUAL = "MANUAL",
+    ACR_COUNTER_NOTICE = "ACR_COUNTER_NOTICE",
+    DMCA_RETRACTION = "DMCA_RETRACTION",
+    DMCA_COUNTER_NOTICE = "DMCA_COUNTER_NOTICE",
+    DMCA_AND_ACR_COUNTER_NOTICE = "DMCA_AND_ACR_COUNTER_NOTICE"
 
 
 class TrackDelistStatus(Base, RepresentableMixin):

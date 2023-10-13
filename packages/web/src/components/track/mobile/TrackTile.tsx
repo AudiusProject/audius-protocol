@@ -31,6 +31,7 @@ import { TrackTileProps } from 'components/track/types'
 import { Text } from 'components/typography'
 import typeStyles from 'components/typography/typography.module.css'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { profilePage } from 'utils/route'
 
 import { LockedStatusBadge, LockedStatusBadgeProps } from '../LockedStatusBadge'
@@ -216,15 +217,11 @@ const TrackTile = (props: CombinedProps) => {
     [onClickOverflow, id]
   )
 
-  const onClickPremiumPill = useCallback(
-    (e: MouseEvent) => {
-      if (isPurchase && trackId) {
-        e.stopPropagation()
-        openPremiumContentPurchaseModal({ contentId: trackId })
-      }
-    },
-    [isPurchase, trackId, openPremiumContentPurchaseModal]
-  )
+  const onClickPremiumPill = useAuthenticatedClickCallback(() => {
+    if (isPurchase && trackId) {
+      openPremiumContentPurchaseModal({ contentId: trackId })
+    }
+  }, [isPurchase, trackId, openPremiumContentPurchaseModal])
 
   const [artworkLoaded, setArtworkLoaded] = useState(false)
   useEffect(() => {

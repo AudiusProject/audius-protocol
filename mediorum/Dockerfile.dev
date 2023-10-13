@@ -1,0 +1,23 @@
+FROM golang:alpine3.18
+
+RUN apk add build-base make ffmpeg
+
+# Required for service registration
+RUN apk add curl build-base python3-dev=3.11.6-r0 py3-pip
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install 'web3==6.6.1'
+
+WORKDIR /app
+
+RUN go install github.com/cosmtrek/air@latest
+
+COPY go.mod go.sum ./
+RUN go mod graph | awk '{if ($1 !~ "@") print $2}' | xargs go get
+
+COPY . .
+RUN go build
+RUN go build -o mediorum-cmd cmd/main.go
+
+VOLUME ["/mediorum_data"]
+EXPOSE 1991
+ENTRYPOINT ["air"]

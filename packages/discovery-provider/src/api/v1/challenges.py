@@ -1,10 +1,12 @@
 import logging
+from datetime import datetime
 
 from flask_restx import Namespace, Resource, abort, fields, reqparse
 
 from src.api.v1.helpers import (
     DescriptiveArgument,
     decode_with_abort,
+    error_response,
     extend_undisbursed_challenge,
     get_current_user_id,
     make_response,
@@ -13,13 +15,19 @@ from src.api.v1.helpers import (
 )
 from src.api.v1.models.challenges import (
     attestation,
+    challenge_info,
     create_sender_attestation,
     undisbursed_challenge,
 )
+from src.models.rewards.challenge import Challenge
 from src.queries.get_attestation import (
     AttestationError,
     get_attestation,
     get_create_sender_attestation,
+)
+from src.queries.get_disbursed_challenges_amount import (
+    get_disbursed_challenges_amount,
+    get_weekly_pool_window_start,
 )
 from src.queries.get_undisbursed_challenges import get_undisbursed_challenges
 from src.utils.db_session import get_db_read_replica
@@ -187,3 +195,65 @@ class CreateSenderAttestation(Resource):
         except Exception as e:
             abort(400, e)
             return None
+
+
+challenge_info_route = "/<string:challenge_id>/info"
+
+challenge_info_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+challenge_info_parser.add_argument(
+    "weekly_pool_min_amount",
+    required=False,
+    description="The minimum amount left in the weekly pool before erroring",
+)
+
+challenge_info_response = make_response(
+    "challenge_info_response", ns, fields.Nested(challenge_info)
+)
+
+
+@ns.route(challenge_info_route, doc=False)
+class ChallengeInfo(Resource):
+    @ns.doc(
+        id="""Get info for a challenge""",
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(challenge_info_parser)
+    @ns.marshal_with(challenge_info_response)
+    @cache(ttl_sec=5)
+    def get(self, challenge_id: str):
+        """
+        Gets challenge information, including remaining funds.
+        """
+        args = challenge_info_parser.parse_args(strict=True)
+        weekly_pool_min_amount = args.get("weekly_pool_min_amount", None)
+        weekly_pool_min_amount = (
+            int(weekly_pool_min_amount) if weekly_pool_min_amount else None
+        )
+        try:
+            db = get_db_read_replica()
+            with db.scoped_session() as session:
+                challenge = (
+                    session.query(Challenge).filter(Challenge.id == challenge_id).one()
+                )
+                weekly_pool_remaining = get_disbursed_challenges_amount(
+                    session, challenge_id, get_weekly_pool_window_start(datetime.now())
+                )
+                res = {
+                    "challenge_id": challenge.id,
+                    "type": challenge.type,
+                    "amount": challenge.amount,
+                    "active": challenge.active,
+                    "step_count": challenge.step_count,
+                    "starting_block": challenge.starting_block,
+                    "weekly_pool": challenge.weekly_pool,
+                    "weekly_pool_remaining": weekly_pool_remaining,
+                }
+                if (
+                    weekly_pool_min_amount
+                    and challenge.weekly_pool
+                    and weekly_pool_remaining < weekly_pool_min_amount
+                ):
+                    return error_response(res)
+                return success_response(res)
+        except Exception as e:
+            return abort(500, e)

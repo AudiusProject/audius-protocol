@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@audius/sdk": "*",
+    "@audius/spl": "*",
     "@pedalboard/relay": "*",
     "@pedalboard/sla-auditor": "*",
     "@pedalboard/trending-challenge-rewards": "*"

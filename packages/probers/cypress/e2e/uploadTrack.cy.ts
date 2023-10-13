@@ -7,10 +7,6 @@ const timestamp = dayjs().format('YYMMDD_HHmmss')
 describe('Upload', () => {
   beforeEach(() => {
     localStorage.setItem('HAS_REQUESTED_BROWSER_PUSH_PERMISSION', 'true')
-    localStorage.setItem(
-      'FeatureFlagOverride:upload_redesign_enabled',
-      'enabled'
-    )
   })
 
   it('user should be able to upload a single track', () => {

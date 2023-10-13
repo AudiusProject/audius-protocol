@@ -13,13 +13,13 @@ import {
   useGetSalesCount,
   useUSDCPurchaseDetailsModal
 } from '@audius/common'
-import { full } from '@audius/sdk'
 import {
-  HarmonyButton,
-  HarmonyButtonSize,
-  HarmonyButtonType,
-  IconDownload
-} from '@audius/stems'
+  Button,
+  ButtonSize,
+  ButtonType,
+  IconCloudDownload
+} from '@audius/harmony'
+import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
@@ -171,12 +171,12 @@ const RenderSalesPage = () => {
     <Header
       primary={messages.headerText}
       rightDecorator={
-        <HarmonyButton
+        <Button
           onClick={downloadCSV}
           text={messages.downloadCSV}
-          variant={HarmonyButtonType.SECONDARY}
-          size={HarmonyButtonSize.SMALL}
-          iconLeft={IconDownload}
+          variant={ButtonType.SECONDARY}
+          size={ButtonSize.SMALL}
+          iconLeft={IconCloudDownload}
           disabled={isLoading || isEmpty}
         />
       }

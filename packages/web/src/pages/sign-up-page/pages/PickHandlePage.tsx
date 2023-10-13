@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { HarmonyButton } from '@audius/stems'
+import { Button } from '@audius/harmony'
 import { Formik, Form } from 'formik'
 import { useDispatch } from 'react-redux'
 
@@ -54,7 +54,7 @@ export const PickHandlePage = (props: PickHandlePageProps) => {
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
         <Form>
           <TextField name='handle' label={messages.handle} />
-          <HarmonyButton type='submit' text={messages.continue} />
+          <Button type='submit' text={messages.continue} />
         </Form>
       </Formik>
     </div>

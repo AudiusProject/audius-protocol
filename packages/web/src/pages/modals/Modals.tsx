@@ -36,7 +36,7 @@ import TierExplainerModal from 'components/user-badges/TierExplainerModal'
 import ConnectedUserListModal from 'components/user-list-modal/ConnectedUserListModal'
 import { WithdrawUSDCModal } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
 import AudioBreakdownModal from 'pages/audio-rewards-page/components/modals/AudioBreakdownModal'
-import ChallengeRewardsModal from 'pages/audio-rewards-page/components/modals/ChallengeRewards'
+import { ChallengeRewardsModal } from 'pages/audio-rewards-page/components/modals/ChallengeRewardsModal'
 import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
 import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
 import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
@@ -79,9 +79,9 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   TiersExplainer: TierExplainerModal,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
   DuplicateAddConfirmation: DuplicateAddConfirmationModal,
+  AudioBreakdown: AudioBreakdownModal,
   UploadConfirmation: UploadConfirmationModal,
   BuyAudio: BuyAudioModal,
-  AudioBreakdown: AudioBreakdownModal,
   BuyAudioRecovery: BuyAudioRecoveryModal,
   TransactionDetails: TransactionDetailsModal,
   InboxSettings: InboxSettingsModal,

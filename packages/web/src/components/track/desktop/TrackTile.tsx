@@ -1,4 +1,4 @@
-import { MouseEvent, memo, useCallback } from 'react'
+import { memo } from 'react'
 
 import {
   formatCount,
@@ -22,6 +22,7 @@ import { DogEar } from 'components/dog-ear'
 import { Link } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
 import typeStyles from 'components/typography/typography.module.css'
+import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { useFlag } from 'hooks/useRemoteConfig'
 
 import { LockedStatusBadge, LockedStatusBadgeProps } from '../LockedStatusBadge'
@@ -161,15 +162,11 @@ const TrackTile = ({
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
   const isPurchase = isPremiumContentUSDCPurchaseGated(premiumConditions)
-  const onClickPremiumPill = useCallback(
-    (e: MouseEvent) => {
-      if (isPurchase && trackId) {
-        e.stopPropagation()
-        openPremiumContentPurchaseModal({ contentId: trackId })
-      }
-    },
-    [isPurchase, trackId, openPremiumContentPurchaseModal]
-  )
+  const onClickPremiumPill = useAuthenticatedClickCallback(() => {
+    if (isPurchase && trackId) {
+      openPremiumContentPurchaseModal({ contentId: trackId })
+    }
+  }, [isPurchase, trackId, openPremiumContentPurchaseModal])
 
   const getDurationText = () => {
     if (duration === null || duration === undefined) {
