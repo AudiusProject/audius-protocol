@@ -5,7 +5,8 @@ import {
   formatWei,
   walletSelectors,
   accountSelectors,
-  useSelectTierInfo
+  useSelectTierInfo,
+  isNullOrUndefined
 } from '@audius/common'
 import BN from 'bn.js'
 import { TouchableOpacity, View } from 'react-native'
@@ -74,9 +75,12 @@ const useTotalBalanceWithFallback = () => {
   const walletTotalBalance = useSelector(getAccountTotalBalance)
 
   return useMemo(() => {
-    if (walletTotalBalance != null) {
+    if (!isNullOrUndefined(walletTotalBalance)) {
       return walletTotalBalance
-    } else if (account?.total_balance != null) {
+    } else if (
+      !isNullOrUndefined(account) &&
+      !isNullOrUndefined(account.total_balance)
+    ) {
       return new BN(account.total_balance) as BNWei
     }
 
@@ -135,7 +139,7 @@ export const AccountDetails = () => {
           height={spacing(7)}
           width={spacing(7)}
         />
-        {totalBalance == null ? (
+        {isNullOrUndefined(totalBalance) ? (
           <Skeleton height={18} width={25} />
         ) : (
           <Text fontSize='large' weight='heavy'>

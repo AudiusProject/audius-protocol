@@ -404,7 +404,7 @@ export class SolanaWeb3Manager {
           associatedTokenAccount.toString()
         )
         if (!tokenAccount) {
-          return null
+          return BigInt(0)
         }
       }
 

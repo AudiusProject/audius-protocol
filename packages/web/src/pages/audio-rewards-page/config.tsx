@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 
 import {
+  ChallengeName,
   ChallengeRewardID,
   Nullable,
   challengeRewardsConfig
@@ -25,8 +26,9 @@ type LinkButtonType =
   | 'trendingTracks'
   | 'sendFirstTip'
   | 'firstPlaylist'
-  | 's'
-  | 'b'
+  | ChallengeName.AudioMatchingSell
+  | ChallengeName.AudioMatchingBuy
+
 type LinkButtonInfo = {
   label: string
   leftIcon: ReactNode | null
@@ -81,13 +83,13 @@ const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
     rightIcon: <IconArrow />,
     link: () => EXPLORE_PAGE
   },
-  s: {
+  [ChallengeName.AudioMatchingSell]: {
     label: 'View Premium Tracks',
     leftIcon: null,
     rightIcon: <IconArrow />,
     link: () => EXPLORE_PREMIUM_TRACKS_PAGE
   },
-  b: {
+  [ChallengeName.AudioMatchingBuy]: {
     label: 'View Premium Tracks',
     leftIcon: null,
     rightIcon: <IconArrow />,
@@ -165,20 +167,20 @@ const webChallengesConfig: Record<ChallengeRewardID, WebChallengeInfo> = {
       complete: linkButtonMap.firstPlaylist
     }
   },
-  s: {
+  [ChallengeName.AudioMatchingSell]: {
     icon: <i className='emoji large cart' />,
     modalButtonInfo: {
-      incomplete: linkButtonMap.firstPlaylist,
-      inProgress: linkButtonMap.firstPlaylist,
-      complete: linkButtonMap.firstPlaylist
+      incomplete: linkButtonMap[ChallengeName.AudioMatchingSell],
+      inProgress: linkButtonMap[ChallengeName.AudioMatchingSell],
+      complete: linkButtonMap[ChallengeName.AudioMatchingSell]
     }
   },
-  b: {
+  [ChallengeName.AudioMatchingBuy]: {
     icon: <i className='emoji large cart' />,
     modalButtonInfo: {
-      incomplete: linkButtonMap.firstPlaylist,
-      inProgress: linkButtonMap.firstPlaylist,
-      complete: linkButtonMap.firstPlaylist
+      incomplete: linkButtonMap[ChallengeName.AudioMatchingBuy],
+      inProgress: linkButtonMap[ChallengeName.AudioMatchingBuy],
+      complete: linkButtonMap[ChallengeName.AudioMatchingBuy]
     }
   },
   'trending-playlist': {

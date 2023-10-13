@@ -26,7 +26,6 @@ import { Text, TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconDrag from 'app/assets/images/iconDrag.svg'
-import IconHeart from 'app/assets/images/iconHeart.svg'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconLock from 'app/assets/images/iconLock.svg'
 import IconRemoveTrack from 'app/assets/images/iconRemoveTrack.svg'
@@ -49,7 +48,7 @@ const { getCollection } = cacheCollectionsSelectors
 const { getPlaying, getUid } = playerSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
-export type TrackItemAction = 'save' | 'overflow' | 'remove'
+export type TrackItemAction = 'overflow' | 'remove'
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   trackContainer: {
@@ -162,7 +161,6 @@ export type TrackListItemProps = {
   isReorderable?: boolean
   noDividerMargin?: boolean
   onRemove?: (index: number) => void
-  onSave?: (isSaved: boolean, trackId: ID) => void
   prevUid?: UID
   showDivider?: boolean
   showTopDivider?: boolean
@@ -213,7 +211,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     isReorderable = false,
     noDividerMargin,
     onRemove,
-    onSave,
     prevUid,
     showDivider,
     showTopDivider,
@@ -344,14 +341,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     track_id
   ])
 
-  const handlePressSave = (e: NativeSyntheticEvent<NativeTouchEvent>) => {
-    e.stopPropagation()
-    const isNotAvailable = (isDeleted || isUnlisted) && !has_current_user_saved
-    if (!isNotAvailable && onSave) {
-      onSave(has_current_user_saved, track_id)
-    }
-  }
-
   const handlePressOverflow = (e: NativeSyntheticEvent<NativeTouchEvent>) => {
     e.stopPropagation()
     handleOpenOverflowMenu()
@@ -455,21 +444,6 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
               <IconLock fill={white} width={10} height={10} />
               <Text style={styles.lockedText}>{messages.locked}</Text>
             </View>
-          ) : null}
-          {(isDeleted || !isLocked) && trackItemAction === 'save' ? (
-            <IconButton
-              icon={IconHeart}
-              styles={{
-                root: styles.iconContainer,
-                icon: styles.icon
-              }}
-              fill={
-                has_current_user_saved
-                  ? themeColors.primary
-                  : themeColors.neutralLight4
-              }
-              onPress={handlePressSave}
-            />
           ) : null}
           {trackItemAction === 'overflow' ? (
             <IconButton

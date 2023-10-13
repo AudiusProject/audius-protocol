@@ -22,7 +22,8 @@ type PreviewButtonProps = {
   className?: string
 }
 
-export const PreviewButton = ({ index, className }: PreviewButtonProps) => {
+export const PreviewButton = (props: PreviewButtonProps) => {
+  const { index, className } = props
   const { playingPreviewIndex, togglePreview } =
     useContext(UploadPreviewContext)
   const [{ value: track }] = useField<CollectionTrackForUpload>(

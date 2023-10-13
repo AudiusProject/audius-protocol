@@ -6,7 +6,8 @@ import {
   transactionDetailsActions,
   modalsActions,
   buyAudioSelectors,
-  formatAudio
+  formatAudio,
+  isNullOrUndefined
 } from '@audius/common'
 import { Button, ButtonSize, ButtonType, IconInfo } from '@audius/stems'
 import { useDispatch } from 'react-redux'
@@ -72,7 +73,9 @@ export const SuccessPage = () => {
         </div>
         {/* If user's balance is still loading or failed to load, don't show it. */}
         {transactionDetails.status !== Status.SUCCESS ||
-        transactionDetails.transactionDetails.balance == null ? null : (
+        isNullOrUndefined(
+          transactionDetails.transactionDetails.balance
+        ) ? null : (
           <div className={styles.newBalance}>
             {formatAudio(transactionDetails.transactionDetails.balance, 0)}
             <span className={styles.label}>{messages.audio}</span>

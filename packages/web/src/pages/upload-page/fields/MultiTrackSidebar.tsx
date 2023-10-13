@@ -17,7 +17,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import layoutStyles from 'components/layout/layout.module.css'
 import { Text } from 'components/typography'
 
-import { UploadFormScrollContext } from '../UploadPageNew'
+import { UploadFormScrollContext } from '../UploadPage'
 import { useIndexedField } from '../hooks'
 import { SingleTrackEditValues, TrackEditFormValues } from '../types'
 import { UploadPreviewContext } from '../utils/uploadPreviewContext'
