@@ -7,8 +7,7 @@ export enum ButtonType {
   PRIMARY = 'primary',
   SECONDARY = 'secondary',
   TERTIARY = 'tertiary',
-  DESTRUCTIVE = 'destructive',
-  DESTRUCTIVE_SECONDARY = 'destructive_secondary'
+  DESTRUCTIVE = 'destructive'
 }
 
 export enum ButtonSize {
@@ -21,6 +20,7 @@ type BaseButtonStyles = {
   button: string
   text: string
   icon: string
+  spinner: string
 }
 
 export type HTMLButtonProps = Omit<
@@ -43,6 +43,11 @@ export type BaseButtonProps = {
    * Optional icon element to include on the right side of the button
    */
   iconRight?: IconComponent
+
+  /**
+   * Show a spinning loading state instead of the left icon
+   */
+  isLoading?: boolean
 
   /**
    * The max width at which text will still be shown

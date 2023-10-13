@@ -1,13 +1,8 @@
 import { useCallback } from 'react'
 
 import { UploadType } from '@audius/common'
-import {
-  HarmonyButton,
-  HarmonyButtonType,
-  IconCaretRight,
-  Scrollbar,
-  SegmentedControl
-} from '@audius/stems'
+import { Button, ButtonType } from '@audius/harmony'
+import { IconCaretRight, Scrollbar, SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 
 import { Text } from 'components/typography'
@@ -96,8 +91,8 @@ export const TracksPreview = (props: TracksPreviewProps) => {
             tracks.length === 1 ? messages.trackAdded : messages.tracksAdded
           }`}
         </Text>
-        <HarmonyButton
-          variant={HarmonyButtonType.PRIMARY}
+        <Button
+          variant={ButtonType.PRIMARY}
           text={messages.continue}
           name='continue'
           iconRight={IconCaretRight}

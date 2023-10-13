@@ -1,7 +1,7 @@
 import { ChangeEvent, useCallback } from 'react'
 
 import { GENRES, convertGenreLabelToValue } from '@audius/common'
-import { HarmonyButton } from '@audius/stems'
+import { Button } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
 
@@ -89,7 +89,7 @@ export const SelectGenrePage = (props: SelectGenrePageProps) => {
                   />
                 )
               })}
-              <HarmonyButton type='submit' text={messages.continue} />
+              <Button type='submit' text={messages.continue} />
             </Form>
           )
         }}

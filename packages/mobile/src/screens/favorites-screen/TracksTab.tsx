@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import type { ID, Nullable, Track, UID, User } from '@audius/common'
 import {
-  FavoriteSource,
   LibraryCategory,
   PlaybackSource,
   SavedPageTabs,
@@ -12,8 +11,7 @@ import {
   reachabilitySelectors,
   savedPageActions,
   savedPageSelectors,
-  savedPageTracksLineupActions as tracksActions,
-  tracksSocialActions
+  savedPageTracksLineupActions as tracksActions
 } from '@audius/common'
 import { debounce, isEqual } from 'lodash'
 import Animated, { Layout } from 'react-native-reanimated'
@@ -33,7 +31,6 @@ import { NoTracksPlaceholder } from './NoTracksPlaceholder'
 import { OfflineContentBanner } from './OfflineContentBanner'
 import { useFavoritesLineup } from './useFavoritesLineup'
 
-const { saveTrack, unsaveTrack } = tracksSocialActions
 const { fetchSaves: fetchSavesAction, fetchMoreSaves } = savedPageActions
 const {
   getTrackSaves,
@@ -196,15 +193,6 @@ export const TracksTab = () => {
     })
   }, isEqual)
 
-  const onToggleSave = useCallback(
-    (isSaved: boolean, trackId: ID) => {
-      if (trackId === undefined) return
-      const action = isSaved ? unsaveTrack : saveTrack
-      dispatch(action(trackId, FavoriteSource.LIBRARY_PAGE))
-    },
-    [dispatch]
-  )
-
   const togglePlay = useCallback(
     (uid: UID, id: ID) => {
       dispatch(tracksActions.togglePlay(uid, id, PlaybackSource.LIBRARY_PAGE))
@@ -245,10 +233,9 @@ export const TracksTab = () => {
                     hideArt
                     onEndReached={handleMoreFetchSaves}
                     onEndReachedThreshold={1.5}
-                    onSave={onToggleSave}
                     showDivider
                     togglePlay={togglePlay}
-                    trackItemAction='save'
+                    trackItemAction='overflow'
                     uids={filteredTrackUids}
                   />
                 </Tile>

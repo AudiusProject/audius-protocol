@@ -70,7 +70,6 @@ export type CollectionPageProps = {
   onHeroTrackSave?: () => void
   onHeroTrackRepost?: () => void
   onClickRow: (record: any) => void
-  onClickSave?: (record: any) => void
   onClickMobileOverflow?: (
     collectionId: ID,
     overflowActions: OverflowAction[]
@@ -97,7 +96,6 @@ const CollectionPage = ({
   onHeroTrackShare,
   onHeroTrackSave,
   onClickRow,
-  onClickSave,
   onHeroTrackRepost,
   onClickMobileOverflow,
   onClickFavorites,
@@ -193,12 +191,6 @@ const CollectionPage = ({
       onClickRow({ uid, track_id: trackId })
     }
   }
-  const onSave = (isSaved: boolean, trackId: number) => {
-    if (!isOwner) {
-      onClickSave?.({ has_current_user_saved: isSaved, track_id: trackId })
-    }
-  }
-
   const playingUid = getPlayingUid()
 
   const trackAccessMap = usePremiumContentAccessMap(tracks.entries)
@@ -290,7 +282,6 @@ const CollectionPage = ({
                 tracks={trackList}
                 showTopDivider
                 showDivider
-                onSave={onSave}
                 togglePlay={togglePlay}
               />
             )

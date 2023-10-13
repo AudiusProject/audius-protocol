@@ -19,14 +19,12 @@ import config from '../../src/config'
 import audiusLibsWrapper from '../../src/audiusLibsInstance'
 import {
   createClaimableTokenAccountInstruction,
-  createTransferClaimableTokenInstruction
-} from '../../src/typed-routes/solana/programs/claimable-tokens'
-import {
+  createTransferClaimableTokenInstruction,
   createEvaluateAttestationsInstruction,
   createSenderPublicInstruction,
-  createSubmitAttestationInstruction
-} from '../../src/typed-routes/solana/programs/reward-manager'
-import { RewardManagerInstruction } from '../../src/typed-routes/solana/programs/reward-manager/constants'
+  createSubmitAttestationInstruction,
+  RewardManagerInstruction
+} from '@audius/spl'
 import { InvalidRelayInstructionError } from '../../src/typed-routes/solana/InvalidRelayInstructionError'
 
 const CLAIMABLE_TOKEN_PROGRAM_ID = new PublicKey(

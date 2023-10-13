@@ -88,6 +88,7 @@ jobs:
             - ./packages/harmony/dist
             - ./packages/common/dist
             - ./packages/libs/dist
+            - ./packages/spl/dist
 
   generate-release:
     working_directory: ~/audius-protocol

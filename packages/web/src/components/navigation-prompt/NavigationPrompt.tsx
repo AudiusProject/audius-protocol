@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
-import {
-  HarmonyButton,
-  HarmonyButtonType,
-  Modal,
-  ModalContent,
-  ModalHeader
-} from '@audius/stems'
+import { Button, ButtonType } from '@audius/harmony'
+import { Modal, ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
 import { Location } from 'history'
 import { Prompt } from 'react-router-dom'
@@ -88,16 +83,16 @@ export const NavigationPrompt = (props: Props) => {
               {messages.body}
             </Text>
             <div className={cn(layoutStyles.row, layoutStyles.gap2)}>
-              <HarmonyButton
+              <Button
                 className={styles.button}
                 text={messages.cancel}
-                variant={HarmonyButtonType.SECONDARY}
+                variant={ButtonType.SECONDARY}
                 onClick={closeModal}
               />
-              <HarmonyButton
+              <Button
                 className={styles.button}
                 text={messages.proceed}
-                variant={HarmonyButtonType.DESTRUCTIVE}
+                variant={ButtonType.DESTRUCTIVE}
                 onClick={handleConfirmNavigationClick}
               />
             </div>
