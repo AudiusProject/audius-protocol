@@ -1,3 +1,4 @@
+/*  */
 .container {
   display: flex;
   flex-direction: column;
@@ -10,6 +11,7 @@
   line-height: 60px;
   background: var(--page-header-gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 .container h3 {
@@ -83,13 +85,13 @@
 }
 
 .progressDescription {
+  display: flex;
+  flex-direction: column;
   flex: 1 1 0;
-  padding: 16px 24px;
-  font-weight: var(--font-bold);
+  gap: var(--unit-3);
+  padding: var(--unit-4) var(--unit-6);
 }
-.progressDescription p {
-  line-height: 20px;
-}
+
 .progressDescription.mobile {
   width: 100%;
   padding: 0px 20px;
@@ -299,12 +301,12 @@
   margin-right: 16px;
 }
 
-.claimRewardWrapper .spinner {
+.spinner {
   width: 24px;
   height: 24px;
 }
 
-.claimRewardWrapper .spinner svg path {
+.spinner svg path {
   fill: var(--white);
   stroke: var(--white);
   stroke-width: 6px;
@@ -338,6 +340,7 @@
 .rewardAmount {
   background: var(--page-header-gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -397,4 +400,25 @@
 }
 .buttonSpacer {
   width: 10px;
+}
+
+/* Audio matching styles */
+.audioMatchingContainer {
+  gap: var(--unit-8);
+}
+.audioMatchingContainer.mobile {
+  gap: var(--unit-6);
+}
+.audioMatchingDescription {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-3);
+}
+.audioMatchingTotalContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid var(--border-strong);
+  padding: var(--unit-4) var(--unit-6);
+  background-color: var(--background-surface-2);
 }

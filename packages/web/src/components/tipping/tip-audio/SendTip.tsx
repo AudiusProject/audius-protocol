@@ -23,7 +23,8 @@ import {
   OnRampProvider,
   buyAudioActions,
   FeatureFlags,
-  StringKeys
+  StringKeys,
+  isNullOrUndefined
 } from '@audius/common'
 import {
   IconTrophy,
@@ -181,7 +182,7 @@ export const SendTip = () => {
           <img alt='no tier' src={IconNoTierBadge} width='16' height='16' />
         )}
         <span className={styles.amountAvailable}>
-          {accountBalance == null ? (
+          {isNullOrUndefined(accountBalance) ? (
             <Skeleton width='20px' height='14px' />
           ) : (
             formatWei(accountBalance, true, 0)

@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, text
 from sqlalchemy.orm import relationship
 
 from src.models.base import Base
@@ -19,5 +19,10 @@ class UserChallenge(Base, RepresentableMixin):
     current_step_count = Column(Integer)
     completed_blocknumber = Column(Integer)
     amount = Column(Integer, nullable=False)
+    created_at = Column(
+        DateTime,
+        nullable=False,
+        server_default=text("CURRENT_TIMESTAMP"),
+    )
 
     challenge = relationship("Challenge")  # type: ignore

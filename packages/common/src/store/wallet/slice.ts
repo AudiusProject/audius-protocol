@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
 
-import { Nullable } from 'utils/typeUtils'
+import { isNullOrUndefined, Nullable } from 'utils/typeUtils'
 
 import { Chain } from '../../models/Chain'
 import { StringUSDC, StringWei } from '../../models/Wallet'
@@ -46,7 +46,7 @@ const slice = createSlice({
       state.balance = balance
       state.balanceLoading = false
       state.balanceLoadDidFail = false
-      if (totalBalance != null) {
+      if (!isNullOrUndefined(totalBalance)) {
         state.totalBalance = totalBalance
         state.totalBalanceLoadDidFail = false
       }
@@ -72,12 +72,12 @@ const slice = createSlice({
       state,
       { payload: { amount } }: PayloadAction<{ amount: StringWei }>
     ) => {
-      if (state.balance == null) return
+      if (isNullOrUndefined(state.balance)) return
       const existingBalance = new BN(state.balance)
       state.balance = existingBalance
         .add(new BN(amount))
         .toString() as StringWei
-      if (state.totalBalance != null) {
+      if (!isNullOrUndefined(state.totalBalance)) {
         state.totalBalance = new BN(state.totalBalance)
           .add(new BN(amount))
           .toString() as StringWei

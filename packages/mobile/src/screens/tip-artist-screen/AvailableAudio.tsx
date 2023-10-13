@@ -1,5 +1,5 @@
 import type { BNWei } from '@audius/common'
-import { formatWei, walletSelectors } from '@audius/common'
+import { formatWei, walletSelectors, isNullOrUndefined } from '@audius/common'
 import { Image, Platform, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -51,7 +51,7 @@ export const AvailableAudio = () => {
           {messages.available}
         </Text>
         <Image style={styles.audioToken} source={TokenBadgeNoTier} />
-        {accountBalance == null ? (
+        {isNullOrUndefined(accountBalance) ? (
           <Skeleton width={24} height={13} />
         ) : (
           <Text variant='body' style={styles.text}>

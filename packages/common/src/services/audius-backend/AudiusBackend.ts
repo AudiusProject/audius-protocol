@@ -80,7 +80,8 @@ import {
   decodeHashId,
   Timer,
   Nullable,
-  removeNullable
+  removeNullable,
+  isNullOrUndefined
 } from '../../utils'
 import type { DiscoveryNodeSelectorService } from '../sdk/discovery-node-selector'
 
@@ -2943,7 +2944,7 @@ export const audiusBackend = ({
       const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
       const ownerWAudioBalance =
         await audiusLibs.solanaWeb3Manager.getWAudioBalance(userBank)
-      if (!ownerWAudioBalance) {
+      if (isNullOrUndefined(ownerWAudioBalance)) {
         throw new Error('Failed to fetch account waudio balance')
       }
       return ownerWAudioBalance
@@ -3119,7 +3120,7 @@ export const audiusBackend = ({
     const waudioBalance = await audiusLibs.solanaWeb3Manager.getWAudioBalance(
       address
     )
-    if (waudioBalance == null) {
+    if (isNullOrUndefined(waudioBalance)) {
       console.warn(`Failed to get waudio balance for address: ${address}`)
       reportError({
         error: new Error('Failed to get wAudio balance for address'),

@@ -27,7 +27,6 @@ type TrackListProps = {
   isReorderable?: boolean
   onRemove?: (index: number) => void
   onReorder?: DraggableFlatListProps<UID | ID>['onDragEnd']
-  onSave?: (isSaved: boolean, trackId: ID) => void
   showSkeleton?: boolean
   togglePlay?: (uid: string, trackId: ID) => void
   trackItemAction?: TrackItemAction
@@ -52,7 +51,6 @@ export const TrackList = ({
   noDividerMargin,
   onRemove,
   onReorder,
-  onSave,
   showDivider,
   showSkeleton,
   showTopDivider,
@@ -92,7 +90,6 @@ export const TrackList = ({
               uid={uids && (item as UID)}
               prevUid={uids && uids[index - 1]}
               key={item}
-              onSave={onSave}
               togglePlay={togglePlay}
               trackItemAction={trackItemAction}
               onRemove={onRemove}
@@ -110,7 +107,6 @@ export const TrackList = ({
         isReorderable,
         noDividerMargin,
         onRemove,
-        onSave,
         showDivider,
         showTopDivider,
         togglePlay,

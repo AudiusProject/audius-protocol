@@ -1,10 +1,6 @@
 /* globals Jimp */
 
 export default () => {
-  const script = `/scripts/jimp.min.js`
-  // eslint-disable-next-line
-  importWorkerScript(script)
-
   /**
    * Given 4 images, return a new image with each image taking up the four corners
    */

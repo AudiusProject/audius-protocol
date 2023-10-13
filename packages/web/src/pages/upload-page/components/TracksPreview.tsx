@@ -38,7 +38,7 @@ const uploadDescriptions = {
     'Upload single tracks. Each appears separately.'
 }
 
-export const TracksPreviewNew = (props: TracksPreviewProps) => {
+export const TracksPreview = (props: TracksPreviewProps) => {
   const { onContinue, onRemove, tracks, uploadType, setUploadType } = props
 
   const handleOptionSelect = useCallback(
@@ -49,8 +49,8 @@ export const TracksPreviewNew = (props: TracksPreviewProps) => {
   )
 
   return (
-    <div className={styles.containerNew}>
-      <div className={cn(styles.infoContainerNew, styles.headerContainerNew)}>
+    <div className={styles.root}>
+      <div className={cn(styles.info, styles.header)}>
         <Text variant='label' size='small'>
           {messages.releaseType}
         </Text>
@@ -68,7 +68,7 @@ export const TracksPreviewNew = (props: TracksPreviewProps) => {
         <Text>{uploadDescriptions[props.uploadType]}</Text>
       </div>
       <Scrollbar
-        className={cn(styles.tracksContainerNew, {
+        className={cn(styles.tracks, {
           [styles.shortScroll]:
             props.uploadType !== UploadType.INDIVIDUAL_TRACKS
         })}
@@ -85,7 +85,7 @@ export const TracksPreviewNew = (props: TracksPreviewProps) => {
           />
         ))}
       </Scrollbar>
-      <div className={cn(styles.infoContainerNew, styles.footerContainerNew)}>
+      <div className={cn(styles.info, styles.footer)}>
         <Text size='small'>
           {`${tracks.length} ${
             tracks.length === 1 ? messages.trackAdded : messages.tracksAdded
