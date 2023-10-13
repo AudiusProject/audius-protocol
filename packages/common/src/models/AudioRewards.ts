@@ -15,6 +15,14 @@ export type UserChallenge = {
 
 export type Specifier = string
 
+/** Used to map challenge names which are single letters to their
+ * semantic equivalents for easier readability
+ */
+export enum ChallengeName {
+  AudioMatchingBuy = 'b',
+  AudioMatchingSell = 's'
+}
+
 export type ChallengeRewardID =
   | 'track-upload'
   | 'referrals'
@@ -26,8 +34,8 @@ export type ChallengeRewardID =
   | 'profile-completion'
   | 'send-first-tip'
   | 'first-playlist'
-  | 's' // $AUDIO matching seller
-  | 'b' // $AUDIO matching buyer
+  | ChallengeName.AudioMatchingSell // $AUDIO matching seller
+  | ChallengeName.AudioMatchingBuy // $AUDIO matching buyer
   | 'trending-track'
   | 'trending-playlist'
   | 'top-api'
