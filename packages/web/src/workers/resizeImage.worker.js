@@ -11,7 +11,10 @@
 
 export default () => {
   // eslint-disable-next-line
+  const jimp = '/scripts/jimp.min.js'
   const exifParser = '/scripts/exif-parser-0.1.12-min.js'
+  // eslint-disable-next-line
+  importWorkerScript(jimp)
   // eslint-disable-next-line
   importWorkerScript(exifParser)
 
