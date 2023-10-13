@@ -109,7 +109,12 @@ export const ChallengeRewardsDrawerProvider = () => {
         claimChallengeReward({
           claim: {
             challengeId: modalType,
-            specifiers: { [challenge.specifier]: challenge.amount },
+            specifiers: [
+              {
+                specifier: challenge.specifier,
+                amount: challenge.amount
+              }
+            ],
             amount: challenge?.claimableAmount ?? 0
           },
           retryOnFailure: true

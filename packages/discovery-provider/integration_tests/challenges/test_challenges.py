@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 from sqlalchemy.orm.session import Session
@@ -24,6 +25,12 @@ logger = logging.getLogger(__name__)
 
 AGGREGATE_CHALLENGE_REWARD_AMOUNT = 5
 AGGREGATE_CHALLENGE_STEP_COUNT = 5
+
+
+def get_created_at():
+    return datetime.strptime(
+        "2023-10-13 11:15:10.627328+00", "%Y-%m-%d %H:%M:%S.%f+00"
+    ).replace(tzinfo=timezone.utc)
 
 
 def setup_challenges(app):
@@ -71,6 +78,7 @@ def setup_challenges(app):
                 is_complete=False,
                 current_step_count=1,
                 amount=5,
+                created_at=get_created_at(),
             ),
             UserChallenge(
                 challenge_id="test_challenge_1",
@@ -80,6 +88,7 @@ def setup_challenges(app):
                 current_step_count=3,
                 completed_blocknumber=100,
                 amount=5,
+                created_at=get_created_at(),
             ),
             UserChallenge(
                 challenge_id="test_challenge_1",
@@ -88,6 +97,7 @@ def setup_challenges(app):
                 current_step_count=2,
                 is_complete=False,
                 amount=5,
+                created_at=get_created_at(),
             ),
             UserChallenge(
                 challenge_id="test_challenge_2",
@@ -95,6 +105,7 @@ def setup_challenges(app):
                 specifier="4",
                 is_complete=True,
                 amount=5,
+                created_at=get_created_at(),
             ),
             UserChallenge(
                 challenge_id="test_challenge_1",
@@ -103,6 +114,7 @@ def setup_challenges(app):
                 is_complete=False,
                 current_step_count=2,
                 amount=5,
+                created_at=get_created_at(),
             ),
         ]
 
@@ -167,6 +179,7 @@ def test_handle_event(app):
             "current_step_count": 1,
             "completed_blocknumber": None,
             "amount": 5,
+            "created_at": get_created_at(),
         }
         assert model_to_dictionary(actual) == expected
 
@@ -202,6 +215,7 @@ def test_handle_event(app):
                 "current_step_count": 2,
                 "completed_blocknumber": None,
                 "amount": 5,
+                "created_at": get_created_at(),
             },
             # Should be unchanged b/c it was already complete
             {
@@ -212,6 +226,7 @@ def test_handle_event(app):
                 "current_step_count": 3,
                 "completed_blocknumber": 100,
                 "amount": 5,
+                "created_at": get_created_at(),
             },
             # Should be newly complete
             {
@@ -222,6 +237,7 @@ def test_handle_event(app):
                 "current_step_count": 3,
                 "completed_blocknumber": 100,
                 "amount": 5,
+                "created_at": get_created_at(),
             },
             # Should be untouched bc user 5 wasn't included
             {
@@ -232,6 +248,7 @@ def test_handle_event(app):
                 "current_step_count": 2,
                 "completed_blocknumber": None,
                 "amount": 5,
+                "created_at": get_created_at(),
             },
             # Should have created a brand new user 6
             {
@@ -244,6 +261,8 @@ def test_handle_event(app):
                 "amount": 5,
             },
         ]
+        # the last challenge was just created so we don't know the created_at time
+        del res_dicts[-1]["created_at"]
         assert expected == res_dicts
 
 
@@ -288,12 +307,16 @@ def test_aggregates(app):
         )
         # - Multiple events with the same user_id but diff specifiers get created
         bus.register_listener(TEST_EVENT, agg_challenge)
-        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 2})
-        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 3})
+        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 2, "amount": 4})
+        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 3, "amount": 6})
         bus.flush()
         bus.process_events(session)
         state = agg_challenge.get_user_challenge_state(session, ["1-2", "1-3"])
         assert len(state) == 2
+        # Test different amounts for the same challenge
+        assert state[0].amount == 4
+        assert state[1].amount == 6
+
         # Also make sure the thing is incomplete
         res = get_challenges(1, False, session, bus)
         agg_chal = {c["challenge_id"]: c for c in res}["test_challenge_3"]
@@ -308,13 +331,6 @@ def test_aggregates(app):
         state = agg_challenge.get_user_challenge_state(session, ["1-4"])
         assert len(state) == 1
 
-        # - If we've maxed the # of challenges, don't create any more
-        # (AGGREGATE_CHALLENGE_STEP_COUNT = 5)
-        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 5})
-        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 6})
-        bus.flush()
-        bus.process_events(session)
-
         def get_user_challenges():
             return (
                 session.query(UserChallenge)
@@ -325,6 +341,12 @@ def test_aggregates(app):
                 .all()
             )
 
+        # - If we've maxed the # of challenges, don't create any more
+        # (AGGREGATE_CHALLENGE_STEP_COUNT = 5)
+        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 5})
+        bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 6})
+        bus.flush()
+        bus.process_events(session)
         assert len(get_user_challenges()) == AGGREGATE_CHALLENGE_STEP_COUNT
         bus.dispatch(TEST_EVENT, 100, 1, {"referred_id": 7})
         bus.flush()

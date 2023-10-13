@@ -835,6 +835,10 @@ export enum delist_track_reason {
   'DMCA' = 'DMCA',
   'ACR' = 'ACR',
   'MANUAL' = 'MANUAL',
+  'ACR_COUNTER_NOTICE' = 'ACR_COUNTER_NOTICE',
+  'DMCA_RETRACTION' = 'DMCA_RETRACTION',
+  'DMCA_COUNTER_NOTICE' = 'DMCA_COUNTER_NOTICE',
+  'DMCA_AND_ACR_COUNTER_NOTICE' = 'DMCA_AND_ACR_COUNTER_NOTICE',
 }
 export enum delist_entity {
   'TRACKS' = 'TRACKS',
