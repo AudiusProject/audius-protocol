@@ -11,7 +11,6 @@ jobs:
         type: string
     machine:
       image: ubuntu-2204:current
-      docker_layer_caching: true
     resource_class: large
     steps:
       - checkout:
