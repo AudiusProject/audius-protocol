@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { Button, ButtonType } from '@audius/harmony'
+import { Button } from '@audius/harmony'
+import { Button as ButtonTmp } from '@audius/stems'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -47,11 +48,10 @@ export const SignInPage = () => {
           <Button text={messages.signIn} type='submit' />
         </Form>
       </Formik>
-      <Button
+      <ButtonTmp
         // @ts-ignore
         as={Link}
         to={SIGN_UP_PAGE}
-        variant={ButtonType.SECONDARY}
         text={messages.createAccount}
       />
     </div>
