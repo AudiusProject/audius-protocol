@@ -10,14 +10,14 @@ import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Button, Screen, ScreenContent, Text } from 'app/components/core'
+import { EnterPassword } from 'app/components/enter-password'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
-import type { ProfileTabScreenParamList } from '../../app-screen/ProfileTabScreen'
+import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
 
 import { ConfirmCredentials } from './ConfirmCredentials'
-import { EnterPassword } from './EnterPassword'
 const { changePage, changePassword } = changePasswordActions
 const { getChangePasswordStatus, getCurrentPage } = changePasswordSelectors
 
@@ -26,10 +26,7 @@ const messages = {
   createNewHeader: 'Create A New Password That Is Secure And Easy To Remember!',
   doneHeader: 'Your Password Has Been Changed',
   changeText: 'Please enter your email and current password.',
-  numberRequirement: 'Must contain numbers',
-  lengthRequirement: 'Length must be at least 8 characters',
-  hardRequirement: 'Hard to guess',
-  matchRequirement: 'Passwords match'
+  submitPasswordButton: 'Continue'
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -129,7 +126,10 @@ export const ChangePasswordScreen = () => {
       <Text style={styles.header} variant='h1'>
         {messages.createNewHeader}
       </Text>
-      <EnterPassword onSubmit={handleNewPasswordSubmitted} />
+      <EnterPassword
+        onSubmit={handleNewPasswordSubmitted}
+        submitButtonText={messages.submitPasswordButton}
+      />
     </View>
   )
 
