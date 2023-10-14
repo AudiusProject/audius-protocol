@@ -208,6 +208,9 @@ export const makeOptimisticChallengeSortComparator = (
     if (!userChallenge1 || !userChallenge2) {
       return 0
     }
+    if (userChallenge1?.claimableAmount > 0) {
+      return -1
+    }
     if (userChallenge1?.state === 'disbursed') {
       return 1
     }
@@ -216,6 +219,9 @@ export const makeOptimisticChallengeSortComparator = (
     }
     if (userChallenge2?.state === 'disbursed') {
       return -1
+    }
+    if (userChallenge2?.claimableAmount > 0) {
+      return 1
     }
     if (userChallenge2?.state === 'completed') {
       return 1

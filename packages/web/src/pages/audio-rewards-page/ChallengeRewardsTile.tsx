@@ -13,7 +13,8 @@ import {
   ChallengeName,
   audioRewardsPageSelectors,
   makeChallengeSortComparator,
-  isAudioMatchingChallenge
+  isAudioMatchingChallenge,
+  makeOptimisticChallengeSortComparator
 } from '@audius/common'
 import {
   ProgressBar,
@@ -214,6 +215,7 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   const dispatch = useDispatch()
   const userChallengesLoading = useSelector(getUserChallengesLoading)
   const userChallenges = useSelector(getUserChallenges)
+  const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
   const isAudioMatchingChallengesEnabled = useIsAudioMatchingChallengesEnabled()
 
@@ -247,8 +249,8 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
         // Filter out challenges that DN didn't return
         .map((id) => userChallenges[id]?.challenge_id)
         .filter(removeNullable)
-        .sort(makeChallengeSortComparator(userChallenges)),
-    [rewardIds, userChallenges]
+        .sort(makeOptimisticChallengeSortComparator(optimisticUserChallenges)),
+    [rewardIds, userChallenges, optimisticUserChallenges]
   )
 
   const rewardsTiles = rewardIdsSorted.map((id) => {
