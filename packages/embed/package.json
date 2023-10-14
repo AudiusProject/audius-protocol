@@ -1,6 +1,6 @@
 {
   "name": "embed",
-  "version": "1.5.45",
+  "version": "1.5.46",
   "scripts": {
     "dev": "preact watch --no-sw --template src/template.html",
     "start:dev": "env-cmd -f .env.dev env-cmd -f .env.local npm run -s dev",
