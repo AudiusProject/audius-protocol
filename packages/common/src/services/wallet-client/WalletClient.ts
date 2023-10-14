@@ -11,7 +11,11 @@ import { isNullOrUndefined } from 'utils/typeUtils'
 import { stringWeiToBN } from 'utils/wallet'
 
 import { AudiusAPIClient } from '../audius-api-client'
-import { AudiusBackend } from '../audius-backend'
+import {
+  AudiusBackend,
+  getUserbankAccountInfo,
+  pollForBalanceChange
+} from '../audius-backend'
 
 // 0.001 Audio
 export const MIN_TRANSFERRABLE_WEI = stringWeiToBN(
@@ -62,35 +66,27 @@ export class WalletClient {
   }
 
   async transferTokensFromEthToSol(): Promise<void> {
-    const initialWAudioBalance = await this.getCurrentWAudioBalance()
+    const account = await getUserbankAccountInfo(this.audiusBackendInstance, {
+      mint: 'audio'
+    })
+    if (!account) {
+      throw new Error('No userbank account.')
+    }
+
     const ercAudioBalance = await this.audiusBackendInstance.getBalance(true)
     if (
       !isNullOrUndefined(ercAudioBalance) &&
       ercAudioBalance.gt(new BN('0'))
     ) {
       await this.audiusBackendInstance.transferAudioToWAudio(ercAudioBalance)
+      await pollForBalanceChange(this.audiusBackendInstance, {
+        tokenAccount: account?.address,
+        initialBalance: account?.amount,
+        mint: 'audio',
+        retryDelayMs: 5000,
+        maxRetryCount: 720 /* one hour */
+      })
     }
-
-    // At this point we know we have transfered ERC $AUDIO into the wormhole,
-    // but we don't know if we've received SPL $AUDIO back yet, so poll
-    await new Promise((resolve, reject) => {
-      const rejectTimeout = setTimeout(() => {
-        console.error('Unable to confirm transfer: timeout')
-        reject(new Error('Unable to confirm transfer: timeout'))
-      }, /* one hour */ 1000 * 60 * 60)
-      setInterval(() => {
-        this.getCurrentWAudioBalance().then((currentWAudioBalance) => {
-          if (
-            currentWAudioBalance &&
-            initialWAudioBalance &&
-            !currentWAudioBalance.eq(initialWAudioBalance)
-          ) {
-            clearTimeout(rejectTimeout)
-            resolve(currentWAudioBalance)
-          }
-        })
-      }, 5000)
-    })
   }
 
   /** Get total balance of external wallets connected to the user's account. Returns null on failure. */
