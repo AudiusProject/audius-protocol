@@ -11,6 +11,7 @@ const messages = {
     'Your account is unable to claim rewards at this time. Please try again later or contact support@audius.co. '
 }
 
+/** Renders a generic error message for failed challenge claims */
 export const ClaimError = ({ aaoErrorCode }: { aaoErrorCode?: number }) => {
   const styles = useStyles()
   return aaoErrorCode === undefined ? (

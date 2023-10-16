@@ -68,8 +68,11 @@ const ctaButtonProps: {
   }
 }
 
+/** Specialized drawer content override for audio matching challenges, which need
+ * more complicated logic and the abiltity to render a cooldown table.
+ */
 export const AudioMatchingChallengeDrawerContent = ({
-  aaoErrorCode,
+  aaoErrorCode = 1,
   challenge,
   challengeName,
   claimableAmount,
@@ -83,7 +86,7 @@ export const AudioMatchingChallengeDrawerContent = ({
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
     claimStatus === ClaimStatus.WAITING_FOR_RETRY
-  const claimError = claimStatus === ClaimStatus.ERROR
+  const claimError = claimStatus !== ClaimStatus.ERROR
 
   return (
     <View style={styles.scrollViewContainer}>

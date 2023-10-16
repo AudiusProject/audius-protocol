@@ -9,6 +9,7 @@ const messages = {
   reward: 'Reward'
 }
 
+/** Renders the "Reward X Audio" content for a challenge modal */
 export const ChallengeReward = ({
   amount,
   subtext
@@ -18,7 +19,6 @@ export const ChallengeReward = ({
 }) => {
   const styles = useStyles()
   return (
-    // TODO: This renders incorrectly for matching. Want to find a way to let this render centered in its container but left-justify for the versions which have two-column layouts
     <View style={styles.rewardCell}>
       <Text
         style={styles.subheader}

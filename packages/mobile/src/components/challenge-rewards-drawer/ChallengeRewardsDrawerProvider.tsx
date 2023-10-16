@@ -8,8 +8,7 @@ import {
   audioRewardsPageActions,
   ClaimStatus,
   audioRewardsPageSelectors,
-  isAudioMatchingChallenge,
-  ChallengeName
+  isAudioMatchingChallenge
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -64,7 +63,7 @@ export const ChallengeRewardsDrawerProvider = () => {
   const { toast } = useToast()
 
   const challenge = userChallenges ? userChallenges[modalType] : null
-  const config = getChallengeConfig(ChallengeName.AudioMatchingSell)
+  const config = getChallengeConfig(modalType)
   const hasChallengeCompleted =
     challenge?.state === 'completed' || challenge?.state === 'disbursed'
 

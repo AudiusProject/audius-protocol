@@ -57,6 +57,9 @@ type ChallengeRewardsDrawerContentProps = {
   children?: React.ReactChild
 }
 
+/** Generic drawer content used for most challenges, responsible for rendering the
+ * task, reward, progress, and actions.
+ */
 export const ChallengeRewardsDrawerContent = ({
   description,
   amount,
