@@ -431,21 +431,23 @@ export const Table = ({
   const renderReorderableRow = useCallback(
     (row: any, key: string, props: TableRowProps, className = '') => {
       return (
-        <Droppable
+        <Draggable
           key={key}
-          className={styles.droppable}
-          hoverClassName={styles.droppableHover}
-          onDrop={(id: ID | string, draggingKind: string, index: number) => {
-            onDragEnd({ source: index, destination: row.index })
-          }}
-          acceptedKinds={['track', 'table-row']}
+          id={isTracksTable ? row.original.track_id : row.id}
+          index={row.id}
+          text={row.original.title}
+          isOwner
+          kind={isTracksTable ? 'track' : 'table-row'}
+          asChild
         >
-          <Draggable
-            id={isTracksTable ? row.original.track_id : row.id}
-            index={row.id}
-            text={row.original.title}
-            isOwner
-            kind={isTracksTable ? 'track' : 'table-row'}
+          <Droppable
+            className={styles.droppable}
+            hoverClassName={styles.droppableHover}
+            onDrop={(id: ID | string, draggingKind: string, index: number) => {
+              onDragEnd({ source: index, destination: row.index })
+            }}
+            acceptedKinds={['track', 'table-row']}
+            asChild
           >
             {renderTableRow(
               row,
@@ -453,8 +455,8 @@ export const Table = ({
               props,
               cn(styles.reorderableRow, className)
             )}
-          </Draggable>
-        </Droppable>
+          </Droppable>
+        </Draggable>
       )
     },
     [isTracksTable, onDragEnd, renderTableRow]

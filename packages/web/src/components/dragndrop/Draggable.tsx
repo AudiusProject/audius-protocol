@@ -41,7 +41,7 @@ export const Draggable = (props: DraggableProps) => {
     onDrop,
     children,
     asChild,
-    ...otherProps // passed to child
+    ...other
   } = props
   const dispatch = useDispatch()
 
@@ -95,7 +95,7 @@ export const Draggable = (props: DraggableProps) => {
       className={styles.draggable}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      {...otherProps}
+      {...other}
     >
       {children}
     </Comp>

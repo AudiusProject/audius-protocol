@@ -46,7 +46,8 @@ export const Droppable = (props: DroppableProps) => {
     disabled,
     acceptOwner = true,
     children,
-    asChild
+    asChild,
+    ...other
   } = props
   const { id, kind, index, isOwner } = useSelector(selectDragnDropState)
   const [hovered, setHovered] = useState(false)
@@ -97,23 +98,28 @@ export const Droppable = (props: DroppableProps) => {
     150
   )
 
-  const droppableHandlerProps = {
-    onDragEnter: handleDragEnter,
-    onDragLeave: handleDragLeave,
-    onDragOver: handleDragOver,
-    onDrop: handleDrop
-  }
-
-  const droppableProps = {
-    className: cn(styles.droppable, className, {
-      [activeClassName]: canDrop,
-      [inactiveClassName]: kind && !canDrop,
-      [hoverClassName]: hovered && canDrop
-    }),
-    ...(canDrop ? droppableHandlerProps : {})
-  }
+  const droppableProps = canDrop
+    ? {
+        onDragEnter: handleDragEnter,
+        onDragLeave: handleDragLeave,
+        onDragOver: handleDragOver,
+        onDrop: handleDrop
+      }
+    : {}
 
   const Comp = asChild ? Slot : 'div'
 
-  return <Comp {...droppableProps}>{children}</Comp>
+  return (
+    <Comp
+      className={cn(styles.droppable, className, {
+        [activeClassName]: canDrop,
+        [inactiveClassName]: kind && !canDrop,
+        [hoverClassName]: hovered && canDrop
+      })}
+      {...droppableProps}
+      {...other}
+    >
+      {children}
+    </Comp>
+  )
 }
