@@ -4,7 +4,7 @@ import { IconCaretRight, IconDownload } from '@audius/stems'
 import cn from 'classnames'
 import { Parallax, useParallaxController } from 'react-scroll-parallax'
 
-import HeroForeground from 'assets/img/publicSite/AudiusApp@2x.png'
+import HeroForeground from 'assets/img/publicSite/ProductShot1@2x.webp'
 import HeroBackgroundMobile from 'assets/img/publicSite/HeroBG.webp'
 import HeroBackground from 'assets/img/publicSite/HeroBG@2x.webp'
 import HeroBackgroundXL from 'assets/img/publicSite/HeroBG@3x.webp'

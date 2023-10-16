@@ -42,6 +42,7 @@
 .title {
   flex-wrap: wrap;
   display: inline-flex;
+  user-select: none;
 }
 
 .textAnimateTitle {
@@ -161,6 +162,7 @@
   line-height: 40px;
   text-shadow: 0 5px 20px rgba(25, 0, 96, 0.5);
   margin-bottom: 32px;
+  user-select: none;
 }
 
 .bgContainer {

@@ -40,6 +40,7 @@
   line-height: 42px;
   text-transform: uppercase;
   text-align: center;
+  user-select: none;
 }
 
 .coloredTitle {
@@ -72,6 +73,7 @@
   background: linear-gradient(to right, #30cfd0 0%, #330867 100%);
   background: linear-gradient(315deg, #5b23e1 0%, #a22feb 100%);
   margin-bottom: 16px;
+  user-select: none;
 }
 
 .subText {
@@ -188,6 +190,7 @@
   left: 6px;
   max-width: 351px;
   margin: -12px auto 0px;
+  user-select: none;
 }
 
 .mobileContainer .titleColor {
@@ -209,6 +212,7 @@
 
 .mobileContainer .coloredTitleWord {
   margin-bottom: 0px;
+  user-select: none;
 }
 
 .mobileContainer .textAnimate:not(:first-child) .coloredTitleWord {

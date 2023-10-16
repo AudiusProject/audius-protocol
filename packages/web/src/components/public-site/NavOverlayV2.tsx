@@ -167,6 +167,7 @@ const NavOverlay = (props: NavOverlayProps) => {
                   onClick={handleClickRoute(link, props.setRenderPublicSite)}
                   className={styles.dappLink}
                   href={link}
+                  target='_blank'
                 >
                   {icon}
                   <h4 className={styles.dappLinkText}>{text}</h4>

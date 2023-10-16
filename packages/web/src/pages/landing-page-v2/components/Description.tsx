@@ -4,7 +4,7 @@ import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useChain, useSpring, useTrail, animated } from 'react-spring'
 
-import productShot from 'assets/img/publicSite/AudiusWeb@2x.png'
+import productShot from 'assets/img/publicSite/ProductShot2@2x.webp'
 import dotsLogo1x from 'assets/img/publicSite/dot-logo@1x.jpg'
 import dotsLogo2x from 'assets/img/publicSite/dot-logo@2x.jpg'
 

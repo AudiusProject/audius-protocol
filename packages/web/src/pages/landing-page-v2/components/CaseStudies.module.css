@@ -23,6 +23,7 @@
   font-weight: 900;
   line-height: 68px;
   text-align: center;
+  user-select: none;
 }
 
 .subTitle {
@@ -151,6 +152,7 @@
   font-size: 32px;
   line-height: 40px;
   text-align: center;
+  user-select: none;
 }
 
 .mobileContainer .subTitle {

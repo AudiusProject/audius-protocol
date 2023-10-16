@@ -30,6 +30,7 @@
   text-shadow: 0px 5px 20px rgba(25, 0, 96, 0.25);
   max-width: 760px;
   margin-bottom: 20px;
+  user-select: none;
 }
 
 .ctaButton {
@@ -177,6 +178,7 @@
   line-height: 52px;
   font-weight: 700;
   text-shadow: 0 5px 20px rgba(25, 0, 96, 0.25);
+  user-select: none;
 }
 
 .mobileContainer .ctaButton {

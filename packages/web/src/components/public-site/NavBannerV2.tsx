@@ -16,6 +16,7 @@ import cn from 'classnames'
 import HorizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
 import {
   AUDIUS_BLOG_LINK,
+  AUDIUS_HELP_LINK,
   AUDIUS_LISTENING_LINK,
   AUDIUS_MERCH_LINK,
   AUDIUS_ORG,
@@ -87,14 +88,14 @@ const NavBanner = (props: NavBannerProps) => {
     {
       text: messages.help,
       subtext: messages.helpDescription,
-      onClick: handleClickRoute(AUDIUS_MERCH_LINK, props.setRenderPublicSite),
+      onClick: () => window.open(AUDIUS_HELP_LINK, '_blank', 'noreferrer,noopener'),
       icon: <IconSupport />,
       iconClassName: styles.menuItemIcon
     },
     {
       text: messages.download,
       subtext: messages.downloadDescription,
-      onClick: handleClickRoute(DOWNLOAD_LINK, props.setRenderPublicSite),
+      onClick: () => window.open(DOWNLOAD_LINK, '_blank', 'noreferrer,noopener'),
       icon: <IconDownloadQueued />,
       iconClassName: styles.menuItemIcon
     },
@@ -102,21 +103,21 @@ const NavBanner = (props: NavBannerProps) => {
       text: messages.blog,
       subtext: messages.blogDescription,
       className: styles.rewardsMenuItem,
-      onClick: handleClickRoute(AUDIUS_BLOG_LINK, props.setRenderPublicSite),
+      onClick: () => window.open(AUDIUS_BLOG_LINK, '_blank', 'noreferrer,noopener'),
       icon: <IconBlog />,
       iconClassName: styles.menuItemIconStroke
     },
     {
       text: messages.oaf,
       subtext: messages.oafDescription,
-      onClick: handleClickRoute(AUDIUS_ORG, props.setRenderPublicSite),
+      onClick: () => window.open(AUDIUS_ORG, '_blank', 'noreferrer,noopener'),
       icon: <IconFoundation />,
       iconClassName: styles.menuItemIcon
     },
     {
       text: messages.merch,
       subtext: messages.merchDescription,
-      onClick: handleClickRoute(AUDIUS_MERCH_LINK, props.setRenderPublicSite),
+      onClick: () => window.open(AUDIUS_MERCH_LINK, '_blank', 'noreferrer,noopener'),
       icon: <IconMerch />,
       iconClassName: styles.menuItemIconStroke
     }
@@ -163,7 +164,7 @@ const NavBanner = (props: NavBannerProps) => {
         </div>
         <div className={styles.linkContainer}>
           <PopupMenu
-            renderMenu={() => {
+            renderMenu={(menuItems: PopupMenuItem[]) => {
               return (
                 <div className={styles.resourcesMenu}>
                   {menuItems.map((item, i) => (

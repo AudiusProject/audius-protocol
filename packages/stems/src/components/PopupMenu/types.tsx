@@ -30,7 +30,7 @@ export type PopupMenuProps = {
   /**
    * An optional function that controls how the menu is rendered
    */
-  renderMenu?: () => JSX.Element
+  renderMenu?: (menuItems: PopupMenuItem[]) => JSX.Element
 
   /**
    * Whether to dismiss the popup on mouse leave

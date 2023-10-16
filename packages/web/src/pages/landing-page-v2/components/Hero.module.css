@@ -53,7 +53,7 @@
 
 .fgContainer {
   user-select: none;
-  z-index: 20;
+  z-index: 10;
 }
 
 .foreground {
@@ -129,6 +129,7 @@
   /*for older browsers*/
   will-change: transform;
   letter-spacing: 0.02em;
+  user-select: none;
 }
 
 .subtitle {
@@ -310,6 +311,7 @@
     0px 12.5px 10px rgba(0, 0, 0, 0.035), 0px 7px 5px rgba(0, 0, 0, 0.03),
     0px 2.8px 2.2px rgba(0, 0, 0, 0.02);
   /* margin-bottom: 24px; */
+  user-select: none;
 }
 
 .mobileContainer .content .subtitle {

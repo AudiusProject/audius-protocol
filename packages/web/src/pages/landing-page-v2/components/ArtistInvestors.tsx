@@ -2,7 +2,7 @@
 import cn from 'classnames'
 import { useSpring, animated } from 'react-spring'
 
-import investorJasonDerulo from 'assets/img/publicSite/Investor-Jason-Derulo.webp'
+import investorPlaceholder from 'assets/img/publicSite/Investor-Placeholder.svg'
 import investorKatyPerry from 'assets/img/publicSite/Investor-Katy-Perry.webp'
 import investorNas from 'assets/img/publicSite/Investor-Nas.webp'
 import investorPushaT from 'assets/img/publicSite/Investor-Pusha-T.webp'
@@ -19,7 +19,6 @@ const messages = {
 
 type AristProps = {
   name: string
-  handle: string
   imageUrl: string
 }
 
@@ -54,28 +53,23 @@ const MobileArtist = (props: AristProps) => {
 const artists = [
   {
     name: 'Katy Perry',
-    handle: 'katyperry',
     imageUrl: investorKatyPerry
   },
   {
     name: 'Nas',
-    handle: 'nas',
     imageUrl: investorNas
   },
   {
-    name: 'Jason Derulo',
-    handle: 'jasonderulo',
-    imageUrl: investorJasonDerulo
-  },
-  {
     name: 'The Chainsmokers',
-    handle: 'thechainsmokers',
     imageUrl: investorTheChainsmokers
   },
   {
     name: 'Pusha T',
-    handle: 'pushat',
     imageUrl: investorPushaT
+  },
+  {
+    name: 'Placeholder',
+    imageUrl: investorPlaceholder
   }
 ]
 
@@ -99,10 +93,10 @@ const ArtistInvestors = (props: ArtistInvestorsProps) => {
         <h3 className={styles.subTitle}>{messages.subtitle}</h3>
         <div className={styles.artistsContainer}>
           {artists.map((artist, i) => (
-            <MobileArtist key={artist.handle} {...artist} />
+            <MobileArtist key={artist.name} {...artist} />
           ))}
         </div>
-        <h3 className={cn(styles.subTitle, styles.manyMore)}>
+        <h3 className={styles.subTitle}>
           {messages.manyMore}
         </h3>
       </div>
@@ -129,7 +123,7 @@ const ArtistInvestors = (props: ArtistInvestorsProps) => {
           </div>
           <div className={styles.artistsContainer}>
             {artists.map((artist) => (
-              <Artist key={artist.handle} {...artist} />
+              <Artist key={artist.name} {...artist} />
             ))}
           </div>
           <h3 className={styles.subTitle}>{messages.manyMore}</h3>

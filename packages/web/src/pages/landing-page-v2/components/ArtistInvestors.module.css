@@ -35,6 +35,7 @@
   line-height: 68px;
   width: 100%;
   text-align: center;
+  user-select: none;
 }
 
 .subTitle {
@@ -84,7 +85,7 @@
   color: #858199;
   font-size: 16px;
   font-weight: 500;
-  line-height: 25px;
+  line-height: 24px;
   text-align: center;
   margin: 18px auto 0px;
 }
@@ -117,17 +118,18 @@
 
 .mobileContainer .title {
   z-index: 1;
-  font-size: 42px;
-  line-height: 52px;
+  font-size: 32px;
+  line-height: 40px;
   text-align: center;
+  user-select: none;
 }
 
 .mobileContainer .subTitle {
   z-index: 1;
   max-width: 300px;
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 500;
-  line-height: 32px;
+  line-height: 24px;
   text-align: center;
 }
 
@@ -143,6 +145,12 @@
   margin-bottom: 24px;
 }
 
+.mobileContainer .artistCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .mobileContainer .artistImageWrapper {
   width: 120px;
   height: 120px;
@@ -150,10 +158,5 @@
 }
 
 .mobileContainer .artistName {
-  color: #7e1bcc;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 19px;
-  text-align: center;
   margin: 0px auto;
 }

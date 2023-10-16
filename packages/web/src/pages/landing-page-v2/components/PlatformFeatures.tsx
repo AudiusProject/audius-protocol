@@ -5,7 +5,7 @@ import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
-import crowdImg from 'assets/img/publicSite/ImgCrowd.jpg'
+import productShot from 'assets/img/publicSite/ProductShot3@2x.webp'
 import useHasViewed from 'hooks/useHasViewed'
 import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
@@ -119,8 +119,8 @@ const PlatformFeatures = (props: PlatformFeaturesProps) => {
         ) : null}
         <div className={styles.body}>
           <img
-            src={crowdImg}
-            className={styles.crowdImg}
+            src={productShot}
+            className={styles.productShot}
             alt='DJ performing in front of crowd'
           />
           {props.isMobile ? (

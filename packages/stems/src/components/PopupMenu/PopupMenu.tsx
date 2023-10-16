@@ -94,7 +94,7 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
           dismissOnMouseLeave={dismissOnMouseLeave}
         >
           {renderMenu ? (
-            renderMenu()
+            renderMenu(items)
           ) : (
             <ul
               className={styles.menu}
