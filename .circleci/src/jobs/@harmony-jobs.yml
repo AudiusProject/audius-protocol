@@ -76,4 +76,8 @@ harmony-deploy-chromatic:
     - checkout
     - attach_workspace:
         at: ./
-    - run: npm run chromatic
+    - run:
+        name: run chromatic
+        command: |
+          cd packages/harmony
+          npm run chromatic
