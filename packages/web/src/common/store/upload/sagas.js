@@ -1012,7 +1012,6 @@ function* uploadSingleTrack(track) {
           throw new Error(`Could not confirm upload single track ${trackId}`)
         }
 
-        let apiClientgetTrackRes = undefined
         let retries = 30
         while (retries !== 0) {
           const maybeTrackRes = yield apiClient.getTrack({
