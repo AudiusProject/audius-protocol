@@ -12,7 +12,6 @@ import {
   ChallengeRewardsModalType,
   ChallengeName,
   audioRewardsPageSelectors,
-  makeChallengeSortComparator,
   isAudioMatchingChallenge,
   makeOptimisticChallengeSortComparator
 } from '@audius/common'
