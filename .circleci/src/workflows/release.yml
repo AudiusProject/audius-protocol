@@ -36,6 +36,10 @@ jobs:
       name: push-trpc
       context: [GCP, dockerhub]
       service: trpc
+  - push-docker-image:
+      name: push-healthz
+      context: [GCP, dockerhub]
+      service: healthz
 
   - release-github-draft-trigger:
       filters:
@@ -77,6 +81,7 @@ jobs:
         - push-pedalboard-sla-auditor
         - push-comms
         - push-trpc
+        - push-healthz
       filters:
         branches:
           only: /^release.*$/
