@@ -17,11 +17,9 @@
     "lint:fix": "npm run lint -- --fix",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "chromatic": "chromatic --exit-zero-on-changes"
+    "chromatic": "chromatic"
   },
-  "author": {
-    "name": "KJ Shanks"
-  },
+  "author": "KJ Shanks",
   "license": "ISC",
   "devDependencies": {
     "@babel/preset-env": "7.22.15",
@@ -83,7 +81,5 @@
     "react-perfect-scrollbar": "1.5.8",
     "react-use": "15.3.8",
     "react-use-measure": "2.1.1"
-  },
-  "readme": "ERROR: No README data found!",
-  "_id": "@audius/harmony@0.0.4"
+  }
 }
