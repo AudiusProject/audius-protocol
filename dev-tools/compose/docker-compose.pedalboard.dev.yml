@@ -1,0 +1,43 @@
+version: '3'
+
+# Defines "dev" plugins. This is run locally by audius-compose
+# Extends from docker-compose.pedalboard.prod.yml
+#
+# Uses the "thin" container which expects all dependencies to be mounted
+
+services:
+  app-template:
+    extends:
+      file: docker-compose.pedalboard.prod.yml
+      service: app-template
+    build:
+      dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
+    volumes:
+      - ${PROJECT_ROOT}:/app
+
+  trending-challenge-rewards:
+    extends:
+      file: docker-compose.pedalboard.prod.yml
+      service: trending-challenge-rewards
+    build:
+      dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
+    volumes:
+      - ${PROJECT_ROOT}:/app
+
+  sla-auditor:
+    extends:
+      file: docker-compose.pedalboard.prod.yml
+      service: sla-auditor
+    build:
+      dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
+    volumes:
+      - ${PROJECT_ROOT}:/app
+
+  relay:
+    extends:
+      file: docker-compose.pedalboard.prod.yml
+      service: relay
+    build:
+      dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.dev
+    volumes:
+      - ${PROJECT_ROOT}:/app

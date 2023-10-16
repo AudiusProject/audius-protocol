@@ -15,6 +15,7 @@ import {
   relayTransaction
 } from 'services/audius-backend/solana'
 import { IntKeys } from 'services/remote-config'
+import { getAccountUser } from 'store/account/selectors'
 import { getContext } from 'store/effects'
 import { getFeePayer } from 'store/solana/selectors'
 import { setVisibility } from 'store/ui/modals/parentSlice'
@@ -291,6 +292,9 @@ function* doBuyUSDC({
 }
 
 function* recoverPurchaseIfNecessary() {
+  const user = yield* select(getAccountUser)
+  if (!user) return
+
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')

@@ -1,0 +1,21 @@
+.container {
+
+}
+
+.wrapperClassName {
+  background: rgba(0,0,0,0.3);
+}
+
+.slider {
+  max-width: 576px;
+  margin: 27px auto;
+}
+
+.input {
+  width: 480px;
+  width: 480px;
+}
+
+.invalid input {
+  color: #F15064;
+}

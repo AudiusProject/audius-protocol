@@ -1,0 +1,180 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 20px;
+  user-select: none;
+}
+
+.user {
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--neutral-light-8);
+}
+
+.user .image {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  margin-right: 25px;
+  overflow: hidden;
+}
+
+.user .image img {
+  width: 100%;
+  height: 100%;
+}
+
+.bottom {
+  padding: 18px 32px;
+  display: flex;
+  align-items: top;
+  justify-content: space-between;
+}
+
+.left {
+  display: flex;
+  flex-direction: column;
+}
+
+.description {
+  font-weight: 500;
+  font-size: var(--font-xl);
+  line-height: 26px;
+  margin-bottom: 16px;
+  margin-right: 24px;
+}
+
+.info {
+  display: flex;
+}
+
+.id {
+  margin-left: 16px;
+}
+
+.executed {
+  margin-left: 16px;
+}
+
+.voteCTA {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--neutral-light-8);
+}
+
+.voteStatusContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.title {
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  line-height: 17px;
+  text-align: right;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.blocks {
+  margin-top: 4px;
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  line-height: 17px;
+  text-align: right;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.time {
+  font-weight: 800;
+  font-size: var(--font-4xl);
+  line-height: 44px;
+  text-align: center;
+}
+
+.voteFor {
+  margin-right: 16px;
+}
+
+.stats {
+  display: flex;
+  flex-direction: column;
+}
+
+.abstained {
+  margin-top: 18px;
+  text-transform: uppercase;
+  font-weight: var(--font-bold);
+  font-size: var(--font-xs);
+  line-height: 15px;
+  text-align: center;
+  letter-spacing: 1px;
+  justify-content: center;
+}
+
+.loadingContainer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.quorumContainer {
+  margin-top: 8px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  text-transform: uppercase;
+  font-weight: var(--font-bold);
+  font-size: var(--font-xs);
+  line-height: 15px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.quorumValue {
+  margin: 0px 8px;
+}
+
+
+.quorumStatusContainer {
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-l);
+  line-height: 22px;
+  color: var(--neutral);
+  text-transform: capitalize;
+  display: inline-flex;
+  margin-top: 16px;
+  align-items: center;
+}
+
+.circle {
+  height: 24px;
+  width: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+}
+
+.circle.met {
+  background-color: #6BCF63;
+}
+
+.circle.notMet {
+  background-color: var(--neutral-light-4);
+}
+
+.icon path {
+  fill: var(--static-white);
+}

@@ -1,0 +1,39 @@
+.container {
+  width: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  position: relative;
+  user-select: none;
+}
+
+.bgImg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 420px;
+  height: 420px;
+  z-index: -1;
+  background: url(../../assets/img/headerImg@2x.jpg);
+  background-position: center;
+  background-size: cover;
+}
+
+.appBarContainer {
+  display: inline-flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  padding: 28px 48px;
+  margin: 0px auto;
+  box-sizing: border-box;
+}
+
+.navContainer {
+  display: inline-flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 0px;
+  margin: 0px auto;
+}

@@ -1,0 +1,50 @@
+.statsChip {
+  padding: 24px 0px;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 228px;
+  box-sizing: border-box;
+}
+
+.divider {
+  width: 100%;
+  border-top: 1px solid #3F415B;
+  margin: 22px 0px 24px;
+}
+
+.tooltipStyle {
+  font-family: var(--font-family);
+  font-weight: 800;
+  font-size: 48px;
+  line-height: 48px;
+  margin-bottom: 6px;
+  text-align: center;
+
+  background: -webkit-linear-gradient(315deg, #7652CC 2.04%, #B05CE6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  justify-content: center;
+
+  display: inline;
+}
+
+.label {
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  line-height: 17px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+
+  color: #BEC5E0;
+  text-align: center;
+}
+
+.loadingContainer {
+  height: 100%;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+}

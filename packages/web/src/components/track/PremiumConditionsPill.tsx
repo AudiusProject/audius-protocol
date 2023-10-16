@@ -5,9 +5,7 @@ import {
   isPremiumContentUSDCPurchaseGated,
   PremiumConditions
 } from '@audius/common'
-import { HarmonyButton, HarmonyButtonSize, IconLock } from '@audius/stems'
-
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { Button, ButtonSize, IconLock } from '@audius/harmony'
 
 import styles from './PremiumConditionsPill.module.css'
 
@@ -26,16 +24,11 @@ export const PremiumConditionsPill = ({
   onClick?: (e: MouseEvent) => void
 }) => {
   const isPurchase = isPremiumContentUSDCPurchaseGated(premiumConditions)
-  const icon = unlocking ? (
-    <LoadingSpinner className={styles.spinner} />
-  ) : isPurchase ? null : (
-    <IconLock />
-  )
 
   let message = null
   if (unlocking) {
     // Show only spinner when unlocking a purchase
-    message = isPurchase ? null : messages.unlocking
+    message = isPurchase ? undefined : messages.unlocking
   } else {
     message = isPurchase
       ? `$${formatPrice(premiumConditions.usdc_purchase.price)}`
@@ -43,12 +36,13 @@ export const PremiumConditionsPill = ({
   }
 
   return (
-    <HarmonyButton
+    <Button
       className={styles.button}
-      size={HarmonyButtonSize.SMALL}
+      size={ButtonSize.SMALL}
       onClick={onClick}
-      color={isPurchase ? 'specialLightGreen' : 'accentBlue'}
-      icon={icon}
+      color={isPurchase ? 'lightGreen' : 'blue'}
+      isLoading={unlocking}
+      iconLeft={IconLock}
       text={message}
     />
   )

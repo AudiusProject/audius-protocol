@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
+    <title>iconWarning</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Guide" transform="translate(-300.000000, -767.000000)">
+            <g id="iconWarning" transform="translate(300.000000, 767.000000)">
+                <g id="warning">
+                    <path d="M9.25974887,1.6060807 L14.701303,14.3030404 C14.8100808,14.5568552 14.692505,14.8507947 14.4386901,14.9595725 C14.3764517,14.9862461 14.3094439,15 14.2417305,15 L1.75826951,15 C1.48212713,15 1.25826951,14.7761424 1.25826951,14.5 C1.25826951,14.4322866 1.27202338,14.3652788 1.29869699,14.3030404 L6.74025113,1.6060807 C6.89782992,1.23839685 7.25936805,1 7.65939616,1 L8.34060384,1 C8.74063195,1 9.10217008,1.23839685 9.25974887,1.6060807 Z" id="Rectangle" fill="#F5A623"></path>
+                    <g id="Group-2" stroke-width="1" transform="translate(7.000000, 6.000000)" fill="#000000">
+                        <g id="Group-3">
+                            <rect id="Rectangle-9" x="0" y="0" width="2" height="5"></rect>
+                            <rect id="Rectangle-9" x="0" y="6" width="2" height="2"></rect>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

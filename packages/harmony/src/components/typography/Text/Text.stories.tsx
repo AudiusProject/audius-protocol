@@ -8,23 +8,27 @@ const messages = {
 }
 
 const meta: Meta<typeof Text> = {
-  title: 'Components/Text',
+  title: 'Components/Typography/Text',
   component: Text,
   argTypes: {
     variant: {
-      control: { type: 'radio' },
+      description: 'Text Variant',
+      control: { type: 'select' },
       options: ['display', 'heading', 'title', 'label', 'body']
     },
     strength: {
+      description: 'Font Strength/Weight',
       control: { type: 'radio' },
       options: ['strong', 'default', 'weak']
     },
     size: {
-      control: { type: 'radio' },
+      description: 'Font Size',
+      control: { type: 'select' },
       options: ['xl', 'l', 'm', 's', 'xs']
     },
     color: {
-      control: { type: 'radio' },
+      description: 'Text Color',
+      control: { type: 'select' },
       options: ['heading', 'default', 'subdued', 'disabled']
     }
   },

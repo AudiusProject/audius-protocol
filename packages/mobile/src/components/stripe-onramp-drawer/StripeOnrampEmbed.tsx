@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { stripeModalUISelectors, stripeModalUIActions } from '@audius/common'
+import type { OnrampSessionResult } from '@stripe/crypto'
 import { View } from 'react-native'
 import { WebView } from 'react-native-webview'
 import { useDispatch, useSelector } from 'react-redux'
@@ -19,10 +20,11 @@ const STRIPE_PUBLISHABLE_KEY = env.REACT_APP_STRIPE_CLIENT_PUBLISHABLE_KEY
 const useStyles = makeStyles(() => ({
   root: {
     display: 'flex',
-    height: '85%'
+    flex: 1,
+    height: '100%'
   },
   spinnerContainer: {
-    height: '85%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center'
   }
@@ -36,10 +38,21 @@ export const StripeOnrampEmbed = () => {
 
   const handleSessionUpdate = useCallback(
     (event) => {
-      if (event?.payload?.session?.status) {
-        dispatch(
-          stripeSessionStatusChanged({ status: event.payload.session.status })
-        )
+      try {
+        const { status } = JSON.parse(
+          event.nativeEvent.data
+        ) as OnrampSessionResult
+
+        if (status) {
+          if (status === 'error') {
+            console.error('Received Stripe session error')
+            dispatch(cancelStripeOnramp())
+          } else {
+            dispatch(stripeSessionStatusChanged({ status }))
+          }
+        }
+      } catch (e) {
+        console.error(`Failed to parse Stripe session update: ${e}`)
       }
     },
     [dispatch]
@@ -52,6 +65,15 @@ export const StripeOnrampEmbed = () => {
       dispatch(cancelStripeOnramp())
     },
     [dispatch]
+  )
+
+  const renderLoadingSpinner = useCallback(
+    () => (
+      <View style={styles.spinnerContainer}>
+        <LoadingSpinner />
+      </View>
+    ),
+    [styles]
   )
 
   const html = `
@@ -69,7 +91,7 @@ export const StripeOnrampEmbed = () => {
     <div id="onramp-element" />
     <script type="text/javascript">
       const handleSessionUpdate = (event) => {
-        window.ReactNativeWebView.postMessage(event)
+        window.ReactNativeWebView.postMessage(JSON.stringify(event.payload.session))
       }
       try {
         const onramp = new window.StripeOnramp("${STRIPE_PUBLISHABLE_KEY}")
@@ -96,14 +118,14 @@ export const StripeOnrampEmbed = () => {
       {clientSecret ? (
         <WebView
           source={{ html }}
+          startInLoadingState={true}
+          renderLoading={renderLoadingSpinner}
           scrollEnabled={false}
           onError={handleError}
           onMessage={handleSessionUpdate}
         />
       ) : (
-        <View style={styles.spinnerContainer}>
-          <LoadingSpinner />
-        </View>
+        renderLoadingSpinner()
       )}
     </View>
   )

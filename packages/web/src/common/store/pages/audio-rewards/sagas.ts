@@ -131,9 +131,15 @@ const getClaimingConfig = (
   remoteConfigInstance: RemoteConfigInstance,
   env: Env
 ) => {
-  const quorumSize = remoteConfigInstance.getRemoteVar(
-    IntKeys.ATTESTATION_QUORUM_SIZE
-  )
+  const { ENVIRONMENT } = env
+  let quorumSize
+  if (ENVIRONMENT === 'development') {
+    quorumSize = 2
+  } else {
+    quorumSize = remoteConfigInstance.getRemoteVar(
+      IntKeys.ATTESTATION_QUORUM_SIZE
+    )
+  }
   const maxClaimRetries = remoteConfigInstance.getRemoteVar(
     IntKeys.MAX_CLAIM_RETRIES
   )
@@ -250,9 +256,10 @@ function* claimChallengeRewardAsync(
   }
   let aaoErrorCode
   try {
-    const challenges = specifiers.map((specifier) => ({
+    const challenges = specifiers.map(({ specifier, amount }) => ({
       challenge_id: challengeId,
-      specifier
+      specifier,
+      amount
     }))
 
     const response: { error?: string; aaoErrorCode?: number } = yield* call(
@@ -263,7 +270,6 @@ function* claimChallengeRewardAsync(
         handle: currentUser.handle,
         recipientEthAddress: currentUser.wallet,
         oracleEthAddress,
-        amount,
         quorumSize,
         endpoints,
         AAOEndpoint,
@@ -302,6 +308,9 @@ function* claimChallengeRewardAsync(
           case FailureReason.AAO_ATTESTATION_UNKNOWN_RESPONSE:
           case FailureReason.MISSING_CHALLENGES:
           case FailureReason.CHALLENGE_INCOMPLETE:
+            yield put(claimChallengeRewardFailed())
+            break
+          case FailureReason.WAIT_FOR_COOLDOWN:
             yield put(claimChallengeRewardFailed())
             break
           case FailureReason.UNKNOWN_ERROR:

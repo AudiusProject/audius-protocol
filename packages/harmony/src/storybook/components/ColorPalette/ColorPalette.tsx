@@ -1,7 +1,8 @@
 import { Fragment } from 'react'
 
-import { Text } from 'components'
-import { Theme, ThemeColors, themeColorsMap } from 'storybook/colors'
+import { Divider, Flex, Text } from 'components'
+import { themeColorsMap } from 'styles/theme'
+import type { Theme, ThemeColors } from 'styles/types'
 
 import { ColorSwatch } from '../ColorSwatch'
 
@@ -17,7 +18,7 @@ const messages = {
   primary: 'Primary',
   primaryDesc:
     'Primary is our brand color. It is used across our interface to represent elements with the highest importance. It defines the overall look and feel of Audius.',
-  secondary: 'Seconday',
+  secondary: 'Secondary',
   secondaryDesc:
     'Secondary colors are use in components such as pills, alerts and labels. These secondary colors are used for secondary actions, while the primary color(s) should take precedence.',
   neutral: 'Neutral',
@@ -44,16 +45,21 @@ const ColorRow = ({ colors, themeKey }: ColorRowProps) => {
   const colorNames = Object.keys(colors)
 
   return (
-    <section className={styles.colorSection}>
-      <div className={styles.colorSectionInfo}>
+    <Flex gap='4xl'>
+      <Flex className={styles.colorSectionInfo} direction='column' gap='l'>
         <Text variant='body' strength='strong'>
           {messages[themeKey]}
         </Text>
         <Text variant='body' strength='weak'>
           {messages[`${themeKey}Desc`]}
         </Text>
-      </div>
-      <div className={styles.colorTileContainer}>
+      </Flex>
+      <Flex
+        className={styles.colorTileContainer}
+        alignItems='flex-start'
+        gap='s'
+        wrap='wrap'
+      >
         {colorNames.map((name) => (
           <ColorSwatch
             key={`colorTile-${name}`}
@@ -61,8 +67,8 @@ const ColorRow = ({ colors, themeKey }: ColorRowProps) => {
             color={colors[name as keyof typeof colors]}
           />
         ))}
-      </div>
-    </section>
+      </Flex>
+    </Flex>
   )
 }
 
@@ -71,7 +77,7 @@ export const ColorPalette = ({ theme = 'day' }: ColorPaletteProps) => {
   const themeKeys = Object.keys(colors) as ThemeKey[]
 
   return (
-    <div className={styles.paletteContainer}>
+    <Flex className={styles.paletteContainer} direction='column' gap='3xl'>
       <Text variant='display' size='xl'>
         {messages.title}
       </Text>
@@ -80,10 +86,10 @@ export const ColorPalette = ({ theme = 'day' }: ColorPaletteProps) => {
       </Text>
       {themeKeys.map((key) => (
         <Fragment key={key}>
-          <div className={styles.divider} />
+          <Divider />
           <ColorRow themeKey={key} colors={colors[key]} />
         </Fragment>
       ))}
-    </div>
+    </Flex>
   )
 }

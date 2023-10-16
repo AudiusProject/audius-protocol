@@ -12,7 +12,12 @@
       }
     ],
     "@babel/preset-typescript",
-    "@babel/preset-react"
+    [
+      "@babel/preset-react",
+      { "runtime": "automatic", "importSource": "@emotion/react" }
+    ]
   ],
-  "plugins": []
+  "plugins": [
+    "@emotion/babel-plugin"
+  ]
 }

@@ -19,7 +19,6 @@ import {
   reformatCollection,
   savedPageActions
 } from '@audius/common'
-import { push as pushRoute } from 'connected-react-router'
 import { range } from 'lodash'
 import { channel, buffers } from 'redux-saga'
 import {
@@ -44,7 +43,7 @@ import {
   reportResultEvents
 } from 'common/store/upload/sagaHelpers'
 import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'
-import { ERROR_PAGE } from 'utils/route'
+import * as errorActions from 'store/errors/actions'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { processAndCacheTracks } from '../cache/tracks/utils'
@@ -646,7 +645,13 @@ export function* handleUploads({
             console.debug('Something went wrong deleting orphaned tracks')
           }
           // Now navigate them to something went wrong
-          yield put(pushRoute(ERROR_PAGE))
+          yield put(
+            errorActions.handleError({
+              name: 'Registering Tracks Error',
+              message: 'Something went wrong registering tracks!',
+              shouldRedirect: true
+            })
+          )
         } else {
           yield put(uploadActions.addTrackToChainError(error))
         }
@@ -890,7 +895,13 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
         } catch (err) {
           console.debug(`Could not delete all tracks: ${err}`)
         }
-        yield put(pushRoute(ERROR_PAGE))
+        yield put(
+          errorActions.handleError({
+            name: 'Create Playlist Error',
+            message: 'Create playlist call failed',
+            shouldRedirect: true
+          })
+        )
       }
     )
   )

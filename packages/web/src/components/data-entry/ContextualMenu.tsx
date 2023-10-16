@@ -42,7 +42,7 @@ type MenuFormProps = {
 
 const MenuForm = (props: MenuFormProps) => {
   const { isOpen, onClose, label, icon, menuFields } = props
-  const { handleSubmit, resetForm } = useFormikContext()
+  const { resetForm } = useFormikContext()
 
   const handleCancel = useCallback(() => {
     resetForm()
@@ -55,13 +55,11 @@ const MenuForm = (props: MenuFormProps) => {
         <ModalTitle title={label} icon={icon} />
       </ModalHeader>
       <ModalContent>
-        <Form>{menuFields}</Form>
+        <Form id={label}>{menuFields}</Form>
       </ModalContent>
       <ModalFooter>
         <Button
-          onClick={() => {
-            handleSubmit()
-          }}
+          form={label}
           type={ButtonType.PRIMARY}
           text={messages.save}
           buttonType='submit'

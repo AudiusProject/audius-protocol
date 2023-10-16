@@ -1,4 +1,4 @@
-import { Text } from 'components'
+import { Box, Flex, Text } from 'components'
 
 import styles from './ColorSwatch.module.css'
 
@@ -10,9 +10,15 @@ type ColorSwatchProps = {
 
 export const ColorSwatch = ({ color, desc, name }: ColorSwatchProps) => {
   return (
-    <div className={styles.tile}>
-      <div className={styles.tileColor} style={{ background: color }} />
-      <div className={styles.tileInfo}>
+    <Flex
+      className={styles.tile}
+      direction='column'
+      gap='s'
+      border='strong'
+      borderRadius='xl'
+    >
+      <Box className={styles.tileColor} style={{ background: color }} />
+      <Flex direction='column' gap='xs' p='s'>
         {name ? (
           <Text
             className={styles.infoText}
@@ -43,7 +49,7 @@ export const ColorSwatch = ({ color, desc, name }: ColorSwatchProps) => {
         >
           {color}
         </Text>
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   )
 }

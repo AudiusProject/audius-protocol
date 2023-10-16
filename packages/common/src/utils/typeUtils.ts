@@ -31,3 +31,7 @@ export type Maybe<T> = T | undefined
 export type Brand<T, U extends string> = T & { _brand: U }
 
 export type ValueOf<T> = T[keyof T]
+
+export function isNullOrUndefined(obj: any): obj is null | undefined {
+  return obj === null || obj === undefined
+}

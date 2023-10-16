@@ -1,12 +1,14 @@
 {
   "name": "root",
-  "version": "1.5.45",
+  "version": "1.5.46",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "packages/discovery-provider/plugins/pedalboard/apps/*",
+    "packages/discovery-provider/plugins/pedalboard/packages/*"
   ],
   "private": true,
   "scripts": {
-    "build": "turbo run build --filter=audius-client^... --filter=audius-mobile-client^...",
+    "build": "turbo run build --filter=audius-client^... --filter=audius-mobile-client^... --filter=identity-service^...",
     "check-secrets": "sh ./scripts/check_secrets.sh",
     "clean:modules": "rm -rf node_modules && rm -rf packages/*/node_modules",
     "clean": "npm run clean:auto -w audius-mobile-client && npm run clean:modules",
@@ -45,7 +47,12 @@
     "SDK======================================": "",
     "sdk": "turbo run start --filter=@audius/sdk",
     "PROTOCOL======================================": "",
-    "protocol": "turbo run start --filter=@audius/compose"
+    "protocol": "turbo run start --filter=@audius/compose --",
+    "PEDALBOARD======================================": "",
+    "pedalboard:build": "turbo run build --filter='./packages/discovery-provider/plugins/pedalboard/apps/*' --filter='./packages/discovery-provider/plugins/pedalboard/packages/*'",
+    "pedalboard:clean": "turbo run clean --filter='./packages/discovery-provider/plugins/pedalboard/apps/*' --filter='./packages/discovery-provider/plugins/pedalboard/packages/*'",
+    "pedalboard:dev": "turbo run dev --concurrency 12 --filter='./packages/discovery-provider/plugins/pedalboard/apps/*' --filter='./packages/discovery-provider/plugins/pedalboard/packages/*'",
+    "pedalboard:test": "turbo run test --filter='./packages/discovery-provider/plugins/pedalboard/apps/*' --filter='./packages/discovery-provider/plugins/pedalboard/packages/*'"
   },
   "devDependencies": {
     "@types/keyv": "4.2.0",
@@ -77,7 +84,8 @@
     "wait-on": "6.0.1"
   },
   "dependencies": {
-    "@escape.tech/mookme": "2.4.1"
+    "@escape.tech/mookme": "2.4.1",
+    "pg": "8.8.0"
   },
   "overrides": {
     "@types/react": "18.0.26",

@@ -1,6 +1,7 @@
 import svgr from '@svgr/rollup'
 import postcssCustomProperties from 'postcss-custom-properties'
 import copy from 'rollup-plugin-copy'
+import json from 'rollup-plugin-json'
 import external from 'rollup-plugin-peer-deps-external'
 import postcss from 'rollup-plugin-postcss'
 import rollupTypescript from 'rollup-plugin-typescript2'
@@ -16,11 +17,13 @@ export default {
       file: pkg.module,
       format: 'es',
       exports: 'named',
-      sourcemap: true
+      sourcemap: true,
+      preserveModules: true
     }
   ],
   plugins: [
     external(),
+    json(),
     postcss({
       plugins: [
         postcssCustomProperties({
@@ -33,6 +36,7 @@ export default {
             'src/assets/styles/spacing.css',
             'src/assets/styles/colors.css',
             'src/assets/styles/tokens.css',
+            'src/assets/styles/animations.css',
             'src/assets/styles/border-radius.css',
             'src/assets/styles/shadows.css'
           ]

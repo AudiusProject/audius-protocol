@@ -14,9 +14,9 @@ export const waitForTransaction = (transactionNumber: number) => {
 }
 
 const waitForBlockConfirmation = (routeAlias, retries = 3) => {
-  cy.wait(routeAlias).then((xhr) => {
-    const { block_found, block_passed } = xhr.response.body.data
-    if (block_found && block_passed) {
+  cy.wait(routeAlias, { timeout: 10000 }).then((xhr) => {
+    const { block_passed } = xhr.response.body.data
+    if (block_passed) {
     } else if (retries > 0) waitForBlockConfirmation(routeAlias, retries - 1)
     // wait for the next response
     else throw new Error('All requests returned non-200 response')

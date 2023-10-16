@@ -13,18 +13,19 @@ import {
   useGetUSDCTransactionsCount,
   useUSDCTransactionDetailsModal
 } from '@audius/common'
-import { full } from '@audius/sdk'
 import {
-  HarmonyButton,
-  HarmonyButtonSize,
-  HarmonyButtonType,
-  IconDownload
-} from '@audius/stems'
+  Button,
+  ButtonSize,
+  ButtonType,
+  IconCloudDownload
+} from '@audius/harmony'
+import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
+import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { MainContentContext } from 'pages/MainContentContext'
 import NotFoundPage from 'pages/not-found-page/NotFoundPage'
@@ -116,15 +117,19 @@ const RenderWithdrawalsPage = () => {
       type: full.GetUSDCTransactionsTypeEnum.Transfer,
       method: full.GetUSDCTransactionsMethodEnum.Send
     },
-    { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE }
+    { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE, force: true }
   )
-  const { status: countStatus, data: count } = useGetUSDCTransactionsCount({
-    userId,
-    type: full.GetUSDCTransactionsTypeEnum.Transfer,
-    method: full.GetUSDCTransactionsMethodEnum.Send
-  })
+  const { status: countStatus, data: count } = useGetUSDCTransactionsCount(
+    {
+      userId,
+      type: full.GetUSDCTransactionsTypeEnum.Transfer,
+      method: full.GetUSDCTransactionsMethodEnum.Send
+    },
+    { force: true }
+  )
 
   const status = combineStatuses([dataStatus, countStatus])
+  useErrorPageOnFailedStatus({ status })
 
   const onSort = useCallback(
     (
@@ -174,12 +179,12 @@ const RenderWithdrawalsPage = () => {
     <Header
       primary={messages.headerText}
       rightDecorator={
-        <HarmonyButton
+        <Button
           onClick={downloadCSV}
           text={messages.downloadCSV}
-          variant={HarmonyButtonType.SECONDARY}
-          size={HarmonyButtonSize.SMALL}
-          iconLeft={IconDownload}
+          variant={ButtonType.SECONDARY}
+          size={ButtonSize.SMALL}
+          iconLeft={IconCloudDownload}
           disabled={isLoading || isEmpty}
         />
       }

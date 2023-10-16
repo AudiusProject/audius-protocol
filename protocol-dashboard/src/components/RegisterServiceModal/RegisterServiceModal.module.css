@@ -1,0 +1,21 @@
+.container {
+  min-width: 720px;
+  width: 720px;
+}
+
+.tabSliderContainer {
+  margin: 24px auto;
+  text-align: center;
+}
+
+.slider {
+  margin-bottom: 24px;
+}
+
+.input {
+  width: 480px;
+}
+
+.invalid input {
+  color: #F15064;
+}

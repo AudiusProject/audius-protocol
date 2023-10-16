@@ -6,11 +6,8 @@ import {
   chatSelectors,
   useInboxUnavailableModal
 } from '@audius/common'
+import { Button, ButtonType, IconCart, IconMessage } from '@audius/harmony'
 import {
-  HarmonyButton,
-  HarmonyButtonType,
-  IconCart,
-  IconMessage,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -99,14 +96,14 @@ export const SaleModalContent = ({
         <TransactionSummary transaction={purchaseDetails} />
       </ModalContent>
       <ModalFooter className={styles.footer}>
-        <HarmonyButton
+        <Button
           className={styles.button}
           iconLeft={IconMessage}
-          variant={HarmonyButtonType.GHOST}
+          variant={ButtonType.TERTIARY}
           text={messages.messageBuyer}
           onClick={handleClickMessageBuyer}
         />
-        <HarmonyButton
+        <Button
           className={styles.button}
           text={messages.done}
           onClick={onClose}

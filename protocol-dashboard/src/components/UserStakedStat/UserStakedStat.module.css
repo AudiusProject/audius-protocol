@@ -1,0 +1,40 @@
+/* Stats Container */
+
+.stakedContainer {
+  padding: 0px 16px;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 228px;
+  box-sizing: border-box;
+  align-items: center;
+}
+
+.stakedAmount {
+  text-align: center;
+  font-family: var(--font-family);
+  font-style: normal;
+  font-weight: 800;
+  font-size: 54px;
+  height: 62px;
+  text-align: center;
+  justify-content: center;
+  letter-spacing: 0.02em;
+  background: -webkit-linear-gradient(315deg, #7652CC 2.04%, #B05CE6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline;
+}
+
+.label,
+.description {
+  font-family: var(--font-family);
+  font-style: normal;
+  font-weight: var(--font-bold);
+  font-size: var(--font-l);
+  line-height: 22px;
+  text-align: center;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #BEC5E0;
+}

@@ -1,8 +1,7 @@
 import { PropsWithChildren, ReactElement, useState } from 'react'
 
+import { Button, ButtonType } from '@audius/harmony'
 import {
-  HarmonyButton,
-  HarmonyButtonType,
   IconCaretRight,
   Modal,
   ModalContent,
@@ -48,8 +47,8 @@ export const ModalField = (props: ModalFieldProps) => {
       </ModalHeader>
       <ModalContent>{children}</ModalContent>
       <ModalFooter>
-        <HarmonyButton
-          variant={HarmonyButtonType.PRIMARY}
+        <Button
+          variant={ButtonType.PRIMARY}
           text={messages.save}
           onClick={() => {
             submitForm()

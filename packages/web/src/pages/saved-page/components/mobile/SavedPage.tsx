@@ -181,7 +181,6 @@ const TracksLineup = ({
   getFilteredData,
   playingUid,
   queuedAndPlaying,
-  onSave,
   onTogglePlay
 }: {
   tracks: Lineup<SavedPageTrack>
@@ -191,7 +190,6 @@ const TracksLineup = ({
   getFilteredData: (trackMetadatas: any) => [SavedPageTrack[], number]
   playingUid: UID | null
   queuedAndPlaying: boolean
-  onSave: (isSaved: boolean, trackId: ID) => void
   onTogglePlay: (uid: UID, trackId: ID) => void
 }) => {
   const [trackEntries] = getFilteredData(tracks.entries)
@@ -287,9 +285,8 @@ const TracksLineup = ({
               tracks={trackList}
               showDivider
               showBorder
-              onSave={onSave}
               togglePlay={onTogglePlay}
-              trackItemAction={TrackItemAction.Save}
+              trackItemAction={TrackItemAction.Overflow}
             />
           </div>
         )}
@@ -630,7 +627,6 @@ export type SavedPageProps = {
   getFilteredData: (trackMetadatas: any) => [SavedPageTrack[], number]
   onTogglePlay: (uid: UID, trackId: ID) => void
 
-  onSave: (isSaved: boolean, trackId: ID) => void
   onPlay: () => void
   onSortTracks: (sorters: any) => void
   formatCardSecondaryText: (saves: number, tracks: number) => string
@@ -669,7 +665,6 @@ const SavedPage = ({
   getFilteredData,
   onFilterChange,
   filterText,
-  onSave,
   playlistUpdates,
   updatePlaylistLastViewedAt,
   currentTab,
@@ -689,7 +684,6 @@ const SavedPage = ({
       getFilteredData={getFilteredData}
       playingUid={playingUid}
       queuedAndPlaying={queuedAndPlaying}
-      onSave={onSave}
       onTogglePlay={onTogglePlay}
     />,
     <AlbumCardLineup key='albumLineup' />,
