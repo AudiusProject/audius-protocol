@@ -1,0 +1,14 @@
+.row {
+  display: flex;
+  justify-content: center;
+  background: var(--white);
+}
+
+.item {
+  padding: var(--unit-6);
+}
+
+.loader {
+  height: var(--unit-8);
+  width: var(--unit-8);
+}
