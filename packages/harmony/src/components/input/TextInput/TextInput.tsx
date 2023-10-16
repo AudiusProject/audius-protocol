@@ -46,10 +46,6 @@ export type TextInputProps = Omit<
    */
   inputRootClassName?: string
   /**
-   * Label Text
-   */
-  label?: string
-  /**
    * Helper text that shows up below the input
    */
   helperText?: string
@@ -73,19 +69,34 @@ export type TextInputProps = Omit<
    * Required or not. Will add an * to the label if required
    */
   required?: boolean
-}
+} & ( // Make either label or aria-label required prop
+    | {
+      /**
+       * Label Text (Required if aria-label is not provided)
+       */
+      label: string
+      ['aria-label']?: string
+    }
+    | {
+      /**
+       * Label Text (Required if aria-label is not provided)
+       */
+      ['aria-label']: string
+      label?: string
+    }
+  )
 
-export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
+const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
   (props: TextInputProps, ref) => {
     const {
       required,
-      label: labelProp,
       className,
       inputRootClassName,
       maxLength,
       showMaxLength,
       size = TextInputSize.DEFAULT,
       hideLabel,
+      label: labelProp,
       value,
       children,
       warning: warningProp,
@@ -154,9 +165,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             maxLength={maxLength}
             disabled={disabled}
             placeholder={shouldShowPlaceholder ? placeholder : undefined}
-            aria-label={
-              label ?? endAdornmentText ?? startAdornmentText ?? placeholder
-            }
+            aria-label={label ?? props['aria-label']}
             {...other}
           />
         </div>
@@ -211,3 +220,6 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
     )
   }
 )
+TextInput.displayName = 'TextInput'
+
+export { TextInput }

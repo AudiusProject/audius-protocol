@@ -81,6 +81,7 @@
 .label {
   color: var(--harmony-neutral-light-4);
   font-weight: var(--harmony-font-medium);
+  font-family: var(--harmony-font-family);
 }
 
 .inputRow {
