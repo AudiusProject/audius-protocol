@@ -1,24 +1,20 @@
 import React from 'react'
 
 import type { UserChallengeState } from '@audius/common'
-import {
-  fillString,
-  formatNumberCommas,
-  ClaimStatus,
-  getAAOErrorEmojis
-} from '@audius/common'
+import { fillString, formatNumberCommas, ClaimStatus } from '@audius/common'
 import { View } from 'react-native'
 
 import IconCheck from 'app/assets/images/iconCheck.svg'
 import IconVerified from 'app/assets/images/iconVerified.svg'
 import Button, { ButtonType } from 'app/components/button'
+import { Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { ProgressBar } from 'app/components/progress-bar'
-import Text from 'app/components/text'
 import { useThemePalette } from 'app/utils/theme'
 
 import { ChallengeDescription } from './ChallengeDescription'
 import { ChallengeReward } from './ChallengeReward'
+import { ClaimError } from './ClaimError'
 import { useStyles } from './styles'
 
 const messages = {
@@ -28,10 +24,6 @@ const messages = {
   incomplete: 'Incomplete',
   complete: 'Complete',
   claim: 'Claim Your Reward',
-  claimErrorMessage:
-    'Something has gone wrong, not all your rewards were claimed. Please try again.',
-  claimErrorMessageAAO:
-    'Your account is unable to claim rewards at this time. Please try again later or contact support@audius.co. ',
   claimableLabel: '$AUDIO available to claim',
   claimedLabel: '$AUDIO claimed so far'
 }
@@ -108,21 +100,6 @@ export const ChallengeRewardsDrawerContent = ({
     messages.claimableLabel
   }`
 
-  const getErrorMessage = () => {
-    if (aaoErrorCode === undefined) {
-      return (
-        <Text style={styles.claimRewardsError} weight='bold'>
-          {messages.claimErrorMessage}
-        </Text>
-      )
-    }
-    return (
-      <Text style={styles.claimRewardsError} weight='bold'>
-        {messages.claimErrorMessageAAO}
-        {getAAOErrorEmojis(aaoErrorCode)}
-      </Text>
-    )
-  }
   return (
     <View style={styles.content}>
       {isVerifiedChallenge ? (
@@ -145,7 +122,12 @@ export const ChallengeRewardsDrawerContent = ({
           <ChallengeReward amount={amount} subtext={messages.audio} />
           {showProgressBar ? (
             <View style={styles.progressCell}>
-              <Text style={styles.subheader} weight='heavy'>
+              <Text
+                color='neutralLight4'
+                style={[styles.subheader, styles.progressSubheader]}
+                weight='heavy'
+                textTransform='uppercase'
+              >
                 {messages.progress}
               </Text>
               <ProgressBar progress={currentStep} max={stepCount} />
@@ -165,6 +147,7 @@ export const ChallengeRewardsDrawerContent = ({
               isInProgress ? styles.statusTextInProgress : {}
             ]}
             weight='heavy'
+            textTransform='uppercase'
           >
             {statusText}
           </Text>
@@ -178,6 +161,7 @@ export const ChallengeRewardsDrawerContent = ({
                 key='claimableAmount'
                 style={styles.claimableAmount}
                 weight='heavy'
+                textTransform='uppercase'
               >
                 {claimableAmountText}
               </Text>,
@@ -205,7 +189,7 @@ export const ChallengeRewardsDrawerContent = ({
             {claimedAmountText}
           </Text>
         ) : null}
-        {claimError ? getErrorMessage() : null}
+        {claimError ? <ClaimError aaoErrorCode={aaoErrorCode} /> : null}
       </View>
     </View>
   )

@@ -3,29 +3,37 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 export const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   content: {
     padding: spacing(4),
+    paddingTop: 0,
+    gap: spacing(6),
     alignItems: 'center'
   },
+  scrollViewContainer: {
+    flex: 1
+  },
+  scrollViewContent: {
+    padding: spacing(4),
+    paddingTop: 0,
+    gap: spacing(6)
+  },
   subheader: {
-    textAlign: 'left',
-    color: palette.neutralLight4,
-    fontSize: spacing(4),
-    textTransform: 'uppercase',
+    textAlign: 'center',
     marginBottom: spacing(3)
+  },
+  progressSubheader: {
+    textAlign: 'left'
   },
   subheaderIcon: {
     marginBottom: spacing(3),
     marginRight: 10
   },
   task: {
-    width: '100%',
-    padding: spacing(6),
-    paddingTop: 0
+    width: '100%'
   },
   taskHeader: {
     ...flexRowCentered()
   },
-  taskText: {
-    fontSize: spacing(4)
+  audioMatchingDescriptionContainer: {
+    gap: spacing(3)
   },
   statusGrid: {
     borderRadius: spacing(4),
@@ -33,15 +41,17 @@ export const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     borderWidth: 1,
     width: '100%',
     marginBottom: spacing(6),
-    flexDirection: 'column'
+    flexDirection: 'column',
+    overflow: 'hidden'
   },
   statusGridColumns: {
     padding: spacing(4),
+    gap: spacing(4),
     flexDirection: 'row',
     justifyContent: 'center'
   },
   rewardCell: {
-    paddingRight: spacing(4)
+    justifyContent: 'center'
   },
   progressCell: {
     flex: 1,
@@ -73,8 +83,15 @@ export const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   audioLabel: {
     textAlign: 'center',
-    fontSize: spacing(3),
-    color: palette.neutralLight4
+    fontSize: spacing(3)
+  },
+  stickyClaimRewardsContainer: {
+    borderTopWidth: 1,
+    borderTopColor: palette.borderDefault,
+    paddingBottom: spacing(10),
+    paddingHorizontal: spacing(4),
+    paddingTop: spacing(4),
+    width: '100%'
   },
   claimRewardsContainer: {
     marginTop: spacing(4),
@@ -95,13 +112,19 @@ export const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   claimableAmount: {
     marginVertical: spacing(4),
     textAlign: 'center',
-    textTransform: 'uppercase',
     color: palette.staticAccentGreenLight1
+  },
+  claimedAmountContainer: {
+    ...flexRowCentered(),
+    borderTopColor: palette.borderStrong,
+    backgroundColor: palette.backgroundSurface2,
+    justifyContent: 'center',
+    borderTopWidth: 1,
+    padding: spacing(4)
   },
   claimedAmount: {
     marginTop: spacing(4),
     textAlign: 'center',
-    textTransform: 'uppercase',
     color: palette.neutralLight4
   }
 }))

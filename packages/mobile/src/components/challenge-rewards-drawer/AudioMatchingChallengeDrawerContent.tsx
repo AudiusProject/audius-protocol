@@ -1,20 +1,23 @@
-import React, { useCallback } from 'react'
+import React from 'react'
 
 import type { OptimisticUserChallenge } from '@audius/common'
-import { ChallengeName, formatNumberCommas, ClaimStatus } from '@audius/common'
-import { View } from 'react-native'
+import { ChallengeName, ClaimStatus, formatNumberCommas } from '@audius/common'
+import { ScrollView, View } from 'react-native'
 
-import IconCheck from 'app/assets/images/iconCheck.svg'
-import Button, { ButtonType } from 'app/components/button'
-import { GradientText, Text } from 'app/components/core'
+import IconArrow from 'app/assets/images/iconArrow.svg'
+import IconUpload from 'app/assets/images/iconUpload.svg'
+import type { ButtonProps } from 'app/components/core'
+import { Button, Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { getChallengeConfig } from 'app/utils/challenges'
 
 import { ChallengeDescription } from './ChallengeDescription'
 import { ChallengeReward } from './ChallengeReward'
+import { ClaimError } from './ClaimError'
 import { useStyles } from './styles'
 
 const messages = {
+  taskDetails: 'Task Details',
   rewardMapping: {
     [ChallengeName.AudioMatchingBuy]: '$AUDIO Every Dollar Spent',
     [ChallengeName.AudioMatchingSell]: '$AUDIO Every Dollar Earned'
@@ -27,6 +30,7 @@ const messages = {
   },
   viewPremiumTracks: 'View Premium Tracks',
   uploadTrack: 'Upload Track',
+  totalClaimed: (amount: string) => `Total $AUDIO Claimed: ${amount}`,
   totalEarned: (amount: string) => `Total $AUDIO Earned: ${amount}`,
   claimAudio: (amount: string) => `Claim ${amount} $AUDIO`
 }
@@ -36,105 +40,117 @@ type AudioMatchingChallengeName =
   | ChallengeName.AudioMatchingSell
 
 type AudioMatchingChallengeDrawerContentProps = {
+  aaoErrorCode?: number
   challenge: OptimisticUserChallenge
   challengeName: AudioMatchingChallengeName
-  onClaim?: () => void
-  /** The status of the rewards being claimed */
+  claimableAmount: number
+  claimedAmount: number
   claimStatus: ClaimStatus
-  onNavigateAway: () => void
-  //   errorContent?: ReactNode
+  onClaim?: () => void
+  onNavigate: () => void
+}
+
+const ctaButtonProps: {
+  [k in AudioMatchingChallengeName]: Pick<
+    ButtonProps,
+    'icon' | 'iconPosition' | 'title'
+  >
+} = {
+  [ChallengeName.AudioMatchingBuy]: {
+    icon: IconArrow,
+    iconPosition: 'right',
+    title: messages.viewPremiumTracks
+  },
+  [ChallengeName.AudioMatchingSell]: {
+    icon: IconUpload,
+    iconPosition: 'left',
+    title: messages.uploadTrack
+  }
 }
 
 export const AudioMatchingChallengeDrawerContent = ({
+  aaoErrorCode,
   challenge,
   challengeName,
-  onClaim,
+  claimableAmount,
+  claimedAmount,
   claimStatus,
-  onNavigateAway
+  onClaim,
+  onNavigate
 }: AudioMatchingChallengeDrawerContentProps) => {
   const styles = useStyles()
   const config = getChallengeConfig(challengeName)
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
     claimStatus === ClaimStatus.WAITING_FOR_RETRY
-  const onClickCTA = useCallback(() => {
-    // TODO: Navigate to the correct page
-  }, [challengeName, onNavigateAway])
+  const claimError = claimStatus === ClaimStatus.ERROR
 
-  // TODO: Finish remaining components below, matching desktop
   return (
-    <View style={styles.content}>
-      <ChallengeDescription
-        description={
-          <>
-            {config.description(challenge)}
-            <Text variant='body' color='neutralLight4'>
-              {messages.descriptionSubtext[challengeName]}
+    <View style={styles.scrollViewContainer}>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <ChallengeDescription
+          task={
+            <Text
+              variant='label'
+              fontSize='medium'
+              weight='heavy'
+              textTransform='uppercase'
+            >
+              {messages.taskDetails}
             </Text>
-          </>
-        }
-      />
-      <View style={styles.statusGrid}>
-        <View style={styles.statusGridColumns}>
-          <ChallengeReward
-            amount={challenge.amount}
-            subtext={messages.rewardMapping[challengeName]}
-          />
-        </View>
-        <View
-          style={[
-            styles.statusCell,
-            hasCompleted ? styles.statusCellComplete : {}
-          ]}
-        >
-          <Text
-            style={[
-              styles.subheader,
-              hasCompleted ? styles.statusTextComplete : {},
-              isInProgress ? styles.statusTextInProgress : {}
-            ]}
-            weight='heavy'
-          >
-            {statusText}
-          </Text>
-        </View>
-      </View>
-      {/* <View style={styles.claimRewardsContainer}>
-        {claimableAmount > 0 && onClaim
-          ? [
+          }
+          renderDescription={() => (
+            <View style={styles.audioMatchingDescriptionContainer}>
+              <Text variant='body'>{config.description(challenge)}</Text>
+              <Text variant='body' color='neutralLight4'>
+                {messages.descriptionSubtext[challengeName]}
+              </Text>
+            </View>
+          )}
+        />
+        <View style={styles.statusGrid}>
+          <View style={styles.statusGridColumns}>
+            <ChallengeReward
+              amount={challenge.amount}
+              subtext={messages.rewardMapping[challengeName]}
+            />
+          </View>
+          {claimedAmount > 0 ? (
+            <View style={styles.claimedAmountContainer}>
               <Text
-                key='claimableAmount'
-                style={styles.claimableAmount}
+                variant='label'
+                fontSize='small'
+                color='neutralLight4'
                 weight='heavy'
+                textTransform='uppercase'
               >
-                {claimableAmountText}
-              </Text>,
-              <Button
-                key='claimButton'
-                containerStyle={styles.claimButtonContainer}
-                style={styles.claimButton}
-                type={claimInProgress ? ButtonType.COMMON : ButtonType.PRIMARY}
-                disabled={claimInProgress}
-                title={messages.claim}
-                onPress={onClaim}
-                renderIcon={(color) =>
-                  claimInProgress ? (
-                    <LoadingSpinner />
-                  ) : (
-                    <IconCheck fill={color} />
-                  )
-                }
-                iconPosition='left'
-              />
-            ]
-          : null}
-        {claimedAmount > 0 && challengeState !== 'disbursed' ? (
-          <Text style={styles.claimedAmount} weight='heavy'>
-            {claimedAmountText}
-          </Text>
-        ) : null}
-        {claimError ? getErrorMessage() : null}
-      </View> */}
+                {messages.totalClaimed(formatNumberCommas(claimedAmount))}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      </ScrollView>
+      <View style={styles.stickyClaimRewardsContainer}>
+        {claimableAmount > 0 && onClaim ? (
+          <Button
+            disabled={claimInProgress}
+            variant='primary'
+            onPress={onClaim}
+            title={messages.claimAudio(formatNumberCommas(claimableAmount))}
+            icon={claimInProgress ? LoadingSpinner : IconArrow}
+            iconPosition='right'
+            fullWidth
+          />
+        ) : (
+          <Button
+            {...ctaButtonProps[challengeName]}
+            variant='commonAlt'
+            onPress={onNavigate}
+            fullWidth
+          />
+        )}
+        {claimError ? <ClaimError aaoErrorCode={aaoErrorCode} /> : null}
+      </View>
     </View>
   )
 }
