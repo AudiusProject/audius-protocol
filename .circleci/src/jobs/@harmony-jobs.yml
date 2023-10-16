@@ -76,8 +76,4 @@ harmony-deploy-chromatic:
     - checkout
     - attach_workspace:
         at: ./
-    - restore_cache:
-        keys:
-          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
-    # - run: yarn install
     - run: npm run chromatic
