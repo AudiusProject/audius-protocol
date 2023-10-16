@@ -676,9 +676,11 @@ export const audiusBackend = ({
       monitoringCallbacks.contentNode
     )
 
-    const useDiscoveryRelay = await getFeatureEnabled(
-      FeatureFlags.DISCOVERY_RELAY
-    )
+    // const useDiscoveryRelay = await getFeatureEnabled(
+    //   FeatureFlags.DISCOVERY_RELAY
+    // )
+
+    const useDiscoveryRelay = true
 
     console.info(
       { useDiscoveryRelay },
