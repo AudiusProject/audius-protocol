@@ -432,7 +432,8 @@ class NotificationProcessor {
     notifications = notifications.filter((n) => n.blocknumber >= latestBlock)
 
     logger.info(
-      `notifications main indexAll job - query notifications from discovery node complete in ${Date.now() - time
+      `notifications main indexAll job - query notifications from discovery node complete in ${
+        Date.now() - time
       }ms`
     )
     time = Date.now()
@@ -446,7 +447,8 @@ class NotificationProcessor {
       // Insert the notifications into the DB to make it easy for users to query for their grouped notifications
       await processNotifications(notifications, tx, optimizelyClient)
       logger.info(
-        `notifications main indexAll job - processNotifications complete in ${Date.now() - time
+        `notifications main indexAll job - processNotifications complete in ${
+          Date.now() - time
         }ms`
       )
       time = Date.now()
@@ -454,7 +456,8 @@ class NotificationProcessor {
       // Fetch additional metadata from DP, query for the user's notification settings, and send push notifications (mobile/browser)
       await sendNotifications(audiusLibs, notifications, tx, optimizelyClient)
       logger.info(
-        `notifications main indexAll job - sendNotifications complete in ${Date.now() - time
+        `notifications main indexAll job - sendNotifications complete in ${
+          Date.now() - time
         }ms`
       )
       time = Date.now()
@@ -468,7 +471,8 @@ class NotificationProcessor {
         tx
       )
       logger.info(
-        `notifications main indexAll job - indexMilestones complete in ${Date.now() - time
+        `notifications main indexAll job - indexMilestones complete in ${
+          Date.now() - time
         }ms`
       )
       time = Date.now()
@@ -476,7 +480,8 @@ class NotificationProcessor {
       // Commit
       await tx.commit()
       logger.info(
-        `notifications main indexAll job - dbCommit complete in ${Date.now() - time
+        `notifications main indexAll job - dbCommit complete in ${
+          Date.now() - time
         }ms`
       )
       time = Date.now()
@@ -487,7 +492,8 @@ class NotificationProcessor {
         optimizelyClient
       )
       logger.info(
-        `notifications main indexAll job - drainPublishedMessages complete - processed ${numProcessedNotifs} notifs in ${Date.now() - time
+        `notifications main indexAll job - drainPublishedMessages complete - processed ${numProcessedNotifs} notifs in ${
+          Date.now() - time
         }ms`
       )
 
@@ -547,7 +553,8 @@ class NotificationProcessor {
     notifications = notifications.filter((n) => n.slot >= latestSlot)
 
     logger.info(
-      `${logLabel} - query solana notifications from discovery node complete in ${Date.now() - time
+      `${logLabel} - query solana notifications from discovery node complete in ${
+        Date.now() - time
       }ms`
     )
     time = Date.now()
@@ -589,7 +596,8 @@ class NotificationProcessor {
         optimizelyClient
       )
       logger.info(
-        `${logLabel} - drainPublishedSolanaMessages complete - processed ${numProcessedNotifs} notifs in ${Date.now() - time
+        `${logLabel} - drainPublishedSolanaMessages complete - processed ${numProcessedNotifs} notifs in ${
+          Date.now() - time
         }ms`
       )
 
@@ -644,7 +652,8 @@ async function filterOutAbusiveUsers(notifications) {
     return !isInitiatorAbusive && !isUserEntityAbusive
   })
   logger.info(
-    `notifications | index.js | Filtered out ${notifications.length - result.length
+    `notifications | index.js | Filtered out ${
+      notifications.length - result.length
     } bad initiators out of ${notifications.length} total.`
   )
   return result

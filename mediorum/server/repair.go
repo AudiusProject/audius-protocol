@@ -81,6 +81,8 @@ func (ss *MediorumServer) startRepairer() {
 			tracker.AbortedReason = "NOT_ENOUGH_PEERS"
 			tracker.FinishedAt = time.Now()
 			saveTracker()
+			// wait 1 minute before running again
+			time.Sleep(time.Minute * 1)
 			continue
 		}
 
@@ -90,6 +92,8 @@ func (ss *MediorumServer) startRepairer() {
 			tracker.AbortedReason = "DISK_FULL"
 			tracker.FinishedAt = time.Now()
 			saveTracker()
+			// wait 1 minute before running again
+			time.Sleep(time.Minute * 1)
 			continue
 		}
 

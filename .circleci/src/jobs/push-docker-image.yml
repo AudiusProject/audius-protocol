@@ -5,7 +5,6 @@ parameters:
 resource_class: large
 machine:
   image: ubuntu-2204:current
-  docker_layer_caching: true
 steps:
   - checkout:
       path: '~/audius-protocol'

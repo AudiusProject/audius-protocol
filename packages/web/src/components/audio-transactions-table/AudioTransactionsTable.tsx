@@ -98,7 +98,7 @@ const renderTransactionTypeCell = (cellInfo: TransactionCell) => {
 
 const renderBalanceCell = (cellInfo: TransactionCell) => {
   const transaction = cellInfo.row.original
-  return formatAudio(transaction.balance)
+  return transaction.balance ? formatAudio(transaction.balance) : ''
 }
 
 const renderDateCell = (cellInfo: TransactionCell) => {

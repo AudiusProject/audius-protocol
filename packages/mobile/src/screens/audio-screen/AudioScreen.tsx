@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import type { StringWei, CommonState } from '@audius/common'
 import {
@@ -10,7 +10,8 @@ import {
   walletSelectors,
   walletActions,
   getTierAndNumberForBalance,
-  modalsActions
+  modalsActions,
+  isNullOrUndefined
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { Image, Linking, View } from 'react-native'
@@ -38,8 +39,10 @@ import {
   Tile,
   ScreenContent
 } from 'app/components/core'
+import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -48,7 +51,7 @@ import { Tier } from './Tier'
 import { TrendingRewards } from './TrendingRewards'
 const { setVisibility } = modalsActions
 const { getBalance } = walletActions
-const { getAccountTotalBalance } = walletSelectors
+const { getAccountTotalBalance, getTotalBalanceLoadDidFail } = walletSelectors
 const { getHasAssociatedWallets } = tokenDashboardPageSelectors
 const { fetchAssociatedWallets } = tokenDashboardPageActions
 const { pressDiscord } = vipDiscordModalActions
@@ -58,7 +61,6 @@ const LEARN_MORE_LINK = 'https://blog.audius.co/article/community-meet-audio'
 const messages = {
   title: '$AUDIO & Rewards',
   audio: '$AUDIO',
-  totalAudio: 'Total $AUDIO',
   send: 'Send $AUDIO',
   receive: 'Receive $AUDIO',
   manageWallet: 'Manage Wallets',
@@ -117,14 +119,21 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     marginVertical: spacing(4)
   },
   audioAmount: {
-    marginTop: spacing(4),
     color: palette.staticWhite,
     fontSize: typography.fontSize.xxxxxl,
     fontFamily: typography.fontByWeight.heavy,
-    marginBottom: 6,
     textShadowColor: 'rgba(0,0,0,0.1)',
     textShadowOffset: { width: 0, height: 4 },
     textShadowRadius: 15
+  },
+  audioAmountContainer: {
+    marginTop: spacing(4),
+    marginBottom: spacing(2)
+  },
+  spinner: {
+    width: spacing(16),
+    height: spacing(16),
+    marginBottom: spacing(3.5)
   },
   audioInfo: {
     flexDirection: 'row',
@@ -174,11 +183,13 @@ export const AudioScreen = () => {
     useThemeColors()
   const dispatch = useDispatch()
   const navigation = useNavigation()
+  const { toast } = useToast()
   const audioFeaturesDegradedText = useRemoteVar(
     StringKeys.AUDIO_FEATURES_DEGRADED_TEXT
   )
 
   const totalBalance = useSelector(getAccountTotalBalance)
+  const balanceLoadDidFail = useSelector(getTotalBalanceLoadDidFail)
 
   const totalBalanceWei =
     useSelector((state: CommonState) => state.wallet.totalBalance) ??
@@ -198,6 +209,16 @@ export const AudioScreen = () => {
       dispatch(getBalance())
     }, [dispatch])
   )
+
+  useEffect(() => {
+    if (balanceLoadDidFail) {
+      toast({
+        content: 'Balance failed to load. Please try again later.',
+        type: 'error',
+        timeout: 10000
+      })
+    }
+  }, [balanceLoadDidFail, toast])
 
   const renderNoticeTile = () => (
     <Tile
@@ -229,13 +250,22 @@ export const AudioScreen = () => {
         }}
         onPress={hasMultipleWallets ? handlePressWalletInfo : undefined}
       >
-        <Text style={styles.audioAmount}>
-          {formatWei(totalBalance, true, 0)}{' '}
-        </Text>
+        <View style={styles.audioAmountContainer}>
+          {isNullOrUndefined(totalBalance) ? (
+            <LoadingSpinner
+              fill={'rgba(255, 255, 255, 0.75)'}
+              style={styles.spinner}
+            />
+          ) : (
+            <Text style={styles.audioAmount}>
+              {formatWei(totalBalance, true, 0)}{' '}
+            </Text>
+          )}
+        </View>
         <View style={styles.audioInfo}>
           {hasMultipleWallets ? (
             <>
-              <Text style={styles.audioText}>{messages.totalAudio}</Text>
+              <Text style={styles.audioText}>{messages.audio}</Text>
               <IconInfo height={16} width={16} fill={'rgba(255,255,255,0.5)'} />
             </>
           ) : (

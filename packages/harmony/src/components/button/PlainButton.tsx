@@ -7,17 +7,19 @@ import styles from './PlainButton.module.css'
 import { PlainButtonProps, PlainButtonSize, PlainButtonType } from './types'
 
 const SIZE_STYLE_MAP: {
-  [k in PlainButtonSize]: [string, string, string]
+  [k in PlainButtonSize]: [string, string, string, string]
 } = {
   [PlainButtonSize.DEFAULT]: [
     styles.buttonDefault,
     styles.iconDefault,
-    styles.textDefault
+    styles.textDefault,
+    styles.spinnerDefault
   ],
   [PlainButtonSize.LARGE]: [
     styles.buttonLarge,
     styles.iconLarge,
-    styles.textLarge
+    styles.textLarge,
+    styles.spinnerLarge
   ]
 }
 
@@ -39,22 +41,25 @@ export const PlainButton = forwardRef<HTMLButtonElement, PlainButtonProps>(
       disabled,
       ...baseProps
     } = props
+    const isDisabled = disabled || baseProps.isLoading
 
-    const [buttonSizeClass, iconSizeClass, textSizeClass] = SIZE_STYLE_MAP[size]
+    const [buttonSizeClass, iconSizeClass, textSizeClass, spinnerSizeClass] =
+      SIZE_STYLE_MAP[size]
 
     return (
       <BaseButton
         ref={ref}
-        disabled={disabled}
+        disabled={isDisabled}
         styles={{
           button: cn(
             styles.button,
             TYPE_STYLE_MAP[variant],
-            { [styles.disabled]: disabled },
+            { [styles.disabled]: isDisabled },
             buttonSizeClass
           ),
           icon: cn(styles.icon, iconSizeClass),
-          text: cn(styles.text, textSizeClass)
+          text: cn(styles.text, textSizeClass),
+          spinner: cn(styles.spinner, spinnerSizeClass)
         }}
         {...baseProps}
       />

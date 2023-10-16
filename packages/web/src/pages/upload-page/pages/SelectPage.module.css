@@ -1,0 +1,29 @@
+.select {
+  display: flex;
+}
+
+.dropzone {
+  flex: 1 1 0;
+  height: 600px;
+  position: relative;
+}
+
+.invalidFileType {
+  position: absolute;
+  top: 152px;
+  left: 0px;
+  right: 0px;
+  margin: auto;
+}
+
+.uploaded {
+  flex: 1 1 0;
+  transition: flex-grow ease-in-out 0.18s;
+  margin-left: 16px;
+  max-width: 50%;
+}
+
+.hide {
+  flex-grow: 0.0001;
+  margin: 0;
+}

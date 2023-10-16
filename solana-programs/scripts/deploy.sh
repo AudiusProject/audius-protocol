@@ -215,6 +215,7 @@ echo "Initalizing reward manager..."
 audius-reward-manager-cli init \
     --keypair "$reward_manager_pda_keypair" \
     --token-keypair "$reward_manager_token_pda_keypair" \
+    # TODO: PAY-2001: Re-deploy this with min-votes 3
     --min-votes 2 \
     --token-mint "$(solana address -k $token_keypair)"
 echo

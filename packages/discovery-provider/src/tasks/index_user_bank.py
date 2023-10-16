@@ -659,10 +659,7 @@ def process_transfer_instruction(
             # TODO: Remove on launch: https://linear.app/audius/issue/PAY-1987/remove-check-to-only-disburse-dollaraudio-matching-challenges-in-non
             env = shared_config["discprov"]["env"]
             if env in ("stage", "dev"):
-                amount = int(
-                    round(balance_changes[receiver_account]["change"])
-                    / 10**USDC_DECIMALS
-                )
+                amount = int(round(purchase_metadata["price"]) / 10**USDC_DECIMALS)
                 challenge_event_bus.dispatch(
                     ChallengeEvent.audio_matching_buyer,
                     slot,

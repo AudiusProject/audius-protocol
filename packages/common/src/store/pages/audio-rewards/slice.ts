@@ -1,6 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { UserChallenge, ChallengeRewardID, Specifier } from '../../../models'
+import {
+  UserChallenge,
+  ChallengeRewardID,
+  Specifier,
+  SpecifierWithAmount
+} from '../../../models'
 
 import {
   AudioRewardsClaim,
@@ -90,7 +95,7 @@ const slice = createSlice({
       state,
       action: PayloadAction<{
         challengeId: ChallengeRewardID
-        specifiers: Specifier[]
+        specifiers: SpecifierWithAmount[]
       }>
     ) => {
       const { challengeId, specifiers } = action.payload
@@ -105,7 +110,7 @@ const slice = createSlice({
       if (userChallenge.challenge_type === 'aggregate') {
         state.disbursedChallenges[challengeId] = ([] as string[]).concat(
           state.disbursedChallenges[challengeId] ?? [],
-          specifiers
+          specifiers.map((s) => s.specifier)
         )
         // All completed challenges that are disbursed are fully disbursed
         if (userChallenge?.is_complete) {

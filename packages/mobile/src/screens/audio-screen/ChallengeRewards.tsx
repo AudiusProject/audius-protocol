@@ -13,7 +13,8 @@ import {
   audioRewardsPageSelectors,
   modalsActions,
   makeOptimisticChallengeSortComparator,
-  FeatureFlags
+  FeatureFlags,
+  ChallengeName
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { View } from 'react-native'
@@ -43,8 +44,8 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   'referred',
   'send-first-tip',
   'first-playlist',
-  'b', // $AUDIO matching buyer
-  's' // $AUDIO matching seller
+  ChallengeName.AudioMatchingBuy, // $AUDIO matching buyer
+  ChallengeName.AudioMatchingSell // $AUDIO matching seller
 ])
 
 /** Pulls rewards from remoteconfig */

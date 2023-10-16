@@ -8,13 +8,8 @@ import {
   formatUSDCWeiToFloorCentsNumber,
   BNUSDC
 } from '@audius/common'
-import {
-  HarmonyButton,
-  HarmonyButtonSize,
-  HarmonyButtonType,
-  IconQuestionCircle,
-  Switch
-} from '@audius/stems'
+import { Button, ButtonType, IconQuestionCircle } from '@audius/harmony'
+import { Switch } from '@audius/stems'
 import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
 
@@ -108,16 +103,14 @@ export const ConfirmTransferDetails = () => {
         ) : null}
       </div>
       <div className={styles.buttons}>
-        <HarmonyButton
+        <Button
           iconLeft={IconCaretLeft}
-          variant={HarmonyButtonType.SECONDARY}
-          size={HarmonyButtonSize.DEFAULT}
+          variant={ButtonType.SECONDARY}
           text={messages.goBack}
           onClick={handleGoBack}
         />
-        <HarmonyButton
-          variant={HarmonyButtonType.SECONDARY}
-          size={HarmonyButtonSize.DEFAULT}
+        <Button
+          variant={ButtonType.SECONDARY}
           text={messages.confirm}
           onClick={handleContinue}
         />

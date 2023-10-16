@@ -1,4 +1,4 @@
-const ethWeb3ProviderEndpoint = 'http://localhost:8546'
+const ethWeb3ProviderEndpoint = 'http://0.0.0.0:8546'
 require('@openzeppelin/test-helpers/configure')({
   provider: ethWeb3ProviderEndpoint,
 })

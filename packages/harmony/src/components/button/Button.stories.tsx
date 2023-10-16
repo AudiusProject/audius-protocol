@@ -34,6 +34,32 @@ const meta: Meta<typeof Button> = {
         <Button {...baseProps} size={ButtonSize.DEFAULT} {...props} disabled />
         <Button {...baseProps} size={ButtonSize.LARGE} {...props} disabled />
       </div>
+      <div style={{ alignItems: 'center', display: 'flex', gap: '16px' }}>
+        <Button
+          {...baseProps}
+          size={ButtonSize.SMALL}
+          {...props}
+          text='Loading'
+          minWidth={123}
+          isLoading
+        />
+        <Button
+          {...baseProps}
+          size={ButtonSize.DEFAULT}
+          {...props}
+          text='Loading'
+          minWidth={180}
+          isLoading
+        />
+        <Button
+          {...baseProps}
+          size={ButtonSize.LARGE}
+          {...props}
+          text='Loading'
+          minWidth={212}
+          isLoading
+        />
+      </div>
     </div>
   )
 }
@@ -46,7 +72,7 @@ type Story = StoryObj<typeof Button>
 export const Primary: Story = {}
 
 // Primary w/ color
-export const PrimaryWithColor: Story = { args: { color: 'blue' } }
+export const PrimaryWithColor: Story = { args: { hexColor: '#13C65A' } }
 
 // Secondary
 export const Secondary: Story = { args: { variant: ButtonType.SECONDARY } }
@@ -56,6 +82,3 @@ export const Tertiary: Story = { args: { variant: ButtonType.TERTIARY } }
 
 // Destructive
 export const Destructive: Story = { args: { variant: ButtonType.DESTRUCTIVE } }
-
-// Ghost
-export const Ghost: Story = { args: { variant: ButtonType.GHOST } }

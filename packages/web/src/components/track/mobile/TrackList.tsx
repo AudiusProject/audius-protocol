@@ -34,7 +34,6 @@ type TrackListProps = {
   showDivider?: boolean
   noDividerMargin?: boolean
   showBorder?: boolean
-  onSave?: (isSaved: boolean, trackId: ID) => void
   onRemove?: (index: number) => void
   togglePlay?: (uid: string, trackId: ID) => void
   trackItemAction?: TrackItemAction
@@ -46,7 +45,6 @@ const TrackList = ({
   containerClassName = '',
   itemClassName,
   tracks,
-  onSave,
   onRemove,
   showTopDivider,
   showDivider,
@@ -106,7 +104,6 @@ const TrackList = ({
           uid={track.uid}
           isDeleted={track.isDeleted}
           isLocked={track.isLocked}
-          onSave={onSave}
           isRemoveActive={track.isRemoveActive}
           onRemove={onRemove}
           togglePlay={togglePlay}

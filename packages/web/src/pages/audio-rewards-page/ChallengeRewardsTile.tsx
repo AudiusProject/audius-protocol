@@ -10,9 +10,10 @@ import {
   challengesSelectors,
   audioRewardsPageActions,
   ChallengeRewardsModalType,
+  ChallengeName,
   audioRewardsPageSelectors,
-  makeChallengeSortComparator,
-  isAudioMatchingChallenge
+  isAudioMatchingChallenge,
+  makeOptimisticChallengeSortComparator
 } from '@audius/common'
 import {
   ProgressBar,
@@ -191,8 +192,8 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   'referred',
   'send-first-tip',
   'first-playlist',
-  's', // $AUDIO matching seller
-  'b' // $AUDIO matching buyer
+  ChallengeName.AudioMatchingSell, // $AUDIO matching seller
+  ChallengeName.AudioMatchingBuy // $AUDIO matching buyer
 ])
 
 /** Pulls rewards from remoteconfig */
@@ -213,6 +214,7 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   const dispatch = useDispatch()
   const userChallengesLoading = useSelector(getUserChallengesLoading)
   const userChallenges = useSelector(getUserChallenges)
+  const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
   const isAudioMatchingChallengesEnabled = useIsAudioMatchingChallengesEnabled()
 
@@ -246,8 +248,8 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
         // Filter out challenges that DN didn't return
         .map((id) => userChallenges[id]?.challenge_id)
         .filter(removeNullable)
-        .sort(makeChallengeSortComparator(userChallenges)),
-    [rewardIds, userChallenges]
+        .sort(makeOptimisticChallengeSortComparator(optimisticUserChallenges)),
+    [rewardIds, userChallenges, optimisticUserChallenges]
   )
 
   const rewardsTiles = rewardIdsSorted.map((id) => {

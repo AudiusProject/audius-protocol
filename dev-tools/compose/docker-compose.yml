@@ -85,6 +85,14 @@ services:
       service: healthz
     <<: *common
 
+  # Protocol dashboard
+  
+  dashboard:
+    extends: 
+      file: docker-compose.protocol-dashboard.yml
+      service: dashboard
+    <<: *common
+
   # Discovery
 
   discovery-provider-notifications:
