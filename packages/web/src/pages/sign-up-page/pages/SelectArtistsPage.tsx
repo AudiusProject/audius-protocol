@@ -6,7 +6,7 @@ import {
   useGetFeaturedArtists,
   useGetTopArtistsInGenre
 } from '@audius/common'
-import { HarmonyButton } from '@audius/stems'
+import { Button } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
 
@@ -129,7 +129,7 @@ export const SelectArtistsPage = (props: SelectArtistsPageProps) => {
                       )
                     })}
               </fieldset>
-              <HarmonyButton type='submit' text={messages.continue} />
+              <Button type='submit' text={messages.continue} />
             </Form>
           )
         }}

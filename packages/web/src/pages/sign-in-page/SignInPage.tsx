@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { Button, ButtonType, HarmonyButton } from '@audius/stems'
+import { Button } from '@audius/harmony'
+import { Button as ButtonTmp } from '@audius/stems'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -44,15 +45,14 @@ export const SignInPage = () => {
         <Form>
           <TextField name='email' label={messages.emailLabel} />
           <TextField name='password' label={messages.passwordLabel} />
-          <HarmonyButton text={messages.signIn} type='submit' />
+          <Button text={messages.signIn} type='submit' />
         </Form>
       </Formik>
-      <Button
+      <ButtonTmp
         // @ts-ignore
         as={Link}
         to={SIGN_UP_PAGE}
-        type={ButtonType.COMMON}
-        title={messages.createAccount}
+        text={messages.createAccount}
       />
     </div>
   )

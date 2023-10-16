@@ -51,7 +51,6 @@ const getCommonRequirement = (password: string) => {
 const messages = {
   passwordPlaceholder: 'Password',
   confirmationPlaceholder: 'Confirm Password',
-  buttonText: 'Continue',
   checks: {
     number: 'Must contain numbers',
     length: 'Length must be at least 8 characters',
@@ -78,12 +77,11 @@ const useStyles = makeStyles(({ spacing }) => ({
 type EnterPasswordProps = {
   isLoading?: boolean
   onSubmit: (password: string) => void
+  submitButtonText: string
 }
 
-export const EnterPassword = ({
-  isLoading = false,
-  onSubmit
-}: EnterPasswordProps) => {
+export const EnterPassword = (props: EnterPasswordProps) => {
+  const { isLoading, onSubmit, submitButtonText } = props
   const styles = useStyles()
   const [password, setPassword] = useState('')
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
@@ -232,7 +230,7 @@ export const EnterPassword = ({
         onPress={handleSubmit}
         icon={isLoading ? LoadingSpinner : IconArrow}
         iconPosition='right'
-        title={messages.buttonText}
+        title={submitButtonText}
       />
     </View>
   )

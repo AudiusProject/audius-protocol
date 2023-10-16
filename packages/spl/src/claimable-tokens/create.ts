@@ -7,7 +7,9 @@ import {
   TransactionInstruction,
   AccountMeta
 } from '@solana/web3.js'
-import { ethAddress } from '../../layout-utils'
+
+import { ethAddress } from '../layout-utils'
+
 import {
   CLAIMABLE_TOKEN_PROGRAM_ID,
   ClaimableTokenInstruction

@@ -13,7 +13,7 @@ describe('Smoke test -- upload page', () => {
 
     cy.visit('upload')
 
-    cy.findByRole('heading', { name: /upload tracks/i, level: 1 }).should(
+    cy.findByRole('heading', { name: /upload your music/i, level: 1 }).should(
       'exist'
     )
   })

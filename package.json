@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.5.45",
+  "version": "1.5.46",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
@@ -8,7 +8,7 @@
   ],
   "private": true,
   "scripts": {
-    "build": "turbo run build --filter=audius-client^... --filter=audius-mobile-client^...",
+    "build": "turbo run build --filter=audius-client^... --filter=audius-mobile-client^... --filter=identity-service^...",
     "check-secrets": "sh ./scripts/check_secrets.sh",
     "clean:modules": "rm -rf node_modules && rm -rf packages/*/node_modules",
     "clean": "npm run clean:auto -w audius-mobile-client && npm run clean:modules",

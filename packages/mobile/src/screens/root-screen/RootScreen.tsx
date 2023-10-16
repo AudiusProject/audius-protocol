@@ -24,6 +24,7 @@ import {
 import { enterBackground, enterForeground } from 'app/store/lifecycle/actions'
 
 import { AppDrawerScreen } from '../app-drawer-screen'
+import { ResetPasswordModalScreen } from '../reset-password-screen'
 import { SignInScreen } from '../sign-in-screen'
 import { SignUpRootScreen } from '../sign-up-screen'
 
@@ -37,8 +38,12 @@ const { reset } = playerActions
 const Stack = createNativeStackNavigator()
 
 export type RootScreenParamList = {
+  UpdateStack: undefined
+  HomeStack: undefined
   SignUp: undefined
   SignIn: undefined
+  SignOnStack: undefined
+  ResetPassword: { login: string; email: string }
 }
 
 /**
@@ -123,6 +128,11 @@ export const RootScreen = () => {
           ) : (
             <Stack.Screen name='SignOnStack' component={SignOnScreen} />
           )}
+          <Stack.Screen
+            name='ResetPassword'
+            component={ResetPasswordModalScreen}
+            options={{ presentation: 'modal' }}
+          />
         </Stack.Navigator>
       ) : null}
     </>

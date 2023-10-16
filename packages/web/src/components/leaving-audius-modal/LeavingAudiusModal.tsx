@@ -1,9 +1,8 @@
 import { useCallback } from 'react'
 
 import { useLeavingAudiusModal } from '@audius/common'
+import { Button, ButtonType } from '@audius/harmony'
 import {
-  HarmonyButton,
-  HarmonyButtonType,
   IconExternalLink,
   IconInfo,
   Modal,
@@ -59,13 +58,13 @@ export const LeavingAudiusModal = () => {
         />
       </ModalContent>
       <ModalFooter className={styles.footer}>
-        <HarmonyButton
+        <Button
           className={styles.button}
-          variant={HarmonyButtonType.GHOST}
+          variant={ButtonType.TERTIARY}
           text={messages.goBack}
           onClick={onClose}
         />
-        <HarmonyButton
+        <Button
           className={styles.button}
           text={messages.visitSite}
           onClick={handleOpen}

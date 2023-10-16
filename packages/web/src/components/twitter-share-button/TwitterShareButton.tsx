@@ -7,7 +7,7 @@ import {
   cacheUsersActions,
   cacheUsersSelectors
 } from '@audius/common'
-import { HarmonyButton, HarmonyButtonProps } from '@audius/stems'
+import { Button, ButtonProps } from '@audius/harmony'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconTwitterBird } from 'assets/img/iconTwitterBird.svg'
@@ -41,8 +41,8 @@ type DynamicTwitterProps = {
 type TwitterShareButtonProps = {
   url?: string
   hideText?: boolean
-  fullWidth?: HarmonyButtonProps['fullWidth']
-  size?: HarmonyButtonProps['size']
+  fullWidth?: ButtonProps['fullWidth']
+  size?: ButtonProps['size']
 } & (StaticTwitterProps | DynamicTwitterProps)
 
 export const TwitterShareButton = (props: TwitterShareButtonProps) => {
@@ -115,14 +115,14 @@ export const TwitterShareButton = (props: TwitterShareButtonProps) => {
     }
   }
 
-  const colorOverride: Partial<HarmonyButtonProps> = {
-    color: 'staticTwitterBlue'
+  const colorOverride: Partial<ButtonProps> = {
+    color: 'blue'
   }
 
   return (
-    <HarmonyButton
+    <Button
       fullWidth={fullWidth}
-      text={hideText ? null : messages.share}
+      text={hideText ? undefined : messages.share}
       iconLeft={IconTwitterBird}
       size={size}
       {...colorOverride}

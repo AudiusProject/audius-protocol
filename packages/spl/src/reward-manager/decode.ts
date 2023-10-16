@@ -1,4 +1,5 @@
 import { TransactionInstruction } from '@solana/web3.js'
+
 import { RewardManagerInstruction } from './constants'
 import {
   DecodedCreateSenderPublicInstruction,

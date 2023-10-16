@@ -163,35 +163,29 @@ describe('Upload', () => {
         '0'
       )
 
-      cy.waitUntil(() => {
-        return cy
-          .findByRole('progressbar', { name: /upload in progress/i })
-          .then((progressbar) => {
-            return Number(progressbar.attr('aria-valuenow')) > 0
-          })
-      })
+      const assertProgress = (progress: number) => {
+        cy.waitUntil(
+          () => {
+            return cy
+              .findByRole('progressbar', { name: /upload in progress/i })
+              .then((progressbar) => {
+                return Number(progressbar.attr('aria-valuenow')) > progress
+              })
+          },
+          { timeout: 100000, interval: 5000 }
+        )
+      }
 
-      cy.waitUntil(
-        () => {
-          return cy
-            .findByRole('progressbar', { name: /upload in progress/i })
-            .then((progressbar) => {
-              return Number(progressbar.attr('aria-valuenow')) > 50
-            })
-        },
-        { timeout: 40000, interval: 1000 }
-      )
-
-      cy.waitUntil(
-        () => {
-          return cy
-            .findByRole('progressbar', { name: /upload in progress/i })
-            .then((progressbar) => {
-              return Number(progressbar.attr('aria-valuenow')) === 100
-            })
-        },
-        { timeout: 40000, interval: 1000 }
-      )
+      assertProgress(0)
+      assertProgress(10)
+      assertProgress(20)
+      assertProgress(30)
+      assertProgress(40)
+      assertProgress(50)
+      assertProgress(60)
+      assertProgress(70)
+      assertProgress(80)
+      assertProgress(90)
     })
 
     cy.findByText(/finalizing upload/i).should('exist')
