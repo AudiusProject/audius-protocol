@@ -67,6 +67,7 @@
     "@optimizely/optimizely-sdk": "4.9.2",
     "@project-serum/anchor": "0.24.2",
     "@project-serum/sol-wallet-adapter": "0.2.5",
+    "@radix-ui/react-slot": "^1.0.2",
     "@react-spring/web": "9.7.2",
     "@reduxjs/toolkit": "1.6.1",
     "@sentry/browser": "7.65.0",
