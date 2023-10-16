@@ -16,6 +16,7 @@ export const HelperText = (props: HelperTextProps) => {
   return (
     <div className={styles.root}>
       <Text
+        variant='body'
         size={size}
         strength='default'
         color={hasError ? 'error' : 'default'}
