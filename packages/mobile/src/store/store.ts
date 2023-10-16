@@ -6,6 +6,7 @@ import {
   reducers as commonReducers,
   chatMiddleware
 } from '@audius/common'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import backend from 'audius-client/src/common/store/backend/reducer'
 import type { BackendState } from 'audius-client/src/common/store/backend/types'
 import searchBar from 'audius-client/src/common/store/search-bar/reducer'
@@ -105,7 +106,7 @@ const onSagaError = (
   }
 }
 
-const commonStoreReducers = commonReducers()
+const commonStoreReducers = commonReducers(AsyncStorage)
 
 const rootReducer = combineReducers({
   ...commonStoreReducers,
