@@ -78,8 +78,6 @@ harmony-deploy-chromatic:
         at: ./
     - restore_cache:
         keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          - v1-dependencies-
           - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
     # - run: yarn install
     - run: npm run chromatic
