@@ -144,12 +144,14 @@ export const AccessAndSaleFormSchema = (trackLength: number) =>
           )
         })
       ),
-      [PREVIEW]: z.optional(z.nullable(z.number()))
+      [PREVIEW]: z.optional(z.nullable(z.number())),
+      [AVAILABILITY_TYPE]: z.nativeEnum(TrackAvailabilityType)
     })
     .refine(
       (values) => {
         const formValues = values as AccessAndSaleFormValues
-        if (isPremiumContentUSDCPurchaseGated(formValues[PREMIUM_CONDITIONS])) {
+        const isUsdcGated = formValues[AVAILABILITY_TYPE] === 'USDC_PURCHASE'
+        if (isUsdcGated) {
           return formValues[PREVIEW] !== undefined && formValues[PREVIEW] >= 0
         }
         return true
@@ -159,7 +161,8 @@ export const AccessAndSaleFormSchema = (trackLength: number) =>
     .refine(
       (values) => {
         const formValues = values as AccessAndSaleFormValues
-        if (isPremiumContentUSDCPurchaseGated(formValues[PREMIUM_CONDITIONS])) {
+        const isUsdcGated = formValues[AVAILABILITY_TYPE] === 'USDC_PURCHASE'
+        if (isUsdcGated) {
           return (
             formValues[PREVIEW] === undefined ||
             isNaN(trackLength) ||
