@@ -209,7 +209,9 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
         <View style={styles.formContentSection}>
           <TrackDetailsTile trackId={track.track_id} />
         </View>
-        <AudioMatchSection amount={Math.round(price / 100)} />
+        {stage !== PurchaseContentStage.FINISH ? (
+          <AudioMatchSection amount={Math.round(price / 100)} />
+        ) : null}
         <View style={styles.formContentSection}>
           {isPurchaseSuccessful ? null : (
             <PayExtraFormSection amountPresets={payExtraAmountPresetValues} />

@@ -103,7 +103,9 @@ const RenderForm = ({
               owner={track.user}
             />
           </div>
-          <AudioMatchSection amount={Math.round(price / 100)} />
+          {stage !== PurchaseContentStage.FINISH ? (
+            <AudioMatchSection amount={Math.round(price / 100)} />
+          ) : null}
           <div className={styles.contentWrapper}>
             <PurchaseContentFormFields
               stage={stage}
