@@ -5,6 +5,7 @@
   box-shadow: 0 2px 5px -2px var(--tile-shadow-3);
   background-color: var(--white);
   overflow: hidden;
+  padding-bottom: 5px;
 }
 
 .table {
@@ -13,7 +14,6 @@
   width: 100%;
   min-width: 0px !important;
   background-color: var(--white);
-  padding-bottom: 5px;
 
   display: flex;
   flex-direction: column;
@@ -32,7 +32,10 @@
 }
 
 .tableHeadRow {
+  display: flex;
+  flex: 1 1 0;
   position: relative;
+  overflow: hidden;
   min-width: 0px !important;
 }
 
@@ -41,15 +44,6 @@
   position: relative;
   display: flex;
   overflow: hidden;
-}
-
-.cellSectionEnd {
-  position: relative;
-  flex: 0 0 144px;
-}
-
-.cellSectionEnd.menu {
-  flex: 0 0 64px;
 }
 
 .tableHeader {
@@ -200,6 +194,8 @@
 .tableRow {
   display: flex;
   position: relative;
+  flex: 1 1 0;
+  overflow: hidden;
   background: var(--white);
   min-width: 0px !important;
   color: var(--neutral);
@@ -212,7 +208,8 @@
   color: var(--primary);
 }
 
-.tableRow:hover:not(.skeletonRow) {
+.tableRow:hover:not(.skeletonRow),
+.tableRow:hover > td {
   z-index: 1;
   box-shadow: 0 1px 0 0 var(--neutral-light-8),
     0 -1px 0 0 var(--neutral-light-8);
@@ -276,13 +273,6 @@
   justify-content: right;
 }
 
-.loader {
-  position: relative;
-  height: 32px;
-  width: 32px;
-  margin: 24px auto;
-}
-
 .reorderableRow {
   cursor: grab;
 }
@@ -305,4 +295,15 @@
 
 .droppableHover::after {
   opacity: 1;
+}
+
+.cellSectionEnd {
+  position: sticky !important;
+  right: 0;
+  z-index: 2;
+  background-color: var(--white);
+}
+
+.cellSectionEnd.menu {
+  flex: 0 0 64px;
 }

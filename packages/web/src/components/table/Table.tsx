@@ -32,11 +32,11 @@ import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
 import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
 import { ReactComponent as IconCaretUp } from 'assets/img/iconCaretUpLine.svg'
 import { Draggable, Droppable } from 'components/dragndrop'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './Table.module.css'
+import { TableLoadingSpinner } from './components/TableLoadingSpinner'
 
 // - Infinite scroll constants -
 // Fetch the next group of rows when the user scroll within X rows of the bottom
@@ -229,14 +229,15 @@ export const Table = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => handleSortChange(), [sortBy])
 
-  const renderTableHeader = useCallback((column: any) => {
+  const renderTableHeader = useCallback((column: any, endHeader?: boolean) => {
     return (
       <th
         className={cn(styles.tableHeader, {
           [styles.titleHeader]: Boolean(column.accessor),
           [styles.hasSorter]: column.disableSortBy !== true,
           [styles.leftAlign]: column.align === 'left',
-          [styles.rightAlign]: column.align === 'right'
+          [styles.rightAlign]: column.align === 'right',
+          [styles.cellSectionEnd]: endHeader
         })}
         {...column.getHeaderProps()}
         key={column.id}
@@ -294,37 +295,34 @@ export const Table = ({
           {...headerGroupProps}
           key={headerGroupKey}
         >
-          <div className={styles.cellSection}>
-            {headers.map(renderTableHeader)}
-          </div>
-          {endHeaders.length ? (
-            <div
-              className={cn(styles.cellSectionEnd, {
-                [styles.menu]: endHeaders[0].id === 'overflowMenu'
-              })}
-            >
-              {endHeaders.map(renderTableHeader)}
-            </div>
-          ) : null}
+          {headers.map((header) => renderTableHeader(header, false))}
+          {endHeaders.length
+            ? endHeaders.map((endHeader) => renderTableHeader(endHeader, true))
+            : null}
         </tr>
       )
     })
   }, [headerGroups, renderTableHeader])
 
   const renderCell = useCallback(
-    (cell: Cell) => (
-      <td
-        className={cn(styles.tableCell, {
-          [styles.leftAlign]: cell.column.align === 'left',
-          [styles.rightAlign]: cell.column.align === 'right'
-        })}
-        {...cell.getCellProps()}
-        key={`${cell.row.id}_${cell.getCellProps().key}`}
-      >
-        {cell.render('Cell')}
-      </td>
-    ),
-    []
+    (cell: Cell, isEnd?: boolean) => {
+      const Cell = isVirtualized ? 'div' : 'td'
+
+      return (
+        <Cell
+          className={cn(styles.tableCell, {
+            [styles.leftAlign]: cell.column.align === 'left',
+            [styles.rightAlign]: cell.column.align === 'right',
+            [styles.cellSectionEnd]: isEnd
+          })}
+          {...cell.getCellProps()}
+          key={`${cell.row.id}_${cell.getCellProps().key}`}
+        >
+          {cell.render('Cell')}
+        </Cell>
+      )
+    },
+    [isVirtualized]
   )
 
   const renderSkeletonCell = useCallback(
@@ -352,8 +350,10 @@ export const Table = ({
           cell.column.id === 'trackActions' || cell.column.id === 'overflowMenu'
       )
 
+      const Row = isVirtualized ? 'div' : 'tr'
+
       return (
-        <tr
+        <Row
           className={cn(
             styles.tableRow,
             getRowClassName?.(row.index),
@@ -368,20 +368,14 @@ export const Table = ({
             onClickRow?.(e, row, row.index)
           }
         >
-          <div className={styles.cellSection}>{cells.map(renderCell)}</div>
-          {endCells.length ? (
-            <div
-              className={cn(styles.cellSectionEnd, {
-                [styles.menu]: endCells[0].column.id === 'overflowMenu'
-              })}
-            >
-              {endCells.map(renderCell)}
-            </div>
-          ) : null}
-        </tr>
+          {cells.map((cell) => renderCell(cell))}
+          {endCells.length
+            ? endCells.map((endCell) => renderCell(endCell, true))
+            : null}
+        </Row>
       )
     },
-    [activeIndex, getRowClassName, onClickRow, renderCell]
+    [activeIndex, getRowClassName, onClickRow, renderCell, isVirtualized]
   )
 
   const renderSkeletonRow = useCallback(
@@ -419,11 +413,13 @@ export const Table = ({
     (row: any, key: string, props: TableRowProps, className = '') => {
       return (
         <Draggable
+          key={key}
           id={isTracksTable ? row.original.track_id : row.id}
           index={row.id}
           text={row.original.title}
           isOwner
           kind={isTracksTable ? 'track' : 'table-row'}
+          asChild
         >
           {renderTableRow(row, key, props, className)}
         </Draggable>
@@ -435,21 +431,23 @@ export const Table = ({
   const renderReorderableRow = useCallback(
     (row: any, key: string, props: TableRowProps, className = '') => {
       return (
-        <Droppable
-          key={row.index}
-          className={styles.droppable}
-          hoverClassName={styles.droppableHover}
-          onDrop={(id: ID | string, draggingKind: string, index: number) => {
-            onDragEnd({ source: index, destination: row.index })
-          }}
-          acceptedKinds={['track', 'table-row']}
+        <Draggable
+          key={key}
+          id={isTracksTable ? row.original.track_id : row.id}
+          index={row.id}
+          text={row.original.title}
+          isOwner
+          kind={isTracksTable ? 'track' : 'table-row'}
+          asChild
         >
-          <Draggable
-            id={isTracksTable ? row.original.track_id : row.id}
-            index={row.id}
-            text={row.original.title}
-            isOwner
-            kind={isTracksTable ? 'track' : 'table-row'}
+          <Droppable
+            className={styles.droppable}
+            hoverClassName={styles.droppableHover}
+            onDrop={(id: ID | string, draggingKind: string, index: number) => {
+              onDragEnd({ source: index, destination: row.index })
+            }}
+            acceptedKinds={['track', 'table-row']}
+            asChild
           >
             {renderTableRow(
               row,
@@ -457,8 +455,8 @@ export const Table = ({
               props,
               cn(styles.reorderableRow, className)
             )}
-          </Draggable>
-        </Droppable>
+          </Droppable>
+        </Draggable>
       )
     },
     [isTracksTable, onDragEnd, renderTableRow]
@@ -633,13 +631,9 @@ export const Table = ({
           {...getTableProps()}
         >
           <thead className={styles.tableHead}>{renderHeaders()}</thead>
-          {loading ? (
-            <LoadingSpinner className={styles.loader} />
-          ) : (
-            <tbody className={styles.tableBody} {...getTableBodyProps()}>
-              {renderRows()}
-            </tbody>
-          )}
+          <tbody className={styles.tableBody} {...getTableBodyProps()}>
+            {loading ? <TableLoadingSpinner /> : renderRows()}
+          </tbody>
         </table>
         {renderPaginationControls()}
         {renderShowMoreControl()}
@@ -681,43 +675,43 @@ export const Table = ({
                   {...getTableProps()}
                 >
                   <thead className={styles.tableHead}>{renderHeaders()}</thead>
-                  {loading ? (
-                    <LoadingSpinner className={styles.loader} />
-                  ) : (
-                    <tbody
-                      className={styles.tableBody}
-                      {...getTableBodyProps()}
-                      ref={
-                        registerChild as (
-                          instance: HTMLTableSectionElement | null
-                        ) => void
-                      }
-                    >
-                      <AutoSizer disableHeight>
-                        {({ width }) => (
-                          <List
-                            autoHeight
-                            height={height}
-                            width={width}
-                            isScrolling={isScrolling}
-                            onScroll={onChildScroll}
-                            scrollTop={scrollTop}
-                            onRowsRendered={(info) => onRowsRendered(info)}
-                            ref={registerListChild}
-                            overscanRowsCount={2}
-                            rowCount={
-                              debouncedFetchMore && totalRowCount != null
-                                ? totalRowCount
-                                : rows.length
-                            }
-                            rowHeight={64}
-                            rowRenderer={renderRow}
-                          />
-                        )}
-                      </AutoSizer>
-                    </tbody>
-                  )}
+                  <tbody>{loading ? <TableLoadingSpinner /> : null}</tbody>
                 </table>
+                <div
+                  className={styles.tableBody}
+                  {...getTableBodyProps()}
+                  ref={
+                    registerChild as (
+                      instance: HTMLTableSectionElement | null
+                    ) => void
+                  }
+                >
+                  {loading ? null : (
+                    <AutoSizer disableHeight>
+                      {({ width }) => (
+                        <List
+                          role='Tabpanel'
+                          autoHeight
+                          height={height}
+                          width={width}
+                          isScrolling={isScrolling}
+                          onScroll={onChildScroll}
+                          scrollTop={scrollTop}
+                          onRowsRendered={(info) => onRowsRendered(info)}
+                          ref={registerListChild}
+                          overscanRowsCount={2}
+                          rowCount={
+                            debouncedFetchMore && totalRowCount != null
+                              ? totalRowCount
+                              : rows.length
+                          }
+                          rowHeight={64}
+                          rowRenderer={renderRow}
+                        />
+                      )}
+                    </AutoSizer>
+                  )}
+                </div>
               </div>
             )}
           </WindowScroller>
