@@ -1,5 +1,7 @@
 import Footer from 'components/public-site/Footer'
 import NavBanner from 'components/public-site/NavBanner'
+// import Footer from 'components/public-site/FooterV2'
+// import NavBanner from 'components/public-site/NavBannerV2'
 
 import styles from './TermsOfUsePage.module.css'
 

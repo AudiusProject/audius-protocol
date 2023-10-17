@@ -118,7 +118,7 @@ const StatsPopupMenu = ({
           className={cn(styles.iconButton, styles.statButton)}
           aria-label={messages.more}
           text={<IconKebabHorizontal />}
-          onClick={triggerPopup}
+          onClick={() => triggerPopup()}
         />
       )}
     />
