@@ -60,6 +60,11 @@ export type PopupProps = {
   isVisible: boolean
 
   /**
+   * Whether to dismiss the popup on mouse leave
+   */
+  dismissOnMouseLeave?: boolean
+
+  /**
    * Show the header
    */
   showHeader?: boolean
