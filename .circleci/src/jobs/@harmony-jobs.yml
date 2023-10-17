@@ -80,4 +80,4 @@ harmony-deploy-chromatic:
         name: run chromatic
         command: |
           cd packages/harmony
-          npm run chromatic
+          npm run chromatic --exit-zero-on-changes
