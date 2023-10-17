@@ -1,17 +1,12 @@
 import {
-  AllMiddlewareArgs,
-  KnownEventFromType,
-  SayFn,
   App as SlackApp,
   SlackCommandMiddlewareArgs,
-  SlackEventMiddlewareArgs
 } from '@slack/bolt'
 import { AlignmentEnum, AsciiTable3 } from 'ascii-table3'
 import { App } from '@pedalboard/basekit'
 import { Err, Ok, Result } from 'ts-results'
 import { SharedData } from './config'
 import { onDisburse } from './app'
-import { WebClient } from '@slack/web-api'
 import { ChallengeDisbursementUserbankFriendly } from './queries'
 import { announceTopFiveTrending } from './trending'
 

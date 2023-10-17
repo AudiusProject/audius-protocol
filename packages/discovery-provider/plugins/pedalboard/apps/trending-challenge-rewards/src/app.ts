@@ -4,15 +4,11 @@ import { Ok, Err, Result } from 'ts-results'
 import { AudiusLibs } from '@audius/sdk'
 import { SharedData } from './config'
 import {
-  ChallengeDisbursementUserbank,
-  ChallengeDisbursementUserbankFriendly,
-  getChallengesDisbursementsUserbanks,
-  getChallengesDisbursementsUserbanksFriendly,
+  getChallengesDisbursementsUserbanksFriendlyEnsureSlots,
   getTrendingChallenges
 } from './queries'
 import fetch from 'node-fetch'
 import axios from 'axios'
-import { RespondFn, SlashCommand } from '@slack/bolt'
 import { WebClient } from '@slack/web-api'
 import { formatDisbursementTable } from './slack'
 
@@ -48,13 +44,11 @@ export const onDisburse = async (
 
   await getAllChallenges(app, nodeGroups, completedBlock, dryRun)
 
-  const friendly = await getChallengesDisbursementsUserbanksFriendly(
+  const friendly = await getChallengesDisbursementsUserbanksFriendlyEnsureSlots(
     db,
     trimmedSpecifier
   )
 
-  const normal = await getChallengesDisbursementsUserbanks(db, trimmedSpecifier)
-  console.log('friendly = ', JSON.stringify(friendly))
   const formattedResults = formatDisbursementTable(friendly)
   console.log(formattedResults)
 
