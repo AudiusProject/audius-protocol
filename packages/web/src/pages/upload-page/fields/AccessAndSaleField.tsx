@@ -150,8 +150,7 @@ export const AccessAndSaleFormSchema = (trackLength: number) =>
     .refine(
       (values) => {
         const formValues = values as AccessAndSaleFormValues
-        const isUsdcGated = formValues[AVAILABILITY_TYPE] === 'USDC_PURCHASE'
-        if (isUsdcGated) {
+        if (formValues[AVAILABILITY_TYPE] === 'USDC_PURCHASE') {
           return formValues[PREVIEW] !== undefined && formValues[PREVIEW] >= 0
         }
         return true
@@ -161,8 +160,7 @@ export const AccessAndSaleFormSchema = (trackLength: number) =>
     .refine(
       (values) => {
         const formValues = values as AccessAndSaleFormValues
-        const isUsdcGated = formValues[AVAILABILITY_TYPE] === 'USDC_PURCHASE'
-        if (isUsdcGated) {
+        if (formValues[AVAILABILITY_TYPE] === 'USDC_PURCHASE') {
           return (
             formValues[PREVIEW] === undefined ||
             isNaN(trackLength) ||
