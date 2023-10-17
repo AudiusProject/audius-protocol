@@ -13,13 +13,16 @@
       "outputMode": "new-only"
     },
     "lint": {
-      "outputMode": "new-only"
+      "outputMode": "new-only",
+      "dependsOn": ["^build"]
     },
     "lint:fix": {
-      "outputMode": "new-only"
+      "outputMode": "new-only",
+      "dependsOn": ["^build"]
     },
     "verify": {
-      "outputMode": "new-only"
+      "outputMode": "new-only",
+      "dependsOn": ["^build"]
     },
     "test": {
       "outputs": ["coverage/**"],
