@@ -186,7 +186,7 @@ const DownloadPage = (props: DownloadPageProps) => {
             </div>
           </div>
           <CTASignUp
-          // <CTAStartListening
+            // <CTAStartListening
             isMobile={props.isMobile}
             setRenderPublicSite={props.setRenderPublicSite}
           />

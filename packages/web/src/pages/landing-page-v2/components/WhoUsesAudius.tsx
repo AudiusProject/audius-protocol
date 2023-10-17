@@ -1,6 +1,7 @@
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useCallback } from 'react'
 
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
 import artistAluna from 'assets/img/publicSite/Artist-Aluna.webp'
@@ -141,7 +142,7 @@ const WhoUsesAudius = (props: WhoUsesAudiusProps) => {
                 ),
                 width: '100%'
               }}
-              >
+            >
               <h3 className={styles.title}>{messages.title}</h3>
               <h3 className={styles.subTitle}>{messages.subtitle}</h3>
             </animated.div>

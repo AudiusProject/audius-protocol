@@ -88,14 +88,16 @@ const NavBanner = (props: NavBannerProps) => {
     {
       text: messages.help,
       subtext: messages.helpDescription,
-      onClick: () => window.open(AUDIUS_HELP_LINK, '_blank', 'noreferrer,noopener'),
+      onClick: () =>
+        window.open(AUDIUS_HELP_LINK, '_blank', 'noreferrer,noopener'),
       icon: <IconSupport />,
       iconClassName: styles.menuItemIcon
     },
     {
       text: messages.download,
       subtext: messages.downloadDescription,
-      onClick: () => window.open(DOWNLOAD_LINK, '_blank', 'noreferrer,noopener'),
+      onClick: () =>
+        window.open(DOWNLOAD_LINK, '_blank', 'noreferrer,noopener'),
       icon: <IconDownloadQueued />,
       iconClassName: styles.menuItemIcon
     },
@@ -103,7 +105,8 @@ const NavBanner = (props: NavBannerProps) => {
       text: messages.blog,
       subtext: messages.blogDescription,
       className: styles.rewardsMenuItem,
-      onClick: () => window.open(AUDIUS_BLOG_LINK, '_blank', 'noreferrer,noopener'),
+      onClick: () =>
+        window.open(AUDIUS_BLOG_LINK, '_blank', 'noreferrer,noopener'),
       icon: <IconBlog />,
       iconClassName: styles.menuItemIconStroke
     },
@@ -117,7 +120,8 @@ const NavBanner = (props: NavBannerProps) => {
     {
       text: messages.merch,
       subtext: messages.merchDescription,
-      onClick: () => window.open(AUDIUS_MERCH_LINK, '_blank', 'noreferrer,noopener'),
+      onClick: () =>
+        window.open(AUDIUS_MERCH_LINK, '_blank', 'noreferrer,noopener'),
       icon: <IconMerch />,
       iconClassName: styles.menuItemIconStroke
     }

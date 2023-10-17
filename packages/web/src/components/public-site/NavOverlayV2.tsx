@@ -168,6 +168,7 @@ const NavOverlay = (props: NavOverlayProps) => {
                   className={styles.dappLink}
                   href={link}
                   target='_blank'
+                  rel='noreferrer'
                 >
                   {icon}
                   <h4 className={styles.dappLinkText}>{text}</h4>
