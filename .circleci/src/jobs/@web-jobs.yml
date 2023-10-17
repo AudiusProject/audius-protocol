@@ -58,7 +58,7 @@ web-build-demo:
         command: |
           cd packages/web
           export PUBLIC_URL=/${CIRCLE_BRANCH}
-          CI=false npx turbo run build:stage
+          CI=false npm run build:stage -w audius-client
           mv build-staging build-demo
     - persist_to_workspace:
         root: ./
