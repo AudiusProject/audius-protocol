@@ -2,7 +2,11 @@ import type {
   ChallengeRewardsInfo,
   OptimisticUserChallenge
 } from '@audius/common'
-import { fillString, formatNumberCommas } from '@audius/common'
+import {
+  fillString,
+  formatNumberCommas,
+  isAudioMatchingChallenge
+} from '@audius/common'
 import { View, Image } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 
@@ -104,6 +108,7 @@ type PanelProps = {
   MobileChallengeConfig
 
 export const Panel = ({
+  id,
   onPress,
   icon,
   title,
@@ -130,6 +135,12 @@ export const Panel = ({
   if (shouldShowProgress) {
     if (shouldShowCompleted) {
       progressLabelFilled = messages.completeLabel
+    } else if (isAudioMatchingChallenge(id)) {
+      if (needsDisbursement) {
+        progressLabelFilled = messages.readyToClaim
+      } else {
+        progressLabelFilled = progressLabel ?? ''
+      }
     } else if (challenge?.challenge_type === 'aggregate') {
       // Count down
       progressLabelFilled = fillString(
