@@ -46,7 +46,7 @@ const { getPurchaseContentFlowStage, getPurchaseContentError } =
 const PREMIUM_TRACK_PURCHASE_MODAL_NAME = 'PremiumTrackPurchase'
 
 const messages = {
-  buy: (price: string) => `Buy $${price}`,
+  buy: 'Buy',
   title: 'Complete Purchase',
   summary: 'Summary',
   artistCut: 'Artist Cut',
@@ -169,6 +169,13 @@ const PremiumTrackPurchaseDrawerHeader = ({
   )
 }
 
+const getButtonText = (isUnlocking: boolean, amountDue: number) =>
+  isUnlocking
+    ? messages.purchasing
+    : amountDue > 0
+    ? `${messages.buy} $${formatPrice(amountDue)}`
+    : messages.buy
+
 // The bulk of the form rendering is in a nested component because we want access
 // to the FormikContext, which can only be used in a component which is a descendant
 // of the `<Formik />` component
@@ -191,6 +198,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
 
   const { stage, error, isUnlocking, purchaseSummaryValues } =
     usePurchaseContentFormState({ price })
+  const { amountDue } = purchaseSummaryValues
 
   const isPurchaseSuccessful = stage === PurchaseContentStage.FINISH
 
@@ -260,11 +268,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
           <Button
             onPress={submitForm}
             disabled={isUnlocking}
-            title={
-              isUnlocking
-                ? messages.purchasing
-                : messages.buy(formatPrice(price))
-            }
+            title={getButtonText(isUnlocking, amountDue)}
             variant={'primary'}
             size='large'
             color={specialLightGreen}
