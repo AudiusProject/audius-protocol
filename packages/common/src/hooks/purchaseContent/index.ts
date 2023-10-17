@@ -1,4 +1,5 @@
 export * from './usePurchaseContentFormConfiguration'
+export * from './useChallengeCooldownSchedule'
 export * from './utils'
 export * from './types'
 export * from './constants'

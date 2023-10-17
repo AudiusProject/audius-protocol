@@ -5,8 +5,7 @@ import {
   OptimisticUserChallenge,
   challengeRewardsConfig,
   formatNumberCommas,
-  audioRewardsPageSelectors,
-  isAudioMatchingChallenge
+  useAudioMatchingChallengeCooldownSchedule
 } from '@audius/common'
 import { IconArrowRight, IconCloudUpload, Text } from '@audius/harmony'
 import {
@@ -17,7 +16,6 @@ import {
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
-import { useSelector } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { SummaryTable } from 'components/summary-table'
@@ -25,16 +23,13 @@ import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { isMobile } from 'utils/clientUtil'
 import { EXPLORE_PREMIUM_TRACKS_PAGE, UPLOAD_PAGE } from 'utils/route'
+import { getCurrentThemeColors } from 'utils/theme/theme'
 
 import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
 import styles from './styles.module.css'
 
 dayjs.extend(utc)
-
-const { getUndisbursedUserChallenges } = audioRewardsPageSelectors
-
-const COOLDOWN_DAYS = 7
 
 const messages = {
   rewardMapping: {
@@ -52,8 +47,10 @@ const messages = {
   totalEarned: (amount: string) => `Total $AUDIO Earned: ${amount}`,
   claimAudio: (amount: string) => `Claim ${amount} $AUDIO`,
   upcomingRewards: 'Upcoming Rewards',
+  audio: '$AUDIO',
   laterToday: 'Later Today',
-  readyToClaim: 'Ready to Claim!'
+  readyToClaim: 'Ready to Claim!',
+  tomorrow: 'Tomorrow'
 }
 
 type AudioMatchingChallengeName =
@@ -87,45 +84,6 @@ const ClaimInProgressSpinner = () => (
   <LoadingSpinner className={styles.spinner} />
 )
 
-/**
- * Filters for only $AUDIO matching challenges and generates row
- * items in correct format for SummaryTable. Also calculates the
- * total claimable amount.
- */
-const useUndisbursedChallengesCooldown = () => {
-  // Only show the cooldown for the $AUDIO matching challenges.
-  // TODO: PAY-2030 Use cooldown_days from api instead of
-  // isAudioMatchingChallenge and COOLDOWN_DAYS.
-  const challenges = useSelector(getUndisbursedUserChallenges)
-    .filter((c) => isAudioMatchingChallenge(c.challenge_id))
-    .map((c) => ({ ...c, created_at: dayjs.utc(c.created_at) }))
-  const now = dayjs.utc()
-  // Only challenges past the cooldown period are claimable
-  const claimableAmount = challenges
-    .filter((c) => now.diff(c.created_at, 'day') >= COOLDOWN_DAYS)
-    .reduce((acc, curr) => acc + curr.amount, 0)
-  // Challenges are already ordered by completed_blocknumber ascending.
-  // Convert to local time and group challenges by date claimable.
-  const cooldownItems = new Array(7)
-  challenges
-    .filter((c) => now.diff(c.created_at, 'day') < COOLDOWN_DAYS)
-    .forEach((c) => {
-      const diff = now.diff(c.created_at, 'day')
-      cooldownItems[diff] = {
-        ...cooldownItems[diff],
-        id: c.specifier,
-        label: c.created_at.add(7, 'day').local().format('ddd M/D'),
-        value: (cooldownItems[diff]?.value ?? 0) + c.amount
-      }
-    })
-  const cooldownSummary = {
-    id: messages.readyToClaim,
-    label: messages.readyToClaim,
-    value: claimableAmount
-  }
-  return { cooldownItems, cooldownSummary, claimableAmount }
-}
-
 /** Implements custom ChallengeRewardsContent for the $AUDIO matching challenges */
 export const AudioMatchingRewardsModalContent = ({
   challenge,
@@ -137,9 +95,10 @@ export const AudioMatchingRewardsModalContent = ({
 }: AudioMatchingRewardsModalContentProps) => {
   const wm = useWithMobileStyle(styles.mobile)
   const navigateToPage = useNavigateToPage()
+  const secondary = getCurrentThemeColors()['--secondary']
   const { fullDescription } = challengeRewardsConfig[challengeName]
-  const { cooldownItems, cooldownSummary, claimableAmount } =
-    useUndisbursedChallengesCooldown()
+  const { cooldownChallenges, claimableAmount, cooldownChallengesSummary } =
+    useAudioMatchingChallengeCooldownSchedule(challenge?.challenge_id)
 
   const audioClaimedSoFar = challenge
     ? challenge.amount * challenge.current_step_count -
@@ -206,8 +165,11 @@ export const AudioMatchingRewardsModalContent = ({
           </div>
           <SummaryTable
             title={messages.upcomingRewards}
-            items={cooldownItems}
-            summaryItem={cooldownSummary}
+            items={cooldownChallenges}
+            summaryItem={cooldownChallengesSummary}
+            secondaryTitle={messages.audio}
+            summaryLabelColor='secondary'
+            summaryValueColor='default'
           />
         </>
       )}
