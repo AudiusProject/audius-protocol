@@ -1,11 +1,9 @@
-import {
-  PurchaseContentStage,
-  payExtraAmountPresetValues
-} from '@audius/common'
+import { PurchaseContentStage, usePayExtraPresets } from '@audius/common'
 import { IconCheck } from '@audius/stems'
 
 import { Icon } from 'components/Icon'
 import { Text } from 'components/typography'
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
 
@@ -27,6 +25,7 @@ export const PurchaseContentFormFields = ({
   purchaseSummaryValues,
   stage
 }: PurchaseContentFormFieldsProps) => {
+  const payExtraAmountPresetValues = usePayExtraPresets(useRemoteVar)
   const isPurchased = stage === PurchaseContentStage.FINISH
 
   if (isPurchased) {

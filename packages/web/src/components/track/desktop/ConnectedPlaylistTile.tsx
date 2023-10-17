@@ -303,7 +303,10 @@ const ConnectedPlaylistTile = ({
       <Menu menu={menu}>
         {(ref, triggerPopup) => (
           <div className={styles.menuContainer} ref={menuRef}>
-            <div className={styles.menuKebabContainer} onClick={triggerPopup}>
+            <div
+              className={styles.menuKebabContainer}
+              onClick={() => triggerPopup()}
+            >
               <IconKebabHorizontal
                 className={cn(styles.iconKebabHorizontal)}
                 ref={ref}

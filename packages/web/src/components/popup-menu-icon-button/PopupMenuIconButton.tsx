@@ -27,7 +27,7 @@ export const PopupMenuIconButton = (props: PopupMenuIconButtonProps) => {
           className={cn(styles.icon, style, iconClassName)}
           icon={icon}
           disabled={disabled}
-          onClick={triggerPopup}
+          onClick={() => triggerPopup()}
         />
       )}
     />

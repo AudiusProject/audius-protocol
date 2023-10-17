@@ -1,0 +1,9 @@
+when: << pipeline.parameters.run-healthz-workflow >>
+jobs:
+  - push-docker-image:
+      name: push-healthz
+      context: [GCP, dockerhub]
+      service: healthz
+      filters:
+        branches:
+          only: main

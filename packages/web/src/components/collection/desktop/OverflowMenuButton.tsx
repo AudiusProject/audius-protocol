@@ -86,7 +86,7 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
         <Button
           ref={ref}
           leftIcon={<IconKebabHorizontal />}
-          onClick={triggerPopup}
+          onClick={() => triggerPopup()}
           text={null}
           textClassName={styles.buttonTextFormatting}
           type={ButtonType.COMMON}

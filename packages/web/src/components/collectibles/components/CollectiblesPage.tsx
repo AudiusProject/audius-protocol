@@ -606,7 +606,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                 <Button
                   leftIcon={<IconKebabHorizontal />}
                   ref={anchorRef}
-                  onClick={triggerPopup}
+                  onClick={() => triggerPopup()}
                   text={null}
                   size={ButtonSize.SMALL}
                   type={ButtonType.COMMON}
