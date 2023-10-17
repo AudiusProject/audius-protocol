@@ -1,11 +1,9 @@
-import { AudiusLibs, AudiusSdk, sdk } from '@audius/sdk'
+import { AudiusLibs } from '@audius/sdk'
 import { App } from '@pedalboard/basekit'
 import moment from 'moment'
 import dotenv from 'dotenv'
 import { initAudiusLibs } from './libs'
 import { Err, Ok, Result } from 'ts-results'
-import { App as SlackApp } from '@slack/bolt'
-import { initSlack } from './slack'
 
 export type SharedData = {
   oracleEthAddress: string
