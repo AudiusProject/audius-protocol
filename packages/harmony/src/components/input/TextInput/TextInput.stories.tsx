@@ -2,7 +2,8 @@ import type { Meta, StoryObj } from '@storybook/react'
 
 import { IconSearch, IconVisibilityHidden } from '../../typography'
 
-import { TextInput, TextInputSize } from './TextInput'
+import { TextInput } from './TextInput'
+import { TextInputSize } from './types'
 
 const meta: Meta<typeof TextInput> = {
   title: 'Components/Input/TextInput',
@@ -54,7 +55,8 @@ export const Icons: Story = {
     helperText: 'This is assistive text.',
     placeholder: 'Your handle',
     startIcon: IconSearch,
-    endIcon: IconVisibilityHidden
+    endIcon: IconVisibilityHidden,
+    value: '12312309'
   }
 }
 
@@ -64,8 +66,6 @@ export const MaxCharacters: Story = {
     helperText: 'This is assistive text.',
     placeholder: 'Your handle',
     maxLength: 60,
-    showMaxLength: true,
-    value: 'Flying a little close to the character limit there bud 🦅',
-    error: true
+    value: 'Flying a little close to the character limit there bud 🦅'
   }
 }

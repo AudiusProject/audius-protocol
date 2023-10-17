@@ -12,7 +12,6 @@ type HelperTextProps = {
 
 export const HelperText = (props: HelperTextProps) => {
   const { children, hasError, size = 's' } = props
-  console.log(size)
   return (
     <div className={styles.root}>
       <Text

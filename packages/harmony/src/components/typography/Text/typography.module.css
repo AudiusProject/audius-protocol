@@ -45,8 +45,12 @@
   color: var(--harmony-text-disabled);
 }
 
-.colorError {
+.colorDanger {
   color: var(--harmony-red);
+}
+
+.colorWarning {
+  color: var(--harmony-orange);
 }
 
 /* --- Display Styles --- */

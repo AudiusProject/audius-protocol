@@ -1,90 +1,15 @@
-import { forwardRef, type ComponentPropsWithoutRef } from 'react'
+import { forwardRef } from 'react'
 
 import cn from 'classnames'
 
-import layoutStyles from 'components/layout/layout.module.css'
-import { IconComponent, Text, TextSize } from 'components/typography'
+import { Text, TextSize } from 'components/typography'
+
+import { Flex } from '../../layout'
 
 import { HelperText } from './HelperText'
 import styles from './TextInput.module.css'
+import { TextInputSize, type TextInputProps } from './types'
 import { useFocusState } from './useFocusState'
-
-export enum TextInputSize {
-  SMALL = 'small',
-  DEFAULT = 'default'
-}
-
-export type TextInputProps = Omit<
-  ComponentPropsWithoutRef<'input'>,
-  // Omitting required purely for storybook docs
-  'size' | 'required'
-> & {
-  /**
-   * Input sizes. NOTE: small inputs will not show the label
-   * @default default
-   */
-  size?: TextInputSize
-  /**
-   * Show a "x/Max" text displaying number of characters allowed
-   */
-  showMaxLength?: boolean
-  /**
-   * Toggle warning state
-   */
-  warning?: boolean
-  /**
-   * Toggle error state
-   */
-  error?: boolean
-  /**
-   * Hides the label. If the label is hidden the placeholder will show instead.
-   * @default false
-   */
-  hideLabel?: boolean
-  /**
-   * ClassName on the div wrapping the whole input container (doesn't include assistive text)
-   */
-  inputRootClassName?: string
-  /**
-   * Helper text that shows up below the input
-   */
-  helperText?: string
-  /**
-   * Floating text on the lefthand side of the input.
-   */
-  startAdornmentText?: string
-  /**
-   * Floating text on the righthand side of the input
-   */
-  endAdornmentText?: string
-  /**
-   * Floating icon on the lefthand side of the input. Note: will float to the left of the label & content
-   */
-  startIcon?: IconComponent
-  /**
-   * Floating text on the righthand side of the input
-   */
-  endIcon?: IconComponent
-  /**
-   * Required or not. Will add an * to the label if required
-   */
-  required?: boolean
-} & ( // Make either label or aria-label required prop
-    | {
-        /**
-         * Label Text (Required if aria-label is not provided)
-         */
-        label: string
-        ['aria-label']?: string
-      }
-    | {
-        /**
-         * Label Text (Required if aria-label is not provided)
-         */
-        ['aria-label']: string
-        label?: string
-      }
-  )
 
 const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
   const {
@@ -92,7 +17,8 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
     className,
     inputRootClassName,
     maxLength,
-    showMaxLength,
+    showMaxLengthThreshold = 0.7,
+    maxLengthWarningThreshold = 0.9,
     size = TextInputSize.DEFAULT,
     hideLabel,
     label: labelProp,
@@ -113,15 +39,6 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
     ...other
   } = props
 
-  const characterCount = value !== undefined ? `${value}`.length : 0
-  const nearCharacterLimit = maxLength && characterCount >= 0.9 * maxLength
-
-  // Hide the label when requested or when the size is set to small
-  const shouldShowLabel = !hideLabel && size !== TextInputSize.SMALL
-  const label = required ? `${labelProp} *` : labelProp
-
-  const helperTextSize: TextSize = size === TextInputSize.SMALL ? 'xs' : 's'
-
   /**
    * Since Firefox doesn't support the :has() pseudo selector,
    * manually track the focused state and use classes for focus, required, and disabled
@@ -131,23 +48,44 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
     onBlurProp
   )
 
-  // Whenever a label isn't visible the placeholder shows in it's place
-  const shouldShowPlaceholder = isFocused || !shouldShowLabel
+  const characterCount = value !== undefined ? `${value}`.length : 0
+  const hasValue = characterCount > 0
 
-  const style = {
+  // Hide the label when requested or when the size is set to small
+  const shouldShowLabel = !hideLabel && size !== TextInputSize.SMALL
+  const labelText = required ? `${labelProp} *` : labelProp
+  const helperTextSize: TextSize = size === TextInputSize.SMALL ? 'xs' : 's'
+
+  // Whenever a label isn't visible the placeholder should be visible in it's place (if provided)
+  const shouldShowPlaceholder = isFocused || !shouldShowLabel
+  const shouldShowAdornments = isFocused || hasValue || !shouldShowLabel
+  // Show the maxlength text whenever we hit a certain threshold (default 70%)
+  const shouldShowMaxLengthText =
+    // isFocused &&
+    maxLength && characterCount >= showMaxLengthThreshold * maxLength
+  // Turn the maxlength text to the warning color whenever we hit a certain threshold (default 90%)
+  const showMaxlengthWarningColor =
+    maxLength && characterCount >= maxLengthWarningThreshold * maxLength
+
+  const inputRootStyle = {
     [styles.default]: size === TextInputSize.DEFAULT,
     [styles.small]: size === TextInputSize.SMALL,
-    [styles.warning]: warningProp || nearCharacterLimit,
+    [styles.warning]: warningProp,
     [styles.error]: error,
     [styles.focused]: isFocused,
     [styles.disabled]: disabled,
     [styles.required]: required
   }
 
+  const inputElStyle = {
+    [styles.default]: size === TextInputSize.DEFAULT,
+    [styles.small]: size === TextInputSize.SMALL
+  }
+
   const inputRender = (
-    <div className={cn(styles.inputRow, layoutStyles.row)}>
-      <div className={cn(layoutStyles.row, styles.inputContainer)}>
-        {startAdornmentText ? (
+    <Flex className={styles.inputRow}>
+      <Flex className={styles.inputContainer}>
+        {startAdornmentText && shouldShowAdornments ? (
           <Text variant='label' size='l' color='subdued'>
             {startAdornmentText}
           </Text>
@@ -156,68 +94,70 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
           onFocus={handleFocus}
           onBlur={handleBlur}
           ref={ref}
-          className={cn(styles.textInput, inputClassName)}
+          className={cn(styles.textInput, inputClassName, inputElStyle)}
           value={value}
           maxLength={maxLength}
           disabled={disabled}
           placeholder={shouldShowPlaceholder ? placeholder : undefined}
-          aria-label={label ?? props['aria-label']}
+          aria-label={labelText ?? props['aria-label']}
+          aria-required={required}
           {...other}
         />
-      </div>
-      {endAdornmentText ? (
+      </Flex>
+      {endAdornmentText && shouldShowAdornments ? (
         <Text variant='label' size='l' color='subdued'>
           {endAdornmentText}
         </Text>
       ) : null}
-    </div>
+    </Flex>
   )
 
   return (
-    <div className={cn(styles.root, className)}>
-      <div className={cn(styles.inputRoot, inputRootClassName, style)}>
+    <Flex className={cn(styles.root, className)} direction='column'>
+      <Flex
+        className={cn(styles.inputRoot, inputRootClassName, inputRootStyle)}
+      >
         {StartIcon ? <StartIcon /> : null}
-        {shouldShowLabel ? (
-          <label className={styles.elevatedLabel}>
-            <Text
-              variant='body'
-              tag='span'
-              className={cn(styles.label, {
-                [styles.hasValue]: characterCount > 0 || startAdornmentText
-              })}
-            >
-              {label}
-            </Text>
-            {inputRender}
-          </label>
-        ) : (
-          inputRender
-        )}
+        <label className={styles.elevatedLabelRow}>
+          {shouldShowLabel ? (
+            <Flex direction='row' justifyContent='space-between'>
+              <Text
+                variant='body'
+                tag='span'
+                size='l'
+                className={cn(styles.label, {
+                  [styles.hasValue]: hasValue
+                })}
+              >
+                {labelText}
+              </Text>
+              {shouldShowMaxLengthText ? (
+                <Text
+                  variant='body'
+                  size='xs'
+                  tag='span'
+                  color={showMaxlengthWarningColor ? 'warning' : 'default'}
+                >
+                  {characterCount}/{maxLength}
+                </Text>
+              ) : null}
+            </Flex>
+          ) : null}
+          {inputRender}
+        </label>
 
-        {showMaxLength && (
-          <div className={styles.characterCount}>
-            <Text
-              variant='body'
-              size='xs'
-              tag='span'
-              color={error ? 'error' : 'default'}
-            >
-              {characterCount}/{maxLength}
-            </Text>
-          </div>
-        )}
         {EndIcon ? <EndIcon /> : null}
         {children}
-      </div>
+      </Flex>
       {helperText ? (
         <HelperText hasError={error} size={helperTextSize}>
           {helperText}
         </HelperText>
       ) : null}
-    </div>
+    </Flex>
   )
 })
 
-// TextInput.displayName = 'TextInput'
+TextInput.displayName = 'TextInput'
 
 export { TextInput }

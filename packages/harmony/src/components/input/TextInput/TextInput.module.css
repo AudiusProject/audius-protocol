@@ -1,14 +1,14 @@
 .root {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
+  /* This isolates z-index to only affect this component */
+  isolation: isolate;
 }
 
 .inputRoot {
   display: flex;
   align-items: center;
-  gap: var(--harmony-unit-3);
-  padding: var(--harmony-unit-4);
+  /* Dont need Y padding since the flex centering takes care of it */
+  padding: 0 var(--harmony-spacing-l);
+  /* The gap spaces the content around the icons */
   border: 1px solid var(--harmony-border-default);
   border-radius: var(--harmony-unit-1);
   background-color: var(--harmony-bg-surface-1);
@@ -19,45 +19,38 @@
   }
 }
 
+.inputRoot:hover {
+  border-color: var(--harmony-border-strong);
+}
+
 .small {
-  --gap: -4px;
-  --font-size: var(--harmony-font-s);
+  /* gap between icons & content */
+  gap: var(--harmony-spacing-s);
+  font-size: var(--harmony-font-s);
   height: 34px;
 }
 
 .default {
-  --gap: 0px;
-  --font-size: var(--harmony-font-m);
+  /* gap between icons & content */
+  gap: var(--harmony-spacing-m);
+  font-size: var(--harmony-font-m);
   height: 64px;
 }
 
-.large {
-  --gap: var(--harmony-unit-1);
-  --font-size: var(--harmony-font-xl);
-  height: 66px;
-}
-
-.root:hover {
-  border-color: var(--harmony-neutral-light-6);
-}
-
-.focused {
+.focused,
+.focused:hover {
   border-color: var(--harmony-secondary);
 }
 
 .warning,
-.warning.focused {
+.warning.focused,
+.warning:hover {
   border-color: var(--harmony-orange);
 }
 
 .error,
-.error.focused {
-  border-color: var(--harmony-red);
-}
-
-.error:hover,
-.error:hover.focused {
-  /* TODO: Figure out of we want a hover color */
+.error.focused,
+.error:hover {
   border-color: var(--harmony-red);
 }
 
@@ -66,17 +59,27 @@
   border-color: var(--harmony-neutral-light-8);
 }
 
+/* Actual input */
 .textInput {
+  padding: 0;
+  overflow: visible;
   width: 100%;
   height: 100%;
   outline: 0;
   border: 0;
   background: none;
-  font-size: var(--harmony-font-size);
   font-weight: var(--harmony-font-medium);
   color: var(--harmony-text-default);
 }
 
+.textInput.small {
+  font-size: var(--harmony-font-s);
+}
+.textInput.default {
+  font-size: var(--harmony-font-l);
+}
+
+/* Placeholder and label */
 .textInput::placeholder,
 .label {
   color: var(--harmony-neutral-light-4);
@@ -94,55 +97,35 @@
 }
 
 /** 
- * Flex container so that the absolutely positioned elevated placeholder
- * starts out centered vertically
+ * Flex container containing the label text and the max character limit text
  **/
-.elevatedLabel {
+.elevatedLabelRow {
   position: relative;
-  display: flex;
-  align-items: center;
   width: 100%;
   height: 100%;
-  font-size: var(--harmony-font-size);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--harmony-spacing-xs);
 }
 
 /** Add the "*" to required fields, but have it disappear when elevated **/
-.required:not(.focused) .elevatedLabel .placeholder:not(.hasValue)::after {
+.required:not(.focused) .elevatedLabelRow .placeholder:not(.hasValue)::after {
   content: ' *';
 }
 
-/** Push the input down a bit to make room for the elevated placeholder **/
-.elevatedLabel .inputRow {
-  padding-top: calc(var(--harmony-font-xs));
-}
-
-/** Position the elevated label absoutely on top of the input **/
+/** Position the label in the center when unfocussed **/
 .label {
   color: var(--harmony-text-subdued);
-  position: absolute;
   z-index: 2;
   transition: all 0.3s ease;
+  /* When not focussed, the label centers itself visually */
+  transform: translate(0px, 50%);
 }
 
-/** Move the elevated label to the top left if focused or has text **/
-.focused .elevatedLabel .label,
+/** Shrink the size of the label **/
+.focused .elevatedLabelRow .label,
 .hasValue {
-  transform: translate(0px, calc(-1em - var(--harmony-unit-1)));
-  font-size: var(--harmony-font-xs);
-}
-
-/** Make a container for the character count... **/
-.characterCount {
-  position: relative;
-  padding-top: var(--harmony-unit-2);
-  align-self: flex-start;
-  color: var(--harmony-neutral-light-4);
-  font-size: var(--harmony-font-xs);
-  font-weight: var(--harmony-font-bold);
-}
-
-/** ... then position the actual count absolutely relative to that **/
-.characterCount span {
-  position: absolute;
-  right: 0;
+  transform: translate(0, 0);
+  font-size: var(--harmony-font-s);
 }
