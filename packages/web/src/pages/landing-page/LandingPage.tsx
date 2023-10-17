@@ -11,15 +11,15 @@ import { shouldShowCookieBanner, dismissCookieBanner } from 'utils/gdpr'
 import { getPathname } from 'utils/route'
 
 import styles from './LandingPage.module.css'
-import ArtistTestimonials from './components/ArtistTestimonials'
-import CTAListening from './components/CTAListening'
-import CTASignUp from './components/CTASignUp'
+import ArtistInvestors from './components/ArtistInvestors'
+import CTAGetStarted from './components/CTAGetStarted'
+import CTAStartListening from './components/CTAStartListening'
+import CaseStudies from './components/CaseStudies'
 import Description from './components/Description'
 import FeaturedContent from './components/FeaturedContent'
 import Hero from './components/Hero'
-import JoinTheCommunity from './components/JoinTheCommunity'
 import PlatformFeatures from './components/PlatformFeatures'
-import PlatformTagline from './components/PlatformTagline'
+import WhoUsesAudius from './components/WhoUsesAudius'
 
 const FANBURST_UTM_SOURCE = 'utm_source=fanburst'
 
@@ -108,9 +108,10 @@ const LandingPage = (props: LandingPageProps) => {
           setRenderPublicSite={props.setRenderPublicSite}
         />
         <Description isMobile={props.isMobile} />
-        <ArtistTestimonials isMobile={props.isMobile} />
+        <WhoUsesAudius isMobile={props.isMobile} />
         <PlatformFeatures isMobile={props.isMobile} />
-        <CTAListening
+        <ArtistInvestors isMobile={props.isMobile} />
+        <CTAGetStarted
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
         />
@@ -118,12 +119,11 @@ const LandingPage = (props: LandingPageProps) => {
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
         />
-        <PlatformTagline isMobile={props.isMobile} />
-        <JoinTheCommunity
+        <CaseStudies
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
         />
-        <CTASignUp
+        <CTAStartListening
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
         />

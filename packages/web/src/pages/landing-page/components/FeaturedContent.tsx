@@ -94,7 +94,7 @@ const DesktopPlaylistTile = (props: PlaylistTileProps) => {
           className={styles.track}
           style={{
             backgroundImage: `url(${props.imageUrl})`,
-            boxShadow: `0px 10px 50px -2px rgba(56, 14, 13, 0.4)`
+            boxShadow: `0 6px 28px 0 rgba(56, 14, 13, 0.4)`
           }}
         >
           <div className={styles.trackContent}>
@@ -122,7 +122,7 @@ const MobilePlaylistTile = (props: PlaylistTileProps) => (
         backgroundImage: `url(${
           props.imageUrl || audiusExclusivesPlaylistImg
         })`,
-        boxShadow: `0px 10px 50px -2px rgba(56, 14, 13, 0.4)`
+        boxShadow: `0px 8px 16px 0px rgba(0, 0, 0, 0.08), 0px 0px 4px 0px rgba(0, 0, 0, 0.04)`
       }}
     ></div>
     <div className={styles.trackTitle}>{props.title}</div>
@@ -228,10 +228,8 @@ const FeaturedContent = (props: FeaturedContentProps) => {
               )
             }}
           >
-            <div className={styles.header}>
-              <h3 className={styles.title}>{messages.title}</h3>
-              <h4 className={styles.subTitle}>{messages.subTitle}</h4>
-            </div>
+            <h3 className={styles.title}>{messages.title}</h3>
+            <h4 className={styles.subTitle}>{messages.subTitle}</h4>
           </animated.div>
         </div>
         <div className={styles.tracksContainer}>

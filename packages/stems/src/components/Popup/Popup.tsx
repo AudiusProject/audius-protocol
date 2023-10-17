@@ -249,6 +249,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     position,
     anchorOrigin: anchorOriginProp = defaultAnchorOrigin,
     transformOrigin: transformOriginProp = defaultTransformOrigin,
+    dismissOnMouseLeave,
     hideCloseButton = false,
     showHeader,
     title,
@@ -409,6 +410,12 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
 
   const wrapperStyle = zIndex ? { zIndex } : {}
 
+  const handleMouseLeave = useCallback(() => {
+    if (dismissOnMouseLeave) {
+      onClose()
+    }
+  }, [dismissOnMouseLeave, onClose])
+
   return (
     <>
       {/* Portal the popup out of the dom structure so that it has a separate stacking context */}
@@ -417,6 +424,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
           ref={wrapperRef}
           className={cn(styles.wrapper, wrapperClassName)}
           style={wrapperStyle}
+          onMouseLeave={handleMouseLeave}
         >
           {transitions.map(({ item, key, props }) =>
             item ? (
