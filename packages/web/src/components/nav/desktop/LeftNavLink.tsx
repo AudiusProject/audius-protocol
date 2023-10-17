@@ -30,8 +30,8 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
 
 type LeftNavDroppableProps = SetOptional<
   DroppableProps,
-  'hoverClassName' | 'activeClassName' | 'inactiveClassName' | 'forward'
-> & { forward?: false }
+  'hoverClassName' | 'activeClassName' | 'inactiveClassName'
+>
 
 export const LeftNavDroppable = (props: LeftNavDroppableProps) => {
   const { kind } = useSelector(selectDragnDropState)

@@ -181,7 +181,7 @@ jobs:
                 json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"${block_content}\" } },"
             fi
 
-            json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"\n*These changes will be auto-deployed to foundation nodes in 2 hours (10am PST).* Set \`HALT_AUTO_DEPLOY\`=\`true\` <https://app.circleci.com/settings/organization/github/AudiusProject/contexts/4be7f5c8-cadb-4deb-b66e-318867a6960b|here> if needed.\n\" } }"
+            json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"\n*These changes will be auto-deployed to foundation nodes in 3 hours (11am PST).* Set \`HALT_AUTO_DEPLOY\`=\`true\` <https://app.circleci.com/settings/organization/github/AudiusProject/contexts/4be7f5c8-cadb-4deb-b66e-318867a6960b|here> if needed.\n\" } }"
             json_content+="]}"
 
             # Send Slack daily deploy message
@@ -275,7 +275,7 @@ jobs:
             else
                 # If we approved the job, send the success message
                 json_content+="{ \"type\": \"section\","
-                json_content+=" \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deploying $job_url to foundation nodes... Please watch for issues and approve the release for SPs when ready (I'll remind you in 2 hours at noon PST).\" } }"
+                json_content+=" \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deploying $job_url to foundation nodes... Please watch for issues and approve the release for SPs when ready (I'll remind you in an hour).\" } }"
             fi
 
             json_content+="]}"
@@ -547,23 +547,6 @@ workflows:
             - generate-config
             - init
           workspace_path: ../workspace
-
-  trigger-gcp-cleanup:
-    when:
-      and:
-        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ['gcp-cleanup', << pipeline.schedule.name >>]
-    jobs:
-      - generate-config
-      - continuation/continue:
-          configuration_path: ../workspace/.circleci/continue_config.yml
-          name: run-gcp-cleanup
-          parameters: '{ "run-gcp-cleanup": true }'
-          pre-steps:
-            - attach_workspace:
-                at: ../workspace
-          requires:
-            - generate-config
 
   release-create-branch:
     when:

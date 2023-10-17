@@ -1,4 +1,4 @@
-import { formatPrice } from '@audius/common'
+import { formatPrice, isNullOrUndefined } from '@audius/common'
 import { View } from 'react-native'
 
 import { Text } from 'app/components/core'
@@ -82,7 +82,7 @@ export const PurchaseSummaryTable = ({
             <Text>{messages.price(formatPrice(extraAmount))}</Text>
           </View>
         ) : null}
-        {existingBalance ? (
+        {!isNullOrUndefined(existingBalance) && existingBalance > 0 ? (
           <View style={styles.summaryRow}>
             <Text>{messages.existingBalance}</Text>
             <Text>{messages.subtractPrice(formatPrice(existingBalance))}</Text>

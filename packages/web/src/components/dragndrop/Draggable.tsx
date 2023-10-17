@@ -1,6 +1,7 @@
 import { DragEvent, ReactNode, useCallback } from 'react'
 
 import { ID } from '@audius/common'
+import { Slot } from '@radix-ui/react-slot'
 import { useDispatch } from 'react-redux'
 
 import { DragDropKind, drag, drop } from 'store/dragndrop/slice'
@@ -24,6 +25,7 @@ export type DraggableProps = {
   children: ReactNode
   onDrag?: () => void
   onDrop?: () => void
+  asChild?: boolean
 }
 
 export const Draggable = (props: DraggableProps) => {
@@ -38,7 +40,8 @@ export const Draggable = (props: DraggableProps) => {
     onDrag,
     onDrop,
     children,
-    ...otherProps // passed to child
+    asChild,
+    ...other
   } = props
   const dispatch = useDispatch()
 
@@ -84,15 +87,17 @@ export const Draggable = (props: DraggableProps) => {
     onDrop?.()
   }, [dispatch, onDrop])
 
+  const Comp = asChild ? Slot : 'div'
+
   return (
-    <div
+    <Comp
       draggable={!isDisabled}
       className={styles.draggable}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      {...otherProps}
+      {...other}
     >
       {children}
-    </div>
+    </Comp>
   )
 }

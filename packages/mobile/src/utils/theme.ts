@@ -15,6 +15,10 @@ export const defaultTheme = {
   aiSecondary: '#0FC578',
   background: '#F3F0F7',
   backgroundSecondary: '#FAFAFA',
+  backgroundSurface: '#FCFCFC',
+  backgroundSurface2: '#F2F2F4',
+  borderDefault: '#F2F2F4',
+  borderStrong: '#E7E6EB',
   primary: '#CC0FE0',
   primaryDark1: '#B80ECA',
   primaryDark2: '#A30CB3',
@@ -75,6 +79,10 @@ export const darkTheme = {
   aiSecondary: '#0FC578',
   background: '#242438',
   backgroundSecondary: '#2F3048',
+  backgroundSurface: '#35364F',
+  backgroundSurface2: '#3F415B',
+  borderDefault: '#3F415B',
+  borderStrong: '#4E4F6A',
   primary: '#C74BD3',
   primaryDark1: '#C556D4',
   primaryDark2: '#C563D6',
@@ -134,6 +142,10 @@ export const matrixTheme = {
   ...darkTheme,
   background: '#1A1818',
   backgroundSecondary: '#1A1818',
+  backgroundSurface: '#1D211B',
+  backgroundSurface2: '#1A2F15',
+  borderDefault: '#3F415B',
+  borderStrong: '#4E4F6A',
   primary: '#0CF10C',
   primaryDark1: '#0CF10C',
   primaryDark2: '#0CF10C',
@@ -187,6 +199,10 @@ export type ThemeColors = {
   aiSecondary: string
   background: string
   backgroundSecondary: string
+  backgroundSurface: string
+  backgroundSurface2: string
+  borderDefault: string
+  borderStrong: string
   primary: string
   primaryDark1: string
   primaryDark2: string

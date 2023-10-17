@@ -108,7 +108,7 @@ const NavPopupMenu = () => {
               <div
                 className={styles.icon}
                 ref={anchorRef}
-                onClick={triggerPopup}
+                onClick={() => triggerPopup()}
               >
                 <Icon icon={IconKebabHorizontal} />
               </div>

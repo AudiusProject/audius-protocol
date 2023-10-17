@@ -229,10 +229,7 @@ const Card = ({
     bottomActions = (
       <div className={sizeStyles.actionsContainer} ref={menuActionsRef}>
         <Menu menu={menu}>
-          {(
-            ref: Ref<SVGSVGElement>,
-            triggerPopup: MouseEventHandler<HTMLDivElement>
-          ) => (
+          {(ref: Ref<SVGSVGElement>, triggerPopup: () => void) => (
             <div className={styles.iconContainer} onClick={triggerPopup}>
               <IconKebabHorizontal
                 className={styles.iconKebabHorizontal}

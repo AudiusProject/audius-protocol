@@ -7,7 +7,8 @@ import {
   challengesSelectors,
   audioRewardsPageActions,
   ClaimStatus,
-  audioRewardsPageSelectors
+  audioRewardsPageSelectors,
+  isAudioMatchingChallenge
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -18,9 +19,10 @@ import type { ChallengesParamList } from 'app/utils/challenges'
 import { getChallengeConfig } from 'app/utils/challenges'
 
 import Button, { ButtonType } from '../button'
-import { useDrawerState } from '../drawer/AppDrawer'
+import { AppDrawer, useDrawerState } from '../drawer/AppDrawer'
 
-import { ChallengeRewardsDrawer } from './ChallengeRewardsDrawer'
+import { AudioMatchingChallengeDrawerContent } from './AudioMatchingChallengeDrawerContent'
+import { ChallengeRewardsDrawerContent } from './ChallengeRewardsDrawerContent'
 import { ProfileCompletionChecks } from './ProfileCompletionChecks'
 import { ReferralRewardContents } from './ReferralRewardContents'
 const { getChallengeRewardsModalType, getClaimStatus, getAAOErrorCode } =
@@ -185,27 +187,46 @@ export const ChallengeRewardsDrawerProvider = () => {
   }
 
   return (
-    <ChallengeRewardsDrawer
+    <AppDrawer
+      modalName='ChallengeRewardsExplainer'
       onClose={handleClose}
+      isFullscreen
+      isGestureSupported={false}
       title={config.title}
-      titleIcon={config.icon}
-      description={config.description(challenge)}
-      progressLabel={config.progressLabel ?? 'Completed'}
-      amount={challenge.totalAmount}
-      challengeState={challenge.state}
-      currentStep={challenge.current_step_count}
-      stepCount={challenge.max_steps}
-      claimableAmount={audioToClaim}
-      claimedAmount={audioClaimedSoFar}
-      claimStatus={claimStatus}
-      aaoErrorCode={aaoErrorCode}
-      onClaim={hasConfig ? onClaim : undefined}
-      isVerifiedChallenge={!!config.isVerifiedChallenge}
-      showProgressBar={
-        challenge.challenge_type !== 'aggregate' && challenge.max_steps > 1
-      }
+      titleImage={config.icon}
     >
-      {contents}
-    </ChallengeRewardsDrawer>
+      {isAudioMatchingChallenge(modalType) ? (
+        <AudioMatchingChallengeDrawerContent
+          aaoErrorCode={aaoErrorCode}
+          challengeName={modalType}
+          challenge={challenge}
+          claimableAmount={audioToClaim}
+          claimedAmount={audioClaimedSoFar}
+          claimStatus={claimStatus}
+          onNavigate={handleNavigation}
+          onClaim={hasConfig ? onClaim : undefined}
+        />
+      ) : (
+        <ChallengeRewardsDrawerContent
+          description={config.description(challenge)}
+          progressLabel={config.progressLabel ?? 'Completed'}
+          amount={challenge.totalAmount}
+          challengeState={challenge.state}
+          currentStep={challenge.current_step_count}
+          stepCount={challenge.max_steps}
+          claimableAmount={audioToClaim}
+          claimedAmount={audioClaimedSoFar}
+          claimStatus={claimStatus}
+          aaoErrorCode={aaoErrorCode}
+          onClaim={hasConfig ? onClaim : undefined}
+          isVerifiedChallenge={!!config.isVerifiedChallenge}
+          showProgressBar={
+            challenge.challenge_type !== 'aggregate' && challenge.max_steps > 1
+          }
+        >
+          {contents}
+        </ChallengeRewardsDrawerContent>
+      )}
+    </AppDrawer>
   )
 }

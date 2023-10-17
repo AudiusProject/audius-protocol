@@ -575,7 +575,7 @@ export const GiantTrackTile = ({
                     <Button
                       className={cn(styles.buttonFormatting, styles.moreButton)}
                       leftIcon={<IconKebabHorizontal />}
-                      onClick={triggerPopup}
+                      onClick={() => triggerPopup()}
                       text={null}
                       textClassName={styles.buttonTextFormatting}
                       type={ButtonType.COMMON}
