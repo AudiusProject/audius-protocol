@@ -227,7 +227,7 @@ const ConnectedTrackTile = ({
                 [styles.small]: size === TrackTileSize.SMALL,
                 [styles.large]: size === TrackTileSize.LARGE
               })}
-              onClick={triggerPopup}
+              onClick={() => triggerPopup()}
             >
               <IconKebabHorizontal
                 className={cn(styles.iconKebabHorizontal)}
