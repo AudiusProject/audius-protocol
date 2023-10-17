@@ -31,12 +31,9 @@ mobile-init:
     - common-lint
 
     - run:
-        name: typecheck
-        command: npx turbo run typecheck --filter=audius-mobile-client
-
-    - run:
-        name: lint
-        command: npx turbo run lint --filter=audius-mobile-client
+        name: lint & typecheck
+        command: |
+          npx turbo run verify --filter=audius-mobile-client
 
     - persist_to_workspace:
         root: ./

@@ -17,14 +17,9 @@ web-init:
     - common-lint
 
     - run:
-        name: typecheck
+        name: lint & typecheck
         command: |
-          npx turbo run typecheck --filter=audius-client
-
-    - run:
-        name: lint
-        command: |
-          npx turbo run lint --filter=audius-client
+          npx turbo run verify --filter=audius-client
 
     - run:
         name: stylelint
