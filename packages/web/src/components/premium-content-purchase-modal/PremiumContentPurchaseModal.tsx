@@ -28,6 +28,7 @@ import { isMobile } from 'utils/clientUtil'
 import { pushUniqueRoute } from 'utils/route'
 
 import styles from './PremiumContentPurchaseModal.module.css'
+import { AudioMatchSection } from './components/AudioMatchSection'
 import { PurchaseContentFormFields } from './components/PurchaseContentFormFields'
 import { PurchaseContentFormFooter } from './components/PurchaseContentFormFooter'
 import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState'
@@ -96,14 +97,21 @@ const RenderForm = ({
       </ModalHeader>
       <ModalContent className={styles.content}>
         <>
-          <LockedTrackDetailsTile
-            track={track as unknown as Track}
-            owner={track.user}
-          />
-          <PurchaseContentFormFields
-            stage={stage}
-            purchaseSummaryValues={purchaseSummaryValues}
-          />
+          <div className={styles.contentWrapper}>
+            <LockedTrackDetailsTile
+              track={track as unknown as Track}
+              owner={track.user}
+            />
+          </div>
+          {stage !== PurchaseContentStage.FINISH ? (
+            <AudioMatchSection amount={Math.round(price / 100)} />
+          ) : null}
+          <div className={styles.contentWrapper}>
+            <PurchaseContentFormFields
+              stage={stage}
+              purchaseSummaryValues={purchaseSummaryValues}
+            />
+          </div>
         </>
       </ModalContent>
       <ModalFooter className={styles.footer}>
