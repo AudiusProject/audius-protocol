@@ -32,11 +32,11 @@ mobile-init:
 
     - run:
         name: typecheck
-        command: cd packages/mobile && npm run typecheck
+        command: npx turbo run typecheck --filter=audius-mobile-client
 
     - run:
         name: lint
-        command: cd packages/mobile && npm run lint
+        command: npx turbo run lint --filter=audius-mobile-client
 
     - persist_to_workspace:
         root: ./

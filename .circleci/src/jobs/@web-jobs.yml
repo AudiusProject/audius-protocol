@@ -23,20 +23,17 @@ web-init:
     - run:
         name: typecheck
         command: |
-          cd packages/web
-          npm run typecheck
+          npx turbo run typecheck --filter=audius-client
 
     - run:
         name: lint
         command: |
-          cd packages/web
-          npm run lint
+          npx turbo run lint --filter=audius-client
 
     - run:
         name: stylelint
         command: |
-          cd packages/web
-          npm run stylelint
+          npm run stylelint -w audius-client
 
     - persist_to_workspace:
         root: ./
@@ -70,7 +67,7 @@ web-build-demo:
         command: |
           cd packages/web
           export PUBLIC_URL=/${CIRCLE_BRANCH}
-          CI=false npm run build:stage
+          CI=false npx turbo run build:stage
           mv build-staging build-demo
     - persist_to_workspace:
         root: ./

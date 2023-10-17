@@ -35,7 +35,7 @@ COPY --from=builder /app/out/package-lock.json ./package-lock.json
 COPY --from=builder /app/scripts ./scripts
 
 RUN echo "installing deps for ${APP_NAME}"
-RUN CI=true npm run install-packages
+RUN npm i
 
 # Build the project and its dependencies
 COPY --from=builder /app/out/full/ .
