@@ -121,15 +121,7 @@
 }
 
 .mobileContainer .artistsContainer {
-  margin: unset;
-  max-width: 400px;
-  z-index: 1;
-  display: inline-flex;
-  margin-top: 48px;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 24px;
+  width: 100%;
 }
 
 .mobileContainer .artistCard {
