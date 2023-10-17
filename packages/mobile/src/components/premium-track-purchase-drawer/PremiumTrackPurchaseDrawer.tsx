@@ -6,11 +6,11 @@ import {
   formatPrice,
   isContentPurchaseInProgress,
   isTrackPurchasable,
-  payExtraAmountPresetValues,
   purchaseContentActions,
   purchaseContentSelectors,
   statusIsNotFinalized,
   useGetTrackById,
+  usePayExtraPresets,
   usePurchaseContentFormConfiguration
 } from '@audius/common'
 import { Formik, useFormikContext } from 'formik'
@@ -26,6 +26,7 @@ import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -175,6 +176,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
   const navigation = useNavigation()
   const styles = useStyles()
   const { specialLightGreen, accentRed, secondary } = useThemeColors()
+  const presetValues = usePayExtraPresets(useRemoteVar)
 
   const { submitForm, resetForm } = useFormikContext()
 
@@ -214,7 +216,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
         ) : null}
         <View style={styles.formContentSection}>
           {isPurchaseSuccessful ? null : (
-            <PayExtraFormSection amountPresets={payExtraAmountPresetValues} />
+            <PayExtraFormSection amountPresets={presetValues} />
           )}
           <PurchaseSummaryTable
             {...purchaseSummaryValues}
@@ -280,6 +282,7 @@ export const PremiumTrackPurchaseDrawer = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const isUSDCEnabled = useIsUSDCEnabled()
+  const presetValues = usePayExtraPresets(useRemoteVar)
   const { data } = useDrawer('PremiumTrackPurchase')
   const { trackId } = data
   const { data: track, status: trackStatus } = useGetTrackById(
@@ -293,7 +296,7 @@ export const PremiumTrackPurchaseDrawer = () => {
   const isLoading = statusIsNotFinalized(trackStatus)
 
   const { initialValues, onSubmit, validationSchema } =
-    usePurchaseContentFormConfiguration({ track })
+    usePurchaseContentFormConfiguration({ track, presetValues })
 
   const handleClosed = useCallback(() => {
     dispatch(purchaseContentActions.cleanup())

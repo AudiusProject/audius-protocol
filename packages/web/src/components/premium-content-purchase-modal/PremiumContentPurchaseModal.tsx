@@ -11,7 +11,8 @@ import {
   buyUSDCActions,
   purchaseContentActions,
   purchaseContentSelectors,
-  isContentPurchaseInProgress
+  isContentPurchaseInProgress,
+  usePayExtraPresets
 } from '@audius/common'
 import { IconCart, ModalContent, ModalFooter, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
@@ -23,6 +24,7 @@ import { Icon } from 'components/Icon'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
 import { Text } from 'components/typography'
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import { isMobile } from 'utils/clientUtil'
 import { pushUniqueRoute } from 'utils/route'
@@ -139,6 +141,7 @@ export const PremiumContentPurchaseModal = () => {
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
+  const presetValues = usePayExtraPresets(useRemoteVar)
 
   const { data: track } = useGetTrackById(
     { id: trackId! },
@@ -146,7 +149,7 @@ export const PremiumContentPurchaseModal = () => {
   )
 
   const { initialValues, validationSchema, onSubmit } =
-    usePurchaseContentFormConfiguration({ track })
+    usePurchaseContentFormConfiguration({ track, presetValues })
 
   const isValidTrack = track && isTrackPurchasable(track)
 

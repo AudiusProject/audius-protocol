@@ -3,19 +3,29 @@ import {
   isPremiumContentUSDCPurchaseGated
 } from 'models/Track'
 
-import { payExtraAmountPresetValues } from './constants'
-import { PayExtraPreset, PurchasableTrackMetadata } from './types'
+import {
+  PayExtraAmountPresetValues,
+  PayExtraPreset,
+  PurchasableTrackMetadata
+} from './types'
 
-export const getExtraAmount = (
-  amountPreset: PayExtraPreset,
+type GetExtraAmountArgs = {
+  amountPreset: PayExtraPreset
+  presetValues: PayExtraAmountPresetValues
+  customAmount?: number
+}
+
+export const getExtraAmount = ({
+  amountPreset,
+  presetValues,
   customAmount = 0
-) => {
+}: GetExtraAmountArgs) => {
   let extraAmount = 0
   switch (amountPreset) {
     case PayExtraPreset.LOW:
     case PayExtraPreset.MEDIUM:
     case PayExtraPreset.HIGH:
-      extraAmount = payExtraAmountPresetValues[amountPreset]
+      extraAmount = presetValues[amountPreset]
       break
     case PayExtraPreset.CUSTOM:
       extraAmount = Number.isFinite(customAmount) ? customAmount : 0
