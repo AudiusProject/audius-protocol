@@ -475,18 +475,17 @@ export const Table = ({
       style: CSSProperties
     }) => {
       const row = rows[index]
+      if (!row) return
+
       prepareRow(row)
 
-      let render
-      if (isEmptyRow(row)) {
-        render = renderSkeletonRow
-      } else {
-        render = isReorderable
-          ? renderReorderableRow
-          : isTracksTable
-          ? renderDraggableRow
-          : renderTableRow
-      }
+      const render = isEmptyRow(row)
+        ? renderSkeletonRow
+        : isReorderable
+        ? renderReorderableRow
+        : isTracksTable
+        ? renderDraggableRow
+        : renderTableRow
       return render(row, key, { ...row.getRowProps({ style }) })
     },
     [
