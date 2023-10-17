@@ -68,7 +68,7 @@ export const PriceField = (props: TextFieldProps) => {
       {...props}
       value={humanizedValue ?? undefined}
       onChange={handlePriceChange}
-      onBlur={handlePriceBlur}
+      onEndEditing={handlePriceBlur}
     />
   )
 }
