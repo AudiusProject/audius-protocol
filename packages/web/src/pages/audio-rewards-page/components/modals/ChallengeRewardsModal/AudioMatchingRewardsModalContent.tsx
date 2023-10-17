@@ -15,7 +15,8 @@ import {
   HarmonyButtonType
 } from '@audius/stems'
 import cn from 'classnames'
-import moment from 'moment'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 import { useSelector } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -28,6 +29,8 @@ import { EXPLORE_PREMIUM_TRACKS_PAGE, UPLOAD_PAGE } from 'utils/route'
 import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
 import styles from './styles.module.css'
+
+dayjs.extend(utc)
 
 const { getUndisbursedUserChallenges } = audioRewardsPageSelectors
 
@@ -95,23 +98,23 @@ const useUndisbursedChallengesCooldown = () => {
   // isAudioMatchingChallenge and COOLDOWN_DAYS.
   const challenges = useSelector(getUndisbursedUserChallenges)
     .filter((c) => isAudioMatchingChallenge(c.challenge_id))
-    .map((c) => ({ ...c, created_at: moment(c.created_at) }))
-  const now = moment.utc()
+    .map((c) => ({ ...c, created_at: dayjs.utc(c.created_at) }))
+  const now = dayjs.utc()
   // Only challenges past the cooldown period are claimable
   const claimableAmount = challenges
-    .filter((c) => now.diff(c.created_at, 'days') >= COOLDOWN_DAYS)
+    .filter((c) => now.diff(c.created_at, 'day') >= COOLDOWN_DAYS)
     .reduce((acc, curr) => acc + curr.amount, 0)
   // Challenges are already ordered by completed_blocknumber ascending.
   // Convert to local time and group challenges by date claimable.
   const cooldownItems = new Array(7)
   challenges
-    .filter((c) => now.diff(c.created_at, 'days') < COOLDOWN_DAYS)
+    .filter((c) => now.diff(c.created_at, 'day') < COOLDOWN_DAYS)
     .forEach((c) => {
-      const diff = now.diff(c.created_at, 'days')
+      const diff = now.diff(c.created_at, 'day')
       cooldownItems[diff] = {
         ...cooldownItems[diff],
         id: c.specifier,
-        label: c.created_at.add(7, 'days').local().format('ddd M/D'),
+        label: c.created_at.add(7, 'day').local().format('ddd M/D'),
         value: (cooldownItems[diff]?.value ?? 0) + c.amount
       }
     })
