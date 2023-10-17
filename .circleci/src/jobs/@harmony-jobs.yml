@@ -67,3 +67,17 @@ harmony-deploy-storybook:
         command: |
           cd packages/harmony
           npx wrangler publish
+
+harmony-deploy-chromatic:
+  docker:
+    - image: cimg/node:18.17
+  working_directory: ~/harmony
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: run chromatic
+        command: |
+          cd packages/harmony
+          npm run chromatic --exit-zero-on-changes

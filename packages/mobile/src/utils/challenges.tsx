@@ -1,4 +1,4 @@
-import { challengeRewardsConfig } from '@audius/common'
+import { ChallengeName, challengeRewardsConfig } from '@audius/common'
 import type { ChallengeRewardID, OptimisticUserChallenge } from '@audius/common'
 import type { ImageSourcePropType } from 'react-native'
 import { Platform } from 'react-native'
@@ -175,16 +175,23 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
         iconPosition: 'right'
       }
     },
-    b: {
+    [ChallengeName.AudioMatchingBuy]: {
       icon: Cart,
       buttonInfo: {
+        navigation: {
+          screen: 'explore',
+          params: { screen: 'PremiumTracks' }
+        },
         renderIcon: (color) => <IconArrow fill={color} />,
         iconPosition: 'right'
       }
     },
-    s: {
+    [ChallengeName.AudioMatchingSell]: {
       icon: Cart,
       buttonInfo: {
+        navigation: {
+          screen: 'Upload'
+        },
         renderIcon: (color) => <IconArrow fill={color} />,
         iconPosition: 'right'
       }

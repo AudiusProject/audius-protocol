@@ -6,11 +6,11 @@ import {
   formatPrice,
   isContentPurchaseInProgress,
   isTrackPurchasable,
-  payExtraAmountPresetValues,
   purchaseContentActions,
   purchaseContentSelectors,
   statusIsNotFinalized,
   useGetTrackById,
+  usePayExtraPresets,
   usePurchaseContentFormConfiguration
 } from '@audius/common'
 import { Formik, useFormikContext } from 'formik'
@@ -26,6 +26,7 @@ import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -33,6 +34,7 @@ import { useThemeColors } from 'app/utils/theme'
 import LoadingSpinner from '../loading-spinner/LoadingSpinner'
 import { TrackDetailsTile } from '../track-details-tile'
 
+import { AudioMatchSection } from './AudioMatchSection'
 import { PayExtraFormSection } from './PayExtraFormSection'
 import { PurchaseSuccess } from './PurchaseSuccess'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
@@ -44,7 +46,7 @@ const { getPurchaseContentFlowStage, getPurchaseContentError } =
 const PREMIUM_TRACK_PURCHASE_MODAL_NAME = 'PremiumTrackPurchase'
 
 const messages = {
-  buy: (price: string) => `Buy $${price}`,
+  buy: 'Buy',
   title: 'Complete Purchase',
   summary: 'Summary',
   artistCut: 'Artist Cut',
@@ -73,8 +75,11 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     flex: 1
   },
   formContentContainer: {
-    paddingHorizontal: spacing(4),
     paddingVertical: spacing(6),
+    gap: spacing(4)
+  },
+  formContentSection: {
+    paddingHorizontal: spacing(4),
     gap: spacing(4)
   },
   formActions: {
@@ -164,6 +169,13 @@ const PremiumTrackPurchaseDrawerHeader = ({
   )
 }
 
+const getButtonText = (isUnlocking: boolean, amountDue: number) =>
+  isUnlocking
+    ? messages.purchasing
+    : amountDue > 0
+    ? `${messages.buy} $${formatPrice(amountDue)}`
+    : messages.buy
+
 // The bulk of the form rendering is in a nested component because we want access
 // to the FormikContext, which can only be used in a component which is a descendant
 // of the `<Formik />` component
@@ -171,6 +183,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
   const navigation = useNavigation()
   const styles = useStyles()
   const { specialLightGreen, accentRed, secondary } = useThemeColors()
+  const presetValues = usePayExtraPresets(useRemoteVar)
 
   const { submitForm, resetForm } = useFormikContext()
 
@@ -185,6 +198,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
 
   const { stage, error, isUnlocking, purchaseSummaryValues } =
     usePurchaseContentFormState({ price })
+  const { amountDue } = purchaseSummaryValues
 
   const isPurchaseSuccessful = stage === PurchaseContentStage.FINISH
 
@@ -202,33 +216,40 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
   return (
     <>
       <ScrollView contentContainerStyle={styles.formContentContainer}>
-        <TrackDetailsTile trackId={track.track_id} />
-        {isPurchaseSuccessful ? null : (
-          <PayExtraFormSection amountPresets={payExtraAmountPresetValues} />
-        )}
-        <PurchaseSummaryTable
-          {...purchaseSummaryValues}
-          isPurchaseSuccessful={isPurchaseSuccessful}
-        />
-        {isPurchaseSuccessful ? (
-          <PurchaseSuccess track={track} />
-        ) : (
-          <View>
-            <View style={styles.payToUnlockTitleContainer}>
-              <Text weight='heavy' textTransform='uppercase' fontSize='small'>
-                {messages.payToUnlock}
-              </Text>
-              <LockedStatusBadge locked />
-            </View>
-            <Text style={styles.disclaimer}>
-              {messages.disclaimer(
-                <Text colorValue={secondary} onPress={handleTermsPress}>
-                  {messages.termsOfUse}
+        <View style={styles.formContentSection}>
+          <TrackDetailsTile trackId={track.track_id} />
+        </View>
+        {stage !== PurchaseContentStage.FINISH ? (
+          <AudioMatchSection amount={Math.round(price / 100)} />
+        ) : null}
+        <View style={styles.formContentSection}>
+          {isPurchaseSuccessful ? null : (
+            <PayExtraFormSection amountPresets={presetValues} />
+          )}
+          <PurchaseSummaryTable
+            {...purchaseSummaryValues}
+            isPurchaseSuccessful={isPurchaseSuccessful}
+          />
+          {isPurchaseSuccessful ? (
+            <PurchaseSuccess track={track} />
+          ) : (
+            <View>
+              <View style={styles.payToUnlockTitleContainer}>
+                <Text weight='heavy' textTransform='uppercase' fontSize='small'>
+                  {messages.payToUnlock}
                 </Text>
-              )}
-            </Text>
-          </View>
-        )}
+                <LockedStatusBadge locked />
+              </View>
+              <Text style={styles.disclaimer}>
+                {messages.disclaimer(
+                  <Text colorValue={secondary} onPress={handleTermsPress}>
+                    {messages.termsOfUse}
+                  </Text>
+                )}
+              </Text>
+            </View>
+          )}
+        </View>
       </ScrollView>
       {isPurchaseSuccessful ? null : (
         <View style={styles.formActions}>
@@ -247,11 +268,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
           <Button
             onPress={submitForm}
             disabled={isUnlocking}
-            title={
-              isUnlocking
-                ? messages.purchasing
-                : messages.buy(formatPrice(price))
-            }
+            title={getButtonText(isUnlocking, amountDue)}
             variant={'primary'}
             size='large'
             color={specialLightGreen}
@@ -269,6 +286,7 @@ export const PremiumTrackPurchaseDrawer = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const isUSDCEnabled = useIsUSDCEnabled()
+  const presetValues = usePayExtraPresets(useRemoteVar)
   const { data } = useDrawer('PremiumTrackPurchase')
   const { trackId } = data
   const { data: track, status: trackStatus } = useGetTrackById(
@@ -282,7 +300,7 @@ export const PremiumTrackPurchaseDrawer = () => {
   const isLoading = statusIsNotFinalized(trackStatus)
 
   const { initialValues, onSubmit, validationSchema } =
-    usePurchaseContentFormConfiguration({ track })
+    usePurchaseContentFormConfiguration({ track, presetValues })
 
   const handleClosed = useCallback(() => {
     dispatch(purchaseContentActions.cleanup())

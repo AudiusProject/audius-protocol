@@ -72,7 +72,7 @@ export const DeveloperAppListItem = (props: DeveloperAppListItemProps) => {
             icon={
               <IconKebabHorizontal className={styles.listItemActionsIcon} />
             }
-            onClick={onClick}
+            onClick={() => onClick()}
           />
         )}
       />

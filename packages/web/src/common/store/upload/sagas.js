@@ -30,7 +30,8 @@ import {
   fork,
   cancel,
   all,
-  getContext
+  getContext,
+  delay
 } from 'redux-saga/effects'
 
 import { make } from 'common/store/analytics/actions'
@@ -796,6 +797,7 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
             `Could not confirm playlist creation for playlist id ${playlistId}`
           )
         }
+
         return (yield call(audiusBackendInstance.getPlaylists, userId, [
           playlistId
         ]))[0]
@@ -1010,14 +1012,25 @@ function* uploadSingleTrack(track) {
           throw new Error(`Could not confirm upload single track ${trackId}`)
         }
 
-        return yield apiClient.getTrack({
-          id: trackId,
-          currentUserId: userId,
-          unlistedArgs: {
-            urlTitle: formatUrlName(track.metadata.title),
-            handle
+        let retries = 30
+        while (retries !== 0) {
+          const maybeTrackRes = yield apiClient.getTrack({
+            id: trackId,
+            currentUserId: userId,
+            unlistedArgs: {
+              urlTitle: formatUrlName(track.metadata.title),
+              handle
+            }
+          })
+          if (maybeTrackRes !== undefined && maybeTrackRes !== null) {
+            return maybeTrackRes
           }
-        })
+          // lil bit of delay for retries
+          yield delay(1500)
+          retries -= 1
+        }
+
+        throw new Error(`Exhausted retries querying for track ${trackId}`)
       },
       function* onSuccess(confirmedTrack) {
         yield call(responseChan.put, { confirmedTrack })
@@ -1087,6 +1100,7 @@ function* uploadSingleTrack(track) {
       status: ProgressStatus.COMPLETE
     })
   )
+
   yield put(
     uploadActions.uploadTracksSucceeded(confirmedTrack.track_id, [
       confirmedTrack

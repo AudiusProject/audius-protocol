@@ -15,11 +15,15 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
     const {
       items,
       onClose,
+      renderMenu,
       position,
       renderTrigger,
+      dismissOnMouseLeave,
       hideCloseButton,
       title,
       titleClassName,
+      wrapperClassName,
+      className,
       zIndex,
       containerRef,
       anchorOrigin,
@@ -32,7 +36,10 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
     const [isPopupVisible, setIsPopupVisible] = useState<boolean>(false)
 
     const triggerPopup = useCallback(
-      () => setIsPopupVisible(!isPopupVisible),
+      (onMouseEnter?: boolean) => {
+        if (onMouseEnter && isPopupVisible) return
+        setIsPopupVisible(!isPopupVisible)
+      },
       [isPopupVisible, setIsPopupVisible]
     )
 
@@ -82,31 +89,37 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
           containerRef={containerRef}
           transformOrigin={transformOrigin}
           anchorOrigin={anchorOrigin}
-          wrapperClassName={styles.popup}
+          wrapperClassName={cn(styles.popup, wrapperClassName)}
+          className={className}
+          dismissOnMouseLeave={dismissOnMouseLeave}
         >
-          <ul
-            className={styles.menu}
-            role='menu'
-            aria-labelledby={triggerId}
-            tabIndex={-1}
-          >
-            {items.map((item, i) => (
-              <li
-                key={typeof item.text === 'string' ? item.text : i}
-                role='menuitem'
-                className={cn(styles.item, item.className)}
-                onClick={handleMenuItemClick(item)}
-                tabIndex={i === 0 ? 0 : -1}
-              >
-                {item.icon && (
-                  <div className={cn(styles.icon, item.iconClassName)}>
-                    {item.icon}
-                  </div>
-                )}
-                {item.text}
-              </li>
-            ))}
-          </ul>
+          {renderMenu ? (
+            renderMenu(items)
+          ) : (
+            <ul
+              className={styles.menu}
+              role='menu'
+              aria-labelledby={triggerId}
+              tabIndex={-1}
+            >
+              {items.map((item, i) => (
+                <li
+                  key={typeof item.text === 'string' ? item.text : i}
+                  role='menuitem'
+                  className={cn(styles.item, item.className)}
+                  onClick={handleMenuItemClick(item)}
+                  tabIndex={i === 0 ? 0 : -1}
+                >
+                  {item.icon && (
+                    <div className={cn(styles.icon, item.iconClassName)}>
+                      {item.icon}
+                    </div>
+                  )}
+                  {item.text}
+                </li>
+              ))}
+            </ul>
+          )}
         </Popup>
       </div>
     )
