@@ -14,12 +14,12 @@ import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
 
 import IconCrown from 'app/assets/images/iconCrown.svg'
+import IconEmbed from 'app/assets/images/iconEmbed.svg'
 import IconListeningHistory from 'app/assets/images/iconListeningHistory.svg'
 import IconMessage from 'app/assets/images/iconMessage.svg'
 import IconSettings from 'app/assets/images/iconSettings.svg'
 import IconUpload from 'app/assets/images/iconUpload.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
-import IconUserGroup from 'app/assets/images/iconUserGroup.svg'
 import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
@@ -147,7 +147,7 @@ const WrappedLeftNavDrawer = () => {
       />
       {isStaging || isFeatureFlagAccessEnabled ? (
         <LeftNavLink
-          icon={IconUserGroup}
+          icon={IconEmbed}
           label={messages.featureFlags}
           to='FeatureFlagOverride'
           params={null}
