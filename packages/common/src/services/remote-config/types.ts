@@ -351,7 +351,10 @@ export enum StringKeys {
   STRIPE_ALLOWED_COUNTRIES_2_LETTER = 'STRIPE_ALLOWED_COUNTRIES_2_LETTER',
 
   /** Text to display on related features when Solana/$AUDIO features are degraded */
-  AUDIO_FEATURES_DEGRADED_TEXT = 'AUDIO_FEATURES_DEGRADED_TEXT'
+  AUDIO_FEATURES_DEGRADED_TEXT = 'AUDIO_FEATURES_DEGRADED_TEXT',
+
+  /** Preset amounts for the Pay Extra feature in USDC purchases, specified in cents */
+  PAY_EXTRA_PRESET_CENT_AMOUNTS = 'PAY_EXTRA_PRESET_CENT_AMOUNTS'
 }
 
 export type AllRemoteConfigKeys =
