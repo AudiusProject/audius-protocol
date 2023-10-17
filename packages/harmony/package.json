@@ -16,7 +16,8 @@
     "lint": "eslint src --ext=ts,tsx",
     "lint:fix": "npm run lint -- --fix",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "chromatic": "chromatic"
   },
   "author": "KJ Shanks",
   "license": "ISC",
@@ -43,6 +44,7 @@
     "babel-core": "6.26.3",
     "babel-loader": "8.3.0",
     "babel-runtime": "6.26.0",
+    "chromatic": "7.4.0",
     "cross-env": "5.2.1",
     "css-loader": "3.6.0",
     "eslint": "8.19.0",
