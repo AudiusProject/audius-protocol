@@ -33,6 +33,7 @@ import { useThemeColors } from 'app/utils/theme'
 import LoadingSpinner from '../loading-spinner/LoadingSpinner'
 import { TrackDetailsTile } from '../track-details-tile'
 
+import { AudioMatchSection } from './AudioMatchSection'
 import { PayExtraFormSection } from './PayExtraFormSection'
 import { PurchaseSuccess } from './PurchaseSuccess'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
@@ -73,8 +74,11 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     flex: 1
   },
   formContentContainer: {
-    paddingHorizontal: spacing(4),
     paddingVertical: spacing(6),
+    gap: spacing(4)
+  },
+  formContentSection: {
+    paddingHorizontal: spacing(4),
     gap: spacing(4)
   },
   formActions: {
@@ -202,33 +206,38 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
   return (
     <>
       <ScrollView contentContainerStyle={styles.formContentContainer}>
-        <TrackDetailsTile trackId={track.track_id} />
-        {isPurchaseSuccessful ? null : (
-          <PayExtraFormSection amountPresets={payExtraAmountPresetValues} />
-        )}
-        <PurchaseSummaryTable
-          {...purchaseSummaryValues}
-          isPurchaseSuccessful={isPurchaseSuccessful}
-        />
-        {isPurchaseSuccessful ? (
-          <PurchaseSuccess track={track} />
-        ) : (
-          <View>
-            <View style={styles.payToUnlockTitleContainer}>
-              <Text weight='heavy' textTransform='uppercase' fontSize='small'>
-                {messages.payToUnlock}
-              </Text>
-              <LockedStatusBadge locked />
-            </View>
-            <Text style={styles.disclaimer}>
-              {messages.disclaimer(
-                <Text colorValue={secondary} onPress={handleTermsPress}>
-                  {messages.termsOfUse}
+        <View style={styles.formContentSection}>
+          <TrackDetailsTile trackId={track.track_id} />
+        </View>
+        <AudioMatchSection amount={Math.round(price / 100)} />
+        <View style={styles.formContentSection}>
+          {isPurchaseSuccessful ? null : (
+            <PayExtraFormSection amountPresets={payExtraAmountPresetValues} />
+          )}
+          <PurchaseSummaryTable
+            {...purchaseSummaryValues}
+            isPurchaseSuccessful={isPurchaseSuccessful}
+          />
+          {isPurchaseSuccessful ? (
+            <PurchaseSuccess track={track} />
+          ) : (
+            <View>
+              <View style={styles.payToUnlockTitleContainer}>
+                <Text weight='heavy' textTransform='uppercase' fontSize='small'>
+                  {messages.payToUnlock}
                 </Text>
-              )}
-            </Text>
-          </View>
-        )}
+                <LockedStatusBadge locked />
+              </View>
+              <Text style={styles.disclaimer}>
+                {messages.disclaimer(
+                  <Text colorValue={secondary} onPress={handleTermsPress}>
+                    {messages.termsOfUse}
+                  </Text>
+                )}
+              </Text>
+            </View>
+          )}
+        </View>
       </ScrollView>
       {isPurchaseSuccessful ? null : (
         <View style={styles.formActions}>
