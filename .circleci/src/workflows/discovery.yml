@@ -56,6 +56,13 @@ jobs:
       filters:
         branches:
           only: /^main$/
+  - push-docker-image:
+      name: push-healthz
+      context: [Vercel, dockerhub]
+      service: healthz
+      filters:
+        branches:
+          only: main
 
   - lint-discovery-provider:
       name: lint-discovery-provider
@@ -87,6 +94,7 @@ jobs:
         - push-pedalboard-sla-auditor
         - push-comms
         - push-trpc
+        - push-healthz
       filters:
         branches:
           only: main
