@@ -70,7 +70,7 @@ harmony-deploy-storybook:
 
 harmony-deploy-chromatic:
   docker:
-    - image: circleci/node:16
+    - image: cimg/node:18.17
   working_directory: ~/harmony
   steps:
     - checkout

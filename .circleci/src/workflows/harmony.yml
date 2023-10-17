@@ -19,5 +19,5 @@ jobs:
         - harmony-init
       filters:
         branches:
-          # not main
-          only: /^((?!main).)*$/
+          ignore:
+            - /^release.*$/
