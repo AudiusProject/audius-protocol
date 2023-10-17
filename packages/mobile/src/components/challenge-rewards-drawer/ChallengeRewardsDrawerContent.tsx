@@ -140,14 +140,14 @@ export const ChallengeRewardsDrawerContent = ({
         <View
           style={[
             styles.statusCell,
-            hasCompleted ? styles.statusCellComplete : {}
+            hasCompleted ? styles.statusCellComplete : null
           ]}
         >
           <Text
             style={[
               styles.subheader,
-              hasCompleted ? styles.statusTextComplete : {},
-              isInProgress ? styles.statusTextInProgress : {}
+              hasCompleted ? styles.statusTextComplete : null,
+              isInProgress ? styles.statusTextInProgress : null
             ]}
             weight='heavy'
             textTransform='uppercase'

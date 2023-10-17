@@ -61,8 +61,8 @@ export const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   statusCell: {
     alignItems: 'center',
-    paddingLeft: 32,
-    paddingRight: 32,
+    paddingLeft: spacing(8),
+    paddingRight: spacing(8),
     paddingTop: spacing(3),
     backgroundColor: palette.neutralLight9,
     borderBottomLeftRadius: spacing(4),

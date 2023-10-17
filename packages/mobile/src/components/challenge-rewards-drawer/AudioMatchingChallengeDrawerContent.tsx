@@ -72,7 +72,7 @@ const ctaButtonProps: {
  * more complicated logic and the abiltity to render a cooldown table.
  */
 export const AudioMatchingChallengeDrawerContent = ({
-  aaoErrorCode = 1,
+  aaoErrorCode,
   challenge,
   challengeName,
   claimableAmount,
@@ -86,7 +86,7 @@ export const AudioMatchingChallengeDrawerContent = ({
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
     claimStatus === ClaimStatus.WAITING_FOR_RETRY
-  const claimError = claimStatus !== ClaimStatus.ERROR
+  const claimError = claimStatus === ClaimStatus.ERROR
 
   return (
     <View style={styles.scrollViewContainer}>
