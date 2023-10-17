@@ -14,16 +14,6 @@
   position: relative;
 }
 
-.foreground {
-  position: relative;
-  z-index: 5;
-  display: inline-flex;
-  width: 100%;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
 :global(#landingPage) .title {
   font-family: 'Avenir Next LT Pro' !important;
 }
@@ -59,7 +49,7 @@
   gap: 24px;
   width: 100%;
   width: calc(100% + 60px);
-  margin-bottom: 24px;
+  margin: 48px 0 24px;
 }
 
 /*  Artist Component */
@@ -99,12 +89,6 @@
   margin-top: 4px;
 }
 
-.animateTitleContainer {
-  overflow: hidden;
-  width: 100%;
-  margin-bottom: 48px;
-}
-
 /* Mobile */
 
 .mobileContainer {
@@ -114,6 +98,10 @@
   flex-direction: column;
   align-items: center;
   margin: 56px 0 120px;
+}
+
+.mobileContainer .content {
+  padding: 0 16px;
 }
 
 .mobileContainer .title {
@@ -126,7 +114,6 @@
 
 .mobileContainer .subTitle {
   z-index: 1;
-  max-width: 300px;
   font-size: 18px;
   font-weight: 500;
   line-height: 24px;

@@ -14,16 +14,6 @@
   position: relative;
 }
 
-.foreground {
-  position: relative;
-  z-index: 5;
-  display: inline-flex;
-  width: 100%;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
 .productShot {
   width: 100%;
   max-width: 807px;
@@ -64,9 +54,6 @@
   justify-content: center;
   flex-wrap: wrap;
   gap: 24px;
-  width: 100%;
-  margin: -34px 0 0 -60px;
-  width: calc(100% + 60px);
 }
 
 /*  Artist Component */
@@ -108,12 +95,6 @@
   margin-top: 4px;
 }
 
-.animateTitleContainer {
-  overflow: hidden;
-  width: 100%;
-  margin-bottom: 36px;
-}
-
 /* Mobile */
 
 .mobileContainer {
@@ -122,7 +103,8 @@
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 56px;
+  margin: 72px 0 56px;
+  padding: 0 16px;
 }
 
 .mobileContainer .title {
@@ -134,7 +116,6 @@
 
 .mobileContainer .subTitle {
   z-index: 1;
-  max-width: 300px;
   font-size: 18px;
   font-weight: 500;
   line-height: 24px;
@@ -151,6 +132,7 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 24px;
+  margin-top: 36px;
 }
 
 .mobileContainer .artistImageWrapper {
@@ -160,7 +142,6 @@
 }
 
 .mobileContainer .artistName {
-  color: #7e1bcc;
   font-size: 16px;
   font-weight: 500;
   line-height: 19px;

@@ -148,6 +148,10 @@
   padding: 0px 24px;
 }
 
+.mobileContainer .content {
+  margin: 0 24px;
+}
+
 .mobileContainer .title {
   font-size: 32px;
   line-height: 40px;

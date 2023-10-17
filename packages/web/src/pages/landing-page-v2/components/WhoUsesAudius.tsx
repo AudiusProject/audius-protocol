@@ -131,8 +131,22 @@ const WhoUsesAudius = (props: WhoUsesAudiusProps) => {
   if (props.isMobile) {
     return (
       <div className={styles.mobileContainer}>
-        <h3 className={styles.title}>{messages.title}</h3>
-        <h3 className={styles.subTitle}>{messages.subtitle}</h3>
+        <div ref={refInView} className={styles.content}>
+          <div className={styles.animateTitleContainer}>
+            <animated.div
+              style={{
+                opacity: titleStyles.opacity,
+                transform: titleStyles.x.interpolate(
+                  (x) => `translate3d(0,${x}px,0)`
+                ),
+                width: '100%'
+              }}
+              >
+              <h3 className={styles.title}>{messages.title}</h3>
+              <h3 className={styles.subTitle}>{messages.subtitle}</h3>
+            </animated.div>
+          </div>
+        </div>
         <div className={styles.artistsContainer}>
           {artists.map((artist, i) => (
             <MobileArtist
@@ -149,26 +163,22 @@ const WhoUsesAudius = (props: WhoUsesAudiusProps) => {
   return (
     <div className={styles.container}>
       <div ref={refInView} className={styles.content}>
-        <div className={styles.foreground}>
-          <div className={styles.animateTitleContainer}>
-            <animated.div
-              style={{
-                opacity: titleStyles.opacity,
-                transform: titleStyles.x.interpolate(
-                  (x) => `translate3d(0,${x}px,0)`
-                ),
-                width: '100%'
-              }}
-            >
-              <h3 className={styles.title}>{messages.title}</h3>
-              <h3 className={styles.subTitle}>{messages.subtitle}</h3>
-            </animated.div>
-          </div>
-          <div className={styles.artistsContainer}>
-            {artists.map((artist) => (
-              <Artist key={artist.handle} {...artist} goToArtist={goToArtist} />
-            ))}
-          </div>
+        <animated.div
+          style={{
+            opacity: titleStyles.opacity,
+            transform: titleStyles.x.interpolate(
+              (x) => `translate3d(0,${x}px,0)`
+            ),
+            width: '100%'
+          }}
+        >
+          <h3 className={styles.title}>{messages.title}</h3>
+          <h3 className={styles.subTitle}>{messages.subtitle}</h3>
+        </animated.div>
+        <div className={styles.artistsContainer}>
+          {artists.map((artist) => (
+            <Artist key={artist.handle} {...artist} goToArtist={goToArtist} />
+          ))}
         </div>
       </div>
     </div>

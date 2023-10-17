@@ -113,9 +113,20 @@ const CaseStudies = (props: CaseStudiesProps) => {
 
   if (props.isMobile) {
     return (
-      <div className={styles.mobileContainer}>
-        <div className={styles.title}>{messages.title}</div>
-        <div className={styles.subTitle}>{messages.subTitle}</div>
+      <div className={styles.mobileContainer} ref={refInView}>
+        <div className={styles.content}>
+          <animated.div
+            style={{
+              opacity: textStyles.opacity,
+              transform: textStyles.x.interpolate(
+                (x) => `translate3d(0,${x}px,0)`
+              )
+            }}
+          >
+            <div className={styles.title}>{messages.title}</div>
+            <div className={styles.subTitle}>{messages.subTitle}</div>
+          </animated.div>
+        </div>
         {cards.map((card, i) => (
           <div
             key={i}
@@ -143,19 +154,17 @@ const CaseStudies = (props: CaseStudiesProps) => {
   return (
     <div className={styles.container} ref={refInView}>
       <div className={styles.content}>
-        <div className={styles.animateTitleContainer}>
-          <animated.div
-            style={{
-              opacity: textStyles.opacity,
-              transform: textStyles.x.interpolate(
-                (x) => `translate3d(0,${x}px,0)`
-              )
-            }}
-          >
-            <div className={styles.title}>{messages.title}</div>
-            <div className={styles.subTitle}>{messages.subTitle}</div>
-          </animated.div>
-        </div>
+        <animated.div
+          style={{
+            opacity: textStyles.opacity,
+            transform: textStyles.x.interpolate(
+              (x) => `translate3d(0,${x}px,0)`
+            )
+          }}
+        >
+          <div className={styles.title}>{messages.title}</div>
+          <div className={styles.subTitle}>{messages.subTitle}</div>
+        </animated.div>
         <div className={styles.cardsContainer}>
           {cards.map((card) => (
             <Card

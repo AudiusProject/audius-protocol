@@ -89,16 +89,28 @@ const ArtistInvestors = (props: ArtistInvestorsProps) => {
   if (props.isMobile) {
     return (
       <div className={styles.mobileContainer}>
-        <h3 className={styles.title}>{messages.title}</h3>
-        <h3 className={styles.subTitle}>{messages.subtitle}</h3>
-        <div className={styles.artistsContainer}>
-          {artists.map((artist, i) => (
-            <MobileArtist key={artist.name} {...artist} />
-          ))}
+        <div ref={refInView} className={styles.content}>
+          <animated.div
+            style={{
+              opacity: titleStyles.opacity,
+              transform: titleStyles.x.interpolate(
+                (x) => `translate3d(0,${x}px,0)`
+              ),
+              width: '100%'
+            }}
+          >
+            <h3 className={styles.title}>{messages.title}</h3>
+            <h3 className={styles.subTitle}>{messages.subtitle}</h3>
+          </animated.div>
+          <div className={styles.artistsContainer}>
+            {artists.map((artist, i) => (
+              <MobileArtist key={artist.name} {...artist} />
+              ))}
+          </div>
+          <h3 className={styles.subTitle}>
+            {messages.manyMore}
+          </h3>
         </div>
-        <h3 className={styles.subTitle}>
-          {messages.manyMore}
-        </h3>
       </div>
     )
   }
@@ -106,28 +118,24 @@ const ArtistInvestors = (props: ArtistInvestorsProps) => {
   return (
     <div className={styles.container}>
       <div ref={refInView} className={styles.content}>
-        <div className={styles.foreground}>
-          <div className={styles.animateTitleContainer}>
-            <animated.div
-              style={{
-                opacity: titleStyles.opacity,
-                transform: titleStyles.x.interpolate(
-                  (x) => `translate3d(0,${x}px,0)`
-                ),
-                width: '100%'
-              }}
-            >
-              <h3 className={styles.title}>{messages.title}</h3>
-              <h3 className={styles.subTitle}>{messages.subtitle}</h3>
-            </animated.div>
-          </div>
-          <div className={styles.artistsContainer}>
-            {artists.map((artist) => (
-              <Artist key={artist.name} {...artist} />
-            ))}
-          </div>
-          <h3 className={styles.subTitle}>{messages.manyMore}</h3>
+        <animated.div
+          style={{
+            opacity: titleStyles.opacity,
+            transform: titleStyles.x.interpolate(
+              (x) => `translate3d(0,${x}px,0)`
+            ),
+            width: '100%'
+          }}
+        >
+          <h3 className={styles.title}>{messages.title}</h3>
+          <h3 className={styles.subTitle}>{messages.subtitle}</h3>
+        </animated.div>
+        <div className={styles.artistsContainer}>
+          {artists.map((artist) => (
+            <Artist key={artist.name} {...artist} />
+          ))}
         </div>
+        <h3 className={styles.subTitle}>{messages.manyMore}</h3>
       </div>
     </div>
   )
