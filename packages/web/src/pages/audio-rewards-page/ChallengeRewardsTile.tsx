@@ -27,6 +27,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { Text } from 'components/typography'
 import { useIsAudioMatchingChallengesEnabled } from 'hooks/useIsAudioMatchingChallengesEnabled'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
@@ -46,7 +47,8 @@ const messages = {
   completeLabel: 'COMPLETE',
   claimReward: 'Claim Your Reward',
   readyToClaim: 'Ready to Claim',
-  viewDetails: 'View Details'
+  viewDetails: 'View Details',
+  new: 'New!'
 }
 
 type RewardPanelProps = {
@@ -59,6 +61,18 @@ type RewardPanelProps = {
   openModal: (modalType: ChallengeRewardsModalType) => void
   id: ChallengeRewardID
 }
+
+const ReadyToClaimPill = () => (
+  <span className={styles.pillMessage}>{messages.readyToClaim}</span>
+)
+
+const NewChallengePill = () => (
+  <span className={styles.newChallengePill}>
+    <Text as='span' variant='body' strength='strong' color='staticWhite'>
+      {messages.new}
+    </Text>
+  </span>
+)
 
 const RewardPanel = ({
   id,
@@ -85,6 +99,8 @@ const RewardPanel = ({
     challenge.max_steps > 1 &&
     challenge.challenge_type !== 'aggregate' &&
     !hasDisbursed
+  const showNewChallengePill =
+    isAudioMatchingChallenge(id) && !needsDisbursement
 
   let progressLabelFilled: string
   if (shouldShowCompleted) {
@@ -135,11 +151,11 @@ const RewardPanel = ({
     >
       <div className={wm(styles.rewardPanelTop)}>
         <div className={wm(styles.pillContainer)}>
-          {needsDisbursement && (
-            <span className={wm(styles.pillMessage)}>
-              {messages.readyToClaim}
-            </span>
-          )}
+          {needsDisbursement ? (
+            <ReadyToClaimPill />
+          ) : showNewChallengePill ? (
+            <NewChallengePill />
+          ) : null}
         </div>
         <span className={wm(styles.rewardTitle)}>
           {icon}
