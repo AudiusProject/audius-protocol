@@ -12,8 +12,7 @@ import { selectSystemTheme } from './theme'
 
 export const launchSelectImageActionSheet = (
   onSelectImage: (image: Image) => void,
-  options: Options,
-  // TODO
+  options?: Options,
   name?: string
 ) => {
   const theme = selectSystemTheme(store.getState())
