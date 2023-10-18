@@ -8,7 +8,7 @@
   ],
   "private": true,
   "scripts": {
-    "build": "turbo run build --filter=audius-client^... --filter=audius-mobile-client^... --filter=identity-service^...",
+    "build": "turbo run build",
     "check-secrets": "sh ./scripts/check_secrets.sh",
     "clean:modules": "rm -rf node_modules && rm -rf packages/*/node_modules",
     "clean:dist": "rm -rf packages/*/dist",
