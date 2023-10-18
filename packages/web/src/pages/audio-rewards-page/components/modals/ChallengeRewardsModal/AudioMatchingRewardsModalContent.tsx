@@ -4,7 +4,8 @@ import {
   ChallengeName,
   OptimisticUserChallenge,
   challengeRewardsConfig,
-  formatNumberCommas
+  formatNumberCommas,
+  useAudioMatchingChallengeCooldownSchedule
 } from '@audius/common'
 import { IconArrowRight, IconCloudUpload, Text } from '@audius/harmony'
 import {
@@ -13,8 +14,11 @@ import {
   HarmonyButtonType
 } from '@audius/stems'
 import cn from 'classnames'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { SummaryTable } from 'components/summary-table'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { isMobile } from 'utils/clientUtil'
@@ -23,6 +27,8 @@ import { EXPLORE_PREMIUM_TRACKS_PAGE, UPLOAD_PAGE } from 'utils/route'
 import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
 import styles from './styles.module.css'
+
+dayjs.extend(utc)
 
 const messages = {
   rewardMapping: {
@@ -38,7 +44,12 @@ const messages = {
   viewPremiumTracks: 'View Premium Tracks',
   uploadTrack: 'Upload Track',
   totalEarned: (amount: string) => `Total $AUDIO Earned: ${amount}`,
-  claimAudio: (amount: string) => `Claim ${amount} $AUDIO`
+  claimAudio: (amount: string) => `Claim ${amount} $AUDIO`,
+  upcomingRewards: 'Upcoming Rewards',
+  audio: '$AUDIO',
+  laterToday: 'Later Today',
+  readyToClaim: 'Ready to Claim!',
+  tomorrow: 'Tomorrow'
 }
 
 type AudioMatchingChallengeName =
@@ -84,6 +95,8 @@ export const AudioMatchingRewardsModalContent = ({
   const wm = useWithMobileStyle(styles.mobile)
   const navigateToPage = useNavigateToPage()
   const { fullDescription } = challengeRewardsConfig[challengeName]
+  const { cooldownChallenges, claimableAmount, cooldownChallengesSummary } =
+    useAudioMatchingChallengeCooldownSchedule(challenge?.challenge_id)
 
   const audioClaimedSoFar = challenge
     ? challenge.amount * challenge.current_step_count -
@@ -140,22 +153,30 @@ export const AudioMatchingRewardsModalContent = ({
           </div>
         </>
       ) : (
-        <div className={styles.progressCard}>
-          <div className={styles.progressInfo}>
-            {progressDescription}
-            {progressReward}
+        <>
+          <div className={styles.progressCard}>
+            <div className={styles.progressInfo}>
+              {progressDescription}
+              {progressReward}
+            </div>
+            {progressStatusLabel}
           </div>
-          {progressStatusLabel}
-        </div>
+          <SummaryTable
+            title={messages.upcomingRewards}
+            items={cooldownChallenges}
+            summaryItem={cooldownChallengesSummary}
+            secondaryTitle={messages.audio}
+            summaryLabelColor='secondary'
+            summaryValueColor='neutral'
+          />
+        </>
       )}
       {challenge?.claimableAmount && challenge.claimableAmount > 0 ? (
         <HarmonyButton
           fullWidth
           iconRight={claimInProgress ? ClaimInProgressSpinner : IconArrowRight}
           disabled={claimInProgress}
-          text={messages.claimAudio(
-            formatNumberCommas(challenge.claimableAmount)
-          )}
+          text={messages.claimAudio(formatNumberCommas(claimableAmount))}
           onClick={onClaimRewardClicked}
         />
       ) : (

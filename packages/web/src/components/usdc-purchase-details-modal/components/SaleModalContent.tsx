@@ -99,7 +99,7 @@ export const SaleModalContent = ({
         <Button
           className={styles.button}
           iconLeft={IconMessage}
-          variant={ButtonType.TERTIARY}
+          variant={ButtonType.SECONDARY}
           text={messages.messageBuyer}
           onClick={handleClickMessageBuyer}
         />

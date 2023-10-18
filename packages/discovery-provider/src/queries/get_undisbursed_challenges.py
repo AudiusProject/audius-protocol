@@ -16,6 +16,7 @@ class UndisbursedChallengeResponse(TypedDict):
     completed_blocknumber: Optional[int]
     handle: str
     wallet: str
+    created_at: str
 
 
 def to_challenge_response(
@@ -32,6 +33,7 @@ def to_challenge_response(
         "completed_blocknumber": user_challenge.completed_blocknumber,
         "handle": handle,
         "wallet": wallet,
+        "created_at": str(user_challenge.created_at),
     }
 
 

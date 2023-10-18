@@ -20,6 +20,7 @@ undisbursed_challenge = ns.model(
         "completed_blocknumber": fields.Integer(required=True),
         "handle": fields.String(required=True),
         "wallet": fields.String(required=True),
+        "created_at": fields.String(required=True),
     },
 )
 
