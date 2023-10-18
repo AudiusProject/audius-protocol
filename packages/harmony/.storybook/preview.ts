@@ -1,6 +1,7 @@
 import { withThemeByDataAttribute } from '@storybook/addon-themes'
 
 // This file is used to configure all stories
+import './global.css'
 import 'assets/styles/reset.css'
 import 'assets/fonts/avenir.css'
 import 'assets/styles/fonts.css'
