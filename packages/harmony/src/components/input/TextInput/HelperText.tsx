@@ -18,7 +18,7 @@ export const HelperText = (props: HelperTextProps) => {
         variant='body'
         size={size}
         strength='default'
-        color={hasError ? 'error' : 'default'}
+        color={hasError ? 'danger' : 'default'}
       >
         {children}
       </Text>
