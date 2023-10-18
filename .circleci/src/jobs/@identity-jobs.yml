@@ -12,10 +12,6 @@ identity-init:
         keys:
           - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
-    - restore_cache:
-        keys:
-          - cache-{{ .Revision }}
-
     - run:
         name: verify
         command: npx turbo run verify --filter=identity-service

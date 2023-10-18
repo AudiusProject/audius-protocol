@@ -81,15 +81,6 @@ jobs:
             - ./packages/libs/node_modules
             - ./packages/identity-service/node_modules
 
-      - save_cache:
-          key: cache-{{ .Revision }}
-          paths:
-            - ./packages/stems/dist
-            - ./packages/harmony/dist
-            - ./packages/common/dist
-            - ./packages/libs/dist
-            - ./packages/spl/dist
-
   generate-release:
     working_directory: ~/audius-protocol
     resource_class: small

@@ -1,0 +1,23 @@
+{
+  "extends": ["//"],
+  "pipeline": {
+    "build": {
+      "outputs": [
+        "build-development/**",
+        "build-staging/**",
+        "build-production/**"
+      ],
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"],
+      "outputMode": "new-only"
+    },
+    "dist": {
+      "outputs": ["dist/**"],
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"],
+      "outputMode": "new-only"
+    }
+  }
+}
