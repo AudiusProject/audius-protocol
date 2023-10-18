@@ -13,11 +13,13 @@
   padding: var(--unit-1) var(--unit-2);
 }
 
-.unlocked.gated, .coloredWhenLocked.premium {
+.unlocked.gated,
+.coloredWhenLocked.premium {
   background-color: var(--accent-blue);
 }
 
-.unlocked.premium, .coloredWhenLocked.premium {
+.unlocked.premium,
+.coloredWhenLocked.premium {
   background-color: var(--special-light-green);
 }
 
