@@ -14,7 +14,7 @@ export type SummaryTableItem = {
 
 export type SummaryTableProps = {
   items: SummaryTableItem[]
-  summaryItem: SummaryTableItem
+  summaryItem?: SummaryTableItem
   title: ReactNode
   secondaryTitle?: ReactNode
   summaryLabelColor?: ColorValue
@@ -45,14 +45,16 @@ export const SummaryTable = ({
           <Text>{value}</Text>
         </div>
       ))}
-      <div className={styles.row}>
-        <Text variant='title' size='medium' color={summaryLabelColor}>
-          {summaryItem.label}
-        </Text>
-        <Text variant='title' size='medium' color={summaryValueColor}>
-          {summaryItem.value}
-        </Text>
-      </div>
+      {summaryItem !== undefined ? (
+        <div className={styles.row}>
+          <Text variant='title' size='medium' color={summaryLabelColor}>
+            {summaryItem.label}
+          </Text>
+          <Text variant='title' size='medium' color={summaryValueColor}>
+            {summaryItem.value}
+          </Text>
+        </div>
+      ) : null}
     </div>
   )
 }

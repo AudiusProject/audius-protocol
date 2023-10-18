@@ -73,6 +73,9 @@ const getAudioMatchingChallengeCooldownSummary = (claimableAmount: number) => ({
   value: claimableAmount
 })
 
+/**
+ * Custom hook using values specific to $AUDIO matching challenges.
+ */
 export const useAudioMatchingChallengeCooldownSchedule = (
   challengeId?: ChallengeRewardID
 ) => {
@@ -83,6 +86,8 @@ export const useAudioMatchingChallengeCooldownSchedule = (
     cooldownChallenges:
       formatAudioMatchingChallengeCooldownSchedule(cooldownChallenges),
     cooldownChallengesSummary:
-      getAudioMatchingChallengeCooldownSummary(claimableAmount)
+      claimableAmount > 0
+        ? getAudioMatchingChallengeCooldownSummary(claimableAmount)
+        : undefined
   }
 }

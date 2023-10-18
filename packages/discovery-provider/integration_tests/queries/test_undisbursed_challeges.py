@@ -73,6 +73,7 @@ def setup_challenges(app):
                 is_complete=False,
                 current_step_count=1,
                 amount=5,
+                created_at="2023-10-16 17:51:31.105065+00",
             ),
             UserChallenge(
                 challenge_id="test_challenge_1",
@@ -82,6 +83,7 @@ def setup_challenges(app):
                 current_step_count=3,
                 completed_blocknumber=100,
                 amount=5,
+                created_at="2023-10-16 17:51:31.105065+00",
             ),
             UserChallenge(
                 challenge_id="test_challenge_2",
@@ -89,6 +91,7 @@ def setup_challenges(app):
                 specifier="3",
                 is_complete=False,
                 amount=5,
+                created_at="2023-10-16 17:51:31.105065+00",
             ),
             UserChallenge(
                 challenge_id="test_challenge_2",
@@ -97,6 +100,7 @@ def setup_challenges(app):
                 is_complete=True,
                 completed_blocknumber=102,
                 amount=5,
+                created_at="2023-10-16 17:51:31.105065+00",
             ),
             UserChallenge(
                 challenge_id="test_challenge_2",
@@ -105,6 +109,7 @@ def setup_challenges(app):
                 is_complete=True,
                 completed_blocknumber=102,
                 amount=5,
+                created_at="2023-10-16 17:51:31.105065+00",
             ),
             UserChallenge(
                 challenge_id="test_challenge_3",
@@ -113,6 +118,7 @@ def setup_challenges(app):
                 is_complete=True,
                 completed_blocknumber=100,
                 amount=5,
+                created_at="2023-10-16 17:51:31.105065+00",
             ),
         ]
 
@@ -146,6 +152,7 @@ def test_undisbursed_challenges(app):
                 "completed_blocknumber": 100,
                 "handle": "TestHandle6",
                 "wallet": "0x6",
+                "created_at": "2023-10-16 17:51:31.105065+00",
             },
             {
                 "challenge_id": "test_challenge_2",
@@ -155,6 +162,7 @@ def test_undisbursed_challenges(app):
                 "completed_blocknumber": 102,
                 "handle": "TestHandle4",
                 "wallet": "0x4",
+                "created_at": "2023-10-16 17:51:31.105065+00",
             },
             {
                 "challenge_id": "test_challenge_2",
@@ -164,8 +172,12 @@ def test_undisbursed_challenges(app):
                 "completed_blocknumber": 102,
                 "handle": "TestHandle5",
                 "wallet": "0x5",
+                "created_at": "2023-10-16 17:51:31.105065+00",
             },
         ]
+        print("REED")
+        print(expected[0])
+        print(undisbursed[0])
         assert expected == undisbursed
 
         # Test that it filters correctly by user_id

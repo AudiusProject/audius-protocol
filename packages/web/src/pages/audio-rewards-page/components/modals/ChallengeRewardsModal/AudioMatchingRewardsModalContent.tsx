@@ -23,7 +23,6 @@ import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { isMobile } from 'utils/clientUtil'
 import { EXPLORE_PREMIUM_TRACKS_PAGE, UPLOAD_PAGE } from 'utils/route'
-import { getCurrentThemeColors } from 'utils/theme/theme'
 
 import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
@@ -95,7 +94,6 @@ export const AudioMatchingRewardsModalContent = ({
 }: AudioMatchingRewardsModalContentProps) => {
   const wm = useWithMobileStyle(styles.mobile)
   const navigateToPage = useNavigateToPage()
-  const secondary = getCurrentThemeColors()['--secondary']
   const { fullDescription } = challengeRewardsConfig[challengeName]
   const { cooldownChallenges, claimableAmount, cooldownChallengesSummary } =
     useAudioMatchingChallengeCooldownSchedule(challenge?.challenge_id)
@@ -169,7 +167,7 @@ export const AudioMatchingRewardsModalContent = ({
             summaryItem={cooldownChallengesSummary}
             secondaryTitle={messages.audio}
             summaryLabelColor='secondary'
-            summaryValueColor='default'
+            summaryValueColor='neutral'
           />
         </>
       )}
