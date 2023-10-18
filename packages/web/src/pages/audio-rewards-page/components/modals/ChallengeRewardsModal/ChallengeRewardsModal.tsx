@@ -12,7 +12,10 @@ import {
   getAAOErrorEmojis,
   musicConfettiActions,
   challengeRewardsConfig,
-  isAudioMatchingChallenge
+  isAudioMatchingChallenge,
+  isCooldownChallengeClaimable,
+  SpecifierWithAmount,
+  UndisbursedUserChallenge
 } from '@audius/common'
 import {
   Button,
@@ -51,15 +54,18 @@ import { ProgressReward } from './ProgressReward'
 import styles from './styles.module.css'
 
 const { show: showConfetti } = musicConfettiActions
-const { getAAOErrorCode, getChallengeRewardsModalType, getClaimStatus } =
-  audioRewardsPageSelectors
+const {
+  getAAOErrorCode,
+  getChallengeRewardsModalType,
+  getClaimStatus,
+  getUndisbursedUserChallenges
+} = audioRewardsPageSelectors
 const {
   setChallengeRewardsModalType,
   resetAndCancelClaimReward,
   claimChallengeReward
 } = audioRewardsPageActions
-const { getOptimisticUserChallenges } = challengesSelectors
-const { getCompletionStages } = challengesSelectors
+const { getOptimisticUserChallenges, getCompletionStages } = challengesSelectors
 const getUserHandle = accountSelectors.getUserHandle
 
 export const useRewardsModalType = (): [
@@ -213,6 +219,19 @@ const getErrorMessage = (aaoErrorCode?: number) => {
   return <>{messages.claimError}</>
 }
 
+/* Filter for only claimable challenges */
+const getClaimableChallengeSpecifiers = (
+  specifiers: SpecifierWithAmount[],
+  undisbursedUserChallenges: UndisbursedUserChallenge[]
+) => {
+  return specifiers.filter((s) => {
+    const challenge = undisbursedUserChallenges.filter(
+      (c) => c.specifier === s.specifier
+    )[0] // specifiers are unique
+    return isCooldownChallengeClaimable(challenge)
+  })
+}
+
 type BodyProps = {
   dismissModal: () => void
 }
@@ -226,6 +245,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 
   const userChallenges = useSelector(getOptimisticUserChallenges)
   const challenge = userChallenges[modalType]
+  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
 
   const { fullDescription, progressLabel, isVerifiedChallenge } =
     challengeRewardsConfig[modalType]
@@ -338,7 +358,10 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
             challengeId: challenge.challenge_id,
             specifiers:
               challenge.challenge_type === 'aggregate'
-                ? challenge.undisbursedSpecifiers
+                ? getClaimableChallengeSpecifiers(
+                    challenge.undisbursedSpecifiers,
+                    undisbursedUserChallenges
+                  )
                 : [
                     { specifier: challenge.specifier, amount: challenge.amount }
                   ],
@@ -348,7 +371,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         })
       )
     }
-  }, [dispatch, challenge])
+  }, [challenge, dispatch, undisbursedUserChallenges])
 
   useEffect(() => {
     if (claimStatus === ClaimStatus.SUCCESS) {
