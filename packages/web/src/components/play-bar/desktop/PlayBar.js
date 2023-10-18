@@ -308,12 +308,9 @@ class PlayBar extends Component {
     let profilePictureSizes = null
     let trackId = null
     let duration = null
-    let reposted = false
-    let favorited = false
     let isOwner = false
     let isTrackUnlisted = false
     let trackPermalink = ''
-    let premiumConditions = null
 
     if (uid && track && user) {
       trackTitle = track.title
@@ -327,10 +324,7 @@ class PlayBar extends Component {
 
       duration = audioPlayer.getDuration()
       trackId = track.track_id
-      reposted = track.has_current_user_reposted
-      favorited = track.has_current_user_saved || false
       isTrackUnlisted = track.is_unlisted
-      premiumConditions = track.premium_conditions
     } else if (collectible && user) {
       // Special case for audio nft playlist
       trackTitle = collectible.name
@@ -341,9 +335,6 @@ class PlayBar extends Component {
       profilePictureSizes = user._profile_picture_sizes
       isOwner = this.props.accountUser?.user_id === user.user_id
       duration = audioPlayer.getDuration()
-
-      reposted = false
-      favorited = false
     }
 
     let playButtonStatus
