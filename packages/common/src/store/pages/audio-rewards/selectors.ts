@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect'
 
-import { ChallengeRewardID, Specifier } from '../../../models/AudioRewards'
+import { ChallengeRewardID } from '../../../models/AudioRewards'
 import { CommonState } from '../../commonStore'
 
 import { ClaimStatus } from './types'
