@@ -7,17 +7,31 @@
         "build-staging/**",
         "build-production/**"
       ],
-      "cache": false,
-      "persistent": true,
-      "dependsOn": ["^build"],
+      "dependsOn": ["@audius/sdk#build:web", "^build"],
       "outputMode": "new-only"
     },
     "dist": {
       "outputs": ["dist/**"],
+      "dependsOn": ["@audius/sdk#build:web", "^build"],
+      "outputMode": "new-only"
+    },
+    "start": {
       "cache": false,
       "persistent": true,
-      "dependsOn": ["^build"],
+      "dependsOn": ["@audius/sdk#build:web", "^build"],
       "outputMode": "new-only"
+    },
+    "lint": {
+      "outputMode": "new-only",
+      "dependsOn": ["@audius/sdk#build:web", "^build"]
+    },
+    "lint:fix": {
+      "outputMode": "new-only",
+      "dependsOn": ["@audius/sdk#build:web", "^build"]
+    },
+    "verify": {
+      "outputMode": "new-only",
+      "dependsOn": ["@audius/sdk#build:web", "^build"]
     }
   }
 }

@@ -1,0 +1,15 @@
+{
+  "extends": ["//"],
+  "pipeline": {
+    "build:node": {
+      "outputs": ["dist/**"],
+      "dependsOn": ["^build"],
+      "outputMode": "new-only"
+    },
+    "build:web": {
+      "outputs": ["dist/**"],
+      "dependsOn": ["^build"],
+      "outputMode": "new-only"
+    }
+  }
+}

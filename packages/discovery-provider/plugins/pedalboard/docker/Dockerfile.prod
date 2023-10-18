@@ -48,7 +48,7 @@ COPY --from=builder /app/out/full/ .
 COPY turbo.json turbo.json
 
 RUN echo "building ${APP_NAME}"
-RUN turbo run build "--filter=@pedalboard/${APP_NAME}"...
+RUN turbo run build:node "--filter=@pedalboard${APP_NAME}"...
 
 # RUN
 FROM base AS runner

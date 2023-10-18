@@ -1,0 +1,28 @@
+{
+  "extends": ["//"],
+  "pipeline": {
+    "build": {
+      "outputs": ["dist/**"],
+      "dependsOn": ["@audius/sdk#build:node", "^build"],
+      "outputMode": "new-only"
+    },
+    "start": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["@audius/sdk#build:node", "^build"],
+      "outputMode": "new-only"
+    },
+    "lint": {
+      "outputMode": "new-only",
+      "dependsOn": ["@audius/sdk#build:node", "^build"]
+    },
+    "lint:fix": {
+      "outputMode": "new-only",
+      "dependsOn": ["@audius/sdk#build:node", "^build"]
+    },
+    "verify": {
+      "outputMode": "new-only",
+      "dependsOn": ["@audius/sdk#build:node", "^build"]
+    }
+  }
+}
