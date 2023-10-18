@@ -17,7 +17,6 @@ import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import { ScrollView } from 'app/components/core'
 import { ImageField } from 'app/components/fields'
-import { EditProfileFormScreen } from 'app/components/form-screen'
 import { useUserCoverImage } from 'app/components/image/UserCoverImage'
 import { useUserImage } from 'app/components/image/UserImage'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
@@ -25,6 +24,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import type { Image } from 'app/types/image'
 
+import { FormScreen } from './FormScreen'
 import { ProfileTextField } from './ProfileTextField'
 import type { ProfileValues, UpdatedProfile } from './types'
 
@@ -82,11 +82,7 @@ const EditProfileForm = (props: EditProfileFormProps) => {
   const styles = useStyles()
 
   return (
-    <EditProfileFormScreen
-      onReset={handleReset}
-      onSubmit={handleSubmit}
-      errors={errors}
-    >
+    <FormScreen onReset={handleReset} onSubmit={handleSubmit} errors={errors}>
       <ImageField
         name='cover_photo'
         styles={{ imageContainer: styles.coverPhoto }}
@@ -133,7 +129,7 @@ const EditProfileForm = (props: EditProfileFormProps) => {
         <ProfileTextField name='website' label='Website' icon={IconLink} />
         <ProfileTextField name='donation' label='Donation' icon={IconDonate} />
       </ScrollView>
-    </EditProfileFormScreen>
+    </FormScreen>
   )
 }
 

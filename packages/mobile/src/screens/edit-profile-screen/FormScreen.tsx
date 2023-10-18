@@ -3,9 +3,9 @@ import { useCallback } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { isEmpty } from 'lodash'
 
-import type { ScreenProps } from '../core/Screen'
-import { ScreenContent, Screen } from '../core/Screen'
-import { TextButton } from '../core/TextButton'
+import type { ScreenProps } from '../../components/core/Screen'
+import { ScreenContent, Screen } from '../../components/core/Screen'
+import { TextButton } from '../../components/core/TextButton'
 
 const messages = {
   cancel: 'Cancel',
@@ -18,7 +18,7 @@ type FormScreenProps = ScreenProps & {
   errors?: Record<string, unknown>
 }
 
-export const EditProfileFormScreen = (props: FormScreenProps) => {
+export const FormScreen = (props: FormScreenProps) => {
   const { children, onSubmit, onReset, errors, ...other } = props
 
   const navigation = useNavigation()
