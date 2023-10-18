@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect'
 
-import { ChallengeRewardID } from '../../../models/AudioRewards'
+import { ChallengeRewardID, Specifier } from '../../../models/AudioRewards'
 import { CommonState } from '../../commonStore'
 
 import { ClaimStatus } from './types'
@@ -35,6 +35,14 @@ export const getUndisbursedUserChallenges = (state: CommonState) =>
       state.pages.audioRewards.disbursedChallenges[challenge.challenge_id] ?? []
     ).includes(challenge.specifier)
   })
+
+export const getUndisbursedUserChallengeBySpecifier = createSelector(
+  getUndisbursedUserChallenges,
+  (_: CommonState, specifier: Specifier) => specifier,
+  (challenges, specifier) => {
+    return challenges.filter((c) => c.specifier === specifier)
+  }
+)
 
 export const getUserChallenge = (
   state: CommonState,
