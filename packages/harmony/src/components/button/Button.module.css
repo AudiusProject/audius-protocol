@@ -117,6 +117,7 @@
   --button-color: var(--harmony-n-300);
   --text-color: var(--harmony-text-default);
   background: transparent;
+  border-color: var(--harmony-border-strong);
   box-shadow: none;
 }
 .secondary:hover {
@@ -138,15 +139,24 @@
 
 /* Tertiary */
 .tertiary {
-  --button-color: var(--harmony-n-300);
   --text-color: var(--harmony-text-default);
-  background: var(--harmony-static-white);
+  background: #FFFFFF;
+  opacity: 0.85;
+  backdrop-filter: blur(6px);
+  border-color: var(--harmony-border-default);
 }
 .tertiary:hover {
   box-shadow: var(--harmony-shadow-mid);
+  background: var(--harmony-static-white);
+  border-color: var(--harmony-border-strong);
+  opacity: 1;
+  backdrop-filter: none;
 }
 .tertiary:active {
   background-color: var(--harmony-n-50);
+  border-color: var(--harmony-border-strong);
+  opacity: 1;
+  backdrop-filter: none;
   box-shadow: none;
 }
 
