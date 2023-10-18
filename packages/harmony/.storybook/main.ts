@@ -4,7 +4,12 @@ import { StorybookConfig } from '@storybook/react-webpack5'
 const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(mdx|ts|tsx)'],
   addons: [
-    '@storybook/addon-essentials',
+    {
+      name: '@storybook/addon-essentials',
+      options: {
+        backgrounds: false
+      }
+    },
     '@storybook/addon-a11y',
     '@storybook/addon-themes'
   ],
