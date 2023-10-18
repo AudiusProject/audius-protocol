@@ -6,6 +6,7 @@ import { getUserId } from 'store/account/selectors'
 import { encodeHashId } from 'utils/hashIds'
 
 import { actions as chatActions } from './slice'
+import { ChatWebsocketError } from './types'
 
 const { connect, disconnect, addMessage, setMessageReactionSucceeded } =
   chatActions
@@ -56,6 +57,11 @@ export const chatMiddleware =
           }
           errorListener = (e) => {
             console.debug('[chats] WebSocket error.', e)
+            store.dispatch(
+              chatActions.logError({
+                error: new ChatWebsocketError(e.target.url, e.code)
+              })
+            )
           }
           sdk.chats.addEventListener('open', openListener)
           sdk.chats.addEventListener('message', messageListener)

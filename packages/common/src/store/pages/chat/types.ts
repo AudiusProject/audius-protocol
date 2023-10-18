@@ -21,3 +21,9 @@ export type ChatMessageTileProps = {
   onSuccess?: () => void
   className?: string
 }
+
+export class ChatWebsocketError extends Error {
+  constructor(public url?: string, public code?: string) {
+    super(`Chat Websocket Error, code: ${code}`)
+  }
+}

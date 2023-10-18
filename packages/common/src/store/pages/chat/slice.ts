@@ -21,6 +21,8 @@ import { signOut } from 'store/sign-out/slice'
 import { hasTail } from 'utils/chatUtils'
 import { encodeHashId } from 'utils/hashIds'
 
+import { ChatWebsocketError } from './types'
+
 type UserChatWithMessagesStatus = UserChat & {
   messagesStatus?: Status
   messagesSummary?: TypedCommsResponse<ChatMessage>['summary']
@@ -614,8 +616,10 @@ const slice = createSlice({
       chatsAdapter.removeOne(state.chats, chatId)
       chatMessagesAdapter.removeAll(state.messages[chatId])
     },
-    // TODO: Expect error/code/url/etc to be already passed or handle event directly?
-    logError: (_state, _action: PayloadAction<{ error: any }>) => {
+    logError: (
+      _state,
+      _action: PayloadAction<{ error: ChatWebsocketError }>
+    ) => {
       // triggers saga
     }
   },
