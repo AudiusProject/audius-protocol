@@ -78,7 +78,7 @@ export const PurchaseModalContent = ({
       <ModalFooter className={styles.footer}>
         <Button
           className={styles.button}
-          variant={ButtonType.TERTIARY}
+          variant={ButtonType.SECONDARY}
           text={messages.visitTrack}
           iconRight={IconArrowRight}
           onClick={handleClickVisitTrack}

@@ -116,7 +116,7 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
               ref={anchorRef}
               variant={ButtonType.SECONDARY}
               iconLeft={IconKebabHorizontal}
-              onClick={triggerPopup}
+              onClick={() => triggerPopup()}
             />
           )}
         />
