@@ -613,6 +613,10 @@ const slice = createSlice({
       const { chatId } = action.payload
       chatsAdapter.removeOne(state.chats, chatId)
       chatMessagesAdapter.removeAll(state.messages[chatId])
+    },
+    // TODO: Expect error/code/url/etc to be already passed or handle event directly?
+    logError: (_state, _action: PayloadAction<{ error: any }>) => {
+      // triggers saga
     }
   },
   extraReducers: {
