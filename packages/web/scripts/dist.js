@@ -8,9 +8,9 @@
 const fs = require('fs')
 const path = require('path')
 
+const { notarize } = require('@electron/notarize')
 const program = require('commander')
 const builder = require('electron-builder')
-const notarize = require('electron-notarize').notarize
 const fse = require('fs-extra')
 
 const PRODUCTION_APP_ID = 'co.audius.app'
