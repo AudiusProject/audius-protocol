@@ -414,6 +414,7 @@ type UndisbursedUserChallengesResponse = [
     completed_blocknumber: number
     handle: string
     wallet: string
+    created_at: string
   }
 ]
 

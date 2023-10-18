@@ -28,6 +28,7 @@ export type UndisbursedUserChallenge = Pick<
   completed_blocknumber: number
   handle: string
   wallet: string
+  created_at: string
 }
 
 export enum HCaptchaStatus {
