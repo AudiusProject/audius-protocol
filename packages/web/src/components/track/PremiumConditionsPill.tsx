@@ -17,11 +17,13 @@ const messages = {
 export const PremiumConditionsPill = ({
   premiumConditions,
   unlocking,
-  onClick
+  onClick,
+  showIcon = true
 }: {
   premiumConditions: PremiumConditions
   unlocking: boolean
   onClick?: (e: MouseEvent) => void
+  showIcon?: boolean
 }) => {
   const isPurchase = isPremiumContentUSDCPurchaseGated(premiumConditions)
 
@@ -42,7 +44,7 @@ export const PremiumConditionsPill = ({
       onClick={onClick}
       color={isPurchase ? 'lightGreen' : 'blue'}
       isLoading={unlocking}
-      iconLeft={IconLock}
+      iconLeft={showIcon ? IconLock : undefined}
       text={message}
     />
   )

@@ -1,5 +1,7 @@
 .container {
   align-items: center;
+  justify-content: center;
+  gap: var(--unit-1);
   background-color: var(--neutral-light-4);
   border-radius: var(--unit-20);
   display: flex;
@@ -7,19 +9,32 @@
   padding: var(--unit-half) var(--unit-2);
 }
 
-.unlocked.gated {
+.container.hasText {
+  padding: var(--unit-1) var(--unit-2);
+}
+
+.unlocked.gated, .coloredWhenLocked.premium {
   background-color: var(--accent-blue);
 }
 
-.unlocked.premium {
+.unlocked.premium, .coloredWhenLocked.premium {
   background-color: var(--special-light-green);
 }
 
-.icon {
+.icon.medium {
   width: 14px;
   height: 14px;
 }
 
+.icon.small {
+  width: 12px;
+  height: 12px;
+}
+
 .icon path {
   fill: var(--static-white);
+}
+
+.text {
+  text-decoration: none;
 }

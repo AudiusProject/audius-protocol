@@ -26,15 +26,12 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
-import FavoriteButton from 'components/alt-button/FavoriteButton'
-import RepostButton from 'components/alt-button/RepostButton'
 import PlayButton from 'components/play-bar/PlayButton'
 import VolumeBar from 'components/play-bar/VolumeBar'
 import NextButtonProvider from 'components/play-bar/next-button/NextButtonProvider'
 import PreviousButtonProvider from 'components/play-bar/previous-button/PreviousButtonProvider'
 import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButtonProvider'
 import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
-import Tooltip from 'components/tooltip/Tooltip'
 import { audioPlayer } from 'services/audio-player'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
@@ -46,6 +43,7 @@ import { PlaybackRateButton } from '../playback-rate-button/PlaybackRateButton'
 
 import styles from './PlayBar.module.css'
 import PlayingTrackInfo from './components/PlayingTrackInfo'
+import { SocialActions } from './components/SocialActions'
 const { makeGetCurrent } = queueSelectors
 const {
   getCollectible,
@@ -70,13 +68,6 @@ const VOLUME_GRANULARITY = 100.0
 const SEEK_INTERVAL = 200
 const RESTART_THRESHOLD_SEC = 3
 const SKIP_DURATION_SEC = 15
-
-const messages = {
-  favorite: 'Favorite',
-  unfavorite: 'Unfavorite',
-  reposted: 'Reposted',
-  repost: 'Repost'
-}
 
 class PlayBar extends Component {
   constructor(props) {
@@ -322,6 +313,7 @@ class PlayBar extends Component {
     let isOwner = false
     let isTrackUnlisted = false
     let trackPermalink = ''
+    let premiumConditions = null
 
     if (uid && track && user) {
       trackTitle = track.title
@@ -338,6 +330,7 @@ class PlayBar extends Component {
       reposted = track.has_current_user_reposted
       favorited = track.has_current_user_saved || false
       isTrackUnlisted = track.is_unlisted
+      premiumConditions = track.premium_conditions
     } else if (collectible && user) {
       // Special case for audio nft playlist
       trackTitle = collectible.name
@@ -362,9 +355,6 @@ class PlayBar extends Component {
       playButtonStatus = 'play'
     }
 
-    const isFavoriteAndRepostDisabled = !uid || isOwner
-    const favoriteText = favorited ? messages.unfavorite : messages.favorite
-    const repostText = reposted ? messages.reposted : messages.repost
     const matrix = isMatrix()
     const isLongFormContent =
       track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
@@ -460,44 +450,13 @@ class PlayBar extends Component {
               granularity={VOLUME_GRANULARITY}
               onChange={this.updateVolume}
             />
-            <div className={styles.toggleRepostContainer}>
-              <Tooltip
-                text={repostText}
-                disabled={isFavoriteAndRepostDisabled}
-                mount='body'
-                placement='top'
-              >
-                <span>
-                  <RepostButton
-                    aria-label={repostText}
-                    onClick={() => this.onToggleRepost(reposted, trackId)}
-                    isActive={reposted}
-                    isDisabled={isFavoriteAndRepostDisabled || isTrackUnlisted}
-                    isDarkMode={shouldShowDark(theme)}
-                    isMatrixMode={matrix}
-                  />
-                </span>
-              </Tooltip>
-            </div>
-
-            <div className={styles.toggleFavoriteContainer}>
-              <Tooltip
-                text={favoriteText}
-                disabled={isFavoriteAndRepostDisabled}
-                placement='top'
-                mount='body'
-              >
-                <span>
-                  <FavoriteButton
-                    isDisabled={isFavoriteAndRepostDisabled || isTrackUnlisted}
-                    isMatrixMode={matrix}
-                    isActive={favorited}
-                    isDarkMode={shouldShowDark(theme)}
-                    onClick={() => this.onToggleFavorite(favorited, trackId)}
-                  />
-                </span>
-              </Tooltip>
-            </div>
+            <SocialActions
+              trackId={trackId}
+              uid={uid}
+              isOwner={isOwner}
+              onToggleRepost={this.onToggleRepost}
+              onToggleFavorite={this.onToggleFavorite}
+            />
           </div>
         </div>
       </div>
