@@ -36,14 +36,6 @@ export const getUndisbursedUserChallenges = (state: CommonState) =>
     ).includes(challenge.specifier)
   })
 
-export const getUndisbursedUserChallengeBySpecifier = createSelector(
-  getUndisbursedUserChallenges,
-  (_: CommonState, specifier: Specifier) => specifier,
-  (challenges, specifier) => {
-    return challenges.filter((c) => c.specifier === specifier)
-  }
-)
-
 export const getUserChallenge = (
   state: CommonState,
   props: { challengeId: ChallengeRewardID }

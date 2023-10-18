@@ -14,7 +14,8 @@ import {
   challengeRewardsConfig,
   isAudioMatchingChallenge,
   isCooldownChallengeClaimable,
-  SpecifierWithAmount
+  SpecifierWithAmount,
+  UndisbursedUserChallenge
 } from '@audius/common'
 import {
   Button,
@@ -218,6 +219,19 @@ const getErrorMessage = (aaoErrorCode?: number) => {
   return <>{messages.claimError}</>
 }
 
+/* Filter for only claimable challenges */
+const getClaimableChallengeSpecifiers = (
+  specifiers: SpecifierWithAmount[],
+  undisbursedUserChallenges: UndisbursedUserChallenge[]
+) => {
+  return specifiers.filter((s) => {
+    const challenge = undisbursedUserChallenges.filter(
+      (c) => c.specifier === s.specifier
+    )[0] // specifiers are unique
+    return isCooldownChallengeClaimable(challenge)
+  })
+}
+
 type BodyProps = {
   dismissModal: () => void
 }
@@ -336,19 +350,6 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
     challenge.max_steps > 1 &&
     challenge.challenge_type !== 'aggregate'
 
-  /* Filter for only claimable challenges */
-  const getClaimableChallengeSpecifiers = useCallback(
-    (specifiers: SpecifierWithAmount[]) => {
-      return specifiers.filter((s) => {
-        const challenge = undisbursedUserChallenges.filter(
-          (c) => c.specifier === s.specifier
-        )[0] // specifiers are unique
-        return isCooldownChallengeClaimable(challenge)
-      })
-    },
-    [undisbursedUserChallenges]
-  )
-
   const onClaimRewardClicked = useCallback(() => {
     if (challenge) {
       dispatch(
@@ -357,8 +358,13 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
             challengeId: challenge.challenge_id,
             specifiers:
               challenge.challenge_type === 'aggregate'
-                ? getClaimableChallengeSpecifiers(challenge.undisbursedSpecifiers)
-                : [ { specifier: challenge.specifier, amount: challenge.amount } ],
+                ? getClaimableChallengeSpecifiers(
+                    challenge.undisbursedSpecifiers,
+                    undisbursedUserChallenges
+                  )
+                : [
+                    { specifier: challenge.specifier, amount: challenge.amount }
+                  ],
             amount: challenge.claimableAmount
           },
           retryOnFailure: true
