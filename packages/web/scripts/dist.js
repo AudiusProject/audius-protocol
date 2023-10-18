@@ -148,7 +148,11 @@ const makeBuildParams = (isProduction) => {
         icon: icns,
         hardenedRuntime: true,
         entitlements: 'resources/entitlements.mac.plist',
-        entitlementsInherit: 'resources/entitlements.mac.plist'
+        entitlementsInherit: 'resources/entitlements.mac.plist',
+        target: {
+          target: 'default',
+          arch: 'universal'
+        }
       },
       dmg: {
         icon: dmgIcns,
