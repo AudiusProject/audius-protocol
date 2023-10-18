@@ -62,18 +62,6 @@ type RewardPanelProps = {
   id: ChallengeRewardID
 }
 
-const ReadyToClaimPill = () => (
-  <span className={styles.pillMessage}>{messages.readyToClaim}</span>
-)
-
-const NewChallengePill = () => (
-  <span className={styles.newChallengePill}>
-    <Text as='span' variant='body' strength='strong' color='staticWhite'>
-      {messages.new}
-    </Text>
-  </span>
-)
-
 const RewardPanel = ({
   id,
   title,
@@ -152,9 +140,17 @@ const RewardPanel = ({
       <div className={wm(styles.rewardPanelTop)}>
         <div className={wm(styles.pillContainer)}>
           {needsDisbursement ? (
-            <ReadyToClaimPill />
+            <span className={styles.pillMessage}>{messages.readyToClaim}</span>
           ) : showNewChallengePill ? (
-            <NewChallengePill />
+            <Text
+              as='span'
+              className={styles.newChallengePill}
+              variant='body'
+              strength='strong'
+              color='staticWhite'
+            >
+              {messages.new}
+            </Text>
           ) : null}
         </div>
         <span className={wm(styles.rewardTitle)}>
