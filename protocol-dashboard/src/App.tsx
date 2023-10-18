@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Provider, useSelector } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
 import { Switch, Route } from 'react-router'
-import { createBrowserHistory } from 'history'
+import { createHashHistory } from 'history'
 
 import Header from 'components/Header'
 import Home from 'containers/Home'
@@ -27,8 +27,9 @@ import NotFound from 'containers/NotFound'
 import Proposal from 'containers/Proposal'
 import { createStyles } from 'utils/mobile'
 import { getDidGraphError } from 'store/api/hooks'
+import UnregisteredNode from 'containers/UnregisteredNode'
 const styles = createStyles({ desktopStyles, mobileStyles })
-const history = createBrowserHistory({
+const history = createHashHistory({
   basename: import.meta.env.VITE_DASHBOARD_BASE_URL || '/'
 })
 const store = createStore(history)
@@ -62,6 +63,10 @@ const App = () => {
                 <Route path={routes.HOME} exact component={Home} />
                 <Route path={routes.SERVICES} exact component={Services} />
                 <Route
+                  path={routes.SERVICES_UNREGISTERED_DISCOVERY_NODE}
+                  component={UnregisteredNode}
+                />
+                <Route
                   path={routes.SERVICES_DISCOVERY_PROVIDER}
                   exact
                   component={DiscoveryProviders}
@@ -70,6 +75,10 @@ const App = () => {
                   path={routes.SERVICES_DISCOVERY_PROVIDER_NODE}
                   exact
                   component={Node}
+                />
+                <Route
+                  path={routes.SERVICES_UNREGISTERED_CONTENT_NODE}
+                  component={UnregisteredNode}
                 />
                 <Route
                   path={routes.SERVICES_CONTENT}

@@ -1,7 +1,6 @@
-import React, { useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import clsx from 'clsx'
-import { RouteComponentProps } from 'react-router'
-import { matchPath } from 'react-router-dom'
+import { matchPath, useLocation, useParams } from 'react-router-dom'
 import { Utils } from '@audius/sdk/dist/legacy.js'
 
 import Page from 'components/Page'
@@ -47,16 +46,11 @@ const messages = {
   owner: 'Your Wallet'
 }
 
-type OwnProps = {}
-type UserPageProps = OwnProps & RouteComponentProps<{ wallet: string }>
+const UserPage = () => {
+  const { wallet } = useParams<{ wallet: string }>()
+  const location = useLocation()
 
-const UserPage: React.FC<UserPageProps> = (props: UserPageProps) => {
-  const {
-    location: { pathname },
-    match: {
-      params: { wallet }
-    }
-  } = props
+  const { pathname } = location
   const { status, user: userAccount } = useUser({ wallet })
   const { status: userDelegatesStatus, delegates } = useUserDelegates({
     wallet

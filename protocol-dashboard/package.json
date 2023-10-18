@@ -42,7 +42,7 @@
   },
   "scripts": {
     "publish-scripts": "./scripts/publishScripts.sh",
-    "configure-local-env": "node ./scripts/configureEnv.js dev",
+    "configure-local-env": "node ./scripts/configureEnv.cjs dev",
     "configure-stage-env": "node ./scripts/configureEnv.cjs stage",
     "configure-prod-env": "node ./scripts/configureEnv.cjs prod",
     "start": "vite",

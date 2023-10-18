@@ -1,18 +1,50 @@
-import React from 'react'
-
+import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import styles from './ContentNodes.module.css'
 import Page from 'components/Page'
 import ContentTable from 'components/ContentTable'
-import { SERVICES_TITLE, SERVICES } from 'utils/routes'
+import { SERVICES_TITLE, SERVICES, SERVICES_CONTENT_NODE, SERVICES_UNREGISTERED_CONTENT_NODE } from 'utils/routes'
+import { useReplaceRoute } from 'utils/effects'
 
 const messages = {
-  title: 'Content Nodes'
+  title: 'CONTENT NODES',
 }
 
-type OwnProps = {}
-type ContentNodesProps = OwnProps
+const ContentNodes = () => {
+  const location = useLocation()
+  const [spId, setSpId] = useState<number | null>(null)
+  const replaceRoute = useReplaceRoute()
 
-const ContentNodes: React.FC<ContentNodesProps> = () => {
+  const query = new URLSearchParams(location.search)
+  const endpoint = query.get('endpoint')
+
+  useEffect(() => {
+    const resolveEndpointToSpId = async () => {
+      if (!endpoint) return
+      try {
+        const spId = await window.aud.ServiceProviderClient.getServiceProviderIdFromEndpoint(endpoint)
+        setSpId(spId)
+      } catch (error) {
+        console.error('Failed to resolve endpoint to spId:', error)
+        setSpId(0)
+      }
+    }
+
+    resolveEndpointToSpId()
+  }, [endpoint])
+
+  useEffect(() => {
+    if (spId === null) return
+
+    let path = ''
+    if (spId === 0) {
+      path = `${SERVICES_UNREGISTERED_CONTENT_NODE}?endpoint=${endpoint}`
+    } else {
+      path = SERVICES_CONTENT_NODE.replace(':spID', spId.toString())
+    }
+    replaceRoute(path)
+  }, [spId, endpoint, replaceRoute])
+
   return (
     <Page
       title={messages.title}

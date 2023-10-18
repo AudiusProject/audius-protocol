@@ -6,6 +6,16 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import wasm from 'vite-plugin-wasm'
 import topLevelAwait from 'vite-plugin-top-level-await'
 
+// Custom plugin to replace dashboard path in index.html
+function htmlReplacementsPlugin() {
+  return {
+    name: 'html-replacements',
+    transformIndexHtml(html: string) {
+      return html.replace(/%VITE_DASHBOARD_BASE_URL%/g, process.env.VITE_DASHBOARD_BASE_URL || '/')
+    }
+  }
+}
+
 export default defineConfig({
   plugins: [
     react(),
@@ -17,19 +27,15 @@ export default defineConfig({
     svgr(),
     
     nodePolyfills({
-      // To exclude specific polyfills, add them to this list
-      exclude: [
-        'fs', // Excludes the polyfill for `fs` and `node:fs`
-      ],
-      // Whether to polyfill specific globals
+      exclude: ['fs'],
       globals: {
-        Buffer: true, // can also be 'build', 'dev', or false
+        Buffer: true,
         global: true,
         process: true,
       },
-      // Whether to polyfill `node:` protocol imports
       protocolImports: true,
     }),
+    htmlReplacementsPlugin(),
   ],
 
   resolve: {
