@@ -550,7 +550,7 @@ function* confirmUpdateProfile(userId, metadata) {
         )
         yield put(profileActions.updateProfileSucceeded(metadata.user_id))
       },
-      function* () {
+      function* (...args) {
         yield put(profileActions.updateProfileFailed())
       },
       undefined,

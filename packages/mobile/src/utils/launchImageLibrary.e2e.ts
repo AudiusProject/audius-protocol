@@ -1,7 +1,7 @@
 import coverPhoto from '../../e2e/fixtures/coverPhoto.json'
 import profilePicture from '../../e2e/fixtures/profilePicture.json'
 
-function launchImageLibrary(options: any, callback: Function) {
+export function openPicker(options: any, callback: Function) {
   if (typeof options === 'function') {
     callback = options
   }
@@ -18,4 +18,3 @@ function launchImageLibrary(options: any, callback: Function) {
     ]
   })
 }
-export default launchImageLibrary
