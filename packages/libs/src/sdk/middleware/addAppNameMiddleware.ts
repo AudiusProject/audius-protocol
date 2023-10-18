@@ -27,24 +27,6 @@ export const addAppNameMiddleware = ({
   return {
     pre: async (context: RequestContext): Promise<FetchParams> => {
       // If an app name is not provided, fetch the name from the dev app
-      if (!appName) {
-        const middleware = [services.discoveryNodeSelector.createMiddleware()]
-        const apiClientConfig = new Configuration({
-          fetchApi: fetch,
-          middleware
-        })
-        const developerApps = new DeveloperAppsApi(
-          apiClientConfig,
-          services.entityManager,
-          services.auth
-        )
-
-        appName = (
-          await developerApps.getDeveloperApp({
-            address: await services.auth.getAddress()
-          })
-        ).data?.name
-      }
 
       return {
         url:

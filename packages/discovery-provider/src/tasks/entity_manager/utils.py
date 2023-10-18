@@ -35,6 +35,7 @@ from src.tasks.metadata import (
 from src.utils import helpers
 from src.utils.eth_manager import EthManager
 from src.utils.structured_logger import StructuredLogger
+from src.models.grants.suppliers import Supplier
 
 utils_logger = StructuredLogger(__name__)
 
@@ -400,27 +401,32 @@ def validate_signer(params: ManageEntityParameters):
     signer_matches_user = wallet and wallet.lower() == signer
     if signer_matches_user:
         params.logger.set_context("isApp", "false")
-    else:
+    elif (signer, params.user_id) in params.existing_records["Grant"]:
         params.logger.set_context("isApp", "unknown")
         grant_key = (signer, params.user_id)
-        is_signer_authorized = grant_key in params.existing_records["Grant"]
-        if is_signer_authorized:
-            grant = params.existing_records["Grant"][grant_key]
-            developer_app = params.existing_records["DeveloperApp"][signer]
-            if (not developer_app) or (developer_app.is_delete) or (grant.is_revoked):
-                raise IndexingValidationError(
-                    f"Signer is not authorized to perform action for user {params.user_id}"
-                )
-            params.logger.set_context("isApp", "true")
-            params.logger.set_context(
-                "appName",
-                params.existing_records["DeveloperApp"][signer].name,
+
+        grant = params.existing_records["Grant"][grant_key]
+        developer_app = params.existing_records["DeveloperApp"][signer]
+        if (not developer_app) or (developer_app.is_delete) or (grant.is_revoked):
+            raise IndexingValidationError(
+                f"Signer is not authorized to perform action for user {params.user_id}"
             )
-            params.logger.set_context(
-                "userHandle",
-                params.existing_records["User"][params.user_id].handle,
-            )
-        else:
+        params.logger.set_context("isApp", "true")
+        params.logger.set_context(
+            "appName",
+            params.existing_records["DeveloperApp"][signer].name,
+        )
+        params.logger.set_context(
+            "userHandle",
+            params.existing_records["User"][params.user_id].handle,
+        )
+    else:
+        params.logger.info(f"asdf signer {signer}")
+        supplier_res = (
+            params.session.query(Supplier).filter(Supplier.wallet == signer).first()
+        )
+
+        if not supplier_res:
             raise IndexingValidationError(
                 f"Signer does not match user {params.user_id} or an authorized wallet"
             )
