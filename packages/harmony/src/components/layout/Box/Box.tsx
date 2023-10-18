@@ -2,6 +2,13 @@ import styled from '@emotion/styled'
 
 import type { BoxProps } from './types'
 
+const getSpacingVar = (value: number | string) => {
+  if (!isNaN(value)) {
+    return `--harmony-unit-${value}`
+  }
+  return `--harmony-spacing-${value}`
+}
+
 /** Base layout component used as a building block for creating pages and other components. */
 export const Box = styled.div(
   ({
@@ -41,14 +48,14 @@ export const Box = styled.div(
       height: h,
       width: w,
       boxShadow: shadow && `var(--harmony-shadow-${shadow})`,
-      paddingTop: padT && `var(--harmony-spacing-${padT})`,
-      paddingLeft: padL && `var(--harmony-spacing-${padL})`,
-      paddingRight: padR && `var(--harmony-spacing-${padR})`,
-      paddingBottom: padB && `var(--harmony-spacing-${padB})`,
-      marginTop: marginT && `var(--harmony-spacing-${marginT})`,
-      marginLeft: marginL && `var(--harmony-spacing-${marginL})`,
-      marginRight: marginR && `var(--harmony-spacing-${marginR})`,
-      marginBottom: marginB && `var(--harmony-spacing-${marginB})`,
+      paddingTop: padT && getSpacingVar(padT),
+      paddingLeft: padL && getSpacingVar(padL),
+      paddingRight: padR && getSpacingVar(padR),
+      paddingBottom: padB && getSpacingVar(padB),
+      marginTop: marginT && getSpacingVar(marginT),
+      marginLeft: marginL && getSpacingVar(marginL),
+      marginRight: marginR && getSpacingVar(marginR),
+      marginBottom: marginB && getSpacingVar(marginB),
       border: border && `1px solid var(--harmony-border-${border})`,
       borderRadius:
         borderRadius && `var(--harmony-border-radius-${borderRadius})`

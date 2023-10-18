@@ -14,34 +14,34 @@ export type BoxProps = {
   w?: CSSProperties['width']
 
   /** Padding */
-  p?: SpacingValue
+  p?: SpacingValue | number
   /** Padding Horizontal */
-  ph?: SpacingValue
+  ph?: SpacingValue | number
   /** Padding Vertical */
-  pv?: SpacingValue
+  pv?: SpacingValue | number
   /** Padding Top */
-  pt?: SpacingValue
+  pt?: SpacingValue | number
   /** Padding Left */
-  pl?: SpacingValue
+  pl?: SpacingValue | number
   /** Padding Right */
-  pr?: SpacingValue
+  pr?: SpacingValue | number
   /** Padding Bottom */
-  pb?: SpacingValue
+  pb?: SpacingValue | number
 
   /** Margin */
-  m?: SpacingValue
+  m?: SpacingValue | number
   /** Margin Horizontal */
-  mh?: SpacingValue
+  mh?: SpacingValue | number
   /** Margin Vertical */
-  mv?: SpacingValue
+  mv?: SpacingValue | number
   /** Margin Top */
-  mt?: SpacingValue
+  mt?: SpacingValue | number
   /** Margin Left */
-  ml?: SpacingValue
+  ml?: SpacingValue | number
   /** Margin Right */
-  mr?: SpacingValue
+  mr?: SpacingValue | number
   /** Margin Bottom */
-  mb?: SpacingValue
+  mb?: SpacingValue | number
 
   /** Border */
   border?: BorderValue
