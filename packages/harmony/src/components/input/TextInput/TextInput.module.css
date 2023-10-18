@@ -12,7 +12,7 @@
   padding: 0 var(--harmony-spacing-l);
   /* The gap spaces the content around the icons */
   border: 1px solid var(--harmony-border-default);
-  border-radius: var(--harmony-unit-1);
+  border-radius: var(--harmony-border-radius-s);
   background-color: var(--harmony-bg-surface-1);
   transition: border ease-in-out 0.1s;
   box-sizing: border-box;
