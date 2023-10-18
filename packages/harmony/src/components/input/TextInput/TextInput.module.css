@@ -1,8 +1,10 @@
+/* The absolute root of the entire component, including assistive text */
 .root {
   /* This isolates z-index to only affect this component */
   isolation: isolate;
 }
 
+/* The inputRoot is the root container of all things that aren't assistive text */
 .inputRoot {
   display: flex;
   align-items: center;
@@ -19,10 +21,12 @@
   }
 }
 
+/* hover border color */
 .inputRoot:hover {
   border-color: var(--harmony-border-strong);
 }
 
+/* small input size */
 .small {
   /* gap between icons & content */
   gap: var(--harmony-spacing-s);
@@ -30,6 +34,7 @@
   height: 34px;
 }
 
+/* default input size */
 .default {
   /* gap between icons & content */
   gap: var(--harmony-spacing-m);
@@ -37,30 +42,36 @@
   height: 64px;
 }
 
+/* focused border color */
 .focused,
 .focused:hover {
   border-color: var(--harmony-secondary);
 }
 
+/* warning border color */
 .warning,
 .warning.focused,
 .warning:hover {
   border-color: var(--harmony-orange);
 }
 
+/* error border color */
 .error,
 .error.focused,
 .error:hover {
   border-color: var(--harmony-red);
 }
 
+/* disabled styles */
 .disabled {
-  background-color: var(--harmony-neutral-light-9);
-  border-color: var(--harmony-neutral-light-8);
+  cursor: not-allowed;
+  & * {
+    cursor: not-allowed;
+  }
 }
 
-/* Actual input */
-.textInput {
+/* Actual input element */
+.inputElement {
   padding: 0;
   overflow: visible;
   width: 100%;
@@ -70,36 +81,40 @@
   background: none;
   font-weight: var(--harmony-font-medium);
   color: var(--harmony-text-default);
+  text-overflow: ellipsis;
 }
 
-.textInput.small {
+.inputElement.disabled,
+.inputElement.disabled::placeholder {
+  color: var(--harmony-text-subdued);
+}
+
+/* Change font size of the input based on size */
+.inputElement.small {
   font-size: var(--harmony-font-s);
 }
-.textInput.default {
+.inputElement.default {
   font-size: var(--harmony-font-l);
 }
 
-/* Placeholder and label */
-.textInput::placeholder,
+/* Placeholder and label text styles (they are the same for the most part) */
+.inputElement::placeholder,
 .label {
-  color: var(--harmony-neutral-light-4);
+  color: var(--harmony-text-default);
   font-weight: var(--harmony-font-medium);
   font-family: var(--harmony-font-family);
 }
 
-.inputRow {
+/* The row containing the input + adornments */
+.inputAdornmentRow {
   width: 100%;
   justify-content: space-between;
 }
 
-.inputContainer {
-  flex: 1 1 0;
-}
-
 /** 
- * Flex container containing the label text and the max character limit text
+ * Container inbetween the icons, contains the label + input + maxlength text + adornments
  **/
-.elevatedLabelRow {
+.innerRootContainer {
   position: relative;
   width: 100%;
   height: 100%;
@@ -109,8 +124,8 @@
   gap: var(--harmony-spacing-xs);
 }
 
-/** Add the "*" to required fields, but have it disappear when elevated **/
-.required:not(.focused) .elevatedLabelRow .placeholder:not(.hasValue)::after {
+/** Adds the "*" to required fields, but have it disappear when elevated **/
+.required:not(.focused) .innerRootContainer .placeholder:not(.hasValue)::after {
   content: ' *';
 }
 
@@ -120,11 +135,14 @@
   z-index: 2;
   transition: all 0.3s ease;
   /* When not focussed, the label centers itself visually */
-  transform: translate(0px, 50%);
+  transform: translate(
+    0px,
+    13px
+  ); /* 13px is a ✨magic✨ number that makes it look centered with the input */
 }
 
 /** Shrink the size of the label **/
-.focused .elevatedLabelRow .label,
+.focused .innerRootContainer .label,
 .hasValue {
   transform: translate(0, 0);
   font-size: var(--harmony-font-s);

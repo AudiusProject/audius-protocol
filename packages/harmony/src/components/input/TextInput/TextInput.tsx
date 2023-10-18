@@ -1,4 +1,4 @@
-import { forwardRef } from 'react'
+import { forwardRef, useId } from 'react'
 
 import cn from 'classnames'
 
@@ -23,6 +23,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
     hideLabel,
     label: labelProp,
     value,
+    id: idProp,
     children,
     warning: warningProp,
     error,
@@ -48,6 +49,10 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
     onBlurProp
   )
 
+  // For focus behavior and accessiblity, <label> needs to have a htmlFor={} provided to an id matching the input
+  const backupId = useId()
+  const id = idProp ?? backupId
+
   const characterCount = value !== undefined ? `${value}`.length : 0
   const hasValue = characterCount > 0
 
@@ -59,14 +64,16 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
   // Whenever a label isn't visible the placeholder should be visible in it's place (if provided)
   const shouldShowPlaceholder = isFocused || !shouldShowLabel
   const shouldShowAdornments = isFocused || hasValue || !shouldShowLabel
-  // Show the maxlength text whenever we hit a certain threshold (default 70%)
+  // Show the maxlength text whenever we hit a certain threshold (default 70%) + the input is focused
   const shouldShowMaxLengthText =
-    // isFocused &&
-    maxLength && characterCount >= showMaxLengthThreshold * maxLength
+    isFocused &&
+    maxLength &&
+    characterCount >= showMaxLengthThreshold * maxLength
   // Turn the maxlength text to the warning color whenever we hit a certain threshold (default 90%)
   const showMaxlengthWarningColor =
     maxLength && characterCount >= maxLengthWarningThreshold * maxLength
 
+  // Styles for the root of the input
   const inputRootStyle = {
     [styles.default]: size === TextInputSize.DEFAULT,
     [styles.small]: size === TextInputSize.SMALL,
@@ -77,33 +84,36 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
     [styles.required]: required
   }
 
+  // Styles for the input element itself
   const inputElStyle = {
     [styles.default]: size === TextInputSize.DEFAULT,
-    [styles.small]: size === TextInputSize.SMALL
+    [styles.small]: size === TextInputSize.SMALL,
+    [styles.disabled]: disabled
   }
 
   const inputRender = (
-    <Flex className={styles.inputRow}>
-      <Flex className={styles.inputContainer}>
-        {startAdornmentText && shouldShowAdornments ? (
-          <Text variant='label' size='l' color='subdued'>
-            {startAdornmentText}
-          </Text>
-        ) : null}
-        <input
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          ref={ref}
-          className={cn(styles.textInput, inputClassName, inputElStyle)}
-          value={value}
-          maxLength={maxLength}
-          disabled={disabled}
-          placeholder={shouldShowPlaceholder ? placeholder : undefined}
-          aria-label={labelText ?? props['aria-label']}
-          aria-required={required}
-          {...other}
-        />
-      </Flex>
+    <Flex
+      className={cn(styles.inputAdornmentRow, { [styles.focused]: isFocused })}
+    >
+      {startAdornmentText && shouldShowAdornments ? (
+        <Text variant='label' size='l' color='subdued'>
+          {startAdornmentText}
+        </Text>
+      ) : null}
+      <input
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        ref={ref}
+        className={cn(styles.inputElement, inputClassName, inputElStyle)}
+        value={value}
+        maxLength={maxLength}
+        disabled={disabled}
+        placeholder={shouldShowPlaceholder ? placeholder : undefined}
+        aria-label={labelText ?? props['aria-label']}
+        aria-required={required}
+        id={id}
+        {...other}
+      />
       {endAdornmentText && shouldShowAdornments ? (
         <Text variant='label' size='l' color='subdued'>
           {endAdornmentText}
@@ -114,13 +124,20 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
 
   return (
     <Flex className={cn(styles.root, className)} direction='column'>
-      <Flex
+      <label
+        htmlFor={id}
         className={cn(styles.inputRoot, inputRootClassName, inputRootStyle)}
       >
         {StartIcon ? <StartIcon /> : null}
-        <label className={styles.elevatedLabelRow}>
+        <div className={styles.innerRootContainer}>
           {shouldShowLabel ? (
-            <Flex direction='row' justifyContent='space-between'>
+            <Flex
+              className={styles.labelRow}
+              direction='row'
+              alignItems='center'
+              justifyContent='space-between'
+              gap='s'
+            >
               <Text
                 variant='body'
                 tag='span'
@@ -144,11 +161,11 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
             </Flex>
           ) : null}
           {inputRender}
-        </label>
+        </div>
 
         {EndIcon ? <EndIcon /> : null}
         {children}
-      </Flex>
+      </label>
       {helperText ? (
         <HelperText hasError={error} size={helperTextSize}>
           {helperText}
@@ -157,7 +174,5 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>((props, ref) => {
     </Flex>
   )
 })
-
-TextInput.displayName = 'TextInput'
 
 export { TextInput }
