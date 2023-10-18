@@ -6,6 +6,7 @@ import {
   PremiumConditions
 } from '@audius/common'
 import { Button, ButtonSize, IconLock } from '@audius/harmony'
+import cn from 'classnames'
 
 import styles from './PremiumConditionsPill.module.css'
 
@@ -15,13 +16,19 @@ const messages = {
 }
 
 export const PremiumConditionsPill = ({
+  className,
   premiumConditions,
   unlocking,
-  onClick
+  onClick,
+  showIcon = true,
+  buttonSize = ButtonSize.SMALL
 }: {
   premiumConditions: PremiumConditions
   unlocking: boolean
   onClick?: (e: MouseEvent) => void
+  showIcon?: boolean
+  className?: string
+  buttonSize?: ButtonSize
 }) => {
   const isPurchase = isPremiumContentUSDCPurchaseGated(premiumConditions)
 
@@ -37,12 +44,12 @@ export const PremiumConditionsPill = ({
 
   return (
     <Button
-      className={styles.button}
-      size={ButtonSize.SMALL}
+      className={cn(styles.button, className)}
+      size={buttonSize}
       onClick={onClick}
       color={isPurchase ? 'lightGreen' : 'blue'}
       isLoading={unlocking}
-      iconLeft={IconLock}
+      iconLeft={showIcon ? IconLock : undefined}
       text={message}
     />
   )
