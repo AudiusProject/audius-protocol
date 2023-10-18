@@ -9,8 +9,10 @@ import {
   queueActions,
   tracksSocialActions,
   playerSelectors,
-  queueSelectors
+  queueSelectors,
+  usePremiumContentAccess
 } from '@audius/common'
+import { IconLock } from '@audius/stems'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -21,6 +23,7 @@ import CoSign, { Size } from 'components/co-sign/CoSign'
 import PlayButton from 'components/play-bar/PlayButton'
 import TrackingBar from 'components/play-bar/TrackingBar'
 import { PlayButtonStatus } from 'components/play-bar/types'
+import { LockedStatusBadge } from 'components/track/LockedStatusBadge'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
 import { AppState } from 'store/types'
@@ -33,6 +36,10 @@ const { recordListen, saveTrack, unsaveTrack } = tracksSocialActions
 const { pause, play } = queueActions
 
 const SEEK_INTERVAL = 200
+
+const messages = {
+  preview: 'preview'
+}
 
 type OwnProps = {
   onClickInfo: () => void
@@ -79,6 +86,12 @@ const PlayBar = ({
       collectible?.imageUrl) ??
     collectible?.frameUrl ??
     collectible?.gifUrl
+
+  const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const shouldShowPreviewLock =
+    track?.premium_conditions &&
+    'usdc_purchase' in track.premium_conditions &&
+    !doesUserHaveAccess
 
   if (((!uid || !track) && !collectible) || !user) return null
 
@@ -138,14 +151,16 @@ const PlayBar = ({
       <div className={styles.playBar}>
         <TrackingBar percentComplete={percentComplete} />
         <div className={styles.controls}>
-          <FavoriteButton
-            isDisabled={track?.is_unlisted}
-            onClick={toggleFavorite}
-            isDarkMode={isDarkMode()}
-            isMatrixMode={isMatrix()}
-            isActive={has_current_user_saved}
-            className={styles.favorite}
-          />
+          {shouldShowPreviewLock ? null : (
+            <FavoriteButton
+              isDisabled={track?.is_unlisted}
+              onClick={toggleFavorite}
+              isDarkMode={isDarkMode()}
+              isMatrixMode={isMatrix()}
+              isActive={has_current_user_saved}
+              className={styles.favorite}
+            />
+          )}
           <div className={styles.info} onClick={onClickInfo}>
             {_co_sign ? (
               <CoSign
@@ -161,7 +176,13 @@ const PlayBar = ({
                   style={{
                     backgroundImage: `url(${image})`
                   }}
-                />
+                >
+                  {shouldShowPreviewLock ? (
+                    <div className={styles.lockOverlay}>
+                      <IconLock className={styles.iconLock} />
+                    </div>
+                  ) : null}
+                </div>
               </CoSign>
             ) : (
               <div
@@ -169,11 +190,28 @@ const PlayBar = ({
                 style={{
                   backgroundImage: `url(${image})`
                 }}
-              />
+              >
+                {shouldShowPreviewLock ? (
+                  <div className={styles.lockOverlay}>
+                    <IconLock className={styles.iconLock} />
+                  </div>
+                ) : null}
+              </div>
             )}
             <div className={styles.title}>{title}</div>
             <div className={styles.separator}>•</div>
             <div className={styles.artist}>{name}</div>
+            {shouldShowPreviewLock ? (
+              <div className={styles.lockPreview}>
+                <LockedStatusBadge
+                  locked
+                  variant='premium'
+                  text={messages.preview}
+                  coloredWhenLocked
+                  iconSize='small'
+                />
+              </div>
+            ) : null}
           </div>
           <div className={styles.play}>
             <PlayButton
