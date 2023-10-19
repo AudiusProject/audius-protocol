@@ -146,8 +146,8 @@
 .tertiary {
   --button-color: var(--harmony-border-default);
   --text-color: var(--harmony-text-default);
-  background-color: var(--harmony-bg-white);
-  opacity: .85;
+  /* Don't use opacity prop as it affects the text too */
+  background-color: rgb(255, 255, 255, .85);
   backdrop-filter: blur(6px);
 }
 .tertiary:hover {
@@ -234,8 +234,8 @@ html[data-theme='dark'] {
   .tertiary {
     --button-color: var(--harmony-bg-white);
     --text-color: var(--harmony-text-default);
-    background-color: var(--button-color);
-    opacity: .6;
+    /* Don't use opacity prop as it affects the text too */
+    background-color: rgba(50, 51, 77, 0.6);
   }
   .tertiary:hover {
     --button-color: var(--harmony-bg-white);
