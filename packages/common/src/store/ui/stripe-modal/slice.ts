@@ -1,4 +1,4 @@
-import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import {
   StripeSessionStatus,
@@ -10,8 +10,9 @@ type InitializeStripeModalPayload = {
   amount: string
   destinationCurrency: StripeDestinationCurrencyType
   destinationWallet: string
-  onrampSucceeded: Action
-  onrampCanceled: Action
+  onrampFailed: StripeModalState['onrampFailed']
+  onrampSucceeded: StripeModalState['onrampSucceeded']
+  onrampCanceled: StripeModalState['onrampCanceled']
 }
 
 const initialState: StripeModalState = {}
@@ -25,6 +26,7 @@ const slice = createSlice({
       action: PayloadAction<InitializeStripeModalPayload>
     ) => {
       state.stripeSessionStatus = 'initialized'
+      state.onrampFailed = action.payload.onrampFailed
       state.onrampSucceeded = action.payload.onrampSucceeded
       state.onrampCanceled = action.payload.onrampCanceled
     },

@@ -59,8 +59,11 @@ const slice = createSlice({
     onrampSucceeded: (state) => {
       state.stage = BuyUSDCStage.CONFIRMING_PURCHASE
     },
-    buyUSDCFlowFailed: (state) => {
-      state.error = new Error('USDC purchase failed')
+    onrampFailed: (state, action: PayloadAction<{ error: Error }>) => {
+      state.error = new Error(`Stripe onramp failed: ${action.payload}`)
+    },
+    buyUSDCFlowFailed: (state, action: PayloadAction<{ error: Error }>) => {
+      state.error = action.payload.error
     },
     buyUSDCFlowSucceeded: (state) => {
       state.stage = BuyUSDCStage.FINISH
@@ -91,6 +94,7 @@ export const {
   purchaseStarted,
   onrampSucceeded,
   onrampCanceled,
+  onrampFailed,
   stripeSessionStatusChanged,
   startRecoveryIfNecessary,
   recoveryStatusChanged,

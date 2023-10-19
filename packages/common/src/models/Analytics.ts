@@ -321,6 +321,7 @@ export enum Name {
   // Buy USDC
   BUY_USDC_ON_RAMP_OPENED = 'Buy USDC: On Ramp Opened',
   BUY_USDC_ON_RAMP_CANCELED = 'Buy USDC: On Ramp Canceled',
+  BUY_USDC_ON_RAMP_FAILURE = 'Buy USDC: On Ramp Failed',
   BUY_USDC_ON_RAMP_SUCCESS = 'Buy USDC: On Ramp Success',
   BUY_USDC_SUCCESS = 'Buy USDC: Success',
   BUY_USDC_FAILURE = 'Buy USDC: Failure',
@@ -1559,6 +1560,12 @@ type BuyUSDCOnRampCanceled = {
   provider: string
 }
 
+type BuyUSDCOnRampFailed = {
+  eventName: Name.BUY_USDC_ON_RAMP_FAILURE
+  error: string
+  provider: string
+}
+
 type BuyUSDCOnRampSuccess = {
   eventName: Name.BUY_USDC_ON_RAMP_SUCCESS
   provider: string
@@ -1933,6 +1940,7 @@ export type AllTrackingEvents =
   | BuyUSDCOnRampOpened
   | BuyUSDCOnRampSuccess
   | BuyUSDCOnRampCanceled
+  | BuyUSDCOnRampFailed
   | BuyUSDCSuccess
   | BuyUSDCFailure
   | BuyUSDCRecoveryInProgress
