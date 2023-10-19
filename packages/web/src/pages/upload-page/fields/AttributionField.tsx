@@ -180,7 +180,7 @@ export const AttributionField = () => {
       if (get(values, IS_AI_ATTRIBUTED)) {
         setAiUserId(get(values, AI_USER_ID) ?? aiUserId)
       } else {
-        setAiUserId(undefined)
+        setAiUserId(null)
       }
       setIsrc(get(values, ISRC) ?? isrcValue)
       setIswc(get(values, ISWC) ?? iswcValue)
