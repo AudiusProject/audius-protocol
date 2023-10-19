@@ -475,7 +475,8 @@ describe('Rewards Page Sagas', () => {
         max_steps: 7,
         challenge_type: 'numeric',
         specifier: '1',
-        user_id: '1'
+        user_id: '1',
+        disbursed_amount: 7
       },
       {
         challenge_id: 'referrals',
@@ -487,7 +488,8 @@ describe('Rewards Page Sagas', () => {
         max_steps: 5,
         challenge_type: 'numeric',
         specifier: '1',
-        user_id: '1'
+        user_id: '1',
+        disbursed_amount: 5
       },
       {
         challenge_id: 'track-upload',
@@ -499,7 +501,8 @@ describe('Rewards Page Sagas', () => {
         max_steps: 3,
         challenge_type: 'numeric',
         specifier: '1',
-        user_id: '1'
+        user_id: '1',
+        disbursed_amount: 3
       }
     ]
     const fetchUserChallengesProvisions: StaticProvider[] = [
@@ -607,7 +610,8 @@ describe('Rewards Page Sagas', () => {
         max_steps: 7,
         challenge_type: 'numeric',
         specifier: '1',
-        user_id: '1'
+        user_id: '1',
+        disbursed_amount: 7
       }
     ]
 
@@ -659,7 +663,8 @@ describe('Rewards Page Sagas', () => {
         max_steps: 7,
         challenge_type: 'numeric',
         specifier: '1',
-        user_id: '1'
+        user_id: '1',
+        disbursed_amount: 2
       }
     ]
 
