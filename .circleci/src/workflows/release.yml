@@ -42,9 +42,6 @@ jobs:
       service: healthz
 
   - release-github-draft-trigger:
-      filters:
-        branches:
-          only: /^release.*$/
       type: approval
   - release-github-draft:
       context: github
@@ -61,16 +58,15 @@ jobs:
         - release-github-trigger
 
   - release-governance-trigger:
-      filters:
-        branches:
-          only: /^release.*$/
       type: approval
   - release-governance:
       context: governance
       requires:
         - release-governance-trigger
 
-  - deploy-foundation-nodes-trigger:
+  - alert-slack-push-failure:
+      when: on_fail
+      context: slack-secrets
       requires:
         - push-identity-service
         - push-mediorum
@@ -82,9 +78,24 @@ jobs:
         - push-comms
         - push-trpc
         - push-healthz
-      filters:
-        branches:
-          only: /^release.*$/
+  
+  - alert-slack-push-success:
+      context: slack-secrets
+      requires:
+        - push-identity-service
+        - push-mediorum
+        - push-discovery-provider
+        - push-discovery-provider-notifications
+        - push-pedalboard-trending-challenge-rewards
+        - push-pedalboard-relay
+        - push-pedalboard-sla-auditor
+        - push-comms
+        - push-trpc
+        - push-healthz
+
+  - deploy-foundation-nodes-trigger:
+      requires:
+        - alert-slack-push-success
       type: approval
   - deploy-foundation-nodes:
       context: github
@@ -93,9 +104,6 @@ jobs:
   - release-audius-docker-compose-trigger:
       requires:
         - deploy-foundation-nodes
-      filters:
-        branches:
-          only: /^release.*$/
       type: approval
   - release-audius-docker-compose:
       context: github
@@ -103,9 +111,6 @@ jobs:
         - release-audius-docker-compose-trigger
 
   - release-discord-trigger:
-      filters:
-        branches:
-          only: /^release.*$/
       type: approval
   - release-discord:
       context: discord
