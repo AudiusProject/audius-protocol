@@ -1,4 +1,4 @@
-import type { ComponentPropsWithoutRef } from 'react'
+import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 
 import type { IconComponent } from '../../typography'
 
@@ -39,9 +39,9 @@ export type TextInputProps = Omit<
    */
   inputRootClassName?: string
   /**
-   * Helper text that shows up below the input
+   * Helper text (or JSX) that shows up below the input
    */
-  helperText?: string
+  helperText?: string | ReactNode
   /**
    * Floating text on the lefthand side of the input.
    */
