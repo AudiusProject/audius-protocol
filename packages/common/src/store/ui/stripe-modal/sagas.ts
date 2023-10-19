@@ -17,13 +17,23 @@ function* handleInitializeStripeModal({
   payload: { amount, destinationCurrency, destinationWallet }
 }: ReturnType<typeof initializeStripeModal>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const res = yield* call(createStripeSession, audiusBackendInstance, {
-    amount,
-    destinationCurrency,
-    destinationWallet
-  })
-  // TODO: Need to handle errors here?
-  yield* put(stripeSessionCreated({ clientSecret: res.client_secret }))
+  const { onrampFailed } = yield* select(getStripeModalState)
+  try {
+    const res = yield* call(createStripeSession, audiusBackendInstance, {
+      amount,
+      destinationCurrency,
+      destinationWallet
+    })
+    yield* put(stripeSessionCreated({ clientSecret: res.client_secret }))
+  } catch (e) {
+    // TODO: When we have better error messages from identity, we should extract them here so
+    // they make it into analytics.
+    // https://linear.app/audius/issue/PAY-2041/[usdc]-we-should-pipe-the-stripe-session-creation-error-back-from
+    if (onrampFailed) {
+      yield* put({ type: onrampFailed.type, payload: { error: e } })
+    }
+    yield* put(setVisibility({ modal: 'StripeOnRamp', visible: 'closing' }))
+  }
 }
 
 function* handleStripeSessionChanged({

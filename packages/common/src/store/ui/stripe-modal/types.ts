@@ -12,6 +12,7 @@ export type StripeDestinationCurrencyType = 'sol' | 'usdc'
 export type StripeModalState = {
   onrampSucceeded?: Action
   onrampCanceled?: Action
+  onrampFailed?: Action
   stripeSessionStatus?: StripeSessionStatus
   stripeClientSecret?: string
 }

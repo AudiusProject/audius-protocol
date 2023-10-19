@@ -26,6 +26,7 @@ import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
   onrampCanceled,
+  onrampFailed,
   onrampOpened,
   purchaseStarted,
   onrampSucceeded,
@@ -90,6 +91,7 @@ function* purchaseStep({
 
   // Wait for on ramp finish
   const result = yield* race({
+    failure: take(onrampFailed),
     success: take(onrampSucceeded),
     canceled: take(onrampCanceled)
   })
@@ -101,6 +103,21 @@ function* purchaseStep({
       make({ eventName: Name.BUY_USDC_ON_RAMP_CANCELED, provider })
     )
     return {}
+  } else if (result.failure) {
+    const error = result.failure.payload?.error
+      ? result.failure.payload.error
+      : new Error('Unknown error')
+
+    yield* call(
+      track,
+      make({
+        eventName: Name.BUY_USDC_ON_RAMP_FAILURE,
+        provider,
+        error: error.message
+      })
+    )
+    // Throw up to the flow above this
+    throw error
   }
   yield* call(
     track,
@@ -223,6 +240,7 @@ function* doBuyUSDC({
         destinationCurrency: 'usdc',
         destinationWallet: rootAccount.publicKey.toString(),
         onrampCanceled,
+        onrampFailed,
         onrampSucceeded
       })
     )
@@ -273,19 +291,20 @@ function* doBuyUSDC({
       })
     )
   } catch (e) {
+    const error = e as Error
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
-      error: e as Error,
+      error,
       additionalInfo: { userBank }
     })
-    yield* put(buyUSDCFlowFailed())
+    yield* put(buyUSDCFlowFailed({ error }))
     yield* call(
       track,
       make({
         eventName: Name.BUY_USDC_FAILURE,
         provider,
         requestedAmount: desiredAmount,
-        error: (e as Error).message
+        error: error.message
       })
     )
   }
