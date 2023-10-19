@@ -100,6 +100,8 @@
   --text-color: var(--harmony-static-white);
   --button-color: var(--harmony-primary);
   background: var(--button-color);
+  border: none;
+  margin: 0 1px;
 }
 .primary:hover {
   --overlay-color: var(--harmony-static-white);
@@ -126,6 +128,8 @@
   --overlay-color: var(--harmony-static-white);
   --overlay-opacity: 0.1;
   box-shadow: var(--harmony-shadow-mid);
+  border: none;
+  margin: 0 1px;
 }
 .secondary:active {
   --button-color: var(--harmony-primary);
@@ -134,6 +138,8 @@
   --overlay-color: var(--harmony-static-black);
   --overlay-opacity: 0.2;
   box-shadow: none;
+  border: none;
+  margin: 0 1px;
 }
 
 /* Tertiary */
