@@ -9,6 +9,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.rewards.challenge import Challenge, ChallengeType
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.user_challenge import UserChallenge
+from src.utils.spl_audio import from_wei
 
 
 class ChallengeResponse(TypedDict):
@@ -22,11 +23,29 @@ class ChallengeResponse(TypedDict):
     max_steps: Optional[int]
     challenge_type: str
     amount: str
+    disbursed_amount: int
     metadata: Dict
 
 
+def get_disbursements_by_challenge_id(
+    disbursements: List[ChallengeDisbursement], challenge_id: str
+) -> List[ChallengeDisbursement]:
+    return list(filter(lambda d: d.challenge_id == challenge_id, disbursements))
+
+
+def get_disbursed_amount(disbursements: List[ChallengeDisbursement]) -> int:
+    if disbursements is None:
+        return 0
+    return sum(
+        from_wei(disbursement.amount)
+        for disbursement in filter(lambda x: x is not None, disbursements)
+    )
+
+
 def rollup_aggregates(
-    user_challenges: List[UserChallenge], parent_challenge: Challenge
+    user_challenges: List[UserChallenge],
+    parent_challenge: Challenge,
+    disbursements: List[ChallengeDisbursement],
 ) -> ChallengeResponse:
     num_complete = reduce(
         lambda acc, cur: cast(int, acc) + cur.amount if cur.is_complete else acc,
@@ -52,6 +71,7 @@ def rollup_aggregates(
         "is_active": parent_challenge.active,
         "is_disbursed": False,  # This doesn't indicate anything for aggregate challenges
         "amount": parent_challenge.amount,
+        "disbursed_amount": get_disbursed_amount(disbursements),
         "metadata": {},
     }
     return response_dict
@@ -60,7 +80,7 @@ def rollup_aggregates(
 def to_challenge_response(
     user_challenge: UserChallenge,
     challenge: Challenge,
-    disbursement: ChallengeDisbursement,
+    disbursements: List[ChallengeDisbursement],
     metadata: Dict,
 ) -> ChallengeResponse:
     return {
@@ -72,8 +92,9 @@ def to_challenge_response(
         "max_steps": challenge.step_count,
         "challenge_type": challenge.type,
         "is_active": challenge.active,
-        "is_disbursed": disbursement is not None,
+        "is_disbursed": disbursements is not None and len(disbursements) > 0,
         "amount": challenge.amount,
+        "disbursed_amount": get_disbursed_amount(disbursements),
         "metadata": metadata,
     }
 
@@ -94,6 +115,7 @@ def create_empty_user_challenges(
             "is_active": challenge.active,
             "is_disbursed": False,
             "amount": challenge.amount,
+            "disbursed_amount": 0,
             "metadata": metadatas[i],
         }
         user_challenges.append(user_challenge)
@@ -170,9 +192,8 @@ def get_challenges(
         if show_historical or all_challenges_map[i[0].challenge_id].active
     ]
     disbursements: List[ChallengeDisbursement] = [
-        i[1] for i in challenges_and_disbursements
+        i[1] for i in challenges_and_disbursements if i[1] is not None
     ]
-
     regular_user_challenges: List[ChallengeResponse] = []
     aggregate_user_challenges_map: DefaultDict[str, List[UserChallenge]] = defaultdict(
         lambda: []
@@ -197,11 +218,12 @@ def get_challenges(
                 and not user_challenge.is_complete
             ):
                 continue
-
             user_challenge_dict = to_challenge_response(
                 user_challenge,
                 parent_challenge,
-                disbursements[i],
+                get_disbursements_by_challenge_id(
+                    disbursements, user_challenge.challenge_id
+                ),
                 existing_metadata[i],
             )
             override_step_count = event_bus.get_manager(
@@ -214,7 +236,13 @@ def get_challenges(
     rolled_up: List[ChallengeResponse] = []
     for challenge_id, challenges in aggregate_user_challenges_map.items():
         parent_challenge = all_challenges_map[challenge_id]
-        rolled_up.append(rollup_aggregates(challenges, parent_challenge))
+        rolled_up.append(
+            rollup_aggregates(
+                challenges,
+                parent_challenge,
+                get_disbursements_by_challenge_id(disbursements, challenge_id),
+            )
+        )
 
     # Return empty user challenges for active challenges that are non-hidden
     # and visible for the current user

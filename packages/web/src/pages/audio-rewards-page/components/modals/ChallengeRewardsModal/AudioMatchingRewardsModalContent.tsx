@@ -5,7 +5,8 @@ import {
   OptimisticUserChallenge,
   challengeRewardsConfig,
   formatNumberCommas,
-  useAudioMatchingChallengeCooldownSchedule
+  useAudioMatchingChallengeCooldownSchedule,
+  challengesSelectors
 } from '@audius/common'
 import { IconArrowRight, IconCloudUpload, Text } from '@audius/harmony'
 import {
@@ -16,6 +17,7 @@ import {
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
+import { useSelector } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { SummaryTable } from 'components/summary-table'
@@ -27,6 +29,8 @@ import { EXPLORE_PREMIUM_TRACKS_PAGE, UPLOAD_PAGE } from 'utils/route'
 import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
 import styles from './styles.module.css'
+
+const { getOptimisticUserChallenges } = challengesSelectors
 
 dayjs.extend(utc)
 
@@ -97,11 +101,7 @@ export const AudioMatchingRewardsModalContent = ({
   const { fullDescription } = challengeRewardsConfig[challengeName]
   const { cooldownChallenges, claimableAmount, cooldownChallengesSummary } =
     useAudioMatchingChallengeCooldownSchedule(challenge?.challenge_id)
-
-  const audioClaimedSoFar = challenge
-    ? challenge.amount * challenge.current_step_count -
-      challenge.claimableAmount
-    : 0
+  const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
 
   const progressDescription = (
     <ProgressDescription
@@ -123,11 +123,11 @@ export const AudioMatchingRewardsModalContent = ({
   )
 
   const progressStatusLabel =
-    audioClaimedSoFar > 0 ? (
+    userChallenge && userChallenge?.disbursed_amount > 0 ? (
       <div className={styles.audioMatchingTotalContainer}>
         <Text variant='label' size='l' strength='strong' color='subdued'>
           {messages.totalEarned(
-            formatNumberCommas(audioClaimedSoFar.toString())
+            formatNumberCommas(userChallenge.disbursed_amount.toString())
           )}
         </Text>
       </div>

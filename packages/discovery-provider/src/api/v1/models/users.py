@@ -1,6 +1,6 @@
 from flask_restx import fields
 
-from .common import ns, StringEnumToLower
+from .common import StringEnumToLower, ns
 from .playlist_library import playlist_library
 
 # DEPRECATED
@@ -120,6 +120,7 @@ challenge_response = ns.model(
         "max_steps": fields.Integer(),
         "challenge_type": fields.String(required=True),
         "amount": fields.String(required=True),
+        "disbursed_amount": fields.Integer(required=True),
         "metadata": fields.Raw(required=True),
     },
 )
