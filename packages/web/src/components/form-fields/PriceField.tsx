@@ -21,7 +21,9 @@ const messages = {
 }
 
 export const PriceField = (props: TextFieldProps) => {
-  const [{ value }, , { setValue: setPrice }] = useField<number>(props.name)
+  const [{ value }, , { setValue: setPrice, setTouched }] = useField<number>(
+    props.name
+  )
   const [humanizedValue, setHumanizedValue] = useState(
     value ? decimalIntegerToHumanReadable(value) : null
   )
@@ -40,8 +42,9 @@ export const PriceField = (props: TextFieldProps) => {
       const { human, value } = filterDecimalString(e.target.value)
       setHumanizedValue(human)
       setPrice(value)
+      setTouched(true, false)
     },
-    [setPrice, setHumanizedValue]
+    [setPrice, setHumanizedValue, setTouched]
   )
 
   const handlePriceBlur: FocusEventHandler<HTMLInputElement> = useCallback(
@@ -54,6 +57,8 @@ export const PriceField = (props: TextFieldProps) => {
   return (
     <TextField
       {...props}
+      // Safeguard against numeric overflow, -1 (for len max int), -2 (to account for cents)
+      maxLength={Number.MAX_SAFE_INTEGER.toString().length - 3}
       value={humanizedValue ?? undefined}
       startAdornment={messages.dollars}
       onChange={handlePriceChange}

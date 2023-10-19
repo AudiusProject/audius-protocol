@@ -33,6 +33,14 @@ type GetPurchaseSummaryValuesArgs = {
   extraAmount?: number
 }
 
+/**
+ * Gets values for a purchase summary
+ *  - amountDue
+ *  - existingBalance
+ *  - basePrice
+ *  - extraAmount
+ * Throws if number bounds are exceeded
+ */
 export const getPurchaseSummaryValues = ({
   price,
   currentBalance,
@@ -44,7 +52,7 @@ export const getPurchaseSummaryValues = ({
     currentBalance && currentBalance.gt(BN_USDC_CENT_WEI)
       ? currentBalance
       : zeroBalance()
-  const amountDueBN = new BN(amountDue).mul(BN_USDC_CENT_WEI)
+  const amountDueBN = new BN(amountDue.toString()).mul(BN_USDC_CENT_WEI)
 
   if (balanceBN.gte(amountDueBN)) {
     existingBalance = amountDue

@@ -65,6 +65,8 @@ export const PriceField = (props: TextFieldProps) => {
           {messages.dollars}
         </Text>
       }
+      // Safeguard against numeric overflow, -1 (for len max int), -2 (to account for cents)
+      maxLength={Number.MAX_SAFE_INTEGER.toString().length - 3}
       {...props}
       value={humanizedValue ?? undefined}
       onChange={handlePriceChange}
