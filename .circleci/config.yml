@@ -97,7 +97,7 @@ jobs:
             git config --global user.email "audius-infra@audius.co"
             git config --global user.name "audius-infra"
       - run:
-          name: Create+push branch
+          name: Create + push branch
           command: |
             git checkout main
 
