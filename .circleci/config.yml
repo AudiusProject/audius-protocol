@@ -81,7 +81,7 @@ jobs:
             - ./packages/libs/node_modules
             - ./packages/identity-service/node_modules
 
-  generate-release:
+  generate-release-branch:
     working_directory: ~/audius-protocol
     resource_class: small
     docker:
@@ -97,7 +97,7 @@ jobs:
             git config --global user.email "audius-infra@audius.co"
             git config --global user.name "audius-infra"
       - run:
-          name: Create branch
+          name: Create + push branch
           command: |
             git checkout main
 
@@ -112,74 +112,10 @@ jobs:
             mv /tmp/.version.json packages/discovery-provider/.version.json
             git add packages/discovery-provider/.version.json
 
-            GIT_DIFF=$(git log --pretty=format:'%an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum packages/discovery-provider packages/identity-service comms monitoring/healthz | sed 's/"/\\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/=DELIM@/g')
-
-            # Ensure GIT_DIFF ends with the delimiter so the final commit is included
-            if [ ! -z "$GIT_DIFF" ] && [ "${GIT_DIFF: -7}" != "=DELIM@" ]; then
-                GIT_DIFF="${GIT_DIFF}=DELIM@"
-            fi
-            echo "GIT_DIFF: $GIT_DIFF"
-
             git commit -m "Bump version to $NEW_VERSION"
-
             git branch "release-v$NEW_VERSION"
             git checkout "release-v$NEW_VERSION"
-
             git push --set-upstream origin main "release-v$NEW_VERSION"
-
-            # Slack has a limit of 3000 characters per block, so we need to split the diff into multiple blocks
-            max_lines=8
-            json_content="{ \"blocks\": ["
-            json_content+="{ \"type\": \"header\", \"text\": { \"type\": \"plain_text\", \"text\": \"New Protocol Release Branch (v$NEW_VERSION)\n\" } },"
-            line_count=0
-            block_content=""
-
-            # Use =DELIM@ as a delimiter to split the diff into lines (so set Internal Field Separator to "@")
-            buffer=""
-            IFS="@"
-            read -ra ADDR \<<< "$GIT_DIFF"
-            for line in "${ADDR[@]}"; do
-                line="${buffer}${line}"
-
-                # If the current line ends with "=DELIM", then it's a complete line, so process it and reset buffer
-                if [ "${line: -6}" = "=DELIM" ]; then
-                    line="${line%=DELIM}"
-                    buffer=""
-
-                    # Try to replace the author with a Slack mention (use author's name without hyphens or spaces because sh env doesn't allow that)
-                    author_name=$(echo "$line" | awk -F ' - ' '{print $1}')
-                    env_key_name="SLACK_ID_FOR_GH_$(echo $author_name | tr ' ' '_' | tr '-' '_' | tr '[:upper:]' '[:lower:]')"
-                    env_var_value=$(eval echo \$$env_key_name)
-                    if [ ! -z "$env_var_value" ]; then
-                        line=$(echo "$line" | sed "s/$author_name/<@$env_var_value>/")
-                    fi
-
-                    block_content+="• $line\n"
-                    line_count=$((line_count+1))
-
-                    if (( line_count == max_lines )); then
-                        json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"${block_content}\" } },"
-                        line_count=0
-                        block_content=""
-                    fi
-                else
-                    # Otherwise, store the current line in the buffer and wait for the next iteration
-                    buffer+="${line}@"
-                fi
-            done
-
-            if (( line_count > 0 )); then
-                json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"${block_content}\" } },"
-            fi
-
-            json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"\n*These changes will be auto-deployed to foundation nodes in 3 hours (11am PST).* Set \`HALT_AUTO_DEPLOY\`=\`true\` <https://app.circleci.com/settings/organization/github/AudiusProject/contexts/4be7f5c8-cadb-4deb-b66e-318867a6960b|here> if needed.\n\" } }"
-            json_content+="]}"
-
-            # Send Slack daily deploy message
-            echo "Sending message to Slack: $json_content"
-            curl -f -X POST -H 'Content-type: application/json' \
-              --data "$json_content" \
-              $SLACK_DAILY_DEPLOY_WEBHOOK
 
   approve-deployment-holds:
     resource_class: small
@@ -262,7 +198,7 @@ jobs:
             if [[ -z "$job_url" ]]; then
                 # If we couldn't find the deploy trigger job on hold, send the failure message
                 json_content+="{ \"type\": \"section\","
-                json_content+=" \"text\": { \"type\": \"mrkdwn\", \"text\": \"I tried to deploy today's release to foundation nodes but have failed miserably :( please investigate\" } }"
+                json_content+=" \"text\": { \"type\": \"mrkdwn\", \"text\": \"No CircleCI job is on hold for me to auto-approve for today's foundation release (hint: check <https://app.circleci.com/pipelines/github/AudiusProject/audius-protocol?branch=$CIRCLE_BRANCH|here>)\" } }"
             else
                 # If we approved the job, send the success message
                 json_content+="{ \"type\": \"section\","
@@ -545,8 +481,7 @@ workflows:
         - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - equal: ['release-create-branch', << pipeline.schedule.name >>]
     jobs:
-      - generate-release:
-          context: slack-secrets
+      - generate-release-branch
 
   auto-approve-foundation-deploy:
     when:
