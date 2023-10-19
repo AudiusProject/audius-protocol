@@ -216,6 +216,10 @@ html[data-theme='dark'] {
   .primary:hover {
     --overlay-opacity: 0.2;
   }
+  .primary.disabled {
+    --button-color: var(--harmony-n-150);
+    --text-color: var(--harmony-white);
+  }
 
   .tertiary {
     --button-color: var(--harmony-bg-white);
