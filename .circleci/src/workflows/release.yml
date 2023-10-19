@@ -75,7 +75,7 @@ jobs:
         - release-governance-trigger
   
   - alert-slack-push-success:
-      context: slack-secrets
+      context: [slack-secrets, github]
       requires:
         - push-identity-service
         - push-mediorum

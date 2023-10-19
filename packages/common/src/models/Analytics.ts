@@ -364,7 +364,8 @@ export enum Name {
   MESSAGE_UNFURL_PLAYLIST = 'Message Unfurl: Playlist',
   TIP_UNLOCKED_CHAT = 'Unlocked Chat: Tip',
   CHAT_REPORT_USER = 'Report User: Chat',
-  CHAT_ENTRY_POINT = 'Chat Entry Point'
+  CHAT_ENTRY_POINT = 'Chat Entry Point',
+  CHAT_WEBSOCKET_ERROR = 'Chat Websocket Error'
 }
 
 type PageView = {
@@ -1737,6 +1738,11 @@ type ChatEntryPoint = {
   source: 'banner' | 'navmenu' | 'share' | 'profile'
 }
 
+type ChatWebsocketError = {
+  eventName: Name.CHAT_WEBSOCKET_ERROR
+  code?: string
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -1974,3 +1980,4 @@ export type AllTrackingEvents =
   | DeveloperAppDeleteSuccess
   | DeveloperAppDeleteError
   | ChatEntryPoint
+  | ChatWebsocketError
