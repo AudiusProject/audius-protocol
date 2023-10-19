@@ -1,3 +1,7 @@
+import dayjs from 'dayjs'
+
+import { UndisbursedUserChallenge } from 'store/pages'
+
 import {
   ChallengeRewardID,
   UserChallenge,
@@ -240,3 +244,7 @@ export const isAudioMatchingChallenge = (
     challenge === ChallengeName.AudioMatchingBuy
   )
 }
+
+export const isCooldownChallengeClaimable = (
+  challenge: UndisbursedUserChallenge
+) => dayjs.utc().diff(dayjs.utc(challenge.created_at), 'day') >= 7

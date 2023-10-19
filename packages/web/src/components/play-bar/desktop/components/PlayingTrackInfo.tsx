@@ -1,17 +1,32 @@
 import { memo, useEffect } from 'react'
 
-import { ID, Color, ProfilePictureSizes, SquareSizes } from '@audius/common'
+import {
+  ID,
+  Color,
+  ProfilePictureSizes,
+  SquareSizes,
+  CommonState,
+  cacheTracksSelectors,
+  usePremiumContentAccess
+} from '@audius/common'
 import cn from 'classnames'
+import { useSelector } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated, useSpring } from 'react-spring'
 
 import { Draggable } from 'components/dragndrop'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { LockedStatusBadge } from 'components/track/LockedStatusBadge'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { fullTrackPage } from 'utils/route'
 
 import styles from './PlayingTrackInfo.module.css'
+const { getTrack } = cacheTracksSelectors
+
+const messages = {
+  preview: 'Preview'
+}
 
 interface PlayingTrackInfoProps {
   trackId: number
@@ -42,7 +57,6 @@ const PlayingTrackInfo = ({
   isOwner,
   trackTitle,
   trackPermalink,
-  profilePictureSizes,
   artistUserId,
   artistName,
   onClickTrackTitle,
@@ -51,6 +65,15 @@ const PlayingTrackInfo = ({
   hasShadow,
   dominantColor
 }: PlayingTrackInfoProps) => {
+  const track = useSelector((state: CommonState) =>
+    getTrack(state, { id: trackId })
+  )
+  const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const shouldShowPreviewLock =
+    track?.premium_conditions &&
+    'usdc_purchase' in track.premium_conditions &&
+    !doesUserHaveAccess
+
   const [artistSpringProps, setArtistSpringProps] = useSpring(() => springProps)
   const [trackSpringProps, setTrackSpringProps] = useSpring(() => springProps)
   const profileImage = useProfilePicture(
@@ -95,7 +118,10 @@ const PlayingTrackInfo = ({
           id={trackId}
           link={fullTrackPage(trackPermalink)}
         >
-          <animated.div style={trackSpringProps}>
+          <animated.div
+            style={trackSpringProps}
+            className={styles.trackTitleContainer}
+          >
             <div
               className={cn(styles.trackTitle, {
                 [styles.textShadow]: hasShadow
@@ -104,6 +130,15 @@ const PlayingTrackInfo = ({
             >
               {trackTitle}
             </div>
+            {shouldShowPreviewLock ? (
+              <LockedStatusBadge
+                locked
+                iconSize='small'
+                coloredWhenLocked
+                variant='premium'
+                text={messages.preview}
+              />
+            ) : null}
           </animated.div>
         </Draggable>
         <animated.div

@@ -66,21 +66,28 @@
 }
 
 .artwork {
-  width: 100%;
+  position: relative;
   flex: 1;
   max-width: 90vw;
   max-height: 90vw;
 }
 
 .image {
+  --border-width: 2px;
   width: 100%;
   height: 100%;
-  border: 2px solid var(--white);
+  border: var(--border-width) solid var(--white);
   border-radius: 8px;
   box-shadow: 0 3px 20px -2px rgba(105, 73, 78, 0.5);
   background-color: var(--neutral-light-8);
   cursor: pointer;
   overflow: hidden;
+}
+
+.borderOffset {
+  position: absolute;
+  left: calc(-1 * var(--border-width));
+  top: calc(-1 * var(--border-width));
 }
 
 .info {
@@ -93,6 +100,14 @@
   align-items: center;
 }
 
+.trackTitleContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--unit-2);
+  margin: 0px 16px 4px;
+}
+
 .title {
   display: block;
   display: -webkit-box;
@@ -100,7 +115,6 @@
   font-size: var(--font-l);
   font-weight: var(--font-bold);
   line-height: 23px;
-  margin: 0px 16px 4px;
   cursor: pointer;
   max-height: 46px;
   overflow: hidden;
@@ -143,6 +157,9 @@
 
 .actions {
   width: 352px;
+  display: flex;
+  align-items: center;
+  gap: var(--unit-2);
 }
 
 .playButton {
@@ -163,4 +180,8 @@
 
 .verified {
   margin-left: 8px;
+}
+
+.premiumPill {
+  height: var(--unit-12);
 }

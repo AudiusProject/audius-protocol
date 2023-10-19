@@ -1,6 +1,5 @@
-machine:
-  image: ubuntu-2204:current
-resource_class: large
+machine: true
+resource_class: audiusproject/gcp-n2-standard-4
 steps:
   - checkout:
       path: '~/audius-protocol'

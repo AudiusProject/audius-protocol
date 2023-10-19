@@ -4,6 +4,7 @@ import {
   getUserChallengesOverrides
 } from 'store/pages/audio-rewards/selectors'
 import { UndisbursedUserChallenge } from 'store/pages/audio-rewards/types'
+import { isCooldownChallengeClaimable } from 'utils/challenges'
 import { removeNullable } from 'utils/typeUtils'
 
 import {
@@ -109,7 +110,11 @@ const toOptimisticChallenge = (
       ? state === 'completed'
         ? totalAmount
         : 0
-      : undisbursed.reduce<number>((acc, val) => acc + val.amount, 0)
+      : undisbursed.reduce<number>(
+          (acc, val) =>
+            isCooldownChallengeClaimable(val) ? acc + val.amount : acc + 0,
+          0
+        )
 
   const undisbursedSpecifiers = undisbursed.reduce(
     (acc, c) => [...acc, { specifier: c.specifier, amount: c.amount }],
