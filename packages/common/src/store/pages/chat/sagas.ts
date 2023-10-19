@@ -740,21 +740,16 @@ function* doDeleteChat(action: ReturnType<typeof deleteChat>) {
 
 function* doLogError({ payload: { error } }: ReturnType<typeof logError>) {
   const { track, make } = yield* getContext('analytics')
-  // TODO: This spams like crazy if the websocket retries. Find a way
-  // to prevent sending the same error over and over again.
-  // * Configure sentry to limit based on type?
-  // * Store the error in slice and only send if it's different? (the url changes often)
-  // ORRRR consider ditching this altogether and change the middleware to only throw the error if it has a code?
-  // const reportToSentry = yield* getContext('reportToSentry')
-  const { code /* url */ } = error
-  // reportToSentry({
-  //   level: ErrorLevel.Error,
-  //   error,
-  //   additionalInfo: {
-  //     code,
-  //     url
-  //   }
-  // })
+  const reportToSentry = yield* getContext('reportToSentry')
+  const { code, url } = error
+  reportToSentry({
+    level: ErrorLevel.Error,
+    error,
+    additionalInfo: {
+      code,
+      url
+    }
+  })
   yield* call(track, make({ eventName: Name.CHAT_WEBSOCKET_ERROR, code }))
 }
 

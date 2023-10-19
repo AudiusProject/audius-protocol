@@ -57,11 +57,15 @@ export const chatMiddleware =
           }
           errorListener = (e) => {
             console.debug('[chats] WebSocket error.', e)
-            store.dispatch(
-              chatActions.logError({
-                error: new ChatWebsocketError(e.target.url, e.code)
-              })
-            )
+            // Most errors received here have no `code` and are not actionable, so only
+            // log the outliers.
+            if (e.code) {
+              store.dispatch(
+                chatActions.logError({
+                  error: new ChatWebsocketError(e.code, e.target.url)
+                })
+              )
+            }
           }
           sdk.chats.addEventListener('open', openListener)
           sdk.chats.addEventListener('message', messageListener)
