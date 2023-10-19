@@ -39,8 +39,8 @@ For details on operating an Audius service, getting started with the Token and t
 | [`libs`](./packages/libs)                                                                       | `@audius/sdk` and legacy shared utilities `libs`                                                                                                                                      |
 | [`mobile`](./packages/mobile)                                                                   | The Audius reference mobile application                                                                                                                                               |
 | [`probers`](./packages/probers)                                                                 | E2E web tests                                                                                                                                                                         |
-| [`spl`](./packages/spl)                                                                         | Handles Solana instructions for the Audius programs                                                                                                                                   |
 | [`solana-programs`](https://github.com/AudiusProject/audius-protocol/tree/main/solana-programs) | The Solana programs for the Audius protocol, encompassing user account, content listing, and content interaction functionality                                                        |
+| [`spl`](./packages/spl)                                                                         | Handles Solana instructions for the Audius programs                                                                                                                                   |
 | [`sql-ts`](./packages/sql-ts)                                                                   | A typescript database client                                                                                                                                                          |
 | [`stems`](./packages/stems)                                                                     | The Audius client component library                                                                                                                                                   |
 | [`trpc-server`](./packages/trpc-server)                                                         | tRPC server used for serving data                                                                                                                                                     |
@@ -48,25 +48,15 @@ For details on operating an Audius service, getting started with the Token and t
 
 ### Required Dependencies
 
-The following dependencies are required to run Audius:
-
-```
-node python ruby docker docker-compose
-```
-
-`npm install` will fail if they are not met. We recommend [homebrew](https://brew.sh/), [pyenv](https://github.com/pyenv/pyenv), and [rbenv](https://github.com/rbenv/rbenv). Don't forget to follow the instructions in the install command output (eg. adding things to your `.zshrc` or `bashrc` file).
+`npm install` will fail if certain dependencies are not met. We recommend using [homebrew](https://brew.sh/) to install them:
 
 ```bash
 brew install nvm pyenv rbenv homebrew/cask/docker docker-compose
-
-nvm install
-pyenv install
-rbenv install
 ```
 
-### Getting Started
+> Don't forget to follow the instructions in the install command output (eg. adding things to your `.zshrc` or `bashrc` file).
 
-After cloning run:
+### Getting Started
 
 ```bash
 npm install
@@ -74,7 +64,7 @@ npm install
 
 This will do the following:
 
-- Check that you have the correct versions of node, ruby, and python
+- Install the correct versions of node, ruby, and python
 - Install dependencies (npm packages, gems, pods, etc.)
 - Set up command line tools for interacting with the protocol ([dev-tools/README.md](./dev-tools/README.md))
 - Initialize git hooks
