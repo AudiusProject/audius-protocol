@@ -24,7 +24,7 @@ export const decorators = [
       dark: 'dark',
       matrix: 'matrix'
     },
-    defaultTheme: 'light',
+    defaultTheme: 'default',
     attributeName: 'data-theme'
   })
 ]
