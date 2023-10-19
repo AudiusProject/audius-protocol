@@ -114,7 +114,7 @@
 
 /* Secondary */
 .secondary {
-  --button-color: var(--harmony-n-300);
+  --button-color: var(--harmony-border-strong);
   --text-color: var(--harmony-text-default);
   background: transparent;
   box-shadow: none;
@@ -138,18 +138,20 @@
 
 /* Tertiary */
 .tertiary {
-  --button-color: var(--harmony-n-300);
+  --button-color: var(--harmony-border-default);
   --text-color: var(--harmony-text-default);
-  background: var(--harmony-static-white);
+  background-color: var(--harmony-bg-white);
   opacity: .85;
   backdrop-filter: blur(6px);
 }
 .tertiary:hover {
+  --button-color: var(--harmony-border-strong);
   box-shadow: var(--harmony-shadow-mid);
   opacity: 1;
   backdrop-filter: none;
 }
 .tertiary:active {
+  --button-color: var(--harmony-border-strong);
   background-color: var(--harmony-n-50);
   box-shadow: none;
   opacity: 1;
@@ -216,9 +218,14 @@ html[data-theme='dark'] {
   }
 
   .tertiary {
-    --button-color: var(--harmony-white);
+    --button-color: var(--harmony-bg-white);
     --text-color: var(--harmony-text-default);
-    background: transparent;
+    background-color: var(--button-color);
+    opacity: .6;
+  }
+  .tertiary:hover {
+    --button-color: var(--harmony-bg-white);
+    opacity: 1;
   }
   .tertiary:active {
     --button-color: var(--harmony-n-50);
