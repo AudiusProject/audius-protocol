@@ -56,7 +56,8 @@ export const createAllImageSources = ({
   cidMap?: Nullable<{ [key: string]: string }>
 }) => {
   if (!cid || !endpoints) {
-    return [localSource]
+    if (localSource) return [localSource]
+    return []
   }
   let cidForSize: Nullable<string> = null
   if (cidMap && cidMap[size]) {
