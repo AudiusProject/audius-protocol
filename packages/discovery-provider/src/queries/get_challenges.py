@@ -9,7 +9,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.rewards.challenge import Challenge, ChallengeType
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.user_challenge import UserChallenge
-from src.utils.spl_audio import from_wei
+from src.utils.spl_audio import from_lamports
 
 
 class ChallengeResponse(TypedDict):
@@ -37,7 +37,7 @@ def get_disbursed_amount(disbursements: List[ChallengeDisbursement]) -> int:
     if disbursements is None:
         return 0
     return sum(
-        from_wei(disbursement.amount)
+        from_lamports(disbursement.amount)
         for disbursement in filter(lambda x: x is not None, disbursements)
     )
 
