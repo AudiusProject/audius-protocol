@@ -174,8 +174,6 @@
 .destructive:hover {
   --button-color: var(--harmony-red);
   --text-color: var(--harmony-static-white);
-  --overlay-color: var(--harmony-static-white);
-  --overlay-opacity: 0.1;
   background-color: var(--button-color);
   box-shadow: var(--harmony-shadow-mid);
 }
