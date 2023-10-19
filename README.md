@@ -19,35 +19,45 @@
 
 Audius is a decentralized, community-owned music-sharing protocol
 
-For further details on operating an Audius service, getting started with the Token and the API, see [docs.audius.org](https://docs.audius.org/).
-
-## Apps
-
-| Name                          | Description                            |
-| ----------------------------- | -------------------------------------- |
-| [`web`](./packages/web)       | The Audius web and desktop application |
-| [`mobile`](./packages/mobile) | The Audius mobile application          |
+For details on operating an Audius service, getting started with the Token and the API, see [docs.audius.org](https://docs.audius.org/).
 
 ## Packages
 
-| Name                                                      | Description                         |
-| --------------------------------------------------------- | ----------------------------------- |
-| [`stems`](./packages/stems)                               | The Audius client component library |
-| [`common`](./packages/common)                             | Shared code between web and mobile  |
-| [`eslint-config-audius`](./packages/eslint-config-audius) | Shared lint configuration           |
+| Name                                                                                            | Description                                                                                                                                                                           |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`commands`](./packages/commands)                                                               | CLI to perform actions against the protocol                                                                                                                                           |
+| [`common`](./packages/common)                                                                   | Shared code between web and mobile                                                                                                                                                    |
+| [`compose`](./packages/compose)                                                                 | Defines dependencies for audius-compose                                                                                                                                               |
+| [`contracts`](https://github.com/AudiusProject/audius-protocol/tree/main/contracts)             | The POA network smart contracts for the Audius protocol, encompassing user account, content listing, and content interaction functionality                                            |
+| [`creator-node`](mediorum)                                                                      | Maintains the availability of users' content via the Audius Storage Protocol, including user images and audio content. Also known as Content Node or mediorum.                        |
+| [`discovery-provider`](packages/discovery-provider)                                             | Indexes and stores the contents of the audius contracts on the Ethereum & Solana blockchains for clients to query via an API. Also known as Discovery Node.                           |
+| [`embed`](./packages/embed)                                                                     | Embed player that renders on third party sites                                                                                                                                        |
+| [`eslint-config-audius`](./packages/eslint-config-audius)                                       | Shared lint configuration                                                                                                                                                             |
+| [`eth-contracts`](https://github.com/AudiusProject/audius-protocol/tree/main/eth-contracts)     | The Ethereum smart contracts that run the Audius protocol, encompassing the Audius ERC20 token and functionality for staking, off-chain service registration / lookup, and governance |
+| [`harmony`](./packages/harmony)                                                                 | The Audius design system                                                                                                                                                              |
+| [`identity-service`](packages/identity-service)                                                 | Stores encrypted auth ciphertexts and handles oauth artifacts                                                                                                                         |
+| [`libs`](./packages/libs)                                                                       | `@audius/sdk` and legacy shared utilities `libs`                                                                                                                                      |
+| [`mobile`](./packages/mobile)                                                                   | The Audius reference mobile application                                                                                                                                               |
+| [`probers`](./packages/probers)                                                                 | E2E web tests                                                                                                                                                                         |
+| [`spl`](./packages/spl)                                                                         | Handles Solana instructions for the Audius programs                                                                                                                                   |
+| [`solana-programs`](https://github.com/AudiusProject/audius-protocol/tree/main/solana-programs) | The Solana programs for the Audius protocol, encompassing user account, content listing, and content interaction functionality                                                        |
+| [`sql-ts`](./packages/sql-ts)                                                                   | A typescript database client                                                                                                                                                          |
+| [`stems`](./packages/stems)                                                                     | The Audius client component library                                                                                                                                                   |
+| [`trpc-server`](./packages/trpc-server)                                                         | tRPC server used for serving data                                                                                                                                                     |
+| [`web`](./packages/web)                                                                         | The Audius reference web and desktop application                                                                                                                                      |
 
 ### Required Dependencies
 
-The following dependencies are required to run the Audius client:
+The following dependencies are required to run Audius:
 
 ```
-node python ruby
+node python ruby docker docker-compose
 ```
 
 `npm install` will fail if they are not met. We recommend [homebrew](https://brew.sh/), [pyenv](https://github.com/pyenv/pyenv), and [rbenv](https://github.com/rbenv/rbenv). Don't forget to follow the instructions in the install command output (eg. adding things to your `.zshrc` or `bashrc` file).
 
-```
-brew install nvm pyenv rbenv
+```bash
+brew install nvm pyenv rbenv homebrew/cask/docker docker-compose
 
 nvm install
 pyenv install
@@ -64,101 +74,34 @@ npm install
 
 This will do the following:
 
-- Check you have the correct versions of node, ruby, and python
-- Install root dependencies
-- Install all package dependencies
-- Initialize git hooks (`npx @escape.tech/mookme init --only-hook --skip-types-selection`)
-- Install ios pods
+- Check that you have the correct versions of node, ruby, and python
+- Install dependencies (npm packages, gems, pods, etc.)
+- Set up command line tools for interacting with the protocol ([dev-tools/README.md](./dev-tools/README.md))
+- Initialize git hooks
 
-### Running A Client
+### Running the Protocol
+
+```bash
+npm run protocol
+```
+
+For more details and troubleshooting please refer to [dev-tools/README.md](./dev-tools/README.md)
+
+### Running the Client
 
 Environments:
 
-- \*:dev runs against local services
-- \*:stage runs against the staging testnet
-- \*:prod runs against production infrastructure
+- `\*:dev` runs against local services
+- `\*:stage` runs against the staging testnet
+- `\*:prod` runs against production infrastructure
+
+For example:
 
 ```bash
-# web
-npm run web:dev
-npm run web:stage
 npm run web:prod
-
-# desktop
-npm run desktop:dev
-npm run desktop:stage
-npm run desktop:prod
-
-# mobile
-
-# ios
-npm run ios:dev
-npm run ios:stage
-npm run ios:prod
-# on a physical device
-xcrun xctrace list devices
-npm run ios:<env> -- --device "My iPhone"
-
-# android
-npm run android:dev
-npm run android:stage
-npm run android:prod
-# on a physical device
-adb devices
-npm run android:<env> -- --device "A38M608KHBK"
-
-# stems in watch mode
-npm run stems
-
-# common in watch mode
-npm run common
-
-# lint and typecheck
-npm run verify
 ```
 
-## Overview
-
-### Audius Services
-
-These off-chain services are run by community members via the Audius staking system:
-
-| Service                                    | Description                                                                                                                                                    |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`creator-node`](mediorum)                 | Maintains the availability of users' content via the Audius Storage Protocol, including user images and audio content. Also known as Content Node or mediorum. |
-| [`discovery-provider`](discovery-provider) | Indexes and stores the contents of the audius contracts on the Ethereum & Solana blockchains for clients to query via an API. Also known as Discovery Node.    |
-| [`identity-service`](identity-service)     | Stores encrypted auth ciphertexts and handles oauth artifacts                                                                                                  |
-
-### Smart Contracts & Programs
-
-The independent sets of smart contracts that power the on-chain aspects of the Audius protocol:
-
-| Contracts                                                                                       | Description                                                                                                                                                                           |
-| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`eth-contracts`](https://github.com/AudiusProject/audius-protocol/tree/main/eth-contracts)     | The Ethereum smart contracts that run the Audius protocol, encompassing the Audius ERC20 token and functionality for staking, off-chain service registration / lookup, and governance |
-| [`solana-programs`](https://github.com/AudiusProject/audius-protocol/tree/main/solana-programs) | The Solana programs for the Audius protocol, encompassing user account, content listing, and content interaction functionality                                                        |
-| [`contracts`](https://github.com/AudiusProject/audius-protocol/tree/main/contracts)             | The POA network smart contracts for the Audius protocol, encompassing user account, content listing, and content interaction functionality                                            |
-
-### Audius Client Libraries
-
-Client-side libraries to provide a unified interface for interacting with the entire
-Audius protocol:
-
-| Library                                                                            | Description                                                                                                                           |
-| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| [`libs`](https://github.com/AudiusProject/audius-protocol/tree/main/packages/libs) | A complete javascript interface to the Audius smart contracts and Audius services: Identity Service, Discovery Provider, Creator Node |
-
-## Development
-
-### Prerequisites
-
-- Install docker & docker-compose [https://docs.docker.com/get-docker](https://docs.docker.com/get-docker)
-- Install rust https://rustup.rs/
-- Install nvm & node (v14.17.5) https://github.com/nvm-sh/nvm
-
-### Running the protocol
-
-Refer to [dev-tools/README.md](./dev-tools/README.md)
+For all available commands please see the [package.json scripts](https://github.com/AudiusProject/audius-protocol/blob/f850434ddca7d697f78a58d971f9bba1aba7f24d/package.json#L10) and the relevant package READMEs.
 
 ## Contributing
 

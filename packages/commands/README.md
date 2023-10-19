@@ -5,6 +5,8 @@ audius-cmd --help
 audius-cmd <command> --help
 ```
 
+`audius-cmd` is a command line tool to perform actions against the Audius protocol. It is especially useful to seed data on an instance of the protocol running locally
+
 ## Examples
 
 **create-user**
