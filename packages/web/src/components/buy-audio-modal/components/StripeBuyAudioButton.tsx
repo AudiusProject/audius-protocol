@@ -49,6 +49,7 @@ export const StripeBuyAudioButton = () => {
           amount,
           onrampSucceeded,
           onrampCanceled,
+          onrampFailed: onrampCanceled,
           destinationCurrency: 'sol',
           destinationWallet
         })
