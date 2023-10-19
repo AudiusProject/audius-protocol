@@ -48,13 +48,13 @@ For details on operating an Audius service, getting started with the Token and t
 
 ### Required Dependencies
 
-`npm install` will fail if certain dependencies are not met. We recommend using [homebrew](https://brew.sh/) to install them:
+We recommend using [homebrew](https://brew.sh/) to install the dependencies required to run Audius:
 
 ```bash
 brew install nvm pyenv rbenv homebrew/cask/docker docker-compose
 ```
 
-> Don't forget to follow the instructions in the install command output (eg. adding things to your `.zshrc` or `bashrc` file).
+> You will need to add some shell configuration for [`nvm`](https://github.com/nvm-sh/nvm#installing-and-updating), [`pyenv`](https://github.com/pyenv/pyenv#set-up-your-shell-environment-for-pyenv), and [`rbenv`](https://github.com/rbenv/rbenv#basic-git-checkout). Please refer to the respective documentation and the installation output
 
 ### Getting Started
 

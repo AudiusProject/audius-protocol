@@ -2,9 +2,11 @@
 
 ## Setup
 
-Make sure you've done `npm i` at the root of the repo. This will run `dev-tools/setup.sh`
+Make sure you've done `npm i` at the root of the repo. This will run `dev-tools/setup.sh`.
 
-You can also install dev-tools without cloning the repo by doing:
+You may need to restart your shell, or do `. ~/.profile` to ensure everything is in your path.
+
+Alternatively, you can install dev-tools without cloning the repo by doing:
 
 ```bash
 curl "https://raw.githubusercontent.com/AudiusProject/audius-protocol/main/dev-tools/setup.sh" | bash
@@ -12,15 +14,17 @@ curl "https://raw.githubusercontent.com/AudiusProject/audius-protocol/main/dev-t
 
 ## Bring up the protocol
 
+Make sure Docker is running and do:
+
 ```
 npm run protocol
 ```
 
-You can use `watch audius-compose ps` to ensure that all services report "Status" as Healthy.
+You can use `audius-compose ps` to ensure that all services report "Status" as Healthy.
 
 > All options passed to `npm run protocol` will be passed to `audius-compose` under the hood.
 
-> You can also do `audius-compose up` directly, but this has the disadvantage of not building the required Javascript dependencies before bringing up the protocol. See (CLI Tools)(#cli-tools) for details
+> You can also do `audius-compose up` directly, but this has the disadvantage of not building the required Javascript dependencies before bringing up the protocol. See [CLI Tools](#cli-tools) for details
 
 ## Connect via hostname or client
 
