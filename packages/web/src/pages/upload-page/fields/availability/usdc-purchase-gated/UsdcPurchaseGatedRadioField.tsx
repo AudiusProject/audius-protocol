@@ -2,6 +2,9 @@ import {
   FeatureFlags,
   PremiumConditions,
   TrackAvailabilityType,
+  isPremiumContentCollectibleGated,
+  isPremiumContentFollowGated,
+  isPremiumContentTipGated,
   isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
 import { IconCart, IconStars } from '@audius/stems'
@@ -26,6 +29,7 @@ const messages = {
 }
 
 type UsdcPurchaseGatedRadioFieldProps = {
+  isRemix: boolean
   isUpload?: boolean
   initialPremiumConditions?: PremiumConditions
   isInitiallyUnlisted?: boolean
@@ -34,18 +38,29 @@ type UsdcPurchaseGatedRadioFieldProps = {
 export const UsdcPurchaseGatedRadioField = (
   props: UsdcPurchaseGatedRadioFieldProps
 ) => {
-  const { isUpload, initialPremiumConditions, isInitiallyUnlisted } = props
+  const { isRemix, isUpload, initialPremiumConditions, isInitiallyUnlisted } = props
 
   const { isEnabled: isUsdcUploadEnabled } = useFlag(
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
 
-  const noUsdcPurchase =
+  const isInitiallyPublic =
+    !isUpload && !isInitiallyUnlisted && !initialPremiumConditions
+  const isInitiallySpecialAccess =
     !isUpload &&
-    !isPremiumContentUSDCPurchaseGated(initialPremiumConditions) &&
-    !isInitiallyUnlisted
+    !!(
+      isPremiumContentFollowGated(initialPremiumConditions) ||
+      isPremiumContentTipGated(initialPremiumConditions)
+    )
+  const isInitiallyCollectibleGated =
+    !isUpload && isPremiumContentCollectibleGated(initialPremiumConditions)
 
-  const disabled = noUsdcPurchase || !isUsdcUploadEnabled
+  const disabled =
+    isInitiallyPublic ||
+    isInitiallySpecialAccess ||
+    isInitiallyCollectibleGated ||
+    isRemix ||
+    !isUsdcUploadEnabled
 
   const helpContent = (
     <div className={styles.helpContent}>
