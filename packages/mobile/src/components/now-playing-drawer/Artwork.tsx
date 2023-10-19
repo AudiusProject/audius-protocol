@@ -1,9 +1,14 @@
 import type { CommonState, Nullable, Track } from '@audius/common'
-import { SquareSizes, averageColorSelectors } from '@audius/common'
+import {
+  DogEarType,
+  SquareSizes,
+  averageColorSelectors,
+  usePremiumContentAccess
+} from '@audius/common'
 import { Dimensions } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import { Shadow } from 'app/components/core'
+import { DogEar, Shadow } from 'app/components/core'
 import { TrackImage } from 'app/components/image/TrackImage'
 import { makeStyles } from 'app/styles'
 const { getDominantColorsByTrack } = averageColorSelectors
@@ -50,8 +55,17 @@ export const Artwork = ({ track }: ArtworkProps) => {
     shadowColor = `rgb(${r.toFixed()},${g.toFixed()},${b.toFixed()})`
   }
 
+  const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const shouldShowDogEar =
+    track?.premium_conditions &&
+    'usdc_purchase' in track.premium_conditions &&
+    !doesUserHaveAccess
+
   return (
     <Shadow opacity={0.2} radius={8} color={shadowColor} style={styles.root}>
+      {shouldShowDogEar ? (
+        <DogEar type={DogEarType.USDC_PURCHASE} borderOffset={2} />
+      ) : null}
       <TrackImage
         style={styles.image}
         track={track}

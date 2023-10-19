@@ -7,6 +7,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { FlatList } from 'react-native-gesture-handler'
 import { useAsync } from 'react-use'
 
+import IconEmbed from 'app/assets/images/iconEmbed.svg'
 import IconRemove from 'app/assets/images/iconRemove.svg'
 import { ModalScreen, Screen, SegmentedControl } from 'app/components/core'
 import { FilterInput } from 'app/components/filter-input'
@@ -103,6 +104,7 @@ const FeatureFlagScreen = () => {
     <Screen
       variant='secondary'
       title={messages.title}
+      icon={IconEmbed}
       topbarLeft={
         <TopBarIconButton icon={IconRemove} onPress={navigation.goBack} />
       }

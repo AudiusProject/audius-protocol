@@ -17,7 +17,9 @@ import {
   OverflowAction,
   OverflowSource,
   mobileOverflowMenuUIActions,
-  shareModalUIActions
+  shareModalUIActions,
+  usePremiumContentAccess,
+  formatPrice
 } from '@audius/common'
 import { View, Platform } from 'react-native'
 import { CastButton } from 'react-native-google-cast'
@@ -28,11 +30,13 @@ import IconChromecast from 'app/assets/images/iconChromecast.svg'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
 import { useAirplay } from 'app/components/audio/Airplay'
-import { IconButton } from 'app/components/core'
+import { Button, IconButton } from 'app/components/core'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
+import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
 import { FavoriteButton } from './FavoriteButton'
@@ -58,15 +62,24 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   container: {
     marginTop: spacing(10),
     height: spacing(12),
+    flexDirection: 'row',
+    gap: spacing(2)
+  },
+  actions: {
     borderRadius: 10,
+    height: spacing(12),
     backgroundColor: palette.neutralLight8,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-evenly'
+    justifyContent: 'space-evenly',
+    flexGrow: 1
   },
   button: {
     flexGrow: 1,
     alignItems: 'center'
+  },
+  buyButton: {
+    backgroundColor: palette.specialLightGreen
   },
   animatedIcon: {
     width: spacing(7),
@@ -96,6 +109,23 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+
+  const handlePurchasePress = useCallback(() => {
+    if (track?.track_id) {
+      dispatch(
+        setVisibility({
+          drawer: 'PremiumTrackPurchase',
+          visible: true,
+          data: { trackId: track.track_id }
+        })
+      )
+    }
+  }, [dispatch, track?.track_id])
+  const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const shouldShowPurchasePill =
+    track?.premium_conditions &&
+    'usdc_purchase' in track.premium_conditions &&
+    !doesUserHaveAccess
 
   useLayoutEffect(() => {
     if (Platform.OS === 'android' && castMethod === 'airplay') {
@@ -179,6 +209,24 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
 
   const { openAirplayDialog } = useAirplay()
 
+  const renderPurchaseButton = () => {
+    if (
+      track?.premium_conditions &&
+      'usdc_purchase' in track.premium_conditions
+    ) {
+      const price = track.premium_conditions.usdc_purchase.price
+      return (
+        <Button
+          style={styles.buyButton}
+          styles={{ icon: { width: spacing(4), height: spacing(4) } }}
+          title={`$${formatPrice(price)}`}
+          size='large'
+          onPress={handlePurchasePress}
+        />
+      )
+    }
+  }
+
   const renderCastButton = () => {
     if (castMethod === 'airplay') {
       return (
@@ -258,11 +306,14 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
 
   return (
     <View style={styles.container}>
-      {renderCastButton()}
-      {renderRepostButton()}
-      {renderFavoriteButton()}
-      {renderShareButton()}
-      {renderOptionsButton()}
+      {shouldShowPurchasePill ? renderPurchaseButton() : null}
+      <View style={styles.actions}>
+        {!shouldShowPurchasePill ? renderCastButton() : null}
+        {!shouldShowPurchasePill ? renderRepostButton() : null}
+        {renderFavoriteButton()}
+        {renderShareButton()}
+        {renderOptionsButton()}
+      </View>
     </View>
   )
 }

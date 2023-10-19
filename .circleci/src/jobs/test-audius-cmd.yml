@@ -1,6 +1,5 @@
-machine:
-  image: ubuntu-2204:current
-resource_class: large
+machine: true
+resource_class: audiusproject/gcp-n2-standard-4
 steps:
   - checkout:
       path: '~/audius-protocol'
@@ -8,4 +7,17 @@ steps:
   - run:
       name: audius-cmd test
       no_output_timeout: 15m
-      command: . ~/.profile; audius-compose up --prod && audius-cmd test
+      command: |
+        . ~/.profile
+        if ! (audius-compose up --prod && audius-cmd test); then
+          echo
+          echo "TEST FAILURE"
+          echo "Performing cleanup"
+          echo
+          audius-compose down
+          false
+        fi
+  - run:
+      name: cleanup
+      no_output_timeout: 15m
+      command: . ~/.profile; audius-compose down

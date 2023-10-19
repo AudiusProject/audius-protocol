@@ -638,6 +638,7 @@ export const PremiumTrackSection = ({
   const dispatch = useDispatch()
   const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
   const premiumTrackStatus = premiumTrackStatusMap[trackId] ?? null
+
   const isFollowGated = isPremiumContentFollowGated(premiumConditions)
   const isTipGated = isPremiumContentTipGated(premiumConditions)
   const isUSDCPurchaseGated =

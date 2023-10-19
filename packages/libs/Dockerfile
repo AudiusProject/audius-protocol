@@ -31,7 +31,7 @@ COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/package-lock.json ./package-lock.json
 COPY --from=builder /app/scripts ./scripts
 
-RUN CI=true npm run install-packages
+RUN CI=true npm i
 
 # Build the project and its dependencies
 COPY --from=builder /app/out/full/ .

@@ -6,7 +6,9 @@ import {
   cacheTracksSelectors,
   CommonState,
   accountSelectors,
-  averageColorSelectors
+  averageColorSelectors,
+  DogEarType,
+  usePremiumContentAccess
 } from '@audius/common'
 import { IconButton } from '@audius/stems'
 import { animated, useSpring } from '@react-spring/web'
@@ -14,6 +16,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link, useHistory } from 'react-router-dom'
 
 import { ReactComponent as IconVisualizer } from 'assets/img/iconVisualizer.svg'
+import { DogEar } from 'components/dog-ear'
 import { Draggable } from 'components/dragndrop'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
@@ -47,7 +50,10 @@ const FadeInUp = (props: FadeInUpProps) => {
   })
 
   return (
-    <animated.div className={styles.root} style={{ ...slideInProps, ...style }}>
+    <animated.div
+      className={styles.fadeIn}
+      style={{ ...slideInProps, ...style }}
+    >
       {children}
     </animated.div>
   )
@@ -59,9 +65,14 @@ export const NowPlayingArtworkTile = () => {
   const { pathname } = location
 
   const trackId = useSelector(getTrackId)
-  const trackTitle = useSelector(
-    (state: CommonState) => getTrack(state, { id: trackId })?.title
+  const track = useSelector((state: CommonState) =>
+    getTrack(state, { id: trackId })
   )
+  const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const shouldShowPurchaseDogEar =
+    track?.premium_conditions &&
+    'usdc_purchase' in track.premium_conditions &&
+    !doesUserHaveAccess
 
   const isOwner = useSelector((state: CommonState) => {
     const ownerId = getTrack(state, { id: trackId })?.owner_id
@@ -111,19 +122,25 @@ export const NowPlayingArtworkTile = () => {
         ${coverArtColorMap.r},
         ${coverArtColorMap.g},
         ${coverArtColorMap.b}
-        , 0.7)`
+        , 0.25)`
   })
 
   if (!permalink || !trackId) return null
 
   return (
     <Draggable
-      text={trackTitle}
+      text={track?.title}
       kind='track'
       id={trackId}
       isOwner={isOwner}
       link={fullTrackPage(permalink)}
+      className={styles.root}
     >
+      {shouldShowPurchaseDogEar ? (
+        <div className={styles.borderOffset}>
+          <DogEar type={DogEarType.USDC_PURCHASE} className={styles.dogEar} />
+        </div>
+      ) : null}
       <FadeInUp style={{ boxShadow: coverArtColor }}>
         <Link to={permalink} aria-label={messages.viewTrack}>
           <DynamicImage
