@@ -744,16 +744,17 @@ function* doLogError({ payload: { error } }: ReturnType<typeof logError>) {
   // to prevent sending the same error over and over again.
   // * Configure sentry to limit based on type?
   // * Store the error in slice and only send if it's different? (the url changes often)
-  const reportToSentry = yield* getContext('reportToSentry')
-  const { code, url } = error
-  reportToSentry({
-    level: ErrorLevel.Error,
-    error,
-    additionalInfo: {
-      code,
-      url
-    }
-  })
+  // ORRRR consider ditching this altogether and change the middleware to only throw the error if it has a code?
+  // const reportToSentry = yield* getContext('reportToSentry')
+  const { code /* url */ } = error
+  // reportToSentry({
+  //   level: ErrorLevel.Error,
+  //   error,
+  //   additionalInfo: {
+  //     code,
+  //     url
+  //   }
+  // })
   yield* call(track, make({ eventName: Name.CHAT_WEBSOCKET_ERROR, code }))
 }
 
