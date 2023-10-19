@@ -3,7 +3,8 @@ import { useEffect } from 'react'
 import {
   getPathFromTrackUrl,
   useGetTrackByPermalink,
-  accountSelectors
+  accountSelectors,
+  usePremiumContentAccess
 } from '@audius/common'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
@@ -16,7 +17,7 @@ import { SwitchRowField } from '../SwitchRowField'
 
 import styles from './RemixSettingsField.module.css'
 import { TrackInfo } from './TrackInfo'
-import { IS_REMIX, REMIX_LINK, SHOW_REMIXES } from './types'
+import { CAN_REMIX_PARENT, IS_REMIX, REMIX_LINK, SHOW_REMIXES } from './types'
 const { getUserId } = accountSelectors
 
 const messages = {
@@ -35,6 +36,7 @@ const messages = {
 
 export const RemixSettingsMenuFields = () => {
   const [{ value: trackUrl }] = useField(REMIX_LINK)
+  const [, , { setValue: setCanRemixParent }] = useField(CAN_REMIX_PARENT)
   const permalink = useThrottle(getPathFromTrackUrl(trackUrl), 1000)
   const currentUserId = useSelector(getUserId)
 
@@ -44,12 +46,16 @@ export const RemixSettingsMenuFields = () => {
   )
 
   const trackId = track?.track_id
+  const { doesUserHaveAccess: canRemixParent } = usePremiumContentAccess(
+    track ?? null
+  )
 
   const [, , { setValue: setParentTrackId }] = useField('parentTrackId')
 
   useEffect(() => {
     setParentTrackId(trackId)
-  }, [trackId, setParentTrackId])
+    setCanRemixParent(canRemixParent)
+  }, [trackId, setParentTrackId, canRemixParent, setCanRemixParent])
 
   return (
     <div className={styles.fields}>

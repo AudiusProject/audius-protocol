@@ -25,6 +25,7 @@ import styles from './RemixSettingsField.module.css'
 import { RemixSettingsMenuFields } from './RemixSettingsMenuFields'
 import { TrackInfo } from './TrackInfo'
 import {
+  CAN_REMIX_PARENT,
   IS_REMIX,
   REMIX_LINK,
   REMIX_OF,
@@ -64,7 +65,10 @@ export const RemixSettingsField = () => {
   const isRemix = Boolean(remixOf && remixOf?.tracks.length > 0)
 
   const initialValues = useMemo(() => {
-    const initialValues = { parentTrackId }
+    const initialValues = {
+      parentTrackId,
+      [CAN_REMIX_PARENT]: true
+    }
     set(initialValues, SHOW_REMIXES, showRemixes)
     set(initialValues, IS_REMIX, isRemix)
     set(initialValues, REMIX_LINK, remixLink)
