@@ -109,14 +109,20 @@ steps:
           fi
 
 
-          # Generate git diff for audius-docker-compose commits from last "release-vX.Y.Z auto-deploy" commit to HEAD
+          # Update tags in audius-docker-compose stage branch
           cd ..
           git clone --branch stage https://github.com/AudiusProject/audius-docker-compose.git audius-docker-compose
           cd audius-docker-compose
           last_release_commit=$(git log --format=format:%H --grep='^release-v.*auto-deploy$' -1)
-          GIT_DIFF=$(git log --pretty=format:'%an - %s [<https://github.com/AudiusProject/audius-docker-compose/commit/%H|%h>]' --abbrev-commit $last_release_commit..HEAD | grep -v '^audius-infra - Update tag to' | sed 's/"/\\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/=DELIM@/g')
-          git commit --allow-empty -m "$CIRCLE_BRANCH auto-deploy"
+          sed -i "s/{TAG:-.*}/{TAG:-$CIRCLE_SHA1}/" creator-node/docker-compose*.yml
+          sed -i "s/{TAG:-.*}/{TAG:-$CIRCLE_SHA1}/" discovery-provider/docker-compose*.yml
+          sed -i "s/{TAG:-.*}/{TAG:-$CIRCLE_SHA1}/" identity-service/docker-compose*.yml
+          git add */docker-compose*.yml
+          git commit -m "$CIRCLE_BRANCH auto-deploy"
           git push origin stage
+
+          # Generate git diff for audius-docker-compose commits from last "release-vX.Y.Z auto-deploy" commit to HEAD
+          GIT_DIFF=$(git log --pretty=format:'%an - %s [<https://github.com/AudiusProject/audius-docker-compose/commit/%H|%h>]' --abbrev-commit $last_release_commit..HEAD | grep -v '^audius-infra - Update tag to' | sed 's/"/\\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/=DELIM@/g')
           most_recent_commit=$(git rev-parse --verify HEAD)
           audius_docker_compose_commit_blocks=$(generate_json_content "$GIT_DIFF")
           if [ -z "$audius_docker_compose_commit_blocks" ]; then
