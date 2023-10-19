@@ -26,10 +26,14 @@ export type TextInputProps = Omit<
    */
   error?: boolean
   /**
-   * Hides the label. If the label is hidden the placeholder will show instead.
+   * Hides the label. If the label is hidden the placeholder will show by default instead.
    * @default false
    */
   hideLabel?: boolean
+  /**
+   * Label Text. Required to provide due to accessibility. If the hideLabel is true, the label used via aria-label
+   */
+  label: string
   /**
    * ClassName on the div wrapping the whole input container (doesn't include assistive text)
    */
@@ -68,19 +72,4 @@ export type TextInputProps = Omit<
    * @default 0.9
    */
   maxLengthWarningThreshold?: number
-} & ( // Make either label or aria-label required prop
-    | {
-        /**
-         * Label Text (Required if aria-label is not provided)
-         */
-        label: string
-        ['aria-label']?: string
-      }
-    | {
-        /**
-         * Label Text (Required if aria-label is not provided)
-         */
-        ['aria-label']: string
-        label?: string
-      }
-  )
+}

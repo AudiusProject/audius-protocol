@@ -90,6 +90,6 @@ export const Disabled: Story = {
     label: 'Input Label',
     helperText: 'This is assistive text.',
     disabled: true,
-    value: 'You couldnt change me if you tried'
+    value: "You couldn't change me if you tried"
   }
 }
