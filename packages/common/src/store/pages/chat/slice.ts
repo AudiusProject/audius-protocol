@@ -21,6 +21,8 @@ import { signOut } from 'store/sign-out/slice'
 import { hasTail } from 'utils/chatUtils'
 import { encodeHashId } from 'utils/hashIds'
 
+import { ChatWebsocketError } from './types'
+
 type UserChatWithMessagesStatus = UserChat & {
   messagesStatus?: Status
   messagesSummary?: TypedCommsResponse<ChatMessage>['summary']
@@ -613,6 +615,12 @@ const slice = createSlice({
       const { chatId } = action.payload
       chatsAdapter.removeOne(state.chats, chatId)
       chatMessagesAdapter.removeAll(state.messages[chatId])
+    },
+    logError: (
+      _state,
+      _action: PayloadAction<{ error: ChatWebsocketError }>
+    ) => {
+      // triggers saga
     }
   },
   extraReducers: {

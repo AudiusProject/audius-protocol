@@ -1,4 +1,7 @@
+import { withThemeByDataAttribute } from '@storybook/addon-themes'
+
 // This file is used to configure all stories
+import './global.css'
 import 'assets/styles/reset.css'
 import 'assets/fonts/avenir.css'
 import 'assets/styles/fonts.css'
@@ -13,3 +16,15 @@ import 'assets/styles/shadows.css'
 export const parameters = {
   viewMode: 'docs'
 }
+
+export const decorators = [
+  withThemeByDataAttribute({
+    themes: {
+      default: 'default',
+      dark: 'dark',
+      matrix: 'matrix'
+    },
+    defaultTheme: 'default',
+    attributeName: 'data-theme'
+  })
+]

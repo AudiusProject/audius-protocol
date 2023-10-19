@@ -325,7 +325,7 @@ const TrackHeader = ({
     if (!isLoading && DogEarType) {
       return (
         <div className={styles.borderOffset}>
-          <DogEar type={DogEarType} className={styles.DogEar} />
+          <DogEar type={DogEarType} />
         </div>
       )
     }

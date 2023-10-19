@@ -321,6 +321,7 @@ export enum Name {
   // Buy USDC
   BUY_USDC_ON_RAMP_OPENED = 'Buy USDC: On Ramp Opened',
   BUY_USDC_ON_RAMP_CANCELED = 'Buy USDC: On Ramp Canceled',
+  BUY_USDC_ON_RAMP_FAILURE = 'Buy USDC: On Ramp Failed',
   BUY_USDC_ON_RAMP_SUCCESS = 'Buy USDC: On Ramp Success',
   BUY_USDC_SUCCESS = 'Buy USDC: Success',
   BUY_USDC_FAILURE = 'Buy USDC: Failure',
@@ -364,7 +365,8 @@ export enum Name {
   MESSAGE_UNFURL_PLAYLIST = 'Message Unfurl: Playlist',
   TIP_UNLOCKED_CHAT = 'Unlocked Chat: Tip',
   CHAT_REPORT_USER = 'Report User: Chat',
-  CHAT_ENTRY_POINT = 'Chat Entry Point'
+  CHAT_ENTRY_POINT = 'Chat Entry Point',
+  CHAT_WEBSOCKET_ERROR = 'Chat Websocket Error'
 }
 
 type PageView = {
@@ -1559,6 +1561,12 @@ type BuyUSDCOnRampCanceled = {
   provider: string
 }
 
+type BuyUSDCOnRampFailed = {
+  eventName: Name.BUY_USDC_ON_RAMP_FAILURE
+  error: string
+  provider: string
+}
+
 type BuyUSDCOnRampSuccess = {
   eventName: Name.BUY_USDC_ON_RAMP_SUCCESS
   provider: string
@@ -1735,6 +1743,11 @@ type ChatReportUser = {
 type ChatEntryPoint = {
   eventName: Name.CHAT_ENTRY_POINT
   source: 'banner' | 'navmenu' | 'share' | 'profile'
+}
+
+type ChatWebsocketError = {
+  eventName: Name.CHAT_WEBSOCKET_ERROR
+  code?: string
 }
 
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
@@ -1933,6 +1946,7 @@ export type AllTrackingEvents =
   | BuyUSDCOnRampOpened
   | BuyUSDCOnRampSuccess
   | BuyUSDCOnRampCanceled
+  | BuyUSDCOnRampFailed
   | BuyUSDCSuccess
   | BuyUSDCFailure
   | BuyUSDCRecoveryInProgress
@@ -1974,3 +1988,4 @@ export type AllTrackingEvents =
   | DeveloperAppDeleteSuccess
   | DeveloperAppDeleteError
   | ChatEntryPoint
+  | ChatWebsocketError

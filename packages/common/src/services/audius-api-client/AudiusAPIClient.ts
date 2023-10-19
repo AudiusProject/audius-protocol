@@ -401,6 +401,7 @@ type UserChallengesResponse = [
     max_steps: number
     challenge_type: string
     amount: string
+    disbursed_amount: number
     metadata: object
   }
 ]

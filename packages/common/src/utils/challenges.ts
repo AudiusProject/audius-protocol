@@ -245,6 +245,14 @@ export const isAudioMatchingChallenge = (
   )
 }
 
+// TODO: currently only $AUDIO matching challenges have cooldown
+// so this works, but really we should check if `cooldown_period` exists on the
+// challenge instead of using `!isAudioMatchingChallenge`. PAY-2030
 export const isCooldownChallengeClaimable = (
   challenge: UndisbursedUserChallenge
-) => dayjs.utc().diff(dayjs.utc(challenge.created_at), 'day') >= 7
+) => {
+  return (
+    !isAudioMatchingChallenge(challenge.challenge_id) ||
+    dayjs.utc().diff(dayjs.utc(challenge.created_at), 'day') >= 7
+  )
+}

@@ -10,10 +10,3 @@ for dir in contracts eth-contracts packages/identity-service libs; do
     cd "$PROTOCOL_DIR/$dir"
     nvm install
 done
-
-# Link libs
-cd $PROTOCOL_DIR/packages/libs
-nvm use
-npm i
-npm run build
-npm link

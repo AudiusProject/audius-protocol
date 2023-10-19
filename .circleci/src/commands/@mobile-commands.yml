@@ -67,8 +67,11 @@ mobile-prepare-ios:
           curl -sL https://sentry.io/get-cli/ | bash
           echo export SENTRY_BINARY=/usr/local/bin/sentry-cli >> "$BASH_ENV"
     - run:
+        name: Build dependencies
+        command: npx turbo run build --filter=audius-mobile-client
+    - run:
         name: create bundle
-        command: cd packages/mobile && npm run bundle:ios
+        command: cd packages/mobile && npx turbo run bundle:ios
     - run:
         name: update fastlane
         command: cd packages/mobile/ios && sudo bundle update fastlane
@@ -142,6 +145,9 @@ mobile-prepare-android:
     - run:
         name: update fastlane
         command: cd packages/mobile/android && sudo bundle update fastlane
+    - run:
+        name: Build dependencies
+        command: npx turbo run build --filter=audius-mobile-client
     - run:
         name: fetch app fastlane json config to upload to play store
         command: |
@@ -230,6 +236,9 @@ mobile-release-saga-dapp-store:
           corepack enable --install-directory ~/bin
           corepack prepare pnpm@`npm info pnpm --json | jq -r .version` --activate
           pnpm install
+    - run:
+        name: Build dependencies
+        command: npx turbo run build --filter=audius-mobile-client
     - run:
         name: Install solana
         command: |

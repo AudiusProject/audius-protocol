@@ -3,19 +3,28 @@ import { StorybookConfig } from '@storybook/react-webpack5'
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(mdx|ts|tsx)'],
-  addons: ['@storybook/addon-essentials', '@storybook/addon-a11y'],
+  addons: [
+    {
+      name: '@storybook/addon-essentials',
+      options: {
+        backgrounds: false
+      }
+    },
+    '@storybook/addon-a11y',
+    '@storybook/addon-themes'
+  ],
   framework: {
     name: '@storybook/react-webpack5',
     options: {}
   },
   babel: (options) => ({
     ...options,
-    presets: [...(options?.presets ?? []), '@emotion/babel-preset-css-prop'],
+    presets: [...(options?.presets ?? []), '@emotion/babel-preset-css-prop']
   }),
   docs: {
     autodocs: true,
     // autodocs: 'tag',
-    defaultName: 'Documentation',
+    defaultName: 'Documentation'
   },
   webpackFinal: (config: any) => {
     config.module.rules.find(

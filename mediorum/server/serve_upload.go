@@ -34,8 +34,8 @@ func (ss *MediorumServer) serveUploadList(c echo.Context) error {
 	afterCursor, _ := time.Parse(time.RFC3339Nano, c.QueryParam("after"))
 	var uploads []Upload
 	err := ss.crud.DB.
-		Where("created_at > ? or transcoded_at > ?", afterCursor, afterCursor).
-		Order(`created_at, transcoded_at`).Limit(1000).Find(&uploads).Error
+		Where("created_at > ?", afterCursor).
+		Order(`created_at`).Limit(2000).Find(&uploads).Error
 	if err != nil {
 		return err
 	}

@@ -154,7 +154,7 @@ export type SolCollectionMap = {
 export type PremiumTrackStatus = null | 'UNLOCKING' | 'UNLOCKED' | 'LOCKED'
 
 export type TrackMetadata = {
-  ai_attribution_user_id?: number
+  ai_attribution_user_id?: Nullable<number>
   blocknumber: number
   activity_timestamp?: string
   is_delete: boolean

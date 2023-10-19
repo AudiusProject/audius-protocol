@@ -28,6 +28,10 @@ export const getCollection = (
     return getSmartCollection(state, { variant: smartCollectionVariant })
   }
 
+  if (params?.id) {
+    return getCachedCollection(state, params)
+  }
+
   const permalink = getCollectionPermalink(state)
   if (permalink) {
     return getCachedCollection(state, { permalink })

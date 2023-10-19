@@ -1,14 +1,29 @@
-import type { Nullable, Track, User } from '@audius/common'
+import {
+  usePremiumContentAccess,
+  type Nullable,
+  type Track,
+  type User
+} from '@audius/common'
 import { TouchableOpacity, View } from 'react-native'
 
-import { Text } from 'app/components/core'
+import { LockedStatusBadge, Text } from 'app/components/core'
 import UserBadges from 'app/components/user-badges/UserBadges'
 import { makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
 
+const messages = {
+  preview: 'PREVIEW'
+}
+
 const useStyles = makeStyles(({ typography, spacing }) => ({
   root: {
     alignItems: 'center'
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing(2),
+    flexWrap: 'wrap'
   },
   trackTitle: {
     textAlign: 'center'
@@ -38,14 +53,32 @@ export const TrackInfo = ({
   user
 }: TrackInfoProps) => {
   const styles = useStyles()
+  const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const shouldShowPreviewLock =
+    track?.premium_conditions &&
+    'usdc_purchase' in track.premium_conditions &&
+    !doesUserHaveAccess
+
   return (
     <View style={styles.root}>
       {user && track ? (
         <>
-          <TouchableOpacity onPress={onPressTitle}>
+          <TouchableOpacity
+            style={styles.titleContainer}
+            onPress={onPressTitle}
+          >
             <Text numberOfLines={2} style={styles.trackTitle} variant='h1'>
               {track.title}
             </Text>
+            {shouldShowPreviewLock ? (
+              <LockedStatusBadge
+                variant='purchase'
+                locked
+                coloredWhenLocked
+                iconSize='small'
+                text={messages.preview}
+              />
+            ) : null}
           </TouchableOpacity>
           <TouchableOpacity onPress={onPressArtist}>
             <View style={styles.artistInfo}>
