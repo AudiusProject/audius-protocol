@@ -209,6 +209,9 @@ export const makeOptimisticChallengeSortComparator = (
     const userChallenge1 = userChallenges[id1]
     const userChallenge2 = userChallenges[id2]
 
+    if (isAudioMatchingChallenge(id1)) {
+      return -1
+    }
     if (!userChallenge1 || !userChallenge2) {
       return 0
     }
