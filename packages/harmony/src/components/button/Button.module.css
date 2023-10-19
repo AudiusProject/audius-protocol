@@ -221,6 +221,10 @@ html[data-theme='dark'] {
     --text-color: var(--harmony-white);
   }
 
+  .secondary:hover {
+    --overlay-opacity: 0.2;
+  }
+
   .tertiary {
     --button-color: var(--harmony-bg-white);
     --text-color: var(--harmony-text-default);
