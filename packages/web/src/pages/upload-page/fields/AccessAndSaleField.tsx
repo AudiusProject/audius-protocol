@@ -450,7 +450,10 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     !isUpload && isPremiumContentCollectibleGated(initialPremiumConditions)
 
   const noSpecialAccess =
-    isInitiallyPublic || isInitiallyUsdcGated || isInitiallyCollectibleGated || isRemix
+    isInitiallyPublic ||
+    isInitiallyUsdcGated ||
+    isInitiallyCollectibleGated ||
+    isRemix
   const noSpecialAccessOptions =
     noSpecialAccess || (!isUpload && !isInitiallyUnlisted)
 

@@ -2,7 +2,6 @@ import {
   PremiumConditions,
   TrackAvailabilityType,
   collectiblesSelectors,
-  isPremiumContentCollectibleGated,
   isPremiumContentFollowGated,
   isPremiumContentTipGated,
   isPremiumContentUSDCPurchaseGated

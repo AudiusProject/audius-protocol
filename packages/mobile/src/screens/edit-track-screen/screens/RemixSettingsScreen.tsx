@@ -193,11 +193,8 @@ export const RemixSettingsScreen = () => {
 
   const { doesUserHaveAccess } = usePremiumContentAccess(parentTrack)
   const hasErrors = Boolean(
-    isTrackRemix && (
-      isInvalidParentTrack ||
-      isRemixUrlMissing ||
-      !doesUserHaveAccess
-    )
+    isTrackRemix &&
+      (isInvalidParentTrack || isRemixUrlMissing || !doesUserHaveAccess)
   )
 
   return (

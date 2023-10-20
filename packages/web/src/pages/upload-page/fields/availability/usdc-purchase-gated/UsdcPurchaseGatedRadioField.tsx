@@ -4,8 +4,7 @@ import {
   TrackAvailabilityType,
   isPremiumContentCollectibleGated,
   isPremiumContentFollowGated,
-  isPremiumContentTipGated,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentTipGated
 } from '@audius/common'
 import { IconCart, IconStars } from '@audius/stems'
 
@@ -38,7 +37,8 @@ type UsdcPurchaseGatedRadioFieldProps = {
 export const UsdcPurchaseGatedRadioField = (
   props: UsdcPurchaseGatedRadioFieldProps
 ) => {
-  const { isRemix, isUpload, initialPremiumConditions, isInitiallyUnlisted } = props
+  const { isRemix, isUpload, initialPremiumConditions, isInitiallyUnlisted } =
+    props
 
   const { isEnabled: isUsdcUploadEnabled } = useFlag(
     FeatureFlags.USDC_PURCHASES_UPLOAD

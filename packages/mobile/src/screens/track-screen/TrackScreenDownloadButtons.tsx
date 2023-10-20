@@ -51,9 +51,7 @@ const DownloadButton = ({
   const requiresFollow = state === ButtonState.REQUIRES_FOLLOW
   const isProcessing = state === ButtonState.PROCESSING
   const isDisabled =
-    !doesUserHaveAccess ||
-    state === ButtonState.PROCESSING ||
-    requiresFollow
+    !doesUserHaveAccess || state === ButtonState.PROCESSING || requiresFollow
 
   const handlePress = useCallback(() => {
     if (requiresFollow) {
@@ -69,7 +67,7 @@ const DownloadButton = ({
     }
 
     onClick()
-  }, [isDisabled, onClick, requiresFollow, toast])
+  }, [isDisabled, onClick, requiresFollow, doesUserHaveAccess, toast])
 
   // Manually handling disabled state in order to show a toast
   // when a follow is required

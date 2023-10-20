@@ -14,14 +14,14 @@ import { useThrottle } from 'react-use'
 
 import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
+import { HelpCallout } from 'components/help-callout/HelpCallout'
 
+import { IS_PREMIUM, PREMIUM_CONDITIONS } from '../AccessAndSaleField'
 import { SwitchRowField } from '../SwitchRowField'
 
 import styles from './RemixSettingsField.module.css'
 import { TrackInfo } from './TrackInfo'
 import { CAN_REMIX_PARENT, IS_REMIX, REMIX_LINK, SHOW_REMIXES } from './types'
-import { HelpCallout } from 'components/help-callout/HelpCallout'
-import { IS_PREMIUM, PREMIUM_CONDITIONS } from '../AccessAndSaleField'
 const { getUserId } = accountSelectors
 
 const messages = {
@@ -72,16 +72,16 @@ export const RemixSettingsMenuFields = () => {
   return (
     <div className={styles.fields}>
       {isPremium ? (
-          <HelpCallout
-            content={`${messages.changeAvailabilityPrefix} ${
-              isPremiumContentUSDCPurchaseGated(premiumConditions)
-                ? messages.premium
-                : isPremiumContentCollectibleGated(premiumConditions)
-                ? messages.collectibleGated
-                : messages.specialAccess
-            }${messages.changeAvailabilitySuffix}`}
-          />
-        ) : null}
+        <HelpCallout
+          content={`${messages.changeAvailabilityPrefix} ${
+            isPremiumContentUSDCPurchaseGated(premiumConditions)
+              ? messages.premium
+              : isPremiumContentCollectibleGated(premiumConditions)
+              ? messages.collectibleGated
+              : messages.specialAccess
+          }${messages.changeAvailabilitySuffix}`}
+        />
+      ) : null}
       <SwitchRowField
         name={SHOW_REMIXES}
         header={messages.hideRemix.header}
