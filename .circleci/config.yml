@@ -104,14 +104,17 @@ jobs:
             OLD_VERSION=$(jq -r .version packages/discovery-provider/.version.json)
             NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
 
+            # Bump version for content node
             jq --arg version "$NEW_VERSION" '.version=$version' mediorum/.version.json > /tmp/.version.json
             mv /tmp/.version.json mediorum/.version.json
             git add mediorum/.version.json
 
+            # Bump version for discovery node
             jq --arg version "$NEW_VERSION" '.version=$version' packages/discovery-provider/.version.json > /tmp/.version.json
             mv /tmp/.version.json packages/discovery-provider/.version.json
             git add packages/discovery-provider/.version.json
 
+            # Weird way to push both to main and the new release branch
             git commit -m "Bump version to $NEW_VERSION"
             git branch "release-v$NEW_VERSION"
             git checkout "release-v$NEW_VERSION"
