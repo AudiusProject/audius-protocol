@@ -74,7 +74,7 @@ jobs:
       requires:
         - release-governance-trigger
   
-  - alert-slack-push-success:
+  - commit-audius-docker-compose-and-notify:
       context: [slack-secrets, github]
       requires:
         - push-identity-service
@@ -90,7 +90,7 @@ jobs:
 
   - deploy-foundation-nodes-trigger:
       requires:
-        - alert-slack-push-success
+        - commit-audius-docker-compose-and-notify
       type: approval
   - deploy-foundation-nodes:
       context: github
