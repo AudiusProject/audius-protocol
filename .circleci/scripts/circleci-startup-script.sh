@@ -55,3 +55,7 @@ WantedBy = multi-user.target
 EOT
 systemctl enable circleci.service
 systemctl start circleci.service
+
+# Periodically clean up local docker registry
+# Runs every hour, checks if disk usage exceeds 80%, then runs docker system prune
+echo '5 * * * * root [ $(df | grep /dev/root | awk '"'"'{print $5}'"'"' | grep -oP "^\d+") -gt 80 ] && docker system prune -f | logger -t dockerprune' >> /etc/crontab
