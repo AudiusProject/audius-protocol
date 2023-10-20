@@ -64,8 +64,8 @@ jobs:
           name: Install dependencies
           # If node_modules exists in cache, run postinstall. Otherwise, run npm ci
           command: |
-            [[ ! -d node_modules ]] || npm run postinstall
-            [[ -d node_modules ]] || npm ci
+            [[ ! -d node_modules ]] || CI=true npm run postinstall
+            [[ -d node_modules ]] || CI=true npm ci
 
       - save_cache:
           key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}

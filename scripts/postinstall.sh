@@ -11,7 +11,9 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
   if command -v pod >/dev/null; then
     pod install
   fi
+  cd ../../..
 fi
 
-cd ../../..
-./dev-tools/setup.sh
+if [[ -z "${CI}" ]]; then
+  ./dev-tools/setup.sh
+fi
