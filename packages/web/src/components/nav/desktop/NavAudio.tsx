@@ -137,7 +137,11 @@ const NavAudio = () => {
   }
 
   return (
-    <div className={styles.audio}>
+    <div
+      className={cn(styles.audio, {
+        [styles.hasAction]: bubbleType === 'claim' || bubbleType === 'earn'
+      })}
+    >
       <div
         className={cn(styles.amountContainer, styles.interactive, {
           [styles.hasBalance]: positiveTotalBalance
