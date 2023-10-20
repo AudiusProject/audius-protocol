@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import React from 'react'
 
+import { removeNullable } from '@audius/common'
 import { View } from 'react-native'
 
 import { Text } from 'app/components/core'
@@ -23,9 +24,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   lastRow: {
     borderBottomWidth: 0
-  },
-  title: {
-    letterSpacing: 1
   },
   greyRow: {
     backgroundColor: palette.neutralLight10
@@ -56,22 +54,21 @@ export const SummaryTable = ({
   summaryValueColor = 'secondary'
 }: SummaryTableProps) => {
   const styles = useStyles()
+  const nonNullItems = items.filter(removeNullable)
   return (
     <View style={styles.container}>
       <View style={[styles.row, styles.greyRow]}>
-        <Text weight='bold' textTransform='uppercase' style={styles.title}>
-          {title}
-        </Text>
-        <Text variant='body' fontSize='large'>
+        <Text weight='bold'>{title}</Text>
+        <Text variant='body' fontSize='large' weight='bold'>
           {secondaryTitle}
         </Text>
       </View>
-      {items.map(({ id, label, value }, index) => (
+      {nonNullItems.map(({ id, label, value }, index) => (
         <View
           key={id}
           style={[
             styles.row,
-            summaryItem === undefined && index === items.length - 1
+            summaryItem === undefined && index === nonNullItems.length - 1
               ? styles.lastRow
               : null
           ]}
@@ -81,7 +78,7 @@ export const SummaryTable = ({
         </View>
       ))}
       {summaryItem !== undefined ? (
-        <View style={[styles.row, styles.lastRow]}>
+        <View style={[styles.row, styles.lastRow, styles.greyRow]}>
           <Text
             variant='body'
             fontSize='medium'

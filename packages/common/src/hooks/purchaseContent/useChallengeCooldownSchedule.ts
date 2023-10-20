@@ -49,7 +49,7 @@ const getAudioMatchingCooldownLabel = (now: Dayjs, created_at: Dayjs) => {
   } else if (diff === COOLDOWN_DAYS - 2) {
     return messages.tomorrow
   }
-  return created_at.local().add(COOLDOWN_DAYS, 'day').format('ddd M/D')
+  return created_at.local().add(COOLDOWN_DAYS, 'day').format('ddd (M/D)')
 }
 
 const formatAudioMatchingChallengeCooldownSchedule = (
