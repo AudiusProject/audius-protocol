@@ -17,17 +17,12 @@ export default defineConfig({
     svgr(),
     
     nodePolyfills({
-      // To exclude specific polyfills, add them to this list
-      exclude: [
-        'fs', // Excludes the polyfill for `fs` and `node:fs`
-      ],
-      // Whether to polyfill specific globals
+      exclude: ['fs'],
       globals: {
-        Buffer: true, // can also be 'build', 'dev', or false
+        Buffer: true,
         global: true,
         process: true,
       },
-      // Whether to polyfill `node:` protocol imports
       protocolImports: true,
     }),
   ],
@@ -49,9 +44,9 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
   },
-  // Base URL. Set to /dashboard/ in Dockerfile.
-  // When deploying: leave DASHBOARD_BASE_URL unset
-  base: process.env.DASHBOARD_BASE_URL || '/',
+  // Base URL. Set DASHBOARD_BASE_URL to /dashboard/ in Dockerfile.
+  // When deploying: leave DASHBOARD_BASE_URL unset (or set to './')
+  base: process.env.VITE_DASHBOARD_BASE_URL || './',
   build: {
     commonjsOptions: {
       transformMixedEsModules: true,
