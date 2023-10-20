@@ -4,7 +4,7 @@ import { SummaryTable } from '../summary-table'
 import type { SummaryTableItem } from '../summary-table/SummaryTable'
 
 const messages = {
-  summary: 'Summary',
+  summary: 'Transaction Summary',
   payExtra: 'Pay Extra',
   premiumTrack: 'Premium Track',
   existingBalance: 'Existing Balance',
