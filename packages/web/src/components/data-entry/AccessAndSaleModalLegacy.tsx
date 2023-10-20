@@ -6,7 +6,8 @@ import {
   isPremiumContentCollectibleGated,
   isPremiumContentFollowGated,
   isPremiumContentTipGated,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentUSDCPurchaseGated,
+  useUSDCPurchaseConfig
 } from '@audius/common'
 import {
   Button,
@@ -22,6 +23,7 @@ import { set, get } from 'lodash'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { TrackMetadataState } from 'components/track-availability-modal/types'
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { defaultFieldVisibility } from 'pages/track-page/utils'
 import {
   AVAILABILITY_TYPE,
@@ -80,6 +82,8 @@ export const AccessAndSaleModalLegacy = (
     preview_start_seconds: preview,
     ...fieldVisibility
   } = metadataState
+
+  const usdcPurchaseConfig = useUSDCPurchaseConfig(useRemoteVar)
 
   const initialValues: AccessAndSaleFormValues = useMemo(() => {
     const isUsdcGated = isPremiumContentUSDCPurchaseGated(premiumConditions)
@@ -198,7 +202,7 @@ export const AccessAndSaleModalLegacy = (
       initialValues={initialValues}
       onSubmit={onSubmit}
       validationSchema={toFormikValidationSchema(
-        AccessAndSaleFormSchema(trackLength)
+        AccessAndSaleFormSchema(trackLength, usdcPurchaseConfig)
       )}
       menuFields={
         <AccessAndSaleMenuFields
