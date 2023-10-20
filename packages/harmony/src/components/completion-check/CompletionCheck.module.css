@@ -1,9 +1,15 @@
 .container {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   position: relative;
+  width: 16px;
+  height: 16px;
 }
 
 .defaultCompletionIcon {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
   height: 12px;
   width: 12px;
   border: 2px solid var(--harmony-neutral);
@@ -11,13 +17,12 @@
 }
 
 .completionIcon {
-  top: 0px;
-  left: 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: absolute;
-  width: 16px;
-  height: 1px;
-
   border-radius: 50%;
+  z-index: 15;
 }
 
 .emptyCompletionIcon {
