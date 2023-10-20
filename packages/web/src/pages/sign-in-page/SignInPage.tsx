@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { Button, ButtonType, Flex, Text } from '@audius/harmony'
+import { Box, Button, ButtonType, Flex, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -67,27 +67,29 @@ export const SignInPage = () => {
           </Text>
         </Flex>
         <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-          <Form className={styles.form}>
-            <Flex direction='column' gap='2xl' w='100%'>
-              <Flex direction='column' gap='l'>
-                <TextField name='email' label={messages.emailLabel} />
-                <TextField
-                  name='password'
-                  label={messages.passwordLabel}
-                  type='password'
-                />
-              </Flex>
-              <Flex direction='column' gap='l'>
-                <Button text={messages.signIn} type='submit' />
-                <Flex direction='row' alignItems='flexStart'>
-                  <Text color='heading'>
-                    {/* TODO: link destination */}
-                    <Link to={''}>{messages.forgotPassword}</Link>
-                  </Text>
+          <Box w='100%'>
+            <Form>
+              <Flex direction='column' gap='2xl' w='100%'>
+                <Flex direction='column' gap='l'>
+                  <TextField name='email' label={messages.emailLabel} />
+                  <TextField
+                    name='password'
+                    label={messages.passwordLabel}
+                    type='password'
+                  />
+                </Flex>
+                <Flex direction='column' gap='l'>
+                  <Button text={messages.signIn} type='submit' />
+                  <Flex direction='row' alignItems='flexStart'>
+                    <Text color='heading'>
+                      {/* TODO: link destination */}
+                      <Link to={''}>{messages.forgotPassword}</Link>
+                    </Text>
+                  </Flex>
                 </Flex>
               </Flex>
-            </Flex>
-          </Form>
+            </Form>
+          </Box>
         </Formik>
       </Flex>
       <Button
