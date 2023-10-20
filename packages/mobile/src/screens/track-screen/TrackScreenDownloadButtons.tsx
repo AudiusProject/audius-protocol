@@ -22,12 +22,14 @@ export type DownloadButtonProps = {
   state: ButtonState
   type: DownloadButtonType
   label: string
+  doesUserHaveAccess: boolean
   onClick?: () => void
 }
 
 export const messages = {
   followToDownload: 'Must follow artist to download',
-  addDownloadPrefix: (label: string) => `Download ${label}`
+  addDownloadPrefix: (label: string) => `Download ${label}`,
+  mustHaveAccess: 'Must have access to download'
 }
 
 const useStyles = makeStyles(() => ({
@@ -40,6 +42,7 @@ const useStyles = makeStyles(() => ({
 const DownloadButton = ({
   label,
   state,
+  doesUserHaveAccess,
   onClick = () => {}
 }: DownloadButtonProps) => {
   const { toast } = useToast()
@@ -47,11 +50,18 @@ const DownloadButton = ({
   const styles = useStyles()
   const requiresFollow = state === ButtonState.REQUIRES_FOLLOW
   const isProcessing = state === ButtonState.PROCESSING
-  const isDisabled = state === ButtonState.PROCESSING || requiresFollow
+  const isDisabled =
+    !doesUserHaveAccess ||
+    state === ButtonState.PROCESSING ||
+    requiresFollow
 
   const handlePress = useCallback(() => {
     if (requiresFollow) {
       toast({ content: messages.followToDownload })
+    }
+
+    if (!doesUserHaveAccess) {
+      toast({ content: messages.mustHaveAccess })
     }
 
     if (isDisabled) {
@@ -123,14 +133,14 @@ export const TrackScreenDownloadButtons = ({
     return null
   }
 
-  if (!isOwner && !doesUserHaveAccess) {
-    return null
-  }
-
   return (
     <View style={{ marginBottom: 12 }}>
       {buttons.map((props) => (
-        <DownloadButton {...props} key={props.label} />
+        <DownloadButton
+          {...props}
+          doesUserHaveAccess={doesUserHaveAccess}
+          key={props.label}
+        />
       ))}
     </View>
   )
