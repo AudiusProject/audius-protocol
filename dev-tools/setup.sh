@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-set -ex
+set -exu pipefail
 
-[ -d "/etc/os-release" ] && source /etc/os-release
+[ -f "/etc/os-release" ] && source /etc/os-release
 case "$ID" in
 debian | ubuntu)
     # Uninstall old versions of docker
