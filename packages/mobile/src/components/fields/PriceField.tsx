@@ -18,6 +18,11 @@ import { Text } from '../core/Text'
 import type { TextFieldProps } from './TextField'
 import { TextField } from './TextField'
 
+// Maximum field length to safeguard against numeric overflow:
+// -1 (for len max int)
+// -2 (to account for digits added to include cents)
+const MAX_LENGTH = Number.MAX_SAFE_INTEGER.toString().length - 3
+
 const messages = {
   dollars: '$'
 }
@@ -65,6 +70,7 @@ export const PriceField = (props: TextFieldProps) => {
           {messages.dollars}
         </Text>
       }
+      maxLength={MAX_LENGTH}
       {...props}
       value={humanizedValue ?? undefined}
       onChange={handlePriceChange}
