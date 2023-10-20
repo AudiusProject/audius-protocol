@@ -31,7 +31,7 @@ debian | ubuntu)
     fi
 
     # Install dependencies
-    sudo NEEDRESTART_MODE=a apt-get install -y \
+    sudo NEEDRESTART_MODE=l apt-get install -y \
         git \
         python3 \
         python3-pip \

@@ -2,9 +2,8 @@ parameters:
   service:
     description: "Service to test"
     type: string
-machine:
-  image: ubuntu-2204:current
-resource_class: large
+machine: true
+resource_class: audiusproject/gcp-n2-standard-4
 steps:
   - checkout:
       path: '~/audius-protocol'
@@ -13,3 +12,8 @@ steps:
       name: test run "<< parameters.service >>"
       no_output_timeout: 20m
       command: . ~/.profile; audius-compose test run "<< parameters.service >>"
+  - run:
+      name: cleanup
+      no_output_timeout: 5m
+      command: . ~/.profile; audius-compose test down
+      when: always
