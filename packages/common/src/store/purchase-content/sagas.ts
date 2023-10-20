@@ -18,7 +18,7 @@ import {
   onrampOpened,
   onrampCanceled
 } from 'store/buy-usdc/slice'
-import { USDCOnRampProvider } from 'store/buy-usdc/types'
+import { BuyUSDCError, USDCOnRampProvider } from 'store/buy-usdc/types'
 import { getUSDCUserBank } from 'store/buy-usdc/utils'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUser } from 'store/cache/users/selectors'
@@ -38,7 +38,7 @@ import {
   purchaseContentFlowFailed,
   startPurchaseContentFlow
 } from './slice'
-import { ContentType } from './types'
+import { ContentType, PurchaseContentError, PurchaseErrorCode } from './types'
 
 const { getUserId } = accountSelectors
 
@@ -208,7 +208,9 @@ function* doStartPurchaseContentFlow({
         return
       }
       if (result.failed) {
-        yield* put(purchaseContentFlowFailed())
+        yield* put(
+          purchaseContentFlowFailed({ error: result.failed.payload.error })
+        )
         return
       }
     }
@@ -246,19 +248,25 @@ function* doStartPurchaseContentFlow({
       make({ eventName: Name.PURCHASE_CONTENT_SUCCESS, contentId, contentType })
     )
   } catch (e: unknown) {
+    // If we get a known error, pipe it through directly. Otherwise make sure we
+    // have a properly contstructed error to put into the slice.
+    const error =
+      e instanceof PurchaseContentError || e instanceof BuyUSDCError
+        ? e
+        : new PurchaseContentError(PurchaseErrorCode.Unknown, `${e}`)
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
-      error: e as Error,
+      error,
       additionalInfo: { contentId, contentType }
     })
-    yield* put(purchaseContentFlowFailed())
+    yield* put(purchaseContentFlowFailed({ error }))
     yield* call(
       track,
       make({
         eventName: Name.PURCHASE_CONTENT_FAILURE,
         contentId,
         contentType,
-        error: (e as Error).message
+        error: error.message
       })
     )
   }

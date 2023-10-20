@@ -130,6 +130,26 @@ export enum IntKeys {
   MAX_AUDIO_PURCHASE_AMOUNT = 'MAX_AUDIO_PURCHASE_AMOUNT',
 
   /**
+   * Minimum price for purchasable content in cents
+   */
+  MIN_CONTENT_PRICE_CENTS = 'MIN_CONTENT_PRICE_CENTS',
+
+  /**
+   * Maximum price for purchasable content in cents
+   */
+  MAX_CONTENT_PRICE_CENTS = 'MAX_CONTENT_PRICE_CENTS',
+
+  /**
+   * Minimum USDC (in cents) required to purchase in the BuyUSDC modal
+   */
+  MIN_USDC_PURCHASE_AMOUNT_CENTS = 'MIN_USDC_PURCHASE_AMOUNT_CENTS',
+
+  /**
+   * Maximum USDC (in cents) required to purchase in the BuyUSDC modal
+   */
+  MAX_USDC_PURCHASE_AMOUNT_CENTS = 'MAX_USDC_PURCHASE_AMOUNT_CENTS',
+
+  /**
    * The time to delay between polls of the user wallet when performing a purchase of $AUDIO/$USDC
    */
   BUY_TOKEN_WALLET_POLL_DELAY_MS = 'BUY_TOKEN_WALLET_POLL_DELAY_MS',
