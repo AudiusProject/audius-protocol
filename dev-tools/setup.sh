@@ -2,7 +2,7 @@
 
 set -ex
 
-source /etc/os-release
+[ -d "/etc/os-release" ] && source /etc/os-release
 case "$ID" in
 debian | ubuntu)
     # Uninstall old versions of docker
