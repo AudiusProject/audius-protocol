@@ -1,5 +1,5 @@
 import { ApolloProvider } from '@apollo/client'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Provider, useSelector } from 'react-redux'
 import { ConnectedRouter } from 'connected-react-router'
 import { Switch, Route } from 'react-router'
@@ -29,9 +29,7 @@ import { createStyles } from 'utils/mobile'
 import { getDidGraphError } from 'store/api/hooks'
 import UnregisteredNode from 'containers/UnregisteredNode'
 const styles = createStyles({ desktopStyles, mobileStyles })
-const history = createHashHistory({
-  basename: import.meta.env.VITE_DASHBOARD_BASE_URL || '/'
-})
+const history = createHashHistory()
 const store = createStore(history)
 
 const Root = () => (

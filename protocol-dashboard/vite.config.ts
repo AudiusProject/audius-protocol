@@ -6,16 +6,6 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import wasm from 'vite-plugin-wasm'
 import topLevelAwait from 'vite-plugin-top-level-await'
 
-// Custom plugin to replace dashboard path in index.html
-function htmlReplacementsPlugin() {
-  return {
-    name: 'html-replacements',
-    transformIndexHtml(html: string) {
-      return html.replace(/%VITE_DASHBOARD_BASE_URL%/g, process.env.VITE_DASHBOARD_BASE_URL || '/')
-    }
-  }
-}
-
 export default defineConfig({
   plugins: [
     react(),
@@ -35,7 +25,6 @@ export default defineConfig({
       },
       protocolImports: true,
     }),
-    htmlReplacementsPlugin(),
   ],
 
   resolve: {
@@ -55,9 +44,9 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
   },
-  // Base URL. Set to /dashboard/ in Dockerfile.
-  // When deploying: leave DASHBOARD_BASE_URL unset
-  base: process.env.DASHBOARD_BASE_URL || '/',
+  // Base URL. Set DASHBOARD_BASE_URL to /dashboard/ in Dockerfile.
+  // When deploying: leave DASHBOARD_BASE_URL unset (or set to './')
+  base: process.env.VITE_DASHBOARD_BASE_URL || './',
   build: {
     commonjsOptions: {
       transformMixedEsModules: true,
