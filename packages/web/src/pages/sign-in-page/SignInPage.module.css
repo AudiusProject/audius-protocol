@@ -1,0 +1,14 @@
+.root {
+  background-color: var(--harmony-white);
+}
+
+.logo {
+  max-height: 160px;
+  max-width: 160px;
+  height: 100%;
+  width: 100%;
+}
+
+.form {
+  width: 100%;
+}
