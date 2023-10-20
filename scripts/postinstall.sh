@@ -12,3 +12,6 @@ if [[ -z "${SKIP_POD_INSTALL}" ]]; then
     pod install
   fi
 fi
+
+cd ../../..
+./dev-tools/setup.sh
