@@ -16,7 +16,7 @@ export enum PurchaseContentStage {
 export enum PurchaseErrorCode {
   Unknown = 'Unknown'
 }
-// May extend in the future, but for now we are proxying buy usdc errors
+
 export type PurchaseContentErrorCode = BuyUSDCErrorCode | PurchaseErrorCode
 
 export class PurchaseContentError extends Error {
