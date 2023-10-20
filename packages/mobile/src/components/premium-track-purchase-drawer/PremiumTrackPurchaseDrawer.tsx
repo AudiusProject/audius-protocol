@@ -1,6 +1,9 @@
 import { useCallback, type ReactNode, useEffect } from 'react'
 
-import type { PurchasableTrackMetadata } from '@audius/common'
+import type {
+  PurchasableTrackMetadata,
+  PurchaseContentError
+} from '@audius/common'
 import {
   PurchaseContentStage,
   formatPrice,
@@ -11,6 +14,7 @@ import {
   statusIsNotFinalized,
   useGetTrackById,
   usePayExtraPresets,
+  usePurchaseContentErrorMessage,
   usePurchaseContentFormConfiguration
 } from '@audius/common'
 import { Formik, useFormikContext } from 'formik'
@@ -66,8 +70,7 @@ const messages = {
       }
     </>
   ),
-  termsOfUse: 'Terms of Use.',
-  error: 'Your purchase was unsuccessful.'
+  termsOfUse: 'Terms of Use.'
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
@@ -136,6 +139,19 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   }
 }))
 
+const RenderError = ({ error: { code } }: { error: PurchaseContentError }) => {
+  const styles = useStyles()
+  const { accentRed } = useThemeColors()
+  return (
+    <View style={styles.errorContainer}>
+      <IconError fill={accentRed} width={spacing(5)} height={spacing(5)} />
+      <Text weight='medium' color='accentRed'>
+        {usePurchaseContentErrorMessage(code, useRemoteVar)}
+      </Text>
+    </View>
+  )
+}
+
 const PremiumTrackPurchaseDrawerHeader = ({
   onClose
 }: {
@@ -182,7 +198,7 @@ const getButtonText = (isUnlocking: boolean, amountDue: number) =>
 const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
   const navigation = useNavigation()
   const styles = useStyles()
-  const { specialLightGreen, accentRed, secondary } = useThemeColors()
+  const { specialLightGreen, secondary } = useThemeColors()
   const presetValues = usePayExtraPresets(useRemoteVar)
 
   const { submitForm, resetForm } = useFormikContext()
@@ -253,18 +269,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
       </ScrollView>
       {isPurchaseSuccessful ? null : (
         <View style={styles.formActions}>
-          {error ? (
-            <View style={styles.errorContainer}>
-              <IconError
-                fill={accentRed}
-                width={spacing(5)}
-                height={spacing(5)}
-              />
-              <Text weight='medium' colorValue={accentRed}>
-                {messages.error}
-              </Text>
-            </View>
-          ) : null}
+          {error ? <RenderError error={error} /> : null}
           <Button
             onPress={submitForm}
             disabled={isUnlocking}

@@ -1,5 +1,7 @@
 export * from './usePurchaseContentFormConfiguration'
 export * from './useChallengeCooldownSchedule'
+export * from './useUSDCPurchaseConfig'
+export * from './usePurchaseContentErrorMessage'
 export * from './usePayExtraPresets'
 export * from './utils'
 export * from './types'
