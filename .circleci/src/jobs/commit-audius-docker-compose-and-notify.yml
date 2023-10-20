@@ -17,7 +17,7 @@ steps:
         git config --global user.email "audius-infra@audius.co"
         git config --global user.name "audius-infra"
   - run:
-      name: Alert Slack of changelog
+      name: Set tag in audius-docker-compose and alert Slack of changelog
       command: |
         generate_json_content() {
           GIT_DIFF="$1"
