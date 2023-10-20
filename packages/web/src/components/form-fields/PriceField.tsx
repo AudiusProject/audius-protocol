@@ -16,6 +16,11 @@ import { useField } from 'formik'
 
 import { TextField, TextFieldProps } from './TextField'
 
+// Maximum field length to safeguard against numeric overflow:
+// -1 (for len max int)
+// -2 (to account for digits added to include cents)
+const MAX_LENGTH = Number.MAX_SAFE_INTEGER.toString().length - 3
+
 const messages = {
   dollars: '$'
 }
@@ -58,7 +63,7 @@ export const PriceField = (props: TextFieldProps) => {
     <TextField
       {...props}
       // Safeguard against numeric overflow, -1 (for len max int), -2 (to account for cents)
-      maxLength={Number.MAX_SAFE_INTEGER.toString().length - 3}
+      maxLength={MAX_LENGTH}
       value={humanizedValue ?? undefined}
       startAdornment={messages.dollars}
       onChange={handlePriceChange}
