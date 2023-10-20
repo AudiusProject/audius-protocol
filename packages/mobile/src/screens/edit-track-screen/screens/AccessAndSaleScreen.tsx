@@ -8,7 +8,8 @@ import {
   isPremiumContentTipGated,
   isPremiumContentCollectibleGated,
   FeatureFlags,
-  removeNullable
+  removeNullable,
+  isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
 import { useField, useFormikContext } from 'formik'
 import { useSelector } from 'react-redux'
@@ -116,6 +117,8 @@ export const AccessAndSaleScreen = () => {
 
   const isInitiallyPublic =
     !isUpload && !initialValues.is_unlisted && !initialPremiumConditions
+  const isInitiallyUsdcGated =
+    !isUpload && isPremiumContentUSDCPurchaseGated(initialPremiumConditions)
   const isInitiallySpecialAccess =
     !isUpload &&
     !!(
@@ -126,18 +129,29 @@ export const AccessAndSaleScreen = () => {
     !isUpload && isPremiumContentCollectibleGated(initialPremiumConditions)
   const isInitiallyHidden = !isUpload && initialValues.is_unlisted
 
+  const noUsdcGate =
+    isInitiallyPublic ||
+    isInitiallySpecialAccess ||
+    isInitiallyCollectibleGated ||
+    isRemix ||
+    !isUsdcUploadEnabled
+
+  const noSpecialAccess =
+    isInitiallyPublic ||
+    isInitiallyUsdcGated ||
+    isInitiallyCollectibleGated ||
+    isRemix
+  const noSpecialAccessOptions =
+    noSpecialAccess || (!isUpload && !isInitiallyHidden)
+
   const noCollectibleGate =
     isInitiallyPublic ||
+    isInitiallyUsdcGated ||
     isInitiallySpecialAccess ||
     isRemix ||
     hasNoCollectibles
   const noCollectibleDropdown =
     noCollectibleGate || (!isUpload && !isInitiallyHidden)
-
-  const noSpecialAccess =
-    isInitiallyPublic || isInitiallyCollectibleGated || isRemix
-  const noSpecialAccessOptions =
-    noSpecialAccess || (!isUpload && !isInitiallyHidden)
 
   const noHidden = !isUpload && !initialValues.is_unlisted
 
@@ -157,7 +171,7 @@ export const AccessAndSaleScreen = () => {
       ? {
           label: premiumAvailability,
           value: premiumAvailability,
-          disabled: !isUsdcUploadEnabled
+          disabled: noUsdcGate
         }
       : null,
     {
@@ -189,8 +203,8 @@ export const AccessAndSaleScreen = () => {
     items[premiumAvailability] = (
       <PremiumRadioField
         selected={availability === TrackAvailabilityType.USDC_PURCHASE}
-        disabled={!isUsdcUploadEnabled}
-        disabledContent={!isUsdcUploadEnabled}
+        disabled={noUsdcGate}
+        disabledContent={noUsdcGate}
       />
     )
   }

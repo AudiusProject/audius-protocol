@@ -5,7 +5,8 @@ import {
   createRemixOfMetadata,
   remixSettingsActions,
   remixSettingsSelectors,
-  Status
+  Status,
+  usePremiumContentAccess
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { useField } from 'formik'
@@ -40,6 +41,7 @@ const messages = {
   done: 'Done',
   invalidRemixUrl: 'Please paste a valid Audius track URL',
   missingRemixUrl: 'Must include a link to the original track',
+  remixAccessError: 'Must have access to the original track',
   enterLink: 'Enter an Audius Link',
   changeAvailbilityPrefix: 'Availablity is set to',
   changeAvailbilitySuffix:
@@ -189,8 +191,10 @@ export const RemixSettingsScreen = () => {
     }
   }, [remixOfInput, isTouched, parentTrack])
 
+  const { doesUserHaveAccess } = usePremiumContentAccess(parentTrack)
   const hasErrors = Boolean(
-    isTrackRemix && (isInvalidParentTrack || isRemixUrlMissing)
+    isTrackRemix &&
+      (isInvalidParentTrack || isRemixUrlMissing || !doesUserHaveAccess)
   )
 
   return (
@@ -248,7 +252,9 @@ export const RemixSettingsScreen = () => {
               {hasErrors ? (
                 <InputErrorMessage
                   message={
-                    isInvalidParentTrack
+                    !doesUserHaveAccess
+                      ? messages.remixAccessError
+                      : isInvalidParentTrack
                       ? messages.invalidRemixUrl
                       : messages.missingRemixUrl
                   }

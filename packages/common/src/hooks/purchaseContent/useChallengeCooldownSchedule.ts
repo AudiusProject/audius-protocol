@@ -1,4 +1,5 @@
 import dayjs, { Dayjs } from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 import { useSelector } from 'react-redux'
 
 import { ChallengeRewardID } from 'models/AudioRewards'
@@ -10,6 +11,8 @@ import {
 import { COOLDOWN_DAYS } from './constants'
 
 const { getUndisbursedUserChallenges } = audioRewardsPageSelectors
+
+dayjs.extend(utc)
 
 const messages = {
   laterToday: 'Later Today',
@@ -27,8 +30,7 @@ export const useChallengeCooldownSchedule = (
   const challenges = useSelector(getUndisbursedUserChallenges)
     .filter((c) => c.challenge_id === challengeId)
     .map((c) => ({ ...c, createdAtDate: dayjs.utc(c.created_at) }))
-  // Clamp "now" to beginning of day to avoid duplicate dates in cooldown items
-  const now = dayjs.utc().startOf('day')
+  const now = dayjs.utc()
   // Only challenges past the cooldown period are claimable
   const claimableAmount = challenges
     .filter((c) => now.diff(c.createdAtDate, 'day') >= COOLDOWN_DAYS)
@@ -47,7 +49,7 @@ const getAudioMatchingCooldownLabel = (now: Dayjs, created_at: Dayjs) => {
   } else if (diff === COOLDOWN_DAYS - 2) {
     return messages.tomorrow
   }
-  return created_at.add(COOLDOWN_DAYS, 'day').local().format('ddd M/D')
+  return created_at.local().add(COOLDOWN_DAYS, 'day').format('ddd (M/D)')
 }
 
 const formatAudioMatchingChallengeCooldownSchedule = (
@@ -56,11 +58,12 @@ const formatAudioMatchingChallengeCooldownSchedule = (
   const now = dayjs.utc().startOf('day')
   const cooldownChallenges = new Array(7)
   challenges.forEach((c) => {
-    const diff = now.diff(c.created_at, 'day')
+    const createdAtUTC = dayjs.utc(c.created_at)
+    const diff = now.diff(createdAtUTC, 'day')
     cooldownChallenges[diff] = {
       ...cooldownChallenges[diff],
       id: c.specifier,
-      label: getAudioMatchingCooldownLabel(now, dayjs.utc(c.created_at)),
+      label: getAudioMatchingCooldownLabel(now, createdAtUTC),
       value: (cooldownChallenges[diff]?.value ?? 0) + c.amount
     }
   })

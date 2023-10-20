@@ -442,11 +442,18 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     name: AVAILABILITY_TYPE
   })
 
+  const isInitiallyPublic =
+    !isUpload && !isInitiallyUnlisted && !initialPremiumConditions
+  const isInitiallyUsdcGated =
+    !isUpload && isPremiumContentUSDCPurchaseGated(initialPremiumConditions)
+  const isInitiallyCollectibleGated =
+    !isUpload && isPremiumContentCollectibleGated(initialPremiumConditions)
+
   const noSpecialAccess =
-    !isUpload &&
-    !isPremiumContentFollowGated(initialPremiumConditions) &&
-    !isPremiumContentTipGated(initialPremiumConditions) &&
-    !isInitiallyUnlisted
+    isInitiallyPublic ||
+    isInitiallyUsdcGated ||
+    isInitiallyCollectibleGated ||
+    isRemix
   const noSpecialAccessOptions =
     noSpecialAccess || (!isUpload && !isInitiallyUnlisted)
 
@@ -532,6 +539,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
         />
         {isUsdcEnabled ? (
           <UsdcPurchaseGatedRadioField
+            isRemix={isRemix}
             isUpload={isUpload}
             initialPremiumConditions={initialPremiumConditions}
             isInitiallyUnlisted={isInitiallyUnlisted}

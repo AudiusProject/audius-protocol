@@ -2,7 +2,9 @@ import {
   PremiumConditions,
   TrackAvailabilityType,
   collectiblesSelectors,
-  isPremiumContentCollectibleGated
+  isPremiumContentFollowGated,
+  isPremiumContentTipGated,
+  isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
 import { IconCollectible } from '@audius/stems'
 
@@ -42,12 +44,23 @@ export const CollectibleGatedRadioField = (
     return numEthCollectibles + numSolCollectibles > 0
   })
 
+  const isInitiallyPublic =
+    !isUpload && !isInitiallyUnlisted && !initialPremiumConditions
+  const isInitiallySpecialAccess =
+    !isUpload &&
+    !!(
+      isPremiumContentFollowGated(initialPremiumConditions) ||
+      isPremiumContentTipGated(initialPremiumConditions)
+    )
+  const isInitiallyUsdcGated =
+    !isUpload && isPremiumContentUSDCPurchaseGated(initialPremiumConditions)
+
   const disabled =
+    isInitiallyPublic ||
+    isInitiallyUsdcGated ||
+    isInitiallySpecialAccess ||
     isRemix ||
-    !hasCollectibles ||
-    (!isUpload &&
-      !isPremiumContentCollectibleGated(initialPremiumConditions) &&
-      !isInitiallyUnlisted)
+    !hasCollectibles
 
   const fieldsDisabled = disabled || (!isUpload && !isInitiallyUnlisted)
 
