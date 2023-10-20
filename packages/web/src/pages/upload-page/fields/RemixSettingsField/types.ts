@@ -9,7 +9,7 @@ export const CAN_REMIX_PARENT = 'can_remix_parent'
 
 const messages = {
   remixLinkError: 'Must provide valid remix link',
-  remixAccessError: 'Must have access to parent track to remix'
+  remixAccessError: 'Must have access to the original track'
 }
 
 export const RemixSettingsFieldSchema = z
