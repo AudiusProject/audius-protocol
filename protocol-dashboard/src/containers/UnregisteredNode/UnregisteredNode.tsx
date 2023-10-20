@@ -16,18 +16,17 @@ const messages = {
   content: 'Content Node'
 }
 
-type UnregisteredContentNodeProps = { endpoint: string; accountWallet: Address | undefined }
+type UnregisteredContentNodeProps = {
+  endpoint: string
+  accountWallet: Address | undefined
+}
 const UnregisteredContentNode = ({
   endpoint,
   accountWallet
 }: UnregisteredContentNodeProps) => {
   // const isOwner = accountWallet === discoveryProvider!.owner
 
-  return (
-    <>
-    Health UI and Registration UI Coming Soon
-    </>
-  )
+  return <>Health UI and Registration UI Coming Soon</>
 }
 
 type UnregisteredDiscoveryProviderProps = {
@@ -40,11 +39,7 @@ const UnregisteredDiscoveryProvider = ({
 }: UnregisteredDiscoveryProviderProps) => {
   // const isOwner = accountWallet === discoveryProvider!.owner
 
-  return (
-    <>
-    Health UI and Registration UI Coming Soon
-    </>
-  )
+  return <>Health UI and Registration UI Coming Soon</>
 }
 
 const UnregisteredNode = () => {
@@ -54,7 +49,7 @@ const UnregisteredNode = () => {
   const { wallet: accountWallet } = useAccount()
 
   const isDiscovery = !!matchPath(location.pathname, {
-    path: SERVICES_UNREGISTERED_DISCOVERY_NODE,
+    path: SERVICES_UNREGISTERED_DISCOVERY_NODE
   })
 
   return (
@@ -65,9 +60,15 @@ const UnregisteredNode = () => {
       defaultPreviousPageRoute={SERVICES}
     >
       {isDiscovery ? (
-        <UnregisteredDiscoveryProvider endpoint={endpoint} accountWallet={accountWallet} />
+        <UnregisteredDiscoveryProvider
+          endpoint={endpoint}
+          accountWallet={accountWallet}
+        />
       ) : (
-        <UnregisteredContentNode endpoint={endpoint} accountWallet={accountWallet} />
+        <UnregisteredContentNode
+          endpoint={endpoint}
+          accountWallet={accountWallet}
+        />
       )}
     </Page>
   )

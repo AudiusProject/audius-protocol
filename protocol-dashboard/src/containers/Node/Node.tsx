@@ -22,10 +22,7 @@ const messages = {
 }
 
 type ContentNodeProps = { spID: number; accountWallet: Address | undefined }
-const ContentNode = ({
-  spID,
-  accountWallet
-}: ContentNodeProps) => {
+const ContentNode = ({ spID, accountWallet }: ContentNodeProps) => {
   const { node: contentNode, status } = useContentNode({ spID })
 
   if (status === Status.Failure) {
@@ -55,10 +52,7 @@ type DiscoveryProviderProps = {
   spID: number
   accountWallet: Address | undefined
 }
-const DiscoveryProvider = ({
-  spID,
-  accountWallet
-}: DiscoveryProviderProps) => {
+const DiscoveryProvider = ({ spID, accountWallet }: DiscoveryProviderProps) => {
   const { node: discoveryProvider, status } = useDiscoveryProvider({ spID })
   const pushRoute = usePushRoute()
   if (status === Status.Failure) {
@@ -91,7 +85,7 @@ const Node = () => {
   const { wallet: accountWallet } = useAccount()
 
   const isDiscovery = !!matchPath(location.pathname, {
-    path: SERVICES_DISCOVERY_PROVIDER_NODE,
+    path: SERVICES_DISCOVERY_PROVIDER_NODE
   })
 
   return (

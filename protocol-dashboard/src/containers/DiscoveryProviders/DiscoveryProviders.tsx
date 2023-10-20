@@ -1,7 +1,12 @@
 import styles from './DiscoveryProviders.module.css'
 import Page from 'components/Page'
 import DiscoveryTable from 'components/DiscoveryTable'
-import { SERVICES, SERVICES_CONTENT_NODE, SERVICES_TITLE, SERVICES_UNREGISTERED_CONTENT_NODE } from 'utils/routes'
+import {
+  SERVICES,
+  SERVICES_CONTENT_NODE,
+  SERVICES_TITLE,
+  SERVICES_UNREGISTERED_CONTENT_NODE
+} from 'utils/routes'
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useReplaceRoute } from 'utils/effects'
@@ -22,7 +27,9 @@ const DiscoveryProviders = () => {
     const resolveEndpointToSpId = async () => {
       if (!endpoint) return
       try {
-        const spId = await window.aud.ServiceProviderClient.getServiceProviderIdFromEndpoint(endpoint)
+        const spId = await window.aud.ServiceProviderClient.getServiceProviderIdFromEndpoint(
+          endpoint
+        )
         setSpId(spId)
       } catch (error) {
         console.error('Failed to resolve endpoint to spId:', error)

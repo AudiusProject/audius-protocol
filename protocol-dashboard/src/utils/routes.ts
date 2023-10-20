@@ -25,7 +25,8 @@ export const SERVICES_DISCOVERY_PROVIDER_TITLE = 'Discovery Nodes'
 
 export const SERVICES_DISCOVERY_PROVIDER_NODE = '/services/discovery-node/:spID'
 export const SERVICES_DISCOVERY_PROVIDER_NODE_TITLE = 'Discovery Node'
-export const SERVICES_UNREGISTERED_DISCOVERY_NODE = '/services/discovery-node/unregistered'
+export const SERVICES_UNREGISTERED_DISCOVERY_NODE =
+  '/services/discovery-node/unregistered'
 export const SERVICES_UNREGISTERED_DISCOVERY_NODE_TITLE = 'Unregistered Node'
 
 export const SERVICES_CONTENT = '/services/content-node'
@@ -33,7 +34,8 @@ export const SERVICES_CONTENT_TITLE = 'Content Nodes'
 
 export const SERVICES_CONTENT_NODE = '/services/content-node/:spID'
 export const SERVICES_CONTENT_NODE_TITLE = 'Content Node'
-export const SERVICES_UNREGISTERED_CONTENT_NODE = '/services/content-node/unregistered'
+export const SERVICES_UNREGISTERED_CONTENT_NODE =
+  '/services/content-node/unregistered'
 export const SERVICES_UNREGISTERED_CONTENT_NODE_TITLE = 'Unregistered Node'
 
 export const SERVICES_SERVICE_PROVIDERS = '/services/service-providers'
