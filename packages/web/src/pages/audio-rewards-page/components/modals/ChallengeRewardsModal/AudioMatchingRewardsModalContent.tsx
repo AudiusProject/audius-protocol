@@ -50,10 +50,7 @@ const messages = {
   totalEarned: (amount: string) => `Total $AUDIO Earned: ${amount}`,
   claimAudio: (amount: string) => `Claim ${amount} $AUDIO`,
   upcomingRewards: 'Upcoming Rewards',
-  audio: '$AUDIO',
-  laterToday: 'Later Today',
-  readyToClaim: 'Ready to Claim!',
-  tomorrow: 'Tomorrow'
+  audio: '$AUDIO'
 }
 
 type AudioMatchingChallengeName =

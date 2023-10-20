@@ -14,6 +14,7 @@ import { getChallengeConfig } from 'app/utils/challenges'
 import { ChallengeDescription } from './ChallengeDescription'
 import { ChallengeReward } from './ChallengeReward'
 import { ClaimError } from './ClaimError'
+import { CooldownSummaryTable } from './CooldownSummaryTable'
 import { useStyles } from './styles'
 
 const messages = {
@@ -132,6 +133,7 @@ export const AudioMatchingChallengeDrawerContent = ({
             </View>
           ) : null}
         </View>
+        <CooldownSummaryTable challengeId={challengeName} />
       </ScrollView>
       <View style={styles.stickyClaimRewardsContainer}>
         {claimableAmount > 0 && onClaim ? (
