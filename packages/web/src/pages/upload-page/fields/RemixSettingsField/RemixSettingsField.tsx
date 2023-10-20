@@ -34,6 +34,7 @@ import {
   SHOW_REMIXES,
   SHOW_REMIXES_BASE
 } from './types'
+import { IS_PREMIUM, PREMIUM_CONDITIONS } from '../AccessAndSaleField'
 
 const messages = {
   title: 'Remix Settings',
@@ -51,6 +52,10 @@ export const RemixSettingsField = () => {
     useTrackField<FieldVisibility[typeof SHOW_REMIXES_BASE]>(SHOW_REMIXES)
   const [{ value: remixOf }, , { setValue: setRemixOf }] =
     useTrackField<SingleTrackEditValues[typeof REMIX_OF]>(REMIX_OF)
+    const [{ value: isPremium }] =
+    useTrackField<SingleTrackEditValues[typeof IS_PREMIUM]>(IS_PREMIUM)
+  const [{ value: premiumConditions }] =
+    useTrackField<SingleTrackEditValues[typeof PREMIUM_CONDITIONS]>(PREMIUM_CONDITIONS)
 
   const parentTrackId = remixOf?.tracks[0].parent_track_id
   const { data: remixOfTrack } = useGetTrackById(
@@ -72,8 +77,10 @@ export const RemixSettingsField = () => {
     set(initialValues, SHOW_REMIXES, showRemixes)
     set(initialValues, IS_REMIX, isRemix)
     set(initialValues, REMIX_LINK, remixLink)
+    set(initialValues, IS_PREMIUM, isPremium)
+    set(initialValues, PREMIUM_CONDITIONS, premiumConditions)
     return initialValues as unknown as RemixSettingsFormValues
-  }, [showRemixes, isRemix, remixLink, parentTrackId])
+  }, [showRemixes, isRemix, remixLink, parentTrackId, isPremium, premiumConditions])
 
   const handleSubmit = useCallback(
     (values: RemixSettingsFormValues) => {
