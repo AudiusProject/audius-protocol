@@ -22,8 +22,12 @@ const useStyles = makeStyles(({ typography, spacing }) => ({
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing(2),
+    justifyContent: 'center',
+    columnGap: spacing(2),
     flexWrap: 'wrap'
+  },
+  previewBadge: {
+    marginBottom: spacing(2)
   },
   trackTitle: {
     textAlign: 'center'
@@ -71,13 +75,15 @@ export const TrackInfo = ({
               {track.title}
             </Text>
             {shouldShowPreviewLock ? (
-              <LockedStatusBadge
-                variant='purchase'
-                locked
-                coloredWhenLocked
-                iconSize='small'
-                text={messages.preview}
-              />
+              <View style={styles.previewBadge}>
+                <LockedStatusBadge
+                  variant='purchase'
+                  locked
+                  coloredWhenLocked
+                  iconSize='small'
+                  text={messages.preview}
+                />
+              </View>
             ) : null}
           </TouchableOpacity>
           <TouchableOpacity onPress={onPressArtist}>
