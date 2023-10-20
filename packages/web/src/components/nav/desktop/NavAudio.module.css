@@ -5,10 +5,14 @@
 .audio {
   display: flex;
   align-items: center;
-  padding-left: 8px;
+  padding-left: var(--unit-2);
   position: relative;
   min-height: 16px;
   flex-wrap: wrap;
+}
+
+.audio.hasAction {
+  row-gap: var(--unit-2);
 }
 
 .audio:hover:before {
