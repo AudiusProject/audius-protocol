@@ -68,11 +68,6 @@ function* watchFetchTrack() {
           })) as unknown as Track
         }
         if (track) {
-          // Premium tracks cannot be used as remix track parents
-          if (track.is_premium) {
-            yield* put(fetchTrackFailed())
-            return
-          }
           yield* put(fetchTrackSucceeded({ trackId: track.track_id }))
           return
         }
