@@ -4,7 +4,7 @@ import { Text } from 'app/components/core'
 
 import { BoxedTextField } from './BoxedTextField'
 
-const TRACK_PREVIEW = 'preview_start_seconds'
+export const TRACK_PREVIEW = 'preview_start_seconds'
 
 const messages = {
   title: '30 Second Preview',

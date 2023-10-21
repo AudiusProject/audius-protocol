@@ -123,7 +123,8 @@ export const SpecialAccessAvailability = ({
     ? { follow_user_id: currentUserId }
     : null
   const [selectedSpecialAccessGate, setSelectedSpecialAccessGate] = useState(
-    !('nft_collection' in (previousPremiumConditions ?? {}))
+    isPremiumContentFollowGated(previousPremiumConditions) ||
+      isPremiumContentTipGated(previousPremiumConditions)
       ? previousPremiumConditions ?? defaultSpecialAccess
       : defaultSpecialAccess
   )
