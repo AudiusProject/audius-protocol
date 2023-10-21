@@ -23,7 +23,7 @@ type CompletionChangeIconProps = {
 export const CompletionError = (props: CompletionChangeIconProps) => (
   <animated.div
     style={props.iconStyles}
-    className={cn(styles.completionIcon, styles.removeIcon)}
+    className={cn(styles.completionIcon, styles.xIcon)}
   >
     {' '}
     <IconValidationX />{' '}
