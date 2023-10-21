@@ -180,7 +180,6 @@ async function fetchTimeSeries(
     if (route === 'routes') {
       endpoint = `${node}/v1/metrics/aggregates/${route}/${bucket}?bucket_size=${bucketSize}`
     }
-    console.log(`MICHELLE BUCKET ${bucket} BUCKET SIZE ${bucketSize}`)
     if (node) {
       data = (
         await fetchWithTimeout(endpoint)
