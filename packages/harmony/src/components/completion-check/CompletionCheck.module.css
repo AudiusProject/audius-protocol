@@ -1,9 +1,9 @@
 .container {
   display: inline-flex;
-  align-items: center;
   position: relative;
   width: 16px;
   height: 16px;
+  isolation: isolate;
 }
 
 .defaultCompletionIcon {
@@ -22,7 +22,7 @@
   align-items: center;
   position: absolute;
   border-radius: 50%;
-  z-index: 15;
+  z-index: 2;
 }
 
 .emptyCompletionIcon {
@@ -32,9 +32,4 @@
 .checkIcon,
 .removeIcon {
   z-index: 15;
-}
-
-.checkIcon > svg path,
-.removeIcon > svg path {
-  fill: var(--harmony-white);
 }

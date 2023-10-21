@@ -3,6 +3,8 @@ import type { CSSProperties } from 'react'
 import { useTransition, animated } from '@react-spring/web'
 import cn from 'classnames'
 
+import { Flex } from '../layout/'
+
 import styles from './CompletionCheck.module.css'
 import { IconValidationX, IconValidationCheck } from './icons'
 import type { CompletionCheckProps } from './types'
@@ -54,7 +56,7 @@ export const CompletionCheck = (props: CompletionCheckProps) => {
     leave: { x: 0 }
   })
   return (
-    <div className={styles.container}>
+    <Flex alignItems='center' className={styles.container}>
       <CompletionDefault className={styles.defaultCompletionIcon} />
       {transitions((style, value) => {
         if (completionComponents[value]) {
@@ -77,6 +79,6 @@ export const CompletionCheck = (props: CompletionCheckProps) => {
         }
         return null
       })}
-    </div>
+    </Flex>
   )
 }
