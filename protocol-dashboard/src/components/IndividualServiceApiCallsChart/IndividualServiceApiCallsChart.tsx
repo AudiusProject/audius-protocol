@@ -21,8 +21,7 @@ const IndividualServiceApiCallsChart: React.FC<IndividualServiceApiCallsChartPro
     labels = []
     data = []
   } else {
-    labels =
-      apiCalls?.map(a => new Date(a.timestamp).getTime() / 1000) ?? null
+    labels = apiCalls?.map(a => new Date(a.timestamp).getTime() / 1000) ?? null
     data = apiCalls?.map(a => a.total_count) ?? null
   }
   return (

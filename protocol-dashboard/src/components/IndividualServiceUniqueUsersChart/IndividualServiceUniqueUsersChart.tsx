@@ -21,8 +21,7 @@ const IndividualServiceUniqueUsersChart: React.FC<IndividualServiceUniqueUsersCh
     labels = []
     data = []
   } else {
-    labels =
-      apiCalls?.map(a => new Date(a.timestamp).getTime() / 1000) ?? null
+    labels = apiCalls?.map(a => new Date(a.timestamp).getTime() / 1000) ?? null
     data = apiCalls?.map(a => a.unique_count) ?? null
   }
   return (
