@@ -1,5 +1,7 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 
+import { isPremiumContentUSDCPurchaseGated } from '@audius/common'
+import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 
 import IconCart from 'app/assets/images/iconCart.svg'
@@ -12,7 +14,7 @@ import { useColor } from 'app/utils/theme'
 
 import type { TrackAvailabilitySelectionProps } from '../../../components/types'
 
-import { TrackPreviewField } from './TrackPreviewField'
+import { TRACK_PREVIEW, TrackPreviewField } from './TrackPreviewField'
 import { TrackPriceField } from './TrackPriceField'
 
 const WAITLIST_TYPEFORM = 'https://example.com'
@@ -73,7 +75,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 }))
 
 export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
-  const { selected, disabled } = props
+  const { selected, disabled, previousPremiumConditions } = props
   const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
   const styles = useStyles()
 
@@ -94,16 +96,30 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
     ? neutralLight4
     : neutral
 
+  const selectedUsdcPurchaseValue = useMemo(() => {
+    if (isPremiumContentUSDCPurchaseGated(previousPremiumConditions)) {
+      return previousPremiumConditions.usdc_purchase
+    }
+    return { price: 0, splits: {} }
+  }, [previousPremiumConditions])
+  const [{ value: preview }] = useField(TRACK_PREVIEW)
+  const previewStartSeconds = useRef(preview ?? 0).current
+
   useEffect(() => {
     if (selected) {
       setTrackAvailabilityFields({
         is_premium: true,
-        premium_conditions: { usdc_purchase: { price: 0, splits: {} } },
-        preview_start_seconds: 0,
+        premium_conditions: { usdc_purchase: selectedUsdcPurchaseValue },
+        preview_start_seconds: previewStartSeconds,
         'field_visibility.remixes': false
       })
     }
-  }, [selected, setTrackAvailabilityFields])
+  }, [
+    selected,
+    previewStartSeconds,
+    selectedUsdcPurchaseValue,
+    setTrackAvailabilityFields
+  ])
 
   const renderHelpCalloutContent = useCallback(() => {
     return (

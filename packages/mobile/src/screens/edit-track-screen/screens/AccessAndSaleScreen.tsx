@@ -77,7 +77,6 @@ const MarkedAsRemix = () => {
 export const AccessAndSaleScreen = () => {
   const navigation = useNavigation()
   const { initialValues } = useFormikContext<FormValues>()
-  const [{ value: isPremium }] = useField<boolean>('is_premium')
   const [{ value: premiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
@@ -101,10 +100,16 @@ export const AccessAndSaleScreen = () => {
   const isUpload = !initialValues?.track_id
   const initialPremiumConditions = initialValues?.premium_conditions ?? null
   const initialAvailability = useMemo(() => {
-    if ('nft_collection' in (premiumConditions ?? {})) {
+    if (isUsdcEnabled && isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+      return TrackAvailabilityType.USDC_PURCHASE
+    }
+    if (isPremiumContentCollectibleGated(premiumConditions)) {
       return TrackAvailabilityType.COLLECTIBLE_GATED
     }
-    if (isPremium) {
+    if (
+      isPremiumContentFollowGated(premiumConditions) ||
+      isPremiumContentTipGated(premiumConditions)
+    ) {
       return TrackAvailabilityType.SPECIAL_ACCESS
     }
     if (isUnlisted) {
@@ -205,6 +210,7 @@ export const AccessAndSaleScreen = () => {
         selected={availability === TrackAvailabilityType.USDC_PURCHASE}
         disabled={noUsdcGate}
         disabledContent={noUsdcGate}
+        previousPremiumConditions={previousPremiumConditions}
       />
     )
   }
@@ -240,10 +246,15 @@ export const AccessAndSaleScreen = () => {
    * - user has selected a collection for this collectible gated track
    */
   const handleSubmit = useCallback(() => {
+    const collectibleGateHasNoSelectedCollection =
+      isPremiumContentCollectibleGated(premiumConditions) &&
+      !premiumConditions.nft_collection
+    const usdcGateHasInvalidPrice =
+      isPremiumContentUSDCPurchaseGated(premiumConditions) &&
+      premiumConditions.usdc_purchase.price < 1 // todo: or whatever the validation should be
     if (
       !premiumConditions ||
-      !('nft_collection' in premiumConditions) ||
-      !!premiumConditions.nft_collection
+      !(collectibleGateHasNoSelectedCollection || usdcGateHasInvalidPrice)
     ) {
       navigation.goBack()
     }
@@ -270,8 +281,7 @@ export const AccessAndSaleScreen = () => {
           onPress={handleSubmit}
           disabled={
             !!(
-              premiumConditions &&
-              'nft_collection' in premiumConditions &&
+              isPremiumContentCollectibleGated(premiumConditions) &&
               !premiumConditions.nft_collection
             )
           }
