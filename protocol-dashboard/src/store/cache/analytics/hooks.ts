@@ -176,11 +176,14 @@ async function fetchTimeSeries(
   try {
     const bucketSize = BUCKET_GRANULARITY_MAP[bucket]
     let data
+    let endpoint = `${node}/v1/metrics/${route}?bucket_size=${bucketSize}&start_time=${startTime}` 
+    if (route === 'routes') {
+      endpoint = `${node}/v1/metrics/aggregates/${route}/${bucket}?bucket_size=${bucketSize}`
+    }
+    console.log(`MICHELLE BUCKET ${bucket} BUCKET SIZE ${bucketSize}`)
     if (node) {
       data = (
-        await fetchWithTimeout(
-          `${node}/v1/metrics/${route}?bucket_size=${bucketSize}&start_time=${startTime}`
-        )
+        await fetchWithTimeout(endpoint)
       ).data.slice(1) // Trim off the first day so we don't show partial data
     } else {
       data = await fetchWithLibs({
