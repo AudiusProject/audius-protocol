@@ -9,12 +9,8 @@ import styles from './CompletionCheck.module.css'
 import { IconValidationX, IconValidationCheck } from './icons'
 import type { CompletionCheckProps } from './types'
 
-type CompletionDefaultProps = {
-  className: string
-}
-
-export const CompletionDefault = (props: CompletionDefaultProps) => (
-  <div className={cn(styles.defaultCompletionIcon, props.className)} />
+export const CompletionDefault = () => (
+  <div className={cn(styles.defaultCompletionIcon)} />
 )
 export const CompletionEmpty = () => (
   <div className={cn(styles.completionIcon, styles.emptyCompletionIcon)} />
@@ -57,7 +53,7 @@ export const CompletionCheck = (props: CompletionCheckProps) => {
   })
   return (
     <Flex alignItems='center' className={styles.container}>
-      <CompletionDefault className={styles.defaultCompletionIcon} />
+      <CompletionDefault />
       {transitions((style, value) => {
         if (completionComponents[value]) {
           const CompletionIcon = completionComponents[value]
