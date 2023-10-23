@@ -1,6 +1,6 @@
 import { expect } from '@storybook/jest'
 import type { Meta, StoryObj } from '@storybook/react'
-import { within, userEvent } from '@storybook/testing-library'
+import { within } from '@storybook/testing-library'
 
 import { Text } from './Text'
 
