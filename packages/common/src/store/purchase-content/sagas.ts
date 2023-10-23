@@ -47,10 +47,7 @@ type GetPurchaseConfigArgs = {
   contentType: ContentType
 }
 
-function* getUSDCPremiumConditions({
-  contentId,
-  contentType
-}: GetPurchaseConfigArgs) {
+function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
   if (contentType !== ContentType.TRACK) {
     throw new Error('Only tracks are supported')
   }
@@ -62,7 +59,20 @@ function* getUSDCPremiumConditions({
   ) {
     throw new Error('Content is missing premium conditions')
   }
-  return trackInfo.premium_conditions.usdc_purchase
+  const artistInfo = yield* select(getUser, { id: trackInfo.owner_id })
+  if (!artistInfo) {
+    throw new Error('Failed to retrieve content owner')
+  }
+
+  // Renaming most of this info to match analytics event properties
+  const {
+    premium_conditions: {
+      usdc_purchase: { price }
+    },
+    title
+  } = trackInfo
+
+  return { price, title, artistInfo }
 }
 
 function* getPurchaseConfig({ contentId, contentType }: GetPurchaseConfigArgs) {
@@ -140,24 +150,32 @@ function* doStartPurchaseContentFlow({
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
 
+  const { price, title, artistInfo } = yield* call(getContentInfo, {
+    contentId,
+    contentType
+  })
+
+  const analyticsInfo = {
+    price,
+    contentId,
+    contentType,
+    contentName: title,
+    artistHandle: artistInfo.handle,
+    isVerifiedArtist: artistInfo.is_verified,
+    payExtraAmount: extraAmount,
+    payExtraPreset: extraAmountPreset
+  }
+
   // Record start
   yield* call(
     track,
     make({
       eventName: Name.PURCHASE_CONTENT_STARTED,
-      extraAmount,
-      extraAmountPreset,
-      contentId,
-      contentType
+      ...analyticsInfo
     })
   )
 
   try {
-    const { price } = yield* call(getUSDCPremiumConditions, {
-      contentId,
-      contentType
-    })
-
     // get user bank
     const userBank = yield* call(getUSDCUserBank)
 
@@ -245,7 +263,10 @@ function* doStartPurchaseContentFlow({
 
     yield* call(
       track,
-      make({ eventName: Name.PURCHASE_CONTENT_SUCCESS, contentId, contentType })
+      make({
+        eventName: Name.PURCHASE_CONTENT_SUCCESS,
+        ...analyticsInfo
+      })
     )
   } catch (e: unknown) {
     // If we get a known error, pipe it through directly. Otherwise make sure we
@@ -264,9 +285,8 @@ function* doStartPurchaseContentFlow({
       track,
       make({
         eventName: Name.PURCHASE_CONTENT_FAILURE,
-        contentId,
-        contentType,
-        error: error.message
+        error: error.message,
+        ...analyticsInfo
       })
     )
   }

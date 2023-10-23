@@ -1600,24 +1600,29 @@ type BuyUSDCRecoveryFailure = {
   error: string
 }
 
-type PurchaseContentStarted = {
+type ContentPurchaseMetadata = {
+  price: number
+  contentId: number
+  contentName: string
+  contentType: string
+  payExtraAmount?: number
+  payExtraPreset?: string
+  artistHandle: string
+  isVerifiedArtist: boolean
+}
+
+type PurchaseContentStarted = ContentPurchaseMetadata & {
   eventName: Name.PURCHASE_CONTENT_STARTED
-  extraAmount?: number
-  extraAmountPreset?: string
-  contentId: number
-  contentType: string
 }
-type PurchaseContentSuccess = {
+type PurchaseContentSuccess = ContentPurchaseMetadata & {
   eventName: Name.PURCHASE_CONTENT_SUCCESS
-  contentId: number
-  contentType: string
 }
-type PurchaseContentFailure = {
+
+type PurchaseContentFailure = ContentPurchaseMetadata & {
   eventName: Name.PURCHASE_CONTENT_FAILURE
-  contentId: number
-  contentType: string
   error: string
 }
+
 type PurchaseContentTwitterShare = {
   eventName: Name.PURCHASE_CONTENT_TWITTER_SHARE
   text: string
