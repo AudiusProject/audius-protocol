@@ -6,7 +6,8 @@ import eslint from 'vite-plugin-eslint'
 import svgr from 'vite-plugin-svgr'
 import viteTsconfigPaths from 'vite-tsconfig-paths'
 
-export default defineConfig(() => {
+export default defineConfig(async () => {
+  const glsl = (await import('vite-plugin-glsl')).default
   return {
     build: {
       outDir: 'build'
@@ -25,6 +26,7 @@ export default defineConfig(() => {
       }
     },
     plugins: [
+      glsl(),
       commonjs(),
       svgr({
         include: '**/*.svg'
