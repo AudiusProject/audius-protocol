@@ -1,3 +1,4 @@
+/// <reference types="@testing-library/jest-native" />
 /* eslint-disable import/order, import/no-duplicates */
 
 declare module 'fxa-common-password-list'
