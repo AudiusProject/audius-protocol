@@ -85,3 +85,6 @@ export const Tertiary: Story = { args: { variant: ButtonType.TERTIARY } }
 
 // Destructive
 export const Destructive: Story = { args: { variant: ButtonType.DESTRUCTIVE } }
+
+// Hiding at certain widths
+export const HiddenMobileText: Story = { args: { widthToHideText: 900 } }
