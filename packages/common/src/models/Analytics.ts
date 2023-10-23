@@ -1605,7 +1605,7 @@ type ContentPurchaseMetadata = {
   contentId: number
   contentName: string
   contentType: string
-  payExtraAmount?: number
+  payExtraAmount: number
   payExtraPreset?: string
   artistHandle: string
   isVerifiedArtist: boolean
