@@ -115,9 +115,10 @@ export const PurchaseContentFormFooter = ({
         color='lightGreen'
         type='submit'
         isLoading={isUnlocking}
-        text={getButtonText(isUnlocking, amountDue)}
         fullWidth
-      />
+      >
+        {getButtonText(isUnlocking, amountDue)}
+      </Button>
       {error ? <ContentPurchaseError /> : null}
     </>
   )

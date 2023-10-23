@@ -72,11 +72,9 @@ export const CreatePasswordPage = (props: CreatePasswordPageProps) => {
             name='confirmPassword'
             label={messages.confirmPasswordLabel}
           />
-          <Button
-            variant={ButtonType.PRIMARY}
-            text={messages.continue}
-            type='submit'
-          />
+          <Button variant={ButtonType.PRIMARY} type='submit'>
+            {messages.continue}
+          </Button>
         </Form>
       </Formik>
     </div>
