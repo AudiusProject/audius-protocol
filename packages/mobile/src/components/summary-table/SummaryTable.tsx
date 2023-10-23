@@ -25,7 +25,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   lastRow: {
     borderBottomWidth: 0
   },
-  greyRow: {
+  grayRow: {
     backgroundColor: palette.neutralLight10
   }
 }))
@@ -57,7 +57,7 @@ export const SummaryTable = ({
   const nonNullItems = items.filter(removeNullable)
   return (
     <View style={styles.container}>
-      <View style={[styles.row, styles.greyRow]}>
+      <View style={[styles.row, styles.grayRow]}>
         <Text weight='bold'>{title}</Text>
         <Text variant='body' fontSize='large' weight='bold'>
           {secondaryTitle}
@@ -78,7 +78,7 @@ export const SummaryTable = ({
         </View>
       ))}
       {summaryItem !== undefined ? (
-        <View style={[styles.row, styles.lastRow, styles.greyRow]}>
+        <View style={[styles.row, styles.lastRow, styles.grayRow]}>
           <Text
             variant='body'
             fontSize='medium'
