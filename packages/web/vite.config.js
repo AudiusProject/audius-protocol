@@ -43,7 +43,8 @@ export default defineConfig(() => {
         services: '/src/services',
         store: '/src/store',
         workers: '/src/workers',
-        utils: '/src/utils'
+        utils: '/src/utils',
+        stream: require.resolve('stream-browserify')
       },
       preserveSymlinks: true
     },

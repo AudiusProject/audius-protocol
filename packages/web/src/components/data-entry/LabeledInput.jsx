@@ -3,7 +3,7 @@ import { Component } from 'react'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import Input from './Input.js'
+import Input from './Input.jsx'
 import styles from './LabeledInput.module.css'
 
 class LabeledInput extends Component {

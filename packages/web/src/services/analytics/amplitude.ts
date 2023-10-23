@@ -1,5 +1,6 @@
 // Amplitude Analytics
 import { Name, Nullable } from '@audius/common'
+import amplitude from 'amplitude-js'
 
 import { getSource } from './segment'
 
@@ -17,7 +18,6 @@ let amp: Nullable<any> = null
 export const init = async () => {
   try {
     if (!amp && AMP_API_KEY) {
-      const amplitude = await import('amplitude-js')
       amplitude
         .getInstance()
         // Note: https is prepended to the apiEndpoint url specified
