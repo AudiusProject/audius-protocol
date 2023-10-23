@@ -11,7 +11,7 @@ import styles from './HCaptchaModal.module.css'
 import ModalDrawer from './ModalDrawer'
 const { setHCaptchaStatus } = audioRewardsPageActions
 
-const sitekey = process.env.VITE_HCAPTCHA_SITE_KEY
+const sitekey = import.meta.env.VITE_HCAPTCHA_SITE_KEY
 
 const messages = {
   title: 'Complete Captcha Verification'

@@ -53,16 +53,18 @@ export const storeContext: CommonStoreContext = {
   getLineupSelectorForRoute,
   audioPlayer,
   solanaClient: new SolanaClient({
-    solanaClusterEndpoint: process.env.VITE_SOLANA_CLUSTER_ENDPOINT,
-    metadataProgramId: process.env.VITE_METADATA_PROGRAM_ID
+    solanaClusterEndpoint: import.meta.env.VITE_SOLANA_CLUSTER_ENDPOINT,
+    metadataProgramId: import.meta.env.VITE_METADATA_PROGRAM_ID
   }),
   sentry: Sentry,
   reportToSentry,
   trackDownload,
-  instagramAppId: process.env.VITE_INSTAGRAM_APP_ID,
-  instagramRedirectUrl: process.env.VITE_INSTAGRAM_REDIRECT_URL,
+  instagramAppId: import.meta.env.VITE_INSTAGRAM_APP_ID,
+  instagramRedirectUrl: import.meta.env.VITE_INSTAGRAM_REDIRECT_URL,
   share,
-  openSeaClient: new OpenSeaClient(process.env.VITE_OPENSEA_API_URL as string),
+  openSeaClient: new OpenSeaClient(
+    import.meta.env.VITE_OPENSEA_API_URL as string
+  ),
   audiusSdk,
   imageUtils: {
     generatePlaylistArtwork

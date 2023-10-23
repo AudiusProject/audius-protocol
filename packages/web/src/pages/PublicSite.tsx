@@ -17,7 +17,7 @@ import {
 
 import { AppContextProvider } from './AppContextProvider'
 
-const BASENAME = process.env.PUBLIC_URL
+const BASENAME = import.meta.env.PUBLIC_URL
 
 const PrivacyPolicyPage = lazy(
   () => import('pages/privacy-policy-page/PrivacyPolicyPage')

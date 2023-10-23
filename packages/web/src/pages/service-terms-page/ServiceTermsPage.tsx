@@ -5,7 +5,7 @@ import NavBanner from 'components/public-site/NavBanner'
 
 import styles from './ServiceTermsPage.module.css'
 
-const BASENAME = process.env.PUBLIC_URL
+const BASENAME = import.meta.env.PUBLIC_URL
 
 const messages = {
   download: 'Download Service Terms'

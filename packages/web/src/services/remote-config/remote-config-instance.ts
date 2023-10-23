@@ -63,7 +63,7 @@ export const remoteConfigInstance = remoteConfig({
       id.toString()
     ),
   setLogLevel: () => optimizely.setLogLevel('warn'),
-  environment: process.env.VITE_ENVIRONMENT as Environment
+  environment: import.meta.env.VITE_ENVIRONMENT as Environment
 })
 
 remoteConfigInstance.init()

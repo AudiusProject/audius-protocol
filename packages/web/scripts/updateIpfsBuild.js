@@ -4,8 +4,8 @@ const AbortController = require('abort-controller')
 const pinataSDK = require('@pinata/sdk')
 
 const pinata = pinataSDK(
-  process.env.PINATA_KEY_NAME,
-  process.env.PINATA_KEY_SECRET
+  import.meta.env.PINATA_KEY_NAME,
+  import.meta.env.PINATA_KEY_SECRET
 )
 
 const args = process.argv
@@ -72,7 +72,7 @@ const updateContentNodePeers = async () => {
       clearTimeout(timeout)
     }
   }
-  if (Object.values(connections).every(isConnected => !isConnected)) {
+  if (Object.values(connections).every((isConnected) => !isConnected)) {
     console.error('unable to update peer with a single ipfs content node')
     process.exit(1)
   }
@@ -115,11 +115,11 @@ const pinPinata = async (cid, addr) => {
   return new Promise((resolve, reject) => {
     pinata
       .pinByHash(cid, options)
-      .then(result => {
+      .then((result) => {
         console.log(`CID ${cid} pinned to pinata`)
         resolve(result)
       })
-      .catch(err => {
+      .catch((err) => {
         reject(err)
       })
   })

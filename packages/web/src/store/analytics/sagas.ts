@@ -12,7 +12,7 @@ function* trackLocation() {
     } = yield take(LOCATION_CHANGE)
     if (pathname) {
       if ((window as any).gtag) {
-        ;(window as any).gtag('config', process.env.GA_MEASUREMENT_ID, {
+        ;(window as any).gtag('config', import.meta.env.GA_MEASUREMENT_ID, {
           page_path: pathname
         })
       }

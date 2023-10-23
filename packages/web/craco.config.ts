@@ -8,8 +8,8 @@ import {
 } from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 
-const isProd = process.env.NODE_ENV === 'production'
-const analyze = process.env.BUNDLE_ANALYZE === 'true'
+const isProd = import.meta.env.NODE_ENV === 'production'
+const analyze = import.meta.env.BUNDLE_ANALYZE === 'true'
 
 const SOURCEMAP_URL = 'https://s3.us-west-1.amazonaws.com/sourcemaps.audius.co/'
 

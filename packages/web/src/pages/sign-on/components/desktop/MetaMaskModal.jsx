@@ -10,7 +10,7 @@ import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 
 import styles from './MetaMaskModal.module.css'
 
-const WEB3_NETWORK_ID = process.env.VITE_WEB3_NETWORK_ID
+const WEB3_NETWORK_ID = import.meta.env.VITE_WEB3_NETWORK_ID
 
 const messages = {
   title: '    Are You Sure You Want To Continue With MetaMask?   ',

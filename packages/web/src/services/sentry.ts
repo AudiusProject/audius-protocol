@@ -14,11 +14,11 @@ const MAX_BREADCRUMBS = 300
 
 export const initializeSentry = () => {
   Sentry.init({
-    dsn: process.env.VITE_SENTRY_DSN,
+    dsn: import.meta.env.VITE_SENTRY_DSN,
 
     // Need to give Sentry a version so it can
     // associate stacktraces with sourcemaps
-    release: process.env.VITE_CURRENT_GIT_SHA,
+    release: import.meta.env.VITE_CURRENT_GIT_SHA,
 
     // Capture console.errors in sentry
     integrations: [

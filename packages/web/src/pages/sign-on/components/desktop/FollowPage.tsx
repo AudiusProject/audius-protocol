@@ -22,7 +22,7 @@ const messages = {
   following: 'Following'
 }
 
-const ENVIRONMENT = process.env.VITE_ENVIRONMENT
+const ENVIRONMENT = import.meta.env.VITE_ENVIRONMENT
 const MINIMUM_FOLLOWER_COUNT =
   ENVIRONMENT === 'production' || ENVIRONMENT === 'staging' ? 3 : 0
 
