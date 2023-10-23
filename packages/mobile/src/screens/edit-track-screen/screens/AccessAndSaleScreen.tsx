@@ -9,15 +9,18 @@ import {
   FeatureFlags,
   removeNullable,
   isPremiumContentUSDCPurchaseGated,
-  useAccessAndRemixSettings
+  useAccessAndRemixSettings,
+  useUSDCPurchaseConfig
 } from '@audius/common'
 import { useField, useFormikContext } from 'formik'
 
+import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
 import IconCart from 'app/assets/images/iconCart.svg'
 import { Button } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
+import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { TopBarIconButton } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
 
 import { CollectibleGatedAvailability } from '../components/CollectibleGatedAvailability'
@@ -52,6 +55,9 @@ const collectibleGatedAvailability = TrackAvailabilityType.COLLECTIBLE_GATED
 const hiddenAvailability = TrackAvailabilityType.HIDDEN
 
 const useStyles = makeStyles(({ spacing }) => ({
+  backButton: {
+    marginLeft: -6
+  },
   isRemix: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -215,20 +221,27 @@ export const AccessAndSaleScreen = () => {
    * - track is collectible gated and user has not selected an nft collection, or
    * - track is usdc purchase gated and user has not selected a valid price
    */
-  const handleSubmit = useCallback(() => {
-    const collectibleGateHasNoSelectedCollection =
+  const { minContentPriceCents, maxContentPriceCents } =
+    useUSDCPurchaseConfig(useRemoteVar)
+  const usdcGateHasInvalidPrice = useMemo(() => {
+    return (
+      isPremiumContentUSDCPurchaseGated(premiumConditions) &&
+      (premiumConditions.usdc_purchase.price < minContentPriceCents / 100 ||
+        premiumConditions.usdc_purchase.price > maxContentPriceCents / 100)
+    )
+  }, [premiumConditions, minContentPriceCents, maxContentPriceCents])
+  const collectibleGateHasNoSelectedCollection = useMemo(() => {
+    return (
       isPremiumContentCollectibleGated(premiumConditions) &&
       !premiumConditions.nft_collection
-    const usdcGateHasInvalidPrice =
-      isPremiumContentUSDCPurchaseGated(premiumConditions) &&
-      premiumConditions.usdc_purchase.price < 1 // todo: or whatever the validation should be
-    if (
-      !premiumConditions ||
-      !(collectibleGateHasNoSelectedCollection || usdcGateHasInvalidPrice)
-    ) {
-      navigation.goBack()
-    }
-  }, [premiumConditions, navigation])
+    )
+  }, [premiumConditions])
+  const isFormInvalid =
+    usdcGateHasInvalidPrice || collectibleGateHasNoSelectedCollection
+
+  const goBack = useCallback(() => {
+    navigation.goBack()
+  }, [navigation])
 
   return (
     <ListSelectionScreen
@@ -241,6 +254,15 @@ export const AccessAndSaleScreen = () => {
       disableSearch
       allowDeselect={false}
       hideSelectionLabel
+      topbarLeft={
+        <TopBarIconButton
+          icon={IconCaretLeft}
+          style={styles.backButton}
+          onPress={() => {
+            if (!isFormInvalid) goBack()
+          }}
+        />
+      }
       header={<MarkedAsRemix />}
       itemStyles={styles.listItem}
       bottomSection={
@@ -249,13 +271,8 @@ export const AccessAndSaleScreen = () => {
           size='large'
           fullWidth
           title={messages.done}
-          onPress={handleSubmit}
-          disabled={
-            !!(
-              isPremiumContentCollectibleGated(premiumConditions) &&
-              !premiumConditions.nft_collection
-            )
-          }
+          onPress={goBack}
+          disabled={isFormInvalid}
         />
       }
     />
