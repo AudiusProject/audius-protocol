@@ -1,6 +1,4 @@
-import React from 'react'
-import { RouteComponentProps } from 'react-router'
-import { matchPath } from 'react-router-dom'
+import { matchPath, useLocation, useParams } from 'react-router-dom'
 import NodeOverview from 'components/NodeOverview'
 import { useDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
 import { useContentNode } from 'store/cache/contentNode/hooks'
@@ -24,10 +22,7 @@ const messages = {
 }
 
 type ContentNodeProps = { spID: number; accountWallet: Address | undefined }
-const ContentNode: React.FC<ContentNodeProps> = ({
-  spID,
-  accountWallet
-}: ContentNodeProps) => {
+const ContentNode = ({ spID, accountWallet }: ContentNodeProps) => {
   const { node: contentNode, status } = useContentNode({ spID })
 
   if (status === Status.Failure) {
@@ -57,10 +52,7 @@ type DiscoveryProviderProps = {
   spID: number
   accountWallet: Address | undefined
 }
-const DiscoveryProvider: React.FC<DiscoveryProviderProps> = ({
-  spID,
-  accountWallet
-}: DiscoveryProviderProps) => {
+const DiscoveryProvider = ({ spID, accountWallet }: DiscoveryProviderProps) => {
   const { node: discoveryProvider, status } = useDiscoveryProvider({ spID })
   const pushRoute = usePushRoute()
   if (status === Status.Failure) {
@@ -86,16 +78,13 @@ const DiscoveryProvider: React.FC<DiscoveryProviderProps> = ({
   )
 }
 
-type NodeProps = {} & RouteComponentProps<{ spID: string }>
-const Node: React.FC<NodeProps> = (props: NodeProps) => {
-  const {
-    location: { pathname },
-    match: { params }
-  } = props
-  const spID = parseInt(params.spID)
+const Node = () => {
+  const { spID: spIDParam } = useParams<{ spID: string }>()
+  const spID = parseInt(spIDParam, 10)
+  const location = useLocation()
   const { wallet: accountWallet } = useAccount()
 
-  const isDiscovery = !!matchPath(pathname, {
+  const isDiscovery = !!matchPath(location.pathname, {
     path: SERVICES_DISCOVERY_PROVIDER_NODE
   })
 

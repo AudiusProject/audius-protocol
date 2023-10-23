@@ -1,21 +1,24 @@
 import coverPhoto from '../../e2e/fixtures/coverPhoto.json'
 import profilePicture from '../../e2e/fixtures/profilePicture.json'
 
-function launchImageLibrary(options: any, callback: Function) {
+type Options = {
+  testID: string
+}
+
+export function openPicker(options: Options, callback: Function) {
   if (typeof options === 'function') {
     callback = options
   }
-  const { name } = options
+  const { testID } = options
 
   // eslint-disable-next-line n/no-callback-literal
   callback({
     assets: [
-      name === 'cover_photo'
+      testID === 'cover_photo'
         ? coverPhoto
-        : name === 'profile_picture'
+        : testID === 'profile_picture'
         ? profilePicture
         : null
     ]
   })
 }
-export default launchImageLibrary

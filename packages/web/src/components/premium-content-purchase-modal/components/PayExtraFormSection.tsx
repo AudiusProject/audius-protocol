@@ -32,6 +32,7 @@ export const PayExtraFormSection = ({
   const handleClickPreset = (newPreset: PayExtraPreset) => {
     setPreset(newPreset === preset ? PayExtraPreset.NONE : newPreset)
   }
+
   return (
     <div className={styles.container}>
       <Text variant='title' color='neutralLight4' className={styles.title}>

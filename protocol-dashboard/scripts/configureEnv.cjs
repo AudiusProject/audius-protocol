@@ -28,7 +28,7 @@ if (env === 'stage' || env === 'prod') {
       .map(([key, value]) => `${key}=${value}`)
       .join('\n')
 
-    const VITE_DASHBOARD_BASE_URL = process.env.DASHBOARD_BASE_URL || '/'
+    const VITE_DASHBOARD_BASE_URL = process.env.DASHBOARD_BASE_URL || './'
     envString += `\nVITE_DASHBOARD_BASE_URL=${VITE_DASHBOARD_BASE_URL}`
     console.log(`Protocol dashboard base path: ${VITE_DASHBOARD_BASE_URL}`)
 
@@ -62,7 +62,7 @@ if (env === 'stage' || env === 'prod') {
       remoteHost && process.argv.length > 3 && process.argv[3] === 'remote'
     const host = useRemoteHost ? remoteHost : localhost
 
-    const VITE_DASHBOARD_BASE_URL = process.env.DASHBOARD_BASE_URL || '/'
+    const VITE_DASHBOARD_BASE_URL = process.env.DASHBOARD_BASE_URL || './'
     const VITE_ENVIRONMENT = 'development'
     const VITE_CONTENT_NODE = `http://${host}:4000`
     const VITE_DISCOVERY_PROVIDER = `http://${host}:5000`

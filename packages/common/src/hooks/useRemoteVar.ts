@@ -44,3 +44,5 @@ export const createUseRemoteVarHook = ({
 
   return useRemoteVar
 }
+
+export type RemoteVarHook = ReturnType<typeof createUseRemoteVarHook>

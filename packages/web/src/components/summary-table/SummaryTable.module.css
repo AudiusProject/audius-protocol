@@ -22,7 +22,10 @@
   border-top: 1px solid var(--border-default);
 }
 
-.row:first-child,
-.row:last-child {
+.row:first-child {
+  background: var(--background-surface-1);
+}
+
+.rowGrayBackground {
   background: var(--background-surface-1);
 }

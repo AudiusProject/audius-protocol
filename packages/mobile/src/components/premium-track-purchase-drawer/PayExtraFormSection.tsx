@@ -50,7 +50,8 @@ export const PayExtraFormSection = ({
   amountPresets
 }: PayExtraFormSectionProps) => {
   const [{ value: preset }, , { setValue: setPreset }] = useField(AMOUNT_PRESET)
-  const [{ value: customAmount }] = useField(CUSTOM_AMOUNT)
+  const [{ value: customAmount }, { error: customAmountError }] =
+    useField(CUSTOM_AMOUNT)
   const styles = useStyles()
 
   const handleClickPreset = (newPreset: PayExtraPreset) => {
@@ -99,6 +100,7 @@ export const PayExtraFormSection = ({
           label={messages.customAmount}
           value={String(customAmount)}
           placeholder={messages.placeholder}
+          errorMessage={customAmountError}
           noGutter
         />
       ) : null}
