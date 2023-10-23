@@ -1,0 +1,659 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ern:NewReleaseMessage xmlns:ern="http://ddex.net/xml/ern/382"
+  xmlns:xs="http://www.w3.org/2001/XMLSchema-instance"
+  xs:schemaLocation="http://ddex.net/xml/ern/382 http://ddex.net/xml/ern/382/release-notification.xsd"
+  MessageSchemaVersionId="ern/382"
+  LanguageAndScriptCode="en">
+    <MessageHeader>
+        <MessageId>20170112112123022</MessageId>
+        <MessageSender>
+            <PartyId>DPID_OF_THE_SENDER</PartyId>
+            <PartyName>
+                <FullName>Test Label</FullName>
+            </PartyName>
+        </MessageSender>
+        <MessageRecipient>
+            <PartyId>PADPIDA2013020802I</PartyId>
+            <PartyName>
+                <FullName>YouTube</FullName>
+            </PartyName>
+        </MessageRecipient>
+        <MessageCreatedDateTime>2017-01-09T22:59:41.662+01:00</MessageCreatedDateTime>
+        <MessageControlType>LiveMessage</MessageControlType>
+    </MessageHeader>
+    <UpdateIndicator>OriginalMessage</UpdateIndicator>
+    <ResourceList>
+        <SoundRecording>
+            <SoundRecordingType>MusicalWorkSoundRecording</SoundRecordingType>
+            <SoundRecordingId>
+                <ISRC>QZ6RS1700001</ISRC>
+                <!--- Adds one asset label to the Art Track asset (optional and can be repeated) -->
+                <ProprietaryId Namespace="YOUTUBE:AT_ASSET_LABEL">foobar_asset_label</ProprietaryId>
+                <!--- Sets the custom ID on the Art Track asset (optional) -->
+                <ProprietaryId Namespace="YOUTUBE:AT_CUSTOM_ID">art_track_custom_001</ProprietaryId>
+            </SoundRecordingId>
+            <IndirectSoundRecordingId>
+                <ISWC>T1234567890</ISWC>
+            </IndirectSoundRecordingId>
+            <ResourceReference>A1</ResourceReference>
+            <ReferenceTitle LanguageAndScriptCode="en">
+                <TitleText>A little bit of Foo</TitleText>
+            </ReferenceTitle>
+            <Duration>PT0H3M16S</Duration>
+            <SoundRecordingDetailsByTerritory>
+                <TerritoryCode>Worldwide</TerritoryCode>
+                <Title LanguageAndScriptCode="en" TitleType="FormalTitle">
+                    <TitleText>A little bit of Foo</TitleText>
+                </Title>
+                <Title LanguageAndScriptCode="en" TitleType="DisplayTitle">
+                    <TitleText>A little bit of Foo</TitleText>
+                </Title>
+                <DisplayArtist SequenceNumber="1">
+                    <PartyName>
+                        <FullName>Jonny and the Føøbars</FullName>
+                    </PartyName>
+                    <ArtistRole>MainArtist</ArtistRole>
+                </DisplayArtist>
+                <ResourceContributor SequenceNumber="1">
+                    <PartyName>
+                        <FullName>Jane Doe</FullName>
+                    </PartyName>
+                    <ResourceContributorRole>Producer</ResourceContributorRole>
+                </ResourceContributor>
+                <IndirectResourceContributor SequenceNumber="1">
+                    <PartyName>
+                        <FullName>Jonny Smith</FullName>
+                    </PartyName>
+                    <IndirectResourceContributorRole>Composer</IndirectResourceContributorRole>
+                </IndirectResourceContributor>
+                <DisplayArtistName>Jonny and the Føøbars</DisplayArtistName>
+                <LabelName LabelNameType="DisplayLabelName">Test Label</LabelName>
+                <PLine>
+                    <Year>2017</Year>
+                    <PLineText>(P) 2017 Test Label Inc.</PLineText>
+                </PLine>
+                <Genre>
+                    <GenreText>Hip Hop</GenreText>
+                </Genre>
+                <ParentalWarningType>Explicit</ParentalWarningType>
+                <!-- TechnicalSoundRecordingDetails are only to be provided when relevant Resource Files are communicated -->
+                <TechnicalSoundRecordingDetails>
+                    <TechnicalResourceDetailsReference>T1</TechnicalResourceDetailsReference>
+                    <File>
+                        <FileName>721620118165_T1_001.flac</FileName>
+                        <FilePath>resources/</FilePath>
+                    </File>
+                </TechnicalSoundRecordingDetails>
+            </SoundRecordingDetailsByTerritory>
+        </SoundRecording>
+        <SoundRecording>
+            <SoundRecordingType>MusicalWorkSoundRecording</SoundRecordingType>
+            <SoundRecordingId>
+                <ISRC>QZ6RS1700002</ISRC>
+                <!--- Adds one asset label to the Art Track asset (optional and can be repeated) -->
+                <ProprietaryId Namespace="YOUTUBE:AT_ASSET_LABEL">foobar_asset_label</ProprietaryId>
+                <!--- Sets the custom ID on the Art Track asset (optional) -->
+                <ProprietaryId Namespace="YOUTUBE:AT_CUSTOM_ID">art_track_custom_002</ProprietaryId>
+            </SoundRecordingId>
+            <IndirectSoundRecordingId>
+                <ISWC>T2345678901</ISWC>
+            </IndirectSoundRecordingId>
+            <ResourceReference>A2</ResourceReference>
+            <ReferenceTitle LanguageAndScriptCode="en">
+                <TitleText>All you need is Foo</TitleText>
+            </ReferenceTitle>
+            <Duration>PT0H4M26S</Duration>
+            <SoundRecordingDetailsByTerritory>
+                <TerritoryCode>Worldwide</TerritoryCode>
+                <Title LanguageAndScriptCode="en" TitleType="FormalTitle">
+                    <TitleText>All you need is Foo</TitleText>
+                </Title>
+                <Title LanguageAndScriptCode="en" TitleType="DisplayTitle">
+                    <TitleText>All you need is Foo</TitleText>
+                </Title>
+                <DisplayArtist SequenceNumber="1">
+                    <PartyName>
+                        <FullName>Jonny and the Føøbars</FullName>
+                    </PartyName>
+                    <PartyId IsISNI="true">000000010909498X</PartyId>
+                    <ArtistRole>AssociatedPerformer</ArtistRole>
+                    <ArtistRole>MainArtist</ArtistRole>
+                </DisplayArtist>
+                <IndirectResourceContributor SequenceNumber="1">
+                    <PartyName>
+                        <FullName>Jonny Smith</FullName>
+                    </PartyName>
+                    <IndirectResourceContributorRole>Composer</IndirectResourceContributorRole>
+                </IndirectResourceContributor>
+                <DisplayArtistName>Jonny and the Føøbars</DisplayArtistName>
+                <LabelName LabelNameType="DisplayLabelName">Test Label</LabelName>
+                <PLine>
+                    <Year>2017</Year>
+                    <PLineText>(P) 2017 Test Label Inc.</PLineText>
+                </PLine>
+                <Genre>
+                    <GenreText>Hip Hop</GenreText>
+                </Genre>
+                <ParentalWarningType>Explicit</ParentalWarningType>
+                <!-- TechnicalSoundRecordingDetails are only to be provided when relevant Resource Files are communicated -->
+                <TechnicalSoundRecordingDetails>
+                    <TechnicalResourceDetailsReference>T2</TechnicalResourceDetailsReference>
+                    <File>
+                        <FileName>721620118165_T2_002.flac</FileName>
+                        <FilePath>resources/</FilePath>
+                    </File>
+                </TechnicalSoundRecordingDetails>
+            </SoundRecordingDetailsByTerritory>
+        </SoundRecording>
+        <SoundRecording>
+            <SoundRecordingType>MusicalWorkSoundRecording</SoundRecordingType>
+            <SoundRecordingId>
+                <ISRC>QZ6RS1700003</ISRC>
+                <!--- Adds one asset label to the Art Track asset (optional and can be repeated) -->
+                <ProprietaryId Namespace="YOUTUBE:AT_ASSET_LABEL">foobar_asset_label</ProprietaryId>
+                <!--- Sets the custom ID on the Art Track asset (optional) -->
+                <ProprietaryId Namespace="YOUTUBE:AT_CUSTOM_ID">art_track_custom_003</ProprietaryId>
+            </SoundRecordingId>
+            <IndirectSoundRecordingId>
+                <ISWC>T3456789012</ISWC>
+            </IndirectSoundRecordingId>
+            <ResourceReference>A3</ResourceReference>
+            <ReferenceTitle LanguageAndScriptCode="en">
+                <TitleText>Foo makes the world go round</TitleText>
+            </ReferenceTitle>
+            <Duration>PT0H3M53S</Duration>
+            <SoundRecordingDetailsByTerritory>
+                <TerritoryCode>Worldwide</TerritoryCode>
+                <Title LanguageAndScriptCode="en" TitleType="FormalTitle">
+                    <TitleText>Foo makes the world go round</TitleText>
+                </Title>
+                <Title LanguageAndScriptCode="en" TitleType="DisplayTitle">
+                    <TitleText>Foo makes the world go round</TitleText>
+                </Title>
+                <DisplayArtist SequenceNumber="1">
+                    <PartyName>
+                        <FullName>Jonny and the Føøbars</FullName>
+                    </PartyName>
+                    <PartyId IsISNI="true">000000010909498X</PartyId>
+                    <ArtistRole>AssociatedPerformer</ArtistRole>
+                    <ArtistRole>MainArtist</ArtistRole>
+                </DisplayArtist>
+                <IndirectResourceContributor SequenceNumber="1">
+                    <PartyName>
+                        <FullName>Jonny Smith</FullName>
+                    </PartyName>
+                    <IndirectResourceContributorRole>Composer</IndirectResourceContributorRole>
+                </IndirectResourceContributor>
+                <DisplayArtistName>Jonny and the Føøbars</DisplayArtistName>
+                <LabelName LabelNameType="DisplayLabelName">Test Label</LabelName>
+                <PLine>
+                    <Year>2017</Year>
+                    <PLineText>(P) 2017 Test Label Inc.</PLineText>
+                </PLine>
+                <Genre>
+                    <GenreText>Hip Hop</GenreText>
+                </Genre>
+                <ParentalWarningType>Explicit</ParentalWarningType>
+                <!-- TechnicalSoundRecordingDetails are only to be provided when relevant Resource Files are communicated -->
+                <TechnicalSoundRecordingDetails>
+                    <TechnicalResourceDetailsReference>T3</TechnicalResourceDetailsReference>
+                    <File>
+                        <FileName>721620118165_T3_003.flac</FileName>
+                        <FilePath>resources/</FilePath>
+                    </File>
+                </TechnicalSoundRecordingDetails>
+            </SoundRecordingDetailsByTerritory>
+        </SoundRecording>
+        <SoundRecording>
+            <SoundRecordingType>MusicalWorkSoundRecording</SoundRecordingType>
+            <SoundRecordingId>
+                <ISRC>QZ6RS1700004</ISRC>
+                <!--- Adds one asset label to the Art Track asset (optional and can be repeated) -->
+                <ProprietaryId Namespace="YOUTUBE:AT_ASSET_LABEL">foobar_asset_label</ProprietaryId>
+                <!--- Sets the custom ID on the Art Track asset (optional) -->
+                <ProprietaryId Namespace="YOUTUBE:AT_CUSTOM_ID">art_track_custom_004</ProprietaryId>
+            </SoundRecordingId>
+            <IndirectSoundRecordingId>
+                <ISWC>T4567890123</ISWC>
+            </IndirectSoundRecordingId>
+            <ResourceReference>A4</ResourceReference>
+            <ReferenceTitle LanguageAndScriptCode="en">
+                <TitleText>There ain't no Foo when you're gone</TitleText>
+            </ReferenceTitle>
+            <Duration>PT0H3M20S</Duration>
+            <SoundRecordingDetailsByTerritory>
+                <TerritoryCode>Worldwide</TerritoryCode>
+                <Title LanguageAndScriptCode="en" TitleType="FormalTitle">
+                    <TitleText>There ain't no Foo when you're gone</TitleText>
+                </Title>
+                <Title LanguageAndScriptCode="en" TitleType="DisplayTitle">
+                    <TitleText>There ain't no Foo when you're gone</TitleText>
+                </Title>
+                <DisplayArtist SequenceNumber="1">
+                    <PartyName>
+                        <FullName>Jonny and the Føøbars</FullName>
+                    </PartyName>
+                    <PartyId IsISNI="true">000000010909498X</PartyId>
+                    <ArtistRole>AssociatedPerformer</ArtistRole>
+                    <ArtistRole>MainArtist</ArtistRole>
+                </DisplayArtist>
+                <IndirectResourceContributor SequenceNumber="1">
+                    <PartyName>
+                        <FullName>Jonny Smith</FullName>
+                    </PartyName>
+                    <IndirectResourceContributorRole>Composer</IndirectResourceContributorRole>
+                </IndirectResourceContributor>
+                <DisplayArtistName>Jonny and the Føøbars</DisplayArtistName>
+                <LabelName LabelNameType="DisplayLabelName">Test Label</LabelName>
+                <PLine>
+                    <Year>2017</Year>
+                    <PLineText>(P) 2017 Test Label Inc.</PLineText>
+                </PLine>
+                <Genre>
+                    <GenreText>Hip Hop</GenreText>
+                </Genre>
+                <ParentalWarningType>Explicit</ParentalWarningType>
+                <!-- TechnicalSoundRecordingDetails are only to be provided when relevant Resource Files are communicated -->
+                <TechnicalSoundRecordingDetails>
+                    <TechnicalResourceDetailsReference>T4</TechnicalResourceDetailsReference>
+                    <File>
+                        <FileName>721620118165_T4_004.flac</FileName>
+                        <FilePath>resources/</FilePath>
+                    </File>
+                </TechnicalSoundRecordingDetails>
+            </SoundRecordingDetailsByTerritory>
+        </SoundRecording>
+        <SoundRecording>
+            <SoundRecordingType>MusicalWorkSoundRecording</SoundRecordingType>
+            <SoundRecordingId>
+                <ISRC>QZ6RS1700005</ISRC>
+                <!--- Adds one asset label to the Art Track asset (optional and can be repeated) -->
+                <ProprietaryId Namespace="YOUTUBE:AT_ASSET_LABEL">foobar_asset_label</ProprietaryId>
+                <!--- Sets the custom ID on the Art Track asset (optional) -->
+                <ProprietaryId Namespace="YOUTUBE:AT_CUSTOM_ID">art_track_custom_005</ProprietaryId>
+            </SoundRecordingId>
+            <IndirectSoundRecordingId>
+                <ISWC>T5678901234</ISWC>
+            </IndirectSoundRecordingId>
+            <ResourceReference>A5</ResourceReference>
+            <ReferenceTitle LanguageAndScriptCode="en">
+                <TitleText>Save the last Foo for me</TitleText>
+            </ReferenceTitle>
+            <Duration>PT0H4M21S</Duration>
+            <SoundRecordingDetailsByTerritory>
+                <TerritoryCode>Worldwide</TerritoryCode>
+                <Title LanguageAndScriptCode="en" TitleType="FormalTitle">
+                    <TitleText>Save the last Foo for me</TitleText>
+                </Title>
+                <Title LanguageAndScriptCode="en" TitleType="DisplayTitle">
+                    <TitleText>Save the last Foo for me</TitleText>
+                </Title>
+                <DisplayArtist SequenceNumber="1">
+                    <PartyName>
+                        <FullName>Jonny and the Føøbars</FullName>
+                    </PartyName>
+                    <PartyId IsISNI="true">000000010909498X</PartyId>
+                    <ArtistRole>AssociatedPerformer</ArtistRole>
+                    <ArtistRole>MainArtist</ArtistRole>
+                </DisplayArtist>
+                <IndirectResourceContributor SequenceNumber="1">
+                    <PartyName>
+                        <FullName>Jonny Smith</FullName>
+                    </PartyName>
+                    <IndirectResourceContributorRole>Composer</IndirectResourceContributorRole>
+                </IndirectResourceContributor>
+                <DisplayArtistName>Jonny and the Føøbars</DisplayArtistName>
+                <LabelName LabelNameType="DisplayLabelName">Test Label</LabelName>
+                <PLine>
+                    <Year>2017</Year>
+                    <PLineText>(P) 2017 Test Label Inc.</PLineText>
+                </PLine>
+                <Genre>
+                    <GenreText>Hip Hop</GenreText>
+                </Genre>
+                <ParentalWarningType>Explicit</ParentalWarningType>
+                <!-- TechnicalSoundRecordingDetails are only to be provided when relevant Resource Files are communicated -->
+                <TechnicalSoundRecordingDetails>
+                    <TechnicalResourceDetailsReference>T5</TechnicalResourceDetailsReference>
+                    <File>
+                        <FileName>721620118165_T5_005.flac</FileName>
+                        <FilePath>resources/</FilePath>
+                    </File>
+                </TechnicalSoundRecordingDetails>
+            </SoundRecordingDetailsByTerritory>
+        </SoundRecording>
+        <Image>
+            <ImageType>FrontCoverImage</ImageType>
+            <ImageId>
+                <ProprietaryId Namespace="DPID:DPID_OF_THE_SENDER">PId0401</ProprietaryId>
+            </ImageId>
+            <ResourceReference>A6</ResourceReference>
+            <ImageDetailsByTerritory>
+                <TerritoryCode>Worldwide</TerritoryCode>
+                <!-- TechnicalImageDetails are only to be provided when relevant Resource Files are communicated -->
+                <TechnicalImageDetails>
+                    <TechnicalResourceDetailsReference>T6</TechnicalResourceDetailsReference>
+                    <File>
+                        <FileName>721620118165_T6_006.jpg</FileName>
+                        <FilePath>resources/</FilePath>
+                    </File>
+                </TechnicalImageDetails>
+            </ImageDetailsByTerritory>
+        </Image>
+    </ResourceList>
+    <ReleaseList>
+        <Release IsMainRelease="true">
+            <ReleaseId>
+                <ICPN>721620118165</ICPN>
+            </ReleaseId>
+            <ReleaseReference>R0</ReleaseReference>
+            <ReferenceTitle LanguageAndScriptCode="en">
+                <TitleText>A whole lot of Foo</TitleText>
+            </ReferenceTitle>
+            <ReleaseResourceReferenceList>
+                <ReleaseResourceReference ReleaseResourceType="PrimaryResource">A1</ReleaseResourceReference>
+                <ReleaseResourceReference ReleaseResourceType="PrimaryResource">A2</ReleaseResourceReference>
+                <ReleaseResourceReference ReleaseResourceType="PrimaryResource">A3</ReleaseResourceReference>
+                <ReleaseResourceReference ReleaseResourceType="PrimaryResource">A4</ReleaseResourceReference>
+                <ReleaseResourceReference ReleaseResourceType="PrimaryResource">A5</ReleaseResourceReference>
+                <ReleaseResourceReference ReleaseResourceType="SecondaryResource">A6</ReleaseResourceReference>
+            </ReleaseResourceReferenceList>
+            <ReleaseType>Album</ReleaseType>
+            <ReleaseDetailsByTerritory>
+                <TerritoryCode>Worldwide</TerritoryCode>
+                <DisplayArtistName>Jonny and the Føøbars</DisplayArtistName>
+                <LabelName LabelNameType="DisplayLabelName">Test Label</LabelName>
+                <Title LanguageAndScriptCode="en" TitleType="FormalTitle">
+                    <TitleText>A whole lot of Foo</TitleText>
+                </Title>
+                <Title LanguageAndScriptCode="en" TitleType="DisplayTitle">
+                    <TitleText>A whole lot of Foo</TitleText>
+                </Title>
+                <DisplayArtist SequenceNumber="1">
+                    <PartyName>
+                        <FullName>Jonny and the Føøbars</FullName>
+                    </PartyName>
+                    <PartyId IsISNI="true">000000010909498X</PartyId>
+                    <ArtistRole>MainArtist</ArtistRole>
+                </DisplayArtist>
+                <ParentalWarningType>Explicit</ParentalWarningType>
+                <ResourceGroup>
+                    <ResourceGroup>
+                        <Title TitleType="GroupingTitle">
+                            <TitleText>Disc 1</TitleText>
+                        </Title>
+                        <SequenceNumber>1</SequenceNumber>
+                        <ResourceGroupContentItem>
+                            <SequenceNumber>1</SequenceNumber>
+                            <ResourceType>SoundRecording</ResourceType>
+                            <ReleaseResourceReference ReleaseResourceType="PrimaryResource">A1</ReleaseResourceReference>
+                        </ResourceGroupContentItem>
+                        <ResourceGroupContentItem>
+                            <SequenceNumber>2</SequenceNumber>
+                            <ResourceType>SoundRecording</ResourceType>
+                            <ReleaseResourceReference ReleaseResourceType="PrimaryResource">A2</ReleaseResourceReference>
+                        </ResourceGroupContentItem>
+                        <ResourceGroupContentItem>
+                            <SequenceNumber>3</SequenceNumber>
+                            <ResourceType>SoundRecording</ResourceType>
+                            <ReleaseResourceReference ReleaseResourceType="PrimaryResource">A3</ReleaseResourceReference>
+                        </ResourceGroupContentItem>
+                        <ResourceGroupContentItem>
+                            <SequenceNumber>4</SequenceNumber>
+                            <ResourceType>SoundRecording</ResourceType>
+                            <ReleaseResourceReference ReleaseResourceType="PrimaryResource">A4</ReleaseResourceReference>
+                        </ResourceGroupContentItem>
+                        <ResourceGroupContentItem>
+                            <SequenceNumber>5</SequenceNumber>
+                            <ResourceType>SoundRecording</ResourceType>
+                            <ReleaseResourceReference ReleaseResourceType="PrimaryResource">A5</ReleaseResourceReference>
+                        </ResourceGroupContentItem>
+                    </ResourceGroup>
+                    <ResourceGroupContentItem>
+                        <SequenceNumber>6</SequenceNumber>
+                        <ResourceType>Image</ResourceType>
+                        <ReleaseResourceReference ReleaseResourceType="SecondaryResource">A6</ReleaseResourceReference>
+                    </ResourceGroupContentItem>
+                </ResourceGroup>
+                <Genre>
+                    <GenreText>Hip Hop</GenreText>
+                </Genre>
+                <ReleaseDate>2017-12-09</ReleaseDate>
+            </ReleaseDetailsByTerritory>
+            <Duration>PT0H38M13S</Duration>
+            <PLine>
+                <Year>2017</Year>
+                <PLineText>(P) 2017 Test Label Inc.</PLineText>
+            </PLine>
+            <GlobalOriginalReleaseDate>2017-12-09</GlobalOriginalReleaseDate>
+        </Release>
+        <Release>
+            <ReleaseId>
+                <ISRC>USGCV1172318</ISRC>
+            </ReleaseId>
+            <ReleaseReference>R1</ReleaseReference>
+            <ReferenceTitle LanguageAndScriptCode="en">
+                <TitleText>Have Yourself a Merry Little Christmas</TitleText>
+            </ReferenceTitle>
+            <ReleaseResourceReferenceList>
+                <ReleaseResourceReference ReleaseResourceType="PrimaryResource">A1</ReleaseResourceReference>
+            </ReleaseResourceReferenceList>
+            <ReleaseType>TrackRelease</ReleaseType>
+            <ReleaseDetailsByTerritory>
+                <TerritoryCode>Worldwide</TerritoryCode>
+                <DisplayArtistName>Jonny and the Føøbars</DisplayArtistName>
+                <LabelName LabelNameType="DisplayLabelName">Test Label</LabelName>
+                <Title LanguageAndScriptCode="en" TitleType="FormalTitle">
+                    <TitleText>Have Yourself a Merry Little Christmas</TitleText>
+                </Title>
+                <Title LanguageAndScriptCode="en" TitleType="DisplayTitle">
+                    <TitleText>Have Yourself a Merry Little Christmas</TitleText>
+                </Title>
+                <DisplayArtist SequenceNumber="1">
+                    <PartyName>
+                        <FullName>Jonny and the Føøbars</FullName>
+                    </PartyName>
+                    <PartyId IsISNI="true">000000010909498X</PartyId>
+                    <ArtistRole>AssociatedPerformer</ArtistRole>
+                    <ArtistRole>MainArtist</ArtistRole>
+                </DisplayArtist>
+                <ParentalWarningType>Explicit</ParentalWarningType>
+                <Genre>
+                    <GenreText>Hip Hop</GenreText>
+                </Genre>
+            </ReleaseDetailsByTerritory>
+            <Duration>PT0H3M44S</Duration>
+            <PLine>
+                <Year>2017</Year>
+                <PLineText>(P) 2017 Test Label Inc.</PLineText>
+            </PLine>
+        </Release>
+        <Release>
+            <ReleaseId>
+                <ISRC>ZAE2C1600004</ISRC>
+            </ReleaseId>
+            <ReleaseReference>R2</ReleaseReference>
+            <ReferenceTitle LanguageAndScriptCode="en">
+                <TitleText>Traffic</TitleText>
+            </ReferenceTitle>
+            <ReleaseResourceReferenceList>
+                <ReleaseResourceReference ReleaseResourceType="PrimaryResource">A2</ReleaseResourceReference>
+            </ReleaseResourceReferenceList>
+            <ReleaseType>TrackRelease</ReleaseType>
+            <ReleaseDetailsByTerritory>
+                <TerritoryCode>Worldwide</TerritoryCode>
+                <DisplayArtistName>Jonny and the Føøbars</DisplayArtistName>
+                <LabelName LabelNameType="DisplayLabelName">Test Label</LabelName>
+                <Title LanguageAndScriptCode="en" TitleType="FormalTitle">
+                    <TitleText>Traffic</TitleText>
+                </Title>
+                <Title LanguageAndScriptCode="en" TitleType="DisplayTitle">
+                    <TitleText>Traffic</TitleText>
+                </Title>
+                <DisplayArtist SequenceNumber="1">
+                    <PartyName>
+                        <FullName>Jonny and the Føøbars</FullName>
+                    </PartyName>
+                    <PartyId IsISNI="true">000000010909498X</PartyId>
+                    <ArtistRole>AssociatedPerformer</ArtistRole>
+                    <ArtistRole>MainArtist</ArtistRole>
+                </DisplayArtist>
+                <ParentalWarningType>Explicit</ParentalWarningType>
+                <Genre>
+                    <GenreText>Hip Hop</GenreText>
+                </Genre>
+            </ReleaseDetailsByTerritory>
+            <Duration>PT0H4M26S</Duration>
+            <PLine>
+                <Year>2017</Year>
+                <PLineText>(P) 2017 Test Label Inc.</PLineText>
+            </PLine>
+        </Release>
+        <Release>
+            <ReleaseId>
+                <ISRC>ZAE2C1600002</ISRC>
+            </ReleaseId>
+            <ReleaseReference>R3</ReleaseReference>
+            <ReferenceTitle LanguageAndScriptCode="en">
+                <TitleText>Foo makes the world go round</TitleText>
+            </ReferenceTitle>
+            <ReleaseResourceReferenceList>
+                <ReleaseResourceReference ReleaseResourceType="PrimaryResource">A3</ReleaseResourceReference>
+            </ReleaseResourceReferenceList>
+            <ReleaseType>TrackRelease</ReleaseType>
+            <ReleaseDetailsByTerritory>
+                <TerritoryCode>Worldwide</TerritoryCode>
+                <DisplayArtistName>Jonny and the Føøbars</DisplayArtistName>
+                <LabelName LabelNameType="DisplayLabelName">Test Label</LabelName>
+                <Title LanguageAndScriptCode="en" TitleType="FormalTitle">
+                    <TitleText>Foo makes the world go round</TitleText>
+                </Title>
+                <Title LanguageAndScriptCode="en" TitleType="DisplayTitle">
+                    <TitleText>Foo makes the world go round</TitleText>
+                </Title>
+                <DisplayArtist SequenceNumber="1">
+                    <PartyName>
+                        <FullName>Jonny and the Føøbars</FullName>
+                    </PartyName>
+                    <PartyId IsISNI="true">000000010909498X</PartyId>
+                    <ArtistRole>AssociatedPerformer</ArtistRole>
+                    <ArtistRole>MainArtist</ArtistRole>
+                </DisplayArtist>
+                <ParentalWarningType>Explicit</ParentalWarningType>
+                <Genre>
+                    <GenreText>Hip Hop</GenreText>
+                </Genre>
+            </ReleaseDetailsByTerritory>
+            <Duration>PT0H3M53S</Duration>
+            <PLine>
+                <Year>2017</Year>
+                <PLineText>(P) 2017 Test Label Inc.</PLineText>
+            </PLine>
+        </Release>
+        <Release>
+            <ReleaseId>
+                <ISRC>ZAE2C1600001</ISRC>
+            </ReleaseId>
+            <ReleaseReference>R4</ReleaseReference>
+            <ReferenceTitle LanguageAndScriptCode="en">
+                <TitleText>There ain't no Foo when you're gone</TitleText>
+            </ReferenceTitle>
+            <ReleaseResourceReferenceList>
+                <ReleaseResourceReference ReleaseResourceType="PrimaryResource">A4</ReleaseResourceReference>
+            </ReleaseResourceReferenceList>
+            <ReleaseType>TrackRelease</ReleaseType>
+            <ReleaseDetailsByTerritory>
+                <TerritoryCode>Worldwide</TerritoryCode>
+                <DisplayArtistName>Jonny and the Føøbars</DisplayArtistName>
+                <LabelName LabelNameType="DisplayLabelName">Test Label</LabelName>
+                <Title LanguageAndScriptCode="en" TitleType="FormalTitle">
+                    <TitleText>There ain't no Foo when you're gone</TitleText>
+                </Title>
+                <Title LanguageAndScriptCode="en" TitleType="DisplayTitle">
+                    <TitleText>There ain't no Foo when you're gone</TitleText>
+                </Title>
+                <DisplayArtist SequenceNumber="1">
+                    <PartyName>
+                        <FullName>Jonny and the Føøbars</FullName>
+                    </PartyName>
+                    <PartyId IsISNI="true">000000010909498X</PartyId>
+                    <ArtistRole>AssociatedPerformer</ArtistRole>
+                    <ArtistRole>MainArtist</ArtistRole>
+                </DisplayArtist>
+                <ParentalWarningType>Explicit</ParentalWarningType>
+                <Genre>
+                    <GenreText>Hip Hop</GenreText>
+                </Genre>
+            </ReleaseDetailsByTerritory>
+            <Duration>PT0H3M20S</Duration>
+            <PLine>
+                <Year>2017</Year>
+                <PLineText>(P) 2017 Test Label Inc.</PLineText>
+            </PLine>
+        </Release>
+        <Release>
+            <ReleaseId>
+                <ISRC>ZAE2C1600006</ISRC>
+            </ReleaseId>
+            <ReleaseReference>R5</ReleaseReference>
+            <ReferenceTitle LanguageAndScriptCode="en">
+                <TitleText>Save the last Foo for me</TitleText>
+            </ReferenceTitle>
+            <ReleaseResourceReferenceList>
+                <ReleaseResourceReference ReleaseResourceType="PrimaryResource">A5</ReleaseResourceReference>
+            </ReleaseResourceReferenceList>
+            <ReleaseType>TrackRelease</ReleaseType>
+            <ReleaseDetailsByTerritory>
+                <TerritoryCode>Worldwide</TerritoryCode>
+                <DisplayArtistName>Jonny and the Føøbars</DisplayArtistName>
+                <LabelName LabelNameType="DisplayLabelName">Test Label</LabelName>
+                <Title LanguageAndScriptCode="en" TitleType="FormalTitle">
+                    <TitleText>Save the last Foo for me</TitleText>
+                </Title>
+                <Title LanguageAndScriptCode="en" TitleType="DisplayTitle">
+                    <TitleText>Save the last Foo for me</TitleText>
+                </Title>
+                <DisplayArtist SequenceNumber="1">
+                    <PartyName>
+                        <FullName>Jonny and the Føøbars</FullName>
+                    </PartyName>
+                    <PartyId IsISNI="true">000000010909498X</PartyId>
+                    <ArtistRole>AssociatedPerformer</ArtistRole>
+                    <ArtistRole>MainArtist</ArtistRole>
+                </DisplayArtist>
+                <ParentalWarningType>Explicit</ParentalWarningType>
+                <Genre>
+                    <GenreText>Hip Hop</GenreText>
+                </Genre>
+            </ReleaseDetailsByTerritory>
+            <Duration>PT0H4M21S</Duration>
+            <PLine>
+                <Year>2017</Year>
+                <PLineText>(P) 2017 Test Label Inc.</PLineText>
+            </PLine>
+        </Release>
+    </ReleaseList>
+    <DealList>
+        <ReleaseDeal>
+            <DealReleaseReference>R1</DealReleaseReference>
+            <DealReleaseReference>R2</DealReleaseReference>
+            <DealReleaseReference>R3</DealReleaseReference>
+            <DealReleaseReference>R4</DealReleaseReference>
+            <DealReleaseReference>R5</DealReleaseReference>
+            <Deal>
+                <!-- These dealterms will enable Art Track creation for YouTube Red.-->
+                <DealTerms>
+                    <CommercialModelType>AdvertisementSupportedModel</CommercialModelType>
+                    <CommercialModelType>SubscriptionModel</CommercialModelType>
+                    <Usage>
+                        <UseType>OnDemandStream</UseType>
+                    </Usage>
+                    <TerritoryCode>Worldwide</TerritoryCode>
+                    <ValidityPeriod>
+                        <StartDate>2017-01-12</StartDate>
+                    </ValidityPeriod>
+                </DealTerms>
+            </Deal>
+        </ReleaseDeal>
+    </DealList>
+</ern:NewReleaseMessage>

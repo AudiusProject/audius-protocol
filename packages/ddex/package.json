@@ -1,0 +1,15 @@
+{
+  "name": "ddex",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^0.34.6"
+  },
+  "dependencies": {
+    "linkedom": "0.16.0"
+  }
+}
