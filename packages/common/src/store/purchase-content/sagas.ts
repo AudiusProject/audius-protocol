@@ -156,13 +156,13 @@ function* doStartPurchaseContentFlow({
   })
 
   const analyticsInfo = {
-    price,
+    price: price / 100,
     contentId,
     contentType,
     contentName: title,
     artistHandle: artistInfo.handle,
     isVerifiedArtist: artistInfo.is_verified,
-    payExtraAmount: extraAmount,
+    payExtraAmount: extraAmount ? extraAmount / 100 : 0,
     payExtraPreset: extraAmountPreset
   }
 
