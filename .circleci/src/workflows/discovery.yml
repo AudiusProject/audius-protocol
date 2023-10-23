@@ -1,3 +1,5 @@
+<<: ./common-backend.yml
+
 when: << pipeline.parameters.run-discovery-workflow >>
 jobs:
   - push-docker-image:
@@ -49,20 +51,6 @@ jobs:
       filters:
         branches:
           only: main
-  - push-docker-image:
-      name: push-protocol-dashboard
-      context: [Vercel, dockerhub]
-      service: dashboard
-      filters:
-        branches:
-          only: /^main$/
-  - push-docker-image:
-      name: push-healthz
-      context: [Vercel, dockerhub]
-      service: healthz
-      filters:
-        branches:
-          only: main
 
   - lint-discovery-provider:
       name: lint-discovery-provider
@@ -94,6 +82,7 @@ jobs:
         - push-pedalboard-sla-auditor
         - push-comms
         - push-trpc
+        - push-protocol-dashboard
         - push-healthz
       filters:
         branches:

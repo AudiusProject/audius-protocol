@@ -1,3 +1,5 @@
+<<: ./common-backend.yml
+
 when: << pipeline.parameters.run-creator-workflow >>
 jobs:
   - push-docker-image:
@@ -23,6 +25,8 @@ jobs:
         - test-mediorum
         - test-mediorum-unittests
         - push-mediorum
+        - push-protocol-dashboard
+        - push-healthz
       filters:
         branches:
           only: main
