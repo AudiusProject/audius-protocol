@@ -50,6 +50,11 @@ jobs:
       context: [GCP, dockerhub, slack-secrets]
       service: healthz
       notify_slack_on_failure: true
+  - push-docker-image:
+      name: push-protocol-dashboard
+      context: [GCP, dockerhub, slack-secrets]
+      service: dashboard
+      notify_slack_on_failure: true
 
   - release-github-draft-trigger:
       type: approval
@@ -87,6 +92,7 @@ jobs:
         - push-comms
         - push-trpc
         - push-healthz
+        - push-protocol-dashboard
 
   - deploy-foundation-nodes-trigger:
       requires:

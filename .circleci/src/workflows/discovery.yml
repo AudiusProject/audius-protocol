@@ -55,7 +55,7 @@ jobs:
       service: dashboard
       filters:
         branches:
-          only: /^main$/
+          only: main
   - push-docker-image:
       name: push-healthz
       context: [Vercel, dockerhub]
@@ -94,6 +94,7 @@ jobs:
         - push-pedalboard-sla-auditor
         - push-comms
         - push-trpc
+        - push-protocol-dashboard
         - push-healthz
       filters:
         branches:
