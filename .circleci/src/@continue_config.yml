@@ -35,9 +35,6 @@ parameters:
   run-creator-workflow:
     type: boolean
     default: false
-  run-common-backend-workflow:
-    type: boolean
-    default: false
   run-sdk-workflow:
     type: boolean
     default: false

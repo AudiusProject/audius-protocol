@@ -1,5 +1,3 @@
-<<: ./common-backend.yml
-
 when: << pipeline.parameters.run-discovery-workflow >>
 jobs:
   - push-docker-image:
@@ -48,6 +46,20 @@ jobs:
       name: push-trpc
       context: [Vercel, dockerhub]
       service: trpc
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
+      name: push-protocol-dashboard
+      context: [Vercel, dockerhub]
+      service: dashboard
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
+      name: push-healthz
+      context: [Vercel, dockerhub]
+      service: healthz
       filters:
         branches:
           only: main

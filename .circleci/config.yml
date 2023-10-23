@@ -413,7 +413,6 @@ workflows:
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
             .* run-integration-workflow true
-            .* run-common-backend-workflow true
             .* run-creator-workflow true
             .* run-discovery-workflow true
             .* run-identity-workflow true
