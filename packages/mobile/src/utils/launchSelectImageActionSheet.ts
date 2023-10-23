@@ -13,7 +13,7 @@ import { selectSystemTheme } from './theme'
 export const launchSelectImageActionSheet = (
   onSelectImage: (image: Image) => void,
   options?: Options,
-  name?: string
+  testID?: string
 ) => {
   const theme = selectSystemTheme(store.getState())
   const { primary, secondary } = theme
@@ -33,14 +33,15 @@ export const launchSelectImageActionSheet = (
     const { path, filename, mime } = image
     return onSelectImage({
       url: path,
-      file: { uri: path, name: filename ?? name ?? 'tmp', type: mime }
+      file: { uri: path, name: filename ?? 'tmp', type: mime }
     })
   }
 
   const selectPhotoFromLibrary = () => {
     openPicker({
       ...baseOptions,
-      ...options
+      ...options,
+      testID
     }).then(handleSelectImage)
   }
 
@@ -56,7 +57,7 @@ export const launchSelectImageActionSheet = (
     ActionSheetIOS.showActionSheetWithOptions(
       {
         options: ['Cancel', 'Photo Library', 'Take Photo'],
-        tintColor: theme.secondary,
+        tintColor: secondary,
         cancelButtonIndex: 0
       },
       (buttonIndex) => {
