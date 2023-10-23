@@ -3,8 +3,10 @@ import { useCallback } from 'react'
 import {
   Name,
   PurchasableTrackMetadata,
+  PurchaseContentError,
   PurchaseContentStage,
-  formatPrice
+  formatPrice,
+  usePurchaseContentErrorMessage
 } from '@audius/common'
 import { Button } from '@audius/harmony'
 import {
@@ -19,6 +21,7 @@ import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
 import { Text } from 'components/typography'
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { fullTrackPage } from 'utils/route'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
@@ -32,15 +35,18 @@ const messages = {
   shareButtonContent: 'I just purchased a track on Audius!',
   shareTwitterText: (trackTitle: string, handle: string) =>
     `I bought the track ${trackTitle} by ${handle} on Audius! #AudiusPremium`,
-  purchaseSuccessful: 'Your Purchase Was Successful!',
-  error: 'Your purchase was unsuccessful.'
+  purchaseSuccessful: 'Your Purchase Was Successful!'
 }
 
-const ContentPurchaseError = () => {
+const ContentPurchaseError = ({
+  error: { code }
+}: {
+  error: PurchaseContentError
+}) => {
   return (
     <Text className={styles.errorContainer} color='accentRed'>
       <Icon icon={IconError} size='medium' />
-      {messages.error}
+      {usePurchaseContentErrorMessage(code, useRemoteVar)}
     </Text>
   )
 }
@@ -103,7 +109,6 @@ export const PurchaseContentFormFooter = ({
           size={HarmonyPlainButtonSize.LARGE}
           text={messages.viewTrack}
         />
-        {error ? <ContentPurchaseError /> : null}
       </>
     )
   }
@@ -118,7 +123,7 @@ export const PurchaseContentFormFooter = ({
         text={getButtonText(isUnlocking, amountDue)}
         fullWidth
       />
-      {error ? <ContentPurchaseError /> : null}
+      {error ? <ContentPurchaseError error={error} /> : null}
     </>
   )
 }

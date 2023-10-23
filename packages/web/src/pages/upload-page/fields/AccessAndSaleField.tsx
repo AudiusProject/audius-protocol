@@ -4,13 +4,16 @@ import {
   accountSelectors,
   FeatureFlags,
   FieldVisibility,
+  formatPrice,
   isPremiumContentCollectibleGated,
   isPremiumContentFollowGated,
   isPremiumContentTipGated,
   isPremiumContentUSDCPurchaseGated,
   Nullable,
   PremiumConditions,
-  TrackAvailabilityType
+  TrackAvailabilityType,
+  USDCPurchaseConfig,
+  useUSDCPurchaseConfig
 } from '@audius/common'
 import {
   IconCart,
@@ -36,7 +39,7 @@ import { HelpCallout } from 'components/help-callout/HelpCallout'
 import layoutStyles from 'components/layout/layout.module.css'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import { Text } from 'components/typography'
-import { useFlag } from 'hooks/useRemoteConfig'
+import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { defaultFieldVisibility } from 'pages/track-page/utils'
 
 import {
@@ -96,8 +99,10 @@ const messages = {
   },
   errors: {
     price: {
-      tooLow: 'Price must be at least $1.00.',
-      tooHigh: 'Price must be less than $9999.99.'
+      tooLow: (minPrice: number) =>
+        `Price must be at least $${formatPrice(minPrice)}.`,
+      tooHigh: (maxPrice: number) =>
+        `Price must be less than $${formatPrice(maxPrice)}.`
     },
     preview: {
       tooEarly: 'Preview must start during the track.',
@@ -128,7 +133,15 @@ export type AccessAndSaleFormValues = {
   [PREVIEW]?: number
 }
 
-export const AccessAndSaleFormSchema = (trackLength: number) =>
+type AccessAndSaleRemoteConfig = Pick<
+  USDCPurchaseConfig,
+  'minContentPriceCents' | 'maxContentPriceCents'
+>
+
+export const AccessAndSaleFormSchema = (
+  trackLength: number,
+  { minContentPriceCents, maxContentPriceCents }: AccessAndSaleRemoteConfig
+) =>
   z
     .object({
       [PREMIUM_CONDITIONS]: z.nullable(
@@ -138,8 +151,14 @@ export const AccessAndSaleFormSchema = (trackLength: number) =>
             z.object({
               price: z
                 .number()
-                .lte(999999, messages.errors.price.tooHigh)
-                .gte(100, messages.errors.price.tooLow)
+                .lte(
+                  maxContentPriceCents,
+                  messages.errors.price.tooHigh(maxContentPriceCents)
+                )
+                .gte(
+                  minContentPriceCents,
+                  messages.errors.price.tooLow(minContentPriceCents)
+                )
             })
           )
         })
@@ -188,6 +207,8 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     index,
     'preview.duration'
   )
+
+  const usdcPurchaseConfig = useUSDCPurchaseConfig(useRemoteVar)
 
   // Fields from the outer form
   const [{ value: isUnlisted }, , { setValue: setIsUnlistedValue }] =
@@ -388,7 +409,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       onSubmit={onSubmit}
       renderValue={renderValue}
       validationSchema={toFormikValidationSchema(
-        AccessAndSaleFormSchema(trackLength)
+        AccessAndSaleFormSchema(trackLength, usdcPurchaseConfig)
       )}
       menuFields={
         <AccessAndSaleMenuFields
