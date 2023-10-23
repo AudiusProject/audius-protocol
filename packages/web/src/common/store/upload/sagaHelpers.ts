@@ -17,7 +17,7 @@ import { TrackForUpload } from 'pages/upload-page/types'
 import { waitForWrite } from 'utils/sagaHelpers'
 const { getAccountUser } = accountSelectors
 
-const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT
+const ENVIRONMENT = process.env.VITE_ENVIRONMENT
 
 export function* reportResultEvents({
   numSuccess,

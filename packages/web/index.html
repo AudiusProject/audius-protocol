@@ -65,7 +65,7 @@
       // Account recovery
       try {
         const urlParams = new URLSearchParams(window.location.search)
-        const useHashRouting = '%REACT_APP_USE_HASH_ROUTING%' === 'true'
+        const useHashRouting = '%VITE_USE_HASH_ROUTING%' === 'true'
         const login = urlParams.get('login')
         const warning = urlParams.get('warning')
 
@@ -104,26 +104,26 @@
     <!-- start Google Analytics -->
     <script
       async
-      src="https://www.googletagmanager.com/gtag/js?id=%REACT_APP_GA_MEASUREMENT_ID%"
+      src="https://www.googletagmanager.com/gtag/js?id=%VITE_GA_MEASUREMENT_ID%"
     ></script>
     <script>
       const nodeEnv = '%NODE_ENV%'
-      const reactEnv = '%REACT_APP_ENVIRONMENT%'
+      const reactEnv = '%VITE_ENVIRONMENT%'
       if (nodeEnv === 'production' && reactEnv === 'production') {
         window.dataLayer = window.dataLayer || []
         function gtag() {
           dataLayer.push(arguments)
         }
         gtag('js', new Date())
-        gtag('config', '%REACT_APP_GA_MEASUREMENT_ID%')
+        gtag('config', '%VITE_GA_MEASUREMENT_ID%')
       }
     </script>
     <!-- end Google Analytics -->
 
     <!-- start Adroll -->
     <script async type="text/javascript">
-      const adroll_adv_id = '%REACT_APP_ADROLL_AVD_ID%'
-      const adroll_pix_id = '%REACT_APP_ADROLL_PIX_ID%'
+      const adroll_adv_id = '%VITE_ADROLL_AVD_ID%'
+      const adroll_pix_id = '%VITE_ADROLL_PIX_ID%'
       const adroll_version = '2.0'
       if (
         nodeEnv === 'production' &&
@@ -163,7 +163,7 @@
       async
       onLoad="window.dispatchEvent(new CustomEvent('OPTIMIZELY_LOADED'))"
       onError="window.optimizelyDatafile = {}; window.dispatchEvent(new CustomEvent('OPTIMIZELY_LOADED'))"
-      src="https://experiments.audius.co/datafiles/%REACT_APP_OPTIMIZELY_KEY%.json/tag.js"
+      src="https://experiments.audius.co/datafiles/%VITE_OPTIMIZELY_KEY%.json/tag.js"
     ></script>
     <!-- end Optimizely -->
   </head>

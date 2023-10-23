@@ -3,8 +3,8 @@ import { Name, Nullable } from '@audius/common'
 
 import { getSource } from './segment'
 
-const AMP_API_KEY = process.env.REACT_APP_AMPLITUDE_API_KEY
-const AMPLITUDE_PROXY = process.env.REACT_APP_AMPLITUDE_PROXY
+const AMP_API_KEY = process.env.VITE_AMPLITUDE_API_KEY
+const AMPLITUDE_PROXY = process.env.VITE_AMPLITUDE_PROXY
 
 /**
  * ========================= Amplitude Analytics =========================

@@ -28,7 +28,7 @@ export const getIsInEU = async () => {
 export const shouldShowCookieBanner = async (): Promise<boolean> => {
   if (
     process.env.NODE_ENV === 'production' &&
-    process.env.REACT_APP_ENVIRONMENT === 'production'
+    process.env.VITE_ENVIRONMENT === 'production'
   ) {
     const isDimissed = await localStorage.getItem(DISMISSED_COOKIE_BANNER_KEY)
     if (isDimissed) return false
