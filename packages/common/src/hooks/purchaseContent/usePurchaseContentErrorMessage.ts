@@ -31,7 +31,6 @@ export const usePurchaseContentErrorMessage = (
       return messages.maximumPurchase(maxUSDCPurchaseAmountCents)
     case BuyUSDCErrorCode.OnrampError:
     case PurchaseErrorCode.Unknown:
-    default:
       return messages.generic
   }
 }
