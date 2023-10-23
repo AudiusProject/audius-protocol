@@ -8,7 +8,7 @@ import { ButtonProps, ButtonSize, ButtonType } from './types'
 const baseProps: ButtonProps = {
   iconLeft: Icons.IconCampfire,
   iconRight: Icons.IconCampfire,
-  text: 'Click Me'
+  children: 'Click Me'
 }
 
 const meta: Meta<typeof Button> = {
@@ -39,26 +39,29 @@ const meta: Meta<typeof Button> = {
           {...baseProps}
           size={ButtonSize.SMALL}
           {...props}
-          text='Loading'
           minWidth={123}
           isLoading
-        />
+        >
+          Loading
+        </Button>
         <Button
           {...baseProps}
           size={ButtonSize.DEFAULT}
           {...props}
-          text='Loading'
           minWidth={180}
           isLoading
-        />
+        >
+          Loading
+        </Button>
         <Button
           {...baseProps}
           size={ButtonSize.LARGE}
           {...props}
-          text='Loading'
           minWidth={212}
           isLoading
-        />
+        >
+          Loading
+        </Button>
       </div>
     </div>
   )
