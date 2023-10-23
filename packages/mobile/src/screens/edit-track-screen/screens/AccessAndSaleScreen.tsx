@@ -9,7 +9,8 @@ import {
   isPremiumContentCollectibleGated,
   FeatureFlags,
   removeNullable,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentUSDCPurchaseGated,
+  useAccessAndRemixSettings
 } from '@audius/common'
 import { useField, useFormikContext } from 'formik'
 import { useSelector } from 'react-redux'
@@ -124,45 +125,21 @@ export const AccessAndSaleScreen = () => {
     // eslint-disable-next-line
   }, [])
 
-  const isInitiallyPublic =
-    !isUpload && !initialValues.is_unlisted && !initialPremiumConditions
-  const isInitiallyUsdcGated =
-    !isUpload && isPremiumContentUSDCPurchaseGated(initialPremiumConditions)
-  const isInitiallySpecialAccess =
-    !isUpload &&
-    !!(
-      isPremiumContentFollowGated(initialPremiumConditions) ||
-      isPremiumContentTipGated(initialPremiumConditions)
-    )
-  const isInitiallyCollectibleGated =
-    !isUpload && isPremiumContentCollectibleGated(initialPremiumConditions)
-  const isInitiallyHidden = !isUpload && initialValues.is_unlisted
+  const {
+    noUsdcGate: noUsdcGateOption,
+    noSpecialAccessGate,
+    noSpecialAccessGateFields,
+    noCollectibleGate,
+    noCollectibleGateFields,
+    noHidden
+  } = useAccessAndRemixSettings({
+    isUpload,
+    isRemix,
+    initialPremiumConditions,
+    isInitiallyUnlisted: initialValues.is_unlisted
+  })
 
-  const noUsdcGate =
-    isInitiallyPublic ||
-    isInitiallySpecialAccess ||
-    isInitiallyCollectibleGated ||
-    isRemix ||
-    !isUsdcUploadEnabled
-
-  const noSpecialAccess =
-    isInitiallyPublic ||
-    isInitiallyUsdcGated ||
-    isInitiallyCollectibleGated ||
-    isRemix
-  const noSpecialAccessOptions =
-    noSpecialAccess || (!isUpload && !isInitiallyHidden)
-
-  const noCollectibleGate =
-    isInitiallyPublic ||
-    isInitiallyUsdcGated ||
-    isInitiallySpecialAccess ||
-    isRemix ||
-    hasNoCollectibles
-  const noCollectibleDropdown =
-    noCollectibleGate || (!isUpload && !isInitiallyHidden)
-
-  const noHidden = !isUpload && !initialValues.is_unlisted
+  const noUsdcGate = noUsdcGateOption || !isUsdcUploadEnabled
 
   const [availability, setAvailability] =
     useState<TrackAvailabilityType>(initialAvailability)
@@ -186,7 +163,7 @@ export const AccessAndSaleScreen = () => {
     {
       label: specialAccessAvailability,
       value: specialAccessAvailability,
-      disabled: noSpecialAccess
+      disabled: noSpecialAccessGate
     },
     {
       label: collectibleGatedAvailability,
@@ -222,8 +199,8 @@ export const AccessAndSaleScreen = () => {
   items[specialAccessAvailability] = (
     <SpecialAccessAvailability
       selected={availability === TrackAvailabilityType.SPECIAL_ACCESS}
-      disabled={noSpecialAccess}
-      disabledContent={noSpecialAccessOptions}
+      disabled={noSpecialAccessGate}
+      disabledContent={noSpecialAccessGateFields}
       previousPremiumConditions={previousPremiumConditions}
     />
   )
@@ -232,7 +209,7 @@ export const AccessAndSaleScreen = () => {
     <CollectibleGatedAvailability
       selected={availability === TrackAvailabilityType.COLLECTIBLE_GATED}
       disabled={noCollectibleGate}
-      disabledContent={noCollectibleDropdown}
+      disabledContent={noCollectibleGateFields}
       previousPremiumConditions={previousPremiumConditions}
     />
   )

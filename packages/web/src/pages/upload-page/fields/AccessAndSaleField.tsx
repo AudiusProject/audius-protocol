@@ -13,7 +13,8 @@ import {
   PremiumConditions,
   TrackAvailabilityType,
   USDCPurchaseConfig,
-  useUSDCPurchaseConfig
+  useUSDCPurchaseConfig,
+  useAccessAndRemixSettings
 } from '@audius/common'
 import {
   IconCart,
@@ -463,22 +464,16 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     name: AVAILABILITY_TYPE
   })
 
-  const isInitiallyPublic =
-    !isUpload && !isInitiallyUnlisted && !initialPremiumConditions
-  const isInitiallyUsdcGated =
-    !isUpload && isPremiumContentUSDCPurchaseGated(initialPremiumConditions)
-  const isInitiallyCollectibleGated =
-    !isUpload && isPremiumContentCollectibleGated(initialPremiumConditions)
-
-  const noSpecialAccess =
-    isInitiallyPublic ||
-    isInitiallyUsdcGated ||
-    isInitiallyCollectibleGated ||
-    isRemix
-  const noSpecialAccessOptions =
-    noSpecialAccess || (!isUpload && !isInitiallyUnlisted)
-
-  const noHidden = !isUpload && !isInitiallyUnlisted
+  const {
+    noSpecialAccessGate,
+    noSpecialAccessGateFields,
+    noHidden
+  } = useAccessAndRemixSettings({
+    isUpload: !!isUpload,
+    isRemix,
+    initialPremiumConditions: initialPremiumConditions ?? null,
+    isInitiallyUnlisted: !!isInitiallyUnlisted
+  })
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -573,9 +568,9 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             label={messages.specialAccess}
             description={messages.specialAccessSubtitle}
             value={TrackAvailabilityType.SPECIAL_ACCESS}
-            disabled={noSpecialAccess}
+            disabled={noSpecialAccessGate}
             checkedContent={
-              <SpecialAccessFields disabled={noSpecialAccessOptions} />
+              <SpecialAccessFields disabled={noSpecialAccessGateFields} />
             }
           />
         ) : null}
