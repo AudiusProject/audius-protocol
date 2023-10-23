@@ -1,4 +1,5 @@
-@import '~antd/dist/antd.min.css';
+@import 'antd/dist/antd.min.css';
+@import 'assets/styles/index.css';
 
 /* Begin Reset.css */
 html,
@@ -147,8 +148,6 @@ a {
 }
 
 /* End Reset.css */
-
-@import '~assets/styles/index.css';
 
 body {
   margin: 0;
