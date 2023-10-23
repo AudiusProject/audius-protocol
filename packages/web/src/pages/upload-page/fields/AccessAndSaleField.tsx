@@ -18,6 +18,7 @@ import {
 } from '@audius/common'
 import {
   IconCart,
+  IconCollectible,
   IconHidden,
   IconNote,
   IconSpecialAccess,
@@ -75,6 +76,7 @@ const messages = {
   specialAccess: 'Special Access',
   specialAccessSubtitle:
     'Special Access tracks are only available to users who meet certain criteria, such as following the artist.',
+  collectibleGated: 'Collectible Gated',
   compatibilityTitle: "Not seeing what you're looking for?",
   compatibilitySubtitle:
     'Unverified Solana NFT Collections are not compatible at this time.',
@@ -319,7 +321,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   )
 
   const renderValue = useCallback(() => {
-    if (premiumConditions && 'nft_collection' in premiumConditions) {
+    if (isPremiumContentCollectibleGated(premiumConditions)) {
       const { nft_collection } = premiumConditions
       if (!nft_collection) return null
       const { imageUrl, name } = nft_collection
@@ -327,8 +329,8 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       return (
         <>
           <SelectedValue
-            label={messages.specialAccess}
-            icon={IconSpecialAccess}
+            label={messages.collectibleGated}
+            icon={IconCollectible}
           />
           <div className={styles.nftOwner}>
             <Text variant='label' size='small'>
