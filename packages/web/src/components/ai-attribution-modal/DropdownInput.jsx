@@ -4,7 +4,7 @@ import Select from 'antd/lib/select'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import { ReactComponent as IconCaretDown } from 'assets/img/iconCaretDown.svg'
+import IconCaretDown from 'assets/img/iconCaretDown.svg'
 import { HelperText } from 'components/data-entry/HelperText'
 
 import styles from './DropdownInput.module.css'

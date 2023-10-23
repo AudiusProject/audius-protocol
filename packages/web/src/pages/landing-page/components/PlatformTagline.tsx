@@ -3,7 +3,7 @@ import { Parallax } from 'react-scroll-parallax'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
-import { ReactComponent as IconQuotePyramid } from 'assets/img/publicSite/quote-pyramid.svg'
+import IconQuotePyramid from 'assets/img/publicSite/quote-pyramid.svg'
 import useHasViewed from 'hooks/useHasViewed'
 
 import styles from './PlatformTagline.module.css'

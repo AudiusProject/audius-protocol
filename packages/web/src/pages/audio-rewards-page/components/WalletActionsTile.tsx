@@ -9,8 +9,8 @@ import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
-import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
+import IconReceive from 'assets/img/iconReceive.svg'
+import IconSend from 'assets/img/iconSend.svg'
 import { useSelector } from 'utils/reducer'
 
 import styles from './WalletActionsTile.module.css'

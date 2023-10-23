@@ -12,7 +12,7 @@ import {
   DayPickerSingleDateController
 } from 'react-dates'
 
-import { ReactComponent as IconCalendar } from 'assets/img/iconCalendar.svg'
+import IconCalendar from 'assets/img/iconCalendar.svg'
 
 import styles from './DatePickerField.module.css'
 

@@ -5,8 +5,8 @@ import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import useMeasure from 'react-use-measure'
 
-import { ReactComponent as IconCaretDownLine } from 'assets/img/iconCaretDownLine.svg'
-import { ReactComponent as IconCaretUpLine } from 'assets/img/iconCaretUpLine.svg'
+import IconCaretDownLine from 'assets/img/iconCaretDownLine.svg'
+import IconCaretUpLine from 'assets/img/iconCaretUpLine.svg'
 
 import styles from './CollapsibleContent.module.css'
 

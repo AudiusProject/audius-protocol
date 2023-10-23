@@ -5,7 +5,7 @@ import AntMenu from 'antd/lib/menu'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import { ReactComponent as IconCaretDown } from 'assets/img/iconCaretDown.svg'
+import IconCaretDown from 'assets/img/iconCaretDown.svg'
 
 import styles from './Dropdown.module.css'
 

@@ -2,7 +2,7 @@ import { memo } from 'react'
 
 import PropTypes from 'prop-types'
 
-import { ReactComponent as LogoSVG } from 'assets/img/audiusLogoGlyph.svg'
+import LogoSVG from 'assets/img/audiusLogoGlyph.svg'
 
 import styles from './EndOfLineup.module.css'
 

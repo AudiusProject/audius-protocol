@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
 
-import { ReactComponent as IconEmbed } from 'assets/img/iconEmbed.svg'
+import IconEmbed from 'assets/img/iconEmbed.svg'
 
 import SettingsCard from '../SettingsCard'
 import styles from '../SettingsPage.module.css'

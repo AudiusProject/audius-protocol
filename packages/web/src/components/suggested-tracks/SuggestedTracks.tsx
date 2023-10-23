@@ -20,7 +20,7 @@ import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { useToggle } from 'react-use'
 
-import { ReactComponent as IconCaretDown } from 'assets/img/iconCaretDownLine.svg'
+import IconCaretDown from 'assets/img/iconCaretDownLine.svg'
 import { Divider } from 'components/divider'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

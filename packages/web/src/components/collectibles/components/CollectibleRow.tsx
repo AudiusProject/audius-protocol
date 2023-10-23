@@ -7,9 +7,9 @@ import {
 } from '@audius/common'
 import cn from 'classnames'
 
-import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
-import { ReactComponent as IconShow } from 'assets/img/iconMultiselectAdd.svg'
-import { ReactComponent as IconHide } from 'assets/img/iconRemoveTrack.svg'
+import IconDrag from 'assets/img/iconDrag.svg'
+import IconShow from 'assets/img/iconMultiselectAdd.svg'
+import IconHide from 'assets/img/iconRemoveTrack.svg'
 import {
   collectibleMessages,
   editTableContainerClass

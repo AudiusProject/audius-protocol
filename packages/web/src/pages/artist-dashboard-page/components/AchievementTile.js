@@ -1,6 +1,6 @@
 import { memo } from 'react'
 
-import { ReactComponent as IconTrophy } from 'assets/img/iconTrophy.svg'
+import IconTrophy from 'assets/img/iconTrophy.svg'
 
 import styles from './AchievementTile.module.css'
 

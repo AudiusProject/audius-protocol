@@ -4,8 +4,8 @@ import { trimToAlphaNumeric } from '@audius/common'
 import Tag from 'antd/lib/tag'
 import cn from 'classnames'
 
-import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
-import { ReactComponent as IconSave } from 'assets/img/iconSave.svg'
+import IconRemove from 'assets/img/iconRemove.svg'
+import IconSave from 'assets/img/iconSave.svg'
 
 import styles from './TagInput.module.css'
 

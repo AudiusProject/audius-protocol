@@ -13,7 +13,7 @@ import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import { useWindowSize } from 'react-use'
 
-import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
+import IconSearch from 'assets/img/iconSearch.svg'
 import { Dropzone } from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
 import { MainContentContext } from 'pages/MainContentContext'

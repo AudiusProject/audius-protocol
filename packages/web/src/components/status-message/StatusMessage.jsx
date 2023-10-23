@@ -3,9 +3,9 @@ import PropTypes from 'prop-types'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated, useTransition } from 'react-spring'
 
-import { ReactComponent as IconArrow } from 'assets/img/iconArrow.svg'
-import { ReactComponent as IconValidationCheck } from 'assets/img/iconValidationCheck.svg'
-import { ReactComponent as IconValidationX } from 'assets/img/iconValidationX.svg'
+import IconArrow from 'assets/img/iconArrow.svg'
+import IconValidationCheck from 'assets/img/iconValidationCheck.svg'
+import IconValidationX from 'assets/img/iconValidationX.svg'
 
 import styles from './StatusMessage.module.css'
 

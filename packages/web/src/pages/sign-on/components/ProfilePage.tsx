@@ -11,7 +11,7 @@ import {
 } from '@audius/common'
 import cn from 'classnames'
 
-import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
+import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
 import { ToastContext } from 'components/toast/ToastContext'
 import CompleteProfileWithSocial from 'pages/sign-on/components/CompleteProfileWithSocial'
 import ProfileForm, {
