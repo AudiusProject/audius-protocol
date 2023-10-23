@@ -3,7 +3,6 @@ import { useCallback, useMemo, useState } from 'react'
 import type { Nullable, PremiumConditions } from '@audius/common'
 import {
   TrackAvailabilityType,
-  collectiblesSelectors,
   isPremiumContentFollowGated,
   isPremiumContentTipGated,
   isPremiumContentCollectibleGated,
@@ -13,7 +12,6 @@ import {
   useAccessAndRemixSettings
 } from '@audius/common'
 import { useField, useFormikContext } from 'formik'
-import { useSelector } from 'react-redux'
 
 import IconCart from 'app/assets/images/iconCart.svg'
 import { Button } from 'app/components/core'
@@ -46,8 +44,6 @@ const messages = {
     'This track is marked as a remix. To enable additional availability options, unmark within Remix Settings.',
   done: 'Done'
 }
-
-const { getSupportedUserCollections } = collectiblesSelectors
 
 const publicAvailability = TrackAvailabilityType.PUBLIC
 const premiumAvailability = TrackAvailabilityType.USDC_PURCHASE
@@ -94,13 +90,6 @@ export const AccessAndSaleScreen = () => {
   const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
-
-  const { ethCollectionMap, solCollectionMap } = useSelector(
-    getSupportedUserCollections
-  )
-  const numEthCollectibles = Object.keys(ethCollectionMap).length
-  const numSolCollectibles = Object.keys(solCollectionMap).length
-  const hasNoCollectibles = numEthCollectibles + numSolCollectibles === 0
 
   const isUpload = !initialValues?.track_id
   const initialPremiumConditions = initialValues?.premium_conditions ?? null
@@ -222,9 +211,9 @@ export const AccessAndSaleScreen = () => {
   )
 
   /**
-   * Only navigate back if:
-   * - track is not collectible gated, or
-   * - user has selected a collection for this collectible gated track
+   * Do not navigate back if:
+   * - track is collectible gated and user has not selected an nft collection, or
+   * - track is usdc purchase gated and user has not selected a valid price
    */
   const handleSubmit = useCallback(() => {
     const collectibleGateHasNoSelectedCollection =
