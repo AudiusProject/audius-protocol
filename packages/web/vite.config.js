@@ -1,6 +1,7 @@
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import commonjs from 'vite-plugin-commonjs'
 import eslint from 'vite-plugin-eslint'
 import svgr from 'vite-plugin-svgr'
 import viteTsconfigPaths from 'vite-tsconfig-paths'
@@ -23,7 +24,14 @@ export default defineConfig(() => {
         ]
       }
     },
-    plugins: [svgr(), react(), eslint()],
+    plugins: [
+      commonjs(),
+      svgr({
+        include: '**/*.svg'
+      }),
+      react(),
+      eslint()
+    ],
     resolve: {
       alias: {
         // Should be able to use the ts resolve paths plugin instead

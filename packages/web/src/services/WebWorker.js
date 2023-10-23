@@ -13,6 +13,7 @@ export default class WebWorker {
     const code = workerFile.toString()
     const blob = new Blob([
       `
+      const basename = ${import.meta.env.PUBLIC_URL}
       const importWorkerScript = ${importWorkScriptCode}
       const code = ${code}
       code()
