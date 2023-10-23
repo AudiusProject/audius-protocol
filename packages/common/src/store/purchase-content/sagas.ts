@@ -64,7 +64,6 @@ function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
     throw new Error('Failed to retrieve content owner')
   }
 
-  // Renaming most of this info to match analytics event properties
   const {
     premium_conditions: {
       usdc_purchase: { price }
