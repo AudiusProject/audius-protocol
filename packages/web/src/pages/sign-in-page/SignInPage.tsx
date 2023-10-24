@@ -96,11 +96,9 @@ export const SignInPage = () => {
                       />
                     </Flex>
                     <Flex direction='column' gap='l'>
-                      <Button
-                        text={messages.signIn}
-                        iconRight={IconArrowRight}
-                        type='submit'
-                      />
+                      <Button iconRight={IconArrowRight} type='submit'>
+                        {messages.signIn}
+                      </Button>
                       <Flex direction='row' alignItems='flexStart'>
                         <Text color='heading'>
                           {/* TODO: link destination */}
@@ -116,10 +114,11 @@ export const SignInPage = () => {
           <Button
             // @ts-ignore
             asChild={Link}
-            variant={ButtonType.SECONDARY}
             to={SIGN_UP_PAGE}
-            text={messages.createAccount}
-          />
+            variant={ButtonType.SECONDARY}
+          >
+            {messages.createAccount}
+          </Button>
         </Flex>
       </PageWithAudiusValues>
     </Flex>
