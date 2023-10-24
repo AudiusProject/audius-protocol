@@ -20,16 +20,16 @@
 
 /* Only add hover styles on devices which support it */
 @media (hover: hover) {
-  .button:not(.disabled):hover {
+  .button:hover {
     transform: scale(1.04);
   }
 }
 
-.button:not(.disabled):active {
+.button:active {
   transform: scale(0.98);
 }
 
-.button.disabled {
+.disabled {
   pointer-events: none;
 }
 
