@@ -8,7 +8,7 @@ import { PlainButtonProps, PlainButtonSize, PlainButtonType } from './types'
 const baseProps: PlainButtonProps = {
   iconLeft: Icons.IconCampfire,
   iconRight: Icons.IconCampfire,
-  text: 'Click Me'
+  children: 'Click Me'
 }
 
 type StoryArgs = {

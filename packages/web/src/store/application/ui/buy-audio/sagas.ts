@@ -427,7 +427,7 @@ function* getAudioPurchaseInfo({
     const quote = yield* call(JupiterSingleton.getQuote, {
       inputTokenSymbol: 'SOL',
       outputTokenSymbol: 'AUDIO',
-      inputAmount: inSol,
+      inputAmount: inSol / LAMPORTS_PER_SOL,
       slippage
     })
     const {

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-set -ex
+set -exo pipefail
 
-[ -d "/etc/os-release" ] && source /etc/os-release
+[ -f "/etc/os-release" ] && source /etc/os-release
 case "$ID" in
 debian | ubuntu)
     # Uninstall old versions of docker
@@ -31,7 +31,7 @@ debian | ubuntu)
     fi
 
     # Install dependencies
-    sudo NEEDRESTART_MODE=a apt-get install -y \
+    sudo NEEDRESTART_MODE=l apt-get install -y \
         git \
         python3 \
         python3-pip \

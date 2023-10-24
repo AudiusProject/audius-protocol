@@ -50,10 +50,7 @@ const messages = {
   totalEarned: (amount: string) => `Total $AUDIO Earned: ${amount}`,
   claimAudio: (amount: string) => `Claim ${amount} $AUDIO`,
   upcomingRewards: 'Upcoming Rewards',
-  audio: '$AUDIO',
-  laterToday: 'Later Today',
-  readyToClaim: 'Ready to Claim!',
-  tomorrow: 'Tomorrow'
+  audio: '$AUDIO'
 }
 
 type AudioMatchingChallengeName =
@@ -161,14 +158,16 @@ export const AudioMatchingRewardsModalContent = ({
             </div>
             {progressStatusLabel}
           </div>
-          <SummaryTable
-            title={messages.upcomingRewards}
-            items={cooldownChallenges}
-            summaryItem={cooldownChallengesSummary}
-            secondaryTitle={messages.audio}
-            summaryLabelColor='secondary'
-            summaryValueColor='neutral'
-          />
+          {cooldownChallengesSummary ? (
+            <SummaryTable
+              title={messages.upcomingRewards}
+              items={cooldownChallenges}
+              summaryItem={cooldownChallengesSummary}
+              secondaryTitle={messages.audio}
+              summaryLabelColor='secondary'
+              summaryValueColor='neutral'
+            />
+          ) : null}
         </>
       )}
       {challenge?.claimableAmount && challenge.claimableAmount > 0 ? (

@@ -75,10 +75,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             styles.button,
             TYPE_STYLE_MAP[variant],
             { [styles.disabled]: isDisabled },
-            buttonSizeClass
+            buttonSizeClass,
+            textSizeClass
           ),
           icon: cn(styles.icon, iconSizeClass),
-          text: cn(styles.text, textSizeClass),
           spinner: cn(styles.spinner, spinnerSizeClass)
         }}
         style={style}

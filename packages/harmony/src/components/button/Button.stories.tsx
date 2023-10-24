@@ -1,14 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import * as Icons from '../typography/Icons'
-
 import { Button } from './Button'
 import { ButtonProps, ButtonSize, ButtonType } from './types'
 
 const baseProps: ButtonProps = {
-  iconLeft: Icons.IconCampfire,
-  iconRight: Icons.IconCampfire,
-  text: 'Click Me'
+  children: 'Click Me'
 }
 
 const meta: Meta<typeof Button> = {
@@ -34,32 +30,6 @@ const meta: Meta<typeof Button> = {
         <Button {...baseProps} size={ButtonSize.DEFAULT} {...props} disabled />
         <Button {...baseProps} size={ButtonSize.LARGE} {...props} disabled />
       </div>
-      <div style={{ alignItems: 'center', display: 'flex', gap: '16px' }}>
-        <Button
-          {...baseProps}
-          size={ButtonSize.SMALL}
-          {...props}
-          text='Loading'
-          minWidth={123}
-          isLoading
-        />
-        <Button
-          {...baseProps}
-          size={ButtonSize.DEFAULT}
-          {...props}
-          text='Loading'
-          minWidth={180}
-          isLoading
-        />
-        <Button
-          {...baseProps}
-          size={ButtonSize.LARGE}
-          {...props}
-          text='Loading'
-          minWidth={212}
-          isLoading
-        />
-      </div>
     </div>
   )
 }
@@ -82,3 +52,6 @@ export const Tertiary: Story = { args: { variant: ButtonType.TERTIARY } }
 
 // Destructive
 export const Destructive: Story = { args: { variant: ButtonType.DESTRUCTIVE } }
+
+// Hidden text at certain widths (e.g. mobile layouts)
+export const HiddenTextAtWidth: Story = { args: { widthToHideText: 900 } }

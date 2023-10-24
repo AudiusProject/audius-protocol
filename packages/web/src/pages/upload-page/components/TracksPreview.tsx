@@ -93,11 +93,12 @@ export const TracksPreview = (props: TracksPreviewProps) => {
         </Text>
         <Button
           variant={ButtonType.PRIMARY}
-          text={messages.continue}
           name='continue'
           iconRight={IconCaretRight}
           onClick={onContinue}
-        />
+        >
+          {messages.continue}
+        </Button>
       </div>
     </div>
   )

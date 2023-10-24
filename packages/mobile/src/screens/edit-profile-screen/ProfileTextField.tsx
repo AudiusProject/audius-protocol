@@ -50,7 +50,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => {
   }
 })
 
-type FormTextInputProps = TextInputProps & {
+type ProfileTextFieldProps = TextInputProps & {
   icon?: ComponentType<SvgProps>
   isFirstInput?: boolean
   label: string
@@ -63,17 +63,18 @@ type FormTextInputProps = TextInputProps & {
     label: TextStyle
   }>
 
-export const FormTextInput = ({
-  icon: Icon,
-  isFirstInput,
-  label,
-  name,
-  prefix,
-  style,
-  styles: stylesProp,
-  required,
-  ...other
-}: FormTextInputProps) => {
+export const ProfileTextField = (props: ProfileTextFieldProps) => {
+  const {
+    icon: Icon,
+    isFirstInput,
+    label,
+    name,
+    prefix,
+    style,
+    styles: stylesProp,
+    required,
+    ...other
+  } = props
   const styles = useStyles()
   const [{ value, onChange, onBlur }] = useField<string>({
     name,

@@ -1,6 +1,6 @@
 {
   "name": "audius-mobile-client",
-  "version": "1.5.46",
+  "version": "1.5.47",
   "private": true,
   "scripts": {
     "jetifier": "jetifier",
@@ -33,7 +33,7 @@
     "start": "react-native start",
     "start:e2e": "RN_E2E=true react-native start",
     "start:storybook": "RN_STORYBOOK=true react-native start",
-    "test": "jest",
+    "test": "jest src",
     "test:e2e": "detox test --configuration ios.sim.debug signUp.test.ts",
     "upgrade": "react-native upgrade",
     "ios:bump-build-number": "fastlane run increment_build_number xcodeproj:\"ios/AudiusReactNative.xcodeproj\"",
@@ -193,6 +193,8 @@
     "@storybook/addon-ondevice-controls": "6.5.6",
     "@storybook/react-native": "6.5.6",
     "@svgr/plugin-svgo": "5.5.0",
+    "@testing-library/jest-native": "5.4.3",
+    "@testing-library/react-native": "12.3.0",
     "@tsconfig/react-native": "2.0.3",
     "@types/array.prototype.flat": "1.2.1",
     "@types/bn.js": "5.1.0",
@@ -202,7 +204,6 @@
     "@types/numeral": "2.0.2",
     "@types/react": "18.0.26",
     "@types/react-native-video": "3.1.5",
-    "@types/react-test-renderer": "16.9.0",
     "babel-jest": "29.2.1",
     "babel-loader": "8.3.0",
     "babel-plugin-macros": "3.1.0",
@@ -226,6 +227,9 @@
   },
   "jest": {
     "preset": "react-native",
+    "setupFilesAfterEnv": [
+      "@testing-library/jest-native/extend-expect"
+    ],
     "moduleFileExtensions": [
       "ts",
       "tsx",

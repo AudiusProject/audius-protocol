@@ -9,7 +9,6 @@ import {
   Text,
   TextInput
 } from '@audius/harmony'
-import cn from 'classnames'
 import { Form, Formik } from 'formik'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
@@ -101,18 +100,9 @@ export const SignUpPage = (props: SignUpPageProps) => {
                 <Divider className={styles.flex1} />
               </Flex>
               <Flex gap='s' w='100%' direction='row'>
-                <SocialButton
-                  type='twitter'
-                  className={cn(styles.flex1, styles.w100)}
-                />
-                <SocialButton
-                  type='instagram'
-                  className={cn(styles.flex1, styles.w100)}
-                />
-                <SocialButton
-                  type='tiktok'
-                  className={cn(styles.flex1, styles.w100)}
-                />
+                <SocialButton type='twitter' className={styles.flex1} />
+                <SocialButton type='instagram' className={styles.flex1} />
+                <SocialButton type='tiktok' className={styles.flex1} />
               </Flex>
             </Flex>
             <Flex direction='column' gap='l' alignItems='flex-start' w='100%'>

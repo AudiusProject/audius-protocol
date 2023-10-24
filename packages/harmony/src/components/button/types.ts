@@ -18,22 +18,13 @@ export enum ButtonSize {
 
 type BaseButtonStyles = {
   button: string
-  text: string
   icon: string
   spinner: string
 }
 
-export type HTMLButtonProps = Omit<
-  ComponentPropsWithoutRef<'button'>,
-  'children'
->
+export type HTMLButtonProps = ComponentPropsWithoutRef<'button'>
 
 export type BaseButtonProps = {
-  /**
-   * The text of the button
-   */
-  text?: string
-
   /**
    * Optional icon element to include on the left side of the button
    */
