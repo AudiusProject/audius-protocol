@@ -119,7 +119,7 @@ describe('Upload', () => {
         name: /mark this track as ai generated/i
       }).click()
       cy.findByRole('combobox', { name: /find users/i }).type(
-        aiAttribution.name
+        aiAttribution.inputName
       )
     })
     cy.findByRole('option', { name: aiAttribution.name }).click()
