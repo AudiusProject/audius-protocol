@@ -13,10 +13,12 @@ import {
   PremiumConditions,
   TrackAvailabilityType,
   USDCPurchaseConfig,
-  useUSDCPurchaseConfig
+  useUSDCPurchaseConfig,
+  useAccessAndRemixSettings
 } from '@audius/common'
 import {
   IconCart,
+  IconCollectible,
   IconHidden,
   IconNote,
   IconSpecialAccess,
@@ -74,6 +76,7 @@ const messages = {
   specialAccess: 'Special Access',
   specialAccessSubtitle:
     'Special Access tracks are only available to users who meet certain criteria, such as following the artist.',
+  collectibleGated: 'Collectible Gated',
   compatibilityTitle: "Not seeing what you're looking for?",
   compatibilitySubtitle:
     'Unverified Solana NFT Collections are not compatible at this time.',
@@ -345,7 +348,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   )
 
   const renderValue = useCallback(() => {
-    if (premiumConditions && 'nft_collection' in premiumConditions) {
+    if (isPremiumContentCollectibleGated(premiumConditions)) {
       const { nft_collection } = premiumConditions
       if (!nft_collection) return null
       const { imageUrl, name } = nft_collection
@@ -353,8 +356,8 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       return (
         <>
           <SelectedValue
-            label={messages.specialAccess}
-            icon={IconSpecialAccess}
+            label={messages.collectibleGated}
+            icon={IconCollectible}
           />
           <div className={styles.nftOwner}>
             <Text variant='label' size='small'>
@@ -490,22 +493,16 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     name: AVAILABILITY_TYPE
   })
 
-  const isInitiallyPublic =
-    !isUpload && !isInitiallyUnlisted && !initialPremiumConditions
-  const isInitiallyUsdcGated =
-    !isUpload && isPremiumContentUSDCPurchaseGated(initialPremiumConditions)
-  const isInitiallyCollectibleGated =
-    !isUpload && isPremiumContentCollectibleGated(initialPremiumConditions)
-
-  const noSpecialAccess =
-    isInitiallyPublic ||
-    isInitiallyUsdcGated ||
-    isInitiallyCollectibleGated ||
-    isRemix
-  const noSpecialAccessOptions =
-    noSpecialAccess || (!isUpload && !isInitiallyUnlisted)
-
-  const noHidden = !isUpload && !isInitiallyUnlisted
+  const {
+    noSpecialAccessGate,
+    noSpecialAccessGateFields,
+    noHidden
+  } = useAccessAndRemixSettings({
+    isUpload: !!isUpload,
+    isRemix,
+    initialPremiumConditions: initialPremiumConditions ?? null,
+    isInitiallyUnlisted: !!isInitiallyUnlisted
+  })
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -600,9 +597,9 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             label={messages.specialAccess}
             description={messages.specialAccessSubtitle}
             value={TrackAvailabilityType.SPECIAL_ACCESS}
-            disabled={noSpecialAccess}
+            disabled={noSpecialAccessGate}
             checkedContent={
-              <SpecialAccessFields disabled={noSpecialAccessOptions} />
+              <SpecialAccessFields disabled={noSpecialAccessGateFields} />
             }
           />
         ) : null}
