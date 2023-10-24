@@ -67,7 +67,6 @@ type HarmonySelectablePillProps = Omit<ButtonProps, 'title'> &
     icon?: React.ReactElement
     label: string
     size?: 'default' | 'large'
-    disabled?: boolean
   } & StylesProps<{ root: ViewStyle }>
 
 export const HarmonySelectablePill = (props: HarmonySelectablePillProps) => {
@@ -119,8 +118,8 @@ export const HarmonySelectablePill = (props: HarmonySelectablePillProps) => {
     >
       <Pressable
         accessibilityRole='button'
-        onPressIn={disabled ? null : handlePressIn}
-        onPressOut={disabled ? null : handlePressOut}
+        onPressIn={disabled ? undefined : handlePressIn}
+        onPressOut={disabled ? undefined : handlePressOut}
         disabled={disabled}
         style={[
           styles.pressable,

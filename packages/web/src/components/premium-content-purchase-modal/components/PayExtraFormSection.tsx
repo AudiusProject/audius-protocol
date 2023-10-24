@@ -27,7 +27,7 @@ export type PayExtraFormSectionProps = {
 
 export const PayExtraFormSection = ({
   amountPresets,
-  disabled = false
+  disabled
 }: PayExtraFormSectionProps) => {
   const [{ value: preset }, , { setValue: setPreset }] = useField(AMOUNT_PRESET)
 
