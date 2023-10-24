@@ -16,6 +16,7 @@ export const SelectablePill = forwardRef<
       size = 'default',
       isSelected,
       label,
+      disabled,
       icon: IconComponent,
       className,
       ...restProps
@@ -28,7 +29,8 @@ export const SelectablePill = forwardRef<
           styles.pill,
           {
             [styles.large]: size === 'large',
-            [styles.selected]: isSelected
+            [styles.selected]: isSelected,
+            [styles.disabled]: disabled
           },
           className
         )}
