@@ -7,8 +7,7 @@ import {
   Flex,
   IconArrowRight,
   IconVisibilityHidden,
-  Text,
-  TextInput
+  Text
 } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
@@ -16,6 +15,7 @@ import { Link } from 'react-router-dom'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { signIn } from 'common/store/pages/signon/actions'
+import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithAudiusValues'
 import { SIGN_UP_PAGE } from 'utils/route'
@@ -82,9 +82,13 @@ export const SignInPage = () => {
                 <Form>
                   <Flex direction='column' gap='2xl' w='100%'>
                     <Flex direction='column' gap='l'>
-                      <TextInput name='email' label={messages.emailLabel} />
+                      {/* TODO: replace old TextField */}
+                      <HarmonyTextField
+                        name='email'
+                        label={messages.emailLabel}
+                      />
                       {/* TODO: password visibility icon and toggle */}
-                      <TextInput
+                      <HarmonyTextField
                         name='password'
                         label={messages.passwordLabel}
                         endIcon={IconVisibilityHidden}
