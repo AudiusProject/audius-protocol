@@ -79,15 +79,14 @@ export const PurchaseModalContent = ({
         <Button
           className={styles.button}
           variant={ButtonType.SECONDARY}
-          text={messages.visitTrack}
           iconRight={IconArrowRight}
           onClick={handleClickVisitTrack}
-        />
-        <Button
-          className={styles.button}
-          text={messages.done}
-          onClick={onClose}
-        />
+        >
+          {messages.visitTrack}
+        </Button>
+        <Button className={styles.button} onClick={onClose}>
+          {messages.done}
+        </Button>
       </ModalFooter>
     </>
   )

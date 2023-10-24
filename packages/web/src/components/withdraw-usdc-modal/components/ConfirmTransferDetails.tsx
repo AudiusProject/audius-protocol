@@ -106,14 +106,13 @@ export const ConfirmTransferDetails = () => {
         <Button
           iconLeft={IconCaretLeft}
           variant={ButtonType.SECONDARY}
-          text={messages.goBack}
           onClick={handleGoBack}
-        />
-        <Button
-          variant={ButtonType.SECONDARY}
-          text={messages.confirm}
-          onClick={handleContinue}
-        />
+        >
+          {messages.goBack}
+        </Button>
+        <Button variant={ButtonType.SECONDARY} onClick={handleContinue}>
+          {messages.confirm}
+        </Button>
       </div>
       <Hint
         text={messages.notSure}

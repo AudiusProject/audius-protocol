@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 
 import { ColorValue } from '@audius/stems'
+import cn from 'classnames'
 
 import { Text } from 'components/typography'
 
@@ -46,7 +47,7 @@ export const SummaryTable = ({
         </div>
       ))}
       {summaryItem !== undefined ? (
-        <div className={styles.row}>
+        <div className={cn(styles.row, styles.rowGrayBackground)}>
           <Text variant='title' size='medium' color={summaryLabelColor}>
             {summaryItem.label}
           </Text>

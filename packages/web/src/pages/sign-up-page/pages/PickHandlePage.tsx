@@ -54,7 +54,7 @@ export const PickHandlePage = (props: PickHandlePageProps) => {
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
         <Form>
           <TextField name='handle' label={messages.handle} />
-          <Button type='submit' text={messages.continue} />
+          <Button type='submit'> {messages.continue} </Button>
         </Form>
       </Formik>
     </div>

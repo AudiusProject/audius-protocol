@@ -4,7 +4,7 @@ import { Button } from './Button'
 import { ButtonProps, ButtonSize, ButtonType } from './types'
 
 const baseProps: ButtonProps = {
-  text: 'Click Me'
+  children: 'Click Me'
 }
 
 const meta: Meta<typeof Button> = {
@@ -52,3 +52,6 @@ export const Tertiary: Story = { args: { variant: ButtonType.TERTIARY } }
 
 // Destructive
 export const Destructive: Story = { args: { variant: ButtonType.DESTRUCTIVE } }
+
+// Hidden text at certain widths (e.g. mobile layouts)
+export const HiddenTextAtWidth: Story = { args: { widthToHideText: 900 } }

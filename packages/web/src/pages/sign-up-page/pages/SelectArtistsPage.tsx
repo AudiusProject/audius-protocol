@@ -129,7 +129,7 @@ export const SelectArtistsPage = (props: SelectArtistsPageProps) => {
                       )
                     })}
               </fieldset>
-              <Button type='submit' text={messages.continue} />
+              <Button type='submit'>{messages.continue}</Button>
             </Form>
           )
         }}

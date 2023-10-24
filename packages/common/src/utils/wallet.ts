@@ -114,22 +114,22 @@ export const formatWei = (
   return formatNumberCommas(trimmed) as StringAudio
 }
 
-const convertBigIntToUIString = (amount: bigint, decimals: number) => {
-  const str = amount.toString()
-  return `${str.substring(0, str.length - decimals)}.${str.substring(
-    str.length - decimals
-  )}`
-}
-
 export const convertBigIntToAmountObject = (
   amount: bigint,
   decimals: number
 ): AmountObject => {
+  const divisor = BigInt(10 ** decimals)
+  const quotient = amount / divisor
+  const remainder = amount % divisor
+  const uiAmountString =
+    remainder > 0
+      ? `${quotient.toString()}.${remainder.toString().padStart(decimals, '0')}`
+      : quotient.toString()
   return {
     amount: Number(amount),
     amountString: amount.toString(),
     uiAmount: Number(amount) / 10 ** decimals,
-    uiAmountString: convertBigIntToUIString(amount, decimals)
+    uiAmountString
   }
 }
 

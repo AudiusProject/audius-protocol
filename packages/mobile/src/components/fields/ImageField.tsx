@@ -4,7 +4,7 @@ import type { Nullable } from '@audius/common'
 import { useField } from 'formik'
 import type { ImageStyle, ViewStyle } from 'react-native'
 import { Animated, Pressable, View } from 'react-native'
-import type { Asset } from 'react-native-image-picker'
+import type { Options } from 'react-native-image-crop-picker'
 
 import IconUpload from 'app/assets/images/iconUpload.svg'
 import { DynamicImage } from 'app/components/core'
@@ -51,18 +51,16 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     bottom: 0,
     backgroundColor: '#000',
     opacity: 0.2
-  },
-  shareSheet: {
-    color: palette.secondary
   }
 }))
 
-type ImageValue = Nullable<{ file: any; url: string }>
+type ImageValue = Nullable<Image>
 
 type ImageFieldProps = {
   isProcessing?: boolean
   name: string
   label?: string
+  pickerOptions?: Options
 } & StylesProps<{
   root?: ViewStyle
   imageContainer?: ViewStyle
@@ -70,7 +68,14 @@ type ImageFieldProps = {
 }>
 
 export const ImageField = (props: ImageFieldProps) => {
-  const { isProcessing, name, styles: stylesProp, style, label } = props
+  const {
+    isProcessing,
+    name,
+    styles: stylesProp,
+    style,
+    label,
+    pickerOptions
+  } = props
   const styles = useStyles()
   const [isLoading, setIsLoading] = useState(false)
   const [{ value }, , { setValue }] = useField<ImageValue>(name)
@@ -80,23 +85,12 @@ export const ImageField = (props: ImageFieldProps) => {
   const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.9)
 
   const handlePress = useCallback(() => {
-    const handleImageSelected = (_image: Image, rawResponse: Asset) => {
-      setValue({
-        url: rawResponse.uri!,
-        file: {
-          uri: rawResponse.uri,
-          name: rawResponse.fileName,
-          type: rawResponse.type
-        }
-      })
+    const handleImageSelected = (image: Image) => {
+      setValue(image)
       setIsLoading(true)
     }
-    launchSelectImageActionSheet(
-      handleImageSelected,
-      styles.shareSheet.color,
-      name
-    )
-  }, [setValue, styles.shareSheet.color, name])
+    launchSelectImageActionSheet(handleImageSelected, pickerOptions, name)
+  }, [setValue, pickerOptions, name])
 
   const isDefaultImage = url && /imageCoverPhotoBlank/.test(url)
 
