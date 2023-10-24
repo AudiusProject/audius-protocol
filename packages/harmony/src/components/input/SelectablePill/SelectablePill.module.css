@@ -21,28 +21,37 @@
   box-shadow: var(--harmony-shadow-near);
 }
 
-.pill:hover {
+.pill:not(.disabled):hover {
   background-color: var(--harmony-s-200);
   color: var(--harmony-static-white);
   border: 1px solid var(--harmony-secondary);
 }
 
-.large:hover {
+.large:not(.disabled):hover {
   background-color: var(--harmony-s-100);
   border: 1px solid var(--harmony-s-200);
   box-shadow: none;
 }
 
 .selected,
-.pill:active {
+.pill:not(.disabled):active {
   background-color: var(--harmony-s-400);
   color: var(--harmony-static-white);
   border: 1px solid var(--harmony-s-400);
 }
 
-.large:active,
+.large:not(.disabled):active,
 .large.selected {
   box-shadow: none;
+}
+
+.disabled {
+  opacity: 0.45;
+}
+
+.disabled:hover {
+  background-color: var(--harmony-white);
+  border: 1px solid var(--harmony-border-strong);
 }
 
 .icon path {

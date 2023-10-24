@@ -6,5 +6,6 @@ export type SelectablePillProps = {
   size?: 'default' | 'large'
   isSelected: boolean
   label: string
+  isDisabled?: boolean
   icon?: IconComponent
 } & Omit<ComponentPropsWithoutRef<'button'>, 'children'>

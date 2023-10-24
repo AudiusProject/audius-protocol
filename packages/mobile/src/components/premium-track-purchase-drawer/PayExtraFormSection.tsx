@@ -44,10 +44,12 @@ const formatPillAmount = (val: number) => `$${Math.floor(val / 100)}`
 
 export type PayExtraFormSectionProps = {
   amountPresets: PayExtraAmountPresetValues
+  isDisabled?: boolean
 }
 
 export const PayExtraFormSection = ({
-  amountPresets
+  amountPresets,
+  isDisabled
 }: PayExtraFormSectionProps) => {
   const [{ value: preset }, , { setValue: setPreset }] = useField(AMOUNT_PRESET)
   const [{ value: customAmount }, { error: customAmountError }] =
@@ -69,6 +71,7 @@ export const PayExtraFormSection = ({
             style={styles.pill}
             isSelected={preset === PayExtraPreset.LOW}
             label={formatPillAmount(amountPresets[PayExtraPreset.LOW])}
+            isDisabled={isDisabled}
             onPress={() => handleClickPreset(PayExtraPreset.LOW)}
           />
           <HarmonySelectablePill
@@ -76,6 +79,7 @@ export const PayExtraFormSection = ({
             style={styles.pill}
             isSelected={preset === PayExtraPreset.MEDIUM}
             label={formatPillAmount(amountPresets[PayExtraPreset.MEDIUM])}
+            isDisabled={isDisabled}
             onPress={() => handleClickPreset(PayExtraPreset.MEDIUM)}
           />
           <HarmonySelectablePill
@@ -83,6 +87,7 @@ export const PayExtraFormSection = ({
             style={styles.pill}
             isSelected={preset === PayExtraPreset.HIGH}
             label={formatPillAmount(amountPresets[PayExtraPreset.HIGH])}
+            isDisabled={isDisabled}
             onPress={() => handleClickPreset(PayExtraPreset.HIGH)}
           />
         </View>
@@ -91,6 +96,7 @@ export const PayExtraFormSection = ({
           style={styles.pill}
           isSelected={preset === PayExtraPreset.CUSTOM}
           label={messages.customAmount}
+          isDisabled={isDisabled}
           onPress={() => handleClickPreset(PayExtraPreset.CUSTOM)}
         />
       </View>

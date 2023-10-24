@@ -67,6 +67,7 @@ type HarmonySelectablePillProps = Omit<ButtonProps, 'title'> &
     icon?: React.ReactElement
     label: string
     size?: 'default' | 'large'
+    isDisabled?: boolean
   } & StylesProps<{ root: ViewStyle }>
 
 export const HarmonySelectablePill = (props: HarmonySelectablePillProps) => {
@@ -78,6 +79,7 @@ export const HarmonySelectablePill = (props: HarmonySelectablePillProps) => {
     onPressIn,
     onPressOut,
     size,
+    isDisabled,
     style,
     ...other
   } = props
@@ -90,18 +92,20 @@ export const HarmonySelectablePill = (props: HarmonySelectablePillProps) => {
 
   const handlePressIn = useCallback(
     (event: GestureResponderEvent) => {
+      if (isDisabled) return
       onPressIn?.(event)
       handlePressInScale()
     },
-    [handlePressInScale, onPressIn]
+    [handlePressInScale, isDisabled, onPressIn]
   )
 
   const handlePressOut = useCallback(
     (event: GestureResponderEvent) => {
+      if (isDisabled) return
       onPressOut?.(event)
       handlePressOutScale()
     },
-    [handlePressOutScale, onPressOut]
+    [handlePressOutScale, isDisabled, onPressOut]
   )
 
   return (
@@ -110,6 +114,7 @@ export const HarmonySelectablePill = (props: HarmonySelectablePillProps) => {
         styles.pill,
         size === 'large' ? styles.pillLarge : undefined,
         isSelected ? styles.pressed : undefined,
+        isDisabled ? { opacity: 0.45 } : undefined,
         { transform: [{ scale }] },
         style
       ]}
@@ -118,6 +123,7 @@ export const HarmonySelectablePill = (props: HarmonySelectablePillProps) => {
         accessibilityRole='button'
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
+        disabled={isDisabled}
         style={[
           styles.pressable,
           size === 'large' ? styles.pressableLarge : undefined

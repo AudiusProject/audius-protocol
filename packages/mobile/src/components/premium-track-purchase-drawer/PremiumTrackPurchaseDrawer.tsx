@@ -217,6 +217,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
   const { amountDue } = purchaseSummaryValues
 
   const isPurchaseSuccessful = stage === PurchaseContentStage.FINISH
+  const isInProgress = isContentPurchaseInProgress(stage)
 
   // Navigate to track screen in the background if purchase is successful
   useEffect(() => {
@@ -240,7 +241,10 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
         ) : null}
         <View style={styles.formContentSection}>
           {isPurchaseSuccessful ? null : (
-            <PayExtraFormSection amountPresets={presetValues} />
+            <PayExtraFormSection
+              amountPresets={presetValues}
+              isDisabled={isInProgress}
+            />
           )}
           <PurchaseSummaryTable
             {...purchaseSummaryValues}
