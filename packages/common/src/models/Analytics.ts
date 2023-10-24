@@ -1287,14 +1287,16 @@ type CreateUserBankRequest = {
 
 type CreateUserBankSuccess = {
   eventName: Name.CREATE_USER_BANK_SUCCESS
-  userId: ID
+  mint: string
+  recipientEthAddress: string
 }
 
 type CreateUserBankFailure = {
   eventName: Name.CREATE_USER_BANK_FAILURE
-  userId: ID
+  mint: string
+  recipientEthAddress: string
   errorCode: string
-  error: string
+  errorMessage: string
 }
 
 type RewardsClaimStart = {
