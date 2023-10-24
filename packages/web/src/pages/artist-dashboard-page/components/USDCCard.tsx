@@ -97,7 +97,6 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
         <div className={styles.withdrawButton}>
           <Button
             variant={ButtonType.SECONDARY}
-            text={messages.withdraw}
             fullWidth
             iconLeft={IconWithdraw}
             onClick={() =>
@@ -105,7 +104,9 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
                 page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS
               })
             }
-          />
+          >
+            {messages.withdraw}
+          </Button>
         </div>
         <PopupMenu
           transformOrigin={{ horizontal: 'right', vertical: 'top' }}

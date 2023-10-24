@@ -93,11 +93,9 @@ export const USDCTransactionDetailsModal = () => {
         />
       </ModalContent>
       <ModalFooter className={styles.footer}>
-        <Button
-          className={styles.button}
-          text={messages.done}
-          onClick={onClose}
-        />
+        <Button className={styles.button} onClick={onClose}>
+          {messages.done}
+        </Button>
       </ModalFooter>
     </Modal>
   )

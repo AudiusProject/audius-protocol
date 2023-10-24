@@ -45,7 +45,7 @@ export const SignInPage = () => {
         <Form>
           <TextField name='email' label={messages.emailLabel} />
           <TextField name='password' label={messages.passwordLabel} />
-          <Button text={messages.signIn} type='submit' />
+          <Button type='submit'> {messages.signIn} </Button>
         </Form>
       </Formik>
       <ButtonTmp

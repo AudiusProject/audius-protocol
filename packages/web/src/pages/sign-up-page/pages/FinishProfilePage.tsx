@@ -64,7 +64,7 @@ export const FinishProfilePage = (props: FinishProfilePageProps) => {
           <CoverPhotoField />
           <ProfilePictureField />
           <TextField name='displayName' label={messages.displayName} />
-          <Button type='submit' text={messages.continue} />
+          <Button type='submit'> {messages.continue} </Button>
         </Form>
       </Formik>
     </div>

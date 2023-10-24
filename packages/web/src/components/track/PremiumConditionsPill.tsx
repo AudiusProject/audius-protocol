@@ -50,7 +50,8 @@ export const PremiumConditionsPill = ({
       color={isPurchase ? 'lightGreen' : 'blue'}
       isLoading={unlocking}
       iconLeft={showIcon ? IconLock : undefined}
-      text={message}
-    />
+    >
+      {message}
+    </Button>
   )
 }
