@@ -517,7 +517,8 @@ def get_notifications(session: Session, args: GetNotificationArgs):
         # Filter out usdc create tracks
         filtered: List[NotificationGroup] = []
         for notification in notifications_and_actions:
-            if notification["type"] == NotificationType.CREATE:
+            is_track = "track_id" in notification["actions"][0]["data"]
+            if notification["type"] == NotificationType.CREATE and is_track:
                 res = (
                     session.query(Track).filter(
                         Track.track_id == notification["actions"][0]["data"]["track_id"]
@@ -529,7 +530,7 @@ def get_notifications(session: Session, args: GetNotificationArgs):
                     and "usdc_purchase" in res.premium_conditions
                 ):
                     # Filter out the notification
-                    break
+                    continue
             filtered.append(notification)
         return filtered
 
