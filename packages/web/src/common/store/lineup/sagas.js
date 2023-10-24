@@ -78,7 +78,11 @@ function* filterDeletes(tracksMetadata, removeDeleted) {
         return null
       }
 
-      if (!allowedIds.includes(metadata.owner_id)) {
+      if (
+        metadata.is_premium &&
+        isPremiumContentUSDCPurchaseGated(metadata.premium_conditions) &&
+        !allowedIds.includes(metadata.owner_id)
+      ) {
         return null
       }
 
