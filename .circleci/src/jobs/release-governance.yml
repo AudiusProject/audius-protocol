@@ -34,7 +34,7 @@ steps:
             {
               "type": "section",
               "text": {
-                "text": "New Governance Proposals are out @ https://dashboard.audius.org/#/governance"
+                "text": "New Governance Proposals are out @ https://dashboard.audius.org/#/governance",
                 "type": "mrkdwn"
               },
               "accessory": {
