@@ -41,9 +41,13 @@ export const PageWithAudiusValues = (props: PageWithAudiusValuesProps) => {
 const AudiusValue = (props: { icon: IconComponent; text: string }) => {
   const { icon: Icon, text } = props
   return (
-    <Flex direction='row' gap='l' alignItems='center'>
-      {/* TODO: icon should be white */}
-      <Icon />
+    <Flex
+      className={styles.valueRow}
+      direction='row'
+      gap='l'
+      alignItems='center'
+    >
+      <Icon className={styles.icon} />
       <Text variant='heading' size='xl'>
         {text}
       </Text>
