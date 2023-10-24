@@ -15,7 +15,8 @@ import {
   getContext,
   FeatureFlags,
   isPremiumContentUSDCPurchaseGated,
-  doesUserHaveTrackAccess
+  doesUserHaveTrackAccess,
+  StringKeys
 } from '@audius/common'
 import {
   all,
@@ -53,6 +54,10 @@ function* filterDeletes(tracksMetadata, removeDeleted) {
   const isUSDCGatedContentEnabled = yield getFeatureEnabled(
     FeatureFlags.USDC_PURCHASES
   )
+  const allowedIds = yield remoteConfig
+    .getRemoteVar(StringKeys.EXPLORE_PREMIUM_ALLOWED_USER_IDS)
+    ?.split(',')
+    .map((id) => parseInt(id))
 
   return tracksMetadata
     .map((metadata) => {
@@ -70,6 +75,10 @@ function* filterDeletes(tracksMetadata, removeDeleted) {
         metadata.is_premium &&
         isPremiumContentUSDCPurchaseGated(metadata.premium_conditions)
       ) {
+        return null
+      }
+
+      if (!allowedIds.includes(metadata.owner_id)) {
         return null
       }
 
