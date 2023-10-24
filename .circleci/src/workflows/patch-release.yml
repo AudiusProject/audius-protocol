@@ -1,4 +1,4 @@
-when: << pipeline.parameters.run-patch-release-workflow >>
+when: << pipeline.parameters.patch-release-commit-sha >>
 jobs:
   - deploy-foundation-nodes-trigger:
       type: approval
