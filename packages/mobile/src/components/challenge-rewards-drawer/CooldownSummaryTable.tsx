@@ -16,9 +16,9 @@ export const CooldownSummaryTable = ({
 }: {
   challengeId: ChallengeRewardID
 }) => {
-  const { cooldownChallenges, cooldownChallengesSummary } =
+  const { cooldownChallenges, cooldownChallengesSummary, isEmpty } =
     useAudioMatchingChallengeCooldownSchedule(challengeId)
-  return (
+  return !isEmpty ? (
     <SummaryTable
       title={messages.upcomingRewards}
       secondaryTitle={messages.audio}
@@ -26,5 +26,5 @@ export const CooldownSummaryTable = ({
       items={cooldownChallenges}
       summaryItem={cooldownChallengesSummary}
     />
-  )
+  ) : null
 }

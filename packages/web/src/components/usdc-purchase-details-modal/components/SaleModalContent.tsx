@@ -100,14 +100,13 @@ export const SaleModalContent = ({
           className={styles.button}
           iconLeft={IconMessage}
           variant={ButtonType.SECONDARY}
-          text={messages.messageBuyer}
           onClick={handleClickMessageBuyer}
-        />
-        <Button
-          className={styles.button}
-          text={messages.done}
-          onClick={onClose}
-        />
+        >
+          {messages.messageBuyer}
+        </Button>
+        <Button className={styles.button} onClick={onClose}>
+          {messages.done}
+        </Button>
       </ModalFooter>
     </>
   )

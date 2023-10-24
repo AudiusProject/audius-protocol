@@ -51,11 +51,9 @@ export const SignUpPage = (props: SignUpPageProps) => {
         <Form>
           <h1>{messages.header}</h1>
           <TextField name='email' label={messages.emailLabel} />
-          <Button
-            variant={ButtonType.PRIMARY}
-            text={messages.signUp}
-            type='submit'
-          />
+          <Button variant={ButtonType.PRIMARY} type='submit'>
+            {messages.signUp}
+          </Button>
         </Form>
       </Formik>
       <Text>{messages.haveAccount}</Text>

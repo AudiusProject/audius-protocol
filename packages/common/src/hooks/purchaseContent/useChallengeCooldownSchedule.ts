@@ -91,6 +91,8 @@ export const useAudioMatchingChallengeCooldownSchedule = (
     cooldownChallengesSummary:
       claimableAmount > 0
         ? getAudioMatchingChallengeCooldownSummary(claimableAmount)
-        : undefined
+        : undefined,
+    isEmpty:
+      cooldownChallenges.every((c) => c === undefined) && claimableAmount === 0
   }
 }

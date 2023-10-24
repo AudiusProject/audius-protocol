@@ -18,7 +18,7 @@ import {
   onrampOpened,
   onrampCanceled
 } from 'store/buy-usdc/slice'
-import { USDCOnRampProvider } from 'store/buy-usdc/types'
+import { BuyUSDCError, USDCOnRampProvider } from 'store/buy-usdc/types'
 import { getUSDCUserBank } from 'store/buy-usdc/utils'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUser } from 'store/cache/users/selectors'
@@ -38,7 +38,7 @@ import {
   purchaseContentFlowFailed,
   startPurchaseContentFlow
 } from './slice'
-import { ContentType } from './types'
+import { ContentType, PurchaseContentError, PurchaseErrorCode } from './types'
 
 const { getUserId } = accountSelectors
 
@@ -47,10 +47,7 @@ type GetPurchaseConfigArgs = {
   contentType: ContentType
 }
 
-function* getUSDCPremiumConditions({
-  contentId,
-  contentType
-}: GetPurchaseConfigArgs) {
+function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
   if (contentType !== ContentType.TRACK) {
     throw new Error('Only tracks are supported')
   }
@@ -62,7 +59,19 @@ function* getUSDCPremiumConditions({
   ) {
     throw new Error('Content is missing premium conditions')
   }
-  return trackInfo.premium_conditions.usdc_purchase
+  const artistInfo = yield* select(getUser, { id: trackInfo.owner_id })
+  if (!artistInfo) {
+    throw new Error('Failed to retrieve content owner')
+  }
+
+  const {
+    premium_conditions: {
+      usdc_purchase: { price }
+    },
+    title
+  } = trackInfo
+
+  return { price, title, artistInfo }
 }
 
 function* getPurchaseConfig({ contentId, contentType }: GetPurchaseConfigArgs) {
@@ -140,24 +149,32 @@ function* doStartPurchaseContentFlow({
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
 
+  const { price, title, artistInfo } = yield* call(getContentInfo, {
+    contentId,
+    contentType
+  })
+
+  const analyticsInfo = {
+    price: price / 100,
+    contentId,
+    contentType,
+    contentName: title,
+    artistHandle: artistInfo.handle,
+    isVerifiedArtist: artistInfo.is_verified,
+    payExtraAmount: extraAmount ? extraAmount / 100 : 0,
+    payExtraPreset: extraAmountPreset
+  }
+
   // Record start
   yield* call(
     track,
     make({
       eventName: Name.PURCHASE_CONTENT_STARTED,
-      extraAmount,
-      extraAmountPreset,
-      contentId,
-      contentType
+      ...analyticsInfo
     })
   )
 
   try {
-    const { price } = yield* call(getUSDCPremiumConditions, {
-      contentId,
-      contentType
-    })
-
     // get user bank
     const userBank = yield* call(getUSDCUserBank)
 
@@ -208,7 +225,9 @@ function* doStartPurchaseContentFlow({
         return
       }
       if (result.failed) {
-        yield* put(purchaseContentFlowFailed())
+        yield* put(
+          purchaseContentFlowFailed({ error: result.failed.payload.error })
+        )
         return
       }
     }
@@ -243,22 +262,30 @@ function* doStartPurchaseContentFlow({
 
     yield* call(
       track,
-      make({ eventName: Name.PURCHASE_CONTENT_SUCCESS, contentId, contentType })
+      make({
+        eventName: Name.PURCHASE_CONTENT_SUCCESS,
+        ...analyticsInfo
+      })
     )
   } catch (e: unknown) {
+    // If we get a known error, pipe it through directly. Otherwise make sure we
+    // have a properly contstructed error to put into the slice.
+    const error =
+      e instanceof PurchaseContentError || e instanceof BuyUSDCError
+        ? e
+        : new PurchaseContentError(PurchaseErrorCode.Unknown, `${e}`)
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
-      error: e as Error,
+      error,
       additionalInfo: { contentId, contentType }
     })
-    yield* put(purchaseContentFlowFailed())
+    yield* put(purchaseContentFlowFailed({ error }))
     yield* call(
       track,
       make({
         eventName: Name.PURCHASE_CONTENT_FAILURE,
-        contentId,
-        contentType,
-        error: (e as Error).message
+        error: error.message,
+        ...analyticsInfo
       })
     )
   }

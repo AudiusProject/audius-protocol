@@ -3,9 +3,9 @@ import { useCallback } from 'react'
 import { useNavigation } from '@react-navigation/native'
 import { isEmpty } from 'lodash'
 
-import type { ScreenProps } from '../core/Screen'
-import { ScreenContent, Screen } from '../core/Screen'
-import { TextButton } from '../core/TextButton'
+import type { ScreenProps } from '../../components/core/Screen'
+import { ScreenContent, Screen } from '../../components/core/Screen'
+import { TextButton } from '../../components/core/TextButton'
 
 const messages = {
   cancel: 'Cancel',
@@ -16,11 +16,10 @@ type FormScreenProps = ScreenProps & {
   onSubmit: () => void
   onReset: () => void
   errors?: Record<string, unknown>
-  goBackOnSubmit?: boolean
 }
 
-export const FormScreen = ({ children, ...props }: FormScreenProps) => {
-  const { onSubmit, onReset, errors, goBackOnSubmit, ...other } = props
+export const FormScreen = (props: FormScreenProps) => {
+  const { children, onSubmit, onReset, errors, ...other } = props
 
   const navigation = useNavigation()
 
@@ -28,13 +27,6 @@ export const FormScreen = ({ children, ...props }: FormScreenProps) => {
     onReset()
     navigation.goBack()
   }, [navigation, onReset])
-
-  const handleSave = useCallback(() => {
-    onSubmit()
-    if (goBackOnSubmit) {
-      navigation.goBack()
-    }
-  }, [onSubmit, goBackOnSubmit, navigation])
 
   const topbarLeft = (
     <TextButton
@@ -48,12 +40,11 @@ export const FormScreen = ({ children, ...props }: FormScreenProps) => {
     <TextButton
       title={messages.save}
       variant='primary'
-      onPress={handleSave}
+      onPress={onSubmit}
       disabled={!isEmpty(errors)}
     />
   )
 
-  // TODO: add <ScreenContent> to usages of SafeAreaScreen
   return (
     <Screen
       variant='white'

@@ -49,13 +49,14 @@ export const ModalField = (props: ModalFieldProps) => {
       <ModalFooter>
         <Button
           variant={ButtonType.PRIMARY}
-          text={messages.save}
           onClick={() => {
             submitForm()
             isEmpty(errors) && close()
           }}
           type='submit'
-        />
+        >
+          {messages.save}
+        </Button>
       </ModalFooter>
     </Modal>
   )

@@ -96,8 +96,12 @@ export const AudioMatchingRewardsModalContent = ({
   const wm = useWithMobileStyle(styles.mobile)
   const navigateToPage = useNavigateToPage()
   const { fullDescription } = challengeRewardsConfig[challengeName]
-  const { cooldownChallenges, claimableAmount, cooldownChallengesSummary } =
-    useAudioMatchingChallengeCooldownSchedule(challenge?.challenge_id)
+  const {
+    cooldownChallenges,
+    claimableAmount,
+    cooldownChallengesSummary,
+    isEmpty: isCooldownChallengesEmpty
+  } = useAudioMatchingChallengeCooldownSchedule(challenge?.challenge_id)
   const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
 
   const progressDescription = (
@@ -158,14 +162,16 @@ export const AudioMatchingRewardsModalContent = ({
             </div>
             {progressStatusLabel}
           </div>
-          <SummaryTable
-            title={messages.upcomingRewards}
-            items={cooldownChallenges}
-            summaryItem={cooldownChallengesSummary}
-            secondaryTitle={messages.audio}
-            summaryLabelColor='secondary'
-            summaryValueColor='neutral'
-          />
+          {!isCooldownChallengesEmpty ? (
+            <SummaryTable
+              title={messages.upcomingRewards}
+              items={cooldownChallenges}
+              summaryItem={cooldownChallengesSummary}
+              secondaryTitle={messages.audio}
+              summaryLabelColor='secondary'
+              summaryValueColor='neutral'
+            />
+          ) : null}
         </>
       )}
       {challenge?.claimableAmount && challenge.claimableAmount > 0 ? (

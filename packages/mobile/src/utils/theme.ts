@@ -1,3 +1,4 @@
+import type { CommonState } from '@audius/common'
 import { themeSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
@@ -267,10 +268,15 @@ const themeColorsByThemeVariant: Record<
   [Theme.MATRIX]: matrixTheme
 }
 
+export const selectSystemTheme = (state: CommonState) => {
+  const systemAppearance = getSystemAppearance(state)
+  const systemTheme = systemAppearance === 'dark' ? Theme.DARK : Theme.DEFAULT
+  return themeColorsByThemeVariant[systemTheme]
+}
+
 export const useThemeVariant = (): keyof typeof themeColorsByThemeVariant => {
   const theme = useSelector(getTheme)
   const systemAppearance = useSelector(getSystemAppearance)
-
   const systemTheme = systemAppearance === 'dark' ? Theme.DARK : Theme.DEFAULT
   return theme === Theme.AUTO ? systemTheme : theme ?? Theme.DEFAULT
 }

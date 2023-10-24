@@ -127,12 +127,13 @@ export const EnterTransferDetails = () => {
       <Button
         variant={ButtonType.SECONDARY}
         fullWidth
-        text={messages.continue}
         disabled={
           !!(amountError || addressError || !address || balance?.isZero())
         }
         onClick={handleContinue}
-      />
+      >
+        {messages.continue}
+      </Button>
       <Hint
         text={messages.notSure}
         link={''} // TODO(USDC): Link

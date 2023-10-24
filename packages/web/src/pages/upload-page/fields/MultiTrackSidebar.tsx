@@ -43,12 +43,13 @@ export const MultiTrackSidebar = () => {
           <div className={styles.completeButton}>
             <Button
               onClick={scrollToTop}
-              text={messages.complete}
               variant={ButtonType.PRIMARY}
               iconRight={IconUpload}
               type='submit'
               fullWidth
-            />
+            >
+              {messages.complete}
+            </Button>
           </div>
           {!isEmpty(errors) && submitCount > 0 ? (
             <div className={cn(layoutStyles.row, layoutStyles.gap1)}>

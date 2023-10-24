@@ -173,12 +173,13 @@ const RenderSalesPage = () => {
       rightDecorator={
         <Button
           onClick={downloadCSV}
-          text={messages.downloadCSV}
           variant={ButtonType.SECONDARY}
           size={ButtonSize.SMALL}
           iconLeft={IconCloudDownload}
           disabled={isLoading || isEmpty}
-        />
+        >
+          {messages.downloadCSV}
+        </Button>
       }
     />
   )

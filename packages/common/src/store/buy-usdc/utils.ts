@@ -1,6 +1,13 @@
 import { call, select } from 'typed-redux-saga'
 
 import { createUserBankIfNeeded } from 'services/audius-backend/solana'
+import { IntKeys } from 'services/index'
+import {
+  MAX_CONTENT_PRICE_CENTS,
+  MAX_USDC_PURCHASE_AMOUNT_CENTS,
+  MIN_CONTENT_PRICE_CENTS,
+  MIN_USDC_PURCHASE_AMOUNT_CENTS
+} from 'services/remote-config/defaults'
 import { getContext } from 'store/effects'
 import { getFeePayer } from 'store/solana/selectors'
 
@@ -21,4 +28,39 @@ export function* getUSDCUserBank(ethAddress?: string) {
     mint: 'usdc',
     recordAnalytics: track
   })
+}
+
+export function* getBuyUSDCRemoteConfig() {
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+  yield* call([remoteConfigInstance, remoteConfigInstance.waitForRemoteConfig])
+
+  const minContentPriceCents =
+    remoteConfigInstance.getRemoteVar(IntKeys.MIN_CONTENT_PRICE_CENTS) ??
+    MIN_CONTENT_PRICE_CENTS
+  const maxContentPriceCents =
+    remoteConfigInstance.getRemoteVar(IntKeys.MAX_CONTENT_PRICE_CENTS) ??
+    MAX_CONTENT_PRICE_CENTS
+  const minUSDCPurchaseAmountCents =
+    remoteConfigInstance.getRemoteVar(IntKeys.MIN_USDC_PURCHASE_AMOUNT_CENTS) ??
+    MIN_USDC_PURCHASE_AMOUNT_CENTS
+  const maxUSDCPurchaseAmountCents =
+    remoteConfigInstance.getRemoteVar(IntKeys.MAX_USDC_PURCHASE_AMOUNT_CENTS) ??
+    MAX_USDC_PURCHASE_AMOUNT_CENTS
+
+  const retryDelayMs =
+    remoteConfigInstance.getRemoteVar(IntKeys.BUY_TOKEN_WALLET_POLL_DELAY_MS) ??
+    undefined
+  const maxRetryCount =
+    remoteConfigInstance.getRemoteVar(
+      IntKeys.BUY_TOKEN_WALLET_POLL_MAX_RETRIES
+    ) ?? undefined
+
+  return {
+    minContentPriceCents,
+    maxContentPriceCents,
+    minUSDCPurchaseAmountCents,
+    maxUSDCPurchaseAmountCents,
+    maxRetryCount,
+    retryDelayMs
+  }
 }
