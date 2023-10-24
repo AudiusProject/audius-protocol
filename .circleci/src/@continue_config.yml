@@ -44,7 +44,7 @@ parameters:
     default: false
   patch-release-commit-sha:
     type: string
-    default: ""
+    default: ''
 
   run-web-workflow:
     type: boolean
