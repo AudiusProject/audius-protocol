@@ -38,7 +38,7 @@ export const SignUpPage = (props: SignUpPageProps) => {
   const { onNext } = props
 
   const handleSubmit = useCallback(
-    (values: SignUpEmailValues) => {
+    (_values: SignUpEmailValues) => {
       onNext({ stage: 'create-password' })
     },
     [onNext]
