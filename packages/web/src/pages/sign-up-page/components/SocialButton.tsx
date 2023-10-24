@@ -1,6 +1,6 @@
 import {
   Button,
-  ButtonProps,
+  type ButtonProps,
   IconInstagram,
   IconTikTok,
   IconTwitter
@@ -10,6 +10,7 @@ import cn from 'classnames'
 import styles from './SocialButton.module.css'
 
 type SocialMedia = 'tiktok' | 'instagram' | 'twitter'
+
 export type SocialButtonProps = ButtonProps & {
   type: SocialMedia
 }
