@@ -446,9 +446,8 @@ def delete_track(params: ManageEntityParameters):
         params.block_datetime,
     )
     deleted_track.is_delete = True
+    # Detach this track from the parent if it is a stem
     deleted_track.stem_of = null()
-    deleted_track.remix_of = null()
-    deleted_track.premium_conditions = null()
 
     # delete stems record
     params.session.query(Stem).filter_by(child_track_id=track_id).delete()

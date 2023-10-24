@@ -7,6 +7,8 @@ from typing import Dict, List, Optional, TypedDict, Union
 from sqlalchemy import bindparam, text
 from sqlalchemy.orm.session import Session
 
+from src.models.tracks.track import Track
+
 logger = logging.getLogger(__name__)
 
 
@@ -203,11 +205,9 @@ def get_notification_groups(session: Session, args: GetNotificationArgs):
     """
     Gets the user's notifications in the database
     """
+    valid_types = args.get("valid_types", default_valid_types)
     limit = args.get("limit") or DEFAULT_LIMIT
     limit = min(limit, MAX_LIMIT)  # type: ignore
-
-    # Set valid types
-    args["valid_types"] = args.get("valid_types", []) + default_valid_types  # type: ignore
 
     rows = session.execute(
         notification_groups_sql,
@@ -216,7 +216,7 @@ def get_notification_groups(session: Session, args: GetNotificationArgs):
             "limit": limit,
             "timestamp_offset": args.get("timestamp", None),
             "group_id_offset": args.get("group_id", None),
-            "valid_types": args.get("valid_types", None),
+            "valid_types": valid_types,
         },
     )
 
@@ -232,6 +232,7 @@ def get_notification_groups(session: Session, args: GetNotificationArgs):
         }
         for r in rows
     ]
+
     return res
 
 
@@ -481,6 +482,8 @@ notifications_sql = notifications_sql.bindparams(
 
 
 def get_notifications(session: Session, args: GetNotificationArgs):
+    args["valid_types"] = args.get("valid_types", []) + default_valid_types  # type: ignore
+
     notifications = get_notification_groups(session, args)
     notification_ids = []
     for notification in notifications:
@@ -508,6 +511,28 @@ def get_notifications(session: Session, args: GetNotificationArgs):
         }
         for notification in notifications
     ]
+
+    # TODO(PAY-1880): Remove this check after launch
+    if NotificationType.USDC_PURCHASE_BUYER not in args["valid_types"]:  # type: ignore
+        # Filter out usdc create tracks
+        filtered: List[NotificationGroup] = []
+        for notification in notifications_and_actions:
+            if notification["type"] == NotificationType.CREATE:
+                res = (
+                    session.query(Track).filter(
+                        Track.track_id == notification["actions"][0]["data"]["track_id"]
+                    )
+                ).one_or_none()
+                if (
+                    res
+                    and res.premium_conditions
+                    and "usdc_purchase" in res.premium_conditions
+                ):
+                    # Filter out the notification
+                    break
+            filtered.append(notification)
+        return filtered
+
     return notifications_and_actions
 
 
