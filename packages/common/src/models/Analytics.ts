@@ -158,6 +158,7 @@ export enum Name {
   TRACK_UPLOAD_COLLECTIBLE_GATED = 'Track Upload: Collectible Gated',
   TRACK_UPLOAD_FOLLOW_GATED = 'Track Upload: Follow Gated',
   TRACK_UPLOAD_TIP_GATED = 'Track Upload: Tip Gated',
+  TRACK_UPLOAD_USDC_GATED = 'Track Upload: USDC Gated',
 
   // Gated Track Listen
   LISTEN_GATED = 'Listen: Gated',
@@ -838,19 +839,22 @@ type TrackUploadViewTrackPage = {
 // Gated Track Uploads
 type TrackUploadCollectibleGated = {
   eventName: Name.TRACK_UPLOAD_COLLECTIBLE_GATED
-  count: number
   kind: 'tracks'
 }
 
 type TrackUploadFollowGated = {
   eventName: Name.TRACK_UPLOAD_FOLLOW_GATED
-  count: number
   kind: 'tracks'
 }
 
 type TrackUploadTipGated = {
   eventName: Name.TRACK_UPLOAD_TIP_GATED
-  count: number
+  kind: 'tracks'
+}
+
+type TrackUploadUSDCGated = {
+  eventName: Name.TRACK_UPLOAD_USDC_GATED
+  price: number
   kind: 'tracks'
 }
 
@@ -1821,6 +1825,7 @@ export type AllTrackingEvents =
   | TrackUploadCollectibleGated
   | TrackUploadFollowGated
   | TrackUploadTipGated
+  | TrackUploadUSDCGated
   | TrackUploadSuccess
   | TrackUploadFailure
   | TrackUploadRejected
