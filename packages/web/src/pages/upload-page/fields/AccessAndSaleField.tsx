@@ -109,7 +109,8 @@ const messages = {
       tooLate:
         'Preview must start at least 30 seconds before the end of the track.'
     }
-  }
+  },
+  required: 'Required'
 }
 
 export const IS_UNLISTED = 'is_unlisted'
@@ -146,11 +147,10 @@ export const AccessAndSaleFormSchema = (
     .object({
       [PREMIUM_CONDITIONS]: z.nullable(
         z.object({
-          // TODO: there are other types
           usdc_purchase: z.optional(
             z.object({
               price: z
-                .number()
+                .number({ invalid_type_error: messages.required })
                 .lte(
                   maxContentPriceCents,
                   messages.errors.price.tooHigh(maxContentPriceCents)
@@ -163,7 +163,9 @@ export const AccessAndSaleFormSchema = (
           )
         })
       ),
-      [PREVIEW]: z.optional(z.nullable(z.number())),
+      [PREVIEW]: z.optional(
+        z.nullable(z.number({ invalid_type_error: messages.required }))
+      ),
       [AVAILABILITY_TYPE]: z.nativeEnum(TrackAvailabilityType)
     })
     .refine(
@@ -252,7 +254,9 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       set(
         initialValues,
         PRICE_HUMANIZED,
-        (Number(premiumConditions.usdc_purchase.price || 0) / 100).toFixed(2)
+        premiumConditions.usdc_purchase.price
+          ? (Number(premiumConditions.usdc_purchase.price) / 100).toFixed(2)
+          : undefined
       )
     }
     if (isFollowGated || isTipGated) {
@@ -275,36 +279,59 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     return initialValues as AccessAndSaleFormValues
   }, [fieldVisibility, isPremium, isUnlisted, premiumConditions, preview])
 
-  const onSubmit = useCallback(
+  const handleSubmit = useCallback(
     (values: AccessAndSaleFormValues) => {
-      setPremiumConditionsValue(get(values, PREMIUM_CONDITIONS))
-      if (get(values, PREMIUM_CONDITIONS)) {
-        setIsPremiumValue(true)
-      }
-      if (
-        get(values, AVAILABILITY_TYPE) === TrackAvailabilityType.USDC_PURCHASE
-      ) {
-        setPreviewValue(get(values, PREVIEW))
-        setIsPremiumValue(true)
-        setPremiumConditionsValue({
-          // @ts-ignore splits get added in saga
-          usdc_purchase: {
-            price: Math.round(get(values, PRICE))
+      setFieldVisibilityValue({
+        ...defaultFieldVisibility,
+        remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes
+      })
+      setIsUnlistedValue(false)
+      setPremiumConditionsValue(null)
+      setPreviewValue(undefined)
+
+      const availabilityType = get(values, AVAILABILITY_TYPE)
+      switch (availabilityType) {
+        case TrackAvailabilityType.USDC_PURCHASE: {
+          setPreviewValue(get(values, PREVIEW) ?? 0)
+          setIsPremiumValue(true)
+          setPremiumConditionsValue({
+            // @ts-ignore fully formed in saga (validated + added splits)
+            usdc_purchase: {
+              price: Math.round(get(values, PRICE))
+            }
+          })
+          break
+        }
+        case TrackAvailabilityType.HIDDEN: {
+          setFieldVisibilityValue({
+            ...(get(values, FIELD_VISIBILITY) ?? undefined),
+            remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes
+          })
+          setIsUnlistedValue(true)
+          break
+        }
+        case TrackAvailabilityType.COLLECTIBLE_GATED: {
+          setPremiumConditionsValue(get(values, PREMIUM_CONDITIONS))
+          if (get(values, PREMIUM_CONDITIONS)) {
+            setIsPremiumValue(true)
           }
-        })
-      }
-      if (get(values, AVAILABILITY_TYPE) === TrackAvailabilityType.HIDDEN) {
-        setFieldVisibilityValue({
-          ...(get(values, FIELD_VISIBILITY) ?? undefined),
-          remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes
-        })
-        setIsUnlistedValue(true)
-      } else {
-        setFieldVisibilityValue({
-          ...defaultFieldVisibility,
-          remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes
-        })
-        setIsUnlistedValue(false)
+          break
+        }
+        case TrackAvailabilityType.SPECIAL_ACCESS: {
+          const premiumConditions = get(values, PREMIUM_CONDITIONS)
+          setPremiumConditionsValue(premiumConditions)
+          if (get(values, PREMIUM_CONDITIONS)) {
+            setIsPremiumValue(true)
+          }
+          break
+        }
+        case TrackAvailabilityType.PUBLIC: {
+          setFieldVisibilityValue({
+            ...defaultFieldVisibility,
+            remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes
+          })
+          break
+        }
       }
     },
     [
@@ -406,7 +433,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       description={messages.description}
       icon={<IconHidden />}
       initialValues={initialValues}
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
       renderValue={renderValue}
       validationSchema={toFormikValidationSchema(
         AccessAndSaleFormSchema(trackLength, usdcPurchaseConfig)
@@ -486,30 +513,28 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
       switch (type) {
         case TrackAvailabilityType.PUBLIC: {
           setPremiumConditionsValue(null)
+          setPreviewValue(undefined)
           break
         }
         case TrackAvailabilityType.USDC_PURCHASE: {
           if (!isPremiumContentUSDCPurchaseGated(premiumConditionsValue)) {
             setPremiumConditionsValue({
-              // @ts-ignore splits added in saga
-              usdc_purchase: {
-                price: 0
-              }
+              // @ts-ignore fully formed in saga (validated + added splits)
+              usdc_purchase: { price: null }
             })
           }
-
-          if (!previewValue) {
-            setPreviewValue(0)
-          }
+          setPreviewValue(previewValue ?? 0)
           break
         }
         case TrackAvailabilityType.SPECIAL_ACCESS: {
           if (
             !accountUserId ||
-            isPremiumContentTipGated(premiumConditionsValue)
+            isPremiumContentTipGated(premiumConditionsValue) ||
+            isPremiumContentFollowGated(premiumConditionsValue)
           )
             break
           setPremiumConditionsValue({ follow_user_id: accountUserId })
+          setPreviewValue(undefined)
           break
         }
         case TrackAvailabilityType.COLLECTIBLE_GATED:
@@ -519,9 +544,11 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           )
             break
           setPremiumConditionsValue(null)
+          setPreviewValue(undefined)
           break
         case TrackAvailabilityType.HIDDEN:
           setPremiumConditionsValue(null)
+          setPreviewValue(undefined)
           if (!fieldVisibilityValue) break
           setfieldVisibilityValue({
             ...fieldVisibilityValue,

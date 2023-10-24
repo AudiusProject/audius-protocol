@@ -102,7 +102,9 @@ export const AccessAndSaleModalLegacy = (
       set(
         initialValues,
         PRICE_HUMANIZED,
-        (Number(premiumConditions.usdc_purchase.price || 0) / 100).toFixed(2)
+        premiumConditions.usdc_purchase.price
+          ? (Number(premiumConditions.usdc_purchase.price) / 100).toFixed(2)
+          : undefined
       )
     }
     if (isFollowGated || isTipGated) {

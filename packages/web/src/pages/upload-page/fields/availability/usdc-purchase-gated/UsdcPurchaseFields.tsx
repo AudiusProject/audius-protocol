@@ -32,9 +32,9 @@ const messages = {
     placeholder: '1.00'
   },
   preview: {
-    title: '15 Second Preview',
+    title: '30 Second Preview',
     description:
-      'A 15 second preview will be generated. Specify a starting timestamp below.',
+      'A 30 second preview will be generated. Specify a starting timestamp below.',
     placeholder: 'Start Time'
   },
   dollars: '$',
@@ -101,9 +101,9 @@ const PriceField = (props: TrackAvailabilityFieldsProps) => {
 
   useEffect(() => {
     if (humanizedValue !== null) {
-      const dehumaizedValue = decimalIntegerFromHumanReadable(humanizedValue)
-      if (value === undefined || dehumaizedValue !== value) {
-        setPrice(dehumaizedValue)
+      const dehumanizedValue = decimalIntegerFromHumanReadable(humanizedValue)
+      if (value === undefined || dehumanizedValue !== value) {
+        setPrice(dehumanizedValue)
       }
     }
   }, [value, humanizedValue, setPrice])
@@ -119,9 +119,13 @@ const PriceField = (props: TrackAvailabilityFieldsProps) => {
 
   const handlePriceBlur: FocusEventHandler<HTMLInputElement> = useCallback(
     (e) => {
+      if (humanizedValue === null && !e.target.value) {
+        // Do nothing if there is no value set and the user just loses focus
+        return
+      }
       setHumanizedValue(padDecimalValue(e.target.value))
     },
-    []
+    [humanizedValue]
   )
 
   return (

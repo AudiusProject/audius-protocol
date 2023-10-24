@@ -219,7 +219,9 @@ export const AttributionField = () => {
     )
 
     if (!licenseType || licenseType === ALL_RIGHTS_RESERVED_TYPE) {
-      value.push(<SelectedValue label={messages.noLicense} />)
+      value.push(
+        <SelectedValue key={messages.noLicense} label={messages.noLicense} />
+      )
     }
 
     const licenseIcons = computeLicenseIcons(
@@ -238,18 +240,18 @@ export const AttributionField = () => {
       )
     }
     if (isrcValue) {
-      value.push(<SelectedValue label={isrcValue} />)
+      value.push(<SelectedValue key={isrcValue} label={isrcValue} />)
     }
 
     if (iswcValue) {
-      value.push(<SelectedValue label={iswcValue} />)
+      value.push(<SelectedValue key={iswcValue} label={iswcValue} />)
     }
     if (aiUserId) {
       value.push(
         <SelectedValue label={messages.isAiGenerated} icon={IconRobot} />
       )
     }
-    return <SelectedValues>{value}</SelectedValues>
+    return <SelectedValues key={messages.isAiGenerated}>{value}</SelectedValues>
   }, [
     aiUserId,
     allowAttribution,
