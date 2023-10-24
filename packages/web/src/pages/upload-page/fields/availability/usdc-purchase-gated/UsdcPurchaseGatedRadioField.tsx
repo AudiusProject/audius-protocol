@@ -5,9 +5,6 @@ import {
   Name,
   PremiumConditions,
   TrackAvailabilityType,
-  isPremiumContentCollectibleGated,
-  isPremiumContentFollowGated,
-  isPremiumContentTipGated,
   useAccessAndRemixSettings
 } from '@audius/common'
 import { IconCart, IconStars } from '@audius/stems'

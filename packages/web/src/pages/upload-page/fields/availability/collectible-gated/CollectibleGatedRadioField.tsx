@@ -2,9 +2,6 @@ import {
   PremiumConditions,
   TrackAvailabilityType,
   collectiblesSelectors,
-  isPremiumContentFollowGated,
-  isPremiumContentTipGated,
-  isPremiumContentUSDCPurchaseGated,
   useAccessAndRemixSettings
 } from '@audius/common'
 import { IconCollectible } from '@audius/stems'

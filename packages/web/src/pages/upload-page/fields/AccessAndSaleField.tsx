@@ -493,16 +493,13 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     name: AVAILABILITY_TYPE
   })
 
-  const {
-    noSpecialAccessGate,
-    noSpecialAccessGateFields,
-    noHidden
-  } = useAccessAndRemixSettings({
-    isUpload: !!isUpload,
-    isRemix,
-    initialPremiumConditions: initialPremiumConditions ?? null,
-    isInitiallyUnlisted: !!isInitiallyUnlisted
-  })
+  const { noSpecialAccessGate, noSpecialAccessGateFields, noHidden } =
+    useAccessAndRemixSettings({
+      isUpload: !!isUpload,
+      isRemix,
+      initialPremiumConditions: initialPremiumConditions ?? null,
+      isInitiallyUnlisted: !!isInitiallyUnlisted
+    })
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
