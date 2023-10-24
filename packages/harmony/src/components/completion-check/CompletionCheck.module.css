@@ -7,11 +7,12 @@
 }
 
 .defaultCompletionIcon {
+  box-sizing: border-box;
   position: absolute;
   display: inline-flex;
   align-items: center;
-  height: 12px;
-  width: 12px;
+  height: 16px;
+  width: 16px;
   border: 2px solid var(--harmony-neutral);
   border-radius: 50%;
 }
