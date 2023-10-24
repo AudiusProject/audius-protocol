@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 
 import { Status, ServiceType } from 'types'
@@ -8,6 +8,7 @@ import Audius from 'services/Audius'
 import { AppState } from 'store/types'
 import { getDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
 import { getContentNode } from 'store/cache/contentNode/hooks'
+import { AnyAction } from '@reduxjs/toolkit'
 
 function deregisterAudiusService(
   serviceType: ServiceType,
@@ -38,7 +39,7 @@ function deregisterAudiusService(
 export const useDeregisterService = (shouldReset?: boolean) => {
   const [status, setStatus] = useState<undefined | Status>()
   const [error, setError] = useState<string>('')
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (shouldReset) {
       setStatus(undefined)

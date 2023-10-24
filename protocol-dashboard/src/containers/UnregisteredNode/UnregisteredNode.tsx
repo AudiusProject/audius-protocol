@@ -1,4 +1,5 @@
-import { matchPath, useLocation } from 'react-router-dom'
+// import { useQuery } from '@tanstack/react-query'
+import { useMatch, useLocation } from 'react-router-dom'
 import { useAccount } from 'store/account/hooks'
 
 import styles from './UnregisteredNode.module.css'
@@ -26,7 +27,33 @@ const UnregisteredContentNode = ({
 }: UnregisteredContentNodeProps) => {
   // const isOwner = accountWallet === discoveryProvider!.owner
 
-  return <>Health UI and Registration UI Coming Soon</>
+  // const { status, data, error } = useQuery({
+  //   queryKey: ['health', { endpoint }],
+  //   queryFn: async () => {
+  //     const response = await fetch(`${endpoint}/health_check`)
+  //     if (!response.ok) {
+  //       throw new Error(
+  //         `Failed fetching health check from ${endpoint}: ${response.status} ${response.statusText}`
+  //       )
+  //     }
+  //     return response.json()
+  //   }
+  // })
+
+  // if (status === 'pending') {
+  //   return <span>Loading...</span>
+  // }
+
+  // if (status === 'error') {
+  //   return <span>Error: {error.message}</span>
+  // }
+
+  return (
+    <>
+      Health UI and Registration UI Coming Soon
+      {/* {JSON.stringify(data)} */}
+    </>
+  )
 }
 
 type UnregisteredDiscoveryProviderProps = {
@@ -47,10 +74,7 @@ const UnregisteredNode = () => {
   const query = new URLSearchParams(location.search)
   const endpoint = query.get('endpoint')
   const { wallet: accountWallet } = useAccount()
-
-  const isDiscovery = !!matchPath(location.pathname, {
-    path: SERVICES_UNREGISTERED_DISCOVERY_NODE
-  })
+  const isDiscovery = !!useMatch(SERVICES_UNREGISTERED_DISCOVERY_NODE)
 
   return (
     <Page

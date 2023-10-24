@@ -175,7 +175,7 @@ jobs:
                 "https://circleci.com/api/v2/pipeline/$pipeline_id/workflow" \
                 --header "Circle-Token: $CIRCLE_DAILY_DEPLOY_API_TOKEN" | jq -r '.items[] | select(.name=="release") | .id')
 
-              # Fetch the "deploy-prod-foundation-nodes-trigger" job
+              # Fetch the "deploy-foundation-nodes-trigger" job
               job_id=$(curl --request GET \
                 "https://circleci.com/api/v2/workflow/$workflow_id/job" \
                 --header "Circle-Token: $CIRCLE_DAILY_DEPLOY_API_TOKEN" | jq -r '.items[] | select(.name=="deploy-foundation-nodes-trigger" and .status=="on_hold") | .id')

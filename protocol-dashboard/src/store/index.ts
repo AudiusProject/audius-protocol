@@ -3,17 +3,9 @@ import {
   InMemoryCache,
   NormalizedCacheObject
 } from '@apollo/client'
-import {
-  combineReducers,
-  createStore as createReduxStore,
-  applyMiddleware
-} from 'redux'
-import { connectRouter } from 'connected-react-router'
-import { composeWithDevTools } from 'redux-devtools-extension'
-import { routerMiddleware } from 'connected-react-router'
-import { History } from 'history'
+import { configureStore } from '@reduxjs/toolkit'
+import { combineReducers } from 'redux'
 import Audius from 'services/Audius'
-import thunk from 'redux-thunk'
 import discoveryProvider from './cache/discoveryProvider/slice'
 import contentNode from './cache/contentNode/slice'
 import protocol from './cache/protocol/slice'
@@ -26,7 +18,6 @@ import claims from './cache/claims/slice'
 import analytics from './cache/analytics/slice'
 import music from './cache/music/slice'
 import account from './account/slice'
-import pageHistory from './pageHistory/slice'
 import api from './api/slice'
 
 declare global {
@@ -70,36 +61,32 @@ aud.setup()
 
 window.client = client
 
-const getReducer = (history: History) => {
-  return combineReducers({
-    router: connectRouter(history),
-    pageHistory,
-    account,
-    api,
-    cache: combineReducers({
-      discoveryProvider,
-      contentNode,
-      protocol,
-      user,
-      proposals,
-      votes,
-      timeline,
-      claims,
-      analytics,
-      music,
-      rewards
-    })
+export const createStore = () => {
+  const store = configureStore({
+    reducer: combineReducers({
+      account,
+      api,
+      cache: combineReducers({
+        discoveryProvider,
+        contentNode,
+        protocol,
+        user,
+        proposals,
+        votes,
+        timeline,
+        claims,
+        analytics,
+        music,
+        rewards
+      })
+    }),
+    middleware: getDefaultMiddleware =>
+      getDefaultMiddleware({
+        thunk: {
+          extraArgument: aud
+        }
+      })
   })
-}
-
-const getMiddlewares = (history: History) =>
-  applyMiddleware(routerMiddleware(history), thunk.withExtraArgument(aud))
-
-export const createStore = (history: History) => {
-  const composeEnhancers = composeWithDevTools({ trace: true, traceLimit: 25 })
-  const storeReducer = getReducer(history)
-  const middlewares = getMiddlewares(history)
-  let store = createReduxStore(storeReducer, composeEnhancers(middlewares))
   window.store = store
   return store
 }
