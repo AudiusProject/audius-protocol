@@ -55,7 +55,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const isDisabled = disabled || baseProps.isLoading
 
     const style: CSSCustomProperties = {
-      '--button-color':
+      '--base-color':
         !isDisabled && hexColor
           ? hexColor
           : color
