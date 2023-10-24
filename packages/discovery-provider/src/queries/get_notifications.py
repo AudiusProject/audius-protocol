@@ -205,6 +205,7 @@ def get_notification_groups(session: Session, args: GetNotificationArgs):
     """
     Gets the user's notifications in the database
     """
+    valid_types = args.get("valid_types", default_valid_types)
     limit = args.get("limit") or DEFAULT_LIMIT
     limit = min(limit, MAX_LIMIT)  # type: ignore
 
@@ -215,7 +216,7 @@ def get_notification_groups(session: Session, args: GetNotificationArgs):
             "limit": limit,
             "timestamp_offset": args.get("timestamp", None),
             "group_id_offset": args.get("group_id", None),
-            "valid_types": args.get("valid_types", None),
+            "valid_types": valid_types,
         },
     )
 
