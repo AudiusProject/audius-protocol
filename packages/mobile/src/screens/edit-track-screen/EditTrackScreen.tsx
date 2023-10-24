@@ -36,6 +36,7 @@ const useEditTrackSchema = () => {
         premium_conditions: Yup.object({
           usdc_purchase: Yup.object({
             price: Yup.number()
+              .typeError('Required')
               .positive()
               .min(
                 minContentPriceCents / 100,

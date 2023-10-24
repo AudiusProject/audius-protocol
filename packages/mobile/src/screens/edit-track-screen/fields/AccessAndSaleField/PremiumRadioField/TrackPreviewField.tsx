@@ -22,7 +22,7 @@ export const TrackPreviewField = () => {
       title={messages.title}
       description={messages.description}
       name={TRACK_PREVIEW}
-      value={String(value)}
+      value={value}
       keyboardType='number-pad'
       label={messages.label}
       endAdornment={

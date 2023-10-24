@@ -98,8 +98,9 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
     if (selected) {
       setTrackAvailabilityFields({
         is_premium: true,
-        premium_conditions: { usdc_purchase: { price: 0, splits: {} } },
-        preview_start_seconds: 0,
+        // @ts-ignore fully formed in saga (validated + added splits)
+        premium_conditions: { usdc_purchase: { price: null } },
+        preview_start_seconds: null,
         'field_visibility.remixes': false
       })
     }
