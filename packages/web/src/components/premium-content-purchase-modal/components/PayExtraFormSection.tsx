@@ -86,7 +86,7 @@ export const PayExtraFormSection = ({
           placeholder={messages.placeholder}
           label={messages.customAmount}
           name={CUSTOM_AMOUNT}
-          isDisabled={isDisabled}
+          disabled={isDisabled}
         />
       ) : null}
     </div>
