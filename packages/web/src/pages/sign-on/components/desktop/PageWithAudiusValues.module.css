@@ -1,5 +1,7 @@
 .root {
   box-shadow: var(--harmony-shadow-far);
+  /* TODO: should this be on box/flex? */
+  overflow: hidden;
 }
 
 .valuesRoot {

@@ -6,6 +6,7 @@ import {
   ButtonType,
   Flex,
   IconArrowRight,
+  IconVisibilityHidden,
   Text,
   TextInput
 } from '@audius/harmony'
@@ -81,9 +82,11 @@ export const SignInPage = () => {
                 <Flex direction='column' gap='2xl' w='100%'>
                   <Flex direction='column' gap='l'>
                     <TextInput name='email' label={messages.emailLabel} />
+                    {/* TODO: password visibility icon and toggle */}
                     <TextInput
                       name='password'
                       label={messages.passwordLabel}
+                      endIcon={IconVisibilityHidden}
                       type='password'
                     />
                   </Flex>
