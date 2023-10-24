@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react'
 import clsx from 'clsx'
-import { Utils } from '@audius/sdk/dist/legacy.js'
+import BN from 'bn.js'
 
 import { useProposals } from 'store/cache/proposals/hooks'
 import Paper from 'components/Paper'
@@ -52,9 +52,7 @@ export const NoProposals = ({ text }: { text: string }) => {
 const Proposals: React.FC<ProposalsProps> = () => {
   const { activeProposals, resolvedProposals } = useProposals()
   const { status: userStatus, user: accountUser } = useAccountUser()
-  const activeStake = accountUser
-    ? getActiveStake(accountUser)
-    : Utils.toBN('0')
+  const activeStake = accountUser ? getActiveStake(accountUser) : new BN('0')
   const isUserStaker = userStatus === Status.Success && !activeStake.isZero()
 
   return (

@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import clsx from 'clsx'
 import BN from 'bn.js'
-import { Utils } from '@audius/sdk/dist/legacy.js'
 import { TabSlider, ButtonType } from '@audius/stems'
 
 import { useRegisterService } from 'store/actions/registerService'
@@ -125,7 +124,7 @@ const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
     if (isOpen && selectedServiceInfo && calculatedMinStakeRef.current) {
       setStakingBN(calculatedMinStakeRef.current)
       const amount = AudiusClient.getAud(
-        Utils.toBN(calculatedMinStakeRef.current as any)
+        new BN(calculatedMinStakeRef.current as any)
       )
       setStakingAmount(amount.toString())
     }

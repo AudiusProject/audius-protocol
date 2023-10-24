@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import clsx from 'clsx'
 import { matchPath, useLocation, useParams } from 'react-router-dom'
-import { Utils } from '@audius/sdk/dist/legacy.js'
+import BN from 'bn.js'
 
 import Page from 'components/Page'
 import Delegate from 'components/Delegate'
@@ -74,7 +74,7 @@ const UserPage = () => {
   // we have type errors everywhere :(
   const showServiceProviderSkeletonTiles = useMemo(() => {
     if (isServiceProvider) return true
-    return !matchPath(pathname, { path: SERVICES_ACCOUNT_USER })
+    return !matchPath(pathname, SERVICES_ACCOUNT_USER)
   }, [isServiceProvider, pathname])
 
   const hasDiscoveryProviders =
@@ -87,7 +87,7 @@ const UserPage = () => {
   // Check if on user or operator page
   useEffect(() => {
     if (status !== Status.Success) return
-    const isUserPath = !!matchPath(pathname, { path: SERVICES_ACCOUNT_USER })
+    const isUserPath = !!matchPath(pathname, SERVICES_ACCOUNT_USER)
     if (isServiceProvider && isUserPath) replaceRoute(operatorPage(wallet))
     else if (!isServiceProvider && !isUserPath)
       replaceRoute(accountPage(wallet))
@@ -95,7 +95,7 @@ const UserPage = () => {
 
   const numDiscoveryNodes = (user as Operator)?.discoveryProviders?.length ?? 0
   const numContentNodes = (user as Operator)?.contentNodes?.length ?? 0
-  const activeStake = user ? getActiveStake(user) : Utils.toBN('0')
+  const activeStake = user ? getActiveStake(user) : new BN('0')
   const inboundDelegation = useActiveInboundDelegation({ wallet })
   const title = isOwner
     ? messages.owner
@@ -134,10 +134,10 @@ const UserPage = () => {
                 (user as Operator | undefined)?.serviceProvider?.deployerCut ??
                 0
               }
-              delegated={inboundDelegation.amount ?? Utils.toBN('0')}
+              delegated={inboundDelegation.amount ?? new BN('0')}
               minDelegation={
                 (user as Operator | undefined)?.minDelegationAmount ??
-                Utils.toBN('0')
+                new BN('0')
               }
               delegators={
                 (user as Operator | undefined)?.delegators?.length ?? 0

@@ -1,10 +1,5 @@
-import React, { useEffect } from 'react'
-import { Dispatch } from 'redux'
-import { connect } from 'react-redux'
-import { push as pushRoute } from 'connected-react-router'
+import { useEffect } from 'react'
 import clsx from 'clsx'
-
-import { AppState } from 'store/types'
 
 import styles from './Timeline.module.css'
 import Paper from 'components/Paper'
@@ -23,22 +18,14 @@ const messages = {
 
 const MAX_LEN = 4
 
-type OwnProps = {
+type TimelineProps = {
   className?: string
   limit?: number
   wallet: Address
   timelineType: TimelineType
 }
 
-type TimelineProps = OwnProps &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>
-
-const Timeline: React.FC<TimelineProps> = ({
-  className,
-  wallet,
-  timelineType
-}: TimelineProps) => {
+const Timeline = ({ className, wallet, timelineType }: TimelineProps) => {
   const { timeline } = useTimeline(wallet, timelineType)
   const { isOpen, onClick, onClose } = useModalControls()
   useEffect(() => {
@@ -76,14 +63,4 @@ const Timeline: React.FC<TimelineProps> = ({
   )
 }
 
-const mapStateToProps = (state: AppState) => {
-  return {}
-}
-
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    pushRoute: (path: string) => dispatch(pushRoute(path))
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Timeline)
+export default Timeline
