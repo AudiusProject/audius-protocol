@@ -120,7 +120,7 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
         is_premium: true,
         // @ts-ignore fully formed in saga (validated + added splits)
         premium_conditions: { usdc_purchase: selectedUsdcPurchaseValue },
-        preview_start_seconds: null,
+        preview_start_seconds: previewStartSeconds,
         'field_visibility.remixes': false
       })
     }
