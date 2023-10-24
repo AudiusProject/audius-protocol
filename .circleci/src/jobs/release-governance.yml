@@ -3,34 +3,18 @@ docker:
 steps:
   - checkout
 
-  - restore_cache:
-      keys:
-        - sdk-cache-{{ checksum "packages/libs/package-lock.json" }}
-        - sdk-cache-
-  - run:
-      name: Install sdk
-      command: |
-        cd packages/libs
-        npm install
-        npm run build:sdk
-  - save_cache:
-      key: sdk-cache-{{ checksum "packages/libs/package-lock.json" }}
-      paths:
-        - ./packages/libs/node_modules
+  - create_concatenated_patch_file:
+      filename: combined-patch-file.txt
 
   - restore_cache:
       keys:
-        - eth-contracts-cache-{{ checksum "eth-contracts/package-lock.json" }}
-        - eth-contracts-cache-
+        - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+
   - run:
-      name: Install eth-contracts dependencies
+      name: Build sdk
       command: |
-        cd eth-contracts
-        npm install
-  - save_cache:
-      key: eth-contracts-cache-{{ checksum "eth-contracts/package-lock.json" }}
-      paths:
-        - ./eth-contracts/node_modules
+        cd packages/libs
+        npm run build:sdk
 
   - run:
       name: Governance Release
