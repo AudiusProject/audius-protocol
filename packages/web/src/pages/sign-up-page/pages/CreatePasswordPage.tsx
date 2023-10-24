@@ -1,6 +1,14 @@
 import { useCallback, useState } from 'react'
 
-import { Box, Button, ButtonType, Flex, Text, TextInput } from '@audius/harmony'
+import {
+  Box,
+  Button,
+  ButtonType,
+  Flex,
+  Text,
+  TextInput,
+  IconArrowRight
+} from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -263,6 +271,7 @@ export const CreatePasswordPage = (props: CreatePasswordPageProps) => {
                     <TextInput
                       name='password'
                       type='password'
+                      autoFocus
                       autoComplete='new-password'
                       onChange={(e) => {
                         setFieldValue('password', e.target.value)
@@ -344,6 +353,7 @@ export const CreatePasswordPage = (props: CreatePasswordPageProps) => {
                     variant={ButtonType.PRIMARY}
                     disabled={isSubmitting || !isValid}
                     type='submit'
+                    iconRight={IconArrowRight}
                   >
                     {messages.continue}
                   </Button>
