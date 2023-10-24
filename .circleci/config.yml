@@ -13,9 +13,6 @@ parameters:
   workflow:
     type: string
     default: 'main'
-  patch-release-commit-sha:
-    type: string
-    default: ''
 
 commands:
   create_concatenated_patch_file:

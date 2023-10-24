@@ -21,14 +21,7 @@ steps:
       command: |
         git clone --branch stage https://github.com/AudiusProject/audius-docker-compose.git audius-docker-compose
         cd audius-docker-compose
-
-        # Use custom commit hash if provided. Otherwise, determine based on auto-deploy branch
-        if [ -n "<< pipeline.parameters.patch-release-commit-sha >>" ]; then
-          release_commit_hash=<< pipeline.parameters.patch-release-commit-sha >>
-        else
-          release_commit_hash=$(git log --all --grep="$CIRCLE_BRANCH auto-deploy" --pretty=format:"%H" -1)
-        fi
-
+        release_commit_hash=$(git log --all --grep="$CIRCLE_BRANCH auto-deploy" --pretty=format:"%H" -1)
         git fetch origin foundation:foundation
         git checkout foundation
         git merge $release_commit_hash --no-edit
