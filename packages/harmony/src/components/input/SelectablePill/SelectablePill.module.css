@@ -21,26 +21,30 @@
   box-shadow: var(--harmony-shadow-near);
 }
 
-.pill:not(.disabled):hover {
+.pill:hover {
   background-color: var(--harmony-s-200);
   color: var(--harmony-static-white);
   border: 1px solid var(--harmony-secondary);
 }
 
-.large:not(.disabled):hover {
+.large:hover {
   background-color: var(--harmony-s-100);
   border: 1px solid var(--harmony-s-200);
   box-shadow: none;
 }
 
 .selected,
-.pill:not(.disabled):active {
+.pill:active {
   background-color: var(--harmony-s-400);
   color: var(--harmony-static-white);
   border: 1px solid var(--harmony-s-400);
 }
 
-.large:not(.disabled):active,
+.pill.disabled {
+  pointer-events: none;
+}
+
+.large:active,
 .large.selected {
   box-shadow: none;
 }

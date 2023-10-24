@@ -55,7 +55,7 @@ export const PurchaseContentFormFields = ({
     <>
       <PayExtraFormSection
         amountPresets={payExtraAmountPresetValues}
-        isDisabled={isInProgress}
+        disabled={isInProgress}
       />
       <PurchaseSummaryTable
         {...purchaseSummaryValues}

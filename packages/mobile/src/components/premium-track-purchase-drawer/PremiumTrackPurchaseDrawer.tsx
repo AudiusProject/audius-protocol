@@ -243,7 +243,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
           {isPurchaseSuccessful ? null : (
             <PayExtraFormSection
               amountPresets={presetValues}
-              isDisabled={isInProgress}
+              disabled={isInProgress}
             />
           )}
           <PurchaseSummaryTable

@@ -22,17 +22,16 @@ const formatPillAmount = (val: number) => `$${Math.floor(val / 100)}`
 
 export type PayExtraFormSectionProps = {
   amountPresets: PayExtraAmountPresetValues
-  isDisabled?: boolean
+  disabled?: boolean
 }
 
 export const PayExtraFormSection = ({
   amountPresets,
-  isDisabled = false
+  disabled = false
 }: PayExtraFormSectionProps) => {
   const [{ value: preset }, , { setValue: setPreset }] = useField(AMOUNT_PRESET)
 
   const handleClickPreset = (newPreset: PayExtraPreset) => {
-    if (isDisabled) return
     setPreset(newPreset === preset ? PayExtraPreset.NONE : newPreset)
   }
 
@@ -50,7 +49,7 @@ export const PayExtraFormSection = ({
             size='large'
             type='button'
             onClick={() => handleClickPreset(PayExtraPreset.LOW)}
-            isDisabled={isDisabled}
+            disabled={disabled}
           />
           <SelectablePill
             className={styles.presetPill}
@@ -59,7 +58,7 @@ export const PayExtraFormSection = ({
             size='large'
             type='button'
             onClick={() => handleClickPreset(PayExtraPreset.MEDIUM)}
-            isDisabled={isDisabled}
+            disabled={disabled}
           />
           <SelectablePill
             className={styles.presetPill}
@@ -68,7 +67,7 @@ export const PayExtraFormSection = ({
             size='large'
             type='button'
             onClick={() => handleClickPreset(PayExtraPreset.HIGH)}
-            isDisabled={isDisabled}
+            disabled={disabled}
           />
         </div>
         <SelectablePill
@@ -78,7 +77,7 @@ export const PayExtraFormSection = ({
           size='large'
           type='button'
           onClick={() => handleClickPreset(PayExtraPreset.CUSTOM)}
-          isDisabled={isDisabled}
+          disabled={disabled}
         />
       </div>
       {preset === PayExtraPreset.CUSTOM ? (
@@ -86,7 +85,7 @@ export const PayExtraFormSection = ({
           placeholder={messages.placeholder}
           label={messages.customAmount}
           name={CUSTOM_AMOUNT}
-          disabled={isDisabled}
+          disabled={disabled}
         />
       ) : null}
     </div>
