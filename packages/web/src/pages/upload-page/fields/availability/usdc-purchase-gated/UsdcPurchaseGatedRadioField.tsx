@@ -32,12 +32,13 @@ type UsdcPurchaseGatedRadioFieldProps = {
   isUpload?: boolean
   initialPremiumConditions?: PremiumConditions
   isInitiallyUnlisted?: boolean
+  isScheduledRelease?: boolean
 }
 
 export const UsdcPurchaseGatedRadioField = (
   props: UsdcPurchaseGatedRadioFieldProps
 ) => {
-  const { isRemix, isUpload, initialPremiumConditions, isInitiallyUnlisted } =
+  const { isRemix, isUpload, initialPremiumConditions, isInitiallyUnlisted, isScheduledRelease } =
     props
 
   const { isEnabled: isUsdcUploadEnabled } = useFlag(
@@ -60,7 +61,7 @@ export const UsdcPurchaseGatedRadioField = (
     isInitiallySpecialAccess ||
     isInitiallyCollectibleGated ||
     isRemix ||
-    !isUsdcUploadEnabled
+    !isUsdcUploadEnabled || isScheduledRelease
 
   const helpContent = (
     <div className={styles.helpContent}>

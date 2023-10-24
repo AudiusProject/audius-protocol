@@ -64,7 +64,7 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
             date={moment(field.value)}
             onDateChange={(value) => helpers.setValue(value?.toString())}
             // @ts-ignore mismatched moment versions; shouldn't be relevant here
-            isOutsideRange={(day) => !isInclusivelyBeforeDay(day, moment())}
+            isOutsideRange={() => false}
             isFocused={isFocused}
             onFocusChange={({ focused }) => setIsFocused(focused)}
             // @ts-ignore mismatched moment versions; shouldn't be relevant here
