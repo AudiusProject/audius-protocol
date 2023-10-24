@@ -8,6 +8,7 @@ import { SolanaWalletAddress, StringAudio, WalletAddress } from 'models/Wallet'
 
 import { Chain } from './Chain'
 import { PlaylistLibraryKind } from './PlaylistLibrary'
+import { TrackAccessType } from './Track'
 
 const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
 
@@ -160,6 +161,9 @@ export enum Name {
   TRACK_UPLOAD_TIP_GATED = 'Track Upload: Tip Gated',
   TRACK_UPLOAD_USDC_GATED = 'Track Upload: USDC Gated',
   TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK = 'Track Upload: Clicked USDC Waitlist Link',
+
+  // Track Edits
+  TRACK_EDIT_ACCESS_CHANGED = 'Track Edit: Access Changed',
 
   // Gated Track Listen
   LISTEN_GATED = 'Listen: Gated',
@@ -861,6 +865,14 @@ type TrackUploadUSDCGated = {
 
 type TrackUploadClickUSDCWaitListLink = {
   eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK
+}
+
+// Track Edits
+type TrackEditAccessChanged = {
+  eventName: Name.TRACK_EDIT_ACCESS_CHANGED
+  id: number
+  from: TrackAccessType
+  to: TrackAccessType
 }
 
 // Unlocked Gated Tracks
@@ -1832,6 +1844,7 @@ export type AllTrackingEvents =
   | TrackUploadTipGated
   | TrackUploadUSDCGated
   | TrackUploadClickUSDCWaitListLink
+  | TrackEditAccessChanged
   | TrackUploadSuccess
   | TrackUploadFailure
   | TrackUploadRejected
