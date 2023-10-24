@@ -3,12 +3,12 @@ import { useCallback } from 'react'
 import {
   Box,
   Button,
-  ButtonType,
   Flex,
   IconArrowRight,
   IconVisibilityHidden,
   Text
 } from '@audius/harmony'
+import { Button as ButtonTmp } from '@audius/stems'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
@@ -111,14 +111,13 @@ export const SignInPage = () => {
               </Box>
             </Formik>
           </Flex>
-          <Button
+          {/* TODO: switch to stems button when we have asChild support */}
+          <ButtonTmp
             // @ts-ignore
-            asChild={Link}
+            as={Link}
             to={SIGN_UP_PAGE}
-            variant={ButtonType.SECONDARY}
-          >
-            {messages.createAccount}
-          </Button>
+            text={messages.createAccount}
+          />{' '}
         </Flex>
       </PageWithAudiusValues>
     </Flex>
