@@ -529,7 +529,7 @@ def get_notifications(session: Session, args: GetNotificationArgs):
                 ):
                     # Filter out the notification
                     break
-                filtered.append(notification)
+            filtered.append(notification)
         return filtered
 
     return notifications_and_actions
