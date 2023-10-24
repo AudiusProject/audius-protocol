@@ -158,7 +158,7 @@ export const AudioMatchingRewardsModalContent = ({
             </div>
             {progressStatusLabel}
           </div>
-          {cooldownChallengesSummary ? (
+          {cooldownChallenges ? (
             <SummaryTable
               title={messages.upcomingRewards}
               items={cooldownChallenges}
