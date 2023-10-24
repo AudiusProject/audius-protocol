@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
+import { Name } from '@audius/common'
 import { Dimensions, View } from 'react-native'
 
 import IconCart from 'app/assets/images/iconCart.svg'
@@ -7,6 +8,7 @@ import IconStars from 'app/assets/images/iconStars.svg'
 import { Link, Tag, Text } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
+import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
@@ -77,6 +79,10 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
   const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
   const styles = useStyles()
 
+  const handlePressWaitListLink = useCallback(() => {
+    track(make({ eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK }))
+  }, [])
+
   const secondary = useColor('secondary')
   const neutral = useColor('neutral')
   const neutralLight4 = useColor('neutralLight4')
@@ -109,12 +115,12 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
     return (
       <View style={styles.waitlist}>
         <Text>{messages.waitlist}</Text>
-        <Link url={WAITLIST_TYPEFORM}>
+        <Link url={WAITLIST_TYPEFORM} onPress={handlePressWaitListLink}>
           <Text style={styles.link}>{messages.join}</Text>
         </Link>
       </View>
     )
-  }, [styles.link, styles.waitlist])
+  }, [styles.link, styles.waitlist, handlePressWaitListLink])
 
   return (
     <View style={styles.root}>

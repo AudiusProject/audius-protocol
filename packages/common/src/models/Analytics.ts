@@ -159,6 +159,7 @@ export enum Name {
   TRACK_UPLOAD_FOLLOW_GATED = 'Track Upload: Follow Gated',
   TRACK_UPLOAD_TIP_GATED = 'Track Upload: Tip Gated',
   TRACK_UPLOAD_USDC_GATED = 'Track Upload: USDC Gated',
+  TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK = 'Track Upload: Clicked USDC Waitlist Link',
 
   // Gated Track Listen
   LISTEN_GATED = 'Listen: Gated',
@@ -856,6 +857,10 @@ type TrackUploadUSDCGated = {
   eventName: Name.TRACK_UPLOAD_USDC_GATED
   price: number
   kind: 'tracks'
+}
+
+type TrackUploadClickUSDCWaitListLink = {
+  eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK
 }
 
 // Unlocked Gated Tracks
@@ -1826,6 +1831,7 @@ export type AllTrackingEvents =
   | TrackUploadFollowGated
   | TrackUploadTipGated
   | TrackUploadUSDCGated
+  | TrackUploadClickUSDCWaitListLink
   | TrackUploadSuccess
   | TrackUploadFailure
   | TrackUploadRejected
