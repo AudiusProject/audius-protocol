@@ -24,7 +24,7 @@ export const TrackPriceField = () => {
       title={messages.title}
       description={messages.description}
       name={TRACK_PRICE}
-      value={String(value)}
+      value={value}
       keyboardType='numeric'
       label={messages.label}
       placeholder={messages.placeholder}

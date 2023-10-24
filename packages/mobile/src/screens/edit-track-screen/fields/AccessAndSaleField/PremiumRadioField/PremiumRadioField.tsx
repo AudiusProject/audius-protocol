@@ -109,17 +109,18 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
     if (isPremiumContentUSDCPurchaseGated(previousPremiumConditions)) {
       return previousPremiumConditions.usdc_purchase
     }
-    return { price: 0, splits: {} }
+    return { price: null }
   }, [previousPremiumConditions])
   const [{ value: preview }] = useField(TRACK_PREVIEW)
-  const previewStartSeconds = useRef(preview ?? 0).current
+  const previewStartSeconds = useRef(preview ?? null).current
 
   useEffect(() => {
     if (selected) {
       setTrackAvailabilityFields({
         is_premium: true,
+        // @ts-ignore fully formed in saga (validated + added splits)
         premium_conditions: { usdc_purchase: selectedUsdcPurchaseValue },
-        preview_start_seconds: previewStartSeconds,
+        preview_start_seconds: null,
         'field_visibility.remixes': false
       })
     }
