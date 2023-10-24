@@ -30,35 +30,6 @@ const meta: Meta<typeof Button> = {
         <Button {...baseProps} size={ButtonSize.DEFAULT} {...props} disabled />
         <Button {...baseProps} size={ButtonSize.LARGE} {...props} disabled />
       </div>
-      <div style={{ alignItems: 'center', display: 'flex', gap: '16px' }}>
-        <Button
-          {...baseProps}
-          size={ButtonSize.SMALL}
-          {...props}
-          minWidth={123}
-          isLoading
-        >
-          Loading
-        </Button>
-        <Button
-          {...baseProps}
-          size={ButtonSize.DEFAULT}
-          {...props}
-          minWidth={180}
-          isLoading
-        >
-          Loading
-        </Button>
-        <Button
-          {...baseProps}
-          size={ButtonSize.LARGE}
-          {...props}
-          minWidth={212}
-          isLoading
-        >
-          Loading
-        </Button>
-      </div>
     </div>
   )
 }
