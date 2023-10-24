@@ -1,4 +1,6 @@
+import { expect } from '@storybook/jest'
 import type { Meta, StoryObj } from '@storybook/react'
+import { within } from '@storybook/testing-library'
 
 import { Text } from './Text'
 
@@ -60,6 +62,12 @@ export const StrongDisplay: Story = {
     color: 'heading',
     strength: 'strong',
     size: 's'
+  },
+
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    await expect(canvas.getByRole('heading', { level: 1 })).toBeInTheDocument()
   }
 }
 
