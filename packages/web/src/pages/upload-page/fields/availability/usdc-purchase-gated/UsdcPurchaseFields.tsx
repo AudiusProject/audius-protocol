@@ -99,15 +99,6 @@ const PriceField = (props: TrackAvailabilityFieldsProps) => {
     value ? decimalIntegerToHumanReadable(value) : null
   )
 
-  useEffect(() => {
-    if (humanizedValue !== null) {
-      const dehumanizedValue = decimalIntegerFromHumanReadable(humanizedValue)
-      if (value === undefined || dehumanizedValue !== value) {
-        setPrice(dehumanizedValue)
-      }
-    }
-  }, [value, humanizedValue, setPrice])
-
   const handlePriceChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       const { human, value } = filterDecimalString(e.target.value)

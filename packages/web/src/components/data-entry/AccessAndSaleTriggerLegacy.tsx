@@ -1,8 +1,13 @@
 import { useMemo } from 'react'
 
 import {
+  PremiumConditionsCollectibleGated,
+  PremiumConditionsFollowGated,
+  PremiumConditionsTipGated,
+  PremiumConditionsUSDCPurchase,
   Track,
   TrackAvailabilityType,
+  accountSelectors,
   isPremiumContentCollectibleGated,
   isPremiumContentFollowGated,
   isPremiumContentTipGated,
@@ -22,7 +27,6 @@ import {
 import { set, get } from 'lodash'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { TrackMetadataState } from 'components/track-availability-modal/types'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { defaultFieldVisibility } from 'pages/track-page/utils'
 import {
@@ -35,14 +39,15 @@ import {
   IS_UNLISTED,
   PREMIUM_CONDITIONS,
   PREVIEW,
-  PRICE,
   PRICE_HUMANIZED,
-  SPECIAL_ACCESS_TYPE
+  SPECIAL_ACCESS_TYPE,
+  getCombinedDefaultPremiumConditionValues
 } from 'pages/upload-page/fields/AccessAndSaleField'
 import { SpecialAccessType } from 'pages/upload-page/fields/availability/SpecialAccessFields'
 
-import styles from './AccessAndSaleModalLegacy.module.css'
+import styles from './AccessAndSaleTriggerLegacy.module.css'
 import { ContextualMenu } from './ContextualMenu'
+const { getUserId } = accountSelectors
 
 const messages = {
   title: 'Access & Sale',
@@ -55,7 +60,40 @@ const messages = {
   hidden: 'Hidden'
 }
 
-type AccessAndSaleModalLegacyProps = {
+import {
+  Nullable,
+  PremiumConditions
+} from '@audius/common'
+import { useSelector } from 'react-redux'
+
+enum PremiumTrackMetadataField {
+  IS_PREMIUM = 'is_premium',
+  PREMIUM_CONDITIONS = 'premium_conditions',
+  PREVIEW = 'preview_start_seconds'
+}
+
+enum UnlistedTrackMetadataField {
+  UNLISTED = 'unlisted',
+  GENRE = 'genre',
+  MOOD = 'mood',
+  TAGS = 'tags',
+  SHARE = 'share',
+  PLAYS = 'plays'
+}
+
+type TrackMetadataState = {
+  [PremiumTrackMetadataField.IS_PREMIUM]: boolean
+  [PremiumTrackMetadataField.PREMIUM_CONDITIONS]: Nullable<PremiumConditions>
+  [PremiumTrackMetadataField.PREVIEW]: Nullable<number>
+  [UnlistedTrackMetadataField.UNLISTED]: boolean
+  [UnlistedTrackMetadataField.GENRE]: boolean
+  [UnlistedTrackMetadataField.MOOD]: boolean
+  [UnlistedTrackMetadataField.TAGS]: boolean
+  [UnlistedTrackMetadataField.SHARE]: boolean
+  [UnlistedTrackMetadataField.PLAYS]: boolean
+}
+
+type AccessAndSaleTriggerLegacyProps = {
   isRemix: boolean
   isUpload: boolean
   initialForm: Track
@@ -64,8 +102,8 @@ type AccessAndSaleModalLegacyProps = {
   didUpdateState: (newState: TrackMetadataState) => void
 }
 
-export const AccessAndSaleModalLegacy = (
-  props: AccessAndSaleModalLegacyProps
+export const AccessAndSaleTriggerLegacyProps = (
+  props: AccessAndSaleTriggerLegacyProps
 ) => {
   const {
     isUpload,
@@ -75,26 +113,35 @@ export const AccessAndSaleModalLegacy = (
     trackLength,
     didUpdateState
   } = props
+  const initialPremiumConditions = initialForm[PREMIUM_CONDITIONS]
   const {
-    premium_conditions: premiumConditions,
+    premium_conditions: savedPremiumConditions,
     unlisted: isUnlisted,
     is_premium: isPremium,
     preview_start_seconds: preview,
     ...fieldVisibility
   } = metadataState
 
+  // Premium conditions from inside the modal
+  const accountUserId = useSelector(getUserId)
+  const tempPremiumConditions = {
+    ...getCombinedDefaultPremiumConditionValues(accountUserId),
+    ...savedPremiumConditions
+  }
+
   const usdcPurchaseConfig = useUSDCPurchaseConfig(useRemoteVar)
 
   const initialValues: AccessAndSaleFormValues = useMemo(() => {
-    const isUsdcGated = isPremiumContentUSDCPurchaseGated(premiumConditions)
-    const isTipGated = isPremiumContentTipGated(premiumConditions)
-    const isFollowGated = isPremiumContentFollowGated(premiumConditions)
+    const isUsdcGated = isPremiumContentUSDCPurchaseGated(savedPremiumConditions)
+    const isTipGated = isPremiumContentTipGated(savedPremiumConditions)
+    const isFollowGated = isPremiumContentFollowGated(savedPremiumConditions)
     const isCollectibleGated =
-      isPremiumContentCollectibleGated(premiumConditions)
+      isPremiumContentCollectibleGated(savedPremiumConditions)
+
     const initialValues = {}
     set(initialValues, IS_UNLISTED, isUnlisted)
     set(initialValues, IS_PREMIUM, isPremium)
-    set(initialValues, PREMIUM_CONDITIONS, premiumConditions)
+    set(initialValues, PREMIUM_CONDITIONS, tempPremiumConditions)
 
     let availabilityType = TrackAvailabilityType.PUBLIC
     if (isUsdcGated) {
@@ -102,8 +149,8 @@ export const AccessAndSaleModalLegacy = (
       set(
         initialValues,
         PRICE_HUMANIZED,
-        premiumConditions.usdc_purchase.price
-          ? (Number(premiumConditions.usdc_purchase.price) / 100).toFixed(2)
+        tempPremiumConditions.usdc_purchase.price
+          ? (Number(tempPremiumConditions.usdc_purchase.price) / 100).toFixed(2)
           : undefined
       )
     }
@@ -122,56 +169,68 @@ export const AccessAndSaleModalLegacy = (
     set(
       initialValues,
       SPECIAL_ACCESS_TYPE,
-      isTipGated ? SpecialAccessType.TIP : SpecialAccessType.FOLLOW
+      (isTipGated || isPremiumContentTipGated(initialPremiumConditions)) ? SpecialAccessType.TIP : SpecialAccessType.FOLLOW
     )
     return initialValues as AccessAndSaleFormValues
-  }, [fieldVisibility, isPremium, isUnlisted, premiumConditions, preview])
+  }, [fieldVisibility, isPremium, isUnlisted, savedPremiumConditions, tempPremiumConditions, preview])
 
   const onSubmit = (values: AccessAndSaleFormValues) => {
-    let newState = {
-      ...metadataState
-    }
-
     const availabilityType = get(values, AVAILABILITY_TYPE)
+    const preview = get(values, PREVIEW)
+    const specialAccessType = get(values, SPECIAL_ACCESS_TYPE)
+    const fieldVisibility = get(values, FIELD_VISIBILITY)
+    const premiumConditions = get(values, PREMIUM_CONDITIONS)
+
+    let newState = {
+      ...metadataState,
+      ...defaultFieldVisibility,
+      remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes
+    }
+    newState.unlisted = false
+    newState.is_premium = false
+    newState.premium_conditions = null
+    newState.preview_start_seconds = null
+
+    // For gated options, extract the correct premium conditions based on the selected availability type
     switch (availabilityType) {
-      case TrackAvailabilityType.PUBLIC: {
-        newState.is_premium = false
-        newState.unlisted = false
-        newState.premium_conditions = null
-        break
-      }
       case TrackAvailabilityType.USDC_PURCHASE: {
-        newState.is_premium = true
-        const price = Math.round(get(values, PRICE))
+        newState.preview_start_seconds = preview ?? 0
+        const { usdc_purchase: { price } } = premiumConditions as PremiumConditionsUSDCPurchase
         newState.premium_conditions = {
           // @ts-ignore splits get added in saga
-          usdc_purchase: {
-            price
-          }
+          usdc_purchase: { price: Math.round(price) }
         }
-        newState.preview_start_seconds = get(values, PREVIEW) ?? 0
-        break
-      }
-      case TrackAvailabilityType.COLLECTIBLE_GATED:
-      case TrackAvailabilityType.SPECIAL_ACCESS: {
         newState.is_premium = true
-        newState.premium_conditions = get(values, PREMIUM_CONDITIONS)
         break
       }
-    }
-
-    if (get(values, AVAILABILITY_TYPE) === TrackAvailabilityType.HIDDEN) {
-      newState = {
-        ...newState,
-        ...(get(values, FIELD_VISIBILITY) ?? undefined),
-        premium_conditions: null,
-        unlisted: true
+      case TrackAvailabilityType.SPECIAL_ACCESS: {
+        if (specialAccessType === SpecialAccessType.FOLLOW) {
+          const { follow_user_id } = premiumConditions as PremiumConditionsFollowGated
+          newState.premium_conditions = { follow_user_id }
+        } else {
+          const { tip_user_id } = premiumConditions as PremiumConditionsTipGated
+          newState.premium_conditions = { tip_user_id }
+        }
+        newState.is_premium = true
+        break
       }
-    } else {
-      newState = {
-        ...newState,
-        ...defaultFieldVisibility,
-        unlisted: false
+      case TrackAvailabilityType.COLLECTIBLE_GATED: {
+        const { nft_collection } = premiumConditions as PremiumConditionsCollectibleGated
+        newState.premium_conditions = { nft_collection }
+        newState.is_premium = true
+        break
+      }
+      case TrackAvailabilityType.HIDDEN: {
+        newState = {
+          ...newState,
+          ...(fieldVisibility ?? undefined),
+          remixes: fieldVisibility?.remixes ?? defaultFieldVisibility.remixes,
+          unlisted: true
+        }
+        break
+      }
+      case TrackAvailabilityType.PUBLIC: {
+        break
       }
     }
 
@@ -184,10 +243,10 @@ export const AccessAndSaleModalLegacy = (
     availabilityButtonTitle = messages.hidden
     AvailabilityIcon = IconHidden
   } else if (isPremium) {
-    if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+    if (isPremiumContentUSDCPurchaseGated(savedPremiumConditions)) {
       availabilityButtonTitle = messages.premium
       AvailabilityIcon = IconCart
-    } else if (isPremiumContentCollectibleGated(premiumConditions)) {
+    } else if (isPremiumContentCollectibleGated(savedPremiumConditions)) {
       availabilityButtonTitle = messages.collectibleGated
       AvailabilityIcon = IconCollectible
     } else {
@@ -212,9 +271,9 @@ export const AccessAndSaleModalLegacy = (
           isUpload={isUpload}
           isInitiallyUnlisted={initialForm[IS_UNLISTED]}
           initialPremiumConditions={
-            initialForm[PREMIUM_CONDITIONS] ?? undefined
+            initialPremiumConditions ?? undefined
           }
-          premiumConditions={metadataState.premium_conditions}
+          premiumConditions={tempPremiumConditions}
         />
       }
       renderValue={() => null}
