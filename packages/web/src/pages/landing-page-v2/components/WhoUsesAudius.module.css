@@ -71,6 +71,11 @@
   cursor: pointer;
 }
 
+.artistImageWrapper:hover {
+  opacity: 0.85;
+  transform: opacity var(--harmony-quick);
+}
+
 .artistImage {
   height: 100%;
   width: 100%;
