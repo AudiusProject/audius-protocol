@@ -6,6 +6,7 @@
   overflow: hidden;
   display: flex;
   justify-content: center;
+  height: 544px;
   box-shadow: 0px 10px 50px -2px rgba(53, 5, 152, 0.25);
 }
 
@@ -13,16 +14,11 @@
   display: inline-flex;
   width: 100%;
   justify-content: center;
+  align-self: stretch;
   align-items: center;
   z-index: 5;
-  box-shadow: 0px 10px 50px -2px rgba(53, 5, 152, 0.25);
+  box-shadow: 0px 5px 20px 0px rgba(25, 0, 96, 0.50);
   padding: 144px 168px;
-  background: linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.25) 0%,
-      rgba(0, 0, 0, 0.1) 100%
-    ),
-    linear-gradient(0deg, rgba(175, 0, 255, 0.5), rgba(175, 0, 255, 0.5));
 }
 
 .textContent {
@@ -95,11 +91,10 @@
 .background {
   position: absolute;
   z-index: 0;
-  top: 0;
+  top: -10%;
   width: 100%;
-  margin-top: -10%;
   height: 100%;
-  min-height: calc(100% + 500px);
+  min-height: calc(100% + 277px);
   object-fit: cover;
 }
 
@@ -114,6 +109,7 @@
   overflow: hidden;
   width: 100%;
   box-shadow: 0px 10px 50px -2px rgba(53, 5, 152, 0.25);
+  min-height: 216px;
 }
 
 .mobileBgImage {
@@ -126,10 +122,8 @@
 .mobileBackground {
   position: absolute;
   z-index: 0;
-  top: 0;
-  width: 220%;
-  margin: 0% -60% 0px;
-  height: 100%;
+  width: 100%;
+  height: calc(100% + 216px);
   object-fit: cover;
 }
 
@@ -138,12 +132,6 @@
   flex-direction: column;
   max-width: unset;
   padding: 48px;
-  background: linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.25) 0%,
-      rgba(0, 0, 0, 0.1) 100%
-    ),
-    linear-gradient(0deg, rgba(175, 0, 255, 0.5), rgba(175, 0, 255, 0.5));
 }
 
 .mobileContainer .ctaButton {
