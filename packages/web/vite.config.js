@@ -10,7 +10,8 @@ export default defineConfig(async () => {
   const glsl = (await import('vite-plugin-glsl')).default
   return {
     build: {
-      outDir: 'build'
+      outDir: 'build',
+      sourcemap: true
     },
     optimizeDeps: {
       esbuildOptions: {
@@ -27,7 +28,6 @@ export default defineConfig(async () => {
     },
     plugins: [
       glsl(),
-      commonjs(),
       svgr({
         include: '**/*.svg'
       }),

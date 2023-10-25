@@ -18,8 +18,8 @@ const FeedButton = ({
       darkMode={darkMode}
       onClick={onClick}
       href={href}
-      iconLightJSON={() => require('assets/animations/iconFeedLight.json')}
-      iconDarkJSON={() => require('assets/animations/iconFeedDark.json')}
+      iconLightJSON={() => import('assets/animations/iconFeedLight.json')}
+      iconDarkJSON={() => import('assets/animations/iconFeedDark.json')}
     />
   )
 }
