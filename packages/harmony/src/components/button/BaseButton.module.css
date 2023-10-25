@@ -12,21 +12,15 @@
   user-select: none;
   white-space: nowrap;
   transition: transform var(--harmony-hover);
-}
-
-.button:focus {
-  outline: none !important;
-}
-
-/* Only add hover styles on devices which support it */
-@media (hover: hover) {
-  .button:hover {
+  &:focus {
+    outline: none !important;
+  }
+  &:active {
+    transform: scale(0.98);
+  }
+  &:hover {
     transform: scale(1.04);
   }
-}
-
-.button:active {
-  transform: scale(0.98);
 }
 
 .disabled {
