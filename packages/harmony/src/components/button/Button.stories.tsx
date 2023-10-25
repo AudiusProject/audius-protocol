@@ -1,4 +1,6 @@
+import { expect } from '@storybook/jest'
 import type { Meta, StoryObj } from '@storybook/react'
+import { within } from '@storybook/testing-library'
 
 import { Button } from './Button'
 import { ButtonProps, ButtonSize, ButtonType } from './types'
@@ -55,3 +57,29 @@ export const Destructive: Story = { args: { variant: ButtonType.DESTRUCTIVE } }
 
 // Hidden text at certain widths (e.g. mobile layouts)
 export const HiddenTextAtWidth: Story = { args: { widthToHideText: 900 } }
+
+export const Link: Story = {
+  args: { asChild: true },
+  render: (props: ButtonProps) => {
+    return (
+      <Button {...props} asChild>
+        <a
+          href='/'
+          onClick={(e) => {
+            e.preventDefault()
+          }}
+          style={{ textDecorationLine: 'unset' }}
+        >
+          Click Me
+        </a>
+      </Button>
+    )
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+
+    await expect(
+      canvas.getByRole('link', { name: /click me/i })
+    ).toBeInTheDocument()
+  }
+}

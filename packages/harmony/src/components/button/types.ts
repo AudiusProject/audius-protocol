@@ -61,6 +61,12 @@ export type BaseButtonProps = {
    * Internal styling used by derived button components
    */
   styles: BaseButtonStyles
+
+  /**
+   * Change the default rendered element for the one passed as a child,
+   *  merging their props and behavior.
+   */
+  asChild?: boolean
 } & HTMLButtonProps
 
 export type ButtonProps = {

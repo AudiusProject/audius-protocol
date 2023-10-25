@@ -1,5 +1,6 @@
 /* ===Base Styles=== */
 .button {
+  font-family: var(--harmony-font-family);
   align-items: center;
   box-sizing: border-box;
   cursor: pointer;
