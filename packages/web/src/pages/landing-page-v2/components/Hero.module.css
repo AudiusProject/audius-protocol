@@ -67,8 +67,7 @@
 
 .foregroundImg {
   height: 100vh;
-  min-height: 900px;
-  transform: rotate(8.5deg);
+  min-height: 960px;
 }
 
 @media (max-width: 1387px) {
