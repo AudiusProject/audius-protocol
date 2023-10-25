@@ -1,4 +1,3 @@
-import FormData from 'form-data'
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 
 import fetch from 'cross-fetch'
