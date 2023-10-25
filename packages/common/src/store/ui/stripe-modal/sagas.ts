@@ -35,10 +35,14 @@ function* handleInitializeStripeModal({
     })
     yield* put(stripeSessionCreated({ clientSecret: res.client_secret }))
   } catch (e) {
-    const { code, message, type } = ((e as IdentityRequestError).response
-      ?.data ?? {}) as StripeSessionCreationErrorResponseData
+    const {
+      code,
+      message: errorMessage,
+      type
+    } = ((e as IdentityRequestError).response?.data ??
+      {}) as StripeSessionCreationErrorResponseData
 
-    const error = new StripeSessionCreationError(code, message, type)
+    const error = new StripeSessionCreationError(code, errorMessage, type)
 
     if (onrampFailed) {
       yield* put({
@@ -52,7 +56,7 @@ function* handleInitializeStripeModal({
       error,
       additionalInfo: {
         code,
-        message,
+        errorMessage,
         type,
         amount,
         destinationCurrency
@@ -65,7 +69,7 @@ function* handleInitializeStripeModal({
         amount,
         code,
         destinationCurrency,
-        message,
+        errorMessage,
         type
       })
     )

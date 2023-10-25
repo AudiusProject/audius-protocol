@@ -17,7 +17,7 @@ export type StripeModalState = {
   stripeClientSecret?: string
 }
 
-export type StripeSessionCreationErrorResponse = {
+export type StripeSessionCreationErrorResponseData = {
   error: string
   code: string
   message: string
@@ -27,9 +27,10 @@ export type StripeSessionCreationErrorResponse = {
 export class StripeSessionCreationError extends Error {
   constructor(
     public code: string,
-    public message: string,
+    // Avoiding `message` to not shadow the `message` property on Error
+    public errorMessage: string,
     public type: string
   ) {
-    super(`Failed to create Stripe session: ${message}`)
+    super(`Failed to create Stripe session: ${errorMessage}`)
   }
 }
