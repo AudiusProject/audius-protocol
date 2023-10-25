@@ -335,6 +335,9 @@ export enum Name {
   BUY_USDC_RECOVERY_SUCCESS = 'Buy USDC: Recovery Success',
   BUY_USDC_RECOVERY_FAILURE = 'Buy USDC: Recovery Failure',
 
+  // Stripe Tracking
+  STRIPE_SESSION_CREATION_ERROR = 'Stripe: Session Creation Error',
+
   // Purchase Content
   PURCHASE_CONTENT_STARTED = 'Purchase Content: Started',
   PURCHASE_CONTENT_SUCCESS = 'Purchase Content: Success',
@@ -1574,6 +1577,7 @@ type BuyAudioRecoveryFailure = {
   error: string
 }
 
+// Buy USDC
 type BuyUSDCOnRampOpened = {
   eventName: Name.BUY_USDC_ON_RAMP_OPENED
   provider: string
@@ -1622,6 +1626,18 @@ type BuyUSDCRecoveryFailure = {
   eventName: Name.BUY_USDC_RECOVERY_FAILURE
   error: string
 }
+
+// Stripe
+type StripeSessionCreationError = {
+  eventName: Name.STRIPE_SESSION_CREATION_ERROR
+  amount: string
+  destinationCurrency: string
+  code: string
+  message: string
+  type: string
+}
+
+// Content Purchase
 
 type ContentPurchaseMetadata = {
   price: number
@@ -1983,6 +1999,7 @@ export type AllTrackingEvents =
   | BuyUSDCRecoveryInProgress
   | BuyUSDCRecoverySuccess
   | BuyUSDCRecoveryFailure
+  | StripeSessionCreationError
   | PurchaseContentStarted
   | PurchaseContentSuccess
   | PurchaseContentFailure

@@ -1,5 +1,8 @@
+import { IdentityRequestError } from '@audius/sdk'
 import { call, takeEvery, put, select } from 'typed-redux-saga'
 
+import { Name } from 'models/Analytics'
+import { ErrorLevel } from 'models/ErrorReporting'
 import { createStripeSession } from 'services/audius-backend/stripe'
 import { getContext } from 'store/effects'
 
@@ -12,11 +15,17 @@ import {
   stripeSessionCreated,
   stripeSessionStatusChanged
 } from './slice'
+import {
+  StripeSessionCreationError,
+  StripeSessionCreationErrorResponseData
+} from './types'
 
 function* handleInitializeStripeModal({
   payload: { amount, destinationCurrency, destinationWallet }
 }: ReturnType<typeof initializeStripeModal>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const reportToSentry = yield* getContext('reportToSentry')
+  const { track, make } = yield* getContext('analytics')
   const { onrampFailed } = yield* select(getStripeModalState)
   try {
     const res = yield* call(createStripeSession, audiusBackendInstance, {
@@ -26,13 +35,40 @@ function* handleInitializeStripeModal({
     })
     yield* put(stripeSessionCreated({ clientSecret: res.client_secret }))
   } catch (e) {
-    // TODO: When we have better error messages from identity, we should extract them here so
-    // they make it into analytics.
-    // https://linear.app/audius/issue/PAY-2041/[usdc]-we-should-pipe-the-stripe-session-creation-error-back-from
+    const { code, message, type } = ((e as IdentityRequestError).response
+      ?.data ?? {}) as StripeSessionCreationErrorResponseData
+
+    const error = new StripeSessionCreationError(code, message, type)
+
     if (onrampFailed) {
-      yield* put({ type: onrampFailed.type, payload: { error: e } })
+      yield* put({
+        type: onrampFailed.type,
+        payload: { error }
+      })
     }
     yield* put(setVisibility({ modal: 'StripeOnRamp', visible: 'closing' }))
+    yield* call(reportToSentry, {
+      level: ErrorLevel.Error,
+      error,
+      additionalInfo: {
+        code,
+        message,
+        type,
+        amount,
+        destinationCurrency
+      }
+    })
+    yield* call(
+      track,
+      make({
+        eventName: Name.STRIPE_SESSION_CREATION_ERROR,
+        amount,
+        code,
+        destinationCurrency,
+        message,
+        type
+      })
+    )
   }
 }
 
