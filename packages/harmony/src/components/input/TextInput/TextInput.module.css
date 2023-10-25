@@ -2,11 +2,13 @@
 .root {
   /* This isolates z-index to only affect this component */
   isolation: isolate;
+  width: 100%;
 }
 
 /* The contentContainer is the root container of all things that aren't assistive text */
 .contentContainer {
   display: flex;
+  width: 100%;
   align-items: center;
   /* Dont need Y padding since the flex centering takes care of it */
   padding: 0 var(--harmony-spacing-l);

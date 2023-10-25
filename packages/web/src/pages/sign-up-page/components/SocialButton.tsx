@@ -12,7 +12,7 @@ import styles from './SocialButton.module.css'
 type SocialMedia = 'tiktok' | 'instagram' | 'twitter'
 
 export type SocialButtonProps = ButtonProps & {
-  type: SocialMedia
+  socialType: SocialMedia
 }
 
 const getButtonLogo = (type: SocialMedia) => {
@@ -29,10 +29,13 @@ const getButtonLogo = (type: SocialMedia) => {
 }
 
 export const SocialButton = (props: SocialButtonProps) => {
-  const { type, className, ...rest } = props
+  const { socialType, className, ...rest } = props
   return (
-    <Button {...rest} className={cn(styles.root, styles[type], className)}>
-      {getButtonLogo(type)}
+    <Button
+      {...rest}
+      className={cn(styles.root, styles[socialType], className)}
+    >
+      {getButtonLogo(socialType)}
     </Button>
   )
 }

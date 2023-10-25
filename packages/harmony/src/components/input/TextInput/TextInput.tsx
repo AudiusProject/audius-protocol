@@ -123,7 +123,12 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
     )
 
     return (
-      <Flex className={cn(styles.root, className)} direction='column' gap='xs'>
+      <Flex
+        className={cn(styles.root, className)}
+        direction='column'
+        gap='xs'
+        alignItems='flex-start'
+      >
         <label
           htmlFor={id}
           className={cn(
