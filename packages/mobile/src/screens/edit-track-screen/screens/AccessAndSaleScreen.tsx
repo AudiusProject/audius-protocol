@@ -9,8 +9,7 @@ import {
   FeatureFlags,
   removeNullable,
   isPremiumContentUSDCPurchaseGated,
-  useAccessAndRemixSettings,
-  useUSDCPurchaseConfig
+  useAccessAndRemixSettings
 } from '@audius/common'
 import { useField, useFormikContext } from 'formik'
 
@@ -19,7 +18,7 @@ import IconCart from 'app/assets/images/iconCart.svg'
 import { Button } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { TopBarIconButton } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
 
@@ -32,6 +31,8 @@ import type { FormValues, RemixOfField } from '../types'
 
 import type { ListSelectionData } from './ListSelectionScreen'
 import { ListSelectionScreen } from './ListSelectionScreen'
+import { TRACK_PREVIEW } from '../fields/AccessAndSaleField/PremiumRadioField/TrackPreviewField'
+import { TRACK_PRICE } from '../fields/AccessAndSaleField/PremiumRadioField/TrackPriceField'
 
 const messages = {
   title: 'Access & Sale',
@@ -219,25 +220,25 @@ export const AccessAndSaleScreen = () => {
   /**
    * Do not navigate back if:
    * - track is collectible gated and user has not selected an nft collection, or
-   * - track is usdc purchase gated and user has not selected a valid price
+   * - track is usdc purchase gated and user has not selected a valid price or preview
    */
-  const { minContentPriceCents, maxContentPriceCents } =
-    useUSDCPurchaseConfig(useRemoteVar)
-  const usdcGateHasInvalidPrice = useMemo(() => {
-    return (
-      isPremiumContentUSDCPurchaseGated(premiumConditions) &&
-      (premiumConditions.usdc_purchase.price < minContentPriceCents / 100 ||
-        premiumConditions.usdc_purchase.price > maxContentPriceCents / 100)
-    )
-  }, [premiumConditions, minContentPriceCents, maxContentPriceCents])
-  const collectibleGateHasNoSelectedCollection = useMemo(() => {
-    return (
-      isPremiumContentCollectibleGated(premiumConditions) &&
-      !premiumConditions.nft_collection
-    )
-  }, [premiumConditions])
+  const [{ value: price}, { error: priceError }] = useField(TRACK_PRICE)
+  const [{ value: preview}, { error: previewError }] = useField(TRACK_PREVIEW)
+
+  const usdcGateIsInvalid = useMemo(() => {
+      // first time user selects usdc purchase option
+      const priceNotSet = price === null
+      const previewNotSet = preview === null
+      return isPremiumContentUSDCPurchaseGated(premiumConditions) && (!!priceError || priceNotSet || !!previewError || previewNotSet)
+    },
+    [premiumConditions, price, priceError, preview, previewError]
+  )
+  const collectibleGateHasNoSelectedCollection = useMemo(
+    () => isPremiumContentCollectibleGated(premiumConditions) && !premiumConditions.nft_collection,
+    [premiumConditions]
+  )
   const isFormInvalid =
-    usdcGateHasInvalidPrice || collectibleGateHasNoSelectedCollection
+    usdcGateIsInvalid || collectibleGateHasNoSelectedCollection
 
   const goBack = useCallback(() => {
     navigation.goBack()

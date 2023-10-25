@@ -130,6 +130,8 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
     selectedUsdcPurchaseValue,
     setTrackAvailabilityFields
   ])
+  const [{ value: premiumConditions }] = useField('premium_conditions')
+  console.log("YOOOOOO", {preview, premiumConditions})
 
   const renderHelpCalloutContent = useCallback(() => {
     return (
