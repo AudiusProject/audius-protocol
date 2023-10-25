@@ -374,7 +374,10 @@ export enum StringKeys {
   AUDIO_FEATURES_DEGRADED_TEXT = 'AUDIO_FEATURES_DEGRADED_TEXT',
 
   /** Preset amounts for the Pay Extra feature in USDC purchases, specified in cents */
-  PAY_EXTRA_PRESET_CENT_AMOUNTS = 'PAY_EXTRA_PRESET_CENT_AMOUNTS'
+  PAY_EXTRA_PRESET_CENT_AMOUNTS = 'PAY_EXTRA_PRESET_CENT_AMOUNTS',
+
+  /** Allowlist of user ids for explore premium tracks page */
+  EXPLORE_PREMIUM_ALLOWED_USERS = 'EXPLORE_PREMIUM_ALLOWED_USERS'
 }
 
 export type AllRemoteConfigKeys =
