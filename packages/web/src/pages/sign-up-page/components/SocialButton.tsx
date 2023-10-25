@@ -34,6 +34,7 @@ export const SocialButton = (props: SocialButtonProps) => {
     <Button
       {...rest}
       className={cn(styles.root, styles[socialType], className)}
+      aria-label={`Sign in with ${socialType}`}
     >
       {getButtonLogo(socialType)}
     </Button>

@@ -17,13 +17,13 @@ import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
+import { setValueField } from 'common/store/pages/signon/actions'
 import { Link } from 'components/link'
+import PreloadImage from 'components/preload-image/PreloadImage'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { EMAIL_REGEX } from 'utils/email'
+import { SIGN_IN_PAGE } from 'utils/route'
 
-import { setValueField } from '../../../common/store/pages/signon/actions'
-import PreloadImage from '../../../components/preload-image/PreloadImage'
-import { useNavigateToPage } from '../../../hooks/useNavigateToPage'
-import { EMAIL_REGEX } from '../../../utils/email'
-import { SIGN_IN_PAGE } from '../../../utils/route'
 import { SocialButton } from '../components/SocialButton'
 
 import { CreatePasswordState } from './CreatePasswordPage'
@@ -189,8 +189,9 @@ export const SignUpPage = (props: SignUpPageProps) => {
               {messages.signUp}
             </Button>
 
-            <Text variant='body' size='l' tag='p' color='default'>
+            <Text size='l'>
               {messages.haveAccount}{' '}
+              {/* TODO [C-3278]: Update with Harmony Link */}
               <Link
                 to={SIGN_IN_PAGE}
                 variant='body'
