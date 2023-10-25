@@ -15,6 +15,8 @@
     "test": "test-storybook",
     "lint": "eslint src --ext=ts,tsx",
     "lint:fix": "npm run lint -- --fix",
+    "stylelint": "stylelint 'src/**/*.css'",
+    "stylelint:fix": "npm run stylelint -- --fix",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "chromatic": "chromatic"
