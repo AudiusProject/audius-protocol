@@ -55,7 +55,7 @@ function* filterDeletes(tracksMetadata, removeDeleted, lineupPrefix) {
   const isUSDCGatedContentEnabled = yield getFeatureEnabled(
     FeatureFlags.USDC_PURCHASES
   )
-  const allowedHandles = yield remoteConfig
+  const allowedHandles = remoteConfig
     .getRemoteVar(StringKeys.EXPLORE_PREMIUM_ALLOWED_USERS)
     ?.split(',')
 
