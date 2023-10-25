@@ -16,7 +16,8 @@ import {
   FeatureFlags,
   isPremiumContentUSDCPurchaseGated,
   doesUserHaveTrackAccess,
-  StringKeys
+  StringKeys,
+  premiumTracksPageLineupActions
 } from '@audius/common'
 import {
   all,
@@ -44,7 +45,7 @@ const getEntryId = (entry) => `${entry.kind}:${entry.id}`
 
 const flatten = (list) =>
   list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), [])
-function* filterDeletes(tracksMetadata, removeDeleted) {
+function* filterDeletes(tracksMetadata, removeDeleted, lineupPrefix) {
   const tracks = yield select(getTracks)
   const users = yield select(getUsers)
   const remoteConfig = yield getContext('remoteConfigInstance')
@@ -54,10 +55,9 @@ function* filterDeletes(tracksMetadata, removeDeleted) {
   const isUSDCGatedContentEnabled = yield getFeatureEnabled(
     FeatureFlags.USDC_PURCHASES
   )
-  const allowedIds = yield remoteConfig
-    .getRemoteVar(StringKeys.EXPLORE_PREMIUM_ALLOWED_USER_IDS)
+  const allowedHandles = yield remoteConfig
+    .getRemoteVar(StringKeys.EXPLORE_PREMIUM_ALLOWED_USERS)
     ?.split(',')
-    .map((id) => parseInt(id))
 
   return tracksMetadata
     .map((metadata) => {
@@ -78,10 +78,13 @@ function* filterDeletes(tracksMetadata, removeDeleted) {
         return null
       }
 
+      // Only allow a whitelist of artists to be featured on premium tracks explore page. TODO:
+      // https://linear.app/audius/issue/PAY-2085/update-whitelist-of-artists-to-feature-on-explore-premium-tracks-page
       if (
+        lineupPrefix === premiumTracksPageLineupActions.prefix &&
         metadata.is_premium &&
         isPremiumContentUSDCPurchaseGated(metadata.premium_conditions) &&
-        !allowedIds.includes(metadata.owner_id)
+        !allowedHandles.includes(users[metadata.owner_id].handle)
       ) {
         return null
       }
@@ -209,7 +212,8 @@ function* fetchLineupMetadatasAsync(
       const responseFilteredDeletes = yield call(
         filterDeletes,
         lineupMetadatasResponse,
-        removeDeleted
+        removeDeleted,
+        lineupPrefix
       )
 
       const nullCount = lineupMetadatasResponse.reduce(
