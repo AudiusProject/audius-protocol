@@ -35,9 +35,6 @@ const TypographyMeta = {
       description: 'Text',
       control: { type: 'text' }
     }
-  },
-  parameters: {
-    notes: 'What'
   }
 }
 
