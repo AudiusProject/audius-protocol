@@ -1,7 +1,7 @@
 {
   "name": "@audius/harmony",
   "version": "0.0.5",
-  "description": "Audius Design System Component Library",
+  "description": "The Audius Design System",
   "main": "dist/index.es.js",
   "types": "dist/index.d.ts",
   "module": "dist/index.es.js",
@@ -15,11 +15,15 @@
     "test": "test-storybook",
     "lint": "eslint src --ext=ts,tsx",
     "lint:fix": "npm run lint -- --fix",
+    "stylelint": "stylelint 'src/**/*.css'",
+    "stylelint:fix": "npm run stylelint -- --fix",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "chromatic": "chromatic"
+    "chromatic": "chromatic",
+    "typecheck": "tsc --noEmit",
+    "verify": "concurrently \"npm:typecheck\" \"npm:lint:fix\" \"npm:stylelint:fix\""
   },
-  "author": "KJ Shanks",
+  "author": "Audius",
   "license": "ISC",
   "devDependencies": {
     "@babel/preset-env": "7.22.15",
