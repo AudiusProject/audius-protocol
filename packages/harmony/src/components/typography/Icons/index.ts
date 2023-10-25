@@ -209,3 +209,4 @@ export { ReactComponent as IconWithdraw } from '../../../assets/icons/Withdraw.s
 export { ReactComponent as IconFeed } from '../../../assets/icons/Feed.svg'
 export { ReactComponent as IconSave } from '../../../assets/icons/Save.svg'
 export { ReactComponent as IconrecoveryEmail } from '../../../assets/icons/recoveryEmail.svg'
+export { ReactComponent as IconHeadphones } from '../../../assets/icons/Headphones.svg'

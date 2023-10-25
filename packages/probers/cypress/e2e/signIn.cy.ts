@@ -23,7 +23,7 @@ describe('Sign In', () => {
     assertOnSignInPage()
   })
 
-  it.only('can navigate to sign-in from sign-up', () => {
+  it('can navigate to sign-in from sign-up', () => {
     cy.visit('signup')
     cy.findByText(/already have an account?/i)
     cy.findByRole('link', { name: /Sign In/ }).click()
