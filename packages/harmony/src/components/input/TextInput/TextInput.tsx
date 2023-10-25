@@ -128,6 +128,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
         direction='column'
         gap='xs'
         alignItems='flex-start'
+        w='100%'
       >
         <label
           htmlFor={id}

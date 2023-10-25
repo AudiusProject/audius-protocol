@@ -2,7 +2,6 @@
 .root {
   /* This isolates z-index to only affect this component */
   isolation: isolate;
-  width: 100%;
 }
 
 /* The contentContainer is the root container of all things that aren't assistive text */

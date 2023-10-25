@@ -3,8 +3,8 @@ import { createApi } from '@audius/common'
 const signUpApi = createApi({
   reducerPath: 'signUpApi',
   endpoints: {
-    emailInUse: {
-      fetch: async (email, { audiusBackend }) => {
+    isEmailInUse: {
+      fetch: async ({ email }, { audiusBackend }) => {
         return await audiusBackend.emailInUse(email)
       },
       options: {
@@ -14,5 +14,6 @@ const signUpApi = createApi({
   }
 })
 
-export const { useEmailInUse } = signUpApi.hooks
+export const { useIsEmailInUse } = signUpApi.hooks
 export const signUpReducer = signUpApi.reducer
+  

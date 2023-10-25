@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react'
 
 import { Status } from '@audius/common'
-import { useEmailInUse } from '@audius/common/src/api/signUp'
+import { useIsEmailInUse } from '@audius/common/src/api/signUp'
 import {
   Button,
   ButtonType,
@@ -11,7 +11,7 @@ import {
   Text,
   TextInput
 } from '@audius/harmony'
-import { useFormik } from 'formik'
+import { FormikHelpers, useFormik } from 'formik'
 import { useDispatch } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -69,15 +69,18 @@ export const SignUpPage = (props: SignUpPageProps) => {
   const { onNext } = props
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
-  const [checkEmailInUse, result] = useEmailInUse()
+  const [checkIsEmailInUse, result] = useIsEmailInUse()
   const { data: emailExists, status: emailApiStatus, errorMessage } = result
   const submitHandler = useCallback(
-    (values: SignUpEmailValues) => {
+    (
+      values: SignUpEmailValues,
+      { setSubmitting }: FormikHelpers<SignUpEmailValues>
+    ) => {
       const { email } = values
-      checkEmailInUse(email)
-      dispatch(setValueField('email', email))
+      setSubmitting(true)
+      checkIsEmailInUse({ email })
     },
-    [dispatch, checkEmailInUse]
+    [checkIsEmailInUse]
   )
   const formikForm = useFormik({
     initialValues,
@@ -93,19 +96,24 @@ export const SignUpPage = (props: SignUpPageProps) => {
     touched,
     errors,
     handleSubmit,
-    setErrors
+    setErrors,
+    isSubmitting,
+    setSubmitting
   } = formikForm
-
-  const isLoading = emailApiStatus === Status.LOADING
 
   // Check for API status changes (occurs after form submit)
   useEffect(() => {
+    if (emailApiStatus !== Status.LOADING) {
+      setSubmitting(false)
+    }
     // Unknown error state
     if (emailApiStatus === Status.ERROR) {
       setErrors({ email: messages.unknownError })
       return
     }
+    // Succesful API return
     if (emailApiStatus === Status.SUCCESS) {
+      dispatch(setValueField('email', values.email))
       if (emailExists) {
         // Redirect to sign in if the email exists already
         navigate(SIGN_IN_PAGE)
@@ -114,97 +122,98 @@ export const SignUpPage = (props: SignUpPageProps) => {
         onNext({ stage: 'create-password' })
       }
     }
-  }, [emailApiStatus, errorMessage, emailExists, onNext, navigate, setErrors])
+  }, [
+    emailApiStatus,
+    errorMessage,
+    emailExists,
+    onNext,
+    navigate,
+    setErrors,
+    setSubmitting,
+    dispatch,
+    values
+  ])
 
   return (
-    <>
-      <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit}>
+      <Flex direction='column' alignItems='center' ph='2xl' pv='4xl' gap='2xl'>
+        <PreloadImage
+          src={audiusLogoColored}
+          className={styles.logo}
+          alt='Audius Colored Logo'
+        />
         <Flex
           direction='column'
-          alignItems='center'
-          ph='2xl'
-          pv='4xl'
-          gap='2xl'
+          gap='l'
+          alignItems='flex-start'
+          w='100%'
+          className={styles.leftAlignText}
         >
-          <PreloadImage
-            src={audiusLogoColored}
-            className={styles.logo}
-            alt='Audius Colored Logo'
+          <Text color='heading' size='l' variant='heading' tag='h1'>
+            {messages.title}
+          </Text>
+          <Text color='default' size='l' variant='body' tag='h2'>
+            {messages.subHeader}
+          </Text>
+        </Flex>
+        <Flex direction='column' gap='l' w='100%' alignItems='flex-start'>
+          <TextInput
+            name='email'
+            autoFocus
+            autoComplete='email'
+            label={messages.emailLabel}
+            error={!!errors.email && touched.email}
+            helperText={
+              errors.email && touched.email ? errors.email : undefined
+            }
+            onChange={(e) => {
+              // Clear errors on user change (Formik doesn't have an out of the box way to do this for you)
+              setErrors({ email: undefined })
+              handleChange(e)
+            }}
+            onBlur={handleBlur}
+            value={values.email}
+            disabled={isSubmitting}
           />
-          <Flex
-            direction='column'
-            gap='l'
-            alignItems='flex-start'
-            w='100%'
-            className={styles.leftAlignText}
-          >
-            <Text color='heading' size='l' variant='heading' tag='h1'>
-              {messages.title}
+          <Flex w='100%' alignItems='center' gap='s'>
+            <Divider className={styles.flex1} />
+            <Text variant='body' size='m' tag='p' color='subdued'>
+              {messages.dividerText}
             </Text>
-            <Text color='default' size='l' variant='body' tag='h2'>
-              {messages.subHeader}
-            </Text>
+            <Divider className={styles.flex1} />
           </Flex>
-          <Flex direction='column' gap='l' w='100%' alignItems='flex-start'>
-            <TextInput
-              name='email'
-              autoFocus
-              autoComplete='email'
-              label={messages.emailLabel}
-              error={!!errors.email && touched.email}
-              helperText={
-                errors.email && touched.email ? errors.email : undefined
-              }
-              className={styles.w100}
-              onChange={(e) => {
-                // Clear errors on user change (Formik doesn't have an out of the box way to do this for you)
-                setErrors({ email: undefined })
-                handleChange(e)
-              }}
-              onBlur={handleBlur}
-              value={values.email}
-              disabled={isLoading}
-            />
-            <Flex w='100%' alignItems='center' gap='s'>
-              <Divider className={styles.flex1} />
-              <Text variant='body' size='m' tag='p' color='subdued'>
-                {messages.dividerText}
-              </Text>
-              <Divider className={styles.flex1} />
-            </Flex>
-            <Flex gap='s' w='100%' direction='row'>
-              <SocialButton socialType='twitter' className={styles.flex1} />
-              <SocialButton socialType='instagram' className={styles.flex1} />
-              <SocialButton socialType='tiktok' className={styles.flex1} />
-            </Flex>
-          </Flex>
-          <Flex direction='column' gap='l' alignItems='flex-start' w='100%'>
-            <Button
-              variant={ButtonType.PRIMARY}
-              type='submit'
-              fullWidth
-              iconRight={IconArrowRight}
-              isLoading={isLoading}
-            >
-              {messages.signUp}
-            </Button>
-
-            <Text size='l'>
-              {messages.haveAccount}{' '}
-              {/* TODO [C-3278]: Update with Harmony Link */}
-              <Link
-                to={SIGN_IN_PAGE}
-                variant='body'
-                size='medium'
-                strength='strong'
-                color='secondary'
-              >
-                {messages.signIn}
-              </Link>
-            </Text>
+          <Flex direction='row' gap='s' w='100%'>
+            <SocialButton socialType='twitter' className={styles.flex1} />
+            <SocialButton socialType='instagram' className={styles.flex1} />
+            <SocialButton socialType='tiktok' className={styles.flex1} />
           </Flex>
         </Flex>
-      </form>
-    </>
+        <Flex direction='column' gap='l' alignItems='flex-start' w='100%'>
+          <Button
+            variant={ButtonType.PRIMARY}
+            type='submit'
+            fullWidth
+            iconRight={IconArrowRight}
+            isLoading={isSubmitting}
+          >
+            {messages.signUp}
+          </Button>
+
+          <Text size='l'>
+            {messages.haveAccount}{' '}
+            {/* TODO [C-3278]: Update with Harmony Link */}
+            <Link
+              to={SIGN_IN_PAGE}
+              variant='body'
+              size='medium'
+              strength='strong'
+              color='secondary'
+            >
+              {messages.signIn}
+            </Link>
+          </Text>
+        </Flex>
+      </Flex>
+    </form>
   )
 }
