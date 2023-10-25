@@ -17,7 +17,7 @@
   align-self: stretch;
   align-items: center;
   z-index: 5;
-  box-shadow: 0px 5px 20px 0px rgba(25, 0, 96, 0.50);
+  box-shadow: 0px 5px 20px 0px rgba(25, 0, 96, 0.5);
   padding: 144px 168px;
 }
 
@@ -31,7 +31,7 @@
   font-size: 72px;
   font-weight: 700;
   line-height: 88px;
-  text-shadow: 0px 5px 20px rgba(25, 0, 96, 0.50);
+  text-shadow: 0px 5px 20px rgba(25, 0, 96, 0.5);
   margin-bottom: 32px;
 }
 
