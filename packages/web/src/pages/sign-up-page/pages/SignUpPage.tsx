@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
+import { Status } from '@audius/common'
 import { useEmailInUse } from '@audius/common/src/api/signUp'
 import {
   Button,
@@ -37,7 +38,8 @@ const messages = {
   subHeader:
     'Join the revolution in music streaming! Discover, connect, and create on Audius.',
   dividerText: 'Or, get started with one of your socials',
-  invalidEmail: 'Please enter a valid email.'
+  invalidEmail: 'Please enter a valid email.',
+  unknownError: 'Unknown error occurred.'
 }
 
 export type SignUpState = {
@@ -94,22 +96,25 @@ export const SignUpPage = (props: SignUpPageProps) => {
     setErrors
   } = formikForm
 
-  const isLoading = emailApiStatus === 'LOADING'
+  const isLoading = emailApiStatus === Status.LOADING
 
+  // Check for API status changes (occurs after form submit)
   useEffect(() => {
-    if (
-      emailApiStatus === 'ERROR' ||
-      (emailApiStatus === 'SUCCESS' && emailExists)
-    ) {
-      // Redirect to sign in if the email exists already
-      navigate(SIGN_IN_PAGE)
+    // Unknown error state
+    if (emailApiStatus === Status.ERROR) {
+      setErrors({ email: messages.unknownError })
       return
     }
-    if (emailApiStatus === 'SUCCESS') {
-      // Move onto the password page
-      onNext({ stage: 'create-password' })
+    if (emailApiStatus === Status.SUCCESS) {
+      if (emailExists) {
+        // Redirect to sign in if the email exists already
+        navigate(SIGN_IN_PAGE)
+      } else {
+        // Move onto the password page
+        onNext({ stage: 'create-password' })
+      }
     }
-  }, [emailApiStatus, errorMessage, emailExists, onNext, navigate])
+  }, [emailApiStatus, errorMessage, emailExists, onNext, navigate, setErrors])
 
   return (
     <>
