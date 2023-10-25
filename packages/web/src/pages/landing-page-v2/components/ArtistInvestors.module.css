@@ -63,6 +63,7 @@
 }
 
 .artistImageWrapper {
+  border: 2px solid var(--harmony-border-strong);
   border-radius: 50%;
   height: 192px;
   width: 192px;
