@@ -1,5 +1,8 @@
+import { useCallback } from 'react'
+
 import {
   FeatureFlags,
+  Name,
   PremiumConditions,
   TrackAvailabilityType,
   isPremiumContentCollectibleGated,
@@ -11,6 +14,7 @@ import { IconCart, IconStars } from '@audius/stems'
 import { ExternalLink } from 'components/link'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import { useFlag } from 'hooks/useRemoteConfig'
+import { make, track } from 'services/analytics'
 
 import { UsdcPurchaseFields } from './UsdcPurchaseFields'
 import styles from './UsdcPurchaseGatedRadioField.module.css'
@@ -40,6 +44,10 @@ export const UsdcPurchaseGatedRadioField = (
   const { isRemix, isUpload, initialPremiumConditions, isInitiallyUnlisted } =
     props
 
+  const handleClickWaitListLink = useCallback(() => {
+    track(make({ eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK }))
+  }, [])
+
   const { isEnabled: isUsdcUploadEnabled } = useFlag(
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
@@ -66,6 +74,7 @@ export const UsdcPurchaseGatedRadioField = (
     <div className={styles.helpContent}>
       <div>{messages.waitlist}</div>
       <ExternalLink
+        onClick={handleClickWaitListLink}
         className={styles.link}
         to={WAITLIST_TYPEFORM}
         target='_blank'
