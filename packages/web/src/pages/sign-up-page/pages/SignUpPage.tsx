@@ -7,8 +7,7 @@ import {
   Divider,
   Flex,
   IconArrowRight,
-  Text,
-  TextInput
+  Text
 } from '@audius/harmony'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { useDispatch } from 'react-redux'
@@ -17,6 +16,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { setValueField } from 'common/store/pages/signon/actions'
+import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { Link } from 'components/link'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
@@ -108,15 +108,7 @@ export const SignUpPage = (props: SignUpPageProps) => {
       validateOnBlur
       validateOnChange={false}
     >
-      {({
-        values,
-        handleChange,
-        handleBlur,
-        touched,
-        errors,
-        setErrors,
-        isSubmitting
-      }) => (
+      {({ isSubmitting }) => (
         <Form>
           <Flex
             direction='column'
@@ -145,23 +137,11 @@ export const SignUpPage = (props: SignUpPageProps) => {
               </Text>
             </Flex>
             <Flex direction='column' gap='l' w='100%' alignItems='flex-start'>
-              <TextInput
+              <HarmonyTextField
                 name='email'
                 autoFocus
                 autoComplete='email'
                 label={messages.emailLabel}
-                error={!!errors.email && touched.email}
-                helperText={
-                  errors.email && touched.email ? errors.email : undefined
-                }
-                onChange={(e) => {
-                  // Clear errors on user change (Formik doesn't have an out of the box way to do this for you)
-                  setErrors({ email: undefined })
-                  handleChange(e)
-                }}
-                onBlur={handleBlur}
-                value={values.email}
-                disabled={isSubmitting}
               />
               <Flex w='100%' alignItems='center' gap='s'>
                 <Divider className={styles.flex1} />
