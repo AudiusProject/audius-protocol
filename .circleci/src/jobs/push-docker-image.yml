@@ -18,7 +18,7 @@ steps:
       command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
   - run: 
       name: Docker buildx config
-      command: docker buildx create --use
+      command: docker buildx create --platform linux/arm64,linux/amd64 --use
   - run: docker version
   - run: docker context ls
   - run: docker buildx ls
