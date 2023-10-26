@@ -1,0 +1,15 @@
+parameters:
+  service:
+    description: 'Service to push'
+    type: string
+resource_class: arm.medium
+machine:
+  image: ubuntu-2204:current
+steps:
+  - checkout:
+      path: '~/audius-protocol'
+  - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
+  - run:
+      name: Docker login
+      command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  - run: echo "will this run?"

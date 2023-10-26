@@ -80,6 +80,18 @@ jobs:
       requires:
         - lint-discovery-provider
 
+  - push-arm-image:
+      name: push-discovery-provider-arm
+      context: [Vercel, dockerhub]
+      service: discovery-provider
+      filters:
+        branches:
+          only: as/proto-1373-adc-arm
+      requires:
+        - push-discovery-provider
+
+
+
   # Deploy audius-protocol `main` branch (stage)
   - deploy-stage-nodes:
       name: deploy-stage-discovery-provider
