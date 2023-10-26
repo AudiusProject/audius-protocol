@@ -22,8 +22,6 @@ import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
 
 import { retrieveCollections } from '../cache/collections/utils'
 
-import disconnectedWallets from './disconnected_wallet_fix.json'
-
 const { fetchProfile } = profilePageActions
 const { getFeePayer } = solanaSelectors
 const { fetchBlockees, fetchBlockers } = chatActions
@@ -129,44 +127,6 @@ function* onSignedIn({ payload: { account } }) {
       recordAnalytics: analytics.track,
       feePayerOverride
     })
-  }
-
-  // Repair users from flare-101 that were impacted and lost connected wallets
-  // TODO: this should be removed after sufficient time has passed or users have gotten
-  // reconnected.
-  if (account.user_id in disconnectedWallets) {
-    const cid = account.metadata_multihash ?? null
-    if (cid) {
-      const contentNodeMetadata = yield call(
-        audiusBackendInstance.fetchCID,
-        cid,
-        /* cache */ false,
-        /* asUrl */ false
-      )
-      const newMetadata = {
-        ...account
-      }
-      let requiresUpdate = false
-      if (
-        contentNodeMetadata.associated_wallets === null &&
-        disconnectedWallets[account.user_id].associated_wallets !== null
-      ) {
-        requiresUpdate = true
-        newMetadata.associated_wallets =
-          disconnectedWallets[account.user_id].associated_wallets
-      }
-      if (
-        contentNodeMetadata.associated_sol_wallets === null &&
-        disconnectedWallets[account.user_id].associated_sol_wallets !== null
-      ) {
-        requiresUpdate = true
-        newMetadata.associated_sol_wallets =
-          disconnectedWallets[account.user_id].associated_sol_wallets
-      }
-      if (requiresUpdate) {
-        yield fork(updateProfileAsync, { metadata: newMetadata })
-      }
-    }
   }
 }
 
