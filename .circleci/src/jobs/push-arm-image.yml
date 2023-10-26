@@ -12,4 +12,6 @@ steps:
   - run:
       name: Docker login
       command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-  - run: echo "will this run?"
+  - run: . ~/.profile; audius-compose build --prod "<< parameters.service >>"
+  - run: docker inspect --format='{{.Os}}/{{.Architecture}}' audius-protocol-discovery-provider
+
