@@ -3,13 +3,13 @@ import vertexShader from './vert.glsl'
 import fragmentShader from './frag.glsl'
 
 //var glslify = require('glslify')
-var Quad = require('gl-quad')
-var inherits = require('inherits')
+import Quad from 'gl-quad'
+import inherits from 'inherits'
 
-const createShader = require('gl-shader')
+import createShader from 'gl-shader'
 
-var toIdentity = require('gl-mat4/identity')
-var mat4 = require('gl-mat4/create')
+import toIdentity from 'gl-mat4/identity'
+import mat4 from 'gl-mat4/create'
 
 function Vignette(gl, options) {
   if (!(this instanceof Vignette)) return new Vignette(gl, options)
