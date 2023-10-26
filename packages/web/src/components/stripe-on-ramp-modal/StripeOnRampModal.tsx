@@ -22,7 +22,6 @@ const MountStripeSession = ({ session }: { session: OnrampSession }) => {
   const handleSessionUpdate = useCallback(
     (e: any) => {
       if (e?.payload?.session) {
-        console.debug('BZZT', e.payload.session)
         dispatch(stripeSessionStatusChanged({ session: e.payload.session }))
       }
     },
