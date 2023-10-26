@@ -69,8 +69,8 @@ RUN bash scripts/init-db.sh
 COPY --from=contracts /usr/src/app/build/contracts/ build/contracts/
 
 COPY requirements.txt requirements.txt
-RUN --mount=type=cache,target=/root/.cache \
-    python3 -m pip install -r requirements.txt --no-cache-dir
+# RUN --mount=type=cache,target=/root/.cache \
+RUN python3 -m pip install -r requirements.txt --no-cache-dir
 
 COPY . .
 RUN --mount=type=cache,target=/root/.npm cd es-indexer && npm ci && npm run build
