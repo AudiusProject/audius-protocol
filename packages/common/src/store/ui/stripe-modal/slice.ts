@@ -26,6 +26,8 @@ const slice = createSlice({
       action: PayloadAction<InitializeStripeModalPayload>
     ) => {
       state.stripeSessionStatus = 'initialized'
+      state.stripeSessionData = undefined
+      state.previousStripeSessionData = undefined
       state.onrampFailed = action.payload.onrampFailed
       state.onrampSucceeded = action.payload.onrampSucceeded
       state.onrampCanceled = action.payload.onrampCanceled

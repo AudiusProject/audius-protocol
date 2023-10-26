@@ -338,11 +338,12 @@ export enum Name {
   // Stripe Tracking
   STRIPE_SESSION_CREATION_ERROR = 'Stripe: Session Creation Error',
   STRIPE_SESSION_CREATED = 'Stripe Session: Created',
-  STRIPE_REQUIRES_PAYMENT = 'Stripe: Requires Payment',
-  STRIPE_FULLFILMENT_PROCESSING = 'Stripe: Fulfillment Processing',
-  STRIPE_FULLFILMENT_COMPLETE = 'Stripe: Fulfillment Complete',
-  STRIPE_ERROR = 'Stripe: Error',
-  STRIPE_REJECTED = 'Stripe: Rejected',
+  STRIPE_MODAL_INITIALIZED = 'Stripe Modal: Initialized',
+  STRIPE_REQUIRES_PAYMENT = 'Stripe Modal: Requires Payment',
+  STRIPE_FULLFILMENT_PROCESSING = 'Stripe Modal: Fulfillment Processing',
+  STRIPE_FULLFILMENT_COMPLETE = 'Stripe Modal: Fulfillment Complete',
+  STRIPE_ERROR = 'Stripe Modal: Error',
+  STRIPE_REJECTED = 'Stripe Modal: Rejected',
 
   // Purchase Content
   PURCHASE_CONTENT_STARTED = 'Purchase Content: Started',
@@ -1650,6 +1651,10 @@ type StripeSessionCreated = StripeEventFields & {
   eventName: Name.STRIPE_SESSION_CREATED
 }
 
+type StripeModalInitialized = StripeEventFields & {
+  eventName: Name.STRIPE_MODAL_INITIALIZED
+}
+
 type StripeRequiresPayment = StripeEventFields & {
   eventName: Name.STRIPE_REQUIRES_PAYMENT
 }
@@ -2035,6 +2040,7 @@ export type AllTrackingEvents =
   | BuyUSDCRecoveryFailure
   | StripeSessionCreationError
   | StripeSessionCreated
+  | StripeModalInitialized
   | StripeRequiresPayment
   | StripeFulfillmentProcessing
   | StripeFulfillmentComplete

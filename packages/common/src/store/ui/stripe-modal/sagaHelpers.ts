@@ -6,13 +6,6 @@ import { getContext } from 'store/effects'
 
 import { StripeSessionData } from './types'
 
-const EMPTY_SESSION: StripeSessionData = {
-  id: '',
-  quote: null,
-  status: 'initialized',
-  wallet_address: null
-}
-
 const cleanSession = (session: StripeSessionData) => {
   const cleaned = { ...session }
   delete cleaned.client_secret
@@ -34,16 +27,23 @@ const getStripeEventFields = (
 
 export function* reportStripeFlowAnalytics(
   session: StripeSessionData,
-  previousSession: StripeSessionData = EMPTY_SESSION
+  previousSession?: StripeSessionData
 ) {
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
 
-  if (session.status !== previousSession.status) {
+  if (!previousSession || session.status !== previousSession.status) {
     const cleanedSession = cleanSession(session)
     const eventFields = getStripeEventFields(session)
     switch (session.status) {
       case 'initialized':
+        yield* call(
+          track,
+          make({
+            eventName: Name.STRIPE_MODAL_INITIALIZED,
+            ...eventFields
+          })
+        )
         break
       case 'requires_payment':
         yield* call(
