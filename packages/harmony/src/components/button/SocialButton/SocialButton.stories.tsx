@@ -6,7 +6,12 @@ import { SocialButton } from './SocialButton'
 
 const meta: Meta<typeof SocialButton> = {
   title: 'Components/Buttons/SocialButton',
-  component: SocialButton
+  component: SocialButton,
+  parameters: {
+    docs: {
+      controls: { include: ['aria-label', 'socialType'] }
+    }
+  }
 }
 
 export default meta
