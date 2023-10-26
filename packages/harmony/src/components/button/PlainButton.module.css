@@ -54,7 +54,7 @@
 }
 
 .default:active {
-  --text-color: var(--harmony-s-500)
+  --text-color: var(--harmony-s-500);
 }
 
 /* Subdued */

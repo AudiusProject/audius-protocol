@@ -1,28 +1,19 @@
 /* ===Base Styles=== */
 .button {
-  --button-color: var(--harmony-primary);
+  --base-color: var(--harmony-primary);
   --text-color: var(--harmony-static-white);
   --overlay-color: transparent;
-  --overlay-opacity: 0;
+  --overlay-opacity: 0%;
+  --button-color: color-mix(
+    in srgb,
+    var(--overlay-color) var(--overlay-opacity),
+    var(--base-color)
+  );
+  color: var(--text-color);
   border: 1px solid var(--button-color);
   border-radius: var(--harmony-unit-1);
-  color: var(--text-color);
   background-color: var(--button-color);
   box-shadow: var(--harmony-shadow-near);
-}
-
-/* Overlay used for hover/press styling */
-.button::before {
-  content: '';
-  position: absolute;
-  display: block;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--overlay-color, transparent);
-  opacity: var(--overlay-opacity, 0);
-  pointer-events: none;
 }
 
 .icon,
@@ -98,115 +89,106 @@
 /* Primary */
 .primary {
   --text-color: var(--harmony-static-white);
-  --button-color: var(--harmony-primary);
-  background: var(--button-color);
-  border: none;
-  margin: 0 1px;
-}
-.primary:hover {
-  --overlay-color: var(--harmony-static-white);
-  --overlay-opacity: 0.1;
-  box-shadow: var(--harmony-shadow-mid);
-}
-.primary:active {
-  --overlay-color: var(--harmony-static-black);
-  --overlay-opacity: 0.2;
-  box-shadow: none;
+  --base-color: var(--harmony-primary);
+  &:hover {
+    --overlay-color: var(--harmony-static-white);
+    --overlay-opacity: 20%;
+    box-shadow: var(--harmony-shadow-mid);
+  }
+  &:active {
+    --overlay-color: var(--harmony-static-black);
+    --overlay-opacity: 20%;
+    box-shadow: none;
+  }
+  &.disabled {
+    --base-color: var(--harmony-n-150);
+    --text-color: var(--harmony-white);
+    background-color: var(--harmony-n-150);
+    border-color: var(--harmony-n-150);
+    box-shadow: none;
+  }
 }
 
 /* Secondary */
 .secondary {
-  --button-color: var(--harmony-border-strong);
+  --base-color: var(--harmony-border-strong);
   --text-color: var(--harmony-text-default);
   background: transparent;
   box-shadow: none;
-}
-.secondary:hover {
-  --button-color: var(--harmony-primary);
-  --text-color: var(--harmony-static-white);
-  background-color: var(--button-color);
-  --overlay-color: var(--harmony-static-white);
-  --overlay-opacity: 0.1;
-  box-shadow: var(--harmony-shadow-mid);
-  border: none;
-  margin: 0 1px;
-}
-.secondary:active {
-  --button-color: var(--harmony-primary);
-  --text-color: var(--harmony-static-white);
-  background-color: var(--button-color);
-  --overlay-color: var(--harmony-static-black);
-  --overlay-opacity: 0.2;
-  box-shadow: none;
-  border: none;
-  margin: 0 1px;
+  &:hover {
+    --base-color: var(--harmony-primary);
+    --text-color: var(--harmony-static-white);
+    background-color: var(--button-color);
+    --overlay-color: var(--harmony-static-white);
+    --overlay-opacity: 20%;
+    box-shadow: var(--harmony-shadow-mid);
+  }
+  &:active {
+    --base-color: var(--harmony-primary);
+    --text-color: var(--harmony-static-white);
+    background-color: var(--button-color);
+    --overlay-color: var(--harmony-static-black);
+    --overlay-opacity: 20%;
+    box-shadow: none;
+  }
+  &.disabled {
+    opacity: 0.45;
+  }
 }
 
 /* Tertiary */
 .tertiary {
-  --button-color: var(--harmony-border-default);
+  --base-color: var(--harmony-border-default);
   --text-color: var(--harmony-text-default);
   /* Don't use opacity prop as it affects the text too */
-  background-color: rgb(255, 255, 255, .85);
+  background-color: rgb(255, 255, 255, 0.85);
   backdrop-filter: blur(6px);
-}
-.tertiary:hover {
-  --button-color: var(--harmony-border-strong);
-  box-shadow: var(--harmony-shadow-mid);
-  opacity: 1;
-  backdrop-filter: none;
-}
-.tertiary:active {
-  --button-color: var(--harmony-border-strong);
-  background-color: var(--harmony-n-50);
-  box-shadow: none;
-  opacity: 1;
-  backdrop-filter: none;
+  &:hover {
+    --base-color: var(--harmony-border-strong);
+    box-shadow: var(--harmony-shadow-mid);
+    background-color: var(--harmony-bg-white);
+    backdrop-filter: none;
+  }
+  &:active {
+    --base-color: var(--harmony-border-strong);
+    background-color: var(--harmony-bg-surface-2);
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+  &.disabled {
+    box-shadow: none;
+    opacity: 0.45;
+  }
 }
 
 /* Destructive */
 .destructive {
-  --button-color: var(--harmony-red);
+  --base-color: var(--harmony-red);
   --text-color: var(--harmony-red);
   background: transparent;
   box-shadow: none;
-}
-.destructive:hover {
-  --button-color: var(--harmony-red);
-  --text-color: var(--harmony-static-white);
-  background-color: var(--button-color);
-  box-shadow: var(--harmony-shadow-mid);
-}
-.destructive:active {
-  --button-color: var(--harmony-red);
-  --text-color: var(--harmony-static-white);
-  --overlay-color: var(--harmony-static-black);
-  --overlay-opacity: 0.2;
-  background-color: var(--button-color);
-  box-shadow: none;
-}
-
-/* Disabled states */
-.disabled {
-  box-shadow: none;
-}
-
-.primary.disabled {
-  --button-color: var(--harmony-n-150);
-  --text-color: var(--harmony-static-white);
-  background-color: var(--harmony-n-150);
-  border-color: var(--harmony-n-150);
-}
-
-.secondary.disabled,
-.tertiary.disabled,
-.destructive.disabled {
-  opacity: 0.45;
+  &:hover {
+    --base-color: var(--harmony-red);
+    --text-color: var(--harmony-static-white);
+    background-color: var(--button-color);
+    box-shadow: var(--harmony-shadow-mid);
+  }
+  &:active {
+    --base-color: var(--harmony-red);
+    --text-color: var(--harmony-static-white);
+    --overlay-color: var(--harmony-static-black);
+    --overlay-opacity: 20%;
+    background-color: var(--button-color);
+    box-shadow: none;
+  }
+  &.disabled {
+    opacity: 0.45;
+  }
 }
 
 /* Plain */
 .plain {
-  --button-color: transparent;
+  --base-color: transparent;
   --text-color: var(--harmony-neutral);
   background: transparent;
   border: none;
@@ -217,30 +199,15 @@
 
 /* Dark mode */
 html[data-theme='dark'] {
-  .primary:hover {
-    --overlay-opacity: 0.2;
-  }
-  .primary.disabled {
-    --button-color: var(--harmony-n-150);
-    --text-color: var(--harmony-white);
-  }
-
-  .secondary:hover {
-    --overlay-opacity: 0.2;
-  }
-
   .tertiary {
-    --button-color: var(--harmony-bg-white);
-    --text-color: var(--harmony-text-default);
     /* Don't use opacity prop as it affects the text too */
     background-color: rgba(50, 51, 77, 0.6);
   }
   .tertiary:hover {
-    --button-color: var(--harmony-bg-white);
-    opacity: 1;
+    --base-color: var(--harmony-border-strong);
+    background-color: var(--harmony-bg-white);
   }
   .tertiary:active {
-    --button-color: var(--harmony-n-50);
-    background-color: var(--button-color); 
+    background-color: var(--harmony-bg-surface-2);
   }
 }

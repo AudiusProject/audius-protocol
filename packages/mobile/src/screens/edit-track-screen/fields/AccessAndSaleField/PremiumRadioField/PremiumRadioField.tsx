@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 
+import { Name } from '@audius/common'
 import { Dimensions, View } from 'react-native'
 
 import IconCart from 'app/assets/images/iconCart.svg'
@@ -7,6 +8,7 @@ import IconStars from 'app/assets/images/iconStars.svg'
 import { Link, Tag, Text } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
+import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
@@ -41,7 +43,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     alignItems: 'center'
   },
   title: {
-    fontSize: 22,
+    fontSize: 18,
     marginTop: 0
   },
   selectedTitle: {
@@ -55,7 +57,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     marginRight: spacing(2.5)
   },
   subtitleContainer: {
-    marginTop: spacing(2)
+    marginLeft: -1 * spacing(10)
   },
   subtitle: {
     color: palette.neutral
@@ -69,6 +71,9 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   comingSoon: {
     alignSelf: 'flex-start'
+  },
+  fields: {
+    marginLeft: -1 * spacing(10)
   }
 }))
 
@@ -76,6 +81,10 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
   const { selected, disabled } = props
   const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
   const styles = useStyles()
+
+  const handlePressWaitListLink = useCallback(() => {
+    track(make({ eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK }))
+  }, [])
 
   const secondary = useColor('secondary')
   const neutral = useColor('neutral')
@@ -109,12 +118,12 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
     return (
       <View style={styles.waitlist}>
         <Text>{messages.waitlist}</Text>
-        <Link url={WAITLIST_TYPEFORM}>
+        <Link url={WAITLIST_TYPEFORM} onPress={handlePressWaitListLink}>
           <Text style={styles.link}>{messages.join}</Text>
         </Link>
       </View>
     )
-  }, [styles.link, styles.waitlist])
+  }, [styles.link, styles.waitlist, handlePressWaitListLink])
 
   return (
     <View style={styles.root}>
@@ -124,11 +133,13 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
           {messages.title}
         </Text>
       </View>
-      <View style={styles.subtitleContainer}>
-        <Text fontSize='medium' weight='medium' style={styles.subtitle}>
-          {messages.description}
-        </Text>
-      </View>
+      {selected ? (
+        <View style={styles.subtitleContainer}>
+          <Text fontSize='medium' weight='medium' style={styles.subtitle}>
+            {messages.description}
+          </Text>
+        </View>
+      ) : null}
       {disabled ? (
         <>
           <Tag style={styles.comingSoon}>{messages.comingSoon}</Tag>
@@ -140,10 +151,10 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
         </>
       ) : null}
       {selected ? (
-        <>
+        <View style={styles.fields}>
           <TrackPriceField />
           <TrackPreviewField />
-        </>
+        </View>
       ) : null}
     </View>
   )

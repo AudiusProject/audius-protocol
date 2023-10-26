@@ -78,6 +78,7 @@ export const HarmonySelectablePill = (props: HarmonySelectablePillProps) => {
     onPressIn,
     onPressOut,
     size,
+    disabled,
     style,
     ...other
   } = props
@@ -110,14 +111,16 @@ export const HarmonySelectablePill = (props: HarmonySelectablePillProps) => {
         styles.pill,
         size === 'large' ? styles.pillLarge : undefined,
         isSelected ? styles.pressed : undefined,
+        disabled ? { opacity: 0.45 } : undefined,
         { transform: [{ scale }] },
         style
       ]}
     >
       <Pressable
         accessibilityRole='button'
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
+        onPressIn={disabled ? undefined : handlePressIn}
+        onPressOut={disabled ? undefined : handlePressOut}
+        disabled={disabled}
         style={[
           styles.pressable,
           size === 'large' ? styles.pressableLarge : undefined

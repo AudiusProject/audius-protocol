@@ -1,5 +1,6 @@
 import { forwardRef } from 'react'
 
+import { Slot, Slottable } from '@radix-ui/react-slot'
 import cn from 'classnames'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -28,6 +29,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       style,
       children,
       'aria-label': ariaLabelProp,
+      asChild,
       ...other
     } = props
     const { isMatch: isTextHidden } = useMediaQueryListener(
@@ -43,8 +45,10 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       return undefined
     }
 
+    const ButtonComponent = asChild ? Slot : 'button'
+
     return (
-      <button
+      <ButtonComponent
         className={cn(
           baseStyles.button,
           styles.button,
@@ -56,7 +60,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
         )}
         disabled={disabled || isLoading}
         ref={ref}
-        type='button'
+        type={asChild ? undefined : 'button'}
         style={{
           minWidth: minWidth && !isTextHidden ? `${minWidth}px` : 'unset',
           ...style
@@ -65,15 +69,15 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
         {...other}
       >
         {isLoading ? (
-          <LoadingSpinner className={(baseStyles.spinner, styles.spinner)} />
+          <LoadingSpinner className={cn(baseStyles.spinner, styles.spinner)} />
         ) : LeftIconComponent ? (
           <LeftIconComponent className={cn(baseStyles.icon, styles.icon)} />
         ) : null}
-        {!isTextHidden ? children : null}
+        {!isTextHidden ? <Slottable>{children}</Slottable> : null}
         {RightIconComponent ? (
           <RightIconComponent className={cn(baseStyles.icon, styles.icon)} />
         ) : null}
-      </button>
+      </ButtonComponent>
     )
   }
 )

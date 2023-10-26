@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 
 import { Address, Status } from 'types'
@@ -12,6 +12,7 @@ import {
   setClaim,
   setClaimMetadata as setMetadata
 } from 'store/cache/claims/slice'
+import { AnyAction } from '@reduxjs/toolkit'
 
 // -------------------------------- Selectors  --------------------------------
 export const getPendingClaim = (wallet: Address) => (state: AppState) =>
@@ -80,7 +81,7 @@ export function setClaimMetadata(): ThunkAction<
 
 export const usePendingClaim = (wallet: Address) => {
   const pendingClaim = useSelector(getPendingClaim(wallet))
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (wallet && !pendingClaim) {
       dispatch(fetchPendingClaim(wallet))
@@ -92,7 +93,7 @@ export const usePendingClaim = (wallet: Address) => {
 
 export const useFundsPerRound = () => {
   const fundsPerRound = useSelector(getFundsPerRound())
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (!fundsPerRound) {
       dispatch(setClaimMetadata())
@@ -104,7 +105,7 @@ export const useFundsPerRound = () => {
 
 export const useLastFundedBlock = () => {
   const lastFundedBlock = useSelector(getLastFundedBlock())
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (!lastFundedBlock) {
       dispatch(setClaimMetadata())

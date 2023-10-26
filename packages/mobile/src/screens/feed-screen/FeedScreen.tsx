@@ -4,7 +4,8 @@ import {
   Name,
   lineupSelectors,
   feedPageLineupActions as feedActions,
-  feedPageSelectors
+  feedPageSelectors,
+  FeatureFlags
 } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
@@ -14,6 +15,7 @@ import { FeedTipTile } from 'app/components/feed-tip-tile'
 import { Lineup } from 'app/components/lineup'
 import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track } from 'app/services/analytics'
 
 import { EmptyFeedSuggestedFollows } from './EmptyFeedSuggestedFollows'
@@ -30,6 +32,9 @@ const messages = {
 
 export const FeedScreen = () => {
   useAppTabScreen()
+  const { isEnabled: isUsdcEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES
+  )
 
   const dispatch = useDispatch()
 
@@ -53,7 +58,7 @@ export const FeedScreen = () => {
           pullToRefresh
           delineate
           selfLoad
-          header={<FeedTipTile />}
+          header={isUsdcEnabled ? null : <FeedTipTile />}
           hideHeaderOnEmpty
           ListFooterComponent={<EndOfFeedNotice />}
           LineupEmptyComponent={<EmptyFeedSuggestedFollows />}

@@ -8,6 +8,7 @@ import { SolanaWalletAddress, StringAudio, WalletAddress } from 'models/Wallet'
 
 import { Chain } from './Chain'
 import { PlaylistLibraryKind } from './PlaylistLibrary'
+import { TrackAccessType } from './Track'
 
 const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
 
@@ -158,6 +159,11 @@ export enum Name {
   TRACK_UPLOAD_COLLECTIBLE_GATED = 'Track Upload: Collectible Gated',
   TRACK_UPLOAD_FOLLOW_GATED = 'Track Upload: Follow Gated',
   TRACK_UPLOAD_TIP_GATED = 'Track Upload: Tip Gated',
+  TRACK_UPLOAD_USDC_GATED = 'Track Upload: USDC Gated',
+  TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK = 'Track Upload: Clicked USDC Waitlist Link',
+
+  // Track Edits
+  TRACK_EDIT_ACCESS_CHANGED = 'Track Edit: Access Changed',
 
   // Gated Track Listen
   LISTEN_GATED = 'Listen: Gated',
@@ -328,6 +334,9 @@ export enum Name {
   BUY_USDC_RECOVERY_IN_PROGRESS = 'Buy USDC: Recovery In Progress',
   BUY_USDC_RECOVERY_SUCCESS = 'Buy USDC: Recovery Success',
   BUY_USDC_RECOVERY_FAILURE = 'Buy USDC: Recovery Failure',
+
+  // Stripe Tracking
+  STRIPE_SESSION_CREATION_ERROR = 'Stripe: Session Creation Error',
 
   // Purchase Content
   PURCHASE_CONTENT_STARTED = 'Purchase Content: Started',
@@ -838,20 +847,35 @@ type TrackUploadViewTrackPage = {
 // Gated Track Uploads
 type TrackUploadCollectibleGated = {
   eventName: Name.TRACK_UPLOAD_COLLECTIBLE_GATED
-  count: number
   kind: 'tracks'
 }
 
 type TrackUploadFollowGated = {
   eventName: Name.TRACK_UPLOAD_FOLLOW_GATED
-  count: number
   kind: 'tracks'
 }
 
 type TrackUploadTipGated = {
   eventName: Name.TRACK_UPLOAD_TIP_GATED
-  count: number
   kind: 'tracks'
+}
+
+type TrackUploadUSDCGated = {
+  eventName: Name.TRACK_UPLOAD_USDC_GATED
+  price: number
+  kind: 'tracks'
+}
+
+type TrackUploadClickUSDCWaitListLink = {
+  eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK
+}
+
+// Track Edits
+type TrackEditAccessChanged = {
+  eventName: Name.TRACK_EDIT_ACCESS_CHANGED
+  id: number
+  from: TrackAccessType
+  to: TrackAccessType
 }
 
 // Unlocked Gated Tracks
@@ -1287,14 +1311,16 @@ type CreateUserBankRequest = {
 
 type CreateUserBankSuccess = {
   eventName: Name.CREATE_USER_BANK_SUCCESS
-  userId: ID
+  mint: string
+  recipientEthAddress: string
 }
 
 type CreateUserBankFailure = {
   eventName: Name.CREATE_USER_BANK_FAILURE
-  userId: ID
+  mint: string
+  recipientEthAddress: string
   errorCode: string
-  error: string
+  errorMessage: string
 }
 
 type RewardsClaimStart = {
@@ -1551,6 +1577,7 @@ type BuyAudioRecoveryFailure = {
   error: string
 }
 
+// Buy USDC
 type BuyUSDCOnRampOpened = {
   eventName: Name.BUY_USDC_ON_RAMP_OPENED
   provider: string
@@ -1599,6 +1626,18 @@ type BuyUSDCRecoveryFailure = {
   eventName: Name.BUY_USDC_RECOVERY_FAILURE
   error: string
 }
+
+// Stripe
+type StripeSessionCreationError = {
+  eventName: Name.STRIPE_SESSION_CREATION_ERROR
+  amount: string
+  destinationCurrency: string
+  code: string
+  stripeErrorMessage: string
+  type: string
+}
+
+// Content Purchase
 
 type ContentPurchaseMetadata = {
   price: number
@@ -1821,6 +1860,9 @@ export type AllTrackingEvents =
   | TrackUploadCollectibleGated
   | TrackUploadFollowGated
   | TrackUploadTipGated
+  | TrackUploadUSDCGated
+  | TrackUploadClickUSDCWaitListLink
+  | TrackEditAccessChanged
   | TrackUploadSuccess
   | TrackUploadFailure
   | TrackUploadRejected
@@ -1957,6 +1999,7 @@ export type AllTrackingEvents =
   | BuyUSDCRecoveryInProgress
   | BuyUSDCRecoverySuccess
   | BuyUSDCRecoveryFailure
+  | StripeSessionCreationError
   | PurchaseContentStarted
   | PurchaseContentSuccess
   | PurchaseContentFailure

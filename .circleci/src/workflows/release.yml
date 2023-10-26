@@ -75,10 +75,10 @@ jobs:
   - release-governance-trigger:
       type: approval
   - release-governance:
-      context: governance
+      context: [Vercel, governance, slack-secrets]
       requires:
         - release-governance-trigger
-  
+
   - commit-audius-docker-compose-and-notify:
       context: [slack-secrets, github]
       requires:

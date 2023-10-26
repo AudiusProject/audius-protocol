@@ -40,9 +40,22 @@
   border: 1px solid var(--harmony-s-400);
 }
 
+.pill.disabled {
+  pointer-events: none;
+}
+
 .large:active,
 .large.selected {
   box-shadow: none;
+}
+
+.disabled {
+  opacity: 0.45;
+}
+
+.disabled:hover {
+  background-color: var(--harmony-white);
+  border: 1px solid var(--harmony-border-strong);
 }
 
 .icon path {

@@ -216,15 +216,10 @@ export const createUserBankIfNeeded = async (
       console.info(`Userbank doesn't exist, attempted to create...`)
 
       recordAnalytics({
-        eventName: Name.CREATE_USER_BANK_REQUEST,
+        eventName: Name.CREATE_USER_BANK_SUCCESS,
         properties: { mint, recipientEthAddress }
       })
     }
-
-    recordAnalytics({
-      eventName: Name.CREATE_USER_BANK_SUCCESS,
-      properties: { mint, recipientEthAddress }
-    })
     return res.userbank
   } catch (err: any) {
     // Catching error here for analytics purposes

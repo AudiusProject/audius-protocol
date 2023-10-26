@@ -111,6 +111,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           placeholder={shouldShowPlaceholder ? placeholderText : undefined}
           aria-label={props['aria-label'] ?? labelText}
           aria-required={required}
+          role='textbox'
           id={id}
           {...other}
         />

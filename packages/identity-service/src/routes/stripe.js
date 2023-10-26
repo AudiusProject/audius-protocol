@@ -65,9 +65,11 @@ module.exports = function (app) {
         return successResponse(response.data)
       } catch (e) {
         logger.error('Failed to create Stripe session:', e.response.data)
+        const { code, message, type } = e.response.data.error ?? {}
         return errorResponse(
           e.response.status,
-          'Failed to create Stripe session'
+          'Failed to create Stripe session',
+          { code, message, type }
         )
       }
     })

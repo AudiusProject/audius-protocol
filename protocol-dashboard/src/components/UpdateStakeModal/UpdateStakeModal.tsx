@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import { Utils } from '@audius/sdk/dist/legacy.js'
+import BN from 'bn.js'
 import clsx from 'clsx'
 import { ButtonType } from '@audius/stems'
 
@@ -53,7 +53,7 @@ const IncreaseStakeModal: React.FC<IncreaseStakeModalProps> = ({
     onClose()
   }
 
-  const [stakingBN, setStakingBN] = useState(Utils.toBN('0'))
+  const [stakingBN, setStakingBN] = useState(new BN('0'))
   const [stakingAmount, setStakingAmount] = useState('0')
   const [hasRun, setHasRun] = useState(false)
 
@@ -146,9 +146,9 @@ const IncreaseStakeModal: React.FC<IncreaseStakeModalProps> = ({
     <NewStake title={messages.newStakeTitle} stakeAmount={stakingBN} />
   )
   const deployerStake =
-    (accountUser as Operator)?.serviceProvider?.deployerStake ?? Utils.toBN('0')
+    (accountUser as Operator)?.serviceProvider?.deployerStake ?? new BN('0')
   const totalStakedFor =
-    (accountUser as Operator)?.totalStakedFor ?? Utils.toBN('0')
+    (accountUser as Operator)?.totalStakedFor ?? new BN('0')
 
   const stakeChange = stakingBN.sub(deployerStake)
   const min = isIncrease

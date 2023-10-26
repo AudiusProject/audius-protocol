@@ -1,7 +1,7 @@
 import { call, select } from 'typed-redux-saga'
 
 import { createUserBankIfNeeded } from 'services/audius-backend/solana'
-import { IntKeys } from 'services/index'
+import { IntKeys } from 'services/remote-config'
 import {
   MAX_CONTENT_PRICE_CENTS,
   MAX_USDC_PURCHASE_AMOUNT_CENTS,

@@ -36,7 +36,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     alignItems: 'center'
   },
   title: {
-    fontSize: 22,
+    fontSize: 18,
     marginTop: 0
   },
   selectedTitle: {
@@ -50,7 +50,8 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     marginRight: spacing(2.5)
   },
   subtitleContainer: {
-    marginTop: spacing(2)
+    marginTop: spacing(4),
+    marginLeft: -1 * spacing(10)
   },
   subtitle: {
     color: palette.neutral
@@ -120,40 +121,42 @@ export const HiddenAvailability = ({
           {messages.hidden}
         </Text>
       </View>
-      <View style={styles.subtitleContainer}>
-        <Text fontSize='medium' weight='medium' style={styles.subtitle}>
-          {messages.hiddenSubtitle}
-        </Text>
-      </View>
-      {selected && (
-        <View style={styles.selectionContainer}>
-          <SwitchField
-            name='field_visibility.genre'
-            label={messages.showGenre}
-            style={styles.firstSwitch}
-          />
-          <SwitchField
-            name='field_visibility.mood'
-            label={messages.showMood}
-            style={styles.switch}
-          />
-          <SwitchField
-            name='field_visibility.tags'
-            label={messages.showTags}
-            style={styles.switch}
-          />
-          <SwitchField
-            name='field_visibility.share'
-            label={messages.showShareButton}
-            style={styles.switch}
-          />
-          <SwitchField
-            name='field_visibility.play_count'
-            label={messages.showPlayCount}
-            style={styles.switch}
-          />
-        </View>
-      )}
+      {selected ? (
+        <>
+          <View style={styles.subtitleContainer}>
+            <Text fontSize='medium' weight='medium' style={styles.subtitle}>
+              {messages.hiddenSubtitle}
+            </Text>
+          </View>
+          <View style={styles.selectionContainer}>
+            <SwitchField
+              name='field_visibility.genre'
+              label={messages.showGenre}
+              style={styles.firstSwitch}
+            />
+            <SwitchField
+              name='field_visibility.mood'
+              label={messages.showMood}
+              style={styles.switch}
+            />
+            <SwitchField
+              name='field_visibility.tags'
+              label={messages.showTags}
+              style={styles.switch}
+            />
+            <SwitchField
+              name='field_visibility.share'
+              label={messages.showShareButton}
+              style={styles.switch}
+            />
+            <SwitchField
+              name='field_visibility.play_count'
+              label={messages.showPlayCount}
+              style={styles.switch}
+            />
+          </View>
+        </>
+      ) : null}
     </View>
   )
 }

@@ -34,6 +34,8 @@ import { processTracksForUpload } from 'common/store/upload/sagaHelpers'
 import { dominantColor } from 'utils/imageProcessingUtil'
 import { waitForWrite } from 'utils/sagaHelpers'
 
+import { recordEditTrackAnalytics } from './sagaHelpers'
+
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const setDominantColors = averageColorActions.setDominantColors
@@ -216,22 +218,7 @@ function* confirmEditTrack(
             }
           ])
         )
-
-        // Record analytics on track edit
-        // Note: if remixes is not defined in field_visibility, it defaults to true
-        if (
-          (currentTrack?.field_visibility?.remixes ?? true) &&
-          confirmedTrack?.field_visibility?.remixes === false
-        ) {
-          const handle = yield select(getUserHandle)
-          // Record event if hide remixes was turned on
-          yield put(
-            make(Name.REMIX_HIDE, {
-              id: confirmedTrack.track_id,
-              handle
-            })
-          )
-        }
+        yield call(recordEditTrackAnalytics, currentTrack, confirmedTrack)
       },
       function* () {
         yield put(trackActions.editTrackFailed())

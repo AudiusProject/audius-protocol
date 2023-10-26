@@ -1,4 +1,8 @@
-import { PurchaseContentStage, usePayExtraPresets } from '@audius/common'
+import {
+  PurchaseContentStage,
+  isContentPurchaseInProgress,
+  usePayExtraPresets
+} from '@audius/common'
 import { IconCheck } from '@audius/stems'
 
 import { Icon } from 'components/Icon'
@@ -27,6 +31,7 @@ export const PurchaseContentFormFields = ({
 }: PurchaseContentFormFieldsProps) => {
   const payExtraAmountPresetValues = usePayExtraPresets(useRemoteVar)
   const isPurchased = stage === PurchaseContentStage.FINISH
+  const isInProgress = isContentPurchaseInProgress(stage)
 
   if (isPurchased) {
     return (
@@ -48,7 +53,10 @@ export const PurchaseContentFormFields = ({
   }
   return (
     <>
-      <PayExtraFormSection amountPresets={payExtraAmountPresetValues} />
+      <PayExtraFormSection
+        amountPresets={payExtraAmountPresetValues}
+        disabled={isInProgress}
+      />
       <PurchaseSummaryTable
         {...purchaseSummaryValues}
         isPurchased={isPurchased}

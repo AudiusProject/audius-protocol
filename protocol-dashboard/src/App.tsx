@@ -1,9 +1,9 @@
 import { ApolloProvider } from '@apollo/client'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { useEffect, useState } from 'react'
 import { Provider, useSelector } from 'react-redux'
-import { ConnectedRouter } from 'connected-react-router'
-import { Switch, Route } from 'react-router'
-import { createHashHistory } from 'history'
+import { Routes, Route, HashRouter } from 'react-router-dom'
 
 import Header from 'components/Header'
 import Home from 'containers/Home'
@@ -28,19 +28,24 @@ import Proposal from 'containers/Proposal'
 import { createStyles } from 'utils/mobile'
 import { getDidGraphError } from 'store/api/hooks'
 import UnregisteredNode from 'containers/UnregisteredNode'
+import { RouteHistoryProvider } from './providers/RouteHistoryContext'
+
 const styles = createStyles({ desktopStyles, mobileStyles })
-const history = createHashHistory()
-const store = createStore(history)
+const store = createStore()
+const queryClient = new QueryClient()
 
 const Root = () => (
   <Provider store={store}>
-    <App />
+    <QueryClientProvider client={queryClient}>
+      <App />
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   </Provider>
 )
 
 const App = () => {
   //  If the client fails, set it to the backup client
-  const [appolloClient, setApolloClient] = useState(client)
+  const [apolloClient, setApolloClient] = useState(client)
   const didClientError = useSelector(getDidGraphError)
   useEffect(() => {
     if (didClientError) {
@@ -51,83 +56,67 @@ const App = () => {
     }
   }, [didClientError])
   return (
-    <Provider store={store}>
-      <ApolloProvider client={appolloClient}>
-        <ConnectedRouter history={history}>
+    <ApolloProvider client={apolloClient}>
+      <HashRouter>
+        <RouteHistoryProvider>
           <div className={styles.appContainer}>
             <Header />
             <div className={styles.appContent}>
-              <Switch>
-                <Route path={routes.HOME} exact component={Home} />
-                <Route path={routes.SERVICES} exact component={Services} />
+              <Routes>
+                <Route path={routes.HOME} element={<Home />} />
+                <Route path={routes.SERVICES} element={<Services />} />
                 <Route
                   path={routes.SERVICES_UNREGISTERED_DISCOVERY_NODE}
-                  component={UnregisteredNode}
+                  element={<UnregisteredNode />}
                 />
                 <Route
                   path={routes.SERVICES_DISCOVERY_PROVIDER}
-                  exact
-                  component={DiscoveryProviders}
+                  element={<DiscoveryProviders />}
                 />
                 <Route
                   path={routes.SERVICES_DISCOVERY_PROVIDER_NODE}
-                  exact
-                  component={Node}
+                  element={<Node />}
                 />
                 <Route
                   path={routes.SERVICES_UNREGISTERED_CONTENT_NODE}
-                  component={UnregisteredNode}
+                  element={<UnregisteredNode />}
                 />
                 <Route
                   path={routes.SERVICES_CONTENT}
-                  exact
-                  component={ContentNodes}
+                  element={<ContentNodes />}
                 />
-                <Route
-                  path={routes.SERVICES_CONTENT_NODE}
-                  exact
-                  component={Node}
-                />
+                <Route path={routes.SERVICES_CONTENT_NODE} element={<Node />} />
                 <Route
                   path={routes.SERVICES_SERVICE_PROVIDERS}
-                  exact
-                  component={ServiceOperators}
+                  element={<ServiceOperators />}
                 />
                 <Route
                   path={routes.SERVICES_USERS}
-                  exact
-                  component={ServiceUsers}
+                  element={<ServiceUsers />}
                 />
-                <Route
-                  path={routes.SERVICES_ACCOUNT_USER}
-                  exact
-                  component={User}
-                />
+                <Route path={routes.SERVICES_ACCOUNT_USER} element={<User />} />
                 <Route
                   path={routes.SERVICES_ACCOUNT_OPERATOR}
-                  exact
-                  component={User}
+                  element={<User />}
                 />
-                <Route path={routes.GOVERNANCE} exact component={Governance} />
+                <Route path={routes.GOVERNANCE} element={<Governance />} />
                 <Route
                   path={routes.GOVERNANCE_PROPOSAL}
-                  exact
-                  component={Proposal}
+                  element={<Proposal />}
                 />
-                <Route path={routes.ANALYTICS} exact component={Analytics} />
-                <Route path={routes.API} exact component={API} />
+                <Route path={routes.ANALYTICS} element={<Analytics />} />
+                <Route path={routes.API} element={<API />} />
                 <Route
                   path={routes.API_LEADERBOARD}
-                  exact
-                  component={APILeaderboard}
+                  element={<APILeaderboard />}
                 />
-                <Route component={NotFound} />
-              </Switch>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
             </div>
           </div>
-        </ConnectedRouter>
-      </ApolloProvider>
-    </Provider>
+        </RouteHistoryProvider>
+      </HashRouter>
+    </ApolloProvider>
   )
 }
 

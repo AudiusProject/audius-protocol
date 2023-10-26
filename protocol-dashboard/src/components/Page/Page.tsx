@@ -2,13 +2,15 @@ import React, { useCallback, useEffect } from 'react'
 import clsx from 'clsx'
 import { Spring } from 'react-spring/renderprops'
 import { IconArrowWhite } from '@audius/stems'
-import { usePushRoute, useBackRoute } from 'utils/effects'
-import { useLastPage } from 'store/pageHistory/hooks'
+import { usePushRoute } from 'utils/effects'
 
 import desktopStyles from './Page.module.css'
 import mobileStyles from './PageMobile.module.css'
 import { createStyles } from 'utils/mobile'
 import { useIsMobile } from 'utils/hooks'
+import { usePreviousRoute } from '../../providers/RouteHistoryContext'
+import { useNavigate } from 'react-router-dom'
+import { getPageTitle } from 'utils/routes'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -16,6 +18,7 @@ const FADE_DURATION = 200 // (ms)
 
 interface PageProps {
   className?: string
+  children: React.ReactNode
   title: string
   previousPage?: string
   previousPageRoute?: string
@@ -24,7 +27,7 @@ interface PageProps {
   hidePreviousPage?: boolean
 }
 
-const Page: React.FC<PageProps> = ({
+const Page = ({
   className,
   children,
   title,
@@ -33,10 +36,11 @@ const Page: React.FC<PageProps> = ({
   defaultPreviousPageRoute,
   previousPage,
   previousPageRoute
-}) => {
+}: PageProps) => {
   const pushRoute = usePushRoute()
-  const prevPage = useLastPage()
-  const goBackRoute = useBackRoute()
+  const prevRoute = usePreviousRoute()
+  const prevTitle = getPageTitle(prevRoute)
+  const navigate = useNavigate()
   const isMobile = useIsMobile()
 
   useEffect(() => {
@@ -49,21 +53,21 @@ const Page: React.FC<PageProps> = ({
   const onClickPreviousPage = useCallback(() => {
     if (previousPage && previousPageRoute) {
       pushRoute(previousPageRoute)
-    } else if (prevPage) {
-      goBackRoute()
+    } else if (prevRoute) {
+      navigate(-1)
     } else if (defaultPreviousPageRoute) {
       pushRoute(defaultPreviousPageRoute)
     }
   }, [
     previousPageRoute,
     pushRoute,
-    goBackRoute,
-    prevPage,
+    prevRoute,
+    navigate,
     defaultPreviousPageRoute,
     previousPage
   ])
 
-  const previousText = previousPage || prevPage || defaultPreviousPage
+  let previousText = previousPage || prevTitle || defaultPreviousPage
   return (
     <Spring
       from={{ opacity: 0.2 }}

@@ -1,4 +1,4 @@
-import { matchPath, useLocation, useParams } from 'react-router-dom'
+import { useMatch, useParams } from 'react-router-dom'
 import NodeOverview from 'components/NodeOverview'
 import { useDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
 import { useContentNode } from 'store/cache/contentNode/hooks'
@@ -81,12 +81,8 @@ const DiscoveryProvider = ({ spID, accountWallet }: DiscoveryProviderProps) => {
 const Node = () => {
   const { spID: spIDParam } = useParams<{ spID: string }>()
   const spID = parseInt(spIDParam, 10)
-  const location = useLocation()
   const { wallet: accountWallet } = useAccount()
-
-  const isDiscovery = !!matchPath(location.pathname, {
-    path: SERVICES_DISCOVERY_PROVIDER_NODE
-  })
+  const isDiscovery = !!useMatch(SERVICES_DISCOVERY_PROVIDER_NODE)
 
   return (
     <Page

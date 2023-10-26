@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 
 import Audius from 'services/Audius'
@@ -19,6 +19,7 @@ import {
   useTimeRemaining,
   useEthBlockNumber
 } from 'store/cache/protocol/hooks'
+import { AnyAction } from '@reduxjs/toolkit'
 
 // -------------------------------- Selectors  --------------------------------
 export const getActiveProposals = (state: AppState) =>
@@ -179,7 +180,7 @@ export const useProposals = () => {
   const allProposals = useSelector(getAllProposals)
   const resolvedProposals = useSelector(getResolvedProposals)
   const recentProposals = useSelector(getRecentProposals)
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
 
   useEffect(() => {
     if (activeProposals === null) {
@@ -202,7 +203,7 @@ export const useProposal = (proposalId: number) => {
   const proposal = useSelector(state =>
     getProposal(state as AppState, { proposalId })
   )
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (proposal === null || proposal === undefined) {
       dispatch(fetchProposal(proposalId))
@@ -214,7 +215,7 @@ export const useProposal = (proposalId: number) => {
 
 export const useVotingPeriod = () => {
   const votingPeriod = useSelector(getVotingPeriod)
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (!votingPeriod) {
       dispatch(fetchVotingPeriod())
@@ -226,7 +227,7 @@ export const useVotingPeriod = () => {
 
 export const useExecutionDelay = () => {
   const executionDelay = useSelector(getExecutionDelay)
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (!executionDelay) {
       dispatch(fetchExecutionDelay())

@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
-import { Utils } from '@audius/sdk/dist/legacy.js'
+import BN from 'bn.js'
 import { useUser } from 'store/cache/user/hooks'
 import { Address, BigNumber, Status, Operator } from 'types'
 
 export const useUserDelegation = (wallet: Address) => {
   const [status, setStatus] = useState<undefined | Status>()
   const [error, setError] = useState<string>('')
-  const [min, setMin] = useState<BigNumber>(Utils.toBN('0'))
-  const [max, setMax] = useState<BigNumber>(Utils.toBN('0'))
+  const [min, setMin] = useState<BigNumber>(new BN('0'))
+  const [max, setMax] = useState<BigNumber>(new BN('0'))
 
   const { status: userStatus, user } = useUser({ wallet })
 
