@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import {
-  StripeSessionStatus,
   StripeModalState,
-  StripeDestinationCurrencyType
+  StripeDestinationCurrencyType,
+  StripeSessionData
 } from './types'
 
 type InitializeStripeModalPayload = {
@@ -40,9 +40,11 @@ const slice = createSlice({
     cancelStripeOnramp: () => {},
     stripeSessionStatusChanged: (
       state,
-      action: PayloadAction<{ status: StripeSessionStatus }>
+      action: PayloadAction<{ session: StripeSessionData }>
     ) => {
-      state.stripeSessionStatus = action.payload.status
+      state.previousStripeSessionData = state.stripeSessionData
+      state.stripeSessionData = action.payload.session
+      state.stripeSessionStatus = action.payload.session.status
     }
   }
 })

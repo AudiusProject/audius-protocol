@@ -161,6 +161,7 @@ function* doStartPurchaseContentFlow({
     contentName: title,
     artistHandle: artistInfo.handle,
     isVerifiedArtist: artistInfo.is_verified,
+    totalAmount: (price + (extraAmount ?? 0)) / 100,
     payExtraAmount: extraAmount ? extraAmount / 100 : 0,
     payExtraPreset: extraAmountPreset
   }
