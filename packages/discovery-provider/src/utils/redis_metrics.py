@@ -85,7 +85,7 @@ def get_request_ip(request_obj):
 def parse_metrics_key(key):
     """
     Validates that a key is correctly formatted and returns
-    the source: (routes|applications), ip address, and date of key
+    the source: (routes), ip address, and date of key
     """
     if not key.startswith(metrics_prefix):
         logger.warning(f"Bad redis key inserted w/out metrics prefix {key}")
@@ -99,8 +99,8 @@ def parse_metrics_key(key):
     _, source, ip, date, time = fragments
     # Replace the ipv6 _ delimiter back to :
     ip = ip.replace("_", ":")
-    if source not in (metrics_routes, metrics_applications):
-        logger.warning(f"Bad redis key inserted: must be routes or application {key}")
+    if source != metrics_routes:
+        logger.warning(f"Bad redis key inserted: must be routes {key}")
         return None
     date_time = datetime.strptime(f"{date}:{time}", datetime_format)
 
