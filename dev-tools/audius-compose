@@ -327,6 +327,15 @@ def push_arm(ctx, services, prod):
 
     try:
         for service in services:
+            subprocess.run(
+                ["docker", "push", f"audius/{service}:{git_commit}-arm"],
+                check=True,
+            )
+    except subprocess.CalledProcessError:
+        raise click.ClickException("Failed to push arm images")
+
+    try:
+        for service in services:
             og_tag = f"audius/{service}:{git_commit}"
             arm_tag = f"{og_tag}-arm"
             cmd = [
