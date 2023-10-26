@@ -16,4 +16,4 @@ const signUpApi = createApi({
 
 export const { useIsEmailInUse } = signUpApi.hooks
 export const signUpReducer = signUpApi.reducer
-  
+export const signUpFetch = signUpApi.fetch
