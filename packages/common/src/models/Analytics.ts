@@ -337,6 +337,13 @@ export enum Name {
 
   // Stripe Tracking
   STRIPE_SESSION_CREATION_ERROR = 'Stripe: Session Creation Error',
+  STRIPE_SESSION_CREATED = 'Stripe Session: Created',
+  STRIPE_MODAL_INITIALIZED = 'Stripe Modal: Initialized',
+  STRIPE_REQUIRES_PAYMENT = 'Stripe Modal: Requires Payment',
+  STRIPE_FULLFILMENT_PROCESSING = 'Stripe Modal: Fulfillment Processing',
+  STRIPE_FULLFILMENT_COMPLETE = 'Stripe Modal: Fulfillment Complete',
+  STRIPE_ERROR = 'Stripe Modal: Error',
+  STRIPE_REJECTED = 'Stripe Modal: Rejected',
 
   // Purchase Content
   PURCHASE_CONTENT_STARTED = 'Purchase Content: Started',
@@ -1628,13 +1635,44 @@ type BuyUSDCRecoveryFailure = {
 }
 
 // Stripe
-type StripeSessionCreationError = {
-  eventName: Name.STRIPE_SESSION_CREATION_ERROR
+export type StripeEventFields = {
   amount: string
   destinationCurrency: string
+}
+
+type StripeSessionCreationError = StripeEventFields & {
+  eventName: Name.STRIPE_SESSION_CREATION_ERROR
   code: string
   stripeErrorMessage: string
   type: string
+}
+
+type StripeSessionCreated = StripeEventFields & {
+  eventName: Name.STRIPE_SESSION_CREATED
+}
+
+type StripeModalInitialized = StripeEventFields & {
+  eventName: Name.STRIPE_MODAL_INITIALIZED
+}
+
+type StripeRequiresPayment = StripeEventFields & {
+  eventName: Name.STRIPE_REQUIRES_PAYMENT
+}
+
+type StripeFulfillmentProcessing = StripeEventFields & {
+  eventName: Name.STRIPE_FULLFILMENT_PROCESSING
+}
+
+type StripeFulfillmentComplete = StripeEventFields & {
+  eventName: Name.STRIPE_FULLFILMENT_COMPLETE
+}
+
+type StripeError = StripeEventFields & {
+  eventName: Name.STRIPE_ERROR
+}
+
+type StripeRejected = StripeEventFields & {
+  eventName: Name.STRIPE_REJECTED
 }
 
 // Content Purchase
@@ -1646,6 +1684,7 @@ type ContentPurchaseMetadata = {
   contentType: string
   payExtraAmount: number
   payExtraPreset?: string
+  totalAmount: number
   artistHandle: string
   isVerifiedArtist: boolean
 }
@@ -2000,6 +2039,13 @@ export type AllTrackingEvents =
   | BuyUSDCRecoverySuccess
   | BuyUSDCRecoveryFailure
   | StripeSessionCreationError
+  | StripeSessionCreated
+  | StripeModalInitialized
+  | StripeRequiresPayment
+  | StripeFulfillmentProcessing
+  | StripeFulfillmentComplete
+  | StripeError
+  | StripeRejected
   | PurchaseContentStarted
   | PurchaseContentSuccess
   | PurchaseContentFailure

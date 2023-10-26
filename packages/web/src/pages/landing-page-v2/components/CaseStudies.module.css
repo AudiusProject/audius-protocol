@@ -9,7 +9,7 @@
 
 .content {
   max-width: 1240px;
-  margin: 0 120px;
+  margin: 0 auto;
 }
 
 :global(#landingPage) .title,

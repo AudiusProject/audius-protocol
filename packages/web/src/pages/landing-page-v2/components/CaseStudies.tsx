@@ -10,7 +10,7 @@ import imgRemix from 'assets/img/publicSite/ImgRemix.jpg'
 import { handleClickRoute } from 'components/public-site/handleClickRoute'
 import useCardWeight from 'hooks/useCardWeight'
 import useHasViewed from 'hooks/useHasViewed'
-import { AUDIUS_MERCH_LINK, AUDIUS_REMIX_CONTESTS_LINK } from 'utils/route'
+import { AUDIUS_REMIX_CONTESTS_LINK } from 'utils/route'
 
 import styles from './CaseStudies.module.css'
 
@@ -41,7 +41,7 @@ const cards = [
       'radial-gradient(97.53% 194.75% at 3.62% 8.88%, #8F00FF 0%, #00F0FF 100%)',
     containerClass: styles.cypherContainer,
     cta: 'Browse the Store',
-    link: AUDIUS_MERCH_LINK
+    link: AUDIUS_REMIX_CONTESTS_LINK
   }
 ]
 

@@ -2,12 +2,12 @@ import { forwardRef } from 'react'
 
 import cn from 'classnames'
 
-import type { CSSCustomProperties } from '../../types/styles'
-import { toCSSVariableName } from '../../utils/styles'
+import type { CSSCustomProperties } from '../../../types/styles'
+import { toCSSVariableName } from '../../../utils/styles'
+import { BaseButton } from '../BaseButton/BaseButton'
+import { ButtonProps, ButtonSize, ButtonType } from '../types'
 
-import { BaseButton } from './BaseButton'
 import styles from './Button.module.css'
-import { ButtonProps, ButtonSize, ButtonType } from './types'
 
 const SIZE_STYLE_MAP: { [k in ButtonSize]: [string, string, string, string] } =
   {
