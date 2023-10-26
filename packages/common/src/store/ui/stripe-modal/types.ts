@@ -28,9 +28,9 @@ export class StripeSessionCreationError extends Error {
   constructor(
     public code: string,
     // Avoiding `message` to not shadow the `message` property on Error
-    public errorMessage: string,
+    public stripeErrorMessage: string,
     public type: string
   ) {
-    super(`Failed to create Stripe session: ${errorMessage}`)
+    super(`Failed to create Stripe session: ${stripeErrorMessage}`)
   }
 }

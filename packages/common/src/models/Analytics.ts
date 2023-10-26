@@ -1633,7 +1633,7 @@ type StripeSessionCreationError = {
   amount: string
   destinationCurrency: string
   code: string
-  errorMessage: string
+  stripeErrorMessage: string
   type: string
 }
 
