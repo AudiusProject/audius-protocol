@@ -14,7 +14,7 @@ import {
 } from '@audius/common'
 import { IconLock } from '@audius/stems'
 import cn from 'classnames'
-import { connect } from 'react-redux'
+import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -31,7 +31,7 @@ import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import styles from './PlayBar.module.css'
 const { makeGetCurrent } = queueSelectors
-const { getBuffering, getCounter, getPlaying } = playerSelectors
+const { getPreviewing, getBuffering, getCounter, getPlaying } = playerSelectors
 const { recordListen, saveTrack, unsaveTrack } = tracksSocialActions
 const { pause, play } = queueActions
 
@@ -88,10 +88,11 @@ const PlayBar = ({
     collectible?.gifUrl
 
   const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const isPreviewing = useSelector(getPreviewing)
   const shouldShowPreviewLock =
     track?.premium_conditions &&
     'usdc_purchase' in track.premium_conditions &&
-    !doesUserHaveAccess
+    (!doesUserHaveAccess || isPreviewing)
 
   if (((!uid || !track) && !collectible) || !user) return null
 

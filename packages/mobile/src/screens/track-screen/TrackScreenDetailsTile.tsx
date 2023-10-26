@@ -29,7 +29,8 @@ import {
   playbackPositionSelectors,
   FeatureFlags,
   isPremiumContentUSDCPurchaseGated,
-  isPremiumContentCollectibleGated
+  isPremiumContentCollectibleGated,
+  queueSelectors
 } from '@audius/common'
 import type { UID, User, SearchTrack, SearchUser, Track } from '@audius/common'
 import { Image, View } from 'react-native'
@@ -70,6 +71,8 @@ const { tracksActions } = trackPageLineupActions
 const { getUserId } = accountSelectors
 const { getIsReachable } = reachabilitySelectors
 const { getTrackPosition } = playbackPositionSelectors
+const { makeGetCurrent } = queueSelectors
+const getCurrentQueueItem = makeGetCurrent()
 
 const messages = {
   track: 'track',
@@ -90,12 +93,13 @@ type TrackScreenDetailsTileProps = {
   isLineupLoading: boolean
 }
 
-const recordPlay = (id, play = true) => {
+const recordPlay = (id, play = true, isPreview = false) => {
   record(
     make({
       eventName: play ? Name.PLAYBACK_PLAY : Name.PLAYBACK_PAUSE,
       id: String(id),
-      source: PlaybackSource.TRACK_PAGE
+      source: PlaybackSource.TRACK_PAGE,
+      isPreview
     })
   )
 }
@@ -292,25 +296,30 @@ export const TrackScreenDetailsTile = ({
     [track]
   )
 
+  const currentQueueItem = useSelector(getCurrentQueueItem)
   const play = useCallback(
     ({ isPreview = false } = {}) => {
       if (isLineupLoading) return
 
-      if (isPlaying && isPlayingId && isPreviewing === isPreview) {
+      if (isPlaying && isPreviewing === isPreview) {
         dispatch(tracksActions.pause())
-        recordPlay(track_id, false)
-      } else if (!isPlayingId) {
-        dispatch(tracksActions.play(uid, { isPreview }))
-        recordPlay(track_id)
-      } else {
+        recordPlay(track_id, false, true)
+      } else if (
+        currentQueueItem.uid !== uid &&
+        currentQueueItem.track &&
+        currentQueueItem.track.track_id === track_id
+      ) {
         dispatch(tracksActions.play())
         recordPlay(track_id)
+      } else {
+        dispatch(tracksActions.play(uid, { isPreview }))
+        recordPlay(track_id, true, true)
       }
     },
     [
       track_id,
+      currentQueueItem,
       uid,
-      isPlayingId,
       dispatch,
       isPlaying,
       isPreviewing,
