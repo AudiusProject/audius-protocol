@@ -1,3 +1,4 @@
+import cn from 'classnames'
 import { Link } from 'react-router-dom'
 
 import { LockedStatusBadge } from 'components/track/LockedStatusBadge'
@@ -15,7 +16,7 @@ const messages = {
     '. Your purchase will be made in USDC via 3rd party payment provider. Additional payment provider fees may apply. Any remaining USDC balance in your Audius wallet will be applied to this transaction. Once your payment is confirmed, your premium content will be unlocked and available to stream.'
 }
 
-export const PayToUnlockInfo = () => {
+export const PayToUnlockInfo = ({ disabled }: { disabled: boolean }) => {
   return (
     <div className={styles.container}>
       <Text
@@ -30,7 +31,7 @@ export const PayToUnlockInfo = () => {
       <Text className={styles.copy}>
         <span>{messages.copyPart1}</span>
         <Link
-          className={typeStyles.link}
+          className={cn(typeStyles.link, { [styles.disabled]: disabled })}
           to={TERMS_OF_SERVICE}
           target='_blank'
           rel='noreferrer'

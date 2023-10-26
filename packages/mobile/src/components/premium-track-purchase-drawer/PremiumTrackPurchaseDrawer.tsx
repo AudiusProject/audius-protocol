@@ -262,7 +262,10 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
               </View>
               <Text style={styles.disclaimer}>
                 {messages.disclaimer(
-                  <Text colorValue={secondary} onPress={handleTermsPress}>
+                  <Text
+                    colorValue={secondary}
+                    onPress={isInProgress ? undefined : handleTermsPress}
+                  >
                     {messages.termsOfUse}
                   </Text>
                 )}
