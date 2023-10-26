@@ -9,7 +9,8 @@ import styles from './SocialButton.module.css'
 
 type SocialMedia = 'tiktok' | 'instagram' | 'twitter'
 
-export type SocialButtonProps = ButtonProps & {
+// Omitting aria-label from original type purely to make it show in Storybook
+export type SocialButtonProps = Omit<ButtonProps, 'aria-label'> & {
   socialType: SocialMedia
   // Aria label is required since these buttons have no text
   'aria-label': string
