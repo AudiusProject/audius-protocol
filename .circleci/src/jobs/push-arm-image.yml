@@ -17,7 +17,6 @@ steps:
       command: docker buildx create --use
   - run: docker buildx version && docker buildx ls
   - run: . ~/.profile; audius-compose build --prod "<< parameters.service >>"
-  - run: docker inspect --format='{{.Os}}/{{.Architecture}}' audius-protocol-discovery-provider
   - run:
       name: Merge and push new tag manifest
       command: . ~/.profile; audius-compose push-arm --prod "<< parameters.service >>"
