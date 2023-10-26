@@ -6,7 +6,7 @@ import eslint from 'vite-plugin-eslint'
 import svgr from 'vite-plugin-svgr'
 import viteTsconfigPaths from 'vite-tsconfig-paths'
 
-const analyze = import.meta.env.BUNDLE_ANALYZE === 'true'
+const analyze = process.env.BUNDLE_ANALYZE === 'true'
 
 export default defineConfig(async () => {
   const glsl = (await import('vite-plugin-glsl')).default
@@ -35,14 +35,16 @@ export default defineConfig(async () => {
       }),
       react(),
       eslint(),
-      analyze
-        ? visualizer({
-            template: 'treemap', // or sunburst
-            open: true,
-            gzipSize: true,
-            filename: 'analyse.html' // will be saved in project's root
-          })
-        : undefined
+      ...(analyze
+        ? [
+            visualizer({
+              template: 'treemap', // or sunburst
+              open: true,
+              gzipSize: true,
+              filename: 'analyse.html' // will be saved in project's root
+            })
+          ]
+        : [])
     ],
     resolve: {
       alias: {
@@ -56,7 +58,16 @@ export default defineConfig(async () => {
         store: '/src/store',
         workers: '/src/workers',
         utils: '/src/utils',
+
+        os: require.resolve('os-browserify'),
+        path: require.resolve('path-browserify'),
+        url: require.resolve('url'),
+        zlib: require.resolve('browserify-zlib'),
+        crypto: require.resolve('crypto-browserify'),
+        http: require.resolve('stream-http'),
+        https: require.resolve('https-browserify'),
         stream: require.resolve('stream-browserify'),
+        // Resolve to lodash-es to support tree-shaking
         lodash: 'lodash-es'
       },
       preserveSymlinks: true
