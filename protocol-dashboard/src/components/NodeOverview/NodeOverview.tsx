@@ -37,7 +37,13 @@ const messages = {
   healthyPeers2m: 'HEALTHY PEERS',
   chain: 'AUDIUS CHAIN',
   peerReachability: 'PEER REACHABILITY',
-  failed_fetch: 'Failed to fetch health data',
+  uploadsCountErr: 'ERROR READING UPLOADS COUNT',
+  seedingDataLabel: 'SEEDING DATA',
+  failedFetch: 'Failed to fetch health data',
+  peerReachabilityWarning: 'Check firewall and connection to/from peers',
+  checkDiskWarning: 'Check disk/mount',
+  seedingDataText: 'Awaiting completion',
+  uptimeWarning: 'Failed to determine when the server last restarted',
   pending: 'Loading...'
 }
 
@@ -105,7 +111,7 @@ const NodeOverview = ({
         value={
           <TextWithIcon
             icon={<IconWarning />}
-            text={`${messages.failed_fetch}: ${error}`}
+            text={`${messages.failedFetch}: ${error}`}
           />
         }
       />
@@ -118,7 +124,10 @@ const NodeOverview = ({
           <ServiceDetail
             label={messages.errors}
             value={
-              <TextWithIcon icon={<IconWarning />} text={health.otherErrors.join(', ')} />
+              <TextWithIcon
+                icon={<IconWarning />}
+                text={health.otherErrors.join(', ')}
+              />
             }
           />
         )}
@@ -126,7 +135,10 @@ const NodeOverview = ({
           <ServiceDetail
             label={messages.diskHealth}
             value={
-              <TextWithIcon icon={<IconWarning />} text={'Check disk/mount'} />
+              <TextWithIcon
+                icon={<IconWarning />}
+                text={messages.checkDiskWarning}
+              />
             }
           />
         )}
@@ -143,7 +155,7 @@ const NodeOverview = ({
         )}
         {health?.uploadsCountErr && (
           <ServiceDetail
-            label={'ERROR READING UPLOADS COUNT'}
+            label={messages.uploadsCountErr}
             value={
               <TextWithIcon
                 icon={<IconWarning />}
@@ -154,11 +166,11 @@ const NodeOverview = ({
         )}
         {health?.isSeeding && (
           <ServiceDetail
-            label={'SEEDING DATA'}
+            label={messages.seedingDataLabel}
             value={
               <TextWithIcon
                 icon={<IconWarning />}
-                text={'awaiting completion'}
+                text={messages.seedingDataText}
               />
             }
           />
@@ -169,7 +181,7 @@ const NodeOverview = ({
             value={
               <TextWithIcon
                 icon={<IconWarning />}
-                text={'Check firewall and connection to/from peers'}
+                text={messages.peerReachabilityWarning}
               />
             }
           />
@@ -178,10 +190,7 @@ const NodeOverview = ({
           <ServiceDetail
             label={messages.chain}
             value={
-              <TextWithIcon
-                icon={<IconWarning />}
-                text={health.chainError}
-              />
+              <TextWithIcon icon={<IconWarning />} text={health.chainError} />
             }
           />
         )}
@@ -191,7 +200,7 @@ const NodeOverview = ({
             value={
               <TextWithIcon
                 icon={<IconWarning />}
-                text={'Failed to determine when the node last restarted'}
+                text={messages.uptimeWarning}
               />
             }
           />
@@ -270,7 +279,9 @@ const NodeOverview = ({
             <RegisterServiceModal
               isOpen={isOpen}
               onClose={onClose}
-              defaultDelegateOwnerWallet={delegateOwnerWallet || health?.delegateOwnerWallet || ''}
+              defaultDelegateOwnerWallet={
+                delegateOwnerWallet || health?.delegateOwnerWallet || ''
+              }
               defaultEndpoint={endpoint}
               defaultServiceType={serviceType}
             />
@@ -298,13 +309,17 @@ const NodeOverview = ({
         )}
       </div>
       <ServiceDetail label={messages.endpoint} value={endpoint} />
-      {(operatorWallet || health?.operatorWallet) && (<ServiceDetail
-        label={messages.operator}
-        value={operatorWallet || health?.operatorWallet}
-      />
+      {(operatorWallet || health?.operatorWallet) && (
+        <ServiceDetail
+          label={messages.operator}
+          value={operatorWallet || health?.operatorWallet}
+        />
       )}
       {(delegateOwnerWallet || health?.delegateOwnerWallet) && (
-        <ServiceDetail label={messages.delegate} value={delegateOwnerWallet || health.delegateOwnerWallet} />
+        <ServiceDetail
+          label={messages.delegate}
+          value={delegateOwnerWallet || health.delegateOwnerWallet}
+        />
       )}
       {healthDetails}
     </Paper>
@@ -324,7 +339,7 @@ export function RelTime({ date }: { date: Date | string }) {
 }
 
 export function timeSince(date: Date) {
-  if (!date || date.toString() === "0001-01-01T00:00:00Z") return null
+  if (!date || date.toString() === '0001-01-01T00:00:00Z') return null
   if (typeof date == 'string') {
     date = new Date(date)
   }
@@ -334,7 +349,7 @@ export function timeSince(date: Date) {
 }
 
 export function nanosToReadableDuration(nanos: number) {
-  const seconds = nanos / 1e9  // Convert nanoseconds to seconds
+  const seconds = nanos / 1e9 // Convert nanoseconds to seconds
   return secondsToReadableDuration(seconds)
 }
 
@@ -366,6 +381,5 @@ function secondsToReadableDuration(seconds: number) {
   }
   return Math.floor(seconds) + ' seconds'
 }
-
 
 export default NodeOverview

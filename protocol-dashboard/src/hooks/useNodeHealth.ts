@@ -18,11 +18,11 @@ const useNodeHealth = (endpoint: string, serviceType: ServiceType) => {
       if (serviceType === 'discovery-node') {
         try {
           const portHealthResponse = await fetch(`${endpoint}/chain/peer`)
-        const portHealth = portHealthResponse.ok
-        return {
-          ...data,
-          portHealth
-        }
+          const portHealth = portHealthResponse.ok
+          return {
+            ...data,
+            portHealth
+          }
         } catch (e) {
           return data
         }
@@ -44,12 +44,18 @@ const useNodeHealth = (endpoint: string, serviceType: ServiceType) => {
 
     let chainError = undefined
     if (!data?.chain_health) chainError = 'Missing health info'
-    if (!data?.portHealth) chainError = 'Can\'t reach port 30300'
+    if (!data?.portHealth) chainError = "Can't reach port 30300"
 
     res = {
-      diskGbUsed: health?.filesystem_used ? bytesToGb(health.filesystem_used) : undefined,
-      diskGbSize: health?.filesystem_size ? bytesToGb(health.filesystem_size) : undefined,
-      dbGbUsed: health?.database_size ? bytesToGb(health.database_size) : undefined,
+      diskGbUsed: health?.filesystem_used
+        ? bytesToGb(health.filesystem_used)
+        : undefined,
+      diskGbSize: health?.filesystem_size
+        ? bytesToGb(health.filesystem_size)
+        : undefined,
+      dbGbUsed: health?.database_size
+        ? bytesToGb(health.database_size)
+        : undefined,
       dbSizeErr: !health?.database_size ? 'unknown error' : undefined,
       version: health?.version,
       operatorWallet: '', // not exposed in Discovery's health check
@@ -99,24 +105,26 @@ const useNodeHealth = (endpoint: string, serviceType: ServiceType) => {
         : Math.max(totalMediorumSize, diskGbUsed)
 
     // calculate healthy peers counts
-  const now = new Date()
-  const twoMinutesAgoDate = new Date(now.getTime() - 2 * 60 * 1000)
-  let healthyPeers2m = 0
-  if (health?.peerHealths) {
-    for (const endpoint of Object.keys(health.peerHealths)) {
-      const peerHealth = health.peerHealths[endpoint]
-      const healthDate = new Date(peerHealth?.lastHealthy)
-      if (!isNaN(healthDate.getTime()) && healthDate > twoMinutesAgoDate) {
-        healthyPeers2m++
+    const now = new Date()
+    const twoMinutesAgoDate = new Date(now.getTime() - 2 * 60 * 1000)
+    let healthyPeers2m = 0
+    if (health?.peerHealths) {
+      for (const endpoint of Object.keys(health.peerHealths)) {
+        const peerHealth = health.peerHealths[endpoint]
+        const healthDate = new Date(peerHealth?.lastHealthy)
+        if (!isNaN(healthDate.getTime()) && healthDate > twoMinutesAgoDate) {
+          healthyPeers2m++
+        }
       }
     }
-  }
 
     res = {
       diskGbUsed,
       diskGbSize,
       healthyPeers2m,
-      dbGbUsed: health?.databaseSize ? bytesToGb(health.databaseSize) : undefined,
+      dbGbUsed: health?.databaseSize
+        ? bytesToGb(health.databaseSize)
+        : undefined,
       dbSizeErr: health?.dbSizeErr,
       version: health?.version,
       operatorWallet: health?.spOwnerWallet,

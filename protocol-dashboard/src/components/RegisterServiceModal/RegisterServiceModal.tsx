@@ -54,7 +54,9 @@ const RegisterServiceModal = ({
   defaultEndpoint,
   defaultDelegateOwnerWallet
 }: RegisterServiceModalProps) => {
-  const [selectedTab, setSelectedTab] = useState(defaultServiceType || ServiceType.DiscoveryProvider)
+  const [selectedTab, setSelectedTab] = useState(
+    defaultServiceType || ServiceType.DiscoveryProvider
+  )
   const { wallet } = useAccount()
   const serviceInfo = useServiceInfo()
   const { user } = useAccountUser()
@@ -116,7 +118,9 @@ const RegisterServiceModal = ({
   const [stakingBN, setStakingBN] = useState(calculatedMinStake)
   const [stakingAmount, setStakingAmount] = useState('')
   const [endpoint, setEndpoint] = useState(defaultEndpoint || '')
-  const [delegateOwnerWallet, setDelegateOwnerWallet] = useState(defaultDelegateOwnerWallet || wallet || '')
+  const [delegateOwnerWallet, setDelegateOwnerWallet] = useState(
+    defaultDelegateOwnerWallet || wallet || ''
+  )
 
   useEffect(() => {
     if (isOpen && defaultDelegateOwnerWallet) {
