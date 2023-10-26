@@ -19,6 +19,7 @@ steps:
   - run: 
       name: Docker buildx config
       command: docker buildx create --platform linux/arm64,linux/amd64 --use
+  - run: DOCKER_BUILDKIT=1
   - run: docker version
   - run: docker context ls
   - run: docker buildx ls
