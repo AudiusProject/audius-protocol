@@ -16,13 +16,6 @@ steps:
   - run:
       name: Docker login
       command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-  - run: 
-      name: Docker buildx config
-      command: docker buildx create --platform linux/arm64,linux/amd64 --use
-  - run: DOCKER_BUILDKIT=1
-  - run: docker version
-  - run: docker context ls
-  - run: docker buildx ls
   - run: . ~/.profile; audius-compose build --prod "<< parameters.service >>"
   - run: . ~/.profile; audius-compose push --prod "<< parameters.service >>"
   - run:
