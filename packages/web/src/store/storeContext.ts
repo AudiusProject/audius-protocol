@@ -4,7 +4,7 @@ import {
   OpenSeaClient,
   FeatureFlags
 } from '@audius/common'
-import * as Sentry from '@sentry/browser'
+import { setTag, configureScope } from '@sentry/browser'
 
 import * as analytics from 'services/analytics'
 import { audioPlayer } from 'services/audio-player'
@@ -56,7 +56,7 @@ export const storeContext: CommonStoreContext = {
     solanaClusterEndpoint: import.meta.env.VITE_SOLANA_CLUSTER_ENDPOINT,
     metadataProgramId: import.meta.env.VITE_METADATA_PROGRAM_ID
   }),
-  sentry: Sentry,
+  sentry: { setTag, configureScope },
   reportToSentry,
   trackDownload,
   instagramAppId: import.meta.env.VITE_INSTAGRAM_APP_ID,

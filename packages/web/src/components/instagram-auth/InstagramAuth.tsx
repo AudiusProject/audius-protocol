@@ -1,6 +1,6 @@
 import { MouseEvent, ReactNode, useCallback } from 'react'
 
-import * as Sentry from '@sentry/browser'
+import { captureException } from '@sentry/browser'
 import cn from 'classnames'
 
 import 'url-search-params-polyfill'
@@ -90,7 +90,7 @@ const InstagramAuth = ({
       } catch (err) {
         console.error(err)
         onFailure((err as Error).message)
-        Sentry.captureException(`Instagram getProfile failed with ${err}`)
+        captureException(`Instagram getProfile failed with ${err}`)
       }
     },
     [onSuccess, onFailure]

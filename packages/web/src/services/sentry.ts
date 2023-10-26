@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/browser'
+import { init } from '@sentry/browser'
 import { CaptureConsole } from '@sentry/integrations'
 
 const analyticsBlacklist = [
@@ -13,7 +13,7 @@ const analyticsBlacklist = [
 const MAX_BREADCRUMBS = 300
 
 export const initializeSentry = () => {
-  Sentry.init({
+  init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
 
     // Need to give Sentry a version so it can

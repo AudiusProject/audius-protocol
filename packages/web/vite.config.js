@@ -1,10 +1,12 @@
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
 import react from '@vitejs/plugin-react'
+import { visualizer } from 'rollup-plugin-visualizer'
 import { defineConfig } from 'vite'
-import commonjs from 'vite-plugin-commonjs'
 import eslint from 'vite-plugin-eslint'
 import svgr from 'vite-plugin-svgr'
 import viteTsconfigPaths from 'vite-tsconfig-paths'
+
+const analyze = import.meta.env.BUNDLE_ANALYZE === 'true'
 
 export default defineConfig(async () => {
   const glsl = (await import('vite-plugin-glsl')).default
@@ -32,7 +34,15 @@ export default defineConfig(async () => {
         include: '**/*.svg'
       }),
       react(),
-      eslint()
+      eslint(),
+      analyze
+        ? visualizer({
+            template: 'treemap', // or sunburst
+            open: true,
+            gzipSize: true,
+            filename: 'analyse.html' // will be saved in project's root
+          })
+        : undefined
     ],
     resolve: {
       alias: {
@@ -46,7 +56,8 @@ export default defineConfig(async () => {
         store: '/src/store',
         workers: '/src/workers',
         utils: '/src/utils',
-        stream: require.resolve('stream-browserify')
+        stream: require.resolve('stream-browserify'),
+        lodash: 'lodash-es'
       },
       preserveSymlinks: true
     },
