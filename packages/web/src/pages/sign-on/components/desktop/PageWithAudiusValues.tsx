@@ -10,6 +10,8 @@ import {
   Text
 } from '@audius/harmony'
 
+import { useMedia } from 'hooks/useMedia'
+
 import styles from './PageWithAudiusValues.module.css'
 
 type PageWithAudiusValuesProps = PropsWithChildren<{}>
@@ -23,17 +25,19 @@ const messages = {
 
 export const PageWithAudiusValues = (props: PageWithAudiusValuesProps) => {
   const { children } = props
+  const { isDesktop } = useMedia()
+
   return (
     <Flex
       className={styles.root}
       direction='row'
-      w={1280}
+      w={isDesktop ? 1280 : 480}
       h={864}
       borderRadius='l'
       shadow='far'
     >
       {children}
-      <AudiusValues />
+      {isDesktop ? <AudiusValues /> : null}
     </Flex>
   )
 }
