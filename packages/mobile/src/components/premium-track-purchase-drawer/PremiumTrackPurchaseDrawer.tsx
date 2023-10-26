@@ -266,7 +266,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
             <PurchaseUnavailable />
           ) : isPurchaseSuccessful ? (
             <PurchaseSuccess track={track} />
-          ) : (
+          ) : isInProgress ? null : (
             <View>
               <View style={styles.payToUnlockTitleContainer}>
                 <Text weight='heavy' textTransform='uppercase' fontSize='small'>
