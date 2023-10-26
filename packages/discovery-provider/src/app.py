@@ -329,6 +329,10 @@ def configure_celery(celery, test_config=None):
                 "task": "aggregate_metrics",
                 "schedule": timedelta(minutes=METRICS_INTERVAL),
             },
+            "update_metrics": {
+                "task": "update_metrics",
+                "schedule": timedelta(hours=1),
+            },
             "synchronize_metrics": {
                 "task": "synchronize_metrics",
                 "schedule": timedelta(minutes=SYNCHRONIZE_METRICS_INTERVAL),
@@ -472,6 +476,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("index_hourly_play_counts_lock")
     redis_inst.delete("update_discovery_lock")
     redis_inst.delete("aggregate_metrics_lock")
+    redis_inst.delete("update_metrics_lock")
     redis_inst.delete("synchronize_metrics_lock")
     redis_inst.delete("solana_plays_lock")
     redis_inst.delete("index_challenges_lock")

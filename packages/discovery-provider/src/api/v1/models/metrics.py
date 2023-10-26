@@ -11,3 +11,12 @@ plays_metric = ns.model(
 )
 
 genre_metric = ns.model("genre", {"name": fields.String, "count": fields.Integer})
+
+route_metric = ns.model(
+    "route_metric",
+    {
+        "timestamp": fields.String,
+        "count": fields.Integer,
+        "unique_count": fields.Integer,
+    },
+)

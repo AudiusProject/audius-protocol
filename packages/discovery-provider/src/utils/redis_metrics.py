@@ -27,7 +27,7 @@ from src.models.metrics.aggregate_monthly_unique_users_metrics import (
 )
 from src.utils.helpers import get_ip
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
-from src.utils.query_params import app_name_param
+from src.utils.query_params import app_name_param, stringify_query_params
 from src.utils.redis_connection import get_redis
 
 logger = logging.getLogger(__name__)
@@ -486,6 +486,27 @@ def get_aggregate_metrics_info():
     return json.loads(info_str) if info_str else {}
 
 
+def extract_route_key():
+    """
+    Extracts the route redis key and hash from the request
+    The key should be of format:
+        <metrics_prefix>:<metrics_routes>:<ip>:<rounded_date_time_format>
+        ie: "API_METRICS:routes:192.168.0.1:2020/08/04:14"
+    The hash should be of format:
+        <path><sorted_query_params>
+        ie: "/v1/tracks/search?genre=rap&query=best"
+    """
+    path = request.path
+    req_args = request.args.items()
+    req_args = stringify_query_params(req_args)
+    route = f"{path}?{req_args}" if req_args else path
+    ip = get_request_ip(request)
+    date_time = get_rounded_date_time().strftime(datetime_format)
+
+    route_key = f"{metrics_prefix}:{metrics_routes}:{ip}:{date_time}"
+    return (route_key, route)
+
+
 def update_personal_metrics(key, old_timestamp, timestamp, value, metric_type):
     values_str = REDIS.get(key)
     values = json.loads(values_str) if values_str else {}
@@ -591,6 +612,8 @@ def record_metrics(func):
     @functools.wraps(func)
     def wrap(*args, **kwargs):
         try:
+            route_key, route = extract_route_key()
+            REDIS.hincrby(route_key, route, 1)
             record_aggregate_metrics()
         except Exception as e:
             logger.error("Error while recording metrics: %s", e.message)
