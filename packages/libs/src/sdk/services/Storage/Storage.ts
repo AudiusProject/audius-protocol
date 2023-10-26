@@ -140,7 +140,11 @@ export class Storage implements StorageService {
     }
 
     let lastErr
-    for (let selectedNode = await this.storageNodeSelector.getSelectedNode(); this.storageNodeSelector.triedSelectingAllNodes(); selectedNode = await this.storageNodeSelector.getSelectedNode(true)) {
+    for (
+      let selectedNode = await this.storageNodeSelector.getSelectedNode();
+      this.storageNodeSelector.triedSelectingAllNodes();
+      selectedNode = await this.storageNodeSelector.getSelectedNode(true)
+    ) {
       request.url = `${selectedNode!}/uploads`
       try {
         response = await axios(request)
@@ -211,7 +215,11 @@ export class Storage implements StorageService {
    */
   private async getProcessingStatus(id: string): Promise<UploadResponse> {
     let lastErr
-    for (let selectedNode = await this.storageNodeSelector.getSelectedNode(); this.storageNodeSelector.triedSelectingAllNodes(); selectedNode = await this.storageNodeSelector.getSelectedNode(true)) {
+    for (
+      let selectedNode = await this.storageNodeSelector.getSelectedNode();
+      this.storageNodeSelector.triedSelectingAllNodes();
+      selectedNode = await this.storageNodeSelector.getSelectedNode(true)
+    ) {
       try {
         const response = await fetch(`${selectedNode}/uploads/${id}`)
         if (response.ok) {
