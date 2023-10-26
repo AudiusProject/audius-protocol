@@ -3,9 +3,9 @@ import Page from 'components/Page'
 import DiscoveryTable from 'components/DiscoveryTable'
 import {
   SERVICES,
-  SERVICES_CONTENT_NODE,
+  SERVICES_DISCOVERY_PROVIDER,
   SERVICES_TITLE,
-  SERVICES_UNREGISTERED_CONTENT_NODE
+  SERVICES_UNREGISTERED_DISCOVERY_NODE
 } from 'utils/routes'
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
@@ -45,9 +45,9 @@ const DiscoveryProviders = () => {
 
     let path = ''
     if (spId === 0) {
-      path = `${SERVICES_UNREGISTERED_CONTENT_NODE}?endpoint=${endpoint}`
+      path = `${SERVICES_UNREGISTERED_DISCOVERY_NODE}?endpoint=${endpoint}`
     } else {
-      path = SERVICES_CONTENT_NODE.replace(':spID', spId.toString())
+      path = SERVICES_DISCOVERY_PROVIDER.replace(':spID', spId.toString())
     }
     replaceRoute(path)
   }, [spId, endpoint, replaceRoute])

@@ -82,3 +82,24 @@
 .modifyBtnText {
   text-transform: uppercase;
 }
+
+.textWithIcon {
+  display: flex;
+  align-items: center;
+  max-width: 960px;
+}
+
+.textWithIcon > .icon {
+  margin-right: 8px;
+  display: flex;
+}
+
+.registerBtn {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.registerBtnText {
+  text-transform: uppercase;
+}

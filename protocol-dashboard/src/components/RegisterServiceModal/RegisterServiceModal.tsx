@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import clsx from 'clsx'
 import BN from 'bn.js'
 import { TabSlider, ButtonType } from '@audius/stems'
@@ -34,23 +34,27 @@ const messages = {
   registerService: 'Register Service'
 }
 
-type OwnProps = {
+type RegisterServiceModalProps = {
   isOpen: boolean
   onClose: () => void
+  defaultServiceType?: ServiceType
+  defaultEndpoint?: string
+  defaultDelegateOwnerWallet?: string
 }
-
-type RegisterServiceModalProps = OwnProps
 
 const tabOptions = [
   { key: ServiceType.DiscoveryProvider, text: 'Discovery Node' },
   { key: ServiceType.ContentNode, text: 'Content Node' }
 ]
 
-const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
+const RegisterServiceModal = ({
   isOpen,
-  onClose
+  onClose,
+  defaultServiceType,
+  defaultEndpoint,
+  defaultDelegateOwnerWallet
 }: RegisterServiceModalProps) => {
-  const [selectedTab, setSelectedTab] = useState(ServiceType.DiscoveryProvider)
+  const [selectedTab, setSelectedTab] = useState(defaultServiceType || ServiceType.DiscoveryProvider)
   const { wallet } = useAccount()
   const serviceInfo = useServiceInfo()
   const { user } = useAccountUser()
@@ -111,14 +115,16 @@ const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
 
   const [stakingBN, setStakingBN] = useState(calculatedMinStake)
   const [stakingAmount, setStakingAmount] = useState('')
-  const [endpoint, setEndpoint] = useState('')
-  const [delegateOwnerWallet, setDelegateOwnerWallet] = useState(wallet || '')
+  const [endpoint, setEndpoint] = useState(defaultEndpoint || '')
+  const [delegateOwnerWallet, setDelegateOwnerWallet] = useState(defaultDelegateOwnerWallet || wallet || '')
 
   useEffect(() => {
-    if (isOpen && wallet) {
+    if (isOpen && defaultDelegateOwnerWallet) {
+      setDelegateOwnerWallet(defaultDelegateOwnerWallet)
+    } else if (isOpen && wallet) {
       setDelegateOwnerWallet(wallet)
     }
-  }, [isOpen, setDelegateOwnerWallet, wallet])
+  }, [isOpen, setDelegateOwnerWallet, wallet, defaultDelegateOwnerWallet])
 
   useEffect(() => {
     if (isOpen && selectedServiceInfo && calculatedMinStakeRef.current) {
@@ -139,10 +145,11 @@ const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
 
   const onSelectTab = useCallback(
     selectedKey => {
+      if (selectedKey === selectedTab) return
       setSelectedTab(selectedKey)
-      setEndpoint('')
+      setEndpoint(defaultEndpoint || '')
     },
-    [setSelectedTab, setEndpoint]
+    [setSelectedTab, setEndpoint, selectedTab, defaultEndpoint]
   )
 
   const onUpdateStaking = useCallback(
@@ -184,9 +191,9 @@ const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
   }, [status, onClose, onCloseConfirm, setEndpoint, setDelegateOwnerWallet])
 
   const onCloseRegisterModal = useCallback(() => {
-    setEndpoint('')
+    if (endpoint !== defaultEndpoint) setEndpoint('')
     onClose()
-  }, [onClose, setEndpoint])
+  }, [onClose, setEndpoint, endpoint, defaultEndpoint])
 
   const topBox = user && (
     <OperatorStaking
@@ -257,7 +264,7 @@ const RegisterServiceModal: React.FC<RegisterServiceModalProps> = ({
         value={delegateOwnerWallet}
         onChange={setDelegateOwnerWallet}
         label={messages.delegate}
-        placeholder={wallet || ''}
+        placeholder={defaultDelegateOwnerWallet || wallet || ''}
         className={styles.input}
       />
       <Button
