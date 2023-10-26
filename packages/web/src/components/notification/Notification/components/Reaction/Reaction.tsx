@@ -13,7 +13,7 @@ import styles from './Reaction.module.css'
 
 export type ReactionProps = {
   className?: string
-  animationData: LottieProps['options']['animationData']
+  animationData: Promise<LottieProps['options']['animationData']>
   isActive?: boolean
   isResponsive?: boolean
   onClick?: MouseEventHandler
@@ -37,14 +37,23 @@ export const Reaction = (props: ReactionProps) => {
   } = props
   const [isInteracting, setInteracting] = useState(false)
   const [isClicked, setIsClicked] = useState(false)
+  const [animation, setAnimation] =
+    useState<LottieProps['options']['animationData']>()
+
+  useEffect(() => {
+    const loadAnimation = async () => {
+      setAnimation(await animationData)
+    }
+    loadAnimation()
+  }, [animationData])
 
   const lottieOptions = useMemo<LottieProps['options']>(
     () => ({
       autoplay: true,
       loop: true,
-      animationData
+      animationData: animation
     }),
-    [animationData]
+    [animation]
   )
 
   const handleClick: MouseEventHandler = useCallback(

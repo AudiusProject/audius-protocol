@@ -16,7 +16,6 @@ import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 
 import { identify } from 'common/store/analytics/actions'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
-import { updateProfileAsync } from 'common/store/profile/sagas'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
 
