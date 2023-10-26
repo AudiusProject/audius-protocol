@@ -80,6 +80,9 @@ services:
       context: ${PROJECT_ROOT}/packages/discovery-provider
       args:
         git_sha: '${GIT_COMMIT}'
+      platforms:
+        - "linux/amd64"
+        - "linux/arm64"
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
     env_file: .env # used by the startup script
     environment:
