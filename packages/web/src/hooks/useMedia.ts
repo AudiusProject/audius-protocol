@@ -1,11 +1,9 @@
-import { useMediaQuery } from 'react-responsive'
+import { useMedia as useMediaQuery } from 'react-use'
 
 export const useMedia = () => {
-  const isDesktop = useMediaQuery({
-    minWidth: '1280px'
-  })
-  const isTablet = useMediaQuery({ maxWidth: '1280px', minWidth: '480px' })
-  const isPhone = useMediaQuery({ maxWidth: '480px' })
+  const isDesktop = useMediaQuery('(min-width: 1280px)')
+  const isTablet = useMediaQuery('(max-width: 1280px) and (min-width: 480px)')
+  const isPhone = useMediaQuery('(max-width: 480px)')
 
   return {
     isDesktop,
