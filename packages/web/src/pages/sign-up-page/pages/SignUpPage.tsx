@@ -7,7 +7,8 @@ import {
   Divider,
   Flex,
   IconArrowRight,
-  Text
+  Text,
+  SocialButton
 } from '@audius/harmony'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { useDispatch } from 'react-redux'
@@ -22,8 +23,6 @@ import PreloadImage from 'components/preload-image/PreloadImage'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { EMAIL_REGEX } from 'utils/email'
 import { SIGN_IN_PAGE } from 'utils/route'
-
-import { SocialButton } from '../components/SocialButton'
 
 import { CreatePasswordState } from './CreatePasswordPage'
 import styles from './SignUpPage.module.css'
@@ -151,9 +150,21 @@ export const SignUpPage = (props: SignUpPageProps) => {
                 <Divider className={styles.flex1} />
               </Flex>
               <Flex direction='row' gap='s' w='100%'>
-                <SocialButton socialType='twitter' className={styles.flex1} />
-                <SocialButton socialType='instagram' className={styles.flex1} />
-                <SocialButton socialType='tiktok' className={styles.flex1} />
+                <SocialButton
+                  socialType='twitter'
+                  className={styles.flex1}
+                  aria-label='Sign up with Twitter'
+                />
+                <SocialButton
+                  socialType='instagram'
+                  className={styles.flex1}
+                  aria-label='Sign up with Instagram'
+                />
+                <SocialButton
+                  socialType='tiktok'
+                  className={styles.flex1}
+                  aria-label='Sign up with TikTok'
+                />
               </Flex>
             </Flex>
             <Flex direction='column' gap='l' alignItems='flex-start' w='100%'>
