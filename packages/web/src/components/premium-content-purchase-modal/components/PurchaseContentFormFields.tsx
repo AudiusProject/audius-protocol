@@ -61,7 +61,7 @@ export const PurchaseContentFormFields = ({
         {...purchaseSummaryValues}
         isPurchased={isPurchased}
       />
-      <PayToUnlockInfo disabled={isInProgress} />
+      <PayToUnlockInfo />
     </>
   )
 }
