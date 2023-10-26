@@ -6,7 +6,7 @@ jobs:
       service: discovery-provider
       filters:
         branches:
-          only: main
+          only: as/proto-1373-adc-arm
   - push-docker-image:
       name: push-discovery-provider-notifications
       context: [Vercel, dockerhub]
