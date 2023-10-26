@@ -266,7 +266,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
             <PurchaseUnavailable />
           ) : isPurchaseSuccessful ? (
             <PurchaseSuccess track={track} />
-          ) : (
+          ) : isInProgress ? null : (
             <View>
               <View style={styles.payToUnlockTitleContainer}>
                 <Text weight='heavy' textTransform='uppercase' fontSize='small'>
@@ -276,10 +276,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
               </View>
               <Text style={styles.disclaimer}>
                 {messages.disclaimer(
-                  <Text
-                    colorValue={secondary}
-                    onPress={isInProgress ? undefined : handleTermsPress}
-                  >
+                  <Text colorValue={secondary} onPress={handleTermsPress}>
                     {messages.termsOfUse}
                   </Text>
                 )}
