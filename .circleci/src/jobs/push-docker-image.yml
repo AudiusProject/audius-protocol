@@ -19,6 +19,8 @@ steps:
   - run: 
       name: Docker buildx config
       command: docker buildx create --use
+  - run: docker context ls
+  - run: docker buildx ls
   - run: . ~/.profile; audius-compose build --prod "<< parameters.service >>"
   - run: . ~/.profile; audius-compose push --prod "<< parameters.service >>"
   - run:
