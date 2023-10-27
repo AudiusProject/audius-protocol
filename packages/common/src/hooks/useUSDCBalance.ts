@@ -20,7 +20,13 @@ import { setUSDCBalance } from 'store/wallet/slice'
  * stale balance. If absolute latest balance value is needed, defer use until
  * Status.SUCCESS.
  */
-export const useUSDCBalance = ({ isPolling }: { isPolling?: boolean }) => {
+export const useUSDCBalance = ({
+  isPolling,
+  pollingInterval = 1000
+}: {
+  isPolling?: boolean
+  pollingInterval?: number
+} = {}) => {
   const { audiusBackend } = useAppContext()
   const dispatch = useDispatch()
 
@@ -56,7 +62,7 @@ export const useUSDCBalance = ({ isPolling }: { isPolling?: boolean }) => {
     if (isPolling) {
       refresh()
     }
-  }, 1000)
+  }, pollingInterval)
 
   return { balanceStatus, recoveryStatus, data, refresh }
 }
