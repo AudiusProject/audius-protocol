@@ -8,9 +8,7 @@ import { setValueField } from 'common/store/pages/signon/actions'
 import { TextField } from 'components/form-fields'
 import { Link } from 'components/link'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
-
-import { SignUpStep } from './types'
+import { SIGN_IN_PAGE, SIGN_UP_PASSWORD_PAGE } from 'utils/route'
 
 const messages = {
   header: 'Sign Up For Audius',
@@ -18,11 +16,6 @@ const messages = {
   signUp: 'Sign Up Free',
   haveAccount: 'Already have an account?',
   signIn: 'Sign In'
-}
-
-export type SignUpState = {
-  stage: SignUpStep.createAccount
-  email?: string
 }
 
 export type SignUpPageProps = {}
@@ -43,7 +36,7 @@ export const SignUpPage = (props: SignUpPageProps) => {
     (values: SignUpEmailValues) => {
       const { email } = values
       dispatch(setValueField('email', email))
-      navigate(`${SIGN_UP_PAGE}/${SignUpStep.createPassword}`)
+      navigate(SIGN_UP_PASSWORD_PAGE)
     },
     [dispatch, navigate]
   )

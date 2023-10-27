@@ -16,8 +16,6 @@ import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
 import { TRENDING_PAGE } from 'utils/route'
 
-import { SignUpStep } from './types'
-
 const messages = {
   header: 'Follow At Least 3 Artists',
   description:
@@ -25,10 +23,6 @@ const messages = {
   genresLabel: 'Selected genres',
   continue: 'Continue',
   pickArtists: (genre: string) => `Pick ${genre} Artists`
-}
-
-export type SelectArtistsState = {
-  stage: SignUpStep.selectArtists
 }
 
 type SelectArtistsValues = {

@@ -152,7 +152,6 @@ import {
   SALES_PAGE,
   WITHDRAWALS_PAGE,
   EXPLORE_PREMIUM_TRACKS_PAGE,
-  SIGN_UP_STEP_PAGE,
   SIGN_UP_START_PAGE
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
@@ -181,7 +180,7 @@ import { WithdrawalsPage } from './purchases-and-sales/WithdrawalsPage'
 import SettingsPage from './settings-page/SettingsPage'
 import { SubPage } from './settings-page/components/mobile/SettingsPage'
 import { SignInPage } from './sign-in-page'
-import { SignUpRootPage } from './sign-up-page'
+import { SignUpRootPage, SignUpRoute } from './sign-up-page'
 import SmartCollectionPage from './smart-collection/SmartCollectionPage'
 import SupportingPage from './supporting-page/SupportingPage'
 import TopSupportersPage from './top-supporters-page/TopSupportersPage'
@@ -522,13 +521,9 @@ class App extends Component {
                   )}
                 </Route>
                 {isSignInRedesignEnabled ? (
-                  <Route
-                    exact
-                    path={SIGN_UP_STEP_PAGE}
-                    isMobile={isMobileClient}
-                  >
+                  <SignUpRoute path={SIGN_UP_PAGE} isMobile={isMobileClient}>
                     <SignUpRootPage />
-                  </Route>
+                  </SignUpRoute>
                 ) : null}
                 <Route
                   exact

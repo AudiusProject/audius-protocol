@@ -8,12 +8,10 @@ import { useDispatch } from 'react-redux'
 import { setValueField } from 'common/store/pages/signon/actions'
 import { TextField } from 'components/form-fields'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { SIGN_UP_PAGE } from 'utils/route'
+import { SIGN_UP_GENRES_PAGE } from 'utils/route'
 
 import { CoverPhotoField } from '../components/CoverPhotoField'
 import { ProfilePictureField } from '../components/ProfilePictureField'
-
-import { SignUpStep } from './types'
 
 const messages = {
   header: 'Finish Your Profile',
@@ -21,10 +19,6 @@ const messages = {
     'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
   displayName: 'Display Name',
   continue: 'Continue'
-}
-
-export type FinishProfileState = {
-  stage: SignUpStep.finishProfile
 }
 
 type FinishProfilePageProps = {}
@@ -49,7 +43,7 @@ export const FinishProfilePage = (props: FinishProfilePageProps) => {
     (values: FinishProfileValues) => {
       const { displayName } = values
       dispatch(setValueField('name', displayName))
-      navigate(`${SIGN_UP_PAGE}/${SignUpStep.selectGenres}`)
+      navigate(SIGN_UP_GENRES_PAGE)
     },
     [dispatch, navigate]
   )

@@ -7,9 +7,7 @@ import { useDispatch } from 'react-redux'
 import { setValueField } from 'common/store/pages/signon/actions'
 import { TextField } from 'components/form-fields'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { SIGN_UP_PAGE } from 'utils/route'
-
-import { SignUpStep } from './types'
+import { SIGN_UP_FINISH_PROFILE_PAGE } from 'utils/route'
 
 const messages = {
   header: 'Pick Your Handle',
@@ -17,10 +15,6 @@ const messages = {
     'This is how others find and tag you. It is totally unique to you & cannot be changed later.',
   handle: 'Handle',
   continue: 'Continue'
-}
-
-export type PickHandleState = {
-  stage: SignUpStep.pickHandle
 }
 
 const initialValues = {
@@ -41,7 +35,7 @@ export const PickHandlePage = (props: PickHandlePageProps) => {
     (values: PickHandleValues) => {
       const { handle } = values
       dispatch(setValueField('handle', handle))
-      navigate(`${SIGN_UP_PAGE}/${SignUpStep.finishProfile}`)
+      navigate(SIGN_UP_FINISH_PROFILE_PAGE)
     },
     [dispatch, navigate]
   )

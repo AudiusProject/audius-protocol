@@ -7,9 +7,7 @@ import { useDispatch } from 'react-redux'
 import { setValueField } from 'common/store/pages/signon/actions'
 import { TextField } from 'components/form-fields'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { SIGN_UP_PAGE } from 'utils/route'
-
-import { SignUpStep } from './types'
+import { SIGN_UP_HANDLE_PAGE } from 'utils/route'
 
 const messages = {
   header: 'Create Your Password',
@@ -19,13 +17,6 @@ const messages = {
   passwordLabel: 'Password',
   confirmPasswordLabel: 'Confirm Password',
   continue: 'Continue'
-}
-
-export type CreatePasswordState = {
-  stage: SignUpStep.createPassword
-  params: {
-    email: string
-  }
 }
 
 const initialValues = {
@@ -38,11 +29,10 @@ type CreatePasswordValues = {
   confirmPassword: string
 }
 
-type CreatePasswordPageProps = {
-  params: { email: string }
-}
+type CreatePasswordPageProps = {}
 
 export const CreatePasswordPage = (props: CreatePasswordPageProps) => {
+  // TODO: PR #6443 replaces this logic
   const { email } = { email: '' }
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
@@ -51,7 +41,7 @@ export const CreatePasswordPage = (props: CreatePasswordPageProps) => {
     (values: CreatePasswordValues) => {
       const { password } = values
       dispatch(setValueField('password', password))
-      navigate(`${SIGN_UP_PAGE}/${SignUpStep.pickHandle}`)
+      navigate(SIGN_UP_HANDLE_PAGE)
     },
     [dispatch, navigate]
   )

@@ -1,112 +1,124 @@
-import { useEffect, useState } from 'react'
-
 import { useSelector } from 'react-redux'
-import { useParams } from 'react-router-dom'
+import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
 import { getSignOn } from 'common/store/pages/signon/selectors'
-import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { SIGN_UP_PAGE } from 'utils/route'
+import SignOnPageState from 'common/store/pages/signon/types'
+import { AppState } from 'store/types'
+import {
+  SIGN_UP_ARTISTS_PAGE,
+  SIGN_UP_EMAIL_PAGE,
+  SIGN_UP_FINISH_PROFILE_PAGE,
+  SIGN_UP_GENRES_PAGE,
+  SIGN_UP_HANDLE_PAGE,
+  SIGN_UP_PASSWORD_PAGE,
+  SignUpPath,
+  TRENDING_PAGE
+} from 'utils/route'
 
-import {
-  CreatePasswordPage,
-  CreatePasswordState
-} from './pages/CreatePasswordPage'
-import {
-  FinishProfilePage,
-  FinishProfileState
-} from './pages/FinishProfilePage'
-import { PickHandlePage, PickHandleState } from './pages/PickHandlePage'
-import {
-  SelectArtistsPage,
-  SelectArtistsState
-} from './pages/SelectArtistsPage'
-import { SelectGenrePage, SelectGenreState } from './pages/SelectGenrePage'
-import { SignUpPage, SignUpState } from './pages/SignUpPage'
-import { SignUpStep } from './pages/types'
-
-type SignUpRootState =
-  | SignUpState
-  | CreatePasswordState
-  | PickHandleState
-  | FinishProfileState
-  | SelectGenreState
-  | SelectArtistsState
-// | AppCtaState
+import { CreatePasswordPage } from './pages/CreatePasswordPage'
+import { FinishProfilePage } from './pages/FinishProfilePage'
+import { PickHandlePage } from './pages/PickHandlePage'
+import { SelectArtistsPage } from './pages/SelectArtistsPage'
+import { SelectGenrePage } from './pages/SelectGenrePage'
+import { SignUpPage } from './pages/SignUpPage'
 
 // TODO: type this correctly
-const determineAllowedRoute = (signUpData: any, routeAttempt: SignUpStep) => {
-  let allowedRoutes = [SignUpStep.createAccount]
+const determineAllowedRoute = (
+  signUpData: SignOnPageState,
+  routeAttempt: string | SignUpPath
+) => {
+  // Have to type as string[] to avoid too narrow of a type for comparing against
+  let allowedRoutes: string[] = [SignUpPath.createEmail] // create email is available by default
   if (signUpData.email.value) {
-    allowedRoutes.push(SignUpStep.createPassword)
-    // SignUpStep.createAccount
+    // Already have email
+    allowedRoutes.push(SignUpPath.createPassword)
   }
   if (signUpData.password.value) {
-    allowedRoutes.push(SignUpStep.pickHandle)
+    // Already have password
+    allowedRoutes.push(SignUpPath.pickHandle)
   }
   if (signUpData.handle.value) {
-    allowedRoutes.push(SignUpStep.finishProfile)
+    // Already have handle
+    allowedRoutes.push(SignUpPath.finishProfile)
   }
   if (signUpData.name.value) {
-    // At this point the account is created and we can no longer go back to previous steps
-    allowedRoutes = [SignUpStep.selectGenres]
+    // Already have display name
+    // At this point the account is fully created & logged in; now user can't back to account creation steps
+    allowedRoutes = [SignUpPath.selectGenres]
   }
-  // TODO: need to get this from a different part of the store
-  if (signUpData.genres?.value) {
-    allowedRoutes.push(SignUpStep.selectArtists)
+  // TODO: These checks below here may need to fall under a different route umbrella separate from sign up
+  if (signUpData.genres) {
+    console.log({ genres: signUpData.genres })
+    // Already have genres selected
+    allowedRoutes.push(SignUpPath.selectArtists)
   }
-  if (signUpData.artists?.value) {
-    // TODO: if we're here we should be redirecting to /trending
+
+  if (signUpData.followArtists?.selectedUserIds?.length >= 3) {
+    console.log({ artist: signUpData.followArtists })
+    // Already have 3 artists followed (done with sign up if at this point)
+    // TODO: trigger welcome modal when redirecting from here
+    return { isAllowedRoute: false, correctedRoute: TRENDING_PAGE }
   }
 
   const isAllowedRoute = allowedRoutes.includes(routeAttempt)
   // If requested route is allowed return that, otherwise return the last step in the route stack
-  return isAllowedRoute ? routeAttempt : allowedRoutes[allowedRoutes.length - 1]
+  const correctedPath = isAllowedRoute
+    ? routeAttempt
+    : allowedRoutes[allowedRoutes.length - 1]
+  return {
+    isAllowedRoute,
+    correctedRoute: `/signup/${correctedPath}`
+  }
+}
+
+/**
+ * Protected route wrapper that handles redirecting through the sign up page flow
+ */
+export function SignUpRoute({ children, ...rest }: RouteProps) {
+  const existingSignUpState = useSelector((state: AppState) => getSignOn(state))
+  return (
+    <Route
+      {...rest}
+      render={({ location }) => {
+        // Get the requested sub-route
+        const requestedPath = location.pathname.replace('/signup/', '')
+        const { isAllowedRoute, correctedRoute } = determineAllowedRoute(
+          existingSignUpState,
+          requestedPath
+        )
+        return isAllowedRoute ? (
+          <>{children}</>
+        ) : (
+          <Redirect to={correctedRoute} />
+        )
+      }}
+    />
+  )
 }
 
 export const SignUpRootPage = () => {
-  const [signUpState, setSignUpState] = useState<SignUpRootState>({
-    stage: SignUpStep.createAccount
-  })
-  const currentStage = signUpState.stage
-  const currentParams = useParams<{ step: SignUpStep }>()
-  const navigate = useNavigateToPage()
-  // @ts-ignore
-  const signOnState = useSelector((state) => getSignOn(state))
-
-  // Redirect handler logic
-  useEffect(() => {
-    const allowedRoute = determineAllowedRoute(signOnState, currentParams.step)
-    // console.log(
-    //   'Attempted to route to:',
-    //   currentParams.step,
-    //   '; now routing to ',
-    //   allowedRoute
-    // )
-    // If the requested step is not allowed, redirect accordingly
-    if (allowedRoute !== currentParams.step) {
-      navigate(`${SIGN_UP_PAGE}/${allowedRoute}`)
-    }
-    // Sync the stage accordingly
-    // @ts-ignore
-    setSignUpState({ stage: allowedRoute })
-  }, [currentParams, currentStage, navigate, signOnState])
-
   return (
     <div>
-      {signUpState.stage === SignUpStep.createAccount ? <SignUpPage /> : null}
-      {signUpState.stage === SignUpStep.createPassword ? (
-        <CreatePasswordPage params={signUpState.params} />
-      ) : null}
-      {signUpState.stage === SignUpStep.pickHandle ? <PickHandlePage /> : null}
-      {signUpState.stage === SignUpStep.finishProfile ? (
-        <FinishProfilePage />
-      ) : null}
-      {signUpState.stage === SignUpStep.selectGenres ? (
-        <SelectGenrePage />
-      ) : null}
-      {signUpState.stage === SignUpStep.selectArtists ? (
-        <SelectArtistsPage />
-      ) : null}
+      <Switch>
+        <Route exact path={SIGN_UP_EMAIL_PAGE}>
+          <SignUpPage />
+        </Route>
+        <Route exact path={SIGN_UP_PASSWORD_PAGE}>
+          <CreatePasswordPage />
+        </Route>
+        <Route exact path={SIGN_UP_HANDLE_PAGE}>
+          <PickHandlePage />
+        </Route>
+        <Route exact path={SIGN_UP_FINISH_PROFILE_PAGE}>
+          <FinishProfilePage />
+        </Route>
+        <Route exact path={SIGN_UP_GENRES_PAGE}>
+          <SelectGenrePage />
+        </Route>
+        <Route exact path={SIGN_UP_ARTISTS_PAGE}>
+          <SelectArtistsPage />
+        </Route>
+      </Switch>
     </div>
   )
 }

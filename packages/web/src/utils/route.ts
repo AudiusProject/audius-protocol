@@ -69,10 +69,6 @@ export const HOME_PAGE = '/'
 export const NOT_FOUND_PAGE = '/404'
 export const SIGN_IN_PAGE = '/signin'
 export const SIGN_UP_PAGE = '/signup'
-export const SIGN_UP_START_PAGE = '/signup/create-account'
-export const SIGN_UP_PASSWORD_PAGE = '/signup/create-password'
-export const SIGN_UP_HANDLE_PAGE = '/signup/create-password'
-export const SIGN_UP_FINISH_PROFILE_PAGE = '/signup/finish-profile'
 export const OAUTH_LOGIN_PAGE = '/oauth/auth'
 export const NOTIFICATION_PAGE = '/notifications'
 export const APP_REDIRECT = '/app-redirect'
@@ -84,8 +80,24 @@ export const PURCHASES_PAGE = '/purchases'
 export const SALES_PAGE = '/sales'
 export const WITHDRAWALS_PAGE = '/withdrawals'
 
+// Multi-stage sign up flow routes
+export enum SignUpPath {
+  createEmail = 'create-email',
+  createPassword = 'create-password',
+  pickHandle = 'pick-handle',
+  finishProfile = 'finish-profile',
+  selectGenres = 'select-genres',
+  selectArtists = 'select-artists'
+}
+export const SIGN_UP_EMAIL_PAGE = `/signup/${SignUpPath.createEmail}`
+export const SIGN_UP_START_PAGE = SIGN_UP_EMAIL_PAGE // entry point for sign up if needing to redirect to the beginning
+export const SIGN_UP_PASSWORD_PAGE = `/signup/${SignUpPath.createPassword}`
+export const SIGN_UP_HANDLE_PAGE = `/signup/${SignUpPath.pickHandle}`
+export const SIGN_UP_FINISH_PROFILE_PAGE = `/signup/${SignUpPath.finishProfile}`
+export const SIGN_UP_GENRES_PAGE = `/signup/${SignUpPath.selectGenres}`
+export const SIGN_UP_ARTISTS_PAGE = `/signup/${SignUpPath.selectArtists}`
+
 // Param routes.
-export const SIGN_UP_STEP_PAGE = '/signup/:step'
 export const NOTIFICATION_USERS_PAGE = '/notification/:notificationId/users'
 export const SEARCH_CATEGORY_PAGE = '/search/:query/:category'
 export const SEARCH_PAGE = '/search/:query?'
@@ -196,7 +208,12 @@ export const publicSiteRoutes = [
 export const orderedRoutes = [
   SIGN_IN_PAGE,
   SIGN_UP_PAGE,
-  SIGN_UP_STEP_PAGE,
+  SIGN_UP_EMAIL_PAGE,
+  SIGN_UP_PASSWORD_PAGE,
+  SIGN_UP_HANDLE_PAGE,
+  SIGN_UP_FINISH_PROFILE_PAGE,
+  SIGN_UP_GENRES_PAGE,
+  SIGN_UP_ARTISTS_PAGE,
   FEED_PAGE,
   NOTIFICATION_USERS_PAGE,
   NOTIFICATION_PAGE,

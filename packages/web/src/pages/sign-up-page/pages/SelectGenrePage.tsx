@@ -12,15 +12,9 @@ import {
 } from 'common/store/pages/signon/selectors'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
-import { SIGN_UP_PAGE } from 'utils/route'
+import { SIGN_UP_ARTISTS_PAGE } from 'utils/route'
 
 import { GenrePill } from '../components/GenrePill'
-
-import { SignUpStep } from './types'
-
-export type SelectGenreState = {
-  stage: SignUpStep.selectGenres
-}
 
 const messages = {
   header: 'Select Your Genres',
@@ -55,7 +49,7 @@ export const SelectGenrePage = (props: SelectGenrePageProps) => {
     (values: SelectGenreValues) => {
       const genres = Object.keys(values).filter((genre) => values[genre])
       dispatch(setField('genres', genres))
-      navigate(`${SIGN_UP_PAGE}/${SignUpStep.selectArtists}`)
+      navigate(SIGN_UP_ARTISTS_PAGE)
     },
     [dispatch, navigate]
   )
