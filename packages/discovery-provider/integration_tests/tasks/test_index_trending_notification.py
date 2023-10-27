@@ -36,7 +36,9 @@ def test_index_trending_notification(app):
         trending_strategy = trending_strategy_factory.get_strategy(TrendingType.TRACKS)
         # Test that if there are no prev notifications, all trending in top are generated
 
-        trending_key = make_trending_tracks_cache_key("week", None, trending_strategy.version)
+        trending_key = make_trending_tracks_cache_key(
+            "week", None, trending_strategy.version
+        )
         trending_tracks = [
             {
                 "track_id": i,
