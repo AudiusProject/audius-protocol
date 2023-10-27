@@ -1,4 +1,4 @@
-import { createApi } from '@audius/common'
+import { createApi } from 'audius-query'
 
 const signUpApi = createApi({
   reducerPath: 'signUpApi',
