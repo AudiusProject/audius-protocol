@@ -74,25 +74,19 @@ export const SignUpRootPage = () => {
 
   // Redirect handler logic
   useEffect(() => {
-    if (currentParams.step === undefined) {
-      // Start of flow, redirect to the beginning
-      navigate(`${SIGN_UP_PAGE}/${SignUpStep.createAccount}`)
-    } else {
-      const allowedRoute = determineAllowedRoute(
-        signOnState,
-        currentParams.step
-      )
-      console.log(
-        'Attempted to route to:',
-        currentParams.step,
-        '; now routing to ',
-        allowedRoute
-      )
-      if (allowedRoute !== currentParams.step) {
-        navigate(`${SIGN_UP_PAGE}/${allowedRoute}`)
-      }
-      setSignUpState({ stage: allowedRoute })
+    const allowedRoute = determineAllowedRoute(signOnState, currentParams.step)
+    console.log(
+      'Attempted to route to:',
+      currentParams.step,
+      '; now routing to ',
+      allowedRoute
+    )
+    // If the requested step is not allowed, redirect accordingly
+    if (allowedRoute !== currentParams.step) {
+      navigate(`${SIGN_UP_PAGE}/${allowedRoute}`)
     }
+    // Sync the stage accordingly
+    setSignUpState({ stage: allowedRoute })
   }, [currentParams, currentStage, navigate, signOnState])
 
   return (
