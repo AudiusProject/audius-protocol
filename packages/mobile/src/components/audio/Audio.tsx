@@ -712,7 +712,7 @@ export const Audio = () => {
   }, [playbackState, playing])
 
   const handleStop = useCallback(async () => {
-    await TrackPlayer.reset()
+    TrackPlayer.reset()
   }, [])
 
   const handleRepeatModeChange = useCallback(async () => {
