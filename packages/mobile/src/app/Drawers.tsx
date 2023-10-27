@@ -37,6 +37,7 @@ import { StripeOnrampDrawer } from 'app/components/stripe-onramp-drawer'
 import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
 import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-drawer'
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
+import { USDCManualTransferDrawer } from 'app/components/usdc-manual-transfer-drawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
 import { useDrawerState } from '../components/drawer'
@@ -134,7 +135,8 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   BlockMessages: BlockMessagesDrawer,
   DeleteChat: DeleteChatDrawer,
   SupportersInfo: SupportersInfoDrawer,
-  PremiumTrackPurchase: PremiumTrackPurchaseDrawer
+  PremiumTrackPurchase: PremiumTrackPurchaseDrawer,
+  USDCManualTransfer: USDCManualTransferDrawer
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [

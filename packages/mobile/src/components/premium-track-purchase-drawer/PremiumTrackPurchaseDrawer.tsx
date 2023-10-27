@@ -40,6 +40,7 @@ import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { make, track as trackEvent } from 'app/services/analytics'
+import { setVisibility } from 'app/store/drawers/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -80,7 +81,8 @@ const messages = {
       }
     </>
   ),
-  termsOfUse: 'Terms of Use.'
+  termsOfUse: 'Terms of Use.',
+  manualTransfer: '(Advanced) Manual Crypto Transfer'
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
@@ -145,7 +147,13 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     ...flexRowCentered()
   },
   disclaimer: {
-    lineHeight: 20
+    lineHeight: typography.fontSize.medium * 1.25
+  },
+  bottomSection: {
+    gap: spacing(2)
+  },
+  manualTransfer: {
+    lineHeight: typography.fontSize.medium * 1.25
   }
 }))
 
@@ -206,9 +214,10 @@ const getButtonText = (isUnlocking: boolean, amountDue: number) =>
 // to the FormikContext, which can only be used in a component which is a descendant
 // of the `<Formik />` component
 const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
+  const dispatch = useDispatch()
   const navigation = useNavigation()
   const styles = useStyles()
-  const { specialLightGreen, secondary } = useThemeColors()
+  const { specialLightGreen, primary } = useThemeColors()
   const presetValues = usePayExtraPresets(useRemoteVar)
   const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.IOS_USDC_PURCHASE_ENABLED
@@ -245,6 +254,10 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
     trackEvent(make({ eventName: Name.PURCHASE_CONTENT_TOS_CLICKED }))
   }, [])
 
+  const handleManualTransferPress = useCallback(() => {
+    dispatch(setVisibility({ drawer: 'USDCManualTransfer', visible: true }))
+  }, [dispatch])
+
   return (
     <>
       <ScrollView contentContainerStyle={styles.formContentContainer}>
@@ -261,10 +274,22 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
               disabled={isInProgress}
             />
           )}
-          <PurchaseSummaryTable
-            {...purchaseSummaryValues}
-            isPurchaseSuccessful={isPurchaseSuccessful}
-          />
+          <View style={styles.bottomSection}>
+            <PurchaseSummaryTable
+              {...purchaseSummaryValues}
+              isPurchaseSuccessful={isPurchaseSuccessful}
+            />
+            {isIOSDisabled ? null : (
+              <Text
+                color='primary'
+                fontSize='small'
+                onPress={handleManualTransferPress}
+                style={styles.manualTransfer}
+              >
+                {messages.manualTransfer}
+              </Text>
+            )}
+          </View>
           {isIOSDisabled ? (
             <PurchaseUnavailable />
           ) : isPurchaseSuccessful ? (
@@ -279,7 +304,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
               </View>
               <Text style={styles.disclaimer}>
                 {messages.disclaimer(
-                  <Text colorValue={secondary} onPress={handleTermsPress}>
+                  <Text colorValue={primary} onPress={handleTermsPress}>
                     {messages.termsOfUse}
                   </Text>
                 )}
