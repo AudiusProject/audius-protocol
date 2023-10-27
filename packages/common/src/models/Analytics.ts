@@ -350,6 +350,7 @@ export enum Name {
   PURCHASE_CONTENT_SUCCESS = 'Purchase Content: Success',
   PURCHASE_CONTENT_FAILURE = 'Purchase Content: Failure',
   PURCHASE_CONTENT_TWITTER_SHARE = 'Purchase Content: Twitter Share',
+  PURCHASE_CONTENT_TOS_CLICKED = 'Purchase Content: Terms of Service Link Clicked',
 
   // Rate & Review CTA
   RATE_CTA_DISPLAYED = 'Rate CTA: Displayed',
@@ -1706,6 +1707,10 @@ type PurchaseContentTwitterShare = {
   text: string
 }
 
+type PurchaseContentTOSClicked = {
+  eventName: Name.PURCHASE_CONTENT_TOS_CLICKED
+}
+
 type RateCtaDisplayed = {
   eventName: Name.RATE_CTA_DISPLAYED
 }
@@ -2050,6 +2055,7 @@ export type AllTrackingEvents =
   | PurchaseContentSuccess
   | PurchaseContentFailure
   | PurchaseContentTwitterShare
+  | PurchaseContentTOSClicked
   | RateCtaDisplayed
   | RateCtaResponseNo
   | RateCtaResponseYes

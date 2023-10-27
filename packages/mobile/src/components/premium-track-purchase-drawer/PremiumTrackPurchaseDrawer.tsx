@@ -6,6 +6,7 @@ import type {
 } from '@audius/common'
 import {
   FeatureFlags,
+  Name,
   PurchaseContentStage,
   formatPrice,
   isContentPurchaseInProgress,
@@ -38,6 +39,7 @@ import { useDrawer } from 'app/hooks/useDrawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { make, track as trackEvent } from 'app/services/analytics'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -240,6 +242,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
 
   const handleTermsPress = useCallback(() => {
     Linking.openURL('https://audius.co/legal/terms-of-use')
+    trackEvent(make({ eventName: Name.PURCHASE_CONTENT_TOS_CLICKED }))
   }, [])
 
   return (
