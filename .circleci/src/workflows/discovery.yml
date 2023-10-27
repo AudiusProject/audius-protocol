@@ -4,6 +4,9 @@ jobs:
       name: push-discovery-provider
       context: [Vercel, dockerhub]
       service: discovery-provider
+      filters:
+        branches:
+          only: main
   - push-docker-image:
       name: push-discovery-provider-notifications
       context: [Vercel, dockerhub]
