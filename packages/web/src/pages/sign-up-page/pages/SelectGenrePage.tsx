@@ -37,9 +37,7 @@ const initialValues = genres.reduce(
   {} as SelectGenreValues
 )
 
-type SelectGenrePageProps = {}
-
-export const SelectGenrePage = (props: SelectGenrePageProps) => {
+export const SelectGenrePage = () => {
   const { value: displayName } = useSelector(getNameField)
   const { value: handle } = useSelector(getHandleField)
   const dispatch = useDispatch()

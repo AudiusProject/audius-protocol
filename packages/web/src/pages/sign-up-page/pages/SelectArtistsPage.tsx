@@ -33,9 +33,7 @@ const initialValues: SelectArtistsValues = {
   artists: []
 }
 
-type SelectArtistsPageProps = {}
-
-export const SelectArtistsPage = (props: SelectArtistsPageProps) => {
+export const SelectArtistsPage = () => {
   const genres = useSelector((state) => ['Featured', ...getGenres(state)])
   const [currentGenre, setCurrentGenre] = useState('Featured')
   const dispatch = useDispatch()

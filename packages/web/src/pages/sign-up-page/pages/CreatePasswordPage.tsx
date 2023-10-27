@@ -29,9 +29,7 @@ type CreatePasswordValues = {
   confirmPassword: string
 }
 
-type CreatePasswordPageProps = {}
-
-export const CreatePasswordPage = (props: CreatePasswordPageProps) => {
+export const CreatePasswordPage = () => {
   // TODO: PR #6443 replaces this logic
   const { email } = { email: '' }
   const dispatch = useDispatch()

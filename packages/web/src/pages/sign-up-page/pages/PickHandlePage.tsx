@@ -25,9 +25,7 @@ type PickHandleValues = {
   handle: string
 }
 
-type PickHandlePageProps = {}
-
-export const PickHandlePage = (props: PickHandlePageProps) => {
+export const PickHandlePage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
 

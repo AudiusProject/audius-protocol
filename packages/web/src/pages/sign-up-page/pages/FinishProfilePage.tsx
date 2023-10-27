@@ -21,8 +21,6 @@ const messages = {
   continue: 'Continue'
 }
 
-type FinishProfilePageProps = {}
-
 type FinishProfileValues = {
   profile_picture: Nullable<{ file: File; url: string }>
   cover_photo: Nullable<{ file: File; url: string }>
@@ -35,7 +33,7 @@ const initialValues = {
   displayName: ''
 }
 
-export const FinishProfilePage = (props: FinishProfilePageProps) => {
+export const FinishProfilePage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
 

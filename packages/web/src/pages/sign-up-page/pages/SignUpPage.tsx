@@ -39,8 +39,6 @@ const messages = {
   unknownError: 'Unknown error occurred.'
 }
 
-export type SignUpPageProps = {}
-
 const initialValues = {
   email: ''
 }
@@ -55,7 +53,7 @@ const FormSchema = z.object({
     .regex(EMAIL_REGEX, { message: messages.invalidEmail })
 })
 
-export const SignUpPage = (props: SignUpPageProps) => {
+export const SignUpPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const queryContext = useContext(AudiusQueryContext)
