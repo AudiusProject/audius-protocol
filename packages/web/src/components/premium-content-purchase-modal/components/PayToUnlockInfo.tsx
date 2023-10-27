@@ -16,7 +16,7 @@ const messages = {
   copyPart1: 'By clicking on "Buy", you agree to our ',
   termsOfUse: 'Terms of Use',
   copyPart2:
-    '. Your purchase will be made in USDC via 3rd party payment provider. Additional payment provider fees may apply. Any remaining USDC balance in your Audius wallet will be applied to this transaction. Once your payment is confirmed, your premium content will be unlocked and available to stream.'
+    '. Additional payment provider fees may apply. Any remaining USDC balance in your Audius wallet will be applied to this transaction.'
 }
 
 export const PayToUnlockInfo = () => {
