@@ -19,3 +19,4 @@ class AggregateMonthlyTotalUsersMetric(Base, RepresentableMixin):
     updated_at = Column(
         DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")
     )
+    personal_count = Column(Integer)
