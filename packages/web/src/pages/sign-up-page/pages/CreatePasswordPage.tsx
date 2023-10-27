@@ -22,9 +22,6 @@ const messages = {
 
 export type CreatePasswordState = {
   stage: 'create-password'
-  params: {
-    email: string
-  }
 }
 
 const initialValues = {
@@ -38,14 +35,13 @@ type CreatePasswordValues = {
 }
 
 type CreatePasswordPageProps = {
-  params: { email: string }
   onPrevious: (state: SignUpState) => void
   onNext: (state: PickHandleState) => void
 }
 
 export const CreatePasswordPage = (props: CreatePasswordPageProps) => {
-  const { params, onNext } = props
-  const { email } = params
+  const { onNext } = props
+  const { email = '' } = {}
   const dispatch = useDispatch()
 
   const handleSubmit = useCallback(

@@ -38,7 +38,6 @@ export const SignUpRootPage = () => {
       ) : null}
       {signUpState.stage === 'create-password' ? (
         <CreatePasswordPage
-          params={signUpState.params}
           onPrevious={setSignUpState}
           onNext={setSignUpState}
         />
