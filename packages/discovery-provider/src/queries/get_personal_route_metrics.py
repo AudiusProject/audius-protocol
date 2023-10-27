@@ -28,7 +28,7 @@ def get_personal_route_metrics(time_range, bucket_size):
     on this node based on given time range and grouped by bucket size
 
     Returns:
-        [{ timestamp, unique_count, count }]
+        [{ timestamp, unique_count, total_count }]
     """
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
