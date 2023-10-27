@@ -47,7 +47,6 @@ const useEditTrackSchemaZod = () => {
         title: z.string(),
         genre: z.any(),
         description: z.string().length(1000).nullable(),
-        // todo: try z.union() and see if that works
         premium_conditions: z.any(),
         duration: z.number().nullable(),
         preview_start_seconds: z.any()

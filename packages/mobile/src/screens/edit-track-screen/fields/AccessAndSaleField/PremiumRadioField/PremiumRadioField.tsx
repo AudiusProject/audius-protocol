@@ -102,8 +102,8 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
   const titleIconColor = selected
     ? secondary
     : disabled
-    ? neutralLight4
-    : neutral
+      ? neutralLight4
+      : neutral
 
   const selectedUsdcPurchaseValue = useMemo(() => {
     if (isPremiumContentUSDCPurchaseGated(previousPremiumConditions)) {
@@ -130,8 +130,6 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
     selectedUsdcPurchaseValue,
     setTrackAvailabilityFields
   ])
-  const [{ value: premiumConditions }] = useField('premium_conditions')
-  console.log("YOOOOOO", {preview, premiumConditions})
 
   const renderHelpCalloutContent = useCallback(() => {
     return (

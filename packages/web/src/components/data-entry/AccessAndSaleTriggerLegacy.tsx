@@ -122,7 +122,11 @@ export const AccessAndSaleTriggerLegacyProps = (
     ...fieldVisibility
   } = metadataState
 
-  // Premium conditions from inside the modal
+  /**
+   * Premium conditions from inside the modal.
+   * Upon submit, these values along with the selected access option will
+   * determine the final premium conditions that get saved to the track.
+   */
   const accountUserId = useSelector(getUserId)
   const tempPremiumConditions = {
     ...getCombinedDefaultPremiumConditionValues(accountUserId),
@@ -169,6 +173,7 @@ export const AccessAndSaleTriggerLegacyProps = (
     set(
       initialValues,
       SPECIAL_ACCESS_TYPE,
+      // Since we're in edit mode, we check if the track was initially tip gated
       (isTipGated || isPremiumContentTipGated(initialPremiumConditions)) ? SpecialAccessType.TIP : SpecialAccessType.FOLLOW
     )
     return initialValues as AccessAndSaleFormValues

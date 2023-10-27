@@ -152,7 +152,6 @@ export const AccessAndSaleFormSchema = (
 ) =>
   z
     .object({
-      // todo: try z.union() and see if that works
       [PREMIUM_CONDITIONS]: z.any(),
       [PREVIEW]: z.optional(
         z.nullable(z.number({ invalid_type_error: messages.required }))
@@ -164,10 +163,10 @@ export const AccessAndSaleFormSchema = (
         const formValues = values as AccessAndSaleFormValues
         const premiumConditions = formValues[PREMIUM_CONDITIONS]
         if (formValues[AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
-          isPremiumContentUSDCPurchaseGated(premiumConditions) &&
-          !premiumConditions.usdc_purchase.price
+          isPremiumContentUSDCPurchaseGated(premiumConditions)
         ) {
-          return false
+          const { price } = premiumConditions.usdc_purchase
+          return price > 0 && price >= minContentPriceCents
         }
         return true
       },
@@ -178,28 +177,13 @@ export const AccessAndSaleFormSchema = (
         const formValues = values as AccessAndSaleFormValues
         const premiumConditions = formValues[PREMIUM_CONDITIONS]
         if (formValues[AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
-          isPremiumContentUSDCPurchaseGated(premiumConditions) &&
-          premiumConditions.usdc_purchase.price > maxContentPriceCents
+          isPremiumContentUSDCPurchaseGated(premiumConditions)
         ) {
-          return false
+          return premiumConditions.usdc_purchase.price <= maxContentPriceCents
         }
         return true
       },
       { message: messages.errors.price.tooHigh(maxContentPriceCents), path: [PRICE] }
-    )
-    .refine(
-      (values) => {
-        const formValues = values as AccessAndSaleFormValues
-        const premiumConditions = formValues[PREMIUM_CONDITIONS]
-        if (formValues[AVAILABILITY_TYPE] === 'USDC_PURCHASE' &&
-          isPremiumContentUSDCPurchaseGated(premiumConditions) &&
-          premiumConditions.usdc_purchase.price < minContentPriceCents
-        ) {
-          return false
-        }
-        return true
-      },
-      { message: messages.errors.price.tooLow(minContentPriceCents), path: [PRICE] }
     )
     .refine(
       (values) => {
@@ -283,7 +267,11 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
 
   const isRemix = !isEmpty(remixOfValue?.tracks)
 
-  // Premium conditions inside the modal
+  /**
+   * Premium conditions from inside the modal.
+   * Upon submit, these values along with the selected access option will
+   * determine the final premium conditions that get saved to the track.
+   */
   const accountUserId = useSelector(getUserId)
   const tempPremiumConditions = {
     ...getCombinedDefaultPremiumConditionValues(accountUserId),
