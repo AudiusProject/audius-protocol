@@ -272,7 +272,10 @@ def _persist_personal_route_metrics(
                 f"personal unique count record for day {day} before adding new unique count \
                 {unique_daily_count}: {day_unique_record.personal_count} + "
             )
-            day_unique_record.personal_count += unique_daily_count
+            if not day_unique_record.personal_count:
+                day_unique_record.personal_count = unique_daily_count
+            else:
+                day_unique_record.personal_count += unique_daily_count
             logger.info(
                 f"personal unique count record for day {day} after adding new unique count \
                 {unique_daily_count}: {day_unique_record.personal_count}"
@@ -290,7 +293,10 @@ def _persist_personal_route_metrics(
                 f"personal total count record for day {day} before adding new total count \
                 {count}: {day_total_record.personal_count}"
             )
-            day_total_record.personal_count += count
+            if not day_total_record.personal_count:
+                day_total_record.personal_count = count
+            else:
+                day_total_record.personal_count += count
             logger.info(
                 f"personal total count record for day {day} after adding new total count \
                 {count}: {day_total_record.personal_count}"
@@ -308,7 +314,10 @@ def _persist_personal_route_metrics(
                 f"personal unique count record for month {month} before adding new unique count \
                 {unique_monthly_count}: {month_unique_record.personal_count}"
             )
-            month_unique_record.personal_count += unique_monthly_count
+            if not month_unique_record.personal_count:
+                month_unique_record.personal_count = unique_monthly_count
+            else:
+                month_unique_record.personal_count += unique_monthly_count
             logger.info(
                 f"personal unique count record for month {month} after adding new unique count \
                 {unique_monthly_count}: {month_unique_record.personal_count}"
@@ -326,7 +335,10 @@ def _persist_personal_route_metrics(
                 f"personal total count record for month {month} before adding new total count \
                 {count}: {month_total_record.personal_count}"
             )
-            month_total_record.personal_count += count
+            if not month_total_record.personal_count:
+                month_total_record.personal_count = count
+            else:
+                month_total_record.personal_count += count
             logger.info(
                 f"personal total count record for month {month} after adding new total count \
                 {count}: {month_total_record.personal_count}"
