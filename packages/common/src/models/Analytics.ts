@@ -299,6 +299,7 @@ export enum Name {
   REWARDS_CLAIM_HCAPTCHA = 'Rewards Claim: Hcaptcha',
   REWARDS_CLAIM_REJECTION = 'Rewards Claim: Rejection',
   REWARDS_CLAIM_UNKNOWN = 'Rewards Claim: Unknown',
+  REWARDS_CLAIM_DETAILS_OPENED = 'Rewards Claim: Details Opened',
 
   // Tipping
   TIP_AUDIO_REQUEST = 'Tip Audio: Request',
@@ -1391,6 +1392,11 @@ type RewardsClaimUnknown = {
   error: string
 }
 
+type RewardsClaimDetailsOpened = {
+  eventName: Name.REWARDS_CLAIM_DETAILS_OPENED
+  challengeId: string
+}
+
 export type TipSource =
   | 'profile'
   | 'feed'
@@ -2007,6 +2013,7 @@ export type AllTrackingEvents =
   | RewardsClaimFailure
   | RewardsClaimRejection
   | RewardsClaimUnknown
+  | RewardsClaimDetailsOpened
   | TipAudioRequest
   | TipAudioSuccess
   | TipAudioFailure
