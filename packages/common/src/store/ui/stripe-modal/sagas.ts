@@ -1,5 +1,14 @@
 import { IdentityRequestError } from '@audius/sdk'
-import { call, takeEvery, put, select } from 'typed-redux-saga'
+import {
+  call,
+  takeEvery,
+  put,
+  select,
+  delay,
+  fork,
+  cancel,
+  FixedTask
+} from 'typed-redux-saga'
 
 import { Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
@@ -7,6 +16,7 @@ import { createStripeSession } from 'services/audius-backend/stripe'
 import { getContext } from 'store/effects'
 
 import { setVisibility } from '../modals/parentSlice'
+import { toast } from '../toast/slice'
 
 import { reportStripeFlowAnalytics } from './sagaHelpers'
 import { getStripeModalState } from './selectors'
@@ -20,6 +30,13 @@ import {
   StripeSessionCreationError,
   StripeSessionCreationErrorResponseData
 } from './types'
+
+const STRIPE_TAKING_A_WHILE_DELAY = 60 * 1000
+
+const messages = {
+  stripeTakingAWhile:
+    'Stripe is taking longer than expected... Thanks for the patience'
+}
 
 function* handleInitializeStripeModal({
   payload: { amount, destinationCurrency, destinationWallet }
@@ -85,13 +102,30 @@ function* handleInitializeStripeModal({
   }
 }
 
+let stripeTakingAWhileToastTask: FixedTask<any> | null = null
+
+function* toastStripeTakingAWhile() {
+  if (stripeTakingAWhileToastTask) return
+  yield* delay(STRIPE_TAKING_A_WHILE_DELAY)
+  yield put(toast({ content: messages.stripeTakingAWhile }))
+}
+
 function* handleStripeSessionChanged({
   payload: { session }
 }: ReturnType<typeof stripeSessionStatusChanged>) {
   const { onrampSucceeded, previousStripeSessionData } = yield* select(
     getStripeModalState
   )
+
+  if (session.status === 'fulfillment_processing') {
+    stripeTakingAWhileToastTask = yield* fork(toastStripeTakingAWhile)
+  }
   if (session.status === 'fulfillment_complete') {
+    if (stripeTakingAWhileToastTask) {
+      yield* cancel(stripeTakingAWhileToastTask)
+      stripeTakingAWhileToastTask = null
+    }
+
     if (onrampSucceeded) {
       yield* put(onrampSucceeded)
     }

@@ -1,5 +1,4 @@
 .container {
-  z-index: 100;
   display: inline-flex;
   justify-content: center;
   border-radius: 8px;

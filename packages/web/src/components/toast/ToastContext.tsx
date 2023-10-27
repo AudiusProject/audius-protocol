@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useTransition, animated } from 'react-spring'
 
 import { getSafeArea, SafeAreaDirection } from 'utils/safeArea'
+import zIndex from 'utils/zIndex'
 
 import styles from './ToastContext.module.css'
 import Toast from './mobile/Toast'
@@ -87,7 +88,8 @@ export const ToastContextProvider = (props: { children: JSX.Element }) => {
           style={{
             // @ts-ignore
             transform: props.y.interpolate(interp(i)),
-            opacity: props.opacity
+            opacity: props.opacity,
+            zIndex: zIndex.TOAST
           }}
         >
           <Toast
