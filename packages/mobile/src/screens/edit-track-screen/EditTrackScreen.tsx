@@ -253,7 +253,6 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
               10 ** PRECISION
           }
         }
-        // @ts-ignore the preview input field stored it as a string that needs to be parsed into a number
         metadata.preview_start_seconds = Number(metadata.preview_start_seconds)
       }
       onSubmit(metadata)
