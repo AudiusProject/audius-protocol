@@ -23,6 +23,8 @@ import { getUSDCUserBank } from 'store/buy-usdc/utils'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUser } from 'store/cache/users/selectors'
 import { getContext } from 'store/effects'
+import { getPreviewing, getTrackId } from 'store/player/selectors'
+import { stop } from 'store/player/slice'
 import { saveTrack } from 'store/social/tracks/actions'
 import { BN_USDC_CENT_WEI, ceilingBNUSDCToNearestCent } from 'utils/wallet'
 
@@ -256,6 +258,13 @@ function* doStartPurchaseContentFlow({
     // auto-favorite the purchased item
     if (contentType === ContentType.TRACK) {
       yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
+    }
+
+    // Check if playing the purchased track's preview and if so, stop it
+    const isPreviewing = yield* select(getPreviewing)
+    const trackId = yield* select(getTrackId)
+    if (contentId === trackId && isPreviewing) {
+      yield* put(stop({}))
     }
 
     // finish
