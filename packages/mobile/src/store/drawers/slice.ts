@@ -31,6 +31,7 @@ export type Drawer =
   | 'PremiumTrackPurchase'
   | 'StripeOnramp'
   | 'OfflineListening'
+  | 'USDCManualTransfer'
 
 export type DrawerData = {
   EnablePushNotifications: undefined
@@ -72,6 +73,7 @@ export type DrawerData = {
   InboxUnavailable: { userId: number; shouldOpenChat: boolean }
   PremiumTrackPurchase: { trackId: ID }
   StripeOnramp: { clientSecret: string }
+  USDCManualTransfer: undefined
 }
 
 export type DrawersState = { [drawer in Drawer]: boolean | 'closing' } & {
@@ -105,6 +107,7 @@ const initialState: DrawersState = {
   SupportersInfo: false,
   PremiumTrackPurchase: false,
   StripeOnramp: false,
+  USDCManualTransfer: false,
   data: {}
 }
 

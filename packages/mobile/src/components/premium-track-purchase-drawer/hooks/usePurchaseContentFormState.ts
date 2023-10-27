@@ -17,7 +17,11 @@ export const usePurchaseContentFormState = ({ price }: { price: number }) => {
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
 
-  const { data: currentBalance, recoveryStatus, refresh } = useUSDCBalance()
+  const {
+    data: currentBalance,
+    recoveryStatus,
+    refresh
+  } = useUSDCBalance({ isPolling: true })
 
   // Refresh balance on successful recovery
   useEffect(() => {

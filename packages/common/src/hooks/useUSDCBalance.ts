@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
+import { useInterval } from 'react-use'
 
 import { Status } from 'models/Status'
 import { BNUSDC, StringUSDC } from 'models/Wallet'
@@ -19,7 +20,7 @@ import { setUSDCBalance } from 'store/wallet/slice'
  * stale balance. If absolute latest balance value is needed, defer use until
  * Status.SUCCESS.
  */
-export const useUSDCBalance = () => {
+export const useUSDCBalance = ({ isPolling }: { isPolling?: boolean }) => {
   const { audiusBackend } = useAppContext()
   const dispatch = useDispatch()
 
@@ -50,6 +51,12 @@ export const useUSDCBalance = () => {
   useEffect(() => {
     refresh()
   }, [refresh])
+
+  useInterval(() => {
+    if (isPolling) {
+      refresh()
+    }
+  }, 1000)
 
   return { balanceStatus, recoveryStatus, data, refresh }
 }
