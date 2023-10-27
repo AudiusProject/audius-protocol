@@ -22,46 +22,53 @@ import { SelectArtistsPage } from './pages/SelectArtistsPage'
 import { SelectGenrePage } from './pages/SelectGenrePage'
 import { SignUpPage } from './pages/SignUpPage'
 
-// TODO: type this correctly
+/**
+ * Checks against existing sign up redux state,
+ * then determines if the requested path should be allowed or not
+ * if not allowed, also returns furthest step possible based on existing state
+ */
 const determineAllowedRoute = (
-  signUpData: SignOnPageState,
-  routeAttempt: string | SignUpPath
+  signUpState: SignOnPageState,
+  requestedRoute: string | SignUpPath // this string should have already trimmed out /signup/
 ) => {
+  const attemptedPath = requestedRoute.replace('/signup/', '')
   // Have to type as string[] to avoid too narrow of a type for comparing against
   let allowedRoutes: string[] = [SignUpPath.createEmail] // create email is available by default
-  if (signUpData.email.value) {
+  if (signUpState.email.value) {
     // Already have email
     allowedRoutes.push(SignUpPath.createPassword)
   }
-  if (signUpData.password.value) {
+  if (signUpState.password.value) {
     // Already have password
     allowedRoutes.push(SignUpPath.pickHandle)
   }
-  if (signUpData.handle.value) {
+  if (signUpState.handle.value) {
     // Already have handle
     allowedRoutes.push(SignUpPath.finishProfile)
   }
-  if (signUpData.name.value) {
+  if (signUpState.name.value) {
     // Already have display name
     // At this point the account is fully created & logged in; now user can't back to account creation steps
     allowedRoutes = [SignUpPath.selectGenres]
   }
+
   // TODO: These checks below here may need to fall under a different route umbrella separate from sign up
-  if (signUpData.genres) {
+  if (signUpState.genres) {
     // Already have genres selected
     allowedRoutes.push(SignUpPath.selectArtists)
   }
 
-  if (signUpData.followArtists?.selectedUserIds?.length >= 3) {
-    // Already have 3 artists followed (already done with sign up if at this point)
+  if (signUpState.followArtists?.selectedUserIds?.length >= 3) {
+    // Already have 3 artists followed
+    // Done with sign up if at this point so we return early (none of these routes are allowed anymore)
     // TODO: trigger welcome modal when redirecting from here
     return { isAllowedRoute: false, correctedRoute: TRENDING_PAGE }
   }
 
-  const isAllowedRoute = allowedRoutes.includes(routeAttempt)
+  const isAllowedRoute = allowedRoutes.includes(attemptedPath)
   // If requested route is allowed return that, otherwise return the last step in the route stack
   const correctedPath = isAllowedRoute
-    ? routeAttempt
+    ? attemptedPath
     : allowedRoutes[allowedRoutes.length - 1]
   return {
     isAllowedRoute,
@@ -70,7 +77,7 @@ const determineAllowedRoute = (
 }
 
 /**
- * Protected route wrapper that handles redirecting through the sign up page flow
+ * <Route> wrapper that handles redirecting through the sign up page flow
  */
 export function SignUpRoute({ children, ...rest }: RouteProps) {
   const existingSignUpState = useSelector((state: AppState) => getSignOn(state))
@@ -78,11 +85,10 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
     <Route
       {...rest}
       render={({ location }) => {
-        // Get the requested sub-route
-        const requestedPath = location.pathname.replace('/signup/', '')
+        // Check if the route is allowed, if not we redirect accordingly
         const { isAllowedRoute, correctedRoute } = determineAllowedRoute(
           existingSignUpState,
-          requestedPath
+          location.pathname
         )
         return isAllowedRoute ? (
           <>{children}</>
