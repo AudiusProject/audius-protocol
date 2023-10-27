@@ -23,6 +23,7 @@ const MountStripeSession = ({ session }: { session: OnrampSession }) => {
     (e: any) => {
       if (e?.payload?.session?.status) {
         dispatch(
+          // @ts-ignore
           stripeSessionStatusChanged({ status: e.payload.session.status })
         )
       }
