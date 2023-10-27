@@ -29,7 +29,7 @@ const errorMessages = {
     'Preview must start at 0 since the track is less than 30 seconds.'
 }
 
-const useEditTrackSchemaZod = () => {
+const useEditTrackSchema = () => {
   const { minContentPriceCents, maxContentPriceCents } =
     useUSDCPurchaseConfig(useRemoteVar)
   return useMemo(
@@ -180,7 +180,7 @@ const PRECISION = 2
 export type EditTrackParams = UploadTrack
 
 export const EditTrackScreen = (props: EditTrackScreenProps) => {
-  const editTrackSchema = toFormikValidationSchema(useEditTrackSchemaZod())
+  const editTrackSchema = toFormikValidationSchema(useEditTrackSchema())
 
   const { initialValues: initialValuesProp, onSubmit, ...screenProps } = props
 
