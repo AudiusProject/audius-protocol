@@ -10,7 +10,7 @@ import { useColor } from 'app/utils/theme'
 
 const messages = {
   unavailable:
-    "Unfortunately, you can't make purchases on this device. To continue, please use a desktop browser."
+    "Unfortunately, you can't make purchases on this device. To continue, please use your browser."
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
