@@ -323,12 +323,12 @@ def _persist_personal_route_metrics(
         # A record for this month should exist at this point
         if month_total_record:
             logger.debug(
-                f"total count record for month {month} before adding new total count \
+                f"personal total count record for month {month} before adding new total count \
                 {count}: {month_total_record.personal_count}"
             )
             month_total_record.personal_count += count
             logger.info(
-                f"total count record for month {month} after adding new total count \
+                f"personal total count record for month {month} after adding new total count \
                 {count}: {month_total_record.personal_count}"
             )
             session.add(month_total_record)
@@ -509,7 +509,9 @@ def merge_metrics(metrics, end_time, metric_type, db, are_personal_metrics):
 
     if metric_type == "route" and are_personal_metrics:
         # Persist this node's personal metrics
-        logger.debug(f"about to persist personal route metrics: {len(metrics)} new entries")
+        logger.debug(
+            f"about to persist personal route metrics: {len(metrics)} new entries"
+        )
         personal_unique_daily_count, personal_unique_monthly_count, _ = cache_metrics(
             metrics,
             day,

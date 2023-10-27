@@ -54,10 +54,7 @@ def _get_personal_route_metrics(session, time_range, bucket_size):
                 .all()
             )
             unique_count_records = ft.reduce(
-                lambda acc, curr: acc.update(
-                    {str(curr[0]): curr[1]}
-                )
-                or acc,
+                lambda acc, curr: acc.update({str(curr[0]): curr[1]}) or acc,
                 unique_counts,
                 {},
             )
@@ -103,10 +100,7 @@ def _get_personal_route_metrics(session, time_range, bucket_size):
                 .all()
             )
             unique_count_records = ft.reduce(
-                lambda acc, curr: acc.update(
-                    {str(curr[0]): curr[1]}
-                )
-                or acc,
+                lambda acc, curr: acc.update({str(curr[0]): curr[1]}) or acc,
                 unique_counts,
                 {},
             )
@@ -144,7 +138,9 @@ def _get_personal_route_metrics(session, time_range, bucket_size):
                     func.date_trunc(
                         bucket_size, AggregateDailyUniqueUsersMetrics.timestamp
                     ).label("timestamp"),
-                    func.sum(AggregateDailyUniqueUsersMetrics.personal_count).label("count"),
+                    func.sum(AggregateDailyUniqueUsersMetrics.personal_count).label(
+                        "count"
+                    ),
                 )
                 .filter(thirty_days_ago <= AggregateDailyUniqueUsersMetrics.timestamp)
                 .filter(AggregateDailyUniqueUsersMetrics.timestamp < today)
@@ -157,10 +153,7 @@ def _get_personal_route_metrics(session, time_range, bucket_size):
                 .all()
             )
             unique_count_records = ft.reduce(
-                lambda acc, curr: acc.update(
-                    {str(curr[0]): curr[1]}
-                )
-                or acc,
+                lambda acc, curr: acc.update({str(curr[0]): curr[1]}) or acc,
                 unique_counts,
                 {},
             )
@@ -170,7 +163,9 @@ def _get_personal_route_metrics(session, time_range, bucket_size):
                     func.date_trunc(
                         bucket_size, AggregateDailyTotalUsersMetrics.timestamp
                     ).label("timestamp"),
-                    func.sum(AggregateDailyTotalUsersMetrics.personal_count).label("count"),
+                    func.sum(AggregateDailyTotalUsersMetrics.personal_count).label(
+                        "count"
+                    ),
                 )
                 .filter(thirty_days_ago <= AggregateDailyTotalUsersMetrics.timestamp)
                 .filter(AggregateDailyTotalUsersMetrics.timestamp < today)
@@ -214,10 +209,7 @@ def _get_personal_route_metrics(session, time_range, bucket_size):
                 .all()
             )
             unique_count_records = ft.reduce(
-                lambda acc, curr: acc.update(
-                    {str(curr[0]): curr[1]}
-                )
-                or acc,
+                lambda acc, curr: acc.update({str(curr[0]): curr[1]}) or acc,
                 unique_counts,
                 {},
             )
@@ -254,7 +246,9 @@ def _get_personal_route_metrics(session, time_range, bucket_size):
                     func.date_trunc(
                         bucket_size, AggregateDailyUniqueUsersMetrics.timestamp
                     ).label("timestamp"),
-                    func.sum(AggregateDailyUniqueUsersMetrics.personal_count).label("count"),
+                    func.sum(AggregateDailyUniqueUsersMetrics.personal_count).label(
+                        "count"
+                    ),
                 )
                 .filter(AggregateDailyUniqueUsersMetrics.timestamp < today)
                 .group_by(
@@ -266,10 +260,7 @@ def _get_personal_route_metrics(session, time_range, bucket_size):
                 .all()
             )
             unique_count_records = ft.reduce(
-                lambda acc, curr: acc.update(
-                    {str(curr[0]): curr[1]}
-                )
-                or acc,
+                lambda acc, curr: acc.update({str(curr[0]): curr[1]}) or acc,
                 unique_counts,
                 {},
             )
@@ -279,7 +270,9 @@ def _get_personal_route_metrics(session, time_range, bucket_size):
                     func.date_trunc(
                         bucket_size, AggregateDailyTotalUsersMetrics.timestamp
                     ).label("timestamp"),
-                    func.sum(AggregateDailyTotalUsersMetrics.personal_count).label("count"),
+                    func.sum(AggregateDailyTotalUsersMetrics.personal_count).label(
+                        "count"
+                    ),
                 )
                 .filter(AggregateDailyTotalUsersMetrics.timestamp < today)
                 .group_by(
