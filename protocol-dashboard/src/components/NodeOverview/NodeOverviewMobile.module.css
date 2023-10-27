@@ -36,3 +36,8 @@
   font-size: 16px;
   color: #BEC5E0;
 }
+
+.registerBtn {
+  position: relative;
+  margin-top: 14px;
+}
