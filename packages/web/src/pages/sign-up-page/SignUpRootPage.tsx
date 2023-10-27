@@ -70,6 +70,7 @@ export const SignUpRootPage = () => {
   const currentStage = signUpState.stage
   const currentParams = useParams<{ step: SignUpStep }>()
   const navigate = useNavigateToPage()
+  // @ts-ignore
   const signOnState = useSelector((state) => getSignOn(state))
 
   // Redirect handler logic
@@ -86,6 +87,7 @@ export const SignUpRootPage = () => {
       navigate(`${SIGN_UP_PAGE}/${allowedRoute}`)
     }
     // Sync the stage accordingly
+    // @ts-ignore
     setSignUpState({ stage: allowedRoute })
   }, [currentParams, currentStage, navigate, signOnState])
 
