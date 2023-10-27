@@ -13,7 +13,6 @@ import { SIGN_UP_PAGE } from 'utils/route'
 import { CoverPhotoField } from '../components/CoverPhotoField'
 import { ProfilePictureField } from '../components/ProfilePictureField'
 
-import { SelectGenreState } from './SelectGenrePage'
 import { SignUpStep } from './types'
 
 const messages = {

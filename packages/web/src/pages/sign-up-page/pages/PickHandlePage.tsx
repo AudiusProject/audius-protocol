@@ -9,7 +9,6 @@ import { TextField } from 'components/form-fields'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { SIGN_UP_PAGE } from 'utils/route'
 
-import { FinishProfileState } from './FinishProfilePage'
 import { SignUpStep } from './types'
 
 const messages = {

@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom'
 
 import { getSignOn } from 'common/store/pages/signon/selectors'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { SIGN_UP_PAGE, TRENDING_PAGE } from 'utils/route'
+import { SIGN_UP_PAGE } from 'utils/route'
 
 import {
   CreatePasswordPage,
@@ -75,12 +75,12 @@ export const SignUpRootPage = () => {
   // Redirect handler logic
   useEffect(() => {
     const allowedRoute = determineAllowedRoute(signOnState, currentParams.step)
-    console.log(
-      'Attempted to route to:',
-      currentParams.step,
-      '; now routing to ',
-      allowedRoute
-    )
+    // console.log(
+    //   'Attempted to route to:',
+    //   currentParams.step,
+    //   '; now routing to ',
+    //   allowedRoute
+    // )
     // If the requested step is not allowed, redirect accordingly
     if (allowedRoute !== currentParams.step) {
       navigate(`${SIGN_UP_PAGE}/${allowedRoute}`)

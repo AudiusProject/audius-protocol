@@ -9,8 +9,6 @@ import { TextField } from 'components/form-fields'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { SIGN_UP_PAGE } from 'utils/route'
 
-import { PickHandleState } from './PickHandlePage'
-import { SignUpState } from './SignUpPage'
 import { SignUpStep } from './types'
 
 const messages = {
