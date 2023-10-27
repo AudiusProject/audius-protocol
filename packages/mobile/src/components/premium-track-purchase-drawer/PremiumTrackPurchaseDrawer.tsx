@@ -241,8 +241,8 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
   }, [isPurchaseSuccessful, navigation, track.track_id])
 
   const handleTermsPress = useCallback(() => {
-    trackEvent(make({ eventName: Name.PURCHASE_CONTENT_TOS_CLICKED }))
     Linking.openURL('https://audius.co/legal/terms-of-use')
+    trackEvent(make({ eventName: Name.PURCHASE_CONTENT_TOS_CLICKED }))
   }, [])
 
   return (
