@@ -17,7 +17,7 @@ import type { TrackAvailabilitySelectionProps } from '../../../components/types'
 import { TrackPreviewField } from './TrackPreviewField'
 import { TrackPriceField } from './TrackPriceField'
 
-const WAITLIST_TYPEFORM = 'https://example.com'
+const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
 
 type PremiumRadioFieldProps = TrackAvailabilitySelectionProps
 
