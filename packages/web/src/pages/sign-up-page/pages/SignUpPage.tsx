@@ -2,12 +2,15 @@ import { useCallback } from 'react'
 
 import { Button, ButtonType, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
+import { useDispatch } from 'react-redux'
 
+import { setValueField } from 'common/store/pages/signon/actions'
 import { TextField } from 'components/form-fields'
 import { Link } from 'components/link'
-import { SIGN_IN_PAGE } from 'utils/route'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
 
-import { CreatePasswordState } from './CreatePasswordPage'
+import { SignUpStep } from './types'
 
 const messages = {
   header: 'Sign Up For Audius',
@@ -18,13 +21,11 @@ const messages = {
 }
 
 export type SignUpState = {
-  stage: 'sign-up'
+  stage: SignUpStep.createAccount
   email?: string
 }
 
-export type SignUpPageProps = {
-  onNext: (state: CreatePasswordState) => void
-}
+export type SignUpPageProps = {}
 
 const initialValues = {
   email: ''
@@ -35,14 +36,16 @@ type SignUpEmailValues = {
 }
 
 export const SignUpPage = (props: SignUpPageProps) => {
-  const { onNext } = props
+  const navigate = useNavigateToPage()
+  const dispatch = useDispatch()
 
   const handleSubmit = useCallback(
     (values: SignUpEmailValues) => {
       const { email } = values
-      onNext({ stage: 'create-password', params: { email } })
+      dispatch(setValueField('email', email))
+      navigate(`${SIGN_UP_PAGE}/${SignUpStep.createPassword}`)
     },
-    [onNext]
+    [dispatch, navigate]
   )
 
   return (

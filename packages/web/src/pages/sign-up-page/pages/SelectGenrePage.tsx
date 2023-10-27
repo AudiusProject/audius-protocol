@@ -10,14 +10,16 @@ import {
   getHandleField,
   getNameField
 } from 'common/store/pages/signon/selectors'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
+import { SIGN_UP_PAGE } from 'utils/route'
 
 import { GenrePill } from '../components/GenrePill'
 
-import { SelectArtistsState } from './SelectArtistsPage'
+import { SignUpStep } from './types'
 
 export type SelectGenreState = {
-  stage: 'select-genre'
+  stage: SignUpStep.selectGenres
 }
 
 const messages = {
@@ -41,23 +43,21 @@ const initialValues = genres.reduce(
   {} as SelectGenreValues
 )
 
-type SelectGenrePageProps = {
-  onNext: (state: SelectArtistsState) => void
-}
+type SelectGenrePageProps = {}
 
 export const SelectGenrePage = (props: SelectGenrePageProps) => {
-  const { onNext } = props
   const { value: displayName } = useSelector(getNameField)
   const { value: handle } = useSelector(getHandleField)
   const dispatch = useDispatch()
+  const navigate = useNavigateToPage()
 
   const handleSubmit = useCallback(
     (values: SelectGenreValues) => {
       const genres = Object.keys(values).filter((genre) => values[genre])
       dispatch(setField('genres', genres))
-      onNext({ stage: 'select-artists' })
+      navigate(`${SIGN_UP_PAGE}/${SignUpStep.selectArtists}`)
     },
-    [dispatch, onNext]
+    [dispatch, navigate]
   )
 
   return (

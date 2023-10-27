@@ -7,11 +7,14 @@ import { useDispatch } from 'react-redux'
 
 import { setValueField } from 'common/store/pages/signon/actions'
 import { TextField } from 'components/form-fields'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { SIGN_UP_PAGE } from 'utils/route'
 
 import { CoverPhotoField } from '../components/CoverPhotoField'
 import { ProfilePictureField } from '../components/ProfilePictureField'
 
 import { SelectGenreState } from './SelectGenrePage'
+import { SignUpStep } from './types'
 
 const messages = {
   header: 'Finish Your Profile',
@@ -22,12 +25,10 @@ const messages = {
 }
 
 export type FinishProfileState = {
-  stage: 'finish-profile'
+  stage: SignUpStep.finishProfile
 }
 
-type FinishProfilePageProps = {
-  onNext: (state: SelectGenreState) => void
-}
+type FinishProfilePageProps = {}
 
 type FinishProfileValues = {
   profile_picture: Nullable<{ file: File; url: string }>
@@ -42,16 +43,16 @@ const initialValues = {
 }
 
 export const FinishProfilePage = (props: FinishProfilePageProps) => {
-  const { onNext } = props
   const dispatch = useDispatch()
+  const navigate = useNavigateToPage()
 
   const handleSubmit = useCallback(
     (values: FinishProfileValues) => {
       const { displayName } = values
       dispatch(setValueField('name', displayName))
-      onNext({ stage: 'select-genre' })
+      navigate(`${SIGN_UP_PAGE}/${SignUpStep.selectGenres}`)
     },
-    [dispatch, onNext]
+    [dispatch, navigate]
   )
 
   return (

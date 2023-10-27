@@ -12,9 +12,11 @@ import { useDispatch } from 'react-redux'
 
 import { addFollowArtists } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
+import { TRENDING_PAGE } from 'utils/route'
 
-import { AppCtaState } from './AppCtaPage'
+import { SignUpStep } from './types'
 
 const messages = {
   header: 'Follow At Least 3 Artists',
@@ -26,7 +28,7 @@ const messages = {
 }
 
 export type SelectArtistsState = {
-  stage: 'select-artists'
+  stage: SignUpStep.selectArtists
 }
 
 type SelectArtistsValues = {
@@ -37,15 +39,13 @@ const initialValues: SelectArtistsValues = {
   artists: []
 }
 
-type SelectArtistsPageProps = {
-  onNext: (state: AppCtaState) => void
-}
+type SelectArtistsPageProps = {}
 
 export const SelectArtistsPage = (props: SelectArtistsPageProps) => {
-  const { onNext } = props
   const genres = useSelector((state) => ['Featured', ...getGenres(state)])
   const [currentGenre, setCurrentGenre] = useState('Featured')
   const dispatch = useDispatch()
+  const navigate = useNavigateToPage()
 
   const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setCurrentGenre(e.target.value)
@@ -55,9 +55,10 @@ export const SelectArtistsPage = (props: SelectArtistsPageProps) => {
     (values: SelectArtistsValues) => {
       const { artists } = values
       dispatch(addFollowArtists(artists))
-      onNext({ stage: 'app-cta' })
+      // TODO: trigger CTA modal on trending page
+      navigate(TRENDING_PAGE)
     },
-    [dispatch, onNext]
+    [dispatch, navigate]
   )
 
   const isFeaturedArtists = currentGenre === 'Featured'

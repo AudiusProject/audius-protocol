@@ -151,7 +151,9 @@ import {
   PURCHASES_PAGE,
   SALES_PAGE,
   WITHDRAWALS_PAGE,
-  EXPLORE_PREMIUM_TRACKS_PAGE
+  EXPLORE_PREMIUM_TRACKS_PAGE,
+  SIGN_UP_STEP_PAGE,
+  SIGN_UP_START_PAGE
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
@@ -514,11 +516,20 @@ class App extends Component {
                 </Route>
                 <Route exact path={SIGN_UP_PAGE} isMobile={isMobileClient}>
                   {isSignInRedesignEnabled ? (
-                    <SignUpRootPage />
+                    <Redirect to={SIGN_UP_START_PAGE} />
                   ) : (
                     <SignOn signIn={false} initialPage={initialPage} />
                   )}
                 </Route>
+                {isSignInRedesignEnabled ? (
+                  <Route
+                    exact
+                    path={SIGN_UP_STEP_PAGE}
+                    isMobile={isMobileClient}
+                  >
+                    <SignUpRootPage />
+                  </Route>
+                ) : null}
                 <Route
                   exact
                   path={FEED_PAGE}

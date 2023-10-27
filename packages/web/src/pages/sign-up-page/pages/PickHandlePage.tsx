@@ -6,8 +6,11 @@ import { useDispatch } from 'react-redux'
 
 import { setValueField } from 'common/store/pages/signon/actions'
 import { TextField } from 'components/form-fields'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { SIGN_UP_PAGE } from 'utils/route'
 
 import { FinishProfileState } from './FinishProfilePage'
+import { SignUpStep } from './types'
 
 const messages = {
   header: 'Pick Your Handle',
@@ -18,7 +21,7 @@ const messages = {
 }
 
 export type PickHandleState = {
-  stage: 'pick-handle'
+  stage: SignUpStep.pickHandle
 }
 
 const initialValues = {
@@ -29,21 +32,19 @@ type PickHandleValues = {
   handle: string
 }
 
-type PickHandlePageProps = {
-  onNext: (state: FinishProfileState) => void
-}
+type PickHandlePageProps = {}
 
 export const PickHandlePage = (props: PickHandlePageProps) => {
-  const { onNext } = props
   const dispatch = useDispatch()
+  const navigate = useNavigateToPage()
 
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
       const { handle } = values
       dispatch(setValueField('handle', handle))
-      onNext({ stage: 'finish-profile' })
+      navigate(`${SIGN_UP_PAGE}/${SignUpStep.finishProfile}`)
     },
-    [dispatch, onNext]
+    [dispatch, navigate]
   )
 
   return (

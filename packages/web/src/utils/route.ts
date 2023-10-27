@@ -69,6 +69,7 @@ export const HOME_PAGE = '/'
 export const NOT_FOUND_PAGE = '/404'
 export const SIGN_IN_PAGE = '/signin'
 export const SIGN_UP_PAGE = '/signup'
+export const SIGN_UP_START_PAGE = '/signup/create-account'
 export const OAUTH_LOGIN_PAGE = '/oauth/auth'
 export const NOTIFICATION_PAGE = '/notifications'
 export const APP_REDIRECT = '/app-redirect'
@@ -81,6 +82,7 @@ export const SALES_PAGE = '/sales'
 export const WITHDRAWALS_PAGE = '/withdrawals'
 
 // Param routes.
+export const SIGN_UP_STEP_PAGE = '/signup/:step'
 export const NOTIFICATION_USERS_PAGE = '/notification/:notificationId/users'
 export const SEARCH_CATEGORY_PAGE = '/search/:query/:category'
 export const SEARCH_PAGE = '/search/:query?'
@@ -191,6 +193,7 @@ export const publicSiteRoutes = [
 export const orderedRoutes = [
   SIGN_IN_PAGE,
   SIGN_UP_PAGE,
+  SIGN_UP_STEP_PAGE,
   FEED_PAGE,
   NOTIFICATION_USERS_PAGE,
   NOTIFICATION_PAGE,
