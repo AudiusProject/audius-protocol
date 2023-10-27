@@ -113,12 +113,13 @@ export const WithdrawUSDCModal = () => {
       dispatch(
         beginWithdrawUSDC({
           amount,
+          currentBalance: balanceNumberCents,
           destinationAddress: address,
           onSuccess
         })
       )
     },
-    [dispatch, onSuccess]
+    [balanceNumberCents, dispatch, onSuccess]
   )
 
   let formPage

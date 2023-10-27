@@ -336,6 +336,16 @@ export enum Name {
   BUY_USDC_RECOVERY_SUCCESS = 'Buy USDC: Recovery Success',
   BUY_USDC_RECOVERY_FAILURE = 'Buy USDC: Recovery Failure',
 
+  // Withdraw USDC
+  WITHDRAW_USDC_MODAL_OPENED = 'Withdraw USDC: Modal Opened',
+  WITHDRAW_USDC_ADDRESS_PASTED = 'Withdraw USDC: Address Pasted',
+  WITHDRAW_USDC_REQUESTED = 'Withdraw USDC: Requested',
+  WITHDRAW_USDC_FORM_ERROR = 'Withdraw USDC: Form Error',
+  WITHDRAW_USDC_SUCCESS = 'Withdraw USDC: Success',
+  WITHDRAW_USDC_FAILURE = 'Withdraw USDC: Failure',
+  WITHDRAW_USDC_HELP_LINK_CLICKED = 'Withdraw USDC: Help Link Clicked',
+  WITHDRAW_USDC_TX_LINK_CLICKED = 'Withdraw USDC: Tx Link Clicked',
+
   // Stripe Tracking
   STRIPE_SESSION_CREATION_ERROR = 'Stripe: Session Creation Error',
   STRIPE_SESSION_CREATED = 'Stripe Session: Created',
@@ -1641,6 +1651,51 @@ type BuyUSDCRecoveryFailure = {
   error: string
 }
 
+// Withdraw USDC
+
+export type WithdrawUSDCEventFields = {
+  currentBalance: number
+}
+
+export type WithdrawUSDCTransferEventFields = WithdrawUSDCEventFields & {
+  amount: number
+  destinationAddress: string
+}
+
+export type WithdrawUSDCModalOpened = WithdrawUSDCEventFields & {
+  eventName: Name.WITHDRAW_USDC_MODAL_OPENED
+}
+
+export type WithdrawUSDCAddressPasted = WithdrawUSDCEventFields & {
+  eventName: Name.WITHDRAW_USDC_ADDRESS_PASTED
+  destinationAddress: string
+}
+
+export type WithdrawUSDCFormError = WithdrawUSDCEventFields & {
+  eventName: Name.WITHDRAW_USDC_FORM_ERROR
+  error: Error
+}
+
+export type WithdrawUSDCRequested = WithdrawUSDCTransferEventFields & {
+  eventName: Name.WITHDRAW_USDC_REQUESTED
+}
+
+export type WithdrawUSDCSuccess = WithdrawUSDCTransferEventFields & {
+  eventName: Name.WITHDRAW_USDC_SUCCESS
+}
+
+export type WithdrawUSDCFailure = WithdrawUSDCTransferEventFields & {
+  eventName: Name.WITHDRAW_USDC_FAILURE
+}
+
+export type WithdrawUSDCHelpLinkClicked = WithdrawUSDCEventFields & {
+  eventName: Name.WITHDRAW_USDC_HELP_LINK_CLICKED
+}
+
+export type WithdrawUSDCTxLinkClicked = WithdrawUSDCEventFields & {
+  eventName: Name.WITHDRAW_USDC_TX_LINK_CLICKED
+}
+
 // Stripe
 export type StripeEventFields = {
   amount: string
@@ -2050,6 +2105,14 @@ export type AllTrackingEvents =
   | BuyUSDCRecoveryInProgress
   | BuyUSDCRecoverySuccess
   | BuyUSDCRecoveryFailure
+  | WithdrawUSDCModalOpened
+  | WithdrawUSDCAddressPasted
+  | WithdrawUSDCFormError
+  | WithdrawUSDCRequested
+  | WithdrawUSDCSuccess
+  | WithdrawUSDCFailure
+  | WithdrawUSDCHelpLinkClicked
+  | WithdrawUSDCTxLinkClicked
   | StripeSessionCreationError
   | StripeSessionCreated
   | StripeModalInitialized
