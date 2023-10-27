@@ -2,12 +2,10 @@ import {
   ChangeEventHandler,
   FocusEventHandler,
   useCallback,
-  useEffect,
   useState
 } from 'react'
 
 import {
-  decimalIntegerFromHumanReadable,
   decimalIntegerToHumanReadable,
   filterDecimalString,
   padDecimalValue

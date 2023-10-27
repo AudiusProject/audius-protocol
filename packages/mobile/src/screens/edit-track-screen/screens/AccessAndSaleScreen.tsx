@@ -26,13 +26,13 @@ import { CollectibleGatedAvailability } from '../components/CollectibleGatedAvai
 import { HiddenAvailability } from '../components/HiddenAvailability'
 import { SpecialAccessAvailability } from '../components/SpecialAccessAvailability'
 import { PremiumRadioField } from '../fields/AccessAndSaleField/PremiumRadioField/PremiumRadioField'
+import { TRACK_PREVIEW } from '../fields/AccessAndSaleField/PremiumRadioField/TrackPreviewField'
+import { TRACK_PRICE } from '../fields/AccessAndSaleField/PremiumRadioField/TrackPriceField'
 import { PublicAvailabilityRadioField } from '../fields/AccessAndSaleField/PublicAvailabilityRadioField'
 import type { FormValues, RemixOfField } from '../types'
 
 import type { ListSelectionData } from './ListSelectionScreen'
 import { ListSelectionScreen } from './ListSelectionScreen'
-import { TRACK_PREVIEW } from '../fields/AccessAndSaleField/PremiumRadioField/TrackPreviewField'
-import { TRACK_PRICE } from '../fields/AccessAndSaleField/PremiumRadioField/TrackPriceField'
 
 const messages = {
   title: 'Access & Sale',
@@ -222,19 +222,22 @@ export const AccessAndSaleScreen = () => {
    * - track is collectible gated and user has not selected an nft collection, or
    * - track is usdc purchase gated and user has not selected a valid price or preview
    */
-  const [{ value: price}, { error: priceError }] = useField(TRACK_PRICE)
-  const [{ value: preview}, { error: previewError }] = useField(TRACK_PREVIEW)
+  const [{ value: price }, { error: priceError }] = useField(TRACK_PRICE)
+  const [{ value: preview }, { error: previewError }] = useField(TRACK_PREVIEW)
 
   const usdcGateIsInvalid = useMemo(() => {
-      // first time user selects usdc purchase option
-      const priceNotSet = price === null
-      const previewNotSet = preview === null
-      return isPremiumContentUSDCPurchaseGated(premiumConditions) && (!!priceError || priceNotSet || !!previewError || previewNotSet)
-    },
-    [premiumConditions, price, priceError, preview, previewError]
-  )
+    // first time user selects usdc purchase option
+    const priceNotSet = price === null
+    const previewNotSet = preview === null
+    return (
+      isPremiumContentUSDCPurchaseGated(premiumConditions) &&
+      (!!priceError || priceNotSet || !!previewError || previewNotSet)
+    )
+  }, [premiumConditions, price, priceError, preview, previewError])
   const collectibleGateHasNoSelectedCollection = useMemo(
-    () => isPremiumContentCollectibleGated(premiumConditions) && !premiumConditions.nft_collection,
+    () =>
+      isPremiumContentCollectibleGated(premiumConditions) &&
+      !premiumConditions.nft_collection,
     [premiumConditions]
   )
   const isFormInvalid =

@@ -14,16 +14,18 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 
 import { EditTrackNavigator } from './EditTrackNavigator'
-import type { FormValues, EditTrackScreenProps } from './types'
 import { TRACK_PRICE } from './fields/AccessAndSaleField/PremiumRadioField/TrackPriceField'
+import type { FormValues, EditTrackScreenProps } from './types'
 const { computeLicenseVariables, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
 
 const errorMessages = {
   title: 'Your track must have a name',
   genre: 'Genre is required',
   artwork: 'Artwork is required',
-  previewStartThirtyBeforeEnd: 'Preview must start at least 30 seconds before the end of the track.',
-  previewStartZero: 'Preview must start at 0 since the track is less than 30 seconds.'
+  previewStartThirtyBeforeEnd:
+    'Preview must start at least 30 seconds before the end of the track.',
+  previewStartZero:
+    'Preview must start at 0 since the track is less than 30 seconds.'
 }
 
 const useEditTrackSchemaZod = () => {
@@ -38,81 +40,130 @@ const useEditTrackSchemaZod = () => {
      * I understand this is somewhat antithetical to the purpoae of the zod types in the first place, but unless
      * we are okay with occasionally showing one error at a time, we will have to do it this way.
      */
-    () => z
-      .object({
-        artwork: z.object({
-          url: z.string()
-        }).nullable(),
-        trackArtwork: z.string().nullish(),
-        title: z.string(),
-        genre: z.any(),
-        description: z.string().length(1000).nullable(),
-        premium_conditions: z.any(),
-        duration: z.number().nullable(),
-        preview_start_seconds: z.any()
-      })
-      .refine(
-        (values) => {
-          const { artwork, trackArtwork } = values
-          return trackArtwork !== undefined || (artwork !== null && typeof artwork === 'object')
-        },
-        { message: errorMessages.artwork, path: ['artwork'] }
-      )
-      .refine(
-        (values) => {
-          return !!values.title
-        },
-        { message: errorMessages.title, path: ['title'] }
-      )
-      .refine(
-        (values) => {
-          return typeof values.genre === 'string' && !!values.genre
-        },
-        { message: errorMessages.genre, path: ['genre'] }
-      )
-      .refine(
-        (values) => {
-          const { premium_conditions: premiumConditions } = values
-          if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
-            const { price } = premiumConditions.usdc_purchase
-            return price > 0 && price >= minContentPriceCents / 100
+    () =>
+      z
+        .object({
+          artwork: z
+            .object({
+              url: z.string()
+            })
+            .nullable(),
+          trackArtwork: z.string().nullish(),
+          title: z.string(),
+          genre: z.any(),
+          description: z.string().length(1000).nullable(),
+          premium_conditions: z.any(),
+          duration: z.number().nullable(),
+          preview_start_seconds: z.any()
+        })
+        .refine(
+          (values) => {
+            const { artwork, trackArtwork } = values
+            return (
+              trackArtwork !== undefined ||
+              (artwork !== null && typeof artwork === 'object')
+            )
+          },
+          { message: errorMessages.artwork, path: ['artwork'] }
+        )
+        .refine(
+          (values) => {
+            return !!values.title
+          },
+          { message: errorMessages.title, path: ['title'] }
+        )
+        .refine(
+          (values) => {
+            return typeof values.genre === 'string' && !!values.genre
+          },
+          { message: errorMessages.genre, path: ['genre'] }
+        )
+        .refine(
+          (values) => {
+            const { premium_conditions: premiumConditions } = values
+            if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+              const { price } = premiumConditions.usdc_purchase
+              return price > 0 && price >= minContentPriceCents / 100
+            }
+            return true
+          },
+          {
+            message: `Price must be at least $${formatPrice(
+              minContentPriceCents
+            )}.`,
+            path: [TRACK_PRICE]
           }
-          return true
-        },
-        { message: `Price must be at least $${formatPrice(minContentPriceCents)}.`, path: [TRACK_PRICE] }
-      )
-      .refine(
-        (values) => {
-          const { premium_conditions: premiumConditions } = values
-          if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
-            return premiumConditions.usdc_purchase.price <= maxContentPriceCents / 100
+        )
+        .refine(
+          (values) => {
+            const { premium_conditions: premiumConditions } = values
+            if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+              return (
+                premiumConditions.usdc_purchase.price <=
+                maxContentPriceCents / 100
+              )
+            }
+            return true
+          },
+          {
+            message: `Price must be less than $${formatPrice(
+              maxContentPriceCents
+            )}.`,
+            path: [TRACK_PRICE]
           }
-          return true
-        },
-        { message: `Price must be less than $${formatPrice(maxContentPriceCents)}.`, path: [TRACK_PRICE] }
-      )
-      .refine(
-        (values) => {
-          const { duration, premium_conditions: premiumConditions, preview_start_seconds: previewStartSeconds } = values
-          // We only care about preview if track is usdc gated
-          if (previewStartSeconds === null && !isPremiumContentUSDCPurchaseGated(premiumConditions)) return true
-          if (previewStartSeconds === null && isPremiumContentUSDCPurchaseGated(premiumConditions)) return false
-          if (previewStartSeconds !== null && !isPremiumContentUSDCPurchaseGated(premiumConditions)) return false
+        )
+        .refine(
+          (values) => {
+            const {
+              duration,
+              premium_conditions: premiumConditions,
+              preview_start_seconds: previewStartSeconds
+            } = values
+            // We only care about preview if track is usdc gated
+            if (
+              previewStartSeconds === null &&
+              !isPremiumContentUSDCPurchaseGated(premiumConditions)
+            )
+              return true
+            if (
+              previewStartSeconds === null &&
+              isPremiumContentUSDCPurchaseGated(premiumConditions)
+            )
+              return false
+            if (
+              previewStartSeconds !== null &&
+              !isPremiumContentUSDCPurchaseGated(premiumConditions)
+            )
+              return false
 
-          // If duration is NaN, validation passes because we were unable to get duration from a track
-          if (duration === null || isNaN(duration)) return true
+            // If duration is NaN, validation passes because we were unable to get duration from a track
+            if (duration === null || isNaN(duration)) return true
 
-          return duration <= 30 || Number(previewStartSeconds)! <= duration - 30
-        },
-        { message: errorMessages.previewStartThirtyBeforeEnd, path: ['preview_start_seconds'] }
-      )
-      .refine(
-        (values) => {
-          const { duration, preview_start_seconds: previewStartSeconds } = values
-          return duration === null || previewStartSeconds === null || duration! > 30 || Number(previewStartSeconds) === 0
-        },
-        { message: errorMessages.previewStartZero, path: ['preview_start_seconds'] }
-      ),
+            return (
+              duration <= 30 || Number(previewStartSeconds)! <= duration - 30
+            )
+          },
+          {
+            message: errorMessages.previewStartThirtyBeforeEnd,
+            path: ['preview_start_seconds']
+          }
+        )
+        .refine(
+          (values) => {
+            const { duration, preview_start_seconds: previewStartSeconds } =
+              values
+            return (
+              duration === null ||
+              previewStartSeconds === null ||
+              duration! > 30 ||
+              Number(previewStartSeconds) === 0
+            )
+          },
+          {
+            message: errorMessages.previewStartZero,
+            path: ['preview_start_seconds']
+          }
+        ),
     [minContentPriceCents, maxContentPriceCents]
   )
 }
@@ -128,13 +179,17 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
 
   // Handle price conversion of usdc gated tracks from cents => dollars on edit.
   // Convert back to cents on submit function below.
-  const premiumConditionsOverride = isPremiumContentUSDCPurchaseGated(initialValuesProp.premium_conditions)
+  const premiumConditionsOverride = isPremiumContentUSDCPurchaseGated(
+    initialValuesProp.premium_conditions
+  )
     ? {
-      usdc_purchase: {
-        ...initialValuesProp.premium_conditions.usdc_purchase,
-        price: initialValuesProp.premium_conditions.usdc_purchase.price / 10 ** PRECISION
+        usdc_purchase: {
+          ...initialValuesProp.premium_conditions.usdc_purchase,
+          price:
+            initialValuesProp.premium_conditions.usdc_purchase.price /
+            10 ** PRECISION
+        }
       }
-    }
     : initialValuesProp.premium_conditions
   const initialValues: FormValues = {
     ...initialValuesProp,
@@ -186,7 +241,9 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
             ...metadata.premium_conditions.usdc_purchase,
             // Convert dollar price to cents
             // @ts-ignore the price input field stored it as a string that needs to be parsed into a number
-            price: Number(metadata.premium_conditions.usdc_purchase.price) * 10 ** PRECISION
+            price:
+              Number(metadata.premium_conditions.usdc_purchase.price) *
+              10 ** PRECISION
           }
         }
         // @ts-ignore the preview input field stored it as a string that needs to be parsed into a number
@@ -203,7 +260,9 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
       onSubmit={handleSubmit}
       validationSchema={editTrackSchema}
     >
-      {(formikProps) => <EditTrackNavigator {...formikProps} {...screenProps} />}
+      {(formikProps) => (
+        <EditTrackNavigator {...formikProps} {...screenProps} />
+      )}
     </Formik>
   )
 }

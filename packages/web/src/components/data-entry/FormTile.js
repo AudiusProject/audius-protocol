@@ -34,7 +34,7 @@ import { useFlag } from 'hooks/useRemoteConfig'
 import { moodMap } from 'utils/Moods'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
-import { AccessAndSaleTriggerLegacyProps } from './AccessAndSaleTriggerLegacy'
+import { AccessAndSaleTriggerLegacy } from './AccessAndSaleTriggerLegacy'
 import styles from './FormTile.module.css'
 
 const {
@@ -488,7 +488,7 @@ const AdvancedForm = (props) => {
             /> */}
           </div>
           {showAvailability && (
-            <AccessAndSaleTriggerLegacyProps
+            <AccessAndSaleTriggerLegacy
               didUpdateState={didUpdateAvailabilityState}
               metadataState={availabilityState}
               trackLength={props.trackLength}

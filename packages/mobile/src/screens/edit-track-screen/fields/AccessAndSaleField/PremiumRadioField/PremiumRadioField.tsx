@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
-import { Name } from '@audius/common'
-import { isPremiumContentUSDCPurchaseGated } from '@audius/common'
+import { Name, isPremiumContentUSDCPurchaseGated } from '@audius/common'
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 
@@ -102,8 +101,8 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
   const titleIconColor = selected
     ? secondary
     : disabled
-      ? neutralLight4
-      : neutral
+    ? neutralLight4
+    : neutral
 
   const selectedUsdcPurchaseValue = useMemo(() => {
     if (isPremiumContentUSDCPurchaseGated(previousPremiumConditions)) {

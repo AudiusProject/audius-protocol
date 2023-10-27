@@ -12,7 +12,9 @@ import {
   isPremiumContentFollowGated,
   isPremiumContentTipGated,
   isPremiumContentUSDCPurchaseGated,
-  useUSDCPurchaseConfig
+  useUSDCPurchaseConfig,
+  Nullable,
+  PremiumConditions
 } from '@audius/common'
 import {
   Button,
@@ -25,6 +27,7 @@ import {
   IconVisibilityPublic
 } from '@audius/stems'
 import { set, get } from 'lodash'
+import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useRemoteVar } from 'hooks/useRemoteConfig'
@@ -47,6 +50,7 @@ import { SpecialAccessType } from 'pages/upload-page/fields/availability/Special
 
 import styles from './AccessAndSaleTriggerLegacy.module.css'
 import { ContextualMenu } from './ContextualMenu'
+
 const { getUserId } = accountSelectors
 
 const messages = {
@@ -59,12 +63,6 @@ const messages = {
   collectibleGated: 'Collectible Gated',
   hidden: 'Hidden'
 }
-
-import {
-  Nullable,
-  PremiumConditions
-} from '@audius/common'
-import { useSelector } from 'react-redux'
 
 enum PremiumTrackMetadataField {
   IS_PREMIUM = 'is_premium',
@@ -102,7 +100,7 @@ type AccessAndSaleTriggerLegacyProps = {
   didUpdateState: (newState: TrackMetadataState) => void
 }
 
-export const AccessAndSaleTriggerLegacyProps = (
+export const AccessAndSaleTriggerLegacy = (
   props: AccessAndSaleTriggerLegacyProps
 ) => {
   const {
@@ -128,19 +126,25 @@ export const AccessAndSaleTriggerLegacyProps = (
    * determine the final premium conditions that get saved to the track.
    */
   const accountUserId = useSelector(getUserId)
-  const tempPremiumConditions = {
-    ...getCombinedDefaultPremiumConditionValues(accountUserId),
-    ...savedPremiumConditions
-  }
+  const tempPremiumConditions = useMemo(
+    () => ({
+      ...getCombinedDefaultPremiumConditionValues(accountUserId),
+      ...savedPremiumConditions
+    }),
+    [accountUserId, savedPremiumConditions]
+  )
 
   const usdcPurchaseConfig = useUSDCPurchaseConfig(useRemoteVar)
 
   const initialValues: AccessAndSaleFormValues = useMemo(() => {
-    const isUsdcGated = isPremiumContentUSDCPurchaseGated(savedPremiumConditions)
+    const isUsdcGated = isPremiumContentUSDCPurchaseGated(
+      savedPremiumConditions
+    )
     const isTipGated = isPremiumContentTipGated(savedPremiumConditions)
     const isFollowGated = isPremiumContentFollowGated(savedPremiumConditions)
-    const isCollectibleGated =
-      isPremiumContentCollectibleGated(savedPremiumConditions)
+    const isCollectibleGated = isPremiumContentCollectibleGated(
+      savedPremiumConditions
+    )
 
     const initialValues = {}
     set(initialValues, IS_UNLISTED, isUnlisted)
@@ -174,10 +178,20 @@ export const AccessAndSaleTriggerLegacyProps = (
       initialValues,
       SPECIAL_ACCESS_TYPE,
       // Since we're in edit mode, we check if the track was initially tip gated
-      (isTipGated || isPremiumContentTipGated(initialPremiumConditions)) ? SpecialAccessType.TIP : SpecialAccessType.FOLLOW
+      isTipGated || isPremiumContentTipGated(initialPremiumConditions)
+        ? SpecialAccessType.TIP
+        : SpecialAccessType.FOLLOW
     )
     return initialValues as AccessAndSaleFormValues
-  }, [fieldVisibility, isPremium, isUnlisted, savedPremiumConditions, tempPremiumConditions, preview])
+  }, [
+    fieldVisibility,
+    isPremium,
+    isUnlisted,
+    savedPremiumConditions,
+    tempPremiumConditions,
+    initialPremiumConditions,
+    preview
+  ])
 
   const onSubmit = (values: AccessAndSaleFormValues) => {
     const availabilityType = get(values, AVAILABILITY_TYPE)
@@ -200,7 +214,9 @@ export const AccessAndSaleTriggerLegacyProps = (
     switch (availabilityType) {
       case TrackAvailabilityType.USDC_PURCHASE: {
         newState.preview_start_seconds = preview ?? 0
-        const { usdc_purchase: { price } } = premiumConditions as PremiumConditionsUSDCPurchase
+        const {
+          usdc_purchase: { price }
+        } = premiumConditions as PremiumConditionsUSDCPurchase
         newState.premium_conditions = {
           // @ts-ignore splits get added in saga
           usdc_purchase: { price: Math.round(price) }
@@ -210,7 +226,8 @@ export const AccessAndSaleTriggerLegacyProps = (
       }
       case TrackAvailabilityType.SPECIAL_ACCESS: {
         if (specialAccessType === SpecialAccessType.FOLLOW) {
-          const { follow_user_id } = premiumConditions as PremiumConditionsFollowGated
+          const { follow_user_id } =
+            premiumConditions as PremiumConditionsFollowGated
           newState.premium_conditions = { follow_user_id }
         } else {
           const { tip_user_id } = premiumConditions as PremiumConditionsTipGated
@@ -220,7 +237,8 @@ export const AccessAndSaleTriggerLegacyProps = (
         break
       }
       case TrackAvailabilityType.COLLECTIBLE_GATED: {
-        const { nft_collection } = premiumConditions as PremiumConditionsCollectibleGated
+        const { nft_collection } =
+          premiumConditions as PremiumConditionsCollectibleGated
         newState.premium_conditions = { nft_collection }
         newState.is_premium = true
         break
@@ -275,9 +293,7 @@ export const AccessAndSaleTriggerLegacyProps = (
           isRemix={isRemix}
           isUpload={isUpload}
           isInitiallyUnlisted={initialForm[IS_UNLISTED]}
-          initialPremiumConditions={
-            initialPremiumConditions ?? undefined
-          }
+          initialPremiumConditions={initialPremiumConditions ?? undefined}
           premiumConditions={tempPremiumConditions}
         />
       }
