@@ -1,3 +1,5 @@
+import { useSelector } from 'react-redux'
+
 import {
   PremiumConditions,
   isPremiumContentCollectibleGated,
@@ -5,7 +7,6 @@ import {
   isPremiumContentTipGated,
   isPremiumContentUSDCPurchaseGated
 } from 'models/Track'
-import { useSelector } from 'react-redux'
 import { getSupportedUserCollections } from 'store/collectibles/selectors'
 import { CommonState } from 'store/index'
 import { Nullable } from 'utils/typeUtils'
