@@ -7,9 +7,7 @@ const signUpApi = createApi({
       fetch: async ({ email }, { audiusBackend }) => {
         return await audiusBackend.emailInUse(email)
       },
-      options: {
-        type: 'mutation'
-      }
+      options: {}
     }
   }
 })
