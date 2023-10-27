@@ -11,12 +11,13 @@ import {
   SocialButton
 } from '@audius/harmony'
 import { Form, Formik, FormikHelpers } from 'formik'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { setValueField } from 'common/store/pages/signon/actions'
+import { getEmailField } from 'common/store/pages/signon/selectors'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { Link } from 'components/link'
 import PreloadImage from 'components/preload-image/PreloadImage'
@@ -39,10 +40,6 @@ const messages = {
   unknownError: 'Unknown error occurred.'
 }
 
-const initialValues = {
-  email: ''
-}
-
 type SignUpEmailValues = {
   email: string
 }
@@ -57,6 +54,10 @@ export const SignUpPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const queryContext = useContext(AudiusQueryContext)
+  const existingEmailValue = useSelector(getEmailField)
+  const initialValues = {
+    email: existingEmailValue.value ?? ''
+  }
   const submitHandler = useCallback(
     async (
       values: SignUpEmailValues,
