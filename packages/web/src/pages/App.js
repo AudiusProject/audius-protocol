@@ -521,9 +521,9 @@ class App extends Component {
                   )}
                 </Route>
                 {isSignInRedesignEnabled ? (
-                  <SignUpRoute path={SIGN_UP_PAGE} isMobile={isMobileClient}>
+                  <Route path={SIGN_UP_PAGE} isMobile={isMobileClient}>
                     <SignUpRootPage />
-                  </SignUpRoute>
+                  </Route>
                 ) : null}
                 <Route
                   exact

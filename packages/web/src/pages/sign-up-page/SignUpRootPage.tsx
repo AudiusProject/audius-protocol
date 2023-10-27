@@ -104,24 +104,24 @@ export const SignUpRootPage = () => {
   return (
     <div>
       <Switch>
-        <Route exact path={SIGN_UP_EMAIL_PAGE}>
+        <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
           <SignUpPage />
-        </Route>
-        <Route exact path={SIGN_UP_PASSWORD_PAGE}>
+        </SignUpRoute>
+        <SignUpRoute exact path={SIGN_UP_PASSWORD_PAGE}>
           <CreatePasswordPage />
-        </Route>
-        <Route exact path={SIGN_UP_HANDLE_PAGE}>
+        </SignUpRoute>
+        <SignUpRoute exact path={SIGN_UP_HANDLE_PAGE}>
           <PickHandlePage />
-        </Route>
-        <Route exact path={SIGN_UP_FINISH_PROFILE_PAGE}>
+        </SignUpRoute>
+        <SignUpRoute exact path={SIGN_UP_FINISH_PROFILE_PAGE}>
           <FinishProfilePage />
-        </Route>
-        <Route exact path={SIGN_UP_GENRES_PAGE}>
+        </SignUpRoute>
+        <SignUpRoute exact path={SIGN_UP_GENRES_PAGE}>
           <SelectGenrePage />
-        </Route>
-        <Route exact path={SIGN_UP_ARTISTS_PAGE}>
+        </SignUpRoute>
+        <SignUpRoute exact path={SIGN_UP_ARTISTS_PAGE}>
           <SelectArtistsPage />
-        </Route>
+        </SignUpRoute>
       </Switch>
     </div>
   )
