@@ -48,14 +48,12 @@ const determineAllowedRoute = (
   }
   // TODO: These checks below here may need to fall under a different route umbrella separate from sign up
   if (signUpData.genres) {
-    console.log({ genres: signUpData.genres })
     // Already have genres selected
     allowedRoutes.push(SignUpPath.selectArtists)
   }
 
   if (signUpData.followArtists?.selectedUserIds?.length >= 3) {
-    console.log({ artist: signUpData.followArtists })
-    // Already have 3 artists followed (done with sign up if at this point)
+    // Already have 3 artists followed (already done with sign up if at this point)
     // TODO: trigger welcome modal when redirecting from here
     return { isAllowedRoute: false, correctedRoute: TRENDING_PAGE }
   }
