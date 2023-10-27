@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 def get_aggregate_route_metrics(time_range, bucket_size):
     """
-    Returns a list of timestamp with unique count and total count for all routes
+    Returns a list of timestamps with unique count and total count for all routes
     based on given time range and grouped by bucket size
 
     Returns:

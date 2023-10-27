@@ -19,7 +19,7 @@ import { make, track } from 'services/analytics'
 import { UsdcPurchaseFields } from './UsdcPurchaseFields'
 import styles from './UsdcPurchaseGatedRadioField.module.css'
 
-const WAITLIST_TYPEFORM = 'https://example.com'
+const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
 
 const messages = {
   usdcPurchase: 'Premium (Pay-to-Unlock)',

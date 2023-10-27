@@ -73,8 +73,14 @@ import { useSavePodcastProgress } from './useSavePodcastProgress'
 const { getUserId } = accountSelectors
 const { getUsers } = cacheUsersSelectors
 const { getTracks } = cacheTracksSelectors
-const { getPlaying, getSeek, getCurrentTrack, getCounter, getPlaybackRate } =
-  playerSelectors
+const {
+  getPlaying,
+  getSeek,
+  getCurrentTrack,
+  getCounter,
+  getPlaybackRate,
+  getUid
+} = playerSelectors
 const { setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
 const { recordListen } = tracksSocialActions
@@ -170,6 +176,8 @@ export const Audio = () => {
   const repeatMode = useSelector(getRepeat)
   const playbackRate = useSelector(getPlaybackRate)
   const currentUserId = useSelector(getUserId)
+  const uid = useSelector(getUid)
+  const previousUid = usePrevious(uid)
   const trackPositions = useSelector((state: CommonState) =>
     getUserTrackPositions(state, { userId: currentUserId })
   )
@@ -703,6 +711,10 @@ export const Audio = () => {
     }
   }, [playbackState, playing])
 
+  const handleStop = useCallback(async () => {
+    TrackPlayer.reset()
+  }, [])
+
   const handleRepeatModeChange = useCallback(async () => {
     if (repeatMode === RepeatMode.SINGLE) {
       await TrackPlayer.setRepeatMode(TrackPlayerRepeatMode.Track)
@@ -745,6 +757,13 @@ export const Audio = () => {
   useEffect(() => {
     handlePlaybackRateChange()
   }, [handlePlaybackRateChange, playbackRate])
+
+  useEffect(() => {
+    // Stop playback if we have unloaded a uid from the player
+    if (previousUid && !uid && !playing) {
+      handleStop()
+    }
+  }, [handleStop, playing, uid, previousUid])
 
   useSavePodcastProgress()
 

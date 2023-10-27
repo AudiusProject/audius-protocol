@@ -41,7 +41,7 @@ def _get_trending_tracks_with_session(
         args.get("time", "week"),
         args.get("exclude_premium", SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS),
         args.get("limit", TRENDING_TRACKS_LIMIT),
-        args.get("offset", 0)
+        args.get("offset", 0),
     )
     time_range = "week" if time not in ["week", "month", "year", "allTime"] else time
     key = make_trending_tracks_cache_key(time_range, genre, strategy.version)

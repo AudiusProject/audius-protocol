@@ -8,6 +8,7 @@ import { getContext } from 'store/effects'
 
 import { setVisibility } from '../modals/parentSlice'
 
+import { reportStripeFlowAnalytics } from './sagaHelpers'
 import { getStripeModalState } from './selectors'
 import {
   cancelStripeOnramp,
@@ -34,6 +35,14 @@ function* handleInitializeStripeModal({
       destinationWallet
     })
     yield* put(stripeSessionCreated({ clientSecret: res.client_secret }))
+    yield* call(
+      track,
+      make({
+        eventName: Name.STRIPE_SESSION_CREATED,
+        amount,
+        destinationCurrency
+      })
+    )
   } catch (e) {
     const {
       code,
@@ -77,15 +86,18 @@ function* handleInitializeStripeModal({
 }
 
 function* handleStripeSessionChanged({
-  payload: { status }
+  payload: { session }
 }: ReturnType<typeof stripeSessionStatusChanged>) {
-  if (status === 'fulfillment_complete') {
-    const { onrampSucceeded } = yield* select(getStripeModalState)
+  const { onrampSucceeded, previousStripeSessionData } = yield* select(
+    getStripeModalState
+  )
+  if (session.status === 'fulfillment_complete') {
     if (onrampSucceeded) {
       yield* put(onrampSucceeded)
     }
     yield* put(setVisibility({ modal: 'StripeOnRamp', visible: 'closing' }))
   }
+  yield* call(reportStripeFlowAnalytics, session, previousStripeSessionData)
 }
 
 function* handleCancelStripeOnramp() {

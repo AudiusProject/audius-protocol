@@ -27,6 +27,9 @@ import styles from './ConfirmTransferDetails.module.css'
 import { Hint } from './Hint'
 import { TextRow } from './TextRow'
 
+const LEARN_MORE_LINK =
+  'https://support.audius.co/help/Understanding-USDC-on-Audius'
+
 const messages = {
   currentBalance: 'Current Balance',
   amountToWithdraw: 'Amount to Withdraw',
@@ -116,7 +119,7 @@ export const ConfirmTransferDetails = () => {
       </div>
       <Hint
         text={messages.notSure}
-        link={''} // TODO(USDC): Link
+        link={LEARN_MORE_LINK}
         icon={IconQuestionCircle}
         linkText={messages.guide}
       />

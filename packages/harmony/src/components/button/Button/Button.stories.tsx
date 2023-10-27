@@ -2,15 +2,16 @@ import { expect } from '@storybook/jest'
 import type { Meta, StoryObj } from '@storybook/react'
 import { within } from '@storybook/testing-library'
 
+import { ButtonProps, ButtonSize, ButtonType } from '../types'
+
 import { Button } from './Button'
-import { ButtonProps, ButtonSize, ButtonType } from './types'
 
 const baseProps: ButtonProps = {
   children: 'Click Me'
 }
 
 const meta: Meta<typeof Button> = {
-  title: 'Components/Button',
+  title: 'Components/Buttons/Button',
   component: Button,
   render: (props: ButtonProps) => (
     <div
