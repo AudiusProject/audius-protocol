@@ -43,7 +43,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     alignItems: 'center'
   },
   title: {
-    fontSize: 22,
+    fontSize: 18,
     marginTop: 0
   },
   selectedTitle: {
@@ -57,7 +57,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     marginRight: spacing(2.5)
   },
   subtitleContainer: {
-    marginTop: spacing(2)
+    marginLeft: -1 * spacing(10)
   },
   subtitle: {
     color: palette.neutral
@@ -71,6 +71,9 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   comingSoon: {
     alignSelf: 'flex-start'
+  },
+  fields: {
+    marginLeft: -1 * spacing(10)
   }
 }))
 
@@ -130,11 +133,13 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
           {messages.title}
         </Text>
       </View>
-      <View style={styles.subtitleContainer}>
-        <Text fontSize='medium' weight='medium' style={styles.subtitle}>
-          {messages.description}
-        </Text>
-      </View>
+      {selected ? (
+        <View style={styles.subtitleContainer}>
+          <Text fontSize='medium' weight='medium' style={styles.subtitle}>
+            {messages.description}
+          </Text>
+        </View>
+      ) : null}
       {disabled ? (
         <>
           <Tag style={styles.comingSoon}>{messages.comingSoon}</Tag>
@@ -146,10 +151,10 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
         </>
       ) : null}
       {selected ? (
-        <>
+        <View style={styles.fields}>
           <TrackPriceField />
           <TrackPreviewField />
-        </>
+        </View>
       ) : null}
     </View>
   )

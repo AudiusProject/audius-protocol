@@ -38,5 +38,6 @@
 }
 
 .text {
+  color: var(--static-white);
   text-decoration: none;
 }

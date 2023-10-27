@@ -2,9 +2,10 @@ import { forwardRef } from 'react'
 
 import cn from 'classnames'
 
-import { BaseButton } from './BaseButton'
+import { BaseButton } from '../BaseButton/BaseButton'
+import { PlainButtonProps, PlainButtonSize, PlainButtonType } from '../types'
+
 import styles from './PlainButton.module.css'
-import { PlainButtonProps, PlainButtonSize, PlainButtonType } from './types'
 
 const SIZE_STYLE_MAP: {
   [k in PlainButtonSize]: [string, string, string, string]

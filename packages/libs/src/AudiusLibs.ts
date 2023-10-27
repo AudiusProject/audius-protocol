@@ -27,6 +27,7 @@ import { EthContracts } from './services/ethContracts'
 import { EthWeb3Config, EthWeb3Manager } from './services/ethWeb3Manager'
 import { Hedgehog, HedgehogConfig } from './services/hedgehog'
 import { IdentityService } from './services/identity'
+import type { IdentityRequestError } from './services/identity'
 import { Schemas, SchemaValidator } from './services/schemaValidator'
 import {
   SolanaWeb3Manager,
@@ -637,6 +638,7 @@ export class AudiusLibs {
 }
 
 export { AudiusABIDecoder, Utils, SolanaUtils, CreatorNode }
+export { IdentityRequestError }
 
 export { SanityChecks } from './sanityChecks'
 export { RewardsAttester, DEFAULT_MINT, MintName } from './services/solana'

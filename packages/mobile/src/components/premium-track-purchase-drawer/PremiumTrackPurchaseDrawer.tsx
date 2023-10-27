@@ -5,6 +5,8 @@ import type {
   PurchaseContentError
 } from '@audius/common'
 import {
+  FeatureFlags,
+  Name,
   PurchaseContentStage,
   formatPrice,
   isContentPurchaseInProgress,
@@ -18,7 +20,13 @@ import {
   usePurchaseContentFormConfiguration
 } from '@audius/common'
 import { Formik, useFormikContext } from 'formik'
-import { Linking, View, ScrollView, TouchableOpacity } from 'react-native'
+import {
+  Linking,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Platform
+} from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -30,7 +38,8 @@ import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { make, track as trackEvent } from 'app/services/analytics'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -42,6 +51,7 @@ import { AudioMatchSection } from './AudioMatchSection'
 import { PayExtraFormSection } from './PayExtraFormSection'
 import { PurchaseSuccess } from './PurchaseSuccess'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
+import { PurchaseUnavailable } from './PurchaseUnavailable'
 import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState'
 
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
@@ -200,6 +210,10 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
   const styles = useStyles()
   const { specialLightGreen, secondary } = useThemeColors()
   const presetValues = usePayExtraPresets(useRemoteVar)
+  const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
+    FeatureFlags.IOS_USDC_PURCHASE_ENABLED
+  )
+  const isIOSDisabled = Platform.OS === 'ios' && !isIOSUSDCPurchaseEnabled
 
   const { submitForm, resetForm } = useFormikContext()
 
@@ -228,6 +242,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
 
   const handleTermsPress = useCallback(() => {
     Linking.openURL('https://audius.co/legal/terms-of-use')
+    trackEvent(make({ eventName: Name.PURCHASE_CONTENT_TOS_CLICKED }))
   }, [])
 
   return (
@@ -250,9 +265,11 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
             {...purchaseSummaryValues}
             isPurchaseSuccessful={isPurchaseSuccessful}
           />
-          {isPurchaseSuccessful ? (
+          {isIOSDisabled ? (
+            <PurchaseUnavailable />
+          ) : isPurchaseSuccessful ? (
             <PurchaseSuccess track={track} />
-          ) : (
+          ) : isInProgress ? null : (
             <View>
               <View style={styles.payToUnlockTitleContainer}>
                 <Text weight='heavy' textTransform='uppercase' fontSize='small'>
@@ -271,7 +288,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
           )}
         </View>
       </ScrollView>
-      {isPurchaseSuccessful ? null : (
+      {isPurchaseSuccessful || isIOSDisabled ? null : (
         <View style={styles.formActions}>
           {error ? <RenderError error={error} /> : null}
           <Button

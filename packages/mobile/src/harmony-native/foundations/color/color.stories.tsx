@@ -6,8 +6,8 @@ import { Divider, SegmentedControl, Text, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeVariant } from 'app/utils/theme'
 
-import type { Primitives } from './primitives'
-import { primitives } from './primitives'
+import type { PrimitiveColors } from './primitive'
+import { primitiveTheme } from './primitive'
 
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
@@ -61,7 +61,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 }))
 
 const messages = {
-  title: 'Primitives',
+  title: 'Color',
   description:
     'Primitives include all the Audius colors. They gave a numeric name to our HEX values and are organized from lightest to darkest.',
   staticDescription:
@@ -104,6 +104,9 @@ const PaletteSegmentedControl = () => {
 function ColorSwatch(props: ColorSwatchProps) {
   const styles = useStyles()
   const { title, hex } = props
+  // TODO add gradient!
+  if (typeof hex !== 'string') return null
+
   return (
     <Tile style={styles.swatch2} styles={{ content: styles.swatch }}>
       <View style={[styles.swatchColor, { backgroundColor: hex }]} />
@@ -119,7 +122,7 @@ function ColorSwatch(props: ColorSwatchProps) {
 
 type ColorRowProps = {
   description: string
-  colors: Primitives[keyof Primitives]
+  colors: PrimitiveColors[keyof PrimitiveColors]
 }
 
 function ColorRow(props: ColorRowProps) {
@@ -139,7 +142,7 @@ function ColorRow(props: ColorRowProps) {
   )
 }
 
-function Primitivess() {
+function Colors() {
   const theme = useThemeVariant()
   const themeToHarmonyTheme = {
     [Theme.DEFAULT]: 'day',
@@ -148,7 +151,7 @@ function Primitivess() {
     [Theme.MATRIX]: 'matrix'
   }
   const styles = useStyles()
-  const themedPrimitives = primitives[themeToHarmonyTheme[theme]]
+  const themedPrimitives = primitiveTheme[themeToHarmonyTheme[theme]]
   const rows = [
     {
       title: 'Static',
@@ -227,11 +230,11 @@ function Primitivess() {
   )
 }
 
-const PrimitivesMeta = {
-  title: 'Foundation/Color/Primitives',
-  component: Primitivess
+const ColorMeta = {
+  title: 'Foundation/Color',
+  component: Colors
 }
 
-export default PrimitivesMeta
+export default ColorMeta
 
-export const Basic = {}
+export const Docs = {}

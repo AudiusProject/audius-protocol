@@ -9,6 +9,9 @@
 }
 
 .content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
   max-width: 1240px;
   position: relative;
@@ -64,6 +67,7 @@
 }
 
 .artistImageWrapper {
+  border: 2px solid var(--harmony-border-strong);
   border-radius: 50%;
   height: 192px;
   width: 192px;
@@ -71,9 +75,16 @@
   cursor: pointer;
 }
 
+.artistImageWrapper:hover {
+  opacity: 0.85;
+  transform: opacity var(--harmony-quick);
+}
+
 .artistImage {
   height: 100%;
   width: 100%;
+  stroke-width: 2px;
+  stroke: #fff;
 }
 
 .artistName {

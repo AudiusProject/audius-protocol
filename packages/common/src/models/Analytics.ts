@@ -335,11 +335,22 @@ export enum Name {
   BUY_USDC_RECOVERY_SUCCESS = 'Buy USDC: Recovery Success',
   BUY_USDC_RECOVERY_FAILURE = 'Buy USDC: Recovery Failure',
 
+  // Stripe Tracking
+  STRIPE_SESSION_CREATION_ERROR = 'Stripe: Session Creation Error',
+  STRIPE_SESSION_CREATED = 'Stripe Session: Created',
+  STRIPE_MODAL_INITIALIZED = 'Stripe Modal: Initialized',
+  STRIPE_REQUIRES_PAYMENT = 'Stripe Modal: Requires Payment',
+  STRIPE_FULLFILMENT_PROCESSING = 'Stripe Modal: Fulfillment Processing',
+  STRIPE_FULLFILMENT_COMPLETE = 'Stripe Modal: Fulfillment Complete',
+  STRIPE_ERROR = 'Stripe Modal: Error',
+  STRIPE_REJECTED = 'Stripe Modal: Rejected',
+
   // Purchase Content
   PURCHASE_CONTENT_STARTED = 'Purchase Content: Started',
   PURCHASE_CONTENT_SUCCESS = 'Purchase Content: Success',
   PURCHASE_CONTENT_FAILURE = 'Purchase Content: Failure',
   PURCHASE_CONTENT_TWITTER_SHARE = 'Purchase Content: Twitter Share',
+  PURCHASE_CONTENT_TOS_CLICKED = 'Purchase Content: Terms of Service Link Clicked',
 
   // Rate & Review CTA
   RATE_CTA_DISPLAYED = 'Rate CTA: Displayed',
@@ -1574,6 +1585,7 @@ type BuyAudioRecoveryFailure = {
   error: string
 }
 
+// Buy USDC
 type BuyUSDCOnRampOpened = {
   eventName: Name.BUY_USDC_ON_RAMP_OPENED
   provider: string
@@ -1623,6 +1635,49 @@ type BuyUSDCRecoveryFailure = {
   error: string
 }
 
+// Stripe
+export type StripeEventFields = {
+  amount: string
+  destinationCurrency: string
+}
+
+type StripeSessionCreationError = StripeEventFields & {
+  eventName: Name.STRIPE_SESSION_CREATION_ERROR
+  code: string
+  stripeErrorMessage: string
+  type: string
+}
+
+type StripeSessionCreated = StripeEventFields & {
+  eventName: Name.STRIPE_SESSION_CREATED
+}
+
+type StripeModalInitialized = StripeEventFields & {
+  eventName: Name.STRIPE_MODAL_INITIALIZED
+}
+
+type StripeRequiresPayment = StripeEventFields & {
+  eventName: Name.STRIPE_REQUIRES_PAYMENT
+}
+
+type StripeFulfillmentProcessing = StripeEventFields & {
+  eventName: Name.STRIPE_FULLFILMENT_PROCESSING
+}
+
+type StripeFulfillmentComplete = StripeEventFields & {
+  eventName: Name.STRIPE_FULLFILMENT_COMPLETE
+}
+
+type StripeError = StripeEventFields & {
+  eventName: Name.STRIPE_ERROR
+}
+
+type StripeRejected = StripeEventFields & {
+  eventName: Name.STRIPE_REJECTED
+}
+
+// Content Purchase
+
 type ContentPurchaseMetadata = {
   price: number
   contentId: number
@@ -1630,6 +1685,7 @@ type ContentPurchaseMetadata = {
   contentType: string
   payExtraAmount: number
   payExtraPreset?: string
+  totalAmount: number
   artistHandle: string
   isVerifiedArtist: boolean
 }
@@ -1649,6 +1705,10 @@ type PurchaseContentFailure = ContentPurchaseMetadata & {
 type PurchaseContentTwitterShare = {
   eventName: Name.PURCHASE_CONTENT_TWITTER_SHARE
   text: string
+}
+
+type PurchaseContentTOSClicked = {
+  eventName: Name.PURCHASE_CONTENT_TOS_CLICKED
 }
 
 type RateCtaDisplayed = {
@@ -1983,10 +2043,19 @@ export type AllTrackingEvents =
   | BuyUSDCRecoveryInProgress
   | BuyUSDCRecoverySuccess
   | BuyUSDCRecoveryFailure
+  | StripeSessionCreationError
+  | StripeSessionCreated
+  | StripeModalInitialized
+  | StripeRequiresPayment
+  | StripeFulfillmentProcessing
+  | StripeFulfillmentComplete
+  | StripeError
+  | StripeRejected
   | PurchaseContentStarted
   | PurchaseContentSuccess
   | PurchaseContentFailure
   | PurchaseContentTwitterShare
+  | PurchaseContentTOSClicked
   | RateCtaDisplayed
   | RateCtaResponseNo
   | RateCtaResponseYes

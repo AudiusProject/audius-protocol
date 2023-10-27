@@ -62,6 +62,9 @@ const useStyles = makeStyles(({ spacing }) => ({
     marginHorizontal: spacing(4),
     paddingVertical: spacing(2),
     paddingHorizontal: spacing(4)
+  },
+  listItem: {
+    paddingVertical: spacing(6)
   }
 }))
 
@@ -75,6 +78,7 @@ const MarkedAsRemix = () => {
 }
 
 export const AccessAndSaleScreen = () => {
+  const styles = useStyles()
   const navigation = useNavigation()
   const { initialValues } = useFormikContext<FormValues>()
   const [{ value: isPremium }] = useField<boolean>('is_premium')
@@ -261,6 +265,7 @@ export const AccessAndSaleScreen = () => {
       allowDeselect={false}
       hideSelectionLabel
       header={<MarkedAsRemix />}
+      itemStyles={styles.listItem}
       bottomSection={
         <Button
           variant='primary'

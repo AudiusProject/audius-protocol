@@ -121,7 +121,7 @@ export const Hero = (props: HeroProps) => {
         <Parallax
           className={cn(styles.background, styles.fgContainer)}
           translateY={[51, -10]}
-          translateX={[64, 64]}
+          translateX={[44, 44]}
         >
           <img
             src={HeroForeground}

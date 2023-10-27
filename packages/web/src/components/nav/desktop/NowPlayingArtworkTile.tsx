@@ -26,7 +26,7 @@ import { fullTrackPage } from 'utils/route'
 
 import styles from './NowPlayingArtworkTile.module.css'
 
-const { getTrackId, getCollectible } = playerSelectors
+const { getTrackId, getCollectible, getPreviewing } = playerSelectors
 const { getTrack } = cacheTracksSelectors
 const { getUserId } = accountSelectors
 const { getDominantColorsByTrack } = averageColorSelectors
@@ -69,10 +69,11 @@ export const NowPlayingArtworkTile = () => {
     getTrack(state, { id: trackId })
   )
   const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const isPreviewing = useSelector(getPreviewing)
   const shouldShowPurchaseDogEar =
     track?.premium_conditions &&
     'usdc_purchase' in track.premium_conditions &&
-    !doesUserHaveAccess
+    (!doesUserHaveAccess || isPreviewing)
 
   const isOwner = useSelector((state: CommonState) => {
     const ownerId = getTrack(state, { id: trackId })?.owner_id

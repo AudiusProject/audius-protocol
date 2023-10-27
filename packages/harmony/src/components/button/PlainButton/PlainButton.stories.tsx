@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import * as Icons from '../typography/Icons'
+import * as Icons from '../../typography/Icons'
+import { PlainButtonProps, PlainButtonSize, PlainButtonType } from '../types'
 
 import { PlainButton } from './PlainButton'
-import { PlainButtonProps, PlainButtonSize, PlainButtonType } from './types'
 
 const baseProps: PlainButtonProps = {
   iconLeft: Icons.IconCampfire,
@@ -17,7 +17,7 @@ type StoryArgs = {
 }
 
 const meta: Meta<StoryArgs> = {
-  title: 'Components/PlainButton',
+  title: 'Components/Buttons/PlainButton',
   component: ({ props }) => <PlainButton {...baseProps} {...props} />,
   render: ({ dark, props }) => (
     <div
