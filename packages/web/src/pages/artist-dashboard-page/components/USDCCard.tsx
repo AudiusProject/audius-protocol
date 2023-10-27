@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import {
   BNUSDC,
   WithdrawUSDCModalPages,
@@ -28,6 +30,9 @@ import { SALES_PAGE, WITHDRAWALS_PAGE } from 'utils/route'
 
 import styles from './USDCCard.module.css'
 
+const LEARN_MORE_LINK =
+  'https://support.audius.co/help/Understanding-USDC-on-Audius'
+
 const messages = {
   usdc: 'USDC',
   earn: 'Earn USDC by selling your music',
@@ -44,6 +49,10 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
   const balanceNumber =
     formatUSDCWeiToFloorCentsNumber((balance ?? new BN(0)) as BNUSDC) / 100
   const balanceFormatted = formatCurrencyBalance(balanceNumber)
+
+  const handleLearnMore = useCallback(() => {
+    window.open(LEARN_MORE_LINK, '_blank')
+  }, [])
 
   const menuItems: PopupMenuItem[] = [
     {
@@ -85,8 +94,7 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
         <div className={styles.usdcInfo}>
           <Text color='staticWhite'>{messages.earn}</Text>
           <HarmonyPlainButton
-            // TODO: wire up learn more link https://linear.app/audius/issue/PAY-1762/wire-up-learn-more-link
-            onClick={() => {}}
+            onClick={handleLearnMore}
             iconLeft={IconQuestionCircle}
             variant={HarmonyPlainButtonType.INVERTED}
             text={messages.learnMore}
