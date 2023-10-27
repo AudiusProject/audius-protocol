@@ -395,6 +395,11 @@ def persist_app_metrics(db, day, month, app_count):
 
 
 def cache_metrics(metrics, day, month, metric_type, daily_key, monthly_key):
+    """
+    Update the cached unique and total metrics for metric_type (route or app)
+    stored at daily_key for daily metrics and monthly_key for monthly_metrics.
+    Clean up old metrics from cache.
+    """
     daily_metrics_str = REDIS.get(daily_key)
     daily_metrics = json.loads(daily_metrics_str) if daily_metrics_str else {}
 
