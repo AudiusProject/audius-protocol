@@ -27,7 +27,6 @@ export default {
     }
   ],
   plugins: [
-    // nodeExternals({ devDeps: true }),
     json(),
     postcss({
       plugins: [
