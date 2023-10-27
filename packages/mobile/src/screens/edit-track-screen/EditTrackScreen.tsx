@@ -22,6 +22,7 @@ const errorMessages = {
   title: 'Your track must have a name',
   genre: 'Genre is required',
   artwork: 'Artwork is required',
+  description: 'Description cannot exceed 1000 characters',
   previewStartThirtyBeforeEnd:
     'Preview must start at least 30 seconds before the end of the track.',
   previewStartZero:
@@ -51,7 +52,7 @@ const useEditTrackSchemaZod = () => {
           trackArtwork: z.string().nullish(),
           title: z.string(),
           genre: z.any(),
-          description: z.string().length(1000).nullable(),
+          description: z.string().nullish(),
           premium_conditions: z.any(),
           duration: z.number().nullable(),
           preview_start_seconds: z.any()
@@ -76,7 +77,13 @@ const useEditTrackSchemaZod = () => {
           (values) => {
             return typeof values.genre === 'string' && !!values.genre
           },
-          { message: errorMessages.genre, path: ['genre'] }
+          { message: errorMessages.description, path: ['genre'] }
+        )
+        .refine(
+          (values) => {
+            return !values.description || values.description.length <= 1000
+          },
+          { message: errorMessages.description, path: ['description'] }
         )
         .refine(
           (values) => {
