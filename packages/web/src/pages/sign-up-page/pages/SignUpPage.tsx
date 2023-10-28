@@ -11,20 +11,20 @@ import {
   SocialButton
 } from '@audius/harmony'
 import { Form, Formik, FormikHelpers } from 'formik'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { setValueField } from 'common/store/pages/signon/actions'
+import { getEmailField } from 'common/store/pages/signon/selectors'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { Link } from 'components/link'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { EMAIL_REGEX } from 'utils/email'
-import { SIGN_IN_PAGE } from 'utils/route'
+import { SIGN_IN_PAGE, SIGN_UP_PASSWORD_PAGE } from 'utils/route'
 
-import { CreatePasswordState } from './CreatePasswordPage'
 import styles from './SignUpPage.module.css'
 
 const messages = {
@@ -40,19 +40,6 @@ const messages = {
   unknownError: 'Unknown error occurred.'
 }
 
-export type SignUpState = {
-  stage: 'sign-up'
-  email?: string
-}
-
-export type SignUpPageProps = {
-  onNext: (state: CreatePasswordState) => void
-}
-
-const initialValues = {
-  email: ''
-}
-
 type SignUpEmailValues = {
   email: string
 }
@@ -63,11 +50,14 @@ const FormSchema = z.object({
     .regex(EMAIL_REGEX, { message: messages.invalidEmail })
 })
 
-export const SignUpPage = (props: SignUpPageProps) => {
-  const { onNext } = props
+export const SignUpPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const queryContext = useContext(AudiusQueryContext)
+  const existingEmailValue = useSelector(getEmailField)
+  const initialValues = {
+    email: existingEmailValue.value ?? ''
+  }
   const submitHandler = useCallback(
     async (
       values: SignUpEmailValues,
@@ -88,7 +78,7 @@ export const SignUpPage = (props: SignUpPageProps) => {
             navigate(SIGN_IN_PAGE)
           } else {
             // Move onto the password page
-            onNext({ stage: 'create-password' })
+            navigate(SIGN_UP_PASSWORD_PAGE)
           }
         } catch (e) {
           // Unknown error state ¯\_(ツ)_/¯
@@ -96,7 +86,7 @@ export const SignUpPage = (props: SignUpPageProps) => {
         }
       }
     },
-    [dispatch, navigate, onNext, queryContext]
+    [dispatch, navigate, queryContext]
   )
 
   return (
