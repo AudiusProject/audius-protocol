@@ -2,8 +2,10 @@ import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
 import { StorybookConfig } from '@storybook/react-webpack5'
 
 const config: StorybookConfig = {
+  staticDirs: ['./public'],
   stories: ['../src/**/*.stories.@(mdx|ts|tsx)'],
   addons: [
+    'storybook-dark-mode',
     {
       name: '@storybook/addon-essentials',
       options: {
@@ -18,10 +20,6 @@ const config: StorybookConfig = {
     name: '@storybook/react-webpack5',
     options: {}
   },
-  babel: (options) => ({
-    ...options,
-    presets: [...(options?.presets ?? []), '@emotion/babel-preset-css-prop']
-  }),
   docs: {
     autodocs: true,
     // autodocs: 'tag',

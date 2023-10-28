@@ -11,20 +11,30 @@ import 'assets/styles/tokens.css'
 import 'assets/styles/animations.css'
 import 'assets/styles/border-radius.css'
 import 'assets/styles/shadows.css'
+import { darkTheme, lightTheme } from './theme'
+import { HarmonyDocsContainer } from './docs'
 
 // Default to docs view
 export const parameters = {
-  viewMode: 'docs'
+  viewMode: 'docs',
+  darkMode: {
+    light: lightTheme,
+    dark: darkTheme
+  },
+  docs: {
+    container: HarmonyDocsContainer,
+    toc: true
+  }
 }
 
 export const decorators = [
   withThemeByDataAttribute({
     themes: {
-      default: 'default',
+      day: 'day',
       dark: 'dark',
       matrix: 'matrix'
     },
-    defaultTheme: 'default',
+    defaultTheme: 'day',
     attributeName: 'data-theme'
   })
 ]
