@@ -20,7 +20,8 @@ import {
   searchUsersModalSagas,
   relatedArtistsSagas,
   solanaSagas,
-  confirmerSagas
+  confirmerSagas,
+  buyCryptoSagas
 } from '@audius/common'
 import { all, fork } from 'redux-saga/effects'
 
@@ -219,6 +220,7 @@ export default function* rootSaga() {
 
     // Premium content
     premiumContentSagas(),
+    buyCryptoSagas(),
     buyUSDCSagas(),
     purchaseContentSagas(),
     withdrawUSDCSagas(),
