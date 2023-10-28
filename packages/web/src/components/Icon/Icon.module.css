@@ -1,9 +1,9 @@
 .icon {
   --icon-color: currentColor;
   --icon-size: var(--unit-4);
-  width: var(--icon-size);
+  width: var(--icon-size) !important;
   min-width: var(--icon-size);
-  height: var(--icon-size);
+  height: var(--icon-size) !important;
 }
 
 .icon path {
