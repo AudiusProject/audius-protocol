@@ -38,7 +38,7 @@ const useEditTrackSchema = () => {
      * This means that if one of the fields is invalid in the original object definition, while there are other fields
      * that are invalid but would only trigger the error in the refine functions, we would only see the first error.
      * We want all errors to surface at once, so I'm using the refine functions to do the validations.
-     * I understand this is somewhat antithetical to the purpoae of the zod types in the first place, but unless
+     * I understand this is somewhat antithetical to the purpose of the zod types in the first place, but unless
      * we are okay with occasionally showing one error at a time, we will have to do it this way.
      */
     () =>
