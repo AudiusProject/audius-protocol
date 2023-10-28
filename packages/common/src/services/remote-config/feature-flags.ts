@@ -51,7 +51,8 @@ export enum FeatureFlags {
   NEW_PLAYLIST_ROUTES = 'new_playlist_routes',
   DISCOVERY_RELAY = 'discovery_relay',
   SIGN_UP_REDESIGN = 'sign_up_redesign',
-  FEATURE_FLAG_ACCESS = 'feature_flag_access'
+  FEATURE_FLAG_ACCESS = 'feature_flag_access',
+  BUY_USDC_VIA_SOL = 'buy_crypto_via_sol'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -118,5 +119,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.NEW_PLAYLIST_ROUTES]: false,
   [FeatureFlags.DISCOVERY_RELAY]: false,
   [FeatureFlags.SIGN_UP_REDESIGN]: false,
-  [FeatureFlags.FEATURE_FLAG_ACCESS]: false
+  [FeatureFlags.FEATURE_FLAG_ACCESS]: false,
+  [FeatureFlags.BUY_USDC_VIA_SOL]: false
 }
