@@ -38,19 +38,9 @@ const config: StorybookConfig = {
 
     config.module.rules = [
       {
-        test: /\.svg$/,
-        use: [
-          {
-            loader: '@svgr/webpack'
-          },
-          {
-            loader: 'file-loader'
-          }
-        ],
-        type: 'javascript/auto',
-        issuer: {
-          and: [/\.(ts|tsx|md|mdx)$/]
-        }
+        test: /\.svg$/i,
+        issuer: /\.[jt]sx?$/,
+        use: ['@svgr/webpack']
       },
       {
         test: /\.module\.css$/,
