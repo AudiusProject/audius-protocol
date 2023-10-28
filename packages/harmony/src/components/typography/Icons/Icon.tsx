@@ -5,6 +5,7 @@ import { toCSSVariableName } from 'utils/styles'
 
 import styles from './Icon.module.css'
 import type { IconComponent } from './types'
+import type { SVGProps } from 'react'
 
 type IconSize =
   | 'xxSmall' // 12
