@@ -14,7 +14,7 @@ import { AudiusAPIClient } from '../audius-api-client'
 import {
   AudiusBackend,
   getUserbankAccountInfo,
-  pollForBalanceChange
+  pollForTokenBalanceChange
 } from '../audius-backend'
 
 // 0.001 Audio
@@ -79,7 +79,7 @@ export class WalletClient {
       ercAudioBalance.gt(new BN('0'))
     ) {
       await this.audiusBackendInstance.transferAudioToWAudio(ercAudioBalance)
-      await pollForBalanceChange(this.audiusBackendInstance, {
+      await pollForTokenBalanceChange(this.audiusBackendInstance, {
         tokenAccount: account?.address,
         initialBalance: account?.amount,
         mint: 'audio',
