@@ -7,6 +7,5 @@ import './assets/styles/tokens.css'
 import './assets/styles/animations.css'
 import './assets/styles/border-radius.css'
 import './assets/styles/shadows.css'
-import './assets/styles/harmony.css'
 
 export * from './components'

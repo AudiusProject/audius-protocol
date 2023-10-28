@@ -4,7 +4,7 @@ import postcss from 'rollup-plugin-postcss'
 import rollupTypescript from 'rollup-plugin-typescript2'
 import typescript from 'typescript'
 
-import pkg from './package.json' assert { type: 'json'}
+import pkg from './package.json' assert { type: 'json' }
 
 const external = [
   ...Object.keys(pkg.devDependencies),
