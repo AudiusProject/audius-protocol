@@ -6,9 +6,8 @@ import { useDispatch } from 'react-redux'
 
 import { setValueField } from 'common/store/pages/signon/actions'
 import { TextField } from 'components/form-fields'
-
-import { PickHandleState } from './PickHandlePage'
-import { SignUpState } from './SignUpPage'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { SIGN_UP_HANDLE_PAGE } from 'utils/route'
 
 const messages = {
   header: 'Create Your Password',
@@ -18,10 +17,6 @@ const messages = {
   passwordLabel: 'Password',
   confirmPasswordLabel: 'Confirm Password',
   continue: 'Continue'
-}
-
-export type CreatePasswordState = {
-  stage: 'create-password'
 }
 
 const initialValues = {
@@ -34,23 +29,19 @@ type CreatePasswordValues = {
   confirmPassword: string
 }
 
-type CreatePasswordPageProps = {
-  onPrevious: (state: SignUpState) => void
-  onNext: (state: PickHandleState) => void
-}
-
-export const CreatePasswordPage = (props: CreatePasswordPageProps) => {
-  const { onNext } = props
-  const { email = '' } = {}
+export const CreatePasswordPage = () => {
+  // TODO: PR #6443 replaces this logic
+  const { email } = { email: '' }
   const dispatch = useDispatch()
+  const navigate = useNavigateToPage()
 
   const handleSubmit = useCallback(
     (values: CreatePasswordValues) => {
       const { password } = values
       dispatch(setValueField('password', password))
-      onNext({ stage: 'pick-handle' })
+      navigate(SIGN_UP_HANDLE_PAGE)
     },
-    [dispatch, onNext]
+    [dispatch, navigate]
   )
 
   return (
