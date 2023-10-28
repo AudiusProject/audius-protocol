@@ -111,7 +111,7 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
     return { price: null }
   }, [previousPremiumConditions])
   const [{ value: preview }] = useField(TRACK_PREVIEW)
-  const previewStartSeconds = useRef(preview ?? null).current
+  const previewStartSeconds = useRef(preview ?? 0).current
 
   useEffect(() => {
     if (selected) {

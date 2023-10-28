@@ -14,6 +14,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 
 import { EditTrackNavigator } from './EditTrackNavigator'
+import { TRACK_PREVIEW } from './fields/AccessAndSaleField/PremiumRadioField/TrackPreviewField'
 import { TRACK_PRICE } from './fields/AccessAndSaleField/PremiumRadioField/TrackPriceField'
 import type { FormValues, EditTrackScreenProps } from './types'
 const { computeLicenseVariables, ALL_RIGHTS_RESERVED_TYPE } = creativeCommons
@@ -133,26 +134,25 @@ const useEditTrackSchema = () => {
             )
               return true
             if (
-              previewStartSeconds === null &&
-              isPremiumContentUSDCPurchaseGated(premiumConditions)
-            )
-              return false
-            if (
               previewStartSeconds !== null &&
               !isPremiumContentUSDCPurchaseGated(premiumConditions)
             )
               return false
 
+            // If preview is falsy and track is usdc gated (because we got to this line),
+            // validation passes because we will simply set it to 0
+            if (!previewStartSeconds) return true
+
             // If duration is NaN, validation passes because we were unable to get duration from a track
             if (duration === null || isNaN(duration)) return true
 
             return (
-              duration <= 30 || Number(previewStartSeconds)! <= duration - 30
+              duration <= 30 || Number(previewStartSeconds) <= duration - 30
             )
           },
           {
             message: errorMessages.previewStartThirtyBeforeEnd,
-            path: ['preview_start_seconds']
+            path: [TRACK_PREVIEW]
           }
         )
         .refine(
@@ -168,7 +168,7 @@ const useEditTrackSchema = () => {
           },
           {
             message: errorMessages.previewStartZero,
-            path: ['preview_start_seconds']
+            path: [TRACK_PREVIEW]
           }
         ),
     [minContentPriceCents, maxContentPriceCents]
@@ -253,7 +253,10 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
               10 ** PRECISION
           }
         }
-        metadata.preview_start_seconds = Number(metadata.preview_start_seconds)
+        // If user did not set usdc gated track preview, default it to 0
+        metadata.preview_start_seconds = Number(
+          metadata.preview_start_seconds ?? 0
+        )
       }
       onSubmit(metadata)
     },
