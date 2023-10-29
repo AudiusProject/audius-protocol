@@ -1,4 +1,5 @@
 import { withThemeByDataAttribute } from '@storybook/addon-themes'
+import { ComponentRules, RelatedComponents } from '../src/storybook/components'
 
 // This file is used to configure all stories
 import './global.css'
@@ -23,7 +24,10 @@ export const parameters = {
   },
   docs: {
     container: HarmonyDocsContainer,
-    toc: true
+    components: {
+      ComponentRules,
+      RelatedComponents
+    }
   }
 }
 

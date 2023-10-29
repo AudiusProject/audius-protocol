@@ -6,12 +6,13 @@ import type { FlexProps } from './types'
 
 /** Layout component used to group child elements in one-deminsional arrangements. */
 export const Flex = styled(Box)(
-  ({ direction, wrap, alignItems, gap, justifyContent }: FlexProps) => ({
+  ({ direction, wrap, alignItems, gap, justifyContent, flex }: FlexProps) => ({
     display: 'flex',
     alignItems,
     justifyContent,
     flexDirection: direction,
     flexWrap: wrap,
+    flex,
     gap: gap && `var(--harmony-spacing-${gap})`
   })
 )

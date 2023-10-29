@@ -1,6 +1,7 @@
 import type { ComponentPropsWithoutRef } from 'react'
 
-import type { IconComponent } from '../../components/typography/Icons/types'
+import type { IconComponent } from 'components/typography/Icons/Icon'
+
 import type { ColorValue } from '../../types/colors'
 
 export enum ButtonType {

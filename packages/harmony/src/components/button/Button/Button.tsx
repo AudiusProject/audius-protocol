@@ -39,8 +39,10 @@ const TYPE_STYLE_MAP: { [k in ButtonType]: string } = {
 }
 
 /**
- * A common Button component. Includes a few variants and options to
- * include and position icons.
+ * Buttons allow users to trigger an action or event with a single click.
+ * For example, you can use a button for allowing the functionality of
+ * submitting a form, opening a dialog, canceling an action, or performing
+ * a delete operation.
  */
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   function Button(props, ref) {

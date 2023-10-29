@@ -1,5 +1,3 @@
-export * from './types'
-
 // Special Icons
 export { default as IconArtistBadge } from '../../../assets/icons/ArtistBadge.svg'
 export { default as IconCosign } from '../../../assets/icons/Cosign.svg'

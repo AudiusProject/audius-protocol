@@ -1,0 +1,134 @@
+import {
+  Canvas,
+  Meta,
+  Title,
+  Subtitle,
+  Description,
+  Primary,
+  Controls,
+  Story,
+  Stories
+} from '@storybook/blocks'
+import { Button } from './Button'
+import { ButtonSize, ButtonType } from '../types'
+import { Flex, Box } from 'components'
+import * as ButtonStories from './Button.stories'
+import test from '../../../../.storybook/public/buttonBackground.png'
+import IconCamera from 'assets/icons/Camera.svg'
+
+<Meta of={ButtonStories} />
+
+<Title />
+
+- [Overview](#overview)
+- [Props](#props)
+- [Variants](#variants)
+- [Use cases and examples](#use-cases-and-examples)
+- [Do's and dont's](#dos-and-donts)
+
+## Overview
+
+<Subtitle />
+<Description />
+<Primary />
+
+## Props
+
+<Controls />
+## Variants
+
+<Canvas>
+  <Story of={ButtonStories.ButtonTypes} />
+</Canvas>
+
+<Stories />
+
+## Use cases and examples
+
+- Always use primary button as the main action on screen.
+- Avoid vague or generic labels that requires the user read before taking action
+- Use active verbs or phrases that clearly indicate action.
+
+## Do's and don'ts
+
+<ComponentRules
+  rules={[
+    {
+      positive: {
+        description: 'Use 1 or 2 words, no longer than 4 words',
+        component: <Button>Sign Up!</Button>,
+      },
+      negative: {
+        description: 'Don’t use more than 20 characters including spaces.',
+        component: <Button>Get started and sign up for Audius</Button>,
+      }
+    },
+    {
+      positive: {
+        description: 'Use title-case',
+        component: <Button>Get Started</Button>,
+      },
+      negative: {
+        description: 'Don’t use all cap in small or medium buttons (exception: “PLAY”)',
+        component: (
+          <Flex gap='l' alignItems='center'>
+            <Button size={ButtonSize.SMALL} style={{textTransform: 'uppercase'}}>Get Started</Button>
+            <Button size={ButtonSize.DEFAULT} style={{textTransform: 'uppercase'}}>Get Started</Button>
+          </Flex>
+        ),
+      }
+    },
+    {
+      positive: {
+        description: 'You may use primary and secondary side-by-side.',
+        component: (
+          <Flex gap='l'>
+            <Button variant={ButtonType.SECONDARY}>Go Back</Button>
+            <Button>Continue</Button>
+          </Flex>
+        ),
+      },
+      negative: {
+        description: 'Don’t use tertiary as the 3rd level of button hierarchy. Use plain instead',
+        component: (
+          <Flex gap='l'>
+            <Button variant={ButtonType.TERTIARY}>Go Back</Button>
+            <Button>Continue</Button>
+          </Flex>
+        ),
+      }
+    },
+    {
+      positive: {
+        description: 'Use teriary button exclusively on photos or colored backgrounds.',
+        component: <Button>Get Started</Button>,
+      },
+      negative: {
+        description: 'Never place primary buttons actaions side-by-side ',
+        component: <Button>Get Started</Button>,
+      }
+    },
+    {
+      positive: {
+        description: 'Use teriary button exclusively on photos or colored backgrounds. ',
+        component: <Flex w='100%' justifyContent='center' p='2xl' style={{background: `url(${test})`, backgroundSize: 'cover', backgroundPosition: 'center' }}><Button variant={ButtonType.TERTIARY} iconLeft={IconCamera}>Change Cover Photo</Button></Flex>,
+
+        style: {padding: 0}
+      },
+      negative: {
+        description: 'Never place primary buttons actions side-by-side ',
+        component: (
+          <Flex gap='l'>
+            <Button>Go Back</Button>
+            <Button>Continue</Button>
+          </Flex>
+        )
+      }
+    },
+
+]}
+/>
+
+## Related components
+
+<RelatedComponents componentNames={['PlainButton', 'SocialButton']} />

@@ -2,6 +2,7 @@ import { expect } from '@storybook/jest'
 import type { Meta, StoryObj } from '@storybook/react'
 import { within } from '@storybook/testing-library'
 
+import { Flex } from 'components/layout'
 import { IconAlbum } from 'components/typography'
 
 import { ButtonProps, ButtonSize, ButtonType } from '../types'
@@ -45,6 +46,17 @@ type Story = StoryObj<typeof Button>
 
 // Primary
 export const Primary: Story = {}
+
+export const ButtonTypes: Story = {
+  render: () => (
+    <Flex gap='3xl'>
+      <Button variant={ButtonType.PRIMARY}>Primary</Button>
+      <Button variant={ButtonType.SECONDARY}>Secondary</Button>
+      <Button variant={ButtonType.TERTIARY}>Tertiary</Button>
+      <Button variant={ButtonType.DESTRUCTIVE}>Destructive</Button>
+    </Flex>
+  )
+}
 
 // Primary w/ color
 export const PrimaryWithColor: Story = { args: { hexColor: '#13C65A' } }

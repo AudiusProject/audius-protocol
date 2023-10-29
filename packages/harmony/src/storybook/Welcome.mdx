@@ -1,0 +1,36 @@
+import { Meta } from '@storybook/blocks'
+import { Lockup } from './components'
+import { Flex, Box } from 'components'
+import IconNote from 'assets/icons/Note.svg'
+
+<Meta title='Welcome' />
+
+# Harmony Design System
+
+By Audius
+
+### Mission or introductory statement here
+
+## Welcome to Harmony
+
+<Flex gap='3xl' mt='3xl'>
+  <Lockup
+    icon={IconNote}
+    subtitle='Getting started'
+    description='Setup instructions'
+    link='https://github.com/AudiusProject/audius-protocol/tree/main/packages/harmony'
+  />
+  <Lockup
+    icon={IconNote}
+    Unchecked
+    subtitle='Foundations'
+    description='All information about colors, typography, spacing, and icons'
+    link='../?path=/docs/foundations-colors--documentation'
+  />
+  <Lockup
+    icon={IconNote}
+    subtitle='Components'
+    description='All the information and guidelines you’ll ever need on each component'
+    link='../?path=/docs/components-buttons-button--documentation'
+  />
+</Flex>

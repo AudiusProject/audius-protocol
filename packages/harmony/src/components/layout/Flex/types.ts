@@ -10,4 +10,5 @@ export type FlexProps = {
   gap?: SpacingValue
   justifyContent?: CSSProperties['justifyContent']
   wrap?: CSSProperties['flexWrap']
+  flex?: CSSProperties['flex']
 } & BoxProps

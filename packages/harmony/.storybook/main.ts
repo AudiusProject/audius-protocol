@@ -3,7 +3,7 @@ import { StorybookConfig } from '@storybook/react-webpack5'
 
 const config: StorybookConfig = {
   staticDirs: ['./public'],
-  stories: ['../src/**/*.stories.@(mdx|ts|tsx)'],
+  stories: ['../src/**/*.mdx', '../src/**/*.stories.@(mdx|ts|tsx)'],
   addons: [
     'storybook-dark-mode',
     {
@@ -14,7 +14,8 @@ const config: StorybookConfig = {
     },
     '@storybook/addon-a11y',
     '@storybook/addon-themes',
-    '@storybook/addon-interactions'
+    '@storybook/addon-interactions',
+    '@storybook/addon-links'
   ],
   framework: {
     name: '@storybook/react-webpack5',
@@ -37,7 +38,7 @@ const config: StorybookConfig = {
     config.module.rules = [
       {
         test: /\.svg$/i,
-        issuer: /\.[jt]sx?$/,
+        issuer: /\.[jt]sx?|mdx?$/,
         use: ['@svgr/webpack']
       },
       {
@@ -52,6 +53,14 @@ const config: StorybookConfig = {
                 localIdentName: '[name]__[local]___[hash:base64:5]'
               }
             }
+          }
+        ]
+      },
+      {
+        test: /\.(png|jpe?g|gif)$/i,
+        use: [
+          {
+            loader: 'file-loader'
           }
         ]
       },

@@ -14,6 +14,7 @@ export type TextOwnProps<TextComponentType extends ElementType = 'p'> = {
   strength?: TextStrength
   color?: TextColor
   innerRef?: ForwardedRef<HTMLElement>
+  asChild?: boolean
 }
 
 export type TextProps<TextComponentType extends ElementType = 'p'> =
