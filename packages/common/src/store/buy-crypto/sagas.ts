@@ -47,9 +47,6 @@ import { BuyAudioStage, OnRampProvider } from '..'
 
 import { BuyCryptoConfig } from './types'
 
-// Default slippage tolerance, in percentage basis points
-const DEFAULT_SLIPPAGE_BPS = 30
-
 export enum BuyCryptoErrorCode {
   BAD_AMOUNT = 'BadAmount',
   BAD_TOKEN = 'BadToken',
@@ -68,6 +65,8 @@ class BuyCryptoError extends Error {
 }
 
 function* getBuyAudioRemoteConfig() {
+  // Default slippage tolerance, in percentage basis points
+  const DEFAULT_SLIPPAGE_BPS = 30
   const DEFAULT_MIN_AUDIO_PURCHASE_AMOUNT = 5
   const DEFAULT_MAX_AUDIO_PURCHASE_AMOUNT = 999
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
