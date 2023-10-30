@@ -29,13 +29,40 @@ const slice = createSlice({
     buyCryptoViaSol: (_state, _action: PayloadAction<BuyCryptoPayload>) => {
       // Triggers saga
     },
+    /**
+     * @internal used for tracking onramp state in saga
+     */
     onrampSucceeded: () => {
       // handled by saga
     },
+    /**
+     * @internal used for tracking onramp state in saga
+     */
     onrampCanceled: () => {
       // handled by saga
     },
+    /**
+     * @internal used for tracking onramp state in saga
+     */
     onrampFailed: (_state, _action: PayloadAction<{ error: Error }>) => {
+      // handled by saga
+    },
+    /**
+     * Fired when the purchase was exited by the user
+     */
+    buyCryptoCanceled: () => {
+      // handled by saga
+    },
+    /**
+     * Fired when an error was thrown in the saga
+     */
+    buyCryptoFailed: (_state, _action: PayloadAction<{ error: Error }>) => {
+      // handled by saga
+    },
+    /**
+     * Fired when the purchase succeeds
+     */
+    buyCryptoSucceeded: () => {
       // handled by saga
     }
   }
@@ -45,7 +72,10 @@ export const {
   buyCryptoViaSol,
   onrampSucceeded,
   onrampCanceled,
-  onrampFailed
+  onrampFailed,
+  buyCryptoSucceeded,
+  buyCryptoFailed,
+  buyCryptoCanceled
 } = slice.actions
 
 export default slice.reducer

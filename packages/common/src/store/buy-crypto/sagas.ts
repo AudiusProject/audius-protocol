@@ -31,7 +31,10 @@ import {
   onrampCanceled,
   onrampFailed,
   onrampSucceeded,
-  buyCryptoViaSol
+  buyCryptoViaSol,
+  buyCryptoCanceled,
+  buyCryptoFailed,
+  buyCryptoSucceeded
 } from 'store/buy-crypto/slice'
 import { getBuyUSDCRemoteConfig } from 'store/buy-usdc'
 import { getContext } from 'store/commonStore'
@@ -132,7 +135,7 @@ function* doBuyCryptoViaSol({
   let userbank: PublicKey | null = null
   try {
     // Validate inputs
-    // Temporarily only allow Stripe
+    // TODO: Re-add Coinbase support when rewriting BuyAudio
     if (provider !== OnRampProvider.STRIPE) {
       throw new BuyCryptoError(
         BuyCryptoErrorCode.BAD_PROVIDER,
@@ -206,8 +209,6 @@ function* doBuyCryptoViaSol({
     if (requiredAmount <= 0) {
       console.debug('SOL already sufficient for swap. Skipping purchasing step')
     } else {
-      // Track analytics
-
       // Get min stripe purchase amount using USDC as quote for $1
       const minQuote = yield* call(
         [jupiterInstance, jupiterInstance.quoteGet],
@@ -219,13 +220,13 @@ function* doBuyCryptoViaSol({
           slippageBps: config.slippageBps
         }
       )
-
       const minAmount = Number(minQuote.otherAmountThreshold)
       if (requiredAmount < minAmount) {
         console.warn(
           `Stripe requires minimum purchase of $1 (${minAmount} lamports). Required lamports: ${requiredAmount}`
         )
       }
+
       const lamportsToPurchase = Math.max(requiredAmount, minAmount)
 
       // Open Stripe Modal
@@ -276,6 +277,7 @@ function* doBuyCryptoViaSol({
             provider
           })
         )
+        yield* put(buyCryptoCanceled())
         return
       } else if (result.failure) {
         const errorString = result.failure.payload?.error
@@ -444,11 +446,13 @@ function* doBuyCryptoViaSol({
         })
       )
     }
+    yield* put(buyCryptoSucceeded())
   } catch (e) {
     const error =
       e instanceof BuyCryptoError
         ? e
         : new BuyCryptoError(BuyCryptoErrorCode.UNKNOWN, `${e}`)
+    yield* put(buyCryptoFailed({ error }))
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
       error,
