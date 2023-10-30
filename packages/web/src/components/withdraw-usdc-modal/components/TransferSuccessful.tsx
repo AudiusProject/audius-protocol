@@ -70,7 +70,7 @@ export const TransferSuccessful = ({
     openExplorer(signature)
     track(
       make({
-        eventName: Name.WITHDRAW_USDC_TX_LINK_CLICKED,
+        eventName: Name.WITHDRAW_USDC_TRANSACTION_LINK_CLICKED,
         priorBalance: priorBalanceCents / 100,
         currentBalance: balanceNumber / 100,
         amount: amountValue / 100,

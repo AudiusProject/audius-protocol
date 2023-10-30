@@ -344,7 +344,7 @@ export enum Name {
   WITHDRAW_USDC_SUCCESS = 'Withdraw USDC: Success',
   WITHDRAW_USDC_FAILURE = 'Withdraw USDC: Failure',
   WITHDRAW_USDC_HELP_LINK_CLICKED = 'Withdraw USDC: Help Link Clicked',
-  WITHDRAW_USDC_TX_LINK_CLICKED = 'Withdraw USDC: Tx Link Clicked',
+  WITHDRAW_USDC_TRANSACTION_LINK_CLICKED = 'Withdraw USDC: Transaction Link Clicked',
 
   // Stripe Tracking
   STRIPE_SESSION_CREATION_ERROR = 'Stripe: Session Creation Error',
@@ -1694,7 +1694,7 @@ export type WithdrawUSDCHelpLinkClicked = WithdrawUSDCEventFields & {
 }
 
 export type WithdrawUSDCTxLinkClicked = WithdrawUSDCTransferEventFields & {
-  eventName: Name.WITHDRAW_USDC_TX_LINK_CLICKED
+  eventName: Name.WITHDRAW_USDC_TRANSACTION_LINK_CLICKED
   priorBalance: number
   signature: string
 }
