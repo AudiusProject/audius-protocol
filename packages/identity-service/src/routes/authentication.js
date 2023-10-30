@@ -47,7 +47,7 @@ module.exports = function (app) {
               iv: body.iv,
               cipherText: body.cipherText,
               updatedAt: Date.now()
-            })  
+            })
           }
 
           const oldLookupKey = body.oldLookupKey
