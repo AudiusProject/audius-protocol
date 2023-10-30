@@ -234,6 +234,7 @@ export const AccessAndSaleScreen = () => {
       (!!priceError || priceNotSet || !!previewError || previewNotSet)
     )
   }, [premiumConditions, price, priceError, preview, previewError])
+
   const collectibleGateHasNoSelectedCollection = useMemo(
     () =>
       isPremiumContentCollectibleGated(premiumConditions) &&
@@ -262,9 +263,7 @@ export const AccessAndSaleScreen = () => {
         <TopBarIconButton
           icon={IconCaretLeft}
           style={styles.backButton}
-          onPress={() => {
-            if (!isFormInvalid) goBack()
-          }}
+          onPress={isFormInvalid ? undefined : goBack}
         />
       }
       header={<MarkedAsRemix />}
