@@ -127,7 +127,7 @@ export const Hero = (props: HeroProps) => {
             src={HeroForeground}
             className={styles.foregroundImg}
             onLoad={onImgSet}
-            alt='Foreground Audius Mobile App'
+            alt='Foreground Audius Web and Mobile Product Shot'
           />
         </Parallax>
         <Parallax
