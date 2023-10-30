@@ -6,7 +6,7 @@ jobs:
       service: healthz
       filters:
         branches:
-          only: main
+          only: as/proto-1373-adc-arm
   - push-arm-image:
       name: push-healthz-arm
       context: [Vercel, dockerhub]
