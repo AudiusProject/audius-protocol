@@ -42,7 +42,7 @@ export const Icon = (props: IconProps) => {
     className,
     color,
     children,
-    size = 'small',
+    size = 'large',
     style: styleProp,
     ...iconProps
   } = props

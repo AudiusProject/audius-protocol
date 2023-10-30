@@ -2,8 +2,6 @@ import { expect } from '@storybook/jest'
 import type { Meta, StoryObj } from '@storybook/react'
 import { within } from '@storybook/testing-library'
 
-import { IconAlbum } from 'components/typography'
-
 import { ButtonProps, ButtonSize, ButtonType } from '../types'
 
 import { Button } from './Button'
@@ -51,7 +49,7 @@ export const PrimaryWithColor: Story = { args: { hexColor: '#13C65A' } }
 
 // Secondary
 export const Secondary: Story = {
-  args: { variant: ButtonType.SECONDARY, iconLeft: IconAlbum }
+  args: { variant: ButtonType.SECONDARY }
 }
 
 // Tertiary
