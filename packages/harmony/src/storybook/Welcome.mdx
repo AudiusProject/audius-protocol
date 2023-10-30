@@ -1,5 +1,5 @@
 import { Meta } from '@storybook/blocks'
-import { Lockup } from './components'
+import { CardLink } from './components'
 import { Flex, Box } from 'components'
 import IconNote from 'assets/icons/Note.svg'
 
@@ -14,20 +14,20 @@ By Audius
 ## Welcome to Harmony
 
 <Flex gap='3xl' mt='3xl'>
-  <Lockup
+  <CardLink
     icon={IconNote}
     subtitle='Getting started'
     description='Setup instructions'
     link='https://github.com/AudiusProject/audius-protocol/tree/main/packages/harmony'
   />
-  <Lockup
+  <CardLink
     icon={IconNote}
     Unchecked
     subtitle='Foundations'
     description='All information about colors, typography, spacing, and icons'
     link='../?path=/docs/foundations-colors--documentation'
   />
-  <Lockup
+  <CardLink
     icon={IconNote}
     subtitle='Components'
     description='All the information and guidelines you’ll ever need on each component'

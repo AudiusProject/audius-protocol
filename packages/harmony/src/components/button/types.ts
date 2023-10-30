@@ -1,8 +1,8 @@
 import type { ComponentPropsWithoutRef } from 'react'
 
 import type { IconComponent } from 'components/typography/Icons/Icon'
-
-import type { ColorValue } from '../../types/colors'
+// TODO generate this type from the emotion theme
+import type { ColorValue } from 'types/colors'
 
 export enum ButtonType {
   PRIMARY = 'primary',

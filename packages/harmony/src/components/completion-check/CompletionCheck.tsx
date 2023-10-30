@@ -3,10 +3,11 @@ import type { CSSProperties } from 'react'
 import { useTransition, animated } from '@react-spring/web'
 import cn from 'classnames'
 
+import { IconValidationCheck, IconValidationX } from 'components/typography'
+
 import { Flex } from '../layout'
 
 import styles from './CompletionCheck.module.css'
-import { IconValidationX, IconValidationCheck } from './icons'
 import type { CompletionCheckProps } from './types'
 
 export const CompletionDefault = () => (

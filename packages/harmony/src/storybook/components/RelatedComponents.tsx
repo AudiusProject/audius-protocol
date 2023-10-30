@@ -1,15 +1,14 @@
-import IconNote from 'assets/icons/Note.svg'
-import { Flex } from 'components'
+import { Flex, PlainButton, SocialButton } from 'components'
 
-import { Lockup } from './Lockup'
+import InformationBox from './InformationBox'
 
 const relatedComponentsMap = {
   PlainButton: {
-    icon: IconNote,
+    component: <PlainButton>Plain Button</PlainButton>,
     link: 'buttons-plainbutton--documentation'
   },
   SocialButton: {
-    icon: IconNote,
+    component: <SocialButton socialType='instagram' aria-label='instagram' />,
     link: 'buttons-socialbutton--documentation'
   }
 }
@@ -24,16 +23,25 @@ export const RelatedComponents = (props: RelatedComponentsProps) => {
   return (
     <Flex gap='2xl' mt='3xl'>
       {componentNames.map((componentName) => {
-        const { icon, link } = relatedComponentsMap[componentName]
+        const { component, link } = relatedComponentsMap[componentName]
         const fullLink = `../?path=/docs/components-${link}`
         return (
-          <Lockup
-            key={componentName}
-            icon={icon}
-            link={fullLink}
-            subtitle={componentName}
-            description='Lorem ipsum'
-          />
+          <>
+            <InformationBox
+              key={componentName}
+              component={component}
+              href={fullLink}
+              title={componentName}
+              description='Lorem ipsum'
+            />
+            {/* <CardLink
+              key={componentName}
+              icon={icon}
+              link={fullLink}
+              subtitle={componentName}
+              description='Lorem ipsum'
+            /> */}
+          </>
         )
       })}
     </Flex>

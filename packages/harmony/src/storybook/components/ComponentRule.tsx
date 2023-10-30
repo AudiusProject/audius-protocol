@@ -1,10 +1,11 @@
 import type { CSSProperties, ReactElement } from 'react'
 
-// TODO move and use ValidationCheck from completion-check
-import Close from 'assets/icons/Album.svg'
-import Check from 'assets/icons/Check.svg'
-
-import { Flex, Text } from '../../components'
+import {
+  Flex,
+  IconValidationCheck,
+  IconValidationX,
+  Text
+} from '../../components'
 
 const messages = {
   do: 'Do',
@@ -20,11 +21,7 @@ type ComponentRuleProps = {
 
 export const ComponentRule = (props: ComponentRuleProps) => {
   const { component, description = '', isRecommended = false, style } = props
-  const titleIcon = isRecommended ? (
-    <Check color='green' />
-  ) : (
-    <Close color='red' />
-  )
+  const TitleIcon = isRecommended ? IconValidationCheck : IconValidationX
   const title = isRecommended ? messages.do : messages.dont
 
   return (
@@ -33,12 +30,13 @@ export const ComponentRule = (props: ComponentRuleProps) => {
         <Text
           variant='title'
           tag='h5'
-          style={{ display: 'inline-flex', alignItems: 'center' }}
+          style={{ display: 'flex', alignItems: 'center' }}
         >
-          {titleIcon}
-          {title}
+          <TitleIcon size='small' style={{ marginRight: '8px' }} /> {title}
         </Text>
-        <Text tag='section'>{description}</Text>
+        <Text tag='section' style={{ height: '32px', overflow: 'hidden' }}>
+          {description}
+        </Text>
       </Flex>
       <Flex
         as='figure'
