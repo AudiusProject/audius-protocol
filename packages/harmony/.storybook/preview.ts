@@ -24,6 +24,7 @@ export const parameters = {
   },
   docs: {
     container: HarmonyDocsContainer,
+    toc: true,
     components: {
       ComponentRules,
       RelatedComponents
