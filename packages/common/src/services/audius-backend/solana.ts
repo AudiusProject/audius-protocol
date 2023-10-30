@@ -65,7 +65,7 @@ export const getRootSolanaAccount = async (
 export const getSolanaConnection = async (
   audiusBackendInstance: AudiusBackend
 ) => {
-  return (await audiusBackendInstance.getAudiusLibs()).solanaWeb3Manager!
+  return (await audiusBackendInstance.getAudiusLibsTyped()).solanaWeb3Manager!
     .connection
 }
 
@@ -240,9 +240,9 @@ export const createUserBankIfNeeded = async (
 
 /**
  * Polls the given token account until its balance is different from initial balance or a timeoout.
- * Throws an error if the balance doesn't change within the timeout.
+ * @throws an error if the balance doesn't change within the timeout.
  */
-export const pollForBalanceChange = async (
+export const pollForTokenBalanceChange = async (
   audiusBackendInstance: AudiusBackend,
   {
     tokenAccount,
@@ -300,6 +300,54 @@ export const pollForBalanceChange = async (
     return tokenAccountInfo.amount
   }
   throw new Error(`${debugTokenName} balance polling exceeded maximum retries`)
+}
+
+/**
+ * Polls the given wallet until its SOL balance is different from initial balance or a timeoout.
+ * @throws an error if the balance doesn't change within the timeout.
+ */
+export const pollForBalanceChange = async (
+  audiusBackendInstance: AudiusBackend,
+  {
+    wallet,
+    initialBalance,
+    retryDelayMs = DEFAULT_RETRY_DELAY,
+    maxRetryCount = DEFAULT_MAX_RETRY_COUNT
+  }: {
+    wallet: PublicKey
+    initialBalance?: bigint
+    retryDelayMs?: number
+    maxRetryCount?: number
+  }
+) => {
+  console.info(`Polling SOL balance for ${wallet.toBase58()} ...`)
+  let balanceBN = await audiusBackendInstance.getAddressSolBalance(
+    wallet.toBase58()
+  )
+  let balance = BigInt(balanceBN.toString())
+  if (initialBalance === undefined) {
+    initialBalance = balance
+  }
+  let retries = 0
+  while (balance === initialBalance && retries++ < maxRetryCount) {
+    console.debug(
+      `Polling SOL balance (${initialBalance} === ${balance}) [${retries}/${maxRetryCount}]`
+    )
+    await delay(retryDelayMs)
+    balanceBN = await audiusBackendInstance.getAddressSolBalance(
+      wallet.toBase58()
+    )
+    balance = BigInt(balanceBN.toString())
+  }
+  if (balance !== initialBalance) {
+    console.debug(
+      `SOL balance changed by ${
+        balance - initialBalance
+      } (${initialBalance} => ${balance})`
+    )
+    return balance
+  }
+  throw new Error('SOL balance polling exceeded maximum retries')
 }
 
 export type PurchaseContentArgs = {
@@ -448,6 +496,7 @@ export const relayVersionedTransaction = async (
     skipPreflight
   })
 }
+
 /**
  * Helper that gets the lookup table accounts (that is, the account holding the lookup table,
  * not the accounts _in_ the lookup table) from their addresses.
@@ -469,4 +518,36 @@ export const getLookupTableAccounts = async (
       return account.value
     })
   )
+}
+
+/**
+ * Helper to create a versioned transaction with lookup tables
+ */
+export const createVersionedTransaction = async (
+  audiusBackendInstance: AudiusBackend,
+  {
+    instructions,
+    lookupTableAddresses,
+    feePayer
+  }: {
+    instructions: TransactionInstruction[]
+    lookupTableAddresses: string[]
+    feePayer: PublicKey
+  }
+) => {
+  const addressLookupTableAccounts = await getLookupTableAccounts(
+    audiusBackendInstance,
+    { lookupTableAddresses }
+  )
+  const recentBlockhash = await getRecentBlockhash(audiusBackendInstance)
+
+  const message = new TransactionMessage({
+    payerKey: feePayer,
+    recentBlockhash,
+    instructions
+  }).compileToV0Message(addressLookupTableAccounts)
+  return {
+    transaction: new VersionedTransaction(message),
+    addressLookupTableAccounts
+  }
 }

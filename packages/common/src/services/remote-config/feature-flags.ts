@@ -52,6 +52,7 @@ export enum FeatureFlags {
   DISCOVERY_RELAY = 'discovery_relay',
   SIGN_UP_REDESIGN = 'sign_up_redesign',
   FEATURE_FLAG_ACCESS = 'feature_flag_access',
+  BUY_USDC_VIA_SOL = 'buy_crypto_via_sol',
   IOS_USDC_PURCHASE_ENABLED = 'ios_usdc_purchase_enabled'
 }
 
@@ -120,5 +121,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.DISCOVERY_RELAY]: false,
   [FeatureFlags.SIGN_UP_REDESIGN]: false,
   [FeatureFlags.FEATURE_FLAG_ACCESS]: false,
+  [FeatureFlags.BUY_USDC_VIA_SOL]: false,
   [FeatureFlags.IOS_USDC_PURCHASE_ENABLED]: true
 }

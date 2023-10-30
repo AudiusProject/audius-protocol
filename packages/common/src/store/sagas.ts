@@ -30,6 +30,8 @@ import {
 import { playlistUpdatesSagas } from './playlist-updates'
 import { CommonStoreContext } from './storeContext'
 
+import { buyCryptoSagas } from '.'
+
 /**
  * A function that creates common sagas. The function takes
  * a CommonStoreContext as input such that platforms (native and web)
@@ -44,6 +46,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   // tracks: tracksSagas,
   // users: usersSagas,
   account: accountSagas,
+  buyCrypto: buyCryptoSagas,
   buyUSDC: buyUSDCSagas,
   remoteConfig: remoteConfigSagas,
   cast: castSagas,
