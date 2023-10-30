@@ -2,10 +2,8 @@ import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfil
 import react from '@vitejs/plugin-react'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { defineConfig } from 'vite'
-import eslint from 'vite-plugin-eslint'
 import glslify from 'vite-plugin-glslify'
 import svgr from 'vite-plugin-svgr'
-import viteTsconfigPaths from 'vite-tsconfig-paths'
 
 const analyze = process.env.BUNDLE_ANALYZE === 'true'
 
@@ -14,7 +12,11 @@ export default defineConfig({
     outDir: 'build',
     sourcemap: true
   },
+  define: {
+    'process.env': {}
+  },
   optimizeDeps: {
+    include: ['@audius/sdk/dist/web-libs'],
     esbuildOptions: {
       define: {
         global: 'globalThis'
@@ -28,13 +30,17 @@ export default defineConfig({
     }
   },
   plugins: [
+    // TODO: Enable once https://github.com/aleclarson/vite-tsconfig-paths/issues/110
+    // is resolved
+    // tsconfigPaths({
+    //   root: './packages'
+    // }),
     glslify(),
     svgr({
       include: '**/*.svg'
     }),
     react(),
-    eslint(),
-    ...(analyze
+    ...((analyze
       ? [
           visualizer({
             template: 'treemap', // or sunburst
@@ -43,11 +49,11 @@ export default defineConfig({
             filename: 'analyse.html' // will be saved in project's root
           })
         ]
-      : [])
+      : []) as any)
   ],
   resolve: {
     alias: {
-      // Should be able to use the ts resolve paths plugin instead
+      // Should be able to use vite-tsconfig-paths instead
       assets: '/src/assets',
       common: '/src/common',
       components: '/src/components',
@@ -68,8 +74,7 @@ export default defineConfig({
       stream: require.resolve('stream-browserify'),
       // Resolve to lodash-es to support tree-shaking
       lodash: 'lodash-es'
-    },
-    preserveSymlinks: true
+    }
   },
   server: {
     port: 3000
