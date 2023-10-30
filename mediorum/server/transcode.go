@@ -344,6 +344,7 @@ func (ss *MediorumServer) transcodeAudio(upload *Upload, destPath string, cmd *e
 func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logger *slog.Logger, onError errorCallback) error {
 	srcPath := temp.Name()
 	destPath := srcPath + "_320.mp3"
+	defer os.Remove(destPath)
 
 	cmd := exec.Command("ffmpeg",
 		"-y",
@@ -367,7 +368,6 @@ func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logg
 		return onError(err, upload.Status, "os.Open")
 	}
 	defer dest.Close()
-	defer os.Remove(dest.Name())
 
 	// replicate to peers
 	// attempt to forward to an assigned node
@@ -407,6 +407,7 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 
 	srcPath := temp.Name()
 	destPath := strings.TrimSuffix(srcPath, "_320.mp3") + "_320_preview.mp3"
+	defer os.Remove(destPath)
 
 	splitPreview := strings.Split(upload.SelectedPreview.String, "|")
 	previewStart := splitPreview[1]
@@ -435,7 +436,6 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 		return onError(err, upload.Status, "os.Open")
 	}
 	defer dest.Close()
-	defer os.Remove(dest.Name())
 
 	// replicate to peers
 	// attempt to forward to an assigned node
