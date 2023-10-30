@@ -22,6 +22,9 @@ const slice = createSlice({
     beginWithdrawUSDC: (
       state,
       _action: PayloadAction<{
+        /** Balance in cents. Used for analytics */
+        currentBalance: number
+        /** Transfer amount in cents */
         amount: number
         destinationAddress: string
         onSuccess: (transaction: string) => void
