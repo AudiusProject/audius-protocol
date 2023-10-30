@@ -9,6 +9,7 @@ const {
 const authMiddleware = require('../authMiddleware')
 const captchaMiddleware = require('../captchaMiddleware')
 const config = require('../config')
+const audiusLibsWrapper = require('../audiusLibsInstance')
 
 const BOUNCER_BASE_URL = 'https://api.usebouncer.com/v1.1/email/verify'
 
@@ -98,10 +99,17 @@ module.exports = function (app) {
             email: email
           }
         })
-
-        if (existingUser) {
+        const userEvents = await models.UserEvents.findOne({
+          where: {
+            walletAddress
+          }
+        })
+        if (existingUser && userEvents && userEvents.needsRecoveryEmail !== true) {
           return successResponse({ exists: true })
-        } else return successResponse({ exists: false })
+        } else {
+          if (existingUser) existingUser.destroy();
+          return successResponse({ exists: false })
+        }
       } else
         return errorResponseBadRequest('Please pass in a valid email address')
     })
