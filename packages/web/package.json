@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius decentralized application",
   "author": "Audius",
-  "version": "1.5.47",
+  "version": "1.5.48",
   "private": true,
   "scripts": {
     "publish-scripts": "./scripts/publishScripts.sh",
@@ -205,7 +205,7 @@
     "@electron/notarize": "2.1.0",
     "@pinata/sdk": "1.1.13",
     "@redux-devtools/extension": "^3.2.4",
-    "@svgr/webpack": "8.1.0",
+    "@svgr/webpack": "5.5.0",
     "@testing-library/react": "12.0.0",
     "@types/amplitude-js": "8.0.2",
     "@types/bn.js": "5.1.0",
