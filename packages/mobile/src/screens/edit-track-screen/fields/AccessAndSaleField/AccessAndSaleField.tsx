@@ -5,7 +5,9 @@ import {
   type FieldVisibility,
   type Nullable,
   type PremiumConditions,
-  isPremiumContentTipGated
+  isPremiumContentTipGated,
+  isPremiumContentCollectibleGated,
+  isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
 import { useField } from 'formik'
 
@@ -17,6 +19,7 @@ export const accessAndSaleScreenName = 'AccessAndSale'
 const messages = {
   accessAndSale: 'Access & Sale',
   public: 'Public',
+  premium: 'Premium',
   collectibleGated: 'Collectible Gated',
   specialAccess: 'Special Access',
   followersOnly: 'Followers Only',
@@ -53,7 +56,11 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     .map((visibilityKey) => fieldVisibilityLabelMap[visibilityKey])
 
   const trackAvailabilityLabels = useMemo(() => {
-    if ('nft_collection' in (premiumConditions ?? {})) {
+    if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+      const amountLabel = `$${premiumConditions.usdc_purchase.price}`
+      return [messages.premium, amountLabel]
+    }
+    if (isPremiumContentCollectibleGated(premiumConditions)) {
       return [messages.collectibleGated]
     }
     if (isPremiumContentFollowGated(premiumConditions)) {

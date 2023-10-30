@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius decentralized application",
   "author": "Audius",
-  "version": "1.5.47",
+  "version": "1.5.48",
   "private": true,
   "scripts": {
     "publish-scripts": "./scripts/publishScripts.sh",
@@ -176,7 +176,6 @@
     "web3modal": "1.9.3",
     "webgl-context": "2.2.0",
     "webpack-bundle-analyzer": "4.9.0",
-    "yup": "1.2.0",
     "zod-formik-adapter": "1.2.0",
     "zustand": "4.4.3"
   },

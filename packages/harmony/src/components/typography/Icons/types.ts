@@ -1,5 +1,8 @@
 import type { ComponentType, SVGProps } from 'react'
 
-export type IconComponent = ComponentType<SVGProps<SVGSVGElement>> & {
-  title?: string
-}
+export type IconComponent = ComponentType<
+  SVGProps<SVGSVGElement> & {
+    title?: string
+    size?: string
+  }
+>

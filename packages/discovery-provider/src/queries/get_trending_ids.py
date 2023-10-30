@@ -20,7 +20,9 @@ def get_time_trending(cache_args, time, limit, strategy):
 
     time_cache_key = extract_key(path, time_params.items())
     time_trending = use_redis_cache(
-        time_cache_key, TRENDING_TRACKS_TTL_SEC, lambda: get_trending(time_params, strategy)
+        time_cache_key,
+        TRENDING_TRACKS_TTL_SEC,
+        lambda: get_trending(time_params, strategy),
     )
     time_trending_track_ids = [
         {"track_id": track["track_id"]} for track in time_trending

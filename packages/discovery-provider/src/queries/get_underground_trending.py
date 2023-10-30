@@ -298,7 +298,9 @@ def get_underground_trending(request, args, strategy):
         # no args so we get the full list of tracks.
         key = get_trending_cache_key(to_dict(request.args), request.path)
         trending = use_redis_cache(
-            key, TRENDING_TRACKS_TTL_SEC, lambda: _get_underground_trending({}, strategy)
+            key,
+            TRENDING_TRACKS_TTL_SEC,
+            lambda: _get_underground_trending({}, strategy),
         )
         trending = trending[offset : limit + offset]
     return trending

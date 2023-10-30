@@ -120,7 +120,9 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
                 else:
                     new_personal_app_metrics[app_name] = count
 
-    merge_route_metrics(new_personal_route_metrics, end_time, db)
+    # Merge route metrics with other nodes and separately persist personal metrics
+    are_personal_metrics = True
+    merge_route_metrics(new_personal_route_metrics, end_time, db, are_personal_metrics)
     merge_app_metrics(new_personal_app_metrics, end_time, db)
 
     # Merge & persist metrics for other nodes
@@ -147,7 +149,8 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
             summed_unique_monthly_count += new_route_metrics["summed"]["monthly"]
             new_route_metrics = new_route_metrics["deduped"]
 
-        merge_route_metrics(new_route_metrics or {}, end_time, db)
+        are_personal_metrics = False
+        merge_route_metrics(new_route_metrics or {}, end_time, db, are_personal_metrics)
         merge_app_metrics(new_app_metrics or {}, end_time, db)
 
         if new_route_metrics is not None and new_app_metrics is not None:

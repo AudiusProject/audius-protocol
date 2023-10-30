@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react'
 import { useTransition, animated } from '@react-spring/web'
 import cn from 'classnames'
 
-import { Flex } from '../layout/'
+import { Flex } from '../layout'
 
 import styles from './CompletionCheck.module.css'
 import { IconValidationX, IconValidationCheck } from './icons'
@@ -26,7 +26,7 @@ export const CompletionError = (props: CompletionChangeIconProps) => (
     className={cn(styles.completionIcon, styles.xIcon)}
   >
     {' '}
-    <IconValidationX />{' '}
+    <IconValidationX size='small' />{' '}
   </animated.div>
 )
 export const CompletionSuccess = (props: CompletionChangeIconProps) => (
@@ -35,7 +35,7 @@ export const CompletionSuccess = (props: CompletionChangeIconProps) => (
     className={cn(styles.completionIcon, styles.checkIcon)}
   >
     {' '}
-    <IconValidationCheck />
+    <IconValidationCheck size='small' />
   </animated.div>
 )
 

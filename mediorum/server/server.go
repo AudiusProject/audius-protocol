@@ -271,10 +271,16 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes := echoServer.Group(apiBasePath)
 
 	routes.GET("", func(c echo.Context) error {
-		return c.Redirect(http.StatusMovedPermanently, "/health_check")
+		if config.Env == "prod" {
+			return c.Redirect(http.StatusMovedPermanently, "/health_check")
+		}
+		return c.Redirect(http.StatusMovedPermanently, "/dashboard/services/content-node?endpoint="+config.Self.Host)
 	})
 	routes.GET("/", func(c echo.Context) error {
-		return c.Redirect(http.StatusMovedPermanently, "/health_check")
+		if config.Env == "prod" {
+			return c.Redirect(http.StatusMovedPermanently, "/health_check")
+		}
+		return c.Redirect(http.StatusMovedPermanently, "/dashboard/services/content-node?endpoint="+config.Self.Host)
 	})
 
 	// public: uploads

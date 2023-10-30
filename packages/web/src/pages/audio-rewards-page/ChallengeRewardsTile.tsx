@@ -13,7 +13,8 @@ import {
   ChallengeName,
   audioRewardsPageSelectors,
   isAudioMatchingChallenge,
-  makeOptimisticChallengeSortComparator
+  makeOptimisticChallengeSortComparator,
+  Name
 } from '@audius/common'
 import {
   ProgressBar,
@@ -31,6 +32,7 @@ import { Text } from 'components/typography'
 import { useIsAudioMatchingChallengesEnabled } from 'hooks/useIsAudioMatchingChallengesEnabled'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { make, track } from 'services/analytics'
 
 import styles from './RewardsTile.module.css'
 import { Tile } from './components/ExplainerTile'
@@ -75,7 +77,12 @@ const RewardPanel = ({
   const wm = useWithMobileStyle(styles.mobile)
   const userChallenges = useSelector(getOptimisticUserChallenges)
 
-  const openRewardModal = () => openModal(id)
+  const openRewardModal = () => {
+    openModal(id)
+    track(
+      make({ eventName: Name.REWARDS_CLAIM_DETAILS_OPENED, challengeId: id })
+    )
+  }
 
   const challenge = userChallenges[id]
   const shouldShowCompleted =
