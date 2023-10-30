@@ -28,7 +28,7 @@ jobs:
         branches:
           only: as/proto-1373-adc-arm
       requires:
-        - push-identity
+        - push-identity-service
 
 
   # Deploy audius-protocol `main` branch (stage)
