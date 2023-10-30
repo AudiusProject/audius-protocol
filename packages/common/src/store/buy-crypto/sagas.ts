@@ -343,7 +343,9 @@ function* doBuyCryptoViaSol({
         }
       ],
       programId: MEMO_PROGRAM_ID,
-      data: Buffer.from(`In-App ${mint.toUpperCase()} Purchase: Link by Stripe`)
+      data: Buffer.from(
+        `In-App $${mint.toUpperCase()} Purchase: Link by Stripe`
+      )
     })
 
     // Create a temp wSOL account
