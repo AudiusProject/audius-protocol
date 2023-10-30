@@ -19,7 +19,7 @@ import {
   AMOUNT
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
 
-import styles from './Error.module.css'
+import styles from './ErrorPage.module.css'
 import { TextRow } from './TextRow'
 
 const messages = {
@@ -30,7 +30,7 @@ const messages = {
   tryAgain: 'Try Again?'
 }
 
-export const Error = () => {
+export const ErrorPage = () => {
   const { setData } = useWithdrawUSDCModal()
   const { data: balance } = useUSDCBalance()
   const balanceNumber = formatUSDCWeiToFloorDollarNumber(
