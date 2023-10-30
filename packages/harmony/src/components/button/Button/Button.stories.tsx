@@ -48,7 +48,9 @@ export const Primary: Story = {}
 export const PrimaryWithColor: Story = { args: { hexColor: '#13C65A' } }
 
 // Secondary
-export const Secondary: Story = { args: { variant: ButtonType.SECONDARY } }
+export const Secondary: Story = {
+  args: { variant: ButtonType.SECONDARY }
+}
 
 // Tertiary
 export const Tertiary: Story = { args: { variant: ButtonType.TERTIARY } }
