@@ -6,8 +6,11 @@
   height: var(--icon-size);
 }
 
-.icon path {
-  fill: var(--icon-color);
+.iconColor {
+  --icon-color: currentColor;
+  & path {
+    fill: var(--icon-color);
+  }
 }
 
 .xSmall {

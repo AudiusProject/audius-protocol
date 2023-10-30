@@ -56,7 +56,12 @@ export const Icon = (props: IconProps) => {
 
   const childProps = {
     ...iconProps,
-    className: cn(styles.icon, styles[size], className),
+    className: cn(
+      styles.icon,
+      { [styles.iconColor]: color },
+      styles[size],
+      className
+    ),
     style
   }
 
