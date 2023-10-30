@@ -10,7 +10,10 @@ const analyze = process.env.BUNDLE_ANALYZE === 'true'
 export default defineConfig({
   build: {
     outDir: 'build',
-    sourcemap: true
+    sourcemap: true,
+    commonjsOptions: {
+      include: [/libs\/dist\/web-libs/, /node_modules/]
+    }
   },
   define: {
     'process.env': {}
@@ -43,10 +46,10 @@ export default defineConfig({
     ...((analyze
       ? [
           visualizer({
-            template: 'treemap', // or sunburst
+            template: 'treemap',
             open: true,
             gzipSize: true,
-            filename: 'analyse.html' // will be saved in project's root
+            filename: 'analyse.html'
           })
         ]
       : []) as any)
