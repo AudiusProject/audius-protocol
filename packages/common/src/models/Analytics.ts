@@ -1673,7 +1673,8 @@ export type WithdrawUSDCAddressPasted = WithdrawUSDCEventFields & {
 
 export type WithdrawUSDCFormError = WithdrawUSDCEventFields & {
   eventName: Name.WITHDRAW_USDC_FORM_ERROR
-  error: Error
+  error: string
+  value?: string
 }
 
 export type WithdrawUSDCRequested = WithdrawUSDCTransferEventFields & {

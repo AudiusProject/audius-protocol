@@ -59,13 +59,6 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
     }
   ]
 
-  /* TODO:
-* - open event in mobile
- - form errors
- - pasting in
- - clicking help
- - clicking transaction
-  */
   const handleClickWithdraw = () => {
     openWithdrawUSDCModal({
       page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS
