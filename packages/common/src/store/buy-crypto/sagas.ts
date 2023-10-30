@@ -103,7 +103,7 @@ function* getBuyCryptoRemoteConfig(mint: MintName) {
     return {
       maxAmount: config.maxUSDCPurchaseAmountCents / 100.0,
       minAmount: config.minUSDCPurchaseAmountCents / 100.0,
-      slippageBps: DEFAULT_SLIPPAGE_BPS,
+      slippageBps: config.slippage,
       retryDelayMs: config.retryDelayMs,
       maxRetryCount: config.maxRetryCount
     } as BuyCryptoConfig
