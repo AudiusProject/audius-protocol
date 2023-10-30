@@ -1695,6 +1695,10 @@ export type WithdrawUSDCHelpLinkClicked = WithdrawUSDCEventFields & {
 
 export type WithdrawUSDCTxLinkClicked = WithdrawUSDCEventFields & {
   eventName: Name.WITHDRAW_USDC_TX_LINK_CLICKED
+  priorBalance: number
+  amountWithdrawn: number
+  address: string
+  signature: string
 }
 
 // Stripe

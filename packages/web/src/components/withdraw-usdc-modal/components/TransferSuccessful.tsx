@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import {
   useUSDCBalance,
   BNUSDC,
@@ -5,7 +7,8 @@ import {
   formatUSDCWeiToFloorCentsNumber,
   makeSolanaTransactionLink,
   decimalIntegerToHumanReadable,
-  Status
+  Status,
+  Name
 } from '@audius/common'
 import {
   HarmonyPlainButton,
@@ -24,6 +27,7 @@ import {
   ADDRESS,
   AMOUNT
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
+import { make, track } from 'services/analytics'
 
 import { TextRow } from './TextRow'
 import styles from './TransferSuccessful.module.css'
@@ -57,10 +61,24 @@ export const TransferSuccessful = ({
   )
   const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
 
-  const [{ value: amountValue }] = useField(AMOUNT)
-  const [{ value: addressValue }] = useField(ADDRESS)
+  const [{ value: amountValue }] = useField<number>(AMOUNT)
+  const [{ value: addressValue }] = useField<string>(ADDRESS)
 
-  const { signature } = modalData
+  const { signature = '' } = modalData
+
+  const handleClickTransactionLink = useCallback(() => {
+    openExplorer(signature)
+    track(
+      make({
+        eventName: Name.WITHDRAW_USDC_TX_LINK_CLICKED,
+        priorBalance: priorBalanceCents / 100,
+        currentBalance: balanceNumber / 100,
+        amountWithdrawn: amountValue / 100,
+        address: addressValue,
+        signature
+      })
+    )
+  }, [signature, balanceNumber, priorBalanceCents, amountValue, addressValue])
 
   return (
     <div className={styles.root}>
@@ -88,7 +106,7 @@ export const TransferSuccessful = ({
         </Text>
         <HarmonyPlainButton
           style={{ padding: 0 }}
-          onClick={() => openExplorer(signature ?? '')}
+          onClick={handleClickTransactionLink}
           iconRight={IconExternalLink}
           variant={HarmonyPlainButtonType.SUBDUED}
           size={HarmonyPlainButtonSize.DEFAULT}

@@ -13,7 +13,8 @@ import {
   formatUSDCWeiToFloorCentsNumber,
   filterDecimalString,
   padDecimalValue,
-  decimalIntegerToHumanReadable
+  decimalIntegerToHumanReadable,
+  Name
 } from '@audius/common'
 import { Button, ButtonType, IconQuestionCircle } from '@audius/harmony'
 import BN from 'bn.js'
@@ -26,6 +27,7 @@ import {
   ADDRESS,
   AMOUNT
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
+import { make, track } from 'services/analytics'
 
 import styles from './EnterTransferDetails.module.css'
 import { Hint } from './Hint'
@@ -81,6 +83,15 @@ export const EnterTransferDetails = () => {
 
   const [{ value: address }, { error: addressError }] = useField(ADDRESS)
 
+  const handleClickHelpGuide = useCallback(() => {
+    track(
+      make({
+        eventName: Name.WITHDRAW_USDC_HELP_LINK_CLICKED,
+        currentBalance: balanceNumber / 100
+      })
+    )
+  }, [balanceNumber])
+
   const handleContinue = useCallback(() => {
     setData({ page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS })
   }, [setData])
@@ -135,6 +146,7 @@ export const EnterTransferDetails = () => {
         {messages.continue}
       </Button>
       <Hint
+        onClick={handleClickHelpGuide}
         text={messages.notSure}
         link={''} // TODO(USDC): Link
         icon={IconQuestionCircle}

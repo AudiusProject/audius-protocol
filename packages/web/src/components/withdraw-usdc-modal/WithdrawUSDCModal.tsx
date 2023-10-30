@@ -36,12 +36,6 @@ import { TransferSuccessful } from './components/TransferSuccessful'
 const { beginWithdrawUSDC, cleanup } = withdrawUSDCActions
 const { getWithdrawStatus } = withdrawUSDCSelectors
 
-type WithdrawFormValues = {
-  [AMOUNT]: number
-  [ADDRESS]: string
-  [CONFIRM]: boolean
-}
-
 const messages = {
   title: 'Withdraw Funds',
   errors: {
@@ -57,6 +51,12 @@ const messages = {
 export const AMOUNT = 'amount'
 export const ADDRESS = 'address'
 export const CONFIRM = 'confirm'
+
+type WithdrawFormValues = {
+  [AMOUNT]: number
+  [ADDRESS]: string
+  [CONFIRM]: boolean
+}
 
 const WithdrawUSDCFormSchema = (userBalance: number) => {
   let amount = z.number().lte(userBalance, messages.errors.insufficientBalance)
