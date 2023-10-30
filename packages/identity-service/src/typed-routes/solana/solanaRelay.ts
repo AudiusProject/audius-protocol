@@ -96,7 +96,10 @@ const createRouter = () => {
         })
 
         // Check that the instructions are allowed for relay
-        await assertRelayAllowedInstructions(instructions, { user: req.user })
+        await assertRelayAllowedInstructions(instructions, {
+          user: req.user,
+          feePayer: feePayerOverride
+        })
 
         // Send transaction using transaction handler
         const transactionHandler = libs.solanaWeb3Manager!.transactionHandler
@@ -113,7 +116,6 @@ const createRouter = () => {
           instructions,
           skipPreflight,
           feePayerOverride: new PublicKey(feePayerOverride),
-          // @ts-ignore-next-line TODO: this type will exist when libs updates
           lookupTableAddresses,
           retry
         })
