@@ -99,15 +99,20 @@ module.exports = function (app) {
             email: email
           }
         })
-        const userEvents = await models.UserEvents.findOne({
-          where: {
-            walletAddress
+        if (existingUser) {
+          const userEvent = await models.UserEvents.findOne({
+            where: {
+              walletAddress: existingUser.walletAddress
+            }
+          })
+          if ((!userEvent) && !existingUser.handle) {
+            // user does not have recovery email nor handle
+            // delete existing user record to restart sign up
+            existingUser.destroy();
+            return successResponse({ exists: false })
           }
-        })
-        if (existingUser && userEvents && userEvents.needsRecoveryEmail !== true) {
           return successResponse({ exists: true })
         } else {
-          if (existingUser) existingUser.destroy();
           return successResponse({ exists: false })
         }
       } else

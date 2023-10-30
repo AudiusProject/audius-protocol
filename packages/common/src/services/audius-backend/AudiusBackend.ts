@@ -1659,7 +1659,6 @@ export const audiusBackend = ({
       metadata.events.is_mobile_user = true
       setLocalStorageItem('is-mobile-user', 'true')
     }
-    console.log('asdf audiusbackend signup')
 
     return await audiusLibs.Account.signUpV2(
       email,
