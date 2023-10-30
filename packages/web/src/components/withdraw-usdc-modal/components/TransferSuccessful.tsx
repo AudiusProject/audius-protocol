@@ -73,8 +73,8 @@ export const TransferSuccessful = ({
         eventName: Name.WITHDRAW_USDC_TX_LINK_CLICKED,
         priorBalance: priorBalanceCents / 100,
         currentBalance: balanceNumber / 100,
-        amountWithdrawn: amountValue / 100,
-        address: addressValue,
+        amount: amountValue / 100,
+        destinationAddress: addressValue,
         signature
       })
     )

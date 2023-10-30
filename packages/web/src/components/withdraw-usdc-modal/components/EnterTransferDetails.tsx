@@ -55,6 +55,7 @@ export const EnterTransferDetails = () => {
   const balanceNumber = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
+  const analyticsBalance = balanceNumber / 100
   const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
 
   const [
@@ -87,10 +88,24 @@ export const EnterTransferDetails = () => {
     track(
       make({
         eventName: Name.WITHDRAW_USDC_HELP_LINK_CLICKED,
-        currentBalance: balanceNumber / 100
+        currentBalance: analyticsBalance
       })
     )
-  }, [balanceNumber])
+  }, [analyticsBalance])
+
+  const handlePasteAddress = useCallback(
+    (event: React.ClipboardEvent) => {
+      const pastedAddress = event.clipboardData.getData('text/plain')
+      track(
+        make({
+          eventName: Name.WITHDRAW_USDC_ADDRESS_PASTED,
+          destinationAddress: pastedAddress,
+          currentBalance: analyticsBalance
+        })
+      )
+    },
+    [analyticsBalance]
+  )
 
   const handleContinue = useCallback(() => {
     setData({ page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS })
@@ -129,6 +144,7 @@ export const EnterTransferDetails = () => {
         </div>
         <TextField
           title={messages.destinationAddress}
+          onPaste={handlePasteAddress}
           label={messages.solanaWallet}
           aria-label={messages.destinationAddress}
           name={ADDRESS}
