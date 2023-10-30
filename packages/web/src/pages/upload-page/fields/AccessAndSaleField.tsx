@@ -279,6 +279,9 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       SPECIAL_ACCESS_TYPE,
       isTipGated ? SpecialAccessType.TIP : SpecialAccessType.FOLLOW
     )
+    if (isScheduledRelease){
+      setIsUnlistedValue(true)
+    }
     return initialValues as AccessAndSaleFormValues
   }, [fieldVisibility, isPremium, isUnlisted, premiumConditions, preview, isScheduledRelease])
 
