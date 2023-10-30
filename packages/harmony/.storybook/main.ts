@@ -58,11 +58,7 @@ const config: StorybookConfig = {
       },
       {
         test: /\.(png|jpe?g|gif)$/i,
-        use: [
-          {
-            loader: 'file-loader'
-          }
-        ]
+        use: [{ loader: 'file-loader' }]
       },
       ...config.module.rules
     ]
