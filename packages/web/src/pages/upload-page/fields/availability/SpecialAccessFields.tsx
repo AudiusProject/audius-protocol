@@ -52,9 +52,13 @@ export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
       const type = e.target.value as SpecialAccessType
       if (accountUserId) {
         if (type === SpecialAccessType.FOLLOW) {
-          setPremiumConditionsValue({ follow_user_id: accountUserId })
+          setPremiumConditionsValue({
+            follow_user_id: accountUserId
+          })
         } else if (type === SpecialAccessType.TIP) {
-          setPremiumConditionsValue({ tip_user_id: accountUserId })
+          setPremiumConditionsValue({
+            tip_user_id: accountUserId
+          })
         }
       }
       specialAccessTypeField.onChange(e)

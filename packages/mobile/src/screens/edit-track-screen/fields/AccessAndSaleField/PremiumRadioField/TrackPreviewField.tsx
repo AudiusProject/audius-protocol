@@ -1,10 +1,11 @@
 import { useField } from 'formik'
 
 import { Text } from 'app/components/core'
+import { makeStyles } from 'app/styles'
 
 import { BoxedTextField } from './BoxedTextField'
 
-const TRACK_PREVIEW = 'preview_start_seconds'
+export const TRACK_PREVIEW = 'preview_start_seconds'
 
 const messages = {
   title: '30 Second Preview',
@@ -15,14 +16,22 @@ const messages = {
   seconds: '(Seconds)'
 }
 
+const useStyles = makeStyles(({ spacing }) => ({
+  root: {
+    marginTop: spacing(4)
+  }
+}))
+
 export const TrackPreviewField = () => {
+  const styles = useStyles()
   const [{ value }] = useField(TRACK_PREVIEW)
   return (
     <BoxedTextField
+      style={styles.root}
       title={messages.title}
       description={messages.description}
       name={TRACK_PREVIEW}
-      value={String(value)}
+      value={value}
       keyboardType='number-pad'
       label={messages.label}
       endAdornment={
