@@ -1,6 +1,7 @@
-import type { ComponentType, ReactNode } from 'react'
+import type { ComponentType, ReactElement, ReactNode } from 'react'
 import { useState, useCallback } from 'react'
 
+import type { Nullable } from '@audius/common'
 import type { ListRenderItem, ViewStyle } from 'react-native'
 import { FlatList, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
@@ -30,6 +31,7 @@ export type ListSelectionProps = {
   hideSelectionLabel?: boolean
   itemStyles?: ViewStyle
   itemContentStyles?: ViewStyle
+  topbarLeft?: Nullable<ReactElement>
   header?: ReactNode
   bottomSection?: ReactNode
   footer?: ReactNode
@@ -85,6 +87,7 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
     hideSelectionLabel = false,
     itemStyles,
     itemContentStyles,
+    topbarLeft,
     header,
     bottomSection,
     footer
@@ -178,6 +181,7 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
       icon={icon}
       variant='white'
       style={styles.root}
+      topbarLeft={topbarLeft}
       bottomSection={bottomSection}
     >
       <View style={[styles.content, footer ? styles.noFlex : undefined]}>

@@ -3,6 +3,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { Nullable, PremiumConditions } from '@audius/common'
 import {
   createRemixOfMetadata,
+  isPremiumContentCollectibleGated,
+  isPremiumContentUSDCPurchaseGated,
   remixSettingsActions,
   remixSettingsSelectors,
   Status,
@@ -46,6 +48,7 @@ const messages = {
   changeAvailbilityPrefix: 'Availablity is set to',
   changeAvailbilitySuffix:
     'To enable these options, change availability to Public.',
+  premium: 'Premium (Pay-To-Unlock). ',
   collectibleGated: 'Collectible Gated. ',
   specialAccess: 'Special Access. '
 }
@@ -97,7 +100,8 @@ export const RemixSettingsScreen = () => {
   const [{ value: isPremium }] = useField<boolean>('is_premium')
   const [{ value: premiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
-  const isCollectibleGated = 'nft_collection' in (premiumConditions ?? {})
+  const isUsdcGated = isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isCollectibleGated = isPremiumContentCollectibleGated(premiumConditions)
 
   const parentTrackId = remixOf?.tracks[0].parent_track_id
   const [isTrackRemix, setIsTrackRemix] = useState(Boolean(parentTrackId))
@@ -219,7 +223,9 @@ export const RemixSettingsScreen = () => {
             <HelpCallout
               style={styles.changeAvailability}
               content={`${messages.changeAvailbilityPrefix} ${
-                isCollectibleGated
+                isUsdcGated
+                  ? messages.premium
+                  : isCollectibleGated
                   ? messages.collectibleGated
                   : messages.specialAccess
               } ${messages.changeAvailbilitySuffix}`}

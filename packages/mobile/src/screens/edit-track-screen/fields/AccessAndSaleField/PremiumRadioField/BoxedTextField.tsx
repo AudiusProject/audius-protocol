@@ -28,11 +28,11 @@ type BoxedTextFieldProps = TextFieldProps & {
 }
 
 export const BoxedTextField = (props: BoxedTextFieldProps) => {
-  const { title, description, ...other } = props
+  const { title, description, style, ...other } = props
   const styles = useStyles()
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, style]}>
       <Text weight='bold'>{title}</Text>
       <Text>{description}</Text>
       <TextField
