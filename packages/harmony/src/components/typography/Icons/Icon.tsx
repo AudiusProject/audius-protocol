@@ -8,6 +8,8 @@ import { toCSSVariableName } from 'utils/styles'
 import styles from './Icon.module.css'
 import type { IconComponent } from './types'
 
+// TODO use emotion theme's spacing and colors to generate the types here
+
 type IconSize =
   | 'xxSmall' // 12
   | 'xSmall' // 14

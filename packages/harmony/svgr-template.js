@@ -10,6 +10,7 @@ const template = (variables, context) => {
   variables.jsx.closingElement.name.name = 'Icon'
 
   // Append a {...props} to the opening element's attributes
+  // Reference: https://facebook.github.io/jsx/
   variables.jsx.openingElement.attributes.push({
     type: 'JSXSpreadAttribute',
     argument: {
