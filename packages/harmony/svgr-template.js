@@ -1,3 +1,8 @@
+/**
+ * The Harmony svgr template wraps imported svgs in our typography/Icon component
+ * allowing users to set harmony colors and sizes through props.
+ * For further reading, reference https://react-svgr.com/docs/custom-templates/
+ * */
 const template = (variables, context) => {
   const { tpl } = context
 
