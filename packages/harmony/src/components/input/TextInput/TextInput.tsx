@@ -139,7 +139,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             inputRootStyle
           )}
         >
-          {StartIcon ? <StartIcon /> : null}
+          {StartIcon ? <StartIcon size='medium' /> : null}
           <Flex direction='column' gap='xs' justifyContent='center' w='100%'>
             {shouldShowLabel ? (
               <Flex
@@ -174,7 +174,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             ) : null}
             {inputRender}
           </Flex>
-          {EndIcon ? <EndIcon /> : null}
+          {EndIcon ? <EndIcon size='medium' /> : null}
         </label>
         {helperText ? (
           <Text

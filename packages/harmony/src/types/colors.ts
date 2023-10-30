@@ -38,3 +38,4 @@ export type ColorValue =
   | 'green'
   | 'lightGreen'
   | 'gradient'
+  | 'none'

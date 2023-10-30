@@ -2,9 +2,7 @@ import {
   PremiumConditions,
   TrackAvailabilityType,
   collectiblesSelectors,
-  isPremiumContentFollowGated,
-  isPremiumContentTipGated,
-  isPremiumContentUSDCPurchaseGated
+  useAccessAndRemixSettings
 } from '@audius/common'
 import { IconCollectible } from '@audius/stems'
 
@@ -44,25 +42,15 @@ export const CollectibleGatedRadioField = (
     return numEthCollectibles + numSolCollectibles > 0
   })
 
-  const isInitiallyPublic =
-    !isUpload && !isInitiallyUnlisted && !initialPremiumConditions
-  const isInitiallySpecialAccess =
-    !isUpload &&
-    !!(
-      isPremiumContentFollowGated(initialPremiumConditions) ||
-      isPremiumContentTipGated(initialPremiumConditions)
-    )
-  const isInitiallyUsdcGated =
-    !isUpload && isPremiumContentUSDCPurchaseGated(initialPremiumConditions)
-
-  const disabled =
-    isInitiallyPublic ||
-    isInitiallyUsdcGated ||
-    isInitiallySpecialAccess ||
-    isRemix ||
-    !hasCollectibles
-
-  const fieldsDisabled = disabled || (!isUpload && !isInitiallyUnlisted)
+  const {
+    noCollectibleGate: disabled,
+    noCollectibleGateFields: fieldsDisabled
+  } = useAccessAndRemixSettings({
+    isUpload: !!isUpload,
+    isRemix,
+    initialPremiumConditions: initialPremiumConditions ?? null,
+    isInitiallyUnlisted: !!isInitiallyUnlisted
+  })
 
   return (
     <ModalRadioItem
