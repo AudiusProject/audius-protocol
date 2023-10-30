@@ -23,7 +23,7 @@ jobs:
   - push-arm-image:
       name: push-identity-arm
       context: [Vercel, dockerhub]
-      service: identity
+      service: identity-service
       filters:
         branches:
           only: as/proto-1373-adc-arm
