@@ -26,7 +26,7 @@ type IconProps = {
   size?: IconSize
 } & SVGProps<SVGSVGElement>
 
-/** Renders a stems Icon component
+/** Renders a harmony Icon component
  * Ex: `<Icon icon={IconKebabHorizontal} color='accentGreen' />`
  * Use `size` to render one of the standard sizes:
  * - xSmall: 14

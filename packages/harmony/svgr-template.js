@@ -28,7 +28,6 @@ ${variables.interfaces};
 
 const ${variables.componentName} = (props) => {
   const {color} = props
-  console.log('props?', props)
   return ${variables.jsx} 
 };
 
