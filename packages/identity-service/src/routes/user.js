@@ -105,10 +105,10 @@ module.exports = function (app) {
               walletAddress: existingUser.walletAddress
             }
           })
-          if ((!userEvent) && !existingUser.handle) {
+          if (!userEvent && !existingUser.handle) {
             // user does not have recovery email nor handle
             // delete existing user record to restart sign up
-            existingUser.destroy();
+            existingUser.destroy()
             return successResponse({ exists: false })
           }
           return successResponse({ exists: true })

@@ -21,7 +21,7 @@ module.exports = function (app) {
             walletAddress
           }
         })
-        if (!userEvents && needsRecoveryEmail)
+        if (!userEvents)
           throw new Error(`UserEvents for ${walletAddress} not found`)
         return successResponse(userEvents)
       } catch (e) {
