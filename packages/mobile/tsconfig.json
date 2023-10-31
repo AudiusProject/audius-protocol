@@ -1,6 +1,7 @@
 {
   "extends": "@tsconfig/react-native/tsconfig.json",
   "compilerOptions": {
+    "module": "esnext",
     // Remove "dom" when no longer dependent on audius-client
     "lib": ["dom", "es2019"],
     "paths": {
@@ -19,6 +20,7 @@
       "utils/*": ["../../node_modules/audius-client/src/utils/*"]
     },
     "strictNullChecks": true,
+    "types": ["vite/client", "jest"],
     // Update these when no longer dependent on audius-client.
     // Issue is due to absolute paths into audius-client
     "strict": false
