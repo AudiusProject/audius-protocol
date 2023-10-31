@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { CommonState } from 'store/index'
 
-import { trackModalClosed, trackModalOpened } from './actions'
+import { actions } from './parentSlice'
 
 export type BaseModalState = {
   isOpen: boolean | 'closing'
@@ -90,7 +90,9 @@ export const createModal = <T>({
         if (enableTracking) {
           const trackingData =
             state && getTrackingData ? getTrackingData(state) : undefined
-          dispatch(trackModalOpened(reducerPath, trackingData))
+          dispatch(
+            actions.trackModalOpened({ name: reducerPath, trackingData })
+          )
         }
       },
       [dispatch]
@@ -102,7 +104,7 @@ export const createModal = <T>({
     const onClosed = useCallback(() => {
       dispatch(closed())
       if (enableTracking) {
-        dispatch(trackModalClosed(reducerPath))
+        dispatch(actions.trackModalClosed({ name: reducerPath }))
       }
     }, [dispatch])
 
