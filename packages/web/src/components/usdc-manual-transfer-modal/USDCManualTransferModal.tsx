@@ -2,10 +2,11 @@ import { useCallback, useContext } from 'react'
 
 import { Name, useUSDCManualTransferModal } from '@audius/common'
 import { Button, ButtonType } from '@audius/harmony'
-import { IconInfo, LogoUSDC, ModalContent, ModalHeader } from '@audius/stems'
+import { IconError, LogoUSDC, ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
 import { useAsync } from 'react-use'
 
+import { Icon } from 'components/Icon'
 import { AddressTile } from 'components/address-tile'
 import { ToastContext } from 'components/toast/ToastContext'
 import { Text } from 'components/typography'
@@ -94,7 +95,7 @@ export const USDCManualTransferModal = () => {
           <Hint
             text={messages.disclaimer}
             link={USDCLearnMore}
-            icon={IconInfo}
+            icon={() => <Icon icon={IconError} size='large' fill='neutral' />}
             linkText={messages.learnMore}
           />
           <div
@@ -105,13 +106,15 @@ export const USDCManualTransferModal = () => {
             <Button variant={ButtonType.PRIMARY} fullWidth onClick={handleCopy}>
               {messages.copy}
             </Button>
-            <Button
-              variant={ButtonType.TERTIARY}
-              fullWidth
-              onClick={handleClose}
-            >
-              {messages.goBack}
-            </Button>
+            {mobile ? null : (
+              <Button
+                variant={ButtonType.TERTIARY}
+                fullWidth
+                onClick={handleClose}
+              >
+                {messages.goBack}
+              </Button>
+            )}
           </div>
         </div>
       </ModalContent>
