@@ -2,17 +2,10 @@ import { useCallback, useContext } from 'react'
 
 import { useUSDCManualTransferModal } from '@audius/common'
 import { Button, ButtonType } from '@audius/harmony'
-import {
-  IconInfo,
-  LogoUSDC,
-  ModalContent,
-  ModalHeader,
-  Modal
-} from '@audius/stems'
+import { IconInfo, LogoUSDC, ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
 import { useAsync } from 'react-use'
 
-import { useModalState } from 'common/hooks/useModalState'
 import { AddressTile } from 'components/address-tile'
 import { ToastContext } from 'components/toast/ToastContext'
 import { Text } from 'components/typography'
