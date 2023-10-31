@@ -1,11 +1,13 @@
 import { useEffect, useRef } from 'react'
 
+import { useIsomorphicLayoutEffect } from 'react-use'
+
 export function useInterval(callback: () => void, delay: number | null) {
   const savedCallback = useRef(callback)
   const intervalId = useRef<NodeJS.Timer>()
 
   // Remember the latest callback if it changes.
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     savedCallback.current = callback
   }, [callback])
 
