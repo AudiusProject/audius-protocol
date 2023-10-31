@@ -361,8 +361,6 @@ export const PremiumTrackPurchaseDrawer = () => {
     )
   }, [dispatch])
 
-  console.debug(isOpen)
-
   // TODO: Remove manual event tracking in this drawer once
   // it's using common modal state
   // https://linear.app/audius/issue/PAY-2107/switch-mobile-drawers-over-to-common-modal-infrastructure
