@@ -9,8 +9,7 @@ import { TERMS_OF_SERVICE } from 'utils/route'
 import { CallToActionBanner } from './CallToActionBanner'
 
 const messages = {
-  text: 'We’ve updated our Terms of Use and Privacy Policy. By continuing to use the Audius Service, you agree to our updated Terms of Use and Privacy',
-  pill: 'New'
+  text: 'We’ve updated our Terms of Use and Privacy Policy. By continuing to use the Audius Service, you agree to our updated Terms of Use and Privacy'
 }
 
 const TOS_BANNER_LOCAL_STORAGE_KEY = 'dismissTOSBanner'
