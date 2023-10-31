@@ -20,7 +20,8 @@ export const usePurchaseContentFormState = ({ price }: { price: number }) => {
   const {
     data: currentBalance,
     recoveryStatus,
-    refresh
+    refresh,
+    cancelPolling
   } = useUSDCBalance({ isPolling: true })
 
   // Refresh balance on successful recovery
@@ -29,6 +30,12 @@ export const usePurchaseContentFormState = ({ price }: { price: number }) => {
       refresh()
     }
   }, [recoveryStatus, refresh])
+
+  useEffect(() => {
+    if (isUnlocking) {
+      cancelPolling()
+    }
+  }, [isUnlocking, cancelPolling])
 
   const purchaseSummaryValues = usePurchaseSummaryValues({
     price,
