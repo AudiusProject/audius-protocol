@@ -9,9 +9,9 @@ import artistDeadmau5 from 'assets/img/publicSite/Artist-Deadmau5.webp'
 import artistKennyBeats from 'assets/img/publicSite/Artist-Kenny-Beats.webp'
 import artistLoloZouai from 'assets/img/publicSite/Artist-Lolo-Zouai.webp'
 import artistRezz from 'assets/img/publicSite/Artist-Rezz.webp'
-import artistRuss from 'assets/img/publicSite/Artist-Russ.webp'
+import artistMattOX from 'assets/img/publicSite/Artist-Matt-OX.webp'
 import artistSkrillex from 'assets/img/publicSite/Artist-Skrillex.webp'
-import artistSteveAoki from 'assets/img/publicSite/Artist-Steve-Aoki.webp'
+import artistDiplo from 'assets/img/publicSite/Artist-Diplo.webp'
 import artistZedd from 'assets/img/publicSite/Artist-Zedd.webp'
 import useHasViewed from 'hooks/useHasViewed'
 
@@ -86,9 +86,9 @@ const artists = [
     imageUrl: artistKennyBeats
   },
   {
-    name: 'Russ',
-    handle: 'russdiemon',
-    imageUrl: artistRuss
+    name: 'Matt OX',
+    handle: 'mattox',
+    imageUrl: artistMattOX
   },
   {
     name: 'Aluna',
@@ -96,9 +96,9 @@ const artists = [
     imageUrl: artistAluna
   },
   {
-    name: 'Steve Aoki',
-    handle: 'steveaoki',
-    imageUrl: artistSteveAoki
+    name: 'Diplo',
+    handle: 'diplo',
+    imageUrl: artistDiplo
   },
   {
     name: 'Lolo Zouai',
