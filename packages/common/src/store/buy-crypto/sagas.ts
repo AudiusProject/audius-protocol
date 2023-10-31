@@ -1,4 +1,3 @@
-import { MintName } from '@audius/sdk'
 import {
   NATIVE_MINT,
   createAssociatedTokenAccountIdempotentInstruction,
@@ -32,6 +31,7 @@ import {
 } from 'services/Jupiter'
 import {
   MEMO_PROGRAM_ID,
+  MintName,
   createUserBankIfNeeded,
   createVersionedTransaction,
   getBalanceChanges,

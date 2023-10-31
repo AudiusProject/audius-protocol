@@ -1,4 +1,4 @@
-import { AudiusLibs, DEFAULT_MINT, MintName } from '@audius/sdk'
+import { AudiusLibs } from '@audius/sdk'
 import { Account, createTransferCheckedInstruction } from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
@@ -35,6 +35,10 @@ const MINT_DECIMALS: Record<MintName, number> = {
   audio: 8,
   usdc: 6
 }
+
+// TODO: Import from libs https://linear.app/audius/issue/PAY-1750/export-mintname-and-default-mint-from-libs
+export type MintName = 'audio' | 'usdc'
+export const DEFAULT_MINT: MintName = 'audio'
 
 type UserBankConfig = {
   ethAddress?: string
