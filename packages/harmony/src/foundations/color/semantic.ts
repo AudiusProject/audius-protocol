@@ -1,11 +1,11 @@
 import type { Theme } from '../theme/types'
 
-import type { GradientColor, PrimitiveColors } from './primitive'
+import type { PrimitiveColors } from './primitive'
 import { primitiveTheme } from './primitive'
 
 export type SemanticColors = {
   textIcon: {
-    heading: GradientColor
+    heading: string
     default: string
     subdued: string
     disabled: string
@@ -58,3 +58,5 @@ export const semanticTheme: Record<Theme, SemanticColors> = {
   dark: createSemanticTheme(primitiveTheme.dark),
   matrix: createSemanticTheme(primitiveTheme.matrix)
 }
+
+export type BorderOptions = keyof SemanticColors['border']

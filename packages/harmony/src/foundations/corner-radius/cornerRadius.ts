@@ -8,4 +8,4 @@ export const cornerRadius = {
 }
 
 export type CornerRadius = typeof cornerRadius
-export type CorderRadiusOptions = keyof CornerRadius
+export type CornerRadiusOptions = keyof CornerRadius
