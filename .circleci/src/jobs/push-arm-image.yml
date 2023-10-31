@@ -2,9 +2,8 @@ parameters:
   service:
     description: 'Service to push'
     type: string
-resource_class: arm.medium
-machine:
-  image: ubuntu-2204:current
+machine: true
+resource_class: audiusproject/gcp-t2a-standard-4
 steps:
   - checkout:
       path: '~/audius-protocol'
