@@ -1,6 +1,11 @@
 import { useState, useCallback, useMemo } from 'react'
 
-import { Status, User, Track } from '@audius/common'
+import {
+  Status,
+  User,
+  Track,
+  isPremiumContentUSDCPurchaseGated
+} from '@audius/common'
 import { SelectablePill } from '@audius/harmony'
 import {
   IconHidden,
@@ -91,7 +96,7 @@ export const TracksTableContainer = ({
       const pub = dataSource.filter(
         (data) =>
           data.is_unlisted === false &&
-          !('usdc_purchase' in data.premium_conditions || {})
+          !isPremiumContentUSDCPurchaseGated(data.premium_conditions)
       )
       const gated = dataSource.filter(
         (data) =>
