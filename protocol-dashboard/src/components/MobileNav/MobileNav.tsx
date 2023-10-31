@@ -17,8 +17,8 @@ const messages = {
 const navRoutes = [
   { matchParams: { path: routes.HOME, exact: true }, text: 'OVERVIEW' },
   { matchParams: { path: routes.ANALYTICS, exact: true }, text: 'ANALYTICS' },
-  { matchParams: { path: routes.SERVICES }, text: 'SERVICES' },
-  { matchParams: { path: routes.GOVERNANCE }, text: 'GOVERNANCE' }
+  { matchParams: { path: `${routes.SERVICES}*` }, text: 'SERVICES' },
+  { matchParams: { path: `${routes.GOVERNANCE}*` }, text: 'GOVERNANCE' }
 ]
 
 type MobileNavButtonProps = {
