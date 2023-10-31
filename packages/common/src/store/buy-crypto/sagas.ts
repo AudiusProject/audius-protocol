@@ -31,7 +31,6 @@ import {
   parseJupiterInstruction
 } from 'services/Jupiter'
 import {
-  IntKeys,
   MEMO_PROGRAM_ID,
   createUserBankIfNeeded,
   createVersionedTransaction,
@@ -41,7 +40,8 @@ import {
   pollForBalanceChange,
   pollForTransaction,
   relayVersionedTransaction
-} from 'services/index'
+} from 'services/audius-backend/solana'
+import { IntKeys } from 'services/remote-config/types'
 import {
   onrampCanceled,
   onrampFailed,
