@@ -27,10 +27,9 @@ import {
   uploadConfirmationModalUISagas
 } from 'store/ui'
 
+import { buyCryptoSagas } from './buy-crypto'
 import { playlistUpdatesSagas } from './playlist-updates'
 import { CommonStoreContext } from './storeContext'
-
-import { buyCryptoSagas } from '.'
 
 /**
  * A function that creates common sagas. The function takes
