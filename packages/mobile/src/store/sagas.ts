@@ -19,6 +19,7 @@ import {
   confirmerSagas,
   purchaseContentSagas,
   buyUSDCSagas,
+  buyCryptoSagas,
   stripeModalUISagas,
   modalsSagas
 } from '@audius/common'
@@ -129,6 +130,7 @@ export default function* rootSaga() {
     // Premium content
     ...premiumContentSagas(),
     ...purchaseContentSagas(),
+    ...buyCryptoSagas(),
     ...buyUSDCSagas(),
     ...stripeModalUISagas(),
 

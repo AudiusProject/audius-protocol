@@ -11,14 +11,16 @@ import {
   getTokenAccountInfo,
   purchaseContent
 } from 'services/audius-backend/solana'
-import { FeatureFlags } from 'services/index'
+import { FeatureFlags } from 'services/remote-config/feature-flags'
 import { accountSelectors } from 'store/account'
+import { getAccountUser } from 'store/account/selectors'
 import {
   buyCryptoCanceled,
   buyCryptoFailed,
   buyCryptoSucceeded,
   buyCryptoViaSol
 } from 'store/buy-crypto/slice'
+import { BuyCryptoError } from 'store/buy-crypto/types'
 import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
@@ -51,6 +53,18 @@ import {
 import { ContentType, PurchaseContentError, PurchaseErrorCode } from './types'
 
 const { getUserId } = accountSelectors
+
+type RaceStatusResult = {
+  succeeded?:
+    | ReturnType<typeof buyUSDCFlowSucceeded>
+    | ReturnType<typeof buyCryptoSucceeded>
+  failed?:
+    | ReturnType<typeof buyUSDCFlowFailed>
+    | ReturnType<typeof buyCryptoFailed>
+  canceled?:
+    | ReturnType<typeof onrampCanceled>
+    | ReturnType<typeof buyCryptoCanceled>
+}
 
 type GetPurchaseConfigArgs = {
   contentId: ID
@@ -162,7 +176,13 @@ function* doStartPurchaseContentFlow({
     FeatureFlags.BUY_USDC_VIA_SOL
   )
   const reportToSentry = yield* getContext('reportToSentry')
-  const { track, make } = yield* getContext('analytics')
+  const { track, make, identify } = yield* getContext('analytics')
+  const user = yield* select(getAccountUser)
+  if (user) {
+    yield* call(identify, user.handle, {
+      isBuyUSDCViaSolEnabled
+    })
+  }
 
   const { price, title, artistInfo } = yield* call(getContentInfo, {
     contentId,
@@ -220,8 +240,7 @@ function* doStartPurchaseContentFlow({
         .div(BN_USDC_CENT_WEI)
         .toNumber()
       yield* put(buyUSDC())
-      let result: { succeeded?: any; failed?: any; canceled?: any } | null =
-        null
+      let result: RaceStatusResult | null = null
       if (isBuyUSDCViaSolEnabled) {
         yield* put(
           buyCryptoViaSol({
@@ -311,7 +330,9 @@ function* doStartPurchaseContentFlow({
     // If we get a known error, pipe it through directly. Otherwise make sure we
     // have a properly contstructed error to put into the slice.
     const error =
-      e instanceof PurchaseContentError || e instanceof BuyUSDCError
+      e instanceof PurchaseContentError ||
+      e instanceof BuyUSDCError ||
+      e instanceof BuyCryptoError
         ? e
         : new PurchaseContentError(PurchaseErrorCode.Unknown, `${e}`)
     yield* call(reportToSentry, {
