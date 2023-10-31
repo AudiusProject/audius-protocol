@@ -3,8 +3,8 @@ import { useSpring, animated } from 'react-spring'
 
 import investorKatyPerry from 'assets/img/publicSite/Investor-Katy-Perry.webp'
 import investorNas from 'assets/img/publicSite/Investor-Nas.webp'
-import investorSteveAoki from 'assets/img/publicSite/Investor-Steve-Aoki.webp'
 import investorPushaT from 'assets/img/publicSite/Investor-Pusha-T.webp'
+import investorSteveAoki from 'assets/img/publicSite/Investor-Steve-Aoki.webp'
 import investorTheChainsmokers from 'assets/img/publicSite/Investor-The-Chainsmokers.webp'
 import useHasViewed from 'hooks/useHasViewed'
 
