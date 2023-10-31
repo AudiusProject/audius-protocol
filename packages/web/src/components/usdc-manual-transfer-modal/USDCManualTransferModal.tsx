@@ -5,17 +5,19 @@ import { Button, ButtonType } from '@audius/harmony'
 import {
   IconInfo,
   LogoUSDC,
-  Modal,
   ModalContent,
-  ModalHeader
+  ModalHeader,
+  Modal
 } from '@audius/stems'
 import cn from 'classnames'
 import { useAsync } from 'react-use'
 
+import { useModalState } from 'common/hooks/useModalState'
 import { AddressTile } from 'components/address-tile'
 import { ToastContext } from 'components/toast/ToastContext'
 import { Text } from 'components/typography'
 import { Hint } from 'components/withdraw-usdc-modal/components/Hint'
+import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import { getUSDCUserBank } from 'services/solana/solana'
 import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
@@ -49,26 +51,25 @@ export const USDCManualTransferModal = () => {
     return USDCUserBankPubKey?.toString()
   })
 
-  const handleCopyClick = useCallback(() => {
+  const handleCopy = useCallback(() => {
     copyToClipboard(USDCUserBank ?? '')
     toast(messages.copied)
   }, [USDCUserBank, toast])
 
-  const handleCloseClick = useCallback(() => {
-    onClose()
-  }, [onClose])
-
   return (
-    <Modal
+    <ModalDrawer
       zIndex={zIndex.USDC_MANUAL_TRANSFER_MODAL}
       size={'small'}
-      onClose={handleCloseClick}
+      onClose={onClose}
       isOpen={isOpen}
       bodyClassName={styles.modal}
+      useGradientTitle={false}
+      dismissOnClickOutside
+      isFullscreen={false}
     >
       <ModalHeader
         className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
-        onClose={handleCloseClick}
+        onClose={onClose}
         showDismissButton={!mobile}
       >
         <Text
@@ -92,24 +93,20 @@ export const USDCManualTransferModal = () => {
             icon={IconInfo}
             linkText={messages.learnMore}
           />
-          <div className={styles.buttonContainer}>
-            <Button
-              variant={ButtonType.PRIMARY}
-              fullWidth
-              onClick={handleCopyClick}
-            >
+          <div
+            className={cn(styles.buttonContainer, {
+              [styles.mobile]: isMobile
+            })}
+          >
+            <Button variant={ButtonType.PRIMARY} fullWidth onClick={handleCopy}>
               {messages.copy}
             </Button>
-            <Button
-              variant={ButtonType.TERTIARY}
-              fullWidth
-              onClick={handleCloseClick}
-            >
+            <Button variant={ButtonType.TERTIARY} fullWidth onClick={onClose}>
               {messages.goBack}
             </Button>
           </div>
         </div>
       </ModalContent>
-    </Modal>
+    </ModalDrawer>
   )
 }

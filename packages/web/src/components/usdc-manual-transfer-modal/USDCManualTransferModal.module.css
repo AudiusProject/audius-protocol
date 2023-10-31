@@ -22,3 +22,7 @@
   display: flex;
   gap: var(--unit-2);
 }
+
+.buttonContainer.mobile {
+  flex-direction: column;
+}

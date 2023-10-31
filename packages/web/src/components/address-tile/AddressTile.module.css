@@ -16,12 +16,10 @@
 .middleContainer {
   width: 50;
   display: flex;
+  justify-content: center;
   flex: 1;
   flex-shrink: 1;
-  justify-content: center;
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
   padding: var(--unit-4) var(--unit-6);
   border-right: 1px solid var(--border-default);
   border-left: 1px solid var(--border-default);
@@ -33,5 +31,6 @@
 }
 
 .address {
-  overflow: ellipsis;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

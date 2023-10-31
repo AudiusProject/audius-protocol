@@ -16,11 +16,11 @@
 }
 
 .link {
-  color: var(--secondary);
+  color: var(--primary);
   font-weight: var(--font-medium);
   text-decoration: underline !important;
 }
 
 .link:hover {
-  color: var(--secondary);
+  color: var(--primary);
 }
