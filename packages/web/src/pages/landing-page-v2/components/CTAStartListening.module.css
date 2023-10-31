@@ -6,6 +6,7 @@
   height: 500px;
   display: flex;
   justify-content: center;
+  margin-top: 320px;
 }
 
 .content {
@@ -150,7 +151,8 @@
   align-items: center;
   height: 300px;
   width: 100%;
-  padding: 70px 32px 64px;
+  padding: 64px 32px;
+  margin-top: 120px;
 }
 
 .mobileContainer .footerForeground {
