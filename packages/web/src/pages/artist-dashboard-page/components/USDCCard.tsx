@@ -13,15 +13,11 @@ import {
   ButtonType,
   IconWithdraw,
   IconKebabHorizontal,
-  IconQuestionCircle
+  IconQuestionCircle,
+  PlainButton,
+  PlainButtonType
 } from '@audius/harmony'
-import {
-  PopupMenu,
-  PopupMenuItem,
-  HarmonyPlainButton,
-  HarmonyPlainButtonType,
-  LogoUSDC
-} from '@audius/stems'
+import { PopupMenu, PopupMenuItem, LogoUSDC } from '@audius/stems'
 import BN from 'bn.js'
 
 import { Icon } from 'components/Icon'
@@ -108,12 +104,13 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
         </div>
         <div className={styles.usdcInfo}>
           <Text color='staticWhite'>{messages.earn}</Text>
-          <HarmonyPlainButton
+          <PlainButton
             onClick={handleLearnMore}
             iconLeft={IconQuestionCircle}
-            variant={HarmonyPlainButtonType.INVERTED}
-            text={messages.learnMore}
-          />
+            variant={PlainButtonType.INVERTED}
+          >
+            {messages.learnMore}
+          </PlainButton>
         </div>
       </div>
       <div className={styles.withdrawContainer}>
