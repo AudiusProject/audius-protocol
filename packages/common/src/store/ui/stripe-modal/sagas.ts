@@ -35,7 +35,7 @@ const STRIPE_TAKING_A_WHILE_DELAY = 60 * 1000
 
 const messages = {
   stripeTakingAWhile:
-    'Stripe is taking longer than expected... Thanks for the patience'
+    'Stripe is taking longer than expected... Thanks for your patience!'
 }
 
 function* handleInitializeStripeModal({
