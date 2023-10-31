@@ -90,85 +90,85 @@ jobs:
       requires:
         - push-discovery-provider
 
-  # - push-arm-image:
-  #     name: push-discovery-provider-notifications-arm
-  #     context: [Vercel, dockerhub]
-  #     service: discovery-provider-notifications
-  #     filters:
-  #       branches:
-  #         only: as/proto-1373-adc-arm
-  #     requires:
-  #       - push-discovery-provider-notifications
+  - push-arm-image:
+      name: push-discovery-provider-notifications-arm
+      context: [Vercel, dockerhub]
+      service: discovery-provider-notifications
+      filters:
+        branches:
+          only: as/proto-1373-adc-arm
+      requires:
+        - push-discovery-provider-notifications
 
-  # - push-arm-image:
-  #     name: push-pedalboard-trending-challenge-rewards-arm
-  #     context: [Vercel, dockerhub]
-  #     service: trending-challenge-rewards
-  #     filters:
-  #       branches:
-  #         only: as/proto-1373-adc-arm
-  #     requires:
-  #       - push-pedalboard-trending-challenge-rewards
+  - push-arm-image:
+      name: push-pedalboard-trending-challenge-rewards-arm
+      context: [Vercel, dockerhub]
+      service: trending-challenge-rewards
+      filters:
+        branches:
+          only: as/proto-1373-adc-arm
+      requires:
+        - push-pedalboard-trending-challenge-rewards
     
-  # - push-arm-image:
-  #     name: push-pedalboard-relay-arm
-  #     context: [Vercel, dockerhub]
-  #     service: relay
-  #     filters:
-  #       branches:
-  #         only: as/proto-1373-adc-arm
-  #     requires:
-  #       - push-pedalboard-relay
+  - push-arm-image:
+      name: push-pedalboard-relay-arm
+      context: [Vercel, dockerhub]
+      service: relay
+      filters:
+        branches:
+          only: as/proto-1373-adc-arm
+      requires:
+        - push-pedalboard-relay
 
-  # - push-arm-image:
-  #     name: push-pedalboard-sla-auditor-arm
-  #     context: [Vercel, dockerhub]
-  #     service: sla-auditor
-  #     filters:
-  #       branches:
-  #         only: as/proto-1373-adc-arm
-  #     requires:
-  #       - push-pedalboard-sla-auditor
+  - push-arm-image:
+      name: push-pedalboard-sla-auditor-arm
+      context: [Vercel, dockerhub]
+      service: sla-auditor
+      filters:
+        branches:
+          only: as/proto-1373-adc-arm
+      requires:
+        - push-pedalboard-sla-auditor
 
-  # - push-arm-image:
-  #     name: push-comms-arm
-  #     context: [Vercel, dockerhub]
-  #     service: comms
-  #     filters:
-  #       branches:
-  #         only: as/proto-1373-adc-arm
-  #     requires:
-  #       - push-comms
+  - push-arm-image:
+      name: push-comms-arm
+      context: [Vercel, dockerhub]
+      service: comms
+      filters:
+        branches:
+          only: as/proto-1373-adc-arm
+      requires:
+        - push-comms
 
-  # - push-arm-image:
-  #     name: push-trpc-arm
-  #     context: [Vercel, dockerhub]
-  #     service: trpc
-  #     filters:
-  #       branches:
-  #         only: as/proto-1373-adc-arm
-  #     requires:
-  #       - push-trpc
+  - push-arm-image:
+      name: push-trpc-arm
+      context: [Vercel, dockerhub]
+      service: trpc
+      filters:
+        branches:
+          only: as/proto-1373-adc-arm
+      requires:
+        - push-trpc
 
-  # - push-arm-image:
-  #     name: push-protocol-dashboard-arm
-  #     context: [Vercel, dockerhub]
-  #     service: dashboard
-  #     filters:
-  #       branches:
-  #         only: as/proto-1373-adc-arm
-  #     requires:
-  #       - push-protocol-dashboard
+  - push-arm-image:
+      name: push-protocol-dashboard-arm
+      context: [Vercel, dockerhub]
+      service: dashboard
+      filters:
+        branches:
+          only: as/proto-1373-adc-arm
+      requires:
+        - push-protocol-dashboard
 
-  # - push-arm-image:
-  #     name: push-healthz-arm
-  #     context: [Vercel, dockerhub]
-  #     service: healthz
-  #     filters:
-  #       branches:
-  #         only: as/proto-1373-adc-arm
-  #     requires:
-  #       - push-healthz
+  - push-arm-image:
+      name: push-healthz-arm
+      context: [Vercel, dockerhub]
+      service: healthz
+      filters:
+        branches:
+          only: as/proto-1373-adc-arm
+      requires:
+        - push-healthz
 
   # Deploy audius-protocol `main` branch (stage)
   - deploy-stage-nodes:
