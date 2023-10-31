@@ -24,7 +24,11 @@ import {
 
 import { Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
-import { jupiterInstance, parseJupiterInstruction } from 'services/Jupiter'
+import {
+  SLIPPAGE_TOLERANCE_EXCEEDED_ERROR,
+  jupiterInstance,
+  parseJupiterInstruction
+} from 'services/Jupiter'
 import {
   IntKeys,
   MEMO_PROGRAM_ID,
@@ -486,8 +490,12 @@ function* doBuyCryptoViaSol({
       })
       swapError = error
       swapTransactionSignature = res
-      if (swapError && retryCount < maxRetryCount) {
-        console.error(
+      if (
+        swapError &&
+        retryCount < maxRetryCount &&
+        swapError.includes(`${SLIPPAGE_TOLERANCE_EXCEEDED_ERROR}`)
+      ) {
+        console.warn(
           `Failed to swap: ${swapError}. Retrying ${
             retryCount + 1
           } of ${maxRetryCount}...`
