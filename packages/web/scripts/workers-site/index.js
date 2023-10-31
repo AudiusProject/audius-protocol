@@ -297,7 +297,7 @@ async function handleEvent(event) {
     // Adjust browser cache on assets that don't change frequently and/or
     // are given unique hashes when they do.
     if (
-      pathname.startsWith('/static') ||
+      pathname.startsWith('/assets') ||
       pathname.startsWith('/scripts') ||
       pathname.startsWith('/fonts')
     ) {

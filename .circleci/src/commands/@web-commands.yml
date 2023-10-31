@@ -143,12 +143,12 @@ web-deploy-cloudflare:
     - attach_workspace:
         at: ./
     - web-install-wrangler
-    - run:
-        name: Move sourcemaps
-        command: |
-          cd packages/web
-          mkdir -p sourcemaps/static/js
-          mv build-<< parameters.build-type >>/static/js/*.map sourcemaps/static/js
+    # - run:
+    #     name: Move sourcemaps
+    #     command: |
+    #       cd packages/web
+    #       mkdir -p sourcemaps/static/js
+    #       mv build-<< parameters.build-type >>/static/js/*.map sourcemaps/static/js
     - run:
         name: Set up workers site
         command: |
