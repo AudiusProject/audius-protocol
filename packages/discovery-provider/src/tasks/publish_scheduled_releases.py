@@ -1,6 +1,5 @@
-from sqlalchemy import func, DateTime
-import logging
 from datetime import datetime, timedelta
+from datetime import datetime
 
 from src.models.tracks.track import Track
 
@@ -10,6 +9,8 @@ from src.utils.web3_provider import get_eth_web3
 
 logger = StructuredLogger(__name__)
 web3 = get_eth_web3()
+publish_scheduled_releases_cursor_key = "publish_scheduled_releases_cursor"
+batch_size = 1000
 
 
 def convert_timestamp(release_date_str):
@@ -36,17 +37,22 @@ def convert_timestamp(release_date_str):
 
 
 @log_duration(logger)
-def _publish_scheduled_releases(session):
+def _publish_scheduled_releases(session, redis):
     latest_block = web3.eth.get_block("latest")
-    current_timestamp = latest_block.timestamp + 1698426565
+    current_timestamp = latest_block.timestamp
+    previous_cursor = redis.get(publish_scheduled_releases_cursor_key)
+    if not previous_cursor:
+        previous_cursor = datetime.min
 
     candidate_tracks = (
         session.query(Track)
         .filter(
             Track.is_unlisted,
             Track.release_date.isnot(None),  # Filter for non-null release_date
+            Track.created_at >= previous_cursor,
         )
         .order_by(Track.created_at.asc())
+        .limit(batch_size)
         .all()
     )
     # convert release date to utc
@@ -60,15 +66,17 @@ def _publish_scheduled_releases(session):
             and release_date_day > candidate_created_at_day
         ):
             candidate_track.is_unlisted = False
-    # compare w created_at
 
+    if candidate_tracks:
+        redis.set(
+            publish_scheduled_releases_cursor_key, candidate_tracks[-1].created_at
+        )
     return
 
 
 # ####### CELERY TASKS ####### #
 @celery.task(name="publish_scheduled_releases", bind=True)
 def publish_scheduled_releases(self):
-    logger.info(f"asdf hi")
     redis = publish_scheduled_releases.redis
     db = publish_scheduled_releases.db
 
@@ -80,10 +88,9 @@ def publish_scheduled_releases(self):
     )
     try:
         have_lock = update_lock.acquire(blocking=False)
-        logger.info(f"asdf have_lock {have_lock}")
         if have_lock:
             with db.scoped_session() as session:
-                _publish_scheduled_releases(session)
+                _publish_scheduled_releases(session, redis)
 
         else:
             logger.info("Failed to acquire lock")

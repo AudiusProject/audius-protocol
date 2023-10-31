@@ -21,7 +21,6 @@ import {
   PremiumConditionsTipGated,
   ID
 } from '@audius/common'
-import moment from 'moment'
 import {
   IconCart,
   IconCollectible,
@@ -34,6 +33,7 @@ import {
 import cn from 'classnames'
 import { useField } from 'formik'
 import { get, isEmpty, set } from 'lodash'
+import moment from 'moment'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -253,7 +253,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     index,
     'release_date'
   )
-  const isScheduledRelease = moment(release_date).isAfter(moment());
+  const isScheduledRelease = moment(release_date).isAfter(moment())
 
   const usdcPurchaseConfig = useUSDCPurchaseConfig(useRemoteVar)
 
@@ -339,7 +339,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       SPECIAL_ACCESS_TYPE,
       isTipGated ? SpecialAccessType.TIP : SpecialAccessType.FOLLOW
     )
-    if (isScheduledRelease){
+    if (isScheduledRelease) {
       setIsUnlistedValue(true)
     }
     return initialValues as AccessAndSaleFormValues
@@ -509,7 +509,13 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
         })}
       </div>
     )
-  }, [fieldVisibility, isUnlisted, savedPremiumConditions, preview, isScheduledRelease])
+  }, [
+    fieldVisibility,
+    isUnlisted,
+    savedPremiumConditions,
+    preview,
+    isScheduledRelease
+  ])
 
   return (
     <ContextualMenu
@@ -544,8 +550,13 @@ type AccesAndSaleMenuFieldsProps = {
 }
 
 export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
-  const { isRemix, isUpload, isInitiallyUnlisted, initialPremiumConditions, isScheduledRelease } =
-    props
+  const {
+    isRemix,
+    isUpload,
+    isInitiallyUnlisted,
+    initialPremiumConditions,
+    isScheduledRelease
+  } = props
 
   const { isEnabled: isUsdcEnabled } = useFlag(FeatureFlags.USDC_PURCHASES)
   const { isEnabled: isCollectibleGatedEnabled } = useFlag(
@@ -564,7 +575,8 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
       isUpload: !!isUpload,
       isRemix,
       initialPremiumConditions: initialPremiumConditions ?? null,
-      isInitiallyUnlisted: !!isInitiallyUnlisted
+      isInitiallyUnlisted: !!isInitiallyUnlisted,
+      isScheduledRelease: !!isScheduledRelease
     })
 
   return (

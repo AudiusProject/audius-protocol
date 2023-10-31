@@ -31,8 +31,13 @@ type CollectibleGatedRadioFieldProps = {
 export const CollectibleGatedRadioField = (
   props: CollectibleGatedRadioFieldProps
 ) => {
-  const { isRemix, isUpload, initialPremiumConditions, isInitiallyUnlisted, isScheduledRelease} =
-    props
+  const {
+    isRemix,
+    isUpload,
+    initialPremiumConditions,
+    isInitiallyUnlisted,
+    isScheduledRelease
+  } = props
 
   const hasCollectibles = useSelector((state) => {
     const { ethCollectionMap, solCollectionMap } =

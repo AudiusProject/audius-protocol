@@ -132,7 +132,8 @@ export const AccessAndSaleScreen = () => {
     isUpload,
     isRemix,
     initialPremiumConditions,
-    isInitiallyUnlisted: initialValues.is_unlisted
+    isInitiallyUnlisted: initialValues.is_unlisted,
+    isScheduledRelease: false // TODO add scheduled release to mobile
   })
 
   const noUsdcGate = noUsdcGateOption || !isUsdcUploadEnabled
