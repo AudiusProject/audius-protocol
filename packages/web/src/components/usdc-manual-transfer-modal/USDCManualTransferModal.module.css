@@ -22,8 +22,3 @@
   display: flex;
   gap: var(--unit-2);
 }
-
-.iconUSDC {
-  color: '#2775CA';
-  fill: '#2775CA';
-}

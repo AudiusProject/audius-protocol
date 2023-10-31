@@ -84,21 +84,7 @@ export const USDCManualTransferModal = () => {
         <div className={styles.content}>
           <Text>{messages.explainer1}</Text>
           <Text>{messages.explainer2}</Text>
-          <AddressTile
-            address={USDCUserBank ?? ''}
-            // TODO: wrong shade of blue
-            left={
-              <Icon
-                icon={LogoUSDC}
-                size='large'
-                fill='#2775CA'
-                // color='#2775CA'
-                className={styles.iconUSDC}
-                // colorValue='#2775CA'
-                // color='accentBlue'
-              />
-            }
-          />
+          <AddressTile address={USDCUserBank ?? ''} left={<LogoUSDC />} />
           <Hint
             text={messages.disclaimer}
             link={USDCLearnMore}
