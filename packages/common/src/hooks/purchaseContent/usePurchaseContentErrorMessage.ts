@@ -1,3 +1,4 @@
+import { BuyCryptoErrorCode } from 'store/buy-crypto/types'
 import { BuyUSDCErrorCode } from 'store/index'
 import {
   PurchaseContentErrorCode,
@@ -14,7 +15,11 @@ const messages = {
   minimumPurchase: (minAmount: number) =>
     `Total purchase amount must be at least $${formatPrice(minAmount)}.`,
   maximumPurchase: (maxAmount: number) =>
-    `Total purchase amount may not exceed $${formatPrice(maxAmount)}.`
+    `Total purchase amount may not exceed $${formatPrice(maxAmount)}.`,
+  badAmount: (minAmount: number, maxAmount: number) =>
+    `Total purchase amount must be between $${formatPrice(
+      minAmount
+    )} and ${formatPrice(maxAmount)}`
 }
 
 export const usePurchaseContentErrorMessage = (
@@ -29,6 +34,17 @@ export const usePurchaseContentErrorMessage = (
       return messages.minimumPurchase(minUSDCPurchaseAmountCents)
     case BuyUSDCErrorCode.MaxAmountExceeded:
       return messages.maximumPurchase(maxUSDCPurchaseAmountCents)
+    case BuyCryptoErrorCode.BAD_AMOUNT:
+      return messages.badAmount(
+        minUSDCPurchaseAmountCents,
+        maxUSDCPurchaseAmountCents
+      )
+    case BuyCryptoErrorCode.BAD_FEE_PAYER:
+    case BuyCryptoErrorCode.BAD_PROVIDER:
+    case BuyCryptoErrorCode.BAD_TOKEN:
+    case BuyCryptoErrorCode.ON_RAMP_ERROR:
+    case BuyCryptoErrorCode.SWAP_ERROR:
+    case BuyCryptoErrorCode.UNKNOWN:
     case BuyUSDCErrorCode.OnrampError:
     case PurchaseErrorCode.Unknown:
       return messages.generic

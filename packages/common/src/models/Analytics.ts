@@ -229,6 +229,10 @@ export enum Name {
   LINK_CLICKING = 'Link Click',
   TAG_CLICKING = 'Tag Click',
 
+  // Modals
+  MODAL_OPENED = 'Modal Opened',
+  MODAL_CLOSED = 'Modal Closed',
+
   // Search
   SEARCH_SEARCH = 'Search: Search',
   SEARCH_TAG_SEARCH = 'Search: Tag Search',
@@ -362,6 +366,7 @@ export enum Name {
   PURCHASE_CONTENT_FAILURE = 'Purchase Content: Failure',
   PURCHASE_CONTENT_TWITTER_SHARE = 'Purchase Content: Twitter Share',
   PURCHASE_CONTENT_TOS_CLICKED = 'Purchase Content: Terms of Service Link Clicked',
+  PURCHASE_CONTENT_USDC_USER_BANK_COPIED = 'Purchase Content: USDC User Bank Copied',
 
   // Rate & Review CTA
   RATE_CTA_DISPLAYED = 'Rate CTA: Displayed',
@@ -1104,6 +1109,17 @@ type TagClicking = {
   source: 'profile page' | 'track page' | 'collection page'
 }
 
+// Modals
+type ModalOpened = {
+  eventName: Name.MODAL_OPENED
+  name: string
+} & Record<string, any> // For passing state values
+
+type ModalClosed = {
+  eventName: Name.MODAL_CLOSED
+  name: string
+}
+
 // Search
 type SearchTerm = {
   eventName: Name.SEARCH_SEARCH
@@ -1775,6 +1791,11 @@ type PurchaseContentTOSClicked = {
   eventName: Name.PURCHASE_CONTENT_TOS_CLICKED
 }
 
+type PurchaseContentUSDCUserBankCopied = {
+  eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED
+  address: string
+}
+
 type RateCtaDisplayed = {
   eventName: Name.RATE_CTA_DISPLAYED
 }
@@ -2019,6 +2040,8 @@ export type AllTrackingEvents =
   | Unfollow
   | LinkClicking
   | TagClicking
+  | ModalOpened
+  | ModalClosed
   | SearchTerm
   | SearchTag
   | SearchMoreResults
@@ -2129,6 +2152,7 @@ export type AllTrackingEvents =
   | PurchaseContentFailure
   | PurchaseContentTwitterShare
   | PurchaseContentTOSClicked
+  | PurchaseContentUSDCUserBankCopied
   | RateCtaDisplayed
   | RateCtaResponseNo
   | RateCtaResponseYes

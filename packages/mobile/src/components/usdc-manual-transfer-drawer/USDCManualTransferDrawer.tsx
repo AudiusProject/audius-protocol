@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { Name } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
@@ -10,6 +11,7 @@ import LogoUSDC from 'app/assets/images/logoUSDC.svg'
 import { Button, Text, useLink } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useToast } from 'app/hooks/useToast'
+import { make, track as trackEvent } from 'app/services/analytics'
 import { getUSDCUserBank } from 'app/services/buyCrypto'
 import { setVisibility } from 'app/store/drawers/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
@@ -96,6 +98,12 @@ export const USDCManualTransferDrawer = () => {
   const handleConfirmPress = useCallback(() => {
     Clipboard.setString(USDCUserBank ?? '')
     toast({ content: messages.copied, type: 'info' })
+    trackEvent(
+      make({
+        eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
+        address: USDCUserBank ?? ''
+      })
+    )
   }, [USDCUserBank, toast])
 
   const handleCancelPress = useCallback(() => {

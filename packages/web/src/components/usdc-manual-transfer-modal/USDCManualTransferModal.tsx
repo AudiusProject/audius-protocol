@@ -1,16 +1,18 @@
 import { useCallback, useContext } from 'react'
 
-import { useUSDCManualTransferModal } from '@audius/common'
+import { Name, useUSDCManualTransferModal } from '@audius/common'
 import { Button, ButtonType } from '@audius/harmony'
-import { IconInfo, LogoUSDC, ModalContent, ModalHeader } from '@audius/stems'
+import { IconError, LogoUSDC, ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
 import { useAsync } from 'react-use'
 
+import { Icon } from 'components/Icon'
 import { AddressTile } from 'components/address-tile'
 import { ToastContext } from 'components/toast/ToastContext'
 import { Text } from 'components/typography'
 import { Hint } from 'components/withdraw-usdc-modal/components/Hint'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
+import { track, make } from 'services/analytics'
 import { getUSDCUserBank } from 'services/solana/solana'
 import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
@@ -47,13 +49,23 @@ export const USDCManualTransferModal = () => {
   const handleCopy = useCallback(() => {
     copyToClipboard(USDCUserBank ?? '')
     toast(messages.copied)
+    track(
+      make({
+        eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
+        address: USDCUserBank ?? ''
+      })
+    )
   }, [USDCUserBank, toast])
+
+  const handleClose = useCallback(() => {
+    onClose()
+  }, [onClose])
 
   return (
     <ModalDrawer
       zIndex={zIndex.USDC_MANUAL_TRANSFER_MODAL}
       size={'small'}
-      onClose={onClose}
+      onClose={handleClose}
       isOpen={isOpen}
       bodyClassName={styles.modal}
       useGradientTitle={false}
@@ -83,7 +95,7 @@ export const USDCManualTransferModal = () => {
           <Hint
             text={messages.disclaimer}
             link={USDCLearnMore}
-            icon={IconInfo}
+            icon={() => <Icon icon={IconError} size='large' fill='neutral' />}
             linkText={messages.learnMore}
           />
           <div
@@ -94,9 +106,15 @@ export const USDCManualTransferModal = () => {
             <Button variant={ButtonType.PRIMARY} fullWidth onClick={handleCopy}>
               {messages.copy}
             </Button>
-            <Button variant={ButtonType.TERTIARY} fullWidth onClick={onClose}>
-              {messages.goBack}
-            </Button>
+            {mobile ? null : (
+              <Button
+                variant={ButtonType.TERTIARY}
+                fullWidth
+                onClick={handleClose}
+              >
+                {messages.goBack}
+              </Button>
+            )}
           </div>
         </div>
       </ModalContent>

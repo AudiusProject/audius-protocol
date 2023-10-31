@@ -21,7 +21,8 @@ import {
   relatedArtistsSagas,
   solanaSagas,
   confirmerSagas,
-  buyCryptoSagas
+  buyCryptoSagas,
+  modalsSagas
 } from '@audius/common'
 import { all, fork } from 'redux-saga/effects'
 
@@ -149,6 +150,8 @@ export default function* rootSaga() {
     trendingUndergroundSagas(),
     uploadSagas(),
     premiumTracksSagas(),
+
+    modalsSagas(),
 
     // Cache
     coreCacheSagas(),

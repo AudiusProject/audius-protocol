@@ -13,8 +13,8 @@ import {
   ButtonType,
   IconWithdraw,
   IconKebabHorizontal,
-  IconQuestionCircle,
   PlainButton,
+  IconQuestionCircle,
   PlainButtonType
 } from '@audius/harmony'
 import { PopupMenu, PopupMenuItem, LogoUSDC } from '@audius/stems'
