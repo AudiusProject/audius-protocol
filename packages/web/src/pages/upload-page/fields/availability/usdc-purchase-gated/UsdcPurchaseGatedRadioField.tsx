@@ -5,9 +5,7 @@ import {
   Name,
   PremiumConditions,
   TrackAvailabilityType,
-  isPremiumContentCollectibleGated,
-  isPremiumContentFollowGated,
-  isPremiumContentTipGated
+  useAccessAndRemixSettings
 } from '@audius/common'
 import { IconCart, IconStars } from '@audius/stems'
 
@@ -19,7 +17,7 @@ import { make, track } from 'services/analytics'
 import { UsdcPurchaseFields } from './UsdcPurchaseFields'
 import styles from './UsdcPurchaseGatedRadioField.module.css'
 
-const WAITLIST_TYPEFORM = 'https://example.com'
+const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
 
 const messages = {
   usdcPurchase: 'Premium (Pay-to-Unlock)',
@@ -52,23 +50,13 @@ export const UsdcPurchaseGatedRadioField = (
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
 
-  const isInitiallyPublic =
-    !isUpload && !isInitiallyUnlisted && !initialPremiumConditions
-  const isInitiallySpecialAccess =
-    !isUpload &&
-    !!(
-      isPremiumContentFollowGated(initialPremiumConditions) ||
-      isPremiumContentTipGated(initialPremiumConditions)
-    )
-  const isInitiallyCollectibleGated =
-    !isUpload && isPremiumContentCollectibleGated(initialPremiumConditions)
-
-  const disabled =
-    isInitiallyPublic ||
-    isInitiallySpecialAccess ||
-    isInitiallyCollectibleGated ||
-    isRemix ||
-    !isUsdcUploadEnabled
+  const { noUsdcGate } = useAccessAndRemixSettings({
+    isUpload: !!isUpload,
+    isRemix,
+    initialPremiumConditions: initialPremiumConditions ?? null,
+    isInitiallyUnlisted: !!isInitiallyUnlisted
+  })
+  const disabled = noUsdcGate || !isUsdcUploadEnabled
 
   const helpContent = (
     <div className={styles.helpContent}>

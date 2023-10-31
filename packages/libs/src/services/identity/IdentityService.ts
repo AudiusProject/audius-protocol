@@ -46,6 +46,8 @@ export type RelayTransactionData = {
   lookupTableAddresses?: string[]
 }
 
+export type IdentityRequestError = AxiosError
+
 type AttestationResult = {
   status: string
   userId: string

@@ -13,7 +13,7 @@ import type { TrackAvailabilitySelectionProps } from '../../components/types'
 const messages = {
   public: 'Public (Default)',
   publicSubtitle:
-    'Public tracks are visible to all users and appear throughout Audius.'
+    'Public tracks are available to all users and can be streamed for free.'
 }
 
 const screenWidth = Dimensions.get('screen').width
@@ -27,7 +27,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     alignItems: 'center'
   },
   title: {
-    fontSize: 22,
+    fontSize: 18,
     marginTop: 0
   },
   selectedTitle: {
@@ -41,7 +41,8 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     marginRight: spacing(2.5)
   },
   subtitleContainer: {
-    marginTop: spacing(2)
+    marginTop: spacing(4),
+    marginLeft: -1 * spacing(10)
   },
   subtitle: {
     color: palette.neutral
@@ -86,11 +87,13 @@ export const PublicAvailabilityRadioField = (
           {messages.public}
         </Text>
       </View>
-      <View style={styles.subtitleContainer}>
-        <Text fontSize='medium' weight='medium' style={styles.subtitle}>
-          {messages.publicSubtitle}
-        </Text>
-      </View>
+      {selected ? (
+        <View style={styles.subtitleContainer}>
+          <Text fontSize='medium' weight='medium' style={styles.subtitle}>
+            {messages.publicSubtitle}
+          </Text>
+        </View>
+      ) : null}
     </View>
   )
 }

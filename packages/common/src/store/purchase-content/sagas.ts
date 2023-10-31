@@ -11,7 +11,14 @@ import {
   getTokenAccountInfo,
   purchaseContent
 } from 'services/audius-backend/solana'
+import { FeatureFlags } from 'services/index'
 import { accountSelectors } from 'store/account'
+import {
+  buyCryptoCanceled,
+  buyCryptoFailed,
+  buyCryptoSucceeded,
+  buyCryptoViaSol
+} from 'store/buy-crypto/slice'
 import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
@@ -23,7 +30,10 @@ import { getUSDCUserBank } from 'store/buy-usdc/utils'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUser } from 'store/cache/users/selectors'
 import { getContext } from 'store/effects'
+import { getPreviewing, getTrackId } from 'store/player/selectors'
+import { stop } from 'store/player/slice'
 import { saveTrack } from 'store/social/tracks/actions'
+import { OnRampProvider } from 'store/ui/buy-audio/types'
 import { BN_USDC_CENT_WEI, ceilingBNUSDCToNearestCent } from 'utils/wallet'
 
 import { pollPremiumTrack } from '../premium-content/sagas'
@@ -146,6 +156,11 @@ function* doStartPurchaseContentFlow({
   }
 }: ReturnType<typeof startPurchaseContentFlow>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const isBuyUSDCViaSolEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.BUY_USDC_VIA_SOL
+  )
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
 
@@ -161,6 +176,7 @@ function* doStartPurchaseContentFlow({
     contentName: title,
     artistHandle: artistInfo.handle,
     isVerifiedArtist: artistInfo.is_verified,
+    totalAmount: (price + (extraAmount ?? 0)) / 100,
     payExtraAmount: extraAmount ? extraAmount / 100 : 0,
     payExtraPreset: extraAmountPreset
   }
@@ -204,21 +220,38 @@ function* doStartPurchaseContentFlow({
         .div(BN_USDC_CENT_WEI)
         .toNumber()
       yield* put(buyUSDC())
-      yield* put(
-        onrampOpened({
-          provider: USDCOnRampProvider.STRIPE,
-          purchaseInfo: {
-            desiredAmount: balanceNeededCents
-          }
+      let result: { succeeded?: any; failed?: any; canceled?: any } | null =
+        null
+      if (isBuyUSDCViaSolEnabled) {
+        yield* put(
+          buyCryptoViaSol({
+            // expects "friendly" amount, so dollars
+            amount: balanceNeededCents / 100.0,
+            mint: 'usdc',
+            provider: OnRampProvider.STRIPE
+          })
+        )
+        result = yield* race({
+          succeeded: take(buyCryptoSucceeded),
+          failed: take(buyCryptoFailed),
+          canceled: take(buyCryptoCanceled)
         })
-      )
+      } else {
+        yield* put(
+          onrampOpened({
+            provider: USDCOnRampProvider.STRIPE,
+            purchaseInfo: {
+              desiredAmount: balanceNeededCents
+            }
+          })
+        )
 
-      const result = yield* race({
-        success: take(buyUSDCFlowSucceeded),
-        canceled: take(onrampCanceled),
-        failed: take(buyUSDCFlowFailed)
-      })
-
+        result = yield* race({
+          succeeded: take(buyUSDCFlowSucceeded),
+          canceled: take(onrampCanceled),
+          failed: take(buyUSDCFlowFailed)
+        })
+      }
       // Return early for failure or cancellation
       if (result.canceled) {
         yield* put(purchaseCanceled())
@@ -255,6 +288,13 @@ function* doStartPurchaseContentFlow({
     // auto-favorite the purchased item
     if (contentType === ContentType.TRACK) {
       yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
+    }
+
+    // Check if playing the purchased track's preview and if so, stop it
+    const isPreviewing = yield* select(getPreviewing)
+    const trackId = yield* select(getTrackId)
+    if (contentId === trackId && isPreviewing) {
+      yield* put(stop({}))
     }
 
     // finish

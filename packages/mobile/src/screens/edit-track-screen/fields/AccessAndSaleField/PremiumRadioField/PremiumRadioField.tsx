@@ -1,6 +1,7 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 
-import { Name } from '@audius/common'
+import { Name, isPremiumContentUSDCPurchaseGated } from '@audius/common'
+import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 
 import IconCart from 'app/assets/images/iconCart.svg'
@@ -14,10 +15,10 @@ import { useColor } from 'app/utils/theme'
 
 import type { TrackAvailabilitySelectionProps } from '../../../components/types'
 
-import { TrackPreviewField } from './TrackPreviewField'
+import { TRACK_PREVIEW, TrackPreviewField } from './TrackPreviewField'
 import { TrackPriceField } from './TrackPriceField'
 
-const WAITLIST_TYPEFORM = 'https://example.com'
+const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
 
 type PremiumRadioFieldProps = TrackAvailabilitySelectionProps
 
@@ -43,7 +44,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     alignItems: 'center'
   },
   title: {
-    fontSize: 22,
+    fontSize: 18,
     marginTop: 0
   },
   selectedTitle: {
@@ -57,7 +58,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     marginRight: spacing(2.5)
   },
   subtitleContainer: {
-    marginTop: spacing(2)
+    marginLeft: -1 * spacing(10)
   },
   subtitle: {
     color: palette.neutral
@@ -71,11 +72,14 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   },
   comingSoon: {
     alignSelf: 'flex-start'
+  },
+  fields: {
+    marginLeft: -1 * spacing(10)
   }
 }))
 
 export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
-  const { selected, disabled } = props
+  const { selected, disabled, previousPremiumConditions } = props
   const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
   const styles = useStyles()
 
@@ -100,16 +104,31 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
     ? neutralLight4
     : neutral
 
+  const selectedUsdcPurchaseValue = useMemo(() => {
+    if (isPremiumContentUSDCPurchaseGated(previousPremiumConditions)) {
+      return previousPremiumConditions.usdc_purchase
+    }
+    return { price: null }
+  }, [previousPremiumConditions])
+  const [{ value: preview }] = useField(TRACK_PREVIEW)
+  const previewStartSeconds = useRef(preview ?? 0).current
+
   useEffect(() => {
     if (selected) {
       setTrackAvailabilityFields({
         is_premium: true,
-        premium_conditions: { usdc_purchase: { price: 0, splits: {} } },
-        preview_start_seconds: 0,
+        // @ts-ignore fully formed in saga (validated + added splits)
+        premium_conditions: { usdc_purchase: selectedUsdcPurchaseValue },
+        preview_start_seconds: previewStartSeconds,
         'field_visibility.remixes': false
       })
     }
-  }, [selected, setTrackAvailabilityFields])
+  }, [
+    selected,
+    previewStartSeconds,
+    selectedUsdcPurchaseValue,
+    setTrackAvailabilityFields
+  ])
 
   const renderHelpCalloutContent = useCallback(() => {
     return (
@@ -130,11 +149,13 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
           {messages.title}
         </Text>
       </View>
-      <View style={styles.subtitleContainer}>
-        <Text fontSize='medium' weight='medium' style={styles.subtitle}>
-          {messages.description}
-        </Text>
-      </View>
+      {selected ? (
+        <View style={styles.subtitleContainer}>
+          <Text fontSize='medium' weight='medium' style={styles.subtitle}>
+            {messages.description}
+          </Text>
+        </View>
+      ) : null}
       {disabled ? (
         <>
           <Tag style={styles.comingSoon}>{messages.comingSoon}</Tag>
@@ -146,10 +167,10 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
         </>
       ) : null}
       {selected ? (
-        <>
+        <View style={styles.fields}>
           <TrackPriceField />
           <TrackPreviewField />
-        </>
+        </View>
       ) : null}
     </View>
   )

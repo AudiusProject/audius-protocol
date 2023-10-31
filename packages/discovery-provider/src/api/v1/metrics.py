@@ -19,6 +19,7 @@ from src.queries.get_app_name_metrics import (
 )
 from src.queries.get_genre_metrics import get_genre_metrics
 from src.queries.get_historical_route_metrics import get_historical_route_metrics
+from src.queries.get_personal_route_metrics import get_personal_route_metrics
 from src.queries.get_plays_metrics import get_plays_metrics
 from src.queries.get_trailing_metrics import get_aggregate_route_metrics_trailing_month
 from src.utils.redis_cache import cache
@@ -67,6 +68,37 @@ valid_bucket_sizes = {
     "month": ["day", "week"],
     "all_time": ["month", "week"],
 }
+
+
+personal_route_metrics_parser = reqparse.RequestParser()
+personal_route_metrics_parser.add_argument("bucket_size", required=False)
+
+
+@ns.route("/routes/<string:time_range>", doc=False)
+class PersonalRouteMetrics(Resource):
+    @ns.doc(
+        id="""Personal Route Metrics""",
+        params={
+            "bucket_size": "Grouping of route metrics (e.g. by day, week, or month) for given time range"
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @cache(ttl_sec=30 * 60)
+    def get(self, time_range):
+        """Gets node's personal route metrics based on time range and bucket size"""
+        if time_range not in valid_bucket_sizes:
+            abort_bad_path_param("time_range", ns)
+
+        args = personal_route_metrics_parser.parse_args()
+        valid_buckets = valid_bucket_sizes[time_range]
+        bucket_size = args.get("bucket_size") or valid_buckets[0]
+
+        if bucket_size not in valid_buckets:
+            abort_bad_request_param("bucket_size", ns)
+
+        metrics = get_personal_route_metrics(time_range, bucket_size)
+        response = success_response(metrics)
+        return response
 
 
 @ns.route("/routes/cached", doc=False)

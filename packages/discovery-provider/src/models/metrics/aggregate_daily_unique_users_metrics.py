@@ -20,3 +20,4 @@ class AggregateDailyUniqueUsersMetrics(Base, RepresentableMixin):
         DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")
     )
     summed_count = Column(Integer)
+    personal_count = Column(Integer)

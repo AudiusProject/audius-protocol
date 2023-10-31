@@ -656,26 +656,23 @@ def process_transfer_instruction(
                 )
                 return
 
-            # TODO: Remove on launch: https://linear.app/audius/issue/PAY-1987/remove-check-to-only-disburse-dollaraudio-matching-challenges-in-non
-            env = shared_config["discprov"]["env"]
-            if env in ("stage", "dev"):
-                amount = int(round(purchase_metadata["price"]) / 10**USDC_DECIMALS)
-                challenge_event_bus.dispatch(
-                    ChallengeEvent.audio_matching_buyer,
-                    slot,
-                    sender_user_id,
-                    {"track_id": purchase_metadata["id"], "amount": amount},
-                )
-                challenge_event_bus.dispatch(
-                    ChallengeEvent.audio_matching_seller,
-                    slot,
-                    receiver_user_id,
-                    {
-                        "track_id": purchase_metadata["id"],
-                        "sender_user_id": sender_user_id,
-                        "amount": amount,
-                    },
-                )
+            amount = int(round(purchase_metadata["price"]) / 10**USDC_DECIMALS)
+            challenge_event_bus.dispatch(
+                ChallengeEvent.audio_matching_buyer,
+                slot,
+                sender_user_id,
+                {"track_id": purchase_metadata["id"], "amount": amount},
+            )
+            challenge_event_bus.dispatch(
+                ChallengeEvent.audio_matching_seller,
+                slot,
+                receiver_user_id,
+                {
+                    "track_id": purchase_metadata["id"],
+                    "sender_user_id": sender_user_id,
+                    "amount": amount,
+                },
+            )
 
 
 class CreateTokenAccount(TypedDict):

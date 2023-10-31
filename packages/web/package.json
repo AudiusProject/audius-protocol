@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius decentralized application",
   "author": "Audius",
-  "version": "1.5.47",
+  "version": "1.5.48",
   "private": true,
   "scripts": {
     "publish-scripts": "./scripts/publishScripts.sh",
@@ -49,7 +49,7 @@
     "typecheck": "tsc",
     "typecheck:watch": "tsc --watch",
     "install-dmg-license": "npm add dmg-license -w audius-client",
-    "verify": "concurrently \"npm:typecheck\" \"npm:lint:fix\""
+    "verify": "concurrently \"npm:typecheck\" \"npm:lint:fix\" \"npm:stylelint:fix\""
   },
   "dependencies": {
     "@audius/common": "*",
@@ -126,6 +126,7 @@
     "lerp": "1.0.3",
     "linkify-react": "^4.1.0",
     "linkifyjs": "4.1.0",
+    "localforage": "1.10.0",
     "lodash": "4.17.21",
     "numeral": "2.0.6",
     "orbit-controls": "0.0.1",
@@ -160,6 +161,7 @@
     "react-virtualized": "9.22.3",
     "redux": "4.1.1",
     "redux-devtools-extension": "2.13.8",
+    "redux-persist": "6.0.0",
     "redux-saga": "1.1.3",
     "redux-sentry-middleware": "0.1.8",
     "redux-thunk": "2.4.2",
@@ -176,7 +178,6 @@
     "web3modal": "1.9.3",
     "webgl-context": "2.2.0",
     "webpack-bundle-analyzer": "4.9.0",
-    "yup": "1.2.0",
     "zod-formik-adapter": "1.2.0",
     "zustand": "4.4.3"
   },

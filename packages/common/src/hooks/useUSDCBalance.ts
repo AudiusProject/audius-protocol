@@ -11,6 +11,8 @@ import { getRecoveryStatus } from 'store/buy-usdc/selectors'
 import { getUSDCBalance } from 'store/wallet/selectors'
 import { setUSDCBalance } from 'store/wallet/slice'
 
+import { useInterval } from './useInterval'
+
 /**
  * On mount, fetches the USDC balance for the current user and stores it
  * in the redux wallet slice.
@@ -19,7 +21,13 @@ import { setUSDCBalance } from 'store/wallet/slice'
  * stale balance. If absolute latest balance value is needed, defer use until
  * Status.SUCCESS.
  */
-export const useUSDCBalance = () => {
+export const useUSDCBalance = ({
+  isPolling,
+  pollingInterval = 1000
+}: {
+  isPolling?: boolean
+  pollingInterval?: number
+} = {}) => {
   const { audiusBackend } = useAppContext()
   const dispatch = useDispatch()
 
@@ -51,5 +59,15 @@ export const useUSDCBalance = () => {
     refresh()
   }, [refresh])
 
-  return { balanceStatus, recoveryStatus, data, refresh }
+  const id = useInterval(() => {
+    if (isPolling) {
+      refresh()
+    }
+  }, pollingInterval)
+
+  const cancelPolling = useCallback(() => {
+    clearInterval(id)
+  }, [id])
+
+  return { balanceStatus, recoveryStatus, data, refresh, cancelPolling }
 }

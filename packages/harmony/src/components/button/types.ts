@@ -1,7 +1,8 @@
 import type { ComponentPropsWithoutRef } from 'react'
 
-import type { IconComponent } from '../../components/typography/Icons/types'
-import type { ColorValue } from '../../types/colors'
+import type { IconComponent } from 'components/typography/Icons/Icon'
+// TODO generate this type from the emotion theme
+import type { ColorValue } from 'types/colors'
 
 export enum ButtonType {
   PRIMARY = 'primary',
@@ -61,6 +62,12 @@ export type BaseButtonProps = {
    * Internal styling used by derived button components
    */
   styles: BaseButtonStyles
+
+  /**
+   * Change the default rendered element for the one passed as a child,
+   *  merging their props and behavior.
+   */
+  asChild?: boolean
 } & HTMLButtonProps
 
 export type ButtonProps = {

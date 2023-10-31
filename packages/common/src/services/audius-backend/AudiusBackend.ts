@@ -1710,7 +1710,7 @@ export const audiusBackend = ({
     try {
       const { exists: emailExists } =
         await audiusLibs.Account.checkIfEmailRegistered(email)
-      return emailExists
+      return emailExists as boolean
     } catch (error) {
       console.error(getErrorMessage(error))
       throw error

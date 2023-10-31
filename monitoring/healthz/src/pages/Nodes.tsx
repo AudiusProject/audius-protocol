@@ -176,7 +176,7 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
     health.chain_health?.entries['node-health'].description
 
   const StorageProgressBar = ({ progress }: { progress: number }) => {
-    const progressPercent = (progress / MAX_STORAGE_SIZE) * 100
+    const progressPercent = (progress / Math.max(progress, MAX_STORAGE_SIZE)) * 100
 
     return (
       <div className="min-w-[200px] relative">
@@ -251,7 +251,7 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
               progress={totalMediorumUsed === '?' ? 0 : totalMediorumUsed}
             />
             <div className="mt-3 flex">
-              {getStorageBackendIcon(health.blobStorePrefix)} <span className="w-[10px]" /> {totalMediorumUsed} / {totalMediorumSize} GB
+              {getStorageBackendIcon(health.blobStorePrefix)} <span className="w-[10px]" /> {totalMediorumUsed} / {totalMediorumUsed === '?' ? '?' : Math.max(totalMediorumSize, totalMediorumUsed)} GB
             </div>
           </a>
         </td>

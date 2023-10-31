@@ -7,7 +7,8 @@ import {
   SquareSizes,
   CommonState,
   cacheTracksSelectors,
-  usePremiumContentAccess
+  usePremiumContentAccess,
+  playerSelectors
 } from '@audius/common'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
@@ -23,6 +24,7 @@ import { fullTrackPage } from 'utils/route'
 
 import styles from './PlayingTrackInfo.module.css'
 const { getTrack } = cacheTracksSelectors
+const { getPreviewing } = playerSelectors
 
 const messages = {
   preview: 'Preview'
@@ -69,10 +71,11 @@ const PlayingTrackInfo = ({
     getTrack(state, { id: trackId })
   )
   const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const isPreviewing = useSelector(getPreviewing)
   const shouldShowPreviewLock =
     track?.premium_conditions &&
     'usdc_purchase' in track.premium_conditions &&
-    !doesUserHaveAccess
+    (!doesUserHaveAccess || isPreviewing)
 
   const [artistSpringProps, setArtistSpringProps] = useSpring(() => springProps)
   const [trackSpringProps, setTrackSpringProps] = useSpring(() => springProps)

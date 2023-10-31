@@ -2,12 +2,15 @@ import { AudiusLibs } from '@audius/sdk'
 import { Account, createTransferCheckedInstruction } from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
+  GetVersionedTransactionConfig,
   Keypair,
   PublicKey,
   Transaction,
   TransactionInstruction,
   TransactionMessage,
-  VersionedTransaction
+  TransactionResponse,
+  VersionedTransaction,
+  VersionedTransactionResponse
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
@@ -65,7 +68,7 @@ export const getRootSolanaAccount = async (
 export const getSolanaConnection = async (
   audiusBackendInstance: AudiusBackend
 ) => {
-  return (await audiusBackendInstance.getAudiusLibs()).solanaWeb3Manager!
+  return (await audiusBackendInstance.getAudiusLibsTyped()).solanaWeb3Manager!
     .connection
 }
 
@@ -240,9 +243,9 @@ export const createUserBankIfNeeded = async (
 
 /**
  * Polls the given token account until its balance is different from initial balance or a timeoout.
- * Throws an error if the balance doesn't change within the timeout.
+ * @throws an error if the balance doesn't change within the timeout.
  */
-export const pollForBalanceChange = async (
+export const pollForTokenBalanceChange = async (
   audiusBackendInstance: AudiusBackend,
   {
     tokenAccount,
@@ -300,6 +303,54 @@ export const pollForBalanceChange = async (
     return tokenAccountInfo.amount
   }
   throw new Error(`${debugTokenName} balance polling exceeded maximum retries`)
+}
+
+/**
+ * Polls the given wallet until its SOL balance is different from initial balance or a timeoout.
+ * @throws an error if the balance doesn't change within the timeout.
+ */
+export const pollForBalanceChange = async (
+  audiusBackendInstance: AudiusBackend,
+  {
+    wallet,
+    initialBalance,
+    retryDelayMs = DEFAULT_RETRY_DELAY,
+    maxRetryCount = DEFAULT_MAX_RETRY_COUNT
+  }: {
+    wallet: PublicKey
+    initialBalance?: bigint
+    retryDelayMs?: number
+    maxRetryCount?: number
+  }
+) => {
+  console.info(`Polling SOL balance for ${wallet.toBase58()} ...`)
+  let balanceBN = await audiusBackendInstance.getAddressSolBalance(
+    wallet.toBase58()
+  )
+  let balance = BigInt(balanceBN.toString())
+  if (initialBalance === undefined) {
+    initialBalance = balance
+  }
+  let retries = 0
+  while (balance === initialBalance && retries++ < maxRetryCount) {
+    console.debug(
+      `Polling SOL balance (${initialBalance} === ${balance}) [${retries}/${maxRetryCount}]`
+    )
+    await delay(retryDelayMs)
+    balanceBN = await audiusBackendInstance.getAddressSolBalance(
+      wallet.toBase58()
+    )
+    balance = BigInt(balanceBN.toString())
+  }
+  if (balance !== initialBalance) {
+    console.debug(
+      `SOL balance changed by ${
+        balance - initialBalance
+      } (${initialBalance} => ${balance})`
+    )
+    return balance
+  }
+  throw new Error('SOL balance polling exceeded maximum retries')
 }
 
 export type PurchaseContentArgs = {
@@ -448,6 +499,7 @@ export const relayVersionedTransaction = async (
     skipPreflight
   })
 }
+
 /**
  * Helper that gets the lookup table accounts (that is, the account holding the lookup table,
  * not the accounts _in_ the lookup table) from their addresses.
@@ -469,4 +521,104 @@ export const getLookupTableAccounts = async (
       return account.value
     })
   )
+}
+
+/**
+ * Helper to create a versioned transaction with lookup tables
+ */
+export const createVersionedTransaction = async (
+  audiusBackendInstance: AudiusBackend,
+  {
+    instructions,
+    lookupTableAddresses,
+    feePayer
+  }: {
+    instructions: TransactionInstruction[]
+    lookupTableAddresses: string[]
+    feePayer: PublicKey
+  }
+) => {
+  const addressLookupTableAccounts = await getLookupTableAccounts(
+    audiusBackendInstance,
+    { lookupTableAddresses }
+  )
+  const recentBlockhash = await getRecentBlockhash(audiusBackendInstance)
+
+  const message = new TransactionMessage({
+    payerKey: feePayer,
+    recentBlockhash,
+    instructions
+  }).compileToV0Message(addressLookupTableAccounts)
+  return {
+    transaction: new VersionedTransaction(message),
+    addressLookupTableAccounts
+  }
+}
+
+/**
+ * Sometimes fetching a transaction can turn up empty if the transaction
+ * hasn't been finalized and indexed by the RPC yet. This method polls the
+ * transaction a few times before it gives up and returns null.
+ */
+export const pollForTransaction = async (
+  audiusBackendInstance: AudiusBackend,
+  transactionSignature: string,
+  config: GetVersionedTransactionConfig,
+  options?: { maxRetryCount: number; retryDelayMs: number }
+) => {
+  let retryCount = 0
+  const maxRetryCount = options?.maxRetryCount ?? 20
+  const retryDelayMs = options?.retryDelayMs ?? 1000
+  let transaction: VersionedTransactionResponse | TransactionResponse | null =
+    null
+  const connection = await getSolanaConnection(audiusBackendInstance)
+  do {
+    console.debug(
+      `Fetching transaction ${transactionSignature}: attempt ${retryCount} of ${maxRetryCount}`
+    )
+    transaction = await connection.getTransaction(transactionSignature, config)
+    await delay(retryDelayMs)
+  } while (transaction === null && retryCount++ < maxRetryCount)
+  return transaction
+}
+
+/**
+ * Maps both the wallet and token balance changes into a map keyed by the
+ * public key address of each account.
+ */
+export const getBalanceChanges = (
+  transaction: VersionedTransactionResponse | TransactionResponse
+) => {
+  const balanceChanges: Record<string, number> = {}
+  const preTokenBalances: Record<string, bigint> = {}
+  const tokenBalanceChanges: Record<string, bigint> = {}
+
+  const staticAccountKeys = transaction.transaction.message.staticAccountKeys
+  for (let i = 0; i < staticAccountKeys.length; i++) {
+    const pubkey = transaction.transaction.message.staticAccountKeys[i]
+    balanceChanges[pubkey.toBase58()] =
+      (transaction.meta?.postBalances[i] ?? 0) -
+      (transaction.meta?.preBalances[i] ?? 0)
+  }
+  for (const tokenBalance of transaction.meta?.preTokenBalances ?? []) {
+    const account = staticAccountKeys[tokenBalance.accountIndex]
+    if (account) {
+      preTokenBalances[account.toBase58()] = BigInt(
+        tokenBalance.uiTokenAmount.amount
+      )
+    }
+  }
+  for (const tokenBalance of transaction.meta?.postTokenBalances ?? []) {
+    const account = staticAccountKeys[tokenBalance.accountIndex]
+    if (account) {
+      const preTokenBalance = preTokenBalances[account.toBase58()] ?? BigInt(0)
+      const postTokenBalance = BigInt(tokenBalance.uiTokenAmount.amount)
+      const change = postTokenBalance - preTokenBalance
+      tokenBalanceChanges[account.toBase58()] = change
+    }
+  }
+  return {
+    balanceChanges,
+    tokenBalanceChanges
+  }
 }

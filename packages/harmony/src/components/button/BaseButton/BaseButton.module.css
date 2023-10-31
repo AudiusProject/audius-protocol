@@ -1,0 +1,38 @@
+/* ===Base Styles=== */
+.button {
+  font-family: var(--harmony-font-family);
+  align-items: center;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: inline-flex;
+  flex-shrink: 0;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  text-align: center;
+  user-select: none;
+  white-space: nowrap;
+  transition: transform var(--harmony-hover);
+  &:focus {
+    outline: none !important;
+  }
+  &:active {
+    transform: scale(0.98);
+  }
+  &:hover {
+    transform: scale(1.04);
+  }
+}
+
+.disabled {
+  pointer-events: none;
+}
+
+.icon path {
+  fill: currentColor;
+}
+
+.fullWidth {
+  width: 100%;
+  flex-shrink: 1;
+}

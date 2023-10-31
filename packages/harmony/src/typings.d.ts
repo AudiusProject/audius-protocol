@@ -8,10 +8,8 @@ declare module '*.css' {
 }
 
 declare module '*.svg' {
-  const svgUrl: string
   const svgComponent: React.ComponentType<SvgProps>
-  export default svgUrl
-  export { svgComponent as ReactComponent }
+  export default svgComponent
 }
 
 declare module 'storybook-addon-smart-knobs'

@@ -5,7 +5,7 @@ import cn from 'classnames'
 
 import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
-import StatusMessage from 'components/status-message/StatusMessage'
+import { StatusMessage } from 'components/status-message/StatusMessage'
 import { commonPasswordCheck } from 'utils/commonPasswordCheck'
 
 import styles from './EnterPassword.module.css'

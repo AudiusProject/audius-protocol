@@ -1,5 +1,8 @@
+import { useCallback } from 'react'
+
 import {
   BNUSDC,
+  Name,
   WithdrawUSDCModalPages,
   formatCurrencyBalance,
   formatUSDCWeiToFloorCentsNumber,
@@ -24,9 +27,13 @@ import BN from 'bn.js'
 import { Icon } from 'components/Icon'
 import { Text } from 'components/typography'
 import { useGoToRoute } from 'hooks/useGoToRoute'
+import { make, track } from 'services/analytics'
 import { SALES_PAGE, WITHDRAWALS_PAGE } from 'utils/route'
 
 import styles from './USDCCard.module.css'
+
+const LEARN_MORE_LINK =
+  'https://support.audius.co/help/Understanding-USDC-on-Audius'
 
 const messages = {
   usdc: 'USDC',
@@ -41,9 +48,14 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
   const goToRoute = useGoToRoute()
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
 
-  const balanceNumber =
-    formatUSDCWeiToFloorCentsNumber((balance ?? new BN(0)) as BNUSDC) / 100
-  const balanceFormatted = formatCurrencyBalance(balanceNumber)
+  const balanceCents = formatUSDCWeiToFloorCentsNumber(
+    (balance ?? new BN(0)) as BNUSDC
+  )
+  const balanceFormatted = formatCurrencyBalance(balanceCents / 100)
+
+  const handleLearnMore = useCallback(() => {
+    window.open(LEARN_MORE_LINK, '_blank')
+  }, [])
 
   const menuItems: PopupMenuItem[] = [
     {
@@ -55,6 +67,18 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
       onClick: () => goToRoute(WITHDRAWALS_PAGE)
     }
   ]
+
+  const handleClickWithdraw = () => {
+    openWithdrawUSDCModal({
+      page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS
+    })
+    track(
+      make({
+        eventName: Name.WITHDRAW_USDC_MODAL_OPENED,
+        currentBalance: balanceCents
+      })
+    )
+  }
 
   return (
     <div className={styles.usdcContainer}>
@@ -85,8 +109,7 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
         <div className={styles.usdcInfo}>
           <Text color='staticWhite'>{messages.earn}</Text>
           <HarmonyPlainButton
-            // TODO: wire up learn more link https://linear.app/audius/issue/PAY-1762/wire-up-learn-more-link
-            onClick={() => {}}
+            onClick={handleLearnMore}
             iconLeft={IconQuestionCircle}
             variant={HarmonyPlainButtonType.INVERTED}
             text={messages.learnMore}
@@ -99,11 +122,7 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
             variant={ButtonType.SECONDARY}
             fullWidth
             iconLeft={IconWithdraw}
-            onClick={() =>
-              openWithdrawUSDCModal({
-                page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS
-              })
-            }
+            onClick={handleClickWithdraw}
           >
             {messages.withdraw}
           </Button>

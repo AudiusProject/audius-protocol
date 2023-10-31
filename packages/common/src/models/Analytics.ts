@@ -299,6 +299,7 @@ export enum Name {
   REWARDS_CLAIM_HCAPTCHA = 'Rewards Claim: Hcaptcha',
   REWARDS_CLAIM_REJECTION = 'Rewards Claim: Rejection',
   REWARDS_CLAIM_UNKNOWN = 'Rewards Claim: Unknown',
+  REWARDS_CLAIM_DETAILS_OPENED = 'Rewards Claim: Details Opened',
 
   // Tipping
   TIP_AUDIO_REQUEST = 'Tip Audio: Request',
@@ -335,11 +336,32 @@ export enum Name {
   BUY_USDC_RECOVERY_SUCCESS = 'Buy USDC: Recovery Success',
   BUY_USDC_RECOVERY_FAILURE = 'Buy USDC: Recovery Failure',
 
+  // Withdraw USDC
+  WITHDRAW_USDC_MODAL_OPENED = 'Withdraw USDC: Modal Opened',
+  WITHDRAW_USDC_ADDRESS_PASTED = 'Withdraw USDC: Address Pasted',
+  WITHDRAW_USDC_REQUESTED = 'Withdraw USDC: Requested',
+  WITHDRAW_USDC_FORM_ERROR = 'Withdraw USDC: Form Error',
+  WITHDRAW_USDC_SUCCESS = 'Withdraw USDC: Success',
+  WITHDRAW_USDC_FAILURE = 'Withdraw USDC: Failure',
+  WITHDRAW_USDC_HELP_LINK_CLICKED = 'Withdraw USDC: Help Link Clicked',
+  WITHDRAW_USDC_TRANSACTION_LINK_CLICKED = 'Withdraw USDC: Transaction Link Clicked',
+
+  // Stripe Tracking
+  STRIPE_SESSION_CREATION_ERROR = 'Stripe: Session Creation Error',
+  STRIPE_SESSION_CREATED = 'Stripe Session: Created',
+  STRIPE_MODAL_INITIALIZED = 'Stripe Modal: Initialized',
+  STRIPE_REQUIRES_PAYMENT = 'Stripe Modal: Requires Payment',
+  STRIPE_FULLFILMENT_PROCESSING = 'Stripe Modal: Fulfillment Processing',
+  STRIPE_FULLFILMENT_COMPLETE = 'Stripe Modal: Fulfillment Complete',
+  STRIPE_ERROR = 'Stripe Modal: Error',
+  STRIPE_REJECTED = 'Stripe Modal: Rejected',
+
   // Purchase Content
   PURCHASE_CONTENT_STARTED = 'Purchase Content: Started',
   PURCHASE_CONTENT_SUCCESS = 'Purchase Content: Success',
   PURCHASE_CONTENT_FAILURE = 'Purchase Content: Failure',
   PURCHASE_CONTENT_TWITTER_SHARE = 'Purchase Content: Twitter Share',
+  PURCHASE_CONTENT_TOS_CLICKED = 'Purchase Content: Terms of Service Link Clicked',
 
   // Rate & Review CTA
   RATE_CTA_DISPLAYED = 'Rate CTA: Displayed',
@@ -1380,6 +1402,11 @@ type RewardsClaimUnknown = {
   error: string
 }
 
+type RewardsClaimDetailsOpened = {
+  eventName: Name.REWARDS_CLAIM_DETAILS_OPENED
+  challengeId: string
+}
+
 export type TipSource =
   | 'profile'
   | 'feed'
@@ -1574,6 +1601,7 @@ type BuyAudioRecoveryFailure = {
   error: string
 }
 
+// Buy USDC
 type BuyUSDCOnRampOpened = {
   eventName: Name.BUY_USDC_ON_RAMP_OPENED
   provider: string
@@ -1623,6 +1651,97 @@ type BuyUSDCRecoveryFailure = {
   error: string
 }
 
+// Withdraw USDC
+
+export type WithdrawUSDCEventFields = {
+  currentBalance: number
+}
+
+export type WithdrawUSDCTransferEventFields = WithdrawUSDCEventFields & {
+  amount: number
+  destinationAddress: string
+}
+
+export type WithdrawUSDCModalOpened = WithdrawUSDCEventFields & {
+  eventName: Name.WITHDRAW_USDC_MODAL_OPENED
+}
+
+export type WithdrawUSDCAddressPasted = WithdrawUSDCEventFields & {
+  eventName: Name.WITHDRAW_USDC_ADDRESS_PASTED
+  destinationAddress: string
+}
+
+export type WithdrawUSDCFormError = WithdrawUSDCEventFields & {
+  eventName: Name.WITHDRAW_USDC_FORM_ERROR
+  error: string
+  value?: string
+}
+
+export type WithdrawUSDCRequested = WithdrawUSDCTransferEventFields & {
+  eventName: Name.WITHDRAW_USDC_REQUESTED
+}
+
+export type WithdrawUSDCSuccess = WithdrawUSDCTransferEventFields & {
+  eventName: Name.WITHDRAW_USDC_SUCCESS
+}
+
+export type WithdrawUSDCFailure = WithdrawUSDCTransferEventFields & {
+  eventName: Name.WITHDRAW_USDC_FAILURE
+}
+
+export type WithdrawUSDCHelpLinkClicked = WithdrawUSDCEventFields & {
+  eventName: Name.WITHDRAW_USDC_HELP_LINK_CLICKED
+}
+
+export type WithdrawUSDCTxLinkClicked = WithdrawUSDCTransferEventFields & {
+  eventName: Name.WITHDRAW_USDC_TRANSACTION_LINK_CLICKED
+  priorBalance: number
+  signature: string
+}
+
+// Stripe
+export type StripeEventFields = {
+  amount: string
+  destinationCurrency: string
+}
+
+type StripeSessionCreationError = StripeEventFields & {
+  eventName: Name.STRIPE_SESSION_CREATION_ERROR
+  code: string
+  stripeErrorMessage: string
+  type: string
+}
+
+type StripeSessionCreated = StripeEventFields & {
+  eventName: Name.STRIPE_SESSION_CREATED
+}
+
+type StripeModalInitialized = StripeEventFields & {
+  eventName: Name.STRIPE_MODAL_INITIALIZED
+}
+
+type StripeRequiresPayment = StripeEventFields & {
+  eventName: Name.STRIPE_REQUIRES_PAYMENT
+}
+
+type StripeFulfillmentProcessing = StripeEventFields & {
+  eventName: Name.STRIPE_FULLFILMENT_PROCESSING
+}
+
+type StripeFulfillmentComplete = StripeEventFields & {
+  eventName: Name.STRIPE_FULLFILMENT_COMPLETE
+}
+
+type StripeError = StripeEventFields & {
+  eventName: Name.STRIPE_ERROR
+}
+
+type StripeRejected = StripeEventFields & {
+  eventName: Name.STRIPE_REJECTED
+}
+
+// Content Purchase
+
 type ContentPurchaseMetadata = {
   price: number
   contentId: number
@@ -1630,6 +1749,7 @@ type ContentPurchaseMetadata = {
   contentType: string
   payExtraAmount: number
   payExtraPreset?: string
+  totalAmount: number
   artistHandle: string
   isVerifiedArtist: boolean
 }
@@ -1649,6 +1769,10 @@ type PurchaseContentFailure = ContentPurchaseMetadata & {
 type PurchaseContentTwitterShare = {
   eventName: Name.PURCHASE_CONTENT_TWITTER_SHARE
   text: string
+}
+
+type PurchaseContentTOSClicked = {
+  eventName: Name.PURCHASE_CONTENT_TOS_CLICKED
 }
 
 type RateCtaDisplayed = {
@@ -1947,6 +2071,7 @@ export type AllTrackingEvents =
   | RewardsClaimFailure
   | RewardsClaimRejection
   | RewardsClaimUnknown
+  | RewardsClaimDetailsOpened
   | TipAudioRequest
   | TipAudioSuccess
   | TipAudioFailure
@@ -1983,10 +2108,27 @@ export type AllTrackingEvents =
   | BuyUSDCRecoveryInProgress
   | BuyUSDCRecoverySuccess
   | BuyUSDCRecoveryFailure
+  | WithdrawUSDCModalOpened
+  | WithdrawUSDCAddressPasted
+  | WithdrawUSDCFormError
+  | WithdrawUSDCRequested
+  | WithdrawUSDCSuccess
+  | WithdrawUSDCFailure
+  | WithdrawUSDCHelpLinkClicked
+  | WithdrawUSDCTxLinkClicked
+  | StripeSessionCreationError
+  | StripeSessionCreated
+  | StripeModalInitialized
+  | StripeRequiresPayment
+  | StripeFulfillmentProcessing
+  | StripeFulfillmentComplete
+  | StripeError
+  | StripeRejected
   | PurchaseContentStarted
   | PurchaseContentSuccess
   | PurchaseContentFailure
   | PurchaseContentTwitterShare
+  | PurchaseContentTOSClicked
   | RateCtaDisplayed
   | RateCtaResponseNo
   | RateCtaResponseYes
