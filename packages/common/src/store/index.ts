@@ -1,6 +1,7 @@
 /* eslint-disable import/export */
 export * from './account'
 export * from './average-color'
+export * from './buy-crypto'
 export * from './buy-usdc'
 export * from './cache'
 export * from './cast'

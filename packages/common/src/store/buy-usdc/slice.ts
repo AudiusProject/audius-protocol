@@ -45,13 +45,11 @@ const slice = createSlice({
       action: PayloadAction<{
         purchaseInfo: PurchaseInfo
         provider: USDCOnRampProvider
-        onSuccess?: OnSuccess
       }>
     ) => {
       state.stage = BuyUSDCStage.START
       state.error = undefined
       state.provider = action.payload.provider
-      state.onSuccess = action.payload.onSuccess
     },
     purchaseStarted: (state) => {
       state.stage = BuyUSDCStage.PURCHASING

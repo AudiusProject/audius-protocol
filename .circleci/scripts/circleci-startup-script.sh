@@ -4,11 +4,25 @@ set -ex
 # See https://circleci.com/docs/runner-installation-linux/
 # Self-hosted runners should link to this file as the startup script.
 
+export platform="linux/amd64"
+gcp_key="circleci-auth-token"
+
+case "$(uname -m)" in
+    "arm64" | "aarch64" | "arm")
+        platform="linux/arm64"
+        gcp_key="circleci-auth-token-arm"
+        ;;
+    "x86_64" | *)
+        platform="linux/amd64"
+        gcp_key="circleci-auth-token"
+        ;;
+esac
+
 apt install -y git coreutils curl
 
 # download and run circleci agent installer script
 curl -L https://raw.githubusercontent.com/CircleCI-Public/runner-installation-files/main/download-launch-agent.sh -o download-launch-agent.sh
-export platform=linux/amd64 && sh ./download-launch-agent.sh
+sh ./download-launch-agent.sh
 rm download-launch-agent.sh
 
 # setup user and dirs
@@ -25,7 +39,7 @@ chown -R circleci: /etc/opt/circleci
 chmod 600 /etc/opt/circleci/launch-agent-config.yaml
 cat <<EOT >> /etc/opt/circleci/launch-agent-config.yaml
 api:
-  auth_token: $(gcloud secrets versions access 1 --secret=circleci-auth-token)
+  auth_token: $(gcloud secrets versions access 1 --secret=$gcp_key)
 
 runner:
   name: $(hostname)
