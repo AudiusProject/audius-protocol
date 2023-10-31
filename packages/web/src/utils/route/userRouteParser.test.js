@@ -1,9 +1,10 @@
-import { parseUserRoute } from './userRouteParser'
+import { describe, it, expect, vitest } from 'vitest'
 
 // eslint-disable-next-line
 import { mockDecode } from '__mocks__/Hashids'
-jest.mock('@audius/common', () => {
-  const originalModule = jest.requireActual('@audius/common')
+import { parseUserRoute } from './userRouteParser'
+vitest.mock('@audius/common', () => {
+  const originalModule = vitest.requireActual('@audius/common')
 
   return {
     __esModule: true,
@@ -11,8 +12,8 @@ jest.mock('@audius/common', () => {
     ...originalModule,
 
     AudiusBackend: {
-      recordTrackListen: jest.fn(),
-      submitAndEvaluateAttestations: jest.fn()
+      recordTrackListen: vitest.fn(),
+      submitAndEvaluateAttestations: vitest.fn()
     }
   }
 })

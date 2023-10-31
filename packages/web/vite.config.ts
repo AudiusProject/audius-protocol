@@ -1,3 +1,5 @@
+/// <reference types="vitest" />
+
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
 import react from '@vitejs/plugin-react'
 import { visualizer } from 'rollup-plugin-visualizer'
@@ -81,5 +83,8 @@ export default defineConfig({
   },
   server: {
     port: parseInt(process.env.PORT ?? '3000')
+  },
+  test: {
+    environment: 'jsdom'
   }
 })

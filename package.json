@@ -89,6 +89,7 @@
     "pg": "8.8.0"
   },
   "overrides": {
+    "@types/prop-types": "15.7.5",
     "@types/react": "18.0.26",
     "@types/bn.js": "5.1.0",
     "bn.js": "5.1.0",
