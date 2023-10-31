@@ -65,6 +65,18 @@ const slice = createSlice({
     ) => {
       const { modal, visible } = action.payload
       state[modal].isOpen = visible
+    },
+    trackModalOpened: (
+      _state,
+      _action: PayloadAction<{
+        name: string
+        trackingData?: Record<string, any>
+      }>
+    ) => {
+      // handled by saga
+    },
+    trackModalClosed: (_state, _action: PayloadAction<{ name: string }>) => {
+      // handled by saga
     }
   }
 })
