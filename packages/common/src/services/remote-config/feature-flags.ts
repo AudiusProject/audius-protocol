@@ -52,7 +52,7 @@ export enum FeatureFlags {
   DISCOVERY_RELAY = 'discovery_relay',
   SIGN_UP_REDESIGN = 'sign_up_redesign',
   FEATURE_FLAG_ACCESS = 'feature_flag_access',
-  BUY_USDC_VIA_SOL = 'buy_crypto_via_sol',
+  BUY_USDC_VIA_SOL = 'buy_usdc_via_sol',
   IOS_USDC_PURCHASE_ENABLED = 'ios_usdc_purchase_enabled'
 }
 
