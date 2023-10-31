@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   Box,
@@ -23,6 +23,7 @@ import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import {
   PRIVACY_POLICY,
   SIGN_UP_HANDLE_PAGE,
+  SIGN_UP_START_PAGE,
   TERMS_OF_SERVICE
 } from 'utils/route'
 
@@ -73,6 +74,12 @@ export const CreatePasswordPage = () => {
   const dispatch = useDispatch()
   const emailField = useSelector(getEmailField)
   const navigate = useNavigateToPage()
+
+  useEffect(() => {
+    if (!emailField?.value) {
+      navigate(SIGN_UP_START_PAGE)
+    }
+  }, [emailField.value, navigate])
 
   const handleSubmit = useCallback(
     async ({ password, confirmPassword }: CreatePasswordValues) => {
@@ -240,8 +247,7 @@ export const CreatePasswordPage = () => {
             {messages.yourEmail}
           </Text>
           <Text variant='body' size='m'>
-            {/* TODO(nkang): Remove `||` once email page completed */}
-            {emailField?.value || 'email@email.com'}
+            {emailField.value}
           </Text>
         </Box>
       </Box>
