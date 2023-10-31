@@ -1,6 +1,6 @@
 import { useCallback, useContext } from 'react'
 
-import { useUSDCManualTransferModal } from '@audius/common'
+import { Name, useUSDCManualTransferModal } from '@audius/common'
 import { Button, ButtonType } from '@audius/harmony'
 import { IconInfo, LogoUSDC, ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
@@ -11,6 +11,7 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { Text } from 'components/typography'
 import { Hint } from 'components/withdraw-usdc-modal/components/Hint'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
+import { track, make } from 'services/analytics'
 import { getUSDCUserBank } from 'services/solana/solana'
 import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
@@ -47,6 +48,12 @@ export const USDCManualTransferModal = () => {
   const handleCopy = useCallback(() => {
     copyToClipboard(USDCUserBank ?? '')
     toast(messages.copied)
+    track(
+      make({
+        eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
+        address: USDCUserBank ?? ''
+      })
+    )
   }, [USDCUserBank, toast])
 
   const handleClose = useCallback(() => {
