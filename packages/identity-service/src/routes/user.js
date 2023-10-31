@@ -9,7 +9,6 @@ const {
 const authMiddleware = require('../authMiddleware')
 const captchaMiddleware = require('../captchaMiddleware')
 const config = require('../config')
-const audiusLibsWrapper = require('../audiusLibsInstance')
 
 const BOUNCER_BASE_URL = 'https://api.usebouncer.com/v1.1/email/verify'
 
