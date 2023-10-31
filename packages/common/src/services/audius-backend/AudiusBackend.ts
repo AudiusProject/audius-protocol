@@ -15,7 +15,7 @@ import {
   TransactionInstruction
 } from '@solana/web3.js'
 import BN from 'bn.js'
-import { extend, unix, tz } from 'dayjs'
+import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone'
 import utc from 'dayjs/plugin/utc'
 import queryString from 'query-string'
@@ -124,8 +124,8 @@ declare global {
   }
 }
 
-extend(utc)
-extend(timezone)
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 const SEARCH_MAX_SAVED_RESULTS = 10
 const SEARCH_MAX_TOTAL_RESULTS = 50
@@ -2324,7 +2324,9 @@ export const audiusBackend = ({
     try {
       const { data, signature } = await signData()
       const query = {
-        timeOffset: timeOffset ? unix(timeOffset).toISOString() : undefined,
+        timeOffset: timeOffset
+          ? dayjs.unix(timeOffset).toISOString()
+          : undefined,
         limit,
         handle,
         withSupporterDethroned: withDethroned,
@@ -2776,7 +2778,7 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      const timezone = tz.guess()
+      const timezone = dayjs.tz.guess()
       const res = await fetch(`${identityServiceUrl}/users/update`, {
         method: 'POST',
         headers: {
