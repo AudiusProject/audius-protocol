@@ -11,7 +11,7 @@ import {
   getRecentBlockhash,
   getRootSolanaAccount,
   getTokenAccountInfo,
-  pollForBalanceChange,
+  pollForTokenBalanceChange,
   relayTransaction
 } from 'services/audius-backend/solana'
 import { getAccountUser } from 'store/account/selectors'
@@ -107,13 +107,17 @@ function* purchaseStep({
   )
 
   // Wait for the funds to come through
-  const newBalance = yield* call(pollForBalanceChange, audiusBackendInstance, {
-    mint: 'usdc',
-    tokenAccount,
-    initialBalance,
-    retryDelayMs,
-    maxRetryCount
-  })
+  const newBalance = yield* call(
+    pollForTokenBalanceChange,
+    audiusBackendInstance,
+    {
+      mint: 'usdc',
+      tokenAccount,
+      initialBalance,
+      retryDelayMs,
+      maxRetryCount
+    }
+  )
 
   // Check that we got the requested amount
   const purchasedAmount = newBalance - initialBalance

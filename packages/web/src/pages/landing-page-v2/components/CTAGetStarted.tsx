@@ -7,6 +7,9 @@ import { Parallax } from 'react-scroll-parallax'
 import { useChain, useTrail, animated } from 'react-spring'
 
 import capshunBg from 'assets/img/publicSite/CapshunBG.webp'
+import capshunBg2 from 'assets/img/publicSite/CapshunBG@2x.webp'
+import capshunBg3 from 'assets/img/publicSite/CapshunBG@3x.webp'
+import capshunBg4 from 'assets/img/publicSite/CapshunBG@4x.webp'
 import { handleClickRoute } from 'components/public-site/handleClickRoute'
 import { AUDIUS_LISTENING_LINK } from 'utils/route'
 import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
@@ -73,6 +76,12 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
           <Parallax className={cn(styles.mobileBgImage)} translateY={[-100, 0]}>
             <img
               className={styles.mobileBackground}
+              srcSet={`
+              ${capshunBg} 1x,
+              ${capshunBg2} 2x,
+              ${capshunBg3} 3x,
+              ${capshunBg4} 4x,
+              `}
               src={capshunBg}
               alt='Audius Audio Set'
             />
@@ -105,7 +114,7 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
                 ({ x, wordYPosition, ...rest }: any, index: number) => (
                   <animated.span
                     key={titleItems[index]}
-                    className={cn(cn(styles.textAnimateTitle))}
+                    className={cn(styles.textAnimateTitle)}
                     style={{
                       ...rest,
                       transform: x.interpolate(
@@ -138,9 +147,15 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
       </div>
       <div className={styles.bgContainer}>
         <div className={styles.parallaxBg}></div>
-        <Parallax className={cn(styles.bgParallax)} translateY={[-100, 20]}>
+        <Parallax className={cn(styles.bgParallax)} translateY={[-20, 20]}>
           <img
             className={styles.background}
+            srcSet={`
+            ${capshunBg} 1x,
+            ${capshunBg2} 2x,
+            ${capshunBg3} 3x,
+            ${capshunBg4} 4x,
+            `}
             src={capshunBg}
             alt='Audius Audio Set'
           />

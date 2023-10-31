@@ -5,7 +5,11 @@ import {
   accountSelectors,
   getContext,
   getUSDCUserBank,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentCollectibleGated,
+  isPremiumContentFollowGated,
+  isPremiumContentUSDCPurchaseGated,
+  isPremiumContentTipGated,
+  TrackMetadata
 } from '@audius/common'
 import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
@@ -63,6 +67,40 @@ export function* reportResultEvents({
   yield* all(
     [...successEvents, ...failureEvents, ...rejectedEvents].map((e) => put(e))
   )
+}
+
+// Record gated track uploads
+export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
+  const events = tracks.reduce<ReturnType<typeof make>[]>(
+    (out, trackOrMetadata) => {
+      const { is_premium: isPremium, premium_conditions: premiumConditions } =
+        'metadata' in trackOrMetadata
+          ? trackOrMetadata.metadata
+          : trackOrMetadata
+      if (isPremium && premiumConditions) {
+        if (isPremiumContentCollectibleGated(premiumConditions)) {
+          out.push(
+            make(Name.TRACK_UPLOAD_COLLECTIBLE_GATED, { kind: 'tracks' })
+          )
+        } else if (isPremiumContentFollowGated(premiumConditions)) {
+          out.push(make(Name.TRACK_UPLOAD_FOLLOW_GATED, { kind: 'tracks' }))
+        } else if (isPremiumContentTipGated(premiumConditions)) {
+          out.push(make(Name.TRACK_UPLOAD_TIP_GATED, { kind: 'tracks' }))
+        } else if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+          out.push(
+            make(Name.TRACK_UPLOAD_USDC_GATED, {
+              kind: 'tracks',
+              price: premiumConditions.usdc_purchase.price / 100
+            })
+          )
+        }
+      }
+      return out
+    },
+    []
+  )
+
+  yield* all(events.map((e) => put(e)))
 }
 
 export function* processTracksForUpload(tracks: TrackForUpload[]) {

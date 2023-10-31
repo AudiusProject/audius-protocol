@@ -121,7 +121,7 @@ const PlatformFeatures = (props: PlatformFeaturesProps) => {
           <img
             src={productShot}
             className={styles.productShot}
-            alt='DJ performing in front of crowd'
+            alt='Audius Web and Mobile Product Shot'
           />
           {props.isMobile ? (
             <div className={styles.animateTitleContainer}>

@@ -1,10 +1,12 @@
 import { combineReducers } from 'redux'
+import type { Storage } from 'redux-persist'
 
 import apiReducer from '../api/reducer'
 import { Kind } from '../models'
 
 import account from './account/slice'
 import averageColorReducer from './average-color/slice'
+import { buyCryptoReducer } from './buy-crypto'
 import { buyUSDCReducer } from './buy-usdc'
 import collectionsReducer from './cache/collections/reducer'
 import { CollectionsCacheState } from './cache/collections/types'
@@ -43,7 +45,7 @@ import premiumTracks from './pages/premium-tracks/slice'
 import profileReducer from './pages/profile/reducer'
 import { ProfilePageState } from './pages/profile/types'
 import remixes from './pages/remixes/slice'
-import savedPageReducer from './pages/saved-page/reducer'
+import { persistedSavePageReducer } from './pages/saved-page/reducer'
 import searchResults from './pages/search-results/reducer'
 import { SearchPageState } from './pages/search-results/types'
 import settings from './pages/settings/reducer'
@@ -131,12 +133,10 @@ import topSupportersUserListReducer from './user-list/top-supporters/reducers'
 import wallet from './wallet/slice'
 
 /**
- * A function that creates common reducers. The function takes
- * a CommonStoreContext as input such that platforms (native and web)
- * may specify system-level APIs, e.g. local storage.
+ * A function that creates common reducers.
  * @returns an object of all reducers to be used with `combineReducers`
  */
-export const reducers = () => ({
+export const reducers = (storage: Storage) => ({
   account,
 
   api: apiReducer,
@@ -233,7 +233,7 @@ export const reducers = () => ({
     historyPage: historyPageReducer,
     profile: profileReducer,
     smartCollection,
-    savedPage: savedPageReducer,
+    savedPage: persistedSavePageReducer(storage),
     searchResults,
     tokenDashboard: tokenDashboardSlice.reducer,
     track,
@@ -255,6 +255,7 @@ export const reducers = () => ({
 
   // Premium content
   buyUSDC: buyUSDCReducer,
+  buyCrypto: buyCryptoReducer,
   premiumContent,
   purchaseContent: purchaseContentReducer,
   withdrawUSDC: withdrawUSDCReducer,
@@ -375,6 +376,7 @@ export type CommonState = {
 
   // USDC
   buyUSDC: ReturnType<typeof buyUSDCReducer>
+  buyCrypto: ReturnType<typeof buyCryptoReducer>
 
   // Tipping
   tipping: ReturnType<typeof tippingReducer>

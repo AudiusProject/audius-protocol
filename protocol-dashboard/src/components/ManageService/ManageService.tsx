@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react'
-import { Utils } from '@audius/sdk/dist/legacy.js'
 import BN from 'bn.js'
 import clsx from 'clsx'
 import styles from './ManageService.module.css'
@@ -273,10 +272,9 @@ const ManageService: React.FC<ManageServiceProps> = (
   const pendingClaim = usePendingClaim(accountUser?.wallet)
 
   const deployerStake =
-    (accountUser as Operator)?.serviceProvider?.deployerStake ?? Utils.toBN('0')
+    (accountUser as Operator)?.serviceProvider?.deployerStake ?? new BN('0')
   const maxAccountStake =
-    (accountUser as Operator)?.serviceProvider?.maxAccountStake ??
-    Utils.toBN('0')
+    (accountUser as Operator)?.serviceProvider?.maxAccountStake ?? new BN('0')
   if (deployerStake.isZero() || deployerStake.gte(maxAccountStake))
     increaseStakeDisabled = true
 

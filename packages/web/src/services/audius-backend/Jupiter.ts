@@ -65,7 +65,7 @@ const getQuote = async ({
     inputMint: inputToken.address,
     outputMint: outputToken.address,
     amount,
-    slippageBps: slippage, // make sure slippageBps = slippage
+    slippageBps: slippage,
     swapMode,
     onlyDirectRoutes
   })

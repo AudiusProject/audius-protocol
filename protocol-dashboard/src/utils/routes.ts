@@ -1,4 +1,4 @@
-import { matchPath } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 
 /**
  * All Routes for the Audius Protocol Dashboard
@@ -86,64 +86,31 @@ export const proposalPage = (proposalId: number) => {
   return `${GOVERNANCE}/proposal/${proposalId}`
 }
 
-const routes = [
-  { matchParams: { path: HOME, exact: true }, title: HOME_TITLE },
-  { matchParams: { path: ANALYTICS, exact: true }, title: ANALYTICS_TITLE },
-  {
-    matchParams: { path: SERVICES_DISCOVERY_PROVIDER, exact: true },
-    title: SERVICES_DISCOVERY_PROVIDER_TITLE
-  },
-  { matchParams: { path: SERVICES, exact: true }, title: 'SERVICES' },
-  { matchParams: { path: GOVERNANCE, exact: true }, title: GOVERNANCE_TITLE },
-  {
-    matchParams: { path: GOVERNANCE_PROPOSAL, exact: true },
-    title: GOVERNANCE_TITLE
-  },
-  {
-    matchParams: { path: SERVICES_USERS, exact: true },
-    title: SERVICES_USERS_TITLE
-  },
-  {
-    matchParams: { path: SERVICES_ACCOUNT_USER, exact: true },
-    title: SERVICES_ACCOUNT_USER_TITLE
-  },
-  {
-    matchParams: { path: SERVICES_ACCOUNT_OPERATOR, exact: true },
-    title: SERVICES_ACCOUNT_OPERATOR_TITLE
-  },
-  {
-    matchParams: { path: SERVICES_SERVICE_PROVIDERS, exact: true },
-    title: SERVICES_SERVICE_PROVIDERS_TITLE
-  },
-  {
-    matchParams: { path: SERVICES_CONTENT_NODE, exact: true },
-    title: SERVICES_CONTENT_NODE_TITLE
-  },
-  {
-    matchParams: { path: SERVICES_CONTENT, exact: true },
-    title: SERVICES_CONTENT_TITLE
-  },
-  {
-    matchParams: { path: SERVICES_DISCOVERY_PROVIDER_NODE, exact: true },
-    title: SERVICES_DISCOVERY_PROVIDER_NODE_TITLE
-  },
-  { matchParams: { path: SERVICES, exact: true }, title: SERVICES_TITLE },
-  {
-    matchParams: { path: API, exact: true },
-    title: API_TITLE
-  },
-  {
-    matchParams: { path: API_LEADERBOARD, exact: true },
-    title: API_LEADERBOARD_TITLE
-  }
-]
+const routeTitles = {
+  [HOME]: HOME_TITLE,
+  [ANALYTICS]: ANALYTICS_TITLE,
+  [SERVICES_DISCOVERY_PROVIDER]: SERVICES_DISCOVERY_PROVIDER_TITLE,
+  [SERVICES]: SERVICES_TITLE,
+  [GOVERNANCE]: GOVERNANCE_TITLE,
+  [GOVERNANCE_PROPOSAL]: GOVERNANCE_TITLE,
+  [SERVICES_USERS]: SERVICES_USERS_TITLE,
+  [SERVICES_ACCOUNT_USER]: SERVICES_ACCOUNT_USER_TITLE,
+  [SERVICES_ACCOUNT_OPERATOR]: SERVICES_ACCOUNT_OPERATOR_TITLE,
+  [SERVICES_SERVICE_PROVIDERS]: SERVICES_SERVICE_PROVIDERS_TITLE,
+  [SERVICES_CONTENT_NODE]: SERVICES_CONTENT_NODE_TITLE,
+  [SERVICES_CONTENT]: SERVICES_CONTENT_TITLE,
+  [SERVICES_DISCOVERY_PROVIDER_NODE]: SERVICES_DISCOVERY_PROVIDER_NODE_TITLE,
+  [API]: API_TITLE,
+  [API_LEADERBOARD]: API_LEADERBOARD_TITLE
+}
 
-export const getPageTitleFromRoute = (route: string) => {
-  const path = routes.find(rt => !!matchPath(route, rt.matchParams))
-  if (path) {
-    return path.title
-  }
-  // If no routes matched, the 404 page was reached.
+export const getPageTitle = (route: string) => {
+  return routeTitles[route] // If no routes matched, the 404 page was reached
+}
+
+export const usePageTitle = () => {
+  const location = useLocation()
+  return getPageTitle(location.pathname)
 }
 
 export const isCryptoPage = (route: string) => {

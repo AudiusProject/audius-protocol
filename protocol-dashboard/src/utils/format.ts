@@ -1,7 +1,6 @@
 import numeral from 'numeral'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
-import { Utils } from '@audius/sdk/dist/legacy.js'
 import { Address } from 'types'
 import AudiusClient from 'services/Audius'
 import { TICKER } from './consts'
@@ -63,20 +62,20 @@ export const formatShortWallet = (wallet: Address) => {
  * @param {BN} amount
  */
 export const formatAud = (amount: BN | null) => {
-  if (!Utils.isBN(amount as any)) return ''
-  let aud = (amount as BN).div(Utils.toBN('1000000000000000000')).toString()
+  if (!BN.isBN(amount as any)) return ''
+  let aud = (amount as BN).div(new BN('1000000000000000000')).toString()
   aud = numeral(aud).format('0,0')
   return aud
 }
 
 export const formatWeiNumber = (amount: BN | null) => {
-  if (!Utils.isBN(amount as any)) return ''
+  if (!BN.isBN(amount as any)) return ''
   let aud = formatNumberCommas(AudiusClient.getAud(amount as BN))
   return aud
 }
 
 export const formatWei = (amount: BN | null) => {
-  if (!Utils.isBN(amount as any)) return ''
+  if (!BN.isBN(amount as any)) return ''
   let aud = formatNumberCommas(AudiusClient.getAud(amount as BN))
   return `${aud} ${TICKER}`
 }
@@ -99,7 +98,7 @@ export const leftPadZero = (number: number, desiredLength: number) => {
 
 export const formatShortAud = (amount: BN | null) => {
   if (!amount) return ''
-  let aud = amount.div(Utils.toBN('1000000000000000000')).toNumber()
+  let aud = amount.div(new BN('1000000000000000000')).toNumber()
   if (aud >= 1000) {
     const countStr = aud.toString()
     if (countStr.length % 3 === 0) {

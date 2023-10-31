@@ -111,6 +111,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           placeholder={shouldShowPlaceholder ? placeholderText : undefined}
           aria-label={props['aria-label'] ?? labelText}
           aria-required={required}
+          role='textbox'
           id={id}
           {...other}
         />
@@ -123,7 +124,13 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
     )
 
     return (
-      <Flex className={cn(styles.root, className)} direction='column' gap='xs'>
+      <Flex
+        className={cn(styles.root, className)}
+        direction='column'
+        gap='xs'
+        alignItems='flex-start'
+        w='100%'
+      >
         <label
           htmlFor={id}
           className={cn(
@@ -132,7 +139,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             inputRootStyle
           )}
         >
-          {StartIcon ? <StartIcon /> : null}
+          {StartIcon ? <StartIcon size='medium' /> : null}
           <Flex direction='column' gap='xs' justifyContent='center' w='100%'>
             {shouldShowLabel ? (
               <Flex
@@ -167,7 +174,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             ) : null}
             {inputRender}
           </Flex>
-          {EndIcon ? <EndIcon /> : null}
+          {EndIcon ? <EndIcon size='medium' /> : null}
         </label>
         {helperText ? (
           <Text

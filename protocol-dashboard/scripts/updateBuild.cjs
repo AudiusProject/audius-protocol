@@ -74,8 +74,8 @@ const run = async () => {
   try {
     await updateGABuild()
     const cid = await pinGABuild()
-    await pinFromFs(cid)
-    fs.writeFileSync(`./build_cid.txt`, cid)
+    const { IpfsHash } = await pinFromFs(cid)
+    fs.writeFileSync(`./build_cid.txt`, IpfsHash)
     process.exit()
   } catch (err) {
     console.log(err)

@@ -10,7 +10,9 @@ import {
   BNUSDC,
   relayVersionedTransaction,
   relayTransaction,
-  formatUSDCWeiToFloorCentsNumber
+  formatUSDCWeiToFloorCentsNumber,
+  Name,
+  WithdrawUSDCTransferEventFields
 } from '@audius/common'
 import {
   createAssociatedTokenAccountInstruction,
@@ -176,10 +178,25 @@ function* createDestinationTokenAccount({
  * Handles all logic for withdrawing USDC to a given destination. Expects amount in cents.
  */
 function* doWithdrawUSDC({
-  payload: { amount, destinationAddress, onSuccess }
+  payload: { amount, currentBalance, destinationAddress, onSuccess }
 }: ReturnType<typeof beginWithdrawUSDC>) {
+  const { track, make } = yield* getContext('analytics')
+  const analyticsFields: WithdrawUSDCTransferEventFields = {
+    destinationAddress,
+    amount: amount / 100,
+    currentBalance: currentBalance / 100
+  }
   try {
     const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+
+    yield* call(
+      track,
+      make({
+        eventName: Name.WITHDRAW_USDC_REQUESTED,
+        ...analyticsFields
+      })
+    )
+
     const libs = yield* call(getLibs)
     if (!libs.solanaWeb3Manager) {
       throw new Error('Failed to get solana web3 manager')
@@ -300,14 +317,25 @@ function* doWithdrawUSDC({
     })
     yield* call(onSuccess, transactionSignature)
     yield* put(withdrawUSDCSucceeded())
+    yield* call(
+      track,
+      make({ eventName: Name.WITHDRAW_USDC_SUCCESS, ...analyticsFields })
+    )
   } catch (e: unknown) {
+    const error = e as Error
     console.error('Withdraw USDC failed', e)
     const reportToSentry = yield* getContext('reportToSentry')
+    yield* put(withdrawUSDCFailed({ error: e as Error }))
+
+    yield* call(
+      track,
+      make({ eventName: Name.WITHDRAW_USDC_FAILURE, ...analyticsFields, error })
+    )
+
     reportToSentry({
       level: ErrorLevel.Error,
       error: e as Error
     })
-    yield* put(withdrawUSDCFailed({ error: e as Error }))
   }
 }
 

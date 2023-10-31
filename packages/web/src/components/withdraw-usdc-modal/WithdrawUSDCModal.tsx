@@ -10,11 +10,12 @@ import {
   formatUSDCWeiToFloorCentsNumber,
   Nullable,
   withdrawUSDCSelectors,
-  Status
+  Status,
+  Name
 } from '@audius/common'
 import { Modal, ModalContent, ModalHeader } from '@audius/stems'
 import BN from 'bn.js'
-import { Formik, FormikProps } from 'formik'
+import { Formik, FormikProps, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -22,12 +23,13 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { ReactComponent as IconTransaction } from 'assets/img/iconTransaction.svg'
 import { Icon } from 'components/Icon'
 import { Text } from 'components/typography'
+import { make, track } from 'services/analytics'
 import { isValidSolAddress } from 'services/solana/solana'
 
 import styles from './WithdrawUSDCModal.module.css'
 import { ConfirmTransferDetails } from './components/ConfirmTransferDetails'
 import { EnterTransferDetails } from './components/EnterTransferDetails'
-import { Error } from './components/Error'
+import { ErrorPage } from './components/ErrorPage'
 import { TransferInProgress } from './components/TransferInProgress'
 import { TransferSuccessful } from './components/TransferSuccessful'
 
@@ -50,6 +52,12 @@ export const AMOUNT = 'amount'
 export const ADDRESS = 'address'
 export const CONFIRM = 'confirm'
 
+type WithdrawFormValues = {
+  [AMOUNT]: number
+  [ADDRESS]: string
+  [CONFIRM]: boolean
+}
+
 const WithdrawUSDCFormSchema = (userBalance: number) => {
   let amount = z.number().lte(userBalance, messages.errors.insufficientBalance)
   if (userBalance !== 0) {
@@ -69,6 +77,36 @@ const WithdrawUSDCFormSchema = (userBalance: number) => {
       errorMap: () => ({ message: messages.errors.pleaseConfirm })
     })
   })
+}
+
+/** Tracks form errors of interest, only sending events the first time
+ * each error occurs on a changed value. For example:
+ * 1. User enters invalid address: event fired
+ * 2. User changes address and still invalid: no event
+ * 3. User changes address and it's now valid: no event
+ * 4. User changes address and it's invalid again: event fired
+ */
+const TrackFormErrors = ({ currentBalance }: { currentBalance: number }) => {
+  const {
+    errors: { [ADDRESS]: addressError },
+    values: { [ADDRESS]: address }
+  } = useFormikContext<WithdrawFormValues>()
+  const [prevAddressError, setPrevAddressError] = useState<string>()
+  if (addressError !== prevAddressError) {
+    if (addressError === messages.errors.invalidAddress) {
+      track(
+        make({
+          eventName: Name.WITHDRAW_USDC_FORM_ERROR,
+          error: addressError,
+          value: address,
+          currentBalance: currentBalance / 100
+        })
+      )
+    }
+    setPrevAddressError(addressError)
+  }
+
+  return null
 }
 
 export const WithdrawUSDCModal = () => {
@@ -113,12 +151,13 @@ export const WithdrawUSDCModal = () => {
       dispatch(
         beginWithdrawUSDC({
           amount,
+          currentBalance: balanceNumberCents / 100,
           destinationAddress: address,
           onSuccess
         })
       )
     },
-    [dispatch, onSuccess]
+    [balanceNumberCents, dispatch, onSuccess]
   )
 
   let formPage
@@ -138,7 +177,7 @@ export const WithdrawUSDCModal = () => {
       )
       break
     case WithdrawUSDCModalPages.ERROR:
-      formPage = <Error />
+      formPage = <ErrorPage />
       break
   }
 
@@ -190,7 +229,10 @@ export const WithdrawUSDCModal = () => {
           validateOnChange
           onSubmit={handleSubmit}
         >
-          {formPage}
+          <>
+            {formPage}
+            <TrackFormErrors currentBalance={balanceNumberCents} />
+          </>
         </Formik>
       </ModalContent>
     </Modal>

@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 import BN from 'bn.js'
 
@@ -17,6 +17,7 @@ import { useEthBlockNumber } from 'store/cache/protocol/hooks'
 import { useUsers } from 'store/cache/user/hooks'
 import { fetchWeeklyRewards, setWeeklyRewards } from 'store/cache/rewards/slice'
 import { getRewardForClaimBlock } from './helpers'
+import { AnyAction } from '@reduxjs/toolkit'
 
 // -------------------------------- Selectors  --------------------------------
 export const getUserRewards = (wallet: Address) => (state: AppState) =>
@@ -78,7 +79,7 @@ export const useUserWeeklyRewards = ({ wallet }: { wallet: Address }) => {
   const { status: usersStatus, users } = useUsers()
   const { status: claimStatus, hasClaim } = usePendingClaim(wallet)
 
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     const hasInfo = [
       fundsStatus,

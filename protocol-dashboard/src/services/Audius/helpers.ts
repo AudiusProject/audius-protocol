@@ -1,4 +1,3 @@
-import { Utils } from '@audius/sdk/dist/legacy.js'
 import { formatNumber, formatAudString } from 'utils/format'
 import AudiusClient from './AudiusClient'
 import { Permission, BigNumber, Proposal } from 'types'
@@ -82,10 +81,9 @@ export async function getBlockNearTimestamp(
   return targetBlock
 }
 
-export function toChecksumAddress(this: AudiusClient, wallet: string) {
-  // NOTE: This is kinda a hack
-  // but b/c we load in web3 before the js bundle it will work
-  const web3 = window.Web3
+export async function toChecksumAddress(this: AudiusClient, wallet: string) {
+  await this.awaitSetup()
+  const web3 = this.libs.ethWeb3Manager.web3
   return web3.utils.toChecksumAddress(wallet)
 }
 
@@ -97,13 +95,13 @@ export function getBNPercentage(
 ): number {
   const divisor = Math.pow(10, decimals + 1)
   if (n2.toString() === '0') return 0
-  let num = n1.mul(Utils.toBN(divisor.toString())).div(n2)
-  if (num.gte(Utils.toBN(divisor.toString()))) return 1
+  let num = n1.mul(new BN(divisor.toString())).div(n2)
+  if (num.gte(new BN(divisor.toString()))) return 1
   return num.toNumber() / divisor
 }
 
 export function displayShortAud(amount: BigNumber) {
-  return formatNumber(amount.div(Utils.toBN('1000000000000000000') as BN))
+  return formatNumber(amount.div(new BN('1000000000000000000') as BN))
 }
 
 export function displayAud(amount: BigNumber) {
@@ -111,8 +109,8 @@ export function displayAud(amount: BigNumber) {
 }
 
 export function getAud(amount: BigNumber) {
-  const aud = amount.div(Utils.toBN('1000000000000000000'))
-  const wei = amount.sub(aud.mul(Utils.toBN('1000000000000000000')))
+  const aud = amount.div(new BN('1000000000000000000'))
+  const wei = amount.sub(aud.mul(new BN('1000000000000000000')))
   if (wei.isZero()) {
     return aud.toString()
   }
@@ -125,7 +123,7 @@ export function trimRightZeros(number: string) {
 }
 
 export function getWei(amount: BigNumber) {
-  return amount.mul(Utils.toBN('1000000000000000000'))
+  return amount.mul(new BN('1000000000000000000'))
 }
 
 type NodeMetadata = {

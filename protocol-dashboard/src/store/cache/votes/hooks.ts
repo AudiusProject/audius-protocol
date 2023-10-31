@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 
 import Audius from 'services/Audius'
@@ -8,6 +8,7 @@ import { useEffect } from 'react'
 import { setVotes, setUserVote } from './slice'
 import { Vote, VoteEvent } from 'types'
 import { useDispatchBasedOnBlockNumber } from '../protocol/hooks'
+import { AnyAction } from '@reduxjs/toolkit'
 
 // -------------------------------- Selectors  --------------------------------
 
@@ -79,7 +80,7 @@ export const useVotes = (proposalId: number) => {
   const votesAgainst = useSelector(state =>
     getVotesAgainst(state as AppState, { proposalId })
   )
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (votes === null || votes === undefined) {
       dispatch(fetchVotes(proposalId))
@@ -95,7 +96,7 @@ export const useUserVote = (proposalId: number) => {
   const userVote = useSelector(state =>
     getUserVote(state as AppState, { proposalId })
   )
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
 
   useEffect(() => {
     if (userVote === null || userVote === undefined) {

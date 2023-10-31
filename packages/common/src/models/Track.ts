@@ -108,6 +108,14 @@ export enum PremiumContentType {
   USDC_PURCHASE = 'usdc purchase'
 }
 
+export enum TrackAccessType {
+  PUBLIC = 'public',
+  TIP_GATED = 'tip_gated',
+  FOLLOW_GATED = 'follow_gated',
+  COLLECTIBLE_GATED = 'collectible_gated',
+  USDC_GATED = 'usdc_gated'
+}
+
 export const isPremiumContentCollectibleGated = (
   premiumConditions?: Nullable<PremiumConditions>
 ): premiumConditions is PremiumConditionsCollectibleGated =>

@@ -49,8 +49,10 @@ metrics_applications = "applications"
 metrics_visited_nodes = "visited_nodes"
 personal_route_metrics = "personal_route_metrics"
 daily_route_metrics = "daily_route_metrics"
+personal_daily_route_metrics = "personal_daily_route_metrics"
 summed_unique_daily_metrics = "summed_unique_daily_metrics"
 monthly_route_metrics = "monthly_route_metrics"
+personal_monthly_route_metrics = "personal_monthly_route_metrics"
 summed_unique_monthly_metrics = "summed_unique_monthly_metrics"
 personal_app_metrics = "personal_app_metrics"
 daily_app_metrics = "daily_app_metrics"
@@ -254,6 +256,96 @@ def persist_route_metrics(
         session.add(month_total_record)
 
 
+# Expected to be called after calling persist_route_metrics with these day, month params
+def _persist_personal_route_metrics(
+    db, day, month, count, unique_daily_count, unique_monthly_count
+):
+    with db.scoped_session() as session:
+        day_unique_record = (
+            session.query(AggregateDailyUniqueUsersMetrics)
+            .filter(AggregateDailyUniqueUsersMetrics.timestamp == day)
+            .first()
+        )
+        # A record for this day should exist at this point
+        if day_unique_record:
+            logger.debug(
+                f"personal unique count record for day {day} before adding new unique count \
+                {unique_daily_count}: {day_unique_record.personal_count} + "
+            )
+            if not day_unique_record.personal_count:
+                day_unique_record.personal_count = unique_daily_count
+            else:
+                day_unique_record.personal_count += unique_daily_count
+            logger.info(
+                f"personal unique count record for day {day} after adding new unique count \
+                {unique_daily_count}: {day_unique_record.personal_count}"
+            )
+            session.add(day_unique_record)
+
+        day_total_record = (
+            session.query(AggregateDailyTotalUsersMetrics)
+            .filter(AggregateDailyTotalUsersMetrics.timestamp == day)
+            .first()
+        )
+        # A record for this day should exist at this point
+        if day_total_record:
+            logger.debug(
+                f"personal total count record for day {day} before adding new total count \
+                {count}: {day_total_record.personal_count}"
+            )
+            if not day_total_record.personal_count:
+                day_total_record.personal_count = count
+            else:
+                day_total_record.personal_count += count
+            logger.info(
+                f"personal total count record for day {day} after adding new total count \
+                {count}: {day_total_record.personal_count}"
+            )
+            session.add(day_total_record)
+
+        month_unique_record = (
+            session.query(AggregateMonthlyUniqueUsersMetric)
+            .filter(AggregateMonthlyUniqueUsersMetric.timestamp == month)
+            .first()
+        )
+        # A record for this month should exist at this point
+        if month_unique_record:
+            logger.debug(
+                f"personal unique count record for month {month} before adding new unique count \
+                {unique_monthly_count}: {month_unique_record.personal_count}"
+            )
+            if not month_unique_record.personal_count:
+                month_unique_record.personal_count = unique_monthly_count
+            else:
+                month_unique_record.personal_count += unique_monthly_count
+            logger.info(
+                f"personal unique count record for month {month} after adding new unique count \
+                {unique_monthly_count}: {month_unique_record.personal_count}"
+            )
+            session.add(month_unique_record)
+
+        month_total_record = (
+            session.query(AggregateMonthlyTotalUsersMetric)
+            .filter(AggregateMonthlyTotalUsersMetric.timestamp == month)
+            .first()
+        )
+        # A record for this month should exist at this point
+        if month_total_record:
+            logger.debug(
+                f"personal total count record for month {month} before adding new total count \
+                {count}: {month_total_record.personal_count}"
+            )
+            if not month_total_record.personal_count:
+                month_total_record.personal_count = count
+            else:
+                month_total_record.personal_count += count
+            logger.info(
+                f"personal total count record for month {month} after adding new total count \
+                {count}: {month_total_record.personal_count}"
+            )
+            session.add(month_total_record)
+
+
 def persist_app_metrics(db, day, month, app_count):
     with db.scoped_session() as session:
         for application_name, count in app_count.items():
@@ -314,30 +406,15 @@ def persist_app_metrics(db, day, month, app_count):
             session.add(month_record)
 
 
-def merge_metrics(metrics, end_time, metric_type, db):
+def cache_metrics(metrics, day, month, metric_type, daily_key, monthly_key):
     """
-    Merge this node's metrics to those received from other discovery nodes:
-        Update unique and total, daily and monthly metrics for routes and apps
-
-        Dump the cached metrics so that if this node temporarily goes down,
-        we can recover the IPs and app names to perform the calculation and deduplication
-        when the node comes back up
-
-        Clean up old metrics from cache
-
-        Persist metrics in the database
+    Update the cached unique and total metrics for metric_type (route or app)
+    stored at daily_key for daily metrics and monthly_key for monthly_metrics.
+    Clean up old metrics from cache.
     """
-    logger.debug(f"about to merge {metric_type} metrics: {len(metrics)} new entries")
-    day = end_time.split(":")[0]
-    month = f"{day[:7]}/01"
-
-    daily_key = daily_route_metrics if metric_type == "route" else daily_app_metrics
     daily_metrics_str = REDIS.get(daily_key)
     daily_metrics = json.loads(daily_metrics_str) if daily_metrics_str else {}
 
-    monthly_key = (
-        monthly_route_metrics if metric_type == "route" else monthly_app_metrics
-    )
     monthly_metrics_str = REDIS.get(monthly_key)
     monthly_metrics = json.loads(monthly_metrics_str) if monthly_metrics_str else {}
 
@@ -385,7 +462,7 @@ def merge_metrics(metrics, end_time, metric_type, db):
     }
     if daily_metrics:
         REDIS.set(daily_key, json.dumps(daily_metrics))
-    logger.info(f"updated cached daily {metric_type} metrics")
+    logger.info(f"updated cached {daily_key}")
 
     # clean up metrics METRICS_INTERVAL after the end of the month from monthly_metrics
     thirty_one_days_ago = (datetime.utcnow() - timedelta(days=31)).strftime(
@@ -398,11 +475,43 @@ def merge_metrics(metrics, end_time, metric_type, db):
     }
     if monthly_metrics:
         REDIS.set(monthly_key, json.dumps(monthly_metrics))
-    logger.info(f"updated cached monthly {metric_type} metrics")
+    logger.info(f"updated cached {monthly_key}")
 
-    # persist aggregated metrics from other nodes
+    return unique_daily_count, unique_monthly_count, app_count
+
+
+def merge_metrics(metrics, end_time, metric_type, db, are_personal_metrics):
+    """
+    Merge this node's metrics to those received from other discovery nodes:
+        Update unique and total, daily and monthly metrics for routes and apps
+
+        Dump the cached metrics so that if this node temporarily goes down,
+        we can recover the IPs and app names to perform the calculation and deduplication
+        when the node comes back up
+
+        Clean up old metrics from cache
+
+        Persist metrics in the database
+
+    If are_personal_metrics (only for route metrics):
+        Separately cache and persist these metrics as this node's personal metrics, unmerged
+        and unsynchronized with other discovery nodes
+    """
+    logger.debug(f"about to merge {metric_type} metrics: {len(metrics)} new entries")
+    day = end_time.split(":")[0]
+    month = f"{day[:7]}/01"
+
     day_obj = datetime.strptime(day, day_format).date()
     month_obj = datetime.strptime(month, day_format).date()
+
+    unique_daily_count, unique_monthly_count, app_count = cache_metrics(
+        metrics,
+        day,
+        month,
+        metric_type,
+        daily_route_metrics if metric_type == "route" else daily_app_metrics,
+        monthly_route_metrics if metric_type == "route" else monthly_app_metrics,
+    )
     if metric_type == "route":
         persist_route_metrics(
             db,
@@ -415,13 +524,35 @@ def merge_metrics(metrics, end_time, metric_type, db):
     else:
         persist_app_metrics(db, day_obj, month_obj, app_count)
 
+    if metric_type == "route" and are_personal_metrics:
+        # Persist this node's personal metrics
+        logger.debug(
+            f"about to persist personal route metrics: {len(metrics)} new entries"
+        )
+        personal_unique_daily_count, personal_unique_monthly_count, _ = cache_metrics(
+            metrics,
+            day,
+            month,
+            metric_type,
+            personal_daily_route_metrics,
+            personal_monthly_route_metrics,
+        )
+        _persist_personal_route_metrics(
+            db,
+            day_obj,
+            month_obj,
+            sum(metrics.values()),
+            personal_unique_daily_count,
+            personal_unique_monthly_count,
+        )
 
-def merge_route_metrics(metrics, end_time, db):
-    merge_metrics(metrics, end_time, "route", db)
+
+def merge_route_metrics(metrics, end_time, db, are_personal_metrics):
+    merge_metrics(metrics, end_time, "route", db, are_personal_metrics)
 
 
 def merge_app_metrics(metrics, end_time, db):
-    merge_metrics(metrics, end_time, "app", db)
+    merge_metrics(metrics, end_time, "app", db, False)
 
 
 def get_redis_metrics(redis_handle, start_time, metric_type):
@@ -583,7 +714,7 @@ def record_metrics(func):
     """
     The metrics decorator records each time a route is hit in redis
     The number of times a route is hit and an app_name query param are used are recorded.
-    A redis a redis hash map is used to store each of these values.
+    A redis hash map is used to store each of these values.
 
     NOTE: This must be placed before the cache decorator in order for the redis incr to occur
     """

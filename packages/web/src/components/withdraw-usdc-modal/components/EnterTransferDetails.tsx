@@ -13,7 +13,8 @@ import {
   formatUSDCWeiToFloorCentsNumber,
   filterDecimalString,
   padDecimalValue,
-  decimalIntegerToHumanReadable
+  decimalIntegerToHumanReadable,
+  Name
 } from '@audius/common'
 import { Button, ButtonType, IconQuestionCircle } from '@audius/harmony'
 import BN from 'bn.js'
@@ -26,10 +27,14 @@ import {
   ADDRESS,
   AMOUNT
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
+import { make, track } from 'services/analytics'
 
 import styles from './EnterTransferDetails.module.css'
 import { Hint } from './Hint'
 import { TextRow } from './TextRow'
+
+const LEARN_MORE_LINK =
+  'https://support.audius.co/help/Understanding-USDC-on-Audius'
 
 const messages = {
   currentBalance: 'Current Balance',
@@ -53,6 +58,7 @@ export const EnterTransferDetails = () => {
   const balanceNumber = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
+  const analyticsBalance = balanceNumber / 100
   const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
 
   const [
@@ -80,6 +86,29 @@ export const EnterTransferDetails = () => {
   )
 
   const [{ value: address }, { error: addressError }] = useField(ADDRESS)
+
+  const handleClickHelpGuide = useCallback(() => {
+    track(
+      make({
+        eventName: Name.WITHDRAW_USDC_HELP_LINK_CLICKED,
+        currentBalance: analyticsBalance
+      })
+    )
+  }, [analyticsBalance])
+
+  const handlePasteAddress = useCallback(
+    (event: React.ClipboardEvent) => {
+      const pastedAddress = event.clipboardData.getData('text/plain')
+      track(
+        make({
+          eventName: Name.WITHDRAW_USDC_ADDRESS_PASTED,
+          destinationAddress: pastedAddress,
+          currentBalance: analyticsBalance
+        })
+      )
+    },
+    [analyticsBalance]
+  )
 
   const handleContinue = useCallback(() => {
     setData({ page: WithdrawUSDCModalPages.CONFIRM_TRANSFER_DETAILS })
@@ -118,6 +147,7 @@ export const EnterTransferDetails = () => {
         </div>
         <TextField
           title={messages.destinationAddress}
+          onPaste={handlePasteAddress}
           label={messages.solanaWallet}
           aria-label={messages.destinationAddress}
           name={ADDRESS}
@@ -135,8 +165,9 @@ export const EnterTransferDetails = () => {
         {messages.continue}
       </Button>
       <Hint
+        onClick={handleClickHelpGuide}
         text={messages.notSure}
-        link={''} // TODO(USDC): Link
+        link={LEARN_MORE_LINK}
         icon={IconQuestionCircle}
         linkText={messages.guide}
       />

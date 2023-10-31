@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 import semver from 'semver'
 
@@ -16,6 +16,7 @@ import Audius from 'services/Audius'
 import { AppState } from 'store/types'
 import { setLoading, setNodes, setTotal } from './slice'
 import { useEffect } from 'react'
+import { AnyAction } from '@reduxjs/toolkit'
 
 type UseContentNodesProps = {
   owner?: Address
@@ -161,7 +162,7 @@ export const useContentNodes = ({
     limit
   ])
 
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (!status) {
       dispatch(fetchContentNodes({ owner, sortBy, limit }))
@@ -176,7 +177,7 @@ export const useContentNode = ({ spID }: UseContentNodeProps) => {
   const [status, setStatus] = useState(Status.Loading)
   const totalNodes = useSelector(getTotal)
   const node = useSelector(getNode(spID))
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
 
   useEffect(() => {
     if (!node && typeof totalNodes !== 'number') {

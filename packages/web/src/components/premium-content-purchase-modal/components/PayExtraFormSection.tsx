@@ -22,10 +22,12 @@ const formatPillAmount = (val: number) => `$${Math.floor(val / 100)}`
 
 export type PayExtraFormSectionProps = {
   amountPresets: PayExtraAmountPresetValues
+  disabled?: boolean
 }
 
 export const PayExtraFormSection = ({
-  amountPresets
+  amountPresets,
+  disabled
 }: PayExtraFormSectionProps) => {
   const [{ value: preset }, , { setValue: setPreset }] = useField(AMOUNT_PRESET)
 
@@ -47,6 +49,7 @@ export const PayExtraFormSection = ({
             size='large'
             type='button'
             onClick={() => handleClickPreset(PayExtraPreset.LOW)}
+            disabled={disabled}
           />
           <SelectablePill
             className={styles.presetPill}
@@ -55,6 +58,7 @@ export const PayExtraFormSection = ({
             size='large'
             type='button'
             onClick={() => handleClickPreset(PayExtraPreset.MEDIUM)}
+            disabled={disabled}
           />
           <SelectablePill
             className={styles.presetPill}
@@ -63,6 +67,7 @@ export const PayExtraFormSection = ({
             size='large'
             type='button'
             onClick={() => handleClickPreset(PayExtraPreset.HIGH)}
+            disabled={disabled}
           />
         </div>
         <SelectablePill
@@ -72,6 +77,7 @@ export const PayExtraFormSection = ({
           size='large'
           type='button'
           onClick={() => handleClickPreset(PayExtraPreset.CUSTOM)}
+          disabled={disabled}
         />
       </div>
       {preset === PayExtraPreset.CUSTOM ? (
@@ -79,6 +85,7 @@ export const PayExtraFormSection = ({
           placeholder={messages.placeholder}
           label={messages.customAmount}
           name={CUSTOM_AMOUNT}
+          disabled={disabled}
         />
       ) : null}
     </div>

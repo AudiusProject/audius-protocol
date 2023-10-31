@@ -6,13 +6,10 @@ import styles from './Paper.module.css'
 interface PaperProps {
   className?: string
   onClick?: () => void
+  children?: React.ReactNode
 }
 
-const Paper: React.FC<PaperProps> = ({
-  className,
-  children,
-  onClick = () => {}
-}) => {
+const Paper = ({ className, children, onClick = () => {} }: PaperProps) => {
   return (
     <div
       onClick={onClick}

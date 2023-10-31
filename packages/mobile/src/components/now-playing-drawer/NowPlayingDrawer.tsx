@@ -134,6 +134,12 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
     }
   }, [isPlaying, isPlayBarShowing])
 
+  useEffect(() => {
+    if (!currentUid) {
+      setIsPlayBarShowing(false)
+    }
+  }, [currentUid])
+
   const onDrawerOpen = useCallback(() => {
     Keyboard.dismiss()
     onOpen()
