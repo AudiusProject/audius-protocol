@@ -1,0 +1,29 @@
+.modal {
+  width: 720px;
+}
+
+.modalHeader {
+  text-align: center;
+}
+
+.modalHeader.mobile {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-6);
+}
+
+.buttonContainer {
+  display: flex;
+  gap: var(--unit-2);
+}
+
+.iconUSDC {
+  color: '#2775CA';
+  fill: '#2775CA';
+}

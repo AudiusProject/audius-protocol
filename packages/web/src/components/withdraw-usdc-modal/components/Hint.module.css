@@ -17,8 +17,7 @@
 
 .link {
   color: var(--secondary);
-  font-size: var(--font-m);
-  font-weight: var(--font-regular);
+  font-weight: var(--font-medium);
   text-decoration: underline !important;
 }
 

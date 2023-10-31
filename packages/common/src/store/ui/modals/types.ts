@@ -56,6 +56,7 @@ export type Modals =
   | 'WithdrawUSDCModal'
   | 'USDCPurchaseDetailsModal'
   | 'USDCTransactionDetailsModal'
+  | 'USDCManualTransferModal'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
