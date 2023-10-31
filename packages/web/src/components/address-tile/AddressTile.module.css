@@ -33,5 +33,5 @@
 .address {
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: var(--unit-5);
+  line-height: 125%;
 }
