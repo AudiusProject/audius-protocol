@@ -229,6 +229,10 @@ export enum Name {
   LINK_CLICKING = 'Link Click',
   TAG_CLICKING = 'Tag Click',
 
+  // Modals
+  MODAL_OPENED = 'Modal Opened',
+  MODAL_CLOSED = 'Modal Closed',
+
   // Search
   SEARCH_SEARCH = 'Search: Search',
   SEARCH_TAG_SEARCH = 'Search: Tag Search',
@@ -1102,6 +1106,17 @@ type TagClicking = {
   eventName: Name.TAG_CLICKING
   tag: string
   source: 'profile page' | 'track page' | 'collection page'
+}
+
+// Modals
+type ModalOpened = {
+  eventName: Name.MODAL_OPENED
+  name: string
+} & Record<string, any> // For passing state values
+
+type ModalClosed = {
+  eventName: Name.MODAL_CLOSED
+  name: string
 }
 
 // Search
@@ -2019,6 +2034,8 @@ export type AllTrackingEvents =
   | Unfollow
   | LinkClicking
   | TagClicking
+  | ModalOpened
+  | ModalClosed
   | SearchTerm
   | SearchTag
   | SearchMoreResults

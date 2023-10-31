@@ -24,7 +24,8 @@ import {
   mobileOverflowMenuUISagas,
   shareModalUISagas,
   stripeModalUISagas,
-  uploadConfirmationModalUISagas
+  uploadConfirmationModalUISagas,
+  modalsSagas
 } from 'store/ui'
 
 import { buyCryptoSagas } from './buy-crypto'
@@ -57,6 +58,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   shareModalUI: shareModalUISagas,
   stripeModalUI: stripeModalUISagas,
   mobileOverflowMenuUI: mobileOverflowMenuUISagas,
+  modals: modalsSagas,
   deletePlaylistConfirmationModalUI: deletePlaylistConfirmationModalUISagas,
   duplidateAddConfirmationModalUI: duplicateAddConfirmationModalUISagas,
   uploadConfirmationModalUI: uploadConfirmationModalUISagas,

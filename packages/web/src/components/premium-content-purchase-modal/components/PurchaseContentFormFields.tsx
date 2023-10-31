@@ -67,14 +67,16 @@ export const PurchaseContentFormFields = ({
           {...purchaseSummaryValues}
           isPurchased={isPurchased}
         />
-        <Text
-          as={PlainButton}
-          disabled={isInProgress}
-          onClick={() => openUsdcManualTransferModal()}
-          color='primary'
-        >
-          {messages.manualTransfer}
-        </Text>
+        {isInProgress || isPurchased ? null : (
+          <Text
+            as={PlainButton}
+            disabled={isInProgress}
+            onClick={() => openUsdcManualTransferModal()}
+            color='primary'
+          >
+            {messages.manualTransfer}
+          </Text>
+        )}
       </div>
       {isInProgress ? null : <PayToUnlockInfo />}
     </>
