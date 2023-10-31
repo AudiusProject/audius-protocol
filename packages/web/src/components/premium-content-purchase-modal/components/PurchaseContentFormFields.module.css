@@ -22,3 +22,7 @@
   gap: var(--unit-2);
   align-items: flex-start;
 }
+
+.manualTransfer {
+  padding: var(--unit-3) 0;
+}

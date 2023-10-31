@@ -73,6 +73,7 @@ export const PurchaseContentFormFields = ({
             disabled={isInProgress}
             onClick={() => openUsdcManualTransferModal()}
             color='primary'
+            className={styles.manualTransfer}
           >
             {messages.manualTransfer}
           </Text>
