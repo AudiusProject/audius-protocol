@@ -10,10 +10,11 @@ import { useDispatch } from 'react-redux'
 
 import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
+import { zIndex } from 'app/utils/zIndex'
 
 const { dismissToast } = toastActions
 
-const DEFAULT_TIMEOUT = 2000
+const DEFAULT_TIMEOUT = 3000
 const DISTANCE_DOWN = 60
 
 const springConfig = {
@@ -23,7 +24,7 @@ const springConfig = {
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   root: {
-    zIndex: 50,
+    zIndex: zIndex.TOAST,
     alignItems: 'center',
     justifyContent: 'center'
   },

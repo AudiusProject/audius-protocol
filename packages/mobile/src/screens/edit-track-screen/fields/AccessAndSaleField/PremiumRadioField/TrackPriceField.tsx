@@ -4,7 +4,7 @@ import { Text } from 'app/components/core'
 
 import { BoxedTextField } from './BoxedTextField'
 
-const TRACK_PRICE = 'premium_conditions.usdc_purchase.price'
+export const TRACK_PRICE = 'premium_conditions.usdc_purchase.price'
 
 const messages = {
   title: 'Set a Price',
@@ -24,7 +24,7 @@ export const TrackPriceField = () => {
       title={messages.title}
       description={messages.description}
       name={TRACK_PRICE}
-      value={String(value)}
+      value={value}
       keyboardType='numeric'
       label={messages.label}
       placeholder={messages.placeholder}

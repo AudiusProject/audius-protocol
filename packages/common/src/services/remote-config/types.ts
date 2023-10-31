@@ -160,6 +160,19 @@ export enum IntKeys {
   BUY_TOKEN_WALLET_POLL_MAX_RETRIES = 'BUY_TOKEN_WALLET_POLL_MAX_RETRIES',
 
   /**
+   * The maximum amount the price of SOL is allowed to slip before
+   * the Jupiter swap from SOL to the requested token fails.
+   * Expressed in percentage basis points (1pt = 0.01%).
+   *
+   * Note: Increasing this number will increase how much SOL gets purchased,
+   * which improves the likelihood the purchase swaps successfully but with the
+   * downside of charging the user extra for their purchase.
+   * @see https://station.jup.ag/guides/jupiter-swap/price-impact-slippage-price-warning#slippage
+   * @see https://station.jup.ag/guides/general/faq#my-swap-fails-reporting-a-slippage-error-what-should-i-do
+   */
+  BUY_TOKEN_VIA_SOL_SLIPPAGE_BPS = 'BUY_TOKEN_VIA_SOL_SLIPPAGE_BPS',
+
+  /**
    * The allowed slippage percentage/padding percentage for the BuyAudio Modal
    */
   BUY_AUDIO_SLIPPAGE = 'BUY_AUDIO_SLIPPAGE',
@@ -374,7 +387,10 @@ export enum StringKeys {
   AUDIO_FEATURES_DEGRADED_TEXT = 'AUDIO_FEATURES_DEGRADED_TEXT',
 
   /** Preset amounts for the Pay Extra feature in USDC purchases, specified in cents */
-  PAY_EXTRA_PRESET_CENT_AMOUNTS = 'PAY_EXTRA_PRESET_CENT_AMOUNTS'
+  PAY_EXTRA_PRESET_CENT_AMOUNTS = 'PAY_EXTRA_PRESET_CENT_AMOUNTS',
+
+  /** Allowlist of user ids for explore premium tracks page */
+  EXPLORE_PREMIUM_ALLOWED_USERS = 'EXPLORE_PREMIUM_ALLOWED_USERS'
 }
 
 export type AllRemoteConfigKeys =

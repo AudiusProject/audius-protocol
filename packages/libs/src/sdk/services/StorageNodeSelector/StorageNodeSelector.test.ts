@@ -189,4 +189,48 @@ describe('StorageNodeSelector', () => {
       storageNodeB.endpoint
     ])
   })
+
+  it('force reselects successfully', async () => {
+    const bootstrapNodes = [storageNodeA, storageNodeB]
+
+    const storageNodeSelector = new StorageNodeSelector({
+      bootstrapNodes,
+      auth,
+      discoveryNodeSelector,
+      logger
+    })
+
+    expect(await storageNodeSelector.getSelectedNode()).toEqual(
+      storageNodeB.endpoint
+    )
+
+    // force reselect
+    expect(await storageNodeSelector.getSelectedNode(true)).toEqual(
+      storageNodeA.endpoint
+    )
+  })
+
+  it('tries selecting all nodes', async () => {
+    server.use(
+      rest.get(`${storageNodeA.endpoint}/health_check`, (_req, res, ctx) => {
+        return res(ctx.status(400))
+      })
+    )
+    server.use(
+      rest.get(`${storageNodeB.endpoint}/health_check`, (_req, res, ctx) => {
+        return res(ctx.status(400))
+      })
+    )
+    const bootstrapNodes = [storageNodeA, storageNodeB]
+
+    const storageNodeSelector = new StorageNodeSelector({
+      bootstrapNodes,
+      auth,
+      discoveryNodeSelector,
+      logger
+    })
+
+    expect(await storageNodeSelector.getSelectedNode()).toBe(null)
+    expect(await storageNodeSelector.triedSelectingAllNodes()).toBe(true)
+  })
 })

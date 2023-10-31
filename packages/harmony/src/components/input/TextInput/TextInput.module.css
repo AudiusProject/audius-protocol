@@ -7,6 +7,7 @@
 /* The contentContainer is the root container of all things that aren't assistive text */
 .contentContainer {
   display: flex;
+  width: 100%;
   align-items: center;
   /* Dont need Y padding since the flex centering takes care of it */
   padding: 0 var(--harmony-spacing-l);
@@ -61,14 +62,6 @@
   border-color: var(--harmony-red);
 }
 
-/* disabled styles */
-.contentContainer.disabled {
-  cursor: not-allowed;
-  & * {
-    cursor: not-allowed;
-  }
-}
-
 /* Actual input element */
 .input {
   padding: 0;
@@ -99,12 +92,15 @@
   font-size: var(--harmony-font-l);
 }
 
-/* Placeholder and label text styles (they are the same for the most part) */
+/* Placeholder and label text styles (they are the same minus color) */
 .input::placeholder,
 .label {
   color: var(--harmony-text-default);
   font-weight: var(--harmony-font-medium);
   font-family: var(--harmony-font-family);
+}
+.input::placeholder {
+  color: var(--harmony-text-subdued);
 }
 
 /** Position the label in the center when unfocussed **/

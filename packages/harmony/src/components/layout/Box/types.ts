@@ -50,4 +50,6 @@ export type BoxProps = {
 
   /** Elevation Shadow */
   shadow?: ShadowValue
+
+  flex?: CSSProperties['flex']
 }

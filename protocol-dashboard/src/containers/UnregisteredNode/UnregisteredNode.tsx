@@ -1,72 +1,18 @@
-// import { useQuery } from '@tanstack/react-query'
 import { useMatch, useLocation } from 'react-router-dom'
 import { useAccount } from 'store/account/hooks'
 
 import styles from './UnregisteredNode.module.css'
 import Page from 'components/Page'
-import { Address } from 'types'
+import { ServiceType } from 'types'
 import {
   SERVICES_UNREGISTERED_DISCOVERY_NODE,
   SERVICES_TITLE,
   SERVICES
 } from 'utils/routes'
+import NodeOverview from 'components/NodeOverview'
 
 const messages = {
-  title: 'UNREGISTERED SERVICE',
-  discovery: 'Discovery Node',
-  content: 'Content Node'
-}
-
-type UnregisteredContentNodeProps = {
-  endpoint: string
-  accountWallet: Address | undefined
-}
-const UnregisteredContentNode = ({
-  endpoint,
-  accountWallet
-}: UnregisteredContentNodeProps) => {
-  // const isOwner = accountWallet === discoveryProvider!.owner
-
-  // const { status, data, error } = useQuery({
-  //   queryKey: ['health', { endpoint }],
-  //   queryFn: async () => {
-  //     const response = await fetch(`${endpoint}/health_check`)
-  //     if (!response.ok) {
-  //       throw new Error(
-  //         `Failed fetching health check from ${endpoint}: ${response.status} ${response.statusText}`
-  //       )
-  //     }
-  //     return response.json()
-  //   }
-  // })
-
-  // if (status === 'pending') {
-  //   return <span>Loading...</span>
-  // }
-
-  // if (status === 'error') {
-  //   return <span>Error: {error.message}</span>
-  // }
-
-  return (
-    <>
-      Health UI and Registration UI Coming Soon
-      {/* {JSON.stringify(data)} */}
-    </>
-  )
-}
-
-type UnregisteredDiscoveryProviderProps = {
-  endpoint: string
-  accountWallet: Address | undefined
-}
-const UnregisteredDiscoveryProvider = ({
-  endpoint,
-  accountWallet
-}: UnregisteredDiscoveryProviderProps) => {
-  // const isOwner = accountWallet === discoveryProvider!.owner
-
-  return <>Health UI and Registration UI Coming Soon</>
+  title: 'UNREGISTERED SERVICE'
 }
 
 const UnregisteredNode = () => {
@@ -84,14 +30,18 @@ const UnregisteredNode = () => {
       defaultPreviousPageRoute={SERVICES}
     >
       {isDiscovery ? (
-        <UnregisteredDiscoveryProvider
+        <NodeOverview
+          isUnregistered={true}
           endpoint={endpoint}
-          accountWallet={accountWallet}
+          serviceType={ServiceType.DiscoveryProvider}
+          operatorWallet={accountWallet}
         />
       ) : (
-        <UnregisteredContentNode
+        <NodeOverview
+          isUnregistered={true}
           endpoint={endpoint}
-          accountWallet={accountWallet}
+          serviceType={ServiceType.ContentNode}
+          operatorWallet={accountWallet}
         />
       )}
     </Page>

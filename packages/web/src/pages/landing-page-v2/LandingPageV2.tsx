@@ -14,7 +14,7 @@ import styles from './LandingPageV2.module.css'
 import ArtistInvestors from './components/ArtistInvestors'
 import CTAGetStarted from './components/CTAGetStarted'
 import CTAStartListening from './components/CTAStartListening'
-import CaseStudies from './components/CaseStudies'
+// import CaseStudies from './components/CaseStudies'
 import Description from './components/Description'
 import FeaturedContent from './components/FeaturedContent'
 import Hero from './components/Hero'
@@ -119,10 +119,10 @@ const LandingPageV2 = (props: LandingPageV2Props) => {
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
         />
-        <CaseStudies
+        {/* <CaseStudies
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
-        />
+        /> */}
         <CTAStartListening
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}

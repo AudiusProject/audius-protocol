@@ -5,6 +5,8 @@ import type {
   PurchaseContentError
 } from '@audius/common'
 import {
+  FeatureFlags,
+  Name,
   PurchaseContentStage,
   formatPrice,
   isContentPurchaseInProgress,
@@ -18,7 +20,13 @@ import {
   usePurchaseContentFormConfiguration
 } from '@audius/common'
 import { Formik, useFormikContext } from 'formik'
-import { Linking, View, ScrollView, TouchableOpacity } from 'react-native'
+import {
+  Linking,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Platform
+} from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -30,7 +38,9 @@ import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { make, track as trackEvent } from 'app/services/analytics'
+import { setVisibility } from 'app/store/drawers/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -42,6 +52,7 @@ import { AudioMatchSection } from './AudioMatchSection'
 import { PayExtraFormSection } from './PayExtraFormSection'
 import { PurchaseSuccess } from './PurchaseSuccess'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
+import { PurchaseUnavailable } from './PurchaseUnavailable'
 import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState'
 
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
@@ -66,11 +77,12 @@ const messages = {
       {'By clicking on "Buy", you agree to our '}
       {termsOfUse}
       {
-        ' Your purchase will be made in USDC via 3rd party payment provider. Additional payment provider fees may apply. Any remaining USDC balance in your Audius wallet will be applied to this transaction. Once your payment is confirmed, your premium content will be unlocked and available to stream.'
+        ' Additional payment provider fees may apply. Any remaining USDC balance in your Audius wallet will be applied to this transaction.'
       }
     </>
   ),
-  termsOfUse: 'Terms of Use.'
+  termsOfUse: 'Terms of Use.',
+  manualTransfer: '(Advanced) Manual Crypto Transfer'
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
@@ -135,7 +147,13 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     ...flexRowCentered()
   },
   disclaimer: {
-    lineHeight: 20
+    lineHeight: typography.fontSize.medium * 1.25
+  },
+  bottomSection: {
+    gap: spacing(2)
+  },
+  manualTransfer: {
+    lineHeight: typography.fontSize.medium * 1.25
   }
 }))
 
@@ -196,10 +214,15 @@ const getButtonText = (isUnlocking: boolean, amountDue: number) =>
 // to the FormikContext, which can only be used in a component which is a descendant
 // of the `<Formik />` component
 const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
+  const dispatch = useDispatch()
   const navigation = useNavigation()
   const styles = useStyles()
-  const { specialLightGreen, secondary } = useThemeColors()
+  const { specialLightGreen, primary } = useThemeColors()
   const presetValues = usePayExtraPresets(useRemoteVar)
+  const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
+    FeatureFlags.IOS_USDC_PURCHASE_ENABLED
+  )
+  const isIOSDisabled = Platform.OS === 'ios' && !isIOSUSDCPurchaseEnabled
 
   const { submitForm, resetForm } = useFormikContext()
 
@@ -228,7 +251,12 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
 
   const handleTermsPress = useCallback(() => {
     Linking.openURL('https://audius.co/legal/terms-of-use')
+    trackEvent(make({ eventName: Name.PURCHASE_CONTENT_TOS_CLICKED }))
   }, [])
+
+  const handleManualTransferPress = useCallback(() => {
+    dispatch(setVisibility({ drawer: 'USDCManualTransfer', visible: true }))
+  }, [dispatch])
 
   return (
     <>
@@ -246,13 +274,27 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
               disabled={isInProgress}
             />
           )}
-          <PurchaseSummaryTable
-            {...purchaseSummaryValues}
-            isPurchaseSuccessful={isPurchaseSuccessful}
-          />
-          {isPurchaseSuccessful ? (
+          <View style={styles.bottomSection}>
+            <PurchaseSummaryTable
+              {...purchaseSummaryValues}
+              isPurchaseSuccessful={isPurchaseSuccessful}
+            />
+            {isIOSDisabled ? null : (
+              <Text
+                color='primary'
+                fontSize='small'
+                onPress={handleManualTransferPress}
+                style={styles.manualTransfer}
+              >
+                {messages.manualTransfer}
+              </Text>
+            )}
+          </View>
+          {isIOSDisabled ? (
+            <PurchaseUnavailable />
+          ) : isPurchaseSuccessful ? (
             <PurchaseSuccess track={track} />
-          ) : (
+          ) : isInProgress ? null : (
             <View>
               <View style={styles.payToUnlockTitleContainer}>
                 <Text weight='heavy' textTransform='uppercase' fontSize='small'>
@@ -262,7 +304,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
               </View>
               <Text style={styles.disclaimer}>
                 {messages.disclaimer(
-                  <Text colorValue={secondary} onPress={handleTermsPress}>
+                  <Text colorValue={primary} onPress={handleTermsPress}>
                     {messages.termsOfUse}
                   </Text>
                 )}
@@ -271,7 +313,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
           )}
         </View>
       </ScrollView>
-      {isPurchaseSuccessful ? null : (
+      {isPurchaseSuccessful || isIOSDisabled ? null : (
         <View style={styles.formActions}>
           {error ? <RenderError error={error} /> : null}
           <Button

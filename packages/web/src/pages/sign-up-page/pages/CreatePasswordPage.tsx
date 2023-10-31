@@ -5,9 +5,9 @@ import {
   Button,
   ButtonType,
   Flex,
+  IconArrowRight,
   Text,
-  TextInput,
-  IconArrowRight
+  TextInput
 } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -19,7 +19,12 @@ import {
   CompletionChecklistItemStatus
 } from 'components/completion-checklist-item/CompletionChecklistItem'
 import { ExternalLink } from 'components/link'
-import { PRIVACY_POLICY, TERMS_OF_SERVICE } from 'utils/route'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import {
+  PRIVACY_POLICY,
+  SIGN_UP_HANDLE_PAGE,
+  TERMS_OF_SERVICE
+} from 'utils/route'
 
 import styles from '../styles/CreatePasswordPage.module.css'
 import {
@@ -30,9 +35,6 @@ import {
   getNumberRequirementStatus,
   isRequirementsFulfilled
 } from '../utils/passwordRequirementUtils'
-
-import { PickHandleState } from './PickHandlePage'
-import { SignUpState } from './SignUpPage'
 
 const messages = {
   createYourPassword: 'Create Your Password',
@@ -57,10 +59,6 @@ const messages = {
   privacyPolicy: 'Privacy Policy.'
 }
 
-export type CreatePasswordState = {
-  stage: 'create-password'
-}
-
 const initialValues = {
   password: '',
   confirmPassword: ''
@@ -71,15 +69,10 @@ type CreatePasswordValues = {
   confirmPassword: string
 }
 
-type CreatePasswordPageProps = {
-  onPrevious: (state: SignUpState) => void
-  onNext: (state: PickHandleState) => void
-}
-
-export const CreatePasswordPage = (props: CreatePasswordPageProps) => {
-  const { onNext } = props
+export const CreatePasswordPage = () => {
   const dispatch = useDispatch()
   const emailField = useSelector(getEmailField)
+  const navigate = useNavigateToPage()
 
   const handleSubmit = useCallback(
     async ({ password, confirmPassword }: CreatePasswordValues) => {
@@ -89,10 +82,10 @@ export const CreatePasswordPage = (props: CreatePasswordPageProps) => {
       })
       if (fulfillsRequirements) {
         dispatch(setValueField('password', password))
-        onNext({ stage: 'pick-handle' })
+        navigate(SIGN_UP_HANDLE_PAGE)
       }
     },
-    [dispatch, onNext]
+    [dispatch, navigate]
   )
 
   const [requirementsStatuses, setRequirementsStatuses] = useState<{

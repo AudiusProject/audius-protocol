@@ -403,6 +403,7 @@ export class CreatorNode {
       return await axios(axiosRequestObj)
     } catch (e: any) {
       const wallet = this.userStateManager.getCurrentUser()?.wallet
+      // storageNodeSelector is not always defined (not always passed in to the constructor)
       const storageNodes = this.storageNodeSelector.getNodes(wallet ?? '')
 
       for (const storageNode of storageNodes) {

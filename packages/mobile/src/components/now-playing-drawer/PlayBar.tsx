@@ -6,6 +6,7 @@ import {
   FavoriteSource,
   accountSelectors,
   tracksSocialActions,
+  playerSelectors,
   usePremiumContentAccess
 } from '@audius/common'
 import { TouchableOpacity, Animated, View, Dimensions } from 'react-native'
@@ -26,6 +27,7 @@ import { TrackingBar } from './TrackingBar'
 import { NOW_PLAYING_HEIGHT, PLAY_BAR_HEIGHT } from './constants'
 const { getAccountUser } = accountSelectors
 const { saveTrack, unsaveTrack } = tracksSocialActions
+const { getPreviewing } = playerSelectors
 
 const messages = {
   preview: 'PREVIEW'
@@ -128,10 +130,11 @@ export const PlayBar = (props: PlayBarProps) => {
   const staticWhite = useColor('staticWhite')
 
   const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const isPreviewing = useSelector(getPreviewing)
   const shouldShowPreviewLock =
     track?.premium_conditions &&
     'usdc_purchase' in track.premium_conditions &&
-    !doesUserHaveAccess
+    (!doesUserHaveAccess || isPreviewing)
 
   const onPressFavoriteButton = useCallback(() => {
     if (track) {

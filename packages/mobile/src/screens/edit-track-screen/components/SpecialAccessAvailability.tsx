@@ -40,7 +40,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     alignItems: 'center'
   },
   title: {
-    fontSize: 22,
+    fontSize: 18,
     marginTop: 0
   },
   selectedTitle: {
@@ -54,7 +54,8 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     marginRight: spacing(2.5)
   },
   subtitleContainer: {
-    marginTop: spacing(2)
+    marginTop: spacing(4),
+    marginLeft: -1 * spacing(10)
   },
   subtitle: {
     color: palette.neutral
@@ -122,7 +123,8 @@ export const SpecialAccessAvailability = ({
     ? { follow_user_id: currentUserId }
     : null
   const [selectedSpecialAccessGate, setSelectedSpecialAccessGate] = useState(
-    !('nft_collection' in (previousPremiumConditions ?? {}))
+    isPremiumContentFollowGated(previousPremiumConditions) ||
+      isPremiumContentTipGated(previousPremiumConditions)
       ? previousPremiumConditions ?? defaultSpecialAccess
       : defaultSpecialAccess
   )
@@ -167,52 +169,54 @@ export const SpecialAccessAvailability = ({
           {messages.specialAccess}
         </Text>
       </View>
-      <View style={styles.subtitleContainer}>
-        <Text fontSize='medium' weight='medium' style={styles.subtitle}>
-          {messages.specialAccessSubtitle}
-        </Text>
-      </View>
       {selected && (
-        <View style={styles.selectionContainer}>
-          <TouchableOpacity
-            onPress={handlePressFollowers}
-            disabled={
-              isContentDisabled ||
-              isPremiumContentFollowGated(premiumConditions)
-            }
-          >
-            <View style={styles.followersOnly}>
-              <RadioButton
-                checked={isPremiumContentFollowGated(premiumConditions)}
-                disabled={isContentDisabled}
-                style={styles.radio}
-              />
-              <Text style={isContentDisabled ? styles.disabledTitle : null}>
-                {messages.followersOnly}
-              </Text>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handlePressSupporters}
-            disabled={
-              isContentDisabled || isPremiumContentTipGated(premiumConditions)
-            }
-          >
-            <View style={styles.supportersOnly}>
-              <RadioButton
-                checked={isPremiumContentTipGated(premiumConditions)}
-                disabled={isContentDisabled}
-                style={styles.radio}
-              />
-              <Text style={isContentDisabled ? styles.disabledTitle : null}>
-                {messages.supportersOnly}
-              </Text>
-              <TouchableOpacity onPress={handleInfoPress}>
-                <IconInfo style={styles.infoIcon} fill={neutralLight4} />
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        </View>
+        <>
+          <View style={styles.subtitleContainer}>
+            <Text fontSize='medium' weight='medium' style={styles.subtitle}>
+              {messages.specialAccessSubtitle}
+            </Text>
+          </View>
+          <View style={styles.selectionContainer}>
+            <TouchableOpacity
+              onPress={handlePressFollowers}
+              disabled={
+                isContentDisabled ||
+                isPremiumContentFollowGated(premiumConditions)
+              }
+            >
+              <View style={styles.followersOnly}>
+                <RadioButton
+                  checked={isPremiumContentFollowGated(premiumConditions)}
+                  disabled={isContentDisabled}
+                  style={styles.radio}
+                />
+                <Text style={isContentDisabled ? styles.disabledTitle : null}>
+                  {messages.followersOnly}
+                </Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handlePressSupporters}
+              disabled={
+                isContentDisabled || isPremiumContentTipGated(premiumConditions)
+              }
+            >
+              <View style={styles.supportersOnly}>
+                <RadioButton
+                  checked={isPremiumContentTipGated(premiumConditions)}
+                  disabled={isContentDisabled}
+                  style={styles.radio}
+                />
+                <Text style={isContentDisabled ? styles.disabledTitle : null}>
+                  {messages.supportersOnly}
+                </Text>
+                <TouchableOpacity onPress={handleInfoPress}>
+                  <IconInfo style={styles.infoIcon} fill={neutralLight4} />
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </>
       )}
     </View>
   )

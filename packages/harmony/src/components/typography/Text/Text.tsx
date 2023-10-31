@@ -1,5 +1,6 @@
 import { ElementType, ForwardedRef, forwardRef } from 'react'
 
+import { Slot } from '@radix-ui/react-slot'
 import cn from 'classnames'
 import { camelCase } from 'lodash'
 
@@ -21,11 +22,13 @@ export const Text = forwardRef(
       color,
       tag,
       innerRef,
+      asChild,
       ...other
     } = props
 
-    const Tag: ElementType =
-      tag ?? variantTagMap[variant ?? 'body'][size] ?? 'p'
+    const Tag: ElementType = asChild
+      ? Slot
+      : tag ?? variantTagMap[variant ?? 'body'][size] ?? 'p'
 
     const variantClassNames = [
       variant || '',
