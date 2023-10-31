@@ -88,7 +88,11 @@ export const TracksTableContainer = ({
   let filteredData: DataSourceTrack[]
   const { hasOnlyOneSection, pub, gated, hidden, premium, specialAccess } =
     useMemo(() => {
-      const pub = dataSource.filter((data) => data.is_unlisted === false)
+      const pub = dataSource.filter(
+        (data) =>
+          data.is_unlisted === false &&
+          !('usdc_purchase' in data.premium_conditions || {})
+      )
       const gated = dataSource.filter(
         (data) =>
           'tip_user_id' in (data.premium_conditions || {}) ||
