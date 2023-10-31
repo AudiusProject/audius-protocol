@@ -20,7 +20,8 @@ import {
   purchaseContentSagas,
   buyUSDCSagas,
   buyCryptoSagas,
-  stripeModalUISagas
+  stripeModalUISagas,
+  modalsSagas
 } from '@audius/common'
 import addToPlaylistSagas from 'common/store/add-to-playlist/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
@@ -138,6 +139,7 @@ export default function* rootSaga() {
 
     ...walletSagas(),
 
+    ...modalsSagas(),
     ...notificationsSagas(),
 
     // Pages

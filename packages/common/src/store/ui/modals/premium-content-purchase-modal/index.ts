@@ -13,7 +13,9 @@ const premiumContentPurchaseModal =
       isOpen: false,
       contentId: -1
     },
-    sliceSelector: (state) => state.ui.modals
+    sliceSelector: (state) => state.ui.modals,
+    enableTracking: true,
+    getTrackingData: ({ contentId }) => ({ contentId })
   })
 
 export const {
