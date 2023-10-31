@@ -183,11 +183,12 @@ const TrackListItem = ({
           {(ref, triggerPopup) => (
             <div className={cn(styles.menuContainer)} ref={menuRef}>
               {!disableActions && !deleted ? (
-                <IconKebabHorizontal
-                  className={styles.iconKebabHorizontal}
-                  ref={ref}
-                  onClick={onMoreClick(triggerPopup)}
-                />
+                <div ref={ref}>
+                  <IconKebabHorizontal
+                    className={styles.iconKebabHorizontal}
+                    onClick={onMoreClick(triggerPopup)}
+                  />
+                </div>
               ) : (
                 <div className={styles.iconKebabHorizontal} />
               )}
