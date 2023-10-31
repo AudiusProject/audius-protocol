@@ -3,6 +3,8 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { MintName } from 'services/index'
 import { OnRampProvider } from 'store/ui/buy-audio/types'
 
+import { BuyCryptoError } from './types'
+
 type BuyCryptoPayload = {
   /**
    * The amount the user is requesting, in user friendly decimal denomination
@@ -56,7 +58,10 @@ const slice = createSlice({
     /**
      * Fired when an error was thrown in the saga
      */
-    buyCryptoFailed: (_state, _action: PayloadAction<{ error: Error }>) => {
+    buyCryptoFailed: (
+      _state,
+      _action: PayloadAction<{ error: BuyCryptoError }>
+    ) => {
       // handled by saga
     },
     /**
