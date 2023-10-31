@@ -1,14 +1,11 @@
-import { useCallback } from 'react'
-
 import {
   PurchaseContentStage,
   isContentPurchaseInProgress,
   usePayExtraPresets,
-  modalsActions
+  useUSDCManualTransferModal
 } from '@audius/common'
 import { PlainButton } from '@audius/harmony'
 import { IconCheck } from '@audius/stems'
-import { useDispatch } from 'react-redux'
 
 import { Icon } from 'components/Icon'
 import { Text } from 'components/typography'
@@ -20,8 +17,6 @@ import { PayExtraFormSection } from './PayExtraFormSection'
 import { PayToUnlockInfo } from './PayToUnlockInfo'
 import styles from './PurchaseContentFormFields.module.css'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
-
-const { setVisibility } = modalsActions
 
 const messages = {
   purchaseSuccessful: 'Your Purchase Was Successful!',
@@ -37,19 +32,10 @@ export const PurchaseContentFormFields = ({
   purchaseSummaryValues,
   stage
 }: PurchaseContentFormFieldsProps) => {
-  const dispatch = useDispatch()
+  const { onOpen: openUsdcManualTransferModal } = useUSDCManualTransferModal()
   const payExtraAmountPresetValues = usePayExtraPresets(useRemoteVar)
   const isPurchased = stage === PurchaseContentStage.FINISH
   const isInProgress = isContentPurchaseInProgress(stage)
-
-  const handleManualTransferClick = useCallback(() => {
-    dispatch(
-      setVisibility({
-        modal: 'USDCManualTransferModal',
-        visible: true
-      })
-    )
-  }, [dispatch])
 
   if (isPurchased) {
     return (
@@ -84,7 +70,7 @@ export const PurchaseContentFormFields = ({
         <Text
           as={PlainButton}
           disabled={isInProgress}
-          onClick={handleManualTransferClick}
+          onClick={() => openUsdcManualTransferModal()}
           color='primary'
         >
           {messages.manualTransfer}

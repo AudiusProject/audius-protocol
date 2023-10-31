@@ -12,7 +12,6 @@ import {
 import cn from 'classnames'
 import { useAsync } from 'react-use'
 
-import { Icon } from 'components/Icon'
 import { AddressTile } from 'components/address-tile'
 import { ToastContext } from 'components/toast/ToastContext'
 import { Text } from 'components/typography'
@@ -60,14 +59,15 @@ export const USDCManualTransferModal = () => {
 
   return (
     <Modal
+      zIndex={10002}
       size={'small'}
-      onClose={onClose}
+      onClose={handleCloseClick}
       isOpen={isOpen}
       bodyClassName={styles.modal}
     >
       <ModalHeader
         className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
-        onClose={onClose}
+        onClose={handleCloseClick}
         showDismissButton={!mobile}
       >
         <Text
