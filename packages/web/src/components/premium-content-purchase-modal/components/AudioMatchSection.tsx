@@ -13,7 +13,7 @@ type AudioMatchSectionProps = {
 export const AudioMatchSection = ({ amount }: AudioMatchSectionProps) => {
   return (
     <div className={styles.root}>
-      <Text variant='label' size='large' color='white'>
+      <Text variant='label' size='large' color='staticWhite'>
         {messages.earn(amount)}
       </Text>
     </div>

@@ -6,6 +6,7 @@ import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
+import zIndex from 'utils/zIndex'
 
 import styles from './StripeOnRampModal.module.css'
 
@@ -81,6 +82,9 @@ export const StripeOnRampModal = () => {
   return (
     <div
       className={cn(styles.stripeModalWrapper, { [styles.visible]: isOpen })}
+      style={{
+        zIndex: zIndex.STRIPE_ONRAMP_MODAL_BACKGROUND
+      }}
       onClick={handleBackgroundClicked}
     >
       {isOpen && session ? <MountStripeSession session={session} /> : null}
