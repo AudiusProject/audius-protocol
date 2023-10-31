@@ -60,15 +60,14 @@ export const LeavingAudiusModal = () => {
       <ModalFooter className={styles.footer}>
         <Button
           className={styles.button}
-          variant={ButtonType.TERTIARY}
-          text={messages.goBack}
+          variant={ButtonType.SECONDARY}
           onClick={onClose}
-        />
-        <Button
-          className={styles.button}
-          text={messages.visitSite}
-          onClick={handleOpen}
-        />
+        >
+          {messages.goBack}
+        </Button>
+        <Button className={styles.button} onClick={handleOpen}>
+          {messages.visitSite}
+        </Button>
       </ModalFooter>
     </Modal>
   )

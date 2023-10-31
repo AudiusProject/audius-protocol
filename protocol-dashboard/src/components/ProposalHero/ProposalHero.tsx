@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import { Utils } from '@audius/sdk/dist/legacy.js'
+import BN from 'bn.js'
 
 import Paper from 'components/Paper'
 import VoteMeter from 'components/VoteMeter'
@@ -68,9 +68,7 @@ const VoteCTA: React.FC<VoteCTAProps> = ({
   )
 
   const { status: userStatus, user: accountUser } = useAccountUser()
-  const activeStake = accountUser
-    ? getActiveStake(accountUser)
-    : Utils.toBN('0')
+  const activeStake = accountUser ? getActiveStake(accountUser) : new BN('0')
   const isUserStaker = userStatus === Status.Success && !activeStake.isZero()
 
   return (
@@ -237,7 +235,7 @@ const ProposalHero: React.FC<ProposalHeroProps> = ({
     }
   }, [status, newVote, setCurrentVote, setReset])
 
-  const amountAbstained = useAmountAbstained(proposal) || Utils.toBN('0')
+  const amountAbstained = useAmountAbstained(proposal) || new BN('0')
 
   const inProgressProposalSubstate = useGetInProgressProposalSubstate(proposal)
   const proposalMilestoneBlocks = useProposalMilestoneBlocks(proposal)
@@ -260,7 +258,7 @@ const ProposalHero: React.FC<ProposalHeroProps> = ({
 
   const totalMagnitudeVoted = proposal
     ? proposal?.voteMagnitudeYes.add(proposal?.voteMagnitudeNo)
-    : Utils.toBN('0')
+    : new BN('0')
   const hasMetQuorum = proposal
     ? totalMagnitudeVoted.gte(proposal.quorum)
     : false

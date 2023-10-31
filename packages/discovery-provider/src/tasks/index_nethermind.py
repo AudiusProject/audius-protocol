@@ -545,7 +545,9 @@ def index_nethermind(self):
                 logger.disable()
                 update_lock.release()
                 # Send the task with a small amount of sleep to free up cycles
-                celery.send_task("index_nethermind", countdown=0.5)
+                celery.send_task(
+                    "index_nethermind", countdown=0.5, queue="index_nethermind"
+                )
                 return
 
             if in_valid_state:
@@ -555,4 +557,4 @@ def index_nethermind(self):
     except Exception as e:
         logger.error(f"Error in indexing blocks {e}", exc_info=True)
     update_lock.release()
-    celery.send_task("index_nethermind")
+    celery.send_task("index_nethermind", queue="index_nethermind")

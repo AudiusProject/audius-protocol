@@ -40,6 +40,9 @@ const TYPE_STYLE_MAP: { [k in HarmonyButtonType]: string } = {
 }
 
 /**
+ * @deprecated
+ * Deprecated: (use `Button` from \@audius/harmony)
+ *
  * A common Button component. Includes a few variants and options to
  * include and position icons.
  */

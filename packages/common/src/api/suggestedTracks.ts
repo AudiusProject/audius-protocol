@@ -36,7 +36,7 @@ type SuggestedTrack =
   | { isLoading: false; id: ID; track: Track; key: ID }
 
 const skeletons = [...Array(5)].map((_, index) => ({
-  key: index,
+  key: index + 5,
   isLoading: true as const
 }))
 

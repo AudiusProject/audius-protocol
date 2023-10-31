@@ -23,6 +23,7 @@ global.STORIES = [
 import '@storybook/addon-ondevice-controls/register'
 import '@storybook/addon-ondevice-actions/register'
 
+// @ts-expect-error
 import { argsEnhancers } from '@storybook/addon-actions/dist/modern/preset/addArgs'
 
 import { decorators, parameters } from './preview'
@@ -49,8 +50,11 @@ try {
 
 const getStories = () => {
   return {
-    '../src/harmony-native/Primitives.stories.tsx': require('../src/harmony-native/foundations/color/primitives.stories.tsx')
+    '../src/harmony-native/color.stories.tsx': require('../src/harmony-native/foundations/color/color.stories.tsx'),
+    '../src/harmony-native/Typography.stories.tsx': require('../src/harmony-native/foundations/typography/Typography.stories.tsx'),
+    '../src/harmony-native/Link.stories.tsx': require('../src/harmony-native/components/Link/Link.stories.tsx')
   }
 }
 
+// @ts-expect-error
 configure(getStories, module, false)

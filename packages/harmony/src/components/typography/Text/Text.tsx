@@ -1,5 +1,6 @@
 import { ElementType, ForwardedRef, forwardRef } from 'react'
 
+import { Slot } from '@radix-ui/react-slot'
 import cn from 'classnames'
 import { camelCase } from 'lodash'
 
@@ -21,27 +22,26 @@ export const Text = forwardRef(
       color,
       tag,
       innerRef,
-      style,
-      ...otherProps
+      asChild,
+      ...other
     } = props
 
-    const Tag: ElementType =
-      tag ?? variantTagMap[variant ?? 'body'][size] ?? 'p'
+    const Tag: ElementType = asChild
+      ? Slot
+      : tag ?? variantTagMap[variant ?? 'body'][size] ?? 'p'
 
-    type TextClass = keyof typeof styles
     const variantClassNames = [
-      variant ? (variant as TextClass) : '',
-      variant ? (camelCase(`${variant} ${size}`) as TextClass) : '',
-      variant ? (camelCase(`${variant} ${strength}`) as TextClass) : '',
-      color ? (camelCase(`color ${color}`) as TextClass) : ''
-    ].map((cn) => styles[cn as TextClass])
+      variant || '',
+      variant ? camelCase(`${variant} ${size}`) : '',
+      variant ? camelCase(`${variant} ${strength}`) : '',
+      color ? camelCase(`color ${color}`) : ''
+    ].map((cn) => styles[cn])
 
     return (
       <Tag
         ref={innerRef ?? ref}
         className={cn(styles.text, ...variantClassNames, className)}
-        style={style}
-        {...otherProps}
+        {...other}
       >
         {children}
       </Tag>

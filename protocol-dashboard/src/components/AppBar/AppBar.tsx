@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react'
+import BN from 'bn.js'
 import Button from 'components/Button'
 import { Position } from 'components/Tooltip'
 import ConnectMetaMaskModal from 'components/ConnectMetaMaskModal'
@@ -20,7 +21,6 @@ import DisplayAudio from 'components/DisplayAudio'
 import UserImage from 'components/UserImage'
 import useOpenLink from 'hooks/useOpenLink'
 import getActiveStake from 'utils/activeStake'
-import { Utils } from '@audius/sdk/dist/legacy.js'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -75,7 +75,7 @@ const Misconfigured = ({
 
 const UserAccountSnippet = ({ wallet }: UserAccountSnippetProps) => {
   const { user } = useUser({ wallet })
-  const activeStake = user ? getActiveStake(user) : Utils.toBN('0')
+  const activeStake = user ? getActiveStake(user) : new BN('0')
 
   const pushRoute = usePushRoute()
   const onClickUser = useCallback(() => {

@@ -1,4 +1,3 @@
-import { Utils } from '@audius/sdk/dist/legacy.js'
 import { Operator, User } from 'types'
 import BN from 'bn.js'
 
@@ -13,8 +12,8 @@ import BN from 'bn.js'
  */
 
 export const getActiveStake = (user: User | Operator) => {
-  let activeDeployerStake: BN = Utils.toBN('0')
-  let activeDelegatorStake: BN = Utils.toBN('0')
+  let activeDeployerStake: BN = new BN('0')
+  let activeDelegatorStake: BN = new BN('0')
   if ('serviceProvider' in user) {
     const { deployerStake } = user.serviceProvider
     const {
@@ -39,7 +38,7 @@ export const getActiveStake = (user: User | Operator) => {
 }
 
 export const getTotalActiveDelegatedStake = (user: User | Operator) => {
-  let total: BN = Utils.toBN('0')
+  let total: BN = new BN('0')
   if ('delegators' in user) {
     for (const delegator of user.delegators) {
       total = total.add(delegator.activeAmount)

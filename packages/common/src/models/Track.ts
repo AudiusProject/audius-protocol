@@ -108,6 +108,14 @@ export enum PremiumContentType {
   USDC_PURCHASE = 'usdc purchase'
 }
 
+export enum TrackAccessType {
+  PUBLIC = 'public',
+  TIP_GATED = 'tip_gated',
+  FOLLOW_GATED = 'follow_gated',
+  COLLECTIBLE_GATED = 'collectible_gated',
+  USDC_GATED = 'usdc_gated'
+}
+
 export const isPremiumContentCollectibleGated = (
   premiumConditions?: Nullable<PremiumConditions>
 ): premiumConditions is PremiumConditionsCollectibleGated =>
@@ -154,7 +162,7 @@ export type SolCollectionMap = {
 export type PremiumTrackStatus = null | 'UNLOCKING' | 'UNLOCKED' | 'LOCKED'
 
 export type TrackMetadata = {
-  ai_attribution_user_id?: number
+  ai_attribution_user_id?: Nullable<number>
   blocknumber: number
   activity_timestamp?: string
   is_delete: boolean

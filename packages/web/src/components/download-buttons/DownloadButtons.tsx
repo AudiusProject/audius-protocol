@@ -29,6 +29,7 @@ export type DownloadButtonProps = {
   state: ButtonState
   type: ButtonType
   label: string
+  doesUserHaveAccess: boolean
   onClick?: () => void
 }
 
@@ -38,6 +39,7 @@ export const messages = {
   followToDownload: 'Must follow artist to download',
   processingTrack: 'Processing',
   processingStem: 'Uploading',
+  mustHaveAccess: 'Must have access to download',
   addDownloadPrefix: (label: string) => `Download ${label}`
 }
 
@@ -45,14 +47,21 @@ const DownloadButton = ({
   label,
   state,
   type,
+  doesUserHaveAccess,
   onClick = () => {}
 }: DownloadButtonProps) => {
   const dispatch = useDispatch()
   const isMobile = useIsMobile()
   const isDisabled =
-    state === ButtonState.PROCESSING || state === ButtonState.REQUIRES_FOLLOW
+    !doesUserHaveAccess ||
+    state === ButtonState.PROCESSING ||
+    state === ButtonState.REQUIRES_FOLLOW
 
   const getTooltipText = useCallback(() => {
+    if (!doesUserHaveAccess) {
+      return messages.mustHaveAccess
+    }
+
     switch (state) {
       case ButtonState.PROCESSING:
         return type === ButtonType.STEM
@@ -69,7 +78,7 @@ const DownloadButton = ({
             return messages.downloadableTrack
         }
     }
-  }, [state, type])
+  }, [doesUserHaveAccess, state, type])
 
   const renderIcon = () => {
     if (state === ButtonState.PROCESSING) {
@@ -167,10 +176,6 @@ const DownloadButtons = ({
     return null
   }
 
-  if (!isOwner && !doesUserHaveAccess) {
-    return null
-  }
-
   return (
     <div
       className={cn({
@@ -178,7 +183,11 @@ const DownloadButtons = ({
       })}
     >
       {buttons.map((props) => (
-        <DownloadButton {...props} key={props.label} />
+        <DownloadButton
+          {...props}
+          doesUserHaveAccess={doesUserHaveAccess}
+          key={props.label}
+        />
       ))}
     </div>
   )

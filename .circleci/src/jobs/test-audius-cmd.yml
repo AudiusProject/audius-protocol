@@ -1,7 +1,5 @@
-machine:
-  image: ubuntu-2204:current
-  docker_layer_caching: true
-resource_class: large
+machine: true
+resource_class: audiusproject/gcp-n2-standard-4
 steps:
   - checkout:
       path: '~/audius-protocol'
@@ -10,3 +8,8 @@ steps:
       name: audius-cmd test
       no_output_timeout: 15m
       command: . ~/.profile; audius-compose up --prod && audius-cmd test
+  - run:
+      name: cleanup
+      no_output_timeout: 5m
+      command: . ~/.profile; audius-compose down
+      when: always

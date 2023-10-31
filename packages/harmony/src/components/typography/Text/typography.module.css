@@ -45,6 +45,14 @@
   color: var(--harmony-text-disabled);
 }
 
+.colorDanger {
+  color: var(--harmony-red);
+}
+
+.colorWarning {
+  color: var(--harmony-orange);
+}
+
 /* --- Display Styles --- */
 .display {
   font-weight: var(--harmony-font-bold);

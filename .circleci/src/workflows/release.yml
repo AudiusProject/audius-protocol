@@ -2,45 +2,61 @@ when: << pipeline.parameters.run-release-workflow >>
 jobs:
   - push-docker-image:
       name: push-identity-service
-      context: [GCP, dockerhub]
+      context: [Vercel, dockerhub, slack-secrets]
       service: identity-service
+      notify_slack_on_failure: true
   - push-docker-image:
       name: push-mediorum
-      context: [GCP, dockerhub]
+      context: [Vercel, dockerhub, slack-secrets]
       service: mediorum
+      notify_slack_on_failure: true
   - push-docker-image:
       name: push-discovery-provider
-      context: [GCP, dockerhub]
+      context: [Vercel, dockerhub, slack-secrets]
       service: discovery-provider
+      notify_slack_on_failure: true
   - push-docker-image:
       name: push-discovery-provider-notifications
-      context: [GCP, dockerhub]
+      context: [Vercel, dockerhub, slack-secrets]
       service: discovery-provider-notifications
+      notify_slack_on_failure: true
   - push-docker-image:
       name: push-pedalboard-trending-challenge-rewards
-      context: [GCP, dockerhub]
+      context: [Vercel, dockerhub, slack-secrets]
       service: trending-challenge-rewards
+      notify_slack_on_failure: true
   - push-docker-image:
       name: push-pedalboard-relay
-      context: [GCP, dockerhub]
+      context: [Vercel, dockerhub, slack-secrets]
       service: relay
+      notify_slack_on_failure: true
   - push-docker-image:
       name: push-pedalboard-sla-auditor
-      context: [GCP, dockerhub]
+      context: [Vercel, dockerhub, slack-secrets]
       service: sla-auditor
+      notify_slack_on_failure: true
   - push-docker-image:
       name: push-comms
-      context: [GCP, dockerhub]
+      context: [Vercel, dockerhub, slack-secrets]
       service: comms
+      notify_slack_on_failure: true
   - push-docker-image:
       name: push-trpc
-      context: [GCP, dockerhub]
+      context: [Vercel, dockerhub, slack-secrets]
       service: trpc
+      notify_slack_on_failure: true
+  - push-docker-image:
+      name: push-healthz
+      context: [GCP, dockerhub, slack-secrets]
+      service: healthz
+      notify_slack_on_failure: true
+  - push-docker-image:
+      name: push-protocol-dashboard
+      context: [GCP, dockerhub, slack-secrets]
+      service: dashboard
+      notify_slack_on_failure: true
 
   - release-github-draft-trigger:
-      filters:
-        branches:
-          only: /^release.*$/
       type: approval
   - release-github-draft:
       context: github
@@ -57,16 +73,14 @@ jobs:
         - release-github-trigger
 
   - release-governance-trigger:
-      filters:
-        branches:
-          only: /^release.*$/
       type: approval
   - release-governance:
-      context: governance
+      context: [Vercel, governance, slack-secrets]
       requires:
         - release-governance-trigger
 
-  - deploy-foundation-nodes-trigger:
+  - commit-audius-docker-compose-and-notify:
+      context: [slack-secrets, github]
       requires:
         - push-identity-service
         - push-mediorum
@@ -77,9 +91,12 @@ jobs:
         - push-pedalboard-sla-auditor
         - push-comms
         - push-trpc
-      filters:
-        branches:
-          only: /^release.*$/
+        - push-healthz
+        - push-protocol-dashboard
+
+  - deploy-foundation-nodes-trigger:
+      requires:
+        - commit-audius-docker-compose-and-notify
       type: approval
   - deploy-foundation-nodes:
       context: github
@@ -88,9 +105,6 @@ jobs:
   - release-audius-docker-compose-trigger:
       requires:
         - deploy-foundation-nodes
-      filters:
-        branches:
-          only: /^release.*$/
       type: approval
   - release-audius-docker-compose:
       context: github
@@ -98,9 +112,6 @@ jobs:
         - release-audius-docker-compose-trigger
 
   - release-discord-trigger:
-      filters:
-        branches:
-          only: /^release.*$/
       type: approval
   - release-discord:
       context: discord

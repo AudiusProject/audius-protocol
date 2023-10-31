@@ -1,5 +1,11 @@
 FROM node:18.17-alpine as base
 
+ARG TURBO_TEAM
+ENV TURBO_TEAM=$TURBO_TEAM
+
+ARG TURBO_TOKEN
+ENV TURBO_TOKEN=$TURBO_TOKEN
+
 # PRUNE DEPENDENCIES
 FROM base AS builder
 
@@ -25,7 +31,7 @@ COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/package-lock.json ./package-lock.json
 COPY --from=builder /app/scripts ./scripts
 
-RUN CI=true npm run install-packages
+RUN CI=true npm i
 
 # Build the project and its dependencies
 COPY --from=builder /app/out/full/ .

@@ -64,6 +64,12 @@
   text-decoration-color: var(--primary-light-2);
 }
 
+.trackTitleContainer {
+  display: flex;
+  gap: var(--unit-2);
+  width: 180px;
+}
+
 .trackTitle {
   font-size: var(--font-xs);
   font-weight: var(--font-bold);

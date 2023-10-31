@@ -11,10 +11,9 @@ import {
   getRecentBlockhash,
   getRootSolanaAccount,
   getTokenAccountInfo,
-  pollForBalanceChange,
+  pollForTokenBalanceChange,
   relayTransaction
 } from 'services/audius-backend/solana'
-import { IntKeys } from 'services/remote-config'
 import { getAccountUser } from 'store/account/selectors'
 import { getContext } from 'store/effects'
 import { getFeePayer } from 'store/solana/selectors'
@@ -26,31 +25,15 @@ import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
   onrampCanceled,
+  onrampFailed,
   onrampOpened,
   purchaseStarted,
   onrampSucceeded,
   startRecoveryIfNecessary,
   recoveryStatusChanged
 } from './slice'
-import { USDCOnRampProvider } from './types'
-import { getUSDCUserBank } from './utils'
-
-// TODO: Configurable min/max usdc purchase amounts?
-function* getBuyUSDCRemoteConfig() {
-  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
-  yield* call([remoteConfigInstance, remoteConfigInstance.waitForRemoteConfig])
-  const retryDelayMs =
-    remoteConfigInstance.getRemoteVar(IntKeys.BUY_TOKEN_WALLET_POLL_DELAY_MS) ??
-    undefined
-  const maxRetryCount =
-    remoteConfigInstance.getRemoteVar(
-      IntKeys.BUY_TOKEN_WALLET_POLL_MAX_RETRIES
-    ) ?? undefined
-  return {
-    maxRetryCount,
-    retryDelayMs
-  }
-}
+import { BuyUSDCError, BuyUSDCErrorCode, USDCOnRampProvider } from './types'
+import { getBuyUSDCRemoteConfig, getUSDCUserBank } from './utils'
 
 type PurchaseStepParams = {
   desiredAmount: number
@@ -90,6 +73,7 @@ function* purchaseStep({
 
   // Wait for on ramp finish
   const result = yield* race({
+    failure: take(onrampFailed),
     success: take(onrampSucceeded),
     canceled: take(onrampCanceled)
   })
@@ -101,6 +85,21 @@ function* purchaseStep({
       make({ eventName: Name.BUY_USDC_ON_RAMP_CANCELED, provider })
     )
     return {}
+  } else if (result.failure) {
+    const errorString = result.failure.payload?.error
+      ? result.failure.payload.error.message
+      : 'Unknown error'
+
+    yield* call(
+      track,
+      make({
+        eventName: Name.BUY_USDC_ON_RAMP_FAILURE,
+        provider,
+        error: errorString
+      })
+    )
+    // Throw up to the flow above this
+    throw new BuyUSDCError(BuyUSDCErrorCode.OnrampError, errorString)
   }
   yield* call(
     track,
@@ -108,13 +107,17 @@ function* purchaseStep({
   )
 
   // Wait for the funds to come through
-  const newBalance = yield* call(pollForBalanceChange, audiusBackendInstance, {
-    mint: 'usdc',
-    tokenAccount,
-    initialBalance,
-    retryDelayMs,
-    maxRetryCount
-  })
+  const newBalance = yield* call(
+    pollForTokenBalanceChange,
+    audiusBackendInstance,
+    {
+      mint: 'usdc',
+      tokenAccount,
+      initialBalance,
+      retryDelayMs,
+      maxRetryCount
+    }
+  )
 
   // Check that we got the requested amount
   const purchasedAmount = newBalance - initialBalance
@@ -207,13 +210,31 @@ function* doBuyUSDC({
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const config = yield* call(getBuyUSDCRemoteConfig)
 
   const userBank = yield* getUSDCUserBank()
   const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
   try {
     if (provider !== USDCOnRampProvider.STRIPE) {
-      throw new Error('USDC Purchase is only supported via Stripe')
+      throw new BuyUSDCError(
+        BuyUSDCErrorCode.OnrampError,
+        'USDC Purchase is only supported via Stripe'
+      )
+    }
+
+    if (desiredAmount < config.minUSDCPurchaseAmountCents) {
+      throw new BuyUSDCError(
+        BuyUSDCErrorCode.MinAmountNotMet,
+        `Minimum USDC purchase amount is ${config.minUSDCPurchaseAmountCents} cents`
+      )
+    }
+
+    if (desiredAmount > config.maxUSDCPurchaseAmountCents) {
+      throw new BuyUSDCError(
+        BuyUSDCErrorCode.MaxAmountExceeded,
+        `Maximum USDC purchase amount is ${config.maxUSDCPurchaseAmountCents} cents`
+      )
     }
 
     yield* put(
@@ -223,6 +244,7 @@ function* doBuyUSDC({
         destinationCurrency: 'usdc',
         destinationWallet: rootAccount.publicKey.toString(),
         onrampCanceled,
+        onrampFailed,
         onrampSucceeded
       })
     )
@@ -273,19 +295,23 @@ function* doBuyUSDC({
       })
     )
   } catch (e) {
+    const error =
+      e instanceof BuyUSDCError
+        ? e
+        : new BuyUSDCError(BuyUSDCErrorCode.OnrampError, `${e}`)
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
-      error: e as Error,
+      error,
       additionalInfo: { userBank }
     })
-    yield* put(buyUSDCFlowFailed())
+    yield* put(buyUSDCFlowFailed({ error }))
     yield* call(
       track,
       make({
         eventName: Name.BUY_USDC_FAILURE,
         provider,
         requestedAmount: desiredAmount,
-        error: (e as Error).message
+        error: error.message
       })
     )
   }

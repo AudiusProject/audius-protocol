@@ -21,6 +21,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from src import api_helpers, exceptions, tracer
 from src.api.v1 import api as api_v1
 from src.api.v1.playlists import playlist_stream_bp
+from src.api.v1.root_path import bp as root_path_bp
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.challenges.create_new_challenges import create_new_challenges
 from src.database_task import DatabaseTask
@@ -275,6 +276,7 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(api_v1.bp)
     app.register_blueprint(api_v1.bp_full)
     app.register_blueprint(playlist_stream_bp)
+    app.register_blueprint(root_path_bp)
 
     return app
 
@@ -531,4 +533,4 @@ def configure_celery(celery, test_config=None):
 
     # Start tasks that should fire upon startup
     celery.send_task("cache_entity_counts")
-    celery.send_task("index_nethermind")
+    celery.send_task("index_nethermind", queue="index_nethermind")

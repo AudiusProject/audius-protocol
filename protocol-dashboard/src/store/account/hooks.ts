@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 
 import {
@@ -19,6 +19,7 @@ import {
 } from './slice'
 import { useEffect } from 'react'
 import { getUser, fetchUser } from 'store/cache/user/hooks'
+import { AnyAction } from '@reduxjs/toolkit'
 
 // -------------------------------- Selectors  --------------------------------
 export const getIsLoggedIn = (state: AppState) => state.account.loggedIn
@@ -131,7 +132,7 @@ export const useAccount = () => {
   const wallet = useSelector(getAccountWallet)
   const status = useSelector(getAccountStatus)
 
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (!status) {
       dispatch(fetchAccount())
@@ -146,7 +147,7 @@ export const useAccountUser = () => {
   const wallet = useSelector(getAccountWallet)
   const [status, setStatus] = useState<Status | undefined>()
   const user = useSelector(getUser(wallet!))
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (isLoggedIn && !status && wallet) {
       dispatch(fetchUser(wallet, setStatus))
@@ -161,7 +162,7 @@ export const useAccountUser = () => {
 export const usePendingTransactions = () => {
   const wallet = useSelector(getAccountWallet)
   const pendingTransactions = useSelector(getPendingTransactions)
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (wallet && pendingTransactions.status === undefined) {
       dispatch(fetchPendingTransactions(wallet))

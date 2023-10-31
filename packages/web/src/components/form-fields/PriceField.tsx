@@ -16,12 +16,19 @@ import { useField } from 'formik'
 
 import { TextField, TextFieldProps } from './TextField'
 
+// Maximum field length to safeguard against numeric overflow:
+// -1 (for len max int)
+// -2 (to account for digits added to include cents)
+const MAX_LENGTH = Number.MAX_SAFE_INTEGER.toString().length - 3
+
 const messages = {
   dollars: '$'
 }
 
 export const PriceField = (props: TextFieldProps) => {
-  const [{ value }, , { setValue: setPrice }] = useField<number>(props.name)
+  const [{ value }, , { setValue: setPrice, setTouched }] = useField<number>(
+    props.name
+  )
   const [humanizedValue, setHumanizedValue] = useState(
     value ? decimalIntegerToHumanReadable(value) : null
   )
@@ -40,8 +47,9 @@ export const PriceField = (props: TextFieldProps) => {
       const { human, value } = filterDecimalString(e.target.value)
       setHumanizedValue(human)
       setPrice(value)
+      setTouched(true, false)
     },
-    [setPrice, setHumanizedValue]
+    [setPrice, setHumanizedValue, setTouched]
   )
 
   const handlePriceBlur: FocusEventHandler<HTMLInputElement> = useCallback(
@@ -54,6 +62,8 @@ export const PriceField = (props: TextFieldProps) => {
   return (
     <TextField
       {...props}
+      // Safeguard against numeric overflow, -1 (for len max int), -2 (to account for cents)
+      maxLength={MAX_LENGTH}
       value={humanizedValue ?? undefined}
       startAdornment={messages.dollars}
       onChange={handlePriceChange}

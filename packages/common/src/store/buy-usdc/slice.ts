@@ -1,6 +1,11 @@
 import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { BuyUSDCStage, USDCOnRampProvider, PurchaseInfo } from './types'
+import {
+  BuyUSDCStage,
+  USDCOnRampProvider,
+  PurchaseInfo,
+  BuyUSDCError
+} from './types'
 
 type StripeSessionStatus =
   | 'initialized'
@@ -18,7 +23,7 @@ type RecoveryStatus = 'idle' | 'in-progress' | 'success' | 'failure'
 
 type BuyUSDCState = {
   stage: BuyUSDCStage
-  error?: Error
+  error?: BuyUSDCError
   provider: USDCOnRampProvider
   onSuccess?: OnSuccess
   stripeSessionStatus?: StripeSessionStatus
@@ -40,13 +45,11 @@ const slice = createSlice({
       action: PayloadAction<{
         purchaseInfo: PurchaseInfo
         provider: USDCOnRampProvider
-        onSuccess?: OnSuccess
       }>
     ) => {
       state.stage = BuyUSDCStage.START
       state.error = undefined
       state.provider = action.payload.provider
-      state.onSuccess = action.payload.onSuccess
     },
     purchaseStarted: (state) => {
       state.stage = BuyUSDCStage.PURCHASING
@@ -59,8 +62,14 @@ const slice = createSlice({
     onrampSucceeded: (state) => {
       state.stage = BuyUSDCStage.CONFIRMING_PURCHASE
     },
-    buyUSDCFlowFailed: (state) => {
-      state.error = new Error('USDC purchase failed')
+    onrampFailed: (_state, _action: PayloadAction<{ error: Error }>) => {
+      // handled by saga
+    },
+    buyUSDCFlowFailed: (
+      state,
+      action: PayloadAction<{ error: BuyUSDCError }>
+    ) => {
+      state.error = action.payload.error
     },
     buyUSDCFlowSucceeded: (state) => {
       state.stage = BuyUSDCStage.FINISH
@@ -91,6 +100,7 @@ export const {
   purchaseStarted,
   onrampSucceeded,
   onrampCanceled,
+  onrampFailed,
   stripeSessionStatusChanged,
   startRecoveryIfNecessary,
   recoveryStatusChanged,

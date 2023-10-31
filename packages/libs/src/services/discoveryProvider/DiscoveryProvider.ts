@@ -90,6 +90,8 @@ type DiscoveryNodeChallenge = {
   handle: string
   wallet: string
   completed_blocknumber: number
+  created_at: string
+  disbursed_amount: number
 }
 
 export type DiscoveryRelayBody = {

@@ -202,7 +202,7 @@ export const FinishPage = (props: FinishPageProps) => {
                 : messages.uploadInProgress}
             </Text>
             <div className={styles.headerProgressInfo}>
-              <Text variant='label' size='small'>
+              <Text variant='label' as='p' size='small'>
                 {uploadComplete
                   ? '100%'
                   : fullUploadPercent === 100 && !uploadComplete

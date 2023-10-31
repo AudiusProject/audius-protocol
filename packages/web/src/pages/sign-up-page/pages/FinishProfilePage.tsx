@@ -7,11 +7,11 @@ import { useDispatch } from 'react-redux'
 
 import { setValueField } from 'common/store/pages/signon/actions'
 import { TextField } from 'components/form-fields'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { SIGN_UP_GENRES_PAGE } from 'utils/route'
 
 import { CoverPhotoField } from '../components/CoverPhotoField'
 import { ProfilePictureField } from '../components/ProfilePictureField'
-
-import { SelectGenreState } from './SelectGenrePage'
 
 const messages = {
   header: 'Finish Your Profile',
@@ -19,14 +19,6 @@ const messages = {
     'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
   displayName: 'Display Name',
   continue: 'Continue'
-}
-
-export type FinishProfileState = {
-  stage: 'finish-profile'
-}
-
-type FinishProfilePageProps = {
-  onNext: (state: SelectGenreState) => void
 }
 
 type FinishProfileValues = {
@@ -41,17 +33,17 @@ const initialValues = {
   displayName: ''
 }
 
-export const FinishProfilePage = (props: FinishProfilePageProps) => {
-  const { onNext } = props
+export const FinishProfilePage = () => {
   const dispatch = useDispatch()
+  const navigate = useNavigateToPage()
 
   const handleSubmit = useCallback(
     (values: FinishProfileValues) => {
       const { displayName } = values
       dispatch(setValueField('name', displayName))
-      onNext({ stage: 'select-genre' })
+      navigate(SIGN_UP_GENRES_PAGE)
     },
-    [dispatch, onNext]
+    [dispatch, navigate]
   )
 
   return (
@@ -64,7 +56,7 @@ export const FinishProfilePage = (props: FinishProfilePageProps) => {
           <CoverPhotoField />
           <ProfilePictureField />
           <TextField name='displayName' label={messages.displayName} />
-          <Button type='submit' text={messages.continue} />
+          <Button type='submit'> {messages.continue} </Button>
         </Form>
       </Formik>
     </div>

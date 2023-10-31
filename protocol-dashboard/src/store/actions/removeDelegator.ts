@@ -1,12 +1,13 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 import { getAccountWallet, fetchPendingTransactions } from 'store/account/hooks'
 
 import { Status, Address } from 'types'
 import Audius from 'services/Audius'
 import { AppState } from 'store/types'
+import { AnyAction } from '@reduxjs/toolkit'
 
 function removeAudiusDelegator(
   serviceProvider: Address,
@@ -36,7 +37,7 @@ function removeAudiusDelegator(
 export const useRemoveDelegator = (shouldReset: boolean) => {
   const [status, setStatus] = useState<undefined | Status>()
   const [error, setError] = useState<string>('')
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (shouldReset) {
       setStatus(undefined)

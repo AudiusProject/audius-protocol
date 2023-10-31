@@ -14,29 +14,17 @@ web-init:
         keys:
           - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
-    - restore_cache:
-        keys:
-          - cache-{{ .Revision }}
-
     - common-lint
 
     - run:
-        name: typecheck
+        name: lint & typecheck
         command: |
-          cd packages/web
-          npm run typecheck
-
-    - run:
-        name: lint
-        command: |
-          cd packages/web
-          npm run lint
+          npx turbo run verify --filter=audius-client
 
     - run:
         name: stylelint
         command: |
-          cd packages/web
-          npm run stylelint
+          npm run stylelint -w audius-client
 
     - persist_to_workspace:
         root: ./
@@ -70,7 +58,7 @@ web-build-demo:
         command: |
           cd packages/web
           export PUBLIC_URL=/${CIRCLE_BRANCH}
-          CI=false npm run build:stage
+          CI=false npm run build:stage -w audius-client
           mv build-staging build-demo
     - persist_to_workspace:
         root: ./

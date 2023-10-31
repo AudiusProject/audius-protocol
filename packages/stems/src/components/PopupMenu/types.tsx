@@ -7,6 +7,8 @@ type ApplicablePopupProps = Pick<
   | 'position'
   | 'title'
   | 'titleClassName'
+  | 'wrapperClassName'
+  | 'className'
   | 'hideCloseButton'
   | 'zIndex'
   | 'containerRef'
@@ -26,13 +28,23 @@ export type PopupMenuProps = {
   onClose?: () => void
 
   /**
+   * An optional function that controls how the menu is rendered
+   */
+  renderMenu?: (menuItems: PopupMenuItem[]) => JSX.Element
+
+  /**
+   * Whether to dismiss the popup on mouse leave
+   */
+  dismissOnMouseLeave?: boolean
+
+  /**
    * A render function that will be provided:
    * - An anchorRef for positioning the menu
    * - A triggerPopup function that will show/hide the popup
    */
   renderTrigger: (
     anchorRef: React.MutableRefObject<any>,
-    triggerPopup: () => void,
+    triggerPopup: (onMouseEnter?: boolean) => void,
     triggerProps: Partial<ComponentProps<'button'>>
   ) => React.ReactNode
   /**
@@ -60,10 +72,15 @@ export type PopupMenuItem = {
   /**
    * A function triggered when the menu item is clicked
    */
-  onClick: (event: MouseEvent<HTMLLIElement>) => void
+  onClick: (event: MouseEvent<HTMLElement>) => void
 
   /**
    * The text of the menu item
    */
   text: string | React.ReactNode
+
+  /**
+   * The optional description of the menu item
+   */
+  subtext?: string | React.ReactNode
 }

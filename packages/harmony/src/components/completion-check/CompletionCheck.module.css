@@ -1,0 +1,36 @@
+.container {
+  display: inline-flex;
+  position: relative;
+  width: 16px;
+  height: 16px;
+  isolation: isolate;
+}
+
+.defaultCompletionIcon {
+  box-sizing: border-box;
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  height: 16px;
+  width: 16px;
+  border: 2px solid var(--harmony-neutral);
+  border-radius: 50%;
+}
+
+.completionIcon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  border-radius: 50%;
+  z-index: 2;
+}
+
+.emptyCompletionIcon {
+  height: 18px;
+  width: 18px;
+}
+.checkIcon,
+.xIcon {
+  z-index: 2;
+}

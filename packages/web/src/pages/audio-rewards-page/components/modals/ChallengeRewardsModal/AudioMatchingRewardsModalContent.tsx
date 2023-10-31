@@ -4,7 +4,9 @@ import {
   ChallengeName,
   OptimisticUserChallenge,
   challengeRewardsConfig,
-  formatNumberCommas
+  formatNumberCommas,
+  useAudioMatchingChallengeCooldownSchedule,
+  challengesSelectors
 } from '@audius/common'
 import { IconArrowRight, IconCloudUpload, Text } from '@audius/harmony'
 import {
@@ -13,8 +15,12 @@ import {
   HarmonyButtonType
 } from '@audius/stems'
 import cn from 'classnames'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import { useSelector } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { SummaryTable } from 'components/summary-table'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { isMobile } from 'utils/clientUtil'
@@ -23,6 +29,10 @@ import { EXPLORE_PREMIUM_TRACKS_PAGE, UPLOAD_PAGE } from 'utils/route'
 import { ProgressDescription } from './ProgressDescription'
 import { ProgressReward } from './ProgressReward'
 import styles from './styles.module.css'
+
+const { getOptimisticUserChallenges } = challengesSelectors
+
+dayjs.extend(utc)
 
 const messages = {
   rewardMapping: {
@@ -38,7 +48,9 @@ const messages = {
   viewPremiumTracks: 'View Premium Tracks',
   uploadTrack: 'Upload Track',
   totalEarned: (amount: string) => `Total $AUDIO Earned: ${amount}`,
-  claimAudio: (amount: string) => `Claim ${amount} $AUDIO`
+  claimAudio: (amount: string) => `Claim ${amount} $AUDIO`,
+  upcomingRewards: 'Upcoming Rewards',
+  audio: '$AUDIO'
 }
 
 type AudioMatchingChallengeName =
@@ -84,11 +96,13 @@ export const AudioMatchingRewardsModalContent = ({
   const wm = useWithMobileStyle(styles.mobile)
   const navigateToPage = useNavigateToPage()
   const { fullDescription } = challengeRewardsConfig[challengeName]
-
-  const audioClaimedSoFar = challenge
-    ? challenge.amount * challenge.current_step_count -
-      challenge.claimableAmount
-    : 0
+  const {
+    cooldownChallenges,
+    claimableAmount,
+    cooldownChallengesSummary,
+    isEmpty: isCooldownChallengesEmpty
+  } = useAudioMatchingChallengeCooldownSchedule(challenge?.challenge_id)
+  const userChallenge = useSelector(getOptimisticUserChallenges)[challengeName]
 
   const progressDescription = (
     <ProgressDescription
@@ -110,11 +124,11 @@ export const AudioMatchingRewardsModalContent = ({
   )
 
   const progressStatusLabel =
-    audioClaimedSoFar > 0 ? (
+    userChallenge && userChallenge?.disbursed_amount > 0 ? (
       <div className={styles.audioMatchingTotalContainer}>
         <Text variant='label' size='l' strength='strong' color='subdued'>
           {messages.totalEarned(
-            formatNumberCommas(audioClaimedSoFar.toString())
+            formatNumberCommas(userChallenge.disbursed_amount.toString())
           )}
         </Text>
       </div>
@@ -140,22 +154,32 @@ export const AudioMatchingRewardsModalContent = ({
           </div>
         </>
       ) : (
-        <div className={styles.progressCard}>
-          <div className={styles.progressInfo}>
-            {progressDescription}
-            {progressReward}
+        <>
+          <div className={styles.progressCard}>
+            <div className={styles.progressInfo}>
+              {progressDescription}
+              {progressReward}
+            </div>
+            {progressStatusLabel}
           </div>
-          {progressStatusLabel}
-        </div>
+          {!isCooldownChallengesEmpty ? (
+            <SummaryTable
+              title={messages.upcomingRewards}
+              items={cooldownChallenges}
+              summaryItem={cooldownChallengesSummary}
+              secondaryTitle={messages.audio}
+              summaryLabelColor='secondary'
+              summaryValueColor='neutral'
+            />
+          ) : null}
+        </>
       )}
       {challenge?.claimableAmount && challenge.claimableAmount > 0 ? (
         <HarmonyButton
           fullWidth
           iconRight={claimInProgress ? ClaimInProgressSpinner : IconArrowRight}
           disabled={claimInProgress}
-          text={messages.claimAudio(
-            formatNumberCommas(challenge.claimableAmount)
-          )}
+          text={messages.claimAudio(formatNumberCommas(claimableAmount))}
           onClick={onClaimRewardClicked}
         />
       ) : (

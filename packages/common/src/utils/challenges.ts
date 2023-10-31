@@ -1,3 +1,7 @@
+import dayjs from 'dayjs'
+
+import { UndisbursedUserChallenge } from 'store/pages'
+
 import {
   ChallengeRewardID,
   UserChallenge,
@@ -205,8 +209,14 @@ export const makeOptimisticChallengeSortComparator = (
     const userChallenge1 = userChallenges[id1]
     const userChallenge2 = userChallenges[id2]
 
+    if (isAudioMatchingChallenge(id1)) {
+      return -1
+    }
     if (!userChallenge1 || !userChallenge2) {
       return 0
+    }
+    if (userChallenge1?.claimableAmount > 0) {
+      return -1
     }
     if (userChallenge1?.state === 'disbursed') {
       return 1
@@ -216,6 +226,9 @@ export const makeOptimisticChallengeSortComparator = (
     }
     if (userChallenge2?.state === 'disbursed') {
       return -1
+    }
+    if (userChallenge2?.claimableAmount > 0) {
+      return 1
     }
     if (userChallenge2?.state === 'completed') {
       return 1
@@ -232,5 +245,17 @@ export const isAudioMatchingChallenge = (
   return (
     challenge === ChallengeName.AudioMatchingSell ||
     challenge === ChallengeName.AudioMatchingBuy
+  )
+}
+
+// TODO: currently only $AUDIO matching challenges have cooldown
+// so this works, but really we should check if `cooldown_period` exists on the
+// challenge instead of using `!isAudioMatchingChallenge`. PAY-2030
+export const isCooldownChallengeClaimable = (
+  challenge: UndisbursedUserChallenge
+) => {
+  return (
+    !isAudioMatchingChallenge(challenge.challenge_id) ||
+    dayjs.utc().diff(dayjs.utc(challenge.created_at), 'day') >= 7
   )
 }

@@ -37,7 +37,7 @@ services:
     <<: *common
 
   db:
-    image: postgres
+    image: postgres:11.4
     shm_size: 2g
     command: postgres -c shared_buffers=2GB
     restart: unless-stopped

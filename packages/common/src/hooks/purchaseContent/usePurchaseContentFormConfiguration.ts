@@ -12,7 +12,7 @@ import {
 import { Nullable } from 'utils/typeUtils'
 
 import { AMOUNT_PRESET, CUSTOM_AMOUNT } from './constants'
-import { PayExtraPreset } from './types'
+import { PayExtraAmountPresetValues, PayExtraPreset } from './types'
 import { getExtraAmount } from './utils'
 import { PurchaseContentSchema, PurchaseContentValues } from './validation'
 
@@ -26,9 +26,11 @@ const initialValues: PurchaseContentValues = {
 }
 
 export const usePurchaseContentFormConfiguration = ({
-  track
+  track,
+  presetValues
 }: {
   track?: Nullable<UserTrackMetadata>
+  presetValues: PayExtraAmountPresetValues
 }) => {
   const dispatch = useDispatch()
   const stage = useSelector(getPurchaseContentFlowStage)
@@ -39,7 +41,11 @@ export const usePurchaseContentFormConfiguration = ({
     ({ customAmount, amountPreset }: PurchaseContentValues) => {
       if (isUnlocking || !track?.track_id) return
 
-      const extraAmount = getExtraAmount(amountPreset, customAmount)
+      const extraAmount = getExtraAmount({
+        amountPreset,
+        presetValues,
+        customAmount
+      })
 
       dispatch(
         startPurchaseContentFlow({
@@ -50,7 +56,7 @@ export const usePurchaseContentFormConfiguration = ({
         })
       )
     },
-    [isUnlocking, dispatch, track?.track_id]
+    [isUnlocking, presetValues, dispatch, track?.track_id]
   )
 
   return {

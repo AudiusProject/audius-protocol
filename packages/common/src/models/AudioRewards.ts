@@ -11,6 +11,7 @@ export type UserChallenge = {
   specifier: Specifier
   user_id: string
   amount: number
+  disbursed_amount: number
 }
 
 export type Specifier = string
@@ -119,7 +120,10 @@ export type UserChallengeState =
   | 'completed'
   | 'disbursed'
 
-export type SpecifierWithAmount = { specifier: string; amount: number }
+export type SpecifierWithAmount = {
+  specifier: string
+  amount: number
+}
 
 /**
  * A User Challenge that has been updated by the client to optimistically include any updates

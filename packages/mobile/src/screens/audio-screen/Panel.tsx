@@ -2,9 +2,14 @@ import type {
   ChallengeRewardsInfo,
   OptimisticUserChallenge
 } from '@audius/common'
-import { fillString, formatNumberCommas } from '@audius/common'
+import {
+  fillString,
+  formatNumberCommas,
+  isAudioMatchingChallenge
+} from '@audius/common'
 import { View, Image } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
+import LinearGradient from 'react-native-linear-gradient'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconCheck from 'app/assets/images/iconCheck.svg'
@@ -18,7 +23,8 @@ const messages = {
   completeLabel: 'COMPLETE',
   claimReward: 'Claim Your Reward',
   readyToClaim: 'Ready to Claim',
-  viewDetails: 'View Details'
+  viewDetails: 'View Details',
+  new: 'New!'
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -49,11 +55,18 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     fontFamily: typography.fontByWeight.demiBold,
     lineHeight: spacing(4),
     color: palette.secondary,
-    backgroundColor: palette.background,
     borderWidth: 1,
     borderRadius: 12,
     borderColor: palette.backgroundSecondary,
     overflow: 'hidden'
+  },
+  readyToClaimPill: {
+    backgroundColor: palette.background
+  },
+  newChallengeText: {
+    textShadowOffset: { width: 0, height: 1.4 },
+    textShadowRadius: 8,
+    textShadowColor: 'rgba(0,0,0,0.2)'
   },
   header: {
     flexDirection: 'row',
@@ -104,6 +117,7 @@ type PanelProps = {
   MobileChallengeConfig
 
 export const Panel = ({
+  id,
   onPress,
   icon,
   title,
@@ -124,12 +138,20 @@ export const Panel = ({
   const shouldShowProgressBar =
     stepCount > 1 && challenge?.challenge_type !== 'aggregate' && !hasDisbursed
   const needsDisbursement = challenge && challenge.claimableAmount > 0
+  const showNewChallengePill =
+    !needsDisbursement && isAudioMatchingChallenge(id)
 
   const shouldShowProgress = !!progressLabel
   let progressLabelFilled: string | null = null
   if (shouldShowProgress) {
     if (shouldShowCompleted) {
       progressLabelFilled = messages.completeLabel
+    } else if (isAudioMatchingChallenge(id)) {
+      if (needsDisbursement) {
+        progressLabelFilled = messages.readyToClaim
+      } else {
+        progressLabelFilled = progressLabel ?? ''
+      }
     } else if (challenge?.challenge_type === 'aggregate') {
       // Count down
       progressLabelFilled = fillString(
@@ -169,6 +191,23 @@ export const Panel = ({
       <View style={styles.pillContainer}>
         {needsDisbursement ? (
           <Text style={styles.pillMessage}>{messages.readyToClaim}</Text>
+        ) : showNewChallengePill ? (
+          <LinearGradient
+            useAngle={true}
+            angle={125}
+            colors={['#19CCA2', '#61FA66']}
+            style={styles.pillMessage}
+          >
+            <Text
+              variant='body'
+              fontSize='medium'
+              weight='demiBold'
+              color='staticWhite'
+              style={styles.newChallengeText}
+            >
+              {messages.new}
+            </Text>
+          </LinearGradient>
         ) : null}
       </View>
       <View style={styles.content}>

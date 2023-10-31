@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 import dayjs from 'dayjs'
 import duration from 'dayjs/plugin/duration'
@@ -23,6 +23,7 @@ import { useAverageBlockTime, useEthBlockNumber } from '../protocol/hooks'
 import { weiAudToAud } from 'utils/numeric'
 import { ELECTRONIC_SUB_GENRES } from './genres'
 import { fetchWithLibs } from 'utils/fetch'
+import { AnyAction } from '@reduxjs/toolkit'
 dayjs.extend(duration)
 
 const MONTH_IN_MS = dayjs.duration({ months: 1 }).asMilliseconds()
@@ -386,7 +387,7 @@ export const useApiCalls = (bucket: Bucket) => {
   const apiCalls = useSelector(state =>
     getApiCalls(state as AppState, { bucket })
   )
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (doOnce !== bucket && (apiCalls === null || apiCalls === undefined)) {
       setDoOnce(bucket)
@@ -410,7 +411,7 @@ export const useTotalStaked = (bucket: Bucket) => {
   )
   const averageBlockTime = useAverageBlockTime()
   const currentBlockNumber = useEthBlockNumber()
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (
       doOnce !== bucket &&
@@ -442,7 +443,7 @@ export const useTotalStaked = (bucket: Bucket) => {
 export const usePlays = (bucket: Bucket) => {
   const [doOnce, setDoOnce] = useState<Bucket | null>(null)
   const plays = useSelector(state => getPlays(state as AppState, { bucket }))
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (doOnce !== bucket && (plays === null || plays === undefined)) {
       setDoOnce(bucket)
@@ -464,7 +465,7 @@ export const useTrailingApiCalls = (bucket: Bucket) => {
   const apiCalls = useSelector(state =>
     getTrailingApiCalls(state as AppState, { bucket })
   )
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (doOnce !== bucket && (apiCalls === null || apiCalls === undefined)) {
       setDoOnce(bucket)
@@ -486,7 +487,7 @@ export const useTrailingTopGenres = (bucket: Bucket) => {
   const topGenres = useSelector(state =>
     getTrailingTopGenres(state as AppState, { bucket })
   )
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (doOnce !== bucket && (topGenres === null || topGenres === undefined)) {
       setDoOnce(bucket)
@@ -540,7 +541,7 @@ export const useTopApps = (
 ) => {
   const [hasFetched, setHasFetched] = useState<boolean>(false)
   let topApps = useSelector(state => getTopApps(state as AppState, { bucket }))
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (
       !hasFetched &&

@@ -6,6 +6,7 @@ import { Kind } from '../models'
 
 import account from './account/slice'
 import averageColorReducer from './average-color/slice'
+import { buyCryptoReducer } from './buy-crypto'
 import { buyUSDCReducer } from './buy-usdc'
 import collectionsReducer from './cache/collections/reducer'
 import { CollectionsCacheState } from './cache/collections/types'
@@ -254,6 +255,7 @@ export const reducers = (storage: Storage) => ({
 
   // Premium content
   buyUSDC: buyUSDCReducer,
+  buyCrypto: buyCryptoReducer,
   premiumContent,
   purchaseContent: purchaseContentReducer,
   withdrawUSDC: withdrawUSDCReducer,
@@ -374,6 +376,7 @@ export type CommonState = {
 
   // USDC
   buyUSDC: ReturnType<typeof buyUSDCReducer>
+  buyCrypto: ReturnType<typeof buyCryptoReducer>
 
   // Tipping
   tipping: ReturnType<typeof tippingReducer>

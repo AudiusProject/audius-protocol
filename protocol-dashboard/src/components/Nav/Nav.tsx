@@ -1,15 +1,10 @@
-import React, { useCallback } from 'react'
-import { Dispatch } from 'redux'
-import { connect } from 'react-redux'
-import { push as pushRoute } from 'connected-react-router'
-import { matchPath } from 'react-router-dom'
+import { useCallback } from 'react'
+import { matchPath, useNavigate, useLocation } from 'react-router-dom'
 import clsx from 'clsx'
 
-import { AppState } from 'store/types'
 import styles from './Nav.module.css'
 import * as routes from 'utils/routes'
 import { Button, ButtonType } from '@audius/stems'
-import { useLocation } from 'react-router-dom'
 
 const navRoutes = [
   {
@@ -53,7 +48,7 @@ const NavButton = (props: NavButtonProps) => {
   const location = useLocation()
 
   const isActiveRoute = props.matchParams.some(
-    matchParam => !!matchPath(location.pathname, matchParam)
+    matchParam => !!matchPath(matchParam, location.pathname)
   )
   const onButtonClick = useCallback(() => pushRoute(baseRoute), [
     baseRoute,
@@ -71,36 +66,22 @@ const NavButton = (props: NavButtonProps) => {
   )
 }
 
-type OwnProps = {}
-
-type NavProps = OwnProps &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>
-
-const Nav = (props: NavProps) => (
-  <div className={styles.container}>
-    {navRoutes.map(route => (
-      <div key={route.text} className={styles.btnContainer}>
-        <NavButton
-          {...route}
-          pathname={props.pathname}
-          pushRoute={props.pushRoute}
-        />
-      </div>
-    ))}
-  </div>
-)
-
-const mapStateToProps = (state: AppState) => {
-  return {
-    pathname: state.router.location.pathname
-  }
+const Nav = () => {
+  const navigate = useNavigate()
+  const location = useLocation()
+  return (
+    <div className={styles.container}>
+      {navRoutes.map(route => (
+        <div key={route.text} className={styles.btnContainer}>
+          <NavButton
+            {...route}
+            pathname={location.pathname}
+            pushRoute={path => navigate(path)}
+          />
+        </div>
+      ))}
+    </div>
+  )
 }
 
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    pushRoute: (path: string) => dispatch(pushRoute(path))
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Nav)
+export default Nav

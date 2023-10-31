@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 import semver from 'semver'
 
@@ -16,6 +16,7 @@ import Audius from 'services/Audius'
 import { AppState } from 'store/types'
 import { setLoading, setNodes, setTotal } from './slice'
 import { useEffect } from 'react'
+import { AnyAction } from '@reduxjs/toolkit'
 
 type UseDiscoveryProvidersProps = {
   owner?: Address
@@ -178,7 +179,7 @@ export const useDiscoveryProviders = ({
     limit
   ])
 
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (!status) {
       dispatch(fetchDiscoveryProviders())
@@ -193,7 +194,7 @@ export const useDiscoveryProvider = ({ spID }: UseDiscoveryProviderProps) => {
   const [status, setStatus] = useState(Status.Loading)
   const totalDpNodes = useSelector(getTotal)
   const dp = useSelector(getNode(spID))
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
 
   useEffect(() => {
     if (!dp && typeof totalDpNodes !== 'number') {

@@ -5,7 +5,8 @@
  */
 :root,
 root {
-  --harmony-font-family: 'Avenir Next LT Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --harmony-font-family: 'Avenir Next LT Pro', 'Helvetica Neue', Helvetica,
+    Arial, sans-serif;
 
   /* Font Sizes */
   --harmony-font-2xs: 10px;

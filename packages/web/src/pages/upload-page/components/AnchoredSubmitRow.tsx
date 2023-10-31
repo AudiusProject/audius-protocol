@@ -21,13 +21,14 @@ export const AnchoredSubmitRow = () => {
     <>
       <div className={styles.buttonRow}>
         <Button
-          text={messages.complete}
           variant={ButtonType.PRIMARY}
           size={ButtonSize.DEFAULT}
           iconRight={IconCloudUpload}
           onClick={scrollToTop}
           type='submit'
-        />
+        >
+          {messages.complete}
+        </Button>
       </div>
       <div className={styles.placeholder} />
     </>

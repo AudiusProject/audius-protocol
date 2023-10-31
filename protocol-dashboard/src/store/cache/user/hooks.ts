@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
-import { Utils } from '@audius/sdk/dist/legacy.js'
 import BN from 'bn.js'
 import {
   Address,
@@ -34,6 +33,7 @@ import {
   useUsers as useGraphUsers
 } from './graph/hooks'
 import { getUserProfile } from 'services/SelfId'
+import { AnyAction } from '@reduxjs/toolkit'
 
 type UseUsersProp = {
   sortBy?: SortUser
@@ -330,7 +330,7 @@ export const useUsers = ({ limit, sortBy, filter }: UseUsersProp = {}) => {
 
   const { error } = useGraphUsers(status)
 
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (error && !status) {
       dispatch(fetchUsers())
@@ -360,7 +360,7 @@ export const useUser = ({ wallet }: UseUserProps): UseUserResponse => {
 
   const { error } = useGraphUser(wallet, setStatus, !!user)
 
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (error && !user && status !== Status.Failure) {
       dispatch(fetchUser(wallet, setStatus))
@@ -401,11 +401,11 @@ type UseTotalDelegatesProps = { wallet: Address }
 export const useTotalDelegates = ({ wallet }: UseTotalDelegatesProps) => {
   const { status, user } = useUser({ wallet })
   if (status !== Status.Success || !user) {
-    return { status, totalDelegates: Utils.toBN('0') }
+    return { status, totalDelegates: new BN('0') }
   }
   let totalDelegates = user.delegates.reduce(
     (total, delegate) => total.add(delegate.amount),
-    Utils.toBN('0')
+    new BN('0')
   )
   return { status, totalDelegates }
 }
@@ -414,15 +414,15 @@ export const useTotalDelegates = ({ wallet }: UseTotalDelegatesProps) => {
 export const useActiveInboundDelegation = ({ wallet }: { wallet: Address }) => {
   const { status, user } = useUser({ wallet })
   if (status !== Status.Success || !user) {
-    return { status, amount: Utils.toBN('0') }
+    return { status, amount: new BN('0') }
   }
 
   let totalDelegated = (user as Operator).delegators
-  if (!totalDelegated) return { status, amount: Utils.toBN('0') }
+  if (!totalDelegated) return { status, amount: new BN('0') }
 
   const totalInboundDelegation = (user as Operator).delegators.reduce(
     (total, delegator) => total.add(delegator.activeAmount),
-    Utils.toBN('0')
+    new BN('0')
   )
   return { status, amount: totalInboundDelegation }
 }
@@ -434,13 +434,13 @@ type UseUserDelegates = { wallet: Address }
 export const useUserDelegates = ({ wallet }: UseUserDelegates) => {
   const { status, user } = useAccountUser()
   if (status !== Status.Success || !user) {
-    return { status: status || Status.Loading, delegates: Utils.toBN('0') }
+    return { status: status || Status.Loading, delegates: new BN('0') }
   }
   let userDelegates = user.delegates.find(d => d.wallet === wallet)
   if (userDelegates) {
     return { status: Status.Success, delegates: userDelegates.amount }
   }
-  return { status: Status.Success, delegates: Utils.toBN('0') }
+  return { status: Status.Success, delegates: new BN('0') }
 }
 
 const inFlight = new Set<Address>([])
@@ -448,7 +448,7 @@ type UseUserProfile = { wallet: Address }
 export const useUserProfile = ({ wallet }: UseUserProfile) => {
   const { user } = useUser({ wallet })
 
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (user && !inFlight.has(wallet)) {
       inFlight.add(wallet)

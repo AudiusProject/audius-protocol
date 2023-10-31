@@ -1,3 +1,4 @@
+import { SignTypedDataVersion } from '@metamask/eth-sig-util'
 import { keccak_256 } from '@noble/hashes/sha3'
 import * as secp from '@noble/secp256k1'
 
@@ -17,19 +18,18 @@ export const auth = {
     )
   },
   signTransaction: async (data: any) => {
-    const { signTypedData } = await import('eth-sig-util')
+    const { signTypedData } = await import('@metamask/eth-sig-util')
 
     await waitForLibsInit()
-    return signTypedData(
-      Buffer.from(
+    return await signTypedData({
+      privateKey: Buffer.from(
         // @ts-ignore private key is private
         window.audiusLibs.hedgehog?.getWallet()?.privateKey,
         'hex'
       ),
-      {
-        data: data as any
-      }
-    )
+      data: data as any,
+      version: SignTypedDataVersion.V3
+    })
   },
   getSharedSecret: async (publicKey: string | Uint8Array) => {
     await waitForLibsInit()
