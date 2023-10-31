@@ -1,5 +1,4 @@
-import { SolanaWalletAddress } from '@audius/common'
-import { DEFAULT_MINT, MintName } from '@audius/sdk'
+import { SolanaWalletAddress, MintName, DEFAULT_MINT } from '@audius/common'
 import {
   Account,
   getMinimumBalanceForRentExemptAccount,
