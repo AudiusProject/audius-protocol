@@ -3,8 +3,6 @@ import { lazy, Suspense, useState, useCallback, useEffect } from 'react'
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
-// import NavScreen from 'components/public-site/NavOverlay'
-// import LandingPage from 'pages/landing-page/LandingPage'
 import NavScreen from 'components/public-site/NavOverlayV2'
 import LandingPage from 'pages/landing-page-v2/LandingPageV2'
 import {
