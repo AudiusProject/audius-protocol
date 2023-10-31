@@ -21,10 +21,6 @@ export const ADD_LOCAL_COLLECTION = 'SAVED/ADD_LOCAL_COLLECTION'
 export const REMOVE_LOCAL_COLLECTION = 'SAVED/REMOVE_LOCAL_COLLECTION'
 
 export const SET_SELECTED_CATEGORY = 'SAVED/SET_SELECTED_CATEGORY'
-export const INIT_COLLECTIONS_CATEGORY_FROM_LOCAL_STORAGE =
-  'SAVED/INIT_COLLECTIONS_CATEGORY_FROM_LOCAL_STORAGE'
-export const INIT_TRACKS_CATEGORY_FROM_LOCAL_STORAGE =
-  'SAVED/INIT_TRACKS_CATEGORY_FROM_LOCAL_STORAGE'
 
 export const fetchSaves = (
   // the filter query for the "get tracks" query
@@ -152,20 +148,6 @@ export const removeLocalCollection = ({
   type: REMOVE_LOCAL_COLLECTION,
   collectionId,
   isAlbum,
-  category
-})
-
-export const initializeTracksCategoryFromLocalStorage = (
-  category: LibraryCategoryType
-) => ({
-  type: INIT_TRACKS_CATEGORY_FROM_LOCAL_STORAGE,
-  category
-})
-
-export const initializeCollectionsCategoryFromLocalStorage = (
-  category: LibraryCategoryType
-) => ({
-  type: INIT_COLLECTIONS_CATEGORY_FROM_LOCAL_STORAGE,
   category
 })
 

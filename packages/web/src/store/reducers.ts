@@ -5,6 +5,7 @@ import {
 } from '@audius/common'
 import { connectRouter } from 'connected-react-router'
 import { History } from 'history'
+import localForage from 'localforage'
 import { combineReducers } from 'redux'
 
 import backend from 'common/store/backend/reducer'
@@ -28,7 +29,7 @@ import userListModal from 'store/application/ui/userListModal/slice'
 import dragndrop from 'store/dragndrop/slice'
 import error from 'store/errors/reducers'
 
-export const commonStoreReducers = clientStoreReducers()
+export const commonStoreReducers = clientStoreReducers(localForage)
 
 const createRootReducer = (routeHistory: History) =>
   combineReducers({
