@@ -1,3 +1,4 @@
+import { MintName } from '@audius/sdk'
 import {
   NATIVE_MINT,
   createAssociatedTokenAccountIdempotentInstruction,
@@ -32,7 +33,6 @@ import {
 import {
   IntKeys,
   MEMO_PROGRAM_ID,
-  MintName,
   createUserBankIfNeeded,
   createVersionedTransaction,
   getBalanceChanges,
