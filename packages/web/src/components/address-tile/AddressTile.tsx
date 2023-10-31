@@ -46,6 +46,7 @@ export const AddressTile = ({ address, left, right }: AddressTileProps) => {
       <div className={styles.leftContainer}>{left}</div>
       <div className={styles.middleContainer}>
         <Text
+          variant='body'
           className={cn(styles.address, {
             width: width - ADDRESS_HORIZONTAL_MARGINS
           })}
