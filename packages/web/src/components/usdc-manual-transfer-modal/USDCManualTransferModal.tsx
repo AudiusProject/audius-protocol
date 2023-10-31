@@ -19,6 +19,7 @@ import { Hint } from 'components/withdraw-usdc-modal/components/Hint'
 import { getUSDCUserBank } from 'services/solana/solana'
 import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
+import zIndex from 'utils/zIndex'
 
 import styles from './USDCManualTransferModal.module.css'
 
@@ -59,7 +60,7 @@ export const USDCManualTransferModal = () => {
 
   return (
     <Modal
-      zIndex={10002}
+      zIndex={zIndex.USDC_MANUAL_TRANSFER_MODAL}
       size={'small'}
       onClose={handleCloseClick}
       isOpen={isOpen}
