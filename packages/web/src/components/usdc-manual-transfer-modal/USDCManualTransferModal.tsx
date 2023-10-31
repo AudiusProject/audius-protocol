@@ -2,13 +2,7 @@ import { useCallback, useContext } from 'react'
 
 import { Name, useUSDCManualTransferModal } from '@audius/common'
 import { Button, ButtonType } from '@audius/harmony'
-import {
-  IconError,
-  IconInfo,
-  LogoUSDC,
-  ModalContent,
-  ModalHeader
-} from '@audius/stems'
+import { IconError, LogoUSDC, ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
 import { useAsync } from 'react-use'
 
