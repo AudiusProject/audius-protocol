@@ -21,7 +21,6 @@ type IconSize =
 
 type IconProps = {
   color?: ColorValue
-  icon: IconComponent
   size?: IconSize
 } & SVGProps<SVGSVGElement>
 
