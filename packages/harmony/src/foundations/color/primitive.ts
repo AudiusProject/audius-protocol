@@ -43,9 +43,9 @@ export type PrimitiveColors = {
     blue: string
     orange: string
     red: string
-    'dark-red': string
+    darkRed: string
     green: string
-    'light-green': string
+    lightGreen: string
     gradient: string
   }
 }
@@ -94,9 +94,9 @@ export const primitiveTheme: Record<Theme, PrimitiveColors> = {
       blue: '#1BA1F1',
       orange: '#FF9400',
       red: '#D0021B',
-      'dark-red': '#BB0218',
+      darkRed: '#BB0218',
       green: '#0F9E48',
-      'light-green': '#13C65A',
+      lightGreen: '#13C65A',
       gradient: 'linear-gradient(315deg, #5b23e1 0%, #a22feb 100%)'
     }
   },
@@ -144,9 +144,9 @@ export const primitiveTheme: Record<Theme, PrimitiveColors> = {
       blue: '#58B9F4',
       orange: '#EFA947',
       red: '#F9344C',
-      'dark-red': '#C43047',
+      darkRed: '#C43047',
       green: '#6CDF44',
-      'light-green': '#13C65A',
+      lightGreen: '#13C65A',
       gradient: 'linear-gradient(315deg, #7652cc 0%, #b05ce6 100%)'
     }
   },
@@ -193,9 +193,9 @@ export const primitiveTheme: Record<Theme, PrimitiveColors> = {
       blue: '#58B9F4',
       orange: '#EFA947',
       red: '#F9344C',
-      'dark-red': '#C43047',
+      darkRed: '#C43047',
       green: '#6CDF44',
-      'light-green': '#13C65A',
+      lightGreen: '#13C65A',
       gradient: 'linear-gradient(315deg, #7652cc 0%, #b05ce6 100%)'
     }
   }
