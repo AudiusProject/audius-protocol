@@ -55,10 +55,9 @@ import { getBuyUSDCRemoteConfig } from 'store/buy-usdc'
 import { getContext } from 'store/commonStore'
 import { getFeePayer } from 'store/solana/selectors'
 import { TOKEN_LISTING_MAP } from 'store/ui/buy-audio/constants'
+import { BuyAudioStage, OnRampProvider } from 'store/ui/buy-audio/types'
 import { setVisibility } from 'store/ui/modals/parentSlice'
 import { initializeStripeModal } from 'store/ui/stripe-modal/slice'
-
-import { BuyAudioStage, OnRampProvider } from '..'
 
 import { BuyCryptoConfig, BuyCryptoError, BuyCryptoErrorCode } from './types'
 
