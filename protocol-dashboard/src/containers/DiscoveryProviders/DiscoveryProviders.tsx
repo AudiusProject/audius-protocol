@@ -3,7 +3,7 @@ import Page from 'components/Page'
 import DiscoveryTable from 'components/DiscoveryTable'
 import {
   SERVICES,
-  SERVICES_DISCOVERY_PROVIDER,
+  SERVICES_DISCOVERY_PROVIDER_NODE,
   SERVICES_TITLE,
   SERVICES_UNREGISTERED_DISCOVERY_NODE
 } from 'utils/routes'
@@ -47,7 +47,7 @@ const DiscoveryProviders = () => {
     if (spId === 0) {
       path = `${SERVICES_UNREGISTERED_DISCOVERY_NODE}?endpoint=${endpoint}`
     } else {
-      path = SERVICES_DISCOVERY_PROVIDER.replace(':spID', spId.toString())
+      path = SERVICES_DISCOVERY_PROVIDER_NODE.replace(':spID', spId.toString())
     }
     replaceRoute(path)
   }, [spId, endpoint, replaceRoute])
