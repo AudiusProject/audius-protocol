@@ -1,4 +1,4 @@
-import type { SVGProps } from 'react'
+import type { ComponentType, SVGProps } from 'react'
 
 import cn from 'classnames'
 
@@ -6,7 +6,6 @@ import type { ColorValue } from 'types/colors'
 import { toCSSVariableName } from 'utils/styles'
 
 import styles from './Icon.module.css'
-import type { IconComponent } from './types'
 
 // TODO use emotion theme's spacing and colors to generate the types here
 
@@ -22,9 +21,10 @@ type IconSize =
 
 type IconProps = {
   color?: ColorValue
-  icon: IconComponent
   size?: IconSize
 } & SVGProps<SVGSVGElement>
+
+export type IconComponent = ComponentType<IconProps>
 
 /** Renders a harmony Icon component
  * Ex: `<Icon icon={IconKebabHorizontal} color='accentGreen' />`

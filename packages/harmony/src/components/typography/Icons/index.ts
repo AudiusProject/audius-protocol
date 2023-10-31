@@ -1,5 +1,3 @@
-export * from './types'
-
 // Special Icons
 export { default as IconArtistBadge } from '../../../assets/icons/ArtistBadge.svg'
 export { default as IconCosign } from '../../../assets/icons/Cosign.svg'
@@ -210,3 +208,5 @@ export { default as IconFeed } from '../../../assets/icons/Feed.svg'
 export { default as IconSave } from '../../../assets/icons/Save.svg'
 export { default as IconrecoveryEmail } from '../../../assets/icons/recoveryEmail.svg'
 export { default as IconHeadphones } from '../../../assets/icons/Headphones.svg'
+export { default as IconValidationCheck } from '../../../assets/icons/ValidationCheck.svg'
+export { default as IconValidationX } from '../../../assets/icons/ValidationX.svg'

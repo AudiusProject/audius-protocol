@@ -20,5 +20,5 @@
     "noUncheckedIndexedAccess": false
   },
   "include": ["src"],
-  "exclude": ["node_modules", "build", "dist", "rollup.config.js"],
+  "exclude": ["node_modules", "build", "dist", "rollup.config.mjs"],
 }
