@@ -2,14 +2,8 @@ import type { ReactNode } from 'react'
 
 import { ThemeProvider as EmationThemeProvider } from '@emotion/react'
 
-import { dayTheme, darkTheme, matrixTheme } from './theme'
+import { themes } from './theme'
 import type { Theme } from './types'
-
-const themes = {
-  day: dayTheme,
-  dark: darkTheme,
-  matrix: matrixTheme
-}
 
 type ThemeProviderProps = {
   theme: Theme

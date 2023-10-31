@@ -44,3 +44,9 @@ export const matrixTheme: HarmonyTheme = {
   color: colorTheme.matrix,
   ...commonFoundations
 }
+
+export const themes = {
+  day: dayTheme,
+  dark: darkTheme,
+  matrix: matrixTheme
+}
