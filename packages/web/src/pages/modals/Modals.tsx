@@ -30,6 +30,7 @@ import { TransactionDetailsModal } from 'components/transaction-details-modal'
 import UnfollowConfirmationModal from 'components/unfollow-confirmation-modal/UnfollowConfirmationModal'
 import UnloadDialog from 'components/unload-dialog/UnloadDialog'
 import { UploadConfirmationModal } from 'components/upload-confirmation-modal'
+import { USDCManualTransferModal } from 'components/usdc-manual-transfer-modal/USDCManualTransferModal'
 import { USDCPurchaseDetailsModal } from 'components/usdc-purchase-details-modal/USDCPurchaseDetailsModal'
 import { USDCTransactionDetailsModal } from 'components/usdc-transaction-details-modal/USDCTransactionDetailsModal'
 import TierExplainerModal from 'components/user-badges/TierExplainerModal'
@@ -101,7 +102,8 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   WithdrawUSDCModal,
   StripeOnRamp: StripeOnRampModal,
   USDCPurchaseDetailsModal,
-  USDCTransactionDetailsModal
+  USDCTransactionDetailsModal,
+  USDCManualTransferModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [
