@@ -42,7 +42,8 @@ export const Reaction = (props: ReactionProps) => {
 
   useEffect(() => {
     const loadAnimation = async () => {
-      setAnimation(await animationData)
+      const { default: animation } = await animationData
+      setAnimation(animation)
     }
     loadAnimation()
   }, [animationData])
