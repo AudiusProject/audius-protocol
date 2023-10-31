@@ -92,7 +92,7 @@ const NodeOverview = ({
   delegateOwnerWallet,
   isOwner,
   isDeregistered,
-  isUnregistered
+  isUnregistered,
   isLoading
 }: NodeOverviewProps) => {
   const { isOpen, onClick, onClose } = useModalControls()
