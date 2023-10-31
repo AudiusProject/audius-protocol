@@ -12,7 +12,6 @@ import {
 import cn from 'classnames'
 import { useAsync } from 'react-use'
 
-import { Icon } from 'components/Icon'
 import { AddressTile } from 'components/address-tile'
 import { ToastContext } from 'components/toast/ToastContext'
 import { Text } from 'components/typography'
@@ -20,6 +19,7 @@ import { Hint } from 'components/withdraw-usdc-modal/components/Hint'
 import { getUSDCUserBank } from 'services/solana/solana'
 import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
+import zIndex from 'utils/zIndex'
 
 import styles from './USDCManualTransferModal.module.css'
 
@@ -60,14 +60,15 @@ export const USDCManualTransferModal = () => {
 
   return (
     <Modal
+      zIndex={zIndex.USDC_MANUAL_TRANSFER_MODAL}
       size={'small'}
-      onClose={onClose}
+      onClose={handleCloseClick}
       isOpen={isOpen}
       bodyClassName={styles.modal}
     >
       <ModalHeader
         className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
-        onClose={onClose}
+        onClose={handleCloseClick}
         showDismissButton={!mobile}
       >
         <Text

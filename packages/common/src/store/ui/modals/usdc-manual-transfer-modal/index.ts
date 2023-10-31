@@ -1,6 +1,10 @@
 import { createModal } from '../createModal'
 
-const USDCManualTransferModal = createModal({
+export type USDCManualTransferModalState = {
+  isOpen: boolean
+}
+
+const USDCManualTransferModal = createModal<USDCManualTransferModalState>({
   reducerPath: 'USDCManualTransferModal',
   initialState: {
     isOpen: false
