@@ -8,3 +8,4 @@ export const shadows = {
 }
 
 export type Shadows = typeof shadows
+export type ShadowOptions = keyof Shadows

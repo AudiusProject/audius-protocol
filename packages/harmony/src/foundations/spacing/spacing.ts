@@ -42,3 +42,4 @@ export const spacing = {
 }
 
 export type Spacing = typeof spacing
+export type SpacingOptions = keyof Spacing

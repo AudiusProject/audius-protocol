@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 
-import { ThemeProvider as EmationThemeProvider } from '@emotion/react'
+import { ThemeProvider as EmotionThemeProvider } from '@emotion/react'
 
 import { themes } from './theme'
 import type { Theme } from './types'
@@ -14,8 +14,8 @@ export const ThemeProvider = (props: ThemeProviderProps) => {
   const { children, theme } = props
 
   return (
-    <EmationThemeProvider theme={themes[theme]}>
+    <EmotionThemeProvider theme={themes[theme]}>
       {children}
-    </EmationThemeProvider>
+    </EmotionThemeProvider>
   )
 }

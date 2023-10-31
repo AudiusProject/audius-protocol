@@ -1,11 +1,4 @@
-import type { LinearGradientProps } from 'react-native-linear-gradient'
-
 import type { Theme } from '../theme/types'
-
-export type GradientColor = Pick<
-  LinearGradientProps,
-  'start' | 'end' | 'locations' | 'colors'
->
 
 export type PrimitiveColors = {
   static: {
@@ -53,14 +46,8 @@ export type PrimitiveColors = {
     'dark-red': string
     green: string
     'light-green': string
-    gradient: GradientColor
+    gradient: string
   }
-}
-
-// linear-gradient at 315deg
-const baseLinearGradient = {
-  start: { x: 0, y: 1 },
-  end: { x: 1, y: 0 }
 }
 
 export const primitiveTheme: Record<Theme, PrimitiveColors> = {
@@ -110,10 +97,7 @@ export const primitiveTheme: Record<Theme, PrimitiveColors> = {
       'dark-red': '#BB0218',
       green: '#0F9E48',
       'light-green': '#13C65A',
-      gradient: {
-        ...baseLinearGradient,
-        colors: ['#5B23E1', '#A22FEB']
-      }
+      gradient: 'linear-gradient(315deg, #5b23e1 0%, #a22feb 100%)'
     }
   },
 
@@ -163,10 +147,7 @@ export const primitiveTheme: Record<Theme, PrimitiveColors> = {
       'dark-red': '#C43047',
       green: '#6CDF44',
       'light-green': '#13C65A',
-      gradient: {
-        ...baseLinearGradient,
-        colors: ['#7652CC', '#B05CE6']
-      }
+      gradient: 'linear-gradient(315deg, #7652cc 0%, #b05ce6 100%)'
     }
   },
   matrix: {
@@ -212,13 +193,10 @@ export const primitiveTheme: Record<Theme, PrimitiveColors> = {
       blue: '#58B9F4',
       orange: '#EFA947',
       red: '#F9344C',
-      'dark-red': '#BB0218',
+      'dark-red': '#C43047',
       green: '#6CDF44',
       'light-green': '#13C65A',
-      gradient: {
-        ...baseLinearGradient,
-        colors: ['#7652CC', '#B05CE6']
-      }
+      gradient: 'linear-gradient(315deg, #7652cc 0%, #b05ce6 100%)'
     }
   }
 }

@@ -7,3 +7,4 @@ export const motion = {
 }
 
 export type Motion = typeof motion
+export type MotionOptions = keyof Motion
