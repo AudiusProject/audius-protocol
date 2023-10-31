@@ -2,10 +2,17 @@ import { useCallback, useContext } from 'react'
 
 import { useUSDCManualTransferModal } from '@audius/common'
 import { Button, ButtonType } from '@audius/harmony'
-import { IconInfo, LogoUSDC, ModalContent, ModalHeader } from '@audius/stems'
+import {
+  IconInfo,
+  LogoUSDC,
+  ModalContent,
+  ModalHeader,
+  Modal
+} from '@audius/stems'
 import cn from 'classnames'
 import { useAsync } from 'react-use'
 
+import { useModalState } from 'common/hooks/useModalState'
 import { AddressTile } from 'components/address-tile'
 import { ToastContext } from 'components/toast/ToastContext'
 import { Text } from 'components/typography'
@@ -49,11 +56,15 @@ export const USDCManualTransferModal = () => {
     toast(messages.copied)
   }, [USDCUserBank, toast])
 
+  const handleClose = useCallback(() => {
+    onClose()
+  }, [onClose])
+
   return (
     <ModalDrawer
       zIndex={zIndex.USDC_MANUAL_TRANSFER_MODAL}
       size={'small'}
-      onClose={onClose}
+      onClose={handleClose}
       isOpen={isOpen}
       bodyClassName={styles.modal}
       useGradientTitle={false}
@@ -94,7 +105,11 @@ export const USDCManualTransferModal = () => {
             <Button variant={ButtonType.PRIMARY} fullWidth onClick={handleCopy}>
               {messages.copy}
             </Button>
-            <Button variant={ButtonType.TERTIARY} fullWidth onClick={onClose}>
+            <Button
+              variant={ButtonType.TERTIARY}
+              fullWidth
+              onClick={handleClose}
+            >
               {messages.goBack}
             </Button>
           </div>
