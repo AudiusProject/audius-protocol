@@ -18,7 +18,7 @@ import {
   CompletionChecklistItem,
   CompletionChecklistItemStatus
 } from 'components/completion-checklist-item/CompletionChecklistItem'
-import { Link } from 'components/link'
+import { ExternalLink } from 'components/link'
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from 'utils/route'
 
 import styles from '../styles/CreatePasswordPage.module.css'
@@ -95,14 +95,20 @@ export const CreatePasswordPage = (props: CreatePasswordPageProps) => {
     [dispatch, onNext]
   )
 
-  const [requirementsStatuses, setRequirementsStatuses] = useState({
+  const [requirementsStatuses, setRequirementsStatuses] = useState<{
+    [key in PasswordRequirementKey]: CompletionChecklistItemStatus
+  }>({
     hasNumber: 'incomplete',
     minLength: 'incomplete',
     matches: 'incomplete',
     notCommon: 'incomplete'
-  } as { [key in PasswordRequirementKey]: CompletionChecklistItemStatus })
-
-  const requirements = [
+  })
+  const requirements: {
+    status: CompletionChecklistItemStatus
+    label: string
+    key: PasswordRequirementKey
+    path: keyof CreatePasswordValues
+  }[] = [
     {
       status: requirementsStatuses.hasNumber,
       label: messages.requirements.hasNumber,
@@ -127,12 +133,7 @@ export const CreatePasswordPage = (props: CreatePasswordPageProps) => {
       key: 'notCommon',
       path: 'password'
     }
-  ] as {
-    status: CompletionChecklistItemStatus
-    label: string
-    key: PasswordRequirementKey
-    path: keyof CreatePasswordValues
-  }[]
+  ]
 
   const handlePasswordChange = useCallback(
     async ({ password, confirmPassword }: CreatePasswordValues) => {
@@ -327,27 +328,23 @@ export const CreatePasswordPage = (props: CreatePasswordPageProps) => {
                     variant='body'
                   >
                     {messages.agreeTo}
-                    <Link
+                    <ExternalLink
                       variant='body'
                       color='accentPurple'
                       size='small'
                       to={TERMS_OF_SERVICE}
-                      target='_blank'
-                      rel='noreferrer'
                     >
                       {messages.termsOfService}
-                    </Link>
+                    </ExternalLink>
                     {messages.and}
-                    <Link
+                    <ExternalLink
                       to={PRIVACY_POLICY}
                       variant='body'
                       color='accentPurple'
                       size='small'
-                      target='_blank'
-                      rel='noreferrer'
                     >
                       {messages.privacyPolicy}
-                    </Link>
+                    </ExternalLink>
                   </Text>
                   <Button
                     variant={ButtonType.PRIMARY}
