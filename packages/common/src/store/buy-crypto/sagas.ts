@@ -31,9 +31,11 @@ import {
   MintName,
   createUserBankIfNeeded,
   createVersionedTransaction,
+  getBalanceChanges,
   getRootSolanaAccount,
   getSolanaConnection,
   pollForBalanceChange,
+  pollForTransaction,
   relayVersionedTransaction
 } from 'services/index'
 import {
@@ -227,62 +229,37 @@ function* swapSolForCrypto({
   })
 }
 
+/**
+ * Gets the balance changes of the relevant accounts for a swap transaction
+ */
 function* getSwapSolForCryptoResult({
   transactionSignature,
   sourceWallet,
-  destinationTokenAccount,
-  mintAddress
+  destinationTokenAccount
 }: {
   transactionSignature: string
   sourceWallet: PublicKey
   destinationTokenAccount: PublicKey
-  mintAddress: string
 }) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const connection = yield* call(getSolanaConnection, audiusBackendInstance)
-  // Get the resulting output token amount by fetching the transaction
-  // and comparing pre and post balances
-  const transaction = yield* call(
-    [connection, connection.getTransaction],
+  const transactionResponse = yield* call(
+    pollForTransaction,
+    audiusBackendInstance,
     transactionSignature,
-    { maxSupportedTransactionVersion: 0 }
+    {
+      maxSupportedTransactionVersion: 0
+    }
   )
-  let balanceChange = 0
-  const walletAccountIndex =
-    transaction?.transaction.message.staticAccountKeys.findIndex((pubkey) =>
-      pubkey.equals(sourceWallet)
-    )
-  if (!walletAccountIndex) {
-    balanceChange = 0
-  } else {
-    const beforeBalance =
-      transaction?.meta?.preBalances[walletAccountIndex] ?? 0
-    const afterBalance =
-      transaction?.meta?.postBalances[walletAccountIndex] ?? 0
-    balanceChange = afterBalance - beforeBalance
+  if (!transactionResponse) {
+    return {}
   }
 
-  const userbankAccountIndex =
-    transaction?.transaction.message.staticAccountKeys.findIndex((pubkey) =>
-      pubkey.equals(destinationTokenAccount!)
-    )
-  const beforeTokenBalance =
-    transaction?.meta?.preTokenBalances?.find(
-      (balance) =>
-        balance.mint === mintAddress &&
-        balance.accountIndex === userbankAccountIndex
-    )?.uiTokenAmount.uiAmount ?? 0
-  const afterTokenBalance =
-    transaction?.meta?.postTokenBalances?.find(
-      (balance) =>
-        balance.mint === mintAddress &&
-        balance.accountIndex === userbankAccountIndex
-    )?.uiTokenAmount.uiAmount ?? 0
-  const outputTokenChange = afterTokenBalance - beforeTokenBalance
+  const { balanceChanges, tokenBalanceChanges } =
+    getBalanceChanges(transactionResponse)
 
   return {
-    balanceChange,
-    outputTokenChange
+    balanceChange: balanceChanges[sourceWallet.toBase58()],
+    outputTokenChange: tokenBalanceChanges[destinationTokenAccount.toBase58()]
   }
 }
 
@@ -519,27 +496,13 @@ function* doBuyCryptoViaSol({
       }
     } while (!!swapError && retryCount++ < maxRetryCount)
 
-    // If the swap fails for the input amount, try again to get whatever we can
-    // for the user in USDC.
+    // If the swap fails to get the desired ExactOut amount, fall back to
+    // swapping the amount of SOL the user bought into the target token.
     if (swapError) {
-      // Record the initial error and bubble to sentry
       console.error(
-        `Failed to swap for requested ${mint.toUpperCase()} amount. Trying to salvage...`,
+        `Failed to swap for requested ${amount} ${mint.toUpperCase()}. Attempting to salvage all ${mint.toUpperCase()} possible...`,
         swapError
       )
-      reportToSentry({
-        level: ErrorLevel.Error,
-        error: new BuyCryptoError(
-          BuyCryptoErrorCode.SWAP_ERROR,
-          `Failed to swap SOL to ${mint.toUpperCase()}: ${swapError}`
-        ),
-        additionalInfo: {
-          mode: 'ExactOut',
-          wallet: wallet.publicKey.toBase58(),
-          userbank: userbank?.toBase58()
-        }
-      })
-
       // Get the amount to swap using the new balance less the min required for rent
       // Note: This disregards the existing SOL balance, but there shouldn't be any
       const newBalance = yield* call(
@@ -572,7 +535,7 @@ function* doBuyCryptoViaSol({
       if (recoveryError) {
         throw new BuyCryptoError(
           BuyCryptoErrorCode.SWAP_ERROR,
-          `Failed to recover ${mint.toUpperCase()} from SOL: ${recoveryError}`
+          `Failed to recover ${mint.toUpperCase()} from SOL: ${recoveryError}. Initial Swap Error: ${swapError}`
         )
       } else if (res) {
         // Read the results of the swap from the transaction
@@ -581,14 +544,33 @@ function* doBuyCryptoViaSol({
           {
             transactionSignature: res,
             sourceWallet: wallet.publicKey,
-            destinationTokenAccount: userbank,
-            mintAddress: outputToken.address
+            destinationTokenAccount: userbank
           }
         )
         console.info(
-          `Salvaged ${balanceChange} SOL into ${outputTokenChange} ${mint.toUpperCase()}`
+          `Salvaged ${
+            balanceChange === undefined ? '?' : Math.abs(balanceChange)
+          } SOL into ${outputTokenChange ?? '?'} ${mint.toUpperCase()}: ${res}`
         )
+
         // TODO: Some UI here?
+
+        // Even though we recovered some USDC, bubble the initial error as a
+        // failure if the amount salvaged wasn't enough
+        if (
+          outputTokenChange === undefined ||
+          outputTokenChange < BigInt(quoteResponse.outAmount)
+        ) {
+          throw new BuyCryptoError(
+            BuyCryptoErrorCode.SWAP_ERROR,
+            `Failed to swap SOL to ${mint.toUpperCase()}: ${swapError}`
+          )
+        }
+      } else {
+        throw new BuyCryptoError(
+          BuyCryptoErrorCode.UNKNOWN,
+          'Unknown error during recovery swap'
+        )
       }
     } else if (swapTransactionSignature) {
       // Read the results of the swap from the transaction
@@ -597,12 +579,20 @@ function* doBuyCryptoViaSol({
         {
           transactionSignature: swapTransactionSignature,
           sourceWallet: wallet.publicKey,
-          destinationTokenAccount: userbank,
-          mintAddress: outputToken.address
+          destinationTokenAccount: userbank
         }
       )
       console.info(
-        `Succesfully swapped ${balanceChange} SOL into ${outputTokenChange} ${mint.toUpperCase()}: ${swapTransactionSignature}`
+        `Succesfully swapped ${
+          balanceChange === undefined ? '?' : Math.abs(balanceChange)
+        } SOL into ${
+          outputTokenChange ?? '?'
+        } ${mint.toUpperCase()}: ${swapTransactionSignature}`
+      )
+    } else {
+      throw new BuyCryptoError(
+        BuyCryptoErrorCode.UNKNOWN,
+        'Unknown error during initial swap'
       )
     }
 
