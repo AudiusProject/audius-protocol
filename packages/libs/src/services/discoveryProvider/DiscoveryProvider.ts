@@ -6,6 +6,7 @@ import axios, {
   ResponseType
 } from 'axios'
 import fetch from 'cross-fetch'
+// @ts-ignore
 import urlJoin, { PathArg } from 'proper-url-join/es/index.js'
 import type { TransactionReceipt } from 'web3-core'
 
