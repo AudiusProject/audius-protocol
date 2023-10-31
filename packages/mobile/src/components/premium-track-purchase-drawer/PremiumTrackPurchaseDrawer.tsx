@@ -279,7 +279,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
               {...purchaseSummaryValues}
               isPurchaseSuccessful={isPurchaseSuccessful}
             />
-            {isIOSDisabled ? null : (
+            {isIOSDisabled || isInProgress || isPurchaseSuccessful ? null : (
               <Text
                 color='primary'
                 fontSize='small'
