@@ -217,11 +217,26 @@ const TrackTile = (props: CombinedProps) => {
     [onClickOverflow, id]
   )
 
+  const openLockedContentModal = useCallback(() => {
+    if (trackId) {
+      dispatch(setLockedContentId({ id: trackId }))
+      setModalVisibility(true)
+    }
+  }, [trackId, dispatch, setModalVisibility])
+
   const onClickPremiumPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal({ contentId: trackId })
+    } else if (trackId && !doesUserHaveAccess) {
+      openLockedContentModal()
     }
-  }, [isPurchase, trackId, openPremiumContentPurchaseModal])
+  }, [
+    isPurchase,
+    trackId,
+    openPremiumContentPurchaseModal,
+    doesUserHaveAccess,
+    openLockedContentModal
+  ])
 
   const [artworkLoaded, setArtworkLoaded] = useState(false)
   useEffect(() => {
@@ -239,8 +254,7 @@ const TrackTile = (props: CombinedProps) => {
     if (showSkeleton) return
 
     if (trackId && !doesUserHaveAccess && !hasPreview) {
-      dispatch(setLockedContentId({ id: trackId }))
-      setModalVisibility(true)
+      openLockedContentModal()
       return
     }
 
@@ -253,8 +267,7 @@ const TrackTile = (props: CombinedProps) => {
     trackId,
     doesUserHaveAccess,
     hasPreview,
-    dispatch,
-    setModalVisibility
+    openLockedContentModal
   ])
 
   const isReadonly = variant === 'readonly'
