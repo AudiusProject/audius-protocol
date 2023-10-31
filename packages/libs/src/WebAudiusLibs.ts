@@ -614,4 +614,4 @@ export class AudiusLibs {
 export { AudiusABIDecoder, Utils, SolanaUtils, CreatorNode }
 
 export { SanityChecks } from './sanityChecks'
-export { RewardsAttester } from './services/solana'
+export { RewardsAttester, DEFAULT_MINT, MintName } from './services/solana'

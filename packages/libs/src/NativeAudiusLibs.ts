@@ -593,4 +593,4 @@ export { SolanaUtils }
 
 export { Utils } from './utils'
 export { SanityChecks } from './sanityChecks'
-export { RewardsAttester } from './services/solana'
+export { RewardsAttester, DEFAULT_MINT, MintName } from './services/solana'
