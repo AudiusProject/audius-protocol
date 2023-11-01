@@ -107,6 +107,7 @@ export const PayExtraFormSection = ({
           value={String(customAmount)}
           placeholder={messages.placeholder}
           errorMessage={customAmountError}
+          editable={!disabled}
           noGutter
         />
       ) : null}
