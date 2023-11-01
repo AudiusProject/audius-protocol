@@ -157,7 +157,7 @@ import {
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
 import AnimatedSwitch from '../components/animated-switch/AnimatedSwitch'
-import { DirectMessagesBanner } from '../components/banner/DirectMessagesBanner'
+// import { DirectMessagesBanner } from '../components/banner/DirectMessagesBanner'
 import { DownloadAppBanner } from '../components/banner/DownloadAppBanner'
 import { TermsOfServiceUpdateBanner } from '../components/banner/TermsOfServiceUpdateBanner'
 import { UpdateAppBanner } from '../components/banner/UpdateAppBanner'
