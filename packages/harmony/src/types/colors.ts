@@ -39,3 +39,5 @@ export type ColorValue =
   | 'lightGreen'
   | 'gradient'
   | 'none'
+
+export type BackgroundColorValue = 'default' | 'surface1' | 'surface2' | 'white'
