@@ -1,6 +1,6 @@
 import cn from 'classnames'
 
-import { IconInstagram, IconTikTok, IconTwitter } from 'components/typography'
+import { IconInstagram, IconTikTok, IconTwitter } from 'components/icon'
 
 import { Button } from '../Button/Button'
 import type { ButtonProps } from '../types'

@@ -2,12 +2,8 @@ import type { CSSProperties, ReactElement } from 'react'
 
 import { useTheme } from '@emotion/react'
 
-import {
-  Flex,
-  IconValidationCheck,
-  IconValidationX,
-  Text
-} from '../../components'
+import { Flex, Text } from 'components'
+import { IconValidationCheck, IconValidationX } from 'components/icon'
 
 const messages = {
   do: 'Do',
@@ -43,7 +39,7 @@ export const ComponentRule = (props: ComponentRuleProps) => {
           tag='h5'
           style={{ display: 'flex', alignItems: 'center' }}
         >
-          <TitleIcon size='small' style={{ marginRight: '8px' }} /> {title}
+          <TitleIcon size='s' style={{ marginRight: '8px' }} /> {title}
         </Text>
         <Text tag='section' style={{ height: '32px', overflow: 'hidden' }}>
           {description}

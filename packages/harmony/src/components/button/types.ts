@@ -1,6 +1,6 @@
 import type { ComponentPropsWithoutRef } from 'react'
 
-import type { IconComponent } from 'components/typography/Icons/Icon'
+import type { IconComponent } from 'components/icon/Icon'
 // TODO generate this type from the emotion theme
 import type { ColorValue } from 'types/colors'
 

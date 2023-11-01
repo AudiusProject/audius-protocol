@@ -7,17 +7,15 @@ import { toCSSVariableName } from 'utils/styles'
 
 import styles from './Icon.module.css'
 
-// TODO use emotion theme's spacing and colors to generate the types here
-
 type IconSize =
-  | 'xxSmall' // 12
-  | 'xSmall' // 14
-  | 'small' // 16
-  | 'medium' // 20
-  | 'large' // 24
-  | 'xLarge' // 30
-  | 'xxLarge' // 32
-  | 'xxxLarge' // 40
+  | '2xs' // 12
+  | 'xs' // 14
+  | 's' // 16
+  | 'm' // 20
+  | 'l' // 24
+  | 'xl' // 30
+  | '2xl' // 32
+  | '3xl' // 40
 
 type IconProps = {
   color?: ColorValue
@@ -26,23 +24,15 @@ type IconProps = {
 
 export type IconComponent = ComponentType<IconProps>
 
-/** Renders a harmony Icon component
- * Ex: `<Icon icon={IconKebabHorizontal} color='accentGreen' />`
- * Use `size` to render one of the standard sizes:
- * - xSmall: 14
- * - small: 16
- * - medium: 20
- * - large: 24
- * - xLarge: 30
- * - xxLarge: 32
- * - xxxLarge: 40
+/**
+ * Renders a harmony Icon component
  */
 export const Icon = (props: IconProps) => {
   const {
     className,
     color,
     children,
-    size = 'large',
+    size = 'l',
     style: styleProp,
     ...iconProps
   } = props

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { Text } from '../../typography/Text'
+import { Text } from '../../text/Text'
 import { Flex } from '../Flex'
 
 import { Divider } from './Divider'

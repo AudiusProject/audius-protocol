@@ -21,7 +21,7 @@ const template = (variables, context) => {
 
   return tpl`
 ${variables.imports};
-import { Icon } from 'components/typography/Icons/Icon'
+import { Icon } from 'components/icon'
 
 ${variables.interfaces};
 
