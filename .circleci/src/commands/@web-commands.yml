@@ -96,12 +96,25 @@ web-distribute:
     - checkout
     - attach_workspace:
         at: ./
+    - run:
+        name: Install dependencies
+        command: rm -rf node_modules && SKIP_POD_INSTALL=true npm ci
     - when:
         condition: << parameters.install-license >>
         steps:
           - run:
               name: Add dmg-license
               command: npm run install-dmg-license -w audius-client
+    - run:
+        name: setup
+        # https://github.com/nvm-sh/nvm#installing-and-updating
+        command: |
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
+          echo 'export NVM_DIR="$HOME/.nvm"' >> $BASH_ENV
+          echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" --install' >> $BASH_ENV
+          source $BASH_ENV
+          nvm install 14.20.1
+          nvm alias default 14.20.1
     - run:
         name: distribute
         command: |
