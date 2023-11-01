@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"peer_health/ethcontracts"
 	"peer_health/httputil"
 	"peer_health/registrar"
 	"strings"
@@ -58,24 +57,13 @@ func startStagingOrProd(isProd bool) {
 	}
 	logger := slog.With("endpoint", myEndpoint)
 
-	// must have either a CN or DN private key configured
-	privateKeyHex := os.Getenv("delegatePrivateKey")
-	if privateKeyHex == "" {
-		privateKeyHex = mustGetenv("audius_delegate_private_key")
-	}
-	privateKey, err := ethcontracts.ParsePrivateKeyHex(privateKeyHex)
-	if err != nil {
-		log.Fatal("invalid private key", err)
-	}
-	// compute wallet address
-	walletAddress := ethcontracts.ComputeAddressFromPrivateKey(privateKey)
-
 	// fetch peers
 	g := registrar.NewMultiStaging()
 	if isProd {
 		g = registrar.NewMultiProd()
 	}
 	var peers []registrar.Peer
+	var err error
 
 	eg := new(errgroup.Group)
 	eg.Go(func() error {
@@ -97,8 +85,7 @@ func startStagingOrProd(isProd bool) {
 
 	config := Config{
 		Self: registrar.Peer{
-			Host:   httputil.RemoveTrailingSlash(strings.ToLower(myEndpoint)),
-			Wallet: strings.ToLower(walletAddress),
+			Host: httputil.RemoveTrailingSlash(strings.ToLower(myEndpoint)),
 		},
 		NodeType:             nodeType,
 		Env:                  env,
