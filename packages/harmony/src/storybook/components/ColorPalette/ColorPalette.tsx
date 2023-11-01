@@ -1,8 +1,8 @@
 import { Fragment } from 'react'
 
 import { Divider, Flex, Text } from 'components'
-import { themeColorsMap } from 'styles/theme'
-import type { Theme, ThemeColors } from 'styles/types'
+import { PrimitiveColors, primitiveTheme } from 'foundations/color'
+import type { Theme } from 'foundations/theme/types'
 
 import { ColorSwatch } from '../ColorSwatch'
 
@@ -33,8 +33,8 @@ type ColorPaletteProps = {
   theme?: Theme
 }
 
-type ThemeKey = keyof ThemeColors
-type RowColors = typeof themeColorsMap[Theme][ThemeKey]
+type ThemeKey = keyof PrimitiveColors
+type RowColors = PrimitiveColors[ThemeKey]
 
 type ColorRowProps = {
   themeKey: ThemeKey
@@ -73,7 +73,7 @@ const ColorRow = ({ colors, themeKey }: ColorRowProps) => {
 }
 
 export const ColorPalette = ({ theme = 'day' }: ColorPaletteProps) => {
-  const colors = themeColorsMap[theme]
+  const colors = primitiveTheme[theme]
   const themeKeys = Object.keys(colors) as ThemeKey[]
 
   return (

@@ -53,6 +53,8 @@
     "@amplitude/react-native": "2.6.0",
     "@audius/common": "*",
     "@audius/sdk": "*",
+    "@emotion/native": "11.11.0",
+    "@emotion/react": "11.11.1",
     "@fingerprintjs/fingerprintjs-pro-react-native": "2.0.0-test.2",
     "@gorhom/portal": "1.0.9",
     "@hcaptcha/react-native-hcaptcha": "1.3.4",

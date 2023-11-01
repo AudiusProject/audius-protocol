@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { Name } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
@@ -16,6 +16,8 @@ import { getUSDCUserBank } from 'app/services/buyCrypto'
 import { setVisibility } from 'app/store/drawers/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
+import type { AllEvents } from 'app/types/analytics'
+import { useColor } from 'app/utils/theme'
 
 import { AddressTile } from '../core/AddressTile'
 
@@ -89,22 +91,26 @@ export const USDCManualTransferDrawer = () => {
   const dispatch = useDispatch()
   const { toast } = useToast()
   const { onPress: onPressLearnMore } = useLink(USDCLearnMore)
+  const neutral = useColor('neutral')
 
   const { value: USDCUserBank } = useAsync(async () => {
     const USDCUserBankPubKey = await getUSDCUserBank()
     return USDCUserBankPubKey?.toString() ?? ''
   })
 
+  const analytics: AllEvents = useMemo(
+    () => ({
+      eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
+      address: USDCUserBank ?? ''
+    }),
+    [USDCUserBank]
+  )
+
   const handleConfirmPress = useCallback(() => {
     Clipboard.setString(USDCUserBank ?? '')
     toast({ content: messages.copied, type: 'info' })
-    trackEvent(
-      make({
-        eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
-        address: USDCUserBank ?? ''
-      })
-    )
-  }, [USDCUserBank, toast])
+    trackEvent(make(analytics))
+  }, [USDCUserBank, analytics, toast])
 
   const handleCancelPress = useCallback(() => {
     dispatch(
@@ -137,11 +143,13 @@ export const USDCManualTransferDrawer = () => {
         <AddressTile
           address={USDCUserBank ?? ''}
           left={<LogoUSDC height={spacing(6)} />}
+          analytics={analytics}
         />
         <View style={styles.disclaimerContainer}>
           <IconError
             width={spacing(6)}
             height={spacing(6)}
+            fill={neutral}
             style={styles.icon}
           />
           <View style={styles.splContainer}>

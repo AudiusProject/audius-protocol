@@ -1,4 +1,7 @@
-import { withThemeByDataAttribute } from '@storybook/addon-themes'
+import {
+  withThemeByDataAttribute,
+  withThemeFromJSXProvider
+} from '@storybook/addon-themes'
 import { ComponentRules, RelatedComponents } from '../src/storybook/components'
 
 // This file is used to configure all stories
@@ -13,7 +16,9 @@ import 'assets/styles/animations.css'
 import 'assets/styles/border-radius.css'
 import 'assets/styles/shadows.css'
 import { darkTheme, lightTheme } from './theme'
+import { themes } from '../src/foundations/theme'
 import { HarmonyDocsContainer } from './docs'
+import { ThemeProvider } from '@emotion/react'
 
 // Default to docs view
 export const parameters = {
@@ -41,5 +46,10 @@ export const decorators = [
     },
     defaultTheme: 'day',
     attributeName: 'data-theme'
+  }),
+  withThemeFromJSXProvider({
+    themes,
+    defaultTheme: 'day',
+    Provider: ThemeProvider
   })
 ]

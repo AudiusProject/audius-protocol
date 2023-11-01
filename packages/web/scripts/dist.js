@@ -65,7 +65,8 @@ const notarizeFn = async (appId, params) => {
       appPath,
       appleId: process.env.APPLE_ID,
       appleIdPassword: process.env.APPLE_ID_PASSWORD,
-      ascProvider: process.env.ASC_PROVIDER
+      ascProvider: process.env.ASC_PROVIDER,
+      teamId: process.env.ASC_PROVIDER
     })
   } catch (error) {
     console.error(error)

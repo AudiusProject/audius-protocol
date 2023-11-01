@@ -25,6 +25,21 @@ type BaseButtonStyles = {
 
 export type HTMLButtonProps = ComponentPropsWithoutRef<'button'>
 
+/**
+ * These props should only be used for dev purposes, whether in debug mode,
+ * or to show various states in storybook.
+ * */
+type InternalProps = {
+  /**
+   * @ignore: This prop is for internal use only
+   */
+  _isHovered?: boolean
+  /**
+   * @ignore: This prop is for internal use only
+   */
+  _isPressed?: boolean
+}
+
 export type BaseButtonProps = {
   /**
    * Optional icon element to include on the left side of the button
@@ -68,7 +83,8 @@ export type BaseButtonProps = {
    *  merging their props and behavior.
    */
   asChild?: boolean
-} & HTMLButtonProps
+} & HTMLButtonProps &
+  InternalProps
 
 export type ButtonProps = {
   /**

@@ -2,17 +2,17 @@
 .button {
   --base-color: var(--harmony-primary);
   --text-color: var(--harmony-static-white);
-  --overlay-color: transparent;
-  --overlay-opacity: 0%;
-  --button-color: color-mix(
-    in srgb,
-    var(--overlay-color) var(--overlay-opacity),
-    var(--base-color)
-  );
+  --overlay-color: 0, 0, 0;
+  --overlay-opacity: 0.0;
+  --bg-color: linear-gradient(0deg,
+      rgba(var(--overlay-color), var(--overlay-opacity)) 0%,
+      rgba(var(--overlay-color), var(--overlay-opacity)) 100%), var(--base-color);
+
+  box-sizing: border-box;
   color: var(--text-color);
-  border: 1px solid var(--button-color);
+  border: 0px solid transparent;
   border-radius: var(--harmony-unit-1);
-  background-color: var(--button-color);
+  background: var(--bg-color);
   box-shadow: var(--harmony-shadow-near);
 }
 
@@ -90,23 +90,28 @@
 .primary {
   --text-color: var(--harmony-static-white);
   --base-color: var(--harmony-primary);
-  &:hover {
-    --overlay-color: var(--harmony-static-white);
-    --overlay-opacity: 20%;
-    box-shadow: var(--harmony-shadow-mid);
-  }
-  &:active {
-    --overlay-color: var(--harmony-static-black);
-    --overlay-opacity: 20%;
-    box-shadow: none;
-  }
-  &.disabled {
-    --base-color: var(--harmony-n-150);
-    --text-color: var(--harmony-white);
-    background-color: var(--harmony-n-150);
-    border-color: var(--harmony-n-150);
-    box-shadow: none;
-  }
+}
+
+.primary:hover,
+.primary.hover {
+  --overlay-color: 255, 255, 255;
+  --overlay-opacity: 0.2;
+  box-shadow: var(--harmony-shadow-mid);
+}
+
+.primary:active,
+.primary.active {
+  --overlay-color: 0, 0, 0;
+  --overlay-opacity: 0.2;
+  box-shadow: none;
+}
+
+.primary.disabled {
+  --base-color: var(--harmony-n-150);
+  --text-color: var(--harmony-white);
+  background-color: var(--harmony-n-150);
+  border-color: var(--harmony-n-150);
+  box-shadow: none;
 }
 
 /* Secondary */
@@ -115,25 +120,33 @@
   --text-color: var(--harmony-text-default);
   background: transparent;
   box-shadow: none;
-  &:hover {
-    --base-color: var(--harmony-primary);
-    --text-color: var(--harmony-static-white);
-    background-color: var(--button-color);
-    --overlay-color: var(--harmony-static-white);
-    --overlay-opacity: 20%;
-    box-shadow: var(--harmony-shadow-mid);
-  }
-  &:active {
-    --base-color: var(--harmony-primary);
-    --text-color: var(--harmony-static-white);
-    background-color: var(--button-color);
-    --overlay-color: var(--harmony-static-black);
-    --overlay-opacity: 20%;
-    box-shadow: none;
-  }
-  &.disabled {
-    opacity: 0.45;
-  }
+  border: 1px solid var(--harmony-border-strong);
+}
+
+.secondary:hover,
+.secondary.hover {
+  --base-color: var(--harmony-primary);
+  --text-color: var(--harmony-static-white);
+  background: var(--bg-color);
+  --overlay-color: 255, 255, 255;
+  --overlay-opacity: 0.2;
+  box-shadow: var(--harmony-shadow-mid);
+  border: 1px solid transparent;
+}
+
+.secondary:active,
+.secondary.active {
+  --base-color: var(--harmony-primary);
+  --text-color: var(--harmony-static-white);
+  background: var(--bg-color);
+  --overlay-color: 0, 0, 0;
+  --overlay-opacity: 0.2;
+  box-shadow: none;
+  border: 1px solid transparent;
+}
+
+.secondary.disabled {
+  opacity: 0.45;
 }
 
 /* Tertiary */
@@ -143,22 +156,30 @@
   /* Don't use opacity prop as it affects the text too */
   background-color: rgb(255, 255, 255, 0.85);
   backdrop-filter: blur(6px);
-  &:hover {
-    --base-color: var(--harmony-border-strong);
-    box-shadow: var(--harmony-shadow-mid);
-    background-color: var(--harmony-bg-white);
-    backdrop-filter: none;
-  }
-  &:active {
-    --base-color: var(--harmony-border-strong);
-    background-color: var(--harmony-bg-surface-2);
-    box-shadow: none;
-    backdrop-filter: none;
-  }
-  &.disabled {
-    box-shadow: none;
-    opacity: 0.45;
-  }
+  border: 1px solid var(--harmony-border-default);
+}
+
+.tertiary:hover,
+.tertiary.hover {
+  --base-color: var(--harmony-border-strong);
+  box-shadow: var(--harmony-shadow-mid);
+  background-color: var(--harmony-bg-white);
+  backdrop-filter: none;
+  border: 1px solid var(--harmony-border-strong);
+}
+
+.tertiary:active,
+.tertiary.active {
+  --base-color: var(--harmony-border-strong);
+  background-color: var(--harmony-bg-surface-2);
+  box-shadow: none;
+  backdrop-filter: none;
+  border: 1px solid var(--harmony-border-strong);
+}
+
+.tertiary.disabled {
+  box-shadow: none;
+  opacity: 0.45;
 }
 
 /* Destructive */
@@ -167,23 +188,31 @@
   --text-color: var(--harmony-red);
   background: transparent;
   box-shadow: none;
-  &:hover {
-    --base-color: var(--harmony-red);
-    --text-color: var(--harmony-static-white);
-    background-color: var(--button-color);
-    box-shadow: var(--harmony-shadow-mid);
-  }
-  &:active {
-    --base-color: var(--harmony-red);
-    --text-color: var(--harmony-static-white);
-    --overlay-color: var(--harmony-static-black);
-    --overlay-opacity: 20%;
-    background-color: var(--button-color);
-    box-shadow: none;
-  }
-  &.disabled {
-    opacity: 0.45;
-  }
+  border: 1px solid var(--harmony-red);
+}
+
+.destructive:hover,
+.destructive.hover {
+  --base-color: var(--harmony-red);
+  --text-color: var(--harmony-static-white);
+  background: var(--bg-color);
+  box-shadow: var(--harmony-shadow-mid);
+  border: 1px solid transparent;
+}
+
+.destructive:active,
+.destructive.active {
+  --base-color: var(--harmony-red);
+  --text-color: var(--harmony-static-white);
+  --overlay-color: 0, 0, 0;
+  --overlay-opacity: 0.2;
+  background: var(--bg-color);
+  box-shadow: none;
+  border: 1px solid transparent;
+}
+
+.destructive.disabled {
+  opacity: 0.45;
 }
 
 /* Plain */
@@ -203,10 +232,12 @@ html[data-theme='dark'] {
     /* Don't use opacity prop as it affects the text too */
     background-color: rgba(50, 51, 77, 0.6);
   }
+
   .tertiary:hover {
     --base-color: var(--harmony-border-strong);
     background-color: var(--harmony-bg-white);
   }
+
   .tertiary:active {
     background-color: var(--harmony-bg-surface-2);
   }

@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { MintName } from 'services/index'
 import { OnRampProvider } from 'store/ui/buy-audio/types'
+import { StripeSessionCreationError } from 'store/ui/stripe-modal/types'
 
 import { BuyCryptoError } from './types'
 
@@ -46,7 +47,10 @@ const slice = createSlice({
     /**
      * @internal used for tracking onramp state in saga
      */
-    onrampFailed: (_state, _action: PayloadAction<{ error: Error }>) => {
+    onrampFailed: (
+      _state,
+      _action: PayloadAction<{ error: StripeSessionCreationError }>
+    ) => {
       // handled by saga
     },
     /**

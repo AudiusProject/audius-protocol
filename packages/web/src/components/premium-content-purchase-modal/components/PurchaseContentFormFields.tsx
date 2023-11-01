@@ -1,6 +1,5 @@
 import {
   PurchaseContentStage,
-  isContentPurchaseInProgress,
   usePayExtraPresets,
   useUSDCManualTransferModal
 } from '@audius/common'
@@ -25,17 +24,17 @@ const messages = {
 
 type PurchaseContentFormFieldsProps = Pick<
   PurchaseContentFormState,
-  'purchaseSummaryValues' | 'stage'
+  'purchaseSummaryValues' | 'stage' | 'isUnlocking'
 >
 
 export const PurchaseContentFormFields = ({
   purchaseSummaryValues,
-  stage
+  stage,
+  isUnlocking
 }: PurchaseContentFormFieldsProps) => {
   const { onOpen: openUsdcManualTransferModal } = useUSDCManualTransferModal()
   const payExtraAmountPresetValues = usePayExtraPresets(useRemoteVar)
   const isPurchased = stage === PurchaseContentStage.FINISH
-  const isInProgress = isContentPurchaseInProgress(stage)
 
   if (isPurchased) {
     return (
@@ -60,17 +59,16 @@ export const PurchaseContentFormFields = ({
     <>
       <PayExtraFormSection
         amountPresets={payExtraAmountPresetValues}
-        disabled={isInProgress}
+        disabled={isUnlocking}
       />
       <div className={styles.tableContainer}>
         <PurchaseSummaryTable
           {...purchaseSummaryValues}
           isPurchased={isPurchased}
         />
-        {isInProgress || isPurchased ? null : (
+        {isUnlocking || isPurchased ? null : (
           <Text
             as={PlainButton}
-            disabled={isInProgress}
             onClick={() => openUsdcManualTransferModal()}
             color='primary'
             className={styles.manualTransfer}
@@ -79,7 +77,7 @@ export const PurchaseContentFormFields = ({
           </Text>
         )}
       </div>
-      {isInProgress ? null : <PayToUnlockInfo />}
+      {isUnlocking ? null : <PayToUnlockInfo />}
     </>
   )
 }

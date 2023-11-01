@@ -54,7 +54,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       ...baseProps
     } = props
-    const isDisabled = disabled || baseProps.isLoading
+    const { _isHovered, _isPressed, isLoading } = baseProps
+    const isDisabled = disabled || isLoading
 
     const style: CSSCustomProperties = {
       '--base-color':
@@ -76,7 +77,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           button: cn(
             styles.button,
             TYPE_STYLE_MAP[variant],
-            { [styles.disabled]: isDisabled },
+            {
+              [styles.disabled]: isDisabled,
+              [styles.hover]: _isHovered,
+              [styles.active]: _isPressed
+            },
             buttonSizeClass,
             textSizeClass
           ),

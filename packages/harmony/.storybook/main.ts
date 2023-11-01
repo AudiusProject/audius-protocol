@@ -26,6 +26,15 @@ const config: StorybookConfig = {
     // autodocs: 'tag',
     defaultName: 'Documentation'
   },
+  babel: {
+    presets: [
+      [
+        '@babel/preset-react',
+        { runtime: 'automatic', importSource: '@emotion/react' }
+      ]
+    ],
+    plugins: ['@emotion/babel-plugin']
+  },
   webpackFinal: (config: any) => {
     config.module.rules.find(
       (rule) => rule.test.toString() === '/\\.css$/'

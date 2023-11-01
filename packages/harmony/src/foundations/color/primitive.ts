@@ -1,6 +1,56 @@
-import type { Theme, ThemeColors } from './types'
+import type { Theme } from '../theme/types'
 
-export const themeColorsMap: Record<Theme, ThemeColors> = {
+export type PrimitiveColors = {
+  static: {
+    white: string
+    primary: string
+  }
+  primary: {
+    primary: string
+    p100: string
+    p200: string
+    p300: string
+    p400: string
+    p500: string
+  }
+  secondary: {
+    secondary: string
+    s100: string
+    s200: string
+    s300: string
+    s400: string
+    s500: string
+  }
+  neutral: {
+    neutral: string
+    n25: string
+    n50: string
+    n100: string
+    n150: string
+    n200: string
+    n300: string
+    n400: string
+    n500: string
+    n600: string
+    n700: string
+    n800: string
+    n900: string
+    n950: string
+  }
+  special: {
+    white: string
+    background: string
+    blue: string
+    orange: string
+    red: string
+    darkRed: string
+    green: string
+    lightGreen: string
+    gradient: string
+  }
+}
+
+export const primitiveTheme: Record<Theme, PrimitiveColors> = {
   day: {
     static: {
       white: '#FFFFFF',
@@ -47,7 +97,7 @@ export const themeColorsMap: Record<Theme, ThemeColors> = {
       darkRed: '#BB0218',
       green: '#0F9E48',
       lightGreen: '#13C65A',
-      gradient: 'linear-gradient(315deg, #5B23E1 0%, #A22FEB 100%)'
+      gradient: 'linear-gradient(315deg, #5b23e1 0%, #a22feb 100%)'
     }
   },
 
@@ -97,10 +147,9 @@ export const themeColorsMap: Record<Theme, ThemeColors> = {
       darkRed: '#C43047',
       green: '#6CDF44',
       lightGreen: '#13C65A',
-      gradient: 'linear-gradient(315deg, #7652CC 0%, #B05CE6 100%)'
+      gradient: 'linear-gradient(315deg, #7652cc 0%, #b05ce6 100%)'
     }
   },
-
   matrix: {
     static: {
       white: '#FFFFFF',
@@ -144,10 +193,10 @@ export const themeColorsMap: Record<Theme, ThemeColors> = {
       blue: '#58B9F4',
       orange: '#EFA947',
       red: '#F9344C',
-      darkRed: '#BB0218',
+      darkRed: '#C43047',
       green: '#6CDF44',
       lightGreen: '#13C65A',
-      gradient: 'linear-gradient(315deg, #7652CC 0%, #B05CE6 100%)'
+      gradient: 'linear-gradient(315deg, #7652cc 0%, #b05ce6 100%)'
     }
   }
 }
