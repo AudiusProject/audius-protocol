@@ -20,7 +20,7 @@ describe('store/purchase-content/utils', () => {
       expected: { amountDue: 100, existingBalance: 0 }
     },
     {
-      description: 'no balance, extra amount, full total due',
+      description: 'no balance, extra amount, full price due',
       price: 100,
       currentBalance: centsToBN(0),
       extraAmount: 100,
@@ -41,7 +41,7 @@ describe('store/purchase-content/utils', () => {
       currentBalance: centsToBN(99),
       extraAmount: 0,
       minPurchaseAmountCents,
-      expected: { amountDue: 100, existingBalance: 0 }
+      expected: { amountDue: 100, existingBalance: undefined }
     },
     {
       description:
@@ -50,7 +50,7 @@ describe('store/purchase-content/utils', () => {
       currentBalance: centsToBN(101),
       extraAmount: 100,
       minPurchaseAmountCents,
-      expected: { amountDue: 200, existingBalance: 0 }
+      expected: { amountDue: 200, existingBalance: undefined }
     },
     {
       description: 'no extra amount, balance equals price, nothing due',
