@@ -62,7 +62,7 @@ function* watchFetchCollection() {
           collection.playlist_contents.track_ids.length
         )
       )
-      if (fetchLineup && collection.track_count > 0) {
+      if (fetchLineup && collection.playlist_contents.track_ids.length > 0) {
         yield put(tracksActions.fetchLineupMetadatas(0, 200, false, undefined))
       }
     } else {
