@@ -99,7 +99,7 @@
 }
 
 .progressReward {
-  padding: var(--unit-4) var(--unit-6);
+  padding: var(--unit-4);
   text-align: center;
   border-left: 1px solid var(--border-strong);
   max-width: 200px;
