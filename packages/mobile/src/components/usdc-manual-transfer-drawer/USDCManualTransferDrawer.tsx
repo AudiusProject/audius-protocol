@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { Name } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
@@ -98,16 +98,19 @@ export const USDCManualTransferDrawer = () => {
     return USDCUserBankPubKey?.toString() ?? ''
   })
 
-  const analytics: AllEvents = {
-    eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
-    address: USDCUserBank ?? ''
-  }
+  const analytics: AllEvents = useMemo(
+    () => ({
+      eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
+      address: USDCUserBank ?? ''
+    }),
+    [USDCUserBank]
+  )
 
   const handleConfirmPress = useCallback(() => {
     Clipboard.setString(USDCUserBank ?? '')
     toast({ content: messages.copied, type: 'info' })
     trackEvent(make(analytics))
-  }, [USDCUserBank, toast])
+  }, [USDCUserBank, analytics, toast])
 
   const handleCancelPress = useCallback(() => {
     dispatch(
