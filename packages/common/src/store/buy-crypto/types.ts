@@ -31,6 +31,7 @@ export enum BuyCryptoErrorCode {
   BAD_FEE_PAYER = 'BadFeePayer',
   SWAP_ERROR = 'SwapError',
   ON_RAMP_ERROR = 'OnRampError',
+  COUNTRY_NOT_SUPPORTED = 'CountryNotSupported',
   UNKNOWN = 'UnknownError'
 }
 

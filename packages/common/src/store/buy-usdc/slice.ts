@@ -1,5 +1,7 @@
 import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
+import { StripeSessionCreationError } from 'store/ui/stripe-modal/types'
+
 import {
   BuyUSDCStage,
   USDCOnRampProvider,
@@ -62,7 +64,10 @@ const slice = createSlice({
     onrampSucceeded: (state) => {
       state.stage = BuyUSDCStage.CONFIRMING_PURCHASE
     },
-    onrampFailed: (_state, _action: PayloadAction<{ error: Error }>) => {
+    onrampFailed: (
+      _state,
+      _action: PayloadAction<{ error: StripeSessionCreationError }>
+    ) => {
       // handled by saga
     },
     buyUSDCFlowFailed: (
