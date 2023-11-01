@@ -17,8 +17,7 @@ const getPremiumTracksLineup = makeGetLineupMetadatas(getLineup)
 
 const messages = {
   header: 'Premium Tracks',
-  endOfLineup:
-    'You have reached the end of the list. Check back soon for more premium tracks'
+  endOfLineup: 'Check back soon for more premium tracks'
 }
 
 export const PremiumTracksScreen = () => {
