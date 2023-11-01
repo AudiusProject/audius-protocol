@@ -90,12 +90,14 @@
 .primary {
   --text-color: var(--harmony-static-white);
   --base-color: var(--harmony-primary);
-  &:hover {
+  &:hover,
+  &.hover {
     --overlay-color: var(--harmony-static-white);
     --overlay-opacity: 20%;
     box-shadow: var(--harmony-shadow-mid);
   }
-  &:active {
+  &:active,
+  &.active {
     --overlay-color: var(--harmony-static-black);
     --overlay-opacity: 20%;
     box-shadow: none;
@@ -115,7 +117,8 @@
   --text-color: var(--harmony-text-default);
   background: transparent;
   box-shadow: none;
-  &:hover {
+  &:hover,
+  &.hover {
     --base-color: var(--harmony-primary);
     --text-color: var(--harmony-static-white);
     background-color: var(--button-color);
@@ -123,7 +126,8 @@
     --overlay-opacity: 20%;
     box-shadow: var(--harmony-shadow-mid);
   }
-  &:active {
+  &:active,
+  &.active {
     --base-color: var(--harmony-primary);
     --text-color: var(--harmony-static-white);
     background-color: var(--button-color);
@@ -143,13 +147,15 @@
   /* Don't use opacity prop as it affects the text too */
   background-color: rgb(255, 255, 255, 0.85);
   backdrop-filter: blur(6px);
-  &:hover {
+  &:hover,
+  &.hover {
     --base-color: var(--harmony-border-strong);
     box-shadow: var(--harmony-shadow-mid);
     background-color: var(--harmony-bg-white);
     backdrop-filter: none;
   }
-  &:active {
+  &:active,
+  &.active {
     --base-color: var(--harmony-border-strong);
     background-color: var(--harmony-bg-surface-2);
     box-shadow: none;
@@ -167,13 +173,15 @@
   --text-color: var(--harmony-red);
   background: transparent;
   box-shadow: none;
-  &:hover {
+  &:hover,
+  &.hover {
     --base-color: var(--harmony-red);
     --text-color: var(--harmony-static-white);
     background-color: var(--button-color);
     box-shadow: var(--harmony-shadow-mid);
   }
-  &:active {
+  &:active,
+  &.active {
     --base-color: var(--harmony-red);
     --text-color: var(--harmony-static-white);
     --overlay-color: var(--harmony-static-black);

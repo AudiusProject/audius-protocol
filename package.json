@@ -55,6 +55,7 @@
     "pedalboard:test": "turbo run test --filter='./packages/discovery-provider/plugins/pedalboard/apps/*' --filter='./packages/discovery-provider/plugins/pedalboard/packages/*'"
   },
   "devDependencies": {
+    "@emotion/eslint-plugin": "11.11.0",
     "@types/keyv": "4.2.0",
     "@typescript-eslint/eslint-plugin": "5.48.2",
     "@typescript-eslint/parser": "5.48.2",

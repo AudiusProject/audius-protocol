@@ -52,7 +52,48 @@ Fixed height: 32px, 48px, 64px
   <Story of={ButtonStories.Sizes} />
 </Canvas>
 
-<Stories />
+### States
+
+Hover: transform scale: 1.04x, ease-out curve, 120ms
+Pressed: transform scale: 0.98x, ease-out curve, 120ms
+
+<Canvas>
+  <Story of={ButtonStories.States} />
+</Canvas>
+
+### Disabled
+
+<Canvas>
+  <Story of={ButtonStories.Disabled} />
+</Canvas>
+
+### Icons
+
+<Canvas>
+  <Story of={ButtonStories.Icons} />
+</Canvas>
+
+### Loading state
+
+<Canvas>
+  <Story of={ButtonStories.LoadingState} />
+</Canvas>
+
+### Color Prop Applied
+
+Generate the colors for primary button states using colored overlays rather than distinct hex values for each state.
+
+<Canvas>
+  <Story of={ButtonStories.ColorPropApplied} />
+</Canvas>
+
+### Link
+
+A link that looks like a button. Useful for buttons that trigger navigation
+
+<Canvas>
+  <Story of={ButtonStories.Link} />
+</Canvas>
 
 ## Use cases and examples
 
