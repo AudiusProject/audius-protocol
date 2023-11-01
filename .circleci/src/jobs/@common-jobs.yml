@@ -7,6 +7,10 @@ common-init:
     - checkout
     - attach_workspace:
         at: ./
+
+    - create_concatenated_patch_file:
+        filename: combined-patch-file.txt
+
     - restore_cache:
         keys:
           - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}

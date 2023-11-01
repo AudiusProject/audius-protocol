@@ -12,7 +12,7 @@ import {
   getPlaylistsNotInLibrary
 } from './helpers'
 
-describe.skip('findInPlaylistLibrary', () => {
+describe('findInPlaylistLibrary', () => {
   it('finds an index in the library', () => {
     const library = {
       contents: [
@@ -62,7 +62,7 @@ describe.skip('findInPlaylistLibrary', () => {
   })
 })
 
-describe.skip('findIndexInPlaylistLibrary', () => {
+describe('findIndexInPlaylistLibrary', () => {
   it('finds an index in the library', () => {
     const library = {
       contents: [
@@ -125,6 +125,7 @@ describe.skip('findIndexInPlaylistLibrary', () => {
           contents: [
             { type: 'playlist', playlist_id: 7 },
             { type: 'playlist', playlist_id: 10 },
+            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
             {
               type: 'folder',
               name: 'favorites 2',
@@ -141,7 +142,7 @@ describe.skip('findIndexInPlaylistLibrary', () => {
     let index = findIndexInPlaylistLibrary(library, 7)
     expect(index).toEqual([4, 0])
 
-    index = findIndexInPlaylistLibrary(library, '33')
+    index = findIndexInPlaylistLibrary(library, 'Heavy Rotation')
     expect(index).toEqual([4, 2])
 
     index = findIndexInPlaylistLibrary(library, 12)
@@ -176,11 +177,11 @@ describe.skip('findIndexInPlaylistLibrary', () => {
       ]
     }
     const index = findIndexInPlaylistLibrary(library, 'fake-uuid-2')
-    expect(index).toEqual([4, 3])
+    expect(index).toEqual([4, 2])
   })
 })
 
-describe.skip('removeFromPlaylistLibrary', () => {
+describe('removeFromPlaylistLibrary', () => {
   it('removes playlist from the library', () => {
     const library = {
       contents: [
@@ -304,7 +305,7 @@ describe.skip('removeFromPlaylistLibrary', () => {
   })
 })
 
-describe.skip('removePlaylistLibraryDuplicates', () => {
+describe('removePlaylistLibraryDuplicates', () => {
   it('can remove single dupes', () => {
     const library = {
       contents: [
@@ -471,7 +472,7 @@ describe.skip('removePlaylistLibraryDuplicates', () => {
   })
 })
 
-describe.skip('reorderPlaylistLibrary', () => {
+describe('reorderPlaylistLibrary', () => {
   it('can reorder adjacent playlists', () => {
     const library = {
       contents: [
@@ -1201,7 +1202,13 @@ describe.skip('reorderPlaylistLibrary', () => {
         { type: 'playlist', playlist_id: 4 }
       ]
     })
-    const ret2 = reorderPlaylistLibrary(ret, 1, '10', 'playlist', true)
+    const ret2 = reorderPlaylistLibrary(
+      ret,
+      1,
+      'Heavy Rotation',
+      'playlist',
+      true
+    )
     expect(ret2).toEqual({
       contents: [
         {
@@ -1231,8 +1238,8 @@ describe.skip('reorderPlaylistLibrary', () => {
   })
 })
 
-describe.skip('addFolderToLibrary', () => {
-  it('Adds a new folder to the end of a playlist library and returns the result', () => {
+describe('addFolderToLibrary', () => {
+  it('Adds a new folder to the beginning of a playlist library and returns the result', () => {
     const library = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
@@ -1249,15 +1256,15 @@ describe.skip('addFolderToLibrary', () => {
     const result = addFolderToLibrary(library, folder)
     const expectedResult = {
       contents: [
-        { type: 'playlist', playlist_id: 1 },
-        { type: 'playlist', playlist_id: 2 },
-        { type: 'playlist', playlist_id: 3 },
         {
           id: 'fake-uuid',
           name: 'Foldero',
           contents: [],
           type: 'folder'
-        }
+        },
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'playlist', playlist_id: 3 }
       ]
     }
     expect(result).toEqual(expectedResult)
@@ -1324,7 +1331,7 @@ describe.skip('addFolderToLibrary', () => {
   })
 })
 
-describe.skip('renamePlaylistFolderInLibrary', () => {
+describe('renamePlaylistFolderInLibrary', () => {
   it('changes the name of given folder in library', () => {
     const library = {
       contents: [
@@ -1374,7 +1381,7 @@ describe.skip('renamePlaylistFolderInLibrary', () => {
   })
 })
 
-describe.skip('removePlaylistFolderInLibrary', () => {
+describe('removePlaylistFolderInLibrary', () => {
   it('removes folder from library', () => {
     const library = {
       contents: [
@@ -1450,7 +1457,7 @@ describe.skip('removePlaylistFolderInLibrary', () => {
   })
 })
 
-describe.skip('addPlaylistToFolder', () => {
+describe('addPlaylistToFolder', () => {
   it('adds playlist to given folder', () => {
     const library = {
       contents: [
@@ -1499,7 +1506,7 @@ describe.skip('addPlaylistToFolder', () => {
     }
 
     const result = addPlaylistToFolder(library, 'asdf', 'fake-uuid')
-    expect(result).toBe(library)
+    expect(result).toEqual(library)
   })
 
   it('returns the original unchanged library if folder does not exist', () => {
@@ -1564,7 +1571,7 @@ describe.skip('addPlaylistToFolder', () => {
   })
 })
 
-describe.skip('getPlaylistsNotInLibrary', () => {
+describe('getPlaylistsNotInLibrary', () => {
   it('returns the playlists that are not already in the library', () => {
     const library = {
       contents: [
