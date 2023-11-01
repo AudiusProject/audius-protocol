@@ -1,4 +1,4 @@
-import type { Nullable, BNUSDC } from '@audius/common'
+import { Nullable, BNUSDC, useUSDCPurchaseConfig } from '@audius/common'
 import {
   CUSTOM_AMOUNT,
   AMOUNT_PRESET,
@@ -21,6 +21,7 @@ export const usePurchaseSummaryValues = ({
   const [{ value: customAmount }] = useField(CUSTOM_AMOUNT)
   const [{ value: amountPreset }] = useField(AMOUNT_PRESET)
   const presetValues = usePayExtraPresets(useRemoteVar)
+  const { minUSDCPurchaseAmountCents } = useUSDCPurchaseConfig(useRemoteVar)
 
   const extraAmount = getExtraAmount({
     amountPreset,
@@ -34,7 +35,8 @@ export const usePurchaseSummaryValues = ({
     // to reflect that until they explicitly select no preset
     extraAmount: amountPreset === PayExtraPreset.NONE ? undefined : extraAmount,
     price,
-    currentBalance
+    currentBalance,
+    minPurchaseAmountCents: minUSDCPurchaseAmountCents
   })
 
   return purchaseSummaryValues
