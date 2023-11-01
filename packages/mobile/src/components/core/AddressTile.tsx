@@ -64,7 +64,7 @@ export const AddressTile = ({
     Clipboard.setString(address)
     toast({ content: messages.copied, type: 'info' })
     if (analytics) trackEvent(make(analytics))
-  }, [address, toast])
+  }, [address, analytics, toast])
 
   return (
     <View style={styles.addressContainer}>
