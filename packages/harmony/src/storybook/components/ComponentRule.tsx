@@ -1,5 +1,7 @@
 import type { CSSProperties, ReactElement } from 'react'
 
+import { useTheme } from '@emotion/react'
+
 import {
   Flex,
   IconValidationCheck,
@@ -13,6 +15,7 @@ const messages = {
 }
 
 type ComponentRuleProps = {
+  className?: string
   component: ReactElement
   description: ReactElement | string
   isRecommended: boolean
@@ -20,9 +23,17 @@ type ComponentRuleProps = {
 }
 
 export const ComponentRule = (props: ComponentRuleProps) => {
-  const { component, description = '', isRecommended = false, style } = props
+  const {
+    className,
+    component,
+    description = '',
+    isRecommended = false
+  } = props
   const TitleIcon = isRecommended ? IconValidationCheck : IconValidationX
   const title = isRecommended ? messages.do : messages.dont
+
+  const { color, cornerRadius } = useTheme()
+  const borderColor = isRecommended ? color.status.success : color.status.error
 
   return (
     <Flex as='section' direction='column' gap='xl' flex={1}>
@@ -39,11 +50,15 @@ export const ComponentRule = (props: ComponentRuleProps) => {
         </Text>
       </Flex>
       <Flex
+        className={className}
         as='figure'
         p='2xl'
         border='strong'
         justifyContent='center'
-        style={style}
+        css={{
+          border: `1px solid ${borderColor}`,
+          borderRadius: cornerRadius.m
+        }}
       >
         {component}
       </Flex>

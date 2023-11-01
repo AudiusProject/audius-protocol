@@ -5,11 +5,13 @@ import InformationBox from './InformationBox'
 const relatedComponentsMap = {
   PlainButton: {
     component: <PlainButton>Plain Button</PlainButton>,
-    link: 'buttons-plainbutton--documentation'
+    link: 'buttons-plainbutton--documentation',
+    description: 'A Button with no border and background.'
   },
   SocialButton: {
     component: <SocialButton socialType='instagram' aria-label='instagram' />,
-    link: 'buttons-socialbutton--documentation'
+    link: 'buttons-socialbutton--documentation',
+    description: 'A button that can connect a users socials.'
   }
 }
 
@@ -23,25 +25,17 @@ export const RelatedComponents = (props: RelatedComponentsProps) => {
   return (
     <Flex gap='2xl' mt='3xl'>
       {componentNames.map((componentName) => {
-        const { component, link } = relatedComponentsMap[componentName]
+        const { component, link, description } =
+          relatedComponentsMap[componentName]
         const fullLink = `../?path=/docs/components-${link}`
         return (
-          <>
-            <InformationBox
-              key={componentName}
-              component={component}
-              href={fullLink}
-              title={componentName}
-              description='Lorem ipsum'
-            />
-            {/* <CardLink
-              key={componentName}
-              icon={icon}
-              link={fullLink}
-              subtitle={componentName}
-              description='Lorem ipsum'
-            /> */}
-          </>
+          <InformationBox
+            key={componentName}
+            component={component}
+            href={fullLink}
+            title={componentName}
+            description={description}
+          />
         )
       })}
     </Flex>

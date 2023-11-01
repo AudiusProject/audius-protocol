@@ -31,7 +31,6 @@ export const Link = (props: LinkProps) => {
   )
 
   return (
-    // @ts-ignore TODO figure out refs for text
     <Text className={cn(styles.root, className)} {...other} asChild>
       <a onClick={handleClick}>{children}</a>
     </Text>

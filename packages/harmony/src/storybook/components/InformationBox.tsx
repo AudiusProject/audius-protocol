@@ -16,11 +16,13 @@ const InformationBox = (props: InformationBoxProps) => {
     <Flex as='section' direction='column' flex={1} gap='m'>
       <Flex
         as='figure'
-        // TODO: use emotion
-        style={{ backgroundColor: 'white' }}
         p='3xl'
         alignItems='center'
         justifyContent='center'
+        css={(theme) => ({
+          backgroundColor: theme.color.background.default,
+          height: 147
+        })}
       >
         {component}
       </Flex>

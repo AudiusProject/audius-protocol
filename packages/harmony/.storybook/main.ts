@@ -23,7 +23,6 @@ const config: StorybookConfig = {
   },
   docs: {
     autodocs: true,
-    // autodocs: 'tag',
     defaultName: 'Documentation'
   },
   babel: {
