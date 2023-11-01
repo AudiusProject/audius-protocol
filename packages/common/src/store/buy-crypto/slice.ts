@@ -3,8 +3,9 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { MintName } from 'services/index'
 import { OnRampProvider } from 'store/ui/buy-audio/types'
 
-import { BuyCryptoError } from './types'
 import { StripeSessionCreationError } from '..'
+
+import { BuyCryptoError } from './types'
 
 type BuyCryptoPayload = {
   /**
