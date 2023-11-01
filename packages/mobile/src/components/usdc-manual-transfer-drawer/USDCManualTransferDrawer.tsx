@@ -18,7 +18,7 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 
 import { AddressTile } from '../core/AddressTile'
-import { useColor, useThemeColors } from 'app/utils/theme'
+import { useColor } from 'app/utils/theme'
 
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
