@@ -18,6 +18,7 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 
 import { AddressTile } from '../core/AddressTile'
+import { useColor } from 'app/utils/theme'
 
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
@@ -89,6 +90,7 @@ export const USDCManualTransferDrawer = () => {
   const dispatch = useDispatch()
   const { toast } = useToast()
   const { onPress: onPressLearnMore } = useLink(USDCLearnMore)
+  const neutral = useColor('neutral')
 
   const { value: USDCUserBank } = useAsync(async () => {
     const USDCUserBankPubKey = await getUSDCUserBank()
@@ -142,6 +144,7 @@ export const USDCManualTransferDrawer = () => {
           <IconError
             width={spacing(6)}
             height={spacing(6)}
+            fill={neutral}
             style={styles.icon}
           />
           <View style={styles.splContainer}>
