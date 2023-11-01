@@ -269,7 +269,9 @@ const NodeOverview = ({
             )}
             {!isDeregistered && (
               <div className={styles.version}>
-                {`${messages.version} ${health?.version || version || 'unknown'}`}
+                {`${messages.version} ${health?.version ||
+                  version ||
+                  'unknown'}`}
               </div>
             )}
             {!isDeregistered && isUnregistered && (
