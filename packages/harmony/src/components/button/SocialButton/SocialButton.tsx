@@ -24,11 +24,11 @@ export type SocialButtonProps = Omit<ButtonProps, 'aria-label'> & {
 const getButtonLogo = (type: SocialMedia) => {
   switch (type) {
     case 'instagram':
-      return <IconInstagram />
+      return <IconInstagram size='large' />
     case 'tiktok':
-      return <IconTikTok />
+      return <IconTikTok size='large' />
     case 'twitter':
-      return <IconTwitter />
+      return <IconTwitter size='large' />
     default:
       return undefined
   }
