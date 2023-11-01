@@ -30,6 +30,7 @@ common-test:
   docker:
     - image: cimg/node:18.17
   steps:
+    - checkout
     - attach_workspace:
         at: ./
     - run:
