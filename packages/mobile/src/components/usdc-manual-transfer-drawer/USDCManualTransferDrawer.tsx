@@ -19,6 +19,7 @@ import { spacing } from 'app/styles/spacing'
 
 import { AddressTile } from '../core/AddressTile'
 import { useColor } from 'app/utils/theme'
+import { AllEvents } from 'app/types/analytics'
 
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
@@ -97,15 +98,15 @@ export const USDCManualTransferDrawer = () => {
     return USDCUserBankPubKey?.toString() ?? ''
   })
 
+  const analytics: AllEvents = {
+    eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
+    address: USDCUserBank ?? ''
+  }
+
   const handleConfirmPress = useCallback(() => {
     Clipboard.setString(USDCUserBank ?? '')
     toast({ content: messages.copied, type: 'info' })
-    trackEvent(
-      make({
-        eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
-        address: USDCUserBank ?? ''
-      })
-    )
+    trackEvent(make(analytics))
   }, [USDCUserBank, toast])
 
   const handleCancelPress = useCallback(() => {
@@ -139,6 +140,7 @@ export const USDCManualTransferDrawer = () => {
         <AddressTile
           address={USDCUserBank ?? ''}
           left={<LogoUSDC height={spacing(6)} />}
+          analytics={analytics}
         />
         <View style={styles.disclaimerContainer}>
           <IconError
