@@ -29,6 +29,6 @@ common-test:
     - attach_workspace:
         at: ./
     - run:
-      name: 'test'
-      command: |
-        npx turbo run test --filter=@audius/common
+        name: 'test'
+        command: |
+          npx turbo run test --filter=@audius/common
