@@ -1,8 +1,8 @@
 import type { ComponentPropsWithoutRef } from 'react'
 
-import type { IconComponent } from 'components/icon/Icon'
-// TODO generate this type from the emotion theme
-import type { ColorValue } from 'types/colors'
+import type { SpecialColors } from 'foundations/color'
+
+import type { IconComponent } from '../icon'
 
 export enum ButtonType {
   PRIMARY = 'primary',
@@ -90,7 +90,7 @@ export type ButtonProps = {
   /**
    * Override the color of the button, only valid for the `PRIMARY` variant
    */
-  color?: ColorValue
+  color?: SpecialColors
 
   /**
    * Override the color of the button using any hex color, only valid for the `PRIMARY` variant

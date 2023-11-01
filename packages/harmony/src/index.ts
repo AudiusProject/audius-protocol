@@ -8,4 +8,6 @@ import './foundations/motion/motion.css'
 import './foundations/corner-radius/corner-radius.css'
 import './foundations/shadows/shadows.css'
 
+export * from './foundations'
 export * from './components'
+export * from './icons'

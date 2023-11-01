@@ -3,7 +3,7 @@ import type { CSSProperties, ReactElement } from 'react'
 import { useTheme } from '@emotion/react'
 
 import { Flex, Text } from 'components'
-import { IconValidationCheck, IconValidationX } from 'components/icon'
+import { IconValidationCheck, IconValidationX } from 'icons'
 
 const messages = {
   do: 'Do',
