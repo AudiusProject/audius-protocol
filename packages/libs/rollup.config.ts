@@ -288,7 +288,7 @@ export const outputConfigs = {
    */
   coreConfig: {
     input: 'src/core.ts',
-    output: [{ file: 'dist/core', format: 'es', sourcemap: true }],
+    output: [{ file: 'dist/core.js', format: 'es', sourcemap: true }],
     plugins: [
       resolve({ extensions, preferBuiltins: true }),
       commonjs({ extensions }),
