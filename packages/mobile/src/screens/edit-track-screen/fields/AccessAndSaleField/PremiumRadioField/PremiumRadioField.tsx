@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
-import { FeatureFlags, Name, isPremiumContentUSDCPurchaseGated } from '@audius/common'
+import {
+  FeatureFlags,
+  Name,
+  isPremiumContentUSDCPurchaseGated
+} from '@audius/common'
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 
@@ -8,6 +12,7 @@ import IconCart from 'app/assets/images/iconCart.svg'
 import IconStars from 'app/assets/images/iconStars.svg'
 import { Link, Tag, Text } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
@@ -17,7 +22,6 @@ import type { TrackAvailabilitySelectionProps } from '../../../components/types'
 
 import { TRACK_PREVIEW, TrackPreviewField } from './TrackPreviewField'
 import { TrackPriceField } from './TrackPriceField'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 
 const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
 
