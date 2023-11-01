@@ -242,7 +242,6 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
   const { amountDue } = purchaseSummaryValues
 
   const isPurchaseSuccessful = stage === PurchaseContentStage.FINISH
-  const isInProgress = isContentPurchaseInProgress(stage)
 
   // Navigate to track screen in the background if purchase is successful
   useEffect(() => {
@@ -273,7 +272,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
           {isPurchaseSuccessful ? null : (
             <PayExtraFormSection
               amountPresets={presetValues}
-              disabled={isInProgress}
+              disabled={isUnlocking}
             />
           )}
           <View style={styles.bottomSection}>
@@ -281,7 +280,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
               {...purchaseSummaryValues}
               isPurchaseSuccessful={isPurchaseSuccessful}
             />
-            {isIOSDisabled || isInProgress || isPurchaseSuccessful ? null : (
+            {isIOSDisabled || isUnlocking || isPurchaseSuccessful ? null : (
               <Text
                 color='primary'
                 fontSize='small'
@@ -296,7 +295,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
             <PurchaseUnavailable />
           ) : isPurchaseSuccessful ? (
             <PurchaseSuccess track={track} />
-          ) : isInProgress ? null : (
+          ) : isUnlocking ? null : (
             <View>
               <View style={styles.payToUnlockTitleContainer}>
                 <Text weight='heavy' textTransform='uppercase' fontSize='small'>
