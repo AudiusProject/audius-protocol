@@ -1,9 +1,16 @@
-import { useCallback, useContext } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 
-import { Name, useUSDCManualTransferModal } from '@audius/common'
+import {
+  Name,
+  useUSDCManualTransferModal,
+  solanaSelectors,
+  createUserBankIfNeeded
+} from '@audius/common'
 import { Button, ButtonType } from '@audius/harmony'
 import { IconError, LogoUSDC, ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
+import QRCode from 'react-qr-code'
+import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { Icon } from 'components/Icon'
@@ -13,12 +20,15 @@ import { Text } from 'components/typography'
 import { Hint } from 'components/withdraw-usdc-modal/components/Hint'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import { track, make } from 'services/analytics'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { getUSDCUserBank } from 'services/solana/solana'
 import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
 import zIndex from 'utils/zIndex'
 
 import styles from './USDCManualTransferModal.module.css'
+
+const { getFeePayer } = solanaSelectors
 
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
@@ -36,7 +46,21 @@ const messages = {
   copied: 'Copied to Clipboard!'
 }
 
+const useCreateUserbankIfNeeded = () => {
+  const feePayerOverride = useSelector(getFeePayer)
+
+  useEffect(() => {
+    if (!feePayerOverride) return
+    createUserBankIfNeeded(audiusBackendInstance, {
+      recordAnalytics: track,
+      mint: 'usdc',
+      feePayerOverride
+    })
+  }, [feePayerOverride])
+}
+
 export const USDCManualTransferModal = () => {
+  useCreateUserbankIfNeeded()
   const { isOpen, onClose } = useUSDCManualTransferModal()
   const { toast } = useContext(ToastContext)
   const mobile = isMobile()
@@ -91,16 +115,25 @@ export const USDCManualTransferModal = () => {
         <div className={styles.content}>
           <Text>{messages.explainer1}</Text>
           <Text>{messages.explainer2}</Text>
-          <AddressTile address={USDCUserBank ?? ''} left={<LogoUSDC />} />
-          <Hint
-            text={messages.disclaimer}
-            link={USDCLearnMore}
-            icon={() => <Icon icon={IconError} size='large' fill='neutral' />}
-            linkText={messages.learnMore}
-          />
+          <div className={cn(styles.columns, { [styles.mobile]: mobile })}>
+            <div className={styles.qr}>
+              {USDCUserBank ? <QRCode value={USDCUserBank} /> : null}
+            </div>
+            <div className={styles.data}>
+              <AddressTile address={USDCUserBank ?? ''} left={<LogoUSDC />} />
+              <Hint
+                text={messages.disclaimer}
+                link={USDCLearnMore}
+                icon={() => (
+                  <Icon icon={IconError} size='large' fill='neutral' />
+                )}
+                linkText={messages.learnMore}
+              />
+            </div>
+          </div>
           <div
             className={cn(styles.buttonContainer, {
-              [styles.mobile]: isMobile
+              [styles.mobile]: mobile
             })}
           >
             <Button variant={ButtonType.PRIMARY} fullWidth onClick={handleCopy}>

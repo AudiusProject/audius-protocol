@@ -215,10 +215,10 @@ export const formatUSDCWeiToFloorCentsNumber = (amount: BNUSDC) => {
 }
 
 /** General Wallet Utils */
-export const shortenSPLAddress = (addr: string) => {
-  return `${addr.substring(0, 4)}...${addr.substr(addr.length - 5)}`
+export const shortenSPLAddress = (addr: string, numChars: number = 4) => {
+  return `${addr.substring(0, numChars)}...${addr.substr(addr.length - numChars - 1)}`
 }
 
-export const shortenEthAddress = (addr: string) => {
-  return `0x${addr.substring(2, 4)}...${addr.substr(addr.length - 5)}`
+export const shortenEthAddress = (addr: string, numChars: number = 4) => {
+  return `0x${addr.substring(2, numChars)}...${addr.substr(addr.length - numChars - 1)}`
 }

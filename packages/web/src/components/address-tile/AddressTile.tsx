@@ -1,12 +1,11 @@
 import { ReactNode, useCallback, useContext } from 'react'
 
+import { shortenSPLAddress } from '@audius/common'
 import { Text, IconCopy, PlainButton } from '@audius/harmony'
-import { ResizeObserver } from '@juggle/resize-observer'
-import cn from 'classnames'
-import useMeasure from 'react-use-measure'
 
 import { Icon } from 'components/Icon'
 import { ToastContext } from 'components/toast/ToastContext'
+import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
 import styles from './AddressTile.module.css'
@@ -14,8 +13,6 @@ import styles from './AddressTile.module.css'
 const messages = {
   copied: 'Copied to Clipboard!'
 }
-
-const ADDRESS_HORIZONTAL_MARGINS = 220
 
 type AddressTileProps = {
   address: string
@@ -25,6 +22,7 @@ type AddressTileProps = {
 
 export const AddressTile = ({ address, left, right }: AddressTileProps) => {
   const { toast } = useContext(ToastContext)
+  const mobile = isMobile()
 
   const handleCopyPress = useCallback(() => {
     copyToClipboard(address)
@@ -37,21 +35,12 @@ export const AddressTile = ({ address, left, right }: AddressTileProps) => {
     </PlainButton>
   )
 
-  const [ref, { width }] = useMeasure({
-    polyfill: ResizeObserver
-  })
-
   return (
-    <div className={styles.addressContainer} ref={ref}>
+    <div className={styles.addressContainer}>
       <div className={styles.leftContainer}>{left}</div>
       <div className={styles.middleContainer}>
-        <Text
-          variant='body'
-          className={cn(styles.address, {
-            width: width - ADDRESS_HORIZONTAL_MARGINS
-          })}
-        >
-          {address}
+        <Text variant='body' className={styles.address}>
+          {shortenSPLAddress(address, mobile ? 6 : 12)}
         </Text>
       </div>
       <div className={styles.rightContainer}>{right ?? defaultRight}</div>

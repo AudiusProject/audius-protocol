@@ -1,9 +1,10 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useEffect } from 'react'
 
-import { Name } from '@audius/common'
+import { Name, createUserBankIfNeeded, solanaSelectors } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { View } from 'react-native'
-import { useDispatch } from 'react-redux'
+import QRCode from 'react-qr-code'
+import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import IconError from 'app/assets/images/iconError.svg'
@@ -11,7 +12,8 @@ import LogoUSDC from 'app/assets/images/logoUSDC.svg'
 import { Button, Text, useLink } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useToast } from 'app/hooks/useToast'
-import { make, track as trackEvent } from 'app/services/analytics'
+import { make, track, track as trackEvent } from 'app/services/analytics'
+import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import { getUSDCUserBank } from 'app/services/buyCrypto'
 import { setVisibility } from 'app/store/drawers/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
@@ -20,6 +22,8 @@ import type { AllEvents } from 'app/types/analytics'
 import { useColor } from 'app/utils/theme'
 
 import { AddressTile } from '../core/AddressTile'
+
+const { getFeePayer } = solanaSelectors
 
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
@@ -33,6 +37,19 @@ const messages = {
   goBack: 'Go Back',
   learnMore: 'Learn More',
   copied: 'Copied to Clipboard!'
+}
+
+const useCreateUserbankIfNeeded = () => {
+  const feePayerOverride = useSelector(getFeePayer)
+
+  useEffect(() => {
+    if (!feePayerOverride) return
+    createUserBankIfNeeded(audiusBackendInstance, {
+      recordAnalytics: track,
+      mint: 'usdc',
+      feePayerOverride
+    })
+  }, [feePayerOverride])
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -83,6 +100,11 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   shrink: {
     flexShrink: 1
+  },
+  qr: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10
   }
 }))
 
@@ -92,6 +114,7 @@ export const USDCManualTransferDrawer = () => {
   const { toast } = useToast()
   const { onPress: onPressLearnMore } = useLink(USDCLearnMore)
   const neutral = useColor('neutral')
+  useCreateUserbankIfNeeded()
 
   const { value: USDCUserBank } = useAsync(async () => {
     const USDCUserBankPubKey = await getUSDCUserBank()
@@ -140,6 +163,11 @@ export const USDCManualTransferDrawer = () => {
           </Text>
         </View>
         <Text style={styles.explainer}>{messages.explainer}</Text>
+        <View style={styles.qr}>
+          {USDCUserBank ? (
+            <QRCode size={160} style={styles.qr} value={USDCUserBank} />
+          ) : null}
+        </View>
         <AddressTile
           address={USDCUserBank ?? ''}
           left={<LogoUSDC height={spacing(6)} />}
