@@ -63,6 +63,7 @@ const notarizeFn = async (appId, params) => {
     await notarize({
       appBundleId: appId,
       appPath,
+      teamId: process.env.ASC_PROVIDER,
       appleId: process.env.APPLE_ID,
       appleIdPassword: process.env.APPLE_ID_PASSWORD,
       ascProvider: process.env.ASC_PROVIDER
