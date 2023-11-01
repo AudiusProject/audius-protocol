@@ -340,7 +340,7 @@ export const PremiumTrackPurchaseDrawer = () => {
   const isUSDCEnabled = useIsUSDCEnabled()
   const presetValues = usePayExtraPresets(useRemoteVar)
   const { data, isOpen } = useDrawer('PremiumTrackPurchase')
-  const { trackId } = data
+  const trackId = data?.trackId
   const { data: track, status: trackStatus } = useGetTrackById(
     { id: trackId },
     { disabled: !trackId }
