@@ -27,7 +27,7 @@ type Config struct {
 
 func main() {
 	env := os.Getenv("ENV")
-	slog.Info("starting", "ENV", env)
+	slog.Info("starting", "env", env)
 
 	switch env {
 	case "prod":
