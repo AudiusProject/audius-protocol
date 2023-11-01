@@ -25,7 +25,13 @@ export const ComponentRule = (props: ComponentRuleProps) => {
   const title = isRecommended ? messages.do : messages.dont
 
   return (
-    <Flex as='section' direction='column' gap='xl' flex={1}>
+    <Flex
+      as='section'
+      direction='column'
+      gap='xl'
+      flex={1}
+      css={{ overflow: 'hidden' }}
+    >
       <Flex direction='column' gap='m'>
         <Text
           variant='title'
