@@ -24,9 +24,6 @@ const DownloadPage = lazy(() => import('pages/download-page/DownloadPage'))
 const TermsOfUsePage = lazy(
   () => import('pages/terms-of-use-page/TermsOfUsePage')
 )
-const ServiceTermsPage = lazy(
-  () => import('pages/service-terms-page/ServiceTermsPage')
-)
 
 const ROOT_ID = 'root'
 const SCROLL_LOCK_CLASS = 'scrollLock'
@@ -105,17 +102,6 @@ const PublicSite = ({ isMobile, setRenderPublicSite }: PublicSiteProps) => {
               path={'/legal/terms-of-use'}
               render={() => (
                 <TermsOfUsePage
-                  isMobile={isMobileOrNarrow}
-                  openNavScreen={openNavScreen}
-                  setRenderPublicSite={setRenderPublicSite}
-                />
-              )}
-            />
-            <Route
-              exact
-              path={'/legal/service-terms'}
-              render={() => (
-                <ServiceTermsPage
                   isMobile={isMobileOrNarrow}
                   openNavScreen={openNavScreen}
                   setRenderPublicSite={setRenderPublicSite}
