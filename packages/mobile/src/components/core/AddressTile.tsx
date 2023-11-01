@@ -1,8 +1,9 @@
 import { useCallback, type ReactNode } from 'react'
+import { make, track as trackEvent } from 'app/services/analytics'
 
 import Clipboard from '@react-native-clipboard/clipboard'
 import { View } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { TouchableOpacity } from 'react-native'
 
 import IconCopy2 from 'app/assets/images/iconCopy2.svg'
 import { Text } from 'app/components/core'
@@ -10,6 +11,7 @@ import { useToast } from 'app/hooks/useToast'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useColor } from 'app/utils/theme'
+import { AllEvents } from 'app/types/analytics'
 
 const messages = {
   copied: 'Copied to Clipboard!'
@@ -33,7 +35,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     borderLeftWidth: 1,
     borderRightWidth: 1,
     borderColor: palette.borderDefault,
-    flexShrink: 1
+    flexShrink: 1,
+    alignItems: 'center'
   },
   leftContainer: {
     paddingVertical: spacing(4),
@@ -45,9 +48,15 @@ type AddressTileProps = {
   address: string
   left?: ReactNode
   right?: ReactNode
+  analytics?: AllEvents
 }
 
-export const AddressTile = ({ address, left, right }: AddressTileProps) => {
+export const AddressTile = ({
+  address,
+  left,
+  right,
+  analytics
+}: AddressTileProps) => {
   const styles = useStyles()
   const { toast } = useToast()
   const textSubdued = useColor('textIconSubdued')
@@ -55,6 +64,7 @@ export const AddressTile = ({ address, left, right }: AddressTileProps) => {
   const handleCopyPress = useCallback(() => {
     Clipboard.setString(address)
     toast({ content: messages.copied, type: 'info' })
+    if (analytics) trackEvent(make(analytics))
   }, [address, toast])
 
   return (
@@ -67,7 +77,7 @@ export const AddressTile = ({ address, left, right }: AddressTileProps) => {
       </View>
       <View style={styles.rightContainer}>
         {right ?? (
-          <TouchableOpacity onPress={handleCopyPress}>
+          <TouchableOpacity onPress={handleCopyPress} hitSlop={spacing(6)}>
             <IconCopy2
               fill={textSubdued}
               width={spacing(4)}
