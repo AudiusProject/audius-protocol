@@ -120,7 +120,7 @@ describe('store/purchase-content/utils', () => {
       ).toEqual(expect.objectContaining(expected))
     }
   )
-  describe('getPurchaseSummaryValues', () => {})
+
   test.each([
     {
       description: 'no balance, full price needed',
