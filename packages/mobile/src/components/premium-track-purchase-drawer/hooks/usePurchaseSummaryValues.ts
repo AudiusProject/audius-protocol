@@ -1,11 +1,12 @@
-import { Nullable, BNUSDC, useUSDCPurchaseConfig } from '@audius/common'
+import type { Nullable, BNUSDC } from '@audius/common'
 import {
   CUSTOM_AMOUNT,
   AMOUNT_PRESET,
   getExtraAmount,
   getPurchaseSummaryValues,
   PayExtraPreset,
-  usePayExtraPresets
+  usePayExtraPresets,
+  useUSDCPurchaseConfig
 } from '@audius/common'
 import { useField } from 'formik'
 
