@@ -30,11 +30,13 @@ type PurchaseSummaryValues = {
 type GetPurchaseSummaryValuesArgs = {
   price: number
   currentBalance: Nullable<BNUSDC>
+  minPurchaseAmountCents: number
   extraAmount?: number
 }
 
 /**
- * Gets values for a purchase summary
+ * Gets values for a purchase summary. Will ignore existing balance if applying
+ * it would cause the transaction to fall below the given minimum purchase amount.
  *  - amountDue
  *  - existingBalance
  *  - basePrice
@@ -44,7 +46,8 @@ type GetPurchaseSummaryValuesArgs = {
 export const getPurchaseSummaryValues = ({
   price,
   currentBalance,
-  extraAmount
+  extraAmount,
+  minPurchaseAmountCents
 }: GetPurchaseSummaryValuesArgs): PurchaseSummaryValues => {
   let amountDue = price + (extraAmount ?? 0)
   let existingBalance
@@ -61,12 +64,35 @@ export const getPurchaseSummaryValues = ({
     // Note: Rounding amount due *up* to nearest cent for cases where the balance
     // is between cents so that we aren't advertising *lower* than what the user
     // will have to pay.
-    const diff = amountDueBN.sub(balanceBN)
-    amountDue = ceilingBNUSDCToNearestCent(diff as BNUSDC)
+    const diff = ceilingBNUSDCToNearestCent(
+      amountDueBN.sub(balanceBN) as BNUSDC
+    )
       .div(BN_USDC_CENT_WEI)
       .toNumber()
-    existingBalance = balanceBN.div(BN_USDC_CENT_WEI).toNumber()
+    // Don't allow use of existing balance if final amount due is less than the minumum purchase amount
+    if (diff > 0 && diff >= minPurchaseAmountCents) {
+      amountDue = diff
+      existingBalance = balanceBN.div(BN_USDC_CENT_WEI).toNumber()
+    }
   }
 
   return { amountDue, existingBalance, basePrice: price, extraAmount }
+}
+
+/** Used by sagas to calculate balance needed to complete a USDC transaction. Enforces the given minimum purchase amount and will ignore existing balance if applying it would cause the transaction to fall below that amount. */
+export function getBalanceNeeded(
+  totalAmountDue: BNUSDC,
+  existingBalance: BNUSDC,
+  minPurchaseAmountCents: number
+) {
+  const diff = totalAmountDue.sub(existingBalance)
+  const minPurchaseAmountBN = new BN(minPurchaseAmountCents).mul(
+    BN_USDC_CENT_WEI
+  ) as BNUSDC
+  if (diff.gte(minPurchaseAmountBN)) {
+    return diff as BNUSDC
+  } else if (diff.gtn(0)) {
+    return totalAmountDue
+  }
+  return new BN(0) as BNUSDC
 }
