@@ -66,7 +66,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   newChallengeText: {
     textShadowOffset: { width: 0, height: 1.4 },
     textShadowRadius: 8,
-    textShadowColor: 'rgba(0,0,0,0.2)'
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    lineHeight: typography.fontSize.medium
   },
   header: {
     flexDirection: 'row',
