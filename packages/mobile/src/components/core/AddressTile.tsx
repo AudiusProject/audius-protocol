@@ -1,17 +1,16 @@
 import { useCallback, type ReactNode } from 'react'
-import { make, track as trackEvent } from 'app/services/analytics'
 
 import Clipboard from '@react-native-clipboard/clipboard'
-import { View } from 'react-native'
-import { TouchableOpacity } from 'react-native'
+import { View, TouchableOpacity } from 'react-native'
 
 import IconCopy2 from 'app/assets/images/iconCopy2.svg'
 import { Text } from 'app/components/core'
 import { useToast } from 'app/hooks/useToast'
+import { make, track as trackEvent } from 'app/services/analytics'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
+import type { AllEvents } from 'app/types/analytics'
 import { useColor } from 'app/utils/theme'
-import { AllEvents } from 'app/types/analytics'
 
 const messages = {
   copied: 'Copied to Clipboard!'

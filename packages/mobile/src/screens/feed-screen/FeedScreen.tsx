@@ -13,13 +13,13 @@ import IconFeed from 'app/assets/images/iconFeed.svg'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { FeedTipTile } from 'app/components/feed-tip-tile'
 import { Lineup } from 'app/components/lineup'
+import { EndOfLineupNotice } from 'app/components/lineup/EndOfLineupNotice'
 import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track } from 'app/services/analytics'
 
 import { EmptyFeedSuggestedFollows } from './EmptyFeedSuggestedFollows'
-import { EndOfFeedNotice } from './EndOfFeedNotice'
 import { FeedFilterButton } from './FeedFilterButton'
 const { getDiscoverFeedLineup } = feedPageSelectors
 const { makeGetLineupMetadatas } = lineupSelectors
@@ -27,7 +27,8 @@ const { makeGetLineupMetadatas } = lineupSelectors
 const getFeedLineup = makeGetLineupMetadatas(getDiscoverFeedLineup)
 
 const messages = {
-  header: 'Your Feed'
+  header: 'Your Feed',
+  endOfFeed: "Looks like you've reached the end of your feed..."
 }
 
 export const FeedScreen = () => {
@@ -60,7 +61,9 @@ export const FeedScreen = () => {
           selfLoad
           header={isUsdcEnabled ? null : <FeedTipTile />}
           hideHeaderOnEmpty
-          ListFooterComponent={<EndOfFeedNotice />}
+          ListFooterComponent={
+            <EndOfLineupNotice description={messages.endOfFeed} />
+          }
           LineupEmptyComponent={<EmptyFeedSuggestedFollows />}
           actions={feedActions}
           lineupSelector={getFeedLineup}

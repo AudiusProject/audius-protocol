@@ -16,10 +16,10 @@ import { getUSDCUserBank } from 'app/services/buyCrypto'
 import { setVisibility } from 'app/store/drawers/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
+import type { AllEvents } from 'app/types/analytics'
+import { useColor } from 'app/utils/theme'
 
 import { AddressTile } from '../core/AddressTile'
-import { useColor } from 'app/utils/theme'
-import { AllEvents } from 'app/types/analytics'
 
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
