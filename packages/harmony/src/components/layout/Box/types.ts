@@ -50,4 +50,5 @@ export type BoxProps = {
   shadow?: ShadowOptions
 
   flex?: CSSProperties['flex']
+  alignSelf?: CSSProperties['alignSelf']
 }
