@@ -419,6 +419,15 @@ function* doBuyCryptoViaSol({
           error: errorString
         })
       )
+      if (
+        result.failure.payload?.error?.code ===
+        'crypto_onramp_unsupported_country'
+      ) {
+        throw new BuyCryptoError(
+          BuyCryptoErrorCode.COUNTRY_NOT_SUPPORTED,
+          errorString
+        )
+      }
       throw new BuyCryptoError(BuyCryptoErrorCode.ON_RAMP_ERROR, errorString)
     }
 
