@@ -1,4 +1,6 @@
-import type { CSSProperties, ReactElement } from 'react'
+import type { ReactElement } from 'react'
+
+import type { CSSObject } from '@emotion/react'
 
 import { Flex } from 'components'
 
@@ -9,13 +11,13 @@ type ComponentRulesProps = {
     positive: {
       component: ReactElement
       description: string | ReactElement
-      style?: CSSProperties
+      css?: CSSObject
     }
 
     negative: {
       component: ReactElement
       description: string | ReactElement
-      style?: CSSProperties
+      css?: CSSObject
     }
   }[]
 }
@@ -33,13 +35,13 @@ export const ComponentRules = (props: ComponentRulesProps) => {
             <ComponentRule
               component={rule.positive.component}
               description={rule.positive.description}
-              style={rule.positive.style}
+              css={rule.positive.css}
               isRecommended
             />
             <ComponentRule
               component={rule.negative.component}
               description={rule.negative.description}
-              style={rule.negative.style}
+              css={rule.negative.css}
               isRecommended={false}
             />
           </Flex>

@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { Text } from '../../typography'
+import { Text } from '../../text'
 
 import { Box } from './Box'
 

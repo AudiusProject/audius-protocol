@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import * as Icons from '../../typography/Icons'
+import * as Icons from '../../icon'
 import { PlainButtonProps, PlainButtonSize, PlainButtonType } from '../types'
 
 import { PlainButton } from './PlainButton'

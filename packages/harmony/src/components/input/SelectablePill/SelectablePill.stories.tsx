@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { IconHeart } from 'components/typography/Icons'
+import { IconHeart } from 'components/icon'
 
 import { SelectablePill } from './SelectablePill'
 

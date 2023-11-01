@@ -11,7 +11,7 @@ import styles from './typography.module.css'
 export const Text = forwardRef(
   <TextComponentType extends ElementType = 'p'>(
     props: TextProps<TextComponentType>,
-    ref: ForwardedRef<HTMLElement>
+    ref: ForwardedRef<TextComponentType>
   ) => {
     const {
       className,

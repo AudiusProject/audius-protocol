@@ -2,7 +2,7 @@ import { forwardRef, useId } from 'react'
 
 import cn from 'classnames'
 
-import { Text, TextSize } from 'components/typography'
+import { Text, TextSize } from 'components/text'
 
 import { Flex } from '../../layout'
 import { useFocusState } from '../useFocusState'
@@ -139,7 +139,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             inputRootStyle
           )}
         >
-          {StartIcon ? <StartIcon size='medium' /> : null}
+          {StartIcon ? <StartIcon size='m' /> : null}
           <Flex direction='column' gap='xs' justifyContent='center' w='100%'>
             {shouldShowLabel ? (
               <Flex
@@ -174,7 +174,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             ) : null}
             {inputRender}
           </Flex>
-          {EndIcon ? <EndIcon size='medium' /> : null}
+          {EndIcon ? <EndIcon size='m' /> : null}
         </label>
         {helperText ? (
           <Text

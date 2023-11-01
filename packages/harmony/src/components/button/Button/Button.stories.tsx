@@ -2,8 +2,9 @@ import { expect } from '@storybook/jest'
 import type { Meta, StoryObj } from '@storybook/react'
 import { within } from '@storybook/testing-library'
 
+import { IconArrowLeft, IconArrowRight } from 'components/icon'
 import { Box, Flex } from 'components/layout'
-import { IconArrowLeft, IconArrowRight, Text } from 'components/typography'
+import { Text } from 'components/text'
 
 import { ButtonProps, ButtonSize, ButtonType } from '../types'
 
@@ -18,7 +19,6 @@ export default meta
 
 type Story = StoryObj<typeof Button>
 
-// Primary
 export const Primary: Story = {
   render: (props: ButtonProps) => <Button {...props}>Button</Button>
 }
@@ -141,11 +141,11 @@ export const LoadingState: Story = {
 export const ColorPropApplied: Story = {
   render: () => (
     <Flex gap='2xl'>
-      <Flex direction='column' gap='m'>
+      <Flex direction='column' gap='m' flex={1}>
         <Box>
           <Button color='blue'>Default</Button>
         </Box>
-        <ul css={{ listStyle: 'unset' }}>
+        <Flex as='ul' direction='column' gap='s'>
           <Text asChild>
             <li>Background: Color Value</li>
           </Text>
@@ -155,16 +155,16 @@ export const ColorPropApplied: Story = {
           <Text asChild>
             <li>Transform Scale: 1x</li>
           </Text>
-        </ul>
+        </Flex>
       </Flex>
 
-      <Flex direction='column' gap='m'>
+      <Flex direction='column' gap='m' flex={1}>
         <Box>
           <Button color='blue' _isHovered>
             Hover
           </Button>
         </Box>
-        <ul css={{ listStyle: 'unset' }}>
+        <Flex as='ul' direction='column' gap='s'>
           <Text asChild>
             <li>Background: Color Value + White Overlay @ 10% Opacity</li>
           </Text>
@@ -174,16 +174,16 @@ export const ColorPropApplied: Story = {
           <Text asChild>
             <li>Transform Scale: 1.04x</li>
           </Text>
-        </ul>
+        </Flex>
       </Flex>
 
-      <Flex direction='column' gap='m'>
+      <Flex direction='column' gap='m' flex={1}>
         <Box>
           <Button color='blue' _isPressed>
             Pressed
           </Button>
         </Box>
-        <ul css={{ listStyle: 'unset' }}>
+        <Flex as='ul' direction='column' gap='s'>
           <Text asChild>
             <li>Background: Color Value + Black Overlay @ 20% Opacity</li>
           </Text>
@@ -193,16 +193,16 @@ export const ColorPropApplied: Story = {
           <Text asChild>
             <li>Transform Scale: 0.98x</li>
           </Text>
-        </ul>
+        </Flex>
       </Flex>
 
-      <Flex direction='column' gap='m'>
+      <Flex direction='column' gap='m' flex={1}>
         <Box>
           <Button color='blue' disabled>
             Disabled
           </Button>
         </Box>
-        <ul css={{ listStyle: 'unset' }}>
+        <Flex as='ul' direction='column' gap='s'>
           <Text asChild>
             <li>Background: n-150</li>
           </Text>
@@ -212,11 +212,12 @@ export const ColorPropApplied: Story = {
           <Text asChild>
             <li>Transform Scale: 1x</li>
           </Text>
-        </ul>
+        </Flex>
       </Flex>
     </Flex>
   )
 }
+
 export const Link: Story = {
   args: { asChild: true },
   render: (props: ButtonProps) => {
