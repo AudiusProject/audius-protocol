@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
-import { Name, isPremiumContentUSDCPurchaseGated } from '@audius/common'
+import { FeatureFlags, Name, isPremiumContentUSDCPurchaseGated } from '@audius/common'
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 
@@ -17,6 +17,7 @@ import type { TrackAvailabilitySelectionProps } from '../../../components/types'
 
 import { TRACK_PREVIEW, TrackPreviewField } from './TrackPreviewField'
 import { TrackPriceField } from './TrackPriceField'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 
 const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
 
@@ -79,6 +80,9 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 }))
 
 export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
+  const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES_UPLOAD
+  )
   const { selected, disabled, previousPremiumConditions } = props
   const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
   const styles = useStyles()
@@ -156,7 +160,7 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
           </Text>
         </View>
       ) : null}
-      {disabled ? (
+      {!isUsdcUploadEnabled ? (
         <>
           <Tag style={styles.comingSoon}>{messages.comingSoon}</Tag>
           <HelpCallout
