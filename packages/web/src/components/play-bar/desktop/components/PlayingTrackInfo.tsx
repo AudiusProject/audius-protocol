@@ -38,6 +38,7 @@ interface PlayingTrackInfoProps {
   profilePictureSizes: ProfilePictureSizes
   isVerified: boolean
   isTrackUnlisted: boolean
+  isPremium: boolean
   artistUserId: ID
   artistName: string
   artistHandle: string
@@ -64,6 +65,7 @@ const PlayingTrackInfo = ({
   onClickTrackTitle,
   onClickArtistName,
   isTrackUnlisted,
+  isPremium,
   hasShadow,
   dominantColor
 }: PlayingTrackInfoProps) => {
@@ -99,6 +101,33 @@ const PlayingTrackInfo = ({
         }
       : {}
 
+  const renderTrackTitle = () => {
+    return (
+      <animated.div
+        style={trackSpringProps}
+        className={styles.trackTitleContainer}
+      >
+        <div
+          className={cn(styles.trackTitle, {
+            [styles.textShadow]: hasShadow
+          })}
+          onClick={onClickTrackTitle}
+        >
+          {trackTitle}
+        </div>
+        {shouldShowPreviewLock ? (
+          <LockedStatusBadge
+            locked
+            iconSize='small'
+            coloredWhenLocked
+            variant='premium'
+            text={messages.preview}
+          />
+        ) : null}
+      </animated.div>
+    )
+  }
+
   return (
     <div className={styles.info}>
       <div className={styles.profilePictureWrapper}>
@@ -113,37 +142,20 @@ const PlayingTrackInfo = ({
         />
       </div>
       <div className={styles.text}>
-        <Draggable
-          isDisabled={!trackTitle || isTrackUnlisted}
-          text={trackTitle}
-          isOwner={isOwner}
-          kind='track'
-          id={trackId}
-          link={fullTrackPage(trackPermalink)}
-        >
-          <animated.div
-            style={trackSpringProps}
-            className={styles.trackTitleContainer}
+        {isPremium ? (
+          renderTrackTitle()
+        ) : (
+          <Draggable
+            isDisabled={!trackTitle || isTrackUnlisted}
+            text={trackTitle}
+            isOwner={isOwner}
+            kind='track'
+            id={trackId}
+            link={fullTrackPage(trackPermalink)}
           >
-            <div
-              className={cn(styles.trackTitle, {
-                [styles.textShadow]: hasShadow
-              })}
-              onClick={onClickTrackTitle}
-            >
-              {trackTitle}
-            </div>
-            {shouldShowPreviewLock ? (
-              <LockedStatusBadge
-                locked
-                iconSize='small'
-                coloredWhenLocked
-                variant='premium'
-                text={messages.preview}
-              />
-            ) : null}
-          </animated.div>
-        </Draggable>
+            {renderTrackTitle()}
+          </Draggable>
+        )}
         <animated.div
           className={styles.artistNameWrapper}
           style={artistSpringProps}
