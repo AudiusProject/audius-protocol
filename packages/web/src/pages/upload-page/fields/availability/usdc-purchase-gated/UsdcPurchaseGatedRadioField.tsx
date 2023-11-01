@@ -81,8 +81,8 @@ export const UsdcPurchaseGatedRadioField = (
       value={TrackAvailabilityType.USDC_PURCHASE}
       disabled={disabled}
       hintIcon={<IconStars />}
-      hintContent={disabled ? helpContent : undefined}
-      tag={disabled ? messages.comingSoon : undefined}
+      hintContent={!isUsdcUploadEnabled ? helpContent : undefined}
+      tag={!isUsdcUploadEnabled ? messages.comingSoon : undefined}
       checkedContent={<UsdcPurchaseFields disabled={disabled} />}
     />
   )
