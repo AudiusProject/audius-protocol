@@ -115,7 +115,7 @@ export const StripeOnrampEmbed = () => {
           source={{ html }}
           startInLoadingState={true}
           renderLoading={renderLoadingSpinner}
-          scrollEnabled={false}
+          scrollEnabled
           onError={handleError}
           onMessage={handleSessionUpdate}
         />
