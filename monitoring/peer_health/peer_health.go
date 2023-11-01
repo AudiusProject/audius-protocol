@@ -100,6 +100,16 @@ func New(config Config) (*PeerHealths, error) {
 }
 
 func (ph *PeerHealths) Start() {
+	// set peers in redis
+	peersJSON, err := json.Marshal(ph.Config.Peers)
+	if err != nil {
+		panic(err)
+	}
+	err = ph.Redis.Set(context.Background(), "peers", peersJSON, 0).Err()
+	if err != nil {
+		panic(err)
+	}
+
 	go ph.startHealthPoller()
 	go ph.monitorPeerReachability()
 
