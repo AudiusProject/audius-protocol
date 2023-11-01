@@ -1,6 +1,6 @@
 import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { StripeSessionCreationError } from '..'
+import { StripeSessionCreationError } from 'store/ui/stripe-modal/types'
 
 import {
   BuyUSDCStage,

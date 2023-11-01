@@ -20,7 +20,8 @@ const messages = {
     `Total purchase amount must be between $${formatPrice(
       minAmount
     )} and ${formatPrice(maxAmount)}`,
-  countryNotSupported: "We're unable to support transactions in this country"
+  countryNotSupported:
+    'Stripe is unable to support transactions in this country'
 }
 
 export const usePurchaseContentErrorMessage = (
