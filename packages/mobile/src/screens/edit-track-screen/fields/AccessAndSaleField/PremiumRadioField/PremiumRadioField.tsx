@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 
-import { Name, isPremiumContentUSDCPurchaseGated } from '@audius/common'
+import {
+  FeatureFlags,
+  Name,
+  isPremiumContentUSDCPurchaseGated
+} from '@audius/common'
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 
@@ -8,6 +12,7 @@ import IconCart from 'app/assets/images/iconCart.svg'
 import IconStars from 'app/assets/images/iconStars.svg'
 import { Link, Tag, Text } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
@@ -79,6 +84,9 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 }))
 
 export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
+  const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES_UPLOAD
+  )
   const { selected, disabled, previousPremiumConditions } = props
   const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
   const styles = useStyles()
@@ -156,7 +164,7 @@ export const PremiumRadioField = (props: PremiumRadioFieldProps) => {
           </Text>
         </View>
       ) : null}
-      {disabled ? (
+      {!isUsdcUploadEnabled ? (
         <>
           <Tag style={styles.comingSoon}>{messages.comingSoon}</Tag>
           <HelpCallout
