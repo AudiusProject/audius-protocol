@@ -57,9 +57,13 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--unit-6);
-  gap: var(--unit-6);
+  gap: var(--unit-2);
 }
 
 .withdrawButton {
+  flex-grow: 1;
+}
+
+.addFundsButton {
   flex-grow: 1;
 }

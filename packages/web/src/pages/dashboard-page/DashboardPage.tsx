@@ -5,10 +5,8 @@ import {
   Track,
   formatCount,
   themeSelectors,
-  FeatureFlags,
   combineStatuses,
-  useUSDCBalance,
-  buyUSDCActions
+  useUSDCBalance
 } from '@audius/common'
 import cn from 'classnames'
 import { each } from 'lodash'
@@ -19,13 +17,10 @@ import Header from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import { useGoToRoute } from 'hooks/useGoToRoute'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import lazyWithPreload from 'utils/lazyWithPreload'
-import { profilePage, TRENDING_PAGE } from 'utils/route'
 
-import styles from './ArtistDashboardPage.module.css'
+import styles from './DashboardPage.module.css'
 import { ArtistCard } from './components/ArtistCard'
-import ArtistProfile from './components/ArtistProfile'
 import {
   TracksTableContainer,
   DataSourceTrack,
@@ -41,13 +36,13 @@ import { fetch, reset, fetchListenData } from './store/slice'
 
 const { getTheme } = themeSelectors
 
-const { cleanup } = buyUSDCActions
-
 const TotalPlaysChart = lazyWithPreload(
   () => import('./components/TotalPlaysChart')
 )
 
 export const messages = {
+  title: 'Dashboard & Payments',
+  description: 'View important stats like plays, reposts, and more.',
   thisYear: 'This Year'
 }
 
@@ -75,32 +70,25 @@ const StatTile = (props: { title: string; value: any }) => {
   )
 }
 
-export const ArtistDashboardPage = () => {
+export const DashboardPage = () => {
   const goToRoute = useGoToRoute()
   const dispatch = useDispatch()
-  const isUSDCEnabled = getFeatureEnabled(FeatureFlags.USDC_PURCHASES)
   const [selectedTrack, setSelectedTrack] = useState(-1)
   const { account, tracks, stats } = useSelector(makeGetDashboard())
   const listenData = useSelector(getDashboardListenData)
   const dashboardStatus = useSelector(getDashboardStatus)
   const theme = useSelector(getTheme)
-  const {
-    data: balance,
-    balanceStatus,
-    recoveryStatus,
-    refresh
-  } = useUSDCBalance()
-  const status = combineStatuses([dashboardStatus, balanceStatus])
+  const { data: balance, balanceStatus } = useUSDCBalance({
+    isPolling: true,
+    pollingInterval: 3000
+  })
+  const statuses = [dashboardStatus]
+  if (balance === null) {
+    statuses.push(balanceStatus)
+  }
+  const status = combineStatuses(statuses)
 
-  const header = <Header primary='Dashboard' />
-
-  // Refresh the USDC balance if successful recovery
-  useEffect(() => {
-    if (recoveryStatus === 'success') {
-      refresh()
-      dispatch(cleanup())
-    }
-  }, [recoveryStatus, refresh, dispatch])
+  const header = <Header primary={messages.title} />
 
   useEffect(() => {
     dispatch(fetch({ offset: 0, limit: tablePageSize }))
@@ -109,15 +97,6 @@ export const ArtistDashboardPage = () => {
       dispatch(reset({}))
     }
   }, [dispatch])
-
-  useEffect(() => {
-    if (account) {
-      const { track_count = 0 } = account
-      if (!(track_count > 0)) {
-        goToRoute(TRENDING_PAGE)
-      }
-    }
-  }, [account, goToRoute])
 
   const onClickRow = useCallback(
     (record: any) => {
@@ -151,14 +130,9 @@ export const ArtistDashboardPage = () => {
     [dispatch, tracks]
   )
 
-  const renderArtistContent = useCallback(() => {
+  const renderChart = useCallback(() => {
     const trackCount = account?.track_count || 0
     if (!account || !(trackCount > 0) || !listenData) return null
-
-    const statTiles: ReactNode[] = []
-    each(stats, (stat, title) =>
-      statTiles.push(<StatTile key={title} title={title} value={stat} />)
-    )
 
     const chartData =
       selectedTrack === -1 ? listenData.all : listenData[selectedTrack]
@@ -168,76 +142,84 @@ export const ArtistDashboardPage = () => {
       name: track.title
     }))
 
+    return (
+      <Suspense fallback={<div className={styles.chartFallback} />}>
+        <TotalPlaysChart
+          data={chartData}
+          theme={theme}
+          tracks={chartTracks}
+          selectedTrack={selectedTrack}
+          onSetYearOption={onSetYearOption}
+          onSetTrackOption={setSelectedTrack}
+          accountCreatedAt={account.created_at}
+        />
+      </Suspense>
+    )
+  }, [account, theme, listenData, onSetYearOption, selectedTrack, tracks])
+
+  const renderStats = useCallback(() => {
+    if (!account) return null
+
+    const statTiles: ReactNode[] = []
+    each(stats, (stat, title) =>
+      statTiles.push(<StatTile key={title} title={title} value={stat} />)
+    )
+
+    return <div className={styles.statsContainer}>{statTiles}</div>
+  }, [account, stats])
+
+  const renderTable = useCallback(() => {
+    const trackCount = account?.track_count || 0
+    if (!account || !(trackCount > 0)) return null
+
+    const statTiles: ReactNode[] = []
+    each(stats, (stat, title) =>
+      statTiles.push(<StatTile key={title} title={title} value={stat} />)
+    )
+
     const dataSource = formatMetadata(tracks)
     return (
-      <>
-        <div className={styles.sectionContainer}>
-          <Suspense fallback={<div className={styles.chartFallback} />}>
-            <TotalPlaysChart
-              data={chartData}
-              theme={theme}
-              tracks={chartTracks}
-              selectedTrack={selectedTrack}
-              onSetYearOption={onSetYearOption}
-              onSetTrackOption={setSelectedTrack}
-              accountCreatedAt={account.created_at}
-            />
-          </Suspense>
-        </div>
-        <div className={cn(styles.sectionContainer, styles.statsContainer)}>
-          {statTiles}
-        </div>
-        <div className={styles.tracksTableWrapper}>
-          <TracksTableContainer
-            onClickRow={onClickRow}
-            dataSource={dataSource}
-            account={account}
-          />
-        </div>
-      </>
+      <div className={styles.tracksTableWrapper}>
+        <TracksTableContainer
+          onClickRow={onClickRow}
+          dataSource={dataSource}
+          account={account}
+        />
+      </div>
     )
-  }, [
-    account,
-    theme,
-    listenData,
-    onClickRow,
-    onSetYearOption,
-    selectedTrack,
-    stats,
-    tracks
-  ])
+  }, [account, onClickRow, stats, tracks])
 
   return (
     <Page
-      title='Dashboard'
-      description='View important stats like plays, reposts, and more.'
+      title={messages.title}
+      description={messages.description}
       contentClassName={styles.pageContainer}
       header={header}
     >
-      {!account || !balance || !listenData || status === Status.LOADING ? (
+      {!account ||
+      balance === null ||
+      !listenData ||
+      status === Status.LOADING ? (
         <LoadingSpinner className={styles.spinner} />
       ) : (
         <>
-          {isUSDCEnabled ? (
-            <div className={cn(styles.sectionContainer, styles.topSection)}>
-              <ArtistCard
-                userId={account.user_id}
-                handle={account.handle}
-                name={account.name}
-              />
-              <USDCCard balance={balance} />
-            </div>
-          ) : (
-            <ArtistProfile
+          <div
+            className={cn(styles.sectionContainer, styles.topSection, {
+              [styles.isArtist]: account.track_count > 0
+            })}
+          >
+            <ArtistCard
               userId={account.user_id}
-              profilePictureSizes={account._profile_picture_sizes}
-              isVerified={account.is_verified}
-              name={account.name}
               handle={account.handle}
-              onViewProfile={() => goToRoute(profilePage(account.handle))}
+              name={account.name}
             />
-          )}
-          {renderArtistContent()}
+            <USDCCard balance={balance} isArtist={account.track_count > 0} />
+          </div>
+          <div className={styles.sectionContainer}>
+            {renderChart()}
+            {renderStats()}
+            {renderTable()}
+          </div>
         </>
       )}
     </Page>

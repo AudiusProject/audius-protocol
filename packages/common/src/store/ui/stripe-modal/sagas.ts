@@ -31,7 +31,7 @@ import {
   StripeSessionCreationErrorResponseData
 } from './types'
 
-const STRIPE_TAKING_A_WHILE_DELAY = 60 * 1000
+const STRIPE_TAKING_A_WHILE_DELAY = 2 * 1000
 
 const messages = {
   stripeTakingAWhile:
