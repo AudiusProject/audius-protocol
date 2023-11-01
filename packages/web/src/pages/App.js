@@ -157,8 +157,9 @@ import {
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
 import AnimatedSwitch from '../components/animated-switch/AnimatedSwitch'
-import { DirectMessagesBanner } from '../components/banner/DirectMessagesBanner'
+// import { DirectMessagesBanner } from '../components/banner/DirectMessagesBanner'
 import { DownloadAppBanner } from '../components/banner/DownloadAppBanner'
+import { TermsOfServiceUpdateBanner } from '../components/banner/TermsOfServiceUpdateBanner'
 import { UpdateAppBanner } from '../components/banner/UpdateAppBanner'
 import { Web3ErrorBanner } from '../components/banner/Web3ErrorBanner'
 import { ChatListener } from '../components/chat-listener/ChatListener'
@@ -458,7 +459,9 @@ class App extends Component {
       <div className={styles.root}>
         <AppBannerWrapper>
           <DownloadAppBanner />
-          <DirectMessagesBanner />
+          {/* TODO: Re-enable DM after ToS is disabled */}
+          {/* <DirectMessagesBanner /> */}
+          <TermsOfServiceUpdateBanner />
           <Web3ErrorBanner />
           {/* Other banners' logic is self-contained, but since this one uses the IPC
             and can result in either required or optional updates, keeping the visibility
