@@ -14,6 +14,7 @@ jobs:
       docker_layer_caching: true
     resource_class: large
     steps:
+      - run: docker images -a
       - checkout:
           path: '~/audius-protocol'
       - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
