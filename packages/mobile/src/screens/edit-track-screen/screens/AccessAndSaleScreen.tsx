@@ -33,6 +33,7 @@ import type { FormValues, RemixOfField } from '../types'
 
 import type { ListSelectionData } from './ListSelectionScreen'
 import { ListSelectionScreen } from './ListSelectionScreen'
+import moment from 'moment'
 
 const messages = {
   title: 'Access & Sale',
@@ -90,6 +91,9 @@ export const AccessAndSaleScreen = () => {
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
   const [{ value: remixOf }] = useField<RemixOfField>('remix_of')
   const isRemix = !!remixOf
+  const [{ value: releaseDate }] =
+    useField<Nullable<string>>('release_date')
+  const isScheduledRelease = releaseDate === null ? false : moment(releaseDate).isAfter(moment())
 
   const { isEnabled: isUsdcEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
@@ -113,7 +117,7 @@ export const AccessAndSaleScreen = () => {
     ) {
       return TrackAvailabilityType.SPECIAL_ACCESS
     }
-    if (isUnlisted) {
+    if (isUnlisted || isScheduledRelease) {
       return TrackAvailabilityType.HIDDEN
     }
     return TrackAvailabilityType.PUBLIC
@@ -133,7 +137,7 @@ export const AccessAndSaleScreen = () => {
     isRemix,
     initialPremiumConditions,
     isInitiallyUnlisted: initialValues.is_unlisted,
-    isScheduledRelease: false // TODO add scheduled release to mobile
+    isScheduledRelease // TODO add scheduled release to mobile
   })
 
   const noUsdcGate = noUsdcGateOption || !isUsdcUploadEnabled
@@ -149,23 +153,23 @@ export const AccessAndSaleScreen = () => {
   )
 
   const data: ListSelectionData[] = [
-    { label: publicAvailability, value: publicAvailability },
+    { label: publicAvailability, value: publicAvailability, disabled: isScheduledRelease},
     isUsdcEnabled
       ? {
           label: premiumAvailability,
           value: premiumAvailability,
-          disabled: noUsdcGate
+          disabled: noUsdcGate || isScheduledRelease
         }
       : null,
     {
       label: specialAccessAvailability,
       value: specialAccessAvailability,
-      disabled: noSpecialAccessGate
+      disabled: noSpecialAccessGate || isScheduledRelease
     },
     {
       label: collectibleGatedAvailability,
       value: collectibleGatedAvailability,
-      disabled: noCollectibleGate
+      disabled: noCollectibleGate || isScheduledRelease
     },
     {
       label: hiddenAvailability,
@@ -173,11 +177,12 @@ export const AccessAndSaleScreen = () => {
       disabled: noHidden
     }
   ].filter(removeNullable)
-
+  console.log(`asdf data ${JSON.stringify(data)}`)
   const items = {
     [publicAvailability]: (
       <PublicAvailabilityRadioField
         selected={availability === TrackAvailabilityType.PUBLIC}
+        disabled={isScheduledRelease}
       />
     )
   }
@@ -186,7 +191,7 @@ export const AccessAndSaleScreen = () => {
     items[premiumAvailability] = (
       <PremiumRadioField
         selected={availability === TrackAvailabilityType.USDC_PURCHASE}
-        disabled={noUsdcGate}
+        disabled={noUsdcGate || isScheduledRelease}
         disabledContent={noUsdcGate}
         previousPremiumConditions={previousPremiumConditions}
       />
@@ -196,7 +201,7 @@ export const AccessAndSaleScreen = () => {
   items[specialAccessAvailability] = (
     <SpecialAccessAvailability
       selected={availability === TrackAvailabilityType.SPECIAL_ACCESS}
-      disabled={noSpecialAccessGate}
+      disabled={noSpecialAccessGate || isScheduledRelease}
       disabledContent={noSpecialAccessGateFields}
       previousPremiumConditions={previousPremiumConditions}
     />
@@ -205,7 +210,7 @@ export const AccessAndSaleScreen = () => {
   items[collectibleGatedAvailability] = (
     <CollectibleGatedAvailability
       selected={availability === TrackAvailabilityType.COLLECTIBLE_GATED}
-      disabled={noCollectibleGate}
+      disabled={noCollectibleGate || isScheduledRelease}
       disabledContent={noCollectibleGateFields}
       previousPremiumConditions={previousPremiumConditions}
     />
