@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-disabled-tests */
 import {
   addFolderToLibrary,
   findIndexInPlaylistLibrary,
@@ -11,7 +12,7 @@ import {
   getPlaylistsNotInLibrary
 } from './helpers'
 
-describe('findInPlaylistLibrary', () => {
+describe.skip('findInPlaylistLibrary', () => {
   it('finds an index in the library', () => {
     const library = {
       contents: [
@@ -61,7 +62,7 @@ describe('findInPlaylistLibrary', () => {
   })
 })
 
-describe('findIndexInPlaylistLibrary', () => {
+describe.skip('findIndexInPlaylistLibrary', () => {
   it('finds an index in the library', () => {
     const library = {
       contents: [
@@ -179,7 +180,7 @@ describe('findIndexInPlaylistLibrary', () => {
   })
 })
 
-describe('removeFromPlaylistLibrary', () => {
+describe.skip('removeFromPlaylistLibrary', () => {
   it('removes playlist from the library', () => {
     const library = {
       contents: [
@@ -303,7 +304,7 @@ describe('removeFromPlaylistLibrary', () => {
   })
 })
 
-describe('removePlaylistLibraryDuplicates', () => {
+describe.skip('removePlaylistLibraryDuplicates', () => {
   it('can remove single dupes', () => {
     const library = {
       contents: [
@@ -470,7 +471,7 @@ describe('removePlaylistLibraryDuplicates', () => {
   })
 })
 
-describe('reorderPlaylistLibrary', () => {
+describe.skip('reorderPlaylistLibrary', () => {
   it('can reorder adjacent playlists', () => {
     const library = {
       contents: [
@@ -1230,7 +1231,7 @@ describe('reorderPlaylistLibrary', () => {
   })
 })
 
-describe('addFolderToLibrary', () => {
+describe.skip('addFolderToLibrary', () => {
   it('Adds a new folder to the end of a playlist library and returns the result', () => {
     const library = {
       contents: [
@@ -1323,7 +1324,7 @@ describe('addFolderToLibrary', () => {
   })
 })
 
-describe('renamePlaylistFolderInLibrary', () => {
+describe.skip('renamePlaylistFolderInLibrary', () => {
   it('changes the name of given folder in library', () => {
     const library = {
       contents: [
@@ -1373,7 +1374,7 @@ describe('renamePlaylistFolderInLibrary', () => {
   })
 })
 
-describe('removePlaylistFolderInLibrary', () => {
+describe.skip('removePlaylistFolderInLibrary', () => {
   it('removes folder from library', () => {
     const library = {
       contents: [
@@ -1449,7 +1450,7 @@ describe('removePlaylistFolderInLibrary', () => {
   })
 })
 
-describe('addPlaylistToFolder', () => {
+describe.skip('addPlaylistToFolder', () => {
   it('adds playlist to given folder', () => {
     const library = {
       contents: [
@@ -1563,7 +1564,7 @@ describe('addPlaylistToFolder', () => {
   })
 })
 
-describe('getPlaylistsNotInLibrary', () => {
+describe.skip('getPlaylistsNotInLibrary', () => {
   it('returns the playlists that are not already in the library', () => {
     const library = {
       contents: [

@@ -24,12 +24,6 @@ mobile-init:
         keys:
           - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
-    - restore_cache:
-        keys:
-          - cache-{{ .Revision }}
-
-    - common-lint
-
     - run:
         name: lint & typecheck
         command: |

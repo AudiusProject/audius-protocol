@@ -1,0 +1,34 @@
+common-init:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - restore_cache:
+        keys:
+          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+    - run:
+        name: lint & typecheck
+        command: |
+          npx turbo run verify --filter=@audius/common
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - node_modules
+          - packages/common/node_modules
+          - packages/common/dist
+
+common-test:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - attach_workspace:
+        at: ./
+    - run:
+      name: 'test'
+      command: |
+        npx turbo run test --filter=@audius/common

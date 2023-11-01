@@ -1,6 +1,0 @@
-common-lint:
-  description: 'lint @audius/common'
-  steps:
-    - run:
-        name: 'lint @audius/common'
-        command: npx turbo run lint --filter=@audius/common
