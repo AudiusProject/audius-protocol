@@ -17,7 +17,7 @@ export const lightTheme = create({
   appBorderRadius: day.cornerRadius.m,
 
   // Text colors
-  textColor: day.color.textIcon.default,
+  textColor: day.color.text.default,
   textInverseColor: day.color.special.white,
 
   // Toolbar default and active colors
@@ -28,7 +28,7 @@ export const lightTheme = create({
   // Form colors
   inputBg: day.color.neutral.n25,
   inputBorder: day.color.border.default,
-  inputTextColor: day.color.textIcon.default,
+  inputTextColor: day.color.text.default,
   inputBorderRadius: day.cornerRadius.s
 })
 
@@ -46,7 +46,7 @@ export const darkTheme = create({
   appBorderRadius: dark.cornerRadius.m,
 
   // Text colors
-  textColor: dark.color.textIcon.default,
+  textColor: dark.color.text.default,
   textInverseColor: dark.color.special.white,
 
   // Toolbar default and active colors
@@ -57,7 +57,7 @@ export const darkTheme = create({
   // Form colors
   inputBg: dark.color.neutral.n25,
   inputBorder: dark.color.border.default,
-  inputTextColor: dark.color.textIcon.default,
+  inputTextColor: dark.color.text.default,
   inputBorderRadius: dark.cornerRadius.s
 })
 
@@ -75,7 +75,7 @@ export const matrixTheme = create({
   appBorderRadius: matrix.cornerRadius.m,
 
   // Text colors
-  textColor: matrix.color.textIcon.default,
+  textColor: matrix.color.text.default,
   textInverseColor: matrix.color.special.white,
 
   // Toolbar default and active colors
@@ -86,7 +86,7 @@ export const matrixTheme = create({
   // Form colors
   inputBg: matrix.color.neutral.n25,
   inputBorder: matrix.color.border.default,
-  inputTextColor: matrix.color.textIcon.default,
+  inputTextColor: matrix.color.text.default,
   inputBorderRadius: matrix.cornerRadius.s
 })
 

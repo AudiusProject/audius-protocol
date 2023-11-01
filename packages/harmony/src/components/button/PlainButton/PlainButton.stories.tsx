@@ -1,13 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import * as Icons from '../../icon'
+import { IconCampfire } from 'icons'
+
 import { PlainButtonProps, PlainButtonSize, PlainButtonType } from '../types'
 
 import { PlainButton } from './PlainButton'
 
 const baseProps: PlainButtonProps = {
-  iconLeft: Icons.IconCampfire,
-  iconRight: Icons.IconCampfire,
+  iconLeft: IconCampfire,
+  iconRight: IconCampfire,
   children: 'Click Me'
 }
 

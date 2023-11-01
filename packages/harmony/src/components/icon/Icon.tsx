@@ -1,24 +1,22 @@
 import type { ComponentType, SVGProps } from 'react'
 
-import cn from 'classnames'
+import { useTheme } from '@emotion/react'
 
-import type { ColorValue } from 'types/colors'
-import { toCSSVariableName } from 'utils/styles'
+import type { IconColors } from 'foundations/color'
 
-import styles from './Icon.module.css'
+const sizes = {
+  xs: 14,
+  s: 16,
+  m: 20,
+  l: 24,
+  xl: 30,
+  '2xl': 32
+}
 
-type IconSize =
-  | '2xs' // 12
-  | 'xs' // 14
-  | 's' // 16
-  | 'm' // 20
-  | 'l' // 24
-  | 'xl' // 30
-  | '2xl' // 32
-  | '3xl' // 40
+type IconSize = keyof typeof sizes
 
 type IconProps = {
-  color?: ColorValue
+  color?: IconColors
   size?: IconSize
 } & SVGProps<SVGSVGElement>
 
@@ -28,32 +26,25 @@ export type IconComponent = ComponentType<IconProps>
  * Renders a harmony Icon component
  */
 export const Icon = (props: IconProps) => {
-  const {
-    className,
-    color,
-    children,
-    size = 'l',
-    style: styleProp,
-    ...iconProps
-  } = props
+  const { color, children, size, ...other } = props
 
-  const style = color
-    ? {
-        ...styleProp,
-        '--icon-color': `var(${toCSSVariableName(color)})`
-      }
-    : styleProp
+  const theme = useTheme()
+  const iconSize = size ? sizes[size] : undefined
+  const iconColor = color ? theme.color.icon[color] : undefined
 
-  const childProps = {
-    ...iconProps,
-    className: cn(
-      styles.icon,
-      { [styles.iconColor]: color },
-      styles[size],
-      className
-    ),
-    style
-  }
-
-  return <svg {...childProps}>{children}</svg>
+  return (
+    <svg
+      css={[
+        iconSize && {
+          height: iconSize,
+          width: iconSize,
+          minWidth: iconSize
+        },
+        iconColor && { path: { fill: iconColor } }
+      ]}
+      {...other}
+    >
+      {children}
+    </svg>
+  )
 }

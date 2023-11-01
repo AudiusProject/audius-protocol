@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react'
 import { useTransition, animated } from '@react-spring/web'
 import cn from 'classnames'
 
-import { IconValidationCheck, IconValidationX } from 'components/icon'
+import { IconValidationCheck, IconValidationX } from 'icons'
 
 import { Flex } from '../layout'
 
