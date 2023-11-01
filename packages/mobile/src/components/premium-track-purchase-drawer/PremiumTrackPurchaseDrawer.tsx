@@ -139,7 +139,8 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   },
   errorContainer: {
     ...flexRowCentered(),
-    gap: spacing(2)
+    gap: spacing(2),
+    paddingHorizontal: spacing(4)
   },
   spinnerContainer: {
     width: '100%',
