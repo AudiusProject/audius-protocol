@@ -3,10 +3,13 @@
   --base-color: var(--harmony-primary);
   --text-color: var(--harmony-static-white);
   --overlay-color: 0, 0, 0;
-  --overlay-opacity: 0.0;
-  --bg-color: linear-gradient(0deg,
+  --overlay-opacity: 0;
+  --bg-color: linear-gradient(
+      0deg,
       rgba(var(--overlay-color), var(--overlay-opacity)) 0%,
-      rgba(var(--overlay-color), var(--overlay-opacity)) 100%), var(--base-color);
+      rgba(var(--overlay-color), var(--overlay-opacity)) 100%
+    ),
+    var(--base-color);
 
   box-sizing: border-box;
   color: var(--text-color);

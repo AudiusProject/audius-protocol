@@ -2,9 +2,9 @@ import { expect } from '@storybook/jest'
 import type { Meta, StoryObj } from '@storybook/react'
 import { within } from '@storybook/testing-library'
 
-import { IconArrowLeft, IconArrowRight } from 'components/icon'
 import { Box, Flex } from 'components/layout'
 import { Text } from 'components/text'
+import { IconArrowLeft, IconArrowRight } from 'icons'
 
 import { ButtonProps, ButtonSize, ButtonType } from '../types'
 

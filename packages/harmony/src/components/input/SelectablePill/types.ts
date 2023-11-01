@@ -1,6 +1,6 @@
 import type { ComponentPropsWithoutRef } from 'react'
 
-import type { IconComponent } from 'components/icon/Icon'
+import type { IconComponent } from '../../icon'
 
 export type SelectablePillProps = {
   size?: 'default' | 'large'

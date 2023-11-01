@@ -1,35 +1,14 @@
-import type { Theme } from '../theme/types'
-
 import type { PrimitiveColors } from './primitive'
 import { primitiveTheme } from './primitive'
 
-export type SemanticColors = {
-  textIcon: {
-    heading: string
-    default: string
-    subdued: string
-    disabled: string
-  }
-  background: {
-    default: string
-    white: string
-    surface1: string
-    surface2: string
-  }
-  border: {
-    default: string
-    strong: string
-  }
-  focus: string
-  status: {
-    error: string
-    warning: string
-    success: string
-  }
-}
-
-const createSemanticTheme = (primitives: PrimitiveColors): SemanticColors => ({
-  textIcon: {
+const createSemanticTheme = (primitives: PrimitiveColors) => ({
+  text: {
+    heading: primitives.special.gradient,
+    default: primitives.neutral.neutral,
+    subdued: primitives.neutral.n400,
+    disabled: primitives.neutral.n150
+  },
+  icon: {
     heading: primitives.special.gradient,
     default: primitives.neutral.neutral,
     subdued: primitives.neutral.n400,
@@ -53,10 +32,17 @@ const createSemanticTheme = (primitives: PrimitiveColors): SemanticColors => ({
   }
 })
 
-export const semanticTheme: Record<Theme, SemanticColors> = {
+export const semanticTheme = {
   day: createSemanticTheme(primitiveTheme.day),
   dark: createSemanticTheme(primitiveTheme.dark),
   matrix: createSemanticTheme(primitiveTheme.matrix)
 }
 
-export type BorderOptions = keyof SemanticColors['border']
+export type SemanticColors = typeof semanticTheme.day
+
+export type TextColors = keyof SemanticColors['text']
+export type IconColors = keyof SemanticColors['icon']
+export type BackgroundColors = keyof SemanticColors['background']
+export type BorderColors = keyof SemanticColors['border']
+export type FocusColors = keyof SemanticColors['focus']
+export type StatusColors = keyof SemanticColors['status']

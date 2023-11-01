@@ -1,56 +1,4 @@
-import type { Theme } from '../theme/types'
-
-export type PrimitiveColors = {
-  static: {
-    white: string
-    primary: string
-  }
-  primary: {
-    primary: string
-    p100: string
-    p200: string
-    p300: string
-    p400: string
-    p500: string
-  }
-  secondary: {
-    secondary: string
-    s100: string
-    s200: string
-    s300: string
-    s400: string
-    s500: string
-  }
-  neutral: {
-    neutral: string
-    n25: string
-    n50: string
-    n100: string
-    n150: string
-    n200: string
-    n300: string
-    n400: string
-    n500: string
-    n600: string
-    n700: string
-    n800: string
-    n900: string
-    n950: string
-  }
-  special: {
-    white: string
-    background: string
-    blue: string
-    orange: string
-    red: string
-    darkRed: string
-    green: string
-    lightGreen: string
-    gradient: string
-  }
-}
-
-export const primitiveTheme: Record<Theme, PrimitiveColors> = {
+export const primitiveTheme = {
   day: {
     static: {
       white: '#FFFFFF',
@@ -200,3 +148,9 @@ export const primitiveTheme: Record<Theme, PrimitiveColors> = {
     }
   }
 }
+
+export type PrimitiveColors = typeof primitiveTheme.day
+export type PrimaryColors = keyof PrimitiveColors['primary']
+export type SecondaryColors = keyof PrimitiveColors['secondary']
+export type NeutralColors = keyof PrimitiveColors['neutral']
+export type SpecialColors = keyof PrimitiveColors['special']
