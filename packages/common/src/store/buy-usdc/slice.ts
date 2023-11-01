@@ -1,12 +1,13 @@
 import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
+import { StripeSessionCreationError } from '..'
+
 import {
   BuyUSDCStage,
   USDCOnRampProvider,
   PurchaseInfo,
   BuyUSDCError
 } from './types'
-import { StripeSessionCreationError } from '..'
 
 type StripeSessionStatus =
   | 'initialized'
