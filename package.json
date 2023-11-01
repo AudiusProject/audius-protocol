@@ -20,6 +20,7 @@
     "postinstall": "bash ./scripts/postinstall.sh",
     "preinstall": "bash ./scripts/preinstall.sh",
     "turbo-link": "turbo login && turbo link",
+    "validate-ci-config": "circleci config pack .circleci/src > .circleci/continue_config.yml && circleci config validate .circleci/continue_config.yml",
     "verify": "turbo run verify",
     "WEB========================================": "",
     "web:dev": "npm run start:dev -w audius-client",
@@ -52,8 +53,7 @@
     "pedalboard:build": "turbo run build --filter='./packages/discovery-provider/plugins/pedalboard/apps/*' --filter='./packages/discovery-provider/plugins/pedalboard/packages/*'",
     "pedalboard:clean": "turbo run clean --filter='./packages/discovery-provider/plugins/pedalboard/apps/*' --filter='./packages/discovery-provider/plugins/pedalboard/packages/*'",
     "pedalboard:dev": "turbo run dev --concurrency 12 --filter='./packages/discovery-provider/plugins/pedalboard/apps/*' --filter='./packages/discovery-provider/plugins/pedalboard/packages/*'",
-    "pedalboard:test": "turbo run test --filter='./packages/discovery-provider/plugins/pedalboard/apps/*' --filter='./packages/discovery-provider/plugins/pedalboard/packages/*'",
-    "validate-ci-config": "circleci config pack .circleci/src > .circleci/continue_config.yml && circleci config validate .circleci/continue_config.yml"
+    "pedalboard:test": "turbo run test --filter='./packages/discovery-provider/plugins/pedalboard/apps/*' --filter='./packages/discovery-provider/plugins/pedalboard/packages/*'"
   },
   "devDependencies": {
     "@emotion/eslint-plugin": "11.11.0",
