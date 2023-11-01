@@ -14,7 +14,7 @@ import {
   AUDIUS_CONTACT_EMAIL_LINK,
   AUDIUS_DISCORD_LINK,
   AUDIUS_HELP_LINK,
-  AUDIUS_INSTAMGRAM_LINK,
+  AUDIUS_INSTAGRAM_LINK,
   AUDIUS_TWITTER_LINK,
   PRIVACY_POLICY,
   TERMS_OF_SERVICE
@@ -75,7 +75,7 @@ const AboutSettingsPage = () => {
             <Row
               prefix={<IconInstagram className={styles.icon} />}
               title={messages.instagram}
-              href={AUDIUS_INSTAMGRAM_LINK}
+              href={AUDIUS_INSTAGRAM_LINK}
             />
             <Row
               prefix={<IconContact className={styles.icon} />}

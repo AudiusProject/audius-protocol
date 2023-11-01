@@ -1,7 +1,6 @@
 {
   "extends": "@tsconfig/react-native/tsconfig.json",
   "compilerOptions": {
-    "module": "esnext",
     // Remove "dom" when no longer dependent on audius-client
     "lib": ["dom", "es2019"],
     "paths": {

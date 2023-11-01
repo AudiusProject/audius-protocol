@@ -21,7 +21,7 @@ import {
   AUDIUS_BLOG_LINK,
   AUDIUS_DISCORD_LINK,
   AUDIUS_HELP_LINK,
-  AUDIUS_INSTAMGRAM_LINK,
+  AUDIUS_INSTAGRAM_LINK,
   AUDIUS_MERCH_LINK,
   AUDIUS_ORG,
   AUDIUS_SIGN_UP_LINK,
@@ -45,7 +45,7 @@ const messages = {
 const socialLinks = [
   {
     Icon: IconInstagram,
-    link: AUDIUS_INSTAMGRAM_LINK
+    link: AUDIUS_INSTAGRAM_LINK
   },
   {
     Icon: IconTwitterBird,
