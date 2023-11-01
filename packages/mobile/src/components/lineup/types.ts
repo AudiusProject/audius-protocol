@@ -1,4 +1,4 @@
-import type { ReactComponent, ReactElement } from 'react'
+import type { ComponentType, ReactElement } from 'react'
 
 import type {
   ID,
@@ -167,7 +167,7 @@ export type LineupProps = {
    * When `true`, add pull-to-refresh capability
    */
   pullToRefresh?: boolean
-  EndOfLineupComponent?: ReactComponent<any> | ReactElement
+  EndOfLineupComponent?: ComponentType<any> | ReactElement
 } & Pick<
   SectionListProps<unknown>,
   'showsVerticalScrollIndicator' | 'ListEmptyComponent' | 'ListFooterComponent'
