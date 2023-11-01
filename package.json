@@ -20,6 +20,7 @@
     "postinstall": "bash ./scripts/postinstall.sh",
     "preinstall": "bash ./scripts/preinstall.sh",
     "turbo-link": "turbo login && turbo link",
+    "validate-ci-config": "circleci config pack .circleci/src > .circleci/continue_config.yml && circleci config validate .circleci/continue_config.yml",
     "verify": "turbo run verify",
     "WEB========================================": "",
     "web:dev": "npm run start:dev -w audius-client",

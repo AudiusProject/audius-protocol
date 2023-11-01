@@ -43,6 +43,9 @@ parameters:
     type: boolean
     default: false
 
+  run-common-workflow:
+    type: boolean
+    default: false
   run-web-workflow:
     type: boolean
     default: false
