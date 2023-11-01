@@ -19,7 +19,8 @@ const messages = {
   badAmount: (minAmount: number, maxAmount: number) =>
     `Total purchase amount must be between $${formatPrice(
       minAmount
-    )} and ${formatPrice(maxAmount)}`
+    )} and ${formatPrice(maxAmount)}`,
+  countryNotSupported: "We're unable to support transactions in this country"
 }
 
 export const usePurchaseContentErrorMessage = (
@@ -39,6 +40,8 @@ export const usePurchaseContentErrorMessage = (
         minUSDCPurchaseAmountCents,
         maxUSDCPurchaseAmountCents
       )
+    case BuyCryptoErrorCode.COUNTRY_NOT_SUPPORTED:
+      return messages.countryNotSupported
     case BuyCryptoErrorCode.BAD_FEE_PAYER:
     case BuyCryptoErrorCode.BAD_PROVIDER:
     case BuyCryptoErrorCode.BAD_TOKEN:

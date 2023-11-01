@@ -6,6 +6,7 @@ import {
   PurchaseInfo,
   BuyUSDCError
 } from './types'
+import { StripeSessionCreationError } from '..'
 
 type StripeSessionStatus =
   | 'initialized'
@@ -62,7 +63,10 @@ const slice = createSlice({
     onrampSucceeded: (state) => {
       state.stage = BuyUSDCStage.CONFIRMING_PURCHASE
     },
-    onrampFailed: (_state, _action: PayloadAction<{ error: Error }>) => {
+    onrampFailed: (
+      _state,
+      _action: PayloadAction<{ error: StripeSessionCreationError }>
+    ) => {
       // handled by saga
     },
     buyUSDCFlowFailed: (
