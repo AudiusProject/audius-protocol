@@ -15,7 +15,6 @@ steps:
   - run:
       name: Docker login
       command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-  - run: . ~/.profile; audius-compose build --prod "<< parameters.service >>"
   - run: . ~/.profile; audius-compose push --prod "<< parameters.service >>"
   - run:
       when: always

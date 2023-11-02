@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-# Called from within the storagev2 docker container to register the nodes
+# Called from within the storage docker container to register the nodes (only on local dev)
 
 if [ "$#" -ne 1 ]; then
     echo "Usage: $0 <num_nodes>"

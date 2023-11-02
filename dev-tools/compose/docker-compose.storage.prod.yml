@@ -1,15 +1,19 @@
 version: '3.9'
 
+# Defines "prod" content node. Doesn't use turbo yet, but builds with all dependencies baked in.
+# This is used via audius-compose to build+push the prod image.
+# A different docker-compose.yml definition in audius-docker-compose is used to run the prod image with a different entrypoint.
+
 services:
-  storagev2:
+  storage:
     build:
       context: ${PROJECT_ROOT}/mediorum
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
       args:
         git_sha: '${GIT_COMMIT}'
     restart: unless-stopped
     entrypoint: /bin/sh
-    command: /tmp/dev-tools/startup/storagev2.sh 3 # Change 3 to number of nodes if you want more or fewer (up to 5)
+    command: /tmp/dev-tools/startup/storage.sh 3 # Entrypoint for local dev (audius-docker-compose sets a different entrypoint for stage+prod)
     environment:
       - dirTemplate=/data/mediorum_dev_%d
       - dbUrlTemplate=postgresql://postgres:postgres@db:5432/creator_node_%d
@@ -32,7 +36,7 @@ services:
       - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
       - ${PROJECT_ROOT}/packages/libs/src/eth-contracts:/tmp/eth-contracts # Used only in register script
     profiles:
-      - storagev2
+      - storage
     depends_on:
       db:
         condition: service_healthy
