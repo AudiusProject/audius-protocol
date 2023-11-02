@@ -35,6 +35,7 @@ const LEARN_MORE_LINK =
 const messages = {
   usdc: 'USDC',
   earn: 'Earn USDC by selling your music',
+  buyAndSell: 'Buy and sell music with USDC',
   learnMore: 'Learn More',
   withdraw: 'Withdraw',
   addFunds: 'Add Funds',
@@ -123,7 +124,7 @@ export const USDCCard = ({
           </Text>
         </div>
         <div className={styles.usdcInfo}>
-          <Text color='staticWhite'>{messages.earn}</Text>
+          <Text color='staticWhite'>{isArtist ? messages.earn : messages.buyAndSell}</Text>
           <PlainButton
             onClick={handleLearnMore}
             iconLeft={IconQuestionCircle}
