@@ -1,11 +1,9 @@
 import type { CSSProperties, ReactElement } from 'react'
 
-import {
-  Flex,
-  IconValidationCheck,
-  IconValidationX,
-  Text
-} from '../../components'
+import { useTheme } from '@emotion/react'
+
+import { Flex, Text } from 'components'
+import { IconValidationCheck, IconValidationX } from 'icons'
 
 const messages = {
   do: 'Do',
@@ -13,6 +11,7 @@ const messages = {
 }
 
 type ComponentRuleProps = {
+  className?: string
   component: ReactElement
   description: ReactElement | string
   isRecommended: boolean
@@ -20,9 +19,17 @@ type ComponentRuleProps = {
 }
 
 export const ComponentRule = (props: ComponentRuleProps) => {
-  const { component, description = '', isRecommended = false, style } = props
+  const {
+    className,
+    component,
+    description = '',
+    isRecommended = false
+  } = props
   const TitleIcon = isRecommended ? IconValidationCheck : IconValidationX
   const title = isRecommended ? messages.do : messages.dont
+
+  const { color, cornerRadius } = useTheme()
+  const borderColor = isRecommended ? color.status.success : color.status.error
 
   return (
     <Flex as='section' direction='column' gap='xl' flex={1}>
@@ -32,18 +39,22 @@ export const ComponentRule = (props: ComponentRuleProps) => {
           tag='h5'
           style={{ display: 'flex', alignItems: 'center' }}
         >
-          <TitleIcon size='small' style={{ marginRight: '8px' }} /> {title}
+          <TitleIcon size='s' style={{ marginRight: '8px' }} /> {title}
         </Text>
         <Text tag='section' style={{ height: '32px', overflow: 'hidden' }}>
           {description}
         </Text>
       </Flex>
       <Flex
+        className={className}
         as='figure'
         p='2xl'
         border='strong'
         justifyContent='center'
-        style={style}
+        css={{
+          border: `1px solid ${borderColor}`,
+          borderRadius: cornerRadius.m
+        }}
       >
         {component}
       </Flex>

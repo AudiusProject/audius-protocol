@@ -38,17 +38,19 @@ const ContentNode: React.FC<ContentNodeProps> = ({
   const isOwner = accountWallet === contentNode?.owner ?? false
 
   return (
-    <NodeOverview
-      spID={spID}
-      serviceType={ServiceType.ContentNode}
-      version={contentNode?.version}
-      endpoint={contentNode?.endpoint}
-      operatorWallet={contentNode?.owner}
-      delegateOwnerWallet={contentNode?.delegateOwnerWallet}
-      isOwner={isOwner}
-      isDeregistered={contentNode?.isDeregistered}
-      isLoading={status === Status.Loading}
-    />
+    <div className={styles.section}>
+      <NodeOverview
+        spID={spID}
+        serviceType={ServiceType.ContentNode}
+        version={contentNode?.version}
+        endpoint={contentNode?.endpoint}
+        operatorWallet={contentNode?.owner}
+        delegateOwnerWallet={contentNode?.delegateOwnerWallet}
+        isOwner={isOwner}
+        isDeregistered={contentNode?.isDeregistered}
+        isLoading={status === Status.Loading}
+      />
+    </div>
   )
 }
 

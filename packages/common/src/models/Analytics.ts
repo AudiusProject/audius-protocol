@@ -103,6 +103,9 @@ export enum Name {
   ACCOUNT_HEALTH_DOWNLOAD_DESKTOP = 'Account Health: Download Desktop',
   ACCOUNT_HEALTH_CLICK_APP_CTA_BANNER = 'Account Health: App CTA Banner',
 
+  // TOS
+  BANNER_TOS_CLICKED = 'Banner TOS Clicked',
+
   // Social actions
   SHARE = 'Share',
   SHARE_TO_TWITTER = 'Share to Twitter',
@@ -1796,6 +1799,10 @@ type PurchaseContentUSDCUserBankCopied = {
   address: string
 }
 
+type BannerTOSClicked = {
+  eventName: Name.BANNER_TOS_CLICKED
+}
+
 type RateCtaDisplayed = {
   eventName: Name.RATE_CTA_DISPLAYED
 }
@@ -2153,6 +2160,7 @@ export type AllTrackingEvents =
   | PurchaseContentTwitterShare
   | PurchaseContentTOSClicked
   | PurchaseContentUSDCUserBankCopied
+  | BannerTOSClicked
   | RateCtaDisplayed
   | RateCtaResponseNo
   | RateCtaResponseYes

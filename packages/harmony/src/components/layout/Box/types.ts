@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 
-import type { BorderOptions } from 'foundations/color'
+import type { BorderColors } from 'foundations/color'
 import type { CornerRadiusOptions } from 'foundations/corner-radius'
 import type { ShadowOptions } from 'foundations/shadows'
 import type { SpacingOptions } from 'foundations/spacing'
@@ -42,7 +42,7 @@ export type BoxProps = {
   mb?: SpacingOptions
 
   /** Border */
-  border?: BorderOptions
+  border?: BorderColors
   /** Border Radius */
   borderRadius?: CornerRadiusOptions
 
@@ -50,4 +50,5 @@ export type BoxProps = {
   shadow?: ShadowOptions
 
   flex?: CSSProperties['flex']
+  alignSelf?: CSSProperties['alignSelf']
 }

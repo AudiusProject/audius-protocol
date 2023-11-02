@@ -22,7 +22,8 @@ export enum BuyUSDCStage {
 export enum BuyUSDCErrorCode {
   MinAmountNotMet = 'MinAmountNotMet',
   MaxAmountExceeded = 'MaxAmountExceeded',
-  OnrampError = 'OnrampError'
+  OnrampError = 'OnrampError',
+  CountryNotSupported = 'CountryNotSupported'
 }
 
 export class BuyUSDCError extends Error {

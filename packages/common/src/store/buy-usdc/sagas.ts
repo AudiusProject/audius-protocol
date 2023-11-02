@@ -99,6 +99,12 @@ function* purchaseStep({
       })
     )
     // Throw up to the flow above this
+    if (
+      result.failure.payload?.error?.code ===
+      'crypto_onramp_unsupported_country'
+    ) {
+      throw new BuyUSDCError(BuyUSDCErrorCode.CountryNotSupported, errorString)
+    }
     throw new BuyUSDCError(BuyUSDCErrorCode.OnrampError, errorString)
   }
   yield* call(

@@ -19,7 +19,7 @@ export type TextOwnProps<TextComponentType extends ElementType = 'p'> = {
 
 export type TextProps<TextComponentType extends ElementType = 'p'> =
   TextOwnProps<TextComponentType> &
-    Omit<ComponentProps<TextComponentType>, keyof TextOwnProps>
+    Omit<ComponentProps<TextComponentType>, keyof TextOwnProps | 'ref'>
 
 export type TextStrength = 'weak' | 'default' | 'strong'
 

@@ -23,7 +23,14 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: 'module'
   },
-  plugins: ['react', 'react-hooks', '@typescript-eslint', 'jest', 'import'],
+  plugins: [
+    'react',
+    'react-hooks',
+    '@typescript-eslint',
+    '@emotion',
+    'jest',
+    'import'
+  ],
   rules: {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
@@ -75,6 +82,7 @@ module.exports = {
     'react/prop-types': 'off',
     'react/jsx-uses-react': 'off',
     'react/react-in-jsx-scope': 'off',
+    'react/no-unknown-property': ['error', { ignore: ['css'] }],
 
     'prettier/prettier': ['error', require('../.prettierrc')],
 

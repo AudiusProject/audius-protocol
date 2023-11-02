@@ -8,6 +8,7 @@
     "plugins": [{ "name": "typescript-plugin-css-modules" }],
     "allowJs": false,
     "jsx": "react-jsx",
+    "jsxImportSource": "@emotion/react",
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "exactOptionalPropertyTypes": false,

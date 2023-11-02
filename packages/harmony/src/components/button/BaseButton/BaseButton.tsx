@@ -30,6 +30,8 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       children,
       'aria-label': ariaLabelProp,
       asChild,
+      _isHovered,
+      _isPressed,
       ...other
     } = props
     const { isMatch: isTextHidden } = useMediaQueryListener(
@@ -54,7 +56,9 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
           styles.button,
           {
             [baseStyles.disabled]: disabled || isLoading,
-            [baseStyles.fullWidth]: fullWidth
+            [baseStyles.fullWidth]: fullWidth,
+            [baseStyles.hover]: _isHovered,
+            [baseStyles.active]: _isPressed
           },
           className
         )}

@@ -19,7 +19,9 @@ const messages = {
   badAmount: (minAmount: number, maxAmount: number) =>
     `Total purchase amount must be between $${formatPrice(
       minAmount
-    )} and ${formatPrice(maxAmount)}`
+    )} and ${formatPrice(maxAmount)}`,
+  countryNotSupported:
+    'Stripe is unable to support transactions in this country'
 }
 
 export const usePurchaseContentErrorMessage = (
@@ -34,6 +36,9 @@ export const usePurchaseContentErrorMessage = (
       return messages.minimumPurchase(minUSDCPurchaseAmountCents)
     case BuyUSDCErrorCode.MaxAmountExceeded:
       return messages.maximumPurchase(maxUSDCPurchaseAmountCents)
+    case BuyCryptoErrorCode.COUNTRY_NOT_SUPPORTED:
+    case BuyUSDCErrorCode.CountryNotSupported:
+      return messages.countryNotSupported
     case BuyCryptoErrorCode.BAD_AMOUNT:
       return messages.badAmount(
         minUSDCPurchaseAmountCents,

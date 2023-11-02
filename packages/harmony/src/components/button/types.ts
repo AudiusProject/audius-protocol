@@ -1,8 +1,8 @@
 import type { ComponentPropsWithoutRef } from 'react'
 
-import type { IconComponent } from 'components/typography/Icons/Icon'
-// TODO generate this type from the emotion theme
-import type { ColorValue } from 'types/colors'
+import type { SpecialColors } from 'foundations/color'
+
+import type { IconComponent } from '../icon'
 
 export enum ButtonType {
   PRIMARY = 'primary',
@@ -24,6 +24,21 @@ type BaseButtonStyles = {
 }
 
 export type HTMLButtonProps = ComponentPropsWithoutRef<'button'>
+
+/**
+ * These props should only be used for dev purposes, whether in debug mode,
+ * or to show various states in storybook.
+ * */
+type InternalProps = {
+  /**
+   * @ignore: This prop is for internal use only
+   */
+  _isHovered?: boolean
+  /**
+   * @ignore: This prop is for internal use only
+   */
+  _isPressed?: boolean
+}
 
 export type BaseButtonProps = {
   /**
@@ -68,13 +83,14 @@ export type BaseButtonProps = {
    *  merging their props and behavior.
    */
   asChild?: boolean
-} & HTMLButtonProps
+} & HTMLButtonProps &
+  InternalProps
 
 export type ButtonProps = {
   /**
    * Override the color of the button, only valid for the `PRIMARY` variant
    */
-  color?: ColorValue
+  color?: SpecialColors
 
   /**
    * Override the color of the button using any hex color, only valid for the `PRIMARY` variant

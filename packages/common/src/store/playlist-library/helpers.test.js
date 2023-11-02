@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-disabled-tests */
 import {
   addFolderToLibrary,
   findIndexInPlaylistLibrary,
@@ -124,6 +125,7 @@ describe('findIndexInPlaylistLibrary', () => {
           contents: [
             { type: 'playlist', playlist_id: 7 },
             { type: 'playlist', playlist_id: 10 },
+            { type: 'explore_playlist', playlist_id: 'Heavy Rotation' },
             {
               type: 'folder',
               name: 'favorites 2',
@@ -140,7 +142,7 @@ describe('findIndexInPlaylistLibrary', () => {
     let index = findIndexInPlaylistLibrary(library, 7)
     expect(index).toEqual([4, 0])
 
-    index = findIndexInPlaylistLibrary(library, '33')
+    index = findIndexInPlaylistLibrary(library, 'Heavy Rotation')
     expect(index).toEqual([4, 2])
 
     index = findIndexInPlaylistLibrary(library, 12)
@@ -175,7 +177,7 @@ describe('findIndexInPlaylistLibrary', () => {
       ]
     }
     const index = findIndexInPlaylistLibrary(library, 'fake-uuid-2')
-    expect(index).toEqual([4, 3])
+    expect(index).toEqual([4, 2])
   })
 })
 
@@ -1200,7 +1202,13 @@ describe('reorderPlaylistLibrary', () => {
         { type: 'playlist', playlist_id: 4 }
       ]
     })
-    const ret2 = reorderPlaylistLibrary(ret, 1, '10', 'playlist', true)
+    const ret2 = reorderPlaylistLibrary(
+      ret,
+      1,
+      'Heavy Rotation',
+      'playlist',
+      true
+    )
     expect(ret2).toEqual({
       contents: [
         {
@@ -1231,7 +1239,7 @@ describe('reorderPlaylistLibrary', () => {
 })
 
 describe('addFolderToLibrary', () => {
-  it('Adds a new folder to the end of a playlist library and returns the result', () => {
+  it('Adds a new folder to the beginning of a playlist library and returns the result', () => {
     const library = {
       contents: [
         { type: 'playlist', playlist_id: 1 },
@@ -1248,15 +1256,15 @@ describe('addFolderToLibrary', () => {
     const result = addFolderToLibrary(library, folder)
     const expectedResult = {
       contents: [
-        { type: 'playlist', playlist_id: 1 },
-        { type: 'playlist', playlist_id: 2 },
-        { type: 'playlist', playlist_id: 3 },
         {
           id: 'fake-uuid',
           name: 'Foldero',
           contents: [],
           type: 'folder'
-        }
+        },
+        { type: 'playlist', playlist_id: 1 },
+        { type: 'playlist', playlist_id: 2 },
+        { type: 'playlist', playlist_id: 3 }
       ]
     }
     expect(result).toEqual(expectedResult)
@@ -1498,7 +1506,7 @@ describe('addPlaylistToFolder', () => {
     }
 
     const result = addPlaylistToFolder(library, 'asdf', 'fake-uuid')
-    expect(result).toBe(library)
+    expect(result).toEqual(library)
   })
 
   it('returns the original unchanged library if folder does not exist', () => {

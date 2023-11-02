@@ -310,7 +310,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       <View style={styles.actions}>
         {!shouldShowPurchasePill ? renderCastButton() : null}
         {!shouldShowPurchasePill ? renderRepostButton() : null}
-        {renderFavoriteButton()}
+        {!shouldShowPurchasePill ? renderFavoriteButton() : null}
         {renderShareButton()}
         {renderOptionsButton()}
       </View>
