@@ -83,7 +83,7 @@ export const USDCCard = ({
     track(
       make({
         eventName: Name.WITHDRAW_USDC_MODAL_OPENED,
-        currentBalance: balanceCents
+        currentBalance: balanceCents / 100
       })
     )
   }

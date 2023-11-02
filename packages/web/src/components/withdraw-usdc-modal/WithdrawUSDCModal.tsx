@@ -99,7 +99,7 @@ const TrackFormErrors = ({ currentBalance }: { currentBalance: number }) => {
           eventName: Name.WITHDRAW_USDC_FORM_ERROR,
           error: addressError,
           value: address,
-          currentBalance: currentBalance / 100
+          currentBalance
         })
       )
     }
@@ -151,7 +151,7 @@ export const WithdrawUSDCModal = () => {
       dispatch(
         beginWithdrawUSDC({
           amount,
-          currentBalance: balanceNumberCents / 100,
+          currentBalance: balanceNumberCents,
           destinationAddress: address,
           onSuccess
         })
