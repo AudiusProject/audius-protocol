@@ -23,7 +23,7 @@ const relatedComponentsMap = {
   },
   Box: {
     component: (
-      <Box border='default' p='m' w={148}>
+      <Box border='default' p='xs' w={148} h={60}>
         <Text>Hello World</Text>
       </Box>
     ),

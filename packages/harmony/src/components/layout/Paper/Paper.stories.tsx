@@ -4,7 +4,15 @@ import { Paper } from './Paper'
 
 const meta: Meta<typeof Paper> = {
   title: 'Components/Layout/Paper',
-  component: Paper
+  component: Paper,
+  argTypes: {
+    as: {
+      table: { disable: true }
+    },
+    theme: {
+      table: { disable: true }
+    }
+  }
 }
 
 export default meta

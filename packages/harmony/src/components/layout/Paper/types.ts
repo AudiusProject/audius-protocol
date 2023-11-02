@@ -11,16 +11,27 @@ export type PaperProps = {
   /** Width */
   w?: CSSProperties['width']
 
-  /** Background Color */
-  backgroundColor: BackgroundColorValue
+  /**
+   * Background Color
+   * @default default
+   */
+  backgroundColor?: BackgroundColorValue
 
-  /** Border */
+  /**
+   * Border type. If not provided, no border will be used.
+   * @default default
+   */
   border?: BorderOptions
-  /** Border Radius */
-  borderRadius?: CornerRadiusOptions
-  /** Show border or not */
-  showBorder?: boolean
 
-  /** Elevation Shadow */
+  /**
+   * Border Radius
+   * @default m
+   */
+  borderRadius?: CornerRadiusOptions
+
+  /**
+   * Elevation Shadow
+   * @default mid
+   */
   shadow?: ShadowOptions
 }
