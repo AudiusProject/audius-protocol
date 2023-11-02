@@ -44,11 +44,11 @@ import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
-import { ArtistDashboardPage } from 'pages/artist-dashboard-page/ArtistDashboardPage'
 import { AudioRewardsPage } from 'pages/audio-rewards-page/AudioRewardsPage'
 import { AudioTransactionsPage } from 'pages/audio-transactions-page'
 import CheckPage from 'pages/check-page/CheckPage'
 import CollectionPage from 'pages/collection-page/CollectionPage'
+import { DashboardPage } from 'pages/dashboard-page/DashboardPage'
 import EmptyPage from 'pages/empty-page/EmptyPage'
 import ExplorePage from 'pages/explore-page/ExplorePage'
 import FavoritesPage from 'pages/favorites-page/FavoritesPage'
@@ -737,7 +737,7 @@ class App extends Component {
                   exact
                   path={DASHBOARD_PAGE}
                   isMobile={isMobileClient}
-                  component={ArtistDashboardPage}
+                  component={DashboardPage}
                 />
                 <Route
                   exact

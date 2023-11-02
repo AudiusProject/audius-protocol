@@ -159,6 +159,7 @@
     "react-native-video": "5.2.1",
     "react-native-view-shot": "3.4.0",
     "react-native-webview": "11.25.1",
+    "react-qr-code": "2.0.12",
     "react-redux": "8.0.5",
     "react-use": "17.3.2",
     "redux": "4.1.1",

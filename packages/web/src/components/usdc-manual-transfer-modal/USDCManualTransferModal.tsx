@@ -1,9 +1,14 @@
 import { useCallback, useContext } from 'react'
 
-import { Name, useUSDCManualTransferModal } from '@audius/common'
+import {
+  Name,
+  useUSDCManualTransferModal,
+  useCreateUserbankIfNeeded
+} from '@audius/common'
 import { Button, ButtonType } from '@audius/harmony'
 import { IconError, LogoUSDC, ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
+import QRCode from 'react-qr-code'
 import { useAsync } from 'react-use'
 
 import { Icon } from 'components/Icon'
@@ -13,6 +18,7 @@ import { Text } from 'components/typography'
 import { Hint } from 'components/withdraw-usdc-modal/components/Hint'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import { track, make } from 'services/analytics'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { getUSDCUserBank } from 'services/solana/solana'
 import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
@@ -37,6 +43,11 @@ const messages = {
 }
 
 export const USDCManualTransferModal = () => {
+  useCreateUserbankIfNeeded({
+    recordAnalytics: track,
+    audiusBackendInstance,
+    mint: 'usdc'
+  })
   const { isOpen, onClose } = useUSDCManualTransferModal()
   const { toast } = useContext(ToastContext)
   const mobile = isMobile()
@@ -91,16 +102,25 @@ export const USDCManualTransferModal = () => {
         <div className={styles.content}>
           <Text>{messages.explainer1}</Text>
           <Text>{messages.explainer2}</Text>
-          <AddressTile address={USDCUserBank ?? ''} left={<LogoUSDC />} />
-          <Hint
-            text={messages.disclaimer}
-            link={USDCLearnMore}
-            icon={() => <Icon icon={IconError} size='large' fill='neutral' />}
-            linkText={messages.learnMore}
-          />
+          <div className={cn(styles.columns, { [styles.mobile]: mobile })}>
+            <div className={styles.qr}>
+              {USDCUserBank ? <QRCode value={USDCUserBank} /> : null}
+            </div>
+            <div className={styles.data}>
+              <AddressTile address={USDCUserBank ?? ''} left={<LogoUSDC />} />
+              <Hint
+                text={messages.disclaimer}
+                link={USDCLearnMore}
+                icon={() => (
+                  <Icon icon={IconError} size='large' fill='neutral' />
+                )}
+                linkText={messages.learnMore}
+              />
+            </div>
+          </div>
           <div
             className={cn(styles.buttonContainer, {
-              [styles.mobile]: isMobile
+              [styles.mobile]: mobile
             })}
           >
             <Button variant={ButtonType.PRIMARY} fullWidth onClick={handleCopy}>
