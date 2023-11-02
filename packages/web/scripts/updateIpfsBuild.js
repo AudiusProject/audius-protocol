@@ -4,8 +4,8 @@ const AbortController = require('abort-controller')
 const pinataSDK = require('@pinata/sdk')
 
 const pinata = pinataSDK(
-  import.meta.env.PINATA_KEY_NAME,
-  import.meta.env.PINATA_KEY_SECRET
+  process.env.PINATA_KEY_NAME,
+  process.env.PINATA_KEY_SECRET
 )
 
 const args = process.argv

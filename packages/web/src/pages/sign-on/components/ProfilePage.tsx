@@ -22,7 +22,7 @@ import { resizeImage } from 'utils/imageProcessingUtil'
 
 import styles from './ProfilePage.module.css'
 
-const GENERAL_ADMISSION = import.meta.env.VITE_GENERAL_ADMISSION ?? ''
+const GENERAL_ADMISSION = process.env.VITE_GENERAL_ADMISSION ?? ''
 const isMobile = getIsMobile()
 
 const messages = {

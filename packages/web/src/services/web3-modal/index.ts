@@ -4,13 +4,11 @@ import type { IProviderOptions } from 'web3modal'
 import phantomIconPurpleSvg from 'assets/img/phantom-icon-purple.svg'
 import walletLinkSvg from 'assets/img/wallet-link.svg'
 
-const CHAIN_ID = import.meta.env.VITE_ETH_NETWORK_ID
-const BITSKI_CLIENT_ID = import.meta.env.VITE_BITSKI_CLIENT_ID
-const BITSKI_CALLBACK_URL = import.meta.env.VITE_BITSKI_CALLBACK_URL
-const WEB3_NETWORK_ID = parseInt(import.meta.env.VITE_ETH_NETWORK_ID || '')
-const ETH_PROVIDER_URLS = (import.meta.env.VITE_ETH_PROVIDER_URL || '').split(
-  ','
-)
+const CHAIN_ID = process.env.VITE_ETH_NETWORK_ID
+const BITSKI_CLIENT_ID = process.env.VITE_BITSKI_CLIENT_ID
+const BITSKI_CALLBACK_URL = process.env.VITE_BITSKI_CALLBACK_URL
+const WEB3_NETWORK_ID = parseInt(process.env.VITE_ETH_NETWORK_ID || '')
+const ETH_PROVIDER_URLS = (process.env.VITE_ETH_PROVIDER_URL || '').split(',')
 
 type Config = {
   isBitSkiEnabled: boolean

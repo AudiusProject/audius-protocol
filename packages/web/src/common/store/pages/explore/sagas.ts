@@ -22,7 +22,7 @@ const {
 const { getPlaylistIds, getProfileIds } = explorePageSelectors
 
 const EXPLORE_CONTENT_URL =
-  import.meta.env.VITE_EXPLORE_CONTENT_URL || STATIC_EXPLORE_CONTENT_URL
+  process.env.VITE_EXPLORE_CONTENT_URL || STATIC_EXPLORE_CONTENT_URL
 
 type ExploreContent = {
   featuredPlaylists: ID[]

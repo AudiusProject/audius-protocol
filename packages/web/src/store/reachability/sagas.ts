@@ -6,7 +6,7 @@ import { isMobileWeb } from 'common/utils/isMobileWeb'
 const { getIsReachable } = reachabilitySelectors
 const { setUnreachable, setReachable } = reachabilityActions
 
-const REACHABILITY_URL = import.meta.env.VITE_REACHABILITY_URL
+const REACHABILITY_URL = process.env.VITE_REACHABILITY_URL
 
 // Property values borrowed from
 // https://github.com/react-native-community/react-native-netinfo

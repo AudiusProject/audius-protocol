@@ -27,13 +27,13 @@ declare global {
  * audiusBackend initialized for a web environment
  */
 export const audiusBackendInstance = audiusBackend({
-  claimDistributionContractAddress: import.meta.env
-    .VITE_CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
+  claimDistributionContractAddress:
+    process.env.VITE_CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
   env,
-  ethOwnerWallet: import.meta.env.VITE_ETH_OWNER_WALLET,
-  ethProviderUrls: (import.meta.env.VITE_ETH_PROVIDER_URL || '').split(','),
-  ethRegistryAddress: import.meta.env.VITE_ETH_REGISTRY_ADDRESS,
-  ethTokenAddress: import.meta.env.VITE_ETH_TOKEN_ADDRESS,
+  ethOwnerWallet: process.env.VITE_ETH_OWNER_WALLET,
+  ethProviderUrls: (process.env.VITE_ETH_PROVIDER_URL || '').split(','),
+  ethRegistryAddress: process.env.VITE_ETH_REGISTRY_ADDRESS,
+  ethTokenAddress: process.env.VITE_ETH_TOKEN_ADDRESS,
   getFeatureEnabled,
   getHostUrl: () => window.location.origin,
   getLibs: () => import('@audius/sdk/dist/web-libs'),
@@ -85,8 +85,8 @@ export const audiusBackendInstance = audiusBackend({
       )
     }
   },
-  identityServiceUrl: import.meta.env.VITE_IDENTITY_SERVICE,
-  generalAdmissionUrl: import.meta.env.VITE_GENERAL_ADMISSION,
+  identityServiceUrl: process.env.VITE_IDENTITY_SERVICE,
+  generalAdmissionUrl: process.env.VITE_GENERAL_ADMISSION,
   isElectron: isElectron(),
   isMobile: isMobile(),
   monitoringCallbacks,
@@ -96,31 +96,31 @@ export const audiusBackendInstance = audiusBackend({
     const event = new CustomEvent(LIBS_INITTED_EVENT)
     window.dispatchEvent(event)
   },
-  recaptchaSiteKey: import.meta.env.VITE_RECAPTCHA_SITE_KEY,
+  recaptchaSiteKey: process.env.VITE_RECAPTCHA_SITE_KEY,
   recordAnalytics: track,
   reportError: reportToSentry,
-  registryAddress: import.meta.env.VITE_REGISTRY_ADDRESS,
-  entityManagerAddress: import.meta.env.VITE_ENTITY_MANAGER_ADDRESS,
+  registryAddress: process.env.VITE_REGISTRY_ADDRESS,
+  entityManagerAddress: process.env.VITE_ENTITY_MANAGER_ADDRESS,
   remoteConfigInstance,
   setLocalStorageItem: async (key, value) =>
     window.localStorage.setItem(key, value),
   solanaConfig: {
-    claimableTokenPda: import.meta.env.VITE_CLAIMABLE_TOKEN_PDA,
-    claimableTokenProgramAddress: import.meta.env
-      .VITE_CLAIMABLE_TOKEN_PROGRAM_ADDRESS,
-    rewardsManagerProgramId: import.meta.env.VITE_REWARDS_MANAGER_PROGRAM_ID,
-    rewardsManagerProgramPda: import.meta.env.VITE_REWARDS_MANAGER_PROGRAM_PDA,
-    rewardsManagerTokenPda: import.meta.env.VITE_REWARDS_MANAGER_TOKEN_PDA,
-    solanaClusterEndpoint: import.meta.env.VITE_SOLANA_CLUSTER_ENDPOINT,
-    solanaFeePayerAddress: import.meta.env.VITE_SOLANA_FEE_PAYER_ADDRESS,
-    solanaTokenAddress: import.meta.env.VITE_SOLANA_TOKEN_PROGRAM_ADDRESS,
-    waudioMintAddress: import.meta.env.VITE_WAUDIO_MINT_ADDRESS,
-    usdcMintAddress: import.meta.env.VITE_USDC_MINT_ADDRESS,
-    wormholeAddress: import.meta.env.VITE_WORMHOLE_ADDRESS
+    claimableTokenPda: process.env.VITE_CLAIMABLE_TOKEN_PDA,
+    claimableTokenProgramAddress:
+      process.env.VITE_CLAIMABLE_TOKEN_PROGRAM_ADDRESS,
+    rewardsManagerProgramId: process.env.VITE_REWARDS_MANAGER_PROGRAM_ID,
+    rewardsManagerProgramPda: process.env.VITE_REWARDS_MANAGER_PROGRAM_PDA,
+    rewardsManagerTokenPda: process.env.VITE_REWARDS_MANAGER_TOKEN_PDA,
+    solanaClusterEndpoint: process.env.VITE_SOLANA_CLUSTER_ENDPOINT,
+    solanaFeePayerAddress: process.env.VITE_SOLANA_FEE_PAYER_ADDRESS,
+    solanaTokenAddress: process.env.VITE_SOLANA_TOKEN_PROGRAM_ADDRESS,
+    waudioMintAddress: process.env.VITE_WAUDIO_MINT_ADDRESS,
+    usdcMintAddress: process.env.VITE_USDC_MINT_ADDRESS,
+    wormholeAddress: process.env.VITE_WORMHOLE_ADDRESS
   },
-  userNodeUrl: import.meta.env.VITE_USER_NODE,
-  web3NetworkId: import.meta.env.VITE_WEB3_NETWORK_ID,
-  web3ProviderUrls: (import.meta.env.VITE_WEB3_PROVIDER_URL || '').split(','),
+  userNodeUrl: process.env.VITE_USER_NODE,
+  web3NetworkId: process.env.VITE_WEB3_NETWORK_ID,
+  web3ProviderUrls: (process.env.VITE_WEB3_PROVIDER_URL || '').split(','),
   waitForLibsInit,
   waitForWeb3: async () => {
     if (!window.web3Loaded) {
@@ -136,10 +136,10 @@ export const audiusBackendInstance = audiusBackend({
 
   withEagerOption,
   wormholeConfig: {
-    ethBridgeAddress: import.meta.env.VITE_ETH_BRIDGE_ADDRESS,
-    ethTokenBridgeAddress: import.meta.env.VITE_ETH_TOKEN_BRIDGE_ADDRESS,
-    solBridgeAddress: import.meta.env.VITE_SOL_BRIDGE_ADDRESS,
-    solTokenBridgeAddress: import.meta.env.VITE_SOL_TOKEN_BRIDGE_ADDRESS,
-    wormholeRpcHosts: import.meta.env.VITE_WORMHOLE_RPC_HOSTS
+    ethBridgeAddress: process.env.VITE_ETH_BRIDGE_ADDRESS,
+    ethTokenBridgeAddress: process.env.VITE_ETH_TOKEN_BRIDGE_ADDRESS,
+    solBridgeAddress: process.env.VITE_SOL_BRIDGE_ADDRESS,
+    solTokenBridgeAddress: process.env.VITE_SOL_TOKEN_BRIDGE_ADDRESS,
+    wormholeRpcHosts: process.env.VITE_WORMHOLE_RPC_HOSTS
   }
 })
