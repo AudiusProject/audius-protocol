@@ -686,7 +686,7 @@ export const audiusBackend = ({
     )
 
     try {
-      audiusLibs = new AudiusLibs({
+      const newAudiusLibs = new AudiusLibs({
         localStorage,
         web3Config,
         ethWeb3Config,
@@ -735,7 +735,8 @@ export const audiusBackend = ({
         hedgehogConfig,
         useDiscoveryRelay
       })
-      await audiusLibs.init()
+      await newAudiusLibs.init()
+      audiusLibs = newAudiusLibs
       onLibsInit(audiusLibs)
 
       if (useDiscoveryRelay) {
