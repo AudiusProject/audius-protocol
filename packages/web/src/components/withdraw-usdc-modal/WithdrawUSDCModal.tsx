@@ -151,7 +151,7 @@ export const WithdrawUSDCModal = () => {
       dispatch(
         beginWithdrawUSDC({
           amount,
-          currentBalance: balanceNumberCents / 100,
+          currentBalance: balanceNumberCents,
           destinationAddress: address,
           onSuccess
         })
