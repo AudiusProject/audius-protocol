@@ -24,9 +24,7 @@ const { getPremiumTrackStatusMap } = premiumContentSelectors
 
 const messages = {
   repostLabel: 'Repost',
-  unrepostLabel: 'Unrepost',
-  unlocking: 'Unlocking',
-  locked: 'Locked'
+  unrepostLabel: 'Unrepost'
 }
 
 type BottomRowProps = {

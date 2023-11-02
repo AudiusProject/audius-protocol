@@ -1,11 +1,10 @@
 import { AudiusClient } from './AudiusClient'
-import { libs as AudiusLibs, Utils } from '@audius/sdk/dist/legacy.js'
+import { libs as AudiusLibs, Utils } from '@audius/sdk/dist/web-libs.js'
 
 declare global {
   interface Window {
     AudiusClient: any
     Audius: any
-    Utils: any
     Web3: any
     web3: any
     ethereum: any
@@ -16,7 +15,6 @@ declare global {
 }
 
 const Web3 = window.Web3
-window.Utils = Utils
 
 const identityServiceEndpoint = import.meta.env.VITE_IDENTITY_SERVICE_ENDPOINT
 const registryAddress = import.meta.env.VITE_REGISTRY_ADDRESS

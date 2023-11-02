@@ -52,7 +52,7 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
     ...flexRowCentered()
   },
   title: {
-    fontSize: 22,
+    fontSize: 18,
     marginTop: 0
   },
   selectedTitle: {
@@ -66,7 +66,8 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
     marginRight: spacing(2.5)
   },
   subtitleContainer: {
-    marginTop: spacing(2)
+    marginTop: spacing(4),
+    marginLeft: -1 * spacing(10)
   },
   subtitle: {
     color: palette.neutral
@@ -224,11 +225,13 @@ export const CollectibleGatedAvailability = ({
           {messages.collectibleGated}
         </Text>
       </View>
-      <View style={styles.subtitleContainer}>
-        <Text fontSize='medium' weight='medium' style={styles.subtitle}>
-          {messages.collectibleGatedSubtitle}
-        </Text>
-      </View>
+      {selected ? (
+        <View style={styles.subtitleContainer}>
+          <Text fontSize='medium' weight='medium' style={styles.subtitle}>
+            {messages.collectibleGatedSubtitle}
+          </Text>
+        </View>
+      ) : null}
       {hasNoCollectibles ? (
         <HelpCallout
           style={styles.noCollectibles}

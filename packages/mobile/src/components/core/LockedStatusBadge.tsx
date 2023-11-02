@@ -64,7 +64,7 @@ export const LockedStatusBadge = ({
         height={iconSize === 'medium' ? spacing(3.5) : spacing(3)}
       />
       {text ? (
-        <Text fontSize='xs' variant='label' color='white'>
+        <Text fontSize='xs' variant='label' color='staticWhite'>
           {text}
         </Text>
       ) : null}

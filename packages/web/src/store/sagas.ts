@@ -20,7 +20,9 @@ import {
   searchUsersModalSagas,
   relatedArtistsSagas,
   solanaSagas,
-  confirmerSagas
+  confirmerSagas,
+  buyCryptoSagas,
+  modalsSagas
 } from '@audius/common'
 import { all, fork } from 'redux-saga/effects'
 
@@ -79,7 +81,7 @@ import walletSagas from 'common/store/wallet/sagas'
 import firstUploadModalSagas from 'components/first-upload-modal/store/sagas'
 import passwordResetSagas from 'components/password-reset/store/sagas'
 import shareSoundToTikTokModalSagas from 'components/share-sound-to-tiktok-modal/store/sagas'
-import dashboardSagas from 'pages/artist-dashboard-page/store/sagas'
+import dashboardSagas from 'pages/dashboard-page/store/sagas'
 import deletedSagas from 'pages/deleted-page/store/sagas'
 import settingsSagas from 'pages/settings-page/store/sagas'
 import accountSagas from 'store/account/sagas'
@@ -148,6 +150,8 @@ export default function* rootSaga() {
     trendingUndergroundSagas(),
     uploadSagas(),
     premiumTracksSagas(),
+
+    modalsSagas(),
 
     // Cache
     coreCacheSagas(),
@@ -219,6 +223,7 @@ export default function* rootSaga() {
 
     // Premium content
     premiumContentSagas(),
+    buyCryptoSagas(),
     buyUSDCSagas(),
     purchaseContentSagas(),
     withdrawUSDCSagas(),

@@ -7,7 +7,7 @@ import {
   useState
 } from 'react'
 
-import { ID, Kind } from '@audius/common'
+import { ID, Kind, TrackMetadata } from '@audius/common'
 import cn from 'classnames'
 import { debounce, range } from 'lodash'
 import moment from 'moment'
@@ -476,15 +476,20 @@ export const Table = ({
       if (!row) return
 
       prepareRow(row)
+      const rowProps = { ...row.getRowProps({ style }) }
+      const isPremium = (row.original as TrackMetadata).is_premium
 
-      const render = isEmptyRow(row)
-        ? renderSkeletonRow
-        : isReorderable
-        ? renderReorderableRow
-        : isTracksTable
-        ? renderDraggableRow
-        : renderTableRow
-      return render(row, key, { ...row.getRowProps({ style }) })
+      if (isEmptyRow(row)) {
+        return renderSkeletonRow(row, key, rowProps)
+      }
+      if (isReorderable) {
+        return renderReorderableRow(row, key, rowProps)
+      }
+      // Cannot drag premium tracks
+      if (isTracksTable && !isPremium) {
+        return renderDraggableRow(row, key, rowProps)
+      }
+      return renderTableRow(row, key, rowProps)
     },
     [
       rows,
@@ -503,12 +508,18 @@ export const Table = ({
     const displayRows = !showMore ? rows.slice(0, showMoreLimit) : rows
     return displayRows.map((row) => {
       prepareRow(row)
-      const render = isReorderable
-        ? renderReorderableRow
-        : isTracksTable
-        ? renderDraggableRow
-        : renderTableRow
-      return render(row, row.id, { ...row.getRowProps() })
+
+      const rowProps = { ...row.getRowProps() }
+      const isPremium = (row.original as TrackMetadata).is_premium
+
+      if (isReorderable) {
+        return renderReorderableRow(row, row.id, rowProps)
+      }
+      // Cannot drag premium tracks
+      if (isTracksTable && !isPremium) {
+        return renderDraggableRow(row, row.id, rowProps)
+      }
+      return renderTableRow(row, row.id, rowProps)
     })
   }, [
     showMore,

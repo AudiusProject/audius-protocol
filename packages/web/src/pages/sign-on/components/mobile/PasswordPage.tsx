@@ -4,7 +4,7 @@ import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 
 import Input from 'components/data-entry/Input'
-import StatusMessage from 'components/status-message/StatusMessage'
+import { StatusMessage } from 'components/status-message/StatusMessage'
 import { commonPasswordCheck } from 'utils/commonPasswordCheck'
 import { TERMS_OF_SERVICE, PRIVACY_POLICY } from 'utils/route'
 

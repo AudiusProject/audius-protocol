@@ -39,6 +39,10 @@ export type State = {
   topApps: CountMetric
   trailingTopGenres: CountMetric
   trailingApiCalls: CountMetric
+  individualServiceApiCalls: {
+    // Mapping of node endpoint to TimeSeriesMetric
+    [node: string]: TimeSeriesMetric
+  }
 }
 
 export const initialState: State = {
@@ -47,7 +51,8 @@ export const initialState: State = {
   plays: {},
   topApps: {},
   trailingTopGenres: {},
-  trailingApiCalls: {}
+  trailingApiCalls: {},
+  individualServiceApiCalls: {}
 }
 
 type SetApiCalls = { metric: TimeSeriesRecord[] | MetricError; bucket: Bucket }
@@ -62,6 +67,11 @@ type SetTrailingTopGenres = {
   bucket: Bucket
 }
 type SetTrailingApiCalls = { metric: CountRecord | MetricError; bucket: Bucket }
+type SetIndividualServiceApiCalls = {
+  node: string
+  metric: TimeSeriesRecord[] | MetricError
+  bucket: Bucket
+}
 
 const slice = createSlice({
   name: 'analytics',
@@ -96,6 +106,16 @@ const slice = createSlice({
     ) => {
       const { metric, bucket } = action.payload
       state.trailingApiCalls[bucket] = metric
+    },
+    setIndividualServiceApiCalls: (
+      state,
+      action: PayloadAction<SetIndividualServiceApiCalls>
+    ) => {
+      const { node, metric, bucket } = action.payload
+      if (!state.individualServiceApiCalls[node]) {
+        state.individualServiceApiCalls[node] = {}
+      }
+      state.individualServiceApiCalls[node][bucket] = metric
     }
   }
 })
@@ -106,7 +126,8 @@ export const {
   setPlays,
   setTopApps,
   setTrailingTopGenres,
-  setTrailingApiCalls
+  setTrailingApiCalls,
+  setIndividualServiceApiCalls
 } = slice.actions
 
 export default slice.reducer

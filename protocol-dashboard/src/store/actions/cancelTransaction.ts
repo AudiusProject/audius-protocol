@@ -1,12 +1,13 @@
 import { useState, useCallback } from 'react'
 import { useDispatch } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 
 import { PendingTransactionName, Status, Address } from 'types'
 import Audius from 'services/Audius'
 import { AppState } from 'store/types'
 import { fetchPendingTransactions } from 'store/account/hooks'
+import { AnyAction } from '@reduxjs/toolkit'
 
 function cancelDecreaseStake(
   setStatus: (status: Status) => void,
@@ -100,7 +101,7 @@ function cancelRemoveDelegator(
 export const useCancelTransaction = (name: PendingTransactionName) => {
   const [status, setStatus] = useState<undefined | Status>()
   const [error, setError] = useState<string>('')
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
 
   const cancelTransaction = useCallback(
     (wallet?: Address) => {

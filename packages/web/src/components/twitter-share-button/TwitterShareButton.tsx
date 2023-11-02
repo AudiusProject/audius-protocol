@@ -122,11 +122,12 @@ export const TwitterShareButton = (props: TwitterShareButtonProps) => {
   return (
     <Button
       fullWidth={fullWidth}
-      text={hideText ? undefined : messages.share}
       iconLeft={IconTwitterBird}
       size={size}
       {...colorOverride}
       onClick={handleClick}
-    />
+    >
+      {hideText ? undefined : messages.share}
+    </Button>
   )
 }

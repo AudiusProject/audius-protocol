@@ -1,6 +1,6 @@
 import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 
-import type { IconComponent } from '../../typography'
+import type { IconComponent } from '../../icon'
 
 export enum TextInputSize {
   SMALL = 'small',

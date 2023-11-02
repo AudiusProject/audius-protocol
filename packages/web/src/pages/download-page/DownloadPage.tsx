@@ -10,12 +10,9 @@ import { ParallaxProvider } from 'react-scroll-parallax'
 import IconDownloadDesktop from 'assets/img/publicSite/downloadDesktop.svg'
 import IconDownloadMobile from 'assets/img/publicSite/downloadMobile.svg'
 import { CookieBanner } from 'components/cookie-banner/CookieBanner'
-import Footer from 'components/public-site/Footer'
-import NavBanner from 'components/public-site/NavBanner'
-// import Footer from 'components/public-site/FooterV2'
-// import NavBanner from 'components/public-site/NavBannerV2'
-import CTASignUp from 'pages/landing-page/components/CTASignUp'
-// import CTAStartListening from 'pages/landing-page-v2/components/CTAStartListening'
+import Footer from 'components/public-site/FooterV2'
+import NavBanner from 'components/public-site/NavBannerV2'
+import CTAStartListening from 'pages/landing-page-v2/components/CTAStartListening'
 import DownloadApp from 'services/download-app/DownloadApp'
 import { getIOSAppLink } from 'utils/appLinks'
 import { getOS } from 'utils/clientUtil'
@@ -185,8 +182,7 @@ const DownloadPage = (props: DownloadPageProps) => {
               </div>
             </div>
           </div>
-          <CTASignUp
-            // <CTAStartListening
+          <CTAStartListening
             isMobile={props.isMobile}
             setRenderPublicSite={props.setRenderPublicSite}
           />

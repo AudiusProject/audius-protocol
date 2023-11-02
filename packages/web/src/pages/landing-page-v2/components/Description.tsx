@@ -188,7 +188,7 @@ const Description = (props: DescriptionProps) => {
             src={productShot}
             srcSet={`${productShot} 2x`}
             className={styles.productShot}
-            alt='Audius Product Shot'
+            alt='Audius Mobile Product Shot'
           />
           <h3 ref={setStartAnimation} className={styles.title}>
             {trail.map(({ x, wordYPosition, ...rest }: any, index: any) => (

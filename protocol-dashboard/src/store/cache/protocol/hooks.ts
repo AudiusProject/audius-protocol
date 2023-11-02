@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 
 import Audius from 'services/Audius'
@@ -14,6 +14,7 @@ import {
 import { useEffect, useState, useRef } from 'react'
 import { ServiceType, Block } from 'types'
 import AudiusClient from 'services/Audius'
+import { AnyAction } from '@reduxjs/toolkit'
 
 // -------------------------------- Selectors  --------------------------------
 export const getTotalStaked = (state: AppState) =>
@@ -115,7 +116,7 @@ export function fetchAverageBlockTime(): ThunkAction<
 
 export const useTotalStaked = () => {
   const totalStaked = useSelector(getTotalStaked)
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (totalStaked === undefined) dispatch(fetchTotalStaked())
   }, [dispatch, totalStaked])
@@ -125,7 +126,7 @@ export const useTotalStaked = () => {
 
 export const useServiceInfo = () => {
   const services = useSelector(getServiceInfo)
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (
       services.discoveryProvider === undefined ||
@@ -140,7 +141,7 @@ export const useServiceInfo = () => {
 
 export const useProtocolDelegator = () => {
   const delegatorInfo = useSelector(getDelegatorInfo)
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (
       delegatorInfo.maxDelegators === undefined ||
@@ -164,7 +165,7 @@ export const useDispatchBasedOnBlockNumber = (
 ) => {
   const didMount = useRef(false)
   const ethBlockNumber = useEthBlockNumber()
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (didMount.current && ethBlockNumber && ethBlockNumber % mod === 0) {
       actions.forEach(action => {
@@ -236,7 +237,7 @@ export const useTimeRemaining = (block: number, period: number | null) => {
 }
 
 export const useInit = () => {
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     dispatch(fetchServiceStakeValues())
     dispatch(fetchProtocolDelegation())

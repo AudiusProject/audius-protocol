@@ -33,9 +33,10 @@ export const NoTransactionsContent = ({
       <Button
         variant={ButtonType.SECONDARY}
         size={ButtonSize.SMALL}
-        text={ctaText}
         onClick={onCTAClicked}
-      />
+      >
+        {ctaText}
+      </Button>
     </Tile>
   )
 }

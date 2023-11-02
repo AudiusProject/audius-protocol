@@ -215,6 +215,9 @@ export type DesktopTrackTileProps = {
   /** on click share icon */
   onClickShare: (e?: MouseEvent) => void
 
+  /** When the user clicks on the locked pill */
+  onClickLocked?: () => void
+
   /** On click track tile that's does not trigger another action (ie. button or text) */
   onTogglePlay: (e?: MouseEvent) => void
 

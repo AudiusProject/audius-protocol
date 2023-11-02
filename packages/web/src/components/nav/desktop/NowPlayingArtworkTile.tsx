@@ -26,7 +26,7 @@ import { fullTrackPage } from 'utils/route'
 
 import styles from './NowPlayingArtworkTile.module.css'
 
-const { getTrackId, getCollectible } = playerSelectors
+const { getTrackId, getCollectible, getPreviewing } = playerSelectors
 const { getTrack } = cacheTracksSelectors
 const { getUserId } = accountSelectors
 const { getDominantColorsByTrack } = averageColorSelectors
@@ -68,11 +68,13 @@ export const NowPlayingArtworkTile = () => {
   const track = useSelector((state: CommonState) =>
     getTrack(state, { id: trackId })
   )
+  const isPremium = !!track?.is_premium
   const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const isPreviewing = useSelector(getPreviewing)
   const shouldShowPurchaseDogEar =
     track?.premium_conditions &&
     'usdc_purchase' in track.premium_conditions &&
-    !doesUserHaveAccess
+    (!doesUserHaveAccess || isPreviewing)
 
   const isOwner = useSelector((state: CommonState) => {
     const ownerId = getTrack(state, { id: trackId })?.owner_id
@@ -127,20 +129,16 @@ export const NowPlayingArtworkTile = () => {
 
   if (!permalink || !trackId) return null
 
-  return (
-    <Draggable
-      text={track?.title}
-      kind='track'
-      id={trackId}
-      isOwner={isOwner}
-      link={fullTrackPage(permalink)}
-      className={styles.root}
-    >
-      {shouldShowPurchaseDogEar ? (
-        <div className={styles.borderOffset}>
-          <DogEar type={DogEarType.USDC_PURCHASE} className={styles.dogEar} />
-        </div>
-      ) : null}
+  const renderDogEar = () => {
+    return shouldShowPurchaseDogEar ? (
+      <div className={styles.borderOffset}>
+        <DogEar type={DogEarType.USDC_PURCHASE} className={styles.dogEar} />
+      </div>
+    ) : null
+  }
+
+  const renderCoverArt = () => {
+    return (
       <FadeInUp style={{ boxShadow: coverArtColor }}>
         <Link to={permalink} aria-label={messages.viewTrack}>
           <DynamicImage
@@ -156,6 +154,29 @@ export const NowPlayingArtworkTile = () => {
           </DynamicImage>
         </Link>
       </FadeInUp>
+    )
+  }
+
+  if (isPremium) {
+    return (
+      <div className={styles.root}>
+        {renderDogEar()}
+        {renderCoverArt()}
+      </div>
+    )
+  }
+
+  return (
+    <Draggable
+      text={track?.title}
+      kind='track'
+      id={trackId}
+      isOwner={isOwner}
+      link={fullTrackPage(permalink)}
+      className={styles.root}
+    >
+      {renderDogEar()}
+      {renderCoverArt()}
     </Draggable>
   )
 }

@@ -3,6 +3,7 @@ import { composeWithDevToolsLogOnlyInProduction } from '@redux-devtools/extensio
 import { configureScope, addBreadcrumb } from '@sentry/browser'
 import { routerMiddleware } from 'connected-react-router'
 import { createStore, applyMiddleware, Action, Store } from 'redux'
+import { persistStore } from 'redux-persist'
 import createSagaMiddleware from 'redux-saga'
 import createSentryMiddleware from 'redux-sentry-middleware'
 import thunk from 'redux-thunk'
@@ -148,6 +149,7 @@ const configureStore = () => {
 }
 
 export const store = configureStore()
+export const persistor = persistStore(store)
 
 // Mount store to window for easy access
 window.store = store

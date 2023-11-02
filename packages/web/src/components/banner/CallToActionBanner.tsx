@@ -19,6 +19,7 @@ export type CallToActionBannerProps = Pick<
   pill?: string
   pillPosition?: 'left' | 'right'
   text: ReactNode
+  size?: 'small' | 'large'
 }
 
 export const CallToActionBanner = (props: CallToActionBannerProps) => {
@@ -28,6 +29,7 @@ export const CallToActionBanner = (props: CallToActionBannerProps) => {
     pillPosition = 'left',
     text,
     onAccept,
+    size,
     ...bannerProps
   } = props
 
@@ -57,8 +59,16 @@ export const CallToActionBanner = (props: CallToActionBannerProps) => {
           ) : null}
           <div className={styles.contentSelection}>
             {emoji ? <i className={cn('emoji', emoji)} /> : null}
-            <div className={styles.text}>{text}</div>
-            <IconArrowWhite className={styles.arrow} />
+            <div
+              className={cn(styles.text, {
+                [styles.small]: size === 'small'
+              })}
+            >
+              {text}
+            </div>
+            <IconArrowWhite
+              className={cn(styles.arrow, { [styles.small]: size === 'small' })}
+            />
           </div>
           {pill && pillPosition === 'right' ? (
             <Pill

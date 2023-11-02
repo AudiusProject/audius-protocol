@@ -140,6 +140,7 @@ const TrackTile = ({
   onClickRepost,
   onClickFavorite,
   onClickShare,
+  onClickLocked,
   onTogglePlay,
   showRankIcon,
   permalink,
@@ -162,11 +163,20 @@ const TrackTile = ({
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
   const isPurchase = isPremiumContentUSDCPurchaseGated(premiumConditions)
+
   const onClickPremiumPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && trackId) {
       openPremiumContentPurchaseModal({ contentId: trackId })
+    } else if (trackId && !doesUserHaveAccess && onClickLocked) {
+      onClickLocked()
     }
-  }, [isPurchase, trackId, openPremiumContentPurchaseModal])
+  }, [
+    isPurchase,
+    trackId,
+    openPremiumContentPurchaseModal,
+    doesUserHaveAccess,
+    onClickLocked
+  ])
 
   const getDurationText = () => {
     if (duration === null || duration === undefined) {

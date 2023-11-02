@@ -2,7 +2,7 @@ import { forwardRef } from 'react'
 
 import cn from 'classnames'
 
-import { Text } from 'components/typography'
+import { Text } from 'components/text'
 
 import styles from './SelectablePill.module.css'
 import type { SelectablePillProps } from './types'
@@ -16,6 +16,7 @@ export const SelectablePill = forwardRef<
       size = 'default',
       isSelected,
       label,
+      disabled,
       icon: IconComponent,
       className,
       ...restProps
@@ -28,7 +29,8 @@ export const SelectablePill = forwardRef<
           styles.pill,
           {
             [styles.large]: size === 'large',
-            [styles.selected]: isSelected
+            [styles.selected]: isSelected,
+            [styles.disabled]: disabled
           },
           className
         )}
@@ -36,7 +38,9 @@ export const SelectablePill = forwardRef<
         ref={ref}
         {...restProps}
       >
-        {IconComponent ? <IconComponent className={styles.icon} /> : null}
+        {IconComponent ? (
+          <IconComponent className={styles.icon} size='s' />
+        ) : null}
         <Text variant='body' tag='span'>
           {label}
         </Text>

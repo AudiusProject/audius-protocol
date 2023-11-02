@@ -7,25 +7,39 @@ export const formatUser = async (
   aud: Audius,
   user: FullUser
 ): Promise<User | Operator> => {
-  const userWallet = aud.toChecksumAddress(user.id)
+  const userWallet = await aud.toChecksumAddress(user.id)
+
+  const delegates = user.delegateTo
+    ? await Promise.all(
+        user.delegateTo.map(async delegate => {
+          return {
+            wallet: await aud.toChecksumAddress(delegate.toUser.id),
+            amount: new BN(delegate.amount),
+            activeAmount: new BN(delegate.claimableAmount)
+          }
+        })
+      )
+    : []
+
+  const voteHistory = await Promise.all(
+    user.votes.map(async vote => {
+      return {
+        proposalId: parseInt(vote.proposal.id),
+        voter: await aud.toChecksumAddress(user.id),
+        voterStake: new BN(vote.magnitude),
+        blockNumber: parseInt(vote.updatedBlockNumber),
+        vote: vote.vote
+      }
+    })
+  )
+
   let formattedUser: User = {
     wallet: userWallet,
     audToken: new BN(user.balance),
     totalDelegatorStake: new BN(user.delegationSentAmount),
-    delegates:
-      user.delegateTo?.map((delegate, i) => ({
-        wallet: aud.toChecksumAddress(delegate.toUser.id),
-        amount: new BN(delegate.amount),
-        activeAmount: new BN(delegate.claimableAmount)
-      })) ?? [],
+    delegates: delegates,
     events: [],
-    voteHistory: user.votes.map(vote => ({
-      proposalId: parseInt(vote.proposal.id),
-      voter: aud.toChecksumAddress(user.id),
-      voterStake: new BN(vote.magnitude),
-      blockNumber: parseInt(vote.updatedBlockNumber),
-      vote: vote.vote
-    })),
+    voteHistory: voteHistory,
     pendingUndelegateRequest: user.pendingUndelegateStake
       ? {
           amount: new BN(user.pendingUndelegateStake.amount),
@@ -73,15 +87,22 @@ export const formatUser = async (
     }
   }
 
+  const delegators = user.delegateFrom
+    ? await Promise.all(
+        user.delegateFrom.map(async delegate => {
+          return {
+            wallet: await aud.toChecksumAddress(delegate.fromUser.id),
+            amount: new BN(delegate.amount),
+            activeAmount: new BN(delegate.claimableAmount)
+          }
+        })
+      )
+    : []
+
   return {
     ...formattedUser,
     serviceProvider,
-    delegators:
-      user.delegateFrom?.map((delegate, i) => ({
-        wallet: aud.toChecksumAddress(delegate.fromUser.id),
-        amount: new BN(delegate.amount),
-        activeAmount: new BN(delegate.claimableAmount)
-      })) ?? [],
+    delegators: delegators,
     totalStakedFor: new BN(user.stakeAmount).add(
       new BN(user.delegationReceivedAmount)
     ),

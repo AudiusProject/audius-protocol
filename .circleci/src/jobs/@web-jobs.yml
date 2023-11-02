@@ -14,8 +14,6 @@ web-init:
         keys:
           - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
-    - common-lint
-
     - run:
         name: lint & typecheck
         command: |

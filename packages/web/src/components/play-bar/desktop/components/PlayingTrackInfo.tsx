@@ -7,7 +7,8 @@ import {
   SquareSizes,
   CommonState,
   cacheTracksSelectors,
-  usePremiumContentAccess
+  usePremiumContentAccess,
+  playerSelectors
 } from '@audius/common'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
@@ -23,6 +24,7 @@ import { fullTrackPage } from 'utils/route'
 
 import styles from './PlayingTrackInfo.module.css'
 const { getTrack } = cacheTracksSelectors
+const { getPreviewing } = playerSelectors
 
 const messages = {
   preview: 'Preview'
@@ -36,6 +38,7 @@ interface PlayingTrackInfoProps {
   profilePictureSizes: ProfilePictureSizes
   isVerified: boolean
   isTrackUnlisted: boolean
+  isPremium: boolean
   artistUserId: ID
   artistName: string
   artistHandle: string
@@ -62,6 +65,7 @@ const PlayingTrackInfo = ({
   onClickTrackTitle,
   onClickArtistName,
   isTrackUnlisted,
+  isPremium,
   hasShadow,
   dominantColor
 }: PlayingTrackInfoProps) => {
@@ -69,10 +73,11 @@ const PlayingTrackInfo = ({
     getTrack(state, { id: trackId })
   )
   const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const isPreviewing = useSelector(getPreviewing)
   const shouldShowPreviewLock =
     track?.premium_conditions &&
     'usdc_purchase' in track.premium_conditions &&
-    !doesUserHaveAccess
+    (!doesUserHaveAccess || isPreviewing)
 
   const [artistSpringProps, setArtistSpringProps] = useSpring(() => springProps)
   const [trackSpringProps, setTrackSpringProps] = useSpring(() => springProps)
@@ -96,6 +101,33 @@ const PlayingTrackInfo = ({
         }
       : {}
 
+  const renderTrackTitle = () => {
+    return (
+      <animated.div
+        style={trackSpringProps}
+        className={styles.trackTitleContainer}
+      >
+        <div
+          className={cn(styles.trackTitle, {
+            [styles.textShadow]: hasShadow
+          })}
+          onClick={onClickTrackTitle}
+        >
+          {trackTitle}
+        </div>
+        {shouldShowPreviewLock ? (
+          <LockedStatusBadge
+            locked
+            iconSize='small'
+            coloredWhenLocked
+            variant='premium'
+            text={messages.preview}
+          />
+        ) : null}
+      </animated.div>
+    )
+  }
+
   return (
     <div className={styles.info}>
       <div className={styles.profilePictureWrapper}>
@@ -110,37 +142,20 @@ const PlayingTrackInfo = ({
         />
       </div>
       <div className={styles.text}>
-        <Draggable
-          isDisabled={!trackTitle || isTrackUnlisted}
-          text={trackTitle}
-          isOwner={isOwner}
-          kind='track'
-          id={trackId}
-          link={fullTrackPage(trackPermalink)}
-        >
-          <animated.div
-            style={trackSpringProps}
-            className={styles.trackTitleContainer}
+        {isPremium ? (
+          renderTrackTitle()
+        ) : (
+          <Draggable
+            isDisabled={!trackTitle || isTrackUnlisted}
+            text={trackTitle}
+            isOwner={isOwner}
+            kind='track'
+            id={trackId}
+            link={fullTrackPage(trackPermalink)}
           >
-            <div
-              className={cn(styles.trackTitle, {
-                [styles.textShadow]: hasShadow
-              })}
-              onClick={onClickTrackTitle}
-            >
-              {trackTitle}
-            </div>
-            {shouldShowPreviewLock ? (
-              <LockedStatusBadge
-                locked
-                iconSize='small'
-                coloredWhenLocked
-                variant='premium'
-                text={messages.preview}
-              />
-            ) : null}
-          </animated.div>
-        </Draggable>
+            {renderTrackTitle()}
+          </Draggable>
+        )}
         <animated.div
           className={styles.artistNameWrapper}
           style={artistSpringProps}

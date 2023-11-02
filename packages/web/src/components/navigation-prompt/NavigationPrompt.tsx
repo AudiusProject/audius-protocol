@@ -85,16 +85,18 @@ export const NavigationPrompt = (props: Props) => {
             <div className={cn(layoutStyles.row, layoutStyles.gap2)}>
               <Button
                 className={styles.button}
-                text={messages.cancel}
                 variant={ButtonType.SECONDARY}
                 onClick={closeModal}
-              />
+              >
+                {messages.cancel}
+              </Button>
               <Button
                 className={styles.button}
-                text={messages.proceed}
                 variant={ButtonType.DESTRUCTIVE}
                 onClick={handleConfirmNavigationClick}
-              />
+              >
+                {messages.proceed}
+              </Button>
             </div>
           </div>
         </ModalContent>

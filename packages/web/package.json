@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius decentralized application",
   "author": "Audius",
-  "version": "1.5.46",
+  "version": "1.5.49",
   "private": true,
   "scripts": {
     "publish-scripts": "./scripts/publishScripts.sh",
@@ -48,7 +48,7 @@
     "typecheck": "tsc",
     "typecheck:watch": "tsc --watch",
     "install-dmg-license": "npm add dmg-license -w audius-client",
-    "verify": "concurrently \"npm:typecheck\" \"npm:lint:fix\""
+    "verify": "concurrently \"npm:typecheck\" \"npm:lint:fix\" \"npm:stylelint:fix\""
   },
   "dependencies": {
     "@audius/common": "*",
@@ -125,6 +125,7 @@
     "lerp": "1.0.3",
     "linkify-react": "^4.1.0",
     "linkifyjs": "4.1.0",
+    "localforage": "1.10.0",
     "lodash": "4.17.21",
     "numeral": "2.0.6",
     "orbit-controls": "0.0.1",
@@ -144,6 +145,7 @@
     "react-infinite-scroller": "1.2.6",
     "react-lottie": "1.2.3",
     "react-merge-refs": "2.0.1",
+    "react-qr-code": "2.0.12",
     "react-redux": "8.0.5",
     "react-router-dom": "5.3.4",
     "react-router-last-location": "2.0.1",
@@ -151,13 +153,14 @@
     "react-spring": "8.0.27",
     "react-table": "7.8.0",
     "react-twitter-auth": "0.0.13",
-    "react-twitter-embed": "3.0.3",
+    "react-twitter-embed": "4.0.4",
     "react-use": "15.3.8",
     "react-use-gesture": "7.0.0-beta.5",
     "react-use-measure": "2.1.1",
     "react-virtualized": "9.22.3",
     "redux": "4.1.1",
     "redux-devtools-extension": "2.13.8",
+    "redux-persist": "6.0.0",
     "redux-saga": "1.1.3",
     "redux-sentry-middleware": "0.1.8",
     "redux-thunk": "2.4.2",
@@ -174,7 +177,6 @@
     "web3modal": "1.9.3",
     "webgl-context": "2.2.0",
     "webpack-bundle-analyzer": "4.9.0",
-    "yup": "1.2.0",
     "zod-formik-adapter": "1.2.0",
     "zustand": "4.4.3"
   },

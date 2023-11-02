@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
+import type { StripeSessionData } from '@audius/common'
 import { stripeModalUISelectors, stripeModalUIActions } from '@audius/common'
-import type { OnrampSessionResult } from '@stripe/crypto'
 import { View } from 'react-native'
 import { WebView } from 'react-native-webview'
 import { useDispatch, useSelector } from 'react-redux'
@@ -39,16 +39,11 @@ export const StripeOnrampEmbed = () => {
   const handleSessionUpdate = useCallback(
     (event) => {
       try {
-        const { status } = JSON.parse(
-          event.nativeEvent.data
-        ) as OnrampSessionResult
-
-        if (status) {
-          if (status === 'error') {
-            console.error('Received Stripe session error')
+        const session = JSON.parse(event.nativeEvent.data) as StripeSessionData
+        if (session) {
+          dispatch(stripeSessionStatusChanged({ session }))
+          if (session.status === 'error') {
             dispatch(cancelStripeOnramp())
-          } else {
-            dispatch(stripeSessionStatusChanged({ status }))
           }
         }
       } catch (e) {
@@ -120,7 +115,7 @@ export const StripeOnrampEmbed = () => {
           source={{ html }}
           startInLoadingState={true}
           renderLoading={renderLoadingSpinner}
-          scrollEnabled={false}
+          scrollEnabled
           onError={handleError}
           onMessage={handleSessionUpdate}
         />

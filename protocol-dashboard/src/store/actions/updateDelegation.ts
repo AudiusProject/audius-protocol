@@ -1,5 +1,9 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
+import { ThunkDispatch } from 'redux-thunk'
+import AppState from 'store/types'
+import Audius from 'services/Audius'
+import { AnyAction } from '@reduxjs/toolkit'
 
 import { Address, Status, BigNumber } from 'types'
 import { undelegateAudiusStake } from 'store/actions/undelegateStake'
@@ -11,7 +15,7 @@ export const useUpdateDelegation = (
 ) => {
   const [status, setStatus] = useState<undefined | Status>()
   const [error, setError] = useState<string>('')
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (shouldReset) {
       setStatus(undefined)

@@ -1,6 +1,6 @@
 import Audius from 'services/Audius'
 import { useSelector, useDispatch } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 import AppState from 'store/types'
 import { Playlist, Track } from 'types'
@@ -13,6 +13,7 @@ import {
   setTopTracks
 } from './slice'
 import { fetchWithLibs } from 'utils/fetch'
+import { AnyAction } from '@reduxjs/toolkit'
 
 const AUDIUS_URL = import.meta.env.VITE_AUDIUS_URL
 
@@ -114,7 +115,7 @@ export function fetchTopAlbums(): ThunkAction<
 export const useTopTracks = () => {
   const [doOnce, setDoOnce] = useState(false)
   const topTracks = useSelector(getTopTracks)
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
 
   useEffect(() => {
     if (!doOnce && !topTracks) {
@@ -135,7 +136,7 @@ export const useTopTracks = () => {
 export const useTopPlaylists = () => {
   const [doOnce, setDoOnce] = useState(false)
   const topPlaylists = useSelector(getTopPlaylists)
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
 
   useEffect(() => {
     if (!doOnce && !topPlaylists) {
@@ -156,7 +157,7 @@ export const useTopPlaylists = () => {
 export const useTopAlbums = () => {
   const [doOnce, setDoOnce] = useState(false)
   const topAlbums = useSelector(getTopAlbums)
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
 
   useEffect(() => {
     if (!doOnce && !topAlbums) {

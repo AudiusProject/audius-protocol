@@ -1,6 +1,6 @@
 {
   "name": "eslint-config-audius",
-  "version": "1.5.46",
+  "version": "1.5.49",
   "description": "Custom eslint config for Audius.",
   "author": "Audius",
   "homepage": "https://github.com/AudiusProject/audius-client#readme",
@@ -21,6 +21,7 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "peerDependencies": {
+    "@emotion/eslint-plugin": "11.11.0",
     "@typescript-eslint/eslint-plugin": "5.48.2",
     "@typescript-eslint/parser": "5.48.2",
     "eslint": "8.25.0",

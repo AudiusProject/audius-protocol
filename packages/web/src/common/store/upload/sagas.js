@@ -40,7 +40,8 @@ import { trackNewRemixEvent } from 'common/store/cache/tracks/sagas'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import {
   processTracksForUpload,
-  reportResultEvents
+  reportResultEvents,
+  recordGatedTracks
 } from 'common/store/upload/sagaHelpers'
 import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'
 import * as errorActions from 'store/errors/actions'
@@ -743,6 +744,8 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
     isAlbum
   })
 
+  yield call(recordGatedTracks, tracksWithMetadata)
+
   // If we errored, return early
   if (error) {
     console.debug('Saw an error, not going to create a playlist.')
@@ -902,38 +905,6 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
       }
     )
   )
-}
-
-// Record gated track uploads
-function* recordGatedTracks(tracks) {
-  // Group tracks by premium conditions to make use of count field when tracking the metric
-  const eventsByGateType = {}
-
-  for (const track of tracks) {
-    const { is_premium: isPremium, premium_conditions: premiumConditions } =
-      track
-    if (isPremium && premiumConditions) {
-      if (premiumConditions.nft_collection) {
-        eventsByGateType[Name.TRACK_UPLOAD_COLLECTIBLE_GATED] =
-          (eventsByGateType[Name.TRACK_UPLOAD_COLLECTIBLE_GATED] || 0) + 1
-      } else if (premiumConditions.follow_user_id) {
-        eventsByGateType[Name.TRACK_UPLOAD_FOLLOW_GATED] =
-          (eventsByGateType[Name.TRACK_UPLOAD_FOLLOW_GATED] || 0) + 1
-      } else if (premiumConditions.tip_user_id) {
-        eventsByGateType[Name.TRACK_UPLOAD_TIP_GATED] =
-          (eventsByGateType[Name.TRACK_UPLOAD_TIP_GATED] || 0) + 1
-      }
-    }
-  }
-
-  for (const eventName of Object.keys(eventsByGateType)) {
-    yield put(
-      make(eventName, {
-        count: eventsByGateType[eventName],
-        kind: 'tracks'
-      })
-    )
-  }
 }
 
 function* uploadSingleTrack(track) {

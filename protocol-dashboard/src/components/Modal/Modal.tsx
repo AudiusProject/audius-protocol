@@ -15,9 +15,10 @@ interface ModalProps {
   allowScroll?: boolean
   isCloseable?: boolean
   dismissOnClickOutside?: boolean
+  children: ReactNode
 }
 
-const Modal: React.FC<ModalProps> = ({
+const Modal = ({
   className,
   wrapperClassName,
   headerClassName,
@@ -29,7 +30,7 @@ const Modal: React.FC<ModalProps> = ({
   onClose,
   allowScroll,
   children
-}) => {
+}: ModalProps) => {
   return (
     <StemsModal
       wrapperClassName={clsx(styles.container, {

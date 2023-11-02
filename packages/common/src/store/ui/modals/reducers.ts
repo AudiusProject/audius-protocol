@@ -9,6 +9,7 @@ import { leavingAudiusModalReducer } from './leaving-audius-modal'
 import parentReducer, { initialState } from './parentSlice'
 import { premiumContentPurchaseModalReducer } from './premium-content-purchase-modal'
 import { Modals, ModalsState } from './types'
+import { usdcManualTransferModalReducer } from './usdc-manual-transfer-modal'
 import { usdcPurchaseDetailsModalReducer } from './usdc-purchase-details-modal'
 import { usdcTransactionDetailsModalReducer } from './usdc-transaction-details-modal'
 import { withdrawUSDCModalReducer } from './withdraw-usdc-modal'
@@ -35,6 +36,7 @@ const combinedReducers = combineReducers({
   LeavingAudiusModal: leavingAudiusModalReducer,
   WithdrawUSDCModal: withdrawUSDCModalReducer,
   USDCPurchaseDetailsModal: usdcPurchaseDetailsModalReducer,
+  USDCManualTransferModal: usdcManualTransferModalReducer,
   USDCTransactionDetailsModal: usdcTransactionDetailsModalReducer,
   PremiumContentPurchaseModal: premiumContentPurchaseModalReducer
 })

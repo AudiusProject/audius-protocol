@@ -5,6 +5,8 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { CommonState } from 'store/index'
 
+import { actions } from './parentSlice'
+
 export type BaseModalState = {
   isOpen: boolean | 'closing'
 }
@@ -17,11 +19,15 @@ export type BaseModalState = {
 export const createModal = <T>({
   reducerPath,
   initialState,
-  sliceSelector
+  sliceSelector,
+  enableTracking = false,
+  getTrackingData
 }: {
   reducerPath: string
   initialState: T & BaseModalState
   sliceSelector?: (state: CommonState) => Record<string, any>
+  enableTracking?: boolean
+  getTrackingData?: (state: T) => Record<string, any>
 }) => {
   const slice = createSlice({
     name: `modals/${reducerPath}`,
@@ -73,12 +79,20 @@ export const createModal = <T>({
   const useModal = () => {
     const { isOpen, ...data } = useSelector(selector)
     const dispatch = useDispatch()
+
     const onOpen = useCallback(
       (state?: T) => {
         if (!state) {
           dispatch(open({ ...initialState, isOpen: true }))
         } else {
           dispatch(open({ ...state, isOpen: true }))
+        }
+        if (enableTracking) {
+          const trackingData =
+            state && getTrackingData ? getTrackingData(state) : undefined
+          dispatch(
+            actions.trackModalOpened({ name: reducerPath, trackingData })
+          )
         }
       },
       [dispatch]
@@ -89,6 +103,9 @@ export const createModal = <T>({
 
     const onClosed = useCallback(() => {
       dispatch(closed())
+      if (enableTracking) {
+        dispatch(actions.trackModalClosed({ name: reducerPath }))
+      }
     }, [dispatch])
 
     const setData = useCallback(

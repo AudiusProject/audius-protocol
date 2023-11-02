@@ -9,7 +9,7 @@ import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import Input from 'components/data-entry/Input'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import PreloadImage from 'components/preload-image/PreloadImage'
-import StatusMessage from 'components/status-message/StatusMessage'
+import { StatusMessage } from 'components/status-message/StatusMessage'
 import { useDelayedEffect } from 'hooks/useDelayedEffect'
 
 import styles from './EmailPage.module.css'

@@ -1,5 +1,4 @@
 import BN from 'bn.js'
-import { Utils } from '@audius/sdk/dist/legacy.js'
 import AudiusClient from 'services/Audius'
 
 export const WEI = new BN('1000000000000000000')
@@ -24,11 +23,9 @@ export const convertFloatToWei = (number: string) => {
   const nums = number.split('.')
   if (nums.length !== 2) return null
   if (!checkOnlyNumeric(nums[0]) || !checkOnlyNumeric(nums[1])) return null
-  let aud = Utils.toBN(nums[0]).mul(Utils.toBN('1000000000000000000'))
+  let aud = new BN(nums[0]).mul(new BN('1000000000000000000'))
   const weiMultiplier = 18 - nums[1].length
-  let wei = Utils.toBN(nums[1]).mul(
-    Utils.toBN('1'.padEnd(weiMultiplier + 1, '0'))
-  )
+  let wei = new BN(nums[1]).mul(new BN('1'.padEnd(weiMultiplier + 1, '0')))
   return aud.add(wei)
 }
 
@@ -38,7 +35,7 @@ export const checkWeiNumber = (number: string) => {
 
 export const parseWeiNumber = (number: string) => {
   if (checkOnlyNumeric(number)) {
-    return AudiusClient.getWei(Utils.toBN(number))
+    return AudiusClient.getWei(new BN(number))
   } else if (checkOnlyWeiFloat(number)) {
     return convertFloatToWei(number)
   }

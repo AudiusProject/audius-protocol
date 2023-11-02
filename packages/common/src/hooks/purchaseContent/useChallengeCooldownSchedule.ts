@@ -44,18 +44,18 @@ export const useChallengeCooldownSchedule = (
 
 const getAudioMatchingCooldownLabel = (now: Dayjs, created_at: Dayjs) => {
   const diff = now.diff(created_at, 'day')
-  if (diff === COOLDOWN_DAYS - 1) {
+  if (diff === COOLDOWN_DAYS) {
     return messages.laterToday
-  } else if (diff === COOLDOWN_DAYS - 2) {
+  } else if (diff === COOLDOWN_DAYS - 1) {
     return messages.tomorrow
   }
-  return created_at.local().add(COOLDOWN_DAYS, 'day').format('ddd M/D')
+  return created_at.local().add(COOLDOWN_DAYS, 'day').format('ddd (M/D)')
 }
 
 const formatAudioMatchingChallengeCooldownSchedule = (
   challenges: UndisbursedUserChallenge[]
 ) => {
-  const now = dayjs.utc().startOf('day')
+  const now = dayjs.utc().endOf('day')
   const cooldownChallenges = new Array(7)
   challenges.forEach((c) => {
     const createdAtUTC = dayjs.utc(c.created_at)
@@ -91,6 +91,8 @@ export const useAudioMatchingChallengeCooldownSchedule = (
     cooldownChallengesSummary:
       claimableAmount > 0
         ? getAudioMatchingChallengeCooldownSummary(claimableAmount)
-        : undefined
+        : undefined,
+    isEmpty:
+      cooldownChallenges.every((c) => c === undefined) && claimableAmount === 0
   }
 }

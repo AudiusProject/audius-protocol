@@ -9,10 +9,6 @@ export default () => {
   // #CDC8C8, which works out to a luminance of 201.
   const LUMINANCE_THRESHOLD = 201
 
-  const script = `/scripts/jimp.min.js`
-  // eslint-disable-next-line
-  importWorkerScript(script)
-
   const clampedRGBColor = (rgbString /* string of 'r,g,b' */) => {
     const rgb = rgbString.split(',').map((x) => parseInt(x, 10))
     const r = rgb[0]

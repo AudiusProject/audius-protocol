@@ -1,20 +1,33 @@
 import { useCallback, type ReactNode, useEffect } from 'react'
 
-import type { PurchasableTrackMetadata } from '@audius/common'
+import type {
+  PurchasableTrackMetadata,
+  PurchaseContentError
+} from '@audius/common'
 import {
+  FeatureFlags,
+  Name,
   PurchaseContentStage,
   formatPrice,
   isContentPurchaseInProgress,
   isTrackPurchasable,
+  modalsActions,
   purchaseContentActions,
   purchaseContentSelectors,
   statusIsNotFinalized,
   useGetTrackById,
   usePayExtraPresets,
+  usePurchaseContentErrorMessage,
   usePurchaseContentFormConfiguration
 } from '@audius/common'
 import { Formik, useFormikContext } from 'formik'
-import { Linking, View, ScrollView, TouchableOpacity } from 'react-native'
+import {
+  Linking,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Platform
+} from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -26,7 +39,9 @@ import { NativeDrawer } from 'app/components/drawer'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { make, track as trackEvent } from 'app/services/analytics'
+import { setVisibility } from 'app/store/drawers/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -38,6 +53,7 @@ import { AudioMatchSection } from './AudioMatchSection'
 import { PayExtraFormSection } from './PayExtraFormSection'
 import { PurchaseSuccess } from './PurchaseSuccess'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
+import { PurchaseUnavailable } from './PurchaseUnavailable'
 import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState'
 
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
@@ -62,12 +78,12 @@ const messages = {
       {'By clicking on "Buy", you agree to our '}
       {termsOfUse}
       {
-        ' Your purchase will be made in USDC via 3rd party payment provider. Additional payment provider fees may apply. Any remaining USDC balance in your Audius wallet will be applied to this transaction. Once your payment is confirmed, your premium content will be unlocked and available to stream.'
+        ' Additional payment provider fees may apply. Any remaining USDC balance in your Audius wallet will be applied to this transaction.'
       }
     </>
   ),
   termsOfUse: 'Terms of Use.',
-  error: 'Your purchase was unsuccessful.'
+  manualTransfer: '(Advanced) Manual Crypto Transfer'
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
@@ -123,7 +139,8 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   },
   errorContainer: {
     ...flexRowCentered(),
-    gap: spacing(2)
+    gap: spacing(2),
+    paddingHorizontal: spacing(4)
   },
   spinnerContainer: {
     width: '100%',
@@ -132,9 +149,28 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     ...flexRowCentered()
   },
   disclaimer: {
-    lineHeight: 20
+    lineHeight: typography.fontSize.medium * 1.25
+  },
+  bottomSection: {
+    gap: spacing(2)
+  },
+  manualTransfer: {
+    lineHeight: typography.fontSize.medium * 1.25
   }
 }))
+
+const RenderError = ({ error: { code } }: { error: PurchaseContentError }) => {
+  const styles = useStyles()
+  const { accentRed } = useThemeColors()
+  return (
+    <View style={styles.errorContainer}>
+      <IconError fill={accentRed} width={spacing(5)} height={spacing(5)} />
+      <Text weight='medium' color='accentRed'>
+        {usePurchaseContentErrorMessage(code, useRemoteVar)}
+      </Text>
+    </View>
+  )
+}
 
 const PremiumTrackPurchaseDrawerHeader = ({
   onClose
@@ -180,10 +216,15 @@ const getButtonText = (isUnlocking: boolean, amountDue: number) =>
 // to the FormikContext, which can only be used in a component which is a descendant
 // of the `<Formik />` component
 const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
+  const dispatch = useDispatch()
   const navigation = useNavigation()
   const styles = useStyles()
-  const { specialLightGreen, accentRed, secondary } = useThemeColors()
+  const { specialLightGreen, primary } = useThemeColors()
   const presetValues = usePayExtraPresets(useRemoteVar)
+  const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
+    FeatureFlags.IOS_USDC_PURCHASE_ENABLED
+  )
+  const isIOSDisabled = Platform.OS === 'ios' && !isIOSUSDCPurchaseEnabled
 
   const { submitForm, resetForm } = useFormikContext()
 
@@ -211,7 +252,12 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
 
   const handleTermsPress = useCallback(() => {
     Linking.openURL('https://audius.co/legal/terms-of-use')
+    trackEvent(make({ eventName: Name.PURCHASE_CONTENT_TOS_CLICKED }))
   }, [])
+
+  const handleManualTransferPress = useCallback(() => {
+    dispatch(setVisibility({ drawer: 'USDCManualTransfer', visible: true }))
+  }, [dispatch])
 
   return (
     <>
@@ -224,15 +270,32 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
         ) : null}
         <View style={styles.formContentSection}>
           {isPurchaseSuccessful ? null : (
-            <PayExtraFormSection amountPresets={presetValues} />
+            <PayExtraFormSection
+              amountPresets={presetValues}
+              disabled={isUnlocking}
+            />
           )}
-          <PurchaseSummaryTable
-            {...purchaseSummaryValues}
-            isPurchaseSuccessful={isPurchaseSuccessful}
-          />
-          {isPurchaseSuccessful ? (
+          <View style={styles.bottomSection}>
+            <PurchaseSummaryTable
+              {...purchaseSummaryValues}
+              isPurchaseSuccessful={isPurchaseSuccessful}
+            />
+            {isIOSDisabled || isUnlocking || isPurchaseSuccessful ? null : (
+              <Text
+                color='primary'
+                fontSize='small'
+                onPress={handleManualTransferPress}
+                style={styles.manualTransfer}
+              >
+                {messages.manualTransfer}
+              </Text>
+            )}
+          </View>
+          {isIOSDisabled ? (
+            <PurchaseUnavailable />
+          ) : isPurchaseSuccessful ? (
             <PurchaseSuccess track={track} />
-          ) : (
+          ) : isUnlocking ? null : (
             <View>
               <View style={styles.payToUnlockTitleContainer}>
                 <Text weight='heavy' textTransform='uppercase' fontSize='small'>
@@ -242,7 +305,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
               </View>
               <Text style={styles.disclaimer}>
                 {messages.disclaimer(
-                  <Text colorValue={secondary} onPress={handleTermsPress}>
+                  <Text colorValue={primary} onPress={handleTermsPress}>
                     {messages.termsOfUse}
                   </Text>
                 )}
@@ -251,20 +314,9 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
           )}
         </View>
       </ScrollView>
-      {isPurchaseSuccessful ? null : (
+      {isPurchaseSuccessful || isIOSDisabled ? null : (
         <View style={styles.formActions}>
-          {error ? (
-            <View style={styles.errorContainer}>
-              <IconError
-                fill={accentRed}
-                width={spacing(5)}
-                height={spacing(5)}
-              />
-              <Text weight='medium' colorValue={accentRed}>
-                {messages.error}
-              </Text>
-            </View>
-          ) : null}
+          {error ? <RenderError error={error} /> : null}
           <Button
             onPress={submitForm}
             disabled={isUnlocking}
@@ -287,8 +339,8 @@ export const PremiumTrackPurchaseDrawer = () => {
   const dispatch = useDispatch()
   const isUSDCEnabled = useIsUSDCEnabled()
   const presetValues = usePayExtraPresets(useRemoteVar)
-  const { data } = useDrawer('PremiumTrackPurchase')
-  const { trackId } = data
+  const { data, isOpen } = useDrawer('PremiumTrackPurchase')
+  const trackId = data?.trackId
   const { data: track, status: trackStatus } = useGetTrackById(
     { id: trackId },
     { disabled: !trackId }
@@ -304,7 +356,24 @@ export const PremiumTrackPurchaseDrawer = () => {
 
   const handleClosed = useCallback(() => {
     dispatch(purchaseContentActions.cleanup())
+    dispatch(
+      modalsActions.trackModalClosed({ name: 'PremiumContentPurchaseModal' })
+    )
   }, [dispatch])
+
+  // TODO: Remove manual event tracking in this drawer once
+  // it's using common modal state
+  // https://linear.app/audius/issue/PAY-2107/switch-mobile-drawers-over-to-common-modal-infrastructure
+  useEffect(() => {
+    if (trackId && isOpen) {
+      dispatch(
+        modalsActions.trackModalOpened({
+          name: 'PremiumContentPurchaseModal',
+          trackingData: { contentId: trackId }
+        })
+      )
+    }
+  }, [trackId, isOpen, dispatch])
 
   if (!track || !isTrackPurchasable(track) || !isUSDCEnabled) return null
 

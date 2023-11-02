@@ -44,11 +44,11 @@ import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
-import { ArtistDashboardPage } from 'pages/artist-dashboard-page/ArtistDashboardPage'
 import { AudioRewardsPage } from 'pages/audio-rewards-page/AudioRewardsPage'
 import { AudioTransactionsPage } from 'pages/audio-transactions-page'
 import CheckPage from 'pages/check-page/CheckPage'
 import CollectionPage from 'pages/collection-page/CollectionPage'
+import { DashboardPage } from 'pages/dashboard-page/DashboardPage'
 import EmptyPage from 'pages/empty-page/EmptyPage'
 import ExplorePage from 'pages/explore-page/ExplorePage'
 import FavoritesPage from 'pages/favorites-page/FavoritesPage'
@@ -151,13 +151,15 @@ import {
   PURCHASES_PAGE,
   SALES_PAGE,
   WITHDRAWALS_PAGE,
-  EXPLORE_PREMIUM_TRACKS_PAGE
+  EXPLORE_PREMIUM_TRACKS_PAGE,
+  SIGN_UP_START_PAGE
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
 import AnimatedSwitch from '../components/animated-switch/AnimatedSwitch'
-import { DirectMessagesBanner } from '../components/banner/DirectMessagesBanner'
+// import { DirectMessagesBanner } from '../components/banner/DirectMessagesBanner'
 import { DownloadAppBanner } from '../components/banner/DownloadAppBanner'
+import { TermsOfServiceUpdateBanner } from '../components/banner/TermsOfServiceUpdateBanner'
 import { UpdateAppBanner } from '../components/banner/UpdateAppBanner'
 import { Web3ErrorBanner } from '../components/banner/Web3ErrorBanner'
 import { ChatListener } from '../components/chat-listener/ChatListener'
@@ -457,7 +459,9 @@ class App extends Component {
       <div className={styles.root}>
         <AppBannerWrapper>
           <DownloadAppBanner />
-          <DirectMessagesBanner />
+          {/* TODO: Re-enable DM after ToS is disabled */}
+          {/* <DirectMessagesBanner /> */}
+          <TermsOfServiceUpdateBanner />
           <Web3ErrorBanner />
           {/* Other banners' logic is self-contained, but since this one uses the IPC
             and can result in either required or optional updates, keeping the visibility
@@ -514,11 +518,16 @@ class App extends Component {
                 </Route>
                 <Route exact path={SIGN_UP_PAGE} isMobile={isMobileClient}>
                   {isSignInRedesignEnabled ? (
-                    <SignUpRootPage />
+                    <Redirect to={SIGN_UP_START_PAGE} />
                   ) : (
                     <SignOn signIn={false} initialPage={initialPage} />
                   )}
                 </Route>
+                {isSignInRedesignEnabled ? (
+                  <Route path={SIGN_UP_PAGE} isMobile={isMobileClient}>
+                    <SignUpRootPage />
+                  </Route>
+                ) : null}
                 <Route
                   exact
                   path={FEED_PAGE}
@@ -728,7 +737,7 @@ class App extends Component {
                   exact
                   path={DASHBOARD_PAGE}
                   isMobile={isMobileClient}
-                  component={ArtistDashboardPage}
+                  component={DashboardPage}
                 />
                 <Route
                   exact

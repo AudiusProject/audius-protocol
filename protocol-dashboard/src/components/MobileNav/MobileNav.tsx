@@ -1,12 +1,9 @@
-import React, { useCallback } from 'react'
-import { Dispatch } from 'redux'
-import { connect } from 'react-redux'
-import { push as pushRoute } from 'connected-react-router'
-import { matchPath } from 'react-router-dom'
+import { useCallback } from 'react'
+import { useMatch } from 'react-router-dom'
 import clsx from 'clsx'
 import Logo from 'assets/img/audiusLogoHorizontal.svg?react'
+import { useNavigate, useLocation } from 'react-router-dom'
 
-import { AppState } from 'store/types'
 import styles from './MobileNav.module.css'
 import * as routes from 'utils/routes'
 import { Button, ButtonType, IconRemove } from '@audius/stems'
@@ -20,8 +17,8 @@ const messages = {
 const navRoutes = [
   { matchParams: { path: routes.HOME, exact: true }, text: 'OVERVIEW' },
   { matchParams: { path: routes.ANALYTICS, exact: true }, text: 'ANALYTICS' },
-  { matchParams: { path: routes.SERVICES }, text: 'SERVICES' },
-  { matchParams: { path: routes.GOVERNANCE }, text: 'GOVERNANCE' }
+  { matchParams: { path: `${routes.SERVICES}*` }, text: 'SERVICES' },
+  { matchParams: { path: `${routes.GOVERNANCE}*` }, text: 'GOVERNANCE' }
 ]
 
 type MobileNavButtonProps = {
@@ -41,7 +38,7 @@ const MobileNavButton = (props: MobileNavButtonProps) => {
     matchParams: { path },
     onClose
   } = props
-  const isActiveRoute = !!matchPath(window.location.pathname, props.matchParams)
+  const isActiveRoute = !!useMatch(props.matchParams)
   const onButtonClick = useCallback(() => {
     onClose()
     pushRoute(path)
@@ -71,59 +68,43 @@ const LaunchTheAppButton = (props: LaunchTheAppButtonProps) => {
   )
 }
 
-type OwnProps = {
+type MobileNavProps = {
   isOpen: boolean
   onClose: () => void
 }
 
-type MobileNavProps = OwnProps &
-  ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>
+const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
+  const location = useLocation()
+  const navigate = useNavigate()
 
-const MobileNav = ({
-  pathname,
-  pushRoute,
-  isOpen,
-  onClose
-}: MobileNavProps) => (
-  <div
-    className={clsx(styles.container, {
-      [styles.isOpen]: isOpen
-    })}
-  >
-    <div className={styles.close} onClick={onClose}>
-      <IconRemove />
-    </div>
-    <div className={styles.inner}>
-      <div className={styles.top}>
-        <Logo className={styles.logo} />
-        <div className={styles.name}>{messages.name}</div>
+  return (
+    <div
+      className={clsx(styles.container, {
+        [styles.isOpen]: isOpen
+      })}
+    >
+      <div className={styles.close} onClick={onClose}>
+        <IconRemove />
       </div>
-      {navRoutes.map(route => (
-        <div key={route.text} className={styles.btnContainer}>
-          <MobileNavButton
-            {...route}
-            onClose={onClose}
-            pathname={pathname}
-            pushRoute={pushRoute}
-          />
+      <div className={styles.inner}>
+        <div className={styles.top}>
+          <Logo className={styles.logo} />
+          <div className={styles.name}>{messages.name}</div>
         </div>
-      ))}
-      <LaunchTheAppButton />
+        {navRoutes.map(route => (
+          <div key={route.text} className={styles.btnContainer}>
+            <MobileNavButton
+              {...route}
+              onClose={onClose}
+              pathname={location.pathname}
+              pushRoute={path => navigate(path)}
+            />
+          </div>
+        ))}
+        <LaunchTheAppButton />
+      </div>
     </div>
-  </div>
-)
-
-const mapStateToProps = (state: AppState) => {
-  return {
-    pathname: state.router.location.pathname
-  }
+  )
 }
 
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    pushRoute: (path: string) => dispatch(pushRoute(path))
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(MobileNav)
+export default MobileNav

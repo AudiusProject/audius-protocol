@@ -2,8 +2,10 @@ import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
 import { StorybookConfig } from '@storybook/react-webpack5'
 
 const config: StorybookConfig = {
-  stories: ['../src/**/*.stories.@(mdx|ts|tsx)'],
+  staticDirs: ['./public'],
+  stories: ['../src/**/*.mdx', '../src/**/*.stories.@(mdx|ts|tsx)'],
   addons: [
+    'storybook-dark-mode',
     {
       name: '@storybook/addon-essentials',
       options: {
@@ -11,20 +13,26 @@ const config: StorybookConfig = {
       }
     },
     '@storybook/addon-a11y',
-    '@storybook/addon-themes'
+    '@storybook/addon-themes',
+    '@storybook/addon-interactions',
+    '@storybook/addon-links'
   ],
   framework: {
     name: '@storybook/react-webpack5',
     options: {}
   },
-  babel: (options) => ({
-    ...options,
-    presets: [...(options?.presets ?? []), '@emotion/babel-preset-css-prop']
-  }),
   docs: {
     autodocs: true,
-    // autodocs: 'tag',
     defaultName: 'Documentation'
+  },
+  babel: {
+    presets: [
+      [
+        '@babel/preset-react',
+        { runtime: 'automatic', importSource: '@emotion/react' }
+      ]
+    ],
+    plugins: ['@emotion/babel-plugin']
   },
   webpackFinal: (config: any) => {
     config.module.rules.find(
@@ -37,19 +45,9 @@ const config: StorybookConfig = {
 
     config.module.rules = [
       {
-        test: /\.svg$/,
-        use: [
-          {
-            loader: '@svgr/webpack'
-          },
-          {
-            loader: 'file-loader'
-          }
-        ],
-        type: 'javascript/auto',
-        issuer: {
-          and: [/\.(ts|tsx|md|mdx)$/]
-        }
+        test: /\.svg$/i,
+        issuer: /\.[jt]sx?|mdx?$/,
+        use: ['@svgr/webpack']
       },
       {
         test: /\.module\.css$/,
@@ -65,6 +63,10 @@ const config: StorybookConfig = {
             }
           }
         ]
+      },
+      {
+        test: /\.(png|jpe?g|gif)$/i,
+        use: [{ loader: 'file-loader' }]
       },
       ...config.module.rules
     ]

@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import gfm from 'remark-gfm'
 import Page from 'components/Page'
-import { RouteComponentProps } from 'react-router-dom'
 import ProposalHero from 'components/ProposalHero'
 import { useProposal } from 'store/cache/proposals/hooks'
 import { Outcome } from 'types'
@@ -18,6 +17,7 @@ import Paper from 'components/Paper'
 import Loading from 'components/Loading'
 import { IS_PRODUCTION } from 'services/Audius/setup'
 import { decodeProposalCallData } from 'services/Audius/helpers'
+import { useParams } from 'react-router-dom'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
@@ -40,12 +40,9 @@ const getContractLink = (address: string) => {
   return `https://goerli.etherscan.io/address/${address}`
 }
 
-type ProposalProps = {} & RouteComponentProps<{ proposalId: string }>
-const Proposal: React.FC<ProposalProps> = (props: ProposalProps) => {
-  const {
-    match: { params }
-  } = props
-  const proposalId = parseInt(params.proposalId)
+const Proposal = () => {
+  const { proposalId: proposalIdParam } = useParams<{ proposalId: string }>()
+  const proposalId = parseInt(proposalIdParam, 10)
   const { proposal } = useProposal(proposalId)
   const { votesFor, votesAgainst } = useVotes(proposalId)
   const { userVote } = useUserVote(proposalId)

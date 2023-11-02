@@ -1,6 +1,4 @@
-import React from 'react'
-import { RouteComponentProps } from 'react-router'
-import { matchPath } from 'react-router-dom'
+import { useMatch, useParams } from 'react-router-dom'
 import NodeOverview from 'components/NodeOverview'
 import { useDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
 import { useContentNode } from 'store/cache/contentNode/hooks'
@@ -16,6 +14,9 @@ import {
   SERVICES,
   NOT_FOUND
 } from 'utils/routes'
+import IndividualServiceApiCallsChart from 'components/IndividualServiceApiCallsChart'
+import clsx from 'clsx'
+import IndividualServiceUniqueUsersChart from 'components/IndividualServiceUniqueUsersChart'
 
 const messages = {
   title: 'SERVICE',
@@ -32,72 +33,74 @@ const ContentNode: React.FC<ContentNodeProps> = ({
 
   if (status === Status.Failure) {
     return null
-  } else if (status === Status.Loading) {
-    return null
   }
 
-  // TODO: compare owner with the current user
-  const isOwner = accountWallet === contentNode!.owner
+  const isOwner = accountWallet === contentNode?.owner ?? false
 
   return (
-    <NodeOverview
-      spID={spID}
-      serviceType={ServiceType.ContentNode}
-      version={contentNode!.version}
-      endpoint={contentNode!.endpoint}
-      operatorWallet={contentNode!.owner}
-      delegateOwnerWallet={contentNode!.delegateOwnerWallet}
-      isOwner={isOwner}
-      isDeregistered={contentNode!.isDeregistered}
-    />
+    <div className={styles.section}>
+      <NodeOverview
+        spID={spID}
+        serviceType={ServiceType.ContentNode}
+        version={contentNode?.version}
+        endpoint={contentNode?.endpoint}
+        operatorWallet={contentNode?.owner}
+        delegateOwnerWallet={contentNode?.delegateOwnerWallet}
+        isOwner={isOwner}
+        isDeregistered={contentNode?.isDeregistered}
+        isLoading={status === Status.Loading}
+      />
+    </div>
   )
 }
 
-type DiscoveryProviderProps = {
+type DiscoveryNodeProps = {
   spID: number
   accountWallet: Address | undefined
 }
-const DiscoveryProvider: React.FC<DiscoveryProviderProps> = ({
+const DiscoveryNode: React.FC<DiscoveryNodeProps> = ({
   spID,
   accountWallet
-}: DiscoveryProviderProps) => {
-  const { node: discoveryProvider, status } = useDiscoveryProvider({ spID })
+}: DiscoveryNodeProps) => {
+  const { node: discoveryNode, status } = useDiscoveryProvider({ spID })
   const pushRoute = usePushRoute()
   if (status === Status.Failure) {
     pushRoute(NOT_FOUND)
     return null
-  } else if (status === Status.Loading) {
-    return null
   }
 
-  const isOwner = accountWallet === discoveryProvider!.owner
+  const isOwner = accountWallet === discoveryNode?.owner ?? false
 
   return (
-    <NodeOverview
-      spID={spID}
-      serviceType={ServiceType.DiscoveryProvider}
-      version={discoveryProvider!.version}
-      endpoint={discoveryProvider!.endpoint}
-      operatorWallet={discoveryProvider!.owner}
-      delegateOwnerWallet={discoveryProvider!.delegateOwnerWallet}
-      isOwner={isOwner}
-      isDeregistered={discoveryProvider!.isDeregistered}
-    />
+    <>
+      <div className={styles.section}>
+        <NodeOverview
+          spID={spID}
+          serviceType={ServiceType.DiscoveryProvider}
+          version={discoveryNode?.version}
+          endpoint={discoveryNode?.endpoint}
+          operatorWallet={discoveryNode?.owner}
+          delegateOwnerWallet={discoveryNode?.delegateOwnerWallet}
+          isOwner={isOwner}
+          isDeregistered={discoveryNode?.isDeregistered}
+          isLoading={status === Status.Loading}
+        />
+      </div>
+      {discoveryNode ? (
+        <div className={clsx(styles.section, styles.chart)}>
+          <IndividualServiceApiCallsChart node={discoveryNode?.endpoint} />
+          <IndividualServiceUniqueUsersChart node={discoveryNode?.endpoint} />
+        </div>
+      ) : null}
+    </>
   )
 }
 
-type NodeProps = {} & RouteComponentProps<{ spID: string }>
-const Node: React.FC<NodeProps> = (props: NodeProps) => {
-  const {
-    location: { pathname },
-    match: { params }
-  } = props
-  const spID = parseInt(params.spID)
+const Node = () => {
+  const { spID: spIDParam } = useParams<{ spID: string }>()
+  const spID = parseInt(spIDParam, 10)
   const { wallet: accountWallet } = useAccount()
-
-  const isDiscovery = !!matchPath(pathname, {
-    path: SERVICES_DISCOVERY_PROVIDER_NODE
-  })
+  const isDiscovery = !!useMatch(SERVICES_DISCOVERY_PROVIDER_NODE)
 
   return (
     <Page
@@ -107,7 +110,7 @@ const Node: React.FC<NodeProps> = (props: NodeProps) => {
       defaultPreviousPageRoute={SERVICES}
     >
       {isDiscovery ? (
-        <DiscoveryProvider spID={spID} accountWallet={accountWallet} />
+        <DiscoveryNode spID={spID} accountWallet={accountWallet} />
       ) : (
         <ContentNode spID={spID} accountWallet={accountWallet} />
       )}

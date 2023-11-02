@@ -5,7 +5,7 @@
 # Install nvm and required node versions
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
 source ~/.nvm/nvm.sh
-source ~/.bashrc
+[ -f "~/.bashrc" ] && source ~/.bashrc
 for dir in contracts eth-contracts packages/identity-service packages/libs; do
     cd "$PROTOCOL_DIR/$dir"
     nvm install

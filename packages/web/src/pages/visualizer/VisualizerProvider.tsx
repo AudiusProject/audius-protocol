@@ -176,6 +176,7 @@ const Visualizer = ({
           artistUserId={user.user_id}
           isVerified={user.is_verified}
           isTrackUnlisted={track.is_unlisted}
+          isPremium={track.is_premium}
           onClickTrackTitle={() => {
             goToTrackPage()
             onClose()

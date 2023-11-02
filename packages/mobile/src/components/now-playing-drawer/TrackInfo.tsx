@@ -2,14 +2,18 @@ import {
   usePremiumContentAccess,
   type Nullable,
   type Track,
-  type User
+  type User,
+  playerSelectors
 } from '@audius/common'
 import { TouchableOpacity, View } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import { LockedStatusBadge, Text } from 'app/components/core'
 import UserBadges from 'app/components/user-badges/UserBadges'
 import { makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
+
+const { getPreviewing } = playerSelectors
 
 const messages = {
   preview: 'PREVIEW'
@@ -22,8 +26,12 @@ const useStyles = makeStyles(({ typography, spacing }) => ({
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing(2),
+    justifyContent: 'center',
+    columnGap: spacing(2),
     flexWrap: 'wrap'
+  },
+  previewBadge: {
+    marginBottom: spacing(2)
   },
   trackTitle: {
     textAlign: 'center'
@@ -54,10 +62,11 @@ export const TrackInfo = ({
 }: TrackInfoProps) => {
   const styles = useStyles()
   const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const isPreviewing = useSelector(getPreviewing)
   const shouldShowPreviewLock =
     track?.premium_conditions &&
     'usdc_purchase' in track.premium_conditions &&
-    !doesUserHaveAccess
+    (!doesUserHaveAccess || isPreviewing)
 
   return (
     <View style={styles.root}>
@@ -71,13 +80,15 @@ export const TrackInfo = ({
               {track.title}
             </Text>
             {shouldShowPreviewLock ? (
-              <LockedStatusBadge
-                variant='purchase'
-                locked
-                coloredWhenLocked
-                iconSize='small'
-                text={messages.preview}
-              />
+              <View style={styles.previewBadge}>
+                <LockedStatusBadge
+                  variant='purchase'
+                  locked
+                  coloredWhenLocked
+                  iconSize='small'
+                  text={messages.preview}
+                />
+              </View>
             ) : null}
           </TouchableOpacity>
           <TouchableOpacity onPress={onPressArtist}>

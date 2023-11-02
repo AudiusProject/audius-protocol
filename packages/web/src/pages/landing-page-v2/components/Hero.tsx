@@ -121,13 +121,13 @@ export const Hero = (props: HeroProps) => {
         <Parallax
           className={cn(styles.background, styles.fgContainer)}
           translateY={[51, -10]}
-          translateX={[64, 64]}
+          translateX={[44, 44]}
         >
           <img
             src={HeroForeground}
             className={styles.foregroundImg}
             onLoad={onImgSet}
-            alt='Foreground Audius Mobile App'
+            alt='Foreground Audius Web and Mobile Product Shot'
           />
         </Parallax>
         <Parallax
