@@ -1,9 +1,8 @@
 import type { CSSProperties } from 'react'
 
-import type { BorderOptions } from 'foundations/color'
+import type { BackgroundColors, BorderColors } from 'foundations'
 import type { CornerRadiusOptions } from 'foundations/corner-radius'
 import type { ShadowOptions } from 'foundations/shadows'
-import type { BackgroundColorValue } from 'types/colors'
 
 export type PaperProps = {
   /** Height */
@@ -15,13 +14,13 @@ export type PaperProps = {
    * Background Color
    * @default default
    */
-  backgroundColor?: BackgroundColorValue
+  backgroundColor?: BackgroundColors
 
   /**
    * Border type. If not provided, no border will be used.
    * @default default
    */
-  border?: BorderOptions
+  border?: BorderColors
 
   /**
    * Border Radius
