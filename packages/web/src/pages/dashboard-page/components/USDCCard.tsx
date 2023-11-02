@@ -6,6 +6,7 @@ import {
   WithdrawUSDCModalPages,
   formatCurrencyBalance,
   formatUSDCWeiToFloorCentsNumber,
+  useUSDCManualTransferModal,
   useWithdrawUSDCModal
 } from '@audius/common'
 import {
@@ -34,15 +35,24 @@ const LEARN_MORE_LINK =
 const messages = {
   usdc: 'USDC',
   earn: 'Earn USDC by selling your music',
+  buyAndSell: 'Buy and sell music with USDC',
   learnMore: 'Learn More',
-  withdraw: 'Withdraw Funds',
+  withdraw: 'Withdraw',
+  addFunds: 'Add Funds',
   salesSummary: 'Sales Summary',
   withdrawalHistory: 'Withdrawal History'
 }
 
-export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
+export const USDCCard = ({
+  balance,
+  isArtist
+}: {
+  balance: BNUSDC
+  isArtist: boolean
+}) => {
   const goToRoute = useGoToRoute()
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
+  const { onOpen: openUsdcManualTransferModal } = useUSDCManualTransferModal()
 
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
@@ -53,25 +63,36 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
     window.open(LEARN_MORE_LINK, '_blank')
   }, [])
 
-  const menuItems: PopupMenuItem[] = [
-    {
-      text: messages.salesSummary,
-      onClick: () => goToRoute(SALES_PAGE)
-    },
+  const menuItems = [
+    isArtist
+      ? {
+          text: messages.salesSummary,
+          onClick: () => goToRoute(SALES_PAGE)
+        }
+      : null,
     {
       text: messages.withdrawalHistory,
       onClick: () => goToRoute(WITHDRAWALS_PAGE)
     }
-  ]
+  ].filter(Boolean) as PopupMenuItem[]
 
-  const handleClickWithdraw = () => {
+  const handleWithdraw = () => {
     openWithdrawUSDCModal({
       page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS
     })
     track(
       make({
         eventName: Name.WITHDRAW_USDC_MODAL_OPENED,
-        currentBalance: balanceCents
+        currentBalance: balanceCents / 100
+      })
+    )
+  }
+
+  const handleAddFunds = () => {
+    openUsdcManualTransferModal()
+    track(
+      make({
+        eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
       })
     )
   }
@@ -103,7 +124,9 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
           </Text>
         </div>
         <div className={styles.usdcInfo}>
-          <Text color='staticWhite'>{messages.earn}</Text>
+          <Text color='staticWhite'>
+            {isArtist ? messages.earn : messages.buyAndSell}
+          </Text>
           <PlainButton
             onClick={handleLearnMore}
             iconLeft={IconQuestionCircle}
@@ -119,9 +142,18 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
             variant={ButtonType.SECONDARY}
             fullWidth
             iconLeft={IconWithdraw}
-            onClick={handleClickWithdraw}
+            onClick={handleWithdraw}
           >
             {messages.withdraw}
+          </Button>
+        </div>
+        <div className={styles.addFundsButton}>
+          <Button
+            variant={ButtonType.SECONDARY}
+            fullWidth
+            onClick={handleAddFunds}
+          >
+            {messages.addFunds}
           </Button>
         </div>
         <PopupMenu

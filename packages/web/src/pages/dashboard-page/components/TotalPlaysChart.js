@@ -9,7 +9,7 @@ import { Line } from 'react-chartjs-2'
 import DropdownInput from 'components/data-entry/DropdownInput'
 import Dropdown from 'components/navigation/Dropdown'
 
-import { messages } from '../ArtistDashboardPage'
+import { messages } from '../DashboardPage'
 
 import styles from './TotalPlaysChart.module.css'
 

@@ -342,6 +342,7 @@ export enum Name {
   BUY_USDC_RECOVERY_IN_PROGRESS = 'Buy USDC: Recovery In Progress',
   BUY_USDC_RECOVERY_SUCCESS = 'Buy USDC: Recovery Success',
   BUY_USDC_RECOVERY_FAILURE = 'Buy USDC: Recovery Failure',
+  BUY_USDC_ADD_FUNDS_MANUALLY = 'Buy USDC: Add Funds Manually',
 
   // Withdraw USDC
   WITHDRAW_USDC_MODAL_OPENED = 'Withdraw USDC: Modal Opened',
@@ -1670,9 +1671,14 @@ type BuyUSDCRecoveryFailure = {
   error: string
 }
 
+type BuyUSDCAddFundsManually = {
+  eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
+}
+
 // Withdraw USDC
 
 export type WithdrawUSDCEventFields = {
+  /** Balance in dollars */
   currentBalance: number
 }
 
@@ -2138,6 +2144,7 @@ export type AllTrackingEvents =
   | BuyUSDCRecoveryInProgress
   | BuyUSDCRecoverySuccess
   | BuyUSDCRecoveryFailure
+  | BuyUSDCAddFundsManually
   | WithdrawUSDCModalOpened
   | WithdrawUSDCAddressPasted
   | WithdrawUSDCFormError

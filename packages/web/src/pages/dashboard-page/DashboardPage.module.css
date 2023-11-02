@@ -17,14 +17,19 @@
   flex-wrap: wrap;
 }
 
-.topSection > * {
+.topSection.isArtist > * {
   flex: 1;
 }
 
 /* Stat Tile Styles  */
 
 .statsContainer {
-  margin: 0 -10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 10px;
 }
 
 .statTileContainer {
@@ -38,7 +43,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin: 6px 10px;
+  margin: 6px 0px;
 }
 
 .statValue {
@@ -78,4 +83,5 @@
 .tracksTableWrapper {
   margin-top: 50px;
   min-height: 518px;
+  width: 100%;
 }
