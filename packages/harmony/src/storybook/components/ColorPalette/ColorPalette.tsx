@@ -1,7 +1,5 @@
 import { Fragment } from 'react'
 
-import styled from '@emotion/styled'
-
 import { Divider, Flex, Text } from 'components'
 import { PrimitiveColors, primitiveTheme } from 'foundations/color'
 import type { Theme } from 'foundations/theme/types'
@@ -28,8 +26,6 @@ const messages = {
   specialDesc:
     'Special is a unique bucket of primitive accent, success, warning, gradient, and background colors.'
 }
-const SectionInfo = styled(Flex)({ flex: '0 0 400px' })
-const SwatchContainer = styled(Flex)({ flex: '1 1 0' })
 
 type ColorPaletteProps = {
   theme?: Theme
@@ -48,15 +44,15 @@ const ColorRow = ({ colors, themeKey }: ColorRowProps) => {
 
   return (
     <Flex gap='4xl'>
-      <SectionInfo direction='column' gap='l'>
+      <Flex flex='0 0 400px' direction='column' gap='l'>
         <Text variant='body' strength='strong'>
           {messages[themeKey]}
         </Text>
         <Text variant='body' strength='weak'>
           {messages[`${themeKey}Desc`]}
         </Text>
-      </SectionInfo>
-      <SwatchContainer alignItems='flex-start' gap='s' wrap='wrap'>
+      </Flex>
+      <Flex flex='1 1 0' alignItems='flex-start' gap='s' wrap='wrap'>
         {colorNames.map((name) => (
           <ColorSwatch
             key={`colorTile-${name}`}
@@ -64,23 +60,25 @@ const ColorRow = ({ colors, themeKey }: ColorRowProps) => {
             color={colors[name as keyof typeof colors]}
           />
         ))}
-      </SwatchContainer>
+      </Flex>
     </Flex>
   )
 }
-
-const PaletteContainer = styled(Flex)(({ theme }) => ({
-  maxWidth: '1080px',
-  margin: 'auto',
-  paddingInline: theme.spacing.unit8
-}))
 
 export const ColorPalette = ({ theme = 'day' }: ColorPaletteProps) => {
   const colors = primitiveTheme[theme]
   const themeKeys = Object.keys(colors) as ThemeKey[]
 
   return (
-    <PaletteContainer direction='column' gap='3xl'>
+    <Flex
+      css={{
+        maxWidth: '1080px',
+        margin: 'auto'
+      }}
+      direction='column'
+      gap='3xl'
+      ph='unit8'
+    >
       <Text variant='display' size='xl'>
         {messages.title}
       </Text>
@@ -93,6 +91,6 @@ export const ColorPalette = ({ theme = 'day' }: ColorPaletteProps) => {
           <ColorRow themeKey={key} colors={colors[key]} />
         </Fragment>
       ))}
-    </PaletteContainer>
+    </Flex>
   )
 }

@@ -2,7 +2,7 @@ import styled from '@emotion/styled'
 
 import { Box, Flex, Text } from 'components'
 
-const Swatch = styled(Flex)(({ theme }) => ({
+const SwatchRoot = styled(Flex)(({ theme }) => ({
   flex: '1 1 96px',
   maxWidth: '112px',
   background: theme.color.background.white,
@@ -27,7 +27,7 @@ type ColorSwatchProps = {
 
 export const ColorSwatch = ({ color, desc, name }: ColorSwatchProps) => {
   return (
-    <Swatch direction='column' gap='s' border='strong' borderRadius='xl'>
+    <SwatchRoot direction='column' gap='s' border='strong' borderRadius='xl'>
       <TileColor style={{ background: color }} />
       <Flex direction='column' gap='xs' p='s'>
         {name ? (
@@ -44,6 +44,6 @@ export const ColorSwatch = ({ color, desc, name }: ColorSwatchProps) => {
           {color}
         </InfoText>
       </Flex>
-    </Swatch>
+    </SwatchRoot>
   )
 }
