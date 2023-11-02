@@ -1,10 +1,10 @@
-import { useCallback, useMemo, useEffect } from 'react'
+import { useCallback, useMemo } from 'react'
 
-import { Name, createUserBankIfNeeded, solanaSelectors } from '@audius/common'
+import { Name, useCreateUserbankIfNeeded } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { View } from 'react-native'
 import QRCode from 'react-qr-code'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import IconError from 'app/assets/images/iconError.svg'
@@ -23,8 +23,6 @@ import { useColor } from 'app/utils/theme'
 
 import { AddressTile } from '../core/AddressTile'
 
-const { getFeePayer } = solanaSelectors
-
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
 
@@ -37,19 +35,6 @@ const messages = {
   goBack: 'Go Back',
   learnMore: 'Learn More',
   copied: 'Copied to Clipboard!'
-}
-
-const useCreateUserbankIfNeeded = () => {
-  const feePayerOverride = useSelector(getFeePayer)
-
-  useEffect(() => {
-    if (!feePayerOverride) return
-    createUserBankIfNeeded(audiusBackendInstance, {
-      recordAnalytics: track,
-      mint: 'usdc',
-      feePayerOverride
-    })
-  }, [feePayerOverride])
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -114,7 +99,11 @@ export const USDCManualTransferDrawer = () => {
   const { toast } = useToast()
   const { onPress: onPressLearnMore } = useLink(USDCLearnMore)
   const neutral = useColor('neutral')
-  useCreateUserbankIfNeeded()
+  useCreateUserbankIfNeeded({
+    recordAnalytics: track,
+    audiusBackendInstance,
+    mint: 'usdc'
+  })
 
   const { value: USDCUserBank } = useAsync(async () => {
     const USDCUserBankPubKey = await getUSDCUserBank()

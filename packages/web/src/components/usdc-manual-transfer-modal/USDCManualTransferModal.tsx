@@ -1,16 +1,14 @@
-import { useCallback, useContext, useEffect } from 'react'
+import { useCallback, useContext } from 'react'
 
 import {
   Name,
   useUSDCManualTransferModal,
-  solanaSelectors,
-  createUserBankIfNeeded
+  useCreateUserbankIfNeeded
 } from '@audius/common'
 import { Button, ButtonType } from '@audius/harmony'
 import { IconError, LogoUSDC, ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
 import QRCode from 'react-qr-code'
-import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { Icon } from 'components/Icon'
@@ -28,8 +26,6 @@ import zIndex from 'utils/zIndex'
 
 import styles from './USDCManualTransferModal.module.css'
 
-const { getFeePayer } = solanaSelectors
-
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
 
@@ -46,21 +42,12 @@ const messages = {
   copied: 'Copied to Clipboard!'
 }
 
-const useCreateUserbankIfNeeded = () => {
-  const feePayerOverride = useSelector(getFeePayer)
-
-  useEffect(() => {
-    if (!feePayerOverride) return
-    createUserBankIfNeeded(audiusBackendInstance, {
-      recordAnalytics: track,
-      mint: 'usdc',
-      feePayerOverride
-    })
-  }, [feePayerOverride])
-}
-
 export const USDCManualTransferModal = () => {
-  useCreateUserbankIfNeeded()
+  useCreateUserbankIfNeeded({
+    recordAnalytics: track,
+    audiusBackendInstance,
+    mint: 'usdc'
+  })
   const { isOpen, onClose } = useUSDCManualTransferModal()
   const { toast } = useContext(ToastContext)
   const mobile = isMobile()
