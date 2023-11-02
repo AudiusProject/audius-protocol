@@ -124,7 +124,9 @@ export const USDCCard = ({
           </Text>
         </div>
         <div className={styles.usdcInfo}>
-          <Text color='staticWhite'>{isArtist ? messages.earn : messages.buyAndSell}</Text>
+          <Text color='staticWhite'>
+            {isArtist ? messages.earn : messages.buyAndSell}
+          </Text>
           <PlainButton
             onClick={handleLearnMore}
             iconLeft={IconQuestionCircle}

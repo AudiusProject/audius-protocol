@@ -184,7 +184,7 @@ export const DashboardPage = () => {
         />
       </div>
     )
-  }, [account, onClickRow, stats, tracks])
+  }, [account, onClickRow, tracks])
 
   return (
     <Page
