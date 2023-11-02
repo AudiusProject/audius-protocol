@@ -91,8 +91,7 @@ export const USDCCard = ({
     openUsdcManualTransferModal()
     track(
       make({
-        eventName: Name.WITHDRAW_USDC_MODAL_OPENED,
-        currentBalance: balanceCents
+        eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
       })
     )
   }

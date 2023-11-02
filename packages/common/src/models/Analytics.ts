@@ -1671,6 +1671,10 @@ type BuyUSDCRecoveryFailure = {
   error: string
 }
 
+type BuyUSDCAddFundsManually = {
+  eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
+}
+
 // Withdraw USDC
 
 export type WithdrawUSDCEventFields = {
@@ -2139,6 +2143,7 @@ export type AllTrackingEvents =
   | BuyUSDCRecoveryInProgress
   | BuyUSDCRecoverySuccess
   | BuyUSDCRecoveryFailure
+  | BuyUSDCAddFundsManually
   | WithdrawUSDCModalOpened
   | WithdrawUSDCAddressPasted
   | WithdrawUSDCFormError

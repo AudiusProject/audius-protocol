@@ -17,6 +17,7 @@ import Header from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import { useGoToRoute } from 'hooks/useGoToRoute'
+import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import lazyWithPreload from 'utils/lazyWithPreload'
 
 import styles from './DashboardPage.module.css'
@@ -87,6 +88,7 @@ export const DashboardPage = () => {
     statuses.push(balanceStatus)
   }
   const status = combineStatuses(statuses)
+  const isUSDCEnabled = useIsUSDCEnabled()
 
   const header = <Header primary={messages.title} />
 
@@ -172,11 +174,6 @@ export const DashboardPage = () => {
     const trackCount = account?.track_count || 0
     if (!account || !(trackCount > 0)) return null
 
-    const statTiles: ReactNode[] = []
-    each(stats, (stat, title) =>
-      statTiles.push(<StatTile key={title} title={title} value={stat} />)
-    )
-
     const dataSource = formatMetadata(tracks)
     return (
       <div className={styles.tracksTableWrapper}>
@@ -213,7 +210,9 @@ export const DashboardPage = () => {
               handle={account.handle}
               name={account.name}
             />
-            <USDCCard balance={balance} isArtist={account.track_count > 0} />
+            {isUSDCEnabled ? (
+              <USDCCard balance={balance} isArtist={account.track_count > 0} />
+            ) : null}
           </div>
           <div className={styles.sectionContainer}>
             {renderChart()}
