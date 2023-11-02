@@ -12,7 +12,6 @@ export const BASE_URL = `${process.env.VITE_PUBLIC_PROTOCOL || 'https:'}//${
 export const BASE_GA_URL = `${process.env.VITE_PUBLIC_PROTOCOL || 'https:'}//${
   process.env.VITE_GA_HOSTNAME || 'audius.co'
 }`
-export const BASENAME = process.env.PUBLIC_URL
 
 // External Routes
 export const PRIVACY_POLICY = '/legal/privacy-policy'
@@ -428,7 +427,7 @@ export const getPathname = (
   if (USE_HASH_ROUTING && 'host' in location) {
     return location.hash.replace('#', '')
   }
-  return BASENAME ? location.pathname.replace(BASENAME, '') : location.pathname
+  return location.pathname
 }
 
 /**
@@ -477,10 +476,10 @@ export const pushWindowRoute = (route: string) => {
 
   if (route === AUDIUS_SIGN_UP_LINK) {
     recordGoToSignup(() => {
-      window.location.href = `${BASENAME}${routeToPush}`
+      window.location.href = routeToPush
     })
   } else {
-    window.location.href = `${BASENAME}${routeToPush}`
+    window.location.href = routeToPush
   }
 }
 

@@ -15,8 +15,6 @@ import {
 
 import { AppContextProvider } from './AppContextProvider'
 
-const BASENAME = process.env.PUBLIC_URL
-
 const PrivacyPolicyPage = lazy(
   () => import('pages/privacy-policy-page/PrivacyPolicyPage')
 )
@@ -96,7 +94,7 @@ const PublicSite = ({ isMobile, setRenderPublicSite }: PublicSiteProps) => {
 
       <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
         <AppContextProvider>
-          <Router basename={BASENAME}>
+          <Router>
             <Route
               exact
               path={'/legal/terms-of-use'}
