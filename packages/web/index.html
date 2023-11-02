@@ -54,12 +54,18 @@
     <meta property="twitter:app:name:iphone" content="Audius Music" />
     <meta property="twitter:app:name:googleplay" content="Audius Music" />
 
+    <script type="module">
+      import { Buffer } from 'buffer'
+      import processBrowser from 'process/browser'
+      window.Buffer = Buffer
+      window.process = { ...processBrowser, env: process.env }
+    </script>
+
     <script
       defer
       onLoad="window.web3Loaded = true; window.dispatchEvent(new CustomEvent('WEB3_LOADED'))"
       src="/scripts/web3.min.js"
     ></script>
-    <script defer src="/scripts/jimp.min.js"></script>
 
     <script async type="text/javascript">
       // Account recovery
