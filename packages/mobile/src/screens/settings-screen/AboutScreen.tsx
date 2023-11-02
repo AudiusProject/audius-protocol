@@ -4,7 +4,7 @@ import {
   AUDIUS_CONTACT_EMAIL_LINK,
   AUDIUS_DISCORD_LINK,
   AUDIUS_HELP_LINK,
-  AUDIUS_INSTAMGRAM_LINK,
+  AUDIUS_INSTAGRAM_LINK,
   AUDIUS_TWITTER_LINK,
   PRIVACY_POLICY,
   TERMS_OF_SERVICE
@@ -87,7 +87,7 @@ export const AboutScreen = () => {
         <SettingsRow url={AUDIUS_TWITTER_LINK}>
           <SettingsRowLabel label={messages.twitter} icon={IconTwitter} />
         </SettingsRow>
-        <SettingsRow url={AUDIUS_INSTAMGRAM_LINK}>
+        <SettingsRow url={AUDIUS_INSTAGRAM_LINK}>
           <SettingsRowLabel label={messages.instagram} icon={IconInstagram} />
         </SettingsRow>
         <SettingsRow url={AUDIUS_CONTACT_EMAIL_LINK}>
