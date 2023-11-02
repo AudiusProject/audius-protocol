@@ -49,6 +49,19 @@ export default defineConfig(({ mode }) => {
       svgr({
         include: '**/*.svg'
       }),
+      // Import workerscript as raw string
+      // Could use ?raw suffix but it breaks on mobile
+      {
+        transform(code, id) {
+          if (/\.workerscript$/.test(id)) {
+            const str = JSON.stringify(code)
+
+            return {
+              code: `export default ${str}`
+            }
+          }
+        }
+      },
       react(),
       ...((analyze
         ? [

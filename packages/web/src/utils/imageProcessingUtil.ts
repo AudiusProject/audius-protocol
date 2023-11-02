@@ -5,7 +5,7 @@ import generatePlaylistArtworkWorkerFile from 'workers/generatePlaylistArtwork.w
 import gifPreviewWorkerFile from 'workers/gifPreview.worker.js'
 import resizeImageWorkerFile from 'workers/resizeImage.worker.js'
 // @ts-ignore - jimp is a raw-loaded to have workers called directly with it.
-import jimp from 'workers/utils/jimp.min.workerscript?raw'
+import jimp from 'workers/utils/jimp.min.workerscript'
 
 const averageRgbWorker = new WebWorker(averageRgbWorkerFile, false, [jimp])
 const dominantColorWorker = new WebWorker(dominantColorWorkerFile, false, [
