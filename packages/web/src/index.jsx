@@ -9,6 +9,8 @@ import './index.css'
 // when running in dev mode.
 import Root from './root'
 
+window.global ||= window
+
 const container = document.getElementById('root')
 if (container) {
   const root = createRoot(container)
