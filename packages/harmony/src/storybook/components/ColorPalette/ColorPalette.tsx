@@ -6,8 +6,6 @@ import type { Theme } from 'foundations/theme/types'
 
 import { ColorSwatch } from '../ColorSwatch'
 
-import styles from './ColorPalette.module.css'
-
 const messages = {
   title: 'Primitives',
   description:
@@ -46,7 +44,7 @@ const ColorRow = ({ colors, themeKey }: ColorRowProps) => {
 
   return (
     <Flex gap='4xl'>
-      <Flex className={styles.colorSectionInfo} direction='column' gap='l'>
+      <Flex flex='0 0 400px' direction='column' gap='l'>
         <Text variant='body' strength='strong'>
           {messages[themeKey]}
         </Text>
@@ -54,12 +52,7 @@ const ColorRow = ({ colors, themeKey }: ColorRowProps) => {
           {messages[`${themeKey}Desc`]}
         </Text>
       </Flex>
-      <Flex
-        className={styles.colorTileContainer}
-        alignItems='flex-start'
-        gap='s'
-        wrap='wrap'
-      >
+      <Flex flex='1 1 0' alignItems='flex-start' gap='s' wrap='wrap'>
         {colorNames.map((name) => (
           <ColorSwatch
             key={`colorTile-${name}`}
@@ -77,7 +70,15 @@ export const ColorPalette = ({ theme = 'day' }: ColorPaletteProps) => {
   const themeKeys = Object.keys(colors) as ThemeKey[]
 
   return (
-    <Flex className={styles.paletteContainer} direction='column' gap='3xl'>
+    <Flex
+      css={{
+        maxWidth: '1080px',
+        margin: 'auto'
+      }}
+      direction='column'
+      gap='3xl'
+      ph='unit8'
+    >
       <Text variant='display' size='xl'>
         {messages.title}
       </Text>
