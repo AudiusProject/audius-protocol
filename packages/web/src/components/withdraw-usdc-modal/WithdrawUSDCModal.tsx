@@ -99,7 +99,7 @@ const TrackFormErrors = ({ currentBalance }: { currentBalance: number }) => {
           eventName: Name.WITHDRAW_USDC_FORM_ERROR,
           error: addressError,
           value: address,
-          currentBalance
+          currentBalance: currentBalance / 100
         })
       )
     }
