@@ -5,6 +5,7 @@ import {
   Button,
   ButtonType,
   Flex,
+  IconArrowLeft,
   IconArrowRight,
   Text,
   TextInput
@@ -22,6 +23,7 @@ import { ExternalLink } from 'components/link'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import {
   PRIVACY_POLICY,
+  SIGN_UP_EMAIL_PAGE,
   SIGN_UP_HANDLE_PAGE,
   SIGN_UP_START_PAGE,
   TERMS_OF_SERVICE
@@ -36,6 +38,9 @@ import {
   getNumberRequirementStatus,
   isRequirementsFulfilled
 } from '../utils/passwordRequirementUtils'
+import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithAudiusValues'
+import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
+import { IconButton } from '@audius/stems'
 
 const messages = {
   createYourPassword: 'Create Your Password',
@@ -57,7 +62,8 @@ const messages = {
     "By clicking continue, you state you have read and agree to Audius' ",
   termsOfService: 'Terms of Service',
   and: ' and ',
-  privacyPolicy: 'Privacy Policy.'
+  privacyPolicy: 'Privacy Policy.',
+  goBack: 'Go back'
 }
 
 const initialValues = {
@@ -80,6 +86,10 @@ export const CreatePasswordPage = () => {
       navigate(SIGN_UP_START_PAGE)
     }
   }, [emailField.value, navigate])
+
+  const handleClickBackIcon = useCallback(() => {
+    navigate(SIGN_UP_EMAIL_PAGE)
+  }, [])
 
   const handleSubmit = useCallback(
     async ({ password, confirmPassword }: CreatePasswordValues) => {
@@ -223,142 +233,156 @@ export const CreatePasswordPage = () => {
   const isValid = !hasPasswordError && !hasConfirmPasswordError
 
   return (
-    // TODO: Remove all props and styles expect `direction='column'` when this page is plugged into sign up modal.
-    <Flex
-      w={480}
-      h={'calc(100vh - 88px)'}
-      p={'3xl'}
-      className={styles.contentContainer}
-      direction='column'
-    >
-      <Box>
-        <Box mt='xl'>
-          <Text color='heading' size='l' strength='default' variant='heading'>
-            {messages.createYourPassword}
-          </Text>
-        </Box>
-        <Box mt='l'>
-          <Text color='default' size='l' variant='body'>
-            {messages.description}
-          </Text>
-        </Box>
-        <Box mt='2xl'>
-          <Text variant='label' size='xs'>
-            {messages.yourEmail}
-          </Text>
-          <Text variant='body' size='m'>
-            {emailField.value}
-          </Text>
-        </Box>
-      </Box>
-      <Box mt='l' className={styles.formOuterContainer}>
-        <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-          {({
-            values,
-            setFieldValue,
-            isSubmitting,
-            handleBlur: formikHandleBlur,
-            touched
-          }) => (
-            <Form style={{ height: '100%' }}>
-              <Flex direction='column' justifyContent='space-between' h='100%'>
-                <Box>
+    <Flex h='100%' alignItems='center' justifyContent='center'>
+      <PageWithAudiusValues>
+        <LeftContentContainer pv='2xl'>
+          <Box>
+            <IconButton
+              onClick={handleClickBackIcon}
+              aria-label={messages.goBack}
+              icon={<IconArrowLeft />}
+              className={styles.backIcon}
+            />
+            <Box mt='xl'>
+              <Text
+                color='heading'
+                size='l'
+                strength='default'
+                variant='heading'
+              >
+                {messages.createYourPassword}
+              </Text>
+            </Box>
+            <Box mt='l'>
+              <Text color='default' size='l' variant='body'>
+                {messages.description}
+              </Text>
+            </Box>
+            <Box mt='2xl'>
+              <Text variant='label' size='xs'>
+                {messages.yourEmail}
+              </Text>
+              <Text variant='body' size='m'>
+                {emailField.value}
+              </Text>
+            </Box>
+          </Box>
+          <Box mt='l' className={styles.formOuterContainer}>
+            <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+              {({
+                values,
+                setFieldValue,
+                isSubmitting,
+                handleBlur: formikHandleBlur,
+                touched
+              }) => (
+                <Form style={{ height: '100%' }}>
                   <Flex
                     direction='column'
-                    gap='l'
-                    className={styles.inputsContainer}
+                    justifyContent='space-between'
+                    h='100%'
                   >
-                    <TextInput
-                      name='password'
-                      type='password'
-                      autoFocus
-                      autoComplete='new-password'
-                      onChange={(e) => {
-                        setFieldValue('password', e.target.value)
-                        handlePasswordChange({
-                          password: e.target.value,
-                          confirmPassword: values.confirmPassword
-                        })
-                      }}
-                      onBlur={(e) => {
-                        formikHandleBlur(e)
-                        handlePasswordBlur(values)
-                      }}
-                      label={messages.passwordLabel}
-                      value={values.password}
-                      error={touched.password && hasPasswordError}
-                    />
-                    <TextInput
-                      name='confirmPassword'
-                      type='password'
-                      autoComplete='new-password'
-                      onChange={(e) => {
-                        setFieldValue('confirmPassword', e.target.value)
-                        handleConfirmPasswordChange({
-                          password: values.password,
-                          confirmPassword: e.target.value
-                        })
-                      }}
-                      onBlur={(e) => {
-                        formikHandleBlur(e)
-                        handleConfirmPasswordBlur(values)
-                      }}
-                      label={messages.confirmPasswordLabel}
-                      value={values.confirmPassword}
-                      error={touched.confirmPassword && hasConfirmPasswordError}
-                    />
-                  </Flex>
-                  <Flex mt='l' gap='l' direction='column'>
-                    {requirements.map((req) => (
-                      <CompletionChecklistItem
-                        key={req.key}
-                        status={req.status}
-                        label={req.label}
-                      />
-                    ))}
-                  </Flex>
-                </Box>
+                    <Box>
+                      <Flex
+                        direction='column'
+                        gap='l'
+                        className={styles.inputsContainer}
+                      >
+                        <TextInput
+                          name='password'
+                          type='password'
+                          autoFocus
+                          autoComplete='new-password'
+                          onChange={(e) => {
+                            setFieldValue('password', e.target.value)
+                            handlePasswordChange({
+                              password: e.target.value,
+                              confirmPassword: values.confirmPassword
+                            })
+                          }}
+                          onBlur={(e) => {
+                            formikHandleBlur(e)
+                            handlePasswordBlur(values)
+                          }}
+                          label={messages.passwordLabel}
+                          value={values.password}
+                          error={touched.password && hasPasswordError}
+                        />
+                        <TextInput
+                          name='confirmPassword'
+                          type='password'
+                          autoComplete='new-password'
+                          onChange={(e) => {
+                            setFieldValue('confirmPassword', e.target.value)
+                            handleConfirmPasswordChange({
+                              password: values.password,
+                              confirmPassword: e.target.value
+                            })
+                          }}
+                          onBlur={(e) => {
+                            formikHandleBlur(e)
+                            handleConfirmPasswordBlur(values)
+                          }}
+                          label={messages.confirmPasswordLabel}
+                          value={values.confirmPassword}
+                          error={
+                            touched.confirmPassword && hasConfirmPasswordError
+                          }
+                        />
+                      </Flex>
+                      <Flex mt='l' gap='l' direction='column'>
+                        {requirements.map((req) => (
+                          <CompletionChecklistItem
+                            key={req.key}
+                            status={req.status}
+                            label={req.label}
+                          />
+                        ))}
+                      </Flex>
+                    </Box>
 
-                <Flex direction='column' gap='l'>
-                  <Text
-                    color='default'
-                    size='s'
-                    strength='default'
-                    variant='body'
-                  >
-                    {messages.agreeTo}
-                    <ExternalLink
-                      variant='body'
-                      color='accentPurple'
-                      size='small'
-                      to={TERMS_OF_SERVICE}
-                    >
-                      {messages.termsOfService}
-                    </ExternalLink>
-                    {messages.and}
-                    <ExternalLink
-                      to={PRIVACY_POLICY}
-                      variant='body'
-                      color='accentPurple'
-                      size='small'
-                    >
-                      {messages.privacyPolicy}
-                    </ExternalLink>
-                  </Text>
-                  <Button
-                    variant={ButtonType.PRIMARY}
-                    disabled={isSubmitting || !isValid}
-                    type='submit'
-                    iconRight={IconArrowRight}
-                  >
-                    {messages.continue}
-                  </Button>
-                </Flex>
-              </Flex>
-            </Form>
-          )}
-        </Formik>
-      </Box>
+                    <Flex direction='column' gap='l'>
+                      <Text
+                        color='default'
+                        size='s'
+                        strength='default'
+                        variant='body'
+                      >
+                        {messages.agreeTo}
+                        <ExternalLink
+                          variant='body'
+                          color='accentPurple'
+                          size='small'
+                          to={TERMS_OF_SERVICE}
+                        >
+                          {messages.termsOfService}
+                        </ExternalLink>
+                        {messages.and}
+                        <ExternalLink
+                          to={PRIVACY_POLICY}
+                          variant='body'
+                          color='accentPurple'
+                          size='small'
+                        >
+                          {messages.privacyPolicy}
+                        </ExternalLink>
+                      </Text>
+                      <Button
+                        variant={ButtonType.PRIMARY}
+                        disabled={isSubmitting || !isValid}
+                        type='submit'
+                        iconRight={IconArrowRight}
+                      >
+                        {messages.continue}
+                      </Button>
+                    </Flex>
+                  </Flex>
+                </Form>
+              )}
+            </Formik>
+          </Box>
+        </LeftContentContainer>
+      </PageWithAudiusValues>
     </Flex>
   )
 }

@@ -17,6 +17,7 @@ import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithA
 import { SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './SignInPage.module.css'
+import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
 
 const messages = {
   title: 'Sign Into Audius',
@@ -31,17 +32,7 @@ export const SignInPageDesktop = () => {
   return (
     <Flex h='100%' alignItems='center' justifyContent='center'>
       <PageWithAudiusValues>
-        <Flex
-          className={styles.root}
-          h='100%'
-          w={480}
-          // want 80px but don't have var for it
-          pv='4xl'
-          ph='2xl'
-          direction='column'
-          gap='2xl'
-          justifyContent='space-between'
-        >
+        <LeftContentContainer gap='2xl' justifyContent='space-between'>
           {/* TODO: confirm 40px spacing value */}
           <Flex direction='column' gap='2xl' alignItems='center'>
             <PreloadImage
@@ -93,7 +84,7 @@ export const SignInPageDesktop = () => {
             to={SIGN_UP_PAGE}
             text={messages.createAccount}
           />{' '}
-        </Flex>
+        </LeftContentContainer>
       </PageWithAudiusValues>
     </Flex>
   )
