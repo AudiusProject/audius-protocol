@@ -14,7 +14,7 @@ const Paper = ({ className, children, onClick = () => {} }: PaperProps) => {
     <div
       onClick={onClick}
       className={clsx(styles.container, {
-        [className!]: !!className
+        [className!]: !!className,
       })}
     >
       {children}

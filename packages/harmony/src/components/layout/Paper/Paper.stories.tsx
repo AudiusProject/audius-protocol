@@ -5,6 +5,11 @@ import { Paper } from './Paper'
 const meta: Meta<typeof Paper> = {
   title: 'Components/Layout/Paper',
   component: Paper,
+  parameters: {
+    controls: {
+      include: ['w', 'h', 'backgroundColor', 'border', 'borderRadius', 'shadow']
+    }
+  },
   argTypes: {
     as: {
       table: { disable: true }

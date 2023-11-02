@@ -2,10 +2,15 @@ import styled from '@emotion/styled'
 
 import { toCSSVariableName } from 'utils/styles'
 
+import { Flex } from '../Flex'
+
 import type { PaperProps } from './types'
 
-/** Base layout component used as a building block for creating pages and other components. */
-export const Paper = styled.div(
+/**
+ * Base layout component used as a building block for creating pages
+ * and other components.
+ * */
+export const Paper = styled(Flex)(
   ({
     h,
     w,
