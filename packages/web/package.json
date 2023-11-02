@@ -58,7 +58,6 @@
     "@audius/stems": "*",
     "@audius/trpc-server": "*",
     "@coinbase/cbpay-js": "1.2.0",
-    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@fingerprintjs/fingerprintjs-pro": "3.5.6",
     "@hcaptcha/react-hcaptcha": "0.3.6",
     "@juggle/resize-observer": "^3.3.1",
@@ -187,6 +186,7 @@
   },
   "devDependencies": {
     "@electron/notarize": "2.1.0",
+    "@esbuild-plugins/node-globals-polyfill": "0.2.3",
     "@pinata/sdk": "1.1.13",
     "@redux-devtools/extension": "^3.2.4",
     "@testing-library/react": "12.0.0",
