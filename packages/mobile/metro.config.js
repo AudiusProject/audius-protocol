@@ -56,7 +56,7 @@ module.exports = (async () => {
     ],
     resolver: {
       assetExts: assetExts.filter((ext) => ext !== 'svg'),
-      sourceExts: [...sourceExts, 'svg', 'cjs', 'workerscript'],
+      sourceExts: [...sourceExts, 'svg', 'cjs', 'workerscript?raw'],
       extraNodeModules: {
         ...require('node-libs-react-native'),
         // Alias for 'src' to allow for absolute paths
