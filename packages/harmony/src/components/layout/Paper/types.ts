@@ -1,9 +1,10 @@
 import type { BackgroundColors, BorderColors } from 'foundations'
 import type { CornerRadiusOptions } from 'foundations/corner-radius'
 import type { ShadowOptions } from 'foundations/shadows'
+
 import type { FlexProps } from '../Flex/types'
 
-export type PaperProps = FlexProps & {
+export type PaperProps = Omit<FlexProps, 'shadow'> & {
   /**
    * Background Color
    * @default default
@@ -26,5 +27,5 @@ export type PaperProps = FlexProps & {
    * Elevation Shadow
    * @default mid
    */
-  shadow?: Omit<ShadowOptions, 'drop'>
+  shadow?: Exclude<ShadowOptions, 'drop'>
 }
