@@ -3,7 +3,7 @@
 import { logError } from '../logError'
 
 export default () => {
-  const script = `${process.env.PREACT_APP_HOST_PREFIX}/assets/scripts/jimp.min.js`
+  const script = `${process.env.PREACT_APP_HOST_PREFIX}/static/scripts/jimp.min.js`
   // eslint-disable-next-line
   importWorkerScript(script)
 
