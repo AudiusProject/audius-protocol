@@ -606,7 +606,7 @@ def process_transfer_instruction(
     if receiver_user_id is None:
         receiver_account_pubkey = Pubkey.from_string(receiver_account)
         receiver_account_info = solana_client_manager.get_account_info_json_parsed(receiver_account_pubkey)
-        receiver_account_owner = receiver_account_info.value.data.parsed["info"]["owner"]
+        receiver_account_owner = receiver_account_info.data.parsed["info"]["owner"]
         TransactionHistoryModel = (
             AudioTransactionsHistory if is_audio else USDCTransactionsHistory
         )
