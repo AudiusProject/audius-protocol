@@ -1,15 +1,9 @@
-import type { CSSProperties } from 'react'
-
 import type { BackgroundColors, BorderColors } from 'foundations'
 import type { CornerRadiusOptions } from 'foundations/corner-radius'
 import type { ShadowOptions } from 'foundations/shadows'
+import type { FlexProps } from '../Flex/types'
 
-export type PaperProps = {
-  /** Height */
-  h?: CSSProperties['height']
-  /** Width */
-  w?: CSSProperties['width']
-
+export type PaperProps = FlexProps & {
   /**
    * Background Color
    * @default default
@@ -32,5 +26,5 @@ export type PaperProps = {
    * Elevation Shadow
    * @default mid
    */
-  shadow?: ShadowOptions
+  shadow?: Omit<ShadowOptions, 'drop'>
 }
