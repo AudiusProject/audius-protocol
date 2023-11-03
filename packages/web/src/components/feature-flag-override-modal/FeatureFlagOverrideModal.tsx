@@ -44,7 +44,7 @@ export const FeatureFlagOverrideModal = () => {
   const hotkeyToggle = useDevModeHotkey(70 /* f */)
   const [hotkeyActive, setHotkeyActive] = useState(true)
   const [remoteInstanceLoaded, setRemoteInstanceLoaded] = useState(false)
-  const [_, setIsOpen] = useModalState('FeatureFlagOverride')
+  const [ignoredIsOpen, setIsOpen] = useModalState('FeatureFlagOverride')
   const defaultSettings = useRef<Record<string, boolean>>({})
   const hasAccount = useSelector(getHasAccount)
   const [overrideSettings, setOverrideSettings] = useState(
@@ -80,7 +80,7 @@ export const FeatureFlagOverrideModal = () => {
   const closeModal = useCallback(() => {
     setHotkeyActive(false)
     setIsOpen(false)
-  }, [])
+  }, [setIsOpen])
 
   return (
     <Modal
