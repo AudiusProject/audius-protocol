@@ -320,13 +320,13 @@ jobs:
 
             # Patch web/desktop
             npm version patch -ws --include-workspace-root --no-git-tag-version
+            VERSION=$(jq -r .version ./package.json)
             # Patch ios
             sed -i "s/$PREV_VERSION/$VERSION/g" packages/mobile/ios/AudiusReactNative/Info.plist
             # Patch android
             sed -i "s/$PREV_VERSION/$VERSION/g" packages/mobile/android/app/build.gradle
 
             git add .
-            VERSION=$(jq -r .version ./package.json)
             MESSAGE="v${VERSION}
 
             ${CHANGELOG}"
