@@ -1,3 +1,39 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.niceTable {
+  background: white;
+  @apply overflow-hidden rounded-xl shadow-xl border;
+}
+
+
+.niceTable tr {
+  @apply hover:bg-yellow-50;
+}
+.niceTable td, .niceTable th {
+  @apply p-4
+}
+.niceTable td {
+  border-bottom: 1px solid #ccc;
+}
+.niceTable th {
+  @apply text-left bg-purple-700 text-white border-b-2 border-purple-900;
+
+}
+
+
+.nice h2 {
+  @apply text-2xl font-bold;
+
+}
+
+.niceCard {
+  @apply rounded-xl border shadow overflow-clip mb-8;
+}
+.niceCard h2 {
+  @apply bg-purple-700 text-white p-2 text-xl;
+}
+.niceCard pre {
+  @apply text-xs bg-white p-2;
+}
