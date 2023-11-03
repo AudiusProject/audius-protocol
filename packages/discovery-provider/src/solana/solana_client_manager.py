@@ -224,6 +224,34 @@ class SolanaClientManager:
             "solana_client_manager.py | get_account_info | All requests failed to fetch",
         )
 
+    def get_account_info_json_parsed(self, account: Pubkey, retries=DEFAULT_MAX_RETRIES):
+        def _get_account_info_json_parsed(client: Client, index):
+            endpoint = self.endpoints[index]
+            num_retries = retries
+            while num_retries > 0:
+                try:
+                    response = client.get_account_info_json_parsed(account)
+                    return response.value
+                except Exception as e:
+                    logger.error(
+                        f"solana_client_manager.py | get_account_info_json_parsed, {e}",
+                        exc_info=True,
+                    )
+                num_retries -= 1
+                time.sleep(DELAY_SECONDS)
+                logger.error(
+                    f"solana_client_manager.py | get_account_info_json_parsed | Retrying with endpoint {endpoint}"
+                )
+            raise Exception(
+                f"solana_client_manager.py | get_account_info_json_parsed | Failed with endpoint {endpoint}"
+            )
+
+        return _try_all(
+            self.clients,
+            _get_account_info_json_parsed,
+            "solana_client_manager.py | get_account_info_json_parsed | All requests failed to fetch",
+        )
+
 
 @contextmanager
 def timeout(time):

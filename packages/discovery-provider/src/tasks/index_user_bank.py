@@ -526,6 +526,8 @@ def process_transfer_instruction(
     challenge_event_bus: ChallengeEventBus,
     timestamp: datetime,
 ):
+    solana_client_manager: SolanaClientManager = index_user_bank.solana_client_manager
+
     sender_idx = get_account_index(instruction, TRANSFER_SENDER_ACCOUNT_INDEX)
     receiver_idx = get_account_index(instruction, TRANSFER_RECEIVER_ACCOUNT_INDEX)
     sender_account = account_keys[sender_idx]
@@ -602,6 +604,9 @@ def process_transfer_instruction(
     # Cannot index receive external transfers this way as those use the spl-token program,
     # not the claimable tokens program, so we will always have a sender_user_id
     if receiver_user_id is None:
+        receiver_account_pubkey = Pubkey.from_string(receiver_account)
+        receiver_account_info = solana_client_manager.get_account_info_json_parsed(receiver_account_pubkey)
+        receiver_account_owner = receiver_account_info.value.data.parsed["info"]["owner"]
         TransactionHistoryModel = (
             AudioTransactionsHistory if is_audio else USDCTransactionsHistory
         )
@@ -614,7 +619,7 @@ def process_transfer_instruction(
             transaction_created_at=timestamp,
             change=Decimal(balance_changes[sender_account]["change"]),
             balance=Decimal(balance_changes[sender_account]["post_balance"]),
-            tx_metadata=str(receiver_account),
+            tx_metadata=str(receiver_account_owner),
         )
         logger.debug(f"index_user_bank.py | Creating transfer sent {transfer_sent}")
         session.add(transfer_sent)
