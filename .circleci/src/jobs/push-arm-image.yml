@@ -17,8 +17,8 @@ steps:
 #   - run: docker buildx version && docker buildx ls
   - run: . ~/.profile; audius-compose build --prod "<< parameters.service >>"
   - run:
-    name: Install buildx for merge tools
-    command: docker buildx create --name ci-builder --use
+      name: Install buildx for merge tools
+      command: docker buildx create --name ci-builder --use
   - run:
       name: Merge and push new tag manifest
       command: . ~/.profile; audius-compose push-arm --prod "<< parameters.service >>"
