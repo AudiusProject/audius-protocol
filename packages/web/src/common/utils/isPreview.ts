@@ -1,9 +1,5 @@
-import { Track, accountSelectors } from '@audius/common'
-import { select } from 'typed-redux-saga'
+import { ID, Track } from '@audius/common'
 
-const { getUserId } = accountSelectors
-
-export function* isPreview(track: Track) {
-  const currentUserId = yield* select(getUserId)
+export const isPreview = (track: Track, currentUserId: ID | null) => {
   return !!track.preview_cid && track.owner_id !== currentUserId
 }

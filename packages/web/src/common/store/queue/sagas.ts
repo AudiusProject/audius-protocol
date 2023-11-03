@@ -87,12 +87,13 @@ export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
     })
   } else if (entry.kind === Kind.TRACKS) {
     const track = yield* select(getTrack, { uid: entry.uid })
+    const currentUserId = yield* select(getUserId)
     if (!track) return {}
     return {
       id: track.track_id,
       uid: entry.uid,
       source: prefix,
-      isPreview: isPreview(track)
+      isPreview: isPreview(track, currentUserId)
     }
   }
 }
@@ -300,6 +301,7 @@ export function* watchNext() {
     const id = (yield* select(getQueueTrackId)) as ID
     const track = yield* select(getTrack, { id })
     const user = yield* select(getUser, { id: track?.owner_id })
+    const currentUserId = yield* select(getUserId)
     const doesUserHaveAccess = yield* call(
       doesUserHaveTrackAccess,
       track ?? null
@@ -326,7 +328,8 @@ export function* watchNext() {
       if (track) {
         const repeatMode = yield* select(getRepeat)
         const trackIsSameAndRepeatSingle = repeatMode === RepeatMode.SINGLE
-        const isTrackPreview = (yield* isPreview(track)) && !doesUserHaveAccess
+        const isTrackPreview =
+          isPreview(track, currentUserId) && !doesUserHaveAccess
 
         if (trackIsSameAndRepeatSingle) {
           yield* put(
@@ -412,6 +415,7 @@ export function* watchPrevious() {
       const track = yield* select(getTrack, { id })
       const source = yield* select(getSource)
       const user = yield* select(getUser, { id: track?.owner_id })
+      const currentUserId = yield* select(getUserId)
       const doesUserHaveAccess = yield* call(
         doesUserHaveTrackAccess,
         track ?? null
@@ -434,7 +438,7 @@ export function* watchPrevious() {
               uid,
               trackId: id,
               source,
-              isPreview: (yield* isPreview(track)) && !doesUserHaveAccess
+              isPreview: isPreview(track, currentUserId) && !doesUserHaveAccess
             })
           )
           const event = make(Name.PLAYBACK_PLAY, {

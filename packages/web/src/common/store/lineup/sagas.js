@@ -17,7 +17,8 @@ import {
   isPremiumContentUSDCPurchaseGated,
   doesUserHaveTrackAccess,
   StringKeys,
-  premiumTracksPageLineupActions
+  premiumTracksPageLineupActions,
+  accountSelectors
 } from '@audius/common'
 import {
   all,
@@ -41,6 +42,7 @@ const { getUid: getCurrentPlayerTrackUid, getPlaying } = playerSelectors
 const { getUsers } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
+const { getUserId } = accountSelectors
 
 const getEntryId = (entry) => `${entry.kind}:${entry.id}`
 
@@ -291,6 +293,7 @@ function* fetchLineupMetadatasAsync(
       if (trackSubscribers.length > 0) {
         yield put(cacheActions.subscribe(Kind.TRACKS, trackSubscribers))
       }
+      const currentUserId = yield select(getUserId)
       // Retain specified info in the lineup itself and resolve with success.
       const lineupEntries = allMetadatas
         .map(retainSelector)
@@ -300,7 +303,7 @@ function* fetchLineupMetadatasAsync(
           return {
             ...m,
             uid: m.uid || lineupEntry.uid || uids[i],
-            isPreview: isPreview(lineupEntry)
+            isPreview: isPreview(lineupEntry, currentUserId)
           }
         })
         .filter((metadata, idx) => {
