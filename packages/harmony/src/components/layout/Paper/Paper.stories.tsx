@@ -9,14 +9,6 @@ const meta: Meta<typeof Paper> = {
     controls: {
       include: ['w', 'h', 'backgroundColor', 'border', 'borderRadius', 'shadow']
     }
-  },
-  argTypes: {
-    as: {
-      table: { disable: true }
-    },
-    theme: {
-      table: { disable: true }
-    }
   }
 }
 

@@ -1,6 +1,5 @@
+import { useTheme } from '@emotion/react'
 import styled from '@emotion/styled'
-
-import { toCSSVariableName } from 'utils/styles'
 
 import { Flex } from '../Flex'
 
@@ -12,24 +11,20 @@ import type { PaperProps } from './types'
  * */
 export const Paper = styled(Flex)(
   ({
-    h,
-    w,
     backgroundColor = 'default',
     border = 'default',
     borderRadius = 'm',
     shadow = 'mid'
   }: PaperProps) => {
+    const theme = useTheme()
     return {
       position: 'relative',
       boxSizing: 'border-box',
-      height: h,
-      width: w,
-      boxShadow: shadow && `var(--harmony-shadow-${shadow})`,
-      border: border && `1px solid var(--harmony-border-${border})`,
-      borderRadius:
-        borderRadius && `var(--harmony-border-radius-${borderRadius})`,
+      boxShadow: shadow && theme.shadows[shadow],
+      border: border && `1px solid ${theme.color.border[border]}`,
+      borderRadius: borderRadius && theme.cornerRadius[borderRadius],
       backgroundColor:
-        backgroundColor && `var(${toCSSVariableName(`bg-${backgroundColor}`)})`
+        backgroundColor && theme.color.background[backgroundColor]
     }
   }
 )
