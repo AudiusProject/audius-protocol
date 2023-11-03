@@ -13,6 +13,7 @@ import { Link } from 'react-router-dom'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 
 import styles from './SignInPageMobile.module.css'
+import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
 
 const messages = {
   title: 'Sign Into Audius',
@@ -54,12 +55,9 @@ export const SignInPageMobile = () => {
                 <Flex direction='column' gap='l'>
                   {/* TODO: replace old TextField */}
                   <HarmonyTextField name='email' label={messages.emailLabel} />
-                  {/* TODO: password visibility icon and toggle */}
-                  <HarmonyTextField
+                  <HarmonyPasswordField
                     name='password'
                     label={messages.passwordLabel}
-                    endIcon={IconVisibilityHidden}
-                    type='password'
                   />
                 </Flex>
                 <Flex direction='column' gap='l'>

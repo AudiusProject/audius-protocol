@@ -18,6 +18,7 @@ import { SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './SignInPage.module.css'
 import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
+import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
 
 const messages = {
   title: 'Sign Into Audius',
@@ -54,12 +55,9 @@ export const SignInPageDesktop = () => {
                       name='email'
                       label={messages.emailLabel}
                     />
-                    {/* TODO: password visibility icon and toggle */}
-                    <HarmonyTextField
+                    <HarmonyPasswordField
                       name='password'
                       label={messages.passwordLabel}
-                      endIcon={IconVisibilityHidden}
-                      type='password'
                     />
                   </Flex>
                   <Flex direction='column' gap='l'>

@@ -7,8 +7,8 @@ import {
   Flex,
   IconArrowLeft,
   IconArrowRight,
-  Text,
-  TextInput
+  PasswordInput,
+  Text
 } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -288,9 +288,8 @@ export const CreatePasswordPage = () => {
                         gap='l'
                         className={styles.inputsContainer}
                       >
-                        <TextInput
+                        <PasswordInput
                           name='password'
-                          type='password'
                           autoFocus
                           autoComplete='new-password'
                           onChange={(e) => {
@@ -308,9 +307,8 @@ export const CreatePasswordPage = () => {
                           value={values.password}
                           error={touched.password && hasPasswordError}
                         />
-                        <TextInput
+                        <PasswordInput
                           name='confirmPassword'
-                          type='password'
                           autoComplete='new-password'
                           onChange={(e) => {
                             setFieldValue('confirmPassword', e.target.value)
