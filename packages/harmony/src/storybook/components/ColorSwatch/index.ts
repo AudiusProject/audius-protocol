@@ -1,1 +1,0 @@
-export { ColorSwatch } from './ColorSwatch'

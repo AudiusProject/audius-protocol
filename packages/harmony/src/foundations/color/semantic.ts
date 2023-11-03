@@ -24,7 +24,7 @@ const createSemanticTheme = (primitives: PrimitiveColors) => ({
     default: primitives.neutral.n100,
     strong: primitives.neutral.n150
   },
-  focus: primitives.secondary.secondary,
+  focus: { default: primitives.secondary.secondary },
   status: {
     error: primitives.special.red,
     warning: primitives.special.orange,
