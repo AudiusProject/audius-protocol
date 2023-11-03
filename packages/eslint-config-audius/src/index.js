@@ -9,8 +9,8 @@ module.exports = {
     'plugin:jest/recommended',
     'plugin:react/recommended',
     'plugin:import/typescript',
-    'plugin:prettier/recommended',
-    'plugin:mdx/recommended'
+    // 'plugin:mdx/recommended',
+    'plugin:prettier/recommended'
   ],
   globals: {
     Atomics: 'readonly',

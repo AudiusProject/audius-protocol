@@ -1,9 +1,8 @@
-import { useTheme } from '@emotion/react'
 import { Meta, Title, Unstyled } from '@storybook/blocks'
 
-import { Flex, Text } from '../../components'
-import { IconTokenSilver, IconVerified } from '../../icons'
-import { ColorPaletteTable } from '../../storybook/components'
+import { Flex } from 'components'
+import { ColorPaletteTable, BackgroundColorExample } from 'storybook/components'
+
 import { ThemeProvider } from '../theme'
 
 <Meta title='Foundations/Color' />
@@ -138,41 +137,6 @@ Status colors are used to display status states: error, warning, and success.
 - Use **background-white** when applying white to a card or container.
 - Use **static-white** when you want white to remain white in all modes. (ex: ✓ in verified badge)
 
-export function BackgroundColorExample() {
-  const theme = useTheme()
-  const { color, cornerRadius, spacing, shadows } = theme
-
-return (
-
-    <Flex
-      flex={1}
-      p='2xl'
-      css={{
-        background: color.background.default,
-        border: `1px solid ${color.border.strong}`,
-        borderRadius: cornerRadius.m
-      }}
-    >
-      <Flex
-        flex={1}
-        alignItems='center'
-        justifyContent='center'
-        css={{
-          height: spacing.unit20,
-          background: color.background.white,
-          boxShadow: shadows.mid,
-          borderRadius: cornerRadius.m
-        }}
-      >
-        <Text color='default'>
-          Display Name <IconVerified size='xs' /> <IconTokenSilver size='xs' />
-        </Text>
-      </Flex>
-    </Flex>
-
-)
-}
-
 <Unstyled>
   <Flex gap='3xl'>
     <ThemeProvider theme='day'>
@@ -184,10 +148,5 @@ return (
     <ThemeProvider theme='matrix'>
       <BackgroundColorExample />
     </ThemeProvider>
-
   </Flex>
 </Unstyled>
-
-## Related
-
-{/* TODO <RelatedComponents /> */}
