@@ -1,15 +1,16 @@
-import type { BackgroundColors, BorderColors } from 'foundations'
-import type { CornerRadiusOptions } from 'foundations/corner-radius'
-import type { ShadowOptions } from 'foundations/shadows'
+import type {
+  BackgroundColors,
+  BorderColors,
+  CornerRadiusOptions,
+  ShadowOptions
+} from 'foundations'
 
-import type { FlexProps } from '../Flex/types'
-
-export type PaperProps = Omit<FlexProps, 'shadow'> & {
+export type PaperProps = {
   /**
    * Background Color
-   * @default default
+   * @default white
    */
-  backgroundColor?: BackgroundColors
+  backgroundColor?: Exclude<BackgroundColors, 'default'>
 
   /**
    * Border type. If not provided, no border will be used.
