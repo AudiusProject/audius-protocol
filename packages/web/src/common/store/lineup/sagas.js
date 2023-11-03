@@ -34,6 +34,7 @@ import {
 
 import { getToQueue } from 'common/store/queue/sagas'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
+import { isPreview } from 'common/utils/isPreview'
 
 const { getSource, getUid, getPositions } = queueSelectors
 const { getUid: getCurrentPlayerTrackUid, getPlaying } = playerSelectors
@@ -45,6 +46,7 @@ const getEntryId = (entry) => `${entry.kind}:${entry.id}`
 
 const flatten = (list) =>
   list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), [])
+
 function* filterDeletes(tracksMetadata, removeDeleted, lineupPrefix) {
   const tracks = yield select(getTracks)
   const users = yield select(getUsers)
@@ -295,7 +297,11 @@ function* fetchLineupMetadatasAsync(
         .map((m, i) => {
           const lineupEntry = allMetadatas[i]
           // Use metadata.uid, entry.uid, computed new uid in that order of precedence
-          return { ...m, uid: m.uid || lineupEntry.uid || uids[i] }
+          return {
+            ...m,
+            uid: m.uid || lineupEntry.uid || uids[i],
+            isPreview: isPreview(lineupEntry)
+          }
         })
         .filter((metadata, idx) => {
           if (lineup.dedupe && lineup.entryIds) {
