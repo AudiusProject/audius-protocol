@@ -1,19 +1,18 @@
 import {
-  Canvas,
   Meta,
   Title,
   Subtitle,
   Description,
   Primary,
-  Controls,
-  Story,
-  Stories
+  Controls
 } from '@storybook/blocks'
-import { Paper } from './Paper'
-import { Box } from '../Box'
-import { Flex } from '../Flex'
-import * as PaperStories from './Paper.stories'
+
+import { Box, Flex } from 'components'
+import { ComponentRules, RelatedComponents } from 'storybook/components'
+
 import paperExampleGood from '../../../../.storybook/public/paperExampleGood.png'
+
+import * as PaperStories from './Paper.stories'
 
 <Meta of={PaperStories} />
 
