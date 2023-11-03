@@ -11,5 +11,5 @@ services:
     build:
       context: ${PROJECT_ROOT}/mediorum
       dockerfile: Dockerfile.dev
-      args:
-        git_sha: '${GIT_COMMIT}'
+    entrypoint: /bin/sh
+    command: /tmp/dev-tools/startup/storage.sh 3 # Entrypoint for local dev

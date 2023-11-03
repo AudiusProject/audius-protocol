@@ -12,8 +12,6 @@ services:
       args:
         git_sha: '${GIT_COMMIT}'
     restart: unless-stopped
-    entrypoint: /bin/sh
-    command: /tmp/dev-tools/startup/storage.sh 3 # Entrypoint for local dev (audius-docker-compose sets a different entrypoint for stage+prod)
     environment:
       - dirTemplate=/data/mediorum_dev_%d
       - dbUrlTemplate=postgresql://postgres:postgres@db:5432/creator_node_%d
