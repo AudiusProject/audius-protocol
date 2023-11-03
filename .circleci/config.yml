@@ -317,7 +317,14 @@ jobs:
             PREV_VERSION=$(jq -r .version ./package.json)
             CHANGELOG=$(git log --pretty=format:"[%h] %s %an" --date=short v${PREV_VERSION}..HEAD)
             npm i --ignore-scripts
+
+            # Patch web/desktop
             npm version patch -ws --include-workspace-root --no-git-tag-version
+            # Patch ios
+            sed -i "s/$PREV_VERSION/$VERSION/g" packages/mobile/ios/AudiusReactNative/Info.plist
+            # Patch android
+            sed -i "s/$PREV_VERSION/$VERSION/g" packages/mobile/android/app/build.gradle
+
             git add .
             VERSION=$(jq -r .version ./package.json)
             MESSAGE="v${VERSION}
