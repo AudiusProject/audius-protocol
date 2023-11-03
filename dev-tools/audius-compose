@@ -225,7 +225,7 @@ def build(
             "--profile=identity",
             "--profile=discovery",
             "--profile=comms",
-            "--profile=storagev2",
+            "--profile=storage",
             "--profile=notifications",
             "--profile=elasticsearch",
             "--profile=mediorum",
@@ -385,6 +385,9 @@ def up(
 
     AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))
 
+    # Mediorum's Dockerfile.prod doesn't support multiple mediorum instances, so always use dev
+    os.environ['MEDIORUM_ENV_TYPE'] = 'dev'
+
     ctx.invoke(pull)
     sys.exit(
         subprocess.run(
@@ -404,7 +407,7 @@ def up(
                 *(["--profile=notifications"] if notifs else []),
                 *(["--profile=pedalboard"] if pedalboard else []),
                 *(["--profile=comms"] if comms else []),
-                *(["--profile=storagev2"]),
+                *(["--profile=storage"]),
                 *(["--profile=libs"]),
                 *(["--profile=solana"]),
                 "up",
