@@ -1,21 +1,30 @@
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
 import { StorybookConfig } from '@storybook/react-webpack5'
+import remarkGfm from 'remark-gfm'
 
 const config: StorybookConfig = {
   staticDirs: ['./public'],
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(mdx|ts|tsx)'],
   addons: [
     'storybook-dark-mode',
-    {
-      name: '@storybook/addon-essentials',
-      options: {
-        backgrounds: false
-      }
-    },
     '@storybook/addon-a11y',
     '@storybook/addon-themes',
     '@storybook/addon-interactions',
-    '@storybook/addon-links'
+    '@storybook/addon-links',
+    {
+      name: '@storybook/addon-docs',
+      options: {
+        jsxOptions: {
+          importSource: '@emotion/react'
+        },
+        skipCsf: false,
+        mdxPluginOptions: {
+          mdxCompileOptions: {
+            remarkPlugins: [remarkGfm]
+          }
+        }
+      }
+    }
   ],
   framework: {
     name: '@storybook/react-webpack5',
@@ -25,14 +34,13 @@ const config: StorybookConfig = {
     autodocs: true,
     defaultName: 'Documentation'
   },
-  babel: {
-    presets: [
-      [
-        '@babel/preset-react',
-        { runtime: 'automatic', importSource: '@emotion/react' }
-      ]
-    ],
-    plugins: ['@emotion/babel-plugin']
+  babel: (config) => {
+    if (config.presets) {
+      config.presets[0][1].importSource = '@emotion/react'
+    }
+    config.plugins?.push('@emotion/babel-plugin')
+
+    return config
   },
   webpackFinal: (config: any) => {
     config.module.rules.find(

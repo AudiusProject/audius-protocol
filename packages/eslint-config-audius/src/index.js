@@ -4,6 +4,7 @@ module.exports = {
     es6: true
   },
   extends: [
+    'plugin:mdx/recommended',
     'standard',
     'plugin:@typescript-eslint/recommended',
     'plugin:jest/recommended',
@@ -24,6 +25,7 @@ module.exports = {
     sourceType: 'module'
   },
   plugins: [
+    'mdx',
     'react',
     'react-hooks',
     '@typescript-eslint',
@@ -127,6 +129,16 @@ module.exports = {
       typescript: true,
       node: true
     },
-    'import/extensions': ['.js', '.jsx', '.ts', '.tsx']
-  }
+    'import/extensions': ['.js', '.jsx', '.ts', '.tsx', '.mdx'],
+    'mdx/code-blocks': true
+  },
+  overrides: [
+    {
+      files: ['*.mdx'],
+      parser: 'eslint-mdx',
+      rules: {
+        // Add your custom rules here
+      }
+    }
+  ]
 }
