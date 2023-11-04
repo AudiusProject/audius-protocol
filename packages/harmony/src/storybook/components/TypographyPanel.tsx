@@ -1,8 +1,13 @@
 import { Unstyled } from '@storybook/blocks'
 
-import { Flex, Text, TextSize, TextStrength, TextVariant } from 'components'
-
-import { TypographyPaper } from './TypographyPaper'
+import {
+  Flex,
+  Paper,
+  Text,
+  TextSize,
+  TextStrength,
+  TextVariant
+} from 'components'
 
 type TypographyCardProps = {
   variant: TextVariant
@@ -36,7 +41,7 @@ export const TypographyPanel = (props: TypographyPanelProps) => {
     <Unstyled>
       <Flex direction='column' gap='3xl'>
         {sizes.map((size) => (
-          <TypographyPaper key={size}>
+          <Paper p='2xl' shadow='near' key={size}>
             {strengths.map((strength) => (
               <TypographyCard
                 key={strength}
@@ -45,7 +50,7 @@ export const TypographyPanel = (props: TypographyPanelProps) => {
                 strength={strength}
               />
             ))}
-          </TypographyPaper>
+          </Paper>
         ))}
       </Flex>
     </Unstyled>
