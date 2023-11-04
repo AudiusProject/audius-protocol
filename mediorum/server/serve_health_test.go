@@ -2,11 +2,11 @@ package server
 
 import (
 	"encoding/json"
-	"mediorum/ethcontracts"
 	"reflect"
 	"testing"
 	"time"
 
+	"github.com/AudiusProject/audius-protocol/mediorum/ethcontracts"
 	"github.com/gowebpki/jcs"
 )
 

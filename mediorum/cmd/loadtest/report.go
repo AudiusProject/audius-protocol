@@ -2,10 +2,11 @@ package loadtest
 
 import (
 	"fmt"
-	"mediorum/server"
 	"sort"
 	"sync"
 	"time"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/server"
 )
 
 func (tc *TestClient) problems(wg *sync.WaitGroup, peer *server.Peer) {

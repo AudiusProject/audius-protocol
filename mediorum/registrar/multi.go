@@ -2,7 +2,8 @@ package registrar
 
 import (
 	"errors"
-	"mediorum/server"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/server"
 )
 
 func NewMultiStaging() PeerProvider {

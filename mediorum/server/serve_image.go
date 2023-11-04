@@ -3,10 +3,11 @@ package server
 import (
 	"fmt"
 	"io"
-	"mediorum/cidutil"
 	"mime"
 	"strings"
 	"time"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
 
 	"github.com/labstack/echo/v4"
 	"gocloud.dev/blob"

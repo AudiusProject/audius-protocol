@@ -3,10 +3,11 @@ package server
 import (
 	"bytes"
 	"context"
-	"mediorum/cidutil"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
 
 	"github.com/stretchr/testify/assert"
 )

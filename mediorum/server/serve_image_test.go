@@ -1,10 +1,11 @@
 package server
 
 import (
-	"mediorum/cidutil"
 	"net/http"
 	"os"
 	"testing"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
 
 	"github.com/oklog/ulid/v2"
 	"github.com/stretchr/testify/assert"
