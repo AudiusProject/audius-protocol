@@ -1,12 +1,9 @@
-import { forwardRef, useState, memo, useCallback } from 'react'
+import { MouseEvent, forwardRef, useCallback, useState } from 'react'
 
+import { IconVisibilityHidden, IconVisibilityPublic } from 'icons'
 import { TextInput } from '../TextInput'
-import type { PasswordInputProps } from './types'
-import {
-  IconVisibilityHidden,
-  IconVisibilityPublic
-} from 'components/typography'
 import styles from './PasswordInput.modules.css'
+import type { PasswordInputProps } from './types'
 
 const messages = {
   hidePasswordInput: 'Hide password input',
@@ -18,34 +15,28 @@ type VisibilityButtonProps = {
   isVisible: boolean
 }
 
-const VisibilityButton = memo(
-  ({ onClick, isVisible }: VisibilityButtonProps) => {
-    const VisibilityIcon = isVisible
-      ? IconVisibilityPublic
-      : IconVisibilityHidden
-    return (
-      <button
-        tabIndex={0}
-        aria-label={
-          isVisible ? messages.hidePasswordInput : messages.showPasswordInput
-        }
-        className={styles.button}
-        onClick={(e) => {
-          e.preventDefault()
-          onClick()
-        }}
-      >
-        {
-          <VisibilityIcon
-            aria-hidden={true}
-            className={styles.icon}
-            size='large'
-          />
-        }
-      </button>
-    )
-  }
-)
+const VisibilityButton = ({ onClick, isVisible }: VisibilityButtonProps) => {
+  const VisibilityIcon = isVisible ? IconVisibilityPublic : IconVisibilityHidden
+  const handleClick = useCallback(
+    (e: MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault()
+      onClick()
+    },
+    [onClick]
+  )
+  return (
+    <button
+      tabIndex={0}
+      aria-label={
+        isVisible ? messages.hidePasswordInput : messages.showPasswordInput
+      }
+      className={styles.button}
+      onClick={handleClick}
+    >
+      <VisibilityIcon aria-hidden={true} className={styles.icon} size='l' />
+    </button>
+  )
+}
 
 export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
   (props, ref) => {

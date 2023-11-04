@@ -240,7 +240,15 @@ export const CreatePasswordPage = () => {
             <IconButton
               onClick={handleClickBackIcon}
               aria-label={messages.goBack}
-              icon={<IconArrowLeft />}
+              icon={
+                <IconArrowLeft
+                  css={{
+                    '& path': {
+                      fill: 'currentColor'
+                    }
+                  }}
+                />
+              }
               className={styles.backIcon}
             />
             <Box mt='xl'>

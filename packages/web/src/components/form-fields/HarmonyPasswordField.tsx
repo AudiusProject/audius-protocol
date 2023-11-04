@@ -12,10 +12,23 @@ export type PasswordFieldProps = PasswordInputProps & {
 
 // TODO: rename to PasswordField and replace old usages
 export const HarmonyPasswordField = (props: PasswordFieldProps) => {
+  const { name, clearErrorOnChange = true, ...other } = props
+  const [field, { touched, error }, { setError }] = useField(name)
+
+  const hasError = Boolean(touched && error)
+
   return (
-    <HarmonyBaseTextField<PasswordInputProps>
-      inputComponent={PasswordInput}
-      {...props}
+    <PasswordInput
+      {...field}
+      error={hasError}
+      helperText={hasError ? error : undefined}
+      onChange={(e) => {
+        if (clearErrorOnChange) {
+          setError(undefined)
+        }
+        field.onChange(e)
+      }}
+      {...other}
     />
   )
 }
