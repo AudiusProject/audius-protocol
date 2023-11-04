@@ -2,8 +2,6 @@ module github.com/AudiusProject/audius-protocol/mediorum
 
 go 1.20
 
-replace github.com/AudiusProject/audius-protocol/mediorum => /mediorum
-
 require (
 	github.com/disintegration/imaging v1.6.2
 	github.com/erni27/imcache v1.1.0
