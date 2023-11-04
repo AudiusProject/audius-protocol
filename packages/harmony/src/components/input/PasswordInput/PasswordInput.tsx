@@ -33,7 +33,16 @@ const VisibilityButton = ({ onClick, isVisible }: VisibilityButtonProps) => {
       className={styles.button}
       onClick={handleClick}
     >
-      <VisibilityIcon aria-hidden={true} className={styles.icon} size='l' />
+      <VisibilityIcon
+        aria-hidden={true}
+        className={styles.icon}
+        size='l'
+        css={{
+          '& path': {
+            fill: 'currentColor'
+          }
+        }}
+      />
     </button>
   )
 }
