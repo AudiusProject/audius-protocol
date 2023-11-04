@@ -36,16 +36,16 @@ export const typography = {
     '9xl': 96
   },
   lineHeight: {
-    xs: 12,
-    s: 16,
-    m: 20,
-    l: 24,
-    xl: 32,
-    '2xl': 40,
-    '3xl': 52,
-    '4xl': 68,
-    '5xl': 88,
-    '6xl': 120
+    xs: '12px',
+    s: '16px',
+    m: '20px',
+    l: '24px',
+    xl: '32px',
+    '2xl': '40px',
+    '3xl': '52px',
+    '4xl': '68px',
+    '5xl': '88px',
+    '6xl': '120px'
   }
 }
 
