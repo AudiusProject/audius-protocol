@@ -26,6 +26,7 @@ const VisibilityButton = ({ onClick, isVisible }: VisibilityButtonProps) => {
   )
   return (
     <button
+      type='button'
       tabIndex={0}
       aria-label={
         isVisible ? messages.hidePasswordInput : messages.showPasswordInput
