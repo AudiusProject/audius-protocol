@@ -12,14 +12,14 @@ export const Paper = styled(Flex)<PaperProps>((props) => {
   const {
     theme,
     backgroundColor = 'white',
-    border = 'default',
+    border,
     borderRadius = 'm',
     shadow = 'mid'
   } = props
 
   return {
     boxShadow: theme.shadows[shadow],
-    border: `1px solid ${theme.color.border[border]}`,
+    border: border && `1px solid ${theme.color.border[border]}`,
     borderRadius: theme.cornerRadius[borderRadius],
     backgroundColor: theme.color.background[backgroundColor]
   }
