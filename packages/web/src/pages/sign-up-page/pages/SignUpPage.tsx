@@ -22,12 +22,12 @@ import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { Link } from 'components/link'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
+import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithAudiusValues'
 import { EMAIL_REGEX } from 'utils/email'
 import { SIGN_IN_PAGE, SIGN_UP_PASSWORD_PAGE } from 'utils/route'
 
 import styles from './SignUpPage.module.css'
-import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
-import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithAudiusValues'
 
 const messages = {
   title: 'Sign Up For Audius',

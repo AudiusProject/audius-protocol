@@ -4,16 +4,15 @@ import {
   Flex,
   IconArrowRight,
   IconAudiusLogoHorizontalColor,
-  IconVisibilityHidden,
   Text
 } from '@audius/harmony'
 import { Form } from 'formik'
 import { Link } from 'react-router-dom'
 
+import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 
 import styles from './SignInPageMobile.module.css'
-import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
 
 const messages = {
   title: 'Sign Into Audius',

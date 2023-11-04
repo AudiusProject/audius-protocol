@@ -10,6 +10,7 @@ import {
   PasswordInput,
   Text
 } from '@audius/harmony'
+import { IconButton } from '@audius/stems'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -21,6 +22,8 @@ import {
 } from 'components/completion-checklist-item/CompletionChecklistItem'
 import { ExternalLink } from 'components/link'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
+import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithAudiusValues'
 import {
   PRIVACY_POLICY,
   SIGN_UP_EMAIL_PAGE,
@@ -38,9 +41,6 @@ import {
   getNumberRequirementStatus,
   isRequirementsFulfilled
 } from '../utils/passwordRequirementUtils'
-import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithAudiusValues'
-import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
-import { IconButton } from '@audius/stems'
 
 const messages = {
   createYourPassword: 'Create Your Password',
@@ -89,7 +89,7 @@ export const CreatePasswordPage = () => {
 
   const handleClickBackIcon = useCallback(() => {
     navigate(SIGN_UP_EMAIL_PAGE)
-  }, [])
+  }, [navigate])
 
   const handleSubmit = useCallback(
     async ({ password, confirmPassword }: CreatePasswordValues) => {
