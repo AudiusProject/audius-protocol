@@ -1,5 +1,5 @@
 import { PasswordInput, PasswordInputProps } from '@audius/harmony'
-import { HarmonyBaseTextField } from './HarmonyBaseTextField'
+import { useField } from 'formik'
 
 export type PasswordFieldProps = PasswordInputProps & {
   name: string
