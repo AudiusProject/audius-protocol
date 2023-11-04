@@ -93,35 +93,11 @@
 }
 
 /* Placeholder and label text styles (they are the same minus color) */
-.input::placeholder,
-.label {
+.input::placeholder {
   color: var(--harmony-text-default);
   font-weight: var(--harmony-font-medium);
   font-family: var(--harmony-font-family);
 }
 .input::placeholder {
   color: var(--harmony-text-subdued);
-}
-
-/** Position the label in the center when unfocussed **/
-.label {
-  color: var(--harmony-text-subdued);
-  /* text overflow should just break off into the ellipses */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  z-index: 2;
-  transition: all var(--harmony-expressive);
-  /* When not focussed, the label centers itself visually */
-  transform: translate(
-    0px,
-    13px
-  ); /* 13px is a ✨magic✨ number that makes it look centered with the input */
-}
-
-/** Shrink the size of the label **/
-.label.focused,
-.hasValue {
-  transform: translate(0, 0);
-  font-size: var(--harmony-font-s);
 }

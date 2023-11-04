@@ -123,6 +123,8 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       </Flex>
     )
 
+    const isLabelElevated = hasValue || isFocused
+
     return (
       <Flex
         className={cn(styles.root, className)}
@@ -152,10 +154,17 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
                 <Text
                   variant='body'
                   tag='span'
-                  size='l'
-                  className={cn(styles.label, {
-                    [styles.hasValue]: hasValue,
-                    [styles.focused]: isFocused
+                  size={isLabelElevated ? 's' : 'l'}
+                  color='subdued'
+                  css={(theme) => ({
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    zIndex: 2,
+                    transition: `all ${theme.motion.expressive}`,
+                    transform: isLabelElevated
+                      ? 'translate(0, 0)'
+                      : 'translate(0px, 13px)'
                   })}
                 >
                   {labelText}

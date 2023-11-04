@@ -1,12 +1,8 @@
 import { Meta, Title, Unstyled } from '@storybook/blocks'
 
-import { Text } from 'components'
+import { Text, Paper } from 'components'
 import typographyExample from 'storybook/assets/typographyExample.png'
-import {
-  TypographyPanel,
-  TypographyPaper,
-  ColorPaletteTable
-} from 'storybook/components'
+import { TypographyPanel, ColorPaletteTable } from 'storybook/components'
 
 <Meta title='Foundations/Typography' />
 
@@ -23,11 +19,11 @@ import {
 Typography expresses hierarchy and brand presence. Harmony uses the font family Avenir Next LT Pro. The type system is designed with readability, flexibility and personality in mind.
 
 <Unstyled>
-  <TypographyPaper>
+  <Paper p='2xl' shadow='near'>
     <Text variant='display' size='xl'>
       Audius, freedom to listen and share.
     </Text>
-  </TypographyPaper>
+  </Paper>
 </Unstyled>
 
 ## Text Styles

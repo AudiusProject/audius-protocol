@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react'
 import { Unstyled } from '@storybook/blocks'
 
 import {
@@ -8,6 +9,7 @@ import {
   TextStrength,
   TextVariant
 } from 'components'
+import { variantStylesMap } from 'components/text/Text/Text'
 
 type TypographyCardProps = {
   variant: TextVariant
@@ -17,6 +19,16 @@ type TypographyCardProps = {
 
 export const TypographyCard = (props: TypographyCardProps) => {
   const { variant, size, strength } = props
+  const { typography } = useTheme()
+
+  // @ts-ignore
+  const fontSize = typography.size[variantStylesMap[variant].fontSize[size]]
+  const lineHeight =
+    // @ts-ignore
+    typography.lineHeight[variantStylesMap[variant].lineHeight[size]]
+  // @ts-ignore
+  const fontWeightKey = variantStylesMap[variant].fontWeight[strength]
+
   return (
     <Flex flex={1} direction='column' gap='l'>
       <Text>
@@ -24,6 +36,10 @@ export const TypographyCard = (props: TypographyCardProps) => {
         {strength ? `-${strength}` : ''}
       </Text>
       <Text {...props}>Ag</Text>
+      <Text>
+        Font Size: {fontSize}px, Line-height: {lineHeight}, Spacing:{' '}
+        {variant === 'label' ? '0.5px' : '0%'} Weight: {fontWeightKey}
+      </Text>
     </Flex>
   )
 }
@@ -41,7 +57,7 @@ export const TypographyPanel = (props: TypographyPanelProps) => {
     <Unstyled>
       <Flex direction='column' gap='3xl'>
         {sizes.map((size) => (
-          <Paper p='2xl' shadow='near' key={size}>
+          <Paper p='2xl' shadow='near' gap='l' key={size}>
             {strengths.map((strength) => (
               <TypographyCard
                 key={strength}
