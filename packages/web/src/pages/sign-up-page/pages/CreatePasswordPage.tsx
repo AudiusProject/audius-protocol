@@ -7,9 +7,10 @@ import {
   Flex,
   IconArrowLeft,
   IconArrowRight,
-  Text,
-  TextInput
+  PasswordInput,
+  Text
 } from '@audius/harmony'
+import { IconButton } from '@audius/stems'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -21,6 +22,8 @@ import {
 } from 'components/completion-checklist-item/CompletionChecklistItem'
 import { ExternalLink } from 'components/link'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
+import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithAudiusValues'
 import {
   PRIVACY_POLICY,
   SIGN_UP_EMAIL_PAGE,
@@ -38,9 +41,6 @@ import {
   getNumberRequirementStatus,
   isRequirementsFulfilled
 } from '../utils/passwordRequirementUtils'
-import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithAudiusValues'
-import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
-import { IconButton } from '@audius/stems'
 
 const messages = {
   createYourPassword: 'Create Your Password',
@@ -89,7 +89,7 @@ export const CreatePasswordPage = () => {
 
   const handleClickBackIcon = useCallback(() => {
     navigate(SIGN_UP_EMAIL_PAGE)
-  }, [])
+  }, [navigate])
 
   const handleSubmit = useCallback(
     async ({ password, confirmPassword }: CreatePasswordValues) => {
@@ -240,7 +240,15 @@ export const CreatePasswordPage = () => {
             <IconButton
               onClick={handleClickBackIcon}
               aria-label={messages.goBack}
-              icon={<IconArrowLeft />}
+              icon={
+                <IconArrowLeft
+                  css={{
+                    '& path': {
+                      fill: 'currentColor'
+                    }
+                  }}
+                />
+              }
               className={styles.backIcon}
             />
             <Box mt='xl'>
@@ -288,9 +296,8 @@ export const CreatePasswordPage = () => {
                         gap='l'
                         className={styles.inputsContainer}
                       >
-                        <TextInput
+                        <PasswordInput
                           name='password'
-                          type='password'
                           autoFocus
                           autoComplete='new-password'
                           onChange={(e) => {
@@ -308,9 +315,8 @@ export const CreatePasswordPage = () => {
                           value={values.password}
                           error={touched.password && hasPasswordError}
                         />
-                        <TextInput
+                        <PasswordInput
                           name='confirmPassword'
-                          type='password'
                           autoComplete='new-password'
                           onChange={(e) => {
                             setFieldValue('confirmPassword', e.target.value)

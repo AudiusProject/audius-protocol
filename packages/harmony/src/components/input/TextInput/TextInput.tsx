@@ -1,4 +1,4 @@
-import { forwardRef, useId } from 'react'
+import { ReactNode, forwardRef, useId } from 'react'
 
 import cn from 'classnames'
 
@@ -36,8 +36,18 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       endAdornmentText,
       startIcon: StartIcon,
       endIcon: EndIcon,
+      endAdornment: endAdornmentProp,
       ...other
     } = props
+
+    let endAdornment: null | ReactNode
+    if (EndIcon != null) {
+      endAdornment = <EndIcon size='m' />
+    } else if (endAdornmentProp != null) {
+      endAdornment = endAdornmentProp
+    } else {
+      endAdornment = null
+    }
 
     /**
      * Since Firefox doesn't support the :has() pseudo selector,
@@ -174,7 +184,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             ) : null}
             {inputRender}
           </Flex>
-          {EndIcon ? <EndIcon size='m' /> : null}
+          {endAdornment}
         </label>
         {helperText ? (
           <Text

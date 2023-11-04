@@ -1,7 +1,7 @@
-import { TextInput, TextInputProps } from '@audius/harmony'
+import { PasswordInput, PasswordInputProps } from '@audius/harmony'
 import { useField } from 'formik'
 
-export type TextFieldProps = TextInputProps & {
+export type PasswordFieldProps = PasswordInputProps & {
   name: string
   /**
    * Clears out field errors while the input is being changed for a small UX improvement
@@ -10,15 +10,15 @@ export type TextFieldProps = TextInputProps & {
   clearErrorOnChange?: boolean
 }
 
-// TODO: rename to TextField and replace old usages
-export const HarmonyTextField = (props: TextFieldProps) => {
+// TODO: rename to PasswordField and replace old usages
+export const HarmonyPasswordField = (props: PasswordFieldProps) => {
   const { name, clearErrorOnChange = true, ...other } = props
   const [field, { touched, error }, { setError }] = useField(name)
 
   const hasError = Boolean(touched && error)
 
   return (
-    <TextInput
+    <PasswordInput
       {...field}
       error={hasError}
       helperText={hasError ? error : undefined}

@@ -1,23 +1,17 @@
-import {
-  Box,
-  Button,
-  Flex,
-  IconArrowRight,
-  IconVisibilityHidden,
-  Text
-} from '@audius/harmony'
+import { Box, Button, Flex, IconArrowRight, Text } from '@audius/harmony'
 import { Button as ButtonTmp } from '@audius/stems'
 import { Form } from 'formik'
 import { Link } from 'react-router-dom'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
+import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import PreloadImage from 'components/preload-image/PreloadImage'
+import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
 import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithAudiusValues'
 import { SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './SignInPage.module.css'
-import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
 
 const messages = {
   title: 'Sign Into Audius',
@@ -54,12 +48,9 @@ export const SignInPageDesktop = () => {
                       name='email'
                       label={messages.emailLabel}
                     />
-                    {/* TODO: password visibility icon and toggle */}
-                    <HarmonyTextField
+                    <HarmonyPasswordField
                       name='password'
                       label={messages.passwordLabel}
-                      endIcon={IconVisibilityHidden}
-                      type='password'
                     />
                   </Flex>
                   <Flex direction='column' gap='l'>
