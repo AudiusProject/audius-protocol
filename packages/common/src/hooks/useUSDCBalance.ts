@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react'
 
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
-import { useInterval } from 'react-use'
 
 import { Status } from 'models/Status'
 import { BNUSDC, StringUSDC } from 'models/Wallet'
@@ -11,6 +10,8 @@ import { useAppContext } from 'src/context/appContext'
 import { getRecoveryStatus } from 'store/buy-usdc/selectors'
 import { getUSDCBalance } from 'store/wallet/selectors'
 import { setUSDCBalance } from 'store/wallet/slice'
+
+import { useInterval } from './useInterval'
 
 /**
  * On mount, fetches the USDC balance for the current user and stores it
@@ -58,11 +59,15 @@ export const useUSDCBalance = ({
     refresh()
   }, [refresh])
 
-  useInterval(() => {
+  const id = useInterval(() => {
     if (isPolling) {
       refresh()
     }
   }, pollingInterval)
 
-  return { balanceStatus, recoveryStatus, data, refresh }
+  const cancelPolling = useCallback(() => {
+    clearInterval(id)
+  }, [id])
+
+  return { balanceStatus, recoveryStatus, data, refresh, cancelPolling }
 }

@@ -6,15 +6,18 @@ import {
   Description,
   Primary,
   Controls,
-  Story,
-  Stories
+  Story
 } from '@storybook/blocks'
-import { Button } from './Button'
-import { ButtonSize, ButtonType } from '../types'
-import { Flex, Box } from 'components'
-import * as ButtonStories from './Button.stories'
-import test from '../../../../.storybook/public/buttonBackground.png'
+
 import IconCamera from 'assets/icons/Camera.svg'
+import { Flex } from 'components'
+import buttonBackground from 'storybook/assets/buttonBackground.png'
+import { ComponentRules, RelatedComponents } from 'storybook/components'
+
+import { ButtonSize, ButtonType } from '../types'
+
+import { Button } from './Button'
+import * as ButtonStories from './Button.stories'
 
 <Meta of={ButtonStories} />
 
@@ -52,7 +55,48 @@ Fixed height: 32px, 48px, 64px
   <Story of={ButtonStories.Sizes} />
 </Canvas>
 
-<Stories />
+### States
+
+Hover: transform scale: 1.04x, ease-out curve, 120ms
+Pressed: transform scale: 0.98x, ease-out curve, 120ms
+
+<Canvas>
+  <Story of={ButtonStories.States} />
+</Canvas>
+
+### Disabled
+
+<Canvas>
+  <Story of={ButtonStories.Disabled} />
+</Canvas>
+
+### Icons
+
+<Canvas>
+  <Story of={ButtonStories.Icons} />
+</Canvas>
+
+### Loading state
+
+<Canvas>
+  <Story of={ButtonStories.LoadingState} />
+</Canvas>
+
+### Color Prop Applied
+
+Generate the colors for primary button states using colored overlays rather than distinct hex values for each state.
+
+<Canvas>
+  <Story of={ButtonStories.ColorPropApplied} />
+</Canvas>
+
+### Link
+
+A link that looks like a button. Useful for buttons that trigger navigation
+
+<Canvas>
+  <Story of={ButtonStories.Link} />
+</Canvas>
 
 ## Use cases and examples
 
@@ -122,9 +166,22 @@ Fixed height: 32px, 48px, 64px
     {
       positive: {
         description: 'Use teriary button exclusively on photos or colored backgrounds. ',
-        component: <Flex w='100%' justifyContent='center' p='2xl' style={{background: `url(${test})`, backgroundSize: 'cover', backgroundPosition: 'center' }}><Button variant={ButtonType.TERTIARY} iconLeft={IconCamera}>Change Cover Photo</Button></Flex>,
-
-        style: {padding: 0}
+        component: (
+          <Flex 
+            w='100%' 
+            justifyContent='center' 
+            p='2xl' 
+            style={{
+              background: `url(${buttonBackground})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center'
+            }}>
+            <Button variant={ButtonType.TERTIARY} iconLeft={IconCamera}>
+              Change Cover Photo
+            </Button>
+          </Flex>
+        ),
+        css: {padding: 0}
       },
       negative: {
         description: 'Never place primary buttons actions side-by-side ',

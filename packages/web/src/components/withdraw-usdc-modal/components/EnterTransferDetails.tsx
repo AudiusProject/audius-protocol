@@ -116,6 +116,13 @@ export const EnterTransferDetails = () => {
 
   return (
     <div className={styles.root}>
+      <Hint
+        onClick={handleClickHelpGuide}
+        text={messages.notSure}
+        link={LEARN_MORE_LINK}
+        icon={IconQuestionCircle}
+        linkText={messages.guide}
+      />
       <TextRow left={messages.currentBalance} right={`$${balanceFormatted}`} />
       <Divider style={{ margin: 0 }} />
       <div className={styles.amount}>
@@ -164,13 +171,6 @@ export const EnterTransferDetails = () => {
       >
         {messages.continue}
       </Button>
-      <Hint
-        onClick={handleClickHelpGuide}
-        text={messages.notSure}
-        link={LEARN_MORE_LINK}
-        icon={IconQuestionCircle}
-        linkText={messages.guide}
-      />
     </div>
   )
 }

@@ -1,93 +1,93 @@
 import { create } from '@storybook/theming/create'
-import { themeColorsMap } from '../src/styles/theme'
+import { themes as harmonyThemes } from '../src/foundations/theme'
 
-const { day, dark, matrix } = themeColorsMap
+const { day, dark, matrix } = harmonyThemes
 
 export const lightTheme = create({
   base: 'light',
 
   // Color
-  colorPrimary: day.primary.primary,
-  colorSecondary: day.secondary.secondary,
+  colorPrimary: day.color.primary.primary,
+  colorSecondary: day.color.secondary.secondary,
 
   // UI
-  appBg: day.special.background,
-  appContentBg: day.special.white,
-  appBorderColor: day.neutral.n100,
-  appBorderRadius: 8,
+  appBg: day.color.background.default,
+  appContentBg: day.color.background.white,
+  appBorderColor: day.color.border.default,
+  appBorderRadius: day.cornerRadius.m,
 
   // Text colors
-  textColor: day.neutral.neutral,
-  textInverseColor: day.special.white,
+  textColor: day.color.text.default,
+  textInverseColor: day.color.special.white,
 
   // Toolbar default and active colors
   barTextColor: '#9E9E9E',
   barSelectedColor: '#585C6D',
-  barBg: day.special.white,
+  barBg: day.color.background.white,
 
   // Form colors
-  inputBg: day.neutral.n25,
-  inputBorder: day.neutral.n100,
-  inputTextColor: day.neutral.neutral,
-  inputBorderRadius: 4
+  inputBg: day.color.neutral.n25,
+  inputBorder: day.color.border.default,
+  inputTextColor: day.color.text.default,
+  inputBorderRadius: day.cornerRadius.s
 })
 
 export const darkTheme = create({
   base: 'dark',
 
   // Color
-  colorPrimary: dark.primary.primary,
-  colorSecondary: dark.secondary.secondary,
+  colorPrimary: dark.color.primary.primary,
+  colorSecondary: dark.color.secondary.secondary,
 
   // UI
-  appBg: dark.special.background,
-  appContentBg: dark.special.white,
-  appBorderColor: dark.neutral.n100,
-  appBorderRadius: 8,
+  appBg: dark.color.background.default,
+  appContentBg: dark.color.background.white,
+  appBorderColor: dark.color.border.default,
+  appBorderRadius: dark.cornerRadius.m,
 
   // Text colors
-  textColor: dark.neutral.neutral,
-  textInverseColor: dark.special.white,
+  textColor: dark.color.text.default,
+  textInverseColor: dark.color.special.white,
 
   // Toolbar default and active colors
   barTextColor: '#9E9E9E',
   barSelectedColor: '#585C6D',
-  barBg: dark.special.white,
+  barBg: dark.color.background.white,
 
   // Form colors
-  inputBg: dark.neutral.n25,
-  inputBorder: dark.neutral.n100,
-  inputTextColor: dark.neutral.neutral,
-  inputBorderRadius: 4
+  inputBg: dark.color.neutral.n25,
+  inputBorder: dark.color.border.default,
+  inputTextColor: dark.color.text.default,
+  inputBorderRadius: dark.cornerRadius.s
 })
 
 export const matrixTheme = create({
   base: 'dark',
 
   // Color
-  colorPrimary: matrix.primary.primary,
-  colorSecondary: matrix.secondary.secondary,
+  colorPrimary: matrix.color.primary.primary,
+  colorSecondary: matrix.color.secondary.secondary,
 
   // UI
-  appBg: matrix.special.background,
-  appContentBg: matrix.special.white,
-  appBorderColor: matrix.neutral.n100,
-  appBorderRadius: 8,
+  appBg: matrix.color.background.default,
+  appContentBg: matrix.color.background.white,
+  appBorderColor: matrix.color.border.default,
+  appBorderRadius: matrix.cornerRadius.m,
 
   // Text colors
-  textColor: matrix.neutral.neutral,
-  textInverseColor: matrix.special.white,
+  textColor: matrix.color.text.default,
+  textInverseColor: matrix.color.special.white,
 
   // Toolbar default and active colors
   barTextColor: '#9E9E9E',
   barSelectedColor: '#585C6D',
-  barBg: matrix.special.white,
+  barBg: matrix.color.background.white,
 
   // Form colors
-  inputBg: matrix.neutral.n25,
-  inputBorder: matrix.neutral.n100,
-  inputTextColor: matrix.neutral.neutral,
-  inputBorderRadius: 4
+  inputBg: matrix.color.neutral.n25,
+  inputBorder: matrix.color.border.default,
+  inputTextColor: matrix.color.text.default,
+  inputBorderRadius: matrix.cornerRadius.s
 })
 
 export const themes = {

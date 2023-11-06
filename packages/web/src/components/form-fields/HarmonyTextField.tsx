@@ -1,5 +1,4 @@
-import { TextInput } from '@audius/harmony'
-import { TextInputProps } from '@audius/harmony/dist/components/input/TextInput/types'
+import { TextInput, TextInputProps } from '@audius/harmony'
 import { useField } from 'formik'
 
 export type TextFieldProps = TextInputProps & {

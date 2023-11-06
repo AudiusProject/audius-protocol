@@ -146,12 +146,12 @@ services:
       service: sla-auditor
     <<: *common
 
-  # Storage v2
+  # Storage (content node)
 
   mediorum:
     extends:
-      file: docker-compose.storagev2.yml
-      service: storagev2
+      file: docker-compose.storage.${MEDIORUM_ENV_TYPE:-${DOCKERCOMPOSE_ENV_TYPE:-dev}}.yml
+      service: storage
     container_name: audius-protocol-mediorum
     <<: *common
 

@@ -43,7 +43,7 @@ const useNodeHealth = (endpoint: string, serviceType: ServiceType) => {
     // ----------Discovery health----------
 
     let chainError = undefined
-    if (!data?.chain_health) chainError = 'Missing health info'
+    if (!health?.chain_health) chainError = 'Missing health info'
     if (!data?.portHealth) chainError = "Can't reach port 30300"
 
     res = {

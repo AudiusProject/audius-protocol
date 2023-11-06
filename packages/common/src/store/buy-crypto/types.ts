@@ -23,3 +23,21 @@ export type BuyCryptoConfig = {
    */
   maxRetryCount?: number
 }
+
+export enum BuyCryptoErrorCode {
+  BAD_AMOUNT = 'BadAmount',
+  BAD_TOKEN = 'BadToken',
+  BAD_PROVIDER = 'BadProvider',
+  BAD_FEE_PAYER = 'BadFeePayer',
+  SWAP_ERROR = 'SwapError',
+  ON_RAMP_ERROR = 'OnRampError',
+  COUNTRY_NOT_SUPPORTED = 'CountryNotSupported',
+  UNKNOWN = 'UnknownError'
+}
+
+export class BuyCryptoError extends Error {
+  name = 'BuyCryptoError'
+  constructor(public code: BuyCryptoErrorCode, message: string) {
+    super(`${code}: ${message}`)
+  }
+}

@@ -103,6 +103,9 @@ export enum Name {
   ACCOUNT_HEALTH_DOWNLOAD_DESKTOP = 'Account Health: Download Desktop',
   ACCOUNT_HEALTH_CLICK_APP_CTA_BANNER = 'Account Health: App CTA Banner',
 
+  // TOS
+  BANNER_TOS_CLICKED = 'Banner TOS Clicked',
+
   // Social actions
   SHARE = 'Share',
   SHARE_TO_TWITTER = 'Share to Twitter',
@@ -229,6 +232,10 @@ export enum Name {
   LINK_CLICKING = 'Link Click',
   TAG_CLICKING = 'Tag Click',
 
+  // Modals
+  MODAL_OPENED = 'Modal Opened',
+  MODAL_CLOSED = 'Modal Closed',
+
   // Search
   SEARCH_SEARCH = 'Search: Search',
   SEARCH_TAG_SEARCH = 'Search: Tag Search',
@@ -335,6 +342,7 @@ export enum Name {
   BUY_USDC_RECOVERY_IN_PROGRESS = 'Buy USDC: Recovery In Progress',
   BUY_USDC_RECOVERY_SUCCESS = 'Buy USDC: Recovery Success',
   BUY_USDC_RECOVERY_FAILURE = 'Buy USDC: Recovery Failure',
+  BUY_USDC_ADD_FUNDS_MANUALLY = 'Buy USDC: Add Funds Manually',
 
   // Withdraw USDC
   WITHDRAW_USDC_MODAL_OPENED = 'Withdraw USDC: Modal Opened',
@@ -362,6 +370,7 @@ export enum Name {
   PURCHASE_CONTENT_FAILURE = 'Purchase Content: Failure',
   PURCHASE_CONTENT_TWITTER_SHARE = 'Purchase Content: Twitter Share',
   PURCHASE_CONTENT_TOS_CLICKED = 'Purchase Content: Terms of Service Link Clicked',
+  PURCHASE_CONTENT_USDC_USER_BANK_COPIED = 'Purchase Content: USDC User Bank Copied',
 
   // Rate & Review CTA
   RATE_CTA_DISPLAYED = 'Rate CTA: Displayed',
@@ -1104,6 +1113,17 @@ type TagClicking = {
   source: 'profile page' | 'track page' | 'collection page'
 }
 
+// Modals
+type ModalOpened = {
+  eventName: Name.MODAL_OPENED
+  name: string
+} & Record<string, any> // For passing state values
+
+type ModalClosed = {
+  eventName: Name.MODAL_CLOSED
+  name: string
+}
+
 // Search
 type SearchTerm = {
   eventName: Name.SEARCH_SEARCH
@@ -1651,9 +1671,14 @@ type BuyUSDCRecoveryFailure = {
   error: string
 }
 
+type BuyUSDCAddFundsManually = {
+  eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
+}
+
 // Withdraw USDC
 
 export type WithdrawUSDCEventFields = {
+  /** Balance in dollars */
   currentBalance: number
 }
 
@@ -1773,6 +1798,15 @@ type PurchaseContentTwitterShare = {
 
 type PurchaseContentTOSClicked = {
   eventName: Name.PURCHASE_CONTENT_TOS_CLICKED
+}
+
+type PurchaseContentUSDCUserBankCopied = {
+  eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED
+  address: string
+}
+
+type BannerTOSClicked = {
+  eventName: Name.BANNER_TOS_CLICKED
 }
 
 type RateCtaDisplayed = {
@@ -2019,6 +2053,8 @@ export type AllTrackingEvents =
   | Unfollow
   | LinkClicking
   | TagClicking
+  | ModalOpened
+  | ModalClosed
   | SearchTerm
   | SearchTag
   | SearchMoreResults
@@ -2108,6 +2144,7 @@ export type AllTrackingEvents =
   | BuyUSDCRecoveryInProgress
   | BuyUSDCRecoverySuccess
   | BuyUSDCRecoveryFailure
+  | BuyUSDCAddFundsManually
   | WithdrawUSDCModalOpened
   | WithdrawUSDCAddressPasted
   | WithdrawUSDCFormError
@@ -2129,6 +2166,8 @@ export type AllTrackingEvents =
   | PurchaseContentFailure
   | PurchaseContentTwitterShare
   | PurchaseContentTOSClicked
+  | PurchaseContentUSDCUserBankCopied
+  | BannerTOSClicked
   | RateCtaDisplayed
   | RateCtaResponseNo
   | RateCtaResponseYes

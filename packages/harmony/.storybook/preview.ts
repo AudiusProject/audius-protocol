@@ -1,19 +1,24 @@
-import { withThemeByDataAttribute } from '@storybook/addon-themes'
+import {
+  withThemeByDataAttribute,
+  withThemeFromJSXProvider
+} from '@storybook/addon-themes'
 import { ComponentRules, RelatedComponents } from '../src/storybook/components'
 
 // This file is used to configure all stories
 import './global.css'
-import 'assets/styles/reset.css'
-import 'assets/fonts/avenir.css'
-import 'assets/styles/fonts.css'
-import 'assets/styles/spacing.css'
-import 'assets/styles/colors.css'
-import 'assets/styles/tokens.css'
-import 'assets/styles/animations.css'
-import 'assets/styles/border-radius.css'
-import 'assets/styles/shadows.css'
+import 'foundations/reset/reset.css'
+import 'foundations/typography/avenir.css'
+import 'foundations/typography/fonts.css'
+import 'foundations/spacing/spacing.css'
+import 'foundations/color/primitive.css'
+import 'foundations/color/semantic.css'
+import 'foundations/motion/motion.css'
+import 'foundations/corner-radius/corner-radius.css'
+import 'foundations/shadows/shadows.css'
 import { darkTheme, lightTheme } from './theme'
+import { themes } from '../src/foundations/theme'
 import { HarmonyDocsContainer } from './docs'
+import { ThemeProvider } from '@emotion/react'
 
 // Default to docs view
 export const parameters = {
@@ -41,5 +46,10 @@ export const decorators = [
     },
     defaultTheme: 'day',
     attributeName: 'data-theme'
+  }),
+  withThemeFromJSXProvider({
+    themes,
+    defaultTheme: 'day',
+    Provider: ThemeProvider
   })
 ]

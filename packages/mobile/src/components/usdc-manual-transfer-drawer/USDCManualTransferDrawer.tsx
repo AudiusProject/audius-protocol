@@ -1,7 +1,9 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
+import { Name, useCreateUserbankIfNeeded } from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { View } from 'react-native'
+import QRCode from 'react-qr-code'
 import { useDispatch } from 'react-redux'
 import { useAsync } from 'react-use'
 
@@ -10,10 +12,14 @@ import LogoUSDC from 'app/assets/images/logoUSDC.svg'
 import { Button, Text, useLink } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import { useToast } from 'app/hooks/useToast'
+import { make, track, track as trackEvent } from 'app/services/analytics'
+import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import { getUSDCUserBank } from 'app/services/buyCrypto'
 import { setVisibility } from 'app/store/drawers/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
+import type { AllEvents } from 'app/types/analytics'
+import { useColor } from 'app/utils/theme'
 
 import { AddressTile } from '../core/AddressTile'
 
@@ -79,6 +85,11 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   shrink: {
     flexShrink: 1
+  },
+  qr: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10
   }
 }))
 
@@ -87,16 +98,31 @@ export const USDCManualTransferDrawer = () => {
   const dispatch = useDispatch()
   const { toast } = useToast()
   const { onPress: onPressLearnMore } = useLink(USDCLearnMore)
+  const neutral = useColor('neutral')
+  useCreateUserbankIfNeeded({
+    recordAnalytics: track,
+    audiusBackendInstance,
+    mint: 'usdc'
+  })
 
   const { value: USDCUserBank } = useAsync(async () => {
     const USDCUserBankPubKey = await getUSDCUserBank()
     return USDCUserBankPubKey?.toString() ?? ''
   })
 
+  const analytics: AllEvents = useMemo(
+    () => ({
+      eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
+      address: USDCUserBank ?? ''
+    }),
+    [USDCUserBank]
+  )
+
   const handleConfirmPress = useCallback(() => {
     Clipboard.setString(USDCUserBank ?? '')
     toast({ content: messages.copied, type: 'info' })
-  }, [USDCUserBank, toast])
+    trackEvent(make(analytics))
+  }, [USDCUserBank, analytics, toast])
 
   const handleCancelPress = useCallback(() => {
     dispatch(
@@ -126,14 +152,21 @@ export const USDCManualTransferDrawer = () => {
           </Text>
         </View>
         <Text style={styles.explainer}>{messages.explainer}</Text>
+        <View style={styles.qr}>
+          {USDCUserBank ? (
+            <QRCode size={160} style={styles.qr} value={USDCUserBank} />
+          ) : null}
+        </View>
         <AddressTile
           address={USDCUserBank ?? ''}
           left={<LogoUSDC height={spacing(6)} />}
+          analytics={analytics}
         />
         <View style={styles.disclaimerContainer}>
           <IconError
             width={spacing(6)}
             height={spacing(6)}
+            fill={neutral}
             style={styles.icon}
           />
           <View style={styles.splContainer}>

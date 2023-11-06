@@ -1,6 +1,6 @@
 import cn from 'classnames'
 
-import { IconInstagram, IconTikTok, IconTwitter } from 'components/typography'
+import { IconInstagram, IconTikTok, IconTwitter } from 'icons'
 
 import { Button } from '../Button/Button'
 import type { ButtonProps } from '../types'
@@ -24,11 +24,11 @@ export type SocialButtonProps = Omit<ButtonProps, 'aria-label'> & {
 const getButtonLogo = (type: SocialMedia) => {
   switch (type) {
     case 'instagram':
-      return <IconInstagram />
+      return <IconInstagram size='l' />
     case 'tiktok':
-      return <IconTikTok />
+      return <IconTikTok size='l' />
     case 'twitter':
-      return <IconTwitter />
+      return <IconTwitter size='l' />
     default:
       return undefined
   }

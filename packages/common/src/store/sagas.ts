@@ -24,13 +24,13 @@ import {
   mobileOverflowMenuUISagas,
   shareModalUISagas,
   stripeModalUISagas,
-  uploadConfirmationModalUISagas
+  uploadConfirmationModalUISagas,
+  modalsSagas
 } from 'store/ui'
 
+import { buyCryptoSagas } from './buy-crypto'
 import { playlistUpdatesSagas } from './playlist-updates'
 import { CommonStoreContext } from './storeContext'
-
-import { buyCryptoSagas } from '.'
 
 /**
  * A function that creates common sagas. The function takes
@@ -58,6 +58,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   shareModalUI: shareModalUISagas,
   stripeModalUI: stripeModalUISagas,
   mobileOverflowMenuUI: mobileOverflowMenuUISagas,
+  modals: modalsSagas,
   deletePlaylistConfirmationModalUI: deletePlaylistConfirmationModalUISagas,
   duplidateAddConfirmationModalUI: duplicateAddConfirmationModalUISagas,
   uploadConfirmationModalUI: uploadConfirmationModalUISagas,

@@ -2,7 +2,7 @@ import { useCallback, MouseEvent, ComponentPropsWithoutRef } from 'react'
 
 import cn from 'classnames'
 
-import { Text, TextProps } from '../typography'
+import { Text, TextProps } from '../text'
 
 import styles from './Link.module.css'
 
@@ -31,7 +31,6 @@ export const Link = (props: LinkProps) => {
   )
 
   return (
-    // @ts-ignore TODO figure out refs for text
     <Text className={cn(styles.root, className)} {...other} asChild>
       <a onClick={handleClick}>{children}</a>
     </Text>

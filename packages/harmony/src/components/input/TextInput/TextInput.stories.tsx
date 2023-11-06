@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { IconSearch, IconVisibilityHidden } from '../../typography'
+import { IconSearch, IconVisibilityHidden } from 'icons'
 
 import { TextInput } from './TextInput'
 import { TextInputProps, TextInputSize } from './types'

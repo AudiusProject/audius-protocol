@@ -30,7 +30,6 @@ import {
   parseJupiterInstruction
 } from 'services/Jupiter'
 import {
-  IntKeys,
   MEMO_PROGRAM_ID,
   MintName,
   createUserBankIfNeeded,
@@ -41,7 +40,8 @@ import {
   pollForBalanceChange,
   pollForTransaction,
   relayVersionedTransaction
-} from 'services/index'
+} from 'services/audius-backend/solana'
+import { IntKeys } from 'services/remote-config/types'
 import {
   onrampCanceled,
   onrampFailed,
@@ -55,29 +55,11 @@ import { getBuyUSDCRemoteConfig } from 'store/buy-usdc'
 import { getContext } from 'store/commonStore'
 import { getFeePayer } from 'store/solana/selectors'
 import { TOKEN_LISTING_MAP } from 'store/ui/buy-audio/constants'
+import { BuyAudioStage, OnRampProvider } from 'store/ui/buy-audio/types'
 import { setVisibility } from 'store/ui/modals/parentSlice'
 import { initializeStripeModal } from 'store/ui/stripe-modal/slice'
 
-import { BuyAudioStage, OnRampProvider } from '..'
-
-import { BuyCryptoConfig } from './types'
-
-export enum BuyCryptoErrorCode {
-  BAD_AMOUNT = 'BadAmount',
-  BAD_TOKEN = 'BadToken',
-  BAD_PROVIDER = 'BadProvider',
-  BAD_FEE_PAYER = 'BadFeePayer',
-  SWAP_ERROR = 'SwapError',
-  ON_RAMP_ERROR = 'OnRampError',
-  UNKNOWN = 'UnknownError'
-}
-
-class BuyCryptoError extends Error {
-  name = 'BuyCryptoError'
-  constructor(public code: BuyCryptoErrorCode, message: string) {
-    super(`${code}: ${message}`)
-  }
-}
+import { BuyCryptoConfig, BuyCryptoError, BuyCryptoErrorCode } from './types'
 
 function* getBuyAudioRemoteConfig() {
   // Default slippage tolerance, in percentage basis points
@@ -436,6 +418,15 @@ function* doBuyCryptoViaSol({
           error: errorString
         })
       )
+      if (
+        result.failure.payload?.error?.code ===
+        'crypto_onramp_unsupported_country'
+      ) {
+        throw new BuyCryptoError(
+          BuyCryptoErrorCode.COUNTRY_NOT_SUPPORTED,
+          errorString
+        )
+      }
       throw new BuyCryptoError(BuyCryptoErrorCode.ON_RAMP_ERROR, errorString)
     }
 

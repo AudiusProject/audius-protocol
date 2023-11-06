@@ -29,6 +29,7 @@ import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { getRecommendedTracks } from 'common/store/recommendation/sagas'
+import { isPreview } from 'common/utils/isPreview'
 
 const {
   getCollectible,
@@ -86,11 +87,13 @@ export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
     })
   } else if (entry.kind === Kind.TRACKS) {
     const track = yield* select(getTrack, { uid: entry.uid })
+    const currentUserId = yield* select(getUserId)
     if (!track) return {}
     return {
       id: track.track_id,
       uid: entry.uid,
-      source: prefix
+      source: prefix,
+      isPreview: isPreview(track, currentUserId)
     }
   }
 }
@@ -195,8 +198,7 @@ export function* watchPlay() {
             uid,
             isPreview,
             trackId: playActionTrack.track_id,
-            // Don't auto-advance after previews
-            onEnd: isPreview ? playerActions.stop : next
+            onEnd: next
           })
         )
       } else {
@@ -299,6 +301,7 @@ export function* watchNext() {
     const id = (yield* select(getQueueTrackId)) as ID
     const track = yield* select(getTrack, { id })
     const user = yield* select(getUser, { id: track?.owner_id })
+    const currentUserId = yield* select(getUserId)
     const doesUserHaveAccess = yield* call(
       doesUserHaveTrackAccess,
       track ?? null
@@ -307,7 +310,9 @@ export function* watchNext() {
     // Skip deleted, owner deactivated, or locked premium track
     if (
       track &&
-      (track.is_delete || user?.is_deactivated || !doesUserHaveAccess)
+      (track.is_delete ||
+        user?.is_deactivated ||
+        (!doesUserHaveAccess && !track.preview_cid))
     ) {
       yield* put(next({ skip }))
     } else {
@@ -323,17 +328,27 @@ export function* watchNext() {
       if (track) {
         const repeatMode = yield* select(getRepeat)
         const trackIsSameAndRepeatSingle = repeatMode === RepeatMode.SINGLE
+        const isTrackPreview =
+          isPreview(track, currentUserId) && !doesUserHaveAccess
 
         if (trackIsSameAndRepeatSingle) {
           yield* put(
             playerActions.play({
               uid,
               trackId: track.track_id,
-              onEnd: next
+              onEnd: next,
+              isPreview: isTrackPreview
             })
           )
         } else {
-          yield* put(play({ uid, trackId: id, source }))
+          yield* put(
+            play({
+              uid,
+              trackId: id,
+              source,
+              isPreview: isTrackPreview
+            })
+          )
           const event = make(Name.PLAYBACK_PLAY, {
             id: `${id}`,
             source: PlaybackSource.PASSIVE
@@ -400,6 +415,7 @@ export function* watchPrevious() {
       const track = yield* select(getTrack, { id })
       const source = yield* select(getSource)
       const user = yield* select(getUser, { id: track?.owner_id })
+      const currentUserId = yield* select(getUserId)
       const doesUserHaveAccess = yield* call(
         doesUserHaveTrackAccess,
         track ?? null
@@ -409,13 +425,22 @@ export function* watchPrevious() {
       // deleted or to which the user does not have access, skip over it.
       if (
         track &&
-        (track.is_delete || user?.is_deactivated || !doesUserHaveAccess)
+        (track.is_delete ||
+          user?.is_deactivated ||
+          (!doesUserHaveAccess && !track.preview_cid))
       ) {
         yield* put(previous())
       } else {
         const index = yield* select(getIndex)
-        if (index >= 0) {
-          yield* put(play({ uid, trackId: id, source }))
+        if (track && index >= 0) {
+          yield* put(
+            play({
+              uid,
+              trackId: id,
+              source,
+              isPreview: isPreview(track, currentUserId) && !doesUserHaveAccess
+            })
+          )
           const event = make(Name.PLAYBACK_PLAY, {
             id: `${id}`,
             source: PlaybackSource.PASSIVE

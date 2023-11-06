@@ -6,10 +6,6 @@
   object-fit: contain;
 }
 
-.leftAlignText {
-  text-align: left;
-}
-
 .flex1 {
   flex: 1;
 }

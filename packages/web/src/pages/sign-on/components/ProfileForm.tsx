@@ -18,7 +18,7 @@ import InstagramAuth, {
 } from 'components/instagram-auth/InstagramAuth'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import ProfilePicture from 'components/profile-picture/ProfilePicture'
-import StatusMessage from 'components/status-message/StatusMessage'
+import { StatusMessage } from 'components/status-message/StatusMessage'
 import { TwitterAuthProps } from 'components/twitter-auth/TwitterAuth'
 import { useDelayedEffect } from 'hooks/useDelayedEffect'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'

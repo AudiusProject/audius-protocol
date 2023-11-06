@@ -1,13 +1,16 @@
-import { forwardRef } from 'react'
+import { CSSProperties, forwardRef } from 'react'
 
 import cn from 'classnames'
 
-import type { CSSCustomProperties } from '../../../types/styles'
 import { toCSSVariableName } from '../../../utils/styles'
 import { BaseButton } from '../BaseButton/BaseButton'
 import { ButtonProps, ButtonSize, ButtonType } from '../types'
 
 import styles from './Button.module.css'
+
+type CSSCustomProperties = CSSProperties & {
+  [index: `--${string}`]: any
+}
 
 const SIZE_STYLE_MAP: { [k in ButtonSize]: [string, string, string, string] } =
   {
@@ -54,7 +57,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       disabled,
       ...baseProps
     } = props
-    const isDisabled = disabled || baseProps.isLoading
+    const { _isHovered, _isPressed, isLoading } = baseProps
+    const isDisabled = disabled || isLoading
 
     const style: CSSCustomProperties = {
       '--base-color':
@@ -76,7 +80,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           button: cn(
             styles.button,
             TYPE_STYLE_MAP[variant],
-            { [styles.disabled]: isDisabled },
+            {
+              [styles.disabled]: isDisabled,
+              [styles.hover]: _isHovered,
+              [styles.active]: _isPressed
+            },
             buttonSizeClass,
             textSizeClass
           ),

@@ -22,12 +22,12 @@ const navRoutes = [
   },
   {
     baseRoute: routes.SERVICES,
-    matchParams: [{ path: routes.SERVICES }],
+    matchParams: [{ path: `${routes.SERVICES}*` }],
     text: 'SERVICES'
   },
   {
     baseRoute: routes.GOVERNANCE,
-    matchParams: [{ path: routes.GOVERNANCE }],
+    matchParams: [{ path: `${routes.GOVERNANCE}*` }],
     text: 'GOVERNANCE'
   }
 ]

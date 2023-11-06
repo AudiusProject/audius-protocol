@@ -11,14 +11,16 @@ import {
   getTokenAccountInfo,
   purchaseContent
 } from 'services/audius-backend/solana'
-import { FeatureFlags } from 'services/index'
+import { FeatureFlags } from 'services/remote-config/feature-flags'
 import { accountSelectors } from 'store/account'
+import { getAccountUser } from 'store/account/selectors'
 import {
   buyCryptoCanceled,
   buyCryptoFailed,
   buyCryptoSucceeded,
   buyCryptoViaSol
 } from 'store/buy-crypto/slice'
+import { BuyCryptoError } from 'store/buy-crypto/types'
 import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
@@ -26,7 +28,7 @@ import {
   onrampCanceled
 } from 'store/buy-usdc/slice'
 import { BuyUSDCError, USDCOnRampProvider } from 'store/buy-usdc/types'
-import { getUSDCUserBank } from 'store/buy-usdc/utils'
+import { getBuyUSDCRemoteConfig, getUSDCUserBank } from 'store/buy-usdc/utils'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUser } from 'store/cache/users/selectors'
 import { getContext } from 'store/effects'
@@ -49,8 +51,21 @@ import {
   startPurchaseContentFlow
 } from './slice'
 import { ContentType, PurchaseContentError, PurchaseErrorCode } from './types'
+import { getBalanceNeeded } from './utils'
 
 const { getUserId } = accountSelectors
+
+type RaceStatusResult = {
+  succeeded?:
+    | ReturnType<typeof buyUSDCFlowSucceeded>
+    | ReturnType<typeof buyCryptoSucceeded>
+  failed?:
+    | ReturnType<typeof buyUSDCFlowFailed>
+    | ReturnType<typeof buyCryptoFailed>
+  canceled?:
+    | ReturnType<typeof onrampCanceled>
+    | ReturnType<typeof buyCryptoCanceled>
+}
 
 type GetPurchaseConfigArgs = {
   contentId: ID
@@ -161,8 +176,15 @@ function* doStartPurchaseContentFlow({
     getFeatureEnabled,
     FeatureFlags.BUY_USDC_VIA_SOL
   )
+  const usdcConfig = yield* call(getBuyUSDCRemoteConfig)
   const reportToSentry = yield* getContext('reportToSentry')
-  const { track, make } = yield* getContext('analytics')
+  const { track, make, identify } = yield* getContext('analytics')
+  const user = yield* select(getAccountUser)
+  if (user) {
+    yield* call(identify, user.handle, {
+      isBuyUSDCViaSolEnabled
+    })
+  }
 
   const { price, title, artistInfo } = yield* call(getContentInfo, {
     contentId,
@@ -210,9 +232,13 @@ function* doStartPurchaseContentFlow({
 
     const priceBN = new BN(price).mul(BN_USDC_CENT_WEI)
     const extraAmountBN = new BN(extraAmount ?? 0).mul(BN_USDC_CENT_WEI)
-    const balanceNeeded: BNUSDC = priceBN
-      .add(extraAmountBN)
-      .sub(new BN(initialBalance.toString())) as BNUSDC
+    const totalAmountDueCentsBN = priceBN.add(extraAmountBN) as BNUSDC
+
+    const balanceNeeded = getBalanceNeeded(
+      totalAmountDueCentsBN,
+      new BN(initialBalance.toString()) as BNUSDC,
+      usdcConfig.minUSDCPurchaseAmountCents
+    )
 
     // buy USDC if necessary
     if (balanceNeeded.gtn(0)) {
@@ -220,8 +246,7 @@ function* doStartPurchaseContentFlow({
         .div(BN_USDC_CENT_WEI)
         .toNumber()
       yield* put(buyUSDC())
-      let result: { succeeded?: any; failed?: any; canceled?: any } | null =
-        null
+      let result: RaceStatusResult | null = null
       if (isBuyUSDCViaSolEnabled) {
         yield* put(
           buyCryptoViaSol({
@@ -311,7 +336,9 @@ function* doStartPurchaseContentFlow({
     // If we get a known error, pipe it through directly. Otherwise make sure we
     // have a properly contstructed error to put into the slice.
     const error =
-      e instanceof PurchaseContentError || e instanceof BuyUSDCError
+      e instanceof PurchaseContentError ||
+      e instanceof BuyUSDCError ||
+      e instanceof BuyCryptoError
         ? e
         : new PurchaseContentError(PurchaseErrorCode.Unknown, `${e}`)
     yield* call(reportToSentry, {

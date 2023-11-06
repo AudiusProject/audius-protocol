@@ -1,8 +1,9 @@
 .root {
   border: transparent;
-  & svg path {
-    fill: var(--harmony-static-white);
-  }
+}
+
+.root svg path {
+  fill: var(--harmony-static-white);
 }
 
 .instagram {

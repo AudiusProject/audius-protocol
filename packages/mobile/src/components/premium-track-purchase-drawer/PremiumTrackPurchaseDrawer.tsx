@@ -11,6 +11,7 @@ import {
   formatPrice,
   isContentPurchaseInProgress,
   isTrackPurchasable,
+  modalsActions,
   purchaseContentActions,
   purchaseContentSelectors,
   statusIsNotFinalized,
@@ -138,7 +139,8 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   },
   errorContainer: {
     ...flexRowCentered(),
-    gap: spacing(2)
+    gap: spacing(2),
+    paddingHorizontal: spacing(4)
   },
   spinnerContainer: {
     width: '100%',
@@ -240,7 +242,6 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
   const { amountDue } = purchaseSummaryValues
 
   const isPurchaseSuccessful = stage === PurchaseContentStage.FINISH
-  const isInProgress = isContentPurchaseInProgress(stage)
 
   // Navigate to track screen in the background if purchase is successful
   useEffect(() => {
@@ -271,7 +272,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
           {isPurchaseSuccessful ? null : (
             <PayExtraFormSection
               amountPresets={presetValues}
-              disabled={isInProgress}
+              disabled={isUnlocking}
             />
           )}
           <View style={styles.bottomSection}>
@@ -279,7 +280,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
               {...purchaseSummaryValues}
               isPurchaseSuccessful={isPurchaseSuccessful}
             />
-            {isIOSDisabled ? null : (
+            {isIOSDisabled || isUnlocking || isPurchaseSuccessful ? null : (
               <Text
                 color='primary'
                 fontSize='small'
@@ -294,7 +295,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
             <PurchaseUnavailable />
           ) : isPurchaseSuccessful ? (
             <PurchaseSuccess track={track} />
-          ) : isInProgress ? null : (
+          ) : isUnlocking ? null : (
             <View>
               <View style={styles.payToUnlockTitleContainer}>
                 <Text weight='heavy' textTransform='uppercase' fontSize='small'>
@@ -338,8 +339,8 @@ export const PremiumTrackPurchaseDrawer = () => {
   const dispatch = useDispatch()
   const isUSDCEnabled = useIsUSDCEnabled()
   const presetValues = usePayExtraPresets(useRemoteVar)
-  const { data } = useDrawer('PremiumTrackPurchase')
-  const { trackId } = data
+  const { data, isOpen } = useDrawer('PremiumTrackPurchase')
+  const trackId = data?.trackId
   const { data: track, status: trackStatus } = useGetTrackById(
     { id: trackId },
     { disabled: !trackId }
@@ -355,7 +356,24 @@ export const PremiumTrackPurchaseDrawer = () => {
 
   const handleClosed = useCallback(() => {
     dispatch(purchaseContentActions.cleanup())
+    dispatch(
+      modalsActions.trackModalClosed({ name: 'PremiumContentPurchaseModal' })
+    )
   }, [dispatch])
+
+  // TODO: Remove manual event tracking in this drawer once
+  // it's using common modal state
+  // https://linear.app/audius/issue/PAY-2107/switch-mobile-drawers-over-to-common-modal-infrastructure
+  useEffect(() => {
+    if (trackId && isOpen) {
+      dispatch(
+        modalsActions.trackModalOpened({
+          name: 'PremiumContentPurchaseModal',
+          trackingData: { contentId: trackId }
+        })
+      )
+    }
+  }, [trackId, isOpen, dispatch])
 
   if (!track || !isTrackPurchasable(track) || !isUSDCEnabled) return null
 

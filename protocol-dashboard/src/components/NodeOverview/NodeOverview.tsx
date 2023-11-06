@@ -80,6 +80,7 @@ type NodeOverviewProps = {
   isOwner?: boolean
   isDeregistered?: boolean
   isUnregistered?: boolean
+  isLoading: boolean
 }
 
 const NodeOverview = ({
@@ -91,7 +92,8 @@ const NodeOverview = ({
   delegateOwnerWallet,
   isOwner,
   isDeregistered,
-  isUnregistered
+  isUnregistered,
+  isLoading
 }: NodeOverviewProps) => {
   const { isOpen, onClick, onClose } = useModalControls()
   const { health, status, error } = useNodeHealth(endpoint, serviceType)
@@ -252,76 +254,84 @@ const NodeOverview = ({
 
   return (
     <Paper className={styles.container}>
-      <div className={styles.header}>
-        <div className={styles.serviceType}>
-          {serviceType === ServiceType.DiscoveryProvider
-            ? messages.dp
-            : messages.cn}
-        </div>
-        {isDeregistered && (
-          <div className={styles.deregistered}>{messages.deregistered}</div>
-        )}
-        {!isDeregistered && (
-          <div className={styles.version}>
-            {`${messages.version} ${health?.version || version || 'unknown'}`}
+      {isLoading ? (
+        <Loading className={styles.loading} />
+      ) : (
+        <>
+          <div className={styles.header}>
+            <div className={styles.serviceType}>
+              {serviceType === ServiceType.DiscoveryProvider
+                ? messages.dp
+                : messages.cn}
+            </div>
+            {isDeregistered && (
+              <div className={styles.deregistered}>{messages.deregistered}</div>
+            )}
+            {!isDeregistered && (
+              <div className={styles.version}>
+                {`${messages.version} ${health?.version ||
+                  version ||
+                  'unknown'}`}
+              </div>
+            )}
+            {!isDeregistered && isUnregistered && (
+              <>
+                <Button
+                  onClick={onClick}
+                  leftIcon={<IconArrowWhite />}
+                  type={ButtonType.PRIMARY}
+                  text={messages.register}
+                  className={clsx(styles.registerBtn)}
+                  textClassName={styles.registerBtnText}
+                />
+                <RegisterServiceModal
+                  isOpen={isOpen}
+                  onClose={onClose}
+                  defaultDelegateOwnerWallet={
+                    delegateOwnerWallet || health?.delegateOwnerWallet || ''
+                  }
+                  defaultEndpoint={endpoint}
+                  defaultServiceType={serviceType}
+                />
+              </>
+            )}
+            {!isDeregistered && isOwner && (
+              <>
+                <Button
+                  onClick={onClick}
+                  leftIcon={<IconPencil />}
+                  type={ButtonType.PRIMARY_ALT}
+                  text={messages.modify}
+                  className={clsx(styles.modifyBtn)}
+                  textClassName={styles.modifyBtnText}
+                />
+                <ModifyServiceModal
+                  isOpen={isOpen}
+                  onClose={onClose}
+                  spID={spID}
+                  serviceType={serviceType}
+                  endpoint={endpoint}
+                  delegateOwnerWallet={health?.delegateOwnerWallet}
+                />
+              </>
+            )}
           </div>
-        )}
-        {!isDeregistered && isUnregistered && (
-          <>
-            <Button
-              onClick={onClick}
-              leftIcon={<IconArrowWhite />}
-              type={ButtonType.PRIMARY}
-              text={messages.register}
-              className={clsx(styles.registerBtn)}
-              textClassName={styles.registerBtnText}
+          <ServiceDetail label={messages.endpoint} value={endpoint} />
+          {(operatorWallet || health?.operatorWallet) && (
+            <ServiceDetail
+              label={messages.operator}
+              value={operatorWallet || health?.operatorWallet}
             />
-            <RegisterServiceModal
-              isOpen={isOpen}
-              onClose={onClose}
-              defaultDelegateOwnerWallet={
-                delegateOwnerWallet || health?.delegateOwnerWallet || ''
-              }
-              defaultEndpoint={endpoint}
-              defaultServiceType={serviceType}
+          )}
+          {(delegateOwnerWallet || health?.delegateOwnerWallet) && (
+            <ServiceDetail
+              label={messages.delegate}
+              value={delegateOwnerWallet || health.delegateOwnerWallet}
             />
-          </>
-        )}
-        {!isDeregistered && isOwner && (
-          <>
-            <Button
-              onClick={onClick}
-              leftIcon={<IconPencil />}
-              type={ButtonType.PRIMARY_ALT}
-              text={messages.modify}
-              className={clsx(styles.modifyBtn)}
-              textClassName={styles.modifyBtnText}
-            />
-            <ModifyServiceModal
-              isOpen={isOpen}
-              onClose={onClose}
-              spID={spID}
-              serviceType={serviceType}
-              endpoint={endpoint}
-              delegateOwnerWallet={health?.delegateOwnerWallet}
-            />
-          </>
-        )}
-      </div>
-      <ServiceDetail label={messages.endpoint} value={endpoint} />
-      {(operatorWallet || health?.operatorWallet) && (
-        <ServiceDetail
-          label={messages.operator}
-          value={operatorWallet || health?.operatorWallet}
-        />
+          )}
+          {healthDetails}
+        </>
       )}
-      {(delegateOwnerWallet || health?.delegateOwnerWallet) && (
-        <ServiceDetail
-          label={messages.delegate}
-          value={delegateOwnerWallet || health.delegateOwnerWallet}
-        />
-      )}
-      {healthDetails}
     </Paper>
   )
 }

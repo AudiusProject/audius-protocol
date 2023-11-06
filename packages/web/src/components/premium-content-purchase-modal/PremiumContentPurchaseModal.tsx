@@ -112,6 +112,7 @@ const RenderForm = ({
             <PurchaseContentFormFields
               stage={stage}
               purchaseSummaryValues={purchaseSummaryValues}
+              isUnlocking={isUnlocking}
             />
           </div>
         </>
