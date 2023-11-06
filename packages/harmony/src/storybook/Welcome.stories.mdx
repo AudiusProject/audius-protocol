@@ -1,0 +1,162 @@
+import { Meta, Title, Unstyled } from '@storybook/blocks'
+
+import {
+  Flex,
+  Button,
+  SelectablePill,
+  TextInput,
+  Text,
+  Box,
+  Paper
+} from 'components'
+import { IconNote } from 'icons'
+
+import { InformationBox } from './components'
+import openSource from './assets/openSource.png'
+import IconUnity from './assets/Unity.svg'
+import IconConsistency from './assets/Consistency.svg'
+import IconScalable from './assets/Scalable.svg'
+import IconReusable from './assets/Reusable.svg'
+import IconGitHub from './assets/GitHub.png'
+import IconFigma from './assets/Figma.svg'
+
+<Meta title='Welcome' />
+
+<Title>Harmony Desgin System</Title>
+
+Dive into our design guidelines, component documentation, and streamlined resources for building apps with Harmony.
+
+### What's inside
+
+Collaborative tools for designers and developers.
+
+<Unstyled>
+  <Flex gap='3xl' mv='3xl'>
+    <InformationBox
+      css={{
+        background: `url(${openSource})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
+      title='Open Source Library'
+      description='Our Audius Protocol Harmony package on Github'
+      href='https://github.com/AudiusProject/audius-protocol/tree/main/packages/harmony'
+    />
+    <InformationBox
+      title='Foundations'
+      description="Harmony's core essence: type, color, spacing, shadows, and more."
+      href='/?path=/docs/foundations-welcome--documentation'
+      component={
+        <Flex alignItems='center' gap='xl'>
+          <Text variant='display' size='s'>
+            Ag
+          </Text>
+          <Flex
+            h={32}
+            w={32}
+            alignItems='center'
+            justifyContent='center'
+            css={{ background: 'rgba(90, 73, 202, 0.10)' }}
+          >
+            <Text>32</Text>
+          </Flex>
+          <Flex direction='column'>
+            <Box
+              h={24}
+              w={24}
+              css={(theme) => ({ background: theme.color.neutral.neutral })}
+            />
+            <Box
+              h={24}
+              w={24}
+              css={(theme) => ({ background: theme.color.neutral.n400 })}
+            />
+            <Box
+              h={24}
+              w={24}
+              css={(theme) => ({ background: theme.color.neutral.n150 })}
+            />
+          </Flex>
+          <Flex direction='column' gap='m'>
+            <Paper h={24} w={24} shadow='near' borderRadius='xs' />
+            <Paper h={24} w={24} shadow='near' borderRadius='s' />
+            <Paper h={24} w={24} shadow='near' borderRadius='2xl' />
+          </Flex>
+          <IconNote color='default' />
+        </Flex>
+
+      }
+    />
+    <InformationBox
+      title='Components'
+      description='Detailed information and guidelines on each component.'
+      href='/?path=/docs/components-welcome--documentation'
+      css={{ overflow: 'hidden' }}
+      component={
+        <Flex
+          gap='l'
+          alignItems='center'
+          wrap='wrap'
+        >
+          <Button size='small' variant='primary'>
+            Button
+          </Button>
+          <SelectablePill label='Pill' size='large' />
+          <TextInput
+            label='Display name'
+            placeholder='express yourself ✨'
+            _isFocused
+          />
+        </Flex>
+      }
+    />
+
+  </Flex>
+</Unstyled>
+
+## Our Principles
+
+<Unstyled>
+  <Flex gap='3xl' mv='3xl'>
+    <InformationBox
+      title='Unity'
+      description='Uniting designers & developers with a unified language'
+      component={<IconUnity />}
+    />
+    <InformationBox
+      title='Consistency'
+      description='Uniting designers & developers with a unified language'
+      component={<IconConsistency />}
+    />
+    <InformationBox
+      title='Scalable'
+      description='Uniting designers & developers with a unified language'
+      component={<IconScalable />}
+    />
+    <InformationBox
+      title='Reusable'
+      description='Aim to increases production and speed'
+      component={<IconReusable />}
+    />
+  </Flex>
+</Unstyled>
+
+## For Designers & Developers
+
+Empowering creativity with streamlined resources. Dive into our collaborative tools.
+
+<Unstyled>
+  <Flex gap='3xl' mv='3xl'>
+    <InformationBox
+      title='Figma'
+      description='Our public Figma library on Community.'
+      component={<IconFigma css={{ width: 50 }} />}
+    />
+    <InformationBox
+      title='Github'
+      description='Our open-source library on GitHub'
+      component={<img css={{ width: 200 }} src={IconGitHub} />}
+      href='https://github.com/AudiusProject/audius-protocol/tree/main/packages/harmony'
+    />
+  </Flex>
+</Unstyled>
