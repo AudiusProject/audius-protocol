@@ -6,6 +6,7 @@
     "packages/discovery-provider/plugins/pedalboard/apps/*",
     "packages/discovery-provider/plugins/pedalboard/packages/*"
   ],
+  "cacheBust": 1,
   "private": true,
   "scripts": {
     "build": "turbo run build",
