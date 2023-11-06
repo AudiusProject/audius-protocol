@@ -6,7 +6,9 @@ const createSemanticTheme = (primitives: PrimitiveColors) => ({
     heading: primitives.special.gradient,
     default: primitives.neutral.neutral,
     subdued: primitives.neutral.n400,
-    disabled: primitives.neutral.n150
+    disabled: primitives.neutral.n150,
+    warning: primitives.special.orange,
+    danger: primitives.special.red
   },
   icon: {
     heading: primitives.special.gradient,
@@ -24,7 +26,7 @@ const createSemanticTheme = (primitives: PrimitiveColors) => ({
     default: primitives.neutral.n100,
     strong: primitives.neutral.n150
   },
-  focus: primitives.secondary.secondary,
+  focus: { default: primitives.secondary.secondary },
   status: {
     error: primitives.special.red,
     warning: primitives.special.orange,

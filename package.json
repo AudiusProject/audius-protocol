@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.5.49",
+  "version": "1.5.50",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
@@ -69,7 +69,8 @@
     "eslint-import-resolver-typescript": "3.5.5",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-jest": "27.1.1",
-    "eslint-plugin-n": "^15.3.0",
+    "eslint-plugin-mdx": "2.2.0",
+    "eslint-plugin-n": "15.3.0",
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-prettier": "4.2.1",
     "eslint-plugin-promise": "6.1.0",

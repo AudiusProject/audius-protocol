@@ -1,18 +1,13 @@
-import {
-  Box,
-  Button,
-  Flex,
-  IconArrowRight,
-  IconVisibilityHidden,
-  Text
-} from '@audius/harmony'
+import { Box, Button, Flex, IconArrowRight, Text } from '@audius/harmony'
 import { Button as ButtonTmp } from '@audius/stems'
 import { Form } from 'formik'
 import { Link } from 'react-router-dom'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
+import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import PreloadImage from 'components/preload-image/PreloadImage'
+import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
 import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithAudiusValues'
 import { SIGN_UP_PAGE } from 'utils/route'
 
@@ -31,17 +26,7 @@ export const SignInPageDesktop = () => {
   return (
     <Flex h='100%' alignItems='center' justifyContent='center'>
       <PageWithAudiusValues>
-        <Flex
-          className={styles.root}
-          h='100%'
-          w={480}
-          // want 80px but don't have var for it
-          pv='4xl'
-          ph='2xl'
-          direction='column'
-          gap='2xl'
-          justifyContent='space-between'
-        >
+        <LeftContentContainer gap='2xl' justifyContent='space-between'>
           {/* TODO: confirm 40px spacing value */}
           <Flex direction='column' gap='2xl' alignItems='center'>
             <PreloadImage
@@ -63,12 +48,9 @@ export const SignInPageDesktop = () => {
                       name='email'
                       label={messages.emailLabel}
                     />
-                    {/* TODO: password visibility icon and toggle */}
-                    <HarmonyTextField
+                    <HarmonyPasswordField
                       name='password'
                       label={messages.passwordLabel}
-                      endIcon={IconVisibilityHidden}
-                      type='password'
                     />
                   </Flex>
                   <Flex direction='column' gap='l'>
@@ -93,7 +75,7 @@ export const SignInPageDesktop = () => {
             to={SIGN_UP_PAGE}
             text={messages.createAccount}
           />{' '}
-        </Flex>
+        </LeftContentContainer>
       </PageWithAudiusValues>
     </Flex>
   )

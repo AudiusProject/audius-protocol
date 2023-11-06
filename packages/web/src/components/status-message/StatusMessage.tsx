@@ -1,6 +1,6 @@
 import { CSSProperties } from 'react'
 
-import { IconCheck, IconCloseAlt } from '@audius/harmony'
+import { IconValidationCheck, IconValidationX } from '@audius/harmony'
 import { useTransition, animated } from '@react-spring/web'
 import cn from 'classnames'
 
@@ -29,7 +29,7 @@ export const StatusError = (props: StatusChangeIconProps) => (
     className={cn(styles.statusIcon, styles.removeIcon)}
   >
     {' '}
-    <IconCloseAlt />{' '}
+    <IconValidationX size='s' />{' '}
   </animated.div>
 )
 export const StatusSuccess = (props: StatusChangeIconProps) => (
@@ -38,7 +38,7 @@ export const StatusSuccess = (props: StatusChangeIconProps) => (
     className={cn(styles.statusIcon, styles.checkIcon)}
   >
     {' '}
-    <IconCheck />
+    <IconValidationCheck size='s' />
   </animated.div>
 )
 

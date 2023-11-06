@@ -1,0 +1,15 @@
+version: '3.9'
+
+# Defines "dev" content node. This is ran locally by audius-compose and uses `air` for hot reloading.
+# Extends from docker-compose.storage.prod.yml.
+
+services:
+  storage:
+    extends:
+      file: docker-compose.storage.prod.yml
+      service: storage
+    build:
+      context: ${PROJECT_ROOT}/mediorum
+      dockerfile: Dockerfile.dev
+    entrypoint: /bin/sh
+    command: /tmp/dev-tools/startup/storage.sh 3 # Entrypoint for local dev

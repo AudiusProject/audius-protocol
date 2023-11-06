@@ -9,6 +9,7 @@ module.exports = {
     'plugin:jest/recommended',
     'plugin:react/recommended',
     'plugin:import/typescript',
+    // 'plugin:mdx/recommended',
     'plugin:prettier/recommended'
   ],
   globals: {
@@ -29,7 +30,8 @@ module.exports = {
     '@typescript-eslint',
     '@emotion',
     'jest',
-    'import'
+    'import',
+    'mdx'
   ],
   rules: {
     '@typescript-eslint/explicit-function-return-type': 'off',
@@ -127,6 +129,12 @@ module.exports = {
       typescript: true,
       node: true
     },
-    'import/extensions': ['.js', '.jsx', '.ts', '.tsx']
-  }
+    'import/extensions': ['.js', '.jsx', '.ts', '.tsx', '.mdx']
+  },
+  overrides: [
+    {
+      files: ['*.mdx'],
+      parser: 'eslint-mdx'
+    }
+  ]
 }

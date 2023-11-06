@@ -1678,6 +1678,7 @@ type BuyUSDCAddFundsManually = {
 // Withdraw USDC
 
 export type WithdrawUSDCEventFields = {
+  /** Balance in dollars */
   currentBalance: number
 }
 

@@ -184,6 +184,7 @@ function* doWithdrawUSDC({
   const analyticsFields: WithdrawUSDCTransferEventFields = {
     destinationAddress,
     amount: amount / 100,
+    // Incoming balance is in cents, analytics values are in dollars
     currentBalance: currentBalance / 100
   }
   try {

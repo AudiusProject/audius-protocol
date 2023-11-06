@@ -5,6 +5,8 @@ import type {
   ReactNode
 } from 'react'
 
+import type { TextColors } from 'foundations'
+
 export type TextOwnProps<TextComponentType extends ElementType = 'p'> = {
   tag?: TextComponentType
   className?: string
@@ -12,7 +14,7 @@ export type TextOwnProps<TextComponentType extends ElementType = 'p'> = {
   variant?: TextVariant
   size?: TextSize
   strength?: TextStrength
-  color?: TextColor
+  color?: TextColors
   innerRef?: ForwardedRef<HTMLElement>
   asChild?: boolean
 }
@@ -22,14 +24,6 @@ export type TextProps<TextComponentType extends ElementType = 'p'> =
     Omit<ComponentProps<TextComponentType>, keyof TextOwnProps | 'ref'>
 
 export type TextStrength = 'weak' | 'default' | 'strong'
-
-export type TextColor =
-  | 'heading'
-  | 'default'
-  | 'subdued'
-  | 'disabled'
-  | 'danger'
-  | 'warning'
 
 export type TextSize = 'xl' | 'l' | 'm' | 's' | 'xs'
 

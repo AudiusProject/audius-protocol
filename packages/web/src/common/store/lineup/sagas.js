@@ -17,7 +17,8 @@ import {
   isPremiumContentUSDCPurchaseGated,
   doesUserHaveTrackAccess,
   StringKeys,
-  premiumTracksPageLineupActions
+  premiumTracksPageLineupActions,
+  accountSelectors
 } from '@audius/common'
 import {
   all,
@@ -34,17 +35,20 @@ import {
 
 import { getToQueue } from 'common/store/queue/sagas'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
+import { isPreview } from 'common/utils/isPreview'
 
 const { getSource, getUid, getPositions } = queueSelectors
 const { getUid: getCurrentPlayerTrackUid, getPlaying } = playerSelectors
 const { getUsers } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
+const { getUserId } = accountSelectors
 
 const getEntryId = (entry) => `${entry.kind}:${entry.id}`
 
 const flatten = (list) =>
   list.reduce((a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), [])
+
 function* filterDeletes(tracksMetadata, removeDeleted, lineupPrefix) {
   const tracks = yield select(getTracks)
   const users = yield select(getUsers)
@@ -289,13 +293,18 @@ function* fetchLineupMetadatasAsync(
       if (trackSubscribers.length > 0) {
         yield put(cacheActions.subscribe(Kind.TRACKS, trackSubscribers))
       }
+      const currentUserId = yield select(getUserId)
       // Retain specified info in the lineup itself and resolve with success.
       const lineupEntries = allMetadatas
         .map(retainSelector)
         .map((m, i) => {
           const lineupEntry = allMetadatas[i]
           // Use metadata.uid, entry.uid, computed new uid in that order of precedence
-          return { ...m, uid: m.uid || lineupEntry.uid || uids[i] }
+          return {
+            ...m,
+            uid: m.uid || lineupEntry.uid || uids[i],
+            isPreview: isPreview(lineupEntry, currentUserId)
+          }
         })
         .filter((metadata, idx) => {
           if (lineup.dedupe && lineup.entryIds) {
