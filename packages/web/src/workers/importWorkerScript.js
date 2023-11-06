@@ -4,8 +4,6 @@ const importWorkerScript = (script) => {
     // eslint-disable-next-line
     let origin = location.origin
     // eslint-disable-next-line
-    if (basename) origin += basename
-    // eslint-disable-next-line
     importScripts(origin + script)
   } else {
     // eslint-disable-next-line

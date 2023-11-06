@@ -3,13 +3,11 @@ import NavBanner from 'components/public-site/NavBannerV2'
 
 import styles from './PrivacyPolicyPage.module.css'
 
-const BASENAME = process.env.VITE_PUBLIC_URL
-
 const messages = {
   download: 'Download Privacy Policy'
 }
 
-const privacyPolicyDocumentRoute = `${BASENAME}/documents/PrivacyPolicy.pdf`
+const privacyPolicyDocumentRoute = `/documents/PrivacyPolicy.pdf`
 
 type PrivacyPolicyPageProps = {
   isMobile: boolean
