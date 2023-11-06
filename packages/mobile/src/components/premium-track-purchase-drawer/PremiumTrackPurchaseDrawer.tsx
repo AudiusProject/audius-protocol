@@ -18,7 +18,8 @@ import {
   usePayExtraPresets,
   usePremiumContentPurchaseModal,
   usePurchaseContentErrorMessage,
-  usePurchaseContentFormConfiguration
+  usePurchaseContentFormConfiguration,
+  useUSDCManualTransferModal
 } from '@audius/common'
 import { Formik, useFormikContext } from 'formik'
 import {
@@ -219,7 +220,6 @@ const RenderForm = ({
   onClose: () => void
   track: PurchasableTrackMetadata
 }) => {
-  const dispatch = useDispatch()
   const navigation = useNavigation()
   const styles = useStyles()
   const { specialLightGreen, primary } = useThemeColors()
@@ -227,6 +227,7 @@ const RenderForm = ({
   const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.IOS_USDC_PURCHASE_ENABLED
   )
+  const { onOpen: openUSDCManualTransferModal } = useUSDCManualTransferModal()
   const isIOSDisabled = Platform.OS === 'ios' && !isIOSUSDCPurchaseEnabled
 
   const { submitForm, resetForm } = useFormikContext()
@@ -259,8 +260,8 @@ const RenderForm = ({
   }, [])
 
   const handleManualTransferPress = useCallback(() => {
-    dispatch(setVisibility({ drawer: 'USDCManualTransfer', visible: true }))
-  }, [dispatch])
+    openUSDCManualTransferModal()
+  }, [openUSDCManualTransferModal])
 
   return (
     <>

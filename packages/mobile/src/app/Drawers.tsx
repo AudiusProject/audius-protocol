@@ -114,6 +114,7 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   // Disabled to allow the proper zIndex sibling order for multiple purchases on Android.
   // See: https://linear.app/audius/issue/PAY-2119/stripe-drawer-appearing-behind-purchase-drawer
   // PremiumTrackPurchaseModal: PremiumTrackPurchaseDrawer,
+  // USDCManualTransfer: USDCManualTransferDrawer
   // StripeOnRamp: StripeOnrampDrawer,
   InboxUnavailableModal: InboxUnavailableDrawer,
   LeavingAudiusModal: LeavingAudiusDrawer
@@ -138,9 +139,6 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   BlockMessages: BlockMessagesDrawer,
   DeleteChat: DeleteChatDrawer,
   SupportersInfo: SupportersInfoDrawer
-  // Disabled to allow the proper zIndex sibling order for multiple purchases on Android.
-  // See: https://linear.app/audius/issue/PAY-2119/stripe-drawer-appearing-behind-purchase-drawer
-  // USDCManualTransfer: USDCManualTransferDrawer
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [
@@ -181,9 +179,9 @@ export const Drawers = () => {
         modal={PremiumTrackPurchaseDrawer}
         modalName={'PremiumContentPurchaseModal'}
       />
-      <NativeDrawer
-        drawer={USDCManualTransferDrawer}
-        drawerName='USDCManualTransfer'
+      <CommonDrawer
+        modal={USDCManualTransferDrawer}
+        modalName='USDCManualTransferModal'
       />
       <CommonDrawer modal={StripeOnrampDrawer} modalName='StripeOnRamp' />
     </>
