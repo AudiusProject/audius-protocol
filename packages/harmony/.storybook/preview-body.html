@@ -1,7 +1,6 @@
 <style>
-  /* TODO: Is there a way to update this based on which page we are on? */
   #storybook-docs {
-    border-top: 10px solid var(--harmony-p-300);
+    border-top: 10px solid #5A49CA;
   }
 
   #storybook-docs .sbdocs-wrapper {
@@ -9,5 +8,62 @@
   }
   #configuration-options {
     margin-bottom: var(--harmony-spacing-2xl);
+  }
+
+  .sbdocs-title {
+    color: var(--text-colors-text, #111);
+    font-size: 72px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+  }
+
+  #storybook-docs :where(h2:not(.sb-anchor, .sb-unstyled, .sb-unstyled h2)) {
+    color: var(--text-colors-text, #111);
+    font-size: 32px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    border-bottom: unset;
+  }
+
+  #storybook-docs :where(h3:not(.sb-anchor, .sb-unstyled, .sb-unstyled h3)) {
+    color: var(--text-colors-text-muted, #414141);
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+  }
+
+  #storybook-docs :where(h4:not(.sb-anchor, .sb-unstyled, .sb-unstyled h4)) {
+    color: var(--text-colors-text-muted, #414141);
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+  }
+  
+  #storybook-docs :where(p:not(.sb-anchor, .sb-unstyled, .sb-unstyled p)) {
+    color: var(--text-colors-text-muted, #3F3F3F);
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+  }
+
+  #storybook-docs :where(a:not(.sb-anchor, .toc-link, .sb-unstyled, .sb-unstyled a)), li:has(a)::marker{
+    color: #5A49CA;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+  }
+
+  #storybook-docs :where(li:not(.sb-anchor, .toc-list-item, .sb-unstyled, .sb-unstyled li)) {
+    color: var(--text-colors-text-muted, #414141);
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
   }
 </style>

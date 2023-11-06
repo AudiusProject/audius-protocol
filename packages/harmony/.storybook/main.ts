@@ -6,7 +6,6 @@ const config: StorybookConfig = {
   staticDirs: ['./public'],
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(mdx|ts|tsx)'],
   addons: [
-    'storybook-dark-mode',
     '@storybook/addon-a11y',
     '@storybook/addon-themes',
     '@storybook/addon-interactions',

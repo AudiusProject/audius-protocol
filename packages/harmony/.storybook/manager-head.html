@@ -1,0 +1,38 @@
+<style>
+  .sidebar-header > div {
+    margin-right: 0
+  }
+  .sidebar-header button[aria-label="Shortcuts"] {
+    display: none
+  }
+
+  .sidebar-subheading button[data-action="collapse-root"] {
+    display: flex;
+    padding: 4px 16px;
+    align-items: center;
+    gap: 8px;
+    border-radius: var(--border-radius-2-xl, 320px);
+    background: var(--violet-v-200, #C7BFFD);
+  }
+
+  .sidebar-subheading button {
+    color: var(--toolbar-default-bar-text, #201C3D) !important;
+  }
+
+  .sidebar-subheading button span {
+    color: var(--toolbar-default-bar-text, #201C3D) !important;
+  }
+  
+  .sidebar-item:hover {
+    background: var(--violet-v-300, #C7BFFD) !important;
+  }
+
+  .sidebar-item svg, .search-result-item svg {
+    color: var(--violet-v-300, #C7BFFD) !important;
+  }
+
+  .sidebar-item[data-selected="true"] {
+    background: var(--violet-v-400, #5A49CA) !important;
+  }
+
+</style>

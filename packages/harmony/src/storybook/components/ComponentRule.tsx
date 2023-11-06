@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactElement } from 'react'
+import type { ReactElement } from 'react'
 
 import { useTheme } from '@emotion/react'
 
@@ -15,7 +15,6 @@ type ComponentRuleProps = {
   component: ReactElement
   description: ReactElement | string
   isRecommended: boolean
-  style?: CSSProperties
 }
 
 export const ComponentRule = (props: ComponentRuleProps) => {
@@ -34,14 +33,10 @@ export const ComponentRule = (props: ComponentRuleProps) => {
   return (
     <Flex as='section' direction='column' gap='xl' flex={1}>
       <Flex direction='column' gap='m'>
-        <Text
-          variant='title'
-          tag='h5'
-          style={{ display: 'flex', alignItems: 'center' }}
-        >
-          <TitleIcon size='s' style={{ marginRight: '8px' }} /> {title}
+        <Text variant='title' tag='h4' css={{ textTransform: 'uppercase' }}>
+          <TitleIcon css={{ marginRight: '4px' }} /> {title}
         </Text>
-        <Text tag='section' style={{ height: '32px', overflow: 'hidden' }}>
+        <Text tag='section' css={{ height: '32px', overflow: 'hidden' }}>
           {description}
         </Text>
       </Flex>

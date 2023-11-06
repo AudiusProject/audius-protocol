@@ -1,7 +1,9 @@
 import { MouseEvent, forwardRef, useCallback, useState } from 'react'
 
 import { IconVisibilityHidden, IconVisibilityPublic } from 'icons'
+
 import { TextInput } from '../TextInput'
+
 import styles from './PasswordInput.modules.css'
 import type { PasswordInputProps } from './types'
 

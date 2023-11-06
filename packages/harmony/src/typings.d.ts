@@ -13,4 +13,7 @@ declare module '*.svg' {
   export default iconComponent
 }
 
+declare module '*.png'
+declare module '*.jpg'
+
 declare module 'storybook-addon-smart-knobs'
