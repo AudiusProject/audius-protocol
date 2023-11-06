@@ -16,6 +16,7 @@ type UseAccessAndRemixSettingsProps = {
   isRemix: boolean
   initialPremiumConditions: Nullable<PremiumConditions>
   isInitiallyUnlisted: boolean
+  isScheduledRelease: boolean
 }
 
 /**
@@ -33,7 +34,8 @@ export const useAccessAndRemixSettings = ({
   isUpload,
   isRemix,
   initialPremiumConditions,
-  isInitiallyUnlisted
+  isInitiallyUnlisted,
+  isScheduledRelease
 }: UseAccessAndRemixSettingsProps) => {
   const hasNoCollectibles = useSelector((state: CommonState) => {
     const { ethCollectionMap, solCollectionMap } =
@@ -83,7 +85,9 @@ export const useAccessAndRemixSettings = ({
     isInitiallySpecialAccess ||
     hasNoCollectibles
   const noCollectibleGateFields =
-    noCollectibleGate || (!isUpload && !isInitiallyHidden)
+    noCollectibleGate ||
+    (!isUpload && !isInitiallyHidden) ||
+    !!isScheduledRelease
 
   const noHidden = !isUpload && !isInitiallyUnlisted
 

@@ -10,6 +10,7 @@ import {
   isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
 import { useField } from 'formik'
+import moment from 'moment'
 
 import type { ContextualMenuProps } from 'app/components/core'
 import { ContextualMenu } from 'app/components/core'
@@ -50,6 +51,9 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
   const [{ value: fieldVisibility }] =
     useField<FieldVisibility>('field_visibility')
+  const [{ value: releaseDate }] = useField<Nullable<string>>('release_date')
+  const isScheduledRelease =
+    releaseDate === null ? false : moment(releaseDate).isAfter(moment())
 
   const fieldVisibilityLabels = fieldVisibilityKeys
     .filter((visibilityKey) => fieldVisibility[visibilityKey])
@@ -69,7 +73,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     if (isPremiumContentTipGated(premiumConditions)) {
       return [messages.specialAccess, messages.supportersOnly]
     }
-    if (isUnlisted) {
+    if (isUnlisted || isScheduledRelease) {
       return [messages.hidden, ...fieldVisibilityLabels]
     }
     return [messages.public]
