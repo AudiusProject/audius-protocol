@@ -21,7 +21,7 @@ jobs:
         - identity-init
 
   - push-arm-image:
-      name: push-identity-arm
+      name: push-identity-service-arm
       context: [Vercel, dockerhub]
       service: identity-service
       filters:
