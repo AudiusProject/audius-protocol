@@ -344,13 +344,14 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     }
     return initialValues as AccessAndSaleFormValues
   }, [
-    fieldVisibility,
-    isPremium,
-    isUnlisted,
     savedPremiumConditions,
+    isUnlisted,
+    isPremium,
     tempPremiumConditions,
+    isScheduledRelease,
+    fieldVisibility,
     preview,
-    isScheduledRelease
+    setIsUnlistedValue
   ])
 
   const handleSubmit = useCallback(

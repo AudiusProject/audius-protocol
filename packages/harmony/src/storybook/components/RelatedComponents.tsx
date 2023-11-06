@@ -1,6 +1,6 @@
 import { Text, Box, Divider, Flex, PlainButton, SocialButton } from 'components'
 
-import InformationBox from './InformationBox'
+import { InformationBox } from './InformationBox'
 
 const relatedComponentsMap = {
   PlainButton: {

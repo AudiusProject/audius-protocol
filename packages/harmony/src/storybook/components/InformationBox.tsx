@@ -1,24 +1,25 @@
 import type { ReactElement } from 'react'
 
-import { Flex, Link } from 'components'
+import { Flex, Link, Paper, Text } from 'components'
 
 type InformationBoxProps = {
+  className?: string
   component: ReactElement
   title: string
   description: string
-  href: string
+  href?: string
 }
 
-const InformationBox = (props: InformationBoxProps) => {
-  const { component = null, title, description, href } = props
+export const InformationBox = (props: InformationBoxProps) => {
+  const { component = null, title, description, href, className } = props
 
   return (
-    <Flex as='section' direction='column' flex={1} gap='m'>
+    <Paper as='section' direction='column' flex={1} gap='m'>
       <Flex
-        as='figure'
-        p='3xl'
+        p='xl'
         alignItems='center'
         justifyContent='center'
+        className={className}
         css={(theme) => ({
           backgroundColor: theme.color.background.default,
           height: 147
@@ -26,10 +27,10 @@ const InformationBox = (props: InformationBoxProps) => {
       >
         {component}
       </Flex>
-      <Link href={href}>{title}</Link>
-      <section>{description}</section>
-    </Flex>
+      <Flex direction='column' pv='xl' ph='l' gap='s'>
+        {href ? <Link href={href}>{title}</Link> : <Text>{title}</Text>}
+        <Text tag='section'>{description}</Text>
+      </Flex>
+    </Paper>
   )
 }
-
-export default InformationBox
