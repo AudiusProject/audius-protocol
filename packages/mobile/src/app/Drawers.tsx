@@ -111,11 +111,11 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   ProfileActions: ProfileActionsDrawer,
   PlaybackRate: PlaybackRateDrawer,
   PublishPlaylistConfirmation: PublishPlaylistDrawer,
-  // Disabled to allow the proper zIndex sibling order for multiple purchases on Android.
-  // See: https://linear.app/audius/issue/PAY-2119/stripe-drawer-appearing-behind-purchase-drawer
-  // PremiumTrackPurchaseModal: PremiumTrackPurchaseDrawer,
-  // USDCManualTransfer: USDCManualTransferDrawer
-  // StripeOnRamp: StripeOnrampDrawer,
+  // PremiumContent, USDCManualTransfer, and StripOnRamp *must* be in this order
+  // to avoid zIndex issues.
+  PremiumContentPurchaseModal: PremiumTrackPurchaseDrawer,
+  USDCManualTransferModal: USDCManualTransferDrawer,
+  StripeOnRamp: StripeOnrampDrawer,
   InboxUnavailableModal: InboxUnavailableDrawer,
   LeavingAudiusModal: LeavingAudiusDrawer
 }
@@ -166,24 +166,6 @@ export const Drawers = () => {
           drawer={Drawer}
         />
       ))}
-      {/**
-       * The Stripe drawer is opened while the purchase drawer is opened.
-       * We set a higher zIndex on the Stripe drawer, but on Android,
-       * this is only working for the first purchase. The second time,
-       * it seems to fall back on sibling order. Rather than make _all_ common
-       * drawers render after _all_ native drawers to get this to work,
-       * we made the tradeoff of not unmounting these drawers to reduce the
-       * risk of introducing other zIndex bugs in fixing this one.
-       */}
-      <CommonDrawer
-        modal={PremiumTrackPurchaseDrawer}
-        modalName={'PremiumContentPurchaseModal'}
-      />
-      <CommonDrawer
-        modal={USDCManualTransferDrawer}
-        modalName='USDCManualTransferModal'
-      />
-      <CommonDrawer modal={StripeOnrampDrawer} modalName='StripeOnRamp' />
     </>
   )
 }
