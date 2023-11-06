@@ -51,12 +51,11 @@ web-build-demo:
     - run:
         name: build-demo
         no_output_timeout: 30m
-        # Set the branch name as the VITE_PUBLIC_URL so that relative paths work, e.g.
+        # Set the branch name as base so that relative paths work, e.g.
         # demo.audius.co/some-branch/handle/track resolves as /handle/track would at audius.co
         command: |
           cd packages/web
-          export VITE_PUBLIC_URL=/${CIRCLE_BRANCH}
-          CI=false npm run build:stage -w audius-client
+          CI=false npm run build:stage -w audius-client -- --base=/${CIRCLE_BRANCH}
           mv build-staging build-demo
     - persist_to_workspace:
         root: ./
