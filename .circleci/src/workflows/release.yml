@@ -149,6 +149,19 @@ jobs:
         - push-trpc
         - push-healthz
         - push-protocol-dashboard
+        # uncomment these when arm builds are stable
+        # - push-identity-service-arm
+        # - push-mediorum-arm
+        # - push-discovery-provider-arm
+        # - push-discovery-provider-notifications-arm
+        # - push-pedalboard-trending-challenge-rewards-arm
+        # - push-pedalboard-relay-arm
+        # - push-pedalboard-sla-auditor-arm
+        # - push-comms-arm
+        # - push-trpc-arm
+        # - push-healthz-arm
+        # - push-protocol-dashboard-arm
+
 
   - deploy-foundation-nodes-trigger:
       requires:

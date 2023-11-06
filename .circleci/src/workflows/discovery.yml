@@ -186,6 +186,17 @@ jobs:
         - push-trpc
         - push-protocol-dashboard
         - push-healthz
+        # uncomment when arm builds are stable
+        # - push-discovery-provider-arm
+        # - push-discovery-provider-notifications-arm
+        # - push-pedalboard-trending-challenge-rewards-arm
+        # - push-pedalboard-relay-arm
+        # - push-pedalboard-sla-auditor-arm
+        # - push-comms-arm
+        # - push-trpc-arm
+        # - push-protocol-dashboard-arm
+        # - push-healthz-arm
+
       filters:
         branches:
           only: main
