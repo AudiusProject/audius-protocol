@@ -113,7 +113,7 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   PublishPlaylistConfirmation: PublishPlaylistDrawer,
   // Disabled to allow the proper zIndex sibling order for multiple purchases on Android.
   // See: https://linear.app/audius/issue/PAY-2119/stripe-drawer-appearing-behind-purchase-drawer
-  // PremiumTrackPurchase: PremiumTrackPurchaseDrawer,
+  // PremiumTrackPurchaseModal: PremiumTrackPurchaseDrawer,
   // StripeOnRamp: StripeOnrampDrawer,
   InboxUnavailableModal: InboxUnavailableDrawer,
   LeavingAudiusModal: LeavingAudiusDrawer

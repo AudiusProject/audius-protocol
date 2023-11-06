@@ -58,8 +58,6 @@ import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
 
-const PREMIUM_TRACK_PURCHASE_MODAL_NAME = 'PremiumTrackPurchase'
-
 const messages = {
   buy: 'Buy',
   title: 'Complete Purchase',
@@ -214,7 +212,13 @@ const getButtonText = (isUnlocking: boolean, amountDue: number) =>
 // The bulk of the form rendering is in a nested component because we want access
 // to the FormikContext, which can only be used in a component which is a descendant
 // of the `<Formik />` component
-const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
+const RenderForm = ({
+  onClose,
+  track
+}: {
+  onClose: () => void
+  track: PurchasableTrackMetadata
+}) => {
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const styles = useStyles()
@@ -293,7 +297,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
           {isIOSDisabled ? (
             <PurchaseUnavailable />
           ) : isPurchaseSuccessful ? (
-            <PurchaseSuccess track={track} />
+            <PurchaseSuccess onPressViewTrack={onClose} track={track} />
           ) : isUnlocking ? null : (
             <View>
               <View style={styles.payToUnlockTitleContainer}>
@@ -386,7 +390,7 @@ export const PremiumTrackPurchaseDrawer = () => {
             validationSchema={toFormikValidationSchema(validationSchema)}
             onSubmit={onSubmit}
           >
-            <RenderForm track={track} />
+            <RenderForm onClose={onClose} track={track} />
           </Formik>
         </View>
       )}

@@ -19,7 +19,8 @@ import {
   mobileOverflowMenuUIActions,
   shareModalUIActions,
   usePremiumContentAccess,
-  formatPrice
+  formatPrice,
+  usePremiumContentPurchaseModal
 } from '@audius/common'
 import { View, Platform } from 'react-native'
 import { CastButton } from 'react-native-google-cast'
@@ -34,7 +35,6 @@ import { Button, IconButton } from 'app/components/core'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
-import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -109,18 +109,14 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
 
   const handlePurchasePress = useCallback(() => {
     if (track?.track_id) {
-      dispatch(
-        setVisibility({
-          drawer: 'PremiumTrackPurchase',
-          visible: true,
-          data: { trackId: track.track_id }
-        })
-      )
+      openPremiumContentPurchaseModal({ contentId: track.track_id })
     }
-  }, [dispatch, track?.track_id])
+  }, [track?.track_id, openPremiumContentPurchaseModal])
   const { doesUserHaveAccess } = usePremiumContentAccess(track)
   const shouldShowPurchasePill =
     track?.premium_conditions &&
