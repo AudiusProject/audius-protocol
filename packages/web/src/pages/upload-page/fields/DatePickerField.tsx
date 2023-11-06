@@ -3,6 +3,7 @@ import 'react-dates/lib/css/_datepicker.css'
 
 import { useRef, useState } from 'react'
 
+import { FeatureFlags } from '@audius/common'
 import { Popup } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
@@ -13,6 +14,7 @@ import {
 } from 'react-dates'
 
 import IconCalendar from 'assets/img/iconCalendar.svg'
+import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from './DatePickerField.module.css'
 
@@ -27,7 +29,9 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
   const [field, , helpers] = useField<string | undefined>(name)
   const [isFocused, setIsFocused] = useState(false)
   const anchorRef = useRef<HTMLDivElement | null>(null)
-
+  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
+    FeatureFlags.SCHEDULED_RELEASES
+  )
   return (
     <>
       <div
@@ -63,8 +67,12 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
             // @ts-ignore todo: upgrade moment
             date={moment(field.value)}
             onDateChange={(value) => helpers.setValue(value?.toString())}
-            // @ts-ignore mismatched moment versions; shouldn't be relevant here
-            isOutsideRange={(day) => !isInclusivelyBeforeDay(day, moment())}
+            isOutsideRange={(day) =>
+              isScheduledReleasesEnabled
+                ? false
+                : // @ts-ignore mismatched moment versions; shouldn't be relevant here
+                  !isInclusivelyBeforeDay(day, moment())
+            }
             focused={isFocused}
             isFocused={isFocused}
             onFocusChange={({ focused }) => setIsFocused(focused)}

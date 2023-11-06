@@ -98,10 +98,22 @@ module.exports = function (app) {
             email: email
           }
         })
-
         if (existingUser) {
+          const userEvent = await models.UserEvents.findOne({
+            where: {
+              walletAddress: existingUser.walletAddress
+            }
+          })
+          if (!userEvent && !existingUser.handle) {
+            // user does not have recovery email nor handle
+            // delete existing user record to restart sign up
+            existingUser.destroy()
+            return successResponse({ exists: false })
+          }
           return successResponse({ exists: true })
-        } else return successResponse({ exists: false })
+        } else {
+          return successResponse({ exists: false })
+        }
       } else
         return errorResponseBadRequest('Please pass in a valid email address')
     })
