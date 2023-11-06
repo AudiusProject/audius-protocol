@@ -2,8 +2,8 @@ import { OnRampProvider } from '@audius/common'
 import { Button, ButtonProps, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 
-import { ReactComponent as LogoStripeLink } from 'assets/img/LogoStripeLink.svg'
-import { ReactComponent as CoinbaseLogo } from 'assets/img/coinbase-pay/LogoCoinbase.svg'
+import LogoStripeLink from 'assets/img/LogoStripeLink.svg'
+import CoinbaseLogo from 'assets/img/coinbase-pay/LogoCoinbase.svg'
 
 import styles from './OnRampButton.module.css'
 

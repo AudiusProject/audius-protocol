@@ -2,8 +2,8 @@ import { useCallback } from 'react'
 
 import { IconButton, IconCaretRight } from '@audius/stems'
 
-import { ReactComponent as IconCopyPlain } from 'assets/img/iconCopyPlain.svg'
-import { ReactComponent as IconWarning } from 'assets/img/iconWarning.svg'
+import IconCopyPlain from 'assets/img/iconCopyPlain.svg'
+import IconWarning from 'assets/img/iconWarning.svg'
 import { Divider } from 'components/divider'
 import Toast from 'components/toast/Toast'
 import { MountPlacement } from 'components/types'

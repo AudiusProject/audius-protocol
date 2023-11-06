@@ -78,10 +78,10 @@ const useStyles = makeStyles((theme) => {
 
   const labelConfig = {
     variant: 'label' as const,
-    fontSize: { xs: '2xs', s: 'xs', m: 's', l: 'm' },
-    lineHeight: { xs: 's', s: 's', m: 'm', l: 'm' },
+    fontSize: { xs: '2xs', s: 'xs', m: 's', l: 'm', xl: 'xl' },
+    lineHeight: { xs: 'xs', s: 'xs', m: 's', l: 's', xl: 'l' },
     fontWeight: { default: 'bold', strong: 'heavy' },
-    style: { textTransform: 'uppercase' as const }
+    style: { textTransform: 'uppercase' as const, letterSpacing: 0.5 }
   }
 
   const bodyConfig = {

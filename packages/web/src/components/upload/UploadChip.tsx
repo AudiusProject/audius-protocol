@@ -1,7 +1,7 @@
 import { IconMultiselectAdd } from '@audius/stems'
 import cn from 'classnames'
 
-import { ReactComponent as IconUpload } from 'assets/img/iconUpload.svg'
+import IconUpload from 'assets/img/iconUpload.svg'
 import { Tile } from 'components/tile'
 
 import styles from './UploadChip.module.css'

@@ -1,4 +1,4 @@
-import { forwardRef, useId } from 'react'
+import { ReactNode, forwardRef, useId } from 'react'
 
 import cn from 'classnames'
 
@@ -36,8 +36,18 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       endAdornmentText,
       startIcon: StartIcon,
       endIcon: EndIcon,
+      endAdornment: endAdornmentProp,
       ...other
     } = props
+
+    let endAdornment: null | ReactNode
+    if (EndIcon != null) {
+      endAdornment = <EndIcon size='m' />
+    } else if (endAdornmentProp != null) {
+      endAdornment = endAdornmentProp
+    } else {
+      endAdornment = null
+    }
 
     /**
      * Since Firefox doesn't support the :has() pseudo selector,
@@ -123,6 +133,8 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       </Flex>
     )
 
+    const isLabelElevated = hasValue || isFocused
+
     return (
       <Flex
         className={cn(styles.root, className)}
@@ -152,10 +164,17 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
                 <Text
                   variant='body'
                   tag='span'
-                  size='l'
-                  className={cn(styles.label, {
-                    [styles.hasValue]: hasValue,
-                    [styles.focused]: isFocused
+                  size={isLabelElevated ? 's' : 'l'}
+                  color='subdued'
+                  css={(theme) => ({
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    zIndex: 2,
+                    transition: `all ${theme.motion.expressive}`,
+                    transform: isLabelElevated
+                      ? 'translate(0, 0)'
+                      : 'translate(0px, 13px)'
                   })}
                 >
                   {labelText}
@@ -174,7 +193,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             ) : null}
             {inputRender}
           </Flex>
-          {EndIcon ? <EndIcon size='m' /> : null}
+          {endAdornment}
         </label>
         {helperText ? (
           <Text

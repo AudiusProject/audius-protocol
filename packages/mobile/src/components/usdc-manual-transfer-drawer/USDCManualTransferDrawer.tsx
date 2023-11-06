@@ -1,21 +1,23 @@
 import { useCallback, useMemo } from 'react'
 
-import { Name, useCreateUserbankIfNeeded } from '@audius/common'
+import {
+  Name,
+  useCreateUserbankIfNeeded,
+  useUSDCManualTransferModal
+} from '@audius/common'
 import Clipboard from '@react-native-clipboard/clipboard'
 import { View } from 'react-native'
 import QRCode from 'react-qr-code'
-import { useDispatch } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import IconError from 'app/assets/images/iconError.svg'
 import LogoUSDC from 'app/assets/images/logoUSDC.svg'
 import { Button, Text, useLink } from 'app/components/core'
-import { NativeDrawer } from 'app/components/drawer'
+import Drawer from 'app/components/drawer'
 import { useToast } from 'app/hooks/useToast'
 import { make, track, track as trackEvent } from 'app/services/analytics'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import { getUSDCUserBank } from 'app/services/buyCrypto'
-import { setVisibility } from 'app/store/drawers/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import type { AllEvents } from 'app/types/analytics'
@@ -95,8 +97,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 export const USDCManualTransferDrawer = () => {
   const styles = useStyles()
-  const dispatch = useDispatch()
   const { toast } = useToast()
+  const { isOpen, onClose, onClosed } = useUSDCManualTransferModal()
   const { onPress: onPressLearnMore } = useLink(USDCLearnMore)
   const neutral = useColor('neutral')
   useCreateUserbankIfNeeded({
@@ -124,21 +126,12 @@ export const USDCManualTransferDrawer = () => {
     trackEvent(make(analytics))
   }, [USDCUserBank, analytics, toast])
 
-  const handleCancelPress = useCallback(() => {
-    dispatch(
-      setVisibility({
-        drawer: 'USDCManualTransfer',
-        visible: 'closing'
-      })
-    )
-  }, [dispatch])
-
   const handleLearnMorePress = useCallback(() => {
     onPressLearnMore()
   }, [onPressLearnMore])
 
   return (
-    <NativeDrawer drawerName='USDCManualTransfer'>
+    <Drawer isOpen={isOpen} onClose={onClose} onClosed={onClosed}>
       <View style={styles.drawer}>
         <View style={styles.titleContainer}>
           <Text
@@ -192,13 +185,13 @@ export const USDCManualTransferDrawer = () => {
           />
           <Button
             title={messages.goBack}
-            onPress={handleCancelPress}
+            onPress={onClose}
             variant='common'
             size='large'
             fullWidth
           />
         </View>
       </View>
-    </NativeDrawer>
+    </Drawer>
   )
 }

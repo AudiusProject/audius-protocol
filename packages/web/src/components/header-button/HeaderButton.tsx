@@ -1,6 +1,6 @@
 import cn from 'classnames'
 
-import { ReactComponent as Caret } from 'assets/img/iconCaretDown.svg'
+import Caret from 'assets/img/iconCaretDown.svg'
 
 import styles from './HeaderButton.module.css'
 

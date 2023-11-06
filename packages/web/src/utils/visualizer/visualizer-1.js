@@ -1,4 +1,3 @@
-// Required to do this in order to play with webpack & create-react-app without ejecting
 import vertexShader from './shaders/visualizer-1.vert'
 import fragmentShader from './shaders/visualizer-1.frag'
 
@@ -7,15 +6,19 @@ import vignette from './gl-vignette-background'
 import GLAudioAnalyser from 'utils/visualizer/GLAudioAnalyser'
 import { webglSupported } from 'pages/visualizer/utils'
 
-const createOrbit = require('orbit-controls')
-const createCamera = require('perspective-camera')
-const createShader = require('gl-shader')
+import createOrbit from 'orbit-controls'
+import createCamera from 'perspective-camera'
+import createShader from 'gl-shader'
 
-const setIdentity = require('gl-mat4/identity')
-const newArray = require('array-range')
-const lerp = require('lerp')
-const hexRgbByte = require('hex-rgb')
-const hexRgb = str => hexRgbByte(str).map(x => x / 255)
+import setIdentity from 'gl-mat4/identity'
+import newArray from 'array-range'
+import lerp from 'lerp'
+import hexRgbByte from 'hex-rgb'
+import getWebGLContext from 'webgl-context'
+import canvasLoop from 'canvas-loop'
+import canvasFit from 'canvas-fit'
+
+const hexRgb = (str) => hexRgbByte(str).map((x) => x / 255)
 
 let settings = {
   opacity: 0.5,
@@ -26,6 +29,7 @@ let settings = {
 }
 
 const webglExists = webglSupported()
+const gl = getWebGLContext()
 
 let Visualizer1 = (function () {
   if (!webglExists) return null
@@ -36,10 +40,9 @@ let Visualizer1 = (function () {
 
   const colorVec = hexRgb(settings.color)
 
-  const gl = require('webgl-context')()
   const canvas = gl.canvas
 
-  const app = require('canvas-loop')(canvas, {
+  const app = canvasLoop(canvas, {
     scale: window.devicePixelRatio
   })
 
@@ -68,12 +71,12 @@ let Visualizer1 = (function () {
   })
 
   const paths = newArray(segments).map(createSegment)
-  const lines = paths.map(path => {
+  const lines = paths.map((path) => {
     return createLine(gl, shader, path)
   })
 
   let time = 0
-  app.on('tick', dt => {
+  app.on('tick', (dt) => {
     time += Math.min(30, dt) / 1000
 
     const width = gl.drawingBufferWidth
@@ -146,11 +149,7 @@ let Visualizer1 = (function () {
       settings.gradient = ['#FFFFFF', '#4F4F4F']
       settings.color = '#000'
     }
-    window.addEventListener(
-      'resize',
-      require('canvas-fit')(canvas, window),
-      false
-    )
+    window.addEventListener('resize', canvasFit(canvas, window), false)
     const visWrapper = document.querySelector('.visualizer')
     if (visWrapper && !visWrapper.hasChildNodes()) {
       visWrapper.appendChild(canvas)

@@ -15,7 +15,7 @@ import { animated, useSpring } from '@react-spring/web'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useHistory } from 'react-router-dom'
 
-import { ReactComponent as IconVisualizer } from 'assets/img/iconVisualizer.svg'
+import IconVisualizer from 'assets/img/iconVisualizer.svg'
 import { DogEar } from 'components/dog-ear'
 import { Draggable } from 'components/dragndrop'
 import DynamicImage from 'components/dynamic-image/DynamicImage'

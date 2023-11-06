@@ -1,6 +1,6 @@
 package registrar
 
-import "mediorum/server"
+import "github.com/AudiusProject/audius-protocol/mediorum/server"
 
 type PeerProvider interface {
 	Peers() ([]server.Peer, error)

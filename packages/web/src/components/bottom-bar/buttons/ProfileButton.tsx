@@ -18,8 +18,8 @@ const ProfileButton = ({
       isMatrix={isMatrixMode}
       onClick={onClick}
       href={href}
-      iconLightJSON={() => require('assets/animations/iconProfileLight.json')}
-      iconDarkJSON={() => require('assets/animations/iconProfileDark.json')}
+      iconLightJSON={() => import('assets/animations/iconProfileLight.json')}
+      iconDarkJSON={() => import('assets/animations/iconProfileDark.json')}
     />
   )
 }

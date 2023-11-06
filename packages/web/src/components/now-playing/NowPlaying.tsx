@@ -33,7 +33,7 @@ import { Scrubber } from '@audius/stems'
 import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { ReactComponent as IconCaret } from 'assets/img/iconCaretRight.svg'
+import IconCaret from 'assets/img/iconCaretRight.svg'
 import { useRecord, make } from 'common/store/analytics/actions'
 import CoSign, { Size } from 'components/co-sign/CoSign'
 import { DogEar } from 'components/dog-ear'

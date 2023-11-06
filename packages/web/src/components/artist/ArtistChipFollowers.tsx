@@ -1,7 +1,7 @@
 import { ID, formatCount } from '@audius/common'
 import cn from 'classnames'
 
-import { ReactComponent as IconUser } from 'assets/img/iconUser.svg'
+import IconUser from 'assets/img/iconUser.svg'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import { isDarkMode } from 'utils/theme/theme'
 

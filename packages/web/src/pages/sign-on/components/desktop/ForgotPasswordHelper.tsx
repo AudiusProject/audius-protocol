@@ -1,6 +1,6 @@
 import { Modal } from '@audius/stems'
 
-import { ReactComponent as IconQuestionMark } from 'assets/img/iconQuestionMark.svg'
+import IconQuestionMark from 'assets/img/iconQuestionMark.svg'
 import Toast from 'components/toast/Toast'
 import { MountPlacement, ComponentPlacement } from 'components/types'
 import { copyToClipboard } from 'utils/clipboardUtil'

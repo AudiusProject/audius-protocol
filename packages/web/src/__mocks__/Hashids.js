@@ -1,7 +1,9 @@
-export const mockDecode = jest.fn()
+import { vitest } from 'vitest'
 
-jest.mock('hashids', () => {
-  return jest.fn().mockImplementation(() => {
+export const mockDecode = vitest.fn()
+
+vitest.mock('hashids', () => {
+  return vitest.fn().mockImplementation(() => {
     return { decode: mockDecode }
   })
 })

@@ -25,7 +25,7 @@ import {
   ButtonType
 } from '@audius/stems'
 
-import { ReactComponent as IconGoldBadgeSVG } from 'assets/img/IconGoldBadge.svg'
+import IconGoldBadgeSVG from 'assets/img/IconGoldBadge.svg'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 

@@ -13,7 +13,7 @@ import { Switch } from '@audius/stems'
 import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
 
-import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
+import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
 import { HelperText } from 'components/data-entry/HelperText'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'

@@ -4,7 +4,7 @@ import {
   OpenSeaClient,
   FeatureFlags
 } from '@audius/common'
-import * as Sentry from '@sentry/browser'
+import { setTag, configureScope } from '@sentry/browser'
 
 import * as analytics from 'services/analytics'
 import { audioPlayer } from 'services/audio-player'
@@ -53,18 +53,16 @@ export const storeContext: CommonStoreContext = {
   getLineupSelectorForRoute,
   audioPlayer,
   solanaClient: new SolanaClient({
-    solanaClusterEndpoint: process.env.REACT_APP_SOLANA_CLUSTER_ENDPOINT,
-    metadataProgramId: process.env.REACT_APP_METADATA_PROGRAM_ID
+    solanaClusterEndpoint: process.env.VITE_SOLANA_CLUSTER_ENDPOINT,
+    metadataProgramId: process.env.VITE_METADATA_PROGRAM_ID
   }),
-  sentry: Sentry,
+  sentry: { setTag, configureScope },
   reportToSentry,
   trackDownload,
-  instagramAppId: process.env.REACT_APP_INSTAGRAM_APP_ID,
-  instagramRedirectUrl: process.env.REACT_APP_INSTAGRAM_REDIRECT_URL,
+  instagramAppId: process.env.VITE_INSTAGRAM_APP_ID,
+  instagramRedirectUrl: process.env.VITE_INSTAGRAM_REDIRECT_URL,
   share,
-  openSeaClient: new OpenSeaClient(
-    process.env.REACT_APP_OPENSEA_API_URL as string
-  ),
+  openSeaClient: new OpenSeaClient(process.env.VITE_OPENSEA_API_URL as string),
   audiusSdk,
   imageUtils: {
     generatePlaylistArtwork

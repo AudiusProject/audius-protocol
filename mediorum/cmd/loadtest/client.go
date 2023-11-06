@@ -2,11 +2,12 @@ package loadtest
 
 import (
 	"fmt"
-	"mediorum/server"
 	"net/http"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/server"
 )
 
 type TestClient struct {

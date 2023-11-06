@@ -73,7 +73,10 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
         {...other}
       >
         {isLoading ? (
-          <LoadingSpinner className={cn(baseStyles.spinner, styles.spinner)} />
+          <LoadingSpinner
+            data-chromatic='ignore'
+            className={cn(baseStyles.spinner, styles.spinner)}
+          />
         ) : LeftIconComponent ? (
           <LeftIconComponent className={cn(baseStyles.icon, styles.icon)} />
         ) : null}

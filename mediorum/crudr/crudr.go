@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"mediorum/httputil"
 	"reflect"
 	"strings"
 	"sync"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/httputil"
 
 	"github.com/oklog/ulid/v2"
 	"golang.org/x/exp/slog"

@@ -12,14 +12,15 @@ import (
 	"image/png"
 	"io"
 	"log"
-	"mediorum/cidutil"
-	"mediorum/crudr"
 	"mime/multipart"
 	"os"
 	"os/exec"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
+	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
 
 	"github.com/disintegration/imaging"
 	"github.com/spf13/cast"

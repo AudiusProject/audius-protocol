@@ -1,12 +1,12 @@
 import type { MomentInput } from 'moment'
-import moment, { utc, duration } from 'moment'
+import moment from 'moment'
 
 const SECONDS_PER_MINUTE = 60
 const MINUTES_PER_HOUR = 60
 const SECONDS_PER_HOUR = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
 
 export const formatSeconds = (seconds: number): string => {
-  const time = utc(duration(seconds, 'seconds').asMilliseconds())
+  const time = moment.utc(moment.duration(seconds, 'seconds').asMilliseconds())
   if (seconds > SECONDS_PER_HOUR) {
     return time.format('h:mm:ss')
   }
@@ -14,7 +14,7 @@ export const formatSeconds = (seconds: number): string => {
 }
 
 export const formatSecondsAsText = (seconds: number): string => {
-  const d = duration(seconds, 'seconds')
+  const d = moment.duration(seconds, 'seconds')
   if (seconds > SECONDS_PER_HOUR) {
     return `${d.hours()}h ${d.minutes()}m`
   }
@@ -28,7 +28,7 @@ export const formatLineupTileDuration = (
   if (!isLongFormContent && seconds < SECONDS_PER_HOUR) {
     return formatSeconds(seconds)
   }
-  const d = duration(seconds, 'seconds')
+  const d = moment.duration(seconds, 'seconds')
   const hourText = d.hours() > 0 ? `${d.hours()}hr ` : ''
   // Ceiling the minute value
   const minuteText = `${

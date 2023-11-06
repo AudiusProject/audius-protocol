@@ -3,7 +3,7 @@ import { ComponentType, ReactNode } from 'react'
 import cn from 'classnames'
 import { Link, LinkProps } from 'react-router-dom'
 
-import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
+import IconCaretRight from 'assets/img/iconCaretRight.svg'
 
 import styles from './Row.module.css'
 

@@ -3,11 +3,12 @@ package server
 import (
 	"database/sql"
 	"fmt"
-	"mediorum/cidutil"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
 
 	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"

@@ -17,7 +17,7 @@ import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated, Transition } from 'react-spring/renderprops'
 
-import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
+import IconCaretRight from 'assets/img/iconCaretRight.svg'
 import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
 import Skeleton from 'components/skeleton/Skeleton'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'

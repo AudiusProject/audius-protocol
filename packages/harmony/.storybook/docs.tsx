@@ -1,5 +1,5 @@
 import React from 'react'
-import { themes } from './theme'
+import { harmonyDocsThemes } from '../src/storybook/theme'
 import { DocsContainer, DocsContainerProps } from '@storybook/addon-docs'
 import { ThemeProvider } from '../src/foundations/theme'
 
@@ -9,7 +9,7 @@ export const HarmonyDocsContainer = (props: DocsContainerProps) => {
 
   return (
     <ThemeProvider theme={currentTheme}>
-      <DocsContainer {...props} theme={themes[currentTheme]} />
+      <DocsContainer {...props} theme={harmonyDocsThemes[currentTheme]} />
     </ThemeProvider>
   )
 }

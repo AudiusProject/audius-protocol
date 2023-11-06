@@ -10,7 +10,7 @@ import horizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
 import {
   AUDIUS_HOME_LINK,
   AUDIUS_TWITTER_LINK,
-  AUDIUS_INSTAMGRAM_LINK,
+  AUDIUS_INSTAGRAM_LINK,
   AUDIUS_DISCORD_LINK,
   AUDIUS_PRESS_LINK,
   PRIVACY_POLICY,
@@ -61,7 +61,7 @@ const socialLinks = [
   {
     text: 'Instagram',
     Icon: IconInstagram,
-    link: AUDIUS_INSTAMGRAM_LINK
+    link: AUDIUS_INSTAGRAM_LINK
   },
   {
     text: 'Twitter',

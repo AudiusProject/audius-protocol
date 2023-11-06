@@ -1,11 +1,12 @@
 {
   "name": "root",
-  "version": "1.5.49",
+  "version": "1.5.50",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
     "packages/discovery-provider/plugins/pedalboard/packages/*"
   ],
+  "cacheBust": 1,
   "private": true,
   "scripts": {
     "build": "turbo run build",
@@ -91,8 +92,11 @@
     "pg": "8.8.0"
   },
   "overrides": {
+    "@types/prop-types": "15.7.5",
     "@types/react": "18.0.26",
     "@types/bn.js": "5.1.0",
+    "bn.js": "5.1.0",
+    "moment": "2.24.0",
     "react-native-svg": "12.3.0",
     "redux": "4.1.1",
     "webpack": "5.88.2"

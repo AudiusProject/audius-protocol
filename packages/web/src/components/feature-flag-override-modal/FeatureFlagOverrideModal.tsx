@@ -42,9 +42,7 @@ const setOverrideSetting = (flag: string, val: OverrideSetting) => {
 
 export const FeatureFlagOverrideModal = () => {
   const hotkeyToggle = useDevModeHotkey(70 /* f */)
-  // Ref to handle modal toggle from the hotkey
-  // Needed to avoid it getting out of sync when using closeModal function
-  const hotkeyRef = useRef<boolean | null>(null)
+  const [ignoredHotkeyActive, setHotkeyActive] = useState(true)
   const [remoteInstanceLoaded, setRemoteInstanceLoaded] = useState(false)
   const [isOpen, setIsOpen] = useModalState('FeatureFlagOverride')
   const defaultSettings = useRef<Record<string, boolean>>({})
@@ -75,20 +73,18 @@ export const FeatureFlagOverrideModal = () => {
     }
   }, [hasAccount])
 
-  const closeModal = useCallback(() => {
-    hotkeyRef.current = false
-    setIsOpen(false)
-  }, [hotkeyRef, setIsOpen])
-
   useEffect(() => {
-    if (hotkeyRef.current === null) {
-      hotkeyRef.current = false
-      return
-    }
+    setHotkeyActive((active) => {
+      const newValue = !active
+      setIsOpen(newValue)
+      return newValue
+    })
+  }, [hotkeyToggle])
 
-    hotkeyRef.current = !hotkeyRef.current
-    setIsOpen(hotkeyRef.current)
-  }, [hotkeyToggle, setIsOpen])
+  const closeModal = useCallback(() => {
+    setHotkeyActive(false)
+    setIsOpen(false)
+  }, [setIsOpen])
 
   return (
     <Modal

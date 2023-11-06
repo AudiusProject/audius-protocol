@@ -11,7 +11,7 @@ import {
 import { IconTrophy, IconTrending } from '@audius/stems'
 import cn from 'classnames'
 
-import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
+import IconTip from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'utils/constants'
 

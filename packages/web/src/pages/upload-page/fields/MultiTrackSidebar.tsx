@@ -7,7 +7,7 @@ import cn from 'classnames'
 import { useField, useFormikContext } from 'formik'
 import { isEmpty } from 'lodash'
 
-import { ReactComponent as IconTrash } from 'assets/img/iconTrash.svg'
+import IconTrash from 'assets/img/iconTrash.svg'
 import { Icon } from 'components/Icon'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import layoutStyles from 'components/layout/layout.module.css'

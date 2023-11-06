@@ -4,7 +4,7 @@ import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'
 
-import { ReactComponent as IconAudioRewardsPill } from 'assets/img/iconAudioRewardsPill.svg'
+import IconAudioRewardsPill from 'assets/img/iconAudioRewardsPill.svg'
 import useCardWeight from 'hooks/useCardWeight'
 
 import styles from './PerspectiveCard.module.css'
