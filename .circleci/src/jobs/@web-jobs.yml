@@ -56,7 +56,7 @@ web-build-demo:
         command: |
           cd packages/web
           cp ./.env/.env.stage ./.env/.env.stage.tmp
-          echo "\nVITE_PUBLIC_URL=/${CIRCLE_BRANCH}" >> ./.env/.env.stage
+          echo -e "\nVITE_PUBLIC_URL=/${CIRCLE_BRANCH}" >> ./.env/.env.stage
           CI=false npm run build:stage -w audius-client
           mv build-staging build-demo
           cp ./.env/.env.stage.tmp ./.env/.env.stage
