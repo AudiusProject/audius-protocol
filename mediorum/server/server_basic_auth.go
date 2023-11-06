@@ -5,11 +5,12 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"mediorum/server/signature"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"

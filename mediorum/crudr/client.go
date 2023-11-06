@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"mediorum/httputil"
-	"mediorum/server/signature"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/AudiusProject/audius-protocol/mediorum/httputil"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
 	"github.com/oklog/ulid/v2"
 	"golang.org/x/exp/slog"
 	"gorm.io/gorm/clause"

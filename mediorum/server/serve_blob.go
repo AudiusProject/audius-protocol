@@ -7,8 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"mediorum/cidutil"
-	"mediorum/server/signature"
 	"mime"
 	"net/http"
 	"os"
@@ -16,6 +14,10 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
 
 	"github.com/erni27/imcache"
 	"github.com/labstack/echo/v4"

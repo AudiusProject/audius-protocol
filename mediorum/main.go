@@ -4,10 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"mediorum/ethcontracts"
-	"mediorum/httputil"
-	"mediorum/registrar"
-	"mediorum/server"
 	"os"
 	"strconv"
 	"strings"
@@ -16,6 +12,10 @@ import (
 
 	_ "embed"
 
+	"github.com/AudiusProject/audius-protocol/mediorum/ethcontracts"
+	"github.com/AudiusProject/audius-protocol/mediorum/httputil"
+	"github.com/AudiusProject/audius-protocol/mediorum/registrar"
+	"github.com/AudiusProject/audius-protocol/mediorum/server"
 	"golang.org/x/exp/slices"
 	"golang.org/x/exp/slog"
 	"golang.org/x/sync/errgroup"

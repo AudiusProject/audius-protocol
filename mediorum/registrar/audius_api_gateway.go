@@ -3,9 +3,11 @@ package registrar
 import (
 	"encoding/json"
 	"io/ioutil"
-	"mediorum/httputil"
-	"mediorum/server"
 	"strings"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/httputil"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/server"
 )
 
 type NodeResponse struct {
