@@ -6,7 +6,7 @@ jobs:
       service: discovery-provider
       filters:
         branches:
-          only: as/proto-1373-adc-arm
+          only: main
   - push-docker-image:
       name: push-discovery-provider-notifications
       context: [Vercel, dockerhub]
@@ -86,7 +86,7 @@ jobs:
       service: discovery-provider
       filters:
         branches:
-          only: as/proto-1373-adc-arm
+          only: main
       requires:
         - push-discovery-provider
 
@@ -96,7 +96,7 @@ jobs:
       service: discovery-provider-notifications
       filters:
         branches:
-          only: as/proto-1373-adc-arm
+          only: main
       requires:
         - push-discovery-provider-notifications
 
@@ -106,7 +106,7 @@ jobs:
       service: trending-challenge-rewards
       filters:
         branches:
-          only: as/proto-1373-adc-arm
+          only: main
       requires:
         - push-pedalboard-trending-challenge-rewards
     
@@ -116,7 +116,7 @@ jobs:
       service: relay
       filters:
         branches:
-          only: as/proto-1373-adc-arm
+          only: main
       requires:
         - push-pedalboard-relay
 
@@ -126,7 +126,7 @@ jobs:
       service: sla-auditor
       filters:
         branches:
-          only: as/proto-1373-adc-arm
+          only: main
       requires:
         - push-pedalboard-sla-auditor
 
@@ -136,7 +136,7 @@ jobs:
       service: comms
       filters:
         branches:
-          only: as/proto-1373-adc-arm
+          only: main
       requires:
         - push-comms
 
@@ -146,7 +146,7 @@ jobs:
       service: trpc
       filters:
         branches:
-          only: as/proto-1373-adc-arm
+          only: main
       requires:
         - push-trpc
 
@@ -156,7 +156,7 @@ jobs:
       service: dashboard
       filters:
         branches:
-          only: as/proto-1373-adc-arm
+          only: main
       requires:
         - push-protocol-dashboard
 
@@ -166,7 +166,7 @@ jobs:
       service: healthz
       filters:
         branches:
-          only: as/proto-1373-adc-arm
+          only: main
       requires:
         - push-healthz
 

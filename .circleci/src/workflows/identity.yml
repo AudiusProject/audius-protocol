@@ -11,7 +11,7 @@ jobs:
         - identity-init
       filters:
         branches:
-          only: as/proto-1373-adc-arm
+          only: main
 
   - test:
       name: test-identity-service
@@ -26,7 +26,7 @@ jobs:
       service: identity-service
       filters:
         branches:
-          only: as/proto-1373-adc-arm
+          only: main
       requires:
         - push-identity-service
 
