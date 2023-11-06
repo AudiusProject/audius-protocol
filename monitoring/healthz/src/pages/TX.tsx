@@ -1,37 +1,31 @@
 import { AudiusABIDecoder } from '@audius/sdk/dist/web-libs'
 import { useQuery } from '@tanstack/react-query'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { Web3 } from 'web3'
+import { Link } from 'react-router-dom'
+import { EM_ADDRESS, decodeEmLog, provider } from '../utils/acdc-client'
 
-// todo: should be env specific
-const web3 = new Web3('https://acdc-gateway.audius.co/')
-const EM_ADDRESS = '0x1cd8a543596d499b9b6e7a6ec15ecd2b7857fd64'
+// todo: env config
 const DISCOVERY = 'https://discoveryprovider.audius.co'
 
 export function TxViewer() {
   const { data, isLoading } = useQuery([], async ({ queryKey }) => {
-    const latestBlock = await web3.eth.getBlock()
-    const logs: any[] = await web3.eth.getPastLogs({
-      fromBlock: latestBlock.number - BigInt(10000),
+    const latestBlock = await provider.getBlockNumber()
+    const logs: any[] = await provider.getLogs({
+      fromBlock: latestBlock - 10000,
       address: EM_ADDRESS,
     })
 
     logs.reverse()
-    const logsDecoded = AudiusABIDecoder.decodeLogs('EntityManager', logs)
-    return { latestBlock, logs, logsDecoded }
+    // const logsDecoded = AudiusABIDecoder.decodeLogs('EntityManager', logs)
+    return { latestBlock, logs }
   })
 
   if (isLoading || !data) return <div>loading</div>
-  const { latestBlock, logs, logsDecoded } = data
-
-  if (logs.length !== logsDecoded.length) {
-    throw new Error(`raw logs and decoded logs have diff length`)
-  }
+  const { latestBlock, logs } = data
 
   return (
     <div className="nice">
       <h2>Recent Transactions</h2>
-      <p>Latest Block: {latestBlock.number.toString()} </p>
+      <p>Latest Block: {latestBlock.toString()} </p>
 
       <table className="niceTable mt-4">
         <thead>
@@ -48,8 +42,7 @@ export function TxViewer() {
         </thead>
         <tbody>
           {logs.map((log, idx) => {
-            const decoded = logsDecoded[idx]
-            const em = abiParamsToObject(decoded.events)
+            const em = decodeEmLog(log.data)
             return (
               <tr key={idx} onClick={() => console.log(log, em)}>
                 <td>{log.blockNumber.toString()}</td>
@@ -73,15 +66,15 @@ export function TxViewer() {
                 </td>
                 <td>
                   <a
-                    href={`${DISCOVERY}/users?id=${em._userId}`}
+                    href={`${DISCOVERY}/users?id=${em._userId.toString()}`}
                     target="_blank"
                   >
-                    {em._userId}
+                    {em._userId.toString()}
                   </a>
                 </td>
                 <td>{em._action}</td>
                 <td>{em._entityType}</td>
-                <td>{em._entityId}</td>
+                <td>{em._entityId.toString()}</td>
                 <td>
                   <pre className="text-xs">{em._metadata}</pre>
                 </td>
@@ -95,13 +88,4 @@ export function TxViewer() {
       <button className="p-4 rounded bg-purple-800 text-white">Older</button>
     </div>
   )
-}
-
-export function abiParamsToObject(params: any[]) {
-  const result: Record<string, string> = {}
-  for (const param of params) {
-    if (!param.value) continue
-    result[param.name] = param.value
-  }
-  return result
 }

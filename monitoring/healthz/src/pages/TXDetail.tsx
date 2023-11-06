@@ -1,17 +1,14 @@
-import { AudiusABIDecoder } from '@audius/sdk/dist/web-libs'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
-import { Web3 } from 'web3'
-import { abiParamsToObject } from './TX'
 import { fetcher } from '../query'
+import { decodeEmLog, provider } from '../utils/acdc-client'
 
-// @ts-ignore
+// @ts-expect-error (so we can JSON.stringify the abi params)
 BigInt.prototype.toJSON = function () {
   return this.toString() + 'n'
 }
 
 // todo: env config
-const web3 = new Web3('https://acdc-gateway.audius.co/')
 const DISCOVERY = 'https://discoveryprovider.audius.co'
 
 const preClass = ``
@@ -23,19 +20,14 @@ export function TxDetail() {
   const params = useParams()
 
   const { data } = useQuery([params.tx!], async () => {
-    const receipt = await web3.eth.getTransactionReceipt(params.tx!)
-    const logsDecoded = AudiusABIDecoder.decodeLogs(
-      'EntityManager',
-      receipt.logs as any
-    )
-    return { receipt, logsDecoded }
+    const receipt = await provider.getTransactionReceipt(params.tx!)
+    if (!receipt) return {}
+    const em = decodeEmLog(receipt.logs[0].data)
+    return { receipt, em }
   })
 
-  if (!data) return <div>loading</div>
-  const { receipt, logsDecoded } = data
-
-  const em = abiParamsToObject(logsDecoded[0].events)
-
+  if (!data || !data.receipt || !data.em) return <div>loading</div>
+  const { receipt, em } = data
   const metadata = em._metadata ? JSON.parse(em._metadata) : undefined
 
   return (
@@ -60,7 +52,7 @@ export function TxDetail() {
       <div className="niceCard">
         <h2>Decoded ABI</h2>
         <pre className={preClass}>
-          {JSON.stringify(logsDecoded, undefined, 2)}
+          {JSON.stringify(em.toObject(), undefined, 2)}
         </pre>
       </div>
 
@@ -95,7 +87,7 @@ function UserChip({ id, signer }: { id: string; signer?: string }) {
       />
       <div className="">
         {user.handle}
-        {signer && signer != user.wallet && (
+        {signer && signer.toLowerCase() != user.wallet.toLowerCase() && (
           <div className="text-sm text-gray-800">
             signed by <span className="text-purple-800">{signer}</span>
           </div>
@@ -126,7 +118,6 @@ function ObjectChip({
 }
 
 function TrackChip({ id }: { id: string }) {
-  //https://discoveryprovider.audius.co/tracks?id=1
   const { data } = useQuery([id], async () => {
     return fetcher(`${DISCOVERY}/tracks?id=${id}`)
   })

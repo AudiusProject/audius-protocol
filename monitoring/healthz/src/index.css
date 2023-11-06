@@ -19,7 +19,9 @@
 }
 .niceTable th {
   @apply text-left bg-purple-700 text-white border-b-2 border-purple-900;
-
+}
+.nice a {
+  @apply text-purple-700 underline;
 }
 
 
