@@ -16,7 +16,6 @@ export const InformationBox = (props: InformationBoxProps) => {
   return (
     <Paper as='section' direction='column' flex={1} gap='m'>
       <Flex
-        as='figure'
         p='xl'
         alignItems='center'
         justifyContent='center'
