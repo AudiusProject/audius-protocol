@@ -13,7 +13,6 @@ import { ThemeProvider } from '@emotion/react'
 // Default to docs view
 export const parameters = {
   viewMode: 'docs',
-  enableShortcuts: false,
   docs: {
     container: HarmonyDocsContainer,
     toc: true,
@@ -21,9 +20,6 @@ export const parameters = {
       ComponentRules,
       RelatedComponents
     }
-  },
-  options: {
-    enableShortcuts: false
   }
 }
 
