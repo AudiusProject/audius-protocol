@@ -1,7 +1,5 @@
 import 'setimmediate'
-import { Buffer } from 'buffer'
 
-import process from 'process/browser'
 import { createRoot } from 'react-dom/client'
 
 import './index.css'
@@ -11,9 +9,7 @@ import './index.css'
 // when running in dev mode.
 import Root from './root'
 
-// @ts-ignore
-window.Buffer = Buffer
-window.process = process
+window.global ||= window
 
 const container = document.getElementById('root')
 if (container) {

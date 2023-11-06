@@ -1,6 +1,6 @@
 import cn from 'classnames'
 
-import { ReactComponent as IconCoSign } from 'assets/img/iconCoSign.svg'
+import IconCoSign from 'assets/img/iconCoSign.svg'
 
 import styles from './Check.module.css'
 import { Size } from './types'

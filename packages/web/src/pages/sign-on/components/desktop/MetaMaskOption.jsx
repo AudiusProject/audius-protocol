@@ -3,7 +3,7 @@ import { Component } from 'react'
 import { Button, ButtonType } from '@audius/stems'
 import PropTypes from 'prop-types'
 
-import { ReactComponent as LogoMetaMask } from 'assets/img/logoMetaMask.svg'
+import LogoMetaMask from 'assets/img/logoMetaMask.svg'
 
 import styles from './MetaMaskOption.module.css'
 

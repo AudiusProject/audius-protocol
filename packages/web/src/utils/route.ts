@@ -3,16 +3,16 @@ import { push as pushRoute } from 'connected-react-router'
 import { Location as HistoryLocation } from 'history'
 import { matchPath } from 'react-router'
 
-const USE_HASH_ROUTING = process.env.REACT_APP_USE_HASH_ROUTING === 'true'
+const USE_HASH_ROUTING = process.env.VITE_USE_HASH_ROUTING === 'true'
 
 // Host/protocol.
-export const BASE_URL = `${
-  process.env.REACT_APP_PUBLIC_PROTOCOL || 'https:'
-}//${process.env.REACT_APP_PUBLIC_HOSTNAME || 'audius.co'}`
-export const BASE_GA_URL = `${
-  process.env.REACT_APP_PUBLIC_PROTOCOL || 'https:'
-}//${process.env.REACT_APP_GA_HOSTNAME || 'audius.co'}`
-export const BASENAME = process.env.PUBLIC_URL
+export const BASE_URL = `${process.env.VITE_PUBLIC_PROTOCOL || 'https:'}//${
+  process.env.VITE_PUBLIC_HOSTNAME || 'audius.co'
+}`
+export const BASE_GA_URL = `${process.env.VITE_PUBLIC_PROTOCOL || 'https:'}//${
+  process.env.VITE_GA_HOSTNAME || 'audius.co'
+}`
+export const BASENAME = process.env.VITE_PUBLIC_URL
 
 // External Routes
 export const PRIVACY_POLICY = '/legal/privacy-policy'
@@ -138,7 +138,7 @@ export const EMPTY_PAGE = '/empty_page'
 
 // External Links
 export const AUDIUS_TWITTER_LINK = 'https://twitter.com/audius'
-export const AUDIUS_INSTAMGRAM_LINK = 'https://www.instagram.com/audiusmusic'
+export const AUDIUS_INSTAGRAM_LINK = 'https://www.instagram.com/audiusmusic'
 export const AUDIUS_DISCORD_LINK = 'https://discord.gg/audius'
 export const AUDIUS_TELEGRAM_LINK = 'https://t.me/Audius'
 export const AUDIUS_PRESS_LINK = 'https://brand.audius.co'

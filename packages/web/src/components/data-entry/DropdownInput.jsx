@@ -3,7 +3,7 @@ import { Component } from 'react'
 import Select from 'antd/lib/select'
 import cn from 'classnames'
 
-import { ReactComponent as IconCaretDown } from 'assets/img/iconCaretDown.svg'
+import IconCaretDown from 'assets/img/iconCaretDown.svg'
 
 import styles from './DropdownInput.module.css'
 import { HelperText } from './HelperText'

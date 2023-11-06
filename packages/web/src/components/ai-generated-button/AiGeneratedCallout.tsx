@@ -4,7 +4,7 @@ import { Button, ButtonType, IconRobot } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import { ReactComponent as IconArrow } from 'assets/img/iconArrow.svg'
+import IconArrow from 'assets/img/iconArrow.svg'
 import { profilePageAiAttributedTracks } from 'utils/route'
 
 import styles from './AiGeneratedCallout.module.css'

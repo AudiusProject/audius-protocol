@@ -18,8 +18,8 @@ declare global {
   }
 }
 
-const COGNITO_KEY = process.env.REACT_APP_COGNITO_KEY
-const COGNITO_TEMPLATE_ID = process.env.REACT_APP_COGNITO_TEMPLATE_ID
+const COGNITO_KEY = process.env.VITE_COGNITO_KEY
+const COGNITO_TEMPLATE_ID = process.env.VITE_COGNITO_TEMPLATE_ID
 
 const CheckPage = () => {
   const dispatch = useDispatch()

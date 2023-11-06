@@ -2,7 +2,7 @@ import { memo, useState, useRef, useEffect } from 'react'
 
 import cn from 'classnames'
 
-import { ReactComponent as IconPencil } from 'assets/img/iconPencil.svg'
+import IconPencil from 'assets/img/iconPencil.svg'
 import UserBadges from 'components/user-badges/UserBadges'
 
 import styles from './EditableName.module.css'

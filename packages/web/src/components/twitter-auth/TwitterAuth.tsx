@@ -3,7 +3,7 @@ import 'whatwg-fetch'
 import 'url-search-params-polyfill'
 
 import { TwitterProfile } from '@audius/common'
-import * as Sentry from '@sentry/browser'
+import { captureException } from '@sentry/browser'
 
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
@@ -83,7 +83,7 @@ const TwitterAuth = (props: TwitterAuthProps) => {
       })
       .catch((error) => {
         popup?.close()
-        Sentry.captureException(`Twitter getProfile failed with ${error}`)
+        captureException(`Twitter getProfile failed with ${error}`)
         return onFailure(error)
       })
   }

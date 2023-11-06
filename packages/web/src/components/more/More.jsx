@@ -3,7 +3,7 @@ import { Component } from 'react'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import { ReactComponent as IconArrow } from 'assets/img/iconArrowGrey.svg'
+import IconArrow from 'assets/img/iconArrowGrey.svg'
 
 import styles from './More.module.css'
 

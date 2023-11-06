@@ -8,7 +8,7 @@ import {
 } from '@audius/common'
 import { Redirect } from 'react-router'
 
-import { ReactComponent as IconBigSearch } from 'assets/img/iconBigSearch.svg'
+import IconBigSearch from 'assets/img/iconBigSearch.svg'
 import Card from 'components/card/desktop/Card'
 import CategoryHeader from 'components/header/desktop/CategoryHeader'
 import Header from 'components/header/desktop/Header'

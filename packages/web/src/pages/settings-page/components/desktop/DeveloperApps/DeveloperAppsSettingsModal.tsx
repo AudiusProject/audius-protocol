@@ -10,7 +10,7 @@ import {
   IconTrash
 } from '@audius/stems'
 
-import { ReactComponent as IconEmbed } from 'assets/img/iconEmbed.svg'
+import IconEmbed from 'assets/img/iconEmbed.svg'
 
 import { AppDetailsPage } from './AppDetailsPage'
 import { CreateNewAppPage } from './CreateNewAppPage'

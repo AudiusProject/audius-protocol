@@ -8,7 +8,7 @@ import { get, set } from 'lodash'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { ReactComponent as IconCreativeCommons } from 'assets/img/iconCreativeCommons.svg'
+import IconCreativeCommons from 'assets/img/iconCreativeCommons.svg'
 import { Icon } from 'components/Icon'
 import { AiAttributionDropdown } from 'components/ai-attribution-modal/AiAttributionDropdown'
 import {

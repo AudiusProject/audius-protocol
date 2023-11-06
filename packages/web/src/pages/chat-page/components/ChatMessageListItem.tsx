@@ -24,7 +24,7 @@ import { useSelector } from 'common/hooks/useSelector'
 import { reactionMap } from 'components/notification/Notification/components/Reaction'
 import { UserGeneratedText } from 'components/user-generated-text'
 
-import { ReactComponent as ChatTail } from '../../../assets/img/ChatTail.svg'
+import ChatTail from '../../../assets/img/ChatTail.svg'
 
 import styles from './ChatMessageListItem.module.css'
 import { ChatMessagePlaylist } from './ChatMessagePlaylist'

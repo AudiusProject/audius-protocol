@@ -1,9 +1,9 @@
 const importWorkerScript = (script) => {
-  const basename = process.env.PUBLIC_URL
   // eslint-disable-next-line
   if (self.location.origin !== 'blob://') {
     // eslint-disable-next-line
     let origin = location.origin
+    // eslint-disable-next-line
     if (basename) origin += basename
     // eslint-disable-next-line
     importScripts(origin + script)

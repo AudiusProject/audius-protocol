@@ -1,7 +1,8 @@
-import { parseCollectionRoute } from './collectionRouteParser'
+import { describe, it, expect } from 'vitest'
 
 // eslint-disable-next-line
 import { mockDecode } from '__mocks__/Hashids'
+import { parseCollectionRoute } from './collectionRouteParser'
 
 describe('parseCollectionRoute', () => {
   it('can decode a playlist id route', () => {

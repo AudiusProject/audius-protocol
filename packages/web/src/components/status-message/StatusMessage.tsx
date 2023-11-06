@@ -4,7 +4,7 @@ import { IconValidationCheck, IconValidationX } from '@audius/harmony'
 import { useTransition, animated } from '@react-spring/web'
 import cn from 'classnames'
 
-import { ReactComponent as IconArrow } from 'assets/img/iconArrow.svg'
+import IconArrow from 'assets/img/iconArrow.svg'
 
 import styles from './StatusMessage.module.css'
 

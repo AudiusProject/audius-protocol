@@ -27,10 +27,10 @@ import {
   WindowScroller
 } from 'react-virtualized'
 
-import { ReactComponent as IconCaretDown } from 'assets/img/iconCaretDownLine.svg'
-import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
-import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
-import { ReactComponent as IconCaretUp } from 'assets/img/iconCaretUpLine.svg'
+import IconCaretDown from 'assets/img/iconCaretDownLine.svg'
+import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
+import IconCaretRight from 'assets/img/iconCaretRight.svg'
+import IconCaretUp from 'assets/img/iconCaretUpLine.svg'
 import { Draggable, Droppable } from 'components/dragndrop'
 import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'

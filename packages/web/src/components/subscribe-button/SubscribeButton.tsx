@@ -2,8 +2,8 @@ import { useState, useCallback, useEffect } from 'react'
 
 import cn from 'classnames'
 
-import { ReactComponent as IconNotification } from 'assets/img/iconNotification.svg'
-import { ReactComponent as IconNotificationOff } from 'assets/img/iconNotificationOff.svg'
+import IconNotification from 'assets/img/iconNotification.svg'
+import IconNotificationOff from 'assets/img/iconNotificationOff.svg'
 import { isMobile } from 'utils/clientUtil'
 import { isMatrix } from 'utils/theme/theme'
 

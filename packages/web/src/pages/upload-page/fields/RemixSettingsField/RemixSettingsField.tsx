@@ -10,7 +10,7 @@ import {
 import { get, set } from 'lodash'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { ReactComponent as IconRemix } from 'assets/img/iconRemixGray.svg'
+import IconRemix from 'assets/img/iconRemixGray.svg'
 import {
   ContextualMenu,
   SelectedValue

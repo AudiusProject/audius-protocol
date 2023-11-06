@@ -15,6 +15,7 @@ export default class WebWorker {
     const dependencyCode = dependencies.map((d) => `${d.toString()};`).join()
     const blob = new Blob([
       `
+      const basename = ${process.env.VITE_PUBLIC_URL}
       ${dependencyCode};
       const importWorkerScript = ${importWorkScriptCode}
       const code = ${code}

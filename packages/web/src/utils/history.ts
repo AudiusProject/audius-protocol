@@ -6,8 +6,8 @@ import {
   History
 } from 'history'
 
-const USE_HASH_ROUTING = process.env.REACT_APP_USE_HASH_ROUTING === 'true'
-const basename = process.env.PUBLIC_URL
+const USE_HASH_ROUTING = process.env.VITE_USE_HASH_ROUTING === 'true'
+const basename = process.env.VITE_PUBLIC_URL
 
 let history: History
 if (USE_HASH_ROUTING) {

@@ -4,7 +4,7 @@ import { SquareSizes, WidthSizes, User } from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
+import BadgeArtist from 'assets/img/badgeArtist.svg'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import UserBadges from 'components/user-badges/UserBadges'

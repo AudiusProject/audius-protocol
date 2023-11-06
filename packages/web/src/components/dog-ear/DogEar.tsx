@@ -7,9 +7,9 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 
-import { ReactComponent as Rectangle } from 'assets/img/dogEarRectangle.svg'
-import { ReactComponent as IconHidden } from 'assets/img/iconHidden.svg'
-import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
+import Rectangle from 'assets/img/dogEarRectangle.svg'
+import IconHidden from 'assets/img/iconHidden.svg'
+import IconStar from 'assets/img/iconStar.svg'
 import { isMobile } from 'utils/clientUtil'
 import { isMatrix } from 'utils/theme/theme'
 

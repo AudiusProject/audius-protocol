@@ -1,6 +1,7 @@
 import { playerReducer, playerActions } from '@audius/common'
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
+import { describe, it, expect, vitest } from 'vitest'
 
 import { noopReducer } from 'store/testHelper'
 
@@ -23,11 +24,11 @@ const initialUsers = {
 
 const makeInitialPlayer = (playing) => ({
   audio: {
-    load: jest.fn(),
-    play: jest.fn(),
-    pause: jest.fn(),
-    stop: jest.fn(),
-    seek: jest.fn()
+    load: vitest.fn(),
+    play: vitest.fn(),
+    pause: vitest.fn(),
+    stop: vitest.fn(),
+    seek: vitest.fn()
   },
   playing
 })

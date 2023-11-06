@@ -12,12 +12,14 @@ import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { all } from 'redux-saga/effects'
+import { describe, it, beforeAll, expect, vitest } from 'vitest'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import cacheSagas from 'common/store/cache/sagas'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { noopReducer, allSagas } from 'store/testHelper'
+
 const { asLineup, initialLineupState } = lineupReducer
 const { asCache, initialCacheState } = cacheReducer
 
@@ -84,7 +86,7 @@ class Sagas extends LineupSagas {
 const sagas = new Sagas()
 
 beforeAll(() => {
-  jest.spyOn(Date, 'now').mockImplementation(() => MOCK_TIMESTAMP)
+  vitest.spyOn(Date, 'now').mockImplementation(() => MOCK_TIMESTAMP)
 })
 
 describe('fetch', () => {

@@ -11,8 +11,8 @@ import Lottie from 'react-lottie'
 import { Transition } from 'react-spring/renderprops'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import { ReactComponent as IconArrow } from 'assets/img/iconArrowGrey.svg'
-import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
+import IconArrow from 'assets/img/iconArrowGrey.svg'
+import IconSearch from 'assets/img/iconSearch.svg'
 import SearchBarResult from 'components/search/SearchBarResult'
 import { setupHotkeys, removeHotkeys } from 'utils/hotkeyUtil'
 

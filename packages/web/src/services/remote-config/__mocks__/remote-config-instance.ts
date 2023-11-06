@@ -1,4 +1,5 @@
 import { RemoteConfigInstance } from '@audius/common'
+import { vitest } from 'vitest'
 
 let fakeConfig: Record<string, any> = {}
 
@@ -11,7 +12,7 @@ export type MockRemoteConfigInstance = RemoteConfigInstance & {
 }
 
 export const remoteConfigInstance = {
-  init: jest.fn(),
+  init: vitest.fn(),
   getRemoteVar: (key: any) => {
     return fakeConfig[key] ?? null
   },

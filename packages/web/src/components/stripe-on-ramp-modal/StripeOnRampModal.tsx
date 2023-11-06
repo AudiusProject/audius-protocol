@@ -10,8 +10,7 @@ import zIndex from 'utils/zIndex'
 
 import styles from './StripeOnRampModal.module.css'
 
-const STRIPE_PUBLISHABLE_KEY =
-  process.env.REACT_APP_STRIPE_CLIENT_PUBLISHABLE_KEY
+const STRIPE_PUBLISHABLE_KEY = process.env.VITE_STRIPE_CLIENT_PUBLISHABLE_KEY
 
 const { getStripeModalState } = stripeModalUISelectors
 const { cancelStripeOnramp, stripeSessionStatusChanged } = stripeModalUIActions

@@ -13,7 +13,7 @@ import {
   DayPickerSingleDateController
 } from 'react-dates'
 
-import { ReactComponent as IconCalendar } from 'assets/img/iconCalendar.svg'
+import IconCalendar from 'assets/img/iconCalendar.svg'
 import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from './DatePickerField.module.css'
@@ -73,6 +73,7 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
                 : // @ts-ignore mismatched moment versions; shouldn't be relevant here
                   !isInclusivelyBeforeDay(day, moment())
             }
+            focused={isFocused}
             isFocused={isFocused}
             onFocusChange={({ focused }) => setIsFocused(focused)}
             // @ts-ignore mismatched moment versions; shouldn't be relevant here
