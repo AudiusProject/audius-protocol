@@ -4,6 +4,10 @@ set -ex
 # See https://circleci.com/docs/runner-installation-linux/
 # Self-hosted runners should link to this file as the startup script.
 
+# Stop circleci if it exists and is running
+systemctl stop circleci.service &>/dev/null || true
+systemctl disable circleci.service &>/dev/null || true
+
 export platform="linux/amd64"
 gcp_key="circleci-auth-token"
 
@@ -37,7 +41,7 @@ chown -R circleci /var/opt/circleci /opt/circleci
 mkdir -p /etc/opt/circleci && touch /etc/opt/circleci/launch-agent-config.yaml
 chown -R circleci: /etc/opt/circleci
 chmod 600 /etc/opt/circleci/launch-agent-config.yaml
-cat <<EOT >> /etc/opt/circleci/launch-agent-config.yaml
+cat <<EOT > /etc/opt/circleci/launch-agent-config.yaml
 api:
   auth_token: $(gcloud secrets versions access 1 --secret=$gcp_key)
 
@@ -48,13 +52,15 @@ runner:
 EOT
 
 # allow sudo
-echo "circleci ALL=(ALL) NOPASSWD:ALL" | tee -a /etc/sudoers
+echo "circleci ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/circleci
+chown root /etc/sudoers.d/circleci
+chmod 440 /etc/sudoers.d/circleci
 
-# enable circleci systemd service
+# setup circleci systemd service
 touch /usr/lib/systemd/system/circleci.service
 chown root: /usr/lib/systemd/system/circleci.service
 chmod 755 /usr/lib/systemd/system/circleci.service
-cat <<EOT >> /usr/lib/systemd/system/circleci.service
+cat <<EOT > /usr/lib/systemd/system/circleci.service
 [Unit]
 Description=CircleCI Runner
 After=network.target
@@ -71,5 +77,7 @@ systemctl enable circleci.service
 systemctl start circleci.service
 
 # Periodically clean up local docker registry
-# Runs every hour, checks if disk usage exceeds 80%, then runs docker system prune
-echo '5 * * * * root [ $(df | grep /dev/root | awk '"'"'{print $5}'"'"' | grep -oP "^\d+") -gt 80 ] && docker system prune -f | logger -t dockerprune' >> /etc/crontab
+curl -L https://raw.githubusercontent.com/AudiusProject/audius-protocol/phelpsdb-self-hosted-ci-cleanup/.circleci/scripts/periodic-cleanup -o /usr/local/sbin/periodic-cleanup
+chmod 755 /usr/local/sbin/periodic-cleanup
+echo '5 * * * * root /usr/local/sbin/periodic-cleanup | logger -t cleanup' >> /etc/crontab
+echo '35 * * * * root /usr/local/sbin/periodic-cleanup --full | logger -t cleanup' >> /etc/crontab
