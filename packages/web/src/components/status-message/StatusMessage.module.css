@@ -60,8 +60,3 @@
 .removeIcon {
   z-index: 15;
 }
-
-.checkIcon > svg path,
-.removeIcon > svg path {
-  fill: var(--white);
-}
