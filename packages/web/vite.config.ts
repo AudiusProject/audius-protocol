@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
   const analyze = env.VITE_BUNDLE_ANALYZE === 'true'
 
   return {
+    base: env.VITE_PUBLIC_URL ?? '/',
     build: {
       outDir: 'build',
       sourcemap: true,
