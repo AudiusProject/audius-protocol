@@ -11,18 +11,11 @@ steps:
   - run:
       name: Docker login
       command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-#   - run:
-#       name: Install buildx
-#       command: docker buildx version &> /dev/null || (docker buildx create --use && echo "buildx installed")
-#   - run: docker buildx version && docker buildx ls
-  - run: . ~/.profile; audius-compose build --prod "<< parameters.service >>"
   - run:
-      name: Install buildx for merge tools
-      command: docker buildx create --name ci-builder --use
+      name: Install buildx
+      command: docker buildx version &> /dev/null || (docker buildx create --name ci-builder --use && echo "buildx installed")
+  - run: docker buildx version && docker buildx ls
+  - run: . ~/.profile; audius-compose build --prod "<< parameters.service >>"
   - run:
       name: Merge and push new tag manifest
       command: . ~/.profile; audius-compose push-arm --prod "<< parameters.service >>"
-  - run:
-      name: Buildx cleanup
-      command: docker buildx rm ci-builder && docker buildx prune --all -f
-
