@@ -12,6 +12,7 @@ import {
   useAccessAndRemixSettings
 } from '@audius/common'
 import { useField, useFormikContext } from 'formik'
+import moment from 'moment'
 
 import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
 import IconCart from 'app/assets/images/iconCart.svg'
@@ -33,7 +34,6 @@ import type { FormValues, RemixOfField } from '../types'
 
 import type { ListSelectionData } from './ListSelectionScreen'
 import { ListSelectionScreen } from './ListSelectionScreen'
-import moment from 'moment'
 
 const messages = {
   title: 'Access & Sale',
@@ -91,9 +91,9 @@ export const AccessAndSaleScreen = () => {
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
   const [{ value: remixOf }] = useField<RemixOfField>('remix_of')
   const isRemix = !!remixOf
-  const [{ value: releaseDate }] =
-    useField<Nullable<string>>('release_date')
-  const isScheduledRelease = releaseDate === null ? false : moment(releaseDate).isAfter(moment())
+  const [{ value: releaseDate }] = useField<Nullable<string>>('release_date')
+  const isScheduledRelease =
+    releaseDate === null ? false : moment(releaseDate).isAfter(moment())
 
   const { isEnabled: isUsdcEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
@@ -137,7 +137,7 @@ export const AccessAndSaleScreen = () => {
     isRemix,
     initialPremiumConditions,
     isInitiallyUnlisted: initialValues.is_unlisted,
-    isScheduledRelease // TODO add scheduled release to mobile
+    isScheduledRelease
   })
 
   const noUsdcGate = noUsdcGateOption || !isUsdcUploadEnabled
@@ -153,7 +153,11 @@ export const AccessAndSaleScreen = () => {
   )
 
   const data: ListSelectionData[] = [
-    { label: publicAvailability, value: publicAvailability, disabled: isScheduledRelease},
+    {
+      label: publicAvailability,
+      value: publicAvailability,
+      disabled: isScheduledRelease
+    },
     isUsdcEnabled
       ? {
           label: premiumAvailability,
@@ -177,7 +181,6 @@ export const AccessAndSaleScreen = () => {
       disabled: noHidden
     }
   ].filter(removeNullable)
-  console.log(`asdf data ${JSON.stringify(data)}`)
   const items = {
     [publicAvailability]: (
       <PublicAvailabilityRadioField
