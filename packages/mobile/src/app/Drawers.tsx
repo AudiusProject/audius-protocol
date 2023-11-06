@@ -113,6 +113,7 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   PublishPlaylistConfirmation: PublishPlaylistDrawer,
   // Disabled to allow the proper zIndex sibling order for multiple purchases on Android.
   // See: https://linear.app/audius/issue/PAY-2119/stripe-drawer-appearing-behind-purchase-drawer
+  // PremiumTrackPurchaseModal: PremiumTrackPurchaseDrawer,
   // StripeOnRamp: StripeOnrampDrawer,
   InboxUnavailableModal: InboxUnavailableDrawer,
   LeavingAudiusModal: LeavingAudiusDrawer
@@ -139,7 +140,6 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   SupportersInfo: SupportersInfoDrawer
   // Disabled to allow the proper zIndex sibling order for multiple purchases on Android.
   // See: https://linear.app/audius/issue/PAY-2119/stripe-drawer-appearing-behind-purchase-drawer
-  // PremiumTrackPurchase: PremiumTrackPurchaseDrawer,
   // USDCManualTransfer: USDCManualTransferDrawer
 }
 
@@ -177,9 +177,9 @@ export const Drawers = () => {
        * we made the tradeoff of not unmounting these drawers to reduce the
        * risk of introducing other zIndex bugs in fixing this one.
        */}
-      <NativeDrawer
-        drawer={PremiumTrackPurchaseDrawer}
-        drawerName={'PremiumTrackPurchase'}
+      <CommonDrawer
+        modal={PremiumTrackPurchaseDrawer}
+        modalName={'PremiumContentPurchaseModal'}
       />
       <NativeDrawer
         drawer={USDCManualTransferDrawer}

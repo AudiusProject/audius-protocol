@@ -5,7 +5,8 @@ import {
   formatPrice,
   isPremiumContentUSDCPurchaseGated,
   premiumContentActions,
-  premiumContentSelectors
+  premiumContentSelectors,
+  usePremiumContentPurchaseModal
 } from '@audius/common'
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -61,6 +62,8 @@ export const LineupTileAccessStatus = ({
   const styles = useStyles()
   const dispatch = useDispatch()
   const isUSDCEnabled = useIsUSDCEnabled()
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
   const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
   const premiumTrackStatus = premiumTrackStatusMap[trackId]
   const staticWhite = useColor('staticWhite')
@@ -69,18 +72,12 @@ export const LineupTileAccessStatus = ({
 
   const handlePress = useCallback(() => {
     if (isUSDCPurchase) {
-      dispatch(
-        setVisibility({
-          drawer: 'PremiumTrackPurchase',
-          visible: true,
-          data: { trackId }
-        })
-      )
+      openPremiumContentPurchaseModal({ contentId: trackId })
     } else if (trackId) {
       dispatch(setLockedContentId({ id: trackId }))
       dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))
     }
-  }, [isUSDCPurchase, dispatch, trackId])
+  }, [trackId, isUSDCPurchase, openPremiumContentPurchaseModal, dispatch])
 
   return (
     <TouchableOpacity onPress={handlePress}>

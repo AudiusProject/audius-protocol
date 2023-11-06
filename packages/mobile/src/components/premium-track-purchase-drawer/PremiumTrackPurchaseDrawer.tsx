@@ -11,12 +11,12 @@ import {
   formatPrice,
   isContentPurchaseInProgress,
   isTrackPurchasable,
-  modalsActions,
   purchaseContentActions,
   purchaseContentSelectors,
   statusIsNotFinalized,
   useGetTrackById,
   usePayExtraPresets,
+  usePremiumContentPurchaseModal,
   usePurchaseContentErrorMessage,
   usePurchaseContentFormConfiguration
 } from '@audius/common'
@@ -35,8 +35,7 @@ import IconCart from 'app/assets/images/iconCart.svg'
 import IconCloseAlt from 'app/assets/images/iconCloseAlt.svg'
 import IconError from 'app/assets/images/iconError.svg'
 import { Button, LockedStatusBadge, Text } from 'app/components/core'
-import { NativeDrawer } from 'app/components/drawer'
-import { useDrawer } from 'app/hooks/useDrawer'
+import Drawer from 'app/components/drawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
@@ -58,8 +57,6 @@ import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState
 
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
-
-const PREMIUM_TRACK_PURCHASE_MODAL_NAME = 'PremiumTrackPurchase'
 
 const messages = {
   buy: 'Buy',
@@ -215,7 +212,13 @@ const getButtonText = (isUnlocking: boolean, amountDue: number) =>
 // The bulk of the form rendering is in a nested component because we want access
 // to the FormikContext, which can only be used in a component which is a descendant
 // of the `<Formik />` component
-const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
+const RenderForm = ({
+  onClose,
+  track
+}: {
+  onClose: () => void
+  track: PurchasableTrackMetadata
+}) => {
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const styles = useStyles()
@@ -294,7 +297,7 @@ const RenderForm = ({ track }: { track: PurchasableTrackMetadata }) => {
           {isIOSDisabled ? (
             <PurchaseUnavailable />
           ) : isPurchaseSuccessful ? (
-            <PurchaseSuccess track={track} />
+            <PurchaseSuccess onPressViewTrack={onClose} track={track} />
           ) : isUnlocking ? null : (
             <View>
               <View style={styles.payToUnlockTitleContainer}>
@@ -339,8 +342,13 @@ export const PremiumTrackPurchaseDrawer = () => {
   const dispatch = useDispatch()
   const isUSDCEnabled = useIsUSDCEnabled()
   const presetValues = usePayExtraPresets(useRemoteVar)
-  const { data, isOpen } = useDrawer('PremiumTrackPurchase')
-  const trackId = data?.trackId
+  const {
+    data: { contentId: trackId },
+    isOpen,
+    onClose,
+    onClosed
+  } = usePremiumContentPurchaseModal()
+
   const { data: track, status: trackStatus } = useGetTrackById(
     { id: trackId },
     { disabled: !trackId }
@@ -355,33 +363,18 @@ export const PremiumTrackPurchaseDrawer = () => {
     usePurchaseContentFormConfiguration({ track, presetValues })
 
   const handleClosed = useCallback(() => {
+    onClosed()
     dispatch(purchaseContentActions.cleanup())
-    dispatch(
-      modalsActions.trackModalClosed({ name: 'PremiumContentPurchaseModal' })
-    )
-  }, [dispatch])
-
-  // TODO: Remove manual event tracking in this drawer once
-  // it's using common modal state
-  // https://linear.app/audius/issue/PAY-2107/switch-mobile-drawers-over-to-common-modal-infrastructure
-  useEffect(() => {
-    if (trackId && isOpen) {
-      dispatch(
-        modalsActions.trackModalOpened({
-          name: 'PremiumContentPurchaseModal',
-          trackingData: { contentId: trackId }
-        })
-      )
-    }
-  }, [trackId, isOpen, dispatch])
+  }, [onClosed, dispatch])
 
   if (!track || !isTrackPurchasable(track) || !isUSDCEnabled) return null
 
   return (
-    <NativeDrawer
+    <Drawer
       blockClose={isUnlocking}
+      isOpen={isOpen}
+      onClose={onClose}
       drawerHeader={PremiumTrackPurchaseDrawerHeader}
-      drawerName={PREMIUM_TRACK_PURCHASE_MODAL_NAME}
       onClosed={handleClosed}
       isGestureSupported={false}
       isFullscreen
@@ -397,10 +390,10 @@ export const PremiumTrackPurchaseDrawer = () => {
             validationSchema={toFormikValidationSchema(validationSchema)}
             onSubmit={onSubmit}
           >
-            <RenderForm track={track} />
+            <RenderForm onClose={onClose} track={track} />
           </Formik>
         </View>
       )}
-    </NativeDrawer>
+    </Drawer>
   )
 }
