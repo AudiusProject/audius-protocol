@@ -28,9 +28,7 @@ export type Drawer =
   | 'BlockMessages'
   | 'DeleteChat'
   | 'SupportersInfo'
-  | 'StripeOnramp'
   | 'OfflineListening'
-  | 'USDCManualTransfer'
 
 export type DrawerData = {
   EnablePushNotifications: undefined
@@ -70,8 +68,6 @@ export type DrawerData = {
   DeleteChat: { chatId: string }
   SupportersInfo: undefined
   InboxUnavailable: { userId: number; shouldOpenChat: boolean }
-  StripeOnramp: { clientSecret: string }
-  USDCManualTransfer: undefined
 }
 
 export type DrawersState = { [drawer in Drawer]: boolean | 'closing' } & {
@@ -103,8 +99,6 @@ const initialState: DrawersState = {
   BlockMessages: false,
   DeleteChat: false,
   SupportersInfo: false,
-  StripeOnramp: false,
-  USDCManualTransfer: false,
   data: {}
 }
 
