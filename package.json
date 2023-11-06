@@ -94,7 +94,7 @@
     "@types/bn.js": "5.1.0",
     "react-native-svg": "12.3.0",
     "redux": "4.1.1",
-    "webpack": "5.88.2"
+    "webpack": "5.89.0"
   },
   "packageManager": "npm@9.6.7"
 }

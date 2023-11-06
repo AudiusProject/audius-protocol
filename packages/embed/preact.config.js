@@ -3,10 +3,21 @@ import { resolve } from 'path'
 import preactSVGLoader from 'preact-cli-svg-loader'
 
 const NodePolyfillPlugin = require('node-polyfill-webpack-plugin')
+const RefreshPlugin = require('@prefresh/webpack')
+const webpack = require('webpack')
 
 export default function (config, env, helpers) {
+  // config.plugins.pop()
+  // console.log(config.plugins[config.plugins.length - 1].matcher.name)
   config.plugins.push(new NodePolyfillPlugin())
-  config.resolve.fallback = { ...config.resolve.fallback, fs: false }
+  // config.plugins.push(new webpack.HotModuleReplacementPlugin())
+  // config.plugins.push(new RefreshPlugin())
+  // config.plugins.push(new RefreshPlugin())
+  config.resolve.fallback = {
+    ...config.resolve.fallback,
+    crypto: false,
+    fs: resolve(__dirname, './src/util/empty.js'),
+  }
 
   // Use any `index` file, not just index.js
   config.resolve.alias['preact-cli-entrypoint'] = resolve(
@@ -16,7 +27,7 @@ export default function (config, env, helpers) {
   )
   config.resolve.alias = {
     ...config.resolve.alias,
-    fs: resolve(__dirname, './src/util/empty.js')
+    fs: resolve(__dirname, './src/util/empty.js'),
   }
 
   // Vendored SVG fix

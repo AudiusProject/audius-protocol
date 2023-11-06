@@ -2,7 +2,7 @@
   "name": "embed",
   "version": "1.5.49",
   "scripts": {
-    "dev": "preact watch --no-sw --template src/template.ejs",
+    "dev": "preact watch",
     "start:dev": "env-cmd -f .env.dev env-cmd -f .env.local npm run -s dev",
     "start:stage": "env-cmd -f .env.stage env-cmd -f .env.local npm run -s dev",
     "start:prod": "env-cmd -f .env.prod env-cmd -f .env.local npm run -s dev",
@@ -23,15 +23,16 @@
     "identity-obj-proxy": "3.0.0",
     "jest": "29.4.2",
     "per-env": "1.0.2",
+    "postcss": "8.4.31",
+    "postcss-loader": "7.3.3",
     "preact-cli": "4.0.0-next.3",
     "preact-cli-svg-loader": "1.0.0",
     "preact-render-spy": "1.2.1",
-    "serve": "11.1.0",
-    "postcss": "8.4.31",
-    "postcss-loader": "7.3.3"
+    "serve": "11.1.0"
   },
   "dependencies": {
     "@audius/sdk": "*",
+    "@prefresh/babel-plugin": "^0.4.1",
     "amplitude-js": "8.11.1",
     "axios": "0.19.2",
     "classnames": "2.2.6",
@@ -39,7 +40,7 @@
     "hashids": "2.2.10",
     "hls.js": "0.13.1",
     "node-polyfill-webpack-plugin": "2.0.1",
-    "preact": "10.18.1",
+    "preact": "10.18.2",
     "preact-render-to-string": "6.2.2",
     "preact-router": "4.1.2",
     "react-helmet": "6.1.0",
