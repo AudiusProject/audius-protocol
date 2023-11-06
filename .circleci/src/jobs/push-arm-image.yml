@@ -12,7 +12,7 @@ steps:
       name: Docker login
       command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
   - run:
-      name: Install buildx
+      name: Install buildx if nonexistent
       command: docker buildx version &> /dev/null || (docker buildx create --name ci-builder --use && echo "buildx installed")
   - run: docker buildx version && docker buildx ls
   - run: . ~/.profile; audius-compose build --prod "<< parameters.service >>"
