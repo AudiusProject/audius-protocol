@@ -1,8 +1,9 @@
 import { addons } from '@storybook/manager-api'
-import { create } from '@storybook/theming/create'
 
-import { harmonyBrandTheme } from '../src/storybook/theme'
+import { lightTheme } from '../src/storybook/theme'
+
+import './global.css'
 
 addons.setConfig({
-  theme: harmonyBrandTheme
+  theme: lightTheme
 })
