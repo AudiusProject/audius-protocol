@@ -15,8 +15,6 @@ import {
   AUDIO_NFT_PLAYLIST_ROUTE
 } from './routes'
 
-import './index.css'
-
 const Index = () => (
   <BrowserRouter>
     <Routes>

@@ -12,7 +12,6 @@ export default defineConfig(({ command, mode }) => {
   const analyze = env.VITE_BUNDLE_ANALYZE === 'true'
 
   const base = command === 'build' ? '/embed/' : '/'
-  console.log({ base })
   return {
     base,
     build: {
