@@ -7,8 +7,8 @@ import { useDispatch, useSelector } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Transition, animated } from 'react-spring/renderprops'
 
-import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
-import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
+import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
+import IconSend from 'assets/img/iconSend.svg'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'

@@ -28,37 +28,48 @@ const ShuffleButtonProvider = ({
   const matrixAnimations = useRef<AnimationStates | null>(null)
 
   useEffect(() => {
-    if (isMatrix) {
-      if (!matrixAnimations.current) {
-        const pbIconShuffleOff = require('assets/animations/pbIconShuffleOffMatrix.json')
-        const pbIconShuffleOn = require('assets/animations/pbIconShuffleOnMatrix.json')
-        matrixAnimations.current = {
-          pbIconShuffleOff,
-          pbIconShuffleOn
+    const loadAnimations = async () => {
+      if (isMatrix) {
+        if (!matrixAnimations.current) {
+          const { default: pbIconShuffleOff } = (await import(
+            'assets/animations/pbIconShuffleOffMatrix.json'
+          )) as any
+          const { default: pbIconShuffleOn } = (await import(
+            'assets/animations/pbIconShuffleOnMatrix.json'
+          )) as any
+          matrixAnimations.current = {
+            pbIconShuffleOff,
+            pbIconShuffleOn
+          }
         }
-      }
-      setAnimations({ ...matrixAnimations.current })
-    } else if (darkMode) {
-      if (!darkAnimations.current) {
-        const pbIconShuffleOff = require('assets/animations/pbIconShuffleOffDark.json')
-        const pbIconShuffleOn = require('assets/animations/pbIconShuffleOnDark.json')
-        darkAnimations.current = {
-          pbIconShuffleOff,
-          pbIconShuffleOn
+        setAnimations({ ...matrixAnimations.current })
+      } else if (darkMode) {
+        if (!darkAnimations.current) {
+          const pbIconShuffleOff = require('assets/animations/pbIconShuffleOffDark.json')
+          const pbIconShuffleOn = require('assets/animations/pbIconShuffleOnDark.json')
+          darkAnimations.current = {
+            pbIconShuffleOff,
+            pbIconShuffleOn
+          }
         }
-      }
-      setAnimations({ ...darkAnimations.current })
-    } else {
-      if (!defaultAnimations.current) {
-        const pbIconShuffleOff = require('assets/animations/pbIconShuffleOff.json')
-        const pbIconShuffleOn = require('assets/animations/pbIconShuffleOn.json')
-        defaultAnimations.current = {
-          pbIconShuffleOff,
-          pbIconShuffleOn
+        setAnimations({ ...darkAnimations.current })
+      } else {
+        if (!defaultAnimations.current) {
+          const { default: pbIconShuffleOff } = (await import(
+            'assets/animations/pbIconShuffleOff.json'
+          )) as any
+          const { default: pbIconShuffleOn } = (await import(
+            'assets/animations/pbIconShuffleOn.json'
+          )) as any
+          defaultAnimations.current = {
+            pbIconShuffleOff,
+            pbIconShuffleOn
+          }
         }
+        setAnimations({ ...defaultAnimations.current })
       }
-      setAnimations({ ...defaultAnimations.current })
     }
+    loadAnimations()
   }, [darkMode, setAnimations, isMatrix])
 
   return (

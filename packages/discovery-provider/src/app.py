@@ -21,7 +21,6 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from src import api_helpers, exceptions, tracer
 from src.api.v1 import api as api_v1
 from src.api.v1.playlists import playlist_stream_bp
-from src.api.v1.root_path import bp as root_path_bp
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.challenges.create_new_challenges import create_new_challenges
 from src.database_task import DatabaseTask
@@ -276,7 +275,6 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(api_v1.bp)
     app.register_blueprint(api_v1.bp_full)
     app.register_blueprint(playlist_stream_bp)
-    app.register_blueprint(root_path_bp)
 
     return app
 
@@ -325,6 +323,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.cache_current_nodes",
             "src.tasks.update_aggregates",
             "src.tasks.cache_entity_counts",
+            "src.tasks.publish_scheduled_releases"
         ],
         beat_schedule={
             "aggregate_metrics": {
@@ -435,6 +434,10 @@ def configure_celery(celery, test_config=None):
                 "task": "index_latest_block",
                 "schedule": timedelta(seconds=5),
             },
+            "publish_scheduled_releases": {
+                "task": "publish_scheduled_releases",
+                "schedule": timedelta(minutes=1),
+            },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -492,7 +495,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete(INDEX_REACTIONS_LOCK)
     redis_inst.delete(UPDATE_DELIST_STATUSES_LOCK)
     redis_inst.delete("update_aggregates_lock")
-
+    redis_inst.delete("publish_scheduled_releases")
     # delete cached final_poa_block in case it has changed
     redis_inst.delete(final_poa_block_redis_key)
 

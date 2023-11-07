@@ -10,7 +10,7 @@ import {
 import { useField } from 'formik'
 import { get, set } from 'lodash'
 
-import { ReactComponent as IconSourceFiles } from 'assets/img/iconSourceFiles.svg'
+import IconSourceFiles from 'assets/img/iconSourceFiles.svg'
 import {
   ContextualMenu,
   SelectedValue,

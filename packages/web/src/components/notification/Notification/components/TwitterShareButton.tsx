@@ -10,7 +10,7 @@ import {
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ReactComponent as IconTwitterBird } from 'assets/img/iconTwitterBird.svg'
+import IconTwitterBird from 'assets/img/iconTwitterBird.svg'
 import { useRecord, TrackEvent } from 'common/store/analytics/actions'
 import { openTwitterLink } from 'utils/tweet'
 

@@ -2,7 +2,7 @@ import { ComponentProps, forwardRef, MouseEvent } from 'react'
 
 import cn from 'classnames'
 
-import { ReactComponent as IconSave } from 'assets/img/iconSave.svg'
+import IconSave from 'assets/img/iconSave.svg'
 
 import styles from './Pill.module.css'
 

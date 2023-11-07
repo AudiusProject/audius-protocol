@@ -21,7 +21,7 @@ import {
 import cn from 'classnames'
 import { debounce } from 'lodash'
 
-import { ReactComponent as IconRemix } from 'assets/img/iconRemix.svg'
+import IconRemix from 'assets/img/iconRemix.svg'
 import Input from 'components/data-entry/Input'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { HelpCallout } from 'components/help-callout/HelpCallout'

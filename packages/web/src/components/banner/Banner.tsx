@@ -1,6 +1,6 @@
 import cn from 'classnames'
 
-import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
+import IconRemove from 'assets/img/iconRemove.svg'
 
 import styles from './Banner.module.css'
 

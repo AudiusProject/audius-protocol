@@ -13,6 +13,7 @@ import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
 import * as matchers from 'redux-saga-test-plan/matchers'
 import { take } from 'redux-saga/effects'
+import { describe, it, expect } from 'vitest'
 
 import * as sagas from 'common/store/queue/sagas'
 import { getRecommendedTracks } from 'common/store/recommendation/sagas'

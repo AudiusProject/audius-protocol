@@ -31,14 +31,16 @@ export const TypographyCard = (props: TypographyCardProps) => {
 
   return (
     <Flex flex={1} direction='column' gap='l'>
-      <Text>
+      <Text tag='h4'>
         {variant}-{size}
         {strength ? `-${strength}` : ''}
       </Text>
-      <Text {...props}>Ag</Text>
+      <Unstyled>
+        <Text {...props}>Ag</Text>
+      </Unstyled>
       <Text>
         Font Size: {fontSize}px, Line-height: {lineHeight}, Spacing:{' '}
-        {variant === 'label' ? '0.5px' : '0%'} Weight: {fontWeightKey}
+        {variant === 'label' ? '0.5px' : '0%'}, Weight: {fontWeightKey}
       </Text>
     </Flex>
   )
@@ -54,21 +56,19 @@ export const TypographyPanel = (props: TypographyPanelProps) => {
   const { variant, sizes, strengths } = props
 
   return (
-    <Unstyled>
-      <Flex direction='column' gap='3xl'>
-        {sizes.map((size) => (
-          <Paper p='2xl' shadow='near' gap='l' key={size}>
-            {strengths.map((strength) => (
-              <TypographyCard
-                key={strength}
-                variant={variant}
-                size={size}
-                strength={strength}
-              />
-            ))}
-          </Paper>
-        ))}
-      </Flex>
-    </Unstyled>
+    <Flex direction='column' gap='3xl'>
+      {sizes.map((size) => (
+        <Paper p='2xl' shadow='near' gap='l' key={size}>
+          {strengths.map((strength) => (
+            <TypographyCard
+              key={strength}
+              variant={variant}
+              size={size}
+              strength={strength}
+            />
+          ))}
+        </Paper>
+      ))}
+    </Flex>
   )
 }

@@ -1,7 +1,7 @@
 import { isElectron } from 'utils/clientUtil'
 
-const ENV = process.env.REACT_APP_ENVIRONMENT
-// const SCHEME = process.env.REACT_APP_SCHEME
+const ENV = process.env.VITE_ENVIRONMENT
+// const SCHEME = process.env.VITE_SCHEME
 
 // On startup, when this script is included, create a link to the
 // downloaded electron app (if available) and try redirecting to it.

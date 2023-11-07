@@ -16,7 +16,7 @@ import {
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontalAlt.svg'
+import IconKebabHorizontal from 'assets/img/iconKebabHorizontalAlt.svg'
 import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { NotificationDot } from 'components/notification-dot'

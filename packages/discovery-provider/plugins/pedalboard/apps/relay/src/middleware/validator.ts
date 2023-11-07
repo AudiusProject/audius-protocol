@@ -70,7 +70,7 @@ export const validator = async (
   }
 
   // inject remaining fields into ctx for downstream middleware
-  const ip = request.ip
+  const ip = request.ip ?? ''
 
   const oldCtx = response.locals.ctx
   response.locals.ctx = {

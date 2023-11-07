@@ -1,7 +1,3 @@
-:global(#landingPage) .heroContainer .title {
-  font-family: 'Avenir Next LT Pro Condensed' !important;
-}
-
 .container {
   flex-shrink: 0;
   position: relative;

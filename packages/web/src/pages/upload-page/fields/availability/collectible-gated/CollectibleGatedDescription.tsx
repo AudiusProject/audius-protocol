@@ -2,7 +2,7 @@ import { collectiblesSelectors } from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
-import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
+import IconExternalLink from 'assets/img/iconExternalLink.svg'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 import { ExternalLink } from 'components/link'
 import { AUDIUS_GATED_CONTENT_BLOG_LINK } from 'utils/route'

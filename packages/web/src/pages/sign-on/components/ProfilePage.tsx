@@ -11,7 +11,7 @@ import {
 } from '@audius/common'
 import cn from 'classnames'
 
-import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
+import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
 import { ToastContext } from 'components/toast/ToastContext'
 import CompleteProfileWithSocial from 'pages/sign-on/components/CompleteProfileWithSocial'
 import ProfileForm, {
@@ -22,7 +22,7 @@ import { resizeImage } from 'utils/imageProcessingUtil'
 
 import styles from './ProfilePage.module.css'
 
-const GENERAL_ADMISSION = process.env.REACT_APP_GENERAL_ADMISSION ?? ''
+const GENERAL_ADMISSION = process.env.VITE_GENERAL_ADMISSION ?? ''
 const isMobile = getIsMobile()
 
 const messages = {

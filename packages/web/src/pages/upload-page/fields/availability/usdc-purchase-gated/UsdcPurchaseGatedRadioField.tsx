@@ -34,13 +34,19 @@ type UsdcPurchaseGatedRadioFieldProps = {
   isUpload?: boolean
   initialPremiumConditions?: PremiumConditions
   isInitiallyUnlisted?: boolean
+  isScheduledRelease?: boolean
 }
 
 export const UsdcPurchaseGatedRadioField = (
   props: UsdcPurchaseGatedRadioFieldProps
 ) => {
-  const { isRemix, isUpload, initialPremiumConditions, isInitiallyUnlisted } =
-    props
+  const {
+    isRemix,
+    isUpload,
+    initialPremiumConditions,
+    isInitiallyUnlisted,
+    isScheduledRelease
+  } = props
 
   const handleClickWaitListLink = useCallback(() => {
     track(make({ eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK }))
@@ -54,9 +60,10 @@ export const UsdcPurchaseGatedRadioField = (
     isUpload: !!isUpload,
     isRemix,
     initialPremiumConditions: initialPremiumConditions ?? null,
-    isInitiallyUnlisted: !!isInitiallyUnlisted
+    isInitiallyUnlisted: !!isInitiallyUnlisted,
+    isScheduledRelease: !!isScheduledRelease
   })
-  const disabled = noUsdcGate || !isUsdcUploadEnabled
+  const disabled = noUsdcGate || !isUsdcUploadEnabled || isScheduledRelease
 
   const helpContent = (
     <div className={styles.helpContent}>

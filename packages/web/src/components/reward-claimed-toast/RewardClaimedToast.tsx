@@ -6,7 +6,7 @@ import {
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'
+import IconCaretRight from 'assets/img/iconCaretRight.svg'
 import { ToastContext } from 'components/toast/ToastContext'
 import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
 import { getLocationPathname } from 'store/routing/selectors'

@@ -22,7 +22,7 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 
-import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
+import BadgeArtist from 'assets/img/badgeArtist.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { ArtistRecommendationsDropdown } from 'components/artist-recommendations/ArtistRecommendationsDropdown'

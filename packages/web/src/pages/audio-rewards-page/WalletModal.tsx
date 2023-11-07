@@ -18,8 +18,8 @@ import {
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
-import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
+import IconReceive from 'assets/img/iconReceive.svg'
+import IconSend from 'assets/img/iconSend.svg'
 import SocialProof from 'components/social-proof/SocialProof'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'

@@ -19,7 +19,7 @@ import {
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { ReactComponent as IconCamera } from 'assets/img/iconCamera.svg'
+import IconCamera from 'assets/img/iconCamera.svg'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import EditableRow, { Format } from 'components/groupable-list/EditableRow'
 import GroupableList from 'components/groupable-list/GroupableList'

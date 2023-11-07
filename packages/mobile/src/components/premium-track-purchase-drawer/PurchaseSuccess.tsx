@@ -6,7 +6,6 @@ import { View } from 'react-native'
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import IconVerified from 'app/assets/images/iconVerified.svg'
 import { Button, Text } from 'app/components/core'
-import { useDrawer } from 'app/hooks/useDrawer'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { EventNames } from 'app/types/analytics'
@@ -41,10 +40,15 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   }
 }))
 
-export const PurchaseSuccess = ({ track }: { track: UserTrackMetadata }) => {
+export const PurchaseSuccess = ({
+  onPressViewTrack,
+  track
+}: {
+  onPressViewTrack: () => void
+  track: UserTrackMetadata
+}) => {
   const styles = useStyles()
   const { specialGreen, staticWhite, neutralLight4 } = useThemeColors()
-  const { onClose } = useDrawer('PremiumTrackPurchase')
   const { handle } = track.user
   const { title } = track
   const link = getTrackRoute(track, true)
@@ -83,7 +87,7 @@ export const PurchaseSuccess = ({ track }: { track: UserTrackMetadata }) => {
         size='large'
       />
       <Button
-        onPress={onClose}
+        onPress={onPressViewTrack}
         title={messages.viewTrack}
         variant='commonAlt'
         styles={{

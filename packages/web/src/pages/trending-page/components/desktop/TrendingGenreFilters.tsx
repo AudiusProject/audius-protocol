@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import { getCanonicalName } from '@audius/common'
 
-import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
+import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
 import SelectablePills from 'components/selectable-pill/SelectablePills'
 
 import styles from './TrendingGenreFilters.module.css'

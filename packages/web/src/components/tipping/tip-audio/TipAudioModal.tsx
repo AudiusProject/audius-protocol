@@ -16,7 +16,7 @@ import { useDispatch } from 'react-redux'
 import { animated, Transition } from 'react-spring/renderprops'
 import { usePrevious } from 'react-use'
 
-import { ReactComponent as IconSuccess } from 'assets/img/iconVerified.svg'
+import IconSuccess from 'assets/img/iconVerified.svg'
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useSelector } from 'common/hooks/useSelector'
 import { useRemoteVar } from 'hooks/useRemoteConfig'

@@ -30,10 +30,6 @@
   align-items: center;
 }
 
-:global(#landingPage) .title {
-  font-family: 'Avenir Next LT Pro Condensed' !important;
-}
-
 .title {
   color: #7e1bcc;
   font-size: 48px;

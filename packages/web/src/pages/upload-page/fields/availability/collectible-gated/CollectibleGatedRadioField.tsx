@@ -25,13 +25,19 @@ type CollectibleGatedRadioFieldProps = {
   isUpload?: boolean
   initialPremiumConditions?: PremiumConditions
   isInitiallyUnlisted?: boolean
+  isScheduledRelease?: boolean
 }
 
 export const CollectibleGatedRadioField = (
   props: CollectibleGatedRadioFieldProps
 ) => {
-  const { isRemix, isUpload, initialPremiumConditions, isInitiallyUnlisted } =
-    props
+  const {
+    isRemix,
+    isUpload,
+    initialPremiumConditions,
+    isInitiallyUnlisted,
+    isScheduledRelease
+  } = props
 
   const hasCollectibles = useSelector((state) => {
     const { ethCollectionMap, solCollectionMap } =
@@ -49,7 +55,8 @@ export const CollectibleGatedRadioField = (
     isUpload: !!isUpload,
     isRemix,
     initialPremiumConditions: initialPremiumConditions ?? null,
-    isInitiallyUnlisted: !!isInitiallyUnlisted
+    isInitiallyUnlisted: !!isInitiallyUnlisted,
+    isScheduledRelease: !!isScheduledRelease
   })
 
   return (
