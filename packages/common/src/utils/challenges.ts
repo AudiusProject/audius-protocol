@@ -6,7 +6,8 @@ import {
   ChallengeRewardID,
   UserChallenge,
   OptimisticUserChallenge,
-  ChallengeName
+  ChallengeName,
+  SpecifierWithAmount
 } from '../models'
 
 import { formatNumberCommas } from './formatUtil'
@@ -271,4 +272,3 @@ export const getClaimableChallengeSpecifiers = (
     return isCooldownChallengeClaimable(challenge)
   })
 }
-
