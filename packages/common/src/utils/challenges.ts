@@ -259,3 +259,16 @@ export const isCooldownChallengeClaimable = (
     dayjs.utc().diff(dayjs.utc(challenge.created_at), 'day') >= 7
   )
 }
+/* Filter for only claimable challenges */
+export const getClaimableChallengeSpecifiers = (
+  specifiers: SpecifierWithAmount[],
+  undisbursedUserChallenges: UndisbursedUserChallenge[]
+) => {
+  return specifiers.filter((s) => {
+    const challenge = undisbursedUserChallenges.filter(
+      (c) => c.specifier === s.specifier
+    )[0] // specifiers are unique
+    return isCooldownChallengeClaimable(challenge)
+  })
+}
+
