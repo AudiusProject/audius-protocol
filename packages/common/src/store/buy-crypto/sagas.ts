@@ -58,10 +58,10 @@ import { getBuyUSDCRemoteConfig } from 'store/buy-usdc'
 import { getContext } from 'store/commonStore'
 import { getFeePayer } from 'store/solana/selectors'
 import { TOKEN_LISTING_MAP } from 'store/ui/buy-audio/constants'
-import { BuyAudioStage, OnRampProvider } from 'store/ui/buy-audio/types'
+import { OnRampProvider } from 'store/ui/buy-audio/types'
 import { setVisibility } from 'store/ui/modals/parentSlice'
 import { initializeStripeModal } from 'store/ui/stripe-modal/slice'
-import { waitForAccount } from 'utils/sagaHelpers'
+import { waitForAccount, waitForValue } from 'utils/sagaHelpers'
 
 import {
   BuyCryptoConfig,
@@ -335,6 +335,16 @@ function* doBuyCryptoViaSol({
   const reportToSentry = yield* getContext('reportToSentry')
   const audiusLocalStorage = yield* getContext('localStorage')
 
+  yield* call(
+    track,
+    make({
+      eventName: Name.BUY_CRYPTO_STARTED,
+      mint,
+      provider,
+      amount
+    })
+  )
+
   // Get config
   const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
   const feePayerAddress = yield* select(getFeePayer)
@@ -440,15 +450,13 @@ function* doBuyCryptoViaSol({
     )
     yield* put(setVisibility({ modal: 'StripeOnRamp', visible: true }))
 
-    // TODO: Make unified BuyCrypto analytics?
     yield* call(
       track,
       make({
-        eventName:
-          mint === 'audio'
-            ? Name.BUY_AUDIO_ON_RAMP_OPENED
-            : Name.BUY_USDC_ON_RAMP_OPENED,
-        provider
+        eventName: Name.BUY_CRYPTO_ON_RAMP_OPENED,
+        mint,
+        provider,
+        amount
       })
     )
 
@@ -471,11 +479,10 @@ function* doBuyCryptoViaSol({
       yield* call(
         track,
         make({
-          eventName:
-            mint === 'audio'
-              ? Name.BUY_AUDIO_ON_RAMP_CANCELED
-              : Name.BUY_USDC_ON_RAMP_CANCELED,
-          provider
+          eventName: Name.BUY_CRYPTO_ON_RAMP_CANCELED,
+          mint,
+          provider,
+          amount
         })
       )
       yield* put(buyCryptoCanceled())
@@ -488,11 +495,10 @@ function* doBuyCryptoViaSol({
       yield* call(
         track,
         make({
-          eventName:
-            mint === 'audio'
-              ? Name.BUY_AUDIO_ON_RAMP_CANCELED
-              : Name.BUY_USDC_ON_RAMP_FAILURE,
+          eventName: Name.BUY_CRYPTO_ON_RAMP_FAILURE,
+          mint,
           provider,
+          amount,
           error: errorString
         })
       )
@@ -524,11 +530,10 @@ function* doBuyCryptoViaSol({
     yield* call(
       track,
       make({
-        eventName:
-          mint === 'audio'
-            ? Name.BUY_AUDIO_ON_RAMP_SUCCESS
-            : Name.BUY_USDC_ON_RAMP_SUCCESS,
-        provider
+        eventName: Name.BUY_CRYPTO_ON_RAMP_SUCCESS,
+        mint,
+        provider,
+        amount
       })
     )
 
@@ -553,6 +558,17 @@ function* doBuyCryptoViaSol({
         }. Expected: ${lamportsToPurchase}.`
       )
     }
+
+    // Record analytics
+    yield* call(
+      track,
+      make({
+        eventName: Name.BUY_CRYPTO_ON_RAMP_CONFIRMED,
+        mint,
+        provider,
+        amount
+      })
+    )
 
     // Try the swap a few times in hopes the price comes back if it slipped
     let swapError = null
@@ -658,28 +674,15 @@ function* doBuyCryptoViaSol({
     }
 
     // Record success
-    if (mint === 'audio') {
-      yield* call(
-        track,
-        make({
-          eventName: Name.BUY_AUDIO_SUCCESS,
-          provider,
-          requestedAudio: amount,
-          surplusAudio:
-            amount - Number(quoteResponse.outAmount) / outputTokenLamports,
-          actualAudio: Number(quoteResponse.outAmount) / outputTokenLamports
-        })
-      )
-    } else if (mint === 'usdc') {
-      yield* call(
-        track,
-        make({
-          eventName: Name.BUY_USDC_SUCCESS,
-          provider,
-          requestedAmount: amount
-        })
-      )
-    }
+    yield* call(
+      track,
+      make({
+        eventName: Name.BUY_CRYPTO_ON_RAMP_SUCCESS,
+        mint,
+        provider,
+        amount
+      })
+    )
     yield* put(buyCryptoSucceeded())
 
     // Clear local storage
@@ -701,28 +704,16 @@ function* doBuyCryptoViaSol({
         userbank: userbank?.toBase58()
       }
     })
-    if (mint === 'audio') {
-      yield* call(
-        track,
-        make({
-          eventName: Name.BUY_AUDIO_FAILURE,
-          provider,
-          requestedAudio: amount,
-          error: error.message,
-          stage: BuyAudioStage.START
-        })
-      )
-    } else if (mint === 'usdc') {
-      yield* call(
-        track,
-        make({
-          eventName: Name.BUY_USDC_FAILURE,
-          provider,
-          requestedAmount: amount,
-          error: error.message
-        })
-      )
-    }
+    yield* call(
+      track,
+      make({
+        eventName: Name.BUY_CRYPTO_ON_RAMP_FAILURE,
+        mint,
+        provider,
+        amount,
+        error: error.message
+      })
+    )
   }
 }
 
@@ -738,7 +729,7 @@ function* recoverBuyCryptoViaSolIfNecessary() {
   // Pull from context
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const { track } = yield* getContext('analytics')
+  const { track, make } = yield* getContext('analytics')
   const reportToSentry = yield* getContext('reportToSentry')
 
   // Return early if feature not enabled
@@ -761,13 +752,21 @@ function* recoverBuyCryptoViaSolIfNecessary() {
     return
   }
 
-  console.info('Found failed BuyCryptoViaSol...', localStorageState)
+  const { mint, amount, provider } = localStorageState
+  yield* call(
+    track,
+    make({
+      eventName: Name.BUY_CRYPTO_RECOVERY_STARTED,
+      mint,
+      provider,
+      amount
+    })
+  )
 
   // Get config
   const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
   const connection = yield* call(getSolanaConnection, audiusBackendInstance)
-  const feePayerAddress = yield* select(getFeePayer)
-  const { mint, amount } = localStorageState
+  const feePayerAddress = yield* waitForValue(getFeePayer)
   const config = yield* call(getBuyCryptoRemoteConfig, mint)
   const outputToken = TOKEN_LISTING_MAP[mint.toUpperCase()]
   let userbank: PublicKey | null = null
@@ -803,8 +802,10 @@ function* recoverBuyCryptoViaSolIfNecessary() {
     // Don't do anything if we don't have any SOL.
     // Don't clear local storage either - maybe the SOL hasn't gotten to us yet?
     if (salvageInputAmount <= 0) {
-      console.warn(`Not enough SOL for purchase: ${salvageInputAmount}`)
-      return
+      throw new BuyCryptoError(
+        BuyCryptoErrorCode.BAD_AMOUNT,
+        `Buy Crypto via SOL Recovery flow initiated, but no SOL in root wallet: ${wallet.publicKey.toBase58()}`
+      )
     }
 
     // Get a quote for swapping the entire balance
@@ -840,13 +841,39 @@ function* recoverBuyCryptoViaSolIfNecessary() {
       expectedAmount: BigInt(outputTokenAmount)
     })
 
-    // Put the success event so any failed purchases can be reattempted
+    // Record success
     yield* put(buyCryptoRecoverySucceeded())
+    yield* call(
+      track,
+      make({
+        eventName: Name.BUY_CRYPTO_RECOVERY_SUCCESS,
+        mint,
+        provider,
+        amount
+      })
+    )
+
+    // Clear local storage
+    yield* call(
+      [audiusLocalStorage, audiusLocalStorage.removeItem],
+      BUY_CRYPTO_VIA_SOL_STATE_KEY
+    )
   } catch (e) {
     const error =
       e instanceof BuyCryptoError
         ? e
         : new BuyCryptoError(BuyCryptoErrorCode.UNKNOWN, `${e}`)
+
+    yield* call(
+      track,
+      make({
+        eventName: Name.BUY_CRYPTO_RECOVERY_FAILURE,
+        mint,
+        provider,
+        amount,
+        error: error.message
+      })
+    )
     yield* put(buyCryptoRecoveryFailed({ error }))
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
