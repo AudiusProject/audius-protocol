@@ -81,7 +81,7 @@ const slice = createSlice({
       // handled by saga
     },
     /**
-     * Fired when the recovery succeeds
+     * Fired when the recovery fails
      */
     buyCryptoRecoveryFailed: (
       _state,
