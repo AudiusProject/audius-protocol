@@ -68,18 +68,15 @@ def update_remixes_table(session, track_record, track_metadata):
     session.query(Remix).filter_by(child_track_id=child_track_id).delete()
 
     # Add all remixes
-    if "remix_of" in track_metadata and isinstance(track_metadata["remix_of"], dict):
-        tracks = track_metadata["remix_of"].get("tracks")
-        if tracks and isinstance(tracks, list):
-            for track in tracks:
-                if not isinstance(track, dict):
-                    continue
-                parent_track_id = track.get("parent_track_id")
-                if isinstance(parent_track_id, int):
-                    remix = Remix(
-                        parent_track_id=parent_track_id, child_track_id=child_track_id
-                    )
-                    session.add(remix)
+    parent_track_ids = get_remix_parent_track_ids(track_metadata)
+    if not parent_track_ids:
+        return
+
+    for parent_track_id in parent_track_ids:
+        remix = Remix(
+            parent_track_id=parent_track_id, child_track_id=child_track_id
+        )
+        session.add(remix)
 
 
 def update_track_price_history(
@@ -466,8 +463,8 @@ def validate_remixability(params: ManageEntityParameters):
     user_id = params.user_id
     session = params.session
 
-    track_ids = get_remix_parent_track_ids(track_metadata)
-    if not track_ids:
+    parent_track_ids = get_remix_parent_track_ids(track_metadata)
+    if not parent_track_ids:
         return
 
     args: List[PremiumContentAccessBatchArgs] = list(
@@ -477,7 +474,7 @@ def validate_remixability(params: ManageEntityParameters):
                 "premium_content_id": track_id,
                 "premium_content_type": "track",
             },
-            track_ids,
+            parent_track_ids,
         )
     )
     premium_content_batch_access = (
