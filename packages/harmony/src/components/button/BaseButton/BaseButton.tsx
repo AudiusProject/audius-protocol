@@ -1,14 +1,12 @@
 import { forwardRef } from 'react'
 
+import { CSSObject, useTheme } from '@emotion/react'
 import { Slot, Slottable } from '@radix-ui/react-slot'
-import cn from 'classnames'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import { useMediaQueryListener } from '../../../hooks/useMediaQueryListener'
 import type { BaseButtonProps } from '../types'
-
-import baseStyles from './BaseButton.module.css'
 
 /**
  * Base component for Harmony buttons. Not intended to be used directly. Use
@@ -23,7 +21,6 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       isLoading,
       widthToHideText,
       minWidth,
-      className,
       fullWidth,
       styles,
       style,
@@ -34,6 +31,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       _isPressed,
       ...other
     } = props
+    const { motion } = useTheme()
     const { isMatch: isTextHidden } = useMediaQueryListener(
       `(max-width: ${widthToHideText}px)`
     )
@@ -49,19 +47,56 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
 
     const ButtonComponent = asChild ? Slot : 'button'
 
+    const buttonComponentCss: CSSObject = {
+      fontFamily: 'var(--harmony-font-family)',
+      alignItems: 'center',
+      boxSizing: 'border-box',
+      cursor: 'pointer',
+      display: 'inline-flex',
+      flexShrink: 0,
+      justifyContent: 'center',
+      overflow: 'hidden',
+      position: 'relative',
+      textAlign: 'center',
+      userSelect: 'none',
+      whiteSpace: 'nowrap',
+      transition: `transform ${motion.hover}`,
+
+      ...(fullWidth && {
+        width: '100%',
+        flexShrink: 1
+      }),
+
+      ':focus': {
+        outline: 'none !important'
+      },
+      ':hover': {
+        transform: 'scale(1.04)'
+      },
+      ':active': {
+        transform: 'scale(0.98)'
+      },
+
+      ...((disabled || isLoading || _isHovered || _isPressed) && {
+        pointerEvents: 'none'
+      }),
+      ...(_isHovered && {
+        transform: 'scale(1.04)'
+      }),
+      ...(_isPressed && {
+        transform: 'scale(0.98)'
+      })
+    }
+
+    const iconCss = {
+      '& path': {
+        fill: 'currentcolor'
+      }
+    }
+
     return (
       <ButtonComponent
-        className={cn(
-          baseStyles.button,
-          styles.button,
-          {
-            [baseStyles.disabled]: disabled || isLoading,
-            [baseStyles.fullWidth]: fullWidth,
-            [baseStyles.hover]: _isHovered,
-            [baseStyles.active]: _isPressed
-          },
-          className
-        )}
+        css={{ ...buttonComponentCss, ...styles.button }}
         disabled={disabled || isLoading}
         ref={ref}
         type={asChild ? undefined : 'button'}
@@ -73,16 +108,13 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
         {...other}
       >
         {isLoading ? (
-          <LoadingSpinner
-            data-chromatic='ignore'
-            className={cn(baseStyles.spinner, styles.spinner)}
-          />
+          <LoadingSpinner data-chromatic='ignore' css={styles.icon} />
         ) : LeftIconComponent ? (
-          <LeftIconComponent className={cn(baseStyles.icon, styles.icon)} />
+          <LeftIconComponent css={{ ...iconCss, ...styles.icon }} />
         ) : null}
         {!isTextHidden ? <Slottable>{children}</Slottable> : null}
         {RightIconComponent ? (
-          <RightIconComponent className={cn(baseStyles.icon, styles.icon)} />
+          <RightIconComponent css={{ ...iconCss, ...styles.icon }} />
         ) : null}
       </ButtonComponent>
     )
