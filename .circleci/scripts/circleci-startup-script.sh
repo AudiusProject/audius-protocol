@@ -8,6 +8,8 @@ set -ex
 systemctl stop circleci.service &>/dev/null || true
 systemctl disable circleci.service &>/dev/null || true
 
+
+# set platform used for circleci installer and token
 export platform="linux/amd64"
 gcp_key="circleci-auth-token"
 
@@ -22,12 +24,16 @@ case "$(uname -m)" in
         ;;
 esac
 
+
+# install basic dependencies
 apt install -y git coreutils curl
+
 
 # download and run circleci agent installer script
 curl -L https://raw.githubusercontent.com/CircleCI-Public/runner-installation-files/main/download-launch-agent.sh -o download-launch-agent.sh
 sh ./download-launch-agent.sh
 rm download-launch-agent.sh
+
 
 # setup user and dirs
 id -u circleci &>/dev/null || adduser --disabled-password --gecos GECOS circleci
@@ -36,6 +42,7 @@ usermod -aG docker circleci
 mkdir -p /var/opt/circleci
 chmod 0750 /var/opt/circleci
 chown -R circleci /var/opt/circleci /opt/circleci
+
 
 # setup config
 mkdir -p /etc/opt/circleci && touch /etc/opt/circleci/launch-agent-config.yaml
@@ -51,10 +58,11 @@ runner:
   cleanup_working_directory: true
 EOT
 
+
 # allow sudo
 echo "circleci ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/circleci
-chown root /etc/sudoers.d/circleci
 chmod 440 /etc/sudoers.d/circleci
+
 
 # setup circleci systemd service
 touch /usr/lib/systemd/system/circleci.service
@@ -76,8 +84,19 @@ EOT
 systemctl enable circleci.service
 systemctl start circleci.service
 
+
 # Periodically clean up local docker registry
 curl -L https://raw.githubusercontent.com/AudiusProject/audius-protocol/phelpsdb-self-hosted-ci-cleanup/.circleci/scripts/periodic-cleanup -o /usr/local/sbin/periodic-cleanup
 chmod 755 /usr/local/sbin/periodic-cleanup
-echo '5 * * * * root /usr/local/sbin/periodic-cleanup | logger -t cleanup' >> /etc/crontab
-echo '35 * * * * root /usr/local/sbin/periodic-cleanup --full | logger -t cleanup' >> /etc/crontab
+
+cat <<EOT > /etc/cron.hourly/audius-ci-hourly
+#!/bin/sh
+/usr/local/sbin/periodic-cleanup | logger -t cleanup
+EOT
+chmod 755 /etc/cron.hourly/audius-ci-hourly
+
+cat <<EOT > /etc/cron.daily/audius-ci-daily
+#!/bin/sh
+/usr/local/sbin/periodic-cleanup --full | logger -t cleanup
+EOT
+chmod 755 /etc/cron.hourly/audius-ci-daily
