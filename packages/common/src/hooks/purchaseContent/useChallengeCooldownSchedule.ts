@@ -58,8 +58,9 @@ const getAudioMatchingCooldownLabel = (
 const formatAudioMatchingChallengesForCooldownSchedule = (
   challenges: UndisbursedUserChallenge[]
 ) => {
+  if (challenges.length === 0) return []
   const now = dayjs().endOf('day')
-  const cooldownChallenges = new Array(7)
+  const cooldownChallenges = new Array(challenges[0].cooldown_days)
   challenges.forEach((c) => {
     const createdAt = toLocalTime(c.created_at)
     const diff = now.diff(createdAt, 'day')

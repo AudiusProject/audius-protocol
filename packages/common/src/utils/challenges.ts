@@ -271,8 +271,10 @@ export const getClaimableChallengeSpecifiers = (
   return specifiers.filter((s) => {
     const challenge = undisbursedUserChallenges.filter(
       (c) => c.specifier === s.specifier
-    )[0] // specifiers are unique
-    return isCooldownChallengeClaimable(challenge)
+    )
+    if (challenge.length === 0) return false
+    // specifiers are unique
+    return isCooldownChallengeClaimable(challenge[0])
   })
 }
 
