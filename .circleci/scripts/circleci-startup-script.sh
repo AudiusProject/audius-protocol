@@ -99,4 +99,4 @@ cat <<EOT > /etc/cron.daily/audius-ci-daily
 #!/bin/sh
 /usr/local/sbin/periodic-cleanup --full | logger -t cleanup
 EOT
-chmod 755 /etc/cron.hourly/audius-ci-daily
+chmod 755 /etc/cron.daily/audius-ci-daily
