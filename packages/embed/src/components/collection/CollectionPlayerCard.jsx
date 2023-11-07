@@ -1,10 +1,8 @@
 import cn from 'classnames'
-import { h } from 'preact'
 import SimpleBar from 'simplebar-react'
 
 import 'simplebar/dist/simplebar.min.css'
 import IconVerified from '../../assets/img/iconVerified.svg'
-import { isBItem } from '../../util/bitems'
 import { getArtworkUrl } from '../../util/getArtworkUrl'
 import { stripLeadingSlash } from '../../util/stringUtil'
 import Artwork from '../artwork/Artwork'
@@ -147,7 +145,6 @@ const CollectionPlayerCard = ({
             }}
           >
             {collection.tracks.map((track, i) => {
-              if (isBItem(track.id)) return null
               return (
                 <CollectionListRow
                   key={i}
