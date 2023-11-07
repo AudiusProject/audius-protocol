@@ -2,8 +2,8 @@
 
 export const logError = (...args) => {
   if (
-    process.env.PREACT_APP_ENVIRONMENT !== 'production' ||
-    process.env.PREACT_APP_SHOW_ERROR_LOGS
+    process.env.VITE_ENVIRONMENT !== 'production' ||
+    process.env.VITE_SHOW_ERROR_LOGS
   ) {
     console.error(args)
   }

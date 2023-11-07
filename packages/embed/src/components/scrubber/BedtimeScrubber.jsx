@@ -1,6 +1,5 @@
 import { Scrubber } from '@audius/stems'
-import { h } from 'preact'
-import { useEffect } from 'preact/hooks'
+import { useEffect } from 'react'
 
 import { PlayingState } from '../playbutton/PlayButton'
 

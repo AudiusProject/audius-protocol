@@ -1,5 +1,4 @@
-import { h } from 'preact'
-import { useState, useContext, useEffect } from 'preact/hooks'
+import { useState, useContext, useEffect } from 'react'
 
 import { isMobileWebTwitter } from '../../util/isMobileWebTwitter'
 import Artwork from '../artwork/Artwork'
