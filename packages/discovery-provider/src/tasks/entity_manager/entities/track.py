@@ -16,7 +16,7 @@ from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.premium_content.premium_content_access_checker import (
     PremiumContentAccessBatchArgs,
-    PremiumContentAccessChecker,
+    premium_content_access_checker,
 )
 from src.premium_content.premium_content_constants import USDC_PURCHASE_KEY
 from src.tasks.entity_manager.utils import (
@@ -478,7 +478,7 @@ def validate_remixability(params: ManageEntityParameters):
         )
     )
     premium_content_batch_access = (
-        PremiumContentAccessChecker.check_access_for_batch(session, args)
+        premium_content_access_checker.check_access_for_batch(session, args)
     )
     if "track" not in premium_content_batch_access:
         return
@@ -494,7 +494,7 @@ def validate_remixability(params: ManageEntityParameters):
 
 
 def get_remix_parent_track_ids(track_metadata):
-    if not "remix_of" in track_metadata:
+    if "remix_of" not in track_metadata:
         return
     if not isinstance(track_metadata["remix_of"], dict):
         return
