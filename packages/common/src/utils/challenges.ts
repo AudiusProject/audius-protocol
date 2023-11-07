@@ -6,7 +6,8 @@ import {
   ChallengeRewardID,
   UserChallenge,
   OptimisticUserChallenge,
-  ChallengeName
+  ChallengeName,
+  SpecifierWithAmount
 } from '../models'
 
 import { formatNumberCommas } from './formatUtil'
@@ -248,14 +249,33 @@ export const isAudioMatchingChallenge = (
   )
 }
 
-// TODO: currently only $AUDIO matching challenges have cooldown
-// so this works, but really we should check if `cooldown_period` exists on the
-// challenge instead of using `!isAudioMatchingChallenge`. PAY-2030
+/** Returns true if the challenge is not a cooldown challenge by checking
+ * whether it has `cooldown_days` defined and whether the challenge has been
+ * created for more than `cooldown_days` days.
+ */
 export const isCooldownChallengeClaimable = (
   challenge: UndisbursedUserChallenge
 ) => {
   return (
-    !isAudioMatchingChallenge(challenge.challenge_id) ||
-    dayjs.utc().diff(dayjs.utc(challenge.created_at), 'day') >= 7
+    challenge.cooldown_days === undefined ||
+    dayjs.utc().diff(dayjs.utc(challenge.created_at), 'day') >=
+      challenge.cooldown_days
   )
+}
+
+/* Filter for only claimable challenges */
+export const getClaimableChallengeSpecifiers = (
+  specifiers: SpecifierWithAmount[],
+  undisbursedUserChallenges: UndisbursedUserChallenge[]
+) => {
+  return specifiers.filter((s) => {
+    const challenge = undisbursedUserChallenges.filter(
+      (c) => c.specifier === s.specifier
+    )[0] // specifiers are unique
+    return isCooldownChallengeClaimable(challenge)
+  })
+}
+
+export const toLocalTime = (date: string) => {
+  return dayjs.utc(date).local()
 }

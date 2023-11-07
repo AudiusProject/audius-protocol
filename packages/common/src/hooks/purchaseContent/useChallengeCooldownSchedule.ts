@@ -7,8 +7,7 @@ import {
   UndisbursedUserChallenge,
   audioRewardsPageSelectors
 } from 'store/pages'
-
-import { COOLDOWN_DAYS } from './constants'
+import { isCooldownChallengeClaimable, toLocalTime } from 'utils/challenges'
 
 const { getUndisbursedUserChallenges } = audioRewardsPageSelectors
 
@@ -30,40 +29,44 @@ export const useChallengeCooldownSchedule = (
   const challenges = useSelector(getUndisbursedUserChallenges)
     .filter((c) => c.challenge_id === challengeId)
     .map((c) => ({ ...c, createdAtDate: dayjs.utc(c.created_at) }))
-  const now = dayjs.utc()
   // Only challenges past the cooldown period are claimable
-  const claimableAmount = challenges
-    .filter((c) => now.diff(c.createdAtDate, 'day') >= COOLDOWN_DAYS)
-    .reduce((acc, curr) => acc + curr.amount, 0)
   // Challenges are already ordered by completed_blocknumber ascending.
   const cooldownChallenges = challenges.filter(
-    (c) => now.diff(c.createdAtDate, 'day') < COOLDOWN_DAYS
+    (c) => !isCooldownChallengeClaimable(c)
   )
-  return { claimableAmount, cooldownChallenges }
+  const claimableAmount = challenges
+    .filter(isCooldownChallengeClaimable)
+    .reduce((acc, curr) => acc + curr.amount, 0)
+  return { cooldownChallenges, claimableAmount }
 }
 
-const getAudioMatchingCooldownLabel = (now: Dayjs, created_at: Dayjs) => {
-  const diff = now.diff(created_at, 'day')
-  if (diff === COOLDOWN_DAYS) {
+const getAudioMatchingCooldownLabel = (
+  challenge: UndisbursedUserChallenge,
+  now: Dayjs
+) => {
+  const createdAt = toLocalTime(challenge.created_at)
+  const cooldownDays = challenge.cooldown_days ?? 0
+  const diff = now.diff(createdAt, 'day')
+  if (diff === cooldownDays) {
     return messages.laterToday
-  } else if (diff === COOLDOWN_DAYS - 1) {
+  } else if (diff === cooldownDays - 1) {
     return messages.tomorrow
   }
-  return created_at.local().add(COOLDOWN_DAYS, 'day').format('ddd (M/D)')
+  return createdAt.add(cooldownDays, 'day').format('ddd (M/D)')
 }
 
-const formatAudioMatchingChallengeCooldownSchedule = (
+const formatAudioMatchingChallengesForCooldownSchedule = (
   challenges: UndisbursedUserChallenge[]
 ) => {
-  const now = dayjs.utc().endOf('day')
+  const now = dayjs().endOf('day')
   const cooldownChallenges = new Array(7)
   challenges.forEach((c) => {
-    const createdAtUTC = dayjs.utc(c.created_at)
-    const diff = now.diff(createdAtUTC, 'day')
+    const createdAt = toLocalTime(c.created_at)
+    const diff = now.diff(createdAt, 'day')
     cooldownChallenges[diff] = {
       ...cooldownChallenges[diff],
       id: c.specifier,
-      label: getAudioMatchingCooldownLabel(now, createdAtUTC),
+      label: getAudioMatchingCooldownLabel(c, now),
       value: (cooldownChallenges[diff]?.value ?? 0) + c.amount
     }
   })
@@ -87,7 +90,7 @@ export const useAudioMatchingChallengeCooldownSchedule = (
   return {
     claimableAmount,
     cooldownChallenges:
-      formatAudioMatchingChallengeCooldownSchedule(cooldownChallenges),
+      formatAudioMatchingChallengesForCooldownSchedule(cooldownChallenges),
     cooldownChallengesSummary:
       claimableAmount > 0
         ? getAudioMatchingChallengeCooldownSummary(claimableAmount)
