@@ -33,7 +33,7 @@ const relatedFoundationsMap = {
         />
       </Flex>
     ),
-    href: '/?path=/docs/foundations-color--documentation'
+    link: '/?path=/docs/foundations-color--documentation'
   },
   Shadow: {
     title: 'Shadow',
@@ -46,13 +46,13 @@ const relatedFoundationsMap = {
         <Paper h={48} w={48} borderRadius='s' shadow='far' />
       </Flex>
     ),
-    href: '/?path=/docs/foundations-shadow--documentation'
+    link: '/?path=/docs/foundations-shadow--documentation'
   },
   CornerRadius: {
     title: 'Corner Radius',
     description:
       'Used to give sharp edges a more subtle, rounded effect and style.',
-    href: '/?path=/docs/foundations-corner-radius--documentation',
+    link: '/?path=/docs/foundations-corner-radius--documentation',
     component: (
       <Flex gap='l'>
         <Box
@@ -89,7 +89,7 @@ const relatedFoundationsMap = {
     title: 'Spacing',
     description:
       'Ensure layouts are consistent with our intuitive spacing system.',
-    href: '/?path=/docs/foundations-spacing--documentation',
+    link: '/?path=/docs/foundations-spacing--documentation',
     component: (
       <Flex
         h={48}
@@ -108,14 +108,14 @@ const relatedFoundationsMap = {
     title: 'Icons',
     description:
       'Visually communicate intent. Icons that are crisp, clear, and coherent.',
-    href: '/?path=/docs/foundations-icons--documentation',
+    link: '/?path=/docs/foundations-icons--documentation',
     component: <IconNote height={48} width={48} color='default' />
   },
   Motion: {
     title: 'Motion',
     description:
       'Animations that brings the UI to life and ensuring usability.',
-    href: '/?path=/docs/foundations-motion--documentation',
+    link: '/?path=/docs/foundations-motion--documentation',
     component: <Button color='blue'>Quick!</Button>
   }
 }
