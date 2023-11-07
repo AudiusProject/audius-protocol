@@ -1,4 +1,3 @@
-import { h } from 'preact'
 
 import Artwork from '../artwork/Artwork'
 import AudiusLogoButton from '../button/AudiusLogoButton'

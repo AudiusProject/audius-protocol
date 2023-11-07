@@ -1,7 +1,6 @@
 import { IconVolume0, IconVolume2 } from '@audius/stems'
 import cn from 'classnames'
-import { h } from 'preact'
-import { useState, useEffect, useRef, useCallback } from 'preact/hooks'
+import { useState, useEffect, useRef, useCallback } from 'react'
 
 import AudiusLogo from '../../assets/img/audiusLogoHorizontal.svg'
 import { getScrollParent } from '../../util/scrollParent'
