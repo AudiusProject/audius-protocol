@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { Box } from 'components/layout/Box'
 import { Flex } from 'components/layout/Flex'
 import { Paper } from 'components/layout/Paper'
+// TODO: Get final image assets from Sammie
 import shadowBackground from 'storybook/assets/shadowBackground.jpeg'
 
 import { Avatar } from './Avatar'
