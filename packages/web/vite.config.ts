@@ -8,6 +8,7 @@ import vike from 'vike/plugin'
 import { defineConfig, loadEnv } from 'vite'
 import glslify from 'vite-plugin-glslify'
 import svgr from 'vite-plugin-svgr'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
 import { env as APP_ENV } from './src/services/env'
 
@@ -61,11 +62,9 @@ export default defineConfig(({ mode }) => {
       }
     },
     plugins: [
-      // TODO: Enable once https://github.com/aleclarson/vite-tsconfig-paths/issues/110
-      // is resolved
-      // tsconfigPaths({
-      //   root: './packages'
-      // }),
+      tsconfigPaths({
+        projects: ['.', '../common']
+      }),
       glslify(),
       svgr({
         include: '**/*.svg'
@@ -119,20 +118,6 @@ export default defineConfig(({ mode }) => {
     ],
     resolve: {
       alias: {
-        // Should be able to use vite-tsconfig-paths instead
-        app: '/src/app',
-        assets: '/src/assets',
-        common: '/src/common',
-        components: '/src/components',
-        hooks: '/src/hooks',
-        pages: '/src/pages',
-        'public-site': '/src/public-site',
-        services: '/src/services',
-        store: '/src/store',
-        workers: '/src/workers',
-        utils: '/src/utils',
-        ssr: '/src/ssr',
-
         os: require.resolve('os-browserify'),
         path: require.resolve('path-browserify'),
         url: require.resolve('url'),

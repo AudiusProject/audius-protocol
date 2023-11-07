@@ -1,6 +1,6 @@
 import { ID, LineupState } from '../../../models'
 
-export default interface TrackPageState {
+export interface TrackPageState {
   trackId: ID | null
   trackPermalink: string | null
   rank: {

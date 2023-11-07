@@ -99,12 +99,8 @@ export {
 export * from './share-sound-to-tiktok-modal/types'
 export * as shareSoundToTiktokModalSelectors from './share-sound-to-tiktok-modal/selectors'
 
-export {
-  default as themeReducer,
-  actions as themeActions,
-  SetThemeAction,
-  SetSystemAppearanceAction
-} from './theme/slice'
+export { default as themeReducer, actions as themeActions } from './theme/slice'
+export type { SetThemeAction, SetSystemAppearanceAction } from './theme/slice'
 export * as themeSelectors from './theme/selectors'
 
 export { default as toastReducer, actions as toastActions } from './toast/slice'
@@ -151,8 +147,8 @@ export * from './transaction-details/types'
 
 export {
   default as searchUsersModalReducer,
-  actions as searchUsersModalActions,
-  SearchUsersModalState
+  actions as searchUsersModalActions
 } from './search-users-modal/slice'
+export type { SearchUsersModalState } from './search-users-modal/slice'
 export * as searchUsersModalSelectors from './search-users-modal/selectors'
 export { default as searchUsersModalSagas } from './search-users-modal/sagas'

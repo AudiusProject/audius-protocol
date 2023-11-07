@@ -8,8 +8,8 @@
   "license": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "module": "dist/index.js",
-  "exports": "./dist/index.js",
+  "module": "dist/index.es.js",
+  "exports": "./src/index.ts",
   "files": [
     "src"
   ],
