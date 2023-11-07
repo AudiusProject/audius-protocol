@@ -20,6 +20,17 @@ jobs:
       requires:
         - identity-init
 
+  - push-arm-image:
+      name: push-identity-service-arm
+      context: [Vercel, dockerhub]
+      service: identity-service
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-identity-service
+
+
   # Deploy audius-protocol `main` branch (stage)
   - deploy-stage-nodes:
       name: deploy-stage-identity-service

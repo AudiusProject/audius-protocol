@@ -56,6 +56,62 @@ jobs:
       service: dashboard
       notify_slack_on_failure: true
 
+  - push-arm-image:
+      name: push-discovery-provider-arm
+      context: [Vercel, dockerhub]
+      service: discovery-provider
+      requires:
+        - push-discovery-provider
+  - push-arm-image:
+      name: push-discovery-provider-notifications-arm
+      context: [Vercel, dockerhub]
+      service: discovery-provider-notifications
+      requires:
+        - push-discovery-provider-notifications
+  - push-arm-image:
+      name: push-pedalboard-trending-challenge-rewards-arm
+      context: [Vercel, dockerhub]
+      service: trending-challenge-rewards
+      requires:
+        - push-pedalboard-trending-challenge-rewards
+  - push-arm-image:
+      name: push-pedalboard-relay-arm
+      context: [Vercel, dockerhub]
+      service: relay
+      requires:
+        - push-relay
+
+  - push-arm-image:
+      name: push-pedalboard-sla-auditor-arm
+      context: [Vercel, dockerhub]
+      service: sla-auditor
+      requires:
+        - push-pedalboard-sla-auditor
+  - push-arm-image:
+      name: push-comms-arm
+      context: [Vercel, dockerhub]
+      service: comms
+      requires:
+        - push-comms
+  - push-arm-image:
+      name: push-trpc-arm
+      context: [Vercel, dockerhub]
+      service: trpc
+      requires:
+        - push-trpc
+  - push-arm-image:
+      name: push-protocol-dashboard-arm
+      context: [Vercel, dockerhub]
+      service: dashboard
+      requires:
+        - push-protocol-dashboard
+  - push-arm-image:
+      name: push-healthz-arm
+      context: [Vercel, dockerhub]
+      service: healthz
+      requires:
+        - push-healthz
+
   - release-github-draft-trigger:
       type: approval
   - release-github-draft:
@@ -93,6 +149,19 @@ jobs:
         - push-trpc
         - push-healthz
         - push-protocol-dashboard
+        # uncomment these when arm builds are stable
+        # - push-identity-service-arm
+        # - push-mediorum-arm
+        # - push-discovery-provider-arm
+        # - push-discovery-provider-notifications-arm
+        # - push-pedalboard-trending-challenge-rewards-arm
+        # - push-pedalboard-relay-arm
+        # - push-pedalboard-sla-auditor-arm
+        # - push-comms-arm
+        # - push-trpc-arm
+        # - push-healthz-arm
+        # - push-protocol-dashboard-arm
+
 
   - deploy-foundation-nodes-trigger:
       requires:
