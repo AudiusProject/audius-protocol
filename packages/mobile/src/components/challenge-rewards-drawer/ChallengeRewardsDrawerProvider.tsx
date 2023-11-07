@@ -117,15 +117,12 @@ export const ChallengeRewardsDrawerProvider = () => {
         claimChallengeReward({
           claim: {
             challengeId: modalType,
-            specifiers:
-              challenge.challenge_type === 'aggregate'
-                ? getClaimableChallengeSpecifiers(
-                    challenge.undisbursedSpecifiers,
-                    undisbursedUserChallenges
-                  )
-                : [
-                    { specifier: challenge.specifier, amount: challenge.amount }
-                  ],
+            specifiers: [
+              {
+                specifier: challenge.specifier,
+                amount: challenge.amount
+              }
+            ],
             amount: challenge?.claimableAmount ?? 0
           },
           retryOnFailure: true
