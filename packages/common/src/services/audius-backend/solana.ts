@@ -567,7 +567,7 @@ export const pollForTransaction = async (
   options?: { maxRetryCount: number; retryDelayMs: number }
 ) => {
   let retryCount = 0
-  const maxRetryCount = options?.maxRetryCount ?? 20
+  const maxRetryCount = options?.maxRetryCount ?? 60
   const retryDelayMs = options?.retryDelayMs ?? 1000
   let transaction: VersionedTransactionResponse | TransactionResponse | null =
     null
