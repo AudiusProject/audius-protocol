@@ -1,5 +1,4 @@
 import cn from 'classnames'
-import { h } from 'preact'
 
 import styles from './Button.module.css'
 

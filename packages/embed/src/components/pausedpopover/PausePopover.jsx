@@ -1,6 +1,5 @@
 import cn from 'classnames'
-import { h } from 'preact'
-import { useContext } from 'preact/hooks'
+import { useContext } from 'react'
 import { CSSTransition } from 'react-transition-group'
 
 import IconRemove from '../../assets/img/iconRemove.svg'

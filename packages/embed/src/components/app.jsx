@@ -1,7 +1,11 @@
 import cn from 'classnames'
-import { h } from 'preact'
-import { useCallback, useEffect, useState, useRef } from 'preact/hooks'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import { CSSTransition } from 'react-transition-group'
+import { useParams } from 'react-router-dom'
+import { useSearchParams } from "react-router-dom"
+
+import '@audius/stems/dist/stems.css'
+import '@audius/harmony/dist/harmony.css'
 
 import {
   initTrackSessionStart,
@@ -26,11 +30,9 @@ import {
   getTrack,
   getTrackWithHashId
 } from '../util/BedtimeClient'
-import { isBItem } from '../util/bitems'
 import { getArtworkUrl } from '../util/getArtworkUrl'
 import { decodeHashId } from '../util/hashIds'
-import { getDominantColor } from '../util/image/dominantColor'
-import { DEFAULT_DOMINANT_COLOR } from '../util/image/dominantColor.worker'
+import { getDominantColor } from '../util/image/imageProcessingUtil'
 import { isMobileWebTwitter } from '../util/isMobileWebTwitter'
 import { logError } from '../util/logError'
 import { shadeColor } from '../util/shadeColor'
@@ -49,13 +51,9 @@ import { PauseContextProvider } from './pausedpopover/PauseProvider'
 import { ToastContextProvider } from './toast/ToastContext'
 import TrackPlayerContainer from './track/TrackPlayerContainer'
 
-if (module.hot) {
-  // tslint:disable-next-line:no-var-requires
-  require('preact/debug')
-}
-
-// How long to wait for GA before we show the loading screen
+// How long to wait before we show the loading screen
 const LOADING_WAIT_MSEC = 1
+const DEFAULT_DOMINANT_COLOR = '#7e1bcc'
 
 const RequestType = Object.seal({
   TRACK: 'track',
@@ -156,6 +154,8 @@ const getRequestDataFromURL = ({ path, type, flavor, matches }) => {
 }
 
 const App = (props) => {
+  const params = useParams()
+  const searchParams = useSearchParams()
   const [didError, setDidError] = useState(false) // General errors
   const [did404, setDid404] = useState(false) // 404s indicate content was deleted
   const [isBlocked, setIsBlocked] = useState(false) // Whether or not the content was blocked
@@ -205,10 +205,6 @@ const App = (props) => {
 
         if (!track) {
           setDid404(true)
-          setTracksResponse(null)
-        } else if (isBItem(track.id)) {
-          setDid404(true)
-          setIsBlocked(true)
           setTracksResponse(null)
         } else {
           setDid404(false)
@@ -316,7 +312,12 @@ const App = (props) => {
 
   // Perform initial request
   useEffect(() => {
-    const request = getRequestDataFromURL(props)
+    const request = getRequestDataFromURL({
+      path: props.path,
+      type: params.type,
+      flavor: searchParams[0]?.get('flavor') ?? undefined,
+      matches: params
+    })
     if (!request) {
       setDidError(true)
       return
@@ -393,6 +394,7 @@ const App = (props) => {
           in
           timeout={1000}
         >
+          <>
           {!tracksResponse ? null : (
             <TrackPlayerContainer
               track={tracksResponse}
@@ -418,6 +420,7 @@ const App = (props) => {
               backgroundColor={dominantColor.primary}
             />
           )}
+          </>
         </CSSTransition>
       )
     }

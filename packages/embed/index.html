@@ -6,12 +6,14 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <% preact.headEnd %>
+    <link rel="apple-touch-icon" sizes="180x180" href="https://audius.co/favicons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://audius.co/favicons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://audius.co/favicons/favicon-16x16.png">
 
     <!-- start Google Analytics -->
     <script
       async
-      src="/embed/assets/scripts/gtag.js?id=G-V6N1ZTVGS5"
+      src="https://www.googletagmanager.com/gtag/js?id=%VITE_GA_MEASUREMENT_ID%"
     ></script>
     <script>
       try {
@@ -24,22 +26,9 @@
       } catch (e) {}
     </script>
     <!-- end Google Analytics -->
-
-    <!-- start bItems -->
-    <script type="text/javascript">
-      const fetchBItems = async () => {
-        const bItemsUrl = 'https://bitems.audius.co'
-        try {
-          window.bItems = new Set((await (await fetch(bItemsUrl)).json()).i)
-        } catch (e) {
-          window.bItems = new Set()
-        }
-      }
-      fetchBItems()
-    </script>
-    <!-- end bItems -->
   </head>
   <body>
-    <% preact.bodyEnd %>
+    <div id="root"></div>
+    <script type="module" src="/src/index.jsx"></script>
   </body>
 </html>

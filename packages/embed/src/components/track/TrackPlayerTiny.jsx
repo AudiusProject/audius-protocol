@@ -1,6 +1,5 @@
 import cn from 'classnames'
-import { h } from 'preact'
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import AudiusLogoGlyph from '../../assets/img/audiusLogoGlyph.svg'
 import { getCopyableLink } from '../../util/shareUtil'

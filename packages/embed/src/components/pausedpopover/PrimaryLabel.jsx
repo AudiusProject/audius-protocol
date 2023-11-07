@@ -1,5 +1,4 @@
 import cn from 'classnames'
-import { h } from 'preact'
 
 import styles from './PrimaryLabel.module.css'
 
