@@ -41,6 +41,7 @@ import {
   pollForTransaction,
   relayVersionedTransaction
 } from 'services/audius-backend/solana'
+import { FeatureFlags } from 'services/index'
 import { IntKeys } from 'services/remote-config/types'
 import {
   onrampCanceled,
@@ -49,7 +50,9 @@ import {
   buyCryptoViaSol,
   buyCryptoCanceled,
   buyCryptoFailed,
-  buyCryptoSucceeded
+  buyCryptoSucceeded,
+  buyCryptoRecoverySucceeded,
+  buyCryptoRecoveryFailed
 } from 'store/buy-crypto/slice'
 import { getBuyUSDCRemoteConfig } from 'store/buy-usdc'
 import { getContext } from 'store/commonStore'
@@ -58,8 +61,16 @@ import { TOKEN_LISTING_MAP } from 'store/ui/buy-audio/constants'
 import { BuyAudioStage, OnRampProvider } from 'store/ui/buy-audio/types'
 import { setVisibility } from 'store/ui/modals/parentSlice'
 import { initializeStripeModal } from 'store/ui/stripe-modal/slice'
+import { waitForAccount } from 'utils/sagaHelpers'
 
-import { BuyCryptoConfig, BuyCryptoError, BuyCryptoErrorCode } from './types'
+import {
+  BuyCryptoConfig,
+  BuyCryptoError,
+  BuyCryptoErrorCode,
+  BuyCryptoViaSolLocalStorageState
+} from './types'
+
+const BUY_CRYPTO_VIA_SOL_STATE_KEY = 'buy_crypto_via_sol'
 
 function* getBuyAudioRemoteConfig() {
   // Default slippage tolerance, in percentage basis points
@@ -215,10 +226,76 @@ function* swapSolForCrypto({
   })
 }
 
+function* assertRecoverySuccess({
+  res,
+  swapError,
+  recoveryError,
+  mint,
+  wallet,
+  userbank,
+  expectedAmount
+}: {
+  res: string | null
+  swapError: string | null
+  recoveryError: string | null
+  mint: MintName
+  wallet: PublicKey
+  userbank: PublicKey
+  expectedAmount: bigint
+}) {
+  const audiusLocalStorage = yield* getContext('localStorage')
+  if (recoveryError) {
+    throw new BuyCryptoError(
+      BuyCryptoErrorCode.SWAP_ERROR,
+      `Failed to recover ${mint.toUpperCase()} from SOL: ${recoveryError}. Initial Swap Error: ${swapError}`
+    )
+  } else if (res) {
+    // Read the results of the swap from the transaction
+    const { balanceChange, outputTokenChange } = yield* call(
+      getSwapSolForCryptoTransaction,
+      {
+        transactionSignature: res,
+        sourceWallet: wallet,
+        destinationTokenAccount: userbank
+      }
+    )
+    console.info(
+      `Salvaged ${
+        balanceChange === undefined ? '?' : Math.abs(balanceChange)
+      } SOL into ${outputTokenChange ?? '?'} ${mint.toUpperCase()}: ${res}`
+    )
+
+    // TODO: Some UI here?
+
+    // Even though we recovered some USDC, bubble the initial error as a
+    // failure if the amount salvaged wasn't enough
+    if (
+      outputTokenChange === undefined ||
+      outputTokenChange < expectedAmount // BigInt(quoteResponse.outAmount)
+    ) {
+      // Clear local storage - the SOL is gone, but we just didn't get enough
+      // of the output token
+      yield* call(
+        [audiusLocalStorage, audiusLocalStorage.removeItem],
+        BUY_CRYPTO_VIA_SOL_STATE_KEY
+      )
+      throw new BuyCryptoError(
+        BuyCryptoErrorCode.INSUFFICIENT_FUNDS_ERROR,
+        `Failed to swap SOL to ${expectedAmount} ${mint.toUpperCase()}. Initial Swap Error: ${swapError}.`
+      )
+    }
+  } else {
+    throw new BuyCryptoError(
+      BuyCryptoErrorCode.UNKNOWN,
+      'Unknown error during recovery swap'
+    )
+  }
+}
+
 /**
  * Gets the balance changes of the relevant accounts for a swap transaction
  */
-function* getSwapSolForCryptoResult({
+function* getSwapSolForCryptoTransaction({
   transactionSignature,
   sourceWallet,
   destinationTokenAccount
@@ -256,6 +333,7 @@ function* doBuyCryptoViaSol({
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const { track, make } = yield* getContext('analytics')
   const reportToSentry = yield* getContext('reportToSentry')
+  const audiusLocalStorage = yield* getContext('localStorage')
 
   // Get config
   const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
@@ -430,6 +508,18 @@ function* doBuyCryptoViaSol({
       throw new BuyCryptoError(BuyCryptoErrorCode.ON_RAMP_ERROR, errorString)
     }
 
+    // Update local storage
+    const localStorageState: BuyCryptoViaSolLocalStorageState = {
+      amount,
+      mint,
+      provider
+    }
+    yield* call(
+      [audiusLocalStorage, audiusLocalStorage.setJSONValue],
+      BUY_CRYPTO_VIA_SOL_STATE_KEY,
+      localStorageState
+    )
+
     // Record analytics
     yield* call(
       track,
@@ -509,13 +599,16 @@ function* doBuyCryptoViaSol({
         wallet.publicKey
       )
       const salvageInputAmount = newBalance - minRent
+      console.info(
+        `Attempting to salvage ${salvageInputAmount} SOL into ${mint.toUpperCase()}`
+      )
 
       // Get a quote for swapping the entire balance
       const exactInQuote = yield* call(
         [jupiterInstance, jupiterInstance.quoteGet],
         {
           inputMint: TOKEN_LISTING_MAP.SOL.address,
-          outputMint: TOKEN_LISTING_MAP.USDC.address,
+          outputMint: TOKEN_LISTING_MAP[mint.toUpperCase()].address,
           amount: salvageInputAmount,
           swapMode: 'ExactIn',
           slippageBps: config.slippageBps
@@ -531,50 +624,19 @@ function* doBuyCryptoViaSol({
         userbank,
         feePayer
       })
-      if (recoveryError) {
-        throw new BuyCryptoError(
-          BuyCryptoErrorCode.SWAP_ERROR,
-          `Failed to recover ${mint.toUpperCase()} from SOL: ${recoveryError}. Initial Swap Error: ${swapError}`
-        )
-      } else if (res) {
-        // Read the results of the swap from the transaction
-        const { balanceChange, outputTokenChange } = yield* call(
-          getSwapSolForCryptoResult,
-          {
-            transactionSignature: res,
-            sourceWallet: wallet.publicKey,
-            destinationTokenAccount: userbank
-          }
-        )
-        console.info(
-          `Salvaged ${
-            balanceChange === undefined ? '?' : Math.abs(balanceChange)
-          } SOL into ${outputTokenChange ?? '?'} ${mint.toUpperCase()}: ${res}`
-        )
-
-        // TODO: Some UI here?
-
-        // Even though we recovered some USDC, bubble the initial error as a
-        // failure if the amount salvaged wasn't enough
-        if (
-          outputTokenChange === undefined ||
-          outputTokenChange < BigInt(quoteResponse.outAmount)
-        ) {
-          throw new BuyCryptoError(
-            BuyCryptoErrorCode.SWAP_ERROR,
-            `Failed to swap SOL to ${mint.toUpperCase()}: ${swapError}`
-          )
-        }
-      } else {
-        throw new BuyCryptoError(
-          BuyCryptoErrorCode.UNKNOWN,
-          'Unknown error during recovery swap'
-        )
-      }
+      yield* call(assertRecoverySuccess, {
+        res,
+        swapError,
+        recoveryError,
+        mint,
+        wallet: wallet.publicKey,
+        userbank,
+        expectedAmount: BigInt(quoteResponse.outAmount)
+      })
     } else if (swapTransactionSignature) {
       // Read the results of the swap from the transaction
       const { balanceChange, outputTokenChange } = yield* call(
-        getSwapSolForCryptoResult,
+        getSwapSolForCryptoTransaction,
         {
           transactionSignature: swapTransactionSignature,
           sourceWallet: wallet.publicKey,
@@ -619,6 +681,12 @@ function* doBuyCryptoViaSol({
       )
     }
     yield* put(buyCryptoSucceeded())
+
+    // Clear local storage
+    yield* call(
+      [audiusLocalStorage, audiusLocalStorage.removeItem],
+      BUY_CRYPTO_VIA_SOL_STATE_KEY
+    )
   } catch (e) {
     const error =
       e instanceof BuyCryptoError
@@ -658,11 +726,144 @@ function* doBuyCryptoViaSol({
   }
 }
 
+/**
+ * Failures happen when the on ramp purchase could not be confirmed, or the
+ * subsequent swap attempts all fail. Get the SOL balance of the wallet, and
+ * if it has a balance greater than min rent, attempt to swap all of it to the
+ * output token. If we get enough of the output token after the swap, it's a
+ * successful recovery.
+ */
+function* recoverBuyCryptoViaSolIfNecessary() {
+  yield* call(waitForAccount)
+  // Pull from context
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const { track } = yield* getContext('analytics')
+  const reportToSentry = yield* getContext('reportToSentry')
+
+  // Return early if feature not enabled
+  if (!getFeatureEnabled(FeatureFlags.BUY_USDC_VIA_SOL)) {
+    return
+  }
+
+  // Check for local storage
+  const audiusLocalStorage = yield* getContext('localStorage')
+  const localStorageState = yield* call(
+    [
+      audiusLocalStorage,
+      audiusLocalStorage.getJSONValue<BuyCryptoViaSolLocalStorageState>
+    ],
+    BUY_CRYPTO_VIA_SOL_STATE_KEY
+  )
+
+  // Do nothing if there's no local storage state
+  if (!localStorageState) {
+    return
+  }
+
+  console.info('Found failed BuyCryptoViaSol...', localStorageState)
+
+  // Get config
+  const wallet = yield* call(getRootSolanaAccount, audiusBackendInstance)
+  const connection = yield* call(getSolanaConnection, audiusBackendInstance)
+  const feePayerAddress = yield* select(getFeePayer)
+  const { mint, amount } = localStorageState
+  const config = yield* call(getBuyCryptoRemoteConfig, mint)
+  const outputToken = TOKEN_LISTING_MAP[mint.toUpperCase()]
+  let userbank: PublicKey | null = null
+
+  try {
+    if (!feePayerAddress) {
+      throw new BuyCryptoError(
+        BuyCryptoErrorCode.BAD_FEE_PAYER,
+        'Fee Payer is missing'
+      )
+    }
+
+    const outputTokenLamports = 10 ** outputToken.decimals
+    const outputTokenAmount = Math.ceil(amount * outputTokenLamports)
+    const feePayer = new PublicKey(feePayerAddress)
+    userbank = yield* call(createUserBankIfNeeded, audiusBackendInstance, {
+      mint: localStorageState.mint,
+      feePayerOverride: feePayerAddress,
+      recordAnalytics: track
+    })
+
+    // Get swappable salvage amount
+    const minRent = yield* call(
+      [connection, connection.getMinimumBalanceForRentExemption],
+      0
+    )
+    const balance = yield* call(
+      [connection, connection.getBalance],
+      wallet.publicKey
+    )
+    const salvageInputAmount = balance - minRent
+
+    // Don't do anything if we don't have any SOL.
+    // Don't clear local storage either - maybe the SOL hasn't gotten to us yet?
+    if (salvageInputAmount <= 0) {
+      console.warn(`Not enough SOL for purchase: ${salvageInputAmount}`)
+      return
+    }
+
+    // Get a quote for swapping the entire balance
+    const exactInQuote = yield* call(
+      [jupiterInstance, jupiterInstance.quoteGet],
+      {
+        inputMint: TOKEN_LISTING_MAP.SOL.address,
+        outputMint: TOKEN_LISTING_MAP.USDC.address,
+        amount: salvageInputAmount,
+        swapMode: 'ExactIn',
+        slippageBps: config.slippageBps
+      }
+    )
+
+    // Do the swap. Just do it once, slippage shouldn't be a
+    // concern since the quote is fresh and the tolerance is high.
+    const { res, error: recoveryError } = yield* call(swapSolForCrypto, {
+      quoteResponse: exactInQuote,
+      mint,
+      wallet,
+      userbank,
+      feePayer
+    })
+
+    // Assert we got what we needed
+    yield* call(assertRecoverySuccess, {
+      res,
+      swapError: null,
+      recoveryError,
+      mint,
+      wallet: wallet.publicKey,
+      userbank,
+      expectedAmount: BigInt(outputTokenAmount)
+    })
+
+    // Put the success event so any failed purchases can be reattempted
+    yield* put(buyCryptoRecoverySucceeded())
+  } catch (e) {
+    const error =
+      e instanceof BuyCryptoError
+        ? e
+        : new BuyCryptoError(BuyCryptoErrorCode.UNKNOWN, `${e}`)
+    yield* put(buyCryptoRecoveryFailed({ error }))
+    yield* call(reportToSentry, {
+      level: ErrorLevel.Error,
+      error,
+      additionalInfo: {
+        wallet: wallet.publicKey.toBase58(),
+        userbank: userbank?.toBase58()
+      }
+    })
+  }
+}
+
 // Only one purchase at a time
-function* watchBuyCrypto() {
+function* watchBuyCryptoViaSol() {
   yield* takeLatest(buyCryptoViaSol, doBuyCryptoViaSol)
 }
 
 export default function sagas() {
-  return [watchBuyCrypto]
+  return [watchBuyCryptoViaSol, recoverBuyCryptoViaSolIfNecessary]
 }
