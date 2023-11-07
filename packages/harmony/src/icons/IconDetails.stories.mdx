@@ -1,0 +1,145 @@
+import { Meta, Title } from '@storybook/blocks'
+
+import { Flex } from 'components'
+import { IconQuestionCircle, IconStars } from 'icons'
+import addIconArrangement from 'storybook/assets/addIconArrangement.png'
+import exportIconCommand from 'storybook/assets/exportIconCommand.png'
+import exportIconLayer from 'storybook/assets/exportIconLayer.png'
+import verifyIconSettings from 'storybook/assets/verifyIconSettings.png'
+
+<Meta title='Icons/Details' />
+
+<Title>Details</Title>
+
+### Overview
+
+An icon is a graphic symbol designed to visually indicate the purpose of an interface element.
+
+export function Step(props) {
+  const { index, children } = props
+  return (
+    <section
+      css={(theme) => ({
+        background: theme.color.background.surface1,
+        borderRadius: theme.cornerRadius.s,
+        border: `1px solid ${theme.color.border.strong}`,
+        padding: theme.spacing.l,
+        marginTop: theme.spacing['2xl']
+      })}
+    >
+      {index === undefined ? null : <h2>Step {index}</h2>}
+      {children}
+    </section>
+  )
+}
+
+# For Developers
+
+export const headerIconCss = {
+  visibility: 'visible !important',
+  top: '3px !important'
+}
+
+## <IconQuestionCircle color='default' css={headerIconCss} /> How to Export Icons
+
+Follow the general guide below to learn how to export icons from the library
+
+<Step index={1}>
+
+Find the icon you want to export.
+Pro Tip: You can search for icons by pressing Cmd + F
+
+<img src={exportIconCommand} />
+
+</Step>
+
+<Step index={2}>
+
+Please be sure to select the parent layer. If you export the wrong layer the file name will be `<export the layer above>`
+
+<img src={exportIconLayer} />
+
+</Step>
+
+<Step index={3}>
+
+Locate the export panel in the bottom right corner of figma. (Export panel is only visible when a layer is selected)
+
+</Step>
+
+<Step index={4}>
+
+⚠️ Verify the export settings are correct. (See screenshot) If not,
+go back to step 2.
+
+<img src={verifyIconSettings} />
+
+</Step>
+
+<Step index={5}>
+
+Hit 'Export', save the file & you are done! 🎉
+
+</Step>
+
+## <IconStars color='default' css={headerIconCss} /> Add new icons to Harmony
+
+<Step>
+  Developers, when you download new icons, make sure to add them to Harmony so
+  everyone can access them in the future.
+</Step>
+<Step>
+  If you're unable to add them to Harmony due to time constraints, please add an
+  issue to the Design System backlog.
+</Step>
+
+# For Designers
+
+## Instructions: Adding Icons to this file.
+
+When adding new utility icons to this library, designers should ensure the following:
+
+<Step>
+### Paths
+
+- Ensure all icons consist of a single flattened path
+  - To flatten select the desired path & hit ‘CMD + E’
+- Rename the path to `Export layer above`
+
+</Step>
+
+<Step>
+### Color
+
+Ensure fill color is set to
+
+<Flex alignItems='center' gap='xs'>
+  <svg
+    xmlns='http://www.w3.org/2000/svg'
+    width='16'
+    height='16'
+    viewBox='0 0 16 16'
+    fill='none'
+  >
+    <circle cx='8' cy='8' r='8' fill='#FF0000' />
+  </svg>
+  Annotations/Primary
+</Flex>
+
+</Step>
+
+<Step>
+### Arrangement
+
+Rearrange utility icons into alphabetical order using the plugin Griddle with the following configuration
+
+<img src={addIconArrangement} />
+
+</Step>
+
+<Step>
+### Changelog
+
+For every change / addition, add an entry to the changelog.
+
+</Step>

@@ -37,6 +37,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       startIcon: StartIcon,
       endIcon: EndIcon,
       endAdornment: endAdornmentProp,
+      _isFocused,
       ...other
     } = props
 
@@ -53,10 +54,12 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
      * Since Firefox doesn't support the :has() pseudo selector,
      * manually track the focused state and use classes for focus, required, and disabled
      */
-    const [isFocused, handleFocus, handleBlur] = useFocusState(
+    const [isFocusedState, handleFocus, handleBlur] = useFocusState(
       onFocusProp,
       onBlurProp
     )
+
+    const isFocused = _isFocused ?? isFocusedState
 
     // For focus behavior and accessiblity, <label> needs to have a htmlFor={} provided to an id matching the input
     const backupId = useId()
