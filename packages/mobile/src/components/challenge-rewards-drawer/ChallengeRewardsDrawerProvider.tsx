@@ -8,8 +8,7 @@ import {
   audioRewardsPageActions,
   ClaimStatus,
   audioRewardsPageSelectors,
-  isAudioMatchingChallenge,
-  getClaimableChallengeSpecifiers
+  isAudioMatchingChallenge
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -26,12 +25,8 @@ import { AudioMatchingChallengeDrawerContent } from './AudioMatchingChallengeDra
 import { ChallengeRewardsDrawerContent } from './ChallengeRewardsDrawerContent'
 import { ProfileCompletionChecks } from './ProfileCompletionChecks'
 import { ReferralRewardContents } from './ReferralRewardContents'
-const {
-  getChallengeRewardsModalType,
-  getClaimStatus,
-  getAAOErrorCode,
-  getUndisbursedUserChallenges
-} = audioRewardsPageSelectors
+const { getChallengeRewardsModalType, getClaimStatus, getAAOErrorCode } =
+  audioRewardsPageSelectors
 const { claimChallengeReward, resetAndCancelClaimReward } =
   audioRewardsPageActions
 const { getOptimisticUserChallenges } = challengesSelectors
@@ -56,7 +51,6 @@ export const ChallengeRewardsDrawerProvider = () => {
   const userChallenges = useSelector((state: CommonState) =>
     getOptimisticUserChallenges(state, true)
   )
-  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
 
   const handleClose = useCallback(() => {
     dispatch(resetAndCancelClaimReward())
