@@ -6,14 +6,20 @@ import {
   Description,
   Primary,
   Controls,
-  Story,
-  Stories
+  Story
 } from '@storybook/blocks'
-import { Avatar } from './Avatar'
-import { Box } from '../layout/Box'
+
+import avatarPlaybarExampleBad from 'storybook/assets/avatarPlaybarExampleBad.png'
+import avatarProfileExampleGood from 'storybook/assets/avatarProfileExampleGood.png'
+import spacedAvatarList from 'storybook/assets/spacedAvatarList.png'
+import stackedAvatarList from 'storybook/assets/stackedAvatarList.png'
+import stackedAvatarListReversedBad from 'storybook/assets/stackedAvatarListReversedBad.png'
+import stackedAvatarListSmall from 'storybook/assets/stackedAvatarListSmall.png'
+import { ComponentRules } from 'storybook/components'
+
 import { Flex } from '../layout/Flex'
+
 import * as AvatarStories from './Avatar.stories'
-import paperExampleGood from 'storybook/assets/paperExampleGood.png'
 
 <Meta of={AvatarStories} />
 
@@ -67,35 +73,60 @@ _Note: Avatar also accepts layout props from [Flex](?path=/docs/components-layou
   rules={[
     {
       positive: {
-        description:
-          'Use paper to create spin-off component in your local library.',
+        description: 'Space avatars -8px apart, stacked with the first on top.',
         component: (
           <Flex h='100%' w='100%' alignItems='center' justifyContent='center'>
-            <img src={paperExampleGood} />
+            <img src={stackedAvatarList} />
+          </Flex>
+        )
+      },
+      negative: {
+        description: 'Don’t place avatars side-by-side without a -8px padding.',
+        component: (
+          <Flex h='100%' w='100%' alignItems='center' justifyContent='center'>
+            <img src={spacedAvatarList} />
+          </Flex>
+        )
+      }
+    },
+    {
+      positive: {
+        description: 'Maximum of 3 avatars when 24px or smaller.',
+        component: (
+          <Flex h='100%' w='100%' alignItems='center' justifyContent='center'>
+            <img src={stackedAvatarListSmall} />
           </Flex>
         )
       },
       negative: {
         description:
-          'Don’t apply properties not built into the Avatar component.',
+          'Don’t increase the default stroke size for small avatars (24px) or swap the stack direction.',
         component: (
-          <Box
-            w={347}
-            h={93}
-            pv={17}
-            ph={18}
-            style={{
-              border: '5px solid #6A677A',
-              borderRadius: '20px',
-              background: '#F5F5F5'
-            }}
-          />
+          <Flex h='100%' w='100%' alignItems='center' justifyContent='center'>
+            <img src={stackedAvatarListReversedBad} />
+          </Flex>
+        )
+      }
+    },
+    {
+      positive: {
+        description:
+          'Always use the strong avatar when an avatar is overlapping a dark background or cover photo.',
+        component: (
+          <Flex h='100%' w='100%' alignItems='center' justifyContent='center'>
+            <img src={avatarProfileExampleGood} />
+          </Flex>
+        )
+      },
+      negative: {
+        description:
+          'Don’t increase the default stroke size for small avatars (24px) or swap the stack direction.',
+        component: (
+          <Flex h='100%' w='100%' alignItems='center' justifyContent='center'>
+            <img src={avatarPlaybarExampleBad} />
+          </Flex>
         )
       }
     }
   ]}
 />
-
-## Related components
-
-<RelatedComponents componentNames={['Divider', 'Flex', 'Box']} />
