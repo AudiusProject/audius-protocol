@@ -13,7 +13,7 @@ import { Avatar } from './Avatar'
 import { Box } from '../layout/Box'
 import { Flex } from '../layout/Flex'
 import * as AvatarStories from './Avatar.stories'
-import paperExampleGood from '../../../.storybook/public/paperExampleGood.png'
+import paperExampleGood from 'storybook/assets/paperExampleGood.png'
 
 <Meta of={AvatarStories} />
 
@@ -36,11 +36,30 @@ _Note: Avatar also accepts layout props from [Flex](?path=/docs/components-layou
 
 <Controls />
 
+## Configuration Options
+
+### Default
+
+<Canvas>
+  <Story of={AvatarStories.Default} />
+</Canvas>
+
+## Strong
+
+<Canvas>
+  <Story of={AvatarStories.Strong} />
+</Canvas>
+
 ## Use cases and examples
 
-- The paper component has pre-set properties for color, corner radius, shadow, border color, and spacing.
-- Use the paper component to quickly create containers and eliminate guesswork.
-- Ensure consistency by using the paper component to create containers that follow Harmony’s foundational properties.
+- The Avatar’s fill is always set to the user’s uploaded profile photo and can only be edited by the users.
+- Generally, the Avatar component is accompanied by the user’s Display Name, Tier Badge, and @Handle, but in some cases it stands alone is a grouping such as on tracks tiles, notifications, and the top supporters card.
+- Strong should be used when an avatar is overlapping a dark background or cover photo.
+- Avatars should have consistently styling throughout.
+- Avatars can we placed overlapping side-by-side to signal multiple users.
+- There should be no more than 3 avatars stacked if 24px or smaller.
+- By default, avatars should have a stroke (or outline) width of 2px on the outside of the frame.
+- 24px avatars should have a stroke (or outline) width of 1.2px.
 
 ## Do's and don'ts
 
