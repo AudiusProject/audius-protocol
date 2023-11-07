@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 from sqlalchemy import desc
 from sqlalchemy.orm.session import Session
@@ -14,6 +14,10 @@ from src.models.tracks.track import Track
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
+from src.premium_content.premium_content_access_checker import (
+    PremiumContentAccessBatchArgs,
+    PremiumContentAccessChecker,
+)
 from src.premium_content.premium_content_constants import USDC_PURCHASE_KEY
 from src.tasks.entity_manager.utils import (
     CHARACTER_LIMIT_DESCRIPTION,
@@ -299,6 +303,8 @@ def validate_track_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_DESCRIPTION}"
             )
+        validate_remixability(params)
+
     if params.action == Action.UPDATE or params.action == Action.DELETE:
         # update / delete specific validations
         if track_id not in params.existing_records["Track"]:
@@ -453,3 +459,61 @@ def delete_track(params: ManageEntityParameters):
     params.session.query(Stem).filter_by(child_track_id=track_id).delete()
 
     params.add_record(track_id, deleted_track)
+
+
+def validate_remixability(params: ManageEntityParameters):
+    track_metadata = params.metadata
+    user_id = params.user_id
+    session = params.session
+
+    track_ids = get_remix_parent_track_ids(track_metadata)
+    if not track_ids:
+        return
+
+    args: List[PremiumContentAccessBatchArgs] = list(
+        map(
+            lambda track_id: {
+                "user_id": user_id,
+                "premium_content_id": track_id,
+                "premium_content_type": "track",
+            },
+            track_ids,
+        )
+    )
+    premium_content_batch_access = (
+        PremiumContentAccessChecker.check_access_for_batch(session, args)
+    )
+    if "track" not in premium_content_batch_access:
+        return
+    if user_id not in premium_content_batch_access["track"]:
+        return
+
+    for track_id in premium_content_batch_access["track"][user_id]:
+        access = premium_content_batch_access["track"][user_id][track_id]
+        if not access["does_user_have_access"]:
+            raise IndexingValidationError(
+                f"User {user_id} does not have access to premium track {track_id}"
+            )
+
+
+def get_remix_parent_track_ids(track_metadata):
+    if not "remix_of" in track_metadata:
+        return
+    if not isinstance(track_metadata["remix_of"], dict):
+        return
+
+    tracks = track_metadata["remix_of"].get("tracks")
+    if not tracks:
+        return
+    if not isinstance(tracks, list):
+        return
+
+    parent_track_ids = []
+    for track in tracks:
+        if not isinstance(track, dict):
+            continue
+        parent_track_id = track.get("parent_track_id")
+        if isinstance(parent_track_id, int):
+            parent_track_ids.append(parent_track_id)
+
+    return parent_track_ids
