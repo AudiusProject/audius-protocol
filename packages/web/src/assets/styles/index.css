@@ -1,9 +1,9 @@
-@import 'assets/styles/colors.css';
-@import 'assets/styles/sizing.css';
-@import 'assets/styles/type.css';
-@import 'assets/styles/emoji.css';
-@import 'assets/styles/ant-overrides.css';
-@import 'assets/styles/shadows.css';
+@import './colors.css';
+@import './sizing.css';
+@import './type.css';
+@import './emoji.css';
+@import './ant-overrides.css';
+@import './shadows.css';
 
 #root *,
 body * {
