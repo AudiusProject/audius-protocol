@@ -1,5 +1,3 @@
-import dayjs from 'dayjs'
-
 import { UndisbursedUserChallenge } from 'store/pages'
 
 import {
@@ -276,8 +274,4 @@ export const getClaimableChallengeSpecifiers = (
     // specifiers are unique
     return isCooldownChallengeClaimable(challenge[0])
   })
-}
-
-export const toLocalTime = (date: string) => {
-  return dayjs.utc(date).local()
 }

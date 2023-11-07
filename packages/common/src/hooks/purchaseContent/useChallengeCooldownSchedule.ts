@@ -7,7 +7,8 @@ import {
   UndisbursedUserChallenge,
   audioRewardsPageSelectors
 } from 'store/pages'
-import { isCooldownChallengeClaimable, toLocalTime } from 'utils/challenges'
+import { isCooldownChallengeClaimable } from 'utils/challenges'
+import { utcToLocalTime } from 'utils/timeUtil'
 
 const { getUndisbursedUserChallenges } = audioRewardsPageSelectors
 
@@ -44,7 +45,7 @@ const getAudioMatchingCooldownLabel = (
   challenge: UndisbursedUserChallenge,
   now: Dayjs
 ) => {
-  const createdAt = toLocalTime(challenge.created_at)
+  const createdAt = utcToLocalTime(challenge.created_at)
   const cooldownDays = challenge.cooldown_days ?? 0
   const diff = now.diff(createdAt, 'day')
   if (diff === cooldownDays) {
@@ -62,7 +63,7 @@ const formatAudioMatchingChallengesForCooldownSchedule = (
   const now = dayjs().endOf('day')
   const cooldownChallenges = new Array(challenges[0].cooldown_days)
   challenges.forEach((c) => {
-    const createdAt = toLocalTime(c.created_at)
+    const createdAt = utcToLocalTime(c.created_at)
     const diff = now.diff(createdAt, 'day')
     cooldownChallenges[diff] = {
       ...cooldownChallenges[diff],
