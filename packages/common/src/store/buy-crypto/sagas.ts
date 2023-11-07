@@ -34,11 +34,11 @@ import {
   MintName,
   createUserBankIfNeeded,
   createVersionedTransaction,
-  getBalanceChanges,
   getRootSolanaAccount,
   getSolanaConnection,
+  getTokenAccountInfo,
   pollForBalanceChange,
-  pollForTransaction,
+  pollForTokenBalanceChange,
   relayVersionedTransaction
 } from 'services/audius-backend/solana'
 import { FeatureFlags } from 'services/index'
@@ -230,99 +230,23 @@ function* assertRecoverySuccess({
   res,
   swapError,
   recoveryError,
-  mint,
-  wallet,
-  userbank,
-  expectedAmount
+  mint
 }: {
   res: string | null
   swapError: string | null
   recoveryError: string | null
   mint: MintName
-  wallet: PublicKey
-  userbank: PublicKey
-  expectedAmount: bigint
 }) {
-  const audiusLocalStorage = yield* getContext('localStorage')
   if (recoveryError) {
     throw new BuyCryptoError(
       BuyCryptoErrorCode.SWAP_ERROR,
       `Failed to recover ${mint.toUpperCase()} from SOL: ${recoveryError}. Initial Swap Error: ${swapError}`
     )
-  } else if (res) {
-    // Read the results of the swap from the transaction
-    const { balanceChange, outputTokenChange } = yield* call(
-      getSwapSolForCryptoTransaction,
-      {
-        transactionSignature: res,
-        sourceWallet: wallet,
-        destinationTokenAccount: userbank
-      }
-    )
-    console.info(
-      `Salvaged ${
-        balanceChange === undefined ? '?' : Math.abs(balanceChange)
-      } SOL into ${outputTokenChange ?? '?'} ${mint.toUpperCase()}: ${res}`
-    )
-
-    // TODO: Some UI here?
-
-    // Even though we recovered some USDC, bubble the initial error as a
-    // failure if the amount salvaged wasn't enough
-    if (
-      outputTokenChange === undefined ||
-      outputTokenChange < expectedAmount // BigInt(quoteResponse.outAmount)
-    ) {
-      // Clear local storage - the SOL is gone, but we just didn't get enough
-      // of the output token
-      yield* call(
-        [audiusLocalStorage, audiusLocalStorage.removeItem],
-        BUY_CRYPTO_VIA_SOL_STATE_KEY
-      )
-      throw new BuyCryptoError(
-        BuyCryptoErrorCode.INSUFFICIENT_FUNDS_ERROR,
-        `Failed to swap SOL to ${expectedAmount} ${mint.toUpperCase()}. Initial Swap Error: ${swapError}.`
-      )
-    }
-  } else {
+  } else if (!res) {
     throw new BuyCryptoError(
       BuyCryptoErrorCode.UNKNOWN,
-      'Unknown error during recovery swap'
+      `Unknown error during recovery swap. Initial Swap Error: ${swapError}`
     )
-  }
-}
-
-/**
- * Gets the balance changes of the relevant accounts for a swap transaction
- */
-function* getSwapSolForCryptoTransaction({
-  transactionSignature,
-  sourceWallet,
-  destinationTokenAccount
-}: {
-  transactionSignature: string
-  sourceWallet: PublicKey
-  destinationTokenAccount: PublicKey
-}) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const transactionResponse = yield* call(
-    pollForTransaction,
-    audiusBackendInstance,
-    transactionSignature,
-    {
-      maxSupportedTransactionVersion: 0
-    }
-  )
-  if (!transactionResponse) {
-    return {}
-  }
-
-  const { balanceChanges, tokenBalanceChanges } =
-    getBalanceChanges(transactionResponse)
-
-  return {
-    balanceChange: balanceChanges[sourceWallet.toBase58()],
-    outputTokenChange: tokenBalanceChanges[destinationTokenAccount.toBase58()]
   }
 }
 
@@ -570,6 +494,13 @@ function* doBuyCryptoViaSol({
       })
     )
 
+    // Save pre swap token balance
+    const account = yield* call(getTokenAccountInfo, audiusBackendInstance, {
+      mint,
+      tokenAccount: userbank
+    })
+    const preSwapTokenBalance = account?.amount ?? BigInt(0)
+
     // Try the swap a few times in hopes the price comes back if it slipped
     let swapError = null
     let swapTransactionSignature: string | null = null
@@ -608,6 +539,8 @@ function* doBuyCryptoViaSol({
         `Failed to swap for requested ${amount} ${mint.toUpperCase()}. Attempting to salvage all ${mint.toUpperCase()} possible...`,
         swapError
       )
+      // Get "amount" in terms of wei
+      const expectedAmount = BigInt(quoteResponse.outAmount)
       // Get the amount to swap using the new balance less the min required for rent
       // Note: This disregards the existing SOL balance, but there shouldn't be any
       const newBalance = yield* call(
@@ -644,29 +577,40 @@ function* doBuyCryptoViaSol({
         res,
         swapError,
         recoveryError,
-        mint,
-        wallet: wallet.publicKey,
-        userbank,
-        expectedAmount: BigInt(quoteResponse.outAmount)
+        mint
       })
-    } else if (swapTransactionSignature) {
-      // Read the results of the swap from the transaction
-      const { balanceChange, outputTokenChange } = yield* call(
-        getSwapSolForCryptoTransaction,
+      const outputTokenChange = yield* call(
+        pollForTokenBalanceChange,
+        audiusBackendInstance,
         {
-          transactionSignature: swapTransactionSignature,
-          sourceWallet: wallet.publicKey,
-          destinationTokenAccount: userbank
+          initialBalance: preSwapTokenBalance,
+          tokenAccount: userbank,
+          mint,
+          retryDelayMs: config.retryDelayMs,
+          maxRetryCount: config.maxRetryCount
         }
       )
       console.info(
-        `Succesfully swapped ${
-          balanceChange === undefined ? '?' : Math.abs(balanceChange)
-        } SOL into ${
-          outputTokenChange ?? '?'
-        } ${mint.toUpperCase()}: ${swapTransactionSignature}`
+        `Salvaged ${
+          exactInQuote.inAmount
+        } SOL into ${outputTokenChange} ${mint.toUpperCase()}: ${res}`
       )
-    } else {
+      if (
+        outputTokenChange === undefined ||
+        outputTokenChange < expectedAmount
+      ) {
+        // Clear local storage - the SOL is gone, but we just didn't get enough
+        // of the output token
+        yield* call(
+          [audiusLocalStorage, audiusLocalStorage.removeItem],
+          BUY_CRYPTO_VIA_SOL_STATE_KEY
+        )
+        throw new BuyCryptoError(
+          BuyCryptoErrorCode.INSUFFICIENT_FUNDS_ERROR,
+          `Failed to swap SOL to ${expectedAmount} ${mint.toUpperCase()}. Initial Swap Error: ${swapError}.`
+        )
+      }
+    } else if (!swapTransactionSignature) {
       throw new BuyCryptoError(
         BuyCryptoErrorCode.UNKNOWN,
         'Unknown error during initial swap'
@@ -780,7 +724,7 @@ function* recoverBuyCryptoViaSolIfNecessary() {
     }
 
     const outputTokenLamports = 10 ** outputToken.decimals
-    const outputTokenAmount = Math.ceil(amount * outputTokenLamports)
+    const expectedAmount = Math.ceil(amount * outputTokenLamports)
     const feePayer = new PublicKey(feePayerAddress)
     userbank = yield* call(createUserBankIfNeeded, audiusBackendInstance, {
       mint: localStorageState.mint,
@@ -808,6 +752,12 @@ function* recoverBuyCryptoViaSolIfNecessary() {
       )
     }
 
+    // Get pre swap token balance
+    const account = yield* call(getTokenAccountInfo, audiusBackendInstance, {
+      tokenAccount: userbank,
+      mint
+    })
+
     // Get a quote for swapping the entire balance
     const exactInQuote = yield* call(
       [jupiterInstance, jupiterInstance.quoteGet],
@@ -830,16 +780,47 @@ function* recoverBuyCryptoViaSolIfNecessary() {
       feePayer
     })
 
-    // Assert we got what we needed
+    // Check response
     yield* call(assertRecoverySuccess, {
       res,
       swapError: null,
       recoveryError,
-      mint,
-      wallet: wallet.publicKey,
-      userbank,
-      expectedAmount: BigInt(outputTokenAmount)
+      mint
     })
+
+    // Get the token difference
+    const outputTokenChange = yield* call(
+      pollForTokenBalanceChange,
+      audiusBackendInstance,
+      {
+        initialBalance: account?.amount ?? BigInt(0),
+        tokenAccount: userbank,
+        mint,
+        retryDelayMs: config.retryDelayMs,
+        maxRetryCount: config.maxRetryCount
+      }
+    )
+
+    // Report to the console what we got
+    console.info(
+      `Salvaged ${
+        exactInQuote.inAmount
+      } SOL into ${outputTokenChange} ${mint.toUpperCase()}: ${res}`
+    )
+
+    // Check if it's enough
+    if (outputTokenChange === undefined || outputTokenChange < expectedAmount) {
+      // Clear local storage - the SOL is gone, but we just didn't get enough
+      // of the output token
+      yield* call(
+        [audiusLocalStorage, audiusLocalStorage.removeItem],
+        BUY_CRYPTO_VIA_SOL_STATE_KEY
+      )
+      throw new BuyCryptoError(
+        BuyCryptoErrorCode.INSUFFICIENT_FUNDS_ERROR,
+        `Failed to swap SOL to ${expectedAmount} ${mint.toUpperCase()}. Initial Swap Error: Unknown.`
+      )
+    }
 
     // Record success
     yield* put(buyCryptoRecoverySucceeded())
