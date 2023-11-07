@@ -17,7 +17,7 @@ import stackedAvatarListReversedBad from 'storybook/assets/stackedAvatarListReve
 import stackedAvatarListSmall from 'storybook/assets/stackedAvatarListSmall.png'
 import { ComponentRules } from 'storybook/components'
 
-import { Flex } from '../layout/Flex'
+import { Flex } from 'components/layout/Flex'
 
 import * as AvatarStories from './Avatar.stories'
 
@@ -38,9 +38,9 @@ import * as AvatarStories from './Avatar.stories'
 
 ## Props
 
-_Note: Avatar also accepts layout props from [Flex](?path=/docs/components-layout-flex--documentation)_
-
 <Controls />
+
+_Note: Avatar also accepts layout props from [Flex](?path=/docs/components-layout-flex--documentation)_
 
 ## Configuration Options
 
@@ -74,14 +74,12 @@ _Note: Avatar also accepts layout props from [Flex](?path=/docs/components-layou
     {
       positive: {
         description: 'Space avatars -8px apart, stacked with the first on top.',
-        component: (
-          <Flex h='100%' w='100%' alignItems='center' justifyContent='center'>
-            <img src={stackedAvatarList} />
-          </Flex>
-        )
+        size: 'small',
+        component: <img src={stackedAvatarList} />
       },
       negative: {
         description: 'Don’t place avatars side-by-side without a -8px padding.',
+        size: 'small',
         component: (
           <Flex h='100%' w='100%' alignItems='center' justifyContent='center'>
             <img src={spacedAvatarList} />
@@ -92,6 +90,7 @@ _Note: Avatar also accepts layout props from [Flex](?path=/docs/components-layou
     {
       positive: {
         description: 'Maximum of 3 avatars when 24px or smaller.',
+        size: 'small',
         component: (
           <Flex h='100%' w='100%' alignItems='center' justifyContent='center'>
             <img src={stackedAvatarListSmall} />
@@ -101,6 +100,7 @@ _Note: Avatar also accepts layout props from [Flex](?path=/docs/components-layou
       negative: {
         description:
           'Don’t increase the default stroke size for small avatars (24px) or swap the stack direction.',
+        size: 'small',
         component: (
           <Flex h='100%' w='100%' alignItems='center' justifyContent='center'>
             <img src={stackedAvatarListReversedBad} />
@@ -112,20 +112,12 @@ _Note: Avatar also accepts layout props from [Flex](?path=/docs/components-layou
       positive: {
         description:
           'Always use the strong avatar when an avatar is overlapping a dark background or cover photo.',
-        component: (
-          <Flex h='100%' w='100%' alignItems='center' justifyContent='center'>
-            <img src={avatarProfileExampleGood} />
-          </Flex>
-        )
+        component: <img src={avatarProfileExampleGood} />
       },
       negative: {
         description:
           'Don’t increase the default stroke size for small avatars (24px) or swap the stack direction.',
-        component: (
-          <Flex h='100%' w='100%' alignItems='center' justifyContent='center'>
-            <img src={avatarPlaybarExampleBad} />
-          </Flex>
-        )
+        component: <img src={avatarPlaybarExampleBad} />
       }
     }
   ]}
