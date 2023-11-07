@@ -3,7 +3,7 @@ import { Meta, Title, Unstyled } from '@storybook/blocks'
 
 import { Paper, Flex, Text, Box } from 'components'
 import spacingExample from 'storybook/assets/spacingExample.png'
-import { CardLink } from 'storybook/components'
+import { CardLink, RelatedFoundations } from 'storybook/components'
 
 <Meta title='Foundations/Spacing' />
 
@@ -91,3 +91,7 @@ export function SpacingExample(props) {
 - Elements should be grouped by likeness, with the most similar elements closer together and unlike elements farther apart.
 
 <img src={spacingExample} />
+
+## Related Foundations
+
+<RelatedFoundations foundationNames={['Color', 'Shadow', 'CornerRadius']} />
