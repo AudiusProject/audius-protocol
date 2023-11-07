@@ -34,8 +34,8 @@ const getButtonLogo = (type: SocialMedia) => {
 
 const getSocialButtonProps = (type: SocialMedia): ButtonProps => {
   switch (type) {
-    case 'instagram':
-      return {}
+    // case 'instagram':
+    //   return {}
     case 'tiktok':
       return { hexColor: '#fe2c55' }
     case 'twitter':
@@ -50,19 +50,8 @@ export const SocialButton = (props: SocialButtonProps) => {
   const socialButtonProps = getSocialButtonProps(socialType)
 
   const instagramBackgroundCss: CSSObject = {
-    /* Due to the gradient we have to manually apply the same darken calculation that the button uses to each color in the gradient. 
-       A bit hacky but this button is a unique edge case */
-    background: `radial-gradient(61.46% 59.09% at 36.25% 96.55%,
-      color-mix(in srgb, var(--overlay-color) var(--overlay-opacity), #ffd600) 0%,
-      color-mix(in srgb, var(--overlay-color) var(--overlay-opacity), #ff6930) 48.44%,
-      color-mix(in srgb, var(--overlay-color) var(--overlay-opacity), #fe3b36) 73.44%,
-      rgba(254, 59, 54, 0) 100%),
-    radial-gradient(202.83% 136.37% at 84.5% 113.5%,
-      color-mix(in srgb, var(--overlay-color) var(--overlay-opacity), #ff1b90) 24.39%,
-      color-mix(in srgb, var(--overlay-color) var(--overlay-opacity), #f80261) 43.67%,
-      color-mix(in srgb, var(--overlay-color) var(--overlay-opacity), #ed00c0) 68.85%,
-      color-mix(in srgb, var(--overlay-color) var(--overlay-opacity), #c500e9) 77.68%,
-      color-mix(in srgb, var(--overlay-color) var(--overlay-opacity), #7017ff) 89.32%)`
+    background: `radial-gradient(61.46% 59.09% at 36.25% 96.55%, #ffd600 0%, #ff6930 48.44%, #fe3b36 73.44%, rgba(254, 59, 54, 0) 100%),
+      radial-gradient(202.83% 136.37% at 84.5% 113.5%, #ff1b90 24.39%, #f80261 43.67%, #ed00c0 68.85%, #c500e9 77.68%, #7017ff 89.32%)`
   }
 
   return (
