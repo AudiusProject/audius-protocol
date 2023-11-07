@@ -1,5 +1,7 @@
 import type { ReactElement } from 'react'
 
+import { Unstyled } from '@storybook/blocks'
+
 import { Flex, Link, Paper, Text } from 'components'
 
 type InformationBoxProps = {
@@ -25,7 +27,7 @@ export const InformationBox = (props: InformationBoxProps) => {
           height: 147
         })}
       >
-        {component}
+        <Unstyled>{component}</Unstyled>
       </Flex>
       <Flex direction='column' pv='xl' ph='l' gap='s'>
         {href ? <Link href={href}>{title}</Link> : <Text>{title}</Text>}
