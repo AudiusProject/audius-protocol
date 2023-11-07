@@ -13,9 +13,7 @@ import {
   musicConfettiActions,
   challengeRewardsConfig,
   isAudioMatchingChallenge,
-  isCooldownChallengeClaimable,
-  SpecifierWithAmount,
-  UndisbursedUserChallenge
+  getClaimableChallengeSpecifiers
 } from '@audius/common'
 import {
   Button,
@@ -217,19 +215,6 @@ const getErrorMessage = (aaoErrorCode?: number) => {
     )
   }
   return <>{messages.claimError}</>
-}
-
-/* Filter for only claimable challenges */
-const getClaimableChallengeSpecifiers = (
-  specifiers: SpecifierWithAmount[],
-  undisbursedUserChallenges: UndisbursedUserChallenge[]
-) => {
-  return specifiers.filter((s) => {
-    const challenge = undisbursedUserChallenges.filter(
-      (c) => c.specifier === s.specifier
-    )[0] // specifiers are unique
-    return isCooldownChallengeClaimable(challenge)
-  })
 }
 
 type BodyProps = {
