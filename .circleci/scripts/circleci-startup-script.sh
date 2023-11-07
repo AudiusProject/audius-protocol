@@ -86,7 +86,7 @@ systemctl start circleci.service
 
 
 # Periodically clean up local docker registry
-curl -L https://raw.githubusercontent.com/AudiusProject/audius-protocol/phelpsdb-self-hosted-ci-cleanup/.circleci/scripts/periodic-cleanup -o /usr/local/sbin/periodic-cleanup
+curl -L https://raw.githubusercontent.com/AudiusProject/audius-protocol/main/.circleci/scripts/periodic-cleanup -o /usr/local/sbin/periodic-cleanup
 chmod 755 /usr/local/sbin/periodic-cleanup
 
 cat <<EOT > /etc/cron.hourly/audius-ci-hourly
