@@ -2,7 +2,7 @@ export type AvatarProps = {
   /**
    * Url image source
    */
-  url?: string
+  src: string
 
   /**
    * Variant
@@ -14,11 +14,11 @@ export type AvatarProps = {
    * Size
    * @default auto
    */
-  size?: 'auto' | '24px' | '40px'
+  size?: 'auto' | 'small' | 'large'
 
   /**
    * Stroke Width
-   * @default 2px
+   * @default default
    */
-  strokeWidth?: '1.2px' | '2px'
+  strokeWidth?: 'thin' | 'default'
 }

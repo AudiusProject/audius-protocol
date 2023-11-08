@@ -29,21 +29,21 @@ type Story = StoryObj<typeof Avatar>
 
 export const Default: Story = {
   args: {
-    url: shadowBackground
+    src: shadowBackground
   }
 }
 
 export const Strong: Story = {
   args: {
     variant: 'strong',
-    url: shadowBackground
+    src: shadowBackground
   },
   render: (props) => (
     <Paper w={350} h={160}>
       <Box
         w={80}
         h={80}
-        style={{ position: 'absolute', top: '40px', left: '32px' }}
+        css={{ position: 'absolute', top: '40px', left: '32px' }}
       >
         <Avatar {...props} />
       </Box>
@@ -51,7 +51,7 @@ export const Strong: Story = {
         <Box
           h='100%'
           w='100%'
-          style={{ background: `url(${shadowBackground})` }}
+          css={{ background: `url(${shadowBackground})` }}
         />
         <Box h='100%' w='100%' />
       </Flex>
