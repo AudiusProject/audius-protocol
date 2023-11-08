@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react'
+import type { ReactNode } from 'react'
 
 import { Unstyled } from '@storybook/blocks'
 
@@ -6,7 +6,7 @@ import { Flex, Link, Paper, Text } from 'components'
 
 type InformationBoxProps = {
   className?: string
-  component: ReactElement
+  component: ReactNode
   title: string
   description: string
   href?: string
