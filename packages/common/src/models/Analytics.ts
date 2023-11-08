@@ -1707,15 +1707,20 @@ type BuyCryptoEvent = {
     | Name.BUY_CRYPTO_ON_RAMP_CONFIRMED
     | Name.BUY_CRYPTO_SUCCESS
     | Name.BUY_CRYPTO_FAILURE
-    | Name.BUY_CRYPTO_RECOVERY_STARTED
-    | Name.BUY_CRYPTO_RECOVERY_FAILURE
-    | Name.BUY_CRYPTO_RECOVERY_SUCCESS
 
   provider: string
   requestedAmount: number
   mint: MintName
   error?: string
 }
+
+type BuyCryptoRecoveryEvent = {
+  eventName:
+    | Name.BUY_CRYPTO_RECOVERY_STARTED
+    | Name.BUY_CRYPTO_RECOVERY_FAILURE
+    | Name.BUY_CRYPTO_RECOVERY_SUCCESS
+  intendedSOL: number
+} & Omit<BuyCryptoEvent, 'eventName'>
 
 // Withdraw USDC
 
@@ -2209,6 +2214,7 @@ export type AllTrackingEvents =
   | BuyUSDCRecoveryFailure
   | BuyUSDCAddFundsManually
   | BuyCryptoEvent
+  | BuyCryptoRecoveryEvent
   | WithdrawUSDCModalOpened
   | WithdrawUSDCAddressPasted
   | WithdrawUSDCFormError

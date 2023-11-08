@@ -721,7 +721,8 @@ function* recoverBuyCryptoViaSolIfNecessary() {
       eventName: Name.BUY_CRYPTO_RECOVERY_STARTED,
       mint,
       provider,
-      requestedAmount: amount
+      requestedAmount: amount,
+      intendedSOL: intendedLamports / LAMPORTS_PER_SOL
     })
   )
 
@@ -761,7 +762,9 @@ function* recoverBuyCryptoViaSolIfNecessary() {
     )
     // Cap the swappable salvage amount by the intended lamports, in case
     // there's additional SOL for a different reason (eg. old BuyAudio recovery)
-    const salvageInputAmount = Math.min(balance - minRent, intendedLamports)
+    const salvageInputAmount = intendedLamports
+      ? Math.min(balance - minRent, intendedLamports)
+      : balance - minRent
 
     // Don't do anything if we don't have any SOL.
     // Don't clear local storage either - maybe the SOL hasn't gotten to us yet?
@@ -810,27 +813,29 @@ function* recoverBuyCryptoViaSolIfNecessary() {
     })
 
     // Get the token difference
-    const outputTokenChange = yield* call(
+    const initialBalance = account?.amount ?? BigInt(0)
+    const newBalance = yield* call(
       pollForTokenBalanceChange,
       audiusBackendInstance,
       {
-        initialBalance: account?.amount ?? BigInt(0),
+        initialBalance,
         tokenAccount: userbank,
         mint,
         retryDelayMs: config.retryDelayMs,
         maxRetryCount: config.maxRetryCount
       }
     )
+    const balanceChange = newBalance - initialBalance
 
     // Report to the console what we got
     console.info(
       `Salvaged ${
         exactInQuote.inAmount
-      } SOL into ${outputTokenChange} ${mint.toUpperCase()}: ${res}`
+      } SOL into ${balanceChange} ${mint.toUpperCase()} (expected: ${expectedAmount} ${mint.toUpperCase()}): ${res}`
     )
 
     // Check if it's enough
-    if (outputTokenChange === undefined || outputTokenChange < expectedAmount) {
+    if (balanceChange === undefined || balanceChange < expectedAmount) {
       throw new BuyCryptoError(
         BuyCryptoErrorCode.INSUFFICIENT_FUNDS_ERROR,
         `Failed to swap SOL to ${expectedAmount} ${mint.toUpperCase()}. Initial Swap Error: Unknown.`
@@ -845,6 +850,7 @@ function* recoverBuyCryptoViaSolIfNecessary() {
         eventName: Name.BUY_CRYPTO_RECOVERY_SUCCESS,
         mint,
         provider,
+        intendedSOL: intendedLamports / LAMPORTS_PER_SOL,
         requestedAmount: amount
       })
     )
@@ -879,6 +885,7 @@ function* recoverBuyCryptoViaSolIfNecessary() {
         mint,
         provider,
         requestedAmount: amount,
+        intendedSOL: intendedLamports / LAMPORTS_PER_SOL,
         error: error.message
       })
     )
