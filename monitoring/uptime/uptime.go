@@ -160,10 +160,10 @@ func (u *Uptime) pollHealth() {
 }
 
 type UptimeResponse struct {
-	Host             string  `json:"host"`
-	UptimePercentage float64 `json:"uptime_percentage"`
-	Duration         string  `json:"duration"`
-	UptimeHours      []bool  `json:"uptime_raw_data"`
+	Host             string         `json:"host"`
+	UptimePercentage float64        `json:"uptime_percentage"`
+	Duration         string         `json:"duration"`
+	UptimeHours      map[string]int `json:"uptime_raw_data"`
 }
 
 func (u *Uptime) handleUptime(c echo.Context) error {
@@ -199,11 +199,9 @@ func (u *Uptime) handleUptime(c echo.Context) error {
 	return c.JSON(http.StatusOK, resp)
 }
 
-// calculateUptime returns the uptime percentage for a given host over a given duration.
-// TODO: This could aggregate on a daily/weekly/monthly basis to avoid having to iterate over all hourly records.
-func (u *Uptime) calculateUptime(host string, duration time.Duration) (float64, []bool, error) {
+func (u *Uptime) calculateUptime(host string, duration time.Duration) (float64, map[string]int, error) {
 	var upCount, totalCount int
-	var uptimeHours []bool
+	uptimeHours := make(map[string]int)
 
 	endTime := time.Now().UTC().Truncate(time.Hour)
 	startTime := endTime.Add(-duration)
@@ -211,24 +209,22 @@ func (u *Uptime) calculateUptime(host string, duration time.Duration) (float64, 
 	err := u.DB.View(func(tx *bbolt.Tx) error {
 		b := tx.Bucket(UptimeBucket)
 
-		// iterate from the most recent to the oldest records until we cover the duration
 		for t := endTime; !t.Before(startTime); t = t.Add(-time.Hour) {
-			hourKey := []byte(t.Format("2006-01-02T15"))
+			hourKey := t.Format("2006-01-02T15")
+			hourTimestamp := t.Format(time.RFC3339)
 
-			peerBucket := b.Bucket(hourKey)
+			peerBucket := b.Bucket([]byte(hourKey))
 			if peerBucket != nil {
 				value := peerBucket.Get([]byte(host))
 				totalCount++
-				isUp := string(value) == "1"
-				uptimeHours = append(uptimeHours, isUp)
-
-				if isUp {
+				if string(value) == "1" {
+					uptimeHours[hourTimestamp] = 1 // online
 					upCount++
+				} else {
+					uptimeHours[hourTimestamp] = 0 // offline
 				}
-			} else {
-				// if there's no record for that hour, assume down
-				uptimeHours = append(uptimeHours, false)
 			}
+			// if there's no record, don't include the hour in the map
 		}
 		return nil
 	})
