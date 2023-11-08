@@ -79,7 +79,7 @@ jobs:
       context: [Vercel, dockerhub]
       service: relay
       requires:
-        - push-relay
+        - push-pedalboard-relay
 
   - push-arm-image:
       name: push-pedalboard-sla-auditor-arm
@@ -111,6 +111,20 @@ jobs:
       service: healthz
       requires:
         - push-healthz
+  - push-arm-image:
+      name: push-identity-service-arm
+      context: [Vercel, dockerhub]
+      service: identity-service
+      requires:
+        - push-identity-service
+  - push-arm-image:
+      name: push-mediorum-arm
+      context: [Vercel, dockerhub]
+      service: mediorum
+      requires:
+        - push-mediorum
+
+
 
   - release-github-draft-trigger:
       type: approval
