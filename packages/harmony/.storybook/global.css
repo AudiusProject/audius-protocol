@@ -8,7 +8,3 @@
 @import '../src/foundations/corner-radius/corner-radius.css';
 @import '../src/foundations/shadows/shadows.css';
 @import '../src/storybook/theme/colors.css';
-
-html {
-  background-color: var(--harmony-background);
-}
