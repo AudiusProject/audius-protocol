@@ -158,7 +158,7 @@ export const AudioMatchingRewardsModalContent = ({
             </div>
             {progressStatusLabel}
           </div>
-          {/* {!isCooldownChallengesEmpty ? (
+          {!isCooldownChallengesEmpty ? (
             <SummaryTable
               title={messages.upcomingRewards}
               items={cooldownChallenges}
@@ -167,7 +167,7 @@ export const AudioMatchingRewardsModalContent = ({
               summaryLabelColor='secondary'
               summaryValueColor='neutral'
             />
-          ) : null} */}
+          ) : null}
         </>
       )}
       {challenge?.claimableAmount && challenge.claimableAmount > 0 ? (
