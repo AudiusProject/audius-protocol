@@ -63,6 +63,13 @@ jobs:
       filters:
         branches:
           only: main
+  - push-docker-image:
+      name: push-uptime
+      context: [Vercel, dockerhub]
+      service: uptime
+      filters:
+        branches:
+          only: main
 
   - lint-discovery-provider:
       name: lint-discovery-provider
