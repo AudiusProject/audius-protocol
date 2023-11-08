@@ -80,8 +80,7 @@ export const ChallengeRewardsDrawerProvider = () => {
   let audioClaimedSoFar = 0
   if (challenge?.challenge_type === 'aggregate') {
     audioToClaim = challenge.claimableAmount
-    audioClaimedSoFar =
-      challenge.amount * challenge.current_step_count - audioToClaim
+    audioClaimedSoFar = challenge.disbursed_amount
   } else if (challenge?.state === 'completed') {
     audioToClaim = challenge.totalAmount
     audioClaimedSoFar = 0
