@@ -1,12 +1,60 @@
-import { Text, Box, Divider, Flex, PlainButton, SocialButton } from 'components'
+import {
+  Text,
+  Box,
+  Divider,
+  Flex,
+  PlainButton,
+  SocialButton,
+  Button,
+  TextInput,
+  SelectablePill,
+  Paper
+} from 'components'
+import { IconCaretRight } from 'icons'
 
 import { InformationBox } from './InformationBox'
 
 const relatedComponentsMap = {
+  Button: {
+    title: 'Button',
+    description:
+      'Buttons allow users to trigger an action or event with a single click.',
+    component: <Button>Button</Button>,
+    link: 'buttons-button--documentation'
+  },
+  TextInput: {
+    title: 'Text Input',
+    description: 'An input is a field where users can enter and edit text.',
+    component: (
+      <TextInput
+        label='Input label'
+        placeholder='Placeholder value'
+        _isFocused
+      />
+    ),
+    link: 'input-textinput--documentation'
+  },
+  SelectablePill: {
+    title: 'Selectable Pill',
+    description: 'Used for binary selections',
+    component: (
+      <SelectablePill label='SelectablePill' size='large' isSelected={false} />
+    ),
+    link: 'input-selectablepill--documentation'
+  },
   PlainButton: {
-    component: <PlainButton>Plain Button</PlainButton>,
-    link: 'buttons-plainbutton--documentation',
-    description: 'A Button with no border and background.'
+    title: 'Plain Button',
+    description:
+      'The plain button is like our button component but without a bounding frame or container.',
+    component: <PlainButton iconRight={IconCaretRight}>See More</PlainButton>,
+    link: 'buttons-plainbutton--documentation'
+  },
+  TextLink: {
+    title: 'Text Link',
+    description:
+      'Apply link text properties to any text to link an internal or external page.',
+    component: null,
+    link: 'textlink--documentation'
   },
   SocialButton: {
     component: <SocialButton socialType='instagram' aria-label='instagram' />,
@@ -20,7 +68,7 @@ const relatedComponentsMap = {
         borderRadius='m'
         p='l'
         gap='m'
-        style={{ background: 'white' }}
+        css={{ background: 'white' }}
       >
         <Text variant='label'>A</Text>
         <Divider />
@@ -30,6 +78,20 @@ const relatedComponentsMap = {
     description:
       'A separator between two elements, usually consisting of a horizontal  or vertical line.',
     link: 'components-layout-divider--documentation'
+  },
+  Avatar: {
+    title: 'Avatar',
+    description:
+      'Ensure layouts are consistent with our intuitive spacing system.',
+    component: null,
+    link: 'avatar--documentation'
+  },
+  Paper: {
+    title: 'Paper',
+    description:
+      'Ensure layouts are consistent with our intuitive spacing system.',
+    component: <Paper w={124} h={70} shadow='mid' />,
+    link: 'layout-paper--documentation'
   },
   Box: {
     component: (
@@ -65,6 +127,19 @@ const relatedComponentsMap = {
     description:
       'Description of component goes here and will likely go to 2-3 lines so that its can fully explain itself.',
     link: 'components-layout-flex--documentation'
+  },
+  FollowButton: {
+    title: 'Follow Button',
+    description: 'The Follow button allow users to hold an on or off state.',
+    component: 'TODO',
+    link: 'TODO'
+  },
+  RadioInput: {
+    title: 'Radio Input',
+    description:
+      'Radio buttons allow a user to select a single option from a list of predefined options.',
+    component: 'TODO',
+    link: 'TODO'
   }
 }
 
@@ -76,7 +151,13 @@ export const RelatedComponents = (props: RelatedComponentsProps) => {
   const { componentNames } = props
 
   return (
-    <Flex gap='2xl' mt='3xl'>
+    <Flex
+      mv='3xl'
+      gap='2xl'
+      css={{ section: { flex: '0 0 calc(33.33% - 32px)' } }}
+      wrap='wrap'
+      justifyContent='space-between'
+    >
       {componentNames.map((componentName) => {
         const { component, link, description } =
           relatedComponentsMap[componentName]
