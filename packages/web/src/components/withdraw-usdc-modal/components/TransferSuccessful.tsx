@@ -3,11 +3,11 @@ import { useCallback } from 'react'
 import {
   useUSDCBalance,
   BNUSDC,
-  useWithdrawUSDCModal,
   formatUSDCWeiToFloorCentsNumber,
   makeSolanaTransactionLink,
   decimalIntegerToHumanReadable,
   Status,
+  withdrawUSDCSelectors,
   Name
 } from '@audius/common'
 import {
@@ -31,6 +31,9 @@ import { make, track } from 'services/analytics'
 
 import { TextRow } from './TextRow'
 import styles from './TransferSuccessful.module.css'
+import { useSelector } from 'react-redux'
+
+const { getWithdrawTransaction } = withdrawUSDCSelectors
 
 const messages = {
   priorBalance: 'Prior Balance',
@@ -55,7 +58,7 @@ export const TransferSuccessful = ({
   priorBalanceCents: number
 }) => {
   const { data: balance, balanceStatus } = useUSDCBalance()
-  const { data: modalData } = useWithdrawUSDCModal()
+  const signature = useSelector(getWithdrawTransaction)
   const balanceNumber = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
@@ -64,9 +67,8 @@ export const TransferSuccessful = ({
   const [{ value: amountValue }] = useField<number>(AMOUNT)
   const [{ value: addressValue }] = useField<string>(ADDRESS)
 
-  const { signature = '' } = modalData
-
   const handleClickTransactionLink = useCallback(() => {
+    if (!signature) return
     openExplorer(signature)
     track(
       make({

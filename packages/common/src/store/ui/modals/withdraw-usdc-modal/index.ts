@@ -10,8 +10,6 @@ export enum WithdrawUSDCModalPages {
 
 export type WithdrawUSDCModalState = {
   page: WithdrawUSDCModalPages
-  // Completed transaction signature
-  signature?: string
 }
 
 const withdrawUSDCModal = createModal<WithdrawUSDCModalState>({
@@ -23,5 +21,8 @@ const withdrawUSDCModal = createModal<WithdrawUSDCModalState>({
   sliceSelector: (state) => state.ui.modals
 })
 
-export const { hook: useWithdrawUSDCModal, reducer: withdrawUSDCModalReducer } =
-  withdrawUSDCModal
+export const {
+  hook: useWithdrawUSDCModal,
+  reducer: withdrawUSDCModalReducer,
+  actions: withdrawUSDCModalActions
+} = withdrawUSDCModal
