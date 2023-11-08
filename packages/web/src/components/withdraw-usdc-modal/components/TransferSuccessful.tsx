@@ -18,6 +18,7 @@ import {
 } from '@audius/stems'
 import BN from 'bn.js'
 import { useField } from 'formik'
+import { useSelector } from 'react-redux'
 
 import IconExternalLink from 'assets/img/iconExternalLink.svg'
 import { Icon } from 'components/Icon'
@@ -31,7 +32,6 @@ import { make, track } from 'services/analytics'
 
 import { TextRow } from './TextRow'
 import styles from './TransferSuccessful.module.css'
-import { useSelector } from 'react-redux'
 
 const { getWithdrawTransaction } = withdrawUSDCSelectors
 
