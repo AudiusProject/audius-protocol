@@ -18,7 +18,11 @@
     "jsx": "react-jsx",
     "downlevelIteration": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "paths": {
+      "@audius/common": ["../../common/src/index.ts"],
+      "@audius/common/*": ["../../common/src/*"]
+    }
   },
   "include": ["src", "src/**/*.css"]
 }

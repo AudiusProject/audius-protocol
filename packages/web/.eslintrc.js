@@ -11,6 +11,7 @@ module.exports = {
       // relative to /src, which eslint can't tell apart from 3rd party deps
       alias: {
         map: [
+          ['@audius/common', '../common/src'],
           ['__mocks__', './src/__mocks__'],
           ['audio', './src/audio'],
           ['assets', './src/assets'],
