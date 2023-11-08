@@ -1,4 +1,16 @@
-import { JupiterTokenListing } from './types'
+/**
+ * From Jupiter API documentation:
+ * https://docs.jup.ag/jupiter-core/jupiter-sdk/v2/full-guide
+ * "6. Configure the input token, output token"
+ */
+export type JupiterTokenListing = {
+  chainId: number // 101,
+  address: string // 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v',
+  symbol: string // 'USDC',
+  name: string // 'Wrapped USDC',
+  decimals: number // 6,
+  logoURI: string // 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/BXXkv6z8ykpG1yuvUDPgh732wzVHB69RnB9YgSYh3itW/logo.png',
+}
 
 /**
  * Generated and cached from the response of https://cache.jup.ag/tokens for tokens we care about

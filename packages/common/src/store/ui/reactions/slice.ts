@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { Nullable } from '../../../utils/typeUtils'
-import { CommonState } from '../../commonStore'
 
 import { ReactionTypes } from './types'
 
@@ -48,10 +47,6 @@ const slice = createSlice({
   }
 })
 
-export const makeGetReactionForSignature =
-  (signature: string) => (state: CommonState) =>
-    state.ui.reactions.reactionsForEntityMap[signature]
-
 export const {
   setLocalReactionValues,
   writeReactionValue,
@@ -60,4 +55,3 @@ export const {
 
 export const actions = slice.actions
 export default slice.reducer
-export const selectors = { makeGetReactionForSignature }

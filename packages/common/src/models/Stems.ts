@@ -1,19 +1,5 @@
 import { Track } from 'models/Track'
-
-export enum StemCategory {
-  INSTRUMENTAL = 'INSTRUMENTAL',
-  LEAD_VOCALS = 'LEAD_VOCALS',
-  MELODIC_LEAD = 'MELODIC_LEAD',
-  PAD = 'PAD',
-  SNARE = 'SNARE',
-  KICK = 'KICK',
-  HIHAT = 'HIHAT',
-  PERCUSSION = 'PERCUSSION',
-  SAMPLE = 'SAMPLE',
-  BACKING_VOX = 'BACKING_VOX',
-  BASS = 'BASS',
-  OTHER = 'OTHER'
-}
+import { StemCategory } from './StemCategory'
 
 export const stemCategoryFriendlyNames = {
   [StemCategory.INSTRUMENTAL]: 'Instrumental',

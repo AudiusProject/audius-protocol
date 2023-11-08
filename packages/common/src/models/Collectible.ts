@@ -3,7 +3,7 @@ import type { Metadata } from '@metaplex-foundation/mpl-token-metadata'
 import { Nullable } from '../utils/typeUtils'
 
 import { Chain } from './Chain'
-import { TokenStandard } from './Track'
+import { TokenStandard } from './TokenStandard'
 
 export type CollectiblesMetadata = {
   [key: string]: object

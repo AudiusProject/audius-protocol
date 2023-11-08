@@ -1,6 +1,5 @@
 import { Nullable } from '../utils/typeUtils'
-
-import { TokenStandard } from './Track'
+import { TokenStandard } from './TokenStandard'
 
 type AssetContract = {
   address: Nullable<string>

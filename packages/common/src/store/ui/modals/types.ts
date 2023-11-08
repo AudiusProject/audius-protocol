@@ -1,5 +1,4 @@
 import { CreateChatModalState } from './create-chat-modal'
-import { BaseModalState } from './createModal'
 import { EditPlaylistModalState } from './edit-playlist-modal'
 import { EditTrackModalState } from './edit-track-modal'
 import { InboxUnavailableModalState } from './inbox-unavailable-modal'
@@ -9,6 +8,10 @@ import { USDCManualTransferModalState } from './usdc-manual-transfer-modal'
 import { USDCPurchaseDetailsModalState } from './usdc-purchase-details-modal'
 import { USDCTransactionDetailsModalState } from './usdc-transaction-details-modal'
 import { WithdrawUSDCModalState } from './withdraw-usdc-modal'
+
+export type BaseModalState = {
+  isOpen: boolean | 'closing'
+}
 
 export type Modals =
   | 'TiersExplainer'

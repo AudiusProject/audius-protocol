@@ -3,13 +3,9 @@ import { useCallback } from 'react'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { CommonState } from 'store/index'
+import { BaseModalState, CommonState } from 'store/index'
 
 import { actions } from './parentSlice'
-
-export type BaseModalState = {
-  isOpen: boolean | 'closing'
-}
 
 /**
  * Creates the necessary actions/reducers/selectors for a modal,

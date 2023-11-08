@@ -7,9 +7,10 @@ import { Favorite } from './Favorite'
 import { CID, ID, UID } from './Identifiers'
 import { CoverArtSizes } from './ImageSizes'
 import { Repost } from './Repost'
-import { StemCategory } from './Stems'
 import { Timestamped } from './Timestamped'
 import { User, UserMetadata } from './User'
+import { StemCategory } from './StemCategory'
+import { TokenStandard } from './TokenStandard'
 
 type EpochTimeStamp = number
 
@@ -53,9 +54,6 @@ export type Remix = {
 export type RemixOf = {
   tracks: Remix[]
 }
-
-// Premium content
-export type TokenStandard = 'ERC721' | 'ERC1155'
 
 export type PremiumConditionsEthNFTCollection = {
   chain: Chain.Eth
