@@ -97,7 +97,6 @@
     "clamp": "1.0.1",
     "classnames": "2.2.6",
     "connected-react-router": "6.9.3",
-    "dayjs": "1.10.7",
     "electron-log": "3.0.9",
     "electron-updater": "4.3.5",
     "exif-parser": "0.1.12",

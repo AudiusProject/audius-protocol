@@ -7,7 +7,8 @@ import {
   Theme,
   usePremiumContentAccess,
   cacheTracksSelectors,
-  CommonState
+  CommonState,
+  ModalSource
 } from '@audius/common'
 import { useSelector } from 'react-redux'
 
@@ -60,7 +61,10 @@ export const SocialActions = ({
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
   const onClickPremiumPill = useAuthenticatedClickCallback(() => {
-    openPremiumContentPurchaseModal({ contentId: trackId })
+    openPremiumContentPurchaseModal(
+      { contentId: trackId },
+      { source: ModalSource.PlayBar }
+    )
   }, [trackId, openPremiumContentPurchaseModal])
 
   const { doesUserHaveAccess } = usePremiumContentAccess(track)

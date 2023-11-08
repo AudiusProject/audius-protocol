@@ -1,6 +1,7 @@
 import React from 'react'
 import { harmonyDocsThemes } from '../src/storybook/theme'
 import { DocsContainer, DocsContainerProps } from '@storybook/addon-docs'
+import { useDarkMode } from 'storybook-dark-mode'
 import { ThemeProvider } from '../src/foundations/theme'
 
 export const HarmonyDocsContainer = (props: DocsContainerProps) => {

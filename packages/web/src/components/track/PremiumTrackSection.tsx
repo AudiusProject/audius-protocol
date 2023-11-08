@@ -17,7 +17,8 @@ import {
   tippingActions,
   User,
   usersSocialActions as socialActions,
-  usePremiumContentPurchaseModal
+  usePremiumContentPurchaseModal,
+  ModalSource
 } from '@audius/common'
 import {
   Button,
@@ -132,7 +133,10 @@ const LockedPremiumTrackSection = ({
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
     }
-    openPremiumContentPurchaseModal({ contentId: trackId })
+    openPremiumContentPurchaseModal(
+      { contentId: trackId },
+      { source: ModalSource.TrackDetails }
+    )
   }, [
     trackId,
     lockedContentModalVisibility,

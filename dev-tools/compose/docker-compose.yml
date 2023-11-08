@@ -93,6 +93,14 @@ services:
       service: dashboard
     <<: *common
 
+  # Uptime (standalone container used by Discovery and Content)
+
+  uptime:
+    extends:
+      file: docker-compose.uptime.yml
+      service: uptime
+    <<: *common
+
   # Discovery
 
   discovery-provider-notifications:

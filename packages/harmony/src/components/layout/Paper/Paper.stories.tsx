@@ -19,7 +19,6 @@ type Story = StoryObj<typeof Paper>
 export const Default: Story = {
   args: {
     w: 248,
-    h: 84,
-    backgroundColor: 'white'
+    h: 84
   }
 }

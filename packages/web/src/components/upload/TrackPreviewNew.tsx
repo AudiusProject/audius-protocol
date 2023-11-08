@@ -51,6 +51,8 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
     onRemove
   } = props
 
+  const Icon = fileTypeIcon(fileType)
+
   return (
     <div className={styles.trackPreviewNew}>
       {displayIndex ? (
@@ -58,11 +60,7 @@ export const TrackPreviewNew = (props: TrackPreviewProps) => {
           {index + 1}
         </Text>
       ) : null}
-      <img
-        className={styles.trackPreviewImage}
-        src={fileTypeIcon(fileType)}
-        alt='File type icon'
-      />
+      <Icon className={styles.trackPreviewImage} />
       <Text className={styles.titleText} size='small'>
         {trackTitle}
       </Text>

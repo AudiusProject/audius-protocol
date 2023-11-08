@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { ID, PremiumConditions } from '@audius/common'
 import {
+  ModalSource,
   formatPrice,
   isPremiumContentUSDCPurchaseGated,
   premiumContentActions,
@@ -72,7 +73,10 @@ export const LineupTileAccessStatus = ({
 
   const handlePress = useCallback(() => {
     if (isUSDCPurchase) {
-      openPremiumContentPurchaseModal({ contentId: trackId })
+      openPremiumContentPurchaseModal(
+        { contentId: trackId },
+        { source: ModalSource.TrackTile }
+      )
     } else if (trackId) {
       dispatch(setLockedContentId({ id: trackId }))
       dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))

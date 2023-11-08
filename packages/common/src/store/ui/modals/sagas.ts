@@ -7,12 +7,12 @@ import { actions } from './parentSlice'
 const { trackModalOpened, trackModalClosed } = actions
 
 function* handleTrackModalOpened({
-  payload: { name, trackingData }
+  payload: { name, source, trackingData }
 }: ReturnType<typeof trackModalOpened>) {
   const { track, make } = yield* getContext('analytics')
   yield* call(
     track,
-    make({ eventName: Name.MODAL_OPENED, name, ...trackingData })
+    make({ eventName: Name.MODAL_OPENED, source, name, ...trackingData })
   )
 }
 
