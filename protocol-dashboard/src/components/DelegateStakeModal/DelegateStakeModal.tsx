@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react'
+import BN from 'bn.js'
 import clsx from 'clsx'
-import { Utils } from '@audius/sdk/dist/legacy.js'
 import { ButtonType } from '@audius/stems'
 
 import { useDelegateStake } from 'store/actions/delegateStake'
@@ -42,13 +42,13 @@ const DelegateStakeModal: React.FC<DelegateStakeModalProps> = ({
   onClose
 }: DelegateStakeModalProps) => {
   const { min, max, user } = useUserDelegation(serviceOperatorWallet)
-  const [stakingBN, setStakingBN] = useState(Utils.toBN('0'))
+  const [stakingBN, setStakingBN] = useState(new BN('0'))
   const [stakingAmount, setStakingAmount] = useState('')
 
   useEffect(() => {
     if (!isOpen) {
       setStakingAmount('')
-      setStakingBN(Utils.toBN('0'))
+      setStakingBN(new BN('0'))
     }
   }, [isOpen, setStakingAmount, setStakingBN])
 

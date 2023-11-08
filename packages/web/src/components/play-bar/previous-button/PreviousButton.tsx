@@ -1,6 +1,6 @@
 import cn from 'classnames'
 
-import { ReactComponent as IconPrev } from 'assets/img/pbIconPrev.svg'
+import IconPrev from 'assets/img/pbIconPrev.svg'
 
 import styles from '../PlayBarButton.module.css'
 

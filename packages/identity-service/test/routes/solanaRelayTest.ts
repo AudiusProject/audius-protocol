@@ -5,12 +5,14 @@ import {
   createAssociatedTokenAccountInstruction,
   createCloseAccountInstruction,
   createInitializeAccountInstruction,
+  createSyncNativeInstruction,
   createTransferCheckedInstruction
 } from '@solana/spl-token'
 import {
   Keypair,
   PublicKey,
   Secp256k1Program,
+  SystemProgram,
   TransactionInstruction
 } from '@solana/web3.js'
 import assert from 'assert'
@@ -19,14 +21,12 @@ import config from '../../src/config'
 import audiusLibsWrapper from '../../src/audiusLibsInstance'
 import {
   createClaimableTokenAccountInstruction,
-  createTransferClaimableTokenInstruction
-} from '../../src/typed-routes/solana/programs/claimable-tokens'
-import {
+  createTransferClaimableTokenInstruction,
   createEvaluateAttestationsInstruction,
   createSenderPublicInstruction,
-  createSubmitAttestationInstruction
-} from '../../src/typed-routes/solana/programs/reward-manager'
-import { RewardManagerInstruction } from '../../src/typed-routes/solana/programs/reward-manager/constants'
+  createSubmitAttestationInstruction,
+  RewardManagerInstruction
+} from '@audius/spl'
 import { InvalidRelayInstructionError } from '../../src/typed-routes/solana/InvalidRelayInstructionError'
 
 const CLAIMABLE_TOKEN_PROGRAM_ID = new PublicKey(
@@ -259,6 +259,12 @@ describe('Solana Relay', function () {
         InvalidRelayInstructionError,
         'Transfer not to userbank'
       )
+    })
+
+    it('should allow syncNative instructions', async function () {
+      await assertRelayAllowedInstructions([
+        createSyncNativeInstruction(getRandomPublicKey())
+      ])
     })
 
     it('should not allow other instructions (non-exhaustive)', async function () {
@@ -874,6 +880,83 @@ describe('Solana Relay', function () {
           }),
         InvalidRelayInstructionError,
         'Invalid user transfer authority'
+      )
+    })
+  })
+
+  describe('System Program', function () {
+    it('should allow transfers when authenticated', async function () {
+      const feePayer = getRandomPublicKey()
+      const fromPubkey = getRandomPublicKey()
+      const toPubkey = getRandomPublicKey()
+      // Dummy eth address, no significance
+      const walletAddress = '0x36034724e7bda41d5142efd85e1f6773460f5679'
+      await assertRelayAllowedInstructions(
+        [
+          SystemProgram.transfer({
+            fromPubkey,
+            toPubkey,
+            lamports: 1
+          })
+        ],
+        { user: { walletAddress }, feePayer: feePayer.toBase58() }
+      )
+    })
+
+    it('should not allow transfers when not authenticated', async function () {
+      const feePayer = getRandomPublicKey()
+      const fromPubkey = getRandomPublicKey()
+      const toPubkey = getRandomPublicKey()
+      await assert.rejects(async () =>
+        assertRelayAllowedInstructions([
+          SystemProgram.transfer({
+            fromPubkey,
+            toPubkey,
+            lamports: 1
+          })
+        ])
+      )
+    })
+
+    it('should not allow transfers from the feePayer', async function () {
+      const walletAddress = '0x36034724e7bda41d5142efd85e1f6773460f5679'
+      const feePayer = getRandomPublicKey()
+      const toPubkey = getRandomPublicKey()
+      await assert.rejects(async () =>
+        assertRelayAllowedInstructions(
+          [
+            SystemProgram.transfer({
+              fromPubkey: feePayer,
+              toPubkey,
+              lamports: 1
+            })
+          ],
+
+          { user: { walletAddress }, feePayer: feePayer.toBase58() }
+        )
+      )
+    })
+
+    it('should not allow other system instructions', async function () {
+      const walletAddress = '0x36034724e7bda41d5142efd85e1f6773460f5679'
+      const feePayer = getRandomPublicKey()
+      const fromPubkey = getRandomPublicKey()
+      const newAccountPubkey = getRandomPublicKey()
+      const programId = getRandomPublicKey()
+      await assert.rejects(async () =>
+        assertRelayAllowedInstructions(
+          [
+            SystemProgram.createAccount({
+              fromPubkey,
+              newAccountPubkey,
+              programId,
+              lamports: 1,
+              space: 0
+            })
+          ],
+
+          { user: { walletAddress }, feePayer: feePayer.toBase58() }
+        )
       )
     })
   })

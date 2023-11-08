@@ -155,15 +155,16 @@ export const Delegating: React.FC<DelegatingProps> = props => {
 
 type StandaloneBoxProps = {
   className?: string
+  children: ReactNode
 }
-export const StandaloneBox: React.FC<StandaloneBoxProps> = props => {
+export const StandaloneBox = ({ className, children }: StandaloneBoxProps) => {
   return (
     <Box
       className={clsx(styles.topBox, styles.standalone, {
-        [props.className!]: !!props.className
+        [className!]: !!className
       })}
     >
-      {props.children}
+      {children}
     </Box>
   )
 }
@@ -174,7 +175,7 @@ type ToOperatorProps = {
   name: string
   wallet: Address
 }
-export const ToOperator: React.FC<ToOperatorProps> = props => {
+export const ToOperator = (props: ToOperatorProps) => {
   return (
     <Box
       className={clsx(styles.bottomBox, {
@@ -193,13 +194,14 @@ export const ToOperator: React.FC<ToOperatorProps> = props => {
   )
 }
 
-type BoxProps = { className?: string }
-export const Box: React.FC<BoxProps> = props => {
+type BoxProps = {
+  className?: string
+  children: ReactNode
+}
+export const Box = ({ className, children }: BoxProps) => {
   return (
-    <div
-      className={clsx(styles.box, { [props.className!]: !!props.className })}
-    >
-      {props.children}
+    <div className={clsx(styles.box, { [className!]: !!className })}>
+      {children}
     </div>
   )
 }

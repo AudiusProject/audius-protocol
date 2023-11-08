@@ -12,7 +12,7 @@ import {
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ReactComponent as IconValidationX } from 'assets/img/iconValidationX.svg'
+import IconValidationX from 'assets/img/iconValidationX.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import { make, TrackEvent, useRecord } from 'common/store/analytics/actions'
 import { InstagramAuthButton } from 'components/instagram-auth/InstagramAuthButton'

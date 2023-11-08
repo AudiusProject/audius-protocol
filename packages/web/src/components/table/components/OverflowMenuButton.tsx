@@ -1,6 +1,6 @@
 import cn from 'classnames'
 
-import { ReactComponent as IconOptions } from 'assets/img/iconKebabHorizontal.svg'
+import IconOptions from 'assets/img/iconKebabHorizontal.svg'
 import tabStyles from 'components/actions-tab/ActionsTab.module.css'
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
@@ -65,10 +65,11 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
               triggerPopup()
             }}
           >
-            <IconOptions
-              className={cn(tabStyles.iconKebabHorizontal, styles.icon)}
-              ref={ref}
-            />
+            <div ref={ref}>
+              <IconOptions
+                className={cn(tabStyles.iconKebabHorizontal, styles.icon)}
+              />
+            </div>
           </div>
         )}
       </Menu>

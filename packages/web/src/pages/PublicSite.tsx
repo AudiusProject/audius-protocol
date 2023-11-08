@@ -3,8 +3,8 @@ import { lazy, Suspense, useState, useCallback, useEffect } from 'react'
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
-import NavScreen from 'components/public-site/NavOverlay'
-import LandingPage from 'pages/landing-page/LandingPage'
+import NavScreen from 'components/public-site/NavOverlayV2'
+import LandingPage from 'pages/landing-page-v2/LandingPageV2'
 import {
   TRENDING_PAGE,
   SIGN_UP_PAGE,
@@ -15,7 +15,7 @@ import {
 
 import { AppContextProvider } from './AppContextProvider'
 
-const BASENAME = process.env.PUBLIC_URL
+const BASENAME = process.env.VITE_PUBLIC_URL
 
 const PrivacyPolicyPage = lazy(
   () => import('pages/privacy-policy-page/PrivacyPolicyPage')
@@ -23,9 +23,6 @@ const PrivacyPolicyPage = lazy(
 const DownloadPage = lazy(() => import('pages/download-page/DownloadPage'))
 const TermsOfUsePage = lazy(
   () => import('pages/terms-of-use-page/TermsOfUsePage')
-)
-const ServiceTermsPage = lazy(
-  () => import('pages/service-terms-page/ServiceTermsPage')
 )
 
 const ROOT_ID = 'root'
@@ -105,17 +102,6 @@ const PublicSite = ({ isMobile, setRenderPublicSite }: PublicSiteProps) => {
               path={'/legal/terms-of-use'}
               render={() => (
                 <TermsOfUsePage
-                  isMobile={isMobileOrNarrow}
-                  openNavScreen={openNavScreen}
-                  setRenderPublicSite={setRenderPublicSite}
-                />
-              )}
-            />
-            <Route
-              exact
-              path={'/legal/service-terms'}
-              render={() => (
-                <ServiceTermsPage
                   isMobile={isMobileOrNarrow}
                   openNavScreen={openNavScreen}
                   setRenderPublicSite={setRenderPublicSite}

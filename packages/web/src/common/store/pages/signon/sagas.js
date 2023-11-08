@@ -113,6 +113,16 @@ function* getArtistsToFollow() {
   yield put(signOnActions.setUsersToFollow(users))
 }
 
+function* fetchDefaultFollowArtists() {
+  yield call(waitForRead)
+  try {
+    const defaultFollowUserIds = yield call(getDefautFollowUserIds)
+    yield call(fetchUsers, Array.from(defaultFollowUserIds))
+  } catch (e) {
+    console.error('Unable to fetch default follow artists', e)
+  }
+}
+
 function* fetchAllFollowArtist() {
   yield call(waitForRead)
   try {
@@ -495,10 +505,10 @@ function* signUp() {
         }
       },
       function* () {
-        yield put(signOnActions.signUpSucceeded())
         yield put(signOnActions.sendWelcomeEmail(name))
         yield call(fetchAccountAsync, { isSignUp: true })
         yield put(signOnActions.followArtists())
+        yield put(signOnActions.signUpSucceeded())
       },
       function* ({ timeout }) {
         if (timeout) {
@@ -728,7 +738,11 @@ function* watchValidateHandle() {
 }
 
 function* watchSignUp() {
-  yield takeLatest(signOnActions.SIGN_UP, signUp)
+  yield takeLatest(signOnActions.SIGN_UP, function* (action) {
+    // Fetch the default follow artists in parallel so that we don't have to block on this later (thus adding perceived sign up time) in the follow artists step.
+    yield fork(fetchDefaultFollowArtists)
+    yield signUp(action)
+  })
 }
 
 function* watchSignIn() {

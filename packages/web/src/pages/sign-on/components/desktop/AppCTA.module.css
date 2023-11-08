@@ -17,7 +17,6 @@
 
 /* Hack to override !important on the #root */
 :global(#root) .title {
-  font-family: Gilroy !important;
   color: var(--secondary-dark-1);
   font-size: var(--font-2xl);
   font-weight: 800;
@@ -26,7 +25,6 @@
 :global(#root) .subtitle {
   font-size: var(--font-m);
   font-weight: var(--font-medium);
-  font-family: Gilroy !important;
   line-height: 20px;
   color: var(--neutral);
 }

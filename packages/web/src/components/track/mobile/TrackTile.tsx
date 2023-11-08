@@ -11,14 +11,15 @@ import {
   Genre,
   getDogEarType,
   isPremiumContentUSDCPurchaseGated,
-  usePremiumContentPurchaseModal
+  usePremiumContentPurchaseModal,
+  ModalSource
 } from '@audius/common'
 import { IconCrown, IconHidden, IconTrending } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
-import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
+import IconStar from 'assets/img/iconStar.svg'
+import IconVolume from 'assets/img/iconVolume.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
@@ -217,11 +218,29 @@ const TrackTile = (props: CombinedProps) => {
     [onClickOverflow, id]
   )
 
+  const openLockedContentModal = useCallback(() => {
+    if (trackId) {
+      dispatch(setLockedContentId({ id: trackId }))
+      setModalVisibility(true)
+    }
+  }, [trackId, dispatch, setModalVisibility])
+
   const onClickPremiumPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && trackId) {
-      openPremiumContentPurchaseModal({ contentId: trackId })
+      openPremiumContentPurchaseModal(
+        { contentId: trackId },
+        { source: ModalSource.TrackTile }
+      )
+    } else if (trackId && !doesUserHaveAccess) {
+      openLockedContentModal()
     }
-  }, [isPurchase, trackId, openPremiumContentPurchaseModal])
+  }, [
+    isPurchase,
+    trackId,
+    openPremiumContentPurchaseModal,
+    doesUserHaveAccess,
+    openLockedContentModal
+  ])
 
   const [artworkLoaded, setArtworkLoaded] = useState(false)
   useEffect(() => {
@@ -239,8 +258,7 @@ const TrackTile = (props: CombinedProps) => {
     if (showSkeleton) return
 
     if (trackId && !doesUserHaveAccess && !hasPreview) {
-      dispatch(setLockedContentId({ id: trackId }))
-      setModalVisibility(true)
+      openLockedContentModal()
       return
     }
 
@@ -253,8 +271,7 @@ const TrackTile = (props: CombinedProps) => {
     trackId,
     doesUserHaveAccess,
     hasPreview,
-    dispatch,
-    setModalVisibility
+    openLockedContentModal
   ])
 
   const isReadonly = variant === 'readonly'

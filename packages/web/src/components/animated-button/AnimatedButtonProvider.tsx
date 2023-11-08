@@ -133,8 +133,8 @@ const AnimatedButton = ({
 export type AnimatedButtonProviderProps = {
   darkMode: boolean
   isMatrix: boolean
-  iconDarkJSON: () => any
-  iconLightJSON: () => any
+  iconDarkJSON: () => Promise<any>
+  iconLightJSON: () => Promise<any>
 } & BaseAnimatedButtonProps
 
 const AnimatedButtonProvider = ({
@@ -148,17 +148,20 @@ const AnimatedButtonProvider = ({
   const darkAnimations = useRef<IconJSON | null>(null)
 
   useEffect(() => {
-    if (darkMode) {
-      if (!darkAnimations.current) {
-        darkAnimations.current = iconDarkJSON()
+    const loadAnimations = async () => {
+      if (darkMode) {
+        if (!darkAnimations.current) {
+          darkAnimations.current = await iconDarkJSON()
+        }
+        setIconJSON({ ...darkAnimations.current })
+      } else {
+        if (!defaultAnimations.current) {
+          defaultAnimations.current = await iconLightJSON()
+        }
+        setIconJSON({ ...defaultAnimations.current })
       }
-      setIconJSON({ ...darkAnimations.current })
-    } else {
-      if (!defaultAnimations.current) {
-        defaultAnimations.current = iconLightJSON()
-      }
-      setIconJSON({ ...defaultAnimations.current })
     }
+    loadAnimations()
   }, [darkMode, setIconJSON, iconDarkJSON, iconLightJSON])
 
   return iconJSON && <AnimatedButton iconJSON={iconJSON} {...buttonProps} />

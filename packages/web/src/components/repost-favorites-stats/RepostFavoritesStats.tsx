@@ -3,8 +3,8 @@ import { useCallback, MouseEvent } from 'react'
 import { pluralize, formatCount } from '@audius/common'
 import cn from 'classnames'
 
-import { ReactComponent as IconFavorite } from 'assets/img/iconHeart.svg'
-import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
+import IconFavorite from 'assets/img/iconHeart.svg'
+import IconRepost from 'assets/img/iconRepost.svg'
 
 import styles from './RepostFavoritesStats.module.css'
 

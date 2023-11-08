@@ -1,11 +1,9 @@
 import type { CSSProperties } from 'react'
 
-import type {
-  BorderRadiusValue,
-  BorderValue,
-  ShadowValue,
-  SpacingValue
-} from 'styles/types'
+import type { BorderColors } from 'foundations/color'
+import type { CornerRadiusOptions } from 'foundations/corner-radius'
+import type { ShadowOptions } from 'foundations/shadows'
+import type { SpacingOptions } from 'foundations/spacing'
 
 export type BoxProps = {
   /** Height */
@@ -14,40 +12,43 @@ export type BoxProps = {
   w?: CSSProperties['width']
 
   /** Padding */
-  p?: SpacingValue
+  p?: SpacingOptions
   /** Padding Horizontal */
-  ph?: SpacingValue
+  ph?: SpacingOptions
   /** Padding Vertical */
-  pv?: SpacingValue
+  pv?: SpacingOptions
   /** Padding Top */
-  pt?: SpacingValue
+  pt?: SpacingOptions
   /** Padding Left */
-  pl?: SpacingValue
+  pl?: SpacingOptions
   /** Padding Right */
-  pr?: SpacingValue
+  pr?: SpacingOptions
   /** Padding Bottom */
-  pb?: SpacingValue
+  pb?: SpacingOptions
 
   /** Margin */
-  m?: SpacingValue
+  m?: SpacingOptions
   /** Margin Horizontal */
-  mh?: SpacingValue
+  mh?: SpacingOptions
   /** Margin Vertical */
-  mv?: SpacingValue
+  mv?: SpacingOptions
   /** Margin Top */
-  mt?: SpacingValue
+  mt?: SpacingOptions
   /** Margin Left */
-  ml?: SpacingValue
+  ml?: SpacingOptions
   /** Margin Right */
-  mr?: SpacingValue
+  mr?: SpacingOptions
   /** Margin Bottom */
-  mb?: SpacingValue
+  mb?: SpacingOptions
 
   /** Border */
-  border?: BorderValue
+  border?: BorderColors
   /** Border Radius */
-  borderRadius?: BorderRadiusValue
+  borderRadius?: CornerRadiusOptions
 
   /** Elevation Shadow */
-  shadow?: ShadowValue
+  shadow?: ShadowOptions
+
+  flex?: CSSProperties['flex']
+  alignSelf?: CSSProperties['alignSelf']
 }

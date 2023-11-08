@@ -36,3 +36,8 @@ export const parsePlaylistIdFromPermalink = (permalink: string) => {
   const playlistNameWithId = permalink?.split('/').slice(-1)[0] ?? ''
   return parseInt(playlistNameWithId.split('-').slice(-1)[0])
 }
+
+/** Takes a list of comma-separated strings, splits and parses them into numbers */
+export const parseIntList = (str: string) => {
+  return str.split(',').map((s) => Number.parseInt(s))
+}

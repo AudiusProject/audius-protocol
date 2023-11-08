@@ -11,7 +11,8 @@ import {
   buyUSDCActions,
   purchaseContentActions,
   purchaseContentSelectors,
-  isContentPurchaseInProgress
+  isContentPurchaseInProgress,
+  usePayExtraPresets
 } from '@audius/common'
 import { IconCart, ModalContent, ModalFooter, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
@@ -23,11 +24,13 @@ import { Icon } from 'components/Icon'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
 import { Text } from 'components/typography'
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import { isMobile } from 'utils/clientUtil'
 import { pushUniqueRoute } from 'utils/route'
 
 import styles from './PremiumContentPurchaseModal.module.css'
+import { AudioMatchSection } from './components/AudioMatchSection'
 import { PurchaseContentFormFields } from './components/PurchaseContentFormFields'
 import { PurchaseContentFormFooter } from './components/PurchaseContentFormFooter'
 import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState'
@@ -96,14 +99,22 @@ const RenderForm = ({
       </ModalHeader>
       <ModalContent className={styles.content}>
         <>
-          <LockedTrackDetailsTile
-            track={track as unknown as Track}
-            owner={track.user}
-          />
-          <PurchaseContentFormFields
-            stage={stage}
-            purchaseSummaryValues={purchaseSummaryValues}
-          />
+          <div className={styles.contentWrapper}>
+            <LockedTrackDetailsTile
+              track={track as unknown as Track}
+              owner={track.user}
+            />
+          </div>
+          {stage !== PurchaseContentStage.FINISH ? (
+            <AudioMatchSection amount={Math.round(price / 100)} />
+          ) : null}
+          <div className={styles.contentWrapper}>
+            <PurchaseContentFormFields
+              stage={stage}
+              purchaseSummaryValues={purchaseSummaryValues}
+              isUnlocking={isUnlocking}
+            />
+          </div>
         </>
       </ModalContent>
       <ModalFooter className={styles.footer}>
@@ -131,6 +142,7 @@ export const PremiumContentPurchaseModal = () => {
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
+  const presetValues = usePayExtraPresets(useRemoteVar)
 
   const { data: track } = useGetTrackById(
     { id: trackId! },
@@ -138,7 +150,7 @@ export const PremiumContentPurchaseModal = () => {
   )
 
   const { initialValues, validationSchema, onSubmit } =
-    usePurchaseContentFormConfiguration({ track })
+    usePurchaseContentFormConfiguration({ track, presetValues })
 
   const isValidTrack = track && isTrackPurchasable(track)
 

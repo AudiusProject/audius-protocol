@@ -38,7 +38,7 @@ import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ReactComponent as IconQuestionCircle } from 'assets/img/iconQuestionCircle.svg'
+import IconQuestionCircle from 'assets/img/iconQuestionCircle.svg'
 import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
 import { OnRampButton } from 'components/on-ramp-button'
 import Skeleton from 'components/skeleton/Skeleton'

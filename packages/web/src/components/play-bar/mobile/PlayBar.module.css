@@ -36,6 +36,7 @@
 }
 
 .image {
+  position: relative;
   height: 26px;
   width: 26px;
   border-radius: 2px;
@@ -52,7 +53,7 @@
   cursor: pointer;
   height: 100%;
   width: 100%;
-  max-width: calc(100vw - 98px);
+  margin-right: var(--unit-2);
   user-select: none;
   padding-top: 20px;
   margin-top: -20px;
@@ -90,4 +91,30 @@
   margin-right: 8px;
   justify-self: flex-end;
   width: 32px;
+}
+
+.lockPreview {
+  margin-left: auto;
+}
+
+.lockOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #000;
+  opacity: 0.4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iconLock {
+  width: 10px;
+  height: 10px;
+}
+
+.iconLock path {
+  fill: var(--static-white);
 }

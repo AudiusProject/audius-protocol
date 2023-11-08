@@ -130,6 +130,26 @@ export enum IntKeys {
   MAX_AUDIO_PURCHASE_AMOUNT = 'MAX_AUDIO_PURCHASE_AMOUNT',
 
   /**
+   * Minimum price for purchasable content in cents
+   */
+  MIN_CONTENT_PRICE_CENTS = 'MIN_CONTENT_PRICE_CENTS',
+
+  /**
+   * Maximum price for purchasable content in cents
+   */
+  MAX_CONTENT_PRICE_CENTS = 'MAX_CONTENT_PRICE_CENTS',
+
+  /**
+   * Minimum USDC (in cents) required to purchase in the BuyUSDC modal
+   */
+  MIN_USDC_PURCHASE_AMOUNT_CENTS = 'MIN_USDC_PURCHASE_AMOUNT_CENTS',
+
+  /**
+   * Maximum USDC (in cents) required to purchase in the BuyUSDC modal
+   */
+  MAX_USDC_PURCHASE_AMOUNT_CENTS = 'MAX_USDC_PURCHASE_AMOUNT_CENTS',
+
+  /**
    * The time to delay between polls of the user wallet when performing a purchase of $AUDIO/$USDC
    */
   BUY_TOKEN_WALLET_POLL_DELAY_MS = 'BUY_TOKEN_WALLET_POLL_DELAY_MS',
@@ -138,6 +158,19 @@ export enum IntKeys {
    * The maximum amount of times to poll the user wallet before giving up on an $AUDIO/$USDC purchase
    */
   BUY_TOKEN_WALLET_POLL_MAX_RETRIES = 'BUY_TOKEN_WALLET_POLL_MAX_RETRIES',
+
+  /**
+   * The maximum amount the price of SOL is allowed to slip before
+   * the Jupiter swap from SOL to the requested token fails.
+   * Expressed in percentage basis points (1pt = 0.01%).
+   *
+   * Note: Increasing this number will increase how much SOL gets purchased,
+   * which improves the likelihood the purchase swaps successfully but with the
+   * downside of charging the user extra for their purchase.
+   * @see https://station.jup.ag/guides/jupiter-swap/price-impact-slippage-price-warning#slippage
+   * @see https://station.jup.ag/guides/general/faq#my-swap-fails-reporting-a-slippage-error-what-should-i-do
+   */
+  BUY_TOKEN_VIA_SOL_SLIPPAGE_BPS = 'BUY_TOKEN_VIA_SOL_SLIPPAGE_BPS',
 
   /**
    * The allowed slippage percentage/padding percentage for the BuyAudio Modal
@@ -351,7 +384,13 @@ export enum StringKeys {
   STRIPE_ALLOWED_COUNTRIES_2_LETTER = 'STRIPE_ALLOWED_COUNTRIES_2_LETTER',
 
   /** Text to display on related features when Solana/$AUDIO features are degraded */
-  AUDIO_FEATURES_DEGRADED_TEXT = 'AUDIO_FEATURES_DEGRADED_TEXT'
+  AUDIO_FEATURES_DEGRADED_TEXT = 'AUDIO_FEATURES_DEGRADED_TEXT',
+
+  /** Preset amounts for the Pay Extra feature in USDC purchases, specified in cents */
+  PAY_EXTRA_PRESET_CENT_AMOUNTS = 'PAY_EXTRA_PRESET_CENT_AMOUNTS',
+
+  /** Allowlist of user ids for explore premium tracks page */
+  EXPLORE_PREMIUM_ALLOWED_USERS = 'EXPLORE_PREMIUM_ALLOWED_USERS'
 }
 
 export type AllRemoteConfigKeys =

@@ -2,7 +2,6 @@ import { useCallback, useMemo, useState } from 'react'
 
 import { useField } from 'formik'
 import { View } from 'react-native'
-import type { Asset } from 'react-native-image-picker'
 
 import IconImage from 'app/assets/images/iconImage.svg'
 import IconPencil from 'app/assets/images/iconPencil.svg'
@@ -56,7 +55,7 @@ const messages = {
 
 type PickArtworkFieldProps = {
   name: string
-  onChange?: (image: Asset) => void
+  onChange?: () => void
   buttonTitle?: string
   onPress?: () => void
   onImageLoad?: () => void
@@ -73,24 +72,17 @@ export const PickArtworkField = (props: PickArtworkFieldProps) => {
   const trackArtworkUrl = value?.url ?? existingTrackArtwork
   const [isImageLoading, setIsImageLoading] = useState(false)
 
-  const { secondary } = useThemeColors()
-
   const handleChangeArtwork = useCallback(() => {
-    const handleImageSelected = (_image: Image, rawResponse: Asset) => {
-      setArtwork({
-        url: rawResponse.uri,
-        file: {
-          uri: rawResponse.uri,
-          name: rawResponse.fileName,
-          type: rawResponse.type
-        },
-        source: 'original'
-      })
-      onChange?.(rawResponse)
+    const handleImageSelected = (image: Image) => {
+      setArtwork(image)
+      onChange?.()
       setIsImageLoading(true)
     }
-    launchSelectImageActionSheet(handleImageSelected, secondary)
-  }, [secondary, setArtwork, onChange])
+    launchSelectImageActionSheet(handleImageSelected, {
+      height: 1000,
+      width: 1000
+    })
+  }, [setArtwork, onChange])
 
   const handleImageLoad = useCallback(() => {
     onImageLoad?.()

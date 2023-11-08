@@ -1,2 +1,1 @@
-import { launchImageLibrary } from 'react-native-image-picker'
-export default launchImageLibrary
+export { openPicker, openCamera } from 'react-native-image-crop-picker'

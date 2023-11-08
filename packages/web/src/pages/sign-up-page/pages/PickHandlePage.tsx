@@ -1,13 +1,13 @@
 import { useCallback } from 'react'
 
-import { HarmonyButton } from '@audius/stems'
+import { Button } from '@audius/harmony'
 import { Formik, Form } from 'formik'
 import { useDispatch } from 'react-redux'
 
 import { setValueField } from 'common/store/pages/signon/actions'
 import { TextField } from 'components/form-fields'
-
-import { FinishProfileState } from './FinishProfilePage'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { SIGN_UP_FINISH_PROFILE_PAGE } from 'utils/route'
 
 const messages = {
   header: 'Pick Your Handle',
@@ -15,10 +15,6 @@ const messages = {
     'This is how others find and tag you. It is totally unique to you & cannot be changed later.',
   handle: 'Handle',
   continue: 'Continue'
-}
-
-export type PickHandleState = {
-  stage: 'pick-handle'
 }
 
 const initialValues = {
@@ -29,21 +25,17 @@ type PickHandleValues = {
   handle: string
 }
 
-type PickHandlePageProps = {
-  onNext: (state: FinishProfileState) => void
-}
-
-export const PickHandlePage = (props: PickHandlePageProps) => {
-  const { onNext } = props
+export const PickHandlePage = () => {
   const dispatch = useDispatch()
+  const navigate = useNavigateToPage()
 
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
       const { handle } = values
       dispatch(setValueField('handle', handle))
-      onNext({ stage: 'finish-profile' })
+      navigate(SIGN_UP_FINISH_PROFILE_PAGE)
     },
-    [dispatch, onNext]
+    [dispatch, navigate]
   )
 
   return (
@@ -54,7 +46,7 @@ export const PickHandlePage = (props: PickHandlePageProps) => {
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
         <Form>
           <TextField name='handle' label={messages.handle} />
-          <HarmonyButton type='submit' text={messages.continue} />
+          <Button type='submit'> {messages.continue} </Button>
         </Form>
       </Formik>
     </div>

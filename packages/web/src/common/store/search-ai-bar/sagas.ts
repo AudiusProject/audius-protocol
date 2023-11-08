@@ -43,7 +43,7 @@ export function* getSearchResults(searchText: string) {
       call([apiClient, 'getSearchAutocomplete'], {
         currentUserId: userId,
         query,
-        limit: 3,
+        limit: 10,
         offset: 0,
         kind: SearchKind.USERS
       })
@@ -65,7 +65,7 @@ export function* getSearchResults(searchText: string) {
     results = yield* call([apiClient, 'getSearchAutocomplete'], {
       currentUserId: userId,
       query: searchText,
-      limit: 3,
+      limit: 10,
       offset: 0,
       kind: SearchKind.USERS
     })

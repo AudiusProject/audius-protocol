@@ -15,13 +15,13 @@ import { logError } from './logError'
 const HOSTNAME = getAPIHostname()
 const IDENTITY_SERVICE_ENDPOINT = getIdentityEndpoint()
 
-const env = process.env.PREACT_APP_ENVIRONMENT
+const env = process.env.VITE_ENVIRONMENT
 const sdkConfigOptions =
   env === 'development'
     ? developmentConfig
     : env === 'staging'
-    ? stagingConfig
-    : productionConfig
+      ? stagingConfig
+      : productionConfig
 
 export const RequestedEntity = Object.seal({
   TRACKS: 'tracks',
@@ -115,10 +115,10 @@ const getFormattedCollectionResponse = (collection) => {
 }
 
 const constructCollectiblesEndpoint = (handle) =>
-  `${process.env.PREACT_APP_AUDIUS_SCHEME}://${HOSTNAME}/embed/api/${handle}/${RequestedEntity.COLLECTIBLES}`
+  `${process.env.VITE_AUDIUS_SCHEME}://${HOSTNAME}/embed/api/${handle}/${RequestedEntity.COLLECTIBLES}`
 
 const constructCollectibleIdEndpoint = (handle, collectibleId) =>
-  `${process.env.PREACT_APP_AUDIUS_SCHEME}://${HOSTNAME}/embed/api/${handle}/${RequestedEntity.COLLECTIBLES}/${collectibleId}`
+  `${process.env.VITE_AUDIUS_SCHEME}://${HOSTNAME}/embed/api/${handle}/${RequestedEntity.COLLECTIBLES}/${collectibleId}`
 
 export const getTrack = async (id) => {
   const res = await audiusSdk.full.tracks.getTrack({

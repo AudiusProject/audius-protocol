@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"mediorum/httputil"
 	"reflect"
-	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/httputil"
 
 	"github.com/oklog/ulid/v2"
 	"golang.org/x/exp/slog"
@@ -46,56 +46,40 @@ type Crudr struct {
 	callbacks []func(op *Op, records interface{})
 }
 
-func migrateOpsPartition(db *gorm.DB, partitionName string, modulus int, remainder int) error {
-	sql := fmt.Sprintf(`
-		DO $$ 
-		DECLARE 
-		    _partition_name text := '%s'; 
-		    _modulus integer := %d;
-		    _remainder integer := %d;
-		BEGIN 
-		    EXECUTE format('CREATE TABLE IF NOT EXISTS %%I PARTITION OF ops FOR VALUES WITH (MODULUS %%s, REMAINDER %%s);', _partition_name, _modulus, _remainder);
-		    
-		    BEGIN
-		        EXECUTE format('ALTER TABLE %%I ADD PRIMARY KEY ("ulid");', _partition_name);
-		    EXCEPTION WHEN invalid_table_definition THEN 
-		        NULL;
-		    END;
-		END $$;
-	`, partitionName, modulus, remainder)
-
-	return db.Exec(sql).Error
-}
-
-// create partitioned ops table if it does not exist
+// create ops table if it does not exist
 func migrateOps(db *gorm.DB) error {
-	// create ops
-	opDDL := `
-  BEGIN;
-
-	CREATE TABLE IF NOT EXISTS ops (
-		"ulid" TEXT,
-		"host" TEXT,
-		"action" TEXT,
-		"table" TEXT,
-		"data" JSONB)
-		PARTITION BY HASH ("host");
-	
-	COMMIT;
-	`
-	err := db.Exec(opDDL).Error
-	if err != nil {
-		return err
-	}
-
-	// create partitions
-	totalPartitions := 1009
-	for i := 0; i < totalPartitions; i++ {
-		partitionName := "ops_" + strconv.Itoa(i)
-		if err := migrateOpsPartition(db, partitionName, totalPartitions, i); err != nil {
-			slog.Error(fmt.Sprintf("Could not create partition %s", partitionName), "err", err)
+	// de-partition ops if necessary
+	hasPart := false
+	db.Raw(`SELECT EXISTS (SELECT FROM information_schema.tables where table_name   = 'ops_1')`).Scan(&hasPart)
+	if hasPart {
+		departitoinDDL := `
+		BEGIN;
+			alter table ops rename to ops_part;
+			create table ops as select * from ops_part;
+			alter table ops add primary key (ulid);
+			drop table ops_part;
+		COMMIT;
+		`
+		if err := db.Exec(departitoinDDL).Error; err != nil {
 			return err
 		}
+	}
+
+	// create ops
+	opDDL := `
+	BEGIN;
+
+		CREATE TABLE IF NOT EXISTS ops (
+			"ulid" TEXT primary key,
+			"host" TEXT,
+			"action" TEXT,
+			"table" TEXT,
+			"data" JSONB);
+
+	COMMIT;
+	`
+	if err := db.Exec(opDDL).Error; err != nil {
+		return err
 	}
 
 	return nil

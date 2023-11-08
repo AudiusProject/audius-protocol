@@ -12,14 +12,15 @@ import (
 	"image/png"
 	"io"
 	"log"
-	"mediorum/cidutil"
-	"mediorum/crudr"
 	"mime/multipart"
 	"os"
 	"os/exec"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
+	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
 
 	"github.com/disintegration/imaging"
 	"github.com/spf13/cast"
@@ -128,7 +129,7 @@ func (ss *MediorumServer) findMissedJobs(work chan *Upload, myHost string, retra
 	ss.crud.DB.Where("status in ?", []string{newStatus, busyStatus, errorStatus}).Find(&uploads)
 
 	for _, upload := range uploads {
-		if upload.ErrorCount > 100 {
+		if upload.ErrorCount > 10 {
 			continue
 		}
 
@@ -277,10 +278,13 @@ func (ss *MediorumServer) transcodeAudio(upload *Upload, destPath string, cmd *e
 	var wg sync.WaitGroup
 	wg.Add(2)
 
+	var stderrBuf bytes.Buffer
+	var stdoutBuf bytes.Buffer
+
 	// Log stdout
 	go func() {
 		defer wg.Done()
-		var stdoutBuf bytes.Buffer
+
 		stdoutLines := bufio.NewScanner(stdout)
 		for stdoutLines.Scan() {
 			stdoutBuf.WriteString(stdoutLines.Text())
@@ -295,7 +299,7 @@ func (ss *MediorumServer) transcodeAudio(upload *Upload, destPath string, cmd *e
 	// Log stderr and parse it to update transcode progress
 	go func() {
 		defer wg.Done()
-		var stderrBuf bytes.Buffer
+
 		stderrLines := bufio.NewScanner(stderr)
 
 		durationUs := float64(0)
@@ -332,7 +336,7 @@ func (ss *MediorumServer) transcodeAudio(upload *Upload, destPath string, cmd *e
 
 	err = cmd.Wait()
 	if err != nil {
-		return onError(err, upload.Status, "cmd.Wait")
+		return onError(err, upload.Status, "ffmpeg", "stdout="+stdoutBuf.String(), "stderr="+stderrBuf.String())
 	}
 
 	return nil
@@ -341,6 +345,7 @@ func (ss *MediorumServer) transcodeAudio(upload *Upload, destPath string, cmd *e
 func (ss *MediorumServer) transcodeFullAudio(upload *Upload, temp *os.File, logger *slog.Logger, onError errorCallback) error {
 	srcPath := temp.Name()
 	destPath := srcPath + "_320.mp3"
+	defer os.Remove(destPath)
 
 	cmd := exec.Command("ffmpeg",
 		"-y",
@@ -403,6 +408,7 @@ func (ss *MediorumServer) transcodeAudioPreview(upload *Upload, temp *os.File, l
 
 	srcPath := temp.Name()
 	destPath := strings.TrimSuffix(srcPath, "_320.mp3") + "_320_preview.mp3"
+	defer os.Remove(destPath)
 
 	splitPreview := strings.Split(upload.SelectedPreview.String, "|")
 	previewStart := splitPreview[1]

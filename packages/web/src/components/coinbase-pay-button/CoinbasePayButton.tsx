@@ -42,7 +42,7 @@ export const CoinbasePayButton = ({
   const imageSrc = useAsync(async () => {
     try {
       const module = await import(
-        `assets/img/coinbase-pay/${size}/button-cbPay-${size}-${variant}${resolution}.png`
+        `../../assets/img/coinbase-pay/${size}/button-cbPay-${size}-${variant}${resolution}.png`
       )
       const image: string =
         typeof module === 'string' ? module : module?.default

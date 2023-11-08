@@ -5,13 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"mediorum/cidutil"
-	"mediorum/server/signature"
 	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
 
 	"gocloud.dev/blob"
 )

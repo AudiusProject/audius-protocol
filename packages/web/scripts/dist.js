@@ -8,9 +8,9 @@
 const fs = require('fs')
 const path = require('path')
 
+const { notarize } = require('@electron/notarize')
 const program = require('commander')
 const builder = require('electron-builder')
-const notarize = require('electron-notarize').notarize
 const fse = require('fs-extra')
 
 const PRODUCTION_APP_ID = 'co.audius.app'
@@ -65,7 +65,8 @@ const notarizeFn = async (appId, params) => {
       appPath,
       appleId: process.env.APPLE_ID,
       appleIdPassword: process.env.APPLE_ID_PASSWORD,
-      ascProvider: process.env.ASC_PROVIDER
+      ascProvider: process.env.ASC_PROVIDER,
+      teamId: process.env.ASC_PROVIDER
     })
   } catch (error) {
     console.error(error)
@@ -148,7 +149,11 @@ const makeBuildParams = (isProduction) => {
         icon: icns,
         hardenedRuntime: true,
         entitlements: 'resources/entitlements.mac.plist',
-        entitlementsInherit: 'resources/entitlements.mac.plist'
+        entitlementsInherit: 'resources/entitlements.mac.plist',
+        target: {
+          target: 'default',
+          arch: 'universal'
+        }
       },
       dmg: {
         icon: dmgIcns,

@@ -1,0 +1,12 @@
+when: << pipeline.parameters.run-common-workflow >>
+jobs:
+  - common-init:
+      context:
+        - Vercel
+
+  - common-test:
+      context:
+        - Vercel 
+      requires:
+        - common-init
+  

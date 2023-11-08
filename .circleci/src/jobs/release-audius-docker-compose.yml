@@ -17,11 +17,12 @@ steps:
         git config --global user.email "audius-infra@audius.co"
         git config --global user.name "audius-infra"
   - run:
-      name: Merge foundation into main branch
+      name: Merge foundation into main branch at release commit
       command: |
-        git clone https://github.com/AudiusProject/audius-docker-compose.git
+        git clone --branch foundation https://github.com/AudiusProject/audius-docker-compose.git audius-docker-compose
         cd audius-docker-compose
+        release_commit_hash=$(git log --all --grep="$CIRCLE_BRANCH auto-deploy" --pretty=format:"%H" -1)
+        git fetch origin main:main
         git checkout main
-        git fetch
-        git merge origin/foundation --no-edit
+        git merge $release_commit_hash --no-edit
         git push origin main

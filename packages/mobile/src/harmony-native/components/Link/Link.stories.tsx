@@ -4,7 +4,7 @@ import type { Story } from '@storybook/react-native'
 import { Link } from './Link'
 
 const LinkMeta = {
-  title: 'Link',
+  title: 'Components/Link',
   component: Link,
   argTypes: {
     onPress: { action: 'pressed the link' }

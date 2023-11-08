@@ -23,7 +23,9 @@ export const Box = styled.div(
     mb,
     border,
     borderRadius,
-    shadow
+    shadow,
+    flex,
+    alignSelf
   }: BoxProps) => {
     const padT = pt ?? pv ?? p
     const padB = pb ?? pv ?? p
@@ -51,7 +53,9 @@ export const Box = styled.div(
       marginBottom: marginB && `var(--harmony-spacing-${marginB})`,
       border: border && `1px solid var(--harmony-border-${border})`,
       borderRadius:
-        borderRadius && `var(--harmony-border-radius-${borderRadius})`
+        borderRadius && `var(--harmony-border-radius-${borderRadius})`,
+      flex,
+      alignSelf
     }
   }
 )

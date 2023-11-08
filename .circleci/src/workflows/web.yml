@@ -1,9 +1,13 @@
 when: << pipeline.parameters.run-web-workflow >>
 jobs:
-  - web-init
+  - web-init:
+      context:
+        - Vercel
 
   # Cut a demo if not main
   - web-build-demo:
+      context:
+        - Vercel
       requires:
         - web-init
       filters:
@@ -19,9 +23,13 @@ jobs:
 
   # Build
   - web-build-staging:
+      context:
+        - Vercel
       requires:
         - web-init
   - web-build-production:
+      context:
+        - Vercel
       requires:
         - web-init
       filters:

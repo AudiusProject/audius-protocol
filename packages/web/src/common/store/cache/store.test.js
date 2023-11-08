@@ -9,6 +9,7 @@ import {
 } from '@audius/common'
 import { combineReducers } from 'redux'
 import { expectSaga } from 'redux-saga-test-plan'
+import { describe, it, expect, vitest } from 'vitest'
 
 import sagas from 'common/store/cache/sagas'
 import {
@@ -29,7 +30,7 @@ const MOCK_TIMESTAMP = 1479427200000
 
 beforeAll(() => {
   config.CACHE_PRUNE_MIN = 1
-  jest.spyOn(Date, 'now').mockImplementation(() => MOCK_TIMESTAMP)
+  vitest.spyOn(Date, 'now').mockImplementation(() => MOCK_TIMESTAMP)
 })
 
 describe('add', () => {

@@ -5,8 +5,7 @@ import {
   useCallback,
   ReactNode,
   useRef,
-  MouseEventHandler,
-  Ref
+  MouseEventHandler
 } from 'react'
 
 import {
@@ -20,7 +19,7 @@ import {
 } from '@audius/common'
 import cn from 'classnames'
 
-import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
+import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
 import ActionsTab from 'components/actions-tab/ActionsTab'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import Menu, { MenuOptionType } from 'components/menu/Menu'
@@ -229,15 +228,11 @@ const Card = ({
     bottomActions = (
       <div className={sizeStyles.actionsContainer} ref={menuActionsRef}>
         <Menu menu={menu}>
-          {(
-            ref: Ref<SVGSVGElement>,
-            triggerPopup: MouseEventHandler<HTMLDivElement>
-          ) => (
+          {(ref, triggerPopup: () => void) => (
             <div className={styles.iconContainer} onClick={triggerPopup}>
-              <IconKebabHorizontal
-                className={styles.iconKebabHorizontal}
-                ref={ref}
-              />
+              <div ref={ref}>
+                <IconKebabHorizontal className={styles.iconKebabHorizontal} />
+              </div>
             </div>
           )}
         </Menu>

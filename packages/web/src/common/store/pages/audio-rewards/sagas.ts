@@ -256,13 +256,13 @@ function* claimChallengeRewardAsync(
   }
   let aaoErrorCode
   try {
-    const challenges = Object.entries(specifiers).map(
-      ([specifier, amount]) => ({
+    const challenges = specifiers
+      .map(({ specifier, amount }) => ({
         challenge_id: challengeId,
         specifier,
         amount
-      })
-    )
+      }))
+      .filter(({ amount }) => amount > 0) // We shouldn't have any 0 amount challenges, but just in case.
 
     const response: { error?: string; aaoErrorCode?: number } = yield* call(
       audiusBackendInstance.submitAndEvaluateAttestations,
@@ -312,6 +312,9 @@ function* claimChallengeRewardAsync(
           case FailureReason.CHALLENGE_INCOMPLETE:
             yield put(claimChallengeRewardFailed())
             break
+          case FailureReason.WAIT_FOR_COOLDOWN:
+            yield put(claimChallengeRewardFailed())
+            break
           case FailureReason.UNKNOWN_ERROR:
           default:
             // If there is an AAO error code, then the AAO must have
@@ -324,7 +327,7 @@ function* claimChallengeRewardAsync(
 
             // If this was an aggregate challenges with multiple specifiers,
             // then libs handles the retries and we shouldn't retry here.
-            if (specifiers.size > 1) {
+            if (specifiers.length > 1) {
               yield put(claimChallengeRewardFailed())
               break
             }

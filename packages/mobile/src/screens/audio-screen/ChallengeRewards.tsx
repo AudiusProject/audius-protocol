@@ -13,7 +13,9 @@ import {
   audioRewardsPageSelectors,
   modalsActions,
   makeOptimisticChallengeSortComparator,
-  FeatureFlags
+  FeatureFlags,
+  ChallengeName,
+  Name
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { View } from 'react-native'
@@ -21,6 +23,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { getChallengeConfig } from 'app/utils/challenges'
 
@@ -43,8 +46,8 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   'referred',
   'send-first-tip',
   'first-playlist',
-  'b', // $AUDIO matching buyer
-  's' // $AUDIO matching seller
+  ChallengeName.AudioMatchingBuy, // $AUDIO matching buyer
+  ChallengeName.AudioMatchingSell // $AUDIO matching seller
 ])
 
 /** Pulls rewards from remoteconfig */
@@ -118,11 +121,20 @@ export const ChallengeRewards = () => {
     .sort(makeOptimisticChallengeSortComparator(optimisticUserChallenges))
     .map((id) => {
       const props = getChallengeConfig(id)
+      const onPress = () => {
+        openModal(id)
+        track(
+          make({
+            eventName: Name.REWARDS_CLAIM_DETAILS_OPENED,
+            challengeId: id
+          })
+        )
+      }
       return (
         <Panel
           {...props}
           challenge={optimisticUserChallenges[id]}
-          onPress={() => openModal(id)}
+          onPress={onPress}
           key={props.title}
         />
       )

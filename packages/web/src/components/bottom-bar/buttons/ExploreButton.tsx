@@ -18,8 +18,8 @@ const ExploreButton = ({
       isMatrix={isMatrixMode}
       onClick={onClick}
       href={href}
-      iconLightJSON={() => require('assets/animations/iconExploreLight.json')}
-      iconDarkJSON={() => require('assets/animations/iconExploreDark.json')}
+      iconLightJSON={() => import('assets/animations/iconExploreLight.json')}
+      iconDarkJSON={() => import('assets/animations/iconExploreDark.json')}
     />
   )
 }

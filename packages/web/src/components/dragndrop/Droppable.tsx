@@ -1,13 +1,13 @@
 import {
   useState,
   useCallback,
-  cloneElement,
   ReactElement,
   DragEvent,
   ReactNode
 } from 'react'
 
 import { ID, useDebouncedCallback } from '@audius/common'
+import { Slot } from '@radix-ui/react-slot'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
@@ -29,10 +29,10 @@ export type DroppableProps = {
   acceptOwner?: boolean
 } & (
   | {
-      forward: true
+      asChild: true
       children: ReactElement
     }
-  | { forward?: false; children: ReactNode }
+  | { asChild?: false; children: ReactNode }
 )
 
 export const Droppable = (props: DroppableProps) => {
@@ -46,7 +46,8 @@ export const Droppable = (props: DroppableProps) => {
     disabled,
     acceptOwner = true,
     children,
-    forward
+    asChild,
+    ...other
   } = props
   const { id, kind, index, isOwner } = useSelector(selectDragnDropState)
   const [hovered, setHovered] = useState(false)
@@ -97,25 +98,28 @@ export const Droppable = (props: DroppableProps) => {
     150
   )
 
-  const droppableHandlerProps = {
-    onDragEnter: handleDragEnter,
-    onDragLeave: handleDragLeave,
-    onDragOver: handleDragOver,
-    onDrop: handleDrop
-  }
+  const droppableProps = canDrop
+    ? {
+        onDragEnter: handleDragEnter,
+        onDragLeave: handleDragLeave,
+        onDragOver: handleDragOver,
+        onDrop: handleDrop
+      }
+    : {}
 
-  const droppableProps = {
-    className: cn(styles.droppable, className, {
-      [activeClassName]: canDrop,
-      [inactiveClassName]: kind && !canDrop,
-      [hoverClassName]: hovered && canDrop
-    }),
-    ...(canDrop ? droppableHandlerProps : {})
-  }
+  const Comp = asChild ? Slot : 'div'
 
-  if (forward) {
-    return cloneElement(children, droppableProps)
-  }
-
-  return <div {...droppableProps}>{children}</div>
+  return (
+    <Comp
+      className={cn(styles.droppable, className, {
+        [activeClassName]: canDrop,
+        [inactiveClassName]: kind && !canDrop,
+        [hoverClassName]: hovered && canDrop
+      })}
+      {...droppableProps}
+      {...other}
+    >
+      {children}
+    </Comp>
+  )
 }

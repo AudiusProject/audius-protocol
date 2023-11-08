@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"os"
 
-	"mediorum/httputil"
+	"github.com/AudiusProject/audius-protocol/mediorum/httputil"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"

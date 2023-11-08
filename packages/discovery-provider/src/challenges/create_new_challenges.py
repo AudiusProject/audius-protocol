@@ -18,6 +18,7 @@ class ChallengeJSON(TypedDict):
     step_count: Optional[int]
     starting_block: Optional[int]
     weekly_pool: Optional[int]
+    cooldown_days: Optional[int]
 
 
 class OverrideChallengeJson(TypedDict):
@@ -60,6 +61,7 @@ def get_challenges_dicts():
                     "starting_block",
                     "step_count",
                     "weekly_pool",
+                    "cooldown_days",
                 ]:
                     if key in override:
                         challenge[key] = override[key]
@@ -98,6 +100,7 @@ def create_new_challenges(session, allowed_challenge_types=None):
             starting_block=challenge_dict.get("starting_block"),
             step_count=challenge_dict.get("step_count"),
             weekly_pool=challenge_dict.get("weekly_pool"),
+            cooldown_days=challenge_dict.get("cooldown_days"),
         )
         challenges.append(challenge)
     session.add_all(challenges)
@@ -114,3 +117,4 @@ def create_new_challenges(session, allowed_challenge_types=None):
             existing.step_count = challenge_dict.get("step_count")
             existing.starting_block = challenge_dict.get("starting_block")
             existing.weekly_pool = challenge_dict.get("weekly_pool")
+            existing.cooldown_days = challenge_dict.get("cooldown_days")

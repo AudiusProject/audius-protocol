@@ -1,7 +1,7 @@
 import BN from 'bn.js'
 import { useState, useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 import { getAccountWallet } from 'store/account/hooks'
 import { fetchUser } from 'store/cache/user/hooks'
@@ -9,6 +9,7 @@ import { fetchUser } from 'store/cache/user/hooks'
 import { Status } from 'types'
 import Audius from 'services/Audius'
 import { AppState } from 'store/types'
+import { AnyAction } from '@reduxjs/toolkit'
 
 function updateMinimumDelegationAmount(
   amount: BN,
@@ -43,7 +44,7 @@ function updateMinimumDelegationAmount(
 export const useUpdateMinimumDelegationAmount = (shouldReset?: boolean) => {
   const [status, setStatus] = useState<undefined | Status>()
   const [error, setError] = useState<string>('')
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (shouldReset) {
       setStatus(undefined)

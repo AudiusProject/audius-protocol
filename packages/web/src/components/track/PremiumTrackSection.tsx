@@ -17,7 +17,8 @@ import {
   tippingActions,
   User,
   usersSocialActions as socialActions,
-  usePremiumContentPurchaseModal
+  usePremiumContentPurchaseModal,
+  ModalSource
 } from '@audius/common'
 import {
   Button,
@@ -32,7 +33,7 @@ import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
+import IconExternalLink from 'assets/img/iconExternalLink.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { FollowButton } from 'components/follow-button/FollowButton'
@@ -132,7 +133,10 @@ const LockedPremiumTrackSection = ({
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
     }
-    openPremiumContentPurchaseModal({ contentId: trackId })
+    openPremiumContentPurchaseModal(
+      { contentId: trackId },
+      { source: ModalSource.TrackDetails }
+    )
   }, [
     trackId,
     lockedContentModalVisibility,
@@ -638,6 +642,7 @@ export const PremiumTrackSection = ({
   const dispatch = useDispatch()
   const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
   const premiumTrackStatus = premiumTrackStatusMap[trackId] ?? null
+
   const isFollowGated = isPremiumContentFollowGated(premiumConditions)
   const isTipGated = isPremiumContentTipGated(premiumConditions)
   const isUSDCPurchaseGated =

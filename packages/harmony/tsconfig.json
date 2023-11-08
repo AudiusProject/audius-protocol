@@ -8,6 +8,7 @@
     "plugins": [{ "name": "typescript-plugin-css-modules" }],
     "allowJs": false,
     "jsx": "react-jsx",
+    "jsxImportSource": "@emotion/react",
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "exactOptionalPropertyTypes": false,
@@ -20,5 +21,5 @@
     "noUncheckedIndexedAccess": false
   },
   "include": ["src"],
-  "exclude": ["node_modules", "build", "dist", "rollup.config.js"],
+  "exclude": ["node_modules", "build", "dist", "rollup.config.mjs"],
 }

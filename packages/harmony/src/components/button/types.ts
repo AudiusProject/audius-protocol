@@ -1,14 +1,16 @@
 import type { ComponentPropsWithoutRef } from 'react'
 
-import type { IconComponent } from '../../components/typography/Icons/types'
-import type { ColorValue } from '../../types/colors'
+import type { CSSObject } from '@emotion/react'
+
+import type { SpecialColors } from 'foundations/color'
+
+import type { IconComponent } from '../icon'
 
 export enum ButtonType {
   PRIMARY = 'primary',
   SECONDARY = 'secondary',
   TERTIARY = 'tertiary',
-  DESTRUCTIVE = 'destructive',
-  DESTRUCTIVE_SECONDARY = 'destructive_secondary'
+  DESTRUCTIVE = 'destructive'
 }
 
 export enum ButtonSize {
@@ -18,22 +20,28 @@ export enum ButtonSize {
 }
 
 type BaseButtonStyles = {
-  button: string
-  text: string
-  icon: string
+  button: CSSObject
+  icon: CSSObject
 }
 
-export type HTMLButtonProps = Omit<
-  ComponentPropsWithoutRef<'button'>,
-  'children'
->
+export type HTMLButtonProps = ComponentPropsWithoutRef<'button'>
+
+/**
+ * These props should only be used for dev purposes, whether in debug mode,
+ * or to show various states in storybook.
+ * */
+type InternalProps = {
+  /**
+   * @ignore: This prop is for internal use only
+   */
+  _isHovered?: boolean
+  /**
+   * @ignore: This prop is for internal use only
+   */
+  _isPressed?: boolean
+}
 
 export type BaseButtonProps = {
-  /**
-   * The text of the button
-   */
-  text?: string
-
   /**
    * Optional icon element to include on the left side of the button
    */
@@ -43,6 +51,11 @@ export type BaseButtonProps = {
    * Optional icon element to include on the right side of the button
    */
   iconRight?: IconComponent
+
+  /**
+   * Show a spinning loading state instead of the left icon
+   */
+  isLoading?: boolean
 
   /**
    * The max width at which text will still be shown
@@ -65,13 +78,20 @@ export type BaseButtonProps = {
    * Internal styling used by derived button components
    */
   styles: BaseButtonStyles
-} & HTMLButtonProps
+
+  /**
+   * Change the default rendered element for the one passed as a child,
+   *  merging their props and behavior.
+   */
+  asChild?: boolean
+} & HTMLButtonProps &
+  InternalProps
 
 export type ButtonProps = {
   /**
    * Override the color of the button, only valid for the `PRIMARY` variant
    */
-  color?: ColorValue
+  color?: SpecialColors
 
   /**
    * Override the color of the button using any hex color, only valid for the `PRIMARY` variant

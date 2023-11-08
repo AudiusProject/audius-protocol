@@ -1,6 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { BasicModalsState, Modals } from './types'
+import {
+  BasicModalsState,
+  Modals,
+  TrackModalClosedActionPayload,
+  TrackModalOpenedActionPayload
+} from './types'
 
 export const initialState: BasicModalsState = {
   TiersExplainer: { isOpen: false },
@@ -48,7 +53,8 @@ export const initialState: BasicModalsState = {
   UploadConfirmation: { isOpen: false },
   WithdrawUSDCModal: { isOpen: false },
   USDCPurchaseDetailsModal: { isOpen: false },
-  USDCTransactionDetailsModal: { isOpen: false }
+  USDCTransactionDetailsModal: { isOpen: false },
+  USDCManualTransferModal: { isOpen: false }
 }
 
 const slice = createSlice({
@@ -64,6 +70,18 @@ const slice = createSlice({
     ) => {
       const { modal, visible } = action.payload
       state[modal].isOpen = visible
+    },
+    trackModalOpened: (
+      _state,
+      _action: PayloadAction<TrackModalOpenedActionPayload>
+    ) => {
+      // handled by saga
+    },
+    trackModalClosed: (
+      _state,
+      _action: PayloadAction<TrackModalClosedActionPayload>
+    ) => {
+      // handled by saga
     }
   }
 })

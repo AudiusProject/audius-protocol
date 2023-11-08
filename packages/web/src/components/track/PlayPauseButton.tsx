@@ -6,16 +6,11 @@ import {
   playbackPositionSelectors,
   CommonState
 } from '@audius/common'
-import {
-  HarmonyButton,
-  HarmonyButtonSize,
-  HarmonyButtonType,
-  IconPause,
-  IconPlay
-} from '@audius/stems'
+import { Button, ButtonSize, ButtonType } from '@audius/harmony'
+import { IconPause, IconPlay } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
-import { ReactComponent as IconRepeat } from 'assets/img/iconRepeatOff.svg'
+import IconRepeat from 'assets/img/iconRepeatOff.svg'
 import { useFlag } from 'hooks/useRemoteConfig'
 
 const { getUserId } = accountSelectors
@@ -78,17 +73,16 @@ export const PlayPauseButton = ({
   }
 
   return (
-    <HarmonyButton
+    <Button
       name={isPreview ? 'preview' : 'play'}
-      size={HarmonyButtonSize.LARGE}
-      variant={
-        isPreview ? HarmonyButtonType.SECONDARY : HarmonyButtonType.PRIMARY
-      }
-      text={playing ? messages.pause : playText}
+      size={ButtonSize.LARGE}
+      variant={isPreview ? ButtonType.SECONDARY : ButtonType.PRIMARY}
       iconLeft={playing ? IconPause : PlayIconComponent}
       onClick={onPlay}
       minWidth={180}
       disabled={disabled}
-    />
+    >
+      {playing ? messages.pause : playText}
+    </Button>
   )
 }

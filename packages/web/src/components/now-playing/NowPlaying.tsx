@@ -22,16 +22,22 @@ import {
   playerActions,
   playerSelectors,
   queueSelectors,
-  playbackRateValueMap
+  playbackRateValueMap,
+  usePremiumContentAccess,
+  DogEarType,
+  premiumContentSelectors,
+  usePremiumContentPurchaseModal,
+  ModalSource
 } from '@audius/common'
+import { ButtonSize } from '@audius/harmony'
 import { Scrubber } from '@audius/stems'
-import cn from 'classnames'
 import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { ReactComponent as IconCaret } from 'assets/img/iconCaretRight.svg'
+import IconCaret from 'assets/img/iconCaretRight.svg'
 import { useRecord, make } from 'common/store/analytics/actions'
 import CoSign, { Size } from 'components/co-sign/CoSign'
+import { DogEar } from 'components/dog-ear'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PlayButton from 'components/play-bar/PlayButton'
 import NextButtonProvider from 'components/play-bar/next-button/NextButtonProvider'
@@ -39,7 +45,10 @@ import PreviousButtonProvider from 'components/play-bar/previous-button/Previous
 import RepeatButtonProvider from 'components/play-bar/repeat-button/RepeatButtonProvider'
 import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleButtonProvider'
 import { PlayButtonStatus } from 'components/play-bar/types'
+import { LockedStatusBadge } from 'components/track/LockedStatusBadge'
+import { PremiumConditionsPill } from 'components/track/PremiumConditionsPill'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
 import { AppState } from 'store/types'
@@ -65,6 +74,7 @@ const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
 const { next, pause, play, previous, repeat, shuffle } = queueActions
 const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 const getUserId = accountSelectors.getUserId
+const { getPremiumTrackStatusMap } = premiumContentSelectors
 
 type OwnProps = {
   onClose: () => void
@@ -79,7 +89,8 @@ const RESTART_THRESHOLD_SEC = 3
 const SKIP_DURATION_SEC = 15
 
 const messages = {
-  nowPlaying: 'Now Playing'
+  nowPlaying: 'Now Playing',
+  preview: 'preview'
 }
 
 const g = withNullGuard((wide: NowPlayingProps) => {
@@ -370,6 +381,27 @@ const NowPlaying = g(
     const matrix = isMatrix()
     const darkMode = isDarkMode()
 
+    const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
+    const premiumTrackStatus =
+      track_id &&
+      premiumTrackStatusMap[typeof track_id === 'number' ? track_id : -1]
+    const { onOpen: openPremiumContentPurchaseModal } =
+      usePremiumContentPurchaseModal()
+    const onClickPremiumPill = useAuthenticatedClickCallback(() => {
+      openPremiumContentPurchaseModal(
+        {
+          contentId: typeof track_id === 'number' ? track_id : -1
+        },
+        { source: ModalSource.NowPlaying }
+      )
+    }, [track_id, openPremiumContentPurchaseModal])
+
+    const { doesUserHaveAccess } = usePremiumContentAccess(track)
+    const shouldShowPurchasePreview =
+      track?.premium_conditions &&
+      'usdc_purchase' in track.premium_conditions &&
+      !doesUserHaveAccess
+
     return (
       <div className={styles.nowPlaying}>
         <div className={styles.header}>
@@ -393,22 +425,51 @@ const NowPlaying = g(
               onClick={goToTrackPage}
               style={artworkAverageColor}
             >
+              {shouldShowPurchasePreview ? (
+                <div className={styles.borderOffset}>
+                  <DogEar
+                    type={DogEarType.USDC_PURCHASE}
+                    className={styles.dogEar}
+                  />
+                </div>
+              ) : null}
               <DynamicImage image={image} />
             </div>
           </CoSign>
         ) : (
-          <div
-            className={cn(styles.artwork, styles.image)}
-            onClick={goToTrackPage}
-            ref={artworkRef}
-            style={artworkAverageColor}
-          >
-            <DynamicImage image={image} />
+          <div className={styles.artwork}>
+            <div
+              className={styles.image}
+              onClick={goToTrackPage}
+              ref={artworkRef}
+              style={artworkAverageColor}
+            >
+              {shouldShowPurchasePreview ? (
+                <div className={styles.borderOffset}>
+                  <DogEar
+                    type={DogEarType.USDC_PURCHASE}
+                    className={styles.dogEar}
+                  />
+                </div>
+              ) : null}
+              <DynamicImage image={image} />
+            </div>
           </div>
         )}
         <div className={styles.info}>
-          <div className={styles.title} onClick={goToTrackPage}>
-            {title}
+          <div className={styles.trackTitleContainer}>
+            <div className={styles.title} onClick={goToTrackPage}>
+              {title}
+            </div>
+            {shouldShowPurchasePreview ? (
+              <LockedStatusBadge
+                locked
+                iconSize='small'
+                coloredWhenLocked
+                variant='premium'
+                text={messages.preview}
+              />
+            ) : null}
           </div>
           <div className={styles.artist} onClick={goToProfilePage}>
             {name}
@@ -475,6 +536,16 @@ const NowPlaying = g(
           </div>
         </div>
         <div className={styles.actions}>
+          {shouldShowPurchasePreview && track.premium_conditions ? (
+            <PremiumConditionsPill
+              showIcon={false}
+              premiumConditions={track.premium_conditions}
+              unlocking={premiumTrackStatus === 'UNLOCKING'}
+              onClick={onClickPremiumPill}
+              className={styles.premiumPill}
+              buttonSize={ButtonSize.LARGE}
+            />
+          ) : null}
           <ActionsBar
             isOwner={currentUserId === owner_id}
             hasReposted={has_current_user_reposted}
@@ -486,6 +557,8 @@ const NowPlaying = g(
             onClickOverflow={onClickOverflow}
             isDarkMode={isDarkMode()}
             isMatrixMode={matrix}
+            showRepost={!shouldShowPurchasePreview}
+            showFavorite={!shouldShowPurchasePreview}
           />
         </div>
       </div>

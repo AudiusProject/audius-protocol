@@ -1,6 +1,6 @@
 import cn from 'classnames'
 
-import { ReactComponent as IconNext } from 'assets/img/pbIconNext.svg'
+import IconNext from 'assets/img/pbIconNext.svg'
 
 import styles from '../PlayBarButton.module.css'
 

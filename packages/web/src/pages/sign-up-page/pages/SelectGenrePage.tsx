@@ -1,7 +1,7 @@
 import { ChangeEvent, useCallback } from 'react'
 
 import { GENRES, convertGenreLabelToValue } from '@audius/common'
-import { HarmonyButton } from '@audius/stems'
+import { Button } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
 
@@ -10,15 +10,11 @@ import {
   getHandleField,
   getNameField
 } from 'common/store/pages/signon/selectors'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
+import { SIGN_UP_ARTISTS_PAGE } from 'utils/route'
 
 import { GenrePill } from '../components/GenrePill'
-
-import { SelectArtistsState } from './SelectArtistsPage'
-
-export type SelectGenreState = {
-  stage: 'select-genre'
-}
 
 const messages = {
   header: 'Select Your Genres',
@@ -41,23 +37,19 @@ const initialValues = genres.reduce(
   {} as SelectGenreValues
 )
 
-type SelectGenrePageProps = {
-  onNext: (state: SelectArtistsState) => void
-}
-
-export const SelectGenrePage = (props: SelectGenrePageProps) => {
-  const { onNext } = props
+export const SelectGenrePage = () => {
   const { value: displayName } = useSelector(getNameField)
   const { value: handle } = useSelector(getHandleField)
   const dispatch = useDispatch()
+  const navigate = useNavigateToPage()
 
   const handleSubmit = useCallback(
     (values: SelectGenreValues) => {
       const genres = Object.keys(values).filter((genre) => values[genre])
       dispatch(setField('genres', genres))
-      onNext({ stage: 'select-artists' })
+      navigate(SIGN_UP_ARTISTS_PAGE)
     },
-    [dispatch, onNext]
+    [dispatch, navigate]
   )
 
   return (
@@ -89,7 +81,7 @@ export const SelectGenrePage = (props: SelectGenrePageProps) => {
                   />
                 )
               })}
-              <HarmonyButton type='submit' text={messages.continue} />
+              <Button type='submit'>{messages.continue}</Button>
             </Form>
           )
         }}

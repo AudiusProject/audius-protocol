@@ -1,15 +1,13 @@
 import { useCallback } from 'react'
 
 import { useGetTrackById } from '@audius/common'
+import { Button, ButtonType, IconArrowRight } from '@audius/harmony'
 import {
   ModalHeader,
   ModalTitle,
   IconCart,
   ModalContent,
-  ModalFooter,
-  HarmonyButton,
-  HarmonyButtonType,
-  IconArrow
+  ModalFooter
 } from '@audius/stems'
 import moment from 'moment'
 
@@ -78,18 +76,17 @@ export const PurchaseModalContent = ({
         <TransactionSummary transaction={purchaseDetails} />
       </ModalContent>
       <ModalFooter className={styles.footer}>
-        <HarmonyButton
+        <Button
           className={styles.button}
-          variant={HarmonyButtonType.GHOST}
-          text={messages.visitTrack}
-          iconRight={IconArrow}
+          variant={ButtonType.SECONDARY}
+          iconRight={IconArrowRight}
           onClick={handleClickVisitTrack}
-        />
-        <HarmonyButton
-          className={styles.button}
-          text={messages.done}
-          onClick={onClose}
-        />
+        >
+          {messages.visitTrack}
+        </Button>
+        <Button className={styles.button} onClick={onClose}>
+          {messages.done}
+        </Button>
       </ModalFooter>
     </>
   )

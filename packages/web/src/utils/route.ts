@@ -3,22 +3,21 @@ import { push as pushRoute } from 'connected-react-router'
 import { Location as HistoryLocation } from 'history'
 import { matchPath } from 'react-router'
 
-const USE_HASH_ROUTING = process.env.REACT_APP_USE_HASH_ROUTING === 'true'
+const USE_HASH_ROUTING = process.env.VITE_USE_HASH_ROUTING === 'true'
 
 // Host/protocol.
-export const BASE_URL = `${
-  process.env.REACT_APP_PUBLIC_PROTOCOL || 'https:'
-}//${process.env.REACT_APP_PUBLIC_HOSTNAME || 'audius.co'}`
-export const BASE_GA_URL = `${
-  process.env.REACT_APP_PUBLIC_PROTOCOL || 'https:'
-}//${process.env.REACT_APP_GA_HOSTNAME || 'audius.co'}`
-export const BASENAME = process.env.PUBLIC_URL
+export const BASE_URL = `${process.env.VITE_PUBLIC_PROTOCOL || 'https:'}//${
+  process.env.VITE_PUBLIC_HOSTNAME || 'audius.co'
+}`
+export const BASE_GA_URL = `${process.env.VITE_PUBLIC_PROTOCOL || 'https:'}//${
+  process.env.VITE_GA_HOSTNAME || 'audius.co'
+}`
+export const BASENAME = process.env.VITE_PUBLIC_URL
 
 // External Routes
 export const PRIVACY_POLICY = '/legal/privacy-policy'
 export const COOKIE_POLICY = `${BASE_URL}${PRIVACY_POLICY}`
 export const TERMS_OF_SERVICE = '/legal/terms-of-use'
-export const SERVICE_TERMS = '/legal/service-terms'
 export const DOWNLOAD_START_LINK = '/download?start_download=true'
 export const DOWNLOAD_LINK = '/download'
 export const PRESS_PAGE = '/press'
@@ -80,6 +79,23 @@ export const PURCHASES_PAGE = '/purchases'
 export const SALES_PAGE = '/sales'
 export const WITHDRAWALS_PAGE = '/withdrawals'
 
+// Multi-stage sign up flow routes
+export enum SignUpPath {
+  createEmail = 'create-email',
+  createPassword = 'create-password',
+  pickHandle = 'pick-handle',
+  finishProfile = 'finish-profile',
+  selectGenres = 'select-genres',
+  selectArtists = 'select-artists'
+}
+export const SIGN_UP_EMAIL_PAGE = `/signup/${SignUpPath.createEmail}`
+export const SIGN_UP_START_PAGE = SIGN_UP_EMAIL_PAGE // entry point for sign up if needing to redirect to the beginning
+export const SIGN_UP_PASSWORD_PAGE = `/signup/${SignUpPath.createPassword}`
+export const SIGN_UP_HANDLE_PAGE = `/signup/${SignUpPath.pickHandle}`
+export const SIGN_UP_FINISH_PROFILE_PAGE = `/signup/${SignUpPath.finishProfile}`
+export const SIGN_UP_GENRES_PAGE = `/signup/${SignUpPath.selectGenres}`
+export const SIGN_UP_ARTISTS_PAGE = `/signup/${SignUpPath.selectArtists}`
+
 // Param routes.
 export const NOTIFICATION_USERS_PAGE = '/notification/:notificationId/users'
 export const SEARCH_CATEGORY_PAGE = '/search/:query/:category'
@@ -122,8 +138,9 @@ export const EMPTY_PAGE = '/empty_page'
 
 // External Links
 export const AUDIUS_TWITTER_LINK = 'https://twitter.com/audius'
-export const AUDIUS_INSTAMGRAM_LINK = 'https://www.instagram.com/audiusmusic'
+export const AUDIUS_INSTAGRAM_LINK = 'https://www.instagram.com/audiusmusic'
 export const AUDIUS_DISCORD_LINK = 'https://discord.gg/audius'
+export const AUDIUS_TELEGRAM_LINK = 'https://t.me/Audius'
 export const AUDIUS_PRESS_LINK = 'https://brand.audius.co'
 export const AUDIUS_MERCH_LINK = 'https://merch.audius.co/'
 export const AUDIUS_REMIX_CONTESTS_LINK = 'https://remix.audius.co/'
@@ -180,7 +197,6 @@ export const authenticatedRoutes = [
 export const publicSiteRoutes = [
   PRESS_PAGE,
   TERMS_OF_SERVICE,
-  SERVICE_TERMS,
   PRIVACY_POLICY,
   DOWNLOAD_LINK,
   AUTH_REDIRECT
@@ -190,6 +206,12 @@ export const publicSiteRoutes = [
 export const orderedRoutes = [
   SIGN_IN_PAGE,
   SIGN_UP_PAGE,
+  SIGN_UP_EMAIL_PAGE,
+  SIGN_UP_PASSWORD_PAGE,
+  SIGN_UP_HANDLE_PAGE,
+  SIGN_UP_FINISH_PROFILE_PAGE,
+  SIGN_UP_GENRES_PAGE,
+  SIGN_UP_ARTISTS_PAGE,
   FEED_PAGE,
   NOTIFICATION_USERS_PAGE,
   NOTIFICATION_PAGE,

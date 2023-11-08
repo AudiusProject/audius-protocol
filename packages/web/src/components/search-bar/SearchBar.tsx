@@ -5,7 +5,7 @@ import cn from 'classnames'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
+import IconSearch from 'assets/img/iconSearch.svg'
 import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './SearchBar.module.css'

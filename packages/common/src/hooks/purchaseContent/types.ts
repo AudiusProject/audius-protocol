@@ -18,3 +18,10 @@ export enum PayExtraPreset {
 export type PurchasableTrackMetadata = UserTrackMetadata & {
   premium_conditions: PremiumConditionsUSDCPurchase
 }
+
+export type USDCPurchaseConfig = {
+  minContentPriceCents: number
+  maxContentPriceCents: number
+  minUSDCPurchaseAmountCents: number
+  maxUSDCPurchaseAmountCents: number
+}

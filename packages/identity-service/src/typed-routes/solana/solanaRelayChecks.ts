@@ -4,12 +4,15 @@ import {
   TOKEN_PROGRAM_ID,
   decodeInstruction,
   isCloseAccountInstruction,
-  isTransferCheckedInstruction
+  isTransferCheckedInstruction,
+  isSyncNativeInstruction
 } from '@solana/spl-token'
 import {
   PublicKey,
   TransactionInstruction,
-  Secp256k1Program
+  Secp256k1Program,
+  SystemProgram,
+  SystemInstruction
 } from '@solana/web3.js'
 import audiusLibsWrapper from '../../audiusLibsInstance'
 import models from '../../models'
@@ -21,9 +24,9 @@ import {
 } from './programs/associatedToken'
 import {
   decodeClaimableTokenInstruction,
-  isTransferClaimableTokenInstruction
-} from './programs/claimable-tokens'
-import { decodeRewardManagerInstruction } from './programs/reward-manager'
+  isTransferClaimableTokenInstruction,
+  decodeRewardManagerInstruction
+} from '@audius/spl'
 import config from '../../config'
 
 const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
@@ -122,7 +125,7 @@ const assertAllowedAssociatedTokenAccountProgramInstruction = (
 
 /**
  * Allow normal transfers provided they are into userbanks, and allow
- * close account instructions.
+ * close account instructions and sync native (to unwrap wSOL) instructions.
  */
 const assertAllowedTokenProgramInstruction = async (
   instructionIndex: number,
@@ -147,7 +150,10 @@ const assertAllowedTokenProgramInstruction = async (
         `Invalid destination account: ${destination.toBase58()}`
       )
     }
-  } else if (!isCloseAccountInstruction(decodedInstruction)) {
+  } else if (
+    !isCloseAccountInstruction(decodedInstruction) &&
+    !isSyncNativeInstruction(decodedInstruction)
+  ) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
       'Unsupported Token Program instruction'
@@ -250,6 +256,14 @@ const JupiterSharedSwapAccountIndex = {
   PLATFORM_FEE_ACCOUNT: 9,
   TOKEN_2022_PROGRAM: 10
 }
+// Only allow swaps from USDC (for withdrawals) or SOL (for userbank purchases)
+const allowedSourceMints = [NATIVE_MINT.toBase58(), usdcMintAddress]
+const allowedDestinationMints = [
+  NATIVE_MINT.toBase58(),
+  usdcMintAddress,
+  audioMintAddress
+]
+// Only allow swaps to SOL (for withdrawals) or USDC or AUDIO (for userbank purchases)
 const assertAllowedJupiterProgramInstruction = async (
   instructionIndex: number,
   instruction: TransactionInstruction,
@@ -274,16 +288,14 @@ const assertAllowedJupiterProgramInstruction = async (
       JupiterSharedSwapAccountIndex.USER_TRANSFER_AUTHORITY
     ].pubkey.toBase58()
 
-  // Only allow swaps from USDC
-  if (sourceMint !== usdcMintAddress) {
+  if (!allowedSourceMints.includes(sourceMint)) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
       `Invalid source mint: ${sourceMint}`
     )
   }
 
-  // Only allow swaps to SOL
-  if (destinationMint !== NATIVE_MINT.toBase58()) {
+  if (!allowedDestinationMints.includes(destinationMint)) {
     throw new InvalidRelayInstructionError(
       instructionIndex,
       `Invalid destination mint: ${destinationMint}`
@@ -299,6 +311,42 @@ const assertAllowedJupiterProgramInstruction = async (
       instructionIndex,
       `Invalid transfer authority: ${userWallet}`
     )
+  }
+}
+
+const assertAllowedSystemProgramInstruction = (
+  instructionIndex: number,
+  instruction: TransactionInstruction,
+  walletAddress?: string,
+  feePayer?: string
+) => {
+  if (!walletAddress) {
+    throw new InvalidRelayInstructionError(
+      instructionIndex,
+      'System program requires authentication'
+    )
+  }
+  if (!feePayer) {
+    throw new InvalidRelayInstructionError(
+      instructionIndex,
+      'Invalid fee payer'
+    )
+  }
+  const decodedInstructionType =
+    SystemInstruction.decodeInstructionType(instruction)
+  if (decodedInstructionType !== 'Transfer') {
+    throw new InvalidRelayInstructionError(
+      instructionIndex,
+      'Invalid System Program Instruction'
+    )
+  } else {
+    const decodedInstruction = SystemInstruction.decodeTransfer(instruction)
+    if (decodedInstruction.fromPubkey.toBase58() === feePayer) {
+      throw new InvalidRelayInstructionError(
+        instructionIndex,
+        'Invalid fromPubkey for transfer'
+      )
+    }
   }
 }
 
@@ -322,6 +370,7 @@ export const assertRelayAllowedInstructions = async (
       blockchainUserId?: number
       handle?: string
     }
+    feePayer?: string
     socialProofEnabled?: boolean
   }
 ) => {
@@ -358,6 +407,14 @@ export const assertRelayAllowedInstructions = async (
           i,
           instruction,
           options?.user?.walletAddress
+        )
+        break
+      case SystemProgram.programId.toBase58():
+        assertAllowedSystemProgramInstruction(
+          i,
+          instruction,
+          options?.user?.walletAddress,
+          options?.feePayer
         )
         break
       case Secp256k1Program.programId.toBase58():

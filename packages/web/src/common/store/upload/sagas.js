@@ -30,7 +30,8 @@ import {
   fork,
   cancel,
   all,
-  getContext
+  getContext,
+  delay
 } from 'redux-saga/effects'
 
 import { make } from 'common/store/analytics/actions'
@@ -39,7 +40,8 @@ import { trackNewRemixEvent } from 'common/store/cache/tracks/sagas'
 import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import {
   processTracksForUpload,
-  reportResultEvents
+  reportResultEvents,
+  recordGatedTracks
 } from 'common/store/upload/sagaHelpers'
 import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'
 import * as errorActions from 'store/errors/actions'
@@ -742,6 +744,8 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
     isAlbum
   })
 
+  yield call(recordGatedTracks, tracksWithMetadata)
+
   // If we errored, return early
   if (error) {
     console.debug('Saw an error, not going to create a playlist.')
@@ -796,6 +800,7 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
             `Could not confirm playlist creation for playlist id ${playlistId}`
           )
         }
+
         return (yield call(audiusBackendInstance.getPlaylists, userId, [
           playlistId
         ]))[0]
@@ -902,38 +907,6 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
   )
 }
 
-// Record gated track uploads
-function* recordGatedTracks(tracks) {
-  // Group tracks by premium conditions to make use of count field when tracking the metric
-  const eventsByGateType = {}
-
-  for (const track of tracks) {
-    const { is_premium: isPremium, premium_conditions: premiumConditions } =
-      track
-    if (isPremium && premiumConditions) {
-      if (premiumConditions.nft_collection) {
-        eventsByGateType[Name.TRACK_UPLOAD_COLLECTIBLE_GATED] =
-          (eventsByGateType[Name.TRACK_UPLOAD_COLLECTIBLE_GATED] || 0) + 1
-      } else if (premiumConditions.follow_user_id) {
-        eventsByGateType[Name.TRACK_UPLOAD_FOLLOW_GATED] =
-          (eventsByGateType[Name.TRACK_UPLOAD_FOLLOW_GATED] || 0) + 1
-      } else if (premiumConditions.tip_user_id) {
-        eventsByGateType[Name.TRACK_UPLOAD_TIP_GATED] =
-          (eventsByGateType[Name.TRACK_UPLOAD_TIP_GATED] || 0) + 1
-      }
-    }
-  }
-
-  for (const eventName of Object.keys(eventsByGateType)) {
-    yield put(
-      make(eventName, {
-        count: eventsByGateType[eventName],
-        kind: 'tracks'
-      })
-    )
-  }
-}
-
 function* uploadSingleTrack(track) {
   yield waitForWrite()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
@@ -1010,14 +983,25 @@ function* uploadSingleTrack(track) {
           throw new Error(`Could not confirm upload single track ${trackId}`)
         }
 
-        return yield apiClient.getTrack({
-          id: trackId,
-          currentUserId: userId,
-          unlistedArgs: {
-            urlTitle: formatUrlName(track.metadata.title),
-            handle
+        let retries = 30
+        while (retries !== 0) {
+          const maybeTrackRes = yield apiClient.getTrack({
+            id: trackId,
+            currentUserId: userId,
+            unlistedArgs: {
+              urlTitle: formatUrlName(track.metadata.title),
+              handle
+            }
+          })
+          if (maybeTrackRes !== undefined && maybeTrackRes !== null) {
+            return maybeTrackRes
           }
-        })
+          // lil bit of delay for retries
+          yield delay(1500)
+          retries -= 1
+        }
+
+        throw new Error(`Exhausted retries querying for track ${trackId}`)
       },
       function* onSuccess(confirmedTrack) {
         yield call(responseChan.put, { confirmedTrack })
@@ -1087,6 +1071,7 @@ function* uploadSingleTrack(track) {
       status: ProgressStatus.COMPLETE
     })
   )
+
   yield put(
     uploadActions.uploadTracksSucceeded(confirmedTrack.track_id, [
       confirmedTrack

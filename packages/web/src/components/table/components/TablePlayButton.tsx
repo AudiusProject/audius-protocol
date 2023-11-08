@@ -1,7 +1,7 @@
 import cn from 'classnames'
 
-import { ReactComponent as IconPause } from 'assets/img/pbIconPause.svg'
-import { ReactComponent as IconPlay } from 'assets/img/pbIconPlay.svg'
+import IconPause from 'assets/img/pbIconPause.svg'
+import IconPlay from 'assets/img/pbIconPlay.svg'
 
 import styles from './TablePlayButton.module.css'
 

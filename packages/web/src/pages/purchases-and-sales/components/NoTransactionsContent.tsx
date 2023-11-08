@@ -1,9 +1,4 @@
-import {
-  HarmonyButton,
-  HarmonyButtonSize,
-  HarmonyButtonType,
-  IconCart
-} from '@audius/stems'
+import { Button, ButtonSize, ButtonType, IconCart } from '@audius/harmony'
 
 import { Icon } from 'components/Icon'
 import { Tile } from 'components/tile'
@@ -35,12 +30,13 @@ export const NoTransactionsContent = ({
           {bodyText}
         </Text>
       </div>
-      <HarmonyButton
-        variant={HarmonyButtonType.SECONDARY}
-        size={HarmonyButtonSize.SMALL}
-        text={ctaText}
+      <Button
+        variant={ButtonType.SECONDARY}
+        size={ButtonSize.SMALL}
         onClick={onCTAClicked}
-      />
+      >
+        {ctaText}
+      </Button>
     </Tile>
   )
 }

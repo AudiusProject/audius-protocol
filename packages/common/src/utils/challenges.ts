@@ -1,9 +1,14 @@
+import { UndisbursedUserChallenge } from 'store/pages'
+
 import {
   ChallengeRewardID,
   UserChallenge,
-  OptimisticUserChallenge
+  OptimisticUserChallenge,
+  ChallengeName,
+  SpecifierWithAmount
 } from '../models'
 
+import dayjs from './dayjs'
 import { formatNumberCommas } from './formatUtil'
 
 export type ChallengeRewardsInfo = {
@@ -118,8 +123,8 @@ export const challengeRewardsConfig: Record<
     progressLabel: 'Not Earned',
     panelButtonText: 'Discover Some Tracks'
   },
-  s: {
-    id: 's',
+  [ChallengeName.AudioMatchingSell]: {
+    id: ChallengeName.AudioMatchingSell,
     title: 'Sell to Earn',
     description: (_) =>
       'Receive 1 additional $AUDIO for each dollar earned from sales.',
@@ -128,13 +133,13 @@ export const challengeRewardsConfig: Record<
     progressLabel: 'No Recent Activity',
     panelButtonText: 'View Details'
   },
-  b: {
-    id: 'b',
-    title: 'Buy to Earn',
+  [ChallengeName.AudioMatchingBuy]: {
+    id: ChallengeName.AudioMatchingBuy,
+    title: 'Spend to Earn',
     description: (_) =>
-      'Receive 1 additional $AUDIO for each dollar earned from purchases.',
+      'Earn 1 $AUDIO for each dollar you spend on premium tracks.',
     fullDescription: () =>
-      'Receive 1 additional $AUDIO for each dollar earned from purchases.',
+      'Earn 1 $AUDIO for each dollar you spend on premium tracks.',
     progressLabel: 'No Recent Activity',
     panelButtonText: 'View Details'
   },
@@ -204,8 +209,14 @@ export const makeOptimisticChallengeSortComparator = (
     const userChallenge1 = userChallenges[id1]
     const userChallenge2 = userChallenges[id2]
 
+    if (isAudioMatchingChallenge(id1)) {
+      return -1
+    }
     if (!userChallenge1 || !userChallenge2) {
       return 0
+    }
+    if (userChallenge1?.claimableAmount > 0) {
+      return -1
     }
     if (userChallenge1?.state === 'disbursed') {
       return 1
@@ -216,6 +227,9 @@ export const makeOptimisticChallengeSortComparator = (
     if (userChallenge2?.state === 'disbursed') {
       return -1
     }
+    if (userChallenge2?.claimableAmount > 0) {
+      return 1
+    }
     if (userChallenge2?.state === 'completed') {
       return 1
     }
@@ -223,6 +237,37 @@ export const makeOptimisticChallengeSortComparator = (
   }
 }
 
-export const isAudioMatchingChallenge = (challenge: ChallengeRewardID) => {
-  return challenge === 's' || challenge === 'b'
+export const isAudioMatchingChallenge = (
+  challenge: ChallengeRewardID
+): challenge is
+  | ChallengeName.AudioMatchingSell
+  | ChallengeName.AudioMatchingBuy => {
+  return (
+    challenge === ChallengeName.AudioMatchingSell ||
+    challenge === ChallengeName.AudioMatchingBuy
+  )
+}
+
+// TODO: currently only $AUDIO matching challenges have cooldown
+// so this works, but really we should check if `cooldown_period` exists on the
+// challenge instead of using `!isAudioMatchingChallenge`. PAY-2030
+export const isCooldownChallengeClaimable = (
+  challenge: UndisbursedUserChallenge
+) => {
+  return (
+    !isAudioMatchingChallenge(challenge.challenge_id) ||
+    dayjs.utc().diff(dayjs.utc(challenge.created_at), 'day') >= 7
+  )
+}
+/* Filter for only claimable challenges */
+export const getClaimableChallengeSpecifiers = (
+  specifiers: SpecifierWithAmount[],
+  undisbursedUserChallenges: UndisbursedUserChallenge[]
+) => {
+  return specifiers.filter((s) => {
+    const challenge = undisbursedUserChallenges.filter(
+      (c) => c.specifier === s.specifier
+    )[0] // specifiers are unique
+    return isCooldownChallengeClaimable(challenge)
+  })
 }

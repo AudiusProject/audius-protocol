@@ -43,7 +43,7 @@ type ToastState = { showToast: boolean }
 
 class Toast extends PureComponent<ToastProps, ToastState> {
   static defaultProps = {
-    delay: 1500,
+    delay: 3000,
     containerStyles: {},
     useCaret: false,
     requireAccount: true,

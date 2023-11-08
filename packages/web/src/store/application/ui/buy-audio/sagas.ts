@@ -29,7 +29,8 @@ import {
   solanaSelectors,
   deriveUserBankPubkey,
   convertWeiToWAudio,
-  isNullOrUndefined
+  isNullOrUndefined,
+  dayjs
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import { QuoteResponse } from '@jup-ag/api'
@@ -42,7 +43,6 @@ import {
   TransactionMessage
 } from '@solana/web3.js'
 import BN from 'bn.js'
-import dayjs from 'dayjs'
 import { takeLatest, takeLeading } from 'redux-saga/effects'
 import { call, select, put, take, race, fork } from 'typed-redux-saga'
 
@@ -427,7 +427,7 @@ function* getAudioPurchaseInfo({
     const quote = yield* call(JupiterSingleton.getQuote, {
       inputTokenSymbol: 'SOL',
       outputTokenSymbol: 'AUDIO',
-      inputAmount: inSol,
+      inputAmount: inSol / LAMPORTS_PER_SOL,
       slippage
     })
     const {

@@ -1,12 +1,13 @@
 {
   "name": "@audius/compose",
-  "version": "1.0.1",
+  "version": "1.0.5",
   "private": true,
   "scripts": {
     "start": "./start.sh"
   },
   "dependencies": {
     "@audius/sdk": "*",
+    "@audius/spl": "*",
     "@pedalboard/relay": "*",
     "@pedalboard/sla-auditor": "*",
     "@pedalboard/trending-challenge-rewards": "*"

@@ -6,7 +6,13 @@ if ! [ -z $CI ]; then
   exit 0
 fi
 
+export NVM_DIR=$HOME/.nvm;
+source $NVM_DIR/nvm.sh;
+
+nvm install
 cp .python-version-dev .python-version
+pyenv install -s
+rbenv install -s
 
 required_node_version=$(<.nvmrc)
 current_node_version=$(node --version)

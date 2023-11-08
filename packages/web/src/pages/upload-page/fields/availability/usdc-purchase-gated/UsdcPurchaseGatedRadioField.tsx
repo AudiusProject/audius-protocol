@@ -1,19 +1,23 @@
+import { useCallback } from 'react'
+
 import {
   FeatureFlags,
+  Name,
   PremiumConditions,
   TrackAvailabilityType,
-  isPremiumContentUSDCPurchaseGated
+  useAccessAndRemixSettings
 } from '@audius/common'
 import { IconCart, IconStars } from '@audius/stems'
 
 import { ExternalLink } from 'components/link'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import { useFlag } from 'hooks/useRemoteConfig'
+import { make, track } from 'services/analytics'
 
 import { UsdcPurchaseFields } from './UsdcPurchaseFields'
 import styles from './UsdcPurchaseGatedRadioField.module.css'
 
-const WAITLIST_TYPEFORM = 'https://example.com'
+const WAITLIST_TYPEFORM = 'https://link.audius.co/waitlist'
 
 const messages = {
   usdcPurchase: 'Premium (Pay-to-Unlock)',
@@ -26,31 +30,46 @@ const messages = {
 }
 
 type UsdcPurchaseGatedRadioFieldProps = {
+  isRemix: boolean
   isUpload?: boolean
   initialPremiumConditions?: PremiumConditions
   isInitiallyUnlisted?: boolean
+  isScheduledRelease?: boolean
 }
 
 export const UsdcPurchaseGatedRadioField = (
   props: UsdcPurchaseGatedRadioFieldProps
 ) => {
-  const { isUpload, initialPremiumConditions, isInitiallyUnlisted } = props
+  const {
+    isRemix,
+    isUpload,
+    initialPremiumConditions,
+    isInitiallyUnlisted,
+    isScheduledRelease
+  } = props
+
+  const handleClickWaitListLink = useCallback(() => {
+    track(make({ eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK }))
+  }, [])
 
   const { isEnabled: isUsdcUploadEnabled } = useFlag(
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
 
-  const noUsdcPurchase =
-    !isUpload &&
-    !isPremiumContentUSDCPurchaseGated(initialPremiumConditions) &&
-    !isInitiallyUnlisted
-
-  const disabled = noUsdcPurchase || !isUsdcUploadEnabled
+  const { noUsdcGate } = useAccessAndRemixSettings({
+    isUpload: !!isUpload,
+    isRemix,
+    initialPremiumConditions: initialPremiumConditions ?? null,
+    isInitiallyUnlisted: !!isInitiallyUnlisted,
+    isScheduledRelease: !!isScheduledRelease
+  })
+  const disabled = noUsdcGate || !isUsdcUploadEnabled || isScheduledRelease
 
   const helpContent = (
     <div className={styles.helpContent}>
       <div>{messages.waitlist}</div>
       <ExternalLink
+        onClick={handleClickWaitListLink}
         className={styles.link}
         to={WAITLIST_TYPEFORM}
         target='_blank'
@@ -69,8 +88,8 @@ export const UsdcPurchaseGatedRadioField = (
       value={TrackAvailabilityType.USDC_PURCHASE}
       disabled={disabled}
       hintIcon={<IconStars />}
-      hintContent={disabled ? helpContent : undefined}
-      tag={disabled ? messages.comingSoon : undefined}
+      hintContent={!isUsdcUploadEnabled ? helpContent : undefined}
+      tag={!isUsdcUploadEnabled ? messages.comingSoon : undefined}
       checkedContent={<UsdcPurchaseFields disabled={disabled} />}
     />
   )

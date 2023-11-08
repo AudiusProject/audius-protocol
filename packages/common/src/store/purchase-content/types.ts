@@ -1,3 +1,7 @@
+import { BuyCryptoErrorCode } from 'store/buy-crypto/types'
+
+import { BuyUSDCErrorCode } from '../buy-usdc'
+
 export enum ContentType {
   TRACK = 'track'
 }
@@ -9,4 +13,19 @@ export enum PurchaseContentStage {
   CONFIRMING_PURCHASE = 'CONFIRMING_PURCHASE',
   CANCELED = 'CANCELED',
   FINISH = 'FINISH'
+}
+
+export enum PurchaseErrorCode {
+  Unknown = 'Unknown'
+}
+
+export type PurchaseContentErrorCode =
+  | BuyUSDCErrorCode
+  | BuyCryptoErrorCode
+  | PurchaseErrorCode
+
+export class PurchaseContentError extends Error {
+  constructor(public code: PurchaseContentErrorCode, message: string) {
+    super(message)
+  }
 }

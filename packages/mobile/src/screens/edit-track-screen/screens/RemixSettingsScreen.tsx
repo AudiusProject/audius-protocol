@@ -3,9 +3,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { Nullable, PremiumConditions } from '@audius/common'
 import {
   createRemixOfMetadata,
+  isPremiumContentCollectibleGated,
+  isPremiumContentUSDCPurchaseGated,
   remixSettingsActions,
   remixSettingsSelectors,
-  Status
+  Status,
+  usePremiumContentAccess
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { useField } from 'formik'
@@ -13,12 +16,14 @@ import { debounce } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
+import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
 import IconRemix from 'app/assets/images/iconRemix.svg'
 import type { TextProps } from 'app/components/core'
 import { TextInput, Divider, Button, Switch, Text } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { TopBarIconButton } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
 import { getTrackRoute } from 'app/utils/routes'
 
@@ -40,15 +45,20 @@ const messages = {
   done: 'Done',
   invalidRemixUrl: 'Please paste a valid Audius track URL',
   missingRemixUrl: 'Must include a link to the original track',
+  remixAccessError: 'Must have access to the original track',
   enterLink: 'Enter an Audius Link',
   changeAvailbilityPrefix: 'Availablity is set to',
   changeAvailbilitySuffix:
     'To enable these options, change availability to Public.',
+  premium: 'Premium (Pay-To-Unlock). ',
   collectibleGated: 'Collectible Gated. ',
   specialAccess: 'Special Access. '
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
+  backButton: {
+    marginLeft: -6
+  },
   setting: {
     paddingHorizontal: spacing(6),
     paddingVertical: spacing(8)
@@ -95,7 +105,8 @@ export const RemixSettingsScreen = () => {
   const [{ value: isPremium }] = useField<boolean>('is_premium')
   const [{ value: premiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
-  const isCollectibleGated = 'nft_collection' in (premiumConditions ?? {})
+  const isUsdcGated = isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isCollectibleGated = isPremiumContentCollectibleGated(premiumConditions)
 
   const parentTrackId = remixOf?.tracks[0].parent_track_id
   const [isTrackRemix, setIsTrackRemix] = useState(Boolean(parentTrackId))
@@ -189,8 +200,10 @@ export const RemixSettingsScreen = () => {
     }
   }, [remixOfInput, isTouched, parentTrack])
 
+  const { doesUserHaveAccess } = usePremiumContentAccess(parentTrack)
   const hasErrors = Boolean(
-    isTrackRemix && (isInvalidParentTrack || isRemixUrlMissing)
+    isTrackRemix &&
+      (isInvalidParentTrack || isRemixUrlMissing || !doesUserHaveAccess)
   )
 
   return (
@@ -198,6 +211,13 @@ export const RemixSettingsScreen = () => {
       title={messages.screenTitle}
       icon={IconRemix}
       variant='white'
+      topbarLeft={
+        <TopBarIconButton
+          icon={IconCaretLeft}
+          style={styles.backButton}
+          onPress={hasErrors ? undefined : handleSubmit}
+        />
+      }
       bottomSection={
         <Button
           variant='primary'
@@ -215,7 +235,9 @@ export const RemixSettingsScreen = () => {
             <HelpCallout
               style={styles.changeAvailability}
               content={`${messages.changeAvailbilityPrefix} ${
-                isCollectibleGated
+                isUsdcGated
+                  ? messages.premium
+                  : isCollectibleGated
                   ? messages.collectibleGated
                   : messages.specialAccess
               } ${messages.changeAvailbilitySuffix}`}
@@ -248,7 +270,9 @@ export const RemixSettingsScreen = () => {
               {hasErrors ? (
                 <InputErrorMessage
                   message={
-                    isInvalidParentTrack
+                    !doesUserHaveAccess
+                      ? messages.remixAccessError
+                      : isInvalidParentTrack
                       ? messages.invalidRemixUrl
                       : messages.missingRemixUrl
                   }

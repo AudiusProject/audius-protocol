@@ -111,6 +111,7 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
 
   yield* put(event)
 
+  yield* call(optimisticUpdateCollection, { ...playlist, track_count: count })
   yield* call(
     confirmAddTrackToPlaylist,
     userId,
@@ -120,7 +121,6 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
     playlist
   )
 
-  yield* call(optimisticUpdateCollection, { ...playlist, track_count: count })
   yield* put(
     cacheActions.subscribe(Kind.TRACKS, [{ uid: trackUid, id: action.trackId }])
   )

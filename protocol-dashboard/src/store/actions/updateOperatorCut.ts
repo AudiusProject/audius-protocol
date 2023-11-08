@@ -39,7 +39,7 @@ function updateAudiusOperatorCut(
 export const useUpdateOperatorCut = (shouldReset?: boolean) => {
   const [status, setStatus] = useState<undefined | Status>()
   const [error, setError] = useState<string>('')
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (shouldReset) {
       setStatus(undefined)

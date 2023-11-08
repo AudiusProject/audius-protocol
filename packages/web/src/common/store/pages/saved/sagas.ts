@@ -1,26 +1,21 @@
 import {
-  accountSelectors,
   APIActivityV2,
+  Favorite,
+  FavoriteType,
+  LibraryCategoryType,
+  Nullable,
+  User,
+  UserTrackMetadata,
+  accountSelectors,
+  savedPageActions as actions,
   decodeHashId,
   encodeHashId,
   getContext,
   removeNullable,
   responseAdapter,
-  savedPageActions as actions,
   savedPageSelectors,
-  signOutActions,
   savedPageTracksLineupActions as tracksActions,
-  User,
-  UserTrackMetadata,
-  waitForValue,
-  LIBRARY_TRACKS_CATEGORY_LS_KEY,
-  LIBRARY_COLLECTIONS_CATEGORY_LS_KEY,
-  isLibraryCategory,
-  LibraryCategoryType,
-  Nullable,
-  calculateNewLibraryCategories,
-  Favorite,
-  FavoriteType
+  waitForValue
 } from '@audius/common'
 import { call, fork, put, select, takeLatest } from 'typed-redux-saga'
 
@@ -28,7 +23,6 @@ import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { waitForRead } from 'utils/sagaHelpers'
 
 import tracksSagas from './lineups/sagas'
-const { signOut: signOutAction } = signOutActions
 
 const { getTrackSaves } = savedPageSelectors
 const { getAccountUser } = accountSelectors
@@ -206,85 +200,6 @@ function* watchFetchMoreSaves() {
   )
 }
 
-/**
- * Sets the selected category from local storage when the app loads
- */
-function* setInitialSelectedCategory() {
-  const getLocalStorageItem = yield* getContext('getLocalStorageItem')
-
-  const tracksCategoryFromLocalStorage = yield* call(
-    getLocalStorageItem,
-    LIBRARY_TRACKS_CATEGORY_LS_KEY
-  )
-  if (
-    tracksCategoryFromLocalStorage != null &&
-    isLibraryCategory(tracksCategoryFromLocalStorage)
-  ) {
-    yield* put(
-      actions.initializeTracksCategoryFromLocalStorage(
-        tracksCategoryFromLocalStorage
-      )
-    )
-  }
-
-  const collectionsCategoryFromLocalStorage = yield* call(
-    getLocalStorageItem,
-    LIBRARY_COLLECTIONS_CATEGORY_LS_KEY
-  )
-
-  if (
-    collectionsCategoryFromLocalStorage != null &&
-    isLibraryCategory(collectionsCategoryFromLocalStorage)
-  ) {
-    yield* put(
-      actions.initializeCollectionsCategoryFromLocalStorage(
-        collectionsCategoryFromLocalStorage
-      )
-    )
-  }
-}
-
-function* setLocalStorageCategory(
-  rawParams: ReturnType<typeof actions.setSelectedCategory>
-) {
-  const setLocalStorageItem = yield* getContext('setLocalStorageItem')
-  const getLocalStorageItem = yield* getContext('getLocalStorageItem')
-  const tracksCategoryFromLocalStorage = yield* call(
-    getLocalStorageItem,
-    LIBRARY_TRACKS_CATEGORY_LS_KEY
-  )
-  const { collectionsCategory, tracksCategory } = calculateNewLibraryCategories(
-    {
-      currentTab: rawParams.currentTab,
-      chosenCategory: rawParams.category,
-      prevTracksCategory: tracksCategoryFromLocalStorage
-    }
-  )
-  setLocalStorageItem(LIBRARY_TRACKS_CATEGORY_LS_KEY, tracksCategory)
-  setLocalStorageItem(LIBRARY_COLLECTIONS_CATEGORY_LS_KEY, collectionsCategory)
-}
-
-function* watchSetSelectedCategory() {
-  yield* takeLatest(actions.SET_SELECTED_CATEGORY, setLocalStorageCategory)
-}
-
-function* clearLocalStorageLibraryCategories() {
-  const removeLocalStorageItem = yield* getContext('removeLocalStorageItem')
-  removeLocalStorageItem(LIBRARY_COLLECTIONS_CATEGORY_LS_KEY)
-  removeLocalStorageItem(LIBRARY_TRACKS_CATEGORY_LS_KEY)
-}
-
-function* watchSignOut() {
-  yield* takeLatest(signOutAction.type, clearLocalStorageLibraryCategories)
-}
-
 export default function sagas() {
-  return [
-    ...tracksSagas(),
-    watchFetchSaves,
-    watchFetchMoreSaves,
-    watchSetSelectedCategory,
-    setInitialSelectedCategory,
-    watchSignOut
-  ]
+  return [...tracksSagas(), watchFetchSaves, watchFetchMoreSaves]
 }

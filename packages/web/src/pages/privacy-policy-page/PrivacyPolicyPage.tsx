@@ -1,9 +1,9 @@
-import Footer from 'components/public-site/Footer'
-import NavBanner from 'components/public-site/NavBanner'
+import Footer from 'components/public-site/FooterV2'
+import NavBanner from 'components/public-site/NavBannerV2'
 
 import styles from './PrivacyPolicyPage.module.css'
 
-const BASENAME = process.env.PUBLIC_URL
+const BASENAME = process.env.VITE_PUBLIC_URL
 
 const messages = {
   download: 'Download Privacy Policy'

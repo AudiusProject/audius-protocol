@@ -7,8 +7,8 @@ import { useDispatch, useSelector } from 'react-redux'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Transition, animated } from 'react-spring/renderprops'
 
-import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
-import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
+import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
+import IconSend from 'assets/img/iconSend.svg'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'
@@ -25,7 +25,7 @@ const messages = {
   goBack: 'Go Back',
   somethingWrong: 'Something’s gone wrong. Wait a little while and try again.',
   maintenance: 'We’re performing some necessary one-time maintenance.',
-  fewMinutes: 'This may take a few minutes.',
+  severalMinutes: 'This may take several minutes.',
   holdOn: 'Don’t close this window or refresh the page.'
 }
 
@@ -54,7 +54,7 @@ const ConvertingInfo = ({ isVisible }: { isVisible: boolean }) => (
         <animated.div style={style} className={styles.info}>
           <p>{messages.maintenance}</p>
           <br />
-          <p>{messages.fewMinutes}</p>
+          <p>{messages.severalMinutes}</p>
           <p>{messages.holdOn}</p>
         </animated.div>
       ) : null}

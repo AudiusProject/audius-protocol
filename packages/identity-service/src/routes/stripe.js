@@ -42,6 +42,7 @@ module.exports = function (app) {
         'transaction_details[destination_network]': 'solana',
         'transaction_details[destination_currency]': destinationCurrency,
         'transaction_details[destination_exchange_amount]': amount,
+        'transaction_details[lock_wallet_address]': true,
         customer_ip_address: getIP(req)
       })
       urlEncodedData.append(
@@ -65,9 +66,11 @@ module.exports = function (app) {
         return successResponse(response.data)
       } catch (e) {
         logger.error('Failed to create Stripe session:', e.response.data)
+        const { code, message, type } = e.response.data.error ?? {}
         return errorResponse(
           e.response.status,
-          'Failed to create Stripe session'
+          'Failed to create Stripe session',
+          { code, message, type }
         )
       }
     })

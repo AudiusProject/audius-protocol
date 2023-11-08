@@ -10,7 +10,7 @@ const messages = {
   // NOTE: Send tip -> Send $AUDIO change
   disclaimerAlt: 'Are you sure? This action cannot be reversed.', // iOS only
   maintenance: 'We’re performing some necessary one-time maintenance.',
-  fewMinutes: 'This may take a few minutes.',
+  severalMinutes: 'This may take several minutes.',
   holdOn: 'Don’t close this screen or restart the app.',
   somethingWrong: 'Something’s gone wrong. Wait a little while and try again.'
 }
@@ -30,7 +30,7 @@ export const SendTipStatusText = () => {
       <View>
         <DescriptionText>{messages.maintenance}</DescriptionText>
         <DescriptionText allowNewline>
-          {messages.fewMinutes} {'\n'}
+          {messages.severalMinutes} {'\n'}
           {messages.holdOn}
         </DescriptionText>
       </View>

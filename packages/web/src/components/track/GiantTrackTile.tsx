@@ -26,7 +26,7 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 
-import { ReactComponent as IconRobot } from 'assets/img/robot.svg'
+import IconRobot from 'assets/img/robot.svg'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
 import { UserLink } from 'components/link'
@@ -575,7 +575,7 @@ export const GiantTrackTile = ({
                     <Button
                       className={cn(styles.buttonFormatting, styles.moreButton)}
                       leftIcon={<IconKebabHorizontal />}
-                      onClick={triggerPopup}
+                      onClick={() => triggerPopup()}
                       text={null}
                       textClassName={styles.buttonTextFormatting}
                       type={ButtonType.COMMON}
