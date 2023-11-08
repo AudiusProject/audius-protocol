@@ -132,7 +132,7 @@ export const ChallengeRewardsDrawerProvider = () => {
         })
       )
     }
-  }, [dispatch, modalType, challenge])
+  }, [dispatch, modalType, challenge, undisbursedUserChallenges])
 
   useEffect(() => {
     if (claimStatus === ClaimStatus.SUCCESS) {

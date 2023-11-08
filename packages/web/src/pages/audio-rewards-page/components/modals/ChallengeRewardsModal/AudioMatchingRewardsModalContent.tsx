@@ -15,8 +15,6 @@ import {
   HarmonyButtonType
 } from '@audius/stems'
 import cn from 'classnames'
-import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc'
 import { useSelector } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -31,8 +29,6 @@ import { ProgressReward } from './ProgressReward'
 import styles from './styles.module.css'
 
 const { getOptimisticUserChallenges } = challengesSelectors
-
-dayjs.extend(utc)
 
 const messages = {
   rewardMapping: {
@@ -162,7 +158,7 @@ export const AudioMatchingRewardsModalContent = ({
             </div>
             {progressStatusLabel}
           </div>
-          {!isCooldownChallengesEmpty ? (
+          {/* {!isCooldownChallengesEmpty ? (
             <SummaryTable
               title={messages.upcomingRewards}
               items={cooldownChallenges}
@@ -171,7 +167,7 @@ export const AudioMatchingRewardsModalContent = ({
               summaryLabelColor='secondary'
               summaryValueColor='neutral'
             />
-          ) : null}
+          ) : null} */}
         </>
       )}
       {challenge?.claimableAmount && challenge.claimableAmount > 0 ? (
