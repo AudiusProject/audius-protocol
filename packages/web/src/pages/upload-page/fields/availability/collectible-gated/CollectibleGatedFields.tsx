@@ -13,10 +13,10 @@ import DropdownInput from 'components/ai-attribution-modal/DropdownInput'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 
 import {
-  AccessAndSaleFormValues,
   AVAILABILITY_TYPE,
+  AccessAndSaleFormValues,
   PREMIUM_CONDITIONS
-} from '../../AccessAndSaleField'
+} from '../../types'
 
 import styles from './CollectibleGatedFields.module.css'
 

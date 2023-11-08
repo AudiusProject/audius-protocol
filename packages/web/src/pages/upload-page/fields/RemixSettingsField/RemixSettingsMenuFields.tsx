@@ -16,12 +16,12 @@ import { Divider } from 'components/divider'
 import { TextField } from 'components/form-fields'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 
-import { IS_PREMIUM, PREMIUM_CONDITIONS } from '../AccessAndSaleField'
 import { SwitchRowField } from '../SwitchRowField'
 
 import styles from './RemixSettingsField.module.css'
 import { TrackInfo } from './TrackInfo'
 import { CAN_REMIX_PARENT, IS_REMIX, REMIX_LINK, SHOW_REMIXES } from './types'
+import { IS_PREMIUM, PREMIUM_CONDITIONS } from '../types'
 const { getUserId } = accountSelectors
 
 const messages = {

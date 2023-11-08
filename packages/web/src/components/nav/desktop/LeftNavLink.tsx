@@ -5,7 +5,7 @@ import { NavLink, NavLinkProps } from 'react-router-dom'
 import { SetOptional } from 'type-fest'
 
 import { Droppable, DroppableProps } from 'components/dragndrop'
-import { selectDragnDropState } from 'store/dragndrop/slice'
+import { selectDragnDropState } from 'store/dragndrop/selectors'
 import { useSelector } from 'utils/reducer'
 
 import styles from './LeftNavLink.module.css'

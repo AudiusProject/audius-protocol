@@ -10,9 +10,12 @@ import Tooltip from 'components/tooltip/Tooltip'
 import { Text } from 'components/typography'
 
 import {
+  SPECIAL_ACCESS_TYPE,
   AccessAndSaleFormValues,
-  PREMIUM_CONDITIONS
-} from '../AccessAndSaleField'
+  PREMIUM_CONDITIONS,
+  SpecialAccessType,
+  TrackAvailabilityFieldsProps
+} from '../types'
 
 import styles from './SpecialAccessFields.module.css'
 
@@ -23,17 +26,6 @@ const messages = {
   supportersOnly: 'Available to Supporters Only',
   supportersInfo: 'Supporters are users who have sent you a tip.'
 }
-
-export enum SpecialAccessType {
-  TIP = 'tip',
-  FOLLOW = 'follow'
-}
-
-type TrackAvailabilityFieldsProps = {
-  disabled?: boolean
-}
-
-const SPECIAL_ACCESS_TYPE = 'special_access_type'
 
 export const SpecialAccessFields = (props: TrackAvailabilityFieldsProps) => {
   const { disabled } = props

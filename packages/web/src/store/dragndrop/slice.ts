@@ -1,8 +1,6 @@
 import { ID, PlaylistLibraryKind } from '@audius/common'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { AppState } from 'store/types'
-
 export type DragDropKind =
   | PlaylistLibraryKind
   | 'track'
@@ -47,11 +45,6 @@ const slice = createSlice({
     }
   }
 })
-
-export const selectDragnDropState = (state: AppState) => state.dragndrop
-
-export const selectDraggingKind = (state: AppState) => state.dragndrop.kind
-export const selectDraggingId = (state: AppState) => state.dragndrop.id
 
 export const { drag, drop } = slice.actions
 export default slice.reducer

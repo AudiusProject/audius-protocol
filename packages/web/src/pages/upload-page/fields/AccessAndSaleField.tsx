@@ -51,10 +51,7 @@ import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { defaultFieldVisibility } from 'pages/track-page/utils'
 
 import { HiddenAvailabilityFields } from '../fields/availability/HiddenAvailabilityFields'
-import {
-  SpecialAccessFields,
-  SpecialAccessType
-} from '../fields/availability/SpecialAccessFields'
+import { SpecialAccessFields } from '../fields/availability/SpecialAccessFields'
 import { useIndexedField, useTrackField } from '../hooks'
 import { SingleTrackEditValues } from '../types'
 
@@ -62,6 +59,19 @@ import styles from './AccessAndSaleField.module.css'
 import { REMIX_OF } from './RemixSettingsField'
 import { CollectibleGatedRadioField } from './availability/collectible-gated/CollectibleGatedRadioField'
 import { UsdcPurchaseGatedRadioField } from './availability/usdc-purchase-gated/UsdcPurchaseGatedRadioField'
+import {
+  PREMIUM_CONDITIONS,
+  PREVIEW,
+  AVAILABILITY_TYPE,
+  AccessAndSaleFormValues,
+  PRICE,
+  IS_UNLISTED,
+  IS_PREMIUM,
+  FIELD_VISIBILITY,
+  PRICE_HUMANIZED,
+  SPECIAL_ACCESS_TYPE,
+  SpecialAccessType
+} from './types'
 const { getUserId } = accountSelectors
 
 const messages = {
@@ -117,27 +127,6 @@ const messages = {
     }
   },
   required: 'Required'
-}
-
-export const IS_UNLISTED = 'is_unlisted'
-export const IS_PREMIUM = 'is_premium'
-export const PREMIUM_CONDITIONS = 'premium_conditions'
-
-export const AVAILABILITY_TYPE = 'availability_type'
-export const SPECIAL_ACCESS_TYPE = 'special_access_type'
-export const FIELD_VISIBILITY = 'field_visibility'
-export const PRICE = 'premium_conditions.usdc_purchase.price'
-export const PRICE_HUMANIZED = 'price_humanized'
-export const PREVIEW = 'preview_start_seconds'
-
-export type AccessAndSaleFormValues = {
-  [IS_UNLISTED]: boolean
-  [AVAILABILITY_TYPE]: TrackAvailabilityType
-  [PREMIUM_CONDITIONS]: Nullable<PremiumConditions>
-  [SPECIAL_ACCESS_TYPE]: Nullable<SpecialAccessType>
-  [FIELD_VISIBILITY]: FieldVisibility
-  [PRICE_HUMANIZED]: string
-  [PREVIEW]?: number
 }
 
 type AccessAndSaleRemoteConfig = Pick<

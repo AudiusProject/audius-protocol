@@ -10,7 +10,8 @@ import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { Droppable } from 'components/dragndrop'
-import { DragDropKind, selectDraggingKind } from 'store/dragndrop/slice'
+import { selectDraggingKind } from 'store/dragndrop/selectors'
+import { DragDropKind } from 'store/dragndrop/slice'
 import { useSelector } from 'utils/reducer'
 
 import { GroupHeader } from '../GroupHeader'

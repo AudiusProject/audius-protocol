@@ -2,7 +2,7 @@ import { RouterContextProvider } from 'components/animated-switch/RouterContextP
 import { HeaderContextProvider } from 'components/header/mobile/HeaderContextProvider'
 import { NavProvider } from 'components/nav/store/context'
 import { ScrollProvider } from 'components/scroll-provider/ScrollProvider'
-import { ToastContextProvider } from 'components/toast/ToastContext'
+import { ToastContextProvider } from 'components/toast/ToastContextProvider'
 import { MainContentContextProvider } from 'pages/MainContentContext'
 
 import { AppContextProvider } from './AppContextProvider'

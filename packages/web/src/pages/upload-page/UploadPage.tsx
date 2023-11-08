@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
 
+import { UploadFormScrollContext } from './UploadFormScrollContext'
 import styles from './UploadPage.module.css'
 import { EditPage } from './pages/EditPage'
 import { FinishPage } from './pages/FinishPage'
@@ -51,8 +52,6 @@ const initialFormState = {
 type UploadPageProps = {
   scrollToTop: () => void
 }
-
-export const UploadFormScrollContext = createContext(() => {})
 
 export const UploadPage = (props: UploadPageProps) => {
   const { scrollToTop } = props

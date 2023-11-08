@@ -11,7 +11,8 @@ import { Slot } from '@radix-ui/react-slot'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
-import { DragDropKind, selectDragnDropState } from 'store/dragndrop/slice'
+import { selectDragnDropState } from 'store/dragndrop/selectors'
+import { DragDropKind } from 'store/dragndrop/slice'
 
 import styles from './Droppable.module.css'
 

@@ -21,11 +21,8 @@ import { useToggle } from 'react-use'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Draggable } from 'components/dragndrop'
-import {
-  DragDropKind,
-  selectDraggingKind,
-  selectDraggingId
-} from 'store/dragndrop/slice'
+import { selectDraggingKind, selectDraggingId } from 'store/dragndrop/selectors'
+import { DragDropKind } from 'store/dragndrop/slice'
 import { useSelector } from 'utils/reducer'
 import { BASE_URL } from 'utils/route'
 

@@ -20,7 +20,6 @@ import { fullTrackPage } from 'utils/route'
 
 import { useTrackField } from '../../hooks'
 import { SingleTrackEditValues } from '../../types'
-import { IS_PREMIUM, PREMIUM_CONDITIONS } from '../AccessAndSaleField'
 
 import styles from './RemixSettingsField.module.css'
 import { RemixSettingsMenuFields } from './RemixSettingsMenuFields'
@@ -35,6 +34,7 @@ import {
   SHOW_REMIXES,
   SHOW_REMIXES_BASE
 } from './types'
+import { IS_PREMIUM, PREMIUM_CONDITIONS } from '../types'
 
 const messages = {
   title: 'Remix Settings',

@@ -33,23 +33,25 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { defaultFieldVisibility } from 'pages/track-page/utils'
 import {
-  AVAILABILITY_TYPE,
   AccessAndSaleFormSchema,
-  AccessAndSaleFormValues,
   AccessAndSaleMenuFields,
-  FIELD_VISIBILITY,
-  IS_PREMIUM,
-  IS_UNLISTED,
-  PREMIUM_CONDITIONS,
-  PREVIEW,
-  PRICE_HUMANIZED,
-  SPECIAL_ACCESS_TYPE,
   getCombinedDefaultPremiumConditionValues
 } from 'pages/upload-page/fields/AccessAndSaleField'
-import { SpecialAccessType } from 'pages/upload-page/fields/availability/SpecialAccessFields'
 
 import styles from './AccessAndSaleTriggerLegacy.module.css'
 import { ContextualMenu } from './ContextualMenu'
+import {
+  PREMIUM_CONDITIONS,
+  IS_UNLISTED,
+  IS_PREMIUM,
+  PRICE_HUMANIZED,
+  AVAILABILITY_TYPE,
+  FIELD_VISIBILITY,
+  PREVIEW,
+  SPECIAL_ACCESS_TYPE,
+  SpecialAccessType,
+  AccessAndSaleFormValues
+} from 'pages/upload-page/fields/types'
 
 const { getUserId } = accountSelectors
 

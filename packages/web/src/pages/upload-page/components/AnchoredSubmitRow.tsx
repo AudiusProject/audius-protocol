@@ -7,7 +7,7 @@ import {
   IconCloudUpload
 } from '@audius/harmony'
 
-import { UploadFormScrollContext } from '../UploadPage'
+import { UploadFormScrollContext } from '../UploadFormScrollContext'
 
 import styles from './AnchoredSubmitRow.module.css'
 

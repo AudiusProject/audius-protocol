@@ -21,7 +21,7 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
 import ConnectedProfileCompletionPane from 'components/profile-progress/ConnectedProfileCompletionPane'
-import { selectDraggingKind } from 'store/dragndrop/slice'
+import { selectDraggingKind } from 'store/dragndrop/selectors'
 import { AppState } from 'store/types'
 import {
   EXPLORE_PAGE,
