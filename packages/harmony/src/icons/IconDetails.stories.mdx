@@ -1,6 +1,6 @@
 import { Meta, Title } from '@storybook/blocks'
 
-import { Flex } from 'components'
+import { Flex, Divider } from 'components'
 import { IconQuestionCircle, IconStars } from 'icons'
 import addIconArrangement from 'storybook/assets/addIconArrangement.png'
 import exportIconCommand from 'storybook/assets/exportIconCommand.png'
@@ -15,6 +15,8 @@ import verifyIconSettings from 'storybook/assets/verifyIconSettings.png'
 
 An icon is a graphic symbol designed to visually indicate the purpose of an interface element.
 
+<Divider />
+
 export function Step(props) {
   const { index, children } = props
   return (
@@ -27,20 +29,20 @@ export function Step(props) {
         marginTop: theme.spacing['2xl']
       })}
     >
-      {index === undefined ? null : <h2>Step {index}</h2>}
+      {index === undefined ? null : <h4>Step {index}</h4>}
       {children}
     </section>
   )
 }
 
-# For Developers
+## For Developers
 
 export const headerIconCss = {
   visibility: 'visible !important',
   top: '3px !important'
 }
 
-## <IconQuestionCircle color='default' css={headerIconCss} /> How to Export Icons
+### <IconQuestionCircle color='default' css={headerIconCss} /> How to Export Icons
 
 Follow the general guide below to learn how to export icons from the library
 
@@ -93,14 +95,14 @@ Hit 'Export', save the file & you are done! 🎉
   issue to the Design System backlog.
 </Step>
 
-# For Designers
+## For Designers
 
-## Instructions: Adding Icons to this file.
+### Instructions: Adding Icons to this file.
 
 When adding new utility icons to this library, designers should ensure the following:
 
 <Step>
-### Paths
+#### Paths
 
 - Ensure all icons consist of a single flattened path
   - To flatten select the desired path & hit ‘CMD + E’
@@ -109,7 +111,7 @@ When adding new utility icons to this library, designers should ensure the follo
 </Step>
 
 <Step>
-### Color
+#### Color
 
 Ensure fill color is set to
 
@@ -129,7 +131,7 @@ Ensure fill color is set to
 </Step>
 
 <Step>
-### Arrangement
+#### Arrangement
 
 Rearrange utility icons into alphabetical order using the plugin Griddle with the following configuration
 
@@ -138,7 +140,7 @@ Rearrange utility icons into alphabetical order using the plugin Griddle with th
 </Step>
 
 <Step>
-### Changelog
+#### Changelog
 
 For every change / addition, add an entry to the changelog.
 
