@@ -14,8 +14,8 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   'referred',
   'send-first-tip',
   'first-playlist',
-  ChallengeName.AudioMatchingSell, // $AUDIO matching seller
-  ChallengeName.AudioMatchingBuy // $AUDIO matching buyer
+  ChallengeName.AudioMatchingSell,
+  ChallengeName.AudioMatchingBuy
 ])
 
 /** Pulls rewards from remoteconfig */
