@@ -25,14 +25,7 @@ export const useParsedQueryParams = () => {
         return 'postmessage'
       }
       try {
-        const url = new URL(decodeURIComponent(redirectUri))
-        // Ensure that the redirect_uri protocol is https
-        // IMPORTANT: If this validation is not done, users can
-        // use the redirect_uri to execute arbitrary code on the host
-        // domain (e.g. audius.co).
-        if (url.protocol !== 'https:') {
-          throw new Error('Invalid redirect_uri protocol, https required')
-        }
+        return new URL(decodeURIComponent(redirectUri))
       } catch {
         return null
       }
