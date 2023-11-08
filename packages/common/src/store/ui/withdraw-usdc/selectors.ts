@@ -19,3 +19,7 @@ export const getWithdrawAmountError = (state: CommonState) => {
 export const getWithdrawStatus = (state: CommonState) => {
   return state.withdrawUSDC.withdrawStatus
 }
+
+export const getWithdrawTransaction = (state: CommonState) => {
+  return state.withdrawUSDC.withdrawTransaction
+}
