@@ -1,6 +1,5 @@
 import cn from 'classnames'
-import { h } from 'preact'
-import { useState, useEffect } from 'preact/hooks'
+import { useState, useEffect } from 'react'
 
 import Card from '../card/Card'
 

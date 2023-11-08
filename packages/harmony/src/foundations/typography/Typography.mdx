@@ -2,7 +2,11 @@ import { Meta, Title, Unstyled } from '@storybook/blocks'
 
 import { Text, Paper } from 'components'
 import typographyExample from 'storybook/assets/typographyExample.png'
-import { TypographyPanel, ColorPaletteTable } from 'storybook/components'
+import {
+  TypographyPanel,
+  ColorPaletteTable,
+  RelatedFoundations
+} from 'storybook/components'
 
 <Meta title='Foundations/Typography' />
 
@@ -118,3 +122,7 @@ export function Emp(props) {
 - Consider likeness of elements when spacing text of different sizes.
 
 <img src={typographyExample} />
+
+## Related Foundations
+
+<RelatedFoundations foundationNames={['Color', 'Shadow', 'CornerRadius']} />

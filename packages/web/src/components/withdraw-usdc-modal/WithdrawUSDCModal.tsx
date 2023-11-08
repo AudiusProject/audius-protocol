@@ -128,16 +128,6 @@ export const WithdrawUSDCModal = () => {
     }
   }, [balanceNumberCents, priorBalanceCents, setPriorBalanceCents])
 
-  const onSuccess = useCallback(
-    (signature: string) => {
-      setData({
-        page: WithdrawUSDCModalPages.TRANSFER_SUCCESSFUL,
-        signature
-      })
-    },
-    [setData]
-  )
-
   useEffect(() => {
     if (withdrawalStatus === Status.ERROR) {
       setData({
@@ -152,12 +142,11 @@ export const WithdrawUSDCModal = () => {
         beginWithdrawUSDC({
           amount,
           currentBalance: balanceNumberCents,
-          destinationAddress: address,
-          onSuccess
+          destinationAddress: address
         })
       )
     },
-    [balanceNumberCents, dispatch, onSuccess]
+    [balanceNumberCents, dispatch]
   )
 
   let formPage

@@ -2,10 +2,10 @@ package server
 
 import (
 	"database/sql"
-	"mediorum/crudr"
-	"mediorum/ddl"
 	"time"
 
+	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
+	"github.com/AudiusProject/audius-protocol/mediorum/ddl"
 	"gocloud.dev/blob"
 	"golang.org/x/exp/slog"
 	"gorm.io/driver/postgres"

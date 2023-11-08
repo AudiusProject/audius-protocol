@@ -1,4 +1,4 @@
-import { gifPreview } from '../../util/image/gifPreview'
+import { gifPreview } from '../../util/image/imageProcessingUtil'
 
 export const getFrameFromGif = async (url) => {
   const preview = await gifPreview(url)

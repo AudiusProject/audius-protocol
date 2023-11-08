@@ -10,11 +10,11 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/exp/slog"
-
-	"mediorum/server/signature"
 )
 
 const (

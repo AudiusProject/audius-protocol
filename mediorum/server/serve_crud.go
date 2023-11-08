@@ -3,9 +3,10 @@ package server
 import (
 	"context"
 	"fmt"
-	"mediorum/crudr"
 	"net/http"
 	"time"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
 
 	"github.com/labstack/echo/v4"
 )

@@ -1,14 +1,14 @@
-import dayjs from 'dayjs'
-
 import { UndisbursedUserChallenge } from 'store/pages'
 
 import {
   ChallengeRewardID,
   UserChallenge,
   OptimisticUserChallenge,
-  ChallengeName
+  ChallengeName,
+  SpecifierWithAmount
 } from '../models'
 
+import dayjs from './dayjs'
 import { formatNumberCommas } from './formatUtil'
 
 export type ChallengeRewardsInfo = {
@@ -258,4 +258,16 @@ export const isCooldownChallengeClaimable = (
     !isAudioMatchingChallenge(challenge.challenge_id) ||
     dayjs.utc().diff(dayjs.utc(challenge.created_at), 'day') >= 7
   )
+}
+/* Filter for only claimable challenges */
+export const getClaimableChallengeSpecifiers = (
+  specifiers: SpecifierWithAmount[],
+  undisbursedUserChallenges: UndisbursedUserChallenge[]
+) => {
+  return specifiers.filter((s) => {
+    const challenge = undisbursedUserChallenges.filter(
+      (c) => c.specifier === s.specifier
+    )[0] // specifiers are unique
+    return isCooldownChallengeClaimable(challenge)
+  })
 }

@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"mediorum/server"
 	"os"
 	"os/exec"
 	"time"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/server"
 )
 
 // !! metrics.go is WIP - will revisit !!

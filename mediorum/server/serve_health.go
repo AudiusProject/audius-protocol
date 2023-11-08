@@ -4,12 +4,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"mediorum/ethcontracts"
-	"mediorum/server/signature"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/AudiusProject/audius-protocol/mediorum/ethcontracts"
+	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
 	"github.com/gowebpki/jcs"
 	"github.com/labstack/echo/v4"
 )

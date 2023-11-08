@@ -3,10 +3,11 @@ package server
 import (
 	"context"
 	"errors"
-	"mediorum/cidutil"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/labstack/echo/v4"

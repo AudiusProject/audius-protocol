@@ -79,7 +79,7 @@ export const FeatureFlagOverrideModal = () => {
       setIsOpen(newValue)
       return newValue
     })
-  }, [hotkeyToggle])
+  }, [hotkeyToggle, setIsOpen])
 
   const closeModal = useCallback(() => {
     setHotkeyActive(false)
