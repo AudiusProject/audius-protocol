@@ -1,5 +1,3 @@
-import dayjs from 'dayjs'
-
 import { UndisbursedUserChallenge } from 'store/pages'
 
 import {
@@ -10,6 +8,7 @@ import {
   SpecifierWithAmount
 } from '../models'
 
+import dayjs from './dayjs'
 import { formatNumberCommas } from './formatUtil'
 
 export type ChallengeRewardsInfo = {
