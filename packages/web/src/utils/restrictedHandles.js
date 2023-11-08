@@ -1,4 +1,4 @@
-import { GENRES } from '@audius/common'
+import { GENRES } from '@audius/common/utils/genres'
 
 import { moodMap } from 'utils/Moods'
 import { orderedRoutes } from 'utils/route'

@@ -1,4 +1,5 @@
-import { ID, decodeHashId } from '@audius/common'
+import { ID } from '@audius/common/models/Identifiers'
+import { decodeHashId } from '@audius/common/utils/hashIds'
 import { matchPath } from 'react-router-dom'
 
 import { TRACK_ID_PAGE, TRACK_PAGE } from 'utils/route'

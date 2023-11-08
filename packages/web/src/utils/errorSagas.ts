@@ -1,4 +1,4 @@
-import { AdditionalErrorReportInfo } from '@audius/common'
+import { AdditionalErrorReportInfo } from '@audius/common/models/ErrorReporting'
 import { takeEvery, put } from 'redux-saga/effects'
 
 import * as errorActions from 'store/errors/actions'

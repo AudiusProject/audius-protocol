@@ -1,4 +1,4 @@
-import { MobileOS } from '@audius/common'
+import { MobileOS } from '@audius/common/models/OS'
 
 import { getMobileOS } from './clientUtil'
 import { IOS_APP_STORE_LINK, IOS_WEBSITE_STORE_LINK } from './route'

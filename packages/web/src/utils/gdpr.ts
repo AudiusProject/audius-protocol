@@ -1,4 +1,4 @@
-import { Nullable } from '@audius/common'
+import { Nullable } from '@audius/common/utils/typeUtils'
 
 import { getLocation } from 'services/Location'
 import { localStorage } from 'services/local-storage'
