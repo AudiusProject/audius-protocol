@@ -27,7 +27,8 @@ import { ErrorLevel } from 'models/ErrorReporting'
 import {
   SLIPPAGE_TOLERANCE_EXCEEDED_ERROR,
   jupiterInstance,
-  parseJupiterInstruction
+  parseJupiterInstruction,
+  quoteWithAnalytics
 } from 'services/Jupiter'
 import {
   MEMO_PROGRAM_ID,
@@ -265,7 +266,7 @@ function* doBuyCryptoViaSol({
       eventName: Name.BUY_CRYPTO_STARTED,
       mint,
       provider,
-      amount
+      requestedAmount: amount
     })
   )
 
@@ -325,16 +326,18 @@ function* doBuyCryptoViaSol({
     })
 
     // Get required SOL purchase amount via ExactOut + minRent.
-    const quoteResponse = yield* call(
-      [jupiterInstance, jupiterInstance.quoteGet],
-      {
+    const quoteResponse = yield* call(quoteWithAnalytics, {
+      quoteArgs: {
         inputMint: TOKEN_LISTING_MAP.SOL.address,
         outputMint: outputToken.address,
         amount: Math.ceil(amount * outputTokenLamports),
         swapMode: 'ExactOut',
         slippageBps: config.slippageBps
-      }
-    )
+      },
+      track,
+      make
+    })
+
     const connection = yield* call(getSolanaConnection, audiusBackendInstance)
     const minRent = yield* call(
       [connection, connection.getMinimumBalanceForRentExemption],
@@ -345,13 +348,18 @@ function* doBuyCryptoViaSol({
     const requiredAmount = Number(quoteResponse.otherAmountThreshold) + minRent
 
     // Get min stripe purchase amount using USDC as quote for $1
-    const minQuote = yield* call([jupiterInstance, jupiterInstance.quoteGet], {
-      inputMint: TOKEN_LISTING_MAP.SOL.address,
-      outputMint: TOKEN_LISTING_MAP.USDC.address,
-      amount: 1 * 10 ** TOKEN_LISTING_MAP.USDC.decimals,
-      swapMode: 'ExactOut',
-      slippageBps: config.slippageBps
+    const minQuote = yield* call(quoteWithAnalytics, {
+      quoteArgs: {
+        inputMint: TOKEN_LISTING_MAP.SOL.address,
+        outputMint: TOKEN_LISTING_MAP.USDC.address,
+        amount: 1 * 10 ** TOKEN_LISTING_MAP.USDC.decimals,
+        swapMode: 'ExactOut',
+        slippageBps: config.slippageBps
+      },
+      track,
+      make
     })
+
     const minAmount = Number(minQuote.otherAmountThreshold)
     if (requiredAmount < minAmount) {
       console.warn(
@@ -380,7 +388,7 @@ function* doBuyCryptoViaSol({
         eventName: Name.BUY_CRYPTO_ON_RAMP_OPENED,
         mint,
         provider,
-        amount
+        requestedAmount: amount
       })
     )
 
@@ -406,7 +414,7 @@ function* doBuyCryptoViaSol({
           eventName: Name.BUY_CRYPTO_ON_RAMP_CANCELED,
           mint,
           provider,
-          amount
+          requestedAmount: amount
         })
       )
       yield* put(buyCryptoCanceled())
@@ -422,7 +430,7 @@ function* doBuyCryptoViaSol({
           eventName: Name.BUY_CRYPTO_ON_RAMP_FAILURE,
           mint,
           provider,
-          amount,
+          requestedAmount: amount,
           error: errorString
         })
       )
@@ -442,7 +450,8 @@ function* doBuyCryptoViaSol({
     const localStorageState: BuyCryptoViaSolLocalStorageState = {
       amount,
       mint,
-      provider
+      provider,
+      createdAt: Date.now()
     }
     yield* call(
       [audiusLocalStorage, audiusLocalStorage.setJSONValue],
@@ -457,7 +466,7 @@ function* doBuyCryptoViaSol({
         eventName: Name.BUY_CRYPTO_ON_RAMP_SUCCESS,
         mint,
         provider,
-        amount
+        requestedAmount: amount
       })
     )
 
@@ -490,7 +499,7 @@ function* doBuyCryptoViaSol({
         eventName: Name.BUY_CRYPTO_ON_RAMP_CONFIRMED,
         mint,
         provider,
-        amount
+        requestedAmount: amount
       })
     )
 
@@ -553,16 +562,17 @@ function* doBuyCryptoViaSol({
       )
 
       // Get a quote for swapping the entire balance
-      const exactInQuote = yield* call(
-        [jupiterInstance, jupiterInstance.quoteGet],
-        {
+      const exactInQuote = yield* call(quoteWithAnalytics, {
+        quoteArgs: {
           inputMint: TOKEN_LISTING_MAP.SOL.address,
           outputMint: TOKEN_LISTING_MAP[mint.toUpperCase()].address,
           amount: salvageInputAmount,
           swapMode: 'ExactIn',
           slippageBps: config.slippageBps
-        }
-      )
+        },
+        track,
+        make
+      })
 
       // Do the swap. Just do it once, slippage shouldn't be a
       // concern since the quote is fresh and the tolerance is high.
@@ -624,7 +634,7 @@ function* doBuyCryptoViaSol({
         eventName: Name.BUY_CRYPTO_ON_RAMP_SUCCESS,
         mint,
         provider,
-        amount
+        requestedAmount: amount
       })
     )
     yield* put(buyCryptoSucceeded())
@@ -654,7 +664,7 @@ function* doBuyCryptoViaSol({
         eventName: Name.BUY_CRYPTO_ON_RAMP_FAILURE,
         mint,
         provider,
-        amount,
+        requestedAmount: amount,
         error: error.message
       })
     )
@@ -696,14 +706,20 @@ function* recoverBuyCryptoViaSolIfNecessary() {
     return
   }
 
-  const { mint, amount, provider } = localStorageState
+  // Pre-emptively clear while working
+  yield* call(
+    [audiusLocalStorage, audiusLocalStorage.removeItem],
+    BUY_CRYPTO_VIA_SOL_STATE_KEY
+  )
+
+  const { mint, amount, provider, createdAt } = localStorageState
   yield* call(
     track,
     make({
       eventName: Name.BUY_CRYPTO_RECOVERY_STARTED,
       mint,
       provider,
-      amount
+      requestedAmount: amount
     })
   )
 
@@ -759,16 +775,17 @@ function* recoverBuyCryptoViaSolIfNecessary() {
     })
 
     // Get a quote for swapping the entire balance
-    const exactInQuote = yield* call(
-      [jupiterInstance, jupiterInstance.quoteGet],
-      {
+    const exactInQuote = yield* call(quoteWithAnalytics, {
+      quoteArgs: {
         inputMint: TOKEN_LISTING_MAP.SOL.address,
         outputMint: TOKEN_LISTING_MAP.USDC.address,
         amount: salvageInputAmount,
         swapMode: 'ExactIn',
         slippageBps: config.slippageBps
-      }
-    )
+      },
+      track,
+      make
+    })
 
     // Do the swap. Just do it once, slippage shouldn't be a
     // concern since the quote is fresh and the tolerance is high.
@@ -810,12 +827,6 @@ function* recoverBuyCryptoViaSolIfNecessary() {
 
     // Check if it's enough
     if (outputTokenChange === undefined || outputTokenChange < expectedAmount) {
-      // Clear local storage - the SOL is gone, but we just didn't get enough
-      // of the output token
-      yield* call(
-        [audiusLocalStorage, audiusLocalStorage.removeItem],
-        BUY_CRYPTO_VIA_SOL_STATE_KEY
-      )
       throw new BuyCryptoError(
         BuyCryptoErrorCode.INSUFFICIENT_FUNDS_ERROR,
         `Failed to swap SOL to ${expectedAmount} ${mint.toUpperCase()}. Initial Swap Error: Unknown.`
@@ -830,14 +841,8 @@ function* recoverBuyCryptoViaSolIfNecessary() {
         eventName: Name.BUY_CRYPTO_RECOVERY_SUCCESS,
         mint,
         provider,
-        amount
+        requestedAmount: amount
       })
-    )
-
-    // Clear local storage
-    yield* call(
-      [audiusLocalStorage, audiusLocalStorage.removeItem],
-      BUY_CRYPTO_VIA_SOL_STATE_KEY
     )
   } catch (e) {
     const error =
@@ -845,13 +850,31 @@ function* recoverBuyCryptoViaSolIfNecessary() {
         ? e
         : new BuyCryptoError(BuyCryptoErrorCode.UNKNOWN, `${e}`)
 
+    // Replace the local storage key so we can try again later
+    // Don't retry if the SOL was swapped away already
+    if (error.code !== BuyCryptoErrorCode.INSUFFICIENT_FUNDS_ERROR) {
+      const ttlMs = 1000 * 60 * 60 * 2 // 2 hours (arbitrary)
+      const isExpired = Date.now() - createdAt > ttlMs
+      // Only continue to retry if within 2 hours from initial attempt
+      // This makes sure we don't wait for SOL to arrive forever
+      if (!isExpired) {
+        yield* call(
+          [audiusLocalStorage, audiusLocalStorage.setJSONValue],
+          BUY_CRYPTO_VIA_SOL_STATE_KEY,
+          localStorageState
+        )
+      } else {
+        console.warn('BuyCrypto recovery expired. Will not reattempt.')
+      }
+    }
+
     yield* call(
       track,
       make({
         eventName: Name.BUY_CRYPTO_RECOVERY_FAILURE,
         mint,
         provider,
-        amount,
+        requestedAmount: amount,
         error: error.message
       })
     )

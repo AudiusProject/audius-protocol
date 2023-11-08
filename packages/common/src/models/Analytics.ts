@@ -419,7 +419,11 @@ export enum Name {
   TIP_UNLOCKED_CHAT = 'Unlocked Chat: Tip',
   CHAT_REPORT_USER = 'Report User: Chat',
   CHAT_ENTRY_POINT = 'Chat Entry Point',
-  CHAT_WEBSOCKET_ERROR = 'Chat Websocket Error'
+  CHAT_WEBSOCKET_ERROR = 'Chat Websocket Error',
+
+  // Jupiter
+  JUPITER_QUOTE_REQUEST = 'Jupiter: Quote Request',
+  JUPITER_QUOTE_RESPONSE = 'Jupiter: Quote Response'
 }
 
 type PageView = {
@@ -1708,7 +1712,7 @@ type BuyCryptoEvent = {
     | Name.BUY_CRYPTO_RECOVERY_SUCCESS
 
   provider: string
-  amount: number
+  requestedAmount: number
   mint: MintName
   error?: string
 }
@@ -1972,6 +1976,27 @@ type ChatEntryPoint = {
 type ChatWebsocketError = {
   eventName: Name.CHAT_WEBSOCKET_ERROR
   code?: string
+}
+
+// Jupiter
+type JupiterQuoteRequest = {
+  eventName: Name.JUPITER_QUOTE_REQUEST
+  inputMint: string
+  outputMint: string
+  swapMode?: string
+  slippageBps?: number
+  amount: number
+}
+
+type JupiterQuoteResponse = {
+  eventName: Name.JUPITER_QUOTE_RESPONSE
+  inputMint: string
+  outputMint: string
+  swapMode: string
+  slippageBps: number
+  otherAmountThreshold: number
+  inAmount: number
+  outAmount: number
 }
 
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
@@ -2240,3 +2265,5 @@ export type AllTrackingEvents =
   | DeveloperAppDeleteError
   | ChatEntryPoint
   | ChatWebsocketError
+  | JupiterQuoteResponse
+  | JupiterQuoteRequest
