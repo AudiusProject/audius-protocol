@@ -22,10 +22,10 @@ export const PlainButton = forwardRef<HTMLButtonElement, PlainButtonProps>(
 
     // Size Styles
     const defaultStyles: CSSObject = {
-      gap: spacing.unit1,
+      gap: spacing.xs,
       height: spacing.unit4,
       fontSize: typography.size.s,
-      lineHeight: spacing.unit4
+      lineHeight: typography.lineHeight.s
     }
     const defaultIconStyles: CSSObject = {
       width: spacing.unit4,
@@ -33,10 +33,10 @@ export const PlainButton = forwardRef<HTMLButtonElement, PlainButtonProps>(
     }
 
     const largeStyles: CSSObject = {
-      gap: spacing.unit2,
+      gap: spacing.s,
       height: spacing.unit5,
       fontSize: typography.size.l,
-      lineHeight: spacing.unit5
+      lineHeight: typography.lineHeight.m
     }
     const largeIconStyles: CSSObject = {
       width: spacing.unit5,

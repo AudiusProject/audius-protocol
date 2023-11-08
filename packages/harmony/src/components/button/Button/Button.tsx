@@ -39,12 +39,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     // Size Styles
     const smallStyles: CSSObject = {
-      gap: spacing.unit1,
+      gap: spacing.xs,
       height: spacing.unit8,
-      paddingInline: spacing.unit3,
+      paddingInline: spacing.m,
       fontSize: typography.size.s,
       fontWeight: typography.weight.bold,
-      lineHeight: spacing.unit4,
+      lineHeight: typography.lineHeight.s,
       textTransform: 'capitalize'
     }
     const smallIconStyles: CSSObject = {
@@ -54,13 +54,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     const defaultStyles: CSSObject = {
-      gap: spacing.unit2,
+      gap: spacing.s,
       height: spacing.unit12,
-      paddingInline: spacing.unit6,
+      paddingInline: spacing.xl,
       fontSize: typography.size.l,
       fontWeight: typography.weight.bold,
-      // TODO: See if this can be done with theme vars
-      lineHeight: 'calc(4.5 * var(--harmony-unit))',
+      lineHeight: typography.lineHeight.l,
       textTransform: 'capitalize'
     }
     const defaultIconStyles: CSSObject = {
@@ -70,12 +69,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     const largeStyles: CSSObject = {
-      gap: spacing.unit2,
+      gap: spacing.s,
       height: spacing.unit16,
-      paddingInline: spacing.unit6,
+      paddingInline: spacing.xl,
       fontSize: typography.size.xl,
       fontWeight: typography.weight.bold,
-      lineHeight: spacing.unit4,
+      lineHeight: typography.lineHeight.m,
       letterSpacing: '0.25px',
       textTransform: 'uppercase'
     }
@@ -86,22 +85,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     // Variant Styles
-    const primaryHoverStyles: CSSObject = {
-      '--overlay-color': '255, 255, 255',
-      '--overlay-opacity': 0.2,
-      boxShadow: shadows.mid
-    }
-    const primaryActiveStyles: CSSObject = {
-      '--overlay-color': '0, 0, 0',
-      '--overlay-opacity': 0.2,
-      boxShadow: 'none'
-    }
     const primaryStyles: CSSObject = {
-      '&:hover': primaryHoverStyles,
-      '&:active': primaryActiveStyles,
-
-      ...(_isHovered && primaryHoverStyles),
-      ...(_isPressed && primaryActiveStyles),
       ...(isDisabled && {
         backgroundColor: themeColors.neutral.n150,
         boxShadow: 'none'
@@ -109,16 +93,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     const secondaryHoverStyles: CSSObject = {
-      '--overlay-color': '255, 255, 255',
-      '--overlay-opacity': 0.2,
       backgroundColor: themeColors.primary.primary,
-      color: themeColors.static.white,
-      boxShadow: shadows.mid
-    }
-    const secondaryActiveStyles: CSSObject = {
-      ...secondaryHoverStyles,
-      '--overlay-color': '0, 0, 0',
-      boxShadow: 'none'
+      color: themeColors.static.white
     }
     const secondaryStyles: CSSObject = {
       backgroundColor: 'transparent',
@@ -126,10 +102,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       boxShadow: `0 0 0 1px inset ${themeColors.border.strong}`,
 
       '&:hover': secondaryHoverStyles,
-      '&:active': secondaryActiveStyles,
+      '&:active': secondaryHoverStyles,
 
-      ...(_isHovered && secondaryHoverStyles),
-      ...(_isPressed && secondaryActiveStyles),
+      ...((_isHovered || _isPressed) && secondaryHoverStyles),
       ...(isDisabled && {
         backgroundColor: themeColors.neutral.n150,
         color: themeColors.static.white,
@@ -147,7 +122,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       boxShadow: `0 0 0 1px inset ${themeColors.border.strong}`
     }
     const tertiaryStyles: CSSObject = {
-      // Don't use opacity prop as it affects the text too
       backgroundColor:
         type === 'dark' ? 'rgba(50, 51, 77, 0.6)' : 'rgb(255, 255, 255, 0.85)',
       color: themeColors.text.default,
@@ -165,16 +139,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     const destructiveHoverStyles: CSSObject = {
-      '--overlay-color': '255, 255, 255',
-      '--overlay-opacity': 0.2,
       backgroundColor: themeColors.special.red,
-      color: themeColors.static.white,
-      boxShadow: shadows.mid
-    }
-    const destructiveActiveStyles: CSSObject = {
-      ...destructiveHoverStyles,
-      '--overlay-color': '0, 0, 0',
-      boxShadow: 'none'
+      color: themeColors.static.white
     }
     const destructiveStyles: CSSObject = {
       backgroundColor: 'transparent',
@@ -182,35 +148,34 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       boxShadow: `0 0 0 1px inset ${themeColors.special.red}`,
 
       '&:hover': destructiveHoverStyles,
-      '&:active': destructiveActiveStyles,
+      '&:active': destructiveHoverStyles,
 
-      ...(_isHovered && destructiveHoverStyles),
-      ...(_isPressed && destructiveActiveStyles),
+      ...((_isHovered || _isPressed) && destructiveHoverStyles),
       ...(isDisabled && {
         opacity: 0.45
       })
     }
 
+    const hoverStyles: CSSObject = {
+      boxShadow: shadows.mid,
+      '::before': {
+        backgroundColor: 'rgba(255, 255, 255, 0.2)'
+      }
+    }
+    const activeStyles: CSSObject = {
+      boxShadow: 'none',
+      '&::before': {
+        backgroundColor: 'rgba(0, 0, 0, 0.2)'
+      }
+    }
+
     const buttonCss: CSSObject = {
-      '--overlay-color': '0, 0, 0',
-      '--overlay-opacity': 0,
       backgroundColor: themeColors.primary.primary,
       color: themeColors.static.white,
       boxSizing: 'border-box',
       border: 'none',
       borderRadius: cornerRadius.s,
       boxShadow: shadows.near,
-
-      '&::before': {
-        zIndex: -1,
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(var(--overlay-color), var(--overlay-opacity))'
-      },
 
       ...(size === ButtonSize.SMALL
         ? smallStyles
@@ -224,7 +189,25 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ? tertiaryStyles
         : variant === ButtonType.DESTRUCTIVE
         ? destructiveStyles
-        : primaryStyles)
+        : primaryStyles),
+
+      '::before': {
+        zIndex: -1,
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0)'
+      },
+
+      ...(variant !== ButtonType.TERTIARY && {
+        ':hover': hoverStyles,
+        ':active': activeStyles,
+        ...(_isHovered && hoverStyles),
+        ...(_isPressed && activeStyles)
+      })
     }
 
     const iconCss =
@@ -234,14 +217,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ? largeIconStyles
         : defaultIconStyles
 
-    const style: CSSCustomProperties = {
-      backgroundColor:
-        !isDisabled && hexColor
-          ? hexColor
-          : color
-          ? `var(${toCSSVariableName(color)})`
-          : undefined
-    }
+    const style: CSSCustomProperties =
+      variant === ButtonType.PRIMARY && !isDisabled
+        ? {
+            backgroundColor:
+              hexColor ||
+              (color ? `var(${toCSSVariableName(color)})` : undefined)
+          }
+        : {}
 
     return (
       <BaseButton

@@ -31,7 +31,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       _isPressed,
       ...other
     } = props
-    const { motion } = useTheme()
+    const { motion, typography } = useTheme()
     const { isMatch: isTextHidden } = useMediaQueryListener(
       `(max-width: ${widthToHideText}px)`
     )
@@ -48,7 +48,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
     const ButtonComponent = asChild ? Slot : 'button'
 
     const buttonComponentCss: CSSObject = {
-      fontFamily: 'var(--harmony-font-family)',
+      fontFamily: typography.font,
       alignItems: 'center',
       boxSizing: 'border-box',
       cursor: 'pointer',
@@ -96,7 +96,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
 
     return (
       <ButtonComponent
-        css={{ ...buttonComponentCss, ...styles.button }}
+        css={[buttonComponentCss, styles.button]}
         disabled={disabled || isLoading}
         ref={ref}
         type={asChild ? undefined : 'button'}
@@ -110,11 +110,11 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
         {isLoading ? (
           <LoadingSpinner data-chromatic='ignore' css={styles.icon} />
         ) : LeftIconComponent ? (
-          <LeftIconComponent css={{ ...iconCss, ...styles.icon }} />
+          <LeftIconComponent css={[iconCss, styles.icon]} />
         ) : null}
         {!isTextHidden ? <Slottable>{children}</Slottable> : null}
         {RightIconComponent ? (
-          <RightIconComponent css={{ ...iconCss, ...styles.icon }} />
+          <RightIconComponent css={[iconCss, styles.icon]} />
         ) : null}
       </ButtonComponent>
     )

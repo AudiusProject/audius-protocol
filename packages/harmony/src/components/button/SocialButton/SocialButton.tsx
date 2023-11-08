@@ -22,11 +22,11 @@ export type SocialButtonProps = Omit<ButtonProps, 'aria-label'> & {
 const getButtonLogo = (type: SocialMedia) => {
   switch (type) {
     case 'instagram':
-      return <IconInstagram size='l' />
+      return <IconInstagram color='staticWhite' size='l' />
     case 'tiktok':
-      return <IconTikTok size='l' />
+      return <IconTikTok color='staticWhite' size='l' />
     case 'twitter':
-      return <IconTwitter size='l' />
+      return <IconTwitter color='staticWhite' size='l' />
     default:
       return undefined
   }
@@ -34,8 +34,6 @@ const getButtonLogo = (type: SocialMedia) => {
 
 const getSocialButtonProps = (type: SocialMedia): ButtonProps => {
   switch (type) {
-    // case 'instagram':
-    //   return {}
     case 'tiktok':
       return { hexColor: '#fe2c55' }
     case 'twitter':
@@ -58,14 +56,10 @@ export const SocialButton = (props: SocialButtonProps) => {
     <Button
       {...socialButtonProps}
       {...rest}
-      css={({ color }) => ({
+      css={{
         border: 'transparent',
-        ...(socialType === 'instagram' && instagramBackgroundCss),
-
-        '& svg path': {
-          fill: color.static.white
-        }
-      })}
+        ...(socialType === 'instagram' && instagramBackgroundCss)
+      }}
     >
       {getButtonLogo(socialType)}
     </Button>
