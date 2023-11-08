@@ -5,8 +5,7 @@ import {
   useCallback,
   ReactNode,
   useRef,
-  MouseEventHandler,
-  Ref
+  MouseEventHandler
 } from 'react'
 
 import {
