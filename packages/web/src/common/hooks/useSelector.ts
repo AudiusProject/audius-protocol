@@ -1,4 +1,4 @@
-import { CommonState } from '@audius/common'
+import { CommonState } from '@audius/common/store/commonStore'
 import {
   useSelector as untypedUseSelector,
   TypedUseSelectorHook

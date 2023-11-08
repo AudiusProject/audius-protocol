@@ -1,42 +1,22 @@
+import { ErrorLevel } from '@audius/common/models/ErrorReporting'
+import { Kind } from '@audius/common/models/Kind'
 import {
-  Kind,
-  accountSelectors,
-  cacheActions,
-  profilePageActions,
-  accountActions,
   recordIP,
-  solanaSelectors,
-  createUserBankIfNeeded,
-  getContext,
-  FeatureFlags,
-  chatActions,
-  ErrorLevel
-} from '@audius/common'
-import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
-
-import { identify } from 'common/store/analytics/actions'
-import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
-import { reportToSentry } from 'store/errors/reportToSentry'
-import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
-
-import { retrieveCollections } from '../cache/collections/utils'
-
-const { fetchProfile } = profilePageActions
-const { getFeePayer } = solanaSelectors
-const { fetchBlockees, fetchBlockers } = chatActions
-
-const {
+  createUserBankIfNeeded
+} from '@audius/common/services/audius-backend'
+import { FeatureFlags } from '@audius/common/services/remote-config'
+import {
   getUserId,
   getUserHandle,
   getAccountUser,
   getAccountSavedPlaylistIds,
   getAccountOwnedPlaylistIds,
   getAccountToCache
-} = accountSelectors
-
-const {
+} from '@audius/common/store/account/selectors'
+import {
   signedIn,
   showPushNotificationConfirmation,
+  fetchAccountRequested,
   fetchAccountSucceeded,
   fetchAccountFailed,
   fetchAccount,
@@ -46,7 +26,22 @@ const {
   tikTokLogin,
   fetchSavedPlaylists,
   addAccountPlaylist
-} = accountActions
+} from '@audius/common/store/account/slice'
+import { add, update } from '@audius/common/store/cache/actions'
+import { getContext } from '@audius/common/store/effects'
+import { actions as chatActions } from '@audius/common/store/pages/chat/slice'
+import { fetchProfile } from '@audius/common/store/pages/profile/actions'
+import { getFeePayer } from '@audius/common/store/solana/selectors'
+import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
+
+import { identify } from 'common/store/analytics/actions'
+import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
+import { reportToSentry } from 'store/errors/reportToSentry'
+import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
+
+import { retrieveCollections } from '../cache/collections/utils'
+
+const { fetchBlockees, fetchBlockers } = chatActions
 
 const IP_STORAGE_KEY = 'user-ip-timestamp'
 
@@ -136,7 +131,7 @@ export function* fetchAccountAsync({ isSignUp = false }) {
   const isElectron = yield getContext('isElectron')
   const fingerprintClient = yield getContext('fingerprintClient')
 
-  yield put(accountActions.fetchAccountRequested())
+  yield put(fetchAccountRequested())
 
   const account = yield call(audiusBackendInstance.getAccount)
   if (!account) {
@@ -181,7 +176,7 @@ export function* fetchAccountAsync({ isSignUp = false }) {
 export function* fetchLocalAccountAsync() {
   const localStorage = yield getContext('localStorage')
 
-  yield put(accountActions.fetchAccountRequested())
+  yield put(fetchAccountRequested())
 
   const cachedAccount = yield call([localStorage, 'getAudiusAccount'])
   const cachedAccountUser = yield call([localStorage, 'getAudiusAccountUser'])
@@ -204,7 +199,7 @@ function* cacheAccount(account) {
   const collections = account.playlists || []
 
   yield put(
-    cacheActions.add(Kind.USERS, [
+    add(Kind.USERS, [
       { id: account.user_id, uid: 'USER_ACCOUNT', metadata: account }
     ])
   )
@@ -254,9 +249,7 @@ function* associateTwitterAccount(action) {
     const { verified } = profile
     if (!account.is_verified && verified) {
       yield put(
-        cacheActions.update(Kind.USERS, [
-          { id: userId, metadata: { is_verified: true } }
-        ])
+        update(Kind.USERS, [{ id: userId, metadata: { is_verified: true } }])
       )
     }
   } catch (err) {
@@ -281,9 +274,7 @@ function* associateInstagramAccount(action) {
     const { is_verified: verified } = profile
     if (!account.is_verified && verified) {
       yield put(
-        cacheActions.update(Kind.USERS, [
-          { id: userId, metadata: { is_verified: true } }
-        ])
+        update(Kind.USERS, [{ id: userId, metadata: { is_verified: true } }])
       )
     }
   } catch (err) {
@@ -308,9 +299,7 @@ function* associateTikTokAccount(action) {
     const { is_verified: verified } = profile
     if (!account.is_verified && verified) {
       yield put(
-        cacheActions.update(Kind.USERS, [
-          { id: userId, metadata: { is_verified: true } }
-        ])
+        update(Kind.USERS, [{ id: userId, metadata: { is_verified: true } }])
       )
     }
   } catch (err) {
@@ -343,7 +332,7 @@ function* watchFetchAccount() {
 }
 
 function* watchFetchAccountFailed() {
-  yield takeEvery(accountActions.fetchAccountFailed.type, function* (action) {
+  yield takeEvery(fetchAccountFailed.type, function* (action) {
     const userId = yield select(getUserId)
     if (userId) {
       yield call(reportToSentry, {

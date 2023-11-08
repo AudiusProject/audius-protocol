@@ -1,12 +1,12 @@
 // @refresh reset
 import { useState, useMemo } from 'react'
 
+import { AudiusQueryContext } from '@audius/common/audius-query/AudiusQueryContext'
 import {
-  AudiusQueryContext,
-  accountSelectors,
   createAudiusTrpcClient,
   trpc
-} from '@audius/common'
+} from '@audius/common/services/trpc-client'
+import { getUserId } from '@audius/common/store/account/selectors'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ConnectedRouter } from 'connected-react-router'
 import { Provider, useSelector } from 'react-redux'
@@ -35,7 +35,7 @@ import './index.css'
 import './services/webVitals'
 
 const AudiusTrpcProvider = ({ children }: { children: React.ReactNode }) => {
-  const currentUserId = useSelector(accountSelectors.getUserId)
+  const currentUserId = useSelector(getUserId)
   const [queryClient] = useState(() => new QueryClient())
   const trpcClient = useMemo(
     () => createAudiusTrpcClient(currentUserId),
