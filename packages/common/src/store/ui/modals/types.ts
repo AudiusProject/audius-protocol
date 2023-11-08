@@ -1,3 +1,4 @@
+import { ModalSource } from 'models/Analytics'
 import { CreateChatModalState } from './create-chat-modal'
 import { BaseModalState } from './createModal'
 import { EditPlaylistModalState } from './edit-playlist-modal'
@@ -77,3 +78,13 @@ export type StatefulModalsState = {
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState
+
+export type TrackModalOpenedActionPayload = {
+  name: string
+  source: ModalSource
+  trackingData?: Record<string, any>
+}
+
+export type TrackModalClosedActionPayload = {
+  name: string
+}
