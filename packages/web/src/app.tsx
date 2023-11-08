@@ -8,6 +8,7 @@ import {
   trpc
 } from '@audius/common'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { ConnectedRouter } from 'connected-react-router'
 import { Provider, useSelector } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
@@ -61,7 +62,8 @@ const AudiusApp = () => {
               dispatch: store.dispatch,
               reportToSentry,
               env,
-              fetch
+              fetch,
+              remoteConfigInstance
             }}
           >
             <ConnectedRouter history={history}>

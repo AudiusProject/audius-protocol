@@ -18,7 +18,8 @@ import {
   toastActions,
   confirmerActions,
   confirmTransaction,
-  IntKeys
+  IntKeys,
+  getHandleReservedStatus
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { isEmpty } from 'lodash'
@@ -51,7 +52,6 @@ import * as signOnActions from './actions'
 import { watchSignOnError } from './errorSagas'
 import { getRouteOnCompletion, getSignOn } from './selectors'
 import { FollowArtistsCategory, Pages } from './types'
-import { checkHandle } from './verifiedChecker'
 
 const { requestPushNotificationPermissions } = settingsPageActions
 const { getFeePayer } = solanaSelectors
@@ -279,12 +279,12 @@ function* validateHandle(action) {
         : instagramResult?.data
       const tikTokUser = tiktokResult?.timeout ? null : tiktokResult?.data
 
-      const handleCheckStatus = checkHandle(
+      const handleCheckStatus = getHandleReservedStatus({
         isOauthVerified,
-        twitterUserQuery?.user?.profile?.[0] ?? null,
-        instagramUser || null,
-        tikTokUser || null
-      )
+        lookedUpTwitterUser: twitterUserQuery?.user?.profile?.[0] ?? null,
+        lookedUpInstagramUser: instagramUser || null,
+        lookedUpTikTokUser: tikTokUser || null
+      })
 
       if (handleCheckStatus !== 'notReserved') {
         yield put(signOnActions.validateHandleFailed(handleCheckStatus))
