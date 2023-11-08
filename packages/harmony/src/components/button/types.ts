@@ -1,5 +1,7 @@
 import type { ComponentPropsWithoutRef } from 'react'
 
+import type { CSSObject } from '@emotion/react'
+
 import type { SpecialColors } from 'foundations/color'
 
 import type { IconComponent } from '../icon'
@@ -18,9 +20,8 @@ export enum ButtonSize {
 }
 
 type BaseButtonStyles = {
-  button: string
-  icon: string
-  spinner: string
+  button: CSSObject
+  icon: CSSObject
 }
 
 export type HTMLButtonProps = ComponentPropsWithoutRef<'button'>
