@@ -451,7 +451,8 @@ function* doBuyCryptoViaSol({
       amount,
       mint,
       provider,
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      intendedLamports: Number(quoteResponse.otherAmountThreshold)
     }
     yield* call(
       [audiusLocalStorage, audiusLocalStorage.setJSONValue],
@@ -712,7 +713,8 @@ function* recoverBuyCryptoViaSolIfNecessary() {
     BUY_CRYPTO_VIA_SOL_STATE_KEY
   )
 
-  const { mint, amount, provider, createdAt } = localStorageState
+  const { mint, amount, provider, createdAt, intendedLamports } =
+    localStorageState
   yield* call(
     track,
     make({
@@ -757,7 +759,9 @@ function* recoverBuyCryptoViaSolIfNecessary() {
       [connection, connection.getBalance],
       wallet.publicKey
     )
-    const salvageInputAmount = balance - minRent
+    // Cap the swappable salvage amount by the intended lamports, in case
+    // there's additional SOL for a different reason (eg. old BuyAudio recovery)
+    const salvageInputAmount = Math.min(balance - minRent, intendedLamports)
 
     // Don't do anything if we don't have any SOL.
     // Don't clear local storage either - maybe the SOL hasn't gotten to us yet?

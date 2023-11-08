@@ -51,4 +51,5 @@ export type BuyCryptoViaSolLocalStorageState = {
   mint: MintName
   provider: OnRampProvider
   createdAt: number
+  intendedLamports: number
 }
