@@ -6,6 +6,7 @@ import { MonitorPayload, ServiceMonitorType } from 'models/Services'
 import { TimeRange } from 'models/TimeRange'
 import { SolanaWalletAddress, StringAudio, WalletAddress } from 'models/Wallet'
 import { MintName } from 'services/index'
+import { Prettify } from 'utils/typeUtils'
 
 import { Chain } from './Chain'
 import { PlaylistLibraryKind } from './PlaylistLibrary'
@@ -1714,13 +1715,15 @@ type BuyCryptoEvent = {
   error?: string
 }
 
-type BuyCryptoRecoveryEvent = {
-  eventName:
-    | Name.BUY_CRYPTO_RECOVERY_STARTED
-    | Name.BUY_CRYPTO_RECOVERY_FAILURE
-    | Name.BUY_CRYPTO_RECOVERY_SUCCESS
-  intendedSOL: number
-} & Omit<BuyCryptoEvent, 'eventName'>
+type BuyCryptoRecoveryEvent = Prettify<
+  {
+    eventName:
+      | Name.BUY_CRYPTO_RECOVERY_STARTED
+      | Name.BUY_CRYPTO_RECOVERY_FAILURE
+      | Name.BUY_CRYPTO_RECOVERY_SUCCESS
+    intendedSOL: number
+  } & Omit<BuyCryptoEvent, 'eventName'>
+>
 
 // Withdraw USDC
 
