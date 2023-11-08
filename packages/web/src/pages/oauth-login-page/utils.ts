@@ -21,7 +21,8 @@ export const getIsRedirectValid = ({
     if (parsedRedirectUri === 'postmessage') {
       return true
     }
-    const { hash, username, password, pathname, hostname, protocol } = parsedRedirectUri
+    const { hash, username, password, pathname, hostname, protocol } =
+      parsedRedirectUri
     // Ensure that the redirect_uri protocol is http or https
     // IMPORTANT: If this validation is not done, users can
     // use the redirect_uri to execute arbitrary code on the host
