@@ -5,6 +5,9 @@ import type {
   ShadowOptions
 } from 'foundations'
 
+/**
+ * An elevated container which stands out from the background.
+ */
 export type PaperProps = {
   /**
    * Background Color
