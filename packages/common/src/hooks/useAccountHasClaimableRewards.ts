@@ -1,4 +1,4 @@
-import { ChallengeRewardID } from '../models'
+import { ChallengeName, ChallengeRewardID } from '../models'
 import { getOptimisticUserChallenges } from '../store/challenges/selectors'
 
 import { useProxySelector } from './useProxySelector'
@@ -13,7 +13,9 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   'profile-completion',
   'referred',
   'send-first-tip',
-  'first-playlist'
+  'first-playlist',
+  ChallengeName.AudioMatchingSell, // $AUDIO matching seller
+  ChallengeName.AudioMatchingBuy // $AUDIO matching buyer
 ])
 
 /** Pulls rewards from remoteconfig */
