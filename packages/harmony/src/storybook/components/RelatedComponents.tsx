@@ -79,7 +79,7 @@ const relatedComponentsMap = {
     ),
     description:
       'A separator between two elements, usually consisting of a horizontal  or vertical line.',
-    link: 'components-layout-divider--documentation'
+    link: 'layout-divider--documentation'
   },
   Avatar: {
     title: 'Avatar',
@@ -113,7 +113,7 @@ const relatedComponentsMap = {
     ),
     description:
       'A simple layout component which adds pre-defined margin, padidng, and borders',
-    link: 'components-layout-box--documentation'
+    link: 'layout-box--documentation'
   },
   Flex: {
     component: (
