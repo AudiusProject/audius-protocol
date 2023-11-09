@@ -92,6 +92,9 @@ web-distribute:
     install-license:
       default: false
       type: boolean
+    environment:
+      default: 'prod'
+      type: string
   steps:
     - checkout
     - attach_workspace:
@@ -99,6 +102,24 @@ web-distribute:
     - run:
         name: Install dependencies
         command: rm -rf node_modules && SKIP_POD_INSTALL=true npm ci
+    - run:
+        name: Verify version
+        command: |
+          cd packages/web
+          environment="<< parameters.environment >>"
+          if [ "$environment" = "prod" ]; then
+            host="audius.co"
+          else
+            host="staging.audius.co"
+          fi
+
+          live_version=$(curl -s https://s3.us-west-1.amazonaws.com/$host/package.json | jq -r '.version')
+          deploying_version=$(jq -r '.version' package.json)
+
+          version_is_ok=$(npx semver -r ">=$live_version" $deploying_version)
+          if [ -z "$version_is_ok" ]; then
+            circleci-agent step halt
+          fi
     - when:
         condition: << parameters.install-license >>
         steps:
@@ -149,6 +170,17 @@ web-deploy-cloudflare:
     #       cd packages/web
     #       mkdir -p sourcemaps/static/js
     #       mv build-<< parameters.build-type >>/static/js/*.map sourcemaps/static/js
+    - run:
+        name: Verify version
+        command: |
+          cd packages/web
+          live_version=$(curl -s https://audius.co/package.json | jq -r '.version')
+          deploying_version=$(jq -r '.version' package.json)
+
+          version_is_ok=$(npx semver -r ">=$live_version" $deploying_version)
+          if [ -z "$version_is_ok" ]; then
+            circleci-agent step halt
+          fi
     - run:
         name: Set up workers site
         command: |
