@@ -1,15 +1,21 @@
 import { Meta, Title } from '@storybook/blocks'
 
-import { Flex } from 'components'
+import { Flex, Divider } from 'components'
 import * as SpecialIcons from 'icons/specialIcons'
+import { Heading } from 'storybook/components'
 
 <Meta title='Icons/Special Icons' />
 
 <Title>Special Icons</Title>
 
+<Heading>
 ### Overview
 
 Speciality icons differ from utility icons in that they may have a background shape/colors, consist of multiple vector layers, and used more sparingly across the app.
+
+</Heading>
+
+<Divider />
 
 ## Two-Tone / Special Styling
 
@@ -23,6 +29,8 @@ Speciality icons differ from utility icons in that they may have a background sh
   <SpecialIcons.IconPlaybackPause />
 </Flex>
 
+<Divider />
+
 ## VIP Tier Badges
 
 <Flex rowGap='xl' columnGap='2xl' alignItems='center'>
@@ -31,6 +39,8 @@ Speciality icons differ from utility icons in that they may have a background sh
   <SpecialIcons.IconTokenPlatinum />
   <SpecialIcons.IconTokenSilver />
 </Flex>
+
+<Divider />
 
 ## File Types
 
@@ -69,58 +79,62 @@ Speciality icons differ from utility icons in that they may have a background sh
   <SpecialIcons.IconFileXWMA />
 </Flex>
 
+<Divider />
+
 ## Creative Commons
 
-### Individual Icons
-
-<Flex gap='l'>
-  <SpecialIcons.IconCcBy />
-  <SpecialIcons.IconCcCC />
-  <SpecialIcons.IconCcNC_EU />
-  <SpecialIcons.IconCcNC_JP />
-  <SpecialIcons.IconCcNC />
-  <SpecialIcons.IconCcND />
-  <SpecialIcons.IconCcPD />
-  <SpecialIcons.IconCcRemix />
-  <SpecialIcons.IconCcSA />
-  <SpecialIcons.IconCcSampling />
-  <SpecialIcons.IconCcSamplingPlus />
-  <SpecialIcons.IconCcShare />
-  <SpecialIcons.IconCcZero />
+<Flex direction='column' gap='l'>
+  ### Individual Icons
+  <Flex gap='l'>
+    <SpecialIcons.IconCcBy />
+    <SpecialIcons.IconCcCC />
+    <SpecialIcons.IconCcNC_EU />
+    <SpecialIcons.IconCcNC_JP />
+    <SpecialIcons.IconCcNC />
+    <SpecialIcons.IconCcND />
+    <SpecialIcons.IconCcPD />
+    <SpecialIcons.IconCcRemix />
+    <SpecialIcons.IconCcSA />
+    <SpecialIcons.IconCcSampling />
+    <SpecialIcons.IconCcSamplingPlus />
+    <SpecialIcons.IconCcShare />
+    <SpecialIcons.IconCcZero />
+  </Flex>
 </Flex>
 
-### Lockups
-
-<Flex columnGap='2xl' rowGap='l' wrap='wrap'>
-  <Flex gap='xs'>
-    <SpecialIcons.IconCcCC />
-    <SpecialIcons.IconCcBy />
-  </Flex>
-  <Flex gap='xs'>
-    <SpecialIcons.IconCcCC />
-    <SpecialIcons.IconCcBy />
-    <SpecialIcons.IconCcSA />
-  </Flex>
-  <Flex gap='xs'>
-    <SpecialIcons.IconCcCC />
-    <SpecialIcons.IconCcBy />
-    <SpecialIcons.IconCcNC />
-  </Flex>
-  <Flex gap='xs'>
-    <SpecialIcons.IconCcCC />
-    <SpecialIcons.IconCcBy />
-    <SpecialIcons.IconCcNC />
-    <SpecialIcons.IconCcSA />
-  </Flex>
-  <Flex gap='xs'>
-    <SpecialIcons.IconCcCC />
-    <SpecialIcons.IconCcBy />
-    <SpecialIcons.IconCcND />
-  </Flex>
-  <Flex gap='xs'>
-    <SpecialIcons.IconCcCC />
-    <SpecialIcons.IconCcBy />
-    <SpecialIcons.IconCcNC />
-    <SpecialIcons.IconCcND />
+<Flex direction='column' gap='l'>
+  ### Lockups
+  <Flex columnGap='2xl' rowGap='l' wrap='wrap'>
+    <Flex gap='xs'>
+      <SpecialIcons.IconCcCC />
+      <SpecialIcons.IconCcBy />
+    </Flex>
+    <Flex gap='xs'>
+      <SpecialIcons.IconCcCC />
+      <SpecialIcons.IconCcBy />
+      <SpecialIcons.IconCcSA />
+    </Flex>
+    <Flex gap='xs'>
+      <SpecialIcons.IconCcCC />
+      <SpecialIcons.IconCcBy />
+      <SpecialIcons.IconCcNC />
+    </Flex>
+    <Flex gap='xs'>
+      <SpecialIcons.IconCcCC />
+      <SpecialIcons.IconCcBy />
+      <SpecialIcons.IconCcNC />
+      <SpecialIcons.IconCcSA />
+    </Flex>
+    <Flex gap='xs'>
+      <SpecialIcons.IconCcCC />
+      <SpecialIcons.IconCcBy />
+      <SpecialIcons.IconCcND />
+    </Flex>
+    <Flex gap='xs'>
+      <SpecialIcons.IconCcCC />
+      <SpecialIcons.IconCcBy />
+      <SpecialIcons.IconCcNC />
+      <SpecialIcons.IconCcND />
+    </Flex>
   </Flex>
 </Flex>
