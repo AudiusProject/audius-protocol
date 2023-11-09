@@ -325,6 +325,16 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	healthz.Any("*", echo.WrapHandler(healthzProxy))
 
 	// -------------------
+	// reverse proxy /up to uptime container
+	uptime := routes.Group("/up")
+	uptimeUrl, err := url.Parse("http://uptime:1996")
+	if err != nil {
+		log.Fatal("Invalid uptime URL: ", err)
+	}
+	uptimeProxy := httputil.NewSingleHostReverseProxy(uptimeUrl)
+	uptime.Any("*", echo.WrapHandler(uptimeProxy))
+
+	// -------------------
 	// internal
 	internalApi := routes.Group("/internal")
 
