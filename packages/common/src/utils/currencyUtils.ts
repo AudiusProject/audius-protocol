@@ -1,4 +1,4 @@
-/**
+/*
  * This file contains utilities necessary for working with the variety of
  * currencies within the Audius ecosystem, both for formatting and converting.
  *
@@ -21,12 +21,11 @@
  *  Used for purchasing content.
  */
 
-export const AUDIO_DECIMALS = 18
-export const WAUDIO_DECIMALS = 8
-export const SOL_DECIMALS = 9
-export const USDC_DECIMALS = 6
-export const CENT_DECIMALS = 4
-
+/**
+ * A type that represents a cryptocurrency amount as an object with two parts:
+ * - The full Wei amount as a bigint
+ * - The number of decimals
+ */
 export type CurrencyAmount = {
   amount: bigint
   decimals: number
@@ -72,7 +71,10 @@ export const truncate = (amount: bigint, significantDigits: number) => {
 }
 
 /**
- * Formats a bigint representing a fixed decimal as a fixed decimal string
+ * Formats a bigint representing a fixed decimal as a fixed decimal string.
+ * Intended for serialization purposes only, not to be used in UI.
+ * @see toFixedString for user facing formatting
+ * @see formatBalance for user facing balance
  * @param amount the amount
  * @param decimals the number of decimals
  * @returns
@@ -105,6 +107,9 @@ export const fromFixedDecimalString = (amount: string): CurrencyAmount => {
 
 /**
  * Converts a currency amount object to a decimal string without trailing zeros
+ * Intended for utility purposes only, not to be used in UI.
+ * @see toFixedString for user facing formatting
+ * @see formatBalance for user facing balance
  * @param amount the amount
  * @param decimals the number of decimals
  * @returns
@@ -127,6 +132,23 @@ export const fromDecimalString = (amount: string, decimals: number) => {
 }
 
 /**
+ * Formats the amount into a decimal and fixes the number of decimal digits
+ * @example toFixedString(AUDIO(123.456), 2) === "123.45"
+ */
+export const toFixedString = (amount: CurrencyAmount, decimals: number) => {
+  if (decimals < 0) {
+    throw Error('Decimals must be positive')
+  }
+  const defaultFixed = toFixedDecimalString(amount)
+  const parts = defaultFixed.split('.')
+  if (decimals > 0 && parts.length > 1 && parts[1] !== undefined) {
+    return `${parts[0]}.${parts[1].substring(0, decimals)}`
+  } else {
+    return parts[0]
+  }
+}
+
+/**
  * Formats the currency to a balance summary string.
  * - Always floor/truncate, never round up
  * - Show two decimal places maximum (eg 1.2345 => 1.23)
@@ -136,7 +158,7 @@ export const fromDecimalString = (amount: string, decimals: number) => {
  * @param decimals the number of decimals
  * @returns
  */
-export const formatBalanceSummary = ({ amount, decimals }: CurrencyAmount) => {
+export const formatBalance = ({ amount, decimals }: CurrencyAmount) => {
   if (amount === BigInt(0)) {
     return '0'
   }
@@ -158,17 +180,60 @@ export const formatBalanceSummary = ({ amount, decimals }: CurrencyAmount) => {
   }
 }
 
-type Currency = {
-  fromString: (amount: string) => bigint
-  toString: (amount: bigint) => string
-  
-}
+/**
+ * Creates a CurrencyAmount
+ * @param amount the amount of currency, represented as:
+ * - a decimal string or number (1.234 or "1.234"),
+ * - as a CurrencyAmount { amount: 1234n, decimals: 3 }
+ * - as the raw BigInt (1234000000000000000n)
+ * @returns {CurrencyAmount} the amount of AUDIO as a CurrencyAmount object
+ */
+const createCurrencyAmountConstructor =
+  (decimals: number) =>
+  (amount: string | number | CurrencyAmount | bigint): CurrencyAmount => {
+    if (typeof amount === 'string' || typeof amount === 'number') {
+      return fromDecimalString('' + amount, decimals)
+    } else if (typeof amount === 'object') {
+      return fromDecimalString(toDecimalString(amount), decimals)
+    } else {
+      return { amount, decimals }
+    }
+  }
 
-export const AUDIO = {
-  fromString(amount: string) {
-    return fromDecimalString(amount, AUDIO_DECIMALS)
-  }
-  toString(amount: bigint) {
-    return toDecimalString({ amount, decimals: AUDIU})
-  }
-}
+/**
+ * The number of decimal digits in a unit of AUDIO (ERC-20)
+ */
+const AUDIO_DECIMALS = 18
+/**
+ * The number of decimal digits in a unit of wrapped AUDIO (SPL)
+ */
+const WAUDIO_DECIMALS = 8
+/**
+ * The number of decimal digits in a unit of SOL (SPL)
+ */
+const SOL_DECIMALS = 9
+/**
+ * The number of decimal digits in a unit of USDC (SPL)
+ */
+const USDC_DECIMALS = 6
+
+/**
+ * Helper function to construct AUDIO currency amounts
+ * @see createCurrencyAmountConstructor
+ */
+export const AUDIO = createCurrencyAmountConstructor(AUDIO_DECIMALS)
+/**
+ * Helper function to construct wAUDIO currency amounts
+ * @see createCurrencyAmountConstructor
+ */
+export const wAUDIO = createCurrencyAmountConstructor(WAUDIO_DECIMALS)
+/**
+ * Helper function to construct SOL currency amounts
+ * @see createCurrencyAmountConstructor
+ */
+export const SOL = createCurrencyAmountConstructor(SOL_DECIMALS)
+/**
+ * Helper function to construct USDC currency amounts
+ * @see createCurrencyAmountConstructor
+ */
+export const USDC = createCurrencyAmountConstructor(USDC_DECIMALS)

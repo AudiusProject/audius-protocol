@@ -3,11 +3,14 @@ import {
   ceil,
   floor,
   fromFixedDecimalString,
-  formatBalanceSummary,
   toFixedDecimalString,
   truncate,
   toDecimalString,
-  fromDecimalString
+  fromDecimalString,
+  AUDIO,
+  wAUDIO,
+  formatBalance,
+  toFixedString
 } from './currencyUtils'
 
 describe('currency amount utils', function () {
@@ -194,50 +197,70 @@ describe('currency amount utils', function () {
     }
   })
 
-  describe('toBalanceSummary', function () {
+  describe('to fixed string', function () {
+    it('includes trailing 0s if inside decimal count', function () {
+      expect(toFixedString(AUDIO(1.1), 2)).toBe('1.10')
+    })
+    it('excludes trailing decimals outside decimal count', function () {
+      expect(toFixedString(AUDIO(123.456789), 2)).toBe('123.45')
+    })
+    it('works for non-decimal amounts', function () {
+      expect(toFixedString(AUDIO(123), 2)).toBe('123.00')
+    })
+    it('works when decimals is 0', function () {
+      expect(toFixedString(AUDIO(123), 0)).toBe('123')
+    })
+    it('throws when decimals is < 0', function () {
+      expect(() => toFixedString(AUDIO(123), -1)).toThrow(
+        'Decimals must be positive'
+      )
+    })
+  })
+
+  describe('format as a balance', function () {
     type ToBalanceSummaryTestCase = {
-      fn: typeof formatBalanceSummary
+      fn: typeof formatBalance
       args: CurrencyAmount
       expected: string
     }
     const balanceSummaryTestCases: ToBalanceSummaryTestCase[] = [
       {
-        fn: formatBalanceSummary,
+        fn: formatBalance,
         args: { amount: BigInt(0), decimals: 18 },
         expected: '0'
       },
       {
-        fn: formatBalanceSummary,
+        fn: formatBalance,
         args: { amount: BigInt('8000000000000000000'), decimals: 18 },
         expected: '8'
       },
       {
-        fn: formatBalanceSummary,
+        fn: formatBalance,
         args: { amount: BigInt('8000000000000110000'), decimals: 18 },
         expected: '8'
       },
       {
-        fn: formatBalanceSummary,
+        fn: formatBalance,
         args: { amount: BigInt('8010000000000000000'), decimals: 18 },
         expected: '8.01'
       },
       {
-        fn: formatBalanceSummary,
+        fn: formatBalance,
         args: { amount: BigInt('4210000000000000005500'), decimals: 18 },
         expected: '4210'
       },
       {
-        fn: formatBalanceSummary,
+        fn: formatBalance,
         args: { amount: BigInt('9999995400000000000000'), decimals: 18 },
         expected: '9999.99'
       },
       {
-        fn: formatBalanceSummary,
+        fn: formatBalance,
         args: { amount: BigInt('12345777777777777777777'), decimals: 18 },
         expected: '12K'
       },
       {
-        fn: formatBalanceSummary,
+        fn: formatBalance,
         args: { amount: BigInt('560109954'), decimals: 4 },
         expected: '56K'
       }
@@ -248,5 +271,34 @@ describe('currency amount utils', function () {
         expect(fn(args)).toBe(expected)
       })
     }
+  })
+
+  describe('CurrencyAmount constructor', function () {
+    it('correctly constructs an AUDIO amount from a decimal string', function () {
+      const { amount, decimals } = AUDIO('1.234')
+      expect(amount).toBe(BigInt('1234000000000000000'))
+      expect(decimals).toBe(18)
+    })
+    it('correctly constructs an AUDIO amount from a decimal number', function () {
+      const { amount, decimals } = AUDIO(1.234)
+      expect(amount).toBe(BigInt('1234000000000000000'))
+      expect(decimals).toBe(18)
+    })
+    it('correctly constructs an AUDIO amount from the Wei amount', function () {
+      const { amount, decimals } = AUDIO(BigInt('1234000000000000000'))
+      expect(amount).toBe(BigInt('1234000000000000000'))
+      expect(decimals).toBe(18)
+    })
+    it('correctly constructs an AUDIO amount from a different currency amount', function () {
+      const { amount, decimals } = AUDIO({ amount: BigInt(1234), decimals: 3 })
+      expect(amount).toBe(BigInt('1234000000000000000'))
+      expect(decimals).toBe(18)
+    })
+    it('correctly converts wAUDIO to AUDIO', function () {
+      const waudio = wAUDIO(BigInt(123400000))
+      const { amount, decimals } = AUDIO(waudio)
+      expect(amount).toBe(BigInt('1234000000000000000'))
+      expect(decimals).toBe(18)
+    })
   })
 })
