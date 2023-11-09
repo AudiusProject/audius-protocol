@@ -1,5 +1,6 @@
 module.exports = {
   ...require('prettier-config-standard'),
   bracketSameLine: false,
-  jsxSingleQuote: true
+  jsxSingleQuote: true,
+  overrides: [{ files: '*.mdx', options: { parser: 'mdx' } }]
 }

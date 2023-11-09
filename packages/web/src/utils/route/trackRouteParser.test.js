@@ -1,7 +1,8 @@
-import { parseTrackRoute } from './trackRouteParser'
+import { describe, it, expect } from 'vitest'
 
 // eslint-disable-next-line
 import { mockDecode } from '__mocks__/Hashids'
+import { parseTrackRoute } from './trackRouteParser'
 
 describe('parseTrackRoute', () => {
   it('can parse a handle/slug route', () => {

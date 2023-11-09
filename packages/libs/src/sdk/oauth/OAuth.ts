@@ -2,6 +2,7 @@ import type { DecodedUserToken, UsersApi } from '../api/generated/default'
 import type { LoggerService } from '../services/Logger'
 import { isOAuthScopeValid } from '../utils/oauthScope'
 import { parseParams } from '../utils/parseParams'
+
 import {
   OAuthScope,
   IsWriteAccessGrantedSchema,

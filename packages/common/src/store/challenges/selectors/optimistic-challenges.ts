@@ -4,11 +4,13 @@ import {
   getUserChallengesOverrides
 } from 'store/pages/audio-rewards/selectors'
 import { UndisbursedUserChallenge } from 'store/pages/audio-rewards/types'
+import { isCooldownChallengeClaimable } from 'utils/challenges'
 import { removeNullable } from 'utils/typeUtils'
 
 import {
   ChallengeRewardID,
   OptimisticUserChallenge,
+  SpecifierWithAmount,
   UserChallenge,
   UserChallengeState
 } from '../../../models/AudioRewards'
@@ -108,8 +110,16 @@ const toOptimisticChallenge = (
       ? state === 'completed'
         ? totalAmount
         : 0
-      : undisbursed.reduce<number>((acc, val) => acc + val.amount, 0)
-  const undisbursedSpecifiers = undisbursed.map((c) => c.specifier)
+      : undisbursed.reduce<number>(
+          (acc, val) =>
+            isCooldownChallengeClaimable(val) ? acc + val.amount : acc + 0,
+          0
+        )
+
+  const undisbursedSpecifiers = undisbursed.reduce(
+    (acc, c) => [...acc, { specifier: c.specifier, amount: c.amount }],
+    [] as SpecifierWithAmount[]
+  )
 
   return {
     ...challengeOverridden,

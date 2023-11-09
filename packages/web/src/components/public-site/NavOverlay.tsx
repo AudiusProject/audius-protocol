@@ -1,122 +1,99 @@
 import { useEffect, useState } from 'react'
 
 import {
-  IconCampfire,
-  IconDiscord,
-  IconDownload,
-  IconExplore,
-  IconFollow,
+  IconBlog,
+  IconDiscord2,
+  IconTelegram,
+  IconDownloadQueued,
+  IconFoundation,
   IconInstagram,
+  IconMerch,
   IconRemove,
-  IconTrending,
+  IconSupport,
   IconTwitterBird
 } from '@audius/stems'
 import cn from 'classnames'
 import ReactDOM from 'react-dom'
 
 import HorizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
-import HeroBackground from 'assets/img/publicSite/Hero-BG@2x.jpg'
+import HeroBackground from 'assets/img/publicSite/HeroBG@2x.webp'
 import {
   AUDIUS_BLOG_LINK,
   AUDIUS_DISCORD_LINK,
-  AUDIUS_DOCS_LINK,
-  AUDIUS_EXPLORE_LINK,
-  AUDIUS_HOT_AND_NEW,
-  AUDIUS_INSTAMGRAM_LINK,
-  AUDIUS_LISTENING_LINK,
+  AUDIUS_HELP_LINK,
+  AUDIUS_INSTAGRAM_LINK,
+  AUDIUS_MERCH_LINK,
   AUDIUS_ORG,
-  AUDIUS_PRESS_LINK,
-  AUDIUS_REMIX_CONTESTS_LINK,
   AUDIUS_SIGN_UP_LINK,
-  AUDIUS_TEAM_LINK,
+  AUDIUS_TELEGRAM_LINK,
   AUDIUS_TWITTER_LINK,
-  DOWNLOAD_START_LINK,
-  PRIVACY_POLICY,
-  TERMS_OF_SERVICE
+  DOWNLOAD_START_LINK
 } from 'utils/route'
 
 import styles from './NavOverlay.module.css'
 import { handleClickRoute } from './handleClickRoute'
 
 const messages = {
-  startListening: 'Start Listening'
+  signUp: 'Sign Up',
+  downloadTheApp: 'Download the App',
+  helpAndSupport: 'Help & Support',
+  readTheBlog: 'Read the Blog',
+  merchStore: 'Merch Store',
+  openAudioFoundation: 'Open Audio Foundation'
 }
 
 const socialLinks = [
   {
     Icon: IconInstagram,
-    link: AUDIUS_INSTAMGRAM_LINK
+    link: AUDIUS_INSTAGRAM_LINK
   },
   {
     Icon: IconTwitterBird,
     link: AUDIUS_TWITTER_LINK
   },
   {
-    Icon: IconDiscord,
+    Icon: IconDiscord2,
     link: AUDIUS_DISCORD_LINK
+  },
+  {
+    Icon: IconTelegram,
+    link: AUDIUS_TELEGRAM_LINK
   }
 ]
 
 const dappLinks = [
   {
-    text: 'Sign Up',
-    icon: <IconFollow className={styles.dappLinkIcon} />,
-    link: AUDIUS_SIGN_UP_LINK
-  },
-  {
-    text: 'Trending',
-    icon: <IconTrending className={styles.dappLinkIcon} />,
-    link: AUDIUS_LISTENING_LINK
-  },
-  {
-    text: 'Explore',
-    icon: <IconExplore className={styles.dappLinkIcon} />,
-    link: AUDIUS_EXPLORE_LINK
-  },
-  {
-    text: 'Hot & New',
-    icon: <IconCampfire className={styles.dappLinkIcon} />,
-    link: AUDIUS_HOT_AND_NEW
-  },
-  {
-    text: 'Download App',
-    icon: <IconDownload className={styles.dappLinkIcon} />,
+    text: messages.downloadTheApp,
+    icon: <IconDownloadQueued className={styles.dappLinkIcon} />,
     link: DOWNLOAD_START_LINK
-  }
-]
-
-const links = [
+  },
   {
-    text: 'Blog',
+    text: messages.helpAndSupport,
+    icon: <IconSupport className={styles.dappLinkIcon} />,
+    link: AUDIUS_HELP_LINK
+  },
+  {
+    text: messages.readTheBlog,
+    icon: (
+      <IconBlog
+        className={cn(styles.dappLinkIcon, styles.dappLinkIconStroke)}
+      />
+    ),
     link: AUDIUS_BLOG_LINK
   },
   {
-    text: 'Docs',
-    link: AUDIUS_DOCS_LINK
+    text: messages.merchStore,
+    icon: (
+      <IconMerch
+        className={cn(styles.dappLinkIcon, styles.dappLinkIconStroke)}
+      />
+    ),
+    link: AUDIUS_MERCH_LINK
   },
   {
-    text: 'Privacy Policy',
-    link: PRIVACY_POLICY
-  },
-  {
-    text: 'Remixes',
-    link: AUDIUS_REMIX_CONTESTS_LINK
-  },
-  {
-    text: 'Team',
-    link: AUDIUS_TEAM_LINK
-  },
-  {
-    text: 'Terms of Service',
-    link: TERMS_OF_SERVICE
-  },
-  {
-    text: 'Token',
+    text: messages.openAudioFoundation,
+    icon: <IconFoundation className={styles.dappLinkIcon} />,
     link: AUDIUS_ORG
-  },
-  {
-    text: 'Brand',
-    link: AUDIUS_PRESS_LINK
   }
 ]
 
@@ -147,9 +124,9 @@ const useModalRoot = () => {
 }
 
 const NavOverlay = (props: NavOverlayProps) => {
-  const onStartListening = () => {
+  const onSignUp = () => {
     props.closeNavScreen()
-    handleClickRoute(AUDIUS_LISTENING_LINK, props.setRenderPublicSite)()
+    handleClickRoute(AUDIUS_SIGN_UP_LINK, props.setRenderPublicSite)()
   }
 
   const modalRoot = useModalRoot()
@@ -172,14 +149,14 @@ const NavOverlay = (props: NavOverlayProps) => {
         </div>
         <div className={styles.content}>
           <div className={styles.iconContainer}>
-            <IconRemove
-              className={styles.iconClose}
-              onClick={props.closeNavScreen}
-            />
             <img
               src={HorizontalLogo}
               className={styles.horizontalLogo}
               alt='Audius Logo'
+            />
+            <IconRemove
+              className={styles.iconClose}
+              onClick={props.closeNavScreen}
             />
           </div>
           <div className={styles.dappLinksContainer}>
@@ -190,20 +167,14 @@ const NavOverlay = (props: NavOverlayProps) => {
                   onClick={handleClickRoute(link, props.setRenderPublicSite)}
                   className={styles.dappLink}
                   href={link}
+                  target='_blank'
+                  rel='noreferrer'
                 >
                   {icon}
                   <h4 className={styles.dappLinkText}>{text}</h4>
                 </a>
               ))}
             </div>
-          </div>
-          <div className={styles.startListeningButtonContainer}>
-            <button
-              className={styles.startListeningButton}
-              onClick={onStartListening}
-            >
-              {messages.startListening}
-            </button>
           </div>
           <div className={styles.iconsContainer}>
             {socialLinks.map(({ Icon, link }, idx) => (
@@ -216,17 +187,10 @@ const NavOverlay = (props: NavOverlayProps) => {
               </a>
             ))}
           </div>
-          <div className={styles.linksContainer}>
-            {links.map(({ text, link }, idx) => (
-              <a
-                key={idx}
-                onClick={handleClickRoute(link, props.setRenderPublicSite)}
-                className={styles.link}
-                href={link}
-              >
-                {text}
-              </a>
-            ))}
+          <div className={styles.signUpButtonContainer}>
+            <button className={styles.signUpButton} onClick={onSignUp}>
+              {messages.signUp}
+            </button>
           </div>
         </div>
       </div>,

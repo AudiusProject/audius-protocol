@@ -4,10 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"mediorum/ethcontracts"
-	"mediorum/httputil"
-	"mediorum/registrar"
-	"mediorum/server"
 	"os"
 	"strconv"
 	"strings"
@@ -16,6 +12,10 @@ import (
 
 	_ "embed"
 
+	"github.com/AudiusProject/audius-protocol/mediorum/ethcontracts"
+	"github.com/AudiusProject/audius-protocol/mediorum/httputil"
+	"github.com/AudiusProject/audius-protocol/mediorum/registrar"
+	"github.com/AudiusProject/audius-protocol/mediorum/server"
 	"golang.org/x/exp/slices"
 	"golang.org/x/exp/slog"
 	"golang.org/x/sync/errgroup"
@@ -57,9 +57,9 @@ func main() {
 
 func startStagingOrProd(isProd bool) {
 	logger := slog.With("creatorNodeEndpoint", os.Getenv("creatorNodeEndpoint"))
-	g := registrar.NewAudiusApiGatewayStaging()
+	g := registrar.NewMultiStaging()
 	if isProd {
-		g = registrar.NewAudiusApiGatewayProd()
+		g = registrar.NewMultiProd()
 	}
 
 	var peers, signers []server.Peer
@@ -120,7 +120,7 @@ func startStagingOrProd(isProd bool) {
 		ListenPort:           "1991",
 		Peers:                peers,
 		Signers:              signers,
-		ReplicationFactor:    3,
+		ReplicationFactor:    5,
 		PrivateKey:           privateKeyHex,
 		Dir:                  "/tmp/mediorum",
 		PostgresDSN:          os.Getenv("dbUrl"),

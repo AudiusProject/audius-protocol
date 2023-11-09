@@ -1,7 +1,7 @@
 import { ID, ProfilePictureSizes, Nullable } from '@audius/common'
 import cn from 'classnames'
 
-import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
+import BadgeArtist from 'assets/img/badgeArtist.svg'
 import ProfilePicture from 'components/profile-picture/ProfilePicture'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import EditableName from 'pages/profile-page/components/EditableName'
@@ -18,7 +18,6 @@ type ProfileWrappingProps = {
   profilePictureSizes: Nullable<ProfilePictureSizes>
   updatedProfilePicture: { error: boolean; url: string }
   hasProfilePicture: boolean
-  doesFollowCurrentUser: boolean
   isOwner: boolean
   isArtist: boolean
   editMode: boolean
@@ -60,7 +59,6 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
     profilePictureSizes,
     updatedProfilePicture,
     hasProfilePicture,
-    doesFollowCurrentUser,
     isOwner,
     isArtist,
     editMode,
@@ -110,7 +108,7 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
               [styles.hide]: !isArtist || loading || isDeactivated
             })}
           />
-          {!isDeactivated && (
+          {!isDeactivated && userId && (
             <>
               <EditableName
                 className={editMode ? styles.editableName : null}
@@ -122,7 +120,7 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
               />
               <div className={styles.handleWrapper}>
                 <h2 className={styles.handle}>{handle}</h2>
-                {doesFollowCurrentUser ? <FollowsYouBadge /> : null}
+                <FollowsYouBadge userId={userId} />
               </div>
             </>
           )}

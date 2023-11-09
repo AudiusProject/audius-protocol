@@ -1,16 +1,19 @@
 import { useCallback, useState } from 'react'
 
-import { WithdrawUSDCModalPages, useWithdrawUSDCModal } from '@audius/common'
 import {
-  HarmonyButton,
-  HarmonyButtonSize,
-  HarmonyButtonType,
-  IconQuestionCircle,
-  Switch
-} from '@audius/stems'
+  WithdrawUSDCModalPages,
+  decimalIntegerToHumanReadable,
+  useWithdrawUSDCModal,
+  useUSDCBalance,
+  formatUSDCWeiToFloorCentsNumber,
+  BNUSDC
+} from '@audius/common'
+import { Button, ButtonType, IconQuestionCircle } from '@audius/harmony'
+import { Switch } from '@audius/stems'
+import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
 
-import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
+import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
 import { HelperText } from 'components/data-entry/HelperText'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
@@ -19,13 +22,16 @@ import {
   AMOUNT,
   CONFIRM
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
-import { toHumanReadable } from 'utils/tokenInput'
 
 import styles from './ConfirmTransferDetails.module.css'
 import { Hint } from './Hint'
 import { TextRow } from './TextRow'
 
+const LEARN_MORE_LINK =
+  'https://support.audius.co/help/Understanding-USDC-on-Audius'
+
 const messages = {
+  currentBalance: 'Current Balance',
   amountToWithdraw: 'Amount to Withdraw',
   destinationAddress: 'Destination Address',
   review: 'Review Details Carefully',
@@ -46,6 +52,12 @@ export const ConfirmTransferDetails = () => {
   const [{ value: addressValue }] = useField(ADDRESS)
   const [confirmField, { error: confirmError }] = useField(CONFIRM)
 
+  const { data: balance } = useUSDCBalance()
+  const balanceNumber = formatUSDCWeiToFloorCentsNumber(
+    (balance ?? new BN(0)) as BNUSDC
+  )
+  const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
+
   const handleGoBack = useCallback(() => {
     setData({ page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS })
   }, [setData])
@@ -61,10 +73,12 @@ export const ConfirmTransferDetails = () => {
 
   return (
     <div className={styles.root}>
+      <TextRow left={messages.currentBalance} right={`$${balanceFormatted}`} />
+      <Divider style={{ margin: 0 }} />
       <div className={styles.amount}>
         <TextRow
           left={messages.amountToWithdraw}
-          right={`-$${toHumanReadable(amountValue)}`}
+          right={`-$${decimalIntegerToHumanReadable(amountValue)}`}
         />
       </div>
       <Divider style={{ margin: 0 }} />
@@ -92,23 +106,20 @@ export const ConfirmTransferDetails = () => {
         ) : null}
       </div>
       <div className={styles.buttons}>
-        <HarmonyButton
+        <Button
           iconLeft={IconCaretLeft}
-          variant={HarmonyButtonType.SECONDARY}
-          size={HarmonyButtonSize.DEFAULT}
-          text={messages.goBack}
+          variant={ButtonType.SECONDARY}
           onClick={handleGoBack}
-        />
-        <HarmonyButton
-          variant={HarmonyButtonType.SECONDARY}
-          size={HarmonyButtonSize.DEFAULT}
-          text={messages.confirm}
-          onClick={handleContinue}
-        />
+        >
+          {messages.goBack}
+        </Button>
+        <Button variant={ButtonType.SECONDARY} onClick={handleContinue}>
+          {messages.confirm}
+        </Button>
       </div>
       <Hint
         text={messages.notSure}
-        link={''} // TODO(USDC): Link
+        link={LEARN_MORE_LINK}
         icon={IconQuestionCircle}
         linkText={messages.guide}
       />

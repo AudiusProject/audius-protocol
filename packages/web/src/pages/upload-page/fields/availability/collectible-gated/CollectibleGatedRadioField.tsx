@@ -2,7 +2,7 @@ import {
   PremiumConditions,
   TrackAvailabilityType,
   collectiblesSelectors,
-  isPremiumContentCollectibleGated
+  useAccessAndRemixSettings
 } from '@audius/common'
 import { IconCollectible } from '@audius/stems'
 
@@ -25,13 +25,19 @@ type CollectibleGatedRadioFieldProps = {
   isUpload?: boolean
   initialPremiumConditions?: PremiumConditions
   isInitiallyUnlisted?: boolean
+  isScheduledRelease?: boolean
 }
 
 export const CollectibleGatedRadioField = (
   props: CollectibleGatedRadioFieldProps
 ) => {
-  const { isRemix, isUpload, initialPremiumConditions, isInitiallyUnlisted } =
-    props
+  const {
+    isRemix,
+    isUpload,
+    initialPremiumConditions,
+    isInitiallyUnlisted,
+    isScheduledRelease
+  } = props
 
   const hasCollectibles = useSelector((state) => {
     const { ethCollectionMap, solCollectionMap } =
@@ -42,14 +48,16 @@ export const CollectibleGatedRadioField = (
     return numEthCollectibles + numSolCollectibles > 0
   })
 
-  const disabled =
-    isRemix ||
-    !hasCollectibles ||
-    (!isUpload &&
-      !isPremiumContentCollectibleGated(initialPremiumConditions) &&
-      !isInitiallyUnlisted)
-
-  const fieldsDisabled = disabled || (!isUpload && !isInitiallyUnlisted)
+  const {
+    noCollectibleGate: disabled,
+    noCollectibleGateFields: fieldsDisabled
+  } = useAccessAndRemixSettings({
+    isUpload: !!isUpload,
+    isRemix,
+    initialPremiumConditions: initialPremiumConditions ?? null,
+    isInitiallyUnlisted: !!isInitiallyUnlisted,
+    isScheduledRelease: !!isScheduledRelease
+  })
 
   return (
     <ModalRadioItem
@@ -57,7 +65,7 @@ export const CollectibleGatedRadioField = (
       label={messages.collectibleGated}
       value={TrackAvailabilityType.COLLECTIBLE_GATED}
       disabled={disabled}
-      hintText={disabled ? messages.noCollectibles : undefined}
+      hintContent={disabled ? messages.noCollectibles : undefined}
       description={
         <CollectibleGatedDescription
           hasCollectibles={hasCollectibles}

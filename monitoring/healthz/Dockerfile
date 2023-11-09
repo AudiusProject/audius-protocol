@@ -5,7 +5,7 @@ RUN apt update && apt install -y python3 make gcc g++
 ENV WORKDIR /app
 WORKDIR ${WORKDIR}
 
-COPY index.html package.json package-lock.json tsconfig.json tsconfig.node.json vite.config.ts .
+COPY index.html package.json package-lock.json tsconfig.json tsconfig.node.json vite.config.ts postcss.config.js tailwind.config.js .
 ADD src ./src
 ADD workers-site ./workers-site
 

@@ -1,0 +1,67 @@
+/* ----- Top Addresses Table ----- */
+/* Columns */
+.rankColumn {
+  min-width: 100px;
+  flex: 1;
+}
+.totalStakedColumn {
+  width: 116px;
+  min-width: 116px;
+  text-align: right;
+  margin-right: 32px;
+  justify-content: flex-end;
+}
+.voteWeightColumn {
+  width: 110px;
+  min-width: 110px;
+  text-align: right;
+  margin-right: 32px;
+}
+.proposalVotedColumn {
+  width: 152px;
+  min-width: 152px;
+  text-align: right;
+}
+
+/* Row Render */
+.rowContainer {
+  display: inline-flex;
+  align-items: center;
+  height: 80px;
+  width: 100%;
+}
+
+.rowCol {
+  font-family: var(--font-family);
+  
+  font-weight: var(--font-regular);
+  font-size: var(--font-m);
+  color: #BEC5E0;
+}
+
+.colRank {
+  margin-right: 25px;
+}
+
+.colImg {
+  height: 56px;
+  width: 56px;
+  border-radius: 50%;
+  margin-right: 25px;
+}
+
+.colAddress {
+  flex: 1;
+}
+
+.colStaked {
+
+}
+
+.colVoteWeight {
+
+}
+
+.colProposedVotes {
+
+}

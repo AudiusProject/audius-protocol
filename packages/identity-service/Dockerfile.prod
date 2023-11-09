@@ -1,0 +1,58 @@
+FROM node:18-alpine AS base
+
+ARG TURBO_TEAM
+ENV TURBO_TEAM=$TURBO_TEAM
+
+ARG TURBO_TOKEN
+ENV TURBO_TOKEN=$TURBO_TOKEN
+ 
+# PRUNE DEPENDENCIES
+FROM base AS builder
+
+RUN apk add --no-cache libc6-compat
+RUN apk update
+
+WORKDIR /app
+RUN npm install turbo --global
+
+COPY . .
+RUN turbo prune --scope=identity-service --docker
+
+# INSTALL & BUILD
+FROM base AS installer
+
+WORKDIR /app
+
+RUN apk add --no-cache python3 py3-pip make g++ curl bash libc6-compat
+RUN apk update
+
+# First install dependencies (as they change less often)
+COPY .gitignore .gitignore
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/out/package-lock.json ./package-lock.json
+COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/packages/identity-service/patches ./packages/identity-service/patches
+
+RUN CI=true npm i
+
+# Build the project and its dependencies
+COPY --from=builder /app/out/full/ .
+COPY turbo.json turbo.json
+
+RUN npx turbo run build --filter=identity-service
+
+# Add the wait script to the image
+# Script originally from https://github.com/ufoscout/docker-compose-wait/releases/download/2.4.0/wait /usr/bin/wait
+COPY packages/identity-service/scripts/wait /usr/bin/wait
+
+ARG git_sha
+
+ENV GIT_SHA=$git_sha
+
+EXPOSE 7000
+
+HEALTHCHECK --interval=5s --timeout=5s --start-period=15m --retries=12 \
+    CMD curl -f http://localhost:7000/health_check || exit 1
+
+WORKDIR /app/packages/identity-service
+CMD ["bash", "scripts/start.sh"]

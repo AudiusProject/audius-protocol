@@ -1,22 +1,24 @@
+import EventEmitter from 'events'
+
+import * as secp from '@noble/secp256k1'
+import { base64 } from '@scure/base'
+import WebSocket from 'isomorphic-ws'
+import * as aes from 'micro-aes-gcm'
+import type TypedEmitter from 'typed-emitter'
+import { ulid } from 'ulid'
+
+import type { AuthService } from '../../services/Auth'
+import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector/types'
+import type { LoggerService } from '../../services/Logger'
+import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
+import { parseParams } from '../../utils/parseParams'
 import {
   BaseAPI,
   Configuration,
   HTTPQuery,
   RequestOpts
 } from '../generated/default'
-import * as aes from 'micro-aes-gcm'
-import { base64 } from '@scure/base'
-import { ulid } from 'ulid'
 
-import * as secp from '@noble/secp256k1'
-import type {
-  ChatInvite,
-  UserChat,
-  ChatMessage,
-  ChatWebsocketEventData,
-  RPCPayloadRequest,
-  ValidatedChatPermissions
-} from './serverTypes'
 import {
   ChatBlockRequest,
   ChatBlockRequestSchema,
@@ -54,14 +56,14 @@ import {
   TypedCommsResponse,
   UnfurlResponse
 } from './clientTypes'
-import WebSocket from 'isomorphic-ws'
-import EventEmitter from 'events'
-import type TypedEmitter from 'typed-emitter'
-import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector/types'
-import type { AuthService } from '../../services/Auth'
-import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
-import { parseParams } from '../../utils/parseParams'
-import type { LoggerService } from '../../services/Logger'
+import type {
+  ChatInvite,
+  UserChat,
+  ChatMessage,
+  ChatWebsocketEventData,
+  RPCPayloadRequest,
+  ValidatedChatPermissions
+} from './serverTypes'
 
 const GENERIC_MESSAGE_ERROR = 'Error: this message can not be displayed'
 
@@ -182,16 +184,16 @@ export class ChatsApi
       timestamp: new Date().getTime()
     }
     if (limit) {
-      query['limit'] = limit
+      query.limit = limit
     }
     if (before) {
-      query['before'] = before
+      query.before = before
     }
     if (after) {
-      query['after'] = after
+      query.after = after
     }
     if (currentUserId) {
-      query['current_user_id'] = currentUserId
+      query.current_user_id = currentUserId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
@@ -238,16 +240,16 @@ export class ChatsApi
       timestamp: new Date().getTime()
     }
     if (limit) {
-      query['limit'] = limit
+      query.limit = limit
     }
     if (before) {
-      query['before'] = before
+      query.before = before
     }
     if (after) {
-      query['after'] = after
+      query.after = after
     }
     if (currentUserId) {
-      query['current_user_id'] = currentUserId
+      query.current_user_id = currentUserId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
@@ -292,7 +294,7 @@ export class ChatsApi
       timestamp: new Date().getTime()
     }
     if (parsedArgs?.currentUserId) {
-      query['current_user_id'] = parsedArgs.currentUserId
+      query.current_user_id = parsedArgs.currentUserId
     }
     const res = await this.signAndSendRequest({
       method: 'GET',
@@ -317,9 +319,9 @@ export class ChatsApi
       'getPermissions',
       ChatGetPermissionRequestSchema
     )(params)
-    query['id'] = userIds
+    query.id = userIds
     if (currentUserId) {
-      query['current_user_id'] = currentUserId
+      query.current_user_id = currentUserId
     }
 
     const res = await this.signAndSendRequest({
@@ -345,7 +347,7 @@ export class ChatsApi
       timestamp: new Date().getTime()
     }
     if (parsedArgs?.currentUserId) {
-      query['current_user_id'] = parsedArgs.currentUserId
+      query.current_user_id = parsedArgs.currentUserId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
@@ -370,7 +372,7 @@ export class ChatsApi
       timestamp: new Date().getTime()
     }
     if (parsedArgs?.currentUserId) {
-      query['current_user_id'] = parsedArgs.currentUserId
+      query.current_user_id = parsedArgs.currentUserId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',
@@ -507,7 +509,7 @@ export class ChatsApi
       params: {
         chat_id: chatId,
         message_id: messageId,
-        reaction: reaction
+        reaction
       }
     })
   }
@@ -704,7 +706,7 @@ export class ChatsApi
       timestamp: new Date().getTime()
     }
     if (currentUserId) {
-      queryParameters['current_user_id'] = currentUserId
+      queryParameters.current_user_id = currentUserId
     }
     const response = await this.signAndSendRequest({
       method: 'GET',

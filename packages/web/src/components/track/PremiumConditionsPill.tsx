@@ -1,12 +1,12 @@
+import type { MouseEvent } from 'react'
+
 import {
   formatPrice,
   isPremiumContentUSDCPurchaseGated,
   PremiumConditions
 } from '@audius/common'
-import { IconLock } from '@audius/stems'
+import { Button, ButtonSize, IconLock } from '@audius/harmony'
 import cn from 'classnames'
-
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import styles from './PremiumConditionsPill.module.css'
 
@@ -16,35 +16,42 @@ const messages = {
 }
 
 export const PremiumConditionsPill = ({
+  className,
   premiumConditions,
-  unlocking
+  unlocking,
+  onClick,
+  showIcon = true,
+  buttonSize = ButtonSize.SMALL
 }: {
   premiumConditions: PremiumConditions
   unlocking: boolean
+  onClick?: (e: MouseEvent) => void
+  showIcon?: boolean
+  className?: string
+  buttonSize?: ButtonSize
 }) => {
   const isPurchase = isPremiumContentUSDCPurchaseGated(premiumConditions)
-  const icon = unlocking ? (
-    <LoadingSpinner className={styles.spinner} />
-  ) : isPurchase ? null : (
-    <IconLock />
-  )
 
   let message = null
   if (unlocking) {
     // Show only spinner when unlocking a purchase
-    message = isPurchase ? null : messages.unlocking
+    message = isPurchase ? undefined : messages.unlocking
   } else {
     message = isPurchase
       ? `$${formatPrice(premiumConditions.usdc_purchase.price)}`
       : messages.locked
   }
 
-  const colorStyle = isPurchase ? styles.premiumContent : styles.gatedContent
-
   return (
-    <div className={cn(styles.container, colorStyle)}>
-      {icon}
+    <Button
+      className={cn(styles.button, className)}
+      size={buttonSize}
+      onClick={onClick}
+      color={isPurchase ? 'lightGreen' : 'blue'}
+      isLoading={unlocking}
+      iconLeft={showIcon ? IconLock : undefined}
+    >
       {message}
-    </div>
+    </Button>
   )
 }

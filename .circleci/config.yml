@@ -62,8 +62,10 @@ jobs:
 
       - run:
           name: Install dependencies
+          # If node_modules exists in cache, run postinstall. Otherwise, run npm ci
           command: |
-            npm ci
+            [[ ! -d node_modules ]] || CI=true npm run postinstall
+            [[ -d node_modules ]] || CI=true npm ci
 
       - save_cache:
           key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
@@ -77,16 +79,9 @@ jobs:
             - ./packages/harmony/node_modules
             - ./packages/common/node_modules
             - ./packages/libs/node_modules
+            - ./packages/identity-service/node_modules
 
-      - save_cache:
-          key: cache-{{ .Revision }}
-          paths:
-            - ./packages/stems/dist
-            - ./packages/harmony/dist
-            - ./packages/common/dist
-            - ./packages/libs/dist
-
-  generate-release:
+  generate-release-branch:
     working_directory: ~/audius-protocol
     resource_class: small
     docker:
@@ -102,71 +97,208 @@ jobs:
             git config --global user.email "audius-infra@audius.co"
             git config --global user.name "audius-infra"
       - run:
-          name: Create branch
+          name: Create + push branch
           command: |
-            OLD_VERSION=$(jq -r .version discovery-provider/.version.json)
-            NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
-
             git checkout main
 
+            OLD_VERSION=$(jq -r .version packages/discovery-provider/.version.json)
+            NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+
+            # Bump version for content node
             jq --arg version "$NEW_VERSION" '.version=$version' mediorum/.version.json > /tmp/.version.json
             mv /tmp/.version.json mediorum/.version.json
             git add mediorum/.version.json
 
-            jq --arg version "$NEW_VERSION" '.version=$version' discovery-provider/.version.json > /tmp/.version.json
-            mv /tmp/.version.json discovery-provider/.version.json
-            git add discovery-provider/.version.json
+            # Bump version for discovery node
+            jq --arg version "$NEW_VERSION" '.version=$version' packages/discovery-provider/.version.json > /tmp/.version.json
+            mv /tmp/.version.json packages/discovery-provider/.version.json
+            git add packages/discovery-provider/.version.json
 
-            # Escape double quotes in commit message and replace git log's platform-specific newlines with @@DELIM@@
-            GIT_DIFF=$(git log --pretty=format:'• %an - %s [<https://github.com/AudiusProject/audius-protocol/commit/%H|%h>]' --abbrev-commit origin/release-v$OLD_VERSION..HEAD -- mediorum discovery-provider identity-service comms | sed 's/"/\"/g' | tr -d '\r' | sed ':a;N;$!ba;s/\n/@@DELIM@@/g')
+            # Weird way to push both to main and the new release branch
             git commit -m "Bump version to $NEW_VERSION"
-
             git branch "release-v$NEW_VERSION"
             git checkout "release-v$NEW_VERSION"
-
             git push --set-upstream origin main "release-v$NEW_VERSION"
 
-            # Slack has a limit of 3000 characters per block, so we need to split the diff into multiple blocks
-            max_lines=8
+  approve-deployment-holds:
+    resource_class: small
+    docker:
+      - image: cimg/base:2023.01
+    steps:
+      - run:
+          name: Abort if auto-deploy is halted
+          command: |
+            if [ "$HALT_AUTO_DEPLOY" == "true" ]; then
+              echo "Auto-deploy is currently halted. Exiting without approval."
+
+              json_content="{ \"blocks\": ["
+              json_content+="\"type\": \"section\","
+              json_content+="\"text\": { \"type\": \"mrkdwn\", \"text\": \"Normally I'd ship today's release to foundation nodes now, but auto-deploy is currently halted...\" }"
+              json_content+="}]}"
+
+              curl -f -X POST -H 'Content-type: application/json' \
+              --data "$json_content" \
+              $SLACK_DAILY_DEPLOY_WEBHOOK
+
+              exit 1
+            fi
+      - run:
+          name: Approve the deployments
+          command: |
+            (
+              set -e
+              # Find latest release version
+              git clone https://github.com/AudiusProject/audius-protocol.git
+              cd audius-protocol
+              git fetch --all
+              VERSION=$(jq -r .version packages/discovery-provider/.version.json)
+              cd ..
+              echo "Running against protocol version: $VERSION"
+
+              # Get the pipeline for the most recent commit on the release branch
+              response=$(curl --request GET \
+                --url "https://circleci.com/api/v2/project/gh/AudiusProject/audius-protocol/pipeline?branch=release-v$VERSION" \
+                --header "Circle-Token: $CIRCLE_DAILY_DEPLOY_API_TOKEN")
+
+              pipeline_id=$(echo "$response" | jq -r '.items[0].id')
+              pipeline_number=$(echo "$response" | jq -r '.items[0].number')
+
+              # Abort early if we can't find the pipeline
+              if [ -z "$pipeline_id" ] || [ "$pipeline_id" = "null" ]; then
+                echo "Could not find pipeline for release-v$VERSION"
+                exit 1
+              fi
+
+              # Fetch the "release" workflow
+              echo "Fetching release workflow from pipeline $pipeline_id"
+              workflow_id=$(curl --request GET \
+                "https://circleci.com/api/v2/pipeline/$pipeline_id/workflow" \
+                --header "Circle-Token: $CIRCLE_DAILY_DEPLOY_API_TOKEN" | jq -r '.items[] | select(.name=="release") | .id')
+
+              # Fetch the "deploy-foundation-nodes-trigger" job
+              job_id=$(curl --request GET \
+                "https://circleci.com/api/v2/workflow/$workflow_id/job" \
+                --header "Circle-Token: $CIRCLE_DAILY_DEPLOY_API_TOKEN" | jq -r '.items[] | select(.name=="deploy-foundation-nodes-trigger" and .status=="on_hold") | .id')
+
+              # If we found the job, approve it automatically
+              if [ ! -z "$job_id" ]; then
+                  echo "Approving job with id=$job_id"
+                  job_url="https://app.circleci.com/pipelines/gh/AudiusProject/audius-protocol/$pipeline_number/workflows/$workflow_id"
+                  curl --request POST \
+                    "https://circleci.com/api/v2/workflow/$workflow_id/approve/$job_id" \
+                    --header "Circle-Token: $CIRCLE_DAILY_DEPLOY_API_TOKEN"
+                  
+                  # Record approval for the Slack message
+                  echo "<${job_url}|release-v$VERSION>" > /tmp/job_url.txt
+              fi
+            ) || true  # catch errors so we can send a Slack message in the next step
+      - run:
+          name: Notify Slack
+          command: |
+            job_url=$(cat /tmp/job_url.txt) || true
             json_content="{ \"blocks\": ["
-            json_content+="{ \"type\": \"header\", \"text\": { \"type\": \"plain_text\", \"text\": \"New Protocol Release Branch (v0.4.9)\n\" } },"
-            json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"*These changes will be released to SPs at 11am PST:*\n\" } },"
-            line_count=0
-            block_content=""
 
-            # Use @@ as Internal Field Separator, so @@DELIM@@ effectively becomes the delimiter for us to build blocks
-            IFS='@@'
-            read -ra ADDR \<<< "$GIT_DIFF"
-            for line in "${ADDR[@]}"; do
-                if [[ $line == "DELIM" ]]; then
-                    continue
-                fi
-
-                block_content+="$line\n"
-                line_count=$((line_count+1))
-
-                if (( line_count == max_lines )); then
-                    json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"${block_content}\" } },"
-                    line_count=0
-                    block_content=""
-                fi
-            done
-
-            if (( line_count > 0 )); then
-                json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"${block_content}\" } },"
+            if [[ -z "$job_url" ]]; then
+                # If we couldn't find the deploy trigger job on hold, send the failure message
+                json_content+="{ \"type\": \"section\","
+                json_content+=" \"text\": { \"type\": \"mrkdwn\", \"text\": \"No CircleCI job is on hold for me to auto-approve for today's foundation release (hint: check <https://app.circleci.com/pipelines/github/AudiusProject/audius-protocol?branch=$CIRCLE_BRANCH|here>)\" } }"
+            else
+                # If we approved the job, send the success message
+                json_content+="{ \"type\": \"section\","
+                json_content+=" \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deploying $job_url to foundation nodes... Please watch for issues and approve the release for SPs when ready (I'll remind you in an hour).\" } }"
             fi
 
-            json_content=${json_content%,}
             json_content+="]}"
-            
-            # The next step of this job will read this file and send it to Slack
-            echo $json_content > /tmp/slack_message.json
-      - run:
-          name: Send Slack Daily Deploy Message
-          command: |
             curl -f -X POST -H 'Content-type: application/json' \
-              --data @/tmp/slack_message.json \
+              --data "$json_content" \
               $SLACK_DAILY_DEPLOY_WEBHOOK
+
+  notify-sp-release-job:
+    resource_class: small
+    docker:
+      - image: cimg/base:2023.01
+    steps:
+      - run:
+          name: Abort if auto-deploy is halted
+          command: |
+            if [ "$HALT_AUTO_DEPLOY" == "true" ]; then
+              echo "Auto-deploy is currently halted. Exiting without approval."
+
+              json_content="{ \"blocks\": ["
+              json_content+="\"type\": \"section\","
+              json_content+="\"text\": { \"type\": \"mrkdwn\", \"text\": \"Normally I'd remind you to approve the SP release for today, but auto-deploy is currently halted...\" }"
+              json_content+="}]}"
+
+              curl -f -X POST -H 'Content-type: application/json' \
+                --data "$json_content" \
+                $SLACK_DAILY_DEPLOY_WEBHOOK
+              
+              exit 1
+            fi
+      - run:
+          name: Find branch, send Slack message
+          command: |
+            handle_error() {
+              # Construct failure Slack message
+              failure_content="{ \"blocks\": ["
+              failure_content+="{ \"type\": \"section\", \"text\": { \"type\": \"plain_text\", \"text\": \"Failed to find job for today's SP release. If this was not intentional, please check for 'release-audius-docker-compose-trigger' in today's release branch.\n\" } }"
+              failure_content+="]}"
+              echo "Sending error message to Slack: $failure_content"
+              
+              # Send Slack failure message
+              curl -f -X POST -H 'Content-type: application/json' \
+                --data "$failure_content" \
+                $SLACK_DAILY_DEPLOY_WEBHOOK
+            }
+
+            (
+              set -e
+              # Find latest version
+              git clone https://github.com/AudiusProject/audius-protocol.git
+              cd audius-protocol
+              git fetch --all
+              VERSION=$(jq -r .version packages/discovery-provider/.version.json)
+              cd ..
+              
+              # Get the pipeline for the most recent commit on the release branch
+               response=$(curl --request GET \
+                --url "https://circleci.com/api/v2/project/gh/AudiusProject/audius-protocol/pipeline?branch=release-v$VERSION" \
+                --header "Circle-Token: $CIRCLE_DAILY_DEPLOY_API_TOKEN")
+
+              pipeline_id=$(echo "$response" | jq -r '.items[0].id')
+              pipeline_number=$(echo "$response" | jq -r '.items[0].number')
+
+              # Fetch the "release" workflow
+              echo "Fetching release workflow from pipeline $pipeline_id"
+              workflow_id=$(curl --request GET \
+                "https://circleci.com/api/v2/pipeline/$pipeline_id/workflow" \
+                --header "Circle-Token: $CIRCLE_DAILY_DEPLOY_API_TOKEN" | jq -r '.items[] | select(.name=="release") | .id')
+
+              # Fetch the "release-audius-docker-compose-trigger" job
+              job_id=$(curl --request GET \
+                "https://circleci.com/api/v2/workflow/$workflow_id/job" \
+                --header "Circle-Token: $CIRCLE_DAILY_DEPLOY_API_TOKEN" | jq -r '.items[] | select(.name=="release-audius-docker-compose-trigger" and .status=="on_hold") | .id')
+
+              # If we found the on-hold job, notify Slack for someone to approve it
+              if [ ! -z "$job_id" ]; then
+                  echo "Found job: $JOB_ID"
+                  job_url="https://app.circleci.com/pipelines/gh/AudiusProject/audius-protocol/$pipeline_number/workflows/$workflow_id"
+
+                  # Build Slack message
+                  json_content="{ \"blocks\": ["
+                  json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"Release v$VERSION is ready for SPs! Please approve <$job_url|release-audius-docker-compose-trigger> and react to this message with :white_check_mark:\n\" } }"
+                  json_content+="]}"
+                  echo "Text to send to slack: $json_content"
+                  
+                  # Send Slack message
+                  curl -f -X POST -H 'Content-type: application/json' \
+                    --data "$json_content" \
+                    $SLACK_DAILY_DEPLOY_WEBHOOK
+              else
+                  echo "Didn't find job"
+                  exit 1
+              fi
+            ) || handle_error
 
   generate-client-release:
     working_directory: ~/audius-protocol
@@ -209,7 +341,9 @@ workflows:
         equal: [scheduled_pipeline, << pipeline.trigger_source >>]
     jobs:
       - generate-config
-      - init
+      - init:
+          context:
+            - Vercel
       - path-filtering/filter:
           name: trigger-relevant-workflows
           filters:
@@ -220,44 +354,35 @@ workflows:
           base-revision: main
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
-            discovery-provider/.* run-discovery-workflow true
-            discovery-provider/.* run-integration-workflow true
-            discovery-provider/.* run-gcp-workflow true
             comms/.* run-discovery-workflow true
-            comms/.* run-integration-workflow true
-            comms/.* run-gcp-workflow true
             mediorum/.* run-creator-workflow true
-            mediorum/.* run-integration-workflow true
-            mediorum/.* run-gcp-workflow true
-            identity-service/.* run-identity-workflow true
-            identity-service/.* run-integration-workflow true
-            identity-service/.* run-gcp-workflow true
-            libs/.* run-creator-workflow true
-            libs/.* run-identity-workflow true
-            libs/.* run-sdk-workflow true
-            libs/.* run-integration-workflow true
-            libs/.* run-gcp-workflow true
+            packages/identity-service/.* run-identity-workflow true
+            packages/identity-service/.* run-integration-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
-            eth-contracts/.* run-integration-workflow true
-            eth-contracts/.* run-gcp-workflow true
+            monitoring/healthz/.* run-healthz-workflow true
+            protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
-            contracts/.* run-integration-workflow true
-            contracts/.* run-gcp-workflow true
             .circleci/.* run-discovery-workflow true
             .circleci/.* run-creator-workflow true
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
+            .circleci/.* run-protocol-dashboard-workflow true
+            .circleci/.* run-healthz-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
             .circleci/.* run-stems-workflow true
+            .circleci/.* run-harmony-workflow true
             .circleci/.* run-embed-workflow true
             .* run-release-workflow false
+            .* run-integration-workflow true
+            packages/discovery-provider/.* run-discovery-workflow true
             packages/web/.* run-web-workflow true
             packages/mobile/.* run-mobile-workflow true
             packages/probers/.* run-web-workflow true
             packages/embed/.* run-embed-workflow true
+            packages/common/.* run-common-workflow true
             packages/common/.* run-web-workflow true
             packages/common/.* run-mobile-workflow true
             packages/stems/.* run-stems-workflow true
@@ -267,6 +392,14 @@ workflows:
             packages/eslint-config-audius/.* run-web-workflow true
             packages/eslint-config-audius/.* run-mobile-workflow true
             packages/eslint-config-audius/.* run-stems-workflow true
+            packages/eslint-config-audius/.* run-harmony-workflow true
+            packages/libs/.* run-creator-workflow true
+            packages/libs/.* run-identity-workflow true
+            packages/libs/.* run-protocol-dashboard-workflow true
+            packages/libs/.* run-sdk-workflow true
+            packages/libs/.* run-web-workflow true
+            packages/libs/.* run-mobile-workflow true
+            packages/libs/.* run-embed-workflow true
           requires:
             - generate-config
             - init
@@ -280,19 +413,32 @@ workflows:
           base-revision: main~1
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
-            .* run-gcp-workflow true
             .* run-integration-workflow true
-            .* run-discovery-workflow true
             .* run-creator-workflow true
+            .* run-discovery-workflow true
             .* run-identity-workflow true
             .* run-eth-contracts-workflow true
             .* run-contracts-workflow true
             .* run-release-workflow false
-            libs/.* run-sdk-workflow true
-            .* run-web-workflow true
-            .* run-mobile-workflow true
+            .* run-sdk-workflow true
             .* run-stems-workflow true
+            .* run-harmony-workflow true
             .* run-probers-workflow true
+            .circleci/.* run-web-workflow true
+            .circleci/.* run-mobile-workflow true
+            packages/common/.* run-common-workflow true
+            packages/common/.* run-web-workflow true
+            packages/common/.* run-mobile-workflow true
+            packages/eslint-config-audius/.* run-web-workflow true
+            packages/eslint-config-audius/.* run-mobile-workflow true
+            packages/libs/.* run-web-workflow true
+            packages/libs/.* run-mobile-workflow true
+            packages/harmony/.* run-web-workflow true
+            packages/harmony/.* run-mobile-workflow true
+            packages/mobile/.* run-mobile-workflow true
+            packages/web/.* run-web-workflow true
+            protocol-dashboard/.* run-protocol-dashboard-workflow true
+            monitoring/healthz/.* run-healthz-workflow true
           requires:
             - generate-config
             - init
@@ -306,11 +452,7 @@ workflows:
           base-revision: main
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
-            .* run-gcp-workflow true
             .* run-integration-workflow true
-            .* run-discovery-workflow true
-            .* run-creator-workflow true
-            .* run-identity-workflow true
             .* run-eth-contracts-workflow true
             .* run-contracts-workflow true
             .* run-release-workflow true
@@ -344,8 +486,26 @@ workflows:
         - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - equal: ['release-create-branch', << pipeline.schedule.name >>]
     jobs:
-      - generate-release:
-          context: slack-secrets
+      - generate-release-branch
+
+  auto-approve-foundation-deploy:
+    when:
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal:
+            ['auto-approve-foundation-deploy', << pipeline.schedule.name >>]
+    jobs:
+      - approve-deployment-holds:
+          context: [slack-secrets, circle-daily-deploy-secrets]
+
+  notify-sp-release:
+    when:
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ['notify-sp-release', << pipeline.schedule.name >>]
+    jobs:
+      - notify-sp-release-job:
+          context: [slack-secrets, circle-daily-deploy-secrets]
 
   release-client-create-branch:
     when:

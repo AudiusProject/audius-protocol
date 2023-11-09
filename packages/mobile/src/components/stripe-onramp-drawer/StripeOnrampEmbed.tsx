@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import type { StripeSessionData } from '@audius/common'
 import { stripeModalUISelectors, stripeModalUIActions } from '@audius/common'
 import { View } from 'react-native'
 import { WebView } from 'react-native-webview'
@@ -19,10 +20,11 @@ const STRIPE_PUBLISHABLE_KEY = env.REACT_APP_STRIPE_CLIENT_PUBLISHABLE_KEY
 const useStyles = makeStyles(() => ({
   root: {
     display: 'flex',
-    height: '85%'
+    flex: 1,
+    height: '100%'
   },
   spinnerContainer: {
-    height: '85%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center'
   }
@@ -36,10 +38,16 @@ export const StripeOnrampEmbed = () => {
 
   const handleSessionUpdate = useCallback(
     (event) => {
-      if (event?.payload?.session?.status) {
-        dispatch(
-          stripeSessionStatusChanged({ status: event.payload.session.status })
-        )
+      try {
+        const session = JSON.parse(event.nativeEvent.data) as StripeSessionData
+        if (session) {
+          dispatch(stripeSessionStatusChanged({ session }))
+          if (session.status === 'error') {
+            dispatch(cancelStripeOnramp())
+          }
+        }
+      } catch (e) {
+        console.error(`Failed to parse Stripe session update: ${e}`)
       }
     },
     [dispatch]
@@ -52,6 +60,15 @@ export const StripeOnrampEmbed = () => {
       dispatch(cancelStripeOnramp())
     },
     [dispatch]
+  )
+
+  const renderLoadingSpinner = useCallback(
+    () => (
+      <View style={styles.spinnerContainer}>
+        <LoadingSpinner />
+      </View>
+    ),
+    [styles]
   )
 
   const html = `
@@ -69,7 +86,7 @@ export const StripeOnrampEmbed = () => {
     <div id="onramp-element" />
     <script type="text/javascript">
       const handleSessionUpdate = (event) => {
-        window.ReactNativeWebView.postMessage(event)
+        window.ReactNativeWebView.postMessage(JSON.stringify(event.payload.session))
       }
       try {
         const onramp = new window.StripeOnramp("${STRIPE_PUBLISHABLE_KEY}")
@@ -96,14 +113,14 @@ export const StripeOnrampEmbed = () => {
       {clientSecret ? (
         <WebView
           source={{ html }}
-          scrollEnabled={false}
+          startInLoadingState={true}
+          renderLoading={renderLoadingSpinner}
+          scrollEnabled
           onError={handleError}
           onMessage={handleSessionUpdate}
         />
       ) : (
-        <View style={styles.spinnerContainer}>
-          <LoadingSpinner />
-        </View>
+        renderLoadingSpinner()
       )}
     </View>
   )

@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import {
-  accountSelectors,
   cacheUsersSelectors,
   Chain,
   FollowSource,
@@ -13,12 +12,13 @@ import {
   isPremiumContentUSDCPurchaseGated,
   Nullable,
   PremiumConditions,
-  premiumContentActions,
   premiumContentSelectors,
   removeNullable,
   tippingActions,
   User,
-  usersSocialActions as socialActions
+  usersSocialActions as socialActions,
+  usePremiumContentPurchaseModal,
+  ModalSource
 } from '@audius/common'
 import {
   Button,
@@ -33,27 +33,25 @@ import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
+import IconExternalLink from 'assets/img/iconExternalLink.svg'
 import { useModalState } from 'common/hooks/useModalState'
-import { showRequiresAccountModal } from 'common/store/pages/signon/actions'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { FollowButton } from 'components/follow-button/FollowButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { IconTip } from 'components/notification/Notification/components/icons'
 import typeStyles from 'components/typography/typography.module.css'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useAuthenticatedCallback } from 'hooks/useAuthenticatedCallback'
 import { emptyStringGuard } from 'pages/track-page/utils'
 import { AppState } from 'store/types'
-import { profilePage, SIGN_UP_PAGE } from 'utils/route'
+import { profilePage } from 'utils/route'
 
 import styles from './GiantTrackTile.module.css'
 import { LockedStatusBadge } from './LockedStatusBadge'
 
 const { getUsers } = cacheUsersSelectors
 const { beginTip } = tippingActions
-const { setPurchaseContentId } = premiumContentActions
 const { getPremiumTrackStatusMap } = premiumContentSelectors
-const { getAccountUser } = accountSelectors
 
 const messages = {
   howToUnlock: 'HOW TO UNLOCK',
@@ -120,45 +118,40 @@ const LockedPremiumTrackSection = ({
   const dispatch = useDispatch()
   const [lockedContentModalVisibility, setLockedContentModalVisibility] =
     useModalState('LockedContent')
-  const [, setPurchaseModalVisibility] = useModalState('PremiumContentPurchase')
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
   const source = lockedContentModalVisibility
     ? 'howToUnlockModal'
     : 'howToUnlockTrackPage'
   const followSource = lockedContentModalVisibility
     ? FollowSource.HOW_TO_UNLOCK_MODAL
     : FollowSource.HOW_TO_UNLOCK_TRACK_PAGE
-  const account = useSelector(getAccountUser)
   const isUSDCPurchaseGated =
     isPremiumContentUSDCPurchaseGated(premiumConditions)
 
-  const handlePurchase = useCallback(() => {
-    dispatch(setPurchaseContentId({ id: trackId }))
+  const handlePurchase = useAuthenticatedCallback(() => {
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
     }
-    setPurchaseModalVisibility(true)
+    openPremiumContentPurchaseModal(
+      { contentId: trackId },
+      { source: ModalSource.TrackDetails }
+    )
   }, [
     trackId,
     lockedContentModalVisibility,
-    setPurchaseModalVisibility,
-    setLockedContentModalVisibility,
-    dispatch
+    openPremiumContentPurchaseModal,
+    setLockedContentModalVisibility
   ])
 
-  const handleSendTip = useCallback(() => {
-    if (account) {
-      dispatch(beginTip({ user: tippedUser, source, trackId }))
-    } else {
-      dispatch(pushRoute(SIGN_UP_PAGE))
-      dispatch(showRequiresAccountModal())
-    }
+  const handleSendTip = useAuthenticatedCallback(() => {
+    dispatch(beginTip({ user: tippedUser, source, trackId }))
 
     if (lockedContentModalVisibility) {
       setLockedContentModalVisibility(false)
     }
   }, [
     dispatch,
-    account,
     tippedUser,
     source,
     trackId,
@@ -166,28 +159,22 @@ const LockedPremiumTrackSection = ({
     setLockedContentModalVisibility
   ])
 
-  const handleFollow = useCallback(() => {
-    if (account) {
-      if (isPremiumContentFollowGated(premiumConditions)) {
-        dispatch(
-          socialActions.followUser(
-            premiumConditions.follow_user_id,
-            followSource,
-            trackId
-          )
+  const handleFollow = useAuthenticatedCallback(() => {
+    if (isPremiumContentFollowGated(premiumConditions)) {
+      dispatch(
+        socialActions.followUser(
+          premiumConditions.follow_user_id,
+          followSource,
+          trackId
         )
-      }
-    } else {
-      dispatch(pushRoute(SIGN_UP_PAGE))
-      dispatch(showRequiresAccountModal())
+      )
+    }
 
-      if (lockedContentModalVisibility) {
-        setLockedContentModalVisibility(false)
-      }
+    if (lockedContentModalVisibility) {
+      setLockedContentModalVisibility(false)
     }
   }, [
     dispatch,
-    account,
     premiumConditions,
     followSource,
     trackId,
@@ -655,6 +642,7 @@ export const PremiumTrackSection = ({
   const dispatch = useDispatch()
   const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
   const premiumTrackStatus = premiumTrackStatusMap[trackId] ?? null
+
   const isFollowGated = isPremiumContentFollowGated(premiumConditions)
   const isTipGated = isPremiumContentTipGated(premiumConditions)
   const isUSDCPurchaseGated =

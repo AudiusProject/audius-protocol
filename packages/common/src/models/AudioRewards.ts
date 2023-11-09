@@ -11,9 +11,18 @@ export type UserChallenge = {
   specifier: Specifier
   user_id: string
   amount: number
+  disbursed_amount: number
 }
 
 export type Specifier = string
+
+/** Used to map challenge names which are single letters to their
+ * semantic equivalents for easier readability
+ */
+export enum ChallengeName {
+  AudioMatchingBuy = 'b',
+  AudioMatchingSell = 's'
+}
 
 export type ChallengeRewardID =
   | 'track-upload'
@@ -26,6 +35,8 @@ export type ChallengeRewardID =
   | 'profile-completion'
   | 'send-first-tip'
   | 'first-playlist'
+  | ChallengeName.AudioMatchingSell // $AUDIO matching seller
+  | ChallengeName.AudioMatchingBuy // $AUDIO matching buyer
   | 'trending-track'
   | 'trending-playlist'
   | 'top-api'
@@ -49,7 +60,9 @@ export enum FailureReason {
   // An unknown error has occurred
   UNKNOWN_ERROR = 'UNKNOWN_ERROR',
   // Unknown AAO error
-  AAO_ATTESTATION_UNKNOWN_RESPONSE = 'AAO_ATTESTATION_UNKNOWN_RESPONSE'
+  AAO_ATTESTATION_UNKNOWN_RESPONSE = 'AAO_ATTESTATION_UNKNOWN_RESPONSE',
+  // Need to wait for cooldown period
+  WAIT_FOR_COOLDOWN = 'WAIT_FOR_COOLDOWN'
 }
 
 export type FlowUIOpenEvent = {
@@ -107,6 +120,11 @@ export type UserChallengeState =
   | 'completed'
   | 'disbursed'
 
+export type SpecifierWithAmount = {
+  specifier: string
+  amount: number
+}
+
 /**
  * A User Challenge that has been updated by the client to optimistically include any updates
  */
@@ -118,5 +136,5 @@ export type OptimisticUserChallenge = Omit<
   state: UserChallengeState
   totalAmount: number
   claimableAmount: number
-  undisbursedSpecifiers: Specifier[]
+  undisbursedSpecifiers: SpecifierWithAmount[]
 }

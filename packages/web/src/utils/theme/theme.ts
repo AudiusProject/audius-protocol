@@ -11,10 +11,28 @@ export type ThemeColor = keyof typeof DefaultTheme &
   keyof typeof DarkTheme &
   keyof typeof MatrixTheme
 
-const applyTheme = (themeObject: { [key: string]: string }) => {
+const getThemeNameKey = (theme: Theme) => {
+  switch (theme) {
+    case Theme.AUTO:
+      if (doesPreferDarkMode()) {
+        return Theme.DARK
+      }
+      return Theme.DEFAULT
+    case Theme.DEFAULT:
+    case Theme.DARK:
+    case Theme.MATRIX:
+    default:
+      return theme
+  }
+}
+
+const applyTheme = (theme: Theme) => {
+  const themeObject: { [key: string]: string } = getThemeColors(theme)
   Object.keys(themeObject).forEach((key) => {
     document.documentElement.style.setProperty(key, themeObject[key])
   })
+  // Set data-theme to enable theme scoped css rules
+  document.documentElement.setAttribute('data-theme', getThemeNameKey(theme))
 }
 
 const doesPreferDarkMode = () => {
@@ -47,8 +65,7 @@ const getThemeColors = (theme: Theme | null) => {
 }
 
 export const setTheme = (theme: Theme) => {
-  const themeFile = getThemeColors(theme)
-  applyTheme(themeFile)
+  applyTheme(theme)
   window.localStorage.setItem(THEME_KEY, theme)
 }
 

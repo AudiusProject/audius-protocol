@@ -1,15 +1,16 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
+import BN from 'bn.js'
 import { sampleSize } from 'lodash'
 
-import { Base, BaseConstructorArgs, Services } from './base'
-import BN from 'bn.js'
-import { RewardsManagerError } from '../services/solana/errors'
 import { WAUDIO_DECMIALS } from '../constants'
-import { Utils } from '../utils/utils'
-import type { ServiceProvider } from './ServiceProvider'
-import type { Logger, Nullable } from '../utils'
-import type { AttestationMeta } from '../services/solana/rewards'
 import type { DiscoveryProvider } from '../services/discoveryProvider'
+import { RewardsManagerError } from '../services/solana/errors'
+import type { AttestationMeta } from '../services/solana/rewards'
+import type { Logger, Nullable } from '../utils'
+import { Utils } from '../utils/utils'
+
+import type { ServiceProvider } from './ServiceProvider'
+import { Base, BaseConstructorArgs, Services } from './base'
 
 const { decodeHashId } = Utils
 
@@ -27,6 +28,7 @@ const GetAttestationError = Object.freeze({
   AAO_ATTESTATION_ERROR: 'AAO_ATTESTATION_ERROR',
   AAO_ATTESTATION_REJECTION: 'AAO_ATTESTATION_REJECTION',
   AAO_ATTESTATION_UNKNOWN_RESPONSE: 'AAO_ATTESTATION_UNKNOWN_RESPONSE',
+  WAIT_FOR_COOLDOWN: 'WAIT_FOR_COOLDOWN',
   UNKNOWN_ERROR: 'UNKNOWN_ERROR'
 })
 
@@ -572,26 +574,19 @@ export class Rewards extends Base {
       const response: AxiosResponse<{
         result: string
         errorCode?: number
-        needs: keyof typeof GetAttestationError
       }> = await axios(request)
       // if attestation is successful, 'result' represents a signature
       // otherwise, 'result' is false
       // - there may or may not be a value for `needs` if the attestation fails
       // - depending on whether the user can take an action to attempt remediation
-      const { result, errorCode, needs } = response.data
+      const { result, errorCode } = response.data
 
       if (!result) {
-        logger.error(
-          `Failed to get AAO attestation${needs ? `: needs ${needs}` : ''}`
-        )
-        const mappedErr = needs
-          ? GetAttestationError[needs] ||
-            GetAttestationError.AAO_ATTESTATION_UNKNOWN_RESPONSE
-          : GetAttestationError.AAO_ATTESTATION_REJECTION
+        logger.error('Failed to get AAO attestation')
         return {
           success: null,
           aaoErrorCode: errorCode,
-          error: mappedErr
+          error: GetAttestationError.AAO_ATTESTATION_REJECTION
         }
       }
 

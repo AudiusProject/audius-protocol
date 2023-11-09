@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux'
 import { useSpring, animated } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
 
-import { ReactComponent as AudiusLogo } from 'assets/img/audiusLogoHorizontal.svg'
+import AudiusLogo from 'assets/img/audiusLogoHorizontal.svg'
 import ConnectedBottomBar from 'components/nav/mobile/ConnectedBottomBar'
 import MobilePlayBar from 'components/play-bar/mobile/PlayBar'
 

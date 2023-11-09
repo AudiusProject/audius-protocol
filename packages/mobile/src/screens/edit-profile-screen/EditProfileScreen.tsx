@@ -16,7 +16,7 @@ import IconLink from 'app/assets/images/iconLink.svg'
 import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import { ScrollView } from 'app/components/core'
-import { EditProfileFormScreen } from 'app/components/form-screen'
+import { ImageField } from 'app/components/fields'
 import { useUserCoverImage } from 'app/components/image/UserCoverImage'
 import { useUserImage } from 'app/components/image/UserImage'
 import { isImageUriSource } from 'app/hooks/useContentNodeImage'
@@ -24,7 +24,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import type { Image } from 'app/types/image'
 
-import { ProfileImageField } from './ProfileImageField'
+import { FormScreen } from './FormScreen'
 import { ProfileTextField } from './ProfileTextField'
 import type { ProfileValues, UpdatedProfile } from './types'
 
@@ -82,24 +82,24 @@ const EditProfileForm = (props: EditProfileFormProps) => {
   const styles = useStyles()
 
   return (
-    <EditProfileFormScreen
-      onReset={handleReset}
-      onSubmit={handleSubmit}
-      errors={errors}
-    >
-      <ProfileImageField
+    <FormScreen onReset={handleReset} onSubmit={handleSubmit} errors={errors}>
+      <ImageField
         name='cover_photo'
         styles={{ imageContainer: styles.coverPhoto }}
-        imageOptions={{ height: 500, width: 2000, freeStyleCropEnabled: true }}
+        pickerOptions={{ height: 500, width: 2000, freeStyleCropEnabled: true }}
       />
-      <ProfileImageField
+      <ImageField
         name='profile_picture'
         styles={{
           root: styles.profilePicture,
           imageContainer: styles.profilePictureImageContainer,
           image: styles.profilePictureImage
         }}
-        imageOptions={{ height: 1000, width: 1000, cropperCircleOverlay: true }}
+        pickerOptions={{
+          height: 1000,
+          width: 1000,
+          cropperCircleOverlay: true
+        }}
       />
       <ScrollView style={styles.textFields}>
         <ProfileTextField isFirstInput name='name' label='Name' />
@@ -129,7 +129,7 @@ const EditProfileForm = (props: EditProfileFormProps) => {
         <ProfileTextField name='website' label='Website' icon={IconLink} />
         <ProfileTextField name='donation' label='Donation' icon={IconDonate} />
       </ScrollView>
-    </EditProfileFormScreen>
+    </FormScreen>
   )
 }
 

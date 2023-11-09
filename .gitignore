@@ -181,6 +181,8 @@ docs/npm-debug.log*
 docs/yarn-debug.log*
 docs/yarn-error.log*
 
+**/local-storage/
+
 **/.hooks/*.local.json
 
 **/.hooks/*.local.json
@@ -194,3 +196,13 @@ yalc.lock
 
 # Solana
 app-keypair.json
+
+# Turborepo
+.turbo
+
+# CI
+combined-patch-file.txt
+.circleci/continue_config.yml
+
+# Identity
+packages/identity-service/emailCache

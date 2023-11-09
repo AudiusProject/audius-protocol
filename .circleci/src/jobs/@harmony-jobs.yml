@@ -1,0 +1,83 @@
+harmony-init:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - checkout
+
+    - create_concatenated_patch_file:
+        filename: combined-patch-file.txt
+
+    - restore_cache:
+        keys:
+          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+
+    # Lint
+    - run:
+        name: lint
+        command: |
+          cd packages/harmony
+          npm run lint
+
+    # Persist node modules directory to workspace
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - node_modules
+          - packages/harmony/node_modules
+
+harmony-build-storybook:
+  working_directory: ~/harmony
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: build storybook
+        command: |
+          cd packages/harmony
+          npm run build-storybook
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - packages/harmony/storybook-static
+
+harmony-deploy-storybook:
+  working_directory: ~/harmony
+  docker:
+    - image: cimg/node:18.17
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: install wrangler
+        command: |
+          cd packages/harmony
+          npm install @cloudflare/wrangler
+    - run:
+        name: Set up workers site
+        command: |
+          cd packages/harmony/workers-site
+          npm i
+    - run:
+        name: Deploy to Cloudflare
+        command: |
+          cd packages/harmony
+          npx wrangler publish
+
+harmony-deploy-chromatic:
+  docker:
+    - image: cimg/node:18.17
+  working_directory: ~/harmony
+  steps:
+    - checkout
+    - attach_workspace:
+        at: ./
+    - run:
+        name: run chromatic
+        command: |
+          cd packages/harmony
+          npm run chromatic -- --exit-zero-on-changes

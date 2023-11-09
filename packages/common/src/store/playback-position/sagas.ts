@@ -104,6 +104,7 @@ const getPlayerSeekInfo = async (audioPlayer: AudioPlayer) => {
 function* savePlaybackPositionWorker() {
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   yield* call(remoteConfigInstance.waitForRemoteConfig)
+  const isNativeMobile = yield* getContext('isNativeMobile')
 
   const audioPlayer = yield* getContext('audioPlayer')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
@@ -114,7 +115,7 @@ function* savePlaybackPositionWorker() {
   )
 
   // eslint-disable-next-line no-unmodified-loop-condition
-  while (isNewPodcastControlsEnabled) {
+  while (isNewPodcastControlsEnabled && !isNativeMobile) {
     const trackId = yield* select(getTrackId)
     const userId = yield* select(getUserId)
     const track = yield* select(getTrack, { id: trackId })

@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"mediorum/httputil"
 	"reflect"
 	"strings"
 	"sync"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/httputil"
 
 	"github.com/oklog/ulid/v2"
 	"golang.org/x/exp/slog"
@@ -45,26 +46,53 @@ type Crudr struct {
 	callbacks []func(op *Op, records interface{})
 }
 
+// create ops table if it does not exist
+func migrateOps(db *gorm.DB) error {
+	// de-partition ops if necessary
+	hasPart := false
+	db.Raw(`SELECT EXISTS (SELECT FROM information_schema.tables where table_name   = 'ops_1')`).Scan(&hasPart)
+	if hasPart {
+		departitoinDDL := `
+		BEGIN;
+			alter table ops rename to ops_part;
+			create table ops as select * from ops_part;
+			alter table ops add primary key (ulid);
+			drop table ops_part;
+		COMMIT;
+		`
+		if err := db.Exec(departitoinDDL).Error; err != nil {
+			return err
+		}
+	}
+
+	// create ops
+	opDDL := `
+	BEGIN;
+
+		CREATE TABLE IF NOT EXISTS ops (
+			"ulid" TEXT primary key,
+			"host" TEXT,
+			"action" TEXT,
+			"table" TEXT,
+			"data" JSONB);
+
+	COMMIT;
+	`
+	if err := db.Exec(opDDL).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func New(selfHost string, myPrivateKey *ecdsa.PrivateKey, peerHosts []string, db *gorm.DB) *Crudr {
 	selfHost = httputil.RemoveTrailingSlash(strings.ToLower(selfHost))
 
-	// TODO: change to partitioned schema after all nodes have migrated
-	opDDL := `
-	create table if not exists ops (
-		ulid text primary key,
-		host text not null,
-		action text not null,
-		"table" text not null,
-		data json
-	);
-	`
-	err := db.Exec(opDDL).Error
-
+	err := migrateOps(db)
 	if err != nil {
 		panic(err)
 	}
 
-	// todo: combine with above
 	err = db.AutoMigrate(&Cursor{})
 	if err != nil {
 		panic(err)

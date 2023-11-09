@@ -13,7 +13,7 @@ import {
 } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
-import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
+import IconTip from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
 import { UserProfilePictureList } from 'components/notification/Notification/components/UserProfilePictureList'
 import {

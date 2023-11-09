@@ -21,6 +21,7 @@ import { expectSaga } from 'redux-saga-test-plan'
 import { call, select } from 'redux-saga-test-plan/matchers'
 import { StaticProvider } from 'redux-saga-test-plan/providers'
 import { all, fork } from 'redux-saga/effects'
+import { beforeAll, describe, it, vitest } from 'vitest'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { apiClient } from 'services/audius-api-client'
@@ -58,11 +59,11 @@ const {
 const { getAccountUser, getUserHandle, getUserId } = accountSelectors
 
 // Setup mocks
-jest.mock('services/remote-config/remote-config-instance')
-jest.mock('utils/route/hashIds')
-jest.mock('services/AudiusBackend')
-jest.mock('services/audius-api-client/AudiusAPIClient')
-jest.mock('utils/sagaPollingDaemons')
+vitest.mock('services/remote-config/remote-config-instance')
+vitest.mock('utils/route/hashIds')
+vitest.mock('services/AudiusBackend')
+vitest.mock('services/audius-api-client/AudiusAPIClient')
+vitest.mock('utils/sagaPollingDaemons')
 
 function* saga() {
   yield all(rewardsSagas().map(fork))
@@ -70,7 +71,7 @@ function* saga() {
 
 const testClaim: AudioRewardsClaim = {
   challengeId: 'connect-verified',
-  specifiers: ['1'],
+  specifiers: [{ specifier: '1', amount: 10 }],
   amount: 10
 }
 const testUser = {
@@ -130,11 +131,11 @@ beforeAll(() => {
     [IntKeys.MAX_CLAIM_RETRIES]: MAX_CLAIM_RETRIES,
     [IntKeys.CLIENT_ATTESTATION_PARALLELIZATION]: 20
   })
-  remoteConfigInstance.waitForRemoteConfig = jest.fn()
+  remoteConfigInstance.waitForRemoteConfig = vitest.fn()
 
   // Hijack console.error for expected errors
   const oldConsoleError = console.error
-  jest.spyOn(console, 'error').mockImplementation((...args) => {
+  vitest.spyOn(console, 'error').mockImplementation((...args: any) => {
     if (
       args &&
       (args.length <= 1 ||
@@ -475,7 +476,8 @@ describe('Rewards Page Sagas', () => {
         max_steps: 7,
         challenge_type: 'numeric',
         specifier: '1',
-        user_id: '1'
+        user_id: '1',
+        disbursed_amount: 7
       },
       {
         challenge_id: 'referrals',
@@ -487,7 +489,8 @@ describe('Rewards Page Sagas', () => {
         max_steps: 5,
         challenge_type: 'numeric',
         specifier: '1',
-        user_id: '1'
+        user_id: '1',
+        disbursed_amount: 5
       },
       {
         challenge_id: 'track-upload',
@@ -499,7 +502,8 @@ describe('Rewards Page Sagas', () => {
         max_steps: 3,
         challenge_type: 'numeric',
         specifier: '1',
-        user_id: '1'
+        user_id: '1',
+        disbursed_amount: 3
       }
     ]
     const fetchUserChallengesProvisions: StaticProvider[] = [
@@ -607,7 +611,8 @@ describe('Rewards Page Sagas', () => {
         max_steps: 7,
         challenge_type: 'numeric',
         specifier: '1',
-        user_id: '1'
+        user_id: '1',
+        disbursed_amount: 7
       }
     ]
 
@@ -659,7 +664,8 @@ describe('Rewards Page Sagas', () => {
         max_steps: 7,
         challenge_type: 'numeric',
         specifier: '1',
-        user_id: '1'
+        user_id: '1',
+        disbursed_amount: 2
       }
     ]
 

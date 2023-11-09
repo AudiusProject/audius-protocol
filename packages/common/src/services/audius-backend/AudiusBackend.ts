@@ -15,12 +15,10 @@ import {
   TransactionInstruction
 } from '@solana/web3.js'
 import BN from 'bn.js'
-import { extend, unix, tz } from 'dayjs'
-import timezone from 'dayjs/plugin/timezone'
-import utc from 'dayjs/plugin/utc'
 import queryString from 'query-string'
 
 import { Env } from 'services/env'
+import dayjs from 'utils/dayjs'
 
 import placeholderCoverArt from '../../assets/img/imageBlank2x.png'
 import imageCoverPhotoBlank from '../../assets/img/imageCoverPhotoBlank.jpg'
@@ -80,7 +78,8 @@ import {
   decodeHashId,
   Timer,
   Nullable,
-  removeNullable
+  removeNullable,
+  isNullOrUndefined
 } from '../../utils'
 import type { DiscoveryNodeSelectorService } from '../sdk/discovery-node-selector'
 
@@ -122,9 +121,6 @@ declare global {
     Web3: any
   }
 }
-
-extend(utc)
-extend(timezone)
 
 const SEARCH_MAX_SAVED_RESULTS = 10
 const SEARCH_MAX_TOTAL_RESULTS = 50
@@ -675,8 +671,17 @@ export const audiusBackend = ({
       monitoringCallbacks.contentNode
     )
 
+    const useDiscoveryRelay = await getFeatureEnabled(
+      FeatureFlags.DISCOVERY_RELAY
+    )
+
+    console.info(
+      { useDiscoveryRelay },
+      `discovery relay${useDiscoveryRelay ? ' ' : ' not '}enabled`
+    )
+
     try {
-      audiusLibs = new AudiusLibs({
+      const newAudiusLibs = new AudiusLibs({
         localStorage,
         web3Config,
         ethWeb3Config,
@@ -722,10 +727,17 @@ export const audiusBackend = ({
         preferHigherPatchForSecondaries: await getFeatureEnabled(
           FeatureFlags.PREFER_HIGHER_PATCH_FOR_SECONDARIES
         ),
-        hedgehogConfig
+        hedgehogConfig,
+        useDiscoveryRelay
       })
-      await audiusLibs.init()
+      await newAudiusLibs.init()
+      audiusLibs = newAudiusLibs
       onLibsInit(audiusLibs)
+
+      if (useDiscoveryRelay) {
+        // libs not respecting the flag, mod web3 manager manually
+        audiusLibs.web3Manager.discoveryProvider = audiusLibs.discoveryProvider
+      }
 
       sanityChecks(audiusLibs)
     } catch (err) {
@@ -1081,7 +1093,8 @@ export const audiusBackend = ({
 
   async function updateTrack(
     _trackId: ID,
-    metadata: TrackMetadata & { artwork: { file: File } }
+    metadata: TrackMetadata & { artwork: { file: File } },
+    transcodePreview?: boolean
   ) {
     const cleanedMetadata = schemas.newTrackMetadata(metadata, true)
     if (metadata.artwork) {
@@ -1091,7 +1104,10 @@ export const audiusBackend = ({
       )
       cleanedMetadata.cover_art_sizes = resp.id
     }
-    return await audiusLibs.Track.updateTrackV2(cleanedMetadata)
+    return await audiusLibs.Track.updateTrackV2(
+      cleanedMetadata,
+      transcodePreview
+    )
   }
 
   // TODO(C-2719)
@@ -1690,7 +1706,7 @@ export const audiusBackend = ({
     try {
       const { exists: emailExists } =
         await audiusLibs.Account.checkIfEmailRegistered(email)
-      return emailExists
+      return emailExists as boolean
     } catch (error) {
       console.error(getErrorMessage(error))
       throw error
@@ -2185,12 +2201,14 @@ export const audiusBackend = ({
       let entityId = 0
       let entityType = Entity.Track
       let amount = '' as StringUSDC
+      let extraAmount = '' as StringUSDC
       const userIds = notification.actions
         .map((action) => {
           const data = action.data
           entityId = decodeHashId(data.content_id) as number
           entityType = Entity.Track
           amount = data.amount
+          extraAmount = data.extra_amount
           return decodeHashId(data.buyer_user_id)
         })
         .filter(removeNullable)
@@ -2200,6 +2218,7 @@ export const audiusBackend = ({
         entityId,
         entityType,
         amount,
+        extraAmount,
         ...formatBaseNotification(notification)
       }
     } else if (notification.type === 'usdc_purchase_buyer') {
@@ -2301,7 +2320,9 @@ export const audiusBackend = ({
     try {
       const { data, signature } = await signData()
       const query = {
-        timeOffset: timeOffset ? unix(timeOffset).toISOString() : undefined,
+        timeOffset: timeOffset
+          ? dayjs.unix(timeOffset).toISOString()
+          : undefined,
         limit,
         handle,
         withSupporterDethroned: withDethroned,
@@ -2753,7 +2774,7 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      const timezone = tz.guess()
+      const timezone = dayjs.tz.guess()
       const res = await fetch(`${identityServiceUrl}/users/update`, {
         method: 'POST',
         headers: {
@@ -2886,12 +2907,12 @@ export const audiusBackend = ({
   /**
    * Make a request to fetch the eth AUDIO balance of the the user
    * @params {bool} bustCache
-   * @returns {Promise<BN>} balance
+   * @returns {Promise<BN | null>} balance or null if failed to fetch balance
    */
   async function getBalance(bustCache = false) {
     await waitForLibsInit()
     const wallet = audiusLibs.web3Manager.getWalletAddress()
-    if (!wallet) return
+    if (!wallet) return null
 
     try {
       const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
@@ -2905,6 +2926,7 @@ export const audiusBackend = ({
       return balance
     } catch (e) {
       console.error(e)
+      reportError({ error: e as Error })
       return null
     }
   }
@@ -2920,14 +2942,14 @@ export const audiusBackend = ({
       const userBank = await audiusLibs.solanaWeb3Manager.deriveUserBank()
       const ownerWAudioBalance =
         await audiusLibs.solanaWeb3Manager.getWAudioBalance(userBank)
-      if (!ownerWAudioBalance) {
-        console.error('Failed to fetch account waudio balance')
-        return new BN('0')
+      if (isNullOrUndefined(ownerWAudioBalance)) {
+        throw new Error('Failed to fetch account waudio balance')
       }
       return ownerWAudioBalance
     } catch (e) {
       console.error(e)
-      return new BN('0')
+      reportError({ error: e as Error })
+      return null
     }
   }
 
@@ -2946,14 +2968,14 @@ export const audiusBackend = ({
    * Make a request to fetch the balance, staked and delegated total of the wallet address
    * @params {string} address The wallet address to fetch the balance for
    * @params {bool} bustCache
-   * @returns {Promise<BN>} balance
+   * @returns {Promise<BN | null>} balance or null if error
    */
   async function getAddressTotalStakedBalance(
     address: string,
     bustCache = false
   ) {
     await waitForLibsInit()
-    if (!address) return
+    if (!address) return null
 
     try {
       const ethWeb3 = audiusLibs.ethWeb3Manager.getWeb3()
@@ -2975,6 +2997,7 @@ export const audiusBackend = ({
 
       return balance.add(delegatedBalance).add(stakedBalance)
     } catch (e) {
+      reportError({ error: e as Error })
       console.error(e)
       return null
     }
@@ -3088,16 +3111,20 @@ export const audiusBackend = ({
   /**
    * Fetches the SPL WAUDIO balance for the user's solana wallet address
    * @param {string} The solana wallet address
-   * @returns {Promise<BN>}
+   * @returns {Promise<BN | null>} Returns the balance, or null if error
    */
   async function getAddressWAudioBalance(address: string) {
     await waitForLibsInit()
     const waudioBalance = await audiusLibs.solanaWeb3Manager.getWAudioBalance(
       address
     )
-    if (!waudioBalance) {
+    if (isNullOrUndefined(waudioBalance)) {
       console.warn(`Failed to get waudio balance for address: ${address}`)
-      return new BN('0')
+      reportError({
+        error: new Error('Failed to get wAudio balance for address'),
+        additionalInfo: { address }
+      })
+      return null
     }
     return new BN(waudioBalance.toString())
   }
@@ -3131,19 +3158,21 @@ export const audiusBackend = ({
     handle,
     recipientEthAddress,
     oracleEthAddress,
-    amount,
     quorumSize,
     endpoints,
     AAOEndpoint,
     parallelization,
     feePayerOverride
   }: {
-    challenges: { challenge_id: ChallengeRewardID; specifier: string }[]
+    challenges: {
+      challenge_id: ChallengeRewardID
+      specifier: string
+      amount: number
+    }[]
     userId: ID
     handle: string
     recipientEthAddress: string
     oracleEthAddress: string
-    amount: number
     quorumSize: number
     endpoints: string[]
     AAOEndpoint: string
@@ -3176,7 +3205,7 @@ export const audiusBackend = ({
       })
 
       const res = await attester.processChallenges(
-        challenges.map(({ specifier, challenge_id: challengeId }) => ({
+        challenges.map(({ specifier, challenge_id: challengeId, amount }) => ({
           specifier,
           challengeId,
           userId: encodedUserId,

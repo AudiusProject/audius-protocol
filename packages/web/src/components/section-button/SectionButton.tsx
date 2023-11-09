@@ -1,6 +1,6 @@
 import cn from 'classnames'
 
-import { ReactComponent as IconArrow } from 'assets/img/iconArrow.svg'
+import IconArrow from 'assets/img/iconArrow.svg'
 
 import styles from './SectionButton.module.css'
 

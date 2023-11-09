@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"mediorum/httputil"
-	"mediorum/server"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/httputil"
+	"github.com/AudiusProject/audius-protocol/mediorum/server"
 )
 
 func NewGraphStaging() PeerProvider {

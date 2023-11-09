@@ -1,6 +1,6 @@
 import cn from 'classnames'
 
-import { ReactComponent as IconTwitter } from 'assets/img/iconTwitterBird.svg'
+import IconTwitter from 'assets/img/iconTwitterBird.svg'
 
 import { SocialButton, SocialButtonProps } from '../SocialButton'
 

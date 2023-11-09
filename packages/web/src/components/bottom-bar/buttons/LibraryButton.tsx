@@ -18,8 +18,8 @@ const LibraryButton = ({
       isMatrix={isMatrixMode}
       onClick={onClick}
       href={href}
-      iconLightJSON={() => require('assets/animations/iconFavoriteLight.json')}
-      iconDarkJSON={() => require('assets/animations/iconFavoriteDark.json')}
+      iconLightJSON={() => import('assets/animations/iconFavoriteLight.json')}
+      iconDarkJSON={() => import('assets/animations/iconFavoriteDark.json')}
     />
   )
 }

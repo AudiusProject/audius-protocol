@@ -22,7 +22,8 @@ audius-protocol-identity-service-1 \
 audius-protocol-solana-test-validator-1 \
 audius-protocol-eth-ganache-1 \
 audius-protocol-poa-ganache-1 \
-audius-protocol-pedalboard
+audius-protocol-pedalboard \
+audius-protocol-anti-abuse-oracle-1
 """
 
 
@@ -69,9 +70,7 @@ def get_git_commit(protocol_dir):
 
 # TODO: Maybe clean up later to handle comms config (currently using explicit env vars in docker-compose.comms.yml)
 def generate_env(
-    protocol_dir,
-    discovery_provider_replicas,
-    elasticsearch_replicas,
+    protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod=False
 ):
     config = {}
     if (protocol_dir / "dev-tools/config.json").exists():
@@ -90,7 +89,7 @@ def generate_env(
     )["version"]
 
     env["DISCOVERY_NODE_VERSION"] = json.loads(
-        (protocol_dir / "discovery-provider/.version.json").read_text(),
+        (protocol_dir / "packages/discovery-provider/.version.json").read_text(),
     )["version"]
 
     env["ELASTICSEARCH_REPLICAS"] = str(elasticsearch_replicas)
@@ -149,6 +148,11 @@ def generate_env(
             aao_wallets.append(value)
     env["AAO_WALLET_ADDRESSES"] = ",".join(aao_wallets)
 
+    if prod:
+        env["DOCKERCOMPOSE_ENV_TYPE"] = "prod"
+    else:
+        env["DOCKERCOMPOSE_ENV_TYPE"] = "dev"
+
     for key, value in config.get("extra-env", {}).items():
         env[key] = value
 
@@ -190,19 +194,23 @@ def cli(ctx, protocol_dir):
 @click.option("-d", "--discovery-provider-replicas", default=1, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-a", "--args", type=str, multiple=True)
+@click.option(
+    "--prod",
+    is_flag=True,
+    help="Use production containers which have all dependencies built in",
+)
 @click.argument("services", nargs=-1)
 @click.pass_obj
 def build(
     protocol_dir,
     discovery_provider_replicas,
     elasticsearch_replicas,
+    prod,
     args,
     services,
 ):
     generate_env(
-        protocol_dir,
-        discovery_provider_replicas,
-        elasticsearch_replicas,
+        protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod
     )
 
     proc = subprocess.run(
@@ -217,7 +225,7 @@ def build(
             "--profile=identity",
             "--profile=discovery",
             "--profile=comms",
-            "--profile=storagev2",
+            "--profile=storage",
             "--profile=notifications",
             "--profile=elasticsearch",
             "--profile=mediorum",
@@ -227,6 +235,7 @@ def build(
             "--profile=libs",
             "--profile=solana",
             "--profile=block-explorer",
+            "--profile=uptime",
             "build",
             *args,
             *services,
@@ -239,8 +248,13 @@ def build(
 
 @cli.command()
 @click.argument("services", nargs=-1)
+@click.option(
+    "--prod",
+    is_flag=True,
+    help="Use production containers which have all dependencies built in",
+)
 @click.pass_context
-def push(ctx, services):
+def push(ctx, services, prod):
     protocol_dir = ctx.obj
     services = services or ["mediorum", "discovery-provider", "identity-service"]
 
@@ -250,7 +264,7 @@ def push(ctx, services):
         raise click.ClickException("Failed to get git commit")
 
     # this is building w/o cache every time
-    ctx.invoke(build, services=services)
+    ctx.invoke(build, services=services, prod=prod)
 
     try:
         for service in services:
@@ -275,6 +289,69 @@ def push(ctx, services):
             )
     except subprocess.CalledProcessError:
         raise click.ClickException("Failed to push images")
+
+
+@cli.command()
+@click.argument("services", nargs=-1)
+@click.option(
+    "--prod",
+    is_flag=True,
+    help="Use production containers which have all dependencies built in",
+)
+@click.pass_context
+def push_arm(ctx, services, prod):
+    protocol_dir = ctx.obj
+    services = services or ["mediorum", "discovery-provider", "identity-service"]
+
+    git_commit = get_git_commit(protocol_dir)
+
+    if not git_commit:
+        raise click.ClickException("Failed to get git commit")
+
+    # this is building w/o cache every time
+    ctx.invoke(build, services=services, prod=prod)
+
+    try:
+        for service in services:
+            # TODO: Find if there is a better way to find source image names
+            subprocess.run(
+                [
+                    "docker",
+                    "tag",
+                    f"{protocol_dir.name}-{service}",
+                    f"audius/{service}:{git_commit}-arm",
+                ],
+                check=True,
+            )
+    except subprocess.CalledProcessError:
+        raise click.ClickException("Failed to tag local images")
+
+    try:
+        for service in services:
+            subprocess.run(
+                ["docker", "push", f"audius/{service}:{git_commit}-arm"],
+                check=True,
+            )
+    except subprocess.CalledProcessError:
+        raise click.ClickException("Failed to push arm images")
+
+    try:
+        for service in services:
+            og_tag = f"audius/{service}:{git_commit}"
+            arm_tag = f"{og_tag}-arm"
+            cmd = [
+                "docker",
+                "buildx",
+                "imagetools",
+                "create",
+                "-t",
+                og_tag,
+                og_tag,
+                arm_tag,
+            ]
+            subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError:
+        raise click.ClickException("Failed to merge manifest")
 
 
 @cli.command()
@@ -344,9 +421,16 @@ def load_env(protocol_dir, service, environment):
 )
 @click.option("--comms", is_flag=True, help="Bring up comms/dms containers")
 @click.option("-a", "--args", type=str, multiple=True)
+@click.option(
+    "--prod",
+    is_flag=True,
+    help="Use production containers which have all dependencies built in",
+)
 @click.argument("services", nargs=-1)
 @click.pass_obj
+@click.pass_context
 def up(
+    ctx,
     protocol_dir,
     discovery_provider_replicas,
     elasticsearch_replicas,
@@ -356,16 +440,19 @@ def up(
     pedalboard,
     comms,
     args,
+    prod,
     services,
 ):
     generate_env(
-        protocol_dir,
-        discovery_provider_replicas,
-        elasticsearch_replicas,
+        protocol_dir, discovery_provider_replicas, elasticsearch_replicas, prod
     )
 
     AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))
 
+    # Mediorum's Dockerfile.prod doesn't support multiple mediorum instances, so always use dev
+    os.environ['MEDIORUM_ENV_TYPE'] = 'dev'
+
+    ctx.invoke(pull)
     sys.exit(
         subprocess.run(
             [
@@ -384,7 +471,7 @@ def up(
                 *(["--profile=notifications"] if notifs else []),
                 *(["--profile=pedalboard"] if pedalboard else []),
                 *(["--profile=comms"] if comms else []),
-                *(["--profile=storagev2"]),
+                *(["--profile=storage"]),
                 *(["--profile=libs"]),
                 *(["--profile=solana"]),
                 "up",

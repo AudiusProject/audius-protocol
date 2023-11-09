@@ -1,11 +1,13 @@
-const helpers = require('./helpers')
 const assert = require('assert')
-const { convertAudsToWeiBN } = require('../initScripts/helpers/utils')
-const nock = require('nock')
-const { Vote } = require('../src/services/ethContracts/GovernanceClient')
+
 const time = require('@openzeppelin/test-helpers/src/time')
-const { initializeLibConfig } = require('./helpers')
+const nock = require('nock')
+
 const { AudiusLibs } = require('../src/AudiusLibs')
+const { Vote } = require('../src/services/ethContracts/GovernanceClient')
+
+const { initializeLibConfig, convertAudsToWeiBN } = require('./helpers')
+const helpers = require('./helpers')
 
 const { audiusInstance: audius0, getRandomLocalhost } = helpers
 
@@ -130,7 +132,7 @@ describe('Governance tests', function () {
     // Cleanup outstanding proposals
     const ids =
       await audius0.ethContracts.GovernanceClient.getInProgressProposals()
-    for (let id of ids) {
+    for (const id of ids) {
       await evaluateProposal(id, false)
     }
   })

@@ -1,8 +1,8 @@
 import {
   useUSDCBalance,
-  formatCurrencyBalance,
   BNUSDC,
-  formatUSDCWeiToFloorDollarNumber
+  formatUSDCWeiToFloorCentsNumber,
+  decimalIntegerToHumanReadable
 } from '@audius/common'
 import BN from 'bn.js'
 import { useField } from 'formik'
@@ -14,7 +14,6 @@ import {
   ADDRESS,
   AMOUNT
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
-import { toHumanReadable } from 'utils/tokenInput'
 
 import { TextRow } from './TextRow'
 import styles from './TransferInProgress.module.css'
@@ -27,10 +26,10 @@ const messages = {
 
 export const TransferInProgress = () => {
   const { data: balance } = useUSDCBalance()
-  const balanceNumber = formatUSDCWeiToFloorDollarNumber(
+  const balanceNumber = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
-  const balanceFormatted = formatCurrencyBalance(balanceNumber)
+  const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
 
   const [{ value: amountValue }] = useField(AMOUNT)
   const [{ value: addressValue }] = useField(ADDRESS)
@@ -41,7 +40,7 @@ export const TransferInProgress = () => {
       <Divider style={{ margin: 0 }} />
       <TextRow
         left={messages.amountToWithdraw}
-        right={`-$${toHumanReadable(amountValue)}`}
+        right={`-$${decimalIntegerToHumanReadable(amountValue)}`}
       />
       <Divider style={{ margin: 0 }} />
       <div className={styles.destination}>

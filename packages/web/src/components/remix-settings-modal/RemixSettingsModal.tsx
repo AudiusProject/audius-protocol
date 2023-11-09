@@ -6,7 +6,9 @@ import {
   PremiumConditions,
   SquareSizes,
   Track,
-  User
+  User,
+  isPremiumContentCollectibleGated,
+  isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
 import {
   Modal,
@@ -19,7 +21,7 @@ import {
 import cn from 'classnames'
 import { debounce } from 'lodash'
 
-import { ReactComponent as IconRemix } from 'assets/img/iconRemix.svg'
+import IconRemix from 'assets/img/iconRemix.svg'
 import Input from 'components/data-entry/Input'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
@@ -44,6 +46,7 @@ const messages = {
   changeAvailabilityPrefix: 'Availablity is set to ',
   changeAvailabilitySuffix:
     '. To enable these options, change availability to Public.',
+  premium: 'Premium (Pay-to-Unlock)',
   collectibleGated: 'Collectible Gated',
   specialAccess: 'Special Access',
   markAsRemix: 'Mark This Track as a Remix',
@@ -187,10 +190,12 @@ const RemixSettingsModal = ({
           <HelpCallout
             className={styles.disableInfo}
             content={`${messages.changeAvailabilityPrefix} ${
-              'nft_collection' in (premiumConditions ?? {})
+              isPremiumContentUSDCPurchaseGated(premiumConditions)
+                ? messages.premium
+                : isPremiumContentCollectibleGated(premiumConditions)
                 ? messages.collectibleGated
                 : messages.specialAccess
-            } ${messages.changeAvailabilitySuffix}`}
+            }${messages.changeAvailabilitySuffix}`}
           />
         ) : null}
         <div className={styles.toggleRow}>

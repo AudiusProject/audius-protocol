@@ -1,6 +1,5 @@
 import cn from 'classnames'
-import { h } from 'preact'
-import { useState, useEffect, useRef } from 'preact/hooks'
+import { useState, useEffect, useRef } from 'react'
 
 import audiusLogo from '../../assets/img/logoEmbedPlayer.png'
 import { logError } from '../../util/logError'

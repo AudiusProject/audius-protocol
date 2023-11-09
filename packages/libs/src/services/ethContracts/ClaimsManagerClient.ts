@@ -1,10 +1,7 @@
 import { Utils } from '../../utils'
 import { ContractClient } from '../contracts/ContractClient'
-import type { EthWeb3Manager } from '../ethWeb3Manager'
 
 export class ClaimsManagerClient extends ContractClient {
-  // @ts-expect-error defined in ContractClient
-  override web3Manager: EthWeb3Manager
   /* ------- GETTERS ------- */
 
   // Get the duration of a funding round in blocks
@@ -93,10 +90,10 @@ export class ClaimsManagerClient extends ContractClient {
     })
     return events.map((event) => ({
       blockNumber: parseInt(event.blockNumber as unknown as string),
-      claimer: event.returnValues['_claimer'],
-      rewards: Utils.toBN(event.returnValues['_rewards']),
-      oldTotal: Utils.toBN(event.returnValues['_oldTotal']),
-      newTotal: Utils.toBN(event.returnValues['_newTotal'])
+      claimer: event.returnValues._claimer,
+      rewards: Utils.toBN(event.returnValues._rewards),
+      oldTotal: Utils.toBN(event.returnValues._oldTotal),
+      newTotal: Utils.toBN(event.returnValues._newTotal)
     }))
   }
 }

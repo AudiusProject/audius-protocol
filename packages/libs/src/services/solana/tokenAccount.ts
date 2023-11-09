@@ -5,6 +5,7 @@ import {
   SYSVAR_RENT_PUBKEY,
   Connection
 } from '@solana/web3.js'
+
 import type { Nullable } from '../../utils'
 import type { IdentityService } from '../identity'
 

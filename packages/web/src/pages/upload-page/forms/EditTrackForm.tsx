@@ -1,12 +1,6 @@
 import { useCallback, useContext, useMemo } from 'react'
 
-import {
-  HarmonyPlainButton,
-  HarmonyPlainButtonType,
-  IconCaretRight,
-  IconPause,
-  IconPlay
-} from '@audius/stems'
+import { HarmonyPlainButton, IconCaretRight } from '@audius/stems'
 import cn from 'classnames'
 import { Form, Formik, FormikProps, useField } from 'formik'
 import moment from 'moment'
@@ -14,13 +8,14 @@ import { useUnmount } from 'react-use'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
+import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { Text } from 'components/typography'
-import { UploadFormScrollContext } from 'pages/upload-page/UploadPageNew'
+import { UploadFormScrollContext } from 'pages/upload-page/UploadPage'
 
 import { AnchoredSubmitRow } from '../components/AnchoredSubmitRow'
+import { PreviewButton } from '../components/PreviewButton'
 import { AccessAndSaleField } from '../fields/AccessAndSaleField'
 import { AttributionField } from '../fields/AttributionField'
 import { MultiTrackSidebar } from '../fields/MultiTrackSidebar'
@@ -30,7 +25,6 @@ import { SourceFilesField } from '../fields/SourceFilesField'
 import { TrackMetadataFields } from '../fields/TrackMetadataFields'
 import { defaultHiddenFields } from '../fields/availability/HiddenAvailabilityFields'
 import { TrackEditFormValues, TrackFormState } from '../types'
-import { UploadPreviewContext } from '../utils/uploadPreviewContext'
 import { TrackMetadataFormSchema } from '../validation'
 
 import styles from './EditTrackForm.module.css'
@@ -120,9 +114,6 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
   const { values, dirty } = props
   const isMultiTrack = values.trackMetadatas.length > 1
   const trackIdx = values.trackMetadatasIndex
-  const { playingPreviewIndex, togglePreview } =
-    useContext(UploadPreviewContext)
-  const isPreviewPlaying = playingPreviewIndex === trackIdx
   const [, , { setValue: setIndex }] = useField('trackMetadatasIndex')
   useUnmount(() => {
     setIndex(0)
@@ -149,15 +140,11 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
               <AccessAndSaleField isUpload />
               <AttributionField />
             </div>
-            <HarmonyPlainButton
+            <PreviewButton
+              // Since edit form is a single component, render a different preview for each track
+              key={trackIdx}
               className={styles.previewButton}
-              variant={HarmonyPlainButtonType.SUBDUED}
-              type='button'
-              text={messages.preview}
-              iconLeft={isPreviewPlaying ? IconPause : IconPlay}
-              onClick={() => {
-                togglePreview(values.tracks[trackIdx].preview, trackIdx)
-              }}
+              index={trackIdx}
             />
           </div>
           {isMultiTrack ? <MultiTrackFooter /> : null}

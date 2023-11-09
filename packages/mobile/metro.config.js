@@ -35,9 +35,10 @@ const getClientAliases = () => {
 
 module.exports = (async () => {
   const {
-    resolver: { sourceExts, assetExts }
+    resolver: { sourceExts, assetExts, resolverMainFields }
   } = await getDefaultConfig()
-  return {
+
+  const config = {
     transformer: {
       getTransformOptions: async () => ({
         transform: {
@@ -55,11 +56,12 @@ module.exports = (async () => {
     ],
     resolver: {
       assetExts: assetExts.filter((ext) => ext !== 'svg'),
-      sourceExts: [...sourceExts, 'svg', 'cjs'],
+      sourceExts: [...sourceExts, 'svg', 'cjs', 'workerscript'],
       extraNodeModules: {
         ...require('node-libs-react-native'),
         // Alias for 'src' to allow for absolute paths
         app: path.resolve(__dirname, 'src'),
+        '@audius/harmony-native': path.resolve(__dirname, 'src/harmony-native'),
 
         // The following imports are needed for @audius/common
         // and audius-client to compile correctly
@@ -96,4 +98,14 @@ module.exports = (async () => {
     },
     maxWorkers: 2
   }
+
+  if (process.env.RN_STORYBOOK) {
+    resolverMainFields.unshift('sbmodern')
+    config.resolver.resolverMainFields = resolverMainFields
+  }
+
+  if (process.env.RN_E2E)
+    config.resolver.sourceExts = ['e2e.ts', ...config.resolver.sourceExts]
+
+  return config
 })()

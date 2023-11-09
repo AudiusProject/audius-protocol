@@ -3,9 +3,10 @@ import {
   WalletManager,
   getPlatformCreateKey
 } from '@audius/hedgehog'
-import type { IdentityService } from '../identity'
-import type { LocalStorage } from '../../utils/localStorage'
 import type { SetAuthFn, SetUserFn, GetFn, CreateKey } from '@audius/hedgehog'
+
+import type { LocalStorage } from '../../utils/localStorage'
+import type { IdentityService } from '../identity'
 
 export type HedgehogConfig = {
   identityService: IdentityService
@@ -67,7 +68,7 @@ export class Hedgehog {
       )
 
       // hedgehog property is called username so being consistent instead of calling it email
-      const data = await this.getFn({ lookupKey: lookupKey, username: email })
+      const data = await this.getFn({ lookupKey, username: email })
 
       if (data?.iv && data.cipherText) {
         const { walletObj, entropy } =

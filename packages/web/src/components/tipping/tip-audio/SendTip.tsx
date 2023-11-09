@@ -23,7 +23,8 @@ import {
   OnRampProvider,
   buyAudioActions,
   FeatureFlags,
-  StringKeys
+  StringKeys,
+  isNullOrUndefined
 } from '@audius/common'
 import {
   IconTrophy,
@@ -37,9 +38,10 @@ import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ReactComponent as IconQuestionCircle } from 'assets/img/iconQuestionCircle.svg'
+import IconQuestionCircle from 'assets/img/iconQuestionCircle.svg'
 import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
 import { OnRampButton } from 'components/on-ramp-button'
+import Skeleton from 'components/skeleton/Skeleton'
 import Tooltip from 'components/tooltip/Tooltip'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
@@ -84,12 +86,12 @@ export const SendTip = () => {
   const supportingMap = useSelector(getOptimisticSupporting)
   const receiver = useSelector(getSendUser)
 
-  const accountBalance = (useSelector(getAccountBalance) ??
-    new BN('0')) as BNWei
-
+  const accountBalance = useSelector(getAccountBalance)
   const [tipAmount, setTipAmount] = useState('')
 
-  const { tier } = getTierAndNumberForBalance(weiToString(accountBalance))
+  const { tier } = getTierAndNumberForBalance(
+    weiToString(accountBalance ?? (new BN('0') as BNWei))
+  )
   const audioBadge = audioTierMapPng[tier as BadgeTier]
 
   const [isDisabled, setIsDisabled] = useState(true)
@@ -102,7 +104,7 @@ export const SendTip = () => {
     hasInsufficientBalance
   } = useGetFirstOrTopSupporter({
     tipAmount,
-    accountBalance,
+    accountBalance: accountBalance ?? (new BN('0') as BNWei),
     account,
     receiver,
     supportingMap,
@@ -180,7 +182,11 @@ export const SendTip = () => {
           <img alt='no tier' src={IconNoTierBadge} width='16' height='16' />
         )}
         <span className={styles.amountAvailable}>
-          {formatWei(accountBalance, true, 0)}
+          {isNullOrUndefined(accountBalance) ? (
+            <Skeleton width='20px' height='14px' />
+          ) : (
+            formatWei(accountBalance, true, 0)
+          )}
         </span>
       </div>
     </div>

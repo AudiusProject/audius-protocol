@@ -9,11 +9,6 @@
   margin-top: 90px;
 }
 
-:global(#downloadPage) .title,
-:global(#downloadPage) .appTitle {
-  font-family: 'Avenir Next LT Pro Condensed' !important;
-}
-
 .downloadsSection {
   margin: 50px 0;
 }

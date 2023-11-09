@@ -1,9 +1,4 @@
 import type Web3Type from 'web3'
-import Web3 from '../../utils/web3'
-import {
-  Configuration,
-  DeveloperAppsApi as GeneratedDeveloperAppsApi
-} from '../generated/default'
 
 import type { AuthService, EntityManagerService } from '../../services'
 import {
@@ -11,8 +6,13 @@ import {
   EntityType,
   AdvancedOptions
 } from '../../services/EntityManager/types'
-
 import { parseParams } from '../../utils/parseParams'
+import Web3 from '../../utils/web3'
+import {
+  Configuration,
+  DeveloperAppsApi as GeneratedDeveloperAppsApi
+} from '../generated/default'
+
 import {
   CreateDeveloperAppRequest,
   CreateDeveloperAppSchema,

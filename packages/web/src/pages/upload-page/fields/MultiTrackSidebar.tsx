@@ -1,23 +1,19 @@
 import { MouseEvent, useCallback, useContext } from 'react'
 
 import { imageBlank as placeholderArt } from '@audius/common'
-import {
-  HarmonyButton,
-  HarmonyButtonType,
-  IconError,
-  IconUpload
-} from '@audius/stems'
+import { Button, ButtonType } from '@audius/harmony'
+import { IconError, IconUpload } from '@audius/stems'
 import cn from 'classnames'
 import { useField, useFormikContext } from 'formik'
 import { isEmpty } from 'lodash'
 
-import { ReactComponent as IconTrash } from 'assets/img/iconTrash.svg'
+import IconTrash from 'assets/img/iconTrash.svg'
 import { Icon } from 'components/Icon'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import layoutStyles from 'components/layout/layout.module.css'
 import { Text } from 'components/typography'
 
-import { UploadFormScrollContext } from '../UploadPageNew'
+import { UploadFormScrollContext } from '../UploadPage'
 import { useIndexedField } from '../hooks'
 import { SingleTrackEditValues, TrackEditFormValues } from '../types'
 import { UploadPreviewContext } from '../utils/uploadPreviewContext'
@@ -45,13 +41,15 @@ export const MultiTrackSidebar = () => {
         <div className={cn(styles.body, layoutStyles.col, layoutStyles.gap2)}>
           <TrackNavigator />
           <div className={styles.completeButton}>
-            <HarmonyButton
+            <Button
               onClick={scrollToTop}
-              text={messages.complete}
-              variant={HarmonyButtonType.PRIMARY}
+              variant={ButtonType.PRIMARY}
               iconRight={IconUpload}
+              type='submit'
               fullWidth
-            />
+            >
+              {messages.complete}
+            </Button>
           </div>
           {!isEmpty(errors) && submitCount > 0 ? (
             <div className={cn(layoutStyles.row, layoutStyles.gap1)}>

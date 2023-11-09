@@ -34,6 +34,8 @@ import { processTracksForUpload } from 'common/store/upload/sagaHelpers'
 import { dominantColor } from 'utils/imageProcessingUtil'
 import { waitForWrite } from 'utils/sagaHelpers'
 
+import { recordEditTrackAnalytics } from './sagaHelpers'
+
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const setDominantColors = averageColorActions.setDominantColors
@@ -164,6 +166,9 @@ function* confirmEditTrack(
   yield waitForWrite()
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const apiClient = yield getContext('apiClient')
+  const transcodePreview =
+    formFields.preview_start_seconds !== null &&
+    currentTrack.preview_start_seconds !== formFields.preview_start_seconds
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
@@ -171,7 +176,8 @@ function* confirmEditTrack(
         const { blockHash, blockNumber } = yield call(
           audiusBackendInstance.updateTrack,
           trackId,
-          { ...formFields }
+          { ...formFields },
+          transcodePreview
         )
 
         const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
@@ -212,22 +218,7 @@ function* confirmEditTrack(
             }
           ])
         )
-
-        // Record analytics on track edit
-        // Note: if remixes is not defined in field_visibility, it defaults to true
-        if (
-          (currentTrack?.field_visibility?.remixes ?? true) &&
-          confirmedTrack?.field_visibility?.remixes === false
-        ) {
-          const handle = yield select(getUserHandle)
-          // Record event if hide remixes was turned on
-          yield put(
-            make(Name.REMIX_HIDE, {
-              id: confirmedTrack.track_id,
-              handle
-            })
-          )
-        }
+        yield call(recordEditTrackAnalytics, currentTrack, confirmedTrack)
       },
       function* () {
         yield put(trackActions.editTrackFailed())

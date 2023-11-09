@@ -14,29 +14,15 @@ web-init:
         keys:
           - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
-    - restore_cache:
-        keys:
-          - cache-{{ .Revision }}
-
-    - common-lint
-
     - run:
-        name: typecheck
+        name: lint & typecheck
         command: |
-          cd packages/web
-          npm run typecheck
-
-    - run:
-        name: lint
-        command: |
-          cd packages/web
-          npm run lint
+          npx turbo run verify --filter=audius-client
 
     - run:
         name: stylelint
         command: |
-          cd packages/web
-          npm run stylelint
+          npm run stylelint -w audius-client
 
     - persist_to_workspace:
         root: ./
@@ -46,6 +32,8 @@ web-init:
           - packages/probers/node_modules
           - packages/stems/node_modules
           - packages/stems/dist
+          - packages/harmony/node_modules
+          - packages/harmony/dist
           - packages/common/node_modules
           - packages/common/dist
           - packages/libs/node_modules
@@ -63,13 +51,15 @@ web-build-demo:
     - run:
         name: build-demo
         no_output_timeout: 30m
-        # Set the branch name as the PUBLIC_URL so that relative paths work, e.g.
+        # Set the branch name as the VITE_PUBLIC_URL so that relative paths work, e.g.
         # demo.audius.co/some-branch/handle/track resolves as /handle/track would at audius.co
         command: |
           cd packages/web
-          export PUBLIC_URL=/${CIRCLE_BRANCH}
-          CI=false npm run build:stage
+          cp ./.env/.env.stage ./.env/.env.stage.tmp
+          echo -e "\nVITE_PUBLIC_URL=/${CIRCLE_BRANCH}" >> ./.env/.env.stage
+          CI=false npm run build:stage -w audius-client
           mv build-staging build-demo
+          cp ./.env/.env.stage.tmp ./.env/.env.stage
     - persist_to_workspace:
         root: ./
         paths:
@@ -103,9 +93,9 @@ web-test-staging:
         cypress-command: 'cd packages/probers && npx cypress run --browser chrome'
         start-command: 'npx serve -l 3001 -s packages/web/build-staging'
     - store_artifacts:
-        path: /home/circleci/audius-client/packages/probers/cypress/videos
+        path: /home/circleci/audius-protocol/packages/probers/cypress/videos
     - store_artifacts:
-        path: /home/circleci/audius-client/packages/probers/cypress/screenshots
+        path: /home/circleci/audius-protocol/packages/probers/cypress/screenshots
 
 web-build-production:
   working_directory: ~/audius-protocol
@@ -161,7 +151,7 @@ web-deploy-staging-cloudflare:
         build-type: staging
         environment: staging
         copy-robots: false
-    - web-deploy-sourcemaps-s3
+    # - web-deploy-sourcemaps-s3
 
 web-deploy-release-candidate:
   working_directory: ~/audius-protocol
@@ -172,7 +162,7 @@ web-deploy-release-candidate:
         build-type: production
         environment: release
         copy-robots: true
-    - web-deploy-sourcemaps-s3
+    # - web-deploy-sourcemaps-s3
 
 web-deploy-staging-release-candidate:
   working_directory: ~/audius-protocol
@@ -183,7 +173,7 @@ web-deploy-staging-release-candidate:
         build-type: staging
         environment: staging-release
         copy-robots: true
-    - web-deploy-sourcemaps-s3
+    # - web-deploy-sourcemaps-s3
 
 web-deploy-production-s3:
   working_directory: ~/audius-protocol
@@ -220,7 +210,7 @@ web-deploy-production-cloudflare:
         build-type: production
         environment: production
         copy-robots: true
-    - web-deploy-sourcemaps-s3
+    # - web-deploy-sourcemaps-s3
 
 web-deploy-sentry-sourcemaps:
   working_directory: ~/audius-protocol

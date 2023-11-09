@@ -5,7 +5,7 @@ import {
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import { createJupiterApiClient, Instruction, QuoteResponse } from '@jup-ag/api'
-import { PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js'
+import { PublicKey, TransactionInstruction } from '@solana/web3.js'
 
 let _jup: ReturnType<typeof createJupiterApiClient>
 
@@ -65,8 +65,7 @@ const getQuote = async ({
     inputMint: inputToken.address,
     outputMint: outputToken.address,
     amount,
-    slippageBps: slippage, // make sure slippageBps = slippage
-    asLegacyTransaction: true,
+    slippageBps: slippage,
     swapMode,
     onlyDirectRoutes
   })
@@ -92,25 +91,41 @@ const getQuote = async ({
 
 const getSwapInstructions = async ({
   quote,
-  userPublicKey
+  userPublicKey,
+  destinationTokenAccount,
+  wrapAndUnwrapSol = true,
+  useSharedAccounts = true
 }: {
   quote: QuoteResponse
   userPublicKey: PublicKey
+  destinationTokenAccount?: PublicKey
+  wrapAndUnwrapSol?: boolean
+  useSharedAccounts?: boolean
 }) => {
   const jup = getInstance()
-  const instructions = await jup.swapInstructionsPost({
+  const response = await jup.swapInstructionsPost({
     swapRequest: {
       quoteResponse: quote,
       userPublicKey: userPublicKey.toString(),
-      asLegacyTransaction: true
+      destinationTokenAccount: destinationTokenAccount?.toString(),
+      wrapAndUnwrapSol,
+      useSharedAccounts
     }
   })
+  const {
+    tokenLedgerInstruction,
+    computeBudgetInstructions,
+    setupInstructions,
+    swapInstruction,
+    cleanupInstruction,
+    addressLookupTableAddresses
+  } = response
   const instructionsFlattened = [
-    instructions.tokenLedgerInstruction,
-    ...instructions.computeBudgetInstructions,
-    ...instructions.setupInstructions,
-    instructions.swapInstruction,
-    instructions.cleanupInstruction
+    tokenLedgerInstruction,
+    ...computeBudgetInstructions,
+    ...setupInstructions,
+    swapInstruction,
+    cleanupInstruction
   ]
     .filter((i): i is Instruction => i !== undefined)
     .map((i) => {
@@ -126,45 +141,50 @@ const getSwapInstructions = async ({
         })
       } as TransactionInstruction
     })
-  return instructionsFlattened
+  return {
+    instructions: instructionsFlattened,
+    response,
+    lookupTableAddresses: addressLookupTableAddresses
+  }
 }
 
-const getSwapTransaction = async ({
-  quote,
-  userPublicKey
-}: {
-  quote: QuoteResponse
-  userPublicKey: PublicKey
-}) => {
-  const jup = getInstance()
-  const { swapTransaction } = await jup.swapPost({
-    swapRequest: {
-      quoteResponse: quote,
-      userPublicKey: userPublicKey.toString(),
-      asLegacyTransaction: true
-    }
+export const parseInstruction = (instruction: Instruction) => {
+  return new TransactionInstruction({
+    programId: new PublicKey(instruction.programId),
+    keys: instruction.accounts.map((a) => ({
+      pubkey: new PublicKey(a.pubkey),
+      isSigner: a.isSigner,
+      isWritable: a.isWritable
+    })),
+    data: Buffer.from(instruction.data, 'base64')
   })
-  const swapTransactionBuf = Buffer.from(swapTransaction, 'base64')
-  const transaction = Transaction.from(swapTransactionBuf)
-  return transaction
 }
 
 async function _sendTransaction({
   name,
-  transaction,
+  instructions,
   feePayer,
-  transactionHandler
+  transactionHandler,
+  lookupTableAddresses,
+  signatures,
+  recentBlockhash
 }: {
   name: string
-  transaction: Transaction
+  instructions: TransactionInstruction[]
   feePayer: PublicKey
   transactionHandler: TransactionHandler
+  lookupTableAddresses: string[]
+  signatures?: { publicKey: string; signature: Buffer }[]
+  recentBlockhash?: string
 }) {
   console.debug(`Exchange: starting ${name} transaction...`)
   const result = await transactionHandler.handleTransaction({
-    instructions: transaction.instructions,
+    instructions,
     feePayerOverride: feePayer,
     skipPreflight: true,
+    lookupTableAddresses,
+    signatures,
+    recentBlockhash,
     errorMapping: {
       fromErrorCode: (errorCode) => {
         if (errorCode === ERROR_CODE_SLIPPAGE) {
@@ -178,8 +198,8 @@ async function _sendTransaction({
   })
   if (result.error) {
     console.debug(
-      `Exchange: ${name} transaction stringified:`,
-      JSON.stringify(transaction)
+      `Exchange: ${name} instructions stringified:`,
+      JSON.stringify(instructions)
     )
     throw new Error(`${name} transaction failed: ${result.error}`)
   }
@@ -188,20 +208,25 @@ async function _sendTransaction({
 }
 
 const executeExchange = async ({
-  transaction,
+  instructions,
   feePayer,
-  transactionHandler
+  transactionHandler,
+  lookupTableAddresses = [],
+  signatures
 }: {
-  transaction: Transaction
+  instructions: TransactionInstruction[]
   feePayer: PublicKey
   transactionHandler: TransactionHandler
+  lookupTableAddresses?: string[]
+  signatures?: { publicKey: string; signature: Buffer }[]
 }) => {
-  // Wrap this in try/finally to ensure cleanup transaction runs, if applicable
   const { res: txId } = await _sendTransaction({
     name: 'Swap',
-    transaction,
+    instructions,
     feePayer,
-    transactionHandler
+    transactionHandler,
+    lookupTableAddresses,
+    signatures
   })
   return txId
 }
@@ -209,6 +234,5 @@ const executeExchange = async ({
 export const JupiterSingleton = {
   getQuote,
   getSwapInstructions,
-  getSwapTransaction,
   executeExchange
 }

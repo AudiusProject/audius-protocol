@@ -1,3 +1,4 @@
+/* eslint-disable import/export */
 export { sdk } from './sdk'
 export type { AudiusSdk } from './sdk'
 export * as full from './api/generated/full'

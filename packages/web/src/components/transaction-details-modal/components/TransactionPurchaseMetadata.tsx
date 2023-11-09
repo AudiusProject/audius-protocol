@@ -5,7 +5,7 @@ import {
   makeSolanaTransactionLink
 } from '@audius/common'
 
-import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
+import IconExternalLink from 'assets/img/iconExternalLink.svg'
 import {
   IconUSD,
   IconSOL,

@@ -13,7 +13,7 @@ export const getAudiusURL = () => {
   if (!hostname) {
     return `https://${window.location.host}`
   }
-  const scheme = process.env.PREACT_APP_AUDIUS_SCHEME
+  const scheme = process.env.VITE_AUDIUS_SCHEME
 
   return `${scheme}://${hostname}`
 }

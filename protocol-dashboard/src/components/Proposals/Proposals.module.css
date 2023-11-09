@@ -1,0 +1,40 @@
+.container {
+  flex-direction: column;
+  box-sizing: border-box;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+}
+
+.title {
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-xl);
+  color: var(--neutral);
+  padding: 28px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.active .title {
+  padding: 18px 32px;
+}
+
+.noProposals {
+  border-top: 1px solid var(--neutral-light-8);
+
+  text-align: center;
+  font-family: var(--font-family);
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-m);
+  color: var(--neutral);
+  padding: 28px 32px;
+}
+
+.list {
+  min-height: 100px;
+}
+
+.loading {
+  margin: 16px auto 0px;
+}

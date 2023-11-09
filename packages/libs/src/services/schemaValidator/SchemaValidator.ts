@@ -1,8 +1,8 @@
 import { validate } from 'jsonschema'
 
+import PlaylistSchema from './schemas/playlistSchema.json'
 import TrackSchema from './schemas/trackSchema.json'
 import UserSchema from './schemas/userSchema.json'
-import PlaylistSchema from './schemas/playlistSchema.json'
 
 export const trackSchemaType = 'TrackSchema'
 export const userSchemaType = 'UserSchema'

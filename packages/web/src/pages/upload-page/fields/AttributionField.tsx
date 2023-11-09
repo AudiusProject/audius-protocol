@@ -8,7 +8,7 @@ import { get, set } from 'lodash'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { ReactComponent as IconCreativeCommons } from 'assets/img/iconCreativeCommons.svg'
+import IconCreativeCommons from 'assets/img/iconCreativeCommons.svg'
 import { Icon } from 'components/Icon'
 import { AiAttributionDropdown } from 'components/ai-attribution-modal/AiAttributionDropdown'
 import {
@@ -180,7 +180,7 @@ export const AttributionField = () => {
       if (get(values, IS_AI_ATTRIBUTED)) {
         setAiUserId(get(values, AI_USER_ID) ?? aiUserId)
       } else {
-        setAiUserId(undefined)
+        setAiUserId(null)
       }
       setIsrc(get(values, ISRC) ?? isrcValue)
       setIswc(get(values, ISWC) ?? iswcValue)
@@ -219,7 +219,9 @@ export const AttributionField = () => {
     )
 
     if (!licenseType || licenseType === ALL_RIGHTS_RESERVED_TYPE) {
-      value.push(<SelectedValue label={messages.noLicense} />)
+      value.push(
+        <SelectedValue key={messages.noLicense} label={messages.noLicense} />
+      )
     }
 
     const licenseIcons = computeLicenseIcons(
@@ -238,18 +240,18 @@ export const AttributionField = () => {
       )
     }
     if (isrcValue) {
-      value.push(<SelectedValue label={isrcValue} />)
+      value.push(<SelectedValue key={isrcValue} label={isrcValue} />)
     }
 
     if (iswcValue) {
-      value.push(<SelectedValue label={iswcValue} />)
+      value.push(<SelectedValue key={iswcValue} label={iswcValue} />)
     }
     if (aiUserId) {
       value.push(
         <SelectedValue label={messages.isAiGenerated} icon={IconRobot} />
       )
     }
-    return <SelectedValues>{value}</SelectedValues>
+    return <SelectedValues key={messages.isAiGenerated}>{value}</SelectedValues>
   }, [
     aiUserId,
     allowAttribution,

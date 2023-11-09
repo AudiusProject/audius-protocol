@@ -25,6 +25,7 @@ import { RootScreen } from 'app/screens/root-screen'
 import { WalletConnectProvider } from 'app/screens/wallet-connect'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
+import { env } from 'app/services/env'
 import { setLibs } from 'app/services/libs'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { persistor, store } from 'app/store'
@@ -38,7 +39,7 @@ import { AppContextProvider } from './AppContextProvider'
 import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
 import { ThemeProvider } from './ThemeProvider'
-import { useSyncCodepush } from './useSyncCodepush'
+import { AudiusTrpcProvider } from './TrpcProvider'
 
 Sentry.init({
   dsn: Config.SENTRY_DSN
@@ -64,8 +65,6 @@ const Modals = () => {
 }
 
 const App = () => {
-  const { isPendingMandatoryCodePushUpdate } = useSyncCodepush()
-
   // Reset libs so that we get a clean app start
   useEffectOnce(() => {
     setLibs(null)
@@ -84,42 +83,42 @@ const App = () => {
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
         <FlipperAsyncStorage />
         <Provider store={store}>
-          <AudiusQueryContext.Provider
-            value={{
-              apiClient,
-              audiusSdk,
-              audiusBackend: audiusBackendInstance,
-              dispatch: store.dispatch,
-              reportToSentry
-            }}
-          >
-            <PersistGate loading={null} persistor={persistor}>
-              <ThemeProvider>
-                <WalletConnectProvider>
-                  <PortalProvider>
-                    <ErrorBoundary>
-                      <NavigationContainer>
-                        <Toasts />
-                        <Airplay />
-                        <RootScreen
-                          isPendingMandatoryCodePushUpdate={
-                            isPendingMandatoryCodePushUpdate
-                          }
-                        />
-                        <Drawers />
-                        <Modals />
-                        <Audio />
-                        <OAuth />
-                        <NotificationReminder />
-                        <RateCtaReminder />
-                        <PortalHost name='ChatReactionsPortal' />
-                      </NavigationContainer>
-                    </ErrorBoundary>
-                  </PortalProvider>
-                </WalletConnectProvider>
-              </ThemeProvider>
-            </PersistGate>
-          </AudiusQueryContext.Provider>
+          <AudiusTrpcProvider>
+            <AudiusQueryContext.Provider
+              value={{
+                apiClient,
+                audiusSdk,
+                audiusBackend: audiusBackendInstance,
+                dispatch: store.dispatch,
+                reportToSentry,
+                env,
+                fetch
+              }}
+            >
+              <PersistGate loading={null} persistor={persistor}>
+                <ThemeProvider>
+                  <WalletConnectProvider>
+                    <PortalProvider>
+                      <ErrorBoundary>
+                        <NavigationContainer>
+                          <Toasts />
+                          <Airplay />
+                          <RootScreen />
+                          <Drawers />
+                          <Modals />
+                          <Audio />
+                          <OAuth />
+                          <NotificationReminder />
+                          <RateCtaReminder />
+                          <PortalHost name='ChatReactionsPortal' />
+                        </NavigationContainer>
+                      </ErrorBoundary>
+                    </PortalProvider>
+                  </WalletConnectProvider>
+                </ThemeProvider>
+              </PersistGate>
+            </AudiusQueryContext.Provider>
+          </AudiusTrpcProvider>
         </Provider>
       </SafeAreaProvider>
     </AppContextProvider>

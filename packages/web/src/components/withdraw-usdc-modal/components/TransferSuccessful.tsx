@@ -1,10 +1,14 @@
+import { useCallback } from 'react'
+
 import {
   useUSDCBalance,
-  formatCurrencyBalance,
   BNUSDC,
-  useWithdrawUSDCModal,
-  formatUSDCWeiToFloorDollarNumber,
-  makeSolanaTransactionLink
+  formatUSDCWeiToFloorCentsNumber,
+  makeSolanaTransactionLink,
+  decimalIntegerToHumanReadable,
+  Status,
+  withdrawUSDCSelectors,
+  Name
 } from '@audius/common'
 import {
   HarmonyPlainButton,
@@ -14,8 +18,9 @@ import {
 } from '@audius/stems'
 import BN from 'bn.js'
 import { useField } from 'formik'
+import { useSelector } from 'react-redux'
 
-import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
+import IconExternalLink from 'assets/img/iconExternalLink.svg'
 import { Icon } from 'components/Icon'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
@@ -23,10 +28,12 @@ import {
   ADDRESS,
   AMOUNT
 } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
-import { toHumanReadable } from 'utils/tokenInput'
+import { make, track } from 'services/analytics'
 
 import { TextRow } from './TextRow'
 import styles from './TransferSuccessful.module.css'
+
+const { getWithdrawTransaction } = withdrawUSDCSelectors
 
 const messages = {
   priorBalance: 'Prior Balance',
@@ -50,31 +57,49 @@ export const TransferSuccessful = ({
 }: {
   priorBalanceCents: number
 }) => {
-  const { data: balance } = useUSDCBalance()
-  const { data: modalData } = useWithdrawUSDCModal()
-  const balanceNumber = formatUSDCWeiToFloorDollarNumber(
+  const { data: balance, balanceStatus } = useUSDCBalance()
+  const signature = useSelector(getWithdrawTransaction)
+  const balanceNumber = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
-  const balanceFormatted = formatCurrencyBalance(balanceNumber)
+  const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
 
-  const [{ value: amountValue }] = useField(AMOUNT)
-  const [{ value: addressValue }] = useField(ADDRESS)
+  const [{ value: amountValue }] = useField<number>(AMOUNT)
+  const [{ value: addressValue }] = useField<string>(ADDRESS)
 
-  const { signature } = modalData
+  const handleClickTransactionLink = useCallback(() => {
+    if (!signature) return
+    openExplorer(signature)
+    track(
+      make({
+        eventName: Name.WITHDRAW_USDC_TRANSACTION_LINK_CLICKED,
+        priorBalance: priorBalanceCents / 100,
+        currentBalance: balanceNumber / 100,
+        amount: amountValue / 100,
+        destinationAddress: addressValue,
+        signature
+      })
+    )
+  }, [signature, balanceNumber, priorBalanceCents, amountValue, addressValue])
 
   return (
     <div className={styles.root}>
       <TextRow
         left={messages.priorBalance}
-        right={`$${toHumanReadable(priorBalanceCents)}`}
+        right={`$${decimalIntegerToHumanReadable(priorBalanceCents)}`}
       />
       <Divider style={{ margin: 0 }} />
       <TextRow
         left={messages.amountWithdrawn}
-        right={`-$${toHumanReadable(amountValue)}`}
+        right={`-$${decimalIntegerToHumanReadable(amountValue)}`}
       />
       <Divider style={{ margin: 0 }} />
-      <TextRow left={messages.newBalance} right={`$${balanceFormatted}`} />
+      <TextRow
+        left={messages.newBalance}
+        right={
+          balanceStatus === Status.SUCCESS ? `$${balanceFormatted}` : undefined
+        }
+      />
       <Divider style={{ margin: 0 }} />
       <div className={styles.destination}>
         <TextRow left={messages.destinationAddress} />
@@ -83,7 +108,7 @@ export const TransferSuccessful = ({
         </Text>
         <HarmonyPlainButton
           style={{ padding: 0 }}
-          onClick={() => openExplorer(signature ?? '')}
+          onClick={handleClickTransactionLink}
           iconRight={IconExternalLink}
           variant={HarmonyPlainButtonType.SUBDUED}
           size={HarmonyPlainButtonSize.DEFAULT}

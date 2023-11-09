@@ -1,16 +1,19 @@
 import { useCallback, useContext, useEffect, useState } from 'react'
 
+import { ResponseError } from '@audius/sdk'
 import { CaseReducerActions, createSlice } from '@reduxjs/toolkit'
+import retry from 'async-retry'
 import { produce } from 'immer'
 import { isEqual, mapValues } from 'lodash'
 import { denormalize, normalize } from 'normalizr'
 import { useDispatch, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { useBooleanOnce } from 'hooks/useBooleanOnce'
 import { CollectionMetadata, UserCollectionMetadata } from 'models/Collection'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { Kind } from 'models/Kind'
-import { Status } from 'models/Status'
+import { Status, statusIsNotFinalized } from 'models/Status'
 import { UserMetadata } from 'models/User'
 import { getCollection } from 'store/cache/collections/selectors'
 import { reformatCollection } from 'store/cache/collections/utils/reformatCollection'
@@ -40,11 +43,26 @@ import {
   PerEndpointState,
   PerKeyState,
   SliceConfig,
-  QueryHookResults
+  QueryHookResults,
+  FetchResetAction,
+  RetryConfig
 } from './types'
 import { capitalize, getKeyFromFetchArgs, selectCommonEntityMap } from './utils'
 
 const { addEntries } = cacheActions
+
+const defaultRetryConfig: RetryConfig = {
+  retries: 2
+}
+
+const isNonRetryableError = (e: unknown) => {
+  // Don't retry user-level errors other than 404
+  if (e instanceof ResponseError) {
+    const { status } = e.response
+    return status >= 400 && status < 500 && status !== 404
+  }
+  return false
+}
 
 export const createApi = <
   EndpointDefinitions extends DefaultEndpointDefinitions
@@ -78,6 +96,7 @@ export const createApi = <
   }
 
   api.reducer = slice.reducer
+  api.actions = slice.actions
   api.util = {
     updateQueryData:
       (endpointName, fetchArgs, updateRecipe) =>
@@ -138,6 +157,12 @@ const addEndpointToSlice = <NormalizedData>(
       scopedState.status = Status.SUCCESS
       scopedState.nonNormalizedData = nonNormalizedData
       state[endpointName][key] = scopedState
+    },
+    [`reset${capitalize(endpointName)}`]: (
+      state: ApiState,
+      _action: FetchResetAction
+    ) => {
+      state[endpointName] = {}
     }
   }
 }
@@ -155,15 +180,15 @@ const useQueryState = <Args, Data>(
       )
     }
 
-    if (!fetchArgs) return null
-
-    const key = getKeyFromFetchArgs(fetchArgs)
-
     const endpointState: PerEndpointState<any> =
       state.api[reducerPath][endpointName]
 
+    if (!fetchArgs) return endpointState.default
+
+    const key = getKeyFromFetchArgs(fetchArgs)
+
     // Retrieve data from cache if lookup args provided
-    if (!endpointState[key]) {
+    if (key && !endpointState[key]) {
       if (
         !(
           endpoint.options?.idArgKey ||
@@ -271,12 +296,28 @@ const fetchData = async <Args, Data>(
 
     endpoint.onQueryStarted?.(fetchArgs, { dispatch })
 
-    const apiData = await endpoint.fetch(fetchArgs, context)
+    // If endpoint config specifies retries wrap the fetch
+    // and return a single error at the end if all retries fail
+    const apiData = endpoint.options.retry
+      ? await retry(
+          async (bail) => {
+            try {
+              return endpoint.fetch(fetchArgs, context)
+            } catch (e) {
+              if (isNonRetryableError(e)) {
+                bail(new Error(`Non-retryable error: ${e}`))
+              }
+              return null
+            }
+          },
+          { ...defaultRetryConfig, ...endpoint.options.retryConfig }
+        )
+      : await endpoint.fetch(fetchArgs, context)
     if (apiData == null) {
       throw new Error('Remote data not found')
     }
 
-    let data: any
+    let data: Data
     if (endpoint.options.schemaKey) {
       const { entities, result } = normalize(
         { [endpoint.options.schemaKey]: apiData },
@@ -312,6 +353,7 @@ const fetchData = async <Args, Data>(
     )
 
     endpoint.onQuerySuccess?.(data, fetchArgs, { dispatch })
+    return apiData
   } catch (e) {
     context.reportToSentry({
       error: e as Error,
@@ -328,6 +370,7 @@ const fetchData = async <Args, Data>(
         errorMessage: getErrorMessage(e)
       }) as FetchErrorAction
     )
+    return undefined
   }
 }
 
@@ -348,6 +391,10 @@ const buildEndpointHooks = <
     hookOptions?: QueryHookOptions
   ): QueryHookResults<Data> => {
     const dispatch = useDispatch()
+    const force = useBooleanOnce({
+      initialValue: hookOptions?.force,
+      defaultValue: false
+    })
     const queryState = useQueryState(
       fetchArgs,
       reducerPath,
@@ -355,8 +402,14 @@ const buildEndpointHooks = <
       endpoint
     )
 
+    // If `force` and we aren't already idle/loading, ignore queryState and force a fetch
+    const state =
+      force && queryState?.status && !statusIsNotFinalized(queryState.status)
+        ? null
+        : queryState
+
     const { nonNormalizedData, status, errorMessage, isInitialValue } =
-      queryState ?? {
+      state ?? {
         nonNormalizedData: null,
         status: Status.IDLE
       }

@@ -28,10 +28,10 @@ import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
-import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
-import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'
-import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
-import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
+import IconAlbum from 'assets/img/iconAlbum.svg'
+import IconFilter from 'assets/img/iconFilter.svg'
+import IconNote from 'assets/img/iconNote.svg'
+import IconPlaylists from 'assets/img/iconPlaylists.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
@@ -181,7 +181,6 @@ const TracksLineup = ({
   getFilteredData,
   playingUid,
   queuedAndPlaying,
-  onSave,
   onTogglePlay
 }: {
   tracks: Lineup<SavedPageTrack>
@@ -191,7 +190,6 @@ const TracksLineup = ({
   getFilteredData: (trackMetadatas: any) => [SavedPageTrack[], number]
   playingUid: UID | null
   queuedAndPlaying: boolean
-  onSave: (isSaved: boolean, trackId: ID) => void
   onTogglePlay: (uid: UID, trackId: ID) => void
 }) => {
   const [trackEntries] = getFilteredData(tracks.entries)
@@ -287,9 +285,8 @@ const TracksLineup = ({
               tracks={trackList}
               showDivider
               showBorder
-              onSave={onSave}
               togglePlay={onTogglePlay}
-              trackItemAction={TrackItemAction.Save}
+              trackItemAction={TrackItemAction.Overflow}
             />
           </div>
         )}
@@ -630,7 +627,6 @@ export type SavedPageProps = {
   getFilteredData: (trackMetadatas: any) => [SavedPageTrack[], number]
   onTogglePlay: (uid: UID, trackId: ID) => void
 
-  onSave: (isSaved: boolean, trackId: ID) => void
   onPlay: () => void
   onSortTracks: (sorters: any) => void
   formatCardSecondaryText: (saves: number, tracks: number) => string
@@ -669,7 +665,6 @@ const SavedPage = ({
   getFilteredData,
   onFilterChange,
   filterText,
-  onSave,
   playlistUpdates,
   updatePlaylistLastViewedAt,
   currentTab,
@@ -689,7 +684,6 @@ const SavedPage = ({
       getFilteredData={getFilteredData}
       playingUid={playingUid}
       queuedAndPlaying={queuedAndPlaying}
-      onSave={onSave}
       onTogglePlay={onTogglePlay}
     />,
     <AlbumCardLineup key='albumLineup' />,
@@ -731,7 +725,7 @@ const SavedPage = ({
         <div className={styles.tabBar}>{tabs}</div>
       </>
     )
-  }, [title, setHeader, tabs])
+  }, [title, setHeader, tabs, currentTab])
 
   return (
     <MobilePageContainer

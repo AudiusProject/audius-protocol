@@ -1,0 +1,31 @@
+<style>
+
+  .sidebar-header > div {
+    margin-right: 0
+  }
+  .sidebar-header button[aria-label="Shortcuts"] {
+    display: none
+  }
+
+  /* !imortant needed in the following to override highly specific storybook styles */
+  .sidebar-subheading button {
+    color: var(--harmony-docs-bar-text-color) !important;
+  }
+
+  .sidebar-subheading button span {
+    color: var(--harmony-docs-bar-text-color) !important;
+  }
+  
+  .sidebar-item:not([data-selected="true"]):hover {
+    background: var(--harmony-docs-bar-hover-color);
+  }
+
+  .sidebar-item svg, .search-result-item svg {
+    color: var(--harmony-docs-icon-color) !important;
+  }
+
+  .sidebar-item[data-selected="true"] svg {
+    color: var(--harmony-docs-icon-selected-color) !important;
+  }
+
+</style>

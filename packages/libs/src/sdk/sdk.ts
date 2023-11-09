@@ -1,13 +1,10 @@
 import { isBrowser } from 'browser-or-node'
-import { OAuth } from './oauth'
-import { GrantsApi } from './api/grants/GrantsApi'
-import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
-import { AlbumsApi } from './api/albums/AlbumsApi'
-import { PlaylistsApi } from './api/playlists/PlaylistsApi'
-import { TracksApi } from './api/tracks/TracksApi'
-import { UsersApi } from './api/users/UsersApi'
+import fetch from 'cross-fetch'
+
 import { ResolveApi } from './api/ResolveApi'
+import { AlbumsApi } from './api/albums/AlbumsApi'
 import { ChatsApi } from './api/chats/ChatsApi'
+import { DeveloperAppsApi } from './api/developer-apps/DeveloperAppsApi'
 import { Configuration, TipsApi } from './api/generated/default'
 import {
   Configuration as ConfigurationFull,
@@ -19,8 +16,12 @@ import {
   TipsApi as TipsApiFull,
   TransactionsApi as TransactionsApiFull
 } from './api/generated/full'
-import fetch from 'cross-fetch'
+import { GrantsApi } from './api/grants/GrantsApi'
+import { PlaylistsApi } from './api/playlists/PlaylistsApi'
+import { TracksApi } from './api/tracks/TracksApi'
+import { UsersApi } from './api/users/UsersApi'
 import { addAppNameMiddleware } from './middleware'
+import { OAuth } from './oauth'
 import {
   DiscoveryNodeSelector,
   Auth,
@@ -28,10 +29,10 @@ import {
   EntityManager,
   AppAuth
 } from './services'
-import { StorageNodeSelector } from './services/StorageNodeSelector'
 import { defaultEntityManagerConfig } from './services/EntityManager/constants'
-import { SdkConfig, SdkConfigSchema, ServicesContainer } from './types'
 import { Logger } from './services/Logger'
+import { StorageNodeSelector } from './services/StorageNodeSelector'
+import { SdkConfig, SdkConfigSchema, ServicesContainer } from './types'
 
 /**
  * The Audius SDK
@@ -100,7 +101,7 @@ const initializeServices = (config: SdkConfig) => {
   const defaultStorage = new Storage({ storageNodeSelector, logger })
 
   const defaultServices: ServicesContainer = {
-    storageNodeSelector: storageNodeSelector,
+    storageNodeSelector,
     discoveryNodeSelector: defaultDiscoveryNodeSelector,
     entityManager: defaultEntityManager,
     storage: defaultStorage,

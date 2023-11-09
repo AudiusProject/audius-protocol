@@ -12,14 +12,18 @@ import {
   audioRewardsPageActions,
   audioRewardsPageSelectors,
   modalsActions,
-  makeOptimisticChallengeSortComparator
+  makeOptimisticChallengeSortComparator,
+  FeatureFlags,
+  ChallengeName,
+  Name
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import LoadingSpinner from 'app/components/loading-spinner'
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { getChallengeConfig } from 'app/utils/challenges'
 
@@ -41,7 +45,9 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   'profile-completion',
   'referred',
   'send-first-tip',
-  'first-playlist'
+  'first-playlist',
+  ChallengeName.AudioMatchingBuy, // $AUDIO matching buyer
+  ChallengeName.AudioMatchingSell // $AUDIO matching seller
 ])
 
 /** Pulls rewards from remoteconfig */
@@ -70,6 +76,9 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const ChallengeRewards = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
+  const { isEnabled: isAudioMatchingChallengesEnabled } = useFeatureFlag(
+    FeatureFlags.AUDIO_MATCHING_CHALLENGES
+  )
 
   const userChallengesLoading = useSelector(getUserChallengesLoading)
   const userChallenges = useSelector(getUserChallenges)
@@ -80,7 +89,11 @@ export const ChallengeRewards = () => {
 
   // The referred challenge only needs a tile if the user was referred
   const hideReferredTile = !userChallenges.referred?.is_complete
-  const rewardIds = useRewardIds({ referred: hideReferredTile })
+  const rewardIds = useRewardIds({
+    referred: hideReferredTile,
+    b: !isAudioMatchingChallengesEnabled,
+    s: !isAudioMatchingChallengesEnabled
+  })
 
   useEffect(() => {
     if (!userChallengesLoading && !haveChallengesLoaded) {
@@ -108,11 +121,20 @@ export const ChallengeRewards = () => {
     .sort(makeOptimisticChallengeSortComparator(optimisticUserChallenges))
     .map((id) => {
       const props = getChallengeConfig(id)
+      const onPress = () => {
+        openModal(id)
+        track(
+          make({
+            eventName: Name.REWARDS_CLAIM_DETAILS_OPENED,
+            challengeId: id
+          })
+        )
+      }
       return (
         <Panel
           {...props}
           challenge={optimisticUserChallenges[id]}
-          onPress={() => openModal(id)}
+          onPress={onPress}
           key={props.title}
         />
       )

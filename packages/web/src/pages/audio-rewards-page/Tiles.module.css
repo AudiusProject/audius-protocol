@@ -68,6 +68,18 @@
   justify-content: center;
 }
 
+.spinner {
+  width: var(--unit-20);
+  height: var(--unit-20);
+  margin: 0 auto;
+  padding-top: var(--unit-2);
+  padding-bottom: var(--unit-2);
+}
+
+.spinner g path {
+  stroke: rgba(255, 255, 255, 0.75);
+}
+
 .balanceAmount {
   font-weight: 800;
   font-size: 96px;

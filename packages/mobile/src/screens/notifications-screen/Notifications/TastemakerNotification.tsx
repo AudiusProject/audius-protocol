@@ -27,7 +27,7 @@ const messages = {
   is: 'is',
   tastemaker: 'now trending thanks to you! Great work 🙌',
   twitterShare: (trackOwnerHandle: string, trackTitle: string) => {
-    return `I was one of the first to discover ${trackTitle} by ${trackOwnerHandle} on @AudiusProject and it just made it onto trending! #Audius #AudiusTastemaker`
+    return `I was one of the first to discover ${trackTitle} by ${trackOwnerHandle} on @audius and it just made it onto trending! #Audius #AudiusTastemaker`
   }
 }
 

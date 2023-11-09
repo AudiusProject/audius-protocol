@@ -12,7 +12,7 @@ import InfiniteScroll from 'react-infinite-scroller'
 import { useDispatch, useSelector } from 'react-redux'
 import { useSearchParam } from 'react-use'
 
-import { ReactComponent as IconNotification } from 'assets/img/iconNotification.svg'
+import IconNotification from 'assets/img/iconNotification.svg'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import {
   getModalNotification,

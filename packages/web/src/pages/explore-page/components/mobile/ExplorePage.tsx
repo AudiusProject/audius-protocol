@@ -16,15 +16,16 @@ import {
   explorePageActions,
   ExplorePageTabs as ExploreTabs,
   ExploreCollectionsVariant,
-  explorePageSelectors
+  explorePageSelectors,
+  removeNullable
 } from '@audius/common'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ReactComponent as IconForYou } from 'assets/img/iconExploreMobileForYou.svg'
-import { ReactComponent as IconMoods } from 'assets/img/iconExploreMobileMoods.svg'
-import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
-import { ReactComponent as IconUser } from 'assets/img/iconUser.svg'
+import IconForYou from 'assets/img/iconExploreMobileForYou.svg'
+import IconMoods from 'assets/img/iconExploreMobileMoods.svg'
+import IconNote from 'assets/img/iconNote.svg'
+import IconUser from 'assets/img/iconUser.svg'
 import Card from 'components/card/mobile/Card'
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -32,6 +33,7 @@ import CardLineup from 'components/lineup/CardLineup'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useMainPageHeader } from 'components/nav/store/context'
+import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import useTabs from 'hooks/useTabs/useTabs'
 import {
   CHILL_PLAYLISTS,
@@ -40,7 +42,8 @@ import {
   PROVOKING_PLAYLISTS,
   INTIMATE_PLAYLISTS,
   ExploreCollection,
-  ExploreMoodCollection
+  ExploreMoodCollection,
+  PREMIUM_TRACKS
 } from 'pages/explore-page/collections'
 import {
   collectionPage,
@@ -136,8 +139,15 @@ const ExplorePage = ({
 }: ExplorePageProps) => {
   useMainPageHeader()
 
-  const justForYouTiles = justForYou.map(
-    (t: SmartCollection | ExploreCollection) => {
+  const isUSDCPurchasesEnabled = useIsUSDCEnabled()
+  const justForYouTiles = justForYou
+    .map((t: SmartCollection | ExploreCollection) => {
+      const isPremiumTracksTile =
+        t.variant === ExploreCollectionsVariant.DIRECT_LINK &&
+        t.title === PREMIUM_TRACKS.title
+      if (!isUSDCPurchasesEnabled && isPremiumTracksTile) {
+        return null
+      }
       const Icon = t.icon ? t.icon : Fragment
       if (t.variant === CollectionVariant.SMART) {
         return (
@@ -163,14 +173,22 @@ const ExplorePage = ({
             gradient={t.gradient}
             shadow={t.shadow}
             // @ts-ignore
-            icon={<Icon />}
+            icon={
+              <Icon
+                className={
+                  t.title === PREMIUM_TRACKS.title
+                    ? styles.premiumTracksBackgroundIcon
+                    : undefined
+                }
+              />
+            }
             goToRoute={goToRoute}
             isIncentivized={t.incentivized}
           />
         )
       }
-    }
-  )
+    })
+    .filter(removeNullable)
 
   const lifestyleTiles = lifestyle.map((t: ExploreMoodCollection) => {
     return (
@@ -251,7 +269,12 @@ const ExplorePage = ({
         title={messages.justForYou}
         description={messages.justForYouDescription}
       >
-        <div className={cn(styles.section, styles.tripleHeaderSectionTenTile)}>
+        <div
+          className={cn(
+            styles.section,
+            styles.quadrupleHeaderSectionElevenTile
+          )}
+        >
           {justForYouTiles}
         </div>
       </TabBodyHeader>,

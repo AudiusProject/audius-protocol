@@ -1,0 +1,33 @@
+.mobileNav {
+  position: absolute;
+  left: 24px;
+  top: 20px;
+}
+
+.mobileNav path {
+  fill: var(--static-white);
+}
+
+.appBarContainer {
+  display: inline-flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  padding: 28px 48px;
+  margin: 0px auto;
+  height: 140px;
+  box-sizing: border-box;
+}
+
+.bgImg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 140px;
+  height: 140px;
+  z-index: -1;
+  background: url(../../assets/img/headerImg@2x.jpg);
+  background-position: center;
+  background-size: cover;
+}

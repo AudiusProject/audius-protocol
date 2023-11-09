@@ -1,9 +1,9 @@
 import { sampleSize } from 'lodash'
 
-import { Base, BaseConstructorArgs } from './base'
+import type { ServiceWithEndpoint } from '../utils'
 import { getNStorageNodes } from '../utils/getNStorageNodes'
 
-import type { ServiceWithEndpoint } from '../utils'
+import { Base, BaseConstructorArgs } from './base'
 
 const CONTENT_NODE_SERVICE_NAME = 'content-node'
 const DISCOVERY_NODE_SERVICE_NAME = 'discovery-node'

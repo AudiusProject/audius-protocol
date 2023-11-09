@@ -1,7 +1,7 @@
 import { ID } from '@audius/common'
 import cn from 'classnames'
 
-import { ReactComponent as IconRemix } from 'assets/img/iconRemix.svg'
+import IconRemix from 'assets/img/iconRemix.svg'
 import ConnectedRemixCard from 'components/remix-card/ConnectedRemixCard'
 import SectionButton from 'components/section-button/SectionButton'
 import { isMatrix } from 'utils/theme/theme'

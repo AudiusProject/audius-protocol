@@ -1,7 +1,7 @@
 const nock = require('nock')
 
-const Web3 = require('../src/LibsWeb3')
 const { AudiusLibs } = require('../src/AudiusLibs')
+const Web3 = require('../src/LibsWeb3')
 const dataContractsConfig = require('../src/data-contracts/config.json')
 const ethContractsConfig = require('../src/eth-contracts/config.json')
 
@@ -27,7 +27,7 @@ const constants = {
   signature:
     '0xbb3ffe5f32950ace5c0a8ecb9c43ab836b7b7146a56e2519ac1c662e9b00bdcd7de9a3f3265206c54f0b8094f8ac8832d32d5852492c1aa3e9493e28ae3a31b91b',
   wallet: '0xdfdbe819b5710b750b3a00eb2fae8a59b85c66af',
-  ethContractsConfig: ethContractsConfig
+  ethContractsConfig
 }
 
 const dataWeb3 = new Web3(
@@ -78,12 +78,12 @@ const getRandomLocalhost = () => {
 }
 
 const deregisterSPEndpoint = async (libs, account, type) => {
-  let previousRegisteredId =
+  const previousRegisteredId =
     await libs.ethContracts.ServiceProviderFactoryClient.getServiceProviderIdFromAddress(
       account,
       type
     )
-  let prevSpInfo =
+  const prevSpInfo =
     await libs.ethContracts.ServiceProviderFactoryClient.getServiceEndpointInfo(
       type,
       previousRegisteredId
@@ -101,10 +101,15 @@ const deregisterSPEndpoint = async (libs, account, type) => {
   }
 
   nock(prevSpInfo.endpoint).get(path).reply(200, response)
-  let tx = await libs.ethContracts.ServiceProviderFactoryClient.deregister(
+  const tx = await libs.ethContracts.ServiceProviderFactoryClient.deregister(
     type,
     prevSpInfo.endpoint
   )
+}
+
+function convertAudsToWeiBN(ethWeb3, amountOfAUDS) {
+  const tokenInWei = ethWeb3.utils.toWei(amountOfAUDS.toString(), 'ether')
+  return ethWeb3.utils.toBN(tokenInWei)
 }
 
 module.exports = {
@@ -115,5 +120,6 @@ module.exports = {
   audiusLibsConfig,
   initializeLibConfig,
   getRandomLocalhost,
-  deregisterSPEndpoint
+  deregisterSPEndpoint,
+  convertAudsToWeiBN
 }

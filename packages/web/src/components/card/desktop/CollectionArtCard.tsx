@@ -13,7 +13,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
+import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { CollectionMenuProps } from 'components/menu/CollectionMenu'
@@ -176,10 +176,11 @@ const CollectionArtCard = g(
                   }}
                   className={styles.iconKebabHorizontalWrapper}
                 >
-                  <IconKebabHorizontal
-                    className={styles.iconKebabHorizontal}
-                    ref={ref}
-                  />
+                  <div ref={ref}>
+                    <IconKebabHorizontal
+                      className={styles.iconKebabHorizontal}
+                    />
+                  </div>
                 </div>
               )}
             </Menu>

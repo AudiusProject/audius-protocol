@@ -5,22 +5,33 @@ import {
   SquareSizes,
   FavoriteSource,
   accountSelectors,
-  tracksSocialActions
+  tracksSocialActions,
+  playerSelectors,
+  usePremiumContentAccess
 } from '@audius/common'
 import { TouchableOpacity, Animated, View, Dimensions } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
+import IconLock from 'app/assets/images/iconLock.svg'
 import { FavoriteButton } from 'app/components/favorite-button'
 import { TrackImage } from 'app/components/image/TrackImage'
 import Text from 'app/components/text'
 import { makeStyles } from 'app/styles'
+import { useColor } from 'app/utils/theme'
 import { zIndex } from 'app/utils/zIndex'
+
+import { LockedStatusBadge } from '../core'
 
 import { PlayButton } from './PlayButton'
 import { TrackingBar } from './TrackingBar'
 import { NOW_PLAYING_HEIGHT, PLAY_BAR_HEIGHT } from './constants'
 const { getAccountUser } = accountSelectors
 const { saveTrack, unsaveTrack } = tracksSocialActions
+const { getPreviewing } = playerSelectors
+
+const messages = {
+  preview: 'PREVIEW'
+}
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   root: {
@@ -34,6 +45,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     width: '100%',
     paddingLeft: spacing(3),
     paddingRight: spacing(3),
+    gap: spacing(3),
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start'
@@ -51,24 +63,41 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     flexShrink: 1,
     flexGrow: 1,
     alignItems: 'center',
-    flexDirection: 'row'
+    flexDirection: 'row',
+    gap: spacing(3)
   },
-  artwork: {
-    marginLeft: spacing(3),
+  artworkContainer: {
+    position: 'relative',
     height: 26,
     width: 26,
-    overflow: 'hidden',
-    backgroundColor: palette.neutralLight7,
-    borderRadius: 2
+    borderRadius: 2,
+    overflow: 'hidden'
+  },
+  artwork: {
+    height: '100%',
+    width: '100%',
+    backgroundColor: palette.neutralLight7
+  },
+  lockOverlay: {
+    backgroundColor: '#000',
+    opacity: 0.4,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 10,
+    zIndex: 10
   },
   trackText: {
     alignItems: 'center',
-    marginLeft: spacing(3),
     flexDirection: 'row'
   },
   title: {
     color: palette.neutral,
-    maxWidth: Dimensions.get('window').width / 3,
+    maxWidth: Dimensions.get('window').width / 3.5,
     fontSize: spacing(3)
   },
   separator: {
@@ -98,6 +127,14 @@ export const PlayBar = (props: PlayBarProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const currentUser = useSelector(getAccountUser)
+  const staticWhite = useColor('staticWhite')
+
+  const { doesUserHaveAccess } = usePremiumContentAccess(track)
+  const isPreviewing = useSelector(getPreviewing)
+  const shouldShowPreviewLock =
+    track?.premium_conditions &&
+    'usdc_purchase' in track.premium_conditions &&
+    (!doesUserHaveAccess || isPreviewing)
 
   const onPressFavoriteButton = useCallback(() => {
     if (track) {
@@ -142,18 +179,25 @@ export const PlayBar = (props: PlayBarProps) => {
         translateYAnimation={translationAnim}
       />
       <View style={styles.container}>
-        {renderFavoriteButton()}
+        {shouldShowPreviewLock ? null : renderFavoriteButton()}
         <TouchableOpacity
           activeOpacity={1}
           style={styles.trackInfo}
           onPress={onPress}
         >
           {track ? (
-            <TrackImage
-              style={styles.artwork}
-              track={track}
-              size={SquareSizes.SIZE_150_BY_150}
-            />
+            <View style={styles.artworkContainer}>
+              {shouldShowPreviewLock ? (
+                <View style={styles.lockOverlay}>
+                  <IconLock fill={staticWhite} width={10} height={10} />
+                </View>
+              ) : null}
+              <TrackImage
+                style={styles.artwork}
+                track={track}
+                size={SquareSizes.SIZE_150_BY_150}
+              />
+            </View>
           ) : null}
           <View style={styles.trackText}>
             <Text numberOfLines={1} weight='bold' style={styles.title}>
@@ -170,6 +214,15 @@ export const PlayBar = (props: PlayBarProps) => {
               {user?.name ?? ''}
             </Text>
           </View>
+          {shouldShowPreviewLock ? (
+            <LockedStatusBadge
+              variant='purchase'
+              locked
+              coloredWhenLocked
+              iconSize='small'
+              text={messages.preview}
+            />
+          ) : null}
         </TouchableOpacity>
         <PlayButton wrapperStyle={styles.playIcon} />
       </View>

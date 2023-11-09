@@ -1,6 +1,6 @@
 import { OS } from '@audius/common'
 
-const ENVIRONMENT = process.env.REACT_APP_ENVIRONMENT
+const ENVIRONMENT = process.env.VITE_ENVIRONMENT
 
 let APP_DOWNLOAD_URL: string
 switch (ENVIRONMENT) {

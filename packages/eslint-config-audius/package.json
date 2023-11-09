@@ -1,6 +1,6 @@
 {
   "name": "eslint-config-audius",
-  "version": "1.5.42",
+  "version": "1.5.50",
   "description": "Custom eslint config for Audius.",
   "author": "Audius",
   "homepage": "https://github.com/AudiusProject/audius-client#readme",
@@ -21,6 +21,7 @@
     "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "peerDependencies": {
+    "@emotion/eslint-plugin": "11.11.0",
     "@typescript-eslint/eslint-plugin": "5.48.2",
     "@typescript-eslint/parser": "5.48.2",
     "eslint": "8.25.0",
@@ -31,6 +32,7 @@
     "eslint-import-resolver-typescript": "3.5.5",
     "eslint-plugin-import": "2.26.0",
     "eslint-plugin-jest": "27.1.1",
+    "eslint-plugin-mdx": "2.2.0",
     "eslint-plugin-n": "15.3.0",
     "eslint-plugin-node": "11.1.0",
     "eslint-plugin-prettier": "4.2.1",

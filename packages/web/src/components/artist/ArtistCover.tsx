@@ -6,7 +6,7 @@ import {
   WidthSizes
 } from '@audius/common'
 
-import { ReactComponent as BadgeArtist } from 'assets/img/badgeArtist.svg'
+import BadgeArtist from 'assets/img/badgeArtist.svg'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import UserBadges from 'components/user-badges/UserBadges'
@@ -22,7 +22,6 @@ type ArtistCoverProps = {
   name: string
   handle: string
   isArtist: boolean
-  doesFollowCurrentUser: boolean
   onNameClick: () => void
   coverPhotoSizes: CoverPhotoSizes
   profilePictureSizes: ProfilePictureSizes
@@ -33,7 +32,6 @@ export const ArtistCover = ({
   name,
   handle,
   isArtist,
-  doesFollowCurrentUser,
   onNameClick,
   profilePictureSizes,
   coverPhotoSizes
@@ -82,7 +80,7 @@ export const ArtistCover = ({
               className={styles.artistHandle}
               onClick={onNameClick}
             >{`@${handle}`}</div>
-            {doesFollowCurrentUser ? <FollowsYouBadge /> : null}
+            <FollowsYouBadge userId={userId} />
           </div>
         </div>
       </div>

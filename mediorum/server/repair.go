@@ -3,10 +3,11 @@ package server
 import (
 	"context"
 	"errors"
-	"mediorum/cidutil"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/labstack/echo/v4"
@@ -31,12 +32,12 @@ type RepairTracker struct {
 }
 
 func (ss *MediorumServer) startRepairer() {
+	// wait a minute on startup to determine healthy peers
+	time.Sleep(time.Minute * 1)
+
 	logger := ss.logger.With("task", "repair")
 
 	for {
-		// wait a minute between runs
-		time.Sleep(time.Minute * 1)
-
 		// pick up where we left off from the last repair.go run, including if the server restarted in the middle of a run
 		tracker := RepairTracker{
 			StartedAt:   time.Now(),
@@ -74,13 +75,15 @@ func (ss *MediorumServer) startRepairer() {
 		}
 
 		// check that network is valid (should have more peers than replication factor)
-		if healthyPeers := ss.findHealthyPeers(5 * time.Minute); len(healthyPeers) < ss.Config.ReplicationFactor {
+		if healthyPeers := ss.findHealthyPeers(time.Hour); len(healthyPeers) < ss.Config.ReplicationFactor {
 			logger.Warn("not enough healthy peers to run repair",
 				"R", ss.Config.ReplicationFactor,
 				"peers", len(healthyPeers))
 			tracker.AbortedReason = "NOT_ENOUGH_PEERS"
 			tracker.FinishedAt = time.Now()
 			saveTracker()
+			// wait 1 minute before running again
+			time.Sleep(time.Minute * 1)
 			continue
 		}
 
@@ -90,20 +93,28 @@ func (ss *MediorumServer) startRepairer() {
 			tracker.AbortedReason = "DISK_FULL"
 			tracker.FinishedAt = time.Now()
 			saveTracker()
+			// wait 1 minute before running again
+			time.Sleep(time.Minute * 1)
 			continue
 		}
 
 		logger.Info("repair starting")
 		err := ss.runRepair(&tracker)
+		tracker.FinishedAt = time.Now()
 		if err != nil {
 			logger.Error("repair failed", "err", err, "took", tracker.Duration)
 			tracker.AbortedReason = err.Error()
 		} else {
 			logger.Info("repair OK", "took", tracker.Duration)
 			ss.lastSuccessfulRepair = tracker
+			if tracker.CleanupMode {
+				ss.lastSuccessfulCleanup = tracker
+			}
 		}
-		tracker.FinishedAt = time.Now()
 		saveTracker()
+
+		// wait 10 minutes before running again
+		time.Sleep(time.Minute * 10)
 	}
 }
 
@@ -191,7 +202,6 @@ func (ss *MediorumServer) runRepair(tracker *RepairTracker) error {
 }
 
 func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
-	tracker.Counters["total_checked"]++
 	ctx := context.Background()
 	logger := ss.logger.With("task", "repair", "cid", cid, "cleanup", tracker.CleanupMode)
 
@@ -202,6 +212,8 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 	if !tracker.CleanupMode && !isMineHealthy {
 		return nil
 	}
+
+	tracker.Counters["total_checked"]++
 
 	// use preferredHealthyHosts when determining my rank because we want to check if we're in the top N*2 healthy nodes not the top N*2 unhealthy nodes
 	myRank := slices.Index(preferredHealthyHosts, ss.Config.Self.Host)
@@ -289,35 +301,33 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 	// check all healthy nodes ahead of me in the preferred order to ensure they have it.
 	// if R+1 healthy nodes in front of me have it, I can safely delete.
 	// don't delete if we replicated the blob within the past 24 hours
-	wasReplicatedToday := attrs.CreateTime.After(time.Now().Add(-24 * time.Hour))
-	if tracker.CleanupMode && (!isMine || !isMineHealthy) && alreadyHave && !wasReplicatedToday {
-		depth := 0
-		// loop preferredHealthyHosts (not preferredHosts) because we don't mind storing a blob a little while longer if it's not on enough healthy nodes
-		for _, host := range preferredHealthyHosts {
-			if ss.hostHasBlob(host, cid) {
-				depth++
-			}
-			if host == ss.Config.Self.Host {
-				break
-			}
-		}
+	// wasReplicatedToday := attrs.CreateTime.After(time.Now().Add(-24 * time.Hour))
+	wasReplicatedThisWeek := attrs.CreateTime.After(time.Now().Add(-24 * 7 * time.Hour))
+
+	if !ss.Config.StoreAll && tracker.CleanupMode && alreadyHave && myRank > ss.Config.ReplicationFactor*3 && !wasReplicatedThisWeek {
+		// depth := 0
+		// // loop preferredHealthyHosts (not preferredHosts) because we don't mind storing a blob a little while longer if it's not on enough healthy nodes
+		// for _, host := range preferredHealthyHosts {
+		// 	if ss.hostHasBlob(host, cid) {
+		// 		depth++
+		// 	}
+		// 	if host == ss.Config.Self.Host {
+		// 		break
+		// 	}
+		// }
 
 		// if i'm the first node that over-replicated, keep the file for a week as a buffer since a node ahead of me in the preferred order will likely be down temporarily at some point
-		wasReplicatedThisWeek := attrs.CreateTime.After(time.Now().Add(-24 * 7 * time.Hour))
-		if depth > ss.Config.ReplicationFactor+1 || depth == ss.Config.ReplicationFactor+1 && !wasReplicatedThisWeek {
-			tracker.Counters["delete_over_replicated_needed"]++
-			logger.Info("deleting", "depth", depth, "hosts", preferredHosts, "healthyHosts", preferredHealthyHosts)
-			err = ss.dropFromMyBucket(cid)
-			if err != nil {
-				tracker.Counters["delete_over_replicated_fail"]++
-				logger.Error("delete failed", "err", err)
-				return err
-			} else {
-				tracker.Counters["delete_over_replicated_success"]++
-				logger.Info("delete OK")
-				tracker.ContentSize -= attrs.Size
-				return nil
-			}
+		tracker.Counters["delete_over_replicated_needed"]++
+		err = ss.dropFromMyBucket(cid)
+		if err != nil {
+			tracker.Counters["delete_over_replicated_fail"]++
+			logger.Error("delete failed", "err", err)
+			return err
+		} else {
+			tracker.Counters["delete_over_replicated_success"]++
+			logger.Info("delete OK")
+			tracker.ContentSize -= attrs.Size
+			return nil
 		}
 	}
 
@@ -325,47 +335,47 @@ func (ss *MediorumServer) repairCid(cid string, tracker *RepairTracker) error {
 	// even tho this blob isn't "mine"
 	// in cleanup mode the top N*2 healthy nodes will check to see if it's under-replicated
 	// and pull file if under-replicated
-	if tracker.CleanupMode && !isMine && !alreadyHave && myRank >= 0 && myRank < ss.Config.ReplicationFactor*2 && ss.diskHasSpace() {
-		hasIt := []string{}
-		// loop preferredHosts (not preferredHealthyHosts) because hostHasBlob is the real source of truth for if a node can serve a blob (not our health info about the host, which could be outdated)
-		for _, host := range preferredHosts {
-			if ss.hostHasBlob(host, cid) {
-				if host == ss.Config.Self.Host {
-					continue
-				}
-				hasIt = append(hasIt, host)
-				if len(hasIt) == ss.Config.ReplicationFactor {
-					break
-				}
-			}
-		}
+	// if tracker.CleanupMode && !isMine && !alreadyHave && myRank >= 0 && myRank < ss.Config.ReplicationFactor*2 && ss.diskHasSpace() {
+	// 	hasIt := []string{}
+	// 	// loop preferredHosts (not preferredHealthyHosts) because hostHasBlob is the real source of truth for if a node can serve a blob (not our health info about the host, which could be outdated)
+	// 	for _, host := range preferredHosts {
+	// 		if ss.hostHasBlob(host, cid) {
+	// 			if host == ss.Config.Self.Host {
+	// 				continue
+	// 			}
+	// 			hasIt = append(hasIt, host)
+	// 			if len(hasIt) == ss.Config.ReplicationFactor {
+	// 				break
+	// 			}
+	// 		}
+	// 	}
 
-		if len(hasIt) < ss.Config.ReplicationFactor {
-			// get it
-			tracker.Counters["pull_under_replicated_needed"]++
-			success := false
-			for _, host := range hasIt {
-				err := ss.pullFileFromHost(host, cid)
-				if err != nil {
-					tracker.Counters["pull_under_replicated_fail"]++
-					logger.Error("pull failed (under-replicated)", err, "host", host)
-				} else {
-					tracker.Counters["pull_under_replicated_success"]++
-					logger.Info("pull OK (under-replicated)", "host", host)
+	// 	if len(hasIt) < ss.Config.ReplicationFactor {
+	// 		// get it
+	// 		tracker.Counters["pull_under_replicated_needed"]++
+	// 		success := false
+	// 		for _, host := range hasIt {
+	// 			err := ss.pullFileFromHost(host, cid)
+	// 			if err != nil {
+	// 				tracker.Counters["pull_under_replicated_fail"]++
+	// 				logger.Error("pull failed (under-replicated)", err, "host", host)
+	// 			} else {
+	// 				tracker.Counters["pull_under_replicated_success"]++
+	// 				logger.Info("pull OK (under-replicated)", "host", host)
 
-					pulledAttrs, errAttrs := ss.bucket.Attributes(ctx, key)
-					if errAttrs != nil {
-						tracker.ContentSize += pulledAttrs.Size
-					}
-					return nil
-				}
-			}
-			if !success {
-				logger.Warn("failed to pull under-replicated from any host", "hosts", preferredHosts)
-				return errors.New("failed to pull under-replicated from any host")
-			}
-		}
-	}
+	// 				pulledAttrs, errAttrs := ss.bucket.Attributes(ctx, key)
+	// 				if errAttrs != nil {
+	// 					tracker.ContentSize += pulledAttrs.Size
+	// 				}
+	// 				return nil
+	// 			}
+	// 		}
+	// 		if !success {
+	// 			logger.Warn("failed to pull under-replicated from any host", "hosts", preferredHosts)
+	// 			return errors.New("failed to pull under-replicated from any host")
+	// 		}
+	// 	}
+	// }
 
 	return nil
 }

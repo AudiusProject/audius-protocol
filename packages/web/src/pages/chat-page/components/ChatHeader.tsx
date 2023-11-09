@@ -175,7 +175,7 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
                       ref={ref}
                       aria-label={messages.chatSettings}
                       icon={<IconKebabHorizontal />}
-                      onClick={trigger}
+                      onClick={() => trigger()}
                     />
                   )}
                 />

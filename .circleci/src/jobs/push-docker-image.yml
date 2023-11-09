@@ -1,47 +1,39 @@
 parameters:
-  instance-name:
-    description: 'Name of gcp instance to use for pushing'
-    type: string
   service:
     description: 'Service to push'
     type: string
-resource_class: small
-docker:
-  - image: google/cloud-sdk:412.0.0-slim
+  notify_slack_on_failure:
+    description: 'Whether to notify Slack on failure'
+    type: boolean
+    default: false
+machine: true
+resource_class: audiusproject/gcp-n2-standard-4
 steps:
-  - gcp-auth
+  - checkout:
+      path: '~/audius-protocol'
+  - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
   - run:
-      name: Choose GCP Image
+      name: Docker login
+      command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  - run: . ~/.profile; audius-compose push --prod "<< parameters.service >>"
+  - run:
+      when: always
+      name: Log out of Docker
+      command: docker logout
+  - run:
+      when: on_fail
+      name: Alert Slack of failure
       command: |
-        # Image Preference:
-        #   1. GCP image built for this commit
-        #   2. Latest audius-protocol GCP image
-        #   3. debian-11
+        if [ "<< parameters.notify_slack_on_failure >>" = "true" ]; then
+          json_content="{ \"blocks\": ["
+          json_content+="{ \"type\": \"section\","
+          json_content+="\"text\": { \"type\": \"mrkdwn\", \"text\": \"Failed to build and push << parameters.service >>. Today's release can't move forward until this is resolved. Hint: check <https://app.circleci.com/pipelines/github/AudiusProject/audius-protocol?branch=$CIRCLE_BRANCH|here>\" }"
+          json_content+="}]}"
+          echo "Sending error message to Slack: $json_content"
 
-        IMAGE_FLAG=""  # Default is debian-11
-        if gcloud compute images describe 'audius-protocol-<< pipeline.git.revision >>' &>/dev/null; then
-          IMAGE_FLAG='--image=audius-protocol-<< pipeline.git.revision >>'
-        elif gcloud compute images describe-from-family audius-protocol &>/dev/null; then
-          IMAGE_FLAG="--image-family=audius-protocol"
+          curl -f -X POST -H 'Content-type: application/json' \
+          --data "$json_content" \
+          $SLACK_DAILY_DEPLOY_WEBHOOK
+        else
+          echo "Notification is disabled."
         fi
-
-        echo "export IMAGE_FLAG='$IMAGE_FLAG'" >> "$BASH_ENV"
-  - gcp-run:
-      instance-name: '<< parameters.instance-name >>'
-      create-instance-args: >-
-        $IMAGE_FLAG
-        --preemptible
-        --tags=circleci
-        --machine-type=n2-standard-4
-        --boot-disk-size=160G
-        --boot-disk-type=pd-ssd
-      pass-env: DOCKERHUB_PASS DOCKERHUB_USERNAME
-      steps:
-        - gcp-checkout
-        - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
-        - run:
-            name: Docker login
-            command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-        - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
-        - run: . ~/.profile; audius-compose build "<< parameters.service >>"
-        - run: . ~/.profile; audius-compose push "<< parameters.service >>"

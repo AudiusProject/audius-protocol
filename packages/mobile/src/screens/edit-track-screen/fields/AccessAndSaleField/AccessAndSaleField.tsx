@@ -5,9 +5,12 @@ import {
   type FieldVisibility,
   type Nullable,
   type PremiumConditions,
-  isPremiumContentTipGated
+  isPremiumContentTipGated,
+  isPremiumContentCollectibleGated,
+  isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
 import { useField } from 'formik'
+import moment from 'moment'
 
 import type { ContextualMenuProps } from 'app/components/core'
 import { ContextualMenu } from 'app/components/core'
@@ -17,6 +20,7 @@ export const accessAndSaleScreenName = 'AccessAndSale'
 const messages = {
   accessAndSale: 'Access & Sale',
   public: 'Public',
+  premium: 'Premium',
   collectibleGated: 'Collectible Gated',
   specialAccess: 'Special Access',
   followersOnly: 'Followers Only',
@@ -47,13 +51,20 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
   const [{ value: fieldVisibility }] =
     useField<FieldVisibility>('field_visibility')
+  const [{ value: releaseDate }] = useField<Nullable<string>>('release_date')
+  const isScheduledRelease =
+    releaseDate === null ? false : moment(releaseDate).isAfter(moment())
 
   const fieldVisibilityLabels = fieldVisibilityKeys
     .filter((visibilityKey) => fieldVisibility[visibilityKey])
     .map((visibilityKey) => fieldVisibilityLabelMap[visibilityKey])
 
   const trackAvailabilityLabels = useMemo(() => {
-    if ('nft_collection' in (premiumConditions ?? {})) {
+    if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+      const amountLabel = `$${premiumConditions.usdc_purchase.price}`
+      return [messages.premium, amountLabel]
+    }
+    if (isPremiumContentCollectibleGated(premiumConditions)) {
       return [messages.collectibleGated]
     }
     if (isPremiumContentFollowGated(premiumConditions)) {
@@ -62,11 +73,11 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     if (isPremiumContentTipGated(premiumConditions)) {
       return [messages.specialAccess, messages.supportersOnly]
     }
-    if (isUnlisted) {
+    if (isUnlisted || isScheduledRelease) {
       return [messages.hidden, ...fieldVisibilityLabels]
     }
     return [messages.public]
-  }, [premiumConditions, isUnlisted, fieldVisibilityLabels])
+  }, [premiumConditions, isUnlisted, isScheduledRelease, fieldVisibilityLabels])
 
   return (
     <ContextualMenu

@@ -5,7 +5,7 @@ import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
+import IconRemove from 'assets/img/iconRemove.svg'
 import { dismissCookieBanner } from 'store/application/ui/cookieBanner/actions'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'

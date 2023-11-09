@@ -1,6 +1,13 @@
 import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { BuyUSDCStage, USDCOnRampProvider, PurchaseInfo } from './types'
+import { StripeSessionCreationError } from 'store/ui/stripe-modal/types'
+
+import {
+  BuyUSDCStage,
+  USDCOnRampProvider,
+  PurchaseInfo,
+  BuyUSDCError
+} from './types'
 
 type StripeSessionStatus =
   | 'initialized'
@@ -14,17 +21,21 @@ type OnSuccess = {
   message?: string
 }
 
+type RecoveryStatus = 'idle' | 'in-progress' | 'success' | 'failure'
+
 type BuyUSDCState = {
   stage: BuyUSDCStage
-  error?: Error
+  error?: BuyUSDCError
   provider: USDCOnRampProvider
   onSuccess?: OnSuccess
   stripeSessionStatus?: StripeSessionStatus
+  recoveryStatus: RecoveryStatus
 }
 
 const initialState: BuyUSDCState = {
   provider: USDCOnRampProvider.UNKNOWN,
-  stage: BuyUSDCStage.START
+  stage: BuyUSDCStage.START,
+  recoveryStatus: 'idle'
 }
 
 const slice = createSlice({
@@ -36,13 +47,11 @@ const slice = createSlice({
       action: PayloadAction<{
         purchaseInfo: PurchaseInfo
         provider: USDCOnRampProvider
-        onSuccess?: OnSuccess
       }>
     ) => {
       state.stage = BuyUSDCStage.START
       state.error = undefined
       state.provider = action.payload.provider
-      state.onSuccess = action.payload.onSuccess
     },
     purchaseStarted: (state) => {
       state.stage = BuyUSDCStage.PURCHASING
@@ -55,8 +64,17 @@ const slice = createSlice({
     onrampSucceeded: (state) => {
       state.stage = BuyUSDCStage.CONFIRMING_PURCHASE
     },
-    buyUSDCFlowFailed: (state) => {
-      state.error = new Error('USDC purchase failed')
+    onrampFailed: (
+      _state,
+      _action: PayloadAction<{ error: StripeSessionCreationError }>
+    ) => {
+      // handled by saga
+    },
+    buyUSDCFlowFailed: (
+      state,
+      action: PayloadAction<{ error: BuyUSDCError }>
+    ) => {
+      state.error = action.payload.error
     },
     buyUSDCFlowSucceeded: (state) => {
       state.stage = BuyUSDCStage.FINISH
@@ -66,7 +84,17 @@ const slice = createSlice({
       action: PayloadAction<{ status: StripeSessionStatus }>
     ) => {
       state.stripeSessionStatus = action.payload.status
-    }
+    },
+    startRecoveryIfNecessary: () => {
+      // triggers sagas
+    },
+    recoveryStatusChanged: (
+      state,
+      action: PayloadAction<{ status: RecoveryStatus }>
+    ) => {
+      state.recoveryStatus = action.payload.status
+    },
+    cleanup: () => initialState
   }
 })
 
@@ -77,7 +105,11 @@ export const {
   purchaseStarted,
   onrampSucceeded,
   onrampCanceled,
-  stripeSessionStatusChanged
+  onrampFailed,
+  stripeSessionStatusChanged,
+  startRecoveryIfNecessary,
+  recoveryStatusChanged,
+  cleanup
 } = slice.actions
 
 export default slice.reducer

@@ -1,4 +1,4 @@
-import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'
+import IconFilter from 'assets/img/iconFilter.svg'
 import { Input } from 'components/input'
 
 import styles from './FilterInput.module.css'

@@ -1,13 +1,13 @@
 import { useContext } from 'react'
 
 import {
-  HarmonyButton,
-  HarmonyButtonSize,
-  HarmonyButtonType,
-  IconUpload
-} from '@audius/stems'
+  Button,
+  ButtonSize,
+  ButtonType,
+  IconCloudUpload
+} from '@audius/harmony'
 
-import { UploadFormScrollContext } from '../UploadPageNew'
+import { UploadFormScrollContext } from '../UploadPage'
 
 import styles from './AnchoredSubmitRow.module.css'
 
@@ -20,14 +20,15 @@ export const AnchoredSubmitRow = () => {
   return (
     <>
       <div className={styles.buttonRow}>
-        <HarmonyButton
-          text={messages.complete}
-          variant={HarmonyButtonType.PRIMARY}
-          size={HarmonyButtonSize.DEFAULT}
-          iconRight={IconUpload}
+        <Button
+          variant={ButtonType.PRIMARY}
+          size={ButtonSize.DEFAULT}
+          iconRight={IconCloudUpload}
           onClick={scrollToTop}
           type='submit'
-        />
+        >
+          {messages.complete}
+        </Button>
       </div>
       <div className={styles.placeholder} />
     </>

@@ -18,14 +18,14 @@ import {
 } from '@audius/common'
 import { RouterState } from 'connected-react-router'
 
-import signOnReducer from 'common/store/pages/signon/reducer'
+import SignOnPageState from 'common/store/pages/signon/types'
 import { SearchAiBarState } from 'common/store/search-ai-bar/types'
 import { SearchBarState } from 'common/store/search-bar/types'
 import { EmbedModalState } from 'components/embed-modal/store/types'
 import { FirstUploadModalState } from 'components/first-upload-modal/store/slice'
 import { PasswordResetState } from 'components/password-reset/store/types'
 import { UnfollowConfirmationModalState } from 'components/unfollow-confirmation-modal/store/types'
-import ArtistDashboardState from 'pages/artist-dashboard-page/store/types'
+import ArtistDashboardState from 'pages/dashboard-page/store/types'
 import DeletedPageReducer from 'pages/deleted-page/store/slice'
 import VisualizerReducer from 'pages/visualizer/store/slice'
 import AppCTAModalReducer from 'store/application/ui/app-cta-modal/slice'
@@ -48,7 +48,7 @@ export type AppState = CommonState & {
 
   searchBar: SearchBarState
   searchAiBar: SearchAiBarState
-  signOn: ReturnType<typeof signOnReducer>
+  signOn: SignOnPageState
 
   // Config
   reachability: ReachabilityState

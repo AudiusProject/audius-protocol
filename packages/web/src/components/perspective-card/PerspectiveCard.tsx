@@ -4,7 +4,7 @@ import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'
 
-import { ReactComponent as IconAudioRewardsPill } from 'assets/img/iconAudioRewardsPill.svg'
+import IconAudioRewardsPill from 'assets/img/iconAudioRewardsPill.svg'
 import useCardWeight from 'hooks/useCardWeight'
 
 import styles from './PerspectiveCard.module.css'
@@ -13,6 +13,7 @@ type PerspectiveCardProps = {
   backgroundGradient?: string
   shadowColor?: string
   backgroundIcon?: ReactNode | JSX.Element
+  backgroundIconClassName?: string
   children?: JSX.Element | JSX.Element[]
   className?: string
   isDisabled?: boolean
@@ -26,6 +27,7 @@ const PerspectiveCard = ({
   backgroundGradient,
   shadowColor,
   backgroundIcon,
+  backgroundIconClassName,
   children,
   className,
   isDisabled,
@@ -68,7 +70,9 @@ const PerspectiveCard = ({
             </div>
           ) : null}
           {children}
-          <div className={styles.backgroundIcon}>{backgroundIcon}</div>
+          <div className={cn(styles.backgroundIcon, backgroundIconClassName)}>
+            {backgroundIcon}
+          </div>
         </div>
       </animated.div>
     </div>

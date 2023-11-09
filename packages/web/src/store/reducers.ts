@@ -5,6 +5,7 @@ import {
 } from '@audius/common'
 import { connectRouter } from 'connected-react-router'
 import { History } from 'history'
+import localForage from 'localforage'
 import { combineReducers } from 'redux'
 
 import backend from 'common/store/backend/reducer'
@@ -15,7 +16,7 @@ import embedModal from 'components/embed-modal/store/reducers'
 import firstUploadModal from 'components/first-upload-modal/store/slice'
 import passwordReset from 'components/password-reset/store/reducer'
 import unfollowConfirmation from 'components/unfollow-confirmation-modal/store/reducers'
-import dashboard from 'pages/artist-dashboard-page/store/slice'
+import dashboard from 'pages/dashboard-page/store/slice'
 import deleted from 'pages/deleted-page/store/slice'
 import visualizer from 'pages/visualizer/store/slice'
 import appCTAModal from 'store/application/ui/app-cta-modal/slice'
@@ -28,7 +29,7 @@ import userListModal from 'store/application/ui/userListModal/slice'
 import dragndrop from 'store/dragndrop/slice'
 import error from 'store/errors/reducers'
 
-export const commonStoreReducers = clientStoreReducers()
+export const commonStoreReducers = clientStoreReducers(localForage)
 
 const createRootReducer = (routeHistory: History) =>
   combineReducers({

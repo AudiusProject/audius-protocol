@@ -33,24 +33,20 @@ mobile-prepare-ios:
     - checkout
     - attach_workspace:
         at: ./
+    - restore_cache:
+        key: 1-gems-{{ checksum "packages/mobile/ios/Gemfile.lock" }}
     - run:
-        name: install cocoapods
-        command: sudo gem install cocoapods:1.12.0
-    - run:
-        name: copy bundle
-        command: cd packages/mobile && npm run bundle:ios
-    - run:
-        name: Install Sentry CLI
+        name: install gems
         command: |
-          curl -sL https://sentry.io/get-cli/ | bash
-          echo export SENTRY_BINARY=/usr/local/bin/sentry-cli >> "$BASH_ENV"
+          cd packages/mobile/ios
+          sudo bundle update --bundler
+          bundle check || bundle install --path vendor/bundle
+    - save_cache:
+        key: 1-gems-{{ checksum "packages/mobile/ios/Gemfile.lock" }}
+        paths:
+          - packages/mobile/ios/vendor/bundle
     - restore_cache:
         key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
-    - run:
-        name: Symlink react-native
-        command: |
-          ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native
-          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native
     - run:
         name: install pods
         command: |
@@ -61,18 +57,19 @@ mobile-prepare-ios:
         paths:
           - packages/mobile/ios/pods
     - run:
-        name: update bundler
-        command: sudo gem install bundler:1.17.3
-    - restore_cache:
-        key: 1-gems-{{ checksum "packages/mobile/ios/Gemfile.lock" }}
-    - run: cd packages/mobile/ios && (bundle check || bundle install --path vendor/bundle)
-    - save_cache:
-        key: 1-gems-{{ checksum "packages/mobile/ios/Gemfile.lock" }}
-        paths:
-          - packages/mobile/ios/vendor/bundle
+        name: Install Sentry CLI
+        command: |
+          curl -sL https://sentry.io/get-cli/ | bash
+          echo export SENTRY_BINARY=/usr/local/bin/sentry-cli >> "$BASH_ENV"
+    - run:
+        name: Build dependencies
+        command: npx turbo run build --filter=audius-mobile-client
+    - run:
+        name: create bundle
+        command: cd packages/mobile && npx turbo run bundle:ios
     - run:
         name: update fastlane
-        command: cd packages/mobile/ios && bundle update fastlane
+        command: cd packages/mobile/ios && sudo bundle update fastlane
 
 # Build ios app
 mobile-build-ios:
@@ -141,6 +138,12 @@ mobile-prepare-android:
         paths:
           - packages/mobile/android/vendor/bundle
     - run:
+        name: update fastlane
+        command: cd packages/mobile/android && sudo bundle update fastlane
+    - run:
+        name: Build dependencies
+        command: npx turbo run build --filter=audius-mobile-client
+    - run:
         name: fetch app fastlane json config to upload to play store
         command: |
           echo "$FASTLANE_PLAYSTORE_JSON" > packages/mobile/android/app/api.txt
@@ -173,10 +176,6 @@ mobile-build-android:
           cd packages/mobile/android
           bundle exec fastlane incrementVersionCode package_name:<<parameters.bundle-id>> track:<<parameters.track>>
     - run:
-        name: Symlink react-native
-        command: |
-          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native
-    - run:
         name: generating the release apk & bundle
         command: |
           echo "yes" | sdkmanager "platforms;android-30" && cd packages/mobile/android && ./gradlew <<parameters.build-type>>
@@ -195,11 +194,6 @@ mobile-release-android:
       default: 'alpha'
       type: string
   steps:
-    - run:
-        name: Symlink react-native
-        command: |
-          ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native
-          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native
     - run:
         name: release android
         command: |
@@ -229,6 +223,9 @@ mobile-release-saga-dapp-store:
           corepack prepare pnpm@`npm info pnpm --json | jq -r .version` --activate
           pnpm install
     - run:
+        name: Build dependencies
+        command: npx turbo run build --filter=audius-mobile-client
+    - run:
         name: Install solana
         command: |
           sh -c "$(curl -sSfL https://release.solana.com/v1.16.3/install)"
@@ -242,11 +239,6 @@ mobile-release-saga-dapp-store:
         command: |
           cd packages/mobile/android
           bundle exec fastlane incrementVersionCode package_name:<<parameters.bundle-id>> track:<<parameters.track>>
-    - run:
-        name: Symlink react-native
-        command: |
-          ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native
-          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native
     - run:
         name: Build Android
         command: |

@@ -24,9 +24,11 @@ import {
   mobileOverflowMenuUISagas,
   shareModalUISagas,
   stripeModalUISagas,
-  uploadConfirmationModalUISagas
+  uploadConfirmationModalUISagas,
+  modalsSagas
 } from 'store/ui'
 
+import { buyCryptoSagas } from './buy-crypto'
 import { playlistUpdatesSagas } from './playlist-updates'
 import { CommonStoreContext } from './storeContext'
 
@@ -44,6 +46,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   // tracks: tracksSagas,
   // users: usersSagas,
   account: accountSagas,
+  buyCrypto: buyCryptoSagas,
   buyUSDC: buyUSDCSagas,
   remoteConfig: remoteConfigSagas,
   cast: castSagas,
@@ -55,6 +58,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   shareModalUI: shareModalUISagas,
   stripeModalUI: stripeModalUISagas,
   mobileOverflowMenuUI: mobileOverflowMenuUISagas,
+  modals: modalsSagas,
   deletePlaylistConfirmationModalUI: deletePlaylistConfirmationModalUISagas,
   duplidateAddConfirmationModalUI: duplicateAddConfirmationModalUISagas,
   uploadConfirmationModalUI: uploadConfirmationModalUISagas,
@@ -99,6 +103,8 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   // pages/trending-page/store/lineups/trending/sagas.ts
   // pages/trending-underground-page/store/lineups/tracks/sagas.ts
   // pages/trending-underground-page/store/sagas.ts
+  // pages/premium-tracks/sagas.ts
+  // pages/premium-tracks/lineups/tracks/sagas.ts
   // pages/smart-collection/store/sagas.ts
   // store/application/ui/theme/sagas.ts
   // pages/search-page/store/sagas.ts

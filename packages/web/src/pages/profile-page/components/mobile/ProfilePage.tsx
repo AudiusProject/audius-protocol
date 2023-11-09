@@ -18,11 +18,11 @@ import {
 } from '@audius/common'
 import cn from 'classnames'
 
-import { ReactComponent as IconAlbum } from 'assets/img/iconAlbum.svg'
-import { ReactComponent as IconCollectibles } from 'assets/img/iconCollectibles.svg'
-import { ReactComponent as IconNote } from 'assets/img/iconNote.svg'
-import { ReactComponent as IconPlaylists } from 'assets/img/iconPlaylists.svg'
-import { ReactComponent as IconReposts } from 'assets/img/iconRepost.svg'
+import IconAlbum from 'assets/img/iconAlbum.svg'
+import IconCollectibles from 'assets/img/iconCollectibles.svg'
+import IconNote from 'assets/img/iconNote.svg'
+import IconPlaylists from 'assets/img/iconPlaylists.svg'
+import IconReposts from 'assets/img/iconRepost.svg'
 import Card from 'components/card/mobile/Card'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
@@ -675,7 +675,6 @@ const ProfilePage = g(
             trackCount={profile.track_count}
             followerCount={profile.follower_count}
             followingCount={profile.followee_count}
-            doesFollowCurrentUser={!!profile.does_follow_current_user}
             setFollowingUserId={setFollowingUserId}
             setFollowersUserId={setFollowersUserId}
             twitterHandle={twitterHandle}

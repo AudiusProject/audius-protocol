@@ -3,27 +3,32 @@ import { useCallback, useMemo, useState } from 'react'
 import type { Nullable, PremiumConditions } from '@audius/common'
 import {
   TrackAvailabilityType,
-  collectiblesSelectors,
   isPremiumContentFollowGated,
   isPremiumContentTipGated,
   isPremiumContentCollectibleGated,
   FeatureFlags,
-  removeNullable
+  removeNullable,
+  isPremiumContentUSDCPurchaseGated,
+  useAccessAndRemixSettings
 } from '@audius/common'
 import { useField, useFormikContext } from 'formik'
-import { useSelector } from 'react-redux'
+import moment from 'moment'
 
+import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
 import IconCart from 'app/assets/images/iconCart.svg'
 import { Button } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
+import { TopBarIconButton } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
 
 import { CollectibleGatedAvailability } from '../components/CollectibleGatedAvailability'
 import { HiddenAvailability } from '../components/HiddenAvailability'
 import { SpecialAccessAvailability } from '../components/SpecialAccessAvailability'
 import { PremiumRadioField } from '../fields/AccessAndSaleField/PremiumRadioField/PremiumRadioField'
+import { TRACK_PREVIEW } from '../fields/AccessAndSaleField/PremiumRadioField/TrackPreviewField'
+import { TRACK_PRICE } from '../fields/AccessAndSaleField/PremiumRadioField/TrackPriceField'
 import { PublicAvailabilityRadioField } from '../fields/AccessAndSaleField/PublicAvailabilityRadioField'
 import type { FormValues, RemixOfField } from '../types'
 
@@ -45,8 +50,6 @@ const messages = {
   done: 'Done'
 }
 
-const { getSupportedUserCollections } = collectiblesSelectors
-
 const publicAvailability = TrackAvailabilityType.PUBLIC
 const premiumAvailability = TrackAvailabilityType.USDC_PURCHASE
 const specialAccessAvailability = TrackAvailabilityType.SPECIAL_ACCESS
@@ -54,6 +57,9 @@ const collectibleGatedAvailability = TrackAvailabilityType.COLLECTIBLE_GATED
 const hiddenAvailability = TrackAvailabilityType.HIDDEN
 
 const useStyles = makeStyles(({ spacing }) => ({
+  backButton: {
+    marginLeft: -6
+  },
   isRemix: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -61,6 +67,9 @@ const useStyles = makeStyles(({ spacing }) => ({
     marginHorizontal: spacing(4),
     paddingVertical: spacing(2),
     paddingHorizontal: spacing(4)
+  },
+  listItem: {
+    paddingVertical: spacing(6)
   }
 }))
 
@@ -74,36 +83,41 @@ const MarkedAsRemix = () => {
 }
 
 export const AccessAndSaleScreen = () => {
+  const styles = useStyles()
   const navigation = useNavigation()
   const { initialValues } = useFormikContext<FormValues>()
-  const [{ value: isPremium }] = useField<boolean>('is_premium')
   const [{ value: premiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
   const [{ value: remixOf }] = useField<RemixOfField>('remix_of')
   const isRemix = !!remixOf
+  const [{ value: releaseDate }] = useField<Nullable<string>>('release_date')
+  const isScheduledRelease =
+    releaseDate === null ? false : moment(releaseDate).isAfter(moment())
 
   const { isEnabled: isUsdcEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
   )
-
-  const { ethCollectionMap, solCollectionMap } = useSelector(
-    getSupportedUserCollections
+  const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES_UPLOAD
   )
-  const numEthCollectibles = Object.keys(ethCollectionMap).length
-  const numSolCollectibles = Object.keys(solCollectionMap).length
-  const hasNoCollectibles = numEthCollectibles + numSolCollectibles === 0
 
   const isUpload = !initialValues?.track_id
   const initialPremiumConditions = initialValues?.premium_conditions ?? null
   const initialAvailability = useMemo(() => {
-    if ('nft_collection' in (premiumConditions ?? {})) {
+    if (isUsdcEnabled && isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+      return TrackAvailabilityType.USDC_PURCHASE
+    }
+    if (isPremiumContentCollectibleGated(premiumConditions)) {
       return TrackAvailabilityType.COLLECTIBLE_GATED
     }
-    if (isPremium) {
+    if (
+      isPremiumContentFollowGated(premiumConditions) ||
+      isPremiumContentTipGated(premiumConditions)
+    ) {
       return TrackAvailabilityType.SPECIAL_ACCESS
     }
-    if (isUnlisted) {
+    if (isUnlisted || isScheduledRelease) {
       return TrackAvailabilityType.HIDDEN
     }
     return TrackAvailabilityType.PUBLIC
@@ -111,32 +125,22 @@ export const AccessAndSaleScreen = () => {
     // eslint-disable-next-line
   }, [])
 
-  const isInitiallyPublic =
-    !isUpload && !initialValues.is_unlisted && !initialPremiumConditions
-  const isInitiallySpecialAccess =
-    !isUpload &&
-    !!(
-      isPremiumContentFollowGated(initialPremiumConditions) ||
-      isPremiumContentTipGated(initialPremiumConditions)
-    )
-  const isInitiallyCollectibleGated =
-    !isUpload && isPremiumContentCollectibleGated(initialPremiumConditions)
-  const isInitiallyHidden = !isUpload && initialValues.is_unlisted
+  const {
+    noUsdcGate: noUsdcGateOption,
+    noSpecialAccessGate,
+    noSpecialAccessGateFields,
+    noCollectibleGate,
+    noCollectibleGateFields,
+    noHidden
+  } = useAccessAndRemixSettings({
+    isUpload,
+    isRemix,
+    initialPremiumConditions,
+    isInitiallyUnlisted: initialValues.is_unlisted,
+    isScheduledRelease
+  })
 
-  const noCollectibleGate =
-    isInitiallyPublic ||
-    isInitiallySpecialAccess ||
-    isRemix ||
-    hasNoCollectibles
-  const noCollectibleDropdown =
-    noCollectibleGate || (!isUpload && !isInitiallyHidden)
-
-  const noSpecialAccess =
-    isInitiallyPublic || isInitiallyCollectibleGated || isRemix
-  const noSpecialAccessOptions =
-    noSpecialAccess || (!isUpload && !isInitiallyHidden)
-
-  const noHidden = !isUpload && !initialValues.is_unlisted
+  const noUsdcGate = noUsdcGateOption || !isUsdcUploadEnabled
 
   const [availability, setAvailability] =
     useState<TrackAvailabilityType>(initialAvailability)
@@ -149,27 +153,39 @@ export const AccessAndSaleScreen = () => {
   )
 
   const data: ListSelectionData[] = [
-    { label: publicAvailability, value: publicAvailability },
+    {
+      label: publicAvailability,
+      value: publicAvailability,
+      disabled: isScheduledRelease
+    },
     isUsdcEnabled
-      ? { label: premiumAvailability, value: premiumAvailability }
+      ? {
+          label: premiumAvailability,
+          value: premiumAvailability,
+          disabled: noUsdcGate || isScheduledRelease
+        }
       : null,
     {
       label: specialAccessAvailability,
       value: specialAccessAvailability,
-      disabled: noSpecialAccess
+      disabled: noSpecialAccessGate || isScheduledRelease
     },
     {
       label: collectibleGatedAvailability,
       value: collectibleGatedAvailability,
-      disabled: noCollectibleGate
+      disabled: noCollectibleGate || isScheduledRelease
     },
-    { label: hiddenAvailability, value: hiddenAvailability, disabled: noHidden }
+    {
+      label: hiddenAvailability,
+      value: hiddenAvailability,
+      disabled: noHidden
+    }
   ].filter(removeNullable)
-
   const items = {
     [publicAvailability]: (
       <PublicAvailabilityRadioField
         selected={availability === TrackAvailabilityType.PUBLIC}
+        disabled={isScheduledRelease}
       />
     )
   }
@@ -178,6 +194,9 @@ export const AccessAndSaleScreen = () => {
     items[premiumAvailability] = (
       <PremiumRadioField
         selected={availability === TrackAvailabilityType.USDC_PURCHASE}
+        disabled={noUsdcGate || isScheduledRelease}
+        disabledContent={noUsdcGate}
+        previousPremiumConditions={previousPremiumConditions}
       />
     )
   }
@@ -185,8 +204,8 @@ export const AccessAndSaleScreen = () => {
   items[specialAccessAvailability] = (
     <SpecialAccessAvailability
       selected={availability === TrackAvailabilityType.SPECIAL_ACCESS}
-      disabled={noSpecialAccess}
-      disabledContent={noSpecialAccessOptions}
+      disabled={noSpecialAccessGate || isScheduledRelease}
+      disabledContent={noSpecialAccessGateFields}
       previousPremiumConditions={previousPremiumConditions}
     />
   )
@@ -194,8 +213,8 @@ export const AccessAndSaleScreen = () => {
   items[collectibleGatedAvailability] = (
     <CollectibleGatedAvailability
       selected={availability === TrackAvailabilityType.COLLECTIBLE_GATED}
-      disabled={noCollectibleGate}
-      disabledContent={noCollectibleDropdown}
+      disabled={noCollectibleGate || isScheduledRelease}
+      disabledContent={noCollectibleGateFields}
       previousPremiumConditions={previousPremiumConditions}
     />
   )
@@ -208,19 +227,35 @@ export const AccessAndSaleScreen = () => {
   )
 
   /**
-   * Only navigate back if:
-   * - track is not collectible gated, or
-   * - user has selected a collection for this collectible gated track
+   * Do not navigate back if:
+   * - track is collectible gated and user has not selected an nft collection, or
+   * - track is usdc purchase gated and user has not selected a valid price or preview
    */
-  const handleSubmit = useCallback(() => {
-    if (
-      !premiumConditions ||
-      !('nft_collection' in premiumConditions) ||
-      !!premiumConditions.nft_collection
-    ) {
-      navigation.goBack()
-    }
-  }, [premiumConditions, navigation])
+  const [{ value: price }, { error: priceError }] = useField(TRACK_PRICE)
+  const [{ value: preview }, { error: previewError }] = useField(TRACK_PREVIEW)
+
+  const usdcGateIsInvalid = useMemo(() => {
+    // first time user selects usdc purchase option
+    const priceNotSet = price === null
+    const previewNotSet = preview === null
+    return (
+      isPremiumContentUSDCPurchaseGated(premiumConditions) &&
+      (!!priceError || priceNotSet || !!previewError || previewNotSet)
+    )
+  }, [premiumConditions, price, priceError, preview, previewError])
+
+  const collectibleGateHasNoSelectedCollection = useMemo(
+    () =>
+      isPremiumContentCollectibleGated(premiumConditions) &&
+      !premiumConditions.nft_collection,
+    [premiumConditions]
+  )
+  const isFormInvalid =
+    usdcGateIsInvalid || collectibleGateHasNoSelectedCollection
+
+  const goBack = useCallback(() => {
+    navigation.goBack()
+  }, [navigation])
 
   return (
     <ListSelectionScreen
@@ -233,21 +268,23 @@ export const AccessAndSaleScreen = () => {
       disableSearch
       allowDeselect={false}
       hideSelectionLabel
+      topbarLeft={
+        <TopBarIconButton
+          icon={IconCaretLeft}
+          style={styles.backButton}
+          onPress={isFormInvalid ? undefined : goBack}
+        />
+      }
       header={<MarkedAsRemix />}
+      itemStyles={styles.listItem}
       bottomSection={
         <Button
           variant='primary'
           size='large'
           fullWidth
           title={messages.done}
-          onPress={handleSubmit}
-          disabled={
-            !!(
-              premiumConditions &&
-              'nft_collection' in premiumConditions &&
-              !premiumConditions.nft_collection
-            )
-          }
+          onPress={goBack}
+          disabled={isFormInvalid}
         />
       }
     />

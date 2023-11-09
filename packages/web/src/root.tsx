@@ -1,3 +1,6 @@
+import '@audius/stems/dist/stems.css'
+import '@audius/harmony/dist/harmony.css'
+
 import { Suspense, useState, useEffect, lazy } from 'react'
 
 import { useAsync } from 'react-use'

@@ -10,7 +10,6 @@ import {
   getProfileImageField,
   getIsVerified
 } from 'common/store/pages/signon/selectors'
-import type { EditableField } from 'common/store/pages/signon/types'
 import { EditingStatus } from 'common/store/pages/signon/types'
 import {
   Animated,
@@ -250,10 +249,10 @@ const ProfileManual = ({ navigation }: ProfileManualProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
 
-  const handleField: EditableField = useSelector(getHandleField)
-  const nameField: EditableField = useSelector(getNameField)
-  const emailField: EditableField = useSelector(getEmailField)
-  const profileImage: Image = useSelector(getProfileImageField)
+  const handleField = useSelector(getHandleField)
+  const nameField = useSelector(getNameField)
+  const emailField = useSelector(getEmailField)
+  const profileImage = useSelector(getProfileImageField)
   const isVerified: boolean = useSelector(getIsVerified)
 
   const [showHandleConfirmingSpinner, setShowHandleConfirmingSpinner] =
@@ -388,7 +387,7 @@ const ProfileManual = ({ navigation }: ProfileManualProps) => {
                     hasSelectedImage={!!profileImage}
                     photoBtnIsHidden={photoBtnIsHidden}
                     setPhotoBtnIsHidden={setPhotoBtnIsHidden}
-                    profileImage={profileImage}
+                    profileImage={profileImage as any}
                   />
                   <PhotoButton
                     hasSelectedImage={!!profileImage}

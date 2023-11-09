@@ -53,7 +53,7 @@ export const theme = {
   '--tile-shadow-3': 'rgba(133,129,153,0.25)',
   '--tile-shadow-1-alt': 'rgba(133,129,153,0.12)',
 
-  '--currently-playing-border': '#FFFFFF',
+  '--currently-playing-border': '#F2F2F4',
   '--currently-playing-default-shadow': 'rgba(242,242,242,0.5)',
 
   '--card-image-shadow': 'rgba(133,129,153,0.75)',

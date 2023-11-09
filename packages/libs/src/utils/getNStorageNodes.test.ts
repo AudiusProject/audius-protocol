@@ -1,6 +1,8 @@
-import type { StorageNode } from './getNStorageNodes'
 import assert from 'assert'
+
 import nock from 'nock'
+
+import type { StorageNode } from './getNStorageNodes'
 import { isNodeHealthy, getNStorageNodes } from './getNStorageNodes'
 
 const sampleNodes: StorageNode[] = [
@@ -36,21 +38,23 @@ describe('isNodeHealthy', () => {
   })
 
   it('should return true when node is healthy', async () => {
-    nock('http://node1.com').get('/status').reply(200)
+    nock('http://node1.com').get('/health_check').reply(200)
 
     const result = await isNodeHealthy('http://node1.com')
     assert.equal(result, true)
   })
 
   it('should return false when node is not healthy', async () => {
-    nock('http://node1.com').get('/status').reply(500)
+    nock('http://node1.com').get('/health_check').reply(500)
 
     const result = await isNodeHealthy('http://node1.com')
     assert.equal(result, false)
   })
 
   it('should return false when an error occurs', async () => {
-    nock('http://invalid-url').get('/status').replyWithError('Request failed')
+    nock('http://invalid-url')
+      .get('/health_check')
+      .replyWithError('Request failed')
 
     const result = await isNodeHealthy('http://invalid-url')
     assert.equal(result, false)
@@ -63,18 +67,18 @@ describe('getNStorageNodes', () => {
   })
 
   it('should return healthy nodes when no rendezvousKey is provided', async () => {
-    nock('http://node1.com').get('/status').reply(500)
-    nock('http://node2.com').get('/status').reply(500)
-    nock('http://node3.com').get('/status').reply(200)
+    nock('http://node1.com').get('/health_check').reply(500)
+    nock('http://node2.com').get('/health_check').reply(500)
+    nock('http://node3.com').get('/health_check').reply(200)
 
     const result = await getNStorageNodes(sampleNodes, 2)
     assert.deepEqual(result, ['http://node3.com'])
   })
 
   it('should return all healthy nodes when no numNodes is not specified and all nodes are healthy', async () => {
-    nock('http://node1.com').get('/status').reply(200)
-    nock('http://node2.com').get('/status').reply(200)
-    nock('http://node3.com').get('/status').reply(200)
+    nock('http://node1.com').get('/health_check').reply(200)
+    nock('http://node2.com').get('/health_check').reply(200)
+    nock('http://node3.com').get('/health_check').reply(200)
 
     const result = await getNStorageNodes(sampleNodes)
     assert.deepEqual(result, [
@@ -85,40 +89,40 @@ describe('getNStorageNodes', () => {
   })
 
   it('should return all healthy nodes when no numNodes is not specified and 1 node is unhealthy', async () => {
-    nock('http://node1.com').get('/status').reply(200)
-    nock('http://node2.com').get('/status').reply(200)
-    nock('http://node3.com').get('/status').reply(500)
+    nock('http://node1.com').get('/health_check').reply(200)
+    nock('http://node2.com').get('/health_check').reply(200)
+    nock('http://node3.com').get('/health_check').reply(500)
 
     const result = await getNStorageNodes(sampleNodes)
     assert.deepEqual(result, ['http://node1.com', 'http://node2.com'])
   })
 
   it('should return nodes sorted by rendezvous score when a rendezvousKey is provided', async () => {
-    nock('http://node1.com').get('/status').reply(200)
-    nock('http://node2.com').get('/status').reply(200)
-    nock('http://node3.com').get('/status').reply(200)
+    nock('http://node1.com').get('/health_check').reply(200)
+    nock('http://node2.com').get('/health_check').reply(200)
+    nock('http://node3.com').get('/health_check').reply(200)
 
     const result = await getNStorageNodes(sampleNodes, 3, 'test-rendezvous-key')
     assert.deepEqual(result, [
+      'http://node3.com',
       'http://node2.com',
-      'http://node1.com',
-      'http://node3.com'
+      'http://node1.com'
     ])
   })
 
   it('should return only the healthy nodes sorted by rendezvous score when a rendezvousKey is provided', async () => {
-    nock('http://node1.com').get('/status').reply(200)
-    nock('http://node2.com').get('/status').reply(200)
-    nock('http://node3.com').get('/status').reply(500)
+    nock('http://node1.com').get('/health_check').reply(200)
+    nock('http://node2.com').get('/health_check').reply(200)
+    nock('http://node3.com').get('/health_check').reply(500)
 
     const result = await getNStorageNodes(sampleNodes, 3, 'test-rendezvous-key')
     assert.deepEqual(result, ['http://node2.com', 'http://node1.com'])
   })
 
   it('should return an empty array when there are no healthy nodes and numNodes is specified', async () => {
-    nock('http://node1.com').get('/status').reply(500)
-    nock('http://node2.com').get('/status').reply(500)
-    nock('http://node3.com').get('/status').reply(500)
+    nock('http://node1.com').get('/health_check').reply(500)
+    nock('http://node2.com').get('/health_check').reply(500)
+    nock('http://node3.com').get('/health_check').reply(500)
 
     const result = await getNStorageNodes(sampleNodes, 2)
     assert.deepEqual(result, [])

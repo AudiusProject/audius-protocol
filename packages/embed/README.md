@@ -1,6 +1,6 @@
 # Audius Embed Player
 
-Like you've seen on [twitter](https://twitter.com/AudiusProject/status/1293624808459010050).
+Like you've seen on [twitter](https://twitter.com/audius/status/1293624808459010050).
 
 
 ## Running

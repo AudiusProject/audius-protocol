@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { recordPlay, recordPause } from '../analytics/analytics'
 import { sendPostMessage } from '../api/util'
@@ -40,10 +40,10 @@ const usePlayback = (id, onAfterAudioEnd) => {
 
   // Hold onto the callbacks we return as refs, to be passed into
   // onTrackEnd to break the cyclic dependeny here.
-  const togglePlayRef = useRef(() => {})
-  const loadRef = useRef(() => {})
-  const stopRef = useRef(() => {})
-  const setVolumeRef = useRef(() => {})
+  const togglePlayRef = useRef(() => { })
+  const loadRef = useRef(() => { })
+  const stopRef = useRef(() => { })
+  const setVolumeRef = useRef(() => { })
 
   // On track end, we need to be able to refer to the
   // latest updated onAfterAudioEnd function passed in

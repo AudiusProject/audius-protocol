@@ -6,13 +6,14 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"mediorum/cmd/loadtest"
-	"mediorum/cmd/reaper"
-	"mediorum/cmd/segments"
-	"mediorum/registrar"
-	"mediorum/server"
 	"os"
 	"strconv"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/cmd/loadtest"
+	"github.com/AudiusProject/audius-protocol/mediorum/cmd/reaper"
+	"github.com/AudiusProject/audius-protocol/mediorum/cmd/segments"
+	"github.com/AudiusProject/audius-protocol/mediorum/registrar"
+	"github.com/AudiusProject/audius-protocol/mediorum/server"
 )
 
 func getenvWithDefault(key string, fallback string) string {

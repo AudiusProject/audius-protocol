@@ -21,9 +21,12 @@ const ModalDrawer = (props: ModalDrawerProps) => {
       <Drawer
         isOpen={props.isOpen}
         onClose={props.onClose}
+        onClosed={props.onClosed}
         isFullscreen={
           props.isFullscreen === undefined ? true : props.isFullscreen
         }
+        zIndex={props.zIndex}
+        shouldClose={props.shouldClose}
       >
         <div className={styles.drawer}>
           <div className={styles.titleContainer}>
@@ -47,6 +50,7 @@ const ModalDrawer = (props: ModalDrawerProps) => {
     <Modal
       isOpen={props.isOpen}
       onClose={props.onClose}
+      onClosed={props.onClosed}
       showTitleHeader={props.showTitleHeader}
       showDismissButton={props.showDismissButton}
       dismissOnClickOutside={props.dismissOnClickOutside}
@@ -65,6 +69,7 @@ const ModalDrawer = (props: ModalDrawerProps) => {
         [styles.gradientHeader]: gradientTitle,
         [props.bodyClassName!]: !!props.bodyClassName
       })}
+      zIndex={props.zIndex}
     >
       {props.children}
     </Modal>

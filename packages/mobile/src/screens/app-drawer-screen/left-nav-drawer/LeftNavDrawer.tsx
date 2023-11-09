@@ -10,9 +10,11 @@ import {
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
 import { View } from 'react-native'
+import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
 
 import IconCrown from 'app/assets/images/iconCrown.svg'
+import IconEmbed from 'app/assets/images/iconEmbed.svg'
 import IconListeningHistory from 'app/assets/images/iconListeningHistory.svg'
 import IconMessage from 'app/assets/images/iconMessage.svg'
 import IconSettings from 'app/assets/images/iconSettings.svg'
@@ -32,12 +34,15 @@ import { VanityMetrics } from './VanityMetrics'
 const { getAccountUser } = accountSelectors
 const { getHasUnreadMessages } = chatSelectors
 
+const isStaging = Config.ENVIRONMENT === 'staging'
+
 const messages = {
   profile: 'Profile',
   audio: '$AUDIO & Rewards',
   upload: 'Upload a Track',
   listeningHistory: 'Listening History',
-  settings: 'Settings'
+  settings: 'Settings',
+  featureFlags: 'Feature Flags'
 }
 
 type AccountDrawerProps = DrawerContentComponentProps & {
@@ -73,6 +78,9 @@ const WrappedLeftNavDrawer = () => {
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
   const hasUnreadMessages = useSelector(getHasUnreadMessages)
   const { isEnabled: isChatEnabled } = useFeatureFlag(FeatureFlags.CHAT_ENABLED)
+  const { isEnabled: isFeatureFlagAccessEnabled } = useFeatureFlag(
+    FeatureFlags.FEATURE_FLAG_ACCESS
+  )
 
   return (
     <DrawerContentScrollView>
@@ -137,6 +145,14 @@ const WrappedLeftNavDrawer = () => {
           style: { marginLeft: spacing(-1) }
         }}
       />
+      {isStaging || isFeatureFlagAccessEnabled ? (
+        <LeftNavLink
+          icon={IconEmbed}
+          label={messages.featureFlags}
+          to='FeatureFlagOverride'
+          params={null}
+        />
+      ) : null}
     </DrawerContentScrollView>
   )
 }

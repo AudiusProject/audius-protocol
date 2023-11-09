@@ -2,7 +2,7 @@ import { ReactNode, useCallback } from 'react'
 
 import cn from 'classnames'
 
-import { ReactComponent as IconCopy } from 'assets/img/iconCopy.svg'
+import IconCopy from 'assets/img/iconCopy.svg'
 import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import { ComponentPlacement, MountPlacement } from 'components/types'

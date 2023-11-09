@@ -15,9 +15,9 @@ import { useAsyncFn } from 'react-use'
 import audiusExclusivesPlaylistImg from 'assets/img/publicSite/AudiusExclusivesPlaylistArt.png'
 import audiusWeeklyPlaylistImg from 'assets/img/publicSite/AudiusWeeklyPlaylistArt.png'
 import hotAndNewPlaylistImg from 'assets/img/publicSite/HotAndNewPlaylistArt.jpeg'
-import { ReactComponent as IconLines } from 'assets/img/publicSite/Lines.svg'
+import IconLines from 'assets/img/publicSite/Lines.svg'
 import moombahtonPlaylistImg from 'assets/img/publicSite/MoombahtonPlaylistArt.png'
-import { ReactComponent as IconListenOnAudius } from 'assets/img/publicSite/listen-on-audius.svg'
+import IconListenOnAudius from 'assets/img/publicSite/listen-on-audius.svg'
 import { fetchExploreContent } from 'common/store/pages/explore/sagas'
 import { handleClickRoute } from 'components/public-site/handleClickRoute'
 import useCardWeight from 'hooks/useCardWeight'
@@ -94,7 +94,7 @@ const DesktopPlaylistTile = (props: PlaylistTileProps) => {
           className={styles.track}
           style={{
             backgroundImage: `url(${props.imageUrl})`,
-            boxShadow: `0px 10px 50px -2px rgba(56, 14, 13, 0.4)`
+            boxShadow: `0 6px 28px 0 rgba(56, 14, 13, 0.4)`
           }}
         >
           <div className={styles.trackContent}>
@@ -122,7 +122,7 @@ const MobilePlaylistTile = (props: PlaylistTileProps) => (
         backgroundImage: `url(${
           props.imageUrl || audiusExclusivesPlaylistImg
         })`,
-        boxShadow: `0px 10px 50px -2px rgba(56, 14, 13, 0.4)`
+        boxShadow: `0px 8px 16px 0px rgba(0, 0, 0, 0.08), 0px 0px 4px 0px rgba(0, 0, 0, 0.04)`
       }}
     ></div>
     <div className={styles.trackTitle}>{props.title}</div>
@@ -174,9 +174,20 @@ const FeaturedContent = (props: FeaturedContentProps) => {
 
   if (props.isMobile) {
     return (
-      <div className={styles.mobileContainer}>
-        <h3 className={styles.title}>{messages.title}</h3>
-        <h4 className={styles.subTitle}>{messages.subTitle}</h4>
+      <div className={styles.mobileContainer} ref={refInView}>
+        <div className={styles.content}>
+          <animated.div
+            style={{
+              opacity: textStyles.opacity,
+              transform: textStyles.x.interpolate(
+                (x) => `translate3d(0,${x}px,0)`
+              )
+            }}
+          >
+            <h3 className={styles.title}>{messages.title}</h3>
+            <h4 className={styles.subTitle}>{messages.subTitle}</h4>
+          </animated.div>
+        </div>
         <div className={styles.tracksContainer}>
           {trendingPlaylistsResponse.value == null ||
           trendingPlaylistsResponse.value.length < 4
@@ -220,20 +231,16 @@ const FeaturedContent = (props: FeaturedContentProps) => {
   return (
     <div className={styles.container} ref={refInView}>
       <div className={styles.content}>
-        <div className={styles.animateTitleContainer}>
-          <animated.div
-            style={{
-              transform: textStyles.x.interpolate(
-                (x) => `translate3d(0,${x}px,0)`
-              )
-            }}
-          >
-            <div className={styles.header}>
-              <h3 className={styles.title}>{messages.title}</h3>
-              <h4 className={styles.subTitle}>{messages.subTitle}</h4>
-            </div>
-          </animated.div>
-        </div>
+        <animated.div
+          style={{
+            transform: textStyles.x.interpolate(
+              (x) => `translate3d(0,${x}px,0)`
+            )
+          }}
+        >
+          <h3 className={styles.title}>{messages.title}</h3>
+          <h4 className={styles.subTitle}>{messages.subTitle}</h4>
+        </animated.div>
         <div className={styles.tracksContainer}>
           {trendingPlaylistsResponse.value == null ||
           trendingPlaylistsResponse.value.length < 4

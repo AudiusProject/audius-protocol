@@ -34,8 +34,8 @@ const messages = {
   done: 'Done',
   twitterCopyPrefix: 'I just tipped ',
   twitterCopyPrefixAlt: 'I just sent ', // iOS only
-  twitterCopySuffix: ' $AUDIO on @AudiusProject #Audius #AUDIOTip',
-  twitterCopySuffixAlt: ' $AUDIO on @AudiusProject #Audius #AUDIO' // iOS only
+  twitterCopySuffix: ' $AUDIO on @audius #Audius #AUDIOTip',
+  twitterCopySuffixAlt: ' $AUDIO on @audius #Audius #AUDIO' // iOS only
 }
 
 const useStyles = makeStyles(({ spacing }) => ({

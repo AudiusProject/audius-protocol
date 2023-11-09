@@ -45,9 +45,16 @@ export enum FeatureFlags {
   PROXY_WORMHOLE = 'proxy_wormhole',
   AI_ATTRIBUTION = 'ai_attribution',
   DEVELOPER_APPS_PAGE = 'developer_apps_page',
-  UPLOAD_REDESIGN_ENABLED = 'upload_redesign_enabled',
   USDC_PURCHASES = 'usdc_purchases',
-  NEW_PLAYLIST_ROUTES = 'new_playlist_routes'
+  USDC_PURCHASES_UPLOAD = 'usdc_purchases_upload',
+  AUDIO_MATCHING_CHALLENGES = 'audio_matching_challenges',
+  NEW_PLAYLIST_ROUTES = 'new_playlist_routes',
+  DISCOVERY_RELAY = 'discovery_relay',
+  SIGN_UP_REDESIGN = 'sign_up_redesign',
+  FEATURE_FLAG_ACCESS = 'feature_flag_access',
+  BUY_USDC_VIA_SOL = 'buy_usdc_via_sol',
+  IOS_USDC_PURCHASE_ENABLED = 'ios_usdc_purchase_enabled',
+  SCHEDULED_RELEASES = 'scheduled_releases'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -108,7 +115,14 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.PROXY_WORMHOLE]: false,
   [FeatureFlags.AI_ATTRIBUTION]: false,
   [FeatureFlags.DEVELOPER_APPS_PAGE]: false,
-  [FeatureFlags.UPLOAD_REDESIGN_ENABLED]: false,
   [FeatureFlags.USDC_PURCHASES]: false,
-  [FeatureFlags.NEW_PLAYLIST_ROUTES]: false
+  [FeatureFlags.USDC_PURCHASES_UPLOAD]: false,
+  [FeatureFlags.AUDIO_MATCHING_CHALLENGES]: false,
+  [FeatureFlags.NEW_PLAYLIST_ROUTES]: false,
+  [FeatureFlags.DISCOVERY_RELAY]: false,
+  [FeatureFlags.SIGN_UP_REDESIGN]: false,
+  [FeatureFlags.FEATURE_FLAG_ACCESS]: false,
+  [FeatureFlags.BUY_USDC_VIA_SOL]: false,
+  [FeatureFlags.IOS_USDC_PURCHASE_ENABLED]: true,
+  [FeatureFlags.SCHEDULED_RELEASES]: false
 }

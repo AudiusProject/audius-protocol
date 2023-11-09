@@ -1,8 +1,9 @@
 import BN from 'bn.js'
-import dayjs from 'dayjs'
 import numeral from 'numeral'
 
 import { BNWei } from 'models/Wallet'
+
+import dayjs from './dayjs'
 
 /**
  * The format for counting numbers should be 4 characters if possible (3 numbers and 1 Letter) without trailing 0

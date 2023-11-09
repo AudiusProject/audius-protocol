@@ -1,34 +1,34 @@
 import semver from 'semver'
-import { AudiusTokenClient } from './AudiusTokenClient'
-import { RegistryClient } from './RegistryClient'
-import { GovernanceClient } from './GovernanceClient'
-import { ServiceTypeManagerClient } from './ServiceTypeManagerClient'
-import { ServiceProviderFactoryClient } from './ServiceProviderFactoryClient'
-import { StakingProxyClient } from './StakingProxyClient'
-import { DelegateManagerClient } from './DelegateManagerClient'
-import { ClaimsManagerClient } from './ClaimsManagerClient'
-import { ClaimDistributionClient } from './ClaimDistributionClient'
-import { WormholeClient } from './WormholeClient'
-import { EthRewardsManagerClient } from './EthRewardsManagerClient'
-import { TrustedNotifierManagerClient } from './TrustedNotifierManagerClient'
-import type { Logger } from '../../utils'
-import type { EthWeb3Manager } from '../ethWeb3Manager'
-import type { ContractClient } from '../contracts/ContractClient'
-
-import { abi as AudiusTokenABI } from '../../eth-contracts/ABIs/AudiusToken.json'
-import { abi as RegistryABI } from '../../eth-contracts/ABIs/Registry.json'
-import { abi as GovernanceABI } from '../../eth-contracts/ABIs/Governance.json'
-import { abi as ServiceTypeManagerABI } from '../../eth-contracts/ABIs/ServiceTypeManager.json'
-import { abi as ServiceProviderFactoryABI } from '../../eth-contracts/ABIs/ServiceProviderFactory.json'
-import { abi as StakingABI } from '../../eth-contracts/ABIs/Staking.json'
-import { abi as DelegateManagerABI } from '../../eth-contracts/ABIs/DelegateManagerV2.json'
-import { abi as ClaimsManagerABI } from '../../eth-contracts/ABIs/ClaimsManager.json'
-import { abi as ClaimDistributionABI } from '../../eth-contracts/ABIs/AudiusClaimDistributor.json'
-import { abi as WormholeClientABI } from '../../eth-contracts/ABIs/WormholeClient.json'
-import { abi as EthRewardsManagerABI } from '../../eth-contracts/ABIs/EthRewardsManager.json'
-import { abi as TrustedNotifierManagerABI } from '../../eth-contracts/ABIs/TrustedNotifierManager.json'
-
 import type { AbiItem } from 'web3-utils'
+
+import { abi as ClaimDistributionABI } from '../../eth-contracts/ABIs/AudiusClaimDistributor.json'
+import { abi as AudiusTokenABI } from '../../eth-contracts/ABIs/AudiusToken.json'
+import { abi as ClaimsManagerABI } from '../../eth-contracts/ABIs/ClaimsManager.json'
+import { abi as DelegateManagerABI } from '../../eth-contracts/ABIs/DelegateManagerV2.json'
+import { abi as EthRewardsManagerABI } from '../../eth-contracts/ABIs/EthRewardsManager.json'
+import { abi as GovernanceABI } from '../../eth-contracts/ABIs/Governance.json'
+import { abi as RegistryABI } from '../../eth-contracts/ABIs/Registry.json'
+import { abi as ServiceProviderFactoryABI } from '../../eth-contracts/ABIs/ServiceProviderFactory.json'
+import { abi as ServiceTypeManagerABI } from '../../eth-contracts/ABIs/ServiceTypeManager.json'
+import { abi as StakingABI } from '../../eth-contracts/ABIs/Staking.json'
+import { abi as TrustedNotifierManagerABI } from '../../eth-contracts/ABIs/TrustedNotifierManager.json'
+import { abi as WormholeClientABI } from '../../eth-contracts/ABIs/WormholeClient.json'
+import type { Logger } from '../../utils'
+import type { ContractClient } from '../contracts/ContractClient'
+import type { EthWeb3Manager } from '../ethWeb3Manager'
+
+import { AudiusTokenClient } from './AudiusTokenClient'
+import { ClaimDistributionClient } from './ClaimDistributionClient'
+import { ClaimsManagerClient } from './ClaimsManagerClient'
+import { DelegateManagerClient } from './DelegateManagerClient'
+import { EthRewardsManagerClient } from './EthRewardsManagerClient'
+import { GovernanceClient } from './GovernanceClient'
+import { RegistryClient } from './RegistryClient'
+import { ServiceProviderFactoryClient } from './ServiceProviderFactoryClient'
+import { ServiceTypeManagerClient } from './ServiceTypeManagerClient'
+import { StakingProxyClient } from './StakingProxyClient'
+import { TrustedNotifierManagerClient } from './TrustedNotifierManagerClient'
+import { WormholeClient } from './WormholeClient'
 
 const GovernanceRegistryKey = 'Governance'
 const ServiceTypeManagerProxyKey = 'ServiceTypeManagerProxy'
@@ -278,7 +278,7 @@ export class EthContracts {
       )
       return version
     } catch (e) {
-      console.log(`Error retrieving version for ${serviceType}`)
+      console.info(`Error retrieving version for ${serviceType}`)
       return ''
     }
   }

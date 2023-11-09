@@ -134,6 +134,9 @@ export const ShareModal = () => {
     }
   }, [content, dispatch, onClose])
 
+  const isPremium =
+    content?.type === 'track' && !!content.track.premium_conditions
+
   const shareProps = {
     isOpen,
     isOwner,
@@ -141,9 +144,10 @@ export const ShareModal = () => {
     onShareToTwitter: handleShareToTwitter,
     onShareToTikTok: handleShareToTikTok,
     onCopyLink: handleCopyLink,
-    onEmbed: ['playlist', 'album', 'track'].includes(content?.type ?? '')
-      ? handleEmbed
-      : undefined,
+    onEmbed:
+      ['playlist', 'album', 'track'].includes(content?.type ?? '') && !isPremium
+        ? handleEmbed
+        : undefined,
     onClose,
     onClosed,
     showTikTokShareAction: Boolean(

@@ -2,7 +2,11 @@ import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { ID } from 'models/Identifiers'
 
-import { ContentType, PurchaseContentStage } from './types'
+import {
+  ContentType,
+  PurchaseContentError,
+  PurchaseContentStage
+} from './types'
 
 type OnSuccess = {
   action?: Action
@@ -13,13 +17,19 @@ type PurchaseContentState = {
   stage: PurchaseContentStage
   contentType: ContentType
   contentId: ID
-  error?: Error
+  /** Pay extra amount in cents */
+  extraAmount?: number
+  /** Used for analytics */
+  extraAmountPreset?: string
+  error?: PurchaseContentError
   onSuccess?: OnSuccess
 }
 
 const initialState: PurchaseContentState = {
   contentType: ContentType.TRACK,
   contentId: -1,
+  extraAmount: undefined,
+  extraAmountPreset: undefined,
   error: undefined,
   stage: PurchaseContentStage.START
 }
@@ -31,6 +41,8 @@ const slice = createSlice({
     startPurchaseContentFlow: (
       state,
       action: PayloadAction<{
+        extraAmount?: number
+        extraAmountPreset?: string
         contentId: ID
         contentType?: ContentType
         onSuccess?: OnSuccess
@@ -38,6 +50,8 @@ const slice = createSlice({
     ) => {
       state.stage = PurchaseContentStage.START
       state.error = undefined
+      state.extraAmount = action.payload.extraAmount
+      state.extraAmountPreset = action.payload.extraAmountPreset
       state.contentId = action.payload.contentId
       state.contentType = action.payload.contentType ?? ContentType.TRACK
       state.onSuccess = action.payload.onSuccess
@@ -54,11 +68,20 @@ const slice = createSlice({
     purchaseSucceeded: (state) => {
       state.stage = PurchaseContentStage.CONFIRMING_PURCHASE
     },
-    purchaseConfirmed: (state) => {
+    purchaseConfirmed: (
+      state,
+      _action: PayloadAction<{
+        contentType: ContentType
+        contentId: ID
+      }>
+    ) => {
       state.stage = PurchaseContentStage.FINISH
     },
-    purchaseContentFlowFailed: (state) => {
-      state.error = new Error('Content purchase failed')
+    purchaseContentFlowFailed: (
+      state,
+      action: PayloadAction<{ error: PurchaseContentError }>
+    ) => {
+      state.error = action.payload.error
     },
     cleanup: () => initialState
   }
@@ -71,7 +94,8 @@ export const {
   purchaseSucceeded,
   purchaseConfirmed,
   purchaseCanceled,
-  purchaseContentFlowFailed
+  purchaseContentFlowFailed,
+  cleanup
 } = slice.actions
 
 export default slice.reducer

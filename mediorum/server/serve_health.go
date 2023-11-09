@@ -4,12 +4,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"mediorum/ethcontracts"
-	"mediorum/server/signature"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/AudiusProject/audius-protocol/mediorum/ethcontracts"
+	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
 	"github.com/gowebpki/jcs"
 	"github.com/labstack/echo/v4"
 )
@@ -31,15 +31,12 @@ type healthCheckResponseData struct {
 	SPOwnerWallet           string                     `json:"spOwnerWallet"`
 	Git                     string                     `json:"git"`
 	AudiusDockerCompose     string                     `json:"audiusDockerCompose"`
-	StoragePathUsed         uint64                     `json:"storagePathUsed"`  // bytes
-	StoragePathSize         uint64                     `json:"storagePathSize"`  // bytes
 	MediorumPathUsed        uint64                     `json:"mediorumPathUsed"` // bytes
 	MediorumPathSize        uint64                     `json:"mediorumPathSize"` // bytes
-	LegacyDirUsed           uint64                     `json:"legacyDirUsed"`    // bytes
-	MediorumDirUsed         uint64                     `json:"mediorumDirUsed"`  // bytes
 	DatabaseSize            uint64                     `json:"databaseSize"`     // bytes
 	DbSizeErr               string                     `json:"dbSizeErr"`
 	LastSuccessfulRepair    RepairTracker              `json:"lastSuccessfulRepair"`
+	LastSuccessfulCleanup   RepairTracker              `json:"lastSuccessfulCleanup"`
 	UploadsCount            int64                      `json:"uploadsCount"`
 	UploadsCountErr         string                     `json:"uploadsCountErr"`
 	AutoUpgradeEnabled      bool                       `json:"autoUpgradeEnabled"`
@@ -56,6 +53,7 @@ type healthCheckResponseData struct {
 	TrustedNotifierID       int                        `json:"trustedNotifierId"`
 	PeerHealths             map[string]*PeerHealth     `json:"peerHealths"`
 	UnreachablePeers        []string                   `json:"unreachablePeers"`
+	FailsPeerReachability   bool                       `json:"failsPeerReachability"`
 	StoreAll                bool                       `json:"storeAll"`
 }
 
@@ -92,15 +90,12 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		SPOwnerWallet:           ss.Config.SPOwnerWallet,
 		Git:                     ss.Config.GitSHA,
 		AudiusDockerCompose:     ss.Config.AudiusDockerCompose,
-		StoragePathUsed:         ss.storagePathUsed,
-		StoragePathSize:         ss.storagePathSize,
 		MediorumPathUsed:        ss.mediorumPathUsed,
 		MediorumPathSize:        ss.mediorumPathSize,
-		LegacyDirUsed:           ss.legacyDirUsed,
-		MediorumDirUsed:         ss.mediorumDirUsed,
 		DatabaseSize:            ss.databaseSize,
 		DbSizeErr:               ss.dbSizeErr,
 		LastSuccessfulRepair:    ss.lastSuccessfulRepair,
+		LastSuccessfulCleanup:   ss.lastSuccessfulCleanup,
 		UploadsCount:            ss.uploadsCount,
 		UploadsCountErr:         ss.uploadsCountErr,
 		AutoUpgradeEnabled:      ss.Config.AutoUpgradeEnabled,
@@ -116,6 +111,7 @@ func (ss *MediorumServer) serveHealthCheck(c echo.Context) error {
 		TrustedNotifierID:       ss.Config.TrustedNotifierID,
 		PeerHealths:             ss.peerHealths,
 		UnreachablePeers:        ss.unreachablePeers,
+		FailsPeerReachability:   ss.failsPeerReachability,
 		Signers:                 ss.Config.Signers,
 		StoreAll:                ss.Config.StoreAll,
 	}

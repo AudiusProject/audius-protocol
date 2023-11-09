@@ -22,6 +22,7 @@ export type USDCPurchaseDetails = {
   sellerUserId: number
   buyerUserId: number
   amount: StringUSDC
+  extraAmount: StringUSDC
   contentType: USDCContentPurchaseType
   contentId: number
   createdAt: string

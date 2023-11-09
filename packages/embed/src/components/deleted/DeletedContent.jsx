@@ -1,5 +1,4 @@
 import cn from 'classnames'
-import { h } from 'preact'
 
 import FullColorLogo from '../../assets/img/Horizontal-Logo-Full-Color.png'
 import AudiusLogo from '../../assets/img/audiusLogoHorizontal.svg'

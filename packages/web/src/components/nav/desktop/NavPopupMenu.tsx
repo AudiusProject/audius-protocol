@@ -1,6 +1,5 @@
 import {
   removeNullable,
-  accountSelectors,
   FeatureFlags,
   chatSelectors,
   Name
@@ -17,7 +16,7 @@ import {
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontalAlt.svg'
+import IconKebabHorizontal from 'assets/img/iconKebabHorizontalAlt.svg'
 import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { NotificationDot } from 'components/notification-dot'
@@ -33,23 +32,17 @@ import {
 import zIndex from 'utils/zIndex'
 
 import styles from './NavPopupMenu.module.css'
-const { getAccountHasTracks } = accountSelectors
 
 const messages = {
   settings: 'Settings',
-  dashboard: 'Artist Dashboard',
+  dashboard: 'Dashboard & Payments',
   audio: '$AUDIO & Rewards',
   messages: 'Messages'
-}
-
-const useAccountHasTracks = () => {
-  return useSelector(getAccountHasTracks)
 }
 
 const NavPopupMenu = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
-  const hasTracks = useAccountHasTracks()
   const hasUnreadMessages = useSelector(chatSelectors.getHasUnreadMessages)
   const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
 
@@ -74,14 +67,12 @@ const NavPopupMenu = () => {
           iconClassName: styles.menuItemIcon
         }
       : null,
-    hasTracks
-      ? {
-          text: messages.dashboard,
-          onClick: () => navigate(DASHBOARD_PAGE),
-          icon: <IconDashboard />,
-          iconClassName: styles.menuItemIcon
-        }
-      : null,
+    {
+      text: messages.dashboard,
+      onClick: () => navigate(DASHBOARD_PAGE),
+      icon: <IconDashboard />,
+      iconClassName: styles.menuItemIcon
+    },
     {
       text: messages.audio,
       className: styles.rewardsMenuItem,
@@ -108,7 +99,7 @@ const NavPopupMenu = () => {
               <div
                 className={styles.icon}
                 ref={anchorRef}
-                onClick={triggerPopup}
+                onClick={() => triggerPopup()}
               >
                 <Icon icon={IconKebabHorizontal} />
               </div>

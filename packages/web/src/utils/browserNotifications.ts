@@ -35,10 +35,10 @@ declare global {
  *
  */
 
-const basename = process.env.PUBLIC_URL
+const basename = process.env.VITE_PUBLIC_URL
 
-const fcmWebPushPublicKey = process.env.REACT_APP_FCM_PUSH_PUBLIC_KEY as string
-const safariWebPushID = process.env.REACT_APP_SAFARI_WEB_PUSH_ID
+const fcmWebPushPublicKey = process.env.VITE_FCM_PUSH_PUBLIC_KEY as string
+const safariWebPushID = process.env.VITE_SAFARI_WEB_PUSH_ID
 const applicationServerPublicKey = fcmWebPushPublicKey
 export const isPushManagerAvailable =
   !isElectron() && 'serviceWorker' in navigator && 'PushManager' in window

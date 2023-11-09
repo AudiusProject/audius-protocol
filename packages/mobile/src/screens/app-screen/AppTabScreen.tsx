@@ -40,12 +40,12 @@ import {
 import { AiGeneratedTracksScreen } from '../ai-generated-tracks-screen'
 import { AppDrawerContext } from '../app-drawer-screen'
 import { AudioScreen } from '../audio-screen'
+import { ChangePasswordScreen } from '../change-password-screen'
 import { EditProfileScreen } from '../edit-profile-screen'
 import {
   AboutScreen,
   AccountSettingsScreen,
   AccountVerificationScreen,
-  ChangePasswordScreen,
   ListeningHistoryScreen,
   DownloadSettingsScreen,
   InboxSettingsScreen,
@@ -103,6 +103,7 @@ export type AppTabScreenParamList = {
   NotificationSettingsScreen: undefined
   AudioScreen: undefined
   Upload: undefined
+  FeatureFlagOverride: undefined
   EditTrack: { id: ID }
   WalletConnect: undefined
   ChatList: undefined

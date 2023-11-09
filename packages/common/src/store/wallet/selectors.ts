@@ -3,8 +3,8 @@ import BN from 'bn.js'
 
 import { BNUSDC } from 'models/Wallet'
 import { CommonState } from 'store/commonStore'
-import { Nullable } from 'utils/typeUtils'
-import { stringWeiToBN, zeroBNWei } from 'utils/wallet'
+import { Nullable, isNullOrUndefined } from 'utils/typeUtils'
+import { stringWeiToBN } from 'utils/wallet'
 
 // Previously, the getAccountBalance selector would return different
 // values (although numerically the same) because of the return of a
@@ -17,7 +17,7 @@ const getAccountBalanceStr = (state: CommonState) => {
 }
 export const getAccountBalance = createSelector(
   getAccountBalanceStr,
-  (balance) => (balance ? stringWeiToBN(balance) : zeroBNWei)
+  (balance) => (!isNullOrUndefined(balance) ? stringWeiToBN(balance) : balance)
 )
 
 export const getAccountBalanceLoading = (state: CommonState) => {
@@ -29,8 +29,15 @@ const getAccountTotalBalanceStr = (state: CommonState) =>
 
 export const getAccountTotalBalance = createSelector(
   getAccountTotalBalanceStr,
-  (totalBalance) => (totalBalance ? stringWeiToBN(totalBalance) : zeroBNWei)
+  (totalBalance) =>
+    !isNullOrUndefined(totalBalance) ? stringWeiToBN(totalBalance) : null
 )
+
+export const getBalanceLoadDidFail = (state: CommonState) =>
+  state.wallet.balanceLoadDidFail
+
+export const getTotalBalanceLoadDidFail = (state: CommonState) =>
+  state.wallet.totalBalanceLoadDidFail
 
 export const getLocalBalanceDidChange = (state: CommonState): boolean =>
   state.wallet.localBalanceDidChange

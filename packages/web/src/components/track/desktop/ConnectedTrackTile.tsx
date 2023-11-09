@@ -27,7 +27,7 @@ import cn from 'classnames'
 import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
-import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
+import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import { Draggable } from 'components/dragndrop'
@@ -227,12 +227,13 @@ const ConnectedTrackTile = ({
                 [styles.small]: size === TrackTileSize.SMALL,
                 [styles.large]: size === TrackTileSize.LARGE
               })}
-              onClick={triggerPopup}
+              onClick={() => triggerPopup()}
             >
-              <IconKebabHorizontal
-                className={cn(styles.iconKebabHorizontal)}
-                ref={ref}
-              />
+              <div ref={ref}>
+                <IconKebabHorizontal
+                  className={cn(styles.iconKebabHorizontal)}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -302,6 +303,11 @@ const ConnectedTrackTile = ({
     shareTrack(trackId)
   }, [shareTrack, trackId])
 
+  const openLockedContentModal = useCallback(() => {
+    dispatch(setLockedContentId({ id: trackId }))
+    setLockedContentVisibility(true)
+  }, [dispatch, trackId, setLockedContentVisibility])
+
   const onTogglePlay = useCallback(
     (e?: MouseEvent /* click event within TrackTile */) => {
       // Skip toggle play if click event happened within track menu container
@@ -319,8 +325,7 @@ const ConnectedTrackTile = ({
       // Show the locked content modal if gated track and user does not have access.
       // Also skip toggle play in this case.
       if (trackId && !doesUserHaveAccess && !hasPreview) {
-        dispatch(setLockedContentId({ id: trackId }))
-        setLockedContentVisibility(true)
+        openLockedContentModal()
         return
       }
 
@@ -332,8 +337,7 @@ const ConnectedTrackTile = ({
       uid,
       trackId,
       doesUserHaveAccess,
-      dispatch,
-      setLockedContentVisibility
+      openLockedContentModal
     ]
   )
 
@@ -383,6 +387,7 @@ const ConnectedTrackTile = ({
       onClickRepost={onClickRepost}
       onClickFavorite={onClickFavorite}
       onClickShare={onClickShare}
+      onClickLocked={openLockedContentModal}
       onTogglePlay={onTogglePlay}
       isTrending={isTrending}
       showRankIcon={showRankIcon}

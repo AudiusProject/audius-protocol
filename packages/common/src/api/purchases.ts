@@ -21,13 +21,21 @@ type GetPurchaseListArgs = {
 }
 
 const parsePurchase = (purchase: full.Purchase): USDCPurchaseDetails => {
-  const { contentId, contentType, amount, buyerUserId, sellerUserId, ...rest } =
-    purchase
+  const {
+    contentId,
+    contentType,
+    extraAmount,
+    amount,
+    buyerUserId,
+    sellerUserId,
+    ...rest
+  } = purchase
   return {
     ...rest,
     contentType: contentType as USDCContentPurchaseType,
     contentId: HashId.parse(contentId),
     amount: amount as StringUSDC,
+    extraAmount: extraAmount as StringUSDC,
     buyerUserId: HashId.parse(buyerUserId),
     sellerUserId: HashId.parse(sellerUserId)
   }
@@ -74,7 +82,7 @@ const purchasesApi = createApi({
         )
         return purchases
       },
-      options: {}
+      options: { retry: true }
     },
     getPurchasesCount: {
       fetch: async (
@@ -92,7 +100,7 @@ const purchasesApi = createApi({
         })
         return data ?? 0
       },
-      options: {}
+      options: { retry: true }
     },
     getSales: {
       fetch: async (
@@ -133,7 +141,7 @@ const purchasesApi = createApi({
         )
         return purchases
       },
-      options: {}
+      options: { retry: true }
     },
     getSalesCount: {
       fetch: async (
@@ -151,7 +159,7 @@ const purchasesApi = createApi({
         })
         return data ?? 0
       },
-      options: {}
+      options: { retry: true }
     }
   }
 })
@@ -163,3 +171,4 @@ export const {
   useGetSalesCount
 } = purchasesApi.hooks
 export const purchasesApiReducer = purchasesApi.reducer
+export const purchasesApiActions = purchasesApi.actions

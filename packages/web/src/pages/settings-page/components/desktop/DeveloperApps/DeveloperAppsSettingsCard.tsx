@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
 
-import { ReactComponent as IconEmbed } from 'assets/img/iconEmbed.svg'
+import IconEmbed from 'assets/img/iconEmbed.svg'
 
 import SettingsCard from '../SettingsCard'
 import styles from '../SettingsPage.module.css'
@@ -11,7 +11,7 @@ import { DeveloperAppsSettingsModal } from './DeveloperAppsSettingsModal'
 
 const messages = {
   title: 'Create App',
-  description: 'Create your own app using the Audius API',
+  description: 'Create your own app using the Audius API.',
   buttonText: 'Manage Your Apps'
 }
 

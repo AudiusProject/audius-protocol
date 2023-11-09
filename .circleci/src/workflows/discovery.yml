@@ -2,95 +2,219 @@ when: << pipeline.parameters.run-discovery-workflow >>
 jobs:
   - push-docker-image:
       name: push-discovery-provider
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-discovery-provider-$CIRCLE_BUILD_NUM
+      context: [Vercel, dockerhub]
       service: discovery-provider
+      filters:
+        branches:
+          only: main
   - push-docker-image:
       name: push-discovery-provider-notifications
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-discovery-provider-notifications-$CIRCLE_BUILD_NUM
+      context: [Vercel, dockerhub]
       service: discovery-provider-notifications
+      filters:
+        branches:
+          only: main
   - push-docker-image:
       name: push-pedalboard-trending-challenge-rewards
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-pedalboard-trending-challenge-rewards-$CIRCLE_BUILD_NUM
+      context: [Vercel, dockerhub]
       service: trending-challenge-rewards
+      filters:
+        branches:
+          only: main
   - push-docker-image:
       name: push-pedalboard-relay
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-pedalboard-relay-$CIRCLE_BUILD_NUM
+      context: [Vercel, dockerhub]
       service: relay
+      filters:
+        branches:
+          only: main
   - push-docker-image:
       name: push-pedalboard-sla-auditor
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-pedalboard-sla-auditor-$CIRCLE_BUILD_NUM
+      context: [Vercel, dockerhub]
       service: sla-auditor
+      filters:
+        branches:
+          only: main
   - push-docker-image:
       name: push-comms
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-comms-$CIRCLE_BUILD_NUM
+      context: [Vercel, dockerhub]
       service: comms
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
+      name: push-trpc
+      context: [Vercel, dockerhub]
+      service: trpc
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
+      name: push-protocol-dashboard
+      context: [Vercel, dockerhub]
+      service: dashboard
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
+      name: push-healthz
+      context: [Vercel, dockerhub]
+      service: healthz
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
+      name: push-uptime
+      context: [Vercel, dockerhub]
+      service: uptime
+      filters:
+        branches:
+          only: main
 
   - lint-discovery-provider:
       name: lint-discovery-provider
 
   - test:
       name: test-discovery-provider
-      context: GCP
-      instance-name: circleci-test-discovery-provider-$CIRCLE_BUILD_NUM
+      context: Vercel
       service: discovery-provider
       requires:
         - lint-discovery-provider
   - test:
       name: test-discovery-provider-notifications
-      context: GCP
-      instance-name: circleci-test-discovery-provider-notifications-$CIRCLE_BUILD_NUM
+      context: Vercel
       service: discovery-provider-notifications
       requires:
         - lint-discovery-provider
 
-  # Release
-  - deploy-prod-discovery-provider-trigger:
-      requires:
-        - test-discovery-provider
-        - push-discovery-provider
-        - push-comms
-      filters:
-        branches:
-          only: /^release.*$/
-      type: approval
-  - deploy:
-      name: deploy-prod-discovery-provider
-      context:
-        - open-vpn
-        - slack-secrets
-      requires:
-        - deploy-prod-discovery-provider-trigger
-      hosts: >-
-        prod-discovery-1
-        prod-discovery-2
-        prod-discovery-3
+  - push-arm-image:
+      name: push-discovery-provider-arm
+      context: [Vercel, dockerhub]
       service: discovery-provider
-
-  # Main deploy
-  - deploy:
-      name: deploy-stage-discovery-provider
-      requires:
-        - test-discovery-provider
-        - push-discovery-provider
-        - push-comms
       filters:
         branches:
           only: main
-      context:
-        - open-vpn
-        - build-freeze
-        - slack-secrets
-      hosts: >-
-        stage-discovery-4
-        stage-discovery-1
-        stage-discovery-2
-        stage-discovery-3
-        stage-discovery-5
+      requires:
+        - push-discovery-provider
+
+  - push-arm-image:
+      name: push-discovery-provider-notifications-arm
+      context: [Vercel, dockerhub]
+      service: discovery-provider-notifications
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-discovery-provider-notifications
+
+  - push-arm-image:
+      name: push-pedalboard-trending-challenge-rewards-arm
+      context: [Vercel, dockerhub]
+      service: trending-challenge-rewards
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-pedalboard-trending-challenge-rewards
+    
+  - push-arm-image:
+      name: push-pedalboard-relay-arm
+      context: [Vercel, dockerhub]
+      service: relay
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-pedalboard-relay
+
+  - push-arm-image:
+      name: push-pedalboard-sla-auditor-arm
+      context: [Vercel, dockerhub]
+      service: sla-auditor
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-pedalboard-sla-auditor
+
+  - push-arm-image:
+      name: push-comms-arm
+      context: [Vercel, dockerhub]
+      service: comms
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-comms
+
+  - push-arm-image:
+      name: push-trpc-arm
+      context: [Vercel, dockerhub]
+      service: trpc
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-trpc
+
+  - push-arm-image:
+      name: push-protocol-dashboard-arm
+      context: [Vercel, dockerhub]
+      service: dashboard
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-protocol-dashboard
+
+  - push-arm-image:
+      name: push-healthz-arm
+      context: [Vercel, dockerhub]
+      service: healthz
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-healthz
+
+  # Deploy audius-protocol `main` branch (stage)
+  - deploy-stage-nodes:
+      name: deploy-stage-discovery-provider
+      requires:
+        - lint-discovery-provider
+        - test-discovery-provider
+        - test-discovery-provider-notifications
+        - push-discovery-provider
+        - push-discovery-provider-notifications
+        - push-pedalboard-trending-challenge-rewards
+        - push-pedalboard-relay
+        - push-pedalboard-sla-auditor
+        - push-comms
+        - push-trpc
+        - push-protocol-dashboard
+        - push-healthz
+        # uncomment when arm builds are stable
+        # - push-discovery-provider-arm
+        # - push-discovery-provider-notifications-arm
+        # - push-pedalboard-trending-challenge-rewards-arm
+        # - push-pedalboard-relay-arm
+        # - push-pedalboard-sla-auditor-arm
+        # - push-comms-arm
+        # - push-trpc-arm
+        # - push-protocol-dashboard-arm
+        # - push-healthz-arm
+
+      filters:
+        branches:
+          only: main
+      context: github
       service: discovery-provider
-      freeze: $FREEZE_BUILD
+
+  # Test for API regressions after deploying to stage
+  - test-discovery-api:
+      name: test-discovery-api
+      requires:
+        - deploy-stage-discovery-provider
+      filters:
+        branches:
+          only: main

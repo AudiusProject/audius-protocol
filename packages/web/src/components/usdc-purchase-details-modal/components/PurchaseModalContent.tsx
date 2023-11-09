@@ -1,15 +1,13 @@
 import { useCallback } from 'react'
 
-import { useGetTrackById, formatUSDCWeiToUSDString } from '@audius/common'
+import { useGetTrackById } from '@audius/common'
+import { Button, ButtonType, IconArrowRight } from '@audius/harmony'
 import {
   ModalHeader,
   ModalTitle,
   IconCart,
   ModalContent,
-  ModalFooter,
-  HarmonyButton,
-  HarmonyButtonType,
-  IconArrow
+  ModalFooter
 } from '@audius/stems'
 import moment from 'moment'
 
@@ -21,12 +19,12 @@ import { useGoToRoute } from 'hooks/useGoToRoute'
 
 import { DetailSection } from './DetailSection'
 import { TrackLink } from './TrackLink'
+import { TransactionSummary } from './TransactionSummary'
 import styles from './styles.module.css'
 import { ContentProps } from './types'
 
 const messages = {
   by: 'By',
-  cost: 'Cost',
   date: 'Date',
   done: 'Done',
   purchaseDetails: 'Purchase Details',
@@ -75,25 +73,20 @@ export const PurchaseModalContent = ({
             {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
           </Text>
         </DetailSection>
-        <DetailSection label={messages.cost}>
-          <Text size='large'>{`$${formatUSDCWeiToUSDString(
-            purchaseDetails.amount
-          )}`}</Text>
-        </DetailSection>
+        <TransactionSummary transaction={purchaseDetails} />
       </ModalContent>
       <ModalFooter className={styles.footer}>
-        <HarmonyButton
+        <Button
           className={styles.button}
-          variant={HarmonyButtonType.GHOST}
-          text={messages.visitTrack}
-          iconRight={IconArrow}
+          variant={ButtonType.SECONDARY}
+          iconRight={IconArrowRight}
           onClick={handleClickVisitTrack}
-        />
-        <HarmonyButton
-          className={styles.button}
-          text={messages.done}
-          onClick={onClose}
-        />
+        >
+          {messages.visitTrack}
+        </Button>
+        <Button className={styles.button} onClick={onClose}>
+          {messages.done}
+        </Button>
       </ModalFooter>
     </>
   )

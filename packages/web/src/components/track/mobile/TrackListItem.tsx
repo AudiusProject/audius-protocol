@@ -6,11 +6,10 @@ import cn from 'classnames'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import { ReactComponent as IconDrag } from 'assets/img/iconDrag.svg'
-import { ReactComponent as IconHeart } from 'assets/img/iconHeart.svg'
-import { ReactComponent as IconRemoveTrack } from 'assets/img/iconRemoveTrack.svg'
-import { ReactComponent as IconPause } from 'assets/img/pbIconPause.svg'
-import { ReactComponent as IconPlay } from 'assets/img/pbIconPlay.svg'
+import IconDrag from 'assets/img/iconDrag.svg'
+import IconRemoveTrack from 'assets/img/iconRemoveTrack.svg'
+import IconPause from 'assets/img/pbIconPause.svg'
+import IconPlay from 'assets/img/pbIconPlay.svg'
 import { SeoLink } from 'components/link'
 import { TablePlayButton } from 'components/table/components/TablePlayButton'
 import UserBadges from 'components/user-badges/UserBadges'
@@ -118,7 +117,6 @@ export type TrackListItemProps = {
   uid?: string
   isReorderable?: boolean
   isDragging?: boolean
-  onSave?: (isSaved: boolean, trackId: ID) => void
   onRemove?: (trackId: ID) => void
   togglePlay?: (uid: string, trackId: ID) => void
   onClickOverflow?: () => void
@@ -129,7 +127,6 @@ const TrackListItem = ({
   className,
   isLoading,
   index,
-  isSaved = false,
   isActive = false,
   isPlaying = false,
   isRemoveActive = false,
@@ -143,7 +140,6 @@ const TrackListItem = ({
   coverArtSizes,
   isDeleted,
   isLocked,
-  onSave,
   onRemove,
   togglePlay,
   trackItemAction,
@@ -155,12 +151,6 @@ const TrackListItem = ({
 
   const onClickTrack = () => {
     if (uid && !isLocked && !isDeleted && togglePlay) togglePlay(uid, trackId)
-  }
-
-  const onSaveTrack = (e: MouseEvent) => {
-    e.stopPropagation()
-    if (isDeleted && !isSaved) return
-    if (onSave) onSave(isSaved, trackId)
   }
 
   const onRemoveTrack = (e: MouseEvent<Element>) => {
@@ -224,13 +214,6 @@ const TrackListItem = ({
         <div className={styles.locked}>
           <IconLock />
           <span>{messages.locked}</span>
-        </div>
-      ) : null}
-      {!isLocked && trackItemAction === TrackItemAction.Save ? (
-        <div className={styles.iconContainer} onClick={onSaveTrack}>
-          <IconHeart
-            className={cn(styles.heartIcon, { [styles.isSaved]: isSaved })}
-          />
         </div>
       ) : null}
       {onClickOverflow && trackItemAction === TrackItemAction.Overflow && (

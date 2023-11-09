@@ -33,7 +33,7 @@ import {
   IconUserGroup
 } from '@audius/stems'
 
-import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
+import IconTip from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
 import UserList from 'components/user-list/UserList'
 import { UserListType } from 'store/application/ui/userListModal/types'

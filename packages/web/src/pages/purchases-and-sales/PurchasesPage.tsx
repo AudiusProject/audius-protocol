@@ -13,23 +13,25 @@ import {
   useGetPurchasesCount,
   useUSDCPurchaseDetailsModal
 } from '@audius/common'
-import { full } from '@audius/sdk'
 import {
-  HarmonyButton,
-  HarmonyButtonSize,
-  HarmonyButtonType,
-  IconDownload
-} from '@audius/stems'
+  Button,
+  ButtonSize,
+  ButtonType,
+  IconCloudDownload
+} from '@audius/harmony'
+import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
+import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { MainContentContext } from 'pages/MainContentContext'
 import NotFoundPage from 'pages/not-found-page/NotFoundPage'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
+import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
 import { FEED_PAGE } from 'utils/route'
 
@@ -111,11 +113,14 @@ const RenderPurchasesPage = () => {
   } = useAllPaginatedQuery(
     useGetPurchases,
     { userId, sortMethod, sortDirection },
-    { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE }
+    { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE, force: true }
   )
-  const { status: countStatus, data: count } = useGetPurchasesCount({
-    userId
-  })
+  const { status: countStatus, data: count } = useGetPurchasesCount(
+    {
+      userId
+    },
+    { force: true }
+  )
 
   const status = combineStatuses([dataStatus, countStatus])
 
@@ -138,6 +143,8 @@ const RenderPurchasesPage = () => {
     }
   }, [hasMore, loadMore])
 
+  useErrorPageOnFailedStatus({ status })
+
   const onClickRow = useCallback(
     (purchaseDetails: USDCPurchaseDetails) => {
       openDetailsModal({ variant: 'purchase', purchaseDetails })
@@ -145,7 +152,9 @@ const RenderPurchasesPage = () => {
     [openDetailsModal]
   )
 
-  const isEmpty = status === Status.SUCCESS && purchases.length === 0
+  const isEmpty =
+    status === Status.ERROR ||
+    (status === Status.SUCCESS && purchases.length === 0)
   const isLoading = statusIsNotFinalized(status)
 
   const downloadCSV = useCallback(async () => {
@@ -158,20 +167,26 @@ const RenderPurchasesPage = () => {
       encodedDataSignature
     })
     const blobUrl = window.URL.createObjectURL(blob)
-    window.location.assign(blobUrl)
+    const a = document.createElement('a')
+    a.href = blobUrl
+    a.download = `audius_purchases_${formatToday()}.csv`
+    a.click()
+    window.URL.revokeObjectURL(blobUrl)
   }, [userId])
 
   const header = (
     <Header
       primary={messages.headerText}
       rightDecorator={
-        <HarmonyButton
+        <Button
           onClick={downloadCSV}
-          text={messages.downloadCSV}
-          variant={HarmonyButtonType.SECONDARY}
-          size={HarmonyButtonSize.SMALL}
-          iconLeft={IconDownload}
-        />
+          variant={ButtonType.SECONDARY}
+          size={ButtonSize.SMALL}
+          iconLeft={IconCloudDownload}
+          disabled={isLoading || isEmpty}
+        >
+          {messages.downloadCSV}
+        </Button>
       }
     />
   )

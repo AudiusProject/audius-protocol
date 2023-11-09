@@ -13,7 +13,9 @@ import {
   premiumContentSelectors,
   tippingActions,
   usePremiumConditionsEntity,
-  usersSocialActions
+  usePremiumContentPurchaseModal,
+  usersSocialActions,
+  ModalSource
 } from '@audius/common'
 import type { ViewStyle } from 'react-native'
 import { Image, Text, View } from 'react-native'
@@ -29,7 +31,6 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import UserBadges from 'app/components/user-badges'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { setVisibility } from 'app/store/drawers/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 
@@ -188,6 +189,8 @@ export const DetailsTileNoAccess = ({
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const { isOpen: isModalOpen } = useDrawer('LockedContent')
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
   const source = isModalOpen ? 'howToUnlockModal' : 'howToUnlockTrackPage'
   const followSource = isModalOpen
     ? FollowSource.HOW_TO_UNLOCK_MODAL
@@ -211,14 +214,11 @@ export const DetailsTileNoAccess = ({
   }, [tippedUser, navigation, dispatch, source, trackId])
 
   const handlePurchasePress = useCallback(() => {
-    dispatch(
-      setVisibility({
-        drawer: 'PremiumTrackPurchase',
-        visible: true,
-        data: { trackId }
-      })
+    openPremiumContentPurchaseModal(
+      { contentId: trackId },
+      { source: ModalSource.TrackDetails }
     )
-  }, [dispatch, trackId])
+  }, [trackId, openPremiumContentPurchaseModal])
 
   const handlePressArtistName = useCallback(
     (handle: string) => () => {

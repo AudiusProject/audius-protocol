@@ -1,4 +1,6 @@
 import assert from 'assert'
+
+import { describe, it } from 'mocha'
 import nock from 'nock'
 
 import { timeRequests } from './network'
@@ -102,7 +104,7 @@ describe('timeRequests()', () => {
 
     // Make sure there is some variance
     assert(!allResults.every((val) => val === allResults[0]))
-  }, 10000)
+  }).timeout(10000)
 
   it('filterNonResponsive = true', async () => {
     const requests = [

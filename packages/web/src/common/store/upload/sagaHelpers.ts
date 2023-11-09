@@ -5,8 +5,13 @@ import {
   accountSelectors,
   getContext,
   getUSDCUserBank,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentCollectibleGated,
+  isPremiumContentFollowGated,
+  isPremiumContentUSDCPurchaseGated,
+  isPremiumContentTipGated,
+  TrackMetadata
 } from '@audius/common'
+import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { range } from 'lodash'
 import { all, call, put, select } from 'typed-redux-saga'
@@ -15,6 +20,8 @@ import { make } from 'common/store/analytics/actions'
 import { TrackForUpload } from 'pages/upload-page/types'
 import { waitForWrite } from 'utils/sagaHelpers'
 const { getAccountUser } = accountSelectors
+
+const ENVIRONMENT = process.env.VITE_ENVIRONMENT
 
 export function* reportResultEvents({
   numSuccess,
@@ -62,6 +69,40 @@ export function* reportResultEvents({
   )
 }
 
+// Record gated track uploads
+export function* recordGatedTracks(tracks: (TrackForUpload | TrackMetadata)[]) {
+  const events = tracks.reduce<ReturnType<typeof make>[]>(
+    (out, trackOrMetadata) => {
+      const { is_premium: isPremium, premium_conditions: premiumConditions } =
+        'metadata' in trackOrMetadata
+          ? trackOrMetadata.metadata
+          : trackOrMetadata
+      if (isPremium && premiumConditions) {
+        if (isPremiumContentCollectibleGated(premiumConditions)) {
+          out.push(
+            make(Name.TRACK_UPLOAD_COLLECTIBLE_GATED, { kind: 'tracks' })
+          )
+        } else if (isPremiumContentFollowGated(premiumConditions)) {
+          out.push(make(Name.TRACK_UPLOAD_FOLLOW_GATED, { kind: 'tracks' }))
+        } else if (isPremiumContentTipGated(premiumConditions)) {
+          out.push(make(Name.TRACK_UPLOAD_TIP_GATED, { kind: 'tracks' }))
+        } else if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+          out.push(
+            make(Name.TRACK_UPLOAD_USDC_GATED, {
+              kind: 'tracks',
+              price: premiumConditions.usdc_purchase.price / 100
+            })
+          )
+        }
+      }
+      return out
+    },
+    []
+  )
+
+  yield* all(events.map((e) => put(e)))
+}
+
 export function* processTracksForUpload(tracks: TrackForUpload[]) {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isUsdcPurchaseEnabled = yield* call(
@@ -72,7 +113,12 @@ export function* processTracksForUpload(tracks: TrackForUpload[]) {
 
   const ownerAccount = yield* select(getAccountUser)
   const wallet = ownerAccount?.erc_wallet ?? ownerAccount?.wallet
-  const ownerUserbank = yield* getUSDCUserBank(wallet)
+
+  // TODO: Figure out how to support USDC properly in dev.
+  let ownerUserbank: PublicKey
+  if (ENVIRONMENT !== 'development') {
+    ownerUserbank = yield* getUSDCUserBank(wallet)
+  }
 
   tracks.forEach((track) => {
     const premium_conditions = track.metadata.premium_conditions
@@ -82,7 +128,7 @@ export function* processTracksForUpload(tracks: TrackForUpload[]) {
       premium_conditions.usdc_purchase = {
         price: priceCents,
         splits: {
-          [ownerUserbank.toString()]: priceWei
+          [ownerUserbank?.toString() ?? '']: priceWei
         }
       }
     }

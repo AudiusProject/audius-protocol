@@ -1,19 +1,21 @@
-import type { Maybe } from '../../../utils/types'
+import fetch from 'cross-fetch'
+
 import { isNodeHealthy } from '../../../utils/getNStorageNodes'
 import RendezvousHash from '../../../utils/rendezvous'
-import fetch from 'cross-fetch'
+import type { Maybe } from '../../../utils/types'
+import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
+import type { AuthService } from '../Auth'
 import type { DiscoveryNodeSelectorService } from '../DiscoveryNodeSelector'
 import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
-import type { AuthService } from '../Auth'
+import type { LoggerService } from '../Logger'
+
+import { defaultStorageNodeSelectorConfig } from './constants'
 import type {
   StorageNode,
   StorageNodeSelectorConfig,
   StorageNodeSelectorConfigInternal,
   StorageNodeSelectorService
 } from './types'
-import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
-import { defaultStorageNodeSelectorConfig } from './constants'
-import type { LoggerService } from '../Logger'
 
 const DISCOVERY_RESPONSE_TIMEOUT = 15000
 
@@ -25,9 +27,10 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
   private orderedNodes?: string[] // endpoints (lowercase)
   private selectedNode?: string | null
   private selectedDiscoveryNode?: string | null
+  private selectionState: 'healthy_only' | 'failed_all'
   private readonly discoveryNodeSelector?: DiscoveryNodeSelectorService
   private readonly initialDiscoveryFetchPromise: Promise<void>
-  private resolveInitialDiscoveryFetchPromise: () => void = () => {}
+  private resolveInitialDiscoveryFetchPromise: () => void = () => { }
 
   constructor(config: StorageNodeSelectorConfig) {
     this.config = mergeConfigWithDefaults(
@@ -41,6 +44,7 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
       '[storage-node-selector]'
     )
     this.nodes = this.config.bootstrapNodes ?? []
+    this.selectionState = 'healthy_only'
 
     this.discoveryNodeSelector?.addEventListener(
       'change',
@@ -85,11 +89,12 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     }
 
     this.nodes = contentNodes
+    this.selectionState = 'healthy_only'
     this.resolveInitialDiscoveryFetchPromise()
   }
 
-  public async getSelectedNode() {
-    if (this.selectedNode) {
+  public async getSelectedNode(forceReselect = false) {
+    if (this.selectedNode && !forceReselect) {
       return this.selectedNode
     }
 
@@ -110,19 +115,42 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     return await this.select()
   }
 
+  public triedSelectingAllNodes() {
+    return this.selectionState === 'failed_all'
+  }
+
   public getNodes(cid: string) {
     return this.orderNodes(cid)
   }
 
-  private async select() {
-    if (!this.orderedNodes) {
-      this.orderedNodes = await this.orderNodes(
+  private async select(): Promise<string | null> {
+    // We've selected all healthy nodes. Restart from the beginning of the ordered list
+    if (this.selectionState === 'failed_all') {
+      this.selectionState = 'healthy_only'
+    }
+
+    // Select the next node in rendezvous order from the list of all nodes
+    this.selectedNode = await this.selectUntilEndOfList() ?? null
+    this.logger.info('Selected content node', this.selectedNode)
+
+    if (!this.selectedNode) {
+      // We've selected all healthy nodes. Return null and start over next time select() is called
+      this.logger.info('Selected all healthy nodes. Returning null and starting over next time select() is called')
+      this.selectionState = 'failed_all'
+    }
+
+    return this.selectedNode
+  }
+
+  private async selectUntilEndOfList(): Promise<Maybe<string>> {
+    if (!this.orderedNodes?.length) {
+      this.orderedNodes = this.orderNodes(
         (await this.auth.getAddress()).toLowerCase()
       )
     }
 
     if (this.orderedNodes.length === 0) {
-      return null
+      return undefined
     }
 
     const currentNodeIndex = this.selectedNode
@@ -132,19 +160,17 @@ export class StorageNodeSelector implements StorageNodeSelectorService {
     let selectedNode: Maybe<string>
     let nextNodeIndex = currentNodeIndex
 
-    while (!selectedNode) {
-      nextNodeIndex = (nextNodeIndex + 1) % this.orderedNodes.length
-      if (nextNodeIndex === currentNodeIndex) break
+    while (nextNodeIndex !== this.orderedNodes.length - 1) {
+      nextNodeIndex++
       const nextNode = this.orderedNodes[nextNodeIndex]
-      if (!nextNode) continue
+      if (!nextNode) continue // should never happen unless this.orderedNodes has falsy values
       if (await isNodeHealthy(nextNode)) {
         selectedNode = nextNode
+        break
       }
     }
 
-    this.selectedNode = selectedNode
-    this.logger.info('Selected content node', this.selectedNode)
-    return this.selectedNode ?? null
+    return selectedNode
   }
 
   private orderNodes(key: string) {

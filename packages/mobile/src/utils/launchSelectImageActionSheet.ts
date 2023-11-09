@@ -4,15 +4,16 @@ import type {
   Image as CropPickerImage,
   Options
 } from 'react-native-image-crop-picker'
-import { openPicker, openCamera } from 'react-native-image-crop-picker'
 
 import { store } from 'app/store'
 
+import { openPicker, openCamera } from './launchImageLibrary'
 import { selectSystemTheme } from './theme'
 
 export const launchSelectImageActionSheet = (
   onSelectImage: (image: Image) => void,
-  options: Options
+  options?: Options,
+  testID?: string
 ) => {
   const theme = selectSystemTheme(store.getState())
   const { primary, secondary } = theme
@@ -29,18 +30,18 @@ export const launchSelectImageActionSheet = (
   }
 
   const handleSelectImage = (image: CropPickerImage) => {
-    const { filename, mime, data } = image
-    const url = `data:${mime};base64,${data}`
+    const { path, filename, mime } = image
     return onSelectImage({
-      url,
-      file: { uri: url, name: filename ?? '', type: 'base64' }
+      url: path,
+      file: { uri: path, name: filename ?? 'tmp', type: mime }
     })
   }
 
   const selectPhotoFromLibrary = () => {
     openPicker({
       ...baseOptions,
-      ...options
+      ...options,
+      testID
     }).then(handleSelectImage)
   }
 
@@ -56,7 +57,7 @@ export const launchSelectImageActionSheet = (
     ActionSheetIOS.showActionSheetWithOptions(
       {
         options: ['Cancel', 'Photo Library', 'Take Photo'],
-        tintColor: theme.secondary,
+        tintColor: secondary,
         cancelButtonIndex: 0
       },
       (buttonIndex) => {

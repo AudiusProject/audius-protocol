@@ -44,6 +44,10 @@ export const stringWeiToBN = (stringWei: StringWei): BNWei => {
   return new BN(stringWei) as BNWei
 }
 
+export const stringUSDCToBN = (stringUSDC: StringUSDC): BNUSDC => {
+  return new BN(stringUSDC) as BNUSDC
+}
+
 export const stringAudioToBN = (stringAudio: StringAudio): BNAudio => {
   return new BN(stringAudio) as BNAudio
 }
@@ -110,22 +114,22 @@ export const formatWei = (
   return formatNumberCommas(trimmed) as StringAudio
 }
 
-const convertBigIntToUIString = (amount: bigint, decimals: number) => {
-  const str = amount.toString()
-  return `${str.substring(0, str.length - decimals)}.${str.substring(
-    str.length - decimals
-  )}`
-}
-
 export const convertBigIntToAmountObject = (
   amount: bigint,
   decimals: number
 ): AmountObject => {
+  const divisor = BigInt(10 ** decimals)
+  const quotient = amount / divisor
+  const remainder = amount % divisor
+  const uiAmountString =
+    remainder > 0
+      ? `${quotient.toString()}.${remainder.toString().padStart(decimals, '0')}`
+      : quotient.toString()
   return {
     amount: Number(amount),
     amountString: amount.toString(),
     uiAmount: Number(amount) / 10 ** decimals,
-    uiAmountString: convertBigIntToUIString(amount, decimals)
+    uiAmountString
   }
 }
 
@@ -158,10 +162,16 @@ export const floorBNUSDCToNearestCent = (value: BNUSDC): BNUSDC => {
 }
 
 /** Formats a USDC wei string (full precision) to a fixed string suitable for
-display as a dollar amount. Note: will lose precision by rounding _up_ to nearest cent */
-export const formatUSDCWeiToUSDString = (amount: StringUSDC, precision = 2) => {
+display as a dollar amount. Note: will lose precision by rounding _up_ to nearest
+cent and will drop negative signs
+*/
+export const formatUSDCWeiToUSDString = (
+  amount: StringUSDC | BN,
+  precision = 2
+) => {
+  const amountBN = BN.isBN(amount) ? amount : new BN(amount)
   // remove negative sign if present.
-  const amountPos = amount.replace('-', '')
+  const amountPos = amountBN.abs()
   // Since we only need two digits of precision, we will multiply up by 1000
   // with BN, divide by $1 Wei, ceiling up to the nearest cent,
   //  and then convert to JS number and divide back down before formatting to
@@ -205,10 +215,14 @@ export const formatUSDCWeiToFloorCentsNumber = (amount: BNUSDC) => {
 }
 
 /** General Wallet Utils */
-export const shortenSPLAddress = (addr: string) => {
-  return `${addr.substring(0, 4)}...${addr.substr(addr.length - 5)}`
+export const shortenSPLAddress = (addr: string, numChars = 4) => {
+  return `${addr.substring(0, numChars)}...${addr.substr(
+    addr.length - numChars - 1
+  )}`
 }
 
-export const shortenEthAddress = (addr: string) => {
-  return `0x${addr.substring(2, 4)}...${addr.substr(addr.length - 5)}`
+export const shortenEthAddress = (addr: string, numChars = 4) => {
+  return `0x${addr.substring(2, numChars)}...${addr.substr(
+    addr.length - numChars - 1
+  )}`
 }

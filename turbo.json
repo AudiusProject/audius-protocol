@@ -1,0 +1,32 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "pipeline": {
+    "build": {
+      "outputs": ["dist/**", "build/**"],
+      "dependsOn": ["^build"],
+      "outputMode": "new-only"
+    },
+    "start": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"],
+      "outputMode": "new-only"
+    },
+    "lint": {
+      "outputMode": "new-only",
+      "dependsOn": ["^build"]
+    },
+    "lint:fix": {
+      "outputMode": "new-only",
+      "dependsOn": ["^build"]
+    },
+    "verify": {
+      "outputMode": "new-only",
+      "dependsOn": ["^build"]
+    },
+    "test": {
+      "outputs": ["coverage/**"],
+      "dependsOn": []
+    }
+  }
+}

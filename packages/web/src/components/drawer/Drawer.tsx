@@ -1,4 +1,11 @@
-import { useEffect, useCallback, useRef, ReactNode, useState } from 'react'
+import {
+  useEffect,
+  useCallback,
+  useRef,
+  ReactNode,
+  useState,
+  RefObject
+} from 'react'
 
 import { useInstanceVar } from '@audius/common'
 import { IconRemove } from '@audius/stems'
@@ -44,12 +51,6 @@ const stiff = {
   friction: 40
 }
 
-const fast = {
-  mass: 1,
-  tension: 300,
-  friction: 40
-}
-
 // Interpolates a single y-value into a string translate3d
 const interpY = (y: number) => `translate3d(0, ${y}px, 0)`
 
@@ -58,24 +59,27 @@ export type DrawerProps = {
   children: ReactNode
   shouldClose?: boolean
   onClose?: () => void
+  onClosed?: () => void
   isFullscreen?: boolean
+  zIndex?: number
+}
+
+const getHeight = (contentRef: RefObject<HTMLDivElement>) => {
+  if (!contentRef.current) return 0
+
+  return contentRef.current.getBoundingClientRect().height
 }
 
 const DraggableDrawer = ({
   isOpen,
   children,
   shouldClose,
-  onClose
+  onClose,
+  zIndex
 }: DrawerProps) => {
   const Portal = usePortal({})
 
   const contentRef = useRef<HTMLDivElement>(null)
-
-  const getHeight = useCallback(() => {
-    if (!contentRef.current) return 0
-
-    return contentRef.current.getBoundingClientRect().height
-  }, [contentRef])
 
   // Stores the initial translation of the drawer
   const [initialTranslation] = useInstanceVar(0)
@@ -86,7 +90,7 @@ const DraggableDrawer = ({
 
   const [drawerSlideProps, setDrawerSlideProps] = useSpring(() => ({
     to: {
-      y: -1 * getHeight()
+      y: -1 * getHeight(contentRef)
     },
     config: wobble,
     onFrame(frame: any) {
@@ -112,7 +116,7 @@ const DraggableDrawer = ({
     setIsBackgroundVisible(true)
     setDrawerSlideProps({
       to: {
-        y: -1 * getHeight()
+        y: -1 * getHeight(contentRef)
       },
       immediate: false,
       config: wobble,
@@ -136,8 +140,7 @@ const DraggableDrawer = ({
     setDrawerSlideProps,
     setContentFadeProps,
     setBackgroundOpacityProps,
-    setIsBackgroundVisible,
-    getHeight
+    setIsBackgroundVisible
   ])
 
   const close = useCallback(() => {
@@ -175,7 +178,8 @@ const DraggableDrawer = ({
   // Handle the "controlled" component
   useEffect(() => {
     if (isOpen) {
-      open()
+      // Ensure that our drawer knows the height of its inner contents
+      setImmediate(open)
     }
   }, [open, isOpen])
 
@@ -185,20 +189,6 @@ const DraggableDrawer = ({
     }
   }, [shouldClose, close])
 
-  useEffect(() => {
-    // Toggle drawer if isOpen
-    if (isOpen) {
-      const drawerY = -1 * getHeight()
-      setDrawerSlideProps({
-        to: {
-          y: drawerY
-        },
-        immediate: false,
-        config: fast
-      })
-    }
-  }, [isOpen, setDrawerSlideProps, getHeight])
-
   const bind = useDrag(
     ({
       last,
@@ -207,7 +197,7 @@ const DraggableDrawer = ({
       movement: [, my],
       memo = currentTranslation()
     }) => {
-      const height = getHeight()
+      const height = getHeight(contentRef)
 
       let newY = memo + my
 
@@ -301,7 +291,8 @@ const DraggableDrawer = ({
         {...bind()}
         style={{
           // @ts-ignore
-          transform: drawerSlideProps.y.interpolate(interpY)
+          transform: drawerSlideProps.y.interpolate(interpY),
+          zIndex
         }}
       >
         <animated.div className={styles.playBar} style={contentFadeProps}>
@@ -317,7 +308,8 @@ const DraggableDrawer = ({
           className={styles.background}
           style={{
             ...backgroundOpacityProps,
-            ...(isOpen ? {} : { pointerEvents: 'none' })
+            ...(isOpen ? {} : { pointerEvents: 'none' }),
+            zIndex: zIndex ? zIndex - 1 : undefined
           }}
         />
       )}
@@ -332,13 +324,20 @@ const interpolateBorderRadius = (r: number) => {
   return `${r2}px ${r2}px 0px 0px`
 }
 
-const FullscreenDrawer = ({ children, isOpen, onClose }: DrawerProps) => {
+const FullscreenDrawer = ({
+  children,
+  isOpen,
+  onClose,
+  onClosed
+}: DrawerProps) => {
   const drawerRef = useRef<HTMLDivElement | null>(null)
   // Lock to prevent double scrollbars
   useEffect(() => {
-    if (drawerRef.current && isOpen) {
-      disableBodyScroll(drawerRef.current)
-    }
+    setImmediate(() => {
+      if (drawerRef.current && isOpen) {
+        disableBodyScroll(drawerRef.current)
+      }
+    })
     return () => {
       clearAllBodyScrollLocks()
     }
@@ -359,7 +358,12 @@ const FullscreenDrawer = ({ children, isOpen, onClose }: DrawerProps) => {
       y: 1,
       borderRadius: 40
     },
-    config: slowWobble
+    config: slowWobble,
+    onDestroyed: () => {
+      if (!isOpen && onClosed) {
+        onClosed()
+      }
+    }
   })
   return (
     <Portal>

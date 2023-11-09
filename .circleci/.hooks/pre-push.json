@@ -1,0 +1,8 @@
+{
+  "steps": [
+    {
+      "name": "validate-ci-config",
+      "command": "npm run validate-ci-config"
+    }
+  ]
+}

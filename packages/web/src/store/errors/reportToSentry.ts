@@ -1,5 +1,5 @@
 import { getErrorMessage, ReportToSentryArgs, ErrorLevel } from '@audius/common'
-import * as Sentry from '@sentry/browser'
+import { withScope, captureException } from '@sentry/browser'
 import type { SeverityLevel } from '@sentry/types'
 
 const Levels: { [level in ErrorLevel]: SeverityLevel } = {
@@ -19,7 +19,7 @@ export const reportToSentry = async ({
 }: ReportToSentryArgs) => {
   console.debug(error, level)
   try {
-    Sentry.withScope((scope) => {
+    withScope((scope) => {
       if (level) {
         const sentryLevel = Levels[level]
         scope.setLevel(sentryLevel)
@@ -33,7 +33,7 @@ export const reportToSentry = async ({
       if (name) {
         error.name = name
       }
-      Sentry.captureException(error)
+      captureException(error)
     })
   } catch (error) {
     console.error(`Got error trying to log error: ${getErrorMessage(error)}`)

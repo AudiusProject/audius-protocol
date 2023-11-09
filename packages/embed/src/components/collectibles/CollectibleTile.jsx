@@ -1,6 +1,5 @@
 import cn from 'classnames'
-import { h } from 'preact'
-import { useEffect, useState } from 'preact/hooks'
+import { useEffect, useState } from 'react'
 
 import { logError } from '../../util/logError'
 

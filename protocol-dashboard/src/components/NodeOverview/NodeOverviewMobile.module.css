@@ -1,0 +1,43 @@
+.container {
+  flex: 1;
+  padding: 16px;
+  display: inline-flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+}
+
+.container > * {
+  width: 100%;
+}
+
+.header {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.version {
+  margin-top: 4px;
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: var(--font-s);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #777C96;
+}
+
+.value {
+  font-family: var(--font-family);
+  font-weight: var(--font-bold);
+  font-size: 16px;
+  color: #BEC5E0;
+}
+
+.registerBtn {
+  position: relative;
+  margin-top: 14px;
+}

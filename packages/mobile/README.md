@@ -4,16 +4,6 @@ The Audius React Native mobile client
 
 ## Setup
 
-### Extra iOS Setup
-
-```bash
-gem install cocoapods
-
-cd ios
-pod install
-cd ..
-```
-
 ## Running iOS
 
 ```bash

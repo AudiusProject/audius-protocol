@@ -5,11 +5,8 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"log"
-	"mediorum/cidutil"
-	"mediorum/crudr"
-	"mediorum/ethcontracts"
-	"mediorum/persistence"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/signal"
@@ -20,15 +17,21 @@ import (
 	"time"
 
 	_ "embed"
+	_ "net/http/pprof"
 
+	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
+	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
+	"github.com/AudiusProject/audius-protocol/mediorum/ethcontracts"
+	"github.com/AudiusProject/audius-protocol/mediorum/persistence"
 	"github.com/erni27/imcache"
 	"github.com/imroc/req/v3"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gocloud.dev/blob"
-	_ "gocloud.dev/blob/fileblob"
 	"golang.org/x/exp/slog"
+
+	_ "gocloud.dev/blob/fileblob"
 )
 
 type Peer struct {
@@ -39,12 +42,6 @@ type Peer struct {
 type VersionJson struct {
 	Version string `json:"version"`
 	Service string `json:"service"`
-}
-
-func (p Peer) ApiPath(parts ...string) string {
-	// todo: remove this method, just use apiPath helper everywhere
-	parts = append([]string{p.Host}, parts...)
-	return apiPath(parts...)
 }
 
 type MediorumConfig struct {
@@ -87,28 +84,26 @@ type MediorumServer struct {
 	reqClient       *req.Client
 
 	// simplify
-	storagePathUsed  uint64
-	storagePathSize  uint64
 	mediorumPathUsed uint64
 	mediorumPathSize uint64
 	mediorumPathFree uint64
-	legacyDirUsed    uint64
-	mediorumDirUsed  uint64
 
-	databaseSize         uint64
-	dbSizeErr            string
-	lastSuccessfulRepair RepairTracker
+	databaseSize          uint64
+	dbSizeErr             string
+	lastSuccessfulRepair  RepairTracker
+	lastSuccessfulCleanup RepairTracker
 
 	uploadsCount    int64
 	uploadsCountErr string
 
 	isSeeding bool
 
-	peerHealthsMutex   sync.RWMutex
-	peerHealths        map[string]*PeerHealth
-	unreachablePeers   []string
-	redirectCache      *imcache.Cache[string, string]
-	uploadOrigCidCache *imcache.Cache[string, string]
+	peerHealthsMutex      sync.RWMutex
+	peerHealths           map[string]*PeerHealth
+	unreachablePeers      []string
+	redirectCache         *imcache.Cache[string, string]
+	uploadOrigCidCache    *imcache.Cache[string, string]
+	failsPeerReachability bool
 
 	StartedAt time.Time
 	Config    MediorumConfig
@@ -249,12 +244,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	echoServer.HideBanner = true
 	echoServer.Debug = true
 
-	// echoServer is the root server
-	// it mostly exists to serve the catch all reverse proxy rule at the end
-	// most routes and middleware should be added to the `routes` group
-	// mostly don't add CORS middleware here as it will break reverse proxy at the end
 	echoServer.Use(middleware.Recover())
 	echoServer.Use(middleware.Logger())
+	echoServer.Use(middleware.CORS())
+	echoServer.Use(middleware.Gzip())
 
 	ss := &MediorumServer{
 		echo:            echoServer,
@@ -268,27 +261,25 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		isSeeding:       config.Env == "stage" || config.Env == "prod",
 
 		peerHealths:        map[string]*PeerHealth{},
-		redirectCache:      imcache.New[string, string](imcache.WithMaxEntriesOption[string, string](50_000)),
-		uploadOrigCidCache: imcache.New[string, string](imcache.WithMaxEntriesOption[string, string](50_000)),
+		redirectCache:      imcache.New(imcache.WithMaxEntriesOption[string, string](50_000)),
+		uploadOrigCidCache: imcache.New(imcache.WithMaxEntriesOption[string, string](50_000)),
 
 		StartedAt: time.Now().UTC(),
 		Config:    config,
 	}
 
-	// routes holds all of our handled routes
-	// and related middleware like CORS
 	routes := echoServer.Group(apiBasePath)
-	routes.Use(middleware.CORS())
 
 	routes.GET("", func(c echo.Context) error {
-		return c.Redirect(http.StatusMovedPermanently, "/health_check")
+		return c.Redirect(http.StatusFound, "/dashboard/#/services/content-node?endpoint="+config.Self.Host)
 	})
 	routes.GET("/", func(c echo.Context) error {
-		return c.Redirect(http.StatusMovedPermanently, "/health_check")
+		return c.Redirect(http.StatusFound, "/dashboard/#/services/content-node?endpoint="+config.Self.Host)
 	})
 
 	// public: uploads
-	routes.GET("/uploads/:id", ss.getUpload, ss.requireHealthy)
+	routes.GET("/uploads", ss.serveUploadList)
+	routes.GET("/uploads/:id", ss.serveUploadDetail, ss.requireHealthy)
 	routes.POST("/uploads/:id", ss.updateUpload, ss.requireHealthy, ss.requireUserSignature)
 	routes.POST("/uploads", ss.postUpload, ss.requireHealthy)
 	// workaround because reverse proxy catches the browser's preflight OPTIONS request instead of letting our CORS middleware handle it
@@ -296,16 +287,20 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		return c.NoContent(http.StatusNoContent)
 	})
 
-	routes.HEAD("/ipfs/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted)
-	routes.GET("/ipfs/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted)
-	routes.HEAD("/content/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted)
-	routes.GET("/content/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted)
-	routes.HEAD("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant, ss.requireHealthy)
-	routes.GET("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant, ss.requireHealthy)
-	routes.HEAD("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant, ss.requireHealthy)
-	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant, ss.requireHealthy)
-	routes.HEAD("/tracks/cidstream/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted, ss.requireRegisteredSignature)
-	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireHealthy, ss.ensureNotDelisted, ss.requireRegisteredSignature)
+	// serve blob (audio)
+	routes.HEAD("/ipfs/:cid", ss.serveBlob, ss.requireHealthy, ss.ensureNotDelisted)
+	routes.GET("/ipfs/:cid", ss.serveBlob, ss.requireHealthy, ss.ensureNotDelisted)
+	routes.HEAD("/content/:cid", ss.serveBlob, ss.requireHealthy, ss.ensureNotDelisted)
+	routes.GET("/content/:cid", ss.serveBlob, ss.requireHealthy, ss.ensureNotDelisted)
+	routes.HEAD("/tracks/cidstream/:cid", ss.serveBlob, ss.requireHealthy, ss.ensureNotDelisted, ss.requireRegisteredSignature)
+	routes.GET("/tracks/cidstream/:cid", ss.serveBlob, ss.requireHealthy, ss.ensureNotDelisted, ss.requireRegisteredSignature)
+
+	// serve image
+	routes.HEAD("/ipfs/:jobID/:variant", ss.serveImage, ss.requireHealthy)
+	routes.GET("/ipfs/:jobID/:variant", ss.serveImage, ss.requireHealthy)
+	routes.HEAD("/content/:jobID/:variant", ss.serveImage, ss.requireHealthy)
+	routes.GET("/content/:jobID/:variant", ss.serveImage, ss.requireHealthy)
+
 	routes.GET("/contact", ss.serveContact)
 	routes.GET("/health_check", ss.serveHealthCheck)
 	routes.HEAD("/health_check", ss.serveHealthCheck)
@@ -320,6 +315,16 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.POST("/delist_status/insert", ss.serveInsertDelistStatus, ss.requireBodySignedByOwner)
 
 	// -------------------
+	// healthz
+	healthz := routes.Group("/healthz")
+	healthzUrl, err := url.Parse("http://healthz")
+	if err != nil {
+		log.Fatal("Invalid healthz URL: ", err)
+	}
+	healthzProxy := httputil.NewSingleHostReverseProxy(healthzUrl)
+	healthz.Any("*", echo.WrapHandler(healthzProxy))
+
+	// -------------------
 	// internal
 	internalApi := routes.Group("/internal")
 
@@ -327,28 +332,33 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
 	internalApi.POST("/crud/push", ss.serveCrudPush, middleware.BasicAuth(ss.checkBasicAuth))
 
-	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation, cidutil.UnescapeCidParam)
-	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo, cidutil.UnescapeCidParam)
-
-	// TODO: remove
-	internalApi.GET("/blobs/:cid/location", ss.getBlobLocation, cidutil.UnescapeCidParam)
-	internalApi.GET("/blobs/:cid/info", ss.getBlobInfo, cidutil.UnescapeCidParam)
+	internalApi.GET("/blobs/location/:cid", ss.serveBlobLocation, cidutil.UnescapeCidParam)
+	internalApi.GET("/blobs/info/:cid", ss.serveBlobInfo, cidutil.UnescapeCidParam)
 
 	// internal: blobs between peers
-	internalApi.GET("/blobs/:cid", ss.serveInternalBlobPull, cidutil.UnescapeCidParam, middleware.BasicAuth(ss.checkBasicAuth))
-	internalApi.POST("/blobs", ss.postBlob, middleware.BasicAuth(ss.checkBasicAuth))
+	internalApi.GET("/blobs/:cid", ss.serveInternalBlobGET, cidutil.UnescapeCidParam, middleware.BasicAuth(ss.checkBasicAuth))
+	internalApi.POST("/blobs", ss.serveInternalBlobPOST, middleware.BasicAuth(ss.checkBasicAuth))
 
 	// WIP internal: metrics
 	internalApi.GET("/metrics", ss.getMetrics)
 	internalApi.GET("/logs/partition-ops", ss.getPartitionOpsLog)
 	internalApi.GET("/logs/reaper", ss.getReaperLog)
 	internalApi.GET("/logs/repair", ss.serveRepairLog)
+	internalApi.GET("/logs/storageAndDb", ss.serveStorageAndDbLogs)
+
+	// internal: testing
+	internalApi.GET("/proxy_health_check", ss.proxyHealthCheck)
 
 	return ss, nil
 
 }
 
 func (ss *MediorumServer) MustStart() {
+
+	// start pprof server
+	go func() {
+		log.Println(http.ListenAndServe(":6060", nil))
+	}()
 
 	// start server
 	go func() {
@@ -360,11 +370,26 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startTranscoder()
 
+	zeroTime := time.Time{}
 	var lastSuccessfulRepair RepairTracker
-	if err := ss.crud.DB.Where("finished_at is not null").Where("aborted_reason = ?", "").Order("started_at desc").First(&lastSuccessfulRepair).Error; err != nil {
+	err := ss.crud.DB.
+		Where("finished_at is not null and finished_at != ? and aborted_reason = ?", zeroTime, "").
+		Order("started_at desc").
+		First(&lastSuccessfulRepair).Error
+	if err != nil {
 		lastSuccessfulRepair = RepairTracker{Counters: map[string]int{}}
 	}
 	ss.lastSuccessfulRepair = lastSuccessfulRepair
+
+	var lastSuccessfulCleanup RepairTracker
+	err = ss.crud.DB.
+		Where("finished_at is not null and finished_at != ? and aborted_reason = ? and cleanup_mode = true", zeroTime, "").
+		Order("started_at desc").
+		First(&lastSuccessfulCleanup).Error
+	if err != nil {
+		lastSuccessfulCleanup = RepairTracker{Counters: map[string]int{}}
+	}
+	ss.lastSuccessfulCleanup = lastSuccessfulCleanup
 
 	// for any background task that make authenticated peer requests
 	// only start if we have a valid registered wallet
@@ -380,6 +405,8 @@ func (ss *MediorumServer) MustStart() {
 
 		go ss.pollForSeedingCompletion()
 
+		go ss.startUploadScroller()
+
 	} else {
 		go func() {
 			for range time.Tick(10 * time.Second) {
@@ -393,7 +420,7 @@ func (ss *MediorumServer) MustStart() {
 	go ss.monitorPeerReachability()
 
 	// signals
-	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(ss.quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	<-ss.quit
 	close(ss.quit)
 
@@ -401,9 +428,9 @@ func (ss *MediorumServer) MustStart() {
 }
 
 func (ss *MediorumServer) Stop() {
-	ss.logger.Debug("stopping")
+	ss.logger.Info("stopping")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
 	if err := ss.echo.Shutdown(ctx); err != nil {
@@ -418,7 +445,7 @@ func (ss *MediorumServer) Stop() {
 
 	// todo: stop transcode worker + repairer too
 
-	ss.logger.Debug("bye")
+	ss.logger.Info("bye")
 
 }
 

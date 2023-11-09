@@ -2,6 +2,5 @@ when: << pipeline.parameters.run-contracts-workflow >>
 jobs:
   - test:
       name: test-contracts
-      context: GCP
-      instance-name: circleci-test-contracts-$CIRCLE_BUILD_NUM
+      context: Vercel
       service: contracts

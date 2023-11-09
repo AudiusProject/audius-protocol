@@ -3,7 +3,7 @@ import NavBanner from 'components/public-site/NavBanner'
 
 import styles from './PrivacyPolicyPage.module.css'
 
-const BASENAME = process.env.PUBLIC_URL
+const BASENAME = process.env.VITE_PUBLIC_URL
 
 const messages = {
   download: 'Download Privacy Policy'

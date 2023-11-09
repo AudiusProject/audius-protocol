@@ -3,8 +3,8 @@ import {
   useUSDCTransactionDetailsModal,
   makeSolanaTransactionLink
 } from '@audius/common'
+import { Button } from '@audius/harmony'
 import {
-  HarmonyButton,
   IconExternalLink,
   Modal,
   ModalContent,
@@ -93,11 +93,9 @@ export const USDCTransactionDetailsModal = () => {
         />
       </ModalContent>
       <ModalFooter className={styles.footer}>
-        <HarmonyButton
-          className={styles.button}
-          text={messages.done}
-          onClick={onClose}
-        />
+        <Button className={styles.button} onClick={onClose}>
+          {messages.done}
+        </Button>
       </ModalFooter>
     </Modal>
   )

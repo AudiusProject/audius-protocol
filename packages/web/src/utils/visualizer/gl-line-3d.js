@@ -1,9 +1,9 @@
-const createBuffer = require('gl-buffer')
-const createVAO = require('gl-vao')
+import createBuffer from 'gl-buffer'
+import createVAO from 'gl-vao'
 
-const pack = require('array-pack-2d')
-const identity = require('gl-mat4/identity')
-const clamp = require('clamp')
+import pack from 'array-pack-2d'
+import identity from 'gl-mat4/identity'
+import clamp from 'clamp'
 
 export default function (gl, shader, path) {
   if (!shader) throw new TypeError('need to pass a shader')
@@ -50,7 +50,7 @@ export default function (gl, shader, path) {
     miter,
     aspect,
 
-    draw () {
+    draw() {
       shader.bind()
       shader.uniforms.model = this.model
       shader.uniforms.view = this.view
@@ -68,10 +68,10 @@ export default function (gl, shader, path) {
 
   // in real-world you wouldn't want to create so
   // many typed arrays per frame
-  function update (path) {
+  function update(path) {
     // ensure 3 component vectors
     if (path.length > 0 && path[0].length !== 3) {
-      path = path.map(point => {
+      path = path.map((point) => {
         let [x, y, z] = point
         return [x || 0, y || 0, z || 0]
       })
@@ -80,7 +80,10 @@ export default function (gl, shader, path) {
     count = (path.length - 1) * 6
 
     // each pair has a mirrored direction
-    let direction = duplicate(path.map(x => 1), true)
+    let direction = duplicate(
+      path.map((x) => 1),
+      true
+    )
     // now get the positional data for each vertex
     let positions = duplicate(path)
     let previous = duplicate(path.map(relative(-1)))
@@ -94,30 +97,38 @@ export default function (gl, shader, path) {
     directionBuffer.update(pack(direction))
     indexBuffer.update(indexUint16)
 
-    vao.update([
-      { buffer: positionBuffer, size: 3 },
-      { buffer: directionBuffer, size: 1 },
-      { buffer: nextBuffer, size: 3 },
-      { buffer: previousBuffer, size: 3 }
-    ], indexBuffer)
+    vao.update(
+      [
+        { buffer: positionBuffer, size: 3 },
+        { buffer: directionBuffer, size: 1 },
+        { buffer: nextBuffer, size: 3 },
+        { buffer: previousBuffer, size: 3 }
+      ],
+      indexBuffer
+    )
   }
 
-  function emptyBuffer (ArrayType, type) {
+  function emptyBuffer(ArrayType, type) {
     ArrayType = ArrayType || Float32Array
-    return createBuffer(gl, new ArrayType(), type || gl.ARRAY_BUFFER, gl.STATIC_DRAW)
+    return createBuffer(
+      gl,
+      new ArrayType(),
+      type || gl.ARRAY_BUFFER,
+      gl.STATIC_DRAW
+    )
   }
 }
 
-function relative (offset) {
+function relative(offset) {
   return (point, index, list) => {
     index = clamp(index + offset, 0, list.length - 1)
     return list[index]
   }
 }
 
-function duplicate (nestedArray, mirror) {
+function duplicate(nestedArray, mirror) {
   var out = []
-  nestedArray.forEach(x => {
+  nestedArray.forEach((x) => {
     let x1 = mirror ? -x : x
     out.push(x1, x)
   })
@@ -125,7 +136,7 @@ function duplicate (nestedArray, mirror) {
 }
 
 // counter-clockwise indices but prepared for duplicate vertices
-function createIndices (length) {
+function createIndices(length) {
   let indices = new Uint16Array(length * 6)
   let c = 0
   let index = 0

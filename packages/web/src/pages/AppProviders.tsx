@@ -6,6 +6,7 @@ import { ToastContextProvider } from 'components/toast/ToastContext'
 import { MainContentContextProvider } from 'pages/MainContentContext'
 
 import { AppContextProvider } from './AppContextProvider'
+import { ThemeProvider } from './ThemeProvider'
 
 type AppContextProps = {
   children: JSX.Element
@@ -14,17 +15,19 @@ type AppContextProps = {
 const AppProviders = ({ children }: AppContextProps) => {
   return (
     <AppContextProvider>
-      <NavProvider>
-        <ScrollProvider>
-          <RouterContextProvider>
-            <MainContentContextProvider>
-              <HeaderContextProvider>
-                <ToastContextProvider>{children}</ToastContextProvider>
-              </HeaderContextProvider>
-            </MainContentContextProvider>
-          </RouterContextProvider>
-        </ScrollProvider>
-      </NavProvider>
+      <ThemeProvider>
+        <NavProvider>
+          <ScrollProvider>
+            <RouterContextProvider>
+              <MainContentContextProvider>
+                <HeaderContextProvider>
+                  <ToastContextProvider>{children}</ToastContextProvider>
+                </HeaderContextProvider>
+              </MainContentContextProvider>
+            </RouterContextProvider>
+          </ScrollProvider>
+        </NavProvider>
+      </ThemeProvider>
     </AppContextProvider>
   )
 }

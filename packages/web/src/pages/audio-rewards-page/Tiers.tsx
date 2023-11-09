@@ -14,7 +14,7 @@ import { Button, ButtonType, IconDiscord } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import { ReactComponent as IconArrow } from 'assets/img/iconArrowGrey.svg'
+import IconArrow from 'assets/img/iconArrowGrey.svg'
 import IconBronzeBadge from 'assets/img/tokenBadgeBronze108@2x.png'
 import IconGoldBadge from 'assets/img/tokenBadgeGold108@2x.png'
 import IconPlatinumBadge from 'assets/img/tokenBadgePlatinum108@2x.png'

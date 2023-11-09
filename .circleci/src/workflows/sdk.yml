@@ -2,31 +2,13 @@ when: << pipeline.parameters.run-sdk-workflow >>
 jobs:
   - test:
       name: test-audius-libs
-      context: GCP
-      instance-name: circleci-test-audius-libs-$CIRCLE_BUILD_NUM
+      context: Vercel
       service: audius-libs
 
   - test:
       name: test-audius-sdk
-      context: GCP
-      instance-name: circleci-test-audius-libs-$CIRCLE_BUILD_NUM
+      context: Vercel
       service: audius-sdk
-
-  # Prerelease from main
-  - release-audius-sdk:
-      requires:
-        - test-audius-libs
-        - test-audius-sdk
-      name: release-audius-sdk-prerelease
-      filters:
-        branches:
-          only: /^main$/
-      sdk-release-commit: $CIRCLE_SHA1
-      sdk-release-version: prerelease
-      sdk-release-preid: beta
-      context:
-        - Audius Client
-        - slack-secrets
 
   # Patch via trigger
   - release-audius-sdk-trigger:
@@ -43,7 +25,7 @@ jobs:
         - release-audius-sdk-trigger
       sdk-release-commit: $CIRCLE_SHA1
       sdk-release-version: patch
-      sdk-release-preid: ""
+      sdk-release-preid: ''
       context:
         - Audius Client
         - slack-secrets

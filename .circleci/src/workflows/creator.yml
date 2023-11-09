@@ -2,61 +2,38 @@ when: << pipeline.parameters.run-creator-workflow >>
 jobs:
   - push-docker-image:
       name: push-mediorum
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-mediorum-$CIRCLE_BUILD_NUM
+      context: [Vercel, dockerhub]
       service: mediorum
-  - test:
-      name: test-mediorum
-      context: GCP
-      instance-name: circleci-test-mediorum-$CIRCLE_BUILD_NUM
-      service: mediorum
-
-  # Release
-  - deploy-prod-creator-node-trigger:
-      requires:
-        - test-mediorum
-        - push-mediorum
       filters:
         branches:
-          only: /^release.*$/
-      type: approval
-  - deploy:
-      name: deploy-prod-creator-node
-      context:
-        - open-vpn
-        - slack-secrets
+          only: main
+  - test:
+      name: test-mediorum
+      context: Vercel
+      service: mediorum
+  - test:
+      name: test-mediorum-unittests
+      context: Vercel
+      service: mediorum-unittests
+  - push-arm-image:
+      name: push-mediorum-arm
+      context: [Vercel, dockerhub]
+      service: mediorum
+      filters:
+        branches:
+          only: main
       requires:
-        - deploy-prod-creator-node-trigger
-      hosts: >-
-        prod-user-metadata
-        prod-creator-1
-        prod-creator-2
-        prod-creator-3
-        prod-creator-5
-      service: creator-node
+        - push-mediorum
 
-  # Main deploy
-
-  - deploy:
+  # Deploy audius-protocol `main` branch (stage)
+  - deploy-stage-nodes:
       name: deploy-stage-creator-node
       requires:
         - test-mediorum
+        - test-mediorum-unittests
         - push-mediorum
       filters:
         branches:
           only: main
-      context:
-        - open-vpn
-        - build-freeze
-        - slack-secrets
-      hosts: >-
-        stage-creator-5
-        stage-creator-6
-        stage-creator-7
-        stage-creator-8
-        stage-creator-9
-        stage-creator-10
-        stage-creator-11
-        stage-user-metadata
+      context: github
       service: creator-node
-      freeze: $FREEZE_BUILD

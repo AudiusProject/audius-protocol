@@ -5,15 +5,17 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"mediorum/cidutil"
-	"mediorum/server/signature"
 	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
-	"golang.org/x/sync/errgroup"
+	"github.com/AudiusProject/audius-protocol/mediorum/server/signature"
+
+	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
+
+	"gocloud.dev/blob"
 )
 
 func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]string, error) {
@@ -48,22 +50,17 @@ func (ss *MediorumServer) replicateToMyBucket(fileName string, file io.Reader) e
 	logger.Info("replicateToMyBucket")
 	key := cidutil.ShardCID(fileName)
 
-	// already have?
-	alreadyHave, _ := ss.bucket.Exists(ctx, key)
-	if !alreadyHave {
-		w, err := ss.bucket.NewWriter(ctx, key, nil)
-		if err != nil {
-			return err
-		}
-		defer w.Close()
-
-		_, err = io.Copy(w, file)
-		if err != nil {
-			return err
-		}
+	w, err := ss.bucket.NewWriter(ctx, key, nil)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	_, err = io.Copy(w, file)
+	if err != nil {
+		return err
+	}
+
+	return w.Close()
 }
 
 func (ss *MediorumServer) dropFromMyBucket(fileName string) error {
@@ -87,13 +84,7 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 	}
 
 	client := http.Client{
-		Timeout: 30 * time.Second,
-	}
-
-	// first check if target already has it...
-	if ss.hostHasBlob(peer, fileName) {
-		ss.logger.Info(peer + " already has " + fileName)
-		return nil
+		Timeout: time.Minute,
 	}
 
 	r, w := io.Pipe()
@@ -139,59 +130,21 @@ func (ss *MediorumServer) replicateFileToHost(peer string, fileName string, file
 
 // hostHasBlob is a "quick check" that a host has a blob (used for checking host has blob before redirecting to it).
 func (ss *MediorumServer) hostHasBlob(host, key string) bool {
-	client := http.Client{
-		Timeout: 2 * time.Second,
-	}
-	u := apiPath(host, fmt.Sprintf("internal/blobs/info/%s", url.PathEscape(key)))
-	req, err := http.NewRequest("GET", u, nil)
-	if err != nil {
-		return false
-	}
-	req.Header.Set("User-Agent", "mediorum "+ss.Config.Self.Host)
-	has, err := client.Do(req)
-	if err != nil {
-		return false
-	}
-	defer has.Body.Close()
-	return has.StatusCode == 200
+	attr, err := ss.hostGetBlobInfo(host, key)
+	return err == nil && attr != nil
 }
 
-// raceHostHasBlob tries batches of 5 hosts concurrently to find the first healthy host with the key instead of sequentially waiting for a 2s timeout from each host.
-func (ss *MediorumServer) raceHostHasBlob(key string, hostsWithKey []string) string {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	g, _ := errgroup.WithContext(ctx)
-	g.SetLimit(5)
-	hostWithKeyCh := make(chan string, 1)
-
-	for _, host := range hostsWithKey {
-		if host == ss.Config.Self.Host {
-			continue
-		}
-		h := host
-		g.Go(func() error {
-			if ss.hostHasBlob(h, key) {
-				// write to channel and cancel context to stop other goroutines, or stop if context was already canceled
-				select {
-				case hostWithKeyCh <- h:
-					cancel()
-				case <-ctx.Done():
-				}
-			}
-			return nil
-		})
+func (ss *MediorumServer) hostGetBlobInfo(host, key string) (*blob.Attributes, error) {
+	var attr *blob.Attributes
+	u := apiPath(host, fmt.Sprintf("internal/blobs/info/%s", url.PathEscape(key)))
+	resp, err := ss.reqClient.R().SetSuccessResult(&attr).Get(u)
+	if err != nil {
+		return nil, err
 	}
-
-	go func() {
-		g.Wait()
-		close(hostWithKeyCh)
-	}()
-
-	host, ok := <-hostWithKeyCh
-	if ok {
-		return host
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("%s %s", u, resp.Status)
 	}
-	return ""
+	return attr, nil
 }
 
 func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
@@ -199,7 +152,7 @@ func (ss *MediorumServer) pullFileFromHost(host, cid string) error {
 		return errors.New("should not pull blob from self")
 	}
 	client := http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: time.Minute,
 	}
 	u := apiPath(host, "internal/blobs", url.PathEscape(cid))
 

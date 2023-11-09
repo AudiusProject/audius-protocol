@@ -1,18 +1,19 @@
+import retry from 'async-retry'
 import axios, { AxiosRequestConfig } from 'axios'
 import FormData from 'form-data'
-import retry from 'async-retry'
+
+import type { StorageNodeSelectorService } from '../../sdk'
+import type { UserStateManager } from '../../userStateManager'
 import { Nullable, TrackMetadata, UserMetadata, Utils, uuid } from '../../utils'
+import { hashAndSign, sortObjectKeys } from '../../utils/apiSigning'
 import {
   userSchemaType,
   trackSchemaType,
   playlistSchemaType,
   Schemas
 } from '../schemaValidator/SchemaValidator'
-import type { Web3Manager } from '../web3Manager'
-import type { UserStateManager } from '../../userStateManager'
 import type { MonitoringCallbacks } from '../types'
-import type { StorageNodeSelectorService } from '../../sdk'
-import { hashAndSign, sortObjectKeys } from '../../utils/apiSigning'
+import type { Web3Manager } from '../web3Manager'
 
 const { wait } = Utils
 
@@ -163,7 +164,7 @@ export class CreatorNode {
     const resp = await this._retry3(
       async () => await this.editFileV2(metadata.audio_upload_id!, data),
       (e) => {
-        console.log('Retrying editFileV2', e)
+        console.info('Retrying editFileV2', e)
       }
     )
 
@@ -183,7 +184,7 @@ export class CreatorNode {
     const updatedMetadata = { ...metadata }
     const audioUploadOpts: { [key: string]: string } = {}
     if (updatedMetadata.preview_start_seconds != null) {
-      audioUploadOpts['previewStartSeconds'] =
+      audioUploadOpts.previewStartSeconds =
         updatedMetadata.preview_start_seconds.toString()
     }
 
@@ -193,7 +194,7 @@ export class CreatorNode {
         async () =>
           await this.uploadTrackAudioV2(trackFile, onProgress, audioUploadOpts),
         (e) => {
-          console.log('Retrying uploadTrackAudioV2', e)
+          console.info('Retrying uploadTrackAudioV2', e)
         }
       )
     ]
@@ -203,7 +204,7 @@ export class CreatorNode {
           async () =>
             await this.uploadTrackCoverArtV2(coverArtFile, onProgress),
           (e) => {
-            console.log('Retrying uploadTrackCoverArtV2', e)
+            console.info('Retrying uploadTrackCoverArtV2', e)
           }
         )
       )
@@ -277,7 +278,7 @@ export class CreatorNode {
     const response = await this._makeRequestV2({
       method: 'post',
       url: `/uploads/${uploadId}`,
-      data: data,
+      data,
       params: { signature: JSON.stringify(signatureEnvelope) },
       headers
     })
@@ -402,6 +403,7 @@ export class CreatorNode {
       return await axios(axiosRequestObj)
     } catch (e: any) {
       const wallet = this.userStateManager.getCurrentUser()?.wallet
+      // storageNodeSelector is not always defined (not always passed in to the constructor)
       const storageNodes = this.storageNodeSelector.getNodes(wallet ?? '')
 
       for (const storageNode of storageNodes) {

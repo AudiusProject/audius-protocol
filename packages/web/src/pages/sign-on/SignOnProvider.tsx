@@ -159,6 +159,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
     if (this.state.initialPage) {
       this.props.goToRoute(TRENDING_PAGE)
     } else if (this.props.routeOnExit) {
+      // @ts-ignore
       this.props.goToRoute(this.props.routeOnExit)
     } else {
       // Go back a route
@@ -216,7 +217,6 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
         email,
         handle
       } = this.props.fields
-      this.props.followArtists(selectedUserIds)
       this.props.recordCompleteFollow(
         selectedUserIds.join('|'),
         selectedUserIds.length,
@@ -485,6 +485,7 @@ export class SignOnProvider extends Component<SignOnProps, SignOnState> {
       return <Children {...childProps} {...mobileProps} />
     } else {
       const Children = this.props.children as ComponentType<DesktopSignOnProps>
+      // @ts-ignore
       return <Children {...childProps} {...desktopProps} />
     }
   }
@@ -559,8 +560,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     nextPage: (isMobile: boolean) => dispatch(signOnAction.nextPage(isMobile)),
     previousPage: () => dispatch(signOnAction.previousPage()),
     goToPage: (page: Pages) => dispatch(signOnAction.goToPage(page)),
-    followArtists: (userIds: ID[]) =>
-      dispatch(signOnAction.followArtists(userIds)),
     addFollows: (userIds: ID[]) =>
       dispatch(signOnAction.addFollowArtists(userIds)),
     removeFollows: (userIds: ID[]) =>

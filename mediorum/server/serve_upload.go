@@ -3,17 +3,15 @@ package server
 import (
 	"database/sql"
 	"fmt"
-	"io"
-	"mediorum/cidutil"
-	"mime"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
+
 	"github.com/labstack/echo/v4"
 	"github.com/oklog/ulid/v2"
-	"gocloud.dev/blob"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -21,7 +19,7 @@ var (
 	filesFormFieldName = "files"
 )
 
-func (ss *MediorumServer) getUpload(c echo.Context) error {
+func (ss *MediorumServer) serveUploadDetail(c echo.Context) error {
 	var upload *Upload
 	err := ss.crud.DB.First(&upload, "id = ?", c.Param("id")).Error
 	if err != nil {
@@ -31,6 +29,18 @@ func (ss *MediorumServer) getUpload(c echo.Context) error {
 		return c.JSON(422, upload)
 	}
 	return c.JSON(200, upload)
+}
+
+func (ss *MediorumServer) serveUploadList(c echo.Context) error {
+	afterCursor, _ := time.Parse(time.RFC3339Nano, c.QueryParam("after"))
+	var uploads []Upload
+	err := ss.crud.DB.
+		Where("created_at > ?", afterCursor).
+		Order(`created_at`).Limit(2000).Find(&uploads).Error
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, uploads)
 }
 
 type UpdateUploadBody struct {
@@ -205,136 +215,4 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	}
 
 	return c.JSON(status, uploads)
-}
-
-func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
-	// images are small enough to always serve all at once (no 206 range responses)
-	c.Request().Header.Del("Range")
-
-	ctx := c.Request().Context()
-	jobID := c.Param("jobID")
-	variant := c.Param("variant")
-	isOriginalJpg := variant == "original.jpg"
-
-	// helper function... only sets cache-control header on success
-	serveSuccessWithReader := func(blob *blob.Reader) error {
-		name := fmt.Sprintf("%s/%s", jobID, variant)
-		c.Response().Header().Set(echo.HeaderCacheControl, "public, max-age=2592000, immutable")
-		http.ServeContent(c.Response(), c.Request(), name, blob.ModTime(), blob)
-		return blob.Close()
-	}
-
-	serveSuccess := func(blobPath string) error {
-		if blob, err := ss.bucket.NewReader(ctx, blobPath, nil); err == nil {
-			return serveSuccessWithReader(blob)
-		} else {
-			return err
-		}
-	}
-
-	// if the client provided a filename, set it in the header to be auto-populated in download prompt
-	filenameForDownload := c.QueryParam("filename")
-	if filenameForDownload != "" {
-		contentDisposition := mime.QEncoding.Encode("utf-8", filenameForDownload)
-		c.Response().Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, contentDisposition))
-	}
-
-	// 1. resolve ulid to upload cid
-	if cid, err := ss.getUploadOrigCID(jobID); err == nil {
-		c.Response().Header().Set("x-orig-cid", cid)
-		jobID = cid
-	}
-
-	// 2. if is ba ... serve variant
-	if strings.HasPrefix(jobID, "ba") {
-		baCid := jobID
-
-		var variantStoragePath string
-
-		// parse 150x150 dimensions
-		// while still allowing original.jpg
-		w, h, err := parseVariantSize(variant)
-		if err == nil {
-			variantStoragePath = cidutil.ImageVariantPath(baCid, variant)
-		} else if isOriginalJpg {
-			variantStoragePath = cidutil.ShardCID(baCid)
-		} else {
-			return c.String(400, err.Error())
-		}
-
-		c.Response().Header().Set("x-variant-storage-path", variantStoragePath)
-
-		// we already have this version
-		if blob, err := ss.bucket.NewReader(ctx, variantStoragePath, nil); err == nil {
-			return serveSuccessWithReader(blob)
-		}
-
-		// we need to generate it
-		// ... get the cid
-		// ... create the variant
-		// ... store it at variantStoragePath
-		startDynamicResize := time.Now()
-		if host := ss.findNodeToServeBlob(baCid); host != "" {
-
-			err := ss.pullFileFromHost(host, baCid)
-			if err != nil {
-				return err
-			}
-
-			if !isOriginalJpg {
-				// dynamically create resized version
-				r, err := ss.bucket.NewReader(ctx, cidutil.ShardCID(baCid), nil)
-				if err != nil {
-					return err
-				}
-
-				resized, _, _ := Resized(".jpg", r, w, h, "fill")
-				w, _ := ss.bucket.NewWriter(ctx, variantStoragePath, nil)
-				io.Copy(w, resized)
-				w.Close()
-				r.Close()
-				c.Response().Header().Set("x-dynamic-resize-ok", fmt.Sprintf("%.2fs", time.Since(startDynamicResize).Seconds()))
-			}
-		} else {
-			return c.String(400, fmt.Sprintf("unable to find cid: %s", baCid))
-		}
-
-		// ... serve it
-		return serveSuccess(variantStoragePath)
-	}
-
-	// 3. if Qm ... serve legacy
-	if cidutil.IsLegacyCID(jobID) {
-
-		// storage path for Qm images is like:
-		// QmDirMultihash/150x150.jpg
-		// (no sharding)
-		key := jobID + "/" + variant
-
-		c.Response().Header().Set("x-variant-storage-path", key)
-
-		// have it
-		if blob, err := ss.bucket.NewReader(ctx, key, nil); err == nil {
-			return serveSuccessWithReader(blob)
-		}
-
-		// pull blob from another host and store it at key
-		// keys like QmDirMultiHash/150x150.jpg works fine with findNodeToServeBlob
-		startFindNode := time.Now()
-		if host := ss.findNodeToServeBlob(key); host != "" {
-			err := ss.pullFileFromHost(host, key)
-			if err != nil {
-				return err
-			}
-
-			c.Response().Header().Set("x-find-node-success", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
-			return serveSuccess(key)
-
-		} else {
-			c.Response().Header().Set("x-find-node-failure", fmt.Sprintf("%.2fs", time.Since(startFindNode).Seconds()))
-		}
-	}
-
-	msg := fmt.Sprintf("variant %s not found for upload %s", variant, jobID)
-	return c.String(400, msg)
 }

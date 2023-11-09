@@ -44,7 +44,7 @@ import { UiErrorCode } from 'store/errors/actions'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
 import { isValidEmailString } from 'utils/email'
 import { restrictedHandles } from 'utils/restrictedHandles'
-import { ERROR_PAGE, FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
+import { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
 
 import * as signOnActions from './actions'
@@ -111,6 +111,16 @@ const followArtistCategoryGenreMappings = {
 function* getArtistsToFollow() {
   const users = yield select(getUsers)
   yield put(signOnActions.setUsersToFollow(users))
+}
+
+function* fetchDefaultFollowArtists() {
+  yield call(waitForRead)
+  try {
+    const defaultFollowUserIds = yield call(getDefautFollowUserIds)
+    yield call(fetchUsers, Array.from(defaultFollowUserIds))
+  } catch (e) {
+    console.error('Unable to fetch default follow artists', e)
+  }
 }
 
 function* fetchAllFollowArtist() {
@@ -389,7 +399,6 @@ function* signUp() {
           const params = {
             error,
             phase,
-            redirectRoute: rateLimited ? SIGN_UP_PAGE : ERROR_PAGE,
             shouldReport: !rateLimited && !blocked,
             shouldToast: rateLimited
           }
@@ -496,9 +505,10 @@ function* signUp() {
         }
       },
       function* () {
-        yield put(signOnActions.signUpSucceeded())
         yield put(signOnActions.sendWelcomeEmail(name))
         yield call(fetchAccountAsync, { isSignUp: true })
+        yield put(signOnActions.followArtists())
+        yield put(signOnActions.signUpSucceeded())
       },
       function* ({ timeout }) {
         if (timeout) {
@@ -513,14 +523,15 @@ function* signUp() {
 }
 
 function* signIn(action) {
+  const { email, password } = action
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield call(waitForRead)
   try {
     const signOn = yield select(getSignOn)
     const signInResponse = yield call(
       audiusBackendInstance.signIn,
-      signOn.email.value,
-      signOn.password.value
+      email ?? signOn.email.value,
+      password ?? signOn.password.value
     )
     if (
       !signInResponse.error &&
@@ -727,7 +738,11 @@ function* watchValidateHandle() {
 }
 
 function* watchSignUp() {
-  yield takeLatest(signOnActions.SIGN_UP, signUp)
+  yield takeLatest(signOnActions.SIGN_UP, function* (action) {
+    // Fetch the default follow artists in parallel so that we don't have to block on this later (thus adding perceived sign up time) in the follow artists step.
+    yield fork(fetchDefaultFollowArtists)
+    yield signUp(action)
+  })
 }
 
 function* watchSignIn() {
@@ -739,15 +754,7 @@ function* watchConfigureMetaMask() {
 }
 
 function* watchFollowArtists() {
-  while (
-    yield all([
-      take(signOnActions.SIGN_UP_SUCCEEDED),
-      take(accountActions.fetchAccountSucceeded.type),
-      take(signOnActions.FOLLOW_ARTISTS)
-    ])
-  ) {
-    yield call(followArtists)
-  }
+  yield takeLatest(signOnActions.FOLLOW_ARTISTS, followArtists)
 }
 
 function* watchShowToast() {

@@ -12,10 +12,6 @@ embed-init:
         keys:
           - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
-    - restore_cache:
-        keys:
-          - cache-{{ .Revision }}
-
     - persist_to_workspace:
         root: ./
         paths:
@@ -23,6 +19,8 @@ embed-init:
           - packages/embed/node_modules
           - packages/stems/node_modules
           - packages/stems/dist
+          - packages/harmony/node_modules
+          - packages/harmony/dist
           - packages/libs/node_modules
           - packages/libs/dist
 

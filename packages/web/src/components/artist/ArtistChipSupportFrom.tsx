@@ -10,7 +10,7 @@ import {
 } from '@audius/common'
 import cn from 'classnames'
 
-import { ReactComponent as IconTip } from 'assets/img/iconTip.svg'
+import IconTip from 'assets/img/iconTip.svg'
 import { useSelector } from 'common/hooks/useSelector'
 
 import styles from './ArtistChip.module.css'

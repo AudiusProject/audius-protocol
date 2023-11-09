@@ -5,6 +5,8 @@ import {
   formatUSDCWeiToUSDString,
   notificationsSelectors,
   Nullable,
+  StringUSDC,
+  stringUSDCToBN,
   TrackEntity,
   USDCPurchaseSellerNotification as USDCPurchaseSellerNotificationType
 } from '@audius/common'
@@ -48,7 +50,7 @@ export const USDCPurchaseSellerNotification = (
     getNotificationUsers(state, notification, 1)
   )
   const buyerUser = notificationUsers ? notificationUsers[0] : null
-  const { amount } = notification
+  const { amount, extraAmount } = notification
   const handleClick = useCallback(() => {
     if (track) {
       dispatch(push(getEntityLink(track)))
@@ -65,7 +67,11 @@ export const USDCPurchaseSellerNotification = (
         <UserNameLink user={buyerUser} notification={notification} />{' '}
         {messages.justBoughtYourTrack}{' '}
         <EntityLink entity={track} entityType={Entity.Track} /> for $
-        {formatUSDCWeiToUSDString(amount)}
+        {formatUSDCWeiToUSDString(
+          stringUSDCToBN(amount)
+            .add(stringUSDCToBN(extraAmount))
+            .toString() as StringUSDC
+        )}
         {messages.exclamation}
       </NotificationBody>
     </NotificationTile>

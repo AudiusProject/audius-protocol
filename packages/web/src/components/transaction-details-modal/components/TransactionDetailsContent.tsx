@@ -7,15 +7,16 @@ import {
   TransactionType,
   formatCapitalizeString,
   ChallengeRewardID,
-  makeSolanaTransactionLink
+  makeSolanaTransactionLink,
+  isNullOrUndefined
 } from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useSelector, useDispatch } from 'react-redux'
 
-import { ReactComponent as LogoStripeLink } from 'assets/img/LogoStripeLink.svg'
-import { ReactComponent as LogoCoinbase } from 'assets/img/coinbase-pay/LogoCoinbase.svg'
-import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
+import LogoStripeLink from 'assets/img/LogoStripeLink.svg'
+import LogoCoinbase from 'assets/img/coinbase-pay/LogoCoinbase.svg'
+import IconExternalLink from 'assets/img/iconExternalLink.svg'
 import { useSetVisibility } from 'common/hooks/useModalState'
 import { AudioTransactionIcon } from 'components/audio-transaction-icon'
 import { isChangePositive } from 'components/audio-transactions-table/AudioTransactionsTable'
@@ -241,9 +242,12 @@ export const TransactionDetailsContent = ({
               {formatAudio(transactionDetails.change)}
             </span>
           </Block>
-          <Block header={messages.balance}>
-            {formatAudio(transactionDetails.balance, 2)}
-          </Block>
+          {/* If user's balance is still loading or failed to load, don't show it. */}
+          {isNullOrUndefined(transactionDetails.balance) ? null : (
+            <Block header={messages.balance}>
+              {formatAudio(transactionDetails.balance, 2)}
+            </Block>
+          )}
         </BlockContainer>
       )}
     </>

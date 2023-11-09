@@ -1,16 +1,18 @@
 // TODO: a lot of extra parseInt's that result in incorrect (as unknown as string) typecasting
 
-import { ContractABI, Logger, Utils } from '../../utils'
-import { GovernedContractClient } from '../contracts/GovernedContractClient'
 import axios, { AxiosRequestConfig } from 'axios'
-import { range } from 'lodash'
-import type { EthWeb3Manager } from '../ethWeb3Manager'
-import type { GetRegistryAddress } from '../contracts/ContractClient'
-import type { AudiusTokenClient } from './AudiusTokenClient'
-import type { StakingProxyClient } from './StakingProxyClient'
-import type { GovernanceClient } from './GovernanceClient'
-import urlJoin from 'proper-url-join'
 import type BN from 'bn.js'
+import { range } from 'lodash'
+import urlJoin from 'proper-url-join'
+
+import { ContractABI, Logger, Utils } from '../../utils'
+import type { GetRegistryAddress } from '../contracts/ContractClient'
+import { GovernedContractClient } from '../contracts/GovernedContractClient'
+import type { EthWeb3Manager } from '../ethWeb3Manager'
+
+import type { AudiusTokenClient } from './AudiusTokenClient'
+import type { GovernanceClient } from './GovernanceClient'
+import type { StakingProxyClient } from './StakingProxyClient'
 
 type GetEvent = {
   serviceType: string
@@ -76,7 +78,7 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
         method: 'get',
         timeout: 1000,
         params: {
-          'allow_unregistered': 'true'
+          allow_unregistered: 'true'
         }
       }
       const resp = await axios(axiosRequestObj)
@@ -106,7 +108,7 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
     )
     // @ts-expect-error TODO: this seems incorrect
     const tx = await this.web3Manager.sendTransaction(method, 1000000)
-    const returnValues = tx.events?.['RegisteredServiceProvider']?.returnValues
+    const returnValues = tx.events?.RegisteredServiceProvider?.returnValues
     return {
       txReceipt: tx,
       spID: parseInt(returnValues._spID),
@@ -152,11 +154,11 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
 
     return events.map((event) => ({
       blockNumber: parseInt(event.blockNumber as unknown as string),
-      spID: parseInt(event.returnValues['_spID']),
-      serviceType: Utils.hexToUtf8(event.returnValues['_serviceType']),
-      owner: event.returnValues['_owner'],
-      endpoint: event.returnValues['_endpoint'],
-      stakeAmount: Utils.toBN(event.returnValues['_stakeAmout'])
+      spID: parseInt(event.returnValues._spID),
+      serviceType: Utils.hexToUtf8(event.returnValues._serviceType),
+      owner: event.returnValues._owner,
+      endpoint: event.returnValues._endpoint,
+      stakeAmount: Utils.toBN(event.returnValues._stakeAmout)
     }))
   }
 
@@ -179,11 +181,11 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
     })
     return events.map((event) => ({
       blockNumber: parseInt(event.blockNumber as unknown as string),
-      spID: parseInt(event.returnValues['_spID']),
-      serviceType: Utils.hexToUtf8(event.returnValues['_serviceType']),
-      owner: event.returnValues['_owner'],
-      endpoint: event.returnValues['_endpoint'],
-      stakeAmount: Utils.toBN(event.returnValues['_stakeAmount'])
+      spID: parseInt(event.returnValues._spID),
+      serviceType: Utils.hexToUtf8(event.returnValues._serviceType),
+      owner: event.returnValues._owner,
+      endpoint: event.returnValues._endpoint,
+      stakeAmount: Utils.toBN(event.returnValues._stakeAmount)
     }))
   }
 
@@ -203,9 +205,9 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
     })
     return events.map((event) => ({
       blockNumber: parseInt(event.blockNumber as unknown as string),
-      owner: event.returnValues['_owner'],
-      increaseAmount: Utils.toBN(event.returnValues['_increaseAmount']),
-      newStakeAmount: Utils.toBN(event.returnValues['_newStakeAmount'])
+      owner: event.returnValues._owner,
+      increaseAmount: Utils.toBN(event.returnValues._increaseAmount),
+      newStakeAmount: Utils.toBN(event.returnValues._newStakeAmount)
     }))
   }
 
@@ -228,9 +230,9 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
     )
     return events.map((event) => ({
       blockNumber: parseInt(event.blockNumber as unknown as string),
-      owner: event.returnValues['_owner'],
-      decreaseAmount: Utils.toBN(event.returnValues['_decreaseAmount']),
-      newStakeAmount: Utils.toBN(event.returnValues['_newStakeAmount'])
+      owner: event.returnValues._owner,
+      decreaseAmount: Utils.toBN(event.returnValues._decreaseAmount),
+      newStakeAmount: Utils.toBN(event.returnValues._newStakeAmount)
     }))
   }
 
@@ -250,9 +252,9 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
     })
     return events.map((event) => ({
       blockNumber: parseInt(event.blockNumber as unknown as string),
-      owner: event.returnValues['_owner'],
-      decreaseAmount: Utils.toBN(event.returnValues['_decreaseAmount']),
-      lockupExpiryBlock: parseInt(event.returnValues['_lockupExpiryBlock'])
+      owner: event.returnValues._owner,
+      decreaseAmount: Utils.toBN(event.returnValues._decreaseAmount),
+      lockupExpiryBlock: parseInt(event.returnValues._lockupExpiryBlock)
     }))
   }
 
@@ -275,9 +277,9 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
     )
     return events.map((event) => ({
       blockNumber: parseInt(event.blockNumber as unknown as string),
-      owner: event.returnValues['_owner'],
-      decreaseAmount: Utils.toBN(event.returnValues['_decreaseAmount']),
-      lockupExpiryBlock: parseInt(event.returnValues['_lockupExpiryBlock'])
+      owner: event.returnValues._owner,
+      decreaseAmount: Utils.toBN(event.returnValues._decreaseAmount),
+      lockupExpiryBlock: parseInt(event.returnValues._lockupExpiryBlock)
     }))
   }
 
@@ -473,8 +475,7 @@ export class ServiceProviderFactoryClient extends GovernedContractClient {
       endpoint
     )
     const tx = await this.web3Manager.sendTransaction(method)
-    const returnValues =
-      tx.events?.['DeregisteredServiceProvider']?.returnValues
+    const returnValues = tx.events?.DeregisteredServiceProvider?.returnValues
 
     return {
       txReceipt: tx,

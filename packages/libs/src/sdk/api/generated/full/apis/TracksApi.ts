@@ -144,6 +144,23 @@ export interface GetTrendingTracksWithVersionRequest {
     time?: GetTrendingTracksWithVersionTimeEnum;
 }
 
+export interface GetTrendingUSDCPurchaseTracksRequest {
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    genre?: string;
+    time?: GetTrendingUSDCPurchaseTracksTimeEnum;
+}
+
+export interface GetTrendingUSDCPurchaseTracksWithVersionRequest {
+    version: string;
+    offset?: number;
+    limit?: number;
+    userId?: string;
+    genre?: string;
+    time?: GetTrendingUSDCPurchaseTracksWithVersionTimeEnum;
+}
+
 export interface GetUnderTheRadarTracksRequest {
     offset?: number;
     limit?: number;
@@ -787,7 +804,7 @@ export class TracksApi extends runtime.BaseAPI {
 
     /**
      * @hidden
-     * Gets the top 100 trending (most popular tracks on Audius using a given trending strategy version
+     * Gets the top 100 trending (most popular) tracks on Audius using a given trending strategy version
      */
     async getTrendingTracksWithVersionRaw(params: GetTrendingTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
         if (params.version === null || params.version === undefined) {
@@ -829,10 +846,108 @@ export class TracksApi extends runtime.BaseAPI {
     }
 
     /**
-     * Gets the top 100 trending (most popular tracks on Audius using a given trending strategy version
+     * Gets the top 100 trending (most popular) tracks on Audius using a given trending strategy version
      */
     async getTrendingTracksWithVersion(params: GetTrendingTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
         const response = await this.getTrendingTracksWithVersionRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the top trending (most popular) USDC purchase tracks on Audius
+     */
+    async getTrendingUSDCPurchaseTracksRaw(params: GetTrendingUSDCPurchaseTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.genre !== undefined) {
+            queryParameters['genre'] = params.genre;
+        }
+
+        if (params.time !== undefined) {
+            queryParameters['time'] = params.time;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/usdc-purchase`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullTracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the top trending (most popular) USDC purchase tracks on Audius
+     */
+    async getTrendingUSDCPurchaseTracks(params: GetTrendingUSDCPurchaseTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getTrendingUSDCPurchaseTracksRaw(params, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * @hidden
+     * Gets the top trending (most popular) USDC purchase tracks on Audius using a given trending strategy version
+     */
+    async getTrendingUSDCPurchaseTracksWithVersionRaw(params: GetTrendingUSDCPurchaseTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<FullTracksResponse>> {
+        if (params.version === null || params.version === undefined) {
+            throw new runtime.RequiredError('version','Required parameter params.version was null or undefined when calling getTrendingUSDCPurchaseTracksWithVersion.');
+        }
+
+        const queryParameters: any = {};
+
+        if (params.offset !== undefined) {
+            queryParameters['offset'] = params.offset;
+        }
+
+        if (params.limit !== undefined) {
+            queryParameters['limit'] = params.limit;
+        }
+
+        if (params.userId !== undefined) {
+            queryParameters['user_id'] = params.userId;
+        }
+
+        if (params.genre !== undefined) {
+            queryParameters['genre'] = params.genre;
+        }
+
+        if (params.time !== undefined) {
+            queryParameters['time'] = params.time;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/usdc-purchase/{version}`.replace(`{${"version"}}`, encodeURIComponent(String(params.version))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => FullTracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the top trending (most popular) USDC purchase tracks on Audius using a given trending strategy version
+     */
+    async getTrendingUSDCPurchaseTracksWithVersion(params: GetTrendingUSDCPurchaseTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<FullTracksResponse> {
+        const response = await this.getTrendingUSDCPurchaseTracksWithVersionRaw(params, initOverrides);
         return await response.value();
     }
 
@@ -1097,6 +1212,26 @@ export const GetTrendingTracksWithVersionTimeEnum = {
     AllTime: 'allTime'
 } as const;
 export type GetTrendingTracksWithVersionTimeEnum = typeof GetTrendingTracksWithVersionTimeEnum[keyof typeof GetTrendingTracksWithVersionTimeEnum];
+/**
+ * @export
+ */
+export const GetTrendingUSDCPurchaseTracksTimeEnum = {
+    Week: 'week',
+    Month: 'month',
+    Year: 'year',
+    AllTime: 'allTime'
+} as const;
+export type GetTrendingUSDCPurchaseTracksTimeEnum = typeof GetTrendingUSDCPurchaseTracksTimeEnum[keyof typeof GetTrendingUSDCPurchaseTracksTimeEnum];
+/**
+ * @export
+ */
+export const GetTrendingUSDCPurchaseTracksWithVersionTimeEnum = {
+    Week: 'week',
+    Month: 'month',
+    Year: 'year',
+    AllTime: 'allTime'
+} as const;
+export type GetTrendingUSDCPurchaseTracksWithVersionTimeEnum = typeof GetTrendingUSDCPurchaseTracksWithVersionTimeEnum[keyof typeof GetTrendingUSDCPurchaseTracksWithVersionTimeEnum];
 /**
  * @export
  */

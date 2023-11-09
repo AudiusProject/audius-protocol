@@ -3,7 +3,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   FeatureFlags,
   FEATURE_FLAG_OVERRIDE_KEY,
-  OverrideSetting
+  OverrideSetting,
+  accountSelectors
 } from '@audius/common'
 import {
   Modal,
@@ -17,9 +18,11 @@ import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useDevModeHotkey } from 'hooks/useHotkey'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
+import { useSelector } from 'utils/reducer'
 import zIndex from 'utils/zIndex'
 
 import styles from './FeatureFlagOverrideModal.module.css'
+const { getHasAccount } = accountSelectors
 
 const flags = Object.values(FeatureFlags)
 const messages = {
@@ -39,12 +42,11 @@ const setOverrideSetting = (flag: string, val: OverrideSetting) => {
 
 export const FeatureFlagOverrideModal = () => {
   const hotkeyToggle = useDevModeHotkey(70 /* f */)
-  // Ref to handle modal toggle from the hotkey
-  // Needed to avoid it getting out of sync when using closeModal function
-  const hotkeyRef = useRef<boolean | null>(null)
+  const [ignoredHotkeyActive, setHotkeyActive] = useState(true)
   const [remoteInstanceLoaded, setRemoteInstanceLoaded] = useState(false)
   const [isOpen, setIsOpen] = useModalState('FeatureFlagOverride')
   const defaultSettings = useRef<Record<string, boolean>>({})
+  const hasAccount = useSelector(getHasAccount)
   const [overrideSettings, setOverrideSettings] = useState(
     flags.reduce<Record<string, OverrideSetting>>(
       (acc, flag) => ({ ...acc, [flag]: getOverrideSetting(flag) }),
@@ -64,23 +66,25 @@ export const FeatureFlagOverrideModal = () => {
       setRemoteInstanceLoaded(true)
     }
 
-    remoteConfigInstance.waitForUserRemoteConfig().then(updateDefaultSettings)
-  }, [])
-
-  const closeModal = useCallback(() => {
-    hotkeyRef.current = false
-    setIsOpen(false)
-  }, [hotkeyRef, setIsOpen])
+    if (hasAccount) {
+      remoteConfigInstance.waitForUserRemoteConfig().then(updateDefaultSettings)
+    } else {
+      remoteConfigInstance.waitForRemoteConfig().then(updateDefaultSettings)
+    }
+  }, [hasAccount])
 
   useEffect(() => {
-    if (hotkeyRef.current === null) {
-      hotkeyRef.current = false
-      return
-    }
-
-    hotkeyRef.current = !hotkeyRef.current
-    setIsOpen(hotkeyRef.current)
+    setHotkeyActive((active) => {
+      const newValue = !active
+      setIsOpen(newValue)
+      return newValue
+    })
   }, [hotkeyToggle, setIsOpen])
+
+  const closeModal = useCallback(() => {
+    setHotkeyActive(false)
+    setIsOpen(false)
+  }, [setIsOpen])
 
   return (
     <Modal

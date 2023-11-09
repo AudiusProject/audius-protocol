@@ -52,14 +52,14 @@ export const useModalScrollCount = () => {
   }, [getCount, isOverflowHidden, toggle])
 
   const incrementScrollCount = useCallback(() => {
-    setCount(count => count + 1)
-    setToggle(toggle => !toggle)
+    setCount((count) => count + 1)
+    setToggle((toggle) => !toggle)
   }, [setCount, setToggle])
   const decrementScrollCount = useCallback(() => {
     // Though we should in theory never be decrementing past zero, getting into
     // that state would be bad for us, so guard against it defensively
-    setCount(count => Math.max(0, count - 1))
-    setToggle(toggle => !toggle)
+    setCount((count) => Math.max(0, count - 1))
+    setToggle((toggle) => !toggle)
   }, [setCount, setToggle])
 
   return {

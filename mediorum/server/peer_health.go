@@ -3,9 +3,11 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
+	"github.com/labstack/echo/v4"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"
 )
@@ -27,7 +29,7 @@ func (ss *MediorumServer) startHealthPoller() {
 				if peer.Host == ss.Config.Self.Host {
 					return
 				}
-				req, err := http.NewRequest("GET", peer.ApiPath("/health_check"), nil)
+				req, err := http.NewRequest("GET", apiPath(peer.Host, "/health_check"), nil)
 				if err != nil {
 					return
 				}
@@ -72,7 +74,7 @@ func (ss *MediorumServer) startHealthPoller() {
 						if resp.StatusCode == 200 {
 							// node isn't healthy if there's any other node that is reachable by >50% of other nodes but not by this node
 							unreachablePeers := ss.getReachableByMajorityButNotByHost(peer.Host)
-							if len(unreachablePeers) == 0 || true { // TODO: remove the || true after nodes upgrade to expose reachable peers
+							if len(unreachablePeers) == 0 || true { // TODO: we can remove the "|| true" if we want to enforce peer reachability
 								ss.peerHealths[peer.Host].LastHealthy = time.Now()
 							}
 						}
@@ -87,7 +89,7 @@ func (ss *MediorumServer) startHealthPoller() {
 		if i < 5 {
 			time.Sleep(time.Second)
 		} else {
-			time.Sleep(time.Second * 30)
+			time.Sleep(time.Minute * 2)
 		}
 	}
 }
@@ -147,6 +149,9 @@ func (ss *MediorumServer) getReachableByMajorityButNotByHost(host string) []stri
 }
 
 func (ss *MediorumServer) findHealthyPeers(aliveInLast time.Duration) []string {
+	if aliveInLast < (time.Minute * 5) {
+		panic("aliveInLast should be > 5 minutes")
+	}
 	result := []string{}
 	ss.peerHealthsMutex.RLock()
 	defer ss.peerHealthsMutex.RUnlock()
@@ -157,4 +162,35 @@ func (ss *MediorumServer) findHealthyPeers(aliveInLast time.Duration) []string {
 	}
 
 	return result
+}
+
+func (ss *MediorumServer) proxyHealthCheck(c echo.Context) error {
+	peerHost := c.QueryParam("to")
+	req, err := http.NewRequest("GET", apiPath(peerHost, "/health_check"), nil)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create request"})
+	}
+	req.Header.Set("User-Agent", "mediorum proxy debug "+ss.Config.Self.Host)
+
+	timeoutSec, err := strconv.Atoi(c.QueryParam("timeout_sec"))
+	if err != nil {
+		timeoutSec = 1
+	}
+	httpClient := http.Client{
+		Timeout: time.Second * time.Duration(timeoutSec),
+	}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to send request"})
+	}
+	defer resp.Body.Close()
+
+	var response map[string]interface{}
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(&response)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to decode response"})
+	}
+
+	return c.JSON(http.StatusOK, response)
 }

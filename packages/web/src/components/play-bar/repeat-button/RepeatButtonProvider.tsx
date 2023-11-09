@@ -31,44 +31,53 @@ const RepeatButtonProvider = ({
   const matrixAnimations = useRef<AnimationStates | null>(null)
 
   useEffect(() => {
-    if (isMatrix) {
-      if (!matrixAnimations.current) {
-        const pbIconRepeatAll = require('assets/animations/pbIconRepeatAllMatrix.json')
-        const pbIconRepeatSingle = require('assets/animations/pbIconRepeatSingleMatrix.json')
-        const pbIconRepeatOff = require('assets/animations/pbIconRepeatOffMatrix.json')
-        matrixAnimations.current = {
-          pbIconRepeatAll,
-          pbIconRepeatSingle,
-          pbIconRepeatOff
+    const loadAnimations = async () => {
+      if (isMatrix) {
+        if (!matrixAnimations.current) {
+          const pbIconRepeatAll = require('assets/animations/pbIconRepeatAllMatrix.json')
+          const pbIconRepeatSingle = require('assets/animations/pbIconRepeatSingleMatrix.json')
+          const pbIconRepeatOff = require('assets/animations/pbIconRepeatOffMatrix.json')
+          matrixAnimations.current = {
+            pbIconRepeatAll,
+            pbIconRepeatSingle,
+            pbIconRepeatOff
+          }
         }
-      }
 
-      setAnimations({ ...matrixAnimations.current })
-    } else if (darkMode) {
-      if (!darkAnimations.current) {
-        const pbIconRepeatAll = require('assets/animations/pbIconRepeatAllDark.json')
-        const pbIconRepeatSingle = require('assets/animations/pbIconRepeatSingleDark.json')
-        const pbIconRepeatOff = require('assets/animations/pbIconRepeatOffDark.json')
-        darkAnimations.current = {
-          pbIconRepeatAll,
-          pbIconRepeatSingle,
-          pbIconRepeatOff
+        setAnimations({ ...matrixAnimations.current })
+      } else if (darkMode) {
+        if (!darkAnimations.current) {
+          const pbIconRepeatAll = require('assets/animations/pbIconRepeatAllDark.json')
+          const pbIconRepeatSingle = require('assets/animations/pbIconRepeatSingleDark.json')
+          const pbIconRepeatOff = require('assets/animations/pbIconRepeatOffDark.json')
+          darkAnimations.current = {
+            pbIconRepeatAll,
+            pbIconRepeatSingle,
+            pbIconRepeatOff
+          }
         }
-      }
-      setAnimations({ ...darkAnimations.current })
-    } else {
-      if (!defaultAnimations.current) {
-        const pbIconRepeatAll = require('assets/animations/pbIconRepeatAll.json')
-        const pbIconRepeatSingle = require('assets/animations/pbIconRepeatSingle.json')
-        const pbIconRepeatOff = require('assets/animations/pbIconRepeatOff.json')
-        defaultAnimations.current = {
-          pbIconRepeatAll,
-          pbIconRepeatSingle,
-          pbIconRepeatOff
+        setAnimations({ ...darkAnimations.current })
+      } else {
+        if (!defaultAnimations.current) {
+          const { default: pbIconRepeatAll } = (await import(
+            'assets/animations/pbIconRepeatAll.json'
+          )) as any
+          const { default: pbIconRepeatSingle } = (await import(
+            'assets/animations/pbIconRepeatSingle.json'
+          )) as any
+          const { default: pbIconRepeatOff } = (await import(
+            'assets/animations/pbIconRepeatOff.json'
+          )) as any
+          defaultAnimations.current = {
+            pbIconRepeatAll,
+            pbIconRepeatSingle,
+            pbIconRepeatOff
+          }
         }
+        setAnimations({ ...defaultAnimations.current })
       }
-      setAnimations({ ...defaultAnimations.current })
     }
+    loadAnimations()
   }, [darkMode, setAnimations, isMatrix])
 
   return (

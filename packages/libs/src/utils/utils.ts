@@ -1,12 +1,14 @@
-import bs58 from 'bs58'
-import Web3 from '../LibsWeb3'
 import axios, { AxiosResponse } from 'axios'
+import bs58 from 'bs58'
 import Hashids from 'hashids'
-import { MultiProvider } from './multiProvider'
-import { uuid } from './uuid'
+import type { AbiItem } from 'web3-utils'
+
+import Web3 from '../LibsWeb3'
+
 import { fileHasher } from './fileHasher'
 import type { ImageHasher, NonImageHasher, HashedImage } from './fileHasher'
-import type { AbiItem } from 'web3-utils'
+import { MultiProvider } from './multiProvider'
+import { uuid } from './uuid'
 
 // Hashids
 

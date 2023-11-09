@@ -10,8 +10,11 @@ import {
   challengesSelectors,
   audioRewardsPageActions,
   ChallengeRewardsModalType,
+  ChallengeName,
   audioRewardsPageSelectors,
-  makeChallengeSortComparator
+  isAudioMatchingChallenge,
+  makeOptimisticChallengeSortComparator,
+  Name
 } from '@audius/common'
 import {
   ProgressBar,
@@ -25,8 +28,11 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useSetVisibility } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { Text } from 'components/typography'
+import { useIsAudioMatchingChallengesEnabled } from 'hooks/useIsAudioMatchingChallengesEnabled'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { make, track } from 'services/analytics'
 
 import styles from './RewardsTile.module.css'
 import { Tile } from './components/ExplainerTile'
@@ -43,7 +49,8 @@ const messages = {
   completeLabel: 'COMPLETE',
   claimReward: 'Claim Your Reward',
   readyToClaim: 'Ready to Claim',
-  viewDetails: 'View Details'
+  viewDetails: 'View Details',
+  new: 'New!'
 }
 
 type RewardPanelProps = {
@@ -70,7 +77,12 @@ const RewardPanel = ({
   const wm = useWithMobileStyle(styles.mobile)
   const userChallenges = useSelector(getOptimisticUserChallenges)
 
-  const openRewardModal = () => openModal(id)
+  const openRewardModal = () => {
+    openModal(id)
+    track(
+      make({ eventName: Name.REWARDS_CLAIM_DETAILS_OPENED, challengeId: id })
+    )
+  }
 
   const challenge = userChallenges[id]
   const shouldShowCompleted =
@@ -82,10 +94,18 @@ const RewardPanel = ({
     challenge.max_steps > 1 &&
     challenge.challenge_type !== 'aggregate' &&
     !hasDisbursed
+  const showNewChallengePill =
+    isAudioMatchingChallenge(id) && !needsDisbursement
 
   let progressLabelFilled: string
   if (shouldShowCompleted) {
     progressLabelFilled = messages.completeLabel
+  } else if (isAudioMatchingChallenge(id)) {
+    if (needsDisbursement) {
+      progressLabelFilled = messages.readyToClaim
+    } else {
+      progressLabelFilled = progressLabel ?? ''
+    }
   } else if (challenge?.challenge_type === 'aggregate') {
     // Count down
     progressLabelFilled = fillString(
@@ -126,11 +146,19 @@ const RewardPanel = ({
     >
       <div className={wm(styles.rewardPanelTop)}>
         <div className={wm(styles.pillContainer)}>
-          {needsDisbursement && (
-            <span className={wm(styles.pillMessage)}>
-              {messages.readyToClaim}
-            </span>
-          )}
+          {needsDisbursement ? (
+            <span className={styles.pillMessage}>{messages.readyToClaim}</span>
+          ) : showNewChallengePill ? (
+            <Text
+              as='span'
+              className={styles.newChallengePill}
+              variant='body'
+              strength='strong'
+              color='staticWhite'
+            >
+              {messages.new}
+            </Text>
+          ) : null}
         </div>
         <span className={wm(styles.rewardTitle)}>
           {icon}
@@ -142,9 +170,7 @@ const RewardPanel = ({
       </div>
       <div className={wm(styles.rewardPanelBottom)}>
         <div className={wm(styles.rewardProgress)}>
-          {shouldShowCompleted && (
-            <IconCheck className={wm(styles.iconCheck)} />
-          )}
+          {needsDisbursement && <IconCheck className={wm(styles.iconCheck)} />}
           <p className={styles.rewardProgressLabel}>{progressLabelFilled}</p>
           {shouldShowProgressBar && (
             <ProgressBar
@@ -184,7 +210,9 @@ const validRewardIds: Set<ChallengeRewardID> = new Set([
   'profile-completion',
   'referred',
   'send-first-tip',
-  'first-playlist'
+  'first-playlist',
+  ChallengeName.AudioMatchingSell, // $AUDIO matching seller
+  ChallengeName.AudioMatchingBuy // $AUDIO matching buyer
 ])
 
 /** Pulls rewards from remoteconfig */
@@ -205,11 +233,17 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   const dispatch = useDispatch()
   const userChallengesLoading = useSelector(getUserChallengesLoading)
   const userChallenges = useSelector(getUserChallenges)
+  const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
+  const isAudioMatchingChallengesEnabled = useIsAudioMatchingChallengesEnabled()
 
   // The referred challenge only needs a tile if the user was referred
   const hideReferredTile = !userChallenges.referred?.is_complete
-  const rewardIds = useRewardIds({ referred: hideReferredTile })
+  const rewardIds = useRewardIds({
+    referred: hideReferredTile,
+    b: !isAudioMatchingChallengesEnabled,
+    s: !isAudioMatchingChallengesEnabled
+  })
 
   useEffect(() => {
     if (!userChallengesLoading && !haveChallengesLoaded) {
@@ -233,8 +267,8 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
         // Filter out challenges that DN didn't return
         .map((id) => userChallenges[id]?.challenge_id)
         .filter(removeNullable)
-        .sort(makeChallengeSortComparator(userChallenges)),
-    [rewardIds, userChallenges]
+        .sort(makeOptimisticChallengeSortComparator(optimisticUserChallenges)),
+    [rewardIds, userChallenges, optimisticUserChallenges]
   )
 
   const rewardsTiles = rewardIdsSorted.map((id) => {

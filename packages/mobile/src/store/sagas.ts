@@ -19,7 +19,9 @@ import {
   confirmerSagas,
   purchaseContentSagas,
   buyUSDCSagas,
-  stripeModalUISagas
+  buyCryptoSagas,
+  stripeModalUISagas,
+  modalsSagas
 } from '@audius/common'
 import addToPlaylistSagas from 'common/store/add-to-playlist/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
@@ -36,6 +38,7 @@ import exploreCollectionsPageSagas from 'common/store/pages/explore/exploreColle
 import explorePageSagas from 'common/store/pages/explore/sagas'
 import feedPageSagas from 'common/store/pages/feed/sagas'
 import historySagas from 'common/store/pages/history/sagas'
+import premiumTracksSagas from 'common/store/pages/premium-tracks/sagas'
 import remixesSagas from 'common/store/pages/remixes-page/sagas'
 import savedSagas from 'common/store/pages/saved/sagas'
 import searchResultsSagas from 'common/store/pages/search-page/sagas'
@@ -127,6 +130,7 @@ export default function* rootSaga() {
     // Premium content
     ...premiumContentSagas(),
     ...purchaseContentSagas(),
+    ...buyCryptoSagas(),
     ...buyUSDCSagas(),
     ...stripeModalUISagas(),
 
@@ -135,6 +139,7 @@ export default function* rootSaga() {
 
     ...walletSagas(),
 
+    ...modalsSagas(),
     ...notificationsSagas(),
 
     // Pages
@@ -165,6 +170,7 @@ export default function* rootSaga() {
     ...rewardsPageSagas(),
     ...settingsSagas(),
     ...aiSagas(),
+    ...premiumTracksSagas(),
 
     // Cast
     ...castSagas(),

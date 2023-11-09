@@ -10,7 +10,6 @@
 }
 
 .container div {
-  font-family: Gilroy !important;
   font-size: var(--font-m);
   font-weight: var(--font-medium);
   line-height: 20px;

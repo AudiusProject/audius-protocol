@@ -11,6 +11,7 @@ const getLocalStorageItem = (key: string) => window.localStorage.getItem(key)
 const getFlagEnabled = (flag: FeatureFlags) => {
   const overrideKey = `${FEATURE_FLAG_OVERRIDE_KEY}:${flag}`
   const override = getLocalStorageItem?.(overrideKey) as OverrideSetting
+
   if (override === 'enabled') return true
   if (override === 'disabled') return false
 

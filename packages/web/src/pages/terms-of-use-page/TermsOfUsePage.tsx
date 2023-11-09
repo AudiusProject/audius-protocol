@@ -3,7 +3,7 @@ import NavBanner from 'components/public-site/NavBanner'
 
 import styles from './TermsOfUsePage.module.css'
 
-const BASENAME = process.env.PUBLIC_URL
+const BASENAME = process.env.VITE_PUBLIC_URL
 
 const messages = {
   download: 'Download Terms of Use'

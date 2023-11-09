@@ -1,9 +1,14 @@
+import { UndisbursedUserChallenge } from 'store/pages'
+
 import {
   ChallengeRewardID,
   UserChallenge,
-  OptimisticUserChallenge
+  OptimisticUserChallenge,
+  ChallengeName,
+  SpecifierWithAmount
 } from '../models'
 
+import dayjs from './dayjs'
 import { formatNumberCommas } from './formatUtil'
 
 export type ChallengeRewardsInfo = {
@@ -118,6 +123,26 @@ export const challengeRewardsConfig: Record<
     progressLabel: 'Not Earned',
     panelButtonText: 'Discover Some Tracks'
   },
+  [ChallengeName.AudioMatchingSell]: {
+    id: ChallengeName.AudioMatchingSell,
+    title: 'Sell to Earn',
+    description: (_) =>
+      'Receive 1 additional $AUDIO for each dollar earned from sales.',
+    fullDescription: () =>
+      'Receive 1 additional $AUDIO for each dollar earned from sales.',
+    progressLabel: 'No Recent Activity',
+    panelButtonText: 'View Details'
+  },
+  [ChallengeName.AudioMatchingBuy]: {
+    id: ChallengeName.AudioMatchingBuy,
+    title: 'Spend to Earn',
+    description: (_) =>
+      'Earn 1 $AUDIO for each dollar you spend on premium tracks.',
+    fullDescription: () =>
+      'Earn 1 $AUDIO for each dollar you spend on premium tracks.',
+    progressLabel: 'No Recent Activity',
+    panelButtonText: 'View Details'
+  },
   'trending-playlist': {
     id: 'trending-playlist',
     title: 'Top 5 Trending Playlists',
@@ -184,8 +209,14 @@ export const makeOptimisticChallengeSortComparator = (
     const userChallenge1 = userChallenges[id1]
     const userChallenge2 = userChallenges[id2]
 
+    if (isAudioMatchingChallenge(id1)) {
+      return -1
+    }
     if (!userChallenge1 || !userChallenge2) {
       return 0
+    }
+    if (userChallenge1?.claimableAmount > 0) {
+      return -1
     }
     if (userChallenge1?.state === 'disbursed') {
       return 1
@@ -196,9 +227,52 @@ export const makeOptimisticChallengeSortComparator = (
     if (userChallenge2?.state === 'disbursed') {
       return -1
     }
+    if (userChallenge2?.claimableAmount > 0) {
+      return 1
+    }
     if (userChallenge2?.state === 'completed') {
       return 1
     }
     return 0
   }
+}
+
+export const isAudioMatchingChallenge = (
+  challenge: ChallengeRewardID
+): challenge is
+  | ChallengeName.AudioMatchingSell
+  | ChallengeName.AudioMatchingBuy => {
+  return (
+    challenge === ChallengeName.AudioMatchingSell ||
+    challenge === ChallengeName.AudioMatchingBuy
+  )
+}
+
+/** Returns true if the challenge is not a cooldown challenge by checking
+ * whether it has `cooldown_days` defined and whether the challenge has been
+ * created for more than `cooldown_days` days.
+ */
+export const isCooldownChallengeClaimable = (
+  challenge: UndisbursedUserChallenge
+) => {
+  return (
+    challenge.cooldown_days === undefined ||
+    dayjs.utc().diff(dayjs.utc(challenge.created_at), 'day') >=
+      challenge.cooldown_days
+  )
+}
+
+/* Filter for only claimable challenges */
+export const getClaimableChallengeSpecifiers = (
+  specifiers: SpecifierWithAmount[],
+  undisbursedUserChallenges: UndisbursedUserChallenge[]
+) => {
+  return specifiers.filter((s) => {
+    const challenge = undisbursedUserChallenges.filter(
+      (c) => c.specifier === s.specifier
+    )
+    if (challenge.length === 0) return false
+    // specifiers are unique
+    return isCooldownChallengeClaimable(challenge[0])
+  })
 }

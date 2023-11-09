@@ -19,19 +19,11 @@ steps:
       name: npm auth
       command: echo "//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN" > ~/.npmrc
 
+  - create_concatenated_patch_file:
+      filename: combined-patch-file.txt
+
   - restore_cache:
-      keys:
-        - sdk-cache-{{ checksum "packages/libs/package-lock.json" }}
-        - sdk-cache-
-  - run:
-      name: Install sdk
-      command: |
-        cd packages/libs
-        npm install
-  - save_cache:
-      key: sdk-cache-{{ checksum "packages/libs/package-lock.json" }}
-      paths:
-        - ./packages/libs/node_modules
+      key: cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
   - run:
       name: Release

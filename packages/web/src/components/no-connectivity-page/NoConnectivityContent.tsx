@@ -6,7 +6,7 @@ import cn from 'classnames'
 import Lottie from 'react-lottie'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
-import { ReactComponent as IconOffline } from 'assets/img/iconOffline.svg'
+import IconOffline from 'assets/img/iconOffline.svg'
 
 import styles from './NoConnectivityContent.module.css'
 

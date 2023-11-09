@@ -226,6 +226,7 @@ export const Lineup = ({
   limit = Infinity,
   extraFetchOptions,
   ListFooterComponent,
+  EndOfLineupComponent,
   ...listProps
 }: LineupProps) => {
   const dispatch = useDispatch()
@@ -526,7 +527,11 @@ export const Lineup = ({
           hideHeaderOnEmpty && areSectionsEmpty ? undefined : header
         }
         ListFooterComponent={
-          lineup.hasMore ? <View style={{ height: 16 }} /> : ListFooterComponent
+          lineup.hasMore ? (
+            <View style={{ height: 16 }} />
+          ) : (
+            EndOfLineupComponent ?? ListFooterComponent
+          )
         }
         ListEmptyComponent={LineupEmptyComponent}
         onEndReached={handleEndReached}

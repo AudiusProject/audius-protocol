@@ -1,35 +1,46 @@
 #!/usr/bin/env bash
 
-source /etc/os-release
+set -exo pipefail
+
+[ -f "/etc/os-release" ] && source /etc/os-release
 case "$ID" in
 debian | ubuntu)
     # Uninstall old versions of docker
-    sudo apt-get remove -y docker docker-engine docker.io containerd runc
+    set +e
+    for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+    set -e
 
     # Install packages to allow apt to use a repository over HTTPS
     sudo apt-get update
     sudo apt-get install -y ca-certificates curl gnupg lsb-release
 
-    # Setup repository for docker
-    sudo mkdir -p /etc/apt/keyrings
-    curl -fsSL "https://download.docker.com/linux/$ID/gpg" | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$ID $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
+    # Add Docker's official GPG key:
+    if ! [ -f /etc/apt/keyrings/docker.gpg ]; then
+        sudo install -m 0755 -d /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        sudo chmod a+r /etc/apt/keyrings/docker.gpg
+    fi
+
+    # Add the repository to Apt sources:
+    if ! [ -f /etc/apt/sources.list.d/docker.list ]; then
+        echo \
+            "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+            "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        sudo apt-get update
+    fi
 
     # Install dependencies
-    sudo apt-get update
-    sudo apt-get install -y \
+    sudo NEEDRESTART_MODE=l apt-get install -y \
         git \
         python3 \
         python3-pip \
         docker-ce \
         docker-ce-cli \
-        containerd.io
+        containerd.io \
+        docker-buildx-plugin \
+        docker-compose-plugin
 
-    mkdir -p ~/.docker/cli-plugins
-    curl -L "https://github.com/docker/buildx/releases/download/v0.10.4/buildx-v0.9.1.linux-$(dpkg --print-architecture)" -o ~/.docker/cli-plugins/docker-buildx
-    curl -L "https://github.com/docker/compose/releases/download/v2.17.3/docker-compose-linux-$(uname -m)" -o ~/.docker/cli-plugins/docker-compose
-    chmod +x ~/.docker/cli-plugins/docker-buildx
-    chmod +x ~/.docker/cli-plugins/docker-compose
 
     # Add user to docker group
     sudo usermod -aG docker "$USER"
@@ -75,7 +86,8 @@ ln -sf "$PROTOCOL_DIR/dev-tools/audius-compose" "$HOME/.local/bin/audius-compose
 ln -sf "$PROTOCOL_DIR/dev-tools/audius-cloud" "$HOME/.local/bin/audius-cloud"
 ln -sf "$PROTOCOL_DIR/dev-tools/audius-cmd" "$HOME/.local/bin/audius-cmd"
 
-echo "export PROTOCOL_DIR=$PROTOCOL_DIR" >>~/.profile
-echo "export PATH=$HOME/.local/bin:$PATH" >>~/.profile
+# Add env vars to .profile, avoiding duplication
+grep -q PROTOCOL_DIR ~/.profile || echo "export PROTOCOL_DIR=$PROTOCOL_DIR" >>~/.profile
+grep -q "export PATH=$HOME/.local/bin:" ~/.profile || echo "export PATH=$HOME/.local/bin:\$PATH" >>~/.profile
 
 [[ "$AUDIUS_DEV" != "false" ]] && . "$PROTOCOL_DIR/dev-tools/setup-dev.sh" || true

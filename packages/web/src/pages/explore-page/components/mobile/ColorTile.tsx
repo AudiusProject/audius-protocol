@@ -2,7 +2,7 @@ import { ReactNode } from 'react'
 
 import cn from 'classnames'
 
-import { ReactComponent as IconAudioRewardsPill } from 'assets/img/iconAudioRewardsPill.svg'
+import IconAudioRewardsPill from 'assets/img/iconAudioRewardsPill.svg'
 
 import styles from './ColorTile.module.css'
 

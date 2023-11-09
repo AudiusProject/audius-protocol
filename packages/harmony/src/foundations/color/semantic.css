@@ -1,0 +1,21 @@
+/* Semantic Token Definitions */
+:root {
+  /* Text */
+  --harmony-text-heading: var(--harmony-gradient);
+  --harmony-text-default: var(--harmony-neutral);
+  --harmony-text-subdued: var(--harmony-n-400);
+  --harmony-text-disabled: var(--harmony-n-150);
+
+  /* Background */
+  --harmony-bg-default: var(--harmony-background);
+  --harmony-bg-surface-1: var(--harmony-n-25);
+  --harmony-bg-surface-2: var(--harmony-n-100);
+  --harmony-bg-white: var(--harmony-white);
+
+  /* Border */
+  --harmony-border-default: var(--harmony-n-100);
+  --harmony-border-strong: var(--harmony-n-150);
+
+  /* Focus */
+  --harmony-focus: var(--harmony-secondary);
+}

@@ -1,5 +1,0 @@
-when:
-  equal: ["gcp-cleanup", << pipeline.parameters.workflow >>]
-jobs:
-  - gcp-cleanup:
-      context: GCP

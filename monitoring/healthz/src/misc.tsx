@@ -37,24 +37,29 @@ export function nanosToReadableDuration(nanos: number) {
 
 function secondsToReadableDuration(seconds: number) {
   var interval = seconds / 31536000
-  if (interval > 1) {
-    return Math.floor(interval) + ' years'
+  if (interval >= 1) {
+    const val = Math.floor(interval)
+    return val + (val > 1 ? 'yrs' : 'yr')
   }
   interval = seconds / 2592000
-  if (interval > 1) {
-    return Math.floor(interval) + ' months'
+  if (interval >= 1) {
+    const val = Math.floor(interval)
+    return val + (val > 1 ? 'mos' : 'mo')
   }
   interval = seconds / 86400
-  if (interval > 1) {
-    return Math.floor(interval) + ' days'
+  if (interval >= 1) {
+    const val = Math.floor(interval)
+    return val + 'd'
   }
   interval = seconds / 3600
-  if (interval > 1) {
-    return Math.floor(interval) + ' hours'
+  if (interval >= 1) {
+    const val = Math.floor(interval)
+    return val + (val > 1 ? 'hrs' : 'hr')
   }
   interval = seconds / 60
-  if (interval > 1) {
-    return Math.floor(interval) + ' minutes'
+  if (interval >= 1) {
+    const val = Math.floor(interval)
+    return val + 'm'
   }
-  return Math.floor(seconds) + ' seconds'
+  return Math.floor(seconds) + 's'
 }

@@ -2,6 +2,5 @@ when: << pipeline.parameters.run-eth-contracts-workflow >>
 jobs:
   - test:
       name: test-eth-contracts
-      context: GCP
-      instance-name: circleci-test-eth-contracts-$CIRCLE_BUILD_NUM
+      context: Vercel
       service: eth-contracts

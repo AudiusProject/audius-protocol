@@ -40,6 +40,7 @@ export const IconButton = forwardRef<
 
   return (
     <button
+      type='button'
       className={className}
       ref={ref as React.Ref<HTMLButtonElement>}
       {...otherProps}

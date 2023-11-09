@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import { useEffectOnce } from 'react-use'
+
+import { Maybe } from 'utils/typeUtils'
+
 import { FeatureFlags, RemoteConfigInstance } from '../services'
 
 export const FEATURE_FLAG_OVERRIDE_KEY = 'FeatureFlagOverride'
@@ -56,8 +60,8 @@ export const createUseFeatureFlagHook =
     useHasConfigLoaded
   }: {
     remoteConfigInstance: RemoteConfigInstance
-    getLocalStorageItem?: (key: string) => string | null
-    setLocalStorageItem?: (key: string, value: string | null) => void
+    getLocalStorageItem?: (key: string) => Promise<string | null>
+    setLocalStorageItem?: (key: string, value: string | null) => Promise<void>
     useHasAccount: () => boolean
     useHasConfigLoaded: () => boolean
   }) =>
@@ -71,20 +75,39 @@ export const createUseFeatureFlagHook =
       remoteConfigInstance
     )
 
-    const setOverride = (value: OverrideSetting) => {
-      setLocalStorageItem?.(overrideKey, value)
-    }
     const isEnabled = useMemo(
-      () => {
-        const override = getLocalStorageItem?.(overrideKey) as OverrideSetting
-        if (override === 'enabled') return true
-        if (override === 'disabled') return false
-
-        return remoteConfigInstance.getFeatureEnabled(flag, fallbackFlag)
-      },
-      // We want configLoaded and shouldRecompute to trigger refreshes of the memo
-      // eslint-disable-next-line
-      [flag, shouldRecompute]
+      () => remoteConfigInstance.getFeatureEnabled(flag, fallbackFlag),
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [flag, fallbackFlag, shouldRecompute]
     )
-    return { isLoaded: configLoaded, isEnabled, setOverride }
+
+    const setOverride = useCallback(
+      async (value: OverrideSetting) => {
+        await setLocalStorageItem?.(overrideKey, value)
+      },
+      [overrideKey]
+    )
+
+    const [isLocallyEnabled, setIsLocallyOverriden] = useState<Maybe<boolean>>()
+
+    useEffectOnce(() => {
+      const getOverride = async () => {
+        const override = await getLocalStorageItem?.(overrideKey)
+        if (override === 'enabled') {
+          setIsLocallyOverriden(true)
+        }
+        if (override === 'disabled') {
+          setIsLocallyOverriden(false)
+        }
+
+        return undefined
+      }
+      getOverride()
+    })
+
+    return {
+      isLoaded: configLoaded,
+      isEnabled: isLocallyEnabled ?? isEnabled,
+      setOverride
+    }
   }

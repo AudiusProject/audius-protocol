@@ -87,6 +87,11 @@ export enum DrawerAnimationStyle {
 }
 
 export type DrawerProps = {
+  /** Disable close behavior. Useful if the drawer is processing an operation that
+   * must complete before closing. Only supported for fullscreen drawers with gesture
+   * support disabled.
+   */
+  blockClose?: boolean
   /**
    * Whether or not the drawer is open
    */
@@ -194,6 +199,11 @@ export type DrawerProps = {
    */
   drawerStyle?: ViewStyle
 
+  /**
+   * Optional replacement component for the drawer header
+   */
+  drawerHeader?: ComponentType<{ onClose: () => void }>
+
   translationAnim?: Animated.Value
 }
 
@@ -245,6 +255,7 @@ type DrawerComponent = {
   (props: Omit<DrawerProps, 'titleIcon' | 'titleImage'>): React.ReactElement
 }
 export const Drawer: DrawerComponent = ({
+  blockClose = false,
   isOpen,
   children,
   onClose,
@@ -261,6 +272,7 @@ export const Drawer: DrawerComponent = ({
   shouldCloseToInitialOffset,
   shouldHaveRoundedBordersAtInitialOffset = false,
   zIndex = 5,
+  drawerHeader: CustomDrawerHeader,
   drawerStyle,
   shouldShowShadow = true,
   shouldAnimateShadow,
@@ -607,6 +619,12 @@ export const Drawer: DrawerComponent = ({
     ]
   )
 
+  const handlePressClose = useCallback(() => {
+    if (!blockClose) {
+      onClose()
+    }
+  }, [blockClose, onClose])
+
   // NOTE: sk - Need to interpolate the border radius bc of a funky
   // issue with border radius under 1 in ios
   const interpolatedBorderRadius = borderRadiusAnim.current.interpolate({
@@ -654,13 +672,17 @@ export const Drawer: DrawerComponent = ({
         }}
         {...edgeProps}
       >
-        <DrawerHeader
-          onClose={onClose}
-          title={title}
-          titleIcon={titleIcon}
-          titleImage={titleImage}
-          isFullscreen={isFullscreen}
-        />
+        {CustomDrawerHeader ? (
+          <CustomDrawerHeader onClose={handlePressClose} />
+        ) : (
+          <DrawerHeader
+            onClose={handlePressClose}
+            title={title}
+            titleIcon={titleIcon}
+            titleImage={titleImage}
+            isFullscreen={isFullscreen}
+          />
+        )}
         {children}
       </ViewComponent>
     )

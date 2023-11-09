@@ -18,6 +18,8 @@ type ActionsBarProps = {
   onClickOverflow: () => void
   isDarkMode: boolean
   isMatrixMode: boolean
+  showRepost?: boolean
+  showFavorite?: boolean
 }
 
 const ActionsBar = ({
@@ -30,30 +32,36 @@ const ActionsBar = ({
   onShare,
   onClickOverflow,
   isDarkMode,
-  isMatrixMode
+  isMatrixMode,
+  showRepost = true,
+  showFavorite = true
 }: ActionsBarProps) => {
   return (
     <div className={styles.actionsBar}>
-      <RepostButton
-        isDarkMode={isDarkMode}
-        isMatrixMode={isMatrixMode}
-        isActive={hasReposted}
-        isDisabled={isOwner || isCollectible}
-        onClick={onToggleRepost}
-        wrapperClassName={styles.icon}
-        className={styles.repostButton}
-        altVariant
-      />
-      <FavoriteButton
-        isActive={hasFavorited}
-        isDisabled={isOwner || isCollectible}
-        isDarkMode={isDarkMode}
-        isMatrixMode={isMatrixMode}
-        onClick={onToggleFavorite}
-        wrapperClassName={styles.icon}
-        className={styles.favoriteButton}
-        altVariant
-      />
+      {showRepost ? (
+        <RepostButton
+          isDarkMode={isDarkMode}
+          isMatrixMode={isMatrixMode}
+          isActive={hasReposted}
+          isDisabled={isOwner || isCollectible}
+          onClick={onToggleRepost}
+          wrapperClassName={styles.icon}
+          className={styles.repostButton}
+          altVariant
+        />
+      ) : null}
+      {showFavorite ? (
+        <FavoriteButton
+          isActive={hasFavorited}
+          isDisabled={isOwner || isCollectible}
+          isDarkMode={isDarkMode}
+          isMatrixMode={isMatrixMode}
+          onClick={onToggleFavorite}
+          wrapperClassName={styles.icon}
+          className={styles.favoriteButton}
+          altVariant
+        />
+      ) : null}
       <IconButton
         aria-label='share'
         disabled={isCollectible}

@@ -10,14 +10,16 @@ import {
   formatLineupTileDuration,
   Genre,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentUSDCPurchaseGated,
+  usePremiumContentPurchaseModal,
+  ModalSource
 } from '@audius/common'
 import { IconCrown, IconHidden, IconTrending } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
-import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
+import IconStar from 'assets/img/iconStar.svg'
+import IconVolume from 'assets/img/iconVolume.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
@@ -30,6 +32,7 @@ import { TrackTileProps } from 'components/track/types'
 import { Text } from 'components/typography'
 import typeStyles from 'components/typography/typography.module.css'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useAuthenticatedClickCallback } from 'hooks/useAuthenticatedCallback'
 import { profilePage } from 'utils/route'
 
 import { LockedStatusBadge, LockedStatusBadgeProps } from '../LockedStatusBadge'
@@ -185,6 +188,8 @@ const TrackTile = (props: CombinedProps) => {
 
   const dispatch = useDispatch()
   const [, setModalVisibility] = useModalState('LockedContent')
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
   const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
   const trackId = isPremium ? id : null
   const premiumTrackStatus = trackId
@@ -213,6 +218,30 @@ const TrackTile = (props: CombinedProps) => {
     [onClickOverflow, id]
   )
 
+  const openLockedContentModal = useCallback(() => {
+    if (trackId) {
+      dispatch(setLockedContentId({ id: trackId }))
+      setModalVisibility(true)
+    }
+  }, [trackId, dispatch, setModalVisibility])
+
+  const onClickPremiumPill = useAuthenticatedClickCallback(() => {
+    if (isPurchase && trackId) {
+      openPremiumContentPurchaseModal(
+        { contentId: trackId },
+        { source: ModalSource.TrackTile }
+      )
+    } else if (trackId && !doesUserHaveAccess) {
+      openLockedContentModal()
+    }
+  }, [
+    isPurchase,
+    trackId,
+    openPremiumContentPurchaseModal,
+    doesUserHaveAccess,
+    openLockedContentModal
+  ])
+
   const [artworkLoaded, setArtworkLoaded] = useState(false)
   useEffect(() => {
     if (artworkLoaded && !showSkeleton) {
@@ -229,8 +258,7 @@ const TrackTile = (props: CombinedProps) => {
     if (showSkeleton) return
 
     if (trackId && !doesUserHaveAccess && !hasPreview) {
-      dispatch(setLockedContentId({ id: trackId }))
-      setModalVisibility(true)
+      openLockedContentModal()
       return
     }
 
@@ -243,8 +271,7 @@ const TrackTile = (props: CombinedProps) => {
     trackId,
     doesUserHaveAccess,
     hasPreview,
-    dispatch,
-    setModalVisibility
+    openLockedContentModal
   ])
 
   const isReadonly = variant === 'readonly'
@@ -478,6 +505,7 @@ const TrackTile = (props: CombinedProps) => {
           toggleSave={onToggleSave}
           onShare={onClickShare}
           onClickOverflow={onClickOverflowMenu}
+          onClickPremiumPill={onClickPremiumPill}
           isOwner={isOwner}
           readonly={isReadonly}
           isLoading={isLoading}

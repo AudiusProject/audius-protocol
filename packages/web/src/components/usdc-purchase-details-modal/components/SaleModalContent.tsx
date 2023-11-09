@@ -4,14 +4,10 @@ import {
   CommonState,
   chatActions,
   chatSelectors,
-  formatUSDCWeiToUSDString,
   useInboxUnavailableModal
 } from '@audius/common'
+import { Button, ButtonType, IconCart, IconMessage } from '@audius/harmony'
 import {
-  HarmonyButton,
-  HarmonyButtonType,
-  IconCart,
-  IconMessage,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -27,6 +23,7 @@ import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBa
 
 import { DetailSection } from './DetailSection'
 import { TrackLink } from './TrackLink'
+import { TransactionSummary } from './TransactionSummary'
 import styles from './styles.module.css'
 import { ContentProps } from './types'
 
@@ -34,7 +31,6 @@ const { getCanCreateChat } = chatSelectors
 const { createChat } = chatActions
 
 const messages = {
-  cost: 'Cost',
   date: 'Date',
   done: 'Done',
   messageBuyer: 'Message Buyer',
@@ -97,25 +93,20 @@ export const SaleModalContent = ({
             {moment(purchaseDetails.createdAt).format('MMM DD, YYYY')}
           </Text>
         </DetailSection>
-        <DetailSection label={messages.cost}>
-          <Text size='large'>{`$${formatUSDCWeiToUSDString(
-            purchaseDetails.amount
-          )}`}</Text>
-        </DetailSection>
+        <TransactionSummary transaction={purchaseDetails} />
       </ModalContent>
       <ModalFooter className={styles.footer}>
-        <HarmonyButton
+        <Button
           className={styles.button}
           iconLeft={IconMessage}
-          variant={HarmonyButtonType.GHOST}
-          text={messages.messageBuyer}
+          variant={ButtonType.SECONDARY}
           onClick={handleClickMessageBuyer}
-        />
-        <HarmonyButton
-          className={styles.button}
-          text={messages.done}
-          onClick={onClose}
-        />
+        >
+          {messages.messageBuyer}
+        </Button>
+        <Button className={styles.button} onClick={onClose}>
+          {messages.done}
+        </Button>
       </ModalFooter>
     </>
   )

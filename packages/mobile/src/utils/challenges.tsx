@@ -1,9 +1,10 @@
-import { challengeRewardsConfig } from '@audius/common'
+import { ChallengeName, challengeRewardsConfig } from '@audius/common'
 import type { ChallengeRewardID, OptimisticUserChallenge } from '@audius/common'
 import type { ImageSourcePropType } from 'react-native'
 import { Platform } from 'react-native'
 
 import BallotBoxTick from 'app/assets/images/emojis/ballot-box-tick.png'
+import Cart from 'app/assets/images/emojis/cart.png'
 import BarChart from 'app/assets/images/emojis/chart-bar.png'
 import ChartIncreasing from 'app/assets/images/emojis/chart-increasing.png'
 import Gear from 'app/assets/images/emojis/gear.png'
@@ -171,6 +172,27 @@ const mobileChallengeConfig: Record<ChallengeRewardID, MobileChallengeConfig> =
       icon: BarChart,
       buttonInfo: {
         renderIcon: (color) => <IconCheck fill={color} />,
+        iconPosition: 'right'
+      }
+    },
+    [ChallengeName.AudioMatchingBuy]: {
+      icon: Cart,
+      buttonInfo: {
+        navigation: {
+          screen: 'explore',
+          params: { screen: 'PremiumTracks' }
+        },
+        renderIcon: (color) => <IconArrow fill={color} />,
+        iconPosition: 'right'
+      }
+    },
+    [ChallengeName.AudioMatchingSell]: {
+      icon: Cart,
+      buttonInfo: {
+        navigation: {
+          screen: 'Upload'
+        },
+        renderIcon: (color) => <IconArrow fill={color} />,
         iconPosition: 'right'
       }
     }

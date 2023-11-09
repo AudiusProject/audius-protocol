@@ -1,13 +1,14 @@
-import waitForExpect from 'wait-for-expect'
+import type { EIP712TypedData } from 'eth-sig-util'
 import { rest } from 'msw'
-import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
-import { StorageNodeSelector } from './StorageNodeSelector'
-import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
 import { setupServer } from 'msw/node'
+import waitForExpect from 'wait-for-expect'
 
 import type { AuthService } from '../Auth/types'
-import type { EIP712TypedData } from 'eth-sig-util'
+import { DiscoveryNodeSelector } from '../DiscoveryNodeSelector'
+import type { HealthCheckResponseData } from '../DiscoveryNodeSelector/healthCheckTypes'
 import { Logger } from '../Logger'
+
+import { StorageNodeSelector } from './StorageNodeSelector'
 
 const storageNodeA = {
   endpoint: 'https://node-a.audius.co',
@@ -187,5 +188,49 @@ describe('StorageNodeSelector', () => {
       storageNodeA.endpoint,
       storageNodeB.endpoint
     ])
+  })
+
+  it('force reselects successfully', async () => {
+    const bootstrapNodes = [storageNodeA, storageNodeB]
+
+    const storageNodeSelector = new StorageNodeSelector({
+      bootstrapNodes,
+      auth,
+      discoveryNodeSelector,
+      logger
+    })
+
+    expect(await storageNodeSelector.getSelectedNode()).toEqual(
+      storageNodeB.endpoint
+    )
+
+    // force reselect
+    expect(await storageNodeSelector.getSelectedNode(true)).toEqual(
+      storageNodeA.endpoint
+    )
+  })
+
+  it('tries selecting all nodes', async () => {
+    server.use(
+      rest.get(`${storageNodeA.endpoint}/health_check`, (_req, res, ctx) => {
+        return res(ctx.status(400))
+      })
+    )
+    server.use(
+      rest.get(`${storageNodeB.endpoint}/health_check`, (_req, res, ctx) => {
+        return res(ctx.status(400))
+      })
+    )
+    const bootstrapNodes = [storageNodeA, storageNodeB]
+
+    const storageNodeSelector = new StorageNodeSelector({
+      bootstrapNodes,
+      auth,
+      discoveryNodeSelector,
+      logger
+    })
+
+    expect(await storageNodeSelector.getSelectedNode()).toBe(null)
+    expect(await storageNodeSelector.triedSelectingAllNodes()).toBe(true)
   })
 })

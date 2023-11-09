@@ -4,7 +4,7 @@ import { Text } from 'app/components/core'
 import { TextField, type TextFieldProps } from 'app/components/fields'
 import { makeStyles } from 'app/styles'
 
-const useStyles = makeStyles(({ spacing, palette, typography }) => ({
+const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
     padding: spacing(4),
     gap: spacing(4),
@@ -19,18 +19,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   textInput: {
     backgroundColor: palette.white
-  },
-  test: {
-    flex: 1,
-    color: palette.neutral,
-    minWidth: 40,
-    flexGrow: 1,
-    // Needed for android
-    paddingTop: 0,
-    paddingBottom: 0,
-    fontSize: typography.fontSize.large,
-    fontFamily: typography.fontByWeight.demiBold,
-    lineHeight: 20
   }
 }))
 
@@ -40,11 +28,11 @@ type BoxedTextFieldProps = TextFieldProps & {
 }
 
 export const BoxedTextField = (props: BoxedTextFieldProps) => {
-  const { title, description, ...other } = props
+  const { title, description, style, ...other } = props
   const styles = useStyles()
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, style]}>
       <Text weight='bold'>{title}</Text>
       <Text>{description}</Text>
       <TextField

@@ -1,11 +1,11 @@
 # Do not expose any ports in this file to allow running multiple tests and e2e dev at the same time
 
-version: "3.9"
+version: '3.9'
 
 x-logging: &default-logging
   options:
-    max-size: "50m"
-    max-file: "3"
+    max-size: '50m'
+    max-file: '3'
   driver: json-file
 
 services:
@@ -17,12 +17,12 @@ services:
     ports:
       - 5455:5432
     environment:
-      PGUSER: "postgres"
-      POSTGRES_PASSWORD: "postgres"
+      PGUSER: 'postgres'
+      POSTGRES_PASSWORD: 'postgres'
     volumes:
       - ../startup/initdb:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: ['CMD', 'pg_isready']
       interval: 10s
       timeout: 5s
     deploy:
@@ -75,7 +75,7 @@ services:
     image: alpine:3.14
     command: sleep inf
     healthcheck:
-      test: ["CMD", "true"]
+      test: ['CMD', 'true']
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -86,23 +86,18 @@ services:
       - chain
       - solana
 
-  build-audius-libs:
-    extends:
-      file: docker-compose.yml
-      service: build-audius-libs
-    profiles:
-      - tests
-      - libs
-
   # libs
 
   test-audius-libs:
-    extends:
-      file: docker-compose.yml
-      service: build-audius-libs
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/packages/libs/Dockerfile
+      args:
+        TURBO_TEAM: '${TURBO_TEAM}'
+        TURBO_TOKEN: '${TURBO_TOKEN}'
     # TODO: also run integration test current blocker is that integration tests
     # use config.json which was removed with the addition of audius-compose
-    entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test:sdk)' -
+    entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test:unit)' -
     logging: *default-logging
     deploy:
       mode: global
@@ -110,9 +105,12 @@ services:
       - tests
 
   test-audius-sdk:
-    extends:
-      file: docker-compose.yml
-      service: build-audius-libs
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/packages/libs/Dockerfile
+      args:
+        TURBO_TEAM: '${TURBO_TEAM}'
+        TURBO_TOKEN: '${TURBO_TOKEN}'
     entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test:sdk)' -
     logging: *default-logging
     deploy:
@@ -149,8 +147,7 @@ services:
       args:
         CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
         DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
-        antiAbuseOracleAddresses: "${AAO_WALLET_ADDRESSES}"
-    user: node
+        antiAbuseOracleAddresses: '${AAO_WALLET_ADDRESSES}'
     entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test)' -
     logging: *default-logging
     deploy:
@@ -182,9 +179,9 @@ services:
     user: postgres
     command: postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
     environment:
-      POSTGRES_DB: "discovery_provider"
+      POSTGRES_DB: 'discovery_provider'
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: ['CMD', 'pg_isready']
       interval: 1s
       timeout: 2s
     logging: *default-logging
@@ -198,7 +195,7 @@ services:
   discovery-provider-redis:
     image: redis:7.0
     healthcheck:
-      test: ["CMD", "redis-cli", "PING"]
+      test: ['CMD', 'redis-cli', 'PING']
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -215,7 +212,7 @@ services:
       service: discovery-provider
     command: sh -c "./scripts/run-migrations.sh"
     environment:
-      audius_db_url: "postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider"
+      audius_db_url: 'postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider'
     depends_on:
       discovery-provider-db:
         condition: service_healthy
@@ -232,17 +229,17 @@ services:
       file: docker-compose.yml
       service: discovery-provider
     entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; pytest "$$@")' -
-    command: ""
+    command: ''
     environment:
-      audius_db_url: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"
-      audius_db_url_read_replica: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"
+      audius_db_url: 'postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider'
+      audius_db_url_read_replica: 'postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider'
 
-      audius_redis_url: "redis://discovery-provider-redis:6379/00"
+      audius_redis_url: 'redis://discovery-provider-redis:6379/00'
 
-      audius_elasticsearch_url: "http://discovery-provider-elasticsearch:9200"
-      audius_elasticsearch_run_indexer: "true"
+      audius_elasticsearch_url: 'http://discovery-provider-elasticsearch:9200'
+      audius_elasticsearch_run_indexer: 'true'
     volumes:
-      - ${PROJECT_ROOT}/discovery-provider:/audius-discovery-provider
+      - ${PROJECT_ROOT}/packages/discovery-provider:/audius-discovery-provider
       - /audius-discovery-provider/es-indexer/node_modules
     depends_on:
       discovery-provider-elasticsearch:
@@ -262,15 +259,15 @@ services:
 
   test-discovery-provider-notifications:
     build:
-      context: ${PROJECT_ROOT}/discovery-provider/plugins/notifications
+      context: ${PROJECT_ROOT}/packages/discovery-provider/plugins/notifications
       dockerfile: Dockerfile
     entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; npm run test "$$@")' -
     environment:
-      AUDIUS_REDIS_URL: "redis://discovery-provider-redis:6379/00"
-      DN_DB_URL: "postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider"
-      IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/identity_service"
+      AUDIUS_REDIS_URL: 'redis://discovery-provider-redis:6379/00'
+      DN_DB_URL: 'postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider'
+      IDENTITY_DB_URL: 'postgresql://postgres:postgres@identity-service-db:5432/identity_service'
     volumes:
-      - ${PROJECT_ROOT}/discovery-provider/plugins/notifications:/notifications
+      - ${PROJECT_ROOT}/packages/discovery-provider/plugins/notifications:/notifications
       - /notifications/node_modules
     depends_on:
       test-discovery-provider-migrations:
@@ -297,7 +294,7 @@ services:
       dockerfile: Dockerfile
     command: discovery-migrations
     environment:
-      audius_db_url: "postgres://postgres:postgres@discovery-provider-db:5432/discovery_provider?sslmode=disable"
+      audius_db_url: 'postgres://postgres:postgres@discovery-provider-db:5432/discovery_provider?sslmode=disable'
     depends_on:
       test-discovery-provider-migrations:
         condition: service_completed_successfully
@@ -310,10 +307,12 @@ services:
 
   mediorum-db:
     image: postgres:11.4
+    shm_size: 5g
+    command: postgres -c shared_buffers=5GB
     environment:
       POSTGRES_PASSWORD: example
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: ['CMD', 'pg_isready']
       interval: 3s
       timeout: 3s
     logging: *default-logging
@@ -321,6 +320,7 @@ services:
       - ${PROJECT_ROOT}/mediorum/.initdb:/docker-entrypoint-initdb.d
     profiles:
       - mediorum
+      - mediorum-unittests
 
   mediorum:
     build:
@@ -328,12 +328,13 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      dbUrlTemplate: "postgres://postgres:example@mediorum-db:5432/m%d"
-      devNetworkCount: "5"
+      dbUrlTemplate: 'postgres://postgres:example@mediorum-db:5432/m%d'
+      devNetworkCount: '5'
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:1991/health_check"]
-      interval: 3s
-      timeout: 3s
+      test: ['CMD', 'curl', 'http://localhost:1991/health_check']
+      interval: 10s
+      start_period: 60s
+      timeout: 5s
     logging: *default-logging
     profiles:
       - mediorum
@@ -346,15 +347,30 @@ services:
       context: ${PROJECT_ROOT}/mediorum
       dockerfile: Dockerfile
     entrypoint:
-      - "/bin/mediorum-cmd"
+      - '/bin/mediorum-cmd'
     environment:
-      hostNameTemplate: "http://mediorum:199%d"
-      devNetworkCount: "5"
+      hostNameTemplate: 'http://mediorum:199%d'
+      devNetworkCount: '5'
     logging: *default-logging
     profiles:
       - mediorum
     depends_on:
       mediorum:
+        condition: service_healthy
+
+  test-mediorum-unittests:
+    build:
+      context: ${PROJECT_ROOT}/mediorum
+      dockerfile: Dockerfile.unittests
+    logging: *default-logging
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; go test ./... -count 1 -timeout 60s "$$@")' -
+    environment:
+      dbUrlTemplate: 'postgres://postgres:example@mediorum-db:5432/m%d'
+      dbUrl: 'postgres://postgres:example@mediorum-db:5432/mediorum_test'
+    profiles:
+      - mediorum-unittests
+    depends_on:
+      mediorum-db:
         condition: service_healthy
 
   # identity-service
@@ -364,9 +380,9 @@ services:
     user: postgres
     command: postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
     environment:
-      POSTGRES_DB: "identity_service"
+      POSTGRES_DB: 'identity_service'
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: ['CMD', 'pg_isready']
       interval: 1s
       timeout: 2s
     logging: *default-logging
@@ -381,7 +397,7 @@ services:
     image: redis:7.0
     command: redis-server
     healthcheck:
-      test: ["CMD", "redis-cli", "PING"]
+      test: ['CMD', 'redis-cli', 'PING']
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -393,11 +409,11 @@ services:
 
   test-identity-service-migrations:
     extends:
-      file: docker-compose.yml
+      file: docker-compose.identity.prod.yml
       service: identity-service
     command: sh -c "npm run db:migrate"
     environment:
-      dbUrl: "postgresql://postgres:postgres@identity-service-db:5432/identity_service"
+      dbUrl: 'postgresql://postgres:postgres@identity-service-db:5432/identity_service'
     depends_on:
       identity-service-db:
         condition: service_healthy
@@ -410,13 +426,16 @@ services:
 
   test-identity-service:
     extends:
-      file: docker-compose.yml
+      file: docker-compose.identity.prod.yml
       service: identity-service
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && echo $$(ls) && sleep inf || (shift; ./node_modules/.bin/mocha "$$@")' -
-    command: ""
+    build:
+      context: ${PROJECT_ROOT}
+      dockerfile: ${PROJECT_ROOT}/packages/identity-service/Dockerfile.prod
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && echo $$(ls) && sleep inf || (shift; npx mocha "$$@")' -
+    command: ''
     environment:
-      isTestRun: "true"
-      environment: "test"
+      isTestRun: 'true'
+      environment: 'test'
     profiles:
       - tests
       - identity
@@ -425,7 +444,6 @@ volumes:
   poa-contracts-abis:
   eth-contracts-abis:
   solana-programs-idl:
-  audius-libs:
   postgresdata:
   mediorum:
   legacy_creator_file_storage:

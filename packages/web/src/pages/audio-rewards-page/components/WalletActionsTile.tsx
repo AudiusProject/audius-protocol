@@ -1,5 +1,6 @@
 import {
   BNWei,
+  isNullOrUndefined,
   tokenDashboardPageActions,
   walletSelectors
 } from '@audius/common'
@@ -8,8 +9,8 @@ import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import { ReactComponent as IconReceive } from 'assets/img/iconReceive.svg'
-import { ReactComponent as IconSend } from 'assets/img/iconSend.svg'
+import IconReceive from 'assets/img/iconReceive.svg'
+import IconSend from 'assets/img/iconSend.svg'
 import { useSelector } from 'utils/reducer'
 
 import styles from './WalletActionsTile.module.css'
@@ -25,7 +26,7 @@ const messages = {
 
 export const WalletActions = ({ className }: { className?: string }) => {
   const balance = useSelector(getAccountBalance) ?? (new BN(0) as BNWei)
-  const hasBalance = balance && !balance.isZero()
+  const hasBalance = !isNullOrUndefined(balance) && !balance.isZero()
   const dispatch = useDispatch()
 
   const onClickReceive = () => dispatch(pressReceive())

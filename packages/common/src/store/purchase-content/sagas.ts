@@ -11,19 +11,31 @@ import {
   getTokenAccountInfo,
   purchaseContent
 } from 'services/audius-backend/solana'
+import { FeatureFlags } from 'services/remote-config/feature-flags'
 import { accountSelectors } from 'store/account'
+import { getAccountUser } from 'store/account/selectors'
+import {
+  buyCryptoCanceled,
+  buyCryptoFailed,
+  buyCryptoSucceeded,
+  buyCryptoViaSol
+} from 'store/buy-crypto/slice'
+import { BuyCryptoError } from 'store/buy-crypto/types'
 import {
   buyUSDCFlowFailed,
   buyUSDCFlowSucceeded,
   onrampOpened,
   onrampCanceled
 } from 'store/buy-usdc/slice'
-import { USDCOnRampProvider } from 'store/buy-usdc/types'
-import { getUSDCUserBank } from 'store/buy-usdc/utils'
+import { BuyUSDCError, USDCOnRampProvider } from 'store/buy-usdc/types'
+import { getBuyUSDCRemoteConfig, getUSDCUserBank } from 'store/buy-usdc/utils'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUser } from 'store/cache/users/selectors'
 import { getContext } from 'store/effects'
+import { getPreviewing, getTrackId } from 'store/player/selectors'
+import { stop } from 'store/player/slice'
 import { saveTrack } from 'store/social/tracks/actions'
+import { OnRampProvider } from 'store/ui/buy-audio/types'
 import { BN_USDC_CENT_WEI, ceilingBNUSDCToNearestCent } from 'utils/wallet'
 
 import { pollPremiumTrack } from '../premium-content/sagas'
@@ -38,19 +50,29 @@ import {
   purchaseContentFlowFailed,
   startPurchaseContentFlow
 } from './slice'
-import { ContentType } from './types'
+import { ContentType, PurchaseContentError, PurchaseErrorCode } from './types'
+import { getBalanceNeeded } from './utils'
 
 const { getUserId } = accountSelectors
+
+type RaceStatusResult = {
+  succeeded?:
+    | ReturnType<typeof buyUSDCFlowSucceeded>
+    | ReturnType<typeof buyCryptoSucceeded>
+  failed?:
+    | ReturnType<typeof buyUSDCFlowFailed>
+    | ReturnType<typeof buyCryptoFailed>
+  canceled?:
+    | ReturnType<typeof onrampCanceled>
+    | ReturnType<typeof buyCryptoCanceled>
+}
 
 type GetPurchaseConfigArgs = {
   contentId: ID
   contentType: ContentType
 }
 
-function* getUSDCPremiumConditions({
-  contentId,
-  contentType
-}: GetPurchaseConfigArgs) {
+function* getContentInfo({ contentId, contentType }: GetPurchaseConfigArgs) {
   if (contentType !== ContentType.TRACK) {
     throw new Error('Only tracks are supported')
   }
@@ -62,7 +84,19 @@ function* getUSDCPremiumConditions({
   ) {
     throw new Error('Content is missing premium conditions')
   }
-  return trackInfo.premium_conditions.usdc_purchase
+  const artistInfo = yield* select(getUser, { id: trackInfo.owner_id })
+  if (!artistInfo) {
+    throw new Error('Failed to retrieve content owner')
+  }
+
+  const {
+    premium_conditions: {
+      usdc_purchase: { price }
+    },
+    title
+  } = trackInfo
+
+  return { price, title, artistInfo }
 }
 
 function* getPurchaseConfig({ contentId, contentType }: GetPurchaseConfigArgs) {
@@ -129,24 +163,56 @@ function* pollForPurchaseConfirmation({
 }
 
 function* doStartPurchaseContentFlow({
-  payload: { contentId, contentType = ContentType.TRACK }
+  payload: {
+    extraAmount,
+    extraAmountPreset,
+    contentId,
+    contentType = ContentType.TRACK
+  }
 }: ReturnType<typeof startPurchaseContentFlow>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const isBuyUSDCViaSolEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.BUY_USDC_VIA_SOL
+  )
+  const usdcConfig = yield* call(getBuyUSDCRemoteConfig)
   const reportToSentry = yield* getContext('reportToSentry')
-  const { track, make } = yield* getContext('analytics')
+  const { track, make, identify } = yield* getContext('analytics')
+  const user = yield* select(getAccountUser)
+  if (user) {
+    yield* call(identify, user.handle, {
+      isBuyUSDCViaSolEnabled
+    })
+  }
+
+  const { price, title, artistInfo } = yield* call(getContentInfo, {
+    contentId,
+    contentType
+  })
+
+  const analyticsInfo = {
+    price: price / 100,
+    contentId,
+    contentType,
+    contentName: title,
+    artistHandle: artistInfo.handle,
+    isVerifiedArtist: artistInfo.is_verified,
+    totalAmount: (price + (extraAmount ?? 0)) / 100,
+    payExtraAmount: extraAmount ? extraAmount / 100 : 0,
+    payExtraPreset: extraAmountPreset
+  }
 
   // Record start
   yield* call(
     track,
-    make({ eventName: Name.PURCHASE_CONTENT_STARTED, contentId, contentType })
+    make({
+      eventName: Name.PURCHASE_CONTENT_STARTED,
+      ...analyticsInfo
+    })
   )
 
   try {
-    const { price } = yield* call(getUSDCPremiumConditions, {
-      contentId,
-      contentType
-    })
-
     // get user bank
     const userBank = yield* call(getUSDCUserBank)
 
@@ -165,9 +231,14 @@ function* doStartPurchaseContentFlow({
     const { amount: initialBalance } = tokenAccountInfo
 
     const priceBN = new BN(price).mul(BN_USDC_CENT_WEI)
-    const balanceNeeded: BNUSDC = priceBN.sub(
-      new BN(initialBalance.toString())
-    ) as BNUSDC
+    const extraAmountBN = new BN(extraAmount ?? 0).mul(BN_USDC_CENT_WEI)
+    const totalAmountDueCentsBN = priceBN.add(extraAmountBN) as BNUSDC
+
+    const balanceNeeded = getBalanceNeeded(
+      totalAmountDueCentsBN,
+      new BN(initialBalance.toString()) as BNUSDC,
+      usdcConfig.minUSDCPurchaseAmountCents
+    )
 
     // buy USDC if necessary
     if (balanceNeeded.gtn(0)) {
@@ -175,28 +246,46 @@ function* doStartPurchaseContentFlow({
         .div(BN_USDC_CENT_WEI)
         .toNumber()
       yield* put(buyUSDC())
-      yield* put(
-        onrampOpened({
-          provider: USDCOnRampProvider.STRIPE,
-          purchaseInfo: {
-            desiredAmount: balanceNeededCents
-          }
+      let result: RaceStatusResult | null = null
+      if (isBuyUSDCViaSolEnabled) {
+        yield* put(
+          buyCryptoViaSol({
+            // expects "friendly" amount, so dollars
+            amount: balanceNeededCents / 100.0,
+            mint: 'usdc',
+            provider: OnRampProvider.STRIPE
+          })
+        )
+        result = yield* race({
+          succeeded: take(buyCryptoSucceeded),
+          failed: take(buyCryptoFailed),
+          canceled: take(buyCryptoCanceled)
         })
-      )
+      } else {
+        yield* put(
+          onrampOpened({
+            provider: USDCOnRampProvider.STRIPE,
+            purchaseInfo: {
+              desiredAmount: balanceNeededCents
+            }
+          })
+        )
 
-      const result = yield* race({
-        success: take(buyUSDCFlowSucceeded),
-        canceled: take(onrampCanceled),
-        failed: take(buyUSDCFlowFailed)
-      })
-
+        result = yield* race({
+          succeeded: take(buyUSDCFlowSucceeded),
+          canceled: take(onrampCanceled),
+          failed: take(buyUSDCFlowFailed)
+        })
+      }
       // Return early for failure or cancellation
       if (result.canceled) {
         yield* put(purchaseCanceled())
         return
       }
       if (result.failed) {
-        yield* put(purchaseContentFlowFailed())
+        yield* put(
+          purchaseContentFlowFailed({ error: result.failed.payload.error })
+        )
         return
       }
     }
@@ -212,6 +301,7 @@ function* doStartPurchaseContentFlow({
     yield* call(purchaseContent, audiusBackendInstance, {
       id: contentId,
       blocknumber,
+      extraAmount: extraAmountBN,
       splits,
       type: 'track'
     })
@@ -225,27 +315,44 @@ function* doStartPurchaseContentFlow({
       yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
     }
 
+    // Check if playing the purchased track's preview and if so, stop it
+    const isPreviewing = yield* select(getPreviewing)
+    const trackId = yield* select(getTrackId)
+    if (contentId === trackId && isPreviewing) {
+      yield* put(stop({}))
+    }
+
     // finish
-    yield* put(purchaseConfirmed())
+    yield* put(purchaseConfirmed({ contentId, contentType }))
 
     yield* call(
       track,
-      make({ eventName: Name.PURCHASE_CONTENT_SUCCESS, contentId, contentType })
+      make({
+        eventName: Name.PURCHASE_CONTENT_SUCCESS,
+        ...analyticsInfo
+      })
     )
   } catch (e: unknown) {
+    // If we get a known error, pipe it through directly. Otherwise make sure we
+    // have a properly contstructed error to put into the slice.
+    const error =
+      e instanceof PurchaseContentError ||
+      e instanceof BuyUSDCError ||
+      e instanceof BuyCryptoError
+        ? e
+        : new PurchaseContentError(PurchaseErrorCode.Unknown, `${e}`)
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
-      error: e as Error,
+      error,
       additionalInfo: { contentId, contentType }
     })
-    yield* put(purchaseContentFlowFailed())
+    yield* put(purchaseContentFlowFailed({ error }))
     yield* call(
       track,
       make({
         eventName: Name.PURCHASE_CONTENT_FAILURE,
-        contentId,
-        contentType,
-        error: (e as Error).message
+        error: error.message,
+        ...analyticsInfo
       })
     )
   }

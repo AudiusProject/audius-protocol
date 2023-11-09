@@ -111,7 +111,8 @@ const FULL_ENDPOINT_MAP = {
   getSupporters: (userId: OpaqueID) => `/users/${userId}/supporters`,
   getTips: '/tips',
   getPremiumContentSignatures: (userId: OpaqueID) =>
-    `/tracks/${userId}/nft-gated-signatures`
+    `/tracks/${userId}/nft-gated-signatures`,
+  getPremiumTracks: '/tracks/usdc-purchase'
 }
 
 const ENDPOINT_MAP = {
@@ -261,6 +262,12 @@ type GetUserAiTracksByHandleArgs = {
   getUnlisted: boolean
 }
 
+type GetPremiumTracksArgs = {
+  currentUserId: Nullable<ID>
+  offset?: number
+  limit?: number
+}
+
 type GetRelatedArtistsArgs = PaginationArgs & {
   userId: ID
 }
@@ -339,6 +346,7 @@ type GetSearchArgs = {
   kind?: SearchKind
   limit?: number
   offset?: number
+  includePurchaseable?: boolean
 }
 
 type TrendingIdsResponse = {
@@ -393,6 +401,7 @@ type UserChallengesResponse = [
     max_steps: number
     challenge_type: string
     amount: string
+    disbursed_amount: number
     metadata: object
   }
 ]
@@ -406,6 +415,7 @@ type UndisbursedUserChallengesResponse = [
     completed_blocknumber: number
     handle: string
     wallet: string
+    created_at: string
   }
 ]
 
@@ -1134,6 +1144,32 @@ export class AudiusAPIClient {
     return adapted
   }
 
+  async getPremiumTracks({
+    currentUserId,
+    limit,
+    offset
+  }: GetPremiumTracksArgs) {
+    this._assertInitialized()
+    const encodedCurrentUserId = encodeHashId(currentUserId)
+    const params = {
+      user_id: encodedCurrentUserId || undefined,
+      limit,
+      offset
+    }
+
+    const response = await this._getResponse<APIResponse<APITrack[]>>(
+      FULL_ENDPOINT_MAP.getPremiumTracks,
+      params,
+      true,
+      PathType.VersionFullPath
+    )
+
+    if (!response) return []
+
+    const adapted = response.data.map(adapter.makeTrack).filter(removeNullable)
+    return adapted
+  }
+
   async getFavorites({ currentUserId, limit }: GetFavoritesArgs) {
     this._assertInitialized()
     const encodedUserId = encodeHashId(currentUserId)
@@ -1350,7 +1386,8 @@ export class AudiusAPIClient {
     query,
     kind,
     offset,
-    limit
+    limit,
+    includePurchaseable
   }: GetSearchArgs) {
     this._assertInitialized()
     const encodedUserId = encodeHashId(currentUserId)
@@ -1359,7 +1396,8 @@ export class AudiusAPIClient {
       query,
       kind,
       offset,
-      limit
+      limit,
+      includePurchaseable
     }
 
     const searchResponse =
@@ -1377,7 +1415,8 @@ export class AudiusAPIClient {
     query,
     kind,
     offset,
-    limit
+    limit,
+    includePurchaseable
   }: GetSearchArgs) {
     this._assertInitialized()
     const encodedUserId = encodeHashId(currentUserId)
@@ -1386,7 +1425,8 @@ export class AudiusAPIClient {
       query,
       kind,
       offset,
-      limit
+      limit,
+      includePurchaseable
     }
 
     const searchResponse =

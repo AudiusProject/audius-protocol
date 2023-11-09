@@ -1,6 +1,7 @@
 import axios from 'axios'
-import type { Logger } from './types'
+
 import RendezvousHash from './rendezvous'
+import type { Logger } from './types'
 
 export type StorageNode = {
   owner: any

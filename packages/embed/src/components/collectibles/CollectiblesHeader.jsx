@@ -1,6 +1,5 @@
 import BN from 'bn.js'
 import cn from 'classnames'
-import { h } from 'preact'
 
 import IconBronzeBadge from '../../assets/img/IconBronzeBadge.svg'
 import IconGoldBadge from '../../assets/img/IconGoldBadge.svg'

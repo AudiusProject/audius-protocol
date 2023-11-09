@@ -29,6 +29,7 @@ const trackMetadataSchema = {
   is_premium: false,
   premium_conditions: null,
   preview_start_seconds: null,
+  audio_upload_id: null,
   field_visibility: {
     genre: true,
     mood: true,

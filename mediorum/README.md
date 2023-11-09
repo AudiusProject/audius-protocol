@@ -29,7 +29,7 @@ If you want to move data between providers (e.g., from your disk to AWS or GCS),
     * Under `Write` choose `DeleteObject` and `PutObject`.
     * Under `List` choose `ListBucket`.
     * Click `Add Arn`, enter the bucket name, and check the box for `Any object name`.
-3. Make an IAM user and group with this policy, and in the user/group click “Create access key” and select “Third-party service.” 
+3. Make an IAM user and group with this policy, and in the user/group click “Create access key” and select “Third-party service.”
 4. Set the environment variables in your node’s `audius-docker-compose/creator-node/override.env` file accordingly:
    * `AWS_ACCESS_KEY_ID`
    * `AWS_SECRET_ACCESS_KEY`
@@ -51,6 +51,12 @@ with `make dev2` you can use `goreman` to start and stop servers:
 * `make dev2` - starts servers as separate processes
 * `goreman run stop m2`
 * `goreman run start m2`
+
+Uploading a test file:
+
+```
+curl -v -XPOST -F template=audio -F files=@steve_drunk_bass.mp3 http://localhost:1991/uploads
+```
 
 ## Docker
 

@@ -15,7 +15,8 @@ import { Link } from 'react-router-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useTransition, animated } from 'react-spring'
 
-import { ReactComponent as AudiusLogo } from 'assets/img/audiusLogoHorizontal.svg'
+import AudiusLogo from 'assets/img/audiusLogoHorizontal.svg'
+import { SIGN_UP } from 'common/store/pages/signon/actions'
 import {
   RouterContext,
   SlideDirection
@@ -152,9 +153,9 @@ const NavBar = ({
     )
   } else if (leftElement === LeftPreset.NOTIFICATION && !isSignedIn) {
     left = (
-      <button className={styles.signUpButton} onClick={signUp}>
+      <Link className={styles.signUpButton} onClick={signUp} to={SIGN_UP}>
         {messages.signUp}
-      </button>
+      </Link>
     )
   } else if (leftElement === LeftPreset.NOTIFICATION && isSignedIn) {
     left = (

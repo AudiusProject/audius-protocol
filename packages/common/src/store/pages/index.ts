@@ -62,7 +62,7 @@ export * as savedPageActions from './saved-page/actions'
 export * as savedPageSelectors from './saved-page/selectors'
 export * from './saved-page/types'
 export * from './saved-page/utils'
-export { default as savedPageReducer } from './saved-page/reducer'
+export { persistedSavePageReducer } from './saved-page/reducer'
 
 export {
   default as remixesPageLineupReducer,
@@ -142,3 +142,7 @@ export * from './audio-rewards/types'
 export * from './deactivate-account'
 
 export * from './chat'
+
+export { default as premiumTracksPageLineupReducer } from './premium-tracks/lineup/reducer'
+export * as premiumTracksPageLineupSelectors from './premium-tracks/lineup/selectors'
+export { premiumTracksActions as premiumTracksPageLineupActions } from './premium-tracks/lineup/actions'
