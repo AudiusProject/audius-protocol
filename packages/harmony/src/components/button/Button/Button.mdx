@@ -50,16 +50,11 @@ import * as ButtonStories from './Button.stories'
 
 ### Sizes
 
-Fixed height: 32px, 48px, 64px
-
 <Canvas>
   <Story of={ButtonStories.Sizes} />
 </Canvas>
 
 ### States
-
-Hover: transform scale: 1.04x, ease-out curve, 120ms
-Pressed: transform scale: 0.98x, ease-out curve, 120ms
 
 <Canvas>
   <Story of={ButtonStories.States} />
@@ -113,29 +108,40 @@ A link that looks like a button. Useful for buttons that trigger navigation
       positive: {
         description: 'Use 1 or 2 words, no longer than 4 words',
         size: 'small',
-        component: <Button>Sign Up!</Button>,
+        component: <Button>Sign Up!</Button>
       },
       negative: {
         description: 'Don’t use more than 20 characters including spaces.',
         size: 'small',
-        component: <Button>Get started and sign up for Audius</Button>,
+        component: <Button>Get started and sign up for Audius</Button>
       }
     },
     {
       positive: {
         description: 'Use title-case',
         size: 'small',
-        component: <Button>Get Started</Button>,
+        component: <Button>Get Started</Button>
       },
       negative: {
-        description: 'Don’t use all cap in small or medium buttons (exception: “PLAY”)',
+        description:
+          'Don’t use all cap in small or medium buttons (exception: “PLAY”)',
         size: 'small',
         component: (
           <Flex gap='l' alignItems='center'>
-            <Button size={ButtonSize.SMALL} style={{textTransform: 'uppercase'}}>Get Started</Button>
-            <Button size={ButtonSize.DEFAULT} style={{textTransform: 'uppercase'}}>Get Started</Button>
+            <Button
+              size={ButtonSize.SMALL}
+              style={{ textTransform: 'uppercase' }}
+            >
+              Get Started
+            </Button>
+            <Button
+              size={ButtonSize.DEFAULT}
+              style={{ textTransform: 'uppercase' }}
+            >
+              Get Started
+            </Button>
           </Flex>
-        ),
+        )
       }
     },
     {
@@ -147,53 +153,48 @@ A link that looks like a button. Useful for buttons that trigger navigation
             <Button variant={ButtonType.SECONDARY}>Go Back</Button>
             <Button>Continue</Button>
           </Flex>
-        ),
+        )
       },
       negative: {
-        description: 'Don’t use tertiary as the 3rd level of button hierarchy. Use plain instead',
+        description: 'Don’t use tertiary as the secondary action',
         size: 'small',
         component: (
           <Flex gap='l'>
             <Button variant={ButtonType.TERTIARY}>Go Back</Button>
             <Button>Continue</Button>
           </Flex>
-        ),
+        )
       }
     },
     {
       positive: {
-        description: 'Use teriary button exclusively on photos or colored backgrounds.',
+        description:
+          'Use teriary button exclusively on photos or colored backgrounds. ',
         size: 'small',
-        component: <Button>Get Started</Button>,
-      },
-      negative: {
-        description: 'Never place primary buttons actaions side-by-side ',
-        size: 'small',
-        component: <Button>Get Started</Button>,
-      }
-    },
-    {
-      positive: {
-        description: 'Use teriary button exclusively on photos or colored backgrounds. ',
         component: (
-          <Flex 
-            w='100%' 
-            justifyContent='center' 
-            p='2xl' 
+          <Flex
+            h='100%'
+            w='100%'
+            alignItems='center'
+            justifyContent='center'
             style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
               background: `url(${buttonBackground})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center'
-            }}>
+            }}
+          >
             <Button variant={ButtonType.TERTIARY} iconLeft={IconCamera}>
               Change Cover Photo
             </Button>
           </Flex>
-        ),
-        css: {padding: 0}
+        )
       },
       negative: {
         description: 'Never place primary buttons actions side-by-side ',
+        size: 'small',
         component: (
           <Flex gap='l'>
             <Button>Go Back</Button>
@@ -201,9 +202,8 @@ A link that looks like a button. Useful for buttons that trigger navigation
           </Flex>
         )
       }
-    },
-
-]}
+    }
+  ]}
 />
 
 ## Related components

@@ -158,7 +158,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const hoverStyles: CSSObject = {
       boxShadow: shadows.mid,
-      '::before': {
+      '&::before': {
         backgroundColor: 'rgba(255, 255, 255, 0.2)'
       }
     }
