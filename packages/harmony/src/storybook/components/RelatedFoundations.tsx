@@ -136,7 +136,7 @@ export const RelatedFoundations = (props: RelatedFoundationsProps) => {
       justifyContent='space-between'
     >
       {foundationNames.map((foundationName) => {
-        const { component, link, description } =
+        const { component, title, link, description } =
           relatedFoundationsMap[foundationName]
         const href = `../?path=/docs/foundations-${link}`
 
@@ -145,7 +145,7 @@ export const RelatedFoundations = (props: RelatedFoundationsProps) => {
             key={foundationName}
             component={component}
             href={href}
-            title={foundationName}
+            title={title}
             description={description}
           />
         )

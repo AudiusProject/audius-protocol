@@ -6,17 +6,20 @@
   #storybook-docs .sbdocs-wrapper {
     padding: var(--harmony-spacing-3xl);
   }
-  
-  #configuration-options {
-    margin-bottom: var(--harmony-spacing-2xl);
-  }
 
+  .sbdocs-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--harmony-spacing-3xl)
+  }
+  
   .sbdocs-title {
     color: var(--harmony-docs-text);
     font-size: 72px;
     font-style: normal;
     font-weight: 700;
     line-height: normal;
+    margin: 0
   }
 
   #storybook-docs :where(h2:not(.sb-anchor, .sb-unstyled, .sb-unstyled h2)) {
@@ -26,6 +29,8 @@
     font-weight: 700;
     line-height: normal;
     border-bottom: unset;
+    margin: 0;
+    padding: 0;
   }
 
   #storybook-docs :where(h3:not(.sb-anchor, .sb-unstyled, .sb-unstyled h3)) {
@@ -34,6 +39,8 @@
     font-style: normal;
     font-weight: 400;
     line-height: normal;
+    padding: 0;
+    margin: 0;
   }
 
   #storybook-docs :where(h4:not(.sb-anchor, .sb-unstyled, .sb-unstyled h4)) {
@@ -42,6 +49,8 @@
     font-style: normal;
     font-weight: 400;
     line-height: normal;
+    padding: 0;
+    margin: 0;
   }
   
   #storybook-docs :where(p:not(.sb-anchor, .sb-unstyled, .sb-unstyled p)) {
@@ -50,16 +59,24 @@
     font-style: normal;
     font-weight: 400;
     line-height: normal;
+    margin: 0;
   }
 
   #storybook-docs 
    :where(a:not(.sb-anchor, .toc-link, .sb-unstyled, .sb-unstyled a)),
    li:has(a)::marker {
     color: var(--harmony-docs-violet-v400);
-    font-size: 24px;
+    font-size: 16px;
     font-style: normal;
     font-weight: 400;
     line-height: normal;
+  }
+
+  #storybook-docs :where(ul:not(.sb-anchor, .toc-list, .sb-unstyled, .sb-unstyled ul)) {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--harmony-spacing-l)
   }
 
   #storybook-docs :where(li:not(.sb-anchor, .toc-list-item, .sb-unstyled, .sb-unstyled li)) {
@@ -68,5 +85,9 @@
     font-style: normal;
     font-weight: 400;
     line-height: normal;
+    margin-top: 0;
+  }
+  #storybook-docs :where(table:not(.sb-anchor, .sb-unstyled, .sb-unstyled table)) {
+    margin: 0;
   }
 </style>

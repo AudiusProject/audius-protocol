@@ -1,6 +1,7 @@
 import { useTheme } from '@emotion/react'
+import { useTheme as useStorybookTheme } from '@storybook/theming'
 
-import { Box, Flex, Text } from 'components'
+import { Box, Flex } from 'components'
 import { themes, HarmonyTheme } from 'foundations'
 import type { Theme } from 'foundations/theme/types'
 
@@ -16,6 +17,7 @@ type ColorSwatchProps = {
 const ColorSwatch = (props: ColorSwatchProps) => {
   const { colorType, colorName, colorValue, description = colorValue } = props
   const { color, cornerRadius, spacing } = useTheme()
+  const { typography } = useStorybookTheme()
 
   return (
     <Flex gap='l' alignItems='center'>
@@ -29,10 +31,10 @@ const ColorSwatch = (props: ColorSwatchProps) => {
         }}
       />
       <Flex direction='column' gap='unitHalf'>
-        <Text css={{ margin: 0 }}>
+        <p css={{ fontWeight: `${typography.weight.bold} !important` }}>
           {colorType}-{colorName}
-        </Text>
-        <Text css={{ margin: 0 }}>{description}</Text>
+        </p>
+        <p>{description}</p>
       </Flex>
     </Flex>
   )

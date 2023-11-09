@@ -3,7 +3,7 @@ import { Meta, Title, Unstyled } from '@storybook/blocks'
 import { Text, Flex, Paper } from 'components'
 import { TextDropShadow } from 'storybook/assets/TextDropShadow'
 import shadowBackground from 'storybook/assets/shadowBackground.jpeg'
-import { RelatedFoundations } from 'storybook/components'
+import { RelatedFoundations, Heading } from 'storybook/components'
 
 <Meta title='Foundations/Shadow' />
 
@@ -13,9 +13,12 @@ import { RelatedFoundations } from 'storybook/components'
 - [Shadow levels](#shadow-levels)
 - [Usage and examples](#usage-and-examples)
 
+<Heading>
 ## Overview
 
 Shadows offer elevation by distinguishing surface distances along the z-axis. Use Harmony's pre-defined shadow styles for consistent visual effects.
+
+</Heading>
 
 export const centerProps = {
   alignItems: 'center',
@@ -92,9 +95,12 @@ export function ShadowLevel(props) {
 - Do not elevate near shadows above far shadows or vice versa.
 - Use shadow to indicate interaction
 
+<Heading>
 ### Interactions Examples
 
 Use shadows to indicate a card appearing closer or farther on press and hover.
+
+</Heading>
 
 <Unstyled>
   <Paper h={200} flex={1} alignItems='center' justifyContent='center'>
