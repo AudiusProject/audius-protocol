@@ -1,0 +1,58 @@
+import {
+  Canvas,
+  Meta,
+  Story,
+  Title,
+  Subtitle,
+  Description,
+  Controls,
+  Primary
+} from '@storybook/blocks'
+
+import { RelatedComponents } from 'storybook/components'
+
+import * as DividerStories from './Divider.stories'
+
+<Meta of={DividerStories} />
+
+<Title />
+
+- [Overview](#overview)
+- [Props](#props)
+- [Configuration options](#configuration-options)
+- [Use cases and examples](#use-cases-and-examples)
+- [Related Components](#related-components)
+
+## Overview
+
+<Subtitle />
+<Description />
+<Primary />
+
+## Props
+
+<Controls />
+
+## Configuration Options
+
+### Horizontal
+
+<Canvas>
+  <Story of={DividerStories.Horizontal} />
+</Canvas>
+
+### Vertical
+
+<Canvas>
+  <Story of={DividerStories.Vertical} />
+</Canvas>
+
+## Use cases and examples
+
+- Dividers should be used to provide a clear, visual separation between objects.
+- Sometimes, dividers are applied in figma as a single stroke. Designers should ALWAYS apply that single stroke to the outside of the object and call out that the stroke is being used as a divider.
+- Dividers are 1 px rectangles and therefore can sometimes fall off our 4px grid, but dividers should maintain our grid in terms of height and width.
+
+## Related components
+
+<RelatedComponents componentNames={['Box', 'Flex']} />

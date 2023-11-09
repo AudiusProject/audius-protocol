@@ -68,6 +68,7 @@ export const ComponentRule = (props: ComponentRuleProps) => {
           border: `1px solid ${borderColor}`,
           borderRadius: cornerRadius.m,
           boxSizing: 'content-box',
+          overflow: 'hidden',
           '& img': {
             objectFit: 'scale-down',
             width: '100%',

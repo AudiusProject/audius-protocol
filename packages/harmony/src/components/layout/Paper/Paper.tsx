@@ -21,6 +21,7 @@ export const Paper = styled(Flex)<PaperProps>((props) => {
     boxShadow: theme.shadows[shadow],
     border: border && `1px solid ${theme.color.border[border]}`,
     borderRadius: theme.cornerRadius[borderRadius],
-    backgroundColor: theme.color.background[backgroundColor]
+    backgroundColor: theme.color.background[backgroundColor],
+    overflow: 'hidden'
   }
 })

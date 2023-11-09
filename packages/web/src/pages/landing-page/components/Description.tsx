@@ -4,19 +4,17 @@ import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useChain, useSpring, useTrail, animated } from 'react-spring'
 
-import productShot from 'assets/img/publicSite/AudiusWeb@2x.png'
+import productShot from 'assets/img/publicSite/ProductShot2@2x.webp'
 import dotsLogo1x from 'assets/img/publicSite/dot-logo@1x.jpg'
 import dotsLogo2x from 'assets/img/publicSite/dot-logo@2x.jpg'
 
 import styles from './Description.module.css'
 
 const messages = {
-  title1: 'Next Generation',
-  title2: 'Web-3 Streaming Platform',
+  title1: 'A New Model',
+  title2: 'Artist Owned & Controlled',
   description:
-    'Audius is a brand-new streaming platform built for all musicians, not just those signed to labels.',
-  features:
-    'Build a fanbase, share your works in progress, and then publish your completed tracks for all the world to hear. Create, grow, and monetize, all without the need to graduate off the platform or sign a record deal.'
+    "Step into the future with Audius, where we're rewriting the rules of the music industry. Designed by artists, for artists, Audius is not just a platform but a movement. Navigate your creative journey on your terms. In the music industry, connections make the difference, and Audius is where those connections happen. Join us in shaping the next chapter of music history."
 }
 
 const title1Items = messages.title1.split(' ')
@@ -169,7 +167,6 @@ const Description = (props: DescriptionProps) => {
           >
             <div className={cn(styles.description)}>
               <p>{messages.description}</p>
-              <p>{messages.features}</p>
             </div>
           </animated.div>
         </div>
@@ -180,12 +177,18 @@ const Description = (props: DescriptionProps) => {
   return (
     <div className={styles.container}>
       <div className={styles.content}>
+        <img
+          src={dotsLogo1x}
+          srcSet={`${dotsLogo1x} 1x, ${dotsLogo2x} 2x`}
+          className={cn(styles.dotsLogo, styles.dotsLeft)}
+          alt='Background moving dot pattern 1'
+        />
         <div className={styles.foreground}>
           <img
             src={productShot}
             srcSet={`${productShot} 2x`}
             className={styles.productShot}
-            alt='Audius Product Shot'
+            alt='Audius Mobile Product Shot'
           />
           <h3 ref={setStartAnimation} className={styles.title}>
             {trail.map(({ x, wordYPosition, ...rest }: any, index: any) => (
@@ -249,16 +252,13 @@ const Description = (props: DescriptionProps) => {
             <div className={cn(styles.subText, styles.description)}>
               {messages.description}
             </div>
-            <div className={cn(styles.subText, styles.description)}>
-              {messages.features}
-            </div>
           </animated.div>
         </div>
         <img
           src={dotsLogo1x}
           srcSet={`${dotsLogo1x} 1x, ${dotsLogo2x} 2x`}
-          className={styles.dotsLogo}
-          alt='Background moving dot pattern'
+          className={cn(styles.dotsLogo, styles.dotsRight)}
+          alt='Background moving dot pattern 2'
         />
       </div>
     </div>
