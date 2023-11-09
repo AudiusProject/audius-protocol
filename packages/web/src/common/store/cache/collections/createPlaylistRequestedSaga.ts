@@ -1,13 +1,12 @@
+import { Collection } from '@audius/common/models/Collection'
 import {
-  cacheCollectionsActions,
-  cacheCollectionsSelectors,
-  toastActions
-} from '@audius/common'
+  CREATE_PLAYLIST_REQUESTED,
+  createPlaylistRequested
+} from '@audius/common/store/cache/collections/actions'
+import { getCollection } from '@audius/common/store/cache/collections/selectors'
+import { toast } from '@audius/common/store/ui/toast/slice'
 import { push } from 'connected-react-router'
 import { put, select, takeEvery } from 'typed-redux-saga'
-
-const { toast } = toastActions
-const { getCollection } = cacheCollectionsSelectors
 
 const messages = {
   createdToast: 'Playlist Created!',
@@ -16,12 +15,12 @@ const messages = {
 // Either route user to created playlist page, or post a toast
 export function* createPlaylistRequestedSaga() {
   yield* takeEvery(
-    cacheCollectionsActions.CREATE_PLAYLIST_REQUESTED,
-    function* (
-      action: ReturnType<typeof cacheCollectionsActions.createPlaylistRequested>
-    ) {
+    CREATE_PLAYLIST_REQUESTED,
+    function* (action: ReturnType<typeof createPlaylistRequested>) {
       const { playlistId, noticeType } = action
-      const playlist = yield* select(getCollection, { id: playlistId })
+      const playlist: Collection = yield* select(getCollection, {
+        id: playlistId
+      })
       if (!playlist?.permalink) return
 
       const { permalink } = playlist

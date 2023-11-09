@@ -1,13 +1,11 @@
-import {
-  Kind,
-  makeKindId,
-  cacheCollectionsActions as collectionActions,
-  PlaylistOperations,
-  cacheActions,
-  getContext,
-  confirmerActions,
-  confirmTransaction
-} from '@audius/common'
+import { Kind } from '@audius/common/models/Kind'
+import { PlaylistOperations } from '@audius/common/store/cache'
+import { update } from '@audius/common/store/cache/actions'
+import { orderPlaylistFailed } from '@audius/common/store/cache/collections/actions'
+import { confirmTransaction } from '@audius/common/store/confirmer'
+import { requestConfirmation } from '@audius/common/store/confirmer/actions'
+import { getContext } from '@audius/common/store/effects'
+import { makeKindId } from '@audius/common/utils/uid'
 import { call, put } from 'redux-saga/effects'
 
 import { fixInvalidTracksInPlaylist } from './fixInvalidTracksInPlaylist'
@@ -15,7 +13,7 @@ import { retrieveCollection } from './utils/retrieveCollections'
 export function* confirmOrderPlaylist(userId, playlistId, trackIds, playlist) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
-    confirmerActions.requestConfirmation(
+    requestConfirmation(
       makeKindId(Kind.COLLECTIONS, playlistId),
       function* (confirmedPlaylistId) {
         // NOTE: In an attempt to fix playlists in a corrupted state, only attempt the order playlist tracks once,
@@ -67,7 +65,7 @@ export function* confirmOrderPlaylist(userId, playlistId, trackIds, playlist) {
         })
 
         yield put(
-          cacheActions.update(Kind.COLLECTIONS, [
+          update(Kind.COLLECTIONS, [
             {
               id: confirmedPlaylist.playlist_id,
               metadata: confirmedPlaylist
@@ -78,7 +76,7 @@ export function* confirmOrderPlaylist(userId, playlistId, trackIds, playlist) {
       function* ({ error, timeout, message }) {
         // Fail Call
         yield put(
-          collectionActions.orderPlaylistFailed(
+          orderPlaylistFailed(
             message,
             { userId, playlistId, trackIds },
             { error, timeout }
