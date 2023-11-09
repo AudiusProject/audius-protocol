@@ -15,11 +15,7 @@ export const parameters = {
   viewMode: 'docs',
   docs: {
     container: HarmonyDocsContainer,
-    toc: true,
-    components: {
-      // ComponentRules,
-      // RelatedComponents
-    }
+    toc: true
   },
   darkMode: {
     light: harmonyDocsThemes.day,

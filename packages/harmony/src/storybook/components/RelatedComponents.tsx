@@ -132,7 +132,7 @@ const relatedComponentsMap = {
     ),
     description:
       'A layout component to handle flex behavior without manual styling.',
-    link: 'components-layout-flex--documentation'
+    link: 'layout-flex--documentation'
   },
   FollowButton: {
     title: 'Follow Button',
