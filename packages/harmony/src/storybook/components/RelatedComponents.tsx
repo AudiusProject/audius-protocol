@@ -8,9 +8,11 @@ import {
   Button,
   TextInput,
   SelectablePill,
-  Paper
+  Paper,
+  Avatar
 } from 'components'
 import { IconCaretRight } from 'icons'
+import shadowBackground from 'storybook/assets/shadowBackground.jpeg'
 
 import { InformationBox } from './InformationBox'
 
@@ -83,7 +85,11 @@ const relatedComponentsMap = {
     title: 'Avatar',
     description:
       'Ensure layouts are consistent with our intuitive spacing system.',
-    component: null,
+    component: (
+      <Box w={80} h={80}>
+        <Avatar src={shadowBackground} />
+      </Box>
+    ),
     link: 'avatar--documentation'
   },
   Paper: {
