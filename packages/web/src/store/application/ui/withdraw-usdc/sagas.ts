@@ -12,7 +12,9 @@ import {
   relayTransaction,
   formatUSDCWeiToFloorCentsNumber,
   Name,
-  WithdrawUSDCTransferEventFields
+  WithdrawUSDCTransferEventFields,
+  withdrawUSDCModalActions,
+  WithdrawUSDCModalPages
 } from '@audius/common'
 import {
   createAssociatedTokenAccountInstruction,
@@ -43,6 +45,7 @@ import {
 
 const { beginWithdrawUSDC, withdrawUSDCFailed, withdrawUSDCSucceeded } =
   withdrawUSDCActions
+const { set: setWithdrawUSDCModalData } = withdrawUSDCModalActions
 const { getFeePayer } = solanaSelectors
 
 /**
@@ -178,7 +181,7 @@ function* createDestinationTokenAccount({
  * Handles all logic for withdrawing USDC to a given destination. Expects amount in cents.
  */
 function* doWithdrawUSDC({
-  payload: { amount, currentBalance, destinationAddress, onSuccess }
+  payload: { amount, currentBalance, destinationAddress }
 }: ReturnType<typeof beginWithdrawUSDC>) {
   const { track, make } = yield* getContext('analytics')
   const analyticsFields: WithdrawUSDCTransferEventFields = {
@@ -316,8 +319,12 @@ function* doWithdrawUSDC({
     console.debug('Withdraw USDC - successfully transferred USDC.', {
       transactionSignature
     })
-    yield* call(onSuccess, transactionSignature)
-    yield* put(withdrawUSDCSucceeded())
+    yield* put(withdrawUSDCSucceeded({ transaction: transactionSignature }))
+    yield* put(
+      setWithdrawUSDCModalData({
+        page: WithdrawUSDCModalPages.TRANSFER_SUCCESSFUL
+      })
+    )
     yield* call(
       track,
       make({ eventName: Name.WITHDRAW_USDC_SUCCESS, ...analyticsFields })

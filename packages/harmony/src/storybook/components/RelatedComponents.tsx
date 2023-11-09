@@ -1,4 +1,12 @@
-import { Text, Box, Divider, Flex, PlainButton, SocialButton } from 'components'
+import {
+  Text,
+  Box,
+  Divider,
+  Flex,
+  PlainButton,
+  SocialButton,
+  Paper
+} from 'components'
 
 import { InformationBox } from './InformationBox'
 
@@ -29,7 +37,7 @@ const relatedComponentsMap = {
     ),
     description:
       'A separator between two elements, usually consisting of a horizontal  or vertical line.',
-    link: 'components-layout-divider--documentation'
+    link: 'layout-divider--documentation'
   },
   Box: {
     component: (
@@ -44,8 +52,8 @@ const relatedComponentsMap = {
       </Box>
     ),
     description:
-      'Description of component goes here and will likely go to 2-3 lines so that its can fully explain itself.',
-    link: 'components-layout-box--documentation'
+      'A simple layout component which adds pre-defined margin, padidng, and borders',
+    link: 'layout-box--documentation'
   },
   Flex: {
     component: (
@@ -63,8 +71,13 @@ const relatedComponentsMap = {
       </Flex>
     ),
     description:
-      'Description of component goes here and will likely go to 2-3 lines so that its can fully explain itself.',
-    link: 'components-layout-flex--documentation'
+      'A layout component to handle flex behavior without manual styling.',
+    link: 'layout-flex--documentation'
+  },
+  Paper: {
+    component: <Paper w={200} h={80} />,
+    description: 'An elevated container which stands out from the background.',
+    link: 'layout-paper--documentation'
   }
 }
 

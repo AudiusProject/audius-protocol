@@ -1,5 +1,3 @@
-import dayjs, { Dayjs } from 'dayjs'
-import utc from 'dayjs/plugin/utc'
 import { useSelector } from 'react-redux'
 
 import { ChallengeRewardID } from 'models/AudioRewards'
@@ -8,11 +6,10 @@ import {
   audioRewardsPageSelectors
 } from 'store/pages'
 import { isCooldownChallengeClaimable } from 'utils/challenges'
+import dayjs, { Dayjs } from 'utils/dayjs'
 import { utcToLocalTime } from 'utils/timeUtil'
 
 const { getUndisbursedUserChallenges } = audioRewardsPageSelectors
-
-dayjs.extend(utc)
 
 const messages = {
   laterToday: 'Later Today',

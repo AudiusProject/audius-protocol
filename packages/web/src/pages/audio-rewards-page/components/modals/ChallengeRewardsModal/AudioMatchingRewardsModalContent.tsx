@@ -15,8 +15,6 @@ import {
   HarmonyButtonType
 } from '@audius/stems'
 import cn from 'classnames'
-import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc'
 import { useSelector } from 'react-redux'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -31,8 +29,6 @@ import { ProgressReward } from './ProgressReward'
 import styles from './styles.module.css'
 
 const { getOptimisticUserChallenges } = challengesSelectors
-
-dayjs.extend(utc)
 
 const messages = {
   rewardMapping: {

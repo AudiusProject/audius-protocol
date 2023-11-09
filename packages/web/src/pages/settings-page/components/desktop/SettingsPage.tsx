@@ -15,6 +15,7 @@ import {
   removeNullable,
   settingsPageSelectors
 } from '@audius/common'
+import { IconAppearance } from '@audius/harmony'
 import {
   Modal,
   Button,
@@ -23,7 +24,6 @@ import {
   IconNotification,
   IconSignOut,
   IconVerified,
-  IconMood,
   IconSettings,
   IconMessage,
   SegmentedControl,
@@ -317,7 +317,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
       <div className={styles.settings}>
         <SettingsCard
           className={cn({ [styles.cardFull]: hasOddCardCount })}
-          icon={<IconMood />}
+          icon={<IconAppearance />}
           title={messages.appearanceCardTitle}
           description={messages.appearanceCardDescription}
         >

@@ -28,6 +28,7 @@ import * as ButtonStories from './Button.stories'
 - [Configuration Options](#configuration-options)
 - [Use cases and examples](#use-cases-and-examples)
 - [Do's and dont's](#dos-and-donts)
+- [Related Components](#related-components)
 
 ## Overview
 
@@ -101,7 +102,7 @@ A link that looks like a button. Useful for buttons that trigger navigation
 ## Use cases and examples
 
 - Always use primary button as the main action on screen.
-- Avoid vague or generic labels that requires the user read before taking action
+- Avoid vague or generic labels that requires the user read before taking action.
 - Use active verbs or phrases that clearly indicate action.
 
 ## Do's and don'ts
@@ -111,20 +112,24 @@ A link that looks like a button. Useful for buttons that trigger navigation
     {
       positive: {
         description: 'Use 1 or 2 words, no longer than 4 words',
+        size: 'small',
         component: <Button>Sign Up!</Button>,
       },
       negative: {
         description: 'Don’t use more than 20 characters including spaces.',
+        size: 'small',
         component: <Button>Get started and sign up for Audius</Button>,
       }
     },
     {
       positive: {
         description: 'Use title-case',
+        size: 'small',
         component: <Button>Get Started</Button>,
       },
       negative: {
         description: 'Don’t use all cap in small or medium buttons (exception: “PLAY”)',
+        size: 'small',
         component: (
           <Flex gap='l' alignItems='center'>
             <Button size={ButtonSize.SMALL} style={{textTransform: 'uppercase'}}>Get Started</Button>
@@ -136,6 +141,7 @@ A link that looks like a button. Useful for buttons that trigger navigation
     {
       positive: {
         description: 'You may use primary and secondary side-by-side.',
+        size: 'small',
         component: (
           <Flex gap='l'>
             <Button variant={ButtonType.SECONDARY}>Go Back</Button>
@@ -145,6 +151,7 @@ A link that looks like a button. Useful for buttons that trigger navigation
       },
       negative: {
         description: 'Don’t use tertiary as the 3rd level of button hierarchy. Use plain instead',
+        size: 'small',
         component: (
           <Flex gap='l'>
             <Button variant={ButtonType.TERTIARY}>Go Back</Button>
@@ -156,10 +163,12 @@ A link that looks like a button. Useful for buttons that trigger navigation
     {
       positive: {
         description: 'Use teriary button exclusively on photos or colored backgrounds.',
+        size: 'small',
         component: <Button>Get Started</Button>,
       },
       negative: {
         description: 'Never place primary buttons actaions side-by-side ',
+        size: 'small',
         component: <Button>Get Started</Button>,
       }
     },

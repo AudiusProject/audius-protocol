@@ -7,6 +7,13 @@ export enum TextInputSize {
   DEFAULT = 'default'
 }
 
+type InternalProps = {
+  /**
+   * @ignore: This prop is for internal use only
+   */
+  _isFocused?: boolean
+}
+
 export type TextInputProps = Omit<
   ComponentPropsWithoutRef<'input'>,
   // Omitting required purely for storybook docs
@@ -77,4 +84,4 @@ export type TextInputProps = Omit<
    * @default 0.9
    */
   maxLengthWarningThreshold?: number
-}
+} & InternalProps

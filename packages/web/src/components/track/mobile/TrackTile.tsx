@@ -11,7 +11,8 @@ import {
   Genre,
   getDogEarType,
   isPremiumContentUSDCPurchaseGated,
-  usePremiumContentPurchaseModal
+  usePremiumContentPurchaseModal,
+  ModalSource
 } from '@audius/common'
 import { IconCrown, IconHidden, IconTrending } from '@audius/stems'
 import cn from 'classnames'
@@ -226,7 +227,10 @@ const TrackTile = (props: CombinedProps) => {
 
   const onClickPremiumPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && trackId) {
-      openPremiumContentPurchaseModal({ contentId: trackId })
+      openPremiumContentPurchaseModal(
+        { contentId: trackId },
+        { source: ModalSource.TrackTile }
+      )
     } else if (trackId && !doesUserHaveAccess) {
       openLockedContentModal()
     }

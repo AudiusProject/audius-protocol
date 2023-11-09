@@ -25,10 +25,21 @@ html {
   --harmony-docs-neutral-n800: #111111;
 
   --harmony-docs-text: var(--harmony-docs-neutral-n800);
-  --harmony-docs-text-muted: var(--harmony-docs-neutral-n500);
-  --harmony-docs-bar-text-color: var(--harmony-docs-neutral-v600);
+  --harmony-docs-text-muted: var(--harmony-docs-neutral-n600);
+  --harmony-docs-bar-text-color: var(--harmony-docs-violet-v600);
+  --harmony-docs-bar-selected-color: var(--harmony-docs-violet-v400);
+  --harmony-docs-bar-hover-color: var(--harmony-docs-violet-v200);
+  --harmony-docs-icon-color: var(--harmony-docs-violet-v400);
+  --harmony-docs-icon-selected-color: var(--harmony-docs-violet-v050);
+  --harmony-docs-deprecated-color: #ff2e2e;
 }
 
-html[data-theme='dark'] {
-  /* TODO */
+html[data-theme='dark'],
+body.dark:not(.sb-show-main) {
+  --harmony-docs-text: var(--harmony-docs-neutral-n050);
+  --harmony-docs-text-muted: var(--harmony-docs-neutral-n200);
+  --harmony-docs-bar-text-color: var(--harmony-docs-violet-v050);
+  --harmony-docs-bar-selected-color: var(--harmony-docs-violet-v300);
+  --harmony-docs-bar-hover-color: var(--harmony-docs-violet-v500);
+  --harmony-docs-icon-color: var(--harmony-docs-violet-v300);
 }
