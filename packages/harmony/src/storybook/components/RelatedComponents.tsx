@@ -33,6 +33,10 @@ const relatedComponentsMap = {
         <Text variant='label'>A</Text>
         <Divider />
         <Text variant='label'>B</Text>
+        <Divider />
+        <Text variant='label'>C</Text>
+        <Divider />
+        <Text variant='label'>D</Text>
       </Flex>
     ),
     description:
@@ -43,16 +47,15 @@ const relatedComponentsMap = {
     component: (
       <Box
         border='default'
+        borderRadius='s'
         p='xs'
         w={148}
         h={60}
         style={{ background: 'white' }}
-      >
-        <Text>Hello World</Text>
-      </Box>
+      />
     ),
     description:
-      'A simple layout component which adds pre-defined margin, padidng, and borders',
+      'A simple layout component which adds pre-defined margin, padding, and borders',
     link: 'layout-box--documentation'
   },
   Flex: {
