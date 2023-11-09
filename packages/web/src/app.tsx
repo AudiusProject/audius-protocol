@@ -1,5 +1,5 @@
 // @refresh reset
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import {
   AudiusQueryContext,
@@ -8,7 +8,6 @@ import {
   trpc
 } from '@audius/common'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { ConnectedRouter } from 'connected-react-router'
 import { Provider, useSelector } from 'react-redux'
 import { Route, Switch } from 'react-router-dom'
@@ -23,14 +22,10 @@ import { MainContentContext } from 'pages/MainContentContext'
 import DemoTrpcPage from 'pages/demo-trpc/DemoTrpcPage'
 import { OAuthLoginPage } from 'pages/oauth-login-page/OAuthLoginPage'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
-import { apiClient } from 'services/audius-api-client'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { audiusSdk } from 'services/audius-sdk/audiusSdk'
-import { env } from 'services/env'
+import { audiusQueryContext } from 'services/audiusQueryContext'
 import history from 'utils/history'
 
-import { store, persistor } from './store/configureStore'
-import { reportToSentry } from './store/errors/reportToSentry'
+import { persistor, store } from './store/configureStore'
 
 import './index.css'
 import './services/webVitals'
@@ -54,18 +49,7 @@ const AudiusApp = () => {
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <AudiusTrpcProvider>
-          <AudiusQueryContext.Provider
-            value={{
-              apiClient,
-              audiusBackend: audiusBackendInstance,
-              audiusSdk,
-              dispatch: store.dispatch,
-              reportToSentry,
-              env,
-              fetch,
-              remoteConfigInstance
-            }}
-          >
+          <AudiusQueryContext.Provider value={audiusQueryContext}>
             <ConnectedRouter history={history}>
               <LastLocationProvider>
                 <AppProviders>

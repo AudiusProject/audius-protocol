@@ -1,63 +1,89 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 import { Box, Button, Flex, Text } from '@audius/harmony'
-import { Form, Formik } from 'formik'
+import { Form, Formik, FormikProps, useFormikContext } from 'formik'
+import { debounce } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
+import { toFormikValidate } from 'zod-formik-adapter'
 
 import { setValueField } from 'common/store/pages/signon/actions'
 import { getHandleField } from 'common/store/pages/signon/selectors'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import TwitterLogin from 'react-twitter-auth'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { SIGN_UP_FINISH_PROFILE_PAGE } from 'utils/route'
-import { z } from 'zod'
-import { MAX_HANDLE_LENGTH } from '@audius/common'
-import restrictedHandles from 'utils/restrictedHandles'
+import {
+  errorMessages as handleErrorMessages,
+  handleSchema
+} from '../utils/handleSchema'
+import styles from './PickHandlePage.module.css'
 
- const developerAppSchema = z.object({
-  handle: z.string().max(MAX_HANDLE_LENGTH).regex( /^[a-zA-Z0-9_.]*$/, messages.).(restrictedHandles)
-  name: z.string().max(DEVELOPER_APP_NAME_MAX_LENGTH),
-  description: z.string().max(DEVELOPER_APP_DESCRIPTION_MAX_LENGTH).optional()
-})
-
-if (handle.length > MAX_HANDLE_LENGTH) {
-  yield put(signOnActions.validateHandleFailed('tooLong'))
-  if (onValidate) onValidate(true)
-  return
-} else if (!isHandleCharacterCompliant(handle)) {
-  yield put(signOnActions.validateHandleFailed('characters'))
-  if (onValidate) onValidate(true)
-  return
-} else if (isRestrictedHandle(handle)) {
-  yield put(signOnActions.validateHandleFailed('inUse'))
-  if (onValidate) onValidate(true)
-  return
-
-const FormSchema = z.object({
-  email: z
-    .string({ required_error: messages.invalidEmail })
-    .regex(EMAIL_REGEX, { message: messages.invalidEmail })
-})
 const messages = {
   pickYourHandle: 'Pick Your Handle',
   outOf: 'of',
   handleDescription:
     'This is how others find and tag you. It is totally unique to you & cannot be changed later.',
   handle: 'Handle',
-  continue: 'Continue'
-}
-
-const initialValues = {
-  handle: ''
+  continue: 'Continue',
+  linkToClaim: 'Link to claim.',
+  ...handleErrorMessages
 }
 
 type PickHandleValues = {
   handle: string
 }
 
+const HandleField = () => {
+  const { values, validateForm, errors, touched } =
+    useFormikContext<PickHandleValues>()
+  const debouncedValidate = useCallback(debounce(validateForm, 250), [
+    validateForm
+  ])
+  useEffect(() => {
+    debouncedValidate(values)
+  }, [values.handle])
+
+  let helperText: React.ReactNode = errors.handle
+
+  {
+    /* TODO: Finish this + other social linking: */
+  }
+  if (errors.handle === messages.twitterReservedError) {
+    helperText = (
+      <>
+        {messages.twitterReservedError}
+        <TwitterLogin
+          onFailure={() => {}}
+          onSuccess={() => {}}
+          requestTokenUrl={`${audiusBackendInstance.identityServiceUrl}/twitter`}
+          loginUrl={`${audiusBackendInstance.identityServiceUrl}/twitter/callback`}
+          // @ts-expect-error
+          className={styles.hideTwitterButton}
+        >
+          {messages.linkToClaim}
+        </TwitterLogin>
+      </>
+    )
+  }
+
+  return (
+    <HarmonyTextField
+      name='handle'
+      label={messages.handle}
+      helperText={helperText}
+      startAdornmentText='@'
+      placeholder={messages.handle}
+      transformValue={(value) => value.replace(/\s/g, '')}
+    />
+  )
+}
+
 export const PickHandlePage = () => {
+  const formikRef = useRef<FormikProps<PickHandleValues>>(null)
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
-  const { value, error, status } = useSelector(getHandleField)
+  const { value } = useSelector(getHandleField)
 
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
@@ -68,44 +94,56 @@ export const PickHandlePage = () => {
     [dispatch, navigate]
   )
 
+  const initialValues = {
+    handle: value || ''
+  }
+
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-      <Form>
-        <Box>
-          <Flex gap='l' direction='column'>
-            <Box>
-              <Text size='s' variant='label' color='subdued'>
-                1 {messages.outOf} 2
-              </Text>
+    <Formik
+      innerRef={formikRef}
+      initialValues={initialValues}
+      validate={toFormikValidate(handleSchema)}
+      onSubmit={handleSubmit}
+      validateOnChange={false}
+    >
+      {({ isSubmitting, isValid }) => (
+        <Form>
+          <Box>
+            <Flex gap='l' direction='column'>
+              <Box>
+                <Text size='s' variant='label' color='subdued'>
+                  1 {messages.outOf} 2
+                </Text>
+              </Box>
+              <Box>
+                <Text
+                  color='heading'
+                  size='l'
+                  strength='default'
+                  variant='heading'
+                >
+                  {messages.pickYourHandle}
+                </Text>
+              </Box>
+              <Box>
+                <Text size='l' variant='body'>
+                  {messages.handleDescription}
+                </Text>
+              </Box>
+            </Flex>
+            <Box mt='2xl'>
+              <HandleField />
             </Box>
-            <Box>
-              <Text
-                color='heading'
-                size='l'
-                strength='default'
-                variant='heading'
-              >
-                {messages.pickYourHandle}
-              </Text>
-            </Box>
-            <Box>
-              <Text size='l' variant='body'>
-                {messages.handleDescription}
-              </Text>
-            </Box>
-          </Flex>
-          <Box mt='2xl'>
-            <HarmonyTextField
-              name='handle'
-              label={messages.handle}
-              startAdornmentText='@'
-              placeholder={messages.handle}
-              transformValue={(value) => value.replace(/\s/g, '')}
-            />
+            <Button
+              type='submit'
+              disabled={!isValid || isSubmitting}
+              isLoading={isSubmitting}
+            >
+              {messages.continue}
+            </Button>
           </Box>
-          <Button type='submit'> {messages.continue} </Button>
-        </Box>
-      </Form>
+        </Form>
+      )}
     </Formik>
   )
 }

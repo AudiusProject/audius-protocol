@@ -19,7 +19,7 @@ import {
   confirmerActions,
   confirmTransaction,
   IntKeys,
-  getHandleReservedStatus
+  parseHandleReservedStatusFromSocial
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { isEmpty } from 'lodash'
@@ -279,7 +279,7 @@ function* validateHandle(action) {
         : instagramResult?.data
       const tikTokUser = tiktokResult?.timeout ? null : tiktokResult?.data
 
-      const handleCheckStatus = getHandleReservedStatus({
+      const handleCheckStatus = parseHandleReservedStatusFromSocial({
         isOauthVerified,
         lookedUpTwitterUser: twitterUserQuery?.user?.profile?.[0] ?? null,
         lookedUpInstagramUser: instagramUser || null,

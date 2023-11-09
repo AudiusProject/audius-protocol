@@ -1,9 +1,9 @@
 import { isEmpty } from 'lodash'
 
 import { createApi } from 'audius-query'
-import { FeatureFlags } from 'services/index'
+import { FeatureFlags } from 'services/remote-config/feature-flags'
 import { IntKeys } from 'services/remote-config/types'
-import { getHandleReservedStatus } from 'utils/handleReservedStatus'
+import { parseHandleReservedStatusFromSocial } from 'utils/handleReservedStatus'
 
 import { userApiFetch } from './user'
 
@@ -24,13 +24,13 @@ const signUpApi = createApi({
   reducerPath: 'signUpApi',
   endpoints: {
     isEmailInUse: {
-      fetch: async ({ email }, { audiusBackend }) => {
+      fetch: async ({ email }: { email: string }, { audiusBackend }) => {
         return await audiusBackend.emailInUse(email)
       },
       options: {}
     },
     isHandleInUse: {
-      fetch: async ({ handle }, context) => {
+      fetch: async ({ handle }: { handle: string }, context) => {
         const user = await userApiFetch.getUserByHandle(
           {
             handle,
@@ -45,7 +45,7 @@ const signUpApi = createApi({
     },
     getHandleReservedStatus: {
       fetch: async (
-        { handle },
+        { handle }: { handle: string },
         { audiusBackend, remoteConfigInstance, env }
       ) => {
         const handleCheckTimeout =
@@ -94,7 +94,7 @@ const signUpApi = createApi({
           const lookedUpTikTokUser =
             tiktokResult == null ? null : tiktokResult?.data
 
-          const reservedStatus = getHandleReservedStatus({
+          const reservedStatus = parseHandleReservedStatusFromSocial({
             isOauthVerified: false,
             lookedUpTwitterUser,
             lookedUpInstagramUser,

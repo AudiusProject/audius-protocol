@@ -12,13 +12,13 @@ type TikTokUser = {
   verified: boolean
 }
 
-type HandleCheckStatus =
+export type HandleCheckStatus =
   | 'twitterReserved'
   | 'instagramReserved'
   | 'tikTokReserved'
   | 'notReserved'
 
-export const getHandleReservedStatus = ({
+export const parseHandleReservedStatusFromSocial = ({
   isOauthVerified,
   lookedUpTwitterUser,
   lookedUpInstagramUser,

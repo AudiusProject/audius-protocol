@@ -1,8 +1,8 @@
-import { getHandleReservedStatus } from './handleReservedStatus'
+import { parseHandleReservedStatusFromSocial } from './handleReservedStatus'
 
 describe('verifiedChecker', () => {
   it('works for an unverified user that is not reserved', () => {
-    const status = getHandleReservedStatus({
+    const status = parseHandleReservedStatusFromSocial({
       isOauthVerified: false,
       lookedUpTwitterUser: { verified: false },
       lookedUpInstagramUser: { is_verified: false }
@@ -11,7 +11,7 @@ describe('verifiedChecker', () => {
   })
 
   it('works for an unverified user when twitter request fails', () => {
-    const status = getHandleReservedStatus({
+    const status = parseHandleReservedStatusFromSocial({
       isOauthVerified: false,
       lookedUpTwitterUser: null,
       lookedUpInstagramUser: {
@@ -22,7 +22,7 @@ describe('verifiedChecker', () => {
   })
 
   it('works for an unverified user when instagram request fails', () => {
-    const status = getHandleReservedStatus({
+    const status = parseHandleReservedStatusFromSocial({
       isOauthVerified: false,
       lookedUpTwitterUser: { verified: false },
       lookedUpInstagramUser: null
@@ -31,7 +31,7 @@ describe('verifiedChecker', () => {
   })
 
   it('works for an unverified user when both request fails', () => {
-    const status = getHandleReservedStatus({
+    const status = parseHandleReservedStatusFromSocial({
       isOauthVerified: false,
       lookedUpTwitterUser: null,
       lookedUpInstagramUser: null
@@ -40,7 +40,7 @@ describe('verifiedChecker', () => {
   })
 
   it('works for an oauth verified user', () => {
-    const status = getHandleReservedStatus({
+    const status = parseHandleReservedStatusFromSocial({
       isOauthVerified: 'hannibalburess',
       lookedUpTwitterUser: true,
       lookedUpInstagramUser: { verified: true },
@@ -50,7 +50,7 @@ describe('verifiedChecker', () => {
   })
 
   it('works for an oauth verified user when twitter request fails', () => {
-    const status = getHandleReservedStatus({
+    const status = parseHandleReservedStatusFromSocial({
       isOauthVerified: true,
       lookedUpTwitterUser: null,
       lookedUpInstagramUser: { is_verified: true }
@@ -60,7 +60,7 @@ describe('verifiedChecker', () => {
   })
 
   it('works for an oauth verified user when instagram request fails', () => {
-    const status = getHandleReservedStatus({
+    const status = parseHandleReservedStatusFromSocial({
       isOauthVerified: true,
       lookedUpTwitterUser: { verified: true },
       lookedUpInstagramUser: null
@@ -69,7 +69,7 @@ describe('verifiedChecker', () => {
   })
 
   it('works for an oauth verified user when twitter and instagram say not verified. this should not happen.', () => {
-    const status = getHandleReservedStatus({
+    const status = parseHandleReservedStatusFromSocial({
       isOauthVerified: true,
       lookedUpTwitterUser: { verified: false },
       lookedUpInstagramUser: { is_verified: false }
@@ -78,7 +78,7 @@ describe('verifiedChecker', () => {
   })
 
   it('shows that a matching twitter handle is reserved', () => {
-    const status = getHandleReservedStatus({
+    const status = parseHandleReservedStatusFromSocial({
       isOauthVerified: false,
       lookedUpTwitterUser: { verified: true },
       lookedUpInstagramUser: { is_verified: false }
@@ -87,7 +87,7 @@ describe('verifiedChecker', () => {
   })
 
   it('shows that a matching instagram handle is reserved', () => {
-    const status = getHandleReservedStatus({
+    const status = parseHandleReservedStatusFromSocial({
       isOauthVerified: false,
       lookedUpTwitterUser: { verified: false },
       lookedUpInstagramUser: { is_verified: true }
@@ -96,7 +96,7 @@ describe('verifiedChecker', () => {
   })
 
   it('shows that a matching twitter or instagram handle is reserved', () => {
-    const status = getHandleReservedStatus({
+    const status = parseHandleReservedStatusFromSocial({
       isOauthVerified: false,
       lookedUpTwitterUser: { verified: true },
       lookedUpInstagramUser: { is_verified: true }
@@ -107,7 +107,7 @@ describe('verifiedChecker', () => {
   })
 
   it('shows that we can claim a verified handle if both requests fail', () => {
-    const status = getHandleReservedStatus({
+    const status = parseHandleReservedStatusFromSocial({
       isOauthVerified: false,
       lookedUpTwitterUser: null,
       lookedUpInstagramUser: null
