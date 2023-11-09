@@ -37,7 +37,7 @@ const relatedComponentsMap = {
     ),
     description:
       'A separator between two elements, usually consisting of a horizontal  or vertical line.',
-    link: 'components-layout-divider--documentation'
+    link: 'layout-divider--documentation'
   },
   Box: {
     component: (
@@ -53,7 +53,7 @@ const relatedComponentsMap = {
     ),
     description:
       'A simple layout component which adds pre-defined margin, padidng, and borders',
-    link: 'components-layout-box--documentation'
+    link: 'layout-box--documentation'
   },
   Flex: {
     component: (
@@ -72,12 +72,12 @@ const relatedComponentsMap = {
     ),
     description:
       'A layout component to handle flex behavior without manual styling.',
-    link: 'components-layout-flex--documentation'
+    link: 'layout-flex--documentation'
   },
   Paper: {
     component: <Paper w={200} h={80} />,
     description: 'An elevated container which stands out from the background.',
-    link: 'components-layout-paper--documentation'
+    link: 'layout-paper--documentation'
   }
 }
 
