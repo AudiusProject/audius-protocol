@@ -325,14 +325,20 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	healthz.Any("*", echo.WrapHandler(healthzProxy))
 
 	// -------------------
-	// reverse proxy /up to uptime container
-	uptime := routes.Group("/up")
+	// reverse proxy /up and /up_api to uptime container
 	uptimeUrl, err := url.Parse("http://uptime:1996")
 	if err != nil {
 		log.Fatal("Invalid uptime URL: ", err)
 	}
 	uptimeProxy := httputil.NewSingleHostReverseProxy(uptimeUrl)
-	uptime.Any("*", echo.WrapHandler(uptimeProxy))
+
+	uptimeAPI := routes.Group("/up_api")
+	// fixes what I think should be considered an echo bug: https://github.com/labstack/echo/issues/1419
+	uptimeAPI.Use(ACAOHeaderOverwriteMiddleware)
+	uptimeAPI.Any("/*", echo.WrapHandler(uptimeProxy))
+
+	uptimeUI := routes.Group("/up")
+	uptimeUI.Any("*", echo.WrapHandler(uptimeProxy))
 
 	// -------------------
 	// internal
@@ -361,6 +367,20 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	return ss, nil
 
+}
+
+func setResponseACAOHeaderFromRequest(req http.Request, resp echo.Response) {
+	resp.Header().Set(echo.HeaderAccessControlAllowOrigin,
+		req.Header.Get(echo.HeaderOrigin))
+}
+
+func ACAOHeaderOverwriteMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		ctx.Response().Before(func() {
+			setResponseACAOHeaderFromRequest(*ctx.Request(), *ctx.Response())
+		})
+		return next(ctx)
+	}
 }
 
 func (ss *MediorumServer) MustStart() {
