@@ -12,9 +12,10 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
   const port = parseInt(env.VITE_PORT ?? '3000')
   const analyze = env.VITE_BUNDLE_ANALYZE === 'true'
+  env.VITE_PUBLIC_URL = env.VITE_PUBLIC_URL ?? ''
 
   return {
-    base: env.VITE_PUBLIC_URL ?? '/',
+    base: env.VITE_PUBLIC_URL,
     build: {
       outDir: 'build',
       sourcemap: true,
