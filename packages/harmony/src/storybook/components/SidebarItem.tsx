@@ -22,19 +22,16 @@ export const SidebarItem = (props: SidebarItemProps) => {
       : theme.barSelectedColor
 
   return (
-    <Flex justifyContent='space-between' css={{ width: '100%' }}>
+    <Flex justifyContent='space-between' w='100%'>
       <Box as='div'>{name}</Box>
       <Flex
         justifyContent='center'
         alignItems='center'
         as='div'
         ph='s'
-        css={{
-          height: '18px',
-          borderRadius: '4px',
-          border: `1px solid ${statusColor}`,
-          color: statusColor
-        }}
+        borderRadius='s'
+        border='default'
+        css={{ height: '18px', borderColor: statusColor, color: statusColor }}
       >
         {status}
       </Flex>

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import { useTheme } from '@storybook/theming'
 
-import { Paper } from '../../components'
+import { Flex } from 'components'
 
 type TipProps = {
   title: string
@@ -14,7 +14,7 @@ export const Tip = (props: TipProps) => {
   const { title, description, className } = props
   const theme = useTheme()
   return (
-    <Paper
+    <Flex
       borderRadius='m'
       border='default'
       pv='m'
@@ -33,6 +33,6 @@ export const Tip = (props: TipProps) => {
         {title}
       </p>
       <p css={{ margin: 0 }}>{description}</p>
-    </Paper>
+    </Flex>
   )
 }
