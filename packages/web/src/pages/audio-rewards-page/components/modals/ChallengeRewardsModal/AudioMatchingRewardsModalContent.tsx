@@ -122,7 +122,7 @@ export const AudioMatchingRewardsModalContent = ({
   const progressStatusLabel =
     userChallenge && userChallenge?.disbursed_amount > 0 ? (
       <div className={styles.audioMatchingTotalContainer}>
-        <Text variant='label' size='l' strength='strong' color='subdued'>
+        <Text variant='label' size='l' strength='strong'>
           {messages.totalEarned(
             formatNumberCommas(userChallenge.disbursed_amount.toString())
           )}
