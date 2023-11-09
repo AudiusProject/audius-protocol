@@ -1,13 +1,13 @@
 import { useCallback } from 'react'
 
-import { IconArrow, IconDownload } from '@audius/stems'
+import { IconCaretRight, IconDownload } from '@audius/stems'
 import cn from 'classnames'
 import { Parallax, useParallaxController } from 'react-scroll-parallax'
 
-import HeroForeground from 'assets/img/publicSite/AudiusApp@2x.png'
-import HeroBackgroundMobile from 'assets/img/publicSite/Hero-BG@1x.jpg'
-import HeroBackground from 'assets/img/publicSite/Hero-BG@2x.jpg'
-import HeroBackgroundXL from 'assets/img/publicSite/Hero-BG@3x.jpg'
+import HeroBackgroundMobile from 'assets/img/publicSite/HeroBG.webp'
+import HeroBackground from 'assets/img/publicSite/HeroBG@2x.webp'
+import HeroBackgroundXL from 'assets/img/publicSite/HeroBG@3x.webp'
+import HeroForeground from 'assets/img/publicSite/ProductShot1@2x.webp'
 import AppStoreBadge from 'assets/img/publicSite/app-store-badge.svg'
 import GlyphPattern1x from 'assets/img/publicSite/glyph-pattern@1x.png'
 import GlyphPattern2x from 'assets/img/publicSite/glyph-pattern@2x.png'
@@ -16,16 +16,16 @@ import { handleClickRoute } from 'components/public-site/handleClickRoute'
 import { getIOSAppLink } from 'utils/appLinks'
 import {
   APP_REDIRECT,
-  AUDIUS_SIGN_UP_LINK,
+  AUDIUS_LISTENING_LINK,
   DOWNLOAD_START_LINK
 } from 'utils/route'
 
 import styles from './Hero.module.css'
 
 const messages = {
-  title: 'Discover New & Exclusive Music',
-  subtitle: 'Upload, Share & Listen while earning $AUDIO Token Rewards',
-  cta: 'Sign Up Free',
+  title: 'Artists Deserve More',
+  subtitle: 'Take Control: Sell Your Music, Your Way',
+  cta: 'Start Listening',
   download: 'Download The App'
 }
 
@@ -65,13 +65,13 @@ export const Hero = (props: HeroProps) => {
           </div>
           <button
             onClick={handleClickRoute(
-              AUDIUS_SIGN_UP_LINK,
+              AUDIUS_LISTENING_LINK,
               props.setRenderPublicSite
             )}
             className={styles.ctaButton}
           >
             <span className={styles.ctaMessage}>{messages.cta}</span>
-            <IconArrow className={styles.ctaArrow} />
+            <IconCaretRight />
           </button>
           <button
             onClick={handleClickRoute(APP_REDIRECT, props.setRenderPublicSite)}
@@ -94,12 +94,12 @@ export const Hero = (props: HeroProps) => {
               href='https://play.google.com/store/apps/details?id=co.audius.app'
               target='_blank'
               rel='noopener noreferrer'
+              className={styles.googlePlayBtn}
             >
               <GooglePlayBadge
                 aria-label='Get it on Google Play'
                 width={135}
                 height={40}
-                className={styles.googlePlayBtn}
               />
             </a>
           </div>
@@ -121,13 +121,13 @@ export const Hero = (props: HeroProps) => {
         <Parallax
           className={cn(styles.background, styles.fgContainer)}
           translateY={[51, -10]}
-          translateX={[64, 64]}
+          translateX={[44, 44]}
         >
           <img
             src={HeroForeground}
             className={styles.foregroundImg}
             onLoad={onImgSet}
-            alt='Foreground Audius Mobile App'
+            alt='Foreground Audius Web and Mobile Product Shot'
           />
         </Parallax>
         <Parallax
@@ -160,13 +160,13 @@ export const Hero = (props: HeroProps) => {
           <div className={styles.buttonContent}>
             <button
               onClick={handleClickRoute(
-                AUDIUS_SIGN_UP_LINK,
+                AUDIUS_LISTENING_LINK,
                 props.setRenderPublicSite
               )}
               className={styles.ctaButton}
             >
               <span className={styles.ctaMessage}>{messages.cta}</span>
-              <IconArrow width={30} height={30} className={styles.ctaArrow} />
+              <IconCaretRight width={20} height={20} />
             </button>
             <button
               onClick={handleClickRoute(
@@ -202,12 +202,12 @@ export const Hero = (props: HeroProps) => {
               href='https://play.google.com/store/apps/details?id=co.audius.app'
               target='_blank'
               rel='noopener noreferrer'
+              className={styles.googlePlayBtn}
             >
               <GooglePlayBadge
                 aria-label='Get it on Google Play'
                 width={135}
                 height={40}
-                className={styles.googlePlayBtn}
               />
             </a>
           </div>

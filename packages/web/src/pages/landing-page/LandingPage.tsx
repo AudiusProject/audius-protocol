@@ -6,30 +6,30 @@ import { ParallaxProvider } from 'react-scroll-parallax'
 import { FanburstBanner } from 'components/banner/FanburstBanner'
 import { CookieBanner } from 'components/cookie-banner/CookieBanner'
 import Footer from 'components/public-site/Footer'
-import NavBanner from 'components/public-site/NavBanner'
+import NavBannerV2 from 'components/public-site/NavBanner'
 import { shouldShowCookieBanner, dismissCookieBanner } from 'utils/gdpr'
 import { getPathname } from 'utils/route'
 
 import styles from './LandingPage.module.css'
-import ArtistTestimonials from './components/ArtistTestimonials'
-import CTAListening from './components/CTAListening'
-import CTASignUp from './components/CTASignUp'
+import ArtistInvestors from './components/ArtistInvestors'
+import CTAGetStarted from './components/CTAGetStarted'
+import CTAStartListening from './components/CTAStartListening'
+// import CaseStudies from './components/CaseStudies'
 import Description from './components/Description'
 import FeaturedContent from './components/FeaturedContent'
 import Hero from './components/Hero'
-import JoinTheCommunity from './components/JoinTheCommunity'
 import PlatformFeatures from './components/PlatformFeatures'
-import PlatformTagline from './components/PlatformTagline'
+import WhoUsesAudius from './components/WhoUsesAudius'
 
 const FANBURST_UTM_SOURCE = 'utm_source=fanburst'
 
-type LandingPageProps = {
+type LandingPageV2Props = {
   isMobile: boolean
   openNavScreen: () => void
   setRenderPublicSite: (shouldRender: boolean) => void
 }
 
-const LandingPage = (props: LandingPageProps) => {
+const LandingPage = (props: LandingPageV2Props) => {
   useEffect(() => {
     document.documentElement.style.height = 'auto'
     return () => {
@@ -93,7 +93,7 @@ const LandingPage = (props: LandingPageProps) => {
             onClose={onDismissFanburstBanner}
           />
         )}
-        <NavBanner
+        <NavBannerV2
           className={cn({
             [styles.hasBanner]: showFanburstBanner,
             [styles.isMobile]: props.isMobile
@@ -108,9 +108,10 @@ const LandingPage = (props: LandingPageProps) => {
           setRenderPublicSite={props.setRenderPublicSite}
         />
         <Description isMobile={props.isMobile} />
-        <ArtistTestimonials isMobile={props.isMobile} />
+        <WhoUsesAudius isMobile={props.isMobile} />
         <PlatformFeatures isMobile={props.isMobile} />
-        <CTAListening
+        <ArtistInvestors isMobile={props.isMobile} />
+        <CTAGetStarted
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
         />
@@ -118,12 +119,11 @@ const LandingPage = (props: LandingPageProps) => {
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
         />
-        <PlatformTagline isMobile={props.isMobile} />
-        <JoinTheCommunity
+        {/* <CaseStudies
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
-        />
-        <CTASignUp
+        /> */}
+        <CTAStartListening
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
         />
