@@ -32,7 +32,6 @@ const messages = {
   viewPremiumTracks: 'View Premium Tracks',
   uploadTrack: 'Upload Track',
   totalClaimed: (amount: string) => `Total $AUDIO Claimed: ${amount}`,
-  totalEarned: (amount: string) => `Total $AUDIO Earned: ${amount}`,
   claimAudio: (amount: string) => `Claim ${amount} $AUDIO`
 }
 
@@ -124,7 +123,6 @@ export const AudioMatchingChallengeDrawerContent = ({
               <Text
                 variant='label'
                 fontSize='small'
-                color='neutralLight4'
                 weight='heavy'
                 textTransform='uppercase'
               >
