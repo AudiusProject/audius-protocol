@@ -2,7 +2,6 @@ import {
   withThemeByDataAttribute,
   withThemeFromJSXProvider
 } from '@storybook/addon-themes'
-import { ComponentRules, RelatedComponents } from '../src/storybook/components'
 
 // This file is used to configure all stories
 import './global.css'
@@ -16,11 +15,7 @@ export const parameters = {
   viewMode: 'docs',
   docs: {
     container: HarmonyDocsContainer,
-    toc: true,
-    components: {
-      ComponentRules,
-      RelatedComponents
-    }
+    toc: true
   },
   darkMode: {
     light: harmonyDocsThemes.day,

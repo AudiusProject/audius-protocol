@@ -1,4 +1,4 @@
-import type { ReactElement } from 'react'
+import type { ReactNode } from 'react'
 
 import { Unstyled } from '@storybook/blocks'
 
@@ -6,7 +6,7 @@ import { Flex, Link, Paper, Text } from 'components'
 
 type InformationBoxProps = {
   className?: string
-  component: ReactElement
+  component: ReactNode
   title: string
   description: string
   href?: string
@@ -18,13 +18,15 @@ export const InformationBox = (props: InformationBoxProps) => {
   return (
     <Paper as='section' direction='column' flex={1} gap='m'>
       <Flex
-        p='xl'
+        h={144}
+        ph='xl'
         alignItems='center'
         justifyContent='center'
         className={className}
         css={(theme) => ({
           backgroundColor: theme.color.background.default,
-          height: 147
+          flexGrow: 0,
+          WebkitFlexGrow: 0
         })}
       >
         <Unstyled>{component}</Unstyled>
