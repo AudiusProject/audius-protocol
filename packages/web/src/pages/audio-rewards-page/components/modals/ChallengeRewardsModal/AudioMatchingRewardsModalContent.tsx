@@ -43,7 +43,7 @@ const messages = {
   },
   viewPremiumTracks: 'View Premium Tracks',
   uploadTrack: 'Upload Track',
-  totalEarned: (amount: string) => `Total $AUDIO Earned: ${amount}`,
+  totalClaimed: (amount: string) => `Total $AUDIO Claimed: ${amount}`,
   claimAudio: (amount: string) => `Claim ${amount} $AUDIO`,
   upcomingRewards: 'Upcoming Rewards',
   audio: '$AUDIO'
@@ -123,7 +123,7 @@ export const AudioMatchingRewardsModalContent = ({
     userChallenge && userChallenge?.disbursed_amount > 0 ? (
       <div className={styles.audioMatchingTotalContainer}>
         <Text variant='label' size='l' strength='strong'>
-          {messages.totalEarned(
+          {messages.totalClaimed(
             formatNumberCommas(userChallenge.disbursed_amount.toString())
           )}
         </Text>
