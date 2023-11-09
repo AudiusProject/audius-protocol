@@ -21,7 +21,7 @@ export const errorMessages = {
 
 export const handleSchema = z.object({
   handle: z
-    .string({ required_error: errorMessages.missingHandleError })
+    .string()
     .max(MAX_HANDLE_LENGTH)
     .regex(/^[a-zA-Z0-9_.]*$/, errorMessages.badCharacterError)
     .refine(

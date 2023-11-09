@@ -2,9 +2,9 @@ import { useCallback, useEffect, useRef } from 'react'
 
 import { Box, Button, Flex, Text } from '@audius/harmony'
 import { Form, Formik, FormikProps, useFormikContext } from 'formik'
-import { debounce } from 'lodash'
+import { debounce, isEmpty } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
-import { toFormikValidate } from 'zod-formik-adapter'
+import { toFormikValidate, toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { setValueField } from 'common/store/pages/signon/actions'
 import { getHandleField } from 'common/store/pages/signon/selectors'
@@ -35,21 +35,25 @@ type PickHandleValues = {
 }
 
 const HandleField = () => {
-  const { values, validateForm, errors, touched } =
-    useFormikContext<PickHandleValues>()
-  const debouncedValidate = useCallback(debounce(validateForm, 250), [
+  const {
+    values,
+    validateForm,
+    errors: { handle: error },
+    touched
+  } = useFormikContext<PickHandleValues>()
+  const debouncedValidate = useCallback(debounce(validateForm, 1000), [
     validateForm
   ])
   useEffect(() => {
     debouncedValidate(values)
   }, [values.handle])
 
-  let helperText: React.ReactNode = errors.handle
+  let helperText: React.ReactNode = error
 
   {
     /* TODO: Finish this + other social linking: */
   }
-  if (errors.handle === messages.twitterReservedError) {
+  if (error === messages.twitterReservedError) {
     helperText = (
       <>
         {messages.twitterReservedError}
@@ -71,7 +75,8 @@ const HandleField = () => {
     <HarmonyTextField
       name='handle'
       label={messages.handle}
-      helperText={helperText}
+      error={!!error && !isEmpty(values.handle)}
+      helperText={!!error && !isEmpty(values.handle) ? helperText : undefined}
       startAdornmentText='@'
       placeholder={messages.handle}
       transformValue={(value) => value.replace(/\s/g, '')}
@@ -102,11 +107,11 @@ export const PickHandlePage = () => {
     <Formik
       innerRef={formikRef}
       initialValues={initialValues}
-      validate={toFormikValidate(handleSchema)}
+      validationSchema={toFormikValidationSchema(handleSchema)}
       onSubmit={handleSubmit}
       validateOnChange={false}
     >
-      {({ isSubmitting, isValid }) => (
+      {({ isSubmitting, isValid, isValidating }) => (
         <Form>
           <Box>
             <Flex gap='l' direction='column'>
@@ -137,7 +142,7 @@ export const PickHandlePage = () => {
             <Button
               type='submit'
               disabled={!isValid || isSubmitting}
-              isLoading={isSubmitting}
+              isLoading={isSubmitting || isValidating}
             >
               {messages.continue}
             </Button>
