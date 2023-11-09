@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Route } from 'react-router-dom'
 
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import NavScreen from 'components/public-site/NavOverlayV2'
-import LandingPage from 'pages/landing-page-v2/LandingPageV2'
+import LandingPage from 'pages/landing-page-v2/LandingPage'
 import {
   TRENDING_PAGE,
   SIGN_UP_PAGE,

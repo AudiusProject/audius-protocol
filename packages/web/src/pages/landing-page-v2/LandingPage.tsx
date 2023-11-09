@@ -10,7 +10,7 @@ import NavBannerV2 from 'components/public-site/NavBannerV2'
 import { shouldShowCookieBanner, dismissCookieBanner } from 'utils/gdpr'
 import { getPathname } from 'utils/route'
 
-import styles from './LandingPageV2.module.css'
+import styles from './LandingPage.module.css'
 import ArtistInvestors from './components/ArtistInvestors'
 import CTAGetStarted from './components/CTAGetStarted'
 import CTAStartListening from './components/CTAStartListening'
@@ -29,7 +29,7 @@ type LandingPageV2Props = {
   setRenderPublicSite: (shouldRender: boolean) => void
 }
 
-const LandingPageV2 = (props: LandingPageV2Props) => {
+const LandingPage = (props: LandingPageV2Props) => {
   useEffect(() => {
     document.documentElement.style.height = 'auto'
     return () => {
@@ -136,4 +136,4 @@ const LandingPageV2 = (props: LandingPageV2Props) => {
   )
 }
 
-export default LandingPageV2
+export default LandingPage
