@@ -80,16 +80,19 @@ func (u *Uptime) Start() {
 	e.Use(middleware.CORS())
 	e.Use(middleware.Gzip())
 
+	e.Static("/up", "/app/node-ui/dist")
+
+	e.GET("/up_api/uptime", u.handleUptime)
+	e.GET("/up_api/env", u.handleGetEnv)
+
 	e.GET("/health_check", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{
 			"healthy": "true",
 		})
 	})
-	e.GET("/uptime", u.handleUptime)
 
 	e.Logger.Fatal(e.Start(":" + u.Config.ListenPort))
 
-	// signals
 	signal.Notify(u.quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	<-u.quit
 	close(u.quit)
@@ -256,4 +259,17 @@ func (u *Uptime) recordNodeUptimeToDB(host string, wasUp bool) {
 		}
 		return peerBucket.Put([]byte(host), status)
 	})
+}
+
+type EnvResponse struct {
+	Env      string `json:"env"`
+	NodeType string `json:"nodeType"`
+}
+
+func (u *Uptime) handleGetEnv(c echo.Context) error {
+	resp := EnvResponse{
+		Env:      u.Config.Env,
+		NodeType: u.Config.NodeType,
+	}
+	return c.JSON(http.StatusOK, resp)
 }

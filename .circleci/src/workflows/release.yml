@@ -55,6 +55,11 @@ jobs:
       context: [GCP, dockerhub, slack-secrets]
       service: dashboard
       notify_slack_on_failure: true
+  - push-docker-image:
+      name: push-uptime
+      context: [Vercel, dockerhub]
+      service: uptime
+      notify_slack_on_failure: true
 
   - push-arm-image:
       name: push-discovery-provider-arm
