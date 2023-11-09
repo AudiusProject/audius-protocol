@@ -1,9 +1,12 @@
 import {
-  reachabilityActions,
-  reachabilitySelectors,
-  getContext,
-  accountActions
-} from '@audius/common'
+  fetchAccount,
+  fetchAccountFailed,
+  fetchAccountNoInternet,
+  fetchLocalAccount
+} from '@audius/common/store/account/slice'
+import { getContext } from '@audius/common/store/effects'
+import { reachabilityActions } from '@audius/common/store/reachability'
+import { getIsReachable } from '@audius/common/store/reachability/selectors'
 import {
   put,
   all,
@@ -20,7 +23,6 @@ import { REACHABILITY_LONG_TIMEOUT } from 'store/reachability/sagas'
 import * as backendActions from './actions'
 import { watchBackendErrors } from './errorSagas'
 import { getIsSettingUp, getIsSetup } from './selectors'
-const { getIsReachable } = reachabilitySelectors
 
 /**
  * Waits for the backend to be setup. Can be used as a blocking call in another saga,
@@ -60,7 +62,7 @@ export function* awaitReachability() {
 export function* setupBackend() {
   // Optimistically fetch account, then do it again later when we're sure we're connected
   // This ensures we always get the cached account when starting offline if available
-  yield* put(accountActions.fetchLocalAccount())
+  yield* put(fetchLocalAccount())
 
   // Init APICLient
   const apiClient = yield* getContext('apiClient')
@@ -71,7 +73,7 @@ export function* setupBackend() {
   // and just sit here waiting for reachability.
   if (!establishedReachability) {
     console.warn('No internet connectivity')
-    yield* put(accountActions.fetchAccountNoInternet())
+    yield* put(fetchAccountNoInternet())
     yield* take(reachabilityActions.SET_REACHABLE)
     console.info('Reconnected')
   }
@@ -81,10 +83,10 @@ export function* setupBackend() {
 
   // Fire-and-forget init fp
   fingerprintClient.init()
-  yield* put(accountActions.fetchAccount())
+  yield* put(fetchAccount())
   const { web3Error, libsError } = yield* call(audiusBackendInstance.setup)
   if (libsError) {
-    yield* put(accountActions.fetchAccountFailed({ reason: 'LIBS_ERROR' }))
+    yield* put(fetchAccountFailed({ reason: 'LIBS_ERROR' }))
     yield* put(backendActions.setupBackendFailed())
     yield* put(backendActions.libsError(libsError))
     return

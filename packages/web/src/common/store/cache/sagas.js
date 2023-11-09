@@ -1,14 +1,24 @@
+import { Status } from '@audius/common/models/Status'
+import { FeatureFlags, IntKeys } from '@audius/common/services/remote-config'
 import {
-  Status,
-  makeUids,
-  getIdFromKindId,
-  cacheActions,
-  cacheSelectors,
-  cacheConfig,
-  FeatureFlags,
-  confirmerSelectors,
-  IntKeys
-} from '@audius/common'
+  ADD,
+  UNSUBSCRIBE,
+  add as addToCache,
+  addSucceeded,
+  subscribe,
+  setStatus,
+  unsubscribe,
+  unsubscribeSucceeded,
+  UNSUBSCRIBE_SUCCEEDED,
+  remove,
+  REMOVE,
+  removeSucceeded,
+  setCacheConfig
+} from '@audius/common/store/cache/actions'
+import { CACHE_PRUNE_MIN } from '@audius/common/store/cache/config'
+import { getCache, getEntryTTL } from '@audius/common/store/cache/selectors'
+import { getConfirmCalls } from '@audius/common/store/confirmer/selectors'
+import { getIdFromKindId, makeUids } from '@audius/common/utils/uid'
 import { pick } from 'lodash'
 import {
   all,
@@ -18,10 +28,6 @@ import {
   takeEvery,
   getContext
 } from 'redux-saga/effects'
-
-const { CACHE_PRUNE_MIN } = cacheConfig
-const { getConfirmCalls } = confirmerSelectors
-const { getCache, getEntryTTL } = cacheSelectors
 
 const isMissingFields = (cacheEntry, requiredFields) => {
   if (!requiredFields) return false
@@ -149,7 +155,7 @@ function* retrieveFromSourceThenCache({
 }) {
   if (shouldSetLoading) {
     yield put(
-      cacheActions.setStatus(
+      setStatus(
         kind,
         idsToFetch.map((id) => ({ id, status: Status.LOADING }))
       )
@@ -180,7 +186,7 @@ function* retrieveFromSourceThenCache({
     }))
 
     yield put(
-      cacheActions.add(
+      addToCache(
         kind,
         cacheMetadata,
         // Rewrite the cache entry if we forced retrieving it from source
@@ -194,14 +200,14 @@ function* retrieveFromSourceThenCache({
     yield call(onAfterAddToCache, metadatas)
 
     yield put(
-      cacheActions.setStatus(
+      setStatus(
         kind,
         idsToFetch.map((id) => ({ id, status: Status.SUCCESS }))
       )
     )
   } else {
     yield put(
-      cacheActions.setStatus(
+      setStatus(
         kind,
         idsToFetch.map((id) => ({ id, status: Status.ERROR }))
       )
@@ -232,7 +238,7 @@ export function* add(kind, entries, replace, persist) {
   })
   if (entriesToAdd.length > 0) {
     yield put(
-      cacheActions.addSucceeded({
+      addSucceeded({
         kind,
         entries: entriesToAdd,
         replace,
@@ -241,14 +247,14 @@ export function* add(kind, entries, replace, persist) {
     )
   }
   if (entriesToSubscribe.length > 0) {
-    yield put(cacheActions.subscribe(kind, entriesToSubscribe))
+    yield put(subscribe(kind, entriesToSubscribe))
   }
 }
 
 // Adds entries but first checks if they are confirming.
 // If they are, don't add or else we could be in an inconsistent state.
 function* watchAdd() {
-  yield takeEvery(cacheActions.ADD, function* (action) {
+  yield takeEvery(ADD, function* (action) {
     const { kind, entries, replace, persist } = action
     yield call(add, kind, entries, replace, persist)
   })
@@ -256,7 +262,7 @@ function* watchAdd() {
 
 // Prune cache entries if there are no more subscribers.
 function* watchUnsubscribe() {
-  yield takeEvery(cacheActions.UNSUBSCRIBE, function* (action) {
+  yield takeEvery(UNSUBSCRIBE, function* (action) {
     const { kind, unsubscribers } = action
 
     const cache = yield select(getCache, { kind })
@@ -286,7 +292,7 @@ function* watchUnsubscribe() {
     yield all(
       Object.keys(transitiveSubscriptions).map((subscriptionKind) =>
         put(
-          cacheActions.unsubscribe(
+          unsubscribe(
             subscriptionKind,
             transitiveSubscriptions[subscriptionKind]
           )
@@ -294,12 +300,12 @@ function* watchUnsubscribe() {
       )
     )
 
-    yield put(cacheActions.unsubscribeSucceeded(kind, unsubscribers))
+    yield put(unsubscribeSucceeded(kind, unsubscribers))
   })
 }
 
 function* watchUnsubscribeSucceeded() {
-  yield takeEvery(cacheActions.UNSUBSCRIBE_SUCCEEDED, function* (action) {
+  yield takeEvery(UNSUBSCRIBE_SUCCEEDED, function* (action) {
     const { kind, unsubscribers } = action
     const cache = yield select(getCache, { kind })
 
@@ -311,18 +317,18 @@ function* watchUnsubscribeSucceeded() {
       }
     })
     if (idsToRemove.length > 0) {
-      yield put(cacheActions.remove(kind, idsToRemove))
+      yield put(remove(kind, idsToRemove))
     }
   })
 }
 
 function* watchRemove() {
-  yield takeEvery(cacheActions.REMOVE, function* (action) {
+  yield takeEvery(REMOVE, function* (action) {
     const { kind } = action
     const cache = yield select(getCache, { kind })
 
     if (cache && cache.idsToPrune && cache.idsToPrune.size >= CACHE_PRUNE_MIN) {
-      yield put(cacheActions.removeSucceeded(kind, [...cache.idsToPrune]))
+      yield put(removeSucceeded(kind, [...cache.idsToPrune]))
     }
   })
 }
@@ -351,7 +357,7 @@ function* initializeCacheType() {
   const simpleCache = yield call(getFeatureEnabled, FeatureFlags.SIMPLE_CACHE)
 
   yield put(
-    cacheActions.setCacheConfig({
+    setCacheConfig({
       cacheType,
       entryTTL: cacheEntryTTL,
       simple: simpleCache

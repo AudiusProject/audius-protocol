@@ -1,27 +1,38 @@
+import { Name } from '@audius/common/models/Analytics'
+import { DefaultSizes } from '@audius/common/models/ImageSizes'
+import { Kind } from '@audius/common/models/Kind'
+import { accountActions } from '@audius/common/store/account'
 import {
-  Name,
-  DefaultSizes,
-  Kind,
-  makeKindId,
-  squashNewLines,
-  accountSelectors,
-  accountActions,
-  cacheCollectionsSelectors,
-  cacheCollectionsActions as collectionActions,
+  getAccountUser,
+  getUserId
+} from '@audius/common/store/account/selectors'
+import {
   PlaylistOperations,
-  cacheUsersSelectors,
   cacheActions,
-  getContext,
-  toastActions,
-  updatePlaylistArtwork,
-  cacheTracksSelectors,
-  removeNullable,
-  confirmerActions,
-  LibraryCategory,
+  cacheCollectionsActions,
+  reformatCollection
+} from '@audius/common/store/cache'
+import {
+  getCollection,
+  getCollectionTracks
+} from '@audius/common/store/cache/collections/selectors'
+import { getTrack } from '@audius/common/store/cache/tracks/selectors'
+import { getUser } from '@audius/common/store/cache/users/selectors'
+import {
   confirmTransaction,
-  reformatCollection,
-  savedPageActions
-} from '@audius/common'
+  confirmerActions
+} from '@audius/common/store/confirmer'
+import { getContext } from '@audius/common/store/effects'
+import { LibraryCategory } from '@audius/common/store/pages'
+import {
+  addLocalCollection,
+  removeLocalCollection
+} from '@audius/common/store/pages/saved-page/actions'
+import { manualClearToast, toast } from '@audius/common/store/ui/toast/slice'
+import { squashNewLines } from '@audius/common/utils/formatUtil'
+import { removeNullable } from '@audius/common/utils/typeUtils'
+import { makeKindId } from '@audius/common/utils/uid'
+import { updatePlaylistArtwork } from '@audius/common/utils/updatePlaylistArtwork'
 import {
   all,
   call,
@@ -50,12 +61,6 @@ import { fixInvalidTracksInPlaylist } from './fixInvalidTracksInPlaylist'
 import { optimisticUpdateCollection } from './utils/optimisticUpdateCollection'
 import { retrieveCollection } from './utils/retrieveCollections'
 
-const { manualClearToast, toast } = toastActions
-const { getUser } = cacheUsersSelectors
-const { getCollection, getCollectionTracks } = cacheCollectionsSelectors
-const { getTrack } = cacheTracksSelectors
-const { getAccountUser, getUserId } = accountSelectors
-
 const messages = {
   editToast: 'Changes saved!'
 }
@@ -73,7 +78,7 @@ const countTrackIds = (playlistContents, trackId) => {
 /** EDIT PLAYLIST */
 
 function* watchEditPlaylist() {
-  yield takeLatest(collectionActions.EDIT_PLAYLIST, editPlaylistAsync)
+  yield takeLatest(cacheCollectionsActions.EDIT_PLAYLIST, editPlaylistAsync)
 }
 
 function* editPlaylistAsync(action) {
@@ -113,7 +118,7 @@ function* editPlaylistAsync(action) {
   yield call(optimisticUpdateCollection, playlist)
   yield call(confirmEditPlaylist, playlistId, userId, playlist)
 
-  yield put(collectionActions.editPlaylistSucceeded())
+  yield put(cacheCollectionsActions.editPlaylistSucceeded())
   yield put(toast({ content: messages.editToast }))
 }
 
@@ -160,7 +165,7 @@ function* confirmEditPlaylist(playlistId, userId, formFields) {
       },
       function* ({ error, timeout, message }) {
         yield put(
-          collectionActions.editPlaylistFailed(
+          cacheCollectionsActions.editPlaylistFailed(
             message,
             { playlistId, userId, formFields },
             { error, timeout }
@@ -176,7 +181,7 @@ function* confirmEditPlaylist(playlistId, userId, formFields) {
 
 function* watchRemoveTrackFromPlaylist() {
   yield takeEvery(
-    collectionActions.REMOVE_TRACK_FROM_PLAYLIST,
+    cacheCollectionsActions.REMOVE_TRACK_FROM_PLAYLIST,
     removeTrackFromPlaylistAsync
   )
 }
@@ -308,7 +313,7 @@ function* confirmRemoveTrackFromPlaylist(
       function* ({ error, timeout, message }) {
         // Fail Call
         yield put(
-          collectionActions.removeTrackFromPlaylistFailed(
+          cacheCollectionsActions.removeTrackFromPlaylistFailed(
             message,
             { userId, playlistId, trackId, timestamp, count },
             { error, timeout }
@@ -330,7 +335,7 @@ function* confirmRemoveTrackFromPlaylist(
 /** ORDER PLAYLIST */
 
 function* watchOrderPlaylist() {
-  yield takeEvery(collectionActions.ORDER_PLAYLIST, orderPlaylistAsync)
+  yield takeEvery(cacheCollectionsActions.ORDER_PLAYLIST, orderPlaylistAsync)
 }
 
 function* orderPlaylistAsync(action) {
@@ -375,7 +380,10 @@ function* orderPlaylistAsync(action) {
 /** PUBLISH PLAYLIST */
 
 function* watchPublishPlaylist() {
-  yield takeEvery(collectionActions.PUBLISH_PLAYLIST, publishPlaylistAsync)
+  yield takeEvery(
+    cacheCollectionsActions.PUBLISH_PLAYLIST,
+    publishPlaylistAsync
+  )
 }
 
 function* publishPlaylistAsync(action) {
@@ -456,7 +464,7 @@ function* confirmPublishPlaylist(
       function* ({ error, timeout, message }) {
         // Fail Call
         yield put(
-          collectionActions.publishPlaylistFailed(
+          cacheCollectionsActions.publishPlaylistFailed(
             message,
             { userId, playlistId },
             { error, timeout }
@@ -471,7 +479,7 @@ function* confirmPublishPlaylist(
 /** DELETE PLAYLIST */
 
 function* watchDeletePlaylist() {
-  yield takeEvery(collectionActions.DELETE_PLAYLIST, deletePlaylistAsync)
+  yield takeEvery(cacheCollectionsActions.DELETE_PLAYLIST, deletePlaylistAsync)
 }
 
 function* deletePlaylistAsync(action) {
@@ -564,7 +572,7 @@ function* confirmDeleteAlbum(playlistId, trackIds, userId) {
             accountActions.removeAccountPlaylist({ collectionId: playlistId })
           ),
           put(
-            savedPageActions.removeLocalCollection({
+            removeLocalCollection({
               collectionId: playlistId,
               isAlbum: true,
               category: LibraryCategory.Favorite
@@ -623,7 +631,7 @@ function* confirmDeleteAlbum(playlistId, trackIds, userId) {
             })
           ),
           put(
-            savedPageActions.addLocalCollection({
+            addLocalCollection({
               collectionId: playlist.playlist_id,
               isAlbum: playlist.is_album,
               category: LibraryCategory.Favorite
@@ -631,7 +639,7 @@ function* confirmDeleteAlbum(playlistId, trackIds, userId) {
           )
         ])
         yield put(
-          collectionActions.deletePlaylistFailed(
+          cacheCollectionsActions.deletePlaylistFailed(
             message,
             { playlistId, trackIds, userId },
             { error, timeout }
@@ -662,7 +670,7 @@ function* confirmDeletePlaylist(userId, playlistId) {
             accountActions.removeAccountPlaylist({ collectionId: playlistId })
           ),
           put(
-            savedPageActions.removeLocalCollection({
+            removeLocalCollection({
               collectionId: playlistId,
               isAlbum: false,
               category: LibraryCategory.Favorite
@@ -714,7 +722,7 @@ function* confirmDeletePlaylist(userId, playlistId) {
             })
           ),
           put(
-            savedPageActions.addLocalCollection({
+            addLocalCollection({
               collectionId: playlist.playlist_id,
               isAlbum: playlist.is_album,
               category: LibraryCategory.Favorite
@@ -723,7 +731,7 @@ function* confirmDeletePlaylist(userId, playlistId) {
         ])
         yield call(addPlaylistsNotInLibrary)
         yield put(
-          collectionActions.deletePlaylistFailed(
+          cacheCollectionsActions.deletePlaylistFailed(
             message,
             { playlistId, userId },
             { error, timeout }
@@ -785,7 +793,7 @@ function* watchFetchCoverArt() {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const inProgress = new Set()
   yield takeEvery(
-    collectionActions.FETCH_COVER_ART,
+    cacheCollectionsActions.FETCH_COVER_ART,
     function* ({ collectionId, size }) {
       // Unique on id and size
       const key = `${collectionId}-${size}`

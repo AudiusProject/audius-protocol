@@ -1,22 +1,26 @@
+import { Name } from '@audius/common/models/Analytics'
+import { Collection } from '@audius/common/models/Collection'
+import { ID } from '@audius/common/models/Identifiers'
+import { Kind } from '@audius/common/models/Kind'
 import {
-  Name,
-  Kind,
-  makeKindId,
-  makeUid,
-  cacheCollectionsSelectors,
-  cacheCollectionsActions,
   PlaylistOperations,
   cacheActions,
-  getContext,
-  audioRewardsPageActions,
-  Collection,
-  Nullable,
-  ID,
-  cacheTracksSelectors,
-  updatePlaylistArtwork,
-  confirmerActions,
-  confirmTransaction
-} from '@audius/common'
+  cacheCollectionsActions
+} from '@audius/common/store/cache'
+import {
+  getCollection,
+  getCollectionTracks
+} from '@audius/common/store/cache/collections/selectors'
+import { getTrack } from '@audius/common/store/cache/tracks/selectors'
+import {
+  confirmTransaction,
+  confirmerActions
+} from '@audius/common/store/confirmer'
+import { getContext } from '@audius/common/store/effects'
+import { setOptimisticChallengeCompleted } from '@audius/common/store/pages/audio-rewards/slice'
+import { Nullable } from '@audius/common/utils/typeUtils'
+import { makeKindId, makeUid } from '@audius/common/utils/uid'
+import { updatePlaylistArtwork } from '@audius/common/utils/updatePlaylistArtwork'
 import { isEqual } from 'lodash'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
@@ -30,10 +34,6 @@ import {
   retrieveCollection,
   retrieveCollections
 } from './utils/retrieveCollections'
-
-const { getCollection, getCollectionTracks } = cacheCollectionsSelectors
-const { getTrack } = cacheTracksSelectors
-const { setOptimisticChallengeCompleted } = audioRewardsPageActions
 
 type AddTrackToPlaylistAction = ReturnType<
   typeof cacheCollectionsActions.addTrackToPlaylist
@@ -93,6 +93,8 @@ function* addTrackToPlaylistAsync(action: AddTrackToPlaylistAction) {
     [web3.eth, 'getBlock'],
     currentBlockNumber
   )) as { timestamp: number }
+
+  if (!playlist) return
 
   playlist.playlist_contents = {
     track_ids: playlist.playlist_contents.track_ids.concat({

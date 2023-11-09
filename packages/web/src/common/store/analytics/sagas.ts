@@ -1,4 +1,4 @@
-import { getContext } from '@audius/common'
+import { getContext } from '@audius/common/store/effects'
 import { omit } from 'lodash'
 import { takeEvery, call } from 'redux-saga/effects'
 
