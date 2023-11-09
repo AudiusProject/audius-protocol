@@ -5,8 +5,8 @@ import { ParallaxProvider } from 'react-scroll-parallax'
 
 import { FanburstBanner } from 'components/banner/FanburstBanner'
 import { CookieBanner } from 'components/cookie-banner/CookieBanner'
-import FooterV2 from 'components/public-site/FooterV2'
-import NavBannerV2 from 'components/public-site/NavBannerV2'
+import Footer from 'components/public-site/Footer'
+import NavBannerV2 from 'components/public-site/NavBanner'
 import { shouldShowCookieBanner, dismissCookieBanner } from 'utils/gdpr'
 import { getPathname } from 'utils/route'
 
@@ -127,7 +127,7 @@ const LandingPage = (props: LandingPageV2Props) => {
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
         />
-        <FooterV2
+        <Footer
           isMobile={props.isMobile}
           setRenderPublicSite={props.setRenderPublicSite}
         />

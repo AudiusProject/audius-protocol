@@ -30,7 +30,7 @@ import {
   DOWNLOAD_START_LINK
 } from 'utils/route'
 
-import styles from './NavOverlayV2.module.css'
+import styles from './NavOverlay.module.css'
 import { handleClickRoute } from './handleClickRoute'
 
 const messages = {

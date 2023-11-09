@@ -26,7 +26,7 @@ import {
 import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 import zIndex from 'utils/zIndex'
 
-import styles from './NavBannerV2.module.css'
+import styles from './NavBanner.module.css'
 import { handleClickRoute } from './handleClickRoute'
 
 const DESKTOP_NAV_BANNER_MIN_WIDTH = 1170

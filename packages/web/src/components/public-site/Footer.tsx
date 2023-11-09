@@ -24,7 +24,7 @@ import {
   AUDIUS_TELEGRAM_LINK
 } from 'utils/route'
 
-import styles from './FooterV2.module.css'
+import styles from './Footer.module.css'
 import { handleClickRoute } from './handleClickRoute'
 
 const bottomLinks = [
