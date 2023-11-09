@@ -106,7 +106,7 @@ const relatedComponentsMap = {
       </Box>
     ),
     description:
-      'Description of component goes here and will likely go to 2-3 lines so that its can fully explain itself.',
+      'A simple layout component which adds pre-defined margin, padidng, and borders',
     link: 'components-layout-box--documentation'
   },
   Flex: {
@@ -125,7 +125,7 @@ const relatedComponentsMap = {
       </Flex>
     ),
     description:
-      'Description of component goes here and will likely go to 2-3 lines so that its can fully explain itself.',
+      'A layout component to handle flex behavior without manual styling.',
     link: 'components-layout-flex--documentation'
   },
   FollowButton: {

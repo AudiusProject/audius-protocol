@@ -26,7 +26,8 @@ import {
   usePremiumContentAccess,
   DogEarType,
   premiumContentSelectors,
-  usePremiumContentPurchaseModal
+  usePremiumContentPurchaseModal,
+  ModalSource
 } from '@audius/common'
 import { ButtonSize } from '@audius/harmony'
 import { Scrubber } from '@audius/stems'
@@ -387,9 +388,12 @@ const NowPlaying = g(
     const { onOpen: openPremiumContentPurchaseModal } =
       usePremiumContentPurchaseModal()
     const onClickPremiumPill = useAuthenticatedClickCallback(() => {
-      openPremiumContentPurchaseModal({
-        contentId: typeof track_id === 'number' ? track_id : -1
-      })
+      openPremiumContentPurchaseModal(
+        {
+          contentId: typeof track_id === 'number' ? track_id : -1
+        },
+        { source: ModalSource.NowPlaying }
+      )
     }, [track_id, openPremiumContentPurchaseModal])
 
     const { doesUserHaveAccess } = usePremiumContentAccess(track)

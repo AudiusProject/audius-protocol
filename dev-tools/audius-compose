@@ -235,6 +235,7 @@ def build(
             "--profile=libs",
             "--profile=solana",
             "--profile=block-explorer",
+            "--profile=uptime",
             "build",
             *args,
             *services,

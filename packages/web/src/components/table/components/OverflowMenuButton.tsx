@@ -65,10 +65,11 @@ export const OverflowMenuButton = (props: OverflowMenuButtonProps) => {
               triggerPopup()
             }}
           >
-            <IconOptions
-              className={cn(tabStyles.iconKebabHorizontal, styles.icon)}
-              ref={ref}
-            />
+            <div ref={ref}>
+              <IconOptions
+                className={cn(tabStyles.iconKebabHorizontal, styles.icon)}
+              />
+            </div>
           </div>
         )}
       </Menu>

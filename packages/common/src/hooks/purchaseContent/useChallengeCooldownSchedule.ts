@@ -1,5 +1,3 @@
-import dayjs, { Dayjs } from 'dayjs'
-import utc from 'dayjs/plugin/utc'
 import { useSelector } from 'react-redux'
 
 import { ChallengeRewardID } from 'models/AudioRewards'
@@ -7,12 +5,11 @@ import {
   UndisbursedUserChallenge,
   audioRewardsPageSelectors
 } from 'store/pages'
+import dayjs, { Dayjs } from 'utils/dayjs'
 
 import { COOLDOWN_DAYS } from './constants'
 
 const { getUndisbursedUserChallenges } = audioRewardsPageSelectors
-
-dayjs.extend(utc)
 
 const messages = {
   laterToday: 'Later Today',

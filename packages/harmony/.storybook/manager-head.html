@@ -7,15 +7,6 @@
     display: none
   }
 
-  .sidebar-subheading button[data-action="collapse-root"] {
-    display: flex;
-    padding: 4px 16px;
-    align-items: center;
-    gap: 8px;
-    border-radius: var(--harmony-border-radius-2xl);
-    background: var(--harmony-docs-violet-v200);
-  }
-
   /* !imortant needed in the following to override highly specific storybook styles */
   .sidebar-subheading button {
     color: var(--harmony-docs-bar-text-color) !important;
@@ -25,16 +16,16 @@
     color: var(--harmony-docs-bar-text-color) !important;
   }
   
-  .sidebar-item:hover {
-    background: var(--harmony-docs-violet-v200) !important;
+  .sidebar-item:not([data-selected="true"]):hover {
+    background: var(--harmony-docs-bar-hover-color);
   }
 
   .sidebar-item svg, .search-result-item svg {
-    color: var(--harmony-docs-violet-v200) !important;
+    color: var(--harmony-docs-icon-color) !important;
   }
 
-  .sidebar-item[data-selected="true"] {
-    background: var(--harmony-docs-violet-v400) !important;
+  .sidebar-item[data-selected="true"] svg {
+    color: var(--harmony-docs-icon-selected-color) !important;
   }
 
 </style>

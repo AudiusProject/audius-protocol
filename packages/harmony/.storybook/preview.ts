@@ -6,6 +6,7 @@ import {
 // This file is used to configure all stories
 import './global.css'
 import { themes } from '../src/foundations/theme'
+import { harmonyDocsThemes } from '../src/storybook/theme'
 import { HarmonyDocsContainer } from './docs'
 import { ThemeProvider } from '@emotion/react'
 
@@ -14,7 +15,16 @@ export const parameters = {
   viewMode: 'docs',
   docs: {
     container: HarmonyDocsContainer,
-    toc: true
+    toc: true,
+    components: {
+      // ComponentRules,
+      // RelatedComponents
+    }
+  },
+  darkMode: {
+    light: harmonyDocsThemes.day,
+    dark: harmonyDocsThemes.dark,
+    stylePreview: true
   }
 }
 

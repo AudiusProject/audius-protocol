@@ -14,7 +14,8 @@ import {
   tippingActions,
   usePremiumConditionsEntity,
   usePremiumContentPurchaseModal,
-  usersSocialActions
+  usersSocialActions,
+  ModalSource
 } from '@audius/common'
 import type { ViewStyle } from 'react-native'
 import { Image, Text, View } from 'react-native'
@@ -213,7 +214,10 @@ export const DetailsTileNoAccess = ({
   }, [tippedUser, navigation, dispatch, source, trackId])
 
   const handlePurchasePress = useCallback(() => {
-    openPremiumContentPurchaseModal({ contentId: trackId })
+    openPremiumContentPurchaseModal(
+      { contentId: trackId },
+      { source: ModalSource.TrackDetails }
+    )
   }, [trackId, openPremiumContentPurchaseModal])
 
   const handlePressArtistName = useCallback(
