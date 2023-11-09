@@ -131,7 +131,8 @@ export const RelatedFoundations = (props: RelatedFoundationsProps) => {
     <Flex
       mv='3xl'
       gap='2xl'
-      css={{ section: { flex: '0 0 calc(33.33% - 32px)' } }}
+      // Style children to have max of 3 per row but fill the last row
+      css={{ section: { flex: '1 1', minWidth: 300 } }}
       wrap='wrap'
       justifyContent='space-between'
     >
