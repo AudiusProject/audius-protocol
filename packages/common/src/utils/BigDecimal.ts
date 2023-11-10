@@ -1,3 +1,5 @@
+import BN from 'bn.js'
+
 /**
  * Parses a string into the constructor args for a {@link BigDecimal}.
  *
@@ -78,7 +80,7 @@ export class BigDecimal {
    * @param decimalPlaces The number of decimal places the value has.
    */
   constructor(
-    value: BigDecimalCtorArgs | bigint | number | string,
+    value: BigDecimalCtorArgs | bigint | number | string | BN,
     decimalPlaces?: number
   ) {
     switch (typeof value) {
@@ -105,6 +107,9 @@ export class BigDecimal {
           const parsed = parseBigDecimalString(value.toString(), decimalPlaces)
           this.value = parsed.value
           this.decimalPlaces = parsed.decimalPlaces
+        } else if (value instanceof BN) {
+          this.value = BigInt(value.toString())
+          this.decimalPlaces = decimalPlaces ?? 0
         } else {
           this.value = value.value
           this.decimalPlaces = value.decimalPlaces
@@ -318,8 +323,11 @@ export class BigDecimal {
 }
 
 const createTokenConstructor =
-  (decimalPlaces: number) => (value: string | number | BigDecimal | bigint) =>
-    new BigDecimal(value, decimalPlaces)
+  <T extends BigDecimal>(
+    decimalPlaces: ConstructorParameters<typeof BigDecimal>[1]
+  ) =>
+  (value: ConstructorParameters<typeof BigDecimal>[0]): T =>
+    new BigDecimal(value, decimalPlaces) as T
 
 type AudioTokens = BigDecimal & { _brand: 'AUDIO' }
 /**
