@@ -2,7 +2,7 @@ import { useCallback, MouseEvent, ComponentPropsWithoutRef } from 'react'
 
 import cn from 'classnames'
 
-import { Text, TextProps } from '../text'
+import { Text, TextProps } from '../../components/text'
 
 import styles from './Link.module.css'
 
