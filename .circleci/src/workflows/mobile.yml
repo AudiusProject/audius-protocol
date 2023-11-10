@@ -66,7 +66,9 @@ jobs:
           only: /(^release.*)$/
 
   - mobile-deploy-codepush-production-ios-if-ota-release:
-      context: Audius Mobile Client
+      context:
+        - Audius Mobile Client
+        - slack-secrets
       requires:
         - mobile-hold-deploy-codepush-ios-if-ota-release
       filters:
@@ -130,7 +132,9 @@ jobs:
           only: /(^release.*)$/
 
   - mobile-deploy-codepush-production-android-if-ota-release:
-      context: Audius Mobile Client
+      context:
+        - Audius Mobile Client
+        - slack-secrets
       requires:
         - mobile-hold-deploy-codepush-android-if-ota-release
       filters:
@@ -146,7 +150,9 @@ jobs:
           only: /(^release.*)$/
 
   - mobile-deploy-saga-dapp-store:
-      context: Audius Mobile Client
+      context:
+        - Audius Mobile Client
+        - slack-secrets
       requires:
         - mobile-hold-deploy-saga-dapp-store
       filters:
