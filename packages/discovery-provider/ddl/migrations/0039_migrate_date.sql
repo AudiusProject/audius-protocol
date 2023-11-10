@@ -1,4 +1,4 @@
-
+-- migrate release_date to a timestamp
 begin;
 lock table tracks in access exclusive mode;
 
