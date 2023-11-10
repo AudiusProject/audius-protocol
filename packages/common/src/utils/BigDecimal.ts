@@ -274,6 +274,47 @@ export class BigDecimal {
         )}`
       : str
   }
+
+  /**
+   * Formats the decimal as an easy-to-read shorthand summary.
+   * Used primarily for balances in tiles and headers.
+   *
+   * - Always truncates, never rounds up. (eg. `1.9999 => "1.99"`)
+   * - Don't show decimal places if they'd appear as 0. (eg. `1.00234 => "1"`)
+   * - Shows two decimal places if they'd be non-zero. (eg. `1.234 => "1.23"`)
+   * - Count by 1,000s if over 10k (eg. `25413 => "25k"`)
+   *
+   * @example
+   * 0 => "0"
+   * 8 => "8"
+   * 8.01 => "8.01"
+   * 8.10 => "8.10"
+   * 4,210 => "4210"
+   * 9,999.99 => "9999.99"
+   * 56,010 => "56K"
+   * 443,123 => "443K"
+   */
+  public toShorthand() {
+    if (this.value === BigInt(0)) {
+      return '0'
+    }
+    const divisor = BigInt(10 ** this.decimalPlaces)
+    const quotient = this.value / divisor
+    if (quotient >= 10000) {
+      return `${quotient / BigInt(1000)}K`
+    } else if (this.value % divisor === BigInt(0)) {
+      return quotient.toString()
+    } else {
+      const amountString = this.value.toString()
+      const decimalStart = amountString.length - this.decimalPlaces
+      // Get the first two decimals (truncated)
+      const decimal = amountString.substring(decimalStart, decimalStart + 2)
+      if (decimal === '00') {
+        return quotient.toString()
+      }
+      return `${quotient}.${decimal}`
+    }
+  }
 }
 
 const createTokenConstructor =

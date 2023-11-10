@@ -263,6 +263,34 @@ describe('BigDecimal', function () {
     })
   })
 
+  describe('toShorthand', function () {
+    it('shows zero correctly', function () {
+      expect(new BigDecimal('0.00000').toShorthand()).toBe('0')
+    })
+    it('shows whole numbers correctly', function () {
+      expect(new BigDecimal('8.0099').toShorthand()).toBe('8')
+    })
+    it('shows negative numbers correctly', function () {
+      expect(new BigDecimal('-8.0099').toShorthand()).toBe('-8')
+    })
+    it('shows decimal numbers correctly', function () {
+      expect(new BigDecimal('12.345').toShorthand()).toBe('12.34')
+    })
+    it('shows trailing zero if necessary', function () {
+      expect(new BigDecimal('12.301').toShorthand()).toBe('12.30')
+      expect(new BigDecimal('12.30').toShorthand()).toBe('12.30')
+    })
+    it('shows thousands correctly', function () {
+      expect(new BigDecimal('9999.9999').toShorthand()).toBe('9999.99')
+    })
+    it('shows ten thousands correctly', function () {
+      expect(new BigDecimal('10000.9999').toShorthand()).toBe('10K')
+    })
+    it('shows hundred thousands correctly', function () {
+      expect(new BigDecimal('443123.9999').toShorthand()).toBe('443K')
+    })
+  })
+
   describe('helpers', function () {
     it('converts wAUDIO to AUDIO', function () {
       expect(AUDIO(wAUDIO(BigInt('12345678901234567890'))).toString()).toBe(
