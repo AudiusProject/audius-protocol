@@ -1,4 +1,6 @@
-import { Flex, Text, Link, IconComponent } from 'components'
+import { Flex, Text, IconComponent } from 'components'
+
+import { Link } from './Link'
 
 type CardLinkProps = {
   icon?: IconComponent

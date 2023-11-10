@@ -2,6 +2,10 @@ import { CSSObject, useTheme } from '@emotion/react'
 
 import type { AvatarProps } from './types'
 
+/*
+ * The Avatar component is a visual indicator used to quickly identify a
+ * user’s account.
+ */
 export const Avatar = (props: AvatarProps) => {
   const {
     src,
