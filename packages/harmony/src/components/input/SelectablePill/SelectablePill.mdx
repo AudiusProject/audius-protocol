@@ -1,11 +1,4 @@
-import {
-  Canvas,
-  Meta,
-  Title,
-  Primary,
-  Controls,
-  Story
-} from '@storybook/blocks'
+import { Canvas, Meta, Title, Primary, Controls } from '@storybook/blocks'
 
 import { Flex } from 'components'
 import { IconHeart, IconRepost } from 'icons'
@@ -47,15 +40,11 @@ Feed, Trending, and the top of the Library.
 
 ### Size
 
-<Canvas>
-  <Story of={SelectablePillStories.Size} />
-</Canvas>
+<Canvas of={SelectablePillStories.Size} />
 
 ### States
 
-<Canvas>
-  <Story of={SelectablePillStories.States} />
-</Canvas>
+<Canvas of={SelectablePillStories.States} />
 
 <Heading>
 ### Pill as menu
@@ -64,9 +53,7 @@ Can be used to trigger a modal or drawer.
 
 </Heading>
 
-<Canvas>
-  <Story of={SelectablePillStories.PillAsMenu} />
-</Canvas>
+<Canvas of={SelectablePillStories.PillAsMenu} />
 
 <Heading>
 ### Leading Icon
@@ -75,9 +62,7 @@ Only Large pills can have a leading icon.
 
 </Heading>
 
-<Canvas>
-  <Story of={SelectablePillStories.States} />
-</Canvas>
+<Canvas of={SelectablePillStories.States} />
 
 ## Use cases and examples
 
