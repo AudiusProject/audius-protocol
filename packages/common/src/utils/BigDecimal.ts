@@ -1,4 +1,4 @@
-import BN from 'bn.js'
+import type BN from 'bn.js'
 
 /**
  * Parses a string into the constructor args for a {@link BigDecimal}.
@@ -107,12 +107,14 @@ export class BigDecimal {
           const parsed = parseBigDecimalString(value.toString(), decimalPlaces)
           this.value = parsed.value
           this.decimalPlaces = parsed.decimalPlaces
-        } else if (value instanceof BN) {
-          this.value = BigInt(value.toString())
-          this.decimalPlaces = decimalPlaces ?? 0
-        } else {
+        } else if ('value' in value) {
           this.value = value.value
           this.decimalPlaces = value.decimalPlaces
+        } else {
+          // Can't do `value instanceof BN` as the condition because BN is just
+          // a type here, so checked for the CtorArgs instead and used `else`.
+          this.value = BigInt(value.toString())
+          this.decimalPlaces = decimalPlaces ?? 0
         }
         break
       }
