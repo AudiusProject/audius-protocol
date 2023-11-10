@@ -2,7 +2,6 @@ import {
   Canvas,
   Meta,
   Title,
-  Subtitle,
   Description,
   Primary,
   Controls,
@@ -12,7 +11,11 @@ import {
 import IconCamera from 'assets/icons/Camera.svg'
 import { Flex } from 'components'
 import buttonBackground from 'storybook/assets/buttonBackground.png'
-import { ComponentRules, RelatedComponents } from 'storybook/components'
+import {
+  Heading,
+  ComponentRules,
+  RelatedComponents
+} from 'storybook/components'
 
 import { ButtonSize, ButtonType } from '../types'
 
@@ -30,10 +33,11 @@ import * as ButtonStories from './Button.stories'
 - [Do's and dont's](#dos-and-donts)
 - [Related Components](#related-components)
 
-## Overview
+<Heading>
+  ## Overview
+  <Description />
+</Heading>
 
-<Subtitle />
-<Description />
 <Primary />
 
 ## Props
@@ -78,17 +82,23 @@ import * as ButtonStories from './Button.stories'
   <Story of={ButtonStories.LoadingState} />
 </Canvas>
 
+<Heading>
 ### Color Prop Applied
 
 Generate the colors for primary button states using colored overlays rather than distinct hex values for each state.
+
+</Heading>
 
 <Canvas>
   <Story of={ButtonStories.ColorPropApplied} />
 </Canvas>
 
+<Heading>
 ### Link
 
 A link that looks like a button. Useful for buttons that trigger navigation
+
+</Heading>
 
 <Canvas>
   <Story of={ButtonStories.Link} />

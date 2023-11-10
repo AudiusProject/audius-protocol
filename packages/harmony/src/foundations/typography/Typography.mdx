@@ -3,6 +3,7 @@ import { Meta, Title, Unstyled } from '@storybook/blocks'
 import { Text, Paper } from 'components'
 import typographyExample from 'storybook/assets/typographyExample.png'
 import {
+  Heading,
   TypographyPanel,
   ColorPaletteTable,
   RelatedFoundations
@@ -18,9 +19,12 @@ import {
 - [Weight Mappings](#weight-mappings)
 - [Usage and examples](#usage-and-examples)
 
+<Heading>
 ## Overview
 
 Typography expresses hierarchy and brand presence. Harmony uses the font family Avenir Next LT Pro. The type system is designed with readability, flexibility and personality in mind.
+
+</Heading>
 
 <Unstyled>
   <Paper p='2xl' shadow='near'>
@@ -30,9 +34,12 @@ Typography expresses hierarchy and brand presence. Harmony uses the font family 
   </Paper>
 </Unstyled>
 
+<Heading> 
 ## Text Styles
 
 Text styles are a pre-defined set of styles to apply to your designs: Display, Heading, Title, Label, and Body
+
+</Heading>
 
 | Name    | Description                                                      | Weight              | Sizes           | Color                                      |
 | ------- | ---------------------------------------------------------------- | ------------------- | --------------- | ------------------------------------------ |
@@ -94,9 +101,12 @@ Text styles are a pre-defined set of styles to apply to your designs: Display, H
   }}
 />
 
+<Heading>
 ## Weight Mappings
 
 Avenir Next LT Pro's font weights in Figma do not match perfectly to code. See an accurate mapping below and always double check the developer panel.
+
+</Heading>
 
 export function Emp(props) {
   return <Text {...props} color='danger' strength='strong' />

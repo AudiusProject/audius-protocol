@@ -2,22 +2,32 @@ import { Meta, Title } from '@storybook/blocks'
 
 import { Flex, Text, iconSizes } from 'components'
 import * as Icons from 'icons'
+import { Heading } from 'storybook/components'
 
 <Meta title='Icons/Utility Icons' />
 
 <Title>Utility Icons</Title>
 
+<Heading>
 ## Overview
 
 Utility icons are simple, single-color glyphs that identify labels and actions across Audius. They can be paired with text or used alone. They are vector based and should consistent on a single vector layer framed in a 24x24 container. They have no background shape or fill.
 
+</Heading>
+
+<Heading>
 ## Naming Conventions
 
 `<primaryobject-modifier-modifier2->`
 
+</Heading>
+
+<Heading>
 ## Usage
 
 Recommended sizes for utility icons: 14px | 16px | 20px | 24px | 30px | 32px
+
+</Heading>
 
 <Flex direction='column' gap='m'>
   <Flex alignItems='center' gap='2xl'>
@@ -35,7 +45,9 @@ Recommended sizes for utility icons: 14px | 16px | 20px | 24px | 30px | 32px
         w={iconSizes[size]}
         css={{ background: 'rgba(255, 0, 0, 0.10)' }}
       >
-        <Text css={{ color: '#F00' }}>{iconSizes[size]}</Text>
+        <Text css={{ color: '#F00 !important', fontSize: '10px !important' }}>
+          {iconSizes[size]}
+        </Text>
       </Flex>
     ))}
   </Flex>
