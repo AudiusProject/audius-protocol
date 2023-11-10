@@ -10,6 +10,9 @@ import { useFocusState } from '../useFocusState'
 import styles from './TextInput.module.css'
 import { TextInputSize, type TextInputProps } from './types'
 
+/**
+ * An input is a field where users can enter and edit text and  enables the user to provide input in the form of plain text.
+ */
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
   (props, ref) => {
     const {
@@ -37,7 +40,10 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       startIcon: StartIcon,
       endIcon: EndIcon,
       endAdornment: endAdornmentProp,
+      _incorrectError,
+      _isHovered,
       _isFocused,
+      _disablePointerEvents,
       ...other
     } = props
 
@@ -93,9 +99,12 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       [styles.small]: size === TextInputSize.SMALL,
       [styles.warning]: warningProp,
       [styles.error]: error,
-      [styles.focused]: isFocused,
+      [styles.focused]: isFocused || _isFocused,
       [styles.disabled]: disabled,
-      [styles.required]: required
+      [styles.required]: required,
+      [styles.hover]: _isHovered,
+      [styles.incorrectError]: _incorrectError,
+      [styles.disablePointerEvents]: _disablePointerEvents
     }
 
     // Styles for the input element itself
@@ -203,7 +212,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
             variant='body'
             size={helperTextSize}
             strength='default'
-            color={error ? 'danger' : 'default'}
+            color={error ? 'danger' : _incorrectError ? 'warning' : 'default'}
           >
             {helperText}
           </Text>

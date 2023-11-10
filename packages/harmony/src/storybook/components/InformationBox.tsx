@@ -21,7 +21,7 @@ export const InformationBox = (props: InformationBoxProps) => {
   const titleCss = { fontSize: '24px !important' }
 
   return (
-    <Paper as='section' direction='column' flex={1} gap='m'>
+    <Paper as='section' direction='column' flex={1} pb='l'>
       <Flex
         h={144}
         ph='xl'

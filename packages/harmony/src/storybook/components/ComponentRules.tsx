@@ -34,8 +34,8 @@ export const ComponentRules = (props: ComponentRulesProps) => {
 
         return (
           <Flex as='section' key={key} gap='3xl' wrap='wrap'>
-            <ComponentRule {...rule.positive} isRecommended />
-            <ComponentRule {...rule.negative} isRecommended={false} />
+            <ComponentRule isRecommended {...rule.positive} />
+            <ComponentRule isRecommended={false} {...rule.negative} />
           </Flex>
         )
       })}
