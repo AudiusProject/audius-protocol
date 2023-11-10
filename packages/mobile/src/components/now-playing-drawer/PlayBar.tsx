@@ -128,7 +128,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     justifyContent: 'center',
     elevation: 10,
     zIndex: 10
-  },
+  }
 }))
 
 type PlayBarProps = {
@@ -197,7 +197,9 @@ export const PlayBar = (props: PlayBarProps) => {
         translateYAnimation={translationAnim}
       />
       <View style={styles.container}>
-        {shouldShowPreviewLock ? null : <View style={styles.favoriteContainer}>{renderFavoriteButton()}</View>}
+        {shouldShowPreviewLock ? null : (
+          <View style={styles.favoriteContainer}>{renderFavoriteButton()}</View>
+        )}
         <TouchableOpacity
           activeOpacity={1}
           style={styles.trackContainer}
@@ -234,13 +236,13 @@ export const PlayBar = (props: PlayBarProps) => {
           </View>
           {shouldShowPreviewLock ? (
             <View style={styles.lockedContainer}>
-            <LockedStatusBadge
-              variant='purchase'
-              locked
-              coloredWhenLocked
-              iconSize='small'
-              text={messages.preview}
-            />
+              <LockedStatusBadge
+                variant='purchase'
+                locked
+                coloredWhenLocked
+                iconSize='small'
+                text={messages.preview}
+              />
             </View>
           ) : null}
         </TouchableOpacity>
