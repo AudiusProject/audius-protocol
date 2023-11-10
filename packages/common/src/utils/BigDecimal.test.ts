@@ -268,6 +268,9 @@ describe('BigDecimal', function () {
       expect(new BigDecimal('0.00000').toShorthand()).toBe('0')
     })
     it('shows whole numbers correctly', function () {
+      expect(new BigDecimal('1234').toShorthand()).toBe('1234')
+    })
+    it('trunctes to whole numbers correctly', function () {
       expect(new BigDecimal('8.0099').toShorthand()).toBe('8')
     })
     it('shows negative numbers correctly', function () {
@@ -288,6 +291,139 @@ describe('BigDecimal', function () {
     })
     it('shows hundred thousands correctly', function () {
       expect(new BigDecimal('443123.9999').toShorthand()).toBe('443K')
+    })
+  })
+
+  describe('toLocaleString', function () {
+    it('defaults to include all decimals', function () {
+      expect(new BigDecimal('1.23456789').toLocaleString('en-US')).toBe(
+        '1.23456789'
+      )
+    })
+    it('defaults to group with commas', function () {
+      expect(new BigDecimal('123456789').toLocaleString('en-US')).toBe(
+        '123,456,789'
+      )
+    })
+    it('does not group with commas when grouping turned off', function () {
+      expect(
+        new BigDecimal('123456789').toLocaleString('en-US', {
+          useGrouping: false
+        })
+      ).toBe('123456789')
+    })
+    it('defaults to group with commas and include all decimals', function () {
+      expect(
+        new BigDecimal('123456789.123456789').toLocaleString('en-US')
+      ).toBe('123,456,789.123456789')
+    })
+    it('shows minimumFractionDigits', function () {
+      expect(
+        new BigDecimal('1').toLocaleString('en-US', {
+          minimumFractionDigits: 2
+        })
+      ).toBe('1.00')
+      expect(
+        new BigDecimal('0', 5).toLocaleString('en-US', {
+          minimumFractionDigits: 2
+        })
+      ).toBe('0.00')
+    })
+    it('does not show minimumFractionDigits when trailingZeroDisplay is stripIfInteger and decimal part is 0', function () {
+      expect(
+        new BigDecimal('1.0', 5).toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          trailingZeroDisplay: 'stripIfInteger'
+        })
+      ).toBe('1')
+    })
+    it('truncates by default when maximumFractionDigit is set', function () {
+      expect(
+        new BigDecimal('1.005').toLocaleString('en-US', {
+          maximumFractionDigits: 2
+        })
+      ).toBe('1')
+      expect(
+        new BigDecimal('-1.005').toLocaleString('en-US', {
+          maximumFractionDigits: 2
+        })
+      ).toBe('-1')
+    })
+    it('truncates when configured to and maximumFractionDigit is set', function () {
+      expect(
+        new BigDecimal('1.005').toLocaleString('en-US', {
+          roundingMode: 'trunc',
+          maximumFractionDigits: 2
+        })
+      ).toBe('1')
+      expect(
+        new BigDecimal('-1.005').toLocaleString('en-US', {
+          roundingMode: 'trunc',
+          maximumFractionDigits: 2
+        })
+      ).toBe('-1')
+    })
+    it('ceils when configured to and maximumFractionDigit is set', function () {
+      expect(
+        new BigDecimal('1.005').toLocaleString('en-US', {
+          roundingMode: 'ceil',
+          maximumFractionDigits: 2
+        })
+      ).toBe('1.01')
+      expect(
+        new BigDecimal('-1.005').toLocaleString('en-US', {
+          roundingMode: 'ceil',
+          maximumFractionDigits: 2
+        })
+      ).toBe('-1')
+    })
+    it('floors when configured to and maximumFractionDigit is set', function () {
+      expect(
+        new BigDecimal('1.005').toLocaleString('en-US', {
+          roundingMode: 'floor',
+          maximumFractionDigits: 2
+        })
+      ).toBe('1')
+      expect(
+        new BigDecimal('-1.005').toLocaleString('en-US', {
+          roundingMode: 'floor',
+          maximumFractionDigits: 2
+        })
+      ).toBe('-1.01')
+    })
+    it('rounds when configured to and maximumFractionDigit is set', function () {
+      expect(
+        new BigDecimal('1.005').toLocaleString('en-US', {
+          roundingMode: 'halfExpand',
+          maximumFractionDigits: 2
+        })
+      ).toBe('1.01')
+      expect(
+        new BigDecimal('-1.005').toLocaleString('en-US', {
+          roundingMode: 'halfExpand',
+          maximumFractionDigits: 2
+        })
+      ).toBe('-1.01')
+    })
+    it('uses proper grouping and separator for Germany', function () {
+      expect(
+        new BigDecimal('123456789.123456789').toLocaleString('de-DE')
+      ).toBe('123.456.789,123456789')
+    })
+    it('uses proper grouping and separator for France', function () {
+      expect(
+        new BigDecimal('123456789.123456789').toLocaleString('fr-FR')
+      ).toBe('123 456 789,123456789')
+    })
+    it('uses proper grouping and separator for Switzerland', function () {
+      expect(
+        new BigDecimal('123456789.123456789').toLocaleString('de-CH')
+      ).toBe('123’456’789.123456789')
+    })
+    it('uses proper grouping and separator for India', function () {
+      expect(
+        new BigDecimal('123456789.123456789').toLocaleString('en-IN')
+      ).toBe('12,34,56,789.123456789')
     })
   })
 

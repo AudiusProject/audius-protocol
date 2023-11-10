@@ -30,6 +30,84 @@ type BigDecimalCtorArgs = {
 }
 
 /**
+ * A custom options type for our custom toLocaleString() implementation, that
+ * only allows a subset of the Intl.NumberFormat options.
+ *
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat}
+ */
+type FormatOptions = {
+  /**
+   * Whether to use grouping separators, such as thousands separators or thousand/lakh/crore separators.
+   *
+   * Note: Does not support `'always'`, `'auto'`, or `'min2'`
+   * @defaultValue `true`
+   */
+  useGrouping?: boolean
+  /**
+   * The minimum number of fraction digits to use.
+   * @defaultValue `0`
+   */
+  minimumFractionDigits?: number
+  /**
+   * The maximum number of fraction digits to use.
+   * @defaultValue `this.decimalPlaces` (include all decimal places)
+   */
+  maximumFractionDigits?: number
+  /**
+   * How decimals should be rounded.
+   *
+   * Possible values are:
+   *
+   * `'ceil'`
+   *    > Round toward +∞. Positive values round up.
+   *      Negative values round "more positive".
+   *
+   * `'floor'`
+   *    > Round toward -∞. Positive values round down.
+   *      Negative values round "more negative".
+   *
+   * `'trunc'` (default)
+   *    > Round toward 0. This _magnitude_ of the value is always
+   *      reduced by rounding. Positive values round down.
+   *      Negative values round "less negative".
+   *
+   * `'halfExpand'`
+   *    > Ties away from 0. Values above the half-increment round away from
+   *      zero, and below towards 0. What people typically mean by "rounding."
+   *
+   * Note: Does not support `'expand'`, `'halfCeil'`, `'halfFloor'`,
+   * `'halfTrunc'` or `'halfEven'`
+   * @defaultValue `'trunc'`
+   */
+  roundingMode?: 'ceil' | 'floor' | 'trunc' | 'halfExpand'
+  /**
+   * The strategy for displaying trailing zeros on whole numbers.
+   *
+   * Possible values are:
+   *
+   * `'auto'` (default)
+   *    > Keep trailing zeros according to minimumFractionDigits and
+   *      minimumSignificantDigits.
+   *
+   * `'stripIfInteger'`
+   *    > Remove the fraction digits if they are all zero. This is the same as
+   *      "auto" if any of the fraction digits is non-zero.
+   *
+   * @defaultValue `'auto'`
+   */
+  trailingZeroDisplay?: 'auto' | 'stripIfInteger'
+}
+
+const defaultFormatOptions = (bigDecimal: BigDecimal) =>
+  ({
+    useGrouping: true,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: bigDecimal.decimalPlaces,
+    roundingMode: 'trunc',
+    trailingZeroDisplay: 'auto'
+  } as const)
+
+/**
  * BigDecimal uses a BigInt and the number of decimal digits to represent a
  * fixed precision decimal number. It's useful for representing currency,
  * especially cryptocurrency, as balances and amounts are quite large but still
@@ -272,6 +350,10 @@ export class BigDecimal {
   /**
    * Represents the BigDecimal as a fixed decimal string by inserting the
    * decimal point in the appropriate spot and padding any needed zeros.
+   *
+   * Not to be used for UI purposes.
+   *
+   * @see {@link toLocaleString} for UI appropriate strings.
    */
   public toString() {
     const str = this.value.toString().padStart(this.decimalPlaces + 1, '0')
@@ -280,6 +362,69 @@ export class BigDecimal {
           str.length - this.decimalPlaces
         )}`
       : str
+  }
+
+  /**
+   * Analogous to Number().toLocaleString(), with some important differences in
+   * the options available and the defaults. Be sure to check the defaults.
+   *
+   * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat Mozilla NumberFormat documentation}
+   *
+   * @param locale The string specifying the locale (default is 'en-US').
+   * @param options The options for formatting. The available options and defaults are different than NumberFormat.
+   */
+  public toLocaleString(locale?: string, options?: FormatOptions) {
+    // Apply defaults
+    options = {
+      ...defaultFormatOptions(this),
+      ...options
+    }
+    // Apply rounding method
+    let str = ''
+    switch (options.roundingMode) {
+      case 'ceil':
+        str = this.ceil(options.maximumFractionDigits).toString()
+        break
+      case 'floor':
+        str = this.floor(options.maximumFractionDigits).toString()
+        break
+      case 'trunc':
+        str = this.trunc(options.maximumFractionDigits).toString()
+        break
+      case 'halfExpand':
+        str = this.toFixed(options.maximumFractionDigits)
+        break
+    }
+
+    let [whole, decimal] = str.split('.')
+
+    // Strip trailing zeros
+    decimal = (decimal ?? '').replace(/0+$/, '')
+
+    if (options.minimumFractionDigits !== undefined) {
+      if (
+        options.trailingZeroDisplay !== 'stripIfInteger' ||
+        BigInt(decimal) !== BigInt(0)
+      ) {
+        decimal = decimal.padEnd(options.minimumFractionDigits, '0')
+      }
+    }
+
+    // Localize with a decimal to extract the separator
+    const wholeInt = BigInt(whole)
+    const wholeWithDecimal = wholeInt.toLocaleString(locale, {
+      ...options,
+      minimumFractionDigits: 1,
+      maximumFractionDigits: 1
+    })
+    // Get the separator character
+    const decimalSeparator = wholeWithDecimal.substring(
+      wholeWithDecimal.length - 2,
+      wholeWithDecimal.length - 1
+    )
+    // Remove the decimal
+    whole = wholeWithDecimal.substring(0, wholeWithDecimal.length - 2)
+    return decimal.length > 0 ? `${whole}${decimalSeparator}${decimal}` : whole
   }
 
   /**
