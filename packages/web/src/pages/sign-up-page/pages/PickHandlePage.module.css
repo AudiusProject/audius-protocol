@@ -1,3 +1,8 @@
+.container {
+  max-width: 610px;
+  margin: 0 auto;
+}
+
 .hideTwitterButton {
   cursor: pointer;
   background: none;

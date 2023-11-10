@@ -115,51 +115,53 @@ export const PickHandlePage = () => {
   }
 
   return (
-    <Formik
-      innerRef={formikRef}
-      initialValues={initialValues}
-      validationSchema={validationSchema}
-      onSubmit={handleSubmit}
-      validateOnChange={false}
-    >
-      {({ isSubmitting, isValid, isValidating }) => (
-        <Form>
-          <Box>
-            <Flex gap='l' direction='column'>
-              <Box>
-                <Text size='s' variant='label' color='subdued'>
-                  1 {messages.outOf} 2
-                </Text>
+    <Box pv='3xl' className={styles.container}>
+      <Formik
+        innerRef={formikRef}
+        initialValues={initialValues}
+        validationSchema={validationSchema}
+        onSubmit={handleSubmit}
+        validateOnChange={false}
+      >
+        {({ isSubmitting, isValid, isValidating }) => (
+          <Form>
+            <Box>
+              <Flex gap='l' direction='column'>
+                <Box>
+                  <Text size='s' variant='label' color='subdued'>
+                    1 {messages.outOf} 2
+                  </Text>
+                </Box>
+                <Box>
+                  <Text
+                    color='heading'
+                    size='l'
+                    strength='default'
+                    variant='heading'
+                  >
+                    {messages.pickYourHandle}
+                  </Text>
+                </Box>
+                <Box>
+                  <Text size='l' variant='body'>
+                    {messages.handleDescription}
+                  </Text>
+                </Box>
+              </Flex>
+              <Box mt='2xl'>
+                <HandleField />
               </Box>
-              <Box>
-                <Text
-                  color='heading'
-                  size='l'
-                  strength='default'
-                  variant='heading'
-                >
-                  {messages.pickYourHandle}
-                </Text>
-              </Box>
-              <Box>
-                <Text size='l' variant='body'>
-                  {messages.handleDescription}
-                </Text>
-              </Box>
-            </Flex>
-            <Box mt='2xl'>
-              <HandleField />
+              <Button
+                type='submit'
+                disabled={!isValid || isSubmitting}
+                isLoading={isSubmitting || isValidating}
+              >
+                {messages.continue}
+              </Button>
             </Box>
-            <Button
-              type='submit'
-              disabled={!isValid || isSubmitting}
-              isLoading={isSubmitting || isValidating}
-            >
-              {messages.continue}
-            </Button>
-          </Box>
-        </Form>
-      )}
-    </Formik>
+          </Form>
+        )}
+      </Formik>
+    </Box>
   )
 }
