@@ -1,4 +1,16 @@
-const parseBigDecimalString = (value: string, decimalPlaces?: number) => {
+/**
+ * Parses a string into the constructor args for a {@link BigDecimal}.
+ *
+ * Doesn't do any validation of the string - if it's malformed the `BigInt`
+ * construction will fail.
+ * @param value The value represented as a fixed decimal string.
+ * @param decimalPlaces The number of decimal places the result should have.
+ * @returns
+ */
+const parseBigDecimalString = (
+  value: string,
+  decimalPlaces?: number
+): BigDecimalCtorArgs => {
   let [whole, decimal] = value.split('.')
   decimal = decimal ?? ''
   if (decimalPlaces !== undefined) {
@@ -53,6 +65,18 @@ type BigDecimalCtorArgs = {
 export class BigDecimal {
   public value: bigint
   public decimalPlaces: number
+
+  /**
+   * Constructs a `BigDecimal`.
+   *
+   * If `decimalPlaces` is not specified, the number of decimals is inferred.
+   *
+   * If `value` is a `BigDecimal`, converts to the new amount of decimals.
+   * This may lose precision.
+   *
+   * @param value The value to be represented.
+   * @param decimalPlaces The number of decimal places the value has.
+   */
   constructor(
     value: BigDecimalCtorArgs | bigint | number | string,
     decimalPlaces?: number
@@ -93,6 +117,22 @@ export class BigDecimal {
     }
   }
 
+  /**
+   * Math.ceil() but for BigDecimal.
+   *
+   * Also allows specifying the number of decimals to keep.
+   *
+   * @param decimalPlaces The number of decimal places to keep before ceiling.
+   * @returns A new `BigDecimal` with the result for chaining.
+   *
+   * @example
+   * // Specifying how many decimals to keep
+   * new BigDecimal('1.234').ceil(1).toString() // '1.300'
+   *
+   * @example
+   * // Specifying a negative number ceils away whole parts
+   * new BigDecimal('1234.1234').ceil(-1).toString() // '1240.0000'
+   */
   public ceil(decimalPlaces?: number) {
     const digits = this.decimalPlaces - (decimalPlaces ?? 0)
     return this._ceil(digits)
@@ -111,6 +151,22 @@ export class BigDecimal {
     })
   }
 
+  /**
+   * Math.floor() but for BigDecimal.
+   *
+   * Also allows specifying the number of decimals to keep.
+   *
+   * @param decimalPlaces The number of decimal places to keep before flooring.
+   * @returns A new `BigDecimal` with the result for chaining.
+   *
+   * @example
+   * // Specifying how many decimals to keep
+   * new BigDecimal('1.234').floor(1).toString() // '1.200'
+   *
+   * @example
+   * // Specifying a negative number floors away whole parts
+   * new BigDecimal('1234.1234').floor(-1).toString() // '1230.0000'
+   */
   public floor(decimalPlaces?: number) {
     const digits = this.decimalPlaces - (decimalPlaces ?? 0)
     return this._floor(digits)
@@ -132,6 +188,11 @@ export class BigDecimal {
     })
   }
 
+  /**
+   * Number.toPrecision() but for BigDecimal.
+   * @param significantDigits The number of significant digits to keep.
+   * @returns A new BigDecimal with the result for chaining.
+   */
   public toPrecision(significantDigits: number) {
     const signOffset = this.value < 0 ? -1 : 0
     const digits = Math.max(
@@ -141,6 +202,11 @@ export class BigDecimal {
     return this.value > 0 ? this._floor(digits) : this._ceil(digits)
   }
 
+  /**
+   * Number.toFixed() but for BigDecimal.
+   * @param decimalPlaces The number of decimal places to keep.
+   * @returns A new `BigDecimal` with the result for chaining.
+   */
   public toFixed(decimalPlaces?: number) {
     const decimalCount = decimalPlaces ?? 0
     const [whole, decimalOrUndefined] = this.toString().split('.')
@@ -164,7 +230,8 @@ export class BigDecimal {
   }
 
   /**
-   * @override
+   * Represents the BigDecimal as a fixed decimal string by inserting the
+   * decimal point in the appropriate spot and padding any needed zeros.
    */
   public toString() {
     const str = this.value.toString().padStart(this.decimalPlaces + 1, '0')
@@ -181,31 +248,31 @@ const createTokenConstructor =
     new BigDecimal(value, decimalPlaces)
 
 /**
- * Constructs a BigDecimal representing an amount of Ethereum ERC-20 AUDIO
- * tokens, which have 18 decimal places.
+ * Constructs a {@link BigDecimal} representing an amount of Ethereum ERC-20
+ * AUDIO tokens, which have 18 decimal places.
  *
  * Used on the protocol dashboard and in the governance and staking systems.
  * Also used for balance totals after adding linked wallets on the Rewards page.
  */
 export const AUDIO = createTokenConstructor(18)
 /**
- * Constructs a BigDecimal representing an amount of Solana SPL AUDIO tokens,
- * which have 8 decimal places.
+ * Constructs a {@link BigDecimal} representing an amount of Solana SPL AUDIO
+ * tokens, which have 8 decimal places.
  *
  * Used for in-app experiences, like tipping and rewards.
  */
 export const wAUDIO = createTokenConstructor(8)
 /**
- * Constructs a BigDecimal representing an amount of Solana native SOL tokens,
- * which have 9 decimal places.
+ * Constructs a {@link BigDecimal} representing an amount of Solana native SOL
+ * tokens, which have 9 decimal places.
  *
  * Used as an intermediary token for purchasing wAUDIO and for paying for fees
  * of Solana transactions on the platform.
  */
 export const SOL = createTokenConstructor(9)
 /**
- * Constructs a BigDecimal representing an amount of Solana SPL USDC tokens,
- * which have 6 decimal places.
+ * Constructs a {@link BigDecimal} representing an amount of Solana SPL USDC
+ * tokens, which have 6 decimal places.
  *
  * Used for purchasing content in-app, and getting "USD" prices via Jupiter
  * for the wAUDIO token and SOL.
