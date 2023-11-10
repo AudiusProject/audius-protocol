@@ -34,7 +34,7 @@ const relatedComponentsMap = {
         _isFocused
       />
     ),
-    link: 'input-textinput--documentation'
+    link: 'inputs-textinput--documentation'
   },
   SelectablePill: {
     title: 'Selectable Pill',
@@ -42,14 +42,14 @@ const relatedComponentsMap = {
     component: (
       <SelectablePill label='SelectablePill' size='large' isSelected={false} />
     ),
-    link: 'input-selectablepill--documentation'
+    link: 'inputs-selectablepill--documentation'
   },
   PlainButton: {
     title: 'Plain Button',
     description:
       'The plain button is like our button component but without a bounding frame or container.',
     component: <PlainButton iconRight={IconCaretRight}>See More</PlainButton>,
-    link: 'buttons-plainbutton--documentation'
+    link: 'buttons-plainbutton-beta--documentation'
   },
   SocialButton: {
     component: <SocialButton socialType='instagram' aria-label='instagram' />,
@@ -87,7 +87,7 @@ const relatedComponentsMap = {
         <Avatar src={shadowBackground} />
       </Box>
     ),
-    link: 'avatar--documentation'
+    link: 'components-avatar--documentation'
   },
   Paper: {
     title: 'Paper',
@@ -164,7 +164,7 @@ export const RelatedComponents = (props: RelatedComponentsProps) => {
       {componentNames.map((componentName) => {
         const { component, link, description } =
           relatedComponentsMap[componentName]
-        const fullLink = `../?path=/docs/components-${link}`
+        const fullLink = `../?path=/docs/${link}`
         return (
           <InformationBox
             key={componentName}

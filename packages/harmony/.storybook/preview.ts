@@ -18,6 +18,12 @@ export const parameters = {
         'Welcome',
         'Foundations',
         ['Typography', 'Color', 'Shadow', 'Corner Radius', 'Spacing', 'Motion'],
+        'Buttons',
+        'Inputs',
+        ['TextInput', 'SelectablePill', 'PasswordInput'],
+        'Layout',
+        ['Box', 'Flex', 'Divider', 'Paper'],
+        'Text',
         'Components',
         'Icons',
         [

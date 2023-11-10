@@ -18,7 +18,7 @@ type StoryArgs = {
 }
 
 const meta: Meta<StoryArgs> = {
-  title: 'Components/Buttons/PlainButton [beta]',
+  title: 'Buttons/PlainButton [beta]',
   component: ({ props }) => <PlainButton {...baseProps} {...props} />,
   render: ({ dark, props }) => (
     <div

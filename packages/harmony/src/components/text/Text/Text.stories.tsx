@@ -10,7 +10,7 @@ const messages = {
 }
 
 const meta: Meta<typeof Text> = {
-  title: 'Components/Typography/Text',
+  title: 'Text/Text',
   component: Text,
   argTypes: {
     variant: {

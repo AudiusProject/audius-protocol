@@ -5,7 +5,7 @@ import { Flex } from 'components/layout'
 import { SocialButton } from './SocialButton'
 
 const meta: Meta<typeof SocialButton> = {
-  title: 'Components/Buttons/SocialButton',
+  title: 'Buttons/SocialButton',
   component: SocialButton,
   parameters: {
     docs: {
