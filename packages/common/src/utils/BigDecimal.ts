@@ -120,7 +120,7 @@ export class BigDecimal {
   /**
    * Math.ceil() but for BigDecimal.
    *
-   * Also allows specifying the number of decimals to keep.
+   * Also allows specifying a number of decimals to keep.
    *
    * @param decimalPlaces The number of decimal places to keep before ceiling.
    * @returns A new `BigDecimal` with the result for chaining.
@@ -154,7 +154,7 @@ export class BigDecimal {
   /**
    * Math.floor() but for BigDecimal.
    *
-   * Also allows specifying the number of decimals to keep.
+   * Also allows specifying a number of decimals to keep.
    *
    * @param decimalPlaces The number of decimal places to keep before flooring.
    * @returns A new `BigDecimal` with the result for chaining.
@@ -184,6 +184,39 @@ export class BigDecimal {
         : BigInt(0)
     return new BigDecimal({
       value: (this.value / divisor) * divisor + signOffset,
+      decimalPlaces: this.decimalPlaces
+    })
+  }
+
+  /**
+   * Math.trunc() but for BigDecimal.
+   *
+   * Also allows specifying a number of decimals to keep.
+   *
+   * @param decimalPlaces The number of decimal places to keep before truncating.
+   * @returns A new `BigDecimal` with the result for chaining.
+   *
+   * @example
+   * // Specifying how many decimals to keep
+   * new BigDecimal('1.234').trunc(1).toString() // '1.200'
+   *
+   * @example
+   * // Specifying a negative number truncates away whole parts
+   * new BigDecimal('1234.1234').floor(-1).toString() // '1230.0000'
+   */
+  public trunc(decimalPlaces?: number) {
+    const digits = this.decimalPlaces - (decimalPlaces ?? 0)
+    return this._trunc(digits)
+  }
+
+  private _trunc(digits?: number) {
+    const digitsCount = digits ?? this.decimalPlaces
+    if (digitsCount < 0) {
+      throw new RangeError('Digits must be non-negative')
+    }
+    const divisor = BigInt(10 ** digitsCount)
+    return new BigDecimal({
+      value: (this.value / divisor) * divisor,
       decimalPlaces: this.decimalPlaces
     })
   }

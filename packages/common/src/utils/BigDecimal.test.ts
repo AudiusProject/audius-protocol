@@ -161,6 +161,52 @@ describe('BigDecimal', function () {
     })
   })
 
+  describe('trunc', function () {
+    it('truncs positive decimals correctly', function () {
+      expect(new BigDecimal(1.2345).trunc().toString()).toBe('1.0000')
+    })
+    it('truncs negative decimals correctly', function () {
+      expect(new BigDecimal(-1.2345).trunc().toString()).toBe('-1.0000')
+    })
+    it('truncs 0 correctly', function () {
+      expect(new BigDecimal(0, 3).trunc().toString()).toBe('0.000')
+    })
+    it('truncs whole numbers correctly', function () {
+      expect(new BigDecimal(4, 3).trunc().toString()).toBe('4.000')
+    })
+    it('truncs large numbers correctly', function () {
+      expect(
+        new BigDecimal(BigInt('1234567890123456789099999999999999999999'), 20)
+          .trunc()
+          .toString()
+      ).toBe('12345678901234567890.00000000000000000000')
+    })
+    it('truncs tiny numbers correctly', function () {
+      expect(new BigDecimal(BigInt('1'), 20).trunc().toString()).toBe(
+        '0.00000000000000000000'
+      )
+    })
+    it('truncs to arbitrary decimal places correctly', function () {
+      expect(
+        new BigDecimal(BigInt('1234567890123456789099999999999999999999'), 20)
+          .trunc(2)
+          .toString()
+      ).toBe('12345678901234567890.99000000000000000000')
+    })
+    it('throws when decimal places are out of range', function () {
+      expect(() =>
+        new BigDecimal(BigInt('1234567890123456789099999999999999999999'), 20)
+          .trunc(50)
+          .toString()
+      ).toThrow('Digits must be non-negative')
+    })
+    it('truncs to 1s place of represented place if decimal places is beyond number', function () {
+      expect(new BigDecimal(BigInt('12345'), 3).trunc(-10).toString()).toBe(
+        '0.000'
+      )
+    })
+  })
+
   describe('toPrecision', function () {
     it('work on positive numbers', function () {
       expect(new BigDecimal('1234.56789').toPrecision(7).toString()).toBe(
