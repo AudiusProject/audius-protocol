@@ -237,7 +237,7 @@ def parse_release_date(release_date_str):
     return None
 
 
-def populate_track_record_metadata(session, track_record: Track, track_metadata, handle, action):
+def populate_track_record_metadata(track_record: Track, track_metadata, handle, action):
     # Iterate over the track_record keys
     # Update track_record values for which keys exist in track_metadata
     track_record_attributes = track_record.get_attributes_dict()
@@ -377,7 +377,7 @@ def get_handle(params: ManageEntityParameters):
 def update_track_record(
     params: ManageEntityParameters, track: Track, metadata: Dict, handle: str
 ):
-    populate_track_record_metadata(params.session, track, metadata, handle, params.action)
+    populate_track_record_metadata(track, metadata, handle, params.action)
 
     # if cover_art CID is of a dir, store under _sizes field instead
     if track.cover_art:

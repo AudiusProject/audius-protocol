@@ -39,8 +39,12 @@ def convert_timestamp(release_date_str):
 @log_duration(logger)
 def _publish_scheduled_releases(session, redis):
     latest_block = web3.eth.get_block("latest")
-    current_timestamp = latest_block.timestamp
-    previous_cursor = redis.get(publish_scheduled_releases_cursor_key)
+    current_timestamp = latest_block.timestamp + 86400
+    # Get the value from Redis and decode it to a string
+    redis_value = redis.get(publish_scheduled_releases_cursor_key).decode()
+    logger.info(f"asdf redis_value {redis_value}")
+    # Convert the string to a float, then to an integer
+    previous_cursor = datetime.fromtimestamp(int(float(redis_value)))
     if not previous_cursor:
         previous_cursor = datetime.min
 
@@ -56,20 +60,28 @@ def _publish_scheduled_releases(session, redis):
         .all()
     )
     # convert release date to utc
+    published_releases = []
     for candidate_track in candidate_tracks:
-        unix_time = convert_timestamp(candidate_track.release_date)
-        release_date_day = datetime.fromtimestamp(unix_time).date()
+        logger.info(f"asdf candidate_track.release_date {candidate_track.release_date}")
+        try:
+            unix_time = convert_timestamp(candidate_track.release_date)
+            release_date_day = datetime.fromtimestamp(unix_time).date()
+        except Exception:
+            continue
         candidate_created_at_day = candidate_track.created_at.date()
-
+        logger.info(f"asdf candidate_created_at_day {candidate_created_at_day}")
         if (
             current_timestamp >= unix_time
             and release_date_day > candidate_created_at_day
         ):
             candidate_track.is_unlisted = False
+            published_releases.append(candidate_track)
+            logger.info(f"asdf candidate_track {candidate_track}")
 
     if candidate_tracks:
+        logger.info(f"asdf candidate_tracks[-1] {candidate_tracks[-1]}")
         redis.set(
-            publish_scheduled_releases_cursor_key, candidate_tracks[-1].created_at
+            publish_scheduled_releases_cursor_key, candidate_tracks[-1].created_at.timestamp()
         )
     return
 
