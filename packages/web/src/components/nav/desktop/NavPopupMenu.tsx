@@ -9,6 +9,7 @@ import {
   IconDashboard,
   IconMessage,
   IconSettings,
+  IconDonate,
   PopupMenu,
   PopupMenuItem,
   PopupPosition
@@ -27,6 +28,7 @@ import {
   AUDIO_PAGE,
   CHATS_PAGE,
   DASHBOARD_PAGE,
+  PAY_AND_EARN_PAGE,
   SETTINGS_PAGE
 } from 'utils/route'
 import zIndex from 'utils/zIndex'
@@ -35,7 +37,8 @@ import styles from './NavPopupMenu.module.css'
 
 const messages = {
   settings: 'Settings',
-  dashboard: 'Dashboard & Payments',
+  dashboard: 'Artist Dashboard',
+  payAndEarn: 'Pay & Earn',
   audio: '$AUDIO & Rewards',
   messages: 'Messages'
 }
@@ -72,6 +75,11 @@ const NavPopupMenu = () => {
       onClick: () => navigate(DASHBOARD_PAGE),
       icon: <IconDashboard />,
       iconClassName: styles.menuItemIcon
+    },
+    {
+      text: messages.payAndEarn,
+      onClick: () => navigate(PAY_AND_EARN_PAGE),
+      icon: <Icon icon={IconDonate} />
     },
     {
       text: messages.audio,

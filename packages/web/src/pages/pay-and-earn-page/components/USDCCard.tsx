@@ -12,20 +12,16 @@ import {
 import {
   Button,
   ButtonType,
-  IconWithdraw,
-  IconKebabHorizontal,
   PlainButton,
   IconQuestionCircle,
   PlainButtonType
 } from '@audius/harmony'
-import { PopupMenu, PopupMenuItem, LogoUSDC } from '@audius/stems'
+import { LogoUSDC } from '@audius/stems'
 import BN from 'bn.js'
 
 import { Icon } from 'components/Icon'
 import { Text } from 'components/typography'
-import { useGoToRoute } from 'hooks/useGoToRoute'
 import { make, track } from 'services/analytics'
-import { SALES_PAGE, WITHDRAWALS_PAGE } from 'utils/route'
 
 import styles from './USDCCard.module.css'
 
@@ -43,14 +39,7 @@ const messages = {
   withdrawalHistory: 'Withdrawal History'
 }
 
-export const USDCCard = ({
-  balance,
-  isArtist
-}: {
-  balance: BNUSDC
-  isArtist: boolean
-}) => {
-  const goToRoute = useGoToRoute()
+export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
   const { onOpen: openUsdcManualTransferModal } = useUSDCManualTransferModal()
 
@@ -62,19 +51,6 @@ export const USDCCard = ({
   const handleLearnMore = useCallback(() => {
     window.open(LEARN_MORE_LINK, '_blank')
   }, [])
-
-  const menuItems = [
-    isArtist
-      ? {
-          text: messages.salesSummary,
-          onClick: () => goToRoute(SALES_PAGE)
-        }
-      : null,
-    {
-      text: messages.withdrawalHistory,
-      onClick: () => goToRoute(WITHDRAWALS_PAGE)
-    }
-  ].filter(Boolean) as PopupMenuItem[]
 
   const handleWithdraw = () => {
     openWithdrawUSDCModal({
@@ -124,9 +100,7 @@ export const USDCCard = ({
           </Text>
         </div>
         <div className={styles.usdcInfo}>
-          <Text color='staticWhite'>
-            {isArtist ? messages.earn : messages.buyAndSell}
-          </Text>
+          <Text color='staticWhite'>{messages.buyAndSell}</Text>
           <PlainButton
             onClick={handleLearnMore}
             iconLeft={IconQuestionCircle}
@@ -137,16 +111,6 @@ export const USDCCard = ({
         </div>
       </div>
       <div className={styles.withdrawContainer}>
-        <div className={styles.withdrawButton}>
-          <Button
-            variant={ButtonType.SECONDARY}
-            fullWidth
-            iconLeft={IconWithdraw}
-            onClick={handleWithdraw}
-          >
-            {messages.withdraw}
-          </Button>
-        </div>
         <div className={styles.addFundsButton}>
           <Button
             variant={ButtonType.SECONDARY}
@@ -156,19 +120,15 @@ export const USDCCard = ({
             {messages.addFunds}
           </Button>
         </div>
-        <PopupMenu
-          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-          items={menuItems}
-          renderTrigger={(anchorRef, triggerPopup) => (
-            <Button
-              ref={anchorRef}
-              variant={ButtonType.SECONDARY}
-              iconLeft={IconKebabHorizontal}
-              onClick={() => triggerPopup()}
-            />
-          )}
-        />
+        <div className={styles.withdrawButton}>
+          <Button
+            variant={ButtonType.SECONDARY}
+            fullWidth
+            onClick={handleWithdraw}
+          >
+            {messages.withdraw}
+          </Button>
+        </div>
       </div>
     </div>
   )
