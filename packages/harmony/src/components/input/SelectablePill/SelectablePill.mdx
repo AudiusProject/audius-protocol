@@ -67,7 +67,7 @@ Only Large pills can have a leading icon.
 ## Use cases and examples
 
 - Use the Selectable Pill component for binary selections only.
-- Selectable pills should not have trailing icons
+- Selectable pills should not have trailing icons.
 
 ## Do's and don'ts
 
@@ -80,16 +80,8 @@ Only Large pills can have a leading icon.
         component: (
           <Flex direction='column' gap='4xl'>
             <Flex gap='s'>
-              <SelectablePill
-                label='All'
-                size='large'
-                isSelected
-              />
-              <SelectablePill
-                label='Favorites'
-                size='large'
-                icon={IconHeart}
-              />
+              <SelectablePill label='All' size='large' isSelected />
+              <SelectablePill label='Favorites' size='large' icon={IconHeart} />
               <SelectablePill label='Reposts' size='large' icon={IconRepost} />
             </Flex>
             <Flex gap='s'>
@@ -106,16 +98,8 @@ Only Large pills can have a leading icon.
         component: (
           <Flex direction='column'>
             <Flex gap='s'>
-              <SelectablePill
-                label='Type'
-                size='large'
-                isSelected
-              />
-              <SelectablePill
-                label='Genre'
-                size='large'
-                icon={IconHeart}
-              />
+              <SelectablePill label='Type' size='large' isSelected />
+              <SelectablePill label='Genre' size='large' icon={IconHeart} />
               <SelectablePill label='Mood' size='large' icon={IconRepost} />
             </Flex>
             <img src={selectablePillPopover} />
@@ -123,6 +107,5 @@ Only Large pills can have a leading icon.
         )
       }
     }
-
-]}
+  ]}
 />

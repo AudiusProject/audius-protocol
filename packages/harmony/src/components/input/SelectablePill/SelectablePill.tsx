@@ -14,7 +14,7 @@ const SelectablePillRoot = styled.button<SelectablePillProps>((props) => {
     border: `1px solid ${theme.color.secondary.secondary}`,
     ...(size === 'large' && {
       backgroundColor: theme.color.secondary.s100,
-      border: `1px solid ${theme.color.secondary.s200})`,
+      border: `1px solid ${theme.color.secondary.s200}`,
       boxShadow: 'none'
     })
   }
