@@ -321,6 +321,7 @@ const createTokenConstructor =
   (decimalPlaces: number) => (value: string | number | BigDecimal | bigint) =>
     new BigDecimal(value, decimalPlaces)
 
+type AudioTokens = BigDecimal & { _brand: 'AUDIO' }
 /**
  * Constructs a {@link BigDecimal} representing an amount of Ethereum ERC-20
  * AUDIO tokens, which have 18 decimal places.
@@ -328,14 +329,18 @@ const createTokenConstructor =
  * Used on the protocol dashboard and in the governance and staking systems.
  * Also used for balance totals after adding linked wallets on the Rewards page.
  */
-export const AUDIO = createTokenConstructor(18)
+export const AUDIO = createTokenConstructor<AudioTokens>(18)
+
+type wAudioTokens = BigDecimal & { _brand: 'wAUDIO' }
 /**
  * Constructs a {@link BigDecimal} representing an amount of Solana SPL AUDIO
  * tokens, which have 8 decimal places.
  *
  * Used for in-app experiences, like tipping and rewards.
  */
-export const wAUDIO = createTokenConstructor(8)
+export const wAUDIO = createTokenConstructor<wAudioTokens>(8)
+
+type SolTokens = BigDecimal & { _brand: 'SOL' }
 /**
  * Constructs a {@link BigDecimal} representing an amount of Solana native SOL
  * tokens, which have 9 decimal places.
@@ -343,7 +348,9 @@ export const wAUDIO = createTokenConstructor(8)
  * Used as an intermediary token for purchasing wAUDIO and for paying for fees
  * of Solana transactions on the platform.
  */
-export const SOL = createTokenConstructor(9)
+export const SOL = createTokenConstructor<SolTokens>(9)
+
+type UsdcTokens = BigDecimal & { _brand: 'USDC' }
 /**
  * Constructs a {@link BigDecimal} representing an amount of Solana SPL USDC
  * tokens, which have 6 decimal places.
@@ -351,4 +358,4 @@ export const SOL = createTokenConstructor(9)
  * Used for purchasing content in-app, and getting "USD" prices via Jupiter
  * for the wAUDIO token and SOL.
  */
-export const USDC = createTokenConstructor(6)
+export const USDC = createTokenConstructor<UsdcTokens>(6)
