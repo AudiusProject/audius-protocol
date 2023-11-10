@@ -22,7 +22,10 @@ const relatedComponentsMap = {
     description:
       'Buttons allow users to trigger an action or event with a single click.',
     component: <Button>Button</Button>,
-    link: 'buttons-button--documentation'
+    to: {
+      kind: 'buttons-button',
+      story: 'documentation'
+    }
   },
   TextInput: {
     title: 'Text Input',
@@ -34,7 +37,7 @@ const relatedComponentsMap = {
         _isFocused
       />
     ),
-    link: 'inputs-textinput--documentation'
+    to: { kind: 'inputs-textinput', story: 'documentation' }
   },
   SelectablePill: {
     title: 'Selectable Pill',
@@ -42,18 +45,18 @@ const relatedComponentsMap = {
     component: (
       <SelectablePill label='SelectablePill' size='large' isSelected={false} />
     ),
-    link: 'inputs-selectablepill--documentation'
+    to: { kind: 'inputs-selectablepill', story: 'documentation' }
   },
   PlainButton: {
     title: 'Plain Button',
     description:
       'The plain button is like our button component but without a bounding frame or container.',
     component: <PlainButton iconRight={IconCaretRight}>See More</PlainButton>,
-    link: 'buttons-plainbutton-beta--documentation'
+    to: { kind: 'buttons-plainbutton-beta', story: 'documentation' }
   },
   SocialButton: {
     component: <SocialButton socialType='instagram' aria-label='instagram' />,
-    link: 'buttons-socialbutton--documentation',
+    to: { kind: 'buttons-socialbutton', story: 'documentation' },
     description: 'A button that can connect a users socials.'
   },
   Divider: {
@@ -76,7 +79,7 @@ const relatedComponentsMap = {
     ),
     description:
       'A separator between two elements, usually consisting of a horizontal  or vertical line.',
-    link: 'layout-divider--documentation'
+    to: { kind: 'layout-divider', story: 'documentation' }
   },
   Avatar: {
     title: 'Avatar',
@@ -87,14 +90,14 @@ const relatedComponentsMap = {
         <Avatar src={shadowBackground} />
       </Box>
     ),
-    link: 'components-avatar--documentation'
+    to: { kind: 'components-avatar', story: 'documentation' }
   },
   Paper: {
     title: 'Paper',
     description:
       'Ensure layouts are consistent with our intuitive spacing system.',
     component: <Paper w={200} h={80} shadow='mid' />,
-    link: 'layout-paper--documentation'
+    to: { kind: 'layout-paper', story: 'documentation' }
   },
   Box: {
     component: (
@@ -109,7 +112,7 @@ const relatedComponentsMap = {
     ),
     description:
       'A simple layout component which adds pre-defined margin, padding, and borders',
-    link: 'layout-box--documentation'
+    to: { kind: 'layout-box', story: 'documentation' }
   },
   Flex: {
     component: (
@@ -128,20 +131,20 @@ const relatedComponentsMap = {
     ),
     description:
       'A layout component to handle flex behavior without manual styling.',
-    link: 'layout-flex--documentation'
+    to: { kind: 'layout-flex', story: 'documentation' }
   },
   FollowButton: {
     title: 'Follow Button',
     description: 'The Follow button allow users to hold an on or off state.',
     component: 'TODO',
-    link: 'TODO'
+    to: undefined
   },
   RadioInput: {
     title: 'Radio Input',
     description:
       'Radio buttons allow a user to select a single option from a list of predefined options.',
     component: 'TODO',
-    link: 'TODO'
+    to: undefined
   }
 }
 
@@ -162,14 +165,13 @@ export const RelatedComponents = (props: RelatedComponentsProps) => {
       justifyContent='space-between'
     >
       {componentNames.map((componentName) => {
-        const { component, link, description } =
+        const { component, to, description } =
           relatedComponentsMap[componentName]
-        const fullLink = `../?path=/docs/${link}`
         return (
           <InformationBox
             key={componentName}
             component={component}
-            href={fullLink}
+            to={to}
             title={componentName}
             description={description}
           />

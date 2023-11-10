@@ -1,9 +1,9 @@
 import { useTheme } from '@emotion/react'
 import { Meta, Title, Unstyled } from '@storybook/blocks'
 
-import { Paper, Flex, Text, Box } from 'components'
+import { Paper, Flex, Text } from 'components'
 import spacingExample from 'storybook/assets/spacingExample.png'
-import { Heading, CardLink, RelatedFoundations } from 'storybook/components'
+import { Heading, RelatedFoundations } from 'storybook/components'
 
 <Meta title='Foundations/Spacing' />
 
@@ -73,22 +73,6 @@ export function SpacingExample(props) {
 | 4XL  | 64px |
 
 </div>
-
-## Containers
-
-<Unstyled>
-  <Paper p='xl' direction='column' gap='2xl'>
-    <Box w={200}>
-      <CardLink
-        subtitle="I'm a title"
-        description="I'm a description."
-        link='/'
-      />
-    </Box>
-    <Text>Padding: XS | S | M | L | **XL** | 2XL | 3XL | 4XL</Text>
-    <Text>Vertical gap: XS | **S** | M | L | XL | 2XL | 3XL | 4XL</Text>
-  </Paper>
-</Unstyled>
 
 ## Usage and examples
 
