@@ -91,7 +91,6 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     alignItems: 'center',
     flexDirection: 'row'
   },
-  lockedContainer: {},
   // Group: Title, separator, artist
   title: {
     flexShrink: 1,
@@ -235,7 +234,7 @@ export const PlayBar = (props: PlayBarProps) => {
             </Text>
           </View>
           {shouldShowPreviewLock ? (
-            <View style={styles.lockedContainer}>
+            <View>
               <LockedStatusBadge
                 variant='purchase'
                 locked
