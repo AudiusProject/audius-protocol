@@ -40,6 +40,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     alignItems: 'center',
     zIndex: zIndex.PLAY_BAR
   },
+  // Group: Favorite Button, Track Content, Play Button
   container: {
     height: '100%',
     width: '100%',
@@ -47,8 +48,28 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     paddingRight: spacing(3),
     gap: spacing(3),
     flexDirection: 'row',
+    alignItems: 'center'
+  },
+  favoriteContainer: {
+    flexShrink: 1,
     alignItems: 'center',
-    justifyContent: 'flex-start'
+    justifyContent: 'center'
+  },
+  trackContainer: {
+    paddingRight: spacing(1),
+    height: '100%',
+    width: '100%',
+    flexGrow: 1,
+    flexShrink: 1,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    gap: spacing(3)
+  },
+  playContainer: {
+    flexShrink: 1,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   playIcon: {
     width: spacing(8),
@@ -58,24 +79,41 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     width: 28,
     height: 28
   },
-  trackInfo: {
-    height: '100%',
-    flexShrink: 1,
-    flexGrow: 1,
-    alignItems: 'center',
-    flexDirection: 'row',
-    gap: spacing(3)
-  },
+  // Group: Artwork, Text
   artworkContainer: {
-    position: 'relative',
-    height: 26,
-    width: 26,
     borderRadius: 2,
     overflow: 'hidden'
   },
-  artwork: {
-    height: '100%',
+  trackTextContainer: {
+    flexGrow: 1,
+    flexShrink: 1,
     width: '100%',
+    alignItems: 'center',
+    flexDirection: 'row'
+  },
+  lockedContainer: {},
+  // Group: Title, separator, artist
+  title: {
+    flexShrink: 1,
+    color: palette.neutral,
+    fontSize: spacing(3)
+  },
+  separator: {
+    color: palette.neutral,
+    marginLeft: spacing(1),
+    marginRight: spacing(1),
+    fontSize: spacing(4)
+  },
+  artist: {
+    flexGrow: 1,
+    flexShrink: 1,
+    color: palette.neutral,
+    fontSize: spacing(3)
+  },
+  // Artwork interior
+  artwork: {
+    height: 26,
+    width: 26,
     backgroundColor: palette.neutralLight7
   },
   lockOverlay: {
@@ -91,26 +129,6 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     elevation: 10,
     zIndex: 10
   },
-  trackText: {
-    alignItems: 'center',
-    flexDirection: 'row'
-  },
-  title: {
-    color: palette.neutral,
-    maxWidth: Dimensions.get('window').width / 3.5,
-    fontSize: spacing(3)
-  },
-  separator: {
-    color: palette.neutral,
-    marginLeft: spacing(1),
-    marginRight: spacing(1),
-    fontSize: spacing(4)
-  },
-  artist: {
-    color: palette.neutral,
-    maxWidth: Dimensions.get('window').width / 4,
-    fontSize: spacing(3)
-  }
 }))
 
 type PlayBarProps = {
@@ -179,10 +197,10 @@ export const PlayBar = (props: PlayBarProps) => {
         translateYAnimation={translationAnim}
       />
       <View style={styles.container}>
-        {shouldShowPreviewLock ? null : renderFavoriteButton()}
+        {shouldShowPreviewLock ? null : <View style={styles.favoriteContainer}>{renderFavoriteButton()}</View>}
         <TouchableOpacity
           activeOpacity={1}
-          style={styles.trackInfo}
+          style={styles.trackContainer}
           onPress={onPress}
         >
           {track ? (
@@ -199,7 +217,7 @@ export const PlayBar = (props: PlayBarProps) => {
               />
             </View>
           ) : null}
-          <View style={styles.trackText}>
+          <View style={styles.trackTextContainer}>
             <Text numberOfLines={1} weight='bold' style={styles.title}>
               {track?.title ?? ''}
             </Text>
@@ -215,6 +233,7 @@ export const PlayBar = (props: PlayBarProps) => {
             </Text>
           </View>
           {shouldShowPreviewLock ? (
+            <View style={styles.lockedContainer}>
             <LockedStatusBadge
               variant='purchase'
               locked
@@ -222,9 +241,12 @@ export const PlayBar = (props: PlayBarProps) => {
               iconSize='small'
               text={messages.preview}
             />
+            </View>
           ) : null}
         </TouchableOpacity>
-        <PlayButton wrapperStyle={styles.playIcon} />
+        <View style={styles.playContainer}>
+          <PlayButton wrapperStyle={styles.playIcon} />
+        </View>
       </View>
     </Animated.View>
   )
