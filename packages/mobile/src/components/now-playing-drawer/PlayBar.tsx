@@ -9,7 +9,7 @@ import {
   playerSelectors,
   usePremiumContentAccess
 } from '@audius/common'
-import { TouchableOpacity, Animated, View, Dimensions } from 'react-native'
+import { TouchableOpacity, Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconLock from 'app/assets/images/iconLock.svg'
