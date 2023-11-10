@@ -51,4 +51,16 @@
     color: var(--harmony-docs-icon-selected-color) !important;
   }
 
+  /**
+   * Remove the storybook-dark-mode button since we are only using
+   * @storybook/addon-theme
+  */
+  button[title="Change theme to dark mode"] {
+    display: none;
+  }
+
+  button[title="Change theme to light mode"] {
+    display: none;
+  }
+
 </style>

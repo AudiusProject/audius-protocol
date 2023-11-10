@@ -2,6 +2,7 @@ import {
   withThemeByDataAttribute,
   withThemeFromJSXProvider
 } from '@storybook/addon-themes'
+import { ComponentRules, RelatedComponents } from '../src/storybook/components'
 
 // This file is used to configure all stories
 import './global.css'
@@ -45,7 +46,7 @@ export const parameters = {
   darkMode: {
     light: harmonyDocsThemes.day,
     dark: harmonyDocsThemes.dark,
-    stylePreview: true
+    classTarget: 'html'
   }
 }
 
