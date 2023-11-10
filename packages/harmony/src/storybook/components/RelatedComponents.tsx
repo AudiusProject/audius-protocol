@@ -51,13 +51,6 @@ const relatedComponentsMap = {
     component: <PlainButton iconRight={IconCaretRight}>See More</PlainButton>,
     link: 'buttons-plainbutton--documentation'
   },
-  TextLink: {
-    title: 'Text Link',
-    description:
-      'Apply link text properties to any text to link an internal or external page.',
-    component: null,
-    link: 'textlink--documentation'
-  },
   SocialButton: {
     component: <SocialButton socialType='instagram' aria-label='instagram' />,
     link: 'buttons-socialbutton--documentation',
@@ -100,7 +93,7 @@ const relatedComponentsMap = {
     title: 'Paper',
     description:
       'Ensure layouts are consistent with our intuitive spacing system.',
-    component: <Paper w={124} h={70} shadow='mid' />,
+    component: <Paper w={200} h={80} shadow='mid' />,
     link: 'layout-paper--documentation'
   },
   Box: {
