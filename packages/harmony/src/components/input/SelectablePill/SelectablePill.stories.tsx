@@ -6,7 +6,7 @@ import { IconHeart } from 'icons'
 import { SelectablePill } from './SelectablePill'
 
 const meta: Meta<typeof SelectablePill> = {
-  title: 'Components/Input/SelectablePill',
+  title: 'Inputs/SelectablePill',
   component: SelectablePill,
   args: {
     label: 'Label'

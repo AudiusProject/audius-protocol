@@ -13,6 +13,31 @@ import { ThemeProvider } from '@emotion/react'
 
 // Default to docs view
 export const parameters = {
+  options: {
+    storySort: {
+      order: [
+        'Welcome',
+        'Foundations',
+        ['Typography', 'Color', 'Shadow', 'Corner Radius', 'Spacing', 'Motion'],
+        'Buttons',
+        'Inputs',
+        ['TextInput', 'SelectablePill', 'PasswordInput'],
+        'Layout',
+        ['Box', 'Flex', 'Divider', 'Paper'],
+        'Text',
+        'Components',
+        'Icons',
+        [
+          'Figma Instructions',
+          'Utility Icons',
+          'Logos',
+          'Special Icons',
+          'Animated Icons',
+          'Changelog'
+        ]
+      ]
+    }
+  },
   viewMode: 'docs',
   docs: {
     container: HarmonyDocsContainer,

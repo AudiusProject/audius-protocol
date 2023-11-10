@@ -21,7 +21,7 @@ const StoryRender = (props: TextInputProps) => {
 }
 
 const meta: Meta<typeof TextInput> = {
-  title: 'Components/Input/TextInput',
+  title: 'Inputs/TextInput',
   component: TextInput,
   parameters: {
     docs: {

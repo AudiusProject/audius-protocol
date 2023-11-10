@@ -6,7 +6,7 @@ import { Box } from '../Box'
 import { Flex } from './Flex'
 
 const meta: Meta<typeof Flex> = {
-  title: 'Components/Layout/Flex',
+  title: 'Layout/Flex',
   component: Flex,
   parameters: {
     controls: { include: /^(alignItems|direction|gap|justifyContent|wrap)$/ }

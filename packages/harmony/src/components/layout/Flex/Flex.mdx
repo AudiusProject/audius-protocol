@@ -4,8 +4,7 @@ import {
   Title,
   Description,
   Primary,
-  Controls,
-  Story
+  Controls
 } from '@storybook/blocks'
 
 import { Heading, RelatedComponents } from 'storybook/components'
@@ -45,29 +44,21 @@ _Note: Flex also accepts all layout props from [Box](?path=/docs/components-layo
 
 ### Row
 
-<Canvas>
-  <Story of={FlexStories.Default} />
-</Canvas>
+<Canvas of={FlexStories.Default} />
 
 ### Column
 
-<Canvas>
-  <Story of={FlexStories.Column} />
-</Canvas>
+<Canvas of={FlexStories.Column} />
 
 ## Spacing
 
 ### Centered
 
-<Canvas>
-  <Story of={FlexStories.Centered} />
-</Canvas>
+<Canvas of={FlexStories.Centered} />
 
 ### Spaced Evenly
 
-<Canvas>
-  <Story of={FlexStories.SpacedEvenly} />
-</Canvas>
+<Canvas of={FlexStories.SpacedEvenly} />
 
 ## Related components
 
