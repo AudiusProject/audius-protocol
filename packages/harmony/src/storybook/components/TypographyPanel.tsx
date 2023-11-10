@@ -36,7 +36,9 @@ export const TypographyCard = (props: TypographyCardProps) => {
         {strength ? `-${strength}` : ''}
       </Text>
       <Unstyled>
-        <Text {...props}>Ag</Text>
+        <Text tag='p' {...props}>
+          Ag
+        </Text>
       </Unstyled>
       <Text>
         Font Size: {fontSize}px, Line-height: {lineHeight}, Spacing:{' '}
