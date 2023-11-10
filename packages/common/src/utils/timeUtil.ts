@@ -1,6 +1,8 @@
 import type { MomentInput } from 'moment'
 import moment from 'moment'
 
+import dayjs from 'dayjs'
+
 const SECONDS_PER_MINUTE = 60
 const MINUTES_PER_HOUR = 60
 const SECONDS_PER_HOUR = SECONDS_PER_MINUTE * MINUTES_PER_HOUR
@@ -44,4 +46,8 @@ export const formatDate = (date: MomentInput, format?: string): string => {
 
 export const formatDateWithTimezoneOffset = (date: MomentInput): string => {
   return moment(date).add(moment().utcOffset(), 'm').format('MM/DD/YY')
+}
+
+export const utcToLocalTime = (date: string) => {
+  return dayjs.utc(date).local()
 }

@@ -44,12 +44,12 @@ export const ComponentRule = (props: ComponentRuleProps) => {
     <Flex
       as='section'
       direction='column'
-      gap='xl'
+      gap='l'
       flex={1}
       css={{ minWidth: 400 }}
     >
-      <Flex direction='column' gap='m'>
-        <Text variant='title' tag='h4' css={{ textTransform: 'uppercase' }}>
+      <Flex direction='column' gap='s'>
+        <Text variant='title' tag='h4'>
           <TitleIcon css={{ marginRight: '4px' }} /> {title}
         </Text>
         <Text tag='section' css={{ height: '40px', overflow: 'hidden' }}>
@@ -68,6 +68,7 @@ export const ComponentRule = (props: ComponentRuleProps) => {
           border: `1px solid ${borderColor}`,
           borderRadius: cornerRadius.m,
           boxSizing: 'content-box',
+          overflow: 'hidden',
           '& img': {
             objectFit: 'scale-down',
             width: '100%',

@@ -6,32 +6,38 @@ import addIconArrangement from 'storybook/assets/addIconArrangement.png'
 import exportIconCommand from 'storybook/assets/exportIconCommand.png'
 import exportIconLayer from 'storybook/assets/exportIconLayer.png'
 import verifyIconSettings from 'storybook/assets/verifyIconSettings.png'
+import { Heading } from 'storybook/components'
 
 <Meta title='Icons/Details' />
 
 <Title>Details</Title>
 
+<Heading>
 ### Overview
 
 An icon is a graphic symbol designed to visually indicate the purpose of an interface element.
+
+</Heading>
 
 <Divider />
 
 export function Step(props) {
   const { index, children } = props
   return (
-    <section
+    <Flex
+      direction='column'
+      gap='s'
+      as='section'
+      borderRadius='s'
+      border='strong'
+      p='l'
       css={(theme) => ({
-        background: theme.color.background.surface1,
-        borderRadius: theme.cornerRadius.s,
-        border: `1px solid ${theme.color.border.strong}`,
-        padding: theme.spacing.l,
-        marginTop: theme.spacing['2xl']
+        background: theme.color.background.surface1
       })}
     >
       {index === undefined ? null : <h4>Step {index}</h4>}
       {children}
-    </section>
+    </Flex>
   )
 }
 
@@ -42,16 +48,19 @@ export const headerIconCss = {
   top: '3px !important'
 }
 
+<Heading>
 ### <IconQuestionCircle color='default' css={headerIconCss} /> How to Export Icons
 
 Follow the general guide below to learn how to export icons from the library
+
+</Heading>
 
 <Step index={1}>
 
 Find the icon you want to export.
 Pro Tip: You can search for icons by pressing Cmd + F
 
-<img src={exportIconCommand} />
+<img width={300} src={exportIconCommand} />
 
 </Step>
 
@@ -59,7 +68,7 @@ Pro Tip: You can search for icons by pressing Cmd + F
 
 Please be sure to select the parent layer. If you export the wrong layer the file name will be `<export the layer above>`
 
-<img src={exportIconLayer} />
+<img width={800} src={exportIconLayer} />
 
 </Step>
 
@@ -74,7 +83,7 @@ Locate the export panel in the bottom right corner of figma. (Export panel is on
 ⚠️ Verify the export settings are correct. (See screenshot) If not,
 go back to step 2.
 
-<img src={verifyIconSettings} />
+<img width={471} src={verifyIconSettings} />
 
 </Step>
 
@@ -97,9 +106,12 @@ Hit 'Export', save the file & you are done! 🎉
 
 ## For Designers
 
+<Heading>
 ### Instructions: Adding Icons to this file.
 
 When adding new utility icons to this library, designers should ensure the following:
+
+</Heading>
 
 <Step>
 #### Paths
@@ -135,7 +147,7 @@ Ensure fill color is set to
 
 Rearrange utility icons into alphabetical order using the plugin Griddle with the following configuration
 
-<img src={addIconArrangement} />
+<img width={212} src={addIconArrangement} />
 
 </Step>
 

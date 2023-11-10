@@ -29,7 +29,7 @@ setDefaultWasm('node')
 // Please provide an eth RPC provider endpoint here
 // For example https://mainnet.infura.io/v3/<your-key-here>
 const ETH_PROVIDER = process.env.ethProvider
-const SOLANA_CLUSTER_ENDPOINT = 'https://audius.rpcpool.com/'
+const SOLANA_CLUSTER_ENDPOINT = 'https://solana-mainnet.g.alchemy.com/v2/LC5JMm2frfCssi_lVc5Fip_wrEy4B3fP'
 const ETH_BRIDGE_ADDRESS = '0x98f3c9e6E3fAce36bAAd05FE09d375Ef1464288B'
 const SOL_BRIDGE_ADDRESS = 'worm2ZoG2kUd4vFXhvjh93UUH596ayRfgQ2MgjNMTth'
 const ETH_TOKEN_BRIDGE_ADDRESS = '0x3ee18B2214AFF97000D974cf647E7C347E8fa585'
@@ -72,7 +72,7 @@ const ethAccount = web3.eth.accounts.wallet.add(TEST_PRIVATE_KEY)
 const arbiterFee = 0
 const nonce = 2 // this is just some random number atm
 
-async function getGasPrice () {
+async function getGasPrice() {
   try {
     const gasPrices = await axios.get(
       'https://ethgasstation.info/json/ethgasAPI.json'
@@ -135,7 +135,7 @@ const getReceipt = async (txHash, numRetries) => {
   return txReceipt
 }
 
-async function run () {
+async function run() {
   try {
     const gasPrice = await getGasPrice()
     console.log({ gasPrice })

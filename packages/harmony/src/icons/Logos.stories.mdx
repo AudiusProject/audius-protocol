@@ -1,6 +1,6 @@
 import { Meta, Title } from '@storybook/blocks'
 
-import { Flex } from 'components'
+import { Flex, Divider } from 'components'
 import {
   IconAudiusLogo,
   IconAudiusLogoColor,
@@ -24,14 +24,20 @@ import {
   IconLogoCircleUSD,
   IconLogoCircleUSDC
 } from 'icons/logos'
+import { Heading } from 'storybook/components'
 
 <Meta title='Icons/Logos' />
 
 <Title>Logos</Title>
 
+<Heading>
 ## Overview
 
 Logos are used as a visual representation of our brand and other businesses we partner with.
+
+</Heading>
+
+<Divider />
 
 ## Audius
 
@@ -40,12 +46,16 @@ Logos are used as a visual representation of our brand and other businesses we p
   <IconAudiusLogoHorizontal /> <IconAudiusLogoHorizontalColor />
 </Flex>
 
+<Divider />
+
 ## External
 
 <Flex gap='2xl'>
   <IconLogoCoinbase color='red' />
   <IconLogoLinkByStripe color='red' />
 </Flex>
+
+<Divider />
 
 ## Social Media
 
@@ -58,6 +68,8 @@ Logos are used as a visual representation of our brand and other businesses we p
   <IconSnapChat />
   <IconTikTok />
 </Flex>
+
+<Divider />
 
 ## Logo Circles
 

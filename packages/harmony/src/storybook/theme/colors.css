@@ -31,6 +31,7 @@ html {
   --harmony-docs-bar-hover-color: var(--harmony-docs-violet-v200);
   --harmony-docs-icon-color: var(--harmony-docs-violet-v400);
   --harmony-docs-icon-selected-color: var(--harmony-docs-violet-v050);
+  --harmony-docs-deprecated-color: #ff2e2e;
 }
 
 html[data-theme='dark'],

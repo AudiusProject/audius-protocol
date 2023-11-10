@@ -1,6 +1,6 @@
 .container {
   flex-shrink: 0;
-  margin: 44px 0px 120px 0px;
+  margin-top: 160px;
   flex-shrink: 0;
   overflow: hidden;
   width: 100%;
@@ -10,7 +10,7 @@
 
 .content {
   max-width: 1110px;
-  margin: 0px 100px;
+  margin: 0px 48px;
   position: relative;
 }
 
@@ -35,11 +35,12 @@
   display: inline-flex;
   overflow: hidden;
   color: #a3a1b2;
-  font-size: 34px;
+  font-size: 42px;
   font-weight: 800;
   line-height: 42px;
   text-transform: uppercase;
   text-align: center;
+  user-select: none;
 }
 
 .coloredTitle {
@@ -47,9 +48,9 @@
   display: inline-flex;
   overflow: hidden;
   text-transform: uppercase;
-  font-size: 64px;
+  font-size: 72px;
   font-weight: 800;
-  line-height: 78px;
+  line-height: 88px;
   text-align: center;
   margin-bottom: 16px;
 }
@@ -72,15 +73,15 @@
   background: linear-gradient(to right, #30cfd0 0%, #330867 100%);
   background: linear-gradient(315deg, #5b23e1 0%, #a22feb 100%);
   margin-bottom: 16px;
+  user-select: none;
 }
 
 .subText {
   color: #858199;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 500;
-  line-height: 34px;
+  line-height: 32px;
   text-align: center;
-
   width: 100%;
   max-width: 1110px;
 }
@@ -89,21 +90,24 @@
   overflow: hidden;
 }
 
-.description {
-  margin-bottom: 16px;
-}
-
 .dotsLogo {
   user-select: none;
   width: 382px;
   position: absolute;
   top: 230px;
-  right: -118px;
   z-index: 0;
 }
 
+.dotsLeft {
+  left: -118px;
+}
+
+.dotsRight {
+  right: -118px;
+}
+
 .textAnimate {
-  margin-right: 18px;
+  margin-right: 8px;
   overflow: hidden;
   display: inline-flex;
 }
@@ -177,16 +181,16 @@
   flex-wrap: wrap;
   justify-content: center;
   color: #a3a1b2;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 800;
-  letter-spacing: 10px;
-  line-height: 25px;
+  line-height: 32px;
   text-align: center;
   position: relative;
   /* Counteract the spacing on the last character */
   left: 6px;
   max-width: 351px;
   margin: -12px auto 0px;
+  user-select: none;
 }
 
 .mobileContainer .titleColor {
@@ -194,8 +198,8 @@
   flex-wrap: wrap;
   justify-content: center;
   font-weight: 800;
-  font-size: 35px;
-  line-height: 43px;
+  font-size: 42px;
+  line-height: 52px;
   max-width: 500px;
   text-align: center;
   text-transform: uppercase;
@@ -203,15 +207,16 @@
   background: linear-gradient(315deg, #5b23e1 0%, #a22feb 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin: 0 auto 24px auto;
+  margin: 0 16px 24px;
 }
 
 .mobileContainer .coloredTitleWord {
   margin-bottom: 0px;
+  user-select: none;
 }
 
 .mobileContainer .textAnimate:not(:first-child) .coloredTitleWord {
-  margin-right: -18px;
+  margin-right: -8px;
 }
 
 .mobileContainer .textAnimate {
@@ -226,7 +231,7 @@
   width: 100%;
   font-size: 18px;
   font-weight: 500;
-  line-height: 30px;
+  line-height: 24px;
   text-align: center;
   padding: 0px 20px;
 }

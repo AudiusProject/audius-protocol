@@ -2,7 +2,7 @@ import { useTheme } from '@emotion/react'
 import { Meta, Title, Unstyled } from '@storybook/blocks'
 
 import { Paper, Flex, Text } from 'components'
-import { RelatedFoundations } from 'storybook/components'
+import { Heading, RelatedFoundations } from 'storybook/components'
 
 <Meta title='Foundations/Corner Radius' />
 
@@ -11,9 +11,12 @@ import { RelatedFoundations } from 'storybook/components'
 - [Overview](#overview)
 - [Usage and examples](#usage-and-examples)
 
+<Heading>
 ## Overview
 
 Corner radius variables are used to give sharp edges a more subtle, rounded effect and impact the overall look and feel of Harmony components.
+
+</Heading>
 
 export function CornerRadiusExample(props) {
   const { cornerRadius } = props

@@ -33,7 +33,7 @@ const relatedFoundationsMap = {
         />
       </Flex>
     ),
-    link: '/?path=/docs/foundations-color--documentation'
+    link: 'color--documentation'
   },
   Shadow: {
     title: 'Shadow',
@@ -46,13 +46,13 @@ const relatedFoundationsMap = {
         <Paper h={48} w={48} borderRadius='s' shadow='far' />
       </Flex>
     ),
-    link: '/?path=/docs/foundations-shadow--documentation'
+    link: 'shadow--documentation'
   },
   CornerRadius: {
     title: 'Corner Radius',
     description:
       'Used to give sharp edges a more subtle, rounded effect and style.',
-    link: '/?path=/docs/foundations-corner-radius--documentation',
+    link: 'corner-radius--documentation',
     component: (
       <Flex gap='l'>
         <Box
@@ -89,7 +89,7 @@ const relatedFoundationsMap = {
     title: 'Spacing',
     description:
       'Ensure layouts are consistent with our intuitive spacing system.',
-    link: '/?path=/docs/foundations-spacing--documentation',
+    link: 'spacing--documentation',
     component: (
       <Flex
         h={48}
@@ -108,14 +108,14 @@ const relatedFoundationsMap = {
     title: 'Icons',
     description:
       'Visually communicate intent. Icons that are crisp, clear, and coherent.',
-    link: '/?path=/docs/foundations-icons--documentation',
+    link: 'icons--documentation',
     component: <IconNote height={48} width={48} color='default' />
   },
   Motion: {
     title: 'Motion',
     description:
       'Animations that brings the UI to life and ensuring usability.',
-    link: '/?path=/docs/foundations-motion--documentation',
+    link: 'motion--documentation',
     component: <Button color='blue'>Quick!</Button>
   }
 }
@@ -131,12 +131,13 @@ export const RelatedFoundations = (props: RelatedFoundationsProps) => {
     <Flex
       mv='3xl'
       gap='2xl'
-      css={{ section: { flex: '0 0 calc(33.33% - 32px)' } }}
+      // Style children to have max of 3 per row but fill the last row
+      css={{ section: { flex: '1 1', minWidth: 300 } }}
       wrap='wrap'
       justifyContent='space-between'
     >
       {foundationNames.map((foundationName) => {
-        const { component, link, description } =
+        const { component, title, link, description } =
           relatedFoundationsMap[foundationName]
         const href = `../?path=/docs/foundations-${link}`
 
@@ -145,7 +146,7 @@ export const RelatedFoundations = (props: RelatedFoundationsProps) => {
             key={foundationName}
             component={component}
             href={href}
-            title={foundationName}
+            title={title}
             description={description}
           />
         )
