@@ -51,6 +51,28 @@ const userApi = createApi({
         schemaKey: 'user'
       }
     },
+    getUserByHandle: {
+      fetch: async (
+        {
+          handle,
+          currentUserId,
+          retry = true
+        }: { handle: string; currentUserId: Nullable<ID>; retry?: boolean },
+        { apiClient }
+      ) => {
+        const apiUser = await apiClient.getUserByHandle({
+          handle,
+          currentUserId,
+          retry
+        })
+        return apiUser?.[0]
+      },
+      options: {
+        idArgKey: 'handle',
+        kind: Kind.USERS,
+        schemaKey: 'user'
+      }
+    },
     getUsersByIds: {
       fetch: async (args: { ids: ID[] }, context) => {
         const { ids } = args

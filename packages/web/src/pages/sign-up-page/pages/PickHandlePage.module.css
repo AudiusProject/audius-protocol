@@ -1,0 +1,8 @@
+.hideTwitterButton {
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  outline: inherit;
+}

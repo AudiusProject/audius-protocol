@@ -26,6 +26,7 @@ import { apiClient } from 'services/audius-api-client'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk/audiusSdk'
 import { env } from 'services/env'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import history from 'utils/history'
 
 import { store, persistor } from './store/configureStore'
@@ -61,7 +62,8 @@ const AudiusApp = () => {
               dispatch: store.dispatch,
               reportToSentry,
               env,
-              fetch
+              fetch,
+              remoteConfigInstance
             }}
           >
             <ConnectedRouter history={history}>

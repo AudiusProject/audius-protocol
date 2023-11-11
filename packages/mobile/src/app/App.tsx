@@ -9,6 +9,7 @@ import {
 } from 'react-native-safe-area-context'
 import { Provider } from 'react-redux'
 import { useEffectOnce } from 'react-use'
+import { remoteConfigInstance } from 'app/services/remote-config'
 import { PersistGate } from 'redux-persist/integration/react'
 import FlipperAsyncStorage from 'rn-flipper-async-storage-advanced'
 
@@ -92,7 +93,8 @@ const App = () => {
                 dispatch: store.dispatch,
                 reportToSentry,
                 env,
-                fetch
+                fetch,
+                remoteConfigInstance
               }}
             >
               <PersistGate loading={null} persistor={persistor}>
