@@ -127,16 +127,23 @@ web-distribute:
           cd packages/web
           npm run dist:<< parameters.build-type >>
     - run:
+        name: Install jq if not present
+        command: |
+          if ! type "jq" > /dev/null; then
+            apt-get update
+            apt-get install -y jq
+          fi
+    - run:
         name: slack announce
         command: |
           cd packages/web
           deploying_version=$(jq -r '.version' package.json)
           environment="<< parameters.environment >>"
           os="<< parameters.os >>"
-          job_url="https://app.circleci.com/pipelines/gh/AudiusProject/audius-protocol/$pipeline_number/workflows/$workflow_id"
+          job_url="https://app.circleci.com/pipelines/workflows/$CIRCLE_WORKFLOW_ID"
 
           json_content="{ \"blocks\": ["
-          json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deployed $environment v$<${job_url}|$deploying_version> to desktop $os \n\" } }"
+          json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deployed $environment <v${job_url}|$deploying_version> to desktop $os \n\" } }"
           json_content+="]}"
           echo "Text to send to slack: $json_content"
 
@@ -197,10 +204,10 @@ web-deploy-cloudflare:
           cd packages/web
           deploying_version=$(jq -r '.version' package.json)
           environment="<< parameters.environment >>"
-          job_url="https://app.circleci.com/pipelines/gh/AudiusProject/audius-protocol/$pipeline_number/workflows/$workflow_id"
+          job_url="https://app.circleci.com/pipelines/workflows/$CIRCLE_WORKFLOW_ID"
 
           json_content="{ \"blocks\": ["
-          json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deployed $environment v$<${job_url}|$deploying_version> to web \n\" } }"
+          json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deployed $environment <v${job_url}|$deploying_version> to web \n\" } }"
           json_content+="]}"
           echo "Text to send to slack: $json_content"
 
