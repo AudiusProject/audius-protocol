@@ -297,16 +297,13 @@ export class BigDecimal {
     if (digitsToRemove < 0) {
       throw new RangeError('Digits must be non-negative')
     }
+    const signMultiplier = this.value > 0 ? BigInt(1) : BigInt(-1)
     // Divide to get the test digit in the ones place
     const divisor = BigInt(10 ** (digitsToRemove - 1))
     let quotient = this.value / divisor
-    const signMultiplier = this.value > 0 ? BigInt(1) : BigInt(-1)
-    const bump = signMultiplier * BigInt(10)
-    // Check the ones place digit and modify 10s digit if it's >= 5
-    if ((quotient * signMultiplier) % BigInt(10) >= 5) {
-      quotient += bump
-    }
-    // Divide by 10 to remove the test digit
+    // Round the tens digit by adding or subtracting 5
+    quotient += signMultiplier * BigInt(5)
+    // Divide by 10 to remove the rounding test digit
     quotient /= BigInt(10)
     // Multiply by the original divisor and 10 to get the number of digits back
     return new BigDecimal(quotient * divisor * BigInt(10), this.decimalPlaces)
