@@ -1,8 +1,8 @@
 import { BN } from 'bn.js'
 
-import { FixedDecimal } from './BigDecimal'
+import { FixedDecimal } from './FixedDecimal'
 
-describe('BigDecimal', function () {
+describe('FixedDecimal', function () {
   describe('constructor', function () {
     it('constructs properly using bigint', function () {
       expect(
@@ -63,15 +63,15 @@ describe('BigDecimal', function () {
     it('constructs properly using negative number', function () {
       expect(new FixedDecimal(-123.456).toString()).toBe('-123.456')
     })
-    it('constructs properly using another BigDecimal', function () {
+    it('constructs properly using another FixedDecimal', function () {
       expect(new FixedDecimal(new FixedDecimal(1, 3)).toString()).toBe('1.000')
     })
-    it('constructs properly using another negative BigDecimal', function () {
+    it('constructs properly using another negative FixedDecimal', function () {
       expect(new FixedDecimal(new FixedDecimal(-1, 3)).toString()).toBe(
         '-1.000'
       )
     })
-    it('constructs properly using another BigDecimal and decimal places', function () {
+    it('constructs properly using another FixedDecimal and decimal places', function () {
       expect(new FixedDecimal(new FixedDecimal(1, 3), 10).toString()).toBe(
         '1.0000000000'
       )
@@ -335,7 +335,7 @@ describe('BigDecimal', function () {
     it('has as many decimal places as specified', function () {
       expect(new FixedDecimal('1', 5).toFixed(3)).toBe('1.000')
     })
-    it('adds additional decimal places if beyond the precision of the BigDecimal', function () {
+    it('adds additional decimal places if beyond the precision of the FixedDecimal', function () {
       expect(new FixedDecimal('1').toFixed(3)).toBe('1.000')
     })
     it('throws when using negative decimal places', function () {
