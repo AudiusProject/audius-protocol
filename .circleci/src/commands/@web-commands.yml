@@ -143,7 +143,7 @@ web-distribute:
           job_url="https://app.circleci.com/pipelines/workflows/$CIRCLE_WORKFLOW_ID"
 
           json_content="{ \"blocks\": ["
-          json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deployed $environment <v${job_url}|$deploying_version> to desktop $os \n\" } }"
+          json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deployed $environment <${job_url}|v$deploying_version> to desktop $os \n\" } }"
           json_content+="]}"
           echo "Text to send to slack: $json_content"
 
@@ -207,7 +207,7 @@ web-deploy-cloudflare:
           job_url="https://app.circleci.com/pipelines/workflows/$CIRCLE_WORKFLOW_ID"
 
           json_content="{ \"blocks\": ["
-          json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deployed $environment <v${job_url}|$deploying_version> to web \n\" } }"
+          json_content+="{ \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"Deployed $environment <${job_url}|v$deploying_version> to web \n\" } }"
           json_content+="]}"
           echo "Text to send to slack: $json_content"
 
