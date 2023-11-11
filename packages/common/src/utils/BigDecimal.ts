@@ -73,7 +73,7 @@ type FormatOptions = {
    *
    * `'halfExpand'`
    *    > Ties away from 0. Values above the half-increment round away from
-   *      zero, and below towards 0. What people typically mean by "rounding."
+   *      zero, and below towards 0. Does what Math.round() does.
    *
    * Note: Does not support `'expand'`, `'halfCeil'`, `'halfFloor'`,
    * `'halfTrunc'` or `'halfEven'`
@@ -98,6 +98,16 @@ type FormatOptions = {
   trailingZeroDisplay?: 'auto' | 'stripIfInteger'
 }
 
+/**
+ * Gets the default formatting options for toLocalString() for a given BigDecimal.
+ *
+ * Noticable differences from {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat#moreprecision Intl.NumberFormat}:
+ * - `maximumFractionDigits` is the total number of digits, not `3`.
+ * - `roundingMode` is `'trunc'`.
+ *
+ * @param bigDecimal
+ * @returns
+ */
 const defaultFormatOptions = (bigDecimal: BigDecimal) =>
   ({
     useGrouping: true,
@@ -204,27 +214,16 @@ export class BigDecimal {
 
   /**
    * Math.ceil() but for BigDecimal.
-   *
-   * Also allows specifying a number of decimals to keep.
-   *
-   * @param decimalPlaces The number of decimal places to keep before ceiling.
+   * @param decimalPlaces The number of decimal places ceil to.
    * @returns A new `BigDecimal` with the result for chaining.
-   *
-   * @example
-   * // Specifying how many decimals to keep
-   * new BigDecimal('1.234').ceil(1).toString() // '1.300'
-   *
-   * @example
-   * // Specifying a negative number ceils away whole parts
-   * new BigDecimal('1234.1234').ceil(-1).toString() // '1240.0000'
    */
   public ceil(decimalPlaces?: number) {
     const digits = this.decimalPlaces - (decimalPlaces ?? 0)
     return this._ceil(digits)
   }
 
-  private _ceil(digits?: number) {
-    const digitsCount = digits ?? this.decimalPlaces
+  private _ceil(digitsToRemove?: number) {
+    const digitsCount = digitsToRemove ?? this.decimalPlaces
     if (digitsCount < 0) {
       throw new RangeError('Digits must be non-negative')
     }
@@ -238,27 +237,16 @@ export class BigDecimal {
 
   /**
    * Math.floor() but for BigDecimal.
-   *
-   * Also allows specifying a number of decimals to keep.
-   *
-   * @param decimalPlaces The number of decimal places to keep before flooring.
+   * @param decimalPlaces The number of decimal places to floor to.
    * @returns A new `BigDecimal` with the result for chaining.
-   *
-   * @example
-   * // Specifying how many decimals to keep
-   * new BigDecimal('1.234').floor(1).toString() // '1.200'
-   *
-   * @example
-   * // Specifying a negative number floors away whole parts
-   * new BigDecimal('1234.1234').floor(-1).toString() // '1230.0000'
    */
   public floor(decimalPlaces?: number) {
     const digits = this.decimalPlaces - (decimalPlaces ?? 0)
     return this._floor(digits)
   }
 
-  private _floor(digits?: number) {
-    const digitsCount = digits ?? this.decimalPlaces
+  private _floor(digitsToRemove?: number) {
+    const digitsCount = digitsToRemove ?? this.decimalPlaces
     if (digitsCount < 0) {
       throw new RangeError('Digits must be non-negative')
     }
@@ -275,27 +263,16 @@ export class BigDecimal {
 
   /**
    * Math.trunc() but for BigDecimal.
-   *
-   * Also allows specifying a number of decimals to keep.
-   *
-   * @param decimalPlaces The number of decimal places to keep before truncating.
+   * @param decimalPlaces The number of decimal places to truncate to.
    * @returns A new `BigDecimal` with the result for chaining.
-   *
-   * @example
-   * // Specifying how many decimals to keep
-   * new BigDecimal('1.234').trunc(1).toString() // '1.200'
-   *
-   * @example
-   * // Specifying a negative number truncates away whole parts
-   * new BigDecimal('1234.1234').floor(-1).toString() // '1230.0000'
    */
   public trunc(decimalPlaces?: number) {
     const digits = this.decimalPlaces - (decimalPlaces ?? 0)
     return this._trunc(digits)
   }
 
-  private _trunc(digits?: number) {
-    const digitsCount = digits ?? this.decimalPlaces
+  private _trunc(digitsToRemove?: number) {
+    const digitsCount = digitsToRemove ?? this.decimalPlaces
     if (digitsCount < 0) {
       throw new RangeError('Digits must be non-negative')
     }
@@ -307,44 +284,67 @@ export class BigDecimal {
   }
 
   /**
+   * Math.round() but for BigDecimal.
+   * @param decimalPlaces The number of decimal places to round to.
+   * @returns A new `BigDecimal` with the result for chaining.
+   */
+  public round(decimalPlaces?: number) {
+    const digits = this.decimalPlaces - (decimalPlaces ?? 0)
+    return this._round(digits)
+  }
+
+  private _round(digitsToRemove?: number) {
+    const digitsCount = digitsToRemove ?? this.decimalPlaces
+    if (digitsCount < 0) {
+      throw new RangeError('Digits must be non-negative')
+    }
+    // Divide to get the test digit in the ones place
+    const divisor = BigInt(10 ** (digitsCount - 1))
+    let quotient = this.value / divisor
+    const signMultiplier = this.value > 0 ? BigInt(1) : BigInt(-1)
+    const bump = signMultiplier * BigInt(10)
+    // Check the ones place digit and modify 10s digit if it's >= 5
+    if ((quotient * signMultiplier) % BigInt(10) >= 5) {
+      quotient += bump
+    }
+    // Divide by 10 to remove the test digit
+    quotient /= BigInt(10)
+    // Multiply by the original divisor and 10 to get the number of digits back
+    return new BigDecimal(quotient * divisor * BigInt(10), this.decimalPlaces)
+  }
+
+  /**
    * Number.toPrecision() but for BigDecimal.
    * @param significantDigits The number of significant digits to keep.
-   * @returns A new BigDecimal with the result for chaining.
+   * @returns The number truncated to the significant digits specified as a string.
    */
   public toPrecision(significantDigits: number) {
     const signOffset = this.value < 0 ? -1 : 0
-    const digits = Math.max(
+    const digitsToRemove = Math.max(
       this.value.toString().length - significantDigits + signOffset,
       0
     )
-    return this.value > 0 ? this._floor(digits) : this._ceil(digits)
+    const str = this._trunc(digitsToRemove).toString()
+    const decimalOffset = this.decimalPlaces > 0 ? -1 : 0
+    return str.padEnd(significantDigits - decimalOffset - signOffset, '0')
   }
 
   /**
    * Number.toFixed() but for BigDecimal.
-   * @param decimalPlaces The number of decimal places to keep.
-   * @returns A new `BigDecimal` with the result for chaining.
+   * @param decimalPlaces The number of decimal places to show.
+   * @returns The number rounded to the decimal places specifed as a string.
    */
   public toFixed(decimalPlaces?: number) {
     const decimalCount = decimalPlaces ?? 0
-    const [whole, decimalOrUndefined] = this.toString().split('.')
-    const decimal = (decimalOrUndefined ?? '').padEnd(decimalCount + 1, '0')
-    const decimalTruncated = decimal.substring(0, decimalCount - 1)
-
-    const digitToRound =
-      decimalCount > 0
-        ? Number(decimal[decimalCount - 1])
-        : Number(whole[whole.length - 1])
-    const testDigit = Number(decimal[decimalCount])
-    const roundedDigit = testDigit >= 5 ? digitToRound + 1 : digitToRound
-
-    if (decimalCount > 0) {
-      return `${whole}.${decimalTruncated}${roundedDigit}`
-    } else if (decimalCount === 0) {
-      return whole.substring(0, whole.length - 1) + roundedDigit
-    } else {
-      throw new Error('decimalPlaces must be non-negative')
+    if (decimalCount < 0) {
+      throw new RangeError('decimalPlaces must be non-negative')
     }
+    const d =
+      decimalCount > this.decimalPlaces ? this : this.round(decimalCount)
+    const [whole, decimalOrUndefined] = d.toString().split('.')
+    const decimal = (decimalOrUndefined ?? '').padEnd(decimalCount + 1, '0')
+    const decimalTruncated = decimal.substring(0, decimalCount)
+    return decimalCount > 0 ? `${whole}.${decimalTruncated}` : whole
   }
 
   /**
@@ -368,6 +368,7 @@ export class BigDecimal {
    * Analogous to Number().toLocaleString(), with some important differences in
    * the options available and the defaults. Be sure to check the defaults.
    *
+   * @see {@link defaultFormatOptions}
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat Mozilla NumberFormat documentation}
    *
    * @param locale The string specifying the locale (default is 'en-US').
@@ -392,7 +393,7 @@ export class BigDecimal {
         str = this.trunc(options.maximumFractionDigits).toString()
         break
       case 'halfExpand':
-        str = this.toFixed(options.maximumFractionDigits)
+        str = this.round(options.maximumFractionDigits).toString()
         break
     }
 

@@ -101,6 +101,9 @@ describe('BigDecimal', function () {
           .toString()
       ).toBe('12345678901234567890.99000000000000000000')
     })
+    it('flooring carries', function () {
+      expect(new BigDecimal('-999.5').round().toString()).toBe('-1000.0')
+    })
     it('throws when decimal places are out of range', function () {
       expect(() =>
         new BigDecimal(BigInt('1234567890123456789099999999999999999999'), 20)
@@ -146,6 +149,9 @@ describe('BigDecimal', function () {
           .ceil(2)
           .toString()
       ).toBe('12345678901234567890.01000000000000000000')
+    })
+    it('ceiling carries', function () {
+      expect(new BigDecimal('999.5').round().toString()).toBe('1000.0')
     })
     it('throws when decimal places are out of range', function () {
       expect(() =>
@@ -207,26 +213,62 @@ describe('BigDecimal', function () {
     })
   })
 
+  describe('round', function () {
+    it('rounds up positive numbers when appropriate', function () {
+      expect(new BigDecimal('1234.5678').round(2).toString()).toBe('1234.5700')
+      expect(new BigDecimal('1234.5678').round().toString()).toBe('1235.0000')
+    })
+    it('rounds down positive numbers when appropriate', function () {
+      expect(new BigDecimal('8765.4321').round(2).toString()).toBe('8765.4300')
+      expect(new BigDecimal('8765.4321').round().toString()).toBe('8765.0000')
+    })
+    it('rounds up negative numbers when appropriate', function () {
+      expect(new BigDecimal('-1234.5678').round(2).toString()).toBe(
+        '-1234.5700'
+      )
+      expect(new BigDecimal('-1234.5678').round().toString()).toBe('-1235.0000')
+    })
+    it('rounds down negative numbers when appropriate', function () {
+      expect(new BigDecimal('-8765.4321').round(2).toString()).toBe(
+        '-8765.4300'
+      )
+      expect(new BigDecimal('-8765.4321').round().toString()).toBe('-8765.0000')
+    })
+    it('rounds to 0 if decimal places is far beyond number significance', function () {
+      expect(new BigDecimal('1').round(-20).toString()).toBe('0')
+      expect(new BigDecimal('841580.000').round(-20).toString()).toBe('0.000')
+    })
+    it('rounds to 1 if decimal places is beyond number by one place and leads with 5 or greater', function () {
+      expect(new BigDecimal('5').round(-1).toString()).toBe('10')
+      expect(new BigDecimal('841580.000').round(-6).toString()).toBe(
+        '1000000.000'
+      )
+    })
+    it('rounding carries', function () {
+      expect(new BigDecimal('999.5').round().toString()).toBe('1000.0')
+      expect(new BigDecimal('-999.5').round().toString()).toBe('-1000.0')
+    })
+    it('throws when decimal places are out of range', function () {
+      expect(() => new BigDecimal('1').round(20)).toThrow(
+        'Digits must be non-negative'
+      )
+    })
+  })
+
   describe('toPrecision', function () {
     it('work on positive numbers', function () {
-      expect(new BigDecimal('1234.56789').toPrecision(7).toString()).toBe(
-        '1234.56700'
-      )
+      expect(new BigDecimal('1234.56789').toPrecision(7)).toBe('1234.56700')
     })
     it('works on negative numbers', function () {
-      expect(new BigDecimal('-1234.56789').toPrecision(7).toString()).toBe(
-        '-1234.56700'
-      )
+      expect(new BigDecimal('-1234.56789').toPrecision(7)).toBe('-1234.56700')
     })
     it('works when precision is more than the number of digits', function () {
-      expect(new BigDecimal('-1234.56789').toPrecision(100).toString()).toBe(
-        '-1234.56789'
+      expect(new BigDecimal('-1234.56789').toPrecision(15)).toBe(
+        '-1234.56789000000'
       )
     })
     it('works when precision is less than the number of decimal places', function () {
-      expect(new BigDecimal('-1234.56789').toPrecision(2).toString()).toBe(
-        '-1200.00000'
-      )
+      expect(new BigDecimal('-1234.56789').toPrecision(2)).toBe('-1200.00000')
     })
   })
 
@@ -256,7 +298,7 @@ describe('BigDecimal', function () {
     it('adds additional decimal places if beyond the precision of the BigDecimal', function () {
       expect(new BigDecimal('1').toFixed(3)).toBe('1.000')
     })
-    it('throws when using non-negative decimal places', function () {
+    it('throws when using negative decimal places', function () {
       expect(() => new BigDecimal('1').toFixed(-1)).toThrow(
         'decimalPlaces must be non-negative'
       )
