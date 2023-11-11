@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { Paper } from './Paper'
 
 const meta: Meta<typeof Paper> = {
-  title: 'Components/Layout/Paper',
+  title: 'Layout/Paper',
   component: Paper,
   parameters: {
     controls: {

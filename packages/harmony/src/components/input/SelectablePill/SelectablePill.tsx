@@ -6,7 +6,18 @@ import { Text } from 'components/text'
 import type { SelectablePillProps } from './types'
 
 const SelectablePillRoot = styled.button<SelectablePillProps>((props) => {
-  const { theme, isSelected, size } = props
+  const { theme, isSelected, size, _isHovered } = props
+
+  const hoverCss: CSSObject = {
+    backgroundColor: theme.color.secondary.s200,
+    color: theme.color.static.white,
+    border: `1px solid ${theme.color.secondary.secondary}`,
+    ...(size === 'large' && {
+      backgroundColor: theme.color.secondary.s100,
+      border: `1px solid ${theme.color.secondary.s200}`,
+      boxShadow: 'none'
+    })
+  }
 
   const activeCss: CSSObject = {
     backgroundColor: theme.color.secondary.s400,
@@ -40,19 +51,10 @@ const SelectablePillRoot = styled.button<SelectablePillProps>((props) => {
       boxShadow: theme.shadows.near
     }),
 
+    ...(_isHovered && hoverCss),
     ...(isSelected && activeCss),
 
-    ':hover': {
-      backgroundColor: theme.color.secondary.s200,
-      color: theme.color.static.white,
-      border: `1px solid ${theme.color.secondary.secondary}`,
-      ...(size === 'large' && {
-        backgroundColor: theme.color.secondary.s100,
-        border: `1px solid ${theme.color.secondary.s200})`,
-        boxShadow: 'none'
-      })
-    },
-
+    ':hover': hoverCss,
     ':active': activeCss
   }
 })

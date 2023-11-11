@@ -4,8 +4,7 @@ import {
   Title,
   Description,
   Primary,
-  Controls,
-  Story
+  Controls
 } from '@storybook/blocks'
 
 import IconCamera from 'assets/icons/Camera.svg'
@@ -48,39 +47,27 @@ import * as ButtonStories from './Button.stories'
 
 ### Variants
 
-<Canvas>
-  <Story of={ButtonStories.Variants} />
-</Canvas>
+<Canvas of={ButtonStories.Variants} />
 
 ### Sizes
 
-<Canvas>
-  <Story of={ButtonStories.Sizes} />
-</Canvas>
+<Canvas of={ButtonStories.Sizes} />
 
 ### States
 
-<Canvas>
-  <Story of={ButtonStories.States} />
-</Canvas>
+<Canvas of={ButtonStories.States} />
 
 ### Disabled
 
-<Canvas>
-  <Story of={ButtonStories.Disabled} />
-</Canvas>
+<Canvas of={ButtonStories.Disabled} />
 
 ### Icons
 
-<Canvas>
-  <Story of={ButtonStories.Icons} />
-</Canvas>
+<Canvas of={ButtonStories.Icons} />
 
 ### Loading state
 
-<Canvas>
-  <Story of={ButtonStories.LoadingState} />
-</Canvas>
+<Canvas of={ButtonStories.LoadingState} />
 
 <Heading>
 ### Color Prop Applied
@@ -89,9 +76,7 @@ Generate the colors for primary button states using colored overlays rather than
 
 </Heading>
 
-<Canvas>
-  <Story of={ButtonStories.ColorPropApplied} />
-</Canvas>
+<Canvas of={ButtonStories.ColorPropApplied} />
 
 <Heading>
 ### Link
@@ -100,9 +85,7 @@ A link that looks like a button. Useful for buttons that trigger navigation
 
 </Heading>
 
-<Canvas>
-  <Story of={ButtonStories.Link} />
-</Canvas>
+<Canvas of={ButtonStories.Link} />
 
 ## Use cases and examples
 

@@ -2,10 +2,18 @@ import type { ComponentPropsWithoutRef } from 'react'
 
 import type { IconComponent } from '../../icon'
 
+type InternalProps = {
+  /**
+   * @ignore: This prop is for internal use only
+   */
+  _isHovered?: boolean
+}
+
 export type SelectablePillProps = {
   size?: 'default' | 'large'
-  isSelected: boolean
+  isSelected?: boolean
   label: string
   disabled?: boolean
   icon?: IconComponent
-} & Omit<ComponentPropsWithoutRef<'button'>, 'children'>
+} & InternalProps &
+  Omit<ComponentPropsWithoutRef<'button'>, 'children'>

@@ -45,12 +45,12 @@ Collaborative tools for designers and developers.
     }}
     title='Open Source Library'
     description='Our Audius Protocol Harmony package on Github'
-    href='https://github.com/AudiusProject/audius-protocol/tree/main/packages/harmony'
+    to={{ href: 'https://github.com/AudiusProject/audius-protocol/tree/main/packages/harmony' }}
   />
   <InformationBox
     title='Foundations'
     description="Harmony's core essence: type, color, spacing, shadows, and more."
-    href='/?path=/docs/foundations-welcome--documentation'
+    to={{kind: 'foundations', story: 'documentation'}}
     component={
       <Flex alignItems='center' gap='xl'>
         <Text variant='display' size='s'>
@@ -95,7 +95,7 @@ Collaborative tools for designers and developers.
   <InformationBox
     title='Components'
     description='Detailed information and guidelines on each component.'
-    href='/?path=/docs/components-welcome--documentation'
+    to={{kind: 'components', story: 'documentation'}}
     css={{ overflow: 'hidden' }}
     component={
       <Flex gap='l' alignItems='center' wrap='wrap'>
@@ -150,13 +150,17 @@ Empowering creativity with streamlined resources. Dive into our collaborative to
     title='Figma'
     description='Our public Figma library on Community.'
     component={<IconFigma css={{ width: 50 }} />}
-    href='https://www.figma.com/files/1105962599171830714/team/1167502323345567390/Team?fuid=1060287303847875173'
+    to={{
+      href: 'https://www.figma.com/files/1105962599171830714/team/1167502323345567390/Team?fuid=1060287303847875173'
+    }}
   />
   <InformationBox
     title='Github'
     description='Our open-source library on GitHub'
     component={<img css={{ width: 200 }} src={IconGitHub} />}
-    href='https://github.com/AudiusProject/audius-protocol/tree/main/packages/harmony'
+    to={{
+      href: 'https://github.com/AudiusProject/audius-protocol/tree/main/packages/harmony'
+    }}
   />
 </Flex>
 

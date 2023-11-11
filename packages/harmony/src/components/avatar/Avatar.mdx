@@ -4,8 +4,7 @@ import {
   Title,
   Description,
   Primary,
-  Controls,
-  Story
+  Controls
 } from '@storybook/blocks'
 
 import { Flex } from 'components/layout/Flex'
@@ -32,6 +31,7 @@ import * as AvatarStories from './Avatar.stories'
   ## Overview
   <Description />
 </Heading>
+
 <Primary />
 
 ## Props
@@ -44,15 +44,11 @@ _Note: Avatar also accepts layout props from [Flex](?path=/docs/components-layou
 
 ### Default
 
-<Canvas>
-  <Story of={AvatarStories.Default} />
-</Canvas>
+<Canvas of={AvatarStories.Default} />
 
 ### Strong
 
-<Canvas>
-  <Story of={AvatarStories.Strong} />
-</Canvas>
+<Canvas of={AvatarStories.Strong} />
 
 ## Use cases and examples
 

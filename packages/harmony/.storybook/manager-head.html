@@ -21,6 +21,10 @@
 <meta name="msapplication-wide310x150logo" content="mstile-310x150.png" />
 <meta name="msapplication-square310x310logo" content="mstile-310x310.png" />
 
+<meta property="og:description" content="Harmony design system by Audius"/>
+<meta property="og:title" content="Harmony Design System"/>
+<meta property="og:image" content="https://harmony.audius.co/og-banner.jpeg"/>
+
 <style>
 
   .sidebar-header > div {
@@ -49,6 +53,18 @@
 
   .sidebar-item[data-selected="true"] svg {
     color: var(--harmony-docs-icon-selected-color) !important;
+  }
+
+  /**
+   * Remove the storybook-dark-mode button since we are only using
+   * @storybook/addon-theme
+  */
+  button[title="Change theme to dark mode"] {
+    display: none;
+  }
+
+  button[title="Change theme to light mode"] {
+    display: none;
   }
 
 </style>

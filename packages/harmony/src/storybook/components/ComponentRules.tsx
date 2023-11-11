@@ -28,14 +28,14 @@ export const ComponentRules = (props: ComponentRulesProps) => {
   const { rules = [] } = props
 
   return (
-    <Flex as='article' direction='column' gap='3xl' mt='3xl'>
+    <Flex as='article' direction='column' gap='3xl'>
       {rules.map((rule, index) => {
         const key = `rule-${index}`
 
         return (
           <Flex as='section' key={key} gap='3xl' wrap='wrap'>
-            <ComponentRule {...rule.positive} isRecommended />
-            <ComponentRule {...rule.negative} isRecommended={false} />
+            <ComponentRule isRecommended {...rule.positive} />
+            <ComponentRule isRecommended={false} {...rule.negative} />
           </Flex>
         )
       })}

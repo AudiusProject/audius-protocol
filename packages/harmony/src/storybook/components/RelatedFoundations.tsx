@@ -8,7 +8,10 @@ const relatedFoundationsMap = {
     title: 'Typography',
     description: 'Typography expresses hierarchy and brand presence.',
     component: <Text variant='display'>Ag</Text>,
-    link: 'typography--documentation'
+    to: {
+      kind: 'foundations-typography',
+      story: 'documentation'
+    }
   },
   Color: {
     title: 'Color',
@@ -33,7 +36,7 @@ const relatedFoundationsMap = {
         />
       </Flex>
     ),
-    link: 'color--documentation'
+    to: { kind: 'foundations-color', story: 'documentation' }
   },
   Shadow: {
     title: 'Shadow',
@@ -46,13 +49,13 @@ const relatedFoundationsMap = {
         <Paper h={48} w={48} borderRadius='s' shadow='far' />
       </Flex>
     ),
-    link: 'shadow--documentation'
+    to: { kind: 'foundations-shadow', story: 'documentation' }
   },
   CornerRadius: {
     title: 'Corner Radius',
     description:
       'Used to give sharp edges a more subtle, rounded effect and style.',
-    link: 'corner-radius--documentation',
+    to: { kind: 'foundations-corner-radius', story: 'documentation' },
     component: (
       <Flex gap='l'>
         <Box
@@ -89,7 +92,7 @@ const relatedFoundationsMap = {
     title: 'Spacing',
     description:
       'Ensure layouts are consistent with our intuitive spacing system.',
-    link: 'spacing--documentation',
+    to: { kind: 'foundations-spacing', story: 'documentation' },
     component: (
       <Flex
         h={48}
@@ -108,14 +111,14 @@ const relatedFoundationsMap = {
     title: 'Icons',
     description:
       'Visually communicate intent. Icons that are crisp, clear, and coherent.',
-    link: 'icons--documentation',
+    to: { kind: 'icons-utility-icons', story: 'documentation' },
     component: <IconNote height={48} width={48} color='default' />
   },
   Motion: {
     title: 'Motion',
     description:
       'Animations that brings the UI to life and ensuring usability.',
-    link: 'motion--documentation',
+    to: { kind: 'foundations-motion', story: 'documentation' },
     component: <Button color='blue'>Quick!</Button>
   }
 }
@@ -137,15 +140,14 @@ export const RelatedFoundations = (props: RelatedFoundationsProps) => {
       justifyContent='space-between'
     >
       {foundationNames.map((foundationName) => {
-        const { component, title, link, description } =
+        const { component, title, to, description } =
           relatedFoundationsMap[foundationName]
-        const href = `../?path=/docs/foundations-${link}`
 
         return (
           <InformationBox
             key={foundationName}
             component={component}
-            href={href}
+            to={to}
             title={title}
             description={description}
           />

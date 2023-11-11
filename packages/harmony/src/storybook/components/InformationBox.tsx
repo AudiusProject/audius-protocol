@@ -12,16 +12,16 @@ type InformationBoxProps = {
   component: ReactNode
   title: string
   description: string
-  href?: string
+  to?: { kind: string; story: string } | { href: string }
 }
 
 export const InformationBox = (props: InformationBoxProps) => {
-  const { component = null, title, description, href, className } = props
+  const { component = null, title, description, to, className } = props
   const theme = useTheme()
   const titleCss = { fontSize: '24px !important' }
 
   return (
-    <Paper as='section' direction='column' flex={1} gap='m'>
+    <Paper as='section' direction='column' flex={1} pb='l'>
       <Flex
         h={144}
         ph='xl'
@@ -37,16 +37,14 @@ export const InformationBox = (props: InformationBoxProps) => {
         <Unstyled>{component}</Unstyled>
       </Flex>
       <Flex direction='column' pv='xl' ph='l' gap='s'>
-        {href ? (
-          <Link href={href} css={titleCss}>
+        {to ? (
+          <Link {...to} css={titleCss}>
             {title}
           </Link>
         ) : (
-          <Text
-            css={[titleCss, { color: `${theme.color.primary} !important` }]}
-          >
+          <p css={[titleCss, { color: `${theme.color.primary} !important` }]}>
             {title}
-          </Text>
+          </p>
         )}
         <Text>{description}</Text>
       </Flex>

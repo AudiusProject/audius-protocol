@@ -6,7 +6,7 @@ import { Flex } from '../Flex'
 import { Divider } from './Divider'
 
 const meta: Meta<typeof Divider> = {
-  title: 'Components/Layout/Divider',
+  title: 'Layout/Divider',
   component: Divider,
   render: () => (
     <Flex border='strong' borderRadius='m' p='l' gap='m'>
