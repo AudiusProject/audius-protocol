@@ -318,14 +318,17 @@ export class BigDecimal {
    * @returns The number truncated to the significant digits specified as a string.
    */
   public toPrecision(significantDigits: number) {
-    const signOffset = this.value < 0 ? -1 : 0
-    const digitsToRemove = Math.max(
-      this.value.toString().length - significantDigits + signOffset,
-      0
+    const signOffset = this.value < 0 ? 1 : 0
+    const digitsToRemove =
+      this.value.toString().length - significantDigits - signOffset
+    const hasDecimalPoint = this.decimalPlaces > 0
+    const addDecimalPoint = !hasDecimalPoint && digitsToRemove < 0
+    const decimalOffset = hasDecimalPoint || addDecimalPoint ? 1 : 0
+    const str = this._trunc(Math.max(digitsToRemove, 0)).toString()
+    return `${str}${addDecimalPoint ? '.' : ''}`.padEnd(
+      significantDigits + decimalOffset + signOffset,
+      '0'
     )
-    const str = this._trunc(digitsToRemove).toString()
-    const decimalOffset = this.decimalPlaces > 0 ? -1 : 0
-    return str.padEnd(significantDigits - decimalOffset - signOffset, '0')
   }
 
   /**

@@ -294,8 +294,11 @@ describe('BigDecimal', function () {
     it('works when precision is less than the number of decimal places', function () {
       expect(new BigDecimal('-1234.56789').toPrecision(2)).toBe('-1200.00000')
     })
-    it('works on whole numbers', function () {
-      expect(new BigDecimal('123').toPrecision(2)).toBe('123.00')
+    it('works on whole numbers when precision is less than digits', function () {
+      expect(new BigDecimal('123').toPrecision(2)).toBe('120')
+    })
+    it('works on whole numbers when precision is more than digits', function () {
+      expect(new BigDecimal('123').toPrecision(6)).toBe('123.000')
     })
   })
 
