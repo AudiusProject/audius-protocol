@@ -11,7 +11,11 @@ import {
 
 import { Flex } from 'components'
 import { IconSearch } from 'icons'
-import { ComponentRules, RelatedComponents } from 'storybook/components'
+import {
+  Heading,
+  ComponentRules,
+  RelatedComponents
+} from 'storybook/components'
 
 import { TextInput } from './TextInput'
 import * as TextInputStories from './TextInput.stories'
@@ -57,15 +61,21 @@ import { TextInputSize } from './types'
 
 <Canvas of={TextInputStories.AssistiveText} />
 
+<Heading>
 ### Validation and counter
 
 Use validation to give feedback when an invalid input is provided. The validation error should appear when the user is done typing and out of focus.
 
+</Heading>
+
 <Canvas of={TextInputStories.Validation} />
 
+<Heading>
 ### Special Inputs
 
 An input in which the trailing and leading icons are replaced with type (Title-large) and are positioned below the input’s label.
+
+</Heading>
 
 <Canvas of={TextInputStories.SpecialInputs} />
 
