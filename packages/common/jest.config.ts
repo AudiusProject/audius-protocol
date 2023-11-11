@@ -1,3 +1,7 @@
+import { pathsToModuleNameMapper } from 'ts-jest'
+
+const { compilerOptions } = require('./tsconfig.json')
+
 /*
  * For a detailed explanation regarding each configuration property and type check, visit:
  * https://jestjs.io/docs/configuration
@@ -88,7 +92,9 @@ export default {
   // ],
 
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
-  // moduleNameMapper: {},
+  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
+    prefix: '<rootDir>'
+  }),
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
   // modulePathIgnorePatterns: [],

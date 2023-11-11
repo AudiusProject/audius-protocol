@@ -33,7 +33,8 @@
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "esModuleInterop": true
   },
   "include": ["src", "index.d.ts"],
   "exclude": ["node_modules", "dist", "rollup.config.js"]
