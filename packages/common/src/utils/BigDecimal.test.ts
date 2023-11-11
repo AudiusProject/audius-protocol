@@ -1,3 +1,5 @@
+import { BN } from 'bn.js'
+
 import { AUDIO, BigDecimal, wAUDIO } from './BigDecimal'
 
 describe('BigDecimal', function () {
@@ -20,6 +22,28 @@ describe('BigDecimal', function () {
       expect(
         new BigDecimal(
           BigInt('1234567890123456789012345678901234567890'),
+          10
+        ).toString()
+      ).toBe('123456789012345678901234567890.1234567890')
+    })
+    it('constructs properly using BN', function () {
+      expect(
+        new BigDecimal(
+          new BN('1234567890123456789012345678901234567890')
+        ).toString()
+      ).toBe('1234567890123456789012345678901234567890')
+    })
+    it('constructs properly using negative BN', function () {
+      expect(
+        new BigDecimal(
+          new BN('-1234567890123456789012345678901234567890')
+        ).toString()
+      ).toBe('-1234567890123456789012345678901234567890')
+    })
+    it('constructs properly using BN and decimal places', function () {
+      expect(
+        new BigDecimal(
+          new BN('1234567890123456789012345678901234567890'),
           10
         ).toString()
       ).toBe('123456789012345678901234567890.1234567890')
@@ -269,6 +293,9 @@ describe('BigDecimal', function () {
     })
     it('works when precision is less than the number of decimal places', function () {
       expect(new BigDecimal('-1234.56789').toPrecision(2)).toBe('-1200.00000')
+    })
+    it('works on whole numbers', function () {
+      expect(new BigDecimal('123').toPrecision(2)).toBe('123.00')
     })
   })
 

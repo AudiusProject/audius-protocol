@@ -199,8 +199,11 @@ export class BigDecimal {
           this.value = value.value
           this.decimalPlaces = value.decimalPlaces
         } else {
+          // Construct from BN.
           // Can't do `value instanceof BN` as the condition because BN is just
-          // a type here, so checked for the CtorArgs instead and used `else`.
+          // a type, instead get BN by elimination of BigDecimalCtorArgs.
+          // Technically any object works here that has a toString() that's a
+          // valid BigInt() arg. Relies on BigInt() to throw if invalid.
           this.value = BigInt(value.toString())
           this.decimalPlaces = decimalPlaces ?? 0
         }
@@ -222,12 +225,11 @@ export class BigDecimal {
     return this._ceil(digits)
   }
 
-  private _ceil(digitsToRemove?: number) {
-    const digitsCount = digitsToRemove ?? this.decimalPlaces
-    if (digitsCount < 0) {
+  private _ceil(digitsToRemove: number) {
+    if (digitsToRemove < 0) {
       throw new RangeError('Digits must be non-negative')
     }
-    const divisor = BigInt(10 ** digitsCount)
+    const divisor = BigInt(10 ** digitsToRemove)
     const bump = this.value % divisor > 0 ? BigInt(1) : BigInt(0)
     return new BigDecimal({
       value: (this.value / divisor + bump) * divisor,
@@ -245,15 +247,14 @@ export class BigDecimal {
     return this._floor(digits)
   }
 
-  private _floor(digitsToRemove?: number) {
-    const digitsCount = digitsToRemove ?? this.decimalPlaces
-    if (digitsCount < 0) {
+  private _floor(digitsToRemove: number) {
+    if (digitsToRemove < 0) {
       throw new RangeError('Digits must be non-negative')
     }
-    const divisor = BigInt(10 ** digitsCount)
+    const divisor = BigInt(10 ** digitsToRemove)
     const signOffset =
-      this.value < 0 && digitsCount > 0
-        ? BigInt(-1 * 10 ** digitsCount)
+      this.value < 0 && digitsToRemove > 0
+        ? BigInt(-1 * 10 ** digitsToRemove)
         : BigInt(0)
     return new BigDecimal({
       value: (this.value / divisor) * divisor + signOffset,
@@ -271,12 +272,11 @@ export class BigDecimal {
     return this._trunc(digits)
   }
 
-  private _trunc(digitsToRemove?: number) {
-    const digitsCount = digitsToRemove ?? this.decimalPlaces
-    if (digitsCount < 0) {
+  private _trunc(digitsToRemove: number) {
+    if (digitsToRemove < 0) {
       throw new RangeError('Digits must be non-negative')
     }
-    const divisor = BigInt(10 ** digitsCount)
+    const divisor = BigInt(10 ** digitsToRemove)
     return new BigDecimal({
       value: (this.value / divisor) * divisor,
       decimalPlaces: this.decimalPlaces
@@ -293,13 +293,12 @@ export class BigDecimal {
     return this._round(digits)
   }
 
-  private _round(digitsToRemove?: number) {
-    const digitsCount = digitsToRemove ?? this.decimalPlaces
-    if (digitsCount < 0) {
+  private _round(digitsToRemove: number) {
+    if (digitsToRemove < 0) {
       throw new RangeError('Digits must be non-negative')
     }
     // Divide to get the test digit in the ones place
-    const divisor = BigInt(10 ** (digitsCount - 1))
+    const divisor = BigInt(10 ** (digitsToRemove - 1))
     let quotient = this.value / divisor
     const signMultiplier = this.value > 0 ? BigInt(1) : BigInt(-1)
     const bump = signMultiplier * BigInt(10)
