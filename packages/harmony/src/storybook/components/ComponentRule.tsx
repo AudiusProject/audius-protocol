@@ -31,7 +31,7 @@ export const ComponentRule = (props: ComponentRuleProps) => {
   const TitleIcon = isRecommended ? IconValidationCheck : IconValidationX
   const title = isRecommended ? messages.do : messages.dont
 
-  const { color, cornerRadius } = useTheme()
+  const { color } = useTheme()
   const borderColor = isRecommended ? color.status.success : color.status.error
 
   const sizeMap = {
@@ -61,12 +61,12 @@ export const ComponentRule = (props: ComponentRuleProps) => {
         as='figure'
         p='2xl'
         border='strong'
+        borderRadius='m'
         justifyContent='center'
         alignItems='center'
         h={sizeMap[size]}
         css={{
-          border: `1px solid ${borderColor}`,
-          borderRadius: cornerRadius.m,
+          borderColor,
           boxSizing: 'content-box',
           overflow: 'hidden',
           '& img': {

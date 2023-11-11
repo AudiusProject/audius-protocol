@@ -1,25 +1,12 @@
-import { useState } from 'react'
-
+import { expect } from '@storybook/jest'
 import type { Meta, StoryObj } from '@storybook/react'
+import { within, userEvent } from '@storybook/testing-library'
 
 import { Flex } from 'components/layout'
 import { IconSearch, IconVisibilityHidden, IconFilter } from 'icons'
 
 import { TextInput } from './TextInput'
-import { TextInputProps, TextInputSize } from './types'
-
-const StoryRender = (props: TextInputProps) => {
-  const [value, setValue] = useState(props.value)
-  return (
-    <TextInput
-      {...props}
-      value={value}
-      onChange={(e) => {
-        setValue(e.target.value)
-      }}
-    />
-  )
-}
+import { TextInputSize } from './types'
 
 const meta: Meta<typeof TextInput> = {
   title: 'Inputs/TextInput',
@@ -30,8 +17,7 @@ const meta: Meta<typeof TextInput> = {
         exclude: ['inputRef', 'inputRootClassName', 'inputClassName']
       }
     }
-  },
-  render: StoryRender
+  }
 }
 
 export default meta
@@ -43,6 +29,18 @@ export const Default: Story = {
     label: 'Input label',
     helperText: 'This is assistive text.',
     placeholder: 'Placeholder'
+  },
+  render: (props) => <TextInput {...props} />,
+  play: async ({ canvasElement, step }) => {
+    const canvas = within(canvasElement)
+
+    const textInput = canvas.getByRole('textbox', { name: /input label/i })
+
+    await step('Enter text', async () => {
+      await userEvent.type(textInput, 'test')
+
+      await expect(textInput).toHaveValue('test')
+    })
   }
 }
 
