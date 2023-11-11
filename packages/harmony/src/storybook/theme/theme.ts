@@ -13,7 +13,7 @@ const dayTheme = create({
   fontCode: 'monospace',
 
   brandTitle: 'Harmony Design',
-  brandUrl: 'harmony.audius.co',
+  brandUrl: '/',
   brandImage: HarmonyLogo,
   brandTarget: '_self',
 
@@ -41,7 +41,7 @@ const darkTheme = create({
   fontCode: 'monospace',
 
   brandTitle: 'Harmony Design',
-  brandUrl: 'harmony.audius.co',
+  brandUrl: '/',
   brandImage: HarmonyLogoDark,
   brandTarget: '_self',
 
