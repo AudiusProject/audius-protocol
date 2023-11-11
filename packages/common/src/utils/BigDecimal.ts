@@ -1,7 +1,7 @@
 import type BN from 'bn.js'
 
 /**
- * Parses a string into the constructor args for a {@link BigDecimal}.
+ * Parses a string into the constructor args for a {@link FixedDecimal}.
  *
  * Doesn't do any validation of the string - if it's malformed the `BigInt`
  * construction will fail.
@@ -9,10 +9,10 @@ import type BN from 'bn.js'
  * @param decimalPlaces The number of decimal places the result should have.
  * @returns
  */
-const parseBigDecimalString = (
+const parseFixedDecimalString = (
   value: string,
   decimalPlaces?: number
-): BigDecimalCtorArgs => {
+): FixedDecimalCtorArgs => {
   let [whole, decimal] = value.split('.')
   decimal = decimal ?? ''
   if (decimalPlaces !== undefined) {
@@ -24,16 +24,18 @@ const parseBigDecimalString = (
   }
 }
 
-type BigDecimalCtorArgs = {
+type FixedDecimalCtorArgs = {
   value: bigint
   decimalPlaces: number
 }
 
 /**
- * A custom options type for our custom toLocaleString() implementation, that
- * only allows a subset of the Intl.NumberFormat options.
+ * A custom options type for the custom toLocaleString() implementation of
+ * {@link FixedDecimal} that only allows the supported subset of the
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat Intl.NumberFormat options}.
  *
- * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat}
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat MDN documentation for Intl.NumberFormat}
+ * @see {@link defaultFormatOptions}
  */
 type FormatOptions = {
   /**
@@ -99,76 +101,73 @@ type FormatOptions = {
 }
 
 /**
- * Gets the default formatting options for toLocalString() for a given BigDecimal.
+ * Gets the default formatting options for toLocalString() for a given {@link FixedDecimal}.
  *
  * Noticable differences from {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat#moreprecision Intl.NumberFormat}:
  * - `maximumFractionDigits` is the total number of digits, not `3`.
  * - `roundingMode` is `'trunc'`.
  *
- * @param bigDecimal
- * @returns
+ * @param value the fixed decimal to format
+ *
+ * @see {@link FormatOptions}
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat#moreprecision MDN Documentation for Intl.NumberFormat}
  */
-const defaultFormatOptions = (bigDecimal: BigDecimal) =>
+const defaultFormatOptions = (value: FixedDecimal) =>
   ({
     useGrouping: true,
     minimumFractionDigits: 0,
-    maximumFractionDigits: bigDecimal.decimalPlaces,
+    maximumFractionDigits: value.decimalPlaces,
     roundingMode: 'trunc',
     trailingZeroDisplay: 'auto'
   } as const)
 
 /**
- * BigDecimal uses a BigInt and the number of decimal digits to represent a
- * fixed precision decimal number. It's useful for representing currency,
- * especially cryptocurrency, as balances and amounts are quite large but still
- * have decimal representations and formats.
- *
- * This class is not meant to be constructed manually, but rather using helpers
- * such as {@link AUDIO}, {@link wAUDIO}, {@link SOL}, and {@link USDC}.
+ * {@link FixedDecimal} uses a BigInt and the number of decimal digits to
+ * represent a fixed precision decimal number. It's useful for representing
+ * currency, especially cryptocurrency, as the underlying BigInt can handle
+ * the larger amounts while keeping exact precision.
  *
  * This class is not meant to be persisted and have math operated on it. It's
  * primarily convenience utilites for formatting these large numbers according
- * to their decimal counts. To do math on BigDecimal, do math on the internal
- * value instead.
+ * to their decimal counts. To do math on {@link FixedDecimal}, do math on
+ * the internally held BigInt value instead.
  *
  * @example
  * // Math on values
- * wAUDIO(4).value + wAUDIO(5).value // 900000000n
+ * const a = new FixedDecimal(1, 5)
+ * const b = new FixedDecimal(2, 5)
+ * a.value + b.value // 300000n
  *
  * @example
- * // Automatically formats to fixed precision decimals
- * SOL(1).toString() // '1.000000000'
+ * // Automatically formats to fixed precision decimal strings
+ * new FixedDecimal(1, 3).toString() // '1.000'
  *
  * @example
- * // Convert USDC to cents
- * USDC(1.32542).toFixed(2) // '1.33'
- *
- * @example
- * // Get the number of decimals in AUDIO
- * AUDIO(0).decimalPlaces // 18
+ * // Represent fractional dollars and round to cents
+ * new FixedDecimal(1.32542).toFixed(2) // '1.33'
  *
  * @see {@link AUDIO} for the Ethereum ERC-20 AUDIO token
  * @see {@link wAUDIO} for the Solana SPL "wrapped" AUDIO token
  * @see {@link SOL} for the Solana native SOL token
  * @see {@link USDC} for the Solana Circle USDC stablecoin token
  */
-export class BigDecimal {
+export class FixedDecimal {
   public value: bigint
   public decimalPlaces: number
 
   /**
-   * Constructs a `BigDecimal`.
+   * Constructs a {@link FixedDecimal}.
    *
    * If `decimalPlaces` is not specified, the number of decimals is inferred.
    *
-   * If `value` is a `BigDecimal`, converts to the new amount of decimals.
+   * If `value` is a {@link FixedDecimal}, converts to the new amount of decimals.
    * This may lose precision.
    *
    * @param value The value to be represented.
    * @param decimalPlaces The number of decimal places the value has.
    */
   constructor(
-    value: BigDecimalCtorArgs | bigint | number | string | BN,
+    value: FixedDecimalCtorArgs | bigint | number | string | BN,
     decimalPlaces?: number
   ) {
     switch (typeof value) {
@@ -179,20 +178,23 @@ export class BigDecimal {
         if (value.toString() === value.toExponential()) {
           throw new Error('Number must not be in scientific notation')
         }
-        const parsed = parseBigDecimalString(value.toString(), decimalPlaces)
+        const parsed = parseFixedDecimalString(value.toString(), decimalPlaces)
         this.value = parsed.value
         this.decimalPlaces = parsed.decimalPlaces
         break
       }
       case 'string': {
-        const parsed = parseBigDecimalString(value, decimalPlaces)
+        const parsed = parseFixedDecimalString(value, decimalPlaces)
         this.value = parsed.value
         this.decimalPlaces = parsed.decimalPlaces
         break
       }
       case 'object': {
-        if (value instanceof BigDecimal) {
-          const parsed = parseBigDecimalString(value.toString(), decimalPlaces)
+        if (value instanceof FixedDecimal) {
+          const parsed = parseFixedDecimalString(
+            value.toString(),
+            decimalPlaces
+          )
           this.value = parsed.value
           this.decimalPlaces = parsed.decimalPlaces
         } else if ('value' in value) {
@@ -201,9 +203,8 @@ export class BigDecimal {
         } else {
           // Construct from BN.
           // Can't do `value instanceof BN` as the condition because BN is just
-          // a type, instead get BN by elimination of BigDecimalCtorArgs.
-          // Technically any object works here that has a toString() that's a
-          // valid BigInt() arg. Relies on BigInt() to throw if invalid.
+          // a type, instead get BN by elimination. Technically any object works
+          // here that has a toString() that's a valid BigInt() arg.
           this.value = BigInt(value.toString())
           this.decimalPlaces = decimalPlaces ?? 0
         }
@@ -216,9 +217,9 @@ export class BigDecimal {
   }
 
   /**
-   * Math.ceil() but for BigDecimal.
+   * Math.ceil() but for {@link FixedDecimal}.
    * @param decimalPlaces The number of decimal places ceil to.
-   * @returns A new `BigDecimal` with the result for chaining.
+   * @returns A new {@link FixedDecimal} with the result for chaining.
    */
   public ceil(decimalPlaces?: number) {
     const digits = this.decimalPlaces - (decimalPlaces ?? 0)
@@ -231,16 +232,16 @@ export class BigDecimal {
     }
     const divisor = BigInt(10 ** digitsToRemove)
     const bump = this.value % divisor > 0 ? BigInt(1) : BigInt(0)
-    return new BigDecimal({
+    return new FixedDecimal({
       value: (this.value / divisor + bump) * divisor,
       decimalPlaces: this.decimalPlaces
     })
   }
 
   /**
-   * Math.floor() but for BigDecimal.
+   * Math.floor() but for {@link FixedDecimal}.
    * @param decimalPlaces The number of decimal places to floor to.
-   * @returns A new `BigDecimal` with the result for chaining.
+   * @returns A new {@link FixedDecimal} with the result for chaining.
    */
   public floor(decimalPlaces?: number) {
     const digits = this.decimalPlaces - (decimalPlaces ?? 0)
@@ -256,16 +257,16 @@ export class BigDecimal {
       this.value < 0 && digitsToRemove > 0
         ? BigInt(-1 * 10 ** digitsToRemove)
         : BigInt(0)
-    return new BigDecimal({
+    return new FixedDecimal({
       value: (this.value / divisor) * divisor + signOffset,
       decimalPlaces: this.decimalPlaces
     })
   }
 
   /**
-   * Math.trunc() but for BigDecimal.
+   * Math.trunc() but for {@link FixedDecimal}.
    * @param decimalPlaces The number of decimal places to truncate to.
-   * @returns A new `BigDecimal` with the result for chaining.
+   * @returns A new {@link FixedDecimal} with the result for chaining.
    */
   public trunc(decimalPlaces?: number) {
     const digits = this.decimalPlaces - (decimalPlaces ?? 0)
@@ -277,16 +278,16 @@ export class BigDecimal {
       throw new RangeError('Digits must be non-negative')
     }
     const divisor = BigInt(10 ** digitsToRemove)
-    return new BigDecimal({
+    return new FixedDecimal({
       value: (this.value / divisor) * divisor,
       decimalPlaces: this.decimalPlaces
     })
   }
 
   /**
-   * Math.round() but for BigDecimal.
+   * Math.round() but for {@link FixedDecimal}.
    * @param decimalPlaces The number of decimal places to round to.
-   * @returns A new `BigDecimal` with the result for chaining.
+   * @returns A new {@link FixedDecimal} with the result for chaining.
    */
   public round(decimalPlaces?: number) {
     const digits = this.decimalPlaces - (decimalPlaces ?? 0)
@@ -306,11 +307,11 @@ export class BigDecimal {
     // Divide by 10 to remove the rounding test digit
     quotient /= BigInt(10)
     // Multiply by the original divisor and 10 to get the number of digits back
-    return new BigDecimal(quotient * divisor * BigInt(10), this.decimalPlaces)
+    return new FixedDecimal(quotient * divisor * BigInt(10), this.decimalPlaces)
   }
 
   /**
-   * Number.toPrecision() but for BigDecimal.
+   * Number.toPrecision() but for {@link FixedDecimal}.
    * @param significantDigits The number of significant digits to keep.
    * @returns The number truncated to the significant digits specified as a string.
    */
@@ -329,7 +330,7 @@ export class BigDecimal {
   }
 
   /**
-   * Number.toFixed() but for BigDecimal.
+   * Number.toFixed() but for {@link FixedDecimal}.
    * @param decimalPlaces The number of decimal places to show.
    * @returns The number rounded to the decimal places specifed as a string.
    */
@@ -347,7 +348,7 @@ export class BigDecimal {
   }
 
   /**
-   * Represents the BigDecimal as a fixed decimal string by inserting the
+   * Represents the {@link FixedDecimal} as a fixed decimal string by inserting the
    * decimal point in the appropriate spot and padding any needed zeros.
    *
    * Not to be used for UI purposes.
@@ -470,15 +471,15 @@ export class BigDecimal {
 }
 
 const createTokenConstructor =
-  <T extends BigDecimal>(
-    decimalPlaces: ConstructorParameters<typeof BigDecimal>[1]
+  <T extends FixedDecimal>(
+    decimalPlaces: ConstructorParameters<typeof FixedDecimal>[1]
   ) =>
-  (value: ConstructorParameters<typeof BigDecimal>[0]): T =>
-    new BigDecimal(value, decimalPlaces) as T
+  (value: ConstructorParameters<typeof FixedDecimal>[0]): T =>
+    new FixedDecimal(value, decimalPlaces) as T
 
-type AudioTokens = BigDecimal & { _brand: 'AUDIO' }
+type AudioTokens = FixedDecimal & { _brand: 'AUDIO' }
 /**
- * Constructs a {@link BigDecimal} representing an amount of Ethereum ERC-20
+ * Constructs a {@link FixedDecimal} representing an amount of Ethereum ERC-20
  * AUDIO tokens, which have 18 decimal places.
  *
  * Used on the protocol dashboard and in the governance and staking systems.
@@ -486,18 +487,18 @@ type AudioTokens = BigDecimal & { _brand: 'AUDIO' }
  */
 export const AUDIO = createTokenConstructor<AudioTokens>(18)
 
-type wAudioTokens = BigDecimal & { _brand: 'wAUDIO' }
+type wAudioTokens = FixedDecimal & { _brand: 'wAUDIO' }
 /**
- * Constructs a {@link BigDecimal} representing an amount of Solana SPL AUDIO
+ * Constructs a {@link FixedDecimal} representing an amount of Solana SPL AUDIO
  * tokens, which have 8 decimal places.
  *
  * Used for in-app experiences, like tipping and rewards.
  */
 export const wAUDIO = createTokenConstructor<wAudioTokens>(8)
 
-type SolTokens = BigDecimal & { _brand: 'SOL' }
+type SolTokens = FixedDecimal & { _brand: 'SOL' }
 /**
- * Constructs a {@link BigDecimal} representing an amount of Solana native SOL
+ * Constructs a {@link FixedDecimal} representing an amount of Solana native SOL
  * tokens, which have 9 decimal places.
  *
  * Used as an intermediary token for purchasing wAUDIO and for paying for fees
@@ -505,9 +506,9 @@ type SolTokens = BigDecimal & { _brand: 'SOL' }
  */
 export const SOL = createTokenConstructor<SolTokens>(9)
 
-type UsdcTokens = BigDecimal & { _brand: 'USDC' }
+type UsdcTokens = FixedDecimal & { _brand: 'USDC' }
 /**
- * Constructs a {@link BigDecimal} representing an amount of Solana SPL USDC
+ * Constructs a {@link FixedDecimal} representing an amount of Solana SPL USDC
  * tokens, which have 6 decimal places.
  *
  * Used for purchasing content in-app, and getting "USD" prices via Jupiter
