@@ -1,9 +1,17 @@
-export const promiseWithTimeout = (promise: Promise<any>, timeout: number) => {
+export const promiseWithTimeout = (
+  promise: Promise<any>,
+  timeout: number,
+  options?: { rejectOnTimeout?: boolean }
+) => {
   return Promise.race([
     promise,
-    new Promise((_, reject) => {
+    new Promise((resolve, reject) => {
       setTimeout(() => {
-        reject(new Error('Promise timed out'))
+        if (options?.rejectOnTimeout) {
+          reject(new Error('Promise timed out'))
+        } else {
+          resolve(null)
+        }
       }, timeout)
     })
   ])

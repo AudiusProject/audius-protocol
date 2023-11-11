@@ -4,21 +4,11 @@ import { createApi } from 'audius-query'
 import { FeatureFlags } from 'services/remote-config/feature-flags'
 import { IntKeys } from 'services/remote-config/types'
 import { parseHandleReservedStatusFromSocial } from 'utils/handleReservedStatus'
+import { promiseWithTimeout } from 'utils/promiseWithTimeout'
 
 import { userApiFetch } from './user'
 
 const DEFAULT_HANDLE_VERIFICATION_TIMEOUT_MILLIS = 5_000
-
-const promiseWithTimeout = (promise: Promise<any>, timeout: number) => {
-  return Promise.race([
-    promise,
-    new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(null)
-      }, timeout)
-    })
-  ])
-}
 
 const signUpApi = createApi({
   reducerPath: 'signUpApi',
