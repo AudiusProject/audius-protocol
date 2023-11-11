@@ -1,7 +1,7 @@
 .container {
   height: var(--harmony-spacing-4xl);
   position: relative;
-  border-bottom: solid 1px var(--harmony-n-150);
+  border-bottom: solid 1px var(--harmony-border-default);
 }
 
 .logoContainer {
