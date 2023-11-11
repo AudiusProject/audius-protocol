@@ -122,18 +122,20 @@ const defaultFormatOptions = (value: FixedDecimal) =>
   } as const)
 
 /**
- * {@link FixedDecimal} uses a BigInt and the number of decimal digits to
- * represent a fixed precision decimal number. It's useful for representing
- * currency, especially cryptocurrency, as the underlying BigInt can handle
- * the larger amounts while keeping exact precision.
+ * `FixedDecimal` uses a `BigInt` and the number of decimal digits to represent
+ * a fixed precision decimal number. It's useful for representing currency,
+ * especially cryptocurrency, as the underlying BigInt can handle the large
+ * amounts while keeping exact precision.
  *
- * This class is not meant to be persisted and have math operated on it. It's
- * primarily convenience utilites for formatting these large numbers according
- * to their decimal counts. To do math on {@link FixedDecimal}, do math on
- * the internally held BigInt value instead.
+ * This class is not meant to be persisted and used in arithmetic. It's
+ * intended to be convenience utilites for formatting large numbers
+ * according to their decimal counts. If you find yourself wanting to do
+ * arithmetic with two `FixedDecimal`s, consider using `BigInt` instead and
+ * using `FixedDecimal` as the last step to format into a decimal. Adding As an escape
+ * hatch, you can access the underlying `BigInt` value:
  *
  * @example
- * // Math on values
+ * // Math on values. Make sure the decimalPlaces are the same!
  * const a = new FixedDecimal(1, 5)
  * const b = new FixedDecimal(2, 5)
  * a.value + b.value // 300000n
@@ -160,8 +162,8 @@ export class FixedDecimal {
    *
    * If `decimalPlaces` is not specified, the number of decimals is inferred.
    *
-   * If `value` is a {@link FixedDecimal}, converts to the new amount of decimals.
-   * This may lose precision.
+   * If `value` is a {@link FixedDecimal}, converts to the new amount of
+   * decimals, changing precision. Precision data loss may occur.
    *
    * @param value The value to be represented.
    * @param decimalPlaces The number of decimal places the value has.
