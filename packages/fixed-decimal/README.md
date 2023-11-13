@@ -56,7 +56,3 @@ console.log(
 ```
 
 More examples and documentation can be found in the JSDoc and in the tests.
-
-## Documentation
-
-[API](./docs)
