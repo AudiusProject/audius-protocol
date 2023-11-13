@@ -7,6 +7,7 @@ import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useGoToRoute } from 'hooks/useGoToRoute'
 import { profilePage } from 'utils/route'
+import cn from 'classnames'
 
 import styles from './UserNameAndBadges.module.css'
 
@@ -15,6 +16,8 @@ const { getUserId } = accountSelectors
 type BaseUserNameAndBadgesProps = {
   onNavigateAway?: () => void
   classes?: {
+    popover?: string
+    nameContainer?: string
     name?: string
   }
 }
@@ -47,8 +50,9 @@ const UserNameAndBadgesImpl = (props: UserNameAndBadgesImplProps) => {
       handle={user.handle}
       component='span'
       onNavigateAway={onNavigateAway}
+      wrapperClassName={classes?.popover}
     >
-      <div className={styles.nameAndBadge} onClick={handleClick}>
+      <div className={cn(styles.nameAndBadge, classes?.nameContainer)} onClick={handleClick}>
         <span className={classes?.name}>{user.name}</span>
         <UserBadges
           userId={user.user_id}
