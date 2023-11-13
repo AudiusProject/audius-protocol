@@ -1,16 +1,15 @@
-import type { AnchorHTMLAttributes, MouseEventHandler, ReactNode } from 'react'
+import type { HTMLProps, MouseEventHandler, ReactNode } from 'react'
 
-export type TextLinkProps = {
+export type TextLinkProps = Omit<
+  HTMLProps<HTMLAnchorElement>,
+  // Props from Text that don't match anchor props
+  'size' | 'color' | 'ref'
+> & {
   /**
    * Change the default rendered element for the one passed as a child,
    *  merging their props and behavior.
    */
   asChild?: boolean
-
-  /**
-   * The link destination.
-   */
-  href?: AnchorHTMLAttributes<HTMLAnchorElement>['href']
 
   /**
    * Which variant to display.

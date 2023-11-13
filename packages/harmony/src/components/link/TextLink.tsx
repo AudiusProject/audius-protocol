@@ -1,5 +1,3 @@
-import { MouseEvent, useCallback } from 'react'
-
 import { useTheme } from '@emotion/react'
 import { Slot } from '@radix-ui/react-slot'
 
@@ -16,23 +14,12 @@ export const TextLink = (props: TextLinkProps) => {
     asChild = false,
     children,
     variant = 'default',
-    stopPropagation = true,
     isExternal = false,
     onClick,
     ...passthroughProps
   } = props
 
   const { color } = useTheme()
-
-  const handleClick = useCallback(
-    (e: MouseEvent<HTMLElement>) => {
-      onClick?.(e)
-      if (stopPropagation) {
-        e.stopPropagation()
-      }
-    },
-    [onClick, stopPropagation]
-  )
 
   const colorByVariant = {
     default: color.primary.p500,
@@ -48,7 +35,8 @@ export const TextLink = (props: TextLinkProps) => {
   return (
     <Text
       asChild
-      onClick={handleClick}
+      onClick={onClick}
+      tag='a'
       css={{
         color: colorByVariant[variant],
         textDecoration: _isHovered ? 'underline' : 'none',
