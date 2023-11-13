@@ -14,7 +14,7 @@ import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBa
 import { TrackNameWithArtwork } from './components/TrackNameWithArtwork'
 import { PurchaseCell, PurchaseRow } from './types'
 import { isEmptyPurchaseRow } from './utils'
-import styles from './PurchasesTable.module.css'
+import styles from './PurchasesAndSalesTable.module.css'
 
 export type PurchasesTableColumn =
   | 'contentName'

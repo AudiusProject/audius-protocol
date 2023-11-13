@@ -14,6 +14,7 @@ import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBa
 import { TrackNameWithArtwork } from './components/TrackNameWithArtwork'
 import { PurchaseCell, PurchaseRow } from './types'
 import { isEmptyPurchaseRow } from './utils'
+import styles from './PurchasesAndSalesTable.module.css'
 
 export type SalesTableColumn =
   | 'contentName'
@@ -55,7 +56,11 @@ const defaultColumns: SalesTableColumn[] = [
 const renderContentNameCell = (cellInfo: PurchaseCell) => {
   const { contentId, contentType } = cellInfo.row.original
   return contentType === USDCContentPurchaseType.TRACK ? (
-    <TrackNameWithArtwork id={contentId} />
+    <TrackNameWithArtwork
+      wrapperClassName={styles.cellRoot}
+      textClassName={styles.name}
+      id={contentId}
+    />
   ) : (
     // TODO: When we support collection purchases
     <div />
@@ -64,7 +69,10 @@ const renderContentNameCell = (cellInfo: PurchaseCell) => {
 
 const renderBuyerCell = (cellInfo: PurchaseCell) => {
   const { buyerUserId } = cellInfo.row.original
-  return <UserNameAndBadges userId={buyerUserId} />
+  return <UserNameAndBadges
+    classes={{ popover: styles.cellRoot, nameContainer: styles.nameContainer, name: styles.name }}
+    userId={buyerUserId}
+  />
 }
 
 const renderDateCell = (cellInfo: PurchaseCell) => {
