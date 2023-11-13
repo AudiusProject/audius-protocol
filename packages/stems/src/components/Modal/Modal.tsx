@@ -150,8 +150,8 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
   })
 
   const id = useMemo(() => modalKey || uniqueId('modal-'), [modalKey])
-  const titleId = `${id}-title` || ariaLabelledbyProp
-  const subtitleId = `${id}-subtitle` || ariaDescribedbyProp
+  const titleId = `${id}-title`
+  const subtitleId = `${id}-subtitle`
   const [isDoneOpening, setIsDoneOpening] = useState(false)
   const modalContextValue = useMemo(() => {
     return { titleId, subtitleId, onClose, isDoneOpening }

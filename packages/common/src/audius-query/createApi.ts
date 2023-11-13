@@ -116,7 +116,13 @@ export const createApi = <
   return api
 }
 
-const addEndpointToSlice = (sliceConfig: SliceConfig, endpointName: string) => {
+const addEndpointToSlice = <NormalizedData>(
+  sliceConfig: SliceConfig,
+  endpointName: string
+) => {
+  const initState: PerKeyState<NormalizedData> = {
+    status: Status.IDLE
+  }
   sliceConfig.initialState[endpointName] = {}
   sliceConfig.reducers = {
     ...sliceConfig.reducers,
@@ -126,7 +132,7 @@ const addEndpointToSlice = (sliceConfig: SliceConfig, endpointName: string) => {
     ) => {
       const { fetchArgs } = action.payload
       const key = getKeyFromFetchArgs(fetchArgs)
-      const scopedState = { ...state[endpointName][key] }
+      const scopedState = { ...initState, ...state[endpointName][key] }
       scopedState.status = Status.LOADING
       state[endpointName][key] = scopedState
     },
@@ -136,7 +142,7 @@ const addEndpointToSlice = (sliceConfig: SliceConfig, endpointName: string) => {
     ) => {
       const { fetchArgs, errorMessage } = action.payload
       const key = getKeyFromFetchArgs(fetchArgs)
-      const scopedState = { ...state[endpointName][key] }
+      const scopedState = { ...initState, ...state[endpointName][key] }
       scopedState.status = Status.ERROR
       scopedState.errorMessage = errorMessage
       state[endpointName][key] = scopedState
@@ -147,7 +153,7 @@ const addEndpointToSlice = (sliceConfig: SliceConfig, endpointName: string) => {
     ) => {
       const { fetchArgs, nonNormalizedData } = action.payload
       const key = getKeyFromFetchArgs(fetchArgs)
-      const scopedState = { ...state[endpointName][key] }
+      const scopedState = { ...initState, ...state[endpointName][key] }
       scopedState.status = Status.SUCCESS
       scopedState.nonNormalizedData = nonNormalizedData
       state[endpointName][key] = scopedState
