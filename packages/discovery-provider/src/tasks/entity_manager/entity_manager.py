@@ -74,6 +74,7 @@ from src.tasks.entity_manager.utils import (
     expect_cid_metadata_json,
     get_record_key,
     parse_metadata,
+    reset_entity_manager_event_tx_context,
     save_cid_metadata,
 )
 from src.utils import helpers
@@ -195,7 +196,7 @@ def entity_manager_update(
                     )
 
                     # update logger context with this tx event
-                    logger.update_context(event["args"])
+                    reset_entity_manager_event_tx_context(logger, event["args"])
 
                     if (
                         params.action == Action.CREATE

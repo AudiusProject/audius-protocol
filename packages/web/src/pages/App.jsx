@@ -152,14 +152,15 @@ import {
   SALES_PAGE,
   WITHDRAWALS_PAGE,
   EXPLORE_PREMIUM_TRACKS_PAGE,
-  SIGN_UP_START_PAGE
+  SIGN_UP_START_PAGE,
+  PAY_AND_EARN_PAGE
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
 import AnimatedSwitch from '../components/animated-switch/AnimatedSwitch'
 // import { DirectMessagesBanner } from '../components/banner/DirectMessagesBanner'
+// import { TermsOfServiceUpdateBanner } from '../components/banner/TermsOfServiceUpdateBanner'
 import { DownloadAppBanner } from '../components/banner/DownloadAppBanner'
-import { TermsOfServiceUpdateBanner } from '../components/banner/TermsOfServiceUpdateBanner'
 import { UpdateAppBanner } from '../components/banner/UpdateAppBanner'
 import { Web3ErrorBanner } from '../components/banner/Web3ErrorBanner'
 import { ChatListener } from '../components/chat-listener/ChatListener'
@@ -175,6 +176,7 @@ import ExploreCollectionsPage from './explore-page/ExploreCollectionsPage'
 import { FbSharePage } from './fb-share-page/FbSharePage'
 import FollowersPage from './followers-page/FollowersPage'
 import FollowingPage from './following-page/FollowingPage'
+import { PayAndEarnPage } from './pay-and-earn-page/PayAndEarnPage'
 import { PremiumTracksPage } from './premium-tracks-page/PremiumTracksPage'
 import { PurchasesPage, SalesPage } from './purchases-and-sales'
 import { WithdrawalsPage } from './purchases-and-sales/WithdrawalsPage'
@@ -459,9 +461,11 @@ class App extends Component {
       <div className={styles.root}>
         <AppBannerWrapper>
           <DownloadAppBanner />
-          {/* TODO: Re-enable DM after ToS is disabled */}
+
+          {/* Product Announcement Banners */}
           {/* <DirectMessagesBanner /> */}
-          <TermsOfServiceUpdateBanner />
+          {/* <TermsOfServiceUpdateBanner /> */}
+
           <Web3ErrorBanner />
           {/* Other banners' logic is self-contained, but since this one uses the IPC
             and can result in either required or optional updates, keeping the visibility
@@ -738,6 +742,12 @@ class App extends Component {
                   path={DASHBOARD_PAGE}
                   isMobile={isMobileClient}
                   component={DashboardPage}
+                />
+                <Route
+                  exact
+                  path={PAY_AND_EARN_PAGE}
+                  isMobile={isMobileClient}
+                  component={PayAndEarnPage}
                 />
                 <Route
                   exact

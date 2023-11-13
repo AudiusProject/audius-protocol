@@ -1,38 +1,29 @@
-import { useCallback, MouseEvent, ComponentPropsWithoutRef } from 'react'
+import type { ReactNode } from 'react'
 
-import cn from 'classnames'
+import LinkTo from '@storybook/addon-links/react'
 
-import { Text, TextProps } from '../../components/text'
-
-import styles from './Link.module.css'
-
-type LinkProps = TextProps &
-  ComponentPropsWithoutRef<'a'> & {
-    stopPropagation?: boolean
-  }
+type LinkProps = { className?: string; children?: ReactNode } & (
+  | { href: string }
+  | { kind: string; story: string }
+)
 
 export const Link = (props: LinkProps) => {
-  const {
-    className,
-    onClick,
-    stopPropagation = true,
-    children,
-    ...other
-  } = props
+  const { className, children, ...other } = props
 
-  const handleClick = useCallback(
-    (e: MouseEvent<HTMLAnchorElement>) => {
-      onClick?.(e)
-      if (stopPropagation) {
-        e.stopPropagation()
-      }
-    },
-    [onClick, stopPropagation]
-  )
+  if ('href' in other) {
+    const { href } = other
+    return (
+      <a className={className} href={href} target='_blank' rel='noreferrer'>
+        {children}
+      </a>
+    )
+  }
 
+  const { kind, story } = other
   return (
-    <Text className={cn(styles.root, className)} {...other} asChild>
-      <a onClick={handleClick}>{children}</a>
-    </Text>
+    // @ts-expect-error className is available
+    <LinkTo className={className} kind={kind} story={story}>
+      {children}
+    </LinkTo>
   )
 }

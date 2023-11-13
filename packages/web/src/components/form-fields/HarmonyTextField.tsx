@@ -8,11 +8,14 @@ export type TextFieldProps = TextInputProps & {
    * @default true
    */
   clearErrorOnChange?: boolean
+  /** Function to transform the input value upon `onChange`.
+   * E.g. a function to trim whitespace */
+  transformValue?: (value: string) => string
 }
 
 // TODO: rename to TextField and replace old usages
 export const HarmonyTextField = (props: TextFieldProps) => {
-  const { name, clearErrorOnChange = true, ...other } = props
+  const { name, clearErrorOnChange = true, transformValue, ...other } = props
   const [field, { touched, error }, { setError }] = useField(name)
 
   const hasError = Boolean(touched && error)
@@ -25,6 +28,9 @@ export const HarmonyTextField = (props: TextFieldProps) => {
       onChange={(e) => {
         if (clearErrorOnChange) {
           setError(undefined)
+        }
+        if (transformValue) {
+          e.target.value = transformValue(e.target.value)
         }
         field.onChange(e)
       }}

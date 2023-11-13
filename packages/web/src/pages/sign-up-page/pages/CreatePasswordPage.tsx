@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import {
   Box,
@@ -28,7 +28,6 @@ import {
   PRIVACY_POLICY,
   SIGN_UP_EMAIL_PAGE,
   SIGN_UP_HANDLE_PAGE,
-  SIGN_UP_START_PAGE,
   TERMS_OF_SERVICE
 } from 'utils/route'
 
@@ -80,12 +79,6 @@ export const CreatePasswordPage = () => {
   const dispatch = useDispatch()
   const emailField = useSelector(getEmailField)
   const navigate = useNavigateToPage()
-
-  useEffect(() => {
-    if (!emailField?.value) {
-      navigate(SIGN_UP_START_PAGE)
-    }
-  }, [emailField.value, navigate])
 
   const handleClickBackIcon = useCallback(() => {
     navigate(SIGN_UP_EMAIL_PAGE)

@@ -1,3 +1,4 @@
+import { Link } from './Link'
 import { Tip } from './Tip'
 
 const messages = {
@@ -9,11 +10,11 @@ const messages = {
 
 type DeprecatedWarningProps = {
   alternativeName: string
-  alternativeLink: string
+  alternativeLinkTo: { kind: string; story: string }
 }
 
 export const DeprecatedWarning = (props: DeprecatedWarningProps) => {
-  const { alternativeName, alternativeLink } = props
+  const { alternativeName, alternativeLinkTo } = props
 
   return (
     <Tip
@@ -21,9 +22,7 @@ export const DeprecatedWarning = (props: DeprecatedWarningProps) => {
       description={
         <p css={{ margin: 0 }}>
           {messages.description}
-          <a href={alternativeLink} css={{ fontSize: `16px !important` }}>
-            {alternativeName}
-          </a>{' '}
+          <Link {...alternativeLinkTo}>{alternativeName}</Link>{' '}
           {messages.instead}
         </p>
       }
