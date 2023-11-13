@@ -59,7 +59,7 @@ const App = () => {
 
 In order use emotion yourself, follow their documentation for [setting up the css-prop](https://emotion.sh/docs/css-prop)
 
-If using typescript and want access the theme, add an emotion.d.ts file and include the following:
+If using typescript add an emotion.d.ts file and include the following for access to harmony's theme type
 
 ```ts
 import '@emotion/react'
