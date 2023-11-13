@@ -5,11 +5,12 @@ const { logger } = require('./logging')
 const accessKeyId = config.get('awsAccessKeyId')
 const secretAccessKey = config.get('awsSecretAccessKey')
 
-// AWS SNS init
-const AWS = require('aws-sdk')
-const sns = new AWS.SNS({
-  accessKeyId,
-  secretAccessKey,
+const { SNS } = require('@aws-sdk/client-sns');
+const sns = new SNS({
+  credentials: {
+    accessKeyId,
+    secretAccessKey
+  },
   region: 'us-west-1'
 })
 
