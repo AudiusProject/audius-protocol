@@ -123,17 +123,22 @@ const defaultFormatOptions = (value: FixedDecimal) =>
   } as const)
 
 /**
+ * A data structure for fixed precision decimals.
+ *
+ * @summary
  * `FixedDecimal` uses a `BigInt` and the number of decimal digits to represent
  * a fixed precision decimal number. It's useful for representing currency,
- * especially cryptocurrency, as the underlying BigInt can handle the large
+ * especially cryptocurrency, as the underlying `BigInt` can handle the large
  * amounts while keeping exact precision.
  *
- * This class is not meant to be persisted and used in arithmetic. It's
- * intended to be convenience utilites for formatting large numbers
- * according to their decimal counts. If you find yourself wanting to do
- * arithmetic with two `FixedDecimal`s, consider using `BigInt` instead and
+ * Unlike `BigDecimal` or `BigNumber` solutions elsewhere, `FixedDecimal`
+ * is not intended to be persisted and arithmetically operated on, but
+ * rather used ephemerally for normalizing and formatting. Almost all of
+ * its methods are chainable to make it convenient to initialize a
+ * `FixedDecimal`, operate on it, and immediately get back a string
+ * or `bigint` representation. If you find yourself wanting to do
+ * arithmetic with two `FixedDecimal`s, consider using `BigInt`s instead and
  * using `FixedDecimal` as the last step to format into a decimal.
- * As an escape hatch, you can access the underlying `BigInt` value.
  *
  * @example
  * // Math on values. Make sure the decimalPlaces are the same!
