@@ -64,7 +64,12 @@ export default defineConfig(({ mode }) => {
           }
         }
       },
-      react(),
+      react({
+        jsxImportSource: '@emotion/react',
+        babel: {
+          plugins: ['@emotion/babel-plugin']
+        }
+      }),
       ...((analyze
         ? [
             visualizer({
