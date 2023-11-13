@@ -1,3 +1,7 @@
+/**
+ * @module Currency Constructors
+ */
+
 import { FixedDecimal } from './FixedDecimal'
 
 /**
@@ -18,7 +22,7 @@ const createTokenConstructor =
  * Used on the protocol dashboard and in the governance and staking systems.
  * Also used for balance totals after adding linked wallets on the Rewards page.
  */
-type AudioTokens = FixedDecimal & { _brand: 'AUDIO' }
+export type AudioTokens = FixedDecimal & { _brand: 'AUDIO' }
 /**
  * Constructs an amount of {@link AudioTokens} from a fixed decimal string,
  * decimal number, or a bigint or BN in the smallest denomination.
@@ -31,7 +35,7 @@ export const AUDIO = createTokenConstructor<AudioTokens>(18)
  *
  * Used for in-app experiences, like tipping and rewards.
  */
-type wAudioTokens = FixedDecimal & { _brand: 'wAUDIO' }
+export type wAudioTokens = FixedDecimal & { _brand: 'wAUDIO' }
 /**
  * Constructs an amount of {@link wAudioTokens} from a fixed decimal string,
  * decimal number, or a bigint or BN in the smallest denomination.
@@ -45,7 +49,7 @@ export const wAUDIO = createTokenConstructor<wAudioTokens>(8)
  * Used as an intermediary token for purchasing wAUDIO and for paying for fees
  * of Solana transactions on the platform.
  */
-type SolTokens = FixedDecimal & { _brand: 'SOL' }
+export type SolTokens = FixedDecimal & { _brand: 'SOL' }
 /**
  * Constructs an amount of {@link SolTokens} from a fixed decimal string,
  * decimal number, or a bigint or BN in the smallest denomination.
@@ -59,7 +63,7 @@ export const SOL = createTokenConstructor<SolTokens>(9)
  * Used for purchasing content in-app, and getting "USD" prices via Jupiter
  * for the wAUDIO token and SOL.
  */
-type UsdcTokens = FixedDecimal & { _brand: 'USDC' }
+export type UsdcTokens = FixedDecimal & { _brand: 'USDC' }
 /**
  * Constructs an amount of {@link UsdcTokens} from a fixed decimal string,
  * decimal number, or a bigint or BN in the smallest denomination.

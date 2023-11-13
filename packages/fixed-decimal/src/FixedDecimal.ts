@@ -153,7 +153,13 @@ const defaultFormatOptions = (value: FixedDecimal) =>
  * new FixedDecimal(1.32542).toFixed(2) // '1.33'
  */
 export class FixedDecimal {
+  /**
+   * The raw value. For currencies like ETH, this is the "wei" value.
+   */
   public value: bigint
+  /**
+   * The number of decimal places.
+   */
   public decimalPlaces: number
 
   /**
