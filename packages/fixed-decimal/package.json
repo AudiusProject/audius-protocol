@@ -9,7 +9,7 @@
   "scripts": {
     "start": "tsc --build --verbose --watch tsconfig.json",
     "build": "tsc --build --verbose tsconfig.json",
-    "test": "jest"
+    "test": "vitest"
   },
   "repository": {
     "type": "git",
@@ -22,6 +22,9 @@
   },
   "homepage": "https://github.com/AudiusProject/audius-protocol/tree/main/packages/fixed-decimal",
   "devDependencies": {
-    "bn.js": "5.1.0"
+    "@types/bn.js": "5.1.0",
+    "bn.js": "5.1.0",
+    "eslint": "8.19.0",
+    "vitest": "0.34.6"
   }
 }
