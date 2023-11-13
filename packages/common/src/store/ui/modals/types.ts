@@ -1,4 +1,5 @@
 import { ModalSource } from 'models/Analytics'
+
 import { CreateChatModalState } from './create-chat-modal'
 import { BaseModalState } from './createModal'
 import { EditPlaylistModalState } from './edit-playlist-modal'
