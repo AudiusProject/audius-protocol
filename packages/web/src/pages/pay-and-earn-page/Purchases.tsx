@@ -24,7 +24,6 @@ import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
 import Header from 'components/header/desktop/Header'
-import Page from 'components/page/Page'
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { MainContentContext } from 'pages/MainContentContext'
@@ -35,13 +34,13 @@ import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
 import { FEED_PAGE } from 'utils/route'
 
-import styles from './PurchasesPage.module.css'
+import styles from './PayAndEarnPage.module.css'
+import { NoTransactionsContent } from './components/NoTransactionsContent'
 import {
   PurchasesTable,
   PurchasesTableSortDirection,
   PurchasesTableSortMethod
-} from './PurchasesTable'
-import { NoTransactionsContent } from './components/NoTransactionsContent'
+} from './components/PurchasesTable'
 
 const { getUserId } = accountSelectors
 
@@ -192,34 +191,28 @@ const RenderPurchasesPage = () => {
   )
 
   return (
-    <Page
-      title={messages.pageTitle}
-      description={messages.pageDescription}
-      header={header}
-    >
-      <div className={styles.container}>
-        {isEmpty ? (
-          <NoPurchases />
-        ) : (
-          <PurchasesTable
-            key='purchases'
-            data={purchases}
-            loading={isLoading}
-            onSort={onSort}
-            onClickRow={onClickRow}
-            fetchMore={fetchMore}
-            isVirtualized={true}
-            scrollRef={mainContentRef}
-            totalRowCount={count}
-            fetchBatchSize={TRANSACTIONS_BATCH_SIZE}
-          />
-        )}
-      </div>
-    </Page>
+    <div className={styles.container}>
+      {isEmpty ? (
+        <NoPurchases />
+      ) : (
+        <PurchasesTable
+          key='purchases'
+          data={purchases}
+          loading={isLoading}
+          onSort={onSort}
+          onClickRow={onClickRow}
+          fetchMore={fetchMore}
+          isVirtualized={true}
+          scrollRef={mainContentRef}
+          totalRowCount={count}
+          fetchBatchSize={TRANSACTIONS_BATCH_SIZE}
+        />
+      )}
+    </div>
   )
 }
 
-export const PurchasesPage = () => {
+export const Purchases = () => {
   const { isLoaded, isEnabled } = useFlag(FeatureFlags.USDC_PURCHASES)
 
   // Return null if flag isn't loaded yet to prevent flash of 404 page

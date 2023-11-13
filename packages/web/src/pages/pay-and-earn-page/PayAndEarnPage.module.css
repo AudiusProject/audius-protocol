@@ -1,5 +1,8 @@
 .pageContainer {
   user-select: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-8);
 }
 
 .spinner {

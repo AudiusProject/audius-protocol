@@ -148,9 +148,6 @@ import {
   publicSiteRoutes,
   CHAT_PAGE,
   PROFILE_PAGE_AI_ATTRIBUTED_TRACKS,
-  PURCHASES_PAGE,
-  SALES_PAGE,
-  WITHDRAWALS_PAGE,
   EXPLORE_PREMIUM_TRACKS_PAGE,
   SIGN_UP_START_PAGE,
   PAY_AND_EARN_PAGE
@@ -178,8 +175,6 @@ import FollowersPage from './followers-page/FollowersPage'
 import FollowingPage from './following-page/FollowingPage'
 import { PayAndEarnPage } from './pay-and-earn-page/PayAndEarnPage'
 import { PremiumTracksPage } from './premium-tracks-page/PremiumTracksPage'
-import { PurchasesPage, SalesPage } from './purchases-and-sales'
-import { WithdrawalsPage } from './purchases-and-sales/WithdrawalsPage'
 import SettingsPage from './settings-page/SettingsPage'
 import { SubPage } from './settings-page/components/mobile/SettingsPage'
 import { SignInPage } from './sign-in-page'
@@ -760,13 +755,6 @@ class App extends Component {
                   path={AUDIO_TRANSACTIONS_PAGE}
                   isMobile={isMobileClient}
                   component={AudioTransactionsPage}
-                />
-                <Route exact path={PURCHASES_PAGE} component={PurchasesPage} />
-                <Route exact path={SALES_PAGE} component={SalesPage} />
-                <Route
-                  exact
-                  path={WITHDRAWALS_PAGE}
-                  component={WithdrawalsPage}
                 />
                 <Route
                   exact
