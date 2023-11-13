@@ -30,6 +30,7 @@
     "url": "https://github.com/AudiusProject/audius-client/issues"
   },
   "dependencies": {
+    "@audius/fixed-decimal": "*",
     "@audius/sdk": "*",
     "@audius/trpc-server": "*",
     "@fingerprintjs/fingerprintjs-pro": "3.5.6",
