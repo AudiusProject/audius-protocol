@@ -7,6 +7,8 @@ root {
     0px 0px 6px 0px rgba(0, 0, 0, 0.02);
   --harmony-shadow-mid: 0px 4px 8px 0px rgba(0, 0, 0, 0.06),
     0px 0px 4px 0px rgba(0, 0, 0, 0.04);
+  --harmony-shadow-mid-inverted: 0px -4px 8px 0px rgba(0, 0, 0, 0.06),
+    0px 0px 4px 0px rgba(0, 0, 0, 0.04);
   --harmony-shadow-far: 0px 8px 16px 0px rgba(0, 0, 0, 0.08),
     0px 0px 4px 0px rgba(0, 0, 0, 0.04);
   --harmony-shadow-emphasis: 0px 1.34018px 8px 0px rgba(0, 0, 0, 0.2),
