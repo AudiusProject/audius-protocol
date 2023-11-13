@@ -199,7 +199,7 @@ def process_state_changes(
         ) = bulk_processor(*tx_processing_args)
 
         logger.info(
-            f"{bulk_processor.__name__} completed"
+            f"{bulk_processor.__name__} completed."
             f" {tx_type}_state_changed={total_changes_for_tx_type > 0} for block={block_number}"
         )
 
