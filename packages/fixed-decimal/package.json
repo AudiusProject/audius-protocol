@@ -2,13 +2,14 @@
   "private": true,
   "name": "@audius/fixed-decimal",
   "version": "0.0.0",
-  "description": "A data structure to represent fixed precision decimals",
+  "description": "A data structure to represent fixed precision decimals.",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
   "scripts": {
     "start": "tsc --build --verbose --watch tsconfig.json",
     "build": "tsc --build --verbose tsconfig.json",
+    "build:docs": "jsdoc2md --files ./src/*.ts --configure ./jsdoc2md.json --template ./README.hbs > ./README.md",
     "test": "jest"
   },
   "repository": {
@@ -21,5 +22,8 @@
     "url": "https://github.com/AudiusProject/audius-protocol/issues"
   },
   "homepage": "https://github.com/AudiusProject/audius-protocol/tree/main/packages/fixed-decimal",
-  "devDependencies": {}
+  "devDependencies": {
+    "jsdoc-babel": "0.5.0",
+    "jsdoc-to-markdown": "8.0.0"
+  }
 }

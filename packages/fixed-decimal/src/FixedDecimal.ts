@@ -1,13 +1,13 @@
 import type BN from 'bn.js'
 
 /**
+ * @ignore
  * Parses a string into the constructor args for a {@link FixedDecimal}.
  *
  * Doesn't do any validation of the string - if it's malformed the `BigInt`
  * construction will fail.
  * @param value The value represented as a fixed decimal string.
  * @param decimalPlaces The number of decimal places the result should have.
- * @returns
  */
 const parseFixedDecimalString = (
   value: string,
@@ -101,6 +101,7 @@ type FormatOptions = {
 }
 
 /**
+ * @ignore
  * Gets the default formatting options for toLocalString() for a given {@link FixedDecimal}.
  *
  * Noticable differences from {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat#moreprecision Intl.NumberFormat}:
@@ -131,8 +132,8 @@ const defaultFormatOptions = (value: FixedDecimal) =>
  * intended to be convenience utilites for formatting large numbers
  * according to their decimal counts. If you find yourself wanting to do
  * arithmetic with two `FixedDecimal`s, consider using `BigInt` instead and
- * using `FixedDecimal` as the last step to format into a decimal. Adding As an escape
- * hatch, you can access the underlying `BigInt` value:
+ * using `FixedDecimal` as the last step to format into a decimal.
+ * As an escape hatch, you can access the underlying `BigInt` value.
  *
  * @example
  * // Math on values. Make sure the decimalPlaces are the same!
@@ -154,8 +155,8 @@ const defaultFormatOptions = (value: FixedDecimal) =>
  * @see {@link USDC} for the Solana Circle USDC stablecoin token
  */
 export class FixedDecimal {
-  public value: bigint
-  public decimalPlaces: number
+  public readonly value: bigint
+  public readonly decimalPlaces: number
 
   /**
    * Constructs a {@link FixedDecimal}.
@@ -440,14 +441,14 @@ export class FixedDecimal {
    * - Count by 1,000s if over 10k (eg. `25413 => "25k"`)
    *
    * @example
-   * 0 => "0"
-   * 8 => "8"
-   * 8.01 => "8.01"
-   * 8.10 => "8.10"
-   * 4,210 => "4210"
-   * 9,999.99 => "9999.99"
-   * 56,010 => "56K"
-   * 443,123 => "443K"
+   * new FixedDecimal(0, 5).toShorthand() // "0"
+   * new FixedDecimal(8, 5).toShorthand() // "8"
+   * new FixedDecimal(8.01, 5).toShorthand() // "8.01"
+   * new FixedDecimal(8.1, 5).toShorthand() // "8.10"
+   * new FixedDecimal(4210, 5).toShorthand() // "4210"
+   * new FixedDecimal(9999.99, 5).toShorthand() // "9999.99"
+   * new FixedDecimal(56001.43, 5).toShorthand() // "56K"
+   * new FixedDecimal(443123.23, 5).toShorthand() // "443K"
    */
   public toShorthand() {
     if (this.value === BigInt(0)) {
