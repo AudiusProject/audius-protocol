@@ -29,8 +29,8 @@ export const variantStylesMap = {
     fontWeight: { default: 'bold', strong: 'heavy' }
   },
   heading: {
-    fontSize: { s: 'xl', m: '2xl', l: '3xl', xl: '3xl' },
-    lineHeight: { s: 'l', m: 'xl', l: 'xl', xl: 'xl' },
+    fontSize: { s: 'xl', m: '2xl', l: '3xl', xl: '5xl' },
+    lineHeight: { s: 'l', m: 'xl', l: 'xl', xl: '2xl' },
     fontWeight: { default: 'bold', strong: 'heavy' }
   },
   title: {
