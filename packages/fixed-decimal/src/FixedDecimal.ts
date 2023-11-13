@@ -24,7 +24,7 @@ const parseFixedDecimalString = (
   }
 }
 
-type FixedDecimalCtorArgs = {
+export type FixedDecimalCtorArgs = {
   value: bigint
   decimalPlaces: number
 }
@@ -35,9 +35,8 @@ type FixedDecimalCtorArgs = {
  * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat Intl.NumberFormat options}.
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat MDN documentation for Intl.NumberFormat}
- * @see {@link defaultFormatOptions}
  */
-type FormatOptions = {
+export type FixedDecimalFormatOptions = {
   /**
    * Whether to use grouping separators, such as thousands separators or thousand/lakh/crore separators.
    *
@@ -109,7 +108,7 @@ type FormatOptions = {
  *
  * @param value the fixed decimal to format
  *
- * @see {@link FormatOptions}
+ * @see {@link FixedDecimalFormatOptions}
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat#moreprecision MDN Documentation for Intl.NumberFormat}
  */
 const defaultFormatOptions = (value: FixedDecimal) =>
@@ -152,11 +151,6 @@ const defaultFormatOptions = (value: FixedDecimal) =>
  * @example
  * // Represent fractional dollars and round to cents
  * new FixedDecimal(1.32542).toFixed(2) // '1.33'
- *
- * @see {@link AUDIO} for the Ethereum ERC-20 AUDIO token
- * @see {@link wAUDIO} for the Solana SPL "wrapped" AUDIO token
- * @see {@link SOL} for the Solana native SOL token
- * @see {@link USDC} for the Solana Circle USDC stablecoin token
  */
 export class FixedDecimal {
   public value: bigint
@@ -374,14 +368,12 @@ export class FixedDecimal {
   /**
    * Analogous to Number().toLocaleString(), with some important differences in
    * the options available and the defaults. Be sure to check the defaults.
-   *
-   * @see {@link defaultFormatOptions}
    * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat Mozilla NumberFormat documentation}
    *
    * @param locale The string specifying the locale (default is 'en-US').
    * @param options The options for formatting. The available options and defaults are different than NumberFormat.
    */
-  public toLocaleString(locale?: string, options?: FormatOptions) {
+  public toLocaleString(locale?: string, options?: FixedDecimalFormatOptions) {
     // Apply defaults
     options = {
       ...defaultFormatOptions(this),
@@ -445,14 +437,14 @@ export class FixedDecimal {
    * - Count by 1,000s if over 10k (eg. `25413 => "25k"`)
    *
    * @example
-   * 0 => "0"
-   * 8 => "8"
-   * 8.01 => "8.01"
-   * 8.10 => "8.10"
-   * 4,210 => "4210"
-   * 9,999.99 => "9999.99"
-   * 56,010 => "56K"
-   * 443,123 => "443K"
+   * new FixedDecimal(0, 5).toShorthand() // "0"
+   * new FixedDecimal(8, 5).toShorthand() // "8"
+   * new FixedDecimal(8.01, 5).toShorthand() // "8.01"
+   * new FixedDecimal(8.1, 5).toShorthand() // "8.10"
+   * new FixedDecimal(4210, 5).toShorthand() // "4210"
+   * new FixedDecimal(9999.99, 5).toShorthand() // "9999.99"
+   * new FixedDecimal(56001.43, 5).toShorthand() // "56K"
+   * new FixedDecimal(443123.23, 5).toShorthand() // "443K"
    */
   public toShorthand() {
     if (this.value === BigInt(0)) {

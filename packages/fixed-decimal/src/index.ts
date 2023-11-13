@@ -1,2 +1,2 @@
 export { FixedDecimal } from './FixedDecimal'
-export * from './currencies'
+export { SOL, wAUDIO, AUDIO, USDC } from './currencies'
