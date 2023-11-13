@@ -16,12 +16,12 @@ import {
 } from 'utils/route'
 
 import { ProgressHeader } from './components/ProgressHeader'
+import { CreateEmailPage } from './pages/CreateEmailPage'
 import { CreatePasswordPage } from './pages/CreatePasswordPage'
 import { FinishProfilePage } from './pages/FinishProfilePage'
 import { PickHandlePage } from './pages/PickHandlePage'
 import { SelectArtistsPage } from './pages/SelectArtistsPage'
 import { SelectGenrePage } from './pages/SelectGenrePage'
-import { SignUpPage } from './pages/SignUpPage'
 
 /**
  * Checks against existing sign up redux state,
@@ -103,47 +103,45 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
 
 export const SignUpRootPage = () => {
   return (
-    <div>
-      <Switch>
-        <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
-          <SignUpPage />
-        </SignUpRoute>
-        <SignUpRoute exact path={SIGN_UP_PASSWORD_PAGE}>
-          <CreatePasswordPage />
-        </SignUpRoute>
-        {/* White screen routes */}
-        <SignUpRoute
-          exact
-          path={[
-            SIGN_UP_HANDLE_PAGE,
-            SIGN_UP_FINISH_PROFILE_PAGE,
-            SIGN_UP_GENRES_PAGE,
-            SIGN_UP_ARTISTS_PAGE
-          ]}
-        >
-          <ProgressHeader />
-          <Switch>
-            <SignUpRoute exact path={SIGN_UP_HANDLE_PAGE}>
-              <PickHandlePage />
-            </SignUpRoute>
-          </Switch>
-          <Switch>
-            <SignUpRoute exact path={SIGN_UP_FINISH_PROFILE_PAGE}>
-              <FinishProfilePage />
-            </SignUpRoute>
-          </Switch>
-          <Switch>
-            <SignUpRoute exact path={SIGN_UP_GENRES_PAGE}>
-              <SelectGenrePage />
-            </SignUpRoute>
-          </Switch>
-          <Switch>
-            <SignUpRoute exact path={SIGN_UP_ARTISTS_PAGE}>
-              <SelectArtistsPage />
-            </SignUpRoute>
-          </Switch>
-        </SignUpRoute>
-      </Switch>
-    </div>
+    <Switch>
+      <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
+        <CreateEmailPage />
+      </SignUpRoute>
+      <SignUpRoute exact path={SIGN_UP_PASSWORD_PAGE}>
+        <CreatePasswordPage />
+      </SignUpRoute>
+      {/* White screen routes */}
+      <SignUpRoute
+        exact
+        path={[
+          SIGN_UP_HANDLE_PAGE,
+          SIGN_UP_FINISH_PROFILE_PAGE,
+          SIGN_UP_GENRES_PAGE,
+          SIGN_UP_ARTISTS_PAGE
+        ]}
+      >
+        <ProgressHeader />
+        <Switch>
+          <SignUpRoute exact path={SIGN_UP_HANDLE_PAGE}>
+            <PickHandlePage />
+          </SignUpRoute>
+        </Switch>
+        <Switch>
+          <SignUpRoute exact path={SIGN_UP_FINISH_PROFILE_PAGE}>
+            <FinishProfilePage />
+          </SignUpRoute>
+        </Switch>
+        <Switch>
+          <SignUpRoute exact path={SIGN_UP_GENRES_PAGE}>
+            <SelectGenrePage />
+          </SignUpRoute>
+        </Switch>
+        <Switch>
+          <SignUpRoute exact path={SIGN_UP_ARTISTS_PAGE}>
+            <SelectArtistsPage />
+          </SignUpRoute>
+        </Switch>
+      </SignUpRoute>
+    </Switch>
   )
 }
