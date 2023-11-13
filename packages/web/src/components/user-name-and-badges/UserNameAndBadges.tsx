@@ -16,8 +16,6 @@ const { getUserId } = accountSelectors
 type BaseUserNameAndBadgesProps = {
   onNavigateAway?: () => void
   classes?: {
-    popover?: string
-    nameContainer?: string
     name?: string
   }
 }
