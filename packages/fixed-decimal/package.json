@@ -1,0 +1,25 @@
+{
+  "private": true,
+  "name": "@audius/fixed-decimal",
+  "version": "0.0.0",
+  "description": "A data structure to represent fixed precision decimals",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "start": "tsc --build --verbose --watch tsconfig.json",
+    "build": "tsc --build --verbose tsconfig.json",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AudiusProject/audius-protocol.git#main"
+  },
+  "author": "Audius",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/AudiusProject/audius-protocol/issues"
+  },
+  "homepage": "https://github.com/AudiusProject/audius-protocol/tree/main/packages/fixed-decimal",
+  "devDependencies": {}
+}
