@@ -1,0 +1,6 @@
+.container {
+  box-shadow: var(--harmony-shadow-mid-inverted);
+  width: 100%;
+  position: sticky;
+  bottom: 0;
+}

@@ -15,6 +15,7 @@ import {
   TRENDING_PAGE
 } from 'utils/route'
 
+import styles from './SignUpRootPage.module.css'
 import { ProgressHeader } from './components/ProgressHeader'
 import { CreatePasswordPage } from './pages/CreatePasswordPage'
 import { FinishProfilePage } from './pages/FinishProfilePage'
@@ -34,7 +35,7 @@ const determineAllowedRoute = (
 ) => {
   const attemptedPath = requestedRoute.replace('/signup/', '')
   // Have to type as string[] to avoid too narrow of a type for comparing against
-  let allowedRoutes: string[] = [SignUpPath.createEmail] // create email is available by default
+  let allowedRoutes: string[] = [SignUpPath.createEmail, SignUpPath.pickHandle] // create email is available by default
   if (signUpState.email.value) {
     // Already have email
     allowedRoutes.push(SignUpPath.createPassword)
@@ -103,7 +104,7 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
 
 export const SignUpRootPage = () => {
   return (
-    <div>
+    <div className={styles.container}>
       <Switch>
         <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
           <SignUpPage />
