@@ -9,11 +9,13 @@ type ContinueFooterProps = PropsWithChildren<{}>
 export const ContinueFooter = ({ children }: ContinueFooterProps) => {
   return (
     <Flex
+      w='100%'
       pv='l'
       justifyContent='center'
       gap='l'
       alignItems='center'
       direction='column'
+      shadow='mid-inverted'
       className={styles.container}
     >
       {children}

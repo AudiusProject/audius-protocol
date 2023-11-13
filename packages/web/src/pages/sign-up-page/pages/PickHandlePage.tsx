@@ -137,11 +137,7 @@ export const PickHandlePage = () => {
       validateOnChange={false}
     >
       {({ isSubmitting, isValid, isValidating }) => (
-        <Flex
-          direction='column'
-          className={styles.outerContainer}
-          justifyContent='space-between'
-        >
+        <Flex direction='column' justifyContent='space-between' h='100%'>
           <Box pv='3xl' className={styles.contentContainer}>
             <Form>
               <Box>
