@@ -9,7 +9,6 @@ import {
 } from 'react-native-safe-area-context'
 import { Provider } from 'react-redux'
 import { useEffectOnce } from 'react-use'
-import { remoteConfigInstance } from 'app/services/remote-config'
 import { PersistGate } from 'redux-persist/integration/react'
 import FlipperAsyncStorage from 'rn-flipper-async-storage-advanced'
 
@@ -28,6 +27,7 @@ import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import { env } from 'app/services/env'
 import { setLibs } from 'app/services/libs'
+import { remoteConfigInstance } from 'app/services/remote-config'
 import { audiusSdk } from 'app/services/sdk/audius-sdk'
 import { persistor, store } from 'app/store'
 import {
