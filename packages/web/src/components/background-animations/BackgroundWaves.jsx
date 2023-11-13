@@ -64,7 +64,8 @@ const BackgroundWaves = (props) => {
   if (
     (navigator.userAgent.includes('Safari') &&
       !navigator.userAgent.includes('Chrome')) ||
-    navigator.userAgent.includes('Edge' || navigator.userAgent.includes('MSIE'))
+    navigator.userAgent.includes('Edge') ||
+    navigator.userAgent.includes('MSIE')
   ) {
     useStatic = true
   }
