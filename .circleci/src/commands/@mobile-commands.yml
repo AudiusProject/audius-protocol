@@ -48,8 +48,8 @@ mobile-prepare-ios:
     - run:
         name: Symlink react-native
         command: |
-          ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native
-          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native
+          ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
+          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
     - restore_cache:
         key: pods-{{ checksum "packages/mobile/ios/Podfile.lock" }}
     - run:
@@ -200,7 +200,7 @@ mobile-build-android:
     - run:
         name: Symlink react-native
         command: |
-          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native
+          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
     - run:
         name: generating the release apk & bundle
         command: |
@@ -223,8 +223,8 @@ mobile-release-android:
     - run:
         name: Symlink react-native
         command: |
-          ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native
-          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native
+          ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
+          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
     - run:
         name: release android
         command: |
@@ -290,8 +290,8 @@ mobile-release-saga-dapp-store:
     - run:
         name: Symlink react-native
         command: |
-          ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native
-          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native
+          ln -s $PWD/node_modules/.bin/react-native $PWD/packages/mobile/node_modules/.bin/react-native || true
+          ln -s $PWD/node_modules/react-native $PWD/packages/mobile/node_modules/react-native || true
     - run:
         name: Build Android
         command: |
