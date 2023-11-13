@@ -450,9 +450,10 @@ export class FixedDecimal {
     if (this.value === BigInt(0)) {
       return '0'
     }
+    const signMultiplier = this.value > 0 ? BigInt(1) : BigInt(-1)
     const divisor = BigInt(10 ** this.decimalPlaces)
     const quotient = this.value / divisor
-    if (quotient >= 10000) {
+    if (quotient * signMultiplier >= 10000) {
       return `${quotient / BigInt(1000)}K`
     } else if (this.value % divisor === BigInt(0)) {
       return quotient.toString()

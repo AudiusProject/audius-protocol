@@ -444,6 +444,11 @@ describe('FixedDecimal', function () {
     it('shows hundred thousands correctly', function () {
       expect(new FixedDecimal('443123.9999').toShorthand()).toBe('443K')
     })
+
+    it('shows negative numbers correctly', function () {
+      expect(new FixedDecimal('-10000.88882').toShorthand()).toBe('-10K')
+      expect(new FixedDecimal('-9999.99').toShorthand()).toBe('-9999.99')
+    })
   })
 
   describe('toLocaleString', function () {
