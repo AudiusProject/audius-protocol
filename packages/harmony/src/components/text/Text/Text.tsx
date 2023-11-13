@@ -70,7 +70,6 @@ export const Text = forwardRef(
     const theme = useTheme()
 
     const variantConfig = variant && variantStylesMap[variant]
-
     const styles: CSSObject = {
       fontFamily: `'Avenir Next LT Pro', 'Helvetica Neue', Helvetica,
     Arial, sans-serif`,
@@ -78,6 +77,8 @@ export const Text = forwardRef(
       boxSizing: 'border-box',
       ...(color &&
         color === 'heading' && {
+          // inline is necessary to prevent text clipping
+          display: 'inline',
           color: theme.color.secondary.secondary,
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
