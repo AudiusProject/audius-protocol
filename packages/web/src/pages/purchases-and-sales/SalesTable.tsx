@@ -11,7 +11,6 @@ import moment from 'moment'
 import { Table } from 'components/table'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 
-import styles from './PurchasesAndSalesTable.module.css'
 import { TrackNameWithArtwork } from './components/TrackNameWithArtwork'
 import { PurchaseCell, PurchaseRow } from './types'
 import { isEmptyPurchaseRow } from './utils'
@@ -56,11 +55,7 @@ const defaultColumns: SalesTableColumn[] = [
 const renderContentNameCell = (cellInfo: PurchaseCell) => {
   const { contentId, contentType } = cellInfo.row.original
   return contentType === USDCContentPurchaseType.TRACK ? (
-    <TrackNameWithArtwork
-      wrapperClassName={styles.cellRoot}
-      textClassName={styles.text}
-      id={contentId}
-    />
+    <TrackNameWithArtwork id={contentId} />
   ) : (
     // TODO: When we support collection purchases
     <div />
@@ -69,16 +64,7 @@ const renderContentNameCell = (cellInfo: PurchaseCell) => {
 
 const renderBuyerCell = (cellInfo: PurchaseCell) => {
   const { buyerUserId } = cellInfo.row.original
-  return (
-    <UserNameAndBadges
-      classes={{
-        popover: styles.cellRoot,
-        nameContainer: styles.textContainer,
-        name: styles.text
-      }}
-      userId={buyerUserId}
-    />
-  )
+  return <UserNameAndBadges userId={buyerUserId} />
 }
 
 const renderDateCell = (cellInfo: PurchaseCell) => {

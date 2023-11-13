@@ -8,7 +8,7 @@ import moment from 'moment'
 
 import { Table } from 'components/table'
 
-import styles from './PurchasesAndSalesTable.module.css'
+import styles from './WithdrawalsTable.module.css'
 import { TransactionCell, TransactionRow } from './types'
 import { isEmptyTransactionRow } from './utils'
 
