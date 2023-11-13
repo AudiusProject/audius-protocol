@@ -116,13 +116,7 @@ export const createApi = <
   return api
 }
 
-const addEndpointToSlice = <NormalizedData>(
-  sliceConfig: SliceConfig,
-  endpointName: string
-) => {
-  const initState: PerKeyState<NormalizedData> = {
-    status: Status.IDLE
-  }
+const addEndpointToSlice = (sliceConfig: SliceConfig, endpointName: string) => {
   sliceConfig.initialState[endpointName] = {}
   sliceConfig.reducers = {
     ...sliceConfig.reducers,
