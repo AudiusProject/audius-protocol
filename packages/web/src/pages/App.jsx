@@ -152,7 +152,8 @@ import {
   SALES_PAGE,
   WITHDRAWALS_PAGE,
   EXPLORE_PREMIUM_TRACKS_PAGE,
-  SIGN_UP_START_PAGE
+  SIGN_UP_START_PAGE,
+  PAY_AND_EARN_PAGE
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
@@ -175,6 +176,7 @@ import ExploreCollectionsPage from './explore-page/ExploreCollectionsPage'
 import { FbSharePage } from './fb-share-page/FbSharePage'
 import FollowersPage from './followers-page/FollowersPage'
 import FollowingPage from './following-page/FollowingPage'
+import { PayAndEarnPage } from './pay-and-earn-page/PayAndEarnPage'
 import { PremiumTracksPage } from './premium-tracks-page/PremiumTracksPage'
 import { PurchasesPage, SalesPage } from './purchases-and-sales'
 import { WithdrawalsPage } from './purchases-and-sales/WithdrawalsPage'
@@ -738,6 +740,12 @@ class App extends Component {
                   path={DASHBOARD_PAGE}
                   isMobile={isMobileClient}
                   component={DashboardPage}
+                />
+                <Route
+                  exact
+                  path={PAY_AND_EARN_PAGE}
+                  isMobile={isMobileClient}
+                  component={PayAndEarnPage}
                 />
                 <Route
                   exact
