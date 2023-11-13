@@ -24,7 +24,7 @@ const parseFixedDecimalString = (
   }
 }
 
-export type FixedDecimalCtorArgs = {
+type FixedDecimalCtorArgs = {
   value: bigint
   decimalPlaces: number
 }
@@ -36,7 +36,7 @@ export type FixedDecimalCtorArgs = {
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat MDN documentation for Intl.NumberFormat}
  */
-export type FixedDecimalFormatOptions = {
+type FixedDecimalFormatOptions = {
   /**
    * Whether to use grouping separators, such as thousands separators or thousand/lakh/crore separators.
    *
