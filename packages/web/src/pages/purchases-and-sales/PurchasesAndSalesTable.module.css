@@ -1,4 +1,5 @@
-.cellRoot, .textContainer {
+.cellRoot,
+.textContainer {
   max-width: 100%;
 }
 
