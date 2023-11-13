@@ -9,7 +9,6 @@
   "scripts": {
     "start": "tsc --build --verbose --watch tsconfig.json",
     "build": "tsc --build --verbose tsconfig.json",
-    "build:typedoc": "typedoc",
     "test": "jest"
   },
   "repository": {
@@ -22,8 +21,5 @@
     "url": "https://github.com/AudiusProject/audius-protocol/issues"
   },
   "homepage": "https://github.com/AudiusProject/audius-protocol/tree/main/packages/fixed-decimal",
-  "devDependencies": {
-    "typedoc": "0.25.3",
-    "typedoc-plugin-markdown": "3.17.1"
-  }
+  "devDependencies": {}
 }
