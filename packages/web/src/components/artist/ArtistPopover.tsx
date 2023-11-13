@@ -43,7 +43,7 @@ type ArtistPopoverProps = {
   mouseEnterDelay?: number
   component?: 'div' | 'span'
   onNavigateAway?: () => void
-  wrapperClassName?: string
+  containerClassName?: string
 }
 
 export const ArtistPopover = ({
@@ -54,7 +54,7 @@ export const ArtistPopover = ({
   mouseEnterDelay = 0.5,
   component: Component = 'div',
   onNavigateAway,
-  wrapperClassName
+  containerClassName
 }: ArtistPopoverProps) => {
   const [isPopupVisible, setIsPopupVisible] = useState(false)
   const creator = useSelector((state: CommonState) =>
@@ -106,7 +106,11 @@ export const ArtistPopover = ({
 
   return (
     <Component
-      className={cn(styles.popoverContainer, 'artistPopover', wrapperClassName)}
+      className={cn(
+        styles.popoverContainer,
+        'artistPopover',
+        containerClassName
+      )}
       onMouseEnter={onMouseEnter}
     >
       <Popover

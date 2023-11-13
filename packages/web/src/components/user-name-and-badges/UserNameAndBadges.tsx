@@ -50,7 +50,7 @@ const UserNameAndBadgesImpl = (props: UserNameAndBadgesImplProps) => {
       handle={user.handle}
       component='span'
       onNavigateAway={onNavigateAway}
-      wrapperClassName={styles.container}
+      containerClassName={styles.container}
     >
       <div className={styles.nameAndBadge} onClick={handleClick}>
         <span className={cn(styles.name, classes?.name)}>{user.name}</span>
