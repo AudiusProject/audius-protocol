@@ -1,27 +1,29 @@
 {
   "compilerOptions": {
-    "outDir": "dist",
+    "composite": true,
     "baseUrl": ".",
-    "module": "esnext",
-    "target": "es6",
-    "moduleResolution": "node",
-    "lib": ["es6", "dom", "es2016", "es2017", "es2021"],
-    "sourceMap": true,
+    "module": "ESNext",
+    "target": "ESNext",
+    "moduleResolution": "Node",
+    "declarationDir": "dist/types",
     "declaration": true,
     "declarationMap": true,
-    "rootDirs": ["src"],
-    "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noImplicitAny": true,
-    "strict": true,
     "downlevelIteration": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true
+    "noUnusedParameters": true
   },
-  "include": ["src/index.ts"],
-  "exclude": ["node_modules"]
+  "include": [],
+  "references": [
+    { "path": "./tsconfig.esm.json" },
+    { "path": "./tsconfig.cjs.json" }
+  ]
 }
