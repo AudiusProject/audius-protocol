@@ -68,7 +68,7 @@ export const formatCurrencyBalance = (amount: number) => {
 /**
  * Formats a number of bytes into a nice looking string.
  * ie.
- * 1024 => 1.00 KB
+ * 1024 => 1.02 KB
  * 3072 => 3.07 KB
  */
 export const formatBytes = (bytes: number) => {
