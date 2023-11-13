@@ -61,7 +61,7 @@ const renderContentNameCell = (cellInfo: PurchaseCell) => {
   return contentType === USDCContentPurchaseType.TRACK ? (
     <TrackNameWithArtwork
       wrapperClassName={styles.cellRoot}
-      textClassName={styles.name}
+      textClassName={styles.text}
       id={contentId}
     />
   ) : (
@@ -73,7 +73,7 @@ const renderContentNameCell = (cellInfo: PurchaseCell) => {
 const renderArtistCell = (cellInfo: PurchaseCell) => {
   const { sellerUserId } = cellInfo.row.original
   return <UserNameAndBadges
-    classes={{ popover: styles.cellRoot, nameContainer: styles.nameContainer, name: styles.name }}
+    classes={{ popover: styles.cellRoot, nameContainer: styles.textContainer, name: styles.text }}
     userId={sellerUserId}
   />
 }

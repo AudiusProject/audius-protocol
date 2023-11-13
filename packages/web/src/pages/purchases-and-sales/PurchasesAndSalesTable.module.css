@@ -1,8 +1,8 @@
-.cellRoot, .nameContainer {
+.cellRoot, .textContainer {
   max-width: 100%;
 }
 
-.name {
+.text {
   overflow: hidden;
   text-overflow: ellipsis;
 }
