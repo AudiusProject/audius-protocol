@@ -1,7 +1,6 @@
 import { FixedDecimal } from './FixedDecimal'
 
 /**
- * @ignore
  * Creates a {@link FixedDecimal} constructor for a currency.
  * @param decimalPlaces the number of decimal places for the currency
  */
