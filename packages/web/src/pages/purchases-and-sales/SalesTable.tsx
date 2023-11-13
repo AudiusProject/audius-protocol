@@ -11,10 +11,10 @@ import moment from 'moment'
 import { Table } from 'components/table'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 
+import styles from './PurchasesAndSalesTable.module.css'
 import { TrackNameWithArtwork } from './components/TrackNameWithArtwork'
 import { PurchaseCell, PurchaseRow } from './types'
 import { isEmptyPurchaseRow } from './utils'
-import styles from './PurchasesAndSalesTable.module.css'
 
 export type SalesTableColumn =
   | 'contentName'
@@ -69,10 +69,16 @@ const renderContentNameCell = (cellInfo: PurchaseCell) => {
 
 const renderBuyerCell = (cellInfo: PurchaseCell) => {
   const { buyerUserId } = cellInfo.row.original
-  return <UserNameAndBadges
-    classes={{ popover: styles.cellRoot, nameContainer: styles.textContainer, name: styles.text }}
-    userId={buyerUserId}
-  />
+  return (
+    <UserNameAndBadges
+      classes={{
+        popover: styles.cellRoot,
+        nameContainer: styles.textContainer,
+        name: styles.text
+      }}
+      userId={buyerUserId}
+    />
+  )
 }
 
 const renderDateCell = (cellInfo: PurchaseCell) => {
