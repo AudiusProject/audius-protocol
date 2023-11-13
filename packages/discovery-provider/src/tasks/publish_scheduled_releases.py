@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from datetime import datetime
 
 from src.models.tracks.track import Track
@@ -13,13 +13,14 @@ publish_scheduled_releases_cursor_key = "publish_scheduled_releases_cursor"
 batch_size = 1000
 
 
-
 @log_duration(logger)
 def _publish_scheduled_releases(session, redis):
     latest_block = web3.eth.get_block("latest")
     current_timestamp = latest_block.timestamp
     redis_value = redis.get(publish_scheduled_releases_cursor_key)
-    previous_cursor = datetime.fromtimestamp(int(float(redis_value))) if redis_value else datetime.min
+    previous_cursor = (
+        datetime.fromtimestamp(int(float(redis_value))) if redis_value else datetime.min
+    )
 
     candidate_tracks = (
         session.query(Track)
@@ -47,7 +48,8 @@ def _publish_scheduled_releases(session, redis):
 
     if candidate_tracks:
         redis.set(
-            publish_scheduled_releases_cursor_key, candidate_tracks[-1].created_at.timestamp()
+            publish_scheduled_releases_cursor_key,
+            candidate_tracks[-1].created_at.timestamp(),
         )
     return
 
