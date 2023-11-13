@@ -21,6 +21,7 @@ import IconKebabHorizontal from 'assets/img/iconKebabHorizontalAlt.svg'
 import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { NotificationDot } from 'components/notification-dot'
+import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useSelector } from 'utils/reducer'
@@ -48,6 +49,7 @@ const NavPopupMenu = () => {
   const navigate = useNavigateToPage()
   const hasUnreadMessages = useSelector(chatSelectors.getHasUnreadMessages)
   const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
+  const isUSDCEnabled = useIsUSDCEnabled()
 
   const messagesItemText = hasUnreadMessages ? (
     <div className={styles.popupItemText}>
@@ -76,11 +78,13 @@ const NavPopupMenu = () => {
       icon: <IconDashboard />,
       iconClassName: styles.menuItemIcon
     },
-    {
-      text: messages.payAndEarn,
-      onClick: () => navigate(PAY_AND_EARN_PAGE),
-      icon: <Icon icon={IconDonate} />
-    },
+    isUSDCEnabled
+      ? {
+          text: messages.payAndEarn,
+          onClick: () => navigate(PAY_AND_EARN_PAGE),
+          icon: <Icon icon={IconDonate} />
+        }
+      : null,
     {
       text: messages.audio,
       className: styles.rewardsMenuItem,
