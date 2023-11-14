@@ -1,4 +1,5 @@
 export type AvatarProps = {
+  className?: string
   /**
    * Url image source
    */

@@ -62,6 +62,7 @@ export const Text = forwardRef(
       strength = 'default',
       size = 'm',
       color,
+      shadow,
       tag,
       asChild,
       ...other
@@ -92,7 +93,10 @@ export const Text = forwardRef(
         lineHeight: typography.lineHeight[variantConfig.lineHeight[size]],
         // @ts-expect-error
         fontWeight: typography.weight[variantConfig.fontWeight[strength]],
-        ...('css' in variantConfig && variantConfig.css)
+        ...('css' in variantConfig && variantConfig.css),
+        ...(shadow && {
+          textShadow: '0px 1px 5px rgba(0, 0, 0, 0.50)'
+        })
       })
     }
 

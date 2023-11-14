@@ -31,6 +31,7 @@ export const spacing = {
   unit24: 96,
 
   /* --- Spacing Variables --- */
+  '2xs': 2,
   xs: 4,
   s: 8,
   m: 12,
