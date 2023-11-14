@@ -55,6 +55,8 @@ import { getBalanceNeeded } from './utils'
 
 const { getUserId } = accountSelectors
 
+const USE_COINFLOW = true
+
 type RaceStatusResult = {
   succeeded?:
     | ReturnType<typeof buyUSDCFlowSucceeded>
@@ -253,70 +255,84 @@ function* doStartPurchaseContentFlow({
     )
 
     // buy USDC if necessary
-    if (balanceNeeded.gtn(0)) {
-      const balanceNeededCents = ceilingBNUSDCToNearestCent(balanceNeeded)
-        .div(BN_USDC_CENT_WEI)
-        .toNumber()
-      yield* put(buyUSDC())
-      let result: RaceStatusResult | null = null
-      if (isBuyUSDCViaSolEnabled) {
-        yield* put(
-          buyCryptoViaSol({
-            // expects "friendly" amount, so dollars
-            amount: balanceNeededCents / 100.0,
-            mint: 'usdc',
-            provider: OnRampProvider.STRIPE
+    if (USE_COINFLOW) {
+      const { blocknumber, splits } = yield* getPurchaseConfig({
+        contentId,
+        contentType
+      })
+      /* TODO:
+       - Show coinflow modal
+       - Implement creating transaction in coinflow modal
+       - Implement sending transaction in coinflow modal
+       - Add code here to detect when we're done
+      */
+    } else {
+      if (balanceNeeded.gtn(0)) {
+        const balanceNeededCents = ceilingBNUSDCToNearestCent(balanceNeeded)
+          .div(BN_USDC_CENT_WEI)
+          .toNumber()
+        yield* put(buyUSDC())
+        let result: RaceStatusResult | null = null
+        if (isBuyUSDCViaSolEnabled) {
+          yield* put(
+            buyCryptoViaSol({
+              // expects "friendly" amount, so dollars
+              amount: balanceNeededCents / 100.0,
+              mint: 'usdc',
+              provider: OnRampProvider.STRIPE
+            })
+          )
+          result = yield* race({
+            succeeded: take(buyCryptoSucceeded),
+            failed: take(buyCryptoFailed),
+            canceled: take(buyCryptoCanceled)
           })
-        )
-        result = yield* race({
-          succeeded: take(buyCryptoSucceeded),
-          failed: take(buyCryptoFailed),
-          canceled: take(buyCryptoCanceled)
-        })
-      } else {
-        yield* put(
-          onrampOpened({
-            provider: USDCOnRampProvider.STRIPE,
-            purchaseInfo: {
-              desiredAmount: balanceNeededCents
-            }
-          })
-        )
+        } else {
+          yield* put(
+            onrampOpened({
+              provider: USDCOnRampProvider.STRIPE,
+              purchaseInfo: {
+                desiredAmount: balanceNeededCents
+              }
+            })
+          )
 
-        result = yield* race({
-          succeeded: take(buyUSDCFlowSucceeded),
-          canceled: take(onrampCanceled),
-          failed: take(buyUSDCFlowFailed)
-        })
+          result = yield* race({
+            succeeded: take(buyUSDCFlowSucceeded),
+            canceled: take(onrampCanceled),
+            failed: take(buyUSDCFlowFailed)
+          })
+        }
+        // Return early for failure or cancellation
+        if (result.canceled) {
+          yield* put(purchaseCanceled())
+          return
+        }
+        if (result.failed) {
+          yield* put(
+            purchaseContentFlowFailed({ error: result.failed.payload.error })
+          )
+          return
+        }
       }
-      // Return early for failure or cancellation
-      if (result.canceled) {
-        yield* put(purchaseCanceled())
-        return
-      }
-      if (result.failed) {
-        yield* put(
-          purchaseContentFlowFailed({ error: result.failed.payload.error })
-        )
-        return
-      }
+
+      yield* put(usdcBalanceSufficient())
+
+      const { blocknumber, splits } = yield* getPurchaseConfig({
+        contentId,
+        contentType
+      })
+
+      // purchase content
+      yield* call(purchaseContent, audiusBackendInstance, {
+        id: contentId,
+        blocknumber,
+        extraAmount: extraAmountBN,
+        splits,
+        type: 'track'
+      })
     }
 
-    yield* put(usdcBalanceSufficient())
-
-    const { blocknumber, splits } = yield* getPurchaseConfig({
-      contentId,
-      contentType
-    })
-
-    // purchase content
-    yield* call(purchaseContent, audiusBackendInstance, {
-      id: contentId,
-      blocknumber,
-      extraAmount: extraAmountBN,
-      splits,
-      type: 'track'
-    })
     yield* put(purchaseSucceeded())
 
     // confirm purchase

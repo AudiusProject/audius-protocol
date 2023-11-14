@@ -5,6 +5,7 @@ import { createModal } from '../createModal'
 export type CoinflowOnrampModalState = {
   /** Amount in dollars */
   amount: number
+  memo?: string
   destinationWallet: string
   onrampSucceeded?: Action
   onrampCanceled?: Action
