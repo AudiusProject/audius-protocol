@@ -54,8 +54,9 @@ export const SelectablePill = (props: SelectablePillProps) => {
     })
   }
 
-  const css: CSSObject = {
+  const rootCss: CSSObject = {
     display: 'inline-flex',
+    position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing.xs,
@@ -68,12 +69,12 @@ export const SelectablePill = (props: SelectablePillProps) => {
     border: `1px solid ${theme.color.border.strong}`,
     borderRadius: theme.cornerRadius['2xl'],
     ...(size === 'small' && {
-      height: theme.spacing.unit6,
-      paddingInline: theme.spacing.unit3
+      height: theme.spacing.xl,
+      paddingInline: theme.spacing.m
     }),
     ...(size === 'large' && {
-      height: theme.spacing.unit8,
-      paddingInline: theme.spacing.unit4,
+      height: theme.spacing['2xl'],
+      paddingInline: theme.spacing.l,
       boxShadow: theme.shadows.near
     }),
     ...(disabled && { opacity: 0.45 }),
@@ -87,9 +88,9 @@ export const SelectablePill = (props: SelectablePillProps) => {
   }
 
   const iconCss = {
-    marginRight: spacing.unit1,
-    width: spacing.unit4,
-    height: spacing.unit4,
+    marginRight: spacing.xs,
+    width: spacing.l,
+    height: spacing.l,
 
     '& path': {
       fill: 'currentColor'
@@ -105,25 +106,28 @@ export const SelectablePill = (props: SelectablePillProps) => {
     </>
   )
 
-  if (type === 'checkbox' || type === 'radio') {
-    return (
-      <label css={[css, { position: 'relative' }]}>
-        <InputRoot
-          {...other}
-          checked={type === 'checkbox' ? isSelected : undefined}
-        />
-        {pillContent}
-      </label>
-    )
+  switch (type) {
+    case 'checkbox':
+    case 'radio': {
+      return (
+        <label css={rootCss}>
+          <InputRoot
+            {...other}
+            checked={type === 'checkbox' ? isSelected : undefined}
+          />
+          {pillContent}
+        </label>
+      )
+    }
+    case 'button':
+    case 'reset':
+    case 'submit':
+    default: {
+      return (
+        <button css={rootCss} {...other}>
+          {pillContent}
+        </button>
+      )
+    }
   }
-
-  if (!type || type === 'button' || type === 'reset' || type === 'submit') {
-    return (
-      <button css={css} {...other}>
-        {pillContent}
-      </button>
-    )
-  }
-
-  return null
 }
