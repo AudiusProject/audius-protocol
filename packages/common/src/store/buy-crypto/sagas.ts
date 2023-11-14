@@ -72,6 +72,7 @@ import {
 } from './types'
 
 const BUY_CRYPTO_VIA_SOL_STATE_KEY = 'buy_crypto_via_sol'
+const LOCAL_STORAGE_STATE_TTL_MS = 1000 * 60 * 60 * 2 // 2 hours (arbitrary)
 
 function* getBuyAudioRemoteConfig() {
   // Default slippage tolerance, in percentage basis points
@@ -707,12 +708,6 @@ function* recoverBuyCryptoViaSolIfNecessary() {
     return
   }
 
-  // Pre-emptively clear while working
-  yield* call(
-    [audiusLocalStorage, audiusLocalStorage.removeItem],
-    BUY_CRYPTO_VIA_SOL_STATE_KEY
-  )
-
   const { mint, amount, provider, createdAt, intendedLamports } =
     localStorageState
   yield* call(
@@ -733,6 +728,12 @@ function* recoverBuyCryptoViaSolIfNecessary() {
   const config = yield* call(getBuyCryptoRemoteConfig, mint)
   const outputToken = TOKEN_LISTING_MAP[mint.toUpperCase()]
   let userbank: PublicKey | null = null
+
+  // Pre-emptively clear while working
+  yield* call(
+    [audiusLocalStorage, audiusLocalStorage.removeItem],
+    BUY_CRYPTO_VIA_SOL_STATE_KEY
+  )
 
   try {
     if (!feePayerAddress) {
@@ -863,8 +864,7 @@ function* recoverBuyCryptoViaSolIfNecessary() {
     // Replace the local storage key so we can try again later
     // Don't retry if the SOL was swapped away already
     if (error.code !== BuyCryptoErrorCode.INSUFFICIENT_FUNDS_ERROR) {
-      const ttlMs = 1000 * 60 * 60 * 2 // 2 hours (arbitrary)
-      const isExpired = Date.now() - createdAt > ttlMs
+      const isExpired = Date.now() - createdAt > LOCAL_STORAGE_STATE_TTL_MS
       // Only continue to retry if within 2 hours from initial attempt
       // This makes sure we don't wait for SOL to arrive forever
       if (!isExpired) {
