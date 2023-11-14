@@ -6,6 +6,7 @@ import { useProxySelector } from './useProxySelector'
 export const useAccountHasClaimableRewards = (challengeRewardsIds: string) => {
   return useProxySelector(
     (state) => {
+      if (challengeRewardsIds === null) return false
       const optimisticUserChallenges = getOptimisticUserChallenges(state)
       const activeRewardIds = challengeRewardsIds.split(
         ','
