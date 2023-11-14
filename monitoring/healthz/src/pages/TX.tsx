@@ -1,31 +1,57 @@
-import { AudiusABIDecoder } from '@audius/sdk/dist/web-libs'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
-import { EM_ADDRESS, decodeEmLog, provider } from '../utils/acdc-client'
-
-// todo: env config
-const DISCOVERY = 'https://discoveryprovider.audius.co'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import {
+  EM_ADDRESS,
+  decodeEmLog,
+  useEthersProvider,
+  useSomeDiscoveryEndpoint,
+} from '../utils/acdc-client'
 
 export function TxViewer() {
-  const { data, isLoading } = useQuery([], async ({ queryKey }) => {
-    const latestBlock = await provider.getBlockNumber()
-    const logs: any[] = await provider.getLogs({
-      fromBlock: latestBlock - 10000,
-      address: EM_ADDRESS,
-    })
+  const location = useLocation()
+  const navigate = useNavigate()
+  const discoveryEndpoint = useSomeDiscoveryEndpoint()
+  const provider = useEthersProvider()
 
-    logs.reverse()
-    // const logsDecoded = AudiusABIDecoder.decodeLogs('EntityManager', logs)
-    return { latestBlock, logs }
-  })
+  const { data, isLoading } = useQuery(
+    [location.pathname],
+    async ({ queryKey }) => {
+      const latestBlock = await provider.getBlockNumber()
+      const logs: any[] = await provider.getLogs({
+        fromBlock: latestBlock - 10000,
+        address: EM_ADDRESS,
+      })
+
+      logs.reverse()
+      return { latestBlock, logs }
+    }
+  )
 
   if (isLoading || !data) return <div>loading</div>
   const { latestBlock, logs } = data
 
+  const isProd = location.pathname.indexOf('/prod') == 0
+  function toggleStaging() {
+    if (isProd) {
+      navigate(location.pathname.replace('prod', 'stage'))
+    } else {
+      navigate(location.pathname.replace('stage', 'prod'))
+    }
+  }
+
   return (
     <div className="nice">
-      <h2>Recent Transactions</h2>
-      <p>Latest Block: {latestBlock.toString()} </p>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ flexGrow: 1 }}>
+          <h2>Recent Transactions</h2>
+          <p>Latest Block: {latestBlock.toString()} </p>
+        </div>
+
+        <label onClick={toggleStaging}>
+          <input type="checkbox" checked={!isProd} style={{ marginRight: 5 }} />
+          staging
+        </label>
+      </div>
 
       <table className="niceTable mt-4">
         <thead>
@@ -49,7 +75,7 @@ export function TxViewer() {
                 <td>
                   <Link
                     className="text-blue-500 underline"
-                    to={`/explorer/tx/${log.transactionHash}`}
+                    to={`tx/${log.transactionHash}`}
                   >
                     {log.transactionHash.substring(0, 15)}...
                   </Link>
@@ -57,7 +83,7 @@ export function TxViewer() {
                 <td>
                   <div className="text-xs">
                     <a
-                      href={`${DISCOVERY}/users/account?wallet=${em._signer}`}
+                      href={`${discoveryEndpoint}/users/account?wallet=${em._signer}`}
                       target="_blank"
                     >
                       {em._signer}
@@ -66,7 +92,7 @@ export function TxViewer() {
                 </td>
                 <td>
                   <a
-                    href={`${DISCOVERY}/users?id=${em._userId.toString()}`}
+                    href={`${discoveryEndpoint}/users?id=${em._userId.toString()}`}
                     target="_blank"
                   >
                     {em._userId.toString()}

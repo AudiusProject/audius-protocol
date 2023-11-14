@@ -1,15 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { fetcher } from '../query'
-import { decodeEmLog, provider } from '../utils/acdc-client'
+import {
+  decodeEmLog,
+  useEthersProvider,
+  useSomeContentEndpoint,
+  useSomeDiscoveryEndpoint,
+} from '../utils/acdc-client'
 
 // @ts-expect-error (so we can JSON.stringify the abi params)
 BigInt.prototype.toJSON = function () {
   return this.toString() + 'n'
 }
-
-// todo: env config
-const DISCOVERY = 'https://discoveryprovider.audius.co'
 
 const preClass = ``
 const classes = {
@@ -18,6 +20,7 @@ const classes = {
 
 export function TxDetail() {
   const params = useParams()
+  const provider = useEthersProvider()
 
   const { data } = useQuery([params.tx!], async () => {
     const receipt = await provider.getTransactionReceipt(params.tx!)
@@ -32,7 +35,7 @@ export function TxDetail() {
 
   return (
     <div className="nice">
-      <Link to="/explorer" className="block my-4 font-extrabold">
+      <Link to="./../.." className="block my-4 font-extrabold">
         back to logs
       </Link>
 
@@ -69,6 +72,7 @@ export function TxDetail() {
 }
 
 function UserChip({ id, signer }: { id: string; signer?: string }) {
+  const DISCOVERY = useSomeDiscoveryEndpoint()
   const { data } = useQuery([id], async () => {
     return fetcher(`${DISCOVERY}/users?id=${id}`)
   })
@@ -118,6 +122,7 @@ function ObjectChip({
 }
 
 function TrackChip({ id }: { id: string }) {
+  const DISCOVERY = useSomeDiscoveryEndpoint()
   const { data } = useQuery([id], async () => {
     return fetcher(`${DISCOVERY}/tracks?id=${id}`)
   })
@@ -138,6 +143,7 @@ function TrackChip({ id }: { id: string }) {
 }
 
 function PlaylistChip({ id }: { id: string }) {
+  const DISCOVERY = useSomeDiscoveryEndpoint()
   const { data } = useQuery([id], async () => {
     return fetcher(`${DISCOVERY}/playlists?id=${id}`)
   })
@@ -173,17 +179,12 @@ function CidImage({
     borderRadius: 1000,
   }
 
+  const host = useSomeContentEndpoint()
+
   if (!cid) {
     // fallback
     return <div style={styleProps} />
   }
-
-  // const host =
-  //   process.env.REACT_APP_ENVIRONMENT === 'staging'
-  //     ? 'https://creatornode12.staging.audius.co'
-  //     : 'https://creatornode2.audius.co'
-
-  const host = 'https://creatornode2.audius.co'
 
   return <img src={`${host}/content/${cid}/150x150.jpg`} style={styleProps} />
 }

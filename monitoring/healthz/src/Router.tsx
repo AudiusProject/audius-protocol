@@ -4,6 +4,7 @@ import {
   Outlet,
   RouteObject,
   useLocation,
+  useParams,
   useRoutes,
 } from 'react-router-dom'
 import { DiscoveryFeed } from './pages/DiscoveryFeed'
@@ -55,8 +56,8 @@ const routeList: RouteObject[] = [
       { path: 'utils/id', element: <IdTranslator /> },
       { path: 'utils/rendezvous', element: <Rendezvous /> },
 
-      { path: 'explorer', element: <TxViewer /> },
-      { path: 'explorer/tx/:tx', element: <TxDetail /> },
+      { path: '/:env/explorer', element: <TxViewer /> },
+      { path: '/:env/explorer/tx/:tx', element: <TxDetail /> },
 
       { path: '', element: <Nodes /> },
       { path: '*', element: <Nodes /> },
@@ -86,7 +87,7 @@ const utils = [
   {
     name: 'TX Explorer',
     description: 'View ACDC transactions',
-    href: '/explorer',
+    href: '/prod/explorer',
   },
 ]
 
@@ -139,6 +140,7 @@ function classNames(...classes: string[]) {
 
 function Layout() {
   const location = useLocation()
+  const { env } = useParams()
   const currentPath = location.pathname.slice(1)
   const selected = currentPath || 'nodes'
   console.log(currentPath)
@@ -341,9 +343,7 @@ function Layout() {
 
         <main>
           <div className="mx-auto max-w-8xl py-6 sm:px-6 lg:px-8">
-            {currentPath.indexOf('explorer') === 0 ? null : (
-              <EnvironmentSelector />
-            )}
+            {env ? null : <EnvironmentSelector />}
             <Outlet />
           </div>
         </main>
