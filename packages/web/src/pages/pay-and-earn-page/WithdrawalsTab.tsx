@@ -175,7 +175,7 @@ export const useWithdrawals = () => {
 /**
  * Fetches and renders a table of withdrawals for the currently logged in user
  * */
-export const Withdrawals = ({
+export const WithdrawalsTab = ({
   count,
   data: transactions,
   fetchMore,

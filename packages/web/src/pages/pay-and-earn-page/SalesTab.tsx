@@ -166,7 +166,7 @@ export const useSales = () => {
 /**
  * Fetches and renders a table of Sales for the currently logged in user
  * */
-export const Sales = ({
+export const SalesTab = ({
   count,
   data: sales,
   fetchMore,

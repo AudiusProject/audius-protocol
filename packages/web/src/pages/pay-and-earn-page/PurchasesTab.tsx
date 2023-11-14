@@ -64,7 +64,7 @@ const sortDirections: {
 const DEFAULT_SORT_METHOD = full.GetPurchasesSortMethodEnum.Date
 const DEFAULT_SORT_DIRECTION = full.GetPurchasesSortDirectionEnum.Desc
 
-export const NoPurchases = () => {
+const NoPurchases = () => {
   const dispatch = useDispatch()
   const handleClickFindSongs = useCallback(() => {
     dispatch(pushRoute(FEED_PAGE))
@@ -174,7 +174,7 @@ export const usePurchases = () => {
 /**
  * Fetches and renders a table of purchases for the currently logged in user
  * */
-export const Purchases = ({
+export const PurchasesTab = ({
   data,
   count,
   isEmpty,

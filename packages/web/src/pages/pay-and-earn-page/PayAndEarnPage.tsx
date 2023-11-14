@@ -16,9 +16,9 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 
 import styles from './PayAndEarnPage.module.css'
-import { Purchases, usePurchases } from './Purchases'
-import { Sales, useSales } from './Sales'
-import { Withdrawals, useWithdrawals } from './Withdrawals'
+import { PurchasesTab, usePurchases } from './PurchasesTab'
+import { SalesTab, useSales } from './SalesTab'
+import { WithdrawalsTab, useWithdrawals } from './WithdrawalsTab'
 import { USDCCard } from './components/USDCCard'
 
 export const messages = {
@@ -87,36 +87,23 @@ export const PayAndEarnPage = () => {
 
   const header = <Header primary={messages.title} />
 
-  const tables: Record<TableType, TableMetadata> = useMemo(
-    () => ({
-      [TableType.SALES]: {
-        label: messages.sales,
-        downloadCSV: downloadSalesCSV,
-        isDownloadCSVButtonDisabled: isSalesLoading || isSalesEmpty
-      },
-      [TableType.PURCHASES]: {
-        label: messages.purchases,
-        downloadCSV: downloadPurchasesCSV,
-        isDownloadCSVButtonDisabled: isPurchasesLoading || isPurchasesEmpty
-      },
-      [TableType.WITHDRAWALS]: {
-        label: messages.withdrawals,
-        downloadCSV: downloadWithdrawalsCSV,
-        isDownloadCSVButtonDisabled: isWithdrawalsLoading || isWithdrawalsEmpty
-      }
-    }),
-    [
-      downloadPurchasesCSV,
-      downloadSalesCSV,
-      downloadWithdrawalsCSV,
-      isPurchasesEmpty,
-      isPurchasesLoading,
-      isSalesEmpty,
-      isSalesLoading,
-      isWithdrawalsEmpty,
-      isWithdrawalsLoading
-    ]
-  )
+  const tables: Record<TableType, TableMetadata> = {
+    [TableType.SALES]: {
+      label: messages.sales,
+      downloadCSV: downloadSalesCSV,
+      isDownloadCSVButtonDisabled: isSalesLoading || isSalesEmpty
+    },
+    [TableType.PURCHASES]: {
+      label: messages.purchases,
+      downloadCSV: downloadPurchasesCSV,
+      isDownloadCSVButtonDisabled: isPurchasesLoading || isPurchasesEmpty
+    },
+    [TableType.WITHDRAWALS]: {
+      label: messages.withdrawals,
+      downloadCSV: downloadWithdrawalsCSV,
+      isDownloadCSVButtonDisabled: isWithdrawalsLoading || isWithdrawalsEmpty
+    }
+  }
 
   return (
     <Page
@@ -160,7 +147,7 @@ export const PayAndEarnPage = () => {
                 </Button>
               </Flex>
               {selectedTable === 'withdrawals' ? (
-                <Withdrawals
+                <WithdrawalsTab
                   data={withdrawals}
                   count={withdrawalsCount}
                   isEmpty={isWithdrawalsEmpty}
@@ -170,7 +157,7 @@ export const PayAndEarnPage = () => {
                   fetchMore={fetchMoreWithdrawals}
                 />
               ) : selectedTable === 'purchases' ? (
-                <Purchases
+                <PurchasesTab
                   data={purchases}
                   count={purchasesCount}
                   isEmpty={isPurchasesEmpty}
@@ -180,7 +167,7 @@ export const PayAndEarnPage = () => {
                   fetchMore={fetchMorePurchases}
                 />
               ) : (
-                <Sales
+                <SalesTab
                   data={sales}
                   count={salesCount}
                   isEmpty={isSalesEmpty}
