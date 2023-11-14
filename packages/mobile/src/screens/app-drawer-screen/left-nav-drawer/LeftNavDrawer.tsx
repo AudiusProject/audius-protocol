@@ -1,14 +1,26 @@
-import type { User } from '@audius/common'
+import { useMemo } from 'react'
+
+import type { BNUSDC, BNWei, User } from '@audius/common'
 import {
+  Status,
   FeatureFlags,
   StringKeys,
   accountSelectors,
   useAccountHasClaimableRewards,
   chatSelectors,
-  Name
+  Name,
+  useSelectTierInfo,
+  isNullOrUndefined,
+  formatWei,
+  walletSelectors,
+  formatCurrencyBalance,
+  formatUSDCWeiToFloorCentsNumber,
+  useUSDCBalance,
+  combineStatuses
 } from '@audius/common'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
+import BN from 'bn.js'
 import { View } from 'react-native'
 import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
@@ -21,9 +33,13 @@ import IconMessage from 'app/assets/images/iconMessage.svg'
 import IconSettings from 'app/assets/images/iconSettings.svg'
 import IconUpload from 'app/assets/images/iconUpload.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
+import LogoUSDC from 'app/assets/images/logoUSDC.svg'
+import { IconAudioBadge } from 'app/components/audio-rewards'
+import { Text } from 'app/components/core'
+import Skeleton from 'app/components/skeleton'
 import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { make, track } from 'app/services/analytics'
-import { makeStyles } from 'app/styles'
+import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 
 import { AppDrawerContextProvider } from '../AppDrawerContext'
@@ -34,6 +50,7 @@ import { VanityMetrics } from './VanityMetrics'
 
 const { getAccountUser } = accountSelectors
 const { getHasUnreadMessages } = chatSelectors
+const { getAccountTotalBalance } = walletSelectors
 
 const isStaging = Config.ENVIRONMENT === 'staging'
 
@@ -59,8 +76,45 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     borderRadius: spacing(3),
     backgroundColor: palette.secondary,
     marginLeft: spacing(2)
+  },
+  tokens: {
+    ...flexRowCentered(),
+    padding: spacing(0.5),
+    marginLeft: spacing(4),
+    borderWidth: 1,
+    borderColor: palette.neutralLight8,
+    backgroundColor: palette.neutralLight10,
+    borderRadius: spacing(25),
+    gap: spacing(2)
+  },
+  tokenAmount: {
+    paddingRight: spacing(1.5),
+    paddingVertical: spacing(0.5)
   }
 }))
+
+/**
+ * Pulls balances from account and wallet selectors. Will prefer the wallet
+ * balance once it has loaded. Otherwise, will return the account balance if
+ * available. Falls back to 0 if neither wallet or account balance are available.
+ */
+const useTotalBalanceWithFallback = () => {
+  const account = useSelector(getAccountUser)
+  const walletTotalBalance = useSelector(getAccountTotalBalance)
+
+  return useMemo(() => {
+    if (!isNullOrUndefined(walletTotalBalance)) {
+      return walletTotalBalance
+    } else if (
+      !isNullOrUndefined(account) &&
+      !isNullOrUndefined(account.total_balance)
+    ) {
+      return new BN(account.total_balance) as BNWei
+    }
+
+    return null
+  }, [account, walletTotalBalance])
+}
 
 export const LeftNavDrawer = (props: AccountDrawerProps) => {
   const { navigation: drawerHelpers, ...other } = props
@@ -83,6 +137,28 @@ const WrappedLeftNavDrawer = () => {
   const { isEnabled: isFeatureFlagAccessEnabled } = useFeatureFlag(
     FeatureFlags.FEATURE_FLAG_ACCESS
   )
+  const accountUser = useSelector(getAccountUser) as User
+  const { user_id } = accountUser
+  const { tier } = useSelectTierInfo(user_id)
+  const audioBalance = useTotalBalanceWithFallback()
+  const isAudioBalanceLoading = isNullOrUndefined(audioBalance)
+
+  const statuses: Status[] = []
+  const { data: usdcBalance, balanceStatus: usdcBalanceStatus } =
+    useUSDCBalance({
+      isPolling: true,
+      pollingInterval: 3000
+    })
+  if (usdcBalance === null) {
+    statuses.push(usdcBalanceStatus)
+  }
+  const usdcBalanceStatusCombined = combineStatuses(statuses)
+  const isUsdcBalanceLoading =
+    usdcBalance === null || usdcBalanceStatusCombined === Status.LOADING
+  const balanceCents = formatUSDCWeiToFloorCentsNumber(
+    (usdcBalance ?? new BN(0)) as BNUSDC
+  )
+  const usdcBalanceFormatted = formatCurrencyBalance(balanceCents / 100)
 
   return (
     <DrawerContentScrollView>
@@ -108,16 +184,42 @@ const WrappedLeftNavDrawer = () => {
         label={messages.payAndEarn}
         to='PayAndEarnScreen'
         params={null}
-      />
+      >
+        <View style={styles.tokens}>
+          <LogoUSDC height={spacing(5)} width={spacing(5)} />
+          {isUsdcBalanceLoading ? (
+            <Skeleton style={styles.tokenAmount} height={18} width={24} />
+          ) : (
+            <Text style={styles.tokenAmount} fontSize='small' weight='bold'>
+              ${usdcBalanceFormatted}
+            </Text>
+          )}
+        </View>
+      </LeftNavLink>
       <LeftNavLink
         icon={IconCrown}
         label={messages.rewards}
         to='AudioScreen'
         params={null}
       >
-        {hasClaimableRewards ? (
+        {/* {hasClaimableRewards ? (
           <View style={styles.notificationBubble} />
-        ) : null}
+        ) : null} */}
+        <View style={styles.tokens}>
+          <IconAudioBadge
+            tier={tier}
+            showNoTier
+            height={spacing(5)}
+            width={spacing(5)}
+          />
+          {isAudioBalanceLoading ? (
+            <Skeleton style={styles.tokenAmount} height={18} width={24} />
+          ) : (
+            <Text style={styles.tokenAmount} fontSize='small' weight='bold'>
+              {formatWei(audioBalance, true, 0)}
+            </Text>
+          )}
+        </View>
       </LeftNavLink>
       <LeftNavLink
         icon={IconUpload}
