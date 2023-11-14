@@ -25,8 +25,10 @@ export const Box = styled.div<BoxProps>(
     borderRadius,
     shadow,
     flex,
-    alignSelf
+    alignSelf,
+    theme
   }) => {
+    const { shadows, spacing, color, cornerRadius } = theme
     const padT = pt ?? pv ?? p
     const padB = pb ?? pv ?? p
     const padL = pl ?? ph ?? p
@@ -42,18 +44,17 @@ export const Box = styled.div<BoxProps>(
       boxSizing: 'border-box',
       height: h,
       width: w,
-      boxShadow: shadow && `var(--harmony-shadow-${shadow})`,
-      paddingTop: padT && `var(--harmony-spacing-${padT})`,
-      paddingLeft: padL && `var(--harmony-spacing-${padL})`,
-      paddingRight: padR && `var(--harmony-spacing-${padR})`,
-      paddingBottom: padB && `var(--harmony-spacing-${padB})`,
-      marginTop: marginT && `var(--harmony-spacing-${marginT})`,
-      marginLeft: marginL && `var(--harmony-spacing-${marginL})`,
-      marginRight: marginR && `var(--harmony-spacing-${marginR})`,
-      marginBottom: marginB && `var(--harmony-spacing-${marginB})`,
-      border: border && `1px solid var(--harmony-border-${border})`,
-      borderRadius:
-        borderRadius && `var(--harmony-border-radius-${borderRadius})`,
+      boxShadow: shadow && shadows[shadow],
+      paddingTop: padT && spacing[padT],
+      paddingLeft: padL && spacing[padL],
+      paddingRight: padR && spacing[padR],
+      paddingBottom: padB && spacing[padB],
+      marginTop: marginT && spacing[marginT],
+      marginLeft: marginL && spacing[marginL],
+      marginRight: marginR && spacing[marginR],
+      marginBottom: marginB && spacing[marginB],
+      border: border && `1px solid ${color.border[border]}`,
+      borderRadius: borderRadius && cornerRadius[borderRadius],
       flex,
       alignSelf
     }
