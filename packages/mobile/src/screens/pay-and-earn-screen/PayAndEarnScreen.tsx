@@ -3,7 +3,6 @@ import React, { useCallback } from 'react'
 import type { BNUSDC } from '@audius/common'
 import {
   Status,
-  combineStatuses,
   formatCurrencyBalance,
   formatUSDCWeiToFloorCentsNumber,
   useUSDCBalance
@@ -43,6 +42,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     paddingHorizontal: spacing(3)
   },
   spinner: {
+    alignSelf: 'center',
     width: spacing(8),
     height: spacing(8)
   },
@@ -94,20 +94,12 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 const USDCCard = () => {
   const styles = useStyles()
   const white = useColor('white')
-  const statuses: Status[] = []
-  const { data: usdcBalance, balanceStatus: usdcBalanceStatus } =
-    useUSDCBalance({
-      isPolling: true,
-      pollingInterval: 3000
-    })
-  if (usdcBalance === null) {
-    statuses.push(usdcBalanceStatus)
-  }
-  const usdcBalanceStatusCombined = combineStatuses(statuses)
-  const isUsdcBalanceLoading =
-    usdcBalance === null || usdcBalanceStatusCombined === Status.LOADING
+  const { data: balance } = useUSDCBalance({
+    isPolling: true,
+    pollingInterval: 3000
+  })
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
-    (usdcBalance ?? new BN(0)) as BNUSDC
+    (balance ?? new BN(0)) as BNUSDC
   )
   const usdcBalanceFormatted = formatCurrencyBalance(balanceCents / 100)
 
@@ -116,7 +108,7 @@ const USDCCard = () => {
   // TODO: Implement
   const onAddFundsPress = useCallback(() => {}, [])
 
-  if (isUsdcBalanceLoading) {
+  if (balance === null) {
     return <LoadingSpinner style={[styles.spinner]} />
   }
 

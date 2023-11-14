@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Status, combineStatuses, useUSDCBalance } from '@audius/common'
+import { Status, useUSDCBalance } from '@audius/common'
 import {
   Button,
   ButtonSize,
@@ -44,15 +44,10 @@ type TableMetadata = {
 
 export const PayAndEarnPage = () => {
   const [selectedTable, setSelectedTable] = useState<TableType>(TableType.SALES)
-  const statuses = []
   const { data: balance, balanceStatus } = useUSDCBalance({
     isPolling: true,
     pollingInterval: 3000
   })
-  if (balance === null) {
-    statuses.push(balanceStatus)
-  }
-  const status = combineStatuses(statuses)
 
   const {
     count: salesCount,
@@ -112,7 +107,7 @@ export const PayAndEarnPage = () => {
       contentClassName={styles.pageContainer}
       header={header}
     >
-      {balance === null || status === Status.LOADING ? (
+      {balance === null || balanceStatus === Status.LOADING ? (
         <LoadingSpinner className={styles.spinner} />
       ) : (
         <>

@@ -15,8 +15,7 @@ import {
   walletSelectors,
   formatCurrencyBalance,
   formatUSDCWeiToFloorCentsNumber,
-  useUSDCBalance,
-  combineStatuses
+  useUSDCBalance
 } from '@audius/common'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
@@ -136,18 +135,10 @@ const WrappedLeftNavDrawer = () => {
   const audioBalance = useTotalBalanceWithFallback()
   const isAudioBalanceLoading = isNullOrUndefined(audioBalance)
 
-  const statuses: Status[] = []
   const { data: usdcBalance, balanceStatus: usdcBalanceStatus } =
-    useUSDCBalance({
-      isPolling: true,
-      pollingInterval: 3000
-    })
-  if (usdcBalance === null) {
-    statuses.push(usdcBalanceStatus)
-  }
-  const usdcBalanceStatusCombined = combineStatuses(statuses)
+    useUSDCBalance({ isPolling: false })
   const isUsdcBalanceLoading =
-    usdcBalance === null || usdcBalanceStatusCombined === Status.LOADING
+    usdcBalance === null || usdcBalanceStatus === Status.LOADING
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
     (usdcBalance ?? new BN(0)) as BNUSDC
   )
@@ -178,7 +169,7 @@ const WrappedLeftNavDrawer = () => {
         <View style={styles.tokens}>
           <LogoUSDC height={spacing(5)} width={spacing(5)} />
           {isUsdcBalanceLoading ? (
-            <Skeleton style={styles.tokenAmount} height={18} width={24} />
+            <Skeleton style={styles.tokenAmount} height={spacing(4.5)} width={spacing(6)} />
           ) : (
             <Text style={styles.tokenAmount} fontSize='small' weight='bold'>
               ${usdcBalanceFormatted}
