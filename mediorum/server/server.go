@@ -370,8 +370,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 }
 
 func setResponseACAOHeaderFromRequest(req http.Request, resp echo.Response) {
-	resp.Header().Set(echo.HeaderAccessControlAllowOrigin,
-		req.Header.Get(echo.HeaderOrigin))
+	resp.Header().Set(
+		echo.HeaderAccessControlAllowOrigin,
+		req.Header.Get(echo.HeaderOrigin),
+	)
 }
 
 func ACAOHeaderOverwriteMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
