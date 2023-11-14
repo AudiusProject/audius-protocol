@@ -15,12 +15,41 @@ import (
 )
 
 type Config struct {
-	NodeType   string
-	Env        string
 	Self       registrar.Peer
 	Peers      []registrar.Peer
 	ListenPort string
 	Dir        string
+
+	Env       string
+	NodeType  string
+	AudiusUrl string
+
+	EthNetworkId       string
+	EthTokenAddress    string
+	EthRegistryAddress string
+	EthProviderUrl     string
+	EthOwnerWallet     string
+
+	QueryProposalStartBlock string
+	GqlUri                  string
+	GqlBackupUri            string
+
+	EntityManagerAddress string
+
+	IdentityServiceEndpoint string
+
+	WormholeContractAddress          string
+	ClaimDistributionContractAddress string
+	SolanaClusterEndpoint            string
+	WAudioMintAddress                string
+	UsdcMintAddress                  string
+	SolanaTokenProgramAddress        string
+	ClaimableTokenPda                string
+	SolanaFeePayerAddress            string
+	ClaimableTokenProgramAddress     string
+	RewardsManagerProgramId          string
+	RewardsManagerProgramPda         string
+	RewardsManagerTokenPda           string
 }
 
 func main() {
@@ -62,13 +91,99 @@ func main() {
 }
 
 func startStagingOrProd(isProd bool, nodeType, env string) {
-	// must have either a CN or DN endpoint configured
+	// must have either a CN or DN endpoint configured, along with other env vars
 	myEndpoint := ""
+	audiusUrl := ""
+
+	ethNetworkId := ""
+	ethTokenAddress := ""
+	ethRegistryAddress := ""
+	ethProviderUrl := ""
+	ethOwnerWallet := ""
+
+	queryProposalStartBlock := ""
+	gqlUri := ""
+	gqlBackupUri := ""
+
+	entityManagerAddress := ""
+
+	identityService := ""
+
+	wormholeContractAddress := ""
+	claimDistributionContractAddress := ""
+	solanaClusterEndpoint := ""
+	wAudioMintAddress := ""
+	usdcMintAddress := ""
+	solanaTokenProgramAddress := ""
+	claimableTokenPda := ""
+	solanaFeePayerAddress := ""
+	claimableTokenProgramAddress := ""
+	rewardsManagerProgramId := ""
+	rewardsManagerProgramPda := ""
+	rewardsManagerTokenPda := ""
+
 	if nodeType == "content" {
 		myEndpoint = mustGetenv("creatorNodeEndpoint")
+		audiusUrl = mustGetenv("audiusUrl")
+
+		ethNetworkId = mustGetenv("ethNetworkId")
+		ethTokenAddress = mustGetenv("ethTokenAddress")
+		ethRegistryAddress = mustGetenv("ethRegistryAddress")
+		ethProviderUrl = mustGetenv("ethProviderUrl")
+		ethOwnerWallet = os.Getenv("ethOwnerWallet")
+
+		queryProposalStartBlock = mustGetenv("queryProposalStartBlock")
+		gqlUri = mustGetenv("gqlUri")
+		gqlBackupUri = os.Getenv("gqlBackupUri")
+
+		entityManagerAddress = mustGetenv("entityManagerAddress")
+
+		identityService = mustGetenv("identityService")
+
+		wormholeContractAddress = mustGetenv("wormholeContractAddress")
+		claimDistributionContractAddress = mustGetenv("claimDistributionContractAddress")
+		solanaClusterEndpoint = mustGetenv("solanaClusterEndpoint")
+		wAudioMintAddress = mustGetenv("wAudioMintAddress")
+		usdcMintAddress = mustGetenv("usdcMintAddress")
+		solanaTokenProgramAddress = mustGetenv("solanaTokenProgramAddress")
+		claimableTokenPda = mustGetenv("claimableTokenPda")
+		solanaFeePayerAddress = mustGetenv("solanaFeePayerAddress")
+		claimableTokenProgramAddress = mustGetenv("claimableTokenProgramAddress")
+		rewardsManagerProgramId = mustGetenv("rewardsManagerProgramId")
+		rewardsManagerProgramPda = mustGetenv("rewardsManagerProgramPda")
+		rewardsManagerTokenPda = mustGetenv("rewardsManagerTokenPda")
 	} else if nodeType == "discovery" {
 		myEndpoint = mustGetenv("audius_discprov_url")
+		audiusUrl = mustGetenv("audius_url")
+
+		ethNetworkId = mustGetenv("audius_eth_network_id")
+		ethTokenAddress = mustGetenv("audius_eth_token_address")
+		ethRegistryAddress = mustGetenv("audius_eth_contracts_registry")
+		ethProviderUrl = mustGetenv("audius_web3_eth_provider_url")
+		ethOwnerWallet = os.Getenv("audius_eth_owner_wallet")
+
+		queryProposalStartBlock = mustGetenv("audius_query_proposal_start_block")
+		gqlUri = mustGetenv("audius_gql_uri")
+		gqlBackupUri = os.Getenv("audius_gql_backup_uri")
+
+		entityManagerAddress = mustGetenv("audius_contracts_entity_manager_address")
+
+		identityService = mustGetenv("audius_discprov_identity_service_url")
+
+		wormholeContractAddress = mustGetenv("audius_wormhole_contract_address")
+		claimDistributionContractAddress = mustGetenv("audius_solana_claim_distribution_contract_address")
+		solanaClusterEndpoint = mustGetenv("audius_solana_cluster_endpoint")
+		wAudioMintAddress = mustGetenv("audius_solana_waudio_mint")
+		usdcMintAddress = mustGetenv("audius_solana_usdc_mint")
+		solanaTokenProgramAddress = mustGetenv("audius_solana_token_program_address")
+		claimableTokenPda = mustGetenv("audius_solana_claimable_token_pda")
+		solanaFeePayerAddress = mustGetenv("audius_solana_fee_payer_address")
+		claimableTokenProgramAddress = mustGetenv("audius_solana_user_bank_program_address")
+		rewardsManagerProgramId = mustGetenv("audius_solana_rewards_manager_program_address")
+		rewardsManagerProgramPda = mustGetenv("audius_solana_rewards_manager_account")
+		rewardsManagerTokenPda = mustGetenv("audius_solana_rewards_manager_token_pda")
 	}
+
 	logger := slog.With("endpoint", myEndpoint)
 
 	// fetch peers
@@ -94,11 +209,40 @@ func startStagingOrProd(isProd bool, nodeType, env string) {
 		Self: registrar.Peer{
 			Host: httputil.RemoveTrailingSlash(strings.ToLower(myEndpoint)),
 		},
-		NodeType:   nodeType,
-		Env:        env,
 		Peers:      peers,
 		ListenPort: "1996",
 		Dir:        "/bolt",
+
+		Env:       env,
+		NodeType:  nodeType,
+		AudiusUrl: audiusUrl,
+
+		EthNetworkId:       ethNetworkId,
+		EthTokenAddress:    ethTokenAddress,
+		EthRegistryAddress: ethRegistryAddress,
+		EthProviderUrl:     ethProviderUrl,
+		EthOwnerWallet:     ethOwnerWallet,
+
+		QueryProposalStartBlock: queryProposalStartBlock,
+		GqlUri:                  gqlUri,
+		GqlBackupUri:            gqlBackupUri,
+
+		EntityManagerAddress: entityManagerAddress,
+
+		IdentityServiceEndpoint: identityService,
+
+		WormholeContractAddress:          wormholeContractAddress,
+		ClaimDistributionContractAddress: claimDistributionContractAddress,
+		SolanaClusterEndpoint:            solanaClusterEndpoint,
+		WAudioMintAddress:                wAudioMintAddress,
+		UsdcMintAddress:                  usdcMintAddress,
+		SolanaTokenProgramAddress:        solanaTokenProgramAddress,
+		ClaimableTokenPda:                claimableTokenPda,
+		SolanaFeePayerAddress:            solanaFeePayerAddress,
+		ClaimableTokenProgramAddress:     claimableTokenProgramAddress,
+		RewardsManagerProgramId:          rewardsManagerProgramId,
+		RewardsManagerProgramPda:         rewardsManagerProgramPda,
+		RewardsManagerTokenPda:           rewardsManagerTokenPda,
 	}
 
 	ph, err := New(config)
