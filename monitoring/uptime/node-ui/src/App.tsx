@@ -1,23 +1,27 @@
 import { useState } from 'react'
-import useEnvVars from './hooks/useEnvVars'
+import { useEnvVars } from './providers/EnvVarsProvider'
+import { useAudiusLibs } from './providers/AudiusLibsProvider'
 
 interface UptimeResponse {
-  host: string;
-  uptime_percentage: number;
-  duration: string;
-  uptime_raw_data: Record<string, number>;
+  host: string
+  uptime_percentage: number
+  duration: string
+  uptime_raw_data: Record<string, number>
 }
 
 const App = () => {
   const { endpoint, env, nodeType } = useEnvVars()
+  const { audiusLibs, isLoading: isAudiusLibsLoading } = useAudiusLibs()
   const [targetEndpoint, setTargetEndpoint] = useState(endpoint)
   const [uptimeData, setUptimeData] = useState<UptimeResponse | null>(null)
 
   const fetchUptimeData = async () => {
     try {
-      const response = await fetch(`${endpoint}/up_api/uptime?host=${targetEndpoint}`)
+      const response = await fetch(
+        `${endpoint}/up_api/uptime?host=${targetEndpoint}`
+      )
       if (response.ok) {
-        const data = await response.json() as UptimeResponse
+        const data = (await response.json()) as UptimeResponse
         setUptimeData(data)
       } else {
         console.error('Failed to fetch uptime data')
@@ -33,8 +37,11 @@ const App = () => {
       <p>Host: {endpoint}</p>
       <p>Environment: {env}</p>
       <p>Node Type: {nodeType}</p>
+      <p>
+        Libs: {isAudiusLibsLoading ? 'loading...' : `v${audiusLibs!.version}`}
+      </p>
       <input
-        type="text"
+        type='text'
         value={targetEndpoint}
         onChange={(e) => setTargetEndpoint(e.target.value)}
       />
@@ -52,12 +59,14 @@ const App = () => {
               </tr>
             </thead>
             <tbody>
-              {Object.entries(uptimeData.uptime_raw_data).map(([time, status]) => (
-                <tr key={time}>
-                  <td>{time}</td>
-                  <td>{status ? 'Up' : 'Down'}</td>
-                </tr>
-              ))}
+              {Object.entries(uptimeData.uptime_raw_data).map(
+                ([time, status]) => (
+                  <tr key={time}>
+                    <td>{time}</td>
+                    <td>{status ? 'Up' : 'Down'}</td>
+                  </tr>
+                )
+              )}
             </tbody>
           </table>
         </>
