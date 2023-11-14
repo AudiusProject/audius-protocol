@@ -1,11 +1,16 @@
+import isPropValid from '@emotion/is-prop-valid'
 import styled from '@emotion/styled'
 
 import { Box } from '../Box'
 
 import type { FlexProps } from './types'
 
+const invalidProps = ['alignItems', 'direction', 'wrap']
+
 /** Layout component used to group child elements in one-deminsional arrangements. */
-export const Flex = styled(Box)<FlexProps>((props) => {
+export const Flex = styled(Box, {
+  shouldForwardProp: (prop) => isPropValid(prop) && !invalidProps.includes(prop)
+})<FlexProps>((props) => {
   const {
     theme,
     direction,

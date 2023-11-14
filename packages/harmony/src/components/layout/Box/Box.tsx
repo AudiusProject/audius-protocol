@@ -3,7 +3,7 @@ import styled from '@emotion/styled'
 import type { BoxProps } from './types'
 
 /** Base layout component used as a building block for creating pages and other components. */
-export const Box = styled.div(
+export const Box = styled.div<BoxProps>(
   ({
     h,
     w,
@@ -26,7 +26,7 @@ export const Box = styled.div(
     shadow,
     flex,
     alignSelf
-  }: BoxProps) => {
+  }) => {
     const padT = pt ?? pv ?? p
     const padB = pb ?? pv ?? p
     const padL = pl ?? ph ?? p
