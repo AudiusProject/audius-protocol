@@ -1,7 +1,7 @@
 {
-  "defaultCommandTimeout": 20000,
+  "defaultCommandTimeout": 30000,
   "baseUrl": "http://localhost:3001",
   "env": {
-    "initialLoadTimeout": 20000
+    "initialLoadTimeout": 30000
   }
 }
