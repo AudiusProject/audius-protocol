@@ -84,17 +84,13 @@ const NoWithdrawals = () => {
   )
 }
 
-/**
- * Fetches and renders a table of withdrawals for the currently logged in user
- * */
-export const Withdrawals = () => {
+export const useWithdrawals = () => {
   const userId = useSelector(getUserId)
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =
     useState<full.GetUSDCTransactionsSortMethodEnum>(DEFAULT_SORT_METHOD)
   const [sortDirection, setSortDirection] =
     useState<full.GetUSDCTransactionsSortDirectionEnum>(DEFAULT_SORT_DIRECTION)
-  const { mainContentRef } = useContext(MainContentContext)
 
   const { onOpen: openDetailsModal } = useUSDCTransactionDetailsModal()
 
@@ -170,17 +166,31 @@ export const Withdrawals = () => {
     window.URL.revokeObjectURL(blobUrl)
   }, [userId])
 
-  const downloadCSVButton = (
-    <Button
-      onClick={downloadCSV}
-      variant={ButtonType.SECONDARY}
-      size={ButtonSize.SMALL}
-      iconLeft={IconCloudDownload}
-      disabled={isLoading || isEmpty}
-    >
-      {messages.downloadCSV}
-    </Button>
-  )
+  return {
+    count,
+    data: transactions,
+    fetchMore,
+    onSort,
+    onClickRow,
+    isEmpty,
+    isLoading,
+    downloadCSV
+  }
+}
+
+/**
+ * Fetches and renders a table of withdrawals for the currently logged in user
+ * */
+export const Withdrawals = ({
+  count,
+  data: transactions,
+  fetchMore,
+  onSort,
+  onClickRow,
+  isEmpty,
+  isLoading
+}: Omit<ReturnType<typeof useWithdrawals>, 'downloadCSV'>) => {
+  const { mainContentRef } = useContext(MainContentContext)
 
   return (
     <div className={styles.container}>

@@ -89,17 +89,14 @@ const NoSales = () => {
   )
 }
 
-/**
- * Fetches and renders a table of Sales for the currently logged in user
- * */
-const RenderSalesPage = () => {
+export const useSales = () => {
+  console.debug('REED useSales')
   const userId = useSelector(getUserId)
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =
     useState<full.GetSalesSortMethodEnum>(DEFAULT_SORT_METHOD)
   const [sortDirection, setSortDirection] =
     useState<full.GetSalesSortDirectionEnum>(DEFAULT_SORT_DIRECTION)
-  const { mainContentRef } = useContext(MainContentContext)
 
   const { onOpen: openDetailsModal } = useUSDCPurchaseDetailsModal()
 
@@ -166,22 +163,30 @@ const RenderSalesPage = () => {
     window.URL.revokeObjectURL(blobUrl)
   }, [userId])
 
-  const header = (
-    <Header
-      primary={messages.headerText}
-      rightDecorator={
-        <Button
-          onClick={downloadCSV}
-          variant={ButtonType.SECONDARY}
-          size={ButtonSize.SMALL}
-          iconLeft={IconCloudDownload}
-          disabled={isLoading || isEmpty}
-        >
-          {messages.downloadCSV}
-        </Button>
-      }
-    />
-  )
+  return {
+    count,
+    data: sales,
+    fetchMore,
+    onSort,
+    onClickRow,
+    isEmpty,
+    isLoading,
+    downloadCSV
+  }
+}
+/**
+ * Fetches and renders a table of Sales for the currently logged in user
+ * */
+export const Sales = ({
+  count,
+  data: sales,
+  fetchMore,
+  onSort,
+  onClickRow,
+  isEmpty,
+  isLoading
+}: Omit<ReturnType<typeof useSales>, 'downloadCSV'>) => {
+  const { mainContentRef } = useContext(MainContentContext)
 
   return (
     <div className={styles.container}>
@@ -195,20 +200,12 @@ const RenderSalesPage = () => {
           onSort={onSort}
           onClickRow={onClickRow}
           fetchMore={fetchMore}
+          totalRowCount={count}
           isVirtualized={true}
           scrollRef={mainContentRef}
-          totalRowCount={count}
           fetchBatchSize={TRANSACTIONS_BATCH_SIZE}
         />
       )}
     </div>
   )
-}
-
-export const Sales = () => {
-  const { isLoaded, isEnabled } = useFlag(FeatureFlags.USDC_PURCHASES)
-
-  // Return null if flag isn't loaded yet to prevent flash of 404 page
-  if (!isLoaded) return null
-  return isEnabled ? <RenderSalesPage /> : <NotFoundPage />
 }

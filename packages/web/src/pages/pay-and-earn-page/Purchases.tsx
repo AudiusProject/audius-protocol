@@ -74,7 +74,7 @@ const sortDirections: {
 const DEFAULT_SORT_METHOD = full.GetPurchasesSortMethodEnum.Date
 const DEFAULT_SORT_DIRECTION = full.GetPurchasesSortDirectionEnum.Desc
 
-const NoPurchases = () => {
+export const NoPurchases = () => {
   const dispatch = useDispatch()
   const handleClickFindSongs = useCallback(() => {
     dispatch(pushRoute(FEED_PAGE))
@@ -90,17 +90,14 @@ const NoPurchases = () => {
   )
 }
 
-/**
- * Fetches and renders a table of purchases for the currently logged in user
- * */
-const RenderPurchasesPage = () => {
+export const usePurchases = () => {
+  console.debug('REED usePurchases')
   const userId = useSelector(getUserId)
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =
     useState<full.GetPurchasesSortMethodEnum>(DEFAULT_SORT_METHOD)
   const [sortDirection, setSortDirection] =
     useState<full.GetPurchasesSortDirectionEnum>(DEFAULT_SORT_DIRECTION)
-  const { mainContentRef } = useContext(MainContentContext)
 
   const { onOpen: openDetailsModal } = useUSDCPurchaseDetailsModal()
 
@@ -173,22 +170,31 @@ const RenderPurchasesPage = () => {
     window.URL.revokeObjectURL(blobUrl)
   }, [userId])
 
-  const header = (
-    <Header
-      primary={messages.headerText}
-      rightDecorator={
-        <Button
-          onClick={downloadCSV}
-          variant={ButtonType.SECONDARY}
-          size={ButtonSize.SMALL}
-          iconLeft={IconCloudDownload}
-          disabled={isLoading || isEmpty}
-        >
-          {messages.downloadCSV}
-        </Button>
-      }
-    />
-  )
+  return {
+    count,
+    data: purchases,
+    fetchMore,
+    onSort,
+    onClickRow,
+    isEmpty,
+    isLoading,
+    downloadCSV
+  }
+}
+
+/**
+ * Fetches and renders a table of purchases for the currently logged in user
+ * */
+export const Purchases = ({
+  data,
+  count,
+  isEmpty,
+  isLoading,
+  onSort,
+  onClickRow,
+  fetchMore
+}: Omit<ReturnType<typeof usePurchases>, 'downloadCSV'>) => {
+  const { mainContentRef } = useContext(MainContentContext)
 
   return (
     <div className={styles.container}>
@@ -197,25 +203,17 @@ const RenderPurchasesPage = () => {
       ) : (
         <PurchasesTable
           key='purchases'
-          data={purchases}
+          data={data}
           loading={isLoading}
           onSort={onSort}
           onClickRow={onClickRow}
           fetchMore={fetchMore}
-          isVirtualized={true}
-          scrollRef={mainContentRef}
           totalRowCount={count}
+          scrollRef={mainContentRef}
           fetchBatchSize={TRANSACTIONS_BATCH_SIZE}
+          isVirtualized={true}
         />
       )}
     </div>
   )
-}
-
-export const Purchases = () => {
-  const { isLoaded, isEnabled } = useFlag(FeatureFlags.USDC_PURCHASES)
-
-  // Return null if flag isn't loaded yet to prevent flash of 404 page
-  if (!isLoaded) return null
-  return isEnabled ? <RenderPurchasesPage /> : <NotFoundPage />
 }

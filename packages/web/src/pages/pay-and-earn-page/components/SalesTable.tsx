@@ -11,6 +11,7 @@ import moment from 'moment'
 import { Table } from 'components/table'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 
+import styles from '../PayAndEarnPage.module.css'
 import { PurchaseCell, PurchaseRow } from '../types'
 import { isEmptyPurchaseRow } from '../utils'
 
@@ -175,6 +176,7 @@ export const SalesTable = ({
       totalRowCount={totalRowCount ?? 0}
       scrollRef={scrollRef}
       fetchBatchSize={fetchBatchSize}
+      wrapperClassName={styles.tableWrapper}
     />
   )
 }
