@@ -5,7 +5,6 @@ import { Popup } from './Popup'
 import type { PopupProps } from './types'
 import { Button } from 'components/button'
 import { Text } from 'components/text'
-import { Paper } from '../Paper'
 
 const meta: Meta<typeof Popup> = {
   title: 'Layout/Popup [beta]',
@@ -45,9 +44,7 @@ const meta: Meta<typeof Popup> = {
           isVisible={isVisible}
           onClose={() => setIsVisible(false)}
         >
-          <Paper>
-            <Text>Popup Content</Text>
-          </Paper>
+          <Text>Popup Content</Text>
         </Popup>
       </Button>
     )
