@@ -1,7 +1,6 @@
 import { useCallback, useContext, useState } from 'react'
 
 import {
-  FeatureFlags,
   Id,
   Status,
   USDCPurchaseDetails,
@@ -13,21 +12,12 @@ import {
   useGetPurchasesCount,
   useUSDCPurchaseDetailsModal
 } from '@audius/common'
-import {
-  Button,
-  ButtonSize,
-  ButtonType,
-  IconCloudDownload
-} from '@audius/harmony'
 import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import Header from 'components/header/desktop/Header'
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { MainContentContext } from 'pages/MainContentContext'
-import NotFoundPage from 'pages/not-found-page/NotFoundPage'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
 import { formatToday } from 'utils/dateUtils'

@@ -12,12 +12,6 @@ import {
   useGetUSDCTransactionsCount,
   useUSDCTransactionDetailsModal
 } from '@audius/common'
-import {
-  Button,
-  ButtonSize,
-  ButtonType,
-  IconCloudDownload
-} from '@audius/harmony'
 import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
