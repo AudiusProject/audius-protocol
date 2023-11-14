@@ -1,4 +1,4 @@
-import type { MutableRefObject, ReactChild } from 'react'
+import { MutableRefObject, ReactChild } from 'react'
 
 export type Origin = {
   vertical: 'top' | 'center' | 'bottom'
@@ -64,7 +64,7 @@ export type PopupProps = {
    * An optional container ref that controls what the popup considers
    * to be the size of the container it belongs to. If the popup expands outside
    * the bounds of the container, it repositions itself.
-   */
+    */
   containerRef?: MutableRefObject<HTMLDivElement | undefined>
 
   /**
@@ -76,11 +76,11 @@ export type PopupProps = {
    * Fired after the popup finishes closing
    */
   onAfterClose?: () => void
-
+ 
   /**
-   * A function used to check if a click falls inside any element
-   * that should not close the popup. Clicks inside the menu itself
-   * are automatically considered inside
-   */
+  * A function used to check if a click falls inside any element
+  * that should not close the popup. Clicks inside the menu itself
+  * are automatically considered inside
+  */
   checkIfClickInside?: (target: EventTarget) => boolean
 }

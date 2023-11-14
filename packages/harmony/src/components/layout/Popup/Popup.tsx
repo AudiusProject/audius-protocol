@@ -1,21 +1,19 @@
 import {
   forwardRef,
   MutableRefObject,
-  Ref,
   useCallback,
   useEffect,
   useRef,
   useState
 } from 'react'
-
-import { useTheme } from '@emotion/react'
 import cn from 'classnames'
 import ReactDOM from 'react-dom'
 import { useTransition, animated } from 'react-spring'
+import { useTheme } from '@emotion/react'
 
-import { PlainButton, PlainButtonType } from 'components/button'
-import { useClickOutside } from 'hooks/useClickOutside'
 import { IconClose } from 'icons'
+import { PlainButton } from 'components/button'
+import { useClickOutside } from 'hooks/useClickOutside'
 import { getScrollParent } from 'utils/getScrollParent'
 
 import styles from './Popup.module.css'
@@ -60,10 +58,8 @@ const getComputedOrigins = (
       containerRef.current.getBoundingClientRect().height -
       CONTAINER_INSET_PADDING
   } else {
-    containerWidth =
-      portal.getBoundingClientRect().width - CONTAINER_INSET_PADDING
-    containerHeight =
-      portal.getBoundingClientRect().height - CONTAINER_INSET_PADDING
+    containerWidth = portal.getBoundingClientRect().width - CONTAINER_INSET_PADDING
+    containerHeight = portal.getBoundingClientRect().height - CONTAINER_INSET_PADDING
   }
 
   // Get new wrapper position
@@ -109,10 +105,8 @@ const getAdjustedPosition = (
 ): { adjustedTop: number; adjustedLeft: number } => {
   if (!wrapperRect) return { adjustedTop: 0, adjustedLeft: 0 }
 
-  const containerWidth =
-    portal.getBoundingClientRect().width - CONTAINER_INSET_PADDING
-  const containerHeight =
-    portal.getBoundingClientRect().height - CONTAINER_INSET_PADDING
+  const containerWidth = portal.getBoundingClientRect().width - CONTAINER_INSET_PADDING
+  const containerHeight = portal.getBoundingClientRect().height - CONTAINER_INSET_PADDING
   // Account for the portal being a scrollable container.
   // This will happen if the document body itself is what scrolls.
   const containerTop = -1 * portal.getBoundingClientRect().top
@@ -186,7 +180,7 @@ const closingAnimationDuration = 90
  */
 export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
   props: PopupProps,
-  ref: Ref<HTMLDivElement>
+  ref: MutableRefObject
 ) {
   const {
     anchorRef,
@@ -215,10 +209,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     }, closingAnimationDuration)
   }, [onClose, onAfterClose])
 
-  const [anchorOrigin, transformOrigin] = [
-    anchorOriginProp,
-    transformOriginProp
-  ]
+  const [anchorOrigin, transformOrigin] = [anchorOriginProp, transformOriginProp]
 
   const popupRef: React.MutableRefObject<HTMLDivElement> = useClickOutside(
     handleClose,
@@ -390,13 +381,15 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
                   >
                     {hideCloseButton ? null : (
                       <PlainButton
-                        variant={PlainButtonType.SUBDUED}
+                        variant='subdued'
                         aria-label={messages.close}
                         onClick={handleClose}
                         iconLeft={IconClose}
                       />
                     )}
-                    <div className={styles.title}>{title}</div>
+                    <div className={styles.title}>
+                      {title}
+                    </div>
                   </div>
                 )}
                 {children}
