@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { Status, combineStatuses, useUSDCBalance } from '@audius/common'
 import {
@@ -26,14 +26,24 @@ export const messages = {
   description: 'Pay & earn with Audius',
   sales: 'Sales',
   purchases: 'Your Purchases',
-  withdrawals: 'Withdrawal History'
+  withdrawals: 'Withdrawal History',
+  downloadCSV: 'Download CSV'
 }
 
-type TableType = 'sales' | 'purchases' | 'withdrawals'
-type TableMetadata = { label: string; type: TableType }
+enum TableType {
+  SALES = 'sales',
+  PURCHASES = 'purchases',
+  WITHDRAWALS = 'withdrawals'
+}
+
+type TableMetadata = {
+  label: string
+  downloadCSV: () => void
+  isDownloadCSVButtonDisabled: boolean
+}
 
 export const PayAndEarnPage = () => {
-  const [selectedTable, setSelectedTable] = useState<TableType>('sales')
+  const [selectedTable, setSelectedTable] = useState<TableType>(TableType.SALES)
   const statuses = []
   const { data: balance, balanceStatus } = useUSDCBalance({
     isPolling: true,
@@ -74,31 +84,38 @@ export const PayAndEarnPage = () => {
     isLoading: isWithdrawalsLoading,
     downloadCSV: downloadWithdrawalsCSV
   } = useWithdrawals()
-  const isDownloadCSVButtonDisabled =
-    selectedTable === 'sales'
-      ? isSalesLoading || isSalesEmpty
-      : selectedTable === 'purchases'
-      ? isPurchasesLoading || isPurchasesEmpty
-      : isWithdrawalsLoading || isWithdrawalsEmpty
 
   const header = <Header primary={messages.title} />
 
-  const tables: TableMetadata[] = useMemo(
-    () => [
-      {
+  const tables: Record<TableType, TableMetadata> = useMemo(
+    () => ({
+      [TableType.SALES]: {
         label: messages.sales,
-        type: 'sales'
+        downloadCSV: downloadSalesCSV,
+        isDownloadCSVButtonDisabled: isSalesLoading || isSalesEmpty
       },
-      {
+      [TableType.PURCHASES]: {
         label: messages.purchases,
-        type: 'purchases'
+        downloadCSV: downloadPurchasesCSV,
+        isDownloadCSVButtonDisabled: isPurchasesLoading || isPurchasesEmpty
       },
-      {
+      [TableType.WITHDRAWALS]: {
         label: messages.withdrawals,
-        type: 'withdrawals'
+        downloadCSV: downloadWithdrawalsCSV,
+        isDownloadCSVButtonDisabled: isWithdrawalsLoading || isWithdrawalsEmpty
       }
-    ],
-    []
+    }),
+    [
+      downloadPurchasesCSV,
+      downloadSalesCSV,
+      downloadWithdrawalsCSV,
+      isPurchasesEmpty,
+      isPurchasesLoading,
+      isSalesEmpty,
+      isSalesLoading,
+      isWithdrawalsEmpty,
+      isWithdrawalsLoading
+    ]
   )
 
   return (
@@ -113,30 +130,34 @@ export const PayAndEarnPage = () => {
       ) : (
         <>
           <USDCCard balance={balance} />
-          <Paper p='xl' backgroundColor={'black'}>
-            <Flex direction='column' gap='xl'>
-              <Flex>
-                {tables.map((t) => (
-                  <SelectablePill
-                    key={t.type}
-                    label={t.label}
-                    isSelected={selectedTable === t.type}
-                    onClick={() => setSelectedTable(t.type)}
-                  />
-                ))}
+          <Paper w='100%'>
+            <Flex direction='column' w='100%'>
+              <Flex
+                ph='xl'
+                pt='xl'
+                direction='row'
+                justifyContent='space-between'
+                w='100%'
+              >
+                <Flex gap='s'>
+                  {Object.values(TableType).map((t) => (
+                    <SelectablePill
+                      key={tables[t].label}
+                      label={tables[t].label}
+                      isSelected={selectedTable === t}
+                      onClick={() => setSelectedTable(t)}
+                    />
+                  ))}
+                </Flex>
                 <Button
-                  onClick={
-                    selectedTable === 'withdrawals'
-                      ? downloadWithdrawalsCSV
-                      : selectedTable === 'purchases'
-                      ? downloadPurchasesCSV
-                      : downloadSalesCSV
-                  }
+                  onClick={tables[selectedTable].downloadCSV}
                   variant={ButtonType.SECONDARY}
                   size={ButtonSize.SMALL}
                   iconLeft={IconCloudDownload}
-                  disabled={isDownloadCSVButtonDisabled}
-                ></Button>
+                  disabled={tables[selectedTable].isDownloadCSVButtonDisabled}
+                >
+                  {messages.downloadCSV}
+                </Button>
               </Flex>
               {selectedTable === 'withdrawals' ? (
                 <Withdrawals

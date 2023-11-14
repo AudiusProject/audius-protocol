@@ -81,7 +81,6 @@ export const NoPurchases = () => {
 }
 
 export const usePurchases = () => {
-  console.debug('REED usePurchases')
   const userId = useSelector(getUserId)
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =

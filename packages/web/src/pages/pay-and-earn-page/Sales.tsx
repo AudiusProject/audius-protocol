@@ -80,7 +80,6 @@ const NoSales = () => {
 }
 
 export const useSales = () => {
-  console.debug('REED useSales')
   const userId = useSelector(getUserId)
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =

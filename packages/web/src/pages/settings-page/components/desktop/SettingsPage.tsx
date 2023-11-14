@@ -28,8 +28,7 @@ import {
   IconMessage,
   SegmentedControl,
   IconDesktop,
-  IconRobot,
-  IconCart
+  IconRobot
 } from '@audius/stems'
 import cn from 'classnames'
 import { Link } from 'react-router-dom'
