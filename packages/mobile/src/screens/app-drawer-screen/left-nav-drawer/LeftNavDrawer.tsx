@@ -70,13 +70,6 @@ type AccountDrawerProps = DrawerContentComponentProps & {
 }
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
-  notificationBubble: {
-    height: spacing(3),
-    width: spacing(3),
-    borderRadius: spacing(3),
-    backgroundColor: palette.secondary,
-    marginLeft: spacing(2)
-  },
   tokens: {
     ...flexRowCentered(),
     padding: spacing(0.5),
@@ -173,11 +166,8 @@ const WrappedLeftNavDrawer = () => {
           onPress={() => {
             track(make({ eventName: Name.CHAT_ENTRY_POINT, source: 'navmenu' }))
           }}
-        >
-          {hasUnreadMessages ? (
-            <View style={styles.notificationBubble} />
-          ) : null}
-        </LeftNavLink>
+          showNotificationBubble={hasUnreadMessages}
+        />
       ) : null}
       <LeftNavLink
         icon={IconDonate}
@@ -201,10 +191,8 @@ const WrappedLeftNavDrawer = () => {
         label={messages.rewards}
         to='AudioScreen'
         params={null}
+        showNotificationBubble={hasClaimableRewards}
       >
-        {/* {hasClaimableRewards ? (
-          <View style={styles.notificationBubble} />
-        ) : null} */}
         <View style={styles.tokens}>
           <IconAudioBadge
             tier={tier}
