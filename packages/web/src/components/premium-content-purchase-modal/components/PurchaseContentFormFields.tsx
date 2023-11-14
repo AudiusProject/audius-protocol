@@ -1,12 +1,19 @@
 import {
+  BNUSDC,
+  PURCHASE_METHOD,
   PurchaseContentStage,
   usePayExtraPresets,
-  useUSDCManualTransferModal
+  useUSDCBalance,
+  useUSDCManualTransferModal,
+  removeNullable
 } from '@audius/common'
-import { PlainButton } from '@audius/harmony'
-import { IconCheck } from '@audius/stems'
+import { Flex } from '@audius/harmony'
+import { IconCheck, RadioButtonGroup } from '@audius/stems'
+import BN from 'bn.js'
+import { useField } from 'formik'
 
 import { Icon } from 'components/Icon'
+import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import { Text } from 'components/typography'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 
@@ -19,41 +26,49 @@ import { PurchaseSummaryTable } from './PurchaseSummaryTable'
 
 const messages = {
   purchaseSuccessful: 'Your Purchase Was Successful!',
-  manualTransfer: '(Advanced) Manual Crypto Transfer'
+  existingBalance: 'Existing balance',
+  card: 'Add funds with card',
+  manualTransfer: 'Add with crypto transfer'
 }
 
 type PurchaseContentFormFieldsProps = Pick<
   PurchaseContentFormState,
   'purchaseSummaryValues' | 'stage' | 'isUnlocking'
->
+> & { price: number }
 
 export const PurchaseContentFormFields = ({
+  price,
   purchaseSummaryValues,
   stage,
   isUnlocking
 }: PurchaseContentFormFieldsProps) => {
+  const { data: balance } = useUSDCBalance()
   const { onOpen: openUsdcManualTransferModal } = useUSDCManualTransferModal()
   const payExtraAmountPresetValues = usePayExtraPresets(useRemoteVar)
+  const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
+    useField(PURCHASE_METHOD)
   const isPurchased = stage === PurchaseContentStage.FINISH
 
   if (isPurchased) {
     return (
-      <>
-        <PurchaseSummaryTable
-          {...purchaseSummaryValues}
-          isPurchased={isPurchased}
-        />
-        <div className={styles.purchaseSuccessfulContainer}>
-          <div className={styles.completionCheck}>
-            <Icon icon={IconCheck} size='xxSmall' color='white' />
-          </div>
-          <Text variant='heading' size='small'>
-            {messages.purchaseSuccessful}
-          </Text>
+      <Flex alignItems='center' justifyContent='center' gap='m' p='m'>
+        <div className={styles.completionCheck}>
+          <Icon icon={IconCheck} size='xxSmall' color='white' />
         </div>
-      </>
+        <Text variant='heading' size='small'>
+          {messages.purchaseSuccessful}
+        </Text>
+      </Flex>
     )
   }
+
+  const options = [
+    balance?.gte(new BN(price) as BNUSDC)
+      ? { label: messages.manualTransfer, value: 'manual' }
+      : null,
+    { label: messages.card, value: 'card' },
+    { label: messages.existingBalance, value: 'existing' }
+  ].filter(removeNullable)
 
   return (
     <>
@@ -61,22 +76,24 @@ export const PurchaseContentFormFields = ({
         amountPresets={payExtraAmountPresetValues}
         disabled={isUnlocking}
       />
-      <div className={styles.tableContainer}>
-        <PurchaseSummaryTable
-          {...purchaseSummaryValues}
-          isPurchased={isPurchased}
-        />
-        {isUnlocking || isPurchased ? null : (
-          <Text
-            as={PlainButton}
-            onClick={() => openUsdcManualTransferModal()}
-            color='primary'
-            className={styles.manualTransfer}
-          >
-            {messages.manualTransfer}
-          </Text>
-        )}
-      </div>
+      <PurchaseSummaryTable
+        {...purchaseSummaryValues}
+        isPurchased={isPurchased}
+      />
+      <RadioButtonGroup
+        name={'purchaseMethod'}
+        value={purchaseMethod}
+        onChange={setPurchaseMethod}
+      >
+        {options.map((opt) => (
+          <ModalRadioItem
+            key={opt.label}
+            label={opt.label}
+            description={null}
+            value={opt.value}
+          />
+        ))}
+      </RadioButtonGroup>
       {isUnlocking ? null : <PayToUnlockInfo />}
     </>
   )

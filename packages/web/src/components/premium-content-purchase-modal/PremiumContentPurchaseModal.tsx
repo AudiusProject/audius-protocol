@@ -14,6 +14,7 @@ import {
   isContentPurchaseInProgress,
   usePayExtraPresets
 } from '@audius/common'
+import { Flex } from '@audius/harmony'
 import { IconCart, ModalContent, ModalFooter, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
 import { Formik, useFormikContext } from 'formik'
@@ -98,24 +99,20 @@ const RenderForm = ({
         </Text>
       </ModalHeader>
       <ModalContent className={styles.content}>
-        <>
-          <div className={styles.contentWrapper}>
+        <Flex p='xl'>
+          <Flex direction='column' gap='xl' w='100%'>
             <LockedTrackDetailsTile
               track={track as unknown as Track}
               owner={track.user}
             />
-          </div>
-          {stage !== PurchaseContentStage.FINISH ? (
-            <AudioMatchSection amount={Math.round(price / 100)} />
-          ) : null}
-          <div className={styles.contentWrapper}>
             <PurchaseContentFormFields
               stage={stage}
               purchaseSummaryValues={purchaseSummaryValues}
               isUnlocking={isUnlocking}
+              price={price}
             />
-          </div>
-        </>
+          </Flex>
+        </Flex>
       </ModalContent>
       <ModalFooter className={styles.footer}>
         <PurchaseContentFormFooter
@@ -149,10 +146,12 @@ export const PremiumContentPurchaseModal = () => {
     { disabled: !trackId }
   )
 
-  const { initialValues, validationSchema, onSubmit } =
-    usePurchaseContentFormConfiguration({ track, presetValues })
-
   const isValidTrack = track && isTrackPurchasable(track)
+  const price = isValidTrack
+    ? track?.premium_conditions?.usdc_purchase?.price
+    : 0
+  const { initialValues, validationSchema, onSubmit } =
+    usePurchaseContentFormConfiguration({ track, price, presetValues })
 
   // Attempt recovery once on re-mount of the form
   useEffect(() => {

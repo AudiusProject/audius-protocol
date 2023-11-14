@@ -7,6 +7,16 @@ export type PayExtraAmountPresetValues = {
   [PayExtraPreset.HIGH]: number
 }
 
+export enum PurchaseMethod {
+  EXISTING_BALANCE = 'existingBalance',
+  CARD = 'card',
+  MANUAL_TRANSFER = 'manualTransfer'
+}
+
+export enum Vendors {
+  STRIPE = 'stripe'
+}
+
 export enum PayExtraPreset {
   LOW = 'low',
   MEDIUM = 'medium',
