@@ -14,6 +14,7 @@ import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
 
 import IconCrown from 'app/assets/images/iconCrown.svg'
+import IconDonate from 'app/assets/images/iconDonate.svg'
 import IconEmbed from 'app/assets/images/iconEmbed.svg'
 import IconListeningHistory from 'app/assets/images/iconListeningHistory.svg'
 import IconMessage from 'app/assets/images/iconMessage.svg'
@@ -37,9 +38,10 @@ const { getHasUnreadMessages } = chatSelectors
 const isStaging = Config.ENVIRONMENT === 'staging'
 
 const messages = {
-  profile: 'Profile',
-  audio: '$AUDIO & Rewards',
-  upload: 'Upload a Track',
+  profile: 'Your Profile',
+  payAndEarn: 'Pay & Earn',
+  rewards: 'Rewards',
+  upload: 'Upload',
   listeningHistory: 'Listening History',
   settings: 'Settings',
   featureFlags: 'Feature Flags'
@@ -86,12 +88,6 @@ const WrappedLeftNavDrawer = () => {
     <DrawerContentScrollView>
       <AccountDetails />
       <VanityMetrics />
-      <LeftNavLink
-        icon={IconUser}
-        label={messages.profile}
-        to='Profile'
-        params={{ handle: 'accountUser' }}
-      />
       {isChatEnabled ? (
         <LeftNavLink
           icon={IconMessage}
@@ -108,8 +104,14 @@ const WrappedLeftNavDrawer = () => {
         </LeftNavLink>
       ) : null}
       <LeftNavLink
+        icon={IconDonate}
+        label={messages.payAndEarn}
+        to='PayAndEarnScreen'
+        params={null}
+      />
+      <LeftNavLink
         icon={IconCrown}
-        label={messages.audio}
+        label={messages.rewards}
         to='AudioScreen'
         params={null}
       >
@@ -133,6 +135,12 @@ const WrappedLeftNavDrawer = () => {
         label={messages.listeningHistory}
         to='ListeningHistoryScreen'
         params={null}
+      />
+      <LeftNavLink
+        icon={IconUser}
+        label={messages.profile}
+        to='Profile'
+        params={{ handle: 'accountUser' }}
       />
       <LeftNavLink
         icon={IconSettings}
