@@ -9,7 +9,9 @@ import pkg from './package.json' assert { type: 'json' }
 const external = [
   ...Object.keys(pkg.devDependencies),
   ...Object.keys(pkg.peerDependencies),
-  '@emotion/react/jsx-runtime'
+  '@emotion/react/jsx-runtime',
+  '@emotion/cache',
+  '@emotion/is-prop-valid'
 ]
 
 export default {
