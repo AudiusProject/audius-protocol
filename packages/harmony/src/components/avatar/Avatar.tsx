@@ -11,7 +11,8 @@ export const Avatar = (props: AvatarProps) => {
     src,
     strokeWidth = 'default',
     size = 'auto',
-    variant = 'default'
+    variant = 'default',
+    ...other
   } = props
   const { color } = useTheme()
 
@@ -42,5 +43,5 @@ export const Avatar = (props: AvatarProps) => {
     zIndex: 1
   }
 
-  return <div css={rootCss} />
+  return <div css={rootCss} {...other} />
 }

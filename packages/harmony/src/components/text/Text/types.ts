@@ -1,9 +1,4 @@
-import type {
-  ComponentProps,
-  ElementType,
-  ForwardedRef,
-  ReactNode
-} from 'react'
+import type { ComponentProps, ElementType, ReactNode } from 'react'
 
 import type { TextColors } from 'foundations'
 
@@ -15,7 +10,7 @@ export type TextOwnProps<TextComponentType extends ElementType = 'p'> = {
   size?: TextSize
   strength?: TextStrength
   color?: TextColors
-  innerRef?: ForwardedRef<HTMLElement>
+  shadow?: TextShadow
   asChild?: boolean
 }
 
@@ -28,4 +23,5 @@ export type TextStrength = 'weak' | 'default' | 'strong'
 export type TextSize = 'xl' | 'l' | 'm' | 's' | 'xs'
 
 export type TextVariant = 'display' | 'heading' | 'title' | 'label' | 'body'
+export type TextShadow = 'emphasis'
 export type VariantSizeTagMap = Partial<Record<TextSize, ElementType>>

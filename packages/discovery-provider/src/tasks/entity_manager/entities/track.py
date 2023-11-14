@@ -73,9 +73,7 @@ def update_remixes_table(session, track_record, track_metadata):
         return
 
     for parent_track_id in parent_track_ids:
-        remix = Remix(
-            parent_track_id=parent_track_id, child_track_id=child_track_id
-        )
+        remix = Remix(parent_track_id=parent_track_id, child_track_id=child_track_id)
         session.add(remix)
 
 
@@ -214,7 +212,30 @@ def is_valid_json_field(metadata, field):
     return False
 
 
-def populate_track_record_metadata(track_record, track_metadata, handle, action):
+def parse_release_date(release_date_str):
+    # try various time formats
+    if not release_date_str:
+        return None
+
+    try:
+        return str(datetime.strptime(release_date_str, "%a %b %d %Y %H:%M:%S GMT%z"))
+    except ValueError:
+        pass
+
+    try:
+        return str(datetime.strptime(release_date_str, "%Y-%m-%dT%H:%M:%S.%fZ"))
+    except ValueError:
+        pass
+
+    try:
+        return str(datetime.fromtimestamp(int(release_date_str)))
+    except (ValueError, TypeError):
+        pass
+
+    return None
+
+
+def populate_track_record_metadata(track_record: Track, track_metadata, handle, action):
     # Iterate over the track_record keys
     # Update track_record values for which keys exist in track_metadata
     track_record_attributes = track_record.get_attributes_dict()
@@ -255,6 +276,11 @@ def populate_track_record_metadata(track_record, track_metadata, handle, action)
                     track_metadata["title"], handle
                 )
 
+        elif key == "release_date":
+            if "release_date" in track_metadata:
+                # casting to string because datetime doesn't work for some reason
+                # postgres will convert to a timestamp
+                track_record.release_date = parse_release_date(track_metadata["release_date"])  # type: ignore
         else:
             # For most fields, update the track_record when the corresponding field exists
             # in track_metadata
@@ -393,7 +419,6 @@ def create_track(params: ManageEntityParameters):
     dispatch_challenge_track_upload(
         params.challenge_bus, params.block_number, track_record
     )
-
     params.add_record(track_id, track_record)
 
 

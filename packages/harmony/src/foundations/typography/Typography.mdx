@@ -18,6 +18,7 @@ import {
 - [Text Colors](#text-colors)
 - [Weight Mappings](#weight-mappings)
 - [Usage and examples](#usage-and-examples)
+- [Do's and Dont's](#dos-and-donts)
 
 <Heading>
 ## Overview
@@ -123,6 +124,16 @@ export function Emp(props) {
 | Thin - 275            | Thin - 200                 |
 | Ultra Light - 250     | Ultra Light - 100          |
 
+## Shadows
+
+<Unstyled>
+  <Paper p='2xl' shadow='near'>
+    <Text variant='display' size='l' shadow='emphasis'>
+      Audius, freedom to listen and share.
+    </Text>
+  </Paper>
+</Unstyled>
+
 ## Usage and examples
 
 - Always use semantic text variables when applying color to typography.
@@ -132,6 +143,10 @@ export function Emp(props) {
 - Consider likeness of elements when spacing text of different sizes.
 
 <img src={typographyExample} />
+
+## Do's and Dont's
+
+- Display text should never go to two lines!
 
 ## Related Foundations
 
