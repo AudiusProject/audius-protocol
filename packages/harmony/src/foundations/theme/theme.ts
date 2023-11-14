@@ -1,7 +1,7 @@
 import type { ColorTheme } from '../color'
 import { colorTheme } from '../color'
 import { CornerRadius, cornerRadius } from '../corner-radius'
-import { Motion, motion } from '../motion'
+import { Motion, motion, Spring, spring } from '../motion'
 import { Shadows, shadows } from '../shadows'
 import { Spacing, spacing } from '../spacing'
 import { typography } from '../typography'
@@ -14,7 +14,8 @@ const commonFoundations = {
   typography,
   cornerRadius,
   spacing,
-  motion
+  motion,
+  spring
 }
 
 export type HarmonyTheme = {
@@ -24,7 +25,8 @@ export type HarmonyTheme = {
   typography: Typography
   cornerRadius: CornerRadius
   spacing: Spacing
-  motion: Motion
+  motion: Motion,
+  spring: Spring
 }
 
 export const dayTheme: HarmonyTheme = {
