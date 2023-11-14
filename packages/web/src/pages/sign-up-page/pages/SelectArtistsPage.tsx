@@ -6,7 +6,16 @@ import {
   useGetFeaturedArtists,
   useGetTopArtistsInGenre
 } from '@audius/common'
-import { Button } from '@audius/harmony'
+import {
+  Button,
+  Flex,
+  Text,
+  IconArrowRight,
+  PlainButton,
+  PlainButtonType,
+  SelectablePill,
+  Paper
+} from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
 
@@ -14,7 +23,10 @@ import { addFollowArtists } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
-import { TRENDING_PAGE } from 'utils/route'
+import { SIGN_UP_PASSWORD_PAGE, TRENDING_PAGE } from 'utils/route'
+
+import { ContinueFooter } from '../components/ContinueFooter'
+import FollowArtistTile from '../components/FollowArtistTile'
 
 const messages = {
   header: 'Follow At Least 3 Artists',
@@ -22,6 +34,7 @@ const messages = {
     'Curate your feed with tracks uploaded or reposted by anyone you follow. Click the artist’s photo to preview their music.',
   genresLabel: 'Selected genres',
   continue: 'Continue',
+  goBack: 'Go Back',
   pickArtists: (genre: string) => `Pick ${genre} Artists`
 }
 
@@ -34,7 +47,9 @@ const initialValues: SelectArtistsValues = {
 }
 
 export const SelectArtistsPage = () => {
-  const genres = useSelector((state) => ['Featured', ...getGenres(state)])
+  // TODO: DO NOT MERGE
+  // const genres = useSelector((state) => ['Featured', ...getGenres(state)])
+  const genres = ['electronic', 'acoustic']
   const [currentGenre, setCurrentGenre] = useState('Featured')
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
@@ -72,61 +87,67 @@ export const SelectArtistsPage = () => {
     Status.LOADING
 
   return (
-    <div>
-      <h1>{messages.header}</h1>
-      <p>{messages.description}</p>
-      <div role='radiogroup' aria-label={messages.genresLabel}>
-        {genres.map((genre) => (
-          <label key={genre}>
-            <input
-              type='radio'
-              value={genre}
-              checked={genre === currentGenre}
-              onChange={handleChangeGenre}
-            />
-            {genre}
-          </label>
-        ))}
-      </div>
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        {({ values, setValues }) => {
-          const { artists: selectedArtists } = values
-          const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-            const { checked, name } = e.target
-            const userId = parseInt(name, 10)
-            const newArtists = checked
-              ? [userId, ...selectedArtists]
-              : selectedArtists.filter((value) => value !== userId)
+    <Flex direction='column' gap='2xl'>
+      <Flex direction='column' gap='2xl' mh='5xl'>
+        <Flex direction='column' gap='l'>
+          <Text variant='heading' size='l' strength='default'>
+            {messages.header}
+          </Text>
+          <Text variant='body' size='l' strength='default'>
+            {messages.description}
+          </Text>
+        </Flex>
+        <Flex
+          w='100%'
+          direction='row'
+          gap='s'
+          justifyContent='center'
+          role='radiogroup'
+          aria-label={messages.genresLabel}
+        >
+          {genres.map((genre) => (
+            // TODO: max of 6, kebab overflow
+            <SelectablePill key={genre} label={genre} />
+          ))}
+        </Flex>
+        <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+          {({ values, setValues }) => {
+            const { artists: selectedArtists } = values
+            const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+              const { checked, name } = e.target
+              const userId = parseInt(name, 10)
+              const newArtists = checked
+                ? [userId, ...selectedArtists]
+                : selectedArtists.filter((value) => value !== userId)
 
-            setValues({ artists: newArtists })
-          }
-          return (
-            <Form>
-              <fieldset>
-                <legend>{messages.pickArtists(currentGenre)}</legend>
-                {isLoading
-                  ? null
-                  : artists?.map((user) => {
-                      const { user_id, name } = user
-
-                      return (
-                        <label key={user_id}>
-                          <input
-                            type='checkbox'
-                            name={String(user_id)}
-                            onChange={handleChange}
-                            checked={selectedArtists.includes(user_id)}
-                          />
-                          {name}
-                        </label>
-                      )
-                    })}
-              </fieldset>
-              <Button type='submit'>{messages.continue}</Button>
-            </Form>
-          )
-        }}
-      </Formik>
-    </div>
+              setValues({ artists: newArtists })
+            }
+            return (
+              <Form>
+                <fieldset>
+                  <Paper
+                    css={{ background: 'var(--harmony-bg-default)' }}
+                    shadow='none'
+                    p='xl'
+                    direction='row'
+                    gap='m'
+                    rowGap='m'
+                    wrap='wrap'
+                  >
+                    {isLoading
+                      ? null
+                      : artists?.map((user) => {
+                          return (
+                            <FollowArtistTile key={user.user_id} user={user} />
+                          )
+                        })}
+                  </Paper>
+                </fieldset>
+              </Form>
+            )
+          }}
+        </Formik>
+      </Flex>
+    </Flex>
   )
 }
