@@ -1,20 +1,23 @@
 import { ChangeEvent, useCallback } from 'react'
 
 import { GENRES, convertGenreLabelToValue } from '@audius/common'
-import { Button } from '@audius/harmony'
+import {
+  Button,
+  Flex,
+  IconArrowRight,
+  SelectablePill,
+  Text
+} from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
 
 import { setField } from 'common/store/pages/signon/actions'
-import {
-  getHandleField,
-  getNameField
-} from 'common/store/pages/signon/selectors'
+import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { useSelector } from 'utils/reducer'
 import { SIGN_UP_ARTISTS_PAGE } from 'utils/route'
 
-import { GenrePill } from '../components/GenrePill'
+import { AccountHeader } from '../components/AccountHeader'
+import { ContinueFooter } from '../components/ContinueFooter'
 
 const messages = {
   header: 'Select Your Genres',
@@ -38,8 +41,6 @@ const initialValues = genres.reduce(
 )
 
 export const SelectGenrePage = () => {
-  const { value: displayName } = useSelector(getNameField)
-  const { value: handle } = useSelector(getHandleField)
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
 
@@ -52,40 +53,76 @@ export const SelectGenrePage = () => {
     [dispatch, navigate]
   )
 
+  const { isMobile } = useMedia()
+
   return (
-    <div>
-      <div>
-        <p>{displayName}</p>
-        <p>{handle}</p>
-      </div>
-      <h1>{messages.header}</h1>
-      <p>{messages.description}</p>
+    <Flex direction='column' gap={isMobile ? '2xl' : '4xl'}>
+      <AccountHeader />
+      <Flex direction='column' gap={isMobile ? 'xl' : '2xl'}>
+        <Flex direction='column' gap={isMobile ? 's' : 'l'} ph='l'>
+          <Text
+            variant='heading'
+            size={isMobile ? 'm' : 'l'}
+            color='heading'
+            css={{ textAlign: isMobile ? 'left' : 'center' }}
+          >
+            {messages.header}
+          </Text>
+          <Text
+            variant='body'
+            size={isMobile ? 'm' : 'l'}
+            css={{ textAlign: isMobile ? 'left' : 'center' }}
+          >
+            {messages.description}
+          </Text>
+        </Flex>
 
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        {({ values, setValues }) => {
-          const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-            setValues({ ...values, [e.target.name]: !values[e.target.name] })
-          }
+        <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+          {({ values, setValues }) => {
+            const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+              setValues({ ...values, [e.target.name]: !values[e.target.name] })
+            }
 
-          return (
-            <Form>
-              {genres.map((genre) => {
-                const { label, value } = genre
-                return (
-                  <GenrePill
-                    key={value}
-                    label={label}
-                    name={value}
-                    checked={!!values[value]}
-                    onChange={handleChange}
-                  />
-                )
-              })}
-              <Button type='submit'>{messages.continue}</Button>
-            </Form>
-          )
-        }}
-      </Formik>
-    </div>
+            return (
+              <Flex
+                as={Form}
+                alignItems={isMobile ? 'flex-start' : 'center'}
+                direction='column'
+              >
+                <Flex
+                  css={{ maxWidth: 608 }}
+                  justifyContent={isMobile ? 'flex-start' : 'center'}
+                  alignItems='flex-start'
+                  gap='s'
+                  wrap='wrap'
+                  mb='4xl'
+                  ph='l'
+                >
+                  {genres.map((genre) => {
+                    const { label, value } = genre
+                    return (
+                      <SelectablePill
+                        key={value}
+                        size='large'
+                        type='checkbox'
+                        label={label}
+                        name={label}
+                        isSelected={!!values[value]}
+                        onChange={handleChange}
+                      />
+                    )
+                  })}
+                </Flex>
+                <ContinueFooter>
+                  <Button type='submit' iconRight={IconArrowRight}>
+                    {messages.continue}
+                  </Button>
+                </ContinueFooter>
+              </Flex>
+            )
+          }}
+        </Formik>
+      </Flex>
+    </Flex>
   )
 }
