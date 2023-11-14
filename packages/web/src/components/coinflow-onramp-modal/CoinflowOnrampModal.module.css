@@ -1,0 +1,31 @@
+.modalWrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  display: none;
+  background-color: rgba(0, 0, 0, 0.6);
+  overflow: auto;
+}
+
+.modalWrapper.visible {
+  display: block;
+}
+
+/* .modalWrapper iframe {
+  max-height: 100% !important;
+  min-height: 480px !important;
+  max-width: 400px !important;
+  margin: 0 auto !important;
+}
+
+.stripeModal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100%;
+  min-height: 100%;
+  padding: 24px;
+} */

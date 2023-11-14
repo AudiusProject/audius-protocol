@@ -5,6 +5,7 @@ export { rootModalReducer as modalsReducer } from './reducers'
 export { sagas as modalsSagas } from './sagas'
 
 export * from './create-chat-modal'
+export * from './coinflow-onramp-modal'
 export * from './leaving-audius-modal'
 export * from './inbox-unavailable-modal'
 export * from './usdc-purchase-details-modal'

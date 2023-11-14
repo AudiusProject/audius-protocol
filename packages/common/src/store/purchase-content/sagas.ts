@@ -162,6 +162,18 @@ function* pollForPurchaseConfirmation({
   })
 }
 
+/**
+ *
+ * 1. Use utils to create versioned transaction for the amount needed
+ * 2. Make sure to add memo for the track:id:blocknumber
+ * 3. Will want to pass an implementation of sendTransaction as `Wallet`
+ * 4. Implement a modal component that can accept the transaction info and pass to coinflow
+ * 5. Wire up onSuccess events
+ * 6. Look into Marcus' local relay setup against prod for testing. Otherwise, pass a phantom wallet as the feePayer.
+ * https://www.notion.so/audiusproject/Pointing-local-Identity-relay-to-stage-Solana-56e0382ed1934e8fad606466b54d5456?pvs=4
+ *
+ */
+
 function* doStartPurchaseContentFlow({
   payload: {
     extraAmount,
