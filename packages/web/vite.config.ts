@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
   env.VITE_PUBLIC_URL = env.VITE_PUBLIC_URL ?? ''
 
   return {
-    base: env.VITE_PUBLIC_URL,
+    base: env.VITE_PUBLIC_URL || '/',
     build: {
       outDir: 'build',
       sourcemap: true,
@@ -64,7 +64,12 @@ export default defineConfig(({ mode }) => {
           }
         }
       },
-      react(),
+      react({
+        jsxImportSource: '@emotion/react',
+        babel: {
+          plugins: ['@emotion/babel-plugin']
+        }
+      }),
       ...((analyze
         ? [
             visualizer({

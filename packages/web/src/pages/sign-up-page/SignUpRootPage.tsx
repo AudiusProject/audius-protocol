@@ -1,3 +1,4 @@
+import { Box } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
@@ -103,7 +104,7 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
 
 export const SignUpRootPage = () => {
   return (
-    <div>
+    <Box h='100%'>
       <Switch>
         <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
           <SignUpPage />
@@ -144,6 +145,6 @@ export const SignUpRootPage = () => {
           </Switch>
         </SignUpRoute>
       </Switch>
-    </div>
+    </Box>
   )
 }

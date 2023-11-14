@@ -1,6 +1,9 @@
 # Stage 1: Build the React app
 FROM node:18-alpine as react-builder
 
+# The bufferutil package needs python
+RUN apk add --no-cache python3 make g++ 
+
 ENV UPTIME_BASE_URL="/up/"
 WORKDIR /app
 COPY node-ui/package.json node-ui/package-lock.json ./node-ui/

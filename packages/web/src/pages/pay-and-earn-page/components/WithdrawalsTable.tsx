@@ -48,7 +48,11 @@ const defaultColumns: WithdrawalsTableColumn[] = [
 // Cell Render Functions
 const renderDestinationCell = (cellInfo: TransactionCell) => {
   const { metadata } = cellInfo.row.original
-  return typeof metadata === 'string' ? metadata : ''
+  return typeof metadata === 'string' ? (
+    <span className={styles.text}>{metadata}</span>
+  ) : (
+    ''
+  )
 }
 
 const renderDateCell = (cellInfo: TransactionCell) => {
