@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import { Status, combineStatuses, useUSDCBalance } from '@audius/common'
 import {
