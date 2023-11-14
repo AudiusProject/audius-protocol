@@ -12,6 +12,7 @@ import {
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { Link } from 'components/link'
 import { MobileContentContainer } from 'pages/sign-on/components/desktop/MobileContentContainer'
+import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithAudiusValues'
 import { SIGN_IN_PAGE } from 'utils/route'
 
 import styles from './CreateEmailPage.module.css'
@@ -39,7 +40,7 @@ export const CreateEmailPageMobile = ({
   isSubmitting: boolean
 }) => {
   return (
-    <Flex className={styles.backgroundImageRoot} h='100%'>
+    <PageWithAudiusValues>
       <MobileContentContainer
         gap='2xl'
         alignItems='center'
@@ -124,6 +125,6 @@ export const CreateEmailPageMobile = ({
           </Text>
         </Flex>
       </MobileContentContainer>
-    </Flex>
+    </PageWithAudiusValues>
   )
 }

@@ -1,14 +1,16 @@
-import React, { PropsWithChildren } from 'react'
+import React, { Children, PropsWithChildren } from 'react'
 
 import {
   Box,
   Flex,
+  FlexProps,
   IconCloudUpload,
   IconComponent,
   IconHeadphones,
   IconMessage,
   Text
 } from '@audius/harmony'
+import cn from 'classnames'
 
 import { useMedia } from 'hooks/useMedia'
 
@@ -23,27 +25,55 @@ const messages = {
   adFree: 'Ad-Free, Offline Listening'
 }
 
-export const PageWithAudiusValues = (props: PageWithAudiusValuesProps) => {
-  const { children } = props
-  const { isDesktop } = useMedia()
-
+const DesktopRootContainer = ({ children }: PropsWithChildren<{}>) => {
   return (
     <Flex
       className={styles.root}
       direction='row'
-      w={isDesktop ? 1280 : 480}
+      w={1280}
       h={864}
       borderRadius='l'
       shadow='far'
     >
       {children}
-      {isDesktop ? <AudiusValues /> : null}
     </Flex>
   )
 }
 
-const AudiusValue = (props: { icon: IconComponent; text: string }) => {
-  const { icon: Icon, text } = props
+const MobileContainer = ({ children }: PropsWithChildren<{}>) => {
+  return (
+    <Flex className={styles.root} direction='column' h='100%'>
+      {children}
+    </Flex>
+  )
+}
+
+export const PageWithAudiusValues = (props: PageWithAudiusValuesProps) => {
+  const { children } = props
+  const { isDesktop } = useMedia()
+
+  return isDesktop ? (
+    <DesktopRootContainer>
+      {children}
+      <ArtworkContainer isDesktop>
+        <AudiusValues isDesktop />
+      </ArtworkContainer>
+    </DesktopRootContainer>
+  ) : (
+    <MobileContainer>
+      <ArtworkContainer isDesktop={false}>
+        {children} <AudiusValues isDesktop={false} />
+      </ArtworkContainer>
+    </MobileContainer>
+  )
+}
+
+const AudiusValue = (props: {
+  icon: IconComponent
+  text: string
+  isDesktop: boolean
+}) => {
+  const { icon: Icon, text, isDesktop } = props
   return (
     <Flex
       className={styles.valueRow}
@@ -52,36 +82,54 @@ const AudiusValue = (props: { icon: IconComponent; text: string }) => {
       alignItems='center'
     >
       <Icon className={styles.icon} />
-      <Text variant='heading' size='xl'>
+      <Text
+        variant={isDesktop ? 'heading' : 'title'}
+        size={isDesktop ? 'xl' : 'l'}
+        strength={isDesktop ? 'default' : 'weak'}
+      >
         {text}
       </Text>
     </Flex>
   )
 }
 
-const AudiusValues = () => {
+const ArtworkContainer = ({
+  isDesktop,
+  children
+}: PropsWithChildren<{ isDesktop: boolean }>) => (
+  <Flex
+    className={cn(styles.valuesRoot, styles[isDesktop ? 'desktop' : 'mobile'])}
+    direction='column'
+  >
+    {children}
+  </Flex>
+)
+
+export const AudiusValues = ({ isDesktop }: { isDesktop: boolean }) => {
   return (
-    <Flex
-      className={styles.valuesRoot}
-      w={800}
-      h={864}
-      direction='column'
-      alignItems='center'
-      justifyContent='center'
-    >
-      <Flex direction='column' gap='xl'>
+    <Flex direction='column' gap={isDesktop ? 'xl' : 'l'} alignItems='center'>
+      {isDesktop ? (
         <Box pb='l'>
           <Text variant='display' size='s' strength='strong'>
             {messages.heading}
           </Text>
         </Box>
-        <AudiusValue
-          icon={IconCloudUpload}
-          text={messages.unlimitedStreaming}
-        />
-        <AudiusValue icon={IconMessage} text={messages.directMessages} />
-        <AudiusValue icon={IconHeadphones} text={messages.adFree} />
-      </Flex>
+      ) : null}
+      <AudiusValue
+        icon={IconCloudUpload}
+        text={messages.unlimitedStreaming}
+        isDesktop={isDesktop}
+      />
+      <AudiusValue
+        icon={IconMessage}
+        text={messages.directMessages}
+        isDesktop={isDesktop}
+      />
+      <AudiusValue
+        icon={IconHeadphones}
+        text={messages.adFree}
+        isDesktop={isDesktop}
+      />
     </Flex>
   )
 }

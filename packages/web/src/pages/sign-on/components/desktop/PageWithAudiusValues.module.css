@@ -12,8 +12,23 @@
       rgba(162, 47, 235, 0.5) 100%
     ),
     url('../../../../assets/img/2-DJ-4-3.jpg'), lightgray 50% / cover no-repeat;
+}
+
+.valuesRoot.desktop {
+  width: 800px;
+  height: 864px;
   background-position: -175px;
   background-size: cover;
+  justify-content: center;
+}
+
+.valuesRoot.mobile {
+  width: 100%;
+  height: 100%;
+  background-size: auto 100%;
+  background-position: 50%;
+  gap: var(--harmony-spacing-2xl);
+  justify-content: flex-start;
 }
 
 .valueRow,
