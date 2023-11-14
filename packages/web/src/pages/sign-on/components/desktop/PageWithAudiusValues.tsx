@@ -1,9 +1,8 @@
-import React, { Children, PropsWithChildren } from 'react'
+import React, { PropsWithChildren } from 'react'
 
 import {
   Box,
   Flex,
-  FlexProps,
   IconCloudUpload,
   IconComponent,
   IconHeadphones,
