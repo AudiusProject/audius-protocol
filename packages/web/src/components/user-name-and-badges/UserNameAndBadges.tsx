@@ -1,6 +1,7 @@
 import { MouseEventHandler, useCallback } from 'react'
 
 import { UserMetadata, accountSelectors, useGetUserById } from '@audius/common'
+import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
@@ -47,9 +48,10 @@ const UserNameAndBadgesImpl = (props: UserNameAndBadgesImplProps) => {
       handle={user.handle}
       component='span'
       onNavigateAway={onNavigateAway}
+      containerClassName={styles.container}
     >
       <div className={styles.nameAndBadge} onClick={handleClick}>
-        <span className={classes?.name}>{user.name}</span>
+        <span className={cn(styles.name, classes?.name)}>{user.name}</span>
         <UserBadges
           userId={user.user_id}
           className={styles.badges}

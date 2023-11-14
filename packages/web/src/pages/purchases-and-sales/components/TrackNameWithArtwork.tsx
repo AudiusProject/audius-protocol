@@ -17,7 +17,7 @@ export const TrackNameWithArtwork = ({ id }: { id: number }) => {
   return loading ? null : (
     <div className={styles.container}>
       <DynamicImage wrapperClassName={styles.artwork} image={image} />
-      <Text variant='body' size='small'>
+      <Text className={styles.text} variant='body' size='small'>
         {track.title}
       </Text>
     </div>
