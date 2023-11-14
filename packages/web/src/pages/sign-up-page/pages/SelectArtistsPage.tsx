@@ -99,7 +99,6 @@ export const SelectArtistsPage = () => {
         </Flex>
         <Flex
           w='100%'
-          direction='row'
           gap='s'
           justifyContent='center'
           role='radiogroup'
@@ -129,7 +128,6 @@ export const SelectArtistsPage = () => {
                     css={{ background: 'var(--harmony-bg-default)' }}
                     shadow='none'
                     p='xl'
-                    direction='row'
                     gap='m'
                     rowGap='m'
                     wrap='wrap'
