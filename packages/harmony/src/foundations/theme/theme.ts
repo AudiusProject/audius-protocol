@@ -25,7 +25,7 @@ export type HarmonyTheme = {
   typography: Typography
   cornerRadius: CornerRadius
   spacing: Spacing
-  motion: Motion,
+  motion: Motion
   spring: Spring
 }
 
