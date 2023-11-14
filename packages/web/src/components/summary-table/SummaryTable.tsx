@@ -13,6 +13,7 @@ export type SummaryTableItem = {
   label: ReactNode
   icon?: IconComponent
   value?: ReactNode
+  disabled?: boolean
 }
 
 export type SummaryTableProps = {
@@ -48,15 +49,22 @@ export const SummaryTable = ({
           {secondaryTitle}
         </Text>
       </div>
-      {items.map(({ id, label, icon: Icon, value }) => (
-        <div key={id} className={styles.row}>
-          <Flex alignItems='center' gap='s'>
-            {withRadioOptions ? <RadioButton value={id} /> : null}
+      {items.map(({ id, label, icon: Icon, value, disabled }) => (
+        <div
+          key={id}
+          className={cn(styles.row, disabled ? styles.disabled : null)}
+        >
+          <Flex
+            alignItems='center'
+            gap='s'
+            css={{ opacity: disabled ? 0.5 : 1 }}
+          >
+            {withRadioOptions ? (
+              <RadioButton value={id} disabled={disabled} />
+            ) : null}
             {Icon ? (
               <Box ml='s'>
-                <Icon
-                  color='default'
-                />
+                <Icon color='default' />
               </Box>
             ) : null}
             <Text>{label}</Text>

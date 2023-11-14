@@ -3,11 +3,11 @@ import { Text } from 'components/typography'
 import styles from './AudioMatchSection.module.css'
 
 const messages = {
-  earn: (amount: number) => `Earn ${amount} $AUDIO when you buy this track!`
+  earn: (amount: string) => `Earn ${amount} $AUDIO when you buy this track!`
 }
 
 type AudioMatchSectionProps = {
-  amount: number
+  amount: string
 }
 
 export const AudioMatchSection = ({ amount }: AudioMatchSectionProps) => {

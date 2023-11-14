@@ -1,7 +1,7 @@
 .container {
   align-items: center;
   align-self: stretch;
-  border-radius: var(--unit-3);
+  border-radius: var(--unit-1);
   border: 1px solid var(--border-default);
   display: flex;
   flex-direction: column;
@@ -32,4 +32,8 @@
 
 .radioGroup {
   width: 100%;
+}
+
+.disabled {
+  opacity: 0.5;
 }
