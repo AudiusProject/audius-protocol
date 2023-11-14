@@ -22,8 +22,12 @@ jobs:
           name: test run "<< parameters.service >>"
           no_output_timeout: 20m
           command: . ~/.profile; audius-compose test run "<< parameters.service >>"
-      - run: docker images -a
-      - run: docker image ls --digests
+      - run: 
+          when: always
+          command: docker images -a
+      - run:
+          when: always
+          command: docker image ls --digests
 
 workflows:
   test-workflow:
