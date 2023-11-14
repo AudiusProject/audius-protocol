@@ -9,7 +9,7 @@ import {
   useUSDCBalance
 } from '@audius/common'
 import BN from 'bn.js'
-import { View } from 'react-native'
+import { TouchableOpacity, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import IconQuestionCircle from 'app/assets/images/iconQuestionCircle.svg'
@@ -19,12 +19,16 @@ import {
   Screen,
   Button,
   Text,
-  ScreenContent
+  ScreenContent,
+  useLink
 } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles, flexRowCentered } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useColor } from 'app/utils/theme'
+
+const LEARN_MORE_LINK =
+  'https://support.audius.co/help/Understanding-USDC-on-Audius'
 
 const messages = {
   title: 'PAYMENTs & EARNINGS',
@@ -107,8 +111,10 @@ const USDCCard = () => {
   )
   const usdcBalanceFormatted = formatCurrencyBalance(balanceCents / 100)
 
+  const { onPress: onLearnMorePress } = useLink(LEARN_MORE_LINK)
+
   // TODO: Implement
-  const handleAddFunds = useCallback(() => {}, [])
+  const onAddFundsPress = useCallback(() => {}, [])
 
   if (isUsdcBalanceLoading) {
     return <LoadingSpinner style={[styles.spinner]} />
@@ -128,7 +134,7 @@ const USDCCard = () => {
         </View>
         <Text style={styles.balance}>${usdcBalanceFormatted}</Text>
         <Text style={styles.buyAndSell}>{messages.buyAndSell}</Text>
-        <View style={styles.learnMore}>
+        <TouchableOpacity style={styles.learnMore} onPress={onLearnMorePress}>
           <IconQuestionCircle
             height={spacing(4)}
             width={spacing(4)}
@@ -137,13 +143,13 @@ const USDCCard = () => {
           <Text fontSize='small' weight='bold' color='white'>
             {messages.learnMore}
           </Text>
-        </View>
+        </TouchableOpacity>
       </LinearGradient>
       <View style={styles.cardButtons}>
         <Button
           style={styles.addFundsButton}
           title={messages.addFunds}
-          onPress={handleAddFunds}
+          onPress={onAddFundsPress}
           variant='common'
           size='large'
           fullWidth
