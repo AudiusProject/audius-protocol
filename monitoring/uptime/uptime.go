@@ -78,7 +78,6 @@ func (u *Uptime) Start() {
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
-	e.Use(middleware.Gzip())
 
 	e.Static("/up", "/app/node-ui/dist")
 
