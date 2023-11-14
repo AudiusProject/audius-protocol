@@ -1,4 +1,8 @@
-export * as lineupActions from './actions'
-export * as lineupReducer from './reducer'
-export * as lineupSelectors from './selectors'
+import * as actions from './actions'
+import * as reducer from './reducer'
+import * as selectors from './selectors'
+export const lineupActions = actions
+export const lineupReducer = reducer
+export const lineupSelectors = selectors
+
 export { LineupActions as LineupBaseActions } from './actions'

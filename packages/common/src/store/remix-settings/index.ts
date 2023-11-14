@@ -1,4 +1,5 @@
-export * as remixSettingsSelectors from './selectors'
+import * as selectors from './selectors'
+export const remixSettingsSelectors = selectors
 export {
   default as remixSettingsReducer,
   actions as remixSettingsActions

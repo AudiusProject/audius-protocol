@@ -1,1 +1,1 @@
-export * from './DiscoveryNodeSelectorService'
+export { DiscoveryNodeSelectorService } from './DiscoveryNodeSelectorService'

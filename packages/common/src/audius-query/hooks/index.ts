@@ -1,1 +1,1 @@
-export * from './usePaginatedQuery'
+export { usePaginatedQuery } from './usePaginatedQuery'

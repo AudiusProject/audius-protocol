@@ -1,5 +1,6 @@
+import * as selectors from './selectors'
 export {
   actions as stemsUploadActions,
   default as stemsUploadReducer
 } from './slice'
-export * as stemsUploadSelectors from './selectors'
+export const stemsUploadSelectorsSelectors = selectors

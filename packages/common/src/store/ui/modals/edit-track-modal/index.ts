@@ -3,6 +3,8 @@ import { Nullable } from 'utils/typeUtils'
 
 import { createModal } from '../createModal'
 
+import * as selectors from './selectors'
+
 export type EditTrackModalState = {
   trackId: Nullable<ID>
 }
@@ -21,5 +23,4 @@ export const {
   actions: editTrackModalActions,
   reducer: editTrackModalReducer
 } = editTrackModal
-
-export * as editTrackModalSelectors from './selectors'
+export const editTrackModalSelectors = selectors

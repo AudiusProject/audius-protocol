@@ -1,6 +1,7 @@
-export * as changePasswordSelectors from './selectors'
+import * as selectors from './selectors'
+export const changePasswordSelectors = selectors
 export {
   default as changePasswordReducer,
   actions as changePasswordActions
 } from './slice'
-export * from './types'
+export { ChangePasswordPageStep, ChangePasswordState } from './types'

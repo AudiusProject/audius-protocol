@@ -1,5 +1,6 @@
+import * as selectors from './selectors'
 export {
   default as averageColorReducer,
   actions as averageColorActions
 } from './slice'
-export * as averageColorSelectors from './selectors'
+export const averageColorSelectors = selectors

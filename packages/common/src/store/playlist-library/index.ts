@@ -1,3 +1,5 @@
+import * as helpers from './helpers'
+import * as selectors from './selectors'
 export {
   default as playlistLibraryReducer,
   actions as playlistLibraryActions
@@ -7,5 +9,5 @@ export type {
   ReorderAction,
   AddToFolderAction
 } from './slice'
-export * as playlistLibraryHelpers from './helpers'
-export * as playlistLibrarySelectors from './selectors'
+export const playlistLibraryHelpers = helpers
+export const playlistLibrarySelectors = selectors

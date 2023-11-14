@@ -1,1 +1,1 @@
-export * from './TrackDownload'
+export { TrackDownload, TrackDownloadConfig } from './TrackDownload'

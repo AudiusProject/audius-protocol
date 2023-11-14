@@ -1,1 +1,1 @@
-export * from './FingerprintClient'
+export { FingerprintClient } from './FingerprintClient'

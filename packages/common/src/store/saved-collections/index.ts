@@ -1,6 +1,7 @@
+import * as selectors from './selectors'
 export {
   default as savedCollectionsReducer,
   actions as savedCollectionsActions
 } from './slice'
-export * as savedCollectionsSelectors from './selectors'
-export * from './types'
+export const savedCollectionsSelectors = selectors
+export { CollectionType } from './types'

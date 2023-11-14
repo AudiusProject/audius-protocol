@@ -1,1 +1,1 @@
-export * from './LocalStorage'
+export { LocalStorage, CachedDiscoveryProviderType } from './LocalStorage'

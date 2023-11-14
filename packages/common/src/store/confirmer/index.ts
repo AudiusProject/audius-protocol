@@ -1,5 +1,11 @@
-export * as confirmerActions from './actions'
+import * as actions from './actions'
+import * as selectors from './selectors'
+export const confirmerActions = actions
+export const confirmerSelectors = selectors
 export { default as confirmerReducer } from './reducer'
-export * as confirmerSelectors from './selectors'
 export { default as confirmerSagas, confirmTransaction } from './sagas'
-export * from './types'
+export {
+  ConfirmationOptions,
+  ConfirmerState,
+  RequestConfirmationError
+} from './types'

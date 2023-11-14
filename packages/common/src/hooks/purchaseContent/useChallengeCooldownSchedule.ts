@@ -3,14 +3,11 @@ import utc from 'dayjs/plugin/utc'
 import { useSelector } from 'react-redux'
 
 import { ChallengeRewardID } from 'models/AudioRewards'
-import {
-  UndisbursedUserChallenge,
-  audioRewardsPageSelectors
-} from 'store/pages'
+import { UndisbursedUserChallenge, audioRewardsSelectors } from 'store/pages'
 
 import { COOLDOWN_DAYS } from './constants'
 
-const { getUndisbursedUserChallenges } = audioRewardsPageSelectors
+const { getUndisbursedUserChallenges } = audioRewardsSelectors
 
 dayjs.extend(utc)
 
