@@ -196,7 +196,7 @@ const WrappedLeftNavDrawer = () => {
             width={spacing(5)}
           />
           {isAudioBalanceLoading ? (
-            <Skeleton style={styles.tokenAmount} height={18} width={24} />
+            <Skeleton style={styles.tokenAmount} height={spacing(4.5)} width={spacing(6)} />
           ) : (
             <Text style={styles.tokenAmount} fontSize='small' weight='bold'>
               {formatWei(audioBalance, true, 0)}
