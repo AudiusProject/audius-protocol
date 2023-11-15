@@ -16,20 +16,21 @@ export const TextLink = (props: TextLinkProps) => {
     variant = 'default',
     isExternal = false,
     onClick,
+    textVariant,
     ...passthroughProps
   } = props
 
   const { color } = useTheme()
 
   const colorByVariant = {
-    default: color.primary.p500,
-    subdued: color.text.default,
+    default: color.link.default,
+    visible: color.link.visible,
     inverted: color.static.white
   }
 
   const hoverStyles = {
     textDecoration: 'underline',
-    ...(variant === 'subdued' && { color: color.primary.p300 })
+    ...(variant === 'default' && { color: color.primary.p300 })
   }
 
   return (
@@ -43,6 +44,7 @@ export const TextLink = (props: TextLinkProps) => {
         ':hover': hoverStyles,
         ...(_isHovered && hoverStyles)
       }}
+      variant={textVariant}
       {...passthroughProps}
     >
       {asChild ? (
