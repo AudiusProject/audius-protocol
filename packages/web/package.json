@@ -57,6 +57,7 @@
     "@audius/sdk": "*",
     "@audius/stems": "*",
     "@audius/trpc-server": "*",
+    "@cloudflare/kv-asset-handler": "0.2.0",
     "@coinbase/cbpay-js": "1.2.0",
     "@fingerprintjs/fingerprintjs-pro": "3.5.6",
     "@hcaptcha/react-hcaptcha": "0.3.6",
