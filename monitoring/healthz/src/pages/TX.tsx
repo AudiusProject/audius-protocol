@@ -1,5 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom'
 import {
   EM_ADDRESS,
   decodeEmLog,
@@ -10,15 +15,20 @@ import {
 export function TxViewer() {
   const location = useLocation()
   const navigate = useNavigate()
+  let [searchParams, setSearchParams] = useSearchParams()
   const discoveryEndpoint = useSomeDiscoveryEndpoint()
   const provider = useEthersProvider()
+  const isProd = useLocation().pathname.indexOf('/prod') == 0
 
   const { data, isLoading } = useQuery(
-    [location.pathname],
+    [location.pathname, location.search],
     async ({ queryKey }) => {
-      const latestBlock = await provider.getBlockNumber()
+      let latestBlock = parseInt(searchParams.get('block') || '')
+      if (!latestBlock) latestBlock = await provider.getBlockNumber()
+
       const logs: any[] = await provider.getLogs({
-        fromBlock: latestBlock - 10000,
+        fromBlock: latestBlock - (isProd ? 1000 : 10000),
+        toBlock: latestBlock,
         address: EM_ADDRESS,
       })
 
@@ -30,7 +40,6 @@ export function TxViewer() {
   if (isLoading || !data) return <div>loading</div>
   const { latestBlock, logs } = data
 
-  const isProd = location.pathname.indexOf('/prod') == 0
   function toggleStaging() {
     if (isProd) {
       navigate(location.pathname.replace('prod', 'stage'))
@@ -39,18 +48,43 @@ export function TxViewer() {
     }
   }
 
+  function showOlder() {
+    const no = logs[logs.length - 1].blockNumber
+    searchParams.set('block', no)
+    setSearchParams(searchParams)
+  }
+
+  function setBlock(b: string) {
+    searchParams.set('block', b)
+    setSearchParams(searchParams)
+  }
+
   return (
     <div className="nice">
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <div style={{ flexGrow: 1 }}>
           <h2>Recent Transactions</h2>
-          <p>Latest Block: {latestBlock.toString()} </p>
         </div>
 
         <label onClick={toggleStaging}>
-          <input type="checkbox" checked={!isProd} style={{ marginRight: 5 }} />
+          <input
+            type="checkbox"
+            checked={!isProd}
+            style={{ marginRight: 5 }}
+            onChange={() => {}}
+          />
           staging
         </label>
+      </div>
+
+      <div className="my-2 flex items-center gap-2">
+        <div>Block:</div>
+        <input
+          onChange={(e) => setBlock(e.target.value)}
+          placeholder="block number"
+          className="p-2 my-2 rounded niceBorder"
+          value={latestBlock.toString()}
+        />
       </div>
 
       <table className="niceTable mt-4">
@@ -71,7 +105,11 @@ export function TxViewer() {
             const em = decodeEmLog(log.data)
             return (
               <tr key={idx} onClick={() => console.log(log, em)}>
-                <td>{log.blockNumber.toString()}</td>
+                <td>
+                  <Link to={`?block=${log.blockNumber.toString()}`}>
+                    {log.blockNumber.toString()}
+                  </Link>
+                </td>
                 <td>
                   <Link
                     className="text-blue-500 underline"
@@ -104,14 +142,18 @@ export function TxViewer() {
                 <td>
                   <pre className="text-xs">{em._metadata}</pre>
                 </td>
-                <td>{em._signer}</td>
               </tr>
             )
           })}
         </tbody>
       </table>
 
-      <button className="p-4 rounded bg-purple-800 text-white">Older</button>
+      <button
+        className="p-4 rounded bg-purple-800 text-white"
+        onClick={showOlder}
+      >
+        Older
+      </button>
     </div>
   )
 }

@@ -15,7 +15,7 @@ BigInt.prototype.toJSON = function () {
 
 const preClass = ``
 const classes = {
-  chip: `flex items-center bg-white overflow-hidden rounded-full border p-2 pr-4 gap-2 block`,
+  chip: `niceChip`,
 }
 
 export function TxDetail() {
