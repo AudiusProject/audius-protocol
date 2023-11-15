@@ -3,6 +3,7 @@ import React, { PropsWithChildren } from 'react'
 import {
   Box,
   Flex,
+  FlexProps,
   IconCloudUpload,
   IconComponent,
   IconHeadphones,
@@ -11,11 +12,7 @@ import {
 } from '@audius/harmony'
 import cn from 'classnames'
 
-import { useMedia } from 'hooks/useMedia'
-
 import styles from './PageWithAudiusValues.module.css'
-
-type PageWithAudiusValuesProps = PropsWithChildren<{}>
 
 const messages = {
   heading: 'Your Music, Your Way',
@@ -24,7 +21,7 @@ const messages = {
   adFree: 'Ad-Free, Offline Listening'
 }
 
-const DesktopRootContainer = ({ children }: PropsWithChildren<{}>) => {
+export const SignOnContainerDesktop = ({ children }: PropsWithChildren<{}>) => {
   return (
     <Flex
       className={styles.root}
@@ -39,34 +36,13 @@ const DesktopRootContainer = ({ children }: PropsWithChildren<{}>) => {
   )
 }
 
-const MobileContainer = ({ children }: PropsWithChildren<{}>) => {
+export const SignOnContainerMobile = ({ children }: PropsWithChildren<{}>) => {
   return (
     <Flex className={styles.root} direction='column' h='100%'>
       {children}
     </Flex>
   )
 }
-
-export const PageWithAudiusValues = (props: PageWithAudiusValuesProps) => {
-  const { children } = props
-  const { isDesktop } = useMedia()
-
-  return isDesktop ? (
-    <DesktopRootContainer>
-      {children}
-      <ArtworkContainer isDesktop>
-        <AudiusValues isDesktop />
-      </ArtworkContainer>
-    </DesktopRootContainer>
-  ) : (
-    <MobileContainer>
-      <ArtworkContainer isDesktop={false}>
-        {children} <AudiusValues isDesktop={false} />
-      </ArtworkContainer>
-    </MobileContainer>
-  )
-}
-
 const AudiusValue = (props: {
   icon: IconComponent
   text: string
@@ -92,13 +68,16 @@ const AudiusValue = (props: {
   )
 }
 
-const ArtworkContainer = ({
+export const ArtworkContainer = ({
   isDesktop,
-  children
-}: PropsWithChildren<{ isDesktop: boolean }>) => (
+  children,
+  ...rest
+}: PropsWithChildren<{ isDesktop: boolean } & FlexProps>) => (
   <Flex
     className={cn(styles.valuesRoot, styles[isDesktop ? 'desktop' : 'mobile'])}
     direction='column'
+    justifyContent={isDesktop ? 'center' : 'flex-start'}
+    {...rest}
   >
     {children}
   </Flex>
