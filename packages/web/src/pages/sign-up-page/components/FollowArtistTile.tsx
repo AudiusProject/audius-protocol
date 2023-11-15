@@ -4,9 +4,6 @@ import { UserMetadata } from '@audius/common'
 import {
   Avatar,
   Box,
-  Button,
-  ButtonSize,
-  ButtonType,
   Divider,
   Flex,
   IconNote,
@@ -51,7 +48,16 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
         >
           <Flex direction='column' alignItems='center' gap='s'>
             <Flex direction='row' gap='xs' alignItems='center'>
-              <Text variant='title' size='s' strength='default'>
+              <Text
+                variant='title'
+                size='s'
+                strength='default'
+                css={{
+                  // TODO: Need to contain width
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+              >
                 {name}
               </Text>
               {is_verified ? (

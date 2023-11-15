@@ -18,6 +18,7 @@ import {
   Box
 } from '@audius/harmony'
 import { Form, Formik } from 'formik'
+import { values } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { addFollowArtists } from 'common/store/pages/signon/actions'
@@ -48,13 +49,13 @@ const initialValues: SelectArtistsValues = {
 }
 
 export const SelectArtistsPage = () => {
-  // TODO: DO NOT MERGE
   // const genres = useSelector((state) => ['Featured', ...getGenres(state)])
-  const genres = ['electronic', 'acoustic']
+  const genres = ['Featured', 'Electronic', 'Acoustic']
   const [currentGenre, setCurrentGenre] = useState('Featured')
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
 
+  // TODO: adopt SelectablePill as input
   // const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
   //   setCurrentGenre(e.target.value)
   // }, [])
@@ -122,7 +123,13 @@ export const SelectArtistsPage = () => {
         >
           {genres.map((genre) => (
             // TODO: max of 6, kebab overflow
-            <SelectablePill key={genre} label={genre} />
+            <SelectablePill
+              key={genre}
+              label={genre}
+              onClick={() => {
+                setCurrentGenre(genre)
+              }}
+            />
           ))}
         </Flex>
         <Formik initialValues={initialValues} onSubmit={handleSubmit}>
@@ -166,6 +173,18 @@ export const SelectArtistsPage = () => {
           }}
         </Formik>
       </Flex>
+      <ContinueFooter>
+        <Button
+          minWidth={343}
+          type='submit'
+          // disabled={!isValid || isSubmitting}
+          // isLoading={isSubmitting || isValidating}
+          iconRight={IconArrowRight}
+        >
+          {messages.continue}
+        </Button>
+        <Text variant='body'>Selected TODO/3</Text>
+      </ContinueFooter>
     </Flex>
   )
 }
