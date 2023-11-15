@@ -15,9 +15,12 @@
   },
   "dependencies": {
     "@audius/sdk": "3.0.11-beta.21",
+    "@rainbow-me/rainbowkit": "1.2.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "web3": "4.2.2"
+    "viem": "1.19.1",
+    "wagmi": "1.4.6",
+    "web3": "1.8.2"
   },
   "devDependencies": {
     "@types/react": "18.2.15",
@@ -33,7 +36,7 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
     "prettier": "3.1.0",
-    "typescript": "5.0.2",
+    "typescript": "5.2.2",
     "vite": "4.4.5",
     "vite-plugin-node-polyfills": "0.16.0"
   }
