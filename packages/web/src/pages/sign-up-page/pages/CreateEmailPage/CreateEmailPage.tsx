@@ -83,11 +83,7 @@ export const CreateEmailPage = () => {
     >
       {({ isSubmitting }) => (
         <Form css={{ width: '100%', height: '100%' }}>
-          {isDesktop ? (
-            <CreateEmailPageDesktop isSubmitting={isSubmitting} />
-          ) : (
-            <CreateEmailPageMobile isSubmitting={isSubmitting} />
-          )}
+          {isDesktop ? <CreateEmailPageDesktop /> : <CreateEmailPageMobile />}
         </Form>
       )}
     </Formik>

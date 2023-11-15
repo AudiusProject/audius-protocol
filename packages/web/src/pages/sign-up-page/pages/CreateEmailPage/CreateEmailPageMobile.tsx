@@ -8,6 +8,7 @@ import {
   SocialButton,
   Text
 } from '@audius/harmony'
+import { useFormikContext } from 'formik'
 
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { Link } from 'components/link'
@@ -21,11 +22,8 @@ import { SIGN_IN_PAGE } from 'utils/route'
 
 import { messages } from './messages'
 
-export const CreateEmailPageMobile = ({
-  isSubmitting
-}: {
-  isSubmitting: boolean
-}) => {
+export const CreateEmailPageMobile = () => {
+  const { isSubmitting } = useFormikContext()
   return (
     <SignOnContainerMobile>
       <ArtworkContainer>

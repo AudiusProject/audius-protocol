@@ -8,6 +8,7 @@ import {
   Text
 } from '@audius/harmony'
 import cn from 'classnames'
+import { useFormikContext } from 'formik'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
@@ -24,11 +25,8 @@ import { SIGN_IN_PAGE } from 'utils/route'
 import styles from './CreateEmailPage.module.css'
 import { messages } from './messages'
 
-export const CreateEmailPageDesktop = ({
-  isSubmitting
-}: {
-  isSubmitting: boolean
-}) => {
+export const CreateEmailPageDesktop = () => {
+  const { isSubmitting } = useFormikContext()
   return (
     <Flex h='100%' alignItems='center' justifyContent='center'>
       <SignOnContainerDesktop>

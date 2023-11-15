@@ -51,7 +51,8 @@ export const ArtworkContainer = ({
 /**
  * Each individual audius value text + icon row
  */
-const AudiusValue = (props: { icon: IconComponent; text: string }) => {
+type AudiusValueProps = { icon: IconComponent; text: string }
+const AudiusValue = (props: AudiusValueProps) => {
   const { icon: Icon, text } = props
   const { isDesktop } = useMedia()
   return (
