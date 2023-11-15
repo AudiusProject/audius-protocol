@@ -22,7 +22,9 @@
       "icons": ["src/icons/index.ts"],
       "icons/*": ["src/icons/*"],
       "assets": ["src/assets/index.ts"],
-      "assets/*": ["src/assets/*"]
+      "assets/*": ["src/assets/*"],
+      "storybook": ["src/storybook/index.ts"],
+      "storybook/*": ["src/storybook/*"]
     },
     "plugins": [
       { "name": "typescript-plugin-css-modules" },
