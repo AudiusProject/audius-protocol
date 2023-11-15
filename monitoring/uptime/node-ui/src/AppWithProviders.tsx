@@ -1,3 +1,5 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { configureChains, createConfig, WagmiConfig } from 'wagmi'
 import { mainnet, goerli } from 'wagmi/chains'
@@ -33,16 +35,21 @@ const AppWithProviders = () => {
   })
 
   const wagmiConfig = createConfig({
-    autoConnect: false,
+    autoConnect: true,
     connectors,
     publicClient
   })
+
+  const queryClient = new QueryClient()
 
   return (
     <WagmiConfig config={wagmiConfig}>
       <RainbowKitProvider chains={chains}>
         <AudiusLibsProvider>
-          <App />
+          <QueryClientProvider client={queryClient}>
+            <App />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </QueryClientProvider>
         </AudiusLibsProvider>
       </RainbowKitProvider>
     </WagmiConfig>
