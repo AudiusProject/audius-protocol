@@ -219,7 +219,7 @@ async function fetchUptime(
   let metric: UptimeRecord = {}
   try {
     const endpoint = `${node}/up_api/uptime?host=${node}`
-    metric = (await fetchWithTimeout(endpoint)).uptime_raw_data
+    metric = await fetchWithTimeout(endpoint)
   } catch (e) {
     console.error(e)
     error = true

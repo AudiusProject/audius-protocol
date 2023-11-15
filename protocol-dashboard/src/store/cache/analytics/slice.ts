@@ -8,7 +8,12 @@ export type TimeSeriesRecord = {
   summed_unique_count?: number
 }
 
-type UptimeRecord = { [key: string]: number }
+type UptimeRecord = { 
+  host: string,
+  uptime_percentage: number,
+  duration: string,
+  uptime_raw_data: { [key: string]: number }
+}
 
 export type CountRecord = {
   [key: string]: number

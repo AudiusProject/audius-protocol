@@ -1,4 +1,5 @@
-import LineChart from 'components/LineChart'
+import type { DataObject } from 'components/TrackerChart'
+import TrackerChart from 'components/TrackerChart'
 import React from 'react'
 import { useIndividualNodeUptime } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
@@ -12,26 +13,28 @@ type IndividualNodeUptimeChartProps = OwnProps
 const IndividualNodeUptimeChart: React.FC<IndividualNodeUptimeChartProps> = ({
   node,
 }) => {
-  let error, labels: string[], data: number[]
+  let error, subtitle: string, data: DataObject[]
   const { uptime } = useIndividualNodeUptime(node, Bucket.DAY)
   if (uptime === MetricError.ERROR) {
     error = true
-    labels = []
     data = []
-  } else if (uptime) {
-    labels = Object.keys(uptime).map(u => (new Date(u).getTime() / 1000).toString()) ?? null
-    data = Object.values(uptime) ?? null
+  } else if (uptime?.uptime_percentage && uptime?.uptime_raw_data) {
+    subtitle = `Uptime ${Math.round(uptime.uptime_percentage * 100) / 100}%`
+    data = []
+    for (const [bucket, up] of Object.entries(uptime.uptime_raw_data)) {
+      data.push({
+        color: up === 1 ? 'green' : 'red',
+        tooltip: new Date(bucket).toUTCString()
+      })
+    }
   }
 
   return (
-    <LineChart
-      title="Uptime"
-      tooltipTitle="Uptime"
-      error={error}
+    <TrackerChart
+      title="Status"
+      subtitle={subtitle}
       data={data}
-      labels={labels}
-      selection={Bucket.DAY}
-      showLeadingDay
+      error={error}
     />
   )
 }

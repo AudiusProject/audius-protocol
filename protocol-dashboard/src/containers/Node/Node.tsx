@@ -4,7 +4,9 @@ import { useDiscoveryProvider, useDiscoveryProviders } from 'store/cache/discove
 import { useContentNode, useContentNodes } from 'store/cache/contentNode/hooks'
 import { useAccount } from 'store/account/hooks'
 
-import styles from './Node.module.css'
+import desktopStyles from './Node.module.css'
+import mobileStyles from './NodeMobile.module.css'
+import { createStyles } from 'utils/mobile'
 import Page from 'components/Page'
 import { Status, Address, ServiceType } from 'types'
 import { usePushRoute } from 'utils/effects'
@@ -18,6 +20,8 @@ import IndividualServiceApiCallsChart from 'components/IndividualServiceApiCalls
 import clsx from 'clsx'
 import IndividualServiceUniqueUsersChart from 'components/IndividualServiceUniqueUsersChart'
 import IndividualNodeUptimeChart from 'components/IndividualNodeUptimeChart'
+
+const styles = createStyles({ desktopStyles, mobileStyles })
 
 const messages = {
   title: 'SERVICE',
