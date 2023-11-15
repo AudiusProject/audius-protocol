@@ -8,9 +8,10 @@ import moment from 'moment'
 
 import { Table } from 'components/table'
 
+import { TransactionCell, TransactionRow } from '../types'
+import { isEmptyTransactionRow } from '../utils'
+
 import styles from './WithdrawalsTable.module.css'
-import { TransactionCell, TransactionRow } from './types'
-import { isEmptyTransactionRow } from './utils'
 
 export type WithdrawalsTableColumn =
   | 'destination'

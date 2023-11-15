@@ -5,39 +5,38 @@ import {
   USDCContentPurchaseType,
   USDCPurchaseDetails
 } from '@audius/common'
-import BN from 'bn.js'
+import { BN } from 'bn.js'
 import moment from 'moment'
 
 import { Table } from 'components/table'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 
-import { TrackNameWithArtwork } from './components/TrackNameWithArtwork'
-import { PurchaseCell, PurchaseRow } from './types'
-import { isEmptyPurchaseRow } from './utils'
+import styles from '../PayAndEarnPage.module.css'
+import { PurchaseCell, PurchaseRow } from '../types'
+import { isEmptyPurchaseRow } from '../utils'
 
-export type PurchasesTableColumn =
+import { TrackNameWithArtwork } from './TrackNameWithArtwork'
+
+export type SalesTableColumn =
   | 'contentName'
-  | 'artist'
+  | 'buyer'
   | 'date'
   | 'value'
   | 'spacerLeft'
   | 'spacerRight'
 
-export type PurchasesTableSortMethod =
-  | 'contentId'
-  | 'sellerUserId'
-  | 'createdAt'
-export type PurchasesTableSortDirection = 'asc' | 'desc'
+export type SalesTableSortMethod = 'contentId' | 'createdAt' | 'buyerUserId'
+export type SalesTableSortDirection = 'asc' | 'desc'
 
-type PurchasesTableProps = {
-  columns?: PurchasesTableColumn[]
+type SalesTableProps = {
+  columns?: SalesTableColumn[]
   data: USDCPurchaseDetails[]
   isVirtualized?: boolean
   loading?: boolean
   onClickRow?: (txDetails: USDCPurchaseDetails, index: number) => void
   onSort: (
-    sortMethod: PurchasesTableSortMethod,
-    sortDirection: PurchasesTableSortDirection
+    sortMethod: SalesTableSortMethod,
+    sortDirection: SalesTableSortDirection
   ) => void
   fetchMore: (offset: number, limit: number) => void
   totalRowCount?: number
@@ -45,10 +44,10 @@ type PurchasesTableProps = {
   fetchBatchSize: number
 }
 
-const defaultColumns: PurchasesTableColumn[] = [
+const defaultColumns: SalesTableColumn[] = [
   'spacerLeft',
   'contentName',
-  'artist',
+  'buyer',
   'date',
   'value',
   'spacerRight'
@@ -65,9 +64,9 @@ const renderContentNameCell = (cellInfo: PurchaseCell) => {
   )
 }
 
-const renderArtistCell = (cellInfo: PurchaseCell) => {
-  const { sellerUserId } = cellInfo.row.original
-  return <UserNameAndBadges userId={sellerUserId} />
+const renderBuyerCell = (cellInfo: PurchaseCell) => {
+  const { buyerUserId } = cellInfo.row.original
+  return <UserNameAndBadges userId={buyerUserId} />
 }
 
 const renderDateCell = (cellInfo: PurchaseCell) => {
@@ -85,18 +84,18 @@ const renderValueCell = (cellInfo: PurchaseCell) => {
 const tableColumnMap = {
   contentName: {
     id: 'contentName',
-    Header: 'Purchases',
+    Header: 'Sales',
     accessor: 'contentId',
     Cell: renderContentNameCell,
     width: 480,
     disableSortBy: false,
     align: 'left'
   },
-  artist: {
-    id: 'artist',
-    Header: 'Artist',
-    accessor: 'sellerUserId',
-    Cell: renderArtistCell,
+  buyer: {
+    id: 'buyer',
+    Header: 'Purchased By',
+    accessor: 'buyerUserId',
+    Cell: renderBuyerCell,
     maxWidth: 200,
     disableSortBy: false,
     align: 'left'
@@ -135,8 +134,8 @@ const tableColumnMap = {
   }
 }
 
-/** Renders a table of `USDCPurchaseDetails` records with details intended for the Buyer */
-export const PurchasesTable = ({
+/** Renders a table of `USDCPurchaseDetails` records, with details intended for the Seller */
+export const SalesTable = ({
   columns = defaultColumns,
   data,
   isVirtualized = false,
@@ -147,7 +146,7 @@ export const PurchasesTable = ({
   totalRowCount,
   scrollRef,
   fetchBatchSize
-}: PurchasesTableProps) => {
+}: SalesTableProps) => {
   const tableColumns = useMemo(
     () => columns.map((id) => tableColumnMap[id]),
     [columns]
@@ -177,6 +176,7 @@ export const PurchasesTable = ({
       totalRowCount={totalRowCount ?? 0}
       scrollRef={scrollRef}
       fetchBatchSize={fetchBatchSize}
+      wrapperClassName={styles.tableWrapper}
     />
   )
 }
