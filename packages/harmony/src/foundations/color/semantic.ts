@@ -18,6 +18,11 @@ const createSemanticTheme = (primitives: PrimitiveColors) => ({
     disabled: primitives.neutral.n150,
     staticWhite: primitives.static.white
   },
+  link: {
+    default: primitives.neutral.neutral,
+    visible: primitives.primary.p500,
+    inverted: primitives.static.white
+  },
   background: {
     default: primitives.special.background,
     white: primitives.special.white,
