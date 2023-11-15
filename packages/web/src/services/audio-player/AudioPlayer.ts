@@ -101,7 +101,8 @@ export class AudioPlayer {
         // Remove listeners first so src = '' does not throw an error
         // @ts-ignore
         this.audio.removeAllListeners?.()
-        this.audio.removeAttribute('src')
+
+        this.audio.src = ''
         this.audio.remove()
       }
 
