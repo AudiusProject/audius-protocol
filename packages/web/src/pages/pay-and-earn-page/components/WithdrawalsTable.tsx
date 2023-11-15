@@ -8,8 +8,10 @@ import moment from 'moment'
 
 import { Table } from 'components/table'
 
-import { TransactionCell, TransactionRow } from './types'
-import { isEmptyTransactionRow } from './utils'
+import { TransactionCell, TransactionRow } from '../types'
+import { isEmptyTransactionRow } from '../utils'
+
+import styles from './WithdrawalsTable.module.css'
 
 export type WithdrawalsTableColumn =
   | 'destination'
@@ -48,7 +50,11 @@ const defaultColumns: WithdrawalsTableColumn[] = [
 // Cell Render Functions
 const renderDestinationCell = (cellInfo: TransactionCell) => {
   const { metadata } = cellInfo.row.original
-  return typeof metadata === 'string' ? metadata : ''
+  return typeof metadata === 'string' ? (
+    <span className={styles.text}>{metadata}</span>
+  ) : (
+    ''
+  )
 }
 
 const renderDateCell = (cellInfo: TransactionCell) => {

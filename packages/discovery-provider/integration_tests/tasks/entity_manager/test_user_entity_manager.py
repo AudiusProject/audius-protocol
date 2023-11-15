@@ -379,7 +379,7 @@ def test_index_valid_user(app, mocker):
                 "track_id": TRACK_ID_OFFSET,
                 "title": "track 1",
                 "owner_id": USER_ID_OFFSET,
-                "release_date": "Fri Dec 20 2019 12:00:00 GMT-0800",
+                "release_date": datetime(2019, 12, 20),
                 "created_at": datetime(2018, 5, 17),
             }
         ],
@@ -805,7 +805,7 @@ def test_index_invalid_users(app, mocker):
                 "track_id": TRACK_ID_OFFSET,
                 "title": "track 1",
                 "owner_id": USER_ID_OFFSET,
-                "release_date": "Fri Dec 20 2019 12:00:00 GMT-0800",
+                "release_date": datetime(2019, 12, 20),
                 "created_at": datetime(2018, 5, 17),
             }
         ],

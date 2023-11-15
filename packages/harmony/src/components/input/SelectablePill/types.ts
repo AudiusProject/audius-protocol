@@ -9,11 +9,20 @@ type InternalProps = {
   _isHovered?: boolean
 }
 
-export type SelectablePillProps = {
-  size?: 'default' | 'large'
+type BaseProps = {
+  size?: 'small' | 'large'
   isSelected?: boolean
   label: string
   disabled?: boolean
   icon?: IconComponent
-} & InternalProps &
-  Omit<ComponentPropsWithoutRef<'button'>, 'children'>
+}
+
+type InputProps =
+  | ({
+      type: 'checkbox' | 'radio'
+    } & Omit<ComponentPropsWithoutRef<'input'>, 'chiildren' | 'size'>)
+  | ({
+      type?: 'button' | 'submit' | 'reset' | undefined
+    } & Omit<ComponentPropsWithoutRef<'button'>, 'children'>)
+
+export type SelectablePillProps = BaseProps & InternalProps & InputProps

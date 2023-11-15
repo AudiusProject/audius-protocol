@@ -1,7 +1,15 @@
 import { useCallback, useContext, useEffect, useMemo, useRef } from 'react'
 
 import { AudiusQueryContext, useDebouncedCallback } from '@audius/common'
-import { Box, Button, Flex, Text } from '@audius/harmony'
+import {
+  Box,
+  Button,
+  Flex,
+  IconArrowRight,
+  PlainButton,
+  PlainButtonType,
+  Text
+} from '@audius/harmony'
 import { Form, Formik, FormikProps, useFormikContext } from 'formik'
 import { isEmpty } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
@@ -13,8 +21,9 @@ import { getHandleField } from 'common/store/pages/signon/selectors'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { SIGN_UP_FINISH_PROFILE_PAGE } from 'utils/route'
+import { SIGN_UP_FINISH_PROFILE_PAGE, SIGN_UP_PASSWORD_PAGE } from 'utils/route'
 
+import { ContinueFooter } from '../components/ContinueFooter'
 import {
   generateHandleSchema,
   errorMessages as handleErrorMessages
@@ -30,6 +39,7 @@ const messages = {
   handle: 'Handle',
   continue: 'Continue',
   linkToClaim: 'Link to claim.',
+  goBack: 'Go Back',
   ...handleErrorMessages
 }
 
@@ -101,6 +111,10 @@ export const PickHandlePage = () => {
 
   const { value } = useSelector(getHandleField)
 
+  const handleClickBackIcon = useCallback(() => {
+    navigate(SIGN_UP_PASSWORD_PAGE)
+  }, [navigate])
+
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
       const { handle } = values
@@ -115,53 +129,64 @@ export const PickHandlePage = () => {
   }
 
   return (
-    <Box pv='3xl' className={styles.container}>
-      <Formik
-        innerRef={formikRef}
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={handleSubmit}
-        validateOnChange={false}
-      >
-        {({ isSubmitting, isValid, isValidating }) => (
-          <Form>
-            <Box>
-              <Flex gap='l' direction='column'>
-                <Box>
-                  <Text size='s' variant='label' color='subdued'>
-                    1 {messages.outOf} 2
-                  </Text>
+    <Formik
+      innerRef={formikRef}
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={handleSubmit}
+      validateOnChange={false}
+    >
+      {({ isSubmitting, isValid, isValidating }) => (
+        <Flex direction='column' justifyContent='space-between' h='100%'>
+          <Box pv='3xl' className={styles.contentContainer}>
+            <Form>
+              <Box>
+                <Flex gap='l' direction='column'>
+                  <Box>
+                    <Text size='s' variant='label' color='subdued'>
+                      1 {messages.outOf} 2
+                    </Text>
+                  </Box>
+                  <Box>
+                    <Text
+                      color='heading'
+                      size='l'
+                      strength='default'
+                      variant='heading'
+                    >
+                      {messages.pickYourHandle}
+                    </Text>
+                  </Box>
+                  <Box>
+                    <Text size='l' variant='body'>
+                      {messages.handleDescription}
+                    </Text>
+                  </Box>
+                </Flex>
+                <Box mt='2xl'>
+                  <HandleField />
                 </Box>
-                <Box>
-                  <Text
-                    color='heading'
-                    size='l'
-                    strength='default'
-                    variant='heading'
-                  >
-                    {messages.pickYourHandle}
-                  </Text>
-                </Box>
-                <Box>
-                  <Text size='l' variant='body'>
-                    {messages.handleDescription}
-                  </Text>
-                </Box>
-              </Flex>
-              <Box mt='2xl'>
-                <HandleField />
               </Box>
-              <Button
-                type='submit'
-                disabled={!isValid || isSubmitting}
-                isLoading={isSubmitting || isValidating}
-              >
-                {messages.continue}
-              </Button>
-            </Box>
-          </Form>
-        )}
-      </Formik>
-    </Box>
+            </Form>
+          </Box>
+          <ContinueFooter>
+            <Button
+              type='submit'
+              disabled={!isValid || isSubmitting}
+              isLoading={isSubmitting || isValidating}
+              iconRight={IconArrowRight}
+            >
+              {messages.continue}
+            </Button>
+            <PlainButton
+              onClick={handleClickBackIcon}
+              variant={PlainButtonType.SUBDUED}
+            >
+              {messages.goBack}
+            </PlainButton>
+          </ContinueFooter>
+        </Flex>
+      )}
+    </Formik>
   )
 }

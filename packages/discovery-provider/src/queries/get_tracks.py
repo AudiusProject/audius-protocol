@@ -1,7 +1,7 @@
 import logging  # pylint: disable=C0302
 from typing import List, Optional, TypedDict
 
-from sqlalchemy import and_, asc, case, desc, func, or_
+from sqlalchemy import and_, asc, case, desc, or_
 from sqlalchemy.sql.functions import coalesce
 
 from src.models.social.aggregate_plays import AggregatePlay
@@ -170,10 +170,7 @@ def _get_tracks(session, args):
             base_query = base_query.order_by(
                 sort_fn(
                     coalesce(
-                        func.to_timestamp_safe(
-                            TrackWithAggregates.release_date,
-                            "Dy Mon DD YYYY HH24:MI:SS GMTTZHTZM",
-                        ),
+                        TrackWithAggregates.release_date,
                         TrackWithAggregates.created_at,
                     )
                 ),
@@ -213,10 +210,7 @@ def _get_tracks(session, args):
             base_query = base_query.order_by(
                 coalesce(
                     # This func is defined in migrations
-                    func.to_timestamp_safe(
-                        TrackWithAggregates.release_date,
-                        "Dy Mon DD YYYY HH24:MI:SS GMTTZHTZM",
-                    ),
+                    TrackWithAggregates.release_date,
                     TrackWithAggregates.created_at,
                 ).desc(),
                 TrackWithAggregates.track_id,

@@ -4,16 +4,23 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "dev": "env-cmd -f .env.dev.local vite",
     "stage": "env-cmd -f .env.stage.local vite",
     "prod": "env-cmd -f .env.prod.local vite",
+    "stage:preview": "env-cmd -f .env.stage.local vite build && vite preview",
+    "prod:preview": "env-cmd -f .env.prod.local vite build && vite preview",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint --fix . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "lint:fix": "eslint --fix . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
+    "@audius/sdk": "3.0.11-beta.21",
+    "@rainbow-me/rainbowkit": "1.2.0",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "viem": "1.19.1",
+    "wagmi": "1.4.6",
+    "web3": "1.8.2"
   },
   "devDependencies": {
     "@types/react": "18.2.15",
@@ -21,12 +28,16 @@
     "@typescript-eslint/eslint-plugin": "6.0.0",
     "@typescript-eslint/parser": "6.0.0",
     "@vitejs/plugin-react-swc": "3.3.2",
-    "env-cmd": "^10.1.0",
+    "env-cmd": "10.1.0",
     "eslint": "8.53.0",
+    "eslint-config-prettier": "9.0.0",
+    "eslint-plugin-prettier": "5.0.1",
     "eslint-plugin-react": "7.33.2",
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
-    "typescript": "5.0.2",
-    "vite": "4.4.5"
+    "prettier": "3.1.0",
+    "typescript": "5.2.2",
+    "vite": "4.4.5",
+    "vite-plugin-node-polyfills": "0.16.0"
   }
 }

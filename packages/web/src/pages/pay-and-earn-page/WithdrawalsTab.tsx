@@ -1,7 +1,6 @@
 import { useCallback, useContext, useState } from 'react'
 
 import {
-  FeatureFlags,
   Id,
   Status,
   USDCTransactionDetails,
@@ -13,35 +12,25 @@ import {
   useGetUSDCTransactionsCount,
   useUSDCTransactionDetailsModal
 } from '@audius/common'
-import {
-  Button,
-  ButtonSize,
-  ButtonType,
-  IconCloudDownload
-} from '@audius/harmony'
 import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import Header from 'components/header/desktop/Header'
-import Page from 'components/page/Page'
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { MainContentContext } from 'pages/MainContentContext'
-import NotFoundPage from 'pages/not-found-page/NotFoundPage'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
 import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
 import { DASHBOARD_PAGE } from 'utils/route'
 
-import styles from './WithdrawalsPage.module.css'
+import styles from './PayAndEarnPage.module.css'
+import { NoTransactionsContent } from './components/NoTransactionsContent'
 import {
   WithdrawalsTable,
   WithdrawalsTableSortDirection,
   WithdrawalsTableSortMethod
-} from './WithdrawalsTable'
-import { NoTransactionsContent } from './components/NoTransactionsContent'
+} from './components/WithdrawalsTable'
 
 const { getUserId } = accountSelectors
 
@@ -89,17 +78,13 @@ const NoWithdrawals = () => {
   )
 }
 
-/**
- * Fetches and renders a table of withdrawals for the currently logged in user
- * */
-const RenderWithdrawalsPage = () => {
+export const useWithdrawals = () => {
   const userId = useSelector(getUserId)
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =
     useState<full.GetUSDCTransactionsSortMethodEnum>(DEFAULT_SORT_METHOD)
   const [sortDirection, setSortDirection] =
     useState<full.GetUSDCTransactionsSortDirectionEnum>(DEFAULT_SORT_DIRECTION)
-  const { mainContentRef } = useContext(MainContentContext)
 
   const { onOpen: openDetailsModal } = useUSDCTransactionDetailsModal()
 
@@ -175,55 +160,50 @@ const RenderWithdrawalsPage = () => {
     window.URL.revokeObjectURL(blobUrl)
   }, [userId])
 
-  const header = (
-    <Header
-      primary={messages.headerText}
-      rightDecorator={
-        <Button
-          onClick={downloadCSV}
-          variant={ButtonType.SECONDARY}
-          size={ButtonSize.SMALL}
-          iconLeft={IconCloudDownload}
-          disabled={isLoading || isEmpty}
-        >
-          {messages.downloadCSV}
-        </Button>
-      }
-    />
-  )
-
-  return (
-    <Page
-      title={messages.pageTitle}
-      description={messages.pageDescription}
-      header={header}
-    >
-      <div className={styles.container}>
-        {isEmpty ? (
-          <NoWithdrawals />
-        ) : (
-          <WithdrawalsTable
-            key='withdrawals'
-            data={transactions}
-            loading={isLoading}
-            onSort={onSort}
-            onClickRow={onClickRow}
-            fetchMore={fetchMore}
-            isVirtualized={true}
-            scrollRef={mainContentRef}
-            totalRowCount={count}
-            fetchBatchSize={TRANSACTIONS_BATCH_SIZE}
-          />
-        )}
-      </div>
-    </Page>
-  )
+  return {
+    count,
+    data: transactions,
+    fetchMore,
+    onSort,
+    onClickRow,
+    isEmpty,
+    isLoading,
+    downloadCSV
+  }
 }
 
-export const WithdrawalsPage = () => {
-  const { isLoaded, isEnabled } = useFlag(FeatureFlags.USDC_PURCHASES)
+/**
+ * Fetches and renders a table of withdrawals for the currently logged in user
+ * */
+export const WithdrawalsTab = ({
+  count,
+  data: transactions,
+  fetchMore,
+  onSort,
+  onClickRow,
+  isEmpty,
+  isLoading
+}: Omit<ReturnType<typeof useWithdrawals>, 'downloadCSV'>) => {
+  const { mainContentRef } = useContext(MainContentContext)
 
-  // Return null if flag isn't loaded yet to prevent flash of 404 page
-  if (!isLoaded) return null
-  return isEnabled ? <RenderWithdrawalsPage /> : <NotFoundPage />
+  return (
+    <div className={styles.container}>
+      {isEmpty ? (
+        <NoWithdrawals />
+      ) : (
+        <WithdrawalsTable
+          key='withdrawals'
+          data={transactions}
+          loading={isLoading}
+          onSort={onSort}
+          onClickRow={onClickRow}
+          fetchMore={fetchMore}
+          isVirtualized={true}
+          scrollRef={mainContentRef}
+          totalRowCount={count}
+          fetchBatchSize={TRANSACTIONS_BATCH_SIZE}
+        />
+      )}
+    </div>
+  )
 }

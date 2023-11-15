@@ -1,3 +1,20 @@
+.pageContainer {
+  user-select: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-8);
+}
+
+.spinner {
+  height: 40px;
+  width: 40px;
+  margin: 0 auto;
+}
+
+.spinner g path {
+  stroke: var(--secondary) !important;
+}
+
 .container {
   display: flex;
   flex-direction: column;
@@ -18,4 +35,14 @@
   flex-direction: column;
   gap: var(--unit-2);
   justify-content: center;
+}
+
+.tablesContainer {
+  flex: 1;
+  width: 100%;
+}
+
+.tableWrapper {
+  box-shadow: 'none';
+  background-color: 'red';
 }

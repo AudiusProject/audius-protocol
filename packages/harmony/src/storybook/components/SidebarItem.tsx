@@ -5,9 +5,6 @@
 import { jsx } from '@emotion/react'
 import { useTheme } from '@storybook/theming'
 
-import { Box } from '../../components/layout/Box'
-import { Flex } from '../../components/layout/Flex'
-
 type SidebarItemProps = {
   name: string
   status: string
@@ -22,19 +19,25 @@ export const SidebarItem = (props: SidebarItemProps) => {
       : theme.barSelectedColor
 
   return (
-    <Flex justifyContent='space-between' w='100%'>
-      <Box as='div'>{name}</Box>
-      <Flex
-        justifyContent='center'
-        alignItems='center'
-        as='div'
-        ph='s'
-        borderRadius='s'
-        border='default'
-        css={{ height: '18px', borderColor: statusColor, color: statusColor }}
+    <div
+      css={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}
+    >
+      <span>{name}</span>
+      <div
+        css={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: 18,
+          paddingLeft: 8,
+          paddingRight: 8,
+          borderRadius: 4,
+          border: `1px solid ${statusColor}`,
+          color: statusColor
+        }}
       >
         {status}
-      </Flex>
-    </Flex>
+      </div>
+    </div>
   )
 }

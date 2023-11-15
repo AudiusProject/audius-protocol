@@ -44,7 +44,7 @@ import '@audius/harmony/dist/harmony.css'
 
 Setup the ThemeProvider exported by Harmony
 
-```ts
+```tsx
 import { ThemeProvider as HarmonyThemeProvider } from '@audius/harmony'
 
 const App = () => {
@@ -57,9 +57,23 @@ const App = () => {
 }
 ```
 
-## Usage
+In order use emotion yourself, follow their documentation for [setting up the css-prop](https://emotion.sh/docs/css-prop)
+
+If using typescript add an emotion.d.ts file and include the following for access to harmony's theme type
 
 ```ts
+import '@emotion/react'
+import type { HarmonyTheme } from '@audius/harmony'
+
+declare module '@emotion/react' {
+  export interface Theme extends HarmonyTheme {}
+}
+
+```
+
+## Usage
+
+```tsx
 import { Button, ButtonType, Flex } from '@audius/harmony'
 
 const App = () => {

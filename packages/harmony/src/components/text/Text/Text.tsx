@@ -29,8 +29,8 @@ export const variantStylesMap = {
     fontWeight: { default: 'bold', strong: 'heavy' }
   },
   heading: {
-    fontSize: { s: 'xl', m: '2xl', l: '3xl', xl: '3xl' },
-    lineHeight: { s: 'l', m: 'xl', l: 'xl', xl: 'xl' },
+    fontSize: { s: 'xl', m: '2xl', l: '3xl', xl: '5xl' },
+    lineHeight: { s: 'l', m: 'xl', l: 'xl', xl: '2xl' },
     fontWeight: { default: 'bold', strong: 'heavy' }
   },
   title: {
@@ -62,6 +62,7 @@ export const Text = forwardRef(
       strength = 'default',
       size = 'm',
       color,
+      shadow,
       tag,
       asChild,
       ...other
@@ -70,7 +71,6 @@ export const Text = forwardRef(
     const theme = useTheme()
 
     const variantConfig = variant && variantStylesMap[variant]
-
     const styles: CSSObject = {
       fontFamily: `'Avenir Next LT Pro', 'Helvetica Neue', Helvetica,
     Arial, sans-serif`,
@@ -78,6 +78,8 @@ export const Text = forwardRef(
       boxSizing: 'border-box',
       ...(color &&
         color === 'heading' && {
+          // inline is necessary to prevent text clipping
+          display: 'inline',
           color: theme.color.secondary.secondary,
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
@@ -91,7 +93,10 @@ export const Text = forwardRef(
         lineHeight: typography.lineHeight[variantConfig.lineHeight[size]],
         // @ts-expect-error
         fontWeight: typography.weight[variantConfig.fontWeight[strength]],
-        ...('css' in variantConfig && variantConfig.css)
+        ...('css' in variantConfig && variantConfig.css),
+        ...(shadow && {
+          textShadow: '0px 1px 5px rgba(0, 0, 0, 0.50)'
+        })
       })
     }
 
