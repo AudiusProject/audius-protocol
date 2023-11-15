@@ -26,6 +26,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
     ref: ForwardedRef<HTMLButtonElement>
   ) {
     const {
+      initialSelectionIndex,
       label,
       options,
       onSelect,
@@ -33,10 +34,15 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       size = FilterButtonSize.DEFAULT,
       iconRight = IconCaretDown,
       popupAnchorOrigin,
-      popupTransformOrigin
+      popupTransformOrigin,
+      popupPortalLocation
     } = props
     const { color, cornerRadius, spacing, typography } = useTheme()
-    const [selection, setSelection] = useState<FilterButtonOption | null>(null)
+    const [selection, setSelection] = useState<FilterButtonOption | null>(
+      initialSelectionIndex !== undefined
+        ? options[initialSelectionIndex]
+        : null
+    )
     const [isOpen, setIsOpen] = useState(false)
 
     // Size Styles
@@ -184,6 +190,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
           onClose={() => setIsOpen(false)}
           anchorOrigin={popupAnchorOrigin}
           transformOrigin={popupTransformOrigin}
+          portalLocation={popupPortalLocation}
         >
           <Paper mt='s' border='strong' shadow='far'>
             <Box p='s'>
@@ -192,6 +199,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
                 alignItems='flex-start'
                 justifyContent='center'
                 role='listbox'
+                aria-label={selection?.label ?? label ?? props['aria-label']}
                 aria-activedescendant={selection?.label}
               >
                 {options.map((option) => (
@@ -203,6 +211,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
                       icon: optionIconCss
                     }}
                     onClick={() => handleOptionSelect(option)}
+                    aria-label={option.label}
                     role='option'
                   >
                     {option.label}

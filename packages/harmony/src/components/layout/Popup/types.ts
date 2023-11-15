@@ -83,4 +83,10 @@ export type PopupProps = {
    * are automatically considered inside
    */
   checkIfClickInside?: (target: EventTarget) => boolean
+
+  /**
+   * Portal location
+   * @default document.body
+   */
+  portalLocation?: HTMLElement
 }

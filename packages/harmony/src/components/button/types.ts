@@ -170,6 +170,16 @@ export type FilterButtonProps = {
   label?: string
 
   /**
+   * If no label is provided, specify an optional aria-label
+   */
+  'aria-label'?: string
+
+  /**
+   * An initial section (from the provided options)
+   */
+  initialSelectionIndex?: number
+
+  /**
    * The button size
    * @default FilterButtonSize.DEFAULT
    */
@@ -207,4 +217,9 @@ export type FilterButtonProps = {
    * @default { horizontal: 'center', vertical: 'top' }
    */
   popupTransformOrigin?: Origin
+
+  /**
+   * Popup portal location passed to the inner popup
+   */
+  popupPortalLocation?: HTMLElement
 }
