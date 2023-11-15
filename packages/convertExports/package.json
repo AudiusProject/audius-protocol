@@ -1,0 +1,14 @@
+{
+  "name": "convertexports",
+  "version": "1.0.0",
+  "description": "",
+  "main": "convertExports.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "camelcase": "^8.0.0"
+  }
+}
