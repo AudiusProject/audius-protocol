@@ -95,7 +95,8 @@
   border-color: var(--secondary);
 }
 
-.item:hover .usdcPill {
+.item:hover .usdcPill,
+.item:hover .audioPill {
   color: var(--secondary);
   background: var(--white);
 }

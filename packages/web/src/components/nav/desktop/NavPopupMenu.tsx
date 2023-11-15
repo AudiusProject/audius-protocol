@@ -4,12 +4,7 @@ import {
   chatSelectors,
   Name,
   useAccountHasClaimableRewards,
-  StringKeys,
-  useUSDCBalance,
-  Status,
-  formatUSDCWeiToFloorCentsNumber,
-  BNUSDC,
-  formatCurrencyBalance
+  StringKeys
 } from '@audius/common'
 import {
   IconCrown,
@@ -21,7 +16,6 @@ import {
   PopupMenuItem,
   PopupPosition
 } from '@audius/stems'
-import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
@@ -64,15 +58,6 @@ const NavPopupMenu = () => {
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
   const showNotificationBubble = hasUnreadMessages || hasClaimableRewards
 
-  const { data: usdcBalance, balanceStatus: usdcBalanceStatus } =
-    useUSDCBalance({ isPolling: false })
-  const isUsdcBalanceLoading =
-    usdcBalance === null || usdcBalanceStatus === Status.LOADING
-  const balanceCents = formatUSDCWeiToFloorCentsNumber(
-    (usdcBalance ?? new BN(0)) as BNUSDC
-  )
-  const usdcBalanceFormatted = formatCurrencyBalance(balanceCents / 100)
-
   const messagesIcon = hasUnreadMessages ? (
     <div>
       <IconMessage />
@@ -103,11 +88,7 @@ const NavPopupMenu = () => {
         text: (
           <div className={styles.popupItemText}>
             <span>{messages.payAndEarn}</span>
-            <USDCPill
-              className={styles.usdcPill}
-              isLoading={isUsdcBalanceLoading}
-              balance={usdcBalanceFormatted}
-            />
+            <USDCPill className={styles.usdcPill} />
           </div>
         ),
         onClick: () => navigate(PAY_AND_EARN_PAGE),
@@ -140,11 +121,7 @@ const NavPopupMenu = () => {
     text: (
       <div className={styles.popupItemText}>
         <span>{messages.rewards}</span>
-        <AudioPill
-          className={styles.usdcPill}
-          isLoading={isUsdcBalanceLoading}
-          balance={usdcBalanceFormatted}
-        />
+        <AudioPill className={styles.audioPill} />
       </div>
     ),
     onClick: () => navigate(AUDIO_PAGE),

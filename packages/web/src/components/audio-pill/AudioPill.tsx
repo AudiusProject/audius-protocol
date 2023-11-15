@@ -21,9 +21,7 @@ import styles from './AudioPill.module.css'
 const { getAccountUser } = accountSelectors
 const { getAccountTotalBalance } = walletSelectors
 
-type USDCPillProps = {
-  isLoading: boolean
-  balance: string
+type AudioPillProps = {
   className?: string
 }
 
@@ -50,7 +48,7 @@ const useTotalBalanceWithFallback = () => {
   }, [account, walletTotalBalance])
 }
 
-export const AudioPill = ({ isLoading, balance, className }: USDCPillProps) => {
+export const AudioPill = ({ className }: AudioPillProps) => {
   const account = useSelector(getAccountUser)
   const totalBalance = useTotalBalanceWithFallback()
   const positiveTotalBalance = !isNullOrUndefined(totalBalance)
