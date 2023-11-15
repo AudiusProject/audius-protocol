@@ -2,7 +2,6 @@ import React, { useCallback } from 'react'
 
 import type { BNUSDC } from '@audius/common'
 import {
-  Status,
   formatCurrencyBalance,
   formatUSDCWeiToFloorCentsNumber,
   useUSDCBalance

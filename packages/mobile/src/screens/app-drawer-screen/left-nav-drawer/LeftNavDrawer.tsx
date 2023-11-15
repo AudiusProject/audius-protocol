@@ -169,7 +169,11 @@ const WrappedLeftNavDrawer = () => {
         <View style={styles.tokens}>
           <LogoUSDC height={spacing(5)} width={spacing(5)} />
           {isUsdcBalanceLoading ? (
-            <Skeleton style={styles.tokenAmount} height={spacing(4.5)} width={spacing(6)} />
+            <Skeleton
+              style={styles.tokenAmount}
+              height={spacing(4.5)}
+              width={spacing(6)}
+            />
           ) : (
             <Text style={styles.tokenAmount} fontSize='small' weight='bold'>
               ${usdcBalanceFormatted}
