@@ -1,5 +1,6 @@
 import image from '@rollup/plugin-image'
 import rollupTypescript from 'rollup-plugin-typescript2'
+import ttypescript from 'ttypescript'
 
 import pkg from './package.json'
 
@@ -22,18 +23,7 @@ export default [
     ],
     plugins: [
       rollupTypescript({
-        typescript: require('ttypescript'),
-        tsconfigDefaults: {
-          compilerOptions: {
-            plugins: [
-              { transform: 'typescript-transform-paths' },
-              {
-                transform: 'typescript-transform-paths',
-                afterDeclarations: true
-              }
-            ]
-          }
-        }
+        typescript: ttypescript
       }),
       image()
     ],

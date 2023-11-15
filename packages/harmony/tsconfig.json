@@ -5,7 +5,6 @@
     "module": "esnext",
     "sourceMap": true,
     "checkJs": false,
-    "plugins": [{ "name": "typescript-plugin-css-modules" }],
     "allowJs": false,
     "jsx": "react-jsx",
     "jsxImportSource": "@emotion/react",
@@ -14,7 +13,22 @@
     "exactOptionalPropertyTypes": false,
     "declaration": true,
     "declarationMap": true,
-    "baseUrl": "./src",
+    "baseUrl": "./",
+    "paths": {
+      "foundations": ["src/foundations/index.ts"],
+      "foundations/*": ["src/foundations/*"],
+      "components": ["src/components/index.ts"],
+      "components/*": ["src/components/*"],
+      "icons": ["src/icons/index.ts"],
+      "icons/*": ["src/icons/*"],
+      "assets": ["src/assets/index.ts"],
+      "assets/*": ["src/assets/*"]
+    },
+    "plugins": [
+      { "name": "typescript-plugin-css-modules" },
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ],
     "outDir": "build",
     "declarationDir": "./",
     "noPropertyAccessFromIndexSignature": false,

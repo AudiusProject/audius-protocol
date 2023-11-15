@@ -15,12 +15,14 @@ export const iconSizes = {
 
 type IconSize = keyof typeof iconSizes
 
-type IconProps = {
+type BaseIconProps = SVGProps<SVGSVGElement>
+
+type IconProps = BaseIconProps & {
   color?: IconColors
   size?: IconSize
-} & SVGProps<SVGSVGElement>
+}
 
-export type IconComponent = ComponentType<IconProps>
+export type IconComponent = ComponentType<BaseIconProps | IconProps>
 
 /**
  * Renders a harmony Icon component
