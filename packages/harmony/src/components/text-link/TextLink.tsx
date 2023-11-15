@@ -46,7 +46,7 @@ export const TextLink = (props: TextLinkProps) => {
       tag='a'
       css={{
         color: variantColors[variant],
-        textDecoration: _isHovered ? 'underline' : 'none',
+        textDecoration: 'none',
         ':hover': hoverStyles,
         ...(_isHovered && hoverStyles)
       }}
