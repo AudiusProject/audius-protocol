@@ -1,4 +1,4 @@
-import { Box, Paper } from '@audius/harmony'
+import { Paper } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
@@ -82,23 +82,21 @@ const determineAllowedRoute = (
  * <Route> wrapper that handles redirecting through the sign up page flow
  */
 export function SignUpRoute({ children, ...rest }: RouteProps) {
-  // const existingSignUpState = useSelector((state: AppState) => getSignOn(state))
+  const existingSignUpState = useSelector((state: AppState) => getSignOn(state))
   return (
     <Route
       {...rest}
       render={({ location }) => {
-        // TODO: DO NOT MERGE
-        // // Check if the route is allowed, if not we redirect accordingly
-        // const { isAllowedRoute, correctedRoute } = determineAllowedRoute(
-        //   existingSignUpState,
-        //   location.pathname
-        // )
-        // return isAllowedRoute ? (
-        //   <>{children}</>
-        // ) : (
-        //   <Redirect to={correctedRoute} />
-        // )
-        return <>{children}</>
+        // Check if the route is allowed, if not we redirect accordingly
+        const { isAllowedRoute, correctedRoute } = determineAllowedRoute(
+          existingSignUpState,
+          location.pathname
+        )
+        return isAllowedRoute ? (
+          <>{children}</>
+        ) : (
+          <Redirect to={correctedRoute} />
+        )
       }}
     />
   )

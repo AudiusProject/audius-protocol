@@ -11,21 +11,18 @@ import {
   Flex,
   Text,
   IconArrowRight,
-  PlainButton,
-  PlainButtonType,
   SelectablePill,
   Paper,
   Box
 } from '@audius/harmony'
 import { Form, Formik } from 'formik'
-import { values } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { addFollowArtists } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
-import { SIGN_UP_PASSWORD_PAGE, TRENDING_PAGE } from 'utils/route'
+import { TRENDING_PAGE } from 'utils/route'
 
 import { ContinueFooter } from '../components/ContinueFooter'
 import FollowArtistTile from '../components/FollowArtistTile'
@@ -49,8 +46,7 @@ const initialValues: SelectArtistsValues = {
 }
 
 export const SelectArtistsPage = () => {
-  // const genres = useSelector((state) => ['Featured', ...getGenres(state)])
-  const genres = ['Featured', 'Electronic', 'Acoustic']
+  const genres = useSelector((state) => ['Featured', ...getGenres(state)])
   const [currentGenre, setCurrentGenre] = useState('Featured')
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
