@@ -1,20 +1,18 @@
-import { ChangeEvent, useCallback } from 'react'
+import { useCallback } from 'react'
 
-import { GENRES, convertGenreLabelToValue } from '@audius/common'
-import { Button } from '@audius/harmony'
+import { GENRES, Genre, convertGenreLabelToValue } from '@audius/common'
+import { Button, Flex, IconArrowRight, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
 
 import { setField } from 'common/store/pages/signon/actions'
-import {
-  getHandleField,
-  getNameField
-} from 'common/store/pages/signon/selectors'
+import { SelectablePillField } from 'components/form-fields/SelectablePillField'
+import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { useSelector } from 'utils/reducer'
 import { SIGN_UP_ARTISTS_PAGE } from 'utils/route'
 
-import { GenrePill } from '../components/GenrePill'
+import { AccountHeader } from '../components/AccountHeader'
+import { ContinueFooter } from '../components/ContinueFooter'
 
 const messages = {
   header: 'Select Your Genres',
@@ -27,65 +25,97 @@ const genres = GENRES.map((genre) => ({
   label: convertGenreLabelToValue(genre)
 }))
 
-type SelectGenreValues = Record<string, boolean>
+type SelectGenreValues = { genres: Genre[] }
 
-const initialValues = genres.reduce(
-  (acc, genre) => ({
-    ...acc,
-    [genre.value]: false
-  }),
-  {} as SelectGenreValues
-)
+const initialValues: SelectGenreValues = {
+  genres: []
+}
 
 export const SelectGenrePage = () => {
-  const { value: displayName } = useSelector(getNameField)
-  const { value: handle } = useSelector(getHandleField)
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
 
   const handleSubmit = useCallback(
     (values: SelectGenreValues) => {
-      const genres = Object.keys(values).filter((genre) => values[genre])
+      const { genres } = values
       dispatch(setField('genres', genres))
       navigate(SIGN_UP_ARTISTS_PAGE)
     },
     [dispatch, navigate]
   )
 
+  const { isMobile } = useMedia()
+
   return (
-    <div>
-      <div>
-        <p>{displayName}</p>
-        <p>{handle}</p>
-      </div>
-      <h1>{messages.header}</h1>
-      <p>{messages.description}</p>
+    <Flex direction='column' h='100%' gap={isMobile ? '2xl' : '4xl'}>
+      <AccountHeader />
+      <Flex flex={1} direction='column' gap={isMobile ? 'xl' : '2xl'}>
+        <Flex direction='column' gap={isMobile ? 's' : 'l'} ph='l'>
+          <Text
+            variant='heading'
+            size={isMobile ? 'm' : 'l'}
+            color='heading'
+            css={{ textAlign: isMobile ? 'left' : 'center' }}
+            id='genre-header'
+          >
+            {messages.header}
+          </Text>
+          <Text
+            variant='body'
+            size={isMobile ? 'm' : 'l'}
+            css={{ textAlign: isMobile ? 'left' : 'center' }}
+          >
+            {messages.description}
+          </Text>
+        </Flex>
 
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        {({ values, setValues }) => {
-          const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-            setValues({ ...values, [e.target.name]: !values[e.target.name] })
-          }
-
-          return (
-            <Form>
-              {genres.map((genre) => {
-                const { label, value } = genre
-                return (
-                  <GenrePill
-                    key={value}
-                    label={label}
-                    name={value}
-                    checked={!!values[value]}
-                    onChange={handleChange}
-                  />
-                )
-              })}
-              <Button type='submit'>{messages.continue}</Button>
-            </Form>
-          )
-        }}
-      </Formik>
-    </div>
+        <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+          {({ values }) => (
+            <Flex
+              as={Form}
+              alignItems={isMobile ? 'flex-start' : 'center'}
+              direction='column'
+              flex={1}
+              justifyContent='space-between'
+            >
+              <Flex
+                role='group'
+                aria-labelledby='genre-header'
+                css={{ maxWidth: 608 }}
+                justifyContent={isMobile ? 'flex-start' : 'center'}
+                alignItems='flex-start'
+                gap='s'
+                wrap='wrap'
+                mb='4xl'
+                ph='l'
+              >
+                {genres.map((genre) => {
+                  const { label, value } = genre
+                  return (
+                    <SelectablePillField
+                      key={label}
+                      name='genres'
+                      label={label}
+                      value={value}
+                      size='large'
+                      type='checkbox'
+                    />
+                  )
+                })}
+              </Flex>
+              <ContinueFooter>
+                <Button
+                  type='submit'
+                  iconRight={IconArrowRight}
+                  disabled={values.genres.length === 0}
+                >
+                  {messages.continue}
+                </Button>
+              </ContinueFooter>
+            </Flex>
+          )}
+        </Formik>
+      </Flex>
+    </Flex>
   )
 }
