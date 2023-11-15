@@ -1,37 +1,88 @@
-import { useState, type HTMLProps, useCallback } from 'react'
+import { useState, type HTMLProps, useCallback, ChangeEvent } from 'react'
 
+import { useTheme, type CSSObject } from '@emotion/react'
+
+import type { IconComponent } from 'components/icon'
 import { Flex } from 'components/layout/Flex'
 import { Text } from 'components/text/Text'
+import { useControlled } from 'hooks/useControlled'
 import { IconUserFollowing, IconUserFollow, IconUserUnfollow } from 'icons'
 
-type FollowButtonProps = {
-  variant: 'default' | 'pill'
-  initialValue: boolean
-} & HTMLProps<HTMLInputElement>
+const messages = {
+  follow: 'Follow',
+  following: 'Following',
+  unfollow: 'Unfollow'
+}
+
+export type FollowButtonProps = {
+  variant?: 'default' | 'pill'
+  following?: boolean
+  onUnfollow?: () => void
+  onFollow?: () => void
+  size?: 'default' | 'small'
+} & Omit<HTMLProps<HTMLInputElement>, 'size'>
 
 export const FollowButton = (props: FollowButtonProps) => {
-  const { initialValue, onChange } = props
-  const passthroughProps = props
-  // Todo: conditional hover styling
-  const isHover = false
+  const {
+    variant = 'default',
+    following = false,
+    onUnfollow,
+    onFollow,
+    size = 'default',
+    ...inputProps
+  } = props
+  const [value, setValueState] = useControlled({
+    componentName: 'FollowButton',
+    controlledProp: following,
+    defaultValue: undefined,
+    stateName: 'following'
+  })
 
-  const [checked, setChecked] = useState(initialValue)
+  // Track hover manually to swap text and icon
   const [isHovering, setIsHovering] = useState(false)
-  const [isHoveringClicked, setIsHoveringClicked] = useState(false)
-
   const handleMouseEnter = useCallback(() => {
     setIsHovering(true)
   }, [setIsHovering])
-
   const handleMouseLeave = useCallback(() => {
     setIsHovering(false)
   }, [setIsHovering])
 
-  const IconComponent = checked
-    ? isHover
-      ? IconUserUnfollow
-      : IconUserFollow
-    : IconUserFollowing
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      if (value) {
+        onUnfollow?.()
+      } else {
+        onFollow?.()
+      }
+      setValueState(!value)
+    },
+    [value, setValueState, onFollow, onUnfollow]
+  )
+
+  let Icon: IconComponent | null = IconUserFollow
+  let text = messages.follow
+  if (value && !isHovering) {
+    Icon = IconUserFollowing
+    text = messages.following
+  } else if (value && isHovering) {
+    Icon = IconUserUnfollow
+    text = messages.unfollow
+  }
+
+  const { color, cornerRadius } = useTheme()
+  const textColor =
+    value || isHovering ? color.static.white : color.primary.primary
+  const css: CSSObject = {
+    userSelect: 'none',
+    border: `1px solid ${color.primary.primary}`,
+    borderRadius: variant === 'pill' ? cornerRadius['2xl'] : cornerRadius.s,
+    background:
+      value || isHovering ? color.primary.primary : color.static.white,
+    ':active': {
+      background: color.primary.p500,
+      border: `1px solid ${color.primary.p500}`
+    }
+  }
 
   return (
     <>
@@ -45,21 +96,27 @@ export const FollowButton = (props: FollowButtonProps) => {
             height: 0,
             width: 0
           }}
-          onChange={(e) => {
-            setChecked(!checked)
-            onChange?.(e)
-          }}
-          {...passthroughProps}
+          onChange={handleChange}
+          {...inputProps}
         />
         <Flex
+          w={size === 'small' ? 128 : 152}
+          h={size === 'small' ? 28 : 32}
           direction='row'
           alignItems='center'
+          justifyContent='center'
           gap='xs'
-          css={{ userSelect: 'none' }}
+          pv='s'
+          css={css}
         >
-          <IconComponent height={18} width={18} />
-          <Text>
-            {checked ? (isHover ? 'Unfollow' : 'Follow') : 'Following'}
+          <Icon height={18} width={18} css={{ path: { fill: textColor } }} />
+          <Text
+            variant='label'
+            size={size === 'small' ? 's' : 'l'}
+            strength='default'
+            css={{ color: textColor }}
+          >
+            {text}
           </Text>
         </Flex>
       </label>
