@@ -13,7 +13,6 @@ import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { EMAIL_REGEX } from 'utils/email'
 import { SIGN_IN_PAGE, SIGN_UP_PASSWORD_PAGE } from 'utils/route'
 
-import styles from './CreateEmailPage.module.css'
 import { CreateEmailPageDesktop } from './CreateEmailPageDesktop'
 import { CreateEmailPageMobile } from './CreateEmailPageMobile'
 import { messages } from './messages'
@@ -83,7 +82,7 @@ export const CreateEmailPage = () => {
       validateOnChange={false}
     >
       {({ isSubmitting }) => (
-        <Form className={styles.h100}>
+        <Form css={{ width: '100%', height: '100%' }}>
           {isDesktop ? (
             <CreateEmailPageDesktop isSubmitting={isSubmitting} />
           ) : (

@@ -12,24 +12,3 @@
   max-height: 50px;
   max-width: 180px;
 }
-
-.mobileCurvedContainer {
-  border-bottom-left-radius: var(--harmony-border-radius-2xl);
-  border-bottom-right-radius: var(--harmony-border-radius-2xl);
-}
-
-.flex1 {
-  flex: 1;
-}
-
-.w100 {
-  width: 100%;
-}
-
-.h100 {
-  height: 100%;
-}
-
-.textAlignCenter {
-  text-align: center;
-}

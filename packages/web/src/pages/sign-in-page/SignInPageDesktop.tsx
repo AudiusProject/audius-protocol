@@ -7,12 +7,12 @@ import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import PreloadImage from 'components/preload-image/PreloadImage'
-import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
 import {
   ArtworkContainer,
-  AudiusValues,
-  SignOnContainerDesktop
-} from 'pages/sign-on/components/desktop/PageWithAudiusValues'
+  AudiusValues
+} from 'pages/sign-on/components/AudiusValues'
+import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
+import { SignOnContainerDesktop } from 'pages/sign-on/components/desktop/SignOnContainerDesktop'
 import { SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './SignInPage.module.css'
@@ -80,8 +80,8 @@ export const SignInPageDesktop = () => {
             text={messages.createAccount}
           />{' '}
         </LeftContentContainer>
-        <ArtworkContainer isDesktop>
-          <AudiusValues isDesktop />
+        <ArtworkContainer>
+          <AudiusValues />
         </ArtworkContainer>
       </SignOnContainerDesktop>
     </Flex>

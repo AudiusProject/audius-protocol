@@ -11,15 +11,14 @@ import {
 
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { Link } from 'components/link'
-import { MobileContentContainer } from 'pages/sign-on/components/desktop/MobileContentContainer'
 import {
   ArtworkContainer,
-  AudiusValues,
-  SignOnContainerMobile
-} from 'pages/sign-on/components/desktop/PageWithAudiusValues'
+  AudiusValues
+} from 'pages/sign-on/components/AudiusValues'
+import { MobileContentContainer } from 'pages/sign-on/components/desktop/MobileContentContainer'
+import { SignOnContainerMobile } from 'pages/sign-on/components/mobile/SignOnContainerMobile'
 import { SIGN_IN_PAGE } from 'utils/route'
 
-import styles from './CreateEmailPage.module.css'
 import { messages } from './messages'
 
 export const CreateEmailPageMobile = ({
@@ -29,11 +28,14 @@ export const CreateEmailPageMobile = ({
 }) => {
   return (
     <SignOnContainerMobile>
-      <ArtworkContainer isDesktop={false}>
+      <ArtworkContainer>
         <MobileContentContainer
           gap='2xl'
           alignItems='center'
-          className={styles.mobileCurvedContainer}
+          css={(theme) => ({
+            borderBottomLeftRadius: theme.cornerRadius['2xl'],
+            borderBottomRightRadius: theme.cornerRadius['2xl']
+          })}
         >
           <IconAudiusLogoHorizontalColor />
           <Flex
@@ -41,7 +43,7 @@ export const CreateEmailPageMobile = ({
             gap='s'
             alignItems='center'
             w='100%'
-            className={styles.textAlignCenter}
+            css={{ textAlign: 'center' }}
           >
             <Text color='heading' size='m' variant='heading' tag='h1'>
               {messages.title}
@@ -58,27 +60,27 @@ export const CreateEmailPageMobile = ({
               label={messages.emailLabel}
             />
             <Flex w='100%' alignItems='center' gap='s'>
-              <Divider className={styles.flex1} />
+              <Divider css={{ flex: 1 }} />
               <Text variant='body' size='s' tag='p' color='subdued'>
                 {messages.socialsDividerText}
               </Text>
-              <Divider className={styles.flex1} />
+              <Divider css={{ flex: 1 }} />
             </Flex>
             <Flex direction='row' gap='s' w='100%'>
               <SocialButton
                 socialType='twitter'
-                className={styles.flex1}
                 aria-label='Sign up with Twitter'
+                css={{ flex: 1 }}
               />
               <SocialButton
                 socialType='instagram'
-                className={styles.flex1}
                 aria-label='Sign up with Instagram'
+                css={{ flex: 1 }}
               />
               <SocialButton
                 socialType='tiktok'
-                className={styles.flex1}
                 aria-label='Sign up with TikTok'
+                css={{ flex: 1 }}
               />
             </Flex>
           </Flex>
@@ -87,7 +89,7 @@ export const CreateEmailPageMobile = ({
             gap='l'
             alignItems='center'
             w='100%'
-            className={styles.textAlignCenter}
+            css={{ textAlign: 'center' }}
           >
             <Button
               variant={ButtonType.PRIMARY}
@@ -114,7 +116,7 @@ export const CreateEmailPageMobile = ({
             </Text>
           </Flex>
         </MobileContentContainer>
-        <AudiusValues isDesktop={false} />
+        <AudiusValues />
       </ArtworkContainer>
     </SignOnContainerMobile>
   )

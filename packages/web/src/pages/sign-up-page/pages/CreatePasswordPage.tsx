@@ -22,12 +22,12 @@ import {
 } from 'components/completion-checklist-item/CompletionChecklistItem'
 import { ExternalLink } from 'components/link'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
 import {
   ArtworkContainer,
-  AudiusValues,
-  SignOnContainerDesktop
-} from 'pages/sign-on/components/desktop/PageWithAudiusValues'
+  AudiusValues
+} from 'pages/sign-on/components/AudiusValues'
+import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
+import { SignOnContainerDesktop } from 'pages/sign-on/components/desktop/SignOnContainerDesktop'
 import {
   PRIVACY_POLICY,
   SIGN_UP_EMAIL_PAGE,
@@ -385,8 +385,8 @@ export const CreatePasswordPage = () => {
             </Formik>
           </Box>
         </LeftContentContainer>
-        <ArtworkContainer isDesktop>
-          <AudiusValues isDesktop />
+        <ArtworkContainer>
+          <AudiusValues />
         </ArtworkContainer>
       </SignOnContainerDesktop>
     </Flex>

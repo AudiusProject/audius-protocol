@@ -11,10 +11,8 @@ import { Link } from 'react-router-dom'
 
 import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
-import {
-  ArtworkContainer,
-  SignOnContainerMobile
-} from 'pages/sign-on/components/desktop/PageWithAudiusValues'
+import { ArtworkContainer } from 'pages/sign-on/components/AudiusValues'
+import { SignOnContainerMobile } from 'pages/sign-on/components/mobile/SignOnContainerMobile'
 
 import styles from './SignInPageMobile.module.css'
 
@@ -31,7 +29,7 @@ const messages = {
 export const SignInPageMobile = () => {
   return (
     <SignOnContainerMobile>
-      <ArtworkContainer isDesktop={false} justifyContent='space-between'>
+      <ArtworkContainer justifyContent='space-between'>
         <Flex
           className={styles.content}
           w='100%'

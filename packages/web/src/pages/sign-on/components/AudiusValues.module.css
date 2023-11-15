@@ -1,27 +1,21 @@
-.root {
-  box-shadow: var(--harmony-shadow-far);
-  /* TODO: should this be on box/flex? */
-  overflow: hidden;
-}
-
-.valuesRoot {
+.artworkBackground {
   background: radial-gradient(
       77.16% 77.16% at 50% 51.81%,
       rgba(91, 35, 225, 0.8) 0%,
       rgba(113, 41, 230, 0.64) 67.96%,
       rgba(162, 47, 235, 0.5) 100%
     ),
-    url('../../../../assets/img/2-DJ-4-3.jpg'), lightgray 50% / cover no-repeat;
+    url('../../../assets/img/2-DJ-4-3.jpg'), lightgray 50% / cover no-repeat;
 }
 
-.valuesRoot.desktop {
+.artworkBackground.desktop {
   width: 800px;
   height: 864px;
   background-position: -175px;
   background-size: cover;
 }
 
-.valuesRoot.mobile {
+.artworkBackground.mobile {
   width: 100%;
   height: 100%;
   background-size: auto 100%;
@@ -30,7 +24,7 @@
 }
 
 .valueRow,
-.valuesRoot h1 {
+.artworkBackground h1 {
   color: var(--harmony-static-white);
 }
 

@@ -13,12 +13,12 @@ import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { Link } from 'components/link'
 import PreloadImage from 'components/preload-image/PreloadImage'
-import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
 import {
   ArtworkContainer,
-  AudiusValues,
-  SignOnContainerDesktop
-} from 'pages/sign-on/components/desktop/PageWithAudiusValues'
+  AudiusValues
+} from 'pages/sign-on/components/AudiusValues'
+import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
+import { SignOnContainerDesktop } from 'pages/sign-on/components/desktop/SignOnContainerDesktop'
 import { SIGN_IN_PAGE } from 'utils/route'
 
 import styles from './CreateEmailPage.module.css'
@@ -54,26 +54,26 @@ export const CreateEmailPageDesktop = ({
               label={messages.emailLabel}
             />
             <Flex w='100%' alignItems='center' gap='s'>
-              <Divider className={styles.flex1} />
+              <Divider css={{ flex: 1 }} />
               <Text variant='body' size='m' tag='p' color='subdued'>
                 {messages.socialsDividerText}
               </Text>
-              <Divider className={styles.flex1} />
+              <Divider css={{ flex: 1 }} />
             </Flex>
             <Flex direction='row' gap='s' w='100%'>
               <SocialButton
                 socialType='twitter'
-                className={styles.flex1}
+                css={{ flex: 1 }}
                 aria-label='Sign up with Twitter'
               />
               <SocialButton
                 socialType='instagram'
-                className={styles.flex1}
+                css={{ flex: 1 }}
                 aria-label='Sign up with Instagram'
               />
               <SocialButton
                 socialType='tiktok'
-                className={styles.flex1}
+                css={{ flex: 1 }}
                 aria-label='Sign up with TikTok'
               />
             </Flex>
@@ -104,8 +104,8 @@ export const CreateEmailPageDesktop = ({
             </Text>
           </Flex>
         </LeftContentContainer>
-        <ArtworkContainer isDesktop>
-          <AudiusValues isDesktop />
+        <ArtworkContainer>
+          <AudiusValues />
         </ArtworkContainer>
       </SignOnContainerDesktop>
     </Flex>
