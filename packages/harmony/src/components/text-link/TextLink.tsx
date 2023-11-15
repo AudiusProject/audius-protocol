@@ -22,15 +22,21 @@ export const TextLink = (props: TextLinkProps) => {
 
   const { color } = useTheme()
 
-  const colorByVariant = {
+  const variantColors = {
     default: color.link.default,
+    visible: color.link.visible,
+    inverted: color.static.white
+  }
+
+  const variantHoverColors = {
+    default: color.primary.p300,
     visible: color.link.visible,
     inverted: color.static.white
   }
 
   const hoverStyles = {
     textDecoration: 'underline',
-    ...(variant === 'default' && { color: color.primary.p300 })
+    color: variantHoverColors[variant]
   }
 
   return (
@@ -39,7 +45,7 @@ export const TextLink = (props: TextLinkProps) => {
       onClick={onClick}
       tag='a'
       css={{
-        color: colorByVariant[variant],
+        color: variantColors[variant],
         textDecoration: _isHovered ? 'underline' : 'none',
         ':hover': hoverStyles,
         ...(_isHovered && hoverStyles)
