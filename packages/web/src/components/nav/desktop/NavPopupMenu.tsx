@@ -4,7 +4,12 @@ import {
   chatSelectors,
   Name,
   useAccountHasClaimableRewards,
-  StringKeys
+  StringKeys,
+  useUSDCBalance,
+  Status,
+  formatUSDCWeiToFloorCentsNumber,
+  BNUSDC,
+  formatCurrencyBalance
 } from '@audius/common'
 import {
   IconCrown,
@@ -16,13 +21,16 @@ import {
   PopupMenuItem,
   PopupPosition
 } from '@audius/stems'
+import BN from 'bn.js'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import IconKebabHorizontal from 'assets/img/iconKebabHorizontalAlt.svg'
 import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
+import { AudioPill } from 'components/audio-pill/AudioPill'
 import { NotificationDot } from 'components/notification-dot'
+import { USDCPill } from 'components/usdc-pill/USDCPill'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
@@ -56,14 +64,14 @@ const NavPopupMenu = () => {
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
   const showNotificationBubble = hasUnreadMessages || hasClaimableRewards
 
-  const messagesItemText = hasUnreadMessages ? (
-    <div className={styles.popupItemText}>
-      {messages.messages}
-      <NotificationDot variant='large' />
-    </div>
-  ) : (
-    messages.messages
+  const { data: usdcBalance, balanceStatus: usdcBalanceStatus } =
+    useUSDCBalance({ isPolling: false })
+  const isUsdcBalanceLoading =
+    usdcBalance === null || usdcBalanceStatus === Status.LOADING
+  const balanceCents = formatUSDCWeiToFloorCentsNumber(
+    (usdcBalance ?? new BN(0)) as BNUSDC
   )
+  const usdcBalanceFormatted = formatCurrencyBalance(balanceCents / 100)
 
   const messagesIcon = hasUnreadMessages ? (
     <div>
@@ -76,6 +84,45 @@ const NavPopupMenu = () => {
   ) : (
     <IconMessage />
   )
+  const messagesItem = isChatEnabled
+    ? {
+        className: styles.item,
+        text: messages.messages,
+        onClick: () => {
+          navigate(CHATS_PAGE)
+          dispatch(make(Name.CHAT_ENTRY_POINT, { source: 'navmenu' }))
+        },
+        icon: messagesIcon,
+        iconClassName: styles.menuItemIcon
+      }
+    : null
+
+  const payAndEarnItem = isUSDCEnabled
+    ? {
+        className: styles.item,
+        text: (
+          <div className={styles.popupItemText}>
+            <span>{messages.payAndEarn}</span>
+            <USDCPill
+              className={styles.usdcPill}
+              isLoading={isUsdcBalanceLoading}
+              balance={usdcBalanceFormatted}
+            />
+          </div>
+        ),
+        onClick: () => navigate(PAY_AND_EARN_PAGE),
+        icon: <Icon icon={IconDonate} />,
+        iconClassName: styles.payAndEarnIcon
+      }
+    : null
+
+  const dashboardItem = {
+    className: styles.item,
+    text: messages.dashboard,
+    onClick: () => navigate(DASHBOARD_PAGE),
+    icon: <IconDashboard />,
+    iconClassName: styles.menuItemIcon
+  }
 
   const rewardsIcon = hasClaimableRewards ? (
     <div>
@@ -88,49 +135,37 @@ const NavPopupMenu = () => {
   ) : (
     <IconCrown />
   )
+  const rewardsItem = {
+    className: styles.item,
+    text: (
+      <div className={styles.popupItemText}>
+        <span>{messages.rewards}</span>
+        <AudioPill
+          className={styles.usdcPill}
+          isLoading={isUsdcBalanceLoading}
+          balance={usdcBalanceFormatted}
+        />
+      </div>
+    ),
+    onClick: () => navigate(AUDIO_PAGE),
+    icon: rewardsIcon,
+    iconClassName: cn(styles.menuItemIcon, styles.crownIcon)
+  }
+
+  const settingsItem = {
+    className: styles.item,
+    text: messages.settings,
+    onClick: () => navigate(SETTINGS_PAGE),
+    icon: <IconSettings />,
+    iconClassName: styles.menuItemIcon
+  }
 
   const menuItems: PopupMenuItem[] = [
-    isChatEnabled
-      ? {
-          className: styles.item,
-          text: messagesItemText,
-          onClick: () => {
-            navigate(CHATS_PAGE)
-            dispatch(make(Name.CHAT_ENTRY_POINT, { source: 'navmenu' }))
-          },
-          icon: messagesIcon,
-          iconClassName: styles.menuItemIcon
-        }
-      : null,
-    isUSDCEnabled
-      ? {
-          className: styles.item,
-          text: messages.payAndEarn,
-          onClick: () => navigate(PAY_AND_EARN_PAGE),
-          icon: <Icon icon={IconDonate} />
-        }
-      : null,
-    {
-      className: styles.item,
-      text: messages.dashboard,
-      onClick: () => navigate(DASHBOARD_PAGE),
-      icon: <IconDashboard />,
-      iconClassName: styles.menuItemIcon
-    },
-    {
-      className: styles.item,
-      text: messages.rewards,
-      onClick: () => navigate(AUDIO_PAGE),
-      icon: rewardsIcon,
-      iconClassName: cn(styles.menuItemIcon, styles.crownIcon)
-    },
-    {
-      className: styles.item,
-      text: messages.settings,
-      onClick: () => navigate(SETTINGS_PAGE),
-      icon: <IconSettings />,
-      iconClassName: styles.menuItemIcon
-    }
+    messagesItem,
+    payAndEarnItem,
+    dashboardItem,
+    rewardsItem,
+    settingsItem
   ].filter(removeNullable)
 
   return (

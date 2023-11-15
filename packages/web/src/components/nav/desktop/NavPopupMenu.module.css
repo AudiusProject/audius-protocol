@@ -16,7 +16,6 @@
   justify-content: center;
   align-items: center;
   transition: all ease-in-out 0.07s;
-  height: 24px;
 }
 
 .icon svg {
@@ -33,7 +32,7 @@
 .popupItemText {
   display: flex;
   align-items: center;
-  gap: var(--unit-2);
+  gap: var(--unit-4);
 }
 
 .item {
@@ -65,6 +64,12 @@
   height: 100%;
 }
 
+.payAndEarnIcon svg {
+  width: var(--unit-5);
+  height: var(--unit-5) !important;
+}
+
+
 .container {
   display: flex;
   position: relative;
@@ -88,4 +93,13 @@
 .item:hover .innerNotificationDot {
   background: var(--white);
   border-color: var(--secondary);
+}
+
+.item:hover .usdcPill {
+  color: var(--secondary);
+  background: var(--white);
+}
+
+.item:hover .usdcPill path {
+  fill: #2775ca;
 }

@@ -15,7 +15,7 @@ type IconSize =
   | 'xxLarge' // 32
   | 'xxxLarge' // 40
 
-type IconProps = {
+export type IconProps = {
   color?: ColorValue
   icon: IconComponent
   size?: IconSize
