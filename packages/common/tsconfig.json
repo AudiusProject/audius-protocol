@@ -1,19 +1,7 @@
 {
   "compilerOptions": {
     "outDir": "dist",
-    "baseUrl": ".",
-    "paths": {
-      "audius-query": ["src/audius-query/index.ts"],
-      "assets/*": ["src/assets/*"],
-      "hooks/*": ["src/hooks/*"],
-      "models/*": ["src/models/*"],
-      "models": ["src/models"],
-      "schemas/*": ["src/schemas/*"],
-      "services/*": ["src/services/*"],
-      "store/*": ["src/store/*"],
-      "utils/*": ["src/utils/*"],
-      "utils": ["src/utils"]
-    },
+    "baseUrl": "./src",
     "module": "esnext",
     "target": "es6",
     "moduleResolution": "node",
