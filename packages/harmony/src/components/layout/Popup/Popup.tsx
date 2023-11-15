@@ -14,9 +14,10 @@ import ReactDOM from 'react-dom'
 import { useTransition, animated } from 'react-spring'
 
 import { PlainButton, PlainButtonType } from 'components/button'
-import { useClickOutside } from 'hooks/useClickOutside'
 import { IconClose } from 'icons'
-import { getScrollParent } from 'utils/getScrollParent'
+
+import { useClickOutside } from '../../../hooks/useClickOutside'
+import { getScrollParent } from '../../../utils/getScrollParent'
 
 import styles from './Popup.module.css'
 import type { PopupProps, Origin } from './types'
