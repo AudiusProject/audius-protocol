@@ -14,7 +14,7 @@ export default defineConfig({
       protocolImports: true
     })
   ],
-  // Set to /up/ in Dockerfile. Leave unset ('/') if deploying standalone in the future (e.g., to Cloudflare Pages).
+  // Set to /d/ in Dockerfile. Leave unset ('/') if deploying standalone in the future (e.g., to Cloudflare Pages).
   base: process.env.UPTIME_BASE_URL || '/',
   build: {
     commonjsOptions: {

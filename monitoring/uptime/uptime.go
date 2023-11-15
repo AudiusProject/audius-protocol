@@ -79,10 +79,10 @@ func (u *Uptime) Start() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
 
-	e.Static("/up", "/app/node-ui/dist")
+	e.Static("/d", "/app/node-ui/dist")
 
-	e.GET("/up_api/uptime", u.handleUptime)
-	e.GET("/up_api/env", u.handleGetEnv)
+	e.GET("/d_api/uptime", u.handleUptime)
+	e.GET("/d_api/env", u.handleGetEnv)
 
 	e.GET("/health_check", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{

@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { useEnvVars } from './providers/EnvVarsProvider'
 import { useAudiusLibs } from './providers/AudiusLibsProvider'
 
+import { ConnectButton } from '@rainbow-me/rainbowkit'
+import '@rainbow-me/rainbowkit/styles.css'
+
 interface UptimeResponse {
   host: string
   uptime_percentage: number
@@ -11,14 +14,18 @@ interface UptimeResponse {
 
 const App = () => {
   const { endpoint, env, nodeType } = useEnvVars()
-  const { audiusLibs, isLoading: isAudiusLibsLoading } = useAudiusLibs()
+  const {
+    audiusLibs,
+    isLoading: isAudiusLibsLoading,
+    isReadOnly: isLibsReadOnly
+  } = useAudiusLibs()
   const [targetEndpoint, setTargetEndpoint] = useState(endpoint)
   const [uptimeData, setUptimeData] = useState<UptimeResponse | null>(null)
 
   const fetchUptimeData = async () => {
     try {
       const response = await fetch(
-        `${endpoint}/up_api/uptime?host=${targetEndpoint}`
+        `${endpoint}/d_api/dtime?host=${targetEndpoint}`
       )
       if (response.ok) {
         const data = (await response.json()) as UptimeResponse
@@ -38,8 +45,17 @@ const App = () => {
       <p>Environment: {env}</p>
       <p>Node Type: {nodeType}</p>
       <p>
-        Libs: {isAudiusLibsLoading ? 'loading...' : `v${audiusLibs!.version}`}
+        Libs:{' '}
+        {isAudiusLibsLoading
+          ? 'loading...'
+          : `v${audiusLibs!.version} (${
+              isLibsReadOnly ? 'read-only' : 'able to sign txns'
+            })`}
       </p>
+      <div>
+        <ConnectButton />
+      </div>
+      <br />
       <input
         type='text'
         value={targetEndpoint}
