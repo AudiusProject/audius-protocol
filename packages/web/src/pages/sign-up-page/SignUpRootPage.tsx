@@ -4,6 +4,8 @@ import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
 import { getSignOn } from 'common/store/pages/signon/selectors'
 import SignOnPageState from 'common/store/pages/signon/types'
+import { useMedia } from 'hooks/useMedia'
+import { useRouteMatch } from 'hooks/useRouteMatch'
 import { AppState } from 'store/types'
 import {
   SIGN_UP_ARTISTS_PAGE,
@@ -16,6 +18,7 @@ import {
   TRENDING_PAGE
 } from 'utils/route'
 
+import { MobileNavHeader } from './components/MobileNavHeader'
 import { ProgressHeader } from './components/ProgressHeader'
 import { CreateEmailPage } from './pages/CreateEmailPage/CreateEmailPage'
 import { CreatePasswordPage } from './pages/CreatePasswordPage'
@@ -32,7 +35,11 @@ import { SelectGenrePage } from './pages/SelectGenrePage'
 const determineAllowedRoute = (
   signUpState: SignOnPageState,
   requestedRoute: string | SignUpPath // this string should have already trimmed out /signup/
-) => {
+): {
+  allowedRoutes: string[]
+  isAllowedRoute: boolean
+  correctedRoute: string
+} => {
   const attemptedPath = requestedRoute.replace('/signup/', '')
   // Have to type as string[] to avoid too narrow of a type for comparing against
   let allowedRoutes: string[] = [SignUpPath.createEmail] // create email is available by default
@@ -64,7 +71,11 @@ const determineAllowedRoute = (
     // Already have 3 artists followed
     // Done with sign up if at this point so we return early (none of these routes are allowed anymore)
     // TODO: trigger welcome modal when redirecting from here
-    return { isAllowedRoute: false, correctedRoute: TRENDING_PAGE }
+    return {
+      allowedRoutes: [],
+      isAllowedRoute: false,
+      correctedRoute: TRENDING_PAGE
+    }
   }
 
   const isAllowedRoute = allowedRoutes.includes(attemptedPath)
@@ -72,7 +83,9 @@ const determineAllowedRoute = (
   const correctedPath = isAllowedRoute
     ? attemptedPath
     : allowedRoutes[allowedRoutes.length - 1]
+
   return {
+    allowedRoutes,
     isAllowedRoute,
     correctedRoute: `/signup/${correctedPath}`
   }
@@ -102,9 +115,28 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
   )
 }
 
+const useIsBackAllowed = () => {
+  const match = useRouteMatch<{ currentPath: string }>('/signup/:currentPath')
+  const existingSignUpState = useSelector((state: AppState) => getSignOn(state))
+  if (match?.currentPath) {
+    const { allowedRoutes } = determineAllowedRoute(
+      existingSignUpState,
+      match?.currentPath
+    )
+    const currentRouteIndex = allowedRoutes.indexOf(match.currentPath)
+    const isBackAllowed = allowedRoutes.length > 1 && currentRouteIndex > 0
+    return isBackAllowed
+  }
+  return false
+}
+
 export const SignUpRootPage = () => {
+  const { isDesktop } = useMedia()
+  const isBackAllowed = useIsBackAllowed()
+
   return (
     <Box h='100%'>
+      {!isDesktop ? <MobileNavHeader isBackAllowed={isBackAllowed} /> : null}
       <Switch>
         <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
           <CreateEmailPage />
