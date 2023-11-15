@@ -26,7 +26,7 @@
   position: relative;
 }
 
-.icon > svg path {
+.icon>svg path {
   fill: var(--neutral-light-4);
 }
 
@@ -36,11 +36,16 @@
   gap: var(--unit-2);
 }
 
+.item {
+  font-weight: var(--font-bold);
+}
+
 /* Apply color svg transitions on hover */
 .icon:hover path,
 .icon:active path {
   fill: var(--static-neutral-light-10) !important;
 }
+
 .icon:hover {
   transform: scale3d(1.1, 1.1, 1.1);
 }
@@ -70,4 +75,17 @@
   top: 0;
   right: 0;
   transform: translate(50%, -50%);
+}
+
+.innerNotificationDot {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--white);
+  transform: translate(92%, -200%);
+}
+
+.item:hover .innerNotificationDot {
+  background: var(--white);
+  border-color: var(--secondary);
 }

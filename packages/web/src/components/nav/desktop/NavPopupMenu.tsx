@@ -2,7 +2,9 @@ import {
   removeNullable,
   FeatureFlags,
   chatSelectors,
-  Name
+  Name,
+  useAccountHasClaimableRewards,
+  StringKeys
 } from '@audius/common'
 import {
   IconCrown,
@@ -23,7 +25,7 @@ import { Icon } from 'components/Icon'
 import { NotificationDot } from 'components/notification-dot'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { useFlag } from 'hooks/useRemoteConfig'
+import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { useSelector } from 'utils/reducer'
 import {
   AUDIO_PAGE,
@@ -40,7 +42,7 @@ const messages = {
   settings: 'Settings',
   dashboard: 'Artist Dashboard',
   payAndEarn: 'Pay & Earn',
-  audio: '$AUDIO & Rewards',
+  rewards: 'Rewards',
   messages: 'Messages'
 }
 
@@ -50,6 +52,9 @@ const NavPopupMenu = () => {
   const hasUnreadMessages = useSelector(chatSelectors.getHasUnreadMessages)
   const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
   const isUSDCEnabled = useIsUSDCEnabled()
+  const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
+  const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
+  const showNotificationBubble = hasUnreadMessages || hasClaimableRewards
 
   const messagesItemText = hasUnreadMessages ? (
     <div className={styles.popupItemText}>
@@ -60,39 +65,67 @@ const NavPopupMenu = () => {
     messages.messages
   )
 
+  const messagesIcon = hasUnreadMessages ? (
+    <div>
+      <IconMessage />
+      <NotificationDot
+        variant='large'
+        className={styles.innerNotificationDot}
+      />
+    </div>
+  ) : (
+    <IconMessage />
+  )
+
+  const rewardsIcon = hasClaimableRewards ? (
+    <div>
+      <IconCrown />
+      <NotificationDot
+        variant='large'
+        className={styles.innerNotificationDot}
+      />
+    </div>
+  ) : (
+    <IconCrown />
+  )
+
   const menuItems: PopupMenuItem[] = [
     isChatEnabled
       ? {
+          className: styles.item,
           text: messagesItemText,
           onClick: () => {
             navigate(CHATS_PAGE)
             dispatch(make(Name.CHAT_ENTRY_POINT, { source: 'navmenu' }))
           },
-          icon: <IconMessage />,
+          icon: messagesIcon,
           iconClassName: styles.menuItemIcon
         }
       : null,
-    {
-      text: messages.dashboard,
-      onClick: () => navigate(DASHBOARD_PAGE),
-      icon: <IconDashboard />,
-      iconClassName: styles.menuItemIcon
-    },
     isUSDCEnabled
       ? {
+          className: styles.item,
           text: messages.payAndEarn,
           onClick: () => navigate(PAY_AND_EARN_PAGE),
           icon: <Icon icon={IconDonate} />
         }
       : null,
     {
-      text: messages.audio,
-      className: styles.rewardsMenuItem,
+      className: styles.item,
+      text: messages.dashboard,
+      onClick: () => navigate(DASHBOARD_PAGE),
+      icon: <IconDashboard />,
+      iconClassName: styles.menuItemIcon
+    },
+    {
+      className: styles.item,
+      text: messages.rewards,
       onClick: () => navigate(AUDIO_PAGE),
-      icon: <IconCrown />,
+      icon: rewardsIcon,
       iconClassName: cn(styles.menuItemIcon, styles.crownIcon)
     },
     {
+      className: styles.item,
       text: messages.settings,
       onClick: () => navigate(SETTINGS_PAGE),
       icon: <IconSettings />,
@@ -115,7 +148,7 @@ const NavPopupMenu = () => {
               >
                 <Icon icon={IconKebabHorizontal} />
               </div>
-              {hasUnreadMessages ? (
+              {showNotificationBubble ? (
                 <NotificationDot
                   variant='large'
                   className={styles.notificationDot}
