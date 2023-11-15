@@ -1,8 +1,10 @@
 import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler'
 
+import { handleSsr } from './ssr'
+
 /* globals GA, GA_ACCESS_TOKEN, EMBED, DISCOVERY_NODES, HTMLRewriter */
 
-const DEBUG = false
+const DEBUG = true
 const BROWSER_CACHE_TTL_SECONDS = 60 * 60 * 24
 
 const discoveryNodes = DISCOVERY_NODES.split(',')
@@ -287,27 +289,28 @@ async function handleEvent(event) {
       }
     }
 
-    const asset = await getAssetFromKV(event, options)
+    if (!isAssetUrl(event.request.url)) {
+      const response = await handleSsr(event.request.url)
+      if (response !== null) return response
+    } else {
+      // Adjust browser cache on assets that don't change frequently and/or
+      // are given unique hashes when they do.
+      const asset = await getAssetFromKV(event, options)
 
-    const rewritten = new HTMLRewriter()
-      .on('head', new SEOHandlerHead(pathname))
-      .on('body', new SEOHandlerBody())
-      .transform(asset)
-
-    // Adjust browser cache on assets that don't change frequently and/or
-    // are given unique hashes when they do.
-    if (
-      pathname.startsWith('/assets') ||
-      pathname.startsWith('/scripts') ||
-      pathname.startsWith('/fonts')
-    ) {
-      const response = new Response(rewritten.body, rewritten)
+      const response = new Response(asset.body, asset)
       response.headers.set('cache-control', BROWSER_CACHE_TTL_SECONDS)
       return response
     }
-
-    return rewritten
   } catch (e) {
     return new Response(e.message || e.toString(), { status: 500 })
   }
+}
+
+function isAssetUrl(url) {
+  const { pathname } = new URL(url)
+  return (
+    pathname.startsWith('/assets') ||
+    pathname.startsWith('/scripts') ||
+    pathname.startsWith('/fonts')
+  )
 }
