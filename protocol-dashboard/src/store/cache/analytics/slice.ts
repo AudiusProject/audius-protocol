@@ -8,6 +8,8 @@ export type TimeSeriesRecord = {
   summed_unique_count?: number
 }
 
+type UptimeRecord = { [key: string]: number }
+
 export type CountRecord = {
   [key: string]: number
 }
@@ -28,6 +30,11 @@ type TimeSeriesMetric = {
   [key in Bucket]?: TimeSeriesRecord[] | MetricError
 }
 
+
+type UptimeMetric = {
+  [key in Bucket]?: UptimeRecord | MetricError
+}
+
 type CountMetric = {
   [key in Bucket]?: CountRecord | MetricError
 }
@@ -39,6 +46,10 @@ export type State = {
   topApps: CountMetric
   trailingTopGenres: CountMetric
   trailingApiCalls: CountMetric
+  individualNodeUptime: {
+    // Mapping of node endpoint to TimeSeriesMetric
+    [node: string]: UptimeMetric
+  }
   individualServiceApiCalls: {
     // Mapping of node endpoint to TimeSeriesMetric
     [node: string]: TimeSeriesMetric
@@ -52,6 +63,7 @@ export const initialState: State = {
   topApps: {},
   trailingTopGenres: {},
   trailingApiCalls: {},
+  individualNodeUptime: {},
   individualServiceApiCalls: {}
 }
 
@@ -67,6 +79,11 @@ type SetTrailingTopGenres = {
   bucket: Bucket
 }
 type SetTrailingApiCalls = { metric: CountRecord | MetricError; bucket: Bucket }
+type SetIndividualNodeUptime = {
+  node: string
+  metric: UptimeRecord | MetricError
+  bucket: Bucket
+}
 type SetIndividualServiceApiCalls = {
   node: string
   metric: TimeSeriesRecord[] | MetricError
@@ -107,6 +124,16 @@ const slice = createSlice({
       const { metric, bucket } = action.payload
       state.trailingApiCalls[bucket] = metric
     },
+    setIndividualNodeUptime: (
+      state,
+      action: PayloadAction<SetIndividualNodeUptime>
+    ) => {
+      const { node, metric, bucket } = action.payload
+      if (!state.individualNodeUptime[node]) {
+        state.individualNodeUptime[node] = {}
+      }
+      state.individualNodeUptime[node][bucket] = metric
+    },
     setIndividualServiceApiCalls: (
       state,
       action: PayloadAction<SetIndividualServiceApiCalls>
@@ -127,6 +154,7 @@ export const {
   setTopApps,
   setTrailingTopGenres,
   setTrailingApiCalls,
+  setIndividualNodeUptime,
   setIndividualServiceApiCalls
 } = slice.actions
 

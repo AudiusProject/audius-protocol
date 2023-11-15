@@ -1,7 +1,7 @@
 import { useMatch, useParams } from 'react-router-dom'
 import NodeOverview from 'components/NodeOverview'
-import { useDiscoveryProvider } from 'store/cache/discoveryProvider/hooks'
-import { useContentNode } from 'store/cache/contentNode/hooks'
+import { useDiscoveryProvider, useDiscoveryProviders } from 'store/cache/discoveryProvider/hooks'
+import { useContentNode, useContentNodes } from 'store/cache/contentNode/hooks'
 import { useAccount } from 'store/account/hooks'
 
 import styles from './Node.module.css'
@@ -17,6 +17,7 @@ import {
 import IndividualServiceApiCallsChart from 'components/IndividualServiceApiCallsChart'
 import clsx from 'clsx'
 import IndividualServiceUniqueUsersChart from 'components/IndividualServiceUniqueUsersChart'
+import IndividualNodeUptimeChart from 'components/IndividualNodeUptimeChart'
 
 const messages = {
   title: 'SERVICE',
@@ -38,19 +39,26 @@ const ContentNode: React.FC<ContentNodeProps> = ({
   const isOwner = accountWallet === contentNode?.owner ?? false
 
   return (
-    <div className={styles.section}>
-      <NodeOverview
-        spID={spID}
-        serviceType={ServiceType.ContentNode}
-        version={contentNode?.version}
-        endpoint={contentNode?.endpoint}
-        operatorWallet={contentNode?.owner}
-        delegateOwnerWallet={contentNode?.delegateOwnerWallet}
-        isOwner={isOwner}
-        isDeregistered={contentNode?.isDeregistered}
-        isLoading={status === Status.Loading}
-      />
-    </div>
+    <>
+      <div className={styles.section}>
+        <NodeOverview
+          spID={spID}
+          serviceType={ServiceType.ContentNode}
+          version={contentNode?.version}
+          endpoint={contentNode?.endpoint}
+          operatorWallet={contentNode?.owner}
+          delegateOwnerWallet={contentNode?.delegateOwnerWallet}
+          isOwner={isOwner}
+          isDeregistered={contentNode?.isDeregistered}
+          isLoading={status === Status.Loading}
+        />
+      </div>
+      {contentNode ? (
+        <div className={clsx(styles.section, styles.chart)}>
+          <IndividualNodeUptimeChart node={contentNode.endpoint} />
+        </div>
+      ) : null}
+    </>
   )
 }
 
@@ -63,6 +71,7 @@ const DiscoveryNode: React.FC<DiscoveryNodeProps> = ({
   accountWallet
 }: DiscoveryNodeProps) => {
   const { node: discoveryNode, status } = useDiscoveryProvider({ spID })
+
   const pushRoute = usePushRoute()
   if (status === Status.Failure) {
     pushRoute(NOT_FOUND)
@@ -87,10 +96,15 @@ const DiscoveryNode: React.FC<DiscoveryNodeProps> = ({
         />
       </div>
       {discoveryNode ? (
-        <div className={clsx(styles.section, styles.chart)}>
-          <IndividualServiceApiCallsChart node={discoveryNode?.endpoint} />
-          <IndividualServiceUniqueUsersChart node={discoveryNode?.endpoint} />
-        </div>
+        <>
+          <div className={clsx(styles.section, styles.chart)}>
+            <IndividualServiceApiCallsChart node={discoveryNode?.endpoint} />
+            <IndividualServiceUniqueUsersChart node={discoveryNode?.endpoint} />
+          </div>
+          <div className={clsx(styles.section, styles.chart)}>
+            <IndividualNodeUptimeChart node={discoveryNode.endpoint} />
+          </div>
+        </>
       ) : null}
     </>
   )
