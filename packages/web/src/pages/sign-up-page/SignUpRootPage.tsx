@@ -16,7 +16,7 @@ import {
 } from 'utils/route'
 
 import { ProgressHeader } from './components/ProgressHeader'
-import { CreateEmailPage } from './pages/CreateEmailPage'
+import { CreateEmailPage } from './pages/CreateEmailPage/CreateEmailPage'
 import { CreatePasswordPage } from './pages/CreatePasswordPage'
 import { FinishProfilePage } from './pages/FinishProfilePage'
 import { PickHandlePage } from './pages/PickHandlePage'

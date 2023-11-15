@@ -18,7 +18,6 @@
   border-bottom-right-radius: var(--harmony-border-radius-2xl);
 }
 
-/* TODO: consider adding these to a shared spot, maybe Harmony? */
 .flex1 {
   flex: 1;
 }
