@@ -14,9 +14,10 @@ import ReactDOM from 'react-dom'
 import { useTransition, animated } from 'react-spring'
 
 import { PlainButton, PlainButtonType } from 'components/button'
-import { useClickOutside } from 'hooks/useClickOutside'
 import { IconClose } from 'icons'
-import { getScrollParent } from 'utils/getScrollParent'
+
+import { useClickOutside } from '../../../hooks/useClickOutside'
+import { getScrollParent } from '../../../utils/getScrollParent'
 
 import styles from './Popup.module.css'
 import type { PopupProps, Origin } from './types'
@@ -24,8 +25,6 @@ import type { PopupProps, Origin } from './types'
 const messages = {
   close: 'close popup'
 }
-
-const portal = document.body
 
 /**
  * Number of pixels between the edge of the container and the popup
@@ -47,6 +46,7 @@ const getComputedOrigins = (
   transformOrigin: Origin,
   anchorRect: DOMRect,
   wrapperRect: DOMRect,
+  portal: HTMLElement,
   containerRef?: MutableRefObject<HTMLDivElement | undefined>
 ) => {
   if (!anchorRect || !wrapperRect) return { anchorOrigin, transformOrigin }
@@ -105,7 +105,8 @@ const getComputedOrigins = (
 const getAdjustedPosition = (
   top: number,
   left: number,
-  wrapperRect: DOMRect
+  wrapperRect: DOMRect,
+  portal: HTMLElement
 ): { adjustedTop: number; adjustedLeft: number } => {
   if (!wrapperRect) return { adjustedTop: 0, adjustedLeft: 0 }
 
@@ -202,7 +203,8 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     showHeader,
     title,
     zIndex,
-    containerRef
+    containerRef,
+    portalLocation = document.body
   } = props
   const theme = useTheme()
 
@@ -248,6 +250,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
         transformOrigin,
         anchorRect,
         wrapperRect,
+        portalLocation,
         containerRef
       )
       setComputedTransformOrigin(transformOriginComputed)
@@ -267,7 +270,8 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
       const { adjustedTop, adjustedLeft } = getAdjustedPosition(
         top,
         left,
-        wrapperRect
+        wrapperRect,
+        portalLocation
       )
 
       if (wrapperRef.current) {
@@ -285,6 +289,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     transformOrigin,
     setComputedTransformOrigin,
     originalTopPosition,
+    portalLocation,
     containerRef
   ])
 
@@ -404,7 +409,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
             ) : null
           )}
         </div>,
-        portal
+        portalLocation
       )}
     </>
   )
