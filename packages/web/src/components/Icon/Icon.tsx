@@ -44,9 +44,9 @@ export const Icon = (props: IconProps) => {
 
   const style = color
     ? {
-      ...styleProp,
-      '--icon-color': `var(${toCSSVariableName(color)})`
-    }
+        ...styleProp,
+        '--icon-color': `var(${toCSSVariableName(color)})`
+      }
     : styleProp
 
   return (
