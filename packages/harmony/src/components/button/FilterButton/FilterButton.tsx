@@ -1,11 +1,4 @@
-import {
-  forwardRef,
-  ForwardedRef,
-  RefObject,
-  useRef,
-  useState,
-  useCallback
-} from 'react'
+import { forwardRef, RefObject, useRef, useState, useCallback } from 'react'
 
 import { CSSObject, useTheme } from '@emotion/react'
 
@@ -21,10 +14,7 @@ import {
 } from '../types'
 
 export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
-  function FilterButton(
-    props: FilterButtonProps,
-    ref: ForwardedRef<HTMLButtonElement>
-  ) {
+  function FilterButton(props, ref) {
     const {
       initialSelectionIndex,
       label,
