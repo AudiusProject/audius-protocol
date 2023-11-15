@@ -2,7 +2,7 @@ import svgr from '@svgr/rollup'
 import json from 'rollup-plugin-json'
 import postcss from 'rollup-plugin-postcss'
 import rollupTypescript from 'rollup-plugin-typescript2'
-import typescript from 'typescript'
+import ttypescript from 'ttypescript'
 
 import pkg from './package.json' assert { type: 'json' }
 
@@ -34,8 +34,8 @@ export default {
     }),
     svgr(),
     rollupTypescript({
-      clean: true,
-      typescript
+      typescript: ttypescript,
+      clean: true
     })
   ],
   external
