@@ -1,6 +1,9 @@
 import { useMatch, useParams } from 'react-router-dom'
 import NodeOverview from 'components/NodeOverview'
-import { useDiscoveryProvider, useDiscoveryProviders } from 'store/cache/discoveryProvider/hooks'
+import {
+  useDiscoveryProvider,
+  useDiscoveryProviders
+} from 'store/cache/discoveryProvider/hooks'
 import { useContentNode, useContentNodes } from 'store/cache/contentNode/hooks'
 import { useAccount } from 'store/account/hooks'
 

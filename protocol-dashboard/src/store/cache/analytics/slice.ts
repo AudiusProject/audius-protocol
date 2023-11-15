@@ -8,10 +8,10 @@ export type TimeSeriesRecord = {
   summed_unique_count?: number
 }
 
-type UptimeRecord = { 
-  host: string,
-  uptime_percentage: number,
-  duration: string,
+type UptimeRecord = {
+  host: string
+  uptime_percentage: number
+  duration: string
   uptime_raw_data: { [key: string]: number }
 }
 
@@ -34,7 +34,6 @@ export enum MetricError {
 type TimeSeriesMetric = {
   [key in Bucket]?: TimeSeriesRecord[] | MetricError
 }
-
 
 type UptimeMetric = {
   [key in Bucket]?: UptimeRecord | MetricError

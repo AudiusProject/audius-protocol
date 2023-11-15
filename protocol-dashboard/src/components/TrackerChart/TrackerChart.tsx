@@ -36,9 +36,7 @@ const TrackerChart: React.FC<TrackerChartProps> = ({
     <Paper className={styles.chartContainer}>
       <div className={styles.header}>
         <div className={styles.title}>{title}</div>
-        {subtitle && (
-            <div className={styles.subtitle}>{subtitle}</div>
-        )}
+        {subtitle && <div className={styles.subtitle}>{subtitle}</div>}
       </div>
       <div className={styles.chart}>
         {error ? (
@@ -46,16 +44,10 @@ const TrackerChart: React.FC<TrackerChartProps> = ({
         ) : data && data.length >= 2 ? (
           <div className={styles.trackerContainer}>
             <div className={styles.labelContainer}>
-              <div 
-                className={styles.label}
-                style={{ textAlign: 'left' }}
-              >
+              <div className={styles.label} style={{ textAlign: 'left' }}>
                 {data[0].tooltip}
               </div>
-              <div 
-                className={styles.label}
-                style={{ textAlign: 'right' }}
-              >
+              <div className={styles.label} style={{ textAlign: 'right' }}>
                 {data[data.length - 1].tooltip}
               </div>
             </div>
@@ -66,16 +58,14 @@ const TrackerChart: React.FC<TrackerChartProps> = ({
                   className={styles.trackerCell}
                   style={{ backgroundColor: item.color }}
                   onMouseEnter={() => {
-                    setTooltipText(item.tooltip);
-                    setShowTooltip(true);
+                    setTooltipText(item.tooltip)
+                    setShowTooltip(true)
                   }}
                   onMouseLeave={() => setShowTooltip(false)}
                 />
               ))}
               {showTooltip && (
-                <div className={styles.tooltip}>
-                  {tooltipText}
-                </div>
+                <div className={styles.tooltip}>{tooltipText}</div>
               )}
             </div>
           </div>
@@ -88,4 +78,3 @@ const TrackerChart: React.FC<TrackerChartProps> = ({
 }
 
 export default TrackerChart
-

@@ -206,10 +206,7 @@ async function fetchTimeSeries(
   return metric
 }
 
-async function fetchUptime(
-  node: string,
-  bucket: Bucket
-) {
+async function fetchUptime(node: string, bucket: Bucket) {
   if (bucket !== Bucket.DAY) {
     // currently only 24h uptime supported
     return MetricError.ERROR
