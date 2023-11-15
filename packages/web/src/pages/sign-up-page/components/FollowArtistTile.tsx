@@ -4,10 +4,14 @@ import { UserMetadata } from '@audius/common'
 import {
   Avatar,
   Box,
+  Button,
+  ButtonSize,
+  ButtonType,
   Divider,
   Flex,
   IconNote,
   IconUser,
+  IconUserFollow,
   IconVerified,
   Paper,
   Text
@@ -22,13 +26,12 @@ type FollowArtistTileProps = {
 
 const FollowArtistTile = (props: FollowArtistTileProps) => {
   const {
-    user: { user_id, name, is_verified, track_count, follower_count },
-    checked,
+    user: { name, user_id, is_verified, track_count, follower_count },
     onChange
   } = props
   return (
-    <Paper css={{ minWidth: 200 }}>
-      <Flex w='100%' h='100%' direction='column' alignItems='center' gap='3xl'>
+    <Paper w={235} h={220}>
+      <Flex w='100%' direction='column' alignItems='center'>
         <Box w={72} h={72} css={{ position: 'absolute', top: 34 }}>
           <Avatar variant='strong' src={audiusProfilePic} />
         </Box>
@@ -37,7 +40,15 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
           h={68}
           css={{ backgroundImage: `url(${audiusCoverPhoto})` }}
         />
-        <Flex direction='column' alignItems='center' gap='l' p='s'>
+        <Flex
+          direction='column'
+          alignItems='center'
+          gap='l'
+          pt='3xl'
+          pb='l'
+          ph='s'
+          w='100%'
+        >
           <Flex direction='column' alignItems='center' gap='s'>
             <Flex direction='row' gap='xs' alignItems='center'>
               <Text variant='title' size='s' strength='default'>
@@ -64,14 +75,17 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
               </Flex>
             </Flex>
           </Flex>
+          {/* TODO: Use Harmony FollowButton */}
           <label key={user_id}>
-            <input
-              type='checkbox'
-              name={String(user_id)}
-              onChange={onChange}
-              checked={checked}
-            />
-            {name}
+            <Flex alignItems='center' gap='xs'>
+              <input
+                type='checkbox'
+                name={String(user_id)}
+                onChange={onChange}
+              />
+              <IconUserFollow color='subdued' />
+              Follow
+            </Flex>
           </label>
         </Flex>
       </Flex>

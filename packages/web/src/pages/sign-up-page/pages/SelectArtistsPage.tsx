@@ -14,7 +14,8 @@ import {
   PlainButton,
   PlainButtonType,
   SelectablePill,
-  Paper
+  Paper,
+  Box
 } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
@@ -54,9 +55,9 @@ export const SelectArtistsPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
 
-  const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setCurrentGenre(e.target.value)
-  }, [])
+  // const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+  //   setCurrentGenre(e.target.value)
+  // }, [])
 
   const handleSubmit = useCallback(
     (values: SelectArtistsValues) => {
@@ -87,10 +88,25 @@ export const SelectArtistsPage = () => {
     Status.LOADING
 
   return (
-    <Flex direction='column' gap='2xl'>
-      <Flex direction='column' gap='2xl' mh='5xl'>
+    <Flex
+      direction='column'
+      gap='2xl'
+      css={{
+        overflow: 'scroll',
+        // Hide scrollbar
+        scrollbarWidth: 'none', // Firefox
+        msOverflowStyle: 'none', // IE + Edge
+        // Chrome + Safari
+        '::-webkit-scrollbar': {
+          display: 'none'
+        }
+      }}
+    >
+      <Flex direction='column' gap='2xl' mh='5xl' mb='xl'>
+        {/* TODO: Placeholder for AccountHeader */}
+        <Box />
         <Flex direction='column' gap='l'>
-          <Text variant='heading' size='l' strength='default'>
+          <Text variant='heading' size='l' strength='default' color='heading'>
             {messages.header}
           </Text>
           <Text variant='body' size='l' strength='default'>
@@ -136,7 +152,11 @@ export const SelectArtistsPage = () => {
                       ? null
                       : artists?.map((user) => {
                           return (
-                            <FollowArtistTile key={user.user_id} user={user} />
+                            <FollowArtistTile
+                              key={user.user_id}
+                              user={user}
+                              onChange={handleChange}
+                            />
                           )
                         })}
                   </Paper>

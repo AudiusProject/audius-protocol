@@ -106,7 +106,7 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
 
 export const SignUpRootPage = () => {
   return (
-    <Paper h='100%' direction='column' m='4xl'>
+    <Paper w={1280} h={864} direction='column' m='4xl'>
       <Switch>
         <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
           <SignUpPage />
