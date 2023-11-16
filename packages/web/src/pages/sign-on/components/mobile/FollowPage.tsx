@@ -4,7 +4,6 @@ import { ID, User } from '@audius/common'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 
-import { MAIN_CONTENT_ID } from 'app/web-player/WebPlayer'
 import IconWand from 'assets/img/iconWand.svg'
 import {
   FollowArtistsCategory,
@@ -12,6 +11,7 @@ import {
 } from 'common/store/pages/signon/types'
 import UserCard from 'components/card/UserCard'
 import SelectablePills from 'components/selectable-pill/SelectablePills'
+import { MAIN_CONTENT_ID } from 'pages/MainContentContext'
 
 import styles from './FollowPage.module.css'
 

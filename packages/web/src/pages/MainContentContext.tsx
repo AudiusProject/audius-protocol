@@ -1,5 +1,7 @@
 import { createContext, memo, useRef, MutableRefObject } from 'react'
 
+export const MAIN_CONTENT_ID = 'mainContent'
+
 export const MainContentContext = createContext({
   mainContentRef: {} as MutableRefObject<HTMLDivElement | undefined>
 })

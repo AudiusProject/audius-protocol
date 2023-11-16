@@ -10,7 +10,7 @@ import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
 import '../services/webVitals'
 
 import { AppErrorBoundary } from './AppErrorBoundary'
-import AppProviders from './AppProviders'
+import { AppProviders } from './AppProviders'
 import WebPlayer from './web-player/WebPlayer'
 
 export const App = () => {

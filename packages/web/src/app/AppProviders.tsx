@@ -24,7 +24,7 @@ type AppContextProps = {
   children: ReactNode
 }
 
-const AppProviders = ({ children }: AppContextProps) => {
+export const AppProviders = ({ children }: AppContextProps) => {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
@@ -57,5 +57,3 @@ const AppProviders = ({ children }: AppContextProps) => {
     </Provider>
   )
 }
-
-export default AppProviders

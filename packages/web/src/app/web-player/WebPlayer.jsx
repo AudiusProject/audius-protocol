@@ -52,7 +52,8 @@ import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
 import {
   MainContentContext,
-  MainContentContextProvider
+  MainContentContextProvider,
+  MAIN_CONTENT_ID
 } from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
 import { AudioRewardsPage } from 'pages/audio-rewards-page/AudioRewardsPage'
@@ -193,8 +194,6 @@ const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 
 const UploadPage = lazy(() => import('pages/upload-page'))
 const Modals = lazy(() => import('pages/modals/Modals'))
-
-export const MAIN_CONTENT_ID = 'mainContent'
 
 const includeSearch = (search) => {
   return search.includes('oauth_token') || search.includes('code')
