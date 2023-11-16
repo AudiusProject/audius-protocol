@@ -146,8 +146,10 @@ export const SelectArtistsPage = () => {
               <Form>
                 <fieldset>
                   <Paper
-                    css={{ background: 'var(--harmony-bg-default)' }}
-                    shadow='none'
+                    css={{
+                      background: 'var(--harmony-bg-default)',
+                      boxShadow: 'none'
+                    }}
                     p='xl'
                     gap='m'
                     rowGap='m'
