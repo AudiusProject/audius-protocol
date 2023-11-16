@@ -1,6 +1,6 @@
 import { ChangeEvent, ReactNode } from 'react'
 
-import { Flex, IconComponent } from '@audius/harmony'
+import { Box, Flex, IconComponent } from '@audius/harmony'
 import { ColorValue, RadioButton, RadioButtonGroup } from '@audius/stems'
 import cn from 'classnames'
 
@@ -53,12 +53,11 @@ export const SummaryTable = ({
           <Flex alignItems='center' gap='s'>
             {withRadioOptions ? <RadioButton value={id} /> : null}
             {Icon ? (
-              <Icon
-                css={{
-                  marginLeft: 'var(--unit-2)',
-                  '& path': { fill: 'var(--neutral)' }
-                }}
-              />
+              <Box ml='s'>
+                <Icon
+                  color='default'
+                />
+              </Box>
             ) : null}
             <Text>{label}</Text>
           </Flex>
