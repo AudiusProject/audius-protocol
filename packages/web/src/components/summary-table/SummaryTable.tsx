@@ -1,6 +1,6 @@
-import { ChangeEvent, ReactNode } from 'react'
+import { ChangeEvent, ReactNode, useCallback, useState } from 'react'
 
-import { Flex, IconComponent } from '@audius/harmony'
+import { Flex, IconCaretDown, IconComponent } from '@audius/harmony'
 import { ColorValue, RadioButton, RadioButtonGroup } from '@audius/stems'
 import cn from 'classnames'
 
@@ -16,6 +16,8 @@ export type SummaryTableItem = {
 }
 
 export type SummaryTableProps = {
+  /** Enables an expand/collapse interaction. Only the title shows when collapsed. */
+  collapsible?: boolean
   items: SummaryTableItem[]
   summaryItem?: SummaryTableItem
   title: ReactNode
@@ -28,6 +30,7 @@ export type SummaryTableProps = {
 }
 
 export const SummaryTable = ({
+  collapsible = false,
   items,
   summaryItem,
   title,
@@ -38,16 +41,14 @@ export const SummaryTable = ({
   selectedRadioOption,
   onRadioChange
 }: SummaryTableProps) => {
+  // Collapsible is collapsed by default
+  const [expanded, setExpanded] = useState(!collapsible)
+  const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
+
+  const showBody = !collapsible || expanded
+
   const body = (
-    <div className={styles.container}>
-      <div className={styles.row}>
-        <Text variant='title' size='large'>
-          {title}
-        </Text>
-        <Text variant='title' size='large'>
-          {secondaryTitle}
-        </Text>
-      </div>
+    <>
       {items.map(({ id, label, icon: Icon, value }) => (
         <div key={id} className={styles.row}>
           <Flex alignItems='center' gap='s'>
@@ -75,6 +76,26 @@ export const SummaryTable = ({
           </Text>
         </div>
       ) : null}
+    </>
+  )
+
+  const content = (
+    <div className={styles.container}>
+      <Text as='div' variant='title' className={styles.row}>
+        <Flex gap='s'>
+          {collapsible ? (
+            <IconCaretDown
+              onClick={onToggleExpand}
+              className={cn(styles.expander, { [styles.expanded]: expanded })}
+              size='m'
+              color='default'
+            />
+          ) : null}
+          {title}
+        </Flex>
+        {secondaryTitle}
+      </Text>
+      {showBody ? body : null}
     </div>
   )
 
@@ -85,9 +106,9 @@ export const SummaryTable = ({
       onChange={onRadioChange}
       className={styles.radioGroup}
     >
-      {body}
+      {content}
     </RadioButtonGroup>
   ) : (
-    body
+    content
   )
 }

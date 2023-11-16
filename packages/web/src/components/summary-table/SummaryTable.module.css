@@ -9,6 +9,18 @@
   overflow: hidden;
 }
 
+.expander {
+  transition: transform var(--harmony-expressive);
+  cursor: pointer;
+}
+
+.expander.expanded {
+  transform: rotate(180deg);
+}
+
+.body.collapsible {
+}
+
 .row {
   align-items: center;
   align-self: stretch;
