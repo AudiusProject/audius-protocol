@@ -1,4 +1,4 @@
-import { useState, type HTMLProps, useCallback, ChangeEvent } from 'react'
+import { useState, useCallback, ChangeEvent } from 'react'
 
 import { useTheme, type CSSObject } from '@emotion/react'
 
@@ -8,20 +8,17 @@ import { Text } from 'components/text/Text'
 import { useControlled } from 'hooks/useControlled'
 import { IconUserFollowing, IconUserFollow, IconUserUnfollow } from 'icons'
 
+import type { FollowButtonProps } from './types'
+
 const messages = {
   follow: 'Follow',
   following: 'Following',
   unfollow: 'Unfollow'
 }
 
-export type FollowButtonProps = {
-  variant?: 'default' | 'pill'
-  following?: boolean
-  onUnfollow?: () => void
-  onFollow?: () => void
-  size?: 'default' | 'small'
-} & Omit<HTMLProps<HTMLInputElement>, 'size'>
-
+/**
+ * Special button for following or unfollowing a user.
+ */
 export const FollowButton = (props: FollowButtonProps) => {
   const {
     variant = 'default',
