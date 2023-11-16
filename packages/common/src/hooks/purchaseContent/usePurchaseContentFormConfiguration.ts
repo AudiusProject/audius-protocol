@@ -64,26 +64,28 @@ export const usePurchaseContentFormConfiguration = ({
         customAmount
       })
 
-      console.debug('REED got purchaseMethod:', purchaseMethod)
-
       if (purchaseMethod === PurchaseMethod.CARD) {
-        dispatch(
-          startPurchaseContentFlow({
-            extraAmount,
-            extraAmountPreset: amountPreset,
-            contentId: track.track_id,
-            contentType: ContentType.TRACK
-          })
-        )
+        if (track?.track_id === 0) {
+          dispatch(
+            startPurchaseContentFlow({
+              extraAmount,
+              extraAmountPreset: amountPreset,
+              contentId: track.track_id,
+              contentType: ContentType.TRACK
+            })
+          )
+        }
       } else if (purchaseMethod === PurchaseMethod.EXISTING_BALANCE) {
-        dispatch(
-          startPurchaseContentFlow({
-            extraAmount,
-            extraAmountPreset: amountPreset,
-            contentId: track.track_id,
-            contentType: ContentType.TRACK
-          })
-        )
+        if (track?.track_id === 0) {
+          dispatch(
+            startPurchaseContentFlow({
+              extraAmount,
+              extraAmountPreset: amountPreset,
+              contentId: track.track_id,
+              contentType: ContentType.TRACK
+            })
+          )
+        }
       } else if (purchaseMethod === PurchaseMethod.MANUAL_TRANSFER) {
         openUsdcManualTransferModal()
       }

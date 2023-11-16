@@ -12,7 +12,9 @@ import {
   purchaseContentActions,
   purchaseContentSelectors,
   isContentPurchaseInProgress,
-  usePayExtraPresets
+  usePayExtraPresets,
+  useUSDCBalance,
+  statusIsNotFinalized
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import { Flex } from '@audius/harmony'
@@ -23,6 +25,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Icon } from 'components/Icon'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
 import { Text } from 'components/typography'
@@ -102,7 +105,7 @@ const RenderForm = ({
       </ModalHeader>
       <ModalContent className={styles.content}>
         {stage !== PurchaseContentStage.FINISH ? (
-          <AudioMatchSection amount={price.round().toString()} />
+          <AudioMatchSection amount={price.round().toShorthand()} />
         ) : null}
         <Flex p='xl'>
           <Flex direction='column' gap='xl' w='100%'>
@@ -145,11 +148,21 @@ export const PremiumContentPurchaseModal = () => {
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const presetValues = usePayExtraPresets(useRemoteVar)
+  // Fetch USDC balance here so that initialValues takes it into account
+  const { balanceStatus } = useUSDCBalance()
+  const isLoading = statusIsNotFinalized(balanceStatus)
 
   const { data: track } = useGetTrackById(
     { id: trackId! },
     { disabled: !trackId }
   )
+
+  useEffect(() => {
+    console.debug('Modal mounted')
+    return () => {
+      console.debug('modal unmounted')
+    }
+  })
 
   const isValidTrack = track && isTrackPurchasable(track)
   const price = isValidTrack
@@ -194,7 +207,16 @@ export const PremiumContentPurchaseModal = () => {
       useGradientTitle={false}
       dismissOnClickOutside
     >
-      {isValidTrack ? (
+      {isLoading ? (
+        <Flex
+          alignItems='center'
+          justifyContent='center'
+          h='100%'
+          css={{ flexGrow: 1 }}
+        >
+          <LoadingSpinner className={styles.spinner} />
+        </Flex>
+      ) : isValidTrack ? (
         <Formik
           initialValues={initialValues}
           validationSchema={toFormikValidationSchema(validationSchema)}

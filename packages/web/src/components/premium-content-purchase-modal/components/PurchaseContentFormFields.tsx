@@ -2,11 +2,12 @@ import { ChangeEvent, useCallback } from 'react'
 
 import {
   BNUSDC,
-  PURCHASE_METHOD,
   PurchaseContentStage,
   usePayExtraPresets,
   useUSDCBalance,
-  removeNullable
+  removeNullable,
+  PurchaseMethod,
+  PURCHASE_METHOD
 } from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { IconCheck, RadioButtonGroup } from '@audius/stems'
@@ -70,11 +71,14 @@ export const PurchaseContentFormFields = ({
   }
 
   const options = [
+    { label: messages.existingBalance, value: PurchaseMethod.EXISTING_BALANCE },
+    { label: messages.card, value: PurchaseMethod.CARD },
     balance?.gte(new BN(price) as BNUSDC)
-      ? { label: messages.manualTransfer, value: 'manual' }
-      : null,
-    { label: messages.card, value: 'card' },
-    { label: messages.existingBalance, value: 'existing' }
+      ? {
+          label: messages.manualTransfer,
+          value: PurchaseMethod.MANUAL_TRANSFER
+        }
+      : null
   ].filter(removeNullable)
 
   return (
