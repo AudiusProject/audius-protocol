@@ -33,7 +33,7 @@ import {
   AUDIO_PAGE,
   CHATS_PAGE,
   DASHBOARD_PAGE,
-  PAY_AND_EARN_PAGE,
+  PAYMENTS_PAGE,
   SETTINGS_PAGE
 } from 'utils/route'
 import zIndex from 'utils/zIndex'
@@ -91,7 +91,7 @@ const NavPopupMenu = () => {
             <UsdcBalancePill className={styles.usdcPill} />
           </div>
         ),
-        onClick: () => navigate(PAY_AND_EARN_PAGE),
+        onClick: () => navigate(PAYMENTS_PAGE),
         icon: <Icon icon={IconDonate} />,
         iconClassName: styles.payAndEarnIcon
       }

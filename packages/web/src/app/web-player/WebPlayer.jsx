@@ -178,7 +178,7 @@ import {
   PROFILE_PAGE_AI_ATTRIBUTED_TRACKS,
   EXPLORE_PREMIUM_TRACKS_PAGE,
   SIGN_UP_START_PAGE,
-  PAY_AND_EARN_PAGE
+  PAYMENTS_PAGE
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
@@ -739,7 +739,7 @@ class WebPlayer extends Component {
                 />
                 <Route
                   exact
-                  path={PAY_AND_EARN_PAGE}
+                  path={PAYMENTS_PAGE}
                   isMobile={isMobileClient}
                   component={PayAndEarnPage}
                 />
