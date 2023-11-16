@@ -1,7 +1,6 @@
 import { ChangeEvent, useCallback } from 'react'
 
 import {
-  BNUSDC,
   PurchaseContentStage,
   usePayExtraPresets,
   useUSDCBalance,
@@ -9,9 +8,9 @@ import {
   PurchaseMethod,
   PURCHASE_METHOD
 } from '@audius/common'
+import { USDC } from '@audius/fixed-decimal'
 import { Flex } from '@audius/harmony'
 import { IconCheck, RadioButtonGroup } from '@audius/stems'
-import BN from 'bn.js'
 import { useField } from 'formik'
 
 import { Icon } from 'components/Icon'
@@ -36,7 +35,7 @@ const messages = {
 type PurchaseContentFormFieldsProps = Pick<
   PurchaseContentFormState,
   'purchaseSummaryValues' | 'stage' | 'isUnlocking'
-> & { price: number }
+> & { price: bigint }
 
 export const PurchaseContentFormFields = ({
   price,
@@ -49,6 +48,7 @@ export const PurchaseContentFormFields = ({
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
   const isPurchased = stage === PurchaseContentStage.FINISH
+  const balanceUSDC = USDC(balance?.toString() ?? 0)
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -73,7 +73,7 @@ export const PurchaseContentFormFields = ({
   const options = [
     { label: messages.existingBalance, value: PurchaseMethod.EXISTING_BALANCE },
     { label: messages.card, value: PurchaseMethod.CARD },
-    balance?.gte(new BN(price) as BNUSDC)
+    balanceUSDC.value >= price
       ? {
           label: messages.manualTransfer,
           value: PurchaseMethod.MANUAL_TRANSFER

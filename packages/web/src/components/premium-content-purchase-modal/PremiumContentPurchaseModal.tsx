@@ -64,12 +64,12 @@ const RenderForm = ({
   const {
     permalink,
     premium_conditions: {
-      usdc_purchase: { price: priceCents }
+      usdc_purchase: { price }
     }
   } = track
-  const price = USDC(priceCents / 100)
+  const priceUSDC = USDC(price)
   const { error, isUnlocking, purchaseSummaryValues, stage } =
-    usePurchaseContentFormState({ price: priceCents })
+    usePurchaseContentFormState({ price })
 
   const { resetForm } = useFormikContext()
 
@@ -105,7 +105,7 @@ const RenderForm = ({
       </ModalHeader>
       <ModalContent className={styles.content}>
         {stage !== PurchaseContentStage.FINISH ? (
-          <AudioMatchSection amount={price.round().toShorthand()} />
+          <AudioMatchSection amount={priceUSDC.round().toShorthand()} />
         ) : null}
         <Flex p='xl'>
           <Flex direction='column' gap='xl' w='100%'>
@@ -117,7 +117,7 @@ const RenderForm = ({
               stage={stage}
               purchaseSummaryValues={purchaseSummaryValues}
               isUnlocking={isUnlocking}
-              price={Number(price.value) / 10 ** price.decimalPlaces}
+              price={priceUSDC.value}
             />
           </Flex>
         </Flex>
@@ -166,7 +166,7 @@ export const PremiumContentPurchaseModal = () => {
 
   const isValidTrack = track && isTrackPurchasable(track)
   const price = isValidTrack
-    ? USDC(track?.premium_conditions?.usdc_purchase?.price / 100)
+    ? USDC(track?.premium_conditions?.usdc_purchase?.price)
     : USDC(0)
   const { initialValues, validationSchema, onSubmit } =
     usePurchaseContentFormConfiguration({
