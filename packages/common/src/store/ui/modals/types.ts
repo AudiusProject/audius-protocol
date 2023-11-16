@@ -1,5 +1,6 @@
 import { ModalSource } from 'models/Analytics'
 
+import { AddFundsModalState } from './add-funds-modal'
 import { CreateChatModalState } from './create-chat-modal'
 import { BaseModalState } from './createModal'
 import { EditPlaylistModalState } from './edit-playlist-modal'
@@ -60,6 +61,7 @@ export type Modals =
   | 'USDCPurchaseDetailsModal'
   | 'USDCTransactionDetailsModal'
   | 'USDCManualTransferModal'
+  | 'AddFundsModal'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -75,6 +77,7 @@ export type StatefulModalsState = {
   USDCPurchaseDetailsModal: USDCPurchaseDetailsModalState
   USDCTransactionDetailsModal: USDCTransactionDetailsModalState
   USDCManualTransferModal: USDCManualTransferModalState
+  AddFundsModal: AddFundsModalState
   PremiumContentPurchaseModal: PremiumContentPurchaseModalState
 }
 

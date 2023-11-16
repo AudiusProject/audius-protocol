@@ -1,9 +1,6 @@
 import { useCallback, useContext } from 'react'
 
-import {
-  Name,
-  useCreateUserbankIfNeeded
-} from '@audius/common'
+import { Name, useCreateUserbankIfNeeded } from '@audius/common'
 import { Button, ButtonType } from '@audius/harmony'
 import { IconError, LogoUSDC } from '@audius/stems'
 import cn from 'classnames'
@@ -76,9 +73,7 @@ export const USDCManualTransfer = ({ onClose }: { onClose: () => void }) => {
           <Hint
             text={messages.disclaimer}
             link={USDCLearnMore}
-            icon={() => (
-              <Icon icon={IconError} size='large' fill='neutral' />
-            )}
+            icon={() => <Icon icon={IconError} size='large' fill='neutral' />}
             linkText={messages.learnMore}
           />
         </div>
@@ -92,11 +87,7 @@ export const USDCManualTransfer = ({ onClose }: { onClose: () => void }) => {
           {messages.copy}
         </Button>
         {mobile ? null : (
-          <Button
-            variant={ButtonType.TERTIARY}
-            fullWidth
-            onClick={onClose}
-          >
+          <Button variant={ButtonType.TERTIARY} fullWidth onClick={onClose}>
             {messages.goBack}
           </Button>
         )}

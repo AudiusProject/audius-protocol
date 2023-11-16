@@ -1,5 +1,6 @@
 import { Action, combineReducers, Reducer } from '@reduxjs/toolkit'
 
+import { addFundsModalReducer } from './add-funds-modal'
 import { createChatModalReducer } from './create-chat-modal'
 import { BaseModalState } from './createModal'
 import { editPlaylistModalReducer } from './edit-playlist-modal'
@@ -37,6 +38,7 @@ const combinedReducers = combineReducers({
   WithdrawUSDCModal: withdrawUSDCModalReducer,
   USDCPurchaseDetailsModal: usdcPurchaseDetailsModalReducer,
   USDCManualTransferModal: usdcManualTransferModalReducer,
+  AddFundsModal: addFundsModalReducer,
   USDCTransactionDetailsModal: usdcTransactionDetailsModalReducer,
   PremiumContentPurchaseModal: premiumContentPurchaseModalReducer
 })
