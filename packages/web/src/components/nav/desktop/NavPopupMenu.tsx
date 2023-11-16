@@ -22,9 +22,9 @@ import { useDispatch } from 'react-redux'
 import IconKebabHorizontal from 'assets/img/iconKebabHorizontalAlt.svg'
 import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
-import { AudioPill } from 'components/audio-pill/AudioPill'
+import { AudioBalancePill } from 'components/audio-balance-pill/AudioBalancePill'
 import { NotificationDot } from 'components/notification-dot'
-import { USDCPill } from 'components/usdc-pill/USDCPill'
+import { UsdcBalancePill } from 'components/usdc-balance-pill/UsdcBalancePill'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
@@ -88,7 +88,7 @@ const NavPopupMenu = () => {
         text: (
           <div className={styles.popupItemText}>
             <span>{messages.payAndEarn}</span>
-            <USDCPill className={styles.usdcPill} />
+            <UsdcBalancePill className={styles.usdcPill} />
           </div>
         ),
         onClick: () => navigate(PAY_AND_EARN_PAGE),
@@ -121,7 +121,7 @@ const NavPopupMenu = () => {
     text: (
       <div className={styles.popupItemText}>
         <span>{messages.rewards}</span>
-        <AudioPill className={styles.audioPill} />
+        <AudioBalancePill className={styles.audioPill} />
       </div>
     ),
     onClick: () => navigate(AUDIO_PAGE),

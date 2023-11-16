@@ -1,14 +1,11 @@
-import { useMemo } from 'react'
-
-import type { BNWei, User } from '@audius/common'
+import type { User } from '@audius/common'
 import {
   accountSelectors,
   formatWei,
   isNullOrUndefined,
   useSelectTierInfo,
-  walletSelectors
+  useTotalBalanceWithFallback
 } from '@audius/common'
-import BN from 'bn.js'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -19,7 +16,6 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 
 const { getAccountUser } = accountSelectors
-const { getAccountTotalBalance } = walletSelectors
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
@@ -38,30 +34,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   }
 }))
 
-/**
- * Pulls balances from account and wallet selectors. Will prefer the wallet
- * balance once it has loaded. Otherwise, will return the account balance if
- * available. Falls back to 0 if neither wallet or account balance are available.
- */
-const useTotalBalanceWithFallback = () => {
-  const account = useSelector(getAccountUser)
-  const walletTotalBalance = useSelector(getAccountTotalBalance)
-
-  return useMemo(() => {
-    if (!isNullOrUndefined(walletTotalBalance)) {
-      return walletTotalBalance
-    } else if (
-      !isNullOrUndefined(account) &&
-      !isNullOrUndefined(account.total_balance)
-    ) {
-      return new BN(account.total_balance) as BNWei
-    }
-
-    return null
-  }, [account, walletTotalBalance])
-}
-
-export const AudioPill = () => {
+export const AudioBalancePill = () => {
   const styles = useStyles()
   const accountUser = useSelector(getAccountUser) as User
   const { user_id } = accountUser
