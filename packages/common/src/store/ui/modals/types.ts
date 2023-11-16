@@ -62,6 +62,7 @@ export type Modals =
   | 'USDCTransactionDetailsModal'
   | 'USDCManualTransferModal'
   | 'AddFundsModal'
+  | 'Welcome'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
