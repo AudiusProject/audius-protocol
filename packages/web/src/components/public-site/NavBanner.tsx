@@ -210,7 +210,12 @@ const NavBanner = (props: NavBannerProps) => {
             className={styles.popup}
             dismissOnMouseLeave
           />
-          <div onClick={onClickSignUp} className={styles.signUp}>
+          <div
+            onClick={onClickSignUp}
+            className={styles.signUp}
+            role='button'
+            data-testid='signUpButtonDesktop'
+          >
             {messages.signUp}
           </div>
         </div>
