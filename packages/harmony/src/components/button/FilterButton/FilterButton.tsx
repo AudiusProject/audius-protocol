@@ -86,7 +86,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
           : color.text.default,
       gap: spacing.xs,
       fontSize: typography.size.s,
-      fontWeight: typography.weight.medium,
+      fontWeight: typography.weight.demiBold,
       lineHeight: typography.lineHeight.s,
 
       '&:hover': {
