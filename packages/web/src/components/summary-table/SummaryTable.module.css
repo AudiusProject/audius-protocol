@@ -15,7 +15,7 @@
 }
 
 .expander.expanded {
-  transform: rotate(180deg);
+  transform: rotate(-180deg);
 }
 
 .expandableContainer {
