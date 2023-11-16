@@ -13,6 +13,7 @@ import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordFiel
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { ArtworkContainer } from 'pages/sign-on/components/AudiusValues'
 import { SignOnContainerMobile } from 'pages/sign-on/components/mobile/SignOnContainerMobile'
+import { SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './SignInPageMobile.module.css'
 
@@ -82,7 +83,7 @@ export const SignInPageMobile = () => {
         >
           {/* TODO: args look good but style doesn't match design */}
           <Text variant='title'>{messages.newToAudius}</Text>
-          <Link to={''}>{messages.createAccount}</Link>
+          <Link to={SIGN_UP_PAGE}>{messages.createAccount}</Link>
         </Flex>
       </ArtworkContainer>
     </SignOnContainerMobile>
