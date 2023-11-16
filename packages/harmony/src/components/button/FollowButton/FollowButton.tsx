@@ -1,6 +1,7 @@
-import { useState, useCallback, ChangeEvent } from 'react'
+import { useState, useCallback } from 'react'
 
 import { useTheme, type CSSObject } from '@emotion/react'
+import styled from '@emotion/styled'
 
 import type { IconComponent } from 'components/icon'
 import { Flex } from 'components/layout/Flex'
@@ -16,27 +17,37 @@ const messages = {
   unfollow: 'Unfollow'
 }
 
+const InputRoot = styled.input({
+  position: 'absolute',
+  opacity: 0,
+  cursor: 'pointer',
+  height: 0,
+  width: 0
+})
+
 /**
  * Special button for following or unfollowing a user.
  */
 export const FollowButton = (props: FollowButtonProps) => {
   const {
     variant = 'default',
-    following = false,
+    isFollowing = false,
     onUnfollow,
     onFollow,
     size = 'default',
+    as: ignoredAs,
     ...inputProps
   } = props
   const [value, setValueState] = useControlled({
     componentName: 'FollowButton',
-    controlledProp: following,
+    controlledProp: isFollowing,
     defaultValue: undefined,
     stateName: 'following'
   })
 
   // Track hover manually to swap text and icon
   const [isHovering, setIsHovering] = useState(false)
+
   const handleMouseEnter = useCallback(() => {
     setIsHovering(true)
   }, [setIsHovering])
@@ -44,17 +55,14 @@ export const FollowButton = (props: FollowButtonProps) => {
     setIsHovering(false)
   }, [setIsHovering])
 
-  const handleChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      if (value) {
-        onUnfollow?.()
-      } else {
-        onFollow?.()
-      }
-      setValueState(!value)
-    },
-    [value, setValueState, onFollow, onUnfollow]
-  )
+  const handleChange = useCallback(() => {
+    if (value) {
+      onUnfollow?.()
+    } else {
+      onFollow?.()
+    }
+    setValueState(!value)
+  }, [value, setValueState, onFollow, onUnfollow])
 
   let Icon: IconComponent | null = IconUserFollow
   let text = messages.follow
@@ -84,18 +92,7 @@ export const FollowButton = (props: FollowButtonProps) => {
   return (
     <>
       <label onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-        <input
-          type='checkbox'
-          css={{
-            position: 'absolute',
-            opacity: 0,
-            cursor: 'pointer',
-            height: 0,
-            width: 0
-          }}
-          onChange={handleChange}
-          {...inputProps}
-        />
+        <InputRoot type='checkbox' onChange={handleChange} {...inputProps} />
         <Flex
           w={size === 'small' ? 128 : 152}
           h={size === 'small' ? 28 : 32}
@@ -106,6 +103,7 @@ export const FollowButton = (props: FollowButtonProps) => {
           pv='s'
           css={css}
         >
+          {/* TODO: use theme icon colors (confirm w/design) */}
           <Icon height={18} width={18} css={{ path: { fill: textColor } }} />
           <Text
             variant='label'

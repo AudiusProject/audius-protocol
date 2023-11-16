@@ -16,7 +16,7 @@ export type FollowButtonProps = {
   /**
    * The current state of the button
    */
-  following?: boolean
+  isFollowing?: boolean
 
   /**
    * Callback for when a follow is triggered.
