@@ -1,11 +1,11 @@
 import { MutableRefObject } from 'react'
 
-type AppProps = {
+type WebPlayerProps = {
   mainContentRef: MutableRefObject<HTMLDivElement | undefined>
 }
 
-const App: (props: AppProps) => JSX.Element
+const WebPlayer: () => JSX.Element
 
 export const MAIN_CONTENT_ID: 'mainContent'
 
-export default App
+export default WebPlayer

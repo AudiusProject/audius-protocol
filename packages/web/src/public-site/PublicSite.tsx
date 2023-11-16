@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Route } from 'react-router-dom'
 
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
 import NavScreen from 'components/public-site/NavOverlay'
-import LandingPage from 'pages/landing-page/LandingPage'
 import {
   TRENDING_PAGE,
   SIGN_UP_PAGE,
@@ -13,16 +12,18 @@ import {
   AUDIUS_PRESS_LINK
 } from 'utils/route'
 
-import { AppContextProvider } from './AppContextProvider'
+import { AppContextProvider } from '../app/AppContextProvider'
+
+import LandingPage from './pages/landing-page/LandingPage'
 
 const BASENAME = process.env.VITE_PUBLIC_URL
 
 const PrivacyPolicyPage = lazy(
-  () => import('pages/privacy-policy-page/PrivacyPolicyPage')
+  () => import('./pages/privacy-policy-page/PrivacyPolicyPage')
 )
-const DownloadPage = lazy(() => import('pages/download-page/DownloadPage'))
+const DownloadPage = lazy(() => import('./pages/download-page/DownloadPage'))
 const TermsOfUsePage = lazy(
-  () => import('pages/terms-of-use-page/TermsOfUsePage')
+  () => import('./pages/terms-of-use-page/TermsOfUsePage')
 )
 
 const ROOT_ID = 'root'
@@ -37,7 +38,8 @@ type PublicSiteProps = {
   setRenderPublicSite: (shouldRender: boolean) => void
 }
 
-const PublicSite = ({ isMobile, setRenderPublicSite }: PublicSiteProps) => {
+export const PublicSite = (props: PublicSiteProps) => {
+  const { isMobile, setRenderPublicSite } = props
   const [isMobileOrNarrow, setIsMobileOrNarrow] = useState(isMobile)
   const handleMobileMediaQuery = useCallback(() => {
     if (MOBILE_WIDTH_MEDIA_QUERY.matches) setIsMobileOrNarrow(true)
@@ -160,5 +162,3 @@ const PublicSite = ({ isMobile, setRenderPublicSite }: PublicSiteProps) => {
     </>
   )
 }
-
-export default PublicSite

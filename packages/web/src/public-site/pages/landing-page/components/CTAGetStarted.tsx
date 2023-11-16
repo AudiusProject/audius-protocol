@@ -113,7 +113,7 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
               {titleSpring.map(
                 ({ x, wordYPosition, ...rest }: any, index: number) => (
                   <animated.span
-                    key={titleItems[index]}
+                    key={index}
                     className={cn(styles.textAnimateTitle)}
                     style={{
                       ...rest,

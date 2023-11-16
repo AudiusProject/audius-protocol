@@ -3,12 +3,9 @@ import 'setimmediate'
 import { createRoot } from 'react-dom/client'
 
 import './index.css'
+import { Root } from './Root'
 
-// Import CSS first so it's resolved in the right order.
-// Unsure why importing this component first would change that, but it appears to
-// when running in dev mode.
-import Root from './root'
-
+// @ts-ignore
 window.global ||= window
 
 const container = document.getElementById('root')
