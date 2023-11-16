@@ -4,6 +4,9 @@ import { useEnvVars } from './providers/EnvVarsProvider'
 import { useAudiusLibs } from './providers/AudiusLibsProvider'
 import useMinChainVersions from './hooks/useMinChainVersions'
 import useLatestGitHubVersions from './hooks/useLatestGitHubVersions'
+import Header from './Header'
+import Uptime from './Uptime'
+import NetworkOverview from './NetworkOverview'
 
 interface UptimeResponse {
   host: string
@@ -19,9 +22,6 @@ const App = () => {
     isLoading: isAudiusLibsLoading,
     isReadOnly: isLibsReadOnly
   } = useAudiusLibs()
-  const [targetEndpoint, setTargetEndpoint] = useState(endpoint)
-  const [uptimeData, setUptimeData] = useState<UptimeResponse | null>(null)
-
   const {
     data: minChainVersions,
     isPending: isMinChainVersionsPending,
@@ -39,110 +39,65 @@ const App = () => {
   const { connectors, connect } = useConnect()
   const { disconnect } = useDisconnect()
 
-  const fetchUptimeData = async () => {
-    try {
-      const response = await fetch(
-        `${endpoint}/d_api/uptime?host=${targetEndpoint}`
-      )
-      if (response.ok) {
-        const data = (await response.json()) as UptimeResponse
-        setUptimeData(data)
-      } else {
-        console.error('Failed to fetch uptime data')
-      }
-    } catch (error) {
-      console.error('There was an error fetching the uptime data:', error)
-    }
-  }
-
   return (
     <>
-      <h1>Uptime UI</h1>
-      <p>Host: {endpoint}</p>
-      <p>Environment: {env}</p>
-      <p>Node Type: {nodeType}</p>
-      <p>
-        Min enforceable versions (chain):{' '}
-        {isMinChainVersionsPending
-          ? 'loading...'
-          : minChainVersionsError
-            ? 'error'
-            : JSON.stringify(minChainVersions)}
-      </p>
-      <p>
-        Latest versions (GitHub):{' '}
-        {isLatestGithubVersionsPending
-          ? 'loading...'
-          : latestGithubVersionsError
-            ? 'error'
-            : JSON.stringify(latestGithubVersions)}
-      </p>
+      <Header />
+      <div className="pageContainer">
+        <div className="pageContentContainer">
+          <div>
+            <p>Host: {endpoint}</p>
+            <p>Environment: {env}</p>
+            <p>Node Type: {nodeType}</p>
+            <p>
+              Min enforceable versions (chain):{' '}
+              {isMinChainVersionsPending
+                ? 'loading...'
+                : minChainVersionsError
+                ? 'error'
+                : JSON.stringify(minChainVersions)}
+            </p>
+            <p>
+              Latest versions (GitHub):{' '}
+              {isLatestGithubVersionsPending
+                ? 'loading...'
+                : latestGithubVersionsError
+                ? 'error'
+                : JSON.stringify(latestGithubVersions)}
+            </p>
+            <p>
+              MetaMask connected to chain:{' '}
+              {chain?.name
+                ? `${chain.name} (latest block: ${(
+                    latestBlockNumber ?? ''
+                  ).toString()}. if this number is wrong, your
+              RPC env var is not configured to talk to this chain)`
+                : '?'}
+            </p>
+            <p>
+              Libs:{' '}
+              {isAudiusLibsLoading
+                ? 'loading...'
+                : `v${audiusLibs!.version} (${
+                    isLibsReadOnly ? 'read-only' : 'able to sign txns'
+                  })`}
+            </p>
+            {connectors.map((connector) => (
+              <button key={connector.uid} onClick={() => connect({ connector })}>
+                Connect {connector.name}
+              </button>
+            ))}
 
-      <br />
-
-      <p>
-        MetaMask connected to chain:{' '}
-        {chain?.name
-          ? `${chain.name} (latest block: ${(
-              latestBlockNumber ?? ''
-            ).toString()}. if this number is wrong, your
-        RPC env var is not configured to talk to this chain)`
-          : '?'}
-      </p>
-      <p>
-        Libs:{' '}
-        {isAudiusLibsLoading
-          ? 'loading...'
-          : `v${audiusLibs!.version} (${
-              isLibsReadOnly ? 'read-only' : 'able to sign txns'
-            })`}
-      </p>
-
-      {connectors.map((connector) => (
-        <button key={connector.uid} onClick={() => connect({ connector })}>
-          Connect {connector.name}
-        </button>
-      ))}
-
-      {
-        <div>
-          {address && <div>{address}</div>}
-          {address && <button onClick={() => disconnect()}>Disconnect</button>}
+            {
+              <div>
+                {address && <div>{address}</div>}
+                {address && <button onClick={() => disconnect()}>Disconnect</button>}
+              </div>
+            }
+          </div>
+          <Uptime />
+          <NetworkOverview />
         </div>
-      }
-
-      <br />
-      <input
-        type='text'
-        value={targetEndpoint}
-        onChange={(e) => setTargetEndpoint(e.target.value)}
-      />
-      <button onClick={() => void fetchUptimeData()}>Check Uptime</button>
-      {uptimeData && (
-        <>
-          <h2>Uptime Data for {uptimeData.host}</h2>
-          <p>Overall Uptime: {uptimeData.uptime_percentage}%</p>
-          <p>Duration: {uptimeData.duration}</p>
-          <table>
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(uptimeData.uptime_raw_data).map(
-                ([time, status]) => (
-                  <tr key={time}>
-                    <td>{time}</td>
-                    <td>{status ? 'Up' : 'Down'}</td>
-                  </tr>
-                )
-              )}
-            </tbody>
-          </table>
-        </>
-      )}
+      </div>
     </>
   )
 }

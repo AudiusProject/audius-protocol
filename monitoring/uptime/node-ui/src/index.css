@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.pageContainer {
+  @apply mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8;
+}
+
+.pageContentContainer {
+  @apply mx-auto flex flex-col space-y-8;
+}
+
+.button {
+  @apply bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow;
+}
+
+.tableHeaderCellFirst {
+  @apply py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 uppercase;
+}
+
+.tableHeaderCell {
+  @apply px-3 py-3.5 text-left text-sm font-semibold text-gray-900 uppercase;
+}
+
+.tableCellFirst {
+  @apply whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 sm:pl-6;
+}
+
+.tableCell {
+  @apply whitespace-nowrap px-3 py-4 text-sm text-gray-500;
+}
