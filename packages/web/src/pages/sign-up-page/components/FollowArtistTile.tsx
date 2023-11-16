@@ -2,7 +2,6 @@ import { HTMLProps } from 'react'
 
 import { UserMetadata } from '@audius/common'
 import {
-  Avatar,
   Box,
   Divider,
   Flex,
@@ -16,6 +15,7 @@ import {
 
 import audiusCoverPhoto from 'assets/img/4-Conductor-16-9.jpg'
 import audiusProfilePic from 'assets/img/appIcon240.png'
+import { Avatar } from 'components/avatar/Avatar'
 
 type FollowArtistTileProps = {
   user: UserMetadata
@@ -30,7 +30,7 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
     <Paper w={235} h={220}>
       <Flex w='100%' direction='column' alignItems='center'>
         <Box w={72} h={72} css={{ position: 'absolute', top: 34 }}>
-          <Avatar variant='strong' src={audiusProfilePic} />
+          <Avatar variant='strong' src={audiusProfilePic} userId={user_id} />
         </Box>
         <Box
           w='100%'

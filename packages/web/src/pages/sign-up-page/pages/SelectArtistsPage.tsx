@@ -47,7 +47,8 @@ const initialValues: SelectArtistsValues = {
 }
 
 export const SelectArtistsPage = () => {
-  const genres = useSelector((state) => ['Featured', ...getGenres(state)])
+  // const genres = useSelector((state) => ['Featured', ...getGenres(state)])
+  const genres = ['Featured', 'Pop', 'Alternative']
   const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const [currentGenre, setCurrentGenre] = useState('Featured')
   const dispatch = useDispatch()

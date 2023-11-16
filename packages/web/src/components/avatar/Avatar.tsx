@@ -6,14 +6,15 @@ import {
   cacheUsersSelectors,
   imageProfilePicEmpty
 } from '@audius/common'
+import {
+  Avatar as HarmonyAvatar,
+  type AvatarProps as HarmonyAvatarProps
+} from '@audius/harmony'
 import { Link } from 'react-router-dom'
 
-import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { useSelector } from 'utils/reducer'
 import { SIGN_IN_PAGE, profilePage } from 'utils/route'
-
-import styles from './Avatar.module.css'
 
 const { getAccountUser } = accountSelectors
 
@@ -25,7 +26,7 @@ const messages = {
   profile: 'profile'
 }
 
-type AvatarProps = {
+type AvatarProps = HarmonyAvatarProps & {
   userId: Maybe<ID>
 }
 
@@ -52,17 +53,8 @@ export const Avatar = (props: AvatarProps) => {
   })
 
   return (
-    <Link
-      to={goTo}
-      aria-label={`${messages.goTo} ${name} ${messages.profile}`}
-      className={styles.root}
-    >
-      <DynamicImage
-        className={styles.image}
-        wrapperClassName={styles.imageWrapper}
-        skeletonClassName={styles.skeleton}
-        image={image}
-      />
+    <Link to={goTo} aria-label={`${messages.goTo} ${name} ${messages.profile}`}>
+      <HarmonyAvatar src={image} />
     </Link>
   )
 }
