@@ -35,7 +35,7 @@ const messages = {
   addFunds: 'Add Funds'
 }
 
-const useStyles = makeStyles(({ spacing, palette, typography }) => ({
+const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
     paddingVertical: spacing(8),
     paddingHorizontal: spacing(3)
@@ -154,7 +154,7 @@ export const PayAndEarnScreen = () => {
   const styles = useStyles()
   return (
     <Screen
-      url='/payandearn'
+      url='/payments'
       variant='secondary'
       title={messages.title}
       style={styles.root}

@@ -91,6 +91,7 @@ export default defineConfig(({ mode }) => {
         components: '/src/components',
         hooks: '/src/hooks',
         pages: '/src/pages',
+        'public-site': '/src/public-site',
         services: '/src/services',
         store: '/src/store',
         workers: '/src/workers',

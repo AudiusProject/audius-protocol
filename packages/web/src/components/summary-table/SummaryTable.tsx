@@ -1,6 +1,7 @@
-import { ReactNode } from 'react'
+import { ChangeEvent, ReactNode } from 'react'
 
-import { ColorValue } from '@audius/stems'
+import { Box, Flex, IconComponent } from '@audius/harmony'
+import { ColorValue, RadioButton, RadioButtonGroup } from '@audius/stems'
 import cn from 'classnames'
 
 import { Text } from 'components/typography'
@@ -10,7 +11,8 @@ import styles from './SummaryTable.module.css'
 export type SummaryTableItem = {
   id: string
   label: ReactNode
-  value: ReactNode
+  icon?: IconComponent
+  value?: ReactNode
 }
 
 export type SummaryTableProps = {
@@ -20,6 +22,9 @@ export type SummaryTableProps = {
   secondaryTitle?: ReactNode
   summaryLabelColor?: ColorValue
   summaryValueColor?: ColorValue
+  withRadioOptions?: boolean
+  selectedRadioOption?: string
+  onRadioChange?: (e: ChangeEvent<HTMLInputElement>) => void
 }
 
 export const SummaryTable = ({
@@ -28,9 +33,12 @@ export const SummaryTable = ({
   title,
   secondaryTitle,
   summaryLabelColor,
-  summaryValueColor = 'secondary'
+  summaryValueColor = 'secondary',
+  withRadioOptions,
+  selectedRadioOption,
+  onRadioChange
 }: SummaryTableProps) => {
-  return (
+  const body = (
     <div className={styles.container}>
       <div className={styles.row}>
         <Text variant='title' size='large'>
@@ -40,9 +48,19 @@ export const SummaryTable = ({
           {secondaryTitle}
         </Text>
       </div>
-      {items.map(({ id, label, value }) => (
+      {items.map(({ id, label, icon: Icon, value }) => (
         <div key={id} className={styles.row}>
-          <Text>{label}</Text>
+          <Flex alignItems='center' gap='s'>
+            {withRadioOptions ? <RadioButton value={id} /> : null}
+            {Icon ? (
+              <Box ml='s'>
+                <Icon
+                  color='default'
+                />
+              </Box>
+            ) : null}
+            <Text>{label}</Text>
+          </Flex>
           <Text>{value}</Text>
         </div>
       ))}
@@ -57,5 +75,18 @@ export const SummaryTable = ({
         </div>
       ) : null}
     </div>
+  )
+
+  return withRadioOptions && onRadioChange ? (
+    <RadioButtonGroup
+      name={`summaryTable-label-${title}`}
+      value={selectedRadioOption}
+      onChange={onRadioChange}
+      className={styles.radioGroup}
+    >
+      {body}
+    </RadioButtonGroup>
+  ) : (
+    body
   )
 }
