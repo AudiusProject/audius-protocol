@@ -1,28 +1,23 @@
-import React from 'react'
+// By default, don't do any server side rendering
+// Just serve the static HTML
 
-import ReactDOMServer from 'react-dom/server'
 import { escapeInject, dangerouslySkipEscape } from 'vike/server'
 
-import { PageLayout } from './PageLayout'
+import indexHtml from '../index.html?raw'
 
-export { render }
-export { passToClient }
+export function render() {
+  const pattern = /%(\S+?)%/g
+  const env = process.env
 
-// See https://vike.dev/data-fetching
-const passToClient = ['pageProps']
+  // Replace all %VITE_*% with the corresponding environment variable
+  const html = indexHtml.replace(pattern, (text, key) => {
+    if (key in env) {
+      return env[key]
+    } else {
+      // TODO: throw warning
+      return text
+    }
+  })
 
-function render(pageContext) {
-  const { Page, pageProps } = pageContext
-  const pageHtml = ReactDOMServer.renderToString(
-    <PageLayout>
-      <Page {...pageProps} />
-    </PageLayout>
-  )
-
-  return escapeInject`<!DOCTYPE html>
-    <html>
-      <body>
-        <div id="page-view">${dangerouslySkipEscape(pageHtml)}</div>
-      </body>
-    </html>`
+  return escapeInject`${dangerouslySkipEscape(html)}`
 }

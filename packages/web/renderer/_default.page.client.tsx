@@ -1,17 +1,22 @@
-import React from 'react'
+// By default, simply render the SPA without SSR
 
-import { hydrateRoot } from 'react-dom/client'
+import 'setimmediate'
+import { Buffer } from 'buffer'
 
-import { PageLayout } from './PageLayout'
+import processBrowser from 'process/browser'
+import { createRoot } from 'react-dom/client'
 
-export { render }
+import '../src/index.css'
 
-async function render(pageContext) {
-  const { Page, pageProps } = pageContext
-  hydrateRoot(
-    document.getElementById('page-view'),
-    <PageLayout>
-      <Page {...pageProps} />
-    </PageLayout>
-  )
+window.global ||= window
+window.Buffer = Buffer
+window.process = { ...processBrowser, env: process.env }
+
+export async function render() {
+  const container = document.getElementById('root')
+  const Root = await import('../src/root')
+  if (container) {
+    const root = createRoot(container)
+    root.render(<Root />)
+  }
 }

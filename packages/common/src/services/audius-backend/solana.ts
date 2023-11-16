@@ -21,8 +21,6 @@ import { AudiusBackend } from './AudiusBackend'
 const DEFAULT_RETRY_DELAY = 1000
 const DEFAULT_MAX_RETRY_COUNT = 120
 
-const PLACEHOLDER_SIGNATURE = Buffer.from(new Array(64).fill(0))
-
 /**
  * Memo program V1
  * https://github.com/solana-labs/solana-program-library/blob/7492e38b8577eef4defb5d02caadf82162887c68/memo/program/src/lib.rs#L16-L21
@@ -477,6 +475,7 @@ export const relayVersionedTransaction = async (
     skipPreflight?: boolean
   }
 ) => {
+  const PLACEHOLDER_SIGNATURE = Buffer.from(new Array(64).fill(0))
   const libs = await audiusBackendInstance.getAudiusLibsTyped()
   const decompiledMessage = TransactionMessage.decompile(transaction.message, {
     addressLookupTableAccounts
