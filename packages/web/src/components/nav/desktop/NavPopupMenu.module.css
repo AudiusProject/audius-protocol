@@ -16,7 +16,6 @@
   justify-content: center;
   align-items: center;
   transition: all ease-in-out 0.07s;
-  height: 24px;
 }
 
 .icon svg {
@@ -33,7 +32,11 @@
 .popupItemText {
   display: flex;
   align-items: center;
-  gap: var(--unit-2);
+  gap: var(--unit-4);
+}
+
+.item {
+  font-weight: var(--font-bold);
 }
 
 /* Apply color svg transitions on hover */
@@ -41,6 +44,7 @@
 .icon:active path {
   fill: var(--static-neutral-light-10) !important;
 }
+
 .icon:hover {
   transform: scale3d(1.1, 1.1, 1.1);
 }
@@ -60,6 +64,11 @@
   height: 100%;
 }
 
+.payAndEarnIcon svg {
+  width: var(--unit-5);
+  height: var(--unit-5) !important;
+}
+
 .container {
   display: flex;
   position: relative;
@@ -70,4 +79,27 @@
   top: 0;
   right: 0;
   transform: translate(50%, -50%);
+}
+
+.innerNotificationDot {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--white);
+  transform: translate(92%, -200%);
+}
+
+.item:hover .innerNotificationDot {
+  background: var(--white);
+  border-color: var(--secondary);
+}
+
+.item:hover .usdcPill,
+.item:hover .audioPill {
+  color: var(--secondary);
+  background: var(--white);
+}
+
+.item:hover .usdcPill path {
+  fill: #2775ca;
 }
