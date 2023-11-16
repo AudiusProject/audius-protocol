@@ -1,4 +1,4 @@
-import { Box } from '@audius/harmony'
+import { Paper } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
@@ -63,7 +63,6 @@ const determineAllowedRoute = (
   if (signUpState.followArtists?.selectedUserIds?.length >= 3) {
     // Already have 3 artists followed
     // Done with sign up if at this point so we return early (none of these routes are allowed anymore)
-    // TODO: trigger welcome modal when redirecting from here
     return { isAllowedRoute: false, correctedRoute: TRENDING_PAGE }
   }
 
@@ -104,7 +103,7 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
 
 export const SignUpRootPage = () => {
   return (
-    <Box h='100%'>
+    <Paper w={1280} h={864} direction='column' m='4xl'>
       <Switch>
         <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
           <CreateEmailPage />
@@ -145,6 +144,6 @@ export const SignUpRootPage = () => {
           </Switch>
         </SignUpRoute>
       </Switch>
-    </Box>
+    </Paper>
   )
 }

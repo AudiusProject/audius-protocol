@@ -29,3 +29,7 @@
 .rowGrayBackground {
   background: var(--background-surface-1);
 }
+
+.radioGroup {
+  width: 100%;
+}

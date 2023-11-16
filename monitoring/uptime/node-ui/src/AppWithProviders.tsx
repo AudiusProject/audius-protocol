@@ -1,4 +1,10 @@
-import { getDefaultWallets, RainbowKitProvider } from '@rainbow-me/rainbowkit'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import {
+  connectorsForWallets,
+  RainbowKitProvider
+} from '@rainbow-me/rainbowkit'
+import { metaMaskWallet } from '@rainbow-me/rainbowkit/wallets'
 import { configureChains, createConfig, WagmiConfig } from 'wagmi'
 import { mainnet, goerli } from 'wagmi/chains'
 import { publicProvider } from 'wagmi/providers/public'
@@ -26,23 +32,35 @@ const AppWithProviders = () => {
     ]
   )
 
-  const { connectors } = getDefaultWallets({
-    appName: 'Audius Node',
-    projectId: '0416e7e9c027fb75dc5a365384683fdb',
-    chains
-  })
+  const connectors = connectorsForWallets([
+    {
+      groupName: ' ',
+      wallets: [metaMaskWallet({ projectId: 'none', chains })]
+    }
+  ])
+
+  // const { connectors } = getDefaultWallets({
+  //   appName: 'Audius Node',
+  //   projectId: '0416e7e9c027fb75dc5a365384683fdb',
+  //   chains
+  // })
 
   const wagmiConfig = createConfig({
-    autoConnect: false,
+    autoConnect: true,
     connectors,
     publicClient
   })
 
+  const queryClient = new QueryClient()
+
   return (
     <WagmiConfig config={wagmiConfig}>
-      <RainbowKitProvider chains={chains}>
+      <RainbowKitProvider chains={chains} modalSize='compact'>
         <AudiusLibsProvider>
-          <App />
+          <QueryClientProvider client={queryClient}>
+            <App />
+            <ReactQueryDevtools initialIsOpen={false} />
+          </QueryClientProvider>
         </AudiusLibsProvider>
       </RainbowKitProvider>
     </WagmiConfig>
