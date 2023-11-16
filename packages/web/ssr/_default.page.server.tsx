@@ -14,7 +14,8 @@ export function render(pageContext) {
   const { Page, pageProps } = pageContext
   const pageHtml = ReactDOMServer.renderToString(
     <PageLayout>
-      <Page {...pageProps} />
+      hi
+      {/* <Page {...pageProps} /> */}
     </PageLayout>
   )
 

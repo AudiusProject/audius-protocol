@@ -5,7 +5,7 @@ import { Buffer } from 'buffer'
 
 import processBrowser from 'process/browser'
 import { createRoot } from 'react-dom/client'
-import Root from '../src/root'
+import { Root } from '../src/Root'
 
 import '../src/index.css'
 

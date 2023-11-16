@@ -182,7 +182,7 @@ import {
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
-import styles from './App.module.css'
+import styles from './WebPlayer.module.css'
 
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors

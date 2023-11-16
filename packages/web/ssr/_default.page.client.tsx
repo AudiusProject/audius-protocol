@@ -6,14 +6,13 @@ import { hydrateRoot } from 'react-dom/client'
 
 import { PageLayout } from './PageLayout'
 
-export { render }
-
-async function render(pageContext) {
+export async function render(pageContext) {
   const { Page, pageProps } = pageContext
   hydrateRoot(
     document.getElementById('page-view'),
     <PageLayout>
-      <Page {...pageProps} />
+      hi
+      {/* <Page {...pageProps} /> */}
     </PageLayout>
   )
 }
