@@ -3,7 +3,7 @@ import { lazy, Suspense, useState, useCallback, useEffect } from 'react'
 import { BrowserRouter as Router, Route } from 'react-router-dom'
 
 import LoadingSpinnerFullPage from 'components/loading-spinner-full-page/LoadingSpinnerFullPage'
-import NavScreen from 'components/public-site/NavOverlay'
+import NavScreen from 'public-site/components/NavOverlay'
 import {
   TRENDING_PAGE,
   SIGN_UP_PAGE,

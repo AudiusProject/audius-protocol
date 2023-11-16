@@ -18,7 +18,9 @@ export const App = () => {
     <AppProviders>
       <SomethingWrong />
       <Switch>
-        <Route exact path={'/oauth/auth'} component={OAuthLoginPage} />
+        <Route exact path='/oauth/auth'>
+          <OAuthLoginPage />
+        </Route>
         <Route path='/demo/trpc'>
           <DemoTrpcPage />
         </Route>

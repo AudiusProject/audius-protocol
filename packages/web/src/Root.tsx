@@ -9,7 +9,7 @@ import { localStorage } from 'services/local-storage'
 import { useIsMobile, isElectron } from 'utils/clientUtil'
 import { getPathname, HOME_PAGE, publicSiteRoutes } from 'utils/route'
 
-const AudiusApp = lazy(() => import('./app'))
+const App = lazy(() => import('./app'))
 const PublicSite = lazy(() => import('./public-site'))
 
 const isPublicSiteRoute = (location = window.location) => {
@@ -53,7 +53,7 @@ export const Root = () => {
 
   return (
     <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
-      <AudiusApp />
+      <App />
     </Suspense>
   )
 }
