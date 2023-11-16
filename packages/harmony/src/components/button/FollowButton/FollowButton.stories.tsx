@@ -8,7 +8,7 @@ import { FollowButton } from './FollowButton'
 import type { FollowButtonProps } from './types'
 
 const meta: Meta<typeof FollowButton> = {
-  title: 'Buttons/FollowButton',
+  title: 'Buttons/FollowButton [beta]',
   component: FollowButton,
   render: (props: FollowButtonProps) => {
     // eslint-disable-next-line react-hooks/rules-of-hooks
