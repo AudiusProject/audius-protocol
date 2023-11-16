@@ -311,6 +311,8 @@ function isAssetUrl(url) {
   return (
     pathname.startsWith('/assets') ||
     pathname.startsWith('/scripts') ||
-    pathname.startsWith('/fonts')
+    pathname.startsWith('/fonts') ||
+    pathname.startsWith('/favicons') ||
+    pathname.startsWith('/manifest.json')
   )
 }

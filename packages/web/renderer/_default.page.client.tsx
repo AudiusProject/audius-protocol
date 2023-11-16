@@ -5,6 +5,7 @@ import { Buffer } from 'buffer'
 
 import processBrowser from 'process/browser'
 import { createRoot } from 'react-dom/client'
+import Root from '../src/root'
 
 import '../src/index.css'
 
@@ -14,7 +15,6 @@ window.process = { ...processBrowser, env: process.env }
 
 export async function render() {
   const container = document.getElementById('root')
-  const Root = await import('../src/root')
   if (container) {
     const root = createRoot(container)
     root.render(<Root />)
