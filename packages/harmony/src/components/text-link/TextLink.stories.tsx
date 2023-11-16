@@ -10,16 +10,16 @@ const meta: Meta<typeof TextLink> = {
   title: 'Text/TextLink',
   component: TextLink,
   args: {
-    children: 'This is a link',
+    textVariant: 'body',
+    strength: 'strong',
+    children: 'Display Name',
     href: '../?path=/docs/text-textlink--documentation'
   },
   render: (props) => (
-    <Text variant='body' strength='strong'>
-      <Flex direction='row' gap='4xl'>
-        <TextLink {...props} />
-        <TextLink {...props} _isHovered />
-      </Flex>
-    </Text>
+    <Flex direction='row' gap='4xl'>
+      <TextLink {...props} />
+      <TextLink {...props} _isHovered />
+    </Flex>
   )
 }
 
@@ -27,11 +27,21 @@ export default meta
 
 type Story = StoryObj<typeof TextLink>
 
-export const Default: Story = {}
+export const Primary: Story = {
+  render: (props) => <TextLink {...props} />
+}
 
-export const Subdued: Story = {
+export const Default: Story = {
   args: {
-    variant: 'subdued'
+    variant: 'default'
+  }
+}
+
+export const Visible: Story = {
+  args: {
+    variant: 'visible',
+    strength: 'weak',
+    children: 'Terms of Service'
   }
 }
 
@@ -39,8 +49,8 @@ export const Inverted: Story = {
   args: {
     variant: 'inverted'
   },
-  render: (props) => (
-    <Text variant='body' strength='strong'>
+  decorators: [
+    (Story) => (
       <Paper
         h={84}
         direction='row'
@@ -49,11 +59,10 @@ export const Inverted: Story = {
         p='2xl'
         css={{ background: `url(${darkBackgroundSpace})` }}
       >
-        <TextLink {...props} />
-        <TextLink {...props} _isHovered />
+        <Story />
       </Paper>
-    </Text>
-  )
+    )
+  ]
 }
 
 export const External: Story = {
@@ -65,10 +74,10 @@ export const External: Story = {
 }
 
 export const MatchesTextStyle: Story = {
-  render: (props) => (
+  render: () => (
     <Text variant='heading' size='l'>
       This is some large heading text{' '}
-      <TextLink {...props}>with a link</TextLink> in it.
+      <TextLink variant='visible'>with a link</TextLink> in it.
     </Text>
   )
 }

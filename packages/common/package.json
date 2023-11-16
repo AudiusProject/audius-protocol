@@ -76,8 +76,8 @@
     "rollup": "2.76.0",
     "rollup-plugin-dts": "4.2.2",
     "rollup-plugin-typescript2": "0.32.1",
-    "ttypescript": "^1.5.15",
-    "typescript-transform-paths": "^3.4.4"
+    "ttypescript": "1.5.15",
+    "typescript-transform-paths": "3.4.4"
   },
   "peerDependencies": {
     "@reduxjs/toolkit": "1.6.1",

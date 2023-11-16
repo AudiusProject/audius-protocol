@@ -1,7 +1,6 @@
 import { useCallback, useContext, useState } from 'react'
 
 import {
-  FeatureFlags,
   Id,
   Status,
   USDCPurchaseDetails,
@@ -13,35 +12,25 @@ import {
   useGetSalesCount,
   useUSDCPurchaseDetailsModal
 } from '@audius/common'
-import {
-  Button,
-  ButtonSize,
-  ButtonType,
-  IconCloudDownload
-} from '@audius/harmony'
 import { full } from '@audius/sdk'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
-import Header from 'components/header/desktop/Header'
-import Page from 'components/page/Page'
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { MainContentContext } from 'pages/MainContentContext'
-import NotFoundPage from 'pages/not-found-page/NotFoundPage'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
 import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
 import { UPLOAD_PAGE } from 'utils/route'
 
-import styles from './SalesPage.module.css'
+import styles from './PayAndEarnPage.module.css'
+import { NoTransactionsContent } from './components/NoTransactionsContent'
 import {
   SalesTable,
   SalesTableSortDirection,
   SalesTableSortMethod
-} from './SalesTable'
-import { NoTransactionsContent } from './components/NoTransactionsContent'
+} from './components/SalesTable'
 
 const { getUserId } = accountSelectors
 
@@ -90,17 +79,13 @@ const NoSales = () => {
   )
 }
 
-/**
- * Fetches and renders a table of Sales for the currently logged in user
- * */
-const RenderSalesPage = () => {
+export const useSales = () => {
   const userId = useSelector(getUserId)
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =
     useState<full.GetSalesSortMethodEnum>(DEFAULT_SORT_METHOD)
   const [sortDirection, setSortDirection] =
     useState<full.GetSalesSortDirectionEnum>(DEFAULT_SORT_DIRECTION)
-  const { mainContentRef } = useContext(MainContentContext)
 
   const { onOpen: openDetailsModal } = useUSDCPurchaseDetailsModal()
 
@@ -167,55 +152,49 @@ const RenderSalesPage = () => {
     window.URL.revokeObjectURL(blobUrl)
   }, [userId])
 
-  const header = (
-    <Header
-      primary={messages.headerText}
-      rightDecorator={
-        <Button
-          onClick={downloadCSV}
-          variant={ButtonType.SECONDARY}
-          size={ButtonSize.SMALL}
-          iconLeft={IconCloudDownload}
-          disabled={isLoading || isEmpty}
-        >
-          {messages.downloadCSV}
-        </Button>
-      }
-    />
-  )
+  return {
+    count,
+    data: sales,
+    fetchMore,
+    onSort,
+    onClickRow,
+    isEmpty,
+    isLoading,
+    downloadCSV
+  }
+}
+/**
+ * Fetches and renders a table of Sales for the currently logged in user
+ * */
+export const SalesTab = ({
+  count,
+  data: sales,
+  fetchMore,
+  onSort,
+  onClickRow,
+  isEmpty,
+  isLoading
+}: Omit<ReturnType<typeof useSales>, 'downloadCSV'>) => {
+  const { mainContentRef } = useContext(MainContentContext)
 
   return (
-    <Page
-      title={messages.pageTitle}
-      description={messages.pageDescription}
-      header={header}
-    >
-      <div className={styles.container}>
-        {isEmpty ? (
-          <NoSales />
-        ) : (
-          <SalesTable
-            key='sales'
-            data={sales}
-            loading={isLoading}
-            onSort={onSort}
-            onClickRow={onClickRow}
-            fetchMore={fetchMore}
-            isVirtualized={true}
-            scrollRef={mainContentRef}
-            totalRowCount={count}
-            fetchBatchSize={TRANSACTIONS_BATCH_SIZE}
-          />
-        )}
-      </div>
-    </Page>
+    <div className={styles.container}>
+      {isEmpty ? (
+        <NoSales />
+      ) : (
+        <SalesTable
+          key='sales'
+          data={sales}
+          loading={isLoading}
+          onSort={onSort}
+          onClickRow={onClickRow}
+          fetchMore={fetchMore}
+          totalRowCount={count}
+          isVirtualized={true}
+          scrollRef={mainContentRef}
+          fetchBatchSize={TRANSACTIONS_BATCH_SIZE}
+        />
+      )}
+    </div>
   )
-}
-
-export const SalesPage = () => {
-  const { isLoaded, isEnabled } = useFlag(FeatureFlags.USDC_PURCHASES)
-
-  // Return null if flag isn't loaded yet to prevent flash of 404 page
-  if (!isLoaded) return null
-  return isEnabled ? <RenderSalesPage /> : <NotFoundPage />
 }

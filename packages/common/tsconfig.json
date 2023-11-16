@@ -14,6 +14,10 @@
       "utils/*": ["src/utils/*"],
       "utils": ["src/utils"]
     },
+    "plugins": [
+      { "transform": "typescript-transform-paths" },
+      { "transform": "typescript-transform-paths", "afterDeclarations": true }
+    ],
     "module": "esnext",
     "target": "es6",
     "moduleResolution": "node",

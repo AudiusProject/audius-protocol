@@ -4,6 +4,7 @@ import {
   Outlet,
   RouteObject,
   useLocation,
+  useParams,
   useRoutes,
 } from 'react-router-dom'
 import { DiscoveryFeed } from './pages/DiscoveryFeed'
@@ -20,6 +21,8 @@ import { Fragment } from 'react'
 import { Disclosure, Popover, Transition } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import { TxViewer } from './pages/TX'
+import { TxDetail } from './pages/TXDetail'
 const healthzUrl = new URL('./images/healthz.svg', import.meta.url).href
 
 const routeList: RouteObject[] = [
@@ -53,6 +56,9 @@ const routeList: RouteObject[] = [
       { path: 'utils/id', element: <IdTranslator /> },
       { path: 'utils/rendezvous', element: <Rendezvous /> },
 
+      { path: '/:env/explorer', element: <TxViewer /> },
+      { path: '/:env/explorer/tx/:tx', element: <TxDetail /> },
+
       { path: '', element: <Nodes /> },
       { path: '*', element: <Nodes /> },
     ],
@@ -73,18 +79,59 @@ function InnerRouter() {
 
 const utils = [
   { name: 'Hash ID', description: 'Encode an ID', href: '/utils/id' },
-  { name: 'Rendezvous', description: 'Check the rendezvous order for a key', href: '/utils/rendezvous' },
+  {
+    name: 'Rendezvous',
+    description: 'Check the rendezvous order for a key',
+    href: '/utils/rendezvous',
+  },
+  {
+    name: 'TX Explorer',
+    description: 'View ACDC transactions',
+    href: '/prod/explorer',
+  },
 ]
 
 const views = [
-  { name: 'Feed', description: 'Each node\'s view of the feed', href: '/views/feed' },
-  { name: 'Search', description: 'Each node\'s view of a search', href: '/views/search' },
-  { name: 'DMs', description: 'Debugging info about each node for DMs', href: '/views/dms' },
-  { name: 'DM Matrix', description: 'DMs matrix on a given day', href: '/views/dm_matrix' },
-  { name: 'Plugins', description: 'Plugins running on each node', href: '/views/plugins' },
-  { name: 'Trending', description: 'Each node\'s view of trending', href: '/views/trending' },
-  { name: 'Trending Underground', description: 'Each node\'s view of trending underground', href: '/views/trending_underground' },
-  { name: 'Trending Playlists', description: 'Each node\'s view of trending playlists', href: '/views/trending_playlists' },
+  {
+    name: 'Feed',
+    description: "Each node's view of the feed",
+    href: '/views/feed',
+  },
+  {
+    name: 'Search',
+    description: "Each node's view of a search",
+    href: '/views/search',
+  },
+  {
+    name: 'DMs',
+    description: 'Debugging info about each node for DMs',
+    href: '/views/dms',
+  },
+  {
+    name: 'DM Matrix',
+    description: 'DMs matrix on a given day',
+    href: '/views/dm_matrix',
+  },
+  {
+    name: 'Plugins',
+    description: 'Plugins running on each node',
+    href: '/views/plugins',
+  },
+  {
+    name: 'Trending',
+    description: "Each node's view of trending",
+    href: '/views/trending',
+  },
+  {
+    name: 'Trending Underground',
+    description: "Each node's view of trending underground",
+    href: '/views/trending_underground',
+  },
+  {
+    name: 'Trending Playlists',
+    description: "Each node's view of trending playlists",
+    href: '/views/trending_playlists',
+  },
 ]
 
 function classNames(...classes: string[]) {
@@ -93,30 +140,42 @@ function classNames(...classes: string[]) {
 
 function Layout() {
   const location = useLocation()
+  const { env } = useParams()
   const currentPath = location.pathname.slice(1)
   const selected = currentPath || 'nodes'
+  console.log(currentPath)
 
   const renderNodesPopover = () => (
-    <Popover className="relative" aria-current={selected === 'nodes' ? 'page' : undefined}>
-      <Popover.Button className={classNames(
-        selected === 'nodes'
-          ? 'bg-purple-700 text-white dark:bg-purple-500'
-          : 'text-white hover:bg-purple-500 hover:bg-opacity-75 dark:hover:bg-purple-400',
-        'rounded-md px-3 py-2 text-sm font-semibold inline-flex items-center gap-x-1 leading-6'
-      )}>
+    <Popover
+      className="relative"
+      aria-current={selected === 'nodes' ? 'page' : undefined}
+    >
+      <Popover.Button
+        className={classNames(
+          selected === 'nodes'
+            ? 'bg-purple-700 text-white dark:bg-purple-500'
+            : 'text-white hover:bg-purple-500 hover:bg-opacity-75 dark:hover:bg-purple-400',
+          'rounded-md px-3 py-2 text-sm font-semibold inline-flex items-center gap-x-1 leading-6'
+        )}
+      >
         <Link to="/">Nodes</Link>
       </Popover.Button>
     </Popover>
   )
 
   const renderUtilsPopover = () => (
-    <Popover className="relative" aria-current={selected.startsWith('utils') ? 'page' : undefined}>
-      <Popover.Button className={classNames(
-        selected.startsWith('utils')
-          ? 'bg-purple-700 text-white dark:bg-purple-500'
-          : 'text-white hover:bg-purple-500 hover:bg-opacity-75 dark:hover:bg-purple-400',
-        'rounded-md px-3 py-2 text-sm font-semibold inline-flex items-center gap-x-1 leading-6'
-      )}>
+    <Popover
+      className="relative"
+      aria-current={selected.startsWith('utils') ? 'page' : undefined}
+    >
+      <Popover.Button
+        className={classNames(
+          selected.startsWith('utils')
+            ? 'bg-purple-700 text-white dark:bg-purple-500'
+            : 'text-white hover:bg-purple-500 hover:bg-opacity-75 dark:hover:bg-purple-400',
+          'rounded-md px-3 py-2 text-sm font-semibold inline-flex items-center gap-x-1 leading-6'
+        )}
+      >
         <span>Utils</span>
         <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
       </Popover.Button>
@@ -137,17 +196,25 @@ function Layout() {
               onClick={() => close()}
             >
               {utils.map((item) => (
-                <div key={item.name} className={classNames(
-                  item.href.slice(1) === selected
-                    ? 'bg-gray-50 dark:bg-gray-700'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-600',
-                  "relative rounded-lg p-4"
-                )}>
-                  <Link to={item.href} className="font-semibold text-gray-900 dark:text-gray-200">
+                <div
+                  key={item.name}
+                  className={classNames(
+                    item.href.slice(1) === selected
+                      ? 'bg-gray-50 dark:bg-gray-700'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-600',
+                    'relative rounded-lg p-4'
+                  )}
+                >
+                  <Link
+                    to={item.href}
+                    className="font-semibold text-gray-900 dark:text-gray-200"
+                  >
                     {item.name}
                     <span className="absolute inset-0" />
                   </Link>
-                  <p className="mt-1 text-gray-600 dark:text-gray-400">{item.description}</p>
+                  <p className="mt-1 text-gray-600 dark:text-gray-400">
+                    {item.description}
+                  </p>
                 </div>
               ))}
             </div>
@@ -157,15 +224,19 @@ function Layout() {
     </Popover>
   )
 
-
   const renderViewsPopover = () => (
-    <Popover className="relative" aria-current={selected.startsWith('views') ? 'page' : undefined}>
-      <Popover.Button className={classNames(
-        selected.startsWith('views')
-          ? 'bg-purple-700 text-white dark:bg-purple-500'
-          : 'text-white hover:bg-purple-500 hover:bg-opacity-75 dark:hover:bg-purple-400',
-        'rounded-md px-3 py-2 text-sm font-semibold inline-flex items-center gap-x-1 leading-6'
-      )}>
+    <Popover
+      className="relative"
+      aria-current={selected.startsWith('views') ? 'page' : undefined}
+    >
+      <Popover.Button
+        className={classNames(
+          selected.startsWith('views')
+            ? 'bg-purple-700 text-white dark:bg-purple-500'
+            : 'text-white hover:bg-purple-500 hover:bg-opacity-75 dark:hover:bg-purple-400',
+          'rounded-md px-3 py-2 text-sm font-semibold inline-flex items-center gap-x-1 leading-6'
+        )}
+      >
         <span>Views</span>
         <ChevronDownIcon className="h-5 w-5" aria-hidden="true" />
       </Popover.Button>
@@ -186,17 +257,25 @@ function Layout() {
               onClick={() => close()}
             >
               {views.map((item) => (
-                <div key={item.name} className={classNames(
-                  item.href.slice(1) === selected
-                    ? 'bg-gray-50 dark:bg-gray-700'
-                    : 'hover:bg-gray-50 dark:hover:bg-gray-600',
-                  "relative rounded-lg p-4"
-                )}>
-                  <Link to={item.href} className="font-semibold text-gray-900 dark:text-gray-200">
+                <div
+                  key={item.name}
+                  className={classNames(
+                    item.href.slice(1) === selected
+                      ? 'bg-gray-50 dark:bg-gray-700'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-600',
+                    'relative rounded-lg p-4'
+                  )}
+                >
+                  <Link
+                    to={item.href}
+                    className="font-semibold text-gray-900 dark:text-gray-200"
+                  >
                     {item.name}
                     <span className="absolute inset-0" />
                   </Link>
-                  <p className="mt-1 text-gray-600 dark:text-gray-400">{item.description}</p>
+                  <p className="mt-1 text-gray-600 dark:text-gray-400">
+                    {item.description}
+                  </p>
                 </div>
               ))}
             </div>
@@ -236,9 +315,15 @@ function Layout() {
                       <span className="absolute -inset-0.5" />
                       <span className="sr-only">Open main menu</span>
                       {open ? (
-                        <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
+                        <XMarkIcon
+                          className="block h-6 w-6"
+                          aria-hidden="true"
+                        />
                       ) : (
-                        <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
+                        <Bars3Icon
+                          className="block h-6 w-6"
+                          aria-hidden="true"
+                        />
                       )}
                     </Disclosure.Button>
                   </div>
@@ -258,7 +343,7 @@ function Layout() {
 
         <main>
           <div className="mx-auto max-w-8xl py-6 sm:px-6 lg:px-8">
-            <EnvironmentSelector />
+            {env ? null : <EnvironmentSelector />}
             <Outlet />
           </div>
         </main>
