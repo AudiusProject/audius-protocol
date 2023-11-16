@@ -9,9 +9,11 @@ import {
   CoinflowPurchase,
   CoinflowSolanaPurchaseProps
 } from '@coinflowlabs/react'
-import { Connection } from '@solana/web3.js'
+import { Connection, Transaction } from '@solana/web3.js'
 
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
+
+import styles from './CoinflowOnrampModal.module.css'
 
 const MERCHANT_ID = 'audius'
 
@@ -26,8 +28,9 @@ const useCoinflowAdapter = () => {
 
   useEffect(() => {
     const initWallet = async () => {
-      if (!audiusBackend.audiusLibs.solanaWeb3Manager) return
-      const { connection } = audiusBackend.audiusLibs.solanaWeb3Manager
+      const libs = await audiusBackend.getAudiusLibsTyped()
+      if (!libs.solanaWeb3Manager) return
+      const { connection } = libs.solanaWeb3Manager
       const publicKey = await deriveUserBankPubkey(audiusBackend, {
         mint: 'usdc'
       })
@@ -36,25 +39,45 @@ const useCoinflowAdapter = () => {
         wallet: {
           publicKey,
           sendTransaction: async (transaction, connection, options) => {
-            throw new Error('Method not implemented.')
+            console.debug('Sending transaction', transaction)
+            return ''
           }
         }
       })
     }
     initWallet()
-  }, [audiusBackend, audiusBackend.audiusLibs.solanaWeb3Manager])
+  }, [audiusBackend])
 
   return adapter
 }
 
 export const CoinflowOnrampModal = () => {
   const {
-    data: { amount },
+    data: { amount, serializedTransaction },
     isOpen,
     onClose,
     onClosed
   } = useCoinflowOnrampModal()
+  const [transaction, setTransaction] = useState<Transaction | null>(null)
+
   const adapter = useCoinflowAdapter()
+
+  useEffect(() => {
+    if (serializedTransaction) {
+      try {
+        const deserialized = Transaction.from(
+          Buffer.from(serializedTransaction, 'base64')
+        )
+        setTransaction(deserialized)
+      } catch (e) {
+        console.error(e)
+      }
+    } else {
+      setTransaction(null)
+    }
+  }, [serializedTransaction])
+
+  const showContent = isOpen && adapter && transaction
 
   /*
   TODO:
@@ -63,9 +86,16 @@ export const CoinflowOnrampModal = () => {
   */
 
   return (
-    <ModalDrawer isOpen={isOpen} onClose={onClose} onClosed={onClosed}>
-      {isOpen && adapter ? (
+    <ModalDrawer
+      bodyClassName={styles.modalWrapper}
+      zIndex={1000000}
+      isOpen={isOpen}
+      onClose={onClose}
+      onClosed={onClosed}
+    >
+      {showContent ? (
         <CoinflowPurchase
+          transaction={transaction}
           wallet={adapter.wallet}
           connection={adapter.connection}
           merchantId={MERCHANT_ID}

@@ -62,6 +62,9 @@ const slice = createSlice({
     usdcBalanceSufficient: (state) => {
       state.stage = PurchaseContentStage.PURCHASING
     },
+    coinflowPurchaseSucceeded: (_state) => {},
+    coinflowPurchaseFailed: (_state) => {},
+    coinflowPurchaseCanceled: (_state) => {},
     purchaseCanceled: (state) => {
       state.stage = PurchaseContentStage.CANCELED
     },

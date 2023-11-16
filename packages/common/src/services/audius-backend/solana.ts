@@ -433,7 +433,7 @@ export const createTransferToUserBankTransaction = async (
   return tx
 }
 
-export const createFundAccountAndPurchaseContentTransaction = async (
+export const createFundAccountAndPurchaseTransaction = async (
   audiusBackendInstance: AudiusBackend,
   {
     id,

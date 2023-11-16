@@ -90,6 +90,7 @@ import addToPlaylistReducer, {
   AddToPlaylistState
 } from './ui/add-to-playlist/reducer'
 import buyAudioReducer from './ui/buy-audio/slice'
+import coinflowModalReducer from './ui/coinflow-modal/slice'
 import collectibleDetailsReducer, {
   CollectibleDetailsState
 } from './ui/collectible-details/slice'
@@ -199,6 +200,7 @@ export const reducers = (storage: Storage) => ({
     shareSoundToTikTokModal: shareSoundToTikTokModalReducer,
     shareModal: shareModalReducer,
     stripeModal: stripeModalReducer,
+    coinflowModal: coinflowModalReducer,
     searchUsersModal: searchUsersModalReducer,
     toast: toastReducer,
     transactionDetails: transactionDetailsReducer,

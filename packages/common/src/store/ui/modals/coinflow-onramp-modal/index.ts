@@ -3,10 +3,8 @@ import { Action } from '@reduxjs/toolkit'
 import { createModal } from '../createModal'
 
 export type CoinflowOnrampModalState = {
-  /** Amount in dollars */
   amount: number
-  memo?: string
-  destinationWallet: string
+  serializedTransaction: string
   onrampSucceeded?: Action
   onrampCanceled?: Action
   onrampFailed?: Action
@@ -17,7 +15,7 @@ const premiumContentPurchaseModal = createModal<CoinflowOnrampModalState>({
   initialState: {
     isOpen: false,
     amount: -1,
-    destinationWallet: ''
+    serializedTransaction: ''
   },
   sliceSelector: (state) => state.ui.modals
   // enableTracking: true,
@@ -26,5 +24,6 @@ const premiumContentPurchaseModal = createModal<CoinflowOnrampModalState>({
 
 export const {
   hook: useCoinflowOnrampModal,
+  actions: coinflowOnrampModalActions,
   reducer: coinflowOnrampModalReducer
 } = premiumContentPurchaseModal

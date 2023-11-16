@@ -1,5 +1,6 @@
 import { Action, combineReducers, Reducer } from '@reduxjs/toolkit'
 
+import { coinflowOnrampModalReducer } from './coinflow-onramp-modal'
 import { createChatModalReducer } from './create-chat-modal'
 import { BaseModalState } from './createModal'
 import { editPlaylistModalReducer } from './edit-playlist-modal'
@@ -38,7 +39,8 @@ const combinedReducers = combineReducers({
   USDCPurchaseDetailsModal: usdcPurchaseDetailsModalReducer,
   USDCManualTransferModal: usdcManualTransferModalReducer,
   USDCTransactionDetailsModal: usdcTransactionDetailsModalReducer,
-  PremiumContentPurchaseModal: premiumContentPurchaseModalReducer
+  PremiumContentPurchaseModal: premiumContentPurchaseModalReducer,
+  CoinflowOnramp: coinflowOnrampModalReducer
 })
 
 /**

@@ -1,31 +1,11 @@
 .modalWrapper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-
-  display: none;
-  background-color: rgba(0, 0, 0, 0.6);
-  overflow: auto;
+  max-width: 720px;
+  max-height: 720px;
 }
 
-.modalWrapper.visible {
-  display: block;
-}
-
-/* .modalWrapper iframe {
+.modalWrapper iframe {
   max-height: 100% !important;
-  min-height: 480px !important;
-  max-width: 400px !important;
+  min-height: 720px !important;
+  max-width: 100% !important;
   margin: 0 auto !important;
 }
-
-.stripeModal {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 100%;
-  min-height: 100%;
-  padding: 24px;
-} */

@@ -1,3 +1,4 @@
+import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take } from 'typed-redux-saga'
@@ -8,9 +9,13 @@ import { ID } from 'models/Identifiers'
 import { isPremiumContentUSDCPurchaseGated } from 'models/Track'
 import { BNUSDC } from 'models/Wallet'
 import {
+  createFundAccountAndPurchaseTransaction,
+  getRecentBlockhash,
+  getRootSolanaAccount,
   getTokenAccountInfo,
   purchaseContent
 } from 'services/audius-backend/solana'
+import { AudiusBackend } from 'services/index'
 import { FeatureFlags } from 'services/remote-config/feature-flags'
 import { accountSelectors } from 'store/account'
 import { getAccountUser } from 'store/account/selectors'
@@ -35,7 +40,14 @@ import { getContext } from 'store/effects'
 import { getPreviewing, getTrackId } from 'store/player/selectors'
 import { stop } from 'store/player/slice'
 import { saveTrack } from 'store/social/tracks/actions'
+import { getFeePayer } from 'store/solana/selectors'
 import { OnRampProvider } from 'store/ui/buy-audio/types'
+import {
+  transactionCanceled,
+  transactionFailed,
+  transactionSucceeded
+} from 'store/ui/coinflow-modal/slice'
+import { coinflowOnrampModalActions } from 'store/ui/modals/coinflow-onramp-modal'
 import { BN_USDC_CENT_WEI, ceilingBNUSDCToNearestCent } from 'utils/wallet'
 
 import { pollPremiumTrack } from '../premium-content/sagas'
@@ -184,7 +196,9 @@ function* doStartPurchaseContentFlow({
     contentType = ContentType.TRACK
   }
 }: ReturnType<typeof startPurchaseContentFlow>) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const audiusBackendInstance: AudiusBackend = yield* getContext(
+    'audiusBackendInstance'
+  )
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isBuyUSDCViaSolEnabled = yield* call(
     getFeatureEnabled,
@@ -255,22 +269,78 @@ function* doStartPurchaseContentFlow({
     )
 
     // buy USDC if necessary
-    if (USE_COINFLOW) {
-      const { blocknumber, splits } = yield* getPurchaseConfig({
-        contentId,
-        contentType
-      })
-      /* TODO:
-       - Show coinflow modal
-       - Implement creating transaction in coinflow modal
-       - Implement sending transaction in coinflow modal
-       - Add code here to detect when we're done
-      */
-    } else {
-      if (balanceNeeded.gtn(0)) {
-        const balanceNeededCents = ceilingBNUSDCToNearestCent(balanceNeeded)
-          .div(BN_USDC_CENT_WEI)
-          .toNumber()
+    if (balanceNeeded.gtn(0)) {
+      const balanceNeededCents = ceilingBNUSDCToNearestCent(balanceNeeded)
+        .div(BN_USDC_CENT_WEI)
+        .toNumber()
+
+      if (USE_COINFLOW) {
+        const { blocknumber, splits } = yield* getPurchaseConfig({
+          contentId,
+          contentType
+        })
+        const feePayerAddress = yield* select(getFeePayer)
+        if (!feePayerAddress) {
+          throw new Error('Missing feePayer unexpectedly')
+        }
+        const feePayer = new PublicKey(feePayerAddress)
+        const recentBlockhash = yield* call(
+          getRecentBlockhash,
+          audiusBackendInstance
+        )
+        const rootAccount = yield* call(
+          getRootSolanaAccount,
+          audiusBackendInstance
+        )
+
+        const coinflowTransaction = yield* call(
+          createFundAccountAndPurchaseTransaction,
+          audiusBackendInstance,
+          {
+            blocknumber,
+            recentBlockhash,
+            extraAmount,
+            splits,
+            id: contentId,
+            type: 'track',
+            wallet: rootAccount,
+            feePayer
+          }
+        )
+
+        const serializedTransaction = coinflowTransaction
+          .serialize({ requireAllSignatures: false, verifySignatures: false })
+          .toString('base64')
+        const amount = balanceNeededCents / 100.0
+        yield* put(
+          coinflowOnrampModalActions.open({ amount, serializedTransaction })
+        )
+
+        const result = yield* race({
+          succeeded: take(transactionSucceeded),
+          failed: take(transactionFailed),
+          canceled: take(transactionCanceled)
+        })
+
+        // Return early for failure or cancellation
+        if (result.canceled) {
+          yield* put(purchaseCanceled())
+          return
+        }
+        if (result.failed) {
+          yield* put(
+            // TODO: better error
+            purchaseContentFlowFailed({
+              error: new PurchaseContentError(
+                PurchaseErrorCode.Unknown,
+                'Coinflow transaction failed'
+              )
+            })
+          )
+          return
+        }
+      } // if (USE_COINFLOW)
+      else {
         yield* put(buyUSDC())
         let result: RaceStatusResult | null = null
         if (isBuyUSDCViaSolEnabled) {
@@ -318,6 +388,22 @@ function* doStartPurchaseContentFlow({
 
       yield* put(usdcBalanceSufficient())
 
+      const { blocknumber, splits } = yield* getPurchaseConfig({
+        contentId,
+        contentType
+      })
+
+      // purchase content
+      yield* call(purchaseContent, audiusBackendInstance, {
+        id: contentId,
+        blocknumber,
+        extraAmount: extraAmountBN,
+        splits,
+        type: 'track'
+      })
+    } // if(balanceNeeded.lte(0))
+    else {
+      // No need to buy USDC, just execute the purchase
       const { blocknumber, splits } = yield* getPurchaseConfig({
         contentId,
         contentType
