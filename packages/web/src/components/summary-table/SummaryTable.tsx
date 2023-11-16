@@ -54,9 +54,7 @@ export const SummaryTable = ({
             {withRadioOptions ? <RadioButton value={id} /> : null}
             {Icon ? (
               <Box ml='s'>
-                <Icon
-                  color='default'
-                />
+                <Icon color='default' />
               </Box>
             ) : null}
             <Text>{label}</Text>
