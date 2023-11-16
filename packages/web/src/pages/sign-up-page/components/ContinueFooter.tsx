@@ -15,7 +15,7 @@ export const ContinueFooter = ({ children }: ContinueFooterProps) => {
       gap='l'
       alignItems='center'
       direction='column'
-      shadow='mid-inverted'
+      shadow='midInverted'
       className={styles.container}
     >
       {children}

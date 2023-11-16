@@ -104,7 +104,6 @@ const NavBanner = (props: NavBannerProps) => {
     {
       text: messages.blog,
       subtext: messages.blogDescription,
-      className: styles.rewardsMenuItem,
       onClick: () =>
         window.open(AUDIUS_BLOG_LINK, '_blank', 'noreferrer,noopener'),
       icon: <IconBlog />,

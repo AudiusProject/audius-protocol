@@ -63,7 +63,6 @@ const determineAllowedRoute = (
   if (signUpState.followArtists?.selectedUserIds?.length >= 3) {
     // Already have 3 artists followed
     // Done with sign up if at this point so we return early (none of these routes are allowed anymore)
-    // TODO: trigger welcome modal when redirecting from here
     return { isAllowedRoute: false, correctedRoute: TRENDING_PAGE }
   }
 

@@ -1,6 +1,12 @@
 import { useState } from 'react'
+import { useBlockNumber, useNetwork } from 'wagmi'
 import { useEnvVars } from './providers/EnvVarsProvider'
 import { useAudiusLibs } from './providers/AudiusLibsProvider'
+import useMinChainVersions from './hooks/useMinChainVersions'
+import useLatestGitHubVersions from './hooks/useLatestGitHubVersions'
+
+import { ConnectButton } from '@rainbow-me/rainbowkit'
+import '@rainbow-me/rainbowkit/styles.css'
 
 interface UptimeResponse {
   host: string
@@ -11,14 +17,34 @@ interface UptimeResponse {
 
 const App = () => {
   const { endpoint, env, nodeType } = useEnvVars()
-  const { audiusLibs, isLoading: isAudiusLibsLoading } = useAudiusLibs()
+  const {
+    audiusLibs,
+    isLoading: isAudiusLibsLoading,
+    isReadOnly: isLibsReadOnly
+  } = useAudiusLibs()
   const [targetEndpoint, setTargetEndpoint] = useState(endpoint)
   const [uptimeData, setUptimeData] = useState<UptimeResponse | null>(null)
+
+  const {
+    data: minChainVersions,
+    isPending: isMinChainVersionsPending,
+    error: minChainVersionsError
+  } = useMinChainVersions()
+  const {
+    data: latestGithubVersions,
+    isPending: isLatestGithubVersionsPending,
+    error: latestGithubVersionsError
+  } = useLatestGitHubVersions()
+
+  const { chain, chains } = useNetwork()
+  const { data: latestBlockNumber } = useBlockNumber({
+    chainId: 1
+  })
 
   const fetchUptimeData = async () => {
     try {
       const response = await fetch(
-        `${endpoint}/up_api/uptime?host=${targetEndpoint}`
+        `${endpoint}/d_api/dtime?host=${targetEndpoint}`
       )
       if (response.ok) {
         const data = (await response.json()) as UptimeResponse
@@ -38,8 +64,41 @@ const App = () => {
       <p>Environment: {env}</p>
       <p>Node Type: {nodeType}</p>
       <p>
-        Libs: {isAudiusLibsLoading ? 'loading...' : `v${audiusLibs!.version}`}
+        Min enforceable versions (chain):{' '}
+        {isMinChainVersionsPending
+          ? 'loading...'
+          : minChainVersionsError
+          ? 'error'
+          : JSON.stringify(minChainVersions)}
       </p>
+      <p>
+        Latest versions (GitHub):{' '}
+        {isLatestGithubVersionsPending
+          ? 'loading...'
+          : latestGithubVersionsError
+          ? 'error'
+          : JSON.stringify(latestGithubVersions)}
+      </p>
+
+      <br />
+
+      <p>
+        Latest block: {(latestBlockNumber ?? '').toString()} (
+        {chain?.name || 'unknown chain'})
+      </p>
+      <p>Available chains: {chains.map((chain) => chain.name).join(', ')}</p>
+      <p>
+        Libs:{' '}
+        {isAudiusLibsLoading
+          ? 'loading...'
+          : `v${audiusLibs!.version} (${
+              isLibsReadOnly ? 'read-only' : 'able to sign txns'
+            })`}
+      </p>
+      <div>
+        <ConnectButton />
+      </div>
+      <br />
       <input
         type='text'
         value={targetEndpoint}

@@ -18,6 +18,7 @@ import {
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
 
+import { useModalState } from 'common/hooks/useModalState'
 import { addFollowArtists } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
@@ -47,6 +48,7 @@ const initialValues: SelectArtistsValues = {
 
 export const SelectArtistsPage = () => {
   const genres = useSelector((state) => ['Featured', ...getGenres(state)])
+  const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const [currentGenre, setCurrentGenre] = useState('Featured')
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
@@ -60,10 +62,10 @@ export const SelectArtistsPage = () => {
     (values: SelectArtistsValues) => {
       const { artists } = values
       dispatch(addFollowArtists(artists))
-      // TODO: trigger CTA modal on trending page
       navigate(TRENDING_PAGE)
+      setIsWelcomeModalOpen(true)
     },
-    [dispatch, navigate]
+    [dispatch, navigate, setIsWelcomeModalOpen]
   )
 
   const isFeaturedArtists = currentGenre === 'Featured'

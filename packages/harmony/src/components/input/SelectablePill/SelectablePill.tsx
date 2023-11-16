@@ -109,12 +109,11 @@ export const SelectablePill = (props: SelectablePillProps) => {
   switch (type) {
     case 'checkbox':
     case 'radio': {
+      const { checked, ...rest } = other
+
       return (
         <label css={rootCss}>
-          <InputRoot
-            {...other}
-            checked={type === 'checkbox' ? isSelected : undefined}
-          />
+          <InputRoot {...rest} checked={checked ?? isSelected} />
           {pillContent}
         </label>
       )
