@@ -1,16 +1,17 @@
 import { useCallback } from 'react'
 
-import BN from 'bn.js'
+import { USDC } from '@audius/fixed-decimal'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { UserTrackMetadata } from 'models/Track'
-import { BNUSDC } from 'models/Wallet'
 import {
   ContentType,
   isContentPurchaseInProgress,
   purchaseContentActions,
   purchaseContentSelectors
 } from 'store/purchase-content'
+import { useUSDCManualTransferModal } from 'store/ui'
+import { USDC_DIVISOR } from 'utils/formatUtil'
 import { Nullable } from 'utils/typeUtils'
 
 import { useUSDCBalance } from '../useUSDCBalance'
@@ -34,30 +35,27 @@ export const usePurchaseContentFormConfiguration = ({
   presetValues
 }: {
   track?: Nullable<UserTrackMetadata>
-  price: number
+  price: bigint
   presetValues: PayExtraAmountPresetValues
 }) => {
   const dispatch = useDispatch()
+  const { onOpen: openUsdcManualTransferModal } = useUSDCManualTransferModal()
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
-  const { data: balance } = useUSDCBalance()
-  const balance = new USDC(balance)
-  console.debug('REED balance', {
-    balance: balance?.toString(),
-    price,
-    'balance >= price?': balance?.gte(new BN(price) as BNUSDC)
-  })
+  const { data: balanceBN } = useUSDCBalance()
+  const balance = USDC(balanceBN?.div(USDC_DIVISOR).toString() ?? 0)
   const initialValues: PurchaseContentValues = {
     [CUSTOM_AMOUNT]: undefined,
     [AMOUNT_PRESET]: PayExtraPreset.NONE,
-    [PURCHASE_METHOD]: balance?.gte(new BN(price) as BNUSDC)
-      ? PurchaseMethod.EXISTING_BALANCE
-      : PurchaseMethod.CARD
+    [PURCHASE_METHOD]:
+      balance.value >= price
+        ? PurchaseMethod.EXISTING_BALANCE
+        : PurchaseMethod.CARD
   }
 
   const onSubmit = useCallback(
-    ({ customAmount, amountPreset }: PurchaseContentValues) => {
+    ({ customAmount, amountPreset, purchaseMethod }: PurchaseContentValues) => {
       if (isUnlocking || !track?.track_id) return
 
       const extraAmount = getExtraAmount({
@@ -66,16 +64,31 @@ export const usePurchaseContentFormConfiguration = ({
         customAmount
       })
 
-      dispatch(
-        startPurchaseContentFlow({
-          extraAmount,
-          extraAmountPreset: amountPreset,
-          contentId: track.track_id,
-          contentType: ContentType.TRACK
-        })
-      )
+      console.debug('REED got purchaseMethod:', purchaseMethod)
+
+      if (purchaseMethod === PurchaseMethod.CARD) {
+        dispatch(
+          startPurchaseContentFlow({
+            extraAmount,
+            extraAmountPreset: amountPreset,
+            contentId: track.track_id,
+            contentType: ContentType.TRACK
+          })
+        )
+      } else if (purchaseMethod === PurchaseMethod.EXISTING_BALANCE) {
+        dispatch(
+          startPurchaseContentFlow({
+            extraAmount,
+            extraAmountPreset: amountPreset,
+            contentId: track.track_id,
+            contentType: ContentType.TRACK
+          })
+        )
+      } else if (purchaseMethod === PurchaseMethod.MANUAL_TRANSFER) {
+        openUsdcManualTransferModal()
+      }
     },
-    [isUnlocking, presetValues, dispatch, track?.track_id]
+    [isUnlocking, track, presetValues, dispatch, openUsdcManualTransferModal]
   )
 
   return {

@@ -1,10 +1,11 @@
+import { ChangeEvent, useCallback } from 'react'
+
 import {
   BNUSDC,
   PURCHASE_METHOD,
   PurchaseContentStage,
   usePayExtraPresets,
   useUSDCBalance,
-  useUSDCManualTransferModal,
   removeNullable
 } from '@audius/common'
 import { Flex } from '@audius/harmony'
@@ -43,11 +44,17 @@ export const PurchaseContentFormFields = ({
   isUnlocking
 }: PurchaseContentFormFieldsProps) => {
   const { data: balance } = useUSDCBalance()
-  const { onOpen: openUsdcManualTransferModal } = useUSDCManualTransferModal()
   const payExtraAmountPresetValues = usePayExtraPresets(useRemoteVar)
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
   const isPurchased = stage === PurchaseContentStage.FINISH
+
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setPurchaseMethod(e?.target?.value)
+    },
+    [setPurchaseMethod]
+  )
 
   if (isPurchased) {
     return (
@@ -83,7 +90,7 @@ export const PurchaseContentFormFields = ({
       <RadioButtonGroup
         name={'purchaseMethod'}
         value={purchaseMethod}
-        onChange={setPurchaseMethod}
+        onChange={handleChange}
       >
         {options.map((opt) => (
           <ModalRadioItem

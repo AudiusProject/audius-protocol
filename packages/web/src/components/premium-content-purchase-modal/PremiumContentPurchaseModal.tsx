@@ -14,6 +14,7 @@ import {
   isContentPurchaseInProgress,
   usePayExtraPresets
 } from '@audius/common'
+import { USDC } from '@audius/fixed-decimal'
 import { Flex } from '@audius/harmony'
 import { IconCart, ModalContent, ModalFooter, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
@@ -60,11 +61,12 @@ const RenderForm = ({
   const {
     permalink,
     premium_conditions: {
-      usdc_purchase: { price }
+      usdc_purchase: { price: priceCents }
     }
   } = track
+  const price = USDC(priceCents / 100)
   const { error, isUnlocking, purchaseSummaryValues, stage } =
-    usePurchaseContentFormState({ price })
+    usePurchaseContentFormState({ price: priceCents })
 
   const { resetForm } = useFormikContext()
 
@@ -99,6 +101,9 @@ const RenderForm = ({
         </Text>
       </ModalHeader>
       <ModalContent className={styles.content}>
+        {stage !== PurchaseContentStage.FINISH ? (
+          <AudioMatchSection amount={price.round().toString()} />
+        ) : null}
         <Flex p='xl'>
           <Flex direction='column' gap='xl' w='100%'>
             <LockedTrackDetailsTile
@@ -109,7 +114,7 @@ const RenderForm = ({
               stage={stage}
               purchaseSummaryValues={purchaseSummaryValues}
               isUnlocking={isUnlocking}
-              price={price}
+              price={Number(price.value) / 10 ** price.decimalPlaces}
             />
           </Flex>
         </Flex>
@@ -148,10 +153,14 @@ export const PremiumContentPurchaseModal = () => {
 
   const isValidTrack = track && isTrackPurchasable(track)
   const price = isValidTrack
-    ? track?.premium_conditions?.usdc_purchase?.price
-    : 0
+    ? USDC(track?.premium_conditions?.usdc_purchase?.price / 100)
+    : USDC(0)
   const { initialValues, validationSchema, onSubmit } =
-    usePurchaseContentFormConfiguration({ track, price, presetValues })
+    usePurchaseContentFormConfiguration({
+      track,
+      price: price.value,
+      presetValues
+    })
 
   // Attempt recovery once on re-mount of the form
   useEffect(() => {
