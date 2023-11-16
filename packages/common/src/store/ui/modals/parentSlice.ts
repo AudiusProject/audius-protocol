@@ -55,7 +55,8 @@ export const initialState: BasicModalsState = {
   USDCPurchaseDetailsModal: { isOpen: false },
   USDCTransactionDetailsModal: { isOpen: false },
   USDCManualTransferModal: { isOpen: false },
-  AddFundsModal: { isOpen: false }
+  AddFundsModal: { isOpen: false },
+  Welcome: { isOpen: false }
 }
 
 const slice = createSlice({

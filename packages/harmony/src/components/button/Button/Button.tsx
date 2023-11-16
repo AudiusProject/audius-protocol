@@ -86,6 +86,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     // Variant Styles
     const primaryStyles: CSSObject = {
+      '&:hover': { color: themeColors.static.white },
+
+      ...((_isHovered || _isPressed) && { color: themeColors.static.white }),
       ...(isDisabled && {
         backgroundColor: themeColors.neutral.n150,
         boxShadow: 'none'
@@ -114,11 +117,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const tertiaryHoverStyles: CSSObject = {
       backgroundColor: themeColors.background.white,
-      boxShadow: `0 0 0 1px inset ${themeColors.border.strong}, ${shadows.mid}`
+      boxShadow: `0 0 0 1px inset ${themeColors.border.strong}, ${shadows.mid}`,
+      color: themeColors.text.default
     }
     const tertiaryActiveStyles: CSSObject = {
       backgroundColor: themeColors.background.surface2,
       backdropFilter: 'none',
+      color: themeColors.text.default,
       boxShadow: `0 0 0 1px inset ${themeColors.border.strong}`
     }
     const tertiaryStyles: CSSObject = {
