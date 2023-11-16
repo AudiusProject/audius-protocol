@@ -62,8 +62,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       whiteSpace: 'nowrap',
       transition: `
         transform ${motion.hover},
-        border-color ${motion.hover},
-        background-color ${motion.hover}
+        border-color ${motion.hover}
       `,
 
       ...(fullWidth && {

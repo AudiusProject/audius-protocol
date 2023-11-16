@@ -107,7 +107,7 @@ export const PayAndEarnPage = () => {
       contentClassName={styles.pageContainer}
       header={header}
     >
-      {balance === null || balanceStatus === Status.LOADING ? (
+      {balance === null ? (
         <LoadingSpinner className={styles.spinner} />
       ) : (
         <>
