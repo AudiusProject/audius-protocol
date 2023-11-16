@@ -10,7 +10,7 @@ import capshunBg from 'assets/img/publicSite/CapshunBG.webp'
 import capshunBg2 from 'assets/img/publicSite/CapshunBG@2x.webp'
 import capshunBg3 from 'assets/img/publicSite/CapshunBG@3x.webp'
 import capshunBg4 from 'assets/img/publicSite/CapshunBG@4x.webp'
-import { handleClickRoute } from 'components/public-site/handleClickRoute'
+import { handleClickRoute } from 'public-site/components/handleClickRoute'
 import { AUDIUS_LISTENING_LINK } from 'utils/route'
 import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
@@ -113,7 +113,7 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
               {titleSpring.map(
                 ({ x, wordYPosition, ...rest }: any, index: number) => (
                   <animated.span
-                    key={titleItems[index]}
+                    key={index}
                     className={cn(styles.textAnimateTitle)}
                     style={{
                       ...rest,

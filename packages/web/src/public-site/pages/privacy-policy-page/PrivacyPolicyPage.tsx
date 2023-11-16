@@ -1,25 +1,25 @@
-import Footer from 'components/public-site/Footer'
-import NavBanner from 'components/public-site/NavBanner'
+import Footer from 'public-site/components/Footer'
+import NavBanner from 'public-site/components/NavBanner'
 
-import styles from './TermsOfUsePage.module.css'
+import styles from './PrivacyPolicyPage.module.css'
 
 const BASENAME = process.env.VITE_PUBLIC_URL
 
 const messages = {
-  download: 'Download Terms of Use'
+  download: 'Download Privacy Policy'
 }
 
-const termsOfUseDocumentRoute = `${BASENAME}/documents/TermsOfUse.pdf`
+const privacyPolicyDocumentRoute = `${BASENAME}/documents/PrivacyPolicy.pdf`
 
-type TermsOfUsePageProps = {
+type PrivacyPolicyPageProps = {
   isMobile: boolean
   openNavScreen: () => void
   setRenderPublicSite: (shouldRender: boolean) => void
 }
 
-const TermsOfUsePage = (props: TermsOfUsePageProps) => {
+const PrivacyPolicyPage = (props: PrivacyPolicyPageProps) => {
   return (
-    <div id='termsOfUsePage' className={styles.container}>
+    <div id='privacyPolicyPage' className={styles.container}>
       <NavBanner
         invertColors
         className={styles.navBanner}
@@ -31,7 +31,7 @@ const TermsOfUsePage = (props: TermsOfUsePageProps) => {
         {props.isMobile ? (
           <div className={styles.mobileContainer}>
             <a
-              href={termsOfUseDocumentRoute}
+              href={privacyPolicyDocumentRoute}
               className={styles.downloadLink}
               download
             >
@@ -40,8 +40,8 @@ const TermsOfUsePage = (props: TermsOfUsePageProps) => {
           </div>
         ) : (
           <iframe
-            title='Terms of Service'
-            src={termsOfUseDocumentRoute}
+            title='Privacy Policy'
+            src={privacyPolicyDocumentRoute}
             className={styles.pdfIFrame}
           ></iframe>
         )}
@@ -54,4 +54,4 @@ const TermsOfUsePage = (props: TermsOfUsePageProps) => {
   )
 }
 
-export default TermsOfUsePage
+export default PrivacyPolicyPage

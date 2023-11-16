@@ -5,8 +5,8 @@ import { ParallaxProvider } from 'react-scroll-parallax'
 
 import { FanburstBanner } from 'components/banner/FanburstBanner'
 import { CookieBanner } from 'components/cookie-banner/CookieBanner'
-import Footer from 'components/public-site/Footer'
-import NavBannerV2 from 'components/public-site/NavBanner'
+import Footer from 'public-site/components/Footer'
+import NavBannerV2 from 'public-site/components/NavBanner'
 import { shouldShowCookieBanner, dismissCookieBanner } from 'utils/gdpr'
 import { getPathname } from 'utils/route'
 

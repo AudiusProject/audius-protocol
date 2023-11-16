@@ -5,7 +5,7 @@ import footerBackgroundMobile from 'assets/img/publicSite/Footer-Background-mobi
 import footerBackground from 'assets/img/publicSite/Footer-Background@2x.jpg'
 import footerForeground from 'assets/img/publicSite/Footer-Foreground@2x.png'
 import dots2x from 'assets/img/publicSite/dots@2x.jpg'
-import { handleClickRoute } from 'components/public-site/handleClickRoute'
+import { handleClickRoute } from 'public-site/components/handleClickRoute'
 import { AUDIUS_LISTENING_LINK } from 'utils/route'
 
 import styles from './CTAStartListening.module.css'

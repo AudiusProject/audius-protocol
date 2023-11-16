@@ -9,9 +9,8 @@ import { localStorage } from 'services/local-storage'
 import { useIsMobile, isElectron } from 'utils/clientUtil'
 import { getPathname, HOME_PAGE, publicSiteRoutes } from 'utils/route'
 
-const Dapp = lazy(() => import('./app'))
-
-const PublicSite = lazy(() => import('./pages/PublicSite'))
+const App = lazy(() => import('./app'))
+const PublicSite = lazy(() => import('./public-site'))
 
 const isPublicSiteRoute = (location = window.location) => {
   const pathname = getPathname(location).toLowerCase()
@@ -25,7 +24,7 @@ const isPublicSiteSubRoute = (location = window.location) => {
 
 const clientIsElectron = isElectron()
 
-const Root = () => {
+export const Root = () => {
   const [renderPublicSite, setRenderPublicSite] = useState(isPublicSiteRoute())
   const isMobileClient = useIsMobile()
 
@@ -54,9 +53,7 @@ const Root = () => {
 
   return (
     <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
-      <Dapp />
+      <App />
     </Suspense>
   )
 }
-
-export default Root

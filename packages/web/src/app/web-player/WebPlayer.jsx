@@ -27,15 +27,22 @@ import {
 } from 'common/store/pages/signon/actions'
 import { getStatus as getSignOnStatus } from 'common/store/pages/signon/selectors'
 import { Pages as SignOnPages } from 'common/store/pages/signon/types'
+import AnimatedSwitch from 'components/animated-switch/AnimatedSwitch'
 import AppRedirectListener from 'components/app-redirect-popover/AppRedirectListener'
 import { AppRedirectPopover } from 'components/app-redirect-popover/components/AppRedirectPopover'
 import { AppBannerWrapper } from 'components/banner/AppBannerWrapper'
+import { DownloadAppBanner } from 'components/banner/DownloadAppBanner'
+import { UpdateAppBanner } from 'components/banner/UpdateAppBanner'
+import { Web3ErrorBanner } from 'components/banner/Web3ErrorBanner'
+import { ChatListener } from 'components/chat-listener/ChatListener'
 import CookieBanner from 'components/cookie-banner/CookieBanner'
 import { DevModeMananger } from 'components/dev-mode-manager/DevModeManager'
 import { HeaderContextConsumer } from 'components/header/mobile/HeaderContextProvider'
 import Konami from 'components/konami/Konami'
 import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
 import Navigator from 'components/nav/Navigator'
+import TopLevelPage from 'components/nav/mobile/TopLevelPage'
+import Notice from 'components/notice/Notice'
 import { NotificationPage } from 'components/notification'
 import PinnedTrackConfirmation from 'components/pin-track-confirmation/PinTrackConfirmation'
 import PlayBarProvider from 'components/play-bar/PlayBarProvider'
@@ -43,30 +50,52 @@ import { RewardClaimedToast } from 'components/reward-claimed-toast/RewardClaime
 import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
+import {
+  MainContentContext,
+  MainContentContextProvider,
+  MAIN_CONTENT_ID
+} from 'pages/MainContentContext'
 import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
 import { AudioRewardsPage } from 'pages/audio-rewards-page/AudioRewardsPage'
 import { AudioTransactionsPage } from 'pages/audio-transactions-page'
+import { ChatPageProvider } from 'pages/chat-page/ChatPageProvider'
 import CheckPage from 'pages/check-page/CheckPage'
+import { CollectiblesPlaylistPage } from 'pages/collectibles-playlist-page'
 import CollectionPage from 'pages/collection-page/CollectionPage'
 import { DashboardPage } from 'pages/dashboard-page/DashboardPage'
+import { DeactivateAccountPage } from 'pages/deactivate-account-page/DeactivateAccountPage'
 import EmptyPage from 'pages/empty-page/EmptyPage'
+import ExploreCollectionsPage from 'pages/explore-page/ExploreCollectionsPage'
 import ExplorePage from 'pages/explore-page/ExplorePage'
 import FavoritesPage from 'pages/favorites-page/FavoritesPage'
+import { FbSharePage } from 'pages/fb-share-page/FbSharePage'
 import FeedPage from 'pages/feed-page/FeedPage'
+import FollowersPage from 'pages/followers-page/FollowersPage'
+import FollowingPage from 'pages/following-page/FollowingPage'
 import HistoryPage from 'pages/history-page/HistoryPage'
 import NotFoundPage from 'pages/not-found-page/NotFoundPage'
 import NotificationUsersPage from 'pages/notification-users-page/NotificationUsersPage'
+import { PayAndEarnPage } from 'pages/pay-and-earn-page/PayAndEarnPage'
+import { PremiumTracksPage } from 'pages/premium-tracks-page/PremiumTracksPage'
 import ProfilePage from 'pages/profile-page/ProfilePage'
 import RemixesPage from 'pages/remixes-page/RemixesPage'
 import RepostsPage from 'pages/reposts-page/RepostsPage'
 import RequiresUpdate from 'pages/requires-update/RequiresUpdate'
 import SavedPage from 'pages/saved-page/SavedPage'
 import SearchPage from 'pages/search-page/SearchPage'
+import SettingsPage from 'pages/settings-page/SettingsPage'
+import { SubPage } from 'pages/settings-page/components/mobile/SettingsPage'
+import { SignInPage } from 'pages/sign-in-page'
+import { SignUpRootPage } from 'pages/sign-up-page'
+import SmartCollectionPage from 'pages/smart-collection/SmartCollectionPage'
+import SupportingPage from 'pages/supporting-page/SupportingPage'
+import TopSupportersPage from 'pages/top-supporters-page/TopSupportersPage'
 import TrackPage from 'pages/track-page/TrackPage'
 import TrendingPage from 'pages/trending-page/TrendingPage'
 import TrendingPlaylistsPage from 'pages/trending-playlists/TrendingPlaylistPage'
 import TrendingUndergroundPage from 'pages/trending-underground/TrendingUndergroundPage'
 import Visualizer from 'pages/visualizer/Visualizer'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { initializeSentry } from 'services/sentry'
 import { setVisibility as setAppModalCTAVisibility } from 'store/application/ui/app-cta-modal/slice'
@@ -76,7 +105,6 @@ import {
   decrementScrollCount as decrementScrollCountAction
 } from 'store/application/ui/scrollLock/actions'
 import { isMobile, getClient } from 'utils/clientUtil'
-import lazyWithPreload from 'utils/lazyWithPreload'
 import 'utils/redirect'
 import {
   FEED_PAGE,
@@ -154,34 +182,7 @@ import {
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
-import AnimatedSwitch from '../components/animated-switch/AnimatedSwitch'
-// import { DirectMessagesBanner } from '../components/banner/DirectMessagesBanner'
-// import { TermsOfServiceUpdateBanner } from '../components/banner/TermsOfServiceUpdateBanner'
-import { DownloadAppBanner } from '../components/banner/DownloadAppBanner'
-import { UpdateAppBanner } from '../components/banner/UpdateAppBanner'
-import { Web3ErrorBanner } from '../components/banner/Web3ErrorBanner'
-import { ChatListener } from '../components/chat-listener/ChatListener'
-import TopLevelPage from '../components/nav/mobile/TopLevelPage'
-import Notice from '../components/notice/Notice'
-import { getFeatureEnabled } from '../services/remote-config/featureFlagHelpers'
-
 import styles from './App.module.css'
-import { ChatPageProvider } from './chat-page/ChatPageProvider'
-import { CollectiblesPlaylistPage } from './collectibles-playlist-page'
-import { DeactivateAccountPage } from './deactivate-account-page/DeactivateAccountPage'
-import ExploreCollectionsPage from './explore-page/ExploreCollectionsPage'
-import { FbSharePage } from './fb-share-page/FbSharePage'
-import FollowersPage from './followers-page/FollowersPage'
-import FollowingPage from './following-page/FollowingPage'
-import { PayAndEarnPage } from './pay-and-earn-page/PayAndEarnPage'
-import { PremiumTracksPage } from './premium-tracks-page/PremiumTracksPage'
-import SettingsPage from './settings-page/SettingsPage'
-import { SubPage } from './settings-page/components/mobile/SettingsPage'
-import { SignInPage } from './sign-in-page'
-import { SignUpRootPage } from './sign-up-page'
-import SmartCollectionPage from './smart-collection/SmartCollectionPage'
-import SupportingPage from './supporting-page/SupportingPage'
-import TopSupportersPage from './top-supporters-page/TopSupportersPage'
 
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
@@ -192,9 +193,7 @@ const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
 const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 
 const UploadPage = lazy(() => import('pages/upload-page'))
-const Modals = lazyWithPreload(() => import('./modals/Modals'), 0)
-
-export const MAIN_CONTENT_ID = 'mainContent'
+const Modals = lazy(() => import('pages/modals/Modals'))
 
 const includeSearch = (search) => {
   return search.includes('oauth_token') || search.includes('code')
@@ -202,7 +201,7 @@ const includeSearch = (search) => {
 
 initializeSentry()
 
-class App extends Component {
+class WebPlayer extends Component {
   state = {
     mainContent: null,
 
@@ -1014,4 +1013,20 @@ const mapDispatchToProps = (dispatch) => ({
   }
 })
 
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(App))
+const RouterWebPlayer = withRouter(
+  connect(mapStateToProps, mapDispatchToProps)(WebPlayer)
+)
+
+const MainContentRouterWebPlayer = () => {
+  return (
+    <MainContentContextProvider>
+      <MainContentContext.Consumer>
+        {({ mainContentRef }) => (
+          <RouterWebPlayer mainContentRef={mainContentRef} />
+        )}
+      </MainContentContext.Consumer>
+    </MainContentContextProvider>
+  )
+}
+
+export default MainContentRouterWebPlayer

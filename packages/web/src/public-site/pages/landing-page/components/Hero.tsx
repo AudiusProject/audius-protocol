@@ -12,7 +12,7 @@ import AppStoreBadge from 'assets/img/publicSite/app-store-badge.svg'
 import GlyphPattern1x from 'assets/img/publicSite/glyph-pattern@1x.png'
 import GlyphPattern2x from 'assets/img/publicSite/glyph-pattern@2x.png'
 import GooglePlayBadge from 'assets/img/publicSite/google-play-badge.svg'
-import { handleClickRoute } from 'components/public-site/handleClickRoute'
+import { handleClickRoute } from 'public-site/components/handleClickRoute'
 import { getIOSAppLink } from 'utils/appLinks'
 import {
   APP_REDIRECT,
