@@ -46,20 +46,6 @@ type User = {
   pendingUndelegateRequest: GetPendingUndelegateRequestResponse
 }
 
-// type GetPendingDecreaseStakeRequestResponse = {
-//   lockupExpiryBlock: number
-//   amount: BigNumber
-// }
-
-// type Operator = {
-//   serviceProvider: ServiceProvider
-//   pendingDecreaseStakeRequest: GetPendingDecreaseStakeRequestResponse
-//   delegatedTotal: BigNumber
-//   totalStakedFor: BigNumber
-// } & User
-
-// const fetcher = (url: string) => fetch(url).then((res) => res.json())
-
 const fetcher = async url => {
   const res = await fetch(url)
  
