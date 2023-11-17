@@ -2,20 +2,21 @@
   overflow: hidden;
 }
 
+.expander {
+  transition: transform var(--harmony-expressive);
+  cursor: pointer;
+}
+
+.expander.expanded {
+  transform: rotate(-180deg);
+}
+
+.expandableContainer {
+  transition: height var(--harmony-expressive);
+}
+
 .row {
-  background: var(--background-white);
-}
-
-.row:not(:first-child) {
   border-top: 1px solid var(--border-default);
-}
-
-.row:first-child {
-  background: var(--background-surface-1);
-}
-
-.rowGrayBackground {
-  background: var(--background-surface-1);
 }
 
 .radioGroup {

@@ -1,6 +1,7 @@
 import { formatPrice, isNullOrUndefined } from '@audius/common'
 
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
+import { Text } from 'components/typography'
 
 const messages = {
   summary: 'Transaction Summary',
@@ -52,13 +53,14 @@ export const PurchaseSummaryTable = ({
 
   return (
     <SummaryTable
+      collapsible
       items={items}
-      title={messages.summary}
-      summaryItem={{
-        id: 'total',
-        label: isPurchased ? messages.youPaid : messages.total,
-        value: messages.price(formatPrice(amountDue))
-      }}
+      title={isPurchased ? messages.youPaid : messages.total}
+      secondaryTitle={
+        <Text variant='inherit' color='secondary'>
+          {messages.price(formatPrice(amountDue))}
+        </Text>
+      }
     />
   )
 }
