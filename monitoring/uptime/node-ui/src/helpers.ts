@@ -10,6 +10,10 @@ export function getAud(amount: BN) {
   return `${aud}.${trimRightZeros(decimals)}`
 }
 
+export function trimRightZeros(number: string) {
+  return number.replace(/(\d)0+$/gm, '$1')
+}
+
 export const formatNumberCommas = (num: string) => {
   const parts = num.toString().split('.')
   return (
