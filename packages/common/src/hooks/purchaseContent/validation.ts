@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { PurchaseMethod } from 'models/PurchaseContent'
+
 import {
   AMOUNT_PRESET,
   CUSTOM_AMOUNT,
@@ -7,7 +9,7 @@ import {
   maximumPayExtraAmountCents,
   minimumPayExtraAmountCents
 } from './constants'
-import { PayExtraPreset, PurchaseMethod } from './types'
+import { PayExtraPreset } from './types'
 
 const messages = {
   amountInvalid: 'Please specify an amount between $1 and $100'
