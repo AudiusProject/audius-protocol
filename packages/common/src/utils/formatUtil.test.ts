@@ -92,21 +92,21 @@ describe('formatUtil', function () {
   it('can convert float to wei', function () {
     const float = '12345.67890'
     const expected = '12345678900000000000000'
-    expect(AUDIO(float).value.toString()).toBe(expected)
+    expect(AUDIO(float).BigNumberBrand.toString()).toBe(expected)
     expect(convertFloatToWei(float)?.toString()).toBe(expected)
   })
 
   it('can parse wei number (integer)', function () {
     const weiNumber = '1234567890'
     const expected = '1234567890000000000000000000'
-    expect(AUDIO(weiNumber).value.toString()).toBe(expected)
+    expect(AUDIO(weiNumber).BigNumberBrand.toString()).toBe(expected)
     expect(parseWeiNumber(weiNumber)?.toString()).toBe(expected)
   })
 
   it('can parse wei number (floating point)', function () {
     const weiNumber = '1234.567890'
     const expected = '1234567890000000000000'
-    expect(AUDIO(weiNumber).value.toString()).toBe(expected)
+    expect(AUDIO(weiNumber).BigNumberBrand.toString()).toBe(expected)
     expect(parseWeiNumber(weiNumber)?.toString()).toBe(expected)
   })
 
