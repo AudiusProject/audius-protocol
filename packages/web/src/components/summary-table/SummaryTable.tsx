@@ -62,6 +62,7 @@ export type SummaryTableProps = {
   withRadioOptions?: boolean
   selectedRadioOption?: string
   onRadioChange?: (e: ChangeEvent<HTMLInputElement>) => void
+  rowClassName?: string
 }
 
 export const SummaryTable = ({
@@ -74,7 +75,8 @@ export const SummaryTable = ({
   summaryValueColor = 'secondary',
   withRadioOptions,
   selectedRadioOption,
-  onRadioChange
+  onRadioChange,
+  rowClassName
 }: SummaryTableProps) => {
   const { color } = useTheme()
   // Collapsible is collapsed by default
@@ -91,7 +93,7 @@ export const SummaryTable = ({
           justifyContent='space-between'
           pv='m'
           ph='xl'
-          className={styles.row}
+          className={cn(styles.row, rowClassName)}
           css={{ opacity: disabled ? 0.5 : 1 }}
         >
           <Flex alignItems='center' gap='s'>
