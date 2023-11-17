@@ -15,6 +15,7 @@ export const Divider = (props: DividerProps) => {
   const { orientation = 'horizontal', children, className } = props
   const { color, spacing } = useTheme()
   const border = `1px solid ${color.border.strong}`
+
   const css: CSSObject = {
     border: 'none',
     margin: 0,
@@ -42,6 +43,7 @@ export const Divider = (props: DividerProps) => {
         borderBottom: border
       })
   }
+
   const Root = children ? 'div' : 'hr'
   const role = children ? 'separator' : undefined
 
