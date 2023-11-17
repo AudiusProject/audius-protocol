@@ -7,7 +7,6 @@ import { useSelector } from 'utils/reducer'
 import { SIGN_IN_PAGE, profilePage } from 'utils/route'
 
 import styles from './AccountDetails.module.css'
-import NavAudio from './NavAudio'
 
 const { getAccountUser } = accountSelectors
 
@@ -59,7 +58,6 @@ export const AccountDetails = () => {
           )}
         </div>
       </div>
-      <NavAudio />
     </div>
   )
 }

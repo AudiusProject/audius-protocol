@@ -39,7 +39,8 @@ export const spacing = {
   xl: 24,
   '2xl': 32,
   '3xl': 48,
-  '4xl': 64
+  '4xl': 64,
+  '5xl': 128
 }
 
 export type Spacing = typeof spacing
