@@ -23,6 +23,7 @@ import { useModalState } from 'common/hooks/useModalState'
 import { addFollowArtists } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { audioPlayer } from 'services/audio-player'
 import { useSelector } from 'utils/reducer'
 import { TRENDING_PAGE } from 'utils/route'
 
@@ -59,6 +60,21 @@ export const SelectArtistsPage = () => {
   // const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
   //   setCurrentGenre(e.target.value)
   // }, [])
+
+  const [{ isPlaying, nowPlayingUserId }, setPreviewState] = useState({
+    isPlaying: false,
+    nowPlayingUserId: null as ID | null
+  })
+  const handlePreviewClick = (userId: ID, sourceMp3: string) => {
+    if (isPlaying && nowPlayingUserId === userId) {
+      audioPlayer.pause()
+      setPreviewState({ isPlaying: false, nowPlayingUserId: userId })
+    }
+    audioPlayer.stop()
+    audioPlayer.load(0, () => {}, sourceMp3)
+    audioPlayer.play()
+    setPreviewState({ isPlaying: true, nowPlayingUserId: userId })
+  }
 
   const handleSubmit = useCallback(
     (values: SelectArtistsValues) => {
@@ -165,6 +181,7 @@ export const SelectArtistsPage = () => {
                               key={user.user_id}
                               user={user}
                               onChange={handleChange}
+                              onPreviewClick={handlePreviewClick}
                             />
                           )
                         })}

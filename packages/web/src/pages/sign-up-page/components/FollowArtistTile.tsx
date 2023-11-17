@@ -1,6 +1,6 @@
 import { HTMLProps } from 'react'
 
-import { UserMetadata } from '@audius/common'
+import { ID, UserMetadata } from '@audius/common'
 import {
   Avatar,
   Box,
@@ -19,17 +19,30 @@ import audiusProfilePic from 'assets/img/appIcon240.png'
 
 type FollowArtistTileProps = {
   user: UserMetadata
+  onPreviewClick: (userId: ID, source: string) => void
 } & HTMLProps<HTMLInputElement>
 
 const FollowArtistTile = (props: FollowArtistTileProps) => {
   const {
     user: { name, user_id, is_verified, track_count, follower_count },
-    onChange
+    onChange,
+    onPreviewClick
   } = props
+
   return (
     <Paper w={235} h={220}>
       <Flex w='100%' direction='column' alignItems='center'>
-        <Box w={72} h={72} css={{ position: 'absolute', top: 34 }}>
+        <Box
+          w={72}
+          h={72}
+          css={{ position: 'absolute', top: 34 }}
+          onClick={() => {
+            onPreviewClick(
+              user_id,
+              'https://discoveryprovider2.audius.co/v1/tracks/Kdb0BgY/stream'
+            )
+          }}
+        >
           <Avatar variant='strong' src={audiusProfilePic} />
         </Box>
         <Box
