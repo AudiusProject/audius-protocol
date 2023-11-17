@@ -40,25 +40,42 @@ export const SummaryTable = ({
   onRadioChange
 }: SummaryTableProps) => {
   const body = (
-    <div className={styles.container}>
-      <div className={styles.row}>
+    <Flex
+      alignItems='center'
+      alignSelf='stretch'
+      justifyContent='center'
+      direction='column'
+      border='default'
+      borderRadius='xs'
+      className={styles.container}
+    >
+      <Flex
+        alignItems='center'
+        alignSelf='stretch'
+        justifyContent='space-between'
+        pv='m'
+        ph='xl'
+        className={styles.row}
+      >
         <Text variant='title' size='large'>
           {title}
         </Text>
         <Text variant='title' size='large'>
           {secondaryTitle}
         </Text>
-      </div>
+      </Flex>
       {items.map(({ id, label, icon: Icon, value, disabled }) => (
-        <div
+        <Flex
           key={id}
-          className={cn(styles.row, disabled ? styles.disabled : null)}
+          alignItems='center'
+          alignSelf='stretch'
+          justifyContent='space-between'
+          pv='m'
+          ph='xl'
+          className={styles.row}
+          css={{ opacity: disabled ? 0.5 : 1 }}
         >
-          <Flex
-            alignItems='center'
-            gap='s'
-            css={{ opacity: disabled ? 0.5 : 1 }}
-          >
+          <Flex alignItems='center' gap='s'>
             {withRadioOptions ? (
               <RadioButton value={id} disabled={disabled} />
             ) : null}
@@ -70,19 +87,26 @@ export const SummaryTable = ({
             <Text>{label}</Text>
           </Flex>
           <Text>{value}</Text>
-        </div>
+        </Flex>
       ))}
       {summaryItem !== undefined ? (
-        <div className={cn(styles.row, styles.rowGrayBackground)}>
+        <Flex
+          className={cn(styles.row, styles.rowGrayBackground)}
+          alignItems='center'
+          alignSelf='stretch'
+          justifyContent='space-between'
+          pv='m'
+          ph='xl'
+        >
           <Text variant='title' size='medium' color={summaryLabelColor}>
             {summaryItem.label}
           </Text>
           <Text variant='title' size='medium' color={summaryValueColor}>
             {summaryItem.value}
           </Text>
-        </div>
+        </Flex>
       ) : null}
-    </div>
+    </Flex>
   )
 
   return withRadioOptions && onRadioChange ? (

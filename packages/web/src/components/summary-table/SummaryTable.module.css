@@ -1,21 +1,9 @@
 .container {
-  align-items: center;
-  align-self: stretch;
-  border-radius: var(--unit-1);
-  border: 1px solid var(--border-default);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
   overflow: hidden;
 }
 
 .row {
-  align-items: center;
-  align-self: stretch;
   background: var(--background-white);
-  display: flex;
-  justify-content: space-between;
-  padding: var(--unit-3) var(--unit-6);
 }
 
 .row:not(:first-child) {
@@ -32,8 +20,4 @@
 
 .radioGroup {
   width: 100%;
-}
-
-.disabled {
-  opacity: 0.5;
 }
