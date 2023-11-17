@@ -1,1 +1,1 @@
-export * from './SignUpRootPage'
+export { SignUpRootPage as default } from './SignUpRootPage'

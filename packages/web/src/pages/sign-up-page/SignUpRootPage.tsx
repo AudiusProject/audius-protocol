@@ -1,16 +1,24 @@
-import { Paper } from '@audius/harmony'
+import { ReactNode } from 'react'
+
+import { IconCloseAlt, useTheme } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
 import { getSignOn } from 'common/store/pages/signon/selectors'
 import SignOnPageState from 'common/store/pages/signon/types'
+import BackgroundWaves from 'components/background-animations/BackgroundWaves'
+import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
+import Page from 'components/page/Page'
+import { useMedia } from 'hooks/useMedia'
 import { AppState } from 'store/types'
 import {
+  BASE_URL,
   SIGN_UP_ARTISTS_PAGE,
   SIGN_UP_EMAIL_PAGE,
   SIGN_UP_FINISH_PROFILE_PAGE,
   SIGN_UP_GENRES_PAGE,
   SIGN_UP_HANDLE_PAGE,
+  SIGN_UP_PAGE,
   SIGN_UP_PASSWORD_PAGE,
   SignUpPath,
   TRENDING_PAGE
@@ -23,6 +31,11 @@ import { PickHandlePage } from './pages/PickHandlePage'
 import { SelectArtistsPage } from './pages/SelectArtistsPage'
 import { SelectGenrePage } from './pages/SelectGenrePage'
 import { SignUpPage } from './pages/SignUpPage'
+
+const messages = {
+  title: 'Sign Up',
+  description: 'Create an account on Audius'
+}
 
 /**
  * Checks against existing sign up redux state,
@@ -101,10 +114,52 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
   )
 }
 
+type SignUpRootProps = {
+  children: ReactNode
+}
+
+const SignUpRoot = (props: SignUpRootProps) => {
+  const { children } = props
+  const { isDesktop } = useMedia()
+  const { spacing } = useTheme()
+
+  const pageProps = {
+    title: messages.title,
+    description: messages.description,
+    canonicalUrl: `${BASE_URL}/${SIGN_UP_PAGE}`
+  }
+
+  if (isDesktop) {
+    return (
+      <Page {...pageProps}>
+        <BackgroundWaves />
+        <IconCloseAlt
+          color='staticWhite'
+          css={{
+            position: 'absolute',
+            left: spacing['2xl'],
+            top: spacing['2xl'],
+            zIndex: 1
+          }}
+        />
+        {children}
+      </Page>
+    )
+  }
+  return (
+    <MobilePageContainer {...pageProps} fullHeight>
+      {children}
+    </MobilePageContainer>
+  )
+}
+
 export const SignUpRootPage = () => {
   return (
-    <Paper w={1280} h={864} direction='column' m='4xl'>
+    <SignUpRoot>
       <Switch>
+        <Route exact path={SIGN_UP_PAGE}>
+          <Redirect to={SIGN_UP_EMAIL_PAGE} />
+        </Route>
         <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
           <SignUpPage />
         </SignUpRoute>
@@ -144,6 +199,6 @@ export const SignUpRootPage = () => {
           </Switch>
         </SignUpRoute>
       </Switch>
-    </Paper>
+    </SignUpRoot>
   )
 }

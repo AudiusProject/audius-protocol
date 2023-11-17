@@ -1,11 +1,22 @@
-import { Box, Button, Flex, IconArrowRight, Text } from '@audius/harmony'
-import { Button as ButtonTmp } from '@audius/stems'
+import {
+  Box,
+  Button,
+  ButtonType,
+  Flex,
+  IconArrowRight,
+  IconCloseAlt,
+  Text,
+  TextLink,
+  useTheme
+} from '@audius/harmony'
 import { Form } from 'formik'
 import { Link } from 'react-router-dom'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
+import BackgroundWaves from 'components/background-animations/BackgroundWaves'
 import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
+import Page from 'components/page/Page'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
 import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithAudiusValues'
@@ -22,12 +33,39 @@ const messages = {
   forgotPassword: 'Forgot password?'
 }
 
-export const SignInPageDesktop = () => {
+type SignInPageProps = {
+  title: string
+  description: string
+  canonicalUrl: string
+}
+
+export const SignInPageDesktop = (props: SignInPageProps) => {
+  const { title, description, canonicalUrl } = props
+  const { spacing } = useTheme()
+
   return (
-    <Flex h='100%' alignItems='center' justifyContent='center'>
+    <Page
+      title={title}
+      description={description}
+      canonicalUrl={canonicalUrl}
+      css={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      <BackgroundWaves />
+      <IconCloseAlt
+        color='staticWhite'
+        css={{
+          position: 'absolute',
+          left: spacing['2xl'],
+          top: spacing['2xl'],
+          zIndex: 1
+        }}
+      />
       <PageWithAudiusValues>
         <LeftContentContainer gap='2xl' justifyContent='space-between'>
-          {/* TODO: confirm 40px spacing value */}
           <Flex direction='column' gap='2xl' alignItems='center'>
             <PreloadImage
               src={audiusLogoColored}
@@ -35,7 +73,7 @@ export const SignInPageDesktop = () => {
               alt='Audius Colored Logo'
             />
             <Flex w='100%' direction='row' justifyContent='flex-start'>
-              <Text variant='heading' size='l' tag='h1' color='heading'>
+              <Text variant='heading' size='l' tag='h1' color='accent'>
                 {messages.title}
               </Text>
             </Flex>
@@ -43,7 +81,6 @@ export const SignInPageDesktop = () => {
               <Form>
                 <Flex direction='column' gap='2xl' w='100%'>
                   <Flex direction='column' gap='l'>
-                    {/* TODO: replace old TextField */}
                     <HarmonyTextField
                       name='email'
                       label={messages.emailLabel}
@@ -57,26 +94,19 @@ export const SignInPageDesktop = () => {
                     <Button iconRight={IconArrowRight} type='submit'>
                       {messages.signIn}
                     </Button>
-                    <Flex direction='row' alignItems='flexStart'>
-                      <Text color='heading'>
-                        {/* TODO: link destination */}
-                        <Link to={''}>{messages.forgotPassword}</Link>
-                      </Text>
-                    </Flex>
+                    <TextLink variant='visible' textVariant='body'>
+                      {messages.forgotPassword}
+                    </TextLink>
                   </Flex>
                 </Flex>
               </Form>
             </Box>
           </Flex>
-          {/* TODO: switch to stems button when we have asChild support */}
-          <ButtonTmp
-            // @ts-ignore
-            as={Link}
-            to={SIGN_UP_PAGE}
-            text={messages.createAccount}
-          />{' '}
+          <Button variant={ButtonType.SECONDARY} asChild>
+            <Link to={SIGN_UP_PAGE}>{messages.createAccount}</Link>
+          </Button>
         </LeftContentContainer>
       </PageWithAudiusValues>
-    </Flex>
+    </Page>
   )
 }

@@ -5,9 +5,15 @@ import { useDispatch } from 'react-redux'
 
 import { signIn } from 'common/store/pages/signon/actions'
 import { useMedia } from 'hooks/useMedia'
+import { BASE_URL, SIGN_IN_PAGE } from 'utils/route'
 
 import { SignInPageDesktop } from './SignInPageDesktop'
 import { SignInPageMobile } from './SignInPageMobile'
+
+const messages = {
+  title: 'Sign In',
+  description: 'Sign into your Audius account'
+}
 
 type SignInValues = {
   email: string
@@ -34,7 +40,11 @@ export const SignInPage = () => {
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-      <SignInPageComponent />
+      <SignInPageComponent
+        title={messages.title}
+        description={messages.description}
+        canonicalUrl={`${BASE_URL}/${SIGN_IN_PAGE}`}
+      />
     </Formik>
   )
 }

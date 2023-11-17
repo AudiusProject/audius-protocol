@@ -15,12 +15,3 @@
   background-position: -175px;
   background-size: cover;
 }
-
-.valueRow,
-.valuesRoot h1 {
-  color: var(--harmony-static-white);
-}
-
-.icon path {
-  fill: currentColor;
-}

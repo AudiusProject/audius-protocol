@@ -4,13 +4,16 @@ import {
   Flex,
   IconArrowRight,
   IconAudiusLogoHorizontalColor,
-  Text
+  Text,
+  TextLink
 } from '@audius/harmony'
 import { Form } from 'formik'
 import { Link } from 'react-router-dom'
 
 import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
+import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
+import { SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './SignInPageMobile.module.css'
 
@@ -24,67 +27,85 @@ const messages = {
   forgotPassword: 'Forgot password?'
 }
 
-export const SignInPageMobile = () => {
+type SignInPageProps = {
+  title: string
+  description: string
+  canonicalUrl: string
+}
+
+export const SignInPageMobile = (props: SignInPageProps) => {
+  const { title, description, canonicalUrl } = props
+
   return (
-    <Flex
-      className={styles.root}
-      direction='column'
-      w='100%'
-      h='100%'
-      justifyContent='space-between'
-      pb='4xl'
+    <MobilePageContainer
+      title={title}
+      description={description}
+      canonicalUrl={canonicalUrl}
+      fullHeight
     >
       <Flex
-        className={styles.content}
-        w='100%'
-        pv='2xl'
-        ph='l'
+        className={styles.root}
         direction='column'
-        gap='2xl'
+        w='100%'
+        h='100%'
         justifyContent='space-between'
+        pb='4xl'
       >
-        <Flex direction='column' gap='2xl' alignItems='center'>
-          <IconAudiusLogoHorizontalColor />
-          <Text variant='heading' size='l' tag='h1' color='heading'>
-            {messages.title}
+        <Flex
+          className={styles.content}
+          w='100%'
+          pv='2xl'
+          ph='l'
+          direction='column'
+          gap='2xl'
+          justifyContent='space-between'
+        >
+          <Flex direction='column' gap='2xl' alignItems='center'>
+            <IconAudiusLogoHorizontalColor />
+            <Text variant='heading' size='l' tag='h1' color='accent'>
+              {messages.title}
+            </Text>
+            <Box w='100%'>
+              <Form>
+                <Flex direction='column' gap='2xl' w='100%'>
+                  <Flex direction='column' gap='l'>
+                    <HarmonyTextField
+                      name='email'
+                      label={messages.emailLabel}
+                    />
+                    <HarmonyPasswordField
+                      name='password'
+                      label={messages.passwordLabel}
+                    />
+                  </Flex>
+                  <Flex direction='column' gap='l' alignItems='center'>
+                    <Button iconRight={IconArrowRight} type='submit' fullWidth>
+                      {messages.signIn}
+                    </Button>
+                    <TextLink variant='visible' textVariant='body'>
+                      {messages.forgotPassword}
+                    </TextLink>
+                  </Flex>
+                </Flex>
+              </Form>
+            </Box>
+          </Flex>
+        </Flex>
+        <Flex
+          direction='row'
+          w='100%'
+          justifyContent='center'
+          gap='xs'
+          mb='4xl'
+        >
+          <Text variant='title' strength='weak' color='staticWhite'>
+            {messages.newToAudius}{' '}
+            <TextLink variant='inverted' asChild>
+              <Link to={SIGN_UP_PAGE}>{messages.createAccount}</Link>
+            </TextLink>
           </Text>
-          <Box w='100%'>
-            <Form>
-              <Flex direction='column' gap='2xl' w='100%'>
-                <Flex direction='column' gap='l'>
-                  {/* TODO: replace old TextField */}
-                  <HarmonyTextField name='email' label={messages.emailLabel} />
-                  <HarmonyPasswordField
-                    name='password'
-                    label={messages.passwordLabel}
-                  />
-                </Flex>
-                <Flex direction='column' gap='l'>
-                  <Button iconRight={IconArrowRight} type='submit'>
-                    {messages.signIn}
-                  </Button>
-                  <Text color='heading' variant='body'>
-                    {/* TODO: link destination */}
-                    {messages.forgotPassword}
-                  </Text>
-                </Flex>
-              </Flex>
-            </Form>
-          </Box>
         </Flex>
       </Flex>
-      <Flex
-        className={styles.createAccountRow}
-        direction='row'
-        w='100%'
-        justifyContent='center'
-        gap='xs'
-        mb='4xl'
-      >
-        {/* TODO: args look good but style doesn't match design */}
-        <Text variant='title'>{messages.newToAudius}</Text>
-        <Link to={''}>{messages.createAccount}</Link>
-      </Flex>
-    </Flex>
+    </MobilePageContainer>
   )
 }

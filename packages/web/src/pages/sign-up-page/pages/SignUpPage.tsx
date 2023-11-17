@@ -8,10 +8,12 @@ import {
   Flex,
   IconArrowRight,
   Text,
-  SocialButton
+  SocialButton,
+  TextLink
 } from '@audius/harmony'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -19,7 +21,6 @@ import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { setValueField } from 'common/store/pages/signon/actions'
 import { getEmailField } from 'common/store/pages/signon/selectors'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
-import { Link } from 'components/link'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
@@ -92,108 +93,84 @@ export const SignUpPage = () => {
   )
 
   return (
-    <Flex h='100%' alignItems='center' justifyContent='center'>
-      <PageWithAudiusValues>
-        <Formik
-          validationSchema={toFormikValidationSchema(FormSchema)}
-          initialValues={initialValues}
-          onSubmit={submitHandler}
-          validateOnBlur
-          validateOnChange={false}
-        >
-          {({ isSubmitting }) => (
-            <Form>
-              <LeftContentContainer gap='2xl' alignItems='center'>
-                <PreloadImage
-                  src={audiusLogoColored}
-                  className={styles.logo}
-                  alt='Audius Colored Logo'
+    <PageWithAudiusValues>
+      <Formik
+        validationSchema={toFormikValidationSchema(FormSchema)}
+        initialValues={initialValues}
+        onSubmit={submitHandler}
+        validateOnBlur
+        validateOnChange={false}
+      >
+        {({ isSubmitting }) => (
+          <Form>
+            <LeftContentContainer gap='2xl' alignItems='center'>
+              <PreloadImage
+                src={audiusLogoColored}
+                className={styles.logo}
+                alt='Audius Colored Logo'
+              />
+              <Flex direction='column' gap='l' alignItems='flex-start' w='100%'>
+                <Text variant='heading' size='l' tag='h1' color='accent'>
+                  {messages.title}
+                </Text>
+                <Text color='default' size='l' variant='body' tag='h2'>
+                  {messages.subHeader}
+                </Text>
+              </Flex>
+              <Flex direction='column' gap='l' w='100%' alignItems='flex-start'>
+                <HarmonyTextField
+                  name='email'
+                  autoFocus
+                  autoComplete='email'
+                  label={messages.emailLabel}
                 />
-                <Flex
-                  direction='column'
-                  gap='l'
-                  alignItems='flex-start'
-                  w='100%'
-                >
-                  <Text color='heading' size='l' variant='heading' tag='h1'>
-                    {messages.title}
+                <Flex w='100%' alignItems='center' gap='s'>
+                  <Divider className={styles.flex1} />
+                  <Text variant='body' size='m' tag='p' color='subdued'>
+                    {messages.socialsDividerText}
                   </Text>
-                  <Text color='default' size='l' variant='body' tag='h2'>
-                    {messages.subHeader}
-                  </Text>
+                  <Divider className={styles.flex1} />
                 </Flex>
-                <Flex
-                  direction='column'
-                  gap='l'
-                  w='100%'
-                  alignItems='flex-start'
-                >
-                  <HarmonyTextField
-                    name='email'
-                    autoFocus
-                    autoComplete='email'
-                    label={messages.emailLabel}
+                <Flex direction='row' gap='s' w='100%'>
+                  <SocialButton
+                    socialType='twitter'
+                    className={styles.flex1}
+                    aria-label='Sign up with Twitter'
                   />
-                  <Flex w='100%' alignItems='center' gap='s'>
-                    <Divider className={styles.flex1} />
-                    <Text variant='body' size='m' tag='p' color='subdued'>
-                      {messages.socialsDividerText}
-                    </Text>
-                    <Divider className={styles.flex1} />
-                  </Flex>
-                  <Flex direction='row' gap='s' w='100%'>
-                    <SocialButton
-                      socialType='twitter'
-                      className={styles.flex1}
-                      aria-label='Sign up with Twitter'
-                    />
-                    <SocialButton
-                      socialType='instagram'
-                      className={styles.flex1}
-                      aria-label='Sign up with Instagram'
-                    />
-                    <SocialButton
-                      socialType='tiktok'
-                      className={styles.flex1}
-                      aria-label='Sign up with TikTok'
-                    />
-                  </Flex>
+                  <SocialButton
+                    socialType='instagram'
+                    className={styles.flex1}
+                    aria-label='Sign up with Instagram'
+                  />
+                  <SocialButton
+                    socialType='tiktok'
+                    className={styles.flex1}
+                    aria-label='Sign up with TikTok'
+                  />
                 </Flex>
-                <Flex
-                  direction='column'
-                  gap='l'
-                  alignItems='flex-start'
-                  w='100%'
+              </Flex>
+              <Flex direction='column' gap='l' alignItems='flex-start' w='100%'>
+                <Button
+                  variant={ButtonType.PRIMARY}
+                  type='submit'
+                  fullWidth
+                  iconRight={IconArrowRight}
+                  isLoading={isSubmitting}
                 >
-                  <Button
-                    variant={ButtonType.PRIMARY}
-                    type='submit'
-                    fullWidth
-                    iconRight={IconArrowRight}
-                    isLoading={isSubmitting}
-                  >
-                    {messages.signUp}
-                  </Button>
+                  {messages.signUp}
+                </Button>
 
-                  <Text size='l'>
-                    {messages.haveAccount}{' '}
-                    {/* TODO [C-3278]: Update with Harmony Link */}
-                    <Link
-                      to={SIGN_IN_PAGE}
-                      variant='body'
-                      size='medium'
-                      strength='strong'
-                      color='secondary'
-                    >
-                      {messages.signIn}
-                    </Link>
-                  </Text>
-                </Flex>
-              </LeftContentContainer>
-            </Form>
-          )}
-        </Formik>
-      </PageWithAudiusValues>
-    </Flex>
+                <Text variant='body' size='l'>
+                  {messages.haveAccount}{' '}
+                  <TextLink variant='visible' asChild>
+                    <Link to={SIGN_IN_PAGE}>{messages.signIn}</Link>
+                  </TextLink>
+                </Text>
+              </Flex>
+            </LeftContentContainer>
+          </Form>
+        )}
+      </Formik>
+    </PageWithAudiusValues>
   )
 }

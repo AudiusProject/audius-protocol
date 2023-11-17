@@ -1,4 +1,5 @@
 .root {
+  z-index: 1;
   background: radial-gradient(
       77.16% 77.16% at 50% 51.81%,
       rgba(91, 35, 225, 0.8) 0%,
@@ -15,8 +16,4 @@
   background-color: var(--harmony-bg-white);
   border-bottom-left-radius: var(--harmony-border-radius-2xl);
   border-bottom-right-radius: var(--harmony-border-radius-2xl);
-}
-
-.createAccountRow {
-  color: var(--harmony-white);
 }

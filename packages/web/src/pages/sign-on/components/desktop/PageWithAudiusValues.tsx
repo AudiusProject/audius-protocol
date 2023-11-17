@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from 'react'
+import { PropsWithChildren } from 'react'
 
 import {
   Box,
@@ -31,10 +31,9 @@ export const PageWithAudiusValues = (props: PageWithAudiusValuesProps) => {
     <Flex
       className={styles.root}
       direction='row'
-      w={isDesktop ? 1280 : 480}
-      h={864}
       borderRadius='l'
       shadow='far'
+      css={{ zIndex: 1, maxWidth: isDesktop ? 1280 : 480, maxHeight: 864 }}
     >
       {children}
       {isDesktop ? <AudiusValues /> : null}
@@ -45,14 +44,15 @@ export const PageWithAudiusValues = (props: PageWithAudiusValuesProps) => {
 const AudiusValue = (props: { icon: IconComponent; text: string }) => {
   const { icon: Icon, text } = props
   return (
-    <Flex
-      className={styles.valueRow}
-      direction='row'
-      gap='l'
-      alignItems='center'
-    >
-      <Icon className={styles.icon} />
-      <Text variant='heading' size='xl'>
+    <Flex alignItems='center' justifyContent='center' gap='m'>
+      <Icon color='staticWhite' size='2xl' />
+      <Text
+        variant='heading'
+        size='xl'
+        color='staticWhite'
+        shadow='emphasis'
+        css={{ textAlign: 'center' }}
+      >
         {text}
       </Text>
     </Flex>
@@ -64,14 +64,20 @@ const AudiusValues = () => {
     <Flex
       className={styles.valuesRoot}
       w={800}
-      h={864}
       direction='column'
       alignItems='center'
       justifyContent='center'
     >
       <Flex direction='column' gap='xl'>
         <Box pb='l'>
-          <Text variant='display' size='s' strength='strong'>
+          <Text
+            variant='display'
+            size='s'
+            strength='strong'
+            color='staticWhite'
+            shadow='emphasis'
+            css={{ textAlign: 'center' }}
+          >
             {messages.heading}
           </Text>
         </Box>
