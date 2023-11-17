@@ -8,6 +8,7 @@ import { SolanaWalletAddress, StringAudio, WalletAddress } from 'models/Wallet'
 
 import { Chain } from './Chain'
 import { PlaylistLibraryKind } from './PlaylistLibrary'
+import { PurchaseMethod } from './PurchaseContent'
 import { TrackAccessType } from './Track'
 
 const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
@@ -1784,6 +1785,7 @@ type ContentPurchaseMetadata = {
   contentType: string
   payExtraAmount: number
   payExtraPreset?: string
+  purchaseMethod: PurchaseMethod
   totalAmount: number
   artistHandle: string
   isVerifiedArtist: boolean
