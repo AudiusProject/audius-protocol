@@ -4,6 +4,7 @@ import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { PurchaseMethod } from 'models/PurchaseContent'
 import { UserTrackMetadata } from 'models/Track'
 import {
   ContentType,
@@ -22,11 +23,7 @@ import {
   CUSTOM_AMOUNT,
   PURCHASE_METHOD
 } from './constants'
-import {
-  PayExtraAmountPresetValues,
-  PayExtraPreset,
-  PurchaseMethod
-} from './types'
+import { PayExtraAmountPresetValues, PayExtraPreset } from './types'
 import { getExtraAmount } from './utils'
 import { PurchaseContentSchema, PurchaseContentValues } from './validation'
 
@@ -69,26 +66,18 @@ export const usePurchaseContentFormConfiguration = ({
         customAmount
       })
 
-      if (purchaseMethod === PurchaseMethod.CARD) {
-        dispatch(
-          startPurchaseContentFlow({
-            extraAmount,
-            extraAmountPreset: amountPreset,
-            contentId: track.track_id,
-            contentType: ContentType.TRACK
-          })
-        )
-      } else if (purchaseMethod === PurchaseMethod.EXISTING_BALANCE) {
-        dispatch(
-          startPurchaseContentFlow({
-            extraAmount,
-            extraAmountPreset: amountPreset,
-            contentId: track.track_id,
-            contentType: ContentType.TRACK
-          })
-        )
-      } else if (purchaseMethod === PurchaseMethod.MANUAL_TRANSFER) {
+      if (purchaseMethod === PurchaseMethod.MANUAL_TRANSFER) {
         openUsdcManualTransferModal()
+      } else {
+        dispatch(
+          startPurchaseContentFlow({
+            purchaseMethod,
+            extraAmount,
+            extraAmountPreset: amountPreset,
+            contentId: track.track_id,
+            contentType: ContentType.TRACK
+          })
+        )
       }
     },
     [isUnlocking, track, presetValues, dispatch, openUsdcManualTransferModal]
