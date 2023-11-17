@@ -13,7 +13,8 @@ import {
   PlainButton,
   IconComponent,
   Flex,
-  Box
+  Box,
+  useTheme
 } from '@audius/harmony'
 import { BN } from 'bn.js'
 
@@ -37,6 +38,7 @@ export const AddressTile = ({
   iconLeft: IconLeft,
   iconRight: IconRight
 }: AddressTileProps) => {
+  const { color } = useTheme()
   const { toast } = useContext(ToastContext)
   const mobile = isMobile()
 
@@ -73,7 +75,7 @@ export const AddressTile = ({
         </Text>
       </Flex>
       <Flex
-        css={{ backgroundColor: 'var(--background-surface-1)' }}
+        css={{ backgroundColor: color.background.surface1 }}
         alignItems='stretch'
         justifyContent='space-between'
         borderTop='default'
