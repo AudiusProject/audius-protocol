@@ -390,24 +390,24 @@ export class FixedDecimal<T extends bigint, K extends BN = BN> {
    */
   public toLocaleString(locale?: string, options?: FixedDecimalFormatOptions) {
     // Apply defaults
-    options = {
+    const mergedOptions = {
       ...defaultFormatOptions(this),
       ...options
     }
     // Apply rounding method
     let str = ''
-    switch (options.roundingMode) {
+    switch (mergedOptions.roundingMode) {
       case 'ceil':
-        str = this.ceil(options.maximumFractionDigits).toString()
+        str = this.ceil(mergedOptions.maximumFractionDigits).toString()
         break
       case 'floor':
-        str = this.floor(options.maximumFractionDigits).toString()
+        str = this.floor(mergedOptions.maximumFractionDigits).toString()
         break
       case 'trunc':
-        str = this.trunc(options.maximumFractionDigits).toString()
+        str = this.trunc(mergedOptions.maximumFractionDigits).toString()
         break
       case 'halfExpand':
-        str = this.round(options.maximumFractionDigits).toString()
+        str = this.round(mergedOptions.maximumFractionDigits).toString()
         break
     }
 
@@ -416,12 +416,12 @@ export class FixedDecimal<T extends bigint, K extends BN = BN> {
     // Strip trailing zeros
     decimal = (decimal ?? '').replace(/0+$/, '')
 
-    if (options.minimumFractionDigits !== undefined) {
+    if (mergedOptions.minimumFractionDigits !== undefined) {
       if (
-        options.trailingZeroDisplay !== 'stripIfInteger' ||
+        mergedOptions.trailingZeroDisplay !== 'stripIfInteger' ||
         BigInt(decimal) !== BigInt(0)
       ) {
-        decimal = decimal.padEnd(options.minimumFractionDigits, '0')
+        decimal = decimal.padEnd(mergedOptions.minimumFractionDigits, '0')
       }
     }
 
