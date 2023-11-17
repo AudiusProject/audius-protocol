@@ -65,27 +65,23 @@ export const usePurchaseContentFormConfiguration = ({
       })
 
       if (purchaseMethod === PurchaseMethod.CARD) {
-        if (track?.track_id === 0) {
-          dispatch(
-            startPurchaseContentFlow({
-              extraAmount,
-              extraAmountPreset: amountPreset,
-              contentId: track.track_id,
-              contentType: ContentType.TRACK
-            })
-          )
-        }
+        dispatch(
+          startPurchaseContentFlow({
+            extraAmount,
+            extraAmountPreset: amountPreset,
+            contentId: track.track_id,
+            contentType: ContentType.TRACK
+          })
+        )
       } else if (purchaseMethod === PurchaseMethod.EXISTING_BALANCE) {
-        if (track?.track_id === 0) {
-          dispatch(
-            startPurchaseContentFlow({
-              extraAmount,
-              extraAmountPreset: amountPreset,
-              contentId: track.track_id,
-              contentType: ContentType.TRACK
-            })
-          )
-        }
+        dispatch(
+          startPurchaseContentFlow({
+            extraAmount,
+            extraAmountPreset: amountPreset,
+            contentId: track.track_id,
+            contentType: ContentType.TRACK
+          })
+        )
       } else if (purchaseMethod === PurchaseMethod.MANUAL_TRANSFER) {
         openUsdcManualTransferModal()
       }
