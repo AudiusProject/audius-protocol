@@ -84,21 +84,23 @@ const determineAllowedRoute = (
  * <Route> wrapper that handles redirecting through the sign up page flow
  */
 export function SignUpRoute({ children, ...rest }: RouteProps) {
-  const existingSignUpState = useSelector((state: AppState) => getSignOn(state))
+  // DO NOT MERGE
+  // const existingSignUpState = useSelector((state: AppState) => getSignOn(state))
   return (
     <Route
       {...rest}
       render={({ location }) => {
-        // Check if the route is allowed, if not we redirect accordingly
-        const { isAllowedRoute, correctedRoute } = determineAllowedRoute(
-          existingSignUpState,
-          location.pathname
-        )
-        return isAllowedRoute ? (
-          <>{children}</>
-        ) : (
-          <Redirect to={correctedRoute} />
-        )
+        return <>{children}</>
+        //   // Check if the route is allowed, if not we redirect accordingly
+        //   const { isAllowedRoute, correctedRoute } = determineAllowedRoute(
+        //     existingSignUpState,
+        //     location.pathname
+        //   )
+        //   return isAllowedRoute ? (
+        //     <>{children}</>
+        //   ) : (
+        //     <Redirect to={correctedRoute} />
+        //   )
       }}
     />
   )
