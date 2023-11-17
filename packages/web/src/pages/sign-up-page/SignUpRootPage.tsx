@@ -154,7 +154,7 @@ export const SignUpRootPage = () => {
             SIGN_UP_ARTISTS_PAGE
           ]}
         >
-          <ProgressHeader />
+          {isDesktop ? <ProgressHeader /> : null}
           <Switch>
             <SignUpRoute exact path={SIGN_UP_HANDLE_PAGE}>
               <PickHandlePage />
