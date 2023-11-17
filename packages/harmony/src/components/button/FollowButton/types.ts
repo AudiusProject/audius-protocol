@@ -27,9 +27,4 @@ export type FollowButtonProps = {
    * Callback for when an unfollow is triggered.
    */
   onUnfollow?: () => void
-
-  /**
-   * Force hover state style. For use with controlled wrappers.
-   */
-  forceHover?: boolean
 } & Omit<HTMLProps<HTMLInputElement>, 'size'>

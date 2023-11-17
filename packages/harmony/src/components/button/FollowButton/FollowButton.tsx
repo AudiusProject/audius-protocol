@@ -34,7 +34,6 @@ export const FollowButton = (props: FollowButtonProps) => {
     isFollowing = false,
     onUnfollow,
     onFollow,
-    forceHover = false,
     size = 'default',
     as: ignoredAs,
     ...inputProps
@@ -47,8 +46,7 @@ export const FollowButton = (props: FollowButtonProps) => {
   })
 
   // Track hover manually to swap text and icon
-  const [isHoveringState, setIsHovering] = useState(false)
-  const isHovering = forceHover || isHoveringState
+  const [isHovering, setIsHovering] = useState(false)
 
   const handleMouseEnter = useCallback(() => {
     setIsHovering(true)
