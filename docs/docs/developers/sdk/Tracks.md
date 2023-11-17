@@ -1,20 +1,17 @@
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+
 ### getTrack
 
 #### getTrack(`params`)
 
 Get a track by id.
 
-Example:
-
-```typescript
-const { data: track } = await audiusSdk.tracks.getTrack({
-  trackId: "D7KyD",
-});
-
-console.log(track);
-```
-
-#### Params
+<Tabs
+  block={true}
+  defaultValue="request"
+  values={[{"label":"Params","value":"request"},{"label":"Example","value":"example"},{"label":"Response","value":"response"}]}>
+<TabItem value="request">
 
 Create an object with the following fields and pass it as the first argument, as shown in the example above.
 
@@ -22,7 +19,21 @@ Create an object with the following fields and pass it as the first argument, as
 | :-------- | :------- | :------------------ | :----------- |
 | `trackId` | `string` | The ID of the track | **Required** |
 
-#### Returns
+</TabItem>
+
+<TabItem value="example">
+
+```typescript title="Typescript example"
+const { data: track } = await audiusSdk.tracks.getTrack({
+  trackId: 'D7KyD',
+})
+
+console.log(track)
+```
+
+</TabItem>
+
+<TabItem value="response">
 
 Returns a `Promise` containing an object with a `data` field. `data` contains information about the track as described below.
 
@@ -85,6 +96,9 @@ Returns a `Promise` containing an object with a `data` field. `data` contains in
   };
 };
 ```
+
+</TabItem>
+</Tabs>
 
 ---
 
