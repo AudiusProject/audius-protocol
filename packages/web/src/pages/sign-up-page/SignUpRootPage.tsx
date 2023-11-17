@@ -1,9 +1,12 @@
-import { Paper } from '@audius/harmony'
+import { PropsWithChildren } from 'react'
+
+import { Box, PaperProps, Paper, BoxProps } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
 import { getSignOn } from 'common/store/pages/signon/selectors'
 import SignOnPageState from 'common/store/pages/signon/types'
+import { useMedia } from 'hooks/useMedia'
 import { AppState } from 'store/types'
 import {
   SIGN_UP_ARTISTS_PAGE,
@@ -101,9 +104,21 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
   )
 }
 
+const DesktopRootContainer = ({ children }: PropsWithChildren<PaperProps>) => (
+  <Paper w={1280} h={864} direction='column' m='4xl'>
+    {children}
+  </Paper>
+)
+
+const MobileRootContainer = ({ children }: PropsWithChildren<BoxProps>) => (
+  <Box h='100%'> {children}</Box>
+)
+
 export const SignUpRootPage = () => {
+  const { isDesktop } = useMedia()
+  const RootContainer = isDesktop ? DesktopRootContainer : MobileRootContainer
   return (
-    <Paper w={1280} h={864} direction='column' m='4xl'>
+    <RootContainer>
       <Switch>
         <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
           <CreateEmailPage />
@@ -144,6 +159,6 @@ export const SignUpRootPage = () => {
           </Switch>
         </SignUpRoute>
       </Switch>
-    </Paper>
+    </RootContainer>
   )
 }

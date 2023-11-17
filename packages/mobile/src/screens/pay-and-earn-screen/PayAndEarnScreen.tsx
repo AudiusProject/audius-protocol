@@ -154,7 +154,7 @@ export const PayAndEarnScreen = () => {
   const styles = useStyles()
   return (
     <Screen
-      url='/payandearn'
+      url='/payments'
       variant='secondary'
       title={messages.title}
       style={styles.root}

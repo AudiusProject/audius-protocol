@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 import type { Signer } from 'ethers'
+import type { WalletClient } from 'viem'
 import { useEffect, useState } from 'react'
-import { useWalletClient, WalletClient } from 'wagmi'
+import { useWalletClient } from 'wagmi'
 
 // This should be import type { Web3 } from web3, but Audius libs forces us to use a version of web3 without this type
 type Web3Type = any
@@ -12,9 +13,9 @@ const walletClientToSigner = async (
 ): Promise<Signer> => {
   const { account, chain, transport } = walletClient
   const network = {
-    chainId: chain.id,
-    name: chain.name,
-    ensAddress: chain.contracts?.ensRegistry?.address
+    chainId: chain!.id,
+    name: chain!.name,
+    ensAddress: chain!.contracts?.ensRegistry?.address
   }
 
   // Dynamically import hefty libraries so that we don't have to include them in the main index bundle
@@ -22,7 +23,7 @@ const walletClientToSigner = async (
   const { providers } = ethersjs
 
   const provider = new providers.Web3Provider(transport, network)
-  const signer = provider.getSigner(account.address)
+  const signer = provider.getSigner(account!.address)
   return signer
 }
 
@@ -40,7 +41,12 @@ const useWeb3Signer = (chainId?: number): Web3Type | undefined => {
       // Dynamically import hefty libraries so that we don't have to include them in the main index bundle
       const { default: Web3 } = await import('web3')
 
-      if (isMounted && walletClient) {
+      if (
+        isMounted &&
+        walletClient?.chain?.id &&
+        walletClient?.chain?.name &&
+        walletClient?.account
+      ) {
         // Converting to an ethers signer and then web3 instance isn't compatible with Audius libs
         // because it expects it to have the send() or sendAsync() method. The workaround is to pass libs an RPC endpoint (string),
         // and after libs inits we set audiusLibs.ethWeb3Manager.web3 directly.
