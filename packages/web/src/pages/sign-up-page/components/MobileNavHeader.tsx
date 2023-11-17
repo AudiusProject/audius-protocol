@@ -26,10 +26,16 @@ export const MobileNavHeader = (props: MobileNavHeaderProps) => {
         backgroundColor: theme.color.background.white,
         borderBottom: `solid 1px ${theme.color.border.default}`
       })}
+      alignItems='center'
+      justifyContent='center'
     >
-      <Box css={{ height: iconSizes.l, width: iconSizes.l }}>
+      <Flex
+        css={{ height: iconSizes.l, width: iconSizes.l }}
+        alignItems='center'
+      >
         {isBackAllowed ? (
           <PlainButton
+            css={{ padding: 0 }}
             onClick={() => {
               handleBackClick()
             }}
@@ -37,7 +43,7 @@ export const MobileNavHeader = (props: MobileNavHeaderProps) => {
             <IconCaretLeft color='subdued' />
           </PlainButton>
         ) : null}
-      </Box>
+      </Flex>
       {/* mr to offset no icon on the right */}
       <Box mr='xl' css={{ flex: '1' }}>
         <IconAudiusLogoHorizontal
