@@ -1,69 +1,24 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import {
-  connectorsForWallets,
-  RainbowKitProvider
-} from '@rainbow-me/rainbowkit'
-import { metaMaskWallet } from '@rainbow-me/rainbowkit/wallets'
-import { configureChains, createConfig, WagmiConfig } from 'wagmi'
-import { mainnet, goerli } from 'wagmi/chains'
-import { publicProvider } from 'wagmi/providers/public'
-import { jsonRpcProvider } from 'wagmi/providers/jsonRpc'
-import { useEnvVars } from './providers/EnvVarsProvider.tsx'
+import { WagmiProvider } from 'wagmi'
 import { AudiusLibsProvider } from './providers/AudiusLibsProvider.tsx'
 import App from './App.tsx'
+import { useWagmiConfig } from './hooks/useWagmiConfig.tsx'
 
 const AppWithProviders = () => {
-  const { ethProviderUrl } = useEnvVars()
-
-  const { chains, publicClient } = configureChains(
-    [mainnet, goerli],
-    [
-      jsonRpcProvider({
-        rpc: () => {
-          return {
-            http: ethProviderUrl.includes(',')
-              ? ethProviderUrl.split(',')[0] // TODO: Ideally we map these to allow more fallback RPC providers
-              : ethProviderUrl
-          }
-        }
-      }),
-      publicProvider()
-    ]
-  )
-
-  const connectors = connectorsForWallets([
-    {
-      groupName: ' ',
-      wallets: [metaMaskWallet({ projectId: 'none', chains })]
-    }
-  ])
-
-  // const { connectors } = getDefaultWallets({
-  //   appName: 'Audius Node',
-  //   projectId: '0416e7e9c027fb75dc5a365384683fdb',
-  //   chains
-  // })
-
-  const wagmiConfig = createConfig({
-    autoConnect: true,
-    connectors,
-    publicClient
-  })
+  const wagmiConfig = useWagmiConfig()
 
   const queryClient = new QueryClient()
 
   return (
-    <WagmiConfig config={wagmiConfig}>
-      <RainbowKitProvider chains={chains} modalSize='compact'>
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
         <AudiusLibsProvider>
-          <QueryClientProvider client={queryClient}>
-            <App />
-            <ReactQueryDevtools initialIsOpen={false} />
-          </QueryClientProvider>
+          <App />
         </AudiusLibsProvider>
-      </RainbowKitProvider>
-    </WagmiConfig>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </WagmiProvider>
   )
 }
 

@@ -1,12 +1,9 @@
 import { useState } from 'react'
-import { useBlockNumber, useNetwork } from 'wagmi'
+import { useBlockNumber, useAccount, useConnect, useDisconnect } from 'wagmi'
 import { useEnvVars } from './providers/EnvVarsProvider'
 import { useAudiusLibs } from './providers/AudiusLibsProvider'
 import useMinChainVersions from './hooks/useMinChainVersions'
 import useLatestGitHubVersions from './hooks/useLatestGitHubVersions'
-
-import { ConnectButton } from '@rainbow-me/rainbowkit'
-import '@rainbow-me/rainbowkit/styles.css'
 
 interface UptimeResponse {
   host: string
@@ -36,15 +33,16 @@ const App = () => {
     error: latestGithubVersionsError
   } = useLatestGitHubVersions()
 
-  const { chain, chains } = useNetwork()
-  const { data: latestBlockNumber } = useBlockNumber({
-    chainId: 1
-  })
+  const { address, chain } = useAccount()
+  const { data: latestBlockNumber } = useBlockNumber()
+
+  const { connectors, connect } = useConnect()
+  const { disconnect } = useDisconnect()
 
   const fetchUptimeData = async () => {
     try {
       const response = await fetch(
-        `${endpoint}/d_api/dtime?host=${targetEndpoint}`
+        `${endpoint}/d_api/uptime?host=${targetEndpoint}`
       )
       if (response.ok) {
         const data = (await response.json()) as UptimeResponse
@@ -68,25 +66,29 @@ const App = () => {
         {isMinChainVersionsPending
           ? 'loading...'
           : minChainVersionsError
-          ? 'error'
-          : JSON.stringify(minChainVersions)}
+            ? 'error'
+            : JSON.stringify(minChainVersions)}
       </p>
       <p>
         Latest versions (GitHub):{' '}
         {isLatestGithubVersionsPending
           ? 'loading...'
           : latestGithubVersionsError
-          ? 'error'
-          : JSON.stringify(latestGithubVersions)}
+            ? 'error'
+            : JSON.stringify(latestGithubVersions)}
       </p>
 
       <br />
 
       <p>
-        Latest block: {(latestBlockNumber ?? '').toString()} (
-        {chain?.name || 'unknown chain'})
+        MetaMask connected to chain:{' '}
+        {chain?.name
+          ? `${chain.name} (latest block: ${(
+              latestBlockNumber ?? ''
+            ).toString()}. if this number is wrong, your
+        RPC env var is not configured to talk to this chain)`
+          : '?'}
       </p>
-      <p>Available chains: {chains.map((chain) => chain.name).join(', ')}</p>
       <p>
         Libs:{' '}
         {isAudiusLibsLoading
@@ -95,9 +97,20 @@ const App = () => {
               isLibsReadOnly ? 'read-only' : 'able to sign txns'
             })`}
       </p>
-      <div>
-        <ConnectButton />
-      </div>
+
+      {connectors.map((connector) => (
+        <button key={connector.uid} onClick={() => connect({ connector })}>
+          Connect {connector.name}
+        </button>
+      ))}
+
+      {
+        <div>
+          {address && <div>{address}</div>}
+          {address && <button onClick={() => disconnect()}>Disconnect</button>}
+        </div>
+      }
+
       <br />
       <input
         type='text'

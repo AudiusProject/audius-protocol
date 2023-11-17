@@ -359,8 +359,12 @@ export const PremiumTrackPurchaseDrawer = () => {
 
   const isLoading = statusIsNotFinalized(trackStatus)
 
+  const isValidTrack = track && isTrackPurchasable(track)
+  const price = isValidTrack
+    ? track?.premium_conditions?.usdc_purchase?.price
+    : 0
   const { initialValues, onSubmit, validationSchema } =
-    usePurchaseContentFormConfiguration({ track, presetValues })
+    usePurchaseContentFormConfiguration({ track, presetValues, price })
 
   const handleClosed = useCallback(() => {
     onClosed()

@@ -1,8 +1,16 @@
-import { ChangeEvent, ReactNode } from 'react'
+import { ChangeEvent, ReactNode, useCallback, useState } from 'react'
 
-import { Box, Flex, IconComponent } from '@audius/harmony'
+import {
+  Box,
+  Flex,
+  IconCaretDown,
+  IconComponent,
+  useTheme
+} from '@audius/harmony'
 import { ColorValue, RadioButton, RadioButtonGroup } from '@audius/stems'
+import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
+import useMeasure from 'react-use-measure'
 
 import { Text } from 'components/typography'
 
@@ -13,9 +21,38 @@ export type SummaryTableItem = {
   label: ReactNode
   icon?: IconComponent
   value?: ReactNode
+  disabled?: boolean
+}
+
+const Expandable = ({
+  expanded,
+  children
+}: {
+  expanded: boolean
+  children: React.ReactNode
+}) => {
+  const [ref, bounds] = useMeasure({
+    polyfill: ResizeObserver,
+    offsetSize: true
+  })
+
+  return (
+    <Flex
+      direction='column'
+      alignSelf='stretch'
+      className={styles.expandableContainer}
+      style={{ height: expanded ? bounds.height : 0 }}
+    >
+      <Flex direction='column' ref={ref}>
+        {children}
+      </Flex>
+    </Flex>
+  )
 }
 
 export type SummaryTableProps = {
+  /** Enables an expand/collapse interaction. Only the title shows when collapsed. */
+  collapsible?: boolean
   items: SummaryTableItem[]
   summaryItem?: SummaryTableItem
   title: ReactNode
@@ -29,6 +66,7 @@ export type SummaryTableProps = {
 }
 
 export const SummaryTable = ({
+  collapsible = false,
   items,
   summaryItem,
   title,
@@ -40,20 +78,28 @@ export const SummaryTable = ({
   onRadioChange,
   rowClassName
 }: SummaryTableProps) => {
+  const { color } = useTheme()
+  // Collapsible is collapsed by default
+  const [expanded, setExpanded] = useState(!collapsible)
+  const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
+
   const body = (
-    <div className={styles.container}>
-      <div className={styles.row}>
-        <Text variant='title' size='large'>
-          {title}
-        </Text>
-        <Text variant='title' size='large'>
-          {secondaryTitle}
-        </Text>
-      </div>
-      {items.map(({ id, label, icon: Icon, value }) => (
-        <div key={id} className={cn(styles.row, rowClassName)}>
+    <>
+      {items.map(({ id, label, icon: Icon, value, disabled }) => (
+        <Flex
+          key={id}
+          alignItems='center'
+          alignSelf='stretch'
+          justifyContent='space-between'
+          pv='m'
+          ph='xl'
+          className={cn(styles.row, rowClassName)}
+          css={{ opacity: disabled ? 0.5 : 1 }}
+        >
           <Flex alignItems='center' gap='s'>
-            {withRadioOptions ? <RadioButton value={id} /> : null}
+            {withRadioOptions ? (
+              <RadioButton value={id} disabled={disabled} />
+            ) : null}
             {Icon ? (
               <Box ml='s'>
                 <Icon color='default' />
@@ -62,19 +108,62 @@ export const SummaryTable = ({
             <Text>{label}</Text>
           </Flex>
           <Text>{value}</Text>
-        </div>
+        </Flex>
       ))}
       {summaryItem !== undefined ? (
-        <div className={cn(styles.row, styles.rowGrayBackground)}>
+        <Flex
+          className={styles.row}
+          css={{ backgroundColor: color.background.surface1 }}
+          alignItems='center'
+          alignSelf='stretch'
+          justifyContent='space-between'
+          pv='m'
+          ph='xl'
+        >
           <Text variant='title' size='medium' color={summaryLabelColor}>
             {summaryItem.label}
           </Text>
           <Text variant='title' size='medium' color={summaryValueColor}>
             {summaryItem.value}
           </Text>
-        </div>
+        </Flex>
       ) : null}
-    </div>
+    </>
+  )
+
+  const content = (
+    <Flex
+      alignItems='center'
+      alignSelf='stretch'
+      justifyContent='center'
+      direction='column'
+      border='default'
+      borderRadius='xs'
+      className={styles.container}
+    >
+      <Flex
+        alignItems='center'
+        alignSelf='stretch'
+        justifyContent='space-between'
+        pv='m'
+        ph='xl'
+        css={{ backgroundColor: color.background.surface1 }}
+      >
+        <Flex gap='s'>
+          {collapsible ? (
+            <IconCaretDown
+              onClick={onToggleExpand}
+              className={cn(styles.expander, { [styles.expanded]: expanded })}
+              size='m'
+              color='default'
+            />
+          ) : null}
+          <Text variant='title'>{title}</Text>
+        </Flex>
+        <Text variant='title'>{secondaryTitle}</Text>
+      </Flex>
+      {collapsible ? <Expandable expanded={expanded}>{body}</Expandable> : body}
+    </Flex>
   )
 
   return withRadioOptions && onRadioChange ? (
@@ -84,9 +173,9 @@ export const SummaryTable = ({
       onChange={onRadioChange}
       className={styles.radioGroup}
     >
-      {body}
+      {content}
     </RadioButtonGroup>
   ) : (
-    body
+    content
   )
 }

@@ -15,13 +15,12 @@
   },
   "dependencies": {
     "@audius/sdk": "3.0.11-beta.21",
-    "@rainbow-me/rainbowkit": "1.2.0",
     "@tanstack/react-query": "5.8.4",
     "@tanstack/react-query-devtools": "5.8.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "viem": "1.19.1",
-    "wagmi": "1.4.6",
+    "viem": "2.0.0-beta.6",
+    "wagmi": "2.0.0-beta.5",
     "web3": "1.8.2"
   },
   "devDependencies": {

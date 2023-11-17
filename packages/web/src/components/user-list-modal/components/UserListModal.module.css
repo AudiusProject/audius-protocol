@@ -13,7 +13,7 @@
 .modalTitle {
   font-weight: var(--font-heavy);
   letter-spacing: 0.5px;
-  color: var(--neutral-light-2);
+  color: var(--neutral-light-4);
   font-size: var(--font-l);
   text-transform: uppercase;
 }
@@ -30,7 +30,7 @@
 }
 
 .icon path {
-  fill: var(--neutral-light-2);
+  fill: var(--neutral-light-4);
 }
 
 .scrollable {

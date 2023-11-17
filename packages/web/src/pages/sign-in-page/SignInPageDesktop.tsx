@@ -7,8 +7,12 @@ import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import PreloadImage from 'components/preload-image/PreloadImage'
+import {
+  ArtworkContainer,
+  AudiusValues
+} from 'pages/sign-on/components/AudiusValues'
 import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
-import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithAudiusValues'
+import { SignOnContainerDesktop } from 'pages/sign-on/components/desktop/SignOnContainerDesktop'
 import { SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './SignInPage.module.css'
@@ -25,7 +29,7 @@ const messages = {
 export const SignInPageDesktop = () => {
   return (
     <Flex h='100%' alignItems='center' justifyContent='center'>
-      <PageWithAudiusValues>
+      <SignOnContainerDesktop>
         <LeftContentContainer gap='2xl' justifyContent='space-between'>
           {/* TODO: confirm 40px spacing value */}
           <Flex direction='column' gap='2xl' alignItems='center'>
@@ -76,7 +80,10 @@ export const SignInPageDesktop = () => {
             text={messages.createAccount}
           />{' '}
         </LeftContentContainer>
-      </PageWithAudiusValues>
+        <ArtworkContainer>
+          <AudiusValues />
+        </ArtworkContainer>
+      </SignOnContainerDesktop>
     </Flex>
   )
 }
