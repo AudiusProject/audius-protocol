@@ -105,9 +105,13 @@ const RenderForm = ({
       </ModalHeader>
       <ModalContent className={styles.content}>
         {stage !== PurchaseContentStage.FINISH ? (
-          <AudioMatchSection amount={USDC(price).round().toShorthand()} />
+          <AudioMatchSection
+            amount={USDC(price / 100)
+              .round()
+              .toShorthand()}
+          />
         ) : null}
-        <Flex p='xl'>
+        <Flex p={mobile ? 'l' : 'xl'}>
           <Flex direction='column' gap='xl' w='100%'>
             <LockedTrackDetailsTile
               track={track as unknown as Track}
@@ -189,6 +193,7 @@ export const PremiumContentPurchaseModal = () => {
   if (track && !isValidTrack) {
     console.error('PremiumContentPurchaseModal: Track is not purchasable')
   }
+  const mobile = isMobile()
 
   return (
     <ModalDrawer
@@ -200,6 +205,7 @@ export const PremiumContentPurchaseModal = () => {
       useGradientTitle={false}
       dismissOnClickOutside
       zIndex={zIndex.PREMIUM_CONTENT_PURCHASE_MODAL}
+      wrapperClassName={mobile ? styles.mobileWrapper : undefined}
     >
       {isLoading ? (
         <Flex
