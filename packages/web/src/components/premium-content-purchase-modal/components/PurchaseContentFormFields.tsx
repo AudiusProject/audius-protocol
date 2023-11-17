@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useEffect } from 'react'
+import { ChangeEvent, useCallback } from 'react'
 
 import {
   PurchaseContentStage,
@@ -58,23 +58,20 @@ export const PurchaseContentFormFields = ({
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
   const isPurchased = stage === PurchaseContentStage.FINISH
-  const balanceUSDC = USDC((balance ?? new BN(0)) as BN)
+  const balanceUSDC = USDC((balance ?? new BN(0)) as BN).value
   const { extraAmount } = usePurchaseSummaryValues({
     price,
     currentBalance: balance
   })
   const isExistingBalanceDisabled =
-    USDC(price / 100).value + USDC((extraAmount ?? 0) / 100).value >
-    balanceUSDC.value
+    USDC(price / 100).value + USDC((extraAmount ?? 0) / 100).value > balanceUSDC
 
-  useEffect(() => {
-    if (
-      purchaseMethod === PurchaseMethod.EXISTING_BALANCE &&
-      isExistingBalanceDisabled
-    ) {
-      setPurchaseMethod(PurchaseMethod.CARD)
-    }
-  }, [purchaseMethod, isExistingBalanceDisabled, setPurchaseMethod])
+  if (
+    purchaseMethod === PurchaseMethod.EXISTING_BALANCE &&
+    isExistingBalanceDisabled
+  ) {
+    setPurchaseMethod(PurchaseMethod.CARD)
+  }
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -111,7 +108,7 @@ export const PurchaseContentFormFields = ({
               : undefined
           }
         >
-          {messages.dollarSign + balanceUSDC.toFixed(2)}
+          {messages.dollarSign + USDC(balanceUSDC).toFixed(2)}
         </Text>
       )
     },

@@ -92,7 +92,6 @@ export const PurchaseContentFormFooter = ({
   )
 
   const { totalPrice } = purchaseSummaryValues
-  console.debug('REED amountDue', totalPrice)
   if (isPurchased) {
     return (
       <>

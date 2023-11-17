@@ -152,9 +152,6 @@ export const PremiumContentPurchaseModal = () => {
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const presetValues = usePayExtraPresets(useRemoteVar)
-  // Fetch USDC balance here so that initialValues takes it into account
-  const { balanceStatus } = useUSDCBalance()
-  const isLoading = statusIsNotFinalized(balanceStatus)
 
   const { data: track } = useGetTrackById(
     { id: trackId! },
@@ -200,23 +197,14 @@ export const PremiumContentPurchaseModal = () => {
       isOpen={isOpen}
       onClose={handleClose}
       onClosed={handleClosed}
-      bodyClassName={cn(styles.modal, isLoading ? styles.loading : null)}
+      bodyClassName={styles.modal}
       isFullscreen
       useGradientTitle={false}
       dismissOnClickOutside
       zIndex={zIndex.PREMIUM_CONTENT_PURCHASE_MODAL}
       wrapperClassName={mobile ? styles.mobileWrapper : undefined}
     >
-      {isLoading ? (
-        <Flex
-          alignItems='center'
-          justifyContent='center'
-          h='100%'
-          css={{ flexGrow: 1 }}
-        >
-          <LoadingSpinner className={styles.spinner} />
-        </Flex>
-      ) : isValidTrack ? (
+      {isValidTrack ? (
         <Formik
           initialValues={initialValues}
           validationSchema={toFormikValidationSchema(validationSchema)}

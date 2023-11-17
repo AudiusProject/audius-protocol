@@ -44,12 +44,12 @@ export const usePurchaseContentFormConfiguration = ({
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance()
-  const balance = USDC((balanceBN ?? new BN(0)) as BN)
+  const balance = USDC((balanceBN ?? new BN(0)) as BN).value
   const initialValues: PurchaseContentValues = {
     [CUSTOM_AMOUNT]: undefined,
     [AMOUNT_PRESET]: PayExtraPreset.NONE,
     [PURCHASE_METHOD]:
-      balance.value >= BigInt(price / 100)
+      balance >= BigInt(price * 10000)
         ? PurchaseMethod.EXISTING_BALANCE
         : PurchaseMethod.CARD
   }

@@ -14,8 +14,7 @@ export enum PurchaseMethod {
 }
 
 export enum Vendors {
-  STRIPE = 'stripe',
-  COINFLOW = 'coinflow'
+  STRIPE = 'stripe'
 }
 
 export enum PayExtraPreset {
