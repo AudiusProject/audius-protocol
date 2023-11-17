@@ -25,6 +25,7 @@ import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
 import { TRENDING_PAGE } from 'utils/route'
 
+import { AccountHeader } from '../components/AccountHeader'
 import { ContinueFooter } from '../components/ContinueFooter'
 import FollowArtistTile from '../components/FollowArtistTile'
 
@@ -88,7 +89,7 @@ export const SelectArtistsPage = () => {
 
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-      {({ values, setValues }) => {
+      {({ values, setValues, isValid, isSubmitting, isValidating }) => {
         const { selectedArtists } = values
         const handleChange = (userId: number, isFollowing: boolean) => {
           isFollowing
@@ -111,6 +112,7 @@ export const SelectArtistsPage = () => {
               }
             }}
           >
+            <AccountHeader />
             <Flex direction='column' gap='2xl' mh='5xl' mb='xl'>
               {/* TODO: Placeholder for AccountHeader */}
               <Box />
@@ -139,6 +141,7 @@ export const SelectArtistsPage = () => {
                   <SelectablePill
                     key={genre}
                     label={genre}
+                    isSelected={currentGenre === genre}
                     onClick={() => {
                       setCurrentGenre(genre)
                     }}
@@ -180,13 +183,13 @@ export const SelectArtistsPage = () => {
               <Button
                 minWidth={343}
                 type='submit'
-                // disabled={!isValid || isSubmitting}
-                // isLoading={isSubmitting || isValidating}
+                disabled={!isValid || isSubmitting}
+                isLoading={isSubmitting || isValidating}
                 iconRight={IconArrowRight}
               >
                 {messages.continue}
               </Button>
-              <Text variant='body'>Selected {}/3</Text>
+              <Text variant='body'>Selected {selectedArtists.size || 0}/3</Text>
             </ContinueFooter>
           </Flex>
         )

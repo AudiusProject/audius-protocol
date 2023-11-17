@@ -1,4 +1,4 @@
-import { HTMLProps, useRef } from 'react'
+import { HTMLProps } from 'react'
 
 import { UserMetadata, WidthSizes } from '@audius/common'
 import {
@@ -35,11 +35,14 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
     <Paper
       w={235}
       h={220}
-      onClick={() => handleChange(!isSelected)}
+      onClick={() => {
+        handleChange(!isSelected)
+      }}
       css={{ cursor: 'pointer' }}
     >
       <Flex w='100%' direction='column' alignItems='center'>
         <Box w={72} h={72} css={{ position: 'absolute', top: 34 }}>
+          {/* TODO: play song preview on click */}
           <Avatar variant='strong' userId={user_id} />
         </Box>
         <Box w='100%' h={68} css={{ backgroundImage: `url(${coverPhoto})` }} />
@@ -87,7 +90,7 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
               </Flex>
             </Flex>
           </Flex>
-          <Box w='100%'>
+          <Box w='100%' onClick={(e) => e.stopPropagation()}>
             <FollowButton
               variant='pill'
               forceHover={isHovered}
