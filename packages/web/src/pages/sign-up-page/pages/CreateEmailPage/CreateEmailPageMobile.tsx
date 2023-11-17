@@ -57,13 +57,11 @@ export const CreateEmailPageMobile = () => {
               autoComplete='email'
               label={messages.emailLabel}
             />
-            <Flex w='100%' alignItems='center' gap='s'>
-              <Divider css={{ flex: 1, alignSelf: 'center' }} />
+            <Divider css={{ width: '100%' }}>
               <Text variant='body' size='s' tag='p' color='subdued'>
                 {messages.socialsDividerText}
               </Text>
-              <Divider css={{ flex: 1, alignSelf: 'center' }} />
-            </Flex>
+            </Divider>
             <Flex direction='row' gap='s' w='100%'>
               <SocialButton
                 socialType='twitter'
