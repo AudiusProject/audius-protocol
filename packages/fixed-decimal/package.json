@@ -7,8 +7,9 @@
   "module": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
   "scripts": {
-    "start": "tsc --build --verbose --watch tsconfig.json",
-    "build": "tsc --build --verbose tsconfig.json",
+    "start": "tsc --build --verbose --watch tsconfig.build.json",
+    "build": "tsc --build --verbose tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
     "test": "vitest"
   },
   "repository": {
