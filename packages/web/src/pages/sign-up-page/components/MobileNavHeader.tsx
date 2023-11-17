@@ -4,6 +4,7 @@ import {
   IconAudiusLogoHorizontal,
   IconCaretLeft,
   PlainButton,
+  PlainButtonType,
   iconSizes
 } from '@audius/harmony'
 import { useHistory } from 'react-router-dom'
@@ -14,9 +15,6 @@ type MobileNavHeaderProps = {
 export const MobileNavHeader = (props: MobileNavHeaderProps) => {
   const { isBackAllowed = true } = props
   const history = useHistory()
-  const handleBackClick = () => {
-    history.goBack()
-  }
   return (
     <Flex
       ph='xl'
@@ -36,12 +34,10 @@ export const MobileNavHeader = (props: MobileNavHeaderProps) => {
         {isBackAllowed ? (
           <PlainButton
             css={{ padding: 0 }}
-            onClick={() => {
-              handleBackClick()
-            }}
-          >
-            <IconCaretLeft color='subdued' />
-          </PlainButton>
+            onClick={history.goBack}
+            iconLeft={IconCaretLeft}
+            variant={PlainButtonType.SUBDUED}
+          />
         ) : null}
       </Flex>
       {/* mr to offset no icon on the right */}
