@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useEnvVars } from './providers/EnvVarsProvider'
 
-interface UptimeResponse {
+export interface UptimeResponse {
   host: string
   uptime_percentage: number
   duration: string

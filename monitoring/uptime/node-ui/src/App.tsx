@@ -8,13 +8,6 @@ import Header from './Header'
 import Uptime from './Uptime'
 import NetworkOverview from './NetworkOverview'
 
-interface UptimeResponse {
-  host: string
-  uptime_percentage: number
-  duration: string
-  uptime_raw_data: Record<string, number>
-}
-
 const App = () => {
   const { endpoint, env, nodeType } = useEnvVars()
   const {
