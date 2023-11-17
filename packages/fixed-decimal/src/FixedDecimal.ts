@@ -156,7 +156,7 @@ const defaultFormatOptions = (value: FixedDecimal) =>
  */
 export class FixedDecimal<
   BigIntBrand extends bigint = bigint,
-  K extends BN = BN
+  BNBrand extends BN = BN
 > {
   public value: BigIntBrand
   public decimalPlaces: number
@@ -179,7 +179,7 @@ export class FixedDecimal<
       | NoBrand<bigint>
       | number
       | string
-      | K
+      | BNBrand
       | NoBrand<BN>,
     decimalPlaces?: number
   ) {
@@ -251,7 +251,7 @@ export class FixedDecimal<
     }
     const divisor = BigInt(10 ** digitsToRemove)
     const bump = this.value % divisor > 0 ? BigInt(1) : BigInt(0)
-    return new FixedDecimal<BigIntBrand, K>({
+    return new FixedDecimal<BigIntBrand, BNBrand>({
       value: ((this.value / divisor + bump) * divisor) as BigIntBrand,
       decimalPlaces: this.decimalPlaces
     })
@@ -276,7 +276,7 @@ export class FixedDecimal<
       this.value < 0 && digitsToRemove > 0
         ? BigInt(-1 * 10 ** digitsToRemove)
         : BigInt(0)
-    return new FixedDecimal<BigIntBrand, K>({
+    return new FixedDecimal<BigIntBrand, BNBrand>({
       value: ((this.value / divisor) * divisor + signOffset) as BigIntBrand,
       decimalPlaces: this.decimalPlaces
     })
@@ -297,7 +297,7 @@ export class FixedDecimal<
       throw new RangeError('Digits must be non-negative')
     }
     const divisor = BigInt(10 ** digitsToRemove)
-    return new FixedDecimal<BigIntBrand, K>({
+    return new FixedDecimal<BigIntBrand, BNBrand>({
       value: ((this.value / divisor) * divisor) as BigIntBrand,
       decimalPlaces: this.decimalPlaces
     })
@@ -326,7 +326,7 @@ export class FixedDecimal<
     // Divide by 10 to remove the rounding test digit
     quotient /= BigInt(10)
     // Multiply by the original divisor and 10 to get the number of digits back
-    return new FixedDecimal<BigIntBrand, K>(
+    return new FixedDecimal<BigIntBrand, BNBrand>(
       (quotient * divisor * BigInt(10)) as BigIntBrand,
       this.decimalPlaces
     )
