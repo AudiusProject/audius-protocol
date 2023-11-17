@@ -1,6 +1,6 @@
 import { HTMLProps } from 'react'
 
-import { UserMetadata } from '@audius/common'
+import { UserMetadata, WidthSizes } from '@audius/common'
 import {
   Box,
   Divider,
@@ -13,9 +13,8 @@ import {
   Text
 } from '@audius/harmony'
 
-import audiusCoverPhoto from 'assets/img/4-Conductor-16-9.jpg'
-import audiusProfilePic from 'assets/img/appIcon240.png'
 import { Avatar } from 'components/avatar/Avatar'
+import { useCoverPhoto } from 'hooks/useUserCoverPhoto'
 
 type FollowArtistTileProps = {
   user: UserMetadata
@@ -26,17 +25,14 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
     user: { name, user_id, is_verified, track_count, follower_count },
     onChange
   } = props
+  const coverPhoto = useCoverPhoto(user_id, WidthSizes.SIZE_640)
   return (
     <Paper w={235} h={220}>
       <Flex w='100%' direction='column' alignItems='center'>
         <Box w={72} h={72} css={{ position: 'absolute', top: 34 }}>
-          <Avatar variant='strong' src={audiusProfilePic} userId={user_id} />
+          <Avatar variant='strong' userId={user_id} />
         </Box>
-        <Box
-          w='100%'
-          h={68}
-          css={{ backgroundImage: `url(${audiusCoverPhoto})` }}
-        />
+        <Box w='100%' h={68} css={{ backgroundImage: `url(${coverPhoto})` }} />
         <Flex
           direction='column'
           alignItems='center'
