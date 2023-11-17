@@ -16,7 +16,7 @@ import {
   Box
 } from '@audius/harmony'
 import { Form, Formik } from 'formik'
-import { filter, keys, map } from 'lodash'
+import { filter, map } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -40,11 +40,11 @@ const messages = {
 }
 
 type SelectArtistsValues = {
-  selectedArtists: Record<ID, boolean>
+  selectedArtists: Set<ID>
 }
 
 const initialValues: SelectArtistsValues = {
-  selectedArtists: {}
+  selectedArtists: new Set<ID>()
 }
 
 export const SelectArtistsPage = () => {
@@ -63,11 +63,7 @@ export const SelectArtistsPage = () => {
   const handleSubmit = useCallback(
     (values: SelectArtistsValues) => {
       const { selectedArtists } = values
-      const selectedArtistIds = map(
-        filter(selectedArtists, (isSelected) => isSelected),
-        (ignoredIsSelected, artistId) => artistId
-      )
-      dispatch(addFollowArtists(selectedArtistIds))
+      dispatch(addFollowArtists([...selectedArtists]))
       navigate(TRENDING_PAGE)
       setIsWelcomeModalOpen(true)
     },
@@ -93,57 +89,64 @@ export const SelectArtistsPage = () => {
     Status.LOADING
 
   return (
-    <Flex
-      direction='column'
-      gap='2xl'
-      css={{
-        overflow: 'scroll',
-        // Hide scrollbar
-        scrollbarWidth: 'none', // Firefox
-        msOverflowStyle: 'none', // IE + Edge
-        // Chrome + Safari
-        '::-webkit-scrollbar': {
-          display: 'none'
+    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+      {({ values, setValues }) => {
+        const { selectedArtists } = values
+        const handleChange = (userId: number, isFollowing: boolean) => {
+          isFollowing
+            ? selectedArtists.add(userId)
+            : selectedArtists.delete(userId)
+          setValues({ selectedArtists })
         }
-      }}
-    >
-      <Flex direction='column' gap='2xl' mh='5xl' mb='xl'>
-        {/* TODO: Placeholder for AccountHeader */}
-        <Box />
-        <Flex direction='column' gap='l'>
-          <Text variant='heading' size='l' strength='default' color='heading'>
-            {messages.header}
-          </Text>
-          <Text variant='body' size='l' strength='default'>
-            {messages.description}
-          </Text>
-        </Flex>
-        <Flex
-          w='100%'
-          gap='s'
-          justifyContent='center'
-          role='radiogroup'
-          aria-label={messages.genresLabel}
-        >
-          {genres.map((genre) => (
-            // TODO: max of 6, kebab overflow
-            <SelectablePill
-              key={genre}
-              label={genre}
-              onClick={() => {
-                setCurrentGenre(genre)
-              }}
-            />
-          ))}
-        </Flex>
-        <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-          {({ values, setValues }) => {
-            const { selectedArtists } = values
-            const handleChange = (userId: number, isFollowing: boolean) => {
-              selectedArtists[userId] = isFollowing
-              setValues({ selectedArtists })
-            }
-            return (
+        return (
+          <Flex
+            direction='column'
+            gap='2xl'
+            css={{
+              overflow: 'scroll',
+              // Hide scrollbar
+              scrollbarWidth: 'none', // Firefox
+              msOverflowStyle: 'none', // IE + Edge
+              // Chrome + Safari
+              '::-webkit-scrollbar': {
+                display: 'none'
+              }
+            }}
+          >
+            <Flex direction='column' gap='2xl' mh='5xl' mb='xl'>
+              {/* TODO: Placeholder for AccountHeader */}
+              <Box />
+              <Flex direction='column' gap='l'>
+                <Text
+                  variant='heading'
+                  size='l'
+                  strength='default'
+                  color='heading'
+                >
+                  {messages.header}
+                </Text>
+                <Text variant='body' size='l' strength='default'>
+                  {messages.description}
+                </Text>
+              </Flex>
+              <Flex
+                w='100%'
+                gap='s'
+                justifyContent='center'
+                role='radiogroup'
+                aria-label={messages.genresLabel}
+              >
+                {genres.map((genre) => (
+                  // TODO: max of 6, kebab overflow
+                  <SelectablePill
+                    key={genre}
+                    label={genre}
+                    onClick={() => {
+                      setCurrentGenre(genre)
+                    }}
+                  />
+                ))}
+              </Flex>
               <Form>
                 <fieldset>
                   <Paper
@@ -164,7 +167,7 @@ export const SelectArtistsPage = () => {
                             <FollowArtistTile
                               key={userId}
                               user={user}
-                              isSelected={!!selectedArtists[userId]}
+                              isSelected={selectedArtists.has(userId)}
                               handleChange={(value) =>
                                 handleChange(userId, value)
                               }
@@ -174,22 +177,22 @@ export const SelectArtistsPage = () => {
                   </Paper>
                 </fieldset>
               </Form>
-            )
-          }}
-        </Formik>
-      </Flex>
-      <ContinueFooter>
-        <Button
-          minWidth={343}
-          type='submit'
-          // disabled={!isValid || isSubmitting}
-          // isLoading={isSubmitting || isValidating}
-          iconRight={IconArrowRight}
-        >
-          {messages.continue}
-        </Button>
-        <Text variant='body'>Selected TODO/3</Text>
-      </ContinueFooter>
-    </Flex>
+            </Flex>
+            <ContinueFooter>
+              <Button
+                minWidth={343}
+                type='submit'
+                // disabled={!isValid || isSubmitting}
+                // isLoading={isSubmitting || isValidating}
+                iconRight={IconArrowRight}
+              >
+                {messages.continue}
+              </Button>
+              <Text variant='body'>Selected {}/3</Text>
+            </ContinueFooter>
+          </Flex>
+        )
+      }}
+    </Formik>
   )
 }

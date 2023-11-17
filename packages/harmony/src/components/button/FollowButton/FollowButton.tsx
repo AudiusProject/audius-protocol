@@ -34,6 +34,7 @@ export const FollowButton = (props: FollowButtonProps) => {
     isFollowing = false,
     onUnfollow,
     onFollow,
+    forceHover = false,
     size = 'default',
     as: ignoredAs,
     ...inputProps
@@ -46,7 +47,8 @@ export const FollowButton = (props: FollowButtonProps) => {
   })
 
   // Track hover manually to swap text and icon
-  const [isHovering, setIsHovering] = useState(false)
+  const [isHoveringState, setIsHovering] = useState(false)
+  const isHovering = forceHover || isHoveringState
 
   const handleMouseEnter = useCallback(() => {
     setIsHovering(true)
@@ -78,6 +80,7 @@ export const FollowButton = (props: FollowButtonProps) => {
   const textColor =
     value || isHovering ? color.static.white : color.primary.primary
   const css: CSSObject = {
+    minWidth: size === 'small' ? 128 : 152,
     userSelect: 'none',
     border: `1px solid ${color.primary.primary}`,
     borderRadius: variant === 'pill' ? cornerRadius['2xl'] : cornerRadius.s,
@@ -90,31 +93,28 @@ export const FollowButton = (props: FollowButtonProps) => {
   }
 
   return (
-    <>
-      <label onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-        <InputRoot type='checkbox' onChange={handleChange} {...inputProps} />
-        <Flex
-          w={size === 'small' ? 128 : 152}
-          h={size === 'small' ? 28 : 32}
-          direction='row'
-          alignItems='center'
-          justifyContent='center'
-          gap='xs'
-          pv='s'
-          css={css}
+    <label onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      <InputRoot type='checkbox' onChange={handleChange} {...inputProps} />
+      <Flex
+        h={size === 'small' ? 28 : 32}
+        direction='row'
+        alignItems='center'
+        justifyContent='center'
+        gap='xs'
+        pv='s'
+        css={css}
+      >
+        {/* TODO: use theme icon colors (confirm w/design) */}
+        <Icon height={18} width={18} css={{ path: { fill: textColor } }} />
+        <Text
+          variant='label'
+          size={size === 'small' ? 's' : 'l'}
+          strength='default'
+          css={{ color: textColor }}
         >
-          {/* TODO: use theme icon colors (confirm w/design) */}
-          <Icon height={18} width={18} css={{ path: { fill: textColor } }} />
-          <Text
-            variant='label'
-            size={size === 'small' ? 's' : 'l'}
-            strength='default'
-            css={{ color: textColor }}
-          >
-            {text}
-          </Text>
-        </Flex>
-      </label>
-    </>
+          {text}
+        </Text>
+      </Flex>
+    </label>
   )
 }

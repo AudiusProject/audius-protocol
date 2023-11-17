@@ -1,4 +1,4 @@
-import { HTMLProps } from 'react'
+import { HTMLProps, useRef } from 'react'
 
 import { UserMetadata, WidthSizes } from '@audius/common'
 import {
@@ -12,6 +12,7 @@ import {
   Paper,
   Text
 } from '@audius/harmony'
+import { useHover } from 'react-use'
 
 import { Avatar } from 'components/avatar/Avatar'
 import { useCoverPhoto } from 'hooks/useUserCoverPhoto'
@@ -29,8 +30,14 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
     handleChange
   } = props
   const coverPhoto = useCoverPhoto(user_id, WidthSizes.SIZE_640)
-  return (
-    <Paper w={235} h={220}>
+
+  const root = (isHovered: boolean) => (
+    <Paper
+      w={235}
+      h={220}
+      onClick={() => handleChange(!isSelected)}
+      css={{ cursor: 'pointer' }}
+    >
       <Flex w='100%' direction='column' alignItems='center'>
         <Box w={72} h={72} css={{ position: 'absolute', top: 34 }}>
           <Avatar variant='strong' userId={user_id} />
@@ -80,16 +87,20 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
               </Flex>
             </Flex>
           </Flex>
-          {/* TODO: Use Harmony FollowButton */}
-          <FollowButton
-            isFollowing={isSelected}
-            onFollow={() => handleChange(true)}
-            onUnfollow={() => handleChange(false)}
-          />
+          <Box w='100%'>
+            <FollowButton
+              variant='pill'
+              forceHover={isHovered}
+              isFollowing={isSelected}
+              onFollow={() => handleChange(true)}
+              onUnfollow={() => handleChange(false)}
+            />
+          </Box>
         </Flex>
       </Flex>
     </Paper>
   )
+  return useHover(root)[0]
 }
 
 export default FollowArtistTile
