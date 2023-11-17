@@ -166,12 +166,8 @@ export const AUDIUS_DOCS_LINK = 'https://docs.audius.org'
 export const AUDIUS_TEAM_LINK = 'https://audius.org/team'
 export const AUDIUS_DEV_STAKER_LINK = 'https://audius.org/protocol'
 
-export const AUDIUS_HOME_LINK = '/'
-export const AUDIUS_LISTENING_LINK = '/trending'
-export const AUDIUS_SIGN_UP_LINK = '/signup'
 export const AUDIUS_HOT_AND_NEW =
   '/audius/playlist/hot-new-on-audius-%F0%9F%94%A5-4281'
-export const AUDIUS_EXPLORE_LINK = '/explore'
 export const AUDIUS_HELP_LINK = 'https://help.audius.co/'
 
 export const AUDIUS_CAREERS_LINK = 'https://jobs.lever.co/audius'
@@ -478,7 +474,7 @@ export const pushWindowRoute = (route: string) => {
     routeToPush = route
   }
 
-  if (route === AUDIUS_SIGN_UP_LINK) {
+  if (route === SIGN_UP_PAGE) {
     recordGoToSignup(() => {
       window.location.href = `${BASENAME}${routeToPush}`
     })

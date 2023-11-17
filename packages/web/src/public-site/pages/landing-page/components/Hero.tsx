@@ -16,7 +16,7 @@ import { handleClickRoute } from 'public-site/components/handleClickRoute'
 import { getIOSAppLink } from 'utils/appLinks'
 import {
   APP_REDIRECT,
-  AUDIUS_LISTENING_LINK,
+  TRENDING_PAGE,
   DOWNLOAD_START_LINK
 } from 'utils/route'
 
@@ -65,7 +65,7 @@ export const Hero = (props: HeroProps) => {
           </div>
           <button
             onClick={handleClickRoute(
-              AUDIUS_LISTENING_LINK,
+              TRENDING_PAGE,
               props.setRenderPublicSite
             )}
             className={styles.ctaButton}
@@ -160,7 +160,7 @@ export const Hero = (props: HeroProps) => {
           <div className={styles.buttonContent}>
             <button
               onClick={handleClickRoute(
-                AUDIUS_LISTENING_LINK,
+                TRENDING_PAGE,
                 props.setRenderPublicSite
               )}
               className={styles.ctaButton}
