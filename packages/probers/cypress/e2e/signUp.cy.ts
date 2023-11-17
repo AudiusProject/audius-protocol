@@ -63,10 +63,7 @@ describe('Sign Up', () => {
 
     it('can navigate to sign-up from the public site', () => {
       cy.visit('')
-      cy.findByTestId('signUpButtonDesktop')
-        .invoke('attr', 'role')
-        .should('eq', 'button')
-      cy.findByTestId('signUpButtonDesktop').click()
+      cy.findByRole('link', { name: /sign up/i }).click()
       assertOnSignUpPage()
     })
 

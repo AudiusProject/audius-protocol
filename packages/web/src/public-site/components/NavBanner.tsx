@@ -213,14 +213,13 @@ const NavBanner = (props: NavBannerProps) => {
             className={styles.popup}
             dismissOnMouseLeave
           />
-          <div
-            onClick={onClickSignUp}
+          <a
+            href={AUDIUS_SIGN_UP_LINK}
             className={styles.signUp}
-            role='button'
             data-testid='signUpButtonDesktop'
           >
             {messages.signUp}
-          </div>
+          </a>
         </div>
       </div>
     </div>
