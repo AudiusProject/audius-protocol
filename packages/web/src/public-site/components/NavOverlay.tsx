@@ -138,6 +138,7 @@ const NavOverlay = (props: NavOverlayProps) => {
         className={cn(styles.container, {
           [styles.hide]: !props.isOpen
         })}
+        aria-hidden={!props.isOpen}
       >
         <div
           className={cn(styles.backgroundContainer)}
@@ -188,9 +189,13 @@ const NavOverlay = (props: NavOverlayProps) => {
             ))}
           </div>
           <div className={styles.signUpButtonContainer}>
-            <button className={styles.signUpButton} onClick={onSignUp}>
+            <a
+              className={styles.signUpButton}
+              href={AUDIUS_SIGN_UP_LINK}
+              onClick={onSignUp}
+            >
               {messages.signUp}
-            </button>
+            </a>
           </div>
         </div>
       </div>,
