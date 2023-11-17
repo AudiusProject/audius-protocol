@@ -32,7 +32,7 @@ Utility icons are simple, single-color glyphs that identify labels and actions a
   <Flex alignItems='center' gap='2xl'>
     {Object.keys(iconSizes).map((size) => (
       <Flex direction='column' alignItems='center' gap='s'>
-        <Icons.IconNote key={size} size={size} />
+        <Icons.IconNote key={size} size={size} key={`icon-${size}`} />
         <Text css={{ color: '#F00 !important', fontSize: '10px !important' }}>
           {size}
         </Text>
