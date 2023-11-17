@@ -58,11 +58,11 @@ export const CreateEmailPageMobile = () => {
               label={messages.emailLabel}
             />
             <Flex w='100%' alignItems='center' gap='s'>
-              <Divider css={{ flex: 1 }} />
+              <Divider css={{ flex: 1, alignSelf: 'center' }} />
               <Text variant='body' size='s' tag='p' color='subdued'>
                 {messages.socialsDividerText}
               </Text>
-              <Divider css={{ flex: 1 }} />
+              <Divider css={{ flex: 1, alignSelf: 'center' }} />
             </Flex>
             <Flex direction='row' gap='s' w='100%'>
               <SocialButton
