@@ -16,6 +16,7 @@ import {
   Box
 } from '@audius/harmony'
 import { Form, Formik } from 'formik'
+import { filter, keys, map } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -39,11 +40,11 @@ const messages = {
 }
 
 type SelectArtistsValues = {
-  artists: ID[]
+  selectedArtists: Record<ID, boolean>
 }
 
 const initialValues: SelectArtistsValues = {
-  artists: []
+  selectedArtists: {}
 }
 
 export const SelectArtistsPage = () => {
@@ -61,8 +62,12 @@ export const SelectArtistsPage = () => {
 
   const handleSubmit = useCallback(
     (values: SelectArtistsValues) => {
-      const { artists } = values
-      dispatch(addFollowArtists(artists))
+      const { selectedArtists } = values
+      const selectedArtistIds = map(
+        filter(selectedArtists, (isSelected) => isSelected),
+        (ignoredIsSelected, artistId) => artistId
+      )
+      dispatch(addFollowArtists(selectedArtistIds))
       navigate(TRENDING_PAGE)
       setIsWelcomeModalOpen(true)
     },
@@ -133,15 +138,10 @@ export const SelectArtistsPage = () => {
         </Flex>
         <Formik initialValues={initialValues} onSubmit={handleSubmit}>
           {({ values, setValues }) => {
-            const { artists: selectedArtists } = values
-            const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-              const { checked, name } = e.target
-              const userId = parseInt(name, 10)
-              const newArtists = checked
-                ? [userId, ...selectedArtists]
-                : selectedArtists.filter((value) => value !== userId)
-
-              setValues({ artists: newArtists })
+            const { selectedArtists } = values
+            const handleChange = (userId: number, isFollowing: boolean) => {
+              selectedArtists[userId] = isFollowing
+              setValues({ selectedArtists })
             }
             return (
               <Form>
@@ -159,11 +159,15 @@ export const SelectArtistsPage = () => {
                     {isLoading
                       ? null
                       : artists?.map((user) => {
+                          const { user_id: userId } = user
                           return (
                             <FollowArtistTile
-                              key={user.user_id}
+                              key={userId}
                               user={user}
-                              onChange={handleChange}
+                              isSelected={!!selectedArtists[userId]}
+                              handleChange={(value) =>
+                                handleChange(userId, value)
+                              }
                             />
                           )
                         })}

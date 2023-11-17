@@ -5,9 +5,9 @@ import {
   Box,
   Divider,
   Flex,
+  FollowButton,
   IconNote,
   IconUser,
-  IconUserFollow,
   IconVerified,
   Paper,
   Text
@@ -18,12 +18,15 @@ import { useCoverPhoto } from 'hooks/useUserCoverPhoto'
 
 type FollowArtistTileProps = {
   user: UserMetadata
+  isSelected: boolean
+  handleChange: (value: boolean) => void
 } & HTMLProps<HTMLInputElement>
 
 const FollowArtistTile = (props: FollowArtistTileProps) => {
   const {
     user: { name, user_id, is_verified, track_count, follower_count },
-    onChange
+    isSelected,
+    handleChange
   } = props
   const coverPhoto = useCoverPhoto(user_id, WidthSizes.SIZE_640)
   return (
@@ -78,17 +81,11 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
             </Flex>
           </Flex>
           {/* TODO: Use Harmony FollowButton */}
-          <label key={user_id}>
-            <Flex alignItems='center' gap='xs'>
-              <input
-                type='checkbox'
-                name={String(user_id)}
-                onChange={onChange}
-              />
-              <IconUserFollow color='subdued' />
-              Follow
-            </Flex>
-          </label>
+          <FollowButton
+            isFollowing={isSelected}
+            onFollow={() => handleChange(true)}
+            onUnfollow={() => handleChange(false)}
+          />
         </Flex>
       </Flex>
     </Paper>
