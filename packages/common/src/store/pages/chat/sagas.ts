@@ -4,7 +4,6 @@ import type {
   UserChat,
   ValidatedChatPermissions
 } from '@audius/sdk'
-import dayjs from 'dayjs'
 import {
   call,
   delay,
@@ -21,6 +20,7 @@ import { ID } from 'models/Identifiers'
 import { Status } from 'models/Status'
 import * as toastActions from 'src/store/ui/toast/slice'
 import { getAccountUser, getUserId } from 'store/account/selectors'
+import dayjs from 'utils/dayjs'
 
 import { decodeHashId, encodeHashId, removeNullable } from '../../../utils'
 import { cacheUsersActions } from '../../cache'

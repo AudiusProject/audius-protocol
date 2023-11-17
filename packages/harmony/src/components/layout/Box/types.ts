@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ComponentPropsWithoutRef } from 'react'
 
 import type { BorderColors } from 'foundations/color'
 import type { CornerRadiusOptions } from 'foundations/corner-radius'
@@ -51,4 +51,4 @@ export type BoxProps = {
 
   flex?: CSSProperties['flex']
   alignSelf?: CSSProperties['alignSelf']
-}
+} & ComponentPropsWithoutRef<'div'>

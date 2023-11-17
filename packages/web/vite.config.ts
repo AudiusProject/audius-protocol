@@ -12,9 +12,10 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
   const port = parseInt(env.VITE_PORT ?? '3000')
   const analyze = env.VITE_BUNDLE_ANALYZE === 'true'
+  env.VITE_PUBLIC_URL = env.VITE_PUBLIC_URL ?? ''
 
   return {
-    base: env.VITE_PUBLIC_URL ?? '/',
+    base: env.VITE_PUBLIC_URL || '/',
     build: {
       outDir: 'build',
       sourcemap: true,
@@ -63,7 +64,12 @@ export default defineConfig(({ mode }) => {
           }
         }
       },
-      react(),
+      react({
+        jsxImportSource: '@emotion/react',
+        babel: {
+          plugins: ['@emotion/babel-plugin']
+        }
+      }),
       ...((analyze
         ? [
             visualizer({
@@ -83,6 +89,7 @@ export default defineConfig(({ mode }) => {
         components: '/src/components',
         hooks: '/src/hooks',
         pages: '/src/pages',
+        'public-site': '/src/public-site',
         services: '/src/services',
         store: '/src/store',
         workers: '/src/workers',

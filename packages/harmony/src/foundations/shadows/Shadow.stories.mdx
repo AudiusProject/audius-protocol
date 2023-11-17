@@ -3,6 +3,7 @@ import { Meta, Title, Unstyled } from '@storybook/blocks'
 import { Text, Flex, Paper } from 'components'
 import { TextDropShadow } from 'storybook/assets/TextDropShadow'
 import shadowBackground from 'storybook/assets/shadowBackground.jpeg'
+import { RelatedFoundations, Heading } from 'storybook/components'
 
 <Meta title='Foundations/Shadow' />
 
@@ -12,9 +13,12 @@ import shadowBackground from 'storybook/assets/shadowBackground.jpeg'
 - [Shadow levels](#shadow-levels)
 - [Usage and examples](#usage-and-examples)
 
+<Heading>
 ## Overview
 
 Shadows offer elevation by distinguishing surface distances along the z-axis. Use Harmony's pre-defined shadow styles for consistent visual effects.
+
+</Heading>
 
 export const centerProps = {
   alignItems: 'center',
@@ -64,6 +68,7 @@ export function ShadowLevel(props) {
   <Flex justifyContent='space-between'>
     <ShadowLevel shadow='near' />
     <ShadowLevel shadow='mid' />
+    <ShadowLevel shadow='midInverted' />
     <ShadowLevel shadow='far' />
     <ShadowLevel shadow='emphasis' />
     <ShadowLevel
@@ -76,13 +81,14 @@ export function ShadowLevel(props) {
   </Flex>
 </Unstyled>
 
-| Name            | Description                                                                                       |
-| --------------- | ------------------------------------------------------------------------------------------------- |
-| shadow-near     | Optimal for onPress states on cards.                                                              |
-| shadow-mid      | Used for smaller card elements and the default state for card elements with a hover interaction.  |
-| shadow-far      | Used for hover state for card elements, larger cards/sections without hover states, and modals    |
-| shadow-emphasis | Used for separating elements from their background                                                |
-| shadow-special  | Shadow derived from the dominate color of the artwork it’s surrounding. Used for playing artwork. |
+| Name                | Description                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------- |
+| shadow-near         | Optimal for onPress states on cards.                                                              |
+| shadow-mid          | Used for smaller card elements and the default state for card elements with a hover interaction.  |
+| shadow-mid-inverted | This is the same as mid but with the values offset the other direction.                           |
+| shadow-far          | Used for hover state for card elements, larger cards/sections without hover states, and modals    |
+| shadow-emphasis     | Used for separating elements from their background                                                |
+| shadow-special      | Shadow derived from the dominate color of the artwork it’s surrounding. Used for playing artwork. |
 
 ## Usage and examples
 
@@ -91,9 +97,12 @@ export function ShadowLevel(props) {
 - Do not elevate near shadows above far shadows or vice versa.
 - Use shadow to indicate interaction
 
+<Heading>
 ### Interactions Examples
 
 Use shadows to indicate a card appearing closer or farther on press and hover.
+
+</Heading>
 
 <Unstyled>
   <Paper h={200} flex={1} alignItems='center' justifyContent='center'>
@@ -122,3 +131,7 @@ Use shadow-far to indicate an elements that is above the page, preventing the in
     </Text>
   </Paper>
 </Unstyled>
+
+## Related Foundations
+
+<RelatedFoundations foundationNames={['Color', 'Typography', 'CornerRadius']} />

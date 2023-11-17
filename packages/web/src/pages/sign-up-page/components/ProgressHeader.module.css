@@ -1,0 +1,12 @@
+.container {
+  height: var(--harmony-spacing-4xl);
+  position: relative;
+  border-bottom: solid 1px var(--harmony-border-default);
+}
+
+.logoContainer {
+  padding-left: inherit;
+  padding-right: inherit;
+  position: absolute;
+  left: 0;
+}

@@ -17,7 +17,6 @@ import Header from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
 import { useGoToRoute } from 'hooks/useGoToRoute'
-import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import lazyWithPreload from 'utils/lazyWithPreload'
 
 import styles from './DashboardPage.module.css'
@@ -27,7 +26,6 @@ import {
   DataSourceTrack,
   tablePageSize
 } from './components/TracksTableContainer'
-import { USDCCard } from './components/USDCCard'
 import {
   getDashboardListenData,
   getDashboardStatus,
@@ -42,7 +40,7 @@ const TotalPlaysChart = lazyWithPreload(
 )
 
 export const messages = {
-  title: 'Dashboard & Payments',
+  title: 'Artist Dashboard',
   description: 'View important stats like plays, reposts, and more.',
   thisYear: 'This Year'
 }
@@ -88,7 +86,6 @@ export const DashboardPage = () => {
     statuses.push(balanceStatus)
   }
   const status = combineStatuses(statuses)
-  const isUSDCEnabled = useIsUSDCEnabled()
 
   const header = <Header primary={messages.title} />
 
@@ -210,9 +207,6 @@ export const DashboardPage = () => {
               handle={account.handle}
               name={account.name}
             />
-            {isUSDCEnabled ? (
-              <USDCCard balance={balance} isArtist={account.track_count > 0} />
-            ) : null}
           </div>
           <div className={styles.sectionContainer}>
             {renderChart()}

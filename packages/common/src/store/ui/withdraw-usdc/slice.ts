@@ -7,6 +7,7 @@ type WithdrawUSDCState = {
   destinationAddress?: string
   amount?: number
   withdrawError?: Error
+  withdrawTransaction?: string
   destinationError?: Error
   amountError?: Error
 }
@@ -27,12 +28,15 @@ const slice = createSlice({
         /** Transfer amount in cents */
         amount: number
         destinationAddress: string
-        onSuccess: (transaction: string) => void
       }>
     ) => {
       state.withdrawStatus = Status.LOADING
     },
-    withdrawUSDCSucceeded: (state) => {
+    withdrawUSDCSucceeded: (
+      state,
+      action: PayloadAction<{ transaction: string }>
+    ) => {
+      state.withdrawTransaction = action.payload.transaction
       state.withdrawError = undefined
       state.withdrawStatus = Status.SUCCESS
     },

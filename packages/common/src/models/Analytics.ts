@@ -1134,9 +1134,19 @@ type TagClicking = {
   source: 'profile page' | 'track page' | 'collection page'
 }
 
+export enum ModalSource {
+  TrackTile = 'track tile',
+  TrackDetails = 'track details',
+  NowPlaying = 'now playing',
+  PlayBar = 'play bar',
+  // Should never be used, but helps with type-checking
+  Unknown = 'unknown'
+}
+
 // Modals
 type ModalOpened = {
   eventName: Name.MODAL_OPENED
+  source: ModalSource
   name: string
 } & Record<string, any> // For passing state values
 

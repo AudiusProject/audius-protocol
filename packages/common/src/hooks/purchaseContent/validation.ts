@@ -3,10 +3,11 @@ import { z } from 'zod'
 import {
   AMOUNT_PRESET,
   CUSTOM_AMOUNT,
+  PURCHASE_METHOD,
   maximumPayExtraAmountCents,
   minimumPayExtraAmountCents
 } from './constants'
-import { PayExtraPreset } from './types'
+import { PayExtraPreset, PurchaseMethod } from './types'
 
 const messages = {
   amountInvalid: 'Please specify an amount between $1 and $100'
@@ -21,7 +22,8 @@ const createPurchaseContentSchema = () => {
           invalid_type_error: messages.amountInvalid
         })
         .optional(),
-      [AMOUNT_PRESET]: z.nativeEnum(PayExtraPreset)
+      [AMOUNT_PRESET]: z.nativeEnum(PayExtraPreset),
+      [PURCHASE_METHOD]: z.nativeEnum(PurchaseMethod)
     })
     .refine(
       ({ amountPreset, customAmount }) => {

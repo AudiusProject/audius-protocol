@@ -116,7 +116,8 @@ module.exports = {
         ],
         pathGroupsExcludedImportTypes: ['builtin']
       }
-    ]
+    ],
+    'no-constant-binary-expression': 'error'
   },
   settings: {
     jest: {

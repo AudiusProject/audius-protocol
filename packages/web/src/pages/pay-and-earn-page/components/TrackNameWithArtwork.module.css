@@ -1,0 +1,19 @@
+.container {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--unit-6);
+  max-width: 100%;
+}
+
+.artwork {
+  height: var(--unit-10);
+  width: var(--unit-10);
+  border-radius: var(--unit-1);
+  border: 1px solid var(--border-default);
+  overflow: hidden;
+}
+
+.text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

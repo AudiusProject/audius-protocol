@@ -1,6 +1,6 @@
 {
   "name": "root",
-  "version": "1.5.50",
+  "version": "1.5.51",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
@@ -46,6 +46,7 @@
     "stems": "turbo run start --filter=@audius/stems",
     "HARMONY====================================": "",
     "harmony": "turbo run start --filter=@audius/harmony",
+    "harmony:dev": "npm run storybook -w @audius/harmony",
     "SDK======================================": "",
     "sdk": "turbo run start --filter=@audius/sdk",
     "PROTOCOL======================================": "",

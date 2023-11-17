@@ -3,6 +3,8 @@ export { default as IconAudiusLogoColor } from '../assets/icons/AudiusLogoColor.
 export { default as IconAudiusLogoHorizontal } from '../assets/icons/AudiusLogoHorizontal.svg'
 export { default as IconAudiusLogoHorizontalColor } from '../assets/icons/AudiusLogoHorizontalColor.svg'
 export { default as IconAudiusLogoVertical } from '../assets/icons/AudiusLogoVertical.svg'
+export { default as IconLogoCoinbase } from '../assets/icons/Coinbase.svg'
+export { default as IconLogoLinkByStripe } from '../assets/icons/LinkByStripe.svg'
 export { default as IconDiscord } from '../assets/icons/Discord.svg'
 export { default as IconFacebook } from '../assets/icons/Facebook.svg'
 export { default as IconSnapChat } from '../assets/icons/SnapChat.svg'

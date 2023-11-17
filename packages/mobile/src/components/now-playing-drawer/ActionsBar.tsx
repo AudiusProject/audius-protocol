@@ -20,7 +20,8 @@ import {
   shareModalUIActions,
   usePremiumContentAccess,
   formatPrice,
-  usePremiumContentPurchaseModal
+  usePremiumContentPurchaseModal,
+  ModalSource
 } from '@audius/common'
 import { View, Platform } from 'react-native'
 import { CastButton } from 'react-native-google-cast'
@@ -114,7 +115,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
 
   const handlePurchasePress = useCallback(() => {
     if (track?.track_id) {
-      openPremiumContentPurchaseModal({ contentId: track.track_id })
+      openPremiumContentPurchaseModal(
+        { contentId: track.track_id },
+        { source: ModalSource.NowPlaying }
+      )
     }
   }, [track?.track_id, openPremiumContentPurchaseModal])
   const { doesUserHaveAccess } = usePremiumContentAccess(track)

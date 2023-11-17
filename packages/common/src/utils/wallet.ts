@@ -10,7 +10,7 @@ import {
 } from 'models/Wallet'
 import { AmountObject } from 'store/ui'
 import {
-  WEI,
+  WEI_DIVISOR,
   trimRightZeros,
   formatNumberCommas,
   formatWeiToAudioString,
@@ -91,8 +91,8 @@ export const formatWei = (
   shouldTruncate = false,
   significantDigits = 4
 ): StringAudio => {
-  const aud = amount.div(WEI)
-  const wei = amount.sub(aud.mul(WEI))
+  const aud = amount.div(WEI_DIVISOR)
+  const wei = amount.sub(aud.mul(WEI_DIVISOR))
   if (wei.isZero()) {
     return formatNumberCommas(aud.toString()) as StringAudio
   }

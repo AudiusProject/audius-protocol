@@ -16,13 +16,15 @@
   background-color: var(--harmony-bg-surface-1);
   transition: border ease-in-out 0.1s;
   box-sizing: border-box;
+
   & svg path {
     fill: var(--harmony-text-subdued);
   }
 }
 
 /* hover border color */
-.contentContainer:hover {
+.contentContainer:hover,
+.contentContainer.hover {
   border-color: var(--harmony-border-strong);
 }
 
@@ -62,6 +64,17 @@
   border-color: var(--harmony-red);
 }
 
+/* incorrect error border color */
+.contentContainer.incorrectError,
+.contentContainer.incorrectError.focused,
+.contentContainer.incorrectError:hover {
+  border-color: var(--harmony-orange);
+}
+
+.contentContainer.disablePointerEvents {
+  pointer-events: none;
+}
+
 /* Actual input element */
 .input {
   padding: 0;
@@ -88,6 +101,7 @@
 .input.small {
   font-size: var(--harmony-font-s);
 }
+
 .input.default {
   font-size: var(--harmony-font-l);
 }
@@ -98,6 +112,7 @@
   font-weight: var(--harmony-font-medium);
   font-family: var(--harmony-font-family);
 }
+
 .input::placeholder {
   color: var(--harmony-text-subdued);
 }

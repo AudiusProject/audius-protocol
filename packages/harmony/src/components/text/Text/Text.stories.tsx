@@ -10,7 +10,7 @@ const messages = {
 }
 
 const meta: Meta<typeof Text> = {
-  title: 'Components/Typography/Text',
+  title: 'Text/Text',
   component: Text,
   argTypes: {
     variant: {
@@ -31,7 +31,7 @@ const meta: Meta<typeof Text> = {
     color: {
       description: 'Text Color',
       control: { type: 'select' },
-      options: ['heading', 'default', 'subdued', 'disabled']
+      options: ['heading', 'default', 'subdued', 'disabled', 'accent']
     }
   },
   render: (props) => <Text {...props}>{messages.slogan}</Text>

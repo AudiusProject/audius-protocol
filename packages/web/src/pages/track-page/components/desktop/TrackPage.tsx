@@ -107,7 +107,7 @@ const TrackPage = ({
   pause
 }: OwnProps) => {
   const { entries } = tracks
-  const isOwner = heroTrack?.owner_id === userId ?? false
+  const isOwner = heroTrack?.owner_id === userId
   const following = user?.does_current_user_follow ?? false
   const isSaved = heroTrack?.has_current_user_saved ?? false
   const isReposted = heroTrack?.has_current_user_reposted ?? false

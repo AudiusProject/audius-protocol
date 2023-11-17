@@ -7,19 +7,47 @@ import { ComponentRules, RelatedComponents } from '../src/storybook/components'
 // This file is used to configure all stories
 import './global.css'
 import { themes } from '../src/foundations/theme'
+import { harmonyDocsThemes } from '../src/storybook/theme'
 import { HarmonyDocsContainer } from './docs'
 import { ThemeProvider } from '@emotion/react'
 
 // Default to docs view
 export const parameters = {
+  options: {
+    storySort: {
+      order: [
+        'Welcome',
+        'Foundations',
+        ['Typography', 'Color', 'Shadow', 'Corner Radius', 'Spacing', 'Motion'],
+        'Buttons',
+        'Inputs',
+        ['TextInput', 'SelectablePill', 'PasswordInput'],
+        'Layout',
+        ['Box', 'Flex', 'Divider', 'Paper'],
+        'Text',
+        ['Text', 'TextLink'],
+        'Components',
+        'Icons',
+        [
+          'Figma Instructions',
+          'Utility Icons',
+          'Logos',
+          'Special Icons',
+          'Animated Icons',
+          'Changelog'
+        ]
+      ]
+    }
+  },
   viewMode: 'docs',
   docs: {
     container: HarmonyDocsContainer,
-    toc: true,
-    components: {
-      ComponentRules,
-      RelatedComponents
-    }
+    toc: true
+  },
+  darkMode: {
+    light: harmonyDocsThemes.day,
+    dark: harmonyDocsThemes.dark,
+    classTarget: 'html'
   }
 }
 

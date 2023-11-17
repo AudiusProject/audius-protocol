@@ -1,5 +1,8 @@
 import type { ComponentPropsWithoutRef } from 'react'
 
+import type { CSSObject } from '@emotion/react'
+
+import type { Origin } from 'components/layout/Popup/types'
 import type { SpecialColors } from 'foundations/color'
 
 import type { IconComponent } from '../icon'
@@ -18,9 +21,8 @@ export enum ButtonSize {
 }
 
 type BaseButtonStyles = {
-  button: string
-  icon: string
-  spinner: string
+  button: CSSObject
+  icon: CSSObject
 }
 
 export type HTMLButtonProps = ComponentPropsWithoutRef<'button'>
@@ -130,3 +132,94 @@ export type PlainButtonProps = {
    */
   size?: PlainButtonSize
 } & Omit<BaseButtonProps, 'styles'>
+
+export enum FilterButtonSize {
+  DEFAULT = 'default',
+  SMALL = 'small'
+}
+
+export enum FilterButtonType {
+  /**
+   * The container is filled with solid color after selection
+   */
+  FILL_CONTAINER = 'fillContainer',
+
+  /**
+   * The label is used as the selected value
+   */
+  REPLACE_LABEL = 'replaceLabel'
+}
+
+export type FilterButtonOption = {
+  label: string
+  icon?: IconComponent
+}
+
+export type FilterButtonProps = {
+  /**
+   * Selection options
+   * e.g. { label: 'Option A', icon: IconRadar }
+   */
+  options: FilterButtonOption[]
+
+  /**
+   * The text that appears on the button component.
+   * If no label is provided, a different Icon can be specified
+   * to contextually inform users.
+   */
+  label?: string
+
+  /**
+   * If no label is provided, specify an optional aria-label
+   */
+  'aria-label'?: string
+
+  /**
+   * An initial section (from the provided options)
+   */
+  initialSelectionIndex?: number
+
+  /**
+   * The button size
+   * @default FilterButtonSize.DEFAULT
+   */
+  size?: FilterButtonSize
+
+  /**
+   * The type of filter button
+   * @default FilterButtonType.FILL_CONTAINER
+   */
+  variant?: FilterButtonType
+
+  /**
+   * Optional icon element to include on the left side of the button
+   */
+  iconLeft?: IconComponent
+
+  /**
+   * Optional icon element to include on the right side of the button
+   */
+  iconRight?: IconComponent
+
+  /**
+   * What to do when an option is selected
+   */
+  onSelect?: (option: FilterButtonOption) => void
+
+  /**
+   * Popup anchor origin
+   * @default { horizontal: 'center', vertical: 'bottom' }
+   */
+  popupAnchorOrigin?: Origin
+
+  /**
+   * Popup transform origin
+   * @default { horizontal: 'center', vertical: 'top' }
+   */
+  popupTransformOrigin?: Origin
+
+  /**
+   * Popup portal location passed to the inner popup
+   */
+  popupPortalLocation?: HTMLElement
+}

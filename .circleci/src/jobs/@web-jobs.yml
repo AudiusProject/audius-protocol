@@ -254,6 +254,8 @@ web-dist-mac-staging:
     - web-distribute:
         build-type: mac-publish
         install-license: true
+        environment: 'staging'
+        os: 'mac'
 
 web-dist-win-staging:
   working_directory: ~/audius-protocol
@@ -262,6 +264,8 @@ web-dist-win-staging:
   steps:
     - web-distribute:
         build-type: win-publish
+        environment: 'staging'
+        os: 'win'
 
 web-dist-linux-staging:
   working_directory: ~/audius-protocol
@@ -270,6 +274,8 @@ web-dist-linux-staging:
   steps:
     - web-distribute:
         build-type: linux-publish
+        environment: 'staging'
+        os: 'linux'
 
 web-dist-mac-production:
   working_directory: ~/audius-protocol
@@ -284,6 +290,8 @@ web-dist-mac-production:
     - web-distribute:
         build-type: mac-publish-production
         install-license: true
+        environment: 'production'
+        os: 'mac'
 
 web-dist-win-production:
   working_directory: ~/audius-protocol
@@ -292,6 +300,8 @@ web-dist-win-production:
   steps:
     - web-distribute:
         build-type: win-publish-production
+        environment: 'production'
+        os: 'win'
 
 web-dist-linux-production:
   working_directory: ~/audius-protocol
@@ -300,3 +310,5 @@ web-dist-linux-production:
   steps:
     - web-distribute:
         build-type: linux-publish-production
+        environment: 'production'
+        os: 'linux'

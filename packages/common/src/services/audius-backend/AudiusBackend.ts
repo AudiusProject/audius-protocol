@@ -15,12 +15,10 @@ import {
   TransactionInstruction
 } from '@solana/web3.js'
 import BN from 'bn.js'
-import dayjs from 'dayjs'
-import timezone from 'dayjs/plugin/timezone'
-import utc from 'dayjs/plugin/utc'
 import queryString from 'query-string'
 
 import { Env } from 'services/env'
+import dayjs from 'utils/dayjs'
 
 import placeholderCoverArt from '../../assets/img/imageBlank2x.png'
 import imageCoverPhotoBlank from '../../assets/img/imageCoverPhotoBlank.jpg'
@@ -123,9 +121,6 @@ declare global {
     Web3: any
   }
 }
-
-dayjs.extend(utc)
-dayjs.extend(timezone)
 
 const SEARCH_MAX_SAVED_RESULTS = 10
 const SEARCH_MAX_TOTAL_RESULTS = 50

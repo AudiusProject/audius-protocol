@@ -235,6 +235,7 @@ def build(
             "--profile=libs",
             "--profile=solana",
             "--profile=block-explorer",
+            "--profile=uptime",
             "build",
             *args,
             *services,
@@ -288,6 +289,69 @@ def push(ctx, services, prod):
             )
     except subprocess.CalledProcessError:
         raise click.ClickException("Failed to push images")
+
+
+@cli.command()
+@click.argument("services", nargs=-1)
+@click.option(
+    "--prod",
+    is_flag=True,
+    help="Use production containers which have all dependencies built in",
+)
+@click.pass_context
+def push_arm(ctx, services, prod):
+    protocol_dir = ctx.obj
+    services = services or ["mediorum", "discovery-provider", "identity-service"]
+
+    git_commit = get_git_commit(protocol_dir)
+
+    if not git_commit:
+        raise click.ClickException("Failed to get git commit")
+
+    # this is building w/o cache every time
+    ctx.invoke(build, services=services, prod=prod)
+
+    try:
+        for service in services:
+            # TODO: Find if there is a better way to find source image names
+            subprocess.run(
+                [
+                    "docker",
+                    "tag",
+                    f"{protocol_dir.name}-{service}",
+                    f"audius/{service}:{git_commit}-arm",
+                ],
+                check=True,
+            )
+    except subprocess.CalledProcessError:
+        raise click.ClickException("Failed to tag local images")
+
+    try:
+        for service in services:
+            subprocess.run(
+                ["docker", "push", f"audius/{service}:{git_commit}-arm"],
+                check=True,
+            )
+    except subprocess.CalledProcessError:
+        raise click.ClickException("Failed to push arm images")
+
+    try:
+        for service in services:
+            og_tag = f"audius/{service}:{git_commit}"
+            arm_tag = f"{og_tag}-arm"
+            cmd = [
+                "docker",
+                "buildx",
+                "imagetools",
+                "create",
+                "-t",
+                og_tag,
+                og_tag,
+                arm_tag,
+            ]
+            subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError:
+        raise click.ClickException("Failed to merge manifest")
 
 
 @cli.command()

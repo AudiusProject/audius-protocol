@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import type { MomentInput } from 'moment'
 import moment from 'moment'
 
@@ -44,4 +45,8 @@ export const formatDate = (date: MomentInput, format?: string): string => {
 
 export const formatDateWithTimezoneOffset = (date: MomentInput): string => {
   return moment(date).add(moment().utcOffset(), 'm').format('MM/DD/YY')
+}
+
+export const utcToLocalTime = (date: string) => {
+  return dayjs.utc(date).local()
 }

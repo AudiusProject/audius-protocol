@@ -1,8 +1,12 @@
+import { PropsWithChildren } from 'react'
+
+import { Box, PaperProps, Paper, BoxProps } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
 import { getSignOn } from 'common/store/pages/signon/selectors'
 import SignOnPageState from 'common/store/pages/signon/types'
+import { useMedia } from 'hooks/useMedia'
 import { AppState } from 'store/types'
 import {
   SIGN_UP_ARTISTS_PAGE,
@@ -15,12 +19,13 @@ import {
   TRENDING_PAGE
 } from 'utils/route'
 
+import { ProgressHeader } from './components/ProgressHeader'
+import { CreateEmailPage } from './pages/CreateEmailPage/CreateEmailPage'
 import { CreatePasswordPage } from './pages/CreatePasswordPage'
 import { FinishProfilePage } from './pages/FinishProfilePage'
 import { PickHandlePage } from './pages/PickHandlePage'
 import { SelectArtistsPage } from './pages/SelectArtistsPage'
 import { SelectGenrePage } from './pages/SelectGenrePage'
-import { SignUpPage } from './pages/SignUpPage'
 
 /**
  * Checks against existing sign up redux state,
@@ -61,7 +66,6 @@ const determineAllowedRoute = (
   if (signUpState.followArtists?.selectedUserIds?.length >= 3) {
     // Already have 3 artists followed
     // Done with sign up if at this point so we return early (none of these routes are allowed anymore)
-    // TODO: trigger welcome modal when redirecting from here
     return { isAllowedRoute: false, correctedRoute: TRENDING_PAGE }
   }
 
@@ -100,29 +104,61 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
   )
 }
 
+const DesktopRootContainer = ({ children }: PropsWithChildren<PaperProps>) => (
+  <Paper w={1280} h={864} direction='column' m='4xl'>
+    {children}
+  </Paper>
+)
+
+const MobileRootContainer = ({ children }: PropsWithChildren<BoxProps>) => (
+  <Box h='100%'> {children}</Box>
+)
+
 export const SignUpRootPage = () => {
+  const { isDesktop } = useMedia()
+  const RootContainer = isDesktop ? DesktopRootContainer : MobileRootContainer
   return (
-    <div>
+    <RootContainer>
       <Switch>
         <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
-          <SignUpPage />
+          <CreateEmailPage />
         </SignUpRoute>
         <SignUpRoute exact path={SIGN_UP_PASSWORD_PAGE}>
           <CreatePasswordPage />
         </SignUpRoute>
-        <SignUpRoute exact path={SIGN_UP_HANDLE_PAGE}>
-          <PickHandlePage />
-        </SignUpRoute>
-        <SignUpRoute exact path={SIGN_UP_FINISH_PROFILE_PAGE}>
-          <FinishProfilePage />
-        </SignUpRoute>
-        <SignUpRoute exact path={SIGN_UP_GENRES_PAGE}>
-          <SelectGenrePage />
-        </SignUpRoute>
-        <SignUpRoute exact path={SIGN_UP_ARTISTS_PAGE}>
-          <SelectArtistsPage />
+        {/* White screen routes */}
+        <SignUpRoute
+          exact
+          path={[
+            SIGN_UP_HANDLE_PAGE,
+            SIGN_UP_FINISH_PROFILE_PAGE,
+            SIGN_UP_GENRES_PAGE,
+            SIGN_UP_ARTISTS_PAGE
+          ]}
+        >
+          <ProgressHeader />
+          <Switch>
+            <SignUpRoute exact path={SIGN_UP_HANDLE_PAGE}>
+              <PickHandlePage />
+            </SignUpRoute>
+          </Switch>
+          <Switch>
+            <SignUpRoute exact path={SIGN_UP_FINISH_PROFILE_PAGE}>
+              <FinishProfilePage />
+            </SignUpRoute>
+          </Switch>
+          <Switch>
+            <SignUpRoute exact path={SIGN_UP_GENRES_PAGE}>
+              <SelectGenrePage />
+            </SignUpRoute>
+          </Switch>
+          <Switch>
+            <SignUpRoute exact path={SIGN_UP_ARTISTS_PAGE}>
+              <SelectArtistsPage />
+            </SignUpRoute>
+          </Switch>
         </SignUpRoute>
       </Switch>
-    </div>
+    </RootContainer>
   )
 }

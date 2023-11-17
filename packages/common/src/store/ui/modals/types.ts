@@ -1,3 +1,6 @@
+import { ModalSource } from 'models/Analytics'
+
+import { AddFundsModalState } from './add-funds-modal'
 import { CreateChatModalState } from './create-chat-modal'
 import { BaseModalState } from './createModal'
 import { EditPlaylistModalState } from './edit-playlist-modal'
@@ -58,6 +61,8 @@ export type Modals =
   | 'USDCPurchaseDetailsModal'
   | 'USDCTransactionDetailsModal'
   | 'USDCManualTransferModal'
+  | 'AddFundsModal'
+  | 'Welcome'
 
 export type BasicModalsState = {
   [modal in Modals]: BaseModalState
@@ -73,7 +78,18 @@ export type StatefulModalsState = {
   USDCPurchaseDetailsModal: USDCPurchaseDetailsModalState
   USDCTransactionDetailsModal: USDCTransactionDetailsModalState
   USDCManualTransferModal: USDCManualTransferModalState
+  AddFundsModal: AddFundsModalState
   PremiumContentPurchaseModal: PremiumContentPurchaseModalState
 }
 
 export type ModalsState = BasicModalsState & StatefulModalsState
+
+export type TrackModalOpenedActionPayload = {
+  name: string
+  source: ModalSource
+  trackingData?: Record<string, any>
+}
+
+export type TrackModalClosedActionPayload = {
+  name: string
+}

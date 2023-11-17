@@ -1,4 +1,3 @@
-/*  */
 .container {
   display: flex;
   flex-direction: column;
@@ -66,7 +65,7 @@
 .progressCard {
   width: 100%;
   display: flex;
-  flex: 1 1 0;
+  flex: 1 1 0%;
   flex-direction: column;
   border: 1px solid var(--border-strong);
   border-radius: 8px;
@@ -87,7 +86,7 @@
 .progressDescription {
   display: flex;
   flex-direction: column;
-  flex: 1 1 0;
+  flex: 1 1 0%;
   gap: var(--unit-3);
   padding: var(--unit-4) var(--unit-6);
 }
@@ -114,7 +113,7 @@
   padding: 24px 72px;
 }
 .progressBarSection.mobile {
-  flex: 1 1 0;
+  flex: 1 1 0%;
   border-top: none;
   border-left: 1px solid var(--border-strong);
   padding: 0 16px;

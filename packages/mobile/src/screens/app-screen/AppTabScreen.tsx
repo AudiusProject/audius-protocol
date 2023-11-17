@@ -42,6 +42,7 @@ import { AppDrawerContext } from '../app-drawer-screen'
 import { AudioScreen } from '../audio-screen'
 import { ChangePasswordScreen } from '../change-password-screen'
 import { EditProfileScreen } from '../edit-profile-screen'
+import { PayAndEarnScreen } from '../pay-and-earn-screen'
 import {
   AboutScreen,
   AccountSettingsScreen,
@@ -101,6 +102,7 @@ export type AppTabScreenParamList = {
   InboxSettingsScreen: undefined
   DownloadSettingsScreen: undefined
   NotificationSettingsScreen: undefined
+  PayAndEarnScreen: undefined
   AudioScreen: undefined
   Upload: undefined
   FeatureFlagOverride: undefined
@@ -283,6 +285,7 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
         component={SupportingUsersScreen}
         options={screenOptions}
       />
+      <Stack.Screen name='PayAndEarnScreen' component={PayAndEarnScreen} />
       <Stack.Screen name='AudioScreen' component={AudioScreen} />
 
       <Stack.Group>

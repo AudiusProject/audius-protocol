@@ -1,10 +1,11 @@
 import { create } from '@storybook/theming/create'
 
 import HarmonyLogo from '../assets/harmonyLogo.png'
+import HarmonyLogoDark from '../assets/harmonyLogoDark.png'
 
 import { primitives } from './colors'
 
-export const lightTheme = create({
+const dayTheme = create({
   base: 'light',
 
   // typography
@@ -12,27 +13,27 @@ export const lightTheme = create({
   fontCode: 'monospace',
 
   brandTitle: 'Harmony Design',
-  brandUrl: 'harmony.audius.co',
+  brandUrl: '/',
   brandImage: HarmonyLogo,
   brandTarget: '_self',
 
-  textColor: primitives.neutral.N400,
-  textMutedColor: primitives.neutral.N300,
+  textColor: primitives.neutral.N800,
+  textMutedColor: primitives.neutral.N600,
   textInverseColor: primitives.neutral.N050,
   colorPrimary: primitives.primary.V400,
-  colorSecondary: primitives.primary.V300,
+  colorSecondary: primitives.primary.V400,
   appBg: primitives.primary.V050,
   appContentBg: primitives.neutral.N050,
-  appBorderColor: primitives.neutral.N200,
+  appBorderColor: primitives.neutral.N300,
   barTextColor: primitives.primary.V600,
-  barSelectedColor: primitives.primary.V600,
-  barBg: primitives.primary.V050,
+  barSelectedColor: primitives.primary.V400,
+  barBg: primitives.neutral.N050,
   inputBg: primitives.neutral.N050,
   inputBorder: primitives.neutral.N200,
-  inputTextColor: primitives.neutral.N400
+  inputTextColor: primitives.neutral.N800
 })
 
-export const darkTheme = create({
+const darkTheme = create({
   base: 'dark',
 
   // typography
@@ -40,28 +41,28 @@ export const darkTheme = create({
   fontCode: 'monospace',
 
   brandTitle: 'Harmony Design',
-  brandUrl: 'harmony.audius.co',
-  brandImage: HarmonyLogo,
+  brandUrl: '/',
+  brandImage: HarmonyLogoDark,
   brandTarget: '_self',
 
-  textColor: primitives.neutral.N400,
-  textMutedColor: primitives.neutral.N300,
-  textInverseColor: primitives.neutral.N050,
-  colorPrimary: primitives.primary.V400,
+  textColor: primitives.neutral.N050,
+  textMutedColor: primitives.neutral.N200,
+  textInverseColor: primitives.neutral.N800,
+  colorPrimary: primitives.primary.V300,
   colorSecondary: primitives.primary.V300,
-  appBg: primitives.primary.V050,
-  appContentBg: primitives.neutral.N050,
-  appBorderColor: primitives.neutral.N200,
-  barTextColor: primitives.primary.V600,
-  barSelectedColor: primitives.primary.V600,
-  barBg: primitives.primary.V050,
-  inputBg: primitives.neutral.N050,
-  inputBorder: primitives.neutral.N200,
-  inputTextColor: primitives.neutral.N400
+  appBg: primitives.primary.V600,
+  appContentBg: primitives.neutral.N800,
+  appBorderColor: primitives.neutral.N500,
+  barTextColor: primitives.primary.V050,
+  barSelectedColor: primitives.primary.V300,
+  barBg: primitives.neutral.N800,
+  inputBg: primitives.neutral.N500,
+  inputBorder: primitives.neutral.N600,
+  inputTextColor: primitives.neutral.N050
 })
 
 export const harmonyDocsThemes = {
-  light: lightTheme,
+  day: dayTheme,
   dark: darkTheme,
   matrix: darkTheme
 }

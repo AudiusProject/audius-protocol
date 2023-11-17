@@ -2,7 +2,7 @@ import { expect } from '@storybook/jest'
 import type { Meta, StoryObj } from '@storybook/react'
 import { within } from '@storybook/testing-library'
 
-import { Box, Flex } from 'components/layout'
+import { Flex } from 'components/layout'
 import { Text } from 'components/text'
 import { IconArrowLeft, IconArrowRight } from 'icons'
 
@@ -11,7 +11,7 @@ import { ButtonProps, ButtonSize, ButtonType } from '../types'
 import { Button } from './Button'
 
 const meta: Meta<typeof Button> = {
-  title: 'Components/Buttons/Button',
+  title: 'Buttons/Button',
   component: Button
 }
 
@@ -41,7 +41,6 @@ export const Sizes: Story = {
         <Button size={ButtonSize.SMALL}>Small</Button>
         <Text>32px</Text>
       </Flex>
-
       <Flex direction='column' alignItems='center' gap='m'>
         <Button size={ButtonSize.DEFAULT}>Medium</Button>
         <Text>48px</Text>
@@ -126,14 +125,17 @@ export const Icons: Story = {
 
 export const LoadingState: Story = {
   render: () => (
-    <Flex justifyContent='space-between'>
-      <Flex direction='column' gap='2xl'>
-        <Button color='lightGreen'>Buy $1.99</Button>
-        <Button isLoading>Purchasing</Button>
-      </Flex>
-      <Box alignSelf='flex-end'>
-        <Text>Show loading state on click</Text>
-      </Box>
+    <Flex gap='2xl'>
+      <Button isLoading>Purchasing</Button>
+      <Button variant={ButtonType.SECONDARY} isLoading>
+        Uploading
+      </Button>
+      <Button variant={ButtonType.TERTIARY} isLoading>
+        Updating
+      </Button>
+      <Button variant={ButtonType.DESTRUCTIVE} isLoading>
+        Removing
+      </Button>
     </Flex>
   )
 }
@@ -141,79 +143,16 @@ export const LoadingState: Story = {
 export const ColorPropApplied: Story = {
   render: () => (
     <Flex gap='2xl'>
-      <Flex direction='column' gap='m' flex={1}>
-        <Box>
-          <Button color='blue'>Default</Button>
-        </Box>
-        <Flex as='ul' direction='column' gap='s'>
-          <Text asChild>
-            <li>Background: Color Value</li>
-          </Text>
-          <Text asChild>
-            <li>Shadow: Near</li>
-          </Text>
-          <Text asChild>
-            <li>Transform Scale: 1x</li>
-          </Text>
-        </Flex>
-      </Flex>
-
-      <Flex direction='column' gap='m' flex={1}>
-        <Box>
-          <Button color='blue' _isHovered>
-            Hover
-          </Button>
-        </Box>
-        <Flex as='ul' direction='column' gap='s'>
-          <Text asChild>
-            <li>Background: Color Value + White Overlay @ 10% Opacity</li>
-          </Text>
-          <Text asChild>
-            <li>Shadow: Mid</li>
-          </Text>
-          <Text asChild>
-            <li>Transform Scale: 1.04x</li>
-          </Text>
-        </Flex>
-      </Flex>
-
-      <Flex direction='column' gap='m' flex={1}>
-        <Box>
-          <Button color='blue' _isPressed>
-            Pressed
-          </Button>
-        </Box>
-        <Flex as='ul' direction='column' gap='s'>
-          <Text asChild>
-            <li>Background: Color Value + Black Overlay @ 20% Opacity</li>
-          </Text>
-          <Text asChild>
-            <li>Shadow: None</li>
-          </Text>
-          <Text asChild>
-            <li>Transform Scale: 0.98x</li>
-          </Text>
-        </Flex>
-      </Flex>
-
-      <Flex direction='column' gap='m' flex={1}>
-        <Box>
-          <Button color='blue' disabled>
-            Disabled
-          </Button>
-        </Box>
-        <Flex as='ul' direction='column' gap='s'>
-          <Text asChild>
-            <li>Background: n-150</li>
-          </Text>
-          <Text asChild>
-            <li>Shadow: None</li>
-          </Text>
-          <Text asChild>
-            <li>Transform Scale: 1x</li>
-          </Text>
-        </Flex>
-      </Flex>
+      <Button color='blue'>Default</Button>
+      <Button color='blue' _isHovered>
+        Hover
+      </Button>
+      <Button color='blue' _isPressed>
+        Pressed
+      </Button>
+      <Button color='blue' disabled>
+        Disabled
+      </Button>
     </Flex>
   )
 }

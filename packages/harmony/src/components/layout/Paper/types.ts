@@ -5,6 +5,11 @@ import type {
   ShadowOptions
 } from 'foundations'
 
+import type { FlexProps } from '../Flex'
+
+/**
+ * An elevated container which stands out from the background.
+ */
 export type PaperProps = {
   /**
    * Background Color
@@ -28,5 +33,5 @@ export type PaperProps = {
    * Elevation Shadow
    * @default mid
    */
-  shadow?: Exclude<ShadowOptions, 'drop'>
-}
+  shadow?: Exclude<ShadowOptions, 'drop'> | 'none'
+} & FlexProps

@@ -247,6 +247,7 @@ class ChallengeInfo(Resource):
                     "starting_block": challenge.starting_block,
                     "weekly_pool": challenge.weekly_pool,
                     "weekly_pool_remaining": weekly_pool_remaining,
+                    "cooldown_days": challenge.cooldown_days,
                 }
                 if (
                     weekly_pool_min_amount

@@ -14,7 +14,7 @@ const spacingArgs = {
 }
 
 const meta: Meta<typeof Box> = {
-  title: 'Components/Layout/Box',
+  title: 'Layout/Box',
   component: Box,
   parameters: {
     controls: { exclude: /^(theme|as)$/ }

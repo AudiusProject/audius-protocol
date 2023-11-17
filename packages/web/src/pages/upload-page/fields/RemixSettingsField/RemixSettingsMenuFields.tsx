@@ -69,6 +69,29 @@ export const RemixSettingsMenuFields = () => {
     setCanRemixParent(canRemixParent)
   }, [trackId, setParentTrackId, canRemixParent, setCanRemixParent])
 
+  const renderHideRemixesField = () => {
+    if (isPremium) {
+      return (
+        <SwitchRowField
+          name={SHOW_REMIXES}
+          header={messages.hideRemix.header}
+          description={messages.hideRemix.description}
+          inverted={false}
+          checked
+          disabled
+        />
+      )
+    }
+    return (
+      <SwitchRowField
+        name={SHOW_REMIXES}
+        header={messages.hideRemix.header}
+        description={messages.hideRemix.description}
+        inverted
+      />
+    )
+  }
+
   return (
     <div className={styles.fields}>
       {isPremium ? (
@@ -82,14 +105,7 @@ export const RemixSettingsMenuFields = () => {
           }${messages.changeAvailabilitySuffix}`}
         />
       ) : null}
-      <SwitchRowField
-        name={SHOW_REMIXES}
-        header={messages.hideRemix.header}
-        description={messages.hideRemix.description}
-        disabled={isPremium}
-        checked={isPremium}
-        inverted={!isPremium}
-      />
+      {renderHideRemixesField()}
       <Divider />
       <SwitchRowField
         name={IS_REMIX}

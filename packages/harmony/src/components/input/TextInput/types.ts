@@ -7,11 +7,43 @@ export enum TextInputSize {
   DEFAULT = 'default'
 }
 
+type InternalProps = {
+  /**
+   * @ignore: This prop is for internal use only
+   */
+  _isFocused?: boolean
+}
+
 export type TextInputProps = Omit<
   ComponentPropsWithoutRef<'input'>,
   // Omitting required purely for storybook docs
   'size' | 'required'
 > & {
+  /**
+   * @ignore
+   * This prop is for internal use only.
+   * Toggles the incorrect error state for the storybook docs
+   */
+  _incorrectError?: boolean
+  /**
+   * @ignore
+   * This prop is for internal use only.
+   * Toggles the hover state for the storybook docs
+   */
+  _isHovered?: boolean
+  /**
+   * @ignore
+   * This prop is for internal use only.
+   * Toggles the focus state for the storybook docs
+   */
+  _isFocused?: boolean
+  /**
+   * @ignore
+   * This prop is for internal use only.
+   * Disabled pointer events for storybook docs
+   */
+  _disablePointerEvents?: boolean
+
   /**
    * Input sizes. NOTE: small inputs will not show the label
    * @default default
@@ -77,4 +109,4 @@ export type TextInputProps = Omit<
    * @default 0.9
    */
   maxLengthWarningThreshold?: number
-}
+} & InternalProps

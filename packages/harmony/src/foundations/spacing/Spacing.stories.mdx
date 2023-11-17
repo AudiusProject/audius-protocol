@@ -1,9 +1,9 @@
 import { useTheme } from '@emotion/react'
 import { Meta, Title, Unstyled } from '@storybook/blocks'
 
-import { Paper, Flex, Text, Box } from 'components'
+import { Paper, Flex, Text } from 'components'
 import spacingExample from 'storybook/assets/spacingExample.png'
-import { CardLink } from 'storybook/components'
+import { Heading, RelatedFoundations } from 'storybook/components'
 
 <Meta title='Foundations/Spacing' />
 
@@ -14,13 +14,19 @@ import { CardLink } from 'storybook/components'
 - [Containers](#containers)
 - [Usage and examples](#usage-and-examples)
 
+<Heading>
 ## Overview
 
 Consistent and scalable spacing helps you eliminate guesswork because you're designing with a limited set of options.
 
+</Heading>
+
+<Heading>
 ## Spacing sizes
 
 Using the right sizes will create consistency and hierarchy in user interface.
+
+</Heading>
 
 export function SpacingExample(props) {
   const { spacing } = props
@@ -68,22 +74,6 @@ export function SpacingExample(props) {
 
 </div>
 
-## Containers
-
-<Unstyled>
-  <Paper p='xl' direction='column' gap='2xl'>
-    <Box w={200}>
-      <CardLink
-        subtitle="I'm a title"
-        description="I'm a description."
-        link='/'
-      />
-    </Box>
-    <Text>Padding: XS | S | M | L | **XL** | 2XL | 3XL | 4XL</Text>
-    <Text>Vertical gap: XS | **S** | M | L | XL | 2XL | 3XL | 4XL</Text>
-  </Paper>
-</Unstyled>
-
 ## Usage and examples
 
 - Stay consistent with paddings and sizes across different UI components.
@@ -91,3 +81,7 @@ export function SpacingExample(props) {
 - Elements should be grouped by likeness, with the most similar elements closer together and unlike elements farther apart.
 
 <img src={spacingExample} />
+
+## Related Foundations
+
+<RelatedFoundations foundationNames={['Color', 'Shadow', 'CornerRadius']} />

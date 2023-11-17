@@ -58,6 +58,7 @@ export const FAVORITES_PAGE = '/favorites'
 export const LIBRARY_PAGE = '/library'
 export const HISTORY_PAGE = '/history'
 export const DASHBOARD_PAGE = '/dashboard'
+export const PAYMENTS_PAGE = '/payments'
 export const AUDIO_PAGE = '/audio'
 export const AUDIO_TRANSACTIONS_PAGE = '/audio/transactions'
 export const UPLOAD_PAGE = '/upload'
@@ -228,6 +229,7 @@ export const orderedRoutes = [
   LIBRARY_PAGE,
   HISTORY_PAGE,
   DASHBOARD_PAGE,
+  PAYMENTS_PAGE,
   AUDIO_PAGE,
   AUDIO_TRANSACTIONS_PAGE,
   SETTINGS_PAGE,
@@ -262,6 +264,7 @@ export const staticRoutes = new Set([
   FAVORITES_PAGE,
   HISTORY_PAGE,
   DASHBOARD_PAGE,
+  PAYMENTS_PAGE,
   AUDIO_PAGE,
   AUDIO_TRANSACTIONS_PAGE,
   UPLOAD_PAGE,

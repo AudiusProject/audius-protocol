@@ -6,7 +6,7 @@ import { Box } from '../Box'
 import { Flex } from './Flex'
 
 const meta: Meta<typeof Flex> = {
-  title: 'Components/Layout/Flex',
+  title: 'Layout/Flex',
   component: Flex,
   parameters: {
     controls: { include: /^(alignItems|direction|gap|justifyContent|wrap)$/ }
@@ -46,16 +46,24 @@ const meta: Meta<typeof Flex> = {
   render: (props) => (
     <Flex border='strong' borderRadius='m' p='l' mb='xl' {...props}>
       <Box border='strong' borderRadius='s' p='s' ph='l'>
-        <Text variant='heading'>Box A</Text>
+        <Text variant='display' size='s'>
+          Box A
+        </Text>
       </Box>
       <Box border='strong' borderRadius='s' p='s' ph='l'>
-        <Text variant='heading'>Box B</Text>
+        <Text variant='display' size='s'>
+          Box B
+        </Text>
       </Box>
       <Box border='strong' borderRadius='s' p='s' ph='l'>
-        <Text variant='heading'>Box C</Text>
+        <Text variant='display' size='s'>
+          Box C
+        </Text>
       </Box>
       <Box border='strong' borderRadius='s' p='s' ph='l'>
-        <Text variant='heading'>Box D</Text>
+        <Text variant='display' size='s'>
+          Box D
+        </Text>
       </Box>
     </Flex>
   )

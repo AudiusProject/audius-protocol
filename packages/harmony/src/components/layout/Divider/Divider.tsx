@@ -1,7 +1,11 @@
 import styled from '@emotion/styled'
 
-export const Divider = styled.div(() => ({
+/**
+ * A separator between two elements, usually consisting of a horizontal or vertical line.
+ */
+export const Divider = styled.div(({ theme }) => ({
   minHeight: 1,
   minWidth: 1,
-  backgroundColor: 'var(--harmony-border-strong)'
+  alignSelf: 'stretch',
+  backgroundColor: theme.color.border.strong
 }))
