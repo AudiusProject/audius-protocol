@@ -134,13 +134,11 @@ export const SignUpPage = () => {
                     autoComplete='email'
                     label={messages.emailLabel}
                   />
-                  <Flex w='100%' alignItems='center' gap='s'>
-                    <Divider className={styles.flex1} />
+                  <Divider css={{ width: '100%' }}>
                     <Text variant='body' size='m' tag='p' color='subdued'>
                       {messages.socialsDividerText}
                     </Text>
-                    <Divider className={styles.flex1} />
-                  </Flex>
+                  </Divider>
                   <Flex direction='row' gap='s' w='100%'>
                     <SocialButton
                       socialType='twitter'
