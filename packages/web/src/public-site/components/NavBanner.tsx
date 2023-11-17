@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, HTMLAttributes } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 import {
   IconBlog,
@@ -14,6 +14,7 @@ import {
 import cn from 'classnames'
 
 import HorizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
+import { UnstyledButton } from 'components/unstyled-button/UnstyledButton'
 import {
   AUDIUS_BLOG_LINK,
   AUDIUS_HELP_LINK,
@@ -56,16 +57,6 @@ type NavBannerProps = {
   openNavScreen: () => void
   setRenderPublicSite: (shouldRender: boolean) => void
 }
-
-/**
- * A button element with no styling, purely for using the correct html role
- */
-const UnstyledButton = (props: HTMLAttributes<HTMLButtonElement>) => (
-  <button
-    css={{ border: 'none', background: 'transparent', padding: 0, margin: 0 }}
-    {...props}
-  />
-)
 
 const NavBanner = (props: NavBannerProps) => {
   const isNarrow = useMatchesBreakpoint({
