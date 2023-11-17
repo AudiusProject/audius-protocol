@@ -92,7 +92,7 @@ export const AddFunds = ({
         })}
       >
         <Flex direction='column' w='100%' gap='xl'>
-          <Box h='unit6' border='strong' p='m'>
+          <Box h='unit6' border='strong' p='m' borderRadius='s'>
             <Flex alignItems='center' justifyContent='space-between'>
               <Flex alignItems='center'>
                 <IconLogoCircleUSDC />
@@ -113,6 +113,7 @@ export const AddFunds = ({
             withRadioOptions
             onRadioChange={handleChangeOption}
             selectedRadioOption={selectedMethod}
+            rowClassName={mobile ? styles.summaryTableRow : undefined}
           />
           <Button
             variant={ButtonType.PRIMARY}

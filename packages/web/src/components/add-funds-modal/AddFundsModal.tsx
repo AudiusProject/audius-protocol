@@ -27,8 +27,8 @@ export const AddFundsModal = () => {
   const [page, setPage] = useState<Page>('add-funds')
 
   const handleClose = useCallback(() => {
-    onClose()
-  }, [onClose])
+    setPage('add-funds')
+  }, [setPage])
 
   const handleClosed = useCallback(() => {
     setPage('add-funds')
@@ -36,7 +36,11 @@ export const AddFundsModal = () => {
 
   const handleContinue = useCallback(
     (method: Method) => {
-      setPage('crypto-transfer')
+      if (method === 'crypto') {
+        setPage('crypto-transfer')
+      } else {
+        // Open payments
+      }
     },
     [setPage]
   )

@@ -25,6 +25,7 @@ export type SummaryTableProps = {
   withRadioOptions?: boolean
   selectedRadioOption?: string
   onRadioChange?: (e: ChangeEvent<HTMLInputElement>) => void
+  rowClassName?: string
 }
 
 export const SummaryTable = ({
@@ -36,7 +37,8 @@ export const SummaryTable = ({
   summaryValueColor = 'secondary',
   withRadioOptions,
   selectedRadioOption,
-  onRadioChange
+  onRadioChange,
+  rowClassName
 }: SummaryTableProps) => {
   const body = (
     <div className={styles.container}>
@@ -49,14 +51,12 @@ export const SummaryTable = ({
         </Text>
       </div>
       {items.map(({ id, label, icon: Icon, value }) => (
-        <div key={id} className={styles.row}>
+        <div key={id} className={cn(styles.row, rowClassName)}>
           <Flex alignItems='center' gap='s'>
             {withRadioOptions ? <RadioButton value={id} /> : null}
             {Icon ? (
               <Box ml='s'>
-                <Icon
-                  color='default'
-                />
+                <Icon color='default' />
               </Box>
             ) : null}
             <Text>{label}</Text>
