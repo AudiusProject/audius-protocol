@@ -58,9 +58,9 @@ type NavBannerProps = {
 }
 
 /**
- * A button element with no styling, purely for
+ * A button element with no styling, purely for using the correct html role
  */
-const InvisibleButton = (props: HTMLAttributes<HTMLButtonElement>) => (
+const UnstyledButton = (props: HTMLAttributes<HTMLButtonElement>) => (
   <button
     css={{ border: 'none', background: 'transparent', padding: 0, margin: 0 }}
     {...props}
@@ -151,13 +151,13 @@ const NavBanner = (props: NavBannerProps) => {
             alt='Audius Logo'
           />
         </div>
-        <InvisibleButton
+        <UnstyledButton
           onClick={props.openNavScreen}
           data-testid='mobileKebabMenuButton'
           aria-label='Open Nav Menu'
         >
           <IconKebabHorizontal className={styles.kebabMenu} />
-        </InvisibleButton>
+        </UnstyledButton>
       </div>
     )
   }
