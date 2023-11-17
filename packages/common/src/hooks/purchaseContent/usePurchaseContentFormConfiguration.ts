@@ -16,7 +16,12 @@ import { Nullable } from 'utils/typeUtils'
 
 import { useUSDCBalance } from '../useUSDCBalance'
 
-import { AMOUNT_PRESET, CUSTOM_AMOUNT, PURCHASE_METHOD } from './constants'
+import {
+  AMOUNT_PRESET,
+  CENTS_TO_USDC_MULTIPLIER,
+  CUSTOM_AMOUNT,
+  PURCHASE_METHOD
+} from './constants'
 import {
   PayExtraAmountPresetValues,
   PayExtraPreset,
@@ -49,7 +54,7 @@ export const usePurchaseContentFormConfiguration = ({
     [CUSTOM_AMOUNT]: undefined,
     [AMOUNT_PRESET]: PayExtraPreset.NONE,
     [PURCHASE_METHOD]:
-      balance >= BigInt(price * 10000)
+      balance >= BigInt(price * CENTS_TO_USDC_MULTIPLIER)
         ? PurchaseMethod.EXISTING_BALANCE
         : PurchaseMethod.CARD
   }

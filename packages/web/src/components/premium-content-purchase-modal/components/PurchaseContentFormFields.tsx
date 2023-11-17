@@ -5,7 +5,8 @@ import {
   usePayExtraPresets,
   useUSDCBalance,
   PurchaseMethod,
-  PURCHASE_METHOD
+  PURCHASE_METHOD,
+  Vendors
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -108,7 +109,7 @@ export const PurchaseContentFormFields = ({
               : undefined
           }
         >
-          {messages.dollarSign + USDC(balanceUSDC).toFixed(2)}
+          {`$${USDC(balanceUSDC).toFixed(2)}`}
         </Text>
       )
     },
@@ -120,7 +121,7 @@ export const PurchaseContentFormFields = ({
         <FilterButton
           initialSelectionIndex={0}
           variant={FilterButtonType.REPLACE_LABEL}
-          options={[{ label: 'Stripe' }]}
+          options={[{ label: Vendors.STRIPE }]}
         />
       )
     },
