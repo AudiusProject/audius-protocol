@@ -177,20 +177,22 @@ export const SelectArtistsPage = () => {
                         })}
                   </Paper>
                 </fieldset>
+                <ContinueFooter>
+                  <Button
+                    minWidth={343}
+                    type='submit'
+                    disabled={!isValid || isSubmitting}
+                    isLoading={isSubmitting || isValidating}
+                    iconRight={IconArrowRight}
+                  >
+                    {messages.continue}
+                  </Button>
+                  <Text variant='body'>
+                    Selected {selectedArtists.size || 0}/3
+                  </Text>
+                </ContinueFooter>
               </Form>
             </Flex>
-            <ContinueFooter>
-              <Button
-                minWidth={343}
-                type='submit'
-                disabled={!isValid || isSubmitting}
-                isLoading={isSubmitting || isValidating}
-                iconRight={IconArrowRight}
-              >
-                {messages.continue}
-              </Button>
-              <Text variant='body'>Selected {selectedArtists.size || 0}/3</Text>
-            </ContinueFooter>
           </Flex>
         )
       }}
