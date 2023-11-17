@@ -113,7 +113,7 @@ type FixedDecimalFormatOptions = {
  * @see {@link FixedDecimalFormatOptions}
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat#moreprecision MDN Documentation for Intl.NumberFormat}
  */
-const defaultFormatOptions = (value: FixedDecimal) =>
+const defaultFormatOptions = (value: FixedDecimal<any>) =>
   ({
     useGrouping: true,
     minimumFractionDigits: 0,
@@ -154,11 +154,8 @@ const defaultFormatOptions = (value: FixedDecimal) =>
  * // Represent fractional dollars and round to cents
  * new FixedDecimal(1.32542).toFixed(2) // '1.33'
  */
-export class FixedDecimal<
-  BrandedBigInt extends bigint = bigint,
-  BrandedBN extends BN = BN
-> {
-  public value: BrandedBigInt
+export class FixedDecimal<T extends bigint, K extends BN = BN> {
+  public value: T
   public decimalPlaces: number
 
   /**
@@ -174,12 +171,12 @@ export class FixedDecimal<
    */
   constructor(
     value:
-      | FixedDecimalCtorArgs<BrandedBigInt>
-      | BrandedBigInt
+      | FixedDecimalCtorArgs<T>
+      | T
       | NoBrand<bigint>
       | number
       | string
-      | BrandedBN
+      | K
       | NoBrand<BN>,
     decimalPlaces?: number
   ) {
@@ -191,7 +188,7 @@ export class FixedDecimal<
         if (value.toString() === value.toExponential()) {
           throw new Error('Number must not be in scientific notation')
         }
-        const parsed = parseFixedDecimalString<BrandedBigInt>(
+        const parsed = parseFixedDecimalString<T>(
           value.toString(),
           decimalPlaces
         )
@@ -200,17 +197,14 @@ export class FixedDecimal<
         break
       }
       case 'string': {
-        const parsed = parseFixedDecimalString<BrandedBigInt>(
-          value,
-          decimalPlaces
-        )
+        const parsed = parseFixedDecimalString<T>(value, decimalPlaces)
         this.value = parsed.value
         this.decimalPlaces = parsed.decimalPlaces
         break
       }
       case 'object': {
         if (value instanceof FixedDecimal) {
-          const parsed = parseFixedDecimalString<BrandedBigInt>(
+          const parsed = parseFixedDecimalString<T>(
             value.toString(),
             decimalPlaces
           )
@@ -224,13 +218,13 @@ export class FixedDecimal<
           // Can't do `value instanceof BN` as the condition because BN is just
           // a type, instead get BN by elimination. Technically any object works
           // here that has a toString() that's a valid BigInt() arg.
-          this.value = BigInt(value.toString()) as BrandedBigInt
+          this.value = BigInt(value.toString()) as T
           this.decimalPlaces = decimalPlaces ?? 0
         }
         break
       }
       default:
-        this.value = value as BrandedBigInt
+        this.value = value as T
         this.decimalPlaces = decimalPlaces ?? 0
     }
   }
@@ -251,8 +245,8 @@ export class FixedDecimal<
     }
     const divisor = BigInt(10 ** digitsToRemove)
     const bump = this.value % divisor > 0 ? BigInt(1) : BigInt(0)
-    return new FixedDecimal<BrandedBigInt, BrandedBN>({
-      value: ((this.value / divisor + bump) * divisor) as BrandedBigInt,
+    return new FixedDecimal<T, K>({
+      value: ((this.value / divisor + bump) * divisor) as T,
       decimalPlaces: this.decimalPlaces
     })
   }
@@ -276,8 +270,8 @@ export class FixedDecimal<
       this.value < 0 && digitsToRemove > 0
         ? BigInt(-1 * 10 ** digitsToRemove)
         : BigInt(0)
-    return new FixedDecimal<BrandedBigInt, BrandedBN>({
-      value: ((this.value / divisor) * divisor + signOffset) as BrandedBigInt,
+    return new FixedDecimal<T, K>({
+      value: ((this.value / divisor) * divisor + signOffset) as T,
       decimalPlaces: this.decimalPlaces
     })
   }
@@ -297,8 +291,8 @@ export class FixedDecimal<
       throw new RangeError('Digits must be non-negative')
     }
     const divisor = BigInt(10 ** digitsToRemove)
-    return new FixedDecimal<BrandedBigInt, BrandedBN>({
-      value: ((this.value / divisor) * divisor) as BrandedBigInt,
+    return new FixedDecimal<T, K>({
+      value: ((this.value / divisor) * divisor) as T,
       decimalPlaces: this.decimalPlaces
     })
   }
@@ -326,8 +320,8 @@ export class FixedDecimal<
     // Divide by 10 to remove the rounding test digit
     quotient /= BigInt(10)
     // Multiply by the original divisor and 10 to get the number of digits back
-    return new FixedDecimal<BrandedBigInt, BrandedBN>(
-      (quotient * divisor * BigInt(10)) as BrandedBigInt,
+    return new FixedDecimal<T, K>(
+      (quotient * divisor * BigInt(10)) as T,
       this.decimalPlaces
     )
   }

@@ -22,7 +22,7 @@ describe('wallet.ts currency formatting and conversion tests', function () {
   it('can parse audio input to wei', function () {
     const audioInput = '12345'
     const expected = '12345000000000000000000'
-    expect(AUDIO(audioInput).BigNumberBrand.toString()).toBe(expected)
+    expect(AUDIO(audioInput).value.toString()).toBe(expected)
     expect(parseAudioInputToWei(audioInput)?.toString()).toBe(expected)
   })
 
@@ -64,8 +64,8 @@ describe('wallet.ts currency formatting and conversion tests', function () {
     }
     const decimal = new FixedDecimal(amount, decimals)
     expect({
-      amount: Number(decimal.BigNumberBrand),
-      amountString: decimal.BigNumberBrand.toString(),
+      amount: Number(decimal.value),
+      amountString: decimal.value.toString(),
       uiAmount: Number(decimal.toString()),
       uiAmountString: decimal.toString()
     }).toMatchObject(expected)
@@ -77,28 +77,28 @@ describe('wallet.ts currency formatting and conversion tests', function () {
   it('can convert waudio to wei', function () {
     const waudio = new BN('123456789123456789')
     const expected = '1234567891234567890000000000'
-    expect(AUDIO(wAUDIO(waudio)).BigNumberBrand.toString()).toBe(expected)
+    expect(AUDIO(wAUDIO(waudio)).value.toString()).toBe(expected)
     expect(convertWAudioToWei(waudio).toString()).toBe(expected)
   })
 
   it('can convert wei to waudio', function () {
     const wei = new BN('123456789012345678901234567890')
     const expected = '12345678901234567890'
-    expect(wAUDIO(AUDIO(wei)).BigNumberBrand.toString()).toBe(expected)
+    expect(wAUDIO(AUDIO(wei)).value.toString()).toBe(expected)
     expect(convertWeiToWAudio(wei).toString()).toBe(expected)
   })
 
   it('can ceil usdc to nearest cent', function () {
     const usdc = new BN('1234567890')
     const expected = '1234570000'
-    expect(USDC(usdc).ceil(2).BigNumberBrand.toString()).toBe(expected)
+    expect(USDC(usdc).ceil(2).value.toString()).toBe(expected)
     expect(ceilingBNUSDCToNearestCent(usdc as BNUSDC).toString()).toBe(expected)
   })
 
   it('can floor usdc to nearest cent', function () {
     const usdc = new BN('1234567890')
     const expected = '1234560000'
-    expect(USDC(usdc).floor(2).BigNumberBrand.toString()).toBe(expected)
+    expect(USDC(usdc).floor(2).value.toString()).toBe(expected)
     expect(floorBNUSDCToNearestCent(usdc as BNUSDC).toString()).toBe(expected)
   })
 
