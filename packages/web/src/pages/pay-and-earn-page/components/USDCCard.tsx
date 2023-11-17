@@ -6,8 +6,8 @@ import {
   WithdrawUSDCModalPages,
   formatCurrencyBalance,
   formatUSDCWeiToFloorCentsNumber,
-  useUSDCManualTransferModal,
-  useWithdrawUSDCModal
+  useWithdrawUSDCModal,
+  useAddFundsModal
 } from '@audius/common'
 import {
   Button,
@@ -41,7 +41,7 @@ const messages = {
 
 export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
   const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
-  const { onOpen: openUsdcManualTransferModal } = useUSDCManualTransferModal()
+  const { onOpen: openAddFundsModal } = useAddFundsModal()
 
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
@@ -65,7 +65,7 @@ export const USDCCard = ({ balance }: { balance: BNUSDC }) => {
   }
 
   const handleAddFunds = () => {
-    openUsdcManualTransferModal()
+    openAddFundsModal()
     track(
       make({
         eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY

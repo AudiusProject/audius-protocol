@@ -1,4 +1,6 @@
-import { Box } from '@audius/harmony'
+import { PropsWithChildren } from 'react'
+
+import { Box, PaperProps, Paper, BoxProps } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
@@ -70,7 +72,6 @@ const determineAllowedRoute = (
   if (signUpState.followArtists?.selectedUserIds?.length >= 3) {
     // Already have 3 artists followed
     // Done with sign up if at this point so we return early (none of these routes are allowed anymore)
-    // TODO: trigger welcome modal when redirecting from here
     return {
       allowedRoutes: [],
       isAllowedRoute: false,
@@ -130,12 +131,22 @@ const useIsBackAllowed = () => {
   return false
 }
 
+const DesktopRootContainer = ({ children }: PropsWithChildren<PaperProps>) => (
+  <Paper w={1280} h={864} direction='column' m='4xl'>
+    {children}
+  </Paper>
+)
+
+const MobileRootContainer = ({ children }: PropsWithChildren<BoxProps>) => (
+  <Box h='100%'> {children}</Box>
+)
+
 export const SignUpRootPage = () => {
   const { isDesktop } = useMedia()
   const isBackAllowed = useIsBackAllowed()
-
+  const RootContainer = isDesktop ? DesktopRootContainer : MobileRootContainer
   return (
-    <Box h='100%'>
+    <RootContainer>
       {!isDesktop ? <MobileNavHeader isBackAllowed={isBackAllowed} /> : null}
       <Switch>
         <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
@@ -177,6 +188,6 @@ export const SignUpRootPage = () => {
           </Switch>
         </SignUpRoute>
       </Switch>
-    </Box>
+    </RootContainer>
   )
 }

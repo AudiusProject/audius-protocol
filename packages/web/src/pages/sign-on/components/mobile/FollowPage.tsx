@@ -11,7 +11,7 @@ import {
 } from 'common/store/pages/signon/types'
 import UserCard from 'components/card/UserCard'
 import SelectablePills from 'components/selectable-pill/SelectablePills'
-import { MAIN_CONTENT_ID } from 'pages/App'
+import { MAIN_CONTENT_ID } from 'pages/MainContentContext'
 
 import styles from './FollowPage.module.css'
 

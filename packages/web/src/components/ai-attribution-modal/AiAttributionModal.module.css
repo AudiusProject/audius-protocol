@@ -2,15 +2,6 @@
   width: 720px;
 }
 
-.title {
-  color: var(--neutral-light-2);
-  text-transform: uppercase;
-}
-
-.titleIcon path {
-  fill: var(--neutral-light-2);
-}
-
 .content {
   display: inline-flex;
   flex-direction: column;
