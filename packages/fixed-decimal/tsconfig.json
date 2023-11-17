@@ -1,27 +1,11 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    "baseUrl": ".",
-    "module": "ESNext",
-    "target": "ESNext",
-    "moduleResolution": "Node",
-    "declarationDir": "dist/types",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "noImplicitAny": true,
-    "downlevelIteration": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noEmit": true,
+    "skipLibCheck": true
   },
-  "include": [],
+  "include": ["src"],
   "references": [
     { "path": "./tsconfig.esm.json" },
     { "path": "./tsconfig.cjs.json" }
