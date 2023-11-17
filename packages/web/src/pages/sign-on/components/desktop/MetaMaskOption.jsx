@@ -25,6 +25,7 @@ export class MetaMaskOption extends Component {
     return (
       <>
         <Button
+          buttonType='button'
           text={<MetaMaskSignupText text={this.props.text} />}
           onClick={this.props.onClick}
           type={ButtonType.COMMON_ALT}
