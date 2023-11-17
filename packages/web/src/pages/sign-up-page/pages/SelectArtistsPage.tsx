@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import {
   ID,
@@ -16,7 +16,6 @@ import {
   Box
 } from '@audius/harmony'
 import { Form, Formik } from 'formik'
-import { filter, map } from 'lodash'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -48,8 +47,7 @@ const initialValues: SelectArtistsValues = {
 }
 
 export const SelectArtistsPage = () => {
-  // const genres = useSelector((state) => ['Featured', ...getGenres(state)])
-  const genres = ['Featured', 'Pop', 'Alternative']
+  const genres = useSelector((state) => ['Featured', ...getGenres(state)])
   const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const [currentGenre, setCurrentGenre] = useState('Featured')
   const dispatch = useDispatch()
