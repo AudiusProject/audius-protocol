@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, HTMLAttributes } from 'react'
 
 import {
   IconBlog,
@@ -56,6 +56,13 @@ type NavBannerProps = {
   openNavScreen: () => void
   setRenderPublicSite: (shouldRender: boolean) => void
 }
+
+const BlandButton = (props: HTMLAttributes<HTMLButtonElement>) => (
+  <button
+    css={{ border: 'none', background: 'transparent', padding: 0, margin: 0 }}
+    {...props}
+  />
+)
 
 const NavBanner = (props: NavBannerProps) => {
   const isNarrow = useMatchesBreakpoint({
@@ -141,10 +148,13 @@ const NavBanner = (props: NavBannerProps) => {
             alt='Audius Logo'
           />
         </div>
-        <IconKebabHorizontal
-          className={styles.kebabMenu}
+        <BlandButton
           onClick={props.openNavScreen}
-        />
+          data-testid='mobileKebabMenuButton'
+          aria-label='Open Nav Menu'
+        >
+          <IconKebabHorizontal className={styles.kebabMenu} />
+        </BlandButton>
       </div>
     )
   }

@@ -137,37 +137,40 @@ export const PickHandlePage = () => {
       validateOnChange={false}
     >
       {({ isSubmitting, isValid, isValidating }) => (
-        <Flex direction='column' justifyContent='space-between' h='100%'>
+        <Flex
+          direction='column'
+          justifyContent='space-between'
+          h='100%'
+          as={Form}
+        >
           <Box pv='3xl' className={styles.contentContainer}>
-            <Form>
-              <Box>
-                <Flex gap='l' direction='column'>
-                  <Box>
-                    <Text size='s' variant='label' color='subdued'>
-                      1 {messages.outOf} 2
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Text
-                      color='heading'
-                      size='l'
-                      strength='default'
-                      variant='heading'
-                    >
-                      {messages.pickYourHandle}
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Text size='l' variant='body'>
-                      {messages.handleDescription}
-                    </Text>
-                  </Box>
-                </Flex>
-                <Box mt='2xl'>
-                  <HandleField />
+            <Box>
+              <Flex gap='l' direction='column'>
+                <Box>
+                  <Text size='s' variant='label' color='subdued'>
+                    1 {messages.outOf} 2
+                  </Text>
                 </Box>
+                <Box>
+                  <Text
+                    color='heading'
+                    size='l'
+                    strength='default'
+                    variant='heading'
+                  >
+                    {messages.pickYourHandle}
+                  </Text>
+                </Box>
+                <Box>
+                  <Text size='l' variant='body'>
+                    {messages.handleDescription}
+                  </Text>
+                </Box>
+              </Flex>
+              <Box mt='2xl'>
+                <HandleField />
               </Box>
-            </Form>
+            </Box>
           </Box>
           <ContinueFooter>
             <Button

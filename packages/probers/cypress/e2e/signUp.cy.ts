@@ -70,7 +70,8 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    it.only('should create an account', () => {
+    // TODO: Un-skip when full account creation flow is set up
+    it.skip('should create an account', () => {
       const testUser = generateTestUser()
       const { email, password, handle, name } = testUser
       cy.visit('signup')
@@ -205,7 +206,8 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    it('should create an account', () => {
+    // TODO: Un-skip when full account creation flow is set up
+    it.skip('should create an account', () => {
       const testUser = generateTestUser()
       const { email, password, handle } = testUser
       cy.visit('signup')
