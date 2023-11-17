@@ -106,10 +106,7 @@ const Footer = (props: FooterProps) => {
             src={horizontalLogo}
             className={styles.logo}
             alt='Audius Logo'
-            onClick={handleClickRoute(
-              HOME_PAGE,
-              props.setRenderPublicSite
-            )}
+            onClick={handleClickRoute(HOME_PAGE, props.setRenderPublicSite)}
           />
           <div className={styles.siteLinksContainer}>
             <div className={styles.siteLinksColumnContainer}>

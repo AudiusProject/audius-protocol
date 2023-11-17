@@ -90,10 +90,7 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
         <div className={styles.textContent}>
           <div className={styles.title}>{messages.title}</div>
           <button
-            onClick={handleClickRoute(
-              TRENDING_PAGE,
-              props.setRenderPublicSite
-            )}
+            onClick={handleClickRoute(TRENDING_PAGE, props.setRenderPublicSite)}
             className={styles.ctaButton}
           >
             {messages.cta}
@@ -134,10 +131,7 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
             </h3>
           </div>
           <button
-            onClick={handleClickRoute(
-              TRENDING_PAGE,
-              props.setRenderPublicSite
-            )}
+            onClick={handleClickRoute(TRENDING_PAGE, props.setRenderPublicSite)}
             className={styles.ctaButton}
           >
             {messages.cta}
