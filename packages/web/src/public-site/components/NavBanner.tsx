@@ -57,7 +57,10 @@ type NavBannerProps = {
   setRenderPublicSite: (shouldRender: boolean) => void
 }
 
-const BlandButton = (props: HTMLAttributes<HTMLButtonElement>) => (
+/**
+ * A button element with no styling, purely for
+ */
+const InvisibleButton = (props: HTMLAttributes<HTMLButtonElement>) => (
   <button
     css={{ border: 'none', background: 'transparent', padding: 0, margin: 0 }}
     {...props}
@@ -148,13 +151,13 @@ const NavBanner = (props: NavBannerProps) => {
             alt='Audius Logo'
           />
         </div>
-        <BlandButton
+        <InvisibleButton
           onClick={props.openNavScreen}
           data-testid='mobileKebabMenuButton'
           aria-label='Open Nav Menu'
         >
           <IconKebabHorizontal className={styles.kebabMenu} />
-        </BlandButton>
+        </InvisibleButton>
       </div>
     )
   }

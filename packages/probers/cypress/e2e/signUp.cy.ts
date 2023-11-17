@@ -201,7 +201,8 @@ describe('Sign Up', () => {
 
     it('can navigate to sign-up from the public site', () => {
       cy.visit('')
-      cy.findByRole('button', { name: /sign up free/i }).click()
+      cy.findByRole('button', { name: /open nav menu/i }).click()
+      cy.findByRole('button', { name: /sign up/i }).click()
 
       assertOnSignUpPage()
     })
