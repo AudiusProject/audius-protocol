@@ -1,21 +1,37 @@
-import { Text } from 'components/typography'
+import { Flex, useTheme } from '@audius/harmony'
 
-import styles from './AudioMatchSection.module.css'
+import { Text } from 'components/typography'
+import { useIsMobile } from 'utils/clientUtil'
 
 const messages = {
-  earn: (amount: number) => `Earn ${amount} $AUDIO when you buy this track!`
+  earn: (amount: string) => `Earn ${amount} $AUDIO when you buy this track!`
 }
 
 type AudioMatchSectionProps = {
-  amount: number
+  amount: string
 }
 
 export const AudioMatchSection = ({ amount }: AudioMatchSectionProps) => {
+  const isMobile = useIsMobile()
+  const { color } = useTheme()
   return (
-    <div className={styles.root}>
-      <Text variant='label' size='large' color='staticWhite'>
+    <Flex
+      ph='2xl'
+      pv='s'
+      mt={isMobile ? 'l' : undefined}
+      justifyContent='center'
+      alignItems='center'
+      alignSelf='stretch'
+      w='100%'
+      css={{ backgroundColor: color.secondary.secondary }}
+    >
+      <Text
+        variant='label'
+        size={isMobile ? 'small' : 'large'}
+        color='staticWhite'
+      >
         {messages.earn(amount)}
       </Text>
-    </div>
+    </Flex>
   )
 }

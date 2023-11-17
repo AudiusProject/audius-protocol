@@ -91,7 +91,7 @@ export const PurchaseContentFormFooter = ({
     [title]
   )
 
-  const { amountDue } = purchaseSummaryValues
+  const { totalPrice } = purchaseSummaryValues
   if (isPurchased) {
     return (
       <>
@@ -122,7 +122,7 @@ export const PurchaseContentFormFooter = ({
         isLoading={isUnlocking}
         fullWidth
       >
-        {getButtonText(isUnlocking, amountDue)}
+        {getButtonText(isUnlocking, totalPrice)}
       </Button>
       {error ? <ContentPurchaseError error={error} /> : null}
     </>

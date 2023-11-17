@@ -16,6 +16,8 @@ export enum PurchaseContentStage {
 }
 
 export enum PurchaseErrorCode {
+  Canceled = 'Canceled',
+  InsufficientBalance = 'InsufficientBalance',
   Unknown = 'Unknown'
 }
 

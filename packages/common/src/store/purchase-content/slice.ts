@@ -1,6 +1,7 @@
 import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { ID } from 'models/Identifiers'
+import { PurchaseMethod } from 'models/PurchaseContent'
 
 import {
   ContentType,
@@ -23,6 +24,7 @@ type PurchaseContentState = {
   extraAmountPreset?: string
   error?: PurchaseContentError
   onSuccess?: OnSuccess
+  purchaseMethod: PurchaseMethod
 }
 
 const initialState: PurchaseContentState = {
@@ -31,7 +33,8 @@ const initialState: PurchaseContentState = {
   extraAmount: undefined,
   extraAmountPreset: undefined,
   error: undefined,
-  stage: PurchaseContentStage.START
+  stage: PurchaseContentStage.START,
+  purchaseMethod: PurchaseMethod.EXISTING_BALANCE
 }
 
 const slice = createSlice({
@@ -43,6 +46,7 @@ const slice = createSlice({
       action: PayloadAction<{
         extraAmount?: number
         extraAmountPreset?: string
+        purchaseMethod: PurchaseMethod
         contentId: ID
         contentType?: ContentType
         onSuccess?: OnSuccess

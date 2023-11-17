@@ -1,9 +1,13 @@
-import { Paper } from '@audius/harmony'
+import { PropsWithChildren } from 'react'
+
+import { Box, PaperProps, Paper, BoxProps } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
 import { getSignOn } from 'common/store/pages/signon/selectors'
 import SignOnPageState from 'common/store/pages/signon/types'
+import { useMedia } from 'hooks/useMedia'
+import { useRouteMatch } from 'hooks/useRouteMatch'
 import { AppState } from 'store/types'
 import {
   SIGN_UP_ARTISTS_PAGE,
@@ -16,13 +20,14 @@ import {
   TRENDING_PAGE
 } from 'utils/route'
 
+import { MobileNavHeader } from './components/MobileNavHeader'
 import { ProgressHeader } from './components/ProgressHeader'
+import { CreateEmailPage } from './pages/CreateEmailPage/CreateEmailPage'
 import { CreatePasswordPage } from './pages/CreatePasswordPage'
 import { FinishProfilePage } from './pages/FinishProfilePage'
 import { PickHandlePage } from './pages/PickHandlePage'
 import { SelectArtistsPage } from './pages/SelectArtistsPage'
 import { SelectGenrePage } from './pages/SelectGenrePage'
-import { SignUpPage } from './pages/SignUpPage'
 
 /**
  * Checks against existing sign up redux state,
@@ -32,7 +37,11 @@ import { SignUpPage } from './pages/SignUpPage'
 const determineAllowedRoute = (
   signUpState: SignOnPageState,
   requestedRoute: string | SignUpPath // this string should have already trimmed out /signup/
-) => {
+): {
+  allowedRoutes: string[]
+  isAllowedRoute: boolean
+  correctedRoute: string
+} => {
   const attemptedPath = requestedRoute.replace('/signup/', '')
   // Have to type as string[] to avoid too narrow of a type for comparing against
   let allowedRoutes: string[] = [SignUpPath.createEmail] // create email is available by default
@@ -63,7 +72,11 @@ const determineAllowedRoute = (
   if (signUpState.followArtists?.selectedUserIds?.length >= 3) {
     // Already have 3 artists followed
     // Done with sign up if at this point so we return early (none of these routes are allowed anymore)
-    return { isAllowedRoute: false, correctedRoute: TRENDING_PAGE }
+    return {
+      allowedRoutes: [],
+      isAllowedRoute: false,
+      correctedRoute: TRENDING_PAGE
+    }
   }
 
   const isAllowedRoute = allowedRoutes.includes(attemptedPath)
@@ -71,7 +84,9 @@ const determineAllowedRoute = (
   const correctedPath = isAllowedRoute
     ? attemptedPath
     : allowedRoutes[allowedRoutes.length - 1]
+
   return {
+    allowedRoutes,
     isAllowedRoute,
     correctedRoute: `/signup/${correctedPath}`
   }
@@ -101,12 +116,41 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
   )
 }
 
+const useIsBackAllowed = () => {
+  const match = useRouteMatch<{ currentPath: string }>('/signup/:currentPath')
+  const existingSignUpState = useSelector((state: AppState) => getSignOn(state))
+  if (match?.currentPath) {
+    const { allowedRoutes } = determineAllowedRoute(
+      existingSignUpState,
+      match?.currentPath
+    )
+    const currentRouteIndex = allowedRoutes.indexOf(match.currentPath)
+    const isBackAllowed = allowedRoutes.length > 1 && currentRouteIndex > 0
+    return isBackAllowed
+  }
+  return false
+}
+
+const DesktopRootContainer = ({ children }: PropsWithChildren<PaperProps>) => (
+  <Paper w={1280} h={864} direction='column' m='4xl'>
+    {children}
+  </Paper>
+)
+
+const MobileRootContainer = ({ children }: PropsWithChildren<BoxProps>) => (
+  <Box h='100%'> {children}</Box>
+)
+
 export const SignUpRootPage = () => {
+  const { isDesktop } = useMedia()
+  const isBackAllowed = useIsBackAllowed()
+  const RootContainer = isDesktop ? DesktopRootContainer : MobileRootContainer
   return (
-    <Paper w={1280} h={864} direction='column' m='4xl'>
+    <RootContainer>
+      {!isDesktop ? <MobileNavHeader isBackAllowed={isBackAllowed} /> : null}
       <Switch>
         <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
-          <SignUpPage />
+          <CreateEmailPage />
         </SignUpRoute>
         <SignUpRoute exact path={SIGN_UP_PASSWORD_PAGE}>
           <CreatePasswordPage />
@@ -121,7 +165,7 @@ export const SignUpRootPage = () => {
             SIGN_UP_ARTISTS_PAGE
           ]}
         >
-          <ProgressHeader />
+          {isDesktop ? <ProgressHeader /> : null}
           <Switch>
             <SignUpRoute exact path={SIGN_UP_HANDLE_PAGE}>
               <PickHandlePage />
@@ -144,6 +188,6 @@ export const SignUpRootPage = () => {
           </Switch>
         </SignUpRoute>
       </Switch>
-    </Paper>
+    </RootContainer>
   )
 }
