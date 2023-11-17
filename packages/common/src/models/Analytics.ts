@@ -433,12 +433,12 @@ type CreateAccountCompletePassword = {
 }
 type CreateAccountStartTwitter = {
   eventName: Name.CREATE_ACCOUNT_START_TWITTER
-  emailAddress: string
+  emailAddress?: string
 }
 type CreateAccountCompleteTwitter = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_TWITTER
   isVerified: boolean
-  emailAddress: string
+  emailAddress?: string
   handle: string
 }
 type CreateAccountStartInstagram = {

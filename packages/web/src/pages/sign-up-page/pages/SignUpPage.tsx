@@ -1,14 +1,19 @@
 import { useCallback, useContext } from 'react'
 
-import { AudiusQueryContext, signUpFetch } from '@audius/common'
+import {
+  AudiusQueryContext,
+  InstagramProfile,
+  TikTokProfile,
+  TwitterProfile,
+  signUpFetch
+} from '@audius/common'
 import {
   Button,
   ButtonType,
   Divider,
   Flex,
   IconArrowRight,
-  Text,
-  SocialButton
+  Text
 } from '@audius/harmony'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -21,11 +26,20 @@ import { getEmailField } from 'common/store/pages/signon/selectors'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { Link } from 'components/link'
 import PreloadImage from 'components/preload-image/PreloadImage'
+import { ToastContext } from 'components/toast/ToastContext'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
 import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithAudiusValues'
 import { EMAIL_REGEX } from 'utils/email'
 import { SIGN_IN_PAGE, SIGN_UP_PASSWORD_PAGE } from 'utils/route'
+
+import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
+import {
+  useSetProfileFromInstagram,
+  useSetProfileFromTikTok,
+  useSetProfileFromTwitter
+} from '../hooks/socialMediaLogin'
+import { messages as socialMediaMessages } from '../utils/socialMediaMessages'
 
 import styles from './SignUpPage.module.css'
 
@@ -39,7 +53,8 @@ const messages = {
     'Join the revolution in music streaming! Discover, connect, and create on Audius.',
   socialsDividerText: 'Or, get started with one of your socials',
   invalidEmail: 'Please enter a valid email.',
-  unknownError: 'Unknown error occurred.'
+  unknownError: 'Unknown error occurred.',
+  ...socialMediaMessages
 }
 
 type SignUpEmailValues = {
@@ -56,6 +71,7 @@ export const SignUpPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const queryContext = useContext(AudiusQueryContext)
+  const { toast } = useContext(ToastContext)
   const existingEmailValue = useSelector(getEmailField)
   const initialValues = {
     email: existingEmailValue.value ?? ''
@@ -90,6 +106,75 @@ export const SignUpPage = () => {
     },
     [dispatch, navigate, queryContext]
   )
+
+  const handleSocialLoginError = (error: unknown) => {
+    console.error(error)
+    toast(messages.verificationError)
+  }
+
+  const setProfileFromTwitter = useSetProfileFromTwitter()
+  const setProfileFromInstagram = useSetProfileFromInstagram()
+  const setProfileFromTikTok = useSetProfileFromTikTok()
+
+  const processSocialLoginResult = (result: {
+    requiresReview: boolean
+    platform: 'twitter' | 'instagram' | 'tiktok'
+  }) => {
+    toast(messages.socialMediaLoginSucess(result.platform))
+    // TODO: Direct to email + pw page
+    console.info(result)
+  }
+
+  const handleTwitterLogin = async (params: {
+    uuid: string
+    twitterProfile: TwitterProfile
+  }) => {
+    let res
+    try {
+      res = await setProfileFromTwitter(params)
+    } catch (e) {
+      handleSocialLoginError(e)
+      return
+    }
+    processSocialLoginResult({
+      requiresReview: res.requiresReview,
+      platform: 'twitter'
+    })
+  }
+
+  const handleInstagramLogin = async (params: {
+    uuid: string
+    instagramProfile: InstagramProfile
+  }) => {
+    let res
+    try {
+      res = await setProfileFromInstagram(params)
+    } catch (e) {
+      handleSocialLoginError(e)
+      return
+    }
+    processSocialLoginResult({
+      requiresReview: res.requiresReview,
+      platform: 'instagram'
+    })
+  }
+
+  const handleTikTokLogin = async (params: {
+    uuid: string
+    tikTokProfile: TikTokProfile
+  }) => {
+    let res
+    try {
+      res = await setProfileFromTikTok(params)
+    } catch (e) {
+      handleSocialLoginError(e)
+      return
+    }
+    processSocialLoginResult({
+      requiresReview: res.requiresReview,
+      platform: 'tiktok'
+    })
+  }
 
   return (
     <Flex h='100%' alignItems='center' justifyContent='center'>
@@ -141,23 +226,12 @@ export const SignUpPage = () => {
                     </Text>
                     <Divider className={styles.flex1} />
                   </Flex>
-                  <Flex direction='row' gap='s' w='100%'>
-                    <SocialButton
-                      socialType='twitter'
-                      className={styles.flex1}
-                      aria-label='Sign up with Twitter'
-                    />
-                    <SocialButton
-                      socialType='instagram'
-                      className={styles.flex1}
-                      aria-label='Sign up with Instagram'
-                    />
-                    <SocialButton
-                      socialType='tiktok'
-                      className={styles.flex1}
-                      aria-label='Sign up with TikTok'
-                    />
-                  </Flex>
+                  <SocialMediaLoginOptions
+                    onLoginFailure={handleSocialLoginError}
+                    onInstagramLogin={handleInstagramLogin}
+                    onTikTokLogin={handleTikTokLogin}
+                    onTwitterLogin={handleTwitterLogin}
+                  />
                 </Flex>
                 <Flex
                   direction='column'
