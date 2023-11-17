@@ -2,7 +2,7 @@ import { useCallback, useContext } from 'react'
 
 import { Name, useCreateUserbankIfNeeded } from '@audius/common'
 import { Button, ButtonType, Flex, IconLogoCircleUSDC } from '@audius/harmony'
-import { IconError, LogoUSDC } from '@audius/stems'
+import { IconError } from '@audius/stems'
 import cn from 'classnames'
 import QRCode from 'react-qr-code'
 import { useAsync } from 'react-use'

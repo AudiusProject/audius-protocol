@@ -51,7 +51,7 @@ export const AddFunds = ({
   })
   const [selectedMethod, setSelectedMethod] = useState<Method>('card')
   const mobile = isMobile()
-  const { data: balance } = useUSDCBalance()
+  const { data: balance } = useUSDCBalance({ isPolling: true })
   const balanceNumber = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )

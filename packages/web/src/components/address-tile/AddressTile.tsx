@@ -21,8 +21,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
-import styles from './AddressTile.module.css'
-
 const messages = {
   usdcBalance: 'USDC Balance',
   copied: 'Copied to Clipboard!'
@@ -42,7 +40,7 @@ export const AddressTile = ({
   const { toast } = useContext(ToastContext)
   const mobile = isMobile()
 
-  const { data: balance } = useUSDCBalance()
+  const { data: balance } = useUSDCBalance({ isPolling: true })
   const balanceNumber = formatUSDCWeiToCeilingCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
@@ -84,9 +82,13 @@ export const AddressTile = ({
       >
         <Box p='l' borderRadius='s'>
           <Text
-            css={{ userSelect: 'text' }}
+            css={{
+              userSelect: 'text',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              lineHeight: '125%'
+            }}
             variant='body'
-            className={styles.address}
           >
             {mobile ? shortenSPLAddress(address, 20) : address}
           </Text>
