@@ -1,4 +1,4 @@
-import { useCallback, useContext } from 'react'
+import { Suspense, useCallback, useContext, useState } from 'react'
 
 import { AudiusQueryContext, signUpFetch } from '@audius/common'
 import {
@@ -10,7 +10,7 @@ import {
   Text,
   SocialButton
 } from '@audius/harmony'
-import { Form, Formik, FormikHelpers } from 'formik'
+import { Form, Formik, FormikErrors, FormikHelpers } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -23,11 +23,23 @@ import { Link } from 'components/link'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
+import { MetaMaskOption } from 'pages/sign-on/components/desktop/MetaMaskOption'
 import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithAudiusValues'
 import { EMAIL_REGEX } from 'utils/email'
-import { SIGN_IN_PAGE, SIGN_UP_PASSWORD_PAGE } from 'utils/route'
+import lazyWithPreload from 'utils/lazyWithPreload'
+import {
+  SIGN_IN_PAGE,
+  SIGN_UP_HANDLE_PAGE,
+  SIGN_UP_PASSWORD_PAGE
+} from 'utils/route'
 
 import styles from './SignUpPage.module.css'
+
+const showMetaMaskOption = !!window.ethereum
+const ConnectedMetaMaskModal = lazyWithPreload(
+  () => import('pages/sign-up-page/components/ConnectedMetaMaskModal'),
+  0
+)
 
 const messages = {
   title: 'Sign Up For Audius',
@@ -60,11 +72,24 @@ export const SignUpPage = () => {
   const initialValues = {
     email: existingEmailValue.value ?? ''
   }
-  const submitHandler = useCallback(
-    async (
-      values: SignUpEmailValues,
-      { setErrors }: FormikHelpers<SignUpEmailValues>
-    ) => {
+
+  const [isMetaMaskModalOpen, setIsMetaMaskModalOpen] = useState(false)
+  const handleMetaMaskSuccess = () => {
+    setIsMetaMaskModalOpen(false)
+    navigate(SIGN_UP_HANDLE_PAGE)
+  }
+
+  /** Checks if the email is already in use. If so, navigates to sign in page. If not, calls the `onSuccess` callback. */
+  const checkAndSetEmail = useCallback(
+    async ({
+      onSuccess,
+      values,
+      setErrors
+    }: {
+      onSuccess: () => void
+      values: SignUpEmailValues
+      setErrors: (errors: FormikErrors<SignUpEmailValues>) => void
+    }) => {
       const { email } = values
       if (queryContext !== null) {
         try {
@@ -79,8 +104,7 @@ export const SignUpPage = () => {
             // Redirect to sign in if the email exists already
             navigate(SIGN_IN_PAGE)
           } else {
-            // Move onto the password page
-            navigate(SIGN_UP_PASSWORD_PAGE)
+            onSuccess()
           }
         } catch (e) {
           // Unknown error state ¯\_(ツ)_/¯
@@ -91,109 +115,170 @@ export const SignUpPage = () => {
     [dispatch, navigate, queryContext]
   )
 
-  return (
-    <Flex h='100%' alignItems='center' justifyContent='center'>
-      <PageWithAudiusValues>
-        <Formik
-          validationSchema={toFormikValidationSchema(FormSchema)}
-          initialValues={initialValues}
-          onSubmit={submitHandler}
-          validateOnBlur
-          validateOnChange={false}
-        >
-          {({ isSubmitting }) => (
-            <Form>
-              <LeftContentContainer gap='2xl' alignItems='center'>
-                <PreloadImage
-                  src={audiusLogoColored}
-                  className={styles.logo}
-                  alt='Audius Colored Logo'
-                />
-                <Flex
-                  direction='column'
-                  gap='l'
-                  alignItems='flex-start'
-                  w='100%'
-                >
-                  <Text color='heading' size='l' variant='heading' tag='h1'>
-                    {messages.title}
-                  </Text>
-                  <Text color='default' size='l' variant='body' tag='h2'>
-                    {messages.subHeader}
-                  </Text>
-                </Flex>
-                <Flex
-                  direction='column'
-                  gap='l'
-                  w='100%'
-                  alignItems='flex-start'
-                >
-                  <HarmonyTextField
-                    name='email'
-                    autoFocus
-                    autoComplete='email'
-                    label={messages.emailLabel}
-                  />
-                  <Flex w='100%' alignItems='center' gap='s'>
-                    <Divider className={styles.flex1} />
-                    <Text variant='body' size='m' tag='p' color='subdued'>
-                      {messages.socialsDividerText}
-                    </Text>
-                    <Divider className={styles.flex1} />
-                  </Flex>
-                  <Flex direction='row' gap='s' w='100%'>
-                    <SocialButton
-                      socialType='twitter'
-                      className={styles.flex1}
-                      aria-label='Sign up with Twitter'
-                    />
-                    <SocialButton
-                      socialType='instagram'
-                      className={styles.flex1}
-                      aria-label='Sign up with Instagram'
-                    />
-                    <SocialButton
-                      socialType='tiktok'
-                      className={styles.flex1}
-                      aria-label='Sign up with TikTok'
-                    />
-                  </Flex>
-                </Flex>
-                <Flex
-                  direction='column'
-                  gap='l'
-                  alignItems='flex-start'
-                  w='100%'
-                >
-                  <Button
-                    variant={ButtonType.PRIMARY}
-                    type='submit'
-                    fullWidth
-                    iconRight={IconArrowRight}
-                    isLoading={isSubmitting}
-                  >
-                    {messages.signUp}
-                  </Button>
+  const handleClickMetaMask = async ({
+    values,
+    validateForm,
+    setErrors
+  }: {
+    values: SignUpEmailValues
+    validateForm: (
+      values: SignUpEmailValues
+    ) => Promise<FormikErrors<SignUpEmailValues>>
+    setErrors: (errors: FormikErrors<SignUpEmailValues>) => void
+  }) => {
+    const errors = await validateForm(values)
+    if (errors.email) {
+      return
+    }
+    await checkAndSetEmail({
+      onSuccess: () => {
+        setIsMetaMaskModalOpen(true)
+      },
+      values,
+      setErrors
+    })
+  }
 
-                  <Text size='l'>
-                    {messages.haveAccount}{' '}
-                    {/* TODO [C-3278]: Update with Harmony Link */}
-                    <Link
-                      to={SIGN_IN_PAGE}
-                      variant='body'
-                      size='medium'
-                      strength='strong'
-                      color='secondary'
+  const submitHandler = useCallback(
+    async (
+      values: SignUpEmailValues,
+      helpers: FormikHelpers<SignUpEmailValues>
+    ) => {
+      await checkAndSetEmail({
+        onSuccess: () => navigate(SIGN_UP_PASSWORD_PAGE),
+        values,
+        setErrors: helpers.setErrors
+      })
+    },
+    [checkAndSetEmail, navigate]
+  )
+
+  return (
+    <>
+      <Flex h='100%' alignItems='center' justifyContent='center'>
+        <PageWithAudiusValues>
+          <Formik
+            validationSchema={toFormikValidationSchema(FormSchema)}
+            initialValues={initialValues}
+            onSubmit={submitHandler}
+            validateOnBlur
+            validateOnChange={false}
+          >
+            {({ isSubmitting, setErrors, validateForm, values }) => (
+              <Form>
+                <LeftContentContainer gap='2xl' alignItems='center'>
+                  <PreloadImage
+                    src={audiusLogoColored}
+                    className={styles.logo}
+                    alt='Audius Colored Logo'
+                  />
+                  <Flex
+                    direction='column'
+                    gap='l'
+                    alignItems='flex-start'
+                    w='100%'
+                  >
+                    <Text color='heading' size='l' variant='heading' tag='h1'>
+                      {messages.title}
+                    </Text>
+                    <Text color='default' size='l' variant='body' tag='h2'>
+                      {messages.subHeader}
+                    </Text>
+                  </Flex>
+                  <Flex
+                    direction='column'
+                    gap='l'
+                    w='100%'
+                    alignItems='flex-start'
+                  >
+                    <HarmonyTextField
+                      name='email'
+                      autoFocus
+                      autoComplete='email'
+                      label={messages.emailLabel}
+                    />
+                    <Flex w='100%' alignItems='center' gap='s'>
+                      <Divider className={styles.flex1} />
+                      <Text variant='body' size='m' tag='p' color='subdued'>
+                        {messages.socialsDividerText}
+                      </Text>
+                      <Divider className={styles.flex1} />
+                    </Flex>
+                    <Flex direction='row' gap='s' w='100%'>
+                      <SocialButton
+                        socialType='twitter'
+                        className={styles.flex1}
+                        aria-label='Sign up with Twitter'
+                      />
+                      <SocialButton
+                        socialType='instagram'
+                        className={styles.flex1}
+                        aria-label='Sign up with Instagram'
+                      />
+                      <SocialButton
+                        socialType='tiktok'
+                        className={styles.flex1}
+                        aria-label='Sign up with TikTok'
+                      />
+                    </Flex>
+                  </Flex>
+                  <Flex
+                    direction='column'
+                    gap='l'
+                    alignItems='flex-start'
+                    w='100%'
+                  >
+                    <Button
+                      variant={ButtonType.PRIMARY}
+                      type='submit'
+                      fullWidth
+                      iconRight={IconArrowRight}
+                      isLoading={isSubmitting}
                     >
-                      {messages.signIn}
-                    </Link>
-                  </Text>
-                </Flex>
-              </LeftContentContainer>
-            </Form>
-          )}
-        </Formik>
-      </PageWithAudiusValues>
-    </Flex>
+                      {messages.signUp}
+                    </Button>
+
+                    <Text size='l'>
+                      {messages.haveAccount}{' '}
+                      {/* TODO [C-3278]: Update with Harmony Link */}
+                      <Link
+                        to={SIGN_IN_PAGE}
+                        variant='body'
+                        size='medium'
+                        strength='strong'
+                        color='secondary'
+                      >
+                        {messages.signIn}
+                      </Link>
+                    </Text>
+                    {showMetaMaskOption ? (
+                      <MetaMaskOption
+                        fullWidth
+                        onClick={() =>
+                          handleClickMetaMask({
+                            values,
+                            validateForm,
+                            setErrors
+                          })
+                        }
+                      />
+                    ) : null}
+                  </Flex>
+                </LeftContentContainer>
+              </Form>
+            )}
+          </Formik>
+        </PageWithAudiusValues>
+      </Flex>
+      {showMetaMaskOption ? (
+        <Suspense fallback={null}>
+          <ConnectedMetaMaskModal
+            open={isMetaMaskModalOpen}
+            onBack={() => setIsMetaMaskModalOpen(false)}
+            onSuccess={handleMetaMaskSuccess}
+          />
+        </Suspense>
+      ) : null}
+    </>
   )
 }
