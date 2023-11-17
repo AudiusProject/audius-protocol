@@ -28,7 +28,7 @@ const ModalDrawer = (props: ModalDrawerProps) => {
         zIndex={props.zIndex}
         shouldClose={props.shouldClose}
       >
-        <div className={styles.drawer}>
+        <div className={cn(styles.drawer, props.wrapperClassName)}>
           <div className={styles.titleContainer}>
             <span
               className={cn({

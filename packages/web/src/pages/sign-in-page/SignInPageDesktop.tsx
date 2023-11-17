@@ -18,8 +18,12 @@ import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordFiel
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import Page from 'components/page/Page'
 import PreloadImage from 'components/preload-image/PreloadImage'
+import {
+  ArtworkContainer,
+  AudiusValues
+} from 'pages/sign-on/components/AudiusValues'
 import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
-import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithAudiusValues'
+import { SignOnContainerDesktop } from 'pages/sign-on/components/desktop/SignOnContainerDesktop'
 import { SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './SignInPage.module.css'
@@ -44,6 +48,7 @@ export const SignInPageDesktop = (props: SignInPageProps) => {
   const { spacing } = useTheme()
 
   return (
+<<<<<<< HEAD
     <Page
       title={title}
       description={description}
@@ -65,6 +70,10 @@ export const SignInPageDesktop = (props: SignInPageProps) => {
         }}
       />
       <PageWithAudiusValues>
+=======
+    <Flex h='100%' alignItems='center' justifyContent='center'>
+      <SignOnContainerDesktop>
+>>>>>>> main
         <LeftContentContainer gap='2xl' justifyContent='space-between'>
           <Flex direction='column' gap='2xl' alignItems='center'>
             <PreloadImage
@@ -106,7 +115,15 @@ export const SignInPageDesktop = (props: SignInPageProps) => {
             <Link to={SIGN_UP_PAGE}>{messages.createAccount}</Link>
           </Button>
         </LeftContentContainer>
+<<<<<<< HEAD
       </PageWithAudiusValues>
     </Page>
+=======
+        <ArtworkContainer>
+          <AudiusValues />
+        </ArtworkContainer>
+      </SignOnContainerDesktop>
+    </Flex>
+>>>>>>> main
   )
 }

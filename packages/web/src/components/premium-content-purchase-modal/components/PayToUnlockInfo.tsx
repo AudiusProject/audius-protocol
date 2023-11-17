@@ -15,8 +15,7 @@ const messages = {
   payToUnlock: 'Pay to unlock',
   copyPart1: 'By clicking on "Buy", you agree to our ',
   termsOfUse: 'Terms of Use',
-  copyPart2:
-    '. Additional payment provider fees may apply. Any remaining USDC balance in your Audius wallet will be applied to this transaction.'
+  copyPart2: '. Additional payment provider fees may apply.'
 }
 
 export const PayToUnlockInfo = () => {
