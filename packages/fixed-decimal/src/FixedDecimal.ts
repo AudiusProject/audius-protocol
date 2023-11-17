@@ -11,23 +11,23 @@ import { NoBrand } from './utilityTypes'
  * @param decimalPlaces The number of decimal places the result should have.
  * @returns
  */
-const parseFixedDecimalString = (
+const parseFixedDecimalString = <T extends bigint>(
   value: string,
   decimalPlaces?: number
-): FixedDecimalCtorArgs => {
+): FixedDecimalCtorArgs<T> => {
   let [whole, decimal] = value.split('.')
   decimal = decimal ?? ''
   if (decimalPlaces !== undefined) {
     decimal = decimal.padEnd(decimalPlaces, '0').substring(0, decimalPlaces)
   }
   return {
-    value: BigInt(`${whole}${decimal}`),
+    value: BigInt(`${whole}${decimal}`) as T,
     decimalPlaces: decimalPlaces ?? decimal.length
   }
 }
 
-type FixedDecimalCtorArgs = {
-  value: bigint
+type FixedDecimalCtorArgs<T extends bigint> = {
+  value: T
   decimalPlaces: number
 }
 
@@ -171,7 +171,7 @@ export class FixedDecimal<T extends bigint, K extends BN = BN> {
    */
   constructor(
     value:
-      | FixedDecimalCtorArgs
+      | FixedDecimalCtorArgs<T>
       | T
       | NoBrand<bigint>
       | number
@@ -188,27 +188,30 @@ export class FixedDecimal<T extends bigint, K extends BN = BN> {
         if (value.toString() === value.toExponential()) {
           throw new Error('Number must not be in scientific notation')
         }
-        const parsed = parseFixedDecimalString(value.toString(), decimalPlaces)
-        this.value = parsed.value as T
+        const parsed = parseFixedDecimalString<T>(
+          value.toString(),
+          decimalPlaces
+        )
+        this.value = parsed.value
         this.decimalPlaces = parsed.decimalPlaces
         break
       }
       case 'string': {
-        const parsed = parseFixedDecimalString(value, decimalPlaces)
-        this.value = parsed.value as T
+        const parsed = parseFixedDecimalString<T>(value, decimalPlaces)
+        this.value = parsed.value
         this.decimalPlaces = parsed.decimalPlaces
         break
       }
       case 'object': {
         if (value instanceof FixedDecimal) {
-          const parsed = parseFixedDecimalString(
+          const parsed = parseFixedDecimalString<T>(
             value.toString(),
             decimalPlaces
           )
-          this.value = parsed.value as T
+          this.value = parsed.value
           this.decimalPlaces = parsed.decimalPlaces
         } else if ('value' in value) {
-          this.value = value.value as T
+          this.value = value.value
           this.decimalPlaces = value.decimalPlaces
         } else {
           // Construct from BN.
@@ -243,7 +246,7 @@ export class FixedDecimal<T extends bigint, K extends BN = BN> {
     const divisor = BigInt(10 ** digitsToRemove)
     const bump = this.value % divisor > 0 ? BigInt(1) : BigInt(0)
     return new FixedDecimal<T, K>({
-      value: (this.value / divisor + bump) * divisor,
+      value: ((this.value / divisor + bump) * divisor) as T,
       decimalPlaces: this.decimalPlaces
     })
   }
@@ -268,7 +271,7 @@ export class FixedDecimal<T extends bigint, K extends BN = BN> {
         ? BigInt(-1 * 10 ** digitsToRemove)
         : BigInt(0)
     return new FixedDecimal<T, K>({
-      value: (this.value / divisor) * divisor + signOffset,
+      value: ((this.value / divisor) * divisor + signOffset) as T,
       decimalPlaces: this.decimalPlaces
     })
   }
@@ -289,7 +292,7 @@ export class FixedDecimal<T extends bigint, K extends BN = BN> {
     }
     const divisor = BigInt(10 ** digitsToRemove)
     return new FixedDecimal<T, K>({
-      value: (this.value / divisor) * divisor,
+      value: ((this.value / divisor) * divisor) as T,
       decimalPlaces: this.decimalPlaces
     })
   }
