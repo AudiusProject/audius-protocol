@@ -4,7 +4,8 @@ import {
   Flex,
   IconArrowRight,
   IconAudiusLogoHorizontalColor,
-  Text
+  Text,
+  TextLink
 } from '@audius/harmony'
 import { Form } from 'formik'
 import { Link } from 'react-router-dom'
@@ -13,6 +14,7 @@ import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordFiel
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { ArtworkContainer } from 'pages/sign-on/components/AudiusValues'
 import { SignOnContainerMobile } from 'pages/sign-on/components/mobile/SignOnContainerMobile'
+import { SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './SignInPageMobile.module.css'
 
@@ -41,14 +43,13 @@ export const SignInPageMobile = () => {
         >
           <Flex direction='column' gap='2xl' alignItems='center'>
             <IconAudiusLogoHorizontalColor />
-            <Text variant='heading' size='l' tag='h1' color='heading'>
+            <Text variant='heading' size='l' tag='h1' color='accent'>
               {messages.title}
             </Text>
             <Box w='100%'>
               <Form>
                 <Flex direction='column' gap='2xl' w='100%'>
                   <Flex direction='column' gap='l'>
-                    {/* TODO: replace old TextField */}
                     <HarmonyTextField
                       name='email'
                       label={messages.emailLabel}
@@ -58,14 +59,13 @@ export const SignInPageMobile = () => {
                       label={messages.passwordLabel}
                     />
                   </Flex>
-                  <Flex direction='column' gap='l'>
-                    <Button iconRight={IconArrowRight} type='submit'>
+                  <Flex direction='column' gap='l' alignItems='center'>
+                    <Button iconRight={IconArrowRight} type='submit' fullWidth>
                       {messages.signIn}
                     </Button>
-                    <Text color='heading' variant='body'>
-                      {/* TODO: link destination */}
+                    <TextLink variant='visible' textVariant='body'>
                       {messages.forgotPassword}
-                    </Text>
+                    </TextLink>
                   </Flex>
                 </Flex>
               </Form>
@@ -80,9 +80,12 @@ export const SignInPageMobile = () => {
           gap='xs'
           mb='4xl'
         >
-          {/* TODO: args look good but style doesn't match design */}
-          <Text variant='title'>{messages.newToAudius}</Text>
-          <Link to={''}>{messages.createAccount}</Link>
+          <Text variant='title' strength='weak' color='staticWhite'>
+            {messages.newToAudius}{' '}
+            <TextLink variant='inverted' asChild>
+              <Link to={SIGN_UP_PAGE}>{messages.createAccount}</Link>
+            </TextLink>
+          </Text>
         </Flex>
       </ArtworkContainer>
     </SignOnContainerMobile>
