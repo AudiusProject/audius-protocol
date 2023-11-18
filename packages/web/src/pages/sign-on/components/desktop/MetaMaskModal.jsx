@@ -116,6 +116,7 @@ class MetaMaskModal extends Component {
                     ? ButtonType.DISABLED
                     : ButtonType.COMMON
                 }
+                disabled={this.state.submitting}
                 text={messages.continueOption}
                 onClick={this.onClickContinue}
                 textClassName={styles.actionButtonText}
