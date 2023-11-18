@@ -2,6 +2,7 @@ import { ChangeEvent, useCallback, useState } from 'react'
 
 import {
   BNUSDC,
+  Vendors,
   decimalIntegerToHumanReadable,
   formatUSDCWeiToFloorCentsNumber,
   useCreateUserbankIfNeeded,
@@ -22,10 +23,12 @@ import {
 import { BN } from 'bn.js'
 import cn from 'classnames'
 
+import { MobileFilterButton } from 'components/mobile-filter-button/MobileFilterButton'
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
 import { track } from 'services/analytics'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { isMobile } from 'utils/clientUtil'
+import { zIndex } from 'utils/zIndex'
 
 import styles from './AddFunds.module.css'
 
@@ -51,7 +54,7 @@ export const AddFunds = ({
   })
   const [selectedMethod, setSelectedMethod] = useState<Method>('card')
   const mobile = isMobile()
-  const { data: balance } = useUSDCBalance()
+  const { data: balance } = useUSDCBalance({ isPolling: true })
   const balanceNumber = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
@@ -62,11 +65,18 @@ export const AddFunds = ({
       id: 'card',
       label: messages.withCard,
       icon: IconCreditCard,
-      value: (
+      value: mobile ? (
+        <MobileFilterButton
+          onSelect={() => {}}
+          options={[{ label: Vendors.STRIPE }]}
+          zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
+        />
+      ) : (
         <FilterButton
+          onSelect={() => {}}
           initialSelectionIndex={0}
           variant={FilterButtonType.REPLACE_LABEL}
-          options={[{ label: 'Stripe' }]}
+          options={[{ label: Vendors.STRIPE }]}
         />
       )
     },
@@ -92,7 +102,7 @@ export const AddFunds = ({
         })}
       >
         <Flex direction='column' w='100%' gap='xl'>
-          <Box h='unit6' border='strong' p='m'>
+          <Box h='unit6' border='strong' p='m' borderRadius='s'>
             <Flex alignItems='center' justifyContent='space-between'>
               <Flex alignItems='center'>
                 <IconLogoCircleUSDC />
@@ -113,6 +123,8 @@ export const AddFunds = ({
             withRadioOptions
             onRadioChange={handleChangeOption}
             selectedRadioOption={selectedMethod}
+            rowClassName={mobile ? styles.summaryTableRow : undefined}
+            rowValueClassName={mobile ? styles.summaryTableRowValue : undefined}
           />
           <Button
             variant={ButtonType.PRIMARY}

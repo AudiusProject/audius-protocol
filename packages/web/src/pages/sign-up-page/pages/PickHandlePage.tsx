@@ -22,6 +22,7 @@ import {
 import { Form, Formik, FormikProps, useFormikContext } from 'formik'
 import { isEmpty } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { make } from 'common/store/analytics/actions'
@@ -33,7 +34,7 @@ import { TikTokAuthLink } from 'components/tiktok-auth/TikTokAuthLink'
 import { ToastContext } from 'components/toast/ToastContext'
 import TwitterAuth from 'components/twitter-auth/TwitterAuth'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { SIGN_UP_FINISH_PROFILE_PAGE, SIGN_UP_PASSWORD_PAGE } from 'utils/route'
+import { SIGN_UP_FINISH_PROFILE_PAGE } from 'utils/route'
 
 import { ContinueFooter } from '../components/ContinueFooter'
 import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
@@ -250,6 +251,7 @@ export const PickHandlePage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const { toast } = useContext(ToastContext)
+  const history = useHistory()
   const queryContext = useContext(AudiusQueryContext)
   const validationSchema = useMemo(() => {
     if (queryContext != null) {
@@ -263,8 +265,8 @@ export const PickHandlePage = () => {
   const { value } = useSelector(getHandleField)
 
   const handleClickBackIcon = useCallback(() => {
-    navigate(SIGN_UP_PASSWORD_PAGE)
-  }, [navigate])
+    history.goBack()
+  }, [history])
 
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {

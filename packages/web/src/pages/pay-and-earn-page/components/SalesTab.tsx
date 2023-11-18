@@ -8,8 +8,8 @@ import {
   combineStatuses,
   statusIsNotFinalized,
   useAllPaginatedQuery,
-  useGetPurchases,
-  useGetPurchasesCount,
+  useGetSales,
+  useGetSalesCount,
   useUSDCPurchaseDetailsModal
 } from '@audius/common'
 import { full } from '@audius/sdk'
@@ -20,102 +20,102 @@ import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { MainContentContext } from 'pages/MainContentContext'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
+import { isMobile } from 'utils/clientUtil'
 import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
-import { FEED_PAGE } from 'utils/route'
+import { UPLOAD_PAGE } from 'utils/route'
 
-import styles from './PayAndEarnPage.module.css'
-import { NoTransactionsContent } from './components/NoTransactionsContent'
+import styles from '../PayAndEarnPage.module.css'
+
+import { NoTransactionsContent } from './NoTransactionsContent'
 import {
-  PurchasesTable,
-  PurchasesTableSortDirection,
-  PurchasesTableSortMethod
-} from './components/PurchasesTable'
+  SalesTable,
+  SalesTableColumn,
+  SalesTableSortDirection,
+  SalesTableSortMethod
+} from './SalesTable'
 
 const { getUserId } = accountSelectors
 
 const messages = {
-  pageTitle: 'Purchase History',
-  pageDescription: 'View your purchase history',
-  noPurchasesHeader: `You haven't bought anything yet.`,
-  noPurchasesBody: 'Once you make a purchase, it will show up here.',
-  findSongs: 'Find Songs',
-  headerText: 'Your Purchases',
+  pageTitle: 'Sales History',
+  pageDescription: 'View your sales history',
+  noSalesHeader: `You haven't sold anything yet.`,
+  noSalesBody: 'Once you make a sale, it will show up here.',
+  upload: 'Upload Track',
+  headerText: 'Your Sales',
   downloadCSV: 'Download CSV'
 }
 
 const TRANSACTIONS_BATCH_SIZE = 50
 
 const sortMethods: {
-  [k in PurchasesTableSortMethod]: full.GetPurchasesSortMethodEnum
+  [k in SalesTableSortMethod]: full.GetSalesSortMethodEnum
 } = {
-  contentId: full.GetPurchasesSortMethodEnum.ContentTitle,
-  createdAt: full.GetPurchasesSortMethodEnum.Date,
-  sellerUserId: full.GetPurchasesSortMethodEnum.ArtistName
+  contentId: full.GetSalesSortMethodEnum.ContentTitle,
+  createdAt: full.GetSalesSortMethodEnum.Date,
+  buyerUserId: full.GetSalesSortMethodEnum.BuyerName
 }
 
 const sortDirections: {
-  [k in PurchasesTableSortDirection]: full.GetPurchasesSortDirectionEnum
+  [k in SalesTableSortDirection]: full.GetSalesSortDirectionEnum
 } = {
-  asc: full.GetPurchasesSortDirectionEnum.Asc,
-  desc: full.GetPurchasesSortDirectionEnum.Desc
+  asc: full.GetSalesSortDirectionEnum.Asc,
+  desc: full.GetSalesSortDirectionEnum.Desc
 }
 
-const DEFAULT_SORT_METHOD = full.GetPurchasesSortMethodEnum.Date
-const DEFAULT_SORT_DIRECTION = full.GetPurchasesSortDirectionEnum.Desc
+const DEFAULT_SORT_METHOD = full.GetSalesSortMethodEnum.Date
+const DEFAULT_SORT_DIRECTION = full.GetSalesSortDirectionEnum.Desc
 
-const NoPurchases = () => {
+const NoSales = () => {
   const dispatch = useDispatch()
-  const handleClickFindSongs = useCallback(() => {
-    dispatch(pushRoute(FEED_PAGE))
+  const handleClickUpload = useCallback(() => {
+    dispatch(pushRoute(UPLOAD_PAGE))
   }, [dispatch])
-
   return (
     <NoTransactionsContent
-      headerText={messages.noPurchasesHeader}
-      bodyText={messages.noPurchasesBody}
-      ctaText={messages.findSongs}
-      onCTAClicked={handleClickFindSongs}
+      headerText={messages.noSalesHeader}
+      bodyText={messages.noSalesBody}
+      ctaText={messages.upload}
+      onCTAClicked={handleClickUpload}
     />
   )
 }
 
-export const usePurchases = () => {
+export const useSales = () => {
   const userId = useSelector(getUserId)
   // Defaults: sort method = date, sort direction = desc
   const [sortMethod, setSortMethod] =
-    useState<full.GetPurchasesSortMethodEnum>(DEFAULT_SORT_METHOD)
+    useState<full.GetSalesSortMethodEnum>(DEFAULT_SORT_METHOD)
   const [sortDirection, setSortDirection] =
-    useState<full.GetPurchasesSortDirectionEnum>(DEFAULT_SORT_DIRECTION)
+    useState<full.GetSalesSortDirectionEnum>(DEFAULT_SORT_DIRECTION)
 
   const { onOpen: openDetailsModal } = useUSDCPurchaseDetailsModal()
 
   const {
     status: dataStatus,
-    data: purchases,
+    data: sales,
     hasMore,
     loadMore
   } = useAllPaginatedQuery(
-    useGetPurchases,
+    useGetSales,
     { userId, sortMethod, sortDirection },
     { disabled: !userId, pageSize: TRANSACTIONS_BATCH_SIZE, force: true }
   )
-  const { status: countStatus, data: count } = useGetPurchasesCount(
-    {
-      userId
-    },
+
+  const { status: countStatus, data: count } = useGetSalesCount(
+    { userId },
     { force: true }
   )
 
   const status = combineStatuses([dataStatus, countStatus])
 
+  useErrorPageOnFailedStatus({ status })
+
   // TODO: Should fetch users before rendering the table
 
   const onSort = useCallback(
-    (
-      method: PurchasesTableSortMethod,
-      direction: PurchasesTableSortDirection
-    ) => {
+    (method: SalesTableSortMethod, direction: SalesTableSortDirection) => {
       setSortMethod(sortMethods[method] ?? DEFAULT_SORT_METHOD)
       setSortDirection(sortDirections[direction] ?? DEFAULT_SORT_DIRECTION)
     },
@@ -128,25 +128,21 @@ export const usePurchases = () => {
     }
   }, [hasMore, loadMore])
 
-  useErrorPageOnFailedStatus({ status })
-
   const onClickRow = useCallback(
     (purchaseDetails: USDCPurchaseDetails) => {
-      openDetailsModal({ variant: 'purchase', purchaseDetails })
+      openDetailsModal({ variant: 'sale', purchaseDetails })
     },
     [openDetailsModal]
   )
 
-  const isEmpty =
-    status === Status.ERROR ||
-    (status === Status.SUCCESS && purchases.length === 0)
+  const isEmpty = status === Status.SUCCESS && sales.length === 0
   const isLoading = statusIsNotFinalized(status)
 
   const downloadCSV = useCallback(async () => {
     const sdk = await audiusSdk()
     const { data: encodedDataMessage, signature: encodedDataSignature } =
       await audiusBackendInstance.signDiscoveryNodeRequest()
-    const blob = await sdk.users.downloadPurchasesAsCSVBlob({
+    const blob = await sdk.users.downloadSalesAsCSVBlob({
       id: Id.parse(userId!),
       encodedDataMessage,
       encodedDataSignature
@@ -154,14 +150,14 @@ export const usePurchases = () => {
     const blobUrl = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = blobUrl
-    a.download = `audius_purchases_${formatToday()}.csv`
+    a.download = `audius_sales_${formatToday()}.csv`
     a.click()
     window.URL.revokeObjectURL(blobUrl)
   }, [userId])
 
   return {
     count,
-    data: purchases,
+    data: sales,
     fetchMore,
     onSort,
     onClickRow,
@@ -170,37 +166,41 @@ export const usePurchases = () => {
     downloadCSV
   }
 }
-
 /**
- * Fetches and renders a table of purchases for the currently logged in user
+ * Fetches and renders a table of Sales for the currently logged in user
  * */
-export const PurchasesTab = ({
-  data,
+export const SalesTab = ({
   count,
-  isEmpty,
-  isLoading,
+  data: sales,
+  fetchMore,
   onSort,
   onClickRow,
-  fetchMore
-}: Omit<ReturnType<typeof usePurchases>, 'downloadCSV'>) => {
+  isEmpty,
+  isLoading
+}: Omit<ReturnType<typeof useSales>, 'downloadCSV'>) => {
   const { mainContentRef } = useContext(MainContentContext)
+
+  const columns = isMobile()
+    ? (['contentName', 'date', 'value'] as SalesTableColumn[])
+    : undefined
 
   return (
     <div className={styles.container}>
       {isEmpty ? (
-        <NoPurchases />
+        <NoSales />
       ) : (
-        <PurchasesTable
-          key='purchases'
-          data={data}
+        <SalesTable
+          key='sales'
+          columns={columns}
+          data={sales}
           loading={isLoading}
           onSort={onSort}
           onClickRow={onClickRow}
           fetchMore={fetchMore}
           totalRowCount={count}
+          isVirtualized={true}
           scrollRef={mainContentRef}
           fetchBatchSize={TRANSACTIONS_BATCH_SIZE}
-          isVirtualized={true}
         />
       )}
     </div>
