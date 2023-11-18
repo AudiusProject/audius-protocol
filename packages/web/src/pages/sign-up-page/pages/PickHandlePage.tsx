@@ -13,6 +13,7 @@ import {
 import { Form, Formik, FormikProps, useFormikContext } from 'formik'
 import { isEmpty } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 import TwitterLogin from 'react-twitter-auth'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -21,7 +22,7 @@ import { getHandleField } from 'common/store/pages/signon/selectors'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { SIGN_UP_FINISH_PROFILE_PAGE, SIGN_UP_PASSWORD_PAGE } from 'utils/route'
+import { SIGN_UP_FINISH_PROFILE_PAGE } from 'utils/route'
 
 import { ContinueFooter } from '../components/ContinueFooter'
 import {
@@ -101,6 +102,7 @@ export const PickHandlePage = () => {
   const formikRef = useRef<FormikProps<PickHandleValues>>(null)
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
+  const history = useHistory()
   const queryContext = useContext(AudiusQueryContext)
   const validationSchema = useMemo(() => {
     if (queryContext != null) {
@@ -112,8 +114,8 @@ export const PickHandlePage = () => {
   const { value } = useSelector(getHandleField)
 
   const handleClickBackIcon = useCallback(() => {
-    navigate(SIGN_UP_PASSWORD_PAGE)
-  }, [navigate])
+    history.goBack()
+  }, [history])
 
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
