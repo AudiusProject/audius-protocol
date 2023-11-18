@@ -46,7 +46,7 @@ describe('formatUtil', function () {
       // { input 23.4252, expected: '23.42' } // note: existing method incorrectly rounds this instead of truncating!
     ]
     for (const { input, expected } of testCases) {
-      // expect(AUDIO(input).toShorthand()).toBe(expected)
+      expect(AUDIO(input).toShorthand()).toBe(expected)
       expect(formatCurrencyBalance(input)).toBe(expected)
     }
   })
