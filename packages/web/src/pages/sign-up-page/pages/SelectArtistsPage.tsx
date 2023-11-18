@@ -40,11 +40,11 @@ const messages = {
 }
 
 type SelectArtistsValues = {
-  selectedArtists: Set<ID>
+  selectedArtists: ID[]
 }
 
 const initialValues: SelectArtistsValues = {
-  selectedArtists: new Set<ID>()
+  selectedArtists: []
 }
 
 export const SelectArtistsPage = () => {
@@ -91,12 +91,6 @@ export const SelectArtistsPage = () => {
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
       {({ values, setValues, isValid, isSubmitting, isValidating }) => {
         const { selectedArtists } = values
-        const handleChange = (userId: number, isFollowing: boolean) => {
-          isFollowing
-            ? selectedArtists.add(userId)
-            : selectedArtists.delete(userId)
-          setValues({ selectedArtists })
-        }
         return (
           <Flex
             direction='column'
@@ -164,16 +158,7 @@ export const SelectArtistsPage = () => {
                       ? null
                       : artists?.map((user) => {
                           const { user_id: userId } = user
-                          return (
-                            <FollowArtistTile
-                              key={userId}
-                              user={user}
-                              isSelected={selectedArtists.has(userId)}
-                              handleChange={(value) =>
-                                handleChange(userId, value)
-                              }
-                            />
-                          )
+                          return <FollowArtistTile key={userId} user={user} />
                         })}
                   </Paper>
                 </fieldset>
@@ -188,7 +173,7 @@ export const SelectArtistsPage = () => {
                     {messages.continue}
                   </Button>
                   <Text variant='body'>
-                    Selected {selectedArtists.size || 0}/3
+                    Selected {selectedArtists.length || 0}/3
                   </Text>
                 </ContinueFooter>
               </Form>

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, ChangeEvent } from 'react'
 
 import { useTheme, type CSSObject } from '@emotion/react'
 import styled from '@emotion/styled'
@@ -9,7 +9,7 @@ import { Text } from 'components/text/Text'
 import { useControlled } from 'hooks/useControlled'
 import { IconUserFollowing, IconUserFollow, IconUserUnfollow } from 'icons'
 
-import type { FollowButtonProps } from './types'
+import type { CheckboxProps, FollowButtonProps } from './types'
 
 const messages = {
   follow: 'Follow',
@@ -17,13 +17,16 @@ const messages = {
   unfollow: 'Unfollow'
 }
 
-const InputRoot = styled.input({
+const inputStyles: CSSObject = {
   position: 'absolute',
   opacity: 0,
   cursor: 'pointer',
   height: 0,
   width: 0
-})
+}
+
+const InputRoot = styled.input(inputStyles)
+const ButtonRoot = styled.button(inputStyles)
 
 /**
  * Special button for following or unfollowing a user.
@@ -35,7 +38,9 @@ export const FollowButton = (props: FollowButtonProps) => {
     onUnfollow,
     onFollow,
     size = 'default',
-    as: ignoredAs,
+    onChange,
+    type = 'button',
+    checked,
     ...inputProps
   } = props
   const [value, setValueState] = useControlled({
@@ -55,35 +60,44 @@ export const FollowButton = (props: FollowButtonProps) => {
     setIsHovering(false)
   }, [setIsHovering])
 
-  const handleChange = useCallback(() => {
+  const handleValueChange = useCallback(() => {
     if (value) {
       onUnfollow?.()
     } else {
       onFollow?.()
     }
     setValueState(!value)
-  }, [value, setValueState, onFollow, onUnfollow])
+  }, [value, setValueState, onUnfollow, onFollow])
 
+  const handleClick = () => {
+    handleValueChange()
+  }
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    onChange?.(e)
+    handleValueChange()
+  }
+
+  const checkedValue = value || checked
   let Icon: IconComponent | null = IconUserFollow
   let text = messages.follow
-  if (value && !isHovering) {
+  if (checkedValue && !isHovering) {
     Icon = IconUserFollowing
     text = messages.following
-  } else if (value && isHovering) {
+  } else if (checkedValue && isHovering) {
     Icon = IconUserUnfollow
     text = messages.unfollow
   }
 
   const { color, cornerRadius } = useTheme()
   const textColor =
-    value || isHovering ? color.static.white : color.primary.primary
+    checkedValue || isHovering ? color.static.white : color.primary.primary
   const css: CSSObject = {
     minWidth: size === 'small' ? 128 : 152,
     userSelect: 'none',
     border: `1px solid ${color.primary.primary}`,
     borderRadius: variant === 'pill' ? cornerRadius['2xl'] : cornerRadius.s,
     background:
-      value || isHovering ? color.primary.primary : color.static.white,
+      checkedValue || isHovering ? color.primary.primary : color.static.white,
     ':active': {
       background: color.primary.p500,
       border: `1px solid ${color.primary.p500}`
@@ -92,7 +106,15 @@ export const FollowButton = (props: FollowButtonProps) => {
 
   return (
     <label onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-      <InputRoot type='checkbox' onChange={handleChange} {...inputProps} />
+      {type === 'button' ? (
+        <ButtonRoot onClick={handleClick} />
+      ) : (
+        <InputRoot
+          type='checkbox'
+          onChange={handleChange}
+          {...(inputProps as Partial<CheckboxProps>)}
+        />
+      )}
       <Flex
         h={size === 'small' ? 28 : 32}
         direction='row'

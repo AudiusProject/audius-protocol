@@ -12,23 +12,22 @@ import {
   Paper,
   Text
 } from '@audius/harmony'
+import { useField } from 'formik'
 
 import { Avatar } from 'components/avatar/Avatar'
 import { useCoverPhoto } from 'hooks/useUserCoverPhoto'
 
 type FollowArtistTileProps = {
   user: UserMetadata
-  isSelected: boolean
-  handleChange: (value: boolean) => void
 } & HTMLProps<HTMLInputElement>
 
 const FollowArtistTile = (props: FollowArtistTileProps) => {
   const {
-    user: { name, user_id, is_verified, track_count, follower_count },
-    isSelected,
-    handleChange
+    user: { name, user_id, is_verified, track_count, follower_count }
   } = props
   const coverPhoto = useCoverPhoto(user_id, WidthSizes.SIZE_640)
+
+  const [followField] = useField({ name: 'selectedArtists', type: 'checkbox' })
 
   return (
     <Paper w={235} h={220}>
@@ -82,12 +81,13 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
               </Flex>
             </Flex>
           </Flex>
-          <Box w='100%' onClick={(e) => e.stopPropagation()}>
+          <Box w='100%'>
             <FollowButton
               variant='pill'
-              isFollowing={isSelected}
-              onFollow={() => handleChange(true)}
-              onUnfollow={() => handleChange(false)}
+              type='checkbox'
+              {...followField}
+              checked={followField.value.includes(user_id.toString())}
+              value={user_id}
             />
           </Box>
         </Flex>

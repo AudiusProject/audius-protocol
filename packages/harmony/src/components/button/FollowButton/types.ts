@@ -1,4 +1,17 @@
-import type { HTMLProps } from 'react'
+import type { ChangeEventHandler, ComponentPropsWithoutRef } from 'react'
+
+export type CheckboxProps = {
+  type: 'checkbox'
+  onChange?: ChangeEventHandler<HTMLInputElement>
+} & Omit<ComponentPropsWithoutRef<'input'>, 'chiildren' | 'size'>
+
+type InputProps =
+  | CheckboxProps
+  | ({
+      type?: 'button'
+      onChange: undefined
+      checked: undefined
+    } & Omit<ComponentPropsWithoutRef<'button'>, 'children' | 'onChange'>)
 
 export type FollowButtonProps = {
   /**
@@ -27,4 +40,9 @@ export type FollowButtonProps = {
    * Callback for when an unfollow is triggered.
    */
   onUnfollow?: () => void
-} & Omit<HTMLProps<HTMLInputElement>, 'size'>
+
+  /**
+   * Html input type to use
+   */
+  type?: 'button' | 'checkbox'
+} & InputProps
