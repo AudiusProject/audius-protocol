@@ -80,15 +80,13 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
               </Flex>
             </Flex>
           </Flex>
-          <Box w='100%'>
-            <FollowButton
-              variant='pill'
-              type='checkbox'
-              {...followField}
-              checked={followField.value.includes(user_id.toString())}
-              value={user_id}
-            />
-          </Box>
+          <FollowButton
+            variant='pill'
+            type='checkbox'
+            {...followField}
+            isFollowing={followField.value.includes(user_id.toString())}
+            value={user_id}
+          />
         </Flex>
       </Flex>
     </Paper>

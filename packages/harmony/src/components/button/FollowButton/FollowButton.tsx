@@ -17,15 +17,13 @@ const messages = {
   unfollow: 'Unfollow'
 }
 
-const inputStyles: CSSObject = {
+const InputRoot = styled.input({
   position: 'absolute',
   opacity: 0,
   cursor: 'pointer',
   height: 0,
   width: 0
-}
-
-const InputRoot = styled.input(inputStyles)
+})
 
 /**
  * Special button for following or unfollowing a user.
@@ -99,6 +97,7 @@ export const FollowButton = (props: FollowButtonProps) => {
       direction='row'
       alignItems='center'
       justifyContent='center'
+      wrap='nowrap'
       gap='xs'
       pv='s'
     >
@@ -117,14 +116,14 @@ export const FollowButton = (props: FollowButtonProps) => {
 
   switch (type) {
     case 'checkbox': {
-      const { checked, ...rest } = other
+      const { checked: checkedIgnored, ...rest } = other
       return (
         <label
           css={rootCss}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          <InputRoot {...rest} checked={checked ?? isFollowing} />
+          <InputRoot {...rest} checked={isFollowing} />
           {content}
         </label>
       )

@@ -3,7 +3,6 @@ import { useState } from 'react'
 import type { Meta } from '@storybook/react'
 
 import { Flex } from 'components/layout'
-import { Text } from 'components/text/Text'
 
 import { FollowButton } from './FollowButton'
 import type { FollowButtonProps } from './types'

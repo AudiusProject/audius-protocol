@@ -54,7 +54,8 @@ const SelectArtistsFormSchema = z.object({
 })
 
 export const SelectArtistsPage = () => {
-  const genres = useSelector((state) => ['Featured', ...getGenres(state)])
+  // const genres = useSelector((state) => ['Featured', ...getGenres(state)])
+  const genres = ['Featured', 'Pop', 'Alternative']
   const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const [currentGenre, setCurrentGenre] = useState('Featured')
   const dispatch = useDispatch()
@@ -104,7 +105,7 @@ export const SelectArtistsPage = () => {
         return (
           <Flex
             direction='column'
-            gap='2xl'
+            gap='3xl'
             css={{
               overflow: 'scroll',
               // Hide scrollbar
@@ -116,8 +117,9 @@ export const SelectArtistsPage = () => {
               }
             }}
           >
+            {/* DO NOT MERGE */}
+            {/* <AccountHeader /> */}
             <Flex direction='column' gap='2xl' mh='5xl' mb='xl'>
-              <AccountHeader />
               <Flex direction='column' gap='l'>
                 <Text
                   variant='heading'
@@ -155,7 +157,8 @@ export const SelectArtistsPage = () => {
                   <Paper
                     css={{
                       background: 'var(--harmony-bg-default)',
-                      boxShadow: 'none'
+                      boxShadow: 'none',
+                      minHeight: 500
                     }}
                     p='xl'
                     gap='m'
@@ -170,22 +173,22 @@ export const SelectArtistsPage = () => {
                         })}
                   </Paper>
                 </fieldset>
-                <ContinueFooter>
-                  <Button
-                    minWidth={343}
-                    type='submit'
-                    disabled={!dirty || !isValid || isSubmitting}
-                    isLoading={isSubmitting || isValidating}
-                    iconRight={IconArrowRight}
-                  >
-                    {messages.continue}
-                  </Button>
-                  <Text variant='body'>
-                    Selected {selectedArtists.length || 0}/3
-                  </Text>
-                </ContinueFooter>
               </Form>
             </Flex>
+            <ContinueFooter>
+              <Button
+                minWidth={343}
+                type='submit'
+                disabled={!dirty || !isValid || isSubmitting}
+                isLoading={isSubmitting || isValidating}
+                iconRight={IconArrowRight}
+              >
+                {messages.continue}
+              </Button>
+              <Text variant='body'>
+                Selected {selectedArtists.length || 0}/3
+              </Text>
+            </ContinueFooter>
           </Flex>
         )
       }}
