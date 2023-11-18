@@ -3,6 +3,7 @@ import { useState } from 'react'
 import type { Meta } from '@storybook/react'
 
 import { Flex } from 'components/layout'
+import { Text } from 'components/text/Text'
 
 import { FollowButton } from './FollowButton'
 import type { FollowButtonProps } from './types'
@@ -36,7 +37,6 @@ export const Pill = {
 }
 
 const VariantsExample = (props: FollowButtonProps) => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [following, setFollowing] = useState(false)
   return (
     <Flex gap='xl'>
@@ -62,7 +62,6 @@ export const Variants = {
 }
 
 const SizesExample = (props: FollowButtonProps) => {
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [following, setFollowing] = useState(false)
   return (
     <Flex gap='xl'>
@@ -85,4 +84,21 @@ const SizesExample = (props: FollowButtonProps) => {
 
 export const Sizes = {
   render: SizesExample
+}
+
+const CheckboxExample = (props: FollowButtonProps & { type: 'checkbox' }) => {
+  const [valueA, setValueA] = useState(false)
+
+  return (
+    <FollowButton
+      {...props}
+      type='checkbox'
+      isFollowing={valueA}
+      onChange={(e) => setValueA(e.target.checked)}
+    />
+  )
+}
+
+export const Checkboxes = {
+  render: CheckboxExample
 }

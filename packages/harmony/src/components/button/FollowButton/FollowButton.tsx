@@ -119,7 +119,11 @@ export const FollowButton = (props: FollowButtonProps) => {
     case 'checkbox': {
       const { checked, ...rest } = other
       return (
-        <label onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+        <label
+          css={rootCss}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
           <InputRoot {...rest} checked={checked ?? isFollowing} />
           {content}
         </label>

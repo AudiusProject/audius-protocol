@@ -71,7 +71,6 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
                   {track_count}
                 </Text>
               </Flex>
-              {/* TODO: Divider height not working */}
               <Divider />
               <Flex direction='row' gap='xs' alignItems='center'>
                 <IconUser width={16} height={16} color='subdued' />
