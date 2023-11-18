@@ -80,6 +80,7 @@ export const FollowButton = (props: FollowButtonProps) => {
     checkedValue || isHovering ? color.static.white : color.primary.primary
   const rootCss: CSSObject = {
     minWidth: size === 'small' ? 128 : 152,
+    width: '100%',
     userSelect: 'none',
     border: `1px solid ${color.primary.primary}`,
     borderRadius: variant === 'pill' ? cornerRadius['2xl'] : cornerRadius.s,
@@ -97,7 +98,6 @@ export const FollowButton = (props: FollowButtonProps) => {
       direction='row'
       alignItems='center'
       justifyContent='center'
-      wrap='nowrap'
       gap='xs'
       pv='s'
     >
@@ -118,14 +118,16 @@ export const FollowButton = (props: FollowButtonProps) => {
     case 'checkbox': {
       const { checked: checkedIgnored, ...rest } = other
       return (
-        <label
+        <div
           css={rootCss}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          <InputRoot {...rest} checked={isFollowing} />
-          {content}
-        </label>
+          <label>
+            {content}
+            <InputRoot {...rest} checked={isFollowing} />
+          </label>
+        </div>
       )
     }
     case 'button':
