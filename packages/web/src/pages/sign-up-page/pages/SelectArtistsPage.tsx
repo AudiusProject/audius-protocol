@@ -17,6 +17,8 @@ import {
 } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
+import { z } from 'zod'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { addFollowArtists } from 'common/store/pages/signon/actions'
@@ -46,6 +48,10 @@ type SelectArtistsValues = {
 const initialValues: SelectArtistsValues = {
   selectedArtists: []
 }
+
+const SelectArtistsFormSchema = z.object({
+  selectedArtists: z.array(z.string()).min(3)
+})
 
 export const SelectArtistsPage = () => {
   const genres = useSelector((state) => ['Featured', ...getGenres(state)])
@@ -88,8 +94,12 @@ export const SelectArtistsPage = () => {
     Status.LOADING
 
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-      {({ values, setValues, isValid, isSubmitting, isValidating }) => {
+    <Formik
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+      validationSchema={toFormikValidationSchema(SelectArtistsFormSchema)}
+    >
+      {({ values, isValid, isSubmitting, isValidating, dirty }) => {
         const { selectedArtists } = values
         return (
           <Flex
@@ -166,7 +176,7 @@ export const SelectArtistsPage = () => {
                   <Button
                     minWidth={343}
                     type='submit'
-                    disabled={!isValid || isSubmitting}
+                    disabled={!dirty || !isValid || isSubmitting}
                     isLoading={isSubmitting || isValidating}
                     iconRight={IconArrowRight}
                   >
