@@ -192,7 +192,7 @@ const SignUpRoot = (props: SignUpRootProps) => {
   )
 }
 
-export const SignUpRootPage = () => {
+export const SignUpPage = () => {
   const { isDesktop } = useMedia()
 
   return (
