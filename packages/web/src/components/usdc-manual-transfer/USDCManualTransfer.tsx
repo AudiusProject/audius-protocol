@@ -60,12 +60,13 @@ export const USDCManualTransfer = ({ onClose }: { onClose: () => void }) => {
 
   return (
     <div className={styles.root}>
-      <Flex gap='l' alignItems='center'>
+      <Flex gap='l' alignItems='center' direction={mobile ? 'column' : 'row'}>
+        {mobile ? <Text>{messages.explainer}</Text> : null}
         <div className={styles.qr}>
           {USDCUserBank ? <QRCode value={USDCUserBank} /> : null}
         </div>
         <Flex direction='column' gap='xl'>
-          <Text>{messages.explainer}</Text>
+          {!mobile ? <Text>{messages.explainer}</Text> : null}
           <Hint
             text={messages.disclaimer}
             link={USDCLearnMore}
