@@ -1,12 +1,6 @@
 import { ChangeEvent, ReactNode, useCallback, useState } from 'react'
 
-import {
-  Box,
-  Flex,
-  IconCaretDown,
-  IconComponent,
-  useTheme
-} from '@audius/harmony'
+import { Flex, IconCaretDown, IconComponent, useTheme } from '@audius/harmony'
 import { ColorValue, RadioButton, RadioButtonGroup } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
@@ -62,6 +56,8 @@ export type SummaryTableProps = {
   withRadioOptions?: boolean
   selectedRadioOption?: string
   onRadioChange?: (e: ChangeEvent<HTMLInputElement>) => void
+  rowClassName?: string
+  rowValueClassName?: string
 }
 
 export const SummaryTable = ({
@@ -74,7 +70,9 @@ export const SummaryTable = ({
   summaryValueColor = 'secondary',
   withRadioOptions,
   selectedRadioOption,
-  onRadioChange
+  onRadioChange,
+  rowClassName,
+  rowValueClassName
 }: SummaryTableProps) => {
   const { color } = useTheme()
   // Collapsible is collapsed by default
@@ -91,21 +89,21 @@ export const SummaryTable = ({
           justifyContent='space-between'
           pv='m'
           ph='xl'
-          className={styles.row}
+          className={cn(styles.row, rowClassName)}
           css={{ opacity: disabled ? 0.5 : 1 }}
         >
-          <Flex alignItems='center' gap='s'>
+          <Flex alignItems='center' justifyContent='center' gap='s'>
             {withRadioOptions ? (
               <RadioButton value={id} disabled={disabled} />
             ) : null}
             {Icon ? (
-              <Box ml='s'>
+              <Flex alignItems='center' ml='s'>
                 <Icon color='default' />
-              </Box>
+              </Flex>
             ) : null}
             <Text>{label}</Text>
           </Flex>
-          <Text>{value}</Text>
+          <Text className={rowValueClassName}>{value}</Text>
         </Flex>
       ))}
       {summaryItem !== undefined ? (

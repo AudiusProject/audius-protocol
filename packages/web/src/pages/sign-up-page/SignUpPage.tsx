@@ -1,20 +1,25 @@
-import { PropsWithChildren } from 'react'
+import { ReactNode } from 'react'
 
-import { Box, PaperProps, Paper, BoxProps } from '@audius/harmony'
+import { Box, IconCloseAlt, useTheme } from '@audius/harmony'
 import { useSelector } from 'react-redux'
-import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
+import { Link, Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
 import { getSignOn } from 'common/store/pages/signon/selectors'
 import SignOnPageState from 'common/store/pages/signon/types'
+import BackgroundWaves from 'components/background-animations/BackgroundWaves'
+import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
+import Page from 'components/page/Page'
 import { useMedia } from 'hooks/useMedia'
 import { useRouteMatch } from 'hooks/useRouteMatch'
 import { AppState } from 'store/types'
 import {
+  BASE_URL,
   SIGN_UP_ARTISTS_PAGE,
   SIGN_UP_EMAIL_PAGE,
   SIGN_UP_FINISH_PROFILE_PAGE,
   SIGN_UP_GENRES_PAGE,
   SIGN_UP_HANDLE_PAGE,
+  SIGN_UP_PAGE,
   SIGN_UP_PASSWORD_PAGE,
   SignUpPath,
   TRENDING_PAGE
@@ -28,6 +33,11 @@ import { FinishProfilePage } from './pages/FinishProfilePage'
 import { PickHandlePage } from './pages/PickHandlePage'
 import { SelectArtistsPage } from './pages/SelectArtistsPage'
 import { SelectGenrePage } from './pages/SelectGenrePage'
+
+const messages = {
+  title: 'Sign Up',
+  description: 'Create an account on Audius'
+}
 
 /**
  * Checks against existing sign up redux state,
@@ -49,7 +59,7 @@ const determineAllowedRoute = (
     // Already have email
     allowedRoutes.push(SignUpPath.createPassword)
   }
-  if (signUpState.password.value) {
+  if (signUpState.password.value || signUpState.useMetaMask) {
     // Already have password
     allowedRoutes.push(SignUpPath.pickHandle)
   }
@@ -92,6 +102,21 @@ const determineAllowedRoute = (
   }
 }
 
+const useIsBackAllowed = () => {
+  const match = useRouteMatch<{ currentPath: string }>('/signup/:currentPath')
+  const existingSignUpState = useSelector((state: AppState) => getSignOn(state))
+  if (match?.currentPath) {
+    const { allowedRoutes } = determineAllowedRoute(
+      existingSignUpState,
+      match?.currentPath
+    )
+    const currentRouteIndex = allowedRoutes.indexOf(match.currentPath)
+    const isBackAllowed = allowedRoutes.length > 1 && currentRouteIndex > 0
+    return isBackAllowed
+  }
+  return false
+}
+
 /**
  * <Route> wrapper that handles redirecting through the sign up page flow
  */
@@ -116,46 +141,72 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
   )
 }
 
-const useIsBackAllowed = () => {
-  const match = useRouteMatch<{ currentPath: string }>('/signup/:currentPath')
-  const existingSignUpState = useSelector((state: AppState) => getSignOn(state))
-  if (match?.currentPath) {
-    const { allowedRoutes } = determineAllowedRoute(
-      existingSignUpState,
-      match?.currentPath
-    )
-    const currentRouteIndex = allowedRoutes.indexOf(match.currentPath)
-    const isBackAllowed = allowedRoutes.length > 1 && currentRouteIndex > 0
-    return isBackAllowed
-  }
-  return false
+type SignUpRootProps = {
+  children: ReactNode
 }
 
-const DesktopRootContainer = ({ children }: PropsWithChildren<PaperProps>) => (
-  <Paper w={1280} h={864} direction='column' m='4xl'>
-    {children}
-  </Paper>
-)
-
-const MobileRootContainer = ({ children }: PropsWithChildren<BoxProps>) => (
-  <Box h='100%'> {children}</Box>
-)
-
-export const SignUpRootPage = () => {
+const SignUpRoot = (props: SignUpRootProps) => {
+  const { children } = props
   const { isDesktop } = useMedia()
+  const { spacing } = useTheme()
   const isBackAllowed = useIsBackAllowed()
-  const RootContainer = isDesktop ? DesktopRootContainer : MobileRootContainer
+
+  const pageProps = {
+    title: messages.title,
+    description: messages.description,
+    canonicalUrl: `${BASE_URL}/${SIGN_UP_PAGE}`
+  }
+
+  if (isDesktop) {
+    return (
+      <Page {...pageProps}>
+        <BackgroundWaves />
+        <Link to={TRENDING_PAGE}>
+          <IconCloseAlt
+            color='staticWhite'
+            css={{
+              position: 'absolute',
+              left: spacing['2xl'],
+              top: spacing['2xl'],
+              zIndex: 1
+            }}
+          />
+        </Link>
+        <Box css={{ zIndex: 1 }}>{children}</Box>
+      </Page>
+    )
+  }
   return (
-    <RootContainer>
-      {!isDesktop ? <MobileNavHeader isBackAllowed={isBackAllowed} /> : null}
+    <MobilePageContainer
+      {...pageProps}
+      fullHeight
+      css={{
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      <MobileNavHeader isBackAllowed={isBackAllowed} />
+      {children}
+    </MobilePageContainer>
+  )
+}
+
+export const SignUpPage = () => {
+  const { isDesktop } = useMedia()
+
+  return (
+    <SignUpRoot>
       <Switch>
+        <Route exact path={SIGN_UP_PAGE}>
+          <Redirect to={SIGN_UP_EMAIL_PAGE} />
+        </Route>
         <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
           <CreateEmailPage />
         </SignUpRoute>
         <SignUpRoute exact path={SIGN_UP_PASSWORD_PAGE}>
           <CreatePasswordPage />
         </SignUpRoute>
-        {/* White screen routes */}
         <SignUpRoute
           exact
           path={[
@@ -188,6 +239,6 @@ export const SignUpRootPage = () => {
           </Switch>
         </SignUpRoute>
       </Switch>
-    </RootContainer>
+    </SignUpRoot>
   )
 }

@@ -22,12 +22,3 @@
   background-position: 50%;
   gap: var(--harmony-spacing-2xl);
 }
-
-.valueRow,
-.artworkBackground h1 {
-  color: var(--harmony-static-white);
-}
-
-.icon path {
-  fill: currentColor;
-}

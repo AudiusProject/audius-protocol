@@ -85,8 +85,6 @@ import SavedPage from 'pages/saved-page/SavedPage'
 import SearchPage from 'pages/search-page/SearchPage'
 import SettingsPage from 'pages/settings-page/SettingsPage'
 import { SubPage } from 'pages/settings-page/components/mobile/SettingsPage'
-import { SignInPage } from 'pages/sign-in-page'
-import { SignUpRootPage } from 'pages/sign-up-page'
 import SmartCollectionPage from 'pages/smart-collection/SmartCollectionPage'
 import SupportingPage from 'pages/supporting-page/SupportingPage'
 import TopSupportersPage from 'pages/top-supporters-page/TopSupportersPage'
@@ -139,8 +137,6 @@ import {
   TRACK_PAGE,
   TRACK_REMIXES_PAGE,
   PROFILE_PAGE,
-  SIGN_IN_PAGE,
-  SIGN_UP_PAGE,
   authenticatedRoutes,
   EMPTY_PAGE,
   REPOSTING_USERS_ROUTE,
@@ -177,7 +173,6 @@ import {
   CHAT_PAGE,
   PROFILE_PAGE_AI_ATTRIBUTED_TRACKS,
   EXPLORE_PREMIUM_TRACKS_PAGE,
-  SIGN_UP_START_PAGE,
   PAYMENTS_PAGE
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
@@ -189,8 +184,6 @@ const { getTheme } = themeSelectors
 
 const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
   accountSelectors
-
-const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 
 const UploadPage = lazy(() => import('pages/upload-page'))
 const Modals = lazy(() => import('pages/modals/Modals'))
@@ -412,13 +405,7 @@ class WebPlayer extends Component {
   }
 
   render() {
-    const {
-      theme,
-      incrementScroll,
-      decrementScroll,
-      userHandle,
-      isSignInRedesignEnabled
-    } = this.props
+    const { theme, incrementScroll, decrementScroll, userHandle } = this.props
 
     const {
       showWebUpdateBanner,
@@ -506,26 +493,6 @@ class WebPlayer extends Component {
                   path={'/fb/share'}
                   render={(props) => <FbSharePage />}
                 />
-
-                <Route exact path={SIGN_IN_PAGE} isMobile={isMobileClient}>
-                  {isSignInRedesignEnabled ? (
-                    <SignInPage />
-                  ) : (
-                    <SignOn signIn initialPage={initialPage} />
-                  )}
-                </Route>
-                <Route exact path={SIGN_UP_PAGE} isMobile={isMobileClient}>
-                  {isSignInRedesignEnabled ? (
-                    <Redirect to={SIGN_UP_START_PAGE} />
-                  ) : (
-                    <SignOn signIn={false} initialPage={initialPage} />
-                  )}
-                </Route>
-                {isSignInRedesignEnabled ? (
-                  <Route path={SIGN_UP_PAGE} isMobile={isMobileClient}>
-                    <SignUpRootPage />
-                  </Route>
-                ) : null}
                 <Route
                   exact
                   path={FEED_PAGE}
@@ -993,8 +960,7 @@ const mapStateToProps = (state) => ({
   signOnStatus: getSignOnStatus(state),
   theme: getTheme(state),
   showCookieBanner: getShowCookieBanner(state),
-  isChatEnabled: getFeatureEnabled(FeatureFlags.CHAT_ENABLED),
-  isSignInRedesignEnabled: getFeatureEnabled(FeatureFlags.SIGN_UP_REDESIGN)
+  isChatEnabled: getFeatureEnabled(FeatureFlags.CHAT_ENABLED)
 })
 
 const mapDispatchToProps = (dispatch) => ({
