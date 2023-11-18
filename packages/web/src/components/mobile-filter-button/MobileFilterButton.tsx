@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Vendors } from '@audius/common'
+import { PurchaseVendor } from '@audius/common'
 import { Box, Flex, IconCaretDown, Text } from '@audius/harmony'
 
 import ActionDrawer from 'components/action-drawer/ActionDrawer'
@@ -41,7 +41,7 @@ export const MobileFilterButton = ({
         onClick={() => setIsOpen((open) => !open)}
       >
         <Text variant='title' strength='weak' size='s'>
-          {Vendors.STRIPE}
+          {PurchaseVendor.STRIPE}
         </Text>
         <IconCaretDown size='s' color='default' />
       </Flex>

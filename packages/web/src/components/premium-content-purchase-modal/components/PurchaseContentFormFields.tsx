@@ -6,7 +6,8 @@ import {
   useUSDCBalance,
   PurchaseMethod,
   PURCHASE_METHOD,
-  Vendors
+  PurchaseVendor,
+  usePurchaseMethod
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -56,27 +57,25 @@ export const PurchaseContentFormFields = ({
   stage,
   isUnlocking
 }: PurchaseContentFormFieldsProps) => {
-  const { data: balance } = useUSDCBalance()
   const mobile = isMobile()
   const payExtraAmountPresetValues = usePayExtraPresets(useRemoteVar)
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
   const isPurchased = stage === PurchaseContentStage.FINISH
+
+  const { data: balance } = useUSDCBalance({ isPolling: true })
   const balanceUSDC = USDC((balance ?? new BN(0)) as BN).value
   const { extraAmount } = usePurchaseSummaryValues({
     price,
     currentBalance: balance
   })
-  const isExistingBalanceDisabled =
-    USDC(price / 100).value + USDC((extraAmount ?? 0) / 100).value > balanceUSDC
   const hasBalance = balanceUSDC > 0
-
-  if (
-    purchaseMethod === PurchaseMethod.EXISTING_BALANCE &&
-    isExistingBalanceDisabled
-  ) {
-    setPurchaseMethod(PurchaseMethod.CARD)
-  }
+  const { isExistingBalanceDisabled, totalPriceInCents } = usePurchaseMethod({
+    price,
+    extraAmount,
+    method: purchaseMethod,
+    setMethod: setPurchaseMethod
+  })
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
@@ -101,15 +100,15 @@ export const PurchaseContentFormFields = ({
   const options = [
     hasBalance
       ? {
+          id: PurchaseMethod.BALANCE,
           label: messages.existingBalance,
-          id: PurchaseMethod.EXISTING_BALANCE,
           icon: IconDonate,
           disabled: isExistingBalanceDisabled,
           value: (
             <Text
               variant='title'
               color={
-                purchaseMethod === PurchaseMethod.EXISTING_BALANCE
+                purchaseMethod === PurchaseMethod.BALANCE
                   ? 'secondary'
                   : undefined
               }
@@ -120,26 +119,26 @@ export const PurchaseContentFormFields = ({
         }
       : null,
     {
-      label: messages.card,
       id: PurchaseMethod.CARD,
+      label: messages.card,
       icon: IconCreditCard,
       value: mobile ? (
         <MobileFilterButton
           onSelect={() => {}}
-          options={[{ label: Vendors.STRIPE }]}
+          options={[{ label: PurchaseVendor.STRIPE }]}
         />
       ) : (
         <FilterButton
           onSelect={() => {}}
           initialSelectionIndex={0}
           variant={FilterButtonType.REPLACE_LABEL}
-          options={[{ label: Vendors.STRIPE }]}
+          options={[{ label: PurchaseVendor.STRIPE }]}
         />
       )
     },
     {
+      id: PurchaseMethod.CRYPTO,
       label: messages.manualTransfer,
-      id: PurchaseMethod.MANUAL_TRANSFER,
       icon: IconTransaction
     }
   ].filter(Boolean) as SummaryTableItem[]
@@ -152,7 +151,7 @@ export const PurchaseContentFormFields = ({
       />
       <PurchaseSummaryTable
         {...purchaseSummaryValues}
-        isPurchased={isPurchased}
+        totalPriceInCents={totalPriceInCents}
       />
       <SummaryTable
         title={messages.paymentMethod}

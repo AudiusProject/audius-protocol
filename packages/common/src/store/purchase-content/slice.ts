@@ -34,7 +34,7 @@ const initialState: PurchaseContentState = {
   extraAmountPreset: undefined,
   error: undefined,
   stage: PurchaseContentStage.START,
-  purchaseMethod: PurchaseMethod.EXISTING_BALANCE
+  purchaseMethod: PurchaseMethod.BALANCE
 }
 
 const slice = createSlice({
