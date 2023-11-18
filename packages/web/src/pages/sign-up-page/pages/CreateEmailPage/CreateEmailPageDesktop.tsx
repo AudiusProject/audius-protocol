@@ -5,14 +5,15 @@ import {
   Flex,
   IconArrowRight,
   SocialButton,
-  Text
+  Text,
+  TextLink
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useFormikContext } from 'formik'
+import { Link } from 'react-router-dom'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
-import { Link } from 'components/link'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import {
   ArtworkContainer,
@@ -87,18 +88,11 @@ export const CreateEmailPageDesktop = () => {
               {messages.signUp}
             </Button>
 
-            <Text size='l'>
+            <Text variant='body' size='l'>
               {messages.haveAccount}{' '}
-              {/* TODO [C-3278]: Update with Harmony Link */}
-              <Link
-                to={SIGN_IN_PAGE}
-                variant='body'
-                size='medium'
-                strength='strong'
-                color='secondary'
-              >
-                {messages.signIn}
-              </Link>
+              <TextLink variant='visible' asChild>
+                <Link to={SIGN_IN_PAGE}>{messages.signIn}</Link>
+              </TextLink>
             </Text>
           </Flex>
         </LeftContentContainer>

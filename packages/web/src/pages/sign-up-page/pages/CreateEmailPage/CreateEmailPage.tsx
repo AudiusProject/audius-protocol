@@ -81,11 +81,9 @@ export const CreateEmailPage = () => {
       validateOnBlur
       validateOnChange={false}
     >
-      {({ isSubmitting }) => (
-        <Form css={{ width: '100%', height: '100%' }}>
-          {isDesktop ? <CreateEmailPageDesktop /> : <CreateEmailPageMobile />}
-        </Form>
-      )}
+      <Form css={{ width: '100%', height: '100%' }}>
+        {isDesktop ? <CreateEmailPageDesktop /> : <CreateEmailPageMobile />}
+      </Form>
     </Formik>
   )
 }
