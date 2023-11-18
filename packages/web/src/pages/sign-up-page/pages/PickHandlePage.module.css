@@ -3,11 +3,40 @@
   margin: 0 auto;
 }
 
-.hideTwitterButton {
+.outerContainer form {
+  height: 100%;
+}
+
+.linkToClaim {
   cursor: pointer;
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
   outline: inherit;
+  font-weight: inherit;
+  color: var(--harmony-p-500);
+  transition: all var(--harmony-hover);
+  display: inline;
+}
+
+.linkToClaim:hover {
+  text-decoration: underline;
+}
+
+.divider {
+  flex-grow: 1;
+}
+
+.dividerText {
+  text-transform: uppercase;
+}
+
+.socialsContainer {
+  background: var(--harmony-n-100);
+}
+
+.verifiedIcon {
+  margin-left: var(--harmony-spacing-xs);
+  vertical-align: sub;
 }
