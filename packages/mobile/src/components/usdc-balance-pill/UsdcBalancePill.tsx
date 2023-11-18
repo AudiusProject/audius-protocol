@@ -1,4 +1,3 @@
-import type { BNUSDC } from '@audius/common'
 import { Status, useUSDCBalance } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import { View } from 'react-native'
@@ -32,11 +31,7 @@ export const UsdcBalancePill = () => {
     useUSDCBalance({ isPolling: false })
   const isUsdcBalanceLoading =
     usdcBalance === null || usdcBalanceStatus === Status.LOADING
-  const usdcBalanceFormatted = USDC(usdcBalance ?? 0).toLocaleString('en-US', {
-    maximumFractionDigits: 2,
-    minimumFractionDigits: 2,
-    trailingZeroDisplay: 'stripIfInteger'
-  })
+  const usdcBalanceFormatted = USDC(usdcBalance ?? 0).toShorthand()
 
   return (
     <View style={styles.root}>
