@@ -11,6 +11,8 @@ import { Link } from 'react-router-dom'
 
 import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
+import { ArtworkContainer } from 'pages/sign-on/components/AudiusValues'
+import { SignOnContainerMobile } from 'pages/sign-on/components/mobile/SignOnContainerMobile'
 
 import styles from './SignInPageMobile.module.css'
 
@@ -26,65 +28,63 @@ const messages = {
 
 export const SignInPageMobile = () => {
   return (
-    <Flex
-      className={styles.root}
-      direction='column'
-      w='100%'
-      h='100%'
-      justifyContent='space-between'
-      pb='4xl'
-    >
-      <Flex
-        className={styles.content}
-        w='100%'
-        pv='2xl'
-        ph='l'
-        direction='column'
-        gap='2xl'
-        justifyContent='space-between'
-      >
-        <Flex direction='column' gap='2xl' alignItems='center'>
-          <IconAudiusLogoHorizontalColor />
-          <Text variant='heading' size='l' tag='h1' color='heading'>
-            {messages.title}
-          </Text>
-          <Box w='100%'>
-            <Form>
-              <Flex direction='column' gap='2xl' w='100%'>
-                <Flex direction='column' gap='l'>
-                  {/* TODO: replace old TextField */}
-                  <HarmonyTextField name='email' label={messages.emailLabel} />
-                  <HarmonyPasswordField
-                    name='password'
-                    label={messages.passwordLabel}
-                  />
+    <SignOnContainerMobile>
+      <ArtworkContainer justifyContent='space-between'>
+        <Flex
+          className={styles.content}
+          w='100%'
+          pv='2xl'
+          ph='l'
+          direction='column'
+          gap='2xl'
+          justifyContent='space-between'
+        >
+          <Flex direction='column' gap='2xl' alignItems='center'>
+            <IconAudiusLogoHorizontalColor />
+            <Text variant='heading' size='l' tag='h1' color='heading'>
+              {messages.title}
+            </Text>
+            <Box w='100%'>
+              <Form>
+                <Flex direction='column' gap='2xl' w='100%'>
+                  <Flex direction='column' gap='l'>
+                    {/* TODO: replace old TextField */}
+                    <HarmonyTextField
+                      name='email'
+                      label={messages.emailLabel}
+                    />
+                    <HarmonyPasswordField
+                      name='password'
+                      label={messages.passwordLabel}
+                    />
+                  </Flex>
+                  <Flex direction='column' gap='l'>
+                    <Button iconRight={IconArrowRight} type='submit'>
+                      {messages.signIn}
+                    </Button>
+                    <Text color='heading' variant='body'>
+                      {/* TODO: link destination */}
+                      {messages.forgotPassword}
+                    </Text>
+                  </Flex>
                 </Flex>
-                <Flex direction='column' gap='l'>
-                  <Button iconRight={IconArrowRight} type='submit'>
-                    {messages.signIn}
-                  </Button>
-                  <Text color='heading' variant='body'>
-                    {/* TODO: link destination */}
-                    {messages.forgotPassword}
-                  </Text>
-                </Flex>
-              </Flex>
-            </Form>
-          </Box>
+              </Form>
+            </Box>
+          </Flex>
         </Flex>
-      </Flex>
-      <Flex
-        className={styles.createAccountRow}
-        direction='row'
-        w='100%'
-        justifyContent='center'
-        gap='xs'
-        mb='4xl'
-      >
-        {/* TODO: args look good but style doesn't match design */}
-        <Text variant='title'>{messages.newToAudius}</Text>
-        <Link to={''}>{messages.createAccount}</Link>
-      </Flex>
-    </Flex>
+        <Flex
+          className={styles.createAccountRow}
+          direction='row'
+          w='100%'
+          justifyContent='center'
+          gap='xs'
+          mb='4xl'
+        >
+          {/* TODO: args look good but style doesn't match design */}
+          <Text variant='title'>{messages.newToAudius}</Text>
+          <Link to={''}>{messages.createAccount}</Link>
+        </Flex>
+      </ArtworkContainer>
+    </SignOnContainerMobile>
   )
 }

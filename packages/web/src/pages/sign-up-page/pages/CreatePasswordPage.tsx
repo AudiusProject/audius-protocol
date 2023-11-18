@@ -22,8 +22,12 @@ import {
 } from 'components/completion-checklist-item/CompletionChecklistItem'
 import { ExternalLink } from 'components/link'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import {
+  ArtworkContainer,
+  AudiusValues
+} from 'pages/sign-on/components/AudiusValues'
 import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
-import { PageWithAudiusValues } from 'pages/sign-on/components/desktop/PageWithAudiusValues'
+import { SignOnContainerDesktop } from 'pages/sign-on/components/desktop/SignOnContainerDesktop'
 import {
   PRIVACY_POLICY,
   SIGN_UP_EMAIL_PAGE,
@@ -227,7 +231,7 @@ export const CreatePasswordPage = () => {
 
   return (
     <Flex h='100%' alignItems='center' justifyContent='center'>
-      <PageWithAudiusValues>
+      <SignOnContainerDesktop>
         <LeftContentContainer pv='2xl'>
           <Box>
             <IconButton
@@ -381,7 +385,10 @@ export const CreatePasswordPage = () => {
             </Formik>
           </Box>
         </LeftContentContainer>
-      </PageWithAudiusValues>
+        <ArtworkContainer>
+          <AudiusValues />
+        </ArtworkContainer>
+      </SignOnContainerDesktop>
     </Flex>
   )
 }

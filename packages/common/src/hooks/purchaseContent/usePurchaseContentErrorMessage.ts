@@ -51,6 +51,8 @@ export const usePurchaseContentErrorMessage = (
     case BuyCryptoErrorCode.SWAP_ERROR:
     case BuyCryptoErrorCode.UNKNOWN:
     case BuyUSDCErrorCode.OnrampError:
+    case PurchaseErrorCode.Canceled:
+    case PurchaseErrorCode.InsufficientBalance:
     case PurchaseErrorCode.Unknown:
       return messages.generic
   }

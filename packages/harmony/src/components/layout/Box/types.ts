@@ -43,8 +43,24 @@ export type BoxProps = {
 
   /** Border */
   border?: BorderColors
+  /** Border Top */
+  borderTop?: BorderColors
+  /** Border Right */
+  borderRight?: BorderColors
+  /** Border Bottom */
+  borderBottom?: BorderColors
+  /** Border Left */
+  borderLeft?: BorderColors
   /** Border Radius */
   borderRadius?: CornerRadiusOptions
+  /** Border Top Right Radius */
+  borderTopRightRadius?: CornerRadiusOptions
+  /** Border Bottom Right Radius */
+  borderBottomRightRadius?: CornerRadiusOptions
+  /** Border Bottom Left Radius */
+  borderBottomLeftRadius?: CornerRadiusOptions
+  /** Border Top Left Radius */
+  borderTopLeftRadius?: CornerRadiusOptions
 
   /** Elevation Shadow */
   shadow?: ShadowOptions
