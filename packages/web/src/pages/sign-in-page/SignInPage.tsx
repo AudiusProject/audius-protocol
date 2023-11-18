@@ -51,14 +51,6 @@ export const SignInPage = () => {
     canonicalUrl: `${BASE_URL}/${SIGN_IN_PAGE}`
   }
 
-  if (isMobile) {
-    return (
-      <MobilePageContainer {...pageProps} fullHeight>
-        <SignInPageMobile />
-      </MobilePageContainer>
-    )
-  }
-
   return (
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
       {isMobile ? (
