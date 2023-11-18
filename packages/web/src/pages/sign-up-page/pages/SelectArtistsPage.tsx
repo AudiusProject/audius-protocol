@@ -12,8 +12,7 @@ import {
   Text,
   IconArrowRight,
   SelectablePill,
-  Paper,
-  Box
+  Paper
 } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
@@ -54,8 +53,7 @@ const SelectArtistsFormSchema = z.object({
 })
 
 export const SelectArtistsPage = () => {
-  // const genres = useSelector((state) => ['Featured', ...getGenres(state)])
-  const genres = ['Featured', 'Pop', 'Alternative']
+  const genres = useSelector((state) => ['Featured', ...getGenres(state)])
   const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const [currentGenre, setCurrentGenre] = useState('Featured')
   const dispatch = useDispatch()
@@ -100,7 +98,14 @@ export const SelectArtistsPage = () => {
       onSubmit={handleSubmit}
       validationSchema={toFormikValidationSchema(SelectArtistsFormSchema)}
     >
-      {({ values, isValid, isSubmitting, isValidating, dirty }) => {
+      {({
+        values,
+        isValid,
+        isSubmitting,
+        isValidating,
+        dirty,
+        handleSubmit
+      }) => {
         const { selectedArtists } = values
         return (
           <Flex
@@ -117,8 +122,7 @@ export const SelectArtistsPage = () => {
               }
             }}
           >
-            {/* DO NOT MERGE */}
-            {/* <AccountHeader /> */}
+            <AccountHeader />
             <Flex direction='column' gap='2xl' mh='5xl' mb='xl'>
               <Flex direction='column' gap='l'>
                 <Text
@@ -182,6 +186,7 @@ export const SelectArtistsPage = () => {
                 disabled={!dirty || !isValid || isSubmitting}
                 isLoading={isSubmitting || isValidating}
                 iconRight={IconArrowRight}
+                onClick={() => handleSubmit()}
               >
                 {messages.continue}
               </Button>
