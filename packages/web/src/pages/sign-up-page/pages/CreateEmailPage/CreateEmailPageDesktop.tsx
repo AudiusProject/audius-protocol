@@ -4,7 +4,6 @@ import {
   Divider,
   Flex,
   IconArrowRight,
-  SocialButton,
   Text
 } from '@audius/harmony'
 import cn from 'classnames'
@@ -20,6 +19,7 @@ import {
 } from 'pages/sign-on/components/AudiusValues'
 import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
 import { SignOnContainerDesktop } from 'pages/sign-on/components/desktop/SignOnContainerDesktop'
+import { SocialMediaLoginOptions } from 'pages/sign-up-page/components/SocialMediaLoginOptions'
 import { userHasMetaMask } from 'pages/sign-up-page/utils/metamask'
 import { SIGN_IN_PAGE } from 'utils/route'
 
@@ -59,23 +59,12 @@ export const CreateEmailPageDesktop = () => {
                 {messages.socialsDividerText}
               </Text>
             </Divider>
-            <Flex direction='row' gap='s' w='100%'>
-              <SocialButton
-                socialType='twitter'
-                css={{ flex: 1 }}
-                aria-label='Sign up with Twitter'
-              />
-              <SocialButton
-                socialType='instagram'
-                css={{ flex: 1 }}
-                aria-label='Sign up with Instagram'
-              />
-              <SocialButton
-                socialType='tiktok'
-                css={{ flex: 1 }}
-                aria-label='Sign up with TikTok'
-              />
-            </Flex>
+            <SocialMediaLoginOptions
+              onCompleteSocialMediaLogin={(result) => {
+                console.info(result)
+                // TODO
+              }}
+            />
           </Flex>
           <Flex direction='column' gap='l' alignItems='flex-start' w='100%'>
             <Button

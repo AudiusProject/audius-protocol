@@ -1,88 +1,94 @@
-import {
-  InstagramProfile,
-  Name,
-  TikTokProfile,
-  TwitterProfile
-} from '@audius/common'
+import { useContext } from 'react'
+
 import { Box, Flex, SocialButton } from '@audius/harmony'
-import { useDispatch } from 'react-redux'
 
-import { make } from 'common/store/analytics/actions'
-import InstagramAuth from 'components/instagram-auth/InstagramAuth'
-import { TikTokAuth } from 'components/tiktok-auth/TikTokAuthButton'
-import TwitterAuth from 'components/twitter-auth/TwitterAuth'
+import { ToastContext } from 'components/toast/ToastContext'
 
+import { messages } from '../utils/socialMediaMessages'
+
+import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
+import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
+import { SignupFlowTwitterAuth } from './SignupFlowTwitterAuth'
 import styles from './SocialMediaLoginOptions.module.css'
 
 type SocialMediaLoginOptionsProps = {
-  onTwitterLogin: (params: {
-    uuid: string
-    twitterProfile: TwitterProfile
-  }) => void
-  onLoginFailure: (error: any) => void
-  onInstagramLogin: (params: {
-    uuid: string
-    instagramProfile: InstagramProfile
-  }) => void
-  onTikTokLogin: (params: {
-    uuid: string
-    tikTokProfile: TikTokProfile
+  onCompleteSocialMediaLogin: (info: {
+    requiresReview: boolean
+    handle: string
+    platform: 'twitter' | 'instagram' | 'tiktok'
   }) => void
 }
 
 export const SocialMediaLoginOptions = ({
-  onTwitterLogin,
-  onTikTokLogin,
-  onInstagramLogin,
-  onLoginFailure
+  onCompleteSocialMediaLogin
 }: SocialMediaLoginOptionsProps) => {
-  const dispatch = useDispatch()
+  const { toast } = useContext(ToastContext)
+  const handleFailure = () => {
+    toast(messages.verificationError)
+  }
+
+  const handleSuccess = ({
+    handle,
+    requiresReview,
+    platform
+  }: {
+    requiresReview: boolean
+    handle: string
+    platform: 'twitter' | 'instagram' | 'tiktok'
+  }) => {
+    toast(messages.socialMediaLoginSucess(platform))
+    onCompleteSocialMediaLogin({
+      handle,
+      requiresReview,
+      platform
+    })
+  }
+
   return (
     <Flex direction='row' gap='s' w='100%'>
-      <TwitterAuth
+      <SignupFlowTwitterAuth
         className={styles.flex1}
-        forceLogin
-        onClick={() => {
-          dispatch(make(Name.CREATE_ACCOUNT_START_TWITTER, {}))
-        }}
-        onFailure={onLoginFailure}
-        onSuccess={(uuid, profile) =>
-          onTwitterLogin({ uuid, twitterProfile: profile })
+        onFailure={handleFailure}
+        onSuccess={({ handle, requiresReview }) =>
+          handleSuccess({ handle, requiresReview, platform: 'twitter' })
         }
       >
         <SocialButton
+          type='button'
           fullWidth
           socialType='twitter'
-          aria-label='Sign up with Twitter'
+          aria-label={messages.signUpTwitter}
         />
-      </TwitterAuth>
-      <InstagramAuth
+      </SignupFlowTwitterAuth>
+      <SignupFlowInstagramAuth
         className={styles.flex1}
-        onFailure={onLoginFailure}
-        onSuccess={(uuid, profile) =>
-          onInstagramLogin({ uuid, instagramProfile: profile })
+        onFailure={handleFailure}
+        onSuccess={({ handle, requiresReview }) =>
+          handleSuccess({ handle, requiresReview, platform: 'instagram' })
         }
       >
         <SocialButton
+          type='button'
           fullWidth
           socialType='instagram'
           className={styles.flex1}
-          aria-label='Sign up with Instagram'
+          aria-label={messages.signUpInstagram}
         />
-      </InstagramAuth>
+      </SignupFlowInstagramAuth>
       <Box className={styles.flex1}>
-        <TikTokAuth
-          onFailure={onLoginFailure}
-          onSuccess={(uuid, profile) =>
-            onTikTokLogin({ uuid, tikTokProfile: profile })
+        <SignupFlowTikTokAuth
+          onFailure={handleFailure}
+          onSuccess={({ handle, requiresReview }) =>
+            handleSuccess({ handle, requiresReview, platform: 'tiktok' })
           }
         >
           <SocialButton
+            type='button'
             fullWidth
             socialType='tiktok'
-            aria-label='Sign up with TikTok'
+            aria-label={messages.signUpTikTok}
           />
-        </TikTokAuth>
+        </SignupFlowTikTokAuth>
       </Box>
     </Flex>
   )

@@ -1,13 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo, useRef } from 'react'
 
-import {
-  AudiusQueryContext,
-  InstagramProfile,
-  Name,
-  TikTokProfile,
-  TwitterProfile,
-  useDebouncedCallback
-} from '@audius/common'
+import { AudiusQueryContext, useDebouncedCallback } from '@audius/common'
 import {
   Box,
   Button,
@@ -25,24 +18,18 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { make } from 'common/store/analytics/actions'
 import { setValueField } from 'common/store/pages/signon/actions'
 import { getHandleField } from 'common/store/pages/signon/selectors'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
-import InstagramAuth from 'components/instagram-auth/InstagramAuth'
-import { TikTokAuthLink } from 'components/tiktok-auth/TikTokAuthLink'
 import { ToastContext } from 'components/toast/ToastContext'
-import TwitterAuth from 'components/twitter-auth/TwitterAuth'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { SIGN_UP_FINISH_PROFILE_PAGE } from 'utils/route'
 
 import { ContinueFooter } from '../components/ContinueFooter'
+import { SignupFlowInstagramAuth } from '../components/SignupFlowInstagramAuth'
+import { SignupFlowTikTokAuth } from '../components/SignupFlowTikTokAuth'
+import { SignupFlowTwitterAuth } from '../components/SignupFlowTwitterAuth'
 import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
-import {
-  useSetProfileFromInstagram,
-  useSetProfileFromTikTok,
-  useSetProfileFromTwitter
-} from '../hooks/socialMediaLogin'
 import {
   generateHandleSchema,
   errorMessages as handleErrorMessages
@@ -75,32 +62,22 @@ type PickHandleValues = {
 }
 
 type HandleFieldProps = {
-  onTwitterLogin: (params: {
-    uuid: string
-    twitterProfile: TwitterProfile
-  }) => void
-  onInstagramLogin: (params: {
-    uuid: string
-    instagramProfile: InstagramProfile
-  }) => void
-  onTikTokLogin: (params: {
-    uuid: string
-    tikTokProfile: TikTokProfile
+  onCompleteSocialMediaLogin: (info: {
+    requiresReview: boolean
+    handle: string
+    platform: 'twitter' | 'instagram' | 'tiktok'
   }) => void
 }
 
-const HandleField = ({
-  onTwitterLogin,
-  onInstagramLogin,
-  onTikTokLogin
-}: HandleFieldProps) => {
-  const dispatch = useDispatch()
+const HandleField = ({ onCompleteSocialMediaLogin }: HandleFieldProps) => {
   const {
     values,
     validateForm,
     errors: { handle: error },
     setFieldError
   } = useFormikContext<PickHandleValues>()
+
+  const { toast } = useContext(ToastContext)
 
   const debouncedValidate = useDebouncedCallback(
     validateForm,
@@ -112,12 +89,28 @@ const HandleField = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedValidate, values.handle])
 
-  const handleVerifyHandleError = useCallback(
-    (e: unknown) => {
-      console.error(e)
-      setFieldError('handle', messages.verificationError)
+  const handleVerifyHandleError = useCallback(() => {
+    setFieldError('handle', messages.verificationError)
+  }, [setFieldError])
+
+  const handleLoginSuccess = useCallback(
+    ({
+      handle,
+      requiresReview,
+      platform
+    }: {
+      requiresReview: boolean
+      handle: string
+      platform: 'twitter' | 'instagram' | 'tiktok'
+    }) => {
+      toast(messages.socialMediaLoginSucess(platform))
+      onCompleteSocialMediaLogin({
+        handle,
+        requiresReview,
+        platform
+      })
     },
-    [setFieldError]
+    [onCompleteSocialMediaLogin, toast]
   )
 
   let helperText: React.ReactNode = error
@@ -126,49 +119,48 @@ const HandleField = ({
     helperText = (
       <>
         {messages.twitterReservedError}{' '}
-        <TwitterAuth
+        <SignupFlowTwitterAuth
           className={styles.linkToClaim}
-          forceLogin
-          onClick={() => {
-            dispatch(make(Name.CREATE_ACCOUNT_START_TWITTER, {}))
-          }}
           onFailure={handleVerifyHandleError}
-          onSuccess={(uuid, profile) =>
-            onTwitterLogin({ uuid, twitterProfile: profile })
+          onSuccess={({ handle, requiresReview }) =>
+            handleLoginSuccess({ handle, requiresReview, platform: 'twitter' })
           }
         >
           {messages.linkToClaim}
-        </TwitterAuth>
+        </SignupFlowTwitterAuth>
       </>
     )
   } else if (error === messages.instagramReservedError) {
     helperText = (
       <>
         {messages.instagramReservedError}{' '}
-        <InstagramAuth
+        <SignupFlowInstagramAuth
           onFailure={handleVerifyHandleError}
-          onSuccess={(uuid, profile) =>
-            onInstagramLogin({ uuid, instagramProfile: profile })
+          onSuccess={({ handle, requiresReview }) =>
+            handleLoginSuccess({
+              handle,
+              requiresReview,
+              platform: 'instagram'
+            })
           }
           className={styles.linkToClaim}
         >
           {messages.linkToClaim}
-        </InstagramAuth>
+        </SignupFlowInstagramAuth>
       </>
     )
   } else if (error === messages.tiktokReservedError) {
     helperText = (
       <>
         {messages.tiktokReservedError}{' '}
-        <TikTokAuthLink
+        <SignupFlowTikTokAuth
           onFailure={handleVerifyHandleError}
-          onSuccess={(uuid, profile) =>
-            onTikTokLogin({ uuid, tikTokProfile: profile })
+          onSuccess={({ handle, requiresReview }) =>
+            handleLoginSuccess({ handle, requiresReview, platform: 'tiktok' })
           }
-          className={styles.linkToClaim}
         >
-          {messages.linkToClaim}
-        </TikTokAuthLink>
+          <button className={styles.linkToClaim}>{messages.linkToClaim}</button>
+        </SignupFlowTikTokAuth>
       </>
     )
   }
@@ -187,26 +179,15 @@ const HandleField = ({
 }
 
 type SocialMediaSectionProps = {
-  onTwitterLogin: (params: {
-    uuid: string
-    twitterProfile: TwitterProfile
-  }) => void
-  onLoginFailure: (error: any) => void
-  onInstagramLogin: (params: {
-    uuid: string
-    instagramProfile: InstagramProfile
-  }) => void
-  onTikTokLogin: (params: {
-    uuid: string
-    tikTokProfile: TikTokProfile
+  onCompleteSocialMediaLogin: (info: {
+    requiresReview: boolean
+    handle: string
+    platform: 'twitter' | 'instagram' | 'tiktok'
   }) => void
 }
 
 const SocialMediaSection = ({
-  onTwitterLogin,
-  onTikTokLogin,
-  onInstagramLogin,
-  onLoginFailure
+  onCompleteSocialMediaLogin
 }: SocialMediaSectionProps) => {
   return (
     <Flex
@@ -231,10 +212,7 @@ const SocialMediaSection = ({
         </Text>
       </Box>
       <SocialMediaLoginOptions
-        onLoginFailure={onLoginFailure}
-        onTwitterLogin={onTwitterLogin}
-        onInstagramLogin={onInstagramLogin}
-        onTikTokLogin={onTikTokLogin}
+        onCompleteSocialMediaLogin={onCompleteSocialMediaLogin}
       />
       <Box>
         <Text variant='body' size='l'>
@@ -276,86 +254,28 @@ export const PickHandlePage = () => {
     },
     [dispatch, navigate]
   )
-  const setProfileFromTwitter = useSetProfileFromTwitter()
-  const setProfileFromInstagram = useSetProfileFromInstagram()
-  const setProfileFromTikTok = useSetProfileFromTikTok()
 
-  const handleVerificationError = (error: unknown) => {
-    console.error(error)
-    toast(messages.verificationError)
-  }
-
-  const processSocialLoginResult = ({
-    requiresReview,
-    handle,
-    platform
-  }: {
-    requiresReview: boolean
-    handle: string
-    platform: 'twitter' | 'instagram' | 'tiktok'
-  }) => {
-    if (!requiresReview) {
-      dispatch(setValueField('handle', handle))
-      navigate(SIGN_UP_FINISH_PROFILE_PAGE)
-      // TODO(nkang): Disable handle input + other login methods
-    } else {
-      formikRef.current?.setFieldValue('handle', handle, true)
-    }
-    toast(messages.socialMediaLoginSucess(platform))
-  }
-  const handleTwitterLogin = async (params: {
-    uuid: string
-    twitterProfile: TwitterProfile
-  }) => {
-    let res
-    try {
-      res = await setProfileFromTwitter(params)
-    } catch (e) {
-      handleVerificationError(e)
-      return
-    }
-    processSocialLoginResult({
-      requiresReview: res.requiresReview,
-      handle: res.handle,
-      platform: 'twitter'
-    })
-  }
-
-  const handleInstagramLogin = async (params: {
-    uuid: string
-    instagramProfile: InstagramProfile
-  }) => {
-    let res
-    try {
-      res = await setProfileFromInstagram(params)
-    } catch (e) {
-      handleVerificationError(e)
-      return
-    }
-    processSocialLoginResult({
-      requiresReview: res.requiresReview,
-      handle: res.handle,
-      platform: 'instagram'
-    })
-  }
-
-  const handleTikTokLogin = async (params: {
-    uuid: string
-    tikTokProfile: TikTokProfile
-  }) => {
-    let res
-    try {
-      res = await setProfileFromTikTok(params)
-    } catch (e) {
-      handleVerificationError(e)
-      return
-    }
-    processSocialLoginResult({
-      requiresReview: res.requiresReview,
-      handle: res.handle,
-      platform: 'tiktok'
-    })
-  }
+  const processSocialLoginResult = useCallback(
+    ({
+      requiresReview,
+      handle,
+      platform
+    }: {
+      requiresReview: boolean
+      handle: string
+      platform: 'twitter' | 'instagram' | 'tiktok'
+    }) => {
+      if (!requiresReview) {
+        dispatch(setValueField('handle', handle))
+        navigate(SIGN_UP_FINISH_PROFILE_PAGE)
+        // TODO(nkang): Disable handle input + other login methods
+      } else {
+        formikRef.current?.setFieldValue('handle', handle, true)
+      }
+      toast(messages.socialMediaLoginSucess(platform))
+    },
+    [dispatch, navigate, toast]
+  )
 
   const initialValues = {
     handle: value || ''
@@ -404,9 +324,7 @@ export const PickHandlePage = () => {
                   </Flex>
                   <Box mt='2xl'>
                     <HandleField
-                      onTwitterLogin={handleTwitterLogin}
-                      onInstagramLogin={handleInstagramLogin}
-                      onTikTokLogin={handleTikTokLogin}
+                      onCompleteSocialMediaLogin={processSocialLoginResult}
                     />
                   </Box>
                 </Box>
@@ -423,10 +341,7 @@ export const PickHandlePage = () => {
                   <Divider className={styles.divider} />
                 </Flex>
                 <SocialMediaSection
-                  onLoginFailure={handleVerificationError}
-                  onTwitterLogin={handleTwitterLogin}
-                  onInstagramLogin={handleInstagramLogin}
-                  onTikTokLogin={handleTikTokLogin}
+                  onCompleteSocialMediaLogin={processSocialLoginResult}
                 />
               </Flex>
               <ContinueFooter>
