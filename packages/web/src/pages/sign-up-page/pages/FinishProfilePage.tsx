@@ -5,7 +5,7 @@ import { Button } from '@audius/harmony'
 import { Formik, Form } from 'formik'
 import { useDispatch } from 'react-redux'
 
-import { setValueField } from 'common/store/pages/signon/actions'
+import { setField, setValueField } from 'common/store/pages/signon/actions'
 import { TextField } from 'components/form-fields'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { SIGN_UP_GENRES_PAGE } from 'utils/route'
@@ -39,8 +39,10 @@ export const FinishProfilePage = () => {
 
   const handleSubmit = useCallback(
     (values: FinishProfileValues) => {
-      const { displayName } = values
+      const { displayName, cover_photo, profile_picture } = values
       dispatch(setValueField('name', displayName))
+      dispatch(setField('coverPhoto', cover_photo))
+      dispatch(setField('profileImage', profile_picture))
       navigate(SIGN_UP_GENRES_PAGE)
     },
     [dispatch, navigate]
