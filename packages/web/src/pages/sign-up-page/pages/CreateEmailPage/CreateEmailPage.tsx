@@ -17,7 +17,7 @@ import { CreateEmailPageDesktop } from './CreateEmailPageDesktop'
 import { CreateEmailPageMobile } from './CreateEmailPageMobile'
 import { messages } from './messages'
 
-type SignUpEmailValues = {
+export type SignUpEmailValues = {
   email: string
 }
 

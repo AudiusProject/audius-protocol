@@ -20,13 +20,16 @@ import {
 } from 'pages/sign-on/components/AudiusValues'
 import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
 import { SignOnContainerDesktop } from 'pages/sign-on/components/desktop/SignOnContainerDesktop'
+import { userHasMetaMask } from 'pages/sign-up-page/utils/metamask'
 import { SIGN_IN_PAGE } from 'utils/route'
 
 import styles from './CreateEmailPage.module.css'
+import { SignUpWithMetaMaskButton } from './SignUpWithMetaMaskButton'
 import { messages } from './messages'
 
 export const CreateEmailPageDesktop = () => {
   const { isSubmitting } = useFormikContext()
+
   return (
     <Flex h='100%' alignItems='center' justifyContent='center'>
       <SignOnContainerDesktop>
@@ -98,6 +101,14 @@ export const CreateEmailPageDesktop = () => {
                 {messages.signIn}
               </Link>
             </Text>
+            {userHasMetaMask ? (
+              <Flex direction='column' alignItems='center' w='100%'>
+                <SignUpWithMetaMaskButton />
+                <Text size='s' variant='body'>
+                  {messages.metaMaskNotRecommended}
+                </Text>
+              </Flex>
+            ) : null}
           </Flex>
         </LeftContentContainer>
         <ArtworkContainer>

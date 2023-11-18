@@ -7,13 +7,16 @@ import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import PreloadImage from 'components/preload-image/PreloadImage'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import {
   ArtworkContainer,
   AudiusValues
 } from 'pages/sign-on/components/AudiusValues'
 import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
+import { MetaMaskOption } from 'pages/sign-on/components/desktop/MetaMaskOption'
 import { SignOnContainerDesktop } from 'pages/sign-on/components/desktop/SignOnContainerDesktop'
-import { SIGN_UP_PAGE } from 'utils/route'
+import { userHasMetaMask } from 'pages/sign-up-page/utils/metamask'
+import { FEED_PAGE, SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './SignInPage.module.css'
 
@@ -27,6 +30,18 @@ const messages = {
 }
 
 export const SignInPageDesktop = () => {
+  const navigate = useNavigateToPage()
+
+  const handleSignInWithMetaMask = async () => {
+    try {
+      window.localStorage.setItem('useMetaMask', JSON.stringify(true))
+    } catch (err) {
+      console.error(err)
+    }
+    navigate(FEED_PAGE)
+    window.location.reload()
+  }
+
   return (
     <Flex h='100%' alignItems='center' justifyContent='center'>
       <SignOnContainerDesktop>
@@ -58,9 +73,17 @@ export const SignInPageDesktop = () => {
                     />
                   </Flex>
                   <Flex direction='column' gap='l'>
-                    <Button iconRight={IconArrowRight} type='submit'>
-                      {messages.signIn}
-                    </Button>
+                    <Flex direction='column' w='100%'>
+                      <Button iconRight={IconArrowRight} type='submit'>
+                        {messages.signIn}
+                      </Button>
+                      {userHasMetaMask ? (
+                        <MetaMaskOption
+                          text='Sign In With'
+                          onClick={handleSignInWithMetaMask}
+                        />
+                      ) : null}
+                    </Flex>
                     <Flex direction='row' alignItems='flexStart'>
                       <Text color='heading'>
                         {/* TODO: link destination */}
