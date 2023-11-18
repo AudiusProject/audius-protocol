@@ -28,6 +28,10 @@
   font-weight: var(--font-bold);
 }
 
+.unsetWidth {
+  width: unset;
+}
+
 .metaMaskLogo {
   height: 20px;
   width: 109px;

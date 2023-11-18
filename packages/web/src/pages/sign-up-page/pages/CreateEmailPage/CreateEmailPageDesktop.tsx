@@ -21,13 +21,16 @@ import {
 } from 'pages/sign-on/components/AudiusValues'
 import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
 import { SignOnContainerDesktop } from 'pages/sign-on/components/desktop/SignOnContainerDesktop'
+import { userHasMetaMask } from 'pages/sign-up-page/utils/metamask'
 import { SIGN_IN_PAGE } from 'utils/route'
 
 import styles from './CreateEmailPage.module.css'
+import { SignUpWithMetaMaskButton } from './SignUpWithMetaMaskButton'
 import { messages } from './messages'
 
 export const CreateEmailPageDesktop = () => {
   const { isSubmitting } = useFormikContext()
+
   return (
     <Flex h='100%' alignItems='center' justifyContent='center'>
       <SignOnContainerDesktop>
@@ -52,13 +55,11 @@ export const CreateEmailPageDesktop = () => {
               autoComplete='email'
               label={messages.emailLabel}
             />
-            <Flex w='100%' alignItems='center' gap='s'>
-              <Divider css={{ flex: 1, alignSelf: 'center' }} />
+            <Divider css={{ width: '100%' }}>
               <Text variant='body' size='m' tag='p' color='subdued'>
                 {messages.socialsDividerText}
               </Text>
-              <Divider css={{ flex: 1, alignSelf: 'center' }} />
-            </Flex>
+            </Divider>
             <Flex direction='row' gap='s' w='100%'>
               <SocialButton
                 socialType='twitter'
@@ -94,6 +95,14 @@ export const CreateEmailPageDesktop = () => {
                 <Link to={SIGN_IN_PAGE}>{messages.signIn}</Link>
               </TextLink>
             </Text>
+            {userHasMetaMask ? (
+              <Flex direction='column' alignItems='center' w='100%'>
+                <SignUpWithMetaMaskButton />
+                <Text size='s' variant='body'>
+                  {messages.metaMaskNotRecommended}
+                </Text>
+              </Flex>
+            ) : null}
           </Flex>
         </LeftContentContainer>
         <ArtworkContainer>

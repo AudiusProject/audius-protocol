@@ -59,7 +59,7 @@ const determineAllowedRoute = (
     // Already have email
     allowedRoutes.push(SignUpPath.createPassword)
   }
-  if (signUpState.password.value) {
+  if (signUpState.password.value || signUpState.useMetaMask) {
     // Already have password
     allowedRoutes.push(SignUpPath.pickHandle)
   }

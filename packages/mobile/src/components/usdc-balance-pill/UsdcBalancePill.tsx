@@ -41,7 +41,6 @@ export const UsdcBalancePill = () => {
     (usdcBalance ?? new BN(0)) as BNUSDC
   )
   const usdcBalanceFormatted = formatCurrencyBalance(balanceCents / 100)
-
   return (
     <View style={styles.root}>
       <LogoUSDC height={spacing(5)} width={spacing(5)} />
