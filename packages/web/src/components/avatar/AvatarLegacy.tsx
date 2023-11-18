@@ -13,7 +13,7 @@ import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { useSelector } from 'utils/reducer'
 import { SIGN_IN_PAGE, profilePage } from 'utils/route'
 
-import styles from './Avatar.module.css'
+import styles from './AvatarLegacy.module.css'
 
 const { getAccountUser } = accountSelectors
 

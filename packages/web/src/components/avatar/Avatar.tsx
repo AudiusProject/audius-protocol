@@ -31,7 +31,7 @@ type AvatarProps = Omit<HarmonyAvatarProps, 'src'> & {
 }
 
 export const Avatar = (props: AvatarProps) => {
-  const { userId, ...passthroughProps } = props
+  const { userId, ...other } = props
   const profileImage = useProfilePicture(
     userId ?? null,
     SquareSizes.SIZE_150_BY_150
@@ -54,7 +54,7 @@ export const Avatar = (props: AvatarProps) => {
 
   return (
     <Link to={goTo} aria-label={`${messages.goTo} ${name} ${messages.profile}`}>
-      <HarmonyAvatar src={image} {...passthroughProps} />
+      <HarmonyAvatar src={image} {...other} />
     </Link>
   )
 }

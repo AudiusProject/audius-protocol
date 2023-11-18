@@ -116,10 +116,8 @@ export const SelectArtistsPage = () => {
               }
             }}
           >
-            <AccountHeader />
             <Flex direction='column' gap='2xl' mh='5xl' mb='xl'>
-              {/* TODO: Placeholder for AccountHeader */}
-              <Box />
+              <AccountHeader />
               <Flex direction='column' gap='l'>
                 <Text
                   variant='heading'
