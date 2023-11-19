@@ -12,7 +12,7 @@ import cn from 'classnames'
 import { Icon } from 'components/Icon'
 import Skeleton from 'components/skeleton/Skeleton'
 
-import styles from './USDCBalancePill.module.css'
+import styles from './USDCBalancePill2.module.css'
 
 type USDCPillProps = {
   className?: string

@@ -5,7 +5,8 @@ import {
   useUSDCManualTransferModal,
   buyUSDCActions,
   USDCOnRampProvider,
-  PurchaseMethod
+  PurchaseMethod,
+  PurchaseVendor
 } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -17,7 +18,7 @@ import { reset as resetPurchaseMethod } from 'app/store/purchase-vendor/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
 import { PaymentMethod } from '../payment-method/PaymentMethod'
-import { USDCBalanceRow } from '../usdc-balance-row/USDCBalanceRow'
+import { USDCBalanceRow } from '../usdc-balance-row/USDCBalanceRow2'
 
 const DEFAULT_PURCHASE_AMOUNT_CENTS = 10 * 100
 
@@ -53,7 +54,7 @@ export const AddFundsDrawer = () => {
 
   const openCardFlow = useCallback(() => {
     switch (purchaseVendorState) {
-      case 'stripe':
+      case PurchaseVendor.STRIPE:
         dispatch(
           buyUSDCActions.onrampOpened({
             provider: USDCOnRampProvider.STRIPE,
