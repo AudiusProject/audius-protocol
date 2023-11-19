@@ -57,7 +57,7 @@ export const PurchaseSummaryTable = ({
       items={items}
       title={isPurchased ? messages.youPaid : messages.total}
       secondaryTitle={
-        <Text variant='inherit' color='secondary'>
+        <Text as='span' variant='inherit' color='secondary'>
           {messages.price(formatPrice(amountDue))}
         </Text>
       }
