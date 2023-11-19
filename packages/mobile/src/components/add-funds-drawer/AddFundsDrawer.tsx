@@ -18,7 +18,7 @@ import { reset as resetPurchaseMethod } from 'app/store/purchase-vendor/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
 import { PaymentMethod } from '../payment-method/PaymentMethod'
-import { USDCBalanceRow } from '../usdc-balance-row/USDCBalanceRow2'
+import { USDCBalanceRow } from '../usdc-balance-row/USDCBalanceRow'
 
 const DEFAULT_PURCHASE_AMOUNT_CENTS = 10 * 100
 
