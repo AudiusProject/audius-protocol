@@ -88,8 +88,7 @@ def validate_user_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Invalid User Transaction, user id {user_id} offset incorrect"
             )
-        developer_app = params.existing_records["DeveloperApp"][params.signer.lower()]
-        if developer_app:
+        if params.signer.lower() in params.existing_records["DeveloperApp"]:
             raise IndexingValidationError(
                 f"Invalid developer app {params.signer.lower()} cannot create user"
             )
