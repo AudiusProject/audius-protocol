@@ -1,4 +1,5 @@
 import { resolveRoute } from 'vike/routing'
+
 import { staticRoutes } from 'utils/route'
 
 export default (pageContext) => {

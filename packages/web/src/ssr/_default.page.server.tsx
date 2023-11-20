@@ -1,24 +1,23 @@
-// This should do nothing, just serve the page as-is
-
-import React from 'react'
-
+import { Track } from '@audius/sdk'
 import ReactDOMServer from 'react-dom/server'
 import { escapeInject, dangerouslySkipEscape } from 'vike/server'
+import { PageContextServer } from 'vike/types'
 
-import { PageLayout } from './PageLayout'
+import { WebPlayerSkeleton } from './WebPlayerSkeleton'
 
-// See https://vike.dev/data-fetching
 export const passToClient = ['pageProps']
 
-export function render(pageContext) {
+export function render(
+  pageContext: PageContextServer & { pageProps: { track: Track } }
+) {
   const { Page, pageProps } = pageContext
   const pageHtml = ReactDOMServer.renderToString(
-    <PageLayout>
-      hi
-      {/* <Page {...pageProps} /> */}
-    </PageLayout>
+    <WebPlayerSkeleton>
+      <Page {...pageProps} />
+    </WebPlayerSkeleton>
   )
 
+  // TODO: this needs to be index.html
   return escapeInject`<!DOCTYPE html>
     <html>
       <body>
