@@ -30,6 +30,7 @@ export type Modals =
   | 'CollectibleDetails'
   | 'DeactivateAccountConfirmation'
   | 'FeedFilter'
+  | 'PurchaseVendor'
   | 'TrendingGenreSelection'
   | 'SocialProof'
   | 'EditFolder'

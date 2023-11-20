@@ -31,7 +31,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   }
 }))
 
-export const UsdcBalancePill = () => {
+export const USDCBalancePill = () => {
   const styles = useStyles()
   const { data: usdcBalance, balanceStatus: usdcBalanceStatus } =
     useUSDCBalance({ isPolling: false })

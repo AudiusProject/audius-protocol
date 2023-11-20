@@ -3,13 +3,14 @@ import { useCallback, useState } from 'react'
 import {
   useAddFundsModal,
   buyUSDCActions,
-  USDCOnRampProvider
+  USDCOnRampProvider,
+  PurchaseMethod
 } from '@audius/common'
 import { ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
-import { AddFunds, Method } from 'components/add-funds/AddFunds'
+import { AddFunds } from 'components/add-funds/AddFunds'
 import { Text } from 'components/typography'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
@@ -43,8 +44,8 @@ export const AddFundsModal = () => {
   }, [setPage])
 
   const handleContinue = useCallback(
-    (method: Method) => {
-      if (method === 'crypto') {
+    (purchaseMethod: PurchaseMethod) => {
+      if (purchaseMethod === PurchaseMethod.CRYPTO) {
         setPage('crypto-transfer')
       } else {
         dispatch(
