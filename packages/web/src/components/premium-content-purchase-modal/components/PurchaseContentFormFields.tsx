@@ -107,6 +107,7 @@ export const PurchaseContentFormFields = ({
           disabled: isExistingBalanceDisabled,
           value: (
             <Text
+              as='span' // Needed to avoid <p> inside <p> warning
               variant='title'
               color={
                 purchaseMethod === PurchaseMethod.EXISTING_BALANCE
