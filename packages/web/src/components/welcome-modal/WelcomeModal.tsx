@@ -50,7 +50,7 @@ export const WelcomeModal = () => {
         css={({ color }) => ({
           zIndex: 1,
           backgroundColor: color.background.default,
-          background: `url("${profileImage?.url}")`,
+          background: `url("${profileImage}")`,
           ...(!isMobile && {
             '::before': {
               content: '""',
@@ -66,7 +66,7 @@ export const WelcomeModal = () => {
       >
         <Avatar
           variant='strong'
-          src={profileImage?.url}
+          src={profileImage}
           css={{ position: 'absolute', top: 40, height: 96, width: 96 }}
         />
       </Flex>
