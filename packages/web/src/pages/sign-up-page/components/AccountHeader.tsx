@@ -83,8 +83,8 @@ const ProfileImageAvatar = ({
 }
 
 export const AccountHeader = ({ mode }: AccountHeaderProps) => {
-  const coverPhoto = useSelector(getCoverPhotoField)
-  const profileImage = useSelector(getProfileImageField)
+  const { value: coverPhoto } = useSelector(getCoverPhotoField)
+  const { value: profileImage } = useSelector(getProfileImageField)
   const { value: displayName } = useSelector(getNameField)
   const { value: handle } = useSelector(getHandleField)
   const isEditing = mode === 'editing'

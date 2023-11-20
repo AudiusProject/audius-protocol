@@ -58,8 +58,8 @@ export const FinishProfilePage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const { value: savedDisplayName } = useSelector(getNameField)
-  const savedPoverPhoto = useSelector(getCoverPhotoField)
-  const savedProfileImage = useSelector(getProfileImageField)
+  const { value: savedPoverPhoto } = useSelector(getCoverPhotoField)
+  const { value: savedProfileImage } = useSelector(getProfileImageField)
 
   const initialValues = {
     profileImage: { url: savedProfileImage },
