@@ -33,6 +33,12 @@ export const Default: Story = {
   }
 }
 
+export const NoImage: Story = {
+  args: {
+    src: undefined
+  }
+}
+
 export const Strong: Story = {
   args: {
     variant: 'strong',

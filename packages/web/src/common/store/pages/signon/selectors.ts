@@ -12,9 +12,10 @@ export const getNameField = (state: AppState) => state.signOn.name
 export const getPasswordField = (state: AppState) => state.signOn.password
 export const getHandleField = (state: AppState) => state.signOn.handle
 export const getIsVerified = (state: AppState) => state.signOn.verified
-export const getCoverPhotoField = (state: AppState) => state.signOn.coverPhoto
+export const getCoverPhotoField = (state: AppState) =>
+  state.signOn.coverPhoto?.value
 export const getProfileImageField = (state: AppState) =>
-  state.signOn.profileImage
+  state.signOn.profileImage?.value
 export const getGenres = (state: AppState) => state.signOn.genres
 export const getIsMobileSignOnVisible = (state: AppState) =>
   state.signOn.isMobileSignOnVisible

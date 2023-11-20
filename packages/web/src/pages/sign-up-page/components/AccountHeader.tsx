@@ -1,41 +1,97 @@
-import { Avatar, Box, Flex, Text } from '@audius/harmony'
+import { Avatar, Box, Flex, IconCamera, Text } from '@audius/harmony'
+import { useDispatch } from 'react-redux'
 
 import {
   getCoverPhotoField,
-  getHandleField,
   getNameField,
   getProfileImageField
 } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { useSelector } from 'utils/reducer'
 
-export const AccountHeader = () => {
-  const coverPhoto = useSelector(getCoverPhotoField)
-  const profileImage = useSelector(getProfileImageField)
-  const { value: displayName } = useSelector(getNameField)
-  const { value: handle } = useSelector(getHandleField)
+import { ImageField } from './ImageField'
 
+type AccountHeaderProps = {
+  mode: 'editing' | 'viewing'
+}
+
+const CoverPhotoBox = ({ imageUrl }: { imageUrl: string | undefined }) => (
+  <Box
+    h='100%'
+    w='100%'
+    border='default'
+    css={{
+      backgroundColor: 'lightgray',
+      overflow: 'hidden',
+      ...(imageUrl
+        ? {
+            backgroundImage: `url(${imageUrl})`,
+            backgroundPosition: 'center',
+            backgroundSize: '100%',
+            backgroundRepeat: 'no-repeat, no-repeat'
+          }
+        : {
+            background:
+              'linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.00) 100%), #C2C0CC'
+          })
+
+      // filter: 'blur(25px)',
+    }}
+  />
+)
+
+const ProfileImageAvatar = ({
+  imageUrl,
+  isEditing
+}: {
+  imageUrl: string
+  isEditing?: boolean
+}) => {
   const { isMobile } = useMedia()
 
   const avatarSize = isMobile ? 72 : 120
+  return (
+    <Avatar
+      variant='strong'
+      src={imageUrl}
+      css={{
+        height: avatarSize,
+        width: avatarSize,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      {isEditing && !imageUrl ? (
+        <IconCamera size='l' color='staticWhite' />
+      ) : null}
+    </Avatar>
+  )
+}
+
+export const AccountHeader = ({ mode }: AccountHeaderProps) => {
+  const coverPhoto = useSelector(getCoverPhotoField)
+  const profileImage = useSelector(getProfileImageField)
+  const { value: displayName } = useSelector(getNameField)
+  // const { value: handle } = useSelector(getHandleField)
+  // const displayName = 'Aang'
+  const handle = 'f&$kTheFireNation'
+  const isEditing = mode === 'editing'
+
+  const { isMobile } = useMedia()
 
   return (
-    <Box>
-      <Box h={isMobile ? 96 : 168} css={{ overflow: 'hidden' }}>
-        <Box
-          h='100%'
-          w='100%'
-          border='default'
-          css={{
-            backgroundImage: `linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.00) 100%), url(${coverPhoto.url}), url(${coverPhoto.url})`,
-            backgroundPosition: '2.033px -355.342px, center, center',
-            backgroundSize: '100% 571.429%, cover',
-            backgroundRepeat: 'no-repeat, no-repeat',
-            backgroundColor: 'lightgray',
-            filter: 'blur(25px)',
-            overflow: 'hidden'
-          }}
-        />
+    <Box w='100%'>
+      <Box h={isMobile ? 96 : 168} css={{ overflow: 'hidden' }} w='100%'>
+        {isEditing ? (
+          <ImageField name='cover_photo'>
+            {(uploadedImage) => (
+              <CoverPhotoBox imageUrl={uploadedImage?.url ?? coverPhoto} />
+            )}
+          </ImageField>
+        ) : (
+          <CoverPhotoBox imageUrl={coverPhoto} />
+        )}
       </Box>
       <Flex
         css={[
@@ -44,7 +100,7 @@ export const AccountHeader = () => {
             display: 'inline-flex'
           },
           isMobile
-            ? { top: 40, left: 16 }
+            ? { top: 40, left: 16, width: 'calc(100% - 40px)' }
             : {
                 left: 0,
                 right: 0,
@@ -52,15 +108,22 @@ export const AccountHeader = () => {
                 margin: '0 auto'
               }
         ]}
-        justifyContent='center'
+        justifyContent='flex-start'
         alignItems='flex-start'
         gap={isMobile ? 's' : 'xl'}
       >
-        <Avatar
-          variant='strong'
-          css={{ height: avatarSize, width: avatarSize }}
-          src={profileImage.url}
-        />
+        {isEditing ? (
+          <ImageField name='profile_image' css={{ flex: 0 }}>
+            {(uploadedImage) => (
+              <ProfileImageAvatar
+                imageUrl={uploadedImage?.url ?? profileImage}
+                isEditing
+              />
+            )}
+          </ImageField>
+        ) : (
+          <ProfileImageAvatar imageUrl={profileImage} />
+        )}
         <Flex direction='column' gap='2xs' alignItems='flex-start'>
           <Text
             variant='heading'

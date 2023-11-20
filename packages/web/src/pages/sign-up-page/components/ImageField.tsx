@@ -1,6 +1,7 @@
-import { useCallback } from 'react'
+import { ReactNode, useCallback } from 'react'
 
 import { Nullable } from '@audius/common'
+import cn from 'classnames'
 import { useField } from 'formik'
 import ReactDropzone, { DropFilesEventHandler } from 'react-dropzone'
 
@@ -9,20 +10,24 @@ import {
   resizeImage
 } from 'utils/imageProcessingUtil'
 
-const allowedImages = ALLOWED_IMAGE_FILE_TYPES.join(', ')
+import styles from './ImageField.module.css'
 
-type ImageFieldProps = {
-  name: string
-  className: string
-}
+const allowedImages = ALLOWED_IMAGE_FILE_TYPES.join(', ')
 
 type ImageFieldValue = Nullable<{
   file: File
   url: string
 }>
 
+type ImageFieldProps = {
+  name: string
+  className?: string
+  children: (urlValue: ImageFieldValue | null) => ReactNode | ReactNode[]
+  onChange?: (image: ImageFieldValue) => void
+}
+
 export const ImageField = (props: ImageFieldProps) => {
-  const { name, className } = props
+  const { name, className, children, onChange } = props
 
   const [field, , { setValue }] = useField<ImageFieldValue>(name)
   const { value } = field
@@ -32,9 +37,13 @@ export const ImageField = (props: ImageFieldProps) => {
       const [file] = files
       const resizedFile = await resizeImage(file)
       const url = URL.createObjectURL(resizedFile)
-      setValue({ file: resizedFile, url })
+      const image = { file: resizedFile, url }
+      setValue(image)
+      if (onChange) {
+        onChange(image)
+      }
     },
-    [setValue]
+    [setValue, onChange]
   )
 
   return (
@@ -42,9 +51,9 @@ export const ImageField = (props: ImageFieldProps) => {
       onDrop={handleChange}
       data-testid={`${name}-dropzone`}
       accept={allowedImages}
-      className={className}
+      className={cn(styles.defaultStyles, className)}
     >
-      <img className={className} src={value?.url} />
+      {children(value)}
     </ReactDropzone>
   )
 }

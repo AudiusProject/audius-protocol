@@ -51,8 +51,8 @@ export default interface SignOnPageState {
   accountReady: boolean
   twitterId: string
   twitterScreenName: string
-  profileImage: { file: File; url: string }
-  coverPhoto: { file: File; url: string }
+  profileImage: EditableField
+  coverPhoto: EditableField
   suggestedFollowIds: ID[]
   suggestedFollowEntries: User[]
   followIds: ID[]
