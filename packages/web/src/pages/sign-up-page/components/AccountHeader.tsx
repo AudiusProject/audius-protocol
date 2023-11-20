@@ -1,4 +1,4 @@
-import { Avatar, Box, Flex, IconCamera, Text } from '@audius/harmony'
+import { Avatar, Box, Flex, IconCamera, IconImage, Text } from '@audius/harmony'
 
 import {
   getCoverPhotoField,
@@ -14,7 +14,13 @@ type AccountHeaderProps = {
   mode: 'editing' | 'viewing'
 }
 
-const CoverPhotoBox = ({ imageUrl }: { imageUrl: string | undefined }) => (
+const CoverPhotoBox = ({
+  imageUrl,
+  isEditing
+}: {
+  imageUrl: string | undefined
+  isEditing?: boolean
+}) => (
   <Box
     h='100%'
     w='100%'
@@ -34,7 +40,14 @@ const CoverPhotoBox = ({ imageUrl }: { imageUrl: string | undefined }) => (
               'linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.00) 100%), #C2C0CC'
           })
     }}
-  />
+  >
+    {isEditing && !imageUrl ? (
+      <IconImage
+        css={{ position: 'absolute', right: '16px', top: '16px' }}
+        color='staticWhite'
+      />
+    ) : null}
+  </Box>
 )
 
 const ProfileImageAvatar = ({
@@ -45,8 +58,9 @@ const ProfileImageAvatar = ({
   isEditing?: boolean
 }) => {
   const { isMobile } = useMedia()
+  const useSmallSize = isEditing || isMobile
 
-  const avatarSize = isMobile || isEditing ? 72 : 120
+  const avatarSize = useSmallSize ? 72 : 120
   return (
     <Avatar
       variant='strong'
@@ -57,7 +71,7 @@ const ProfileImageAvatar = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        ...(isMobile ? { transform: 'translateY(20px)' } : null)
+        ...(useSmallSize ? { transform: 'translateY(20px)' } : null)
       }}
     >
       {isEditing && !imageUrl ? (
@@ -77,18 +91,18 @@ export const AccountHeader = ({ mode }: AccountHeaderProps) => {
   const isEditing = mode === 'editing'
 
   const { isMobile } = useMedia()
+  const useSmallSize = isEditing || isMobile
 
   return (
     <Box w='100%'>
-      <Box
-        h={isMobile || isEditing ? 96 : 168}
-        css={{ overflow: 'hidden' }}
-        w='100%'
-      >
+      <Box h={useSmallSize ? 96 : 168} css={{ overflow: 'hidden' }} w='100%'>
         {isEditing ? (
           <ImageField name='coverPhoto' imageResizeOptions={{ square: false }}>
             {(uploadedImage) => (
-              <CoverPhotoBox imageUrl={uploadedImage?.url ?? coverPhoto} />
+              <CoverPhotoBox
+                imageUrl={uploadedImage?.url ?? coverPhoto}
+                isEditing
+              />
             )}
           </ImageField>
         ) : (
@@ -101,7 +115,7 @@ export const AccountHeader = ({ mode }: AccountHeaderProps) => {
             position: 'absolute',
             display: 'flex'
           },
-          isMobile || isEditing
+          useSmallSize
             ? { bottom: 0, left: 16, maxWidth: 'calc(100% - 32px)' }
             : {
                 left: 0,
@@ -111,9 +125,9 @@ export const AccountHeader = ({ mode }: AccountHeaderProps) => {
                 margin: '0 auto'
               }
         ]}
-        justifyContent={isMobile || isEditing ? 'flex-start' : 'center'}
-        alignItems={isMobile || isEditing ? 'flex-end' : 'flex-start'}
-        gap={isMobile || isEditing ? 's' : 'xl'}
+        justifyContent={useSmallSize ? 'flex-start' : 'center'}
+        alignItems={useSmallSize ? 'flex-end' : 'flex-start'}
+        gap={useSmallSize ? 's' : 'xl'}
       >
         {isEditing ? (
           <ImageField name='profileImage' css={{ flex: 0 }}>
@@ -138,14 +152,14 @@ export const AccountHeader = ({ mode }: AccountHeaderProps) => {
         >
           <Text
             variant='heading'
-            size={isMobile || isEditing ? 's' : 'xl'}
+            size={useSmallSize ? 's' : 'xl'}
             strength='strong'
             color='staticWhite'
             shadow='emphasis'
             tag='p'
             css={{
               wordBreak: 'break-word',
-              minHeight: isMobile || isEditing ? '24px' : '40px',
+              minHeight: useSmallSize ? '24px' : '40px',
               minWidth: '1px'
             }}
           >
@@ -153,7 +167,7 @@ export const AccountHeader = ({ mode }: AccountHeaderProps) => {
           </Text>
           <Text
             variant='body'
-            size={isMobile || isEditing ? 's' : 'm'}
+            size={useSmallSize ? 's' : 'm'}
             color='staticWhite'
             shadow='emphasis'
           >
