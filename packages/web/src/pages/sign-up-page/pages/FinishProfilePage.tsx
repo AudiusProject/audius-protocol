@@ -13,12 +13,13 @@ import {
   getNameField,
   getProfileImageField
 } from 'common/store/pages/signon/selectors'
-import { TextField } from 'components/form-fields'
+import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { SIGN_UP_GENRES_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
+import { ContinueFooter } from '../components/ContinueFooter'
 
 const messages = {
   header: 'Finish Your Profile',
@@ -26,22 +27,30 @@ const messages = {
     'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
   displayName: 'Display Name',
   continue: 'Continue',
-  inputPlaceholder: 'express yourself 💫'
+  inputPlaceholder: 'express yourself 💫',
+  displayNameRequired: 'Display name is required.',
+  profileImageRequired: 'Profile image is required.'
 }
 
 type FinishProfileValues = {
-  profile_image: Nullable<{ file?: File; url: string }>
-  cover_photo: Nullable<{ file?: File; url: string }>
+  profileImage: { file?: File; url: string }
+  coverPhoto: Nullable<{ file?: File; url: string }>
   displayName: string
 }
 
 // Schema requiring displayName
 const formSchema = toFormikValidationSchema(
-  z
-    .object({
-      displayName: z.string()
-    })
-    .required()
+  z.object({
+    displayName: z.string({ required_error: 'Display name is required.' }),
+    profileImage: z.object({
+      url: z.string({ required_error: 'Profile image is required.' })
+    }),
+    coverPhoto: z
+      .object({
+        url: z.string().optional()
+      })
+      .optional()
+  })
 )
 
 export const FinishProfilePage = () => {
@@ -53,21 +62,21 @@ export const FinishProfilePage = () => {
   const savedProfileImage = useSelector(getProfileImageField)
 
   const initialValues = {
-    profile_image: { url: savedProfileImage },
-    cover_photo: { url: savedPoverPhoto },
+    profileImage: { url: savedProfileImage },
+    coverPhoto: { url: savedPoverPhoto },
     displayName: savedDisplayName || ''
   }
 
   const handleSubmit = useCallback(
-    ({ cover_photo, profile_image }: FinishProfileValues) => {
-      if (cover_photo) {
+    ({ coverPhoto, profileImage }: FinishProfileValues) => {
+      console.log('submitgin')
+      // Only saving the url as there's no need to store the blob in the store
+      dispatch(setValueField('profileImage', profileImage.url))
+      if (coverPhoto) {
         // Only saving the url as there's no need to store the blob in the store
-        dispatch(setValueField('coverPhoto', cover_photo.url))
+        dispatch(setValueField('coverPhoto', coverPhoto.url))
       }
-      if (profile_image) {
-        // Only saving the url as there's no need to store the blob in the store
-        dispatch(setValueField('profileImage', profile_image.url))
-      }
+
       navigate(SIGN_UP_GENRES_PAGE)
     },
     [navigate, dispatch]
@@ -76,83 +85,105 @@ export const FinishProfilePage = () => {
   const { color } = useTheme()
 
   return (
-    <Flex
-      direction='column'
-      h='100%'
-      alignItems='center'
-      w='100%'
-      pt={isMobile ? 'xl' : '3xl'}
-      css={{ background: color.background.white }}
+    <Formik
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+      validationSchema={formSchema}
+      validateOnBlur={false}
+      validateOnChange={false}
     >
-      <Flex
-        direction='column'
-        gap={isMobile ? 'xl' : '2xl'}
-        // TODO: what is this 608px number 🤔
-        css={{ maxWidth: isMobile ? undefined : '608px' }}
-      >
-        <Flex direction='column' gap={isMobile ? 's' : 'l'} ph='l'>
-          <Text
-            variant='heading'
-            size={isMobile ? 'm' : 'l'}
-            color='heading'
-            css={{ textAlign: isMobile ? 'left' : 'center' }}
-            id='genre-header'
+      {({ handleChange, errors, values }) => (
+        <Flex
+          as={Form}
+          direction='column'
+          h='100%'
+          alignItems='center'
+          justifyContent='space-between'
+          w='100%'
+          pt={isMobile ? 'xl' : '3xl'}
+          css={{ background: color.background.white }}
+        >
+          <Flex
+            direction='column'
+            gap={isMobile ? 'xl' : '2xl'}
+            // TODO: what is this 608px number 🤔
+            css={{ maxWidth: isMobile ? undefined : '608px' }}
           >
-            {messages.header}
-          </Text>
-          <Text
-            variant='body'
-            size={isMobile ? 'm' : 'l'}
-            css={{ textAlign: isMobile ? 'left' : 'center' }}
-          >
-            {messages.description}
-          </Text>
-          <Formik
-            initialValues={initialValues}
-            onSubmit={handleSubmit}
-            validationSchema={formSchema}
-          >
-            {({ handleChange }) => (
-              <Flex
-                as={Form}
-                alignItems={isMobile ? 'flex-start' : 'center'}
-                direction='column'
-                flex={1}
-                justifyContent='space-between'
+            <Flex direction='column' gap={isMobile ? 's' : 'l'} ph='l'>
+              <Text
+                variant='heading'
+                size={isMobile ? 'm' : 'l'}
+                color='heading'
+                css={{ textAlign: isMobile ? 'left' : 'center' }}
+                id='genre-header'
               >
-                <Paper
-                  role='group'
-                  aria-labelledby='genre-header'
-                  css={{ maxWidth: 608 }}
-                  justifyContent={isMobile ? 'flex-start' : 'center'}
-                  alignItems='flex-start'
-                  gap='s'
-                  wrap='wrap'
-                  w='100%'
+                {messages.header}
+              </Text>
+              <Text
+                variant='body'
+                size={isMobile ? 'm' : 'l'}
+                css={{ textAlign: isMobile ? 'left' : 'center' }}
+              >
+                {messages.description}
+              </Text>
+
+              <Flex justifyContent='space-between' direction='column' h='100%'>
+                <Flex
+                  alignItems={isMobile ? 'flex-start' : 'center'}
+                  direction='column'
+                  flex={1}
                 >
-                  <AccountHeader mode='editing' />
-                  {/* <CoverPhotoFiePld /> */}
-                  {/* <ProfilePictureField /> */}
-                  <Flex p='m' w='100%'>
-                    <TextField
-                      name='displayName'
-                      label={messages.displayName}
-                      placeholder={messages.inputPlaceholder}
-                      required
-                      onChange={(e) => {
-                        // Update this so that the user can see it update live
-                        dispatch(setValueField('name', e.target.value))
-                        handleChange(e)
-                      }}
-                    />
-                  </Flex>
-                </Paper>
-                <Button type='submit'> {messages.continue} </Button>
+                  <Paper
+                    role='group'
+                    aria-labelledby='genre-header'
+                    css={{ maxWidth: 608 }}
+                    justifyContent={isMobile ? 'flex-start' : 'center'}
+                    alignItems='flex-start'
+                    gap='s'
+                    wrap='wrap'
+                    w='100%'
+                  >
+                    <AccountHeader mode='editing' />
+                    <Flex
+                      p='m'
+                      pt='2xl'
+                      w='100%'
+                      css={{ textAlign: 'left' }}
+                      direction='column'
+                    >
+                      <HarmonyTextField
+                        name='displayName'
+                        label={messages.displayName}
+                        placeholder={messages.inputPlaceholder}
+                        required
+                        maxLength={32}
+                        onChange={(e) => {
+                          // Update this so that the user can see it update live
+                          dispatch(setValueField('name', e.target.value))
+                          handleChange(e)
+                        }}
+                      />
+                      {errors.profileImage ? (
+                        <Text
+                          variant='body'
+                          size='xs'
+                          strength='default'
+                          color='danger'
+                        >
+                          {messages.profileImageRequired}
+                        </Text>
+                      ) : null}
+                    </Flex>
+                  </Paper>
+                </Flex>
               </Flex>
-            )}
-          </Formik>
+            </Flex>
+          </Flex>
+          <ContinueFooter>
+            <Button type='submit'> {messages.continue} </Button>
+          </ContinueFooter>
         </Flex>
-      </Flex>
-    </Flex>
+      )}
+    </Formik>
   )
 }

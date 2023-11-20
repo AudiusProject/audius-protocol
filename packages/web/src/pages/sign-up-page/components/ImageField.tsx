@@ -7,6 +7,7 @@ import ReactDropzone, { DropFilesEventHandler } from 'react-dropzone'
 
 import {
   ALLOWED_IMAGE_FILE_TYPES,
+  ResizeImageOptions,
   resizeImage
 } from 'utils/imageProcessingUtil'
 
@@ -24,10 +25,11 @@ type ImageFieldProps = {
   className?: string
   children: (urlValue: ImageFieldValue | null) => ReactNode | ReactNode[]
   onChange?: (image: ImageFieldValue) => void
+  imageResizeOptions?: Partial<ResizeImageOptions>
 }
 
 export const ImageField = (props: ImageFieldProps) => {
-  const { name, className, children, onChange } = props
+  const { name, className, children, onChange, imageResizeOptions } = props
 
   const [field, , { setValue }] = useField<ImageFieldValue>(name)
   const { value } = field
@@ -35,7 +37,11 @@ export const ImageField = (props: ImageFieldProps) => {
   const handleChange: DropFilesEventHandler = useCallback(
     async (files) => {
       const [file] = files
-      const resizedFile = await resizeImage(file)
+      const resizedFile = await resizeImage(
+        file,
+        imageResizeOptions?.maxWidth,
+        imageResizeOptions?.square
+      )
       const url = URL.createObjectURL(resizedFile)
       const image = { file: resizedFile, url }
       setValue(image)
@@ -43,7 +49,7 @@ export const ImageField = (props: ImageFieldProps) => {
         onChange(image)
       }
     },
-    [setValue, onChange]
+    [setValue, onChange, imageResizeOptions]
   )
 
   return (
