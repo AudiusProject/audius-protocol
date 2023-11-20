@@ -5,5 +5,5 @@ export enum PurchaseMethod {
 }
 
 export enum Vendors {
-  STRIPE = 'stripe'
+  STRIPE = 'Stripe'
 }

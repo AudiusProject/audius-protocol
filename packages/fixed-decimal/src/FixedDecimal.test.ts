@@ -596,5 +596,15 @@ describe('FixedDecimal', function () {
         new FixedDecimal('123456789.123456789').toLocaleString('en-IN')
       ).toBe('12,34,56,789.123456789')
     })
+
+    it('formats zero correctly', function () {
+      expect(
+        new FixedDecimal(0, 6).toLocaleString('en-US', {
+          maximumFractionDigits: 2,
+          minimumFractionDigits: 2,
+          trailingZeroDisplay: 'stripIfInteger'
+        })
+      ).toBe('0')
+    })
   })
 })

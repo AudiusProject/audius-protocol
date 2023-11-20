@@ -227,7 +227,6 @@
   background-color: var(--neutral-light-9);
 }
 
-
 .tableRow.disabled:hover {
   box-shadow: none;
   background-color: var(--neutral-light-9);
