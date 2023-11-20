@@ -55,7 +55,7 @@ export type SummaryTableProps = {
   summaryValueColor?: ColorValue
   withRadioOptions?: boolean
   selectedRadioOption?: string
-  onRadioChange?: (method: Method) => void
+  onRadioChange?: (method: string) => void
   rowClassName?: string
   rowValueClassName?: string
 }

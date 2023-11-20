@@ -98,8 +98,8 @@ export const AddFunds = ({
   ]
 
   const handleChangeOption = useCallback(
-    (method: PurchaseMethod) => {
-      setSelectedPurchaseMethod(method)
+    (method: string) => {
+      setSelectedPurchaseMethod(method as PurchaseMethod)
     },
     [setSelectedPurchaseMethod]
   )

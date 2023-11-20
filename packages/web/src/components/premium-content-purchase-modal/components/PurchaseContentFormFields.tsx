@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback } from 'react'
+import { useCallback } from 'react'
 
 import {
   PurchaseContentStage,
@@ -28,6 +28,7 @@ import { MobileFilterButton } from 'components/mobile-filter-button/MobileFilter
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
 import { Text } from 'components/typography'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
+import zIndex from 'utils/zIndex'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
 import { usePurchaseSummaryValues } from '../hooks/usePurchaseSummaryValues'
@@ -78,8 +79,8 @@ export const PurchaseContentFormFields = ({
   })
 
   const handleChange = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      setPurchaseMethod(e?.target?.value)
+    (method: string) => {
+      setPurchaseMethod(method as PurchaseMethod)
     },
     [setPurchaseMethod]
   )
@@ -96,6 +97,8 @@ export const PurchaseContentFormFields = ({
       </Flex>
     )
   }
+
+  const vendorOptions = [{ label: PurchaseVendor.STRIPE }]
 
   const options = [
     hasBalance
@@ -123,19 +126,24 @@ export const PurchaseContentFormFields = ({
       id: PurchaseMethod.CARD,
       label: messages.card,
       icon: IconCreditCard,
-      value: mobile ? (
-        <MobileFilterButton
-          onSelect={() => {}}
-          options={[{ label: PurchaseVendor.STRIPE }]}
-        />
-      ) : (
-        <FilterButton
-          onSelect={() => {}}
-          initialSelectionIndex={0}
-          variant={FilterButtonType.REPLACE_LABEL}
-          options={[{ label: PurchaseVendor.STRIPE }]}
-        />
-      )
+      value:
+        vendorOptions.length > 1 ? (
+          mobile ? (
+            <MobileFilterButton
+              onSelect={() => {}}
+              options={vendorOptions}
+              zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
+            />
+          ) : (
+            <FilterButton
+              onSelect={() => {}}
+              initialSelectionIndex={0}
+              variant={FilterButtonType.REPLACE_LABEL}
+              options={vendorOptions}
+              popupZIndex={zIndex.USDC_ADD_FUNDS_FILTER_BUTTON_POPUP}
+            />
+          )
+        ) : null
     },
     {
       id: PurchaseMethod.CRYPTO,
