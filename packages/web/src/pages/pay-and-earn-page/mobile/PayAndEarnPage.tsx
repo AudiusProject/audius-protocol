@@ -1,19 +1,25 @@
-import { useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
-import { useUSDCBalance } from '@audius/common'
+import { useUSDCBalance, accountSelectors } from '@audius/common'
 import { Flex, Paper, SelectablePill } from '@audius/harmony'
+import { replace } from 'connected-react-router'
+import { useDispatch, useSelector } from 'react-redux'
 
 import Header from 'components/header/mobile/Header'
 import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useSubPageHeader } from 'components/nav/store/context'
+import { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } from 'utils/route'
 
 import styles from '../PayAndEarnPage.module.css'
 import { PurchasesTab, usePurchases } from '../components/PurchasesTab'
 import { SalesTab, useSales } from '../components/SalesTab'
 import { USDCCard } from '../components/USDCCard'
 import { WithdrawalsTab, useWithdrawals } from '../components/WithdrawalsTab'
+import { PayAndEarnPageProps, TableType } from '../types'
+
+const { getAccountHasTracks } = accountSelectors
 
 export const messages = {
   title: 'Pay & Earn',
@@ -23,24 +29,31 @@ export const messages = {
   withdrawals: 'Withdrawals'
 }
 
-enum TableType {
-  SALES = 'sales',
-  PURCHASES = 'purchases',
-  WITHDRAWALS = 'withdrawals'
-}
-
 type TableMetadata = {
   label: string
   downloadCSV: () => void
   isDownloadCSVButtonDisabled: boolean
 }
 
-export const PayAndEarnPage = () => {
-  const [selectedTable, setSelectedTable] = useState<TableType>(TableType.SALES)
+export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
+  const dispatch = useDispatch()
   const { data: balance } = useUSDCBalance({
     isPolling: true,
     pollingInterval: 3000
   })
+  const accountHasTracks = useSelector(getAccountHasTracks)
+
+  const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
+  const [selectedTable, setSelectedTable] = useState<TableType | null>(null)
+  useEffect(() => {
+    if (accountHasTracks !== null) {
+      const tableOptions = accountHasTracks
+        ? [TableType.SALES, TableType.PURCHASES, TableType.WITHDRAWALS]
+        : [TableType.PURCHASES, TableType.WITHDRAWALS]
+      setTableOptions(tableOptions)
+      setSelectedTable(tableView ?? tableOptions[0])
+    }
+  }, [accountHasTracks, setSelectedTable, tableView, setTableOptions])
 
   const {
     count: salesCount,
@@ -91,6 +104,26 @@ export const PayAndEarnPage = () => {
     }
   }
 
+  const handleSelectablePillClick = useCallback(
+    (t: TableType) => {
+      let route: string
+      switch (t) {
+        case TableType.SALES:
+          route = SALES_PAGE
+          break
+        case TableType.PURCHASES:
+          route = PURCHASES_PAGE
+          break
+        case TableType.WITHDRAWALS:
+          route = WITHDRAWALS_PAGE
+          break
+      }
+      setSelectedTable(t)
+      dispatch(replace(route))
+    },
+    [setSelectedTable, dispatch]
+  )
+
   useSubPageHeader()
 
   const { setHeader } = useContext(HeaderContext)
@@ -104,7 +137,7 @@ export const PayAndEarnPage = () => {
       description={messages.description}
       containerClassName={styles.mobilePageContainer}
     >
-      {balance === null ? (
+      {!tableOptions || !selectedTable || balance === null ? (
         <LoadingSpinner className={styles.spinner} />
       ) : (
         <>
@@ -119,12 +152,12 @@ export const PayAndEarnPage = () => {
                 w='100%'
               >
                 <Flex gap='s'>
-                  {Object.values(TableType).map((t) => (
+                  {tableOptions.map((t) => (
                     <SelectablePill
                       key={tables[t].label}
                       label={tables[t].label}
                       isSelected={selectedTable === t}
-                      onClick={() => setSelectedTable(t)}
+                      onClick={() => handleSelectablePillClick(t)}
                     />
                   ))}
                 </Flex>
