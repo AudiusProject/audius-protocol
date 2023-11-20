@@ -35,9 +35,9 @@ export const FollowButton = (props: FollowButtonProps) => {
     onUnfollow,
     onFollow,
     size = 'default',
-    as: ignoredAs,
-    ...inputProps
+    ...other
   } = props
+  const { type } = other
   const [value, setValueState] = useControlled({
     componentName: 'FollowButton',
     controlledProp: isFollowing,
@@ -55,66 +55,94 @@ export const FollowButton = (props: FollowButtonProps) => {
     setIsHovering(false)
   }, [setIsHovering])
 
-  const handleChange = useCallback(() => {
+  const handleButtonClick = useCallback(() => {
     if (value) {
       onUnfollow?.()
     } else {
       onFollow?.()
     }
     setValueState(!value)
-  }, [value, setValueState, onFollow, onUnfollow])
+  }, [value, setValueState, onUnfollow, onFollow])
 
+  const checkedValue = value
   let Icon: IconComponent | null = IconUserFollow
   let text = messages.follow
-  if (value && !isHovering) {
+  if (checkedValue && !isHovering) {
     Icon = IconUserFollowing
     text = messages.following
-  } else if (value && isHovering) {
+  } else if (checkedValue && isHovering) {
     Icon = IconUserUnfollow
     text = messages.unfollow
   }
 
   const { color, cornerRadius } = useTheme()
   const textColor =
-    value || isHovering ? color.static.white : color.primary.primary
-  const css: CSSObject = {
+    checkedValue || isHovering ? color.static.white : color.primary.primary
+  const rootCss: CSSObject = {
+    minWidth: size === 'small' ? 128 : 152,
+    width: '100%',
     userSelect: 'none',
     border: `1px solid ${color.primary.primary}`,
     borderRadius: variant === 'pill' ? cornerRadius['2xl'] : cornerRadius.s,
     background:
-      value || isHovering ? color.primary.primary : color.static.white,
+      checkedValue || isHovering ? color.primary.primary : color.static.white,
     ':active': {
       background: color.primary.p500,
       border: `1px solid ${color.primary.p500}`
     }
   }
 
-  return (
-    <>
-      <label onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-        <InputRoot type='checkbox' onChange={handleChange} {...inputProps} />
-        <Flex
-          w={size === 'small' ? 128 : 152}
-          h={size === 'small' ? 28 : 32}
-          direction='row'
-          alignItems='center'
-          justifyContent='center'
-          gap='xs'
-          pv='s'
-          css={css}
-        >
-          {/* TODO: use theme icon colors (confirm w/design) */}
-          <Icon height={18} width={18} css={{ path: { fill: textColor } }} />
-          <Text
-            variant='label'
-            size={size === 'small' ? 's' : 'l'}
-            strength='default'
-            css={{ color: textColor }}
-          >
-            {text}
-          </Text>
-        </Flex>
-      </label>
-    </>
+  const content = (
+    <Flex
+      h={size === 'small' ? 28 : 32}
+      direction='row'
+      alignItems='center'
+      justifyContent='center'
+      gap='xs'
+      pv='s'
+    >
+      {/* TODO: use theme icon colors (confirm w/design) */}
+      <Icon height={18} width={18} css={{ path: { fill: textColor } }} />
+      <Text
+        variant='label'
+        size={size === 'small' ? 's' : 'l'}
+        strength='default'
+        css={{ color: textColor }}
+      >
+        {text}
+      </Text>
+    </Flex>
   )
+
+  switch (type) {
+    case 'checkbox': {
+      const { checked: checkedIgnored, ...rest } = other
+      return (
+        <div
+          css={rootCss}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          <label>
+            {content}
+            <InputRoot {...rest} checked={isFollowing} />
+          </label>
+        </div>
+      )
+    }
+    case 'button':
+    default: {
+      return (
+        <button
+          css={rootCss}
+          {...other}
+          onClick={handleButtonClick}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {content}
+        </button>
+      )
+    }
+  }
 }
