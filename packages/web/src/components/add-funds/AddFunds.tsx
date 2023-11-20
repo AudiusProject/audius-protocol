@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import {
   BNUSDC,
@@ -19,8 +19,7 @@ import {
   IconCreditCard,
   IconTransaction,
   FilterButton,
-  FilterButtonType,
-  FilterButtonOption
+  FilterButtonType
 } from '@audius/harmony'
 import { BN } from 'bn.js'
 import cn from 'classnames'
@@ -99,8 +98,8 @@ export const AddFunds = ({
   ]
 
   const handleChangeOption = useCallback(
-    (method: Method) => {
-      setSelectedMethod(method)
+    (method: PurchaseMethod) => {
+      setSelectedPurchaseMethod(method)
     },
     [setSelectedPurchaseMethod]
   )
