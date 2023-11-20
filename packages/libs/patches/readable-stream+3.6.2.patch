@@ -1,0 +1,99 @@
+diff --git a/node_modules/readable-stream/lib/_stream_readable.js b/node_modules/readable-stream/lib/_stream_readable.js
+index df1f608..012fcb7 100644
+--- a/node_modules/readable-stream/lib/_stream_readable.js
++++ b/node_modules/readable-stream/lib/_stream_readable.js
+@@ -23,10 +23,6 @@
+ 
+ module.exports = Readable;
+ 
+-/*<replacement>*/
+-var Duplex;
+-/*</replacement>*/
+-
+ Readable.ReadableState = ReadableState;
+ 
+ /*<replacement>*/
+@@ -88,7 +84,6 @@ function prependListener(emitter, event, fn) {
+   if (!emitter._events || !emitter._events[event]) emitter.on(event, fn);else if (Array.isArray(emitter._events[event])) emitter._events[event].unshift(fn);else emitter._events[event] = [fn, emitter._events[event]];
+ }
+ function ReadableState(options, stream, isDuplex) {
+-  Duplex = Duplex || require('./_stream_duplex');
+   options = options || {};
+ 
+   // Duplex streams are both readable and writable, but share
+@@ -96,7 +91,9 @@ function ReadableState(options, stream, isDuplex) {
+   // However, some cases require setting options to different
+   // values for the readable and the writable sides of the duplex stream.
+   // These options can be provided separately as readableXXX and writableXXX.
+-  if (typeof isDuplex !== 'boolean') isDuplex = stream instanceof Duplex;
++  if (typeof isDuplex !== 'boolean') {
++    isDuplex = stream instanceof Readable && typeof stream._write === 'function' && typeof stream._writableState === 'object';
++  }
+ 
+   // object stream flag. Used to make read(n) ignore n and to
+   // make all the buffer merging and length checks go away
+@@ -161,12 +158,11 @@ function ReadableState(options, stream, isDuplex) {
+   }
+ }
+ function Readable(options) {
+-  Duplex = Duplex || require('./_stream_duplex');
+   if (!(this instanceof Readable)) return new Readable(options);
+ 
+   // Checking for a Stream.Duplex instance is faster here instead of inside
+   // the ReadableState constructor, at least with V8 6.5
+-  var isDuplex = this instanceof Duplex;
++  var isDuplex = this instanceof Readable && typeof this._write === 'function' && typeof this._writableState === 'object';
+   this._readableState = new ReadableState(options, this, isDuplex);
+ 
+   // legacy
+diff --git a/node_modules/readable-stream/lib/_stream_writable.js b/node_modules/readable-stream/lib/_stream_writable.js
+index 292415e..57efea0 100644
+--- a/node_modules/readable-stream/lib/_stream_writable.js
++++ b/node_modules/readable-stream/lib/_stream_writable.js
+@@ -47,10 +47,6 @@ function CorkedRequest(state) {
+ }
+ /* </replacement> */
+ 
+-/*<replacement>*/
+-var Duplex;
+-/*</replacement>*/
+-
+ Writable.WritableState = WritableState;
+ 
+ /*<replacement>*/
+@@ -87,7 +83,6 @@ var errorOrDestroy = destroyImpl.errorOrDestroy;
+ require('inherits')(Writable, Stream);
+ function nop() {}
+ function WritableState(options, stream, isDuplex) {
+-  Duplex = Duplex || require('./_stream_duplex');
+   options = options || {};
+ 
+   // Duplex streams are both readable and writable, but share
+@@ -95,7 +90,9 @@ function WritableState(options, stream, isDuplex) {
+   // However, some cases require setting options to different
+   // values for the readable and the writable sides of the duplex stream,
+   // e.g. options.readableObjectMode vs. options.writableObjectMode, etc.
+-  if (typeof isDuplex !== 'boolean') isDuplex = stream instanceof Duplex;
++  if (typeof isDuplex !== 'boolean') {
++    isDuplex = stream instanceof Writable && typeof stream._write === 'function' && typeof stream._writableState === 'object'; // object stream flag. Used to make read(n) ignore n and to
++  }
+ 
+   // object stream flag to indicate whether or not this stream
+   // contains buffers or objects.
+@@ -229,7 +226,6 @@ if (typeof Symbol === 'function' && Symbol.hasInstance && typeof Function.protot
+   };
+ }
+ function Writable(options) {
+-  Duplex = Duplex || require('./_stream_duplex');
+ 
+   // Writable ctor is applied to Duplexes, too.
+   // `realHasInstance` is necessary because using plain `instanceof`
+@@ -241,7 +237,7 @@ function Writable(options) {
+ 
+   // Checking for a Stream.Duplex instance is faster here instead of inside
+   // the WritableState constructor, at least with V8 6.5
+-  var isDuplex = this instanceof Duplex;
++  var isDuplex = this instanceof Writable && typeof this._write === 'function' && typeof this._writableState === 'object'; // object stream flag. Used to make read(n) ignore n and to
+   if (!isDuplex && !realHasInstance.call(Writable, this)) return new Writable(options);
+   this._writableState = new WritableState(options, this, isDuplex);
+ 
