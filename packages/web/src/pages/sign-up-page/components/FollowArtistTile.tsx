@@ -15,6 +15,7 @@ import {
 import { useField } from 'formik'
 
 import { Avatar } from 'components/avatar/Avatar'
+import { useMedia } from 'hooks/useMedia'
 import { useCoverPhoto } from 'hooks/useUserCoverPhoto'
 
 type FollowArtistTileProps = {
@@ -25,12 +26,17 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
   const {
     user: { name, user_id, is_verified, track_count, follower_count }
   } = props
+  const { isMobile } = useMedia()
   const coverPhoto = useCoverPhoto(user_id, WidthSizes.SIZE_640)
-
   const [followField] = useField({ name: 'selectedArtists', type: 'checkbox' })
 
   return (
-    <Paper w={235} h={220}>
+    <Paper
+      h={220}
+      css={{
+        width: isMobile ? 'calc(50% - 4px)' : 235
+      }}
+    >
       <Flex w='100%' direction='column' alignItems='center'>
         <Box w={72} h={72} css={{ position: 'absolute', top: 34 }}>
           {/* TODO: play song preview on click */}
