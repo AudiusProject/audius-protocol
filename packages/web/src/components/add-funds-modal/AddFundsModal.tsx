@@ -4,7 +4,8 @@ import {
   useAddFundsModal,
   buyUSDCActions,
   USDCOnRampProvider,
-  PurchaseMethod
+  PurchaseMethod,
+  DEFAULT_PURCHASE_AMOUNT_CENTS
 } from '@audius/common'
 import { ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
@@ -25,8 +26,6 @@ const messages = {
 }
 
 type Page = 'add-funds' | 'crypto-transfer'
-
-const DEFAULT_PURCHASE_AMOUNT_CENTS = 10 * 100
 
 export const AddFundsModal = () => {
   const { isOpen, onClose } = useAddFundsModal()

@@ -6,7 +6,8 @@ import {
   buyUSDCActions,
   USDCOnRampProvider,
   PurchaseMethod,
-  PurchaseVendor
+  PurchaseVendor,
+  DEFAULT_PURCHASE_AMOUNT_CENTS
 } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -19,8 +20,6 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 
 import { PaymentMethod } from '../payment-method/PaymentMethod'
 import { USDCBalanceRow } from '../usdc-balance-row/USDCBalanceRow'
-
-const DEFAULT_PURCHASE_AMOUNT_CENTS = 10 * 100
 
 const messages = {
   title: 'Add Funds',
