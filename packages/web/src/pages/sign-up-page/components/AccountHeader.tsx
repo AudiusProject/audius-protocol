@@ -2,6 +2,7 @@ import { Avatar, Box, Flex, IconCamera, IconImage, Text } from '@audius/harmony'
 
 import {
   getCoverPhotoField,
+  getHandleField,
   getNameField,
   getProfileImageField
 } from 'common/store/pages/signon/selectors'
@@ -85,16 +86,14 @@ export const AccountHeader = ({ mode }: AccountHeaderProps) => {
   const coverPhoto = useSelector(getCoverPhotoField)
   const profileImage = useSelector(getProfileImageField)
   const { value: displayName } = useSelector(getNameField)
-  // const { value: handle } = useSelector(getHandleField)
-
-  const handle = 'f&$kTheFireNation'
+  const { value: handle } = useSelector(getHandleField)
   const isEditing = mode === 'editing'
 
   const { isMobile } = useMedia()
   const useSmallSize = isEditing || isMobile
 
   return (
-    <Box w='100%'>
+    <Box w='100%' css={{ zIndex: 4 }}>
       <Box h={useSmallSize ? 96 : 168} css={{ overflow: 'hidden' }} w='100%'>
         {isEditing ? (
           <ImageField name='coverPhoto' imageResizeOptions={{ square: false }}>

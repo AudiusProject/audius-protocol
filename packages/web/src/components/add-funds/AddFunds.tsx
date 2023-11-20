@@ -2,6 +2,8 @@ import { ChangeEvent, useCallback, useState } from 'react'
 
 import {
   BNUSDC,
+  PurchaseMethod,
+  PurchaseVendor,
   decimalIntegerToHumanReadable,
   formatUSDCWeiToFloorCentsNumber,
   useCreateUserbankIfNeeded,
@@ -22,10 +24,12 @@ import {
 import { BN } from 'bn.js'
 import cn from 'classnames'
 
+import { MobileFilterButton } from 'components/mobile-filter-button/MobileFilterButton'
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
 import { track } from 'services/analytics'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { isMobile } from 'utils/clientUtil'
+import { zIndex } from 'utils/zIndex'
 
 import styles from './AddFunds.module.css'
 
@@ -37,19 +41,18 @@ const messages = {
   continue: 'Continue'
 }
 
-export type Method = 'card' | 'crypto'
-
 export const AddFunds = ({
   onContinue
 }: {
-  onContinue: (method: Method) => void
+  onContinue: (purchaseMethod: PurchaseMethod) => void
 }) => {
   useCreateUserbankIfNeeded({
     recordAnalytics: track,
     audiusBackendInstance,
     mint: 'usdc'
   })
-  const [selectedMethod, setSelectedMethod] = useState<Method>('card')
+  const [selectedPurchaseMethod, setSelectedPurchaseMethod] =
+    useState<PurchaseMethod>(PurchaseMethod.CARD)
   const mobile = isMobile()
   const { data: balance } = useUSDCBalance({ isPolling: true })
   const balanceNumber = formatUSDCWeiToFloorCentsNumber(
@@ -59,19 +62,26 @@ export const AddFunds = ({
 
   const items: SummaryTableItem[] = [
     {
-      id: 'card',
+      id: PurchaseMethod.CARD,
       label: messages.withCard,
       icon: IconCreditCard,
-      value: (
+      value: mobile ? (
+        <MobileFilterButton
+          onSelect={() => {}}
+          options={[{ label: PurchaseVendor.STRIPE }]}
+          zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
+        />
+      ) : (
         <FilterButton
+          onSelect={() => {}}
           initialSelectionIndex={0}
           variant={FilterButtonType.REPLACE_LABEL}
-          options={[{ label: 'Stripe' }]}
+          options={[{ label: PurchaseVendor.STRIPE }]}
         />
       )
     },
     {
-      id: 'crypto',
+      id: PurchaseMethod.CRYPTO,
       label: messages.withCrypto,
       icon: IconTransaction
     }
@@ -79,9 +89,9 @@ export const AddFunds = ({
 
   const handleChangeOption = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      setSelectedMethod(e.target.value as Method)
+      setSelectedPurchaseMethod(e.target.value as PurchaseMethod)
     },
-    [setSelectedMethod]
+    [setSelectedPurchaseMethod]
   )
 
   return (
@@ -112,13 +122,14 @@ export const AddFunds = ({
             items={items}
             withRadioOptions
             onRadioChange={handleChangeOption}
-            selectedRadioOption={selectedMethod}
+            selectedRadioOption={selectedPurchaseMethod}
             rowClassName={mobile ? styles.summaryTableRow : undefined}
+            rowValueClassName={mobile ? styles.summaryTableRowValue : undefined}
           />
           <Button
             variant={ButtonType.PRIMARY}
             fullWidth
-            onClick={() => onContinue(selectedMethod)}
+            onClick={() => onContinue(selectedPurchaseMethod)}
           >
             {messages.continue}
           </Button>

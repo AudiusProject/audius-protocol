@@ -1,6 +1,6 @@
 {
   "name": "audius-mobile-client",
-  "version": "1.5.51",
+  "version": "1.5.52",
   "private": true,
   "scripts": {
     "jetifier": "jetifier",
@@ -52,6 +52,7 @@
   "dependencies": {
     "@amplitude/react-native": "2.6.0",
     "@audius/common": "*",
+    "@audius/fixed-decimal": "*",
     "@audius/sdk": "*",
     "@emotion/native": "11.11.0",
     "@emotion/react": "11.11.1",

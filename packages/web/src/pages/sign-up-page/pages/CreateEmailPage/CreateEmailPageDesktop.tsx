@@ -4,15 +4,15 @@ import {
   Divider,
   Flex,
   IconArrowRight,
-  SocialButton,
-  Text
+  Text,
+  TextLink
 } from '@audius/harmony'
 import cn from 'classnames'
 import { useFormikContext } from 'formik'
+import { Link } from 'react-router-dom'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
-import { Link } from 'components/link'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import {
   ArtworkContainer,
@@ -20,13 +20,17 @@ import {
 } from 'pages/sign-on/components/AudiusValues'
 import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
 import { SignOnContainerDesktop } from 'pages/sign-on/components/desktop/SignOnContainerDesktop'
+import { SocialMediaLoginOptions } from 'pages/sign-up-page/components/SocialMediaLoginOptions'
+import { userHasMetaMask } from 'pages/sign-up-page/utils/metamask'
 import { SIGN_IN_PAGE } from 'utils/route'
 
 import styles from './CreateEmailPage.module.css'
+import { SignUpWithMetaMaskButton } from './SignUpWithMetaMaskButton'
 import { messages } from './messages'
 
 export const CreateEmailPageDesktop = () => {
   const { isSubmitting } = useFormikContext()
+
   return (
     <Flex h='100%' alignItems='center' justifyContent='center'>
       <SignOnContainerDesktop>
@@ -56,23 +60,12 @@ export const CreateEmailPageDesktop = () => {
                 {messages.socialsDividerText}
               </Text>
             </Divider>
-            <Flex direction='row' gap='s' w='100%'>
-              <SocialButton
-                socialType='twitter'
-                css={{ flex: 1 }}
-                aria-label='Sign up with Twitter'
-              />
-              <SocialButton
-                socialType='instagram'
-                css={{ flex: 1 }}
-                aria-label='Sign up with Instagram'
-              />
-              <SocialButton
-                socialType='tiktok'
-                css={{ flex: 1 }}
-                aria-label='Sign up with TikTok'
-              />
-            </Flex>
+            <SocialMediaLoginOptions
+              onCompleteSocialMediaLogin={(result) => {
+                console.info(result)
+                // TODO
+              }}
+            />
           </Flex>
           <Flex direction='column' gap='l' alignItems='flex-start' w='100%'>
             <Button
@@ -85,19 +78,20 @@ export const CreateEmailPageDesktop = () => {
               {messages.signUp}
             </Button>
 
-            <Text size='l'>
+            <Text variant='body' size='l'>
               {messages.haveAccount}{' '}
-              {/* TODO [C-3278]: Update with Harmony Link */}
-              <Link
-                to={SIGN_IN_PAGE}
-                variant='body'
-                size='medium'
-                strength='strong'
-                color='secondary'
-              >
-                {messages.signIn}
-              </Link>
+              <TextLink variant='visible' asChild>
+                <Link to={SIGN_IN_PAGE}>{messages.signIn}</Link>
+              </TextLink>
             </Text>
+            {userHasMetaMask ? (
+              <Flex direction='column' alignItems='center' w='100%'>
+                <SignUpWithMetaMaskButton />
+                <Text size='s' variant='body'>
+                  {messages.metaMaskNotRecommended}
+                </Text>
+              </Flex>
+            ) : null}
           </Flex>
         </LeftContentContainer>
         <ArtworkContainer>

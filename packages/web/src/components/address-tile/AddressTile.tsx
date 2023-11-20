@@ -92,7 +92,7 @@ export const AddressTile = ({
             }}
             variant='body'
           >
-            {mobile ? shortenSPLAddress(address, 20) : address}
+            {mobile ? shortenSPLAddress(address, 12) : address}
           </Text>
         </Box>
         <Flex alignItems='center' borderLeft='default' pr='l' pl='l'>

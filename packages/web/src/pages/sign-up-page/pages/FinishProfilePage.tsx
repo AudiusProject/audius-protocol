@@ -91,7 +91,7 @@ export const FinishProfilePage = () => {
       validateOnBlur={false}
       validateOnChange={false}
     >
-      {({ handleChange, errors, values }) => (
+      {({ handleChange, errors }) => (
         <Flex
           as={Form}
           direction='column'
@@ -105,7 +105,6 @@ export const FinishProfilePage = () => {
           <Flex
             direction='column'
             gap={isMobile ? 'xl' : '2xl'}
-            // TODO: what is this 608px number 🤔
             css={{ maxWidth: isMobile ? undefined : '608px' }}
           >
             <Flex direction='column' gap={isMobile ? 's' : 'l'} ph='l'>

@@ -52,7 +52,7 @@ export const usePurchaseContentFormConfiguration = ({
     [AMOUNT_PRESET]: PayExtraPreset.NONE,
     [PURCHASE_METHOD]:
       balance >= BigInt(price * CENTS_TO_USDC_MULTIPLIER)
-        ? PurchaseMethod.EXISTING_BALANCE
+        ? PurchaseMethod.BALANCE
         : PurchaseMethod.CARD
   }
 
@@ -66,7 +66,7 @@ export const usePurchaseContentFormConfiguration = ({
         customAmount
       })
 
-      if (purchaseMethod === PurchaseMethod.MANUAL_TRANSFER) {
+      if (purchaseMethod === PurchaseMethod.CRYPTO) {
         openUsdcManualTransferModal()
       } else {
         dispatch(

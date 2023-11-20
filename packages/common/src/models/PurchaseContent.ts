@@ -1,9 +1,9 @@
 export enum PurchaseMethod {
-  EXISTING_BALANCE = 'existingBalance',
+  BALANCE = 'balance',
   CARD = 'card',
-  MANUAL_TRANSFER = 'manualTransfer'
+  CRYPTO = 'crypto'
 }
 
-export enum Vendors {
-  STRIPE = 'stripe'
+export enum PurchaseVendor {
+  STRIPE = 'Stripe'
 }

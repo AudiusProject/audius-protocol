@@ -1,6 +1,6 @@
 import { accountSelectors } from '@audius/common'
 
-import { Avatar } from 'components/avatar'
+import { AvatarLegacy } from 'components/avatar/AvatarLegacy'
 import { Link, UserLink } from 'components/link'
 import { Text } from 'components/typography'
 import { useSelector } from 'utils/reducer'
@@ -23,7 +23,7 @@ export const AccountDetails = () => {
   return (
     <div className={styles.userHeader}>
       <div className={styles.accountWrapper}>
-        <Avatar userId={account?.user_id} />
+        <AvatarLegacy userId={account?.user_id} />
         <div className={styles.userInfo}>
           {account ? (
             <>
