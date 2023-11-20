@@ -25,7 +25,8 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       iconRight = IconCaretDown,
       popupAnchorOrigin,
       popupTransformOrigin,
-      popupPortalLocation
+      popupPortalLocation,
+      popupZIndex
     } = props
     const { color, cornerRadius, spacing, typography } = useTheme()
     const [selection, setSelection] = useState<FilterButtonOption | null>(
@@ -181,6 +182,7 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
           anchorOrigin={popupAnchorOrigin}
           transformOrigin={popupTransformOrigin}
           portalLocation={popupPortalLocation}
+          zIndex={popupZIndex}
         >
           <Paper mt='s' border='strong' shadow='far'>
             <Box p='s'>
