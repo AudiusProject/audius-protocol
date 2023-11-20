@@ -19,7 +19,7 @@ import { useColor } from 'app/utils/theme'
 import { SummaryTable } from '../summary-table'
 import type { SummaryTableItem } from '../summary-table/SummaryTable'
 
-import { CardSelectionButton } from './CardSelectionButton'
+// import { CardSelectionButton } from './CardSelectionButton'
 
 const messages = {
   title: 'Payment Method',
@@ -86,8 +86,9 @@ export const PaymentMethod = ({
           {messages.withCard}
         </Text>
       ),
-      icon: IconCreditCard,
-      content: <CardSelectionButton title='Stripe' />
+      icon: IconCreditCard
+      // TODO: Re-enable CardSelectionButton when multiple on-ramp vendors exist
+      // content: <CardSelectionButton title='Stripe' />
     },
     {
       id: PurchaseMethod.CRYPTO,
