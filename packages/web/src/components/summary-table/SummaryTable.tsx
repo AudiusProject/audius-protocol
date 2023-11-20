@@ -55,7 +55,7 @@ export type SummaryTableProps = {
   summaryValueColor?: ColorValue
   withRadioOptions?: boolean
   selectedRadioOption?: string
-  onRadioChange?: (e: ChangeEvent<HTMLInputElement>) => void
+  onRadioChange?: (method: Method) => void
   rowClassName?: string
   rowValueClassName?: string
 }
@@ -79,6 +79,13 @@ export const SummaryTable = ({
   const [expanded, setExpanded] = useState(!collapsible)
   const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
 
+  const handleRadioChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      onRadioChange?.(e.target.value)
+    },
+    [onRadioChange]
+  )
+
   const body = (
     <>
       {items.map(({ id, label, icon: Icon, value, disabled }) => (
@@ -92,7 +99,13 @@ export const SummaryTable = ({
           className={cn(styles.row, rowClassName)}
           css={{ opacity: disabled ? 0.5 : 1 }}
         >
-          <Flex alignItems='center' justifyContent='center' gap='s'>
+          <Flex
+            onClick={() => onRadioChange?.(id)}
+            css={{ cursor: 'pointer' }}
+            alignItems='center'
+            justifyContent='center'
+            gap='s'
+          >
             {withRadioOptions ? (
               <RadioButton value={id} disabled={disabled} />
             ) : null}
@@ -166,7 +179,7 @@ export const SummaryTable = ({
     <RadioButtonGroup
       name={`summaryTable-label-${title}`}
       value={selectedRadioOption}
-      onChange={onRadioChange}
+      onChange={handleRadioChange}
       className={styles.radioGroup}
     >
       {content}

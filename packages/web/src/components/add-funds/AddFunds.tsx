@@ -19,7 +19,8 @@ import {
   IconCreditCard,
   IconTransaction,
   FilterButton,
-  FilterButtonType
+  FilterButtonType,
+  FilterButtonOption
 } from '@audius/harmony'
 import { BN } from 'bn.js'
 import cn from 'classnames'
@@ -60,25 +61,35 @@ export const AddFunds = ({
   )
   const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
 
+  const vendorOptions = [{ label: PurchaseVendor.STRIPE }]
+
   const items: SummaryTableItem[] = [
     {
       id: PurchaseMethod.CARD,
       label: messages.withCard,
       icon: IconCreditCard,
-      value: mobile ? (
-        <MobileFilterButton
-          onSelect={() => {}}
-          options={[{ label: PurchaseVendor.STRIPE }]}
-          zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
-        />
-      ) : (
-        <FilterButton
-          onSelect={() => {}}
-          initialSelectionIndex={0}
-          variant={FilterButtonType.REPLACE_LABEL}
-          options={[{ label: PurchaseVendor.STRIPE }]}
-        />
-      )
+      value:
+        vendorOptions.length > 1 ? (
+          mobile ? (
+            <MobileFilterButton
+              onSelect={(vendor: string) => {
+                console.info(vendor)
+              }}
+              options={vendorOptions}
+              zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
+            />
+          ) : (
+            <FilterButton
+              onSelect={({ label: vendor }: { label: string }) => {
+                console.info(vendor)
+              }}
+              initialSelectionIndex={0}
+              variant={FilterButtonType.REPLACE_LABEL}
+              options={vendorOptions}
+              popupZIndex={zIndex.USDC_ADD_FUNDS_FILTER_BUTTON_POPUP}
+            />
+          )
+        ) : null
     },
     {
       id: PurchaseMethod.CRYPTO,
@@ -88,8 +99,8 @@ export const AddFunds = ({
   ]
 
   const handleChangeOption = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      setSelectedPurchaseMethod(e.target.value as PurchaseMethod)
+    (method: Method) => {
+      setSelectedMethod(method)
     },
     [setSelectedPurchaseMethod]
   )
