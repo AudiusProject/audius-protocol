@@ -175,6 +175,7 @@ const InstagramAuth = ({
 
   return (
     <div
+      role='button'
       onClick={handleClick}
       style={style}
       className={cn({

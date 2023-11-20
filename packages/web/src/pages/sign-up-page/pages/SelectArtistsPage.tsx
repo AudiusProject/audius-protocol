@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import {
   ID,
@@ -12,11 +12,12 @@ import {
   Text,
   IconArrowRight,
   SelectablePill,
-  Paper,
-  Box
+  Paper
 } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
+import { z } from 'zod'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { addFollowArtists } from 'common/store/pages/signon/actions'
@@ -25,6 +26,7 @@ import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
 import { TRENDING_PAGE } from 'utils/route'
 
+import { AccountHeader } from '../components/AccountHeader'
 import { ContinueFooter } from '../components/ContinueFooter'
 import FollowArtistTile from '../components/FollowArtistTile'
 
@@ -39,12 +41,16 @@ const messages = {
 }
 
 type SelectArtistsValues = {
-  artists: ID[]
+  selectedArtists: ID[]
 }
 
 const initialValues: SelectArtistsValues = {
-  artists: []
+  selectedArtists: []
 }
+
+const SelectArtistsFormSchema = z.object({
+  selectedArtists: z.array(z.string()).min(3)
+})
 
 export const SelectArtistsPage = () => {
   const genres = useSelector((state) => ['Featured', ...getGenres(state)])
@@ -60,8 +66,8 @@ export const SelectArtistsPage = () => {
 
   const handleSubmit = useCallback(
     (values: SelectArtistsValues) => {
-      const { artists } = values
-      dispatch(addFollowArtists(artists))
+      const { selectedArtists } = values
+      dispatch(addFollowArtists([...selectedArtists]))
       navigate(TRENDING_PAGE)
       setIsWelcomeModalOpen(true)
     },
@@ -87,68 +93,76 @@ export const SelectArtistsPage = () => {
     Status.LOADING
 
   return (
-    <Flex
-      direction='column'
-      gap='2xl'
-      css={{
-        overflow: 'scroll',
-        // Hide scrollbar
-        scrollbarWidth: 'none', // Firefox
-        msOverflowStyle: 'none', // IE + Edge
-        // Chrome + Safari
-        '::-webkit-scrollbar': {
-          display: 'none'
-        }
-      }}
+    <Formik
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+      validationSchema={toFormikValidationSchema(SelectArtistsFormSchema)}
     >
-      <Flex direction='column' gap='2xl' mh='5xl' mb='xl'>
-        {/* TODO: Placeholder for AccountHeader */}
-        <Box />
-        <Flex direction='column' gap='l'>
-          <Text variant='heading' size='l' strength='default' color='heading'>
-            {messages.header}
-          </Text>
-          <Text variant='body' size='l' strength='default'>
-            {messages.description}
-          </Text>
-        </Flex>
-        <Flex
-          w='100%'
-          gap='s'
-          justifyContent='center'
-          role='radiogroup'
-          aria-label={messages.genresLabel}
-        >
-          {genres.map((genre) => (
-            // TODO: max of 6, kebab overflow
-            <SelectablePill
-              key={genre}
-              label={genre}
-              onClick={() => {
-                setCurrentGenre(genre)
-              }}
-            />
-          ))}
-        </Flex>
-        <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-          {({ values, setValues }) => {
-            const { artists: selectedArtists } = values
-            const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-              const { checked, name } = e.target
-              const userId = parseInt(name, 10)
-              const newArtists = checked
-                ? [userId, ...selectedArtists]
-                : selectedArtists.filter((value) => value !== userId)
-
-              setValues({ artists: newArtists })
-            }
-            return (
+      {({
+        values,
+        isValid,
+        isSubmitting,
+        isValidating,
+        dirty,
+        handleSubmit
+      }) => {
+        const { selectedArtists } = values
+        return (
+          <Flex
+            direction='column'
+            gap='3xl'
+            css={{
+              overflow: 'scroll',
+              // Hide scrollbar
+              scrollbarWidth: 'none', // Firefox
+              msOverflowStyle: 'none', // IE + Edge
+              // Chrome + Safari
+              '::-webkit-scrollbar': {
+                display: 'none'
+              }
+            }}
+          >
+            <AccountHeader />
+            <Flex direction='column' gap='2xl' mh='5xl' mb='xl'>
+              <Flex direction='column' gap='l'>
+                <Text
+                  variant='heading'
+                  size='l'
+                  strength='default'
+                  color='heading'
+                >
+                  {messages.header}
+                </Text>
+                <Text variant='body' size='l' strength='default'>
+                  {messages.description}
+                </Text>
+              </Flex>
+              <Flex
+                w='100%'
+                gap='s'
+                justifyContent='center'
+                role='radiogroup'
+                aria-label={messages.genresLabel}
+              >
+                {genres.map((genre) => (
+                  // TODO: max of 6, kebab overflow
+                  <SelectablePill
+                    key={genre}
+                    label={genre}
+                    isSelected={currentGenre === genre}
+                    onClick={() => {
+                      setCurrentGenre(genre)
+                    }}
+                  />
+                ))}
+              </Flex>
               <Form>
                 <fieldset>
                   <Paper
                     css={{
                       background: 'var(--harmony-bg-default)',
-                      boxShadow: 'none'
+                      boxShadow: 'none',
+                      minHeight: 500
                     }}
                     p='xl'
                     gap='m'
@@ -158,33 +172,31 @@ export const SelectArtistsPage = () => {
                     {isLoading
                       ? null
                       : artists?.map((user) => {
-                          return (
-                            <FollowArtistTile
-                              key={user.user_id}
-                              user={user}
-                              onChange={handleChange}
-                            />
-                          )
+                          const { user_id: userId } = user
+                          return <FollowArtistTile key={userId} user={user} />
                         })}
                   </Paper>
                 </fieldset>
               </Form>
-            )
-          }}
-        </Formik>
-      </Flex>
-      <ContinueFooter>
-        <Button
-          minWidth={343}
-          type='submit'
-          // disabled={!isValid || isSubmitting}
-          // isLoading={isSubmitting || isValidating}
-          iconRight={IconArrowRight}
-        >
-          {messages.continue}
-        </Button>
-        <Text variant='body'>Selected TODO/3</Text>
-      </ContinueFooter>
-    </Flex>
+            </Flex>
+            <ContinueFooter>
+              <Button
+                minWidth={343}
+                type='submit'
+                disabled={!dirty || !isValid || isSubmitting}
+                isLoading={isSubmitting || isValidating}
+                iconRight={IconArrowRight}
+                onClick={() => handleSubmit()}
+              >
+                {messages.continue}
+              </Button>
+              <Text variant='body'>
+                Selected {selectedArtists.length || 0}/3
+              </Text>
+            </ContinueFooter>
+          </Flex>
+        )
+      }}
+    </Formik>
   )
 }
