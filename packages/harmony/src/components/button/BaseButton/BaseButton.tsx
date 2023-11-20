@@ -17,6 +17,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
     const {
       iconLeft: LeftIconComponent,
       iconRight: RightIconComponent,
+      isStaticIcon,
       disabled,
       isLoading,
       widthToHideText,
@@ -93,7 +94,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       })
     }
 
-    const iconCss = {
+    const iconCss = !isStaticIcon && {
       '& path': {
         fill: 'currentcolor'
       }

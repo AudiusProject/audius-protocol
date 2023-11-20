@@ -1,23 +1,41 @@
 import { useCallback } from 'react'
 
-import { Box, IconCloseAlt, useTheme } from '@audius/harmony'
-import { Formik } from 'formik'
+import {
+  Flex,
+  Text,
+  IconAudiusLogoHorizontalColor,
+  Button,
+  IconArrowRight,
+  TextLink,
+  ButtonType,
+  Box
+} from '@audius/harmony'
+import { Form, Formik } from 'formik'
+import { Helmet } from 'react-helmet'
 import { useDispatch } from 'react-redux'
-import { Link, useHistory } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
+import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { signIn } from 'common/store/pages/signon/actions'
-import BackgroundWaves from 'components/background-animations/BackgroundWaves'
-import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
-import Page from 'components/page/Page'
+import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
+import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
+import PreloadImage from 'components/preload-image/PreloadImage'
 import { useMedia } from 'hooks/useMedia'
-import { BASE_URL, SIGN_IN_PAGE, TRENDING_PAGE } from 'utils/route'
+import { SIGN_UP_PAGE } from 'utils/route'
 
-import { SignInPageDesktop } from './SignInPageDesktop'
-import { SignInPageMobile } from './SignInPageMobile'
+import { MetamaskSignInButton } from './MetamaskSignInButton'
 
 const messages = {
-  title: 'Sign In',
-  description: 'Sign into your Audius account'
+  metaTitle: 'Sign In • Audius',
+  metaDescription: 'Sign into your Audius account',
+
+  title: 'Sign Into Audius',
+  emailLabel: 'Email',
+  passwordLabel: 'Password',
+  signIn: 'Sign In',
+  newToAudius: 'New to Audius?',
+  createAccount: 'Create an Account',
+  forgotPassword: 'Forgot password?'
 }
 
 type SignInValues = {
@@ -32,7 +50,7 @@ const initialValues = {
 
 export const SignInPage = () => {
   const dispatch = useDispatch()
-  const history = useHistory()
+  const { isMobile } = useMedia()
 
   const handleSubmit = useCallback(
     (values: SignInValues) => {
@@ -42,41 +60,76 @@ export const SignInPage = () => {
     [dispatch]
   )
 
-  const { isMobile } = useMedia()
-  const { spacing } = useTheme()
-
-  const pageProps = {
-    title: messages.title,
-    description: messages.description,
-    canonicalUrl: `${BASE_URL}/${SIGN_IN_PAGE}`
-  }
-
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-      {isMobile ? (
-        <MobilePageContainer {...pageProps} fullHeight>
-          <SignInPageMobile />
-        </MobilePageContainer>
-      ) : (
-        <Page>
-          <BackgroundWaves />
-          <Link to={TRENDING_PAGE}>
-            <IconCloseAlt
-              color='staticWhite'
-              css={{
-                position: 'absolute',
-                left: spacing['2xl'],
-                top: spacing['2xl'],
-                zIndex: 1
-              }}
-              onClick={history.goBack}
-            />
-          </Link>
-          <Box css={{ zIndex: 1 }}>
-            <SignInPageDesktop />
-          </Box>
-        </Page>
-      )}
-    </Formik>
+    <>
+      <Helmet>
+        <title>{messages.metaTitle}</title>
+        <meta name='description' content={messages.metaDescription} />
+      </Helmet>
+      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+        <Flex
+          flex={1}
+          direction='column'
+          justifyContent='space-between'
+          h='100%'
+          p='2xl'
+          pb={!isMobile ? 'unit14' : undefined}
+        >
+          <Flex as={Form} direction='column' gap='2xl'>
+            <Box alignSelf='center'>
+              {isMobile ? (
+                <IconAudiusLogoHorizontalColor />
+              ) : (
+                <PreloadImage
+                  src={audiusLogoColored}
+                  alt='Audius Logo'
+                  css={{
+                    maxHeight: '160px',
+                    maxWidth: '160px',
+                    height: '100%',
+                    width: '100%',
+                    objectFit: 'contain'
+                  }}
+                />
+              )}
+            </Box>
+            <Text
+              variant='heading'
+              size='l'
+              tag='h1'
+              color='accent'
+              css={{ textAlign: isMobile ? 'center' : undefined }}
+            >
+              {messages.title}
+            </Text>
+            <Flex direction='column' gap='l'>
+              <HarmonyTextField name='email' label={messages.emailLabel} />
+              <HarmonyPasswordField
+                name='password'
+                label={messages.passwordLabel}
+              />
+            </Flex>
+            <Flex direction='column' gap='l' w='100%'>
+              <Button iconRight={IconArrowRight} type='submit'>
+                {messages.signIn}
+              </Button>
+              {!isMobile ? <MetamaskSignInButton /> : null}
+              <TextLink
+                variant='visible'
+                textVariant='body'
+                css={{ textAlign: isMobile ? 'center' : undefined }}
+              >
+                {messages.forgotPassword}
+              </TextLink>
+            </Flex>
+          </Flex>
+          {!isMobile ? (
+            <Button variant={ButtonType.SECONDARY} asChild>
+              <Link to={SIGN_UP_PAGE}>{messages.createAccount}</Link>
+            </Button>
+          ) : null}
+        </Flex>
+      </Formik>
+    </>
   )
 }
