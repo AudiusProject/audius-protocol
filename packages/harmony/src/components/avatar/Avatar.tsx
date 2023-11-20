@@ -43,7 +43,7 @@ export const Avatar = (props: AvatarProps) => {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: src ? color.neutral.n400 : 'unset',
+    backgroundColor: src ? 'unset' : color.neutral.n400,
     backgroundSize: 'cover',
     position: 'relative',
     zIndex: 1
@@ -55,7 +55,10 @@ export const Avatar = (props: AvatarProps) => {
     backgroundImage: `url(${src})`,
     backgroundColor: 'unset',
     backgroundSize: 'cover',
-    zIndex: 1
+    zIndex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 
   return (

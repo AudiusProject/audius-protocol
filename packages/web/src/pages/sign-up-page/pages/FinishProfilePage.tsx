@@ -58,12 +58,12 @@ export const FinishProfilePage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const { value: savedDisplayName } = useSelector(getNameField)
-  const { value: savedPoverPhoto } = useSelector(getCoverPhotoField)
+  const { value: savedCoverPhoto } = useSelector(getCoverPhotoField)
   const { value: savedProfileImage } = useSelector(getProfileImageField)
 
   const initialValues = {
     profileImage: { url: savedProfileImage },
-    coverPhoto: { url: savedPoverPhoto },
+    coverPhoto: { url: savedCoverPhoto },
     displayName: savedDisplayName || ''
   }
 
@@ -113,7 +113,7 @@ export const FinishProfilePage = () => {
                 size={isMobile ? 'm' : 'l'}
                 color='heading'
                 css={{ textAlign: isMobile ? 'left' : 'center' }}
-                id='genre-header'
+                id='profile-header'
               >
                 {messages.header}
               </Text>
@@ -133,7 +133,7 @@ export const FinishProfilePage = () => {
                 >
                   <Paper
                     role='group'
-                    aria-labelledby='genre-header'
+                    aria-labelledby='profile-header'
                     css={{ maxWidth: 608 }}
                     justifyContent={isMobile ? 'flex-start' : 'center'}
                     alignItems='flex-start'
@@ -180,7 +180,7 @@ export const FinishProfilePage = () => {
             </Flex>
           </Flex>
           <ContinueFooter>
-            <Button type='submit'> {messages.continue} </Button>
+            <Button type='submit'>{messages.continue}</Button>
           </ContinueFooter>
         </Flex>
       )}

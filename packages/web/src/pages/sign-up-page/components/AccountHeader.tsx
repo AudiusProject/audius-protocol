@@ -1,4 +1,12 @@
-import { Avatar, Box, Flex, IconCamera, IconImage, Text } from '@audius/harmony'
+import {
+  Avatar,
+  Box,
+  Flex,
+  IconCamera,
+  IconImage,
+  Text,
+  useTheme
+} from '@audius/harmony'
 
 import {
   getCoverPhotoField,
@@ -21,35 +29,37 @@ const CoverPhotoBox = ({
 }: {
   imageUrl: string | undefined
   isEditing?: boolean
-}) => (
-  <Box
-    h='100%'
-    w='100%'
-    border='default'
-    css={{
-      backgroundColor: 'lightgray',
-      overflow: 'hidden',
-      ...(imageUrl
-        ? {
-            backgroundImage: `url(${imageUrl})`,
-            backgroundPosition: 'center',
-            backgroundSize: '100%',
-            backgroundRepeat: 'no-repeat, no-repeat'
-          }
-        : {
-            background:
-              'linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.00) 100%), #C2C0CC'
-          })
-    }}
-  >
-    {isEditing && !imageUrl ? (
-      <IconImage
-        css={{ position: 'absolute', right: '16px', top: '16px' }}
-        color='staticWhite'
-      />
-    ) : null}
-  </Box>
-)
+}) => {
+  const { color } = useTheme()
+  return (
+    <Box
+      h='100%'
+      w='100%'
+      border='default'
+      css={{
+        backgroundColor: color.neutral.n400,
+        overflow: 'hidden',
+        ...(imageUrl
+          ? {
+              backgroundImage: `url(${imageUrl})`,
+              backgroundPosition: 'center',
+              backgroundSize: '100%',
+              backgroundRepeat: 'no-repeat, no-repeat'
+            }
+          : {
+              background: `linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.00) 100%), ${color.neutral.n400}`
+            })
+      }}
+    >
+      {isEditing && !imageUrl ? (
+        <IconImage
+          css={{ position: 'absolute', right: '16px', top: '16px' }}
+          color='staticWhite'
+        />
+      ) : null}
+    </Box>
+  )
+}
 
 const ProfileImageAvatar = ({
   imageUrl,
@@ -59,9 +69,9 @@ const ProfileImageAvatar = ({
   isEditing?: boolean
 }) => {
   const { isMobile } = useMedia()
-  const useSmallSize = isEditing || isMobile
+  const isSmallSize = isEditing || isMobile
 
-  const avatarSize = useSmallSize ? 72 : 120
+  const avatarSize = isSmallSize ? 72 : 120
   return (
     <Avatar
       variant='strong'
@@ -72,7 +82,7 @@ const ProfileImageAvatar = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        ...(useSmallSize ? { transform: 'translateY(20px)' } : null)
+        ...(isSmallSize ? { transform: 'translateY(20px)' } : null)
       }}
     >
       {isEditing && !imageUrl ? (
@@ -90,11 +100,11 @@ export const AccountHeader = ({ mode }: AccountHeaderProps) => {
   const isEditing = mode === 'editing'
 
   const { isMobile } = useMedia()
-  const useSmallSize = isEditing || isMobile
+  const isSmallSize = isEditing || isMobile
 
   return (
     <Box w='100%' css={{ zIndex: 4 }}>
-      <Box h={useSmallSize ? 96 : 168} css={{ overflow: 'hidden' }} w='100%'>
+      <Box h={isSmallSize ? 96 : 168} css={{ overflow: 'hidden' }} w='100%'>
         {isEditing ? (
           <ImageField name='coverPhoto' imageResizeOptions={{ square: false }}>
             {(uploadedImage) => (
@@ -114,7 +124,7 @@ export const AccountHeader = ({ mode }: AccountHeaderProps) => {
             position: 'absolute',
             display: 'flex'
           },
-          useSmallSize
+          isSmallSize
             ? { bottom: 0, left: 16, maxWidth: 'calc(100% - 32px)' }
             : {
                 left: 0,
@@ -124,9 +134,9 @@ export const AccountHeader = ({ mode }: AccountHeaderProps) => {
                 margin: '0 auto'
               }
         ]}
-        justifyContent={useSmallSize ? 'flex-start' : 'center'}
-        alignItems={useSmallSize ? 'flex-end' : 'flex-start'}
-        gap={useSmallSize ? 's' : 'xl'}
+        justifyContent={isSmallSize ? 'flex-start' : 'center'}
+        alignItems={isSmallSize ? 'flex-end' : 'flex-start'}
+        gap={isSmallSize ? 's' : 'xl'}
       >
         {isEditing ? (
           <ImageField name='profileImage' css={{ flex: 0 }}>
@@ -151,14 +161,14 @@ export const AccountHeader = ({ mode }: AccountHeaderProps) => {
         >
           <Text
             variant='heading'
-            size={useSmallSize ? 's' : 'xl'}
+            size={isSmallSize ? 's' : 'xl'}
             strength='strong'
             color='staticWhite'
             shadow='emphasis'
             tag='p'
             css={{
               wordBreak: 'break-word',
-              minHeight: useSmallSize ? '24px' : '40px',
+              minHeight: isSmallSize ? '24px' : '40px',
               minWidth: '1px'
             }}
           >
@@ -166,7 +176,7 @@ export const AccountHeader = ({ mode }: AccountHeaderProps) => {
           </Text>
           <Text
             variant='body'
-            size={useSmallSize ? 's' : 'm'}
+            size={isSmallSize ? 's' : 'm'}
             color='staticWhite'
             shadow='emphasis'
           >
