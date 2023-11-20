@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { Nullable } from '@audius/common'
-import { Button, Flex, Paper, Text, useTheme } from '@audius/harmony'
+import { Box, Button, Flex, Paper, Text, useTheme } from '@audius/harmony'
 import { Formik, Form } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
@@ -164,14 +164,16 @@ export const FinishProfilePage = () => {
                         }}
                       />
                       {errors.profileImage ? (
-                        <Text
-                          variant='body'
-                          size='xs'
-                          strength='default'
-                          color='danger'
-                        >
-                          {messages.profileImageRequired}
-                        </Text>
+                        <Box mt='xs'>
+                          <Text
+                            variant='body'
+                            size='s'
+                            strength='default'
+                            color='danger'
+                          >
+                            {messages.profileImageRequired}
+                          </Text>
+                        </Box>
                       ) : null}
                     </Flex>
                   </Paper>
