@@ -69,7 +69,6 @@ export const FinishProfilePage = () => {
 
   const handleSubmit = useCallback(
     ({ coverPhoto, profileImage }: FinishProfileValues) => {
-      console.log('submitgin')
       // Only saving the url as there's no need to store the blob in the store
       dispatch(setValueField('profileImage', profileImage.url))
       if (coverPhoto) {
