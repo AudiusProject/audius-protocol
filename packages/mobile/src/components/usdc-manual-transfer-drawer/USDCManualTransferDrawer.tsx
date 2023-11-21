@@ -186,7 +186,9 @@ export const USDCManualTransferDrawer = () => {
           left={<LogoUSDC height={spacing(6)} />}
           analytics={analytics}
           balance={USDC(balanceBN ?? new BN(0)).toLocaleString('en-US', {
-            roundingMode: 'floor'
+            roundingMode: 'floor',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
           })}
         />
         <View style={styles.disclaimerContainer}>

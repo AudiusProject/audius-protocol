@@ -60,10 +60,7 @@ export const USDCManualTransfer = ({
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
-  const { data: balanceBN } = useUSDCBalance({
-    isPolling: true,
-    pollingInterval: 1000
-  })
+  const { data: balanceBN } = useUSDCBalance()
   const balance = USDC(balanceBN ?? new BN(0)).value
   const amount = USDC((amountInCents ?? 0) / 100).value
   const isBuyButtonDisabled = isUnlocking || balance < amount
@@ -145,7 +142,13 @@ export const USDCManualTransfer = ({
               disabled={isBuyButtonDisabled}
               onClick={handleBuyClick}
             >
-              {messages.buy(USDC(amount).ceil(2).toFixed(2))}
+              {messages.buy(
+                USDC(amount).toLocaleString('en-us', {
+                  roundingMode: 'ceil',
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })
+              )}
             </Button>
           </>
         )}

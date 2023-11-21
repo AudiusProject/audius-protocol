@@ -1,14 +1,12 @@
 import { useCallback, useState } from 'react'
 
 import {
-  BNUSDC,
   PurchaseMethod,
   PurchaseVendor,
-  decimalIntegerToHumanReadable,
-  formatUSDCWeiToFloorCentsNumber,
   useCreateUserbankIfNeeded,
   useUSDCBalance
 } from '@audius/common'
+import { USDC } from '@audius/fixed-decimal'
 import {
   Box,
   Button,
@@ -54,11 +52,8 @@ export const AddFunds = ({
   const [selectedPurchaseMethod, setSelectedPurchaseMethod] =
     useState<PurchaseMethod>(PurchaseMethod.CARD)
   const mobile = isMobile()
-  const { data: balance } = useUSDCBalance({ isPolling: true })
-  const balanceNumber = formatUSDCWeiToFloorCentsNumber(
-    (balance ?? new BN(0)) as BNUSDC
-  )
-  const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
+  const { data: balanceBN } = useUSDCBalance({ isPolling: true })
+  const balance = USDC(balanceBN ?? new BN(0)).value
 
   const vendorOptions = [{ label: PurchaseVendor.STRIPE }]
 
@@ -123,7 +118,11 @@ export const AddFunds = ({
                 </Box>
               </Flex>
               <Text variant='title' size='l' strength='strong'>
-                {`$${balanceFormatted}`}
+                {`$${USDC(balance).toLocaleString('en-us', {
+                  roundingMode: 'floor',
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}`}
               </Text>
             </Flex>
           </Box>
