@@ -16,23 +16,20 @@ import {
   useTheme
 } from '@audius/harmony'
 import { Form, Formik } from 'formik'
-import { filter, map } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { addFollowArtists } from 'common/store/pages/signon/actions'
-import { getGenres } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { audioPlayer } from 'services/audio-player'
-import { useSelector } from 'utils/reducer'
 import { TRENDING_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import { ContinueFooter } from '../components/ContinueFooter'
 import FollowArtistTile from '../components/FollowArtistTile'
+import { SelectArtistsPreviewContextProvider } from '../utils/selectArtistsPreviewContext'
 
 const messages = {
   header: 'Follow At Least 3 Artists',
@@ -70,21 +67,6 @@ export const SelectArtistsPage = () => {
   // const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
   //   setCurrentGenre(e.target.value)
   // }, [])
-
-  const [{ isPlaying, nowPlayingUserId }, setPreviewState] = useState({
-    isPlaying: false,
-    nowPlayingUserId: null as ID | null
-  })
-  const handlePreviewClick = (userId: ID, sourceMp3: string) => {
-    if (isPlaying && nowPlayingUserId === userId) {
-      audioPlayer.pause()
-      setPreviewState({ isPlaying: false, nowPlayingUserId: userId })
-    }
-    audioPlayer.stop()
-    audioPlayer.load(0, () => {}, sourceMp3)
-    audioPlayer.play()
-    setPreviewState({ isPlaying: true, nowPlayingUserId: userId })
-  }
 
   const handleSubmit = useCallback(
     (values: SelectArtistsValues) => {
@@ -222,29 +204,30 @@ export const SelectArtistsPage = () => {
               </Flex>
               <Form>
                 <fieldset>
-                  <Paper
-                    css={{
-                      background: 'var(--harmony-bg-default)',
-                      boxShadow: 'none',
-                      minHeight: 500
-                    }}
-                    pv='xl'
-                    ph={isMobile ? 'l' : 'xl'}
-                    gap={isMobile ? 's' : 'm'}
-                    wrap='wrap'
-                  >
-                    {isLoading
-                      ? null
-                      : artists?.map((user) => {
-                          return (
-                            <FollowArtistTile
-                              key={user.user_id}
-                              user={user}
-                              onPreviewClick={handlePreviewClick}
-                            />
-                          )
-                        })}
-                  </Paper>
+                  <SelectArtistsPreviewContextProvider>
+                    <Paper
+                      css={{
+                        background: 'var(--harmony-bg-default)',
+                        boxShadow: 'none',
+                        minHeight: 500
+                      }}
+                      pv='xl'
+                      ph={isMobile ? 'l' : 'xl'}
+                      gap={isMobile ? 's' : 'm'}
+                      wrap='wrap'
+                    >
+                      {isLoading
+                        ? null
+                        : artists?.map((user) => {
+                            return (
+                              <FollowArtistTile
+                                key={user.user_id}
+                                user={user}
+                              />
+                            )
+                          })}
+                    </Paper>
+                  </SelectArtistsPreviewContextProvider>
                 </fieldset>
               </Form>
             </Flex>

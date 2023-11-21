@@ -1,6 +1,6 @@
-import { HTMLProps } from 'react'
+import { HTMLProps, useContext } from 'react'
 
-import { ID, UserMetadata, WidthSizes } from '@audius/common'
+import { UserMetadata, WidthSizes } from '@audius/common'
 import {
   Box,
   Divider,
@@ -18,19 +18,21 @@ import { Avatar } from 'components/avatar/Avatar'
 import { useMedia } from 'hooks/useMedia'
 import { useCoverPhoto } from 'hooks/useUserCoverPhoto'
 
+import { SelectArtistsPreviewContext } from '../utils/selectArtistsPreviewContext'
+
 type FollowArtistTileProps = {
   user: UserMetadata
-  onPreviewClick: (userId: ID, source: string) => void
 } & HTMLProps<HTMLInputElement>
 
 const FollowArtistTile = (props: FollowArtistTileProps) => {
   const {
-    user: { name, user_id, is_verified, track_count, follower_count },
-    onPreviewClick
+    user: { name, user_id, is_verified, track_count, follower_count }
   } = props
   const { isMobile } = useMedia()
   const coverPhoto = useCoverPhoto(user_id, WidthSizes.SIZE_640)
   const [followField] = useField({ name: 'selectedArtists', type: 'checkbox' })
+
+  const { togglePreview } = useContext(SelectArtistsPreviewContext)
 
   return (
     <Paper
@@ -45,10 +47,7 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
           h={72}
           css={{ position: 'absolute', top: 34 }}
           onClick={() => {
-            onPreviewClick(
-              user_id,
-              'https://discoveryprovider2.audius.co/v1/tracks/Kdb0BgY/stream'
-            )
+            togglePreview(user_id)
           }}
         >
           <Avatar variant='strong' userId={user_id} />
