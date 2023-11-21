@@ -110,7 +110,7 @@ export const USDCManualTransferDrawer = () => {
   const dispatch = useDispatch()
   const { toast } = useToast()
   const { isOpen, onClose, onClosed, data } = useUSDCManualTransferModal()
-  const { source, amount: amountInCents, onSuccessAction } = data ?? {}
+  const { amount: amountInCents, onSuccessAction } = data ?? {}
   const { onPress: onPressLearnMore } = useLink(USDCLearnMore)
   const { neutral, specialLightGreen } = useThemeColors()
 
@@ -205,7 +205,7 @@ export const USDCManualTransferDrawer = () => {
           </View>
         </View>
         <View style={styles.buttonContainer}>
-          {source === 'add-funds' ? (
+          {amountInCents === undefined ? (
             <>
               <Button
                 title={messages.copy}
@@ -232,7 +232,7 @@ export const USDCManualTransferDrawer = () => {
                 fullWidth
               />
               <Button
-                title={messages.buy(USDC(amount).toFixed(2))}
+                title={messages.buy(USDC(amount).ceil(2).toFixed(2))}
                 onPress={handleBuyPress}
                 variant='primary'
                 color={specialLightGreen}

@@ -54,7 +54,6 @@ export const USDCManualTransferModal = () => {
       <ModalContent>
         <USDCManualTransfer
           onClose={handleClose}
-          source='purchase'
           amountInCents={amount}
           onSuccessAction={onSuccessAction}
         />

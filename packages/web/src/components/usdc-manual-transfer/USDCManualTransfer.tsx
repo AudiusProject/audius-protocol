@@ -49,12 +49,10 @@ const messages = {
 
 export const USDCManualTransfer = ({
   onClose,
-  source,
   amountInCents,
   onSuccessAction
 }: {
   onClose: () => void
-  source: 'add-funds' | 'purchase'
   amountInCents?: number
   onSuccessAction?: Action
 }) => {
@@ -122,7 +120,7 @@ export const USDCManualTransfer = ({
           [styles.mobile]: mobile
         })}
       >
-        {source === 'add-funds' ? (
+        {amountInCents === undefined ? (
           <>
             <Button variant={ButtonType.PRIMARY} fullWidth onClick={handleCopy}>
               {messages.copy}
@@ -147,7 +145,7 @@ export const USDCManualTransfer = ({
               disabled={isBuyButtonDisabled}
               onClick={handleBuyClick}
             >
-              {messages.buy(USDC(amount).toFixed(2))}
+              {messages.buy(USDC(amount).ceil(2).toFixed(2))}
             </Button>
           </>
         )}
