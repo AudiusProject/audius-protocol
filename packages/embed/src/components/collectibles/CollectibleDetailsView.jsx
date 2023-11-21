@@ -8,7 +8,7 @@ import { getCopyableLink } from '../../util/shareUtil'
 import Button from '../button/Button'
 
 import styles from './CollectibleDetailsView.module.css'
-import { getHash } from './collectibleHelpers'
+import { getHash } from '../../util/collectibleHelpers'
 
 const MODEL_VIEWER_SCRIPT_URL =
   'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js'

@@ -29,6 +29,7 @@
     "webpack-cli": "4.5.0"
   },
   "dependencies": {
+    "@audius/fetch-nft": "0.1.8",
     "@audius/harmony": "*",
     "@audius/sdk": "*",
     "@audius/stems": "*",
