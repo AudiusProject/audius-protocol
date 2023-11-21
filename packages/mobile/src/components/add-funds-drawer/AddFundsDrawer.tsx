@@ -70,7 +70,10 @@ export const AddFundsDrawer = () => {
     if (selectedPurchaseMethod === PurchaseMethod.CARD) {
       openCardFlow()
     } else if (selectedPurchaseMethod === PurchaseMethod.CRYPTO) {
-      openUSDCManualTransferModal()
+      openUSDCManualTransferModal({
+        isOpen: true,
+        source: 'add-funds'
+      })
     }
   }, [selectedPurchaseMethod, openCardFlow, openUSDCManualTransferModal])
 

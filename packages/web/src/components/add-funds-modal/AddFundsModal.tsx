@@ -91,7 +91,7 @@ export const AddFundsModal = () => {
         {page === 'add-funds' ? (
           <AddFunds onContinue={handleContinue} />
         ) : (
-          <USDCManualTransfer onClose={handleClose} />
+          <USDCManualTransfer onClose={handleClose} source='add-funds' />
         )}
       </ModalContent>
     </ModalDrawer>

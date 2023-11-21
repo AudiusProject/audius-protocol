@@ -65,22 +65,33 @@ export const usePurchaseContentFormConfiguration = ({
         presetValues,
         customAmount
       })
+      const startPurchaseParams = {
+        purchaseMethod,
+        extraAmount,
+        extraAmountPreset: amountPreset,
+        contentId: track.track_id,
+        contentType: ContentType.TRACK
+      }
 
       if (purchaseMethod === PurchaseMethod.CRYPTO) {
-        openUsdcManualTransferModal()
+        openUsdcManualTransferModal({
+          isOpen: true,
+          source: 'purchase',
+          amount: price + extraAmount,
+          startPurchaseParams
+        })
       } else {
-        dispatch(
-          startPurchaseContentFlow({
-            purchaseMethod,
-            extraAmount,
-            extraAmountPreset: amountPreset,
-            contentId: track.track_id,
-            contentType: ContentType.TRACK
-          })
-        )
+        dispatch(startPurchaseContentFlow(startPurchaseParams))
       }
     },
-    [isUnlocking, track, presetValues, dispatch, openUsdcManualTransferModal]
+    [
+      isUnlocking,
+      track,
+      presetValues,
+      dispatch,
+      openUsdcManualTransferModal,
+      price
+    ]
   )
 
   return {

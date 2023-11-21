@@ -1,10 +1,21 @@
 import { useCallback, useContext } from 'react'
 
-import { Name, useCreateUserbankIfNeeded } from '@audius/common'
+import {
+  Name,
+  StartPurchaseContentFlowParams,
+  isContentPurchaseInProgress,
+  purchaseContentActions,
+  purchaseContentSelectors,
+  useCreateUserbankIfNeeded,
+  useUSDCBalance
+} from '@audius/common'
+import { USDC } from '@audius/fixed-decimal'
 import { Button, ButtonType, Flex, IconLogoCircleUSDC } from '@audius/harmony'
 import { IconError } from '@audius/stems'
+import BN from 'bn.js'
 import cn from 'classnames'
 import QRCode from 'react-qr-code'
+import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { Icon } from 'components/Icon'
@@ -12,13 +23,17 @@ import { AddressTile } from 'components/address-tile'
 import { ToastContext } from 'components/toast/ToastContext'
 import { Text } from 'components/typography'
 import { Hint } from 'components/withdraw-usdc-modal/components/Hint'
-import { track, make } from 'services/analytics'
+import { track as trackAnalytics, make } from 'services/analytics'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { getUSDCUserBank } from 'services/solana/solana'
 import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
 import styles from './USDCManualTransfer.module.css'
+
+const { getPurchaseContentFlowStage, getPurchaseContentError } =
+  purchaseContentSelectors
+const { startPurchaseContentFlow } = purchaseContentActions
 
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
@@ -30,12 +45,35 @@ const messages = {
   learnMore: 'Learn More',
   copy: 'Copy Wallet Address',
   goBack: 'Go Back',
-  copied: 'Copied to Clipboard!'
+  copied: 'Copied to Clipboard!',
+  buy: (amount: string) => `Buy $${amount}`
 }
 
-export const USDCManualTransfer = ({ onClose }: { onClose: () => void }) => {
+export const USDCManualTransfer = ({
+  onClose,
+  source,
+  amountInCents,
+  startPurchaseParams
+}: {
+  onClose: () => void
+  source: 'add-funds' | 'purchase'
+  amountInCents?: number
+  startPurchaseParams?: StartPurchaseContentFlowParams
+}) => {
+  const dispatch = useDispatch()
+  const stage = useSelector(getPurchaseContentFlowStage)
+  const error = useSelector(getPurchaseContentError)
+  const isUnlocking = !error && isContentPurchaseInProgress(stage)
+  const { data: balanceBN } = useUSDCBalance({
+    isPolling: true,
+    pollingInterval: 1000
+  })
+  const balance = USDC((balanceBN ?? new BN(0)) as BN).value
+  const amount = USDC((amountInCents ?? 0) / 100).value
+  const isBuyButtonDisabled = isUnlocking || balance < amount
+
   useCreateUserbankIfNeeded({
-    recordAnalytics: track,
+    recordAnalytics: trackAnalytics,
     audiusBackendInstance,
     mint: 'usdc'
   })
@@ -50,13 +88,20 @@ export const USDCManualTransfer = ({ onClose }: { onClose: () => void }) => {
   const handleCopy = useCallback(() => {
     copyToClipboard(USDCUserBank ?? '')
     toast(messages.copied)
-    track(
+    trackAnalytics(
       make({
         eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
         address: USDCUserBank ?? ''
       })
     )
   }, [USDCUserBank, toast])
+
+  const handleBuyClick = useCallback(() => {
+    if (startPurchaseParams) {
+      dispatch(startPurchaseContentFlow(startPurchaseParams))
+    }
+    onClose()
+  }, [dispatch, onClose, startPurchaseParams])
 
   return (
     <div className={styles.root}>
@@ -81,13 +126,34 @@ export const USDCManualTransfer = ({ onClose }: { onClose: () => void }) => {
           [styles.mobile]: mobile
         })}
       >
-        <Button variant={ButtonType.PRIMARY} fullWidth onClick={handleCopy}>
-          {messages.copy}
-        </Button>
-        {mobile ? null : (
-          <Button variant={ButtonType.TERTIARY} fullWidth onClick={onClose}>
-            {messages.goBack}
-          </Button>
+        {source === 'add-funds' ? (
+          <>
+            <Button variant={ButtonType.PRIMARY} fullWidth onClick={handleCopy}>
+              {messages.copy}
+            </Button>
+            {mobile ? null : (
+              <Button variant={ButtonType.TERTIARY} fullWidth onClick={onClose}>
+                {messages.goBack}
+              </Button>
+            )}
+          </>
+        ) : (
+          <>
+            {mobile ? null : (
+              <Button variant={ButtonType.TERTIARY} fullWidth onClick={onClose}>
+                {messages.goBack}
+              </Button>
+            )}
+            <Button
+              variant={ButtonType.PRIMARY}
+              fullWidth
+              color='lightGreen'
+              disabled={isBuyButtonDisabled}
+              onClick={handleBuyClick}
+            >
+              {messages.buy(USDC(amount).toFixed(2))}
+            </Button>
+          </>
         )}
       </div>
     </div>
