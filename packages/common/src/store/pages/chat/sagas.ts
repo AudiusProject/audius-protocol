@@ -32,7 +32,7 @@ import { makeChatId } from './utils'
 
 // Attach ulid to window object for debugging DMs
 // @ts-ignore
-window.ulid = ulid
+// window.ulid = ulid
 
 const {
   createChat,

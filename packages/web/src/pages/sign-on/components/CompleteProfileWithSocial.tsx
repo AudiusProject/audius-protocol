@@ -9,7 +9,7 @@ import {
 import { IconImage, IconUser, IconVerified } from '@audius/stems'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { Transition } from 'react-spring/renderprops'
+import { Transition } from 'react-spring/renderprops.cjs'
 
 import { InstagramAuthButton } from 'components/instagram-auth/InstagramAuthButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'

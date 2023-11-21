@@ -13,6 +13,7 @@ const directionMap = {
 }
 
 export const getSafeArea = (direction: SafeAreaDirection) => {
+  if (typeof getComputedStyle === 'undefined') return 0
   const property = directionMap[direction]
   const style = getComputedStyle(document.documentElement)
   const propertyValue = style.getPropertyValue(property)

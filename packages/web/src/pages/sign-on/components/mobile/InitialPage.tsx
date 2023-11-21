@@ -10,7 +10,7 @@ import {
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { Spring } from 'react-spring/renderprops'
+import { Spring } from 'react-spring/renderprops.cjs'
 
 import djBackgroundImage from 'assets/img/2-DJ-4-3.jpg'
 import audiusLogoHorizontal from 'assets/img/Horizontal-Logo-Full-Color.png'

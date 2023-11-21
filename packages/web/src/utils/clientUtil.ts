@@ -11,6 +11,9 @@ declare global {
 }
 
 export const isMobile = () => {
+  if (typeof navigator === 'undefined') {
+    return false
+  }
   let check = false
   ;(function (a) {
     if (
@@ -34,6 +37,9 @@ export const isMobile = () => {
 }
 
 export const isElectron = () => {
+  if (typeof navigator === 'undefined') {
+    return false
+  }
   const userAgent = navigator.userAgent.toLowerCase()
   return userAgent.indexOf(' electron/') > -1
 }

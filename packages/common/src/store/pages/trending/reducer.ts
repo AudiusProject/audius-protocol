@@ -22,9 +22,9 @@ import {
   makeInitialState
 } from './lineup/reducer'
 
-const urlParams = new URLSearchParams(window.location.search)
-const genre = urlParams.get('genre')
-const timeRange = urlParams.get('timeRange')
+// const urlParams = new URLSearchParams(window.location.search)
+const genre = ''
+const timeRange = ''
 
 const initialState = {
   trendingTimeRange: Object.values(TimeRange).includes(timeRange)

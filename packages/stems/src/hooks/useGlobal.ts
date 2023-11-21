@@ -6,8 +6,6 @@ declare global {
   }
 }
 
-window.AudiusStems = window.AudiusStems || {}
-
 /**
  * Hook to "share state" between components using the global window object.
  * Obviously, comes with caveats with globals.
@@ -23,6 +21,10 @@ export const useGlobal = <T>(
   name: string,
   initialValue: T
 ): [() => T, (mutator: (cur: T) => void) => void] => {
+  if (window.AudiusStems === undefined) {
+    window.AudiusStems = window.AudiusStems || {}
+  }
+
   useEffect(() => {
     if (window.AudiusStems[name] === undefined) {
       window.AudiusStems[name] = initialValue

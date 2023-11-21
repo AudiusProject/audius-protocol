@@ -8,7 +8,7 @@ import { isEqual } from 'lodash'
 import PropTypes from 'prop-types'
 import Lottie from 'react-lottie'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { Transition } from 'react-spring/renderprops'
+import { Transition } from 'react-spring/renderprops.cjs'
 
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import IconArrow from 'assets/img/iconArrowGrey.svg'

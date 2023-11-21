@@ -1,5 +1,5 @@
 import type { Maybe } from '@audius/common'
-import { Track, sdk } from '@audius/sdk'
+import { sdk, full as FullSdk } from '@audius/sdk'
 import { PageContextServer } from 'vike/types'
 
 const audiusSdk = sdk({
@@ -7,7 +7,7 @@ const audiusSdk = sdk({
 })
 
 export type TrackPageProps = {
-  track: Maybe<Track>
+  track: Maybe<FullSdk.TrackFull>
 }
 
 export async function onBeforeRender(pageContext: PageContextServer) {

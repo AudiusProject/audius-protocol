@@ -2,6 +2,7 @@ import { Track } from '@audius/sdk'
 import { hydrateRoot } from 'react-dom/client'
 import { PageContextClient } from 'vike/types'
 
+import { SsrRoot } from './SsrRoot'
 import { WebPlayerSkeleton } from './WebPlayerSkeleton'
 
 // TODO: test hydrate vs render
@@ -12,8 +13,10 @@ export async function render(
   const { Page, pageProps } = pageContext
   hydrateRoot(
     document.getElementById('page-view'),
-    <WebPlayerSkeleton>
-      <Page {...pageProps} />
-    </WebPlayerSkeleton>
+    <SsrRoot>
+      <WebPlayerSkeleton>
+        <Page {...pageProps} />
+      </WebPlayerSkeleton>
+    </SsrRoot>
   )
 }

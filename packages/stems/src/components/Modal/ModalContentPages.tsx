@@ -3,7 +3,7 @@ import { Children, ReactChild, useState } from 'react'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { animated, Transition } from 'react-spring/renderprops'
+import { animated, Transition } from 'react-spring/renderprops.cjs'
 import useMeasure from 'react-use-measure'
 
 import { ModalContent } from './ModalContent'

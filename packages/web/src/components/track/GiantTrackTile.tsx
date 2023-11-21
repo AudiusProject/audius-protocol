@@ -27,6 +27,7 @@ import {
 import cn from 'classnames'
 
 import IconRobot from 'assets/img/robot.svg'
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
 import { UserLink } from 'components/link'
@@ -494,12 +495,14 @@ export const GiantTrackTile = ({
       elevation='mid'
     >
       <div className={styles.topSection}>
-        <GiantArtwork
-          trackId={trackId}
-          coverArtSizes={coverArtSizes}
-          coSign={coSign}
-          callback={onArtworkLoad}
-        />
+        <ClientOnly>
+          <GiantArtwork
+            trackId={trackId}
+            coverArtSizes={coverArtSizes}
+            coSign={coSign}
+            callback={onArtworkLoad}
+          />
+        </ClientOnly>
         <div className={styles.infoSection}>
           <div className={styles.infoSectionHeader}>
             {renderCardTitle(cn(fadeIn))}
@@ -526,32 +529,34 @@ export const GiantTrackTile = ({
             </div>
           </div>
 
-          <div className={cn(styles.playSection, fadeIn)}>
-            {showPlay ? (
-              <PlayPauseButton
-                disabled={!doesUserHaveAccess}
-                playing={playing && !previewing}
-                onPlay={onPlay}
-                trackId={trackId}
-              />
-            ) : null}
-            {showPreview ? (
-              <PlayPauseButton
-                playing={playing && previewing}
-                onPlay={onPreview}
-                trackId={trackId}
-                isPreview
-              />
-            ) : null}
-            {isLongFormContent && isNewPodcastControlsEnabled ? (
-              <GiantTrackTileProgressInfo
-                duration={duration}
-                trackId={trackId}
-              />
-            ) : (
-              renderListenCount()
-            )}
-          </div>
+          <ClientOnly>
+            <div className={cn(styles.playSection, fadeIn)}>
+              {showPlay ? (
+                <PlayPauseButton
+                  disabled={!doesUserHaveAccess}
+                  playing={playing && !previewing}
+                  onPlay={onPlay}
+                  trackId={trackId}
+                />
+              ) : null}
+              {showPreview ? (
+                <PlayPauseButton
+                  playing={playing && previewing}
+                  onPlay={onPreview}
+                  trackId={trackId}
+                  isPreview
+                />
+              ) : null}
+              {isLongFormContent && isNewPodcastControlsEnabled ? (
+                <GiantTrackTileProgressInfo
+                  duration={duration}
+                  trackId={trackId}
+                />
+              ) : (
+                renderListenCount()
+              )}
+            </div>
+          </ClientOnly>
 
           <div className={cn(styles.statsSection, fadeIn)}>
             {renderStatsRow()}
@@ -600,20 +605,24 @@ export const GiantTrackTile = ({
         </div>
       </div>
 
-      {isPremium && premiumConditions ? (
-        <PremiumTrackSection
-          isLoading={isLoading}
-          trackId={trackId}
-          premiumConditions={premiumConditions}
-          doesUserHaveAccess={doesUserHaveAccess}
-          isOwner={isOwner}
-          ownerId={userId}
-        />
-      ) : null}
+      <ClientOnly>
+        {isPremium && premiumConditions ? (
+          <PremiumTrackSection
+            isLoading={isLoading}
+            trackId={trackId}
+            premiumConditions={premiumConditions}
+            doesUserHaveAccess={doesUserHaveAccess}
+            isOwner={isOwner}
+            ownerId={userId}
+          />
+        ) : null}
+      </ClientOnly>
 
-      {aiAttributionUserId ? (
-        <AiTrackSection attributedUserId={aiAttributionUserId} />
-      ) : null}
+      <ClientOnly>
+        {aiAttributionUserId ? (
+          <AiTrackSection attributedUserId={aiAttributionUserId} />
+        ) : null}
+      </ClientOnly>
 
       <div className={cn(styles.bottomSection, fadeIn)}>
         <div className={styles.infoLabelsSection}>
@@ -642,8 +651,10 @@ export const GiantTrackTile = ({
             {description}
           </UserGeneratedText>
         ) : null}
-        {renderTags()}
-        {renderDownloadButtons()}
+        <ClientOnly>
+          {renderTags()}
+          {renderDownloadButtons()}
+        </ClientOnly>
       </div>
     </Tile>
   )

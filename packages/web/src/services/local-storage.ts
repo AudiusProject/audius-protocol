@@ -1,5 +1,5 @@
 import { LocalStorage } from '@audius/common'
 
 export const localStorage = new LocalStorage({
-  localStorage: window.localStorage
+  localStorage: typeof window !== 'undefined' ? window.localStorage : {}
 })

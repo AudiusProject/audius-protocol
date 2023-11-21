@@ -1,5 +1,7 @@
 // @refresh reset
 
+import { useEffect } from 'react'
+
 import { Route, Switch } from 'react-router-dom'
 
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
@@ -9,11 +11,17 @@ import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
 
 import '../services/webVitals'
 
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
+
 import { AppErrorBoundary } from './AppErrorBoundary'
 import { AppProviders } from './AppProviders'
 import WebPlayer from './web-player/WebPlayer'
 
 export const App = () => {
+  useEffect(() => {
+    remoteConfigInstance.init()
+  }, [])
+
   return (
     <AppProviders>
       <SomethingWrong />

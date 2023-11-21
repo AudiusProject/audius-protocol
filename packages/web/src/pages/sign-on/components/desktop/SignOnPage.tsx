@@ -14,7 +14,7 @@ import cn from 'classnames'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { Transition } from 'react-spring/renderprops'
+import { Transition } from 'react-spring/renderprops.cjs'
 
 import imageSignUp1 from 'assets/img/2-DJ-4-3.jpg'
 import imageSignUp2 from 'assets/img/3-Collection-4-3.jpg'

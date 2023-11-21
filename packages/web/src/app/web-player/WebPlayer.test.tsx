@@ -10,7 +10,7 @@ import WebPlayer from './WebPlayer'
 
 vitest.mock('jimp/es', () => null)
 vitest.mock('./visualizer/Visualizer', () => () => null)
-vitest.mock('react-spring/renderprops', () => ({
+vitest.mock('react-spring/renderprops.cjs', () => ({
   Spring: () => null,
   Transition: () => null
 }))

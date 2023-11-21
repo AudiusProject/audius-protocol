@@ -4,7 +4,7 @@ import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
-import { Spring } from 'react-spring/renderprops'
+import { Spring } from 'react-spring/renderprops.cjs'
 import calcScrollbarWidth from 'scrollbar-width'
 
 import SearchBar from 'components/search-bar/ConnectedSearchBar'

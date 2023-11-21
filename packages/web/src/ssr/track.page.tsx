@@ -1,114 +1,186 @@
 import React from 'react'
 
-import { GiantTrackTile } from 'components/track/GiantTrackTile'
+import {
+  FieldVisibility,
+  Genre,
+  PremiumConditions,
+  decodeHashId
+} from '@audius/common'
+import cn from 'classnames'
+
+import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
+import { Tile } from 'components/tile'
+import { CardTitle } from 'components/track/CardTitle'
+import styles from 'components/track/GiantTrackTile.module.css'
+import { Text } from 'components/typography'
+import trackPageStyles from 'pages/track-page/components/desktop/TrackPage.module.css'
+import { profilePage } from 'utils/route'
 
 import { TrackPageProps } from './track.page.server'
 
 export function Page(props: TrackPageProps) {
   const { track } = props
 
-  console.log(props)
-  return <div>hi</div>
-  // return <GiantTrackTile />
+  if (!track) {
+    return null
+  }
 
-  //   return <Tile
-  //       className={styles.giantTrackTile}
-  //       dogEar={dogEarType}
-  //       size='large'
-  //       elevation='mid'
-  //     >
-  //       <div className={styles.topSection}>
-  //         <GiantArtwork
-  //           trackId={trackId}
-  //           coverArtSizes={coverArtSizes}
-  //           coSign={coSign}
-  //           callback={onArtworkLoad}
-  //         />
-  //         <div className={styles.infoSection}>
-  //           <div className={styles.infoSectionHeader}>
-  //             {renderCardTitle(cn(fadeIn))}
-  //             <div className={styles.title}>
-  //               <h1 className={cn(fadeIn)}>{trackTitle}</h1>
-  //               {isLoading && <Skeleton className={styles.skeleton} />}
-  //             </div>
-  //             <div className={styles.artistWrapper}>
-  //               <div className={cn(fadeIn)}>
-  //                 <span>By </span>
-  //                 <UserLink
-  //                   color='secondary'
-  //                   variant='body'
-  //                   size='large'
-  //                   textAs='h2'
-  //                   userId={userId}
-  //                   badgeSize={18}
-  //                   popover
-  //                 />
-  //               </div>
-  //               {isLoading && (
-  //                 <Skeleton className={styles.skeleton} width='60%' />
-  //               )}
-  //             </div>
-  //           </div>
+  // return (
+  //   <GiantTrackTile
+  //     loading={false}
+  //     playing={false}
+  //     previewing={false}
+  //     trackTitle={track.title}
+  //     trackId={decodeHashId(track.id)!}
+  //     aiAttributionUserId={track.aiAttributionUserId!}
+  //     userId={decodeHashId(track.userId) ?? 0}
+  //     artistHandle={track.user.handle}
+  //     coverArtSizes={{}}
+  //     tags={track.tags ?? ''}
+  //     description={track.description ?? ''}
+  //     listenCount={track.playCount}
+  //     duration={track.duration}
+  //     released={track.releaseDate ?? ''}
+  //     credits={track.creditsSplits ?? ''}
+  //     genre={track.genre ?? ''}
+  //     mood={track.mood ?? ''}
+  //     repostCount={track.repostCount}
+  //     saveCount={track.favoriteCount}
+  //     isReposted={false}
+  //     isOwner={false}
+  //     currentUserId={0}
+  //     isArtistPick={false}
+  //     isSaved={false}
+  //     badge={null}
+  //     isUnlisted={track.isUnlisted}
+  //     isPremium={!!track.isPremium}
+  //     premiumConditions={track.premiumConditions as PremiumConditions}
+  //     doesUserHaveAccess={false}
+  //     isRemix={!!track.remixOf}
+  //     isPublishing={false}
+  //     fieldVisibility={track.fieldVisibility as FieldVisibility}
+  //     coSign={null}
+  //     following={false}
+  //     // Actions
+  //     onPlay={() => {}}
+  //     onPreview={() => {}}
+  //     onShare={() => {}}
+  //     onRepost={() => {}}
+  //     onSave={() => {}}
+  //     onFollow={() => {}}
+  //     onUnfollow={() => {}}
+  //     onDownload={() => {}}
+  //     onMakePublic={() => {}}
+  //     onClickReposts={() => {}}
+  //     onClickFavorites={() => {}}
+  //   />
+  // )
 
-  //           <div className={cn(styles.playSection, fadeIn)}>
-  //             {showPlay ? (
-  //               <PlayPauseButton
-  //                 disabled={!doesUserHaveAccess}
-  //                 playing={playing && !previewing}
-  //                 onPlay={onPlay}
-  //                 trackId={trackId}
-  //               />
-  //             ) : null}
-  //             {showPreview ? (
-  //               <PlayPauseButton
-  //                 playing={playing && previewing}
-  //                 onPlay={onPreview}
-  //                 trackId={trackId}
-  //                 isPreview
-  //               />
-  //             ) : null}
-  //             {isLongFormContent && isNewPodcastControlsEnabled ? (
-  //               <GiantTrackTileProgressInfo
-  //                 duration={duration}
-  //                 trackId={trackId}
-  //               />
-  //             ) : (
-  //               renderListenCount()
-  //             )}
-  //           </div>
+  const {
+    title,
+    id,
+    coverArtSizes,
+    _coSign,
+    isUnlisted,
+    remixOf,
+    isPremium,
+    genre,
+    premiumConditions
+  } = track
 
-  //           <div className={cn(styles.statsSection, fadeIn)}>
-  //             {renderStatsRow()}
-  //           </div>
+  return (
+    <div className={trackPageStyles.contentWrapper}>
+      <Tile className={styles.giantTrackTile} size='large' elevation='mid'>
+        <div className={styles.topSection}>
+          {/* <GiantArtwork
+            trackId={id}
+            coverArtSizes={coverArtSizes}
+            coSign={_cosign}
+            callback={onArtworkLoad}
+          /> */}
+          <div className={styles.infoSection}>
+            <div className={styles.infoSectionHeader}>
+              {/* <CardTitle
+                isUnlisted={isUnlisted}
+                isRemix={!!remixOf}
+                isPremium={!!isPremium}
+                isPodcast={genre === Genre.PODCASTS}
+                premiumConditions={premiumConditions as PremiumConditions}
+              /> */}
+              <div className={styles.title}>
+                <h1>{title}</h1>
+              </div>
+              <div className={styles.artistWrapper}>
+                <div>
+                  <span>By </span>
+                  <a
+                    href={profilePage(track.user.handle)}
+                    className={cn(styles.root)}
+                  >
+                    <Text variant='inherit' className={styles.name}>
+                      {track.user.handle}
+                    </Text>
+                  </a>
+                </div>
+              </div>
+            </div>
 
-  //           <div
-  //             className={cn(styles.actionButtons, fadeIn)}
-  //             role='group'
-  //             aria-label={messages.actionGroupLabel}
-  //           >
-  //             {renderShareButton()}
-  //             {renderMakePublicButton()}
-  //             {doesUserHaveAccess && renderRepostButton()}
-  //             {doesUserHaveAccess && renderFavoriteButton()}
-  //             <span>
-  //               {/* prop types for overflow menu don't work correctly
-  //               so we need to cast here */}
-  //               <Menu {...(overflowMenu as any)}>
-  //                 {(ref, triggerPopup) => (
-  //                   <div className={cn(styles.menuKebabContainer)} ref={ref}>
-  //                     <Button
-  //                       className={cn(styles.buttonFormatting, styles.moreButton)}
-  //                       leftIcon={<IconKebabHorizontal />}
-  //                       onClick={() => triggerPopup()}
-  //                       text={null}
-  //                       textClassName={styles.buttonTextFormatting}
-  //                       type={ButtonType.COMMON}
-  //                     />
-  //                   </div>
-  //                 )}
-  //               </Menu>
-  //             </span>
-  //           </div>
-  //         </div>
-  //     </Tile>
+            {/* <div className={cn(styles.statsSection)}>
+              <RepostFavoritesStats
+                isUnlisted={isUnlisted}
+                repostCount={repostCount}
+                saveCount={saveCount}
+                onClickReposts={onClickReposts}
+                onClickFavorites={onClickFavorites}
+              />
+              {isLongFormContent && isNewPodcastControlsEnabled
+                ? renderListenCount()
+                : null}
+            </div> */}
+          </div>
+          {/* <div className={styles.badges}>
+            {aiAttributionUserId ? (
+              <Badge
+                icon={<IconRobot />}
+                className={styles.badgeAi}
+                textLabel={messages.generatedWithAi}
+              />
+            ) : null}
+            {badge ? (
+              <Badge className={styles.badgePlacement} textLabel={badge} />
+            ) : null}
+          </div> */}
+        </div>
+
+        {/* <div className={cn(styles.bottomSection, fadeIn)}>
+          <div className={styles.infoLabelsSection}>
+            <InfoLabel
+              className={styles.infoLabelPlacement}
+              labelName='duration'
+              labelValue={`${formatSeconds(duration)}`}
+            />
+            {renderReleased()}
+            {renderGenre()}
+            {renderMood()}
+            {credits ? (
+              <InfoLabel
+                className={styles.infoLabelPlacement}
+                labelName='credit'
+                labelValue={credits}
+              />
+            ) : null}
+          </div>
+          {description ? (
+            <UserGeneratedText
+              component='h3'
+              size='small'
+              className={styles.description}
+            >
+              {description}
+            </UserGeneratedText>
+          ) : null}
+        </div> */}
+      </Tile>
+    </div>
+  )
 }
