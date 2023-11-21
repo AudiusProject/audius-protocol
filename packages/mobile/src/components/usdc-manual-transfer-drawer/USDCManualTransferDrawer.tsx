@@ -40,7 +40,7 @@ const USDCLearnMore =
 const messages = {
   title: 'Manual Crypto Transfer',
   explainer:
-    'Add funds by sending  Solana based (SPL) USDC to your Audius account.',
+    'Add funds by sending Solana based (SPL) USDC to your Audius account.',
   hint: 'Use caution to avoid errors and lost funds.',
   copy: 'Copy Wallet Address',
   goBack: 'Go Back',
