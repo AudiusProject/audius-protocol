@@ -18,7 +18,7 @@ const meta: Meta<typeof TextLink> = {
   render: (props) => (
     <Flex direction='row' gap='4xl'>
       <TextLink {...props} />
-      <TextLink {...props} showUnderline />
+      <TextLink {...props} _isHovered />
     </Flex>
   )
 }

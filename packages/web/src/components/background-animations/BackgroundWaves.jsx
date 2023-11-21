@@ -104,7 +104,7 @@ const BackgroundWaves = (props) => {
     <div
       ref={canvasRef}
       className={cn({ [props.className]: !!props.className })}
-      css={{
+      style={{
         position: 'fixed',
         top: 0,
         left: 0,
