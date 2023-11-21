@@ -40,12 +40,13 @@ const USDCLearnMore =
 const messages = {
   title: 'Manual Crypto Transfer',
   explainer:
-    'You can add funds manually by transferring USDC tokens to your Audius Wallet.\n\n\n Use caution to avoid errors and lost funds.',
-  splOnly: 'You can only send Solana based (SPL) USDC tokens to this address.',
+    'Add funds by sending  Solana based (SPL) USDC to your Audius account.',
+  hint: 'Use caution to avoid errors and lost funds.',
   copy: 'Copy Wallet Address',
   goBack: 'Go Back',
   learnMore: 'Learn More',
   copied: 'Copied to Clipboard!',
+  usdcBalance: 'USDC Balance',
   buy: (amount: string) => `Buy ${amount}`
 }
 
@@ -88,10 +89,10 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     textDecorationLine: 'underline'
   },
   explainer: {
-    textAlign: 'center',
+    textAlign: 'left',
     lineHeight: typography.fontSize.medium * 1.25
   },
-  splContainer: {
+  hintContainer: {
     gap: spacing(3),
     flexShrink: 1
   },
@@ -180,9 +181,13 @@ export const USDCManualTransferDrawer = () => {
           ) : null}
         </View>
         <AddressTile
+          title={messages.usdcBalance}
           address={USDCUserBank ?? ''}
           left={<LogoUSDC height={spacing(6)} />}
           analytics={analytics}
+          balance={USDC(balanceBN ?? new BN(0)).toLocaleString('en-US', {
+            roundingMode: 'floor'
+          })}
         />
         <View style={styles.disclaimerContainer}>
           <IconError
@@ -191,9 +196,9 @@ export const USDCManualTransferDrawer = () => {
             fill={neutral}
             style={styles.icon}
           />
-          <View style={styles.splContainer}>
+          <View style={styles.hintContainer}>
             <View style={styles.shrink}>
-              <Text style={styles.disclaimer}>{messages.splOnly}</Text>
+              <Text style={styles.disclaimer}>{messages.hint}</Text>
             </View>
             <Text
               style={styles.learnMore}
