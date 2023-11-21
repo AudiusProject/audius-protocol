@@ -27,9 +27,7 @@ const messages = {
     'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
   displayName: 'Display Name',
   continue: 'Continue',
-  inputPlaceholder: 'express yourself 💫',
-  displayNameRequired: 'Display name is required.',
-  profileImageRequired: 'Profile image is required.'
+  inputPlaceholder: 'express yourself 💫'
 }
 
 export type FinishProfileValues = {
@@ -38,12 +36,11 @@ export type FinishProfileValues = {
   displayName: string
 }
 
-// Schema requiring displayName
 const formSchema = toFormikValidationSchema(
   z.object({
-    displayName: z.string({ required_error: 'Display name is required.' }),
+    displayName: z.string(),
     profileImage: z.object({
-      url: z.string({ required_error: 'Profile image is required.' })
+      url: z.string()
     }),
     coverPhoto: z
       .object({
@@ -54,6 +51,7 @@ const formSchema = toFormikValidationSchema(
 )
 
 export const FinishProfilePage = () => {
+  const { color } = useTheme()
   const { isMobile } = useMedia()
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
@@ -61,6 +59,7 @@ export const FinishProfilePage = () => {
   const { value: savedCoverPhoto } = { ...useSelector(getCoverPhotoField) }
   const { value: savedProfileImage } = { ...useSelector(getProfileImageField) }
 
+  // If the user comes back from a later page we start with whats in the store
   const initialValues = {
     profileImage: savedProfileImage,
     coverPhoto: savedCoverPhoto,
@@ -69,19 +68,15 @@ export const FinishProfilePage = () => {
 
   const handleSubmit = useCallback(
     ({ coverPhoto, profileImage, displayName }: FinishProfileValues) => {
-      // Only saving the url as there's no need to store the blob in the store
+      dispatch(setValueField('name', displayName))
       dispatch(setField('profileImage', { value: profileImage }))
       if (coverPhoto) {
-        // Only saving the url as there's no need to store the blob in the store
         dispatch(setField('coverPhoto', { value: coverPhoto }))
       }
-      dispatch(setValueField('name', displayName))
       navigate(SIGN_UP_GENRES_PAGE)
     },
     [navigate, dispatch]
   )
-
-  const { color } = useTheme()
 
   return (
     <Formik
