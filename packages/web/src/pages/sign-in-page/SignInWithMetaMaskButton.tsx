@@ -1,19 +1,11 @@
-import { useCallback } from 'react'
-
-import { Button, ButtonType, IconMetamask } from '@audius/harmony'
-
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { userHasMetaMask } from 'pages/sign-up-page/utils/metamask'
+import { MetaMaskOption } from 'pages/sign-on/components/desktop/MetaMaskOption'
 import { FEED_PAGE } from 'utils/route'
-
-const messages = {
-  signIn: 'Sign In With MetaMask'
-}
 
 export const SignInWithMetaMaskButton = () => {
   const navigate = useNavigateToPage()
 
-  const handleClick = useCallback(async () => {
+  const handleSignInWithMetaMask = async () => {
     try {
       window.localStorage.setItem('useMetaMask', JSON.stringify(true))
     } catch (err) {
@@ -21,18 +13,9 @@ export const SignInWithMetaMaskButton = () => {
     }
     navigate(FEED_PAGE)
     window.location.reload()
-  }, [navigate])
-
-  if (!userHasMetaMask) return null
+  }
 
   return (
-    <Button
-      variant={ButtonType.SECONDARY}
-      iconRight={IconMetamask}
-      isStaticIcon
-      onClick={handleClick}
-    >
-      {messages.signIn}
-    </Button>
+    <MetaMaskOption text='Sign In With' onClick={handleSignInWithMetaMask} />
   )
 }

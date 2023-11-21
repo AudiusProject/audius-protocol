@@ -69,20 +69,10 @@ const AudiusValue = (props: AudiusValueProps) => {
 /**
  * Renders all the audius values
  */
-
-type AudiusValuesProps = {
-  className?: string
-}
-
-export const AudiusValues = (props: AudiusValuesProps) => {
+export const AudiusValues = () => {
   const { isDesktop } = useMedia()
   return (
-    <Flex
-      direction='column'
-      gap={isDesktop ? 'xl' : 'l'}
-      alignItems='center'
-      {...props}
-    >
+    <Flex direction='column' gap={isDesktop ? 'xl' : 'l'} alignItems='center'>
       {isDesktop ? (
         <Box pb='l'>
           <Text
