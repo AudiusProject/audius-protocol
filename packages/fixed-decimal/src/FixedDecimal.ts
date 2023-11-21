@@ -433,18 +433,19 @@ export class FixedDecimal<
 
     // Localize with a decimal to extract the separator
     const wholeInt = BigInt(whole)
-    const wholeWithDecimal = wholeInt.toLocaleString(locale, {
+    whole = wholeInt.toLocaleString(locale, {
       ...options,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    })
+
+    // Annoyingly, React Native doesn't respect minimumFractionDigits for
+    // bigint formatting. Instead, get the decimalSeparator from a Number.
+    const decimalSeparator = Number(0).toLocaleString(locale, {
       minimumFractionDigits: 1,
       maximumFractionDigits: 1
-    })
-    // Get the separator character
-    const decimalSeparator = wholeWithDecimal.substring(
-      wholeWithDecimal.length - 2,
-      wholeWithDecimal.length - 1
-    )
-    // Remove the decimal
-    whole = wholeWithDecimal.substring(0, wholeWithDecimal.length - 2)
+    })[1]
+
     return decimal.length > 0 ? `${whole}${decimalSeparator}${decimal}` : whole
   }
 

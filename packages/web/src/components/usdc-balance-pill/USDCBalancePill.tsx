@@ -12,13 +12,13 @@ import cn from 'classnames'
 import { Icon } from 'components/Icon'
 import Skeleton from 'components/skeleton/Skeleton'
 
-import styles from './UsdcBalancePill.module.css'
+import styles from './USDCBalancePill.module.css'
 
 type USDCPillProps = {
   className?: string
 }
 
-export const UsdcBalancePill = ({ className }: USDCPillProps) => {
+export const USDCBalancePill = ({ className }: USDCPillProps) => {
   const { data: balance, balanceStatus: usdcBalanceStatus } = useUSDCBalance({
     isPolling: false
   })

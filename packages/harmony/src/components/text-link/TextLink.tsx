@@ -17,7 +17,7 @@ export const TextLink = (props: TextLinkProps) => {
     isExternal = false,
     onClick,
     textVariant,
-    ...passthroughProps
+    ...other
   } = props
 
   const { color } = useTheme()
@@ -51,7 +51,7 @@ export const TextLink = (props: TextLinkProps) => {
         ...(_isHovered && hoverStyles)
       }}
       variant={textVariant}
-      {...passthroughProps}
+      {...other}
     >
       {asChild ? (
         <Slot>{children}</Slot>

@@ -32,7 +32,7 @@ export const AudioMatchSection = ({ amount }: AudioMatchSectionProps) => {
         style={styles.text}
         variant='label'
         textTransform='uppercase'
-        fontSize='large'
+        fontSize='xs'
         color='staticWhite'
       >
         {messages.earn(amount)}

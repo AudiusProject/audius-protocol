@@ -1,4 +1,4 @@
-import { useCallback, MouseEvent } from 'react'
+import { MouseEvent, ReactElement, cloneElement, useCallback } from 'react'
 
 import { TikTokProfile } from '@audius/common'
 
@@ -13,9 +13,17 @@ type TikTokAuthButtonProps = {
   onSuccess: (uuid: string, profile: TikTokProfile) => void
 } & TikTokButtonProps
 
-export const TikTokAuthButton = (props: TikTokAuthButtonProps) => {
-  const { onFailure, onSuccess, onClick, ...buttonProps } = props
+type TikTokAuthProps = Pick<
+  TikTokAuthButtonProps,
+  'onFailure' | 'onSuccess' | 'onClick'
+> & { children: ReactElement }
 
+export const TikTokAuth = ({
+  onFailure,
+  onSuccess,
+  onClick,
+  children
+}: TikTokAuthProps) => {
   const withTikTokAuth = useTikTokAuth({
     onError: onFailure
   })
@@ -54,5 +62,15 @@ export const TikTokAuthButton = (props: TikTokAuthButtonProps) => {
     [withTikTokAuth, onSuccess, onClick]
   )
 
-  return <TikTokButton {...buttonProps} onClick={handleClick} />
+  return cloneElement(children, { onClick: handleClick })
+}
+
+export const TikTokAuthButton = (props: TikTokAuthButtonProps) => {
+  const { onFailure, onSuccess, onClick, ...buttonProps } = props
+
+  return (
+    <TikTokAuth onFailure={onFailure} onSuccess={onSuccess} onClick={onClick}>
+      <TikTokButton {...buttonProps} />
+    </TikTokAuth>
+  )
 }

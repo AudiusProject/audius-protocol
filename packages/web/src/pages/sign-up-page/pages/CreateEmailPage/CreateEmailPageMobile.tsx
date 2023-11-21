@@ -6,12 +6,13 @@ import {
   IconArrowRight,
   IconAudiusLogoHorizontalColor,
   SocialButton,
-  Text
+  Text,
+  TextLink
 } from '@audius/harmony'
 import { useFormikContext } from 'formik'
+import { Link } from 'react-router-dom'
 
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
-import { Link } from 'components/link'
 import {
   ArtworkContainer,
   AudiusValues
@@ -57,13 +58,11 @@ export const CreateEmailPageMobile = () => {
               autoComplete='email'
               label={messages.emailLabel}
             />
-            <Flex w='100%' alignItems='center' gap='s'>
-              <Divider css={{ flex: 1, alignSelf: 'center' }} />
+            <Divider css={{ width: '100%' }}>
               <Text variant='body' size='s' tag='p' color='subdued'>
                 {messages.socialsDividerText}
               </Text>
-              <Divider css={{ flex: 1, alignSelf: 'center' }} />
-            </Flex>
+            </Divider>
             <Flex direction='row' gap='s' w='100%'>
               <SocialButton
                 socialType='twitter'
@@ -99,18 +98,11 @@ export const CreateEmailPageMobile = () => {
               {messages.signUp}
             </Button>
 
-            <Text size='l'>
+            <Text variant='body' size='l'>
               {messages.haveAccount}{' '}
-              {/* TODO [C-3278]: Update with Harmony Link */}
-              <Link
-                to={SIGN_IN_PAGE}
-                variant='body'
-                size='medium'
-                strength='strong'
-                color='secondary'
-              >
-                {messages.signIn}
-              </Link>
+              <TextLink variant='visible' asChild>
+                <Link to={SIGN_IN_PAGE}>{messages.signIn}</Link>
+              </TextLink>
             </Text>
           </Flex>
         </MobileContentContainer>

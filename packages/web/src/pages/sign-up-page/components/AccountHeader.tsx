@@ -20,7 +20,7 @@ export const AccountHeader = () => {
   const avatarSize = isMobile ? 72 : 120
 
   return (
-    <Box>
+    <Box css={{ zIndex: 4 }}>
       <Box h={isMobile ? 96 : 168} css={{ overflow: 'hidden' }}>
         <Box
           h='100%'
@@ -56,11 +56,9 @@ export const AccountHeader = () => {
         alignItems='flex-start'
         gap={isMobile ? 's' : 'xl'}
       >
-        <Avatar
-          variant='strong'
-          css={{ height: avatarSize, width: avatarSize }}
-          src={profileImage.url}
-        />
+        <Box h={avatarSize} w={avatarSize}>
+          <Avatar variant='strong' src={profileImage.url} />
+        </Box>
         <Flex direction='column' gap='2xs' alignItems='flex-start'>
           <Text
             variant='heading'
