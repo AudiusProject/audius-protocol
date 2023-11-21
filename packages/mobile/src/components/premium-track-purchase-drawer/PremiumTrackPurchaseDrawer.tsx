@@ -106,8 +106,6 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     gap: spacing(4)
   },
   headerContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: palette.neutralLight8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
