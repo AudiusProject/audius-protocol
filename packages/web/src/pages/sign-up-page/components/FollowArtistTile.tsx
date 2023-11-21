@@ -51,7 +51,7 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
             )
           }}
         >
-          <Avatar variant='strong' src={audiusProfilePic} />
+          <Avatar variant='strong' userId={user_id} />
         </Box>
         <Box w='100%' h={68} css={{ backgroundImage: `url(${coverPhoto})` }} />
         <Flex
