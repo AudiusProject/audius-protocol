@@ -46,7 +46,7 @@ export const usePurchaseContentFormConfiguration = ({
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance()
-  const balance = USDC((balanceBN ?? new BN(0)) as BN).value
+  const balance = USDC(balanceBN ?? new BN(0)).value
   const initialValues: PurchaseContentValues = {
     [CUSTOM_AMOUNT]: undefined,
     [AMOUNT_PRESET]: PayExtraPreset.NONE,
@@ -65,22 +65,31 @@ export const usePurchaseContentFormConfiguration = ({
         presetValues,
         customAmount
       })
+      const startPurchaseAction = startPurchaseContentFlow({
+        purchaseMethod,
+        extraAmount,
+        extraAmountPreset: amountPreset,
+        contentId: track.track_id,
+        contentType: ContentType.TRACK
+      })
 
       if (purchaseMethod === PurchaseMethod.CRYPTO) {
-        openUsdcManualTransferModal()
+        openUsdcManualTransferModal({
+          amount: price + extraAmount,
+          onSuccessAction: startPurchaseAction
+        })
       } else {
-        dispatch(
-          startPurchaseContentFlow({
-            purchaseMethod,
-            extraAmount,
-            extraAmountPreset: amountPreset,
-            contentId: track.track_id,
-            contentType: ContentType.TRACK
-          })
-        )
+        dispatch(startPurchaseAction)
       }
     },
-    [isUnlocking, track, presetValues, dispatch, openUsdcManualTransferModal]
+    [
+      isUnlocking,
+      track,
+      presetValues,
+      dispatch,
+      openUsdcManualTransferModal,
+      price
+    ]
   )
 
   return {

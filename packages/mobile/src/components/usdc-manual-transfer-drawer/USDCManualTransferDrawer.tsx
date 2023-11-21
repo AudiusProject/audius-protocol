@@ -2,12 +2,18 @@ import { useCallback, useMemo } from 'react'
 
 import {
   Name,
+  isContentPurchaseInProgress,
+  purchaseContentSelectors,
   useCreateUserbankIfNeeded,
+  useUSDCBalance,
   useUSDCManualTransferModal
 } from '@audius/common'
+import { USDC } from '@audius/fixed-decimal'
 import Clipboard from '@react-native-clipboard/clipboard'
+import BN from 'bn.js'
 import { View } from 'react-native'
 import QRCode from 'react-qr-code'
+import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import IconError from 'app/assets/images/iconError.svg'
@@ -21,9 +27,12 @@ import { getUSDCUserBank } from 'app/services/buyCrypto'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import type { AllEvents } from 'app/types/analytics'
-import { useColor } from 'app/utils/theme'
+import { useThemeColors } from 'app/utils/theme'
 
 import { AddressTile } from '../core/AddressTile'
+
+const { getPurchaseContentFlowStage, getPurchaseContentError } =
+  purchaseContentSelectors
 
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
@@ -36,7 +45,8 @@ const messages = {
   copy: 'Copy Wallet Address',
   goBack: 'Go Back',
   learnMore: 'Learn More',
-  copied: 'Copied to Clipboard!'
+  copied: 'Copied to Clipboard!',
+  buy: (amount: string) => `Buy ${amount}`
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -97,10 +107,24 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 export const USDCManualTransferDrawer = () => {
   const styles = useStyles()
+  const dispatch = useDispatch()
   const { toast } = useToast()
-  const { isOpen, onClose, onClosed } = useUSDCManualTransferModal()
+  const { isOpen, onClose, onClosed, data } = useUSDCManualTransferModal()
+  const { amount: amountInCents, onSuccessAction } = data ?? {}
   const { onPress: onPressLearnMore } = useLink(USDCLearnMore)
-  const neutral = useColor('neutral')
+  const { neutral, specialLightGreen } = useThemeColors()
+
+  const stage = useSelector(getPurchaseContentFlowStage)
+  const error = useSelector(getPurchaseContentError)
+  const isUnlocking = !error && isContentPurchaseInProgress(stage)
+  const { data: balanceBN } = useUSDCBalance({
+    isPolling: true,
+    pollingInterval: 1000
+  })
+  const balance = USDC(balanceBN ?? new BN(0)).value
+  const amount = USDC((amountInCents ?? 0) / 100).value
+  const isBuyButtonDisabled = isUnlocking || balance < amount
+
   useCreateUserbankIfNeeded({
     recordAnalytics: track,
     audiusBackendInstance,
@@ -129,6 +153,11 @@ export const USDCManualTransferDrawer = () => {
   const handleLearnMorePress = useCallback(() => {
     onPressLearnMore()
   }, [onPressLearnMore])
+
+  const handleBuyPress = useCallback(() => {
+    if (onSuccessAction) dispatch(onSuccessAction)
+    onClose()
+  }, [dispatch, onClose, onSuccessAction])
 
   return (
     <Drawer isOpen={isOpen} onClose={onClose} onClosed={onClosed}>
@@ -176,20 +205,43 @@ export const USDCManualTransferDrawer = () => {
           </View>
         </View>
         <View style={styles.buttonContainer}>
-          <Button
-            title={messages.copy}
-            onPress={handleConfirmPress}
-            variant='primary'
-            size='large'
-            fullWidth
-          />
-          <Button
-            title={messages.goBack}
-            onPress={onClose}
-            variant='common'
-            size='large'
-            fullWidth
-          />
+          {amountInCents === undefined ? (
+            <>
+              <Button
+                title={messages.copy}
+                onPress={handleConfirmPress}
+                variant='primary'
+                size='large'
+                fullWidth
+              />
+              <Button
+                title={messages.goBack}
+                onPress={onClose}
+                variant='common'
+                size='large'
+                fullWidth
+              />
+            </>
+          ) : (
+            <>
+              <Button
+                title={messages.goBack}
+                onPress={onClose}
+                variant='common'
+                size='large'
+                fullWidth
+              />
+              <Button
+                title={messages.buy(USDC(amount).ceil(2).toFixed(2))}
+                onPress={handleBuyPress}
+                variant='primary'
+                color={specialLightGreen}
+                size='large'
+                disabled={isBuyButtonDisabled}
+                fullWidth
+              />
+            </>
+          )}
         </View>
       </View>
     </Drawer>

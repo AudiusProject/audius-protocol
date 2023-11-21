@@ -65,7 +65,7 @@ export const PurchaseContentFormFields = ({
   const isPurchased = stage === PurchaseContentStage.FINISH
 
   const { data: balance } = useUSDCBalance({ isPolling: true })
-  const balanceUSDC = USDC((balance ?? new BN(0)) as BN).value
+  const balanceUSDC = USDC(balance ?? new BN(0)).value
   const { extraAmount } = usePurchaseSummaryValues({
     price,
     currentBalance: balance
