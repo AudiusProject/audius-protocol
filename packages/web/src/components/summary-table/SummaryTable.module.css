@@ -15,10 +15,6 @@
   transition: height var(--harmony-expressive);
 }
 
-.row {
-  border-top: 1px solid var(--border-default);
-}
-
 .radioGroup {
   width: 100%;
 }
