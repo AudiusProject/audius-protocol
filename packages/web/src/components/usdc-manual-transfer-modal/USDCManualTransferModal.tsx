@@ -18,7 +18,7 @@ const messages = {
 
 export const USDCManualTransferModal = () => {
   const { isOpen, onClose, data } = useUSDCManualTransferModal()
-  const { amount, startPurchaseParams } = data ?? {}
+  const { amount, onSuccessAction } = data ?? {}
   const mobile = isMobile()
 
   const handleClose = useCallback(() => {
@@ -56,7 +56,7 @@ export const USDCManualTransferModal = () => {
           onClose={handleClose}
           source='purchase'
           amountInCents={amount}
-          startPurchaseParams={startPurchaseParams}
+          onSuccessAction={onSuccessAction}
         />
       </ModalContent>
     </ModalDrawer>

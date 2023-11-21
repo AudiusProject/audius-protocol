@@ -75,7 +75,6 @@ export const usePurchaseContentFormConfiguration = ({
 
       if (purchaseMethod === PurchaseMethod.CRYPTO) {
         openUsdcManualTransferModal({
-          isOpen: true,
           source: 'purchase',
           amount: price + extraAmount,
           onSuccessAction: startPurchaseAction
