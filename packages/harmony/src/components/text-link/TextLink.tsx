@@ -10,13 +10,13 @@ import type { TextLinkProps } from './types'
  */
 export const TextLink = (props: TextLinkProps) => {
   const {
+    _isHovered = false,
     asChild = false,
     children,
     variant = 'default',
     isExternal = false,
     onClick,
     textVariant,
-    showUnderline,
     ...other
   } = props
 
@@ -48,7 +48,7 @@ export const TextLink = (props: TextLinkProps) => {
         color: variantColors[variant],
         textDecoration: 'none',
         ':hover': hoverStyles,
-        ...(showUnderline && hoverStyles)
+        ...(_isHovered && hoverStyles)
       }}
       variant={textVariant}
       {...other}

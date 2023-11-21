@@ -13,7 +13,10 @@ import { useFormikContext } from 'formik'
 import { Link } from 'react-router-dom'
 
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
-import { ArtworkContainer, AudiusValues } from 'pages/sign-on-page/AudiusValues'
+import {
+  ArtworkContainer,
+  AudiusValues
+} from 'pages/sign-on/components/AudiusValues'
 import { MobileContentContainer } from 'pages/sign-on/components/desktop/MobileContentContainer'
 import { SignOnContainerMobile } from 'pages/sign-on/components/mobile/SignOnContainerMobile'
 import { SIGN_IN_PAGE } from 'utils/route'

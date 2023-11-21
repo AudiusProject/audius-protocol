@@ -14,7 +14,10 @@ import { Link } from 'react-router-dom'
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import PreloadImage from 'components/preload-image/PreloadImage'
-import { ArtworkContainer, AudiusValues } from 'pages/sign-on-page/AudiusValues'
+import {
+  ArtworkContainer,
+  AudiusValues
+} from 'pages/sign-on/components/AudiusValues'
 import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
 import { SignOnContainerDesktop } from 'pages/sign-on/components/desktop/SignOnContainerDesktop'
 import { SocialMediaLoginOptions } from 'pages/sign-up-page/components/SocialMediaLoginOptions'
@@ -38,7 +41,7 @@ export const CreateEmailPageDesktop = () => {
             className={cn(styles.logo, styles.desktop)}
           />
           <Flex direction='column' gap='l' alignItems='flex-start' w='100%'>
-            <Text size='l' variant='heading' color='accent' tag='h1'>
+            <Text color='heading' size='l' variant='heading' tag='h1'>
               {messages.title}
             </Text>
             <Text color='default' size='l' variant='body' tag='h2'>
@@ -48,6 +51,7 @@ export const CreateEmailPageDesktop = () => {
           <Flex direction='column' gap='l' w='100%' alignItems='flex-start'>
             <HarmonyTextField
               name='email'
+              autoFocus
               autoComplete='email'
               label={messages.emailLabel}
             />
