@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { setValueField } from 'common/store/pages/signon/actions'
+import { setField, setValueField } from 'common/store/pages/signon/actions'
 import {
   getCoverPhotoField,
   getNameField,
@@ -20,6 +20,7 @@ import { SIGN_UP_GENRES_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import { ContinueFooter } from '../components/ContinueFooter'
+import { ImageFieldValue } from '../components/ImageField'
 
 const messages = {
   header: 'Finish Your Profile',
@@ -33,8 +34,8 @@ const messages = {
 }
 
 type FinishProfileValues = {
-  profileImage: { file?: File; url: string }
-  coverPhoto: Nullable<{ file?: File; url: string }>
+  profileImage: ImageFieldValue
+  coverPhoto?: ImageFieldValue
   displayName: string
 }
 
@@ -62,20 +63,20 @@ export const FinishProfilePage = () => {
   const { value: savedProfileImage } = useSelector(getProfileImageField)
 
   const initialValues = {
-    profileImage: { url: savedProfileImage },
-    coverPhoto: { url: savedCoverPhoto },
+    profileImage: savedProfileImage,
+    coverPhoto: savedCoverPhoto,
     displayName: savedDisplayName || ''
   }
 
   const handleSubmit = useCallback(
-    ({ coverPhoto, profileImage }: FinishProfileValues) => {
+    ({ coverPhoto, profileImage, displayName }: FinishProfileValues) => {
       // Only saving the url as there's no need to store the blob in the store
-      dispatch(setValueField('profileImage', profileImage.url))
+      dispatch(setField('profileImage', { value: profileImage }))
       if (coverPhoto) {
         // Only saving the url as there's no need to store the blob in the store
-        dispatch(setValueField('coverPhoto', coverPhoto.url))
+        dispatch(setField('coverPhoto', { value: coverPhoto }))
       }
-
+      dispatch(setValueField('name', displayName))
       navigate(SIGN_UP_GENRES_PAGE)
     },
     [navigate, dispatch]
@@ -88,10 +89,10 @@ export const FinishProfilePage = () => {
       initialValues={initialValues}
       onSubmit={handleSubmit}
       validationSchema={formSchema}
-      validateOnBlur={false}
-      validateOnChange={false}
+      validateOnMount
+      validateOnChange
     >
-      {({ handleChange, errors }) => (
+      {({ isValid, values }) => (
         <Flex
           as={Form}
           direction='column'
@@ -141,7 +142,10 @@ export const FinishProfilePage = () => {
                     wrap='wrap'
                     w='100%'
                   >
-                    <AccountHeader mode='editing' />
+                    <AccountHeader
+                      mode='editing'
+                      displayName={values.displayName}
+                    />
                     <Flex
                       p='m'
                       pt='2xl'
@@ -155,24 +159,7 @@ export const FinishProfilePage = () => {
                         placeholder={messages.inputPlaceholder}
                         required
                         maxLength={32}
-                        onChange={(e) => {
-                          // Update this so that the user can see it update live
-                          dispatch(setValueField('name', e.target.value))
-                          handleChange(e)
-                        }}
                       />
-                      {errors.profileImage ? (
-                        <Box mt='xs'>
-                          <Text
-                            variant='body'
-                            size='s'
-                            strength='default'
-                            color='danger'
-                          >
-                            {messages.profileImageRequired}
-                          </Text>
-                        </Box>
-                      ) : null}
                     </Flex>
                   </Paper>
                 </Flex>
@@ -180,7 +167,9 @@ export const FinishProfilePage = () => {
             </Flex>
           </Flex>
           <ContinueFooter>
-            <Button type='submit'>{messages.continue}</Button>
+            <Button type='submit' disabled={!isValid}>
+              {messages.continue}
+            </Button>
           </ContinueFooter>
         </Flex>
       )}

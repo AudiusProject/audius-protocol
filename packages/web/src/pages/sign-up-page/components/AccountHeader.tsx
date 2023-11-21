@@ -21,6 +21,7 @@ import { ImageField } from './ImageField'
 
 type AccountHeaderProps = {
   mode: 'editing' | 'viewing'
+  displayName?: string // FinishProfilePage provides displayName via form values while it's being modified
 }
 
 const CoverPhotoBox = ({
@@ -37,7 +38,15 @@ const CoverPhotoBox = ({
       w='100%'
       border='default'
       css={{
-        backgroundColor: color.neutral.n400,
+        '&:before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          height: '100%',
+          width: '100%',
+          background: `linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.00) 100%)`
+        },
         overflow: 'hidden',
         ...(imageUrl
           ? {
@@ -46,9 +55,7 @@ const CoverPhotoBox = ({
               backgroundSize: '100%',
               backgroundRepeat: 'no-repeat, no-repeat'
             }
-          : {
-              background: `linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.00) 100%), ${color.neutral.n400}`
-            })
+          : { backgroundColor: color.neutral.n400 })
       }}
     >
       {isEditing && !imageUrl ? (
@@ -65,7 +72,7 @@ const ProfileImageAvatar = ({
   imageUrl,
   isEditing
 }: {
-  imageUrl: string
+  imageUrl?: string
   isEditing?: boolean
 }) => {
   const { isMobile } = useMedia()
@@ -92,12 +99,16 @@ const ProfileImageAvatar = ({
   )
 }
 
-export const AccountHeader = ({ mode }: AccountHeaderProps) => {
+export const AccountHeader = ({
+  mode,
+  displayName: displayNameProps
+}: AccountHeaderProps) => {
   const { value: coverPhoto } = useSelector(getCoverPhotoField)
   const { value: profileImage } = useSelector(getProfileImageField)
-  const { value: displayName } = useSelector(getNameField)
+  const { value: storedDisplayName } = useSelector(getNameField)
   const { value: handle } = useSelector(getHandleField)
   const isEditing = mode === 'editing'
+  const displayName = displayNameProps ?? storedDisplayName
 
   const { isMobile } = useMedia()
   const isSmallSize = isEditing || isMobile
@@ -109,13 +120,13 @@ export const AccountHeader = ({ mode }: AccountHeaderProps) => {
           <ImageField name='coverPhoto' imageResizeOptions={{ square: false }}>
             {(uploadedImage) => (
               <CoverPhotoBox
-                imageUrl={uploadedImage?.url ?? coverPhoto}
+                imageUrl={uploadedImage?.url ?? coverPhoto?.url}
                 isEditing
               />
             )}
           </ImageField>
         ) : (
-          <CoverPhotoBox imageUrl={coverPhoto} />
+          <CoverPhotoBox imageUrl={coverPhoto?.url} />
         )}
       </Box>
       <Flex
@@ -142,13 +153,13 @@ export const AccountHeader = ({ mode }: AccountHeaderProps) => {
           <ImageField name='profileImage' css={{ flex: 0 }}>
             {(uploadedImage) => (
               <ProfileImageAvatar
-                imageUrl={uploadedImage?.url ?? profileImage}
+                imageUrl={uploadedImage?.url ?? profileImage?.url}
                 isEditing
               />
             )}
           </ImageField>
         ) : (
-          <ProfileImageAvatar imageUrl={profileImage} />
+          <ProfileImageAvatar imageUrl={profileImage?.url} />
         )}
         <Flex
           direction='column'

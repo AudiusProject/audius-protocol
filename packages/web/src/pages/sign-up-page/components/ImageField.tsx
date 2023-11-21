@@ -15,7 +15,7 @@ import styles from './ImageField.module.css'
 
 const allowedImages = ALLOWED_IMAGE_FILE_TYPES.join(', ')
 
-type ImageFieldValue = Nullable<{
+export type ImageFieldValue = Nullable<{
   file: File
   url: string
 }>

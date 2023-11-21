@@ -51,7 +51,7 @@ export const WelcomeModal = () => {
         css={({ color }) => ({
           zIndex: 1,
           backgroundColor: color.background.default,
-          background: `url("${profileImage}")`,
+          background: `url("${profileImage?.url}")`,
           ...(!isMobile && {
             '::before': {
               content: '""',
@@ -66,7 +66,7 @@ export const WelcomeModal = () => {
         })}
       >
         <Box w={96} h={96} css={{ position: 'absolute', top: 40 }}>
-          <Avatar variant='strong' src={profileImage} />
+          <Avatar variant='strong' src={profileImage?.url} />
         </Box>
       </Flex>
       <Flex direction='column' p='xl' pt='3xl' gap='xl'>
