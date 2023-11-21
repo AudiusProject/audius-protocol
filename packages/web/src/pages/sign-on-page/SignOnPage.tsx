@@ -51,7 +51,6 @@ export const SignOnPage = () => {
     return (
       <Flex direction='column' w='100%'>
         <Flex
-          h={isExpanded ? '100%' : '520px'}
           borderBottomLeftRadius={!isExpanded ? '2xl' : undefined}
           borderBottomRightRadius={!isExpanded ? '2xl' : undefined}
           css={{
