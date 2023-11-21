@@ -64,8 +64,8 @@ const initialState = {
   instagramScreenName: '',
   tikTokId: '',
   tikTokScreenName: '',
-  profileImage: {}, // Object with file blob & url
-  coverPhoto: {}, // Object with file blob & url
+  profileImage: null, // Object with file blob & url
+  coverPhoto: null, // Object with file blob & url
   status: 'editing', // 'editing', 'loading', 'success', or 'failure'
   toastText: null,
   page: Pages.EMAIL,

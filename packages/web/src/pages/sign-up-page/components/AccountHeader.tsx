@@ -115,8 +115,8 @@ export const AccountHeader = ({
   formDisplayName,
   formProfileImage
 }: AccountHeaderProps) => {
-  const { value: coverPhoto } = useSelector(getCoverPhotoField)
-  const { value: profileImage } = useSelector(getProfileImageField)
+  const { value: coverPhoto } = { ...useSelector(getCoverPhotoField) }
+  const { value: profileImage } = { ...useSelector(getProfileImageField) }
   const { value: storedDisplayName } = useSelector(getNameField)
   const { value: handle } = useSelector(getHandleField)
   const isEditing = mode === 'editing'

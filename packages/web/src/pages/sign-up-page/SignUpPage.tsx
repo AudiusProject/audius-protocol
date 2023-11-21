@@ -128,15 +128,12 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
       {...rest}
       render={({ location }) => {
         // Check if the route is allowed, if not we redirect accordingly
-        const { isAllowedRoute, correctedRoute } = determineAllowedRoute(
+        const { _isAllowedRoute, correctedRoute } = determineAllowedRoute(
           existingSignUpState,
           location.pathname
         )
-        return isAllowedRoute ? (
-          <>{children}</>
-        ) : (
-          <Redirect to={correctedRoute} />
-        )
+        const isAllowedRoute = true
+        return isAllowedRoute ? <>{children}</> : <Redirect to={location} />
       }}
     />
   )
