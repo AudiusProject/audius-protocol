@@ -183,6 +183,8 @@ import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
 import styles from './App.module.css'
 
+import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
+
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
 
@@ -463,6 +465,7 @@ class WebPlayer extends Component {
           ) : null}
         </AppBannerWrapper>
         {this.props.isChatEnabled ? <ChatListener /> : null}
+        <USDCBalanceFetcher />
         <div className={cn(styles.app, { [styles.mobileApp]: isMobileClient })}>
           {this.props.showCookieBanner ? <CookieBanner /> : null}
           <Notice />
