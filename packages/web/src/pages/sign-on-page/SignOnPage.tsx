@@ -30,7 +30,7 @@ export const SignOnPage = () => {
   const { isMobile } = useMedia()
   const [isExpanded] = useToggle(false)
   const [isLoaded, setIsLoaded] = useToggle(false)
-  const { spacing } = useTheme()
+  const { spacing, motion } = useTheme()
 
   useEffect(() => {
     setIsLoaded(true)
@@ -61,7 +61,7 @@ export const SignOnPage = () => {
             width: '100%',
             backgroundColor: 'white',
             zIndex: 1,
-            transition: '0.5s ease-in-out 0.5s',
+            transition: `${motion.calm} 0.5s`,
             transform: isLoaded ? 'translateY(0px)' : 'translateY(-100%)'
           }}
         >
@@ -76,8 +76,9 @@ export const SignOnPage = () => {
         <Flex
           direction='column'
           alignItems='center'
-          pv='2xl'
+          pb='2xl'
           css={{
+            paddingTop: 520,
             flexGrow: 1,
             backgroundImage: `radial-gradient(77.16% 77.16% at 50% 51.81%, rgba(91, 35, 225, 0.80) 0%, rgba(113, 41, 230, 0.64) 67.96%, rgba(162, 47, 235, 0.50) 100%), url(${djPortrait})`,
             backgroundColor: 'lightgray',
@@ -85,7 +86,6 @@ export const SignOnPage = () => {
             backgroundPosition: 'bottom'
           }}
         >
-          <Box h={520} />
           <Switch>
             <Route path={SIGN_UP_PAGE}>
               <AudiusValues css={{ margin: 'auto' }} />
@@ -98,11 +98,11 @@ export const SignOnPage = () => {
                 css={{
                   marginTop: 'auto',
                   opacity: isLoaded ? 1 : 0,
-                  transition: 'opacity 0.5s ease-in-out 1s'
+                  transition: `opacity ${motion.expressive} 1s`
                 }}
               >
                 {messages.newToAudius}{' '}
-                <TextLink variant='inverted' _isHovered asChild>
+                <TextLink variant='inverted' showUnderline asChild>
                   <Link to={SIGN_UP_PAGE}>{messages.createAccount}</Link>
                 </TextLink>
               </Text>
@@ -137,16 +137,16 @@ export const SignOnPage = () => {
             left: 0,
             background: 'white',
             zIndex: 1,
-            transition: 'width 0.5s ease-in-out'
+            transition: `width ${motion.expressive}`
           }}
         >
           {routes}
         </Box>
-        <Box w={480} />
         <Flex
           alignItems='center'
           justifyContent='center'
           css={{
+            marginLeft: 480,
             flexGrow: 1,
             backgroundImage: `radial-gradient(77.16% 77.16% at 50% 51.81%, rgba(91, 35, 225, 0.80) 0%, rgba(113, 41, 230, 0.64) 67.96%, rgba(162, 47, 235, 0.50) 100%), url(${djBackground})`,
             backgroundColor: 'lightgray',
