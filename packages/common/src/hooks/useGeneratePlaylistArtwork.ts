@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 
+import { useAppContext } from 'context'
 import { useSelector } from 'react-redux'
 
 import { ID } from 'models/Identifiers'
-import { useAppContext } from 'src/context'
 import {
   getCollection,
   getCollectionTracks

@@ -375,10 +375,10 @@ export {
 } from './notifications/types'
 export const aiSelectors = aiSelectorsImport
 export { default as aiReducer, actions as aiActions } from './pages/ai/slice'
-export const audioRewardsSelectors = audioRewardsSelectorsImport
+export const audioRewardsPageSelectors = audioRewardsSelectorsImport
 export {
-  default as audioRewardsReducer,
-  actions as audioRewardsActions
+  default as audioRewardsPageReducer,
+  actions as audioRewardsPageActions
 } from './pages/audio-rewards/slice'
 export {
   TrendingRewardsModalType,
@@ -389,10 +389,10 @@ export {
   HCaptchaStatus,
   ClaimStatus
 } from './pages/audio-rewards/types'
-export const audioTransactionsSelectors = audioTransactionsSelectorsImport
+export const audioTransactionsPageSelectors = audioTransactionsSelectorsImport
 export {
-  default as audioTransactionsReducer,
-  actions as audioTransactionsActions
+  default as audioTransactionsPageReducer,
+  actions as audioTransactionsPageActions
 } from './pages/audio-transactions/slice'
 export { chatMiddleware } from './pages/chat/middleware'
 export const chatSelectors = chatSelectorsImport
@@ -406,8 +406,8 @@ export {
   ChatWebsocketError
 } from './pages/chat/types'
 export { makeChatId } from './pages/chat/utils'
-export const collectionActions = collectionActionsImport
-export const collectionSelectors = collectionSelectorsImport
+export const collectionPageActions = collectionActionsImport
+export const collectionPageSelectors = collectionSelectorsImport
 export {
   CollectionTrack,
   CollectionsPageState,
@@ -419,31 +419,30 @@ export {
   default as deactivateAccountReducer,
   actions as deactivateAccountActions
 } from './pages/deactivate-account/slice'
-export const exploreCollectionsSelectors = exploreCollectionsSelectorsImport
+export const explorePageCollectionsSelectors = exploreCollectionsSelectorsImport
 export {
-  default as exploreCollectionsReducer,
-  actions as exploreCollectionsActions
+  default as explorePageCollectionsReducer,
+  actions as explorePageCollectionsActions
 } from './pages/explore/exploreCollections/slice'
-export const exploreSelectors = exploreSelectorsImport
+export const explorePageSelectors = exploreSelectorsImport
 export {
-  default as exploreReducer,
-  actions as exploreActions
+  default as explorePageReducer,
+  actions as explorePageActions
 } from './pages/explore/slice'
 export {
   ExplorePageTabs,
   ExploreContent,
   ExploreCollectionsVariant
 } from './pages/explore/types'
-export const feedSelectors = feedSelectorsImport
+export const feedPageSelectors = feedSelectorsImport
 export { FeedPageState } from './pages/feed/types'
 export const historyPageSelectors = historyPageSelectorsImport
 export { HistoryPageState } from './pages/history-page/types'
-export const lineupSelectors = lineupSelectorsImport
+export const trendingPageLineupSelectors = lineupSelectorsImport
 export { default as premiumTracksReducer } from './pages/premium-tracks/slice'
-export const profileActions = profileActionsImport
-export const feedActions = feedActionsImport
-export const tracksSocialActions = tracksSocialActionsImport
-export const profileSelectors = profileSelectorsImport
+export const profilePageActions = profileActionsImport
+export const feedPageActions = feedActionsImport
+export const profilePageSelectors = profileSelectorsImport
 export {
   FollowType,
   CollectionSortMode,
@@ -456,10 +455,10 @@ export {
   getTabForRoute,
   ProfileUser
 } from './pages/profile/types'
-export const remixesSelectors = remixesSelectorsImport
+export const remixesPageSelectors = remixesSelectorsImport
 export {
-  default as remixesReducer,
-  actions as remixesActions
+  default as remixesPageReducer,
+  actions as remixesPageActions
 } from './pages/remixes/slice'
 export const savedPageActions = savedPageActionsImport
 export const savedPageSelectors = savedPageSelectorsImport
@@ -474,11 +473,11 @@ export {
   SavedPageCollection
 } from './pages/saved-page/types'
 export { calculateNewLibraryCategories } from './pages/saved-page/utils'
-export const searchResultsActions = searchResultsActionsImport
-export const searchResultsSelectors = searchResultsSelectorsImport
+export const searchResultsPageActions = searchResultsActionsImport
+export const searchResultsPageSelectors = searchResultsSelectorsImport
 export { SearchPageState, SearchKind } from './pages/search-results/types'
-export const settingsActions = settingsActionsImport
-export const settingsSelectors = settingsSelectorsImport
+export const settingsPageActions = settingsActionsImport
+export const settingsPageSelectors = settingsSelectorsImport
 export {
   BrowserNotificationSetting,
   PushNotificationSetting,
@@ -489,16 +488,16 @@ export {
   Cast,
   SettingsPageState
 } from './pages/settings/types'
-export const smartCollectionSelectors = smartCollectionSelectorsImport
+export const smartCollectionPageSelectors = smartCollectionSelectorsImport
 export {
-  default as smartCollectionReducer,
-  actions as smartCollectionActions
+  default as smartCollectionPageReducer,
+  actions as smartCollectionPageActions
 } from './pages/smart-collection/slice'
 export { SmartCollectionState } from './pages/smart-collection/types'
-export const tokenDashboardSelectors = tokenDashboardSelectorsImport
+export const tokenDashboardPageSelectors = tokenDashboardSelectorsImport
 export {
-  default as tokenDashboardReducer,
-  actions as tokenDashboardActions
+  default as tokenDashboardPageReducer,
+  actions as tokenDashboardPageActions
 } from './pages/token-dashboard/slice'
 export {
   ConnectWalletsState,
@@ -514,12 +513,13 @@ export {
 export const trackActions = trackActionsImport
 export const trackSelectors = trackSelectorsImport
 export { TrackPageState } from './pages/track/types'
-export const lineupsActions = lineupsActionsImport
-export const lineupsSelectors = lineupsSelectorsImport
+export const trendingPlaylistPageLineupsActions = lineupsActionsImport
+export const trendingPlaylistPageLineupSelectors = lineupSelectorsImport
 export { default as trendingPlaylistsReducer } from './pages/trending-playlists/slice'
-export const trendingActions = trendingActionsImport
-export const trendingSelectors = trendingSelectorsImport
+export const trendingPageLineupActions = trendingActionsImport
+export const trendinPageLineupSelectors = trendingSelectorsImport
 export { TrendingPageState } from './pages/trending/types'
+
 export const playbackPositionSelectors = playbackPositionSelectorsImport
 export {
   default as playbackPositionReducer,
@@ -655,29 +655,29 @@ export {
   BuyAudioStage,
   AmountObject
 } from './ui/buy-audio/types'
-export const collectibleDetailsSelectors = collectibleDetailsSelectorsImport
+export const collectibleDetailsUISelectors = collectibleDetailsSelectorsImport
 export {
-  default as collectibleDetailsReducer,
-  actions as collectibleDetailsActions
+  default as collectibleDetailsUIReducer,
+  actions as collectibleDetailsUIActions
 } from './ui/collectible-details/slice'
-export const deletePlaylistConfirmationModalSelectors =
+export const deletePlaylistConfirmationModalUISelectors =
   deletePlaylistConfirmationModalSelectorsImport
 export {
-  default as deletePlaylistConfirmationModalReducer,
+  default as deletePlaylistConfirmationModalUIReducer,
   actions as deletePlaylistConfirmationModalActions
 } from './ui/delete-playlist-confirmation-modal/slice'
 export { DeletePlaylistConfirmationModalState } from './ui/delete-playlist-confirmation-modal/types'
-export const duplicateAddConfirmationModalSelectors =
+export const duplicateAddConfirmationModalUISelectors =
   duplicateAddConfirmationModalSelectorsImport
 export {
-  default as duplicateAddConfirmationModalReducer,
-  actions as duplicateAddConfirmationModalActions
+  default as duplicateAddConfirmationModalUIReducer,
+  actions as duplicateAddConfirmationModalUIActions
 } from './ui/duplicate-add-confirmation-modal/slice'
 export { DuplicateAddConfirmationModalState } from './ui/duplicate-add-confirmation-modal/types'
-export const mobileOverflowMenuSelectors = mobileOverflowMenuSelectorsImport
+export const mobileOverflowMenuUISelectors = mobileOverflowMenuSelectorsImport
 export {
-  default as mobileOverflowMenuReducer,
-  actions as mobileOverflowMenuActions
+  default as mobileOverflowMenuUIReducer,
+  actions as mobileOverflowMenuUIActions
 } from './ui/mobile-overflow-menu/slice'
 export {
   OverflowAction,
@@ -697,40 +697,41 @@ export {
   StatefulModalsState,
   ModalsState
 } from './ui/modals/types'
-export const nowPlayingSelectors = nowPlayingSelectorsImport
+export const nowPlayingUISelectors = nowPlayingSelectorsImport
 export {
-  default as nowPlayingReducer,
-  actions as nowPlayingActions
+  default as nowPlayingUIReducer,
+  actions as nowPlayingUIActions
 } from './ui/now-playing/slice'
-export const publishPlaylistConfirmationModalSelectors =
+export const publishPlaylistConfirmationUIModalSelectors =
   publishPlaylistConfirmationModalSelectorsImport
 export {
-  default as publishPlaylistConfirmationModalReducer,
-  actions as publishPlaylistConfirmationModalActions
+  default as publishPlaylistConfirmationUIModalReducer,
+  actions as publishPlaylistConfirmationUIModalActions
 } from './ui/publish-playlist-confirmation-modal/slice'
 export { PublishPlaylistConfirmationModalState } from './ui/publish-playlist-confirmation-modal/types'
-export const reactionsSelectors = reactionsSelectorsImport
+export const reactionsUISelectors = reactionsSelectorsImport
 export {
-  default as reactionsReducer,
-  actions as reactionsActions
+  default as reactionsUIReducer,
+  actions as reactionsUIActions
 } from './ui/reactions/slice'
 export { ReactionTypes } from './ui/reactions/types'
 export { getReactionFromRawValue } from './ui/reactions/utils'
-export const relatedArtistsSelectors = relatedArtistsSelectorsImport
+export const relatedArtistsUISelectors = relatedArtistsSelectorsImport
 export {
-  default as relatedArtistsReducer,
-  actions as relatedArtistsActions
+  default as relatedArtistsUIReducer,
+  actions as relatedArtistsUIActions
 } from './ui/related-artists/slice'
 export { RelatedArtists, RelatedArtistsState } from './ui/related-artists/types'
 export const searchUsersModalSelectors = searchUsersModalSelectorsImport
 export {
   default as searchUsersModalReducer,
-  actions as searchUsersModalActions
+  actions as searchUsersModalActions,
+  SearchUsersModalState
 } from './ui/search-users-modal/slice'
-export const shareModalSelectors = shareModalSelectorsImport
+export const shareModalUISelectors = shareModalSelectorsImport
 export {
-  default as shareModalReducer,
-  actions as shareModalActions
+  default as shareModalUIReducer,
+  actions as shareModalUIActions
 } from './ui/share-modal/slice'
 export {
   ShareType,
@@ -755,10 +756,10 @@ export {
   ShareSoundToTiktokModalSetStatusPayload
 } from './ui/share-sound-to-tiktok-modal/types'
 export {} from './ui/stripe-modal/sagaHelpers'
-export const stripeModalSelectors = stripeModalSelectorsImport
+export const stripeModalUISelectors = stripeModalSelectorsImport
 export {
-  default as stripeModalReducer,
-  actions as stripeModalActions
+  default as stripeModalUIReducer,
+  actions as stripeModalUIActions
 } from './ui/stripe-modal/slice'
 export {
   StripeSessionStatus,
@@ -803,11 +804,11 @@ export {
   TransactionDetails,
   TransactionDetailsState
 } from './ui/transaction-details/types'
-export const uploadConfirmationModalSelectors =
+export const uploadConfirmationUIModalSelectors =
   uploadConfirmationModalSelectorsImport
 export {
-  default as uploadConfirmationModalReducer,
-  actions as uploadConfirmationModalActions
+  default as uploadConfirmationUIModalReducer,
+  actions as uploadConfirmationUIModalActions
 } from './ui/upload-confirmation-modal/slice'
 export {
   UploadConfirmationState,
@@ -915,3 +916,5 @@ export {
   getUserBalance,
   getTierForUser
 } from './wallet/utils'
+
+export { modalsActions } from './ui/modals'

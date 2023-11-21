@@ -92,7 +92,15 @@ export {
 } from './linking'
 export { Recording, Timer } from './performance'
 export { makeReducer } from './reducer'
-export { waitForValue } from './sagaHelpers'
+export {
+  batchYield,
+  actionChannelDispatcher,
+  channelCanceller,
+  waitForValue,
+  doEvery,
+  waitForAccount,
+  waitForRead
+} from './sagaHelpers'
 export {
   shallowCompare,
   areSetsEqual,

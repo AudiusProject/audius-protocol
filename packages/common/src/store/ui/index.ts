@@ -33,8 +33,8 @@ export { default as stripeModalUISagas } from './stripe-modal/sagas'
 export { default as toastSagas } from './toast/sagas'
 export { default as uploadConfirmationModalUISagas } from './upload-confirmation-modal/sagas'
 export { default as vipDiscordModalSagas } from './vip-discord-modal/sagas'
-export const addToPlaylistActions = addToPlaylistActionsImport
-export const addToPlaylistSelectors = addToPlaylistSelectorsImport
+export const addToPlaylistUIActions = addToPlaylistActionsImport
+export const addToPlaylistUISelectors = addToPlaylistSelectorsImport
 export { JupiterTokenListing } from './buy-audio/constants'
 export const buyAudioSelectors = buyAudioSelectorsImport
 export {
@@ -48,29 +48,29 @@ export {
   BuyAudioStage,
   AmountObject
 } from './buy-audio/types'
-export const collectibleDetailsSelectors = collectibleDetailsSelectorsImport
+export const collectibleDetailsUISelectors = collectibleDetailsSelectorsImport
 export {
-  default as collectibleDetailsReducer,
-  actions as collectibleDetailsActions
+  default as collectibleDetailsUIReducer,
+  actions as collectibleDetailsUIActions
 } from './collectible-details/slice'
-export const deletePlaylistConfirmationModalSelectors =
+export const deletePlaylistConfirmationModalUISelectors =
   deletePlaylistConfirmationModalSelectorsImport
 export {
-  default as deletePlaylistConfirmationModalReducer,
+  default as deletePlaylistConfirmationModalUIReducer,
   actions as deletePlaylistConfirmationModalActions
 } from './delete-playlist-confirmation-modal/slice'
 export { DeletePlaylistConfirmationModalState } from './delete-playlist-confirmation-modal/types'
-export const duplicateAddConfirmationModalSelectors =
+export const duplicateAddConfirmationModalUISelectors =
   duplicateAddConfirmationModalSelectorsImport
 export {
-  default as duplicateAddConfirmationModalReducer,
-  actions as duplicateAddConfirmationModalActions
+  default as duplicateAddConfirmationModalUIReducer,
+  actions as duplicateAddConfirmationModalUIActions
 } from './duplicate-add-confirmation-modal/slice'
 export { DuplicateAddConfirmationModalState } from './duplicate-add-confirmation-modal/types'
-export const mobileOverflowMenuSelectors = mobileOverflowMenuSelectorsImport
+export const mobileOverflowMenuUISelectors = mobileOverflowMenuSelectorsImport
 export {
-  default as mobileOverflowMenuReducer,
-  actions as mobileOverflowMenuActions
+  default as mobileOverflowMenuUIReducer,
+  actions as mobileOverflowMenuUIActions
 } from './mobile-overflow-menu/slice'
 export {
   OverflowAction,
@@ -90,29 +90,29 @@ export {
   StatefulModalsState,
   ModalsState
 } from './modals/types'
-export const nowPlayingSelectors = nowPlayingSelectorsImport
+export const nowPlayingUISelectors = nowPlayingSelectorsImport
 export {
-  default as nowPlayingReducer,
-  actions as nowPlayingActions
+  default as nowPlayingUIReducer,
+  actions as nowPlayingUIActions
 } from './now-playing/slice'
-export const publishPlaylistConfirmationModalSelectors =
+export const publishPlaylistConfirmationUIModalSelectors =
   publishPlaylistConfirmationModalSelectorsImport
 export {
-  default as publishPlaylistConfirmationModalReducer,
-  actions as publishPlaylistConfirmationModalActions
+  default as publishPlaylistConfirmationUIModalReducer,
+  actions as publishPlaylistConfirmationUIModalActions
 } from './publish-playlist-confirmation-modal/slice'
 export { PublishPlaylistConfirmationModalState } from './publish-playlist-confirmation-modal/types'
-export const reactionsSelectors = reactionsSelectorsImport
+export const reactionsUISelectors = reactionsSelectorsImport
 export {
-  default as reactionsReducer,
-  actions as reactionsActions
+  default as reactionsUIReducer,
+  actions as reactionsUIActions
 } from './reactions/slice'
 export { ReactionTypes } from './reactions/types'
 export { getReactionFromRawValue } from './reactions/utils'
-export const relatedArtistsSelectors = relatedArtistsSelectorsImport
+export const relatedArtistsUISelectors = relatedArtistsSelectorsImport
 export {
-  default as relatedArtistsReducer,
-  actions as relatedArtistsActions
+  default as relatedArtistsUIReducer,
+  actions as relatedArtistsUIActions
 } from './related-artists/slice'
 export { RelatedArtists, RelatedArtistsState } from './related-artists/types'
 export const searchUsersModalSelectors = searchUsersModalSelectorsImport
@@ -121,10 +121,10 @@ export {
   actions as searchUsersModalActions,
   SearchUsersModalState
 } from './search-users-modal/slice'
-export const shareModalSelectors = shareModalSelectorsImport
+export const shareModalUISelectors = shareModalSelectorsImport
 export {
-  default as shareModalReducer,
-  actions as shareModalActions
+  default as shareModalUIReducer,
+  actions as shareModalUIActions
 } from './share-modal/slice'
 export {
   ShareType,
@@ -149,10 +149,10 @@ export {
   ShareSoundToTiktokModalSetStatusPayload
 } from './share-sound-to-tiktok-modal/types'
 export {} from './stripe-modal/sagaHelpers'
-export const stripeModalSelectors = stripeModalSelectorsImport
+export const stripeModalUISelectors = stripeModalSelectorsImport
 export {
-  default as stripeModalReducer,
-  actions as stripeModalActions
+  default as stripeModalUIReducer,
+  actions as stripeModalUIActions
 } from './stripe-modal/slice'
 export {
   StripeSessionStatus,
@@ -191,11 +191,11 @@ export {
   TransactionDetails,
   TransactionDetailsState
 } from './transaction-details/types'
-export const uploadConfirmationModalSelectors =
+export const uploadConfirmationUIModalSelectors =
   uploadConfirmationModalSelectorsImport
 export {
-  default as uploadConfirmationModalReducer,
-  actions as uploadConfirmationModalActions
+  default as uploadConfirmationUIModalReducer,
+  actions as uploadConfirmationUIModalActions
 } from './upload-confirmation-modal/slice'
 export {
   UploadConfirmationState,
@@ -212,3 +212,5 @@ export {
   default as withdrawUSDCReducer,
   actions as withdrawUSDCActions
 } from './withdraw-usdc/slice'
+
+export { modalsActions } from './modals'

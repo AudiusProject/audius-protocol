@@ -30,10 +30,10 @@ import * as trendingSelectorsImport from './trending/selectors'
 
 export const aiSelectors = aiSelectorsImport
 export { default as aiReducer, actions as aiActions } from './ai/slice'
-export const audioRewardsSelectors = audioRewardsSelectorsImport
+export const audioRewardsPageSelectors = audioRewardsSelectorsImport
 export {
-  default as audioRewardsReducer,
-  actions as audioRewardsActions
+  default as audioRewardsPageReducer,
+  actions as audioRewardsPageActions
 } from './audio-rewards/slice'
 export {
   TrendingRewardsModalType,
@@ -44,10 +44,10 @@ export {
   HCaptchaStatus,
   ClaimStatus
 } from './audio-rewards/types'
-export const audioTransactionsSelectors = audioTransactionsSelectorsImport
+export const audioTransactionsPageSelectors = audioTransactionsSelectorsImport
 export {
-  default as audioTransactionsReducer,
-  actions as audioTransactionsActions
+  default as audioTransactionsPageReducer,
+  actions as audioTransactionsPageActions
 } from './audio-transactions/slice'
 export { chatMiddleware } from './chat/middleware'
 export const chatSelectors = chatSelectorsImport
@@ -58,8 +58,8 @@ export {
   ChatWebsocketError
 } from './chat/types'
 export { makeChatId } from './chat/utils'
-export const collectionActions = collectionActionsImport
-export const collectionSelectors = collectionSelectorsImport
+export const collectionPageActions = collectionActionsImport
+export const collectionPageSelectors = collectionSelectorsImport
 export {
   CollectionTrack,
   CollectionsPageState,
@@ -71,30 +71,30 @@ export {
   default as deactivateAccountReducer,
   actions as deactivateAccountActions
 } from './deactivate-account/slice'
-export const exploreCollectionsSelectors = exploreCollectionsSelectorsImport
+export const explorePageCollectionsSelectors = exploreCollectionsSelectorsImport
 export {
-  default as exploreCollectionsReducer,
-  actions as exploreCollectionsActions
+  default as explorePageCollectionsReducer,
+  actions as explorePageCollectionsActions
 } from './explore/exploreCollections/slice'
-export const exploreSelectors = exploreSelectorsImport
+export const explorePageSelectors = exploreSelectorsImport
 export {
-  default as exploreReducer,
-  actions as exploreActions
+  default as explorePageReducer,
+  actions as explorePageActions
 } from './explore/slice'
 export {
   ExplorePageTabs,
   ExploreContent,
   ExploreCollectionsVariant
 } from './explore/types'
-export const feedSelectors = feedSelectorsImport
+export const feedPageSelectors = feedSelectorsImport
 export { FeedPageState } from './feed/types'
 export const historyPageSelectors = historyPageSelectorsImport
 export { HistoryPageState } from './history-page/types'
-export const lineupSelectors = lineupSelectorsImport
+export const trendingPageLineupSelectors = lineupSelectorsImport
 export { default as premiumTracksReducer } from './premium-tracks/slice'
-export const profileActions = profileActionsImport
-export const feedActions = feedActionsImport
-export const profileSelectors = profileSelectorsImport
+export const profilePageActions = profileActionsImport
+export const feedPageActions = feedActionsImport
+export const profilePageSelectors = profileSelectorsImport
 export {
   FollowType,
   CollectionSortMode,
@@ -107,10 +107,10 @@ export {
   getTabForRoute,
   ProfileUser
 } from './profile/types'
-export const remixesSelectors = remixesSelectorsImport
+export const remixesPageSelectors = remixesSelectorsImport
 export {
-  default as remixesReducer,
-  actions as remixesActions
+  default as remixesPageReducer,
+  actions as remixesPageActions
 } from './remixes/slice'
 export const savedPageActions = savedPageActionsImport
 export const savedPageSelectors = savedPageSelectorsImport
@@ -125,11 +125,11 @@ export {
   SavedPageCollection
 } from './saved-page/types'
 export { calculateNewLibraryCategories } from './saved-page/utils'
-export const searchResultsActions = searchResultsActionsImport
-export const searchResultsSelectors = searchResultsSelectorsImport
+export const searchResultsPageActions = searchResultsActionsImport
+export const searchResultsPageSelectors = searchResultsSelectorsImport
 export { SearchPageState, SearchKind } from './search-results/types'
-export const settingsActions = settingsActionsImport
-export const settingsSelectors = settingsSelectorsImport
+export const settingsPageActions = settingsActionsImport
+export const settingsPageSelectors = settingsSelectorsImport
 export {
   BrowserNotificationSetting,
   PushNotificationSetting,
@@ -140,16 +140,16 @@ export {
   Cast,
   SettingsPageState
 } from './settings/types'
-export const smartCollectionSelectors = smartCollectionSelectorsImport
+export const smartCollectionPageSelectors = smartCollectionSelectorsImport
 export {
-  default as smartCollectionReducer,
-  actions as smartCollectionActions
+  default as smartCollectionPageReducer,
+  actions as smartCollectionPageActions
 } from './smart-collection/slice'
 export { SmartCollectionState } from './smart-collection/types'
-export const tokenDashboardSelectors = tokenDashboardSelectorsImport
+export const tokenDashboardPageSelectors = tokenDashboardSelectorsImport
 export {
-  default as tokenDashboardReducer,
-  actions as tokenDashboardActions
+  default as tokenDashboardPageReducer,
+  actions as tokenDashboardPageActions
 } from './token-dashboard/slice'
 export {
   ConnectWalletsState,
@@ -165,9 +165,9 @@ export {
 export const trackActions = trackActionsImport
 export const trackSelectors = trackSelectorsImport
 export { TrackPageState } from './track/types'
-export const lineupsActions = lineupsActionsImport
-export const lineupsSelectors = lineupSelectorsImport
+export const trendingPlaylistPageLineupsActions = lineupsActionsImport
+export const trendingPlaylistPageLineupSelectors = lineupSelectorsImport
 export { default as trendingPlaylistsReducer } from './trending-playlists/slice'
-export const trendingActions = trendingActionsImport
-export const trendingSelectors = trendingSelectorsImport
+export const trendingPageLineupActions = trendingActionsImport
+export const trendinPageLineupSelectors = trendingSelectorsImport
 export { TrendingPageState } from './trending/types'
