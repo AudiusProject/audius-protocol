@@ -1,14 +1,11 @@
-import {
-  BooleanKeys,
-  Chain,
-  getContext,
-  getErrorMessage,
-  tokenDashboardPageActions
-} from '@audius/common'
+import { Chain } from '@audius/common/models/Chain'
+import { BooleanKeys } from '@audius/common/services/remote-config'
+import { getContext } from '@audius/common/store/effects'
+import { updateWalletError } from '@audius/common/store/pages/token-dashboard/slice'
+import { getErrorMessage } from '@audius/common/utils/error'
 import { call, put } from 'typed-redux-saga'
 
 import { createSession } from 'services/web3-modal'
-const { updateWalletError } = tokenDashboardPageActions
 
 export function* establishWalletConnection() {
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')

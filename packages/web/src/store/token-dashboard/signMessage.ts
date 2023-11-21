@@ -1,16 +1,11 @@
-import {
-  accountSelectors,
-  Chain,
-  tokenDashboardPageActions,
-  tokenDashboardPageSelectors,
-  PhantomProvider
-} from '@audius/common'
+import { Chain } from '@audius/common/models/Chain'
+import { PhantomProvider } from '@audius/common/services/audius-backend'
+import { getUserId } from '@audius/common/store/account/selectors'
+import { getConfirmingWallet } from '@audius/common/store/pages/token-dashboard/selectors'
+import { updateWalletError } from '@audius/common/store/pages/token-dashboard/slice'
 import { call, put, select } from 'typed-redux-saga'
 
 import { WalletConnection } from './types'
-const { getUserId } = accountSelectors
-const { getConfirmingWallet } = tokenDashboardPageSelectors
-const { updateWalletError } = tokenDashboardPageActions
 
 const solSign = async (provider: PhantomProvider, msg: Uint8Array) => {
   return provider.signMessage(msg, 'utf8')

@@ -1,11 +1,19 @@
+import { TokenDashboardPageModalState } from '@audius/common/store/pages'
+import { getSendData } from '@audius/common/store/pages/token-dashboard/selectors'
 import {
-  weiToString,
-  tokenDashboardPageActions,
-  TokenDashboardPageModalState,
-  tokenDashboardPageSelectors,
-  walletActions,
-  modalsActions
-} from '@audius/common'
+  confirmSend,
+  preloadWalletProviders,
+  pressSend,
+  setModalState,
+  setModalVisibility
+} from '@audius/common/store/pages/token-dashboard/slice'
+import { setVisibility } from '@audius/common/store/ui/modals/parentSlice'
+import {
+  send,
+  sendFailed,
+  sendSucceeded
+} from '@audius/common/store/wallet/slice'
+import { weiToString } from '@audius/common/utils/wallet'
 import { all, put, race, select, take, takeLatest } from 'typed-redux-saga'
 
 import commonTokenDashboardSagas from 'common/store/pages/token-dashboard/sagas'
@@ -16,16 +24,6 @@ import {
 } from 'services/web3-modal'
 
 import { watchConnectNewWallet } from './connectNewWalletSaga'
-const { setVisibility } = modalsActions
-const { send: walletSend, sendSucceeded, sendFailed } = walletActions
-const { getSendData } = tokenDashboardPageSelectors
-const {
-  pressSend,
-  setModalState,
-  setModalVisibility: setSendAUDIOModalVisibility,
-  confirmSend,
-  preloadWalletProviders
-} = tokenDashboardPageActions
 
 function* pressSendAsync() {
   // Set modal state to input
@@ -36,7 +34,7 @@ function* pressSendAsync() {
     }
   }
   yield* all([
-    put(setSendAUDIOModalVisibility({ isVisible: true })),
+    put(setModalVisibility({ isVisible: true })),
     put(setModalState({ modalState: inputStage }))
   ])
 }
@@ -46,9 +44,7 @@ function* confirmSendAsync() {
   const sendData = yield* select(getSendData)
   if (!sendData) return
   const { recipientWallet, amount, chain } = sendData
-  yield* put(
-    walletSend({ recipientWallet, amount: weiToString(amount), chain })
-  )
+  yield* put(send({ recipientWallet, amount: weiToString(amount), chain }))
 
   const { error } = yield* race({
     success: take(sendSucceeded),
@@ -58,7 +54,7 @@ function* confirmSendAsync() {
   if (error) {
     if (error.payload.error === 'Missing social proof') {
       yield* all([
-        put(setSendAUDIOModalVisibility({ isVisible: false })),
+        put(setModalVisibility({ isVisible: false })),
         put(setVisibility({ modal: 'SocialProof', visible: true }))
       ])
     } else {

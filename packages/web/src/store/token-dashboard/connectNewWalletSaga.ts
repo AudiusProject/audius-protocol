@@ -1,4 +1,11 @@
-import { getContext, Name, tokenDashboardPageActions } from '@audius/common'
+import { Name } from '@audius/common/models/Analytics'
+import { getContext } from '@audius/common/store/effects'
+import {
+  connectNewWallet,
+  resetStatus,
+  setIsConnectingWallet,
+  setModalState
+} from '@audius/common/store/pages/token-dashboard/slice'
 import { captureException } from '@sentry/browser'
 import { fork, put, takeEvery } from 'typed-redux-saga'
 
@@ -15,11 +22,6 @@ import { disconnectWallet } from './disconnectWallet'
 import { establishWalletConnection } from './establishWalletConnection'
 import { getWalletAddress } from './getWalletAddress'
 import { signMessage } from './signMessage'
-
-const { connectNewWallet } = tokenDashboardPageActions
-
-const { setIsConnectingWallet, setModalState, resetStatus } =
-  tokenDashboardPageActions
 
 function* handleConnectNewWallet() {
   const analytics = yield* getContext('analytics')
