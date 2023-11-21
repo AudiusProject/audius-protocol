@@ -44,10 +44,7 @@ type TableMetadata = {
 
 export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
   const dispatch = useDispatch()
-  const { data: balance } = useUSDCBalance({
-    isPolling: true,
-    pollingInterval: 3000
-  })
+  const { data: balance } = useUSDCBalance()
   const accountHasTracks = useSelector(getAccountHasTracks)
 
   const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)

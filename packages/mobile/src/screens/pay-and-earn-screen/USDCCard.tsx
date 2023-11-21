@@ -85,10 +85,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 export const USDCCard = () => {
   const styles = useStyles()
   const white = useColor('white')
-  const { data: balance } = useUSDCBalance({
-    isPolling: true,
-    pollingInterval: 3000
-  })
+  const { data: balance } = useUSDCBalance()
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )

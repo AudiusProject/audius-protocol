@@ -22,7 +22,7 @@ export const usePurchaseContentFormState = ({ price }: { price: number }) => {
     recoveryStatus,
     refresh,
     cancelPolling
-  } = useUSDCBalance({ isPolling: true })
+  } = useUSDCBalance()
 
   // Refresh balance on successful recovery
   useEffect(() => {
