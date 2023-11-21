@@ -27,7 +27,8 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   pill: {
     flexGrow: 1,
-    flexShrink: 0
+    flexShrink: 1,
+    flexBasis: 0
   },
   title: {
     letterSpacing: 0.5
