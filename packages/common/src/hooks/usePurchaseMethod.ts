@@ -23,7 +23,7 @@ export const usePurchaseMethod = ({
   setMethod
 }: UsePurchaseMethodProps) => {
   const { data: balance } = useUSDCBalance({ isPolling: true })
-  const balanceUSDC = USDC((balance ?? new BN(0)) as BN).value
+  const balanceUSDC = USDC(balance ?? new BN(0)).value
   const totalPriceInCents = price + (extraAmount ?? 0)
   const isExistingBalanceDisabled =
     USDC(totalPriceInCents / 100).value > balanceUSDC
