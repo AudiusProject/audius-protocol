@@ -50,6 +50,9 @@ export default interface SignOnPageState {
   useMetaMask: boolean
   accountReady: boolean
   twitterId: string
+  tikTokId: string
+  instagramId: string
+  linkedSocialOnFirstPage: boolean
   twitterScreenName: string
   profileImage: { file: File; url: string }
   coverPhoto: { file: File; url: string }

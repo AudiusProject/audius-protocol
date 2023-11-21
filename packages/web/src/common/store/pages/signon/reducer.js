@@ -36,7 +36,8 @@ import {
   UPDATE_ROUTE_ON_EXIT,
   ADD_FOLLOW_ARTISTS,
   REMOVE_FOLLOW_ARTISTS,
-  SET_REFERRER
+  SET_REFERRER,
+  SET_LINKED_SOCIAL_ON_FIRST_PAGE
 } from './actions'
 import { Pages, FollowArtistsCategory } from './types'
 
@@ -54,6 +55,8 @@ const initialState = {
   name: createTextField(),
   password: createTextField(),
   handle: createTextField(),
+  /** Whether the user linked their social media account on the first page (email page) of the sign up flow */
+  linkedSocialOnFirstPage: false,
   accountAlreadyExisted: false,
   verified: false,
   useMetaMask: false,
@@ -191,6 +194,12 @@ const actionsMap = {
         error: '',
         status: 'editing'
       }
+    }
+  },
+  [SET_LINKED_SOCIAL_ON_FIRST_PAGE](state, action) {
+    return {
+      ...state,
+      linkedSocialOnFirstPage: action.linkedSocialOnFirstPage
     }
   },
   [SET_TWITTER_PROFILE](state, action) {
