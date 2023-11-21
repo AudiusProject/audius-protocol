@@ -8,7 +8,8 @@ import {
   IconArrowRight,
   Text,
   IconCloudUpload,
-  Avatar
+  Avatar,
+  Box
 } from '@audius/harmony'
 import { Modal } from '@audius/stems'
 import { useSelector } from 'react-redux'
@@ -64,11 +65,9 @@ export const WelcomeModal = () => {
           })
         })}
       >
-        <Avatar
-          variant='strong'
-          src={profileImage?.url}
-          css={{ position: 'absolute', top: 40, height: 96, width: 96 }}
-        />
+        <Box w={96} h={96} css={{ position: 'absolute', top: 40 }}>
+          <Avatar variant='strong' src={profileImage?.url} />
+        </Box>
       </Flex>
       <Flex direction='column' p='xl' pt='3xl' gap='xl'>
         <Flex direction='column' css={{ textAlign: 'center' }} gap='l'>

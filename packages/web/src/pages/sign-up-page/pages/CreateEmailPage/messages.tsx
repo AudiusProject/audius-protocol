@@ -12,5 +12,6 @@ export const messages = {
   ),
   socialsDividerText: 'Or, get started with one of your socials',
   invalidEmail: 'Please enter a valid email.',
-  unknownError: 'Unknown error occurred.'
+  unknownError: 'Unknown error occurred.',
+  metaMaskNotRecommended: 'Signing up with MetaMask is not recommended.'
 }

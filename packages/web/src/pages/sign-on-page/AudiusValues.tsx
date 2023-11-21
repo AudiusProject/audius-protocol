@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from 'react'
+import { PropsWithChildren } from 'react'
 
 import {
   Box,
@@ -23,11 +23,6 @@ const messages = {
   adFree: 'Ad-Free, Offline Listening'
 }
 
-/**
- *
- * @param param0
- * @returns
- */
 export const ArtworkContainer = ({
   children,
   ...rest
@@ -56,17 +51,14 @@ const AudiusValue = (props: AudiusValueProps) => {
   const { icon: Icon, text } = props
   const { isDesktop } = useMedia()
   return (
-    <Flex
-      className={styles.valueRow}
-      direction='row'
-      gap='l'
-      alignItems='center'
-    >
-      <Icon className={styles.icon} />
+    <Flex alignItems='center' justifyContent='center' gap='m'>
+      <Icon color='staticWhite' size={isDesktop ? '2xl' : 'l'} />
       <Text
         variant={isDesktop ? 'heading' : 'title'}
         size={isDesktop ? 'xl' : 'l'}
         strength={isDesktop ? 'default' : 'weak'}
+        color='staticWhite'
+        shadow='emphasis'
       >
         {text}
       </Text>
@@ -77,13 +69,29 @@ const AudiusValue = (props: AudiusValueProps) => {
 /**
  * Renders all the audius values
  */
-export const AudiusValues = () => {
+
+type AudiusValuesProps = {
+  className?: string
+}
+
+export const AudiusValues = (props: AudiusValuesProps) => {
   const { isDesktop } = useMedia()
   return (
-    <Flex direction='column' gap={isDesktop ? 'xl' : 'l'} alignItems='center'>
+    <Flex
+      direction='column'
+      gap={isDesktop ? 'xl' : 'l'}
+      alignItems='center'
+      {...props}
+    >
       {isDesktop ? (
         <Box pb='l'>
-          <Text variant='display' size='s' strength='strong'>
+          <Text
+            variant='display'
+            size='s'
+            strength='strong'
+            color='staticWhite'
+            shadow='emphasis'
+          >
             {messages.heading}
           </Text>
         </Box>

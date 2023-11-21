@@ -12,16 +12,14 @@ import cn from 'classnames'
 import { Icon } from 'components/Icon'
 import Skeleton from 'components/skeleton/Skeleton'
 
-import styles from './UsdcBalancePill.module.css'
+import styles from './USDCBalancePill.module.css'
 
 type USDCPillProps = {
   className?: string
 }
 
-export const UsdcBalancePill = ({ className }: USDCPillProps) => {
-  const { data: balance, balanceStatus: usdcBalanceStatus } = useUSDCBalance({
-    isPolling: false
-  })
+export const USDCBalancePill = ({ className }: USDCPillProps) => {
+  const { data: balance, balanceStatus: usdcBalanceStatus } = useUSDCBalance()
   const isLoading = balance === null || usdcBalanceStatus === Status.LOADING
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC

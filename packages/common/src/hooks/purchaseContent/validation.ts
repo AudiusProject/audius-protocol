@@ -1,8 +1,11 @@
 import { z } from 'zod'
 
+import { PurchaseMethod } from 'models/PurchaseContent'
+
 import {
   AMOUNT_PRESET,
   CUSTOM_AMOUNT,
+  PURCHASE_METHOD,
   maximumPayExtraAmountCents,
   minimumPayExtraAmountCents
 } from './constants'
@@ -21,7 +24,8 @@ const createPurchaseContentSchema = () => {
           invalid_type_error: messages.amountInvalid
         })
         .optional(),
-      [AMOUNT_PRESET]: z.nativeEnum(PayExtraPreset)
+      [AMOUNT_PRESET]: z.nativeEnum(PayExtraPreset),
+      [PURCHASE_METHOD]: z.nativeEnum(PurchaseMethod)
     })
     .refine(
       ({ amountPreset, customAmount }) => {

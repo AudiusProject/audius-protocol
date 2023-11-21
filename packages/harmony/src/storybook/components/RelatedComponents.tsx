@@ -69,11 +69,11 @@ const relatedComponentsMap = {
         css={{ background: 'white' }}
       >
         <Text variant='label'>A</Text>
-        <Divider />
+        <Divider orientation='vertical' />
         <Text variant='label'>B</Text>
-        <Divider />
+        <Divider orientation='vertical' />
         <Text variant='label'>C</Text>
-        <Divider />
+        <Divider orientation='vertical' />
         <Text variant='label'>D</Text>
       </Flex>
     ),

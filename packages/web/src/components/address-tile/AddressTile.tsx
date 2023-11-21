@@ -1,28 +1,42 @@
-import { ReactNode, useCallback, useContext } from 'react'
+import { useCallback, useContext } from 'react'
 
-import { shortenSPLAddress } from '@audius/common'
-import { Text, IconCopy, PlainButton } from '@audius/harmony'
+import { shortenSPLAddress, useUSDCBalance } from '@audius/common'
+import { USDC } from '@audius/fixed-decimal'
+import {
+  Text,
+  IconCopy,
+  PlainButton,
+  IconComponent,
+  Flex,
+  Box,
+  useTheme
+} from '@audius/harmony'
+import { BN } from 'bn.js'
 
-import { Icon } from 'components/Icon'
 import { ToastContext } from 'components/toast/ToastContext'
 import { isMobile } from 'utils/clientUtil'
 import { copyToClipboard } from 'utils/clipboardUtil'
 
-import styles from './AddressTile.module.css'
-
 const messages = {
+  usdcBalance: 'USDC Balance',
   copied: 'Copied to Clipboard!'
 }
 
 type AddressTileProps = {
   address: string
-  left?: ReactNode
-  right?: ReactNode
+  iconLeft: IconComponent
+  iconRight?: IconComponent
 }
 
-export const AddressTile = ({ address, left, right }: AddressTileProps) => {
+export const AddressTile = ({
+  address,
+  iconLeft: IconLeft,
+  iconRight: IconRight
+}: AddressTileProps) => {
+  const { color } = useTheme()
   const { toast } = useContext(ToastContext)
   const mobile = isMobile()
+  const { data: balanceBN } = useUSDCBalance({ isPolling: true })
 
   const handleCopyPress = useCallback(() => {
     copyToClipboard(address)
@@ -30,20 +44,55 @@ export const AddressTile = ({ address, left, right }: AddressTileProps) => {
   }, [address, toast])
 
   const defaultRight = (
-    <PlainButton>
-      <Icon icon={IconCopy} onClick={handleCopyPress} />
+    <PlainButton onClick={handleCopyPress}>
+      <IconCopy size='s' color='subdued' />
     </PlainButton>
   )
 
   return (
-    <div className={styles.addressContainer}>
-      <div className={styles.leftContainer}>{left}</div>
-      <div className={styles.middleContainer}>
-        <Text variant='body' className={styles.address}>
-          {shortenSPLAddress(address, mobile ? 6 : 12)}
+    <Flex direction='column' border='default' borderRadius='s'>
+      <Flex p='l' alignItems='center' justifyContent='space-between'>
+        <Flex alignItems='center'>
+          <IconLeft />
+          <Box pl='s'>
+            <Text variant='title' size='m'>
+              {messages.usdcBalance}
+            </Text>
+          </Box>
+        </Flex>
+        <Text variant='title' size='l' strength='strong'>
+          {`$${USDC(balanceBN ?? new BN(0)).toLocaleString('en-us', {
+            roundingMode: 'floor',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          })}`}
         </Text>
-      </div>
-      <div className={styles.rightContainer}>{right ?? defaultRight}</div>
-    </div>
+      </Flex>
+      <Flex
+        css={{ backgroundColor: color.background.surface1 }}
+        alignItems='stretch'
+        justifyContent='space-between'
+        borderTop='default'
+        borderBottomLeftRadius='s'
+        borderBottomRightRadius='s'
+      >
+        <Box p='l' borderRadius='s'>
+          <Text
+            css={{
+              userSelect: 'text',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              lineHeight: '125%'
+            }}
+            variant='body'
+          >
+            {mobile ? shortenSPLAddress(address, 12) : address}
+          </Text>
+        </Box>
+        <Flex alignItems='center' borderLeft='default' pr='l' pl='l'>
+          {IconRight ? <IconRight /> : defaultRight}
+        </Flex>
+      </Flex>
+    </Flex>
   )
 }

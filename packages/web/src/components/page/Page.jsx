@@ -107,9 +107,11 @@ export const Page = (props) => {
         <div
           ref={props.containerRef}
           style={animProps}
-          className={cn(styles.pageContainer, {
-            [props.containerClassName]: !!props.containerClassName
-          })}
+          className={cn(
+            styles.pageContainer,
+            props.containerClassName,
+            props.className
+          )}
         >
           <Helmet encodeSpecialCharacters={false}>
             {props.title ? (

@@ -2,6 +2,7 @@ import type { ComponentType } from 'react'
 
 import type { Modals } from '@audius/common'
 
+import { AddFundsDrawer } from 'app/components/add-funds-drawer/AddFundsDrawer'
 import { AddToPlaylistDrawer } from 'app/components/add-to-playlist-drawer'
 import { ApiRewardsDrawer } from 'app/components/api-rewards-drawer/ApiRewardsDrawer'
 import { AudioBreakdownDrawer } from 'app/components/audio-breakdown-drawer'
@@ -29,6 +30,7 @@ import { PlaybackRateDrawer } from 'app/components/playback-rate-drawer'
 import { PremiumTrackPurchaseDrawer } from 'app/components/premium-track-purchase-drawer'
 import { ProfileActionsDrawer } from 'app/components/profile-actions-drawer'
 import { PublishPlaylistDrawer } from 'app/components/publish-playlist-drawer'
+import { PurchaseVendorDrawer } from 'app/components/purchase-vendor-drawer/PurchaseVendorDrawer'
 import { RateCtaDrawer } from 'app/components/rate-cta-drawer'
 import { ShareDrawer } from 'app/components/share-drawer'
 import { ShareToTikTokDrawer } from 'app/components/share-to-tiktok-drawer'
@@ -111,9 +113,11 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   ProfileActions: ProfileActionsDrawer,
   PlaybackRate: PlaybackRateDrawer,
   PublishPlaylistConfirmation: PublishPlaylistDrawer,
-  // PremiumContent, USDCManualTransfer, and StripOnRamp *must* be in this order
+  // PremiumContent, AddFunds, PurchaseVendor, USDCManualTransfer, and StripOnRamp *must* be in this order
   // to avoid zIndex issues.
   PremiumContentPurchaseModal: PremiumTrackPurchaseDrawer,
+  AddFundsModal: AddFundsDrawer,
+  PurchaseVendor: PurchaseVendorDrawer,
   USDCManualTransferModal: USDCManualTransferDrawer,
   StripeOnRamp: StripeOnrampDrawer,
   InboxUnavailableModal: InboxUnavailableDrawer,

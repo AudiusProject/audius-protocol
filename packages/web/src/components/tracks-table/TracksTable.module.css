@@ -97,6 +97,11 @@
   background-color: var(--neutral-light-9);
 }
 
+.tableRow.disabled * {
+  color: var(--neutral-light-4);
+  background-color: var(--neutral-light-9);
+}
+
 .tableRow.disabled:hover {
   box-shadow: none;
   background-color: var(--neutral-light-9);
@@ -112,7 +117,7 @@
 }
 
 .tableRow.lockedRow {
-  background: var(--white);
+  background-color: var(--white);
 }
 
 .locked {
@@ -120,7 +125,7 @@
   display: flex;
   align-items: center;
   padding: 2px var(--unit-2);
-  background: var(--accent-blue);
+  background-color: var(--accent-blue);
   border-radius: 80px;
   font-weight: var(--font-demi-bold);
   font-size: var(--font-2xs);

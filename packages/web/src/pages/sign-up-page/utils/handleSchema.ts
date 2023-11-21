@@ -19,9 +19,13 @@ export const errorMessages = {
   missingHandleError: 'Please enter a handle.'
 }
 
-export const generateHandleSchema = (
+export const generateHandleSchema = ({
+  audiusQueryContext,
+  skipReservedHandleCheck = false
+}: {
   audiusQueryContext: AudiusQueryContextType
-) => {
+  skipReservedHandleCheck?: boolean
+}) => {
   return z.object({
     handle: z
       .string()
@@ -55,34 +59,36 @@ export const generateHandleSchema = (
         }
       })
       .superRefine(async (h, context) => {
-        let handleReservedStatus: HandleCheckStatus
-        try {
-          handleReservedStatus = await signUpFetch.getHandleReservedStatus(
-            { handle: h },
-            audiusQueryContext
-          )
-        } catch {
-          context.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: errorMessages.unknownError
-          })
-          return
-        }
-        if (handleReservedStatus === 'twitterReserved') {
-          context.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: errorMessages.twitterReservedError
-          })
-        } else if (handleReservedStatus === 'instagramReserved') {
-          context.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: errorMessages.instagramReservedError
-          })
-        } else if (handleReservedStatus === 'tikTokReserved') {
-          context.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: errorMessages.tiktokReservedError
-          })
+        if (!skipReservedHandleCheck) {
+          let handleReservedStatus: HandleCheckStatus
+          try {
+            handleReservedStatus = await signUpFetch.getHandleReservedStatus(
+              { handle: h },
+              audiusQueryContext
+            )
+          } catch {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: errorMessages.unknownError
+            })
+            return
+          }
+          if (handleReservedStatus === 'twitterReserved') {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: errorMessages.twitterReservedError
+            })
+          } else if (handleReservedStatus === 'instagramReserved') {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: errorMessages.instagramReservedError
+            })
+          } else if (handleReservedStatus === 'tikTokReserved') {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: errorMessages.tiktokReservedError
+            })
+          }
         }
       })
   })

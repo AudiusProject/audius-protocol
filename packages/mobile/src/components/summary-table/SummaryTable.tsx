@@ -34,6 +34,9 @@ export type SummaryTableItem = {
   id: string
   label: ReactNode
   value: ReactNode
+  icon?: React.FC
+  content?: ReactNode // expandable content
+  disabled?: boolean
 }
 
 export type SummaryTableProps = {
@@ -43,6 +46,7 @@ export type SummaryTableProps = {
   secondaryTitle?: ReactNode
   summaryLabelColor?: keyof ThemeColors
   summaryValueColor?: keyof ThemeColors
+  renderContent?: (items: SummaryTableItem[]) => ReactNode
 }
 
 export const SummaryTable = ({
@@ -51,52 +55,72 @@ export const SummaryTable = ({
   title,
   secondaryTitle,
   summaryLabelColor,
-  summaryValueColor = 'secondary'
+  summaryValueColor = 'secondary',
+  renderContent: renderContentProp
 }: SummaryTableProps) => {
   const styles = useStyles()
   const nonNullItems = items.filter(removeNullable)
-  return (
-    <View style={styles.container}>
+
+  const renderHeader = () => {
+    return (
       <View style={[styles.row, styles.grayRow]}>
         <Text weight='bold'>{title}</Text>
         <Text variant='body' fontSize='large' weight='bold'>
           {secondaryTitle}
         </Text>
       </View>
-      {nonNullItems.map(({ id, label, value }, index) => (
-        <View
-          key={id}
-          style={[
-            styles.row,
-            summaryItem === undefined && index === nonNullItems.length - 1
-              ? styles.lastRow
-              : null
-          ]}
+    )
+  }
+
+  const renderContent = () => {
+    if (renderContentProp) {
+      return renderContentProp(items)
+    }
+    return nonNullItems.map(({ id, label, value }, index) => (
+      <View
+        key={id}
+        style={[
+          styles.row,
+          summaryItem === undefined && index === nonNullItems.length - 1
+            ? styles.lastRow
+            : null
+        ]}
+      >
+        <Text>{label}</Text>
+        <Text>{value}</Text>
+      </View>
+    ))
+  }
+
+  const renderSummaryItem = () => {
+    if (summaryItem === undefined) return null
+    return (
+      <View style={[styles.row, styles.lastRow, styles.grayRow]}>
+        <Text
+          variant='body'
+          fontSize='medium'
+          weight='bold'
+          color={summaryLabelColor}
         >
-          <Text>{label}</Text>
-          <Text>{value}</Text>
-        </View>
-      ))}
-      {summaryItem !== undefined ? (
-        <View style={[styles.row, styles.lastRow, styles.grayRow]}>
-          <Text
-            variant='body'
-            fontSize='medium'
-            weight='bold'
-            color={summaryLabelColor}
-          >
-            {summaryItem.label}
-          </Text>
-          <Text
-            variant='body'
-            fontSize='medium'
-            weight='bold'
-            color={summaryValueColor}
-          >
-            {summaryItem.value}
-          </Text>
-        </View>
-      ) : null}
+          {summaryItem.label}
+        </Text>
+        <Text
+          variant='body'
+          fontSize='medium'
+          weight='bold'
+          color={summaryValueColor}
+        >
+          {summaryItem.value}
+        </Text>
+      </View>
+    )
+  }
+
+  return (
+    <View style={styles.container}>
+      {renderHeader()}
+      {renderContent()}
+      {renderSummaryItem()}
     </View>
   )
 }

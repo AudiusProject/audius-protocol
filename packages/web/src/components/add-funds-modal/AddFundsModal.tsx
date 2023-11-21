@@ -1,10 +1,17 @@
 import { useCallback, useState } from 'react'
 
-import { useAddFundsModal } from '@audius/common'
+import {
+  useAddFundsModal,
+  buyUSDCActions,
+  USDCOnRampProvider,
+  PurchaseMethod,
+  DEFAULT_PURCHASE_AMOUNT_CENTS
+} from '@audius/common'
 import { ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
+import { useDispatch } from 'react-redux'
 
-import { AddFunds, Method } from 'components/add-funds/AddFunds'
+import { AddFunds } from 'components/add-funds/AddFunds'
 import { Text } from 'components/typography'
 import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
@@ -22,23 +29,35 @@ type Page = 'add-funds' | 'crypto-transfer'
 
 export const AddFundsModal = () => {
   const { isOpen, onClose } = useAddFundsModal()
+  const dispatch = useDispatch()
   const mobile = isMobile()
 
   const [page, setPage] = useState<Page>('add-funds')
 
   const handleClose = useCallback(() => {
-    onClose()
-  }, [onClose])
+    setPage('add-funds')
+  }, [setPage])
 
   const handleClosed = useCallback(() => {
     setPage('add-funds')
   }, [setPage])
 
   const handleContinue = useCallback(
-    (method: Method) => {
-      setPage('crypto-transfer')
+    (purchaseMethod: PurchaseMethod) => {
+      if (purchaseMethod === PurchaseMethod.CRYPTO) {
+        setPage('crypto-transfer')
+      } else {
+        dispatch(
+          buyUSDCActions.onrampOpened({
+            provider: USDCOnRampProvider.STRIPE,
+            purchaseInfo: {
+              desiredAmount: DEFAULT_PURCHASE_AMOUNT_CENTS
+            }
+          })
+        )
+      }
     },
-    [setPage]
+    [setPage, dispatch]
   )
 
   return (

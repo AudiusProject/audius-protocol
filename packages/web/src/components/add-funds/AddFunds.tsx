@@ -1,12 +1,12 @@
-import { ChangeEvent, useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import {
-  BNUSDC,
-  decimalIntegerToHumanReadable,
-  formatUSDCWeiToFloorCentsNumber,
+  PurchaseMethod,
+  PurchaseVendor,
   useCreateUserbankIfNeeded,
   useUSDCBalance
 } from '@audius/common'
+import { USDC } from '@audius/fixed-decimal'
 import {
   Box,
   Button,
@@ -22,10 +22,12 @@ import {
 import { BN } from 'bn.js'
 import cn from 'classnames'
 
+import { MobileFilterButton } from 'components/mobile-filter-button/MobileFilterButton'
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
 import { track } from 'services/analytics'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { isMobile } from 'utils/clientUtil'
+import { zIndex } from 'utils/zIndex'
 
 import styles from './AddFunds.module.css'
 
@@ -37,51 +39,64 @@ const messages = {
   continue: 'Continue'
 }
 
-export type Method = 'card' | 'crypto'
-
 export const AddFunds = ({
   onContinue
 }: {
-  onContinue: (method: Method) => void
+  onContinue: (purchaseMethod: PurchaseMethod) => void
 }) => {
   useCreateUserbankIfNeeded({
     recordAnalytics: track,
     audiusBackendInstance,
     mint: 'usdc'
   })
-  const [selectedMethod, setSelectedMethod] = useState<Method>('card')
+  const [selectedPurchaseMethod, setSelectedPurchaseMethod] =
+    useState<PurchaseMethod>(PurchaseMethod.CARD)
   const mobile = isMobile()
-  const { data: balance } = useUSDCBalance()
-  const balanceNumber = formatUSDCWeiToFloorCentsNumber(
-    (balance ?? new BN(0)) as BNUSDC
-  )
-  const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
+  const { data: balanceBN } = useUSDCBalance({ isPolling: true })
+  const balance = USDC(balanceBN ?? new BN(0)).value
+
+  const vendorOptions = [{ label: PurchaseVendor.STRIPE }]
 
   const items: SummaryTableItem[] = [
     {
-      id: 'card',
+      id: PurchaseMethod.CARD,
       label: messages.withCard,
       icon: IconCreditCard,
-      value: (
-        <FilterButton
-          initialSelectionIndex={0}
-          variant={FilterButtonType.REPLACE_LABEL}
-          options={[{ label: 'Stripe' }]}
-        />
-      )
+      value:
+        vendorOptions.length > 1 ? (
+          mobile ? (
+            <MobileFilterButton
+              onSelect={(vendor: string) => {
+                console.info(vendor)
+              }}
+              options={vendorOptions}
+              zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
+            />
+          ) : (
+            <FilterButton
+              onSelect={({ label: vendor }: { label: string }) => {
+                console.info(vendor)
+              }}
+              initialSelectionIndex={0}
+              variant={FilterButtonType.REPLACE_LABEL}
+              options={vendorOptions}
+              popupZIndex={zIndex.USDC_ADD_FUNDS_FILTER_BUTTON_POPUP}
+            />
+          )
+        ) : null
     },
     {
-      id: 'crypto',
+      id: PurchaseMethod.CRYPTO,
       label: messages.withCrypto,
       icon: IconTransaction
     }
   ]
 
   const handleChangeOption = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      setSelectedMethod(e.target.value as Method)
+    (method: string) => {
+      setSelectedPurchaseMethod(method as PurchaseMethod)
     },
-    [setSelectedMethod]
+    [setSelectedPurchaseMethod]
   )
 
   return (
@@ -92,7 +107,7 @@ export const AddFunds = ({
         })}
       >
         <Flex direction='column' w='100%' gap='xl'>
-          <Box h='unit6' border='strong' p='m'>
+          <Box h='unit6' border='strong' p='m' borderRadius='s'>
             <Flex alignItems='center' justifyContent='space-between'>
               <Flex alignItems='center'>
                 <IconLogoCircleUSDC />
@@ -103,7 +118,11 @@ export const AddFunds = ({
                 </Box>
               </Flex>
               <Text variant='title' size='l' strength='strong'>
-                {`$${balanceFormatted}`}
+                {`$${USDC(balance).toLocaleString('en-us', {
+                  roundingMode: 'floor',
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}`}
               </Text>
             </Flex>
           </Box>
@@ -112,12 +131,14 @@ export const AddFunds = ({
             items={items}
             withRadioOptions
             onRadioChange={handleChangeOption}
-            selectedRadioOption={selectedMethod}
+            selectedRadioOption={selectedPurchaseMethod}
+            rowClassName={mobile ? styles.summaryTableRow : undefined}
+            rowValueClassName={mobile ? styles.summaryTableRowValue : undefined}
           />
           <Button
             variant={ButtonType.PRIMARY}
             fullWidth
-            onClick={() => onContinue(selectedMethod)}
+            onClick={() => onContinue(selectedPurchaseMethod)}
           >
             {messages.continue}
           </Button>
