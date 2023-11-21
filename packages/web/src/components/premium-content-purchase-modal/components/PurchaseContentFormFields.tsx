@@ -171,7 +171,6 @@ export const PurchaseContentFormFields = ({
         onRadioChange={handleChange}
         selectedRadioOption={purchaseMethod}
         items={options}
-        rowClassName={mobile ? styles.summaryTableRow : undefined}
       />
       {isUnlocking ? null : <PayToUnlockInfo />}
     </>
