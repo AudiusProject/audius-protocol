@@ -128,7 +128,7 @@ export const SelectArtistsPage = () => {
               }
             }}
           >
-            <AccountHeader />
+            <AccountHeader mode='viewing' />
             <Flex
               direction='column'
               mh={isMobile ? undefined : '5xl'}
