@@ -34,7 +34,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 export const USDCBalancePill = () => {
   const styles = useStyles()
   const { data: usdcBalance, balanceStatus: usdcBalanceStatus } =
-    useUSDCBalance({ isPolling: false })
+    useUSDCBalance()
   const isUsdcBalanceLoading =
     usdcBalance === null || usdcBalanceStatus === Status.LOADING
   const balanceCents = formatUSDCWeiToFloorCentsNumber(

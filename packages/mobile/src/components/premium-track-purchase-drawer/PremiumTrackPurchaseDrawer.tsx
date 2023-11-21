@@ -106,8 +106,6 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     gap: spacing(4)
   },
   headerContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: palette.neutralLight8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
@@ -242,7 +240,7 @@ const RenderForm = ({
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
 
-  const { data: balance } = useUSDCBalance({ isPolling: true })
+  const { data: balance } = useUSDCBalance()
   const { extraAmount } = usePurchaseSummaryValues({
     price,
     currentBalance: balance

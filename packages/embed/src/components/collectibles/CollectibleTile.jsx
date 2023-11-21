@@ -1,10 +1,11 @@
-import cn from 'classnames'
 import { useEffect, useState } from 'react'
 
+import cn from 'classnames'
+
+import { getFrameFromGif } from '../../util/collectibleHelpers'
 import { logError } from '../../util/logError'
 
 import styles from './CollectibleTile.module.css'
-import { getFrameFromGif } from './collectibleHelpers'
 
 const preload = async (src) =>
   new Promise((resolve) => {

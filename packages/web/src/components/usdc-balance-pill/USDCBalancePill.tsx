@@ -19,9 +19,7 @@ type USDCPillProps = {
 }
 
 export const USDCBalancePill = ({ className }: USDCPillProps) => {
-  const { data: balance, balanceStatus: usdcBalanceStatus } = useUSDCBalance({
-    isPolling: false
-  })
+  const { data: balance, balanceStatus: usdcBalanceStatus } = useUSDCBalance()
   const isLoading = balance === null || usdcBalanceStatus === Status.LOADING
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC

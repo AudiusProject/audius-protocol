@@ -43,8 +43,7 @@ const messages = {
   existingBalance: 'Existing balance',
   card: 'Add funds with card',
   manualTransfer: 'Add with crypto transfer',
-  paymentMethod: 'Payment Method',
-  dollarSign: '$'
+  paymentMethod: 'Payment Method'
 }
 
 type PurchaseContentFormFieldsProps = Pick<
@@ -64,13 +63,13 @@ export const PurchaseContentFormFields = ({
     useField(PURCHASE_METHOD)
   const isPurchased = stage === PurchaseContentStage.FINISH
 
-  const { data: balance } = useUSDCBalance({ isPolling: true })
-  const balanceUSDC = USDC((balance ?? new BN(0)) as BN).value
+  const { data: balanceBN } = useUSDCBalance()
+  const balance = USDC(balanceBN ?? new BN(0)).value
   const { extraAmount } = usePurchaseSummaryValues({
     price,
-    currentBalance: balance
+    currentBalance: balanceBN
   })
-  const hasBalance = balanceUSDC > 0
+  const hasBalance = balance > 0
   const { isExistingBalanceDisabled, totalPriceInCents } = usePurchaseMethod({
     price,
     extraAmount,
@@ -117,7 +116,11 @@ export const PurchaseContentFormFields = ({
                   : undefined
               }
             >
-              {`$${USDC(balanceUSDC).toFixed(2)}`}
+              {`$${USDC(balance).toLocaleString('en-us', {
+                roundingMode: 'floor',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })}`}
             </Text>
           )
         }
