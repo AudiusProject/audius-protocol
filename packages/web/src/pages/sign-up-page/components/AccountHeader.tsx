@@ -17,21 +17,25 @@ import {
 import { useMedia } from 'hooks/useMedia'
 import { useSelector } from 'utils/reducer'
 
-import { ImageField } from './ImageField'
+import { ImageField, ImageFieldValue } from './ImageField'
 
 type AccountHeaderProps = {
   mode: 'editing' | 'viewing'
-  displayName?: string // FinishProfilePage provides displayName via form values while it's being modified
+  formDisplayName?: string
+  formProfileImage?: ImageFieldValue
 }
 
 const CoverPhotoBox = ({
   imageUrl,
+  profileImageUrl,
   isEditing
 }: {
   imageUrl: string | undefined
+  profileImageUrl?: string | undefined
   isEditing?: boolean
 }) => {
   const { color } = useTheme()
+  const hasImage = imageUrl || profileImageUrl
   return (
     <Box
       h='100%'
@@ -45,12 +49,19 @@ const CoverPhotoBox = ({
           left: 0,
           height: '100%',
           width: '100%',
-          background: `linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.00) 100%)`
+          // gradient overlay
+          background: `linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.00) 100%)`,
+          // When there is no cover photo we use the profile photo and heavily blur it
+          ...(hasImage && !imageUrl
+            ? {
+                backdropFilter: 'blur(25px)'
+              }
+            : undefined)
         },
         overflow: 'hidden',
-        ...(imageUrl
+        ...(hasImage
           ? {
-              backgroundImage: `url(${imageUrl})`,
+              backgroundImage: `url(${imageUrl ?? profileImageUrl})`,
               backgroundPosition: 'center',
               backgroundSize: '100%',
               backgroundRepeat: 'no-repeat, no-repeat'
@@ -58,7 +69,7 @@ const CoverPhotoBox = ({
           : { backgroundColor: color.neutral.n400 })
       }}
     >
-      {isEditing && !imageUrl ? (
+      {isEditing && !hasImage ? (
         <IconImage
           css={{ position: 'absolute', right: '16px', top: '16px' }}
           color='staticWhite'
@@ -101,14 +112,16 @@ const ProfileImageAvatar = ({
 
 export const AccountHeader = ({
   mode,
-  displayName: displayNameProps
+  formDisplayName,
+  formProfileImage
 }: AccountHeaderProps) => {
   const { value: coverPhoto } = useSelector(getCoverPhotoField)
   const { value: profileImage } = useSelector(getProfileImageField)
   const { value: storedDisplayName } = useSelector(getNameField)
   const { value: handle } = useSelector(getHandleField)
   const isEditing = mode === 'editing'
-  const displayName = displayNameProps ?? storedDisplayName
+
+  const displayName = formDisplayName ?? storedDisplayName
 
   const { isMobile } = useMedia()
   const isSmallSize = isEditing || isMobile
@@ -121,12 +134,16 @@ export const AccountHeader = ({
             {(uploadedImage) => (
               <CoverPhotoBox
                 imageUrl={uploadedImage?.url ?? coverPhoto?.url}
+                profileImageUrl={formProfileImage?.url ?? profileImage?.url}
                 isEditing
               />
             )}
           </ImageField>
         ) : (
-          <CoverPhotoBox imageUrl={coverPhoto?.url} />
+          <CoverPhotoBox
+            imageUrl={coverPhoto?.url}
+            profileImageUrl={profileImage?.url}
+          />
         )}
       </Box>
       <Flex

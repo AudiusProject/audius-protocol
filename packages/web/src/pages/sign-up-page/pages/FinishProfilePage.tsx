@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
-import { Nullable } from '@audius/common'
-import { Box, Button, Flex, Paper, Text, useTheme } from '@audius/harmony'
+import { Button, Flex, Paper, Text, useTheme } from '@audius/harmony'
 import { Formik, Form } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
@@ -33,7 +32,7 @@ const messages = {
   profileImageRequired: 'Profile image is required.'
 }
 
-type FinishProfileValues = {
+export type FinishProfileValues = {
   profileImage: ImageFieldValue
   coverPhoto?: ImageFieldValue
   displayName: string
@@ -144,7 +143,8 @@ export const FinishProfilePage = () => {
                   >
                     <AccountHeader
                       mode='editing'
-                      displayName={values.displayName}
+                      formDisplayName={values.displayName}
+                      formProfileImage={values.profileImage}
                     />
                     <Flex
                       p='m'
