@@ -17,12 +17,7 @@ export const usePurchaseContentFormState = ({ price }: { price: number }) => {
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
 
-  const {
-    data: currentBalance,
-    recoveryStatus,
-    refresh,
-    cancelPolling
-  } = useUSDCBalance()
+  const { data: currentBalance, recoveryStatus, refresh } = useUSDCBalance()
 
   // Refresh balance on successful recovery
   useEffect(() => {
@@ -30,12 +25,6 @@ export const usePurchaseContentFormState = ({ price }: { price: number }) => {
       refresh()
     }
   }, [recoveryStatus, refresh])
-
-  useEffect(() => {
-    if (isUnlocking) {
-      cancelPolling()
-    }
-  }, [isUnlocking, cancelPolling])
 
   const purchaseSummaryValues = usePurchaseSummaryValues({
     price,
