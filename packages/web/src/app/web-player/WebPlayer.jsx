@@ -50,6 +50,7 @@ import { RewardClaimedToast } from 'components/reward-claimed-toast/RewardClaime
 import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
+import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
 import {
   MainContentContext,
   MainContentContextProvider,
@@ -182,8 +183,6 @@ import {
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
 import styles from './App.module.css'
-
-import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
 
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
