@@ -24,8 +24,8 @@ const sdkConfigOptions =
   env === 'development'
     ? developmentConfig
     : env === 'staging'
-      ? stagingConfig
-      : productionConfig
+    ? stagingConfig
+    : productionConfig
 
 export const RequestedEntity = Object.seal({
   TRACKS: 'tracks',

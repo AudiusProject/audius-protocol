@@ -1,4 +1,3 @@
-
 import Card from '../card/Card'
 
 import CollectibleDetailsView from './CollectibleDetailsView'

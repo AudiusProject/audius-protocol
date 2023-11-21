@@ -1,12 +1,9 @@
+import { Button, Text } from '@audius/harmony'
 
-import AudiusLogo from '../../assets/img/audiusLogoHorizontal.svg'
 import { getCopyableLink } from '../../util/shareUtil'
-import Button from '../button/Button'
-
-import styles from './ListenOnAudiusCTA.module.css'
 
 const messages = {
-  label: 'Listen on'
+  listen: 'Listen on Audius'
 }
 
 const ListenOnAudiusCTA = ({ audiusURL }) => {
@@ -15,12 +12,11 @@ const ListenOnAudiusCTA = ({ audiusURL }) => {
   }
 
   return (
-    <Button
-      onClick={onClick}
-      className={styles.container}
-      icon={<AudiusLogo />}
-      label={messages.label}
-    />
+    <Button fullWidth onClick={onClick}>
+      <Text variant='title' size='l'>
+        {messages.listen}
+      </Text>
+    </Button>
   )
 }
 

@@ -1,13 +1,15 @@
-import cn from 'classnames'
-
-import styles from './PrimaryLabel.module.css'
+import { Text } from '@audius/harmony'
 
 const messages = {
   label: 'Looking for more like this?'
 }
 
-const PrimaryLabel = ({ className }) => {
-  return <div className={cn(styles.container, className)}>{messages.label}</div>
+const PrimaryLabel = () => {
+  return (
+    <Text color='default' variant='heading' size='s'>
+      {messages.label}
+    </Text>
+  )
 }
 
 export default PrimaryLabel

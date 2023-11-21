@@ -1,10 +1,4 @@
-import {
-  useState,
-  useContext,
-  useCallback,
-  useEffect,
-  useMemo
-} from 'react'
+import { useState, useContext, useCallback, useEffect, useMemo } from 'react'
 
 import usePlayback from '../../hooks/usePlayback'
 import { useRecordListens } from '../../hooks/useRecordListens'

@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
 
+import { ThemeProvider } from '@audius/harmony'
 import cn from 'classnames'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { CSSTransition } from 'react-transition-group'
 
 import '@audius/stems/dist/stems.css'
 import '@audius/harmony/dist/harmony.css'
+import './font.css'
 
 import {
   initTrackSessionStart,
@@ -312,7 +314,8 @@ const App = (props) => {
   useEffect(() => {
     const request = getRequestDataFromURL({
       path: props.path,
-      type: props.type,
+      // Type comes from the url if present, otherwise pull from the component props
+      type: params.type || props.type,
       flavor: searchParams[0]?.get('flavor') ?? undefined,
       matches: params
     })
@@ -354,7 +357,7 @@ const App = (props) => {
   const mobileWebTwitter = isMobileWebTwitter(requestState?.isTwitter)
 
   // The idea is to show nothing (null) until either we
-  // get metadata back from GA, or we pass the loading threshold
+  // get metadata back or we pass the loading threshold
   // and display the loading screen.
   const renderPlayerContainer = () => {
     if (didError) {
@@ -467,14 +470,16 @@ const App = (props) => {
         }
       )}
     >
-      <ToastContextProvider>
-        <PauseContextProvider>
-          <CardContextProvider>
-            {renderPausePopover()}
-            {renderPlayerContainer()}
-          </CardContextProvider>
-        </PauseContextProvider>
-      </ToastContextProvider>
+      <ThemeProvider theme='day'>
+        <ToastContextProvider>
+          <PauseContextProvider>
+            <CardContextProvider>
+              {renderPausePopover()}
+              {renderPlayerContainer()}
+            </CardContextProvider>
+          </PauseContextProvider>
+        </ToastContextProvider>
+      </ThemeProvider>
     </div>
   )
 }
