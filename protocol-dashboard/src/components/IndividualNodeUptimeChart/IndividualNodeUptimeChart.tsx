@@ -1,17 +1,17 @@
-import type { DataObject } from 'components/TrackerChart'
 import TrackerChart from 'components/TrackerChart'
 import React from 'react'
 import { useIndividualNodeUptime } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
+import { DataObject } from 'components/TrackerChart'
 
 type OwnProps = {
-  node: string,
+  node: string
 }
 
 type IndividualNodeUptimeChartProps = OwnProps
 
 const IndividualNodeUptimeChart: React.FC<IndividualNodeUptimeChartProps> = ({
-  node,
+  node
 }) => {
   let error, subtitle: string, data: DataObject[]
   const { uptime } = useIndividualNodeUptime(node, Bucket.DAY)
@@ -23,7 +23,7 @@ const IndividualNodeUptimeChart: React.FC<IndividualNodeUptimeChartProps> = ({
     data = []
     for (const [bucket, up] of Object.entries(uptime.uptime_raw_data)) {
       data.push({
-        color: up === 1 ? 'green' : 'red',
+        color: up === 1 ? 'var(--harmony-light-green)' : 'var(--harmony-red)',
         tooltip: new Date(bucket).toUTCString()
       })
     }

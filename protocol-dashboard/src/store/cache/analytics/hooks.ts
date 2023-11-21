@@ -215,7 +215,7 @@ async function fetchUptime(node: string, bucket: Bucket) {
   let error = false
   let metric: UptimeRecord = {}
   try {
-    const endpoint = `${node}/up_api/uptime?host=${node}`
+    const endpoint = `${node}/d_api/uptime?host=${node}`
     metric = await fetchWithTimeout(endpoint)
   } catch (e) {
     console.error(e)

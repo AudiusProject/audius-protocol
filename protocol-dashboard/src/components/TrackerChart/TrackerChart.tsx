@@ -9,11 +9,6 @@ import mobileStyles from './TrackerChartMobile.module.css'
 
 const styles = createStyles({ desktopStyles, mobileStyles })
 
-type DataObject = {
-  color: string
-  tooltip: string
-}
-
 type OwnProps = {
   title: string
   subtitle?: string
@@ -22,6 +17,11 @@ type OwnProps = {
 }
 
 type TrackerChartProps = OwnProps
+
+export type DataObject = {
+  color: string
+  tooltip: string
+}
 
 const TrackerChart: React.FC<TrackerChartProps> = ({
   title,
