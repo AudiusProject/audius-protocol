@@ -14,11 +14,7 @@ import GlyphPattern2x from 'assets/img/publicSite/glyph-pattern@2x.png'
 import GooglePlayBadge from 'assets/img/publicSite/google-play-badge.svg'
 import { handleClickRoute } from 'public-site/components/handleClickRoute'
 import { getIOSAppLink } from 'utils/appLinks'
-import {
-  APP_REDIRECT,
-  AUDIUS_LISTENING_LINK,
-  DOWNLOAD_START_LINK
-} from 'utils/route'
+import { APP_REDIRECT, TRENDING_PAGE, DOWNLOAD_START_LINK } from 'utils/route'
 
 import styles from './Hero.module.css'
 
@@ -64,10 +60,7 @@ export const Hero = (props: HeroProps) => {
             <div>{messages.subtitle}</div>
           </div>
           <button
-            onClick={handleClickRoute(
-              AUDIUS_LISTENING_LINK,
-              props.setRenderPublicSite
-            )}
+            onClick={handleClickRoute(TRENDING_PAGE, props.setRenderPublicSite)}
             className={styles.ctaButton}
           >
             <span className={styles.ctaMessage}>{messages.cta}</span>
@@ -160,7 +153,7 @@ export const Hero = (props: HeroProps) => {
           <div className={styles.buttonContent}>
             <button
               onClick={handleClickRoute(
-                AUDIUS_LISTENING_LINK,
+                TRENDING_PAGE,
                 props.setRenderPublicSite
               )}
               className={styles.ctaButton}

@@ -8,14 +8,14 @@ import cn from 'classnames'
 
 import horizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
 import {
-  AUDIUS_HOME_LINK,
+  HOME_PAGE,
   AUDIUS_TWITTER_LINK,
   AUDIUS_INSTAGRAM_LINK,
   AUDIUS_DISCORD_LINK,
   AUDIUS_PRESS_LINK,
   PRIVACY_POLICY,
   TERMS_OF_SERVICE,
-  AUDIUS_LISTENING_LINK,
+  TRENDING_PAGE,
   AUDIUS_BLOG_LINK,
   DOWNLOAD_LINK,
   AUDIUS_HELP_LINK,
@@ -106,17 +106,14 @@ const Footer = (props: FooterProps) => {
             src={horizontalLogo}
             className={styles.logo}
             alt='Audius Logo'
-            onClick={handleClickRoute(
-              AUDIUS_HOME_LINK,
-              props.setRenderPublicSite
-            )}
+            onClick={handleClickRoute(HOME_PAGE, props.setRenderPublicSite)}
           />
           <div className={styles.siteLinksContainer}>
             <div className={styles.siteLinksColumnContainer}>
               <p className={styles.siteLinksColumnTitle}>{messages.product}</p>
               <a
                 onClick={handleClickRoute(
-                  AUDIUS_LISTENING_LINK,
+                  TRENDING_PAGE,
                   props.setRenderPublicSite
                 )}
                 className={cn(styles.siteLink, styles.link)}
