@@ -27,6 +27,10 @@ export const ALLOWED_IMAGE_FILE_TYPES = [
   'image/webp'
 ]
 
+export type ResizeImageOptions = {
+  maxWidth: number
+  square: boolean
+}
 export const resizeImage = async (
   imageFile: File,
   maxWidth = 1000,
