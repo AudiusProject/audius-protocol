@@ -18,7 +18,6 @@ export const useContractAddress = (contractName: string) => {
     }
   })
 
-  console.log(`useContractAddress ${result.status}`)
   return {
     data: result.data,
     isPending: result.status === 'pending',
