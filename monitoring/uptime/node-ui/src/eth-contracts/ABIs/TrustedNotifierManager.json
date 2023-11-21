@@ -1,5 +1,5 @@
 {
-  "contractName": "TrustedNotifierManager",
+  "contractName": "TrustedNotifierManagerProxy",
   "abi": [
     {
       "constant": false,

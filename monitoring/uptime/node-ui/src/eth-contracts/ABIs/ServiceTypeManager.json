@@ -1,5 +1,5 @@
 {
-  "contractName": "ServiceTypeManager",
+  "contractName": "ServiceTypeManagerProxy",
   "abi": [
     {
       "anonymous": false,

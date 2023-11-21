@@ -1,5 +1,5 @@
 {
-  "contractName": "EthRewardsManager",
+  "contractName": "EthRewardsManagerProxy",
   "abi": [
     {
       "constant": false,

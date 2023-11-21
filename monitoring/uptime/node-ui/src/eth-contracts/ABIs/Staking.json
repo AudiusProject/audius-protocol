@@ -1,5 +1,5 @@
 {
-  "contractName": "Staking",
+  "contractName": "StakingProxy",
   "abi": [
     {
       "anonymous": false,

@@ -1,5 +1,5 @@
 {
-  "contractName": "ClaimsManager",
+  "contractName": "ClaimsManagerProxy",
   "abi": [
     {
       "anonymous": false,
