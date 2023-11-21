@@ -23,7 +23,7 @@ import PreloadImage from 'components/preload-image/PreloadImage'
 import { useMedia } from 'hooks/useMedia'
 import { SIGN_UP_PAGE } from 'utils/route'
 
-import { MetamaskSignInButton } from './MetamaskSignInButton'
+import { SignInWithMetaMaskButton } from './SignInWithMetaMaskButton'
 
 const messages = {
   metaTitle: 'Sign In • Audius',
@@ -113,7 +113,7 @@ export const SignInPage = () => {
               <Button iconRight={IconArrowRight} type='submit'>
                 {messages.signIn}
               </Button>
-              {!isMobile ? <MetamaskSignInButton /> : null}
+              {!isMobile ? <SignInWithMetaMaskButton /> : null}
               <TextLink
                 variant='visible'
                 textVariant='body'

@@ -7,6 +7,7 @@ import type {
 import {
   FeatureFlags,
   Name,
+  PURCHASE_METHOD,
   PurchaseContentStage,
   formatPrice,
   isContentPurchaseInProgress,
@@ -19,9 +20,10 @@ import {
   usePremiumContentPurchaseModal,
   usePurchaseContentErrorMessage,
   usePurchaseContentFormConfiguration,
-  useUSDCManualTransferModal
+  usePurchaseMethod,
+  useUSDCBalance
 } from '@audius/common'
-import { Formik, useFormikContext } from 'formik'
+import { Formik, useField, useFormikContext } from 'formik'
 import {
   Linking,
   View,
@@ -46,6 +48,7 @@ import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
 import LoadingSpinner from '../loading-spinner/LoadingSpinner'
+import { PaymentMethod } from '../payment-method/PaymentMethod'
 import { TrackDetailsTile } from '../track-details-tile'
 
 import { AudioMatchSection } from './AudioMatchSection'
@@ -54,6 +57,7 @@ import { PurchaseSuccess } from './PurchaseSuccess'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
 import { PurchaseUnavailable } from './PurchaseUnavailable'
 import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState'
+import { usePurchaseSummaryValues } from './hooks/usePurchaseSummaryValues'
 
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
@@ -79,8 +83,7 @@ const messages = {
       }
     </>
   ),
-  termsOfUse: 'Terms of Use.',
-  manualTransfer: '(Advanced) Manual Crypto Transfer'
+  termsOfUse: 'Terms of Use.'
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
@@ -88,12 +91,12 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     flex: 1
   },
   formContentContainer: {
-    paddingVertical: spacing(6),
-    gap: spacing(4)
+    paddingBottom: spacing(6)
   },
   formContentSection: {
     paddingHorizontal: spacing(4),
-    gap: spacing(4)
+    gap: spacing(6),
+    marginTop: spacing(4)
   },
   formActions: {
     flex: 0,
@@ -103,8 +106,6 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     gap: spacing(4)
   },
   headerContainer: {
-    borderBottomWidth: 1,
-    borderBottomColor: palette.neutralLight8,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
@@ -149,10 +150,7 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
     lineHeight: typography.fontSize.medium * 1.25
   },
   bottomSection: {
-    gap: spacing(2)
-  },
-  manualTransfer: {
-    lineHeight: typography.fontSize.medium * 1.25
+    gap: spacing(6)
   }
 }))
 
@@ -226,7 +224,6 @@ const RenderForm = ({
   const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.IOS_USDC_PURCHASE_ENABLED
   )
-  const { onOpen: openUSDCManualTransferModal } = useUSDCManualTransferModal()
   const isIOSDisabled = Platform.OS === 'ios' && !isIOSUSDCPurchaseEnabled
 
   const { submitForm, resetForm } = useFormikContext()
@@ -239,6 +236,22 @@ const RenderForm = ({
       usdc_purchase: { price }
     }
   } = track
+
+  const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
+    useField(PURCHASE_METHOD)
+
+  const { data: balance } = useUSDCBalance({ isPolling: true })
+  const { extraAmount } = usePurchaseSummaryValues({
+    price,
+    currentBalance: balance
+  })
+
+  const { isExistingBalanceDisabled, totalPriceInCents } = usePurchaseMethod({
+    price,
+    extraAmount,
+    method: purchaseMethod,
+    setMethod: setPurchaseMethod
+  })
 
   const { stage, error, isUnlocking, purchaseSummaryValues } =
     usePurchaseContentFormState({ price })
@@ -258,20 +271,14 @@ const RenderForm = ({
     trackEvent(make({ eventName: Name.PURCHASE_CONTENT_TOS_CLICKED }))
   }, [])
 
-  const handleManualTransferPress = useCallback(() => {
-    openUSDCManualTransferModal()
-  }, [openUSDCManualTransferModal])
-
   return (
     <>
       <ScrollView contentContainerStyle={styles.formContentContainer}>
-        <View style={styles.formContentSection}>
-          <TrackDetailsTile trackId={track.track_id} />
-        </View>
         {stage !== PurchaseContentStage.FINISH ? (
           <AudioMatchSection amount={Math.round(price / 100)} />
         ) : null}
         <View style={styles.formContentSection}>
+          <TrackDetailsTile trackId={track.track_id} />
           {isPurchaseSuccessful ? null : (
             <PayExtraFormSection
               amountPresets={presetValues}
@@ -281,17 +288,16 @@ const RenderForm = ({
           <View style={styles.bottomSection}>
             <PurchaseSummaryTable
               {...purchaseSummaryValues}
-              isPurchaseSuccessful={isPurchaseSuccessful}
+              totalPriceInCents={totalPriceInCents}
             />
             {isIOSDisabled || isUnlocking || isPurchaseSuccessful ? null : (
-              <Text
-                color='primary'
-                fontSize='small'
-                onPress={handleManualTransferPress}
-                style={styles.manualTransfer}
-              >
-                {messages.manualTransfer}
-              </Text>
+              <PaymentMethod
+                selectedType={purchaseMethod}
+                setSelectedType={setPurchaseMethod}
+                balance={balance}
+                isExistingBalanceDisabled={isExistingBalanceDisabled}
+                showExistingBalance
+              />
             )}
           </View>
           {isIOSDisabled ? (

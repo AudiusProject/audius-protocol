@@ -10,10 +10,10 @@ const messages = {
   signIn: 'Sign In With MetaMask'
 }
 
-export const MetamaskSignInButton = () => {
+export const SignInWithMetaMaskButton = () => {
   const navigate = useNavigateToPage()
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback(async () => {
     try {
       window.localStorage.setItem('useMetaMask', JSON.stringify(true))
     } catch (err) {

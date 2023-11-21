@@ -17,7 +17,8 @@ const external = [
   ...Object.keys(pkg.devDependencies),
   'ethers/lib/utils',
   'ethers/lib/index',
-  'hashids/cjs'
+  'hashids/cjs',
+  'readable-stream'
 ]
 
 const pluginTypescript = typescript({ tsconfig: './tsconfig.json' })

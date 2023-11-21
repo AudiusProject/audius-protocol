@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 import {
   ID,
@@ -12,7 +12,8 @@ import {
   Text,
   IconArrowRight,
   SelectablePill,
-  Paper
+  Paper,
+  useTheme
 } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
@@ -22,6 +23,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { useModalState } from 'common/hooks/useModalState'
 import { addFollowArtists } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
+import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
 import { TRENDING_PAGE } from 'utils/route'
@@ -58,6 +60,8 @@ export const SelectArtistsPage = () => {
   const [currentGenre, setCurrentGenre] = useState('Featured')
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
+  const { color } = useTheme()
+  const headerContainerRef = useRef<HTMLDivElement | null>(null)
 
   // TODO: adopt SelectablePill as input
   // const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
@@ -82,6 +86,7 @@ export const SelectArtistsPage = () => {
       { disabled: isFeaturedArtists }
     )
 
+  const { isMobile } = useMedia()
   const { data: featuredArtists, status: featuredArtistsStatus } =
     useGetFeaturedArtists(undefined, {
       disabled: !isFeaturedArtists
@@ -110,9 +115,10 @@ export const SelectArtistsPage = () => {
         return (
           <Flex
             direction='column'
-            gap='3xl'
+            gap={isMobile ? undefined : '3xl'}
             css={{
-              overflow: 'scroll',
+              width: '100%',
+              overflow: 'auto',
               // Hide scrollbar
               scrollbarWidth: 'none', // Firefox
               msOverflowStyle: 'none', // IE + Edge
@@ -123,38 +129,78 @@ export const SelectArtistsPage = () => {
             }}
           >
             <AccountHeader />
-            <Flex direction='column' gap='2xl' mh='5xl' mb='xl'>
-              <Flex direction='column' gap='l'>
-                <Text
-                  variant='heading'
-                  size='l'
-                  strength='default'
-                  color='heading'
-                >
-                  {messages.header}
-                </Text>
-                <Text variant='body' size='l' strength='default'>
-                  {messages.description}
-                </Text>
-              </Flex>
+            <Flex
+              direction='column'
+              mh={isMobile ? undefined : '5xl'}
+              mb={isMobile ? undefined : 'xl'}
+            >
               <Flex
-                w='100%'
-                gap='s'
-                justifyContent='center'
-                role='radiogroup'
-                aria-label={messages.genresLabel}
+                direction='column'
+                gap='xl'
+                pt={isMobile ? '2xl' : undefined}
+                pb='xl'
+                shadow={isMobile ? 'mid' : undefined}
+                css={{
+                  ...(isMobile && {
+                    zIndex: 2,
+                    backgroundColor: color.background.white,
+                    position: 'sticky',
+                    top: headerContainerRef?.current
+                      ? -(32 + headerContainerRef.current.clientHeight)
+                      : undefined
+                  })
+                }}
               >
-                {genres.map((genre) => (
-                  // TODO: max of 6, kebab overflow
-                  <SelectablePill
-                    key={genre}
-                    label={genre}
-                    isSelected={currentGenre === genre}
-                    onClick={() => {
-                      setCurrentGenre(genre)
-                    }}
-                  />
-                ))}
+                <Flex
+                  direction='column'
+                  gap={isMobile ? 's' : 'l'}
+                  ph={isMobile ? 'l' : undefined}
+                  ref={headerContainerRef}
+                >
+                  <Text
+                    variant='heading'
+                    size='l'
+                    strength='default'
+                    color='heading'
+                  >
+                    {messages.header}
+                  </Text>
+                  <Text variant='body' size='l' strength='default'>
+                    {messages.description}
+                  </Text>
+                </Flex>
+                <Flex
+                  w='100%'
+                  gap='s'
+                  ph={isMobile ? 'l' : undefined}
+                  justifyContent={isMobile ? 'flex-start' : 'center'}
+                  role='radiogroup'
+                  css={{
+                    ...(isMobile && {
+                      overflow: 'auto',
+                      // Hide scrollbar
+                      scrollbarWidth: 'none', // Firefox
+                      msOverflowStyle: 'none', // IE + Edge
+                      // Chrome + Safari
+                      '::-webkit-scrollbar': {
+                        display: 'none'
+                      }
+                    })
+                  }}
+                  aria-label={messages.genresLabel}
+                >
+                  {genres.map((genre) => (
+                    // TODO: max of 6, kebab overflow
+                    <SelectablePill
+                      key={genre}
+                      label={genre}
+                      isSelected={currentGenre === genre}
+                      onClick={() => {
+                        setCurrentGenre(genre)
+                      }}
+                    />
+                  ))}
+                </Flex>
               </Flex>
               <Form>
                 <fieldset>
@@ -164,9 +210,9 @@ export const SelectArtistsPage = () => {
                       boxShadow: 'none',
                       minHeight: 500
                     }}
-                    p='xl'
-                    gap='m'
-                    rowGap='m'
+                    pv='xl'
+                    ph={isMobile ? 'l' : 'xl'}
+                    gap={isMobile ? 's' : 'm'}
                     wrap='wrap'
                   >
                     {isLoading

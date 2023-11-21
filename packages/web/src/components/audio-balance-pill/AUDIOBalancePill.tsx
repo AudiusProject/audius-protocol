@@ -15,7 +15,7 @@ import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
 import Skeleton from 'components/skeleton/Skeleton'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
 
-import styles from './AudioBalancePill.module.css'
+import styles from './AUDIOBalancePill.module.css'
 
 const { getAccountUser } = accountSelectors
 

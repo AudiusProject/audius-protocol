@@ -1,7 +1,7 @@
 .container {
   flex: 1;
   min-width: 227px;
-  padding: 16px 16px 16px 32px;
+  padding: 24px;
   display: inline-flex;
   flex-direction: column;
   box-sizing: border-box;

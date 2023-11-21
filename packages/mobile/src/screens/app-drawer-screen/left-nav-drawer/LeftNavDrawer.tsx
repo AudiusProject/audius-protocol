@@ -20,8 +20,8 @@ import IconMessage from 'app/assets/images/iconMessage.svg'
 import IconSettings from 'app/assets/images/iconSettings.svg'
 import IconUpload from 'app/assets/images/iconUpload.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
-import { AudioBalancePill } from 'app/components/audio-balance-pill/AudioBalancePill'
-import { UsdcBalancePill } from 'app/components/usdc-balance-pill/UsdcBalancePill'
+import { AudioBalancePill } from 'app/components/audio-balance-pill/AUDIOBalancePill'
+import { USDCBalancePill } from 'app/components/usdc-balance-pill/USDCBalancePill'
 import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { make, track } from 'app/services/analytics'
 import { spacing } from 'app/styles/spacing'
@@ -95,7 +95,7 @@ const WrappedLeftNavDrawer = () => {
         to='PayAndEarnScreen'
         params={null}
       >
-        <UsdcBalancePill />
+        <USDCBalancePill />
       </LeftNavLink>
       <LeftNavLink
         icon={IconCrown}

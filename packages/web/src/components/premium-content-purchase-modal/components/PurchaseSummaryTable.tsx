@@ -1,4 +1,4 @@
-import { formatPrice, isNullOrUndefined } from '@audius/common'
+import { formatPrice } from '@audius/common'
 
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
 import { Text } from 'components/typography'
@@ -6,7 +6,6 @@ import { Text } from 'components/typography'
 const messages = {
   summary: 'Transaction Summary',
   premiumTrack: 'Premium Track',
-  existingBalance: 'Existing USDC Balance',
   payExtra: 'Pay Extra',
   total: 'Total',
   youPaid: 'You Paid',
@@ -15,19 +14,15 @@ const messages = {
 }
 
 type PurchaseSummaryTableProps = {
-  amountDue: number
+  totalPriceInCents: number
   basePrice: number
   extraAmount?: number
-  existingBalance?: number
-  isPurchased?: boolean
 }
 
 export const PurchaseSummaryTable = ({
-  amountDue,
-  extraAmount,
+  totalPriceInCents,
   basePrice,
-  existingBalance,
-  isPurchased
+  extraAmount
 }: PurchaseSummaryTableProps) => {
   const items: SummaryTableItem[] = [
     {
@@ -43,22 +38,15 @@ export const PurchaseSummaryTable = ({
       value: messages.price(formatPrice(extraAmount))
     })
   }
-  if (!isNullOrUndefined(existingBalance) && existingBalance > 0) {
-    items.push({
-      id: 'existingBalance',
-      label: messages.existingBalance,
-      value: `-${messages.price(formatPrice(existingBalance))}`
-    })
-  }
 
   return (
     <SummaryTable
       collapsible
       items={items}
-      title={isPurchased ? messages.youPaid : messages.total}
+      title={messages.total}
       secondaryTitle={
-        <Text variant='inherit' color='secondary'>
-          {messages.price(formatPrice(amountDue))}
+        <Text as='span' variant='inherit' color='secondary'>
+          {messages.price(formatPrice(totalPriceInCents))}
         </Text>
       }
     />

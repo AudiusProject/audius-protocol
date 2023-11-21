@@ -1,7 +1,10 @@
+import { Action } from 'redux'
+
 import { createModal } from '../createModal'
 
 export type USDCManualTransferModalState = {
-  isOpen: boolean
+  amount?: number
+  onSuccessAction?: Action
 }
 
 const USDCManualTransferModal = createModal<USDCManualTransferModalState>({

@@ -20,7 +20,7 @@ export const AccountHeader = () => {
   const avatarSize = isMobile ? 72 : 120
 
   return (
-    <Box>
+    <Box css={{ zIndex: 4 }}>
       <Box h={isMobile ? 96 : 168} css={{ overflow: 'hidden' }}>
         <Box
           h='100%'
