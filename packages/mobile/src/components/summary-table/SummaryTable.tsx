@@ -1,14 +1,23 @@
 import type { ReactNode } from 'react'
-import React from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 
 import { removeNullable } from '@audius/common'
-import { View } from 'react-native'
+import {
+  Animated,
+  LayoutAnimation,
+  TouchableOpacity,
+  UIManager,
+  View
+} from 'react-native'
 
+import IconCaretDown from 'app/assets/images/iconCaretDown.svg'
 import { Text } from 'app/components/core'
 import { flexRowCentered, makeStyles } from 'app/styles'
-import type { ThemeColors } from 'app/utils/theme'
+import { useThemeColors, type ThemeColors } from 'app/utils/theme'
+UIManager.setLayoutAnimationEnabledExperimental &&
+  UIManager.setLayoutAnimationEnabledExperimental(true)
 
-const useStyles = makeStyles(({ spacing, palette, typography }) => ({
+const useStyles = makeStyles(({ spacing, palette }) => ({
   container: {
     borderColor: palette.neutralLight8,
     borderWidth: 1,
@@ -27,6 +36,10 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   grayRow: {
     backgroundColor: palette.neutralLight10
+  },
+  collapsibleTitle: {
+    ...flexRowCentered(),
+    gap: spacing(2)
   }
 }))
 
@@ -47,6 +60,22 @@ export type SummaryTableProps = {
   summaryLabelColor?: keyof ThemeColors
   summaryValueColor?: keyof ThemeColors
   renderContent?: (items: SummaryTableItem[]) => ReactNode
+  collapsible?: boolean
+}
+
+const springToValue = ({
+  animation,
+  value
+}: {
+  animation: Animated.Value
+  value: number
+}) => {
+  Animated.spring(animation, {
+    toValue: value,
+    tension: 160,
+    friction: 15,
+    useNativeDriver: true
+  }).start()
 }
 
 export const SummaryTable = ({
@@ -56,13 +85,54 @@ export const SummaryTable = ({
   secondaryTitle,
   summaryLabelColor,
   summaryValueColor = 'secondary',
-  renderContent: renderContentProp
+  renderContent: renderContentProp,
+  collapsible = false
 }: SummaryTableProps) => {
   const styles = useStyles()
+  const { neutral } = useThemeColors()
   const nonNullItems = items.filter(removeNullable)
+  const [isExpanded, setExpanded] = useState(false)
+  const rotateAnim = useRef(new Animated.Value(0))
+
+  const toggleExpanded = useCallback(() => {
+    LayoutAnimation.configureNext(
+      LayoutAnimation.create(180, 'easeInEaseOut', 'opacity')
+    )
+    springToValue({
+      animation: rotateAnim.current,
+      value: isExpanded ? 0 : 180
+    })
+    setExpanded((isExpanded) => !isExpanded)
+  }, [setExpanded, isExpanded])
 
   const renderHeader = () => {
-    return (
+    return collapsible ? (
+      <TouchableOpacity
+        style={[styles.row, styles.grayRow]}
+        onPress={toggleExpanded}
+      >
+        <View style={styles.collapsibleTitle}>
+          <Animated.View
+            style={{
+              transform: [
+                {
+                  rotate: rotateAnim.current.interpolate({
+                    inputRange: [0, 180],
+                    outputRange: ['0deg', '-180deg']
+                  })
+                }
+              ]
+            }}
+          >
+            <IconCaretDown width={16} height={16} fill={neutral} />
+          </Animated.View>
+          <Text weight='bold'>{title}</Text>
+        </View>
+        <Text variant='body' fontSize='large' weight='bold'>
+          {secondaryTitle}
+        </Text>
+      </TouchableOpacity>
+    ) : (
       <View style={[styles.row, styles.grayRow]}>
         <Text weight='bold'>{title}</Text>
         <Text variant='body' fontSize='large' weight='bold'>
@@ -119,7 +189,7 @@ export const SummaryTable = ({
   return (
     <View style={styles.container}>
       {renderHeader()}
-      {renderContent()}
+      {!collapsible || isExpanded ? renderContent() : null}
       {renderSummaryItem()}
     </View>
   )
