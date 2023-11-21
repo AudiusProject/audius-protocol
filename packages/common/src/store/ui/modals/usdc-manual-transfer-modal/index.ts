@@ -1,4 +1,4 @@
-import { StartPurchaseContentFlowParams } from 'models/PurchaseContent'
+import { Action } from 'redux'
 
 import { createModal } from '../createModal'
 
@@ -6,16 +6,14 @@ export type USDCManualTransferModalState = {
   isOpen: boolean
   source: 'add-funds' | 'purchase'
   amount?: number
-  startPurchaseParams?: StartPurchaseContentFlowParams
+  onSuccessAction?: Action
 }
 
 const USDCManualTransferModal = createModal<USDCManualTransferModalState>({
   reducerPath: 'USDCManualTransferModal',
   initialState: {
     isOpen: false,
-    source: 'add-funds',
-    amount: undefined,
-    startPurchaseParams: undefined
+    source: 'add-funds'
   },
   sliceSelector: (state) => state.ui.modals
 })

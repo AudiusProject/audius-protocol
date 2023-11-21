@@ -2,9 +2,7 @@ import { useCallback, useContext } from 'react'
 
 import {
   Name,
-  StartPurchaseContentFlowParams,
   isContentPurchaseInProgress,
-  purchaseContentActions,
   purchaseContentSelectors,
   useCreateUserbankIfNeeded,
   useUSDCBalance
@@ -17,6 +15,7 @@ import cn from 'classnames'
 import QRCode from 'react-qr-code'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
+import { Action } from 'redux'
 
 import { Icon } from 'components/Icon'
 import { AddressTile } from 'components/address-tile'
@@ -33,7 +32,6 @@ import styles from './USDCManualTransfer.module.css'
 
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
-const { startPurchaseContentFlow } = purchaseContentActions
 
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
@@ -53,12 +51,12 @@ export const USDCManualTransfer = ({
   onClose,
   source,
   amountInCents,
-  startPurchaseParams
+  onSuccessAction
 }: {
   onClose: () => void
   source: 'add-funds' | 'purchase'
   amountInCents?: number
-  startPurchaseParams?: StartPurchaseContentFlowParams
+  onSuccessAction?: Action
 }) => {
   const dispatch = useDispatch()
   const stage = useSelector(getPurchaseContentFlowStage)
@@ -68,7 +66,7 @@ export const USDCManualTransfer = ({
     isPolling: true,
     pollingInterval: 1000
   })
-  const balance = USDC((balanceBN ?? new BN(0)) as BN).value
+  const balance = USDC(balanceBN ?? new BN(0)).value
   const amount = USDC((amountInCents ?? 0) / 100).value
   const isBuyButtonDisabled = isUnlocking || balance < amount
 
@@ -97,11 +95,9 @@ export const USDCManualTransfer = ({
   }, [USDCUserBank, toast])
 
   const handleBuyClick = useCallback(() => {
-    if (startPurchaseParams) {
-      dispatch(startPurchaseContentFlow(startPurchaseParams))
-    }
+    if (onSuccessAction) dispatch(onSuccessAction)
     onClose()
-  }, [dispatch, onClose, startPurchaseParams])
+  }, [dispatch, onClose, onSuccessAction])
 
   return (
     <div className={styles.root}>

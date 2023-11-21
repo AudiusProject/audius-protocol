@@ -3,7 +3,6 @@ import { useCallback, useMemo } from 'react'
 import {
   Name,
   isContentPurchaseInProgress,
-  purchaseContentActions,
   purchaseContentSelectors,
   useCreateUserbankIfNeeded,
   useUSDCBalance,
@@ -34,7 +33,6 @@ import { AddressTile } from '../core/AddressTile'
 
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
-const { startPurchaseContentFlow } = purchaseContentActions
 
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
@@ -112,7 +110,7 @@ export const USDCManualTransferDrawer = () => {
   const dispatch = useDispatch()
   const { toast } = useToast()
   const { isOpen, onClose, onClosed, data } = useUSDCManualTransferModal()
-  const { source, amount: amountInCents, startPurchaseParams } = data ?? {}
+  const { source, amount: amountInCents, onSuccessAction } = data ?? {}
   const { onPress: onPressLearnMore } = useLink(USDCLearnMore)
   const { neutral, specialLightGreen } = useThemeColors()
 
@@ -123,7 +121,7 @@ export const USDCManualTransferDrawer = () => {
     isPolling: true,
     pollingInterval: 1000
   })
-  const balance = USDC((balanceBN ?? new BN(0)) as BN).value
+  const balance = USDC(balanceBN ?? new BN(0)).value
   const amount = USDC((amountInCents ?? 0) / 100).value
   const isBuyButtonDisabled = isUnlocking || balance < amount
 
@@ -157,11 +155,9 @@ export const USDCManualTransferDrawer = () => {
   }, [onPressLearnMore])
 
   const handleBuyPress = useCallback(() => {
-    if (startPurchaseParams) {
-      dispatch(startPurchaseContentFlow(startPurchaseParams))
-    }
+    if (onSuccessAction) dispatch(onSuccessAction)
     onClose()
-  }, [dispatch, onClose, startPurchaseParams])
+  }, [dispatch, onClose, onSuccessAction])
 
   return (
     <Drawer isOpen={isOpen} onClose={onClose} onClosed={onClosed}>
