@@ -44,6 +44,7 @@ export const PurchaseSummaryTable = ({
 
   return (
     <SummaryTable
+      collapsible
       title={messages.summary}
       secondaryTitle={
         <Text color='secondary' weight='bold'>
