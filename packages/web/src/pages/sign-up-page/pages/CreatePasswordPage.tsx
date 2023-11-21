@@ -22,10 +22,7 @@ import {
 } from 'components/completion-checklist-item/CompletionChecklistItem'
 import { ExternalLink } from 'components/link'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import {
-  ArtworkContainer,
-  AudiusValues
-} from 'pages/sign-on/components/AudiusValues'
+import { ArtworkContainer, AudiusValues } from 'pages/sign-on-page/AudiusValues'
 import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
 import { SignOnContainerDesktop } from 'pages/sign-on/components/desktop/SignOnContainerDesktop'
 import {
