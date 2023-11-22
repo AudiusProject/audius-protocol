@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 
 import {
   profilePageSelectors,
@@ -7,7 +7,6 @@ import {
   Status
 } from '@audius/common'
 import { useRoute } from '@react-navigation/native'
-import { useDispatch } from 'react-redux'
 
 import { Lineup } from 'app/components/lineup'
 
@@ -18,7 +17,6 @@ import { useSelectProfile } from '../selectors'
 const { getProfileFeedLineup } = profilePageSelectors
 
 export const RepostsTab = () => {
-  const dispatch = useDispatch()
   const { params } = useRoute<ProfileTabRoutes<'Reposts'>>()
   const { lazy } = params
   const { handle, user_id, repost_count } = useSelectProfile([
@@ -26,32 +24,14 @@ export const RepostsTab = () => {
     'user_id',
     'repost_count'
   ])
-  const handleLower = handle.toLowerCase()
 
   const lineup = useProxySelector(
-    (state) => getProfileFeedLineup(state, handleLower),
-    [handleLower]
+    (state) => getProfileFeedLineup(state, handle),
+    [handle]
   )
 
-  const loadMore = useCallback(
-    (offset: number, limit: number) => {
-      dispatch(
-        feedActions.fetchLineupMetadatas(
-          offset,
-          limit,
-          false,
-          { userId: user_id },
-          { handle }
-        )
-      )
-    },
-    [dispatch, user_id, handle]
-  )
-
-  const extraFetchOptions = useMemo(
-    () => ({ handle: handleLower }),
-    [handleLower]
-  )
+  const fetchPayload = useMemo(() => ({ userId: user_id }), [user_id])
+  const extraFetchOptions = useMemo(() => ({ handle }), [handle])
 
   // This prevents showing empty tile before lineup has started to fetch content
   const canShowEmptyTile = repost_count === 0 || lineup.status !== Status.IDLE
@@ -62,14 +42,14 @@ export const RepostsTab = () => {
       lazy={lazy}
       actions={feedActions}
       lineup={lineup}
-      loadMore={loadMore}
+      fetchPayload={fetchPayload}
+      extraFetchOptions={extraFetchOptions}
       limit={repost_count}
       disableTopTabScroll
       LineupEmptyComponent={
         canShowEmptyTile ? <EmptyProfileTile tab='reposts' /> : undefined
       }
       showsVerticalScrollIndicator={false}
-      extraFetchOptions={extraFetchOptions}
     />
   )
 }
