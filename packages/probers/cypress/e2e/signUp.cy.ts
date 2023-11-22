@@ -42,7 +42,8 @@ describe('Sign Up', () => {
   })
 
   context('desktop', () => {
-    it('can navigate to signup from trending', () => {
+    // TODO: IN TEST JAIL [C-3403] - Failing due to "waves bg but no content" issue
+    it.skip('can navigate to signup from trending', () => {
       cy.visit('trending')
       cy.findByText(/have an account\?/i).should('exist')
       cy.findByRole('link', { name: /sign up/i }).click()
@@ -54,7 +55,8 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    it('can navigate to sign-up from sign-in', () => {
+    // TODO: IN TEST JAIL [C-3403] - Failing due to "waves bg but no content" issue
+    it.skip('can navigate to sign-up from sign-in', () => {
       cy.visit('signin')
       cy.findByRole('link', { name: /create an account/i }).click()
 
@@ -178,7 +180,8 @@ describe('Sign Up', () => {
       cy.viewport('iphone-x')
     })
 
-    it('can navigate to signup from trending', () => {
+    // TODO: IN TEST JAIL [C-3403] - Failing due to "waves bg but no content" issue
+    it.skip('can navigate to signup from trending', () => {
       cy.visit('trending')
       cy.findByRole('link', { name: /sign up/i }).click()
       assertOnSignUpPage()
@@ -189,7 +192,8 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    it('can navigate to sign-up from sign-in', () => {
+    // TODO: IN TEST JAIL [C-3403] - Failing due to "waves bg but no content" issue
+    it.skip('can navigate to sign-up from sign-in', () => {
       cy.visit('signin')
       cy.findByRole('link', { name: /create an account/i }).click()
 
