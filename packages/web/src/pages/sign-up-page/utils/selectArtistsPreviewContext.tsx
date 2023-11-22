@@ -6,6 +6,7 @@ import {
   useGetUserById,
   useGetUserTracksByHandle
 } from '@audius/common'
+import { useUnmount } from 'react-use'
 
 import { audioPlayer } from 'services/audio-player'
 import { apiClient } from 'services/audius-api-client'
@@ -99,8 +100,7 @@ export const SelectArtistsPreviewContextProvider = (props: {
     setIsPlaying(true)
   }, [nowPlayingArtistId, stopPreview, trackId])
 
-  // Stop playback on unmount
-  useEffect(stopPreview, [stopPreview])
+  useUnmount(stopPreview)
 
   return (
     <SelectArtistsPreviewContext.Provider
