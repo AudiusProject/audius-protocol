@@ -67,7 +67,7 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    // TODO: Un-skip when full account creation flow is set up
+    // TODO: IN TEST JAIL [C-3403] turn back on when full account creation flow is set up
     it.skip('should create an account', () => {
       const testUser = generateTestUser()
       const { email, password, handle, name } = testUser
@@ -204,7 +204,7 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    // TODO: Un-skip when full account creation flow is set up
+    // TODO: IN TEST JAIL [C-3403] turn back on when full account creation flow is set up
     it.skip('should create an account', () => {
       const testUser = generateTestUser()
       const { email, password, handle } = testUser
