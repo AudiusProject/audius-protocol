@@ -86,9 +86,9 @@ services:
     <<: *common
 
   # Protocol dashboard
-  
+
   dashboard:
-    extends: 
+    extends:
       file: docker-compose.protocol-dashboard.yml
       service: dashboard
     <<: *common
@@ -146,6 +146,12 @@ services:
     extends:
       file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: relay
+    <<: *common
+
+  solana-relay:
+    extends:
+      file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: solana-relay
     <<: *common
 
   sla-auditor:
