@@ -84,7 +84,7 @@ const TrackPlayerTiny = ({
         className={styles.playButton}
       />
       <div className={styles.container} onClick={onClick} ref={containerRef}>
-        {isPurchaseable ? <Preview size='small' /> : null}
+        {isPurchaseable ? <Preview size='s' /> : null}
         <div className={styles.playContainer} />
         <div className={styles.infoContainer}>
           <h1

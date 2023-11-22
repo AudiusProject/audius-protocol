@@ -5,7 +5,7 @@ body {
 
 .app {
   color: white;
-  font-family: "Avenir Next LT Pro" !important;
+  font-family: "Avenir Next LT Pro";
   font-style: bold;
   font-weight: 700;
   user-select: none;

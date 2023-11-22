@@ -1,22 +1,22 @@
 import { IconCart } from '@audius/harmony'
 import cn from 'classnames'
 
-import Rectangle from '../../assets/img/dogEarRectangle.svg'
+import Background from '../../assets/img/dogEar.svg'
 
 import styles from './DogEar.module.css'
 
 export const DogEar = ({ size }) => {
   return (
     <>
-      <Rectangle
+      <Background
         className={cn(styles.dogEar, {
-          [styles.small]: size === 'small'
+          [styles.small]: size === 's'
         })}
       />
       <IconCart
-        size={size === 'small' ? 's' : 'm'}
+        size={size || 'm'}
         className={cn(styles.icon, {
-          [styles.small]: size === 'small'
+          [styles.small]: size === 's'
         })}
         color='staticWhite'
       />

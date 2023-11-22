@@ -48,7 +48,7 @@ const TrackPlayerCompact = ({
         />
       </div>
       <div className={styles.trackInfo}>
-        {isPurchaseable ? <DogEar size='small' /> : null}
+        {isPurchaseable ? <DogEar size='s' /> : null}
         <div className={styles.topSection}>
           {isPurchaseable ? <Preview /> : null}
           <BedtimeScrubber

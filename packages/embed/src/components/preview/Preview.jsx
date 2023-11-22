@@ -7,7 +7,7 @@ import styles from './Preview.module.css'
 export const Preview = ({ size }) => {
   return (
     <PreviewTag
-      className={cn(styles.preview, { [styles.small]: size === 'small' })}
+      className={cn(styles.preview, { [styles.small]: size === 's' })}
     />
   )
 }
