@@ -1,6 +1,5 @@
-import { type addressString, useContractAddress } from './useContractAddress'
+import { useEthContract } from './useEthContracts'
 import serviceTypeManagerJSON from '../eth-contracts/ABIs/ServiceTypeManager.json'
-import { useReadContract } from 'wagmi'
 import { utf8ToBytes32, bytes32ToUtf8 } from '../utils/utils'
 
 export const serviceType = Object.freeze({
@@ -8,60 +7,33 @@ export const serviceType = Object.freeze({
   CREATOR_NODE: 'content-node'
 })
 
-const useMinChainVersion = (contractAddress: string, serviceType: string) => {
-  const result = useReadContract({
-    abi: serviceTypeManagerJSON.abi,
-    address: contractAddress as addressString,
-    functionName: 'getCurrentVersion',
-    args: [utf8ToBytes32(serviceType)],
-    query: {
-      enabled: !!contractAddress,
-      staleTime: Infinity // never refetch
-    }
-  })
-  return {
-    data: result.data ? bytes32ToUtf8(result.data) : result.data,
-    status: result.status,
-    error: result.error
-  }
-}
-
 const useMinChainVersions = () => {
-  // Get ServiceTypeManager's contract address
-  const {
-    data: contractAddress,
-    isPending: isContractAddressPending,
-    error: contractAddressError
-  } = useContractAddress(serviceTypeManagerJSON.contractName)
-
   const expectedVersions: Record<string, string | null | undefined> = {}
+
   const {
-    data: discoveryVersion,
-    status: discoveryVersionStatus,
-    error: discoveryVersionError
-  } = useMinChainVersion(
-    contractAddress as string,
-    serviceType.DISCOVERY_PROVIDER
-  )
-  if (discoveryVersionStatus === 'success') {
-    expectedVersions[serviceType.DISCOVERY_PROVIDER] = discoveryVersion
+    data: discoveryResult,
+    isPending: isDiscoveryResultPending,
+    error: discoveryResultError
+  } = useEthContract(serviceTypeManagerJSON, 'getCurrentVersion', [
+    utf8ToBytes32(serviceType.DISCOVERY_PROVIDER)
+  ])
+  if (!isDiscoveryResultPending && !discoveryResultError && discoveryResult) {
+    expectedVersions[serviceType.DISCOVERY_PROVIDER] = bytes32ToUtf8(discoveryResult)
   }
 
   const {
-    data: contentVersion,
-    status: contentVersionStatus,
-    error: contentVersionError
-  } = useMinChainVersion(contractAddress as string, serviceType.CREATOR_NODE)
-  if (contentVersionStatus === 'success') {
-    expectedVersions[serviceType.CREATOR_NODE] = contentVersion
+    data: contentResult,
+    isPending: isContentResultPending,
+    error: contentResultError
+  } = useEthContract(serviceTypeManagerJSON, 'getCurrentVersion', [
+    utf8ToBytes32(serviceType.CREATOR_NODE)
+  ])
+  if (!isContentResultPending && !contentResultError && contentResult) {
+    expectedVersions[serviceType.CREATOR_NODE] = bytes32ToUtf8(contentResult)
   }
 
-  const isPending =
-    isContractAddressPending ||
-    discoveryVersionStatus === 'pending' ||
-    contentVersionStatus === 'pending'
-  const error =
-    contractAddressError || discoveryVersionError || contentVersionError
+  const isPending = isDiscoveryResultPending || isContentResultPending
+  const error = discoveryResultError || contentResultError
   return {
     data: expectedVersions,
     isPending,
