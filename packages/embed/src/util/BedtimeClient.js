@@ -24,8 +24,8 @@ const sdkConfigOptions =
   env === 'development'
     ? developmentConfig
     : env === 'staging'
-      ? stagingConfig
-      : productionConfig
+    ? stagingConfig
+    : productionConfig
 
 export const RequestedEntity = Object.seal({
   TRACKS: 'tracks',
@@ -55,8 +55,10 @@ const fetchNFTClient = new FetchNFTClient({
   solanaConfig: { rpcEndpoint: solanaRpcEndpoint }
 })
 
-export const getTrackStreamEndpoint = (trackId) =>
-  `${discoveryEndpoint}/v1/tracks/${trackId}/stream`
+export const getTrackStreamEndpoint = (trackId, isPurchaseable) =>
+  `${discoveryEndpoint}/v1/tracks/${trackId}/stream${
+    isPurchaseable ? '?preview=true' : ''
+  }`
 
 export const getCollectiblesJson = async (cid) => {
   const url = `${discoveryEndpoint}/v1/full/cid_data/${cid}`

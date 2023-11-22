@@ -13,7 +13,3 @@ export const getIdentityEndpoint = () => {
 export const getAudiusHostname = () => {
   return process.env.VITE_HOSTNAME_REDIRECT
 }
-
-export const getIsMp3StreamOn = () => {
-  return process.env.VITE_STREAM_MP3_ON === 'true'
-}

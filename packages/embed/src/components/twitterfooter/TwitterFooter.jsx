@@ -1,4 +1,3 @@
-
 import FullColorLogo from '../../assets/img/Horizontal-Logo-Full-Color.png'
 import { getCopyableLink } from '../../util/shareUtil'
 

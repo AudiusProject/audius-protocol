@@ -1,8 +1,7 @@
 import { Helmet } from 'react-helmet'
 
+import { getHash } from '../../util/collectibleHelpers'
 import { getAudiusHostname } from '../../util/getEnv'
-
-import { getHash } from './collectibleHelpers'
 
 const CollectibleHelmet = ({ collectiblesInfo }) => {
   if (!collectiblesInfo) {
