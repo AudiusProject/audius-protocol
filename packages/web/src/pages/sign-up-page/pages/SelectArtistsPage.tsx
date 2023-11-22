@@ -22,8 +22,10 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { useModalState } from 'common/hooks/useModalState'
 import { addFollowArtists } from 'common/store/pages/signon/actions'
+import { getGenres } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { useSelector } from 'utils/reducer'
 import { TRENDING_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
@@ -54,8 +56,7 @@ const SelectArtistsFormSchema = z.object({
 })
 
 export const SelectArtistsPage = () => {
-  // const genres = useSelector((state) => ['Featured', ...getGenres(state)])
-  const genres = ['Featured', 'Pop', 'Alternative']
+  const genres = useSelector((state) => ['Featured', ...getGenres(state)])
   const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const [currentGenre, setCurrentGenre] = useState('Featured')
   const dispatch = useDispatch()
@@ -128,7 +129,7 @@ export const SelectArtistsPage = () => {
               }
             }}
           >
-            {/* <AccountHeader mode='viewing' /> */}
+            <AccountHeader mode='viewing' />
             <Flex
               direction='column'
               mh={isMobile ? undefined : '5xl'}
