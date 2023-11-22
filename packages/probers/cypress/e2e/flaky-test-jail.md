@@ -8,18 +8,24 @@ This is where we list out misbehaving tests go if they're so we can keep a green
 
 #### [Upload Track](./uploadTrack.cy.ts)
 
-This entire suite is in jail at the moment.
+This entire suite is in jail.
 
 The upload flow seems to generally take too long in CI and results in timeouts and consistent failures.
 
-#### [Sign Up](./signUp.cy.ts)
+#### [Sign Up](./signUp.cy.ts) - [C-3403](https://linear.app/audius/issue/C-3403/get-signup-e2e-green)
 
-* "should create an account" is currently in jail because the new sign up flow is still a WIP and needs more work before going green again
+`"should create an account"` is currently in jail because the new sign up flow is still a WIP and needs more work before going green again
 
 <!-- Template
 
-#### [{Test Name}](./{link-to-test-file}) 
+#### [Test Name](./link-to-test-file.cy.ts) - [ticket-number](ticket-link)
 
-Description/justification for why it's flaky and not a real failure
+Description of which tests and why they're in flaky test jail
 
 -->
+
+## Test Jail Process
+
+* Create an appropriate ticket for addressing the test
+* Update this doc with the flaky tests and a description
+* Add a TODO: comment by the test with the ticket number
