@@ -85,28 +85,27 @@ export const SignOnPage = () => {
             backgroundPosition: 'bottom'
           }}
         >
-          <Switch>
-            <Route path={SIGN_UP_PAGE}>
-              <AudiusValues css={{ margin: 'auto' }} />
-            </Route>
-            <Route path={SIGN_IN_PAGE}>
-              <Text
-                variant='title'
-                strength='weak'
-                color='staticWhite'
-                css={{
-                  marginTop: 'auto',
-                  opacity: isLoaded ? 1 : 0,
-                  transition: `opacity ${motion.expressive} 1s`
-                }}
-              >
-                {messages.newToAudius}{' '}
-                <TextLink variant='inverted' showUnderline asChild>
-                  <Link to={SIGN_UP_PAGE}>{messages.createAccount}</Link>
-                </TextLink>
-              </Text>
-            </Route>
-          </Switch>
+          <Box
+            css={{
+              margin: 'auto',
+              opacity: isLoaded ? 1 : 0,
+              transition: `opacity ${motion.expressive} 1s`
+            }}
+          >
+            <Switch>
+              <Route path={SIGN_UP_PAGE}>
+                <AudiusValues />
+              </Route>
+              <Route path={SIGN_IN_PAGE}>
+                <Text variant='title' strength='weak' color='staticWhite'>
+                  {messages.newToAudius}{' '}
+                  <TextLink variant='inverted' showUnderline asChild>
+                    <Link to={SIGN_UP_PAGE}>{messages.createAccount}</Link>
+                  </TextLink>
+                </Text>
+              </Route>
+            </Switch>
+          </Box>
         </Flex>
       </Flex>
     )

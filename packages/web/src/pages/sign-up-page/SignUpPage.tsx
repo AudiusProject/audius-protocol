@@ -1,19 +1,14 @@
-import { ReactNode } from 'react'
-
-import { Box, IconCloseAlt, Paper, useTheme } from '@audius/harmony'
+import { Paper } from '@audius/harmony'
+import { Helmet } from 'react-helmet'
 import { useSelector } from 'react-redux'
-import { Link, Redirect, Route, RouteProps, Switch } from 'react-router-dom'
+import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
 import { getSignOn } from 'common/store/pages/signon/selectors'
 import SignOnPageState from 'common/store/pages/signon/types'
-import BackgroundWaves from 'components/background-animations/BackgroundWaves'
-import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
-import Page from 'components/page/Page'
 import { useMedia } from 'hooks/useMedia'
 import { useRouteMatch } from 'hooks/useRouteMatch'
 import { AppState } from 'store/types'
 import {
-  BASE_URL,
   SIGN_UP_ARTISTS_PAGE,
   SIGN_UP_EMAIL_PAGE,
   SIGN_UP_FINISH_PROFILE_PAGE,
@@ -25,7 +20,6 @@ import {
   TRENDING_PAGE
 } from 'utils/route'
 
-import styles from './SignUpPage.module.css'
 import { MobileNavHeader } from './components/MobileNavHeader'
 import { ProgressHeader } from './components/ProgressHeader'
 import { CreateEmailPage } from './pages/CreateEmailPage/CreateEmailPage'
@@ -36,8 +30,8 @@ import { SelectArtistsPage } from './pages/SelectArtistsPage'
 import { SelectGenrePage } from './pages/SelectGenrePage'
 
 const messages = {
-  title: 'Sign Up',
-  description: 'Create an account on Audius'
+  metaTitle: 'Sign Up',
+  metaDescription: 'Create an account on Audius'
 }
 
 /**
@@ -142,63 +136,17 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
   )
 }
 
-type SignUpRootProps = {
-  children: ReactNode
-}
-
-const SignUpRoot = (props: SignUpRootProps) => {
-  const { children } = props
-  const { isDesktop } = useMedia()
-  const { spacing } = useTheme()
-  const isBackAllowed = useIsBackAllowed()
-
-  const pageProps = {
-    title: messages.title,
-    description: messages.description,
-    canonicalUrl: `${BASE_URL}/${SIGN_UP_PAGE}`,
-    contentClassName: styles.pageContent
-  }
-
-  if (isDesktop) {
-    return (
-      <Page {...pageProps}>
-        <BackgroundWaves />
-        <Link to={TRENDING_PAGE}>
-          <IconCloseAlt
-            color='staticWhite'
-            css={{
-              position: 'absolute',
-              left: spacing['2xl'],
-              top: spacing['2xl'],
-              zIndex: 1
-            }}
-          />
-        </Link>
-        <Box css={{ zIndex: 1 }}>{children}</Box>
-      </Page>
-    )
-  }
-  return (
-    <MobilePageContainer
-      {...pageProps}
-      fullHeight
-      css={{
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}
-    >
-      <MobileNavHeader isBackAllowed={isBackAllowed} />
-      {children}
-    </MobilePageContainer>
-  )
-}
-
 export const SignUpPage = () => {
   const { isDesktop } = useMedia()
+  const isBackAllowed = useIsBackAllowed()
 
   return (
-    <SignUpRoot>
+    <>
+      <Helmet>
+        <title>{messages.metaTitle}</title>
+        <meta name='description' content={messages.metaDescription} />
+      </Helmet>
+
       <Switch>
         <Route exact path={SIGN_UP_PAGE}>
           <Redirect to={SIGN_UP_EMAIL_PAGE} />
@@ -219,7 +167,11 @@ export const SignUpPage = () => {
           ]}
         >
           <Paper direction='column' w='100%' h={864}>
-            {isDesktop ? <ProgressHeader /> : null}
+            {isDesktop ? (
+              <ProgressHeader />
+            ) : (
+              <MobileNavHeader isBackAllowed={isBackAllowed} />
+            )}
             <Switch>
               <SignUpRoute exact path={SIGN_UP_HANDLE_PAGE}>
                 <PickHandlePage />
@@ -243,6 +195,6 @@ export const SignUpPage = () => {
           </Paper>
         </SignUpRoute>
       </Switch>
-    </SignUpRoot>
+    </>
   )
 }

@@ -1,21 +1,55 @@
 import { useCallback, useContext } from 'react'
 
 import { AudiusQueryContext, signUpFetch } from '@audius/common'
+import {
+  Box,
+  Button,
+  ButtonType,
+  Divider,
+  Flex,
+  IconArrowRight,
+  IconAudiusLogoHorizontalColor,
+  Text,
+  TextLink
+} from '@audius/harmony'
 import { Form, Formik, FormikHelpers } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
+import { Link } from 'react-router-dom'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { setValueField } from 'common/store/pages/signon/actions'
 import { getEmailField } from 'common/store/pages/signon/selectors'
+import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
+import PreloadImage from 'components/preload-image/PreloadImage'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { SocialMediaLoginOptions } from 'pages/sign-up-page/components/SocialMediaLoginOptions'
 import { EMAIL_REGEX } from 'utils/email'
 import { SIGN_IN_PAGE, SIGN_UP_PASSWORD_PAGE } from 'utils/route'
 
-import { CreateEmailPageDesktop } from './CreateEmailPageDesktop'
-import { CreateEmailPageMobile } from './CreateEmailPageMobile'
-import { messages } from './messages'
+import { SignUpWithMetaMaskButton } from './SignUpWithMetaMaskButton'
+
+export const messages = {
+  title: 'Sign Up For Audius',
+  emailLabel: 'Email',
+  signUp: 'Sign Up Free',
+  haveAccount: 'Already have an account?',
+  signIn: 'Sign In',
+  subHeader: (
+    <>
+      Join the revolution in music streaming! <br /> Discover, connect, and
+      create on Audius.
+    </>
+  ),
+  socialsDividerText: 'Or, get started with one of your socials',
+  invalidEmail: 'Please enter a valid email.',
+  unknownError: 'Unknown error occurred.',
+  metaMaskNotRecommended: 'Signing up with MetaMask is not recommended.',
+  signUpMetamask: 'Sign Up With MetaMask',
+  learnMore: 'Learn More'
+}
 
 export type SignUpEmailValues = {
   email: string
@@ -29,20 +63,17 @@ const FormSchema = toFormikValidationSchema(
   })
 )
 
-/**
- * Component responsible for form logic and controlling whether to show mobile/desktop.
- * UI render logic is split out into separate components for mobile/desktop
- */
 export const CreateEmailPage = () => {
-  const { isDesktop } = useMedia()
+  const { isMobile } = useMedia()
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
-  const queryContext = useContext(AudiusQueryContext)
   const existingEmailValue = useSelector(getEmailField)
+  const queryContext = useContext(AudiusQueryContext)
+
   const initialValues = {
     email: existingEmailValue.value ?? ''
   }
-  const submitHandler = useCallback(
+  const onSubmit = useCallback(
     async (
       values: SignUpEmailValues,
       { setErrors }: FormikHelpers<SignUpEmailValues>
@@ -77,13 +108,106 @@ export const CreateEmailPage = () => {
     <Formik
       validationSchema={FormSchema}
       initialValues={initialValues}
-      onSubmit={submitHandler}
+      onSubmit={onSubmit}
       validateOnBlur
       validateOnChange={false}
     >
-      <Form css={{ width: '100%', height: '100%' }}>
-        {isDesktop ? <CreateEmailPageDesktop /> : <CreateEmailPageMobile />}
-      </Form>
+      {({ isSubmitting }) => (
+        <Flex
+          as={Form}
+          direction='column'
+          h='100%'
+          w='100%'
+          ph={isMobile ? 'l' : '2xl'}
+          pv='2xl'
+          gap='2xl'
+        >
+          <Box alignSelf='center'>
+            {isMobile ? (
+              <IconAudiusLogoHorizontalColor />
+            ) : (
+              <PreloadImage
+                src={audiusLogoColored}
+                alt='Audius Colored Logo'
+                css={{
+                  height: 160,
+                  width: 160,
+                  objectFit: 'contain'
+                }}
+              />
+            )}
+          </Box>
+          <Flex direction='column' gap={isMobile ? 's' : 'l'}>
+            <Text
+              variant='heading'
+              size={isMobile ? 'm' : 'l'}
+              color='accent'
+              tag='h1'
+              css={{ textAlign: isMobile ? 'center' : undefined }}
+            >
+              {messages.title}
+            </Text>
+            <Text
+              color='default'
+              size={isMobile ? 'm' : 'l'}
+              variant='body'
+              tag='h2'
+              css={{ textAlign: isMobile ? 'center' : undefined }}
+            >
+              {messages.subHeader}
+            </Text>
+          </Flex>
+          <Flex direction='column' gap='l'>
+            <HarmonyTextField
+              name='email'
+              autoComplete='email'
+              label={messages.emailLabel}
+            />
+            <Divider css={{ width: '100%' }}>
+              <Text variant='body' size={isMobile ? 's' : 'm'} color='subdued'>
+                {messages.socialsDividerText}
+              </Text>
+            </Divider>
+            <SocialMediaLoginOptions
+              onCompleteSocialMediaLogin={(result) => {
+                console.info(result)
+                // TODO
+              }}
+            />
+          </Flex>
+          <Flex direction='column' gap='l'>
+            <Button
+              variant={ButtonType.PRIMARY}
+              type='submit'
+              fullWidth
+              iconRight={IconArrowRight}
+              isLoading={isSubmitting}
+            >
+              {messages.signUp}
+            </Button>
+
+            <Text
+              variant='body'
+              size={isMobile ? 'm' : 'l'}
+              css={{ textAlign: isMobile ? 'center' : undefined }}
+            >
+              {messages.haveAccount}{' '}
+              <TextLink variant='visible' asChild>
+                <Link to={SIGN_IN_PAGE}>{messages.signIn}</Link>
+              </TextLink>
+            </Text>
+          </Flex>
+          {!isMobile ? (
+            <Flex direction='column' gap='s'>
+              <SignUpWithMetaMaskButton />
+              <Text size='s' variant='body'>
+                {messages.metaMaskNotRecommended}{' '}
+                <TextLink variant='visible'>{messages.learnMore}</TextLink>
+              </Text>
+            </Flex>
+          ) : null}
+        </Flex>
+      )}
     </Formik>
   )
 }

@@ -84,10 +84,8 @@ export const SignInPage = () => {
                   src={audiusLogoColored}
                   alt='Audius Logo'
                   css={{
-                    maxHeight: '160px',
-                    maxWidth: '160px',
-                    height: '100%',
-                    width: '100%',
+                    height: 160,
+                    width: 160,
                     objectFit: 'contain'
                   }}
                 />
@@ -95,7 +93,7 @@ export const SignInPage = () => {
             </Box>
             <Text
               variant='heading'
-              size='l'
+              size={isMobile ? 'm' : 'l'}
               tag='h1'
               color='accent'
               css={{ textAlign: isMobile ? 'center' : undefined }}
