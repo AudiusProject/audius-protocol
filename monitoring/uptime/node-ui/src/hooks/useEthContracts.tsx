@@ -48,7 +48,7 @@ export const useEthContract = (
     functionName,
     args,
     query: {
-      enabled: !!contractAddress && !!functionName,
+      enabled: !!contractAddress,
       staleTime: Infinity // never refetch
     }
   })
