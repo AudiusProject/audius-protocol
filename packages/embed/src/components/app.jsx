@@ -448,6 +448,7 @@ const App = (props) => {
         listenOnAudiusURL={listenOnAudiusURL}
         flavor={flavor}
         isMobileWebTwitter={mobileWebTwitter}
+        premiumConditions={tracksResponse?.premiumConditions}
       />
     )
   }

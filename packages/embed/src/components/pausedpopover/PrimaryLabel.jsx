@@ -1,13 +1,17 @@
 import { Text } from '@audius/harmony'
 
 const messages = {
-  label: 'Looking for more like this?'
+  more: 'Looking for more like this?',
+  buy: 'Buy The Full Track On Audius'
 }
 
-const PrimaryLabel = () => {
+const PrimaryLabel = ({ premiumConditions }) => {
+  const isPurchaseable =
+    premiumConditions && 'usdc_purchase' in premiumConditions
+
   return (
     <Text color='default' variant='heading' size='s'>
-      {messages.label}
+      {isPurchaseable ? messages.buy : messages.more}
     </Text>
   )
 }

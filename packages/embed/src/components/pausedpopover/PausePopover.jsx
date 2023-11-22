@@ -22,7 +22,8 @@ const PausedPopoverCard = ({
   artworkClickURL,
   listenOnAudiusURL,
   flavor,
-  isMobileWebTwitter
+  isMobileWebTwitter,
+  premiumConditions
 }) => {
   const { popoverVisibility, setPopoverVisibility } = useContext(PauseContext)
   const { width } = useContext(CardDimensionsContext)
@@ -62,7 +63,9 @@ const PausedPopoverCard = ({
           <Flex
             style={{ width: '100%' }}
             alignItems='center'
-            justifyContent='space-between'
+            justifyContent={
+              flavor === PlayerFlavor.CARD ? 'center' : 'space-between'
+            }
           >
             {flavor === PlayerFlavor.COMPACT ? (
               <div
@@ -72,14 +75,17 @@ const PausedPopoverCard = ({
                 <IconRemove />
               </div>
             ) : null}
-            <PrimaryLabel />
+            <PrimaryLabel premiumConditions={premiumConditions} />
             {flavor === PlayerFlavor.COMPACT ? (
               <div className={styles.audiusIcon}>
                 <IconAudius />
               </div>
             ) : null}
           </Flex>
-          <ListenOnAudiusCTA audiusURL={listenOnAudiusURL} />
+          <ListenOnAudiusCTA
+            audiusURL={listenOnAudiusURL}
+            premiumConditions={premiumConditions}
+          />
 
           {flavor === PlayerFlavor.CARD ? (
             <div
