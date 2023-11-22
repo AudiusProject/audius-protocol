@@ -26,7 +26,8 @@ const ListenOnAudiusCTA = ({ audiusURL, premiumConditions }) => {
           ? `${messages.buy} $${USDC(
               premiumConditions.usdc_purchase.price / 100
             ).toLocaleString('en-US', {
-              minimumFractionDigits: 2
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
             })}`
           : messages.listen}
       </Text>
