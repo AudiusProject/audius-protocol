@@ -42,7 +42,7 @@ const Uptime = () => {
         </div>
         <div class="flex-none">
           <button 
-            class="button"
+            class="btn-outline"
             onClick={() => void fetchUptimeData()}
           >
             Check Uptime
