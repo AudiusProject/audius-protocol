@@ -2,9 +2,6 @@ import { useState } from 'react'
 import { Dialog } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
 
-import { ConnectButton } from '@rainbow-me/rainbowkit'
-import '@rainbow-me/rainbowkit/styles.css'
-
 // TODO
 const navigation = [
   { name: 'Uptime', href: '#' },
@@ -39,11 +36,6 @@ const Header = () => {
           <span className="sr-only">Audius d</span>
           <img className="h-8 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="" />
         </a>
-        <div className="flex flex-1 justify-end">
-          <a href="#" className="text-sm font-semibold leading-6 text-gray-900">
-            <ConnectButton />
-          </a>
-        </div>
       </nav>
       <Dialog as="div" className="lg:hidden" open={mobileMenuOpen} onClose={setMobileMenuOpen}>
         <div className="fixed inset-0 z-10" />

@@ -214,11 +214,10 @@ const NodeRow = ({ node }: { NodeResponse }) => {
           {!healthDataError && !health
             ? 'loading...'
             : healthDataError
-            ? 'error'
+            ? (<span class="flex w-3 h-3 me-3 bg-red-500 rounded-full"></span>)
             : health?.healthy || health?.discovery_provider_healthy
             ? (<span class="flex w-3 h-3 me-3 bg-green-500 rounded-full"></span>)
-            : (<span class="flex w-3 h-3 me-3 bg-red-500 rounded-full"></span>
-  )
+            : (<span class="flex w-3 h-3 me-3 bg-red-500 rounded-full"></span>)
           }
         </div>
       </td>

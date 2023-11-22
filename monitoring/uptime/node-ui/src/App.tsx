@@ -74,8 +74,9 @@ const App = () => {
                     isLibsReadOnly ? 'read-only' : 'able to sign txns'
                   })`}
             </p>
+
             {connectors.map((connector) => (
-              <button key={connector.uid} onClick={() => connect({ connector })}>
+              <button class="btn btn-blue" key={connector.uid} onClick={() => connect({ connector })}>
                 Connect {connector.name}
               </button>
             ))}
