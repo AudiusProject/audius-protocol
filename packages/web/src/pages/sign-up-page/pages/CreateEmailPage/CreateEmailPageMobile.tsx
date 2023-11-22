@@ -5,7 +5,6 @@ import {
   Flex,
   IconArrowRight,
   IconAudiusLogoHorizontalColor,
-  SocialButton,
   Text,
   TextLink
 } from '@audius/harmony'
@@ -19,11 +18,18 @@ import {
 } from 'pages/sign-on/components/AudiusValues'
 import { MobileContentContainer } from 'pages/sign-on/components/desktop/MobileContentContainer'
 import { SignOnContainerMobile } from 'pages/sign-on/components/mobile/SignOnContainerMobile'
+import { SocialMediaLoginOptions } from 'pages/sign-up-page/components/SocialMediaLoginOptions'
 import { SIGN_IN_PAGE } from 'utils/route'
 
 import { messages } from './messages'
 
-export const CreateEmailPageMobile = () => {
+type CreateEmailPageMobileProps = {
+  onLinkedSocialMedia: (result: { requiresReview: boolean }) => void
+}
+
+export const CreateEmailPageMobile = ({
+  onLinkedSocialMedia
+}: CreateEmailPageMobileProps) => {
   const { isSubmitting } = useFormikContext()
   return (
     <SignOnContainerMobile>
@@ -63,23 +69,11 @@ export const CreateEmailPageMobile = () => {
                 {messages.socialsDividerText}
               </Text>
             </Divider>
-            <Flex direction='row' gap='s' w='100%'>
-              <SocialButton
-                socialType='twitter'
-                aria-label='Sign up with Twitter'
-                css={{ flex: 1 }}
-              />
-              <SocialButton
-                socialType='instagram'
-                aria-label='Sign up with Instagram'
-                css={{ flex: 1 }}
-              />
-              <SocialButton
-                socialType='tiktok'
-                aria-label='Sign up with TikTok'
-                css={{ flex: 1 }}
-              />
-            </Flex>
+            <SocialMediaLoginOptions
+              onCompleteSocialMediaLogin={(result) => {
+                onLinkedSocialMedia(result)
+              }}
+            />
           </Flex>
           <Flex
             direction='column'

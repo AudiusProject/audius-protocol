@@ -56,7 +56,7 @@ const determineAllowedRoute = (
   const attemptedPath = requestedRoute.replace('/signup/', '')
   // Have to type as string[] to avoid too narrow of a type for comparing against
   let allowedRoutes: string[] = [SignUpPath.createEmail] // create email is available by default
-  if (signUpState.email.value) {
+  if (signUpState.email.value || signUpState.linkedSocialOnFirstPage) {
     // Already have email
     allowedRoutes.push(SignUpPath.createPassword)
   }
