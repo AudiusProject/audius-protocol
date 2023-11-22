@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import {
   profilePageSelectors,
@@ -7,6 +7,7 @@ import {
   Status
 } from '@audius/common'
 import { useRoute } from '@react-navigation/native'
+import { useDispatch } from 'react-redux'
 
 import { Lineup } from 'app/components/lineup'
 
@@ -17,14 +18,34 @@ import { useSelectProfile } from '../selectors'
 const { getProfileFeedLineup } = profilePageSelectors
 
 export const RepostsTab = () => {
+  const dispatch = useDispatch()
   const { params } = useRoute<ProfileTabRoutes<'Reposts'>>()
   const { lazy } = params
-  const { handle, repost_count } = useSelectProfile(['handle', 'repost_count'])
+  const { handle, user_id, repost_count } = useSelectProfile([
+    'handle',
+    'user_id',
+    'repost_count'
+  ])
   const handleLower = handle.toLowerCase()
 
   const lineup = useProxySelector(
     (state) => getProfileFeedLineup(state, handleLower),
     [handleLower]
+  )
+
+  const loadMore = useCallback(
+    (offset: number, limit: number) => {
+      dispatch(
+        feedActions.fetchLineupMetadatas(
+          offset,
+          limit,
+          false,
+          { userId: user_id },
+          { handle }
+        )
+      )
+    },
+    [dispatch, user_id, handle]
   )
 
   const extraFetchOptions = useMemo(
@@ -41,6 +62,7 @@ export const RepostsTab = () => {
       lazy={lazy}
       actions={feedActions}
       lineup={lineup}
+      loadMore={loadMore}
       limit={repost_count}
       disableTopTabScroll
       LineupEmptyComponent={
