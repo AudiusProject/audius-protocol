@@ -1,6 +1,11 @@
 import { createContext, useCallback, useEffect, useState } from 'react'
 
-import { ID } from '@audius/common'
+import {
+  ID,
+  encodeHashId,
+  useGetUserById,
+  useGetUserTracksByHandle
+} from '@audius/common'
 
 import { audioPlayer } from 'services/audio-player'
 import { apiClient } from 'services/audius-api-client'
@@ -24,12 +29,23 @@ export const SelectArtistsPreviewContextProvider = (props: {
 }) => {
   const [nowPlayingArtistId, setNowPlayingArtistId] = useState<number>(-1)
 
-  // TODO: fetch actual track ID
   const [trackId, setTrackId] = useState<string | null>(null)
+  const { data: artist } = useGetUserById({
+    id: nowPlayingArtistId,
+    currentUserId: null
+  })
+  const { data: artistTracks } = useGetUserTracksByHandle(
+    {
+      handle: artist?.handle,
+      currentUserId: null
+    },
+    { disabled: !artist?.handle }
+  )
 
   useEffect(() => {
-    setTrackId('M64o2NQ')
-  }, [nowPlayingArtistId])
+    const trackId = artistTracks?.find((track) => track.is_available)?.track_id
+    trackId && setTrackId(encodeHashId(trackId))
+  }, [artistTracks])
 
   useEffect(() => {
     if (!trackId) return
@@ -86,5 +102,3 @@ export const SelectArtistsPreviewContextProvider = (props: {
     </SelectArtistsPreviewContext.Provider>
   )
 }
-
-global.audioPlayer = audioPlayer
