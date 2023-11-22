@@ -25,23 +25,32 @@ export const SelectArtistsPreviewContextProvider = (props: {
   const [nowPlayingArtistId, setNowPlayingArtistId] = useState<number>(-1)
 
   // TODO: fetch actual track ID
-  const trackId = 'Kdb0BgY'
+  const [trackId, setTrackId] = useState<string | null>(null)
 
   useEffect(() => {
+    setTrackId('M64o2NQ')
+  }, [nowPlayingArtistId])
+
+  useEffect(() => {
+    if (!trackId) return
     audioPlayer.load(
       0,
       () => {},
-      apiClient.makeUrl(`/v1/tracks/${trackId}/stream`)
+      apiClient.makeUrl(`/tracks/${trackId}/stream`)
     )
     audioPlayer.play()
 
     // Clean up on unmount
     return audioPlayer.stop
-  }, [trackId])
+  }, [nowPlayingArtistId, trackId])
 
-  const togglePlayback = audioPlayer.isPlaying()
-    ? audioPlayer.pause
-    : audioPlayer.play
+  const togglePlayback = useCallback(() => {
+    if (audioPlayer.isPlaying()) {
+      audioPlayer.pause()
+    } else {
+      audioPlayer.play()
+    }
+  }, [])
 
   const stopPreview = useCallback(() => {
     audioPlayer.stop()
@@ -77,3 +86,5 @@ export const SelectArtistsPreviewContextProvider = (props: {
     </SelectArtistsPreviewContext.Provider>
   )
 }
+
+global.audioPlayer = audioPlayer

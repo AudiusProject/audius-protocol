@@ -7,6 +7,7 @@ import {
   imageProfilePicEmpty
 } from '@audius/common'
 import {
+  Box,
   Avatar as HarmonyAvatar,
   type AvatarProps as HarmonyAvatarProps
 } from '@audius/harmony'
@@ -28,10 +29,11 @@ const messages = {
 
 type AvatarProps = Omit<HarmonyAvatarProps, 'src'> & {
   userId: Maybe<ID>
+  onClick?: () => void
 }
 
 export const Avatar = (props: AvatarProps) => {
-  const { userId, ...other } = props
+  const { userId, onClick, ...other } = props
   const profileImage = useProfilePicture(
     userId ?? null,
     SquareSizes.SIZE_150_BY_150
@@ -52,7 +54,11 @@ export const Avatar = (props: AvatarProps) => {
     return user?.user_id === currentUser?.user_id ? messages.your : user?.name
   })
 
-  return (
+  return onClick ? (
+    <Box w='100%' h='100%' onClick={onClick}>
+      <HarmonyAvatar src={image} {...other} />
+    </Box>
+  ) : (
     <Link to={goTo} aria-label={`${messages.goTo} ${name} ${messages.profile}`}>
       <HarmonyAvatar src={image} {...other} />
     </Link>

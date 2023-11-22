@@ -42,15 +42,14 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
       }}
     >
       <Flex w='100%' direction='column' alignItems='center'>
-        <Box
-          w={72}
-          h={72}
-          css={{ position: 'absolute', top: 34 }}
-          onClick={() => {
-            togglePreview(user_id)
-          }}
-        >
-          <Avatar variant='strong' userId={user_id} />
+        <Box w={72} h={72} css={{ position: 'absolute', top: 34 }}>
+          <Avatar
+            variant='strong'
+            userId={user_id}
+            onClick={() => {
+              togglePreview(user_id)
+            }}
+          />
         </Box>
         <Box w='100%' h={68} css={{ backgroundImage: `url(${coverPhoto})` }} />
         <Flex
