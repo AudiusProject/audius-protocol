@@ -11,25 +11,28 @@ import { audioPlayer } from 'services/audio-player'
 import { apiClient } from 'services/audius-api-client'
 
 type PreviewContextProps = {
+  isPlaying: boolean
+  nowPlayingArtistId: number
   playPreview: (artistId: ID) => void
   stopPreview: () => void
   togglePreview: (artistId: ID) => void
-  playingPreviewArtistId: number
 }
 
 export const SelectArtistsPreviewContext = createContext<PreviewContextProps>({
+  isPlaying: false,
+  nowPlayingArtistId: -1,
   playPreview: () => {},
   stopPreview: () => {},
-  togglePreview: () => {},
-  playingPreviewArtistId: -1
+  togglePreview: () => {}
 })
 
 export const SelectArtistsPreviewContextProvider = (props: {
   children: JSX.Element
 }) => {
+  const [isPlaying, setIsPlaying] = useState(false)
   const [nowPlayingArtistId, setNowPlayingArtistId] = useState<number>(-1)
-
   const [trackId, setTrackId] = useState<string | null>(null)
+
   const { data: artist } = useGetUserById({
     id: nowPlayingArtistId,
     currentUserId: null
@@ -47,30 +50,21 @@ export const SelectArtistsPreviewContextProvider = (props: {
     trackId && setTrackId(encodeHashId(trackId))
   }, [artistTracks])
 
-  useEffect(() => {
-    if (!trackId) return
-    audioPlayer.load(
-      0,
-      () => {},
-      apiClient.makeUrl(`/tracks/${trackId}/stream`)
-    )
-    audioPlayer.play()
-
-    // Clean up on unmount
-    return audioPlayer.stop
-  }, [nowPlayingArtistId, trackId])
-
   const togglePlayback = useCallback(() => {
     if (audioPlayer.isPlaying()) {
       audioPlayer.pause()
+      setIsPlaying(false)
     } else {
       audioPlayer.play()
+      setIsPlaying(true)
     }
   }, [])
 
   const stopPreview = useCallback(() => {
     audioPlayer.stop()
     setNowPlayingArtistId(-1)
+    setTrackId(null)
+    setIsPlaying(false)
   }, [])
 
   const playPreview = useCallback((artistId: ID) => {
@@ -78,24 +72,44 @@ export const SelectArtistsPreviewContextProvider = (props: {
       audioPlayer.stop()
     }
     setNowPlayingArtistId(artistId)
+    setIsPlaying(true)
   }, [])
 
   const togglePreview = useCallback(
     (artistId: ID) => {
-      artistId === nowPlayingArtistId
-        ? togglePlayback()
-        : setNowPlayingArtistId(artistId)
+      if (artistId === nowPlayingArtistId) {
+        togglePlayback()
+      } else {
+        audioPlayer.stop()
+        setIsPlaying(false)
+        setNowPlayingArtistId(artistId)
+      }
     },
     [nowPlayingArtistId, togglePlayback]
   )
 
+  useEffect(() => {
+    if (!trackId) return
+    audioPlayer.load(
+      0,
+      stopPreview,
+      apiClient.makeUrl(`/tracks/${trackId}/stream`)
+    )
+    audioPlayer.play()
+    setIsPlaying(true)
+  }, [nowPlayingArtistId, stopPreview, trackId])
+
+  // Stop playback on unmount
+  useEffect(stopPreview, [stopPreview])
+
   return (
     <SelectArtistsPreviewContext.Provider
       value={{
+        isPlaying,
+        nowPlayingArtistId,
         playPreview,
         stopPreview,
-        togglePreview,
-        playingPreviewArtistId: nowPlayingArtistId
+        togglePreview
       }}
     >
       {props.children}
