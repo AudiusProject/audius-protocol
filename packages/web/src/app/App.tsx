@@ -19,8 +19,7 @@ import WebPlayer from './web-player/WebPlayer'
 import '../services/webVitals'
 
 const SignOn = lazy(() => import('pages/sign-on/SignOn'))
-const SignInPage = lazy(() => import('pages/sign-in-page'))
-const SignUpPage = lazy(() => import('pages/sign-up-page'))
+const SignOnPage = lazy(() => import('pages/sign-on-page'))
 
 export const AppInner = () => {
   const { isEnabled: isSignInRedesignEnabled } = useFlag(
@@ -31,11 +30,8 @@ export const AppInner = () => {
     <>
       <SomethingWrong />
       <Switch>
-        <Route path={SIGN_IN_PAGE}>
-          {isSignInRedesignEnabled ? <SignInPage /> : <SignOn signIn />}
-        </Route>
-        <Route path={SIGN_UP_PAGE}>
-          {isSignInRedesignEnabled ? <SignUpPage /> : <SignOn signIn={false} />}
+        <Route path={[SIGN_IN_PAGE, SIGN_UP_PAGE]}>
+          {isSignInRedesignEnabled ? <SignOnPage /> : <SignOn signIn />}
         </Route>
         <Route exact path='/oauth/auth'>
           <OAuthLoginPage />
