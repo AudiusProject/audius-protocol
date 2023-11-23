@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
 import {
   Box,
@@ -6,53 +6,34 @@ import {
   ButtonType,
   Flex,
   IconArrowRight,
-  PasswordInput,
   Text,
   TextLink
 } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { setValueField } from 'common/store/pages/signon/actions'
 import { getEmailField } from 'common/store/pages/signon/selectors'
-import { ExternalLink } from 'components/link'
+import { PasswordField } from 'components/form-fields/PasswordField'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import {
-  CompletionChecklistItem,
-  CompletionChecklistItemStatus
-} from 'pages/sign-up-page/components/CompletionChecklistItem'
 import {
   PRIVACY_POLICY,
   SIGN_UP_HANDLE_PAGE,
   TERMS_OF_SERVICE
 } from 'utils/route'
 
-import styles from '../styles/CreatePasswordPage.module.css'
-import {
-  PasswordRequirementKey,
-  getLengthRequirementStatus,
-  getMatchRequirementStatus,
-  getNotCommonRequirementStatus,
-  getNumberRequirementStatus,
-  isRequirementsFulfilled
-} from '../utils/passwordRequirementUtils'
+import { CompletionChecklist } from '../components/CompletionChecklist'
+import { passwordSchema } from '../utils/passwordSchema'
 
 const messages = {
   createYourPassword: 'Create Your Password',
-  createLoginDetails: 'Create Login Details',
   description:
     'Create a password that’s secure and easy to remember! We can’t reset your password, so write it down or use a password manager.',
   yourEmail: 'Your Email',
   passwordLabel: 'Password',
   confirmPasswordLabel: 'Confirm Password',
-  requirements: {
-    hasNumber: 'Must contain numbers',
-    minLength: 'At least 8 characters',
-    matches: 'Passwords match',
-    notCommon: 'Hard to guess'
-  },
-  commonPassword: 'Please choose a less common password',
   continue: 'Continue',
   agreeTo:
     "By clicking continue, you state you have read and agree to Audius' ",
@@ -67,10 +48,12 @@ const initialValues = {
   confirmPassword: ''
 }
 
-type CreatePasswordValues = {
+export type CreatePasswordValues = {
   password: string
   confirmPassword: string
 }
+
+const passwordFormikSchma = toFormikValidationSchema(passwordSchema)
 
 export const CreatePasswordPage = () => {
   const dispatch = useDispatch()
@@ -79,273 +62,86 @@ export const CreatePasswordPage = () => {
   const { isMobile } = useMedia()
 
   const handleSubmit = useCallback(
-    async ({ password, confirmPassword }: CreatePasswordValues) => {
-      const fulfillsRequirements = await isRequirementsFulfilled({
-        password,
-        confirmPassword
-      })
-      if (fulfillsRequirements) {
-        dispatch(setValueField('password', password))
-        navigate(SIGN_UP_HANDLE_PAGE)
-      }
+    (values: CreatePasswordValues) => {
+      const { password } = values
+      console.log('sup!')
+      dispatch(setValueField('password', password))
+      navigate(SIGN_UP_HANDLE_PAGE)
     },
     [dispatch, navigate]
   )
 
-  const [requirementsStatuses, setRequirementsStatuses] = useState<{
-    [key in PasswordRequirementKey]: CompletionChecklistItemStatus
-  }>({
-    hasNumber: 'incomplete',
-    minLength: 'incomplete',
-    matches: 'incomplete',
-    notCommon: 'incomplete'
-  })
-
-  const requirements: {
-    status: CompletionChecklistItemStatus
-    label: string
-    key: PasswordRequirementKey
-    path: keyof CreatePasswordValues
-  }[] = [
-    {
-      status: requirementsStatuses.hasNumber,
-      label: messages.requirements.hasNumber,
-      key: 'hasNumber',
-      path: 'password'
-    },
-    {
-      status: requirementsStatuses.minLength,
-      label: messages.requirements.minLength,
-      key: 'minLength',
-      path: 'password'
-    },
-    {
-      status: requirementsStatuses.matches,
-      label: messages.requirements.matches,
-      key: 'matches',
-      path: 'confirmPassword'
-    },
-    {
-      status: requirementsStatuses.notCommon,
-      label: messages.requirements.notCommon,
-      key: 'notCommon',
-      path: 'password'
-    }
-  ]
-
-  const handlePasswordChange = useCallback(
-    async ({ password, confirmPassword }: CreatePasswordValues) => {
-      const hasNumber = getNumberRequirementStatus({
-        password,
-        ignoreError: requirementsStatuses.hasNumber === 'incomplete'
-      })
-      const minLength = getLengthRequirementStatus({
-        password,
-        ignoreError: requirementsStatuses.minLength === 'incomplete'
-      })
-      const matches = getMatchRequirementStatus({ password, confirmPassword })
-      const notCommon = await getNotCommonRequirementStatus({
-        password,
-        ignoreError: requirementsStatuses.notCommon === 'incomplete'
-      })
-      setRequirementsStatuses((requirements) => ({
-        ...requirements,
-        hasNumber,
-        minLength,
-        matches,
-        notCommon
-      }))
-    },
-    [
-      requirementsStatuses.hasNumber,
-      requirementsStatuses.minLength,
-      requirementsStatuses.notCommon
-    ]
-  )
-
-  const handlePasswordBlur = useCallback(
-    async ({ password, confirmPassword }: CreatePasswordValues) => {
-      if (password) {
-        const notCommon = await getNotCommonRequirementStatus({ password })
-        setRequirementsStatuses((statuses) => ({
-          ...statuses,
-          hasNumber: getNumberRequirementStatus({ password }),
-          minLength: getLengthRequirementStatus({ password }),
-          notCommon,
-          matches: getMatchRequirementStatus({ password, confirmPassword })
-        }))
-      }
-    },
-    []
-  )
-
-  const handleConfirmPasswordChange = useCallback(
-    ({ password, confirmPassword }: CreatePasswordValues) => {
-      if (
-        requirementsStatuses.matches !== 'incomplete' ||
-        password.length <= confirmPassword.length
-      ) {
-        setRequirementsStatuses((statuses) => ({
-          ...statuses,
-          matches: getMatchRequirementStatus({ password, confirmPassword })
-        }))
-      }
-    },
-    [requirementsStatuses.matches]
-  )
-
-  const handleConfirmPasswordBlur = useCallback(
-    (values: CreatePasswordValues) => {
-      if (values.password && values.confirmPassword) {
-        setRequirementsStatuses((statuses) => ({
-          ...statuses,
-          matches: getMatchRequirementStatus({
-            password: values.password,
-            confirmPassword: values.confirmPassword,
-            enforceConfirmPasswordNotEmpty: true
-          })
-        }))
-      }
-    },
-    []
-  )
-
-  const hasPasswordError = requirements.some(
-    (r) => r.status === 'error' && r.path === 'password'
-  )
-
-  const hasConfirmPasswordError = requirements.some(
-    (r) => r.status === 'error' && r.path === 'confirmPassword'
-  )
-
-  const isValid = !hasPasswordError && !hasConfirmPasswordError
-  const isSubmitting = false
-
   return (
-    <Flex
-      direction='column'
-      pv='xl'
-      ph={isMobile ? 'l' : 'xl'}
-      h='100%'
-      justifyContent='space-between'
+    <Formik
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+      validationSchema={passwordFormikSchma}
     >
-      <Flex direction='column' gap='2xl'>
-        <Flex direction='column' gap='s'>
-          <Text
-            color='heading'
-            size={isMobile ? 'm' : 'l'}
-            strength='default'
-            variant='heading'
-          >
-            {messages.createYourPassword}
-          </Text>
-          <Text color='default' size={isMobile ? 'm' : 'l'} variant='body'>
-            {messages.description}
-          </Text>
-        </Flex>
-        <Flex direction='column' h='100%' gap='l'>
-          <Box>
-            <Text variant='label' size='xs'>
-              {messages.yourEmail}
-            </Text>
-            <Text variant='body' size='m'>
-              {emailField.value}
-            </Text>
-          </Box>
-          <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-            {({
-              values,
-              setFieldValue,
-              isSubmitting,
-              handleBlur: formikHandleBlur,
-              touched
-            }) => (
-              <Flex
-                as={Form}
-                direction='column'
-                justifyContent='space-between'
-                h='100%'
-              >
-                <Box>
-                  <Flex
-                    direction='column'
-                    gap='l'
-                    className={styles.inputsContainer}
-                  >
-                    <PasswordInput
-                      name='password'
-                      autoFocus
-                      autoComplete='new-password'
-                      onChange={(e) => {
-                        setFieldValue('password', e.target.value)
-                        handlePasswordChange({
-                          password: e.target.value,
-                          confirmPassword: values.confirmPassword
-                        })
-                      }}
-                      onBlur={(e) => {
-                        formikHandleBlur(e)
-                        handlePasswordBlur(values)
-                      }}
-                      label={messages.passwordLabel}
-                      value={values.password}
-                      error={touched.password && hasPasswordError}
-                    />
-                    <PasswordInput
-                      name='confirmPassword'
-                      autoComplete='new-password'
-                      onChange={(e) => {
-                        setFieldValue('confirmPassword', e.target.value)
-                        handleConfirmPasswordChange({
-                          password: values.password,
-                          confirmPassword: e.target.value
-                        })
-                      }}
-                      onBlur={(e) => {
-                        formikHandleBlur(e)
-                        handleConfirmPasswordBlur(values)
-                      }}
-                      label={messages.confirmPasswordLabel}
-                      value={values.confirmPassword}
-                      error={touched.confirmPassword && hasConfirmPasswordError}
-                    />
-                    <Flex gap={isMobile ? 's' : 'm'} direction='column'>
-                      {requirements.map((req) => (
-                        <CompletionChecklistItem
-                          key={req.key}
-                          status={req.status}
-                          label={req.label}
-                        />
-                      ))}
-                    </Flex>
-                  </Flex>
-                </Box>
-              </Flex>
-            )}
-          </Formik>
-        </Flex>
-      </Flex>
-      {/* Continue footer */}
-      <Flex direction='column' gap='l'>
-        <Text color='default' size='s' strength='default' variant='body'>
-          {messages.agreeTo}
-          <TextLink href={TERMS_OF_SERVICE} variant='visible' isExternal>
-            {messages.termsOfService}
-          </TextLink>
-          {messages.and}
-          <TextLink href={PRIVACY_POLICY} variant='visible' isExternal>
-            {messages.privacyPolicy}
-          </TextLink>
-        </Text>
-        <Button
-          variant={ButtonType.PRIMARY}
-          disabled={isSubmitting || !isValid}
-          type='submit'
-          iconRight={IconArrowRight}
+      {({ isValid, dirty }) => (
+        <Flex
+          as={Form}
+          direction='column'
+          pv='xl'
+          ph={isMobile ? 'l' : 'xl'}
+          h='100%'
+          justifyContent='space-between'
         >
-          {messages.continue}
-        </Button>
-      </Flex>
-    </Flex>
+          <Flex direction='column' gap='2xl'>
+            <Flex direction='column' gap='s'>
+              <Text
+                color='heading'
+                size={isMobile ? 'm' : 'l'}
+                strength='default'
+                variant='heading'
+              >
+                {messages.createYourPassword}
+              </Text>
+              <Text color='default' size={isMobile ? 'm' : 'l'} variant='body'>
+                {messages.description}
+              </Text>
+            </Flex>
+            <Flex direction='column' h='100%' gap='l'>
+              <Box>
+                <Text variant='label' size='xs'>
+                  {messages.yourEmail}
+                </Text>
+                <Text variant='body' size='m'>
+                  {emailField.value}
+                </Text>
+              </Box>
+              <Flex direction='column' gap='l'>
+                <PasswordField name='password' label={messages.passwordLabel} />
+                <PasswordField
+                  name='confirmPassword'
+                  label={messages.confirmPasswordLabel}
+                />
+                <CompletionChecklist />
+              </Flex>
+            </Flex>
+          </Flex>
+          {/* Continue footer */}
+          <Flex direction='column' gap='l'>
+            <Text color='default' size='s' strength='default' variant='body'>
+              {messages.agreeTo}
+              <TextLink href={TERMS_OF_SERVICE} variant='visible' isExternal>
+                {messages.termsOfService}
+              </TextLink>
+              {messages.and}
+              <TextLink href={PRIVACY_POLICY} variant='visible' isExternal>
+                {messages.privacyPolicy}
+              </TextLink>
+            </Text>
+            <Button
+              variant={ButtonType.PRIMARY}
+              disabled={!(dirty && isValid)}
+              type='submit'
+              iconRight={IconArrowRight}
+            >
+              {messages.continue}
+            </Button>
+          </Flex>
+        </Flex>
+      )}
+    </Formik>
   )
 }
