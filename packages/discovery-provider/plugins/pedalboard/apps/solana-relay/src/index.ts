@@ -10,6 +10,7 @@ import {
 import { relay } from './routes/relay/relay'
 import { errorHandlerMiddleware } from './middleware/errorHandler'
 import { signerRecoveryMiddleware } from './middleware/signerRecovery'
+import { cache } from './routes/cache/cache'
 
 const main = async () => {
   const { serverHost, serverPort } = config
@@ -18,6 +19,7 @@ const main = async () => {
   app.use(cors())
   app.use(signerRecoveryMiddleware)
   app.post('/solana/relay', incomingRequestLogger, relay, outgoingRequestLogger)
+  app.post('/solana/cache', incomingRequestLogger, cache, outgoingRequestLogger)
   app.use(errorHandlerMiddleware)
 
   app.listen(serverPort, serverHost, () => {
