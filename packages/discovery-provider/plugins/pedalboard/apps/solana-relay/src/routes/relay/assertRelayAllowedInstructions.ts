@@ -150,7 +150,7 @@ const assertAllowedTokenProgramInstruction = async (
     const destination = decodedInstruction.keys.destination.pubkey
     const userbank = await deriveUserBank(
       wallet,
-      claimableTokenAuthorities['waudio']
+      claimableTokenAuthorities['usdc']
     )
     if (!destination.equals(userbank)) {
       throw new InvalidRelayInstructionError(

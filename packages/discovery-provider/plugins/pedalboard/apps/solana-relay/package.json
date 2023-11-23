@@ -5,6 +5,7 @@
   "scripts": {
     "start": "ts-node ./src/index.ts",
     "start:dev": "ts-node-dev ./src/index.ts",
+    "test": "vitest",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\""
   },
   "jest": {
@@ -27,6 +28,7 @@
     "redis": "4.6.11"
   },
   "devDependencies": {
+    "@audius/sdk": "*",
     "@types/body-parser": "1.19.0",
     "@types/cors": "2.8.10",
     "@types/express": "4.17.12",
@@ -37,9 +39,10 @@
     "esbuild-register": "3.3.2",
     "eslint": "7.32.0",
     "eslint-config-custom-server": "*",
-    "tsconfig": "*",
     "ts-node": "10.7.0",
     "ts-node-dev": "2.0.0",
-    "typescript": "4.5.3"
+    "tsconfig": "*",
+    "typescript": "4.5.3",
+    "vitest": "0.34.6"
   }
 }
