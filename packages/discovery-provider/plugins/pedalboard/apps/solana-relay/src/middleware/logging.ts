@@ -7,27 +7,30 @@ export const incomingRequestLogger = (
   response: Response,
   next: NextFunction
 ) => {
-  const startTime = new Date(new Date().getTime())
+  const startTime = new Date().getTime()
+  response.locals.requestStartTime = startTime
   const requestId = uuidv4()
-  const oldCtx = response.locals.ctx
-  response.locals.ctx = { ...oldCtx, startTime, requestId }
-
-  const { route, method } = request
-  logger.info({ requestId, route, method }, 'incoming request')
+  const {
+    route: { path },
+    method
+  } = request
+  response.locals.logger = logger.child({
+    requestId,
+    path,
+    method
+  })
+  response.locals.logger.info(
+    { startTime: new Date(startTime) },
+    'incoming request'
+  )
   next()
 }
 
-export const outgoingLog = (request: Request, response: Response) => {
+export const outgoingLog = (_request: Request, response: Response) => {
   // in milliseconds
-  const responseTime =
-    new Date().getTime() - response.locals.ctx.startTime.getTime()
-  const { route, method } = request
-  const { locals: ctx } = response
+  const responseTime = new Date().getTime() - response.locals.requestStartTime
   const statusCode = response.statusCode
-  logger.info(
-    { route, method, ctx, responseTime, statusCode },
-    'request completed'
-  )
+  response.locals.logger.info({ responseTime, statusCode }, 'request completed')
 }
 
 export const outgoingRequestLogger = (

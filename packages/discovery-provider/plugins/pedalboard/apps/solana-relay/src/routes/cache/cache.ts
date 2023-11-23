@@ -17,6 +17,8 @@ export const cache = async (
 ) => {
   try {
     const { signature, transaction } = req.body
+    const logger = res.locals.logger.child({ signature, transaction })
+    logger.info('Received cache request')
     if (!signature || !transaction) {
       throw new BadRequestError()
     }
@@ -32,7 +34,7 @@ export const cache = async (
     }
     await cacheTransaction(signature, transaction)
     res.status(200).send({ signature, transaction })
-    logger.info(`cached transaction: ${signature}`)
+    next()
   } catch (e) {
     next(e)
   }

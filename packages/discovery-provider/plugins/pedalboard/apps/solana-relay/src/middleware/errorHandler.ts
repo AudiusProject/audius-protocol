@@ -21,15 +21,10 @@ export const errorHandlerMiddleware = (
     res.status(500).send({ error: getErrorMessage(err) })
   }
   // in milliseconds
-  const responseTime = new Date().getTime() - res.locals.ctx.startTime.getTime()
-  const { route, method } = req
-  const { locals: ctx } = res
+  const responseTime = new Date().getTime() - res.locals.requestStartTime
   const statusCode = res.statusCode
-  logger.info(
+  res.locals.logger.info(
     {
-      route,
-      method,
-      ctx,
       responseTime,
       statusCode,
       error: getErrorMessage(err)
