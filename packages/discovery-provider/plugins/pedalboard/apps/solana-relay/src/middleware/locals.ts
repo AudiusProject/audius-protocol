@@ -4,7 +4,8 @@ import { Logger } from 'pino'
 declare global {
   namespace Express {
     interface Locals {
-      signer?: Users
+      signerUser?: Users
+      isSignedByDiscovery?: boolean
       logger: Logger
       requestStartTime: number
       [k: string]: never

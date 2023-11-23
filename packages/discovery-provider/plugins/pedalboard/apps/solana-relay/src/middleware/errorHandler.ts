@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 import { ResponseError } from '../errors'
-import { logger } from '../logger'
+import { logger as rootLogger } from '../logger'
 
 const getErrorMessage = (error: unknown) =>
   error instanceof Error
@@ -23,7 +23,8 @@ export const errorHandlerMiddleware = (
   // in milliseconds
   const responseTime = new Date().getTime() - res.locals.requestStartTime
   const statusCode = res.statusCode
-  res.locals.logger.info(
+  const logger = res.locals.logger ?? rootLogger
+  logger.info(
     {
       responseTime,
       statusCode,

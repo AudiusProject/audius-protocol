@@ -47,6 +47,7 @@ services:
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.prod
       args:
         app_name: solana-relay
+    env_file: .env # used by the startup script
     environment:
       audius_solana_rewards_manager_program_address: '${SOLANA_REWARD_MANAGER_PUBLIC_KEY}'
       audius_solana_rewards_manager_account: '${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}'

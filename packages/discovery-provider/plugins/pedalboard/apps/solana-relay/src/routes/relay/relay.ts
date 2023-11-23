@@ -1,5 +1,9 @@
 import {
+  BaseTransactionConfirmationStrategy,
+  BlockhashWithExpiryBlockHeight,
+  Commitment,
   Connection,
+  DurableNonceTransactionConfirmationStrategy,
   PublicKey,
   TransactionMessage,
   VersionedTransaction
@@ -8,12 +12,26 @@ import { Request, Response, NextFunction } from 'express'
 import { config } from '../../config'
 import { BadRequestError } from '../../errors'
 import { assertRelayAllowedInstructions } from './assertRelayAllowedInstructions'
-import { cacheTransaction, getCachedDiscoveryNodes } from '../../redis'
+import { cacheTransaction, getCachedDiscoveryNodeEndpoints } from '../../redis'
 import fetch from 'cross-fetch'
 import { Logger } from 'pino'
-
+import base58 from 'bs58'
+import { personalSign } from 'eth-sig-util'
+type Prettify<T> = {
+  [K in keyof T]: T[K]
+} & {}
 type RequestBody = {
   transaction: string
+  confirmationOptions?: {
+    strategy?: Prettify<
+      | Omit<
+          DurableNonceTransactionConfirmationStrategy,
+          keyof BaseTransactionConfirmationStrategy
+        >
+      | BlockhashWithExpiryBlockHeight
+    >
+    commitment?: Commitment
+  }
 }
 
 const connection = new Connection(config.solanaEndpoint)
@@ -29,21 +47,23 @@ const getFeePayerKeyPair = (feePayerPublicKey?: PublicKey) => {
   )
 }
 
-const forwardTransaction = async (
-  logger: Logger,
-  signature: string,
-  transaction: string
-) => {
-  const endpoints = await getCachedDiscoveryNodes()
+const forwardTransaction = async (logger: Logger, transaction: string) => {
+  const endpoints = await getCachedDiscoveryNodeEndpoints()
   logger.info(`Forwarding to ${endpoints.length} endpoints...`)
+  const body = JSON.stringify({ transaction })
   await Promise.all(
     endpoints
       .filter((endpoint) => endpoint !== config.endpoint)
       .map((endpoint) =>
         fetch(`${endpoint}/solana/cache`, {
           method: 'POST',
-          body: JSON.stringify({ signature, transaction }),
-          headers: { 'content-type': 'application/json' }
+          body,
+          headers: {
+            'content-type': 'application/json',
+            'Discovery-Signature': personalSign(config.delegatePrivateKey, {
+              data: body
+            })
+          }
         })
           .then((res) => {
             if (res.ok) {
@@ -52,7 +72,10 @@ const forwardTransaction = async (
                 `Forwarded successfully`
               )
             } else {
-              throw new Error(res.statusText)
+              logger.warn(
+                { endpoint },
+                `Failed to forward transaction to endpoint: ${res.statusText}`
+              )
             }
           })
           .catch((e) => {
@@ -71,7 +94,11 @@ export const relay = async (
   next: NextFunction
 ) => {
   try {
-    const decoded = Buffer.from(req.body.transaction, 'base64')
+    const { transaction: encodedTransaction, confirmationOptions } = req.body
+    const { strategy, commitment } = confirmationOptions ?? {}
+    const confirmationStrategy =
+      strategy ?? (await connection.getLatestBlockhash())
+    const decoded = Buffer.from(encodedTransaction, 'base64')
     const transaction = VersionedTransaction.deserialize(decoded)
     const decompiled = TransactionMessage.decompile(transaction.message)
     const feePayerKey = transaction.message.getAccountKeys().get(0)
@@ -82,21 +109,60 @@ export const relay = async (
       )
     }
     await assertRelayAllowedInstructions(decompiled.instructions, {
-      user: res.locals.signer,
+      user: res.locals.signerUser,
       feePayer: feePayerKey.toBase58()
     })
 
     transaction.sign([feePayerKeyPair])
+
+    const logger = res.locals.logger.child({
+      signature: base58.encode(transaction.signatures[0])
+    })
+    logger.info('Sending transaction...')
     const serializedTx = transaction.serialize()
+
     const signature = await connection.sendRawTransaction(serializedTx)
-    const encoded = Buffer.from(serializedTx).toString('base64')
-    const logger = res.locals.logger.child({ signature, transaction: encoded })
-    logger.info('Caching transaction...')
-    await cacheTransaction(signature, encoded)
-    logger.info('Forwarding transaction...')
-    await forwardTransaction(logger, signature, encoded)
+    if (commitment) {
+      logger.info(`Waiting for transaction to be ${commitment}...`)
+      await connection.confirmTransaction(
+        {
+          ...confirmationStrategy,
+          signature
+        },
+        commitment
+      )
+    }
     res.status(200).send({ signature })
     next()
+    // Confirm, fetch, cache and forward after success response
+    // Only wait for confirmation if we haven't already
+    if (
+      !commitment ||
+      (commitment !== 'confirmed' && commitment !== 'finalized')
+    ) {
+      logger.info(`Confirming transaction...`)
+      await connection.confirmTransaction(
+        {
+          ...confirmationStrategy,
+          signature
+        },
+        'confirmed'
+      )
+    }
+    logger.info('Fetching transaction...')
+    const rpcResponse = await connection.getTransaction(signature, {
+      maxSupportedTransactionVersion: 0,
+      commitment: 'confirmed'
+    })
+    // Need to rewrap so that Solders knows how to parse it
+    const formattedResponse = JSON.stringify({
+      jsonrpc: '2.0',
+      result: rpcResponse
+    })
+    logger.info('Caching transaction...')
+    await cacheTransaction(signature, formattedResponse)
+    logger.info('Forwarding transaction...')
+    await forwardTransaction(logger, formattedResponse)
   } catch (e) {
     next(e)
   }

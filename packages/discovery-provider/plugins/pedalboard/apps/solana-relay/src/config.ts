@@ -63,7 +63,8 @@ const readConfig = () => {
       ]
     }),
     solana_relay_server_host: str({ default: '0.0.0.0' }),
-    solana_relay_server_port: num({ default: 6002 })
+    solana_relay_server_port: num({ default: 6002 }),
+    audius_delegate_private_key: str({ default: '' })
   })
   const solanaFeePayerWalletsParsed = env.audius_solana_fee_payer_wallets
   let solanaFeePayerWallets: Keypair[] = []
@@ -72,6 +73,9 @@ const readConfig = () => {
       Keypair.fromSecretKey(Uint8Array.from(wallet.privateKey))
     )
   }
+  const delegatePrivateKey: Buffer = env.audius_delegate_private_key
+    ? Buffer.from(env.audius_delegate_private_key, 'hex')
+    : Buffer.from([])
   return {
     endpoint: env.audius_discprov_url,
     discoveryDbConnectionString: env.audius_db_url,
@@ -84,7 +88,8 @@ const readConfig = () => {
     claimableTokenProgramId: env.audius_solana_user_bank_program_address,
     usdcMintAddress: env.audius_solana_usdc_mint,
     waudioMintAddress: env.audius_solana_waudio_mint,
-    solanaFeePayerWallets
+    solanaFeePayerWallets,
+    delegatePrivateKey
   }
 }
 

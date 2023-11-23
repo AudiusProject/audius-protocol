@@ -1,12 +1,10 @@
 import { NextFunction, Request, Response } from 'express'
-import { BadRequestError } from '../../errors'
+import { BadRequestError, UnauthorizedError } from '../../errors'
 import { cacheTransaction } from '../../redis'
-import { logger } from '../../logger'
-import { VersionedTransaction } from '@solana/web3.js'
-import base58 from 'bs58'
+import { TransactionResponse } from '@solana/web3.js'
+import { config } from '../../config'
 
 type RequestBody = {
-  signature: string
   transaction: string
 }
 
@@ -16,24 +14,20 @@ export const cache = async (
   next: NextFunction
 ) => {
   try {
-    const { signature, transaction } = req.body
-    const logger = res.locals.logger.child({ signature, transaction })
-    logger.info('Received cache request')
-    if (!signature || !transaction) {
+    if (!res.locals.isSignedByDiscovery) {
+      throw new UnauthorizedError()
+    }
+    const { transaction } = req.body
+    if (!transaction) {
       throw new BadRequestError()
     }
-    const decoded = Buffer.from(transaction, 'base64')
-    const tx = VersionedTransaction.deserialize(decoded)
-    const sig = tx.signatures[0]
-    if (!sig) {
-      throw new BadRequestError('No signature on transaction')
+    const transactionResponse = JSON.parse(transaction) as {
+      result: TransactionResponse
     }
-    const txSignature = base58.encode(sig)
-    if (txSignature !== signature) {
-      throw new BadRequestError('Invalid signature')
-    }
+    const signature = transactionResponse.result.transaction.signatures[0]
+    res.locals.logger.info({ signature }, 'Caching transaction...')
     await cacheTransaction(signature, transaction)
-    res.status(200).send({ signature, transaction })
+    res.status(200).send({ signature })
     next()
   } catch (e) {
     next(e)

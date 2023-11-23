@@ -4,7 +4,7 @@ import { config } from './config'
 let redisClient: RedisClientType
 let isReady: boolean
 
-export async function getRedisConnection() {
+const getRedisConnection = async () => {
   if (!isReady) {
     redisClient = createClient({ url: config.redisUrl })
     redisClient.on('ready', () => {
@@ -15,6 +15,18 @@ export async function getRedisConnection() {
   return redisClient
 }
 
+const parseStringArray = (json: string | null) => {
+  try {
+    const parsed = JSON.parse(json ?? '[]')
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+    return parsed.filter((value): value is string => typeof value === 'string')
+  } catch {
+    return []
+  }
+}
+
 export const cacheTransaction = async (
   signature: string,
   transaction: string
@@ -22,20 +34,18 @@ export const cacheTransaction = async (
   const redis = await getRedisConnection()
   const key = `solana:transaction:${signature}`
   await redis.set(key, transaction)
-  await redis.expire(key, 30)
 }
 
-export const getCachedDiscoveryNodes = async () => {
+export const getCachedDiscoveryNodeEndpoints = async () => {
   const redis = await getRedisConnection()
   const key = 'all-discovery-nodes'
   const json = await redis.get(key)
-  try {
-    const parsed = json === null ? [] : JSON.parse(json)
-    if (!Array.isArray(parsed)) {
-      return []
-    }
-    return parsed.filter((endpoint) => typeof endpoint === 'string') as string[]
-  } catch {
-    return []
-  }
+  return parseStringArray(json)
+}
+
+export const getCachedDiscoveryNodeWallets = async () => {
+  const redis = await getRedisConnection()
+  const key = 'all-discovery-nodes-wallets'
+  const json = await redis.get(key)
+  return parseStringArray(json)
 }

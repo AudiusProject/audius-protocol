@@ -10,10 +10,7 @@ export const incomingRequestLogger = (
   const startTime = new Date().getTime()
   response.locals.requestStartTime = startTime
   const requestId = uuidv4()
-  const {
-    route: { path },
-    method
-  } = request
+  const { path, method } = request
   response.locals.logger = logger.child({
     requestId,
     path,
