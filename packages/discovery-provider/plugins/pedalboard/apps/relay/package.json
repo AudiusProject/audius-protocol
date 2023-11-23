@@ -11,6 +11,7 @@
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\"",
     "sandbox": "npx ts-node ./src/scripts/sandbox.ts",
     "start": "node ./dist/index.js",
+    "start:dev": "node ./dist/index.js",
     "test": "jest --detectOpenHandles"
   },
   "jest": {
