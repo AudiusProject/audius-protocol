@@ -1,20 +1,14 @@
-import { PropsWithChildren } from 'react'
-
 import {
   Box,
   Flex,
-  FlexProps,
   IconCloudUpload,
   IconComponent,
   IconHeadphones,
   IconMessage,
   Text
 } from '@audius/harmony'
-import cn from 'classnames'
 
 import { useMedia } from 'hooks/useMedia'
-
-import styles from './AudiusValues.module.css'
 
 const messages = {
   heading: 'Your Music, Your Way',
@@ -23,30 +17,11 @@ const messages = {
   adFree: 'Ad-Free, Offline Listening'
 }
 
-export const ArtworkContainer = ({
-  children,
-  ...rest
-}: PropsWithChildren<FlexProps>) => {
-  const { isDesktop } = useMedia()
-  return (
-    <Flex
-      className={cn(
-        styles.artworkBackground,
-        styles[isDesktop ? 'desktop' : 'mobile']
-      )}
-      direction='column'
-      justifyContent={isDesktop ? 'center' : 'flex-start'}
-      {...rest}
-    >
-      {children}
-    </Flex>
-  )
-}
+type AudiusValueProps = { icon: IconComponent; text: string }
 
 /**
  * Each individual audius value text + icon row
  */
-type AudiusValueProps = { icon: IconComponent; text: string }
 const AudiusValue = (props: AudiusValueProps) => {
   const { icon: Icon, text } = props
   const { isDesktop } = useMedia()

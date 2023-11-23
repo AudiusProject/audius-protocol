@@ -29,7 +29,7 @@ import { SocialMediaLoginOptions } from 'pages/sign-up-page/components/SocialMed
 import { EMAIL_REGEX } from 'utils/email'
 import { SIGN_IN_PAGE, SIGN_UP_PASSWORD_PAGE } from 'utils/route'
 
-import { SignUpWithMetaMaskButton } from './SignUpWithMetaMaskButton'
+import { SignUpWithMetaMaskButton } from '../components/SignUpWithMetaMaskButton'
 
 export const messages = {
   title: 'Sign Up For Audius',

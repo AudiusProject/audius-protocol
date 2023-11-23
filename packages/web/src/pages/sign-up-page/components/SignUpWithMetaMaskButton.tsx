@@ -10,7 +10,7 @@ import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import ConnectedMetaMaskModal from 'pages/sign-up-page/components/ConnectedMetaMaskModal'
 import { SIGN_IN_PAGE, SIGN_UP_HANDLE_PAGE } from 'utils/route'
 
-import { SignUpEmailValues } from './CreateEmailPage'
+import { SignUpEmailValues } from '../pages/CreateEmailPage'
 
 const messages = {
   signUpMetamask: 'Sign Up With MetaMask',

@@ -5,29 +5,25 @@ import {
   Button,
   ButtonType,
   Flex,
-  IconArrowLeft,
   IconArrowRight,
   PasswordInput,
-  Text
+  Text,
+  TextLink
 } from '@audius/harmony'
-import { IconButton } from '@audius/stems'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { setValueField } from 'common/store/pages/signon/actions'
 import { getEmailField } from 'common/store/pages/signon/selectors'
+import { ExternalLink } from 'components/link'
+import { useMedia } from 'hooks/useMedia'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import {
   CompletionChecklistItem,
   CompletionChecklistItemStatus
-} from 'components/completion-checklist-item/CompletionChecklistItem'
-import { ExternalLink } from 'components/link'
-import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { ArtworkContainer, AudiusValues } from 'pages/sign-on-page/AudiusValues'
-import { LeftContentContainer } from 'pages/sign-on/components/desktop/LeftContentContainer'
-import { SignOnContainerDesktop } from 'pages/sign-on/components/desktop/SignOnContainerDesktop'
+} from 'pages/sign-up-page/components/CompletionChecklistItem'
 import {
   PRIVACY_POLICY,
-  SIGN_UP_EMAIL_PAGE,
   SIGN_UP_HANDLE_PAGE,
   TERMS_OF_SERVICE
 } from 'utils/route'
@@ -80,10 +76,7 @@ export const CreatePasswordPage = () => {
   const dispatch = useDispatch()
   const emailField = useSelector(getEmailField)
   const navigate = useNavigateToPage()
-
-  const handleClickBackIcon = useCallback(() => {
-    navigate(SIGN_UP_EMAIL_PAGE)
-  }, [navigate])
+  const { isMobile } = useMedia()
 
   const handleSubmit = useCallback(
     async ({ password, confirmPassword }: CreatePasswordValues) => {
@@ -107,6 +100,7 @@ export const CreatePasswordPage = () => {
     matches: 'incomplete',
     notCommon: 'incomplete'
   })
+
   const requirements: {
     status: CompletionChecklistItemStatus
     label: string
@@ -225,167 +219,133 @@ export const CreatePasswordPage = () => {
   )
 
   const isValid = !hasPasswordError && !hasConfirmPasswordError
+  const isSubmitting = false
 
   return (
-    <Flex h='100%' alignItems='center' justifyContent='center'>
-      <SignOnContainerDesktop>
-        <LeftContentContainer pv='2xl'>
+    <Flex
+      direction='column'
+      pv='xl'
+      ph={isMobile ? 'l' : 'xl'}
+      h='100%'
+      justifyContent='space-between'
+    >
+      <Flex direction='column' gap='2xl'>
+        <Flex direction='column' gap='s'>
+          <Text
+            color='heading'
+            size={isMobile ? 'm' : 'l'}
+            strength='default'
+            variant='heading'
+          >
+            {messages.createYourPassword}
+          </Text>
+          <Text color='default' size={isMobile ? 'm' : 'l'} variant='body'>
+            {messages.description}
+          </Text>
+        </Flex>
+        <Flex direction='column' h='100%' gap='l'>
           <Box>
-            <IconButton
-              onClick={handleClickBackIcon}
-              aria-label={messages.goBack}
-              icon={
-                <IconArrowLeft
-                  css={{
-                    '& path': {
-                      fill: 'currentColor'
-                    }
-                  }}
-                />
-              }
-              className={styles.backIcon}
-            />
-            <Box mt='xl'>
-              <Text
-                color='heading'
-                size='l'
-                strength='default'
-                variant='heading'
-              >
-                {messages.createYourPassword}
-              </Text>
-            </Box>
-            <Box mt='l'>
-              <Text color='default' size='l' variant='body'>
-                {messages.description}
-              </Text>
-            </Box>
-            <Box mt='2xl'>
-              <Text variant='label' size='xs'>
-                {messages.yourEmail}
-              </Text>
-              <Text variant='body' size='m'>
-                {emailField.value}
-              </Text>
-            </Box>
+            <Text variant='label' size='xs'>
+              {messages.yourEmail}
+            </Text>
+            <Text variant='body' size='m'>
+              {emailField.value}
+            </Text>
           </Box>
-          <Box mt='l' className={styles.formOuterContainer}>
-            <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-              {({
-                values,
-                setFieldValue,
-                isSubmitting,
-                handleBlur: formikHandleBlur,
-                touched
-              }) => (
-                <Form style={{ height: '100%' }}>
+          <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+            {({
+              values,
+              setFieldValue,
+              isSubmitting,
+              handleBlur: formikHandleBlur,
+              touched
+            }) => (
+              <Flex
+                as={Form}
+                direction='column'
+                justifyContent='space-between'
+                h='100%'
+              >
+                <Box>
                   <Flex
                     direction='column'
-                    justifyContent='space-between'
-                    h='100%'
+                    gap='l'
+                    className={styles.inputsContainer}
                   >
-                    <Box>
-                      <Flex
-                        direction='column'
-                        gap='l'
-                        className={styles.inputsContainer}
-                      >
-                        <PasswordInput
-                          name='password'
-                          autoFocus
-                          autoComplete='new-password'
-                          onChange={(e) => {
-                            setFieldValue('password', e.target.value)
-                            handlePasswordChange({
-                              password: e.target.value,
-                              confirmPassword: values.confirmPassword
-                            })
-                          }}
-                          onBlur={(e) => {
-                            formikHandleBlur(e)
-                            handlePasswordBlur(values)
-                          }}
-                          label={messages.passwordLabel}
-                          value={values.password}
-                          error={touched.password && hasPasswordError}
+                    <PasswordInput
+                      name='password'
+                      autoFocus
+                      autoComplete='new-password'
+                      onChange={(e) => {
+                        setFieldValue('password', e.target.value)
+                        handlePasswordChange({
+                          password: e.target.value,
+                          confirmPassword: values.confirmPassword
+                        })
+                      }}
+                      onBlur={(e) => {
+                        formikHandleBlur(e)
+                        handlePasswordBlur(values)
+                      }}
+                      label={messages.passwordLabel}
+                      value={values.password}
+                      error={touched.password && hasPasswordError}
+                    />
+                    <PasswordInput
+                      name='confirmPassword'
+                      autoComplete='new-password'
+                      onChange={(e) => {
+                        setFieldValue('confirmPassword', e.target.value)
+                        handleConfirmPasswordChange({
+                          password: values.password,
+                          confirmPassword: e.target.value
+                        })
+                      }}
+                      onBlur={(e) => {
+                        formikHandleBlur(e)
+                        handleConfirmPasswordBlur(values)
+                      }}
+                      label={messages.confirmPasswordLabel}
+                      value={values.confirmPassword}
+                      error={touched.confirmPassword && hasConfirmPasswordError}
+                    />
+                    <Flex gap={isMobile ? 's' : 'm'} direction='column'>
+                      {requirements.map((req) => (
+                        <CompletionChecklistItem
+                          key={req.key}
+                          status={req.status}
+                          label={req.label}
                         />
-                        <PasswordInput
-                          name='confirmPassword'
-                          autoComplete='new-password'
-                          onChange={(e) => {
-                            setFieldValue('confirmPassword', e.target.value)
-                            handleConfirmPasswordChange({
-                              password: values.password,
-                              confirmPassword: e.target.value
-                            })
-                          }}
-                          onBlur={(e) => {
-                            formikHandleBlur(e)
-                            handleConfirmPasswordBlur(values)
-                          }}
-                          label={messages.confirmPasswordLabel}
-                          value={values.confirmPassword}
-                          error={
-                            touched.confirmPassword && hasConfirmPasswordError
-                          }
-                        />
-                      </Flex>
-                      <Flex mt='l' gap='l' direction='column'>
-                        {requirements.map((req) => (
-                          <CompletionChecklistItem
-                            key={req.key}
-                            status={req.status}
-                            label={req.label}
-                          />
-                        ))}
-                      </Flex>
-                    </Box>
-
-                    <Flex direction='column' gap='l'>
-                      <Text
-                        color='default'
-                        size='s'
-                        strength='default'
-                        variant='body'
-                      >
-                        {messages.agreeTo}
-                        <ExternalLink
-                          variant='body'
-                          color='accentPurple'
-                          size='small'
-                          to={TERMS_OF_SERVICE}
-                        >
-                          {messages.termsOfService}
-                        </ExternalLink>
-                        {messages.and}
-                        <ExternalLink
-                          to={PRIVACY_POLICY}
-                          variant='body'
-                          color='accentPurple'
-                          size='small'
-                        >
-                          {messages.privacyPolicy}
-                        </ExternalLink>
-                      </Text>
-                      <Button
-                        variant={ButtonType.PRIMARY}
-                        disabled={isSubmitting || !isValid}
-                        type='submit'
-                        iconRight={IconArrowRight}
-                      >
-                        {messages.continue}
-                      </Button>
+                      ))}
                     </Flex>
                   </Flex>
-                </Form>
-              )}
-            </Formik>
-          </Box>
-        </LeftContentContainer>
-        <ArtworkContainer>
-          <AudiusValues />
-        </ArtworkContainer>
-      </SignOnContainerDesktop>
+                </Box>
+              </Flex>
+            )}
+          </Formik>
+        </Flex>
+      </Flex>
+      {/* Continue footer */}
+      <Flex direction='column' gap='l'>
+        <Text color='default' size='s' strength='default' variant='body'>
+          {messages.agreeTo}
+          <TextLink href={TERMS_OF_SERVICE} variant='visible' isExternal>
+            {messages.termsOfService}
+          </TextLink>
+          {messages.and}
+          <TextLink href={PRIVACY_POLICY} variant='visible' isExternal>
+            {messages.privacyPolicy}
+          </TextLink>
+        </Text>
+        <Button
+          variant={ButtonType.PRIMARY}
+          disabled={isSubmitting || !isValid}
+          type='submit'
+          iconRight={IconArrowRight}
+        >
+          {messages.continue}
+        </Button>
+      </Flex>
     </Flex>
   )
 }

@@ -2,6 +2,8 @@ import type { ReactElement } from 'react'
 
 import { CompletionCheck, Flex, Text } from '@audius/harmony'
 
+import { useMedia } from 'hooks/useMedia'
+
 export type CompletionChecklistItemStatus = 'incomplete' | 'complete' | 'error'
 
 type CompletionChecklistItemProps = {
@@ -12,16 +14,19 @@ type CompletionChecklistItemProps = {
 export const CompletionChecklistItem = (
   props: CompletionChecklistItemProps
 ) => {
+  const { status, label } = props
+  const { isMobile } = useMedia()
+
   return (
     <Flex alignItems='center' gap='m'>
-      <CompletionCheck value={props.status} />
+      <CompletionCheck value={status} />
       <Text
         variant='body'
         strength='default'
-        size='m'
-        color={props.status === 'error' ? 'danger' : 'default'}
+        size={isMobile ? 's' : 'm'}
+        color={status === 'error' ? 'danger' : 'default'}
       >
-        {props.label}
+        {label}
       </Text>
     </Flex>
   )

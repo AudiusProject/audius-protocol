@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import {
   Box,
@@ -9,7 +9,7 @@ import {
   TextLink,
   useTheme
 } from '@audius/harmony'
-import { Link, Route, Switch } from 'react-router-dom'
+import { Link, Route, Switch, useRouteMatch } from 'react-router-dom'
 import { useToggle } from 'react-use'
 
 import djBackground from 'assets/img/2-DJ-4-3.jpg'
@@ -19,7 +19,13 @@ import { useMedia } from 'hooks/useMedia'
 import { SignInPage } from 'pages/sign-in-page/SignInPage'
 import { AudiusValues } from 'pages/sign-on-page/AudiusValues'
 import SignUpPage from 'pages/sign-up-page'
-import { SIGN_IN_PAGE, SIGN_UP_PAGE, TRENDING_PAGE } from 'utils/route'
+import {
+  SIGN_IN_PAGE,
+  SIGN_UP_EMAIL_PAGE,
+  SIGN_UP_PAGE,
+  SIGN_UP_PASSWORD_PAGE,
+  TRENDING_PAGE
+} from 'utils/route'
 
 const messages = {
   newToAudius: 'New to Audius?',
@@ -28,13 +34,31 @@ const messages = {
 
 export const SignOnPage = () => {
   const { isMobile } = useMedia()
-  const [isExpanded] = useToggle(false)
+  const [isExpanded, setIsExpanded] = useState(false)
   const [isLoaded, setIsLoaded] = useToggle(false)
   const { spacing, motion } = useTheme()
+
+  const collapsedMobilePageMatch = useRouteMatch({
+    path: [SIGN_IN_PAGE, SIGN_UP_EMAIL_PAGE],
+    exact: true
+  })
+
+  const collapsedDesktopPageMatch = useRouteMatch({
+    path: [SIGN_IN_PAGE, SIGN_UP_EMAIL_PAGE, SIGN_UP_PASSWORD_PAGE],
+    exact: true
+  })
+
+  const isPageExpanded = isMobile
+    ? !collapsedMobilePageMatch
+    : !collapsedDesktopPageMatch
 
   useEffect(() => {
     setIsLoaded(true)
   }, [setIsLoaded])
+
+  useEffect(() => {
+    setIsExpanded(isPageExpanded)
+  }, [isPageExpanded])
 
   const routes = (
     <Switch>
@@ -51,8 +75,10 @@ export const SignOnPage = () => {
     return (
       <Flex direction='column' w='100%'>
         <Flex
+          direction='column'
           borderBottomLeftRadius={!isExpanded ? '2xl' : undefined}
           borderBottomRightRadius={!isExpanded ? '2xl' : undefined}
+          h={isExpanded ? '100%' : 'auto'}
           css={{
             position: 'absolute',
             top: 0,
@@ -64,12 +90,6 @@ export const SignOnPage = () => {
             transform: isLoaded ? 'translateY(0px)' : 'translateY(-100%)'
           }}
         >
-          <Link
-            to={TRENDING_PAGE}
-            css={{ position: 'absolute', left: spacing.l, top: spacing.l }}
-          >
-            <IconCloseAlt color='default' />
-          </Link>
           {routes}
         </Flex>
         <Flex
@@ -126,7 +146,8 @@ export const SignOnPage = () => {
       </Link>
       <BackgroundWaves zIndex={0} />
       <Paper w='100%'>
-        <Box
+        <Flex
+          direction='column'
           w={isExpanded ? '100%' : 480}
           h='100%'
           css={{
@@ -139,7 +160,7 @@ export const SignOnPage = () => {
           }}
         >
           {routes}
-        </Box>
+        </Flex>
         <Flex
           alignItems='center'
           justifyContent='center'
