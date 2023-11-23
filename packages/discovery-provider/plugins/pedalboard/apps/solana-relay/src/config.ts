@@ -28,12 +28,34 @@ const readConfig = () => {
       default:
         'postgresql+psycopg2://postgres:postgres@db:5432/discovery_provider_1'
     }),
-    audius_solana_waudio_mint: str({ default: '' }),
-    audius_solana_usdc_mint: str({ default: '' }),
-    audius_solana_user_bank_program_address: str({ default: '' }),
-    audius_solana_rewards_manager_program_address: str({ default: '' }),
-    audius_solana_rewards_manager_account: str({ default: '' }),
-    audius_solana_fee_payer_wallets: json<FeePayerWallet[]>({ default: [] }),
+    audius_solana_waudio_mint: str({
+      default: '37RCjhgV1qGV2Q54EHFScdxZ22ydRMdKMtVgod47fDP3'
+    }),
+    audius_solana_usdc_mint: str({
+      default: '26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y'
+    }),
+    audius_solana_user_bank_program_address: str({
+      default: 'testHKV1B56fbvop4w6f2cTGEub9dRQ2Euta5VmqdX9'
+    }),
+    audius_solana_rewards_manager_program_address: str({
+      default: 'testLsJKtyABc9UXJF8JWFKf1YH4LmqCWBC42c6akPb'
+    }),
+    audius_solana_rewards_manager_account: str({
+      default: 'DJPzVothq58SmkpRb1ATn5ddN2Rpv1j2TcGvM3XsHf1c'
+    }),
+    audius_solana_fee_payer_wallets: json<FeePayerWallet[]>({
+      default: [
+        {
+          privateKey: [
+            170, 161, 84, 122, 118, 210, 128, 213, 96, 185, 143, 218, 54, 254,
+            217, 204, 157, 175, 137, 71, 202, 108, 51, 242, 21, 50, 56, 77, 54,
+            116, 103, 56, 251, 64, 77, 100, 199, 88, 103, 189, 42, 163, 67, 251,
+            101, 204, 7, 59, 70, 109, 113, 50, 209, 154, 55, 164, 227, 108, 203,
+            146, 121, 148, 85, 119
+          ]
+        }
+      ]
+    }),
     solana_relay_server_host: str({ default: '0.0.0.0' }),
     solana_relay_server_port: num({ default: 6002 }),
     AUDIUS_REDIS_URL: str({ default: 'redis://identity-service-redis:6379/00' })
