@@ -18,6 +18,8 @@ x-common: &common
     - 'audius-protocol-creator-node-2:host-gateway'
     - 'audius-protocol-creator-node-3:host-gateway'
     - 'audius-protocol-discovery-provider-1:host-gateway'
+    - 'audius-protocol-discovery-provider-2:host-gateway'
+    - 'audius-protocol-discovery-provider-3:host-gateway'
     - 'audius-protocol-identity-service-1:host-gateway'
     - 'audius-protocol-solana-test-validator-1:host-gateway'
     - 'audius-protocol-eth-ganache-1:host-gateway'
@@ -102,6 +104,12 @@ services:
     <<: *common
 
   # Discovery
+
+  discovery-provider-redis:
+    extends:
+      file: docker-compose.discovery.yml
+      service: discovery-provider-redis
+    <<: *common
 
   discovery-provider-notifications:
     extends:

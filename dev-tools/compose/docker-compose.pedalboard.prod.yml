@@ -42,7 +42,6 @@ services:
     restart: always
 
   solana-relay:
-    container_name: solana-relay
     build:
       context: ${PROJECT_ROOT}
       dockerfile: ${PROJECT_ROOT}/packages/discovery-provider/plugins/pedalboard/docker/Dockerfile.prod
@@ -58,6 +57,9 @@ services:
     restart: always
     profiles:
       - pedalboard
+    deploy:
+      mode: replicated
+      replicas: '${DISCOVERY_PROVIDER_REPLICAS}'
 
   sla-auditor:
     container_name: sla-auditor
