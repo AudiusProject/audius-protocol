@@ -56,19 +56,5 @@ export const ProgressHeader = () => {
       activeStep = 'customize'
   }
 
-  return (
-    <Flex
-      alignItems='center'
-      justifyContent='center'
-      ph='xl'
-      className={styles.container}
-    >
-      <div className={styles.logoContainer}>
-        <IconAudiusLogoHorizontal height={24} width={100} color='subdued' />
-      </div>
-      <Box alignSelf='flex-end'>
-        <SteppedProgress steps={STEPS} activeStep={activeStep} />
-      </Box>
-    </Flex>
-  )
+  return <SteppedProgress steps={STEPS} activeStep={activeStep} />
 }

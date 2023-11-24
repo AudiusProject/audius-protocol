@@ -56,8 +56,6 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
 }
 
 export const SignUpPage = () => {
-  const { isDesktop } = useMedia()
-
   return (
     <>
       <Helmet>
@@ -84,7 +82,6 @@ export const SignUpPage = () => {
             SIGN_UP_ARTISTS_PAGE
           ]}
         >
-          {isDesktop ? <ProgressHeader /> : null}
           <Switch>
             <SignUpRoute exact path={SIGN_UP_HANDLE_PAGE}>
               <PickHandlePage />

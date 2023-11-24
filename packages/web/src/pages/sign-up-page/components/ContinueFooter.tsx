@@ -1,26 +1,25 @@
 import { PropsWithChildren } from 'react'
 
-import { Flex, useTheme } from '@audius/harmony'
+import { Paper } from '@audius/harmony'
 
-import styles from './ContinueFooter.module.css'
+import { useMedia } from 'hooks/useMedia'
 
-type ContinueFooterProps = PropsWithChildren<{}>
+type ContinueFooterProps = PropsWithChildren
 
 export const ContinueFooter = ({ children }: ContinueFooterProps) => {
-  const { color } = useTheme()
+  const { isMobile } = useMedia()
   return (
-    <Flex
+    <Paper
       w='100%'
-      pv='l'
+      p='l'
       justifyContent='center'
       gap='l'
       alignItems='center'
       direction='column'
-      shadow='midInverted'
-      className={styles.container}
-      css={{ backgroundColor: color.background.white, zIndex: 2 }}
+      shadow={isMobile ? 'none' : 'midInverted'}
+      backgroundColor='white'
     >
       {children}
-    </Flex>
+    </Paper>
   )
 }
