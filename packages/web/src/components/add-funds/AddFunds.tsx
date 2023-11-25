@@ -132,8 +132,6 @@ export const AddFunds = ({
             withRadioOptions
             onRadioChange={handleChangeOption}
             selectedRadioOption={selectedPurchaseMethod}
-            rowClassName={mobile ? styles.summaryTableRow : undefined}
-            rowValueClassName={mobile ? styles.summaryTableRowValue : undefined}
           />
           <Button
             variant={ButtonType.PRIMARY}

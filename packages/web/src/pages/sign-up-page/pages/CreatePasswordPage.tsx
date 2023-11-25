@@ -31,6 +31,7 @@ const messages = {
   createYourPassword: 'Create Your Password',
   description:
     'Create a password that’s secure and easy to remember! We can’t reset your password, so write it down or use a password manager.',
+  passwordAndEmailDescription: `Enter your email and create a password. Keep in mind that we can't reset your password.`,
   yourEmail: 'Your Email',
   passwordLabel: 'Password',
   confirmPasswordLabel: 'Confirm Password',
@@ -40,7 +41,8 @@ const messages = {
   termsOfService: 'Terms of Service',
   and: ' and ',
   privacyPolicy: 'Privacy Policy.',
-  goBack: 'Go back'
+  goBack: 'Go back',
+  emailInUse: 'That email is already used by another Audius account.'
 }
 
 const initialValues = {

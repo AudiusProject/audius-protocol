@@ -4,6 +4,7 @@ const { getDefaultConfig } = require('metro-config')
 
 const clientPath = path.resolve(__dirname, '../web')
 const commonPath = path.resolve(__dirname, '../../packages/common')
+const harmonyPath = path.resolve(__dirname, '../../packages/harmony')
 const sdkPath = path.resolve(__dirname, '../../packages/libs')
 const emptyPolyfill = path.resolve(__dirname, 'src/mocks/empty.ts')
 const fixedDecimalPath = path.resolve(__dirname, '../../packages/fixed-decimal')
@@ -53,6 +54,7 @@ module.exports = (async () => {
       path.resolve(__dirname, '../../node_modules'),
       clientPath,
       commonPath,
+      harmonyPath,
       sdkPath,
       fixedDecimalPath
     ],

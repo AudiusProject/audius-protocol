@@ -31,6 +31,7 @@ import { TRENDING_PAGE } from 'utils/route'
 import { AccountHeader } from '../components/AccountHeader'
 import { ContinueFooter } from '../components/ContinueFooter'
 import FollowArtistTile from '../components/FollowArtistTile'
+import { SelectArtistsPreviewContextProvider } from '../utils/selectArtistsPreviewContext'
 
 const messages = {
   header: 'Follow At Least 3 Artists',
@@ -128,7 +129,7 @@ export const SelectArtistsPage = () => {
               }
             }}
           >
-            <AccountHeader />
+            <AccountHeader mode='viewing' />
             <Flex
               direction='column'
               mh={isMobile ? undefined : '5xl'}
@@ -204,24 +205,30 @@ export const SelectArtistsPage = () => {
               </Flex>
               <Form>
                 <fieldset>
-                  <Paper
-                    css={{
-                      background: 'var(--harmony-bg-default)',
-                      boxShadow: 'none',
-                      minHeight: 500
-                    }}
-                    pv='xl'
-                    ph={isMobile ? 'l' : 'xl'}
-                    gap={isMobile ? 's' : 'm'}
-                    wrap='wrap'
-                  >
-                    {isLoading
-                      ? null
-                      : artists?.map((user) => {
-                          const { user_id: userId } = user
-                          return <FollowArtistTile key={userId} user={user} />
-                        })}
-                  </Paper>
+                  <SelectArtistsPreviewContextProvider>
+                    <Paper
+                      css={{
+                        background: 'var(--harmony-bg-default)',
+                        boxShadow: 'none',
+                        minHeight: 500
+                      }}
+                      pv='xl'
+                      ph={isMobile ? 'l' : 'xl'}
+                      gap={isMobile ? 's' : 'm'}
+                      wrap='wrap'
+                    >
+                      {isLoading
+                        ? null
+                        : artists?.map((user) => {
+                            return (
+                              <FollowArtistTile
+                                key={user.user_id}
+                                user={user}
+                              />
+                            )
+                          })}
+                    </Paper>
+                  </SelectArtistsPreviewContextProvider>
                 </fieldset>
               </Form>
             </Flex>

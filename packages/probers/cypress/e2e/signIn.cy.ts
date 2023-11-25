@@ -34,7 +34,9 @@ describe('Sign In', () => {
     cy.visit('signin')
     assertOnSignInPage()
     cy.findByRole('textbox', { name: /email/i }).type(email)
-    cy.findByRole('textbox', { name: /password/i }).type(password)
+    // Password inputs dont have a role, so we just check against label text
+    // https://github.com/testing-library/dom-testing-library/issues/567#issue-616906804
+    cy.findByLabelText(/^password/i).type(password)
     cy.findByRole('button', { name: /sign in/i }).click()
 
     cy.findByRole('heading', {

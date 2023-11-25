@@ -19,7 +19,10 @@ import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
-import { setValueField } from 'common/store/pages/signon/actions'
+import {
+  setLinkedSocialOnFirstPage,
+  setValueField
+} from 'common/store/pages/signon/actions'
 import { getEmailField } from 'common/store/pages/signon/selectors'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import PreloadImage from 'components/preload-image/PreloadImage'
@@ -27,7 +30,12 @@ import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { SocialMediaLoginOptions } from 'pages/sign-up-page/components/SocialMediaLoginOptions'
 import { EMAIL_REGEX } from 'utils/email'
-import { SIGN_IN_PAGE, SIGN_UP_PASSWORD_PAGE } from 'utils/route'
+import {
+  SIGN_IN_PAGE,
+  SIGN_UP_FINISH_PROFILE_PAGE,
+  SIGN_UP_HANDLE_PAGE,
+  SIGN_UP_PASSWORD_PAGE
+} from 'utils/route'
 
 import { SignUpWithMetaMaskButton } from '../components/SignUpWithMetaMaskButton'
 
@@ -73,6 +81,17 @@ export const CreateEmailPage = () => {
   const initialValues = {
     email: existingEmailValue.value ?? ''
   }
+
+  const handleLinkedSocialMedia = useCallback(
+    ({ requiresReview }: { requiresReview: boolean }) => {
+      dispatch(setLinkedSocialOnFirstPage(true))
+      navigate(
+        requiresReview ? SIGN_UP_HANDLE_PAGE : SIGN_UP_FINISH_PROFILE_PAGE
+      )
+    },
+    [dispatch, navigate]
+  )
+
   const onSubmit = useCallback(
     async (
       values: SignUpEmailValues,
@@ -169,10 +188,7 @@ export const CreateEmailPage = () => {
               </Text>
             </Divider>
             <SocialMediaLoginOptions
-              onCompleteSocialMediaLogin={(result) => {
-                console.info(result)
-                // TODO
-              }}
+              onCompleteSocialMediaLogin={handleLinkedSocialMedia}
             />
           </Flex>
           <Flex direction='column' gap='l'>

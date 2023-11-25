@@ -112,7 +112,6 @@ const TrackListItem = ({
   const menu: Omit<TrackMenuProps, 'children'> = {
     handle: track.user.handle,
     includeAddToPlaylist: true,
-    includeEmbed: !track.premium_conditions,
     includeArtistPick: false,
     includeEdit: false,
     includeFavorite: true,

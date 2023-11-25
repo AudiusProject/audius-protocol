@@ -56,8 +56,6 @@ export type SummaryTableProps = {
   withRadioOptions?: boolean
   selectedRadioOption?: string
   onRadioChange?: (method: string) => void
-  rowClassName?: string
-  rowValueClassName?: string
 }
 
 export const SummaryTable = ({
@@ -70,9 +68,7 @@ export const SummaryTable = ({
   summaryValueColor = 'secondary',
   withRadioOptions,
   selectedRadioOption,
-  onRadioChange,
-  rowClassName,
-  rowValueClassName
+  onRadioChange
 }: SummaryTableProps) => {
   const { color } = useTheme()
   // Collapsible is collapsed by default
@@ -96,14 +92,14 @@ export const SummaryTable = ({
           justifyContent='space-between'
           pv='m'
           ph='xl'
-          className={cn(styles.row, rowClassName)}
           css={{ opacity: disabled ? 0.5 : 1 }}
+          borderTop='default'
         >
           <Flex
             onClick={() => onRadioChange?.(id)}
             css={{ cursor: 'pointer' }}
             alignItems='center'
-            justifyContent='center'
+            justifyContent='space-between'
             gap='s'
           >
             {withRadioOptions ? (
@@ -116,18 +112,18 @@ export const SummaryTable = ({
             ) : null}
             <Text>{label}</Text>
           </Flex>
-          <Text className={rowValueClassName}>{value}</Text>
+          <Text>{value}</Text>
         </Flex>
       ))}
       {summaryItem !== undefined ? (
         <Flex
-          className={styles.row}
           css={{ backgroundColor: color.background.surface1 }}
           alignItems='center'
           alignSelf='stretch'
           justifyContent='space-between'
           pv='m'
           ph='xl'
+          borderTop='default'
         >
           <Text variant='title' size='medium' color={summaryLabelColor}>
             {summaryItem.label}

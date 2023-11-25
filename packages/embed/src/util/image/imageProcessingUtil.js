@@ -1,10 +1,12 @@
 import WebWorker from '../WebWorker'
-import jimp from './jimp.min.workerscript'
 
 import dominantColorWorkerFile from './dominantColor.worker.js'
 import gifPreviewWorkerFile from './gifPreview.worker.js'
+import jimp from './jimp.min.workerscript'
 
-const dominantColorWorker = new WebWorker(dominantColorWorkerFile, false, [jimp])
+const dominantColorWorker = new WebWorker(dominantColorWorkerFile, false, [
+  jimp
+])
 const gifPreviewWorker = new WebWorker(gifPreviewWorkerFile, false, [jimp])
 
 export const getDominantColor = async (imageUrl) => {

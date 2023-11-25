@@ -53,6 +53,7 @@
     "@amplitude/react-native": "2.6.0",
     "@audius/common": "*",
     "@audius/fixed-decimal": "*",
+    "@audius/harmony": "*",
     "@audius/sdk": "*",
     "@emotion/native": "11.11.0",
     "@emotion/react": "11.11.1",

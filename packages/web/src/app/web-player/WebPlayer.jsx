@@ -50,6 +50,7 @@ import { RewardClaimedToast } from 'components/reward-claimed-toast/RewardClaime
 import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
+import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
 import {
   MainContentContext,
   MainContentContextProvider,
@@ -463,6 +464,7 @@ class WebPlayer extends Component {
           ) : null}
         </AppBannerWrapper>
         {this.props.isChatEnabled ? <ChatListener /> : null}
+        <USDCBalanceFetcher />
         <div className={cn(styles.app, { [styles.mobileApp]: isMobileClient })}>
           {this.props.showCookieBanner ? <CookieBanner /> : null}
           <Notice />
