@@ -49,9 +49,7 @@ export const SocialMediaLoginOptions = ({
       <SignupFlowTwitterAuth
         className={styles.flex1}
         onFailure={handleFailure}
-        onSuccess={({ handle, requiresReview }) =>
-          handleSuccess({ handle, requiresReview, platform: 'twitter' })
-        }
+        onSuccess={handleSuccess}
       >
         <SocialButton
           type='button'
@@ -63,9 +61,7 @@ export const SocialMediaLoginOptions = ({
       <SignupFlowInstagramAuth
         className={styles.flex1}
         onFailure={handleFailure}
-        onSuccess={({ handle, requiresReview }) =>
-          handleSuccess({ handle, requiresReview, platform: 'instagram' })
-        }
+        onSuccess={handleSuccess}
       >
         <SocialButton
           type='button'
@@ -78,9 +74,7 @@ export const SocialMediaLoginOptions = ({
       <Box className={styles.flex1}>
         <SignupFlowTikTokAuth
           onFailure={handleFailure}
-          onSuccess={({ handle, requiresReview }) =>
-            handleSuccess({ handle, requiresReview, platform: 'tiktok' })
-          }
+          onSuccess={handleSuccess}
         >
           <SocialButton
             type='button'

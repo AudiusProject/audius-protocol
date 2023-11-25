@@ -8,7 +8,7 @@ import { passwordSchema } from '../utils/passwordSchema'
 
 export type CompletionChecklistItemStatus = 'incomplete' | 'complete' | 'error'
 
-const messages = {
+const messages: Record<string, string> = {
   hasNumber: 'Must contain numbers',
   minLength: 'At least 8 characters',
   matches: 'Passwords match',

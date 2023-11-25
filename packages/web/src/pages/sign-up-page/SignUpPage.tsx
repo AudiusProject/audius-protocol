@@ -1,10 +1,8 @@
-import { Paper } from '@audius/harmony'
 import { Helmet } from 'react-helmet'
 import { useSelector } from 'react-redux'
 import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
 import { getSignOn } from 'common/store/pages/signon/selectors'
-import { useMedia } from 'hooks/useMedia'
 import { NavHeader } from 'pages/sign-up-page/components/NavHeader'
 import { determineAllowedRoute } from 'pages/sign-up-page/utils'
 import { AppState } from 'store/types'
@@ -18,7 +16,6 @@ import {
   SIGN_UP_PASSWORD_PAGE
 } from 'utils/route'
 
-import { ProgressHeader } from './components/ProgressHeader'
 import { CreateEmailPage } from './pages/CreateEmailPage'
 import { CreatePasswordPage } from './pages/CreatePasswordPage'
 import { FinishProfilePage } from './pages/FinishProfilePage'

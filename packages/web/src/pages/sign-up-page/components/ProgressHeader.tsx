@@ -1,7 +1,4 @@
 import {
-  Box,
-  Flex,
-  IconAudiusLogoHorizontal,
   IconComponent,
   IconNote,
   IconUser,
@@ -16,8 +13,6 @@ import {
   SIGN_UP_GENRES_PAGE,
   SIGN_UP_HANDLE_PAGE
 } from 'utils/route'
-
-import styles from './ProgressHeader.module.css'
 
 type ProgressHeaderStep = 'customize' | 'genres' | 'artists'
 

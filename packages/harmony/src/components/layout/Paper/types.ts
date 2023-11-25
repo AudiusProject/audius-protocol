@@ -31,5 +31,5 @@ export type PaperProps = {
    * Elevation Shadow
    * @default mid
    */
-  shadow?: Exclude<ShadowOptions, 'drop'> | 'none'
+  shadow?: Exclude<ShadowOptions, 'drop'>
 }

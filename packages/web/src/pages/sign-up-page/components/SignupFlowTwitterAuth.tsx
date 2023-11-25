@@ -11,7 +11,11 @@ import { useSetProfileFromTwitter } from '../hooks/socialMediaLogin'
 type SignupFlowTwitterAuthProps = PropsWithChildren<{
   className?: string
   onFailure: (e: unknown) => void
-  onSuccess: (info: { requiresReview: boolean; handle: string }) => void
+  onSuccess: (info: {
+    requiresReview: boolean
+    handle: string
+    platform: 'twitter'
+  }) => void
 }>
 
 export const SignupFlowTwitterAuth = ({
@@ -42,7 +46,8 @@ export const SignupFlowTwitterAuth = ({
     }
     onSuccess({
       requiresReview: res.requiresReview,
-      handle: res.handle
+      handle: res.handle,
+      platform: 'twitter'
     })
   }
 

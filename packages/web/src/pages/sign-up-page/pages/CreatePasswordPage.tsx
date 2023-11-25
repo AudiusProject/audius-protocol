@@ -64,7 +64,6 @@ export const CreatePasswordPage = () => {
   const handleSubmit = useCallback(
     (values: CreatePasswordValues) => {
       const { password } = values
-      console.log('sup!')
       dispatch(setValueField('password', password))
       navigate(SIGN_UP_HANDLE_PAGE)
     },

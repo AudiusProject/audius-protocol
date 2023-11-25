@@ -16,7 +16,7 @@ export const ContinueFooter = ({ children }: ContinueFooterProps) => {
       gap='l'
       alignItems='center'
       direction='column'
-      shadow={isMobile ? 'none' : 'midInverted'}
+      shadow={isMobile ? undefined : 'midInverted'}
       backgroundColor='white'
     >
       {children}

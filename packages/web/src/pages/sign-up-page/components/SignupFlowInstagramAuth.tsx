@@ -11,7 +11,11 @@ import { useSetProfileFromInstagram } from '../hooks/socialMediaLogin'
 type SignupFlowInstagramAuthProps = PropsWithChildren<{
   className?: string
   onFailure: (e: unknown) => void
-  onSuccess: (info: { requiresReview: boolean; handle: string }) => void
+  onSuccess: (info: {
+    requiresReview: boolean
+    handle: string
+    platform: 'instagram'
+  }) => void
 }>
 
 export const SignupFlowInstagramAuth = ({
@@ -45,7 +49,8 @@ export const SignupFlowInstagramAuth = ({
     }
     onSuccess({
       requiresReview: res.requiresReview,
-      handle: res.handle
+      handle: res.handle,
+      platform: 'instagram'
     })
   }
 

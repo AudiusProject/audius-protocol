@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo, useRef } from 'react'
 
-import { AudiusQueryContext, useDebouncedCallback } from '@audius/common'
+import { useDebouncedCallback, useAudiusQueryContext } from '@audius/common'
 import {
   Button,
   Divider,
@@ -8,10 +8,10 @@ import {
   IconArrowRight,
   IconVerified,
   Paper,
-  Text
+  Text,
+  TextLink
 } from '@audius/harmony'
-import { Form, Formik, FormikProps, useFormikContext } from 'formik'
-import { isEmpty } from 'lodash'
+import { Form, Formik, FormikProps, useField, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -28,13 +28,8 @@ import { SignupFlowInstagramAuth } from '../components/SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from '../components/SignupFlowTikTokAuth'
 import { SignupFlowTwitterAuth } from '../components/SignupFlowTwitterAuth'
 import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
-import {
-  generateHandleSchema,
-  errorMessages as handleErrorMessages
-} from '../utils/handleSchema'
+import { generateHandleSchema, errorMessages } from '../utils/handleSchema'
 import { messages as socialMediaMessages } from '../utils/socialMediaMessages'
-
-import styles from './PickHandlePage.module.css'
 
 const messages = {
   pickYourHandle: 'Pick Your Handle',
@@ -51,8 +46,13 @@ const messages = {
     'Verify your Audius account by linking a verified social media account.',
   claimHandleHeadsUp:
     'Heads up! 👋 Picking a handle that doesn’t match your verified account cannot be undone later.',
-  ...socialMediaMessages,
-  ...handleErrorMessages
+  ...socialMediaMessages
+}
+
+const handleAuthMap = {
+  [errorMessages.twitterReservedError]: SignupFlowTwitterAuth,
+  [errorMessages.instagramReservedError]: SignupFlowInstagramAuth,
+  [errorMessages.tiktokReservedError]: SignupFlowTikTokAuth
 }
 
 type PickHandleValues = {
@@ -68,12 +68,10 @@ type HandleFieldProps = {
 }
 
 const HandleField = ({ onCompleteSocialMediaLogin }: HandleFieldProps) => {
-  const {
-    values,
-    validateForm,
-    errors: { handle: error },
-    setFieldError
-  } = useFormikContext<PickHandleValues>()
+  const [{ value: handle }, { error = errorMessages.instagramReservedError }] =
+    useField('handle')
+  const { values, validateForm, setFieldError } =
+    useFormikContext<PickHandleValues>()
 
   const { toast } = useContext(ToastContext)
 
@@ -82,6 +80,7 @@ const HandleField = ({ onCompleteSocialMediaLogin }: HandleFieldProps) => {
     [validateForm],
     1000
   )
+
   useEffect(() => {
     debouncedValidate(values)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -111,64 +110,29 @@ const HandleField = ({ onCompleteSocialMediaLogin }: HandleFieldProps) => {
     [onCompleteSocialMediaLogin, toast]
   )
 
-  let helperText: React.ReactNode = error
+  const AuthComponent = error ? handleAuthMap[error] : undefined
 
-  if (error === messages.twitterReservedError) {
-    helperText = (
+  const helperText =
+    error && AuthComponent ? (
       <>
-        {messages.twitterReservedError}{' '}
-        <SignupFlowTwitterAuth
-          className={styles.linkToClaim}
-          onFailure={handleVerifyHandleError}
-          onSuccess={({ handle, requiresReview }) =>
-            handleLoginSuccess({ handle, requiresReview, platform: 'twitter' })
-          }
-        >
-          {messages.linkToClaim}
-        </SignupFlowTwitterAuth>
+        {error}{' '}
+        <TextLink variant='visible' asChild>
+          <AuthComponent
+            onFailure={handleVerifyHandleError}
+            onSuccess={handleLoginSuccess}
+          >
+            <span>{messages.linkToClaim}</span>
+          </AuthComponent>
+        </TextLink>
       </>
-    )
-  } else if (error === messages.instagramReservedError) {
-    helperText = (
-      <>
-        {messages.instagramReservedError}{' '}
-        <SignupFlowInstagramAuth
-          onFailure={handleVerifyHandleError}
-          onSuccess={({ handle, requiresReview }) =>
-            handleLoginSuccess({
-              handle,
-              requiresReview,
-              platform: 'instagram'
-            })
-          }
-          className={styles.linkToClaim}
-        >
-          {messages.linkToClaim}
-        </SignupFlowInstagramAuth>
-      </>
-    )
-  } else if (error === messages.tiktokReservedError) {
-    helperText = (
-      <>
-        {messages.tiktokReservedError}{' '}
-        <SignupFlowTikTokAuth
-          onFailure={handleVerifyHandleError}
-          onSuccess={({ handle, requiresReview }) =>
-            handleLoginSuccess({ handle, requiresReview, platform: 'tiktok' })
-          }
-        >
-          <button className={styles.linkToClaim}>{messages.linkToClaim}</button>
-        </SignupFlowTikTokAuth>
-      </>
-    )
-  }
+    ) : null
 
   return (
     <HarmonyTextField
       name='handle'
       label={messages.handle}
-      error={!!error && !isEmpty(values.handle)}
-      helperText={!!error && !isEmpty(values.handle) ? helperText : undefined}
+      error={error && handle}
+      helperText={helperText}
       startAdornmentText='@'
       placeholder={messages.handle}
       transformValue={(value) => value.replace(/\s/g, '')}
@@ -189,13 +153,7 @@ const SocialMediaSection = ({
 }: SocialMediaSectionProps) => {
   const { isMobile } = useMedia()
   return (
-    <Paper
-      direction='column'
-      backgroundColor='surface2'
-      p='l'
-      gap='l'
-      shadow='none'
-    >
+    <Paper direction='column' backgroundColor='surface2' p='l' gap='l'>
       <Flex direction='column' gap='s'>
         <Text
           variant={isMobile ? 'title' : 'heading'}
@@ -231,15 +189,12 @@ export const PickHandlePage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const { toast } = useContext(ToastContext)
-  const queryContext = useContext(AudiusQueryContext)
+  const audiusQueryContext = useAudiusQueryContext()
   const validationSchema = useMemo(() => {
-    if (queryContext != null) {
-      return toFormikValidationSchema(
-        generateHandleSchema({ audiusQueryContext: queryContext })
-      )
-    }
-    return undefined
-  }, [queryContext])
+    return toFormikValidationSchema(
+      generateHandleSchema({ audiusQueryContext })
+    )
+  }, [audiusQueryContext])
 
   const { value } = useSelector(getHandleField)
 
@@ -328,7 +283,7 @@ export const PickHandlePage = () => {
                   variant='body'
                   color='subdued'
                   size='s'
-                  className={styles.dividerText}
+                  css={{ textTransform: 'uppercase' }}
                 >
                   {messages.or}
                 </Text>
