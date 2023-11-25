@@ -1,13 +1,14 @@
-import cn from 'classnames'
 import { useState, useEffect } from 'react'
 
+import cn from 'classnames'
+
+import { getCollectiblesJson } from '../../util/BedtimeClient'
 import Card from '../card/Card'
 
 import CollectibleDetailsView from './CollectibleDetailsView'
 import styles from './CollectibleGallery.module.css'
 import CollectibleTile from './CollectibleTile'
 import CollectiblesHeader from './CollectiblesHeader'
-import { getCollectiblesJson } from '../../util/BedtimeClient'
 
 const CollectibleGallery = ({
   collectibles,

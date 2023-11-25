@@ -6,12 +6,20 @@ import { useDispatch, useSelector } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { setValueField } from 'common/store/pages/signon/actions'
+import {
+  setLinkedSocialOnFirstPage,
+  setValueField
+} from 'common/store/pages/signon/actions'
 import { getEmailField } from 'common/store/pages/signon/selectors'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { EMAIL_REGEX } from 'utils/email'
-import { SIGN_IN_PAGE, SIGN_UP_PASSWORD_PAGE } from 'utils/route'
+import {
+  SIGN_IN_PAGE,
+  SIGN_UP_FINISH_PROFILE_PAGE,
+  SIGN_UP_HANDLE_PAGE,
+  SIGN_UP_PASSWORD_PAGE
+} from 'utils/route'
 
 import { CreateEmailPageDesktop } from './CreateEmailPageDesktop'
 import { CreateEmailPageMobile } from './CreateEmailPageMobile'
@@ -21,11 +29,13 @@ export type SignUpEmailValues = {
   email: string
 }
 
+export const emailSchema = z
+  .string({ required_error: messages.invalidEmail })
+  .regex(EMAIL_REGEX, { message: messages.invalidEmail })
+
 const FormSchema = toFormikValidationSchema(
   z.object({
-    email: z
-      .string({ required_error: messages.invalidEmail })
-      .regex(EMAIL_REGEX, { message: messages.invalidEmail })
+    email: emailSchema
   })
 )
 
@@ -42,6 +52,16 @@ export const CreateEmailPage = () => {
   const initialValues = {
     email: existingEmailValue.value ?? ''
   }
+  const handleLinkedSocialMedia = useCallback(
+    ({ requiresReview }: { requiresReview: boolean }) => {
+      dispatch(setLinkedSocialOnFirstPage(true))
+      navigate(
+        requiresReview ? SIGN_UP_HANDLE_PAGE : SIGN_UP_FINISH_PROFILE_PAGE
+      )
+    },
+    [dispatch, navigate]
+  )
+
   const submitHandler = useCallback(
     async (
       values: SignUpEmailValues,
@@ -82,7 +102,15 @@ export const CreateEmailPage = () => {
       validateOnChange={false}
     >
       <Form css={{ width: '100%', height: '100%' }}>
-        {isDesktop ? <CreateEmailPageDesktop /> : <CreateEmailPageMobile />}
+        {isDesktop ? (
+          <CreateEmailPageDesktop
+            onLinkedSocialMedia={handleLinkedSocialMedia}
+          />
+        ) : (
+          <CreateEmailPageMobile
+            onLinkedSocialMedia={handleLinkedSocialMedia}
+          />
+        )}
       </Form>
     </Formik>
   )

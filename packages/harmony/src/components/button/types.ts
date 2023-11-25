@@ -222,4 +222,9 @@ export type FilterButtonProps = {
    * Popup portal location passed to the inner popup
    */
   popupPortalLocation?: HTMLElement
+
+  /**
+   * zIndex applied to the inner Popup component
+   */
+  popupZIndex?: number
 }

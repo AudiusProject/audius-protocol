@@ -1,6 +1,6 @@
 .container {
   flex: 1;
-  padding: 16px;
+  padding: 24px;
   display: inline-flex;
   flex-direction: column;
   box-sizing: border-box;

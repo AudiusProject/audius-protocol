@@ -17,7 +17,8 @@ const messages = {
 }
 
 export const USDCManualTransferModal = () => {
-  const { isOpen, onClose } = useUSDCManualTransferModal()
+  const { isOpen, onClose, data } = useUSDCManualTransferModal()
+  const { amount, onSuccessAction } = data ?? {}
   const mobile = isMobile()
 
   const handleClose = useCallback(() => {
@@ -51,7 +52,11 @@ export const USDCManualTransferModal = () => {
         </Text>
       </ModalHeader>
       <ModalContent>
-        <USDCManualTransfer onClose={handleClose} />
+        <USDCManualTransfer
+          onClose={handleClose}
+          amountInCents={amount}
+          onSuccessAction={onSuccessAction}
+        />
       </ModalContent>
     </ModalDrawer>
   )

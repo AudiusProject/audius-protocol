@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { useUSDCBalance } from '@audius/common'
+import { useUSDCBalance, accountSelectors } from '@audius/common'
 import {
   Button,
   ButtonSize,
@@ -10,16 +10,22 @@ import {
   Paper,
   SelectablePill
 } from '@audius/harmony'
+import { replace } from 'connected-react-router'
+import { useDispatch, useSelector } from 'react-redux'
 
 import Header from 'components/header/desktop/Header'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Page from 'components/page/Page'
+import { PURCHASES_PAGE, SALES_PAGE, WITHDRAWALS_PAGE } from 'utils/route'
 
 import styles from '../PayAndEarnPage.module.css'
 import { PurchasesTab, usePurchases } from '../components/PurchasesTab'
 import { SalesTab, useSales } from '../components/SalesTab'
 import { USDCCard } from '../components/USDCCard'
 import { WithdrawalsTab, useWithdrawals } from '../components/WithdrawalsTab'
+import { PayAndEarnPageProps, TableType } from '../types'
+
+const { getAccountHasTracks } = accountSelectors
 
 export const messages = {
   title: 'Pay & Earn',
@@ -30,24 +36,28 @@ export const messages = {
   downloadCSV: 'Download CSV'
 }
 
-enum TableType {
-  SALES = 'sales',
-  PURCHASES = 'purchases',
-  WITHDRAWALS = 'withdrawals'
-}
-
 type TableMetadata = {
   label: string
   downloadCSV: () => void
   isDownloadCSVButtonDisabled: boolean
 }
 
-export const PayAndEarnPage = () => {
-  const [selectedTable, setSelectedTable] = useState<TableType>(TableType.SALES)
-  const { data: balance } = useUSDCBalance({
-    isPolling: true,
-    pollingInterval: 3000
-  })
+export const PayAndEarnPage = ({ tableView }: PayAndEarnPageProps) => {
+  const dispatch = useDispatch()
+  const { data: balance } = useUSDCBalance()
+  const accountHasTracks = useSelector(getAccountHasTracks)
+
+  const [tableOptions, setTableOptions] = useState<TableType[] | null>(null)
+  const [selectedTable, setSelectedTable] = useState<TableType | null>(null)
+  useEffect(() => {
+    if (accountHasTracks !== null) {
+      const tableOptions = accountHasTracks
+        ? [TableType.SALES, TableType.PURCHASES, TableType.WITHDRAWALS]
+        : [TableType.PURCHASES, TableType.WITHDRAWALS]
+      setTableOptions(tableOptions)
+      setSelectedTable(tableView ?? tableOptions[0])
+    }
+  }, [accountHasTracks, setSelectedTable, tableView, setTableOptions])
 
   const {
     count: salesCount,
@@ -100,6 +110,26 @@ export const PayAndEarnPage = () => {
     }
   }
 
+  const handleSelectablePillClick = useCallback(
+    (t: TableType) => {
+      let route: string
+      switch (t) {
+        case TableType.SALES:
+          route = SALES_PAGE
+          break
+        case TableType.PURCHASES:
+          route = PURCHASES_PAGE
+          break
+        case TableType.WITHDRAWALS:
+          route = WITHDRAWALS_PAGE
+          break
+      }
+      setSelectedTable(t)
+      dispatch(replace(route))
+    },
+    [setSelectedTable, dispatch]
+  )
+
   return (
     <Page
       title={messages.title}
@@ -107,7 +137,7 @@ export const PayAndEarnPage = () => {
       contentClassName={styles.pageContainer}
       header={header}
     >
-      {balance === null ? (
+      {!tableOptions || !selectedTable || balance === null ? (
         <LoadingSpinner className={styles.spinner} />
       ) : (
         <>
@@ -122,12 +152,12 @@ export const PayAndEarnPage = () => {
                 w='100%'
               >
                 <Flex gap='s'>
-                  {Object.values(TableType).map((t) => (
+                  {tableOptions.map((t) => (
                     <SelectablePill
                       key={tables[t].label}
                       label={tables[t].label}
                       isSelected={selectedTable === t}
-                      onClick={() => setSelectedTable(t)}
+                      onClick={() => handleSelectablePillClick(t)}
                     />
                   ))}
                 </Flex>

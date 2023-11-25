@@ -1,12 +1,7 @@
 import { useCallback, useContext } from 'react'
 
-import {
-  BNUSDC,
-  decimalIntegerToHumanReadable,
-  formatUSDCWeiToCeilingCentsNumber,
-  shortenSPLAddress,
-  useUSDCBalance
-} from '@audius/common'
+import { shortenSPLAddress, useUSDCBalance } from '@audius/common'
+import { USDC } from '@audius/fixed-decimal'
 import {
   Text,
   IconCopy,
@@ -41,12 +36,7 @@ export const AddressTile = ({
   const { color } = useTheme()
   const { toast } = useContext(ToastContext)
   const mobile = isMobile()
-
-  const { data: balance } = useUSDCBalance({ isPolling: true })
-  const balanceNumber = formatUSDCWeiToCeilingCentsNumber(
-    (balance ?? new BN(0)) as BNUSDC
-  )
-  const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
+  const { data: balanceBN } = useUSDCBalance({ isPolling: true })
 
   const handleCopyPress = useCallback(() => {
     copyToClipboard(address)
@@ -71,7 +61,11 @@ export const AddressTile = ({
           </Box>
         </Flex>
         <Text variant='title' size='l' strength='strong'>
-          {`$${balanceFormatted}`}
+          {`$${USDC(balanceBN ?? new BN(0)).toLocaleString('en-us', {
+            roundingMode: 'floor',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          })}`}
         </Text>
       </Flex>
       <Flex

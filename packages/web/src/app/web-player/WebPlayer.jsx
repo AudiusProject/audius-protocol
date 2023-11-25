@@ -50,6 +50,7 @@ import { RewardClaimedToast } from 'components/reward-claimed-toast/RewardClaime
 import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
+import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
 import {
   MainContentContext,
   MainContentContextProvider,
@@ -76,6 +77,7 @@ import HistoryPage from 'pages/history-page/HistoryPage'
 import NotFoundPage from 'pages/not-found-page/NotFoundPage'
 import NotificationUsersPage from 'pages/notification-users-page/NotificationUsersPage'
 import { PayAndEarnPage } from 'pages/pay-and-earn-page/PayAndEarnPage'
+import { TableType } from 'pages/pay-and-earn-page/types'
 import { PremiumTracksPage } from 'pages/premium-tracks-page/PremiumTracksPage'
 import ProfilePage from 'pages/profile-page/ProfilePage'
 import RemixesPage from 'pages/remixes-page/RemixesPage'
@@ -173,7 +175,10 @@ import {
   CHAT_PAGE,
   PROFILE_PAGE_AI_ATTRIBUTED_TRACKS,
   EXPLORE_PREMIUM_TRACKS_PAGE,
-  PAYMENTS_PAGE
+  PAYMENTS_PAGE,
+  WITHDRAWALS_PAGE,
+  PURCHASES_PAGE,
+  SALES_PAGE
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
@@ -459,6 +464,7 @@ class WebPlayer extends Component {
           ) : null}
         </AppBannerWrapper>
         {this.props.isChatEnabled ? <ChatListener /> : null}
+        <USDCBalanceFetcher />
         <div className={cn(styles.app, { [styles.mobileApp]: isMobileClient })}>
           {this.props.showCookieBanner ? <CookieBanner /> : null}
           <Notice />
@@ -703,6 +709,36 @@ class WebPlayer extends Component {
                   path={DASHBOARD_PAGE}
                   isMobile={isMobileClient}
                   component={DashboardPage}
+                />
+                <Route
+                  exact
+                  path={WITHDRAWALS_PAGE}
+                  isMobile={isMobileClient}
+                  render={(props) => (
+                    <PayAndEarnPage
+                      {...props}
+                      tableView={TableType.WITHDRAWALS}
+                    />
+                  )}
+                />
+                <Route
+                  exact
+                  path={PURCHASES_PAGE}
+                  isMobile={isMobileClient}
+                  render={(props) => (
+                    <PayAndEarnPage
+                      {...props}
+                      tableView={TableType.PURCHASES}
+                    />
+                  )}
+                />
+                <Route
+                  exact
+                  path={SALES_PAGE}
+                  isMobile={isMobileClient}
+                  render={(props) => (
+                    <PayAndEarnPage {...props} tableView={TableType.SALES} />
+                  )}
                 />
                 <Route
                   exact

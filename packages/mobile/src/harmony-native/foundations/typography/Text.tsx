@@ -47,6 +47,7 @@ const generateVariantStyles = (config: VariantConfig, theme: HarmonyTheme) => {
         fontSize: typography.size[fontSize[fontSizeKey]],
         lineHeight: typography.lineHeight[lineHeight[fontSizeKey]],
         fontWeight: typography.weight[fontWeight[fontWeightKey]],
+        fontFamily: typography.fontByWeight[fontWeight[fontWeightKey]],
         ...style
       }
     }

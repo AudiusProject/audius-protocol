@@ -1,13 +1,12 @@
-import { ChangeEvent, useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import {
-  BNUSDC,
-  Vendors,
-  decimalIntegerToHumanReadable,
-  formatUSDCWeiToFloorCentsNumber,
+  PurchaseMethod,
+  PurchaseVendor,
   useCreateUserbankIfNeeded,
   useUSDCBalance
 } from '@audius/common'
+import { USDC } from '@audius/fixed-decimal'
 import {
   Box,
   Button,
@@ -40,58 +39,64 @@ const messages = {
   continue: 'Continue'
 }
 
-export type Method = 'card' | 'crypto'
-
 export const AddFunds = ({
   onContinue
 }: {
-  onContinue: (method: Method) => void
+  onContinue: (purchaseMethod: PurchaseMethod) => void
 }) => {
   useCreateUserbankIfNeeded({
     recordAnalytics: track,
     audiusBackendInstance,
     mint: 'usdc'
   })
-  const [selectedMethod, setSelectedMethod] = useState<Method>('card')
+  const [selectedPurchaseMethod, setSelectedPurchaseMethod] =
+    useState<PurchaseMethod>(PurchaseMethod.CARD)
   const mobile = isMobile()
-  const { data: balance } = useUSDCBalance({ isPolling: true })
-  const balanceNumber = formatUSDCWeiToFloorCentsNumber(
-    (balance ?? new BN(0)) as BNUSDC
-  )
-  const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
+  const { data: balanceBN } = useUSDCBalance({ isPolling: true })
+  const balance = USDC(balanceBN ?? new BN(0)).value
+
+  const vendorOptions = [{ label: PurchaseVendor.STRIPE }]
 
   const items: SummaryTableItem[] = [
     {
-      id: 'card',
+      id: PurchaseMethod.CARD,
       label: messages.withCard,
       icon: IconCreditCard,
-      value: mobile ? (
-        <MobileFilterButton
-          onSelect={() => {}}
-          options={[{ label: Vendors.STRIPE }]}
-          zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
-        />
-      ) : (
-        <FilterButton
-          onSelect={() => {}}
-          initialSelectionIndex={0}
-          variant={FilterButtonType.REPLACE_LABEL}
-          options={[{ label: Vendors.STRIPE }]}
-        />
-      )
+      value:
+        vendorOptions.length > 1 ? (
+          mobile ? (
+            <MobileFilterButton
+              onSelect={(vendor: string) => {
+                console.info(vendor)
+              }}
+              options={vendorOptions}
+              zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
+            />
+          ) : (
+            <FilterButton
+              onSelect={({ label: vendor }: { label: string }) => {
+                console.info(vendor)
+              }}
+              initialSelectionIndex={0}
+              variant={FilterButtonType.REPLACE_LABEL}
+              options={vendorOptions}
+              popupZIndex={zIndex.USDC_ADD_FUNDS_FILTER_BUTTON_POPUP}
+            />
+          )
+        ) : null
     },
     {
-      id: 'crypto',
+      id: PurchaseMethod.CRYPTO,
       label: messages.withCrypto,
       icon: IconTransaction
     }
   ]
 
   const handleChangeOption = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      setSelectedMethod(e.target.value as Method)
+    (method: string) => {
+      setSelectedPurchaseMethod(method as PurchaseMethod)
     },
-    [setSelectedMethod]
+    [setSelectedPurchaseMethod]
   )
 
   return (
@@ -113,7 +118,11 @@ export const AddFunds = ({
                 </Box>
               </Flex>
               <Text variant='title' size='l' strength='strong'>
-                {`$${balanceFormatted}`}
+                {`$${USDC(balance).toLocaleString('en-us', {
+                  roundingMode: 'floor',
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}`}
               </Text>
             </Flex>
           </Box>
@@ -122,14 +131,12 @@ export const AddFunds = ({
             items={items}
             withRadioOptions
             onRadioChange={handleChangeOption}
-            selectedRadioOption={selectedMethod}
-            rowClassName={mobile ? styles.summaryTableRow : undefined}
-            rowValueClassName={mobile ? styles.summaryTableRowValue : undefined}
+            selectedRadioOption={selectedPurchaseMethod}
           />
           <Button
             variant={ButtonType.PRIMARY}
             fullWidth
-            onClick={() => onContinue(selectedMethod)}
+            onClick={() => onContinue(selectedPurchaseMethod)}
           >
             {messages.continue}
           </Button>

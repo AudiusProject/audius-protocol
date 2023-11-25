@@ -28,7 +28,13 @@ import styles from './CreateEmailPage.module.css'
 import { SignUpWithMetaMaskButton } from './SignUpWithMetaMaskButton'
 import { messages } from './messages'
 
-export const CreateEmailPageDesktop = () => {
+type CreateEmailPageDesktopProps = {
+  onLinkedSocialMedia: (result: { requiresReview: boolean }) => void
+}
+
+export const CreateEmailPageDesktop = ({
+  onLinkedSocialMedia
+}: CreateEmailPageDesktopProps) => {
   const { isSubmitting } = useFormikContext()
 
   return (
@@ -62,8 +68,7 @@ export const CreateEmailPageDesktop = () => {
             </Divider>
             <SocialMediaLoginOptions
               onCompleteSocialMediaLogin={(result) => {
-                console.info(result)
-                // TODO
+                onLinkedSocialMedia(result)
               }}
             />
           </Flex>

@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 
-import { Box, IconCloseAlt, useTheme } from '@audius/harmony'
+import { Box, IconCloseAlt, Paper, useTheme } from '@audius/harmony'
 import { useSelector } from 'react-redux'
 import { Link, Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
@@ -25,6 +25,7 @@ import {
   TRENDING_PAGE
 } from 'utils/route'
 
+import styles from './SignUpPage.module.css'
 import { MobileNavHeader } from './components/MobileNavHeader'
 import { ProgressHeader } from './components/ProgressHeader'
 import { CreateEmailPage } from './pages/CreateEmailPage/CreateEmailPage'
@@ -55,7 +56,7 @@ const determineAllowedRoute = (
   const attemptedPath = requestedRoute.replace('/signup/', '')
   // Have to type as string[] to avoid too narrow of a type for comparing against
   let allowedRoutes: string[] = [SignUpPath.createEmail] // create email is available by default
-  if (signUpState.email.value) {
+  if (signUpState.email.value || signUpState.linkedSocialOnFirstPage) {
     // Already have email
     allowedRoutes.push(SignUpPath.createPassword)
   }
@@ -154,7 +155,8 @@ const SignUpRoot = (props: SignUpRootProps) => {
   const pageProps = {
     title: messages.title,
     description: messages.description,
-    canonicalUrl: `${BASE_URL}/${SIGN_UP_PAGE}`
+    canonicalUrl: `${BASE_URL}/${SIGN_UP_PAGE}`,
+    contentClassName: styles.pageContent
   }
 
   if (isDesktop) {
@@ -216,27 +218,29 @@ export const SignUpPage = () => {
             SIGN_UP_ARTISTS_PAGE
           ]}
         >
-          {isDesktop ? <ProgressHeader /> : null}
-          <Switch>
-            <SignUpRoute exact path={SIGN_UP_HANDLE_PAGE}>
-              <PickHandlePage />
-            </SignUpRoute>
-          </Switch>
-          <Switch>
-            <SignUpRoute exact path={SIGN_UP_FINISH_PROFILE_PAGE}>
-              <FinishProfilePage />
-            </SignUpRoute>
-          </Switch>
-          <Switch>
-            <SignUpRoute exact path={SIGN_UP_GENRES_PAGE}>
-              <SelectGenrePage />
-            </SignUpRoute>
-          </Switch>
-          <Switch>
-            <SignUpRoute exact path={SIGN_UP_ARTISTS_PAGE}>
-              <SelectArtistsPage />
-            </SignUpRoute>
-          </Switch>
+          <Paper direction='column' w='100%' h={864}>
+            {isDesktop ? <ProgressHeader /> : null}
+            <Switch>
+              <SignUpRoute exact path={SIGN_UP_HANDLE_PAGE}>
+                <PickHandlePage />
+              </SignUpRoute>
+            </Switch>
+            <Switch>
+              <SignUpRoute exact path={SIGN_UP_FINISH_PROFILE_PAGE}>
+                <FinishProfilePage />
+              </SignUpRoute>
+            </Switch>
+            <Switch>
+              <SignUpRoute exact path={SIGN_UP_GENRES_PAGE}>
+                <SelectGenrePage />
+              </SignUpRoute>
+            </Switch>
+            <Switch>
+              <SignUpRoute exact path={SIGN_UP_ARTISTS_PAGE}>
+                <SelectArtistsPage />
+              </SignUpRoute>
+            </Switch>
+          </Paper>
         </SignUpRoute>
       </Switch>
     </SignUpRoot>

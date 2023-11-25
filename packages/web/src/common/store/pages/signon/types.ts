@@ -1,5 +1,7 @@
 import { ID, User } from '@audius/common'
 
+import { ImageFieldValue } from 'pages/sign-up-page/components/ImageField'
+
 export enum EditingStatus {
   EDITING = 'editing',
   LOADING = 'loading',
@@ -7,8 +9,8 @@ export enum EditingStatus {
   FAILURE = 'failure'
 }
 
-export interface EditableField {
-  value: string
+export interface EditableField<T = string> {
+  value: T
   error: string
   status: EditingStatus
 }
@@ -50,9 +52,12 @@ export default interface SignOnPageState {
   useMetaMask: boolean
   accountReady: boolean
   twitterId: string
+  tikTokId: string
+  instagramId: string
+  linkedSocialOnFirstPage: boolean
   twitterScreenName: string
-  profileImage: { file: File; url: string }
-  coverPhoto: { file: File; url: string }
+  profileImage: EditableField<ImageFieldValue>
+  coverPhoto: EditableField<ImageFieldValue>
   suggestedFollowIds: ID[]
   suggestedFollowEntries: User[]
   followIds: ID[]

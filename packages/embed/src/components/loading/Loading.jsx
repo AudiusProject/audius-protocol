@@ -1,5 +1,6 @@
-import cn from 'classnames'
 import { useState, useEffect } from 'react'
+
+import cn from 'classnames'
 
 import Spinner from '../spinner/Spinner'
 

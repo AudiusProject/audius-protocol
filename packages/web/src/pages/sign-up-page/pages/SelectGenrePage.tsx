@@ -48,7 +48,7 @@ export const SelectGenrePage = () => {
 
   return (
     <Flex direction='column' h='100%' gap={isMobile ? '2xl' : '4xl'}>
-      <AccountHeader />
+      <AccountHeader mode='viewing' />
       <Flex flex={1} direction='column' gap={isMobile ? 'xl' : '2xl'}>
         <Flex direction='column' gap={isMobile ? 's' : 'l'} ph='l'>
           <Text

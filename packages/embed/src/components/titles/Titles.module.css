@@ -3,6 +3,7 @@
   flex-direction: column;
   cursor: pointer;
   min-width: 0;
+  gap: 4px;
 }
 
 .title {

@@ -1,31 +1,37 @@
-.container {
-  background-color: rgba(255, 255, 255, 0.95);
+.root {
+  background-color: rgba(255, 255, 255, 0.9);
   position: fixed;
-  display: flex;
   top: 0;
   right: 0;
   left: 0;
   bottom: 0;
-  flex-direction: column;
-  align-items: center;
   z-index: 3;
-  justify-content: space-evenly;
-  padding: 0px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   opacity: 0;
 }
 
-.container.blur {
-  backdrop-filter: blur(4px);
-}
-
-.container > div {
+.root > div {
   transform: scale(0.65);
   transition: all 0.45s cubic-bezier(.09,1.36,.48,.97);
 }
 
+.root.blur {
+  backdrop-filter: blur(4px);
+}
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  padding: 0px 16px;
+}
+
 .logo {
   cursor: pointer;
-  padding: 24px;
 }
 
 .artworkSizing {
@@ -33,14 +39,17 @@
   width: 196px;
 }
 
+
 .dismissIcon {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  opacity: 0.5;
   transform: scale(1);
   transition: all 0.25s ease-out;
   cursor: pointer;
+}
+
+.dismissIcon.card {
+  position: absolute;
+  left: 24px;
+  top: 12px;
 }
 
 .dismissIcon svg {
@@ -54,6 +63,26 @@
 }
 
 .dismissIcon:active {
+  transform: scale(0.98);
+}
+
+.audiusIcon {
+  transform: scale(1);
+  transition: all 0.25s ease-out;
+  cursor: pointer;
+}
+
+.audiusIcon svg {
+  height: 24px;
+  width: 24px;
+}
+
+.audiusIcon:hover {
+  opacity: 0.3;
+  transform: scale(1.05);
+}
+
+.audiusIcon:active {
   transform: scale(0.98);
 }
 

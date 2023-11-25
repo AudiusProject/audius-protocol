@@ -1,10 +1,12 @@
-import { formatPrice, isNullOrUndefined } from '@audius/common'
+import { formatPrice } from '@audius/common'
+
+import { Text } from 'app/components/core'
 
 import { SummaryTable } from '../summary-table'
 import type { SummaryTableItem } from '../summary-table/SummaryTable'
 
 const messages = {
-  summary: 'Transaction Summary',
+  summary: 'Total',
   payExtra: 'Pay Extra',
   premiumTrack: 'Premium Track',
   existingBalance: 'Existing Balance',
@@ -15,19 +17,15 @@ const messages = {
 }
 
 type PurchaseSummaryTableProps = {
-  amountDue: number
-  extraAmount?: number
+  totalPriceInCents: number
   basePrice: number
-  existingBalance?: number
-  isPurchaseSuccessful: boolean
+  extraAmount?: number
 }
 
 export const PurchaseSummaryTable = ({
-  amountDue,
-  extraAmount,
+  totalPriceInCents,
   basePrice,
-  existingBalance,
-  isPurchaseSuccessful
+  extraAmount
 }: PurchaseSummaryTableProps) => {
   const items: SummaryTableItem[] = [
     {
@@ -43,23 +41,17 @@ export const PurchaseSummaryTable = ({
       value: messages.price(formatPrice(extraAmount))
     })
   }
-  if (!isNullOrUndefined(existingBalance) && existingBalance > 0) {
-    items.push({
-      id: 'existingBalance',
-      label: messages.existingBalance,
-      value: `-${messages.price(formatPrice(existingBalance))}`
-    })
-  }
 
   return (
     <SummaryTable
+      collapsible
       title={messages.summary}
+      secondaryTitle={
+        <Text color='secondary' weight='bold'>
+          {messages.price(formatPrice(totalPriceInCents))}
+        </Text>
+      }
       items={items}
-      summaryItem={{
-        id: 'total',
-        label: isPurchaseSuccessful ? messages.youPaid : messages.total,
-        value: messages.price(formatPrice(amountDue))
-      }}
     />
   )
 }

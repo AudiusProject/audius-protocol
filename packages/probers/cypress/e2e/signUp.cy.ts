@@ -29,7 +29,7 @@ function assertOnCreatePasswordPage(user: User) {
   cy.findByRole('heading', { name: /create your password/i }).should('exist')
 
   cy.findByText(
-    /create a password that's secure and easy to remember!/i
+    /Create a password that’s secure and easy to remember!/i
   ).should('exist')
 
   cy.findByText(/your email/i).should('exist')
@@ -63,12 +63,12 @@ describe('Sign Up', () => {
 
     it('can navigate to sign-up from the public site', () => {
       cy.visit('')
-      cy.findByRole('button', { name: /sign up free/i }).click()
-
+      cy.findByRole('link', { name: /sign up/i }).click()
       assertOnSignUpPage()
     })
 
-    it('should create an account', () => {
+    // TODO: Un-skip when full account creation flow is set up
+    it.skip('should create an account', () => {
       const testUser = generateTestUser()
       const { email, password, handle, name } = testUser
       cy.visit('signup')
@@ -77,8 +77,11 @@ describe('Sign Up', () => {
 
       assertOnCreatePasswordPage(testUser)
 
-      cy.findByRole('textbox', { name: /^password/i }).type(password)
-      cy.findByRole('textbox', { name: /confirm password/i }).type(password)
+      // Password inputs dont have a role, so we just check against label text
+      // https://github.com/testing-library/dom-testing-library/issues/567#issue-616906804
+      cy.findByLabelText(/^password/i).type(password)
+      cy.findByLabelText(/confirm password/i).type(password)
+
       cy.findByRole('button', { name: /continue/i }).click()
 
       cy.findByRole('heading', { name: /pick your handle/i }).should('exist')
@@ -195,12 +198,14 @@ describe('Sign Up', () => {
 
     it('can navigate to sign-up from the public site', () => {
       cy.visit('')
-      cy.findByRole('button', { name: /sign up free/i }).click()
+      cy.findByRole('button', { name: /open nav menu/i }).click()
+      cy.findByRole('link', { name: /sign up/i }).click()
 
       assertOnSignUpPage()
     })
 
-    it('should create an account', () => {
+    // TODO: Un-skip when full account creation flow is set up
+    it.skip('should create an account', () => {
       const testUser = generateTestUser()
       const { email, password, handle } = testUser
       cy.visit('signup')

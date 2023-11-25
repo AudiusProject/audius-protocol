@@ -55,9 +55,7 @@ export type SummaryTableProps = {
   summaryValueColor?: ColorValue
   withRadioOptions?: boolean
   selectedRadioOption?: string
-  onRadioChange?: (e: ChangeEvent<HTMLInputElement>) => void
-  rowClassName?: string
-  rowValueClassName?: string
+  onRadioChange?: (method: string) => void
 }
 
 export const SummaryTable = ({
@@ -70,14 +68,19 @@ export const SummaryTable = ({
   summaryValueColor = 'secondary',
   withRadioOptions,
   selectedRadioOption,
-  onRadioChange,
-  rowClassName,
-  rowValueClassName
+  onRadioChange
 }: SummaryTableProps) => {
   const { color } = useTheme()
   // Collapsible is collapsed by default
   const [expanded, setExpanded] = useState(!collapsible)
   const onToggleExpand = useCallback(() => setExpanded((val) => !val), [])
+
+  const handleRadioChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      onRadioChange?.(e.target.value)
+    },
+    [onRadioChange]
+  )
 
   const body = (
     <>
@@ -89,10 +92,16 @@ export const SummaryTable = ({
           justifyContent='space-between'
           pv='m'
           ph='xl'
-          className={cn(styles.row, rowClassName)}
           css={{ opacity: disabled ? 0.5 : 1 }}
+          borderTop='default'
         >
-          <Flex alignItems='center' justifyContent='center' gap='s'>
+          <Flex
+            onClick={() => onRadioChange?.(id)}
+            css={{ cursor: 'pointer' }}
+            alignItems='center'
+            justifyContent='space-between'
+            gap='s'
+          >
             {withRadioOptions ? (
               <RadioButton value={id} disabled={disabled} />
             ) : null}
@@ -103,18 +112,18 @@ export const SummaryTable = ({
             ) : null}
             <Text>{label}</Text>
           </Flex>
-          <Text className={rowValueClassName}>{value}</Text>
+          <Text>{value}</Text>
         </Flex>
       ))}
       {summaryItem !== undefined ? (
         <Flex
-          className={styles.row}
           css={{ backgroundColor: color.background.surface1 }}
           alignItems='center'
           alignSelf='stretch'
           justifyContent='space-between'
           pv='m'
           ph='xl'
+          borderTop='default'
         >
           <Text variant='title' size='medium' color={summaryLabelColor}>
             {summaryItem.label}
@@ -166,7 +175,7 @@ export const SummaryTable = ({
     <RadioButtonGroup
       name={`summaryTable-label-${title}`}
       value={selectedRadioOption}
-      onChange={onRadioChange}
+      onChange={handleRadioChange}
       className={styles.radioGroup}
     >
       {content}
