@@ -16,12 +16,18 @@ import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { setValueField } from 'common/store/pages/signon/actions'
-import { getHandleField } from 'common/store/pages/signon/selectors'
+import {
+  getHandleField,
+  getLinkedSocialOnFirstPage
+} from 'common/store/pages/signon/selectors'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { SIGN_UP_FINISH_PROFILE_PAGE } from 'utils/route'
+import {
+  SIGN_UP_CREATE_LOGIN_DETAILS,
+  SIGN_UP_FINISH_PROFILE_PAGE
+} from 'utils/route'
 
 import { ContinueFooter } from '../components/ContinueFooter'
 import { SignupFlowInstagramAuth } from '../components/SignupFlowInstagramAuth'
@@ -195,15 +201,20 @@ export const PickHandlePage = () => {
     )
   }, [audiusQueryContext])
 
-  const { value } = useSelector(getHandleField)
+  const { value: handle } = useSelector(getHandleField)
+  const isLinkingSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
 
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
       const { handle } = values
       dispatch(setValueField('handle', handle))
-      navigate(SIGN_UP_FINISH_PROFILE_PAGE)
+      navigate(
+        isLinkingSocialOnFirstPage
+          ? SIGN_UP_CREATE_LOGIN_DETAILS
+          : SIGN_UP_FINISH_PROFILE_PAGE
+      )
     },
-    [dispatch, navigate]
+    [dispatch, navigate, isLinkingSocialOnFirstPage]
   )
 
   const processSocialLoginResult = useCallback(
@@ -229,7 +240,7 @@ export const PickHandlePage = () => {
   )
 
   const initialValues = {
-    handle: value || ''
+    handle
   }
 
   return (

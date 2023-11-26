@@ -15,7 +15,6 @@ import {
 import { Form, Formik, FormikHelpers } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
@@ -29,15 +28,15 @@ import PreloadImage from 'components/preload-image/PreloadImage'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { SocialMediaLoginOptions } from 'pages/sign-up-page/components/SocialMediaLoginOptions'
-import { EMAIL_REGEX } from 'utils/email'
 import {
   SIGN_IN_PAGE,
-  SIGN_UP_FINISH_PROFILE_PAGE,
+  SIGN_UP_CREATE_LOGIN_DETAILS,
   SIGN_UP_HANDLE_PAGE,
   SIGN_UP_PASSWORD_PAGE
 } from 'utils/route'
 
 import { SignUpWithMetaMaskButton } from '../components/SignUpWithMetaMaskButton'
+import { emailSchema } from '../utils/emailSchema'
 
 export const messages = {
   title: 'Sign Up For Audius',
@@ -52,7 +51,6 @@ export const messages = {
     </>
   ),
   socialsDividerText: 'Or, get started with one of your socials',
-  invalidEmail: 'Please enter a valid email.',
   unknownError: 'Unknown error occurred.',
   metaMaskNotRecommended: 'Signing up with MetaMask is not recommended.',
   signUpMetamask: 'Sign Up With MetaMask',
@@ -63,13 +61,7 @@ export type SignUpEmailValues = {
   email: string
 }
 
-const FormSchema = toFormikValidationSchema(
-  z.object({
-    email: z
-      .string({ required_error: messages.invalidEmail })
-      .regex(EMAIL_REGEX, { message: messages.invalidEmail })
-  })
-)
+const FormSchema = toFormikValidationSchema(emailSchema)
 
 export const CreateEmailPage = () => {
   const { isMobile } = useMedia()
@@ -83,10 +75,12 @@ export const CreateEmailPage = () => {
   }
 
   const handleLinkedSocialMedia = useCallback(
-    ({ requiresReview }: { requiresReview: boolean }) => {
+    (result: { requiresReview: boolean; handle: string }) => {
+      const { handle, requiresReview } = result
       dispatch(setLinkedSocialOnFirstPage(true))
+      dispatch(setValueField('handle', handle))
       navigate(
-        requiresReview ? SIGN_UP_HANDLE_PAGE : SIGN_UP_FINISH_PROFILE_PAGE
+        requiresReview ? SIGN_UP_HANDLE_PAGE : SIGN_UP_CREATE_LOGIN_DETAILS
       )
     },
     [dispatch, navigate]

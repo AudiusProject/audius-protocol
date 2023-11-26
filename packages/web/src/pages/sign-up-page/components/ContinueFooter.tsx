@@ -1,16 +1,18 @@
 import { PropsWithChildren } from 'react'
 
-import { Paper } from '@audius/harmony'
+import { BoxProps, Paper, PaperProps } from '@audius/harmony'
 
 import { useMedia } from 'hooks/useMedia'
 
 type ContinueFooterProps = PropsWithChildren<{
   className?: string
   sticky?: boolean
-}>
+}> &
+  PaperProps &
+  BoxProps
 
 export const ContinueFooter = (props: ContinueFooterProps) => {
-  const { children, className, sticky } = props
+  const { children, className, sticky, ...other } = props
   const { isMobile } = useMedia()
   return (
     <Paper
@@ -30,6 +32,7 @@ export const ContinueFooter = (props: ContinueFooterProps) => {
         left: 0,
         zIndex: 1
       }}
+      {...other}
     >
       {children}
     </Paper>

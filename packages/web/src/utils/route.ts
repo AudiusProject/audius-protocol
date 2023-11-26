@@ -84,6 +84,7 @@ export const WITHDRAWALS_PAGE = '/payments/withdrawals'
 export enum SignUpPath {
   createEmail = 'create-email',
   createPassword = 'create-password',
+  createLoginDetails = 'create-login-details',
   pickHandle = 'pick-handle',
   finishProfile = 'finish-profile',
   selectGenres = 'select-genres',
@@ -92,6 +93,7 @@ export enum SignUpPath {
 export const SIGN_UP_EMAIL_PAGE = `/signup/${SignUpPath.createEmail}`
 export const SIGN_UP_START_PAGE = SIGN_UP_EMAIL_PAGE // entry point for sign up if needing to redirect to the beginning
 export const SIGN_UP_PASSWORD_PAGE = `/signup/${SignUpPath.createPassword}`
+export const SIGN_UP_CREATE_LOGIN_DETAILS = `/signup/${SignUpPath.finishProfile}`
 export const SIGN_UP_HANDLE_PAGE = `/signup/${SignUpPath.pickHandle}`
 export const SIGN_UP_FINISH_PROFILE_PAGE = `/signup/${SignUpPath.finishProfile}`
 export const SIGN_UP_GENRES_PAGE = `/signup/${SignUpPath.selectGenres}`

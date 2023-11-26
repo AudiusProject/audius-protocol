@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 
 import {
-  Box,
   Flex,
   IconCloseAlt,
   Paper,
@@ -10,7 +9,6 @@ import {
   useTheme
 } from '@audius/harmony'
 import { Link, Route, Switch, useRouteMatch } from 'react-router-dom'
-import { useToggle } from 'react-use'
 
 import djBackground from 'assets/img/2-DJ-4-3.jpg'
 import djPortrait from 'assets/img/DJportrait.jpg'
@@ -35,8 +33,12 @@ const messages = {
 export const SignOnPage = () => {
   const { isMobile } = useMedia()
   const [isExpanded, setIsExpanded] = useState(false)
-  const [isLoaded, setIsLoaded] = useToggle(false)
+  const [isLoaded, setIsLoaded] = useState(false)
   const { spacing, motion } = useTheme()
+  const [panelHeight, setPanelHeight] = useState<number | null>(null)
+  const onSignInPage = !!useRouteMatch(SIGN_IN_PAGE)
+
+  const panelRef = useRef<HTMLDivElement>(null)
 
   const collapsedMobilePageMatch = useRouteMatch({
     path: [SIGN_IN_PAGE, SIGN_UP_EMAIL_PAGE],
@@ -54,11 +56,28 @@ export const SignOnPage = () => {
 
   useEffect(() => {
     setIsLoaded(true)
-  }, [setIsLoaded])
+  }, [])
 
   useEffect(() => {
     setIsExpanded(isPageExpanded)
   }, [isPageExpanded])
+
+  useEffect(() => {
+    setPanelHeight(null)
+  }, [onSignInPage])
+
+  useEffect(() => {
+    if (panelRef.current && panelHeight === null) {
+      // wait for content to finish rendering
+      const calculateHeightTimeout = setTimeout(() => {
+        const height = panelRef.current?.getBoundingClientRect().height
+        if (height) {
+          setPanelHeight(height)
+        }
+      }, 400)
+      return () => clearTimeout(calculateHeightTimeout)
+    }
+  }, [panelHeight])
 
   const routes = (
     <Switch>
@@ -75,10 +94,11 @@ export const SignOnPage = () => {
     return (
       <Flex direction='column' w='100%'>
         <Flex
+          ref={panelRef}
           direction='column'
           borderBottomLeftRadius={!isExpanded ? '2xl' : undefined}
           borderBottomRightRadius={!isExpanded ? '2xl' : undefined}
-          h={isExpanded ? '100%' : 'auto'}
+          h={isExpanded ? '100%' : panelHeight || 'auto'}
           css={{
             position: 'absolute',
             top: 0,
@@ -86,7 +106,7 @@ export const SignOnPage = () => {
             width: '100%',
             backgroundColor: 'white',
             zIndex: 1,
-            transition: `${motion.calm} 0.5s`,
+            transition: `height ${motion.calm}, border-radius ${motion.calm}, transform ${motion.calm} 0.5s`,
             transform: isLoaded ? 'translateY(0px)' : 'translateY(-100%)'
           }}
         >
@@ -97,7 +117,7 @@ export const SignOnPage = () => {
           alignItems='center'
           pb='2xl'
           css={{
-            paddingTop: 520,
+            paddingTop: panelHeight ?? 0,
             flexGrow: 1,
             backgroundImage: `radial-gradient(77.16% 77.16% at 50% 51.81%, rgba(91, 35, 225, 0.80) 0%, rgba(113, 41, 230, 0.64) 67.96%, rgba(162, 47, 235, 0.50) 100%), url(${djPortrait})`,
             backgroundColor: 'lightgray',
@@ -105,27 +125,34 @@ export const SignOnPage = () => {
             backgroundPosition: 'bottom'
           }}
         >
-          <Box
-            css={{
-              margin: 'auto',
-              opacity: isLoaded ? 1 : 0,
-              transition: `opacity ${motion.expressive} 1s`
-            }}
-          >
-            <Switch>
-              <Route path={SIGN_UP_PAGE}>
-                <AudiusValues />
-              </Route>
-              <Route path={SIGN_IN_PAGE}>
-                <Text variant='title' strength='weak' color='staticWhite'>
-                  {messages.newToAudius}{' '}
-                  <TextLink variant='inverted' showUnderline asChild>
-                    <Link to={SIGN_UP_PAGE}>{messages.createAccount}</Link>
-                  </TextLink>
-                </Text>
-              </Route>
-            </Switch>
-          </Box>
+          <Switch>
+            <Route path={SIGN_UP_PAGE}>
+              <AudiusValues
+                css={{
+                  margin: 'auto',
+                  opacity: isLoaded ? 1 : 0,
+                  transition: `opacity ${motion.expressive} 1s`
+                }}
+              />
+            </Route>
+            <Route path={SIGN_IN_PAGE}>
+              <Text
+                variant='title'
+                strength='weak'
+                color='staticWhite'
+                css={{
+                  marginTop: 'auto',
+                  opacity: isLoaded ? 1 : 0,
+                  transition: `opacity ${motion.expressive} 1s`
+                }}
+              >
+                {messages.newToAudius}{' '}
+                <TextLink variant='inverted' showUnderline asChild>
+                  <Link to={SIGN_UP_PAGE}>{messages.createAccount}</Link>
+                </TextLink>
+              </Text>
+            </Route>
+          </Switch>
         </Flex>
       </Flex>
     )

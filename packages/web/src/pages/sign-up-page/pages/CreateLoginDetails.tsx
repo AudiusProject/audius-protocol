@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import {
-  Box,
   Button,
   ButtonType,
   Flex,
@@ -10,29 +9,28 @@ import {
   TextLink
 } from '@audius/harmony'
 import { Form, Formik } from 'formik'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { setValueField } from 'common/store/pages/signon/actions'
-import { getEmailField } from 'common/store/pages/signon/selectors'
+import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { PasswordField } from 'components/form-fields/PasswordField'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import {
   PRIVACY_POLICY,
-  SIGN_UP_HANDLE_PAGE,
+  SIGN_UP_FINISH_PROFILE_PAGE,
   TERMS_OF_SERVICE
 } from 'utils/route'
 
 import { CompletionChecklist } from '../components/CompletionChecklist'
 import { ContinueFooter } from '../components/ContinueFooter'
-import { passwordSchema } from '../utils/passwordSchema'
+import { loginDetailsSchema } from '../utils/loginDetailsSchema'
 
 const messages = {
-  createYourPassword: 'Create Your Password',
-  description:
-    'Create a password that’s secure and easy to remember! We can’t reset your password, so write it down or use a password manager.',
-  yourEmail: 'Your Email',
+  title: 'Create Login Details',
+  description: `Enter your email and create a password. Keep in mind that we can't reset your password.`,
+  emailLabel: 'Email',
   passwordLabel: 'Password',
   confirmPasswordLabel: 'Confirm Password',
   continue: 'Continue',
@@ -46,28 +44,30 @@ const messages = {
 }
 
 const initialValues = {
+  email: '',
   password: '',
   confirmPassword: ''
 }
 
-export type CreatePasswordValues = {
+export type CreateLoginDetailsValues = {
+  email: string
   password: string
   confirmPassword: string
 }
 
-const passwordFormikSchma = toFormikValidationSchema(passwordSchema)
+const loginDetailsFormikSchema = toFormikValidationSchema(loginDetailsSchema)
 
-export const CreatePasswordPage = () => {
+export const CreateLoginDetailsPage = () => {
   const dispatch = useDispatch()
-  const emailField = useSelector(getEmailField)
   const navigate = useNavigateToPage()
   const { isMobile } = useMedia()
 
   const handleSubmit = useCallback(
-    (values: CreatePasswordValues) => {
-      const { password } = values
+    (values: CreateLoginDetailsValues) => {
+      const { email, password } = values
+      dispatch(setValueField('email', email))
       dispatch(setValueField('password', password))
-      navigate(SIGN_UP_HANDLE_PAGE)
+      navigate(SIGN_UP_FINISH_PROFILE_PAGE)
     },
     [dispatch, navigate]
   )
@@ -76,7 +76,7 @@ export const CreatePasswordPage = () => {
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      validationSchema={passwordFormikSchma}
+      validationSchema={loginDetailsFormikSchema}
     >
       {({ isValid, dirty }) => (
         <Flex
@@ -95,22 +95,19 @@ export const CreatePasswordPage = () => {
                 strength='default'
                 variant='heading'
               >
-                {messages.createYourPassword}
+                {messages.title}
               </Text>
               <Text color='default' size={isMobile ? 'm' : 'l'} variant='body'>
                 {messages.description}
               </Text>
             </Flex>
             <Flex direction='column' h='100%' gap='l'>
-              <Box>
-                <Text variant='label' size='xs'>
-                  {messages.yourEmail}
-                </Text>
-                <Text variant='body' size='m'>
-                  {emailField.value}
-                </Text>
-              </Box>
               <Flex direction='column' gap='l'>
+                <HarmonyTextField
+                  name='email'
+                  autoComplete='email'
+                  label={messages.emailLabel}
+                />
                 <PasswordField name='password' label={messages.passwordLabel} />
                 <PasswordField
                   name='confirmPassword'
