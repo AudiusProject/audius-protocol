@@ -1,8 +1,18 @@
 import { useCallback } from 'react'
 
-import { Button, Flex, Paper, Text, useTheme } from '@audius/harmony'
+import {
+  Button,
+  Flex,
+  IconArrowRight,
+  Paper,
+  PlainButton,
+  PlainButtonType,
+  Text,
+  useTheme
+} from '@audius/harmony'
 import { Formik, Form } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -26,7 +36,9 @@ const messages = {
   description:
     'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
   displayName: 'Display Name',
+  outOf: 'of',
   continue: 'Continue',
+  goBack: 'Go Back',
   inputPlaceholder: 'express yourself 💫'
 }
 
@@ -55,9 +67,10 @@ export const FinishProfilePage = () => {
   const { isMobile } = useMedia()
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
+  const history = useHistory()
   const { value: savedDisplayName } = useSelector(getNameField)
-  const { value: savedCoverPhoto } = { ...useSelector(getCoverPhotoField) }
-  const { value: savedProfileImage } = { ...useSelector(getProfileImageField) }
+  const { value: savedCoverPhoto } = useSelector(getCoverPhotoField) ?? {}
+  const { value: savedProfileImage } = useSelector(getProfileImageField) ?? {}
 
   // If the user comes back from a later page we start with whats in the store
   const initialValues = {
@@ -100,9 +113,14 @@ export const FinishProfilePage = () => {
           <Flex
             direction='column'
             gap={isMobile ? 'xl' : '2xl'}
-            css={{ maxWidth: isMobile ? undefined : '608px' }}
+            css={{ maxWidth: isMobile ? undefined : 608 }}
           >
             <Flex direction='column' gap={isMobile ? 's' : 'l'} ph='l'>
+              {isMobile ? null : (
+                <Text size='s' variant='label' color='subdued'>
+                  2 {messages.outOf} 2
+                </Text>
+              )}
               <Text
                 variant='heading'
                 size={isMobile ? 'm' : 'l'}
@@ -162,9 +180,23 @@ export const FinishProfilePage = () => {
             </Flex>
           </Flex>
           <ContinueFooter>
-            <Button type='submit' disabled={!isValid}>
+            <Button
+              type='submit'
+              disabled={!isValid}
+              fullWidth={isMobile}
+              iconRight={IconArrowRight}
+              css={!isMobile && { width: 343 }}
+            >
               {messages.continue}
             </Button>
+            {isMobile ? null : (
+              <PlainButton
+                variant={PlainButtonType.SUBDUED}
+                onClick={history.goBack}
+              >
+                {messages.goBack}
+              </PlainButton>
+            )}
           </ContinueFooter>
         </Flex>
       )}

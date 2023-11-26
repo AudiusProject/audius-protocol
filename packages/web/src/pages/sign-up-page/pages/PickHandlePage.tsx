@@ -68,8 +68,7 @@ type HandleFieldProps = {
 }
 
 const HandleField = ({ onCompleteSocialMediaLogin }: HandleFieldProps) => {
-  const [{ value: handle }, { error = errorMessages.instagramReservedError }] =
-    useField('handle')
+  const [{ value: handle }, { error }] = useField('handle')
   const { values, validateForm, setFieldError } =
     useFormikContext<PickHandleValues>()
 
@@ -242,12 +241,7 @@ export const PickHandlePage = () => {
       validateOnChange={false}
     >
       {({ isSubmitting, isValid, isValidating }) => (
-        <Flex
-          as={Form}
-          direction='column'
-          justifyContent='space-between'
-          h='100%'
-        >
+        <Flex as={Form} direction='column' h='100%'>
           <Flex
             direction='column'
             gap='2xl'

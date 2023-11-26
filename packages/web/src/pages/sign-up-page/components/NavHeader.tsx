@@ -18,6 +18,7 @@ import { useMedia } from 'hooks/useMedia'
 import { useSelector } from 'utils/reducer'
 import {
   SIGN_UP_ARTISTS_PAGE,
+  SIGN_UP_EMAIL_PAGE,
   SIGN_UP_FINISH_PROFILE_PAGE,
   SIGN_UP_GENRES_PAGE,
   SIGN_UP_HANDLE_PAGE,
@@ -56,18 +57,20 @@ export const NavHeader = () => {
     <IconAudiusLogoHorizontal color='subdued' css={{ height: iconSizes.l }} />
   )
 
-  const header = (
+  const header = isBackAllowed ? (
     <>
       <PlainButton
         size={PlainButtonSize.LARGE}
         css={{ padding: 0 }}
-        onClick={isBackAllowed ? history.goBack : handleClose}
-        iconLeft={isBackAllowed ? IconCaretLeft : IconCloseAlt}
+        onClick={history.goBack}
+        iconLeft={IconCaretLeft}
         variant={PlainButtonType.SUBDUED}
       />
-      {isBackAllowed ? audiusLogo : null}
+      {audiusLogo}
       <Box css={{ width: iconSizes.m }} />
     </>
+  ) : (
+    audiusLogo
   )
 
   return (
@@ -80,24 +83,31 @@ export const NavHeader = () => {
       justifyContent='space-between'
     >
       <Switch>
-        <Route
-          path={[
-            SIGN_UP_HANDLE_PAGE,
-            SIGN_UP_FINISH_PROFILE_PAGE,
-            SIGN_UP_GENRES_PAGE,
-            SIGN_UP_ARTISTS_PAGE
-          ]}
-        >
+        <Route path={[SIGN_UP_EMAIL_PAGE]}>
           {isMobile ? (
-            header
-          ) : (
-            <>
-              {audiusLogo}
-              <ProgressHeader />
-              <Box css={{ width: 200 }} />
-            </>
-          )}
+            <PlainButton
+              size={PlainButtonSize.LARGE}
+              css={{ padding: 0 }}
+              onClick={handleClose}
+              iconLeft={IconCloseAlt}
+              variant={PlainButtonType.SUBDUED}
+            />
+          ) : null}
         </Route>
+        {!isMobile ? (
+          <Route
+            path={[
+              SIGN_UP_HANDLE_PAGE,
+              SIGN_UP_FINISH_PROFILE_PAGE,
+              SIGN_UP_GENRES_PAGE,
+              SIGN_UP_ARTISTS_PAGE
+            ]}
+          >
+            {audiusLogo}
+            <ProgressHeader />
+            <Box css={{ width: 200 }} />
+          </Route>
+        ) : null}
         <Route path='*'>{header}</Route>
       </Switch>
     </Flex>

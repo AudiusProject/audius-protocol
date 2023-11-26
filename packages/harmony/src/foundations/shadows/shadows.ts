@@ -7,7 +7,8 @@ export const shadows = {
   emphasis:
     '0px 1.34018px 8px 0px rgba(0, 0, 0, 0.2), 0px 6px 15px 0px rgba(0, 0, 0, 0.1)',
   special: '0px 1px 20px -3px #565776',
-  drop: 'drop-shadow(0px 1.34018px 8px rgba(0, 0, 0, 0.2)) drop-shadow(0px 6px 15px rgba(0, 0, 0, 0.1))'
+  drop: 'drop-shadow(0px 1.34018px 8px rgba(0, 0, 0, 0.2)) drop-shadow(0px 6px 15px rgba(0, 0, 0, 0.1))',
+  flat: undefined
 }
 
 export type Shadows = typeof shadows

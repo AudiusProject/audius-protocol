@@ -13,7 +13,7 @@ export type PaperProps = {
    * Background Color
    * @default white
    */
-  backgroundColor?: Exclude<BackgroundColors, 'default'>
+  backgroundColor?: BackgroundColors
 
   /**
    * Border type. If not provided, no border will be used.

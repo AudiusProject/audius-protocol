@@ -70,35 +70,17 @@ export const SignUpPage = () => {
         <SignUpRoute exact path={SIGN_UP_PASSWORD_PAGE}>
           <CreatePasswordPage />
         </SignUpRoute>
-        <SignUpRoute
-          exact
-          path={[
-            SIGN_UP_HANDLE_PAGE,
-            SIGN_UP_FINISH_PROFILE_PAGE,
-            SIGN_UP_GENRES_PAGE,
-            SIGN_UP_ARTISTS_PAGE
-          ]}
-        >
-          <Switch>
-            <SignUpRoute exact path={SIGN_UP_HANDLE_PAGE}>
-              <PickHandlePage />
-            </SignUpRoute>
-          </Switch>
-          <Switch>
-            <SignUpRoute exact path={SIGN_UP_FINISH_PROFILE_PAGE}>
-              <FinishProfilePage />
-            </SignUpRoute>
-          </Switch>
-          <Switch>
-            <SignUpRoute exact path={SIGN_UP_GENRES_PAGE}>
-              <SelectGenrePage />
-            </SignUpRoute>
-          </Switch>
-          <Switch>
-            <SignUpRoute exact path={SIGN_UP_ARTISTS_PAGE}>
-              <SelectArtistsPage />
-            </SignUpRoute>
-          </Switch>
+        <SignUpRoute exact path={SIGN_UP_HANDLE_PAGE}>
+          <PickHandlePage />
+        </SignUpRoute>
+        <SignUpRoute exact path={SIGN_UP_FINISH_PROFILE_PAGE}>
+          <FinishProfilePage />
+        </SignUpRoute>
+        <SignUpRoute exact path={SIGN_UP_GENRES_PAGE}>
+          <SelectGenrePage />
+        </SignUpRoute>
+        <SignUpRoute exact path={SIGN_UP_ARTISTS_PAGE}>
+          <SelectArtistsPage />
         </SignUpRoute>
       </Switch>
     </>
