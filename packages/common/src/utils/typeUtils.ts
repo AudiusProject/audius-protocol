@@ -35,3 +35,11 @@ export type ValueOf<T> = T[keyof T]
 export function isNullOrUndefined(obj: any): obj is null | undefined {
   return obj === null || obj === undefined
 }
+
+/**
+ * Utility type to improve type hints for editors.
+ * @see https://www.totaltypescript.com/concepts/the-prettify-helper
+ */
+export type Prettify<T> = {
+  [K in keyof T]: T[K]
+} & {}
