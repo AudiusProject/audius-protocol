@@ -183,6 +183,8 @@ import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
 import styles from './WebPlayer.module.css'
 
+import { ClientOnly } from 'components/client-only/ClientOnly'
+
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
 
@@ -287,44 +289,46 @@ class WebPlayer extends Component {
         }
       })
 
-      const windowOpen = window.open
+      if (typeof window !== 'undefined') {
+        const windowOpen = window.open
 
-      const a = document.createElement('a')
-      window.open = (...args) => {
-        const url = args[0]
-        if (!url) {
-          const popup = windowOpen(window.location)
-          const win = {
-            popup,
-            closed: popup.closed,
-            close: () => {
-              popup.close()
+        const a = document.createElement('a')
+        window.open = (...args) => {
+          const url = args[0]
+          if (!url) {
+            const popup = windowOpen(window.location)
+            const win = {
+              popup,
+              closed: popup.closed,
+              close: () => {
+                popup.close()
+              }
             }
-          }
-          Object.defineProperty(win, 'location', {
-            get: () => {
-              a.href = popup.location
-              if (!a.search) {
+            Object.defineProperty(win, 'location', {
+              get: () => {
+                a.href = popup.location
+                if (!a.search) {
+                  return {
+                    href: popup.location,
+                    search: a.search,
+                    hostname: ''
+                  }
+                }
                 return {
                   href: popup.location,
                   search: a.search,
-                  hostname: ''
+                  hostname: a.hostname
                 }
+              },
+              set: (locationHref) => {
+                popup.location = locationHref
+                this.locationHref = locationHref
               }
-              return {
-                href: popup.location,
-                search: a.search,
-                hostname: a.hostname
-              }
-            },
-            set: (locationHref) => {
-              popup.location = locationHref
-              this.locationHref = locationHref
-            }
-          })
-          return win
+            })
+            return win
+          }
+          return windowOpen(...args)
         }
-        return windowOpen(...args)
       }
     }
 
@@ -965,10 +969,12 @@ class WebPlayer extends Component {
             </Suspense>
           </div>
           <PlayBarProvider />
-          <Suspense fallback={null}>
-            <Modals />
-          </Suspense>
-          {/* <ConnectedMusicConfetti /> */}
+          <ClientOnly>
+            <Suspense fallback={null}>
+              <Modals />
+            </Suspense>
+            <ConnectedMusicConfetti />
+          </ClientOnly>
           <Suspense fallback={null}>
             <RewardClaimedToast />
           </Suspense>

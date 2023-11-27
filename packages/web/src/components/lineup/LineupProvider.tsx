@@ -66,20 +66,22 @@ const totalTileHeight = {
   playlist: 350
 }
 
+const innerHeight = typeof window !== 'undefined' ? window.innerHeight : 0
+
 // Load TRACKS_AHEAD x the number of tiles to be displayed on the screen
 export const getLoadMoreTrackCount = (
   variant: LineupVariant,
   multiplier: number | (() => number)
 ) =>
   Math.ceil(
-    (window.innerHeight / totalTileHeight[variant]) *
+    (innerHeight / totalTileHeight[variant]) *
       (typeof multiplier === 'function' ? multiplier() : multiplier)
   )
 
 // Call load more when the user is LOAD_MORE_PAGE_THRESHOLD of the view height
 // away from the bottom of the scrolling window.
 const getLoadMoreThreshold = () =>
-  Math.ceil(window.innerHeight * LOAD_MORE_PAGE_THRESHOLD)
+  Math.ceil(innerHeight * LOAD_MORE_PAGE_THRESHOLD)
 
 const shouldLoadMore = (
   scrollContainer: HTMLDivElement | null,
