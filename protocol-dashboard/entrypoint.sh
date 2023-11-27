@@ -1,17 +1,13 @@
-#!/bin/bash
+#!/bin/sh
 
-FIRST_RUN_FLAG="/.firstrun"
-
-# Check if the container is starting for the first time
-if [ ! -f "$FIRST_RUN_FLAG" ]; then
+if [ ! -d "./dist" ]; then
     echo "Building dist..."
     npm run build:$NETWORK
 
     if [ $? -eq 0 ]; then
         echo "Successfully built dist"
-        touch "$FIRST_RUN_FLAG"
     else
-        echo "'npm run build:prod' failed with exit code $?. Exiting..."
+        echo "'npm run build:$NETWORK' failed with exit code $?. Exiting..."
         exit 1
     fi
 else

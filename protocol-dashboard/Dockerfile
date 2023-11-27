@@ -24,5 +24,3 @@ RUN chmod +x ./entrypoint.sh
 
 ENV DASHBOARD_BASE_URL="/dashboard/"
 RUN npm install --legacy-peer-deps
-
-# ENTRYPOINT ["./entrypoint.sh"]
