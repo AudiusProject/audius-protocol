@@ -19,6 +19,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { setField, setValueField } from 'common/store/pages/signon/actions'
 import {
   getCoverPhotoField,
+  getIsSocialConnected,
   getNameField,
   getProfileImageField
 } from 'common/store/pages/signon/selectors'
@@ -35,11 +36,11 @@ const messages = {
   header: 'Finish Your Profile',
   description:
     'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
-  displayName: 'Display Name',
   outOf: 'of',
+  displayName: 'Display Name',
+  inputPlaceholder: 'express yourself 💫',
   continue: 'Continue',
-  goBack: 'Go Back',
-  inputPlaceholder: 'express yourself 💫'
+  goBack: 'Go back'
 }
 
 export type FinishProfileValues = {
@@ -65,10 +66,12 @@ const formSchema = toFormikValidationSchema(
 export const FinishProfilePage = () => {
   const { color } = useTheme()
   const { isMobile } = useMedia()
+  const history = useHistory()
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
-  const history = useHistory()
+
   const { value: savedDisplayName } = useSelector(getNameField)
+  const isSocialConnected = useSelector(getIsSocialConnected)
   const { value: savedCoverPhoto } = useSelector(getCoverPhotoField) ?? {}
   const { value: savedProfileImage } = useSelector(getProfileImageField) ?? {}
 
@@ -189,7 +192,7 @@ export const FinishProfilePage = () => {
             >
               {messages.continue}
             </Button>
-            {isMobile ? null : (
+            {isMobile || !isSocialConnected ? null : (
               <PlainButton
                 variant={PlainButtonType.SUBDUED}
                 onClick={history.goBack}

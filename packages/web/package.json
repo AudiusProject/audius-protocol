@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius decentralized application",
   "author": "Audius",
-  "version": "1.5.52",
+  "version": "1.5.53",
   "private": true,
   "scripts": {
     "publish-scripts": "./scripts/publishScripts.sh",

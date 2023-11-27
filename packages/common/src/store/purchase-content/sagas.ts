@@ -14,7 +14,6 @@ import {
 } from 'services/audius-backend/solana'
 import { FeatureFlags } from 'services/remote-config/feature-flags'
 import { accountSelectors } from 'store/account'
-import { getAccountUser } from 'store/account/selectors'
 import {
   buyCryptoCanceled,
   buyCryptoFailed,
@@ -235,13 +234,7 @@ function* doStartPurchaseContentFlow({
   )
   const usdcConfig = yield* call(getBuyUSDCRemoteConfig)
   const reportToSentry = yield* getContext('reportToSentry')
-  const { track, make, identify } = yield* getContext('analytics')
-  const user = yield* select(getAccountUser)
-  if (user) {
-    yield* call(identify, user.handle, {
-      isBuyUSDCViaSolEnabled
-    })
-  }
+  const { track, make } = yield* getContext('analytics')
 
   const { price, title, artistInfo } = yield* call(getContentInfo, {
     contentId,
