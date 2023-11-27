@@ -6,8 +6,6 @@ import {
 } from 'store/purchase-content'
 import { formatPrice } from 'utils/formatUtil'
 
-import { RemoteVarHook } from '../useRemoteVar'
-
 import { useUSDCPurchaseConfig } from './useUSDCPurchaseConfig'
 
 const messages = {
@@ -25,11 +23,10 @@ const messages = {
 }
 
 export const usePurchaseContentErrorMessage = (
-  errorCode: PurchaseContentErrorCode,
-  useRemoteVar: RemoteVarHook
+  errorCode: PurchaseContentErrorCode
 ) => {
   const { minUSDCPurchaseAmountCents, maxUSDCPurchaseAmountCents } =
-    useUSDCPurchaseConfig(useRemoteVar)
+    useUSDCPurchaseConfig()
 
   switch (errorCode) {
     case BuyUSDCErrorCode.MinAmountNotMet:

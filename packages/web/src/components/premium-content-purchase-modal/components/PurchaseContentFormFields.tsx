@@ -27,7 +27,6 @@ import { Icon } from 'components/Icon'
 import { MobileFilterButton } from 'components/mobile-filter-button/MobileFilterButton'
 import { SummaryTable, SummaryTableItem } from 'components/summary-table'
 import { Text } from 'components/typography'
-import { useRemoteVar } from 'hooks/useRemoteConfig'
 import zIndex from 'utils/zIndex'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
@@ -58,7 +57,7 @@ export const PurchaseContentFormFields = ({
   isUnlocking
 }: PurchaseContentFormFieldsProps) => {
   const mobile = isMobile()
-  const payExtraAmountPresetValues = usePayExtraPresets(useRemoteVar)
+  const payExtraAmountPresetValues = usePayExtraPresets()
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
   const isPurchased = stage === PurchaseContentStage.FINISH
