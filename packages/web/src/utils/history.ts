@@ -2,6 +2,7 @@ import {
   BrowserHistoryBuildOptions,
   createBrowserHistory,
   createHashHistory,
+  createMemoryHistory,
   HashHistoryBuildOptions,
   History
 } from 'history'
@@ -16,12 +17,14 @@ if (USE_HASH_ROUTING) {
     config.basename = basename
   }
   history = createHashHistory(config)
-} else {
+} else if (typeof window !== 'undefined') {
   const config: BrowserHistoryBuildOptions = {}
   if (basename) {
     config.basename = basename
   }
   history = createBrowserHistory(config)
+} else {
+  history = createMemoryHistory()
 }
 
 export default history

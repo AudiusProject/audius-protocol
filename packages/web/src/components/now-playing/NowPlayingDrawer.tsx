@@ -14,7 +14,7 @@ import NowPlaying from './NowPlaying'
 import styles from './NowPlayingDrawer.module.css'
 const { setIsOpen: _setIsNowPlayingOpen } = nowPlayingUIActions
 
-const DEFAULT_HEIGHT = window.innerHeight
+const DEFAULT_HEIGHT = typeof window !== 'undefined' ? window.innerHeight : 0
 
 // Translation values for a totally hidden drawer
 const DRAWER_HIDDEN_TRANSLATION = -48

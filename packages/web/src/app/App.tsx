@@ -9,7 +9,8 @@ import DemoTrpcPage from 'pages/demo-trpc/DemoTrpcPage'
 import { OAuthLoginPage } from 'pages/oauth-login-page/OAuthLoginPage'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
 
-import '../services/webVitals'
+// TODO: turn into a component to utilize SsrContext
+// import '../services/webVitals'
 
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 

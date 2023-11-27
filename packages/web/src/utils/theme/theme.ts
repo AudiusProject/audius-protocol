@@ -66,11 +66,16 @@ const getThemeColors = (theme: Theme | null) => {
 
 export const setTheme = (theme: Theme) => {
   applyTheme(theme)
-  window.localStorage.setItem(THEME_KEY, theme)
+  if (typeof window !== 'undefined') {
+    window.localStorage.setItem(THEME_KEY, theme)
+  }
 }
 
 export const getTheme = (): Theme | null => {
-  const theme = window.localStorage.getItem(THEME_KEY)
+  const theme =
+    typeof window !== 'undefined'
+      ? window.localStorage.getItem(THEME_KEY)
+      : null
   if (theme && Object.values(Theme).includes(theme as Theme)) {
     return theme as Theme
   }

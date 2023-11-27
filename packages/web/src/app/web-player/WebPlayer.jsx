@@ -39,7 +39,6 @@ import CookieBanner from 'components/cookie-banner/CookieBanner'
 import { DevModeMananger } from 'components/dev-mode-manager/DevModeManager'
 import { HeaderContextConsumer } from 'components/header/mobile/HeaderContextProvider'
 import Konami from 'components/konami/Konami'
-import ConnectedMusicConfetti from 'components/music-confetti/ConnectedMusicConfetti'
 import Navigator from 'components/nav/Navigator'
 import TopLevelPage from 'components/nav/mobile/TopLevelPage'
 import Notice from 'components/notice/Notice'
@@ -190,6 +189,10 @@ const { getTheme } = themeSelectors
 const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
   accountSelectors
 
+const ConnectedMusicConfetti = lazy(() =>
+  import('components/music-confetti/ConnectedMusicConfetti')
+)
+
 const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 
 const UploadPage = lazy(() => import('pages/upload-page'))
@@ -235,7 +238,7 @@ class WebPlayer extends Component {
         this.scrollToTop()
         this.setState({
           initialPage: false,
-          currentRoute: getPathname(location)
+          currentRoute: getPathname(this.props.history.location)
         })
       }
     )
@@ -497,7 +500,7 @@ class WebPlayer extends Component {
                   <Redirect
                     key={route}
                     from={route}
-                    to={{ pathname: getPathname() }}
+                    to={{ pathname: getPathname({ pathname: '' }) }}
                   />
                 ))}
 
@@ -950,7 +953,9 @@ class WebPlayer extends Component {
                     // pathname is not HOME_PAGE. Double check that it is and if not,
                     // just trigger a react router push to the current pathname
                     pathname:
-                      getPathname() === HOME_PAGE ? FEED_PAGE : getPathname(),
+                      getPathname(this.props.history) === HOME_PAGE
+                        ? FEED_PAGE
+                        : getPathname(this.props.history),
                     search: includeSearch(this.props.location.search)
                       ? this.props.location.search
                       : ''
@@ -963,7 +968,7 @@ class WebPlayer extends Component {
           <Suspense fallback={null}>
             <Modals />
           </Suspense>
-          <ConnectedMusicConfetti />
+          {/* <ConnectedMusicConfetti /> */}
           <Suspense fallback={null}>
             <RewardClaimedToast />
           </Suspense>

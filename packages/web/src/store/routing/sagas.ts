@@ -7,7 +7,9 @@ enum LocationAction {
   REPLACE = 'REPLACE'
 }
 
-;(window as any).locationHistory = []
+if (typeof window !== 'undefined') {
+  ;(window as any).locationHistory = []
+}
 
 function* trackLocation() {
   while (true) {

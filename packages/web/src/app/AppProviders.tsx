@@ -14,6 +14,7 @@ import { persistor, store } from 'store/configureStore'
 import history from 'utils/history'
 
 import { MainContentContextProvider } from '../pages/MainContentContext'
+import { useSsrContext } from '../ssr/SsrContext'
 
 import { AppContextProvider } from './AppContextProvider'
 import { AudiusQueryProvider } from './AudiusQueryProvider'
@@ -24,10 +25,22 @@ type AppContextProps = {
   children: ReactNode
 }
 
+const Persist = ({ children }: { children: ReactNode }) => (
+  <PersistGate loading={null} persistor={persistor}>
+    {children}
+  </PersistGate>
+)
+
+const Wrapper = ({ children }: { children: ReactNode }) => <>{children}</>
+
 export const AppProviders = ({ children }: AppContextProps) => {
+  const { isServerSide } = useSsrContext()
+
+  const ReduxPersistProvider = isServerSide ? Wrapper : Persist
+
   return (
     <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
+      <ReduxPersistProvider>
         <ConnectedRouter history={history}>
           <LastLocationProvider>
             <TrpcProvider>
@@ -53,7 +66,7 @@ export const AppProviders = ({ children }: AppContextProps) => {
             </TrpcProvider>
           </LastLocationProvider>
         </ConnectedRouter>
-      </PersistGate>
+      </ReduxPersistProvider>
     </Provider>
   )
 }

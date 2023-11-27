@@ -11,7 +11,7 @@ declare global {
 }
 
 export const isMobile = () => {
-  if (typeof navigator === 'undefined') {
+  if (typeof navigator === 'undefined' || typeof window === 'undefined') {
     return false
   }
   let check = false
@@ -45,6 +45,7 @@ export const isElectron = () => {
 }
 
 export const getOS = () => {
+  if (typeof window === 'undefined') return null
   const platform = window.navigator.platform
 
   const macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K']
@@ -61,6 +62,7 @@ export const getOS = () => {
 }
 
 export const getMobileOS = () => {
+  if (typeof window === 'undefined') return null
   const userAgent = navigator.userAgent || navigator.vendor || window.opera
 
   // Windows Phone must come first because its UA also contains "Android"

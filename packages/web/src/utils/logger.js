@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 const preserveLogs =
-  window.localStorage && window.localStorage.getItem('preserve-logs')
+  typeof window !== 'undefined' &&
+  window.localStorage &&
+  window.localStorage.getItem('preserve-logs')
 
 export const storeLogger = (store) => {
   if (process.env.VITE_ENVIRONMENT === 'production' && !preserveLogs) {

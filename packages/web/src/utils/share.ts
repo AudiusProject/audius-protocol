@@ -9,7 +9,7 @@ export const share = (url: string, text?: string) => {
   const shareableLink = getCopyableLink(url)
 
   // @ts-ignore: navigator may have share field in updated browsers
-  if (navigator.share && isMobile()) {
+  if (typeof navigator !== 'undefined' && navigator.share && isMobile()) {
     navigator
       // @ts-ignore: navigator may have share field in updated browsers
       .share({

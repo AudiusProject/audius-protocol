@@ -3,6 +3,8 @@ import { push as pushRoute } from 'connected-react-router'
 import { Location as HistoryLocation } from 'history'
 import { matchPath } from 'react-router'
 
+import history from './history'
+
 const USE_HASH_ROUTING = process.env.VITE_USE_HASH_ROUTING === 'true'
 
 // Host/protocol.
@@ -424,34 +426,9 @@ export const stripBaseUrl = (url: string) => url.replace(BASE_URL, '')
  * @param {Location} location
  */
 export const getPathname = (
-  location: Location | HistoryLocation = window.location
+  location: Location | HistoryLocation = history.location
 ) => {
-  // If this is a Location, pathname will have a host. If it's a HistoryLocation,
-  // the hashrouter will automatically understand the pathname to be the hash route
-  if (USE_HASH_ROUTING && 'host' in location) {
-    return location.hash.replace('#', '')
-  }
   return BASENAME ? location.pathname.replace(BASENAME, '') : location.pathname
-}
-
-/**
- * For a given route, checks if any of the previous routes in the `orderedRoutes` array matches the window's pathname
- * Returns true if none of the previous routes mach and it does, otherwise false.
- */
-export const doesRenderPage = (pageRoute: string) => {
-  const pgIndex = orderedRoutes.findIndex((route) => route === pageRoute)
-  if (pgIndex === -1) return false
-  const noPreviousMatches = orderedRoutes.slice(0, pgIndex).every((route) => {
-    return !matchPath(getPathname(), {
-      path: route,
-      exact: true
-    })
-  })
-  if (!noPreviousMatches) return false
-  return matchPath(getPathname(), {
-    path: pageRoute,
-    exact: true
-  })
 }
 
 export const recordGoToSignup = (callback: () => void) => {

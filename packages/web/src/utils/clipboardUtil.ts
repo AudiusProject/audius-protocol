@@ -1,8 +1,12 @@
 const PUBLIC_PROTOCOL = process.env.VITE_PUBLIC_PROTOCOL
 const PUBLIC_HOSTNAME = process.env.VITE_PUBLIC_HOSTNAME
 
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+const isIOS =
+  typeof navigator !== 'undefined' &&
+  /iPad|iPhone|iPod/.test(navigator.userAgent)
+const isSafari =
+  typeof navigator !== 'undefined' &&
+  /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
 
 // Pulled from: https://hackernoon.com/copying-text-to-clipboard-with-javascript-df4d4988697f
 export const copyToClipboard = (str: string) => {
@@ -51,4 +55,5 @@ export const copyLinkToClipboard = (link: string) => {
 }
 
 // @ts-ignore: Navigator's share exists on newer browsers
-export const isShareToastDisabled = !!navigator.share
+export const isShareToastDisabled =
+  typeof navigator !== 'undefined' && !!navigator.share

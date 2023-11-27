@@ -9,15 +9,22 @@ import { localStorage } from 'services/local-storage'
 import { useIsMobile, isElectron } from 'utils/clientUtil'
 import { getPathname, HOME_PAGE, publicSiteRoutes } from 'utils/route'
 
-const App = lazy(() => import('./app'))
+import App from './app'
+import { useSsrContext } from './ssr/SsrContext'
+
+// const App = lazy(() => import('./app'))
 const PublicSite = lazy(() => import('./public-site'))
 
-const isPublicSiteRoute = (location = window.location) => {
+const isPublicSiteRoute = (
+  location: { pathname: string } = window.location
+) => {
   const pathname = getPathname(location).toLowerCase()
   return [...publicSiteRoutes, HOME_PAGE].includes(pathname)
 }
 
-const isPublicSiteSubRoute = (location = window.location) => {
+const isPublicSiteSubRoute = (
+  location: { pathname: string } = window.location
+) => {
   const pathname = getPathname(location).toLowerCase()
   return publicSiteRoutes.includes(pathname)
 }
@@ -25,7 +32,10 @@ const isPublicSiteSubRoute = (location = window.location) => {
 const clientIsElectron = isElectron()
 
 export const Root = () => {
-  const [renderPublicSite, setRenderPublicSite] = useState(isPublicSiteRoute())
+  const { path } = useSsrContext()
+  const [renderPublicSite, setRenderPublicSite] = useState(
+    isPublicSiteRoute({ pathname: path ?? '' })
+  )
   const isMobileClient = useIsMobile()
 
   const { value: foundUser } = useAsync(() =>
@@ -35,7 +45,7 @@ export const Root = () => {
   useEffect(() => {
     // TODO: listen to history and change routes based on history...
     window.onpopstate = () => {
-      setRenderPublicSite(isPublicSiteRoute())
+      setRenderPublicSite(isPublicSiteRoute({ pathname: path ?? '' }))
     }
   }, [])
 
@@ -52,8 +62,8 @@ export const Root = () => {
   }
 
   return (
-    <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
-      <App />
-    </Suspense>
+    // <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
+    <App />
+    // </Suspense>
   )
 }

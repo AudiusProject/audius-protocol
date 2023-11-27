@@ -14,7 +14,8 @@ const { getModalVisibility } = modalsSelectors
 type TopLevelPageProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
-const rootElement = document.querySelector('#root')
+const rootElement =
+  typeof document !== 'undefined' ? document.querySelector('#root') : null
 
 const TopLevelPage = ({ showAddToPlaylist }: TopLevelPageProps) => {
   const { isOpen } = useEditPlaylistModal()

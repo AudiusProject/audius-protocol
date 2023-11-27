@@ -129,7 +129,7 @@ const sagaMiddleware = createSagaMiddleware({
 const middlewares = applyMiddleware(
   chatMiddleware(audiusSdk),
   routerMiddleware(history),
-  sagaMiddleware,
+  ...(typeof window !== 'undefined' ? [sagaMiddleware] : []),
   sentryMiddleware,
   thunk
 )
@@ -144,7 +144,10 @@ const configureStore = () => {
     createRootReducer(history),
     composeEnhancers(middlewares)
   )
-  sagaMiddleware.run(rootSaga)
+
+  if (typeof window !== 'undefined') {
+    sagaMiddleware.run(rootSaga)
+  }
   return store
 }
 
@@ -152,7 +155,9 @@ export const store = configureStore()
 export const persistor = persistStore(store)
 
 // Mount store to window for easy access
-window.store = store
+if (typeof window !== 'undefined') {
+  window.store = store
+}
 
 // Set up logger on store
 logger(store)

@@ -416,7 +416,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     }
   }, [dismissOnMouseLeave, onClose])
 
-  return (
+  return typeof document !== 'undefined' ? (
     <>
       {/* Portal the popup out of the dom structure so that it has a separate stacking context */}
       {ReactDOM.createPortal(
@@ -463,5 +463,5 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
         document.body
       )}
     </>
-  )
+  ) : null
 })

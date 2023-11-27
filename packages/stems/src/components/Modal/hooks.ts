@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { useGlobal } from 'hooks/useGlobal'
-
 export const setOverflowHidden = () => {
   document.body.setAttribute('style', 'overflow:hidden;')
 }
@@ -12,23 +10,25 @@ export const removeOverflowHidden = () => {
 
 export const setModalRootTop = () => {
   const root = document.getElementById('modalRootContainer')
+  const scrollY = typeof window !== 'undefined' ? window.scrollY : 0
   if (root) {
-    root.setAttribute('style', `top: ${window.scrollY}px`)
+    root.setAttribute('style', `top: ${scrollY}px`)
   }
 }
 
+let modalCount = 0
+
 export const useModalScrollCount = () => {
-  const [getCount, setCount] = useGlobal('modal-scroll-count', 0)
   // Keep a state toggle to trigger recomputations of the effect
   const [toggle, setToggle] = useState(false)
   const [isOverflowHidden, setIsOverflowHidden] = useState(false)
 
   useEffect(() => {
-    if (!isOverflowHidden && getCount() > 0) {
+    if (!isOverflowHidden && modalCount > 0) {
       setIsOverflowHidden(true)
       setOverflowHidden()
       setModalRootTop()
-    } else if (isOverflowHidden && getCount() === 0) {
+    } else if (isOverflowHidden && modalCount === 0) {
       setIsOverflowHidden(false)
       removeOverflowHidden()
     }
@@ -44,23 +44,23 @@ export const useModalScrollCount = () => {
        * NOTE: This should only be triggered on un-mount when not closed
        */
       setImmediate(() => {
-        if (isOverflowHidden && getCount() === 0) {
+        if (isOverflowHidden && modalCount === 0) {
           removeOverflowHidden()
         }
       })
     }
-  }, [getCount, isOverflowHidden, toggle])
+  }, [isOverflowHidden, toggle])
 
   const incrementScrollCount = useCallback(() => {
-    setCount((count) => count + 1)
+    modalCount = modalCount + 1
     setToggle((toggle) => !toggle)
-  }, [setCount, setToggle])
+  }, [setToggle])
   const decrementScrollCount = useCallback(() => {
     // Though we should in theory never be decrementing past zero, getting into
     // that state would be bad for us, so guard against it defensively
-    setCount((count) => Math.max(0, count - 1))
+    modalCount = Math.max(0, modalCount - 1)
     setToggle((toggle) => !toggle)
-  }, [setCount, setToggle])
+  }, [setToggle])
 
   return {
     incrementScrollCount,
