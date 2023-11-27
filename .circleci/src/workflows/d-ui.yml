@@ -1,0 +1,3 @@
+when: << pipeline.parameters.run-d-ui-workflow >>
+jobs:
+  - d-ui-init

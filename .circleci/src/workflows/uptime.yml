@@ -1,3 +1,0 @@
-when: << pipeline.parameters.run-uptime-workflow >>
-jobs:
-  - uptime-init

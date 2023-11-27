@@ -1,4 +1,4 @@
-uptime-init:
+d-ui-init:
   working_directory: ~/audius-protocol
   docker:
     - image: cimg/ruby:2.6-node
