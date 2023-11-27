@@ -28,7 +28,7 @@ d-ui-init:
 
     # Lint
     - run:
-        name: d lint
+        name: lint
         command: |
           cd monitoring/uptime/node-ui
           npm run lint
