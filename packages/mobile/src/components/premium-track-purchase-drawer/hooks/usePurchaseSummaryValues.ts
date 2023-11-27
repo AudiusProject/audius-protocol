@@ -10,8 +10,6 @@ import {
 } from '@audius/common'
 import { useField } from 'formik'
 
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
-
 export const usePurchaseSummaryValues = ({
   price,
   currentBalance
@@ -21,8 +19,8 @@ export const usePurchaseSummaryValues = ({
 }) => {
   const [{ value: customAmount }] = useField(CUSTOM_AMOUNT)
   const [{ value: amountPreset }] = useField(AMOUNT_PRESET)
-  const presetValues = usePayExtraPresets(useRemoteVar)
-  const { minUSDCPurchaseAmountCents } = useUSDCPurchaseConfig(useRemoteVar)
+  const presetValues = usePayExtraPresets()
+  const { minUSDCPurchaseAmountCents } = useUSDCPurchaseConfig()
 
   const extraAmount = getExtraAmount({
     amountPreset,

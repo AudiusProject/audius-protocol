@@ -2,14 +2,12 @@ import { useMemo } from 'react'
 
 import { IntKeys } from 'services/remote-config'
 
-import { RemoteVarHook } from '../useRemoteVar'
+import { useRemoteVar } from '../useRemoteVar'
 
 import { USDCPurchaseConfig } from './types'
 
 /** Fetches the USDC/purchase content remote config values */
-export const useUSDCPurchaseConfig = (
-  useRemoteVar: RemoteVarHook
-): USDCPurchaseConfig => {
+export const useUSDCPurchaseConfig = (): USDCPurchaseConfig => {
   const minContentPriceCents = useRemoteVar(IntKeys.MIN_CONTENT_PRICE_CENTS)
   const maxContentPriceCents = useRemoteVar(IntKeys.MAX_CONTENT_PRICE_CENTS)
   const minUSDCPurchaseAmountCents = useRemoteVar(

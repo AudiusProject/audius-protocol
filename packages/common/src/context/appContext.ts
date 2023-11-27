@@ -4,6 +4,8 @@ import type { StorageNodeSelectorService } from '@audius/sdk'
 
 import { AnalyticsEvent, AllTrackingEvents } from 'models/Analytics'
 import { AudiusBackend } from 'services/audius-backend'
+import { LocalStorage } from 'services/local-storage'
+import { RemoteConfigInstance } from 'services/remote-config'
 
 type AppContextType = {
   analytics: {
@@ -22,6 +24,8 @@ type AppContextType = {
     ) => Promise<{ url: string; file: File }>
   }
   audiusBackend: AudiusBackend
+  remoteConfig: RemoteConfigInstance
+  localStorage: LocalStorage
 }
 
 export const AppContext = createContext<AppContextType | null>(null)

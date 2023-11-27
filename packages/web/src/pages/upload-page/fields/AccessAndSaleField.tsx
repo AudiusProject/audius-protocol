@@ -47,7 +47,7 @@ import { HelpCallout } from 'components/help-callout/HelpCallout'
 import layoutStyles from 'components/layout/layout.module.css'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import { Text } from 'components/typography'
-import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { defaultFieldVisibility } from 'pages/track-page/utils'
 
 import { HiddenAvailabilityFields } from '../fields/availability/HiddenAvailabilityFields'
@@ -255,7 +255,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
   )
   const isScheduledRelease = moment(release_date).isAfter(moment())
 
-  const usdcPurchaseConfig = useUSDCPurchaseConfig(useRemoteVar)
+  const usdcPurchaseConfig = useUSDCPurchaseConfig()
 
   // Fields from the outer form
   const [{ value: isUnlisted }, , { setValue: setIsUnlistedValue }] =

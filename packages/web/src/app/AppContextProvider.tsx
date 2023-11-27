@@ -6,6 +6,8 @@ import { useAsync } from 'react-use'
 import * as analytics from 'services/analytics'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { getStorageNodeSelector } from 'services/audius-sdk/storageNodeSelector'
+import { localStorage } from 'services/local-storage'
+import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { generatePlaylistArtwork } from 'utils/imageProcessingUtil'
 
 type AppContextProviderProps = {
@@ -20,11 +22,13 @@ export const AppContextProvider = (props: AppContextProviderProps) => {
   const value = useMemo(
     () => ({
       analytics,
+      localStorage,
       storageNodeSelector,
       imageUtils: {
         generatePlaylistArtwork
       },
-      audiusBackend: audiusBackendInstance
+      audiusBackend: audiusBackendInstance,
+      remoteConfig: remoteConfigInstance
     }),
     [storageNodeSelector]
   )
