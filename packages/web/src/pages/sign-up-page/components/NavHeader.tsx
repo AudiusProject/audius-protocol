@@ -25,16 +25,16 @@ import {
   TRENDING_PAGE
 } from 'utils/route'
 
-import { determineAllowedRoute } from '../utils'
+import { determineAllowedRoute } from '../utils/determineAllowedRoutes'
 
 import { ProgressHeader } from './ProgressHeader'
 
 export const useIsBackAllowed = () => {
   const match = useRouteMatch<{ currentPath: string }>('/signup/:currentPath')
-  const existingSignUpState = useSelector(getSignOn)
+  const signUpState = useSelector(getSignOn)
   if (match?.params.currentPath) {
     const { allowedRoutes } = determineAllowedRoute(
-      existingSignUpState,
+      signUpState,
       match?.params.currentPath
     )
     const currentRouteIndex = allowedRoutes.indexOf(match.params.currentPath)

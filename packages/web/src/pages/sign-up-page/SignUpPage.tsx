@@ -1,13 +1,13 @@
 import { Helmet } from 'react-helmet'
-import { useSelector } from 'react-redux'
 import { Redirect, Route, RouteProps, Switch } from 'react-router-dom'
 
 import { getSignOn } from 'common/store/pages/signon/selectors'
 import { NavHeader } from 'pages/sign-up-page/components/NavHeader'
-import { determineAllowedRoute } from 'pages/sign-up-page/utils'
-import { AppState } from 'store/types'
+import { determineAllowedRoute } from 'pages/sign-up-page/utils/determineAllowedRoutes'
+import { useSelector } from 'utils/reducer'
 import {
   SIGN_UP_ARTISTS_PAGE,
+  SIGN_UP_CREATE_LOGIN_DETAILS,
   SIGN_UP_EMAIL_PAGE,
   SIGN_UP_FINISH_PROFILE_PAGE,
   SIGN_UP_GENRES_PAGE,
@@ -17,6 +17,7 @@ import {
 } from 'utils/route'
 
 import { CreateEmailPage } from './pages/CreateEmailPage'
+import { CreateLoginDetailsPage } from './pages/CreateLoginDetails'
 import { CreatePasswordPage } from './pages/CreatePasswordPage'
 import { FinishProfilePage } from './pages/FinishProfilePage'
 import { PickHandlePage } from './pages/PickHandlePage'
@@ -32,14 +33,14 @@ const messages = {
  * <Route> wrapper that handles redirecting through the sign up page flow
  */
 export function SignUpRoute({ children, ...rest }: RouteProps) {
-  const existingSignUpState = useSelector((state: AppState) => getSignOn(state))
+  const signUpState = useSelector(getSignOn)
   return (
     <Route
       {...rest}
       render={({ location }) => {
         // Check if the route is allowed, if not we redirect accordingly
         const { isAllowedRoute, correctedRoute } = determineAllowedRoute(
-          existingSignUpState,
+          signUpState,
           location.pathname
         )
         return isAllowedRoute ? (
@@ -69,6 +70,9 @@ export const SignUpPage = () => {
         </SignUpRoute>
         <SignUpRoute exact path={SIGN_UP_PASSWORD_PAGE}>
           <CreatePasswordPage />
+        </SignUpRoute>
+        <SignUpRoute exact path={SIGN_UP_CREATE_LOGIN_DETAILS}>
+          <CreateLoginDetailsPage />
         </SignUpRoute>
         <SignUpRoute exact path={SIGN_UP_HANDLE_PAGE}>
           <PickHandlePage />

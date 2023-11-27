@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef, useState } from 'react'
+import { Fragment, forwardRef, useEffect, useRef, useState } from 'react'
 
 import { Box, Flex, IconComponent, Text } from '@audius/harmony'
 
@@ -76,7 +76,7 @@ export const SteppedProgress = ({
     <Box>
       <Flex alignItems='center' gap='s'>
         {steps.map((s, i) => (
-          <>
+          <Fragment key={s.key}>
             <Step
               ref={(el) => {
                 if (el) {
@@ -86,12 +86,11 @@ export const SteppedProgress = ({
               icon={s.icon}
               label={s.label}
               isActive={activeStep === s.key}
-              key={s.key}
             />
             {i !== steps.length - 1 ? (
               <Divider className={styles.connector} variant='default' />
             ) : null}
-          </>
+          </Fragment>
         ))}
       </Flex>
       <span
