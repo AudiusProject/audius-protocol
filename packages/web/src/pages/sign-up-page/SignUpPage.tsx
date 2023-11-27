@@ -218,7 +218,12 @@ export const SignUpPage = () => {
             SIGN_UP_ARTISTS_PAGE
           ]}
         >
-          <Paper direction='column' w='100%' h={864}>
+          <Paper
+            direction='column'
+            w='100%'
+            h={864}
+            css={{ isolation: 'isolate' }}
+          >
             {isDesktop ? <ProgressHeader /> : null}
             <Switch>
               <SignUpRoute exact path={SIGN_UP_HANDLE_PAGE}>

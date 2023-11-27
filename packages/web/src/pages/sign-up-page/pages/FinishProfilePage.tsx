@@ -1,14 +1,24 @@
 import { useCallback } from 'react'
 
-import { Button, Flex, Paper, Text, useTheme } from '@audius/harmony'
+import {
+  Button,
+  Flex,
+  Paper,
+  PlainButton,
+  PlainButtonType,
+  Text,
+  useTheme
+} from '@audius/harmony'
 import { Formik, Form } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
+import { useHistory } from 'react-router-dom'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { setField, setValueField } from 'common/store/pages/signon/actions'
 import {
   getCoverPhotoField,
+  getIsSocialConnected,
   getNameField,
   getProfileImageField
 } from 'common/store/pages/signon/selectors'
@@ -27,7 +37,8 @@ const messages = {
     'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
   displayName: 'Display Name',
   continue: 'Continue',
-  inputPlaceholder: 'express yourself 💫'
+  inputPlaceholder: 'express yourself 💫',
+  goBack: 'Go back'
 }
 
 export type FinishProfileValues = {
@@ -53,11 +64,18 @@ const formSchema = toFormikValidationSchema(
 export const FinishProfilePage = () => {
   const { color } = useTheme()
   const { isMobile } = useMedia()
+  const history = useHistory()
+
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const { value: savedDisplayName } = useSelector(getNameField)
+  const isSocialConnected = useSelector(getIsSocialConnected)
   const { value: savedCoverPhoto } = { ...useSelector(getCoverPhotoField) }
   const { value: savedProfileImage } = { ...useSelector(getProfileImageField) }
+
+  const handleClickBackIcon = useCallback(() => {
+    history.goBack()
+  }, [history])
 
   // If the user comes back from a later page we start with whats in the store
   const initialValues = {
@@ -165,6 +183,14 @@ export const FinishProfilePage = () => {
             <Button type='submit' disabled={!isValid}>
               {messages.continue}
             </Button>
+            {isSocialConnected ? (
+              <PlainButton
+                onClick={handleClickBackIcon}
+                variant={PlainButtonType.SUBDUED}
+              >
+                {messages.goBack}
+              </PlainButton>
+            ) : null}
           </ContinueFooter>
         </Flex>
       )}
