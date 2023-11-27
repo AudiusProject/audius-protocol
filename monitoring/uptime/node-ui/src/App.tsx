@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useBlockNumber, useAccount, useConnect, useDisconnect } from 'wagmi'
 import { useEnvVars } from './providers/EnvVarsProvider'
 import { useAudiusLibs } from './providers/AudiusLibsProvider'
@@ -35,8 +34,8 @@ const App = () => {
   return (
     <>
       <Header />
-      <div className="pageContainer">
-        <div className="pageContentContainer">
+      <div className='pageContainer'>
+        <div className='pageContentContainer'>
           <div>
             <p>Host: {endpoint}</p>
             <p>Environment: {env}</p>
@@ -46,16 +45,16 @@ const App = () => {
               {isMinChainVersionsPending
                 ? 'loading...'
                 : minChainVersionsError
-                ? 'error'
-                : JSON.stringify(minChainVersions)}
+                  ? 'error'
+                  : JSON.stringify(minChainVersions)}
             </p>
             <p>
               Latest versions (GitHub):{' '}
               {isLatestGithubVersionsPending
                 ? 'loading...'
                 : latestGithubVersionsError
-                ? 'error'
-                : JSON.stringify(latestGithubVersions)}
+                  ? 'error'
+                  : JSON.stringify(latestGithubVersions)}
             </p>
             <p>
               MetaMask connected to chain:{' '}
@@ -76,7 +75,11 @@ const App = () => {
             </p>
 
             {connectors.map((connector) => (
-              <button class="btn btn-blue" key={connector.uid} onClick={() => connect({ connector })}>
+              <button
+                className='btn btn-blue'
+                key={connector.uid}
+                onClick={() => connect({ connector })}
+              >
                 Connect {connector.name}
               </button>
             ))}
@@ -84,7 +87,9 @@ const App = () => {
             {
               <div>
                 {address && <div>{address}</div>}
-                {address && <button onClick={() => disconnect()}>Disconnect</button>}
+                {address && (
+                  <button onClick={() => disconnect()}>Disconnect</button>
+                )}
               </div>
             }
           </div>

@@ -1,0 +1,13 @@
+uptime-init:
+  working_directory: ~/audius-protocol
+  docker:
+    - image: cimg/ruby:2.6-node
+  
+  steps:
+    - checkout
+    # Lint
+    - run:
+        name: d lint
+        command: |
+          cd monitoring/uptime/node-ui
+          npm run lint

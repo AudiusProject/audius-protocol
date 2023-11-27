@@ -67,6 +67,9 @@ parameters:
   run-protocol-dashboard-workflow:
     type: boolean
     default: false
+  run-uptime-workflow:
+    type: boolean
+    default: false
   run-healthz-workflow:
     type: boolean
     default: false

@@ -20,10 +20,14 @@ const walletClientToSigner = async (
 
   // Dynamically import hefty libraries so that we don't have to include them in the main index bundle
   const ethersjs = await import('ethers')
+  // @ts-expect-error ts(2339) - provider does exist on type Provider
   const { providers } = ethersjs
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const provider = new providers.Web3Provider(transport, network)
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   const signer = provider.getSigner(account!.address)
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return signer
 }
 
