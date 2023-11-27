@@ -227,11 +227,6 @@ function* doStartPurchaseContentFlow({
   }
 }: ReturnType<typeof startPurchaseContentFlow>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const isBuyUSDCViaSolEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.BUY_USDC_VIA_SOL
-  )
   const usdcConfig = yield* call(getBuyUSDCRemoteConfig)
   const reportToSentry = yield* getContext('reportToSentry')
   const { track, make } = yield* getContext('analytics')
