@@ -19,7 +19,8 @@ import {
   PremiumConditionsUSDCPurchase,
   PremiumConditionsFollowGated,
   PremiumConditionsTipGated,
-  ID
+  ID,
+  useFeatureFlag
 } from '@audius/common'
 import {
   IconCart,
@@ -559,7 +560,9 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     isScheduledRelease
   } = props
 
-  const { isEnabled: isUsdcEnabled } = useFlag(FeatureFlags.USDC_PURCHASES)
+  const { isEnabled: isUsdcEnabled } = useFeatureFlag(
+    FeatureFlags.USDC_PURCHASES
+  )
   const { isEnabled: isCollectibleGatedEnabled } = useFlag(
     FeatureFlags.COLLECTIBLE_GATED_ENABLED
   )

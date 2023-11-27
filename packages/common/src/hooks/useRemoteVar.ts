@@ -1,10 +1,6 @@
 import { useMemo } from 'react'
 
-import { useSelector } from 'react-redux'
-
 import { useAppContext } from 'src/context'
-import { getAccountUser } from 'store/account/selectors'
-import { isRemoteConfigLoaded } from 'store/remote-config/selectors'
 
 import {
   AllRemoteConfigKeys,
@@ -15,6 +11,7 @@ import {
   RemoteConfigInstance
 } from '../services'
 
+import { useHasAccount, useHasConfigLoaded } from './helpers'
 import { useRecomputeToggle } from './useFeatureFlag'
 
 /** @deprecated Use `useRemoteVar` directly instead */
@@ -53,9 +50,6 @@ export const createUseRemoteVarHook = ({
 }
 
 export type RemoteVarHook = ReturnType<typeof createUseRemoteVarHook>
-
-const useHasAccount = () => !!useSelector(getAccountUser)
-const useHasConfigLoaded = () => !!useSelector(isRemoteConfigLoaded)
 
 /** Fetches a remote config variable with default fallback */
 export function useRemoteVar(key: IntKeys): number
