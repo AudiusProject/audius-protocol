@@ -75,9 +75,11 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       ':focus': {
         outline: 'none !important'
       },
-      ':hover': {
-        transform: 'scale(1.04)'
-      },
+      ':hover': !fullWidth
+        ? {
+            transform: 'scale(1.04)'
+          }
+        : undefined,
       ':active': {
         transform: 'scale(0.98)'
       },
