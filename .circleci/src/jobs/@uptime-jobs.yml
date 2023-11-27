@@ -5,6 +5,7 @@ uptime-init:
   
   steps:
     - checkout
+    - run: npm install eslint
     # Lint
     - run:
         name: d lint
