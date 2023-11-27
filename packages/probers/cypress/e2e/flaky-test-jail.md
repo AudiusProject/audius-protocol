@@ -2,7 +2,7 @@
 
 ![flaky test meme](./flaky%20test%20meme.jpeg)
 
-This is where we list out misbehaving tests go if they're so we can keep a green baseline
+A list of flaky/misbehaving tests that we are currently skipping in order to keep a green baseline
 
 ## Current Inmates
 
