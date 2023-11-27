@@ -24,7 +24,9 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
             path: "docs",
             routeBasePath: "/",
             sidebarPath: require.resolve("./sidebars.js"),
-            editUrl: "https://github.com/AudiusProject/docs.audius.org/",
+            editUrl: ({ docPath }) => {
+              return `https://holocron.so/github/pr/AudiusProject/audius-protocol/main/editor/docs/docs/${docPath}`
+            },
           },
           theme: {
             customCss: require.resolve("./src/css/custom.css"),
