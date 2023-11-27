@@ -26,7 +26,7 @@ export const AppContextProvider = (props: AppContextProviderProps) => {
       localStorage,
       imageUtils: { generatePlaylistArtwork },
       audiusBackend: audiusBackendInstance,
-      remoteConfing: remoteConfigInstance
+      remoteConfig: remoteConfigInstance
     }),
     [storageNodeSelector]
   )
