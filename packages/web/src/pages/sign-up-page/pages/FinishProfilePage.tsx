@@ -73,10 +73,6 @@ export const FinishProfilePage = () => {
   const { value: savedCoverPhoto } = { ...useSelector(getCoverPhotoField) }
   const { value: savedProfileImage } = { ...useSelector(getProfileImageField) }
 
-  const handleClickBackIcon = useCallback(() => {
-    history.goBack()
-  }, [history])
-
   // If the user comes back from a later page we start with whats in the store
   const initialValues = {
     profileImage: savedProfileImage,
@@ -185,7 +181,7 @@ export const FinishProfilePage = () => {
             </Button>
             {isSocialConnected ? (
               <PlainButton
-                onClick={handleClickBackIcon}
+                onClick={history.goBack}
                 variant={PlainButtonType.SUBDUED}
               >
                 {messages.goBack}
