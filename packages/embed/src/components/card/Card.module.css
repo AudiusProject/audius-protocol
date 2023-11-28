@@ -5,6 +5,7 @@
     border-radius: 12px;
     overflow: visible;
     transition: background 0.5s ease-in-out;
+    overflow: hidden;
 }
 
 

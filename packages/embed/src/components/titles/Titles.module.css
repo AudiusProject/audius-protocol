@@ -20,6 +20,7 @@
 
 .artistName {
   font-size: 15px;
+  line-height: 20px;
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;

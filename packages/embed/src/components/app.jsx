@@ -6,8 +6,8 @@ import { useParams, useSearchParams } from 'react-router-dom'
 import { CSSTransition } from 'react-transition-group'
 
 import '@audius/stems/dist/stems.css'
+import '@audius/harmony/dist/avenir.css'
 import '@audius/harmony/dist/harmony.css'
-import './font.css'
 
 import {
   initTrackSessionStart,
