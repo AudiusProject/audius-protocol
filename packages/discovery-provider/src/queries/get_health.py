@@ -448,6 +448,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         errors.append("unhealthy plays")
     if reactions_health_info["is_unhealthy"]:
         errors.append("unhealthy reactions")
+    if user_bank_health_info["is_unhealthy"]:
+        errors.append("unhealthy user bank")
 
     delist_statuses_ok = get_delist_statuses_ok()
     if not delist_statuses_ok:
@@ -467,6 +469,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         or unhealthy_challenges
         or play_health_info["is_unhealthy"]
         or reactions_health_info["is_unhealthy"]
+        or user_bank_health_info["is_unhealthy"]
         or not delist_statuses_ok
     )
 
