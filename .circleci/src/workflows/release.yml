@@ -168,6 +168,7 @@ jobs:
         - push-trpc
         - push-healthz
         - push-protocol-dashboard
+        - push-uptime
         # uncomment these when arm builds are stable
         # - push-identity-service-arm
         # - push-mediorum-arm
