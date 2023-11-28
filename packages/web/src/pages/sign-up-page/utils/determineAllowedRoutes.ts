@@ -27,10 +27,10 @@ export const determineAllowedRoute = (
   }
   if (signUpState.handle.value) {
     if (signUpState.linkedSocialOnFirstPage) {
-      allowedRoutes.push(SignUpPath.pickHandle)
       allowedRoutes.push(SignUpPath.createLoginDetails)
     }
-    // Already have handle
+    // Already have handle or it needs review
+    allowedRoutes.push(SignUpPath.reviewHandle)
     allowedRoutes.push(SignUpPath.finishProfile)
   }
   if (signUpState.name.value) {
