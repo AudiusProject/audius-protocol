@@ -31,18 +31,18 @@ const Uptime = () => {
 
   return (
     <>
-      <div class="flex justify-between">
-        <div class="flex-initial w-3/4">
+      <div className='flex justify-between'>
+        <div className='flex-initial w-3/4'>
           <input
-            class="w-full"
+            className='w-full'
             type='text'
             value={targetEndpoint}
             onChange={(e) => setTargetEndpoint(e.target.value)}
           />
         </div>
-        <div class="flex-none">
-          <button 
-            class="btn-outline"
+        <div className='flex-none'>
+          <button
+            className='btn-outline'
             onClick={() => void fetchUptimeData()}
           >
             Check Uptime
