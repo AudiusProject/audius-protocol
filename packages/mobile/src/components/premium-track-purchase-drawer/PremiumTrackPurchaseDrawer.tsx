@@ -41,7 +41,7 @@ import { Button, LockedStatusBadge, Text } from 'app/components/core'
 import Drawer from 'app/components/drawer'
 import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as trackEvent } from 'app/services/analytics'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
@@ -161,7 +161,7 @@ const RenderError = ({ error: { code } }: { error: PurchaseContentError }) => {
     <View style={styles.errorContainer}>
       <IconError fill={accentRed} width={spacing(5)} height={spacing(5)} />
       <Text weight='medium' color='accentRed'>
-        {usePurchaseContentErrorMessage(code, useRemoteVar)}
+        {usePurchaseContentErrorMessage(code)}
       </Text>
     </View>
   )
@@ -220,7 +220,7 @@ const RenderForm = ({
   const navigation = useNavigation()
   const styles = useStyles()
   const { specialLightGreen, primary } = useThemeColors()
-  const presetValues = usePayExtraPresets(useRemoteVar)
+  const presetValues = usePayExtraPresets()
   const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
     FeatureFlags.IOS_USDC_PURCHASE_ENABLED
   )
@@ -347,7 +347,7 @@ export const PremiumTrackPurchaseDrawer = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const isUSDCEnabled = useIsUSDCEnabled()
-  const presetValues = usePayExtraPresets(useRemoteVar)
+  const presetValues = usePayExtraPresets()
   const {
     data: { contentId: trackId },
     isOpen,

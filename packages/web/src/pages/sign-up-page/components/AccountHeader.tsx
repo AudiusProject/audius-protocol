@@ -4,6 +4,7 @@ import {
   Flex,
   IconCamera,
   IconImage,
+  IconVerified,
   Text,
   useTheme
 } from '@audius/harmony'
@@ -11,6 +12,7 @@ import {
 import {
   getCoverPhotoField,
   getHandleField,
+  getIsVerified,
   getNameField,
   getProfileImageField
 } from 'common/store/pages/signon/selectors'
@@ -119,6 +121,7 @@ export const AccountHeader = ({
   const { value: profileImage } = { ...useSelector(getProfileImageField) }
   const { value: storedDisplayName } = useSelector(getNameField)
   const { value: handle } = useSelector(getHandleField)
+  const isVerified = useSelector(getIsVerified)
   const isEditing = mode === 'editing'
 
   const displayName = formDisplayName ?? storedDisplayName
@@ -202,14 +205,17 @@ export const AccountHeader = ({
           >
             {displayName}
           </Text>
-          <Text
-            variant='body'
-            size={isSmallSize ? 's' : 'm'}
-            color='staticWhite'
-            shadow='emphasis'
-          >
-            @{handle}
-          </Text>
+          <Flex gap='s' alignItems='center'>
+            <Text
+              variant='body'
+              size={isSmallSize ? 's' : 'm'}
+              color='staticWhite'
+              shadow='emphasis'
+            >
+              @{handle}
+            </Text>
+            {isVerified ? <IconVerified size='s' /> : null}
+          </Flex>
         </Flex>
       </Flex>
     </Box>

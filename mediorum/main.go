@@ -181,6 +181,23 @@ func startSandbox() {
 		}()
 	}
 
+	g := registrar.NewEthChainProvider()
+	var peers, signers []server.Peer
+
+	eg := new(errgroup.Group)
+	eg.Go(func() error {
+		peers, err = g.Peers()
+		return err
+	})
+	eg.Go(func() error {
+		signers, err = g.Signers()
+		return err
+	})
+	if err := eg.Wait(); err != nil {
+		panic(err)
+	}
+	logger.Info("fetched registered nodes", "peers", len(peers), "signers", len(signers))
+
 	migrateQmCidIters, err := strconv.Atoi(getenvWithDefault("MIGRATE_QM_CID_ITERS", "0"))
 	if err != nil {
 		logger.Warn("failed to parse MIGRATE_QM_CID_ITERS; defaulting to 0", "err", err)
@@ -191,13 +208,9 @@ func startSandbox() {
 			Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
 			Wallet: strings.ToLower(walletAddress),
 		},
-		ListenPort: "1991",
-		Peers: []server.Peer{
-			server.Peer{
-				Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
-				Wallet: strings.ToLower(walletAddress),
-			},
-		},
+		ListenPort:           "1991",
+		Peers:                peers,
+		Signers:              signers,
 		ReplicationFactor:    5,
 		PrivateKey:           privateKeyHex,
 		Dir:                  "/tmp/mediorum",
@@ -220,6 +233,8 @@ func startSandbox() {
 		logger.Error("failed to create server", "err", err)
 		log.Fatal(err)
 	}
+
+	go refreshPeersAndSigners(ss, g)
 
 	ss.MustStart()
 }

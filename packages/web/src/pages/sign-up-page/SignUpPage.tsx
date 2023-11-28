@@ -56,7 +56,7 @@ const determineAllowedRoute = (
   const attemptedPath = requestedRoute.replace('/signup/', '')
   // Have to type as string[] to avoid too narrow of a type for comparing against
   let allowedRoutes: string[] = [SignUpPath.createEmail] // create email is available by default
-  if (signUpState.email.value) {
+  if (signUpState.email.value || signUpState.linkedSocialOnFirstPage) {
     // Already have email
     allowedRoutes.push(SignUpPath.createPassword)
   }
@@ -218,7 +218,12 @@ export const SignUpPage = () => {
             SIGN_UP_ARTISTS_PAGE
           ]}
         >
-          <Paper direction='column' w='100%' h={864}>
+          <Paper
+            direction='column'
+            w='100%'
+            h={864}
+            css={{ isolation: 'isolate' }}
+          >
             {isDesktop ? <ProgressHeader /> : null}
             <Switch>
               <SignUpRoute exact path={SIGN_UP_HANDLE_PAGE}>

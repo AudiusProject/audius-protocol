@@ -15,15 +15,25 @@
   },
   "dependencies": {
     "@audius/sdk": "3.0.11-beta.21",
+    "@headlessui/react": "^1.7.17",
+    "@heroicons/react": "^2.0.18",
     "@tanstack/react-query": "5.8.4",
     "@tanstack/react-query-devtools": "5.8.4",
+    "@tremor/react": "^3.11.1",
+    "ethers": "^6.8.1",
+    "autoprefixer": "^10.4.16",
+    "bn.js": "^5.2.1",
+    "postcss": "^8.4.31",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "swr": "^2.2.4",
     "viem": "2.0.0-beta.6",
     "wagmi": "2.0.0-beta.5",
-    "web3": "1.8.2"
+    "web3": "1.8.2",
+    "web3-utils": "^4.0.7"
   },
   "devDependencies": {
+    "@tailwindcss/forms": "^0.5.7",
     "@tanstack/eslint-plugin-query": "5.8.4",
     "@types/react": "18.2.15",
     "@types/react-dom": "18.2.7",
@@ -38,6 +48,7 @@
     "eslint-plugin-react-hooks": "4.6.0",
     "eslint-plugin-react-refresh": "0.4.3",
     "prettier": "3.1.0",
+    "tailwindcss": "^3.3.5",
     "typescript": "5.2.2",
     "vite": "4.4.5",
     "vite-plugin-node-polyfills": "0.16.0"

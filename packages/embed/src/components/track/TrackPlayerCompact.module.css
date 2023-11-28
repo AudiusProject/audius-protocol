@@ -23,6 +23,7 @@
   align-items: center;
   margin-top: 20px;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  gap: 4px;
 }
 
 .bottomSection {

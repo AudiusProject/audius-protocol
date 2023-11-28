@@ -372,7 +372,6 @@ export const TracksTable = ({
             className={styles.tableActionButton}
             isDeleted={deleted}
             includeEdit={!disabledTrackEdit}
-            includeEmbed={!track.premium_conditions}
             includeAddToPlaylist={!isLocked}
             includeFavorite={!isLocked}
             onRemove={onClickRemove}

@@ -1,0 +1,14 @@
+.preview {
+  width: 90px;
+  height: 28px;
+}
+
+.preview.small {
+  width: 77px;
+  height: 24px;
+  padding-bottom: 4px;
+}
+
+.preview.small path {
+  fill: var(--special-light-green);
+}

@@ -437,6 +437,7 @@ workflows:
             packages/harmony/.* run-mobile-workflow true
             packages/mobile/.* run-mobile-workflow true
             packages/web/.* run-web-workflow true
+            packages/embed/.* run-embed-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             monitoring/healthz/.* run-healthz-workflow true
           requires:
