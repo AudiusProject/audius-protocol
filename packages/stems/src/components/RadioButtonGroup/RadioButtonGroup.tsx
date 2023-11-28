@@ -39,7 +39,6 @@ export const RadioButtonGroup = (props: RadioButtonGroupProps) => {
     },
     [setValueState, onChange]
   )
-  console.log('asdf radio button group render')
   return (
     <RadioGroupContext.Provider value={{ name, onChange: handleChange, value }}>
       <div {...divProps} role='radiogroup'>

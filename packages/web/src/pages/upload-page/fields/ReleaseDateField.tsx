@@ -54,12 +54,6 @@ export const ReleaseDateField = () => {
     },
     [setValue]
   )
-  const [selectedOption, setSelectedOption] = useState('releaseNow'); // Default selection
-
-
-  const handleRadioChange = (event: { target: { value: SetStateAction<string> } }) => {
-    setSelectedOption(event.target.value);
-  };
 
 
   const renderValue = useCallback(() => {
@@ -83,20 +77,6 @@ export const ReleaseDateField = () => {
     )
   }, [value])
 
-  const radioGroup = useContext(RadioGroupContext)
-  console.log('asdf hello radioGroup: ', radioGroup?.value)
-
-  const [, , { setValue: setReleaseDateType }] =
-    useField(
-      RELEASE_DATE
-    )
-
-  const handleRadioChange = useCallback(
-    (e: => {
-      setLocalPermission(e.target.value as ChatPermission)
-    },
-    [releaseDateTypeField]
-  )
 
   return (
     <ContextualMenu
@@ -115,32 +95,38 @@ export const ReleaseDateField = () => {
             {messages.title}
           </Text>
           <Text>{messages.description} Release date affects sorting on your profile and is visible in track details.</Text>
-          <RadioButtonGroup
-            name={`summaryTable-label-`}
-            className={styles.radioGroup}
-            onChange={handleRadioChange}
-          >
-            <ModalRadioItem
-              value={ReleaseDateType.RELEASE_NOW}
-              label="Release Immediately"
-
-            />
-            <ModalRadioItem
-              value={ReleaseDateType.HAS_RELEASE_DATE}
-              label="Select a release date"
-              checkedContent={
-                <div className={styles.datePicker}>
-                  <DatePickerField name={RELEASE_DATE} label={messages.title} />
-                </div>
-              }
-            />
-
-          </RadioButtonGroup>
-
+          <RadioItems />
 
         </>
       }
       renderValue={renderValue}
     />
+  )
+}
+
+
+const RadioItems = () => {
+  const [field, ,] = useField('release-date-type')
+  console.log('asdf radiotiems field: ', field)
+
+  return (
+    <RadioButtonGroup
+      className={styles.radioGroup}
+      {...field}
+    >
+
+      <ModalRadioItem
+        value={ReleaseDateType.RELEASE_NOW}
+        label="Release Immediately" />
+      <ModalRadioItem
+        value={ReleaseDateType.HAS_RELEASE_DATE}
+        label="Select a release date"
+        checkedContent={
+          <div className={styles.datePicker}>
+            <DatePickerField name={RELEASE_DATE} label={messages.title} shouldFocus={field.value === ReleaseDateType.HAS_RELEASE_DATE} />
+          </div>
+        }
+      />
+    </RadioButtonGroup>
   )
 }
