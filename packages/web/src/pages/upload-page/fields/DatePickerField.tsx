@@ -1,7 +1,7 @@
 import 'react-dates/initialize'
 import 'react-dates/lib/css/_datepicker.css'
 
-import { useRef, useState } from 'react'
+import { SetStateAction, useEffect, useRef, useState } from 'react'
 
 import { FeatureFlags } from '@audius/common'
 import { Popup } from '@audius/stems'
@@ -17,6 +17,7 @@ import IconCalendar from 'assets/img/iconCalendar.svg'
 import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from './DatePickerField.module.css'
+import { should } from 'vitest'
 
 type DatePickerFieldProps = {
   name: string
@@ -33,6 +34,9 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
   const { isEnabled: isScheduledReleasesEnabled } = useFlag(
     FeatureFlags.SCHEDULED_RELEASES
   )
+
+  useEffect(() => setIsFocused(shouldFocus ?? false), [shouldFocus])
+
   return (
     <>
       <div
@@ -60,7 +64,7 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
       </div>
       <Popup
         anchorRef={anchorRef}
-        isVisible={isFocused || shouldFocus}
+        isVisible={isFocused}
         onClose={() => setIsFocused(false)}
       >
         <div className={cn(styles.datePicker, style)}>

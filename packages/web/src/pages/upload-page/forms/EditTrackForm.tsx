@@ -85,6 +85,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
 
   const onSubmit = useCallback(
     (values: TrackEditFormValues) => {
+      console.log('asdf track edit form: ', values)
       const tracksForUpload = tracks.map((track, i) => {
         const metadata = values.trackMetadatas[i]
         const { licenseType: ignoredLicenseType, ...restMetadata } = metadata
