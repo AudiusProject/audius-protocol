@@ -22,6 +22,12 @@ export const userSignerRecoveryMiddleware = async (
     .where('wallet', '=', walletAddress)
     .first()
   res.locals.signerUser = user
+  if (!user) {
+    res.locals.logger.warn(
+      { walletAddress },
+      'No user found matching signature'
+    )
+  }
   next()
 }
 
