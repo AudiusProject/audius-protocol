@@ -20,7 +20,6 @@ export const userSignerRecoveryMiddleware = async (
   const walletAddress = recoverPersonalSignature({ data, sig })
   const user = await discoveryDb<Users>(Table.Users)
     .where('wallet', '=', walletAddress)
-    .andWhere('is_current', '=', true)
     .first()
   res.locals.signerUser = user
   next()
