@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "ts-node ./src/index.ts",
-    "start:dev": "ts-node-dev ./src/index.ts",
+    "dev": "ts-node-dev ./src/index.ts",
     "test": "vitest",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\""
   },

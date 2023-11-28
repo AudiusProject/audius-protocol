@@ -9,7 +9,6 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "tsc --noEmit && eslint \"src/**/*.ts*\"",
     "start": "node ./dist/index.js",
-    "start:dev": "node ./dist/index.js",
     "test": "jest --detectOpenHandles"
   },
   "jest": {

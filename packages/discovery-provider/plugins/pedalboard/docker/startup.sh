@@ -25,4 +25,4 @@ if nslookup "$elasticsearch_host" >/dev/null 2>&1; then
     export audius_elasticsearch_run_indexer="true"
 fi
 
-npm run start:dev
+npm run dev
