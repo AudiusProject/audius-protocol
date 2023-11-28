@@ -22,10 +22,11 @@ type DatePickerFieldProps = {
   name: string
   label: string
   style?: string
+  shouldFocus?: boolean
 }
 
 export const DatePickerField = (props: DatePickerFieldProps) => {
-  const { name, label, style } = props
+  const { name, label, style, shouldFocus } = props
   const [field, , helpers] = useField<string | undefined>(name)
   const [isFocused, setIsFocused] = useState(false)
   const anchorRef = useRef<HTMLDivElement | null>(null)
@@ -59,7 +60,7 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
       </div>
       <Popup
         anchorRef={anchorRef}
-        isVisible={isFocused}
+        isVisible={isFocused || shouldFocus}
         onClose={() => setIsFocused(false)}
       >
         <div className={cn(styles.datePicker, style)}>

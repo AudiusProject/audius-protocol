@@ -47,6 +47,7 @@ export const ModalRadioItem = (props: ModalRadioItemProps) => {
 
   useEffect(() => {
     if (radioGroup) {
+      console.log('asdf modal radioGroup value: ', radioGroup.value)
       const isChecked = String(value) === String(radioGroup.value)
       if (isCollapsed === isChecked) {
         setIsCollapsed(!isChecked)
