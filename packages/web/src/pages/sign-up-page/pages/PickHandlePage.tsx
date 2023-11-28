@@ -39,7 +39,8 @@ import { messages as socialMediaMessages } from '../utils/socialMediaMessages'
 
 const messages = {
   pickYourHandle: 'Pick Your Handle',
-  outOf: 'of',
+  outOf: (numerator: number, denominator: number) =>
+    `${numerator} of ${denominator}`,
   handleDescription:
     'This is how others find and tag you. It is totally unique to you & cannot be changed later.',
   handle: 'Handle',
@@ -264,7 +265,7 @@ export const PickHandlePage = () => {
             <Flex gap={isMobile ? 's' : 'l'} direction='column'>
               {isMobile ? null : (
                 <Text size='s' variant='label' color='subdued'>
-                  1 {messages.outOf} 2
+                  {messages.outOf(1, 2)}
                 </Text>
               )}
               <Text

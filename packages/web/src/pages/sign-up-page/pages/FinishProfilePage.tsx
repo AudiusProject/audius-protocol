@@ -36,7 +36,8 @@ const messages = {
   header: 'Finish Your Profile',
   description:
     'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
-  outOf: 'of',
+  outOf: (numerator: number, denominator: number) =>
+    `${numerator} of ${denominator}`,
   displayName: 'Display Name',
   inputPlaceholder: 'express yourself 💫',
   continue: 'Continue',
@@ -121,7 +122,7 @@ export const FinishProfilePage = () => {
             <Flex direction='column' gap={isMobile ? 's' : 'l'} ph='l'>
               {isMobile ? null : (
                 <Text size='s' variant='label' color='subdued'>
-                  2 {messages.outOf} 2
+                  {messages.outOf(2, 2)}
                 </Text>
               )}
               <Text

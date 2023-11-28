@@ -6,16 +6,22 @@ import { useMedia } from 'hooks/useMedia'
 
 import { passwordSchema } from '../utils/passwordSchema'
 
-export type CompletionChecklistItemStatus = 'incomplete' | 'complete' | 'error'
+export type CompletionChecklistType =
+  | 'hasNumber'
+  | 'minLength'
+  | 'notCommon'
+  | 'matches'
 
-const messages: Record<string, string> = {
+const messages: Record<CompletionChecklistType, string> = {
   hasNumber: 'Must contain numbers',
   minLength: 'At least 8 characters',
   matches: 'Passwords match',
   notCommon: 'Hard to guess'
 }
 
-const checklist = [
+type ChecklistItem = { type: CompletionChecklistType; path: string }
+
+const checklist: ChecklistItem[] = [
   { type: 'hasNumber', path: 'password' },
   { type: 'minLength', path: 'password' },
   { type: 'matches', path: 'confirmPassword' },
@@ -34,10 +40,12 @@ export const CompletionChecklist = () => {
       confirmPassword
     })
     if (result.success) {
-      return 'success'
+      return null
     }
 
-    return result.error.issues.map((issue) => issue.message)
+    return result.error.issues.map(
+      (issue) => issue.message as CompletionChecklistType
+    )
   }, [password, confirmPassword])
 
   return (

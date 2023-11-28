@@ -17,10 +17,12 @@ import { Link } from 'react-router-dom'
 
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import { signIn } from 'common/store/pages/signon/actions'
+import { getStatus } from 'common/store/pages/signon/selectors'
 import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordField'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { useMedia } from 'hooks/useMedia'
+import { useSelector } from 'utils/reducer'
 import { SIGN_UP_PAGE } from 'utils/route'
 
 import { SignInWithMetaMaskButton } from './SignInWithMetaMaskButton'
@@ -51,6 +53,8 @@ const initialValues = {
 export const SignInPage = () => {
   const dispatch = useDispatch()
   const { isMobile } = useMedia()
+
+  const signInStatus = useSelector(getStatus)
 
   const handleSubmit = useCallback(
     (values: SignInValues) => {
@@ -108,7 +112,11 @@ export const SignInPage = () => {
               />
             </Flex>
             <Flex direction='column' gap='l' w='100%'>
-              <Button iconRight={IconArrowRight} type='submit'>
+              <Button
+                iconRight={IconArrowRight}
+                type='submit'
+                isLoading={signInStatus === 'loading'}
+              >
                 {messages.signIn}
               </Button>
               {!isMobile ? <SignInWithMetaMaskButton /> : null}

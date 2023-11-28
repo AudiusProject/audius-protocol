@@ -105,7 +105,7 @@ export const NavHeader = () => {
           >
             {audiusLogo}
             <ProgressHeader />
-            <Box css={{ width: 200 }} />
+            <Box w={200} />
           </Route>
         ) : null}
         <Route path='*'>{header}</Route>

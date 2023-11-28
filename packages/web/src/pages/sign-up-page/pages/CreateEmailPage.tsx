@@ -176,7 +176,7 @@ export const CreateEmailPage = () => {
               autoComplete='email'
               label={messages.emailLabel}
             />
-            <Divider css={{ width: '100%' }}>
+            <Divider>
               <Text variant='body' size={isMobile ? 's' : 'm'} color='subdued'>
                 {messages.socialsDividerText}
               </Text>

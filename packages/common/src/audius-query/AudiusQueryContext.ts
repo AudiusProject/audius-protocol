@@ -28,7 +28,7 @@ export const useAudiusQueryContext = () => {
 
   if (!audiusQueryContext) {
     throw new Error(
-      'useQueryContext has to be used within <AudiusQueryContext.Provider>'
+      'useAudiusQueryContext has to be used within <AudiusQueryContext.Provider>'
     )
   }
 
