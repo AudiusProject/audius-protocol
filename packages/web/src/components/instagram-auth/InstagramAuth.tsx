@@ -174,7 +174,7 @@ const InstagramAuth = ({
   const getDefaultButtonContent = useCallback(() => <span>{text}</span>, [text])
 
   return (
-    <div
+    <span
       role='button'
       onClick={handleClick}
       style={style}
@@ -184,7 +184,7 @@ const InstagramAuth = ({
       })}
     >
       {children || getDefaultButtonContent()}
-    </div>
+    </span>
   )
 }
 

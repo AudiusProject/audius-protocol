@@ -47,14 +47,28 @@ export const SelectGenrePage = () => {
   const { isMobile } = useMedia()
 
   return (
-    <Flex direction='column' h='100%' gap={isMobile ? '2xl' : '4xl'}>
+    <Flex
+      direction='column'
+      gap={isMobile ? '2xl' : '4xl'}
+      css={{
+        width: '100%',
+        overflow: 'auto',
+        // Hide scrollbar
+        scrollbarWidth: 'none', // Firefox
+        msOverflowStyle: 'none', // IE + Edge
+        // Chrome + Safari
+        '::-webkit-scrollbar': {
+          display: 'none'
+        }
+      }}
+    >
       <AccountHeader mode='viewing' />
       <Flex flex={1} direction='column' gap={isMobile ? 'xl' : '2xl'}>
         <Flex direction='column' gap={isMobile ? 's' : 'l'} ph='l'>
           <Text
             variant='heading'
             size={isMobile ? 'm' : 'l'}
-            color='heading'
+            color='accent'
             css={{ textAlign: isMobile ? 'left' : 'center' }}
             id='genre-header'
           >
@@ -103,11 +117,13 @@ export const SelectGenrePage = () => {
                   )
                 })}
               </Flex>
-              <ContinueFooter>
+              <ContinueFooter sticky>
                 <Button
                   type='submit'
                   iconRight={IconArrowRight}
                   disabled={values.genres.length === 0}
+                  fullWidth={isMobile}
+                  css={!isMobile && { width: 343 }}
                 >
                   {messages.continue}
                 </Button>

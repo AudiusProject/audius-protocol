@@ -10,7 +10,11 @@ import { useSetProfileFromTikTok } from '../hooks/socialMediaLogin'
 
 type SignupFlowTikTokAuthProps = {
   onFailure: (e: unknown) => void
-  onSuccess: (info: { requiresReview: boolean; handle: string }) => void
+  onSuccess: (info: {
+    requiresReview: boolean
+    handle: string
+    platform: 'tiktok'
+  }) => void
   children: ReactElement
 }
 
@@ -44,7 +48,8 @@ export const SignupFlowTikTokAuth = ({
     }
     onSuccess({
       requiresReview: res.requiresReview,
-      handle: res.handle
+      handle: res.handle,
+      platform: 'tiktok'
     })
   }
 

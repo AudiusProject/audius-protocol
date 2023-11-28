@@ -1,24 +1,21 @@
-import { Suspense, useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 
 import { AudiusQueryContext, signUpFetch } from '@audius/common'
+import { Button, ButtonType, IconMetamask } from '@audius/harmony'
 import { useFormikContext } from 'formik'
-import { createPortal } from 'react-dom'
 import { useDispatch } from 'react-redux'
 
 import { setValueField } from 'common/store/pages/signon/actions'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { MetaMaskOption } from 'pages/sign-on/components/desktop/MetaMaskOption'
-import lazyWithPreload from 'utils/lazyWithPreload'
+import ConnectedMetaMaskModal from 'pages/sign-up-page/components/ConnectedMetaMaskModal'
 import { SIGN_IN_PAGE, SIGN_UP_HANDLE_PAGE } from 'utils/route'
 
-import { SignUpEmailValues } from './CreateEmailPage'
-import { messages } from './messages'
+import { SignUpEmailValues } from '../pages/CreateEmailPage'
 
-const ConnectedMetaMaskModal = lazyWithPreload(
-  () => import('pages/sign-up-page/components/ConnectedMetaMaskModal'),
-  0
-)
-
+const messages = {
+  signUpMetamask: 'Sign Up With MetaMask',
+  unknownError: 'Unknown error occurred.'
+}
 export const SignUpWithMetaMaskButton = () => {
   const queryContext = useContext(AudiusQueryContext)
   const dispatch = useDispatch()
@@ -29,7 +26,7 @@ export const SignUpWithMetaMaskButton = () => {
   const handleSuccess = () => {
     navigate(SIGN_UP_HANDLE_PAGE)
   }
-  const handleClickMetaMask = async () => {
+  const handleClick = async () => {
     const errors = await validateForm(values)
     if (errors.email) {
       return false
@@ -59,17 +56,19 @@ export const SignUpWithMetaMaskButton = () => {
 
   return (
     <>
-      <MetaMaskOption fullWidth onClick={handleClickMetaMask} />
-      <Suspense fallback={null}>
-        {createPortal(
-          <ConnectedMetaMaskModal
-            open={isMetaMaskModalOpen}
-            onBack={() => setIsMetaMaskModalOpen(false)}
-            onSuccess={handleSuccess}
-          />,
-          document.body
-        )}
-      </Suspense>
+      <Button
+        variant={ButtonType.SECONDARY}
+        iconRight={IconMetamask}
+        isStaticIcon
+        onClick={handleClick}
+      >
+        {messages.signUpMetamask}
+      </Button>
+      <ConnectedMetaMaskModal
+        open={isMetaMaskModalOpen}
+        onBack={() => setIsMetaMaskModalOpen(false)}
+        onSuccess={handleSuccess}
+      />
     </>
   )
 }
