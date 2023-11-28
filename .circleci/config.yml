@@ -360,6 +360,7 @@ workflows:
             packages/identity-service/.* run-integration-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             monitoring/healthz/.* run-healthz-workflow true
+            monitoring/uptime/node-ui/.* run-d-ui-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
             contracts/.* run-contracts-workflow true
             .circleci/.* run-discovery-workflow true
@@ -367,6 +368,7 @@ workflows:
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-protocol-dashboard-workflow true
+            .circleci/.* run-d-ui-workflow true
             .circleci/.* run-healthz-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
@@ -439,6 +441,7 @@ workflows:
             packages/web/.* run-web-workflow true
             packages/embed/.* run-embed-workflow true
             protocol-dashboard/.* run-protocol-dashboard-workflow true
+            monitoring/uptime/node-ui/.* run-d-ui-workflow true
             monitoring/healthz/.* run-healthz-workflow true
           requires:
             - generate-config
