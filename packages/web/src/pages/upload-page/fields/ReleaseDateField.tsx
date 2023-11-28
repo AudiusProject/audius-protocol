@@ -69,31 +69,31 @@ export const ReleaseDateField = () => {
     useTrackField<ReleaseDateValue>(RELEASE_DATE)
 
   const initialValues = useMemo(
-    () => ({ [RELEASE_DATE]: value ?? undefined, [RELEASE_DATE_HOUR]: undefined, [RELEASE_DATE_MERIDIAN]: undefined }),
+    () => ({ [RELEASE_DATE]: value ?? undefined, [RELEASE_DATE_HOUR]: '12', [RELEASE_DATE_MERIDIAN]: 'PM' }),
     [value]
   )
 
   const onSubmit = useCallback(
     (values: ReleaseDateFormValues) => {
-      // const releaseDateValue = values[RELEASE_DATE]
-      // console.log('asdf onsubmit values: ', values)
-      // const releaseDateHour = +values[RELEASE_DATE_HOUR]
-      // const releaseDateMeridian = values[RELEASE_DATE_MERIDIAN]
+      const releaseDateValue = values[RELEASE_DATE]
+      console.log('asdf onsubmit values: ', values)
+      const releaseDateHour = +values[RELEASE_DATE_HOUR]
+      const releaseDateMeridian = values[RELEASE_DATE_MERIDIAN]
 
-      // const truncatedReleaseDate = moment(releaseDateValue).startOf('day');
+      const truncatedReleaseDate = moment(releaseDateValue).startOf('day');
 
-      // let adjustedHours = releaseDateHour;
-      // if (releaseDateMeridian === 'PM' && releaseDateHour < 12) {
-      //   adjustedHours += 12;
-      // } else if (releaseDateMeridian === 'AM' && releaseDateHour === 12) {
-      //   adjustedHours = 0;
-      // }
-      // console.log('asdf adjustedHours: ', adjustedHours)
-      // const combinedDateTime = truncatedReleaseDate
-      //   .add(adjustedHours, 'hours')
-      // console.log('asdf combinedDateTime: ', combinedDateTime.toString())
+      let adjustedHours = releaseDateHour;
+      if (releaseDateMeridian === 'PM' && releaseDateHour < 12) {
+        adjustedHours += 12;
+      } else if (releaseDateMeridian === 'AM' && releaseDateHour === 12) {
+        adjustedHours = 0;
+      }
+      console.log('asdf adjustedHours: ', adjustedHours)
+      const combinedDateTime = truncatedReleaseDate
+        .add(adjustedHours, 'hours')
+      console.log('asdf combinedDateTime: ', combinedDateTime.toString())
 
-      setValue(null)
+      setValue(combinedDateTime ?? null)
     },
     [setValue]
   )
@@ -171,7 +171,6 @@ const RadioItems = () => {
     <RadioButtonGroup
       className={styles.radioGroup}
       defaultValue={ReleaseDateType.RELEASE_NOW}
-      {...isReleaseNowField}
     >
 
       <ModalRadioItem
@@ -188,13 +187,13 @@ const RadioItems = () => {
 
             {timePeriod !== TimePeriodType.PAST && (
               <>
-                {/* <HarmonyTextField
+                <HarmonyTextField
                   name={RELEASE_DATE_HOUR}
                   label={'Time'}
                   placeholder={'12:00'}
                   hideLabel={false}
                 />
-                <SelectMeridianField name={RELEASE_DATE_MERIDIAN} /> */}
+                <SelectMeridianField name={RELEASE_DATE_MERIDIAN} />
               </>
             )
 
