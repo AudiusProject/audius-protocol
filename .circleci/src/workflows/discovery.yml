@@ -192,6 +192,7 @@ jobs:
         - push-comms
         - push-trpc
         - push-protocol-dashboard
+        - push-uptime
         - push-healthz
         # uncomment when arm builds are stable
         # - push-discovery-provider-arm
