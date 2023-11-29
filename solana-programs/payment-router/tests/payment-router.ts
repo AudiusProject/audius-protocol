@@ -59,7 +59,7 @@ describe('payment-router', () => {
 
   it('creates the payment router pda', async () => {
     try {
-        const tx = await program.methods
+      const tx = await program.methods
         .createPaymentRouterBalancePda()
         .accounts({
           paymentRouterPda,
@@ -100,8 +100,8 @@ describe('payment-router', () => {
         acc[recipient] = amount
         return acc
       },
-      {}
-    )
+        {}
+      )
 
     // Associated token account owned by the PDA
     let audioTokenAccount = await getOrCreateAssociatedTokenAccount(
@@ -201,13 +201,14 @@ describe('payment-router', () => {
       '2kasfxzRdYq7GC96ZFRdvp31JAc8MREG21mxEVhEDzot',
       '6mGfojkDcTHzhZ68pwDgntqn32EYYNDw7otZfT1GCQYH',
     ]
+    const amount = 0.00001
     const recipientAmounts: Record<string, number> = recipients
       .reduce((acc, recipient) => {
-        acc[recipient] = 0.00001
+        acc[recipient] = amount
         return acc
       },
-      {}
-    )
+        {}
+      )
 
     // Associated token account owned by the PDA
     let usdcTokenAccount = await getOrCreateAssociatedTokenAccount(
