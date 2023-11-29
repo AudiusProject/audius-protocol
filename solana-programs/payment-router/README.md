@@ -80,8 +80,12 @@ Note that the PDA has already been created, so attempting to create it again wil
 
 ### Testing the Routing
 
-This will send 0.00001 AUDIO tokens to the wormhole for a given recipient to subsequently redeem.
+The following scripts will respectively send 0.0001 AUDIO / USDC tokens from the fee payer to the payment router, which will distribute it across the given recipients.
 
 ```
-./scripts/testRoute.sh
+./scripts/testRouteAudio.sh
+```
+
+```
+./scripts/testRouteUsdc.sh
 ```
