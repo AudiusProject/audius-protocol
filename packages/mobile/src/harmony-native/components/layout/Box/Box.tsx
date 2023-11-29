@@ -1,11 +1,7 @@
-import type { BoxProps } from '@audius/harmony'
 import styled from '@emotion/native'
-import type { FlexStyle } from 'react-native'
 
-type NativeBoxProps = Omit<BoxProps, 'alignSelf'> & {
-  flex?: number
-  alignSelf?: FlexStyle['alignSelf']
-}
+import type { NativeBoxProps } from './types'
+
 export const Box = styled.View<NativeBoxProps>(
   ({
     h,
@@ -34,12 +30,12 @@ export const Box = styled.View<NativeBoxProps>(
     borderBottomRightRadius,
     borderBottomLeftRadius,
     borderTopLeftRadius,
+    shadow,
     alignSelf,
     flex,
-    shadow,
     theme
   }) => {
-    const { shadows, spacing, color, cornerRadius } = theme
+    const { spacing, color, cornerRadius, shadows } = theme
     const padT = pt ?? pv ?? p
     const padB = pb ?? pv ?? p
     const padL = pl ?? ph ?? p
@@ -55,7 +51,10 @@ export const Box = styled.View<NativeBoxProps>(
       boxSizing: 'border-box',
       height: h,
       width: w,
-      boxShadow: shadow && shadows[shadow],
+      ...(shadow && {
+        ...shadows.native[shadow],
+        backgroundColor: '#fff'
+      }),
       paddingTop: padT && spacing[padT],
       paddingLeft: padL && spacing[padL],
       paddingRight: padR && spacing[padR],
@@ -64,11 +63,32 @@ export const Box = styled.View<NativeBoxProps>(
       marginLeft: marginL && spacing[marginL],
       marginRight: marginR && spacing[marginR],
       marginBottom: marginB && spacing[marginB],
-      border: border && `1px solid ${color.border[border]}`,
-      borderTop: borderTop && `1px solid ${color.border[borderTop]}`,
-      borderRight: borderRight && `1px solid ${color.border[borderRight]}`,
-      borderBottom: borderBottom && `1px solid ${color.border[borderBottom]}`,
-      borderLeft: borderLeft && `1px solid ${color.border[borderLeft]}`,
+      // Native doesn't have a border:"" shorthand
+      ...(border && {
+        borderStyle: 'solid',
+        borderWidth: 1,
+        borderColor: color.border[border]
+      }),
+      ...(borderTop && {
+        borderStyle: 'solid',
+        borderTopWidth: 1,
+        borderTopColor: color.border[borderTop]
+      }),
+      ...(borderRight && {
+        borderStyle: 'solid',
+        borderRightWidth: 1,
+        borderRightColor: color.border[borderRight]
+      }),
+      ...(borderBottom && {
+        borderStyle: 'solid',
+        borderBottomWidth: 1,
+        borderBottomColor: color.border[borderBottom]
+      }),
+      ...(borderLeft && {
+        borderStyle: 'solid',
+        borderLeftWidth: 1,
+        borderLeftColor: color.border[borderLeft]
+      }),
       borderRadius: borderRadius && cornerRadius[borderRadius],
       borderTopRightRadius:
         borderTopRightRadius && cornerRadius[borderTopRightRadius],

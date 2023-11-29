@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/react-native'
 
 import { Text } from 'app/harmony-native/foundations'
 
@@ -62,11 +62,15 @@ const meta: Meta<typeof Box> = {
       options: ['near', 'mid', 'far', 'emphasis']
     }
   },
-  render: (props) => (
-    <Box {...props}>
-      <Text>{messages.testText}</Text>
-    </Box>
-  )
+  render: (props) => {
+    return (
+      <Box style={{ height: '100%' }}>
+        <Box {...props}>
+          <Text>{messages.testText}</Text>
+        </Box>
+      </Box>
+    )
+  }
 }
 
 export default meta
@@ -79,7 +83,9 @@ export const BoxWithBorder: Story = {
   args: {
     p: 'm',
     ph: 'l',
+    shadow: 'near',
     border: 'strong',
-    borderRadius: 's'
+    borderRadius: 's',
+    m: 'xl'
   }
 }

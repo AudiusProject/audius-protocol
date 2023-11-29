@@ -10,7 +10,7 @@ import type { FlexProps } from '../Flex'
 /**
  * An elevated container which stands out from the background.
  */
-export type PaperProps = {
+export type BasePaperProps = {
   /**
    * Background Color
    * @default white
@@ -34,4 +34,5 @@ export type PaperProps = {
    * @default mid
    */
   shadow?: Exclude<ShadowOptions, 'drop'> | 'none'
-} & FlexProps
+}
+export type PaperProps = BasePaperProps & FlexProps

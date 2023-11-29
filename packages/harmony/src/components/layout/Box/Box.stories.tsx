@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
+import { shadows } from 'foundations'
+
 import { Text } from '../../text'
 
 import { Box } from './Box'
@@ -59,7 +61,7 @@ const meta: Meta<typeof Box> = {
     shadow: {
       description: 'Elevation Shadow',
       control: { type: 'radio' },
-      options: ['near', 'mid', 'far', 'emphasis']
+      options: Object.keys(shadows)
     }
   },
   render: (props) => (
