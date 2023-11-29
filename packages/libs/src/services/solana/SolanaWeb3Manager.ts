@@ -355,14 +355,14 @@ export class SolanaWeb3Manager {
     ethAddress?: string
     mint?: MintName
   } = {}) {
-    if (!this.web3Manager) {
+    if (!ethAddress && !this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
       )
     }
 
     const derivationSourceAddress =
-      ethAddress ?? this.web3Manager.getWalletAddress()
+      ethAddress ?? this.web3Manager!.getWalletAddress()
 
     const bank = await getBankAccountAddress(
       derivationSourceAddress,

@@ -1,12 +1,14 @@
 import * as anchor from '@coral-xyz/anchor'
 import { Program } from '@coral-xyz/anchor'
 import { PaymentRouter } from '../target/types/payment_router'
-import { SOL_AUDIO_DECIMALS, SOL_AUDIO_TOKEN_ADDRESS } from './constants'
+import { SPL_AUDIO_DECIMALS, SPL_AUDIO_TOKEN_ADDRESS, SPL_USDC_DECIMALS, SPL_USDC_TOKEN_ADDRESS } from './constants'
 import {
   TOKEN_PROGRAM_ID,
+  createTransferCheckedInstruction,
   getOrCreateAssociatedTokenAccount,
 } from '@solana/spl-token'
 import { assert } from 'chai'
+import { TransactionMessage, VersionedTransaction } from '@solana/web3.js'
 
 const {
   Connection,
@@ -22,7 +24,8 @@ const feePayerKeypair = Keypair.fromSecretKey(
 )
 const feePayerPublicKey = feePayerKeypair.publicKey
 
-const SOL_AUDIO_TOKEN_ADDRESS_KEY = new PublicKey(SOL_AUDIO_TOKEN_ADDRESS)
+const SPL_AUDIO_TOKEN_ADDRESS_KEY = new PublicKey(SPL_AUDIO_TOKEN_ADDRESS)
+const SPL_USDC_TOKEN_ADDRESS_KEY = new PublicKey(SPL_USDC_TOKEN_ADDRESS)
 
 const endpoint = 'https://api.mainnet-beta.solana.com'
 const connection = new Connection(endpoint, 'finalized')
@@ -56,7 +59,7 @@ describe('payment-router', () => {
 
   it('creates the payment router pda', async () => {
     try {
-        const tx = await program.methods
+      const tx = await program.methods
         .createPaymentRouterBalancePda()
         .accounts({
           paymentRouterPda,
@@ -77,10 +80,8 @@ describe('payment-router', () => {
     }
   })
 
-  it('routes the amounts to the recipients', async () => {
-    // List of 10 recipient token accounts.
-    // The keys are some solana token accounts that can be used for testing.
-    // https://explorer.solana.com/address/E7vtghUxo3DwBHHBnkYzTyKgtRS4cL8BiRyufdPMQYUp
+  it('routes AUDIO amounts to the recipients', async () => {
+    // List of 10 recipient testing $AUDIO token accounts.
     const recipients = [
       'E7vtghUxo3DwBHHBnkYzTyKgtRS4cL8BiRyufdPMQYUp',
       'FJ9KXGM6EtZ8fpmMZwHZsa8aL5kZvB3yS2HQzJC3ss5h',
@@ -93,62 +94,202 @@ describe('payment-router', () => {
       'Aunpp6mQonYuKcmFPqhHsfRjrnF8MznHbVti2iVDp4MN',
       'CXeY4Yea4s78LDkXqwkvBmY65aMt4WTmeVeSaUgdz8Cf',
     ]
+    const amount = 0.00001
     const recipientAmounts: Record<string, number> = recipients
       .reduce((acc, recipient) => {
-        acc[recipient] = 0.00001
+        acc[recipient] = amount
         return acc
       },
-      {}
-    )
+        {}
+      )
 
     // Associated token account owned by the PDA
     let audioTokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
       feePayerKeypair,
-      SOL_AUDIO_TOKEN_ADDRESS_KEY,
+      SPL_AUDIO_TOKEN_ADDRESS_KEY,
       paymentRouterPda,
       true // allowOwnerOffCurve: we need this since the owner is a program
     )
+    const feePayerAudioTokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      feePayerKeypair,
+      SPL_AUDIO_TOKEN_ADDRESS_KEY,
+      feePayerPublicKey
+    )
+
     const pdaAtaKey = audioTokenAccount.address
     const audioAmountBeforeTransfer = Number(audioTokenAccount.amount)
 
     const amounts = Object.values(recipientAmounts)
-      .map(amount => new anchor.BN(amount * 10 ** SOL_AUDIO_DECIMALS))
+      .map(amount => new anchor.BN(amount * 10 ** SPL_AUDIO_DECIMALS))
     const totalAmount = amounts
       .reduce((a: anchor.BN, b: anchor.BN) => a.add(b), new anchor.BN(0))
 
-    const tx = await program.methods
-      .route(
-        paymentRouterPdaBump,
-        amounts,
-        totalAmount,
-      )
-      .accounts({
-        sender: pdaAtaKey,
-        senderOwner: paymentRouterPda,
-        splToken: TOKEN_PROGRAM_ID,
-      })
-      .remainingAccounts(
-        recipients
-          .map(recipient => ({
-            pubkey: new PublicKey(recipient),
-            isSigner: false,
-            isWritable: true
-          }))
-      )
-      .rpc()
-    console.log('Your transaction signature', tx)
+    const recentBlockhash = (await connection.getLatestBlockhash()).blockhash
+    const instructions = [
+      createTransferCheckedInstruction(
+        feePayerAudioTokenAccount.address,
+        SPL_AUDIO_TOKEN_ADDRESS_KEY,
+        pdaAtaKey,
+        feePayerPublicKey,
+        totalAmount.toNumber(),
+        SPL_AUDIO_DECIMALS
+      ),
+      await program.methods
+        .route(
+          paymentRouterPdaBump,
+          amounts,
+          totalAmount,
+        )
+        .accounts({
+          sender: pdaAtaKey,
+          senderOwner: paymentRouterPda,
+          splToken: TOKEN_PROGRAM_ID,
+        })
+        .remainingAccounts(
+          recipients
+            .map(recipient => ({
+              pubkey: new PublicKey(recipient),
+              isSigner: false,
+              isWritable: true
+            }))
+        )
+        .instruction()
+    ]
+    const message = new TransactionMessage({
+      payerKey: feePayerPublicKey,
+      recentBlockhash,
+      instructions
+    }).compileToV0Message()
+    const tx = new VersionedTransaction(message)
+    tx.sign([feePayerKeypair])
+    await connection.sendTransaction(tx)
+
+    const rawTransaction = tx.serialize()
+    await connection.sendRawTransaction(rawTransaction)
+    console.log(
+      'Your transaction signature',
+      Buffer.from(tx.signatures[0]).toString('hex')
+    )
 
     audioTokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
       feePayerKeypair,
-      SOL_AUDIO_TOKEN_ADDRESS_KEY,
+      SPL_AUDIO_TOKEN_ADDRESS_KEY,
       paymentRouterPda,
       true // allowOwnerOffCurve: we need this since the owner is a program
     )
     assert.equal(
       Number(audioTokenAccount.amount),
-      audioAmountBeforeTransfer - totalAmount.toNumber(),
+      audioAmountBeforeTransfer,
+      'Incorrect expected amount after transfer to recipients'
+    )
+  })
+
+  it('routes USDC amounts to the recipients', async () => {
+    // List of 10 recipient testing $USDC token accounts.
+    const recipients = [
+      '8q8MSG4cdyDLoDXRGBLQugA6oHtQmbCtVVV1aEuPdYTj',
+      'FMcMbnqupTbWmmyWJb8DhX2f1DHyHEqFf1rD87fRupaP',
+      '4hbyJjqpWAbarjCQhY8YSeptZz1WYSS88DGqG4BteE3v',
+      'C4DohgB7tKRrArNzofi5wkEaGWSWeifK4EruaWnA77D4',
+      'isZMQA3Ury9FkZXBn4Gt51hTLxc8dYsQD7bWz4Ek46E',
+      'DST1gMcKvrDrxmP4UhQkbJ8X6psL8WyuWnS3KWmqLRcu',
+      '3jnV4Xz7G6vLTNNScr86evmPdTSypP2uYGHtTzaHwGY2',
+      'A6Txt94EB7vPkT5YVAqQbkKFfXpLggkEMYLRtQrzkM13',
+      '2kasfxzRdYq7GC96ZFRdvp31JAc8MREG21mxEVhEDzot',
+      '6mGfojkDcTHzhZ68pwDgntqn32EYYNDw7otZfT1GCQYH',
+    ]
+    const amount = 0.00001
+    const recipientAmounts: Record<string, number> = recipients
+      .reduce((acc, recipient) => {
+        acc[recipient] = amount
+        return acc
+      },
+        {}
+      )
+
+    // Associated token account owned by the PDA
+    let usdcTokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      feePayerKeypair,
+      SPL_USDC_TOKEN_ADDRESS_KEY,
+      paymentRouterPda,
+      true // allowOwnerOffCurve: we need this since the owner is a program
+    )
+    const feePayerUsdcTokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      feePayerKeypair,
+      SPL_USDC_TOKEN_ADDRESS_KEY,
+      feePayerPublicKey
+    )
+
+    const pdaAtaKey = usdcTokenAccount.address
+    const usdcAmountBeforeTransfer = Number(usdcTokenAccount.amount)
+
+    const amounts = Object.values(recipientAmounts)
+      .map(amount => new anchor.BN(amount * 10 ** SPL_AUDIO_DECIMALS))
+    const totalAmount = amounts
+      .reduce((a: anchor.BN, b: anchor.BN) => a.add(b), new anchor.BN(0))
+
+    const recentBlockhash = (await connection.getLatestBlockhash()).blockhash
+    const instructions = [
+      createTransferCheckedInstruction(
+        feePayerUsdcTokenAccount.address,
+        SPL_USDC_TOKEN_ADDRESS_KEY,
+        pdaAtaKey,
+        feePayerPublicKey,
+        totalAmount.toNumber(),
+        SPL_USDC_DECIMALS
+      ),
+      await program.methods
+        .route(
+          paymentRouterPdaBump,
+          amounts,
+          totalAmount,
+        )
+        .accounts({
+          sender: pdaAtaKey,
+          senderOwner: paymentRouterPda,
+          splToken: TOKEN_PROGRAM_ID,
+        })
+        .remainingAccounts(
+          recipients
+            .map(recipient => ({
+              pubkey: new PublicKey(recipient),
+              isSigner: false,
+              isWritable: true
+            }))
+        )
+        .instruction()
+    ]
+    const message = new TransactionMessage({
+      payerKey: feePayerPublicKey,
+      recentBlockhash,
+      instructions
+    }).compileToV0Message()
+    const tx = new VersionedTransaction(message)
+    tx.sign([feePayerKeypair])
+    await connection.sendTransaction(tx)
+
+    const rawTransaction = tx.serialize()
+    await connection.sendRawTransaction(rawTransaction)
+    console.log(
+      'Your transaction signature',
+      Buffer.from(tx.signatures[0]).toString('hex')
+    )
+
+    usdcTokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      feePayerKeypair,
+      SPL_USDC_TOKEN_ADDRESS_KEY,
+      paymentRouterPda,
+      true // allowOwnerOffCurve: we need this since the owner is a program
+    )
+    assert.equal(
+      Number(usdcTokenAccount.amount),
+      usdcAmountBeforeTransfer,
       'Incorrect expected amount after transfer to recipients'
     )
   })

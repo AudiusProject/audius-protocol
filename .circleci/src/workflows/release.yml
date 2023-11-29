@@ -128,6 +128,13 @@ jobs:
       service: mediorum
       requires:
         - push-mediorum
+  - push-arm-image:
+      name: push-uptime-arm
+      context: [Vercel, dockerhub]
+      service: uptime
+      requires:
+        - push-uptime
+
 
 
 
@@ -168,6 +175,7 @@ jobs:
         - push-trpc
         - push-healthz
         - push-protocol-dashboard
+        - push-uptime
         # uncomment these when arm builds are stable
         # - push-identity-service-arm
         # - push-mediorum-arm
