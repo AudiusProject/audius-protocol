@@ -71,7 +71,10 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
           <DayPickerSingleDateController
             // @ts-ignore todo: upgrade moment
             date={moment(field.value)}
-            onDateChange={(value) => helpers.setValue(value?.toString())}
+            onDateChange={(value) => {
+              console.log('asdf onDateChange')
+              helpers.setValue(value?.toString())
+            }}
             isOutsideRange={(day) =>
               isScheduledReleasesEnabled
                 ? false

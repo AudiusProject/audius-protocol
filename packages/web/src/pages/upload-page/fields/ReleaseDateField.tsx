@@ -1,4 +1,4 @@
-import { SetStateAction, useCallback, useContext, useMemo, useState } from 'react'
+import { SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 import { IconCalendar, RadioButtonGroup, RadioGroupContext, ModalContent } from '@audius/stems'
 import cn from 'classnames'
@@ -23,6 +23,7 @@ import { HelpCallout } from 'components/help-callout/HelpCallout'
 import { DropdownField, DropdownFieldProps } from 'components/form-fields'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { AVAILABILITY_TYPE } from './AccessAndSaleField'
+import { release } from 'os'
 const messages = {
   title: 'Release Date',
   description:
@@ -63,11 +64,17 @@ export enum TimePeriodType {
   FUTURE = 'FUTURE'
 }
 
+export enum ReleaseDateMeridian {
+  AM = 'AM',
+  PM = 'PM'
+}
+
 
 type ReleaseDateValue = SingleTrackEditValues[typeof RELEASE_DATE]
 
 export const ReleaseDateField = () => {
-  const [{ value: releaseDate }, , { setValue: setReleaseDate }] = useTrackField<ReleaseDateValue>(RELEASE_DATE)
+  const [releaseDateField, , { setValue: setReleaseDate }] = useTrackField<ReleaseDateValue>(RELEASE_DATE)
+  const releaseDate = releaseDateField.value
   const [releaseDateTypeField, , { setValue: setReleaseDateType }] = useField(RELEASE_DATE_TYPE)
   const releaseDateType = releaseDateTypeField.value
 
@@ -76,7 +83,7 @@ export const ReleaseDateField = () => {
 
 
   const initialValues = useMemo(
-    () => ({ [RELEASE_DATE]: releaseDate ?? undefined, [RELEASE_DATE_HOUR]: releaseDateHour ?? '12', [RELEASE_DATE_MERIDIAN]: releaseDateMeridian ?? 'AM', [RELEASE_DATE_TYPE]: releaseDateType ?? false }),
+    () => ({ [RELEASE_DATE]: releaseDate ?? undefined, [RELEASE_DATE_HOUR]: releaseDateHour ?? '12', [RELEASE_DATE_MERIDIAN]: releaseDateMeridian ?? ReleaseDateMeridian.AM, [RELEASE_DATE_TYPE]: releaseDateType ?? false }),
     [releaseDate, releaseDateType, releaseDateHour, releaseDateMeridian]
   )
 
@@ -155,7 +162,7 @@ export const ReleaseDateField = () => {
             {messages.title}
           </Text>
           <Text>{messages.description} Release date affects sorting on your profile and is visible in track details.</Text>
-          <RadioItems releaseDateTypeField={releaseDateTypeField} releaseDate={releaseDate} />
+          <RadioItems releaseDateTypeField={releaseDateTypeField} releaseDateField={releaseDateField} />
 
         </>
       }
@@ -167,21 +174,30 @@ export const ReleaseDateField = () => {
 
 
 const RadioItems = (props: any) => {
-  const { releaseDateTypeField, releaseDate } = props
+  const { releaseDateTypeField } = props
+  const [releaseDateField, ,] = useField(RELEASE_DATE)
 
-  const truncatedReleaseDate = moment(releaseDate).startOf('day');
+  const [timePeriod, setTimePeriod] = useState(TimePeriodType.PAST)
 
-  const today = moment().startOf('day');
-  let timePeriod: TimePeriodType
+  console.log('asdf RadioItems releaseDate: ', releaseDateField.value)
 
-  if (moment(truncatedReleaseDate).isBefore(today)) {
-    timePeriod = TimePeriodType.PAST
-  } else if (moment(truncatedReleaseDate).isAfter(today)) {
-    timePeriod = TimePeriodType.FUTURE
-  } else {
-    timePeriod = TimePeriodType.PRESENT
-  }
+  useEffect(() => {
+    const truncatedReleaseDate = moment(releaseDateField.value).startOf('day');
 
+    const today = moment().startOf('day');
+    console.log('asdf radioitem date changed: ', releaseDateField, today)
+
+    if (moment(truncatedReleaseDate).isBefore(today)) {
+      console.log('asdf radioitems setTimePeriod to past')
+      setTimePeriod(TimePeriodType.PAST)
+    } else if (moment(truncatedReleaseDate).isAfter(today)) {
+      setTimePeriod(TimePeriodType.FUTURE)
+    } else {
+      setTimePeriod(TimePeriodType.PRESENT)
+    }
+    console.log('asdf radioitems timePeriod: ', timePeriod)
+
+  }, [releaseDateField])
 
   return (
     <RadioButtonGroup
@@ -210,7 +226,7 @@ const RadioItems = (props: any) => {
                   placeholder={'12:00'}
                   hideLabel={false}
                 />
-                <SelectMeridianField name={RELEASE_DATE_MERIDIAN} />
+                <SelectMeridianField />
               </>
             )
 
@@ -226,20 +242,14 @@ const RadioItems = (props: any) => {
   )
 }
 
-type SelectMeridianFieldProps = Partial<DropdownFieldProps> & {
-  name: string
-}
-
-export const SelectMeridianField = (props: SelectMeridianFieldProps) => {
+export const SelectMeridianField = () => {
   return (
     <DropdownField
       aria-label={'label'}
-      placeholder={'AM'}
+      placeholder={ReleaseDateMeridian.AM}
       mount='parent'
-      menu={{ items: ['AM', 'PM'] }}
+      menu={{ items: [ReleaseDateMeridian.AM, ReleaseDateMeridian.PM] }}
       size='large'
-      defaultValue='AM'
-      {...props}
-    />
+      name={RELEASE_DATE_MERIDIAN} />
   )
 }
