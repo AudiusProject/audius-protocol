@@ -1,3 +1,5 @@
+# Pretty much the same as the Dockerfile.prod but assumes the whole 
+# discovery-provider package is a mounted volume instead of copying everything.
 FROM audius/contracts:1.0.0 AS contracts
 FROM alpine:3.18
 
@@ -71,7 +73,6 @@ COPY requirements.txt requirements.txt
 RUN --mount=type=cache,target=/root/.cache \
     python3 -m pip install -r requirements.txt --no-cache-dir
 
-COPY ./es-indexer es-indexer
 RUN --mount=type=cache,target=/root/.npm cd es-indexer && npm ci && npm run build
 
 COPY nginx_conf /usr/local/openresty/conf/
