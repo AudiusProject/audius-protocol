@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 rust:1.64.0 AS bpf-builder
+FROM --platform=linux/amd64 rust:1.70.0 AS bpf-builder
 
 WORKDIR /usr/src/app
 
@@ -22,16 +22,44 @@ RUN --mount=type=cache,target=/usr/src/app/target \
     ./scripts/update-keys.sh && \
     cargo build-bpf && \
     mkdir -p artifacts/main-target && \
-    cp -r target/deploy/ artifacts/main-target && \
-    cd anchor/audius-data && anchor build && cd ../.. && \
-    mkdir -p artifacts/audius-data-target && \
-    cp -r anchor/audius-data/target/deploy artifacts/audius-data-target && \
-    cp -r anchor/audius-data/target/idl artifacts/audius-data-target && \
-    cp -r anchor/audius-data/target/types artifacts/audius-data-target
+    cp -r target/deploy/ artifacts/main-target
 
 # ------
 
-FROM rust:1.64.0
+FROM --platform=linux/amd64 rust:1.70.0 AS anchor-builder
+
+WORKDIR /usr/src/app
+
+ENV PATH="/root/solana-release/bin:${PATH}"
+ENV NODE_MAJOR=18
+RUN apt-get update && \
+    apt-get install -y ca-certificates curl gnupg && \
+    mkdir -p /etc/apt/keyrings && \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
+    apt-get update && \
+    apt-get install -y build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git nodejs && \
+    corepack enable && \
+    npm install -g @coral-xyz/anchor-cli@0.28.0 && \
+    curl -SfL https://github.com/solana-labs/solana/releases/download/v1.16.1/solana-release-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C $HOME
+
+ENV CARGO_INCREMENTAL=1
+ARG PAYMENT_ROUTER_PRIVATE_KEY
+
+COPY . .
+RUN --mount=type=cache,target=/usr/src/app/target \
+    --mount=type=cache,target=/root/.cache/solana \
+    --mount=type=cache,target=/usr/local/cargo/registry \
+    ./scripts/update-keys.sh && \
+    mkdir -p artifacts/main-target && \
+    cd payment-router && anchor build && cd .. && \
+    cp -r payment-router/target/deploy artifacts/main-target && \
+    cp -r payment-router/target/idl artifacts/main-target && \
+    cp -r payment-router/target/types artifacts/main-target
+
+# ------
+
+FROM rust:1.70.0
 
 WORKDIR /usr/src/app
 
@@ -45,13 +73,11 @@ ENV PATH="/root/solana-release/bin:${PATH}"
 COPY scripts/install-solana.sh /tmp/install-solana.sh
 RUN --mount=type=cache,target=/usr/local/cargo/registry /tmp/install-solana.sh
 
-COPY anchor/audius-data/package.json anchor/audius-data/yarn.lock anchor/audius-data/
-RUN cd anchor/audius-data && yarn install
-
 ARG AUDIUS_ETH_REGISTRY_PRIVATE_KEY
 ARG TRACK_LISTEN_COUNT_PRIVATE_KEY
 ARG CLAIMABLE_TOKENS_PRIVATE_KEY
 ARG REWARD_MANAGER_PRIVATE_KEY
+ARG PAYMENT_ROUTER_PRIVATE_KEY
 ARG AUDIUS_DATA_PRIVATE_KEY
 ARG owner_private_key
 ARG feepayer_private_key
@@ -67,13 +93,12 @@ ARG valid_signer_eth_address
 
 COPY . .
 COPY --from=bpf-builder /usr/src/app/artifacts/main-target target
-COPY --from=bpf-builder /usr/src/app/artifacts/audius-data-target anchor/audius-data/target
+COPY --from=anchor-builder /usr/src/app/artifacts/main-target target
 
 RUN --mount=type=cache,target=/usr/src/app/target \
     --mount=type=cache,target=/root/.cache/solana \
     --mount=type=cache,target=/usr/local/cargo/registry \
-    ./scripts/setup-predeployed.sh /usr/db && \
-    cp -r anchor/audius-data/target/idl anchor/audius-data/
+    ./scripts/setup-predeployed.sh /usr/db
 
 HEALTHCHECK --interval=5s --timeout=5s --retries=10 \
     CMD solana balance CMRCuQcnbzHzQfDRZfkfAXM9TKce1X6LjHhSLqQc68WU || exit 1

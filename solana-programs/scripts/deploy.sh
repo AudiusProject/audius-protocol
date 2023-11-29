@@ -167,6 +167,10 @@ echo "Deploying audius-reward-manager..."
 solana program deploy target/deploy/audius_reward_manager.so
 echo
 
+echo "Deploying audius-payment-router..."
+solana program deploy target/deploy/audius_payment_router.so
+echo
+
 echo "Deplyoing audius-data..."
 cd anchor/audius-data/
 anchor deploy --provider.cluster "$SOLANA_HOST"
@@ -286,6 +290,7 @@ cat >solana-program-config.json <<EOF
     "fakeUSDCTokenMint": "$(solana address -k "$fake_usdc_token_keypair")",
     "claimableTokenAddress": "$(solana address -k target/deploy/claimable_tokens-keypair.json)",
     "rewardsManagerAddress": "$(solana address -k target/deploy/audius_reward_manager-keypair.json)",
+    "paymentRouterAddress": "$(solana address -k target/deploy/audius_payment_router-keypair.json)",
     "rewardsManagerAccount": "$(solana address -k "$reward_manager_pda_keypair")",
     "rewardsManagerTokenAccount": "$(solana address -k "$reward_manager_token_pda_keypair")"
 }
