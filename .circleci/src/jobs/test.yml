@@ -4,9 +4,9 @@ parameters:
     type: string
 machine: true
 resource_class: audiusproject/gcp-n2-standard-4
+working_directory: ~/audius-protocol
 steps:
-  - checkout:
-      path: '~/audius-protocol'
+  - checkout
   - attach_workspace:
       at: ./
   - create_concatenated_patch_file:
