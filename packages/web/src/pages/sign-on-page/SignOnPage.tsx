@@ -19,9 +19,11 @@ import { AudiusValues } from 'pages/sign-on-page/AudiusValues'
 import SignUpPage from 'pages/sign-up-page'
 import {
   SIGN_IN_PAGE,
+  SIGN_UP_CREATE_LOGIN_DETAILS,
   SIGN_UP_EMAIL_PAGE,
   SIGN_UP_PAGE,
   SIGN_UP_PASSWORD_PAGE,
+  SIGN_UP_REVIEW_HANDLE_PAGE,
   TRENDING_PAGE
 } from 'utils/route'
 
@@ -46,7 +48,13 @@ export const SignOnPage = () => {
   })
 
   const collapsedDesktopPageMatch = useRouteMatch({
-    path: [SIGN_IN_PAGE, SIGN_UP_EMAIL_PAGE, SIGN_UP_PASSWORD_PAGE],
+    path: [
+      SIGN_IN_PAGE,
+      SIGN_UP_EMAIL_PAGE,
+      SIGN_UP_PASSWORD_PAGE,
+      SIGN_UP_REVIEW_HANDLE_PAGE,
+      SIGN_UP_CREATE_LOGIN_DETAILS
+    ],
     exact: true
   })
 

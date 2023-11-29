@@ -21,19 +21,22 @@ import { ImageField, ImageFieldValue } from './ImageField'
 
 type AccountHeaderProps = {
   mode: 'editing' | 'viewing'
+  size?: 'small' | 'large'
   formDisplayName?: string
   formProfileImage?: ImageFieldValue
 }
 
 const ProfileImageAvatar = ({
   imageUrl,
-  isEditing
+  isEditing,
+  size
 }: {
   imageUrl?: string
   isEditing?: boolean
+  size?: 'small' | 'large'
 }) => {
   const { isMobile } = useMedia()
-  const isSmallSize = isEditing || isMobile
+  const isSmallSize = isEditing || isMobile || size === 'small'
 
   const avatarSize = isSmallSize ? 72 : 120
   return (
@@ -56,12 +59,9 @@ const ProfileImageAvatar = ({
   )
 }
 
-export const AccountHeader = ({
-  mode,
-  formDisplayName,
-  formProfileImage
-}: AccountHeaderProps) => {
-  const { value: profileImage } = { ...useSelector(getProfileImageField) }
+export const AccountHeader = (props: AccountHeaderProps) => {
+  const { mode, formDisplayName, formProfileImage, size } = props
+  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
   const { value: storedDisplayName } = useSelector(getNameField)
   const { value: handle } = useSelector(getHandleField)
   const isVerified = useSelector(getIsVerified)
@@ -70,7 +70,7 @@ export const AccountHeader = ({
   const displayName = formDisplayName ?? storedDisplayName
 
   const { isMobile } = useMedia()
-  const isSmallSize = isEditing || isMobile
+  const isSmallSize = isEditing || isMobile || size === 'small'
 
   return (
     <Box w='100%' css={{ zIndex: 4 }}>
@@ -115,11 +115,12 @@ export const AccountHeader = ({
               <ProfileImageAvatar
                 imageUrl={uploadedImage?.url ?? profileImage?.url}
                 isEditing
+                size={size}
               />
             )}
           </ImageField>
         ) : (
-          <ProfileImageAvatar imageUrl={profileImage?.url} />
+          <ProfileImageAvatar imageUrl={profileImage?.url} size={size} />
         )}
         <Flex
           direction='column'
