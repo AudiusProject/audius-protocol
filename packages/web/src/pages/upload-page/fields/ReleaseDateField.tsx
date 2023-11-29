@@ -22,6 +22,7 @@ import { select } from 'typed-redux-saga'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 import { DropdownField, DropdownFieldProps } from 'components/form-fields'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
+import { AVAILABILITY_TYPE } from './AccessAndSaleField'
 const messages = {
   title: 'Release Date',
   description:
@@ -47,7 +48,8 @@ const IS_RELEASE_NOW = 'is_release_now'
 export type ReleaseDateFormValues = {
   [RELEASE_DATE]: string | undefined,
   [RELEASE_DATE_HOUR]: string | undefined,
-  [RELEASE_DATE_MERIDIAN]: string | undefined
+  [RELEASE_DATE_MERIDIAN]: string | undefined,
+  [IS_RELEASE_NOW]: string | undefined
 }
 
 export enum ReleaseDateType {
@@ -67,9 +69,11 @@ type ReleaseDateValue = SingleTrackEditValues[typeof RELEASE_DATE]
 export const ReleaseDateField = () => {
   const [{ value }, , { setValue }] =
     useTrackField<ReleaseDateValue>(RELEASE_DATE)
-  console.log('asdf trackfield release date: ', value?.toString())
+  const [{ value: isReleaseNowField }, , { setValue: setIsReleaseNow }] = useField(IS_RELEASE_NOW)
+
+  console.log('asdf initial isReleaseNowField: ', isReleaseNowField?.toString())
   const initialValues = useMemo(
-    () => ({ [RELEASE_DATE]: value ?? undefined, [RELEASE_DATE_HOUR]: '12', [RELEASE_DATE_MERIDIAN]: 'PM' }),
+    () => ({ [RELEASE_DATE]: value ?? undefined, [RELEASE_DATE_HOUR]: '12', [RELEASE_DATE_MERIDIAN]: 'PM', [IS_RELEASE_NOW]: isReleaseNowField ?? ReleaseDateType.RELEASE_NOW }),
     [value]
   )
 
@@ -94,6 +98,8 @@ export const ReleaseDateField = () => {
       console.log('asdf combinedDateTime: ', combinedDateTime.toString())
 
       setValue(combinedDateTime.toString() ?? null)
+      setIsReleaseNow(values[IS_RELEASE_NOW])
+      // set other fields
     },
     [setValue]
   )
@@ -151,6 +157,7 @@ export const ReleaseDateField = () => {
 
 const RadioItems = () => {
   const [isReleaseNowField, ,] = useField(IS_RELEASE_NOW)
+  console.log('asdf isReleaseNowField: ', isReleaseNowField)
   const [{ value: releaseDateField }, ,] = useField(RELEASE_DATE)
 
   const truncatedReleaseDate = moment(releaseDateField).startOf('day');
@@ -169,8 +176,9 @@ const RadioItems = () => {
 
   return (
     <RadioButtonGroup
+      {...isReleaseNowField}
       className={styles.radioGroup}
-      defaultValue={ReleaseDateType.RELEASE_NOW}
+      defaultValue={isReleaseNowField.value === false ? ReleaseDateType.HAS_RELEASE_DATE : ReleaseDateType.RELEASE_NOW}
     >
 
       <ModalRadioItem
