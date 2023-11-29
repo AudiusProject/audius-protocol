@@ -1,32 +1,4 @@
-FROM --platform=linux/amd64 rust:1.70.0 AS bpf-builder
-
-WORKDIR /usr/src/app
-
-ENV PATH="/root/solana-release/bin:${PATH}"
-RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash - && \
-    apt-get install -y build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git nodejs && \
-    npm install -g yarn@1.22.19 @project-serum/anchor-cli@0.24.1 && \
-    curl -SfL https://github.com/solana-labs/solana/releases/download/v1.10.11/solana-release-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C $HOME
-
-ENV CARGO_INCREMENTAL=1
-
-ARG AUDIUS_ETH_REGISTRY_PRIVATE_KEY
-ARG TRACK_LISTEN_COUNT_PRIVATE_KEY
-ARG CLAIMABLE_TOKENS_PRIVATE_KEY
-ARG REWARD_MANAGER_PRIVATE_KEY
-
-COPY . .
-RUN --mount=type=cache,target=/usr/src/app/target \
-    --mount=type=cache,target=/root/.cache/solana \
-    --mount=type=cache,target=/usr/local/cargo/registry \
-    ./scripts/update-keys.sh && \
-    cargo build-bpf && \
-    mkdir -p artifacts/main-target && \
-    cp -r target/deploy/ artifacts/main-target
-
-# ------
-
-FROM --platform=linux/amd64 rust:1.70.0 AS anchor-builder
+FROM --platform=linux/amd64 rust:1.70.0 AS build-base
 
 WORKDIR /usr/src/app
 
@@ -41,16 +13,56 @@ RUN apt-get update && \
     apt-get install -y build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git nodejs && \
     corepack enable && \
     npm install -g @coral-xyz/anchor-cli@0.28.0 && \
-    curl -SfL https://github.com/solana-labs/solana/releases/download/v1.16.1/solana-release-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C $HOME
+    curl -SfL https://github.com/solana-labs/solana/releases/download/v1.16.3/solana-release-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C $HOME
 
-ENV CARGO_INCREMENTAL=1
-ARG PAYMENT_ROUTER_PRIVATE_KEY
+COPY audius_eth_registry ./audius_eth_registry
+COPY claimable-tokens ./claimable-tokens
+COPY cli ./cli
+COPY reward-manager ./reward-manager
+COPY payment-router ./payment-router
+COPY staking-bridge ./staking-bridge
+COPY track_listen_count ./track_listen_count
+COPY Cargo.lock Cargo.toml ./
+COPY scripts/update-keys.sh scripts/update-keys.sh
 
-COPY . .
 RUN --mount=type=cache,target=/usr/src/app/target \
     --mount=type=cache,target=/root/.cache/solana \
     --mount=type=cache,target=/usr/local/cargo/registry \
-    ./scripts/update-keys.sh && \
+    ./scripts/update-keys.sh
+
+# ------
+FROM build-base AS bpf-builder
+
+WORKDIR /usr/src/app
+
+ENV PATH="/root/solana-release/bin:${PATH}"
+ENV CARGO_INCREMENTAL=1
+
+ARG AUDIUS_ETH_REGISTRY_PRIVATE_KEY
+ARG TRACK_LISTEN_COUNT_PRIVATE_KEY
+ARG CLAIMABLE_TOKENS_PRIVATE_KEY
+ARG REWARD_MANAGER_PRIVATE_KEY
+
+RUN --mount=type=cache,target=/usr/src/app/target \
+    --mount=type=cache,target=/root/.cache/solana \
+    --mount=type=cache,target=/usr/local/cargo/registry \
+    cargo build-bpf && \
+    mkdir -p artifacts/main-target && \
+    cp -r target/deploy/ artifacts/main-target
+
+# ------
+
+FROM build-base AS anchor-builder
+
+WORKDIR /usr/src/app
+
+ENV PATH="/root/solana-release/bin:${PATH}"
+ENV CARGO_INCREMENTAL=1
+ARG PAYMENT_ROUTER_PRIVATE_KEY
+
+RUN --mount=type=cache,target=/usr/src/app/target \
+    --mount=type=cache,target=/root/.cache/solana \
+    --mount=type=cache,target=/usr/local/cargo/registry \
     mkdir -p artifacts/main-target && \
     cd payment-router && anchor build && cd .. && \
     cp -r payment-router/target/deploy artifacts/main-target && \
@@ -59,15 +71,11 @@ RUN --mount=type=cache,target=/usr/src/app/target \
 
 # ------
 
-FROM rust:1.70.0
+FROM build-base
 
 WORKDIR /usr/src/app
 
 ENV CARGO_INCREMENTAL=1
-
-RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash - && \
-    apt-get install -y clang cmake build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git nodejs && \
-    npm install -g yarn @project-serum/anchor-cli@0.24.1
 
 ENV PATH="/root/solana-release/bin:${PATH}"
 COPY scripts/install-solana.sh /tmp/install-solana.sh
@@ -78,7 +86,6 @@ ARG TRACK_LISTEN_COUNT_PRIVATE_KEY
 ARG CLAIMABLE_TOKENS_PRIVATE_KEY
 ARG REWARD_MANAGER_PRIVATE_KEY
 ARG PAYMENT_ROUTER_PRIVATE_KEY
-ARG AUDIUS_DATA_PRIVATE_KEY
 ARG owner_private_key
 ARG feepayer_private_key
 ARG token_private_key
@@ -91,9 +98,9 @@ ARG reward_manager_pda_private_key
 ARG reward_manager_token_pda_private_key
 ARG valid_signer_eth_address
 
-COPY . .
+COPY scripts/. scripts
 COPY --from=bpf-builder /usr/src/app/artifacts/main-target target
-COPY --from=anchor-builder /usr/src/app/artifacts/main-target target
+COPY --from=anchor-builder /usr/src/app/artifacts/main-target/. target
 
 RUN --mount=type=cache,target=/usr/src/app/target \
     --mount=type=cache,target=/root/.cache/solana \

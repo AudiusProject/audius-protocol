@@ -167,14 +167,8 @@ echo "Deploying audius-reward-manager..."
 solana program deploy target/deploy/audius_reward_manager.so
 echo
 
-echo "Deploying audius-payment-router..."
-solana program deploy target/deploy/audius_payment_router.so
-echo
-
-echo "Deplyoing audius-data..."
-cd anchor/audius-data/
-anchor deploy --provider.cluster "$SOLANA_HOST"
-cd ../..
+echo "Deploying payment-router..."
+solana program deploy target/deploy/payment_router.so
 echo
 
 echo "Deploying wAUDIO token..."
@@ -231,47 +225,46 @@ spl-token transfer \
     "$(solana address -k "$reward_manager_token_pda_keypair")"
 echo
 
-echo "Initializing audius admin account..."
-cd anchor/audius-data/
-yarn run ts-node cli/main.ts --function initAdmin \
-    --admin-authority-keypair "$admin_authority_keypair" \
-    --admin-account-keypair "$admin_account_keypair" \
-    --owner-keypair "$owner_keypair" \
-    --network "$SOLANA_HOST"
-cd ../..
-echo
+# echo "Initializing audius admin account..."
+# cd anchor/audius-data/
+# yarn run ts-node cli/main.ts --function initAdmin \
+#     --admin-authority-keypair "$admin_authority_keypair" \
+#     --admin-account-keypair "$admin_account_keypair" \
+#     --owner-keypair "$owner_keypair" \
+#     --network "$SOLANA_HOST"
+# cd ../..
+# echo
 
-echo "Initializing Content/URSM nodes..."
-cd anchor/audius-data/
-# initialize Content/URSM nodes - initContentNode uses deterministic
-# addresses and pkeys from eth-contracts ganache chain.
-yarn run ts-node cli/main.ts -function initContentNode \
-    --admin-authority-keypair "$admin_authority_keypair" \
-    --admin-account-keypair "$admin_account_keypair" \
-    --owner-keypair "$owner_keypair" \
-    --cn-sp-id 1 \
-    --network "$SOLANA_HOST"
+# echo "Initializing Content/URSM nodes..."
+# cd anchor/audius-data/
+# # initialize Content/URSM nodes - initContentNode uses deterministic
+# # addresses and pkeys from eth-contracts ganache chain.
+# yarn run ts-node cli/main.ts -function initContentNode \
+#     --admin-authority-keypair "$admin_authority_keypair" \
+#     --admin-account-keypair "$admin_account_keypair" \
+#     --owner-keypair "$owner_keypair" \
+#     --cn-sp-id 1 \
+#     --network "$SOLANA_HOST"
 
-yarn run ts-node cli/main.ts --function initContentNode \
-    --admin-authority-keypair "$admin_authority_keypair" \
-    --admin-account-keypair "$admin_account_keypair" \
-    --owner-keypair "$owner_keypair" \
-    --cn-sp-id 2 \
-    --network "$SOLANA_HOST"
+# yarn run ts-node cli/main.ts --function initContentNode \
+#     --admin-authority-keypair "$admin_authority_keypair" \
+#     --admin-account-keypair "$admin_account_keypair" \
+#     --owner-keypair "$owner_keypair" \
+#     --cn-sp-id 2 \
+#     --network "$SOLANA_HOST"
 
-yarn run ts-node cli/main.ts --function initContentNode \
-    --admin-authority-keypair "$admin_authority_keypair" \
-    --admin-account-keypair "$admin_account_keypair" \
-    --owner-keypair "$owner_keypair" \
-    --cn-sp-id 3 \
-    --network "$SOLANA_HOST"
-cd ../..
-echo
+# yarn run ts-node cli/main.ts --function initContentNode \
+#     --admin-authority-keypair "$admin_authority_keypair" \
+#     --admin-account-keypair "$admin_account_keypair" \
+#     --owner-keypair "$owner_keypair" \
+#     --cn-sp-id 3 \
+#     --network "$SOLANA_HOST"
+# cd ../..
+# echo
 
 # TODO: Remove this when we deprecate service-commands
 cat >solana-program-config.json <<EOF
 {
-    "anchorProgramId": "$(solana address -k anchor/audius-data/target/deploy/audius_data-keypair.json)",
     "anchorAdminPublicKey": "$(solana address -k "$admin_authority_keypair")",
     "anchorAdminPrivateKey": "$(cat "$admin_authority_keypair")",
     "anchorAdminStoragePublicKey": "$(solana address -k "$admin_account_keypair")",
@@ -290,7 +283,7 @@ cat >solana-program-config.json <<EOF
     "fakeUSDCTokenMint": "$(solana address -k "$fake_usdc_token_keypair")",
     "claimableTokenAddress": "$(solana address -k target/deploy/claimable_tokens-keypair.json)",
     "rewardsManagerAddress": "$(solana address -k target/deploy/audius_reward_manager-keypair.json)",
-    "paymentRouterAddress": "$(solana address -k target/deploy/audius_payment_router-keypair.json)",
+    "paymentRouterAddress": "$(solana address -k target/deploy/payment_router-keypair.json)",
     "rewardsManagerAccount": "$(solana address -k "$reward_manager_pda_keypair")",
     "rewardsManagerTokenAccount": "$(solana address -k "$reward_manager_token_pda_keypair")"
 }

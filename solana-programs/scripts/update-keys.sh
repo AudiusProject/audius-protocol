@@ -44,7 +44,6 @@ if [[ "$OSTYPE" =~ ^darwin ]]; then
     export CLAIMABLE_TOKENS_PRIVATE_KEY=$(grep SOLANA_CLAIMABLE_TOKENS_SECRET_KEY ../.env | tr -d ' ' | cut -d'=' -f2 | tr -d "'")
     export REWARD_MANAGER_PRIVATE_KEY=$(grep SOLANA_REWARD_MANAGER_SECRET_KEY ../.env | tr -d ' ' | cut -d'=' -f2 | tr -d "'")
     export PAYMENT_ROUTER_PRIVATE_KEY=$(grep SOLANA_PAYMENT_ROUTER_SECRET_KEY ../.env | tr -d ' ' | cut -d'=' -f2 | tr -d "'")
-    export AUDIUS_DATA_PRIVATE_KEY=$(grep SOLANA_AUDIUS_DATA_SECRET_KEY ../.env | tr -d ' ' | cut -d'=' -f2 | tr -d "'")
 fi
 
 mkdir -p ${CARGO_TARGET_DIR:-target}/deploy anchor/audius-data/target/deploy
@@ -61,11 +60,5 @@ replace_address claimable-tokens/program/src/lib.rs ${CARGO_TARGET_DIR:-target}/
 generate_key ${CARGO_TARGET_DIR:-target}/deploy/audius_reward_manager-keypair.json "$REWARD_MANAGER_PRIVATE_KEY"
 replace_address reward-manager/program/src/lib.rs ${CARGO_TARGET_DIR:-target}/deploy/audius_reward_manager-keypair.json
 
-generate_key ${CARGO_TARGET_DIR:-target}/deploy/audius_payment_router-keypair.json "$PAYMENT_ROUTER_PRIVATE_KEY"
-replace_address payment-router/programs/payment-router/src/lib.rs ${CARGO_TARGET_DIR:-target}/deploy/audius_payment_router-keypair.json
-
-generate_key ${CARGO_TARGET_DIR:-anchor/audius-data/target}/deploy/audius_data-keypair.json "$AUDIUS_DATA_PRIVATE_KEY"
-replace_address \
-    anchor/audius-data/programs/audius-data/src/lib.rs \
-    anchor/audius-data/Anchor.toml \
-    ${CARGO_TARGET_DIR:-anchor/audius-data/target}/deploy/audius_data-keypair.json
+generate_key ${CARGO_TARGET_DIR:-target}/deploy/payment_router-keypair.json "$PAYMENT_ROUTER_PRIVATE_KEY"
+replace_address payment-router/programs/payment-router/src/lib.rs ${CARGO_TARGET_DIR:-target}/deploy/payment_router-keypair.json
