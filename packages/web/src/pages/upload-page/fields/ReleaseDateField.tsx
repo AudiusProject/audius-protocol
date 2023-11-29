@@ -43,18 +43,18 @@ const messages = {
 const RELEASE_DATE = 'release_date'
 const RELEASE_DATE_HOUR = 'release_date_hour'
 const RELEASE_DATE_MERIDIAN = 'release_date_meridian'
-const IS_RELEASE_NOW = 'is_release_now'
+const RELEASE_DATE_TYPE = 'release_date_type'
 
 export type ReleaseDateFormValues = {
   [RELEASE_DATE]: string | undefined,
   [RELEASE_DATE_HOUR]: string | undefined,
   [RELEASE_DATE_MERIDIAN]: string | undefined,
-  [IS_RELEASE_NOW]: string | undefined
+  [RELEASE_DATE_TYPE]: string | undefined
 }
 
 export enum ReleaseDateType {
   RELEASE_NOW = 'RELEASE_NOW',
-  HAS_RELEASE_DATE = 'HAS_RELEASE_DATE'
+  SCHEDULED_RELEASE = 'SCHEDULED_RELEASE'
 }
 
 export enum TimePeriodType {
@@ -67,18 +67,27 @@ export enum TimePeriodType {
 type ReleaseDateValue = SingleTrackEditValues[typeof RELEASE_DATE]
 
 export const ReleaseDateField = () => {
-  const [{ value }, , { setValue }] =
-    useTrackField<ReleaseDateValue>(RELEASE_DATE)
-  const [{ value: isReleaseNowField }, , { setValue: setIsReleaseNow }] = useField(IS_RELEASE_NOW)
+  const [{ value: releaseDate }, , { setValue: setReleaseDate }] = useTrackField<ReleaseDateValue>(RELEASE_DATE)
+  const [releaseDateTypeField, , { setValue: setReleaseDateType }] = useField(RELEASE_DATE_TYPE)
+  const releaseDateType = releaseDateTypeField.value
 
-  console.log('asdf initial isReleaseNowField: ', isReleaseNowField?.toString())
+  const [{ value: releaseDateHour }, , { setValue: setReleaseDateHour }] = useField(RELEASE_DATE)
+  const [{ value: releaseDateMeridian }, , { setValue: setReleaseDateMeridian }] = useField(RELEASE_DATE_MERIDIAN)
+
+
   const initialValues = useMemo(
-    () => ({ [RELEASE_DATE]: value ?? undefined, [RELEASE_DATE_HOUR]: '12', [RELEASE_DATE_MERIDIAN]: 'PM', [IS_RELEASE_NOW]: isReleaseNowField ?? ReleaseDateType.RELEASE_NOW }),
-    [value]
+    () => ({ [RELEASE_DATE]: releaseDate ?? undefined, [RELEASE_DATE_HOUR]: releaseDateHour ?? '12', [RELEASE_DATE_MERIDIAN]: releaseDateMeridian ?? 'AM', [RELEASE_DATE_TYPE]: releaseDateType ?? false }),
+    [releaseDate, releaseDateType, releaseDateHour, releaseDateMeridian]
   )
 
   const onSubmit = useCallback(
     (values: ReleaseDateFormValues) => {
+      console.log('asdf onSubmit values: ', values)
+      if (values[RELEASE_DATE_TYPE] === ReleaseDateType.RELEASE_NOW) {
+        console.log('asdf no release date nullifying releaseDate')
+        setReleaseDate(null)
+        return
+      }
       const releaseDateValue = values[RELEASE_DATE]
       console.log('asdf onsubmit values: ', values)
       const releaseDateHour = +values[RELEASE_DATE_HOUR]
@@ -97,11 +106,13 @@ export const ReleaseDateField = () => {
         .add(adjustedHours, 'hours')
       console.log('asdf combinedDateTime: ', combinedDateTime.toString())
 
-      setValue(combinedDateTime.toString() ?? null)
-      setIsReleaseNow(values[IS_RELEASE_NOW])
+      setReleaseDate(combinedDateTime.toString() ?? null)
+      setReleaseDateType(values[RELEASE_DATE_TYPE])
+      setReleaseDateHour(values[RELEASE_DATE_HOUR])
+      setReleaseDateMeridian(values[RELEASE_DATE_MERIDIAN])
       // set other fields
     },
-    [setValue]
+    [setReleaseDate]
   )
 
 
@@ -109,7 +120,7 @@ export const ReleaseDateField = () => {
     return (
       <SelectedValue
         label={
-          moment(value ?? undefined)
+          moment(releaseDate ?? undefined)
             .calendar()
             .split(' at')[0]
         }
@@ -118,13 +129,13 @@ export const ReleaseDateField = () => {
         <input
           className={styles.input}
           name={RELEASE_DATE}
-          value={moment(value ?? undefined).format('L')}
+          value={moment(releaseDate ?? undefined).format('L')}
           aria-readonly
           readOnly
         />
       </SelectedValue>
     )
-  }, [value])
+  }, [releaseDate])
 
 
   return (
@@ -144,7 +155,7 @@ export const ReleaseDateField = () => {
             {messages.title}
           </Text>
           <Text>{messages.description} Release date affects sorting on your profile and is visible in track details.</Text>
-          <RadioItems />
+          <RadioItems releaseDateTypeField={releaseDateTypeField} releaseDate={releaseDate} />
 
         </>
       }
@@ -155,12 +166,10 @@ export const ReleaseDateField = () => {
 
 
 
-const RadioItems = () => {
-  const [isReleaseNowField, ,] = useField(IS_RELEASE_NOW)
-  console.log('asdf isReleaseNowField: ', isReleaseNowField)
-  const [{ value: releaseDateField }, ,] = useField(RELEASE_DATE)
+const RadioItems = (props: any) => {
+  const { releaseDateTypeField, releaseDate } = props
 
-  const truncatedReleaseDate = moment(releaseDateField).startOf('day');
+  const truncatedReleaseDate = moment(releaseDate).startOf('day');
 
   const today = moment().startOf('day');
   let timePeriod: TimePeriodType
@@ -176,21 +185,21 @@ const RadioItems = () => {
 
   return (
     <RadioButtonGroup
-      {...isReleaseNowField}
+      {...releaseDateTypeField}
       className={styles.radioGroup}
-      defaultValue={isReleaseNowField.value === false ? ReleaseDateType.HAS_RELEASE_DATE : ReleaseDateType.RELEASE_NOW}
+      defaultValue={releaseDateTypeField.value ?? ReleaseDateType.RELEASE_NOW}
     >
 
       <ModalRadioItem
         value={ReleaseDateType.RELEASE_NOW}
         label="Release Immediately" />
       <ModalRadioItem
-        value={ReleaseDateType.HAS_RELEASE_DATE}
+        value={ReleaseDateType.SCHEDULED_RELEASE}
         label="Select a release date"
         checkedContent={
           <>
             <div className={styles.datePicker}>
-              <DatePickerField name={RELEASE_DATE} label={messages.title} shouldFocus={isReleaseNowField.value === ReleaseDateType.HAS_RELEASE_DATE} />
+              <DatePickerField name={RELEASE_DATE} label={messages.title} shouldFocus={releaseDateTypeField.value === ReleaseDateType.SCHEDULED_RELEASE} />
             </div>
 
             {timePeriod !== TimePeriodType.PAST && (
