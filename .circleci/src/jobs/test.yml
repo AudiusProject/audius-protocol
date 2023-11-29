@@ -9,16 +9,6 @@ steps:
   - checkout
   - attach_workspace:
       at: ./
-  - create_concatenated_patch_file:
-      filename: combined-patch-file.txt
-  - restore_cache:
-      keys:
-        - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
-  - persist_to_workspace:
-      root: ./
-      paths:
-        - node_modules
-        - packages/discovery-provider/es-indexer/node_modules
   - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
   - run:
       name: test run "<< parameters.service >>"
