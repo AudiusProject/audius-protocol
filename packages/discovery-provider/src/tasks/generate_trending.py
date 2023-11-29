@@ -139,9 +139,7 @@ def generate_trending(session, time, genre, limit, offset, strategy):
     )
 
     # Generate track_id --> repost_count mapping
-    track_repost_counts = {
-        track_id: repost_count for (track_id, repost_count) in agg_track_rows
-    }
+    track_repost_counts = {r["track_id"]: r["repost_count"] for r in agg_track_rows}
 
     # Query repost count with respect to rolling time frame in URL (e.g. /trending/week -> window = rolling week)
     track_repost_counts_for_time = get_repost_counts(
@@ -185,9 +183,7 @@ def generate_trending(session, time, genre, limit, offset, strategy):
     # Query save counts
 
     # Generate track_id --> save_count mapping
-    track_save_counts = {
-        track_id: save_count for (track_id, save_count) in agg_track_rows
-    }
+    track_save_counts = {r["track_id"]: r["save_count"] for r in agg_track_rows}
 
     # Query save counts with respect to rolling time frame in URL (e.g. /trending/week -> window = rolling week)
     save_counts_for_time = get_save_counts(
