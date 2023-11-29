@@ -6,4 +6,4 @@ if [ -z "$keypair_path" ]; then
   exit 1
 fi
 
-feePayerSecret=$(cat $keypair_path) anchor run test-route -- --skip-deploy
+feePayerSecret=$(cat $keypair_path) anchor run test-route-audio -- --skip-deploy
