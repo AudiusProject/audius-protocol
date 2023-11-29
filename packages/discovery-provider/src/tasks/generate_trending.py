@@ -5,7 +5,6 @@ from urllib.parse import unquote
 from sqlalchemy import desc, func
 
 from src.models.social.aggregate_plays import AggregatePlay
-from src.models.social.follow import Follow
 from src.models.social.play import Play
 from src.models.social.repost import RepostType
 from src.models.social.save import SaveType
@@ -130,15 +129,18 @@ def generate_trending(session, time, genre, limit, offset, strategy):
     }
 
     agg_track_rows = (
-        session.query(AggregateTrack.track_id, AggregateTrack.save_count, AggregateTrack.repost_count)
+        session.query(
+            AggregateTrack.track_id,
+            AggregateTrack.save_count,
+            AggregateTrack.repost_count,
+        )
         .filter(AggregateTrack.track_id.in_(track_ids))
         .all()
     )
 
     # Generate track_id --> repost_count mapping
     track_repost_counts = {
-        track_id: repost_count
-        for (track_id, repost_count) in agg_track_rows
+        track_id: repost_count for (track_id, repost_count) in agg_track_rows
     }
 
     # Query repost count with respect to rolling time frame in URL (e.g. /trending/week -> window = rolling week)
@@ -184,8 +186,7 @@ def generate_trending(session, time, genre, limit, offset, strategy):
 
     # Generate track_id --> save_count mapping
     track_save_counts = {
-        track_id: save_count
-        for (track_id, save_count) in agg_track_rows
+        track_id: save_count for (track_id, save_count) in agg_track_rows
     }
 
     # Query save counts with respect to rolling time frame in URL (e.g. /trending/week -> window = rolling week)
