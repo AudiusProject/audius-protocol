@@ -15,12 +15,12 @@ RUN apt update && \
 ENV WORKDIR /app
 WORKDIR ${WORKDIR}
 
-COPY .env* index.html package.json package-lock.json tsconfig.json tsconfig.node.json vite.config.ts entrypoint.sh .
+COPY .env* index.html package.json package-lock.json tsconfig.json tsconfig.node.json vite.config.ts .
 ADD src ./src
 ADD public ./public
 ADD scripts ./scripts
 ADD types ./types
-RUN chmod +x ./entrypoint.sh
+RUN chmod +x ./scripts/docker-entrypoint.sh
 
 ENV DASHBOARD_BASE_URL="/dashboard/"
 RUN npm install --legacy-peer-deps
