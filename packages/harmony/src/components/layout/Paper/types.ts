@@ -1,5 +1,4 @@
 import type {
-  BackgroundColors,
   BorderColors,
   CornerRadiusOptions,
   ShadowOptions
@@ -9,12 +8,6 @@ import type {
  * An elevated container which stands out from the background.
  */
 export type PaperProps = {
-  /**
-   * Background Color
-   * @default white
-   */
-  backgroundColor?: BackgroundColors
-
   /**
    * Border type. If not provided, no border will be used.
    * @default default

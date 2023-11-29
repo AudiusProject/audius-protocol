@@ -7,15 +7,7 @@ import {
   useGetFeaturedArtists,
   useGetTopArtistsInGenre
 } from '@audius/common'
-import {
-  Button,
-  Flex,
-  Text,
-  IconArrowRight,
-  SelectablePill,
-  Paper,
-  useTheme
-} from '@audius/harmony'
+import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
 import { z } from 'zod'
@@ -31,9 +23,9 @@ import { useSelector } from 'utils/reducer'
 import { TRENDING_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
-import { ContinueFooter } from '../components/ContinueFooter'
 import FollowArtistTile from '../components/FollowArtistTile'
 import { PreviewArtistToast } from '../components/PreviewArtistToast'
+import { Heading, PageFooter, ScrollView } from '../components/layout'
 import { SelectArtistsPreviewContextProvider } from '../utils/selectArtistsPreviewContext'
 
 const messages = {
@@ -41,9 +33,8 @@ const messages = {
   description:
     'Curate your feed with tracks uploaded or reposted by anyone you follow. Click the artist’s photo to preview their music.',
   genresLabel: 'Genre',
-  continue: 'Continue',
-  goBack: 'Go Back',
-  pickArtists: (genre: string) => `Pick ${genre} Artists`
+  pickArtists: (genre: string) => `Pick ${genre} Artists`,
+  selected: 'Selected'
 }
 
 type SelectArtistsValues = {
@@ -100,6 +91,8 @@ export const SelectArtistsPage = () => {
     (isFeaturedArtists ? topArtistsStatus : featuredArtistsStatus) ===
     Status.LOADING
 
+  const ArtistsList = isMobile ? Flex : Paper
+
   return (
     <Formik
       initialValues={initialValues}
@@ -109,22 +102,7 @@ export const SelectArtistsPage = () => {
       {({ values, isValid, isSubmitting, isValidating, dirty }) => {
         const { selectedArtists } = values
         return (
-          <Flex
-            as={Form}
-            direction='column'
-            gap={isMobile ? undefined : '3xl'}
-            css={{
-              width: '100%',
-              overflow: 'auto',
-              // Hide scrollbar
-              scrollbarWidth: 'none', // Firefox
-              msOverflowStyle: 'none', // IE + Edge
-              // Chrome + Safari
-              '::-webkit-scrollbar': {
-                display: 'none'
-              }
-            }}
-          >
+          <ScrollView as={Form} gap={isMobile ? undefined : '3xl'}>
             <AccountHeader mode='viewing' />
             <Flex
               direction='column'
@@ -148,104 +126,76 @@ export const SelectArtistsPage = () => {
                   })
                 }}
               >
-                <Flex
-                  direction='column'
-                  gap={isMobile ? 's' : 'l'}
-                  ph={isMobile ? 'l' : undefined}
+                <Heading
                   ref={headerContainerRef}
-                >
-                  <Text
-                    variant='heading'
-                    size={isMobile ? 'm' : 'l'}
-                    strength='default'
-                    color='accent'
-                  >
-                    {messages.header}
-                  </Text>
-                  <Text
-                    variant='body'
-                    size={isMobile ? 'm' : 'l'}
-                    strength='default'
-                  >
-                    {messages.description}
-                  </Text>
-                </Flex>
-                <Flex
+                  ph={isMobile ? 'l' : undefined}
+                  heading={messages.header}
+                  description={messages.description}
+                  centered={!isMobile}
+                />
+                <ScrollView
+                  orientation='horizontal'
                   w='100%'
                   gap='s'
                   ph={isMobile ? 'l' : undefined}
                   justifyContent={isMobile ? 'flex-start' : 'center'}
                   role='radiogroup'
                   onChange={handleChangeGenre}
-                  css={{
-                    ...(isMobile && {
-                      overflow: 'auto',
-                      // Hide scrollbar
-                      scrollbarWidth: 'none', // Firefox
-                      msOverflowStyle: 'none', // IE + Edge
-                      // Chrome + Safari
-                      '::-webkit-scrollbar': {
-                        display: 'none'
-                      }
-                    })
-                  }}
                   aria-label={messages.genresLabel}
+                  disableScroll={!isMobile}
                 >
                   {genres.map((genre) => (
                     // TODO: max of 6, kebab overflow
                     <SelectablePill
+                      key={genre}
                       type='radio'
                       name='genre'
-                      key={genre}
                       label={genre}
                       size={isMobile ? 'small' : 'large'}
                       isSelected={currentGenre === genre}
                     />
                   ))}
-                </Flex>
+                </ScrollView>
               </Flex>
-              <fieldset>
-                <SelectArtistsPreviewContextProvider>
-                  <Paper
-                    backgroundColor='default'
-                    pv='xl'
-                    ph={isMobile ? 'l' : 'xl'}
-                    css={{ minHeight: 500 }}
-                    direction='column'
+              <SelectArtistsPreviewContextProvider>
+                <ArtistsList
+                  as='fieldset'
+                  backgroundColor='default'
+                  pv='xl'
+                  ph={isMobile ? 'l' : 'xl'}
+                  css={{ minHeight: 500 }}
+                  direction='column'
+                >
+                  {isLoading || !isMobile ? null : <PreviewArtistToast />}
+                  <Flex
+                    gap={isMobile ? 's' : 'm'}
+                    wrap='wrap'
+                    justifyContent='center'
                   >
-                    {isLoading || !isMobile ? null : <PreviewArtistToast />}
-                    <Flex
-                      gap={isMobile ? 's' : 'm'}
-                      wrap='wrap'
-                      justifyContent='center'
-                    >
-                      {isLoading ? (
-                        <LoadingSpinner />
-                      ) : (
-                        artists?.map((user) => (
-                          <FollowArtistTile key={user.user_id} user={user} />
-                        ))
-                      )}
-                    </Flex>
-                  </Paper>
-                </SelectArtistsPreviewContextProvider>
-              </fieldset>
+                    {isLoading ? (
+                      <LoadingSpinner />
+                    ) : (
+                      artists?.map((user) => (
+                        <FollowArtistTile key={user.user_id} user={user} />
+                      ))
+                    )}
+                  </Flex>
+                </ArtistsList>
+              </SelectArtistsPreviewContextProvider>
             </Flex>
-            <ContinueFooter sticky>
-              <Button
-                type='submit'
-                disabled={!dirty || !isValid || isSubmitting}
-                isLoading={isSubmitting || isValidating}
-                iconRight={IconArrowRight}
-                fullWidth={isMobile}
-              >
-                {messages.continue}
-              </Button>
-              <Text variant='body'>
-                Selected {selectedArtists.length || 0}/3
-              </Text>
-            </ContinueFooter>
-          </Flex>
+            <PageFooter
+              sticky
+              buttonProps={{
+                disabled: !dirty || !isValid || isSubmitting,
+                isLoading: isSubmitting || isValidating
+              }}
+              postfix={
+                <Text variant='body'>
+                  {messages.selected} {selectedArtists.length || 0}/3
+                </Text>
+              }
+            />
+          </ScrollView>
         )
       }}
     </Formik>

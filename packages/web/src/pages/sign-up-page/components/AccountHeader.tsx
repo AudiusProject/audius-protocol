@@ -72,7 +72,7 @@ const CoverPhotoBox = ({
           : { backgroundColor: color.neutral.n400 })
       }}
     >
-      {isEditing && !hasImage ? (
+      {isEditing ? (
         <IconImage
           css={{ position: 'absolute', right: '16px', top: '16px' }}
           color='staticWhite'

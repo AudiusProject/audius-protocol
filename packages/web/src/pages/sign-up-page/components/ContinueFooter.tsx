@@ -4,7 +4,7 @@ import { BoxProps, Paper, PaperProps } from '@audius/harmony'
 
 import { useMedia } from 'hooks/useMedia'
 
-type ContinueFooterProps = PropsWithChildren<{
+export type ContinueFooterProps = PropsWithChildren<{
   className?: string
   sticky?: boolean
 }> &
@@ -30,7 +30,9 @@ export const ContinueFooter = (props: ContinueFooterProps) => {
         position: sticky ? 'sticky' : 'absolute',
         bottom: 0,
         left: 0,
-        zIndex: 1
+        zIndex: 1,
+        borderBottomRightRadius: 0,
+        borderBottomLeftRadius: 0
       }}
       {...other}
     >

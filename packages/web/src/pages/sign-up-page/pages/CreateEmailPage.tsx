@@ -36,6 +36,7 @@ import {
 } from 'utils/route'
 
 import { SignUpWithMetaMaskButton } from '../components/SignUpWithMetaMaskButton'
+import { Heading, Page } from '../components/layout'
 import { emailSchema } from '../utils/emailSchema'
 
 export const messages = {
@@ -128,15 +129,7 @@ export const CreateEmailPage = () => {
       validateOnChange={false}
     >
       {({ isSubmitting }) => (
-        <Flex
-          as={Form}
-          direction='column'
-          h='100%'
-          w='100%'
-          ph={isMobile ? 'l' : '2xl'}
-          pv='2xl'
-          gap='2xl'
-        >
+        <Page as={Form}>
           <Box alignSelf='center'>
             {isMobile ? (
               <IconAudiusLogoHorizontalColor />
@@ -152,26 +145,11 @@ export const CreateEmailPage = () => {
               />
             )}
           </Box>
-          <Flex direction='column' gap={isMobile ? 's' : 'l'}>
-            <Text
-              variant='heading'
-              size={isMobile ? 'm' : 'l'}
-              color='accent'
-              tag='h1'
-              css={{ textAlign: isMobile ? 'center' : undefined }}
-            >
-              {messages.title}
-            </Text>
-            <Text
-              color='default'
-              size={isMobile ? 'm' : 'l'}
-              variant='body'
-              tag='h2'
-              css={{ textAlign: isMobile ? 'center' : undefined }}
-            >
-              {messages.subHeader}
-            </Text>
-          </Flex>
+          <Heading
+            heading={messages.title}
+            description={messages.subHeader}
+            css={isMobile && { alignItems: 'center' }}
+          />
           <Flex direction='column' gap='l'>
             <HarmonyTextField
               name='email'
@@ -218,7 +196,7 @@ export const CreateEmailPage = () => {
               </Text>
             </Flex>
           ) : null}
-        </Flex>
+        </Page>
       )}
     </Formik>
   )

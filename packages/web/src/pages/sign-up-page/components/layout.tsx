@@ -1,6 +1,8 @@
-import { ComponentType, ReactNode } from 'react'
+import { Children, ComponentType, ReactNode, forwardRef } from 'react'
 
 import {
+  Box,
+  BoxProps,
   Button,
   ButtonProps,
   Flex,
@@ -11,7 +13,7 @@ import {
 
 import { useMedia } from 'hooks/useMedia'
 
-import { ContinueFooter } from './ContinueFooter'
+import { ContinueFooter, ContinueFooterProps } from './ContinueFooter'
 
 const messages = {
   continue: 'Continue'
@@ -19,70 +21,159 @@ const messages = {
 
 type PageProps = FlexProps & {
   as?: ComponentType<any>
+  centered?: boolean
 }
 
 export const Page = (props: PageProps) => {
+  const { centered, children, as, ...other } = props
   const { isMobile } = useMedia()
+
+  const childrenArray = Children.toArray(children)
+  const footer = childrenArray.pop()
+
+  const layoutProps: FlexProps = {
+    direction: 'column',
+    h: '100%',
+    gap: '2xl',
+    ph: isMobile ? 'l' : '2xl',
+    pv: 'xl'
+  }
+
+  if (centered) {
+    return (
+      <Flex h='100%' direction='column' alignItems='center' as={as}>
+        <Flex
+          {...layoutProps}
+          {...other}
+          alignSelf='center'
+          css={!isMobile && { maxWidth: 610 }}
+        >
+          {childrenArray}
+        </Flex>
+        {footer}
+      </Flex>
+    )
+  }
+
   return (
-    <Flex
-      direction='column'
-      h='100%'
-      gap='2xl'
-      ph={isMobile ? 'l' : '2xl'}
-      pv='2xl'
-      {...props}
-    />
+    <Flex as={as} {...layoutProps} {...other}>
+      {children}
+    </Flex>
   )
 }
 
 type HeadingProps = {
   prefix?: ReactNode
-  heading: string
-  description: string
-}
+  postfix?: ReactNode
+  heading: ReactNode
+  description?: ReactNode
+  centered?: boolean
+} & Omit<FlexProps & BoxProps, 'prefix'>
 
-export const Heading = (props: HeadingProps) => {
-  const { prefix, heading, description } = props
-  const { isMobile } = useMedia()
-  return (
-    <Flex gap={isMobile ? 's' : 'l'} direction='column'>
-      {prefix}
-      <Text
-        color='heading'
-        size={isMobile ? 'm' : 'l'}
-        strength='default'
-        variant='heading'
+export const Heading = forwardRef<HTMLDivElement, HeadingProps>(
+  (props, ref) => {
+    const { prefix, heading, description, postfix, centered, ...other } = props
+    const { isMobile } = useMedia()
+    return (
+      <Flex
+        ref={ref}
+        gap={isMobile ? 's' : 'l'}
+        direction='column'
+        alignItems={centered ? 'center' : undefined}
+        {...other}
       >
-        {heading}
-      </Text>
-      <Text size={isMobile ? 'm' : 'l'} variant='body'>
-        {description}
-      </Text>
-    </Flex>
-  )
-}
+        {prefix}
+        <Text variant='heading' color='accent' size={isMobile ? 'm' : 'l'}>
+          {heading}
+        </Text>
+        {description ? (
+          <Text size={isMobile ? 'm' : 'l'} variant='body'>
+            {description}
+          </Text>
+        ) : null}
+        {postfix}
+      </Flex>
+    )
+  }
+)
 
 type PageFooterProps = {
   prefix?: ReactNode
   postfix?: ReactNode
   buttonProps?: ButtonProps
-}
+  centered?: boolean
+} & Omit<ContinueFooterProps, 'prefix'>
 
 export const PageFooter = (props: PageFooterProps) => {
-  const { prefix, postfix, buttonProps } = props
+  const { prefix, postfix, buttonProps, centered, ...other } = props
+  const { isMobile } = useMedia()
 
   return (
-    <ContinueFooter>
+    <ContinueFooter {...other}>
       {prefix}
       <Button
         type='submit'
         iconRight={IconArrowRight}
         fullWidth
+        css={!isMobile && centered && { width: 343 }}
         {...buttonProps}
       >
         {messages.continue}
       </Button>
       {postfix}
     </ContinueFooter>
+  )
+}
+
+type ReadOnlyFieldProps = {
+  label: string
+  value: string
+}
+
+export const ReadOnlyField = (props: ReadOnlyFieldProps) => {
+  const { label, value } = props
+
+  return (
+    <Box>
+      <Text variant='label' size='xs'>
+        {label}
+      </Text>
+      <Text variant='body' size='m'>
+        {value}
+      </Text>
+    </Box>
+  )
+}
+
+type ScrollViewProps = {
+  as?: ComponentType<any>
+  orientation?: 'horizontal' | 'vertical'
+  disableScroll?: boolean
+} & FlexProps &
+  BoxProps
+
+export const ScrollView = (props: ScrollViewProps) => {
+  const { children, orientation = 'vertical', disableScroll, ...other } = props
+  const { isMobile } = useMedia()
+
+  return (
+    <Flex
+      w='100%'
+      direction={orientation === 'vertical' ? 'column' : 'row'}
+      gap={isMobile ? '2xl' : '3xl'}
+      css={{
+        overflow: disableScroll ? undefined : 'auto',
+        // Hide scrollbar
+        scrollbarWidth: 'none', // Firefox
+        msOverflowStyle: 'none', // IE + Edge
+        // Chrome + Safari
+        '::-webkit-scrollbar': {
+          display: 'none'
+        }
+      }}
+      {...other}
+    >
+      {children}
+    </Flex>
   )
 }
