@@ -299,6 +299,7 @@ const ProfileHeader = ({
         wrapperClassName={cn(styles.coverPhoto, {
           [styles.isEditing]: isEditing
         })}
+        useBlur={shouldBlur}
       >
         {isArtist && !isEditing && !isDeactivated ? (
           <BadgeArtist className={styles.badgeArtist} />

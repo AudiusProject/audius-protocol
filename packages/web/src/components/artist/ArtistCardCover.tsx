@@ -52,6 +52,7 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
       wrapperClassName={styles.artistCoverPhoto}
       image={darkenedCoverPhoto}
       immediate
+      useBlur={shouldBlur}
     >
       <div className={styles.coverPhotoContentContainer}>
         {isArtist ? <BadgeArtist className={styles.badgeArtist} /> : null}

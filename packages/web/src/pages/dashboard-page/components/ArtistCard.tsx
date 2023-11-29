@@ -30,6 +30,7 @@ export const ArtistCard = ({ userId, handle, name }: ArtistCardProps) => {
         className={styles.coverPhoto}
         wrapperClassName={styles.coverPhotoWrapper}
         image={coverPhoto}
+        useBlur={shouldBlur}
       />
       <div className={styles.details}>
         <DynamicImage

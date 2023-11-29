@@ -30,9 +30,10 @@ export const useCoverPhoto = (
   debug = false
 ) => {
   const dispatch = useDispatch()
-  const coverPhotoSizes = useSelector(
-    (state) => getUser(state, { id: userId })?._cover_photo_sizes
-  )
+  const coverPhotoSizes = useSelector((state) => {
+    const user = getUser(state, { id: userId })
+    return user?.is_deactivated ? null : user?._cover_photo_sizes
+  })
   const profilePhoto = useProfilePicture(
     userId,
     size === WidthSizes.SIZE_640

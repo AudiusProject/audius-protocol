@@ -1,11 +1,6 @@
 import { memo, useState } from 'react'
 
-import {
-  CoverPhotoSizes,
-  WidthSizes,
-  Nullable,
-  imageCoverPhotoBlank
-} from '@audius/common'
+import { WidthSizes, Nullable, imageCoverPhotoBlank } from '@audius/common'
 import cn from 'classnames'
 import { FileWithPreview } from 'react-dropzone'
 import Lottie from 'react-lottie'
@@ -23,7 +18,6 @@ const messages = {
 
 type CoverPhotoProps = {
   userId: Nullable<number>
-  coverPhotoSizes: Nullable<CoverPhotoSizes>
   updatedCoverPhoto?: string
   className?: string
   loading?: boolean
@@ -38,7 +32,6 @@ type CoverPhotoProps = {
 
 const CoverPhoto = ({
   userId,
-  coverPhotoSizes,
   updatedCoverPhoto,
   className,
   error,
@@ -69,9 +62,7 @@ const CoverPhoto = ({
       backgroundImage = `${gradient}, url(${updatedCoverPhoto || image})`
       backgroundStyle = {
         backgroundRepeat: 'no-repeat',
-        backgroundSize: 'cover',
-        // backdropFilter: shouldBlur ? 'blur(25px)' : 'none'
-        backdropFilter: 'blur(25px)'
+        backgroundSize: 'cover'
       }
     }
   } else {
@@ -106,6 +97,7 @@ const CoverPhoto = ({
         imageStyle={backgroundStyle}
         usePlaceholder={false}
         immediate={immediate}
+        useBlur={shouldBlur}
       >
         <div className={styles.spinner}>
           {processing ? loadingElement : null}

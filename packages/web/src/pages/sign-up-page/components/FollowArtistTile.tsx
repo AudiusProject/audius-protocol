@@ -105,7 +105,30 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
           />
         ) : null}
         {avatar}
-        <Box w='100%' h={68} css={{ backgroundImage: `url(${coverPhoto})` }} />
+        <Box
+          w='100%'
+          h={68}
+          css={{
+            backgroundImage: `url(${coverPhoto})`,
+            backgroundSize: 'cover',
+            '&:before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              height: '100%',
+              width: '100%',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              ...(shouldBlur
+                ? {
+                    backdropFilter: 'blur(25px)'
+                  }
+                : undefined)
+            },
+            overflow: 'hidden'
+          }}
+        />
         <Flex
           direction='column'
           alignItems='center'

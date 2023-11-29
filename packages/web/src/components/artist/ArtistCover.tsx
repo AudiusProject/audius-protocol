@@ -38,7 +38,6 @@ export const ArtistCover = ({
 }: ArtistCoverProps) => {
   const { source: coverPhoto, shouldBlur } = useCoverPhoto(
     userId,
-    coverPhotoSizes,
     WidthSizes.SIZE_640
   )
   const profilePicture = useUserProfilePicture(
@@ -54,6 +53,7 @@ export const ArtistCover = ({
       wrapperClassName={styles.artistCoverPhoto}
       image={darkenedCoverPhoto}
       immediate
+      useBlur={shouldBlur}
     >
       <div className={styles.coverPhotoContentContainer}>
         {isArtist ? <BadgeArtist className={styles.badgeArtist} /> : null}

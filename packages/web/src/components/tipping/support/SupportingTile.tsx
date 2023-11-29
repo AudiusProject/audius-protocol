@@ -53,12 +53,26 @@ export const SupportingTile = ({ supporting }: SupportingCardProps) => {
   return receiver ? (
     <div
       className={cn(styles.tileContainer, styles.tileBackground)}
-      style={{
+      css={{
         backgroundImage: `url(${coverPhoto}), linear-gradient(
           180deg,
           rgba(0, 0, 0, 0.1) 50%,
           rgba(0, 0, 0, 0.3) 100%
-        )`
+        )`,
+        '&:before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          height: '100%',
+          width: '100%',
+          ...(shouldBlur
+            ? {
+                backdropFilter: 'blur(25px)'
+              }
+            : undefined)
+        },
+        overflow: 'hidden'
       }}
       onClick={handleClick}
     >
