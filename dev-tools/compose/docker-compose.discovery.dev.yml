@@ -3,8 +3,9 @@ version: '3.9'
 
 services:
   discovery-provider-redis:
-    file: docker-compose.discovery.prod.yml
-    extends: discovery-provider-redis
+    extends:
+      file: docker-compose.discovery.prod.yml
+      service: discovery-provider-redis
 
   discovery-provider-notifications:
     extends:
