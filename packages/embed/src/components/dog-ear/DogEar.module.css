@@ -3,8 +3,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 76px;
-  height: 76px;
+  width: 88px;
+  height: 88px;
   color: var(--special-light-green);
 }
 
@@ -18,9 +18,13 @@
   position: absolute;
   top: 7px;
   left: 7px;
+  height: 29px;
+  width: 29px;
 }
 
 .icon.small {
-  top: 4px;
-  left: 4px;
+  top: 5px;
+  left: 5px;
+  height: 16px;
+  width: 16px;
 }
