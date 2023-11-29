@@ -36,7 +36,7 @@ export const Default = () => (
     <ShadowLevel shadow='mid' />
     <ShadowLevel shadow='midInverted' />
     <ShadowLevel shadow='far' />
-    {/* <ShadowLevel shadow='emphasis' /> */}
+    <ShadowLevel shadow='emphasis' />
     <ShadowLevel shadow='special'>
       <Paper style={{ overflow: 'hidden' }}>
         <ImageBackground
