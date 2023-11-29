@@ -5,6 +5,8 @@ import type {
   ShadowOptions
 } from 'foundations'
 
+import type { FlexProps } from '../Flex'
+
 /**
  * An elevated container which stands out from the background.
  */
