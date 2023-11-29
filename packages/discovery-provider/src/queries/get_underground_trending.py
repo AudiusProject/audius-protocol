@@ -10,6 +10,7 @@ from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.follow import Follow
 from src.models.social.repost import RepostType
 from src.models.social.save import SaveType
+from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
@@ -150,16 +151,16 @@ def get_scorable_track_data(session, redis_instance, strategy):
 
     track_ids = [record[0] for record in base_query]
 
-    # Get all the extra values
-    repost_counts = get_repost_counts(
-        session, False, False, track_ids, [RepostType.track]
+    agg_track_rows = (
+        session.query(AggregateTrack.track_id, AggregateTrack.save_count, AggregateTrack.repost_count)
+        .filter(AggregateTrack.track_id.in_(track_ids))
+        .all()
     )
 
+    # Get all the extra values
     windowed_repost_counts = get_repost_counts(
         session, False, False, track_ids, [RepostType.track], None, "week"
     )
-
-    save_counts = get_save_counts(session, False, False, track_ids, [SaveType.track])
 
     windowed_save_counts = get_save_counts(
         session, False, False, track_ids, [SaveType.track], None, "week"
@@ -168,11 +169,11 @@ def get_scorable_track_data(session, redis_instance, strategy):
     karma_scores = get_karma(session, tuple(track_ids), strategy, None, False, xf)
 
     # Associate all the extra data
-    for track_id, repost_count in repost_counts:
+    for track_id, repost_count in agg_track_rows:
         tracks_map[track_id]["repost_count"] = repost_count
     for track_id, repost_count in windowed_repost_counts:
         tracks_map[track_id]["windowed_repost_count"] = repost_count
-    for track_id, save_count in save_counts:
+    for track_id, save_count in agg_track_rows:
         tracks_map[track_id]["save_count"] = save_count
     for track_id, save_count in windowed_save_counts:
         tracks_map[track_id]["windowed_save_count"] = save_count
