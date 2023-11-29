@@ -51,13 +51,15 @@ const TrackPlayerCompact = ({
         {isPurchaseable ? <DogEar size='s' /> : null}
         <div className={styles.topSection}>
           {isPurchaseable ? <Preview /> : null}
-          <BedtimeScrubber
-            mediaKey={`title-${mediaKey}`}
-            playingState={playingState}
-            seekTo={seekTo}
-            duration={duration}
-            elapsedSeconds={position}
-          />
+          <div className={styles.scrubber}>
+            <BedtimeScrubber
+              mediaKey={`title-${mediaKey}`}
+              playingState={playingState}
+              seekTo={seekTo}
+              duration={duration}
+              elapsedSeconds={position}
+            />
+          </div>
           <div className={styles.logo}>
             <AudiusLogoButton />
           </div>
