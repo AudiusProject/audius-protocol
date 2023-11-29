@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
+import type { ChangeEvent } from 'react'
 
 import {
   ID,
@@ -23,6 +24,7 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { useModalState } from 'common/hooks/useModalState'
 import { addFollowArtists } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
@@ -31,13 +33,14 @@ import { TRENDING_PAGE } from 'utils/route'
 import { AccountHeader } from '../components/AccountHeader'
 import { ContinueFooter } from '../components/ContinueFooter'
 import FollowArtistTile from '../components/FollowArtistTile'
+import { PreviewArtistToast } from '../components/PreviewArtistToast'
 import { SelectArtistsPreviewContextProvider } from '../utils/selectArtistsPreviewContext'
 
 const messages = {
   header: 'Follow At Least 3 Artists',
   description:
     'Curate your feed with tracks uploaded or reposted by anyone you follow. Click the artist’s photo to preview their music.',
-  genresLabel: 'Selected genres',
+  genresLabel: 'Genre',
   continue: 'Continue',
   goBack: 'Go Back',
   pickArtists: (genre: string) => `Pick ${genre} Artists`
@@ -64,10 +67,9 @@ export const SelectArtistsPage = () => {
   const { color } = useTheme()
   const headerContainerRef = useRef<HTMLDivElement | null>(null)
 
-  // TODO: adopt SelectablePill as input
-  // const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-  //   setCurrentGenre(e.target.value)
-  // }, [])
+  const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    setCurrentGenre(e.target.value)
+  }, [])
 
   const handleSubmit = useCallback(
     (values: SelectArtistsValues) => {
@@ -104,17 +106,11 @@ export const SelectArtistsPage = () => {
       onSubmit={handleSubmit}
       validationSchema={toFormikValidationSchema(SelectArtistsFormSchema)}
     >
-      {({
-        values,
-        isValid,
-        isSubmitting,
-        isValidating,
-        dirty,
-        handleSubmit
-      }) => {
+      {({ values, isValid, isSubmitting, isValidating, dirty }) => {
         const { selectedArtists } = values
         return (
           <Flex
+            as={Form}
             direction='column'
             gap={isMobile ? undefined : '3xl'}
             css={{
@@ -160,13 +156,17 @@ export const SelectArtistsPage = () => {
                 >
                   <Text
                     variant='heading'
-                    size='l'
+                    size={isMobile ? 'm' : 'l'}
                     strength='default'
-                    color='heading'
+                    color='accent'
                   >
                     {messages.header}
                   </Text>
-                  <Text variant='body' size='l' strength='default'>
+                  <Text
+                    variant='body'
+                    size={isMobile ? 'm' : 'l'}
+                    strength='default'
+                  >
                     {messages.description}
                   </Text>
                 </Flex>
@@ -176,6 +176,7 @@ export const SelectArtistsPage = () => {
                   ph={isMobile ? 'l' : undefined}
                   justifyContent={isMobile ? 'flex-start' : 'center'}
                   role='radiogroup'
+                  onChange={handleChangeGenre}
                   css={{
                     ...(isMobile && {
                       overflow: 'auto',
@@ -193,53 +194,50 @@ export const SelectArtistsPage = () => {
                   {genres.map((genre) => (
                     // TODO: max of 6, kebab overflow
                     <SelectablePill
+                      type='radio'
+                      name='genre'
                       key={genre}
                       label={genre}
+                      size={isMobile ? 'small' : 'large'}
                       isSelected={currentGenre === genre}
-                      onClick={() => {
-                        setCurrentGenre(genre)
-                      }}
                     />
                   ))}
                 </Flex>
               </Flex>
-              <Form>
-                <fieldset>
-                  <SelectArtistsPreviewContextProvider>
-                    <Paper
-                      css={{
-                        background: 'var(--harmony-bg-default)',
-                        boxShadow: 'none',
-                        minHeight: 500
-                      }}
-                      pv='xl'
-                      ph={isMobile ? 'l' : 'xl'}
+              <fieldset>
+                <SelectArtistsPreviewContextProvider>
+                  <Paper
+                    backgroundColor='default'
+                    pv='xl'
+                    ph={isMobile ? 'l' : 'xl'}
+                    css={{ minHeight: 500 }}
+                    direction='column'
+                  >
+                    {isLoading || !isMobile ? null : <PreviewArtistToast />}
+                    <Flex
                       gap={isMobile ? 's' : 'm'}
                       wrap='wrap'
+                      justifyContent='center'
                     >
-                      {isLoading
-                        ? null
-                        : artists?.map((user) => {
-                            return (
-                              <FollowArtistTile
-                                key={user.user_id}
-                                user={user}
-                              />
-                            )
-                          })}
-                    </Paper>
-                  </SelectArtistsPreviewContextProvider>
-                </fieldset>
-              </Form>
+                      {isLoading ? (
+                        <LoadingSpinner />
+                      ) : (
+                        artists?.map((user) => (
+                          <FollowArtistTile key={user.user_id} user={user} />
+                        ))
+                      )}
+                    </Flex>
+                  </Paper>
+                </SelectArtistsPreviewContextProvider>
+              </fieldset>
             </Flex>
-            <ContinueFooter>
+            <ContinueFooter sticky>
               <Button
-                minWidth={343}
                 type='submit'
                 disabled={!dirty || !isValid || isSubmitting}
                 isLoading={isSubmitting || isValidating}
                 iconRight={IconArrowRight}
-                onClick={() => handleSubmit()}
+                fullWidth={isMobile}
               >
                 {messages.continue}
               </Button>

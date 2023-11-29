@@ -412,6 +412,10 @@ describe('FixedDecimal', function () {
       expect(new FixedDecimal('0.00000').toShorthand()).toBe('0')
     })
 
+    it('shows values between zero and one correctly', function () {
+      expect(new FixedDecimal('0.042').toShorthand()).toBe('0.04')
+    })
+
     it('shows whole numbers correctly', function () {
       expect(new FixedDecimal('1234').toShorthand()).toBe('1234')
     })

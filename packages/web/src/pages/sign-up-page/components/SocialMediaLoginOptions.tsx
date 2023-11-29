@@ -11,7 +11,6 @@ import { messages } from '../utils/socialMediaMessages'
 import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
 import { SignupFlowTwitterAuth } from './SignupFlowTwitterAuth'
-import styles from './SocialMediaLoginOptions.module.css'
 
 type SocialMediaLoginOptionsProps = {
   onCompleteSocialMediaLogin: (info: {
@@ -58,11 +57,9 @@ export const SocialMediaLoginOptions = ({
     <Flex direction='row' gap='s' w='100%'>
       {isTwitterEnabled ? (
         <SignupFlowTwitterAuth
-          className={styles.flex1}
+          css={{ flex: 1 }}
           onFailure={handleFailure}
-          onSuccess={({ handle, requiresReview }) =>
-            handleSuccess({ handle, requiresReview, platform: 'twitter' })
-          }
+          onSuccess={handleSuccess}
         >
           <SocialButton
             type='button'
@@ -74,28 +71,24 @@ export const SocialMediaLoginOptions = ({
       ) : null}
       {isInstagramEnabled ? (
         <SignupFlowInstagramAuth
-          className={styles.flex1}
+          css={{ flex: 1 }}
           onFailure={handleFailure}
-          onSuccess={({ handle, requiresReview }) =>
-            handleSuccess({ handle, requiresReview, platform: 'instagram' })
-          }
+          onSuccess={handleSuccess}
         >
           <SocialButton
             type='button'
             fullWidth
             socialType='instagram'
-            className={styles.flex1}
+            css={{ flex: 1 }}
             aria-label={messages.signUpInstagram}
           />
         </SignupFlowInstagramAuth>
       ) : null}
       {isTikTokEnabled ? (
-        <Box className={styles.flex1}>
+        <Box css={{ flex: 1 }}>
           <SignupFlowTikTokAuth
             onFailure={handleFailure}
-            onSuccess={({ handle, requiresReview }) =>
-              handleSuccess({ handle, requiresReview, platform: 'tiktok' })
-            }
+            onSuccess={handleSuccess}
           >
             <SocialButton
               type='button'

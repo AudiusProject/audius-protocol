@@ -131,7 +131,11 @@ export const USDCManualTransfer = ({
         ) : (
           <>
             {mobile ? null : (
-              <Button variant={ButtonType.TERTIARY} fullWidth onClick={onClose}>
+              <Button
+                variant={ButtonType.SECONDARY}
+                fullWidth
+                onClick={onClose}
+              >
                 {messages.goBack}
               </Button>
             )}

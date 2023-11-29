@@ -8,9 +8,10 @@ export type ShadowOptions =
   | 'emphasis'
   | 'special'
   | 'drop'
+  | 'flat'
 
 export const nativeShadows: Record<
-  Exclude<ShadowOptions, 'drop'>,
+  Exclude<ShadowOptions, 'drop' | 'flat'>,
   ViewStyle
 > = {
   near: {
@@ -69,7 +70,7 @@ export const nativeShadows: Record<
   }
 }
 
-export const shadows: Record<ShadowOptions, string> & {
+export const shadows: Record<ShadowOptions, string | undefined> & {
   native: typeof nativeShadows
 } = {
   near: '0px 2px 4px 0px rgba(0, 0, 0, 0.08), 0px 0px 6px 0px rgba(0, 0, 0, 0.02)',
@@ -80,6 +81,7 @@ export const shadows: Record<ShadowOptions, string> & {
   emphasis:
     '0px 1.34018px 8px 0px rgba(0, 0, 0, 0.2), 0px 6px 15px 0px rgba(0, 0, 0, 0.1)',
   special: '0px 1px 20px -3px #565776',
+  flat: undefined,
   drop: 'drop-shadow(0px 1.34018px 8px rgba(0, 0, 0, 0.2)) drop-shadow(0px 6px 15px rgba(0, 0, 0, 0.1))',
   native: nativeShadows
 }

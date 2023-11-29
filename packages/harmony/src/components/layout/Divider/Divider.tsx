@@ -36,7 +36,8 @@ export const Divider = (props: DividerProps) => {
     ...(!children &&
       orientation === 'vertical' && {
         borderRight: border,
-        alignSelf: 'stretch'
+        alignSelf: 'stretch',
+        height: 'auto'
       }),
     ...(!children &&
       orientation === 'horizontal' && {

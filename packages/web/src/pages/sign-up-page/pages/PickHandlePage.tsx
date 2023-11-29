@@ -1,46 +1,46 @@
 import { useCallback, useContext, useEffect, useMemo, useRef } from 'react'
 
-import { AudiusQueryContext, useDebouncedCallback } from '@audius/common'
+import { useDebouncedCallback, useAudiusQueryContext } from '@audius/common'
 import {
-  Box,
   Button,
   Divider,
   Flex,
   IconArrowRight,
   IconVerified,
-  PlainButton,
-  PlainButtonType,
-  Text
+  Paper,
+  Text,
+  TextLink
 } from '@audius/harmony'
-import { Form, Formik, FormikProps, useFormikContext } from 'formik'
-import { isEmpty } from 'lodash'
+import { Form, Formik, FormikProps, useField, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
-import { useHistory } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { setValueField } from 'common/store/pages/signon/actions'
-import { getHandleField } from 'common/store/pages/signon/selectors'
+import {
+  getHandleField,
+  getLinkedSocialOnFirstPage
+} from 'common/store/pages/signon/selectors'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { SIGN_UP_FINISH_PROFILE_PAGE } from 'utils/route'
+import {
+  SIGN_UP_CREATE_LOGIN_DETAILS,
+  SIGN_UP_FINISH_PROFILE_PAGE
+} from 'utils/route'
 
 import { ContinueFooter } from '../components/ContinueFooter'
 import { SignupFlowInstagramAuth } from '../components/SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from '../components/SignupFlowTikTokAuth'
 import { SignupFlowTwitterAuth } from '../components/SignupFlowTwitterAuth'
 import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
-import {
-  generateHandleSchema,
-  errorMessages as handleErrorMessages
-} from '../utils/handleSchema'
+import { generateHandleSchema, errorMessages } from '../utils/handleSchema'
 import { messages as socialMediaMessages } from '../utils/socialMediaMessages'
-
-import styles from './PickHandlePage.module.css'
 
 const messages = {
   pickYourHandle: 'Pick Your Handle',
-  outOf: 'of',
+  outOf: (numerator: number, denominator: number) =>
+    `${numerator} of ${denominator}`,
   handleDescription:
     'This is how others find and tag you. It is totally unique to you & cannot be changed later.',
   handle: 'Handle',
@@ -53,8 +53,13 @@ const messages = {
     'Verify your Audius account by linking a verified social media account.',
   claimHandleHeadsUp:
     'Heads up! 👋 Picking a handle that doesn’t match your verified account cannot be undone later.',
-  ...socialMediaMessages,
-  ...handleErrorMessages
+  ...socialMediaMessages
+}
+
+const handleAuthMap = {
+  [errorMessages.twitterReservedError]: SignupFlowTwitterAuth,
+  [errorMessages.instagramReservedError]: SignupFlowInstagramAuth,
+  [errorMessages.tiktokReservedError]: SignupFlowTikTokAuth
 }
 
 type PickHandleValues = {
@@ -70,12 +75,9 @@ type HandleFieldProps = {
 }
 
 const HandleField = ({ onCompleteSocialMediaLogin }: HandleFieldProps) => {
-  const {
-    values,
-    validateForm,
-    errors: { handle: error },
-    setFieldError
-  } = useFormikContext<PickHandleValues>()
+  const [{ value: handle }, { error }] = useField('handle')
+  const { values, validateForm, setFieldError } =
+    useFormikContext<PickHandleValues>()
 
   const { toast } = useContext(ToastContext)
 
@@ -84,6 +86,7 @@ const HandleField = ({ onCompleteSocialMediaLogin }: HandleFieldProps) => {
     [validateForm],
     1000
   )
+
   useEffect(() => {
     debouncedValidate(values)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -113,64 +116,29 @@ const HandleField = ({ onCompleteSocialMediaLogin }: HandleFieldProps) => {
     [onCompleteSocialMediaLogin, toast]
   )
 
-  let helperText: React.ReactNode = error
+  const AuthComponent = error ? handleAuthMap[error] : undefined
 
-  if (error === messages.twitterReservedError) {
-    helperText = (
+  const helperText =
+    error && AuthComponent ? (
       <>
-        {messages.twitterReservedError}{' '}
-        <SignupFlowTwitterAuth
-          className={styles.linkToClaim}
-          onFailure={handleVerifyHandleError}
-          onSuccess={({ handle, requiresReview }) =>
-            handleLoginSuccess({ handle, requiresReview, platform: 'twitter' })
-          }
-        >
-          {messages.linkToClaim}
-        </SignupFlowTwitterAuth>
+        {error}{' '}
+        <TextLink variant='visible' asChild>
+          <AuthComponent
+            onFailure={handleVerifyHandleError}
+            onSuccess={handleLoginSuccess}
+          >
+            <span>{messages.linkToClaim}</span>
+          </AuthComponent>
+        </TextLink>
       </>
-    )
-  } else if (error === messages.instagramReservedError) {
-    helperText = (
-      <>
-        {messages.instagramReservedError}{' '}
-        <SignupFlowInstagramAuth
-          onFailure={handleVerifyHandleError}
-          onSuccess={({ handle, requiresReview }) =>
-            handleLoginSuccess({
-              handle,
-              requiresReview,
-              platform: 'instagram'
-            })
-          }
-          className={styles.linkToClaim}
-        >
-          {messages.linkToClaim}
-        </SignupFlowInstagramAuth>
-      </>
-    )
-  } else if (error === messages.tiktokReservedError) {
-    helperText = (
-      <>
-        {messages.tiktokReservedError}{' '}
-        <SignupFlowTikTokAuth
-          onFailure={handleVerifyHandleError}
-          onSuccess={({ handle, requiresReview }) =>
-            handleLoginSuccess({ handle, requiresReview, platform: 'tiktok' })
-          }
-        >
-          <button className={styles.linkToClaim}>{messages.linkToClaim}</button>
-        </SignupFlowTikTokAuth>
-      </>
-    )
-  }
+    ) : null
 
   return (
     <HarmonyTextField
       name='handle'
       label={messages.handle}
-      error={!!error && !isEmpty(values.handle)}
-      helperText={!!error && !isEmpty(values.handle) ? helperText : undefined}
+      error={error && handle}
+      helperText={helperText}
       startAdornmentText='@'
       placeholder={messages.handle}
       transformValue={(value) => value.replace(/\s/g, '')}
@@ -189,70 +157,65 @@ type SocialMediaSectionProps = {
 const SocialMediaSection = ({
   onCompleteSocialMediaLogin
 }: SocialMediaSectionProps) => {
+  const { isMobile } = useMedia()
   return (
-    <Flex
-      borderRadius='m'
-      direction='column'
-      className={styles.socialsContainer}
-      p='l'
-      gap='l'
-    >
-      <Box>
-        <Text tag='span' variant='heading' size='s'>
+    <Paper direction='column' backgroundColor='surface2' p='l' gap='l'>
+      <Flex direction='column' gap='s'>
+        <Text
+          variant={isMobile ? 'title' : 'heading'}
+          size={isMobile ? 'm' : 's'}
+        >
           {messages.claimHandleHeaderPrefix}{' '}
+          <Text color='heading' tag='span'>
+            @{messages.handle}
+          </Text>{' '}
+          <IconVerified
+            size={isMobile ? 's' : 'm'}
+            css={{ verticalAlign: 'sub' }}
+          />
         </Text>
-        <Text tag='span' variant='heading' color='heading' size='s'>
-          @{messages.handle}
-        </Text>
-        <IconVerified size='m' className={styles.verifiedIcon} />
-      </Box>
-      <Box>
-        <Text variant='body' size='l'>
+        <Text variant='body' size={isMobile ? 'm' : 'l'}>
           {messages.claimHandleDescription}
         </Text>
-      </Box>
+      </Flex>
       <SocialMediaLoginOptions
         onCompleteSocialMediaLogin={onCompleteSocialMediaLogin}
       />
-      <Box>
-        <Text variant='body' size='l'>
-          {messages.claimHandleHeadsUp}
-        </Text>
-      </Box>
-    </Flex>
+      <Text variant='body' size={isMobile ? 'm' : 'l'}>
+        {messages.claimHandleHeadsUp}
+      </Text>
+    </Paper>
   )
 }
 
 export const PickHandlePage = () => {
+  const { isMobile } = useMedia()
   const formikRef = useRef<FormikProps<PickHandleValues>>(null)
 
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const { toast } = useContext(ToastContext)
-  const history = useHistory()
-  const queryContext = useContext(AudiusQueryContext)
+  const audiusQueryContext = useAudiusQueryContext()
   const validationSchema = useMemo(() => {
-    if (queryContext != null) {
-      return toFormikValidationSchema(
-        generateHandleSchema({ audiusQueryContext: queryContext })
-      )
-    }
-    return undefined
-  }, [queryContext])
+    return toFormikValidationSchema(
+      generateHandleSchema({ audiusQueryContext })
+    )
+  }, [audiusQueryContext])
 
-  const { value } = useSelector(getHandleField)
-
-  const handleClickBackIcon = useCallback(() => {
-    history.goBack()
-  }, [history])
+  const { value: handle } = useSelector(getHandleField)
+  const isLinkingSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
 
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
       const { handle } = values
       dispatch(setValueField('handle', handle))
-      navigate(SIGN_UP_FINISH_PROFILE_PAGE)
+      navigate(
+        isLinkingSocialOnFirstPage
+          ? SIGN_UP_CREATE_LOGIN_DETAILS
+          : SIGN_UP_FINISH_PROFILE_PAGE
+      )
     },
-    [dispatch, navigate]
+    [dispatch, navigate, isLinkingSocialOnFirstPage]
   )
 
   const processSocialLoginResult = useCallback(
@@ -278,92 +241,78 @@ export const PickHandlePage = () => {
   )
 
   const initialValues = {
-    handle: value || ''
+    handle
   }
 
   return (
-    <Box h='100%' className={styles.outerContainer}>
-      <Formik
-        innerRef={formikRef}
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={handleSubmit}
-        validateOnChange={false}
-      >
-        {({ isSubmitting, isValid, isValidating }) => (
-          <Form>
-            <Flex direction='column' justifyContent='space-between' h='100%'>
-              <Flex
-                pv='3xl'
-                className={styles.contentContainer}
-                direction='column'
-                gap='xl'
+    <Formik
+      innerRef={formikRef}
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={handleSubmit}
+      validateOnChange={false}
+    >
+      {({ isSubmitting, isValid, isValidating }) => (
+        <Flex as={Form} direction='column' h='100%'>
+          <Flex
+            direction='column'
+            gap='2xl'
+            alignSelf='center'
+            pv='xl'
+            ph={isMobile ? 'l' : 'xl'}
+            css={!isMobile && { maxWidth: 610 }}
+          >
+            <Flex gap={isMobile ? 's' : 'l'} direction='column'>
+              {isMobile ? null : (
+                <Text size='s' variant='label' color='subdued'>
+                  {messages.outOf(1, 2)}
+                </Text>
+              )}
+              <Text
+                color='heading'
+                size={isMobile ? 'm' : 'l'}
+                strength='default'
+                variant='heading'
               >
-                <Box>
-                  <Flex gap='l' direction='column'>
-                    <Box>
-                      <Text size='s' variant='label' color='subdued'>
-                        1 {messages.outOf} 2
-                      </Text>
-                    </Box>
-                    <Box>
-                      <Text
-                        color='heading'
-                        size='l'
-                        strength='default'
-                        variant='heading'
-                      >
-                        {messages.pickYourHandle}
-                      </Text>
-                    </Box>
-                    <Box>
-                      <Text size='l' variant='body'>
-                        {messages.handleDescription}
-                      </Text>
-                    </Box>
-                  </Flex>
-                  <Box mt='2xl'>
-                    <HandleField
-                      onCompleteSocialMediaLogin={processSocialLoginResult}
-                    />
-                  </Box>
-                </Box>
-                <Flex alignItems='center' justifyContent='center' gap='s'>
-                  <Divider className={styles.divider} />
-                  <Text
-                    variant='body'
-                    color='subdued'
-                    size='s'
-                    className={styles.dividerText}
-                  >
-                    {messages.or}
-                  </Text>
-                  <Divider className={styles.divider} />
-                </Flex>
-                <SocialMediaSection
-                  onCompleteSocialMediaLogin={processSocialLoginResult}
-                />
-              </Flex>
-              <ContinueFooter>
-                <Button
-                  type='submit'
-                  disabled={!isValid || isSubmitting}
-                  isLoading={isSubmitting || isValidating}
-                  iconRight={IconArrowRight}
-                >
-                  {messages.continue}
-                </Button>
-                <PlainButton
-                  onClick={handleClickBackIcon}
-                  variant={PlainButtonType.SUBDUED}
-                >
-                  {messages.goBack}
-                </PlainButton>
-              </ContinueFooter>
+                {messages.pickYourHandle}
+              </Text>
+              <Text size={isMobile ? 'm' : 'l'} variant='body'>
+                {messages.handleDescription}
+              </Text>
             </Flex>
-          </Form>
-        )}
-      </Formik>
-    </Box>
+            <Flex direction='column' gap={isMobile ? 'l' : 'xl'}>
+              <HandleField
+                onCompleteSocialMediaLogin={processSocialLoginResult}
+              />
+              <Divider>
+                <Text
+                  variant='body'
+                  color='subdued'
+                  size='s'
+                  css={{ textTransform: 'uppercase' }}
+                >
+                  {messages.or}
+                </Text>
+              </Divider>
+              <SocialMediaSection
+                onCompleteSocialMediaLogin={processSocialLoginResult}
+              />
+            </Flex>
+          </Flex>
+          <ContinueFooter>
+            <Button
+              type='submit'
+              disabled={!isValid || isSubmitting}
+              isLoading={isSubmitting || isValidating}
+              iconRight={IconArrowRight}
+              fullWidth={isMobile}
+              css={!isMobile && { width: 343 }}
+            >
+              {messages.continue}
+            </Button>
+          </ContinueFooter>
+        </Flex>
+      )}
+    </Formik>
   )
 }

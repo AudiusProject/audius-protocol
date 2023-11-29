@@ -76,7 +76,7 @@
     "@solana/buffer-layout-utils" "^0.2.0"
     buffer "^6.0.3"
 
-"@solana/web3.js@^1.32.0", "@solana/web3.js@^1.68.0", "@solana/web3.js@^1.78.4":
+"@solana/web3.js@1.78.4", "@solana/web3.js@^1.32.0", "@solana/web3.js@^1.68.0":
   version "1.78.4"
   resolved "https://registry.npmjs.org/@solana/web3.js/-/web3.js-1.78.4.tgz"
   integrity sha512-up5VG1dK+GPhykmuMIozJZBbVqpm77vbOG6/r5dS7NBGZonwHfTLdBbsYc3rjmaQ4DpCXUa3tUc4RZHRORvZrw==

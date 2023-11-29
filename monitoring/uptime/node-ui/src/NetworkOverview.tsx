@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import type { AudiusLibs as AudiusLibsType } from '@audius/sdk/dist/WebAudiusLibs.d.ts'
+import { useEffect, useState } from 'react'
 import BN from 'bn.js'
 import useSWR from 'swr'
-import { Card, Title, Tracker, Flex, Text, Color } from "@tremor/react";
+import { Tracker, Color } from '@tremor/react'
 import { useEnvVars } from './providers/EnvVarsProvider'
 import { useAudiusLibs } from './providers/AudiusLibsProvider'
-import type { AudiusLibsContextType } from './providers/AudiusLibsProvider'
 import { formatWei } from './helpers'
 import useNodes from './hooks/useNodes'
 import { UptimeResponse } from './Uptime'
@@ -16,6 +16,24 @@ interface NodeResponse {
   owner: string
   spID: number
   type: string
+}
+
+interface HealthResponse {
+  data: {
+    version: string
+    discovery_provider_healthy?: boolean
+    healthy?: boolean
+  }
+}
+
+interface RequestCountResponse {
+  timestamp: string
+  unique_count: number
+  total_count: number
+}
+
+interface RequestCountsResponse {
+  data: RequestCountResponse[]
 }
 
 interface Tracker {
@@ -46,23 +64,36 @@ type User = {
   pendingUndelegateRequest: GetPendingUndelegateRequestResponse
 }
 
-const fetcher = async url => {
+class FetchError extends Error {
+  info: any
+  status: number
+
+  constructor(message: string, status: number, info: any) {
+    super(message)
+    this.info = info
+    this.status = status
+    this.name = 'FetchError'
+  }
+}
+
+const fetcher = async (url: string) => {
   const res = await fetch(url)
- 
+
   // If the status code is not in the range 200-299,
   // we still try to parse and throw it.
   if (!res.ok) {
-    const error = new Error('An error occurred while fetching the data.')
-    // Attach extra info to the error object.
-    error.info = await res.json()
-    error.status = res.status
+    const error = new FetchError(
+      'An error occurred while fetching the data.',
+      res.status,
+      await res.json()
+    )
     throw error
   }
- 
+
   return res.json()
 }
 
-const UptimeTracker = ({ data }: { UptimeResponse }) => {
+const UptimeTracker = ({ data }: { data: UptimeResponse }) => {
   if (!data?.uptime_raw_data) {
     return null
   }
@@ -83,20 +114,21 @@ const UptimeTracker = ({ data }: { UptimeResponse }) => {
     }
   }
 
-  return (
-    <Tracker data={trackerData} className="w-20 mx-auto mt-2" />
-  )
+  return <Tracker data={trackerData} className='w-20 mx-auto mt-2' />
 }
 
 const getUserMetadata = async (
   wallet: string,
-  audiusLibs: AudiusLibsContextType
+  audiusLibs: AudiusLibsType
 ): Promise<User> => {
   const totalDelegatorStake =
-    await audiusLibs.ethContracts.DelegateManagerClient.getTotalDelegatorStake(wallet)
-  const pendingUndelegateRequest = await audiusLibs.ethContracts.DelegateManagerClient.getPendingUndelegateRequest(
-    wallet
-  )
+    await audiusLibs.ethContracts!.DelegateManagerClient.getTotalDelegatorStake(
+      wallet
+    )
+  const pendingUndelegateRequest =
+    await audiusLibs.ethContracts!.DelegateManagerClient.getPendingUndelegateRequest(
+      wallet
+    )
 
   const user = {
     wallet,
@@ -109,14 +141,22 @@ const getUserMetadata = async (
 
 const getServiceProviderMetadata = async (
   wallet: string,
-  audiusLibs: AudiusLibsContextType
+  audiusLibs: AudiusLibsType
 ) => {
-  const totalStakedFor = await audiusLibs.ethContracts.StakingProxyClient.totalStakedFor(wallet)
-  const delegatedTotal = await audiusLibs.ethContracts.DelegateManagerClient.getTotalDelegatedToServiceProvider(wallet)
-  const serviceProvider: ServiceProvider = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getServiceProviderDetails(wallet)
-  const pendingDecreaseStakeRequest = await audiusLibs.ethContracts.ServiceProviderFactoryClient.getPendingDecreaseStakeRequest(
-    wallet
-  )
+  const totalStakedFor =
+    await audiusLibs.ethContracts!.StakingProxyClient.totalStakedFor(wallet)
+  const delegatedTotal =
+    await audiusLibs.ethContracts!.DelegateManagerClient.getTotalDelegatedToServiceProvider(
+      wallet
+    )
+  const serviceProvider: ServiceProvider =
+    await audiusLibs.ethContracts!.ServiceProviderFactoryClient.getServiceProviderDetails(
+      wallet
+    )
+  const pendingDecreaseStakeRequest =
+    await audiusLibs.ethContracts!.ServiceProviderFactoryClient.getPendingDecreaseStakeRequest(
+      wallet
+    )
 
   return {
     serviceProvider,
@@ -124,10 +164,9 @@ const getServiceProviderMetadata = async (
     totalStakedFor,
     delegatedTotal
   }
-
 }
 
-const NodeRow = ({ node }: { NodeResponse }) => {
+const NodeRow = ({ node }: { node: NodeResponse }) => {
   const { audiusLibs } = useAudiusLibs()
 
   const [bondedData, setBondedData] = useState('')
@@ -145,9 +184,13 @@ const NodeRow = ({ node }: { NodeResponse }) => {
      */
     const getActiveStake = async (
       wallet: string,
-      audiusLibs: AudiusLibsContextType
+      audiusLibs: AudiusLibsType | null
     ) => {
       try {
+        if (!audiusLibs) {
+          throw new Error('libs not initialized')
+        }
+
         const user = await getUserMetadata(wallet, audiusLibs)
         const serviceProvider = await getServiceProviderMetadata(
           wallet,
@@ -162,7 +205,7 @@ const NodeRow = ({ node }: { NodeResponse }) => {
         let activeDelegatorStake: BN = new BN('0')
         if ('serviceProvider' in operator) {
           const { deployerStake } = operator.serviceProvider
-          const { amount: pendingDecreaseStakeAmount, lockupExpiryBlock} =
+          const { amount: pendingDecreaseStakeAmount, lockupExpiryBlock } =
             operator.pendingDecreaseStakeRequest
           if (lockupExpiryBlock !== 0) {
             activeDeployerStake = deployerStake.sub(pendingDecreaseStakeAmount)
@@ -187,75 +230,74 @@ const NodeRow = ({ node }: { NodeResponse }) => {
     }
 
     if (node.owner) {
-      getActiveStake(node.owner, audiusLibs)
+      void getActiveStake(node.owner, audiusLibs)
     }
   }, [node, audiusLibs])
 
   const { data: healthData, error: healthDataError } = useSWR(
     `${node.endpoint}/health_check?enforce_block_diff=true&healthy_block_diff=250&plays_count_max_drift=720`,
     fetcher
-  )
+  ) as { data: HealthResponse; error: any }
   const health = healthData?.data
   const { data: uptimeData, error: uptimeDataError } = useSWR(
     `${node.endpoint}/d_api/uptime?host=${node.endpoint}&durationHours=12`,
     fetcher
-  )
+  ) as { data: UptimeResponse; error: any }
   // TODO this metric for content nodes
   const { data: requestsData, error: requestsDataError } = useSWR(
     `${node.endpoint}/v1/metrics/routes/week?bucket_size=day`,
     fetcher
-  )
+  ) as { data: RequestCountsResponse; error: any }
   const requests = requestsData?.data
 
   return (
     <tr>
-      <td className="tableCellFirst">
-        <div className="flex items-center justify-center">
-          {!healthDataError && !health
-            ? 'loading...'
-            : healthDataError
-            ? (<span class="flex w-3 h-3 me-3 bg-red-500 rounded-full"></span>)
-            : health?.healthy || health?.discovery_provider_healthy
-            ? (<span class="flex w-3 h-3 me-3 bg-green-500 rounded-full"></span>)
-            : (<span class="flex w-3 h-3 me-3 bg-red-500 rounded-full"></span>)
-          }
+      <td className='tableCellFirst'>
+        <div className='flex items-center justify-center'>
+          {!healthDataError && !health ? (
+            'loading...'
+          ) : healthDataError ? (
+            <span className='flex w-3 h-3 me-3 bg-red-500 rounded-full'></span>
+          ) : health?.healthy || health?.discovery_provider_healthy ? (
+            <span className='flex w-3 h-3 me-3 bg-green-500 rounded-full'></span>
+          ) : (
+            <span className='flex w-3 h-3 me-3 bg-red-500 rounded-full'></span>
+          )}
         </div>
       </td>
-      <td className="tableCell">
+      <td className='tableCell'>
         {!healthDataError && !health
           ? 'loading...'
-          : healthDataError 
-          ? 'error'
-          : health?.version
-        }
+          : healthDataError
+            ? 'error'
+            : health?.version}
       </td>
-      <td className="tableCell">
-        {!uptimeDataError && !uptimeData
-          ? 'loading...'
-          : uptimeDataError || (uptimeData && !uptimeData.uptime_raw_data)
-          ? 'error'
-          : <UptimeTracker key={node.endpoint} data={uptimeData} />
-        }
+      <td className='tableCell'>
+        {!uptimeDataError && !uptimeData ? (
+          'loading...'
+        ) : uptimeDataError || (uptimeData && !uptimeData.uptime_raw_data) ? (
+          'error'
+        ) : (
+          <UptimeTracker key={node.endpoint} data={uptimeData} />
+        )}
       </td>
-      <td className="tableCell">{node.endpoint}</td>
-      <td className="tableCell">
+      <td className='tableCell'>{node.endpoint}</td>
+      <td className='tableCell'>
         {!bondedDataError && !bondedData
           ? 'loading...'
           : bondedDataError
-          ? 'error'
-          : bondedData
-        }
+            ? 'error'
+            : bondedData}
       </td>
-      <td className="tableCell"></td>
-      <td className="tableCell">
+      <td className='tableCell'></td>
+      <td className='tableCell'>
         {!requestsDataError && !requests
           ? 'loading...'
           : requestsDataError
-          ? 'error'
-          : requests[requests.length - 1].total_count
-        }
+            ? 'error'
+            : requests[requests.length - 1].total_count}
       </td>
-      <td className="tableCell">{node.owner}</td>
+      <td className='tableCell'>{node.owner}</td>
     </tr>
   )
 }
@@ -270,54 +312,55 @@ const NetworkOverview = () => {
 
   return (
     <>
-      {isListNodesPending
-        ? 'loading...'
-        : listNodesError
-        ? 'error'
-        : (
-          <div className="mt-8 flow-root">
-            <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                  <table className="min-w-full divide-y divide-gray-300">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th scope="col" className="tableHeaderCellFirst">
-                          Health
-                        </th>
-                        <th scope="col" className="tableHeaderCell">
-                          Version
-                        </th>
-                        <th scope="col" className="tableHeaderCell">
-                          Uptime
-                        </th>
-                        <th scope="col" className="tableHeaderCell">
-                          Host
-                        </th>
-                        <th scope="col" className="tableHeaderCell">
-                          Bond $AUDIO
-                        </th>
-                        <th scope="col" className="tableHeaderCell">
-                          Reward (24h)
-                        </th>
-                        <th scope="col" className="tableHeaderCell">
-                          Requests (24h)
-                        </th>
-                        <th scope="col" className="tableHeaderCell">
-                          Operator
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 bg-white">
-                      {(nodes as NodeResponse[]).map((node) => (<NodeRow key={node.endpoint} node={node} />))}
-                    </tbody>
-                  </table>
-                </div>
+      {isListNodesPending ? (
+        'loading...'
+      ) : listNodesError ? (
+        'error'
+      ) : (
+        <div className='mt-8 flow-root'>
+          <div className='-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8'>
+            <div className='inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8'>
+              <div className='overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg'>
+                <table className='min-w-full divide-y divide-gray-300'>
+                  <thead className='bg-gray-50'>
+                    <tr>
+                      <th scope='col' className='tableHeaderCellFirst'>
+                        Health
+                      </th>
+                      <th scope='col' className='tableHeaderCell'>
+                        Version
+                      </th>
+                      <th scope='col' className='tableHeaderCell'>
+                        Uptime
+                      </th>
+                      <th scope='col' className='tableHeaderCell'>
+                        Host
+                      </th>
+                      <th scope='col' className='tableHeaderCell'>
+                        Bond $AUDIO
+                      </th>
+                      <th scope='col' className='tableHeaderCell'>
+                        Reward (24h)
+                      </th>
+                      <th scope='col' className='tableHeaderCell'>
+                        Requests (24h)
+                      </th>
+                      <th scope='col' className='tableHeaderCell'>
+                        Operator
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className='divide-y divide-gray-200 bg-white'>
+                    {(nodes as NodeResponse[]).map((node) => (
+                      <NodeRow key={node.endpoint} node={node} />
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
-        )
-      }
+        </div>
+      )}
     </>
   )
 }

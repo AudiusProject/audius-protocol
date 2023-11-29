@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 import {
   Button,
   Flex,
+  IconArrowRight,
   Paper,
   PlainButton,
   PlainButtonType,
@@ -35,9 +36,11 @@ const messages = {
   header: 'Finish Your Profile',
   description:
     'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
+  outOf: (numerator: number, denominator: number) =>
+    `${numerator} of ${denominator}`,
   displayName: 'Display Name',
-  continue: 'Continue',
   inputPlaceholder: 'express yourself 💫',
+  continue: 'Continue',
   goBack: 'Go back'
 }
 
@@ -65,13 +68,13 @@ export const FinishProfilePage = () => {
   const { color } = useTheme()
   const { isMobile } = useMedia()
   const history = useHistory()
-
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
+
   const { value: savedDisplayName } = useSelector(getNameField)
   const isSocialConnected = useSelector(getIsSocialConnected)
-  const { value: savedCoverPhoto } = { ...useSelector(getCoverPhotoField) }
-  const { value: savedProfileImage } = { ...useSelector(getProfileImageField) }
+  const { value: savedCoverPhoto } = useSelector(getCoverPhotoField) ?? {}
+  const { value: savedProfileImage } = useSelector(getProfileImageField) ?? {}
 
   // If the user comes back from a later page we start with whats in the store
   const initialValues = {
@@ -114,9 +117,14 @@ export const FinishProfilePage = () => {
           <Flex
             direction='column'
             gap={isMobile ? 'xl' : '2xl'}
-            css={{ maxWidth: isMobile ? undefined : '608px' }}
+            css={{ maxWidth: isMobile ? undefined : 608 }}
           >
             <Flex direction='column' gap={isMobile ? 's' : 'l'} ph='l'>
+              {isMobile ? null : (
+                <Text size='s' variant='label' color='subdued'>
+                  {messages.outOf(2, 2)}
+                </Text>
+              )}
               <Text
                 variant='heading'
                 size={isMobile ? 'm' : 'l'}
@@ -176,17 +184,23 @@ export const FinishProfilePage = () => {
             </Flex>
           </Flex>
           <ContinueFooter>
-            <Button type='submit' disabled={!isValid}>
+            <Button
+              type='submit'
+              disabled={!isValid}
+              fullWidth={isMobile}
+              iconRight={IconArrowRight}
+              css={!isMobile && { width: 343 }}
+            >
               {messages.continue}
             </Button>
-            {isSocialConnected ? (
+            {isMobile || !isSocialConnected ? null : (
               <PlainButton
-                onClick={history.goBack}
                 variant={PlainButtonType.SUBDUED}
+                onClick={history.goBack}
               >
                 {messages.goBack}
               </PlainButton>
-            ) : null}
+            )}
           </ContinueFooter>
         </Flex>
       )}
