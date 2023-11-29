@@ -67,7 +67,7 @@ type ReleaseDateValue = SingleTrackEditValues[typeof RELEASE_DATE]
 export const ReleaseDateField = () => {
   const [{ value }, , { setValue }] =
     useTrackField<ReleaseDateValue>(RELEASE_DATE)
-
+  console.log('asdf trackfield release date: ', value?.toString())
   const initialValues = useMemo(
     () => ({ [RELEASE_DATE]: value ?? undefined, [RELEASE_DATE_HOUR]: '12', [RELEASE_DATE_MERIDIAN]: 'PM' }),
     [value]
@@ -93,7 +93,7 @@ export const ReleaseDateField = () => {
         .add(adjustedHours, 'hours')
       console.log('asdf combinedDateTime: ', combinedDateTime.toString())
 
-      setValue(combinedDateTime ?? null)
+      setValue(combinedDateTime.toString() ?? null)
     },
     [setValue]
   )

@@ -248,12 +248,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     index,
     'preview.duration'
   )
-  const [{ value: release_date }] = useIndexedField<number>(
-    'trackMetadatas',
-    index,
-    'release_date'
-  )
-  const isScheduledRelease = moment(release_date).isAfter(moment())
 
   const usdcPurchaseConfig = useUSDCPurchaseConfig(useRemoteVar)
 
@@ -328,7 +322,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     if (isCollectibleGated) {
       availabilityType = TrackAvailabilityType.COLLECTIBLE_GATED
     }
-    if (isUnlisted || isScheduledRelease) {
+    if (isUnlisted) {
       availabilityType = TrackAvailabilityType.HIDDEN
     }
     set(initialValues, AVAILABILITY_TYPE, availabilityType)
@@ -339,16 +333,12 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       SPECIAL_ACCESS_TYPE,
       isTipGated ? SpecialAccessType.TIP : SpecialAccessType.FOLLOW
     )
-    if (isScheduledRelease) {
-      setIsUnlistedValue(true)
-    }
     return initialValues as AccessAndSaleFormValues
   }, [
     savedPremiumConditions,
     isUnlisted,
     isPremium,
     tempPremiumConditions,
-    isScheduledRelease,
     fieldVisibility,
     preview,
     setIsUnlistedValue
@@ -485,7 +475,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       selectedValues = [specialAccessValue, messages.followersOnly]
     } else if (isPremiumContentTipGated(savedPremiumConditions)) {
       selectedValues = [specialAccessValue, messages.supportersOnly]
-    } else if ((isUnlisted || isScheduledRelease) && fieldVisibility) {
+    } else if ((isUnlisted) && fieldVisibility) {
       const fieldVisibilityKeys = Object.keys(
         messages.fieldVisibility
       ) as Array<keyof FieldVisibility>
@@ -514,8 +504,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
     fieldVisibility,
     isUnlisted,
     savedPremiumConditions,
-    preview,
-    isScheduledRelease
+    preview
   ])
 
   return (
@@ -534,7 +523,6 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
           isRemix={isRemix}
           isUpload={isUpload}
           premiumConditions={tempPremiumConditions}
-          isScheduledRelease={isScheduledRelease}
         />
       }
     />
@@ -547,7 +535,6 @@ type AccesAndSaleMenuFieldsProps = {
   isUpload?: boolean
   isInitiallyUnlisted?: boolean
   initialPremiumConditions?: PremiumConditions
-  isScheduledRelease?: boolean
 }
 
 export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
@@ -556,7 +543,6 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     isUpload,
     isInitiallyUnlisted,
     initialPremiumConditions,
-    isScheduledRelease
   } = props
 
   const { isEnabled: isUsdcEnabled } = useFlag(FeatureFlags.USDC_PURCHASES)
@@ -577,7 +563,6 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
       isRemix,
       initialPremiumConditions: initialPremiumConditions ?? null,
       isInitiallyUnlisted: !!isInitiallyUnlisted,
-      isScheduledRelease: !!isScheduledRelease
     })
 
   const { values } = useFormikContext()
@@ -593,7 +578,6 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
           label={messages.public}
           description={messages.publicSubtitle}
           value={TrackAvailabilityType.PUBLIC}
-          disabled={isScheduledRelease}
         />
         {isUsdcEnabled ? (
           <UsdcPurchaseGatedRadioField
@@ -601,7 +585,6 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             isUpload={isUpload}
             initialPremiumConditions={initialPremiumConditions}
             isInitiallyUnlisted={isInitiallyUnlisted}
-            isScheduledRelease={isScheduledRelease}
           />
         ) : null}
 
@@ -611,7 +594,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             label={messages.specialAccess}
             description={messages.specialAccessSubtitle}
             value={TrackAvailabilityType.SPECIAL_ACCESS}
-            disabled={noSpecialAccessGate || isScheduledRelease}
+            disabled={noSpecialAccessGate}
             checkedContent={
               <SpecialAccessFields disabled={noSpecialAccessGateFields} />
             }
@@ -623,7 +606,6 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
             isUpload={isUpload}
             initialPremiumConditions={initialPremiumConditions}
             isInitiallyUnlisted={isInitiallyUnlisted}
-            isScheduledRelease={isScheduledRelease}
           />
         ) : null}
         <ModalRadioItem
