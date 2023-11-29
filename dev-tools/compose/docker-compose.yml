@@ -107,7 +107,7 @@ services:
 
   discovery-provider-redis:
     extends:
-      file: docker-compose.discovery.yml
+      file: docker-compose.discovery.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: discovery-provider-redis
     <<: *common
 
