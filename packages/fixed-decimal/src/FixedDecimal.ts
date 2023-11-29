@@ -480,7 +480,9 @@ export class FixedDecimal<
     } else if (this.value % divisor === BigInt(0)) {
       return quotient.toString()
     } else {
-      const amountString = this.value.toString()
+      const amountString = this.value
+        .toString()
+        .padStart(this.decimalPlaces, '0')
       const decimalStart = amountString.length - this.decimalPlaces
       // Get the first two decimals (truncated)
       const decimal = amountString.substring(decimalStart, decimalStart + 2)

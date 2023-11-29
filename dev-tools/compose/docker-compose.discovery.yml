@@ -2,13 +2,24 @@
 version: '3.9'
 
 services:
+  discovery-provider-redis:
+    image: redis:7.0
+    command: redis-server
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'PING']
+      interval: 10s
+      timeout: 5s
+    deploy:
+      mode: replicated
+      replicas: '${DISCOVERY_PROVIDER_REPLICAS}'
+
   discovery-provider-notifications:
     build:
       context: ${PROJECT_ROOT}/packages/discovery-provider/plugins/notifications
       args:
         git_sha: '${GIT_COMMIT}'
     environment:
-      AUDIUS_REDIS_URL: 'redis://identity-service-redis:6379/00'
+      AUDIUS_REDIS_URL: 'redis://discovery-provider-redis:6379/00'
       DN_DB_URL: 'postgresql://postgres:postgres@db:5432/discovery_provider_1'
       IDENTITY_DB_URL: 'postgresql://postgres:postgres@db:5432/identity_service'
     volumes:
@@ -125,6 +136,8 @@ services:
         condition: service_healthy
       discovery-provider-elasticsearch:
         condition: '${ELASTICSEARCH_CONDITION}'
+      discovery-provider-redis:
+        condition: service_healthy
     deploy:
       mode: replicated
       replicas: '${DISCOVERY_PROVIDER_REPLICAS}'
