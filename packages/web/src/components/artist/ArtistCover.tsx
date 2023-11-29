@@ -10,7 +10,7 @@ import BadgeArtist from 'assets/img/badgeArtist.svg'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
+import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './ArtistCard.module.css'
@@ -36,7 +36,7 @@ export const ArtistCover = ({
   profilePictureSizes,
   coverPhotoSizes
 }: ArtistCoverProps) => {
-  const coverPhoto = useUserCoverPhoto(
+  const { source: coverPhoto, shouldBlur } = useCoverPhoto(
     userId,
     coverPhotoSizes,
     WidthSizes.SIZE_640

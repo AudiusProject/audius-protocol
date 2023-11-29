@@ -13,7 +13,7 @@ import Lottie from 'react-lottie'
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ImageSelectionButton from 'components/image-selection/ImageSelectionButton'
-import { useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
+import { useCoverPhoto } from 'hooks/useCoverPhoto'
 
 import styles from './CoverPhoto.module.css'
 
@@ -51,11 +51,14 @@ const CoverPhoto = ({
     ? 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.75) 100%)'
     : 'linear-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.05) 70%, rgba(0, 0, 0, 0.2) 100%)'
 
-  const image = useUserCoverPhoto(userId, coverPhotoSizes, WidthSizes.SIZE_2000)
+  const { source: image, shouldBlur } = useCoverPhoto(
+    userId,
+    WidthSizes.SIZE_2000
+  )
   let backgroundImage = ''
   let backgroundStyle = {}
   let immediate = false
-  if (coverPhotoSizes) {
+  if (image) {
     if (image === imageCoverPhotoBlank && !updatedCoverPhoto) {
       backgroundImage = `${gradient}, url(${imageCoverPhotoBlank})`
       backgroundStyle = {
@@ -66,7 +69,9 @@ const CoverPhoto = ({
       backgroundImage = `${gradient}, url(${updatedCoverPhoto || image})`
       backgroundStyle = {
         backgroundRepeat: 'no-repeat',
-        backgroundSize: 'cover'
+        backgroundSize: 'cover',
+        // backdropFilter: shouldBlur ? 'blur(25px)' : 'none'
+        backdropFilter: 'blur(25px)'
       }
     }
   } else {

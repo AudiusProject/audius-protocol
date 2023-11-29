@@ -16,7 +16,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import UserBadges from 'components/user-badges/UserBadges'
-import { useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
+import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { AppState } from 'store/types'
 import { TIPPING_TOP_RANK_THRESHOLD } from 'utils/constants'
@@ -42,12 +42,9 @@ export const SupportingTile = ({ supporting }: SupportingCardProps) => {
       receiver?._profile_picture_sizes ?? null,
       SquareSizes.SIZE_150_BY_150
     ) || profilePicEmpty
-  const coverPhoto =
-    useUserCoverPhoto(
-      receiver?.user_id ?? null,
-      receiver?._cover_photo_sizes ?? null,
-      WidthSizes.SIZE_640
-    ) || imageCoverPhotoBlank
+  const { source: coverPhoto, shouldBlur } =
+    useCoverPhoto(receiver?.user_id ?? null, WidthSizes.SIZE_640) ||
+    imageCoverPhotoBlank
 
   const handleClick = useCallback(() => {
     dispatch(pushRoute(`/${handle}`))

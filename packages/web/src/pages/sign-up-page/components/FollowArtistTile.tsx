@@ -20,8 +20,8 @@ import { useField } from 'formik'
 import { useHover } from 'react-use'
 
 import { Avatar } from 'components/avatar/Avatar'
+import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useMedia } from 'hooks/useMedia'
-import { useCoverPhoto } from 'hooks/useUserCoverPhoto'
 
 import { SelectArtistsPreviewContext } from '../utils/selectArtistsPreviewContext'
 
@@ -34,7 +34,10 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
     user: { name, user_id, is_verified, track_count, follower_count }
   } = props
   const { isMobile } = useMedia()
-  const coverPhoto = useCoverPhoto(user_id, WidthSizes.SIZE_640)
+  const { source: coverPhoto, shouldBlur } = useCoverPhoto(
+    user_id,
+    WidthSizes.SIZE_640
+  )
   const [followField] = useField({ name: 'selectedArtists', type: 'checkbox' })
   const { spacing, color } = useTheme()
 
