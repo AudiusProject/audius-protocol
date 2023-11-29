@@ -53,7 +53,9 @@ export const Box = styled.View<NativeBoxProps>(
       width: w,
       ...(shadow && {
         ...shadows.native[shadow],
-        backgroundColor: '#fff'
+        // In order for shadows to work on iOS they need a background color
+        // Using white as a default here, but can be overridden
+        backgroundColor: color.background.white
       }),
       paddingTop: padT && spacing[padT],
       paddingLeft: padL && spacing[padL],

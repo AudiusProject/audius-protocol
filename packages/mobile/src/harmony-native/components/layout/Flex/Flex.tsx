@@ -1,4 +1,3 @@
-import isPropValid from '@emotion/is-prop-valid'
 import styled from '@emotion/native'
 
 import { Box } from '../Box/Box'
@@ -9,7 +8,7 @@ const invalidProps = ['alignItems', 'direction', 'wrap']
 
 /** Layout component used to group child elements in one-deminsional arrangements. */
 export const Flex = styled(Box, {
-  shouldForwardProp: (prop) => isPropValid(prop) && !invalidProps.includes(prop)
+  shouldForwardProp: (prop) => !invalidProps.includes(prop)
 })<NativeFlexProps>((props) => {
   const {
     theme,
@@ -19,8 +18,7 @@ export const Flex = styled(Box, {
     justifyContent,
     gap,
     rowGap,
-    columnGap,
-    ...rest
+    columnGap
   } = props
   const { spacing } = theme
 
@@ -32,7 +30,6 @@ export const Flex = styled(Box, {
     flexWrap: wrap,
     gap: gap && spacing[gap],
     rowGap: rowGap && spacing[rowGap],
-    columnGap: columnGap && spacing[columnGap],
-    ...rest
+    columnGap: columnGap && spacing[columnGap]
   }
 })

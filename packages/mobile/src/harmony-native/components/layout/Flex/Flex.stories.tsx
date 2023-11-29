@@ -2,9 +2,12 @@ import type { Meta, StoryObj } from '@storybook/react-native'
 
 import { Text } from 'app/harmony-native/foundations'
 
-import { Flex } from './Flex'
+import { Box } from '../Box/Box'
 
-const meta: Meta<typeof Flex> = {
+import { Flex } from './Flex'
+import type { NativeFlexProps } from './types'
+
+const meta: Meta<NativeFlexProps> = {
   title: 'Layout/Flex',
   component: Flex,
   parameters: {
@@ -43,23 +46,34 @@ const meta: Meta<typeof Flex> = {
     }
   },
   render: (props) => (
-    <Flex
-      style={{ backgroundColor: 'rebeccapurple' }}
-      border='strong'
-      borderRadius='m'
-      p='l'
-      mb='xl'
-      mh='s'
-      {...props}
-    >
-      <Text>his</Text>
+    <Flex border='strong' borderRadius='m' p='l' mb='xl' {...props}>
+      <Box border='strong' borderRadius='s' p='s' ph='l'>
+        <Text variant='display' size='s'>
+          Box A
+        </Text>
+      </Box>
+      <Box border='strong' borderRadius='s' p='s' ph='l'>
+        <Text variant='display' size='s'>
+          Box B
+        </Text>
+      </Box>
+      <Box border='strong' borderRadius='s' p='s' ph='l'>
+        <Text variant='display' size='s'>
+          Box C
+        </Text>
+      </Box>
+      <Box border='strong' borderRadius='s' p='s' ph='l'>
+        <Text variant='display' size='s'>
+          Box D
+        </Text>
+      </Box>
     </Flex>
   )
 }
 
 export default meta
 
-type Story = StoryObj<typeof Flex>
+type Story = StoryObj<NativeFlexProps>
 
 export const Default: Story = {}
 
@@ -77,11 +91,6 @@ export const SpacedEvenly: Story = {
   }
 }
 
-export const Column: Story = {
-  args: {
-    direction: 'column'
-  }
-}
 export const Row: Story = {
   args: {
     direction: 'row'

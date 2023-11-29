@@ -1,4 +1,5 @@
 import type { Meta } from '@storybook/react-native'
+import { ImageBackground } from 'react-native'
 
 import { Flex } from 'app/harmony-native/components/layout/Flex/Flex'
 import { Paper } from 'app/harmony-native/components/layout/Paper/Paper'
@@ -6,7 +7,7 @@ import { Paper } from 'app/harmony-native/components/layout/Paper/Paper'
 import { Text } from '../typography'
 
 const meta: Meta = {
-  title: 'Foundations/Layout/Shadows',
+  title: 'Foundation/Shadows',
   parameters: {
     controls: {
       include: ['w', 'h', 'backgroundColor', 'border', 'borderRadius', 'shadow']
@@ -17,28 +18,35 @@ const meta: Meta = {
 export default meta
 
 function ShadowLevel(props) {
-  const { shadow, ...other } = props
+  const { shadow, children, ...other } = props
   return (
     <Flex direction='column' gap='l' alignItems='center'>
-      <Paper h={80} w={80} shadow={shadow} {...other} />
-      <Text>{shadow}</Text>
+      <Paper h={100} w={100} shadow={shadow} {...other}>
+        {children}
+        <Text>{shadow}</Text>
+      </Paper>
     </Flex>
   )
 }
 
 export const Default = () => (
-  <Flex justifyContent='space-between'>
+  <Flex justifyContent='space-between' gap='2xl'>
     <ShadowLevel shadow='near' />
     <ShadowLevel shadow='mid' />
     <ShadowLevel shadow='midInverted' />
     <ShadowLevel shadow='far' />
     <ShadowLevel shadow='emphasis' />
-    {/* <ShadowLevel
-      shadow='special'
-      css={{
-        background: `url(${shadowBackground}), lightgray 50%`,
-        backgroundSize: 'cover'
-      }}
-    /> */}
+    <ShadowLevel shadow='special'>
+      <Paper style={{ overflow: 'hidden' }}>
+        <ImageBackground
+          resizeMode='cover'
+          style={{
+            width: '100%',
+            height: '100%'
+          }}
+          source={require('app/harmony-native/storybook/assets/shadowBackground.jpeg')}
+        />
+      </Paper>
+    </ShadowLevel>
   </Flex>
 )

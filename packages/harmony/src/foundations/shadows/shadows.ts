@@ -61,7 +61,7 @@ export const nativeShadows: Record<
   special: {
     // IOS
     shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 20,
+    shadowRadius: 17,
     shadowOpacity: 0.2,
     shadowColor: '#565776',
     // Android
