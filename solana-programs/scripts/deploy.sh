@@ -79,26 +79,6 @@ fi
 solana address -k "$fake_usdc_token_keypair"
 echo
 
-echo "Generating admin authority keypair"
-admin_authority_keypair=$HOME/.config/solana/admin-authority.json
-if [[ "$admin_authority_private_key" != "" ]]; then
-    echo "$admin_authority_private_key" >$admin_authority_keypair
-else
-    solana-keygen new -s -f --no-bip39-passphrase -o "$admin_authority_keypair"
-fi
-solana address -k "$admin_authority_keypair"
-echo
-
-echo "Generating admin account keypair"
-admin_account_keypair=$HOME/.config/solana/admin.json
-if [[ "$admin_account_private_key" != "" ]]; then
-    echo "$admin_account_private_key" >$admin_account_keypair
-else
-    solana-keygen new -s -f --no-bip39-passphrase -o "$admin_account_keypair"
-fi
-solana address -k "$admin_account_keypair"
-echo
-
 echo "Generating signer group keypair"
 signer_group_keypair=$HOME/.config/solana/signer-group.json
 if [[ "$signer_group_private_key" != "" ]]; then
@@ -225,50 +205,9 @@ spl-token transfer \
     "$(solana address -k "$reward_manager_token_pda_keypair")"
 echo
 
-# echo "Initializing audius admin account..."
-# cd anchor/audius-data/
-# yarn run ts-node cli/main.ts --function initAdmin \
-#     --admin-authority-keypair "$admin_authority_keypair" \
-#     --admin-account-keypair "$admin_account_keypair" \
-#     --owner-keypair "$owner_keypair" \
-#     --network "$SOLANA_HOST"
-# cd ../..
-# echo
-
-# echo "Initializing Content/URSM nodes..."
-# cd anchor/audius-data/
-# # initialize Content/URSM nodes - initContentNode uses deterministic
-# # addresses and pkeys from eth-contracts ganache chain.
-# yarn run ts-node cli/main.ts -function initContentNode \
-#     --admin-authority-keypair "$admin_authority_keypair" \
-#     --admin-account-keypair "$admin_account_keypair" \
-#     --owner-keypair "$owner_keypair" \
-#     --cn-sp-id 1 \
-#     --network "$SOLANA_HOST"
-
-# yarn run ts-node cli/main.ts --function initContentNode \
-#     --admin-authority-keypair "$admin_authority_keypair" \
-#     --admin-account-keypair "$admin_account_keypair" \
-#     --owner-keypair "$owner_keypair" \
-#     --cn-sp-id 2 \
-#     --network "$SOLANA_HOST"
-
-# yarn run ts-node cli/main.ts --function initContentNode \
-#     --admin-authority-keypair "$admin_authority_keypair" \
-#     --admin-account-keypair "$admin_account_keypair" \
-#     --owner-keypair "$owner_keypair" \
-#     --cn-sp-id 3 \
-#     --network "$SOLANA_HOST"
-# cd ../..
-# echo
-
 # TODO: Remove this when we deprecate service-commands
 cat >solana-program-config.json <<EOF
 {
-    "anchorAdminPublicKey": "$(solana address -k "$admin_authority_keypair")",
-    "anchorAdminPrivateKey": "$(cat "$admin_authority_keypair")",
-    "anchorAdminStoragePublicKey": "$(solana address -k "$admin_account_keypair")",
-    "anchorAdminStoragePrivateKey": "$(cat "$admin_account_keypair")",
     "trackListenCountAddress": "$(solana address -k target/deploy/track_listen_count-keypair.json)",
     "audiusEthRegistryAddress": "$(solana address -k target/deploy/audius_eth_registry-keypair.json)",
     "validSigner": "$(solana address -k "$valid_signer_keypair")",
