@@ -3,7 +3,7 @@ import { ImageBackground } from 'react-native'
 
 import { Flex } from 'app/harmony-native/components/layout/Flex/Flex'
 import { Paper } from 'app/harmony-native/components/layout/Paper/Paper'
-import shadowBackground from 'app/harmony-native/storybook/assets/shadowBackground.jpeg'
+import shadowBackground from 'app/harmony-native/storybook/assets/shadowBackground.jpg'
 
 import { Text } from '../typography'
 
@@ -36,7 +36,7 @@ export const Default = () => (
     <ShadowLevel shadow='mid' />
     <ShadowLevel shadow='midInverted' />
     <ShadowLevel shadow='far' />
-    <ShadowLevel shadow='emphasis' />
+    {/* <ShadowLevel shadow='emphasis' /> */}
     <ShadowLevel shadow='special'>
       <Paper style={{ overflow: 'hidden' }}>
         <ImageBackground
