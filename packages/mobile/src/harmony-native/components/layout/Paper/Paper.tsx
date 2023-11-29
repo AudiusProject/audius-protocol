@@ -20,7 +20,11 @@ export const Paper = styled(Flex)<NativePaperProps>((props) => {
   return {
     ...shadows.native[shadow],
     backgroundColor: color.background[backgroundColor],
-    border: border && `1px solid ${color.border[border]}`,
+    ...(border && {
+      borderWidth: 1,
+      borderStyle: 'solid',
+      borderColor: color.border[border]
+    }),
     borderRadius: cornerRadius[borderRadius]
   }
 })

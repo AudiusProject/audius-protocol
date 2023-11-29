@@ -3,6 +3,7 @@ import { ImageBackground } from 'react-native'
 
 import { Flex } from 'app/harmony-native/components/layout/Flex/Flex'
 import { Paper } from 'app/harmony-native/components/layout/Paper/Paper'
+import shadowBackground from 'app/harmony-native/storybook/assets/shadowBackground.jpeg'
 
 import { Text } from '../typography'
 
@@ -44,7 +45,7 @@ export const Default = () => (
             width: '100%',
             height: '100%'
           }}
-          source={require('app/harmony-native/storybook/assets/shadowBackground.jpeg')}
+          source={shadowBackground}
         />
       </Paper>
     </ShadowLevel>

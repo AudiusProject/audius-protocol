@@ -65,10 +65,8 @@ const meta: Meta<NativeBoxProps> = {
   },
   render: (props) => {
     return (
-      <Box style={{ height: '100%' }}>
-        <Box {...props}>
-          <Text>{messages.testText}</Text>
-        </Box>
+      <Box {...props}>
+        <Text>{messages.testText}</Text>
       </Box>
     )
   }
