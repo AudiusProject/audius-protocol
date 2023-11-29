@@ -10,6 +10,8 @@ export type ShadowOptions =
   | 'drop'
   | 'flat'
 
+// TODO: Right now we're keeping native shadows separate under shadows.native but
+// we may want to explore ways to keep the API the same (i.e. theme.shadows for both native & web)
 export const nativeShadows: Record<
   Exclude<ShadowOptions, 'drop' | 'flat'>,
   ViewStyle
