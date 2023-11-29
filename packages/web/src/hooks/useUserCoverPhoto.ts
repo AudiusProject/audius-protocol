@@ -4,11 +4,14 @@ import {
   useImageSize,
   cacheUsersActions,
   imageCoverPhotoBlank,
-  cacheUsersSelectors
+  cacheUsersSelectors,
+  SquareSizes
 } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'utils/reducer'
+
+import { useProfilePicture } from './useUserProfilePicture'
 
 const { fetchCoverPhoto } = cacheUsersActions
 const { getUser } = cacheUsersSelectors
@@ -23,14 +26,21 @@ export const useUserCoverPhoto = (
   defaultImage: string = imageCoverPhotoBlank as string
 ) => {
   const dispatch = useDispatch()
-
+  const profilePhoto = useProfilePicture(
+    userId,
+    size === WidthSizes.SIZE_640
+      ? SquareSizes.SIZE_480_BY_480
+      : SquareSizes.SIZE_1000_BY_1000,
+    defaultImage,
+    true
+  )
   return useImageSize({
     dispatch,
     id: userId,
     sizes: coverPhotoSizes,
     size,
     action: fetchCoverPhoto,
-    defaultImage
+    defaultImage: profilePhoto
   })
 }
 
@@ -44,13 +54,21 @@ export const useCoverPhoto = (
   const coverPhotoSizes = useSelector(
     (state) => getUser(state, { id: userId })?._cover_photo_sizes
   )
+  const profilePhoto = useProfilePicture(
+    userId,
+    size === WidthSizes.SIZE_640
+      ? SquareSizes.SIZE_480_BY_480
+      : SquareSizes.SIZE_1000_BY_1000,
+    defaultImage,
+    load
+  )
   return useImageSize({
     dispatch,
     id: userId,
     sizes: coverPhotoSizes ?? null,
     size,
     action: fetchCoverPhoto,
-    defaultImage,
+    defaultImage: profilePhoto,
     load
   })
 }
@@ -66,14 +84,21 @@ export const useOnUserCoverPhoto = (
   defaultImage: string = imageCoverPhotoBlank as string
 ) => {
   const dispatch = useDispatch()
-
+  const profilePhoto = useProfilePicture(
+    userId,
+    size === WidthSizes.SIZE_640
+      ? SquareSizes.SIZE_480_BY_480
+      : SquareSizes.SIZE_1000_BY_1000,
+    defaultImage,
+    true
+  )
   return useImageSize({
     dispatch,
     id: userId,
     sizes: coverPhotoSizes,
     size,
     action: fetchCoverPhoto,
-    defaultImage,
+    defaultImage: profilePhoto,
     onDemand: true
   })
 }
