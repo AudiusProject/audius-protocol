@@ -1,5 +1,3 @@
-import { h } from 'preact'
-
 import IconVerified from '../../assets/img/iconVerified.svg'
 import { getCopyableLink } from '../../util/shareUtil'
 

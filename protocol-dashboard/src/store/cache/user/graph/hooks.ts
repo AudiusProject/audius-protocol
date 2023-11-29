@@ -1,5 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 import { Status, User, Operator } from 'types'
 import Audius from 'services/Audius'
@@ -10,6 +10,7 @@ import { FullUser, UsersData, UsersVars, UserData, UserVars } from './types'
 import { getGraphAPI, useGraphQuery as useQuery } from 'store/api/hooks'
 import { formatUser } from './formatter'
 import { GET_USERS, GET_USER } from './queries'
+import { AnyAction } from '@reduxjs/toolkit'
 
 // Async function to get
 function populateUsers(
@@ -55,7 +56,7 @@ export const useUsers = (status: Status | undefined) => {
       }
     }
   )
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (status !== Status.Loading && status !== Status.Success && gqlData) {
       dispatch(populateUsers(gqlData.users))
@@ -90,7 +91,7 @@ export const useUser = (
   useEffect(() => {
     setDidFetch(false)
   }, [wallet, setDidFetch])
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
   useEffect(() => {
     if (!didFetch && !hasUser && gqlData) {
       setDidFetch(true)

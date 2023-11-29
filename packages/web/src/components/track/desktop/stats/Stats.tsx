@@ -11,8 +11,8 @@ import {
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
-import { ReactComponent as IconFavorite } from 'assets/img/iconHeart.svg'
-import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
+import IconFavorite from 'assets/img/iconHeart.svg'
+import IconRepost from 'assets/img/iconRepost.svg'
 import { Icon } from 'components/Icon'
 
 import ProfileImage from './ProfileImage'

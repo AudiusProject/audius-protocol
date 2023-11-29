@@ -74,6 +74,7 @@ from src.tasks.entity_manager.utils import (
     expect_cid_metadata_json,
     get_record_key,
     parse_metadata,
+    reset_entity_manager_event_tx_context,
     save_cid_metadata,
 )
 from src.utils import helpers
@@ -195,7 +196,7 @@ def entity_manager_update(
                     )
 
                     # update logger context with this tx event
-                    logger.update_context(event["args"])
+                    reset_entity_manager_event_tx_context(logger, event["args"])
 
                     if (
                         params.action == Action.CREATE
@@ -463,6 +464,8 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                 entities_to_fetch[EntityType.USER].add(user_id)
             if signer:
                 entities_to_fetch[EntityType.GRANT].add((signer.lower(), user_id))
+                entities_to_fetch[EntityType.DEVELOPER_APP].add(signer.lower())
+
             if entity_type == EntityType.DEVELOPER_APP:
                 try:
                     json_metadata = json.loads(metadata)

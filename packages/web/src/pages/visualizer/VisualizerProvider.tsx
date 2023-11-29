@@ -27,8 +27,8 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import PlayingTrackInfo from 'components/play-bar/desktop/components/PlayingTrackInfo'
 import { webglSupported } from './utils'
 import { averageColorSelectors } from '@audius/common'
-import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
-import { ReactComponent as AudiusLogoHorizontal } from 'assets/img/audiusLogoHorizontal.svg'
+import IconRemove from 'assets/img/iconRemove.svg'
+import AudiusLogoHorizontal from 'assets/img/audiusLogoHorizontal.svg'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { audioPlayer } from 'services/audio-player'
 
@@ -176,6 +176,7 @@ const Visualizer = ({
           artistUserId={user.user_id}
           isVerified={user.is_verified}
           isTrackUnlisted={track.is_unlisted}
+          isPremium={track.is_premium}
           onClickTrackTitle={() => {
             goToTrackPage()
             onClose()

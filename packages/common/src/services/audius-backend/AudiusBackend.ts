@@ -15,12 +15,10 @@ import {
   TransactionInstruction
 } from '@solana/web3.js'
 import BN from 'bn.js'
-import { extend, unix, tz } from 'dayjs'
-import timezone from 'dayjs/plugin/timezone'
-import utc from 'dayjs/plugin/utc'
 import queryString from 'query-string'
 
 import { Env } from 'services/env'
+import dayjs from 'utils/dayjs'
 
 import placeholderCoverArt from '../../assets/img/imageBlank2x.png'
 import imageCoverPhotoBlank from '../../assets/img/imageCoverPhotoBlank.jpg'
@@ -123,9 +121,6 @@ declare global {
     Web3: any
   }
 }
-
-extend(utc)
-extend(timezone)
 
 const SEARCH_MAX_SAVED_RESULTS = 10
 const SEARCH_MAX_TOTAL_RESULTS = 50
@@ -686,7 +681,7 @@ export const audiusBackend = ({
     )
 
     try {
-      audiusLibs = new AudiusLibs({
+      const newAudiusLibs = new AudiusLibs({
         localStorage,
         web3Config,
         ethWeb3Config,
@@ -735,7 +730,8 @@ export const audiusBackend = ({
         hedgehogConfig,
         useDiscoveryRelay
       })
-      await audiusLibs.init()
+      await newAudiusLibs.init()
+      audiusLibs = newAudiusLibs
       onLibsInit(audiusLibs)
 
       if (useDiscoveryRelay) {
@@ -1710,7 +1706,7 @@ export const audiusBackend = ({
     try {
       const { exists: emailExists } =
         await audiusLibs.Account.checkIfEmailRegistered(email)
-      return emailExists
+      return emailExists as boolean
     } catch (error) {
       console.error(getErrorMessage(error))
       throw error
@@ -2324,7 +2320,9 @@ export const audiusBackend = ({
     try {
       const { data, signature } = await signData()
       const query = {
-        timeOffset: timeOffset ? unix(timeOffset).toISOString() : undefined,
+        timeOffset: timeOffset
+          ? dayjs.unix(timeOffset).toISOString()
+          : undefined,
         limit,
         handle,
         withSupporterDethroned: withDethroned,
@@ -2776,7 +2774,7 @@ export const audiusBackend = ({
     if (!account) return
     try {
       const { data, signature } = await signData()
-      const timezone = tz.guess()
+      const timezone = dayjs.tz.guess()
       const res = await fetch(`${identityServiceUrl}/users/update`, {
         method: 'POST',
         headers: {

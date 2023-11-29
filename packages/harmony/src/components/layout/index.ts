@@ -1,3 +1,5 @@
 export * from './Box'
 export * from './Divider'
 export * from './Flex'
+export * from './Paper'
+export * from './Popup'

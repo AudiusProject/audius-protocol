@@ -526,6 +526,8 @@ def process_transfer_instruction(
     challenge_event_bus: ChallengeEventBus,
     timestamp: datetime,
 ):
+    solana_client_manager: SolanaClientManager = index_user_bank.solana_client_manager
+
     sender_idx = get_account_index(instruction, TRANSFER_SENDER_ACCOUNT_INDEX)
     receiver_idx = get_account_index(instruction, TRANSFER_RECEIVER_ACCOUNT_INDEX)
     sender_account = account_keys[sender_idx]
@@ -602,6 +604,14 @@ def process_transfer_instruction(
     # Cannot index receive external transfers this way as those use the spl-token program,
     # not the claimable tokens program, so we will always have a sender_user_id
     if receiver_user_id is None:
+        receiver_account_pubkey = Pubkey.from_string(receiver_account)
+        receiver_account_info = solana_client_manager.get_account_info_json_parsed(
+            receiver_account_pubkey
+        )
+        if receiver_account_info:
+            receiver_account_owner = receiver_account_info.data.parsed["info"]["owner"]
+        else:
+            receiver_account_owner = receiver_account
         TransactionHistoryModel = (
             AudioTransactionsHistory if is_audio else USDCTransactionsHistory
         )
@@ -614,7 +624,7 @@ def process_transfer_instruction(
             transaction_created_at=timestamp,
             change=Decimal(balance_changes[sender_account]["change"]),
             balance=Decimal(balance_changes[sender_account]["post_balance"]),
-            tx_metadata=str(receiver_account),
+            tx_metadata=str(receiver_account_owner),
         )
         logger.debug(f"index_user_bank.py | Creating transfer sent {transfer_sent}")
         session.add(transfer_sent)
@@ -656,29 +666,23 @@ def process_transfer_instruction(
                 )
                 return
 
-            # TODO: Remove on launch: https://linear.app/audius/issue/PAY-1987/remove-check-to-only-disburse-dollaraudio-matching-challenges-in-non
-            env = shared_config["discprov"]["env"]
-            if env in ("stage", "dev"):
-                amount = int(
-                    round(balance_changes[receiver_account]["change"])
-                    / 10**USDC_DECIMALS
-                )
-                challenge_event_bus.dispatch(
-                    ChallengeEvent.audio_matching_buyer,
-                    slot,
-                    sender_user_id,
-                    {"track_id": purchase_metadata["id"], "amount": amount},
-                )
-                challenge_event_bus.dispatch(
-                    ChallengeEvent.audio_matching_seller,
-                    slot,
-                    receiver_user_id,
-                    {
-                        "track_id": purchase_metadata["id"],
-                        "sender_user_id": sender_user_id,
-                        "amount": amount,
-                    },
-                )
+            amount = int(round(purchase_metadata["price"]) / 10**USDC_DECIMALS)
+            challenge_event_bus.dispatch(
+                ChallengeEvent.audio_matching_buyer,
+                slot,
+                sender_user_id,
+                {"track_id": purchase_metadata["id"], "amount": amount},
+            )
+            challenge_event_bus.dispatch(
+                ChallengeEvent.audio_matching_seller,
+                slot,
+                receiver_user_id,
+                {
+                    "track_id": purchase_metadata["id"],
+                    "sender_user_id": sender_user_id,
+                    "amount": amount,
+                },
+            )
 
 
 class CreateTokenAccount(TypedDict):

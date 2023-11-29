@@ -1,6 +1,6 @@
 import { PureComponent, ReactNode } from 'react'
 
-import * as Sentry from '@sentry/browser'
+import { captureException, captureMessage } from '@sentry/browser'
 
 export type ErrorWrapperProps = {
   children: ReactNode
@@ -15,8 +15,8 @@ class ErrorWrapper extends PureComponent<ErrorWrapperProps> {
   componentDidCatch(error: Error | null, errorInfo: object) {
     this.setState({ didError: true })
     const { errorMessage } = this.props
-    if (errorMessage) Sentry.captureMessage(errorMessage)
-    Sentry.captureException(error)
+    if (errorMessage) captureMessage(errorMessage)
+    captureException(error)
   }
 
   render() {

@@ -35,8 +35,7 @@ const messages = {
   wtf3: `Backed by an all-star team of investors, Audius was founded in 2018 and serves millions of users every month, making it the largest non-financial crypto application ever built.`
 }
 
-interface HomeProps {}
-const Home: React.FC<HomeProps> = (props: HomeProps) => {
+const Home = () => {
   const { isLoggedIn } = useAccount()
   const { recentProposals } = useProposals()
   const pushRoute = usePushRoute()

@@ -6,6 +6,7 @@ import { getUserId } from 'store/account/selectors'
 import { encodeHashId } from 'utils/hashIds'
 
 import { actions as chatActions } from './slice'
+import { ChatWebsocketError } from './types'
 
 const { connect, disconnect, addMessage, setMessageReactionSucceeded } =
   chatActions
@@ -17,6 +18,7 @@ export const chatMiddleware =
     let reactionListener: ChatEvents['reaction'] | null = null
     let openListener: ChatEvents['open'] | null = null
     let closeListener: ChatEvents['close'] | null = null
+    let errorListener: ChatEvents['error'] | null = null
 
     let hasConnected = false
     return (next) => (action) => {
@@ -53,10 +55,23 @@ export const chatMiddleware =
             console.debug('[chats] WebSocket closed. Reconnecting...')
             await sdk.chats.listen()
           }
+          errorListener = (e) => {
+            console.debug('[chats] WebSocket error.', e)
+            // Most errors received here have no `code` and are not actionable, so only
+            // log the outliers.
+            if (e.code) {
+              store.dispatch(
+                chatActions.logError({
+                  error: new ChatWebsocketError(e.code, e.target.url)
+                })
+              )
+            }
+          }
           sdk.chats.addEventListener('open', openListener)
           sdk.chats.addEventListener('message', messageListener)
           sdk.chats.addEventListener('reaction', reactionListener)
           sdk.chats.addEventListener('close', closeListener)
+          sdk.chats.addEventListener('error', errorListener)
           console.debug('[chats] Listening...')
           return sdk.chats.listen()
         }
@@ -77,6 +92,9 @@ export const chatMiddleware =
           }
           if (closeListener) {
             sdk.chats.removeEventListener('close', closeListener)
+          }
+          if (errorListener) {
+            sdk.chats.removeEventListener('error', errorListener)
           }
         }
         fn()

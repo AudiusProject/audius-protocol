@@ -12,7 +12,8 @@ import {
   getAAOErrorEmojis,
   musicConfettiActions,
   challengeRewardsConfig,
-  isAudioMatchingChallenge
+  isAudioMatchingChallenge,
+  getClaimableChallengeSpecifiers
 } from '@audius/common'
 import {
   Button,
@@ -26,8 +27,8 @@ import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ReactComponent as IconCopy } from 'assets/img/iconCopy.svg'
-import { ReactComponent as IconValidationCheck } from 'assets/img/iconValidationCheck.svg'
+import IconCopy from 'assets/img/iconCopy.svg'
+import IconValidationCheck from 'assets/img/iconValidationCheck.svg'
 import QRCode from 'assets/img/imageQR.png'
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -51,15 +52,18 @@ import { ProgressReward } from './ProgressReward'
 import styles from './styles.module.css'
 
 const { show: showConfetti } = musicConfettiActions
-const { getAAOErrorCode, getChallengeRewardsModalType, getClaimStatus } =
-  audioRewardsPageSelectors
+const {
+  getAAOErrorCode,
+  getChallengeRewardsModalType,
+  getClaimStatus,
+  getUndisbursedUserChallenges
+} = audioRewardsPageSelectors
 const {
   setChallengeRewardsModalType,
   resetAndCancelClaimReward,
   claimChallengeReward
 } = audioRewardsPageActions
-const { getOptimisticUserChallenges } = challengesSelectors
-const { getCompletionStages } = challengesSelectors
+const { getOptimisticUserChallenges, getCompletionStages } = challengesSelectors
 const getUserHandle = accountSelectors.getUserHandle
 
 export const useRewardsModalType = (): [
@@ -226,6 +230,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
 
   const userChallenges = useSelector(getOptimisticUserChallenges)
   const challenge = userChallenges[modalType]
+  const undisbursedUserChallenges = useSelector(getUndisbursedUserChallenges)
 
   const { fullDescription, progressLabel, isVerifiedChallenge } =
     challengeRewardsConfig[modalType]
@@ -315,8 +320,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
   let audioClaimedSoFar = 0
   if (challenge?.challenge_type === 'aggregate') {
     audioToClaim = challenge.claimableAmount
-    audioClaimedSoFar =
-      challenge.amount * challenge.current_step_count - audioToClaim
+    audioClaimedSoFar = challenge.disbursed_amount
   } else if (challenge?.state === 'completed') {
     audioToClaim = challenge.totalAmount
     audioClaimedSoFar = 0
@@ -338,7 +342,10 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
             challengeId: challenge.challenge_id,
             specifiers:
               challenge.challenge_type === 'aggregate'
-                ? challenge.undisbursedSpecifiers
+                ? getClaimableChallengeSpecifiers(
+                    challenge.undisbursedSpecifiers,
+                    undisbursedUserChallenges
+                  )
                 : [
                     { specifier: challenge.specifier, amount: challenge.amount }
                   ],
@@ -348,7 +355,7 @@ const ChallengeRewardsBody = ({ dismissModal }: BodyProps) => {
         })
       )
     }
-  }, [dispatch, challenge])
+  }, [challenge, dispatch, undisbursedUserChallenges])
 
   useEffect(() => {
     if (claimStatus === ClaimStatus.SUCCESS) {

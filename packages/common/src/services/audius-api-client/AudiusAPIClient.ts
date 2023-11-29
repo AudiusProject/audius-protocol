@@ -401,6 +401,7 @@ type UserChallengesResponse = [
     max_steps: number
     challenge_type: string
     amount: string
+    disbursed_amount: number
     metadata: object
   }
 ]
@@ -414,6 +415,7 @@ type UndisbursedUserChallengesResponse = [
     completed_blocknumber: number
     handle: string
     wallet: string
+    created_at: string
   }
 ]
 

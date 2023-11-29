@@ -1,6 +1,13 @@
+import {
+  useEffect,
+  createContext,
+  useState,
+  useContext,
+  useMemo,
+  useRef
+} from 'react'
+
 import cn from 'classnames'
-import { h, createContext } from 'preact'
-import { useEffect, useState, useContext, useMemo, useRef } from 'preact/hooks'
 
 import { isMobileWebTwitter } from '../../util/isMobileWebTwitter'
 import TwitterFooter from '../twitterfooter/TwitterFooter'

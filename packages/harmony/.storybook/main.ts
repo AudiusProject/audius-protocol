@@ -1,21 +1,46 @@
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
 import { StorybookConfig } from '@storybook/react-webpack5'
+import remarkGfm from 'remark-gfm'
 
 const config: StorybookConfig = {
-  stories: ['../src/**/*.stories.@(mdx|ts|tsx)'],
-  addons: ['@storybook/addon-essentials', '@storybook/addon-a11y'],
+  staticDirs: ['./public'],
+  stories: ['../src/**/*.mdx', '../src/**/*.stories.@(mdx|ts|tsx)'],
+  addons: [
+    'storybook-dark-mode',
+    '@storybook/addon-a11y',
+    '@storybook/addon-themes',
+    '@storybook/addon-interactions',
+    '@storybook/addon-links',
+    {
+      name: '@storybook/addon-docs',
+      options: {
+        jsxOptions: {
+          importSource: '@emotion/react'
+        },
+        skipCsf: false,
+        mdxPluginOptions: {
+          mdxCompileOptions: {
+            remarkPlugins: [remarkGfm]
+          }
+        }
+      }
+    }
+  ],
   framework: {
     name: '@storybook/react-webpack5',
     options: {}
   },
-  babel: (options) => ({
-    ...options,
-    presets: [...(options?.presets ?? []), '@emotion/babel-preset-css-prop'],
-  }),
   docs: {
     autodocs: true,
-    // autodocs: 'tag',
-    defaultName: 'Documentation',
+    defaultName: 'Documentation'
+  },
+  babel: (config) => {
+    if (config.presets) {
+      config.presets[0][1].importSource = '@emotion/react'
+    }
+    config.plugins?.push('@emotion/babel-plugin')
+
+    return config
   },
   webpackFinal: (config: any) => {
     config.module.rules.find(
@@ -28,19 +53,9 @@ const config: StorybookConfig = {
 
     config.module.rules = [
       {
-        test: /\.svg$/,
-        use: [
-          {
-            loader: '@svgr/webpack'
-          },
-          {
-            loader: 'file-loader'
-          }
-        ],
-        type: 'javascript/auto',
-        issuer: {
-          and: [/\.(ts|tsx|md|mdx)$/]
-        }
+        test: /\.svg$/i,
+        issuer: /\.[jt]sx?|mdx?$/,
+        use: ['@svgr/webpack']
       },
       {
         test: /\.module\.css$/,
@@ -56,6 +71,10 @@ const config: StorybookConfig = {
             }
           }
         ]
+      },
+      {
+        test: /\.(png|jpe?g|gif)$/i,
+        use: [{ loader: 'file-loader' }]
       },
       ...config.module.rules
     ]

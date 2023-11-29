@@ -1,8 +1,13 @@
 import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { ID } from 'models/Identifiers'
+import { PurchaseMethod } from 'models/PurchaseContent'
 
-import { ContentType, PurchaseContentStage } from './types'
+import {
+  ContentType,
+  PurchaseContentError,
+  PurchaseContentStage
+} from './types'
 
 type OnSuccess = {
   action?: Action
@@ -17,8 +22,9 @@ type PurchaseContentState = {
   extraAmount?: number
   /** Used for analytics */
   extraAmountPreset?: string
-  error?: Error
+  error?: PurchaseContentError
   onSuccess?: OnSuccess
+  purchaseMethod: PurchaseMethod
 }
 
 const initialState: PurchaseContentState = {
@@ -27,7 +33,8 @@ const initialState: PurchaseContentState = {
   extraAmount: undefined,
   extraAmountPreset: undefined,
   error: undefined,
-  stage: PurchaseContentStage.START
+  stage: PurchaseContentStage.START,
+  purchaseMethod: PurchaseMethod.BALANCE
 }
 
 const slice = createSlice({
@@ -39,6 +46,7 @@ const slice = createSlice({
       action: PayloadAction<{
         extraAmount?: number
         extraAmountPreset?: string
+        purchaseMethod: PurchaseMethod
         contentId: ID
         contentType?: ContentType
         onSuccess?: OnSuccess
@@ -73,8 +81,11 @@ const slice = createSlice({
     ) => {
       state.stage = PurchaseContentStage.FINISH
     },
-    purchaseContentFlowFailed: (state) => {
-      state.error = new Error('Content purchase failed')
+    purchaseContentFlowFailed: (
+      state,
+      action: PayloadAction<{ error: PurchaseContentError }>
+    ) => {
+      state.error = action.payload.error
     },
     cleanup: () => initialState
   }

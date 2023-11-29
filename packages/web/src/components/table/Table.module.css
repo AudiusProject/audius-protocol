@@ -5,6 +5,7 @@
   box-shadow: 0 2px 5px -2px var(--tile-shadow-3);
   background-color: var(--white);
   overflow: hidden;
+  padding-bottom: 5px;
 }
 
 .table {
@@ -13,7 +14,6 @@
   width: 100%;
   min-width: 0px !important;
   background-color: var(--white);
-  padding-bottom: 5px;
 
   display: flex;
   flex-direction: column;
@@ -32,8 +32,12 @@
 }
 
 .tableHeadRow {
+  display: flex;
+  flex: 1 1 0;
   position: relative;
+  overflow: hidden;
   min-width: 0px !important;
+  background-color: var(--white);
 }
 
 .cellSection {
@@ -41,15 +45,6 @@
   position: relative;
   display: flex;
   overflow: hidden;
-}
-
-.cellSectionEnd {
-  position: relative;
-  flex: 0 0 144px;
-}
-
-.cellSectionEnd.menu {
-  flex: 0 0 64px;
 }
 
 .tableHeader {
@@ -200,20 +195,26 @@
 .tableRow {
   display: flex;
   position: relative;
-  background: var(--white);
+  flex: 1 1 0;
+  overflow: hidden;
+  background-color: var(--white);
   min-width: 0px !important;
   color: var(--neutral);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
 }
+.tableRow > .tableCell {
+  background-color: var(--white);
+}
 
 .tableRow.active {
   color: var(--primary);
 }
 
-.tableRow:hover:not(.skeletonRow) {
-  z-index: 1;
+.tableRow:hover:not(.skeletonRow),
+.tableRow:hover > .tableCell {
+  z-index: 3;
   box-shadow: 0 1px 0 0 var(--neutral-light-8),
     0 -1px 0 0 var(--neutral-light-8);
   transition: all 0.07s ease-in-out;
@@ -239,7 +240,7 @@
   justify-content: center;
   height: 64px;
   padding: 20px 12px;
-  background: transparent;
+  background-color: transparent;
   user-select: none;
   transition: all 0.05s ease-in-out;
 }
@@ -276,13 +277,6 @@
   justify-content: right;
 }
 
-.loader {
-  position: relative;
-  height: 32px;
-  width: 32px;
-  margin: 24px auto;
-}
-
 .reorderableRow {
   cursor: grab;
 }
@@ -305,4 +299,15 @@
 
 .droppableHover::after {
   opacity: 1;
+}
+
+.cellSectionEnd {
+  position: sticky !important;
+  right: 0;
+  /* z-index: 3; */
+  /* background-color: inherit; */
+}
+
+.cellSectionEnd.menu {
+  flex: 0 0 64px;
 }

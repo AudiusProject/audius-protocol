@@ -2,20 +2,29 @@ when: << pipeline.parameters.run-creator-workflow >>
 jobs:
   - push-docker-image:
       name: push-mediorum
-      context: [GCP, dockerhub]
+      context: [Vercel, dockerhub]
       service: mediorum
       filters:
         branches:
           only: main
   - test:
       name: test-mediorum
-      context: GCP
+      context: Vercel
       service: mediorum
   - test:
       name: test-mediorum-unittests
-      context: GCP
+      context: Vercel
       service: mediorum-unittests
-  
+  - push-arm-image:
+      name: push-mediorum-arm
+      context: [Vercel, dockerhub]
+      service: mediorum
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-mediorum
+
   # Deploy audius-protocol `main` branch (stage)
   - deploy-stage-nodes:
       name: deploy-stage-creator-node

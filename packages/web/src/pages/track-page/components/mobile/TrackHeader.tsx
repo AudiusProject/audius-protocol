@@ -29,7 +29,7 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 
-import { ReactComponent as IconRobot } from 'assets/img/robot.svg'
+import IconRobot from 'assets/img/robot.svg'
 import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'
@@ -325,7 +325,7 @@ const TrackHeader = ({
     if (!isLoading && DogEarType) {
       return (
         <div className={styles.borderOffset}>
-          <DogEar type={DogEarType} className={styles.DogEar} />
+          <DogEar type={DogEarType} />
         </div>
       )
     }

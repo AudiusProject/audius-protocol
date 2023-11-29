@@ -24,10 +24,9 @@ export function createAudiusTrpcClient(currentUserId: number | null) {
 // since tRPC server is deployed manually atm.
 // in the future some tRPC middleware can set host to currently selected DN per request
 function getTrpcEndpoint() {
-  if (process.env.REACT_APP_TRPC_ENDPOINT)
-    return process.env.REACT_APP_TRPC_ENDPOINT
+  if (process.env.VITE_TRPC_ENDPOINT) return process.env.VITE_TRPC_ENDPOINT
 
-  switch (process.env.REACT_APP_ENVIRONMENT) {
+  switch (process.env.VITE_ENVIRONMENT) {
     case 'production':
       return 'https://discoveryprovider3.audius.co/trpc/trpc'
     case 'staging':

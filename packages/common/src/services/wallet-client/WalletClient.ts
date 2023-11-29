@@ -11,7 +11,11 @@ import { isNullOrUndefined } from 'utils/typeUtils'
 import { stringWeiToBN } from 'utils/wallet'
 
 import { AudiusAPIClient } from '../audius-api-client'
-import { AudiusBackend } from '../audius-backend'
+import {
+  AudiusBackend,
+  getUserbankAccountInfo,
+  pollForTokenBalanceChange
+} from '../audius-backend'
 
 // 0.001 Audio
 export const MIN_TRANSFERRABLE_WEI = stringWeiToBN(
@@ -62,9 +66,26 @@ export class WalletClient {
   }
 
   async transferTokensFromEthToSol(): Promise<void> {
-    const balance = await this.audiusBackendInstance.getBalance(true)
-    if (!isNullOrUndefined(balance) && balance.gt(new BN('0'))) {
-      await this.audiusBackendInstance.transferAudioToWAudio(balance)
+    const account = await getUserbankAccountInfo(this.audiusBackendInstance, {
+      mint: 'audio'
+    })
+    if (!account) {
+      throw new Error('No userbank account.')
+    }
+
+    const ercAudioBalance = await this.audiusBackendInstance.getBalance(true)
+    if (
+      !isNullOrUndefined(ercAudioBalance) &&
+      ercAudioBalance.gt(new BN('0'))
+    ) {
+      await this.audiusBackendInstance.transferAudioToWAudio(ercAudioBalance)
+      await pollForTokenBalanceChange(this.audiusBackendInstance, {
+        tokenAccount: account?.address,
+        initialBalance: account?.amount,
+        mint: 'audio',
+        retryDelayMs: 5000,
+        maxRetryCount: 720 /* one hour */
+      })
     }
   }
 

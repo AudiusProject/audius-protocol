@@ -25,7 +25,8 @@ describe('Sign In', () => {
 
   it('can navigate to sign-in from sign-up', () => {
     cy.visit('signup')
-    cy.findByRole('button', { name: /have an account\? sign in/i }).click()
+    cy.findByText(/already have an account?/i)
+    cy.findByRole('link', { name: /Sign In/ }).click()
     assertOnSignInPage()
   })
 
@@ -33,7 +34,9 @@ describe('Sign In', () => {
     cy.visit('signin')
     assertOnSignInPage()
     cy.findByRole('textbox', { name: /email/i }).type(email)
-    cy.findByRole('textbox', { name: /password/i }).type(password)
+    // Password inputs dont have a role, so we just check against label text
+    // https://github.com/testing-library/dom-testing-library/issues/567#issue-616906804
+    cy.findByLabelText(/^password/i).type(password)
     cy.findByRole('button', { name: /sign in/i }).click()
 
     cy.findByRole('heading', {

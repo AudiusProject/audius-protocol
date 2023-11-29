@@ -16,10 +16,6 @@ parameters:
     type: string
     default: 'main'
 
-  run-gcp-cleanup:
-    type: boolean
-    default: false
-
   run-integration-workflow:
     type: boolean
     default: false
@@ -47,6 +43,9 @@ parameters:
     type: boolean
     default: false
 
+  run-common-workflow:
+    type: boolean
+    default: false
   run-web-workflow:
     type: boolean
     default: false
@@ -66,6 +65,12 @@ parameters:
     type: boolean
     default: false
   run-protocol-dashboard-workflow:
+    type: boolean
+    default: false
+  run-d-ui-workflow:
+    type: boolean
+    default: false
+  run-healthz-workflow:
     type: boolean
     default: false
 # Can enable recurring probers against stage at some point

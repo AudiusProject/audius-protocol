@@ -4,7 +4,6 @@ import type {
   UserChat,
   ValidatedChatPermissions
 } from '@audius/sdk'
-import dayjs from 'dayjs'
 import {
   call,
   delay,
@@ -21,6 +20,7 @@ import { ID } from 'models/Identifiers'
 import { Status } from 'models/Status'
 import * as toastActions from 'src/store/ui/toast/slice'
 import { getAccountUser, getUserId } from 'store/account/selectors'
+import dayjs from 'utils/dayjs'
 
 import { decodeHashId, encodeHashId, removeNullable } from '../../../utils'
 import { cacheUsersActions } from '../../cache'
@@ -54,6 +54,7 @@ const {
   setMessageReaction,
   setMessageReactionSucceeded,
   setMessageReactionFailed,
+  logError,
   markChatAsRead,
   markChatAsReadSucceeded,
   markChatAsReadFailed,
@@ -737,6 +738,21 @@ function* doDeleteChat(action: ReturnType<typeof deleteChat>) {
   }
 }
 
+function* doLogError({ payload: { error } }: ReturnType<typeof logError>) {
+  const { track, make } = yield* getContext('analytics')
+  const reportToSentry = yield* getContext('reportToSentry')
+  const { code, url } = error
+  reportToSentry({
+    level: ErrorLevel.Error,
+    error,
+    additionalInfo: {
+      code,
+      url
+    }
+  })
+  yield* call(track, make({ eventName: Name.CHAT_WEBSOCKET_ERROR, code }))
+}
+
 function* watchFetchUnreadMessagesCount() {
   yield takeLatest(fetchUnreadMessagesCount, () => doFetchUnreadMessagesCount())
 }
@@ -811,6 +827,10 @@ function* watchDeleteChat() {
   yield takeEvery(deleteChat, doDeleteChat)
 }
 
+function* watchLogError() {
+  yield takeEvery(logError, doLogError)
+}
+
 export const sagas = () => {
   return [
     watchFetchUnreadMessagesCount,
@@ -830,6 +850,7 @@ export const sagas = () => {
     watchUnblockUser,
     watchFetchPermissions,
     watchFetchLinkUnfurlMetadata,
-    watchDeleteChat
+    watchDeleteChat,
+    watchLogError
   ]
 }

@@ -3,11 +3,13 @@ import { useCallback } from 'react'
 import {
   Name,
   PurchasableTrackMetadata,
+  PurchaseContentError,
   PurchaseContentStage,
-  formatPrice
+  formatPrice,
+  usePurchaseContentErrorMessage
 } from '@audius/common'
+import { Button } from '@audius/harmony'
 import {
-  HarmonyButton,
   HarmonyPlainButton,
   HarmonyPlainButtonSize,
   HarmonyPlainButtonType,
@@ -17,7 +19,6 @@ import {
 
 import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
 import { Text } from 'components/typography'
 import { fullTrackPage } from 'utils/route'
@@ -33,30 +34,28 @@ const messages = {
   shareButtonContent: 'I just purchased a track on Audius!',
   shareTwitterText: (trackTitle: string, handle: string) =>
     `I bought the track ${trackTitle} by ${handle} on Audius! #AudiusPremium`,
-  purchaseSuccessful: 'Your Purchase Was Successful!',
-  error: 'Your purchase was unsuccessful.'
+  purchaseSuccessful: 'Your Purchase Was Successful!'
 }
 
-const ContentPurchaseError = () => {
+const ContentPurchaseError = ({
+  error: { code }
+}: {
+  error: PurchaseContentError
+}) => {
   return (
     <Text className={styles.errorContainer} color='accentRed'>
       <Icon icon={IconError} size='medium' />
-      {messages.error}
+      {usePurchaseContentErrorMessage(code)}
     </Text>
   )
 }
 
-const getButtonContent = (isUnlocking: boolean, amountDue: number) =>
-  isUnlocking ? (
-    <div className={styles.purchaseButtonText}>
-      <LoadingSpinner className={styles.spinner} />
-      <span>{messages.purchasing}</span>
-    </div>
-  ) : amountDue > 0 ? (
-    `${messages.buy} $${formatPrice(amountDue)}`
-  ) : (
-    messages.buy
-  )
+const getButtonText = (isUnlocking: boolean, amountDue: number) =>
+  isUnlocking
+    ? messages.purchasing
+    : amountDue > 0
+    ? `${messages.buy} $${formatPrice(amountDue)}`
+    : messages.buy
 
 type PurchaseContentFormFooterProps = Pick<
   PurchaseContentFormState,
@@ -91,7 +90,7 @@ export const PurchaseContentFormFooter = ({
     [title]
   )
 
-  const { amountDue } = purchaseSummaryValues
+  const { totalPrice } = purchaseSummaryValues
   if (isPurchased) {
     return (
       <>
@@ -109,21 +108,22 @@ export const PurchaseContentFormFooter = ({
           size={HarmonyPlainButtonSize.LARGE}
           text={messages.viewTrack}
         />
-        {error ? <ContentPurchaseError /> : null}
       </>
     )
   }
 
   return (
     <>
-      <HarmonyButton
+      <Button
         disabled={isUnlocking}
-        color='specialLightGreen'
+        color='lightGreen'
         type='submit'
-        text={getButtonContent(isUnlocking, amountDue)}
+        isLoading={isUnlocking}
         fullWidth
-      />
-      {error ? <ContentPurchaseError /> : null}
+      >
+        {getButtonText(isUnlocking, totalPrice)}
+      </Button>
+      {error ? <ContentPurchaseError error={error} /> : null}
     </>
   )
 }

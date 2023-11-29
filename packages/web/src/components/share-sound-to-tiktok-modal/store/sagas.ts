@@ -10,7 +10,7 @@ import {
   shareSoundToTiktokModalSelectors,
   musicConfettiActions
 } from '@audius/common'
-import { takeEvery, put, call, select } from 'typed-redux-saga/macro'
+import { takeEvery, put, call, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { AppState } from 'store/types'

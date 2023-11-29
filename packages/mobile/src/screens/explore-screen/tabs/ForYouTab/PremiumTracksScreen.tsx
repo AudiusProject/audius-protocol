@@ -9,13 +9,15 @@ import { useDispatch } from 'react-redux'
 
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { Lineup } from 'app/components/lineup'
+import { EndOfLineupNotice } from 'app/components/lineup/EndOfLineupNotice'
 const { makeGetLineupMetadatas } = lineupSelectors
 const { getLineup } = premiumTracksPageLineupSelectors
 
 const getPremiumTracksLineup = makeGetLineupMetadatas(getLineup)
 
 const messages = {
-  header: 'Premium Tracks'
+  header: 'Premium Tracks',
+  endOfLineup: 'Check back soon for more premium tracks'
 }
 
 export const PremiumTracksScreen = () => {
@@ -42,6 +44,9 @@ export const PremiumTracksScreen = () => {
           actions={premiumTracksPageLineupActions}
           selfLoad
           pullToRefresh
+          EndOfLineupComponent={
+            <EndOfLineupNotice description={messages.endOfLineup} />
+          }
         />
       </ScreenContent>
     </Screen>

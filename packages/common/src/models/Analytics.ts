@@ -5,9 +5,13 @@ import { ID, PlayableType } from 'models/Identifiers'
 import { MonitorPayload, ServiceMonitorType } from 'models/Services'
 import { TimeRange } from 'models/TimeRange'
 import { SolanaWalletAddress, StringAudio, WalletAddress } from 'models/Wallet'
+import { MintName } from 'services/index'
+import { Prettify } from 'utils/typeUtils'
 
 import { Chain } from './Chain'
 import { PlaylistLibraryKind } from './PlaylistLibrary'
+import { PurchaseMethod } from './PurchaseContent'
+import { TrackAccessType } from './Track'
 
 const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
 
@@ -102,6 +106,9 @@ export enum Name {
   ACCOUNT_HEALTH_DOWNLOAD_DESKTOP = 'Account Health: Download Desktop',
   ACCOUNT_HEALTH_CLICK_APP_CTA_BANNER = 'Account Health: App CTA Banner',
 
+  // TOS
+  BANNER_TOS_CLICKED = 'Banner TOS Clicked',
+
   // Social actions
   SHARE = 'Share',
   SHARE_TO_TWITTER = 'Share to Twitter',
@@ -158,6 +165,11 @@ export enum Name {
   TRACK_UPLOAD_COLLECTIBLE_GATED = 'Track Upload: Collectible Gated',
   TRACK_UPLOAD_FOLLOW_GATED = 'Track Upload: Follow Gated',
   TRACK_UPLOAD_TIP_GATED = 'Track Upload: Tip Gated',
+  TRACK_UPLOAD_USDC_GATED = 'Track Upload: USDC Gated',
+  TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK = 'Track Upload: Clicked USDC Waitlist Link',
+
+  // Track Edits
+  TRACK_EDIT_ACCESS_CHANGED = 'Track Edit: Access Changed',
 
   // Gated Track Listen
   LISTEN_GATED = 'Listen: Gated',
@@ -222,6 +234,10 @@ export enum Name {
   NOT_ON_FIRST_PAGE = 'nav-not-on-first-page',
   LINK_CLICKING = 'Link Click',
   TAG_CLICKING = 'Tag Click',
+
+  // Modals
+  MODAL_OPENED = 'Modal Opened',
+  MODAL_CLOSED = 'Modal Closed',
 
   // Search
   SEARCH_SEARCH = 'Search: Search',
@@ -293,6 +309,7 @@ export enum Name {
   REWARDS_CLAIM_HCAPTCHA = 'Rewards Claim: Hcaptcha',
   REWARDS_CLAIM_REJECTION = 'Rewards Claim: Rejection',
   REWARDS_CLAIM_UNKNOWN = 'Rewards Claim: Unknown',
+  REWARDS_CLAIM_DETAILS_OPENED = 'Rewards Claim: Details Opened',
 
   // Tipping
   TIP_AUDIO_REQUEST = 'Tip Audio: Request',
@@ -321,18 +338,57 @@ export enum Name {
   // Buy USDC
   BUY_USDC_ON_RAMP_OPENED = 'Buy USDC: On Ramp Opened',
   BUY_USDC_ON_RAMP_CANCELED = 'Buy USDC: On Ramp Canceled',
+  BUY_USDC_ON_RAMP_FAILURE = 'Buy USDC: On Ramp Failed',
   BUY_USDC_ON_RAMP_SUCCESS = 'Buy USDC: On Ramp Success',
   BUY_USDC_SUCCESS = 'Buy USDC: Success',
   BUY_USDC_FAILURE = 'Buy USDC: Failure',
   BUY_USDC_RECOVERY_IN_PROGRESS = 'Buy USDC: Recovery In Progress',
   BUY_USDC_RECOVERY_SUCCESS = 'Buy USDC: Recovery Success',
   BUY_USDC_RECOVERY_FAILURE = 'Buy USDC: Recovery Failure',
+  BUY_USDC_ADD_FUNDS_MANUALLY = 'Buy USDC: Add Funds Manually',
+
+  // Buy Crypto
+  BUY_CRYPTO_STARTED = 'Buy Crypto: Started',
+  BUY_CRYPTO_ON_RAMP_OPENED = 'Buy Crypto: On Ramp Opened',
+  BUY_CRYPTO_ON_RAMP_SUCCESS = 'Buy Crypto: On Ramp Success',
+  BUY_CRYPTO_ON_RAMP_FAILURE = 'Buy Crypto: On Ramp Failure',
+  BUY_CRYPTO_ON_RAMP_CANCELED = 'Buy Crypto: On Ramp Canceled',
+  BUY_CRYPTO_ON_RAMP_CONFIRMED = 'Buy Crypto: On Ramp Confirmed',
+  BUY_CRYPTO_SUCCESS = 'Buy Crypto: Success',
+  BUY_CRYPTO_FAILURE = 'Buy Crypto: Failure',
+
+  // Buy Crypto Recovery
+  BUY_CRYPTO_RECOVERY_STARTED = 'Buy Crypto: Recovery Started',
+  BUY_CRYPTO_RECOVERY_SUCCESS = 'Buy Crypto: Recovery Success',
+  BUY_CRYPTO_RECOVERY_FAILURE = 'Buy Crypto: Recovery Failure',
+
+  // Withdraw USDC
+  WITHDRAW_USDC_MODAL_OPENED = 'Withdraw USDC: Modal Opened',
+  WITHDRAW_USDC_ADDRESS_PASTED = 'Withdraw USDC: Address Pasted',
+  WITHDRAW_USDC_REQUESTED = 'Withdraw USDC: Requested',
+  WITHDRAW_USDC_FORM_ERROR = 'Withdraw USDC: Form Error',
+  WITHDRAW_USDC_SUCCESS = 'Withdraw USDC: Success',
+  WITHDRAW_USDC_FAILURE = 'Withdraw USDC: Failure',
+  WITHDRAW_USDC_HELP_LINK_CLICKED = 'Withdraw USDC: Help Link Clicked',
+  WITHDRAW_USDC_TRANSACTION_LINK_CLICKED = 'Withdraw USDC: Transaction Link Clicked',
+
+  // Stripe Tracking
+  STRIPE_SESSION_CREATION_ERROR = 'Stripe: Session Creation Error',
+  STRIPE_SESSION_CREATED = 'Stripe Session: Created',
+  STRIPE_MODAL_INITIALIZED = 'Stripe Modal: Initialized',
+  STRIPE_REQUIRES_PAYMENT = 'Stripe Modal: Requires Payment',
+  STRIPE_FULLFILMENT_PROCESSING = 'Stripe Modal: Fulfillment Processing',
+  STRIPE_FULLFILMENT_COMPLETE = 'Stripe Modal: Fulfillment Complete',
+  STRIPE_ERROR = 'Stripe Modal: Error',
+  STRIPE_REJECTED = 'Stripe Modal: Rejected',
 
   // Purchase Content
   PURCHASE_CONTENT_STARTED = 'Purchase Content: Started',
   PURCHASE_CONTENT_SUCCESS = 'Purchase Content: Success',
   PURCHASE_CONTENT_FAILURE = 'Purchase Content: Failure',
   PURCHASE_CONTENT_TWITTER_SHARE = 'Purchase Content: Twitter Share',
+  PURCHASE_CONTENT_TOS_CLICKED = 'Purchase Content: Terms of Service Link Clicked',
+  PURCHASE_CONTENT_USDC_USER_BANK_COPIED = 'Purchase Content: USDC User Bank Copied',
 
   // Rate & Review CTA
   RATE_CTA_DISPLAYED = 'Rate CTA: Displayed',
@@ -364,7 +420,12 @@ export enum Name {
   MESSAGE_UNFURL_PLAYLIST = 'Message Unfurl: Playlist',
   TIP_UNLOCKED_CHAT = 'Unlocked Chat: Tip',
   CHAT_REPORT_USER = 'Report User: Chat',
-  CHAT_ENTRY_POINT = 'Chat Entry Point'
+  CHAT_ENTRY_POINT = 'Chat Entry Point',
+  CHAT_WEBSOCKET_ERROR = 'Chat Websocket Error',
+
+  // Jupiter
+  JUPITER_QUOTE_REQUEST = 'Jupiter: Quote Request',
+  JUPITER_QUOTE_RESPONSE = 'Jupiter: Quote Response'
 }
 
 type PageView = {
@@ -394,12 +455,12 @@ type CreateAccountCompletePassword = {
 }
 type CreateAccountStartTwitter = {
   eventName: Name.CREATE_ACCOUNT_START_TWITTER
-  emailAddress: string
+  emailAddress?: string
 }
 type CreateAccountCompleteTwitter = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_TWITTER
   isVerified: boolean
-  emailAddress: string
+  emailAddress?: string
   handle: string
 }
 type CreateAccountStartInstagram = {
@@ -836,20 +897,35 @@ type TrackUploadViewTrackPage = {
 // Gated Track Uploads
 type TrackUploadCollectibleGated = {
   eventName: Name.TRACK_UPLOAD_COLLECTIBLE_GATED
-  count: number
   kind: 'tracks'
 }
 
 type TrackUploadFollowGated = {
   eventName: Name.TRACK_UPLOAD_FOLLOW_GATED
-  count: number
   kind: 'tracks'
 }
 
 type TrackUploadTipGated = {
   eventName: Name.TRACK_UPLOAD_TIP_GATED
-  count: number
   kind: 'tracks'
+}
+
+type TrackUploadUSDCGated = {
+  eventName: Name.TRACK_UPLOAD_USDC_GATED
+  price: number
+  kind: 'tracks'
+}
+
+type TrackUploadClickUSDCWaitListLink = {
+  eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK
+}
+
+// Track Edits
+type TrackEditAccessChanged = {
+  eventName: Name.TRACK_EDIT_ACCESS_CHANGED
+  id: number
+  from: TrackAccessType
+  to: TrackAccessType
 }
 
 // Unlocked Gated Tracks
@@ -1057,6 +1133,27 @@ type TagClicking = {
   eventName: Name.TAG_CLICKING
   tag: string
   source: 'profile page' | 'track page' | 'collection page'
+}
+
+export enum ModalSource {
+  TrackTile = 'track tile',
+  TrackDetails = 'track details',
+  NowPlaying = 'now playing',
+  PlayBar = 'play bar',
+  // Should never be used, but helps with type-checking
+  Unknown = 'unknown'
+}
+
+// Modals
+type ModalOpened = {
+  eventName: Name.MODAL_OPENED
+  source: ModalSource
+  name: string
+} & Record<string, any> // For passing state values
+
+type ModalClosed = {
+  eventName: Name.MODAL_CLOSED
+  name: string
 }
 
 // Search
@@ -1285,14 +1382,16 @@ type CreateUserBankRequest = {
 
 type CreateUserBankSuccess = {
   eventName: Name.CREATE_USER_BANK_SUCCESS
-  userId: ID
+  mint: string
+  recipientEthAddress: string
 }
 
 type CreateUserBankFailure = {
   eventName: Name.CREATE_USER_BANK_FAILURE
-  userId: ID
+  mint: string
+  recipientEthAddress: string
   errorCode: string
-  error: string
+  errorMessage: string
 }
 
 type RewardsClaimStart = {
@@ -1353,6 +1452,11 @@ type RewardsClaimUnknown = {
   amount: number
   source: string
   error: string
+}
+
+type RewardsClaimDetailsOpened = {
+  eventName: Name.REWARDS_CLAIM_DETAILS_OPENED
+  challengeId: string
 }
 
 export type TipSource =
@@ -1549,6 +1653,7 @@ type BuyAudioRecoveryFailure = {
   error: string
 }
 
+// Buy USDC
 type BuyUSDCOnRampOpened = {
   eventName: Name.BUY_USDC_ON_RAMP_OPENED
   provider: string
@@ -1556,6 +1661,12 @@ type BuyUSDCOnRampOpened = {
 
 type BuyUSDCOnRampCanceled = {
   eventName: Name.BUY_USDC_ON_RAMP_CANCELED
+  provider: string
+}
+
+type BuyUSDCOnRampFailed = {
+  eventName: Name.BUY_USDC_ON_RAMP_FAILURE
+  error: string
   provider: string
 }
 
@@ -1592,27 +1703,172 @@ type BuyUSDCRecoveryFailure = {
   error: string
 }
 
-type PurchaseContentStarted = {
+type BuyUSDCAddFundsManually = {
+  eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
+}
+
+// Buy Crypto
+
+type BuyCryptoEvent = {
+  eventName:
+    | Name.BUY_CRYPTO_STARTED
+    | Name.BUY_CRYPTO_ON_RAMP_OPENED
+    | Name.BUY_CRYPTO_ON_RAMP_SUCCESS
+    | Name.BUY_CRYPTO_ON_RAMP_FAILURE
+    | Name.BUY_CRYPTO_ON_RAMP_CANCELED
+    | Name.BUY_CRYPTO_ON_RAMP_CONFIRMED
+    | Name.BUY_CRYPTO_SUCCESS
+    | Name.BUY_CRYPTO_FAILURE
+
+  provider: string
+  requestedAmount: number
+  mint: MintName
+  error?: string
+}
+
+type BuyCryptoRecoveryEvent = Prettify<
+  {
+    eventName:
+      | Name.BUY_CRYPTO_RECOVERY_STARTED
+      | Name.BUY_CRYPTO_RECOVERY_FAILURE
+      | Name.BUY_CRYPTO_RECOVERY_SUCCESS
+    intendedSOL: number
+  } & Omit<BuyCryptoEvent, 'eventName'>
+>
+
+// Withdraw USDC
+
+export type WithdrawUSDCEventFields = {
+  /** Balance in dollars */
+  currentBalance: number
+}
+
+export type WithdrawUSDCTransferEventFields = WithdrawUSDCEventFields & {
+  amount: number
+  destinationAddress: string
+}
+
+export type WithdrawUSDCModalOpened = WithdrawUSDCEventFields & {
+  eventName: Name.WITHDRAW_USDC_MODAL_OPENED
+}
+
+export type WithdrawUSDCAddressPasted = WithdrawUSDCEventFields & {
+  eventName: Name.WITHDRAW_USDC_ADDRESS_PASTED
+  destinationAddress: string
+}
+
+export type WithdrawUSDCFormError = WithdrawUSDCEventFields & {
+  eventName: Name.WITHDRAW_USDC_FORM_ERROR
+  error: string
+  value?: string
+}
+
+export type WithdrawUSDCRequested = WithdrawUSDCTransferEventFields & {
+  eventName: Name.WITHDRAW_USDC_REQUESTED
+}
+
+export type WithdrawUSDCSuccess = WithdrawUSDCTransferEventFields & {
+  eventName: Name.WITHDRAW_USDC_SUCCESS
+}
+
+export type WithdrawUSDCFailure = WithdrawUSDCTransferEventFields & {
+  eventName: Name.WITHDRAW_USDC_FAILURE
+}
+
+export type WithdrawUSDCHelpLinkClicked = WithdrawUSDCEventFields & {
+  eventName: Name.WITHDRAW_USDC_HELP_LINK_CLICKED
+}
+
+export type WithdrawUSDCTxLinkClicked = WithdrawUSDCTransferEventFields & {
+  eventName: Name.WITHDRAW_USDC_TRANSACTION_LINK_CLICKED
+  priorBalance: number
+  signature: string
+}
+
+// Stripe
+export type StripeEventFields = {
+  amount: string
+  destinationCurrency: string
+}
+
+type StripeSessionCreationError = StripeEventFields & {
+  eventName: Name.STRIPE_SESSION_CREATION_ERROR
+  code: string
+  stripeErrorMessage: string
+  type: string
+}
+
+type StripeSessionCreated = StripeEventFields & {
+  eventName: Name.STRIPE_SESSION_CREATED
+}
+
+type StripeModalInitialized = StripeEventFields & {
+  eventName: Name.STRIPE_MODAL_INITIALIZED
+}
+
+type StripeRequiresPayment = StripeEventFields & {
+  eventName: Name.STRIPE_REQUIRES_PAYMENT
+}
+
+type StripeFulfillmentProcessing = StripeEventFields & {
+  eventName: Name.STRIPE_FULLFILMENT_PROCESSING
+}
+
+type StripeFulfillmentComplete = StripeEventFields & {
+  eventName: Name.STRIPE_FULLFILMENT_COMPLETE
+}
+
+type StripeError = StripeEventFields & {
+  eventName: Name.STRIPE_ERROR
+}
+
+type StripeRejected = StripeEventFields & {
+  eventName: Name.STRIPE_REJECTED
+}
+
+// Content Purchase
+
+type ContentPurchaseMetadata = {
+  price: number
+  contentId: number
+  contentName: string
+  contentType: string
+  payExtraAmount: number
+  payExtraPreset?: string
+  purchaseMethod: PurchaseMethod
+  totalAmount: number
+  artistHandle: string
+  isVerifiedArtist: boolean
+}
+
+type PurchaseContentStarted = ContentPurchaseMetadata & {
   eventName: Name.PURCHASE_CONTENT_STARTED
-  extraAmount?: number
-  extraAmountPreset?: string
-  contentId: number
-  contentType: string
 }
-type PurchaseContentSuccess = {
+type PurchaseContentSuccess = ContentPurchaseMetadata & {
   eventName: Name.PURCHASE_CONTENT_SUCCESS
-  contentId: number
-  contentType: string
 }
-type PurchaseContentFailure = {
+
+type PurchaseContentFailure = ContentPurchaseMetadata & {
   eventName: Name.PURCHASE_CONTENT_FAILURE
-  contentId: number
-  contentType: string
   error: string
 }
+
 type PurchaseContentTwitterShare = {
   eventName: Name.PURCHASE_CONTENT_TWITTER_SHARE
   text: string
+}
+
+type PurchaseContentTOSClicked = {
+  eventName: Name.PURCHASE_CONTENT_TOS_CLICKED
+}
+
+type PurchaseContentUSDCUserBankCopied = {
+  eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED
+  address: string
+}
+
+type BannerTOSClicked = {
+  eventName: Name.BANNER_TOS_CLICKED
 }
 
 type RateCtaDisplayed = {
@@ -1737,6 +1993,32 @@ type ChatEntryPoint = {
   source: 'banner' | 'navmenu' | 'share' | 'profile'
 }
 
+type ChatWebsocketError = {
+  eventName: Name.CHAT_WEBSOCKET_ERROR
+  code?: string
+}
+
+// Jupiter
+type JupiterQuoteRequest = {
+  eventName: Name.JUPITER_QUOTE_REQUEST
+  inputMint: string
+  outputMint: string
+  swapMode?: string
+  slippageBps?: number
+  amount: number
+}
+
+type JupiterQuoteResponse = {
+  eventName: Name.JUPITER_QUOTE_RESPONSE
+  inputMint: string
+  outputMint: string
+  swapMode: string
+  slippageBps: number
+  otherAmountThreshold: number
+  inAmount: number
+  outAmount: number
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -1803,6 +2085,9 @@ export type AllTrackingEvents =
   | TrackUploadCollectibleGated
   | TrackUploadFollowGated
   | TrackUploadTipGated
+  | TrackUploadUSDCGated
+  | TrackUploadClickUSDCWaitListLink
+  | TrackEditAccessChanged
   | TrackUploadSuccess
   | TrackUploadFailure
   | TrackUploadRejected
@@ -1851,6 +2136,8 @@ export type AllTrackingEvents =
   | Unfollow
   | LinkClicking
   | TagClicking
+  | ModalOpened
+  | ModalClosed
   | SearchTerm
   | SearchTag
   | SearchMoreResults
@@ -1903,6 +2190,7 @@ export type AllTrackingEvents =
   | RewardsClaimFailure
   | RewardsClaimRejection
   | RewardsClaimUnknown
+  | RewardsClaimDetailsOpened
   | TipAudioRequest
   | TipAudioSuccess
   | TipAudioFailure
@@ -1933,15 +2221,38 @@ export type AllTrackingEvents =
   | BuyUSDCOnRampOpened
   | BuyUSDCOnRampSuccess
   | BuyUSDCOnRampCanceled
+  | BuyUSDCOnRampFailed
   | BuyUSDCSuccess
   | BuyUSDCFailure
   | BuyUSDCRecoveryInProgress
   | BuyUSDCRecoverySuccess
   | BuyUSDCRecoveryFailure
+  | BuyUSDCAddFundsManually
+  | BuyCryptoEvent
+  | BuyCryptoRecoveryEvent
+  | WithdrawUSDCModalOpened
+  | WithdrawUSDCAddressPasted
+  | WithdrawUSDCFormError
+  | WithdrawUSDCRequested
+  | WithdrawUSDCSuccess
+  | WithdrawUSDCFailure
+  | WithdrawUSDCHelpLinkClicked
+  | WithdrawUSDCTxLinkClicked
+  | StripeSessionCreationError
+  | StripeSessionCreated
+  | StripeModalInitialized
+  | StripeRequiresPayment
+  | StripeFulfillmentProcessing
+  | StripeFulfillmentComplete
+  | StripeError
+  | StripeRejected
   | PurchaseContentStarted
   | PurchaseContentSuccess
   | PurchaseContentFailure
   | PurchaseContentTwitterShare
+  | PurchaseContentTOSClicked
+  | PurchaseContentUSDCUserBankCopied
+  | BannerTOSClicked
   | RateCtaDisplayed
   | RateCtaResponseNo
   | RateCtaResponseYes
@@ -1974,3 +2285,6 @@ export type AllTrackingEvents =
   | DeveloperAppDeleteSuccess
   | DeveloperAppDeleteError
   | ChatEntryPoint
+  | ChatWebsocketError
+  | JupiterQuoteResponse
+  | JupiterQuoteRequest

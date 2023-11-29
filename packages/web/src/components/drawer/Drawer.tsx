@@ -61,6 +61,7 @@ export type DrawerProps = {
   onClose?: () => void
   onClosed?: () => void
   isFullscreen?: boolean
+  zIndex?: number
 }
 
 const getHeight = (contentRef: RefObject<HTMLDivElement>) => {
@@ -73,7 +74,8 @@ const DraggableDrawer = ({
   isOpen,
   children,
   shouldClose,
-  onClose
+  onClose,
+  zIndex
 }: DrawerProps) => {
   const Portal = usePortal({})
 
@@ -289,7 +291,8 @@ const DraggableDrawer = ({
         {...bind()}
         style={{
           // @ts-ignore
-          transform: drawerSlideProps.y.interpolate(interpY)
+          transform: drawerSlideProps.y.interpolate(interpY),
+          zIndex
         }}
       >
         <animated.div className={styles.playBar} style={contentFadeProps}>
@@ -305,7 +308,8 @@ const DraggableDrawer = ({
           className={styles.background}
           style={{
             ...backgroundOpacityProps,
-            ...(isOpen ? {} : { pointerEvents: 'none' })
+            ...(isOpen ? {} : { pointerEvents: 'none' }),
+            zIndex: zIndex ? zIndex - 1 : undefined
           }}
         />
       )}

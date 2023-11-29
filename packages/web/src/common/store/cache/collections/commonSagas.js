@@ -110,9 +110,9 @@ function* editPlaylistAsync(action) {
     { audiusBackend, generateImage: generatePlaylistArtwork }
   )
 
+  yield call(optimisticUpdateCollection, playlist)
   yield call(confirmEditPlaylist, playlistId, userId, playlist)
 
-  yield call(optimisticUpdateCollection, playlist)
   yield put(collectionActions.editPlaylistSucceeded())
   yield put(toast({ content: messages.editToast }))
 }

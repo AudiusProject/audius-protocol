@@ -1,7 +1,7 @@
 import cn from 'classnames'
 import ReactDropzone from 'react-dropzone'
 
-import { ReactComponent as IconUpload } from 'assets/img/iconUpload.svg'
+import IconUpload from 'assets/img/iconUpload.svg'
 import { ALLOWED_IMAGE_FILE_TYPES } from 'utils/imageProcessingUtil'
 
 import styles from './Dropzone.module.css'

@@ -1,8 +1,9 @@
 import { chatMiddleware, ErrorLevel, Name } from '@audius/common'
 import { composeWithDevToolsLogOnlyInProduction } from '@redux-devtools/extension'
-import * as Sentry from '@sentry/browser'
+import { configureScope, addBreadcrumb } from '@sentry/browser'
 import { routerMiddleware } from 'connected-react-router'
 import { createStore, applyMiddleware, Action, Store } from 'redux'
+import { persistStore } from 'redux-persist'
 import createSagaMiddleware from 'redux-saga'
 import createSentryMiddleware from 'redux-sentry-middleware'
 import thunk from 'redux-thunk'
@@ -112,10 +113,13 @@ const statePruner = (state: AppState) => {
 // If we discover we want specific action bodies in the future for Sentry
 // debuggability, those should be whitelisted here.
 const actionSanitizer = (action: Action) => ({ type: action.type })
-const sentryMiddleware = createSentryMiddleware(Sentry as any, {
-  actionTransformer: actionSanitizer,
-  stateTransformer: statePruner
-})
+const sentryMiddleware = createSentryMiddleware(
+  { configureScope, addBreadcrumb } as any,
+  {
+    actionTransformer: actionSanitizer,
+    stateTransformer: statePruner
+  }
+)
 
 const sagaMiddleware = createSagaMiddleware({
   onError: onSagaError,
@@ -145,6 +149,7 @@ const configureStore = () => {
 }
 
 export const store = configureStore()
+export const persistor = persistStore(store)
 
 // Mount store to window for easy access
 window.store = store

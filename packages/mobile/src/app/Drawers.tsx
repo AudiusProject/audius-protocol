@@ -2,6 +2,7 @@ import type { ComponentType } from 'react'
 
 import type { Modals } from '@audius/common'
 
+import { AddFundsDrawer } from 'app/components/add-funds-drawer/AddFundsDrawer'
 import { AddToPlaylistDrawer } from 'app/components/add-to-playlist-drawer'
 import { ApiRewardsDrawer } from 'app/components/api-rewards-drawer/ApiRewardsDrawer'
 import { AudioBreakdownDrawer } from 'app/components/audio-breakdown-drawer'
@@ -29,6 +30,7 @@ import { PlaybackRateDrawer } from 'app/components/playback-rate-drawer'
 import { PremiumTrackPurchaseDrawer } from 'app/components/premium-track-purchase-drawer'
 import { ProfileActionsDrawer } from 'app/components/profile-actions-drawer'
 import { PublishPlaylistDrawer } from 'app/components/publish-playlist-drawer'
+import { PurchaseVendorDrawer } from 'app/components/purchase-vendor-drawer/PurchaseVendorDrawer'
 import { RateCtaDrawer } from 'app/components/rate-cta-drawer'
 import { ShareDrawer } from 'app/components/share-drawer'
 import { ShareToTikTokDrawer } from 'app/components/share-to-tiktok-drawer'
@@ -37,6 +39,7 @@ import { StripeOnrampDrawer } from 'app/components/stripe-onramp-drawer'
 import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
 import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-drawer'
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
+import { USDCManualTransferDrawer } from 'app/components/usdc-manual-transfer-drawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
 import { useDrawerState } from '../components/drawer'
@@ -110,6 +113,12 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   ProfileActions: ProfileActionsDrawer,
   PlaybackRate: PlaybackRateDrawer,
   PublishPlaylistConfirmation: PublishPlaylistDrawer,
+  // PremiumContent, AddFunds, PurchaseVendor, USDCManualTransfer, and StripOnRamp *must* be in this order
+  // to avoid zIndex issues.
+  PremiumContentPurchaseModal: PremiumTrackPurchaseDrawer,
+  AddFundsModal: AddFundsDrawer,
+  PurchaseVendor: PurchaseVendorDrawer,
+  USDCManualTransferModal: USDCManualTransferDrawer,
   StripeOnRamp: StripeOnrampDrawer,
   InboxUnavailableModal: InboxUnavailableDrawer,
   LeavingAudiusModal: LeavingAudiusDrawer
@@ -133,8 +142,7 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   CreateChatActions: CreateChatActionsDrawer,
   BlockMessages: BlockMessagesDrawer,
   DeleteChat: DeleteChatDrawer,
-  SupportersInfo: SupportersInfoDrawer,
-  PremiumTrackPurchase: PremiumTrackPurchaseDrawer
+  SupportersInfo: SupportersInfoDrawer
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [

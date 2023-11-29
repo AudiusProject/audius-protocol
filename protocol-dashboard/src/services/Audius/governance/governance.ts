@@ -241,7 +241,7 @@ export default class Governance {
   }) {
     // Current callValue is always 0. Changing this is unsupported.
     const proposal = {
-      targetContractRegistryKey: window.Utils.utf8ToHex(
+      targetContractRegistryKey: this.aud.libs.ethWeb3Manager.web3.utils.utf8ToHex(
         args.targetContractName
       ),
       functionSignature: args.functionSignature,

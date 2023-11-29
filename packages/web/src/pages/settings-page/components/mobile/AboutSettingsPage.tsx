@@ -1,9 +1,9 @@
 import appIcon from 'assets/img/appIcon.png'
-import { ReactComponent as IconCareers } from 'assets/img/iconCareers.svg'
-import { ReactComponent as IconContact } from 'assets/img/iconContact.svg'
-import { ReactComponent as IconDiscord } from 'assets/img/iconDiscord.svg'
-import { ReactComponent as IconInstagram } from 'assets/img/iconInstagram.svg'
-import { ReactComponent as IconTwitter } from 'assets/img/iconTwitterBird.svg'
+import IconCareers from 'assets/img/iconCareers.svg'
+import IconContact from 'assets/img/iconContact.svg'
+import IconDiscord from 'assets/img/iconDiscord.svg'
+import IconInstagram from 'assets/img/iconInstagram.svg'
+import IconTwitter from 'assets/img/iconTwitterBird.svg'
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
 import Row from 'components/groupable-list/Row'
@@ -14,7 +14,7 @@ import {
   AUDIUS_CONTACT_EMAIL_LINK,
   AUDIUS_DISCORD_LINK,
   AUDIUS_HELP_LINK,
-  AUDIUS_INSTAMGRAM_LINK,
+  AUDIUS_INSTAGRAM_LINK,
   AUDIUS_TWITTER_LINK,
   PRIVACY_POLICY,
   TERMS_OF_SERVICE
@@ -75,7 +75,7 @@ const AboutSettingsPage = () => {
             <Row
               prefix={<IconInstagram className={styles.icon} />}
               title={messages.instagram}
-              href={AUDIUS_INSTAMGRAM_LINK}
+              href={AUDIUS_INSTAGRAM_LINK}
             />
             <Row
               prefix={<IconContact className={styles.icon} />}

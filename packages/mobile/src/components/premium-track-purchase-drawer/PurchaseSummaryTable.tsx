@@ -1,11 +1,12 @@
 import { formatPrice } from '@audius/common'
-import { View } from 'react-native'
 
 import { Text } from 'app/components/core'
-import { flexRowCentered, makeStyles } from 'app/styles'
+
+import { SummaryTable } from '../summary-table'
+import type { SummaryTableItem } from '../summary-table/SummaryTable'
 
 const messages = {
-  summary: 'Summary',
+  summary: 'Total',
   payExtra: 'Pay Extra',
   premiumTrack: 'Premium Track',
   existingBalance: 'Existing Balance',
@@ -15,88 +16,42 @@ const messages = {
   subtractPrice: (price: string) => `-$${price}`
 }
 
-const useStyles = makeStyles(({ spacing, typography, palette }) => ({
-  summaryContainer: {
-    borderColor: palette.neutralLight8,
-    borderWidth: 1,
-    borderRadius: spacing(1)
-  },
-  summaryRow: {
-    ...flexRowCentered(),
-    justifyContent: 'space-between',
-    paddingVertical: spacing(3),
-    paddingHorizontal: spacing(6),
-    borderBottomColor: palette.neutralLight8,
-    borderBottomWidth: 1
-  },
-  lastRow: {
-    borderBottomWidth: 0
-  },
-  greyRow: {
-    backgroundColor: palette.neutralLight10
-  },
-  summaryTitle: {
-    letterSpacing: 1
-  },
-  strikeThrough: {
-    textDecorationLine: 'line-through'
-  }
-}))
-
 type PurchaseSummaryTableProps = {
-  amountDue: number
-  extraAmount?: number
+  totalPriceInCents: number
   basePrice: number
-  existingBalance?: number
-  isPurchaseSuccessful: boolean
+  extraAmount?: number
 }
 
 export const PurchaseSummaryTable = ({
-  amountDue,
-  extraAmount,
+  totalPriceInCents,
   basePrice,
-  existingBalance,
-  isPurchaseSuccessful
+  extraAmount
 }: PurchaseSummaryTableProps) => {
-  const styles = useStyles()
+  const items: SummaryTableItem[] = [
+    {
+      id: 'premiumTrack',
+      label: messages.premiumTrack,
+      value: messages.price(formatPrice(basePrice))
+    }
+  ]
+  if (extraAmount != null) {
+    items.push({
+      id: 'payExtra',
+      label: messages.payExtra,
+      value: messages.price(formatPrice(extraAmount))
+    })
+  }
 
   return (
-    <>
-      <View style={styles.summaryContainer}>
-        <View style={[styles.summaryRow, styles.greyRow]}>
-          <Text
-            weight='bold'
-            textTransform='uppercase'
-            style={styles.summaryTitle}
-          >
-            {messages.summary}
-          </Text>
-        </View>
-        <View style={styles.summaryRow}>
-          <Text>{messages.premiumTrack}</Text>
-          <Text>{messages.price(formatPrice(basePrice))}</Text>
-        </View>
-        {extraAmount ? (
-          <View style={styles.summaryRow}>
-            <Text>{messages.payExtra}</Text>
-            <Text>{messages.price(formatPrice(extraAmount))}</Text>
-          </View>
-        ) : null}
-        {existingBalance ? (
-          <View style={styles.summaryRow}>
-            <Text>{messages.existingBalance}</Text>
-            <Text>{messages.subtractPrice(formatPrice(existingBalance))}</Text>
-          </View>
-        ) : null}
-        <View style={[styles.summaryRow, styles.lastRow, styles.greyRow]}>
-          <Text weight='bold'>
-            {isPurchaseSuccessful ? messages.youPaid : messages.total}
-          </Text>
-          <Text weight='bold' color='secondary'>
-            {messages.price(formatPrice(amountDue))}
-          </Text>
-        </View>
-      </View>
-    </>
+    <SummaryTable
+      collapsible
+      title={messages.summary}
+      secondaryTitle={
+        <Text color='secondary' weight='bold'>
+          {messages.price(formatPrice(totalPriceInCents))}
+        </Text>
+      }
+      items={items}
+    />
   )
 }

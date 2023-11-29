@@ -1,15 +1,15 @@
+import { useState, useEffect, useRef, useCallback } from 'react'
+
 import { IconVolume0, IconVolume2 } from '@audius/stems'
 import cn from 'classnames'
-import { h } from 'preact'
-import { useState, useEffect, useRef, useCallback } from 'preact/hooks'
 
 import AudiusLogo from '../../assets/img/audiusLogoHorizontal.svg'
+import { getHash } from '../../util/collectibleHelpers'
 import { getScrollParent } from '../../util/scrollParent'
 import { getCopyableLink } from '../../util/shareUtil'
 import Button from '../button/Button'
 
 import styles from './CollectibleDetailsView.module.css'
-import { getHash } from './collectibleHelpers'
 
 const MODEL_VIEWER_SCRIPT_URL =
   'https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js'

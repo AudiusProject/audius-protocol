@@ -24,19 +24,10 @@ mobile-init:
         keys:
           - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
 
-    - restore_cache:
-        keys:
-          - cache-{{ .Revision }}
-
-    - common-lint
-
     - run:
-        name: typecheck
-        command: cd packages/mobile && npm run typecheck
-
-    - run:
-        name: lint
-        command: cd packages/mobile && npm run lint
+        name: lint & typecheck
+        command: |
+          npx turbo run verify --filter=audius-mobile-client
 
     - persist_to_workspace:
         root: ./

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { recordPlay, recordPause } from '../analytics/analytics'
 import { sendPostMessage } from '../api/util'

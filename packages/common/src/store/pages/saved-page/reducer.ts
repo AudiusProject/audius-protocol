@@ -1,3 +1,5 @@
+import { Storage, persistReducer } from 'redux-persist'
+
 import { ID } from 'models/Identifiers'
 import { asLineup } from 'store/lineup/reducer'
 import {
@@ -11,8 +13,6 @@ import {
   FETCH_SAVES_FAILED,
   FETCH_SAVES_REQUESTED,
   FETCH_SAVES_SUCCEEDED,
-  INIT_COLLECTIONS_CATEGORY_FROM_LOCAL_STORAGE,
-  INIT_TRACKS_CATEGORY_FROM_LOCAL_STORAGE,
   REMOVE_LOCAL_COLLECTION,
   REMOVE_LOCAL_TRACK,
   SET_SELECTED_CATEGORY
@@ -201,18 +201,6 @@ const actionsMap: ActionsMap<SavedPageState> = {
       })
     }
   },
-  [INIT_TRACKS_CATEGORY_FROM_LOCAL_STORAGE](state, action) {
-    return {
-      ...state,
-      tracksCategory: action.category
-    }
-  },
-  [INIT_COLLECTIONS_CATEGORY_FROM_LOCAL_STORAGE](state, action) {
-    return {
-      ...state,
-      collectionsCategory: action.category
-    }
-  },
   [signOut.type]() {
     return initialState
   }
@@ -229,4 +217,12 @@ const reducer = (state = initialState, action: any) => {
   return matchingReduceFunction(state, action)
 }
 
-export default reducer
+export const savedPagePersistConfig = (storage: Storage) => ({
+  key: 'saved-page',
+  storage,
+  whitelist: ['tracksCategory', 'collectionsCategory']
+})
+
+export const persistedSavePageReducer = (storage: Storage) => {
+  return persistReducer(savedPagePersistConfig(storage), reducer)
+}

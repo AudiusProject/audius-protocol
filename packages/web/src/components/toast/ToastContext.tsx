@@ -1,4 +1,4 @@
-import { createContext, useCallback } from 'react'
+import { createContext, ReactNode, useCallback } from 'react'
 
 import { CommonState, toastActions } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useTransition, animated } from 'react-spring'
 
 import { getSafeArea, SafeAreaDirection } from 'utils/safeArea'
+import zIndex from 'utils/zIndex'
 
 import styles from './ToastContext.module.css'
 import Toast from './mobile/Toast'
@@ -47,7 +48,7 @@ export const ToastContext = createContext<ToastContextProps>({
   toast: () => {}
 })
 
-export const ToastContextProvider = (props: { children: JSX.Element }) => {
+export const ToastContextProvider = (props: { children: ReactNode }) => {
   const toasts = useSelector((state: CommonState) => state.ui.toast.toasts)
   const dispatch = useDispatch()
 
@@ -87,7 +88,8 @@ export const ToastContextProvider = (props: { children: JSX.Element }) => {
           style={{
             // @ts-ignore
             transform: props.y.interpolate(interp(i)),
-            opacity: props.opacity
+            opacity: props.opacity,
+            zIndex: zIndex.TOAST
           }}
         >
           <Toast

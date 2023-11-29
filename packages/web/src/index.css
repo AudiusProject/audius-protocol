@@ -1,4 +1,6 @@
-@import '~antd/dist/antd.min.css';
+@import 'antd/dist/antd.min.css';
+@import 'assets/styles/index.css';
+@import 'react-perfect-scrollbar/dist/css/styles.css';
 
 /* Begin Reset.css */
 html,
@@ -142,13 +144,11 @@ table {
   outline: none !important;
 }
 
-a {
+a :not(::hover) {
   text-decoration: none !important;
 }
 
 /* End Reset.css */
-
-@import '~assets/styles/index.css';
 
 body {
   margin: 0;

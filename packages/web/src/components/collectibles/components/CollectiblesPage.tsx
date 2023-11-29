@@ -37,7 +37,7 @@ import {
 } from 'react-beautiful-dnd'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ReactComponent as IconGradientCollectibles } from 'assets/img/iconGradientCollectibles.svg'
+import IconGradientCollectibles from 'assets/img/iconGradientCollectibles.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import CollectibleDetails from 'components/collectibles/components/CollectibleDetails'
 import {
@@ -606,7 +606,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
                 <Button
                   leftIcon={<IconKebabHorizontal />}
                   ref={anchorRef}
-                  onClick={triggerPopup}
+                  onClick={() => triggerPopup()}
                   text={null}
                   size={ButtonSize.SMALL}
                   type={ButtonType.COMMON}

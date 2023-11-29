@@ -1,0 +1,118 @@
+/* The absolute root of the entire component, including assistive text */
+.root {
+  /* This isolates z-index to only affect this component */
+  isolation: isolate;
+}
+
+/* The contentContainer is the root container of all things that aren't assistive text */
+.contentContainer {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  /* Dont need Y padding since the flex centering takes care of it */
+  padding: 0 var(--harmony-spacing-l);
+  border: 1px solid var(--harmony-border-default);
+  border-radius: var(--harmony-border-radius-s);
+  background-color: var(--harmony-bg-surface-1);
+  transition: border ease-in-out 0.1s;
+  box-sizing: border-box;
+
+  & svg path {
+    fill: var(--harmony-text-subdued);
+  }
+}
+
+/* hover border color */
+.contentContainer:hover,
+.contentContainer.hover {
+  border-color: var(--harmony-border-strong);
+}
+
+/* small input size */
+.contentContainer.small {
+  /* gap between icons & content */
+  gap: var(--harmony-spacing-s);
+  font-size: var(--harmony-font-s);
+  height: 34px;
+}
+
+/* default input size */
+.contentContainer.contentContainer.default {
+  /* gap between icons & content */
+  gap: var(--harmony-spacing-m);
+  font-size: var(--harmony-font-m);
+  height: 64px;
+}
+
+/* focused border color */
+.contentContainer.focused,
+.contentContainer.focused:hover {
+  border-color: var(--harmony-secondary);
+}
+
+/* warning border color */
+.contentContainer.warning,
+.contentContainer.warning.focused,
+.contentContainer.warning:hover {
+  border-color: var(--harmony-orange);
+}
+
+/* error border color */
+.contentContainer.error,
+.contentContainer.error.focused,
+.contentContainer.error:hover {
+  border-color: var(--harmony-red);
+}
+
+/* incorrect error border color */
+.contentContainer.incorrectError,
+.contentContainer.incorrectError.focused,
+.contentContainer.incorrectError:hover {
+  border-color: var(--harmony-orange);
+}
+
+.contentContainer.disablePointerEvents {
+  pointer-events: none;
+}
+
+/* Actual input element */
+.input {
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  outline: 0;
+  border: 0;
+  background: none;
+  font-weight: var(--harmony-font-medium);
+  color: var(--harmony-text-default);
+  text-overflow: ellipsis;
+}
+
+.input.focused {
+  caret-color: var(--harmony-secondary);
+}
+
+.input.disabled,
+.input.disabled::placeholder {
+  color: var(--harmony-text-subdued);
+}
+
+/* Change font size of the input based on size */
+.input.small {
+  font-size: var(--harmony-font-s);
+}
+
+.input.default {
+  font-size: var(--harmony-font-l);
+}
+
+/* Placeholder and label text styles (they are the same minus color) */
+.input::placeholder {
+  color: var(--harmony-text-default);
+  font-weight: var(--harmony-font-medium);
+  font-family: var(--harmony-font-family);
+}
+
+.input::placeholder {
+  color: var(--harmony-text-subdued);
+}

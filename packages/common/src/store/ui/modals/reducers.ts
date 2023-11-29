@@ -1,5 +1,6 @@
 import { Action, combineReducers, Reducer } from '@reduxjs/toolkit'
 
+import { addFundsModalReducer } from './add-funds-modal'
 import { createChatModalReducer } from './create-chat-modal'
 import { BaseModalState } from './createModal'
 import { editPlaylistModalReducer } from './edit-playlist-modal'
@@ -9,6 +10,7 @@ import { leavingAudiusModalReducer } from './leaving-audius-modal'
 import parentReducer, { initialState } from './parentSlice'
 import { premiumContentPurchaseModalReducer } from './premium-content-purchase-modal'
 import { Modals, ModalsState } from './types'
+import { usdcManualTransferModalReducer } from './usdc-manual-transfer-modal'
 import { usdcPurchaseDetailsModalReducer } from './usdc-purchase-details-modal'
 import { usdcTransactionDetailsModalReducer } from './usdc-transaction-details-modal'
 import { withdrawUSDCModalReducer } from './withdraw-usdc-modal'
@@ -35,6 +37,8 @@ const combinedReducers = combineReducers({
   LeavingAudiusModal: leavingAudiusModalReducer,
   WithdrawUSDCModal: withdrawUSDCModalReducer,
   USDCPurchaseDetailsModal: usdcPurchaseDetailsModalReducer,
+  USDCManualTransferModal: usdcManualTransferModalReducer,
+  AddFundsModal: addFundsModalReducer,
   USDCTransactionDetailsModal: usdcTransactionDetailsModalReducer,
   PremiumContentPurchaseModal: premiumContentPurchaseModalReducer
 })

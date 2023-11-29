@@ -256,9 +256,6 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     let user
     if (this.trackId) {
       const track = resources.tracks[this.trackId]
-      if ('usdc_purchase' in (track.premium_conditions || {})) {
-        return null
-      }
       entity = {
         ...track,
         type: EntityType.Track,

@@ -9,7 +9,7 @@ import {
 } from '@audius/common'
 import cn from 'classnames'
 
-import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
+import IconKebabHorizontal from 'assets/img/iconKebabHorizontal.svg'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
@@ -183,11 +183,12 @@ const TrackListItem = ({
           {(ref, triggerPopup) => (
             <div className={cn(styles.menuContainer)} ref={menuRef}>
               {!disableActions && !deleted ? (
-                <IconKebabHorizontal
-                  className={styles.iconKebabHorizontal}
-                  ref={ref}
-                  onClick={onMoreClick(triggerPopup)}
-                />
+                <div ref={ref}>
+                  <IconKebabHorizontal
+                    className={styles.iconKebabHorizontal}
+                    onClick={onMoreClick(triggerPopup)}
+                  />
+                </div>
               ) : (
                 <div className={styles.iconKebabHorizontal} />
               )}

@@ -12,77 +12,21 @@
       "dependsOn": ["^build"],
       "outputMode": "new-only"
     },
-    "@audius/compose#start": {
-      "dependsOn": ["^build"],
-      "cache": false,
-      "outputMode": "new-only"
-    },
-    "audius-client#start:dev": {
-      "dependsOn": ["^build"],
-      "cache": false,
-      "persistent": true,
-      "outputMode": "new-only"
-    },
-    "audius-client#start:prod": {
-      "dependsOn": ["^build"],
-      "cache": false,
-      "persistent": true,
-      "outputMode": "new-only"
-    },
-    "audius-client#start:stage": {
-      "dependsOn": ["^build"],
-      "cache": false,
-      "persistent": true,
-      "outputMode": "new-only"
-    },
-    "audius-mobile-client#android:dev": {
-      "dependsOn": ["^build"],
-      "cache": false,
-      "persistent": true,
-      "outputMode": "new-only"
-    },
-    "audius-mobile-client#android:prod": {
-      "dependsOn": ["^build"],
-      "cache": false,
-      "persistent": true,
-      "outputMode": "new-only"
-    },
-    "audius-mobile-client#android:stage": {
-      "dependsOn": ["^build"],
-      "cache": false,
-      "persistent": true,
-      "outputMode": "new-only"
-    },
-    "audius-mobile-client#ios:dev": {
-      "dependsOn": ["^build"],
-      "cache": false,
-      "persistent": true,
-      "outputMode": "new-only"
-    },
-    "audius-mobile-client#ios:prod": {
-      "dependsOn": ["^build"],
-      "cache": false,
-      "persistent": true,
-      "outputMode": "new-only"
-    },
-    "audius-mobile-client#ios:stage": {
-      "dependsOn": ["^build"],
-      "cache": false,
-      "persistent": true,
-      "outputMode": "new-only"
-    },
     "lint": {
-      "outputMode": "new-only"
+      "outputMode": "new-only",
+      "dependsOn": ["^build"]
     },
     "lint:fix": {
-      "outputMode": "new-only"
+      "outputMode": "new-only",
+      "dependsOn": ["^build"]
     },
     "verify": {
-      "outputMode": "new-only"
+      "outputMode": "new-only",
+      "dependsOn": ["^build"]
     },
     "test": {
       "outputs": ["coverage/**"],
-      "dependsOn": []
+      "dependsOn": ["^build"]
     }
   }
 }

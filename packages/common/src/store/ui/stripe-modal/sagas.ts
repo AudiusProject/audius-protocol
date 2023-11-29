@@ -1,10 +1,24 @@
-import { call, takeEvery, put, select } from 'typed-redux-saga'
+import { IdentityRequestError } from '@audius/sdk'
+import {
+  call,
+  takeEvery,
+  put,
+  select,
+  delay,
+  fork,
+  cancel,
+  FixedTask
+} from 'typed-redux-saga'
 
+import { Name } from 'models/Analytics'
+import { ErrorLevel } from 'models/ErrorReporting'
 import { createStripeSession } from 'services/audius-backend/stripe'
 import { getContext } from 'store/effects'
 
 import { setVisibility } from '../modals/parentSlice'
+import { toast } from '../toast/slice'
 
+import { reportStripeFlowAnalytics } from './sagaHelpers'
 import { getStripeModalState } from './selectors'
 import {
   cancelStripeOnramp,
@@ -12,30 +26,112 @@ import {
   stripeSessionCreated,
   stripeSessionStatusChanged
 } from './slice'
+import {
+  StripeSessionCreationError,
+  StripeSessionCreationErrorResponseData
+} from './types'
+
+const STRIPE_TAKING_A_WHILE_DELAY = 60 * 1000
+
+const messages = {
+  stripeTakingAWhile:
+    'Stripe is taking longer than expected... Thanks for your patience!'
+}
 
 function* handleInitializeStripeModal({
   payload: { amount, destinationCurrency, destinationWallet }
 }: ReturnType<typeof initializeStripeModal>) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const res = yield* call(createStripeSession, audiusBackendInstance, {
-    amount,
-    destinationCurrency,
-    destinationWallet
-  })
-  // TODO: Need to handle errors here?
-  yield* put(stripeSessionCreated({ clientSecret: res.client_secret }))
+  const reportToSentry = yield* getContext('reportToSentry')
+  const { track, make } = yield* getContext('analytics')
+  const { onrampFailed } = yield* select(getStripeModalState)
+  try {
+    const res = yield* call(createStripeSession, audiusBackendInstance, {
+      amount,
+      destinationCurrency,
+      destinationWallet
+    })
+    yield* put(stripeSessionCreated({ clientSecret: res.client_secret }))
+    yield* call(
+      track,
+      make({
+        eventName: Name.STRIPE_SESSION_CREATED,
+        amount,
+        destinationCurrency
+      })
+    )
+  } catch (e) {
+    const {
+      code,
+      message: stripeErrorMessage,
+      type
+    } = ((e as IdentityRequestError).response?.data ??
+      {}) as StripeSessionCreationErrorResponseData
+
+    const error = new StripeSessionCreationError(code, stripeErrorMessage, type)
+
+    if (onrampFailed) {
+      yield* put({
+        type: onrampFailed.type,
+        payload: { error }
+      })
+    }
+    yield* put(setVisibility({ modal: 'StripeOnRamp', visible: 'closing' }))
+    yield* call(reportToSentry, {
+      level: ErrorLevel.Error,
+      error,
+      additionalInfo: {
+        code,
+        stripeErrorMessage,
+        type,
+        amount,
+        destinationCurrency
+      }
+    })
+    yield* call(
+      track,
+      make({
+        eventName: Name.STRIPE_SESSION_CREATION_ERROR,
+        amount,
+        code,
+        destinationCurrency,
+        stripeErrorMessage,
+        type
+      })
+    )
+  }
+}
+
+let stripeTakingAWhileToastTask: FixedTask<any> | null = null
+
+function* toastStripeTakingAWhile() {
+  if (stripeTakingAWhileToastTask) return
+  yield* delay(STRIPE_TAKING_A_WHILE_DELAY)
+  yield put(toast({ content: messages.stripeTakingAWhile }))
 }
 
 function* handleStripeSessionChanged({
-  payload: { status }
+  payload: { session }
 }: ReturnType<typeof stripeSessionStatusChanged>) {
-  if (status === 'fulfillment_complete') {
-    const { onrampSucceeded } = yield* select(getStripeModalState)
+  const { onrampSucceeded, previousStripeSessionData } = yield* select(
+    getStripeModalState
+  )
+
+  if (session.status === 'fulfillment_processing') {
+    stripeTakingAWhileToastTask = yield* fork(toastStripeTakingAWhile)
+  }
+  if (session.status === 'fulfillment_complete') {
+    if (stripeTakingAWhileToastTask) {
+      yield* cancel(stripeTakingAWhileToastTask)
+      stripeTakingAWhileToastTask = null
+    }
+
     if (onrampSucceeded) {
       yield* put(onrampSucceeded)
     }
     yield* put(setVisibility({ modal: 'StripeOnRamp', visible: 'closing' }))
   }
+  yield* call(reportStripeFlowAnalytics, session, previousStripeSessionData)
 }
 
 function* handleCancelStripeOnramp() {

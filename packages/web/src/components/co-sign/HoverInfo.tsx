@@ -1,7 +1,7 @@
 import { ID } from '@audius/common'
 
-import { ReactComponent as IconHeart } from 'assets/img/iconHeart.svg'
-import { ReactComponent as IconRepost } from 'assets/img/iconRepost.svg'
+import IconHeart from 'assets/img/iconHeart.svg'
+import IconRepost from 'assets/img/iconRepost.svg'
 import UserBadges from 'components/user-badges/UserBadges'
 
 import styles from './HoverInfo.module.css'

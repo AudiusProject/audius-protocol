@@ -51,6 +51,10 @@
   text-align: center;
 }
 
+.text.small {
+  font-size: var(--font-s);
+}
+
 .isMobile .text {
   font-size: var(--font-s);
 }
@@ -59,6 +63,11 @@
   height: var(--unit-5);
   width: var(--unit-5);
   flex-shrink: 0;
+}
+
+.arrow.small {
+  height: var(--unit-3);
+  width: var(--unit-3);
 }
 
 .isMobile .arrow {

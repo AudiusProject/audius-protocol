@@ -72,21 +72,3 @@
   display: inline-flex;
   align-items: center;
 }
-
-/* Favorite / Remove Icons */
-
-.toggleRepostContainer {
-  margin-left: 36px;
-}
-
-.toggleFavoriteContainer {
-  margin-left: 16px;
-}
-
-.toggleRepostContainer,
-.toggleFavoriteContainer {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}

@@ -13,7 +13,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    gap: spacing(4)
+    gap: spacing(2)
   },
   pillContainer: {
     display: 'flex',
@@ -27,15 +27,17 @@ const useStyles = makeStyles(({ spacing }) => ({
   },
   pill: {
     flexGrow: 1,
-    flexShrink: 0
+    flexShrink: 1,
+    flexBasis: 0
   },
   title: {
-    lineHeight: spacing(5)
+    letterSpacing: 0.5
   }
 }))
 
 const messages = {
   payExtra: 'PAY EXTRA',
+  other: 'Other',
   customAmount: 'Custom Amount',
   placeholder: 'Enter a value'
 }
@@ -44,13 +46,16 @@ const formatPillAmount = (val: number) => `$${Math.floor(val / 100)}`
 
 export type PayExtraFormSectionProps = {
   amountPresets: PayExtraAmountPresetValues
+  disabled?: boolean
 }
 
 export const PayExtraFormSection = ({
-  amountPresets
+  amountPresets,
+  disabled
 }: PayExtraFormSectionProps) => {
   const [{ value: preset }, , { setValue: setPreset }] = useField(AMOUNT_PRESET)
-  const [{ value: customAmount }] = useField(CUSTOM_AMOUNT)
+  const [{ value: customAmount }, { error: customAmountError }] =
+    useField(CUSTOM_AMOUNT)
   const styles = useStyles()
 
   const handleClickPreset = (newPreset: PayExtraPreset) => {
@@ -58,38 +63,46 @@ export const PayExtraFormSection = ({
   }
   return (
     <View style={styles.container}>
-      <Text weight='bold' fontSize='medium' color='neutralLight4' noGutter>
+      <Text
+        weight='heavy'
+        fontSize='small'
+        color='neutralLight4'
+        style={styles.title}
+        noGutter
+      >
         {messages.payExtra}
       </Text>
-      <View style={styles.pillContainer}>
-        <View style={styles.presetContainer}>
-          <HarmonySelectablePill
-            size='large'
-            style={styles.pill}
-            isSelected={preset === PayExtraPreset.LOW}
-            label={formatPillAmount(amountPresets[PayExtraPreset.LOW])}
-            onPress={() => handleClickPreset(PayExtraPreset.LOW)}
-          />
-          <HarmonySelectablePill
-            size='large'
-            style={styles.pill}
-            isSelected={preset === PayExtraPreset.MEDIUM}
-            label={formatPillAmount(amountPresets[PayExtraPreset.MEDIUM])}
-            onPress={() => handleClickPreset(PayExtraPreset.MEDIUM)}
-          />
-          <HarmonySelectablePill
-            size='large'
-            style={styles.pill}
-            isSelected={preset === PayExtraPreset.HIGH}
-            label={formatPillAmount(amountPresets[PayExtraPreset.HIGH])}
-            onPress={() => handleClickPreset(PayExtraPreset.HIGH)}
-          />
-        </View>
+      <View style={styles.presetContainer}>
+        <HarmonySelectablePill
+          size='large'
+          style={styles.pill}
+          isSelected={preset === PayExtraPreset.LOW}
+          label={formatPillAmount(amountPresets[PayExtraPreset.LOW])}
+          disabled={disabled}
+          onPress={() => handleClickPreset(PayExtraPreset.LOW)}
+        />
+        <HarmonySelectablePill
+          size='large'
+          style={styles.pill}
+          isSelected={preset === PayExtraPreset.MEDIUM}
+          label={formatPillAmount(amountPresets[PayExtraPreset.MEDIUM])}
+          disabled={disabled}
+          onPress={() => handleClickPreset(PayExtraPreset.MEDIUM)}
+        />
+        <HarmonySelectablePill
+          size='large'
+          style={styles.pill}
+          isSelected={preset === PayExtraPreset.HIGH}
+          label={formatPillAmount(amountPresets[PayExtraPreset.HIGH])}
+          disabled={disabled}
+          onPress={() => handleClickPreset(PayExtraPreset.HIGH)}
+        />
         <HarmonySelectablePill
           size='large'
           style={styles.pill}
           isSelected={preset === PayExtraPreset.CUSTOM}
-          label={messages.customAmount}
+          label={messages.other}
+          disabled={disabled}
           onPress={() => handleClickPreset(PayExtraPreset.CUSTOM)}
         />
       </View>
@@ -99,6 +112,8 @@ export const PayExtraFormSection = ({
           label={messages.customAmount}
           value={String(customAmount)}
           placeholder={messages.placeholder}
+          errorMessage={customAmountError}
+          editable={!disabled}
           noGutter
         />
       ) : null}

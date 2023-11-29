@@ -8,17 +8,12 @@ import {
   formatUSDCWeiToFloorCentsNumber,
   BNUSDC
 } from '@audius/common'
-import {
-  HarmonyButton,
-  HarmonyButtonSize,
-  HarmonyButtonType,
-  IconQuestionCircle,
-  Switch
-} from '@audius/stems'
+import { Button, ButtonType, IconQuestionCircle } from '@audius/harmony'
+import { Switch } from '@audius/stems'
 import BN from 'bn.js'
 import { useField, useFormikContext } from 'formik'
 
-import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
+import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
 import { HelperText } from 'components/data-entry/HelperText'
 import { Divider } from 'components/divider'
 import { Text } from 'components/typography'
@@ -31,6 +26,9 @@ import {
 import styles from './ConfirmTransferDetails.module.css'
 import { Hint } from './Hint'
 import { TextRow } from './TextRow'
+
+const LEARN_MORE_LINK =
+  'https://support.audius.co/help/Understanding-USDC-on-Audius'
 
 const messages = {
   currentBalance: 'Current Balance',
@@ -108,23 +106,20 @@ export const ConfirmTransferDetails = () => {
         ) : null}
       </div>
       <div className={styles.buttons}>
-        <HarmonyButton
+        <Button
           iconLeft={IconCaretLeft}
-          variant={HarmonyButtonType.SECONDARY}
-          size={HarmonyButtonSize.DEFAULT}
-          text={messages.goBack}
+          variant={ButtonType.SECONDARY}
           onClick={handleGoBack}
-        />
-        <HarmonyButton
-          variant={HarmonyButtonType.SECONDARY}
-          size={HarmonyButtonSize.DEFAULT}
-          text={messages.confirm}
-          onClick={handleContinue}
-        />
+        >
+          {messages.goBack}
+        </Button>
+        <Button variant={ButtonType.SECONDARY} onClick={handleContinue}>
+          {messages.confirm}
+        </Button>
       </div>
       <Hint
         text={messages.notSure}
-        link={''} // TODO(USDC): Link
+        link={LEARN_MORE_LINK}
         icon={IconQuestionCircle}
         linkText={messages.guide}
       />

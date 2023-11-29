@@ -10,7 +10,9 @@ export const createStripeSession = async (
   audiusBackendInstance: AudiusBackend,
   config: CreateStripeSessionArgs
 ) => {
-  return (
-    await audiusBackendInstance.getAudiusLibs()
-  ).identityService?.createStripeSession(config)
+  const libs = await audiusBackendInstance.getAudiusLibsTyped()
+  if (!libs.identityService) {
+    throw new Error('createStripeSession: Unexpected missing identity service')
+  }
+  return libs.identityService.createStripeSession(config)
 }

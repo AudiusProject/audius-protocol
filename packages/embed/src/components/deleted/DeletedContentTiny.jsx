@@ -1,5 +1,3 @@
-import { h } from 'preact'
-
 import AudiusLogoGlyph from '../../assets/img/audiusLogoGlyph.svg'
 import PlayButton, { PlayingState } from '../playbutton/PlayButton'
 

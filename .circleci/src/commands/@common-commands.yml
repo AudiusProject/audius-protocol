@@ -1,8 +1,0 @@
-common-lint:
-  description: "lint @audius/common"
-  steps:
-    - run: 
-        name: "lint @audius/common"
-        command: |
-          cd packages/common
-          npm run lint

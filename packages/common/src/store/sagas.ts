@@ -24,9 +24,11 @@ import {
   mobileOverflowMenuUISagas,
   shareModalUISagas,
   stripeModalUISagas,
-  uploadConfirmationModalUISagas
+  uploadConfirmationModalUISagas,
+  modalsSagas
 } from 'store/ui'
 
+import { buyCryptoSagas } from './buy-crypto'
 import { playlistUpdatesSagas } from './playlist-updates'
 import { CommonStoreContext } from './storeContext'
 
@@ -44,6 +46,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   // tracks: tracksSagas,
   // users: usersSagas,
   account: accountSagas,
+  buyCrypto: buyCryptoSagas,
   buyUSDC: buyUSDCSagas,
   remoteConfig: remoteConfigSagas,
   cast: castSagas,
@@ -55,6 +58,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   shareModalUI: shareModalUISagas,
   stripeModalUI: stripeModalUISagas,
   mobileOverflowMenuUI: mobileOverflowMenuUISagas,
+  modals: modalsSagas,
   deletePlaylistConfirmationModalUI: deletePlaylistConfirmationModalUISagas,
   duplidateAddConfirmationModalUI: duplicateAddConfirmationModalUISagas,
   uploadConfirmationModalUI: uploadConfirmationModalUISagas,

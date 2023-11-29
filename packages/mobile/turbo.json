@@ -1,0 +1,22 @@
+{
+  "extends": ["//"],
+  "pipeline": {
+    "android": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true,
+      "outputMode": "new-only"
+    },
+    "ios": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true,
+      "outputMode": "new-only"
+    },
+    "bundle:ios": {
+      "outputs": ["./ios/main.jsbundle"],
+      "dependsOn": ["^build"],
+      "outputMode": "new-only"
+    }
+  }
+}

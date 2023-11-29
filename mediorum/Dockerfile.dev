@@ -8,6 +8,7 @@ RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install 'web3==6.6.1'
 
 WORKDIR /app
+ENV CGO_ENABLED=0
 
 RUN go install github.com/cosmtrek/air@latest
 

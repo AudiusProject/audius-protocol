@@ -10,14 +10,15 @@ import {
   CommonState,
   getDogEarType,
   isPremiumContentUSDCPurchaseGated,
-  usePremiumContentPurchaseModal
+  usePremiumContentPurchaseModal,
+  ModalSource
 } from '@audius/common'
 import { IconCheck, IconCrown, IconHidden, ProgressBar } from '@audius/stems'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
-import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
-import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
+import IconStar from 'assets/img/iconStar.svg'
+import IconVolume from 'assets/img/iconVolume.svg'
 import { DogEar } from 'components/dog-ear'
 import { Link } from 'components/link'
 import Skeleton from 'components/skeleton/Skeleton'
@@ -140,6 +141,7 @@ const TrackTile = ({
   onClickRepost,
   onClickFavorite,
   onClickShare,
+  onClickLocked,
   onTogglePlay,
   showRankIcon,
   permalink,
@@ -162,11 +164,23 @@ const TrackTile = ({
   const { onOpen: openPremiumContentPurchaseModal } =
     usePremiumContentPurchaseModal()
   const isPurchase = isPremiumContentUSDCPurchaseGated(premiumConditions)
+
   const onClickPremiumPill = useAuthenticatedClickCallback(() => {
     if (isPurchase && trackId) {
-      openPremiumContentPurchaseModal({ contentId: trackId })
+      openPremiumContentPurchaseModal(
+        { contentId: trackId },
+        { source: ModalSource.TrackTile }
+      )
+    } else if (trackId && !doesUserHaveAccess && onClickLocked) {
+      onClickLocked()
     }
-  }, [isPurchase, trackId, openPremiumContentPurchaseModal])
+  }, [
+    isPurchase,
+    trackId,
+    openPremiumContentPurchaseModal,
+    doesUserHaveAccess,
+    onClickLocked
+  ])
 
   const getDurationText = () => {
     if (duration === null || duration === undefined) {

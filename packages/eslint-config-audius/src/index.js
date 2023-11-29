@@ -9,6 +9,7 @@ module.exports = {
     'plugin:jest/recommended',
     'plugin:react/recommended',
     'plugin:import/typescript',
+    // 'plugin:mdx/recommended',
     'plugin:prettier/recommended'
   ],
   globals: {
@@ -23,7 +24,15 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: 'module'
   },
-  plugins: ['react', 'react-hooks', '@typescript-eslint', 'jest', 'import'],
+  plugins: [
+    'react',
+    'react-hooks',
+    '@typescript-eslint',
+    '@emotion',
+    'jest',
+    'import',
+    'mdx'
+  ],
   rules: {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
@@ -75,6 +84,7 @@ module.exports = {
     'react/prop-types': 'off',
     'react/jsx-uses-react': 'off',
     'react/react-in-jsx-scope': 'off',
+    'react/no-unknown-property': ['error', { ignore: ['css'] }],
 
     'prettier/prettier': ['error', require('../.prettierrc')],
 
@@ -106,7 +116,8 @@ module.exports = {
         ],
         pathGroupsExcludedImportTypes: ['builtin']
       }
-    ]
+    ],
+    'no-constant-binary-expression': 'error'
   },
   settings: {
     jest: {
@@ -119,6 +130,12 @@ module.exports = {
       typescript: true,
       node: true
     },
-    'import/extensions': ['.js', '.jsx', '.ts', '.tsx']
-  }
+    'import/extensions': ['.js', '.jsx', '.ts', '.tsx', '.mdx']
+  },
+  overrides: [
+    {
+      files: ['*.mdx'],
+      parser: 'eslint-mdx'
+    }
+  ]
 }

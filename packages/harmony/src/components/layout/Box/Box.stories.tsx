@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { Text } from '../../typography'
+import { Text } from '../../text'
 
 import { Box } from './Box'
 
@@ -14,7 +14,7 @@ const spacingArgs = {
 }
 
 const meta: Meta<typeof Box> = {
-  title: 'Components/Layout/Box',
+  title: 'Layout/Box',
   component: Box,
   parameters: {
     controls: { exclude: /^(theme|as)$/ }

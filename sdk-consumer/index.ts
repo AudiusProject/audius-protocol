@@ -34,6 +34,8 @@ import {
   UnrepostAlbumRequest,
   UpdateProfileRequest,
   Logger,
+  StorageNodeSelector,
+  AppAuth,
 } from "@audius/sdk";
 import express from "express";
 import multer from "multer";
@@ -52,7 +54,9 @@ const discoveryNodeSelector = new DiscoveryNodeSelector({
   initialSelectedNode: "http://audius-protocol-discovery-provider-1",
 });
 
-const logger = new Logger({ logLevel: "info" });
+const logger = new Logger({ logLevel: "info" })
+const apiKey = ""
+const apiSecret = ""
 
 const audiusSdk = sdk({
   services: {
@@ -62,13 +66,18 @@ const audiusSdk = sdk({
       web3ProviderUrl: developmentConfig.web3ProviderUrl,
       contractAddress: developmentConfig.entityManagerContractAddress,
       identityServiceUrl: developmentConfig.identityServiceUrl,
-      logger,
+      useDiscoveryRelay: true,
+      logger
     }),
-    logger,
+    storageNodeSelector: new StorageNodeSelector({
+      auth: new AppAuth(apiKey, apiSecret),
+      discoveryNodeSelector: discoveryNodeSelector,
+      bootstrapNodes: developmentConfig.storageNodes
+    })
   },
-  apiKey: "",
-  apiSecret: "",
-});
+  apiKey,
+  apiSecret
+})
 
 app.listen(port, () => {
   console.log(`sdk-consumer listening on port ${port}`);

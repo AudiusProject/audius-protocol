@@ -153,9 +153,7 @@ def sort_by_sort_method(sort_method, sort_fn, track_ids, base_query):
         return base_query.order_by(
             sort_fn(
                 coalesce(
-                    func.to_date_safe(
-                        TrackWithAggregates.release_date, "Dy Mon DD YYYY HH24:MI:SS"
-                    ),
+                    TrackWithAggregates.release_date,
                     TrackWithAggregates.created_at,
                 )
             )

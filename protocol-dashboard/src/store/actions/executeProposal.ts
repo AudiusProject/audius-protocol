@@ -1,12 +1,13 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { ThunkAction } from 'redux-thunk'
+import { ThunkAction, ThunkDispatch } from 'redux-thunk'
 import { Action } from 'redux'
 
 import { Status } from 'types'
 import Audius from 'services/Audius'
 import { AppState } from 'store/types'
 import { fetchProposal } from 'store/cache/proposals/hooks'
+import { AnyAction } from '@reduxjs/toolkit'
 
 function executeAudiusProposal(
   proposalId: number,
@@ -32,7 +33,7 @@ function executeAudiusProposal(
 export const useExecuteProposal = (shouldReset?: boolean) => {
   const [status, setStatus] = useState<undefined | Status>()
   const [error, setError] = useState<string>('')
-  const dispatch = useDispatch()
+  const dispatch: ThunkDispatch<AppState, Audius, AnyAction> = useDispatch()
 
   useEffect(() => {
     if (shouldReset) {

@@ -8,6 +8,13 @@ export type TimeSeriesRecord = {
   summed_unique_count?: number
 }
 
+type UptimeRecord = {
+  host: string
+  uptime_percentage: number
+  duration: string
+  uptime_raw_data: { [key: string]: number }
+}
+
 export type CountRecord = {
   [key: string]: number
 }
@@ -28,6 +35,10 @@ type TimeSeriesMetric = {
   [key in Bucket]?: TimeSeriesRecord[] | MetricError
 }
 
+type UptimeMetric = {
+  [key in Bucket]?: UptimeRecord | MetricError
+}
+
 type CountMetric = {
   [key in Bucket]?: CountRecord | MetricError
 }
@@ -39,6 +50,14 @@ export type State = {
   topApps: CountMetric
   trailingTopGenres: CountMetric
   trailingApiCalls: CountMetric
+  individualNodeUptime: {
+    // Mapping of node endpoint to TimeSeriesMetric
+    [node: string]: UptimeMetric
+  }
+  individualServiceApiCalls: {
+    // Mapping of node endpoint to TimeSeriesMetric
+    [node: string]: TimeSeriesMetric
+  }
 }
 
 export const initialState: State = {
@@ -47,7 +66,9 @@ export const initialState: State = {
   plays: {},
   topApps: {},
   trailingTopGenres: {},
-  trailingApiCalls: {}
+  trailingApiCalls: {},
+  individualNodeUptime: {},
+  individualServiceApiCalls: {}
 }
 
 type SetApiCalls = { metric: TimeSeriesRecord[] | MetricError; bucket: Bucket }
@@ -62,6 +83,16 @@ type SetTrailingTopGenres = {
   bucket: Bucket
 }
 type SetTrailingApiCalls = { metric: CountRecord | MetricError; bucket: Bucket }
+type SetIndividualNodeUptime = {
+  node: string
+  metric: UptimeRecord | MetricError
+  bucket: Bucket
+}
+type SetIndividualServiceApiCalls = {
+  node: string
+  metric: TimeSeriesRecord[] | MetricError
+  bucket: Bucket
+}
 
 const slice = createSlice({
   name: 'analytics',
@@ -96,6 +127,26 @@ const slice = createSlice({
     ) => {
       const { metric, bucket } = action.payload
       state.trailingApiCalls[bucket] = metric
+    },
+    setIndividualNodeUptime: (
+      state,
+      action: PayloadAction<SetIndividualNodeUptime>
+    ) => {
+      const { node, metric, bucket } = action.payload
+      if (!state.individualNodeUptime[node]) {
+        state.individualNodeUptime[node] = {}
+      }
+      state.individualNodeUptime[node][bucket] = metric
+    },
+    setIndividualServiceApiCalls: (
+      state,
+      action: PayloadAction<SetIndividualServiceApiCalls>
+    ) => {
+      const { node, metric, bucket } = action.payload
+      if (!state.individualServiceApiCalls[node]) {
+        state.individualServiceApiCalls[node] = {}
+      }
+      state.individualServiceApiCalls[node][bucket] = metric
     }
   }
 })
@@ -106,7 +157,9 @@ export const {
   setPlays,
   setTopApps,
   setTrailingTopGenres,
-  setTrailingApiCalls
+  setTrailingApiCalls,
+  setIndividualNodeUptime,
+  setIndividualServiceApiCalls
 } = slice.actions
 
 export default slice.reducer

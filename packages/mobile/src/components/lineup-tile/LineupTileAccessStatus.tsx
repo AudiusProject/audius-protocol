@@ -2,9 +2,12 @@ import { useCallback } from 'react'
 
 import type { ID, PremiumConditions } from '@audius/common'
 import {
+  ModalSource,
   formatPrice,
   isPremiumContentUSDCPurchaseGated,
-  premiumContentSelectors
+  premiumContentActions,
+  premiumContentSelectors,
+  usePremiumContentPurchaseModal
 } from '@audius/common'
 import { TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -19,6 +22,7 @@ import { spacing } from 'app/styles/spacing'
 import { useColor } from 'app/utils/theme'
 
 const { getPremiumTrackStatusMap } = premiumContentSelectors
+const { setLockedContentId } = premiumContentActions
 
 const messages = {
   unlocking: 'Unlocking',
@@ -59,26 +63,28 @@ export const LineupTileAccessStatus = ({
   const styles = useStyles()
   const dispatch = useDispatch()
   const isUSDCEnabled = useIsUSDCEnabled()
+  const { onOpen: openPremiumContentPurchaseModal } =
+    usePremiumContentPurchaseModal()
   const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
   const premiumTrackStatus = premiumTrackStatusMap[trackId]
   const staticWhite = useColor('staticWhite')
   const isUSDCPurchase =
     isUSDCEnabled && isPremiumContentUSDCPurchaseGated(premiumConditions)
 
-  const handlePurchasePress = useCallback(() => {
-    dispatch(
-      setVisibility({
-        drawer: 'PremiumTrackPurchase',
-        visible: true,
-        data: { trackId }
-      })
-    )
-  }, [dispatch, trackId])
+  const handlePress = useCallback(() => {
+    if (isUSDCPurchase) {
+      openPremiumContentPurchaseModal(
+        { contentId: trackId },
+        { source: ModalSource.TrackTile }
+      )
+    } else if (trackId) {
+      dispatch(setLockedContentId({ id: trackId }))
+      dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))
+    }
+  }, [trackId, isUSDCPurchase, openPremiumContentPurchaseModal, dispatch])
 
   return (
-    <TouchableOpacity
-      onPress={isUSDCPurchase ? handlePurchasePress : undefined}
-    >
+    <TouchableOpacity onPress={handlePress}>
       <View style={[styles.root, isUSDCPurchase ? styles.usdcPurchase : null]}>
         {premiumTrackStatus === 'UNLOCKING' ? (
           <LoadingSpinner style={styles.loadingSpinner} fill={staticWhite} />

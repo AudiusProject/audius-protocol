@@ -1,0 +1,145 @@
+.container {
+  position: fixed;
+  z-index: 10000;
+  height: 100vh;
+  width: 100vw;
+  top: 0;
+  left: 0;
+  opacity: 1;
+  transition: all 0.15s ease-in-out;
+}
+
+.container.hide {
+  opacity: 0;
+  z-index: -5;
+}
+
+.backgroundContainer {
+  position: absolute;
+  z-index: 1000;
+  height: calc(100vh + 30px);
+  width: calc(100vw + 30px);
+  margin: -10px;
+  filter: blur(5px);
+  background-size: cover;
+  background-position: 50% 5%;
+}
+
+.background {
+  height: 100%;
+  width: 100%;
+  background-color: rgba(126, 27, 204, 0.5);
+}
+
+.content {
+  background: linear-gradient(119deg, #5200ff 1%, #9e00ff 99%);
+  position: absolute;
+  z-index: 2000;
+  height: 100vh;
+  width: 100vw;
+  padding: 24px;
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.iconContainer {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.iconClose {
+  width: 32px;
+  height: 32px;
+}
+
+.iconClose path {
+  fill: var(--static-white);
+}
+
+.horizontalLogo {
+  width: 132px;
+  margin: 0;
+  filter: brightness(0) invert(1);
+}
+
+.signUpButtonContainer {
+  margin-top: 48px;
+}
+
+.signUpButton {
+  width: 100%;
+  display: block;
+  padding: 13px 0px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+  border-radius: 6px;
+  background-color: #ffffff;
+  box-shadow: 0px 0px 1px -2px rgba(133, 129, 153, 0.1),
+    0px 1px 0px -2px #e3e3e3, 1px 2px 5px rgba(133, 129, 153, 0.25);
+  color: #7e1bcc;
+  border: none;
+  transform: scale3d(1, 1, 1);
+}
+
+@media screen and (min-height: 705px) {
+  .dappLinksContainer {
+    margin-top: 56px;
+    margin-bottom: 132px;
+  }
+}
+
+.dappLinks {
+  height: 100%;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.dappLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.dappLinkIcon {
+  height: 24px;
+  width: 24px;
+}
+
+.dappLinkIcon path {
+  fill: var(--static-white);
+}
+
+.dappLinkIconStroke path {
+  fill: none;
+  stroke: var(--static-white);
+}
+
+.dappLinkText {
+  margin-left: 16px;
+  color: var(--static-white);
+  font-size: 20px;
+  line-height: 20px;
+  font-weight: 700;
+}
+
+.iconsContainer {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+}
+
+.icon {
+  width: 32px;
+  height: 32px;
+}
+
+.icon path {
+  fill: var(--static-white);
+}

@@ -39,7 +39,7 @@ const userApi = createApi({
   endpoints: {
     getUserById: {
       fetch: async (
-        { id, currentUserId }: { id: ID; currentUserId: ID },
+        { id, currentUserId }: { id: ID; currentUserId: Nullable<ID> },
         { apiClient }
       ) => {
         const apiUser = await apiClient.getUser({ userId: id, currentUserId })
@@ -47,6 +47,28 @@ const userApi = createApi({
       },
       options: {
         idArgKey: 'id',
+        kind: Kind.USERS,
+        schemaKey: 'user'
+      }
+    },
+    getUserByHandle: {
+      fetch: async (
+        {
+          handle,
+          currentUserId,
+          retry = true
+        }: { handle: string; currentUserId: Nullable<ID>; retry?: boolean },
+        { apiClient }
+      ) => {
+        const apiUser = await apiClient.getUserByHandle({
+          handle,
+          currentUserId,
+          retry
+        })
+        return apiUser?.[0]
+      },
+      options: {
+        idArgKey: 'handle',
         kind: Kind.USERS,
         schemaKey: 'user'
       }

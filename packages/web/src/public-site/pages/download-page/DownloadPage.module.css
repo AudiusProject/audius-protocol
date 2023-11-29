@@ -1,0 +1,246 @@
+.container {
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+  background: #fff;
+}
+
+.content {
+  margin-top: 90px;
+}
+
+.downloadsSection {
+  margin: 50px 0;
+}
+
+.title,
+.appTitle {
+  color: #7e1bcc;
+  background: linear-gradient(315deg, #5b23e1 2.04%, #a22feb 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 64px;
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 78px;
+}
+
+.isMobile .title {
+  font-size: 48px;
+  line-height: 59px;
+}
+
+.isMobile .appTitle {
+  font-size: 32px;
+  line-height: 39px;
+}
+
+.titleContainer {
+  text-align: center;
+}
+
+.isMobile .titleContainer {
+  margin-right: 24px;
+  margin-left: 24px;
+}
+
+.appTitle {
+  text-align: center;
+  font-size: 55px;
+  line-height: 68px;
+}
+
+.subtitle {
+  margin-top: 8px;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 34px;
+}
+
+.isMobile .subtitle {
+  font-size: 18px;
+  line-height: 34px;
+  margin: 8px auto 0px;
+  max-width: 326px;
+}
+
+.linksContainer {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.isMobile .linksContainer {
+  flex-wrap: wrap-reverse;
+}
+
+.platformHeaderIconContainer {
+  margin-top: 24px;
+  width: 140px;
+  height: 140px;
+  background: linear-gradient(315deg, #5b23e1 0%, #a22feb 100%);
+  padding: 25px;
+  border-radius: 50%;
+  margin-bottom: 20px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.isMobile .platformHeaderIconContainer {
+  width: 80px;
+  height: 80px;
+  padding: 16px;
+}
+
+.isMobile .mobileIcon {
+  height: 44px;
+}
+
+.desktopDownloadsContainer,
+.mobileDownloadsContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.desktopDownloadsContainer {
+  padding-right: 85px;
+  border-right: solid 1px #dad9e0;
+}
+
+.isMobile .desktopDownloadsContainer {
+  border-right: none;
+  padding-top: 44px;
+}
+
+.mobileDownloadsContainer {
+  padding-left: 85px;
+}
+
+@media (max-width: 1180px) {
+  .mobileDownloadsContainer {
+    padding-left: 20px;
+  }
+  .desktopDownloadsContainer {
+    padding-right: 20px;
+  }
+}
+
+.isMobile .desktopDownloadsContainer,
+.isMobile .mobileDownloadsContainer {
+  flex: unset;
+  width: 100%;
+  margin-left: 32px;
+  margin-right: 32px;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.isMobile .mobileDownloadsContainer {
+  padding-bottom: 64px;
+  border-bottom: solid 1px #dad9e0;
+}
+
+.appSubtitle {
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 34px;
+  padding-top: 10px;
+  text-align: center;
+}
+
+.downloadLinks {
+  margin-top: 60px;
+  text-align: center;
+}
+
+.isMobile .downloadLinks {
+  margin-top: 8px;
+  width: 100%;
+}
+
+.downloadLinkWrapper {
+  margin-bottom: 10px;
+  margin-top: 24px;
+  width: 100%;
+}
+
+.isMobile .downloadLinkWrapper {
+  margin-bottom: 8px;
+  margin-top: 0;
+}
+
+.downloadLink {
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-weight: 500;
+  color: #858199;
+  display: inline-block;
+  font-size: 24px;
+  line-height: 24px;
+  transition: all 0.15s ease-in-out;
+  border-bottom: solid 2px transparent;
+}
+
+.downloadLink:hover {
+  color: #858199;
+  transform: scale3d(1.03, 1.03, 1.03);
+}
+
+.downloadLink:active {
+  color: #858199;
+  transform: scale3d(0.99, 0.99, 0.99);
+}
+
+.downloadLink:hover .platformName,
+.downloadLink:active .platformName {
+  color: var(--static-secondary);
+}
+
+.isMobile .downloadLink:hover .platformName,
+.isMobile .downloadLink:active .platformName {
+  color: #fff;
+}
+
+.isMobile .downloadLink {
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 25px;
+  color: #fff;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 8px 25px;
+  background: #7e1bcc;
+  border: 1px solid #f2f2f4;
+  box-shadow: 0px 0px 1px -2px rgba(133, 129, 153, 0.1),
+    0px 1px 0px -2px #e3e3e3, 1px 2px 5px rgba(133, 129, 153, 0.25);
+  border-radius: 6px;
+}
+
+.platformName {
+  font-weight: 800;
+  padding-left: 6px;
+}
+
+.platformIcon {
+  width: 25px;
+  height: 25px;
+  position: relative;
+  top: 4px;
+  margin-right: 6px;
+}
+
+.isMobile .platformIcon {
+  width: 22px;
+  height: 22px;
+}

@@ -2,7 +2,7 @@ import { ReactNode, memo } from 'react'
 
 import cn from 'classnames'
 
-import { ReactComponent as IconTrophy } from 'assets/img/iconTrophy.svg'
+import IconTrophy from 'assets/img/iconTrophy.svg'
 
 import styles from './Badge.module.css'
 

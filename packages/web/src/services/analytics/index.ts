@@ -13,7 +13,7 @@ import * as amplitude from './amplitude'
 import * as segment from './segment'
 const { version } = packageInfo
 
-const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
+const IS_PRODUCTION_BUILD = process.env.VITE_ENVIRONMENT === 'production'
 
 let resolveCallback: Nullable<(value?: any) => void> = null
 let rejectCallback: Nullable<(value?: any) => void> = null

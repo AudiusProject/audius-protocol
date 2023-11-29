@@ -11,8 +11,11 @@ import {
   buyUSDCActions,
   purchaseContentActions,
   purchaseContentSelectors,
-  isContentPurchaseInProgress
+  isContentPurchaseInProgress,
+  usePayExtraPresets
 } from '@audius/common'
+import { USDC } from '@audius/fixed-decimal'
+import { Flex } from '@audius/harmony'
 import { IconCart, ModalContent, ModalFooter, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
 import { Formik, useFormikContext } from 'formik'
@@ -26,8 +29,10 @@ import { Text } from 'components/typography'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import { isMobile } from 'utils/clientUtil'
 import { pushUniqueRoute } from 'utils/route'
+import zIndex from 'utils/zIndex'
 
 import styles from './PremiumContentPurchaseModal.module.css'
+import { AudioMatchSection } from './components/AudioMatchSection'
 import { PurchaseContentFormFields } from './components/PurchaseContentFormFields'
 import { PurchaseContentFormFooter } from './components/PurchaseContentFormFooter'
 import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState'
@@ -95,16 +100,27 @@ const RenderForm = ({
         </Text>
       </ModalHeader>
       <ModalContent className={styles.content}>
-        <>
-          <LockedTrackDetailsTile
-            track={track as unknown as Track}
-            owner={track.user}
+        {stage !== PurchaseContentStage.FINISH ? (
+          <AudioMatchSection
+            amount={USDC(price / 100)
+              .round()
+              .toShorthand()}
           />
-          <PurchaseContentFormFields
-            stage={stage}
-            purchaseSummaryValues={purchaseSummaryValues}
-          />
-        </>
+        ) : null}
+        <Flex p={mobile ? 'l' : 'xl'}>
+          <Flex direction='column' gap='xl' w='100%'>
+            <LockedTrackDetailsTile
+              track={track as unknown as Track}
+              owner={track.user}
+            />
+            <PurchaseContentFormFields
+              stage={stage}
+              purchaseSummaryValues={purchaseSummaryValues}
+              isUnlocking={isUnlocking}
+              price={price}
+            />
+          </Flex>
+        </Flex>
       </ModalContent>
       <ModalFooter className={styles.footer}>
         <PurchaseContentFormFooter
@@ -131,16 +147,23 @@ export const PremiumContentPurchaseModal = () => {
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
+  const presetValues = usePayExtraPresets()
 
   const { data: track } = useGetTrackById(
     { id: trackId! },
     { disabled: !trackId }
   )
 
-  const { initialValues, validationSchema, onSubmit } =
-    usePurchaseContentFormConfiguration({ track })
-
   const isValidTrack = track && isTrackPurchasable(track)
+  const price = isValidTrack
+    ? track?.premium_conditions?.usdc_purchase?.price
+    : 0
+  const { initialValues, validationSchema, onSubmit } =
+    usePurchaseContentFormConfiguration({
+      track,
+      price,
+      presetValues
+    })
 
   // Attempt recovery once on re-mount of the form
   useEffect(() => {
@@ -163,6 +186,7 @@ export const PremiumContentPurchaseModal = () => {
   if (track && !isValidTrack) {
     console.error('PremiumContentPurchaseModal: Track is not purchasable')
   }
+  const mobile = isMobile()
 
   return (
     <ModalDrawer
@@ -173,6 +197,8 @@ export const PremiumContentPurchaseModal = () => {
       isFullscreen
       useGradientTitle={false}
       dismissOnClickOutside
+      zIndex={zIndex.PREMIUM_CONTENT_PURCHASE_MODAL}
+      wrapperClassName={mobile ? styles.mobileWrapper : undefined}
     >
       {isValidTrack ? (
         <Formik

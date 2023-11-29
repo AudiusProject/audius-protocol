@@ -323,6 +323,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.cache_current_nodes",
             "src.tasks.update_aggregates",
             "src.tasks.cache_entity_counts",
+            "src.tasks.publish_scheduled_releases"
         ],
         beat_schedule={
             "aggregate_metrics": {
@@ -433,6 +434,10 @@ def configure_celery(celery, test_config=None):
                 "task": "index_latest_block",
                 "schedule": timedelta(seconds=5),
             },
+            "publish_scheduled_releases": {
+                "task": "publish_scheduled_releases",
+                "schedule": timedelta(minutes=1),
+            },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -490,7 +495,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete(INDEX_REACTIONS_LOCK)
     redis_inst.delete(UPDATE_DELIST_STATUSES_LOCK)
     redis_inst.delete("update_aggregates_lock")
-
+    redis_inst.delete("publish_scheduled_releases")
     # delete cached final_poa_block in case it has changed
     redis_inst.delete(final_poa_block_redis_key)
 
@@ -531,4 +536,4 @@ def configure_celery(celery, test_config=None):
 
     # Start tasks that should fire upon startup
     celery.send_task("cache_entity_counts")
-    celery.send_task("index_nethermind")
+    celery.send_task("index_nethermind", queue="index_nethermind")

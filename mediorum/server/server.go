@@ -5,10 +5,6 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"log"
-	"mediorum/cidutil"
-	"mediorum/crudr"
-	"mediorum/ethcontracts"
-	"mediorum/persistence"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -23,6 +19,10 @@ import (
 	_ "embed"
 	_ "net/http/pprof"
 
+	"github.com/AudiusProject/audius-protocol/mediorum/cidutil"
+	"github.com/AudiusProject/audius-protocol/mediorum/crudr"
+	"github.com/AudiusProject/audius-protocol/mediorum/ethcontracts"
+	"github.com/AudiusProject/audius-protocol/mediorum/persistence"
 	"github.com/erni27/imcache"
 	"github.com/imroc/req/v3"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -261,8 +261,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		isSeeding:       config.Env == "stage" || config.Env == "prod",
 
 		peerHealths:        map[string]*PeerHealth{},
-		redirectCache:      imcache.New[string, string](imcache.WithMaxEntriesOption[string, string](50_000)),
-		uploadOrigCidCache: imcache.New[string, string](imcache.WithMaxEntriesOption[string, string](50_000)),
+		redirectCache:      imcache.New(imcache.WithMaxEntriesOption[string, string](50_000)),
+		uploadOrigCidCache: imcache.New(imcache.WithMaxEntriesOption[string, string](50_000)),
 
 		StartedAt: time.Now().UTC(),
 		Config:    config,
@@ -271,10 +271,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes := echoServer.Group(apiBasePath)
 
 	routes.GET("", func(c echo.Context) error {
-		return c.Redirect(http.StatusMovedPermanently, "/health_check")
+		return c.Redirect(http.StatusFound, "/dashboard/#/services/content-node?endpoint="+config.Self.Host)
 	})
 	routes.GET("/", func(c echo.Context) error {
-		return c.Redirect(http.StatusMovedPermanently, "/health_check")
+		return c.Redirect(http.StatusFound, "/dashboard/#/services/content-node?endpoint="+config.Self.Host)
 	})
 
 	// public: uploads
@@ -325,6 +325,22 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	healthz.Any("*", echo.WrapHandler(healthzProxy))
 
 	// -------------------
+	// reverse proxy /d and /d_api to uptime container
+	uptimeUrl, err := url.Parse("http://uptime:1996")
+	if err != nil {
+		log.Fatal("Invalid uptime URL: ", err)
+	}
+	uptimeProxy := httputil.NewSingleHostReverseProxy(uptimeUrl)
+
+	uptimeAPI := routes.Group("/d_api")
+	// fixes what I think should be considered an echo bug: https://github.com/labstack/echo/issues/1419
+	uptimeAPI.Use(ACAOHeaderOverwriteMiddleware)
+	uptimeAPI.Any("/*", echo.WrapHandler(uptimeProxy))
+
+	uptimeUI := routes.Group("/d")
+	uptimeUI.Any("*", echo.WrapHandler(uptimeProxy))
+
+	// -------------------
 	// internal
 	internalApi := routes.Group("/internal")
 
@@ -351,6 +367,22 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	return ss, nil
 
+}
+
+func setResponseACAOHeaderFromRequest(req http.Request, resp echo.Response) {
+	resp.Header().Set(
+		echo.HeaderAccessControlAllowOrigin,
+		req.Header.Get(echo.HeaderOrigin),
+	)
+}
+
+func ACAOHeaderOverwriteMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		ctx.Response().Before(func() {
+			setResponseACAOHeaderFromRequest(*ctx.Request(), *ctx.Response())
+		})
+		return next(ctx)
+	}
 }
 
 func (ss *MediorumServer) MustStart() {

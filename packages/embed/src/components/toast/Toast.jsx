@@ -1,5 +1,3 @@
-import { h } from 'preact'
-
 import styles from './Toast.module.css'
 
 export const Toast = ({ text }) => {

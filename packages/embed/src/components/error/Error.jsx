@@ -1,5 +1,3 @@
-import { h } from 'preact'
-
 import Button from '../button/Button'
 
 import styles from './Error.module.css'

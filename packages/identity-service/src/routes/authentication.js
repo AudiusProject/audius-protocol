@@ -25,7 +25,7 @@ module.exports = function (app) {
           // Setting the option paranoid to true searches both soft-deleted and non-deleted objects
           // https://sequelize.org/master/manual/paranoid.html
           // https://sequelize.org/master/class/lib/model.js~Model.html#static-method-findAll
-          const existingRecord = await models.Authentication.findOne({
+          let existingRecord = await models.Authentication.findOne({
             where: { lookupKey: body.lookupKey },
             paranoid: false
           })
@@ -40,6 +40,14 @@ module.exports = function (app) {
             )
           } else if (existingRecord.isSoftDeleted()) {
             await existingRecord.restore({ transaction })
+          } else {
+            // old auth artifacts may not be recoverable
+            // restart sign up flow and overwrite existing auth artifacts
+            existingRecord = await existingRecord.update({
+              iv: body.iv,
+              cipherText: body.cipherText,
+              updatedAt: Date.now()
+            })
           }
 
           const oldLookupKey = body.oldLookupKey

@@ -1,6 +1,6 @@
 import cn from 'classnames'
 
-import { ReactComponent as IconPodcastForward } from 'assets/img/iconPodcastForward.svg'
+import IconPodcastForward from 'assets/img/iconPodcastForward.svg'
 
 import styles from '../PlayBarButton.module.css'
 

@@ -7,8 +7,9 @@ import {
 } from '@audius/common'
 import { render } from '@testing-library/react'
 import type { Dispatch } from 'redux'
+import { expect, describe, it, vitest } from 'vitest'
 
-jest.mock('react-redux', () => ({
+vitest.mock('react-redux', () => ({
   useDispatch: () => () => {}
 }))
 
@@ -115,7 +116,7 @@ describe('useImageSize', () => {
       })
 
       it('does not dispatch the action to load the desired size', () => {
-        const action = jest.fn()
+        const action = vitest.fn()
         render(<TestComponent {...props} action={action} />)
         expect(action).not.toHaveBeenCalled()
       })
@@ -138,7 +139,7 @@ describe('useImageSize', () => {
       })
 
       it('dispatches the action to load the desired size', () => {
-        const action = jest.fn()
+        const action = vitest.fn()
         render(<TestComponent {...props} action={action} />)
         expect(action).toHaveBeenCalledWith(1, SquareSizes.SIZE_1000_BY_1000)
       })
@@ -159,7 +160,7 @@ describe('useImageSize', () => {
       })
 
       it('dispatches the action to load the desired size', () => {
-        const action = jest.fn()
+        const action = vitest.fn()
         render(<TestComponent {...props} action={action} />)
         expect(action).toHaveBeenCalledWith(1, SquareSizes.SIZE_1000_BY_1000)
       })
@@ -175,7 +176,7 @@ describe('useImageSize', () => {
       }
 
       it('does not dispatch the action to load the desired size', () => {
-        const action = jest.fn()
+        const action = vitest.fn()
         render(<TestComponent {...props} action={action} />)
         expect(action).not.toHaveBeenCalled()
       })

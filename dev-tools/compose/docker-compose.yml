@@ -18,6 +18,8 @@ x-common: &common
     - 'audius-protocol-creator-node-2:host-gateway'
     - 'audius-protocol-creator-node-3:host-gateway'
     - 'audius-protocol-discovery-provider-1:host-gateway'
+    - 'audius-protocol-discovery-provider-2:host-gateway'
+    - 'audius-protocol-discovery-provider-3:host-gateway'
     - 'audius-protocol-identity-service-1:host-gateway'
     - 'audius-protocol-solana-test-validator-1:host-gateway'
     - 'audius-protocol-eth-ganache-1:host-gateway'
@@ -37,7 +39,7 @@ services:
     <<: *common
 
   db:
-    image: postgres
+    image: postgres:11.4
     shm_size: 2g
     command: postgres -c shared_buffers=2GB
     restart: unless-stopped
@@ -93,7 +95,21 @@ services:
       service: dashboard
     <<: *common
 
+  # Uptime (standalone container used by Discovery and Content)
+
+  uptime:
+    extends:
+      file: docker-compose.uptime.yml
+      service: uptime
+    <<: *common
+
   # Discovery
+
+  discovery-provider-redis:
+    extends:
+      file: docker-compose.discovery.yml
+      service: discovery-provider-redis
+    <<: *common
 
   discovery-provider-notifications:
     extends:
@@ -140,18 +156,24 @@ services:
       service: relay
     <<: *common
 
+  solana-relay:
+    extends:
+      file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: solana-relay
+    <<: *common
+
   sla-auditor:
     extends:
       file: docker-compose.pedalboard.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
       service: sla-auditor
     <<: *common
 
-  # Storage v2
+  # Storage (content node)
 
   mediorum:
     extends:
-      file: docker-compose.storagev2.yml
-      service: storagev2
+      file: docker-compose.storage.${MEDIORUM_ENV_TYPE:-${DOCKERCOMPOSE_ENV_TYPE:-dev}}.yml
+      service: storage
     container_name: audius-protocol-mediorum
     <<: *common
 

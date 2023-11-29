@@ -391,6 +391,14 @@ def copy_record(
     return record_copy
 
 
+# Resets all context fields attached to last processed event.
+def reset_entity_manager_event_tx_context(logger: StructuredLogger, eventArgs: dict):
+    logger.update_context(eventArgs)
+    logger.reset_context_key("isApp")
+    logger.reset_context_key("appName")
+    logger.reset_context_key("userHandle")
+
+
 def validate_signer(params: ManageEntityParameters):
     # Ensure the signer is either the user or authorized to perform action for the user
     if params.user_id not in params.existing_records["User"]:

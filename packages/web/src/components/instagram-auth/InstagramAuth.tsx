@@ -1,15 +1,14 @@
 import { MouseEvent, ReactNode, useCallback } from 'react'
 
-import * as Sentry from '@sentry/browser'
+import { captureException } from '@sentry/browser'
 import cn from 'classnames'
 
 import 'url-search-params-polyfill'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 
-const HOSTNAME = process.env.REACT_APP_PUBLIC_HOSTNAME
-const INSTAGRAM_APP_ID = process.env.REACT_APP_INSTAGRAM_APP_ID
-const INSTAGRAM_REDIRECT_URL =
-  process.env.REACT_APP_INSTAGRAM_REDIRECT_URL || ''
+const HOSTNAME = process.env.VITE_PUBLIC_HOSTNAME
+const INSTAGRAM_APP_ID = process.env.VITE_INSTAGRAM_APP_ID
+const INSTAGRAM_REDIRECT_URL = process.env.VITE_INSTAGRAM_REDIRECT_URL || ''
 const INSTAGRAM_AUTHORIZE_URL = `https://api.instagram.com/oauth/authorize?client_id=${INSTAGRAM_APP_ID}&redirect_uri=${encodeURIComponent(
   INSTAGRAM_REDIRECT_URL
 )}&scope=user_profile,user_media&response_type=code`
@@ -91,7 +90,7 @@ const InstagramAuth = ({
       } catch (err) {
         console.error(err)
         onFailure((err as Error).message)
-        Sentry.captureException(`Instagram getProfile failed with ${err}`)
+        captureException(`Instagram getProfile failed with ${err}`)
       }
     },
     [onSuccess, onFailure]
@@ -175,7 +174,8 @@ const InstagramAuth = ({
   const getDefaultButtonContent = useCallback(() => <span>{text}</span>, [text])
 
   return (
-    <div
+    <span
+      role='button'
       onClick={handleClick}
       style={style}
       className={cn({
@@ -184,7 +184,7 @@ const InstagramAuth = ({
       })}
     >
       {children || getDefaultButtonContent()}
-    </div>
+    </span>
   )
 }
 

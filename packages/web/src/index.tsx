@@ -1,19 +1,12 @@
 import 'setimmediate'
-import { Buffer } from 'buffer'
 
-import process from 'process/browser'
 import { createRoot } from 'react-dom/client'
 
 import './index.css'
-
-// Import CSS first so it's resolved in the right order.
-// Unsure why importing this component first would change that, but it appears to
-// when running in dev mode.
-import Root from './root'
+import { Root } from './Root'
 
 // @ts-ignore
-window.Buffer = Buffer
-window.process = process
+window.global ||= window
 
 const container = document.getElementById('root')
 if (container) {

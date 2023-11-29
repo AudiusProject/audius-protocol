@@ -1,9 +1,13 @@
 when: << pipeline.parameters.run-web-workflow >>
 jobs:
-  - web-init
+  - web-init:
+      context:
+        - Vercel
 
   # Cut a demo if not main
   - web-build-demo:
+      context:
+        - Vercel
       requires:
         - web-init
       filters:
@@ -19,9 +23,13 @@ jobs:
 
   # Build
   - web-build-staging:
+      context:
+        - Vercel
       requires:
         - web-init
   - web-build-production:
+      context:
+        - Vercel
       requires:
         - web-init
       filters:
@@ -42,7 +50,9 @@ jobs:
           only: /^main$/
 
   - web-deploy-staging-cloudflare:
-      context: Audius Client
+      context:
+        - Audius Client
+        - slack-secrets
       requires:
         - web-build-staging
       filters:
@@ -83,7 +93,9 @@ jobs:
         branches:
           only: /(^release.*)$/
   - web-deploy-production-cloudflare:
-      context: Audius Client
+      context:
+        - Audius Client
+        - slack-secrets
       requires:
         - web-hold-production
       filters:
@@ -104,6 +116,7 @@ jobs:
       context:
         - Audius Client
         - Vercel
+        - slack-secrets
       requires:
         - web-build-staging
       filters:
@@ -113,6 +126,7 @@ jobs:
       context:
         - Audius Client
         - Vercel
+        - slack-secrets
       requires:
         - web-build-staging
       filters:
@@ -122,6 +136,7 @@ jobs:
       context:
         - Audius Client
         - Vercel
+        - slack-secrets
       requires:
         - web-build-staging
       filters:
@@ -140,6 +155,7 @@ jobs:
       context:
         - Audius Client
         - Vercel
+        - slack-secrets
       requires:
         - web-hold-dist-mac-production
       filters:
@@ -156,6 +172,7 @@ jobs:
       context:
         - Audius Client
         - Vercel
+        - slack-secrets
       requires:
         - web-hold-dist-win-production
       filters:
@@ -172,6 +189,7 @@ jobs:
       context:
         - Audius Client
         - Vercel
+        - slack-secrets
       requires:
         - web-hold-dist-linux-production
       filters:

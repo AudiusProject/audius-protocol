@@ -1,5 +1,3 @@
-import { h } from 'preact'
-
 import AudiusLogoHorizontal from '../../assets/img/audiusLogoHorizontal.svg'
 import { getCopyableLink } from '../../util/shareUtil'
 

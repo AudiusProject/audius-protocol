@@ -1,21 +1,21 @@
 import type { Meta, StoryObj } from '@storybook/react'
 
-import { Text } from '../../typography/Text'
+import { Text } from '../../text/Text'
 import { Flex } from '../Flex'
 
 import { Divider } from './Divider'
 
 const meta: Meta<typeof Divider> = {
-  title: 'Components/Layout/Divider',
+  title: 'Layout/Divider',
   component: Divider,
   render: () => (
     <Flex border='strong' borderRadius='m' p='l' gap='m'>
       <Text variant='label'>Label A</Text>
-      <Divider />
+      <Divider orientation='vertical' />
       <Text variant='label'>Label B</Text>
-      <Divider />
+      <Divider orientation='vertical' />
       <Text variant='label'>Label C</Text>
-      <Divider />
+      <Divider orientation='vertical' />
       <Text variant='label'>Label D</Text>
     </Flex>
   )
@@ -37,11 +37,11 @@ export const Vertical: Story = {
       gap='m'
     >
       <Text variant='label'>Label A</Text>
-      <Divider />
+      <Divider orientation='vertical' />
       <Text variant='label'>Label B</Text>
-      <Divider />
+      <Divider orientation='vertical' />
       <Text variant='label'>Label C</Text>
-      <Divider />
+      <Divider orientation='vertical' />
       <Text variant='label'>Label D</Text>
     </Flex>
   )
@@ -58,5 +58,13 @@ export const Horizontal: Story = {
       <Divider />
       <Text variant='label'>Label D</Text>
     </Flex>
+  )
+}
+
+export const WithText: Story = {
+  render: () => (
+    <Divider>
+      <Text color='subdued'>Text</Text>
+    </Divider>
   )
 }

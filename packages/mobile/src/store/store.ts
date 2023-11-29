@@ -6,6 +6,7 @@ import {
   reducers as commonReducers,
   chatMiddleware
 } from '@audius/common'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import backend from 'audius-client/src/common/store/backend/reducer'
 import type { BackendState } from 'audius-client/src/common/store/backend/types'
 import searchBar from 'audius-client/src/common/store/search-bar/reducer'
@@ -35,6 +36,8 @@ import type { OAuthState } from './oauth/reducer'
 import oauth from './oauth/reducer'
 import type { OfflineDownloadsState } from './offline-downloads/slice'
 import offlineDownloads from './offline-downloads/slice'
+import type { PurchaseVendorState } from './purchase-vendor/slice'
+import purchaseVendor from './purchase-vendor/slice'
 import rootSaga from './sagas'
 import type { SearchState } from './search/searchSlice'
 import search from './search/searchSlice'
@@ -63,6 +66,7 @@ export type AppState = CommonState & {
   search: SearchState
   walletConnect: WalletConnectState
   shareToStoryProgress: ShareToStoryProgressState
+  purchaseVendor: PurchaseVendorState
 }
 
 const messages = {
@@ -105,7 +109,7 @@ const onSagaError = (
   }
 }
 
-const commonStoreReducers = commonReducers()
+const commonStoreReducers = commonReducers(AsyncStorage)
 
 const rootReducer = combineReducers({
   ...commonStoreReducers,
@@ -122,7 +126,8 @@ const rootReducer = combineReducers({
   remoteConfig,
   search,
   walletConnect,
-  shareToStoryProgress
+  shareToStoryProgress,
+  purchaseVendor
 })
 
 const sagaMiddleware = createSagaMiddleware({

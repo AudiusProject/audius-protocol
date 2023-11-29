@@ -6,7 +6,7 @@ import {
   SupporterRankUpNotification
 } from '@audius/common'
 
-import { ReactComponent as IconTrending } from 'assets/img/iconTrending.svg'
+import IconTrending from 'assets/img/iconTrending.svg'
 import { make } from 'common/store/analytics/actions'
 import { useSelector } from 'utils/reducer'
 

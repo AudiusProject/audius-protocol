@@ -56,6 +56,7 @@ export const createAllImageSources = ({
   cidMap?: Nullable<{ [key: string]: string }>
 }) => {
   if (!cid || !endpoints) {
+    if (localSource) return [localSource]
     return []
   }
   let cidForSize: Nullable<string> = null
@@ -156,8 +157,8 @@ export const useContentNodeImage = (
   }, [imageSourceIndex, imageSources])
 
   const showFallbackImage = useMemo(() => {
-    return !cid || failedToLoad
-  }, [failedToLoad, cid])
+    return (!cid && !localSource) || failedToLoad
+  }, [failedToLoad, localSource, cid])
 
   const source = useMemo(() => {
     if (showFallbackImage) {

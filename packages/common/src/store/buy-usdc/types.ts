@@ -18,3 +18,16 @@ export enum BuyUSDCStage {
   CANCELED = 'CANCELED',
   FINISH = 'FINISH'
 }
+
+export enum BuyUSDCErrorCode {
+  MinAmountNotMet = 'MinAmountNotMet',
+  MaxAmountExceeded = 'MaxAmountExceeded',
+  OnrampError = 'OnrampError',
+  CountryNotSupported = 'CountryNotSupported'
+}
+
+export class BuyUSDCError extends Error {
+  constructor(public code: BuyUSDCErrorCode, message: string) {
+    super(message)
+  }
+}

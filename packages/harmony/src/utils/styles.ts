@@ -6,6 +6,5 @@ import { kebabCase } from 'lodash'
  * property set via `style`
  */
 export const toCSSVariableName = (name: string) => {
-  // TODO: support harmony variable names (prefix harmony?)
   return `--harmony-${kebabCase(name)}`
 }

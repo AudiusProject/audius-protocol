@@ -8,7 +8,7 @@ import {
 import { IconHidden, IconPencil } from '@audius/stems'
 import cn from 'classnames'
 
-import { ReactComponent as IconFilter } from 'assets/img/iconFilter.svg'
+import IconFilter from 'assets/img/iconFilter.svg'
 import { Input } from 'components/input'
 import { UserLink } from 'components/link'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'

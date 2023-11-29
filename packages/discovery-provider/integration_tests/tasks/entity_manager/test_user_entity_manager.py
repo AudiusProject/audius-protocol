@@ -379,7 +379,7 @@ def test_index_valid_user(app, mocker):
                 "track_id": TRACK_ID_OFFSET,
                 "title": "track 1",
                 "owner_id": USER_ID_OFFSET,
-                "release_date": "Fri Dec 20 2019 12:00:00 GMT-0800",
+                "release_date": datetime(2019, 12, 20),
                 "created_at": datetime(2018, 5, 17),
             }
         ],
@@ -604,11 +604,30 @@ def test_index_invalid_users(app, mocker):
         "QmInvalidArtistPick": {
             "artist_pick_track_id": TRACK_ID_OFFSET + 1,
         },
+        "QmInvalidVerified": {
+            "is_verified": True,
+            "is_deactivated": False,
+            "name": "verified name",
+            "handle": "verifiedhandle",
+            "profile_picture": None,
+            "profile_picture_sizes": "QmYRHAJ4YuLjT4fLLRMg5STnQA4yDpiBmzk5R3iCDTmkmk",
+            "cover_photo": None,
+            "cover_photo_sizes": "QmUk61QDUTzhNqjnCAWipSp3jnMmXBmtTUC2mtF5F6VvUy",
+            "bio": "ðŸŒžðŸ‘„ðŸŒž",
+            "location": "verified location",
+            "creator_node_endpoint": "https://creatornode2.audius.co,https://creatornode3.audius.co,https://content-node.audius.co",
+            "associated_wallets": None,
+            "associated_sol_wallets": None,
+            "playlist_library": {"contents": []},
+            "events": {"is_mobile_user": True},
+            "user_id": USER_ID_OFFSET + 1,
+        },
     }
 
     create_user1_json = json.dumps(test_metadata["QmCreateUser1"])
     invalid_update_user_json = json.dumps(test_metadata["QmInvalidUserMetadataFields"])
     invalid_update_artist_pick_json = json.dumps(test_metadata["QmInvalidArtistPick"])
+    invalid_verified_user = json.dumps(test_metadata["QmInvalidVerified"])
 
     tx_receipts = {
         # invalid create
@@ -621,6 +640,20 @@ def test_index_invalid_users(app, mocker):
                         "_userId": 1,
                         "_action": "Create",
                         "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreateUserInvalidVerified": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET + 1,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET + 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmUpdateUser2", "data": {invalid_verified_user}}}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -805,7 +838,7 @@ def test_index_invalid_users(app, mocker):
                 "track_id": TRACK_ID_OFFSET,
                 "title": "track 1",
                 "owner_id": USER_ID_OFFSET,
-                "release_date": "Fri Dec 20 2019 12:00:00 GMT-0800",
+                "release_date": datetime(2019, 12, 20),
                 "created_at": datetime(2018, 5, 17),
             }
         ],
@@ -827,13 +860,18 @@ def test_index_invalid_users(app, mocker):
 
         # validate db records
         all_users: List[User] = session.query(User).filter(User.is_current).all()
-        assert len(all_users) == 2  # no new users indexed
+        assert len(all_users) == 3
 
         existing_user_after_index: List[User] = (
             session.query(User).filter(User.user_id == 1).first()
         )
 
         assert existing_user == existing_user_after_index
+
+        invalid_verified_user: List[User] = (
+            session.query(User).filter(User.user_id == USER_ID_OFFSET + 1).first()
+        )
+        assert invalid_verified_user.is_verified == False  # ignored invalid metadata
 
 
 def test_index_verify_users(app, mocker):

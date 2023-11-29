@@ -12,10 +12,6 @@ import {
   LineupTrack
 } from '../../../models'
 
-export const LIBRARY_TRACKS_CATEGORY_LS_KEY = 'libraryTracksCategory'
-
-export const LIBRARY_COLLECTIONS_CATEGORY_LS_KEY = 'libraryCollectionsCategory'
-
 export const LibraryCategory = full.GetUserLibraryTracksTypeEnum
 export type LibraryCategoryType = ValueOf<typeof LibraryCategory>
 
