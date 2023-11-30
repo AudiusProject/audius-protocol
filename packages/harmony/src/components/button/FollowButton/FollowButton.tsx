@@ -111,7 +111,6 @@ export const FollowButton = (props: FollowButtonProps) => {
     minWidth: size === 'small' ? 128 : 152,
     width: '100%',
     userSelect: 'none',
-    // border: `1px solid ${color.primary.primary}`,
     borderRadius: variant === 'pill' ? cornerRadius['2xl'] : cornerRadius.s,
     background: isPressing
       ? color.primary.p500
