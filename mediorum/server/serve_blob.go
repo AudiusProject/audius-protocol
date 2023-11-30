@@ -233,25 +233,20 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 	return c.String(404, "blob not found")
 }
 
-func (ss *MediorumServer) recordMetric(action MetricAction) {
+func (ss *MediorumServer) recordMetric(action string) {
 	today := time.Now().UTC().Truncate(24 * time.Hour)
 	firstOfMonth := time.Date(today.Year(), today.Month(), 1, 0, 0, 0, 0, time.UTC)
 
 	// Increment daily metric
 	err := ss.crud.DB.Transaction(func(tx *gorm.DB) error {
 		var metric DailyMetrics
-
 		if err := tx.FirstOrCreate(&metric, DailyMetrics{
 			Timestamp: today,
 			Action:    action,
 		}).Error; err != nil {
 			return err
 		}
-
-		// Increment the count
 		metric.Count += 1
-
-		// Save the updated record
 		if err := tx.Save(&metric).Error; err != nil {
 			return err
 		}
@@ -266,18 +261,13 @@ func (ss *MediorumServer) recordMetric(action MetricAction) {
 	// Increment monthly metric
 	err = ss.crud.DB.Transaction(func(tx *gorm.DB) error {
 		var metric MonthlyMetrics
-
 		if err := tx.FirstOrCreate(&metric, MonthlyMetrics{
 			Timestamp: firstOfMonth,
 			Action:    action,
 		}).Error; err != nil {
 			return err
 		}
-
-		// Increment the count
 		metric.Count += 1
-
-		// Save the updated record
 		if err := tx.Save(&metric).Error; err != nil {
 			return err
 		}

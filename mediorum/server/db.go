@@ -40,25 +40,24 @@ type Upload struct {
 	// UpldateULID - this is the last ULID that change this thing
 }
 
-type MetricAction string
-
+// Metric actions
 const (
-	TrackStream MetricAction = "TRACK_STREAM"
-	ServeImage  MetricAction = "SERVE_IMAGE"
+	TrackStream string = "track_stream"
+	ServeImage  string = "serve_image"
 )
 
 type DailyMetrics struct {
-	Timestamp time.Time    `gorm:"primaryKey"`
-	Action    MetricAction `gorm:"type:enum('TRACK_STREAM', 'SERVE_IMAGE');primaryKey"`
-	Count     int64        `gorm:"not null"`
-	CreatedAt time.Time    `json:"created_at" gorm:"not null"`
+	Timestamp time.Time `gorm:"primaryKey"`
+	Action    string    `gorm:"primaryKey"`
+	Count     int64     `gorm:"not null"`
+	CreatedAt time.Time `json:"created_at" gorm:"not null"`
 }
 
 type MonthlyMetrics struct {
-	Timestamp time.Time    `gorm:"primaryKey"`
-	Action    MetricAction `gorm:"type:enum('TRACK_STREAM', 'SERVE_IMAGE');primaryKey"`
-	Count     int64        `gorm:"not null"`
-	CreatedAt time.Time    `json:"created_at" gorm:"not null"`
+	Timestamp time.Time `gorm:"primaryKey"`
+	Action    string    `gorm:"primaryKey"`
+	Count     int64     `gorm:"not null"`
+	CreatedAt time.Time `json:"created_at" gorm:"not null"`
 }
 
 type UploadCursor struct {

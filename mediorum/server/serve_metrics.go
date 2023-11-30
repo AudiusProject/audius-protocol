@@ -33,7 +33,7 @@ var (
 		"month":    {"day", "week"},
 		"all_time": {"month", "week"},
 	}
-	validBlobMetricActions = []string{"track_stream", "serve_image", "all"}
+	validBlobMetricActions = []string{TrackStream, ServeImage, "all"}
 )
 
 func (ss *MediorumServer) getMetrics(c echo.Context) error {
@@ -72,7 +72,7 @@ func (ss *MediorumServer) getBlobsServedMetrics(c echo.Context) error {
 				Model(&DailyMetrics{}).
 				Where("timestamp >= ? AND timestamp < ?", sevenDaysAgo, today)
 			if action != "" && action != "all" {
-				query = query.Select("timestamp, count").Where("action = ?", strings.ToUpper(action))
+				query = query.Select("timestamp, count").Where("action = ?", action)
 			} else {
 				// sum counts from all actions together
 				query = query.Select("timestamp, sum(count) as count").Group("timestamp")
@@ -95,7 +95,7 @@ func (ss *MediorumServer) getBlobsServedMetrics(c echo.Context) error {
 				Model(&DailyMetrics{}).
 				Where("timestamp >= ? AND timestamp < ?", thirtyDaysAgo, today)
 			if action != "" && action != "all" {
-				query = query.Select("timestamp, count").Where("action = ?", strings.ToUpper(action))
+				query = query.Select("timestamp, count").Where("action = ?", action)
 			} else {
 				// sum counts from all actions together
 				query = query.Select("timestamp, sum(count) as count").Group("timestamp")
@@ -110,7 +110,7 @@ func (ss *MediorumServer) getBlobsServedMetrics(c echo.Context) error {
 			m.Data = metrics
 		} else if bucket == "week" {
 			var metrics []BlobMetric
-			groupBy := `date(timestamp, 'weekday 1', '-7 days')`
+			groupBy := `date_trunc('week', timestamp)`
 			query := ss.crud.DB.
 				Model(&DailyMetrics{}).
 				Select(groupBy+` as timestamp, sum(count) as count`).
@@ -118,7 +118,7 @@ func (ss *MediorumServer) getBlobsServedMetrics(c echo.Context) error {
 				Group(groupBy)
 
 			if action != "all" {
-				query = query.Where("action = ?", strings.ToUpper(action))
+				query = query.Where("action = ?", action)
 			}
 			err := query.Order("timestamp asc").Find(&metrics).Error
 			if err != nil {
@@ -138,7 +138,7 @@ func (ss *MediorumServer) getBlobsServedMetrics(c echo.Context) error {
 				Model(&MonthlyMetrics{}).
 				Where("timestamp < ?", firstOfMonth)
 			if action != "" && action != "all" {
-				query = query.Select("timestamp, count").Where("action = ?", strings.ToUpper(action))
+				query = query.Select("timestamp, count").Where("action = ?", action)
 			} else {
 				// sum counts from all actions together
 				query = query.Select("timestamp, sum(count) as count").Group("timestamp")
@@ -153,7 +153,7 @@ func (ss *MediorumServer) getBlobsServedMetrics(c echo.Context) error {
 			m.Data = metrics
 		} else if bucket == "week" {
 			var metrics []BlobMetric
-			groupBy := `date(timestamp, 'weekday 1', '-7 days')`
+			groupBy := `date_trunc('week', timestamp)`
 			query := ss.crud.DB.
 				Model(&DailyMetrics{}).
 				Select(groupBy+` as timestamp, sum(count) as count`).
@@ -161,7 +161,7 @@ func (ss *MediorumServer) getBlobsServedMetrics(c echo.Context) error {
 				Group(groupBy)
 
 			if action != "all" {
-				query = query.Where("action = ?", strings.ToUpper(action))
+				query = query.Where("action = ?", action)
 			}
 			err := query.Order("timestamp asc").Find(&metrics).Error
 			if err != nil {
