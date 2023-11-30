@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Dict, List, Union
 
 from sqlalchemy import desc
@@ -218,17 +218,27 @@ def parse_release_date(release_date_str):
         return None
 
     try:
-        return str(datetime.strptime(release_date_str, "%a %b %d %Y %H:%M:%S GMT%z").astimezone(timezone.utc))
+        return str(
+            datetime.strptime(
+                release_date_str, "%a %b %d %Y %H:%M:%S GMT%z"
+            ).astimezone(timezone.utc)
+        )
     except ValueError:
         pass
 
     try:
-        return str(datetime.strptime(release_date_str, "%Y-%m-%dT%H:%M:%S.%fZ").astimezone(timezone.utc))
+        return str(
+            datetime.strptime(release_date_str, "%Y-%m-%dT%H:%M:%S.%fZ").astimezone(
+                timezone.utc
+            )
+        )
     except ValueError:
         pass
 
     try:
-        return str(datetime.fromtimestamp(int(release_date_str)).astimezone(timezone.utc))
+        return str(
+            datetime.fromtimestamp(int(release_date_str)).astimezone(timezone.utc)
+        )
     except (ValueError, TypeError):
         pass
 
@@ -276,11 +286,20 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                     track_metadata["title"], handle
                 )
 
-        elif key == "release_date":
+        elif key == "release_date" or key == "is_unlisted":
             if "release_date" in track_metadata:
                 # casting to string because datetime doesn't work for some reason
                 # postgres will convert to a timestamp
                 track_record.release_date = parse_release_date(track_metadata["release_date"])  # type: ignore
+
+            # release date takes precedence over is_unlisted metadata
+            track_record.is_unlisted = (
+                True
+                if track_record.release_date
+                and track_record.release_date > track_record.created_at
+                else track_metadata.get("is_unlisted", track_record.is_unlisted)
+            )
+
         else:
             # For most fields, update the track_record when the corresponding field exists
             # in track_metadata
