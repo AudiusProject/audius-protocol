@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Union
 
 from sqlalchemy import desc
@@ -218,17 +218,17 @@ def parse_release_date(release_date_str):
         return None
 
     try:
-        return str(datetime.strptime(release_date_str, "%a %b %d %Y %H:%M:%S GMT%z"))
+        return str(datetime.strptime(release_date_str, "%a %b %d %Y %H:%M:%S GMT%z").astimezone(timezone.utc))
     except ValueError:
         pass
 
     try:
-        return str(datetime.strptime(release_date_str, "%Y-%m-%dT%H:%M:%S.%fZ"))
+        return str(datetime.strptime(release_date_str, "%Y-%m-%dT%H:%M:%S.%fZ").astimezone(timezone.utc))
     except ValueError:
         pass
 
     try:
-        return str(datetime.fromtimestamp(int(release_date_str)))
+        return str(datetime.fromtimestamp(int(release_date_str)).astimezone(timezone.utc))
     except (ValueError, TypeError):
         pass
 
