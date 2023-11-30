@@ -169,7 +169,7 @@ export const GiantTrackTile = ({
   trackTitle,
   userId
 }: GiantTrackTileProps) => {
-  const [artworkLoading, setArtworkLoading] = useState(true)
+  const [artworkLoading, setArtworkLoading] = useState(false)
   const onArtworkLoad = useCallback(
     () => setArtworkLoading(false),
     [setArtworkLoading]
@@ -495,14 +495,12 @@ export const GiantTrackTile = ({
       elevation='mid'
     >
       <div className={styles.topSection}>
-        <ClientOnly>
-          <GiantArtwork
-            trackId={trackId}
-            coverArtSizes={coverArtSizes}
-            coSign={coSign}
-            callback={onArtworkLoad}
-          />
-        </ClientOnly>
+        <GiantArtwork
+          trackId={trackId}
+          coverArtSizes={coverArtSizes}
+          coSign={coSign}
+          callback={onArtworkLoad}
+        />
         <div className={styles.infoSection}>
           <div className={styles.infoSectionHeader}>
             {renderCardTitle(cn(fadeIn))}

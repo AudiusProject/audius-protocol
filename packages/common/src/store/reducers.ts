@@ -1,6 +1,8 @@
 import { combineReducers } from 'redux'
 import type { Storage } from 'redux-persist'
 
+import { SsrPageProps } from 'models/SsrPageProps'
+
 import apiReducer from '../api/reducer'
 import { Kind } from '../models'
 
@@ -136,7 +138,7 @@ import wallet from './wallet/slice'
  * A function that creates common reducers.
  * @returns an object of all reducers to be used with `combineReducers`
  */
-export const reducers = (storage: Storage) => ({
+export const reducers = (storage: Storage, ssrPageProps?: SsrPageProps) => ({
   account,
 
   api: apiReducer,
@@ -154,10 +156,10 @@ export const reducers = (storage: Storage) => ({
   collections: asCache(collectionsReducer, Kind.COLLECTIONS),
   // TODO: Fix type error
   // @ts-ignore
-  tracks: asCache(tracksReducer, Kind.TRACKS),
+  tracks: asCache(tracksReducer(ssrPageProps), Kind.TRACKS),
   // TODO: Fix type error
   // @ts-ignore
-  users: asCache(usersReducer, Kind.USERS),
+  users: asCache(usersReducer(ssrPageProps), Kind.USERS),
 
   savedCollections: savedCollectionsReducer,
 
@@ -236,7 +238,7 @@ export const reducers = (storage: Storage) => ({
     savedPage: persistedSavePageReducer(storage),
     searchResults,
     tokenDashboard: tokenDashboardSlice.reducer,
-    track,
+    track: track(ssrPageProps),
     trending,
     trendingPlaylists,
     trendingUnderground,

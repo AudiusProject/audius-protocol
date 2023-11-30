@@ -25,7 +25,8 @@ module.exports = {
           ['types', './src/types'],
           ['utils', './src/utils'],
           ['workers', './src/workers'],
-          ['pages', './src/pages']
+          ['pages', './src/pages'],
+          ['ssr', './src/ssr']
         ],
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.json']
       }

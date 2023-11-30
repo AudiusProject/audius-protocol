@@ -1,10 +1,11 @@
 import { createContext, memo, useContext } from 'react'
 
-import { Nullable } from '@audius/common'
+import { Nullable, SsrPageProps } from '@audius/common'
 
-type SsrContextType = {
+export type SsrContextType = {
   path: Nullable<string>
   isServerSide: boolean
+  pageProps: SsrPageProps
 }
 
 export const useSsrContext = () => {
@@ -13,7 +14,8 @@ export const useSsrContext = () => {
 
 export const SsrContext = createContext({
   path: null,
-  isServerSide: true
+  isServerSide: true,
+  pageProps: {}
 } as SsrContextType)
 
 export const SsrContextProvider = memo(

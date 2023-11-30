@@ -1,9 +1,12 @@
 // @ts-nocheck
 // TODO(nkang) - convert to TS
+
+import { SsrPageProps } from 'models/SsrPageProps'
 import { asLineup } from 'store/lineup/reducer'
 import tracksReducer, {
   initialState as initialLineupState
 } from 'store/pages/track/lineup/reducer'
+import { decodeHashId } from 'utils/hashIds'
 
 import {
   SET_TRACK_ID,
@@ -71,7 +74,23 @@ const actionsMap = {
 
 const tracksLineupReducer = asLineup(tracksPrefix, tracksReducer)
 
-const reducer = (state = initialState, action) => {
+const buildInitialState = (ssrPageProps?: SsrPageProps) => {
+  // If we have preloaded data from the server, populate the initial
+  // cache state with it
+  if (ssrPageProps?.track) {
+    return {
+      ...initialState,
+      trackId: decodeHashId(ssrPageProps.track.id)
+    }
+  }
+  return initialState
+}
+
+const reducer = (ssrPageProps?: SsrPageProps) => (state, action) => {
+  if (!state) {
+    state = buildInitialState(ssrPageProps)
+  }
+
   const tracks = tracksLineupReducer(state.tracks, action)
   if (tracks !== state.tracks) return { ...state, tracks }
 

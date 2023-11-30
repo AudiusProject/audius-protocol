@@ -86,7 +86,8 @@ export function* retrieveTrackByHandleAndSlug({
       idField: 'track_id',
       forceRetrieveFromSource,
       shouldSetLoading: true,
-      deleteExistingEntry: false,
+      // TODO: only deleteExistingEntry on initial page load
+      deleteExistingEntry: true,
       getEntriesTimestamp: function* (ids: ID[]) {
         const selected = yield* select(
           (state: CommonState, ids: ID[]) =>

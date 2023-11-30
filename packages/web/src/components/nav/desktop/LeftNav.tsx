@@ -19,6 +19,7 @@ import { Dispatch } from 'redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import * as signOnActions from 'common/store/pages/signon/actions'
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
 import ConnectedProfileCompletionPane from 'components/profile-progress/ConnectedProfileCompletionPane'
 import { selectDraggingKind } from 'store/dragndrop/slice'
@@ -189,11 +190,13 @@ const LeftNav = (props: NavColumnProps) => {
           </DragAutoscroller>
         </Scrollbar>
       </div>
-      <div className={styles.navAnchor}>
-        {profileCompletionMeter}
-        <NavButton />
-        <NowPlayingArtworkTile />
-      </div>
+      <ClientOnly>
+        <div className={styles.navAnchor}>
+          {profileCompletionMeter}
+          <NavButton />
+          <NowPlayingArtworkTile />
+        </div>
+      </ClientOnly>
     </nav>
   )
 }

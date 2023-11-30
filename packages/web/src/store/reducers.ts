@@ -1,7 +1,8 @@
 import {
   queueReducer as queue,
   remoteConfigReducer as remoteConfig,
-  reducers as clientStoreReducers
+  reducers as clientStoreReducers,
+  SsrPageProps
 } from '@audius/common'
 import { connectRouter } from 'connected-react-router'
 import { History } from 'history'
@@ -29,10 +30,13 @@ import userListModal from 'store/application/ui/userListModal/slice'
 import dragndrop from 'store/dragndrop/slice'
 import error from 'store/errors/reducers'
 
-export const commonStoreReducers = clientStoreReducers(localForage)
+const createRootReducer = (
+  routeHistory: History,
+  ssrPageProps?: SsrPageProps
+) => {
+  const commonStoreReducers = clientStoreReducers(localForage, ssrPageProps)
 
-const createRootReducer = (routeHistory: History) =>
-  combineReducers({
+  return combineReducers({
     // Common store
     ...commonStoreReducers,
     // These also belong in common store reducers but are here until we move them to the @audius/common package.
@@ -82,5 +86,6 @@ const createRootReducer = (routeHistory: History) =>
       })
     })
   })
+}
 
 export default createRootReducer

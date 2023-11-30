@@ -194,7 +194,6 @@ const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
 const ConnectedMusicConfetti = lazy(() =>
   import('components/music-confetti/ConnectedMusicConfetti')
 )
-
 const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 
 const UploadPage = lazy(() => import('pages/upload-page'))
@@ -970,14 +969,11 @@ class WebPlayer extends Component {
           </div>
           <PlayBarProvider />
           <ClientOnly>
-            <Suspense fallback={null}>
-              <Modals />
-            </Suspense>
+            <Modals />
             <ConnectedMusicConfetti />
           </ClientOnly>
-          <Suspense fallback={null}>
-            <RewardClaimedToast />
-          </Suspense>
+
+          <RewardClaimedToast />
           {/* Non-mobile */}
           {!isMobileClient ? <Konami /> : null}
           {!isMobileClient ? <Visualizer /> : null}

@@ -7,7 +7,6 @@ import { getIsVisible } from './store/selectors'
 import { closeVisualizer, toggleVisibility } from './store/slice'
 
 import styles from './Visualizer.module.css'
-import lazyWithPreload from 'utils/lazyWithPreload'
 import { useHistory } from 'react-router-dom'
 import {
   UPLOAD_PAGE,
@@ -22,7 +21,6 @@ export const NO_VISUALIZER_ROUTES = new Set([
   UPLOAD_PLAYLIST_PAGE
 ])
 
-// Fetch the visualizer 1s after initial load
 const VisualizerProvider = lazy(() => import('./VisualizerProvider'))
 
 type VisualizerProps = {} & ReturnType<typeof mapStateToProps> &

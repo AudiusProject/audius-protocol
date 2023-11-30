@@ -1,10 +1,19 @@
-import { cloneElement, useRef, useState, useEffect, useCallback } from 'react'
+import {
+  ReactNode,
+  cloneElement,
+  useRef,
+  useState,
+  useEffect,
+  useCallback,
+  MutableRefObject
+} from 'react'
 
+import { Nullable } from '@audius/common'
 import cn from 'classnames'
-import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Spring } from 'react-spring/renderprops.cjs'
+// @ts-ignore
 import calcScrollbarWidth from 'scrollbar-width'
 
 import SearchBar from 'components/search-bar/ConnectedSearchBar'
@@ -21,7 +30,13 @@ const HEADER_MARGIN_PX = 32
 const MIN_GUTTER_WIDTH = 20
 
 // Responsible for positioning the header
-const HeaderContainer = ({ header, containerRef, showSearch }) => {
+type HeaderContainerProps = Pick<PageProps, 'header' | 'showSearch'> & {
+  containerRef: (element: Nullable<HTMLElement>) => void
+}
+
+const HeaderContainer = (props: HeaderContainerProps) => {
+  const { header, containerRef, showSearch } = props
+
   // Need to offset the header on the right side
   // the width of the scrollbar.
   const [scrollBarWidth, setScrollbarWidth] = useState(0)
@@ -50,7 +65,7 @@ const HeaderContainer = ({ header, containerRef, showSearch }) => {
     setIsChromeOrSafari(chromeOrSafari)
   }, [])
 
-  const headerContainerRef = useRef()
+  const headerContainerRef = useRef<HTMLDivElement>(null)
 
   return (
     <div
@@ -73,7 +88,7 @@ const HeaderContainer = ({ header, containerRef, showSearch }) => {
             : 'linear-gradient(180deg, var(--page-header-gradient-1) 0%, var(--page-header-gradient-1) 40%, var(--page-header-gradient-2-alt) 85%)'
         }}
       >
-        {cloneElement(header, {
+        {cloneElement(header as any, {
           isChromeOrSafari,
           scrollBarWidth,
           headerContainerRef,
@@ -88,10 +103,48 @@ const HeaderContainer = ({ header, containerRef, showSearch }) => {
   )
 }
 
-export const Page = (props) => {
+type PageProps = {
+  title?: string
+  description?: string
+  canonicalUrl?: string
+  structuredData?: object
+  variant?: 'insert' | 'flush'
+  size?: 'medium' | 'large'
+  containerRef?: MutableRefObject<any>
+  contentClassName?: string
+  containerClassName?: string
+  fromOpacity?: number
+  fadeDuration?: number
+  header?: ReactNode
+
+  // There are some pages which don't have a fixed header but still display
+  // a search bar that scrolls with the page.
+  scrollableSearch?: boolean
+  children?: ReactNode
+  showSearch?: boolean
+}
+
+export const Page = (props: PageProps) => {
+  const {
+    title,
+    description,
+    structuredData,
+    variant = 'inset',
+    size = 'medium',
+    containerRef,
+    contentClassName,
+    containerClassName,
+    fromOpacity = 0.2,
+    fadeDuration = 200,
+    header,
+    scrollableSearch = false,
+    children,
+    showSearch = true
+  } = props
+
   const [headerHeight, setHeaderHeight] = useState(0)
 
-  const calculateHeaderHeight = (element) => {
+  const calculateHeaderHeight = (element: Nullable<HTMLElement>) => {
     if (element) {
       setHeaderHeight(element.offsetHeight)
     }
@@ -99,69 +152,69 @@ export const Page = (props) => {
 
   return (
     <Spring
-      from={{ opacity: 0.2 }}
+      from={{ opacity: fromOpacity }}
       to={{ opacity: 1 }}
-      config={{ duration: props.fadeDuration }}
+      config={{ duration: fadeDuration }}
     >
       {(animProps) => (
         <div
-          ref={props.containerRef}
+          ref={containerRef}
           style={animProps}
           className={cn(styles.pageContainer, {
-            [props.containerClassName]: !!props.containerClassName
+            [containerClassName ?? '']: !!containerClassName
           })}
         >
           <Helmet encodeSpecialCharacters={false}>
-            {props.title ? (
-              <title>{`${props.title} ${messages.dotAudius}`}</title>
+            {title ? (
+              <title>{`${title} ${messages.dotAudius}`}</title>
             ) : (
               <title>{messages.audius}</title>
             )}
-            {props.description ? (
-              <meta name='description' content={props.description} />
+            {description ? (
+              <meta name='description' content={description} />
             ) : null}
             {/* TODO: re-enable once we fix redirects and casing of canonicalUrls */}
-            {/* {props.canonicalUrl && (
-              <link rel='canonical' href={props.canonicalUrl} />
+            {/* {canonicalUrl && (
+              <link rel='canonical' href={canonicalUrl} />
             )} */}
-            {props.structuredData && (
+            {structuredData && (
               <script type='application/ld+json'>
-                {JSON.stringify(props.structuredData)}
+                {JSON.stringify(structuredData)}
               </script>
             )}
           </Helmet>
-          {props.header && (
+          {header && (
             <HeaderContainer
-              header={props.header}
-              showSearch={props.showSearch}
+              header={header}
+              showSearch={showSearch}
               containerRef={calculateHeaderHeight}
             />
           )}
           <div
             className={cn({
-              [styles.inset]: props.variant === 'inset',
-              [styles.flush]: props.variant === 'flush',
-              [styles.medium]: props.size === 'medium',
-              [styles.large]: props.size === 'large',
-              [props.containerClassName]: !!props.containerClassName
+              [styles.inset]: variant === 'inset',
+              [styles.flush]: variant === 'flush',
+              [styles.medium]: size === 'medium',
+              [styles.large]: size === 'large',
+              [containerClassName ?? '']: !!containerClassName
             })}
             style={
-              props.variant === 'inset'
+              variant === 'inset'
                 ? { paddingTop: `${headerHeight + HEADER_MARGIN_PX}px` }
-                : null
+                : undefined
             }
           >
             {/* Set an id so that nested components can mount in relation to page if needed, e.g. fixed menu popups. */}
             <div
               id='page'
               className={cn(styles.pageContent, {
-                [props.contentClassName]: !!props.contentClassName
+                [contentClassName ?? '']: !!contentClassName
               })}
             >
-              {props.children}
+              {children}
             </div>
           </div>
-          {props.scrollableSearch && (
+          {scrollableSearch && (
             <div className={styles.searchWrapper}>
               <SearchBar />
             </div>
@@ -170,34 +223,6 @@ export const Page = (props) => {
       )}
     </Spring>
   )
-}
-
-Page.propTypes = {
-  title: PropTypes.string,
-  description: PropTypes.string,
-  canonicalUrl: PropTypes.string,
-  structuredData: PropTypes.object,
-  variant: PropTypes.oneOf(['inset', 'flush']),
-  size: PropTypes.oneOf(['medium', 'large']),
-  containerRef: PropTypes.node,
-  contentClassName: PropTypes.string,
-  containerClassName: PropTypes.string,
-  fadeDuration: PropTypes.number,
-  header: PropTypes.node,
-
-  // There are some pages which don't have a fixed header but still display
-  // a search bar that scrolls with the page.
-  scrollableSearch: PropTypes.bool,
-  children: PropTypes.node,
-  showSearch: PropTypes.bool
-}
-
-Page.defaultProps = {
-  variant: 'inset',
-  size: 'medium',
-  fadeDuration: 200,
-  scrollableSearch: false,
-  showSearch: true
 }
 
 export default Page

@@ -206,6 +206,7 @@ const TrackPage = ({
       structuredData={structuredData}
       variant='flush'
       scrollableSearch
+      fromOpacity={1}
     >
       <div className={styles.headerWrapper}>
         <CoverPhoto
