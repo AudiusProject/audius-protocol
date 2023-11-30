@@ -904,9 +904,7 @@ def process_user_bank_txs() -> None:
             with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
                 parse_sol_tx_futures = {
                     executor.submit(
-                        get_sol_tx_info,
-                        solana_client_manager,
-                        str(tx_sig),
+                        get_sol_tx_info, solana_client_manager, str(tx_sig), redis
                     ): tx_sig
                     for tx_sig in tx_sig_batch
                 }
