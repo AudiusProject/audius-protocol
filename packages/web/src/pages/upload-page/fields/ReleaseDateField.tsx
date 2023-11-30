@@ -1,6 +1,8 @@
 import { SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 import { IconCalendar, RadioButtonGroup, RadioGroupContext, ModalContent } from '@audius/stems'
+import layoutStyles from 'components/layout/layout.module.css'
+
 import cn from 'classnames'
 import moment from 'moment'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
@@ -27,7 +29,7 @@ import { release } from 'os'
 const messages = {
   title: 'Release Date',
   description:
-    'Specify a release date for your music or scheduled it to be released in the future.',
+    'Specify a release date for your music or scheduled it to be released in the future. Release date affects sorting on your profile and is visible in track details.',
   callout: (timePeriod: TimePeriodType) => {
     if (timePeriod === TimePeriodType.PAST) {
       return (<>
@@ -81,9 +83,9 @@ export const ReleaseDateField = () => {
   const [{ value: releaseDateHour }, , { setValue: setReleaseDateHour }] = useField(RELEASE_DATE)
   const [{ value: releaseDateMeridian }, , { setValue: setReleaseDateMeridian }] = useField(RELEASE_DATE_MERIDIAN)
 
-
+  const roundUpHour = moment().add(1, 'hours')
   const initialValues = useMemo(
-    () => ({ [RELEASE_DATE]: releaseDate ?? undefined, [RELEASE_DATE_HOUR]: releaseDateHour ?? '12', [RELEASE_DATE_MERIDIAN]: releaseDateMeridian ?? ReleaseDateMeridian.AM, [RELEASE_DATE_TYPE]: releaseDateType ?? false }),
+    () => ({ [RELEASE_DATE]: releaseDate ?? undefined, [RELEASE_DATE_HOUR]: releaseDateHour ?? roundUpHour.format('h'), [RELEASE_DATE_MERIDIAN]: releaseDateMeridian ?? roundUpHour.format('A'), [RELEASE_DATE_TYPE]: releaseDateType ?? false }),
     [releaseDate, releaseDateType, releaseDateHour, releaseDateMeridian]
   )
 
@@ -171,15 +173,10 @@ export const ReleaseDateField = () => {
       onSubmit={onSubmit}
       menuFields={
         <>
-          <Text
-            className={cn(styles.title, styles.modalHeading)}
-            variant='title'
-            size='large'
-          >
-            {messages.title}
-          </Text>
-          <Text>{messages.description} Release date affects sorting on your profile and is visible in track details.</Text>
-          <RadioItems releaseDateTypeField={releaseDateTypeField} releaseDateField={releaseDateField} />
+          <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
+            <Text>{messages.description}</Text>
+            <RadioItems releaseDateTypeField={releaseDateTypeField} releaseDateField={releaseDateField} />
+          </div>
 
         </>
       }
@@ -231,24 +228,35 @@ const RadioItems = (props: any) => {
         label="Select a release date"
         checkedContent={
           <>
-            <div className={styles.datePicker}>
-              <DatePickerField name={RELEASE_DATE} label={messages.title} shouldFocus={releaseDateTypeField.value === ReleaseDateType.SCHEDULED_RELEASE} />
+            <div
+              className={cn(
+                styles.dropdownRow,
+                layoutStyles.row,
+                layoutStyles.gap2,
+                styles.releaseDateTimePicker
+              )}
+            >
+              <div className={styles.datePicker}>
+                <DatePickerField name={RELEASE_DATE} label={messages.title} shouldFocus={releaseDateTypeField.value === ReleaseDateType.SCHEDULED_RELEASE} />
+              </div>
+
+              {timePeriod !== TimePeriodType.PAST && (
+                <>
+                  <HarmonyTextField
+                    name={RELEASE_DATE_HOUR}
+                    label={'Time'}
+                    placeholder={'12:00'}
+                    hideLabel={false}
+                    className={styles.hourInput}
+                  />
+                  <SelectMeridianField />
+
+                </>
+              )
+
+              }
             </div>
-
-            {timePeriod !== TimePeriodType.PAST && (
-              <>
-                <HarmonyTextField
-                  name={RELEASE_DATE_HOUR}
-                  label={'Time'}
-                  placeholder={'12:00'}
-                  hideLabel={false}
-                />
-                <SelectMeridianField />
-              </>
-            )
-
-            }
-            <ModalContent className={styles.content}>
+            <ModalContent className={styles.releaseDateHint}>
               <HelpCallout icon={<IconInfo />} content={messages.callout(timePeriod)} />
             </ModalContent>
           </>
@@ -267,6 +275,8 @@ export const SelectMeridianField = () => {
       mount='parent'
       menu={{ items: [ReleaseDateMeridian.AM, ReleaseDateMeridian.PM] }}
       size='large'
-      name={RELEASE_DATE_MERIDIAN} />
+      name={RELEASE_DATE_MERIDIAN}
+      dropdownInputStyle={styles.meridianDropdownInput}
+    />
   )
 }
