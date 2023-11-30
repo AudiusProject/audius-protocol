@@ -25,7 +25,7 @@ import {
   IconKebabHorizontal
 } from '@audius/stems'
 import cn from 'classnames'
-
+import moment from 'moment'
 import IconRobot from 'assets/img/robot.svg'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
@@ -64,6 +64,7 @@ const SAVED_TIMEOUT = 1000
 
 const messages = {
   makePublic: 'MAKE PUBLIC',
+  releaseNow: 'RELEASE NOW',
   isPublishing: 'PUBLISHING',
   repostButtonText: 'repost',
   repostedButtonText: 'reposted',
@@ -187,6 +188,11 @@ export const GiantTrackTile = ({
   // Play button is conditionally hidden for USDC-gated tracks when the user does not have access
   const showPlay = isUSDCPurchaseGated ? doesUserHaveAccess : true
 
+  let isScheduledRelease = false
+  if (!isPublishing && moment(released).isAfter(moment())) {
+    isScheduledRelease = true
+  }
+
   const renderCardTitle = (className: string) => {
     return (
       <CardTitle
@@ -217,12 +223,19 @@ export const GiantTrackTile = ({
   }
 
   const renderMakePublicButton = () => {
+    let text = messages.isPublishing
+    if (isUnlisted && isScheduledRelease) {
+      text = messages.releaseNow
+    } else if (isUnlisted && !isScheduledRelease) {
+      text = messages.makePublic
+    }
+    console.log('asdf text: ', text)
     return (
       (isUnlisted || isPublishing) &&
       isOwner && (
         <EntityActionButton
           type={isPublishing ? ButtonType.DISABLED : ButtonType.COMMON}
-          text={isPublishing ? messages.isPublishing : messages.makePublic}
+          text={text}
           leftIcon={
             isPublishing ? (
               <LoadingSpinner className={styles.spinner} />
@@ -260,8 +273,8 @@ export const GiantTrackTile = ({
                   isOwner
                     ? ButtonType.DISABLED
                     : isReposted
-                    ? ButtonType.SECONDARY
-                    : ButtonType.COMMON
+                      ? ButtonType.SECONDARY
+                      : ButtonType.COMMON
                 }
                 widthToHideText={BUTTON_COLLAPSE_WIDTHS.second}
                 text={
@@ -270,7 +283,7 @@ export const GiantTrackTile = ({
                     : messages.repostButtonText
                 }
                 leftIcon={<IconRepost />}
-                onClick={isOwner ? () => {} : onRepost}
+                onClick={isOwner ? () => { } : onRepost}
               />
             </div>
           </Tooltip>
@@ -301,8 +314,8 @@ export const GiantTrackTile = ({
                   isOwner
                     ? ButtonType.DISABLED
                     : isSaved
-                    ? ButtonType.SECONDARY
-                    : ButtonType.COMMON
+                      ? ButtonType.SECONDARY
+                      : ButtonType.COMMON
                 }
                 text={isSaved ? 'FAVORITED' : 'FAVORITE'}
                 widthToHideText={BUTTON_COLLAPSE_WIDTHS.third}
@@ -429,6 +442,12 @@ export const GiantTrackTile = ({
       </>
     )
   }
+  const renderScheduledReleaseRow = () => {
+    return (<>
+      Releases on {released}
+    </>
+    )
+  }
 
   const renderDownloadButtons = () => {
     return (
@@ -448,9 +467,9 @@ export const GiantTrackTile = ({
   const dogEarType = isLoading
     ? undefined
     : getDogEarType({
-        premiumConditions,
-        isUnlisted
-      })
+      premiumConditions,
+      isUnlisted
+    })
 
   const overflowMenuExtraItems = []
   if (!isOwner) {
@@ -555,6 +574,7 @@ export const GiantTrackTile = ({
 
           <div className={cn(styles.statsSection, fadeIn)}>
             {renderStatsRow()}
+            {renderScheduledReleaseRow()}
           </div>
 
           <div
