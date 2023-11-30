@@ -6,7 +6,6 @@ import { FeatureFlags, useFeatureFlag } from '@audius/common'
 import { Route, Switch } from 'react-router-dom'
 
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
-import { useFlag } from 'hooks/useRemoteConfig'
 import DemoTrpcPage from 'pages/demo-trpc/DemoTrpcPage'
 import { OAuthLoginPage } from 'pages/oauth-login-page/OAuthLoginPage'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'

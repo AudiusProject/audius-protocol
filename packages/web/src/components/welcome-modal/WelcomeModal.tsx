@@ -23,7 +23,7 @@ import Drawer from 'components/drawer/Drawer'
 import { useMedia } from 'hooks/useMedia'
 import { CoverPhotoBanner } from 'pages/sign-up-page/components/CoverPhotoBanner'
 import { useSelector } from 'utils/reducer'
-import { TRENDING_PAGE, UPLOAD_PAGE } from 'utils/route'
+import { UPLOAD_PAGE } from 'utils/route'
 
 const messages = {
   welcome: 'Welcome to Audius%0! 🎉',

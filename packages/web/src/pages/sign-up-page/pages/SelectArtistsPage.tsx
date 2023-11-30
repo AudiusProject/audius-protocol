@@ -64,8 +64,6 @@ export const SelectArtistsPage = () => {
   const { color } = useTheme()
   const headerContainerRef = useRef<HTMLDivElement | null>(null)
 
-  console.log({ currentGenre })
-
   const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setCurrentGenre(e.target.value)
   }, [])
