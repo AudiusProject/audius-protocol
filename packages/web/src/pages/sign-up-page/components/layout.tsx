@@ -8,12 +8,12 @@ import {
   Flex,
   FlexProps,
   IconArrowRight,
+  Paper,
+  PaperProps,
   Text
 } from '@audius/harmony'
 
 import { useMedia } from 'hooks/useMedia'
-
-import { ContinueFooter, ContinueFooterProps } from './ContinueFooter'
 
 const messages = {
   continue: 'Continue'
@@ -102,14 +102,34 @@ type PageFooterProps = {
   postfix?: ReactNode
   buttonProps?: ButtonProps
   centered?: boolean
-} & Omit<ContinueFooterProps, 'prefix'>
+  sticky?: boolean
+} & Omit<PaperProps & BoxProps, 'prefix'>
 
 export const PageFooter = (props: PageFooterProps) => {
-  const { prefix, postfix, buttonProps, centered, ...other } = props
+  const { prefix, postfix, buttonProps, centered, sticky, ...other } = props
   const { isMobile } = useMedia()
 
   return (
-    <ContinueFooter {...other}>
+    <Paper
+      w='100%'
+      p='l'
+      justifyContent='center'
+      gap='l'
+      alignItems='center'
+      direction='column'
+      shadow={isMobile && !sticky ? 'flat' : 'midInverted'}
+      backgroundColor='white'
+      css={{
+        overflow: 'unset',
+        position: sticky ? 'sticky' : 'absolute',
+        bottom: 0,
+        left: 0,
+        zIndex: 1,
+        borderBottomRightRadius: 0,
+        borderBottomLeftRadius: 0
+      }}
+      {...other}
+    >
       {prefix}
       <Button
         type='submit'
@@ -121,7 +141,7 @@ export const PageFooter = (props: PageFooterProps) => {
         {messages.continue}
       </Button>
       {postfix}
-    </ContinueFooter>
+    </Paper>
   )
 }
 
