@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useEffectOnce } from 'react-use'
 
 import { useAppContext } from 'src/context/appContext'
-import { Maybe } from 'utils/typeUtils'
+import { Maybe, Nullable } from 'utils/typeUtils'
 
 import { FeatureFlags, RemoteConfigInstance } from '../services'
 
@@ -146,25 +146,25 @@ export const useFeatureFlag = (
     [overrideKey, localStorage]
   )
 
-  const [isLocallyEnabled, setIsLocallyOverriden] = useState<Maybe<boolean>>()
+  const [isLocallyEnabled, setIsLocallyOverriden] =
+    useState<Maybe<Nullable<boolean>>>()
 
   useEffectOnce(() => {
     const getOverride = async () => {
       const override = await localStorage.getItem(overrideKey)
       if (override === 'enabled') {
         setIsLocallyOverriden(true)
-      }
-      if (override === 'disabled') {
+      } else if (override === 'disabled') {
         setIsLocallyOverriden(false)
+      } else {
+        setIsLocallyOverriden(null)
       }
-
-      return undefined
     }
     getOverride()
   })
 
   return {
-    isLoaded: configLoaded,
+    isLoaded: configLoaded && isLocallyEnabled !== undefined,
     isEnabled: isLocallyEnabled ?? isEnabled,
     setOverride
   }

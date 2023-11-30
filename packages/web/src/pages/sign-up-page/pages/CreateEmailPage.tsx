@@ -148,7 +148,8 @@ export const CreateEmailPage = () => {
           <Heading
             heading={messages.title}
             description={messages.subHeader}
-            css={isMobile && { alignItems: 'center' }}
+            tag='h1'
+            centered={isMobile}
           />
           <Flex direction='column' gap='l'>
             <HarmonyTextField

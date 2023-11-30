@@ -42,8 +42,7 @@ describe('Sign Up', () => {
   })
 
   context('desktop', () => {
-    // TODO: IN TEST JAIL [C-3403] - Failing due to "waves bg but no content" issue
-    it.skip('can navigate to signup from trending', () => {
+    it('can navigate to signup from trending', () => {
       cy.visit('trending')
       cy.findByText(/have an account\?/i).should('exist')
       cy.findByRole('link', { name: /sign up/i }).click()
@@ -55,8 +54,7 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    // TODO: IN TEST JAIL [C-3403] - Failing due to "waves bg but no content" issue
-    it.skip('can navigate to sign-up from sign-in', () => {
+    it('can navigate to sign-up from sign-in', () => {
       cy.visit('signin')
       cy.findByRole('link', { name: /create an account/i }).click()
 
@@ -69,8 +67,7 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    // TODO: IN TEST JAIL [C-3403] turn back on when full account creation flow is set up
-    it.skip('should create an account', () => {
+    it('should create an account', () => {
       const testUser = generateTestUser()
       const { email, password, handle, name } = testUser
       cy.visit('signup')
@@ -96,11 +93,11 @@ describe('Sign Up', () => {
         /your photos & display name is how others see you./i
       ).should('exist')
 
-      cy.findByTestId('cover_photo-dropzone').attachFile('cover-photo.jpeg', {
+      cy.findByTestId('coverPhoto-dropzone').attachFile('cover-photo.jpeg', {
         subjectType: 'drag-n-drop'
       })
 
-      cy.findByTestId('profile_picture-dropzone').attachFile(
+      cy.findByTestId('profileImage-dropzone').attachFile(
         'profile-picture.jpeg',
         {
           subjectType: 'drag-n-drop'
@@ -116,7 +113,7 @@ describe('Sign Up', () => {
       )
 
       cy.findByText(name).should('exist')
-      cy.findByText(handle).should('exist')
+      cy.findByText(`@${handle}`).should('exist')
 
       const genres = [/^acoustic/i, /^pop/i, /^lo-fi/i, /^electronic/i]
 
@@ -126,13 +123,12 @@ describe('Sign Up', () => {
 
       cy.findByRole('button', { name: /continue/i }).click()
 
-      cy.findByRole('heading', {
-        name: /follow at least 3 artists/i,
-        level: 1
-      }).should('exist')
+      cy.findByRole('heading', { name: /follow at least 3 artists/i }).should(
+        'exist'
+      )
       cy.findByText(/curate your feed with tracks uploaded/i).should('exist')
 
-      cy.findByRole('radiogroup', { name: /selected genres/i }).within(() => {
+      cy.findByRole('radiogroup', { name: /genre/i }).within(() => {
         cy.findByRole('radio', { name: /featured/i }).should('be.checked')
 
         for (const genre of genres) {
@@ -162,16 +158,16 @@ describe('Sign Up', () => {
         () => {
           cy.findAllByRole('checkbox').then((artists) => {
             const randomArtist = Cypress._.sample(artists)
-            cy.wrap(randomArtist).click()
+            cy.wrap(randomArtist).click({ force: true })
           })
         }
       )
 
       cy.findByRole('button', { name: /continue/i }).click()
 
-      cy.findByRole('heading', { name: /get the app/i, level: 2 }).should(
-        'exist'
-      )
+      cy.findByRole('dialog', { name: /welcome to audius/i }).within(() => {
+        cy.findByRole('button', { name: /start listening/i }).click()
+      })
     })
   })
 
@@ -180,8 +176,7 @@ describe('Sign Up', () => {
       cy.viewport('iphone-x')
     })
 
-    // TODO: IN TEST JAIL [C-3403] - Failing due to "waves bg but no content" issue
-    it.skip('can navigate to signup from trending', () => {
+    it('can navigate to signup from trending', () => {
       cy.visit('trending')
       cy.findByRole('link', { name: /sign up/i }).click()
       assertOnSignUpPage()
@@ -192,8 +187,7 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    // TODO: IN TEST JAIL [C-3403] - Failing due to "waves bg but no content" issue
-    it.skip('can navigate to sign-up from sign-in', () => {
+    it('can navigate to sign-up from sign-in', () => {
       cy.visit('signin')
       cy.findByRole('link', { name: /create an account/i }).click()
 
@@ -208,7 +202,6 @@ describe('Sign Up', () => {
       assertOnSignUpPage()
     })
 
-    // TODO: IN TEST JAIL [C-3403] turn back on when full account creation flow is set up
     it.skip('should create an account', () => {
       const testUser = generateTestUser()
       const { email, password, handle } = testUser

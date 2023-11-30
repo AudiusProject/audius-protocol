@@ -2,7 +2,7 @@
 
 import { lazy } from 'react'
 
-import { FeatureFlags } from '@audius/common'
+import { FeatureFlags, useFeatureFlag } from '@audius/common'
 import { Route, Switch } from 'react-router-dom'
 
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
@@ -22,7 +22,7 @@ const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 const SignOnPage = lazy(() => import('pages/sign-on-page'))
 
 export const AppInner = () => {
-  const { isEnabled: isSignInRedesignEnabled } = useFlag(
+  const { isEnabled: isSignInRedesignEnabled, isLoaded } = useFeatureFlag(
     FeatureFlags.SIGN_UP_REDESIGN
   )
 
@@ -31,7 +31,13 @@ export const AppInner = () => {
       <SomethingWrong />
       <Switch>
         <Route path={[SIGN_IN_PAGE, SIGN_UP_PAGE]}>
-          {isSignInRedesignEnabled ? <SignOnPage /> : <SignOn signIn />}
+          {isLoaded ? (
+            isSignInRedesignEnabled ? (
+              <SignOnPage />
+            ) : (
+              <SignOn signIn />
+            )
+          ) : null}
         </Route>
         <Route exact path='/oauth/auth'>
           <OAuthLoginPage />

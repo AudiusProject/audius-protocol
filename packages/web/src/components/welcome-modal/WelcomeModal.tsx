@@ -45,7 +45,12 @@ export const WelcomeModal = () => {
   }, [setIsOpen])
 
   return (
-    <Root isOpen={isOpen} onClose={onClose} size='small'>
+    <Root
+      isOpen={isOpen}
+      onClose={onClose}
+      size='small'
+      aria-labelledby='welcome-title'
+    >
       <Flex w='100%' h={96} css={{ zIndex: 1 }}>
         <CoverPhotoBanner />
       </Flex>
@@ -64,7 +69,7 @@ export const WelcomeModal = () => {
       </Box>
       <Flex direction='column' p='xl' pt='3xl' gap='xl'>
         <Flex direction='column' css={{ textAlign: 'center' }} gap='l'>
-          <Text variant='label' size='xl' strength='strong'>
+          <Text variant='label' size='xl' strength='strong' id='welcome-title'>
             {fillString(messages.welcome, userName ? `, ${userName}` : '')}
           </Text>
           <Text variant='body' size='l'>
@@ -72,8 +77,8 @@ export const WelcomeModal = () => {
           </Text>
         </Flex>
         <Flex direction='column' gap='s'>
-          <Button iconRight={IconArrowRight} onClick={onClose} asChild>
-            <Link to={TRENDING_PAGE}>{messages.startListening}</Link>
+          <Button iconRight={IconArrowRight} onClick={onClose}>
+            {messages.startListening}
           </Button>
           <Button
             variant={ButtonType.SECONDARY}

@@ -4,6 +4,7 @@ import type { ChangeEvent } from 'react'
 import {
   ID,
   Status,
+  convertGenreLabelToValue,
   useGetFeaturedArtists,
   useGetTopArtistsInGenre
 } from '@audius/common'
@@ -25,7 +26,12 @@ import { TRENDING_PAGE } from 'utils/route'
 import { AccountHeader } from '../components/AccountHeader'
 import FollowArtistTile from '../components/FollowArtistTile'
 import { PreviewArtistToast } from '../components/PreviewArtistToast'
-import { Heading, PageFooter, ScrollView } from '../components/layout'
+import {
+  Heading,
+  HiddenLegend,
+  PageFooter,
+  ScrollView
+} from '../components/layout'
 import { SelectArtistsPreviewContextProvider } from '../utils/selectArtistsPreviewContext'
 
 const messages = {
@@ -50,13 +56,15 @@ const SelectArtistsFormSchema = z.object({
 })
 
 export const SelectArtistsPage = () => {
-  const genres = useSelector((state) => ['Featured', ...getGenres(state)])
+  const artistGenres = useSelector((state) => ['Featured', ...getGenres(state)])
   const [, setIsWelcomeModalOpen] = useModalState('Welcome')
   const [currentGenre, setCurrentGenre] = useState('Featured')
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const { color } = useTheme()
   const headerContainerRef = useRef<HTMLDivElement | null>(null)
+
+  console.log({ currentGenre })
 
   const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setCurrentGenre(e.target.value)
@@ -144,14 +152,15 @@ export const SelectArtistsPage = () => {
                   aria-label={messages.genresLabel}
                   disableScroll={!isMobile}
                 >
-                  {genres.map((genre) => (
+                  {artistGenres.map((genre) => (
                     // TODO: max of 6, kebab overflow
                     <SelectablePill
                       key={genre}
                       type='radio'
                       name='genre'
-                      label={genre}
+                      label={convertGenreLabelToValue(genre)}
                       size={isMobile ? 'small' : 'large'}
+                      value={genre}
                       isSelected={currentGenre === genre}
                     />
                   ))}
@@ -166,6 +175,10 @@ export const SelectArtistsPage = () => {
                   css={{ minHeight: 500 }}
                   direction='column'
                 >
+                  <HiddenLegend>
+                    {messages.pickArtists(currentGenre)}
+                  </HiddenLegend>
+
                   {isLoading || !isMobile ? null : <PreviewArtistToast />}
                   <Flex
                     gap={isMobile ? 's' : 'm'}
