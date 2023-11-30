@@ -2,6 +2,11 @@
 
 set -ex
 
-cargo install --locked --force --root $HOME/solana-release --version 1.16.3 solana-cli solana-keygen
-cargo install --locked --force --root $HOME/solana-release --version 1.16.3 --bin solana-test-validator solana-validator
-cargo install --locked --force --root $HOME/solana-release --version 3.1.0 spl-token-cli
+if [[ "$(uname -m)" == "x86_64" ]]; then
+    curl -SfL https://github.com/solana-labs/solana/releases/download/v1.16.3/solana-release-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C $HOME
+else
+    curl -SfL https://github.com/solana-labs/solana/archive/refs/tags/v1.16.3.tar.gz | tar xzf - -C $HOME
+    mv $HOME/solana-1.16.3 $HOME/solana-release
+    cd $HOME/solana-release
+    ./scripts/cargo-install-all.sh .
+fi
