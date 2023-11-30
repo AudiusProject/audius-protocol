@@ -6,6 +6,7 @@ import { PurchaseMethod } from 'models/PurchaseContent'
 import {
   ContentType,
   PurchaseContentError,
+  PurchaseContentPage,
   PurchaseContentStage
 } from './types'
 
@@ -15,6 +16,7 @@ type OnSuccess = {
 }
 
 type PurchaseContentState = {
+  page: PurchaseContentPage
   stage: PurchaseContentStage
   contentType: ContentType
   contentId: ID
@@ -28,6 +30,7 @@ type PurchaseContentState = {
 }
 
 const initialState: PurchaseContentState = {
+  page: PurchaseContentPage.PURCHASE,
   contentType: ContentType.TRACK,
   contentId: -1,
   extraAmount: undefined,
@@ -52,6 +55,7 @@ const slice = createSlice({
         onSuccess?: OnSuccess
       }>
     ) => {
+      state.page = PurchaseContentPage.PURCHASE
       state.stage = PurchaseContentStage.START
       state.error = undefined
       state.extraAmount = action.payload.extraAmount
@@ -80,6 +84,12 @@ const slice = createSlice({
       }>
     ) => {
       state.stage = PurchaseContentStage.FINISH
+    },
+    setPurchasePage: (
+      state,
+      action: PayloadAction<{ page: PurchaseContentPage }>
+    ) => {
+      state.page = action.payload.page
     },
     purchaseContentFlowFailed: (
       state,

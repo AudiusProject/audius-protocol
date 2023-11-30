@@ -63,6 +63,7 @@ type PurchaseContentFormFooterProps = Pick<
 > & {
   track: PurchasableTrackMetadata
   onViewTrackClicked: () => void
+  onSubmit: () => void
 }
 
 export const PurchaseContentFormFooter = ({
@@ -79,6 +80,8 @@ export const PurchaseContentFormFooter = ({
     user: { handle }
   } = track
   const isPurchased = stage === PurchaseContentStage.FINISH
+  const { totalPrice } = purchaseSummaryValues
+
   const handleTwitterShare = useCallback(
     (handle: string) => {
       const shareText = messages.shareTwitterText(title, handle)
@@ -90,7 +93,6 @@ export const PurchaseContentFormFooter = ({
     [title]
   )
 
-  const { totalPrice } = purchaseSummaryValues
   if (isPurchased) {
     return (
       <>
@@ -111,13 +113,12 @@ export const PurchaseContentFormFooter = ({
       </>
     )
   }
-
   return (
     <>
       <Button
         disabled={isUnlocking}
         color='lightGreen'
-        type='submit'
+        type={'submit'}
         isLoading={isUnlocking}
         fullWidth
       >

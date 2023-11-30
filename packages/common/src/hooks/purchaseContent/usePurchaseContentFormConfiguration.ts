@@ -8,6 +8,7 @@ import { PurchaseMethod } from 'models/PurchaseContent'
 import { UserTrackMetadata } from 'models/Track'
 import {
   ContentType,
+  PurchaseContentPage,
   isContentPurchaseInProgress,
   purchaseContentActions,
   purchaseContentSelectors
@@ -27,9 +28,12 @@ import { PayExtraAmountPresetValues, PayExtraPreset } from './types'
 import { getExtraAmount } from './utils'
 import { PurchaseContentSchema, PurchaseContentValues } from './validation'
 
-const { startPurchaseContentFlow } = purchaseContentActions
-const { getPurchaseContentFlowStage, getPurchaseContentError } =
-  purchaseContentSelectors
+const { startPurchaseContentFlow, setPurchasePage } = purchaseContentActions
+const {
+  getPurchaseContentFlowStage,
+  getPurchaseContentError,
+  getPurchaseContentPage
+} = purchaseContentSelectors
 
 export const usePurchaseContentFormConfiguration = ({
   track,
@@ -44,6 +48,7 @@ export const usePurchaseContentFormConfiguration = ({
   const { onOpen: openUsdcManualTransferModal } = useUSDCManualTransferModal()
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
+  const page = useSelector(getPurchaseContentPage)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance()
   const balance = USDC(balanceBN ?? new BN(0)).value
@@ -73,7 +78,13 @@ export const usePurchaseContentFormConfiguration = ({
         contentType: ContentType.TRACK
       })
 
-      if (purchaseMethod === PurchaseMethod.CRYPTO) {
+      if (
+        purchaseMethod === PurchaseMethod.CRYPTO &&
+        page === PurchaseContentPage.PURCHASE
+      ) {
+        // On web, start purchase flow
+        dispatch(setPurchasePage({ page: PurchaseContentPage.TRANSFER }))
+        // On mobile, open USDCManualTransferDrawer
         openUsdcManualTransferModal({
           amount: price + extraAmount,
           onSuccessAction: startPurchaseAction
@@ -85,6 +96,7 @@ export const usePurchaseContentFormConfiguration = ({
     [
       isUnlocking,
       track,
+      page,
       presetValues,
       dispatch,
       openUsdcManualTransferModal,

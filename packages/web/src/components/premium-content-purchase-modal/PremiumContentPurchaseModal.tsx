@@ -12,7 +12,8 @@ import {
   purchaseContentActions,
   purchaseContentSelectors,
   isContentPurchaseInProgress,
-  usePayExtraPresets
+  usePayExtraPresets,
+  PurchaseContentPage
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import { Flex } from '@audius/harmony'
@@ -26,6 +27,7 @@ import { Icon } from 'components/Icon'
 import { ModalForm } from 'components/modal-form/ModalForm'
 import { LockedTrackDetailsTile } from 'components/track/LockedTrackDetailsTile'
 import { Text } from 'components/typography'
+import { USDCManualTransfer } from 'components/usdc-manual-transfer/USDCManualTransfer'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import { isMobile } from 'utils/clientUtil'
 import { pushUniqueRoute } from 'utils/route'
@@ -39,7 +41,7 @@ import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState
 
 const { startRecoveryIfNecessary, cleanup: cleanupUSDCRecovery } =
   buyUSDCActions
-const { cleanup } = purchaseContentActions
+const { cleanup, setPurchasePage } = purchaseContentActions
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
 
@@ -52,10 +54,12 @@ const messages = {
 // of the `<Formik />` component
 const RenderForm = ({
   onClose,
-  track
+  track,
+  onSubmit
 }: {
   onClose: () => void
   track: PurchasableTrackMetadata
+  onSubmit: any
 }) => {
   const dispatch = useDispatch()
   const {
@@ -64,7 +68,7 @@ const RenderForm = ({
       usdc_purchase: { price }
     }
   } = track
-  const { error, isUnlocking, purchaseSummaryValues, stage } =
+  const { error, isUnlocking, purchaseSummaryValues, stage, page } =
     usePurchaseContentFormState({ price })
 
   const { resetForm } = useFormikContext()
@@ -78,6 +82,10 @@ const RenderForm = ({
       dispatch(pushUniqueRoute(permalink))
     }
   }, [stage, permalink, dispatch])
+
+  const handleClose = useCallback(() => {
+    dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
+  }, [dispatch])
 
   const mobile = isMobile()
 
@@ -100,37 +108,46 @@ const RenderForm = ({
         </Text>
       </ModalHeader>
       <ModalContent className={styles.content}>
-        {stage !== PurchaseContentStage.FINISH ? (
-          <AudioMatchSection
-            amount={USDC(price / 100)
-              .round()
-              .toShorthand()}
-          />
-        ) : null}
-        <Flex p={mobile ? 'l' : 'xl'}>
-          <Flex direction='column' gap='xl' w='100%'>
-            <LockedTrackDetailsTile
-              track={track as unknown as Track}
-              owner={track.user}
-            />
-            <PurchaseContentFormFields
-              stage={stage}
-              purchaseSummaryValues={purchaseSummaryValues}
-              isUnlocking={isUnlocking}
-              price={price}
-            />
-          </Flex>
-        </Flex>
+        {page === PurchaseContentPage.PURCHASE ? (
+          <>
+            {stage !== PurchaseContentStage.FINISH ? (
+              <AudioMatchSection
+                amount={USDC(price / 100)
+                  .round()
+                  .toShorthand()}
+              />
+            ) : null}
+            <Flex p={mobile ? 'l' : 'xl'}>
+              <Flex direction='column' gap='xl' w='100%'>
+                <LockedTrackDetailsTile
+                  track={track as unknown as Track}
+                  owner={track.user}
+                />
+                <PurchaseContentFormFields
+                  stage={stage}
+                  purchaseSummaryValues={purchaseSummaryValues}
+                  isUnlocking={isUnlocking}
+                  price={price}
+                />
+              </Flex>
+            </Flex>
+          </>
+        ) : (
+          <USDCManualTransfer onClose={handleClose} amountInCents={price} />
+        )}
       </ModalContent>
       <ModalFooter className={styles.footer}>
-        <PurchaseContentFormFooter
-          error={error}
-          isUnlocking={isUnlocking}
-          onViewTrackClicked={onClose}
-          purchaseSummaryValues={purchaseSummaryValues}
-          stage={stage}
-          track={track}
-        />
+        {page === PurchaseContentPage.PURCHASE ? (
+          <PurchaseContentFormFooter
+            error={error}
+            isUnlocking={isUnlocking}
+            onViewTrackClicked={onClose}
+            purchaseSummaryValues={purchaseSummaryValues}
+            stage={stage}
+            track={track}
+            onSubmit={onSubmit}
+          />
+        ) : null}
       </ModalFooter>
     </ModalForm>
   )
@@ -206,7 +223,7 @@ export const PremiumContentPurchaseModal = () => {
           validationSchema={toFormikValidationSchema(validationSchema)}
           onSubmit={onSubmit}
         >
-          <RenderForm track={track} onClose={handleClose} />
+          <RenderForm track={track} onClose={handleClose} onSubmit={onSubmit} />
         </Formik>
       ) : null}
     </ModalDrawer>
