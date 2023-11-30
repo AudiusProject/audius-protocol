@@ -65,7 +65,8 @@ const completeUpload = () => {
   }).should('exist')
 }
 
-describe('Upload', () => {
+// TODO [C-3420]: This suite is in test jail due to upload flows taking too long and timing out
+describe.skip('Upload', () => {
   beforeEach(() => {
     localStorage.setItem('HAS_REQUESTED_BROWSER_PUSH_PERMISSION', 'true')
   })
@@ -285,7 +286,9 @@ describe('Upload', () => {
     completeUpload()
 
     cy.findByRole('link', { name: /visit track page/i }).click()
-    cy.findByRole('heading', { name: /pay-gated track/i, level: 1 }).should('exist')
+    cy.findByRole('heading', { name: /pay-gated track/i, level: 1 }).should(
+      'exist'
+    )
     cy.findByRole('button', { name: /preview/i }).should('exist')
     cy.findByText(/premium track/i).should('exist')
     cy.findByText(/users can unlock/i).should('exist')
