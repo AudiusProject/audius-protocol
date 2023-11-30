@@ -1,15 +1,6 @@
 import { useCallback } from 'react'
 
-import {
-  Button,
-  Flex,
-  IconArrowRight,
-  Paper,
-  PlainButton,
-  PlainButtonType,
-  Text,
-  useTheme
-} from '@audius/harmony'
+import { Paper, PlainButton, PlainButtonType } from '@audius/harmony'
 import { Formik, Form } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { useHistory } from 'react-router-dom'
@@ -19,7 +10,6 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { setField, setValueField } from 'common/store/pages/signon/actions'
 import {
   getCoverPhotoField,
-  getIsSocialConnected,
   getNameField,
   getProfileImageField
 } from 'common/store/pages/signon/selectors'
@@ -29,18 +19,16 @@ import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { SIGN_UP_GENRES_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
-import { ContinueFooter } from '../components/ContinueFooter'
 import { ImageFieldValue } from '../components/ImageField'
+import { OutOfText } from '../components/OutOfText'
+import { Heading, Page, PageFooter } from '../components/layout'
 
 const messages = {
   header: 'Finish Your Profile',
   description:
     'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
-  outOf: (numerator: number, denominator: number) =>
-    `${numerator} of ${denominator}`,
   displayName: 'Display Name',
   inputPlaceholder: 'express yourself 💫',
-  continue: 'Continue',
   goBack: 'Go back'
 }
 
@@ -65,14 +53,12 @@ const formSchema = toFormikValidationSchema(
 )
 
 export const FinishProfilePage = () => {
-  const { color } = useTheme()
   const { isMobile } = useMedia()
   const history = useHistory()
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
 
   const { value: savedDisplayName } = useSelector(getNameField)
-  const isSocialConnected = useSelector(getIsSocialConnected)
   const { value: savedCoverPhoto } = useSelector(getCoverPhotoField) ?? {}
   const { value: savedProfileImage } = useSelector(getProfileImageField) ?? {}
 
@@ -104,105 +90,48 @@ export const FinishProfilePage = () => {
       validateOnChange
     >
       {({ isValid, values }) => (
-        <Flex
-          as={Form}
-          direction='column'
-          h='100%'
-          alignItems='center'
-          justifyContent='space-between'
-          w='100%'
-          pt={isMobile ? 'xl' : '3xl'}
-          css={{ background: color.background.white }}
-        >
-          <Flex
-            direction='column'
-            gap={isMobile ? 'xl' : '2xl'}
-            css={{ maxWidth: isMobile ? undefined : 608 }}
-          >
-            <Flex direction='column' gap={isMobile ? 's' : 'l'} ph='l'>
-              {isMobile ? null : (
-                <Text size='s' variant='label' color='subdued'>
-                  {messages.outOf(2, 2)}
-                </Text>
-              )}
-              <Text
-                variant='heading'
-                size={isMobile ? 'm' : 'l'}
-                color='heading'
-                css={{ textAlign: isMobile ? 'left' : 'center' }}
-                id='profile-header'
-              >
-                {messages.header}
-              </Text>
-              <Text
-                variant='body'
-                size={isMobile ? 'm' : 'l'}
-                css={{ textAlign: isMobile ? 'left' : 'center' }}
-              >
-                {messages.description}
-              </Text>
-
-              <Flex justifyContent='space-between' direction='column' h='100%'>
-                <Flex
-                  alignItems={isMobile ? 'flex-start' : 'center'}
-                  direction='column'
-                  flex={1}
+        <Page as={Form} centered>
+          <Heading
+            prefix={
+              isMobile ? null : <OutOfText numerator={2} denominator={2} />
+            }
+            heading={messages.header}
+            description={messages.description}
+            alignItems={!isMobile ? 'center' : undefined}
+          />
+          <Paper direction='column'>
+            <AccountHeader
+              mode='editing'
+              formDisplayName={values.displayName}
+              formProfileImage={values.profileImage}
+            />
+            <HarmonyTextField
+              name='displayName'
+              label={messages.displayName}
+              placeholder={messages.inputPlaceholder}
+              required
+              maxLength={32}
+              css={(theme) => ({
+                padding: theme.spacing.l,
+                paddingTop: theme.spacing.unit10
+              })}
+            />
+          </Paper>
+          <PageFooter
+            centered
+            buttonProps={{ disabled: !isValid }}
+            postfix={
+              isMobile ? null : (
+                <PlainButton
+                  variant={PlainButtonType.SUBDUED}
+                  onClick={history.goBack}
                 >
-                  <Paper
-                    role='group'
-                    aria-labelledby='profile-header'
-                    css={{ maxWidth: 608 }}
-                    justifyContent={isMobile ? 'flex-start' : 'center'}
-                    alignItems='flex-start'
-                    gap='s'
-                    wrap='wrap'
-                    w='100%'
-                  >
-                    <AccountHeader
-                      mode='editing'
-                      formDisplayName={values.displayName}
-                      formProfileImage={values.profileImage}
-                    />
-                    <Flex
-                      p='m'
-                      pt='2xl'
-                      w='100%'
-                      css={{ textAlign: 'left' }}
-                      direction='column'
-                    >
-                      <HarmonyTextField
-                        name='displayName'
-                        label={messages.displayName}
-                        placeholder={messages.inputPlaceholder}
-                        required
-                        maxLength={32}
-                      />
-                    </Flex>
-                  </Paper>
-                </Flex>
-              </Flex>
-            </Flex>
-          </Flex>
-          <ContinueFooter>
-            <Button
-              type='submit'
-              disabled={!isValid}
-              fullWidth={isMobile}
-              iconRight={IconArrowRight}
-              css={!isMobile && { width: 343 }}
-            >
-              {messages.continue}
-            </Button>
-            {isMobile || !isSocialConnected ? null : (
-              <PlainButton
-                variant={PlainButtonType.SUBDUED}
-                onClick={history.goBack}
-              >
-                {messages.goBack}
-              </PlainButton>
-            )}
-          </ContinueFooter>
-        </Flex>
+                  {messages.goBack}
+                </PlainButton>
+              )
+            }
+          />
+        </Page>
       )}
     </Formik>
   )

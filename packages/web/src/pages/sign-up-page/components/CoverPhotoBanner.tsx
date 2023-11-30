@@ -56,7 +56,7 @@ export const CoverPhotoBanner = ({
           : { backgroundColor: color.neutral.n400 })
       }}
     >
-      {showPhotoIcon && !hasImage ? (
+      {showPhotoIcon ? (
         <IconImage
           css={{ position: 'absolute', right: '16px', top: '16px' }}
           color='staticWhite'
