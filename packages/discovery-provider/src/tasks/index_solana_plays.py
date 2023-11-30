@@ -179,10 +179,10 @@ def get_sol_tx_info(
         if existing_tx is not None and existing_tx != "":
             logger.info(f"index_solana_plays.py | Cache hit: {tx_sig}")
             tx_info = GetTransactionResp.from_json(existing_tx.decode("utf-8"))
-            return (tx_info, tx_sig)
+            return tx_info
         logger.info(f"index_solana_plays.py | Cache miss: {tx_sig}")
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
-        return (tx_info, tx_sig)
+        return tx_info
     except SolanaTransactionFetchError:
         return None
 
@@ -198,7 +198,7 @@ def parse_sol_play_transaction(
         logger.info(
             f"index_solana_plays.py | Got transaction: {tx_sig} in {fetch_time}"
         )
-        if not tx_info.value:
+        if not tx_info or not tx_info.value:
             return None
         transaction = tx_info.value.transaction
         if not transaction:

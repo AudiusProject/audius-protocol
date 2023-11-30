@@ -223,10 +223,10 @@ def get_sol_tx_info(
         if existing_tx is not None and existing_tx != "":
             logger.info(f"index_rewards_manager.py | Cache hit: {tx_sig}")
             tx_info = GetTransactionResp.from_json(existing_tx.decode("utf-8"))
-            return (tx_info, tx_sig)
+            return tx_info
         logger.info(f"index_rewards_manager.py | Cache miss: {tx_sig}")
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
-        return (tx_info, tx_sig)
+        return tx_info
     except SolanaTransactionFetchError:
         return None
 
@@ -243,10 +243,10 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
     """
     try:
         tx_info = get_sol_tx_info(solana_client_manager, tx_sig, redis)
-        result = tx_info.value
-        if not result:
+        if not tx_info or not tx_info.value:
             raise Exception("Missing txinfo")
         # Create transaction metadata
+        result = tx_info.value
         tx_metadata: RewardManagerTransactionInfo = {
             "tx_sig": tx_sig,
             "slot": result.slot,
