@@ -21,6 +21,7 @@ export const Box = styled.div<BoxProps>(
     ml,
     mr,
     mb,
+    backgroundColor,
     border,
     borderTop,
     borderRight,
@@ -61,6 +62,8 @@ export const Box = styled.div<BoxProps>(
       marginLeft: marginL && spacing[marginL],
       marginRight: marginR && spacing[marginR],
       marginBottom: marginB && spacing[marginB],
+      backgroundColor:
+        backgroundColor && theme.color.background[backgroundColor],
       border: border && `1px solid ${color.border[border]}`,
       borderTop: borderTop && `1px solid ${color.border[borderTop]}`,
       borderRight: borderRight && `1px solid ${color.border[borderRight]}`,

@@ -34,10 +34,6 @@ export const AddFundsModal = () => {
 
   const [page, setPage] = useState<Page>('add-funds')
 
-  const handleClose = useCallback(() => {
-    setPage('add-funds')
-  }, [setPage])
-
   const handleClosed = useCallback(() => {
     setPage('add-funds')
   }, [setPage])
@@ -64,7 +60,7 @@ export const AddFundsModal = () => {
     <ModalDrawer
       zIndex={zIndex.ADD_FUNDS_MODAL}
       size={'small'}
-      onClose={handleClose}
+      onClose={onClose}
       isOpen={isOpen}
       onClosed={handleClosed}
       bodyClassName={styles.modal}
@@ -91,7 +87,7 @@ export const AddFundsModal = () => {
         {page === 'add-funds' ? (
           <AddFunds onContinue={handleContinue} />
         ) : (
-          <USDCManualTransfer onClose={handleClose} />
+          <USDCManualTransfer onClose={() => setPage('add-funds')} />
         )}
       </ModalContent>
     </ModalDrawer>

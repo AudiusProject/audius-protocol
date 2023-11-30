@@ -86,6 +86,7 @@ export enum SignUpPath {
   createPassword = 'create-password',
   createLoginDetails = 'create-login-details',
   pickHandle = 'pick-handle',
+  reviewHandle = 'review-handle',
   finishProfile = 'finish-profile',
   selectGenres = 'select-genres',
   selectArtists = 'select-artists'
@@ -95,6 +96,7 @@ export const SIGN_UP_START_PAGE = SIGN_UP_EMAIL_PAGE // entry point for sign up 
 export const SIGN_UP_PASSWORD_PAGE = `/signup/${SignUpPath.createPassword}`
 export const SIGN_UP_CREATE_LOGIN_DETAILS = `/signup/${SignUpPath.createLoginDetails}`
 export const SIGN_UP_HANDLE_PAGE = `/signup/${SignUpPath.pickHandle}`
+export const SIGN_UP_REVIEW_HANDLE_PAGE = `/signup/${SignUpPath.reviewHandle}`
 export const SIGN_UP_FINISH_PROFILE_PAGE = `/signup/${SignUpPath.finishProfile}`
 export const SIGN_UP_GENRES_PAGE = `/signup/${SignUpPath.selectGenres}`
 export const SIGN_UP_ARTISTS_PAGE = `/signup/${SignUpPath.selectArtists}`

@@ -1,11 +1,12 @@
 import type { CSSProperties, ComponentPropsWithoutRef } from 'react'
 
-import type { BorderColors } from 'foundations/color'
+import type { BackgroundColors, BorderColors } from 'foundations/color'
 import type { CornerRadiusOptions } from 'foundations/corner-radius'
 import type { ShadowOptions } from 'foundations/shadows'
 import type { SpacingOptions } from 'foundations/spacing'
 
-export type BoxProps = {
+// Custom box props without HTML <div> properties
+export type BaseBoxProps = {
   /** Height */
   h?: CSSProperties['height']
   /** Width */
@@ -40,7 +41,8 @@ export type BoxProps = {
   mr?: SpacingOptions
   /** Margin Bottom */
   mb?: SpacingOptions
-
+  /** Background Color */
+  backgroundColor?: BackgroundColors
   /** Border */
   border?: BorderColors
   /** Border Top */
@@ -67,4 +69,6 @@ export type BoxProps = {
 
   flex?: CSSProperties['flex']
   alignSelf?: CSSProperties['alignSelf']
-} & ComponentPropsWithoutRef<'div'>
+}
+
+export type BoxProps = BaseBoxProps & ComponentPropsWithoutRef<'div'>

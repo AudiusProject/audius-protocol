@@ -1,8 +1,7 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 
 import {
   Flex,
-  Text,
   IconAudiusLogoHorizontalColor,
   Button,
   IconArrowRight,
@@ -22,6 +21,8 @@ import { HarmonyPasswordField } from 'components/form-fields/HarmonyPasswordFiel
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { useMedia } from 'hooks/useMedia'
+import { ForgotPasswordHelper } from 'pages/sign-on/components/desktop/ForgotPasswordHelper'
+import { Heading } from 'pages/sign-up-page/components/layout'
 import { useSelector } from 'utils/reducer'
 import { SIGN_UP_PAGE } from 'utils/route'
 
@@ -53,6 +54,7 @@ const initialValues = {
 export const SignInPage = () => {
   const dispatch = useDispatch()
   const { isMobile } = useMedia()
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
 
   const signInStatus = useSelector(getStatus)
 
@@ -95,15 +97,7 @@ export const SignInPage = () => {
                 />
               )}
             </Box>
-            <Text
-              variant='heading'
-              size={isMobile ? 'm' : 'l'}
-              tag='h1'
-              color='accent'
-              css={{ textAlign: isMobile ? 'center' : undefined }}
-            >
-              {messages.title}
-            </Text>
+            <Heading heading={messages.title} centered={isMobile} />
             <Flex direction='column' gap='l'>
               <HarmonyTextField name='email' label={messages.emailLabel} />
               <HarmonyPasswordField
@@ -124,6 +118,9 @@ export const SignInPage = () => {
                 variant='visible'
                 textVariant='body'
                 css={{ textAlign: isMobile ? 'center' : undefined }}
+                onClick={() => {
+                  setShowForgotPassword(true)
+                }}
               >
                 {messages.forgotPassword}
               </TextLink>
@@ -136,6 +133,10 @@ export const SignInPage = () => {
           ) : null}
         </Flex>
       </Formik>
+      <ForgotPasswordHelper
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+      />
     </>
   )
 }

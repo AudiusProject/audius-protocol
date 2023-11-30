@@ -31,11 +31,12 @@ import { SocialMediaLoginOptions } from 'pages/sign-up-page/components/SocialMed
 import {
   SIGN_IN_PAGE,
   SIGN_UP_CREATE_LOGIN_DETAILS,
-  SIGN_UP_HANDLE_PAGE,
-  SIGN_UP_PASSWORD_PAGE
+  SIGN_UP_PASSWORD_PAGE,
+  SIGN_UP_REVIEW_HANDLE_PAGE
 } from 'utils/route'
 
 import { SignUpWithMetaMaskButton } from '../components/SignUpWithMetaMaskButton'
+import { Heading, Page } from '../components/layout'
 import { emailSchema } from '../utils/emailSchema'
 
 export const messages = {
@@ -74,19 +75,21 @@ export const CreateEmailPage = () => {
     email: existingEmailValue.value ?? ''
   }
 
-  const handleLinkedSocialMedia = useCallback(
+  const handleCompleteSocialMediaLogin = useCallback(
     (result: { requiresReview: boolean; handle: string }) => {
       const { handle, requiresReview } = result
       dispatch(setLinkedSocialOnFirstPage(true))
       dispatch(setValueField('handle', handle))
       navigate(
-        requiresReview ? SIGN_UP_HANDLE_PAGE : SIGN_UP_CREATE_LOGIN_DETAILS
+        requiresReview
+          ? SIGN_UP_REVIEW_HANDLE_PAGE
+          : SIGN_UP_CREATE_LOGIN_DETAILS
       )
     },
     [dispatch, navigate]
   )
 
-  const onSubmit = useCallback(
+  const handleSubmit = useCallback(
     async (
       values: SignUpEmailValues,
       { setErrors }: FormikHelpers<SignUpEmailValues>
@@ -121,20 +124,12 @@ export const CreateEmailPage = () => {
     <Formik
       validationSchema={FormSchema}
       initialValues={initialValues}
-      onSubmit={onSubmit}
+      onSubmit={handleSubmit}
       validateOnBlur
       validateOnChange={false}
     >
       {({ isSubmitting }) => (
-        <Flex
-          as={Form}
-          direction='column'
-          h='100%'
-          w='100%'
-          ph={isMobile ? 'l' : '2xl'}
-          pv='2xl'
-          gap='2xl'
-        >
+        <Page as={Form}>
           <Box alignSelf='center'>
             {isMobile ? (
               <IconAudiusLogoHorizontalColor />
@@ -150,26 +145,11 @@ export const CreateEmailPage = () => {
               />
             )}
           </Box>
-          <Flex direction='column' gap={isMobile ? 's' : 'l'}>
-            <Text
-              variant='heading'
-              size={isMobile ? 'm' : 'l'}
-              color='accent'
-              tag='h1'
-              css={{ textAlign: isMobile ? 'center' : undefined }}
-            >
-              {messages.title}
-            </Text>
-            <Text
-              color='default'
-              size={isMobile ? 'm' : 'l'}
-              variant='body'
-              tag='h2'
-              css={{ textAlign: isMobile ? 'center' : undefined }}
-            >
-              {messages.subHeader}
-            </Text>
-          </Flex>
+          <Heading
+            heading={messages.title}
+            description={messages.subHeader}
+            css={isMobile && { alignItems: 'center' }}
+          />
           <Flex direction='column' gap='l'>
             <HarmonyTextField
               name='email'
@@ -182,7 +162,7 @@ export const CreateEmailPage = () => {
               </Text>
             </Divider>
             <SocialMediaLoginOptions
-              onCompleteSocialMediaLogin={handleLinkedSocialMedia}
+              onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
             />
           </Flex>
           <Flex direction='column' gap='l'>
@@ -216,7 +196,7 @@ export const CreateEmailPage = () => {
               </Text>
             </Flex>
           ) : null}
-        </Flex>
+        </Page>
       )}
     </Formik>
   )

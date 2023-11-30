@@ -1,4 +1,4 @@
-export const messages = {
+export const socialMediaMessages = {
   verificationError:
     'Something went wrong. Please try again or verify with another account.',
   socialMediaLoginSucess: (platform: 'twitter' | 'instagram' | 'tiktok') => {

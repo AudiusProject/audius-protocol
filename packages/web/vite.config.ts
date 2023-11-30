@@ -20,7 +20,8 @@ export default defineConfig(({ mode }) => {
       outDir: 'build',
       sourcemap: true,
       commonjsOptions: {
-        include: [/libs\/dist\/web-libs/, /node_modules/]
+        include: [/libs\/dist\/web-libs/, /node_modules/],
+        transformMixedEsModules: true
       }
     },
     define: {

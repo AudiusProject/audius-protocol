@@ -1,7 +1,7 @@
 import { TextInput, TextInputProps } from '@audius/harmony'
 import { useField } from 'formik'
 
-export type TextFieldProps = TextInputProps & {
+export type HarmonyTextFieldProps = TextInputProps & {
   name: string
   /**
    * Clears out field errors while the input is being changed for a small UX improvement
@@ -14,7 +14,7 @@ export type TextFieldProps = TextInputProps & {
 }
 
 // TODO: rename to TextField and replace old usages
-export const HarmonyTextField = (props: TextFieldProps) => {
+export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
   const { name, clearErrorOnChange = true, transformValue, ...other } = props
   const [field, { touched, error }, { setError }] = useField(name)
 

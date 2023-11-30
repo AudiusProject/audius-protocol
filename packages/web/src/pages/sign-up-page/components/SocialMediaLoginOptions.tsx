@@ -6,7 +6,7 @@ import { Box, Flex, SocialButton } from '@audius/harmony'
 import { ToastContext } from 'components/toast/ToastContext'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
 
-import { messages } from '../utils/socialMediaMessages'
+import { socialMediaMessages } from '../utils/socialMediaMessages'
 
 import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
@@ -25,7 +25,7 @@ export const SocialMediaLoginOptions = ({
 }: SocialMediaLoginOptionsProps) => {
   const { toast } = useContext(ToastContext)
   const handleFailure = () => {
-    toast(messages.verificationError)
+    toast(socialMediaMessages.verificationError)
   }
 
   const handleSuccess = ({
@@ -37,7 +37,7 @@ export const SocialMediaLoginOptions = ({
     handle: string
     platform: 'twitter' | 'instagram' | 'tiktok'
   }) => {
-    toast(messages.socialMediaLoginSucess(platform))
+    toast(socialMediaMessages.socialMediaLoginSucess(platform))
     onCompleteSocialMediaLogin({
       handle,
       requiresReview,
@@ -65,7 +65,7 @@ export const SocialMediaLoginOptions = ({
             type='button'
             fullWidth
             socialType='twitter'
-            aria-label={messages.signUpTwitter}
+            aria-label={socialMediaMessages.signUpTwitter}
           />
         </SignupFlowTwitterAuth>
       ) : null}
@@ -80,7 +80,7 @@ export const SocialMediaLoginOptions = ({
             fullWidth
             socialType='instagram'
             css={{ flex: 1 }}
-            aria-label={messages.signUpInstagram}
+            aria-label={socialMediaMessages.signUpInstagram}
           />
         </SignupFlowInstagramAuth>
       ) : null}
@@ -94,7 +94,7 @@ export const SocialMediaLoginOptions = ({
               type='button'
               fullWidth
               socialType='tiktok'
-              aria-label={messages.signUpTikTok}
+              aria-label={socialMediaMessages.signUpTikTok}
             />
           </SignupFlowTikTokAuth>
         </Box>
