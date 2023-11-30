@@ -26,6 +26,12 @@ declare module '*.jpg' {
   export default value
 }
 
+declare module '*.jpeg' {
+  import type { ImageSourcePropType } from 'react-native'
+  const value: ImageSourcePropType
+  export default value
+}
+
 declare module '@react-native-masked-view/masked-view' {
   import * as React from 'react'
   import type * as ReactNative from 'react-native'
