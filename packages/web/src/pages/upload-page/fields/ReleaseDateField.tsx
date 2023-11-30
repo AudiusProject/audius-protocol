@@ -35,7 +35,7 @@ const messages = {
       </>)
     } else {
       return (<>
-        Your scheduled track will become live on Audius on the date and time you’ve chosen above in your time zone (CST).
+        Your scheduled track will become live on Audius on the date and time you’ve chosen above in your time zone.
       </>)
     }
   }
@@ -122,14 +122,31 @@ export const ReleaseDateField = () => {
     [setReleaseDate]
   )
 
+  const formatReleaseMessage = (releaseDate, base) => {
+    const isFutureRelease = moment(releaseDate ?? undefined).isAfter(moment.now())
+
+    let message = isFutureRelease ? '[Scheduled] for ' : '';
+    message += base;
+    message += isFutureRelease ? ' @ LT' : '';
+
+    return message;
+  }
 
   const renderValue = useCallback(() => {
     return (
       <SelectedValue
         label={
           moment(releaseDate ?? undefined)
-            .calendar()
-            .split(' at')[0]
+            .calendar(null,
+              {
+                sameDay: formatReleaseMessage(releaseDate, '[Today]'),
+                nextDay: formatReleaseMessage(releaseDate, '[Tomorrow] @ LT'),
+                nextWeek: formatReleaseMessage(releaseDate, 'dddd'),
+                lastDay: '[Yesterday]',
+                lastWeek: '[Last] dddd',
+                sameElse: formatReleaseMessage(releaseDate, 'MM/DD/YYYY')
+              }
+            )
         }
         icon={IconCalendar}
       >
