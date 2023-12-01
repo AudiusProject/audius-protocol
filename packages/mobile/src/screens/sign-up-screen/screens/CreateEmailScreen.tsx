@@ -1,0 +1,201 @@
+import { useCallback, useContext } from 'react'
+
+import { AudiusQueryContext, signUpFetch } from '@audius/common'
+import { css } from '@emotion/native'
+import { useTheme } from '@emotion/react'
+import { setValueField } from 'common/store/pages/signon/actions'
+import { getEmailField } from 'common/store/pages/signon/selectors'
+import type { FormikHelpers } from 'formik'
+import { Formik } from 'formik'
+import { Dimensions, ImageBackground } from 'react-native'
+import RadialGradient from 'react-native-radial-gradient'
+import { useDispatch, useSelector } from 'react-redux'
+
+import { Box, Flex, Link, Text } from '@audius/harmony-native'
+import DJBackground from 'app/assets/images/DJportrait.jpg'
+import { Button } from 'app/components/core'
+import { TextField } from 'app/components/fields'
+import { useNavigation } from 'app/hooks/useNavigation'
+
+import { AudiusValues } from '../components/AudiusValues'
+import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
+import { Heading, Page } from '../components/layout'
+import { Divider } from '../components/temp-harmony/Divider'
+import { Hint } from '../components/temp-harmony/Hint'
+import { IconAudiusLogoHorizontalColor } from '../components/temp-harmony/IconAudiusLogoHorizontalColor'
+import IconExclamation from '../components/temp-harmony/IconExclamation.svg'
+import type { SignUpScreenParamList } from '../types'
+
+const messages = {
+  title: 'Sign Up For Audius',
+  emailLabel: 'Email',
+  signUp: 'Sign Up Free',
+  haveAccount: 'Already have an account?',
+  signIn: 'Sign In',
+  subHeader: (
+    <>
+      Join the revolution in music streaming!{'\n'}Discover, connect, and create
+      on Audius.
+    </>
+  ),
+  socialsDividerText: 'Or, get started with one of your socials',
+  unknownError: 'Unknown error occurred.',
+  metaMaskNotRecommended: 'Signing up with MetaMask is not recommended.',
+  signUpMetamask: 'Sign Up With MetaMask',
+  learnMore: 'Learn More',
+  emailExistsError: 'Email already taken.'
+}
+
+type SignUpEmailValues = {
+  email: string
+}
+
+export const CreateEmailScreen = () => {
+  const dispatch = useDispatch()
+  const navigation = useNavigation<SignUpScreenParamList>()
+  const existingEmailValue = useSelector(getEmailField)
+  const queryContext = useContext(AudiusQueryContext)
+  const initialValues = {
+    email: existingEmailValue.value ?? ''
+  }
+  const { color, cornerRadius } = useTheme()
+
+  const handleSubmit = useCallback(
+    async (
+      values: SignUpEmailValues,
+      { setErrors }: FormikHelpers<SignUpEmailValues>
+    ) => {
+      const { email } = values
+      if (queryContext !== null) {
+        try {
+          // Check identity API for existing emails
+          const emailExists = await signUpFetch.isEmailInUse(
+            { email },
+            queryContext
+          )
+          // Set the email in the store
+          dispatch(setValueField('email', values.email))
+          if (emailExists) {
+            setErrors({ email: messages.emailExistsError })
+          } else {
+            navigation.navigate('CreatePassword', { email })
+          }
+        } catch (e) {
+          // Unknown error state ¯\_(ツ)_/¯
+          setErrors({ email: messages.unknownError })
+        }
+      }
+    },
+    [dispatch, navigation, queryContext]
+  )
+
+  return (
+    <Box h='100%'>
+      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+        {({ handleSubmit, errors }) => (
+          <Page
+            style={css({
+              height: 'auto',
+              backgroundColor: color.background.white,
+              borderBottomLeftRadius: cornerRadius['2xl'],
+              borderBottomRightRadius: cornerRadius['2xl'],
+              zIndex: 2
+            })}
+          >
+            <Box alignSelf='center'>
+              <IconAudiusLogoHorizontalColor />
+            </Box>
+
+            <Heading
+              heading={messages.title}
+              description={messages.subHeader}
+              centered
+            />
+            <Flex direction='column' gap='l'>
+              {/* TODO: replace with harmony text input */}
+              <TextField name='email' label={messages.emailLabel} noGutter />
+              {errors.email === messages.emailExistsError ? (
+                <Hint icon={IconExclamation}>
+                  <Text
+                    variant='body'
+                    size='m'
+                    style={css({ textAlign: 'center' })}
+                  >
+                    {messages.emailExistsError}{' '}
+                    <Link to='SignIn' color='accentPurple'>
+                      {messages.signIn}
+                    </Link>
+                  </Text>
+                </Hint>
+              ) : null}
+              <Divider>
+                <Text variant='body' size='s' color='subdued'>
+                  {messages.socialsDividerText}
+                </Text>
+              </Divider>
+              <SocialMediaLoginOptions />
+            </Flex>
+            <Flex direction='column' gap='l'>
+              <Button
+                title={messages.signUp}
+                onPress={() => handleSubmit()}
+                fullWidth
+              />
+              <Text
+                variant='body'
+                size='m'
+                style={css({ textAlign: 'center' })}
+              >
+                {messages.haveAccount}{' '}
+                {/* TODO: how does this to={} work on native */}
+                {/* TODO: Need TextLink equivalent for native harmony? */}
+                <Link to='SignIn' color='accentPurple'>
+                  {messages.signIn}
+                </Link>
+              </Text>
+            </Flex>
+          </Page>
+        )}
+      </Formik>
+      <Flex
+        h='100%'
+        w='100%'
+        alignItems='center'
+        justifyContent='flex-end'
+        style={css({
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          zIndex: 1
+        })}
+      >
+        {/* <RadialGradient
+          colors={[
+            'rgba(91, 35, 225, 0.8)',
+            'rgba(113, 41, 230, 0.640269)',
+            'rgba(162, 47, 235, 0.5)'
+          ]}
+          stops={[0, 0.67, 0.5]}
+          radius={200}
+        /> */}
+        <ImageBackground
+          source={DJBackground}
+          style={{
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            top: 0
+          }}
+          resizeMode='cover'
+        />
+        <AudiusValues
+          style={css({
+            // TODO: how is this positioned on web...
+            position: 'absolute',
+            bottom: 40
+          })}
+        />
+      </Flex>
+    </Box>
+  )
+}
