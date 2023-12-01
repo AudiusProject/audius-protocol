@@ -1,9 +1,11 @@
 import { Collection, CollectionMetadata, SquareSizes } from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { ArtworkField, TextAreaField, TextField } from 'components/form-fields'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
+import { PlaylistSchema } from 'pages/upload-page/validation'
 
 import { EditActions } from './FormActions'
 
@@ -42,6 +44,12 @@ type PlaylistFormProps = {
   onSave: (formFields: CollectionMetadata) => void
 }
 
+const playlistFormSchema = PlaylistSchema.pick({
+  artwork: true,
+  playlist_name: true,
+  description: true
+})
+
 const PlaylistForm = ({
   isAlbum = false,
   metadata,
@@ -63,44 +71,43 @@ const PlaylistForm = ({
         artwork: { url: coverArtUrl || '' }
       }}
       onSubmit={onSave}
+      validationSchema={toFormikValidationSchema(playlistFormSchema)}
     >
-      {({ values }) => (
-        <Form>
-          <Flex direction='column' w='100%' gap='xl'>
-            <Flex w='100%' gap='m'>
-              <ArtworkField name='artwork' />
-              <Flex direction='column' h={218} gap='m' flex={1}>
-                <TextField
-                  name='playlist_name'
-                  label={`${collectionTypeName} ${messages.name}`}
-                  maxLength={64}
-                  required
-                />
-                <TextAreaField
-                  name='description'
-                  placeholder={`${collectionTypeName} ${messages.description}`}
-                  maxLength={1000}
-                  showMaxLength
-                  grows
-                  css={{ flexGrow: 1 }}
-                />
-              </Flex>
+      <Form>
+        <Flex direction='column' w='100%' gap='2xl'>
+          <Flex w='100%' gap='m'>
+            <ArtworkField name='artwork' />
+            <Flex direction='column' h={218} gap='m' flex={1}>
+              <TextField
+                name='playlist_name'
+                label={`${collectionTypeName} ${messages.name}`}
+                maxLength={64}
+                required
+              />
+              <TextAreaField
+                name='description'
+                placeholder={`${collectionTypeName} ${messages.description}`}
+                maxLength={1000}
+                showMaxLength
+                grows
+                css={{ flexGrow: 1 }}
+              />
             </Flex>
-            <EditActions
-              deleteText={
-                isAlbum
-                  ? messages.deleteAlbumButtonText
-                  : messages.deletePlaylistButtonText
-              }
-              saveText={messages.editPlaylistButtonText}
-              cancelText={messages.cancelButtonText}
-              onCancel={onCancel}
-              onDelete={onDelete}
-              onSave={() => onSave(values)}
-            />
           </Flex>
-        </Form>
-      )}
+          <EditActions
+            deleteText={
+              isAlbum
+                ? messages.deleteAlbumButtonText
+                : messages.deletePlaylistButtonText
+            }
+            saveText={messages.editPlaylistButtonText}
+            cancelText={messages.cancelButtonText}
+            onCancel={onCancel}
+            onDelete={onDelete}
+            isForm
+          />
+        </Flex>
+      </Form>
     </Formik>
   )
 }

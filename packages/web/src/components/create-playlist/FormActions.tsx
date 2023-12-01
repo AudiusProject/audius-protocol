@@ -80,13 +80,14 @@ export const CreateActions = ({
   return (
     <div className={styles.createActionsContainer}>
       <Button
-        text={saveText}
-        type={disabled ? ButtonType.DISABLED : ButtonType.PRIMARY}
+        variant={ButtonType.PRIMARY}
         disabled={disabled}
         onClick={onSave}
-        buttonType={isForm ? 'submit' : 'button'}
-        rightIcon={<IconCheck />}
-      />
+        type={isForm ? 'submit' : 'button'}
+        iconRight={IconCheck}
+      >
+        {saveText}
+      </Button>
     </div>
   )
 }
