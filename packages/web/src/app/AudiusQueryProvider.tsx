@@ -14,7 +14,7 @@ type AudiusQueryProviderProps = {
   children: ReactNode
 }
 
-const audiusQueryContext = {
+export const audiusQueryContext = {
   apiClient,
   audiusBackend: audiusBackendInstance,
   audiusSdk,

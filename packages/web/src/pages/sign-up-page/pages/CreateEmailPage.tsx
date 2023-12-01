@@ -1,6 +1,10 @@
 import { useCallback, useContext } from 'react'
 
-import { AudiusQueryContext, signUpFetch } from '@audius/common'
+import {
+  signUpFetch,
+  useAudiusQueryContext,
+  useDebouncedCallback
+} from '@audius/common'
 import {
   Box,
   Button,
@@ -13,10 +17,12 @@ import {
   TextLink
 } from '@audius/harmony'
 import { Form, Formik, FormikHelpers } from 'formik'
+import { debounce } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { toFormikValidationSchema } from 'zod-formik-adapter'
+import { toFormikValidate, toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { audiusQueryContext } from 'app/AudiusQueryProvider'
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import {
   setLinkedSocialOnFirstPage,
@@ -37,7 +43,7 @@ import {
 
 import { SignUpWithMetaMaskButton } from '../components/SignUpWithMetaMaskButton'
 import { Heading, Page } from '../components/layout'
-import { emailSchema } from '../utils/emailSchema'
+import { validateEmail } from '../utils/emailSchema'
 
 export const messages = {
   title: 'Sign Up For Audius',
@@ -62,14 +68,11 @@ export type SignUpEmailValues = {
   email: string
 }
 
-const FormSchema = toFormikValidationSchema(emailSchema)
-
 export const CreateEmailPage = () => {
   const { isMobile } = useMedia()
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const existingEmailValue = useSelector(getEmailField)
-  const queryContext = useContext(AudiusQueryContext)
 
   const initialValues = {
     email: existingEmailValue.value ?? ''
@@ -90,42 +93,18 @@ export const CreateEmailPage = () => {
   )
 
   const handleSubmit = useCallback(
-    async (
-      values: SignUpEmailValues,
-      { setErrors }: FormikHelpers<SignUpEmailValues>
-    ) => {
+    async (values: SignUpEmailValues) => {
       const { email } = values
-      if (queryContext !== null) {
-        try {
-          // Check identity API for existing emails
-          const emailExists = await signUpFetch.isEmailInUse(
-            { email },
-            queryContext
-          )
-          // Set the email in the store
-          dispatch(setValueField('email', values.email))
-          if (emailExists) {
-            // Redirect to sign in if the email exists already
-            navigate(SIGN_IN_PAGE)
-          } else {
-            // Move onto the password page
-            navigate(SIGN_UP_PASSWORD_PAGE)
-          }
-        } catch (e) {
-          // Unknown error state ¯\_(ツ)_/¯
-          setErrors({ email: messages.unknownError })
-        }
-      }
+      dispatch(setValueField('email', email))
+      navigate(SIGN_UP_PASSWORD_PAGE)
     },
-    [dispatch, navigate, queryContext]
+    [dispatch, navigate]
   )
 
   return (
     <Formik
-      validationSchema={FormSchema}
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      validateOnBlur
       validateOnChange={false}
     >
       {({ isSubmitting }) => (
@@ -156,6 +135,8 @@ export const CreateEmailPage = () => {
               name='email'
               autoComplete='email'
               label={messages.emailLabel}
+              helperText={null}
+              validate={validateEmail}
             />
             <Divider>
               <Text variant='body' size={isMobile ? 's' : 'm'} color='subdued'>
