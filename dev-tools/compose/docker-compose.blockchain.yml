@@ -112,9 +112,9 @@ services:
 
   solana-test-validator:
     # NOTE: Building solana program can take a lot of time especially on m1 (upto 30 mins) so we used pre-built images
-    image: audius/solana-programs:latest # Default tag is "latest." Change tag to "m1-slow" to have very slow block times that use less CPU
-    volumes:
-      - solana-programs-idl:/usr/src/app/anchor/audius-data/idl
+    image: audius/solana-programs:latest-arm64 # Default tag is "latest." Change tag to "m1-slow" to have very slow block times that use less CPU
+    # volumes:
+    #   - solana-programs-idl:/usr/src/app/anchor/audius-data/idl
     ports:
       - '8899:8899'
     deploy:

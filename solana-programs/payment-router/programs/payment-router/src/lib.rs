@@ -17,7 +17,11 @@ use crate::router::{
 #[cfg(not(feature = "no-entrypoint"))]
 use solana_security_txt::security_txt;
 
+<<<<<<< Updated upstream
 declare_id!("paytYpX3LPN98TAeen6bFFeraGSuWnomZmCXjAsoqPa");
+=======
+declare_id!("7veBbiKw49XzFcPs4cEot1yBQtbYGoJpm1pLSqzYvYL8");
+>>>>>>> Stashed changes
 
 #[program]
 pub mod payment_router {
