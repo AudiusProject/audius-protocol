@@ -147,24 +147,23 @@ export const useFeatureFlag = (
   )
 
   const [isLocallyEnabled, setIsLocallyOverriden] = useState<Maybe<boolean>>()
+  const [hasFetchedLocalStorage, setHasFetchedLocalStorage] = useState(false)
 
   useEffectOnce(() => {
     const getOverride = async () => {
       const override = await localStorage.getItem(overrideKey)
       if (override === 'enabled') {
         setIsLocallyOverriden(true)
-      }
-      if (override === 'disabled') {
+      } else if (override === 'disabled') {
         setIsLocallyOverriden(false)
       }
-
-      return undefined
+      setHasFetchedLocalStorage(true)
     }
     getOverride()
   })
 
   return {
-    isLoaded: configLoaded,
+    isLoaded: configLoaded && hasFetchedLocalStorage,
     isEnabled: isLocallyEnabled ?? isEnabled,
     setOverride
   }
