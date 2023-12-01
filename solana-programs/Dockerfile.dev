@@ -1,22 +1,19 @@
-FROM --platform=linux/arm64 rust:1.69.0 AS build-base
+FROM --platform=linux/amd64 rust:1.60.0 AS bpf-builder
 
 WORKDIR /usr/src/app
 
 ENV PATH="/root/solana-release/bin:${PATH}"
-ENV CARGO_INCREMENTAL=1
-ENV NODE_MAJOR=18
 RUN apt-get update && \
-    apt-get install -y ca-certificates curl gnupg && \
-    mkdir -p /etc/apt/keyrings && \
-    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
-    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
-    apt-get update && \
-    apt-get install -y build-essential clang libudev-dev libhidapi-dev pkg-config libssl-dev git nodejs && \
-    corepack enable && \
-    npm install -g @coral-xyz/anchor-cli@0.28.0
+    apt-get install -y build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git && \
+    curl -SfL https://github.com/solana-labs/solana/releases/download/v1.14.18/solana-release-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C $HOME
 
-COPY scripts/install-solana.sh /tmp/install-solana.sh
-RUN --mount=type=cache,target=/usr/local/cargo/registry /tmp/install-solana.sh
+ENV CARGO_INCREMENTAL=1
+
+ARG AUDIUS_ETH_REGISTRY_PRIVATE_KEY
+ARG TRACK_LISTEN_COUNT_PRIVATE_KEY
+ARG CLAIMABLE_TOKENS_PRIVATE_KEY
+ARG REWARD_MANAGER_PRIVATE_KEY
+ARG PAYMENT_ROUTER_PRIVATE_KEY
 
 COPY audius_eth_registry ./audius_eth_registry
 COPY claimable-tokens ./claimable-tokens
@@ -31,60 +28,81 @@ COPY scripts/update-keys.sh scripts/update-keys.sh
 RUN --mount=type=cache,target=/usr/src/app/target \
     --mount=type=cache,target=/root/.cache/solana \
     --mount=type=cache,target=/usr/local/cargo/registry \
-    ./scripts/update-keys.sh
+    ./scripts/update-keys.sh && \
+    cargo build-bpf && \
+    mkdir -p artifacts/main-target && \
+    cp -r target/deploy/ artifacts/main-target
 
 # ------
-FROM build-base AS bpf-builder
+FROM --platform=linux/amd64 rust:1.69.0 AS anchor-builder
 
 WORKDIR /usr/src/app
 
 ENV PATH="/root/solana-release/bin:${PATH}"
+ENV NODE_MAJOR=18
+RUN apt-get update && \
+    apt-get install -y ca-certificates curl gnupg && \
+    mkdir -p /etc/apt/keyrings && \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
+    apt-get update && \
+    apt-get install -y build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git nodejs && \
+    npm install -g yarn@1.22.19 @coral-xyz/anchor-cli@0.28.0 && \
+    curl -SfL https://github.com/solana-labs/solana/releases/download/v1.16.3/solana-release-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C $HOME
+
 ENV CARGO_INCREMENTAL=1
 
 ARG AUDIUS_ETH_REGISTRY_PRIVATE_KEY
 ARG TRACK_LISTEN_COUNT_PRIVATE_KEY
 ARG CLAIMABLE_TOKENS_PRIVATE_KEY
 ARG REWARD_MANAGER_PRIVATE_KEY
-
-RUN --mount=type=cache,target=/usr/src/app/target \
-    --mount=type=cache,target=/root/.cache/solana \
-    --mount=type=cache,target=/usr/local/cargo/registry \
-    cargo build-bpf && \
-    mkdir -p artifacts/main-target && \
-    cp -r target/deploy/ artifacts/main-target
-
-# ------
-
-FROM build-base AS anchor-builder
-
-WORKDIR /usr/src/app
-
-ENV PATH="/root/solana-release/bin:${PATH}"
-ENV CARGO_INCREMENTAL=1
 ARG PAYMENT_ROUTER_PRIVATE_KEY
 
+COPY audius_eth_registry ./audius_eth_registry
+COPY claimable-tokens ./claimable-tokens
+COPY cli ./cli
+COPY reward-manager ./reward-manager
+COPY payment-router ./payment-router
+COPY staking-bridge ./staking-bridge
+COPY track_listen_count ./track_listen_count
+COPY Cargo.lock Cargo.toml ./
+COPY scripts/update-keys.sh scripts/update-keys.sh
+
 RUN --mount=type=cache,target=/usr/src/app/target \
     --mount=type=cache,target=/root/.cache/solana \
     --mount=type=cache,target=/usr/local/cargo/registry \
     mkdir -p artifacts/main-target && \
+    ./scripts/update-keys.sh && \
     cd payment-router && anchor build && cd .. && \
     cp -r payment-router/target/deploy artifacts/main-target && \
     cp -r payment-router/target/idl artifacts/main-target && \
     cp -r payment-router/target/types artifacts/main-target
 
 # ------
-
-FROM build-base
+FROM rust:1.69.0
 
 WORKDIR /usr/src/app
 
-ENV PATH="/root/solana-release/bin:${PATH}"
 ENV CARGO_INCREMENTAL=1
+ENV NODE_MAJOR=18
+RUN apt-get update && \
+    apt-get install -y ca-certificates curl gnupg && \
+    mkdir -p /etc/apt/keyrings && \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
+    apt-get update && \
+    apt-get install -y clang cmake build-essential libudev-dev libhidapi-dev pkg-config libssl-dev git nodejs && \
+    npm install -g yarn @coral-xyz/anchor-cli@0.28.0
+
+ENV PATH="/root/solana-release/bin:${PATH}"
+COPY scripts/install-solana.sh /tmp/install-solana.sh
+RUN --mount=type=cache,target=/usr/local/cargo/registry /tmp/install-solana.sh
 
 ARG AUDIUS_ETH_REGISTRY_PRIVATE_KEY
 ARG TRACK_LISTEN_COUNT_PRIVATE_KEY
 ARG CLAIMABLE_TOKENS_PRIVATE_KEY
 ARG REWARD_MANAGER_PRIVATE_KEY
+ARG AUDIUS_DATA_PRIVATE_KEY
 ARG PAYMENT_ROUTER_PRIVATE_KEY
 ARG owner_private_key
 ARG feepayer_private_key
@@ -98,7 +116,7 @@ ARG reward_manager_pda_private_key
 ARG reward_manager_token_pda_private_key
 ARG valid_signer_eth_address
 
-COPY scripts/. scripts
+COPY . .
 COPY --from=bpf-builder /usr/src/app/artifacts/main-target target
 COPY --from=anchor-builder /usr/src/app/artifacts/main-target/. target
 

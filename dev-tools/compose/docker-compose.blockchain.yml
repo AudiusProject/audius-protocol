@@ -132,9 +132,9 @@ services:
     # image: audius/solana-programs:latest-amd64 # build on linux
     build:
       # platform flags seem to have no effect?
-      platforms:
-        - 'linux/arm64'
-        # - "linux/amd64"
+      # platforms:
+      #   - 'linux/arm64'
+      #   # - "linux/amd64"
       context: ${PROJECT_ROOT}/solana-programs
       dockerfile: Dockerfile.dev
       args:

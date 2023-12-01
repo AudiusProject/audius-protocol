@@ -147,9 +147,9 @@ echo "Deploying audius-reward-manager..."
 solana program deploy target/deploy/audius_reward_manager.so
 echo
 
-echo "Deploying payment-router..."
-solana program deploy target/deploy/payment_router.so
-echo
+# echo "Deploying payment-router..."
+# solana program deploy target/deploy/payment_router.so
+# echo
 
 echo "Deploying wAUDIO token..."
 spl-token create-token --decimals 8 -- "$token_keypair"
@@ -189,11 +189,11 @@ claimable-tokens-cli generate-base-pda \
     "$(solana address -k target/deploy/claimable_tokens-keypair.json)"
 echo
 
+# TODO: PAY-2001: Re-deploy this with min-votes 3
 echo "Initalizing reward manager..."
 audius-reward-manager-cli init \
     --keypair "$reward_manager_pda_keypair" \
     --token-keypair "$reward_manager_token_pda_keypair" \
-    # TODO: PAY-2001: Re-deploy this with min-votes 3
     --min-votes 2 \
     --token-mint "$(solana address -k $token_keypair)"
 echo
