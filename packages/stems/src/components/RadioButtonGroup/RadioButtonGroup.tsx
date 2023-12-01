@@ -8,6 +8,7 @@ import {
 import { useControlled } from 'hooks/useControlled'
 
 import { RadioGroupContext } from './RadioGroupContext'
+import Select from 'antd/lib/select'
 
 export type RadioButtonGroupProps = {
   name: string
@@ -40,10 +41,27 @@ export const RadioButtonGroup = (props: RadioButtonGroupProps) => {
     [setValueState, onChange]
   )
   return (
-    <RadioGroupContext.Provider value={{ name, onChange: handleChange, value }}>
+    <>
+
+      <RadioGroupContext.Provider value={{ name, onChange: handleChange, value }}>
+
       <div {...divProps} role='radiogroup'>
+          <Select
+            defaultValue="kj"
+            style={{ width: 120 }}
+            options={[
+              { value: 'jack', label: 'Jack' },
+              { value: 'kj', label: 'kj' },
+              { value: 'Yiminghe', label: 'yiminghe' },
+              { value: 'disabled', label: 'Disabled', disabled: true },
+            ]}
+          />
+          hiifdsa
+
         {children}
       </div>
     </RadioGroupContext.Provider>
+
+    </>
   )
 }

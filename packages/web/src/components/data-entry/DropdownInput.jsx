@@ -16,7 +16,7 @@ class DropdownInput extends Component {
   }
 
   onVisibleChange = (visible) => {
-    console.log('asdf dropdowninput onVisibleChange: ', visible)
+    console.log('asdf dropdowninput onVisibleChange: ', visible, option)
     this.setState({
       focused: visible
     })
@@ -160,7 +160,7 @@ class DropdownInput extends Component {
             }
             notFoundContent={''}
             getPopupContainer={popupContainer}
-            onDropdownVisibleChange={this.onVisibleChange}
+            onVisibleChange={this.onVisibleChange}
             {...other}
           >
             {options}

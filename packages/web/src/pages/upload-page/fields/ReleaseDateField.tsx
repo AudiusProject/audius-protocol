@@ -26,6 +26,7 @@ import { DropdownField, DropdownFieldProps } from 'components/form-fields'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { AVAILABILITY_TYPE } from './AccessAndSaleField'
 import { release } from 'os'
+import Select from 'antd/lib/select'
 const messages = {
   title: 'Release Date',
   description:
@@ -165,23 +166,25 @@ export const ReleaseDateField = () => {
 
 
   return (
-    <ContextualMenu
-      label={messages.title}
-      description={messages.description}
-      icon={<IconCalendar className={styles.titleIcon} />}
-      initialValues={initialValues}
-      onSubmit={onSubmit}
-      menuFields={
-        <>
-          <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-            <Text>{messages.description}</Text>
-            <RadioItems releaseDateTypeField={releaseDateTypeField} releaseDateField={releaseDateField} />
-          </div>
+    <>
+      <ContextualMenu
+        label={messages.title}
+        description={messages.description}
+        icon={<IconCalendar className={styles.titleIcon} />}
+        initialValues={initialValues}
+        onSubmit={onSubmit}
+        menuFields={
+          <>
+            <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
+              <Text>{messages.description}</Text>
+              <RadioItems releaseDateTypeField={releaseDateTypeField} releaseDateField={releaseDateField} />
+            </div>
 
-        </>
-      }
-      renderValue={renderValue}
-    />
+          </>
+        }
+        renderValue={renderValue}
+      />
+    </>
   )
 }
 
@@ -214,19 +217,29 @@ const RadioItems = (props: any) => {
   }, [releaseDateField])
 
   return (
-    <RadioButtonGroup
-      {...releaseDateTypeField}
-      className={styles.radioGroup}
-      defaultValue={releaseDateTypeField.value ?? ReleaseDateType.RELEASE_NOW}
-    >
+    <>
+      <RadioButtonGroup
+        {...releaseDateTypeField}
+        className={styles.radioGroup}
+        defaultValue={releaseDateTypeField.value ?? ReleaseDateType.RELEASE_NOW}
+      >
+        <ModalRadioItem
+          value={ReleaseDateType.RELEASE_NOW}
+          label="Release Immediately" />
+        <ModalRadioItem
+          value={ReleaseDateType.SCHEDULED_RELEASE}
+          label="Select a release date"
+          checkedContent={
+            <>
+            </>
 
-      <ModalRadioItem
-        value={ReleaseDateType.RELEASE_NOW}
-        label="Release Immediately" />
-      <ModalRadioItem
-        value={ReleaseDateType.SCHEDULED_RELEASE}
-        label="Select a release date"
-        checkedContent={
+          }
+
+        />
+
+      </RadioButtonGroup>
+      <>
+        {releaseDateTypeField?.value === ReleaseDateType.SCHEDULED_RELEASE && (
           <>
             <div
               className={cn(
@@ -239,8 +252,7 @@ const RadioItems = (props: any) => {
               <div className={styles.datePicker}>
                 <DatePickerField name={RELEASE_DATE} label={messages.title} shouldFocus={releaseDateTypeField.value === ReleaseDateType.SCHEDULED_RELEASE} />
               </div>
-
-              {timePeriod !== TimePeriodType.PAST && (
+              {timePeriod === TimePeriodType.FUTURE && (
                 <>
                   <HarmonyTextField
                     name={RELEASE_DATE_HOUR}
@@ -250,21 +262,25 @@ const RadioItems = (props: any) => {
                     inputRootClassName={styles.hourInput}
                   />
                   <SelectMeridianField />
-
                 </>
-              )
+              )}
 
-              }
             </div>
             <ModalContent className={styles.releaseDateHint}>
               <HelpCallout icon={<IconInfo />} content={messages.callout(timePeriod)} />
             </ModalContent>
           </>
-        }
-      />
+        )}
+      </>
 
-    </RadioButtonGroup>
+    </>
   )
+}
+const menu = {
+  items: [ReleaseDateMeridian.AM, ReleaseDateMeridian.PM].map((meridian) => {
+    const el = <p>{meridian}</p>
+    return { el, text: meridian, value: meridian }
+  })
 }
 
 export const SelectMeridianField = () => {
