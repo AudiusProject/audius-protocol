@@ -218,27 +218,21 @@ def parse_release_date(release_date_str):
         return None
 
     try:
-        return str(
-            datetime.strptime(
-                release_date_str, "%a %b %d %Y %H:%M:%S GMT%z"
-            ).astimezone(timezone.utc)
+        return datetime.strptime(
+            release_date_str, "%a %b %d %Y %H:%M:%S GMT%z"
+        ).astimezone(timezone.utc)
+    except ValueError:
+        pass
+
+    try:
+        return datetime.strptime(release_date_str, "%Y-%m-%dT%H:%M:%S.%fZ").astimezone(
+            timezone.utc
         )
     except ValueError:
         pass
 
     try:
-        return str(
-            datetime.strptime(release_date_str, "%Y-%m-%dT%H:%M:%S.%fZ").astimezone(
-                timezone.utc
-            )
-        )
-    except ValueError:
-        pass
-
-    try:
-        return str(
-            datetime.fromtimestamp(int(release_date_str)).astimezone(timezone.utc)
-        )
+        return datetime.fromtimestamp(int(release_date_str)).astimezone(timezone.utc)
     except (ValueError, TypeError):
         pass
 
@@ -250,6 +244,7 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
     # Update track_record values for which keys exist in track_metadata
     track_record_attributes = track_record.get_attributes_dict()
     for key, _ in track_record_attributes.items():
+        logger.info("asdf key {key}")
         # For certain fields, update track_record under certain conditions
         if key == "premium_conditions":
             if "premium_conditions" in track_metadata and (
@@ -287,18 +282,36 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                 )
 
         elif key == "release_date" or key == "is_unlisted":
+            track_record.is_unlisted = track_metadata.get(
+                "is_unlisted", track_record.is_unlisted
+            )
+
             if "release_date" in track_metadata:
                 # casting to string because datetime doesn't work for some reason
+                parsed_release_date = parse_release_date(track_metadata["release_date"])
                 # postgres will convert to a timestamp
-                track_record.release_date = parse_release_date(track_metadata["release_date"])  # type: ignore
+                track_record.release_date = str(parsed_release_date)  # type: ignore
+                track_record.is_unlisted = parsed_release_date > datetime.now()
 
             # release date takes precedence over is_unlisted metadata
-            track_record.is_unlisted = (
-                True
-                if track_record.release_date
-                and track_record.release_date > track_record.created_at
-                else track_metadata.get("is_unlisted", track_record.is_unlisted)
-            )
+            # if "is_unlisted" in track_metadata:
+            #     logger.info(f"asdf track_id {track_record.track_id}")
+            #     logger.info(
+            #         f"asdf track_metadata.release_date {track_metadata.get('release_date')}"
+            #     )
+            #     logger.info(
+            #         f"asdf track_record.release_date {parse_release_date(track_record.release_date)}"
+            #     )
+            #     logger.info(f"asdf track_record.created_at {track_record.created_at}")
+
+            #     track_record.is_unlisted = (
+            #         True
+            #         if track_record.release_date
+            #         and parse_release_date(track_record.release_date)
+            #         > track_record.created_at
+            #         else track_metadata.get("is_unlisted", track_record.is_unlisted)
+            #     )
+            #     logger.info(f"asdf track_record.is_unlisted {track_record.is_unlisted}")
 
         else:
             # For most fields, update the track_record when the corresponding field exists
