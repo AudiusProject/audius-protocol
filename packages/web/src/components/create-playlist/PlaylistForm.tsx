@@ -1,14 +1,9 @@
-import {
-  Collection,
-  CollectionMetadata,
-  DeepNullable,
-  Nullable
-} from '@audius/common'
+import { Collection, CollectionMetadata, SquareSizes } from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 
 import { ArtworkField, TextAreaField, TextField } from 'components/form-fields'
-import { ReleaseDateField } from 'pages/upload-page/fields/ReleaseDateField'
+import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 
 import { EditActions } from './FormActions'
 
@@ -28,36 +23,17 @@ const messages = {
   createPlaylistButtonText: 'Create Playlist'
 }
 
-export type EditPlaylistValuess = Partial<Collection> & {
+export type EditPlaylistValuess = Collection & {
   artwork: {
-    file: Blob
-    url: string
-    source: 'unsplash' | 'original' | 'generated'
+    file?: Blob
+    url?: string
+    source?: 'unsplash' | 'original' | 'generated'
     error?: string
   }
-  is_current: boolean
-  mood: Nullable<string>
-  created_at: Nullable<string>
-  tags: Nullable<string>
-  genre: Nullable<string>
-  isAlbum: boolean
-} & DeepNullable<
-    Pick<
-      CollectionMetadata,
-      | 'is_private'
-      | 'updated_at'
-      | 'cover_art'
-      | 'cover_art_sizes'
-      | 'playlist_name'
-      | 'playlist_owner_id'
-      | 'save_count'
-      | 'upc'
-      | 'description'
-    >
-  >
+}
 
 type PlaylistFormProps = {
-  metadata: CollectionMetadata
+  metadata: Collection
   isAlbum?: boolean
   /** Only applies to edit mode */
   onDelete?: () => void
@@ -74,11 +50,23 @@ const PlaylistForm = ({
   onDelete
 }: PlaylistFormProps) => {
   const collectionTypeName = isAlbum ? 'Album' : 'Playlist'
+  const coverArtUrl = useCollectionCoverArt(
+    metadata.playlist_id,
+    metadata?._cover_art_sizes ? metadata._cover_art_sizes : null,
+    SquareSizes.SIZE_1000_BY_1000
+  )
+
   return (
-    <Formik initialValues={metadata} onSubmit={onSave}>
+    <Formik<EditPlaylistValuess>
+      initialValues={{
+        ...metadata,
+        artwork: { url: coverArtUrl || '' }
+      }}
+      onSubmit={onSave}
+    >
       {({ values }) => (
         <Form>
-          <Flex direction='column' w='100%' p='l' gap='xl'>
+          <Flex direction='column' w='100%' gap='xl'>
             <Flex w='100%' gap='m'>
               <ArtworkField name='artwork' />
               <Flex direction='column' h={218} gap='m' flex={1}>
@@ -94,33 +82,23 @@ const PlaylistForm = ({
                   maxLength={1000}
                   showMaxLength
                   grows
+                  css={{ flexGrow: 1 }}
                 />
               </Flex>
             </Flex>
-            <ReleaseDateField />
-            {/* <div>
-            <Text variant='label'>{messages.trackDetails.title}</Text>
-            <Text>{messages.trackDetails.description}</Text>
-            <div>
-              <SelectGenreField name='trackDetails.genre' />
-              <SelectMoodField name='trackDetails.mood' />
-            </div>
-            <TagField name='trackDetails.tags' />
-          </div> */}
+            <EditActions
+              deleteText={
+                isAlbum
+                  ? messages.deleteAlbumButtonText
+                  : messages.deletePlaylistButtonText
+              }
+              saveText={messages.editPlaylistButtonText}
+              cancelText={messages.cancelButtonText}
+              onCancel={onCancel}
+              onDelete={onDelete}
+              onSave={() => onSave(values)}
+            />
           </Flex>
-          {/* <CollectionTrackFieldArray /> */}
-          <EditActions
-            deleteText={
-              isAlbum
-                ? messages.deleteAlbumButtonText
-                : messages.deletePlaylistButtonText
-            }
-            saveText={messages.editPlaylistButtonText}
-            cancelText={messages.cancelButtonText}
-            onCancel={onCancel}
-            onDelete={onDelete}
-            onSave={() => onSave(values)}
-          />
         </Form>
       )}
     </Formik>
