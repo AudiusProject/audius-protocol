@@ -30,6 +30,16 @@ describe('Sign In', () => {
     assertOnSignInPage()
   })
 
+  it.only('can navigate to sign-in after entering email in sign-up', () => {
+    cy.visit('signup')
+    cy.findByRole('textbox', { name: /email/i }).type(email)
+    cy.findByRole('button', { name: /sign up free/i }).click()
+    cy.findByRole('alert').within(() => {
+      cy.findByRole('link', { name: /Sign In/ }).click()
+    })
+    assertOnSignInPage()
+  })
+
   it('can sign in', () => {
     cy.visit('signin')
     assertOnSignInPage()

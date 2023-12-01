@@ -85,6 +85,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         // Should be able to use vite-tsconfig-paths instead
+        app: '/src/app',
         assets: '/src/assets',
         common: '/src/common',
         components: '/src/components',
