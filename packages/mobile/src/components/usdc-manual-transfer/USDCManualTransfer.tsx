@@ -43,8 +43,7 @@ const messages = {
   goBack: 'Go Back',
   learnMore: 'Learn More',
   copied: 'Copied to Clipboard!',
-  usdcBalance: 'USDC Balance',
-  buy: (amount: string) => `Buy $${amount}`
+  usdcBalance: 'USDC Balance'
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -206,26 +205,7 @@ export const USDCManualTransfer = ({
               fullWidth
             />
           </>
-        ) : (
-          <>
-            <Button
-              title={messages.goBack}
-              onPress={onClose}
-              variant='common'
-              size='large'
-              fullWidth
-            />
-            <Button
-              title={messages.buy(USDC(amount).ceil(2).toFixed(2))}
-              onPress={onSuccess}
-              variant='primary'
-              color={specialLightGreen}
-              size='large'
-              disabled={isBuyButtonDisabled}
-              fullWidth
-            />
-          </>
-        )}
+        ) : null}
       </View>
     </View>
   )
