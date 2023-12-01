@@ -1,4 +1,10 @@
-import { Children, ComponentType, ReactNode, forwardRef } from 'react'
+import {
+  Children,
+  ComponentType,
+  ElementType,
+  ReactNode,
+  forwardRef
+} from 'react'
 
 import {
   Box,
@@ -12,6 +18,7 @@ import {
   PaperProps,
   Text
 } from '@audius/harmony'
+import styled from '@emotion/styled'
 
 import { useMedia } from 'hooks/useMedia'
 
@@ -66,13 +73,15 @@ type HeadingProps = {
   prefix?: ReactNode
   postfix?: ReactNode
   heading: ReactNode
+  tag?: ElementType
   description?: ReactNode
   centered?: boolean
 } & Omit<FlexProps & BoxProps, 'prefix'>
 
 export const Heading = forwardRef<HTMLDivElement, HeadingProps>(
   (props, ref) => {
-    const { prefix, heading, description, postfix, centered, ...other } = props
+    const { prefix, heading, description, postfix, centered, tag, ...other } =
+      props
     const { isMobile } = useMedia()
     return (
       <Flex
@@ -83,7 +92,12 @@ export const Heading = forwardRef<HTMLDivElement, HeadingProps>(
         {...other}
       >
         {prefix}
-        <Text variant='heading' color='accent' size={isMobile ? 'm' : 'l'}>
+        <Text
+          variant='heading'
+          color='accent'
+          size={isMobile ? 'm' : 'l'}
+          tag={tag}
+        >
           {heading}
         </Text>
         {description ? (
@@ -179,6 +193,7 @@ export const ScrollView = (props: ScrollViewProps) => {
   return (
     <Flex
       w='100%'
+      h='100%'
       direction={orientation === 'vertical' ? 'column' : 'row'}
       gap={isMobile ? '2xl' : '3xl'}
       css={{
@@ -197,3 +212,14 @@ export const ScrollView = (props: ScrollViewProps) => {
     </Flex>
   )
 }
+
+export const HiddenLegend = styled.legend({
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  margin: -1,
+  padding: 0,
+  overflow: 'hidden',
+  clip: 'rect(0, 0, 0, 0)',
+  border: 0
+})
