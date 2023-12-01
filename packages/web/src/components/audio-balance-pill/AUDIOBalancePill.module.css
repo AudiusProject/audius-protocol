@@ -7,6 +7,7 @@
   padding: 2px;
   padding-right: var(--unit-2);
   border-radius: var(--unit-12);
+  min-width: var(--unit-10);
 }
 
 .amount {

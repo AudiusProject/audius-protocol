@@ -6,6 +6,10 @@
   align-items: center;
 }
 
+.popupMenu {
+  min-width: 256px;
+}
+
 .icon {
   border: 1px solid var(--neutral-light-8);
   border-radius: 50%;
