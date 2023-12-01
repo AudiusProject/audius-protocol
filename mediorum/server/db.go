@@ -40,6 +40,26 @@ type Upload struct {
 	// UpldateULID - this is the last ULID that change this thing
 }
 
+// Metric actions
+const (
+	StreamTrack string = "stream_track"
+	ServeImage  string = "serve_image"
+)
+
+type DailyMetrics struct {
+	Timestamp time.Time `gorm:"primaryKey"`
+	Action    string    `gorm:"primaryKey"`
+	Count     int64     `gorm:"not null"`
+	CreatedAt time.Time `json:"created_at" gorm:"not null"`
+}
+
+type MonthlyMetrics struct {
+	Timestamp time.Time `gorm:"primaryKey"`
+	Action    string    `gorm:"primaryKey"`
+	Count     int64     `gorm:"not null"`
+	CreatedAt time.Time `json:"created_at" gorm:"not null"`
+}
+
 type UploadCursor struct {
 	Host  string `gorm:"primaryKey"`
 	After time.Time
@@ -62,7 +82,7 @@ func dbMustDial(dbPath string) *gorm.DB {
 func dbMigrate(crud *crudr.Crudr, bucket *blob.Bucket, myHost string) {
 	// Migrate the schema
 	slog.Info("db: gorm automigrate")
-	err := crud.DB.AutoMigrate(&Upload{}, &RepairTracker{}, &UploadCursor{}, &StorageAndDbSize{})
+	err := crud.DB.AutoMigrate(&Upload{}, &RepairTracker{}, &UploadCursor{}, &StorageAndDbSize{}, &DailyMetrics{}, &MonthlyMetrics{})
 	if err != nil {
 		panic(err)
 	}
