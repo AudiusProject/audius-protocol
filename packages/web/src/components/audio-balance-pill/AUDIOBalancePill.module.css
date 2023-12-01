@@ -16,6 +16,6 @@
 }
 
 .skeleton {
-  width: var(unit--6);
+  width: var(--unit-8);
   height: 18px;
 }

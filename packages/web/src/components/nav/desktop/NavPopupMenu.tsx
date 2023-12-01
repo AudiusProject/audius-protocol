@@ -150,6 +150,7 @@ const NavPopupMenu = () => {
       <PopupMenu
         items={menuItems}
         position={PopupPosition.BOTTOM_RIGHT}
+        className={styles.popupMenu}
         renderTrigger={(anchorRef, triggerPopup) => {
           return (
             <div className={styles.container}>
