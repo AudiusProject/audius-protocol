@@ -80,7 +80,6 @@ jobs:
             - ./packages/common/node_modules
             - ./packages/libs/node_modules
             - ./packages/identity-service/node_modules
-            - ./packages/discovery-provider/es-indexer/node_modules
 
   generate-release-branch:
     working_directory: ~/audius-protocol

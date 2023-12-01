@@ -22,8 +22,5 @@ if nslookup "$elasticsearch_host" >/dev/null 2>&1; then
     export audius_elasticsearch_run_indexer="true"
 fi
 
-# Run register script in background
+# Run register script in background as it waits for the node to be healthy
 ./scripts/register.py &
-
-# Create sender for current DN
-../../node_modules/.bin/ts-node ./scripts/createSender.ts ${replica} &

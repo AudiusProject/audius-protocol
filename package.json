@@ -4,8 +4,7 @@
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
-    "packages/discovery-provider/plugins/pedalboard/packages/*",
-    "packages/discovery-provider/es-indexer"
+    "packages/discovery-provider/plugins/pedalboard/packages/*"
   ],
   "cacheBust": 1,
   "private": true,

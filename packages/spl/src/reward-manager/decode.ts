@@ -2,10 +2,6 @@ import { TransactionInstruction } from '@solana/web3.js'
 
 import { RewardManagerInstruction } from './constants'
 import {
-  DecodedCreateSenderInstruction,
-  decodeCreateSenderInstruction
-} from './createSender'
-import {
   DecodedCreateSenderPublicInstruction,
   decodeCreateSenderPublicInstruction
 } from './createSenderPublic'
@@ -23,7 +19,6 @@ import {
 } from './submitAttestation'
 
 type DecodedRewardManagerInstruction =
-  | DecodedCreateSenderInstruction
   | DecodedCreateSenderPublicInstruction
   | DecodedDeleteSenderPublicInstruction
   | DecodedSubmitAttestationsInstruction
@@ -35,9 +30,7 @@ export const decodeRewardManagerInstruction = (
   switch (instruction.data[0]) {
     case RewardManagerInstruction.Init:
     case RewardManagerInstruction.ChangeManagerAccount:
-      throw new Error('Not Implemented')
     case RewardManagerInstruction.CreateSender:
-      return decodeCreateSenderInstruction(instruction)
     case RewardManagerInstruction.DeleteSender:
       throw new Error('Not Implemented')
     case RewardManagerInstruction.CreateSenderPublic:
