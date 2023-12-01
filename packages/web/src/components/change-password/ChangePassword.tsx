@@ -91,8 +91,7 @@ export const ChangePassword = ({
         return (
           <EnterPassword
             continueLabel={messages.changePassword}
-            continueIcon={<IconLock />}
-            isMobile={true}
+            continueIcon={IconLock}
             onSubmit={onNewPasswordSubmitted}
           />
         )

@@ -7,12 +7,11 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { setValueField } from 'common/store/pages/signon/actions'
 import { getEmailField } from 'common/store/pages/signon/selectors'
-import { PasswordField } from 'components/form-fields/PasswordField'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { SIGN_UP_HANDLE_PAGE } from 'utils/route'
 
-import { CompletionChecklist } from '../components/CompletionChecklist'
+import { EnterPasswordSection } from '../components/EnterPasswordSection'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
 import { passwordSchema } from '../utils/passwordSchema'
@@ -21,9 +20,7 @@ const messages = {
   createYourPassword: 'Create Your Password',
   description:
     'Create a password that’s secure and easy to remember! We can’t reset your password, so write it down or use a password manager.',
-  yourEmail: 'Your Email',
-  passwordLabel: 'Password',
-  confirmPasswordLabel: 'Confirm Password'
+  yourEmail: 'Your Email'
 }
 
 const initialValues = {
@@ -70,12 +67,7 @@ export const CreatePasswordPage = () => {
               label={messages.yourEmail}
               value={emailField.value}
             />
-            <PasswordField name='password' label={messages.passwordLabel} />
-            <PasswordField
-              name='confirmPassword'
-              label={messages.confirmPasswordLabel}
-            />
-            <CompletionChecklist />
+            <EnterPasswordSection />
           </Flex>
           <PageFooter
             shadow='flat'

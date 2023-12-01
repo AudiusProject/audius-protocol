@@ -85,7 +85,7 @@ export const Sizes = {
   render: SizesExample
 }
 
-const CheckboxExample = (props: FollowButtonProps & { type: 'checkbox' }) => {
+const AsCheckboxExample = (props: FollowButtonProps & { type: 'checkbox' }) => {
   const [valueA, setValueA] = useState(false)
 
   return (
@@ -98,6 +98,6 @@ const CheckboxExample = (props: FollowButtonProps & { type: 'checkbox' }) => {
   )
 }
 
-export const Checkboxes = {
-  render: CheckboxExample
+export const AsCheckbox = {
+  render: AsCheckboxExample
 }

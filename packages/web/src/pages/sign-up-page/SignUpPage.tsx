@@ -27,7 +27,7 @@ import { SelectArtistsPage } from './pages/SelectArtistsPage'
 import { SelectGenrePage } from './pages/SelectGenrePage'
 
 const messages = {
-  metaTitle: 'Sign Up',
+  metaTitle: 'Sign Up • Audius',
   metaDescription: 'Create an account on Audius'
 }
 
@@ -64,12 +64,9 @@ export const SignUpPage = () => {
       </Helmet>
       <NavHeader />
       <Switch>
-        <Route exact path={SIGN_UP_PAGE}>
-          <Redirect to={SIGN_UP_EMAIL_PAGE} />
-        </Route>
-        <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
+        <Route exact path={[SIGN_UP_PAGE, SIGN_UP_EMAIL_PAGE]}>
           <CreateEmailPage />
-        </SignUpRoute>
+        </Route>
         <SignUpRoute exact path={SIGN_UP_PASSWORD_PAGE}>
           <CreatePasswordPage />
         </SignUpRoute>
