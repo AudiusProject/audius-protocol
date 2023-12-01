@@ -28,4 +28,5 @@ export type BasePaperProps = {
    */
   shadow?: Exclude<ShadowOptions, 'drop'>
 }
+
 export type PaperProps = BasePaperProps & FlexProps

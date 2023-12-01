@@ -1,18 +1,20 @@
-import { useCallback, useContext } from 'react'
+import { useCallback } from 'react'
 
-import { AudiusQueryContext, signUpFetch } from '@audius/common'
+import {} from '@audius/common'
 import {
   Box,
   Button,
   ButtonType,
   Divider,
   Flex,
+  Hint,
   IconArrowRight,
   IconAudiusLogoHorizontalColor,
+  IconError,
   Text,
   TextLink
 } from '@audius/harmony'
-import { Form, Formik, FormikHelpers } from 'formik'
+import { ErrorMessage, Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -39,6 +41,8 @@ import { SignUpWithMetaMaskButton } from '../components/SignUpWithMetaMaskButton
 import { Heading, Page } from '../components/layout'
 import { emailSchema } from '../utils/emailSchema'
 
+const EmailSchema = toFormikValidationSchema(emailSchema)
+
 export const messages = {
   title: 'Sign Up For Audius',
   emailLabel: 'Email',
@@ -62,14 +66,11 @@ export type SignUpEmailValues = {
   email: string
 }
 
-const FormSchema = toFormikValidationSchema(emailSchema)
-
 export const CreateEmailPage = () => {
   const { isMobile } = useMedia()
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const existingEmailValue = useSelector(getEmailField)
-  const queryContext = useContext(AudiusQueryContext)
 
   const initialValues = {
     email: existingEmailValue.value ?? ''
@@ -90,42 +91,25 @@ export const CreateEmailPage = () => {
   )
 
   const handleSubmit = useCallback(
-    async (
-      values: SignUpEmailValues,
-      { setErrors }: FormikHelpers<SignUpEmailValues>
-    ) => {
+    async (values: SignUpEmailValues) => {
       const { email } = values
-      if (queryContext !== null) {
-        try {
-          // Check identity API for existing emails
-          const emailExists = await signUpFetch.isEmailInUse(
-            { email },
-            queryContext
-          )
-          // Set the email in the store
-          dispatch(setValueField('email', values.email))
-          if (emailExists) {
-            // Redirect to sign in if the email exists already
-            navigate(SIGN_IN_PAGE)
-          } else {
-            // Move onto the password page
-            navigate(SIGN_UP_PASSWORD_PAGE)
-          }
-        } catch (e) {
-          // Unknown error state ¯\_(ツ)_/¯
-          setErrors({ email: messages.unknownError })
-        }
-      }
+      dispatch(setValueField('email', email))
+      navigate(SIGN_UP_PASSWORD_PAGE)
     },
-    [dispatch, navigate, queryContext]
+    [dispatch, navigate]
+  )
+
+  const signInLink = (
+    <TextLink variant='visible' asChild>
+      <Link to={SIGN_IN_PAGE}>{messages.signIn}</Link>
+    </TextLink>
   )
 
   return (
     <Formik
-      validationSchema={FormSchema}
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      validateOnBlur
+      validationSchema={EmailSchema}
       validateOnChange={false}
     >
       {({ isSubmitting }) => (
@@ -148,14 +132,24 @@ export const CreateEmailPage = () => {
           <Heading
             heading={messages.title}
             description={messages.subHeader}
-            css={isMobile && { alignItems: 'center' }}
+            tag='h1'
+            centered={isMobile}
           />
           <Flex direction='column' gap='l'>
             <HarmonyTextField
               name='email'
               autoComplete='email'
               label={messages.emailLabel}
+              debouncedValidationMs={500}
+              helperText={null}
             />
+            <ErrorMessage name='email'>
+              {(errorMessage) => (
+                <Hint icon={IconError}>
+                  {errorMessage} {signInLink}
+                </Hint>
+              )}
+            </ErrorMessage>
             <Divider>
               <Text variant='body' size={isMobile ? 's' : 'm'} color='subdued'>
                 {messages.socialsDividerText}
@@ -181,10 +175,7 @@ export const CreateEmailPage = () => {
               size={isMobile ? 'm' : 'l'}
               css={{ textAlign: isMobile ? 'center' : undefined }}
             >
-              {messages.haveAccount}{' '}
-              <TextLink variant='visible' asChild>
-                <Link to={SIGN_IN_PAGE}>{messages.signIn}</Link>
-              </TextLink>
+              {messages.haveAccount} {signInLink}
             </Text>
           </Flex>
           {!isMobile ? (

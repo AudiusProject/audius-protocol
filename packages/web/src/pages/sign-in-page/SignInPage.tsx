@@ -97,7 +97,7 @@ export const SignInPage = () => {
                 />
               )}
             </Box>
-            <Heading heading={messages.title} centered={isMobile} />
+            <Heading heading={messages.title} centered={isMobile} tag='h1' />
             <Flex direction='column' gap='l'>
               <HarmonyTextField name='email' label={messages.emailLabel} />
               <HarmonyPasswordField

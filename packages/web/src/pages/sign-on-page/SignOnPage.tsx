@@ -43,13 +43,14 @@ export const SignOnPage = () => {
   const panelRef = useRef<HTMLDivElement>(null)
 
   const collapsedMobilePageMatch = useRouteMatch({
-    path: [SIGN_IN_PAGE, SIGN_UP_EMAIL_PAGE],
+    path: [SIGN_IN_PAGE, SIGN_UP_PAGE, SIGN_UP_EMAIL_PAGE],
     exact: true
   })
 
   const collapsedDesktopPageMatch = useRouteMatch({
     path: [
       SIGN_IN_PAGE,
+      SIGN_UP_PAGE,
       SIGN_UP_EMAIL_PAGE,
       SIGN_UP_PASSWORD_PAGE,
       SIGN_UP_REVIEW_HANDLE_PAGE,

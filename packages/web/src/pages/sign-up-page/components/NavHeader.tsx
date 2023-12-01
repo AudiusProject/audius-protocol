@@ -22,6 +22,7 @@ import {
   SIGN_UP_FINISH_PROFILE_PAGE,
   SIGN_UP_GENRES_PAGE,
   SIGN_UP_HANDLE_PAGE,
+  SIGN_UP_PAGE,
   TRENDING_PAGE
 } from 'utils/route'
 
@@ -83,7 +84,7 @@ export const NavHeader = () => {
       justifyContent='space-between'
     >
       <Switch>
-        <Route path={[SIGN_UP_EMAIL_PAGE]}>
+        <Route path={[SIGN_UP_PAGE, SIGN_UP_EMAIL_PAGE]} exact>
           {isMobile ? (
             <PlainButton
               size={PlainButtonSize.LARGE}
