@@ -26,14 +26,19 @@ interface HealthResponse {
   }
 }
 
-interface RequestCountResponse {
+interface DiscoveryRequestCountResponse {
   timestamp: string
   unique_count: number
   total_count: number
 }
 
+interface ContentRequestCountResponse {
+  timestamp: string
+  count: number
+}
+
 interface RequestCountsResponse {
-  data: RequestCountResponse[]
+  data: DiscoveryRequestCountResponse[] | ContentRequestCountResponse[]
 }
 
 interface Tracker {
@@ -166,7 +171,13 @@ const getServiceProviderMetadata = async (
   }
 }
 
-const NodeRow = ({ node }: { node: NodeResponse }) => {
+const NodeRow = ({
+  node,
+  nodeType
+}: {
+  node: NodeResponse
+  nodeType: string
+}) => {
   const { audiusLibs } = useAudiusLibs()
 
   const [bondedData, setBondedData] = useState('')
@@ -234,21 +245,42 @@ const NodeRow = ({ node }: { node: NodeResponse }) => {
     }
   }, [node, audiusLibs])
 
+  // fetch health
   const { data: healthData, error: healthDataError } = useSWR(
     `${node.endpoint}/health_check?enforce_block_diff=true&healthy_block_diff=250&plays_count_max_drift=720`,
     fetcher
   ) as { data: HealthResponse; error: any }
   const health = healthData?.data
+
+  // fetch 24h uptime data
   const { data: uptimeData, error: uptimeDataError } = useSWR(
     `${node.endpoint}/d_api/uptime?host=${node.endpoint}&durationHours=12`,
     fetcher
   ) as { data: UptimeResponse; error: any }
-  // TODO this metric for content nodes
+
+  // fetch request counts from previous day
+  let requestCount
+  const requestsPath =
+    nodeType == 'discovery'
+      ? 'v1/metrics/routes/week?bucket_size=day'
+      : 'internal/metrics/blobs-served/week?bucket_size=day'
   const { data: requestsData, error: requestsDataError } = useSWR(
-    `${node.endpoint}/v1/metrics/routes/week?bucket_size=day`,
+    `${node.endpoint}/${requestsPath}`,
     fetcher
   ) as { data: RequestCountsResponse; error: any }
   const requests = requestsData?.data
+  // TODO (michelle) verify timestamp matches prev date
+  if (requests && requests.length > 0) {
+    if (nodeType == 'discovery') {
+      requestCount = (requests as DiscoveryRequestCountResponse[])[
+        requests.length - 1
+      ].total_count
+    } else {
+      requestCount = (requests as ContentRequestCountResponse[])[
+        requests.length - 1
+      ].count
+    }
+  }
 
   return (
     <tr>
@@ -291,11 +323,11 @@ const NodeRow = ({ node }: { node: NodeResponse }) => {
       </td>
       <td className='tableCell'></td>
       <td className='tableCell'>
-        {!requestsDataError && !requests
+        {!requestsDataError && !requestCount
           ? 'loading...'
           : requestsDataError
             ? 'error'
-            : requests[requests.length - 1].total_count}
+            : requestCount}
       </td>
       <td className='tableCell'>{node.owner}</td>
     </tr>
@@ -309,6 +341,11 @@ const NetworkOverview = () => {
     isPending: isListNodesPending,
     error: listNodesError
   } = useNodes(nodeType)
+
+  // For requests header
+  const prevDate = new Date()
+  prevDate.setDate(prevDate.getDate() - 1)
+  const prevDateString = prevDate.toISOString().substring(0, 10)
 
   return (
     <>
@@ -343,7 +380,7 @@ const NetworkOverview = () => {
                         Reward (24h)
                       </th>
                       <th scope='col' className='tableHeaderCell'>
-                        Requests (24h)
+                        Requests ({prevDateString})
                       </th>
                       <th scope='col' className='tableHeaderCell'>
                         Operator
@@ -352,7 +389,11 @@ const NetworkOverview = () => {
                   </thead>
                   <tbody className='divide-y divide-gray-200 bg-white'>
                     {(nodes as NodeResponse[]).map((node) => (
-                      <NodeRow key={node.endpoint} node={node} />
+                      <NodeRow
+                        key={node.endpoint}
+                        node={node}
+                        nodeType={nodeType}
+                      />
                     ))}
                   </tbody>
                 </table>
