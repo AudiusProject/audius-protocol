@@ -5,6 +5,8 @@ import { track } from 'services/analytics/amplitude'
 import { findRoute, getPathname } from 'utils/route'
 
 // Establish the "initial load" route
+
+// TODO: Fix remaining getPathname(), doesMatchRoute, pushUniqueRoute
 const route = findRoute(getPathname())
 
 const sendToAnalytics = ({ name, delta }: { name: string; delta: number }) => {

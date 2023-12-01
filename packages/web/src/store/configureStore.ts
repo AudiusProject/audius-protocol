@@ -3,6 +3,7 @@ import { SsrPageProps } from '@audius/common/dist/models/SsrPageProps'
 import { composeWithDevToolsLogOnlyInProduction } from '@redux-devtools/extension'
 import { configureScope, addBreadcrumb } from '@sentry/browser'
 import { routerMiddleware } from 'connected-react-router'
+import { History } from 'history'
 import { createStore, applyMiddleware, Action, Store } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 import createSentryMiddleware from 'redux-sentry-middleware'
@@ -14,7 +15,6 @@ import * as errorActions from 'store/errors/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import createRootReducer from 'store/reducers'
 import rootSaga from 'store/sagas'
-import history from 'utils/history'
 
 import { storeContext } from './storeContext'
 import { AppState } from './types'
@@ -92,7 +92,10 @@ const sentryMiddleware = createSentryMiddleware(
   }
 )
 
-export const configureStore = (ssrPageProps?: SsrPageProps) => {
+export const configureStore = (
+  history: History,
+  ssrPageProps?: SsrPageProps
+) => {
   const onSagaError = (
     error: Error,
     errorInfo: {

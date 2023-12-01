@@ -35,6 +35,7 @@ import ShuffleButtonProvider from 'components/play-bar/shuffle-button/ShuffleBut
 import { audioPlayer } from 'services/audio-player'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { getLineupSelectorForRoute } from 'store/lineup/lineupForRoute'
+import { getLocationPathname } from 'store/routing/selectors'
 import { setupHotkeys } from 'utils/hotkeyUtil'
 import { collectibleDetailsPage, profilePage } from 'utils/route'
 import { isMatrix, shouldShowDark } from 'utils/theme/theme'
@@ -463,8 +464,9 @@ const makeMapStateToProps = () => {
 
   const mapStateToProps = (state) => {
     const premiumTrackSignatureMap = getPremiumTrackSignatureMap(state)
+    const location = getLocationPathname(state)
     const lineupEntries =
-      getLineupEntries(getLineupSelectorForRoute(state), state) ?? []
+      getLineupEntries(getLineupSelectorForRoute(location), state) ?? []
 
     // The lineup has accessible tracks when there is at least one track
     // the user has access to i.e. a non-gated track or an unlocked gated track.

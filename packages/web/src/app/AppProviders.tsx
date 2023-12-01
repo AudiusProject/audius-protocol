@@ -1,4 +1,4 @@
-import { ReactNode, Suspense } from 'react'
+import { ReactNode } from 'react'
 
 import { ConnectedRouter } from 'connected-react-router'
 import { LastLocationProvider } from 'react-router-last-location'
@@ -8,12 +8,12 @@ import { HeaderContextProvider } from 'components/header/mobile/HeaderContextPro
 import { NavProvider } from 'components/nav/store/context'
 import { ScrollProvider } from 'components/scroll-provider/ScrollProvider'
 import { ToastContextProvider } from 'components/toast/ToastContext'
-import history from 'utils/history'
 
 import { MainContentContextProvider } from '../pages/MainContentContext'
 
 import { AppContextProvider } from './AppContextProvider'
 import { AudiusQueryProvider } from './AudiusQueryProvider'
+import { useHistoryContext } from './HistoryProvider'
 import { ReduxProvider } from './ReduxProvider'
 import { ThemeProvider } from './ThemeProvider'
 import { TrpcProvider } from './TrpcProvider'
@@ -23,6 +23,7 @@ type AppContextProps = {
 }
 
 export const AppProviders = ({ children }: AppContextProps) => {
+  const { history } = useHistoryContext()
   return (
     <ReduxProvider>
       <ConnectedRouter history={history}>
