@@ -21,7 +21,3 @@ export type Image = {
   url: string
   file?: string | File | { uri: string; name: string; type: string }
 }
-
-export type EditPlaylistValues = Collection & {
-  artwork: Image
-}

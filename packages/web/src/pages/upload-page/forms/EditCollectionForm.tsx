@@ -61,18 +61,14 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
 
   const handleSubmit = useCallback(
     (values: CollectionValues) => {
-      const {
-        tracks,
-        trackDetails: ignoredTrackDetails,
-        ...collectionMetadata
-      } = values
+      const { tracks, trackDetails, ...collectionMetadata } = values
 
       onContinue({
         uploadType,
         // @ts-expect-error more issues with tracks
         tracks,
         // @ts-expect-error more issues with tracks
-        metadata: { ...collectionMetadata, ...ignoredTrackDetails }
+        metadata: { ...collectionMetadata, ...trackDetails }
       })
     },
     [onContinue, uploadType]
