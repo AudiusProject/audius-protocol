@@ -291,7 +291,9 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                 parsed_release_date = parse_release_date(track_metadata["release_date"])
                 # postgres will convert to a timestamp
                 track_record.release_date = str(parsed_release_date)  # type: ignore
-                track_record.is_unlisted = parsed_release_date > datetime.now()
+                track_record.is_unlisted = (
+                    parsed_release_date and parsed_release_date > datetime.now()
+                )
 
             # release date takes precedence over is_unlisted metadata
             # if "is_unlisted" in track_metadata:
