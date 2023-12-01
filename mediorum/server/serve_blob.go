@@ -202,7 +202,7 @@ func (ss *MediorumServer) serveBlob(c echo.Context) error {
 		}
 
 		if isAudioFile {
-			ss.recordMetric(TrackStream)
+			ss.recordMetric(StreamTrack)
 			http.ServeContent(c.Response(), c.Request(), cid, blob.ModTime(), blob)
 			return nil
 		}

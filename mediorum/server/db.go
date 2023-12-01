@@ -42,7 +42,7 @@ type Upload struct {
 
 // Metric actions
 const (
-	TrackStream string = "track_stream"
+	StreamTrack string = "stream_track"
 	ServeImage  string = "serve_image"
 )
 

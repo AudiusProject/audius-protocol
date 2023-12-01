@@ -33,7 +33,7 @@ var (
 		"month":    {"day", "week"},
 		"all_time": {"month", "week"},
 	}
-	validBlobMetricActions = []string{TrackStream, ServeImage, "all"}
+	validBlobMetricActions = []string{StreamTrack, ServeImage, "all"}
 )
 
 func (ss *MediorumServer) getMetrics(c echo.Context) error {
@@ -53,11 +53,11 @@ func (ss *MediorumServer) getBlobsServedMetrics(c echo.Context) error {
 	}
 	bucket := c.QueryParam("bucket_size")
 	if bucket == "" || !slices.Contains(validBucketSizes[timeRange], bucket) {
-		return c.String(400, fmt.Sprintf("Error: bad request param bucket: %s", bucket))
+		return c.String(400, fmt.Sprintf("Error: bad request param bucket_size=%s", bucket))
 	}
 	action := c.QueryParam("action")
 	if action != "" && !slices.Contains(validBlobMetricActions, action) {
-		return c.String(400, fmt.Sprintf("Error: bad request param action: %s", action))
+		return c.String(400, fmt.Sprintf("Error: bad request param action=%s", action))
 	}
 
 	m := BlobMetrics{}
