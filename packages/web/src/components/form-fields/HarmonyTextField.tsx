@@ -1,6 +1,8 @@
+import { useEffect } from 'react'
+
 import { useDebouncedCallback } from '@audius/common'
 import { TextInput, TextInputProps } from '@audius/harmony'
-import { FieldValidator, useField } from 'formik'
+import { useField, useFormikContext } from 'formik'
 
 export type HarmonyTextFieldProps = TextInputProps & {
   name: string
@@ -12,8 +14,7 @@ export type HarmonyTextFieldProps = TextInputProps & {
   /** Function to transform the input value upon `onChange`.
    * E.g. a function to trim whitespace */
   transformValue?: (value: string) => string
-  validate?: FieldValidator
-  debounceValidationMs?: number
+  debouncedValidationMs?: number
 }
 
 // TODO: rename to TextField and replace old usages
@@ -22,22 +23,24 @@ export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
     name,
     clearErrorOnChange = true,
     transformValue,
-    validate,
-    debounceValidationMs,
+    debouncedValidationMs,
     ...other
   } = props
-  const [field, { touched, error }, { setError }] = useField({ name, validate })
+  const [field, { touched, error }, { setError }] = useField(name)
+  const { value } = field
+  const { validateField } = useFormikContext()
 
-  const debouncedValidation = useDebouncedCallback(
-    async (value) => {
-      const error = await validate?.(value)
-      if (error) {
-        setError(error)
-      }
-    },
-    [setError, validate],
-    debounceValidationMs ?? 0
+  const debouncedValidateField = useDebouncedCallback(
+    (field: string) => validateField(field),
+    [validateField],
+    500
   )
+
+  useEffect(() => {
+    if (debouncedValidationMs) {
+      debouncedValidateField(name)
+    }
+  }, [debouncedValidationMs, debouncedValidateField, name, value])
 
   const hasError = Boolean(touched && error)
 
@@ -54,9 +57,6 @@ export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
           e.target.value = transformValue(e.target.value)
         }
         field.onChange(e)
-        if (validate && debounceValidationMs) {
-          debouncedValidation(e.target.value)
-        }
       }}
       {...other}
     />

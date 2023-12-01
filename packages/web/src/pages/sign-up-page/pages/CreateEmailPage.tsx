@@ -1,28 +1,24 @@
-import { useCallback, useContext } from 'react'
+import { useCallback } from 'react'
 
-import {
-  signUpFetch,
-  useAudiusQueryContext,
-  useDebouncedCallback
-} from '@audius/common'
+import {} from '@audius/common'
 import {
   Box,
   Button,
   ButtonType,
   Divider,
   Flex,
+  Hint,
   IconArrowRight,
   IconAudiusLogoHorizontalColor,
+  IconError,
   Text,
   TextLink
 } from '@audius/harmony'
-import { Form, Formik, FormikHelpers } from 'formik'
-import { debounce } from 'lodash'
+import { ErrorMessage, Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { toFormikValidate, toFormikValidationSchema } from 'zod-formik-adapter'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { audiusQueryContext } from 'app/AudiusQueryProvider'
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import {
   setLinkedSocialOnFirstPage,
@@ -43,7 +39,9 @@ import {
 
 import { SignUpWithMetaMaskButton } from '../components/SignUpWithMetaMaskButton'
 import { Heading, Page } from '../components/layout'
-import { validateEmail } from '../utils/emailSchema'
+import { emailSchema } from '../utils/emailSchema'
+
+const EmailSchema = toFormikValidationSchema(emailSchema)
 
 export const messages = {
   title: 'Sign Up For Audius',
@@ -101,10 +99,17 @@ export const CreateEmailPage = () => {
     [dispatch, navigate]
   )
 
+  const signInLink = (
+    <TextLink variant='visible' asChild>
+      <Link to={SIGN_IN_PAGE}>{messages.signIn}</Link>
+    </TextLink>
+  )
+
   return (
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
+      validationSchema={EmailSchema}
       validateOnChange={false}
     >
       {({ isSubmitting }) => (
@@ -135,9 +140,16 @@ export const CreateEmailPage = () => {
               name='email'
               autoComplete='email'
               label={messages.emailLabel}
+              debouncedValidationMs={500}
               helperText={null}
-              validate={validateEmail}
             />
+            <ErrorMessage name='email'>
+              {(errorMessage) => (
+                <Hint icon={IconError}>
+                  {errorMessage} {signInLink}
+                </Hint>
+              )}
+            </ErrorMessage>
             <Divider>
               <Text variant='body' size={isMobile ? 's' : 'm'} color='subdued'>
                 {messages.socialsDividerText}
@@ -163,10 +175,7 @@ export const CreateEmailPage = () => {
               size={isMobile ? 'm' : 'l'}
               css={{ textAlign: isMobile ? 'center' : undefined }}
             >
-              {messages.haveAccount}{' '}
-              <TextLink variant='visible' asChild>
-                <Link to={SIGN_IN_PAGE}>{messages.signIn}</Link>
-              </TextLink>
+              {messages.haveAccount} {signInLink}
             </Text>
           </Flex>
           {!isMobile ? (
