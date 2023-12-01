@@ -15,6 +15,11 @@ export enum PurchaseContentStage {
   FINISH = 'FINISH'
 }
 
+export enum PurchaseContentPage {
+  PURCHASE = 'purchase',
+  TRANSFER = 'crypto-transfer'
+}
+
 export enum PurchaseErrorCode {
   Canceled = 'Canceled',
   InsufficientBalance = 'InsufficientBalance',
