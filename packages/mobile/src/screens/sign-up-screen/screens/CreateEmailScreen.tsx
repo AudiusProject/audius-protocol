@@ -3,14 +3,12 @@ import { useCallback, useContext, useMemo } from 'react'
 import {
   AudiusQueryContext,
   emailSchema,
-  emailSchemaMessages,
-  signUpFetch
+  emailSchemaMessages
 } from '@audius/common'
 import { css } from '@emotion/native'
 import { useTheme } from '@emotion/react'
 import { setValueField } from 'common/store/pages/signon/actions'
 import { getEmailField } from 'common/store/pages/signon/selectors'
-import type { FormikHelpers } from 'formik'
 import { Formik } from 'formik'
 import { Dimensions, ImageBackground } from 'react-native'
 import RadialGradient from 'react-native-radial-gradient'
@@ -71,32 +69,13 @@ export const CreateEmailScreen = () => {
   }, [queryContext])
 
   const handleSubmit = useCallback(
-    async (
-      values: SignUpEmailValues,
-      { setErrors }: FormikHelpers<SignUpEmailValues>
-    ) => {
+    (values: SignUpEmailValues) => {
       const { email } = values
-      if (queryContext !== null) {
-        try {
-          // Check identity API for existing emails
-          const emailExists = await signUpFetch.isEmailInUse(
-            { email },
-            queryContext
-          )
-          // Set the email in the store
-          dispatch(setValueField('email', values.email))
-          if (emailExists) {
-            setErrors({ email: messages.emailExistsError })
-          } else {
-            navigation.navigate('CreatePassword', { email })
-          }
-        } catch (e) {
-          // Unknown error state ¯\_(ツ)_/¯
-          setErrors({ email: messages.unknownError })
-        }
-      }
+      // Set the email in the store
+      dispatch(setValueField('email', email))
+      navigation.navigate('CreatePassword', { email })
     },
-    [dispatch, navigation, queryContext]
+    [dispatch, navigation]
   )
 
   return (
@@ -106,7 +85,7 @@ export const CreateEmailScreen = () => {
         onSubmit={handleSubmit}
         validationSchema={emailFormikSchema}
       >
-        {({ handleSubmit, errors }) => (
+        {({ handleSubmit, errors, values }) => (
           <Page
             style={css({
               height: 'auto',
@@ -125,7 +104,6 @@ export const CreateEmailScreen = () => {
               description={messages.subHeader}
               centered
             />
-            <Text>{errors.email}</Text>
             <Flex direction='column' gap='l'>
               {/* TODO: replace with harmony text input */}
               <TextField name='email' label={messages.emailLabel} noGutter />
@@ -164,7 +142,10 @@ export const CreateEmailScreen = () => {
                 {messages.haveAccount}{' '}
                 {/* TODO: how does this to={} work on native */}
                 {/* TODO: Need TextLink equivalent for native harmony? */}
-                <Link to='SignIn' color='accentPurple'>
+                <Link
+                  to={{ screen: 'SignIn', params: { email: values.email } }}
+                  color='accentPurple'
+                >
                   {messages.signIn}
                 </Link>
               </Text>
@@ -184,15 +165,23 @@ export const CreateEmailScreen = () => {
           zIndex: 1
         })}
       >
-        {/* <RadialGradient
+        <RadialGradient
+          style={{
+            // NOTE: Width/Height styles are mandatory for gradient to work. Otherwise it will crash the whole app 🫠
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            bottom: 0,
+            zIndex: 2
+          }}
           colors={[
             'rgba(91, 35, 225, 0.8)',
-            'rgba(113, 41, 230, 0.640269)',
+            'rgba(113, 41, 230, 0.64)',
             'rgba(162, 47, 235, 0.5)'
           ]}
-          stops={[0, 0.67, 0.5]}
-          radius={200}
-        /> */}
+          stops={[0, 0.67, 1]}
+          radius={Dimensions.get('window').width * 0.77}
+        />
         <ImageBackground
           source={DJBackground}
           style={{
@@ -205,9 +194,10 @@ export const CreateEmailScreen = () => {
         />
         <AudiusValues
           style={css({
-            // TODO: how is this positioned on web...
+            // TODO: match positioning + animation behavior on web
             position: 'absolute',
-            bottom: 40
+            bottom: 60,
+            zIndex: 3
           })}
         />
       </Flex>
