@@ -30,6 +30,7 @@ import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 import { make } from 'common/store/analytics/actions'
 import { getRecommendedTracks } from 'common/store/recommendation/sagas'
 import { isPreview } from 'common/utils/isPreview'
+import { getLocation } from 'store/routing/selectors'
 
 const {
   getCollectible,
@@ -221,9 +222,12 @@ export function* watchPlay() {
           'getLineupSelectorForRoute'
         )
         if (!getLineupSelectorForRoute) return
+
+        const location = yield* select(getLocation)
+
         // @ts-ignore todo
         const lineup: LineupState<{ id: number }> = yield* select(
-          getLineupSelectorForRoute()
+          getLineupSelectorForRoute(location)
         )
         if (!lineup) return
         if (lineup.entries.length > 0) {

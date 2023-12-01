@@ -1,9 +1,7 @@
 import { ID, encodeUrlName, getHash } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
-import { Location as HistoryLocation } from 'history'
+import { Location } from 'history'
 import { matchPath } from 'react-router'
-
-import history from './history'
 
 const USE_HASH_ROUTING = process.env.VITE_USE_HASH_ROUTING === 'true'
 
@@ -413,8 +411,12 @@ export const chatPage = (id: string) => {
   return `/messages/${id}`
 }
 
-export const doesMatchRoute = (route: string, exact = true) => {
-  return matchPath(getPathname(), {
+export const doesMatchRoute = (
+  location: Location,
+  route: string,
+  exact = true
+) => {
+  return matchPath(getPathname(location), {
     path: route,
     exact
   })
@@ -427,9 +429,7 @@ export const stripBaseUrl = (url: string) => url.replace(BASE_URL, '')
  * if using hash routing
  * @param {Location} location
  */
-export const getPathname = (
-  location: Location | HistoryLocation = history.location
-) => {
+export const getPathname = (location: Location) => {
   return BASENAME ? location.pathname.replace(BASENAME, '') : location.pathname
 }
 
@@ -469,8 +469,8 @@ export const pushWindowRoute = (route: string) => {
 /**
  * Only calls push route if unique (not current route)
  */
-export const pushUniqueRoute = (route: string) => {
-  const pathname = getPathname()
+export const pushUniqueRoute = (location: Location, route: string) => {
+  const pathname = getPathname(location)
   if (route !== pathname) {
     return pushRoute(route)
   }

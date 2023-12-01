@@ -1,4 +1,5 @@
 import type { AudiusSdk } from '@audius/sdk'
+import { Location } from 'history'
 
 import {
   AllTrackingEvents,
@@ -58,7 +59,9 @@ export type CommonStoreContext = {
   explore: Explore
   // A helper that returns the appropriate lineup selector for the current
   // route or screen.
-  getLineupSelectorForRoute?: () => (state: CommonState) => LineupState<Track>
+  getLineupSelectorForRoute?: (
+    location: Location
+  ) => (state: CommonState) => LineupState<Track>
   audioPlayer: AudioPlayer
   solanaClient: SolanaClient
   sentry: {

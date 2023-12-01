@@ -1,9 +1,8 @@
 import { SsrPageProps } from '@audius/common'
+import { createMemoryHistory } from 'history'
 import ReactDOMServer from 'react-dom/server'
 import { escapeInject, dangerouslySkipEscape } from 'vike/server'
 import { PageContextServer } from 'vike/types'
-
-import history from 'utils/history'
 
 import indexHtml from '../../index.html?raw'
 import { Root } from '../Root'
@@ -15,14 +14,15 @@ export const passToClient = ['pageProps', 'urlPathname']
 export function render(
   pageContext: PageContextServer & { pageProps: SsrPageProps }
 ) {
-  const { Page, pageProps, urlPathname } = pageContext
+  const { pageProps, urlPathname } = pageContext
 
-  // TODO: Shared history instance is causing page not to change on new route
-  history.replace(urlPathname)
+  const history = createMemoryHistory({
+    initialEntries: [urlPathname]
+  })
 
   const pageHtml = ReactDOMServer.renderToString(
     <SsrContextProvider
-      value={{ path: urlPathname, isServerSide: true, pageProps }}
+      value={{ path: urlPathname, isServerSide: true, pageProps, history }}
     >
       <Root />
     </SsrContextProvider>
