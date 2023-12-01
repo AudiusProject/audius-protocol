@@ -68,7 +68,7 @@ const PlaylistForm = ({
     <Formik<EditPlaylistValuess>
       initialValues={{
         ...metadata,
-        artwork: { url: coverArtUrl || '' }
+        artwork: { url: coverArtUrl }
       }}
       onSubmit={onSave}
       validationSchema={toFormikValidationSchema(playlistFormSchema)}
@@ -76,8 +76,8 @@ const PlaylistForm = ({
       <Form>
         <Flex direction='column' w='100%' gap='2xl'>
           <Flex w='100%' gap='m'>
-            <ArtworkField name='artwork' />
-            <Flex direction='column' h={218} gap='m' flex={1}>
+            <ArtworkField name='artwork' size='large' />
+            <Flex direction='column' gap='m' flex={1}>
               <TextField
                 name='playlist_name'
                 label={`${collectionTypeName} ${messages.name}`}

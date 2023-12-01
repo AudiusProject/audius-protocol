@@ -90,7 +90,11 @@ export const EditCollectionForm = (props: EditCollectionFormProps) => {
       <Form className={styles.root}>
         <Tile className={styles.collectionFields} elevation='mid'>
           <div className={styles.row}>
-            <ArtworkField name='artwork' className={styles.artwork} />
+            <ArtworkField
+              name='artwork'
+              className={styles.artwork}
+              size='small'
+            />
             <div className={styles.collectionInfo}>
               <TextField
                 name='playlist_name'

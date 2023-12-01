@@ -23,5 +23,5 @@ export type Image = {
 }
 
 export type EditPlaylistValues = Collection & {
-  artwork: { url?: string }
+  artwork: Image
 }
