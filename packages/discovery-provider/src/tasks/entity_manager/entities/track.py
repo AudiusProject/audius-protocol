@@ -244,7 +244,6 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
     # Update track_record values for which keys exist in track_metadata
     track_record_attributes = track_record.get_attributes_dict()
     for key, _ in track_record_attributes.items():
-        logger.info("asdf key {key}")
         # For certain fields, update track_record under certain conditions
         if key == "premium_conditions":
             if "premium_conditions" in track_metadata and (
@@ -282,6 +281,9 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                 )
 
         elif key == "release_date" or key == "is_unlisted":
+            # if scheduled release
+            # release_date can override is_unlisted
+
             track_record.is_unlisted = track_metadata.get(
                 "is_unlisted", track_record.is_unlisted
             )
@@ -295,27 +297,6 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
                     parsed_release_date
                     and parsed_release_date > datetime.now(timezone.utc)
                 )
-
-            # release date takes precedence over is_unlisted metadata
-            # if "is_unlisted" in track_metadata:
-            #     logger.info(f"asdf track_id {track_record.track_id}")
-            #     logger.info(
-            #         f"asdf track_metadata.release_date {track_metadata.get('release_date')}"
-            #     )
-            #     logger.info(
-            #         f"asdf track_record.release_date {parse_release_date(track_record.release_date)}"
-            #     )
-            #     logger.info(f"asdf track_record.created_at {track_record.created_at}")
-
-            #     track_record.is_unlisted = (
-            #         True
-            #         if track_record.release_date
-            #         and parse_release_date(track_record.release_date)
-            #         > track_record.created_at
-            #         else track_metadata.get("is_unlisted", track_record.is_unlisted)
-            #     )
-            #     logger.info(f"asdf track_record.is_unlisted {track_record.is_unlisted}")
-
         else:
             # For most fields, update the track_record when the corresponding field exists
             # in track_metadata
