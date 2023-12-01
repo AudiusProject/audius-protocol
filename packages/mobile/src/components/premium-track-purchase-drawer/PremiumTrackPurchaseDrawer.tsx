@@ -93,8 +93,7 @@ const messages = {
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   root: {
     height: '100%',
-    justifyContent: 'space-between',
-    justifySelf: 'flex-end'
+    justifyContent: 'space-between'
   },
   formContainer: {
     flex: 1
