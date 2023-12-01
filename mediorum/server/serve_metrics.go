@@ -117,7 +117,7 @@ func (ss *MediorumServer) getBlobsServedMetrics(c echo.Context) error {
 				Where("timestamp >= ? AND timestamp < ?", thirtyDaysAgo, today).
 				Group(groupBy)
 
-			if action != "all" {
+			if action != "" && action != "all" {
 				query = query.Where("action = ?", action)
 			}
 			err := query.Order("timestamp asc").Find(&metrics).Error
@@ -160,7 +160,7 @@ func (ss *MediorumServer) getBlobsServedMetrics(c echo.Context) error {
 				Where("timestamp < ?", today).
 				Group(groupBy)
 
-			if action != "all" {
+			if action != "" && action != "all" {
 				query = query.Where("action = ?", action)
 			}
 			err := query.Order("timestamp asc").Find(&metrics).Error
