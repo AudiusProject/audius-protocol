@@ -4,9 +4,6 @@ jobs:
       name: push-mediorum
       context: [Vercel, dockerhub]
       service: mediorum
-      filters:
-        branches:
-          only: main
   - test:
       name: test-mediorum
       context: Vercel
