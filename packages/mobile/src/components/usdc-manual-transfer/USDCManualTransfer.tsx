@@ -103,21 +103,14 @@ export const USDCManualTransfer = ({
   onSuccess?: () => void
 }) => {
   const styles = useStyles()
-  const { neutral, specialLightGreen } = useThemeColors()
+  const { neutral } = useThemeColors()
   const { toast } = useToast()
 
   const { onPress: onPressLearnMore } = useLink(USDCLearnMore)
-
-  const stage = useSelector(getPurchaseContentFlowStage)
-  const error = useSelector(getPurchaseContentError)
-  const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance({
     isPolling: true,
     pollingInterval: 1000
   })
-  const balance = USDC(balanceBN ?? new BN(0)).value
-  const amount = USDC((amountInCents ?? 0) / 100).value
-  const isBuyButtonDisabled = isUnlocking || balance < amount
 
   useCreateUserbankIfNeeded({
     recordAnalytics: track,
