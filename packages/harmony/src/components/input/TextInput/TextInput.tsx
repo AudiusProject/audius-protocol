@@ -145,7 +145,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
     )
 
     const isLabelElevated = hasValue || isFocused
-
+    console.log('asdf harmony: ', className)
     return (
       <Flex
         className={cn(styles.root, className)}

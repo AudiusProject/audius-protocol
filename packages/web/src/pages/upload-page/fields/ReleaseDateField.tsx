@@ -29,7 +29,7 @@ import { release } from 'os'
 const messages = {
   title: 'Release Date',
   description:
-    'Specify a release date for your music or scheduled it to be released in the future. Release date affects sorting on your profile and is visible in track details.',
+    'Specify a release date for your music or schedule it to be released in the future. Release date affects sorting on your profile and is visible in track details.',
   callout: (timePeriod: TimePeriodType) => {
     if (timePeriod === TimePeriodType.PAST) {
       return (<>
@@ -247,7 +247,7 @@ const RadioItems = (props: any) => {
                     label={'Time'}
                     placeholder={'12:00'}
                     hideLabel={false}
-                    className={styles.hourInput}
+                    inputRootClassName={styles.hourInput}
                   />
                   <SelectMeridianField />
 

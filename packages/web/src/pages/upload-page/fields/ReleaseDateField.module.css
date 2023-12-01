@@ -85,12 +85,12 @@
 }
 
 .releaseDateTimePicker {
-  /* height: 60px; */
-}
-
-/* .hourInput {
-  height: 50px;
-} */
+  height: 60px;
+    margin: 24px 0;
+  }
+    .hourInput {
+      height: 60px !important;
+    }
 
 .meridianDropdownInput {
   height: 60px !important;
@@ -98,4 +98,8 @@
 
 .releaseDateHint {
   padding: 0;
+}
+.meridianDropdownInput :global(.ant-select-selection-item) {
+  display: flex;
+  align-items: center;
 }
