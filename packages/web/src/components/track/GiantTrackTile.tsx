@@ -22,7 +22,8 @@ import {
   IconRocket,
   IconRepost,
   IconHeart,
-  IconKebabHorizontal
+  IconKebabHorizontal,
+  IconCalendar
 } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
@@ -52,6 +53,8 @@ import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
 import { PremiumTrackSection } from './PremiumTrackSection'
+import { Text } from '@audius/harmony'
+import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1095,
@@ -443,9 +446,8 @@ export const GiantTrackTile = ({
     )
   }
   const renderScheduledReleaseRow = () => {
-    return (<>
-      Releases on {released}
-    </>
+    return (
+      <ScheduledReleaseLabel released={released} />
     )
   }
 

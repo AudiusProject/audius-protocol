@@ -36,6 +36,9 @@ import {
 
 import { BottomRow } from './BottomRow'
 import styles from './TrackTile.module.css'
+import moment from 'moment'
+import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
+import { release } from 'os'
 
 const { getUserId } = accountSelectors
 const { getTrackPosition } = playbackPositionSelectors
@@ -146,7 +149,8 @@ const TrackTile = ({
   showRankIcon,
   permalink,
   isTrack,
-  trackId
+  trackId,
+  releaseDate
 }: TrackTileProps) => {
   const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
@@ -229,6 +233,7 @@ const TrackTile = ({
       })
 
   let specialContentLabel = null
+  let scheduledReleaseLabel = null
   if (!isLoading) {
     if (isPremium) {
       specialContentLabel = (
@@ -245,7 +250,10 @@ const TrackTile = ({
           {messages.artistPick}
         </div>
       )
-    }
+    } else if (moment(releaseDate).isAfter(moment.now())) {
+      console.log('asdf releaseDate: ', releaseDate, title)
+      scheduledReleaseLabel = (<ScheduledReleaseLabel released={releaseDate} />)
+    } 
   }
 
   return (
@@ -338,9 +346,6 @@ const TrackTile = ({
               typeStyles.body,
               typeStyles.bodyXSmall,
               styles.socialsRow,
-              {
-                [styles.isHidden]: isUnlisted
-              }
             )}
           >
             {isLoading ? (
@@ -348,7 +353,8 @@ const TrackTile = ({
             ) : (
               <>
                 {specialContentLabel}
-                {stats}
+                  {scheduledReleaseLabel}
+                  {!isUnlisted && stats}
               </>
             )}
           </div>

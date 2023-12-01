@@ -128,7 +128,8 @@ const ConnectedTrackTile = ({
     play_count,
     _co_sign,
     duration,
-    preview_cid
+    preview_cid,
+    release_date
   } = trackWithFallback
 
   const { artist_pick_track_id, user_id, handle, name, is_verified } =
@@ -269,6 +270,7 @@ const ConnectedTrackTile = ({
       doesUserHaveAccess={doesUserHaveAccess}
       showRankIcon={showRankIcon}
       variant={variant}
+      releaseDate={releaseDate}
     />
   )
 }
