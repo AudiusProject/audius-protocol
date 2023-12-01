@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import {} from '@audius/common'
+import { emailSchema } from '@audius/common'
 import {
   Box,
   Button,
@@ -19,6 +19,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { audiusQueryContext } from 'app/AudiusQueryProvider'
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import {
   setLinkedSocialOnFirstPage,
@@ -39,9 +40,8 @@ import {
 
 import { SignUpWithMetaMaskButton } from '../components/SignUpWithMetaMaskButton'
 import { Heading, Page } from '../components/layout'
-import { emailSchema } from '../utils/emailSchema'
 
-const EmailSchema = toFormikValidationSchema(emailSchema)
+const EmailSchema = toFormikValidationSchema(emailSchema(audiusQueryContext))
 
 export const messages = {
   title: 'Sign Up For Audius',

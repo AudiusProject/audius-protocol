@@ -1,6 +1,11 @@
-import { useCallback, useContext } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 
-import { AudiusQueryContext, signUpFetch } from '@audius/common'
+import {
+  AudiusQueryContext,
+  emailSchema,
+  emailSchemaMessages,
+  signUpFetch
+} from '@audius/common'
 import { css } from '@emotion/native'
 import { useTheme } from '@emotion/react'
 import { setValueField } from 'common/store/pages/signon/actions'
@@ -10,6 +15,7 @@ import { Formik } from 'formik'
 import { Dimensions, ImageBackground } from 'react-native'
 import RadialGradient from 'react-native-radial-gradient'
 import { useDispatch, useSelector } from 'react-redux'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Box, Flex, Link, Text } from '@audius/harmony-native'
 import DJBackground from 'app/assets/images/DJportrait.jpg'
@@ -42,8 +48,7 @@ const messages = {
   unknownError: 'Unknown error occurred.',
   metaMaskNotRecommended: 'Signing up with MetaMask is not recommended.',
   signUpMetamask: 'Sign Up With MetaMask',
-  learnMore: 'Learn More',
-  emailExistsError: 'Email already taken.'
+  learnMore: 'Learn More'
 }
 
 type SignUpEmailValues = {
@@ -59,6 +64,11 @@ export const CreateEmailScreen = () => {
     email: existingEmailValue.value ?? ''
   }
   const { color, cornerRadius } = useTheme()
+  const emailFormikSchema = useMemo(() => {
+    if (queryContext) {
+      return toFormikValidationSchema(emailSchema(queryContext))
+    }
+  }, [queryContext])
 
   const handleSubmit = useCallback(
     async (
@@ -91,7 +101,11 @@ export const CreateEmailScreen = () => {
 
   return (
     <Box h='100%'>
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+      <Formik
+        initialValues={initialValues}
+        onSubmit={handleSubmit}
+        validationSchema={emailFormikSchema}
+      >
         {({ handleSubmit, errors }) => (
           <Page
             style={css({
@@ -111,17 +125,18 @@ export const CreateEmailScreen = () => {
               description={messages.subHeader}
               centered
             />
+            <Text>{errors.email}</Text>
             <Flex direction='column' gap='l'>
               {/* TODO: replace with harmony text input */}
               <TextField name='email' label={messages.emailLabel} noGutter />
-              {errors.email === messages.emailExistsError ? (
+              {errors.email === emailSchemaMessages.emailInUse ? (
                 <Hint icon={IconExclamation}>
                   <Text
                     variant='body'
                     size='m'
                     style={css({ textAlign: 'center' })}
                   >
-                    {messages.emailExistsError}{' '}
+                    {emailSchemaMessages.emailInUse}{' '}
                     <Link to='SignIn' color='accentPurple'>
                       {messages.signIn}
                     </Link>
