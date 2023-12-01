@@ -1,5 +1,4 @@
-import { Box, useTheme } from '@audius/harmony'
-import { IconImage } from '@audius/stems'
+import { Box, useTheme, IconImage } from '@audius/harmony'
 
 import {
   getCoverPhotoField,
