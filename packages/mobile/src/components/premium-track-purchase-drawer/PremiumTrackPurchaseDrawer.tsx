@@ -5,6 +5,7 @@ import type {
   PurchaseContentError
 } from '@audius/common'
 import {
+  PurchaseContentPage,
   FeatureFlags,
   Name,
   PURCHASE_METHOD,
@@ -50,6 +51,7 @@ import { useThemeColors } from 'app/utils/theme'
 import LoadingSpinner from '../loading-spinner/LoadingSpinner'
 import { PaymentMethod } from '../payment-method/PaymentMethod'
 import { TrackDetailsTile } from '../track-details-tile'
+import { USDCManualTransfer } from '../usdc-manual-transfer'
 
 import { AudioMatchSection } from './AudioMatchSection'
 import { PayExtraFormSection } from './PayExtraFormSection'
@@ -61,6 +63,7 @@ import { usePurchaseSummaryValues } from './hooks/usePurchaseSummaryValues'
 
 const { getPurchaseContentFlowStage, getPurchaseContentError } =
   purchaseContentSelectors
+const { setPurchasePage } = purchaseContentActions
 
 const messages = {
   buy: 'Buy',
@@ -151,6 +154,9 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   },
   bottomSection: {
     gap: spacing(6)
+  },
+  paddingTop: {
+    paddingTop: spacing(4)
   }
 }))
 
@@ -219,6 +225,7 @@ const RenderForm = ({
 }) => {
   const navigation = useNavigation()
   const styles = useStyles()
+  const dispatch = useDispatch()
   const { specialLightGreen, primary } = useThemeColors()
   const presetValues = usePayExtraPresets()
   const { isEnabled: isIOSUSDCPurchaseEnabled } = useFeatureFlag(
@@ -253,7 +260,7 @@ const RenderForm = ({
     setMethod: setPurchaseMethod
   })
 
-  const { stage, error, isUnlocking, purchaseSummaryValues } =
+  const { page, stage, error, isUnlocking, purchaseSummaryValues } =
     usePurchaseContentFormState({ price })
   const { amountDue } = purchaseSummaryValues
 
@@ -271,7 +278,11 @@ const RenderForm = ({
     trackEvent(make({ eventName: Name.PURCHASE_CONTENT_TOS_CLICKED }))
   }, [])
 
-  return (
+  const handleUSDCManualTransferClose = useCallback(() => {
+    dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
+  }, [dispatch])
+
+  return page === PurchaseContentPage.PURCHASE ? (
     <>
       <ScrollView contentContainerStyle={styles.formContentContainer}>
         {stage !== PurchaseContentStage.FINISH ? (
@@ -340,6 +351,14 @@ const RenderForm = ({
         </View>
       )}
     </>
+  ) : (
+    <View style={styles.paddingTop}>
+      <USDCManualTransfer
+        onClose={handleUSDCManualTransferClose}
+        amountInCents={totalPriceInCents}
+        onSuccess={submitForm}
+      />
+    </View>
   )
 }
 

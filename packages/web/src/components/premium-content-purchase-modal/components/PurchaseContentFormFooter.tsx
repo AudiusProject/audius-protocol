@@ -63,7 +63,6 @@ type PurchaseContentFormFooterProps = Pick<
 > & {
   track: PurchasableTrackMetadata
   onViewTrackClicked: () => void
-  onSubmit: () => void
 }
 
 export const PurchaseContentFormFooter = ({

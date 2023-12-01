@@ -9,10 +9,14 @@ import { useSelector } from 'react-redux'
 
 import { usePurchaseSummaryValues } from './usePurchaseSummaryValues'
 
-const { getPurchaseContentFlowStage, getPurchaseContentError } =
-  purchaseContentSelectors
+const {
+  getPurchaseContentFlowStage,
+  getPurchaseContentError,
+  getPurchaseContentPage
+} = purchaseContentSelectors
 
 export const usePurchaseContentFormState = ({ price }: { price: number }) => {
+  const page = useSelector(getPurchaseContentPage)
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
@@ -32,6 +36,7 @@ export const usePurchaseContentFormState = ({ price }: { price: number }) => {
   })
 
   return {
+    page,
     stage,
     error,
     isUnlocking,

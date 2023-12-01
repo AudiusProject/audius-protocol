@@ -17,7 +17,12 @@ import {
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import { Flex } from '@audius/harmony'
-import { IconCart, ModalContent, ModalFooter, ModalHeader } from '@audius/stems'
+import {
+  IconCart,
+  ModalContentPages,
+  ModalFooter,
+  ModalHeader
+} from '@audius/stems'
 import cn from 'classnames'
 import { Formik, useFormikContext } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -49,17 +54,24 @@ const messages = {
   completePurchase: 'Complete Purchase'
 }
 
+const pageToPageIndex = (page: PurchaseContentPage) => {
+  switch (page) {
+    case PurchaseContentPage.PURCHASE:
+      return 0
+    case PurchaseContentPage.TRANSFER:
+      return 1
+  }
+}
+
 // The bulk of the form rendering is in a nested component because we want access
 // to the FormikContext, which can only be used in a component which is a descendant
 // of the `<Formik />` component
 const RenderForm = ({
   onClose,
-  track,
-  onSubmit
+  track
 }: {
   onClose: () => void
   track: PurchasableTrackMetadata
-  onSubmit: any
 }) => {
   const dispatch = useDispatch()
   const {
@@ -70,6 +82,7 @@ const RenderForm = ({
   } = track
   const { error, isUnlocking, purchaseSummaryValues, stage, page } =
     usePurchaseContentFormState({ price })
+  const currentPageIndex = pageToPageIndex(page)
 
   const { resetForm } = useFormikContext()
 
@@ -107,35 +120,36 @@ const RenderForm = ({
           {messages.completePurchase}
         </Text>
       </ModalHeader>
-      <ModalContent className={styles.content}>
-        {page === PurchaseContentPage.PURCHASE ? (
-          <>
-            {stage !== PurchaseContentStage.FINISH ? (
-              <AudioMatchSection
-                amount={USDC(price / 100)
-                  .round()
-                  .toShorthand()}
+      <ModalContentPages
+        contentClassName={styles.content}
+        className={styles.content}
+        currentPage={currentPageIndex}
+      >
+        <>
+          {stage !== PurchaseContentStage.FINISH ? (
+            <AudioMatchSection
+              amount={USDC(price / 100)
+                .round()
+                .toShorthand()}
+            />
+          ) : null}
+          <Flex p={mobile ? 'l' : 'xl'}>
+            <Flex direction='column' gap='xl' w='100%'>
+              <LockedTrackDetailsTile
+                track={track as unknown as Track}
+                owner={track.user}
               />
-            ) : null}
-            <Flex p={mobile ? 'l' : 'xl'}>
-              <Flex direction='column' gap='xl' w='100%'>
-                <LockedTrackDetailsTile
-                  track={track as unknown as Track}
-                  owner={track.user}
-                />
-                <PurchaseContentFormFields
-                  stage={stage}
-                  purchaseSummaryValues={purchaseSummaryValues}
-                  isUnlocking={isUnlocking}
-                  price={price}
-                />
-              </Flex>
+              <PurchaseContentFormFields
+                stage={stage}
+                purchaseSummaryValues={purchaseSummaryValues}
+                isUnlocking={isUnlocking}
+                price={price}
+              />
             </Flex>
-          </>
-        ) : (
-          <USDCManualTransfer onClose={handleClose} amountInCents={price} />
-        )}
-      </ModalContent>
+          </Flex>
+        </>
+        <USDCManualTransfer onClose={handleClose} amountInCents={price} />
+      </ModalContentPages>
       <ModalFooter className={styles.footer}>
         {page === PurchaseContentPage.PURCHASE ? (
           <PurchaseContentFormFooter
@@ -145,7 +159,6 @@ const RenderForm = ({
             purchaseSummaryValues={purchaseSummaryValues}
             stage={stage}
             track={track}
-            onSubmit={onSubmit}
           />
         ) : null}
       </ModalFooter>
@@ -223,7 +236,7 @@ export const PremiumContentPurchaseModal = () => {
           validationSchema={toFormikValidationSchema(validationSchema)}
           onSubmit={onSubmit}
         >
-          <RenderForm track={track} onClose={handleClose} onSubmit={onSubmit} />
+          <RenderForm track={track} onClose={handleClose} />
         </Formik>
       ) : null}
     </ModalDrawer>

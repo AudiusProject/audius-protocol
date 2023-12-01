@@ -13,7 +13,6 @@ import {
   purchaseContentActions,
   purchaseContentSelectors
 } from 'store/purchase-content'
-import { useUSDCManualTransferModal } from 'store/ui'
 import { Nullable } from 'utils/typeUtils'
 
 import { useUSDCBalance } from '../useUSDCBalance'
@@ -45,7 +44,6 @@ export const usePurchaseContentFormConfiguration = ({
   presetValues: PayExtraAmountPresetValues
 }) => {
   const dispatch = useDispatch()
-  const { onOpen: openUsdcManualTransferModal } = useUSDCManualTransferModal()
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const page = useSelector(getPurchaseContentPage)
@@ -65,43 +63,29 @@ export const usePurchaseContentFormConfiguration = ({
     ({ customAmount, amountPreset, purchaseMethod }: PurchaseContentValues) => {
       if (isUnlocking || !track?.track_id) return
 
-      const extraAmount = getExtraAmount({
-        amountPreset,
-        presetValues,
-        customAmount
-      })
-      const startPurchaseAction = startPurchaseContentFlow({
-        purchaseMethod,
-        extraAmount,
-        extraAmountPreset: amountPreset,
-        contentId: track.track_id,
-        contentType: ContentType.TRACK
-      })
-
       if (
         purchaseMethod === PurchaseMethod.CRYPTO &&
         page === PurchaseContentPage.PURCHASE
       ) {
-        // On web, start purchase flow
         dispatch(setPurchasePage({ page: PurchaseContentPage.TRANSFER }))
-        // On mobile, open USDCManualTransferDrawer
-        openUsdcManualTransferModal({
-          amount: price + extraAmount,
-          onSuccessAction: startPurchaseAction
-        })
       } else {
-        dispatch(startPurchaseAction)
+        const extraAmount = getExtraAmount({
+          amountPreset,
+          presetValues,
+          customAmount
+        })
+        dispatch(
+          startPurchaseContentFlow({
+            purchaseMethod,
+            extraAmount,
+            extraAmountPreset: amountPreset,
+            contentId: track.track_id,
+            contentType: ContentType.TRACK
+          })
+        )
       }
     },
-    [
-      isUnlocking,
-      track,
-      page,
-      presetValues,
-      dispatch,
-      openUsdcManualTransferModal,
-      price
-    ]
+    [isUnlocking, track, page, presetValues, dispatch]
   )
 
   return {
