@@ -10,12 +10,15 @@ from sqlalchemy.sql import text
 from src.models.delisting.delist_status_cursor import DelistEntity, DelistStatusCursor
 from src.models.tracks.track import Track
 from src.models.users.user import User
+from src.queries.get_trusted_notifier_discrepancies import (
+    get_track_delist_discrepancies,
+    get_user_delist_discrepancies,
+)
 from src.tasks.celery_app import celery
 from src.utils.auth_helpers import signed_get
 from src.utils.config import shared_config
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.structured_logger import StructuredLogger, log_duration
-from src.queries.get_trusted_notifier_discrepancies import get_track_delist_discrepancies, get_user_delist_discrepancies
 
 logger = StructuredLogger(__name__)
 
@@ -401,8 +404,8 @@ def correct_delist_discrepancies(session: Session, redis: Redis):
         track_delist_discrepancies = json.loads(track_delist_discrepancies_str)
 
         for row in track_delist_discrepancies:
-            track_id = row['track_id']
-            delisted = row['delisted']
+            track_id = row["track_id"]
+            delisted = row["delisted"]
             tracks_to_update = query_tracks_by_track_ids(session, track_id)
             for track_to_update in tracks_to_update:
                 if delisted:
@@ -432,8 +435,8 @@ def correct_delist_discrepancies(session: Session, redis: Redis):
         )
         user_delist_discrepancies = json.loads(user_delist_discrepancies_str)
         for row in user_delist_discrepancies:
-            user_id = row['user_id']
-            delisted = row['delisted']
+            user_id = row["user_id"]
+            delisted = row["delisted"]
             users_to_update = query_users_by_user_ids(session, user_id)
             for user_to_update in users_to_update:
                 if delisted:
