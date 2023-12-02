@@ -18,7 +18,7 @@ logger = StructuredLogger(__name__)
 
 UPDATE_DELIST_STATUSES_LOCK = "update_delist_statuses_lock"
 DEFAULT_LOCK_TIMEOUT_SECONDS = 30 * 60  # 30 minutes
-DELIST_BATCH_SIZE = 5000
+DELIST_BATCH_SIZE = 100
 DATETIME_FORMAT_STRING = "%Y-%m-%d %H:%M:%S.%f+00"
 ALTERNATE_DATETIME_FORMAT_STRING = "%Y-%m-%d %H:%M:%S+00"
 
@@ -481,7 +481,7 @@ def revert_delist_status_cursors(self, reverted_cursor_timestamp: float):
         )
 
 
-@celery.task(name="update_delist_statuses", bind=True, soft_time_limit=1, time_limit=2)
+@celery.task(name="update_delist_statuses", bind=True, soft_time_limit=5, time_limit=6)
 @save_duration_metric(metric_group="celery_task")
 @log_duration(logger)
 def update_delist_statuses(self, current_block_timestamp: int) -> None:
