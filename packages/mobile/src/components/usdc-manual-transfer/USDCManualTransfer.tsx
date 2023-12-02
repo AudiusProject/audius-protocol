@@ -1,18 +1,11 @@
 import { useCallback, useMemo } from 'react'
 
-import {
-  Name,
-  isContentPurchaseInProgress,
-  purchaseContentSelectors,
-  useCreateUserbankIfNeeded,
-  useUSDCBalance
-} from '@audius/common'
+import { Name, useCreateUserbankIfNeeded, useUSDCBalance } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import Clipboard from '@react-native-clipboard/clipboard'
 import BN from 'bn.js'
 import { View } from 'react-native'
 import QRCode from 'react-qr-code'
-import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import IconError from 'app/assets/images/iconError.svg'
@@ -28,9 +21,6 @@ import type { AllEvents } from 'app/types/analytics'
 import { useThemeColors } from 'app/utils/theme'
 
 import { AddressTile } from '../core/AddressTile'
-
-const { getPurchaseContentFlowStage, getPurchaseContentError } =
-  purchaseContentSelectors
 
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
