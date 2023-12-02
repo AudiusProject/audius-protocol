@@ -43,9 +43,9 @@ def check_user_delist_status_cursor(redis: Redis):
                 if user_delist_cursor_check is not None:
                     user_delist_cursor_check = user_delist_cursor_check.decode()
                 if user_delist_cursor_check != "ok":
-                    # If not ok, re-run query every 5 min to quickly suppress errors
+                    # If not ok, re-run query every 1 min to quickly suppress errors
                     # once resolved
-                    if latest_check > datetime.now(timezone.utc) - timedelta(minutes=5):
+                    if latest_check > datetime.now(timezone.utc) - timedelta(minutes=1):
                         return user_delist_cursor_check
                 else:
                     return user_delist_cursor_check
@@ -98,9 +98,9 @@ def check_track_delist_status_cursor(redis: Redis):
                 if track_delist_cursor_check is not None:
                     track_delist_cursor_check = track_delist_cursor_check.decode()
                 if track_delist_cursor_check != "ok":
-                    # If not ok, re-run query every 5 min to quickly suppress errors
+                    # If not ok, re-run query every 1 min to quickly suppress errors
                     # once resolved
-                    if latest_check > datetime.now(timezone.utc) - timedelta(minutes=5):
+                    if latest_check > datetime.now(timezone.utc) - timedelta(minutes=1):
                         return track_delist_cursor_check
                 else:
                     return track_delist_cursor_check
@@ -151,9 +151,9 @@ def get_user_delist_discrepancies(redis: Redis):
                 if user_delist_discrepancies is not None:
                     user_delist_discrepancies = user_delist_discrepancies.decode()
                 if user_delist_discrepancies != "[]":
-                    # If discrepancies, re-run query every 5 min to quickly suppress errors
+                    # If discrepancies, re-run query every 1 min to quickly suppress errors
                     # once resolved
-                    if latest_check > datetime.now(timezone.utc) - timedelta(minutes=5):
+                    if latest_check > datetime.now(timezone.utc) - timedelta(minutes=1):
                         return user_delist_discrepancies
                 else:
                     return user_delist_discrepancies
@@ -219,9 +219,9 @@ def get_track_delist_discrepancies(redis: Redis):
                 if track_delist_discrepancies is not None:
                     track_delist_discrepancies = track_delist_discrepancies.decode()
                 if track_delist_discrepancies != "[]":
-                    # If discrepancies, re-run query every 5 min to quickly suppress errors
+                    # If discrepancies, re-run query every 1 min to quickly suppress errors
                     # once resolved
-                    if latest_check > datetime.now(timezone.utc) - timedelta(minutes=5):
+                    if latest_check > datetime.now(timezone.utc) - timedelta(minutes=1):
                         return track_delist_discrepancies
                 else:
                     return track_delist_discrepancies
