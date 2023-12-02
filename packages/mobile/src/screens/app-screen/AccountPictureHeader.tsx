@@ -16,7 +16,7 @@ import { ProfilePicture } from 'app/components/user'
 import { useRemoteVar, useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 
-const { getAccountUser } = accountSelectors
+const { getUserId } = accountSelectors
 const { getHasUnreadMessages } = chatSelectors
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -51,7 +51,7 @@ export const AccountPictureHeader = (props: AccountPictureHeaderProps) => {
   const { onPress } = props
   const drawerProgress = useDrawerProgress()
   const styles = useStyles()
-  const accountUser = useSelector(getAccountUser)
+  const accountId = useSelector(getUserId)!
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
   const { isEnabled: isChatEnabled } = useFeatureFlag(FeatureFlags.CHAT_ENABLED)
@@ -71,7 +71,7 @@ export const AccountPictureHeader = (props: AccountPictureHeaderProps) => {
     <Animated.View style={{ opacity }}>
       <TouchableOpacity onPress={onPress}>
         <ProfilePicture
-          profile={accountUser}
+          userId={accountId}
           style={styles.root}
           priority='high'
         />

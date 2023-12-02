@@ -20,8 +20,8 @@ import { useField } from 'formik'
 import { useHover } from 'react-use'
 
 import { Avatar } from 'components/avatar/Avatar'
+import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useMedia } from 'hooks/useMedia'
-import { useCoverPhoto } from 'hooks/useUserCoverPhoto'
 
 import { SelectArtistsPreviewContext } from '../utils/selectArtistsPreviewContext'
 
@@ -34,7 +34,10 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
     user: { name, user_id, is_verified, track_count, follower_count }
   } = props
   const { isMobile } = useMedia()
-  const coverPhoto = useCoverPhoto(user_id, WidthSizes.SIZE_640)
+  const { source: coverPhoto, shouldBlur } = useCoverPhoto(
+    user_id,
+    WidthSizes.SIZE_640
+  )
   const [followField] = useField({ name: 'selectedArtists', type: 'checkbox' })
   const { spacing, color } = useTheme()
 
@@ -102,7 +105,30 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
           />
         ) : null}
         {avatar}
-        <Box w='100%' h={68} css={{ backgroundImage: `url(${coverPhoto})` }} />
+        <Box
+          w='100%'
+          h={68}
+          css={{
+            backgroundImage: `url(${coverPhoto})`,
+            backgroundSize: 'cover',
+            '&:before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              height: '100%',
+              width: '100%',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              ...(shouldBlur
+                ? {
+                    backdropFilter: 'blur(25px)'
+                  }
+                : undefined)
+            },
+            overflow: 'hidden'
+          }}
+        />
         <Flex
           direction='column'
           alignItems='center'
