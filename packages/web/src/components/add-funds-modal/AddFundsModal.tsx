@@ -83,7 +83,7 @@ export const AddFundsModal = () => {
           {page === 'add-funds' ? messages.addFunds : messages.cryptoTransfer}
         </Text>
       </ModalHeader>
-      <ModalContent>
+      <ModalContent className={styles.noPadding}>
         {page === 'add-funds' ? (
           <AddFunds onContinue={handleContinue} />
         ) : (

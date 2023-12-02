@@ -39,11 +39,11 @@ export const AudioBalancePill = ({ className }: AudioPillProps) => {
     <div className={cn(styles.container, className)}>
       {positiveTotalBalance && audioBadge ? (
         cloneElement(audioBadge, {
-          height: 16,
-          width: 16
+          height: 20,
+          width: 20
         })
       ) : (
-        <img alt='no tier' src={IconNoTierBadge} width='16' height='16' />
+        <img alt='no tier' src={IconNoTierBadge} width='20' height='20' />
       )}
       {isNullOrUndefined(totalBalance) ? (
         <Skeleton className={styles.skeleton} />

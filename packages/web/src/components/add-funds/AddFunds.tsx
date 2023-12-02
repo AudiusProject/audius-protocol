@@ -106,7 +106,7 @@ export const AddFunds = ({
           [styles.mobile]: mobile
         })}
       >
-        <Flex direction='column' w='100%' gap='xl'>
+        <Flex direction='column' w='100%' gap='xl' p='xl'>
           <Box h='unit6' border='strong' p='m' borderRadius='s'>
             <Flex alignItems='center' justifyContent='space-between'>
               <Flex alignItems='center'>

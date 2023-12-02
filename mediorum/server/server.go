@@ -362,6 +362,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/logs/reaper", ss.getReaperLog)
 	internalApi.GET("/logs/repair", ss.serveRepairLog)
 	internalApi.GET("/logs/storageAndDb", ss.serveStorageAndDbLogs)
+	internalApi.GET("/logs/pg-upgrade", ss.getPgUpgradeLog)
 
 	// internal: testing
 	internalApi.GET("/proxy_health_check", ss.proxyHealthCheck)

@@ -47,8 +47,8 @@ export const AudioBalancePill = () => {
       <IconAudioBadge
         tier={tier}
         showNoTier
-        height={spacing(5)}
-        width={spacing(5)}
+        height={spacing(5.5)}
+        width={spacing(5.5)}
       />
       {isAudioBalanceLoading ? (
         <Skeleton
