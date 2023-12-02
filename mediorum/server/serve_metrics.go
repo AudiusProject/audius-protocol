@@ -195,3 +195,7 @@ func (ss *MediorumServer) getPartitionOpsLog(c echo.Context) error {
 func (ss *MediorumServer) getReaperLog(c echo.Context) error {
 	return ss.getLogfile(c, "reaper.txt")
 }
+
+func (ss *MediorumServer) getPgUpgradeLog(c echo.Context) error {
+	return ss.getLogfile(c, "pg_upgrade.txt")
+}
