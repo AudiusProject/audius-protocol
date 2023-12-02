@@ -1,7 +1,9 @@
+import json
 from datetime import datetime, timezone
 from typing import Dict, List, Set
 from urllib.parse import quote
 
+from redis import Redis
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql import text
 
@@ -13,6 +15,7 @@ from src.utils.auth_helpers import signed_get
 from src.utils.config import shared_config
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.structured_logger import StructuredLogger, log_duration
+from src.queries.get_trusted_notifier_discrepancies import get_track_delist_discrepancies, get_user_delist_discrepancies
 
 logger = StructuredLogger(__name__)
 
@@ -196,12 +199,12 @@ def update_track_is_available_statuses(
     for track_to_update in tracks_to_update:
         delisted = track_delist_map[track_to_update.track_id]["delisted"]
         if delisted:
-            # Deactivate active tracks that have been delisted
+            # Delist available tracks that have been delisted
             if track_to_update.is_available:
                 track_to_update.is_available = False
                 track_to_update.is_delete = True
         else:
-            # Re-activate deactivated tracks that have been un-delisted
+            # Relist unavailable tracks that have been relisted
             if not track_to_update.is_available:
                 track_to_update.is_available = True
                 track_to_update.is_delete = False
@@ -386,6 +389,74 @@ def get_trusted_notifier_endpoint(trusted_notifier_manager: Dict):
     return endpoint
 
 
+def correct_delist_discrepancies(session: Session, redis: Redis):
+    # Correct any cases where the indexer has overridden a delist
+    # because of the race condition between the async delister and
+    # indexer tasks.
+    track_delist_discrepancies_str = get_track_delist_discrepancies(redis)
+    if track_delist_discrepancies_str != "[]":
+        logger.info(
+            f"update_delist_statuses.py | correct_delist_discrepancies | Identified track delist discrepancies to correct: {track_delist_discrepancies_str}"
+        )
+        track_delist_discrepancies = json.loads(track_delist_discrepancies_str)
+
+        for row in track_delist_discrepancies:
+            track_id = row['track_id']
+            delisted = row['delisted']
+            tracks_to_update = query_tracks_by_track_ids(session, track_id)
+            for track_to_update in tracks_to_update:
+                if delisted:
+                    # Delist available tracks that have been delisted
+                    logger.info(
+                        f"update_delist_statuses.py | correct_delist_discrepancies | Delisting track {track_id}"
+                    )
+                    if track_to_update.is_available:
+                        track_to_update.is_available = False
+                        track_to_update.is_delete = True
+                else:
+                    # Relist unavailable tracks that have been relisted
+                    logger.info(
+                        f"update_delist_statuses.py | correct_delist_discrepancies | Re-listing track {track_id}"
+                    )
+                    if not track_to_update.is_available:
+                        track_to_update.is_available = True
+                        track_to_update.is_delete = False
+        logger.info(
+            "update_delist_statuses.py | correct_delist_discrepancies | Track delist discrepancies corrected"
+        )
+
+    user_delist_discrepancies_str = get_user_delist_discrepancies(redis)
+    if user_delist_discrepancies_str != "[]":
+        logger.info(
+            f"update_delist_statuses.py | correct_delist_discrepancies | Identified user delist discrepancies to correct: {user_delist_discrepancies_str}"
+        )
+        user_delist_discrepancies = json.loads(user_delist_discrepancies_str)
+        for row in user_delist_discrepancies:
+            user_id = row['user_id']
+            delisted = row['delisted']
+            users_to_update = query_users_by_user_ids(session, user_id)
+            for user_to_update in users_to_update:
+                if delisted:
+                    logger.info(
+                        f"update_delist_statuses.py | correct_delist_discrepancies | Deactivating user {user_id}"
+                    )
+                    # Deactivate active users that have been delisted
+                    if user_to_update.is_available:
+                        user_to_update.is_available = False
+                        user_to_update.is_deactivated = True
+                else:
+                    # Re-activate deactivated users that have been relisted
+                    logger.info(
+                        f"update_delist_statuses.py | correct_delist_discrepancies | Re-activating user {user_id}"
+                    )
+                    if not user_to_update.is_available:
+                        user_to_update.is_available = True
+                        user_to_update.is_deactivated = False
+        logger.info(
+            "update_delist_statuses.py | correct_delist_discrepancies | User delist discrepancies corrected"
+        )
+
+
 # ####### CELERY TASKS ####### #
 
 
@@ -515,6 +586,11 @@ def update_delist_statuses(self, current_block_timestamp: int) -> None:
                 process_delist_statuses(
                     session, trusted_notifier_endpoint, current_block_timestamp
                 )
+                # Address edge case from the race condition between
+                # the async indexer and delister tasks by checking every
+                # delist and identifying and correcting discrepancies
+                # in the tracks/users tables.
+                correct_delist_discrepancies(session, redis)
 
         except Exception as e:
             logger.error(
