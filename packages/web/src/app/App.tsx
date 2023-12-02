@@ -30,13 +30,15 @@ export const AppInner = () => {
       <SomethingWrong />
       <Switch>
         <Route path={[SIGN_IN_PAGE, SIGN_UP_PAGE]}>
-          {isLoaded ? (
-            isSignInRedesignEnabled ? (
-              <SignOnPage />
-            ) : (
-              <SignOn signIn />
-            )
-          ) : null}
+          {({ location }) => {
+            return isLoaded ? (
+              isSignInRedesignEnabled ? (
+                <SignOnPage />
+              ) : (
+                <SignOn signIn={location.pathname === SIGN_IN_PAGE} />
+              )
+            ) : null
+          }}
         </Route>
         <Route exact path='/oauth/auth'>
           <OAuthLoginPage />
