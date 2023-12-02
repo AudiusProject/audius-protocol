@@ -86,10 +86,15 @@ const messages = {
       }
     </>
   ),
-  termsOfUse: 'Terms of Use.'
+  termsOfUse: 'Terms of Use.',
+  goBack: 'Go Back'
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
+  root: {
+    height: '100%',
+    justifyContent: 'space-between'
+  },
   formContainer: {
     flex: 1
   },
@@ -262,7 +267,6 @@ const RenderForm = ({
 
   const { page, stage, error, isUnlocking, purchaseSummaryValues } =
     usePurchaseContentFormState({ price })
-  const { amountDue } = purchaseSummaryValues
 
   const isPurchaseSuccessful = stage === PurchaseContentStage.FINISH
 
@@ -282,65 +286,94 @@ const RenderForm = ({
     dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
   }, [dispatch])
 
-  return page === PurchaseContentPage.PURCHASE ? (
-    <>
-      <ScrollView contentContainerStyle={styles.formContentContainer}>
-        {stage !== PurchaseContentStage.FINISH ? (
-          <AudioMatchSection amount={Math.round(price / 100)} />
-        ) : null}
-        <View style={styles.formContentSection}>
-          <TrackDetailsTile trackId={track.track_id} />
-          {isPurchaseSuccessful ? null : (
-            <PayExtraFormSection
-              amountPresets={presetValues}
-              disabled={isUnlocking}
-            />
-          )}
-          <View style={styles.bottomSection}>
-            <PurchaseSummaryTable
-              {...purchaseSummaryValues}
-              totalPriceInCents={totalPriceInCents}
-            />
-            {isIOSDisabled || isUnlocking || isPurchaseSuccessful ? null : (
-              <PaymentMethod
-                selectedType={purchaseMethod}
-                setSelectedType={setPurchaseMethod}
-                balance={balance}
-                isExistingBalanceDisabled={isExistingBalanceDisabled}
-                showExistingBalance
-              />
-            )}
-          </View>
-          {isIOSDisabled ? (
-            <PurchaseUnavailable />
-          ) : isPurchaseSuccessful ? (
-            <PurchaseSuccess onPressViewTrack={onClose} track={track} />
-          ) : isUnlocking ? null : (
-            <View>
-              <View style={styles.payToUnlockTitleContainer}>
-                <Text weight='heavy' textTransform='uppercase' fontSize='small'>
-                  {messages.payToUnlock}
-                </Text>
-                <LockedStatusBadge locked />
-              </View>
-              <Text style={styles.disclaimer}>
-                {messages.disclaimer(
-                  <Text colorValue={primary} onPress={handleTermsPress}>
-                    {messages.termsOfUse}
-                  </Text>
+  const handleGoBackPress = useCallback(() => {
+    dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))
+  }, [dispatch])
+
+  return (
+    <View style={styles.root}>
+      {page === PurchaseContentPage.PURCHASE ? (
+        <>
+          <ScrollView contentContainerStyle={styles.formContentContainer}>
+            {stage !== PurchaseContentStage.FINISH ? (
+              <AudioMatchSection amount={Math.round(price / 100)} />
+            ) : null}
+            <View style={styles.formContentSection}>
+              <TrackDetailsTile trackId={track.track_id} />
+              {isPurchaseSuccessful ? null : (
+                <PayExtraFormSection
+                  amountPresets={presetValues}
+                  disabled={isUnlocking}
+                />
+              )}
+              <View style={styles.bottomSection}>
+                <PurchaseSummaryTable
+                  {...purchaseSummaryValues}
+                  totalPriceInCents={totalPriceInCents}
+                />
+                {isIOSDisabled || isUnlocking || isPurchaseSuccessful ? null : (
+                  <PaymentMethod
+                    selectedType={purchaseMethod}
+                    setSelectedType={setPurchaseMethod}
+                    balance={balance}
+                    isExistingBalanceDisabled={isExistingBalanceDisabled}
+                    showExistingBalance
+                  />
                 )}
-              </Text>
+              </View>
+              {isIOSDisabled ? (
+                <PurchaseUnavailable />
+              ) : isPurchaseSuccessful ? (
+                <PurchaseSuccess onPressViewTrack={onClose} track={track} />
+              ) : isUnlocking ? null : (
+                <View>
+                  <View style={styles.payToUnlockTitleContainer}>
+                    <Text
+                      weight='heavy'
+                      textTransform='uppercase'
+                      fontSize='small'
+                    >
+                      {messages.payToUnlock}
+                    </Text>
+                    <LockedStatusBadge locked />
+                  </View>
+                  <Text style={styles.disclaimer}>
+                    {messages.disclaimer(
+                      <Text colorValue={primary} onPress={handleTermsPress}>
+                        {messages.termsOfUse}
+                      </Text>
+                    )}
+                  </Text>
+                </View>
+              )}
             </View>
-          )}
+          </ScrollView>
+        </>
+      ) : (
+        <View style={styles.paddingTop}>
+          <USDCManualTransfer
+            onClose={handleUSDCManualTransferClose}
+            amountInCents={totalPriceInCents}
+            onSuccess={submitForm}
+          />
         </View>
-      </ScrollView>
+      )}
       {isPurchaseSuccessful || isIOSDisabled ? null : (
         <View style={styles.formActions}>
           {error ? <RenderError error={error} /> : null}
+          {page === PurchaseContentPage.TRANSFER ? (
+            <Button
+              title={messages.goBack}
+              onPress={handleGoBackPress}
+              variant='common'
+              size='large'
+              fullWidth
+            />
+          ) : null}
           <Button
             onPress={submitForm}
             disabled={isUnlocking}
-            title={getButtonText(isUnlocking, amountDue)}
+            title={getButtonText(isUnlocking, totalPriceInCents)}
             variant={'primary'}
             size='large'
             color={specialLightGreen}
@@ -350,14 +383,6 @@ const RenderForm = ({
           />
         </View>
       )}
-    </>
-  ) : (
-    <View style={styles.paddingTop}>
-      <USDCManualTransfer
-        onClose={handleUSDCManualTransferClose}
-        amountInCents={totalPriceInCents}
-        onSuccess={submitForm}
-      />
     </View>
   )
 }

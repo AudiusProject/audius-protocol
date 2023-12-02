@@ -1,18 +1,11 @@
 import { useCallback, useMemo } from 'react'
 
-import {
-  Name,
-  isContentPurchaseInProgress,
-  purchaseContentSelectors,
-  useCreateUserbankIfNeeded,
-  useUSDCBalance
-} from '@audius/common'
+import { Name, useCreateUserbankIfNeeded, useUSDCBalance } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import Clipboard from '@react-native-clipboard/clipboard'
 import BN from 'bn.js'
 import { View } from 'react-native'
 import QRCode from 'react-qr-code'
-import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import IconError from 'app/assets/images/iconError.svg'
@@ -29,9 +22,6 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { AddressTile } from '../core/AddressTile'
 
-const { getPurchaseContentFlowStage, getPurchaseContentError } =
-  purchaseContentSelectors
-
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
 
@@ -43,8 +33,7 @@ const messages = {
   goBack: 'Go Back',
   learnMore: 'Learn More',
   copied: 'Copied to Clipboard!',
-  usdcBalance: 'USDC Balance',
-  buy: (amount: string) => `Buy $${amount}`
+  usdcBalance: 'USDC Balance'
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -104,21 +93,14 @@ export const USDCManualTransfer = ({
   onSuccess?: () => void
 }) => {
   const styles = useStyles()
-  const { neutral, specialLightGreen } = useThemeColors()
+  const { neutral } = useThemeColors()
   const { toast } = useToast()
 
   const { onPress: onPressLearnMore } = useLink(USDCLearnMore)
-
-  const stage = useSelector(getPurchaseContentFlowStage)
-  const error = useSelector(getPurchaseContentError)
-  const isUnlocking = !error && isContentPurchaseInProgress(stage)
   const { data: balanceBN } = useUSDCBalance({
     isPolling: true,
     pollingInterval: 1000
   })
-  const balance = USDC(balanceBN ?? new BN(0)).value
-  const amount = USDC((amountInCents ?? 0) / 100).value
-  const isBuyButtonDisabled = isUnlocking || balance < amount
 
   useCreateUserbankIfNeeded({
     recordAnalytics: track,
@@ -206,26 +188,7 @@ export const USDCManualTransfer = ({
               fullWidth
             />
           </>
-        ) : (
-          <>
-            <Button
-              title={messages.goBack}
-              onPress={onClose}
-              variant='common'
-              size='large'
-              fullWidth
-            />
-            <Button
-              title={messages.buy(USDC(amount).ceil(2).toFixed(2))}
-              onPress={onSuccess}
-              variant='primary'
-              color={specialLightGreen}
-              size='large'
-              disabled={isBuyButtonDisabled}
-              fullWidth
-            />
-          </>
-        )}
+        ) : null}
       </View>
     </View>
   )
