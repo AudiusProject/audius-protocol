@@ -146,7 +146,6 @@ export const CreateEmailScreen = () => {
                 style={css({ textAlign: 'center' })}
               >
                 {messages.haveAccount}{' '}
-                {/* TODO: how does this to={} work on native */}
                 {/* TODO: Need TextLink equivalent for native harmony? */}
                 <Link
                   to={{
