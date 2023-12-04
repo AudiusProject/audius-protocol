@@ -1,6 +1,7 @@
 import type { ComponentType, SVGProps } from 'react'
 
 import { useTheme } from '@emotion/react'
+import styled from '@emotion/styled'
 
 import type { IconColors } from 'foundations/color'
 
@@ -20,6 +21,8 @@ type BaseIconProps = SVGProps<SVGSVGElement>
 type IconProps = BaseIconProps & {
   color?: IconColors
   size?: IconSize
+  sizeW?: IconSize
+  sizeH?: IconSize
 }
 
 export type IconComponent = ComponentType<BaseIconProps | IconProps>
@@ -27,26 +30,27 @@ export type IconComponent = ComponentType<BaseIconProps | IconProps>
 /**
  * Renders a harmony Icon component
  */
-export const Icon = (props: IconProps) => {
-  const { color, children, size, ...other } = props
+export const Icon = styled.svg<IconProps>((props) => {
+  const { color, size, sizeH, sizeW } = props
 
   const theme = useTheme()
   const iconSize = size ? iconSizes[size] : undefined
+  const iconSizeW = sizeW ? iconSizes[sizeW] : undefined
+  const iconSizeH = sizeH ? iconSizes[sizeH] : undefined
   const iconColor = color ? theme.color.icon[color] : undefined
 
-  return (
-    <svg
-      css={[
-        iconSize && {
-          height: iconSize,
-          width: iconSize,
-          minWidth: iconSize
-        },
-        iconColor && { path: { fill: iconColor } }
-      ]}
-      {...other}
-    >
-      {children}
-    </svg>
-  )
-}
+  return {
+    ...(iconSize && {
+      height: iconSize,
+      width: iconSize,
+      minWidth: iconSize
+    }),
+    ...(iconSizeH && {
+      height: iconSizeH
+    }),
+    ...(iconSizeW && {
+      width: iconSizeW
+    }),
+    ...(iconColor && { path: { fill: iconColor } })
+  }
+})
