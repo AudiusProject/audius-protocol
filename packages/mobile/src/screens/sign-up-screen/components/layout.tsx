@@ -1,8 +1,5 @@
 import { Children } from 'react'
 
-import { css } from '@emotion/native'
-import { Text as NativeText } from 'react-native'
-
 import { type NativeBoxProps } from '@audius/harmony-native'
 import { Flex } from 'app/harmony-native/components/layout/Flex/Flex'
 import type { NativeFlexProps } from 'app/harmony-native/components/layout/Flex/types'
