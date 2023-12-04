@@ -1,5 +1,3 @@
-import RadialGradient from 'react-native-radial-gradient'
-
 import IconInstagram from 'app/assets/images/iconInstagram.svg'
 import IconTikTok from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitter from 'app/assets/images/iconTwitterBird.svg'
