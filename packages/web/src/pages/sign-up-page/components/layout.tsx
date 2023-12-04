@@ -6,6 +6,7 @@ import {
   forwardRef
 } from 'react'
 
+import { Maybe } from '@audius/common'
 import {
   Box,
   BoxProps,
@@ -18,7 +19,7 @@ import {
   PaperProps,
   Text
 } from '@audius/harmony'
-import styled from '@emotion/styled'
+import styled, { CSSObject } from '@emotion/styled'
 
 import { useMedia } from 'hooks/useMedia'
 
@@ -83,6 +84,11 @@ export const Heading = forwardRef<HTMLDivElement, HeadingProps>(
     const { prefix, heading, description, postfix, centered, tag, ...other } =
       props
     const { isMobile } = useMedia()
+
+    const textCss: Maybe<CSSObject> = centered
+      ? { textAlign: 'center' }
+      : undefined
+
     return (
       <Flex
         ref={ref}
@@ -97,11 +103,12 @@ export const Heading = forwardRef<HTMLDivElement, HeadingProps>(
           color='accent'
           size={isMobile ? 'm' : 'l'}
           tag={tag}
+          css={textCss}
         >
           {heading}
         </Text>
         {description ? (
-          <Text size={isMobile ? 'm' : 'l'} variant='body'>
+          <Text size={isMobile ? 'm' : 'l'} variant='body' css={textCss}>
             {description}
           </Text>
         ) : null}

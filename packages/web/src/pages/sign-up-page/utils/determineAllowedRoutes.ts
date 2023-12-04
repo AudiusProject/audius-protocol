@@ -1,5 +1,5 @@
 import SignOnPageState from 'common/store/pages/signon/types'
-import { SignUpPath, TRENDING_PAGE } from 'utils/route'
+import { SignUpPath } from 'utils/route'
 
 /**
  * Checks against existing sign up redux state,
@@ -47,12 +47,7 @@ export const determineAllowedRoute = (
 
   if (signUpState.followArtists?.selectedUserIds?.length >= 3) {
     // Already have 3 artists followed
-    // Done with sign up if at this point so we return early (none of these routes are allowed anymore)
-    return {
-      allowedRoutes: [],
-      isAllowedRoute: false,
-      correctedRoute: TRENDING_PAGE
-    }
+    allowedRoutes.push(SignUpPath.appCta)
   }
 
   const isAllowedRoute = allowedRoutes.includes(attemptedPath)

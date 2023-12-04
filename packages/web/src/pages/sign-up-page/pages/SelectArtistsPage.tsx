@@ -21,7 +21,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
-import { TRENDING_PAGE } from 'utils/route'
+import { SIGN_UP_APP_CTA_PAGE, TRENDING_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import FollowArtistTile from '../components/FollowArtistTile'
@@ -63,6 +63,7 @@ export const SelectArtistsPage = () => {
   const navigate = useNavigateToPage()
   const { color } = useTheme()
   const headerContainerRef = useRef<HTMLDivElement | null>(null)
+  const { isMobile } = useMedia()
 
   const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setCurrentGenre(e.target.value)
@@ -72,10 +73,14 @@ export const SelectArtistsPage = () => {
     (values: SelectArtistsValues) => {
       const { selectedArtists } = values
       dispatch(addFollowArtists([...selectedArtists]))
-      navigate(TRENDING_PAGE)
-      setIsWelcomeModalOpen(true)
+      if (isMobile) {
+        navigate(TRENDING_PAGE)
+        setIsWelcomeModalOpen(true)
+      } else {
+        navigate(SIGN_UP_APP_CTA_PAGE)
+      }
     },
-    [dispatch, navigate, setIsWelcomeModalOpen]
+    [dispatch, isMobile, navigate, setIsWelcomeModalOpen]
   )
 
   const isFeaturedArtists = currentGenre === 'Featured'
@@ -86,7 +91,6 @@ export const SelectArtistsPage = () => {
       { disabled: isFeaturedArtists }
     )
 
-  const { isMobile } = useMedia()
   const { data: featuredArtists, status: featuredArtistsStatus } =
     useGetFeaturedArtists(undefined, {
       disabled: !isFeaturedArtists

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 
 import {
+  Box,
   Flex,
   IconCloseAlt,
   Paper,
@@ -12,6 +13,7 @@ import { Link, Route, Switch, useRouteMatch } from 'react-router-dom'
 
 import djBackground from 'assets/img/2-DJ-4-3.jpg'
 import djPortrait from 'assets/img/DJportrait.jpg'
+import imagePhone from 'assets/img/imagePhone.png'
 import BackgroundWaves from 'components/background-animations/BackgroundWaves'
 import { useMedia } from 'hooks/useMedia'
 import { SignInPage } from 'pages/sign-in-page/SignInPage'
@@ -19,6 +21,7 @@ import { AudiusValues } from 'pages/sign-on-page/AudiusValues'
 import SignUpPage from 'pages/sign-up-page'
 import {
   SIGN_IN_PAGE,
+  SIGN_UP_APP_CTA_PAGE,
   SIGN_UP_CREATE_LOGIN_DETAILS,
   SIGN_UP_EMAIL_PAGE,
   SIGN_UP_PAGE,
@@ -54,7 +57,8 @@ export const SignOnPage = () => {
       SIGN_UP_EMAIL_PAGE,
       SIGN_UP_PASSWORD_PAGE,
       SIGN_UP_REVIEW_HANDLE_PAGE,
-      SIGN_UP_CREATE_LOGIN_DETAILS
+      SIGN_UP_CREATE_LOGIN_DETAILS,
+      SIGN_UP_APP_CTA_PAGE
     ],
     exact: true
   })
@@ -135,7 +139,7 @@ export const SignOnPage = () => {
           }}
         >
           <Switch>
-            <Route path={SIGN_UP_PAGE}>
+            <Route exact path={[SIGN_UP_PAGE, SIGN_UP_EMAIL_PAGE]}>
               <AudiusValues
                 css={{
                   margin: 'auto',
@@ -180,7 +184,7 @@ export const SignOnPage = () => {
       >
         <IconCloseAlt color='staticWhite' />
       </Link>
-      <BackgroundWaves zIndex={0} />
+      {/* <BackgroundWaves zIndex={0} /> */}
       <Paper w='100%'>
         <Flex
           direction='column'
@@ -209,7 +213,14 @@ export const SignOnPage = () => {
             backgroundPosition: 'center'
           }}
         >
-          <AudiusValues />
+          <Switch>
+            <Route exact path={SIGN_UP_APP_CTA_PAGE}>
+              <Box as='img' w='100%' src={imagePhone} />
+            </Route>
+            <Route path={SIGN_UP_PAGE}>
+              <AudiusValues />
+            </Route>
+          </Switch>
         </Flex>
       </Paper>
     </Flex>

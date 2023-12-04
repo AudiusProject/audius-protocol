@@ -148,13 +148,14 @@ export const PickHandlePage = () => {
       validateOnChange={false}
     >
       {({ isSubmitting, isValid, isValidating }) => (
-        <Page as={Form} centered>
+        <Page as={Form} centered={!isMobile}>
           <Heading
             prefix={
               isMobile ? null : <OutOfText numerator={1} denominator={2} />
             }
             heading={messages.title}
             description={messages.description}
+            centered={!isMobile}
           />
           <Flex direction='column' gap={isMobile ? 'l' : 'xl'}>
             <HandleField
