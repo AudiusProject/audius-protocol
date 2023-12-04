@@ -4,7 +4,8 @@ import solanaWeb3, {
   Keypair,
   PublicKey,
   LAMPORTS_PER_SOL,
-  TransactionInstruction
+  TransactionInstruction,
+  Transaction
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
@@ -492,14 +493,14 @@ export class SolanaWeb3Manager {
   }
 
   /**
-   * Purchases USDC gated content
+   * Purchases USDC gated content via relay, or returns the purchase transaction for manual submission
    * @param params.id the id of the content, eg. the track ID
    * @param params.type the type of the content, eg. "track"
    * @param params.blocknumber the blocknumber the content was last updated
    * @param params.splits map of address to USDC amount, used to split the price amoung several stakeholders
    * @param params.extraAmount Extra amount in USDC wei to be distributed to the stakeholders
    * @param params.purchaserUserId Id of the user that is purchasing the track
-   * @returns the transaction signature and/or an error
+   * @param params.shouldSubmitToRelay Either submit the transaction to relay, or return it
    */
   async purchaseContent({
     id,
@@ -507,7 +508,8 @@ export class SolanaWeb3Manager {
     blocknumber,
     extraAmount = 0,
     splits,
-    purchaserUserId
+    purchaserUserId,
+    shouldSubmitToRelay = true
   }: {
     id: number
     type: 'track'
@@ -515,15 +517,14 @@ export class SolanaWeb3Manager {
     extraAmount?: number | BN
     blocknumber: number
     purchaserUserId?: number
-  }) {
+    shouldSubmitToRelay?: boolean
+  }): Promise<{
+    response?: ReturnType<TransactionHandler['handleTransaction']>
+    transaction: Transaction
+  }> {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
-      )
-    }
-    if (Object.values(splits).length !== 1) {
-      throw new Error(
-        'Purchasing content only supports a single split. Specifying more splits coming soon!'
       )
     }
 
@@ -569,11 +570,16 @@ export class SolanaWeb3Manager {
       programId: MEMO_PROGRAM_ID,
       data: Buffer.from(data)
     })
-    return await this.transactionHandler.handleTransaction({
-      instructions: [...instructions, memoInstruction],
-      skipPreflight: true,
-      feePayerOverride: this.feePayerKey
-    })
+    let response
+    if (shouldSubmitToRelay) {
+      response = this.transactionHandler.handleTransaction({
+        instructions: [...instructions, memoInstruction],
+        skipPreflight: true,
+        feePayerOverride: this.feePayerKey
+      })
+    }
+    const transaction = new Transaction().add(...instructions, memoInstruction)
+    return { response, transaction }
   }
 
   /**

@@ -14,7 +14,7 @@ program
   )
   .action(async (trackId, { from, extraAmount: extraAmountCents }) => {
     const audiusLibs = await initializeAudiusLibs(from)
-    const user = audiusLibs.userStateManager.getCurrentUser();
+    const user = audiusLibs.userStateManager.getCurrentUser()
 
     const track = (await audiusLibs.Track.getTracks(100, 0, [trackId]))[0]
     if (!track.premium_conditions || !track.is_premium) {
@@ -34,7 +34,7 @@ program
     }
 
     try {
-      const response = await audiusLibs.solanaWeb3Manager.purchaseContent({
+      const { response } = await audiusLibs.solanaWeb3Manager.purchaseContent({
         id: trackId,
         extraAmount,
         type: 'track',
