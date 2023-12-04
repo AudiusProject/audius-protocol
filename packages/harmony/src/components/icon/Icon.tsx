@@ -40,13 +40,11 @@ export const Icon = styled.svg<IconProps>((props) => {
   const iconColor = color ? theme.color.icon[color] : undefined
 
   return {
-    css: {
-      ...(iconSize && {
-        height: iconSizeW ?? iconSize,
-        width: iconSizeH ?? iconSize,
-        minWidth: iconSizeH ?? iconSize
-      }),
-      ...(iconColor && { path: { fill: iconColor } })
-    }
+    ...(iconSize && {
+      height: iconSizeW ?? iconSize,
+      width: iconSizeH ?? iconSize,
+      minWidth: iconSizeH ?? iconSize
+    }),
+    ...(iconColor && { path: { fill: iconColor } })
   }
 })
