@@ -70,6 +70,7 @@ export const CreateLoginDetailsPage = () => {
                 name='email'
                 autoComplete='email'
                 label={messages.emailLabel}
+                autoFocus
               />
               <PasswordField name='password' label={messages.passwordLabel} />
               <PasswordField

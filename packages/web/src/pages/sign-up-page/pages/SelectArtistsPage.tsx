@@ -10,6 +10,7 @@ import {
 } from '@audius/common'
 import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
 import { Form, Formik } from 'formik'
+import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -17,14 +18,16 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { useModalState } from 'common/hooks/useModalState'
 import { addFollowArtists } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
 import { SIGN_UP_APP_CTA_PAGE, TRENDING_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
-import FollowArtistTile from '../components/FollowArtistTile'
+import {
+  FollowArtistTile,
+  FollowArtistTileSkeleton
+} from '../components/FollowArtistTile'
 import { PreviewArtistToast } from '../components/PreviewArtistToast'
 import {
   Heading,
@@ -98,7 +101,7 @@ export const SelectArtistsPage = () => {
 
   const artists = isFeaturedArtists ? featuredArtists : topArtists
   const isLoading =
-    (isFeaturedArtists ? topArtistsStatus : featuredArtistsStatus) ===
+    (isFeaturedArtists ? featuredArtistsStatus : topArtistsStatus) ===
     Status.LOADING
 
   const ArtistsList = isMobile ? Flex : Paper
@@ -187,13 +190,13 @@ export const SelectArtistsPage = () => {
                     wrap='wrap'
                     justifyContent='center'
                   >
-                    {isLoading ? (
-                      <LoadingSpinner />
-                    ) : (
-                      artists?.map((user) => (
-                        <FollowArtistTile key={user.user_id} user={user} />
-                      ))
-                    )}
+                    {isLoading
+                      ? range(9).map((index) => (
+                          <FollowArtistTileSkeleton key={index} />
+                        ))
+                      : artists?.map((user) => (
+                          <FollowArtistTile key={user.user_id} user={user} />
+                        ))}
                   </Flex>
                 </ArtistsList>
               </SelectArtistsPreviewContextProvider>

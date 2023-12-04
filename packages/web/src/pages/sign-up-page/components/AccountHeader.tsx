@@ -81,7 +81,7 @@ export const AccountHeader = (props: AccountHeaderProps) => {
               <CoverPhotoBanner
                 coverPhotoUrl={uploadedImage?.url}
                 profileImageUrl={formProfileImage?.url}
-                showPhotoIcon
+                isEditing
               />
             )}
           </ImageField>

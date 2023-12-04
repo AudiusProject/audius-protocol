@@ -215,6 +215,7 @@ export const SignOnPage = () => {
         >
           <Switch>
             <Route exact path={SIGN_UP_APP_CTA_PAGE}>
+              {/* @ts-ignore box type incorrect */}
               <Box as='img' w='100%' src={imagePhone} />
             </Route>
             <Route path={SIGN_UP_PAGE}>

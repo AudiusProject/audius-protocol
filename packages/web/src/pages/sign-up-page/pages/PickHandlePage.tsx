@@ -147,43 +147,34 @@ export const PickHandlePage = () => {
       onSubmit={handleSubmit}
       validateOnChange={false}
     >
-      {({ isSubmitting, isValid, isValidating }) => (
-        <Page as={Form} centered={!isMobile}>
-          <Heading
-            prefix={
-              isMobile ? null : <OutOfText numerator={1} denominator={2} />
-            }
-            heading={messages.title}
-            description={messages.description}
-            centered={!isMobile}
+      <Page as={Form} centered={!isMobile}>
+        <Heading
+          prefix={isMobile ? null : <OutOfText numerator={1} denominator={2} />}
+          heading={messages.title}
+          description={messages.description}
+          centered={!isMobile}
+        />
+        <Flex direction='column' gap={isMobile ? 'l' : 'xl'}>
+          <HandleField
+            autoFocus
+            onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
           />
-          <Flex direction='column' gap={isMobile ? 'l' : 'xl'}>
-            <HandleField
-              onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
-            />
-            <Divider>
-              <Text
-                variant='body'
-                color='subdued'
-                size='s'
-                css={{ textTransform: 'uppercase' }}
-              >
-                {messages.or}
-              </Text>
-            </Divider>
-            <SocialMediaSection
-              onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
-            />
-          </Flex>
-          <PageFooter
-            centered
-            buttonProps={{
-              disabled: !isValid || isSubmitting,
-              isLoading: isSubmitting || isValidating
-            }}
+          <Divider>
+            <Text
+              variant='body'
+              color='subdued'
+              size='s'
+              css={{ textTransform: 'uppercase' }}
+            >
+              {messages.or}
+            </Text>
+          </Divider>
+          <SocialMediaSection
+            onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
           />
-        </Page>
-      )}
+        </Flex>
+        <PageFooter centered />
+      </Page>
     </Formik>
   )
 }

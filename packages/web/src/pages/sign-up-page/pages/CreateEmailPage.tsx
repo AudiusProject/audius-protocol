@@ -141,6 +141,7 @@ export const CreateEmailPage = () => {
               autoComplete='email'
               label={messages.emailLabel}
               debouncedValidationMs={500}
+              autoFocus
               helperText={null}
             />
             <ErrorMessage name='email'>

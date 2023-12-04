@@ -110,6 +110,7 @@ export const FinishProfilePage = () => {
               label={messages.displayName}
               placeholder={messages.inputPlaceholder}
               required
+              autoFocus
               maxLength={32}
               css={(theme) => ({
                 padding: theme.spacing.l,
