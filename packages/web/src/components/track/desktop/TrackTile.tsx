@@ -250,7 +250,8 @@ const TrackTile = ({
           {messages.artistPick}
         </div>
       )
-    } else if (moment(releaseDate).isAfter(moment.now())) {
+    }
+    if (moment(releaseDate).isAfter(moment.now())) {
       console.log('asdf releaseDate: ', releaseDate, title)
       scheduledReleaseLabel = (<ScheduledReleaseLabel released={releaseDate} />)
     } 

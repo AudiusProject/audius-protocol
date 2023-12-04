@@ -54,7 +54,7 @@ import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
 import { PremiumTrackSection } from './PremiumTrackSection'
 import { Text } from '@audius/harmony'
-import { ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
+import { ScheduledReleaseGiantLabel, ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1095,
@@ -447,7 +447,7 @@ export const GiantTrackTile = ({
   }
   const renderScheduledReleaseRow = () => {
     return (
-      <ScheduledReleaseLabel released={released} />
+      <ScheduledReleaseGiantLabel released={released} />
     )
   }
 

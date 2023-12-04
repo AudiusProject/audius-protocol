@@ -27,6 +27,8 @@ import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { AVAILABILITY_TYPE } from './AccessAndSaleField'
 import { release } from 'os'
 import Select from 'antd/lib/select'
+import { getScheduledReleaseLabelMessage } from 'utils/dateUtils'
+
 const messages = {
   title: 'Release Date',
   description:
@@ -125,31 +127,11 @@ export const ReleaseDateField = () => {
     [setReleaseDate]
   )
 
-  const formatReleaseMessage = (releaseDate, base) => {
-    const isFutureRelease = moment(releaseDate ?? undefined).isAfter(moment.now())
-
-    let message = isFutureRelease ? '[Scheduled] for ' : '';
-    message += base;
-    message += isFutureRelease ? ' @ LT' : '';
-
-    return message;
-  }
-
   const renderValue = useCallback(() => {
     return (
       <SelectedValue
         label={
-          moment(releaseDate ?? undefined)
-            .calendar(null,
-              {
-                sameDay: formatReleaseMessage(releaseDate, '[Today]'),
-                nextDay: formatReleaseMessage(releaseDate, '[Tomorrow] @ LT'),
-                nextWeek: formatReleaseMessage(releaseDate, 'dddd'),
-                lastDay: '[Yesterday]',
-                lastWeek: '[Last] dddd',
-                sameElse: formatReleaseMessage(releaseDate, 'MM/DD/YYYY')
-              }
-            )
+          getScheduledReleaseLabelMessage(releaseDate, 'Scheduled for ')
         }
         icon={IconCalendar}
       >

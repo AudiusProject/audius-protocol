@@ -3,8 +3,11 @@ import {
     IconCalendar
 } from '@audius/stems'
 import styles from './ScheduledReleaseLabel.module.css'
+import premiumContentLabelStyles from '../track/PremiumContentLabel.module.css'
+import cn from 'classnames'
 
 import moment from 'moment'
+import { getScheduledReleaseLabelMessage } from 'utils/dateUtils'
 
 const messages = {
     collectibleGated: 'Collectible Gated',
@@ -19,15 +22,25 @@ export const ScheduledReleaseLabel = ({ released
 }) => {
     console.log('asdf released: ', released)
     return (
-        <>
-            <IconCalendar className={styles.scheduledReleaseCalendar} />
+        <div className={cn(premiumContentLabelStyles.labelContainer, styles.scheduledReleaseLabel)}>
+            <IconCalendar className={premiumContentLabelStyles.icon} />
+            Releases on {moment(released).calendar()}
+        </div>
+    )
+}
+
+export const ScheduledReleaseGiantLabel = ({ released
+}) => {
+    console.log('asdf released: ', released)
+    return (
+        <div className={cn(premiumContentLabelStyles.labelContainer, styles.scheduledReleaseLabel)}>
+            <IconCalendar />
             <Text
                 color="accent"
-                strength="weak"
                 variant="title"
             >
-                Releases on {moment(released).calendar()}
+                Releases on {released}
             </Text>
-        </>
+        </div>
     )
 }
