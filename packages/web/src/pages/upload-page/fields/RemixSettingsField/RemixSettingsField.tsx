@@ -92,7 +92,8 @@ export const RemixSettingsField = () => {
     premiumConditions
   ])
 
-  const isUSDCPurchaseGated = isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isUSDCPurchaseGated =
+    isPremiumContentUSDCPurchaseGated(premiumConditions)
 
   // If the track is public or usdc purchase gated, default to showing remixes.
   // Otherwise, default to hiding remixes.
@@ -102,7 +103,7 @@ export const RemixSettingsField = () => {
     } else if (isPremium) {
       setShowRemixes(false)
     }
-  }, [isPremium, isUSDCPurchaseGated])
+  }, [isPremium, isUSDCPurchaseGated, setShowRemixes])
 
   const handleSubmit = useCallback(
     (values: RemixSettingsFormValues) => {
