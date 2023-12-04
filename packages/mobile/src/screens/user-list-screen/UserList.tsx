@@ -122,20 +122,6 @@ export const UserList = (props: UserListProps) => {
     }
   }, [loading, users, isRefreshing])
 
-  const getItemLayout = useCallback(
-    (_data: User[], index: number) => {
-      const itemHeight = ['SUPPORTING', 'TOP SUPPORTERS'].includes(tag)
-        ? 167
-        : 147
-      return {
-        length: itemHeight,
-        offset: itemHeight * index,
-        index
-      }
-    },
-    [tag]
-  )
-
   const handleEndReached = useCallback(() => {
     if (hasMore && isFocused) {
       dispatch(setLoading(tag, true))
@@ -158,6 +144,20 @@ export const UserList = (props: UserListProps) => {
         <MemoizedUserListItem user={item} tag={tag} />
       ),
 
+    [tag]
+  )
+
+  const getItemLayout = useCallback(
+    (_data: User[], index: number) => {
+      const itemHeight = ['SUPPORTING', 'TOP SUPPORTERS'].includes(tag)
+        ? 167
+        : 147
+      return {
+        length: itemHeight,
+        offset: itemHeight * index,
+        index
+      }
+    },
     [tag]
   )
 
