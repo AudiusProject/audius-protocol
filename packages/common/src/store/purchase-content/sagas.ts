@@ -260,7 +260,7 @@ function* doStartPurchaseContentFlow({
 
   try {
     // get user & user bank
-    const purchaserUserId = yield* select(getUserId)
+    const purchaserUserId = (yield* select(getUserId)) ?? -1
     const userBank = yield* call(getUSDCUserBank)
 
     const tokenAccountInfo = yield* call(
