@@ -127,6 +127,9 @@ const RemixSettingsModal = ({
 
   const [url, setUrl] = useState<string | null>(null)
 
+  const isUSDCPurchaseGated = isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isHideRemixesDisabled = isPremium && !isUSDCPurchaseGated
+
   useEffect(() => {
     if (url === null && track && isOpen) {
       setUrl(fullTrackPage(track.permalink))
@@ -189,13 +192,12 @@ const RemixSettingsModal = ({
         {isPremium ? (
           <HelpCallout
             className={styles.disableInfo}
-            content={`${messages.changeAvailabilityPrefix} ${
-              isPremiumContentUSDCPurchaseGated(premiumConditions)
-                ? messages.premium
-                : isPremiumContentCollectibleGated(premiumConditions)
+            content={`${messages.changeAvailabilityPrefix} ${isUSDCPurchaseGated
+              ? messages.premium
+              : isPremiumContentCollectibleGated(premiumConditions)
                 ? messages.collectibleGated
                 : messages.specialAccess
-            }${messages.changeAvailabilitySuffix}`}
+              }${messages.changeAvailabilitySuffix}`}
           />
         ) : null}
         <div className={styles.toggleRow}>
@@ -244,19 +246,19 @@ const RemixSettingsModal = ({
         <div className={styles.divider} />
 
         <div className={styles.toggleRow}>
-          <span className={cn({ [styles.remixDisabled]: isPremium })}>
+          <span className={cn({ [styles.remixDisabled]: isHideRemixesDisabled })}>
             {messages.hideOtherRemixes}
           </span>
           <Switch
-            isOn={!!hideRemixes || isPremium}
+            isOn={!!hideRemixes || isHideRemixesDisabled}
             handleToggle={() => onToggleHideRemixes?.()}
-            isDisabled={isPremium}
+            isDisabled={isHideRemixesDisabled}
             allowCheckedWhileDisabled
           />
         </div>
         <div
           className={cn(styles.subtext, {
-            [styles.remixDisabled]: isPremium
+            [styles.remixDisabled]: isHideRemixesDisabled
           })}
         >
           {messages.preventOtherRemixes}
