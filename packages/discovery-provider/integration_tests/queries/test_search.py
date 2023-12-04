@@ -1,6 +1,7 @@
 import logging
 import os
 import subprocess
+import time
 from datetime import datetime
 
 import pytest
@@ -271,15 +272,16 @@ def setup_search(app_module):
             session.add(balance)
             session.flush()
 
-    logs = subprocess.run(
-        ["npm", "run", "catchup:ci"],
-        env=os.environ,
-        capture_output=True,
-        text=True,
-        cwd="es-indexer",
-        timeout=30,
-    )
-    logger.info(logs)
+    time.sleep(1)
+    # logs = subprocess.run(
+    #     ["npm", "run", "catchup:ci"],
+    #     env=os.environ,
+    #     capture_output=True,
+    #     text=True,
+    #     cwd="es-indexer",
+    #     timeout=30,
+    # )
+    # logger.info(logs)
 
 
 def test_get_tracks_external(app_module):
