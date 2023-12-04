@@ -9,3 +9,5 @@ else
     cargo install --locked --root $HOME/solana-release --version 1.16.3 --bin solana-test-validator solana-validator
     cargo install --locked --root $HOME/solana-release --version 3.1.0 spl-token-cli
 fi
+
+cargo install --git https://github.com/coral-xyz/anchor --tag v0.28.0 anchor-cli --locked

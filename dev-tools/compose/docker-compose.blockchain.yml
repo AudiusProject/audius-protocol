@@ -117,6 +117,7 @@ services:
     #   - solana-programs-idl:/usr/src/app/anchor/audius-data/idl
     ports:
       - '8899:8899'
+      - '8900:8900'
     deploy:
       mode: global
       resources:

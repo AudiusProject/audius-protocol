@@ -147,9 +147,9 @@ echo "Deploying audius-reward-manager..."
 solana program deploy target/deploy/audius_reward_manager.so
 echo
 
-# echo "Deploying payment-router..."
-# solana program deploy target/deploy/payment_router.so
-# echo
+echo "Deploying payment-router..."
+solana program deploy target/deploy/payment_router.so
+echo
 
 echo "Deploying wAUDIO token..."
 spl-token create-token --decimals 8 -- "$token_keypair"
@@ -181,6 +181,14 @@ echo
 
 echo "Minting 100,000,000 wAUDIO..."
 spl-token mint "$(solana address -k "$token_keypair")" 100000000
+echo
+
+echo "Creating USDC token account for owner..."
+spl-token create-account "$(solana address -k "$fake_usdc_token_keypair")"
+echo
+
+echo "Minting 100,000,000 USDC to owner..."
+spl-token mint "$(solana address -k "$fake_usdc_token_keypair")" 100000000
 echo
 
 echo "Initalizing claimable tokens..."

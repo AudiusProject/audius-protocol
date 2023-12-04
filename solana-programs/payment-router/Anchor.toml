@@ -2,13 +2,9 @@
 seeds = false
 skip-lint = false
 [programs.mainnet]
-<<<<<<< Updated upstream
 payment_router = "paytYpX3LPN98TAeen6bFFeraGSuWnomZmCXjAsoqPa"
-=======
-payment_router = "6pca6uGGV5GYKY8W9aGfJbWPx4pe5mW8wLaP9c3LUNpp"
 [programs.localnet]
-payment_router = "7veBbiKw49XzFcPs4cEot1yBQtbYGoJpm1pLSqzYvYL8"
->>>>>>> Stashed changes
+payment_router = "apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa"
 
 [registry]
 url = "https://api.apr.dev"
@@ -16,6 +12,8 @@ url = "https://api.apr.dev"
 # [provider]
 # cluster = "mainnet"
 # wallet = "id.json"
+
+# Used to run against local cluster
 [provider]
 cluster = "localnet"
 wallet = "~/.config/solana/id.json"

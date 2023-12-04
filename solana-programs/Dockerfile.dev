@@ -25,9 +25,9 @@ COPY track_listen_count ./track_listen_count
 COPY Cargo.lock Cargo.toml ./
 COPY scripts/update-keys.sh scripts/update-keys.sh
 
-RUN --mount=type=cache,target=/usr/src/app/target \
-    --mount=type=cache,target=/root/.cache/solana \
-    --mount=type=cache,target=/usr/local/cargo/registry \
+RUN --mount=type=cache,id=bpf-build-cache,target=/usr/src/app/target \
+    --mount=type=cache,id=bpf-solana-cache,target=/root/.cache/solana \
+    --mount=type=cache,id=bpf-cargo-registry,target=/usr/local/cargo/registry \
     ./scripts/update-keys.sh && \
     cargo build-bpf && \
     mkdir -p artifacts/main-target && \
@@ -68,15 +68,20 @@ COPY track_listen_count ./track_listen_count
 COPY Cargo.lock Cargo.toml ./
 COPY scripts/update-keys.sh scripts/update-keys.sh
 
-RUN --mount=type=cache,target=/usr/src/app/target \
-    --mount=type=cache,target=/root/.cache/solana \
-    --mount=type=cache,target=/usr/local/cargo/registry \
-    mkdir -p artifacts/main-target && \
+# Note: The first cache entry here is specifically caching only the payment-router output.
+# We don't want to cache the entire /usr/src/app directory, just whatever build folder
+# might be written to during the following command. If other programs are added to this
+# step, their `target` folder could also be added as a cache directory to speed up incremental
+# compilation.
+RUN --mount=type=cache,id=anchor-build-cache,target=/usr/src/app/payment-router/target \
+    --mount=type=cache,id=anchor-solana-cache,target=/root/.cache/solana \
+    --mount=type=cache,id=anchor-cargo-registry,target=/usr/local/cargo/registry \
+    mkdir -p artifacts/anchor-target && \
     ./scripts/update-keys.sh && \
     cd payment-router && anchor build && cd .. && \
-    cp -r payment-router/target/deploy artifacts/main-target && \
-    cp -r payment-router/target/idl artifacts/main-target && \
-    cp -r payment-router/target/types artifacts/main-target
+    cp -r payment-router/target/deploy artifacts/anchor-target && \
+    cp -r payment-router/target/idl artifacts/anchor-target && \
+    cp -r payment-router/target/types artifacts/anchor-target
 
 # ------
 FROM rust:1.69.0
@@ -96,7 +101,7 @@ RUN apt-get update && \
 
 ENV PATH="/root/solana-release/bin:${PATH}"
 COPY scripts/install-solana.sh /tmp/install-solana.sh
-RUN --mount=type=cache,target=/usr/local/cargo/registry /tmp/install-solana.sh
+RUN --mount=type=cache,id=deploy-cargo-cache,target=/usr/local/cargo/registry /tmp/install-solana.sh
 
 ARG AUDIUS_ETH_REGISTRY_PRIVATE_KEY
 ARG TRACK_LISTEN_COUNT_PRIVATE_KEY
@@ -118,11 +123,10 @@ ARG valid_signer_eth_address
 
 COPY . .
 COPY --from=bpf-builder /usr/src/app/artifacts/main-target target
-COPY --from=anchor-builder /usr/src/app/artifacts/main-target/. target
+COPY --from=anchor-builder /usr/src/app/artifacts/anchor-target/. target
 
-RUN --mount=type=cache,target=/usr/src/app/target \
-    --mount=type=cache,target=/root/.cache/solana \
-    --mount=type=cache,target=/usr/local/cargo/registry \
+RUN --mount=type=cache,id=deploy-solana-cache,target=/root/.cache/solana \
+    --mount=type=cache,id=deploy-cargo-cache,target=/usr/local/cargo/registry \
     ./scripts/setup-predeployed.sh /usr/db
 
 HEALTHCHECK --interval=5s --timeout=5s --retries=10 \

@@ -5,6 +5,5 @@ export const SPL_AUDIO_TOKEN_ADDRESS =
 
 // https://explorer.solana.com/address/EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v
 export const SPL_USDC_DECIMALS = 6
-// export const SPL_USDC_TOKEN_ADDRESS = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
-export const SOL_USDC_TOKEN_ADDRESS =
-  '26Q7gP8UfkDzi7GMFEQxTJaNJ8D2ybCUjex58M5MLu8y'
+export const SPL_USDC_TOKEN_ADDRESS =
+  'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
