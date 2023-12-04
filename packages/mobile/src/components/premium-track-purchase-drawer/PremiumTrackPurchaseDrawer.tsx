@@ -354,7 +354,6 @@ const RenderForm = ({
           <USDCManualTransfer
             onClose={handleUSDCManualTransferClose}
             amountInCents={totalPriceInCents}
-            onSuccess={submitForm}
           />
         </View>
       )}

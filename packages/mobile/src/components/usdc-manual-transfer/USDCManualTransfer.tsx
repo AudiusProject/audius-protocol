@@ -85,12 +85,10 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 
 export const USDCManualTransfer = ({
   onClose,
-  amountInCents,
-  onSuccess
+  amountInCents
 }: {
   onClose: () => void
   amountInCents?: number
-  onSuccess?: () => void
 }) => {
   const styles = useStyles()
   const { neutral } = useThemeColors()
