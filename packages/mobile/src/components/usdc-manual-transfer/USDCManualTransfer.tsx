@@ -97,10 +97,7 @@ export const USDCManualTransfer = ({
   const { toast } = useToast()
 
   const { onPress: onPressLearnMore } = useLink(USDCLearnMore)
-  const { data: balanceBN } = useUSDCBalance({
-    isPolling: true,
-    pollingInterval: 1000
-  })
+  const { data: balanceBN } = useUSDCBalance()
 
   useCreateUserbankIfNeeded({
     recordAnalytics: track,
