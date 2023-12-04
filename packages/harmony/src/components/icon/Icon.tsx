@@ -35,15 +35,21 @@ export const Icon = styled.svg<IconProps>((props) => {
 
   const theme = useTheme()
   const iconSize = size ? iconSizes[size] : undefined
-  const iconSizeW = sizeH ? iconSizes[sizeH] : undefined
-  const iconSizeH = sizeW ? iconSizes[sizeW] : undefined
+  const iconSizeW = sizeW ? iconSizes[sizeW] : undefined
+  const iconSizeH = sizeH ? iconSizes[sizeH] : undefined
   const iconColor = color ? theme.color.icon[color] : undefined
 
   return {
     ...(iconSize && {
-      height: iconSizeW ?? iconSize,
-      width: iconSizeH ?? iconSize,
-      minWidth: iconSizeH ?? iconSize
+      height: iconSize,
+      width: iconSize,
+      minWidth: iconSize
+    }),
+    ...(iconSizeH && {
+      height: iconSizeH
+    }),
+    ...(iconSizeW && {
+      width: iconSizeW
     }),
     ...(iconColor && { path: { fill: iconColor } })
   }
