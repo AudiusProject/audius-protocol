@@ -1,5 +1,5 @@
 import SignOnPageState from 'common/store/pages/signon/types'
-import { SignUpPath, TRENDING_PAGE } from 'utils/route'
+import { SIGN_UP_PAGE, SignUpPath, TRENDING_PAGE } from 'utils/route'
 
 /**
  * Checks against existing sign up redux state,
@@ -16,7 +16,7 @@ export const determineAllowedRoute = (
 } => {
   const attemptedPath = requestedRoute.replace('/signup/', '')
   // Have to type as string[] to avoid too narrow of a type for comparing against
-  let allowedRoutes: string[] = [SignUpPath.createEmail] // create email is available by default
+  let allowedRoutes: string[] = [SIGN_UP_PAGE, SignUpPath.createEmail] // create email is available by default
   if (signUpState.email.value) {
     // Already have email
     allowedRoutes.push(SignUpPath.createPassword)

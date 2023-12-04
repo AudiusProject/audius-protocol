@@ -148,7 +148,11 @@ export const PickHandlePage = () => {
       validateOnChange={false}
     >
       {({ isSubmitting, isValid, isValidating }) => (
-        <Page as={Form} centered>
+        <Page
+          as={Form}
+          centered
+          transition={isMobile ? 'horizontal' : undefined}
+        >
           <Heading
             prefix={
               isMobile ? null : <OutOfText numerator={1} denominator={2} />

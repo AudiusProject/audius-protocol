@@ -47,11 +47,16 @@ export const SelectGenrePage = () => {
   const { isMobile } = useMedia()
 
   return (
-    <ScrollView>
+    <ScrollView gap={isMobile ? '2xl' : '3xl'}>
       <AccountHeader mode='viewing' />
       <Formik initialValues={initialValues} onSubmit={handleSubmit}>
         {({ values }) => (
-          <Page as={Form} centered css={{ paddingTop: 0 }}>
+          <Page
+            as={Form}
+            centered
+            css={{ paddingTop: 0 }}
+            transition='horizontal'
+          >
             <Heading
               heading={messages.header}
               description={messages.description}

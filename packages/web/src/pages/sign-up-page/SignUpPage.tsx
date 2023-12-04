@@ -36,6 +36,7 @@ const messages = {
  */
 export function SignUpRoute({ children, ...rest }: RouteProps) {
   const signUpState = useSelector(getSignOn)
+
   return (
     <Route
       {...rest}
@@ -45,11 +46,12 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
           signUpState,
           location.pathname
         )
-        return isAllowedRoute ? (
-          <>{children}</>
-        ) : (
-          <Redirect to={correctedRoute} />
-        )
+
+        if (!isAllowedRoute) {
+          return <Redirect to={correctedRoute} />
+        }
+
+        return <>{children}</>
       }}
     />
   )
@@ -64,9 +66,12 @@ export const SignUpPage = () => {
       </Helmet>
       <NavHeader />
       <Switch>
-        <Route exact path={[SIGN_UP_PAGE, SIGN_UP_EMAIL_PAGE]}>
+        <SignUpRoute exact path={SIGN_UP_PAGE}>
           <CreateEmailPage />
-        </Route>
+        </SignUpRoute>
+        <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
+          <CreateEmailPage />
+        </SignUpRoute>
         <SignUpRoute exact path={SIGN_UP_PASSWORD_PAGE}>
           <CreatePasswordPage />
         </SignUpRoute>
