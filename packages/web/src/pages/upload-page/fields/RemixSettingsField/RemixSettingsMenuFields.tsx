@@ -64,7 +64,8 @@ export const RemixSettingsMenuFields = () => {
 
   const [, , { setValue: setParentTrackId }] = useField('parentTrackId')
 
-  const isUSDCPurchaseGated = isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isUSDCPurchaseGated =
+    isPremiumContentUSDCPurchaseGated(premiumConditions)
 
   useEffect(() => {
     setParentTrackId(trackId)
@@ -75,10 +76,11 @@ export const RemixSettingsMenuFields = () => {
     if (isPremium && !isUSDCPurchaseGated) {
       return (
         <HelpCallout
-          content={`${messages.changeAvailabilityPrefix} ${isPremiumContentCollectibleGated(premiumConditions)
-            ? messages.collectibleGated
-            : messages.specialAccess
-            }${messages.changeAvailabilitySuffix}`}
+          content={`${messages.changeAvailabilityPrefix} ${
+            isPremiumContentCollectibleGated(premiumConditions)
+              ? messages.collectibleGated
+              : messages.specialAccess
+          }${messages.changeAvailabilitySuffix}`}
         />
       )
     }
