@@ -498,6 +498,7 @@ export class SolanaWeb3Manager {
    * @param params.blocknumber the blocknumber the content was last updated
    * @param params.splits map of address to USDC amount, used to split the price amoung several stakeholders
    * @param params.extraAmount Extra amount in USDC wei to be distributed to the stakeholders
+   * @param params.purchaserUserId Id of the user that is purchasing the track
    * @returns the transaction signature and/or an error
    */
   async purchaseContent({
@@ -505,13 +506,15 @@ export class SolanaWeb3Manager {
     type,
     blocknumber,
     extraAmount = 0,
-    splits
+    splits,
+    purchaserUserId
   }: {
     id: number
     type: 'track'
     splits: Record<string, number | BN>
     extraAmount?: number | BN
     blocknumber: number
+    purchaserUserId?: number
   }) {
     if (!this.web3Manager) {
       throw new Error(
@@ -551,6 +554,10 @@ export class SolanaWeb3Manager {
       mintKey: this.mints.usdc
     })
 
+    const data = purchaserUserId
+      ? `${type}:${id}:${blocknumber}:${purchaserUserId}`
+      : `${type}:${id}:${blocknumber}`
+
     const memoInstruction = new TransactionInstruction({
       keys: [
         {
@@ -560,7 +567,7 @@ export class SolanaWeb3Manager {
         }
       ],
       programId: MEMO_PROGRAM_ID,
-      data: Buffer.from(`${type}:${id}:${blocknumber}`)
+      data: Buffer.from(data)
     })
     return await this.transactionHandler.handleTransaction({
       instructions: [...instructions, memoInstruction],

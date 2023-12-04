@@ -259,7 +259,8 @@ function* doStartPurchaseContentFlow({
   )
 
   try {
-    // get user bank
+    // get user & user bank
+    const purchaserUserId = yield* select(getUserId)
     const userBank = yield* call(getUSDCUserBank)
 
     const tokenAccountInfo = yield* call(
@@ -316,7 +317,8 @@ function* doStartPurchaseContentFlow({
       blocknumber,
       extraAmount: extraAmountBN,
       splits,
-      type: 'track'
+      type: 'track',
+      purchaserUserId
     })
     yield* put(purchaseSucceeded())
 
