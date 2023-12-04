@@ -302,6 +302,13 @@ function* doStartPurchaseContentFlow({
 
     // buy USDC if necessary
     if (balanceNeeded.gtn(0)) {
+      if (purchaseMethod !== PurchaseMethod.CARD) {
+        throw new PurchaseContentError(
+          PurchaseErrorCode.InsufficientBalance,
+          'Unexpected insufficient balance to complete purchase'
+        )
+      }
+
       const balanceNeededCents = ceilingBNUSDCToNearestCent(balanceNeeded)
         .div(BN_USDC_CENT_WEI)
         .toNumber()
@@ -373,25 +380,25 @@ function* doStartPurchaseContentFlow({
         }
       } // if (USE_COINFLOW)
       else {
+        // Stripe or other onramp funds your wallet before you purchase
         yield* put(buyUSDC())
         yield* call(purchaseUSDC, { amount: balanceNeeded })
+        yield* put(usdcBalanceSufficient())
+
+        const { blocknumber, splits } = yield* getPurchaseConfig({
+          contentId,
+          contentType
+        })
+
+        // purchase content
+        yield* call(purchaseContent, audiusBackendInstance, {
+          id: contentId,
+          blocknumber,
+          extraAmount: extraAmountBN,
+          splits,
+          type: 'track'
+        })
       }
-
-      yield* put(usdcBalanceSufficient())
-
-      const { blocknumber, splits } = yield* getPurchaseConfig({
-        contentId,
-        contentType
-      })
-
-      // purchase content
-      yield* call(purchaseContent, audiusBackendInstance, {
-        id: contentId,
-        blocknumber,
-        extraAmount: extraAmountBN,
-        splits,
-        type: 'track'
-      })
     } // if(balanceNeeded.lte(0))
     else {
       // No need to buy USDC, just execute the purchase
