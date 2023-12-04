@@ -49,7 +49,7 @@ npm i ./packages/storage
 
 # Building and running apps in isolation
 
-At the root of this project is a [docker compose](./docker-compose.yml) file that houses all of the applications. Building and running your new application alongside the other is as simple as following the `app-template` example.
+Inside `/dev-tools/compose` is a [docker compose for pedalboard](../../../../dev-tools/compose/docker-compose.pedalboard.dev.yml) file that houses all of the applications. Building and running your new application alongside the other is as simple as following the `app-template` example.
 
 1. Add your new service by copying what the `app-template` does.
 

@@ -1,6 +1,5 @@
 import {
   AudiusQueryContextType,
-  HandleCheckStatus,
   MAX_HANDLE_LENGTH,
   signUpFetch
 } from '@audius/common'
@@ -32,47 +31,40 @@ export const generateHandleSchema = ({
       .max(MAX_HANDLE_LENGTH)
       .regex(/^[a-zA-Z0-9_.]*$/, errorMessages.badCharacterError)
       .refine(
-        (h) => !restrictedHandles.has(h.toLowerCase()),
+        (handle) => !restrictedHandles.has(handle.toLowerCase()),
         errorMessages.handleTakenError
       )
-      .superRefine(async (h, context) => {
-        let isHandleInUse: boolean
+      .superRefine(async (handle, context) => {
         try {
-          isHandleInUse = await signUpFetch.isHandleInUse(
-            { handle: h },
+          const isHandleInUse = await signUpFetch.isHandleInUse(
+            { handle },
             audiusQueryContext
           )
+
+          if (isHandleInUse) {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: errorMessages.handleTakenError,
+              fatal: true
+            })
+            return z.NEVER
+          }
         } catch {
           context.addIssue({
             code: z.ZodIssueCode.custom,
             message: errorMessages.unknownError
           })
-          return
-        }
-        if (isHandleInUse) {
-          context.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: errorMessages.handleTakenError,
-            fatal: true
-          })
-          return z.NEVER
         }
       })
-      .superRefine(async (h, context) => {
-        if (!skipReservedHandleCheck) {
-          let handleReservedStatus: HandleCheckStatus
-          try {
-            handleReservedStatus = await signUpFetch.getHandleReservedStatus(
-              { handle: h },
+      .superRefine(async (handle, context) => {
+        if (skipReservedHandleCheck) return
+        try {
+          const handleReservedStatus =
+            await signUpFetch.getHandleReservedStatus(
+              { handle },
               audiusQueryContext
             )
-          } catch {
-            context.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: errorMessages.unknownError
-            })
-            return
-          }
+
           if (handleReservedStatus === 'twitterReserved') {
             context.addIssue({
               code: z.ZodIssueCode.custom,
@@ -89,6 +81,11 @@ export const generateHandleSchema = ({
               message: errorMessages.tiktokReservedError
             })
           }
+        } catch {
+          context.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: errorMessages.unknownError
+          })
         }
       })
   })

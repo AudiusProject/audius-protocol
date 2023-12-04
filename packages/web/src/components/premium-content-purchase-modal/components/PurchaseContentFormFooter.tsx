@@ -21,7 +21,6 @@ import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
 import { TwitterShareButton } from 'components/twitter-share-button/TwitterShareButton'
 import { Text } from 'components/typography'
-import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { fullTrackPage } from 'utils/route'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
@@ -46,7 +45,7 @@ const ContentPurchaseError = ({
   return (
     <Text className={styles.errorContainer} color='accentRed'>
       <Icon icon={IconError} size='medium' />
-      {usePurchaseContentErrorMessage(code, useRemoteVar)}
+      {usePurchaseContentErrorMessage(code)}
     </Text>
   )
 }
@@ -80,6 +79,8 @@ export const PurchaseContentFormFooter = ({
     user: { handle }
   } = track
   const isPurchased = stage === PurchaseContentStage.FINISH
+  const { totalPrice } = purchaseSummaryValues
+
   const handleTwitterShare = useCallback(
     (handle: string) => {
       const shareText = messages.shareTwitterText(title, handle)
@@ -91,7 +92,6 @@ export const PurchaseContentFormFooter = ({
     [title]
   )
 
-  const { totalPrice } = purchaseSummaryValues
   if (isPurchased) {
     return (
       <>
@@ -112,13 +112,12 @@ export const PurchaseContentFormFooter = ({
       </>
     )
   }
-
   return (
     <>
       <Button
         disabled={isUnlocking}
         color='lightGreen'
-        type='submit'
+        type={'submit'}
         isLoading={isUnlocking}
         fullWidth
       >

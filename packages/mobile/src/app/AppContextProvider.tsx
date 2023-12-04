@@ -5,6 +5,8 @@ import { useAsync } from 'react-use'
 
 import * as analytics from 'app/services/analytics'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
+import { localStorage } from 'app/services/local-storage'
+import { remoteConfigInstance } from 'app/services/remote-config/remote-config-instance'
 import { getStorageNodeSelector } from 'app/services/sdk/storageNodeSelector'
 import { generatePlaylistArtwork } from 'app/utils/generatePlaylistArtwork'
 
@@ -21,8 +23,10 @@ export const AppContextProvider = (props: AppContextProviderProps) => {
     () => ({
       analytics,
       storageNodeSelector,
+      localStorage,
       imageUtils: { generatePlaylistArtwork },
-      audiusBackend: audiusBackendInstance
+      audiusBackend: audiusBackendInstance,
+      remoteConfig: remoteConfigInstance
     }),
     [storageNodeSelector]
   )

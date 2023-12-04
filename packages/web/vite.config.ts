@@ -20,7 +20,8 @@ export default defineConfig(({ mode }) => {
       outDir: 'build',
       sourcemap: true,
       commonjsOptions: {
-        include: [/libs\/dist\/web-libs/, /node_modules/]
+        include: [/libs\/dist\/web-libs/, /node_modules/],
+        transformMixedEsModules: true
       }
     },
     define: {
@@ -84,6 +85,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         // Should be able to use vite-tsconfig-paths instead
+        app: '/src/app',
         assets: '/src/assets',
         common: '/src/common',
         components: '/src/components',

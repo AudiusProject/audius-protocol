@@ -5,7 +5,8 @@ import {
   lineupSelectors,
   feedPageLineupActions as feedActions,
   feedPageSelectors,
-  FeatureFlags
+  FeatureFlags,
+  useFeatureFlag
 } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
@@ -16,7 +17,6 @@ import { Lineup } from 'app/components/lineup'
 import { EndOfLineupNotice } from 'app/components/lineup/EndOfLineupNotice'
 import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track } from 'app/services/analytics'
 
 import { EmptyFeedSuggestedFollows } from './EmptyFeedSuggestedFollows'

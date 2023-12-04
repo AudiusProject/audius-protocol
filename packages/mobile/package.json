@@ -1,6 +1,6 @@
 {
   "name": "audius-mobile-client",
-  "version": "1.5.53",
+  "version": "1.5.54",
   "private": true,
   "scripts": {
     "jetifier": "jetifier",
@@ -194,6 +194,7 @@
     "@storybook/addon-controls": "6.5.16",
     "@storybook/addon-ondevice-actions": "6.5.6",
     "@storybook/addon-ondevice-controls": "6.5.6",
+    "@storybook/addon-ondevice-backgrounds": "6.5.6",
     "@storybook/react-native": "6.5.6",
     "@svgr/plugin-svgo": "5.5.0",
     "@testing-library/jest-native": "5.4.3",

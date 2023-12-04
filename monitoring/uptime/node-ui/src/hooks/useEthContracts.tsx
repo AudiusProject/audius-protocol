@@ -1,12 +1,12 @@
-import type { AbiItem } from 'web3-utils'
+import { AbiItem } from 'web3-utils'
 import registryJSON from '../eth-contracts/ABIs/Registry.json'
 import { useEnvVars } from '../providers/EnvVarsProvider'
 import { useReadContract } from 'wagmi'
-import { utf8ToBytes32 } from '../utils/utils'
+import { utf8ToBytes32 } from '../helpers'
 
 type addressString = `0x${string}`
 
-type ContractABI = {
+export type ContractABI = {
   abi: AbiItem[]
   contractName: string
 }

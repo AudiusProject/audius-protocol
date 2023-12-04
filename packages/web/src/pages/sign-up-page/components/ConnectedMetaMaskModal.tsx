@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useDispatch } from 'react-redux'
 
 import { configureMetaMask } from 'common/store/pages/signon/actions'
@@ -29,13 +30,14 @@ const ConnectedMetaMaskModal = ({
     onSuccess()
   }
 
-  return (
+  return createPortal(
     <MetaMaskModal
       open={open}
       onClickReadConfig={handleClickReadConfig}
       onClickBack={onBack}
       onClickContinue={handleConfigureWithMetamask}
-    />
+    />,
+    document.body
   )
 }
 

@@ -8,7 +8,7 @@ import BadgeArtist from 'assets/img/badgeArtist.svg'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
+import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { profilePage } from 'utils/route'
 
@@ -25,13 +25,11 @@ type ArtistCoverProps = {
 export const ArtistCardCover = (props: ArtistCoverProps) => {
   const { isArtist, artist, onNavigateAway } = props
 
-  const { user_id, name, handle, _cover_photo_sizes, _profile_picture_sizes } =
-    artist
+  const { user_id, name, handle, _profile_picture_sizes } = artist
   const dispatch = useDispatch()
 
-  const coverPhoto = useUserCoverPhoto(
+  const { source: coverPhoto, shouldBlur } = useCoverPhoto(
     user_id,
-    _cover_photo_sizes,
     WidthSizes.SIZE_640
   )
   const profilePicture = useUserProfilePicture(
@@ -54,6 +52,7 @@ export const ArtistCardCover = (props: ArtistCoverProps) => {
       wrapperClassName={styles.artistCoverPhoto}
       image={darkenedCoverPhoto}
       immediate
+      useBlur={shouldBlur}
     >
       <div className={styles.coverPhotoContentContainer}>
         {isArtist ? <BadgeArtist className={styles.badgeArtist} /> : null}

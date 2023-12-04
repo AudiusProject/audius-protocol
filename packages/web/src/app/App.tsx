@@ -2,11 +2,10 @@
 
 import { lazy } from 'react'
 
-import { FeatureFlags } from '@audius/common'
+import { FeatureFlags, useFeatureFlag } from '@audius/common'
 import { Route, Switch } from 'react-router-dom'
 
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
-import { useFlag } from 'hooks/useRemoteConfig'
 import DemoTrpcPage from 'pages/demo-trpc/DemoTrpcPage'
 import { OAuthLoginPage } from 'pages/oauth-login-page/OAuthLoginPage'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
@@ -19,11 +18,10 @@ import WebPlayer from './web-player/WebPlayer'
 import '../services/webVitals'
 
 const SignOn = lazy(() => import('pages/sign-on/SignOn'))
-const SignInPage = lazy(() => import('pages/sign-in-page'))
-const SignUpPage = lazy(() => import('pages/sign-up-page'))
+const SignOnPage = lazy(() => import('pages/sign-on-page'))
 
 export const AppInner = () => {
-  const { isEnabled: isSignInRedesignEnabled } = useFlag(
+  const { isEnabled: isSignInRedesignEnabled, isLoaded } = useFeatureFlag(
     FeatureFlags.SIGN_UP_REDESIGN
   )
 
@@ -31,11 +29,16 @@ export const AppInner = () => {
     <>
       <SomethingWrong />
       <Switch>
-        <Route path={SIGN_IN_PAGE}>
-          {isSignInRedesignEnabled ? <SignInPage /> : <SignOn signIn />}
-        </Route>
-        <Route path={SIGN_UP_PAGE}>
-          {isSignInRedesignEnabled ? <SignUpPage /> : <SignOn signIn={false} />}
+        <Route path={[SIGN_IN_PAGE, SIGN_UP_PAGE]}>
+          {({ location }) => {
+            return isLoaded ? (
+              isSignInRedesignEnabled ? (
+                <SignOnPage />
+              ) : (
+                <SignOn signIn={location.pathname === SIGN_IN_PAGE} />
+              )
+            ) : null
+          }}
         </Route>
         <Route exact path='/oauth/auth'>
           <OAuthLoginPage />

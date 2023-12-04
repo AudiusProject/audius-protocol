@@ -22,7 +22,7 @@ import FirstUploadModal from 'components/first-upload-modal/FirstUploadModal'
 import { InboxUnavailableModal } from 'components/inbox-unavailable-modal/InboxUnavailableModal'
 import { LeavingAudiusModal } from 'components/leaving-audius-modal/LeavingAudiusModal'
 import { LockedContentModal } from 'components/locked-content-modal/LockedContentModal'
-import PasswordResetModal from 'components/password-reset/PasswordResetModal'
+import { PasswordResetModal } from 'components/password-reset/PasswordResetModal'
 import { PremiumContentPurchaseModal } from 'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
 import ShareSoundToTikTokModal from 'components/share-sound-to-tiktok-modal/ShareSoundToTikTokModal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
@@ -31,7 +31,6 @@ import { TransactionDetailsModal } from 'components/transaction-details-modal'
 import UnfollowConfirmationModal from 'components/unfollow-confirmation-modal/UnfollowConfirmationModal'
 import UnloadDialog from 'components/unload-dialog/UnloadDialog'
 import { UploadConfirmationModal } from 'components/upload-confirmation-modal'
-import { USDCManualTransferModal } from 'components/usdc-manual-transfer-modal/USDCManualTransferModal'
 import { USDCPurchaseDetailsModal } from 'components/usdc-purchase-details-modal/USDCPurchaseDetailsModal'
 import { USDCTransactionDetailsModal } from 'components/usdc-transaction-details-modal/USDCTransactionDetailsModal'
 import TierExplainerModal from 'components/user-badges/TierExplainerModal'
@@ -106,7 +105,6 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   StripeOnRamp: StripeOnRampModal,
   USDCPurchaseDetailsModal,
   USDCTransactionDetailsModal,
-  USDCManualTransferModal,
   AddFundsModal
 }
 

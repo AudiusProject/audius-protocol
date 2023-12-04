@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 
 import { useTheme, type CSSObject } from '@emotion/react'
 import styled from '@emotion/styled'
@@ -18,11 +18,16 @@ const messages = {
 }
 
 const InputRoot = styled.input({
+  cursor: 'inherit',
   position: 'absolute',
   opacity: 0,
-  cursor: 'pointer',
-  height: 0,
-  width: 0
+  width: '100%',
+  height: '100%',
+  top: 0,
+  left: 0,
+  margin: 0,
+  padding: 0,
+  zIndex: 1
 })
 
 /**
@@ -47,15 +52,37 @@ export const FollowButton = (props: FollowButtonProps) => {
 
   // Track hover manually to swap text and icon
   const [isHovering, setIsHovering] = useState(false)
+  const [isPressing, setIsPressing] = useState(false)
 
   const handleMouseEnter = useCallback(() => {
     setIsHovering(true)
-  }, [setIsHovering])
+  }, [])
+
+  const handleMouseDown = useCallback(() => {
+    setIsPressing(true)
+  }, [])
+
   const handleMouseLeave = useCallback(() => {
     setIsHovering(false)
-  }, [setIsHovering])
+  }, [])
 
-  const handleButtonClick = useCallback(() => {
+  const handleMouseUp = useCallback(() => {
+    setIsPressing(false)
+  }, [])
+
+  const handlePressIn = useCallback(() => {
+    setIsHovering(true)
+    setIsPressing(true)
+  }, [])
+
+  const handlePressOut = useCallback(() => {
+    setIsHovering(false)
+    setIsPressing(false)
+  }, [])
+
+  useEffect(() => {}, [value])
+
+  const handleClick = useCallback(() => {
     if (value) {
       onUnfollow?.()
     } else {
@@ -70,27 +97,41 @@ export const FollowButton = (props: FollowButtonProps) => {
   if (checkedValue && !isHovering) {
     Icon = IconUserFollowing
     text = messages.following
-  } else if (checkedValue && isHovering) {
+  } else if (checkedValue && isHovering && !isPressing) {
     Icon = IconUserUnfollow
     text = messages.unfollow
   }
 
   const { color, cornerRadius } = useTheme()
   const textColor =
-    checkedValue || isHovering ? color.static.white : color.primary.primary
+    checkedValue || isHovering || isPressing
+      ? color.static.white
+      : color.primary.primary
   const rootCss: CSSObject = {
     minWidth: size === 'small' ? 128 : 152,
     width: '100%',
     userSelect: 'none',
-    border: `1px solid ${color.primary.primary}`,
     borderRadius: variant === 'pill' ? cornerRadius['2xl'] : cornerRadius.s,
-    background:
-      checkedValue || isHovering ? color.primary.primary : color.static.white,
-    ':active': {
-      background: color.primary.p500,
-      border: `1px solid ${color.primary.p500}`
-    }
+    background: isPressing
+      ? color.primary.p500
+      : checkedValue || isHovering
+      ? color.primary.primary
+      : color.static.white,
+    border: `1px solid ${
+      isPressing ? color.primary.p500 : color.primary.primary
+    }`
   }
+
+  // Handles case where user mouses down, moves cursor, and mouses up
+  useEffect(() => {
+    if (isPressing) {
+      document.addEventListener('mouseup', handleMouseUp)
+      return () => {
+        document.removeEventListener('mouseup', handleMouseUp)
+      }
+    }
+    return undefined
+  }, [isPressing, handleMouseUp])
 
   const content = (
     <Flex
@@ -114,32 +155,30 @@ export const FollowButton = (props: FollowButtonProps) => {
     </Flex>
   )
 
+  const rootProps = {
+    css: rootCss,
+    onMouseEnter: handleMouseEnter,
+    onMouseLeave: handleMouseLeave,
+    onMouseDown: handleMouseDown,
+    onMouseUp: handleMouseUp,
+    onTouchStart: handlePressIn,
+    onTouchEnd: handlePressOut
+  }
+
   switch (type) {
     case 'checkbox': {
       const { checked: checkedIgnored, ...rest } = other
       return (
-        <div
-          css={rootCss}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-          <label>
-            {content}
-            <InputRoot {...rest} checked={isFollowing} />
-          </label>
+        <div {...rootProps}>
+          {content}
+          <InputRoot {...rest} checked={isFollowing} />
         </div>
       )
     }
     case 'button':
     default: {
       return (
-        <button
-          css={rootCss}
-          {...other}
-          onClick={handleButtonClick}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
+        <button {...rootProps} {...other} onClick={handleClick}>
           {content}
         </button>
       )

@@ -21,7 +21,7 @@ export const TrackMetadataFields = () => {
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
       <div className={cn(styles.topRow, layoutStyles.row, layoutStyles.gap4)}>
-        <ArtworkField name={getTrackFieldName(index, 'artwork')} />
+        <ArtworkField name={getTrackFieldName(index, 'artwork')} size='small' />
         <div
           className={cn(
             styles.metadataFields,

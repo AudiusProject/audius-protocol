@@ -168,14 +168,14 @@ const TwitterAuth = (props: TwitterAuthProps) => {
   }
 
   return (
-    <div
+    <span
       role='button'
       onClick={onButtonClick}
       style={style}
       className={className}
     >
       {children || getDefaultButtonContent()}
-    </div>
+    </span>
   )
 }
 

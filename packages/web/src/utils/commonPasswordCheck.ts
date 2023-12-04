@@ -46,3 +46,7 @@ export const commonPasswordCheck = async (
 
   return commonPasswordList.test(password) as boolean
 }
+
+export const isNotCommonPassword = async (password: string) => {
+  return !(await commonPasswordCheck(password))
+}
