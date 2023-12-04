@@ -115,7 +115,13 @@ export const CreateEmailScreen = () => {
                     style={css({ textAlign: 'center' })}
                   >
                     {emailSchemaMessages.emailInUse}{' '}
-                    <Link to='SignIn' color='accentPurple'>
+                    <Link
+                      to={{
+                        screen: 'SignIn',
+                        params: { email: values.email }
+                      }}
+                      color='accentPurple'
+                    >
                       {messages.signIn}
                     </Link>
                   </Text>
@@ -143,7 +149,10 @@ export const CreateEmailScreen = () => {
                 {/* TODO: how does this to={} work on native */}
                 {/* TODO: Need TextLink equivalent for native harmony? */}
                 <Link
-                  to={{ screen: 'SignIn', params: { email: values.email } }}
+                  to={{
+                    screen: 'SignIn',
+                    params: { email: values.email }
+                  }}
                   color='accentPurple'
                 >
                   {messages.signIn}
