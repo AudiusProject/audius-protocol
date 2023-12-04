@@ -127,7 +127,8 @@ const RemixSettingsModal = ({
 
   const [url, setUrl] = useState<string | null>(null)
 
-  const isUSDCPurchaseGated = isPremiumContentUSDCPurchaseGated(premiumConditions)
+  const isUSDCPurchaseGated =
+    isPremiumContentUSDCPurchaseGated(premiumConditions)
   const isHideRemixesDisabled = isPremium && !isUSDCPurchaseGated
 
   useEffect(() => {
@@ -192,12 +193,13 @@ const RemixSettingsModal = ({
         {isPremium ? (
           <HelpCallout
             className={styles.disableInfo}
-            content={`${messages.changeAvailabilityPrefix} ${isUSDCPurchaseGated
-              ? messages.premium
-              : isPremiumContentCollectibleGated(premiumConditions)
+            content={`${messages.changeAvailabilityPrefix} ${
+              isUSDCPurchaseGated
+                ? messages.premium
+                : isPremiumContentCollectibleGated(premiumConditions)
                 ? messages.collectibleGated
                 : messages.specialAccess
-              }${messages.changeAvailabilitySuffix}`}
+            }${messages.changeAvailabilitySuffix}`}
           />
         ) : null}
         <div className={styles.toggleRow}>
@@ -246,7 +248,9 @@ const RemixSettingsModal = ({
         <div className={styles.divider} />
 
         <div className={styles.toggleRow}>
-          <span className={cn({ [styles.remixDisabled]: isHideRemixesDisabled })}>
+          <span
+            className={cn({ [styles.remixDisabled]: isHideRemixesDisabled })}
+          >
             {messages.hideOtherRemixes}
           </span>
           <Switch
