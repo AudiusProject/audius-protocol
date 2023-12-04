@@ -260,8 +260,11 @@ function* doStartPurchaseContentFlow({
 
   try {
     // get user & user bank
-    const purchaserUserId = (yield* select(getUserId)) ?? -1
     const userBank = yield* call(getUSDCUserBank)
+    const purchaserUserId = yield* select(getUserId)
+    if (purchaserUserId === null) {
+      throw new Error('Failed to fetch current user id')
+    }
 
     const tokenAccountInfo = yield* call(
       getTokenAccountInfo,
