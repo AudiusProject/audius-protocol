@@ -17,6 +17,8 @@ import {
   setTopApps,
   setTrailingTopGenres,
   MetricError,
+  UptimeRecord,
+  setIndividualNodeUptime,
   setIndividualServiceApiCalls
 } from './slice'
 import { useEffect, useState } from 'react'
@@ -119,6 +121,10 @@ export const getTrailingTopGenres = (
     : null
 export const getTopApps = (state: AppState, { bucket }: { bucket: Bucket }) =>
   state.cache.analytics.topApps ? state.cache.analytics.topApps[bucket] : null
+export const getIndividualNodeUptime = (
+  state: AppState,
+  { node, bucket }: { node: string; bucket: Bucket }
+) => state.cache.analytics.individualNodeUptime?.[node]?.[bucket] ?? null
 export const getIndividualServiceApiCalls = (
   state: AppState,
   { node, bucket }: { node: string; bucket: Bucket }
@@ -200,6 +206,28 @@ async function fetchTimeSeries(
   return metric
 }
 
+async function fetchUptime(node: string, bucket: Bucket) {
+  if (bucket !== Bucket.DAY) {
+    // currently only 24h uptime supported
+    return MetricError.ERROR
+  }
+
+  let error = false
+  let metric: UptimeRecord = {}
+  try {
+    const endpoint = `${node}/d_api/uptime?host=${node}`
+    metric = await fetchWithTimeout(endpoint)
+  } catch (e) {
+    console.error(e)
+    error = true
+  }
+  if (error) {
+    return MetricError.ERROR
+  }
+
+  return metric
+}
+
 export function fetchPlays(
   bucket: Bucket
 ): ThunkAction<void, AppState, Audius, Action<string>> {
@@ -212,6 +240,16 @@ export function fetchPlays(
       )
     }
     dispatch(setPlays({ metric, bucket }))
+  }
+}
+
+export function fetchIndividualNodeUptime(
+  node: string,
+  bucket: Bucket
+): ThunkAction<void, AppState, Audius, Action<string>> {
+  return async dispatch => {
+    const metric = await fetchUptime(node, bucket)
+    dispatch(setIndividualNodeUptime({ node, metric, bucket }))
   }
 }
 
@@ -435,6 +473,28 @@ export const useApiCalls = (bucket: Bucket) => {
   }, [apiCalls, setDoOnce])
 
   return { apiCalls }
+}
+
+export const useIndividualNodeUptime = (node: string, bucket: Bucket) => {
+  const [doOnce, setDoOnce] = useState<Bucket | null>(null)
+  const uptime = useSelector(state =>
+    getIndividualNodeUptime(state as AppState, { node, bucket })
+  )
+  const dispatch = useDispatch()
+  useEffect(() => {
+    if (doOnce !== bucket && (uptime === null || uptime === undefined)) {
+      setDoOnce(bucket)
+      dispatch(fetchIndividualNodeUptime(node, bucket))
+    }
+  }, [dispatch, uptime, bucket, node, doOnce])
+
+  useEffect(() => {
+    if (uptime) {
+      setDoOnce(null)
+    }
+  }, [uptime, setDoOnce])
+
+  return { uptime }
 }
 
 export const useIndividualServiceApiCalls = (node: string, bucket: Bucket) => {

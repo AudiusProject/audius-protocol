@@ -5,6 +5,10 @@ if [[ "$audius_db_url" == "" ]]; then
     export audius_db_url_read_replica="postgresql+psycopg2://postgres:postgres@db:5432/discovery_provider_${replica}"
 fi
 
+if [[ "$audius_redis_url" == "" ]]; then
+    export audius_redis_url="redis://audius-protocol-discovery-provider-redis-${replica}:6379/00"
+fi
+
 export audius_enable_rsyslog=false
 
 export audius_discprov_url="http://audius-protocol-discovery-provider-${replica}"
@@ -18,5 +22,8 @@ if nslookup "$elasticsearch_host" >/dev/null 2>&1; then
     export audius_elasticsearch_run_indexer="true"
 fi
 
-# Run register script in background as it waits for the node to be healthy
+# Run register script in background
 ./scripts/register.py &
+
+# Create sender for current DN
+../../node_modules/.bin/ts-node ./scripts/createSender.ts ${replica} &

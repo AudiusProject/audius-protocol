@@ -12,7 +12,7 @@ import cn from 'classnames'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { MountPlacement } from 'components/types'
-import { useOnUserCoverPhoto } from 'hooks/useUserCoverPhoto'
+import { useOnUserCoverPhoto } from 'hooks/useCoverPhoto'
 import { useOnUserProfilePicture } from 'hooks/useUserProfilePicture'
 
 import { ArtistCard } from './ArtistCard'
@@ -43,6 +43,7 @@ type ArtistPopoverProps = {
   mouseEnterDelay?: number
   component?: 'div' | 'span'
   onNavigateAway?: () => void
+  containerClassName?: string
 }
 
 export const ArtistPopover = ({
@@ -52,7 +53,8 @@ export const ArtistPopover = ({
   mount = MountPlacement.PAGE,
   mouseEnterDelay = 0.5,
   component: Component = 'div',
-  onNavigateAway
+  onNavigateAway,
+  containerClassName
 }: ArtistPopoverProps) => {
   const [isPopupVisible, setIsPopupVisible] = useState(false)
   const creator = useSelector((state: CommonState) =>
@@ -104,7 +106,11 @@ export const ArtistPopover = ({
 
   return (
     <Component
-      className={cn(styles.popoverContainer, 'artistPopover')}
+      className={cn(
+        styles.popoverContainer,
+        'artistPopover',
+        containerClassName
+      )}
       onMouseEnter={onMouseEnter}
     >
       <Popover

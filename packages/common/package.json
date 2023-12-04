@@ -1,6 +1,6 @@
 {
   "name": "@audius/common",
-  "version": "1.5.51",
+  "version": "1.5.54",
   "description": "Common utilities and store for web and mobile.",
   "private": true,
   "author": "Audius",
@@ -30,6 +30,7 @@
     "url": "https://github.com/AudiusProject/audius-client/issues"
   },
   "dependencies": {
+    "@audius/fixed-decimal": "*",
     "@audius/sdk": "*",
     "@audius/trpc-server": "*",
     "@coinflowlabs/react": "^2.7.0",
@@ -76,8 +77,8 @@
     "rollup": "2.76.0",
     "rollup-plugin-dts": "4.2.2",
     "rollup-plugin-typescript2": "0.32.1",
-    "ttypescript": "^1.5.15",
-    "typescript-transform-paths": "^3.4.4"
+    "ttypescript": "1.5.15",
+    "typescript-transform-paths": "3.4.4"
   },
   "peerDependencies": {
     "@reduxjs/toolkit": "1.6.1",
@@ -86,11 +87,5 @@
     "@stripe/crypto": "0.0.4",
     "react": "^18.2.0",
     "redux-saga": "1.1.3"
-  },
-  "jest": {
-    "moduleDirectories": [
-      "node_modules",
-      "src"
-    ]
   }
 }

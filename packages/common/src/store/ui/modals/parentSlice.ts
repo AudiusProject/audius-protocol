@@ -24,6 +24,7 @@ export const initialState: BasicModalsState = {
   CollectibleDetails: { isOpen: false },
   DeactivateAccountConfirmation: { isOpen: false },
   FeedFilter: { isOpen: false },
+  PurchaseVendor: { isOpen: false },
   TrendingGenreSelection: { isOpen: false },
   SocialProof: { isOpen: false },
   EditFolder: { isOpen: false },
@@ -55,7 +56,9 @@ export const initialState: BasicModalsState = {
   USDCPurchaseDetailsModal: { isOpen: false },
   USDCTransactionDetailsModal: { isOpen: false },
   USDCManualTransferModal: { isOpen: false },
-  CoinflowOnramp: { isOpen: false }
+  CoinflowOnramp: { isOpen: false },
+  AddFundsModal: { isOpen: false },
+  Welcome: { isOpen: false }
 }
 
 const slice = createSlice({

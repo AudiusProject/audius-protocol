@@ -89,11 +89,12 @@ export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
     const track = yield* select(getTrack, { uid: entry.uid })
     const currentUserId = yield* select(getUserId)
     if (!track) return {}
+    const doesUserHaveAccess = yield* call(doesUserHaveTrackAccess, track)
     return {
       id: track.track_id,
       uid: entry.uid,
       source: prefix,
-      isPreview: isPreview(track, currentUserId)
+      isPreview: isPreview(track, currentUserId) && !doesUserHaveAccess
     }
   }
 }

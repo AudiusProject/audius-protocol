@@ -15,12 +15,13 @@ export default defineConfig(({ mode }) => {
   env.VITE_PUBLIC_URL = env.VITE_PUBLIC_URL ?? ''
 
   return {
-    base: env.VITE_PUBLIC_URL,
+    base: env.VITE_PUBLIC_URL || '/',
     build: {
       outDir: 'build',
       sourcemap: true,
       commonjsOptions: {
-        include: [/libs\/dist\/web-libs/, /node_modules/]
+        include: [/libs\/dist\/web-libs/, /node_modules/],
+        transformMixedEsModules: true
       }
     },
     define: {
@@ -64,7 +65,12 @@ export default defineConfig(({ mode }) => {
           }
         }
       },
-      react(),
+      react({
+        jsxImportSource: '@emotion/react',
+        babel: {
+          plugins: ['@emotion/babel-plugin']
+        }
+      }),
       ...((analyze
         ? [
             visualizer({
@@ -79,11 +85,13 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         // Should be able to use vite-tsconfig-paths instead
+        app: '/src/app',
         assets: '/src/assets',
         common: '/src/common',
         components: '/src/components',
         hooks: '/src/hooks',
         pages: '/src/pages',
+        'public-site': '/src/public-site',
         services: '/src/services',
         store: '/src/store',
         workers: '/src/workers',

@@ -2,9 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useEffectOnce } from 'react-use'
 
+import { useAppContext } from 'src/context/appContext'
 import { Maybe } from 'utils/typeUtils'
 
 import { FeatureFlags, RemoteConfigInstance } from '../services'
+
+import { useHasAccount, useHasConfigLoaded } from './helpers'
 
 export const FEATURE_FLAG_OVERRIDE_KEY = 'FeatureFlagOverride'
 
@@ -47,6 +50,7 @@ export const useRecomputeToggle = (
 }
 
 /**
+ * @deprecated use `useFeatureFlag` instead
  * Hooks into updates for a given feature flag.
  * Returns both `isLoaded` and `isEnabled` for more granular control
  * @param flag
@@ -111,3 +115,56 @@ export const createUseFeatureFlagHook =
       setOverride
     }
   }
+
+/** Fetches enabled status of a given feature flag with fallback. Result is memoized. */
+export const useFeatureFlag = (
+  flag: FeatureFlags,
+  fallbackFlag?: FeatureFlags
+) => {
+  const overrideKey = `${FEATURE_FLAG_OVERRIDE_KEY}:${flag}`
+  const configLoaded = useHasConfigLoaded()
+  const { localStorage, remoteConfig } = useAppContext()
+
+  const shouldRecompute = useRecomputeToggle(
+    useHasAccount,
+    configLoaded,
+    remoteConfig
+  )
+
+  const isEnabled = useMemo(
+    () => remoteConfig.getFeatureEnabled(flag, fallbackFlag),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [flag, fallbackFlag, shouldRecompute]
+  )
+
+  const setOverride = useCallback(
+    async (value: OverrideSetting) => {
+      return value === null
+        ? localStorage.removeItem(overrideKey)
+        : localStorage.setItem(overrideKey, value)
+    },
+    [overrideKey, localStorage]
+  )
+
+  const [isLocallyEnabled, setIsLocallyOverriden] = useState<Maybe<boolean>>()
+  const [hasFetchedLocalStorage, setHasFetchedLocalStorage] = useState(false)
+
+  useEffectOnce(() => {
+    const getOverride = async () => {
+      const override = await localStorage.getItem(overrideKey)
+      if (override === 'enabled') {
+        setIsLocallyOverriden(true)
+      } else if (override === 'disabled') {
+        setIsLocallyOverriden(false)
+      }
+      setHasFetchedLocalStorage(true)
+    }
+    getOverride()
+  })
+
+  return {
+    isLoaded: configLoaded && hasFetchedLocalStorage,
+    isEnabled: isLocallyEnabled ?? isEnabled,
+    setOverride
+  }
+}

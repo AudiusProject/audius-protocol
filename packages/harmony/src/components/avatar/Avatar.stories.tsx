@@ -3,8 +3,9 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { Box } from 'components/layout/Box'
 import { Flex } from 'components/layout/Flex'
 import { Paper } from 'components/layout/Paper'
-// TODO: Get final image assets from Sammie
+import { IconCamera } from 'icons'
 import shadowBackground from 'storybook/assets/shadowBackground.jpeg'
+// TODO: Get final image assets from Sammie
 
 import { Avatar } from './Avatar'
 
@@ -33,6 +34,23 @@ export const Default: Story = {
   }
 }
 
+export const NoImage: Story = {
+  args: {
+    src: undefined
+  },
+  render: (props) => (
+    <Flex gap='m'>
+      <Box w={80} h={80}>
+        <Avatar {...props} />
+      </Box>
+      <Box w={80} h={80}>
+        <Avatar {...props}>
+          <IconCamera color='staticWhite' />
+        </Avatar>
+      </Box>
+    </Flex>
+  )
+}
 export const Strong: Story = {
   args: {
     variant: 'strong',

@@ -11,10 +11,11 @@
     "start": "http-server -p 80"
   },
   "dependencies": {
-    "@audius/sdk": "3.0.8-beta.11",
+    "@audius/sdk": "3.0.11-beta.21",
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
     "@tanstack/react-query": "^4.10.3",
+    "ethers": "^6.8.1",
     "hashids": "^2.2.10",
     "http-server": "^14.1.1",
     "react": "^18.2.0",

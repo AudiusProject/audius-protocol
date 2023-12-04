@@ -1,20 +1,15 @@
 import type {
-  BackgroundColors,
   BorderColors,
   CornerRadiusOptions,
   ShadowOptions
 } from 'foundations'
 
+import type { FlexProps } from '../Flex'
+
 /**
  * An elevated container which stands out from the background.
  */
-export type PaperProps = {
-  /**
-   * Background Color
-   * @default white
-   */
-  backgroundColor?: Exclude<BackgroundColors, 'default'>
-
+export type BasePaperProps = {
   /**
    * Border type. If not provided, no border will be used.
    * @default default
@@ -33,3 +28,5 @@ export type PaperProps = {
    */
   shadow?: Exclude<ShadowOptions, 'drop'>
 }
+
+export type PaperProps = BasePaperProps & FlexProps

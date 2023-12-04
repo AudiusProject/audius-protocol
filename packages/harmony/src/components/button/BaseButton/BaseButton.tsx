@@ -17,6 +17,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
     const {
       iconLeft: LeftIconComponent,
       iconRight: RightIconComponent,
+      isStaticIcon,
       disabled,
       isLoading,
       widthToHideText,
@@ -60,7 +61,12 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       textAlign: 'center',
       userSelect: 'none',
       whiteSpace: 'nowrap',
-      transition: `transform ${motion.hover}`,
+      transition: `
+        transform ${motion.hover},
+        border-color ${motion.hover},
+        background-color ${motion.hover},
+        color ${motion.hover}
+      `,
 
       ...(fullWidth && {
         width: '100%',
@@ -71,7 +77,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
         outline: 'none !important'
       },
       ':hover': {
-        transform: 'scale(1.04)'
+        transform: fullWidth ? 'scale(1.00)' : 'scale(1.04)'
       },
       ':active': {
         transform: 'scale(0.98)'
@@ -88,7 +94,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
       })
     }
 
-    const iconCss = {
+    const iconCss = !isStaticIcon && {
       '& path': {
         fill: 'currentcolor'
       }
@@ -108,7 +114,7 @@ export const BaseButton = forwardRef<HTMLButtonElement, BaseButtonProps>(
         {...other}
       >
         {isLoading ? (
-          <LoadingSpinner data-chromatic='ignore' css={styles.icon} />
+          <LoadingSpinner css={styles.icon} />
         ) : LeftIconComponent ? (
           <LeftIconComponent css={[iconCss, styles.icon]} />
         ) : null}

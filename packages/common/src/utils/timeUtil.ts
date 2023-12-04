@@ -1,7 +1,6 @@
+import dayjs from 'dayjs'
 import type { MomentInput } from 'moment'
 import moment from 'moment'
-
-import dayjs from 'dayjs'
 
 const SECONDS_PER_MINUTE = 60
 const MINUTES_PER_HOUR = 60

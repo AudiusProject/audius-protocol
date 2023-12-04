@@ -1,6 +1,6 @@
 {
   "name": "@audius/harmony",
-  "version": "0.0.8",
+  "version": "0.0.11",
   "description": "The Audius Design System",
   "license": "ISC",
   "author": "Audius",
@@ -71,6 +71,7 @@
     "react-dom": "18.2.0",
     "react-lottie": "1.2.3",
     "react-merge-refs": "2.0.1",
+    "@types/react-native": "0.71.8",
     "react-perfect-scrollbar": "1.5.8",
     "react-use": "15.3.8",
     "react-use-measure": "2.1.1",
@@ -83,8 +84,9 @@
     "storybook-addon-smart-knobs": "6.0.2",
     "storybook-dark-mode": "3.0.1",
     "tsconfig-paths-webpack-plugin": "3.5.2",
-    "typescript": "4.9.4",
+    "ttypescript": "1.5.15",
     "typescript-plugin-css-modules": "3.4.0",
+    "typescript-transform-paths": "3.4.4",
     "webpack": "4.46.0"
   },
   "peerDependencies": {

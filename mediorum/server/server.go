@@ -325,19 +325,19 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	healthz.Any("*", echo.WrapHandler(healthzProxy))
 
 	// -------------------
-	// reverse proxy /up and /up_api to uptime container
+	// reverse proxy /d and /d_api to uptime container
 	uptimeUrl, err := url.Parse("http://uptime:1996")
 	if err != nil {
 		log.Fatal("Invalid uptime URL: ", err)
 	}
 	uptimeProxy := httputil.NewSingleHostReverseProxy(uptimeUrl)
 
-	uptimeAPI := routes.Group("/up_api")
+	uptimeAPI := routes.Group("/d_api")
 	// fixes what I think should be considered an echo bug: https://github.com/labstack/echo/issues/1419
 	uptimeAPI.Use(ACAOHeaderOverwriteMiddleware)
 	uptimeAPI.Any("/*", echo.WrapHandler(uptimeProxy))
 
-	uptimeUI := routes.Group("/up")
+	uptimeUI := routes.Group("/d")
 	uptimeUI.Any("*", echo.WrapHandler(uptimeProxy))
 
 	// -------------------
@@ -357,10 +357,12 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// WIP internal: metrics
 	internalApi.GET("/metrics", ss.getMetrics)
+	internalApi.GET("/metrics/blobs-served/:timeRange", ss.getBlobsServedMetrics)
 	internalApi.GET("/logs/partition-ops", ss.getPartitionOpsLog)
 	internalApi.GET("/logs/reaper", ss.getReaperLog)
 	internalApi.GET("/logs/repair", ss.serveRepairLog)
 	internalApi.GET("/logs/storageAndDb", ss.serveStorageAndDbLogs)
+	internalApi.GET("/logs/pg-upgrade", ss.getPgUpgradeLog)
 
 	// internal: testing
 	internalApi.GET("/proxy_health_check", ss.proxyHealthCheck)
@@ -370,8 +372,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 }
 
 func setResponseACAOHeaderFromRequest(req http.Request, resp echo.Response) {
-	resp.Header().Set(echo.HeaderAccessControlAllowOrigin,
-		req.Header.Get(echo.HeaderOrigin))
+	resp.Header().Set(
+		echo.HeaderAccessControlAllowOrigin,
+		req.Header.Get(echo.HeaderOrigin),
+	)
 }
 
 func ACAOHeaderOverwriteMiddleware(next echo.HandlerFunc) echo.HandlerFunc {

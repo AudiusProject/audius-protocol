@@ -3,6 +3,7 @@ import { ComponentType, lazy } from 'react'
 import { Client } from '@audius/common'
 import type { Modals as ModalTypes } from '@audius/common'
 
+import { AddFundsModal } from 'components/add-funds-modal/AddFundsModal'
 import AddToPlaylistModal from 'components/add-to-playlist/desktop/AddToPlaylistModal'
 import { AiAttributionSettingsModal } from 'components/ai-attribution-settings-modal'
 import AppCTAModal from 'components/app-cta-modal/AppCTAModal'
@@ -22,7 +23,7 @@ import FirstUploadModal from 'components/first-upload-modal/FirstUploadModal'
 import { InboxUnavailableModal } from 'components/inbox-unavailable-modal/InboxUnavailableModal'
 import { LeavingAudiusModal } from 'components/leaving-audius-modal/LeavingAudiusModal'
 import { LockedContentModal } from 'components/locked-content-modal/LockedContentModal'
-import PasswordResetModal from 'components/password-reset/PasswordResetModal'
+import { PasswordResetModal } from 'components/password-reset/PasswordResetModal'
 import { PremiumContentPurchaseModal } from 'components/premium-content-purchase-modal/PremiumContentPurchaseModal'
 import ShareSoundToTikTokModal from 'components/share-sound-to-tiktok-modal/ShareSoundToTikTokModal'
 import { TipAudioModal } from 'components/tipping/tip-audio/TipAudioModal'
@@ -31,11 +32,11 @@ import { TransactionDetailsModal } from 'components/transaction-details-modal'
 import UnfollowConfirmationModal from 'components/unfollow-confirmation-modal/UnfollowConfirmationModal'
 import UnloadDialog from 'components/unload-dialog/UnloadDialog'
 import { UploadConfirmationModal } from 'components/upload-confirmation-modal'
-import { USDCManualTransferModal } from 'components/usdc-manual-transfer-modal/USDCManualTransferModal'
 import { USDCPurchaseDetailsModal } from 'components/usdc-purchase-details-modal/USDCPurchaseDetailsModal'
 import { USDCTransactionDetailsModal } from 'components/usdc-transaction-details-modal/USDCTransactionDetailsModal'
 import TierExplainerModal from 'components/user-badges/TierExplainerModal'
 import ConnectedUserListModal from 'components/user-list-modal/ConnectedUserListModal'
+import { WelcomeModal } from 'components/welcome-modal/WelcomeModal'
 import { WithdrawUSDCModal } from 'components/withdraw-usdc-modal/WithdrawUSDCModal'
 import AudioBreakdownModal from 'pages/audio-rewards-page/components/modals/AudioBreakdownModal'
 import { ChallengeRewardsModal } from 'pages/audio-rewards-page/components/modals/ChallengeRewardsModal'
@@ -96,6 +97,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   BrowserPushPermissionConfirmation: BrowserPushConfirmationModal,
   ShareSoundToTikTok: ShareSoundToTikTokModal,
   AiAttributionSettings: AiAttributionSettingsModal,
+  Welcome: WelcomeModal,
   PremiumContentPurchaseModal,
   LeavingAudiusModal,
   CreateChatModal,
@@ -105,7 +107,7 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   StripeOnRamp: StripeOnRampModal,
   USDCPurchaseDetailsModal,
   USDCTransactionDetailsModal,
-  USDCManualTransferModal
+  AddFundsModal
 }
 
 const commonModals = Object.entries(commonModalsMap) as [

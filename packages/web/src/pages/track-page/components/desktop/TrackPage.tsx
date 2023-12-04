@@ -107,7 +107,7 @@ const TrackPage = ({
   pause
 }: OwnProps) => {
   const { entries } = tracks
-  const isOwner = heroTrack?.owner_id === userId ?? false
+  const isOwner = heroTrack?.owner_id === userId
   const following = user?.does_current_user_follow ?? false
   const isSaved = heroTrack?.has_current_user_saved ?? false
   const isReposted = heroTrack?.has_current_user_reposted ?? false
@@ -208,11 +208,7 @@ const TrackPage = ({
       scrollableSearch
     >
       <div className={styles.headerWrapper}>
-        <CoverPhoto
-          loading={loading}
-          userId={user ? user.user_id : null}
-          coverPhotoSizes={user ? user._cover_photo_sizes : null}
-        />
+        <CoverPhoto loading={loading} userId={user ? user.user_id : null} />
         <StatBanner isEmpty />
         <NavBanner empty />
       </div>

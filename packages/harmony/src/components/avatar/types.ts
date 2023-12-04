@@ -1,8 +1,11 @@
-export type AvatarProps = {
+import type { PropsWithChildren } from 'react'
+
+export type AvatarProps = PropsWithChildren<{
+  className?: string
   /**
    * Url image source
    */
-  src: string
+  src: string | undefined
 
   /**
    * Variant
@@ -21,4 +24,4 @@ export type AvatarProps = {
    * @default default
    */
   strokeWidth?: 'thin' | 'default'
-}
+}>

@@ -75,15 +75,18 @@ export const CHECK_PAGE = '/check'
 export const DEACTIVATE_PAGE = '/deactivate'
 export const CHATS_PAGE = '/messages'
 export const CHAT_PAGE = '/messages/:id?'
-export const PURCHASES_PAGE = '/purchases'
-export const SALES_PAGE = '/sales'
-export const WITHDRAWALS_PAGE = '/withdrawals'
+export const PAYMENTS_PAGE = '/payments'
+export const PURCHASES_PAGE = '/payments/purchases'
+export const SALES_PAGE = '/payments/sales'
+export const WITHDRAWALS_PAGE = '/payments/withdrawals'
 
 // Multi-stage sign up flow routes
 export enum SignUpPath {
   createEmail = 'create-email',
   createPassword = 'create-password',
+  createLoginDetails = 'create-login-details',
   pickHandle = 'pick-handle',
+  reviewHandle = 'review-handle',
   finishProfile = 'finish-profile',
   selectGenres = 'select-genres',
   selectArtists = 'select-artists'
@@ -91,7 +94,9 @@ export enum SignUpPath {
 export const SIGN_UP_EMAIL_PAGE = `/signup/${SignUpPath.createEmail}`
 export const SIGN_UP_START_PAGE = SIGN_UP_EMAIL_PAGE // entry point for sign up if needing to redirect to the beginning
 export const SIGN_UP_PASSWORD_PAGE = `/signup/${SignUpPath.createPassword}`
+export const SIGN_UP_CREATE_LOGIN_DETAILS = `/signup/${SignUpPath.createLoginDetails}`
 export const SIGN_UP_HANDLE_PAGE = `/signup/${SignUpPath.pickHandle}`
+export const SIGN_UP_REVIEW_HANDLE_PAGE = `/signup/${SignUpPath.reviewHandle}`
 export const SIGN_UP_FINISH_PROFILE_PAGE = `/signup/${SignUpPath.finishProfile}`
 export const SIGN_UP_GENRES_PAGE = `/signup/${SignUpPath.selectGenres}`
 export const SIGN_UP_ARTISTS_PAGE = `/signup/${SignUpPath.selectArtists}`
@@ -165,12 +170,8 @@ export const AUDIUS_DOCS_LINK = 'https://docs.audius.org'
 export const AUDIUS_TEAM_LINK = 'https://audius.org/team'
 export const AUDIUS_DEV_STAKER_LINK = 'https://audius.org/protocol'
 
-export const AUDIUS_HOME_LINK = '/'
-export const AUDIUS_LISTENING_LINK = '/trending'
-export const AUDIUS_SIGN_UP_LINK = '/signup'
 export const AUDIUS_HOT_AND_NEW =
   '/audius/playlist/hot-new-on-audius-%F0%9F%94%A5-4281'
-export const AUDIUS_EXPLORE_LINK = '/explore'
 export const AUDIUS_HELP_LINK = 'https://help.audius.co/'
 
 export const AUDIUS_CAREERS_LINK = 'https://jobs.lever.co/audius'
@@ -228,6 +229,7 @@ export const orderedRoutes = [
   LIBRARY_PAGE,
   HISTORY_PAGE,
   DASHBOARD_PAGE,
+  PAYMENTS_PAGE,
   AUDIO_PAGE,
   AUDIO_TRANSACTIONS_PAGE,
   SETTINGS_PAGE,
@@ -262,6 +264,7 @@ export const staticRoutes = new Set([
   FAVORITES_PAGE,
   HISTORY_PAGE,
   DASHBOARD_PAGE,
+  PAYMENTS_PAGE,
   AUDIO_PAGE,
   AUDIO_TRANSACTIONS_PAGE,
   UPLOAD_PAGE,
@@ -475,7 +478,7 @@ export const pushWindowRoute = (route: string) => {
     routeToPush = route
   }
 
-  if (route === AUDIUS_SIGN_UP_LINK) {
+  if (route === SIGN_UP_PAGE) {
     recordGoToSignup(() => {
       window.location.href = `${BASENAME}${routeToPush}`
     })

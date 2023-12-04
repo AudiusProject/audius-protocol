@@ -5,9 +5,12 @@ import { ID, PlayableType } from 'models/Identifiers'
 import { MonitorPayload, ServiceMonitorType } from 'models/Services'
 import { TimeRange } from 'models/TimeRange'
 import { SolanaWalletAddress, StringAudio, WalletAddress } from 'models/Wallet'
+import { MintName } from 'services/index'
+import { Prettify } from 'utils/typeUtils'
 
 import { Chain } from './Chain'
 import { PlaylistLibraryKind } from './PlaylistLibrary'
+import { PurchaseMethod } from './PurchaseContent'
 import { TrackAccessType } from './Track'
 
 const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
@@ -344,6 +347,21 @@ export enum Name {
   BUY_USDC_RECOVERY_FAILURE = 'Buy USDC: Recovery Failure',
   BUY_USDC_ADD_FUNDS_MANUALLY = 'Buy USDC: Add Funds Manually',
 
+  // Buy Crypto
+  BUY_CRYPTO_STARTED = 'Buy Crypto: Started',
+  BUY_CRYPTO_ON_RAMP_OPENED = 'Buy Crypto: On Ramp Opened',
+  BUY_CRYPTO_ON_RAMP_SUCCESS = 'Buy Crypto: On Ramp Success',
+  BUY_CRYPTO_ON_RAMP_FAILURE = 'Buy Crypto: On Ramp Failure',
+  BUY_CRYPTO_ON_RAMP_CANCELED = 'Buy Crypto: On Ramp Canceled',
+  BUY_CRYPTO_ON_RAMP_CONFIRMED = 'Buy Crypto: On Ramp Confirmed',
+  BUY_CRYPTO_SUCCESS = 'Buy Crypto: Success',
+  BUY_CRYPTO_FAILURE = 'Buy Crypto: Failure',
+
+  // Buy Crypto Recovery
+  BUY_CRYPTO_RECOVERY_STARTED = 'Buy Crypto: Recovery Started',
+  BUY_CRYPTO_RECOVERY_SUCCESS = 'Buy Crypto: Recovery Success',
+  BUY_CRYPTO_RECOVERY_FAILURE = 'Buy Crypto: Recovery Failure',
+
   // Withdraw USDC
   WITHDRAW_USDC_MODAL_OPENED = 'Withdraw USDC: Modal Opened',
   WITHDRAW_USDC_ADDRESS_PASTED = 'Withdraw USDC: Address Pasted',
@@ -403,7 +421,11 @@ export enum Name {
   TIP_UNLOCKED_CHAT = 'Unlocked Chat: Tip',
   CHAT_REPORT_USER = 'Report User: Chat',
   CHAT_ENTRY_POINT = 'Chat Entry Point',
-  CHAT_WEBSOCKET_ERROR = 'Chat Websocket Error'
+  CHAT_WEBSOCKET_ERROR = 'Chat Websocket Error',
+
+  // Jupiter
+  JUPITER_QUOTE_REQUEST = 'Jupiter: Quote Request',
+  JUPITER_QUOTE_RESPONSE = 'Jupiter: Quote Response'
 }
 
 type PageView = {
@@ -433,12 +455,12 @@ type CreateAccountCompletePassword = {
 }
 type CreateAccountStartTwitter = {
   eventName: Name.CREATE_ACCOUNT_START_TWITTER
-  emailAddress: string
+  emailAddress?: string
 }
 type CreateAccountCompleteTwitter = {
   eventName: Name.CREATE_ACCOUNT_COMPLETE_TWITTER
   isVerified: boolean
-  emailAddress: string
+  emailAddress?: string
   handle: string
 }
 type CreateAccountStartInstagram = {
@@ -1685,6 +1707,35 @@ type BuyUSDCAddFundsManually = {
   eventName: Name.BUY_USDC_ADD_FUNDS_MANUALLY
 }
 
+// Buy Crypto
+
+type BuyCryptoEvent = {
+  eventName:
+    | Name.BUY_CRYPTO_STARTED
+    | Name.BUY_CRYPTO_ON_RAMP_OPENED
+    | Name.BUY_CRYPTO_ON_RAMP_SUCCESS
+    | Name.BUY_CRYPTO_ON_RAMP_FAILURE
+    | Name.BUY_CRYPTO_ON_RAMP_CANCELED
+    | Name.BUY_CRYPTO_ON_RAMP_CONFIRMED
+    | Name.BUY_CRYPTO_SUCCESS
+    | Name.BUY_CRYPTO_FAILURE
+
+  provider: string
+  requestedAmount: number
+  mint: MintName
+  error?: string
+}
+
+type BuyCryptoRecoveryEvent = Prettify<
+  {
+    eventName:
+      | Name.BUY_CRYPTO_RECOVERY_STARTED
+      | Name.BUY_CRYPTO_RECOVERY_FAILURE
+      | Name.BUY_CRYPTO_RECOVERY_SUCCESS
+    intendedSOL: number
+  } & Omit<BuyCryptoEvent, 'eventName'>
+>
+
 // Withdraw USDC
 
 export type WithdrawUSDCEventFields = {
@@ -1784,6 +1835,7 @@ type ContentPurchaseMetadata = {
   contentType: string
   payExtraAmount: number
   payExtraPreset?: string
+  purchaseMethod: PurchaseMethod
   totalAmount: number
   artistHandle: string
   isVerifiedArtist: boolean
@@ -1944,6 +1996,27 @@ type ChatEntryPoint = {
 type ChatWebsocketError = {
   eventName: Name.CHAT_WEBSOCKET_ERROR
   code?: string
+}
+
+// Jupiter
+type JupiterQuoteRequest = {
+  eventName: Name.JUPITER_QUOTE_REQUEST
+  inputMint: string
+  outputMint: string
+  swapMode?: string
+  slippageBps?: number
+  amount: number
+}
+
+type JupiterQuoteResponse = {
+  eventName: Name.JUPITER_QUOTE_RESPONSE
+  inputMint: string
+  outputMint: string
+  swapMode: string
+  slippageBps: number
+  otherAmountThreshold: number
+  inAmount: number
+  outAmount: number
 }
 
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
@@ -2155,6 +2228,8 @@ export type AllTrackingEvents =
   | BuyUSDCRecoverySuccess
   | BuyUSDCRecoveryFailure
   | BuyUSDCAddFundsManually
+  | BuyCryptoEvent
+  | BuyCryptoRecoveryEvent
   | WithdrawUSDCModalOpened
   | WithdrawUSDCAddressPasted
   | WithdrawUSDCFormError
@@ -2211,3 +2286,5 @@ export type AllTrackingEvents =
   | DeveloperAppDeleteError
   | ChatEntryPoint
   | ChatWebsocketError
+  | JupiterQuoteResponse
+  | JupiterQuoteRequest

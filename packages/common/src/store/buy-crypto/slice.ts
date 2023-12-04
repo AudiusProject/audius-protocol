@@ -73,6 +73,21 @@ const slice = createSlice({
      */
     buyCryptoSucceeded: () => {
       // handled by saga
+    },
+    /**
+     * Fired when the recovery succeeds
+     */
+    buyCryptoRecoverySucceeded: () => {
+      // handled by saga
+    },
+    /**
+     * Fired when the recovery fails
+     */
+    buyCryptoRecoveryFailed: (
+      _state,
+      _action: PayloadAction<{ error: BuyCryptoError }>
+    ) => {
+      // handled by saga
     }
   }
 })
@@ -84,7 +99,9 @@ export const {
   onrampFailed,
   buyCryptoSucceeded,
   buyCryptoFailed,
-  buyCryptoCanceled
+  buyCryptoCanceled,
+  buyCryptoRecoverySucceeded,
+  buyCryptoRecoveryFailed
 } = slice.actions
 
 export default slice.reducer

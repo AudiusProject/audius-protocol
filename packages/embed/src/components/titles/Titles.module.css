@@ -3,6 +3,7 @@
   flex-direction: column;
   cursor: pointer;
   min-width: 0;
+  gap: 4px;
 }
 
 .title {
@@ -19,6 +20,7 @@
 
 .artistName {
   font-size: 15px;
+  line-height: 20px;
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;

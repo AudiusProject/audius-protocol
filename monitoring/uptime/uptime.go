@@ -78,12 +78,11 @@ func (u *Uptime) Start() {
 	e.Use(middleware.Recover())
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
-	e.Use(middleware.Gzip())
 
-	e.Static("/up", "/app/node-ui/dist")
+	e.Static("/d", "/app/node-ui/dist")
 
-	e.GET("/up_api/uptime", u.handleUptime)
-	e.GET("/up_api/env", u.handleGetEnv)
+	e.GET("/d_api/uptime", u.handleUptime)
+	e.GET("/d_api/env", u.handleGetEnv)
 
 	e.GET("/health_check", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{
@@ -262,14 +261,70 @@ func (u *Uptime) recordNodeUptimeToDB(host string, wasUp bool) {
 }
 
 type EnvResponse struct {
-	Env      string `json:"env"`
-	NodeType string `json:"nodeType"`
+	Env       string `json:"env"`
+	NodeType  string `json:"nodeType"`
+	AudiusUrl string `json:"audiusUrl"`
+
+	EthNetworkId       string `json:"ethNetworkId"`
+	EthTokenAddress    string `json:"ethTokenAddress"`
+	EthRegistryAddress string `json:"ethRegistryAddress"`
+	EthProviderUrl     string `json:"ethProviderUrl"`
+	EthOwnerWallet     string `json:"ethOwnerWallet"`
+
+	QueryProposalStartBlock string `json:"queryProposalStartBlock"`
+	GqlUri                  string `json:"gqlUri"`
+	GqlBackupUri            string `json:"gqlBackupUri"`
+
+	EntityManagerAddress string `json:"entityManagerAddress"`
+
+	IdentityServiceEndpoint string `json:"identityServiceEndpoint"`
+
+	WormholeContractAddress          string `json:"wormholeContractAddress"`
+	ClaimDistributionContractAddress string `json:"claimDistributionContractAddress"`
+	SolanaClusterEndpoint            string `json:"solanaClusterEndpoint"`
+	WAudioMintAddress                string `json:"wAudioMintAddress"`
+	UsdcMintAddress                  string `json:"usdcMintAddress"`
+	SolanaTokenProgramAddress        string `json:"solanaTokenProgramAddress"`
+	ClaimableTokenPda                string `json:"claimableTokenPda"`
+	SolanaFeePayerAddress            string `json:"solanaFeePayerAddress"`
+	ClaimableTokenProgramAddress     string `json:"claimableTokenProgramAddress"`
+	RewardsManagerProgramId          string `json:"rewardsManagerProgramId"`
+	RewardsManagerProgramPda         string `json:"rewardsManagerProgramPda"`
+	RewardsManagerTokenPda           string `json:"rewardsManagerTokenPda"`
 }
 
 func (u *Uptime) handleGetEnv(c echo.Context) error {
 	resp := EnvResponse{
-		Env:      u.Config.Env,
-		NodeType: u.Config.NodeType,
+		Env:       u.Config.Env,
+		NodeType:  u.Config.NodeType,
+		AudiusUrl: u.Config.AudiusUrl,
+
+		EthNetworkId:       u.Config.EthNetworkId,
+		EthTokenAddress:    u.Config.EthTokenAddress,
+		EthRegistryAddress: u.Config.EthRegistryAddress,
+		EthProviderUrl:     u.Config.EthProviderUrl,
+		EthOwnerWallet:     u.Config.EthOwnerWallet,
+
+		QueryProposalStartBlock: u.Config.QueryProposalStartBlock,
+		GqlUri:                  u.Config.GqlUri,
+		GqlBackupUri:            u.Config.GqlBackupUri,
+
+		EntityManagerAddress: u.Config.EntityManagerAddress,
+
+		IdentityServiceEndpoint: u.Config.IdentityServiceEndpoint,
+
+		WormholeContractAddress:          u.Config.WormholeContractAddress,
+		ClaimDistributionContractAddress: u.Config.ClaimDistributionContractAddress,
+		SolanaClusterEndpoint:            u.Config.SolanaClusterEndpoint,
+		WAudioMintAddress:                u.Config.WAudioMintAddress,
+		UsdcMintAddress:                  u.Config.UsdcMintAddress,
+		SolanaTokenProgramAddress:        u.Config.SolanaTokenProgramAddress,
+		ClaimableTokenPda:                u.Config.ClaimableTokenPda,
+		SolanaFeePayerAddress:            u.Config.SolanaFeePayerAddress,
+		ClaimableTokenProgramAddress:     u.Config.ClaimableTokenProgramAddress,
+		RewardsManagerProgramId:          u.Config.RewardsManagerProgramId,
+		RewardsManagerProgramPda:         u.Config.RewardsManagerProgramPda,
+		RewardsManagerTokenPda:           u.Config.RewardsManagerTokenPda,
 	}
 	return c.JSON(http.StatusOK, resp)
 }

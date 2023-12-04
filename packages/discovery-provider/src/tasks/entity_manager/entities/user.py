@@ -88,6 +88,11 @@ def validate_user_tx(params: ManageEntityParameters):
             raise IndexingValidationError(
                 f"Invalid User Transaction, user id {user_id} offset incorrect"
             )
+        if params.signer.lower() in params.existing_records["DeveloperApp"]:
+            raise IndexingValidationError(
+                f"Invalid developer app {params.signer.lower()} cannot create user"
+            )
+
     elif params.action == Action.UPDATE:
         # update / delete specific validations
         validate_signer(params)
@@ -280,15 +285,13 @@ def update_user_metadata(user_record: User, metadata: Dict, params):
     redis = params.redis
     web3 = params.web3
     challenge_event_bus = params.challenge_bus
-    action = params.action
     # Iterate over the user_record keys
     user_record_attributes = user_record.get_attributes_dict()
     for key, _ in user_record_attributes.items():
         # Update the user_record when the corresponding field exists
         # in metadata
         if key in metadata:
-            if key in immutable_user_fields and action == Action.UPDATE:
-                # skip fields that cannot be modified after creation
+            if key in immutable_user_fields:
                 continue
             setattr(user_record, key, metadata[key])
 

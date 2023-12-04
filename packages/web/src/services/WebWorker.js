@@ -1,6 +1,7 @@
 import importWorkerScript from 'workers/importWorkerScript'
 
 const importWorkScriptCode = importWorkerScript.toString()
+const basename = process.env.VITE_PUBLIC_URL
 
 export default class WebWorker {
   /**
@@ -15,11 +16,11 @@ export default class WebWorker {
     const dependencyCode = dependencies.map((d) => `${d.toString()};`).join()
     const blob = new Blob([
       `
-      const basename = ${process.env.VITE_PUBLIC_URL}
+      const basename = ${basename || "''"};
       ${dependencyCode};
-      const importWorkerScript = ${importWorkScriptCode}
-      const code = ${code}
-      code()
+      const importWorkerScript = ${importWorkScriptCode};
+      const code = ${code};
+      code();
     `
     ])
     this.worker = new Worker(URL.createObjectURL(blob))

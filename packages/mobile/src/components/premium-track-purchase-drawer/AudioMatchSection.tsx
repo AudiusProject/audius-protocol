@@ -9,7 +9,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     backgroundColor: palette.secondary,
     border: palette.secondaryDark2,
     paddingHorizontal: spacing(8),
-    paddingVertical: spacing(2)
+    paddingVertical: spacing(2),
+    marginTop: spacing(2)
   },
   text: {
     textAlign: 'center'
@@ -32,7 +33,7 @@ export const AudioMatchSection = ({ amount }: AudioMatchSectionProps) => {
         style={styles.text}
         variant='label'
         textTransform='uppercase'
-        fontSize='large'
+        fontSize='xs'
         color='staticWhite'
       >
         {messages.earn(amount)}

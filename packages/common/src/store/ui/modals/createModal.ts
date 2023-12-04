@@ -3,10 +3,10 @@ import { useCallback } from 'react'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { ModalSource } from 'models/Analytics'
 import { CommonState } from 'store/index'
 
 import { actions } from './parentSlice'
-import { ModalSource } from 'models/Analytics'
 
 export type BaseModalState = {
   isOpen: boolean | 'closing'

@@ -1,5 +1,6 @@
-import cn from 'classnames'
 import { useEffect } from 'react'
+
+import cn from 'classnames'
 
 import IconPause from '../../assets/img/iconPause.svg'
 import IconPlay from '../../assets/img/iconPlay.svg'

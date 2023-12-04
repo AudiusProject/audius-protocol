@@ -10,10 +10,9 @@ import UploadArtwork, {
 import { TrackEditFormValues } from 'pages/upload-page/types'
 import { resizeImage } from 'utils/imageProcessingUtil'
 
-import styles from './ArtworkField.module.css'
-
 type ArtworkFieldProps = Partial<UploadArtworkProps> & {
   name: string
+  size: 'small' | 'large'
 }
 
 export const ArtworkField = (props: ArtworkFieldProps) => {
@@ -43,7 +42,6 @@ export const ArtworkField = (props: ArtworkFieldProps) => {
   return (
     <div>
       <UploadArtwork
-        className={styles.uploadArtwork}
         {...otherField}
         artworkUrl={value?.url}
         onDropArtwork={handleDropArtwork}

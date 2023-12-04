@@ -1,0 +1,30 @@
+.dogEar {
+  z-index: 2;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 88px;
+  height: 88px;
+  color: var(--special-light-green);
+}
+
+.dogEar.small {
+  width: 50px;
+  height: 50px;
+}
+
+.icon {
+  z-index: 2;
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  height: 29px;
+  width: 29px;
+}
+
+.icon.small {
+  top: 5px;
+  left: 5px;
+  height: 16px;
+  width: 16px;
+}

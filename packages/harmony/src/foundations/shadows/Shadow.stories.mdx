@@ -68,6 +68,7 @@ export function ShadowLevel(props) {
   <Flex justifyContent='space-between'>
     <ShadowLevel shadow='near' />
     <ShadowLevel shadow='mid' />
+    <ShadowLevel shadow='midInverted' />
     <ShadowLevel shadow='far' />
     <ShadowLevel shadow='emphasis' />
     <ShadowLevel
@@ -80,13 +81,14 @@ export function ShadowLevel(props) {
   </Flex>
 </Unstyled>
 
-| Name            | Description                                                                                       |
-| --------------- | ------------------------------------------------------------------------------------------------- |
-| shadow-near     | Optimal for onPress states on cards.                                                              |
-| shadow-mid      | Used for smaller card elements and the default state for card elements with a hover interaction.  |
-| shadow-far      | Used for hover state for card elements, larger cards/sections without hover states, and modals    |
-| shadow-emphasis | Used for separating elements from their background                                                |
-| shadow-special  | Shadow derived from the dominate color of the artwork it’s surrounding. Used for playing artwork. |
+| Name                | Description                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------- |
+| shadow-near         | Optimal for onPress states on cards.                                                              |
+| shadow-mid          | Used for smaller card elements and the default state for card elements with a hover interaction.  |
+| shadow-mid-inverted | This is the same as mid but with the values offset the other direction.                           |
+| shadow-far          | Used for hover state for card elements, larger cards/sections without hover states, and modals    |
+| shadow-emphasis     | Used for separating elements from their background                                                |
+| shadow-special      | Shadow derived from the dominate color of the artwork it’s surrounding. Used for playing artwork. |
 
 ## Usage and examples
 

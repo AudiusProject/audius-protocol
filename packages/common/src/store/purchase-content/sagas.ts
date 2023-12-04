@@ -6,6 +6,7 @@ import { call, put, race, select, take } from 'typed-redux-saga'
 import { FavoriteSource, Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { ID } from 'models/Identifiers'
+import { PurchaseMethod } from 'models/PurchaseContent'
 import { isPremiumContentUSDCPurchaseGated } from 'models/Track'
 import { BNUSDC } from 'models/Wallet'
 import {
@@ -18,7 +19,6 @@ import {
 import { AudiusBackend } from 'services/index'
 import { FeatureFlags } from 'services/remote-config/feature-flags'
 import { accountSelectors } from 'store/account'
-import { getAccountUser } from 'store/account/selectors'
 import {
   buyCryptoCanceled,
   buyCryptoFailed,
@@ -176,43 +176,74 @@ function* pollForPurchaseConfirmation({
   })
 }
 
-/**
- *
- * 1. Use utils to create versioned transaction for the amount needed
- * 2. Make sure to add memo for the track:id:blocknumber
- * 3. Will want to pass an implementation of sendTransaction as `Wallet`
- * 4. Implement a modal component that can accept the transaction info and pass to coinflow
- * 5. Wire up onSuccess events
- * 6. Look into Marcus' local relay setup against prod for testing. Otherwise, pass a phantom wallet as the feePayer.
- * https://www.notion.so/audiusproject/Pointing-local-Identity-relay-to-stage-Solana-56e0382ed1934e8fad606466b54d5456?pvs=4
- *
- */
-
-function* doStartPurchaseContentFlow({
-  payload: {
-    extraAmount,
-    extraAmountPreset,
-    contentId,
-    contentType = ContentType.TRACK
-  }
-}: ReturnType<typeof startPurchaseContentFlow>) {
-  const audiusBackendInstance: AudiusBackend = yield* getContext(
-    'audiusBackendInstance'
-  )
+/** Attempts to purchase the requested amount of USDC, will throw on cancellation or failure */
+function* purchaseUSDC({ amount }: { amount: BNUSDC }) {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isBuyUSDCViaSolEnabled = yield* call(
     getFeatureEnabled,
     FeatureFlags.BUY_USDC_VIA_SOL
   )
-  const usdcConfig = yield* call(getBuyUSDCRemoteConfig)
-  const reportToSentry = yield* getContext('reportToSentry')
-  const { track, make, identify } = yield* getContext('analytics')
-  const user = yield* select(getAccountUser)
-  if (user) {
-    yield* call(identify, user.handle, {
-      isBuyUSDCViaSolEnabled
+  const roundedAmount = ceilingBNUSDCToNearestCent(amount)
+    .div(BN_USDC_CENT_WEI)
+    .toNumber()
+
+  let result: RaceStatusResult | null = null
+  if (isBuyUSDCViaSolEnabled) {
+    yield* put(
+      buyCryptoViaSol({
+        // expects "friendly" amount, so dollars
+        amount: roundedAmount / 100.0,
+        mint: 'usdc',
+        provider: OnRampProvider.STRIPE
+      })
+    )
+    result = yield* race({
+      succeeded: take(buyCryptoSucceeded),
+      failed: take(buyCryptoFailed),
+      canceled: take(buyCryptoCanceled)
+    })
+  } else {
+    yield* put(
+      onrampOpened({
+        provider: USDCOnRampProvider.STRIPE,
+        purchaseInfo: {
+          desiredAmount: roundedAmount
+        }
+      })
+    )
+
+    result = yield* race({
+      succeeded: take(buyUSDCFlowSucceeded),
+      canceled: take(onrampCanceled),
+      failed: take(buyUSDCFlowFailed)
     })
   }
+  // Return early for cancellation
+  if (result.canceled) {
+    throw new PurchaseContentError(
+      PurchaseErrorCode.Canceled,
+      'User canceled onramp'
+    )
+  }
+  // throw errors out to the shared handler below
+  if (result.failed) {
+    throw result.failed.payload.error
+  }
+}
+
+function* doStartPurchaseContentFlow({
+  payload: {
+    extraAmount,
+    extraAmountPreset,
+    purchaseMethod,
+    contentId,
+    contentType = ContentType.TRACK
+  }
+}: ReturnType<typeof startPurchaseContentFlow>) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const usdcConfig = yield* call(getBuyUSDCRemoteConfig)
+  const reportToSentry = yield* getContext('reportToSentry')
+  const { track, make } = yield* getContext('analytics')
 
   const { price, title, artistInfo } = yield* call(getContentInfo, {
     contentId,
@@ -223,6 +254,7 @@ function* doStartPurchaseContentFlow({
     price: price / 100,
     contentId,
     contentType,
+    purchaseMethod,
     contentName: title,
     artistHandle: artistInfo.handle,
     isVerifiedArtist: artistInfo.is_verified,
@@ -342,48 +374,7 @@ function* doStartPurchaseContentFlow({
       } // if (USE_COINFLOW)
       else {
         yield* put(buyUSDC())
-        let result: RaceStatusResult | null = null
-        if (isBuyUSDCViaSolEnabled) {
-          yield* put(
-            buyCryptoViaSol({
-              // expects "friendly" amount, so dollars
-              amount: balanceNeededCents / 100.0,
-              mint: 'usdc',
-              provider: OnRampProvider.STRIPE
-            })
-          )
-          result = yield* race({
-            succeeded: take(buyCryptoSucceeded),
-            failed: take(buyCryptoFailed),
-            canceled: take(buyCryptoCanceled)
-          })
-        } else {
-          yield* put(
-            onrampOpened({
-              provider: USDCOnRampProvider.STRIPE,
-              purchaseInfo: {
-                desiredAmount: balanceNeededCents
-              }
-            })
-          )
-
-          result = yield* race({
-            succeeded: take(buyUSDCFlowSucceeded),
-            canceled: take(onrampCanceled),
-            failed: take(buyUSDCFlowFailed)
-          })
-        }
-        // Return early for failure or cancellation
-        if (result.canceled) {
-          yield* put(purchaseCanceled())
-          return
-        }
-        if (result.failed) {
-          yield* put(
-            purchaseContentFlowFailed({ error: result.failed.payload.error })
-          )
-          return
-        }
+        yield* call(purchaseUSDC, { amount: balanceNeeded })
       }
 
       yield* put(usdcBalanceSufficient())
@@ -455,6 +446,14 @@ function* doStartPurchaseContentFlow({
       e instanceof BuyCryptoError
         ? e
         : new PurchaseContentError(PurchaseErrorCode.Unknown, `${e}`)
+
+    // Nested sagas will throw for cancellation, but we don't need to log that as
+    // an error, just return early
+    if (error.code === PurchaseErrorCode.Canceled) {
+      yield* put(purchaseCanceled())
+      return
+    }
+
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
       error,

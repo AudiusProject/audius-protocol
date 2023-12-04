@@ -39,7 +39,7 @@ const userApi = createApi({
   endpoints: {
     getUserById: {
       fetch: async (
-        { id, currentUserId }: { id: ID; currentUserId: ID },
+        { id, currentUserId }: { id: ID; currentUserId: Nullable<ID> },
         { apiClient }
       ) => {
         const apiUser = await apiClient.getUser({ userId: id, currentUserId })

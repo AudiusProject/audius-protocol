@@ -1,6 +1,6 @@
+import type { ID } from '@audius/common'
 import { SquareSizes } from '@audius/common'
 
-import type { UserImageProps } from 'app/components/image/UserImage'
 import { UserImage } from 'app/components/image/UserImage'
 import { makeStyles } from 'app/styles'
 
@@ -19,17 +19,25 @@ const useStyles = makeStyles(({ palette }) => ({
   }
 }))
 
-export type ProfilePictureProps = Partial<FastImageProps> & {
-  profile: UserImageProps['user']
-}
+export type ProfilePictureProps = Partial<FastImageProps> &
+  (
+    | {
+        /** @deprecated Use `userId` directly instead */
+        profile: { user_id: ID }
+      }
+    | {
+        userId: ID
+      }
+  )
 
 export const ProfilePicture = (props: ProfilePictureProps) => {
-  const { profile, style: styleProp, ...other } = props
+  const { style: styleProp, ...other } = props
+  const userId = 'userId' in other ? other.userId : other.profile.user_id
   const styles = useStyles()
 
   return (
     <UserImage
-      user={profile}
+      userId={userId}
       size={SquareSizes.SIZE_150_BY_150}
       style={[styles.profilePhoto, styleProp]}
       {...other}

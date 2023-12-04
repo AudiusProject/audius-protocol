@@ -25,6 +25,7 @@ export const parameters = {
         'Layout',
         ['Box', 'Flex', 'Divider', 'Paper'],
         'Text',
+        ['Text', 'TextLink'],
         'Components',
         'Icons',
         [

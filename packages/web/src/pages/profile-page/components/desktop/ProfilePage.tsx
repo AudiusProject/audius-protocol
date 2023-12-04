@@ -757,9 +757,6 @@ const ProfilePage = ({
         />
         <CoverPhoto
           userId={userId}
-          coverPhotoSizes={
-            profile && profile.is_deactivated ? null : coverPhotoSizes
-          }
           updatedCoverPhoto={updatedCoverPhoto ? updatedCoverPhoto.url : ''}
           error={updatedCoverPhoto ? updatedCoverPhoto.error : false}
           loading={profileLoadingStatus === Status.LOADING}
