@@ -1,6 +1,5 @@
 import logging
 import os
-import subprocess
 import time
 
 from elasticsearch import Elasticsearch

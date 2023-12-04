@@ -1,6 +1,4 @@
 import logging
-import os
-import subprocess
 import time
 
 from integration_tests.utils import populate_mock_db
