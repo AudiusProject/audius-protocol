@@ -12,7 +12,7 @@ export const Flex = styled(Box, {
 })<NativeFlexProps>((props) => {
   const {
     theme,
-    direction,
+    direction = 'row',
     wrap,
     alignItems,
     justifyContent,
