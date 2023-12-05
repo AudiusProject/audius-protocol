@@ -24,8 +24,8 @@ export const getScheduledReleaseLabelMessage = (releaseDate, prefixMessage = '')
   return moment(releaseDate ?? undefined)
     .calendar(null,
       {
-        sameDay: formatReleaseMessage(releaseDate, '[Today] @ LT'),
-        nextDay: formatReleaseMessage(releaseDate, '[Tomorrow] @ LT'),
+        sameDay: formatReleaseMessage(releaseDate, '[Today]'),
+        nextDay: formatReleaseMessage(releaseDate, '[Tomorrow]'),
         nextWeek: formatReleaseMessage(releaseDate, 'dddd'),
         lastDay: '[Yesterday]',
         lastWeek: '[Last] dddd',

@@ -78,7 +78,7 @@ export enum ReleaseDateMeridian {
 
 const timeValidationSchema = z.object({
   release_date_hour: z.string()
-    .refine((value) => /^(0[1-9]|1[0-2]):([0-5][0-9])$/.test(value), {
+    .refine((value) => /^([0-9]|0[1-9]|1[0-2]):([0-5][0-9])$/.test(value), {
       message: "Invalid time."
     })
 });
@@ -93,9 +93,9 @@ export const ReleaseDateField = () => {
   const [{ value: releaseDateHour }, , { setValue: setReleaseDateHour }] = useField(RELEASE_DATE)
   const [{ value: releaseDateMeridian }, , { setValue: setReleaseDateMeridian }] = useField(RELEASE_DATE_MERIDIAN)
 
-  const roundUpHour = moment().add(1, 'hours')
+  const roundUpHour = moment().add(2, 'hours').minutes(0).seconds(0)
   const initialValues = useMemo(
-    () => ({ [RELEASE_DATE]: releaseDate ?? undefined, [RELEASE_DATE_HOUR]: releaseDateHour ?? roundUpHour.format('h'), [RELEASE_DATE_MERIDIAN]: releaseDateMeridian ?? roundUpHour.format('A'), [RELEASE_DATE_TYPE]: releaseDateType ?? false }),
+    () => ({ [RELEASE_DATE]: releaseDate ?? undefined, [RELEASE_DATE_HOUR]: (releaseDateHour ?? roundUpHour.format('H:mm')), [RELEASE_DATE_MERIDIAN]: releaseDateMeridian ?? roundUpHour.format('A'), [RELEASE_DATE_TYPE]: releaseDateType ?? false }),
     [releaseDate, releaseDateType, releaseDateHour, releaseDateMeridian]
   )
 
@@ -145,7 +145,8 @@ export const ReleaseDateField = () => {
         <input
           className={styles.input}
           name={RELEASE_DATE}
-          value={moment(releaseDate ?? undefined).format('L')}
+          value={"hello"
+          }
           aria-readonly
           readOnly
         />
@@ -225,9 +226,7 @@ const RadioItems = (props: any) => {
         />
 
       </RadioButtonGroup>
-      <>
-        {releaseDateTypeField?.value === ReleaseDateType.SCHEDULED_RELEASE && (
-          <>
+      {releaseDateTypeField?.value === ReleaseDateType.SCHEDULED_RELEASE && (
             <div
               className={cn(
                 styles.dropdownRow,
@@ -262,12 +261,10 @@ const RadioItems = (props: any) => {
               )}
 
             </div>
-            {/* <ModalContent className={styles.releaseDateHint}>
-              <HelpCallout icon={<IconInfo />} content={messages.callout(timePeriod)} />
-            </ModalContent> */}
-          </>
-        )}
-      </>
+      )}
+      <ModalContent className={styles.releaseDateHint}>
+        <HelpCallout icon={<IconInfo />} content={messages.callout(timePeriod)} />
+      </ModalContent>
 
     </>
   )

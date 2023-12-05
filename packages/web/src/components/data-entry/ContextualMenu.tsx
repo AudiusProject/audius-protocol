@@ -137,7 +137,7 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
         <Text className={styles.description}>{description}</Text>
       </div>
       {renderValue()}
-      {error ? <HelperText error>{errorMessage}</HelperText> : null}
+        {error ? <HelperText error>{"errorMessage"}</HelperText> : null}
     </Tile>
   )
 
@@ -149,7 +149,7 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
     },
     [error, onSubmit, toggleMenu]
   )
-
+  console.log('asdf formikProps: ', formikProps)
   return (
     <>
       {preview}
