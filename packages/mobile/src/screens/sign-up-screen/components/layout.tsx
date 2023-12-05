@@ -1,9 +1,17 @@
+import type { ReactNode } from 'react'
 import { Children } from 'react'
 
-import { type NativeBoxProps } from '@audius/harmony-native'
+import { css } from '@emotion/native'
+
+import type { NativePaperProps } from '@audius/harmony-native'
+import { Box, Paper, type NativeBoxProps } from '@audius/harmony-native'
+import type { ButtonProps } from 'app/components/button'
+import { Button } from 'app/components/core'
 import { Flex } from 'app/harmony-native/components/layout/Flex/Flex'
 import type { NativeFlexProps } from 'app/harmony-native/components/layout/Flex/types'
 import { Text } from 'app/harmony-native/foundations/typography/Text'
+
+import IconArrowRight from './temp-harmony/ArrowRight.svg'
 
 type PageProps = NativeFlexProps & {
   centered?: boolean
@@ -41,6 +49,54 @@ export const Page = (props: PageProps) => {
   )
 }
 
+type PageFooterProps = {
+  prefix?: ReactNode
+  postfix?: ReactNode
+  buttonProps?: Partial<ButtonProps>
+  centered?: boolean
+  sticky?: boolean
+} & Omit<NativePaperProps & NativeBoxProps, 'prefix'>
+
+export const PageFooter = (props: PageFooterProps) => {
+  const { prefix, postfix, buttonProps, centered, sticky, ...other } = props
+
+  return (
+    <Paper
+      w='100%'
+      p='l'
+      justifyContent='center'
+      gap='l'
+      alignItems='center'
+      direction='column'
+      shadow={!sticky ? 'flat' : 'midInverted'}
+      backgroundColor='white'
+      style={css({
+        // TODO: these aren't native friendly
+        // overflow: 'unset',
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        zIndex: 1,
+        borderBottomRightRadius: 0,
+        borderBottomLeftRadius: 0
+      })}
+      {...other}
+    >
+      {prefix}
+      <Button
+        type='submit'
+        // TODO:
+        // icon={IconArrowRight}
+        fullWidth
+        style={css(centered && { width: 343 })}
+        {...buttonProps}
+        title='Continue'
+      />
+      {postfix}
+    </Paper>
+  )
+}
+
 type HeadingProps = {
   prefix?: any
   postfix?: any
@@ -70,5 +126,25 @@ export const Heading = (props: HeadingProps) => {
       ) : undefined}
       {postfix}
     </Flex>
+  )
+}
+
+type ReadOnlyFieldProps = {
+  label: string
+  value: string
+}
+
+export const ReadOnlyField = (props: ReadOnlyFieldProps) => {
+  const { label, value } = props
+
+  return (
+    <Box>
+      <Text variant='label' size='xs'>
+        {label}
+      </Text>
+      <Text variant='body' size='m'>
+        {value}
+      </Text>
+    </Box>
   )
 }
