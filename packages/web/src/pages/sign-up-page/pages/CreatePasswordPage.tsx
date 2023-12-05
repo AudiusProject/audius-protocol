@@ -57,7 +57,7 @@ export const CreatePasswordPage = () => {
       validationSchema={passwordFormikSchma}
     >
       {({ isValid, dirty }) => (
-        <Page as={Form}>
+        <Page as={Form} transition={isMobile ? undefined : 'horizontal'}>
           <Heading
             heading={messages.createYourPassword}
             description={messages.description}

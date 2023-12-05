@@ -9,6 +9,7 @@ import {
   useGetTopArtistsInGenre
 } from '@audius/common'
 import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
+import { useSpring, animated } from '@react-spring/web'
 import { Form, Formik } from 'formik'
 import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
@@ -36,6 +37,8 @@ import {
   ScrollView
 } from '../components/layout'
 import { SelectArtistsPreviewContextProvider } from '../utils/selectArtistsPreviewContext'
+
+const AnimatedFlex = animated(Flex)
 
 const messages = {
   header: 'Follow At Least 3 Artists',
@@ -106,6 +109,17 @@ export const SelectArtistsPage = () => {
 
   const ArtistsList = isMobile ? Flex : Paper
 
+  const styles = useSpring({
+    from: {
+      opacity: 0,
+      transform: 'translateX(100%)'
+    },
+    to: {
+      opacity: 1,
+      transform: 'translateX(0%)'
+    }
+  })
+
   return (
     <Formik
       initialValues={initialValues}
@@ -117,10 +131,11 @@ export const SelectArtistsPage = () => {
         return (
           <ScrollView as={Form} gap={isMobile ? undefined : '3xl'}>
             <AccountHeader mode='viewing' />
-            <Flex
+            <AnimatedFlex
               direction='column'
               mh={isMobile ? undefined : '5xl'}
               mb={isMobile ? undefined : 'xl'}
+              style={styles}
             >
               <Flex
                 direction='column'
@@ -200,7 +215,7 @@ export const SelectArtistsPage = () => {
                   </Flex>
                 </ArtistsList>
               </SelectArtistsPreviewContextProvider>
-            </Flex>
+            </AnimatedFlex>
             <PageFooter
               sticky
               buttonProps={{

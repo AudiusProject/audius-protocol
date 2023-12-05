@@ -90,7 +90,11 @@ export const FinishProfilePage = () => {
       validateOnChange
     >
       {({ isValid, values }) => (
-        <Page as={Form} centered>
+        <Page
+          as={Form}
+          centered
+          transition={isMobile ? 'horizontal' : 'vertical'}
+        >
           <Heading
             prefix={
               isMobile ? null : <OutOfText numerator={2} denominator={2} />

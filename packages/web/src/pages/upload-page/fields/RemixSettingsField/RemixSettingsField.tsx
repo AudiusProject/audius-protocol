@@ -1,11 +1,12 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import {
   Nullable,
   ID,
   useGetTrackById,
   FieldVisibility,
-  Remix
+  Remix,
+  isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
 import { get, set } from 'lodash'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -90,6 +91,19 @@ export const RemixSettingsField = () => {
     isPremium,
     premiumConditions
   ])
+
+  const isUSDCPurchaseGated =
+    isPremiumContentUSDCPurchaseGated(premiumConditions)
+
+  // If the track is public or usdc purchase gated, default to showing remixes.
+  // Otherwise, default to hiding remixes.
+  useEffect(() => {
+    if (!isPremium || isUSDCPurchaseGated) {
+      setShowRemixes(true)
+    } else if (isPremium) {
+      setShowRemixes(false)
+    }
+  }, [isPremium, isUSDCPurchaseGated, setShowRemixes])
 
   const handleSubmit = useCallback(
     (values: RemixSettingsFormValues) => {

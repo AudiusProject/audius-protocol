@@ -27,6 +27,7 @@ import { PickHandlePage } from './pages/PickHandlePage'
 import { ReviewHandlePage } from './pages/ReviewHandlePage'
 import { SelectArtistsPage } from './pages/SelectArtistsPage'
 import { SelectGenrePage } from './pages/SelectGenrePage'
+import { RouteContextProvider } from './utils/RouteContext'
 
 const messages = {
   metaTitle: 'Sign Up • Audius',
@@ -38,6 +39,7 @@ const messages = {
  */
 export function SignUpRoute({ children, ...rest }: RouteProps) {
   const signUpState = useSelector(getSignOn)
+
   return (
     <Route
       {...rest}
@@ -47,6 +49,7 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
           signUpState,
           location.pathname
         )
+
         return isAllowedRoute ? (
           <>{children}</>
         ) : (
@@ -59,16 +62,17 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
 
 export const SignUpPage = () => {
   return (
-    <>
+    <RouteContextProvider>
       <Helmet>
         <title>{messages.metaTitle}</title>
         <meta name='description' content={messages.metaDescription} />
       </Helmet>
       <NavHeader />
       <Switch>
-        <Route exact path={[SIGN_UP_PAGE, SIGN_UP_EMAIL_PAGE]}>
+        <SignUpRoute exact path={SIGN_UP_PAGE} />
+        <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
           <CreateEmailPage />
-        </Route>
+        </SignUpRoute>
         <SignUpRoute exact path={SIGN_UP_PASSWORD_PAGE}>
           <CreatePasswordPage />
         </SignUpRoute>
@@ -94,6 +98,6 @@ export const SignUpPage = () => {
           <MobileAppCtaPage />
         </SignUpRoute>
       </Switch>
-    </>
+    </RouteContextProvider>
   )
 }
