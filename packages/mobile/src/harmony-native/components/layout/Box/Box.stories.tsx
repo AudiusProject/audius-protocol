@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-native'
 
-import { Text } from 'app/harmony-native/foundations'
+import { Text, Box } from '@audius/harmony-native'
 
-import { Box } from './Box'
 import type { NativeBoxProps } from './types'
 
 const messages = {

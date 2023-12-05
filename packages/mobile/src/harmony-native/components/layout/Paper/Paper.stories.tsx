@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-native'
 
-import { Text } from 'app/harmony-native/foundations'
+import { Text, Paper } from '@audius/harmony-native'
 
-import { Paper } from './Paper'
 import type { NativePaperProps } from './types'
 
 const meta: Meta<NativePaperProps> = {

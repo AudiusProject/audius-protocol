@@ -1,10 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-native'
 
-import { Text } from 'app/harmony-native/foundations'
+import { Text, Box, Flex } from '@audius/harmony-native'
 
-import { Box } from '../Box/Box'
-
-import { Flex } from './Flex'
 import type { NativeFlexProps } from './types'
 
 const meta: Meta<NativeFlexProps> = {

@@ -1,1 +1,5 @@
 export * from './Link'
+export * from './Text/Text'
+export * from './layout/Box/Box'
+export * from './layout/Flex/Flex'
+export * from './layout/Paper/Paper'
