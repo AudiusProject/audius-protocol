@@ -29,7 +29,7 @@ export type CreatePasswordValues = {
   confirmPassword: string
 }
 
-const passwordFormikSchma = toFormikValidationSchema(passwordSchema)
+const passwordFormikSchema = toFormikValidationSchema(passwordSchema)
 
 export const CreatePasswordPage = () => {
   const dispatch = useDispatch()
@@ -50,7 +50,7 @@ export const CreatePasswordPage = () => {
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      validationSchema={passwordFormikSchma}
+      validationSchema={passwordFormikSchema}
     >
       {({ isValid, dirty }) => (
         <Page as={Form} transition={isMobile ? undefined : 'horizontal'}>

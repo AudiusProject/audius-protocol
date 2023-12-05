@@ -3,14 +3,16 @@ import {
   createPasswordPageMessages,
   type CompletionChecklistType
 } from '@audius/common'
-import { CompletionCheck, Flex, Text } from '@audius/harmony'
 import { useField } from 'formik'
 import { useAsync } from 'react-use'
 
-import { useMedia } from 'hooks/useMedia'
+import { Flex, Text } from '@audius/harmony-native'
 
 const messages: Record<CompletionChecklistType, string> =
   createPasswordPageMessages.completionChecklist
+
+// const passwordSchema = schemaBuilder()
+console.log({ passwordSchema })
 
 type ChecklistItem = { type: CompletionChecklistType; path: string }
 
@@ -22,27 +24,37 @@ const checklist: ChecklistItem[] = [
 ]
 
 export const CompletionChecklist = () => {
-  const { isMobile } = useMedia()
-
   const [{ value: password }, passwordMeta] = useField('password')
   const [{ value: confirmPassword }, confirmMeta] = useField('confirmPassword')
 
+  //   console.log({ password, confirmPassword })
+  console.log({ passwordSchema })
+
   const { value: issues } = useAsync(async () => {
-    const result = await passwordSchema.safeParseAsync({
-      password,
-      confirmPassword
-    })
-    if (result.success) {
-      return null
+    // console.log('getting result')
+    try {
+      console.log({ passwordSchema })
+      const result = await passwordSchema.safeParseAsync({
+        password,
+        confirmPassword
+      })
+      console.log({ result })
+      if (result.success) {
+        return null
+      }
+      return []
+    } catch (e) {
+      console.log('dont worry I cuaght the error')
     }
 
-    return result.error.issues.map(
-      (issue) => issue.message as CompletionChecklistType
-    )
+    return null
+    // return result.error.issues.map(
+    //   (issue) => issue.message as CompletionChecklistType
+    // )
   }, [password, confirmPassword])
 
   return (
-    <Flex gap={isMobile ? 's' : 'm'} direction='column'>
+    <Flex gap='s' direction='column'>
       {checklist.map((check) => {
         const { type, path } = check
         const error = issues?.includes(type)
@@ -57,12 +69,16 @@ export const CompletionChecklist = () => {
             : 'complete'
 
         return (
-          <Flex key={type} alignItems='center' gap='m'>
-            <CompletionCheck value={status} />
+          <Flex key={type} direction='row' alignItems='center' gap='m'>
+            <Text>
+              {status === 'complete' && '✅'}
+              {status === 'error' && '😡'}
+              {status === 'incomplete' && '🔘'}
+            </Text>
             <Text
               variant='body'
               strength='default'
-              size={isMobile ? 's' : 'm'}
+              size='s'
               color={status === 'error' ? 'danger' : 'default'}
             >
               {messages[type]}

@@ -11,6 +11,7 @@ export const commonPasswordCheck = async (
     'SHA-1',
     new TextEncoder().encode(password)
   )
+  console.log({ unitarry: Array.from(new Uint8Array(digest)) })
   const hash = Array.from(new Uint8Array(digest))
     .map((x) => x.toString(16).padStart(2, '0'))
     .join('')
@@ -25,6 +26,7 @@ export const commonPasswordCheck = async (
   if (result) {
     // @ts-ignore
     const text = (await result?.text()) as string
+    console.log({ splittyBitty: text.split(/\s+/g) })
     const hashArr = text.split(/\s+/g).map((s) => s.slice(0, s.indexOf(':')))
 
     // If there is no match, return false

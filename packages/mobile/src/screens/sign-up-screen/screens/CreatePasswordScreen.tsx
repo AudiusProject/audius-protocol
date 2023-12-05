@@ -1,30 +1,25 @@
 import { useCallback } from 'react'
 
-import { getEmailField } from 'audius-client/src/common/store/pages/signon/selectors'
+import {
+  createPasswordPageMessages as messages,
+  passwordSchema
+} from '@audius/common'
 import { setValueField } from 'common/store/pages/signon/actions'
 import { Formik } from 'formik'
 import { View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Flex } from '@audius/harmony-native'
 import { Button } from 'app/components/core'
 import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
+import { CompletionChecklist } from '../components/CompletionChecklist'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
 import { useRoute } from '../useRoute'
-
-const messages = {
-  heading: 'Create Your Password',
-  description:
-    "Create a password that's secure and easy to remember! We can't reset your password, so write it down or use a password manager.",
-  yourEmail: 'Your Email',
-  passwordLabel: 'Password',
-  confirmPasswordLabel: 'Confirm Password',
-  continue: 'Continue'
-}
 
 export type CreatePasswordParams = {
   email: string
@@ -40,10 +35,11 @@ type CreatePasswordValues = {
   confirmPassword: string
 }
 
+const passwordFormikSchema = toFormikValidationSchema(passwordSchema)
+
 export const CreatePasswordScreen = () => {
   const { params } = useRoute<'CreatePassword'>()
   const { email } = params
-  const emailField = useSelector(getEmailField)
   const dispatch = useDispatch()
   const navigation = useNavigation<SignUpScreenParamList>()
 
@@ -58,11 +54,15 @@ export const CreatePasswordScreen = () => {
 
   return (
     <View>
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+      <Formik
+        initialValues={initialValues}
+        onSubmit={handleSubmit}
+        validationSchema={passwordFormikSchema}
+      >
         {({ handleSubmit, dirty, isValid }) => (
           <Page>
             <Heading
-              heading={messages.heading}
+              heading={messages.createYourPassword}
               description={messages.description}
             />
             <Flex direction='column' h='100%' gap='l'>
@@ -81,8 +81,9 @@ export const CreatePasswordScreen = () => {
                 secureTextEntry
                 noGutter
               />
+              <CompletionChecklist />
             </Flex>
-            <Button title={messages.continue} onPress={() => handleSubmit()} />
+            <Button title='Continue' onPress={() => handleSubmit()} />
             <PageFooter
               shadow='flat'
               p='l'

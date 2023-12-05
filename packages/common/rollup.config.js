@@ -9,13 +9,13 @@ export default [
     input: 'src/index.ts',
     output: [
       {
-        dir: 'dist',
+        dir: pkg.module,
         format: 'es',
         exports: 'named',
         sourcemap: true
       },
       {
-        dir: 'dist',
+        file: pkg.main,
         format: 'cjs',
         exports: 'named',
         sourcemap: true
@@ -27,6 +27,7 @@ export default [
       }),
       image()
     ],
+    inlineDynamicImports: true,
 
     external: [
       ...Object.keys(pkg.dependencies),
