@@ -81,10 +81,12 @@ logger = StructuredLogger(__name__)
 #
 
 # Populate values used in UserBank indexing from config
-USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
+PAYMENT_ROUTER_ADDRESS = shared_config["solana"]["payment_router_program_address"]
 WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
 USDC_MINT = shared_config["solana"]["usdc_mint"]
-USER_BANK_KEY = Pubkey.from_string(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
+USER_BANK_KEY = (
+    Pubkey.from_string(PAYMENT_ROUTER_ADDRESS) if PAYMENT_ROUTER_ADDRESS else None
+)
 WAUDIO_MINT_PUBKEY = Pubkey.from_string(WAUDIO_MINT) if WAUDIO_MINT else None
 USDC_MINT_PUBKEY = Pubkey.from_string(USDC_MINT) if USDC_MINT else None
 

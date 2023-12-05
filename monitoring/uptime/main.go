@@ -179,6 +179,7 @@ func startStagingOrProd(isProd bool, nodeType, env string) {
 		claimableTokenPda = mustGetenv("audius_solana_claimable_token_pda")
 		solanaFeePayerAddress = mustGetenv("audius_solana_fee_payer_address")
 		claimableTokenProgramAddress = mustGetenv("audius_solana_user_bank_program_address")
+		claimableTokenProgramAddress = mustGetenv("audius_solana_payment_router_program_address")
 		rewardsManagerProgramId = mustGetenv("audius_solana_rewards_manager_program_address")
 		rewardsManagerProgramPda = mustGetenv("audius_solana_rewards_manager_account")
 		rewardsManagerTokenPda = mustGetenv("audius_solana_rewards_manager_token_pda")

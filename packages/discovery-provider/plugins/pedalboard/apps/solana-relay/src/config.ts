@@ -43,6 +43,9 @@ const readConfig = () => {
     audius_solana_user_bank_program_address: str({
       default: 'testHKV1B56fbvop4w6f2cTGEub9dRQ2Euta5VmqdX9'
     }),
+    audius_solana_payment_router_program_address: str({
+      default: 'apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa'
+    }),
     audius_solana_rewards_manager_program_address: str({
       default: 'testLsJKtyABc9UXJF8JWFKf1YH4LmqCWBC42c6akPb'
     }),
@@ -86,6 +89,7 @@ const readConfig = () => {
     rewardsManagerProgramId: env.audius_solana_rewards_manager_program_address,
     rewardsManagerAccountAddress: env.audius_solana_rewards_manager_account,
     claimableTokenProgramId: env.audius_solana_user_bank_program_address,
+    paymentrouterProgramId: env.audius_solana_payment_router_program_address,
     usdcMintAddress: env.audius_solana_usdc_mint,
     waudioMintAddress: env.audius_solana_waudio_mint,
     solanaFeePayerWallets,
