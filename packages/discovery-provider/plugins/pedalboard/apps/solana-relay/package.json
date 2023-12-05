@@ -1,6 +1,6 @@
 {
   "name": "@pedalboard/solana-relay",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "start": "ts-node ./src/index.ts",

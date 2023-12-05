@@ -13,9 +13,8 @@ import { IconError } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
 import QRCode from 'react-qr-code'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
-import { Action } from 'redux'
 
 import { Icon } from 'components/Icon'
 import { AddressTile } from 'components/address-tile'
@@ -49,14 +48,11 @@ const messages = {
 
 export const USDCManualTransfer = ({
   onClose,
-  amountInCents,
-  onSuccessAction
+  amountInCents
 }: {
   onClose: () => void
   amountInCents?: number
-  onSuccessAction?: Action
 }) => {
-  const dispatch = useDispatch()
   const stage = useSelector(getPurchaseContentFlowStage)
   const error = useSelector(getPurchaseContentError)
   const isUnlocking = !error && isContentPurchaseInProgress(stage)
@@ -89,13 +85,8 @@ export const USDCManualTransfer = ({
     )
   }, [USDCUserBank, toast])
 
-  const handleBuyClick = useCallback(() => {
-    if (onSuccessAction) dispatch(onSuccessAction)
-    onClose()
-  }, [dispatch, onClose, onSuccessAction])
-
   return (
-    <div className={styles.root}>
+    <Flex direction='column' gap='xl' p='xl'>
       <Flex gap='l' alignItems='center' direction={mobile ? 'column' : 'row'}>
         {mobile ? <Text>{messages.explainer}</Text> : null}
         <div className={styles.qr}>
@@ -144,7 +135,7 @@ export const USDCManualTransfer = ({
               fullWidth
               color='lightGreen'
               disabled={isBuyButtonDisabled}
-              onClick={handleBuyClick}
+              type='submit'
             >
               {messages.buy(
                 USDC(amount).toLocaleString('en-us', {
@@ -157,6 +148,6 @@ export const USDCManualTransfer = ({
           </>
         )}
       </div>
-    </div>
+    </Flex>
   )
 }

@@ -1,6 +1,9 @@
 import { useCallback } from 'react'
 
-import { emailSchema } from '@audius/common'
+import {
+  emailSchema,
+  createEmailPageMessages as messages
+} from '@audius/common'
 import {
   Box,
   Button,
@@ -42,25 +45,6 @@ import { SignUpWithMetaMaskButton } from '../components/SignUpWithMetaMaskButton
 import { Heading, Page } from '../components/layout'
 
 const EmailSchema = toFormikValidationSchema(emailSchema(audiusQueryContext))
-
-export const messages = {
-  title: 'Sign Up For Audius',
-  emailLabel: 'Email',
-  signUp: 'Sign Up Free',
-  haveAccount: 'Already have an account?',
-  signIn: 'Sign In',
-  subHeader: (
-    <>
-      Join the revolution in music streaming! <br /> Discover, connect, and
-      create on Audius.
-    </>
-  ),
-  socialsDividerText: 'Or, get started with one of your socials',
-  unknownError: 'Unknown error occurred.',
-  metaMaskNotRecommended: 'Signing up with MetaMask is not recommended.',
-  signUpMetamask: 'Sign Up With MetaMask',
-  learnMore: 'Learn More'
-}
 
 export type SignUpEmailValues = {
   email: string
@@ -131,7 +115,12 @@ export const CreateEmailPage = () => {
           </Box>
           <Heading
             heading={messages.title}
-            description={messages.subHeader}
+            description={
+              <>
+                {messages.subHeader.line1}
+                <br /> {messages.subHeader.line2}
+              </>
+            }
             tag='h1'
             centered={isMobile}
           />

@@ -3,7 +3,8 @@ import {
   ComponentType,
   ElementType,
   ReactNode,
-  forwardRef
+  forwardRef,
+  useContext
 } from 'react'
 
 import {
@@ -19,8 +20,11 @@ import {
   Text
 } from '@audius/harmony'
 import styled from '@emotion/styled'
+import { animated, useSpring } from '@react-spring/web'
 
 import { useMedia } from 'hooks/useMedia'
+
+import { RouteContext } from '../utils/RouteContext'
 
 const messages = {
   continue: 'Continue'
@@ -29,11 +33,38 @@ const messages = {
 type PageProps = FlexProps & {
   as?: ComponentType<any>
   centered?: boolean
+  transition?: 'horizontal' | 'vertical'
 }
 
+const AnimatedFlex = animated(Flex)
+
 export const Page = (props: PageProps) => {
-  const { centered, children, as, ...other } = props
+  const { centered, children, as, transition, ...other } = props
   const { isMobile } = useMedia()
+  const { isGoBack } = useContext(RouteContext)
+
+  const translateStart = isGoBack ? '-100%' : '100%'
+  const translateAxis = transition === 'vertical' ? 'Y' : 'X'
+  const shouldTransition = transition || isGoBack
+
+  const fromTransform = shouldTransition
+    ? `translate${translateAxis}(${translateStart})`
+    : undefined
+
+  const toTransform = shouldTransition
+    ? `translate${translateAxis}(0%)`
+    : undefined
+
+  const styles = useSpring({
+    from: {
+      opacity: 0,
+      transform: fromTransform
+    },
+    to: {
+      opacity: 1,
+      transform: toTransform
+    }
+  })
 
   const childrenArray = Children.toArray(children)
   const footer = childrenArray.pop()
@@ -49,23 +80,32 @@ export const Page = (props: PageProps) => {
   if (centered) {
     return (
       <Flex h='100%' direction='column' alignItems='center' as={as}>
-        <Flex
+        <AnimatedFlex
           {...layoutProps}
           {...other}
           alignSelf='center'
           css={!isMobile && { maxWidth: 610 }}
+          style={styles}
         >
           {childrenArray}
-        </Flex>
+        </AnimatedFlex>
         {footer}
       </Flex>
     )
   }
 
   return (
-    <Flex as={as} {...layoutProps} {...other}>
+    <AnimatedFlex
+      as={as}
+      {...layoutProps}
+      {...other}
+      css={
+        isMobile ? { maxWidth: 477, width: '100%', margin: 'auto' } : undefined
+      }
+      style={styles}
+    >
       {children}
-    </Flex>
+    </AnimatedFlex>
   )
 }
 
@@ -188,14 +228,12 @@ type ScrollViewProps = {
 
 export const ScrollView = (props: ScrollViewProps) => {
   const { children, orientation = 'vertical', disableScroll, ...other } = props
-  const { isMobile } = useMedia()
 
   return (
     <Flex
       w='100%'
       h='100%'
       direction={orientation === 'vertical' ? 'column' : 'row'}
-      gap={isMobile ? '2xl' : '3xl'}
       css={{
         overflow: disableScroll ? undefined : 'auto',
         // Hide scrollbar

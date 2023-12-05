@@ -1,11 +1,11 @@
 {
   "name": "root",
-  "version": "1.5.53",
+  "version": "1.5.54",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
     "packages/discovery-provider/plugins/pedalboard/packages/*",
-    "packages/discovery-provider/es-indexer"
+    "packages/es-indexer"
   ],
   "cacheBust": 1,
   "private": true,

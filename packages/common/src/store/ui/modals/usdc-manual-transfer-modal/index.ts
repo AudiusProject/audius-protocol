@@ -1,11 +1,6 @@
-import { Action } from 'redux'
-
 import { createModal } from '../createModal'
 
-export type USDCManualTransferModalState = {
-  amount?: number
-  onSuccessAction?: Action
-}
+export type USDCManualTransferModalState = {}
 
 const USDCManualTransferModal = createModal<USDCManualTransferModalState>({
   reducerPath: 'USDCManualTransferModal',

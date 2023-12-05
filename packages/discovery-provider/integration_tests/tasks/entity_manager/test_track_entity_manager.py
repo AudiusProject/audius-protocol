@@ -139,7 +139,7 @@ def test_index_valid_track(app, mocker):
             "created_at": None,
             "create_date": None,
             "updated_at": None,
-            "release_date": None,
+            "release_date": "2030-11-30T08:00:00.000Z",
             "file_type": None,
             "track_segments": [],
             "has_current_user_reposted": False,
@@ -406,6 +406,7 @@ def test_index_valid_track(app, mocker):
         )
         assert track_3.title == "track 3"
         assert track_3.is_delete == False
+        assert track_3.is_unlisted == True
 
         track_4: Track = (
             session.query(Track)

@@ -1,9 +1,9 @@
-import { useCallback, useContext, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import {
-  AudiusQueryContext,
   emailSchema,
-  emailSchemaMessages
+  emailSchemaMessages,
+  useAudiusQueryContext
 } from '@audius/common'
 import { css } from '@emotion/native'
 import { useTheme } from '@emotion/react'
@@ -57,21 +57,18 @@ export const CreateEmailScreen = () => {
   const dispatch = useDispatch()
   const navigation = useNavigation<SignUpScreenParamList>()
   const existingEmailValue = useSelector(getEmailField)
-  const queryContext = useContext(AudiusQueryContext)
+  const queryContext = useAudiusQueryContext()
   const initialValues = {
     email: existingEmailValue.value ?? ''
   }
   const { color, cornerRadius } = useTheme()
   const emailFormikSchema = useMemo(() => {
-    if (queryContext) {
-      return toFormikValidationSchema(emailSchema(queryContext))
-    }
+    return toFormikValidationSchema(emailSchema(queryContext))
   }, [queryContext])
 
   const handleSubmit = useCallback(
     (values: SignUpEmailValues) => {
       const { email } = values
-      // Set the email in the store
       dispatch(setValueField('email', email))
       navigation.navigate('CreatePassword', { email })
     },

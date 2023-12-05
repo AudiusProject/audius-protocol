@@ -11,3 +11,7 @@
   padding: 0;
   border: none;
 }
+
+.noPadding {
+  padding: 0;
+}

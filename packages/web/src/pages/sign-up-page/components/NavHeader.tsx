@@ -9,7 +9,7 @@ import {
   PlainButton,
   PlainButtonSize,
   PlainButtonType,
-  iconSizes
+  useTheme
 } from '@audius/harmony'
 import { Route, Switch, useHistory, useRouteMatch } from 'react-router-dom'
 
@@ -49,14 +49,13 @@ export const NavHeader = () => {
   const isBackAllowed = useIsBackAllowed()
   const history = useHistory()
   const { isMobile } = useMedia()
+  const { iconSizes } = useTheme()
 
   const handleClose = useCallback(() => {
     history.push(TRENDING_PAGE)
   }, [history])
 
-  const audiusLogo = (
-    <IconAudiusLogoHorizontal color='subdued' css={{ height: iconSizes.l }} />
-  )
+  const audiusLogo = <IconAudiusLogoHorizontal color='subdued' sizeH='l' />
 
   const header = isBackAllowed ? (
     <>

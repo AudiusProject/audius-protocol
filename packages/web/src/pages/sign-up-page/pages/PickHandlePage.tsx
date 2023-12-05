@@ -1,6 +1,6 @@
 import { useCallback, useContext, useMemo } from 'react'
 
-import { useAudiusQueryContext } from '@audius/common'
+import { useAudiusQueryContext, socialMediaMessages } from '@audius/common'
 import { Divider, Flex, IconVerified, Paper, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -25,7 +25,6 @@ import { OutOfText } from '../components/OutOfText'
 import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
 import { Heading, Page, PageFooter } from '../components/layout'
 import { generateHandleSchema } from '../utils/handleSchema'
-import { socialMediaMessages } from '../utils/socialMediaMessages'
 
 const messages = {
   title: 'Pick Your Handle',
@@ -148,7 +147,11 @@ export const PickHandlePage = () => {
       validateOnChange={false}
     >
       {({ isSubmitting, isValid, isValidating }) => (
-        <Page as={Form} centered>
+        <Page
+          as={Form}
+          centered
+          transition={isMobile ? 'horizontal' : undefined}
+        >
           <Heading
             prefix={
               isMobile ? null : <OutOfText numerator={1} denominator={2} />
