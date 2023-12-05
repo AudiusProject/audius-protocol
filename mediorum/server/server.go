@@ -65,7 +65,6 @@ type MediorumConfig struct {
 	WalletIsRegistered   bool
 	StoreAll             bool
 	VersionJson          VersionJson
-	MigrateQmCidIters    int
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
