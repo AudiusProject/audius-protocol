@@ -38,7 +38,11 @@ const useCoinflowAdapter = () => {
         connection,
         wallet: {
           publicKey,
-          sendTransaction: async (transaction, connection, options) => {
+          sendTransaction: async (
+            transaction: any,
+            connection: any,
+            options: any
+          ) => {
             console.debug('Sending transaction', transaction)
             return ''
           }
