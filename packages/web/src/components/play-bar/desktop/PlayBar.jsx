@@ -95,7 +95,7 @@ class PlayBar extends Component {
       },
       /* throttle= */ 200
     )
-    // Listen for keyboard APIs if available
+    // Listen for keyboard play/pause/next/previous APIs (if present)
     if (navigator && 'mediaSession' in navigator) {
       navigator.mediaSession.setActionHandler('play', () => {
         this.togglePlay()
