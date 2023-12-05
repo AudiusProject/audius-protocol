@@ -1,9 +1,9 @@
 import type { BaseFlexProps } from '@audius/harmony'
 import type { ViewStyle } from 'react-native'
 
-import type { NativeBoxProps } from '../Box/types'
+import type { BoxProps } from '../Box/types'
 
-export type NativeFlexProps = NativeBoxProps &
+export type FlexProps = BoxProps &
   Omit<
     BaseFlexProps,
     'alignItems' | 'flexDirection' | 'direction' | 'wrap' | 'justifyContent'

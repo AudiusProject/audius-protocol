@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react'
 
+import type { Theme } from '@audius/harmony'
 import { ThemeProvider as EmotionThemeProvider } from '@emotion/react'
-
-import type { Theme } from '../types'
 
 import { nativeHarmonyThemes } from './theme'
 

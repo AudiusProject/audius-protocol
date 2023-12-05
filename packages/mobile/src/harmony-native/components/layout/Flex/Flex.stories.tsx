@@ -2,9 +2,9 @@ import type { Meta, StoryObj } from '@storybook/react-native'
 
 import { Text, Box, Flex } from '@audius/harmony-native'
 
-import type { NativeFlexProps } from './types'
+import type { FlexProps } from './types'
 
-const meta: Meta<NativeFlexProps> = {
+const meta: Meta<FlexProps> = {
   title: 'Layout/Flex',
   component: Flex,
   parameters: {
@@ -70,7 +70,7 @@ const meta: Meta<NativeFlexProps> = {
 
 export default meta
 
-type Story = StoryObj<NativeFlexProps>
+type Story = StoryObj<FlexProps>
 
 export const Default: Story = {}
 

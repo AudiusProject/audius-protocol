@@ -1,8 +1,8 @@
 import styled from '@emotion/native'
 
-import type { NativeBoxProps } from './types'
+import type { BoxProps } from './types'
 
-export const Box = styled.View<NativeBoxProps>(
+export const Box = styled.View<BoxProps>(
   ({
     h,
     w,

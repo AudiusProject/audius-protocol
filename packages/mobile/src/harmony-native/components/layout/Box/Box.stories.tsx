@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-native'
 
 import { Text, Box } from '@audius/harmony-native'
 
-import type { NativeBoxProps } from './types'
+import type { BoxProps } from './types'
 
 const messages = {
   testText: 'My potions are too strong for you, traveler.'
@@ -13,7 +13,7 @@ const spacingArgs = {
   options: ['xs', 's', 'm', 'l', 'xl', '2xl', '3xl', '4xl']
 }
 
-const meta: Meta<NativeBoxProps> = {
+const meta: Meta<BoxProps> = {
   title: 'Layout/Box',
   component: Box,
   parameters: {
@@ -73,7 +73,7 @@ const meta: Meta<NativeBoxProps> = {
 
 export default meta
 
-type Story = StoryObj<NativeBoxProps>
+type Story = StoryObj<BoxProps>
 
 export const Default: Story = {}
 
