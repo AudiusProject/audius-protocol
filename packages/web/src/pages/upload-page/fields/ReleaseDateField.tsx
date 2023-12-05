@@ -28,6 +28,8 @@ import { AVAILABILITY_TYPE } from './AccessAndSaleField'
 import { release } from 'os'
 import Select from 'antd/lib/select'
 import { getScheduledReleaseLabelMessage } from 'utils/dateUtils'
+import { z } from 'zod'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 const messages = {
   title: 'Release Date',
@@ -74,7 +76,12 @@ export enum ReleaseDateMeridian {
   PM = 'PM'
 }
 
-
+const timeValidationSchema = z.object({
+  release_date_hour: z.string()
+    .refine((value) => /^(0[1-9]|1[0-2]):([0-5][0-9])$/.test(value), {
+      message: "Invalid time."
+    })
+});
 type ReleaseDateValue = SingleTrackEditValues[typeof RELEASE_DATE]
 
 export const ReleaseDateField = () => {
@@ -102,7 +109,7 @@ export const ReleaseDateField = () => {
       }
       const releaseDateValue = values[RELEASE_DATE]
       console.log('asdf onsubmit values: ', values)
-      const releaseDateHour = +values[RELEASE_DATE_HOUR]
+      const releaseDateHour = values[RELEASE_DATE_HOUR]?.split(':')[0]
       const releaseDateMeridian = values[RELEASE_DATE_MERIDIAN]
 
       const truncatedReleaseDate = moment(releaseDateValue).startOf('day');
@@ -154,6 +161,9 @@ export const ReleaseDateField = () => {
         description={messages.description}
         icon={<IconCalendar className={styles.titleIcon} />}
         initialValues={initialValues}
+        validationSchema={toFormikValidationSchema(timeValidationSchema)}
+        validateOnChange={false}
+        validateOnBlur={false}
         onSubmit={onSubmit}
         menuFields={
           <>
@@ -171,9 +181,10 @@ export const ReleaseDateField = () => {
 }
 
 
-
 const RadioItems = (props: any) => {
+
   const { releaseDateTypeField } = props
+  console.log('asdf releaseDateTypeField: ', releaseDateTypeField)
   const [releaseDateField, ,] = useField(RELEASE_DATE)
 
   const [timePeriod, setTimePeriod] = useState(TimePeriodType.PAST)
@@ -211,12 +222,6 @@ const RadioItems = (props: any) => {
         <ModalRadioItem
           value={ReleaseDateType.SCHEDULED_RELEASE}
           label="Select a release date"
-          checkedContent={
-            <>
-            </>
-
-          }
-
         />
 
       </RadioButtonGroup>
@@ -234,7 +239,7 @@ const RadioItems = (props: any) => {
               <div className={styles.datePicker}>
                 <DatePickerField name={RELEASE_DATE} label={messages.title} shouldFocus={releaseDateTypeField.value === ReleaseDateType.SCHEDULED_RELEASE} />
               </div>
-              {timePeriod === TimePeriodType.FUTURE && (
+              {(timePeriod !== TimePeriodType.PAST) && (
                 <>
                   <HarmonyTextField
                     name={RELEASE_DATE_HOUR}
@@ -242,15 +247,24 @@ const RadioItems = (props: any) => {
                     placeholder={'12:00'}
                     hideLabel={false}
                     inputRootClassName={styles.hourInput}
+                    transformBlurValue={(value) => {
+                      console.log('asdf transforming')
+                      // add :00 if it's missing
+                      const number = parseInt(value, 10)
+                      if (!isNaN(number) && number >= 1 && number <= 12) {
+                        return `${number}:00`
+                      }
+                      return value;
+                    }}
                   />
                   <SelectMeridianField />
                 </>
               )}
 
             </div>
-            <ModalContent className={styles.releaseDateHint}>
+            {/* <ModalContent className={styles.releaseDateHint}>
               <HelpCallout icon={<IconInfo />} content={messages.callout(timePeriod)} />
-            </ModalContent>
+            </ModalContent> */}
           </>
         )}
       </>
