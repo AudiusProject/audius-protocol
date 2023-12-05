@@ -115,6 +115,7 @@ services:
     image: audius/solana-programs:latest # Default tag is "latest." Change tag to "m1-slow" to have very slow block times that use less CPU
     ports:
       - '8899:8899'
+      # RPC port
       - '8900:8900'
     deploy:
       mode: global
@@ -130,10 +131,6 @@ services:
     image: audius/solana-programs:latest-arm64 # build on mac
     # image: audius/solana-programs:latest-amd64 # build on linux
     build:
-      # platform flags seem to have no effect?
-      # platforms:
-      #   - 'linux/arm64'
-      #   # - "linux/amd64"
       context: ${PROJECT_ROOT}/solana-programs
       dockerfile: Dockerfile.dev
       args:

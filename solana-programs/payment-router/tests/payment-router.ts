@@ -28,6 +28,7 @@ const SPL_AUDIO_TOKEN_ADDRESS_KEY = new PublicKey(SPL_AUDIO_TOKEN_ADDRESS)
 const SPL_USDC_TOKEN_ADDRESS_KEY = new PublicKey(SPL_USDC_TOKEN_ADDRESS)
 
 const endpoint = 'https://api.mainnet-beta.solana.com'
+// Use this endpoint for local testing
 // const endpoint = 'http://localhost:8899'
 const connection = new Connection(endpoint, 'finalized')
 
