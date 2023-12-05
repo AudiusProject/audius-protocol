@@ -12,69 +12,117 @@
           "default": null
         },
         "preview_cid": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "audio_upload_id": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "preview_start_seconds": {
-          "type": ["float", "null"],
+          "type": [
+            "float",
+            "null"
+          ],
           "default": null
         },
         "cover_art": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "cover_art_sizes": {
           "$comment": "type can be null if attached as a stem",
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "tags": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "genre": {
           "$comment": "genre can be null if attached as a stem",
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "mood": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "credits_splits": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "create_date": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "release_date": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "file_type": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "description": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "license": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "isrc": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "iswc": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "track_segments": {
@@ -103,7 +151,10 @@
           }
         },
         "download": {
-          "type": ["object", "null"],
+          "type": [
+            "object",
+            "null"
+          ],
           "$ref": "#/definitions/Download",
           "default": {
             "cid": null,
@@ -112,12 +163,18 @@
           }
         },
         "stem_of": {
-          "type": ["object", "null"],
+          "type": [
+            "object",
+            "null"
+          ],
           "$ref": "#/definitions/StemOf",
           "default": null
         },
         "remix_of": {
-          "type": ["object", "null"],
+          "type": [
+            "object",
+            "null"
+          ],
           "$ref": "#/definitions/RemixOf",
           "default": null
         },
@@ -126,7 +183,10 @@
           "default": false
         },
         "premium_conditions": {
-          "type": ["object", "null"],
+          "type": [
+            "object",
+            "null"
+          ],
           "items": {
             "oneOf": [
               {
@@ -140,6 +200,30 @@
               },
               {
                 "$ref": "#/definitions/PremiumConditionsTipUserId"
+              },
+              {
+                "$ref": "#/definitions/PremiumConditionsUSDCPurchase"
+              }
+            ]
+          },
+          "default": null
+        },
+        "is_download_gated": {
+          "type": "boolean",
+          "default": false
+        },
+        "download_conditions": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "items": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/definitions/PremiumConditionsUSDCPurchase"
               }
             ]
           },
@@ -150,7 +234,10 @@
           "default": false
         },
         "ai_attribution_user_id": {
-          "type": ["integer", "null"],
+          "type": [
+            "integer",
+            "null"
+          ],
           "default": null
         }
       },
@@ -177,12 +264,17 @@
         "track_segments",
         "is_premium",
         "premium_conditions",
+        "is_download_gated",
+        "download_conditions",
         "is_playlist_upload"
       ],
       "title": "Track"
     },
     "RemixOf": {
-      "type": ["object", "null"],
+      "type": [
+        "object",
+        "null"
+      ],
       "additionalProperties": false,
       "properties": {
         "tracks": {
@@ -193,7 +285,9 @@
           }
         }
       },
-      "required": ["tracks"],
+      "required": [
+        "tracks"
+      ],
       "title": "RemixOf"
     },
     "TrackElement": {
@@ -204,15 +298,23 @@
           "type": "integer"
         }
       },
-      "required": ["parent_track_id"],
+      "required": [
+        "parent_track_id"
+      ],
       "title": "TrackElement"
     },
     "Download": {
-      "type": ["object", "null"],
+      "type": [
+        "object",
+        "null"
+      ],
       "additionalProperties": false,
       "properties": {
         "cid": {
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "is_downloadable": {
           "type": "boolean"
@@ -221,7 +323,11 @@
           "type": "boolean"
         }
       },
-      "required": ["cid", "is_downloadable", "requires_follow"],
+      "required": [
+        "cid",
+        "is_downloadable",
+        "requires_follow"
+      ],
       "title": "Download"
     },
     "FieldVisibility": {
@@ -252,7 +358,10 @@
       "title": "FieldVisibility"
     },
     "StemOf": {
-      "type": ["object", "null"],
+      "type": [
+        "object",
+        "null"
+      ],
       "additionalProperties": false,
       "properties": {
         "category": {
@@ -262,7 +371,10 @@
           "type": "integer"
         }
       },
-      "required": ["category", "parent_track_id"],
+      "required": [
+        "category",
+        "parent_track_id"
+      ],
       "title": "StemOf"
     },
     "TrackSegment": {
@@ -277,11 +389,17 @@
           "$ref": "#/definitions/CID"
         }
       },
-      "required": ["duration", "multihash"],
+      "required": [
+        "duration",
+        "multihash"
+      ],
       "title": "TrackSegment"
     },
     "CID": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "minLength": 46,
       "maxLength": 46,
       "pattern": "^Qm[a-zA-Z0-9]{44}$",
@@ -305,7 +423,9 @@
           }
         }
       },
-      "required": ["nft_collection"],
+      "required": [
+        "nft_collection"
+      ],
       "title": "PremiumConditionsNFTCollection"
     },
     "PremiumConditionsEthNFTCollection": {
@@ -320,7 +440,10 @@
           "type": "string"
         },
         "standard": {
-          "enum": ["ERC721", "ERC1155"]
+          "enum": [
+            "ERC721",
+            "ERC1155"
+          ]
         },
         "name": {
           "type": "string"
@@ -329,15 +452,27 @@
           "type": "string"
         },
         "imageUrl": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "externalLink": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         }
       },
-      "required": ["chain", "address", "standard", "name", "slug"],
+      "required": [
+        "chain",
+        "address",
+        "standard",
+        "name",
+        "slug"
+      ],
       "title": "PremiumConditionsEthNFTCollection"
     },
     "PremiumConditionsSolNFTCollection": {
@@ -355,15 +490,25 @@
           "type": "string"
         },
         "imageUrl": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "externalLink": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         }
       },
-      "required": ["chain", "address", "name"],
+      "required": [
+        "chain",
+        "address",
+        "name"
+      ],
       "title": "PremiumConditionsSolNFTCollection"
     },
     "PremiumConditionsFollowUserId": {
@@ -374,7 +519,9 @@
           "type": "number"
         }
       },
-      "required": ["follow_user_id"],
+      "required": [
+        "follow_user_id"
+      ],
       "title": "PremiumConditionsFollowUserId"
     },
     "PremiumConditionsTipUserId": {
@@ -385,8 +532,33 @@
           "type": "number"
         }
       },
-      "required": ["tip_user_id"],
+      "required": [
+        "tip_user_id"
+      ],
       "title": "PremiumConditionsTipUserId"
+    },
+    "PremiumConditionsUSDCPurchase": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "price": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "splits": {
+          "type": "object",
+          "patternProperties": {
+            "^[1-9A-HJ-NP-Za-km-z]{32,44}$": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        }
+      },
+      "required": [
+        "price",
+        "splits"
+      ]
     }
   }
 }

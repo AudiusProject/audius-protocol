@@ -40,6 +40,10 @@ class Track(Base, RepresentableMixin):
     track_cid = Column(
         String, index=True
     )  # todo: after backfill, add nullable=False, both here and in a db migration
+    orig_file_cid = Column(
+        String, index=True
+    )  # todo: after backfill, add nullable=False, both here and in a db migration
+    orig_filename = Column(Text)
     title = Column(Text)
     duration = Column(Integer)
     preview_start_seconds = Column(Float)
@@ -77,6 +81,8 @@ class Track(Base, RepresentableMixin):
     is_available = Column(Boolean, nullable=False, server_default=text("true"))
     is_premium = Column(Boolean, nullable=False, server_default=text("false"))
     premium_conditions = Column(JSONB(True))
+    is_download_gated = Column(Boolean, nullable=False, server_default=text("false"))
+    download_conditions = Column(JSONB(True))
     is_playlist_upload = Column(Boolean, nullable=False, server_default=text("false"))
     ai_attribution_user_id = Column(Integer, nullable=True)
 

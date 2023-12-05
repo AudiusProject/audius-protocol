@@ -8,17 +8,17 @@ from sqlalchemy.sql import null
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
+from src.gated_content.gated_content_access_checker import (
+    GatedContentAccessBatchArgs,
+    gated_content_access_checker,
+)
+from src.gated_content.gated_content_constants import USDC_PURCHASE_KEY
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
-from src.premium_content.premium_content_access_checker import (
-    PremiumContentAccessBatchArgs,
-    premium_content_access_checker,
-)
-from src.premium_content.premium_content_constants import USDC_PURCHASE_KEY
 from src.tasks.entity_manager.utils import (
     CHARACTER_LIMIT_DESCRIPTION,
     TRACK_ID_OFFSET,
@@ -101,11 +101,11 @@ def update_track_price_history(
                     new_record.total_price_cents = price
                 else:
                     raise IndexingValidationError(
-                        "Invalid type of usdc_purchase premium conditions 'price'"
+                        "Invalid type of usdc_purchase gated conditions 'price'"
                     )
             else:
                 raise IndexingValidationError(
-                    "Price missing from usdc_purchase premium conditions"
+                    "Price missing from usdc_purchase gated conditions"
                 )
 
             if "splits" in usdc_purchase:
@@ -115,11 +115,11 @@ def update_track_price_history(
                     new_record.splits = splits
                 else:
                     raise IndexingValidationError(
-                        "Invalid type of usdc_purchase premium conditions 'splits'"
+                        "Invalid type of usdc_purchase gated conditions 'splits'"
                     )
             else:
                 raise IndexingValidationError(
-                    "Splits missing from usdc_purchase premium conditions"
+                    "Splits missing from usdc_purchase gated conditions"
                 )
     if new_record:
         old_record: Union[TrackPriceHistory, None] = (
@@ -252,6 +252,13 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
             ):
                 track_record.premium_conditions = track_metadata["premium_conditions"]
 
+        elif key == "download_conditions":
+            if "download_conditions" in track_metadata and (
+                is_valid_json_field(track_metadata, "download_conditions")
+                or track_metadata.get("download_conditions") is None
+            ):
+                track_record.download_conditions = track_metadata["download_conditions"]
+
         elif key == "stem_of":
             if "stem_of" in track_metadata and is_valid_json_field(
                 track_metadata, "stem_of"
@@ -353,6 +360,7 @@ def validate_track_tx(params: ManageEntityParameters):
                 f"Track {track_id} description exceeds character limit {CHARACTER_LIMIT_DESCRIPTION}"
             )
         validate_remixability(params)
+        validate_downloadability(params)
 
     if params.action == Action.UPDATE or params.action == Action.DELETE:
         # update / delete specific validations
@@ -519,7 +527,7 @@ def validate_remixability(params: ManageEntityParameters):
     if not parent_track_ids:
         return
 
-    args: List[PremiumContentAccessBatchArgs] = list(
+    args: List[GatedContentAccessBatchArgs] = list(
         map(
             lambda track_id: {
                 "user_id": user_id,
@@ -530,7 +538,7 @@ def validate_remixability(params: ManageEntityParameters):
         )
     )
     premium_content_batch_access = (
-        premium_content_access_checker.check_access_for_batch(session, args)
+        gated_content_access_checker.check_access_for_batch(session, args)
     )
     if "track" not in premium_content_batch_access:
         return
@@ -541,7 +549,7 @@ def validate_remixability(params: ManageEntityParameters):
         access = premium_content_batch_access["track"][user_id][track_id]
         if not access["does_user_have_access"]:
             raise IndexingValidationError(
-                f"User {user_id} does not have access to premium track {track_id}"
+                f"User {user_id} does not have access to gated track {track_id}"
             )
 
 
@@ -566,3 +574,39 @@ def get_remix_parent_track_ids(track_metadata):
             parent_track_ids.append(parent_track_id)
 
     return parent_track_ids
+
+def validate_downloadability(params: ManageEntityParameters):
+    track_metadata = params.metadata
+    is_downloadable = track_metadata.get("download", {}).get("is_downloadable")
+    is_download_gated = track_metadata.get("is_download_gated")
+    download_conditions = track_metadata.get("download_conditions", {})
+    stream_conditions = track_metadata.get("stream_conditions", {})
+    is_stream_usdc_purchase_gated = USDC_PURCHASE_KEY in stream_conditions
+
+    # if stream gated on usdc purchase, must also be download gated
+    if is_stream_usdc_purchase_gated and not is_download_gated:
+        raise IndexingValidationError(
+            f"Track {params.entity_id} is usdc purchase stream gated but not download gated"
+        )
+
+    # if download gated, must also be downloadable
+    if is_download_gated and not is_downloadable:
+        raise IndexingValidationError(
+            f"Track {params.entity_id} is download gated but not downloadable"
+        )
+
+    # if download gated, must have download conditions
+    if is_download_gated and not download_conditions:
+        raise IndexingValidationError(
+            f"Track {params.entity_id} is download gated but has no download conditions"
+        )
+
+    # if both usdc purchase stream gated and download gated,
+    # usdc purchase price must be the same for stream and download conditions
+    if is_stream_usdc_purchase_gated and is_download_gated:
+        stream_usdc_purchase_price = stream_conditions.get(USDC_PURCHASE_KEY, {}).get("price")
+        download_usdc_purchase_price = download_conditions.get(USDC_PURCHASE_KEY, {}).get("price")
+        if stream_usdc_purchase_price != download_usdc_purchase_price:
+            raise IndexingValidationError(
+                f"Track {params.entity_id} is usdc purchase stream and download gated but has different prices"
+            )

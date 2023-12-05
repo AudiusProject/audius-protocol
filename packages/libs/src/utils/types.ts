@@ -107,13 +107,20 @@ export type PremiumConditionsSolNFTCollection = {
   externalLink: Nullable<string>
 }
 
+type PremiumConditionsUSDCPurchase = {
+  usdc_purchase?: {
+    price: number
+    splits: Record<ID, number>
+  }
+}
+
 export type PremiumConditions = {
   nft_collection?:
-    | PremiumConditionsEthNFTCollection
-    | PremiumConditionsSolNFTCollection
+  | PremiumConditionsEthNFTCollection
+  | PremiumConditionsSolNFTCollection
   follow_user_id?: number
   tip_user_id?: number
-}
+} & PremiumConditionsUSDCPurchase
 
 export type PremiumContentSignature = {
   data: string
@@ -127,6 +134,8 @@ export type TrackMetadata = {
   track_id: number
   track_cid: string
   preview_cid: Nullable<string>
+  orig_file_cid: string
+  orig_filename: string
   created_at: string
   isrc: Nullable<string>
   iswc: Nullable<string>
@@ -153,6 +162,8 @@ export type TrackMetadata = {
   is_premium: boolean
   premium_conditions: Nullable<PremiumConditions>
   premium_content_signature: Nullable<PremiumContentSignature>
+  is_download_gated: boolean
+  download_conditions: Nullable<PremiumConditionsUSDCPurchase>
   listenCount?: number
   permalink: string
   audio_upload_id: Nullable<string>

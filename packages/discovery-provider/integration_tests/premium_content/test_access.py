@@ -1,8 +1,6 @@
 from integration_tests.utils import populate_mock_db
+from src.gated_content.gated_content_access_checker import GatedContentAccessChecker
 from src.models.tracks.track import Track
-from src.premium_content.premium_content_access_checker import (
-    PremiumContentAccessChecker,
-)
 from src.utils.db_session import get_db_read_replica
 
 
@@ -79,11 +77,11 @@ def test_access(app):
             db, {"follows": [{"follower_user_id": 2, "followee_user_id": 1}]}
         )
 
-        premium_content_access_checker = PremiumContentAccessChecker()
+        gated_content_access_checker = GatedContentAccessChecker()
 
-        # test non-premium content
+        # test non-gated content
         with db.scoped_session() as session:
-            result = premium_content_access_checker.check_access(
+            result = gated_content_access_checker.check_access(
                 session=session,
                 user_id=1,
                 premium_content_id=non_premium_track_entity["track_id"],
@@ -92,8 +90,8 @@ def test_access(app):
             )
             assert not result["is_premium"] and result["does_user_have_access"]
 
-            # test premium content with user who has no access
-            result = premium_content_access_checker.check_access(
+            # test gated content with user who has no access
+            result = gated_content_access_checker.check_access(
                 session=session,
                 user_id=2,
                 premium_content_id=premium_track_entity_1["track_id"],
@@ -102,8 +100,8 @@ def test_access(app):
             )
             assert result["is_premium"] and not result["does_user_have_access"]
 
-            # test premium content with user who owns the track
-            result = premium_content_access_checker.check_access(
+            # test gated content with user who owns the track
+            result = gated_content_access_checker.check_access(
                 session=session,
                 user_id=2,
                 premium_content_id=premium_track_entity_2["track_id"],
@@ -112,8 +110,8 @@ def test_access(app):
             )
             assert result["is_premium"] and result["does_user_have_access"]
 
-            # test premium content with user who has access
-            result = premium_content_access_checker.check_access(
+            # test gated content with user who has access
+            result = gated_content_access_checker.check_access(
                 session=session,
                 user_id=2,
                 premium_content_id=premium_track_entity_3["track_id"],
@@ -192,10 +190,10 @@ def test_batch_access(app):
 
         populate_mock_db(db, entities)
 
-        premium_content_access_checker = PremiumContentAccessChecker()
+        gated_content_access_checker = GatedContentAccessChecker()
 
         with db.scoped_session() as session:
-            result = premium_content_access_checker.check_access_for_batch(
+            result = gated_content_access_checker.check_access_for_batch(
                 session,
                 [
                     {
@@ -231,7 +229,7 @@ def test_batch_access(app):
             # test non-existent track
             assert user_entity_1["user_id"] not in track_access_result
 
-            # test non-premium track
+            # test non-gated track
             user_2_non_premium_track_access_result = track_access_result[
                 user_entity_2["user_id"]
             ][non_premium_track_entity["track_id"]]
@@ -240,7 +238,7 @@ def test_batch_access(app):
                 and user_2_non_premium_track_access_result["does_user_have_access"]
             )
 
-            # test premium track with user who has no access
+            # test gated track with user who has no access
             user_2_premium_track_access_result = track_access_result[
                 user_entity_2["user_id"]
             ][premium_track_entity_1["track_id"]]
@@ -249,7 +247,7 @@ def test_batch_access(app):
                 and not user_2_premium_track_access_result["does_user_have_access"]
             )
 
-            # test premium track with user who owns the track
+            # test gated track with user who owns the track
             user_3_premium_track_access_result = track_access_result[
                 user_entity_3["user_id"]
             ][premium_track_entity_2["track_id"]]
@@ -258,7 +256,7 @@ def test_batch_access(app):
                 and user_3_premium_track_access_result["does_user_have_access"]
             )
 
-            # test premium track with user who has access
+            # test gated track with user who has access
             user_2_premium_track_access_result_2 = track_access_result[
                 user_entity_2["user_id"]
             ][premium_track_entity_3["track_id"]]

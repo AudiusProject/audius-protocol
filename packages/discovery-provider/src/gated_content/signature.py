@@ -5,14 +5,14 @@ from typing import Optional, TypedDict
 from typing_extensions import NotRequired
 
 from src.api_helpers import generate_signature
-from src.premium_content.premium_content_types import PremiumContentType
+from src.gated_content.gated_content_types import GatedContentType
 
 
 class PremiumContentSignatureArgs(TypedDict):
     user_id: Optional[int]
     track_id: int
     cid: str
-    type: PremiumContentType
+    type: GatedContentType
     is_premium: bool
 
 
@@ -21,7 +21,7 @@ class PremiumContentSignatureForUserArgs(TypedDict):
     user_wallet: str
     track_id: int
     track_cid: str
-    type: PremiumContentType
+    type: GatedContentType
     is_premium: bool
 
 
@@ -34,7 +34,7 @@ def _get_current_utc_timestamp_ms():
     return int(datetime.utcnow().timestamp() * 1000)
 
 
-def get_premium_track_signature(
+def get_gated_track_signature(
     track_id: int,
     cid: str,
     is_premium: bool,
@@ -56,11 +56,11 @@ def get_premium_track_signature(
     return {"data": json.dumps(data), "signature": signature}
 
 
-def get_premium_content_signature(
+def get_gated_content_signature(
     args: PremiumContentSignatureArgs,
 ) -> Optional[PremiumContentSignature]:
     if args["type"] == "track":
-        return get_premium_track_signature(
+        return get_gated_track_signature(
             track_id=args["track_id"],
             cid=args["cid"],
             is_premium=args["is_premium"],
@@ -70,11 +70,15 @@ def get_premium_content_signature(
     return None
 
 
-def get_premium_content_signature_for_user(
+# This is a similar signature generation function, whose data includes the user's wallet.
+# This is used for the case where the user passes in an existing gated content signature
+# (e.g. from track request or nft request) when requesting to stream or download,
+# in which case we make sure the requesting user has the wallet as the user wallet in the signature.
+def get_gated_content_signature_for_user_wallet(
     args: PremiumContentSignatureForUserArgs,
 ) -> Optional[PremiumContentSignature]:
     if args["type"] == "track":
-        return get_premium_track_signature(
+        return get_gated_track_signature(
             track_id=args["track_id"],
             cid=args["track_cid"],
             is_premium=args["is_premium"],

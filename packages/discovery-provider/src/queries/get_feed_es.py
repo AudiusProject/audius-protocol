@@ -242,7 +242,7 @@ def get_feed_es(args, limit=10, offset=0):
     sorted_feed = list(
         filter(
             lambda item: ("premium_conditions" not in item)  # not a track
-            or (item["premium_conditions"] is None)  # not a premium track
+            or (item["premium_conditions"] is None)  # not a gated track
             or (
                 "nft_collection" not in item["premium_conditions"]
             ),  # not a collectible gated track
@@ -250,7 +250,7 @@ def get_feed_es(args, limit=10, offset=0):
         )
     )
 
-    # batch populate premium track metadata
+    # batch populate gated track metadata
     db = get_db_read_replica()
     with db.scoped_session() as session:
         track_items = list(filter(lambda item: "track_id" in item, sorted_feed))
