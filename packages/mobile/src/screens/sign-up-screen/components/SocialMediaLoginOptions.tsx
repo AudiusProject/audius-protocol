@@ -1,8 +1,7 @@
+import { socialMediaMessages } from '@audius/common'
 import { css } from '@emotion/native'
 
 import { Flex } from '@audius/harmony-native'
-
-import { socialMediaMessages } from '../utils/socialMediaMessages'
 
 import { SocialButton } from './temp-harmony/SocialButton'
 

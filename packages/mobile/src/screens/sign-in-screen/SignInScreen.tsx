@@ -51,12 +51,7 @@ export const SignInScreen = () => {
               icon={IconArrow}
               onPress={() => handleSubmit()}
             />
-            <Link
-              to={{
-                screen: 'SignUp'
-              }}
-              color='accentPurple'
-            >
+            <Link to={{ screen: 'SignUp' }} color='accentPurple'>
               Create Account
             </Link>
           </View>
