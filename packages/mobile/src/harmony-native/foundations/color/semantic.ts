@@ -9,6 +9,7 @@ export type SemanticColors = {
     default: string
     subdued: string
     disabled: string
+    staticWhite: string
   }
   background: {
     default: string
@@ -34,7 +35,8 @@ export const semanticTheme: Record<Theme, SemanticColors> = {
       heading: primitiveTheme.day.special.gradient,
       default: primitiveTheme.day.neutral.neutral,
       subdued: primitiveTheme.day.neutral['n-400'],
-      disabled: primitiveTheme.day.neutral['n-150']
+      disabled: primitiveTheme.day.neutral['n-150'],
+      staticWhite: primitiveTheme.day.special.white
     },
     background: {
       default: primitiveTheme.day.special.background,
@@ -58,7 +60,8 @@ export const semanticTheme: Record<Theme, SemanticColors> = {
       heading: primitiveTheme.dark.special.gradient,
       default: primitiveTheme.dark.neutral.neutral,
       subdued: primitiveTheme.dark.neutral['n-400'],
-      disabled: primitiveTheme.dark.neutral['n-150']
+      disabled: primitiveTheme.dark.neutral['n-150'],
+      staticWhite: primitiveTheme.dark.special.white
     },
     background: {
       default: primitiveTheme.dark.special.background,
@@ -82,7 +85,8 @@ export const semanticTheme: Record<Theme, SemanticColors> = {
       heading: primitiveTheme.matrix.special.gradient,
       default: primitiveTheme.matrix.neutral.neutral,
       subdued: primitiveTheme.matrix.neutral['n-400'],
-      disabled: primitiveTheme.matrix.neutral['n-150']
+      disabled: primitiveTheme.matrix.neutral['n-150'],
+      staticWhite: primitiveTheme.matrix.special.white
     },
     background: {
       default: primitiveTheme.matrix.special.background,
