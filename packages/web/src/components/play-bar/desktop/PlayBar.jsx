@@ -95,6 +95,24 @@ class PlayBar extends Component {
       },
       /* throttle= */ 200
     )
+    // Listen for keyboard APIs if available
+    if (navigator && 'mediaSession' in navigator) {
+      navigator.mediaSession.setActionHandler('play', () => {
+        this.togglePlay()
+      })
+
+      navigator.mediaSession.setActionHandler('pause', () => {
+        this.togglePlay()
+      })
+
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        this.onPrevious()
+      })
+
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        this.onNext()
+      })
+    }
   }
 
   componentDidUpdate(prevProps) {
