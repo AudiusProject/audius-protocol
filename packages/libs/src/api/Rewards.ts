@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import BN from 'bn.js'
 import { sampleSize } from 'lodash'
 
-import { WAUDIO_DECMIALS } from '../constants'
+import { WAUDIO_DECIMALS } from '../constants'
 import type { DiscoveryProvider } from '../services/discoveryProvider'
 import { RewardsManagerError } from '../services/solana/errors'
 import type { AttestationMeta } from '../services/solana/rewards'
@@ -133,7 +133,7 @@ type CreateSenderPublicConfig = {
 }
 
 const AAO_REQUEST_TIMEOUT_MS = 15 * 1000
-const WRAPPED_AUDIO_PRECISION = 10 ** WAUDIO_DECMIALS
+const WRAPPED_AUDIO_PRECISION = 10 ** WAUDIO_DECIMALS
 
 export class Rewards extends Base {
   ServiceProvider: ServiceProvider
