@@ -306,7 +306,7 @@ def get_purchase_metadata_from_memo(
                 continue
 
             if price is not None and splits is not None and isinstance(splits, dict):
-                purchase_metadata = {
+                purchase_metadata: PurchaseMetadataDict = {
                     "type": type,
                     "id": id,
                     "price": price * USDC_PER_USD_CENT,
