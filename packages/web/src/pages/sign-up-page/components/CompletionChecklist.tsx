@@ -1,10 +1,9 @@
+import { passwordSchema } from '@audius/common'
 import { CompletionCheck, Flex, Text } from '@audius/harmony'
 import { useField } from 'formik'
 import { useAsync } from 'react-use'
 
 import { useMedia } from 'hooks/useMedia'
-
-import { passwordSchema } from '../utils/passwordSchema'
 
 export type CompletionChecklistType =
   | 'hasNumber'
