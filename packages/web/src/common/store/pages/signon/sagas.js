@@ -441,7 +441,7 @@ function* signUp() {
         if (!signOn.useMetaMask && signOn.instagramId) {
           const { error } = yield call(
             audiusBackendInstance.associateInstagramAccount,
-            handle.toLowerCase(),
+            signOn.instagramId,
             userId,
             handle
           )
