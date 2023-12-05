@@ -11,7 +11,7 @@ import {
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
-import { AnalyticsEvent, Name, SolanaWalletAddress } from '../../models'
+import { AnalyticsEvent, ID, Name, SolanaWalletAddress } from '../../models'
 
 import { AudiusBackend } from './AudiusBackend'
 
@@ -351,11 +351,12 @@ export const pollForBalanceChange = async (
 }
 
 export type PurchaseContentArgs = {
-  id: number
+  id: ID
   blocknumber: number
   extraAmount?: number | BN
   type: 'track'
   splits: Record<string, number | BN>
+  purchaserUserId: ID
 }
 export const purchaseContent = async (
   audiusBackendInstance: AudiusBackend,

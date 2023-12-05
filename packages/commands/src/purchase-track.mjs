@@ -14,6 +14,8 @@ program
   )
   .action(async (trackId, { from, extraAmount: extraAmountCents }) => {
     const audiusLibs = await initializeAudiusLibs(from)
+    const user = audiusLibs.userStateManager.getCurrentUser();
+
     const track = (await audiusLibs.Track.getTracks(100, 0, [trackId]))[0]
     if (!track.premium_conditions || !track.is_premium) {
       program.error('Track is not premium')
@@ -37,7 +39,8 @@ program
         extraAmount,
         type: 'track',
         blocknumber: track.blocknumber,
-        splits: track.premium_conditions.usdc_purchase.splits
+        splits: track.premium_conditions.usdc_purchase.splits,
+        purchaserUserId: user.user_id
       })
       if (response.error) {
         program.error(chalk.red(response.error))

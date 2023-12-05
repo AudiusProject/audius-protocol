@@ -16,7 +16,6 @@ import {
   getTokenAccountInfo,
   purchaseContent
 } from 'services/audius-backend/solana'
-import { AudiusBackend } from 'services/index'
 import { FeatureFlags } from 'services/remote-config/feature-flags'
 import { accountSelectors } from 'store/account'
 import {
@@ -273,9 +272,13 @@ function* doStartPurchaseContentFlow({
   )
 
   try {
-    // get user bank
-    const userBank = yield* call(getUSDCUserBank)
+    // get user & user bank
+    const purchaserUserId = yield* select(getUserId)
+    if (!purchaserUserId) {
+      throw new Error('Failed to fetch purchasing user id')
+    }
 
+    const userBank = yield* call(getUSDCUserBank)
     const tokenAccountInfo = yield* call(
       getTokenAccountInfo,
       audiusBackendInstance,
@@ -396,7 +399,8 @@ function* doStartPurchaseContentFlow({
           blocknumber,
           extraAmount: extraAmountBN,
           splits,
-          type: 'track'
+          type: 'track',
+          purchaserUserId
         })
       }
     } // if(balanceNeeded.lte(0))
@@ -413,7 +417,8 @@ function* doStartPurchaseContentFlow({
         blocknumber,
         extraAmount: extraAmountBN,
         splits,
-        type: 'track'
+        type: 'track',
+        purchaserUserId
       })
     }
 
