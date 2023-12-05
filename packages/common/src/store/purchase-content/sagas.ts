@@ -260,12 +260,12 @@ function* doStartPurchaseContentFlow({
 
   try {
     // get user & user bank
-    const userBank = yield* call(getUSDCUserBank)
     const purchaserUserId = yield* select(getUserId)
-    if (purchaserUserId === null) {
-      throw new Error('Failed to fetch current user id')
+    if (!purchaserUserId) {
+      throw new Error('Failed to fetch purchasing user id')
     }
 
+    const userBank = yield* call(getUSDCUserBank)
     const tokenAccountInfo = yield* call(
       getTokenAccountInfo,
       audiusBackendInstance,

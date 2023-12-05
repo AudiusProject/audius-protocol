@@ -514,7 +514,7 @@ export class SolanaWeb3Manager {
     splits: Record<string, number | BN>
     extraAmount?: number | BN
     blocknumber: number
-    purchaserUserId?: number
+    purchaserUserId: number
   }) {
     if (!this.web3Manager) {
       throw new Error(
@@ -554,9 +554,7 @@ export class SolanaWeb3Manager {
       mintKey: this.mints.usdc
     })
 
-    const data = purchaserUserId
-      ? `${type}:${id}:${blocknumber}:${purchaserUserId}`
-      : `${type}:${id}:${blocknumber}`
+    const data = `${type}:${id}:${blocknumber}:${purchaserUserId}`
 
     const memoInstruction = new TransactionInstruction({
       keys: [

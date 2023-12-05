@@ -356,7 +356,7 @@ export type PurchaseContentArgs = {
   extraAmount?: number | BN
   type: 'track'
   splits: Record<string, number | BN>
-  purchaserUserId?: ID
+  purchaserUserId: ID
 }
 export const purchaseContent = async (
   audiusBackendInstance: AudiusBackend,
