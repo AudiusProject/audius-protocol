@@ -396,7 +396,7 @@ def correct_delist_discrepancies(session: Session, redis: Redis):
     # Correct any cases where the indexer has overridden a delist
     # because of the race condition between the async delister and
     # indexer tasks.
-    track_delist_discrepancies_str = get_track_delist_discrepancies(redis)
+    track_delist_discrepancies_str = get_track_delist_discrepancies(session, redis)
     if track_delist_discrepancies_str != "[]":
         logger.info(
             f"update_delist_statuses.py | correct_delist_discrepancies | Identified track delist discrepancies to correct: {track_delist_discrepancies_str}"
@@ -406,7 +406,7 @@ def correct_delist_discrepancies(session: Session, redis: Redis):
         for row in track_delist_discrepancies:
             track_id = row["track_id"]
             delisted = row["delisted"]
-            tracks_to_update = query_tracks_by_track_ids(session, track_id)
+            tracks_to_update = query_tracks_by_track_ids(session, [track_id])
             for track_to_update in tracks_to_update:
                 if delisted:
                     # Delist available tracks that have been delisted
@@ -428,7 +428,7 @@ def correct_delist_discrepancies(session: Session, redis: Redis):
             "update_delist_statuses.py | correct_delist_discrepancies | Track delist discrepancies corrected"
         )
 
-    user_delist_discrepancies_str = get_user_delist_discrepancies(redis)
+    user_delist_discrepancies_str = get_user_delist_discrepancies(session, redis)
     if user_delist_discrepancies_str != "[]":
         logger.info(
             f"update_delist_statuses.py | correct_delist_discrepancies | Identified user delist discrepancies to correct: {user_delist_discrepancies_str}"
@@ -437,7 +437,7 @@ def correct_delist_discrepancies(session: Session, redis: Redis):
         for row in user_delist_discrepancies:
             user_id = row["user_id"]
             delisted = row["delisted"]
-            users_to_update = query_users_by_user_ids(session, user_id)
+            users_to_update = query_users_by_user_ids(session, [user_id])
             for user_to_update in users_to_update:
                 if delisted:
                     logger.info(
@@ -589,12 +589,12 @@ def update_delist_statuses(self, current_block_timestamp: int) -> None:
                 process_delist_statuses(
                     session, trusted_notifier_endpoint, current_block_timestamp
                 )
+            with db.scoped_session() as session:
                 # Address edge case from the race condition between
                 # the async indexer and delister tasks by checking every
                 # delist and identifying and correcting discrepancies
                 # in the tracks/users tables.
                 correct_delist_discrepancies(session, redis)
-
         except Exception as e:
             logger.error(
                 "update_delist_statuses.py | Fatal error in main loop", exc_info=True
