@@ -252,7 +252,7 @@ const RenderForm = ({
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
 
-  const { data: balance } = useUSDCBalance()
+  const { data: balance } = useUSDCBalance({ isPolling: true })
   const { extraAmount } = usePurchaseSummaryValues({
     price,
     currentBalance: balance
@@ -354,7 +354,6 @@ const RenderForm = ({
           <USDCManualTransfer
             onClose={handleUSDCManualTransferClose}
             amountInCents={totalPriceInCents}
-            onSuccess={submitForm}
           />
         </View>
       )}

@@ -28,7 +28,8 @@ Modify the image directive in `docker-compose.blockchain.yml:solana-test-validat
 image: audius/solana-programs:latest-amd64 # build on linux
 ```
 
-Then run build and push
+Then run build and push.
+
 ```
 DOCKER_BUILDKIT=1 docker compose --profile=solana-build build solana-test-validator-build
 docker push audius/solana-programs:latest-amd64

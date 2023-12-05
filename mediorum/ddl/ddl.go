@@ -39,6 +39,8 @@ func Migrate(db *sql.DB, bucket *blob.Bucket, myHost string) {
 	runMigration(db, dropBlobs)
 
 	runMigration(db, `create index if not exists uploads_ts_idx on uploads(created_at, transcoded_at)`)
+
+	runMigration(db, `drop table if exists "Files", "ClockRecords", "Tracks", "AudiusUsers", "CNodeUsers", "SessionTokens", "ContentBlacklists", "Playlists", "SequelizeMeta", blobs, cid_lookup, cid_log cascade`)
 }
 
 func runMigration(db *sql.DB, ddl string) {

@@ -1,4 +1,4 @@
-version: "3.9"
+version: '3.9'
 
 services:
   poa-ganache:
@@ -14,17 +14,17 @@ services:
       - poa-contracts-abis:/usr/src/app/build/contracts
       - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
     ports:
-      - "8545:8545"
+      - '8545:8545'
     deploy:
       mode: global
 
   poa-blockscout-db:
     image: postgres:13.6
     environment:
-      POSTGRES_PASSWORD: "postgres"
-      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: 'postgres'
+      POSTGRES_USER: 'postgres'
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: ['CMD', 'pg_isready']
       interval: 10s
       timeout: 5s
     deploy:
@@ -34,16 +34,16 @@ services:
 
   poa-blockscout:
     image: blockscout/blockscout:4.1.3
-    command: "mix do ecto.create, ecto.migrate, phx.server"
+    command: 'mix do ecto.create, ecto.migrate, phx.server'
     environment:
-      ETHEREUM_JSONRPC_VARIANT: "ganache"
-      ETHEREUM_JSONRPC_HTTP_URL: "http://poa-ganache:8545"
-      ETHEREUM_JSONRPC_WS_URL: "ws://poa-ganache:8545"
-      INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: "true"
-      DATABASE_URL: "postgresql://postgres:postgres@poa-blockscout-db:5432/postgres?ssl=false"
+      ETHEREUM_JSONRPC_VARIANT: 'ganache'
+      ETHEREUM_JSONRPC_HTTP_URL: 'http://poa-ganache:8545'
+      ETHEREUM_JSONRPC_WS_URL: 'ws://poa-ganache:8545'
+      INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
+      DATABASE_URL: 'postgresql://postgres:postgres@poa-blockscout-db:5432/postgres?ssl=false'
       ECTO_USE_SSL: false
     ports:
-      - "9545:4000"
+      - '9545:4000'
     depends_on:
       poa-blockscout-db:
         condition: service_healthy
@@ -62,23 +62,23 @@ services:
       args:
         CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
         DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
-        antiAbuseOracleAddresses: "${AAO_WALLET_ADDRESSES}"
+        antiAbuseOracleAddresses: '${AAO_WALLET_ADDRESSES}'
     command: bash /tmp/dev-tools/startup/eth-ganache.sh
     volumes:
       - eth-contracts-abis:/usr/src/app/build/contracts
       - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
     ports:
-      - "8546:8545"
+      - '8546:8545'
     deploy:
       mode: global
 
   eth-blockscout-db:
     image: postgres:13.6
     environment:
-      POSTGRES_PASSWORD: "postgres"
-      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: 'postgres'
+      POSTGRES_USER: 'postgres'
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: ['CMD', 'pg_isready']
       interval: 10s
       timeout: 5s
     deploy:
@@ -88,16 +88,16 @@ services:
 
   eth-blockscout:
     image: blockscout/blockscout:4.1.3
-    command: "mix do ecto.create, ecto.migrate, phx.server"
+    command: 'mix do ecto.create, ecto.migrate, phx.server'
     environment:
-      ETHEREUM_JSONRPC_VARIANT: "ganache"
-      ETHEREUM_JSONRPC_HTTP_URL: "http://eth-ganache:8545"
-      ETHEREUM_JSONRPC_WS_URL: "ws://eth-ganache:8545"
-      INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: "true"
-      DATABASE_URL: "postgresql://postgres:postgres@eth-blockscout-db:5432/postgres?ssl=false"
+      ETHEREUM_JSONRPC_VARIANT: 'ganache'
+      ETHEREUM_JSONRPC_HTTP_URL: 'http://eth-ganache:8545'
+      ETHEREUM_JSONRPC_WS_URL: 'ws://eth-ganache:8545'
+      INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: 'true'
+      DATABASE_URL: 'postgresql://postgres:postgres@eth-blockscout-db:5432/postgres?ssl=false'
       ECTO_USE_SSL: false
     ports:
-      - "9546:4000"
+      - '9546:4000'
     depends_on:
       eth-blockscout-db:
         condition: service_healthy
@@ -113,10 +113,10 @@ services:
   solana-test-validator:
     # NOTE: Building solana program can take a lot of time especially on m1 (upto 30 mins) so we used pre-built images
     image: audius/solana-programs:latest # Default tag is "latest." Change tag to "m1-slow" to have very slow block times that use less CPU
-    volumes:
-      - solana-programs-idl:/usr/src/app/anchor/audius-data/idl
     ports:
-      - "8899:8899"
+      - '8899:8899'
+      # RPC port
+      - '8900:8900'
     deploy:
       mode: global
       resources:
@@ -131,27 +131,25 @@ services:
     image: audius/solana-programs:latest-arm64 # build on mac
     # image: audius/solana-programs:latest-amd64 # build on linux
     build:
-      # platform flags seem to have no effect?
-      # platform: linux/arm64
-      # platform: linux/amd64
       context: ${PROJECT_ROOT}/solana-programs
       dockerfile: Dockerfile.dev
       args:
-        AUDIUS_ETH_REGISTRY_PRIVATE_KEY: "${SOLANA_AUDIUS_ETH_REGISTRY_SECRET_KEY}"
-        TRACK_LISTEN_COUNT_PRIVATE_KEY: "${SOLANA_TRACK_LISTEN_COUNT_SECRET_KEY}"
-        CLAIMABLE_TOKENS_PRIVATE_KEY: "${SOLANA_CLAIMABLE_TOKENS_SECRET_KEY}"
-        REWARD_MANAGER_PRIVATE_KEY: "${SOLANA_REWARD_MANAGER_SECRET_KEY}"
-        AUDIUS_DATA_PRIVATE_KEY: "${SOLANA_AUDIUS_DATA_SECRET_KEY}"
-        owner_private_key: "${SOLANA_OWNER_SECRET_KEY}"
-        feepayer_private_key: "${SOLANA_FEEPAYER_SECRET_KEY}"
-        token_private_key: "${SOLANA_TOKEN_MINT_SECRET_KEY}"
-        admin_authority_private_key: "${SOLANA_ADMIN_AUTHORITY_SECRET_KEY}"
-        admin_account_private_key: "${SOLANA_ADMIN_ACCOUNT_SECRET_KEY}"
-        signer_group_private_key: "${SOLANA_SIGNER_GROUP_SECRET_KEY}"
-        valid_signer_private_key: "${SOLANA_VALID_SIGNER_SECRET_KEY}"
-        reward_manager_pda_private_key: "${SOLANA_REWARD_MANAGER_PDA_SECRET_KEY}"
-        reward_manager_token_pda_private_key: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_SECRET_KEY}"
-        valid_signer_eth_address: "${ETH_VALID_SIGNER_ADDRESS}"
-        fake_usdc_token_private_key: "${SOLANA_USDC_TOKEN_MINT_SECRET_KEY}"
+        AUDIUS_ETH_REGISTRY_PRIVATE_KEY: '${SOLANA_AUDIUS_ETH_REGISTRY_SECRET_KEY}'
+        TRACK_LISTEN_COUNT_PRIVATE_KEY: '${SOLANA_TRACK_LISTEN_COUNT_SECRET_KEY}'
+        CLAIMABLE_TOKENS_PRIVATE_KEY: '${SOLANA_CLAIMABLE_TOKENS_SECRET_KEY}'
+        REWARD_MANAGER_PRIVATE_KEY: '${SOLANA_REWARD_MANAGER_SECRET_KEY}'
+        PAYMENT_ROUTER_PRIVATE_KEY: '${SOLANA_PAYMENT_ROUTER_SECRET_KEY}'
+        AUDIUS_DATA_PRIVATE_KEY: '${SOLANA_AUDIUS_DATA_SECRET_KEY}'
+        owner_private_key: '${SOLANA_OWNER_SECRET_KEY}'
+        feepayer_private_key: '${SOLANA_FEEPAYER_SECRET_KEY}'
+        token_private_key: '${SOLANA_TOKEN_MINT_SECRET_KEY}'
+        admin_authority_private_key: '${SOLANA_ADMIN_AUTHORITY_SECRET_KEY}'
+        admin_account_private_key: '${SOLANA_ADMIN_ACCOUNT_SECRET_KEY}'
+        signer_group_private_key: '${SOLANA_SIGNER_GROUP_SECRET_KEY}'
+        valid_signer_private_key: '${SOLANA_VALID_SIGNER_SECRET_KEY}'
+        reward_manager_pda_private_key: '${SOLANA_REWARD_MANAGER_PDA_SECRET_KEY}'
+        reward_manager_token_pda_private_key: '${SOLANA_REWARD_MANAGER_TOKEN_PDA_SECRET_KEY}'
+        valid_signer_eth_address: '${ETH_VALID_SIGNER_ADDRESS}'
+        fake_usdc_token_private_key: '${SOLANA_USDC_TOKEN_MINT_SECRET_KEY}'
     profiles:
       - solana-build
