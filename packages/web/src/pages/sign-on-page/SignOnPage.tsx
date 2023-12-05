@@ -99,7 +99,6 @@ const DesktopSignOnRoot = (props: RootProps) => {
           justifyContent='center'
           flex='1 0 0'
           css={{
-            // flexGrow: 1,
             zIndex: 0,
             overflow: 'hidden',
             backgroundImage: `radial-gradient(77.16% 77.16% at 50% 51.81%, rgba(91, 35, 225, 0.80) 0%, rgba(113, 41, 230, 0.64) 67.96%, rgba(162, 47, 235, 0.50) 100%), url(${djBackground})`,

@@ -3,7 +3,8 @@ import {
   ComponentType,
   ElementType,
   ReactNode,
-  forwardRef
+  forwardRef,
+  useContext
 } from 'react'
 
 import {
@@ -23,6 +24,8 @@ import { animated, useSpring } from '@react-spring/web'
 
 import { useMedia } from 'hooks/useMedia'
 
+import { RouteContext } from '../utils/RouteContext'
+
 const messages = {
   continue: 'Continue'
 }
@@ -38,23 +41,28 @@ const AnimatedFlex = animated(Flex)
 export const Page = (props: PageProps) => {
   const { centered, children, as, transition, ...other } = props
   const { isMobile } = useMedia()
+  const { isGoBack } = useContext(RouteContext)
+
+  const translateStart = isGoBack ? '-100%' : '100%'
+  const translateAxis = transition === 'vertical' ? 'Y' : 'X'
+  const shouldTransition = transition || isGoBack
+
+  const fromTransform = shouldTransition
+    ? `translate${translateAxis}(${translateStart})`
+    : undefined
+
+  const toTransform = shouldTransition
+    ? `translate${translateAxis}(0%)`
+    : undefined
 
   const styles = useSpring({
     from: {
       opacity: 0,
-      transform: transition
-        ? transition === 'vertical'
-          ? 'translateY(100%)'
-          : 'translateX(100%)'
-        : undefined
+      transform: fromTransform
     },
     to: {
       opacity: 1,
-      transform: transition
-        ? transition === 'vertical'
-          ? 'translateY(0%)'
-          : 'translateX(0%)'
-        : undefined
+      transform: toTransform
     }
   })
 
@@ -63,7 +71,6 @@ export const Page = (props: PageProps) => {
 
   const layoutProps: FlexProps = {
     direction: 'column',
-    // flex: 1,
     h: '100%',
     gap: '2xl',
     ph: isMobile ? 'l' : '2xl',

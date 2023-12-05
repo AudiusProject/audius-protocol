@@ -25,6 +25,7 @@ import { PickHandlePage } from './pages/PickHandlePage'
 import { ReviewHandlePage } from './pages/ReviewHandlePage'
 import { SelectArtistsPage } from './pages/SelectArtistsPage'
 import { SelectGenrePage } from './pages/SelectGenrePage'
+import { RouteContextProvider } from './utils/RouteContext'
 
 const messages = {
   metaTitle: 'Sign Up • Audius',
@@ -47,11 +48,11 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
           location.pathname
         )
 
-        if (!isAllowedRoute) {
-          return <Redirect to={correctedRoute} />
-        }
-
-        return <>{children}</>
+        return isAllowedRoute ? (
+          <>{children}</>
+        ) : (
+          <Redirect to={correctedRoute} />
+        )
       }}
     />
   )
@@ -59,7 +60,7 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
 
 export const SignUpPage = () => {
   return (
-    <>
+    <RouteContextProvider>
       <Helmet>
         <title>{messages.metaTitle}</title>
         <meta name='description' content={messages.metaDescription} />
@@ -67,7 +68,7 @@ export const SignUpPage = () => {
       <NavHeader />
       <Switch>
         <SignUpRoute exact path={SIGN_UP_PAGE}>
-          <CreateEmailPage />
+          hello world
         </SignUpRoute>
         <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
           <CreateEmailPage />
@@ -94,6 +95,6 @@ export const SignUpPage = () => {
           <SelectArtistsPage />
         </SignUpRoute>
       </Switch>
-    </>
+    </RouteContextProvider>
   )
 }
