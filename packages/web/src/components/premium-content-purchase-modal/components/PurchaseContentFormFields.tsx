@@ -96,7 +96,10 @@ export const PurchaseContentFormFields = ({
     )
   }
 
-  const vendorOptions = [{ label: PurchaseVendor.STRIPE }]
+  const vendorOptions = [
+    { label: PurchaseVendor.STRIPE },
+    { label: PurchaseVendor.COINFLOW }
+  ]
 
   const options = [
     hasBalance

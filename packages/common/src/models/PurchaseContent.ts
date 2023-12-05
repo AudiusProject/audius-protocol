@@ -5,5 +5,6 @@ export enum PurchaseMethod {
 }
 
 export enum PurchaseVendor {
-  STRIPE = 'Stripe'
+  STRIPE = 'Stripe',
+  COINFLOW = 'Coinflow'
 }

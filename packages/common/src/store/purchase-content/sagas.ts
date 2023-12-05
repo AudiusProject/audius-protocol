@@ -6,7 +6,7 @@ import { call, put, race, select, take } from 'typed-redux-saga'
 import { FavoriteSource, Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { ID } from 'models/Identifiers'
-import { PurchaseMethod } from 'models/PurchaseContent'
+import { PurchaseMethod, PurchaseVendor } from 'models/PurchaseContent'
 import { isPremiumContentUSDCPurchaseGated } from 'models/Track'
 import { BNUSDC } from 'models/Wallet'
 import {
@@ -65,8 +65,6 @@ import { ContentType, PurchaseContentError, PurchaseErrorCode } from './types'
 import { getBalanceNeeded } from './utils'
 
 const { getUserId } = accountSelectors
-
-const USE_COINFLOW = true
 
 type RaceStatusResult = {
   succeeded?:
@@ -235,6 +233,7 @@ function* doStartPurchaseContentFlow({
     extraAmount,
     extraAmountPreset,
     purchaseMethod,
+    purchaseVendor,
     contentId,
     contentType = ContentType.TRACK
   }
@@ -254,6 +253,7 @@ function* doStartPurchaseContentFlow({
     contentId,
     contentType,
     purchaseMethod,
+    purchaseVendor,
     contentName: title,
     artistHandle: artistInfo.handle,
     isVerifiedArtist: artistInfo.is_verified,
@@ -316,7 +316,7 @@ function* doStartPurchaseContentFlow({
         .div(BN_USDC_CENT_WEI)
         .toNumber()
 
-      if (USE_COINFLOW) {
+      if (purchaseVendor === PurchaseVendor.COINFLOW) {
         const { blocknumber, splits } = yield* getPurchaseConfig({
           contentId,
           contentType
