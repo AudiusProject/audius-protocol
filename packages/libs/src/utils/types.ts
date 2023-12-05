@@ -127,6 +127,8 @@ export type TrackMetadata = {
   track_id: number
   track_cid: string
   preview_cid: Nullable<string>
+  orig_file_cid: string
+  orig_filename: string
   created_at: string
   isrc: Nullable<string>
   iswc: Nullable<string>

@@ -118,7 +118,9 @@ export const createUploadTrackMetadataSchema = () =>
     }),
     previewStartSeconds: z.optional(z.number()),
     audioUploadId: z.optional(z.string()),
-    previewCid: z.optional(z.string())
+    previewCid: z.optional(z.string()),
+    origFileCid: z.optional(z.string()),
+    origFilename: z.optional(z.string())
   })
 
 export type TrackMetadata = z.input<
