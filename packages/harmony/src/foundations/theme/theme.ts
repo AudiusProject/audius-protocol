@@ -1,3 +1,4 @@
+import { iconSizes } from '../../components/icon'
 import type { ColorTheme } from '../color'
 import { colorTheme } from '../color'
 import { CornerRadius, cornerRadius } from '../corner-radius'
@@ -15,7 +16,8 @@ const commonFoundations = {
   cornerRadius,
   spacing,
   motion,
-  spring
+  spring,
+  iconSizes
 }
 
 export type HarmonyTheme = {
@@ -27,6 +29,7 @@ export type HarmonyTheme = {
   spacing: Spacing
   motion: Motion
   spring: Spring
+  iconSizes: typeof iconSizes
 }
 
 export const dayTheme: HarmonyTheme = {
