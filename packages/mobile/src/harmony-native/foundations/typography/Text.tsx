@@ -1,24 +1,14 @@
 import { useMemo } from 'react'
 
-import type {
-  TextVariant,
-  TextSize,
-  TextColors,
-  TextStrength
-} from '@audius/harmony'
+import type { BaseTextProps } from '@audius/harmony'
 import { variantStylesMap } from '@audius/harmony'
 import { css } from '@emotion/native'
-import type { TextProps as TextPropsBase, TextStyle } from 'react-native'
+import type { TextProps as NativeTextProps, TextStyle } from 'react-native'
 import { Text as TextBase } from 'react-native'
 
 import { useTheme } from '../theme'
 
-export type TextProps = TextPropsBase & {
-  variant?: TextVariant
-  size?: TextSize
-  strength?: TextStrength
-  color?: TextColors
-}
+export type TextProps = NativeTextProps & BaseTextProps
 
 export const Text = (props: TextProps) => {
   const {
@@ -27,6 +17,7 @@ export const Text = (props: TextProps) => {
     strength = 'default',
     style: styleProp,
     color: colorProp = 'default',
+    textAlign,
     ...other
   } = props
   const theme = useTheme()
@@ -46,9 +37,10 @@ export const Text = (props: TextProps) => {
       fontWeight: t.weight[variantStyles.fontWeight[strength]],
       fontFamily: t.fontByWeight[variantStyles.fontWeight[strength]],
       ...('css' in variantStyles ? variantStyles.css : {}),
-      ...(color && { color })
+      ...(color && { color }),
+      textAlign
     })
-  }, [color, size, strength, theme.typography, variantStyles])
+  }, [color, size, strength, theme.typography, variantStyles, textAlign])
 
   const isHeading = variant === 'display' || variant === 'heading'
 
