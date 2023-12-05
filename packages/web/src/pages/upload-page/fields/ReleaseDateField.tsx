@@ -90,15 +90,15 @@ export const ReleaseDateField = () => {
   const [releaseDateTypeField, , { setValue: setReleaseDateType }] = useField(RELEASE_DATE_TYPE)
   const releaseDateType = releaseDateTypeField.value
 
-  const [{ value: releaseDateHour }, , { setValue: setReleaseDateHour }] = useField(RELEASE_DATE)
+  const [{ value: releaseDateHour }, , { setValue: setReleaseDateHour }] = useField(RELEASE_DATE_HOUR)
   const [{ value: releaseDateMeridian }, , { setValue: setReleaseDateMeridian }] = useField(RELEASE_DATE_MERIDIAN)
 
   const roundUpHour = moment().add(2, 'hours').minutes(0).seconds(0)
   const initialValues = useMemo(
-    () => ({ [RELEASE_DATE]: releaseDate ?? undefined, [RELEASE_DATE_HOUR]: (releaseDateHour ?? roundUpHour.format('H:mm')), [RELEASE_DATE_MERIDIAN]: releaseDateMeridian ?? roundUpHour.format('A'), [RELEASE_DATE_TYPE]: releaseDateType ?? false }),
+    () => ({ [RELEASE_DATE]: releaseDate ?? undefined, [RELEASE_DATE_HOUR]: (releaseDateHour ?? roundUpHour.format('h:mm')), [RELEASE_DATE_MERIDIAN]: releaseDateMeridian ?? roundUpHour.format('A'), [RELEASE_DATE_TYPE]: releaseDateType ?? false }),
     [releaseDate, releaseDateType, releaseDateHour, releaseDateMeridian]
   )
-
+  console.log('asdf intialValues: ', initialValues)
   const onSubmit = useCallback(
     (values: ReleaseDateFormValues) => {
       console.log('asdf onSubmit values: ', values)
@@ -108,8 +108,7 @@ export const ReleaseDateField = () => {
         return
       }
       const releaseDateValue = values[RELEASE_DATE]
-      console.log('asdf onsubmit values: ', values)
-      const releaseDateHour = values[RELEASE_DATE_HOUR]?.split(':')[0]
+      const releaseDateHour = parseInt(values[RELEASE_DATE_HOUR]?.split(':')[0])
       const releaseDateMeridian = values[RELEASE_DATE_MERIDIAN]
 
       const truncatedReleaseDate = moment(releaseDateValue).startOf('day');
@@ -170,7 +169,7 @@ export const ReleaseDateField = () => {
           <>
             <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
               <Text>{messages.description}</Text>
-              <RadioItems releaseDateTypeField={releaseDateTypeField} releaseDateField={releaseDateField} />
+              <RadioItems releaseDateTypeField={releaseDateTypeField} releaseDateField={releaseDateField} setReleaseDateHour={setReleaseDateHour} setReleaseDateMeridian={setReleaseDateMeridian} />
             </div>
 
           </>
@@ -184,7 +183,7 @@ export const ReleaseDateField = () => {
 
 const RadioItems = (props: any) => {
 
-  const { releaseDateTypeField } = props
+  const { releaseDateTypeField, setReleaseDateHour, setReleaseDateMeridian } = props
   console.log('asdf releaseDateTypeField: ', releaseDateTypeField)
   const [releaseDateField, ,] = useField(RELEASE_DATE)
 
@@ -202,13 +201,17 @@ const RadioItems = (props: any) => {
       console.log('asdf radioitems setTimePeriod to past')
       setTimePeriod(TimePeriodType.PAST)
     } else if (moment(truncatedReleaseDate).isAfter(today)) {
+      console.log('asdf resetting')
       setTimePeriod(TimePeriodType.FUTURE)
+      setReleaseDateHour('12:00')
+      setReleaseDateMeridian(ReleaseDateMeridian.AM)
+
     } else {
       setTimePeriod(TimePeriodType.PRESENT)
     }
     console.log('asdf radioitems timePeriod: ', timePeriod)
 
-  }, [releaseDateField])
+  }, [releaseDateField.value, setReleaseDateHour, setReleaseDateMeridian])
 
   return (
     <>
@@ -236,7 +239,7 @@ const RadioItems = (props: any) => {
               )}
             >
               <div className={styles.datePicker}>
-                <DatePickerField name={RELEASE_DATE} label={messages.title} shouldFocus={releaseDateTypeField.value === ReleaseDateType.SCHEDULED_RELEASE} />
+            <DatePickerField isScheduledRelease={true} name={RELEASE_DATE} label={messages.title} shouldFocus={releaseDateTypeField.value === ReleaseDateType.SCHEDULED_RELEASE} />
               </div>
               {(timePeriod !== TimePeriodType.PAST) && (
                 <>

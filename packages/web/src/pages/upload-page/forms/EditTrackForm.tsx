@@ -20,14 +20,21 @@ import { AccessAndSaleField } from '../fields/AccessAndSaleField'
 import { AttributionField } from '../fields/AttributionField'
 import { MultiTrackSidebar } from '../fields/MultiTrackSidebar'
 import { ReleaseDateField } from '../fields/ReleaseDateField'
+import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
+
 import { RemixSettingsField } from '../fields/RemixSettingsField'
 import { SourceFilesField } from '../fields/SourceFilesField'
 import { TrackMetadataFields } from '../fields/TrackMetadataFields'
+
 import { defaultHiddenFields } from '../fields/availability/HiddenAvailabilityFields'
 import { TrackEditFormValues, TrackFormState } from '../types'
 import { TrackMetadataFormSchema } from '../validation'
 
 import styles from './EditTrackForm.module.css'
+import { FeatureFlags } from '@audius/common'
+import { useFlag } from 'hooks/useRemoteConfig'
+
+// const isScheduledReleasesEnabled = true
 
 const messages = {
   multiTrackCount: (index: number, total: number) =>
@@ -119,6 +126,10 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
   useUnmount(() => {
     setIndex(0)
   })
+  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
+    FeatureFlags.SCHEDULED_RELEASES
+  )
+
 
   return (
     <Form>
@@ -135,7 +146,7 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
           >
             <TrackMetadataFields />
             <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-              <ReleaseDateField />
+              {isScheduledReleasesEnabled ? <ReleaseDateField /> : <ReleaseDateFieldLegacy />}
               <RemixSettingsField />
               <SourceFilesField />
               <AccessAndSaleField isUpload />

@@ -24,16 +24,14 @@ type DatePickerFieldProps = {
   label: string
   style?: string
   shouldFocus?: boolean
+  isScheduledRelease?: boolean
 }
 
 export const DatePickerField = (props: DatePickerFieldProps) => {
-  const { name, label, style, shouldFocus } = props
+  const { name, label, style, shouldFocus, isScheduledRelease } = props
   const [field, , helpers] = useField<string | undefined>(name)
   const [isFocused, setIsFocused] = useState(false)
   const anchorRef = useRef<HTMLDivElement | null>(null)
-  const { isEnabled: isScheduledReleasesEnabled } = useFlag(
-    FeatureFlags.SCHEDULED_RELEASES
-  )
 
   useEffect(() => setIsFocused(shouldFocus ?? false), [shouldFocus])
   console.log('asdf anchorRef: ', anchorRef)
@@ -72,11 +70,10 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
             // @ts-ignore todo: upgrade moment
             date={moment(field.value)}
             onDateChange={(value) => {
-              console.log('asdf onDateChange')
               helpers.setValue(value?.toString())
             }}
             isOutsideRange={(day) =>
-              isScheduledReleasesEnabled
+              isScheduledRelease
                 ? false
                 : // @ts-ignore mismatched moment versions; shouldn't be relevant here
                   !isInclusivelyBeforeDay(day, moment())

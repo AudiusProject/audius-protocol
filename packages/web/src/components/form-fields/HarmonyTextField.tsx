@@ -20,6 +20,7 @@ export type HarmonyTextFieldProps = TextInputProps & {
 
 // TODO: rename to TextField and replace old usages
 export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
+  console.log('asdf re-render text field')
   const {
     name,
     clearErrorOnChange = true,

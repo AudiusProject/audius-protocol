@@ -149,7 +149,6 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
     },
     [error, onSubmit, toggleMenu]
   )
-  console.log('asdf formikProps: ', formikProps)
   return (
     <>
       {preview}
