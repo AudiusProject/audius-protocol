@@ -12,12 +12,12 @@ import {
   isInclusivelyBeforeDay,
   DayPickerSingleDateController
 } from 'react-dates'
+import { should } from 'vitest'
 
 import IconCalendar from 'assets/img/iconCalendar.svg'
 import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from './DatePickerField.module.css'
-import { should } from 'vitest'
 
 type DatePickerFieldProps = {
   name: string

@@ -61,7 +61,6 @@ export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
         field.onChange(e)
       }}
       onBlur={(e) => {
-
         if (clearErrorOnChange) {
           setError(undefined)
         }

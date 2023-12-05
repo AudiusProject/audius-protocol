@@ -476,7 +476,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
       selectedValues = [specialAccessValue, messages.followersOnly]
     } else if (isPremiumContentTipGated(savedPremiumConditions)) {
       selectedValues = [specialAccessValue, messages.supportersOnly]
-    } else if ((isUnlisted) && fieldVisibility) {
+    } else if (isUnlisted && fieldVisibility) {
       const fieldVisibilityKeys = Object.keys(
         messages.fieldVisibility
       ) as Array<keyof FieldVisibility>
@@ -501,12 +501,7 @@ export const AccessAndSaleField = (props: AccessAndSaleFieldProps) => {
         })}
       </div>
     )
-  }, [
-    fieldVisibility,
-    isUnlisted,
-    savedPremiumConditions,
-    preview
-  ])
+  }, [fieldVisibility, isUnlisted, savedPremiumConditions, preview])
 
   return (
     <ContextualMenu
@@ -539,12 +534,8 @@ type AccesAndSaleMenuFieldsProps = {
 }
 
 export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
-  const {
-    isRemix,
-    isUpload,
-    isInitiallyUnlisted,
-    initialPremiumConditions,
-  } = props
+  const { isRemix, isUpload, isInitiallyUnlisted, initialPremiumConditions } =
+    props
 
   const { isEnabled: isUsdcEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES
@@ -565,7 +556,7 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
       isUpload: !!isUpload,
       isRemix,
       initialPremiumConditions: initialPremiumConditions ?? null,
-      isInitiallyUnlisted: !!isInitiallyUnlisted,
+      isInitiallyUnlisted: !!isInitiallyUnlisted
     })
 
   const { values } = useFormikContext()

@@ -39,5 +39,5 @@ export const getTrackDefaults = (heroTrack: Track | null) => ({
   remixTrackIds: heroTrack?._remixes?.map(({ track_id }) => track_id) ?? null,
   remixesCount: heroTrack?._remixes_count ?? null,
   remixParentTrackId: heroTrack?.remix_of?.tracks?.[0]?.parent_track_id,
-  download: heroTrack?.download ?? null,
+  download: heroTrack?.download ?? null
 })

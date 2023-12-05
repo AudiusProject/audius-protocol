@@ -15,6 +15,7 @@ import {
   getDogEarType,
   isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
+import { Text } from '@audius/harmony'
 import {
   Button,
   ButtonType,
@@ -27,6 +28,7 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
+
 import IconRobot from 'assets/img/robot.svg'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import { EntityActionButton } from 'components/entity-page/EntityActionButton'
@@ -34,6 +36,10 @@ import { UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
+import {
+  ScheduledReleaseGiantLabel,
+  ScheduledReleaseLabel
+} from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import { SearchTag } from 'components/search/SearchTag'
 import Skeleton from 'components/skeleton/Skeleton'
 import { Tile } from 'components/tile'
@@ -53,8 +59,6 @@ import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
 import { PremiumTrackSection } from './PremiumTrackSection'
-import { Text } from '@audius/harmony'
-import { ScheduledReleaseGiantLabel, ScheduledReleaseLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1095,
@@ -445,9 +449,7 @@ export const GiantTrackTile = ({
     )
   }
   const renderScheduledReleaseRow = () => {
-    return (
-      <ScheduledReleaseGiantLabel released={released} />
-    )
+    return <ScheduledReleaseGiantLabel released={released} />
   }
 
   const renderDownloadButtons = () => {

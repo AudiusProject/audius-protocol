@@ -1,5 +1,6 @@
 import { useCallback, useContext, useMemo } from 'react'
 
+import { FeatureFlags } from '@audius/common'
 import { HarmonyPlainButton, IconCaretRight } from '@audius/stems'
 import cn from 'classnames'
 import { Form, Formik, FormikProps, useField } from 'formik'
@@ -12,6 +13,7 @@ import IconCaretLeft from 'assets/img/iconCaretLeft.svg'
 import layoutStyles from 'components/layout/layout.module.css'
 import { NavigationPrompt } from 'components/navigation-prompt/NavigationPrompt'
 import { Text } from 'components/typography'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { UploadFormScrollContext } from 'pages/upload-page/UploadPage'
 
 import { AnchoredSubmitRow } from '../components/AnchoredSubmitRow'
@@ -21,18 +23,14 @@ import { AttributionField } from '../fields/AttributionField'
 import { MultiTrackSidebar } from '../fields/MultiTrackSidebar'
 import { ReleaseDateField } from '../fields/ReleaseDateField'
 import { ReleaseDateFieldLegacy } from '../fields/ReleaseDateFieldLegacy'
-
 import { RemixSettingsField } from '../fields/RemixSettingsField'
 import { SourceFilesField } from '../fields/SourceFilesField'
 import { TrackMetadataFields } from '../fields/TrackMetadataFields'
-
 import { defaultHiddenFields } from '../fields/availability/HiddenAvailabilityFields'
 import { TrackEditFormValues, TrackFormState } from '../types'
 import { TrackMetadataFormSchema } from '../validation'
 
 import styles from './EditTrackForm.module.css'
-import { FeatureFlags } from '@audius/common'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 // const isScheduledReleasesEnabled = true
 
@@ -129,7 +127,6 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
     FeatureFlags.SCHEDULED_RELEASES
   )
 
-
   return (
     <Form>
       <NavigationPrompt when={dirty} messages={messages.navigationPrompt} />
@@ -145,7 +142,11 @@ const TrackEditForm = (props: FormikProps<TrackEditFormValues>) => {
           >
             <TrackMetadataFields />
             <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
-              {isScheduledReleasesEnabled ? <ReleaseDateField /> : <ReleaseDateFieldLegacy />}
+              {isScheduledReleasesEnabled ? (
+                <ReleaseDateField />
+              ) : (
+                <ReleaseDateFieldLegacy />
+              )}
               <RemixSettingsField />
               <SourceFilesField />
               <AccessAndSaleField isUpload />
