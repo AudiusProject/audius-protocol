@@ -34,7 +34,6 @@ export const DatePickerField = (props: DatePickerFieldProps) => {
   const anchorRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => setIsFocused(shouldFocus ?? false), [shouldFocus])
-  console.log('asdf anchorRef: ', anchorRef)
   return (
     <>
       <div

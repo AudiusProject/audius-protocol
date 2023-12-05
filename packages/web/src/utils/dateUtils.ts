@@ -14,7 +14,6 @@ export const getScheduledReleaseLabelMessage = (releaseDate, prefixMessage = '')
 
   const formatReleaseMessage = (releaseDate, base) => {
     const isFutureRelease = moment(releaseDate ?? undefined).isAfter(moment.now())
-    console.log('asdf isFutureRelease: ', isFutureRelease)
     let message = isFutureRelease ? '[' + prefixMessage + '] ' : ''
     message += base;
     message += isFutureRelease ? ' @ LT' : '';

@@ -569,7 +569,6 @@ export const AccessAndSaleMenuFields = (props: AccesAndSaleMenuFieldsProps) => {
     })
 
   const { values } = useFormikContext()
-  console.log('asdf values: ', values)
 
   return (
     <div className={cn(layoutStyles.col, layoutStyles.gap4)}>

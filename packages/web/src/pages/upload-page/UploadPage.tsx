@@ -65,7 +65,6 @@ export const UploadPage = (props: UploadPageProps) => {
 
   // Pretty print json just for testing
   useEffect(() => {
-    console.log('asdf useEffect upload page')
     if (phase !== Phase.FINISH) return
     const stylizePreElements = function () {
       const preElements = document.getElementsByTagName('pre')

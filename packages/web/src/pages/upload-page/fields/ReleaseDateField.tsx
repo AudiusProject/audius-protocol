@@ -105,7 +105,6 @@ const combineDateTime = (day, time, meridian) => {
   } else if (meridian === 'AM' && time === 12) {
     adjustedHours = 0;
   }
-  console.log('asdf adjustedHours: ', adjustedHours)
   const combinedDateTime = truncatedReleaseDate
     .add(adjustedHours, 'hours')
     .add(minutes, 'minutes')
@@ -127,17 +126,13 @@ export const ReleaseDateField = () => {
     () => ({ [RELEASE_DATE]: releaseDate ?? undefined, [RELEASE_DATE_HOUR]: (releaseDateHour ?? roundUpHour.format('h:mm')), [RELEASE_DATE_MERIDIAN]: releaseDateMeridian ?? roundUpHour.format('A'), [RELEASE_DATE_TYPE]: releaseDateType ?? false }),
     [releaseDate, releaseDateType, releaseDateHour, releaseDateMeridian]
   )
-  console.log('asdf intialValues: ', initialValues)
   const onSubmit = useCallback(
     (values: ReleaseDateFormValues) => {
-      console.log('asdf onSubmit values: ', values)
       if (values[RELEASE_DATE_TYPE] === ReleaseDateType.RELEASE_NOW) {
-        console.log('asdf no release date nullifying releaseDate')
         setReleaseDate(null)
         return
       }
       const combinedDateTime = combineDateTime(values[RELEASE_DATE], values[RELEASE_DATE_HOUR], values[RELEASE_DATE_MERIDIAN])
-      console.log('asdf combinedDateTime: ', combinedDateTime.toString())
 
       setReleaseDate(combinedDateTime.toString() ?? null)
       setReleaseDateType(values[RELEASE_DATE_TYPE])
@@ -199,18 +194,15 @@ export const ReleaseDateField = () => {
 const RadioItems = (props: any) => {
 
   const { releaseDateTypeField, setReleaseDateHour, setReleaseDateMeridian } = props
-  console.log('asdf releaseDateTypeField: ', releaseDateTypeField)
   const [releaseDateField, ,] = useField(RELEASE_DATE)
 
   const [timePeriod, setTimePeriod] = useState(TimePeriodType.PAST)
 
-  console.log('asdf RadioItems releaseDate: ', releaseDateField.value)
 
   useEffect(() => {
     const truncatedReleaseDate = moment(releaseDateField.value).startOf('day');
 
     const now = moment();
-    console.log('asdf radioitem date changed: ', truncatedReleaseDate, now)
 
     if (moment(truncatedReleaseDate).isBefore(now) && moment(truncatedReleaseDate).isSame(now, 'day')) {
       setTimePeriod(TimePeriodType.PRESENT)
@@ -220,15 +212,12 @@ const RadioItems = (props: any) => {
       setReleaseDateMeridian(roundUpHour.format('A'))
 
     } else if (moment(truncatedReleaseDate).isBefore(now)) {
-      console.log('asdf radioitems setTimePeriod to past')
       setTimePeriod(TimePeriodType.PAST)
     } else {
-      console.log('asdf resetting')
       setTimePeriod(TimePeriodType.FUTURE)
       setReleaseDateHour('12:00')
       setReleaseDateMeridian(ReleaseDateMeridian.AM)
     }
-    console.log('asdf radioitems timePeriod: ', timePeriod)
 
   }, [releaseDateField.value, setReleaseDateHour, setReleaseDateMeridian])
 
@@ -268,8 +257,7 @@ const RadioItems = (props: any) => {
                     placeholder={'12:00'}
                     hideLabel={false}
                     inputRootClassName={styles.hourInput}
-                    transformBlurValue={(value) => {
-                      console.log('asdf transforming')
+                transformBlurValue={(value) => {
                       if (value.includes(':')) {
                         return value
                       }

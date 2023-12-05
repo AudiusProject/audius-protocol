@@ -232,7 +232,6 @@ export const GiantTrackTile = ({
     } else if (isUnlisted && !isScheduledRelease) {
       text = messages.makePublic
     }
-    console.log('asdf text: ', text)
     return (
       (isUnlisted || isPublishing) &&
       isOwner && (
