@@ -67,9 +67,7 @@ export const SignUpPage = () => {
       </Helmet>
       <NavHeader />
       <Switch>
-        <SignUpRoute exact path={SIGN_UP_PAGE}>
-          hello world
-        </SignUpRoute>
+        <SignUpRoute exact path={SIGN_UP_PAGE} />
         <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
           <CreateEmailPage />
         </SignUpRoute>

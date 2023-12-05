@@ -6,7 +6,6 @@ import { FeatureFlags, useFeatureFlag } from '@audius/common'
 import { Route, Switch } from 'react-router-dom'
 
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
-import SignOnPage from 'pages/sign-on-page'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
 import { SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
 
@@ -16,7 +15,7 @@ import WebPlayer from './web-player/WebPlayer'
 
 import '../services/webVitals'
 
-// const SignOnPage = lazy(() => import('pages/sign-on-page'))
+const SignOnPage = lazy(() => import('pages/sign-on-page'))
 const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 const OAuthLoginPage = lazy(() => import('pages/oauth-login-page'))
 const DemoTrpcPage = lazy(() => import('pages/demo-trpc/DemoTrpcPage'))
