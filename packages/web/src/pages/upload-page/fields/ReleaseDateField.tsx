@@ -126,53 +126,45 @@ const getScheduledReleaseLabelMessage = (releaseDate, prefixMessage = '') => {
 type ReleaseDateValue = SingleTrackEditValues[typeof RELEASE_DATE]
 
 export const ReleaseDateField = () => {
-  console.log('asdf re-render')
   const [trackReleaseDateField, , { setValue: setTrackReleaseDate }] =
     useTrackField<ReleaseDateValue>(RELEASE_DATE)
   const trackReleaseDate = trackReleaseDateField.value
-  const [releaseDateField, , { setValue: setReleaseDateField }] =
-    useField(RELEASE_DATE)
-  const releaseDate = releaseDateField.value
-
 
   const [releaseDateTypeField, , { setValue: setReleaseDateType }] =
     useField(RELEASE_DATE_TYPE)
   const releaseDateType = releaseDateTypeField.value
 
-  const [{ value: releaseDateHour }, , { setValue: setReleaseDateHour }] =
-    useField(RELEASE_DATE_HOUR)
-
-  const [
-    { value: releaseDateMeridian },
-    ,
-    { setValue: setReleaseDateMeridian }
-  ] = useField(RELEASE_DATE_MERIDIAN)
+  const [, , { setValue: setReleaseDateMeridian }] = useField(
+    RELEASE_DATE_MERIDIAN
+  )
 
   const roundUpHour = moment().add(1, 'hours').minutes(0).seconds(0)
-  const initialValues = useMemo(
-    () => {
-      let releaseDateHour
+  const initialValues = useMemo(() => {
+  // let releaseDateHour
 
-      console.log('asdf initing :', trackReleaseDate, releaseDate, releaseDateType, releaseDateHour, releaseDateMeridian)
-      if (trackReleaseDate) {
-        releaseDateHour = moment(trackReleaseDate).format('h:mm')
-      } else if (!releaseDate) {
-        releaseDateHour = roundUpHour.format('h:mm')
-      } else {
-        releaseDateHour = '12:00'
-      }
+    // console.log('asdf initing :', trackReleaseDate, releaseDate, releaseDateType, releaseDateHour, releaseDateMeridian)
+    // if (trackReleaseDate) {
+    //   releaseDateHour = moment(trackReleaseDate).format('h:mm')
+    // } else if (!releaseDate) {
+    //   releaseDateHour = roundUpHour.format('h:mm')
+    // } else {
+    //   releaseDateHour = '12:00'
+    // }
 
+    return {
+      [RELEASE_DATE]: trackReleaseDate ?? undefined,
+      [RELEASE_DATE_HOUR]: trackReleaseDate
+        ? moment(trackReleaseDate).format('h:mm')
+        : roundUpHour.format('h:mm'),
+      [RELEASE_DATE_MERIDIAN]: trackReleaseDate
+        ? moment(trackReleaseDate).format('A')
+        : roundUpHour.format('A'),
+      [RELEASE_DATE_TYPE]: trackReleaseDate
+        ? ReleaseDateType.SCHEDULED_RELEASE
+        : ReleaseDateType.RELEASE_NOW
+    }
+  }, [trackReleaseDate, releaseDateType])
 
-      return {
-        [RELEASE_DATE]: trackReleaseDate ?? undefined,
-        [RELEASE_DATE_HOUR]: releaseDateHour,
-        [RELEASE_DATE_MERIDIAN]: trackReleaseDate ? moment(trackReleaseDate).format('A') : roundUpHour.format('A'),
-        [RELEASE_DATE_TYPE]: releaseDateType ?? false
-      }
-    },
-    [trackReleaseDate, releaseDate, releaseDateType, releaseDateHour, releaseDateMeridian]
-  )
-  console.log('asdf initialValues: ', initialValues)
   const onSubmit = useCallback(
     (values: ReleaseDateFormValues) => {
       if (values[RELEASE_DATE_TYPE] === ReleaseDateType.RELEASE_NOW) {
@@ -194,9 +186,6 @@ export const ReleaseDateField = () => {
       const combinedDateTime = truncatedReleaseDate.add(adjustedHours, 'hours')
 
       setTrackReleaseDate(combinedDateTime.toString() ?? null)
-      setReleaseDateType(values[RELEASE_DATE_TYPE])
-      setReleaseDateHour(values[RELEASE_DATE_HOUR])
-      setReleaseDateMeridian(values[RELEASE_DATE_MERIDIAN])
       // set other fields
     },
     [setTrackReleaseDate]
@@ -205,7 +194,10 @@ export const ReleaseDateField = () => {
   const renderValue = useCallback(() => {
     return (
       <SelectedValue
-        label={getScheduledReleaseLabelMessage(trackReleaseDate, 'Scheduled for ')}
+        label={getScheduledReleaseLabelMessage(
+          trackReleaseDate,
+          'Scheduled for '
+        )}
         icon={IconCalendar}
       >
         <input
@@ -234,12 +226,7 @@ export const ReleaseDateField = () => {
           <>
             <div className={cn(layoutStyles.col, layoutStyles.gap4)}>
               <Text>{messages.description}</Text>
-              <RadioItems
-                releaseDateTypeField={releaseDateTypeField}
-                releaseDateField={trackReleaseDateField}
-                setReleaseDateHour={setReleaseDateHour}
-                setReleaseDateMeridian={setReleaseDateMeridian}
-              />
+              <RadioItems />
             </div>
           </>
         }
@@ -250,8 +237,19 @@ export const ReleaseDateField = () => {
 }
 
 const RadioItems = (props: any) => {
-  const { releaseDateTypeField, setReleaseDateHour, setReleaseDateMeridian } =
-    props
+  const [releaseDateTypeField, , { setValue: setReleaseDateType }] =
+    useField(RELEASE_DATE_TYPE)
+  const releaseDateType = releaseDateTypeField.value
+  const [{ value: releaseDateHour }, , { setValue: setReleaseDateHour }] =
+    useField(RELEASE_DATE_HOUR)
+
+  const [
+    { value: releaseDateMeridian },
+    ,
+    { setValue: setReleaseDateMeridian }
+  ] = useField(RELEASE_DATE_MERIDIAN)
+
+  console.log('asdf radioItems props: ', props)
   const [releaseDateField, ,] = useField(RELEASE_DATE)
 
   const [timePeriod, setTimePeriod] = useState(TimePeriodType.PRESENT)
@@ -321,6 +319,9 @@ const RadioItems = (props: any) => {
                 hideLabel={false}
                 inputRootClassName={styles.hourInput}
                 transformBlurValue={(value) => {
+                  if (value.includes(':')) {
+                    return value
+                  }
                   // add :00 if it's missing
                   const number = parseInt(value, 10)
                   if (!isNaN(number) && number >= 1 && number <= 12) {
@@ -351,6 +352,13 @@ const menu = {
 }
 
 export const SelectMeridianField = () => {
+  const [
+    { value: releaseDateMeridian },
+    ,
+    { setValue: setReleaseDateMeridian }
+  ] = useField(RELEASE_DATE_MERIDIAN)
+
+  console.log('asdf re-render meridian: ', releaseDateMeridian)
   return (
     <DropdownField
       aria-label={'label'}
