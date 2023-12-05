@@ -252,6 +252,13 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
             ):
                 track_record.premium_conditions = track_metadata["premium_conditions"]
 
+        elif key == "download_conditions":
+            if "download_conditions" in track_metadata and (
+                is_valid_json_field(track_metadata, "download_conditions")
+                or track_metadata.get("download_conditions") is None
+            ):
+                track_record.download_conditions = track_metadata["download_conditions"]
+
         elif key == "stem_of":
             if "stem_of" in track_metadata and is_valid_json_field(
                 track_metadata, "stem_of"
