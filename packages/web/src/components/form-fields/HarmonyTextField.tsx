@@ -20,7 +20,6 @@ export type HarmonyTextFieldProps = TextInputProps & {
 
 // TODO: rename to TextField and replace old usages
 export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
-  console.log('asdf re-render text field')
   const {
     name,
     clearErrorOnChange = true,
@@ -62,14 +61,12 @@ export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
         field.onChange(e)
       }}
       onBlur={(e) => {
-        console.log('asdf onBlur')
 
         if (clearErrorOnChange) {
           setError(undefined)
         }
         if (transformBlurValue) {
           e.target.value = transformBlurValue(e.target.value)
-          console.log('asdf onBlur: ', transformBlurValue, e.target.value)
         }
         field.onChange(e)
         field.onBlur(e)

@@ -144,7 +144,6 @@ export const ContextualMenu = <FormValues extends FormikValues = FormikValues>(
   const handleSubmit = useCallback(
     (values: FormValues, helpers: FormikHelpers<FormValues>) => {
       onSubmit(values, helpers)
-      console.log('asdf submitted: ', values)
       if (!error) toggleMenu()
     },
     [error, onSubmit, toggleMenu]

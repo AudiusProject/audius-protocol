@@ -16,14 +16,12 @@ class DropdownInput extends Component {
   }
 
   onVisibleChange = (visible) => {
-    console.log('asdf dropdowninput onVisibleChange: ', visible, option)
     this.setState({
       focused: visible
     })
   }
 
   onSelect = (value) => {
-    console.log('asdf dropdowninput onSelect: ', value)
     this.setState({
       focused: false
     })

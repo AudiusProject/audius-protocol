@@ -20,7 +20,6 @@ const messages = {
  */
 export const ScheduledReleaseLabel = ({ released
 }) => {
-    console.log('asdf released: ', released)
     return (
         <div className={cn(premiumContentLabelStyles.labelContainer, styles.scheduledReleaseLabel)}>
             <IconCalendar className={premiumContentLabelStyles.icon} />
@@ -31,7 +30,6 @@ export const ScheduledReleaseLabel = ({ released
 
 export const ScheduledReleaseGiantLabel = ({ released
 }) => {
-    console.log('asdf released: ', released)
     return (
         <div className={cn(premiumContentLabelStyles.labelContainer, styles.scheduledReleaseLabel)}>
             <IconCalendar />
