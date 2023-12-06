@@ -108,6 +108,7 @@ const determineAbuseRules = (
     .filter((r) => r.trigger && r.action === 'pass')
     .map((r) => r.rule)
   const allowed = appliedSuccessRules.some((r) => allowRules.has(r))
+
   if (allowed) {
     return {
       blockedFromRelay: false,
