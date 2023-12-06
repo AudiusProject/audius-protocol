@@ -22,8 +22,8 @@ import type { SummaryTableItem } from '../summary-table/SummaryTable'
 const messages = {
   title: 'Payment Method',
   existingBalance: 'Existing balance',
-  withCard: 'Pay with card',
-  withCrypto: 'Add via crypto transfer'
+  withCard: 'Checkout with card',
+  withCrypto: 'Add funds with crypto transfer'
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -58,6 +58,8 @@ type PaymentMethodProps = {
   balance?: Nullable<BNUSDC>
   isExistingBalanceDisabled?: boolean
   showExistingBalance?: boolean
+  cardMessage?: string
+  cryptoMessage?: string
 }
 
 export const PaymentMethod = ({
@@ -65,7 +67,9 @@ export const PaymentMethod = ({
   setSelectedType,
   balance,
   isExistingBalanceDisabled,
-  showExistingBalance
+  showExistingBalance,
+  cardMessage,
+  cryptoMessage
 }: PaymentMethodProps) => {
   const styles = useStyles()
   const neutral = useColor('neutral')
@@ -81,7 +85,7 @@ export const PaymentMethod = ({
       value: PurchaseMethod.CARD,
       label: (
         <Text fontSize='medium' weight='medium'>
-          {messages.withCard}
+          {cardMessage || messages.withCard}
         </Text>
       ),
       icon: IconCreditCard
@@ -91,7 +95,7 @@ export const PaymentMethod = ({
       value: PurchaseMethod.CRYPTO,
       label: (
         <Text fontSize='medium' weight='medium'>
-          {messages.withCrypto}
+          {cryptoMessage || messages.withCrypto}
         </Text>
       ),
       icon: IconTransaction
@@ -159,7 +163,7 @@ export const PaymentMethod = ({
     <SummaryTable
       title={messages.title}
       items={items}
-      renderContent={(items: SummaryTableItem[]) => (
+      renderBody={(items: SummaryTableItem[]) => (
         <FlatList
           renderItem={renderItem}
           ItemSeparatorComponent={Divider}

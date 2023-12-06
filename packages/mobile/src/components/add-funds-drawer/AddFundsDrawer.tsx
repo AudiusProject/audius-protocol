@@ -23,7 +23,9 @@ import { USDCBalanceRow } from '../usdc-balance-row/USDCBalanceRow'
 
 const messages = {
   title: 'Add Funds',
-  continue: 'Continue'
+  continue: 'Continue',
+  withCard: 'Pay with card',
+  withCrypto: 'Add via crypto transfer'
 }
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -97,6 +99,8 @@ export const AddFundsDrawer = () => {
         <PaymentMethod
           selectedType={selectedPurchaseMethod}
           setSelectedType={setSelectedPurchaseMethod}
+          cardMessage={messages.withCard}
+          cryptoMessage={messages.withCrypto}
         />
         <Button
           title={messages.continue}
