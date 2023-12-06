@@ -346,7 +346,7 @@ def process_playlist_data_event(
         # Update the playlist_record when the corresponding field exists
         # in playlist_metadata
         if key == "playlist_contents":
-            if not playlist_metadata.get(key) or playlist_record.is_album:
+            if not playlist_metadata.get(key):
                 continue
             playlist_record.playlist_contents = process_playlist_contents(
                 playlist_record, playlist_metadata, block_integer_time
