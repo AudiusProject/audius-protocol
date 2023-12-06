@@ -74,7 +74,7 @@ export const AddFunds = ({
             />
           ) : (
             <FilterButton
-              onSelect={({ label: vendor }: { label: string }) => {
+              onSelect={(vendor: string) => {
                 console.info(vendor)
               }}
               initialSelectionIndex={0}

@@ -228,6 +228,79 @@ function* purchaseUSDC({ amount }: { amount: BNUSDC }) {
   }
 }
 
+function* purchaseWithCoinflow({
+  blocknumber,
+  extraAmount,
+  splits,
+  contentId,
+  balanceNeededCents
+}: {
+  blocknumber: number
+  extraAmount?: number
+  splits: Record<number, number>
+  contentId: ID
+  balanceNeededCents: number
+}) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const feePayerAddress = yield* select(getFeePayer)
+  if (!feePayerAddress) {
+    throw new Error('Missing feePayer unexpectedly')
+  }
+  const feePayer = new PublicKey(feePayerAddress)
+  const recentBlockhash = yield* call(getRecentBlockhash, audiusBackendInstance)
+  const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
+
+  const coinflowTransaction = yield* call(
+    createFundAccountAndPurchaseTransaction,
+    audiusBackendInstance,
+    {
+      blocknumber,
+      recentBlockhash,
+      extraAmount,
+      splits,
+      id: contentId,
+      type: 'track',
+      wallet: rootAccount,
+      feePayer
+    }
+  )
+
+  const serializedTransaction = coinflowTransaction
+    .serialize({ requireAllSignatures: false, verifySignatures: false })
+    .toString('base64')
+  const amount = balanceNeededCents / 100.0
+  yield* put(coinflowOnrampModalActions.open({ amount, serializedTransaction }))
+
+  const result = yield* race({
+    succeeded: take(transactionSucceeded),
+    failed: take(transactionFailed),
+    canceled: take(transactionCanceled)
+  })
+
+  // Return early for failure or cancellation
+  if (result.canceled) {
+    yield* put(purchaseCanceled())
+    return
+  }
+  if (result.failed) {
+    yield* put(
+      // TODO: better error
+      purchaseContentFlowFailed({
+        error: new PurchaseContentError(
+          PurchaseErrorCode.Unknown,
+          'Coinflow transaction failed'
+        )
+      })
+    )
+  }
+}
+
+function* purchaseUSDCWithStripe({ balanceNeeded }: { balanceNeeded: BNUSDC }) {
+  yield* put(buyUSDC())
+  yield* call(purchaseUSDC, { amount: balanceNeeded })
+  yield* put(usdcBalanceSufficient())
+}
+
 function* doStartPurchaseContentFlow({
   payload: {
     extraAmount,
@@ -297,121 +370,18 @@ function* doStartPurchaseContentFlow({
     const extraAmountBN = new BN(extraAmount ?? 0).mul(BN_USDC_CENT_WEI)
     const totalAmountDueCentsBN = priceBN.add(extraAmountBN) as BNUSDC
 
+    const { blocknumber, splits } = yield* getPurchaseConfig({
+      contentId,
+      contentType
+    })
     const balanceNeeded = getBalanceNeeded(
       totalAmountDueCentsBN,
       new BN(initialBalance.toString()) as BNUSDC,
       usdcConfig.minUSDCPurchaseAmountCents
     )
 
-    // buy USDC if necessary
-    if (balanceNeeded.gtn(0)) {
-      if (purchaseMethod !== PurchaseMethod.CARD) {
-        throw new PurchaseContentError(
-          PurchaseErrorCode.InsufficientBalance,
-          'Unexpected insufficient balance to complete purchase'
-        )
-      }
-
-      const balanceNeededCents = ceilingBNUSDCToNearestCent(balanceNeeded)
-        .div(BN_USDC_CENT_WEI)
-        .toNumber()
-
-      if (purchaseVendor === PurchaseVendor.COINFLOW) {
-        const { blocknumber, splits } = yield* getPurchaseConfig({
-          contentId,
-          contentType
-        })
-        const feePayerAddress = yield* select(getFeePayer)
-        if (!feePayerAddress) {
-          throw new Error('Missing feePayer unexpectedly')
-        }
-        const feePayer = new PublicKey(feePayerAddress)
-        const recentBlockhash = yield* call(
-          getRecentBlockhash,
-          audiusBackendInstance
-        )
-        const rootAccount = yield* call(
-          getRootSolanaAccount,
-          audiusBackendInstance
-        )
-
-        const coinflowTransaction = yield* call(
-          createFundAccountAndPurchaseTransaction,
-          audiusBackendInstance,
-          {
-            blocknumber,
-            recentBlockhash,
-            extraAmount,
-            splits,
-            id: contentId,
-            type: 'track',
-            wallet: rootAccount,
-            feePayer
-          }
-        )
-
-        const serializedTransaction = coinflowTransaction
-          .serialize({ requireAllSignatures: false, verifySignatures: false })
-          .toString('base64')
-        const amount = balanceNeededCents / 100.0
-        yield* put(
-          coinflowOnrampModalActions.open({ amount, serializedTransaction })
-        )
-
-        const result = yield* race({
-          succeeded: take(transactionSucceeded),
-          failed: take(transactionFailed),
-          canceled: take(transactionCanceled)
-        })
-
-        // Return early for failure or cancellation
-        if (result.canceled) {
-          yield* put(purchaseCanceled())
-          return
-        }
-        if (result.failed) {
-          yield* put(
-            // TODO: better error
-            purchaseContentFlowFailed({
-              error: new PurchaseContentError(
-                PurchaseErrorCode.Unknown,
-                'Coinflow transaction failed'
-              )
-            })
-          )
-          return
-        }
-      } // if (USE_COINFLOW)
-      else {
-        // Stripe or other onramp funds your wallet before you purchase
-        yield* put(buyUSDC())
-        yield* call(purchaseUSDC, { amount: balanceNeeded })
-        yield* put(usdcBalanceSufficient())
-
-        const { blocknumber, splits } = yield* getPurchaseConfig({
-          contentId,
-          contentType
-        })
-
-        // purchase content
-        yield* call(purchaseContent, audiusBackendInstance, {
-          id: contentId,
-          blocknumber,
-          extraAmount: extraAmountBN,
-          splits,
-          type: 'track',
-          purchaserUserId
-        })
-      }
-    } // if(balanceNeeded.lte(0))
-    else {
-      // No need to buy USDC, just execute the purchase
-      const { blocknumber, splits } = yield* getPurchaseConfig({
-        contentId,
-        contentType
-      })
-
-      // purchase content
+    if (balanceNeeded.lten(0)) {
+      // No balance needed, perform the purchase right away
       yield* call(purchaseContent, audiusBackendInstance, {
         id: contentId,
         blocknumber,
@@ -420,14 +390,53 @@ function* doStartPurchaseContentFlow({
         type: 'track',
         purchaserUserId
       })
+    } else {
+      // We need to acquire USDC before the purchase can continue
+
+      // Invariant: The user must be checking out with a card
+      if (purchaseMethod !== PurchaseMethod.CARD) {
+        throw new PurchaseContentError(
+          PurchaseErrorCode.InsufficientBalance,
+          'Unexpected insufficient balance to complete purchase'
+        )
+      }
+      const balanceNeededCents = ceilingBNUSDCToNearestCent(balanceNeeded)
+        .div(BN_USDC_CENT_WEI)
+        .toNumber()
+
+      switch (purchaseVendor) {
+        case PurchaseVendor.COINFLOW:
+          // Purchase with coinflow, funding and completing the purchase in one step.
+          yield* call(purchaseWithCoinflow, {
+            blocknumber,
+            extraAmount,
+            splits,
+            contentId,
+            balanceNeededCents
+          })
+          break
+        case PurchaseVendor.STRIPE:
+          // Buy USDC with Stripe. Once funded, continue with purchase.
+          yield* call(purchaseUSDCWithStripe, { balanceNeeded })
+          yield* call(purchaseContent, audiusBackendInstance, {
+            id: contentId,
+            blocknumber,
+            extraAmount: extraAmountBN,
+            splits,
+            type: 'track',
+            purchaserUserId
+          })
+          break
+      }
     }
 
+    // Mark the purchase as successful
     yield* put(purchaseSucceeded())
 
-    // confirm purchase
+    // Poll to confirm purchase (waiting for a signature)
     yield* pollForPurchaseConfirmation({ contentId, contentType })
 
-    // auto-favorite the purchased item
+    // Auto-favorite the purchased item
     if (contentType === ContentType.TRACK) {
       yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
     }
@@ -439,7 +448,7 @@ function* doStartPurchaseContentFlow({
       yield* put(stop({}))
     }
 
-    // finish
+    // Finish
     yield* put(purchaseConfirmed({ contentId, contentType }))
 
     yield* call(

@@ -7,7 +7,10 @@ import {
   PurchaseMethod,
   PURCHASE_METHOD,
   PurchaseVendor,
-  usePurchaseMethod
+  usePurchaseMethod,
+  PURCHASE_VENDOR,
+  useFeatureFlag,
+  FeatureFlags
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -58,8 +61,12 @@ export const PurchaseContentFormFields = ({
 }: PurchaseContentFormFieldsProps) => {
   const mobile = isMobile()
   const payExtraAmountPresetValues = usePayExtraPresets()
+  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
+    FeatureFlags.BUY_WITH_COINFLOW
+  )
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
+  const [, , { setValue: setPurchaseVendor }] = useField(PURCHASE_VENDOR)
   const isPurchased = stage === PurchaseContentStage.FINISH
 
   const { data: balanceBN } = useUSDCBalance()
@@ -76,11 +83,18 @@ export const PurchaseContentFormFields = ({
     setMethod: setPurchaseMethod
   })
 
-  const handleChange = useCallback(
+  const handleChangeMethod = useCallback(
     (method: string) => {
       setPurchaseMethod(method as PurchaseMethod)
     },
     [setPurchaseMethod]
+  )
+
+  const handleChangeVendor = useCallback(
+    (vendor: string) => {
+      setPurchaseVendor(vendor as PurchaseVendor)
+    },
+    [setPurchaseVendor]
   )
 
   if (isPurchased) {
@@ -97,8 +111,8 @@ export const PurchaseContentFormFields = ({
   }
 
   const vendorOptions = [
-    { label: PurchaseVendor.STRIPE },
-    { label: PurchaseVendor.COINFLOW }
+    ...(isCoinflowEnabled ? [{ label: PurchaseVendor.COINFLOW }] : []),
+    { label: PurchaseVendor.STRIPE }
   ]
 
   const options = [
@@ -135,13 +149,14 @@ export const PurchaseContentFormFields = ({
         vendorOptions.length > 1 ? (
           mobile ? (
             <MobileFilterButton
-              onSelect={() => {}}
+              onSelect={handleChangeVendor}
+              initialSelectionIndex={0}
               options={vendorOptions}
               zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
             />
           ) : (
             <FilterButton
-              onSelect={() => {}}
+              onSelect={handleChangeVendor}
               initialSelectionIndex={0}
               variant={FilterButtonType.REPLACE_LABEL}
               options={vendorOptions}
@@ -170,7 +185,7 @@ export const PurchaseContentFormFields = ({
       <SummaryTable
         title={messages.paymentMethod}
         withRadioOptions
-        onRadioChange={handleChange}
+        onRadioChange={handleChangeMethod}
         selectedRadioOption={purchaseMethod}
         items={options}
       />
