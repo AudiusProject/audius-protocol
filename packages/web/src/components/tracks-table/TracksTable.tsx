@@ -276,10 +276,18 @@ export const TracksTable = ({
   const renderReleaseDateCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
     let suffix = ''
-    if (track.release_date && moment.utc(track.release_date).local().isAfter(moment.now())) {
+    if (
+      track.release_date &&
+      moment.utc(track.release_date).local().isAfter(moment.now())
+    ) {
       suffix = ' (Scheduled)'
     }
-    return moment.utc(track.release_date ?? track.created_at).local().format('M/D/YY') + suffix
+    return (
+      moment
+        .utc(track.release_date ?? track.created_at)
+        .local()
+        .format('M/D/YY') + suffix
+    )
   }, [])
 
   const renderListenDateCell = useCallback((cellInfo: TrackCell) => {

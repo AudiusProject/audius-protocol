@@ -228,7 +228,7 @@ export const GiantTrackTile = ({
     let text = messages.isPublishing
     if (isUnlisted && !isPublishing) {
       text = isScheduledRelease ? messages.releaseNow : messages.makePublic
-    } 
+    }
     return (
       (isUnlisted || isPublishing) &&
       isOwner && (
@@ -442,7 +442,9 @@ export const GiantTrackTile = ({
     )
   }
   const renderScheduledReleaseRow = () => {
-    return <ScheduledReleaseGiantLabel released={released} isUnlisted={isUnlisted} />
+    return (
+      <ScheduledReleaseGiantLabel released={released} isUnlisted={isUnlisted} />
+    )
   }
 
   const renderDownloadButtons = () => {

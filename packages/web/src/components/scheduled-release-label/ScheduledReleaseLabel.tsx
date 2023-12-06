@@ -13,7 +13,8 @@ export type ScheduledReleaseLabelProps = {
 }
 
 export const ScheduledReleaseLabel = ({
-  released, isUnlisted
+  released,
+  isUnlisted
 }: ScheduledReleaseLabelProps) => {
   if (!released || !isUnlisted) {
     return <></>
@@ -26,13 +27,14 @@ export const ScheduledReleaseLabel = ({
       )}
     >
       <IconCalendar className={premiumContentLabelStyles.icon} />
-      Releases {moment.utc(released).local().format('M/D/YY [@] h:mm A')} 
+      Releases {moment.utc(released).local().format('M/D/YY [@] h:mm A')}
     </div>
   )
 }
 
 export const ScheduledReleaseGiantLabel = ({
-  released, isUnlisted
+  released,
+  isUnlisted
 }: ScheduledReleaseLabelProps) => {
   if (!released || !isUnlisted) {
     return <></>
@@ -47,7 +49,7 @@ export const ScheduledReleaseGiantLabel = ({
     >
       <IconCalendar />
       <Text color='accent' variant='title'>
-        Releases {moment.utc(released).local().format('M/D/YY [@] h:mm A')} 
+        Releases {moment.utc(released).local().format('M/D/YY [@] h:mm A')}
       </Text>
     </div>
   )
