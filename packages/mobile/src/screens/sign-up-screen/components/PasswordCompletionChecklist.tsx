@@ -11,9 +11,6 @@ import { Flex, Text } from '@audius/harmony-native'
 const messages: Record<CompletionChecklistType, string> =
   createPasswordPageMessages.completionChecklist
 
-// const passwordSchema = schemaBuilder()
-console.log({ passwordSchema })
-
 type ChecklistItem = { type: CompletionChecklistType; path: string }
 
 const checklist: ChecklistItem[] = [
@@ -23,34 +20,25 @@ const checklist: ChecklistItem[] = [
   { type: 'notCommon', path: 'password' }
 ]
 
-export const CompletionChecklist = () => {
+export const PasswordCompletionChecklist = () => {
   const [{ value: password }, passwordMeta] = useField('password')
   const [{ value: confirmPassword }, confirmMeta] = useField('confirmPassword')
 
-  //   console.log({ password, confirmPassword })
-  console.log({ passwordSchema })
-
   const { value: issues } = useAsync(async () => {
-    // console.log('getting result')
     try {
-      console.log({ passwordSchema })
       const result = await passwordSchema.safeParseAsync({
         password,
         confirmPassword
       })
-      console.log({ result })
       if (result.success) {
         return null
       }
-      return []
+      return result.error.issues.map(
+        (issue) => issue.message as CompletionChecklistType
+      )
     } catch (e) {
-      console.log('dont worry I cuaght the error')
+      return null
     }
-
-    return null
-    // return result.error.issues.map(
-    //   (issue) => issue.message as CompletionChecklistType
-    // )
   }, [password, confirmPassword])
 
   return (
@@ -71,6 +59,7 @@ export const CompletionChecklist = () => {
         return (
           <Flex key={type} direction='row' alignItems='center' gap='m'>
             <Text>
+              {/* Temporary until CompletionCheck harmony component exists */}
               {status === 'complete' && '✅'}
               {status === 'error' && '😡'}
               {status === 'incomplete' && '🔘'}

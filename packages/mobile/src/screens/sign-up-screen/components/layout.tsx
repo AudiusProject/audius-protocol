@@ -2,48 +2,37 @@ import type { ReactNode } from 'react'
 import { Children } from 'react'
 
 import { css } from '@emotion/native'
+import { Dimensions } from 'react-native'
 
 import type { NativePaperProps } from '@audius/harmony-native'
 import { Box, Paper, type NativeBoxProps } from '@audius/harmony-native'
-import type { ButtonProps } from 'app/components/button'
+import type { ButtonProps } from 'app/components/core'
 import { Button } from 'app/components/core'
 import { Flex } from 'app/harmony-native/components/layout/Flex/Flex'
 import type { NativeFlexProps } from 'app/harmony-native/components/layout/Flex/types'
 import { Text } from 'app/harmony-native/foundations/typography/Text'
 
-import IconArrowRight from './temp-harmony/ArrowRight.svg'
-
 type PageProps = NativeFlexProps & {
   centered?: boolean
 }
 
-export const Page = (props: PageProps) => {
-  const { centered, children, ...other } = props
+// Horizontal gutter size
+const gutterSize: NativeFlexProps['p'] = 'l'
 
-  const childrenArray = Children.toArray(children)
-  const footer = childrenArray.pop()
+export const Page = (props: PageProps) => {
+  const { children, style, ...other } = props
 
   const layoutProps: NativeFlexProps = {
     direction: 'column',
     h: '100%',
     gap: '2xl',
-    ph: 'l',
-    pv: '2xl'
-  }
-
-  if (centered) {
-    return (
-      <Flex h='100%' direction='column' alignItems='center' {...other}>
-        <Flex {...layoutProps} alignSelf='center'>
-          {childrenArray}
-        </Flex>
-        {footer}
-      </Flex>
-    )
+    ph: gutterSize,
+    pv: '2xl',
+    backgroundColor: 'white'
   }
 
   return (
-    <Flex {...layoutProps} {...other}>
+    <Flex {...layoutProps} style={[style]} {...other}>
       {children}
     </Flex>
   )
@@ -54,46 +43,47 @@ type PageFooterProps = {
   postfix?: ReactNode
   buttonProps?: Partial<ButtonProps>
   centered?: boolean
-  sticky?: boolean
+  onSubmit?: () => void
 } & Omit<NativePaperProps & NativeBoxProps, 'prefix'>
 
 export const PageFooter = (props: PageFooterProps) => {
-  const { prefix, postfix, buttonProps, centered, sticky, ...other } = props
+  const { prefix, postfix, buttonProps, onSubmit, ...other } = props
 
   return (
-    <Paper
-      w='100%'
-      p='l'
-      justifyContent='center'
-      gap='l'
-      alignItems='center'
-      direction='column'
-      shadow={!sticky ? 'flat' : 'midInverted'}
-      backgroundColor='white'
+    <Flex
+      gap='xl'
+      // Have to escape the pre-existing Page padding
+      w={Dimensions.get('window').width}
       style={css({
-        // TODO: these aren't native friendly
-        // overflow: 'unset',
         position: 'absolute',
         bottom: 0,
-        left: 0,
-        zIndex: 1,
-        borderBottomRightRadius: 0,
-        borderBottomLeftRadius: 0
+        left: 0
       })}
-      {...other}
     >
-      {prefix}
-      <Button
-        type='submit'
-        // TODO:
-        // icon={IconArrowRight}
-        fullWidth
-        style={css(centered && { width: 343 })}
-        {...buttonProps}
-        title='Continue'
-      />
-      {postfix}
-    </Paper>
+      {/* Prefixes float above the shadowed paper container  */}
+      <Flex ph={gutterSize}>{prefix}</Flex>
+      <Paper
+        p='l'
+        justifyContent='center'
+        gap='l'
+        alignItems='center'
+        direction='column'
+        shadow='midInverted'
+        style={css({
+          borderRadius: 0
+        })}
+        {...other}
+      >
+        <Button
+          fullWidth
+          {...buttonProps}
+          title='Continue'
+          onPress={() => onSubmit()}
+        />
+        {/* postfixes live insde the paper */}
+        {postfix}
+      </Paper>
+    </Flex>
   )
 }
 

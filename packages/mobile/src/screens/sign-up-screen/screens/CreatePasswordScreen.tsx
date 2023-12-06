@@ -6,16 +6,14 @@ import {
 } from '@audius/common'
 import { setValueField } from 'common/store/pages/signon/actions'
 import { Formik } from 'formik'
-import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { Flex } from '@audius/harmony-native'
-import { Button } from 'app/components/core'
 import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
-import { CompletionChecklist } from '../components/CompletionChecklist'
+import { PasswordCompletionChecklist } from '../components/PasswordCompletionChecklist'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
@@ -53,46 +51,43 @@ export const CreatePasswordScreen = () => {
   )
 
   return (
-    <View>
-      <Formik
-        initialValues={initialValues}
-        onSubmit={handleSubmit}
-        validationSchema={passwordFormikSchema}
-      >
-        {({ handleSubmit, dirty, isValid }) => (
-          <Page>
-            <Heading
-              heading={messages.createYourPassword}
-              description={messages.description}
+    <Formik
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+      validationSchema={passwordFormikSchema}
+    >
+      {({ handleSubmit: triggerSubmit, dirty, isValid }) => (
+        <Page>
+          <Heading
+            heading={messages.createYourPassword}
+            description={messages.description}
+          />
+          <Flex direction='column' h='100%' gap='l'>
+            <ReadOnlyField label={messages.yourEmail} value={email} />
+            <TextField
+              name='password'
+              label={messages.passwordLabel}
+              textContentType='password'
+              secureTextEntry
+              noGutter
             />
-            <Flex direction='column' h='100%' gap='l'>
-              <ReadOnlyField label={messages.yourEmail} value={email} />
-              <TextField
-                name='password'
-                label={messages.passwordLabel}
-                textContentType='password'
-                secureTextEntry
-                noGutter
-              />
-              <TextField
-                name='confirmPassword'
-                label={messages.confirmPasswordLabel}
-                textContentType='password'
-                secureTextEntry
-                noGutter
-              />
-              <CompletionChecklist />
-            </Flex>
-            <Button title='Continue' onPress={() => handleSubmit()} />
-            <PageFooter
-              shadow='flat'
-              p='l'
-              prefix={<SignUpAgreementText />}
-              buttonProps={{ disabled: !(dirty && isValid) }}
+            <TextField
+              name='confirmPassword'
+              label={messages.confirmPasswordLabel}
+              textContentType='password'
+              secureTextEntry
+              noGutter
             />
-          </Page>
-        )}
-      </Formik>
-    </View>
+            <PasswordCompletionChecklist />
+          </Flex>
+          <PageFooter
+            p='l'
+            buttonProps={{ disabled: !(dirty && isValid) }}
+            prefix={<SignUpAgreementText />}
+            onSubmit={triggerSubmit}
+          />
+        </Page>
+      )}
+    </Formik>
   )
 }
