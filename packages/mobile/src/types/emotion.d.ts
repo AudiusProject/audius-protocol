@@ -1,6 +1,6 @@
 import '@emotion/react'
-import type { HarmonyTheme } from '@audius/harmony'
+import type { HarmonyNativeTheme } from '@audius/harmony-native'
 
 declare module '@emotion/react' {
-  export interface Theme extends HarmonyTheme {}
+  export interface Theme extends HarmonyNativeTheme {}
 }

@@ -1,18 +1,10 @@
 import type { ReactNode } from 'react'
 import { Children } from 'react'
 
-import { css } from '@emotion/native'
-import { Dimensions } from 'react-native'
+import type { FlexProps, BoxProps } from '@audius/harmony-native'
+import { Flex, Text } from '@audius/harmony-native'
 
-import type { NativePaperProps } from '@audius/harmony-native'
-import { Box, Paper, type NativeBoxProps } from '@audius/harmony-native'
-import type { ButtonProps } from 'app/components/core'
-import { Button } from 'app/components/core'
-import { Flex } from 'app/harmony-native/components/layout/Flex/Flex'
-import type { NativeFlexProps } from 'app/harmony-native/components/layout/Flex/types'
-import { Text } from 'app/harmony-native/foundations/typography/Text'
-
-type PageProps = NativeFlexProps & {
+type PageProps = FlexProps & {
   centered?: boolean
 }
 
@@ -22,7 +14,7 @@ const gutterSize: NativeFlexProps['p'] = 'l'
 export const Page = (props: PageProps) => {
   const { children, style, ...other } = props
 
-  const layoutProps: NativeFlexProps = {
+  const layoutProps: FlexProps = {
     direction: 'column',
     h: '100%',
     gap: '2xl',
@@ -93,7 +85,7 @@ type HeadingProps = {
   heading: any
   description?: any
   centered?: boolean
-} & Omit<NativeFlexProps & NativeBoxProps, 'prefix'>
+} & Omit<FlexProps & BoxProps, 'prefix'>
 
 export const Heading = (props: HeadingProps) => {
   const { prefix, heading, description, postfix, centered, ...other } = props
