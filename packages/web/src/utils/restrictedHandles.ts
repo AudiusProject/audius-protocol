@@ -1,0 +1,20 @@
+import { restrictedHandles as commonRestrictedHandles } from '@audius/common'
+
+import { orderedRoutes } from 'utils/route'
+
+const restrictedRoutes = orderedRoutes
+  .filter((routePath) => (routePath.match(/\//g) || []).length === 1)
+  .filter((routePath) => !routePath.includes(':'))
+  .map((routePath) => routePath.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())
+  .filter((routePath) => routePath !== '')
+
+export const restrictedHandles = new Set(
+  [
+    // ===== Restricted Genres, Moods, and keywords come from common =====
+    commonRestrictedHandles,
+    // ===== Current Routes =====
+    ...restrictedRoutes
+  ].map((h) => h.toLowerCase())
+)
+
+export default restrictedHandles

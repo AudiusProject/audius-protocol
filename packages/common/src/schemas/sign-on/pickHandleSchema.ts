@@ -1,10 +1,10 @@
+import { z } from 'zod'
+
 import {
   AudiusQueryContextType,
   MAX_HANDLE_LENGTH,
   signUpFetch
 } from '@audius/common'
-import { z } from 'zod'
-
 import restrictedHandles from 'utils/restrictedHandles'
 
 export const errorMessages = {
@@ -18,7 +18,7 @@ export const errorMessages = {
   missingHandleError: 'Please enter a handle.'
 }
 
-export const generateHandleSchema = ({
+export const pickHandleSchema = ({
   audiusQueryContext,
   skipReservedHandleCheck = false
 }: {
@@ -54,7 +54,9 @@ export const generateHandleSchema = ({
             code: z.ZodIssueCode.custom,
             message: errorMessages.unknownError
           })
+          return z.NEVER
         }
+        return z.NEVER
       })
       .superRefine(async (handle, context) => {
         if (skipReservedHandleCheck) return
