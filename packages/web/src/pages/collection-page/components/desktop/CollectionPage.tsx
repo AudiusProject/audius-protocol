@@ -10,7 +10,9 @@ import {
   CollectionTrack,
   CollectionPageTrackRecord,
   CollectionsPageType,
-  DogEarType
+  DogEarType,
+  useFeatureFlag,
+  FeatureFlags
 } from '@audius/common'
 
 import {
@@ -23,6 +25,7 @@ import Page from 'components/page/Page'
 import { SuggestedTracks } from 'components/suggested-tracks'
 import { Tile } from 'components/tile'
 import { TracksTable, TracksTableColumn } from 'components/tracks-table'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { computeCollectionMetadataProps } from 'pages/collection-page/store/utils'
 
 import styles from './CollectionPage.module.css'
@@ -118,6 +121,8 @@ const CollectionPage = ({
   onClickReposts,
   onClickFavorites
 }: CollectionPageProps) => {
+  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
+
   // TODO: Consider dynamic lineups, esp. for caching improvement.
   const [dataSource, playingIndex] =
     tracks.status === Status.SUCCESS
@@ -261,7 +266,10 @@ const CollectionPage = ({
               onReorderTracks={onReorderTracks}
               onSortTracks={onSortTracks}
               isReorderable={
-                userId !== null && userId === playlistOwnerId && allowReordering
+                userId !== null &&
+                userId === playlistOwnerId &&
+                allowReordering &&
+                (!isAlbum || isEditAlbumsEnabled)
               }
               removeText={`${messages.remove} ${
                 isAlbum ? messages.type.album : messages.type.playlist

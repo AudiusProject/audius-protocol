@@ -348,6 +348,7 @@ def process_playlist_data_event(
         if key == "playlist_contents":
             if not playlist_metadata.get(key):
                 continue
+            # TODO: don't allow adding non-owned tracks to albums
             playlist_record.playlist_contents = process_playlist_contents(
                 playlist_record, playlist_metadata, block_integer_time
             )
