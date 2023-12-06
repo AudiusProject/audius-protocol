@@ -34,13 +34,6 @@ if [ "$audius_db_run_migrations" != false ]; then
     echo "Finished running pg_migrate.sh migrations"
 fi
 
-# start es-indexer
-if [[ "$audius_elasticsearch_url" ]] && [[ "$audius_elasticsearch_run_indexer" == "true" ]]; then
-    (
-        cd es-indexer && npm start &
-    )
-fi
-
 # start api server + celery workers
 if [[ "$audius_discprov_dev_mode" == "true" ]]; then
     if [[ "$audius_no_server" != "true" ]] && [[ "$audius_no_server" != "1" ]]; then
@@ -52,7 +45,7 @@ if [[ "$audius_discprov_dev_mode" == "true" ]]; then
         [ -e /var/celerybeat-schedule ] && rm /var/celerybeat-schedule
         [ -e /var/celerybeat.pid ] && rm /var/celerybeat.pid
         audius_service=beat celery -A src.worker.celery beat --schedule=/var/celerybeat-schedule --pidfile=/var/celerybeat.pid --loglevel WARNING 2>&1 | tee >(logger -t beat) &
-        audius_service=worker watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
+        audius_service=worker watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel "$audius_discprov_loglevel" 2>&1 | tee >(logger -t worker) &
     fi
 else
     if [[ "$audius_no_server" != "true" ]] && [[ "$audius_no_server" != "1" ]]; then
@@ -65,10 +58,10 @@ else
         [ -e /var/celerybeat.pid ] && rm /var/celerybeat.pid
         audius_service=beat celery -A src.worker.celery beat --schedule=/var/celerybeat-schedule --pidfile=/var/celerybeat.pid --loglevel WARNING 2>&1 | tee >(logger -t beat) &
         # start worker dedicated to indexing ACDC
-        audius_service=worker celery -A src.worker.celery worker -Q index_nethermind --loglevel $audius_discprov_loglevel --hostname=index_nethermind --concurrency 1 2>&1 | tee >(logger -t index_nethermind_worker) &
+        audius_service=worker celery -A src.worker.celery worker -Q index_nethermind --loglevel "$audius_discprov_loglevel" --hostname=index_nethermind --concurrency 1 2>&1 | tee >(logger -t index_nethermind_worker) &
 
         # start other workers with remaining CPUs
-        audius_service=worker celery -A src.worker.celery worker --max-memory-per-child 300000 --loglevel $audius_discprov_loglevel --concurrency=$(($(nproc) - 5)) 2>&1 | tee >(logger -t worker) &
+        audius_service=worker celery -A src.worker.celery worker --max-memory-per-child 300000 --loglevel "$audius_discprov_loglevel" --concurrency=$(($(nproc) - 5)) 2>&1 | tee >(logger -t worker) &
 
     fi
 fi

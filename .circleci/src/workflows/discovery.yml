@@ -43,6 +43,13 @@ jobs:
         branches:
           only: main
   - push-docker-image:
+      name: push-es-indexer
+      context: [Vercel, dockerhub]
+      service: es-indexer
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
       name: push-trpc
       context: [Vercel, dockerhub]
       service: trpc

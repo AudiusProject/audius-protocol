@@ -109,11 +109,6 @@ func startStagingOrProd(isProd bool) {
 		}()
 	}
 
-	migrateQmCidIters, err := strconv.Atoi(getenvWithDefault("MIGRATE_QM_CID_ITERS", "0"))
-	if err != nil {
-		logger.Warn("failed to parse MIGRATE_QM_CID_ITERS; defaulting to 0", "err", err)
-	}
-
 	config := server.MediorumConfig{
 		Self: server.Peer{
 			Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
@@ -136,7 +131,6 @@ func startStagingOrProd(isProd bool) {
 		AutoUpgradeEnabled:   os.Getenv("autoUpgradeEnabled") == "true",
 		StoreAll:             os.Getenv("STORE_ALL") == "true",
 		VersionJson:          GetVersionJson(),
-		MigrateQmCidIters:    migrateQmCidIters,
 	}
 
 	ss, err := server.New(config)
@@ -198,11 +192,6 @@ func startSandbox() {
 	}
 	logger.Info("fetched registered nodes", "peers", len(peers), "signers", len(signers))
 
-	migrateQmCidIters, err := strconv.Atoi(getenvWithDefault("MIGRATE_QM_CID_ITERS", "0"))
-	if err != nil {
-		logger.Warn("failed to parse MIGRATE_QM_CID_ITERS; defaulting to 0", "err", err)
-	}
-
 	config := server.MediorumConfig{
 		Self: server.Peer{
 			Host:   httputil.RemoveTrailingSlash(strings.ToLower(creatorNodeEndpoint)),
@@ -225,7 +214,6 @@ func startSandbox() {
 		AutoUpgradeEnabled:   os.Getenv("autoUpgradeEnabled") == "true",
 		StoreAll:             os.Getenv("STORE_ALL") == "true",
 		VersionJson:          GetVersionJson(),
-		MigrateQmCidIters:    migrateQmCidIters,
 	}
 
 	ss, err := server.New(config)
