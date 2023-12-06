@@ -68,7 +68,8 @@ const PlaylistForm = ({
     <Formik<EditPlaylistValuess>
       initialValues={{
         ...metadata,
-        artwork: { url: coverArtUrl }
+        artwork: { url: coverArtUrl },
+        description: metadata.description ?? ''
       }}
       onSubmit={onSave}
       validationSchema={toFormikValidationSchema(playlistFormSchema)}
