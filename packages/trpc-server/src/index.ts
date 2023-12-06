@@ -19,7 +19,7 @@ const app = express()
 app.use(cors())
 
 // AppRouter
-const appRouter = router({
+export const appRouter = router({
   me: meRouter,
   users: userRouter,
   tracks: trackRouter,
