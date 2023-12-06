@@ -1,6 +1,6 @@
 import {
   themes as harmonyThemes,
-  primitiveTheme as harmonyPimitiveTheme
+  primitiveTheme as harmonyPrimitiveTheme
 } from '@audius/harmony'
 import { mapValues } from 'lodash'
 
@@ -39,23 +39,23 @@ const primitiveOverrides = {
 
 export const primitiveTheme = {
   day: {
-    ...harmonyPimitiveTheme.day,
+    ...harmonyPrimitiveTheme.day,
     special: {
-      ...harmonyPimitiveTheme.day.special,
+      ...harmonyPrimitiveTheme.day.special,
       ...primitiveOverrides.day.special
     }
   },
   dark: {
-    ...harmonyPimitiveTheme.dark,
+    ...harmonyPrimitiveTheme.dark,
     special: {
-      ...harmonyPimitiveTheme.dark.special,
+      ...harmonyPrimitiveTheme.dark.special,
       ...primitiveOverrides.dark.special
     }
   },
   matrix: {
-    ...harmonyPimitiveTheme.matrix,
+    ...harmonyPrimitiveTheme.matrix,
     special: {
-      ...harmonyPimitiveTheme.matrix.special,
+      ...harmonyPrimitiveTheme.matrix.special,
       ...primitiveOverrides.matrix.special
     }
   }
@@ -172,7 +172,7 @@ const commonFoundations = {
   iconSizes: harmonyThemes.day.iconSizes
 }
 
-export const nativeHarmonyThemes = {
+export const theme = {
   day: {
     type: harmonyThemes.day.type,
     color: {
@@ -232,4 +232,4 @@ export const nativeHarmonyThemes = {
   }
 }
 
-export type HarmonyNativeTheme = typeof nativeHarmonyThemes['dark']
+export type HarmonyNativeTheme = typeof theme['dark']

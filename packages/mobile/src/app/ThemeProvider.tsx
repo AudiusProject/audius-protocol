@@ -78,5 +78,7 @@ export const ThemeProvider = (props: ThemeProviderProps) => {
     }
   }, [isDarkMode, dispatch, appState])
 
-  return <HarmonyThemeProvider theme={theme}>{children}</HarmonyThemeProvider>
+  return (
+    <HarmonyThemeProvider themeName={theme}>{children}</HarmonyThemeProvider>
+  )
 }

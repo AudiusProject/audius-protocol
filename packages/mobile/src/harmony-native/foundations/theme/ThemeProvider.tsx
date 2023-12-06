@@ -3,17 +3,17 @@ import type { ReactNode } from 'react'
 import type { Theme } from '@audius/harmony'
 import { ThemeProvider as EmotionThemeProvider } from '@emotion/react'
 
-import { nativeHarmonyThemes } from './theme'
+import { theme } from './theme'
 
 type ThemeProviderProps = {
-  theme: Theme
+  themeName: Theme
   children: ReactNode
 }
 
 export const ThemeProvider = (props: ThemeProviderProps) => {
-  const { children, theme } = props
+  const { children, themeName } = props
   return (
-    <EmotionThemeProvider theme={nativeHarmonyThemes[theme]}>
+    <EmotionThemeProvider theme={theme[themeName]}>
       {children}
     </EmotionThemeProvider>
   )
