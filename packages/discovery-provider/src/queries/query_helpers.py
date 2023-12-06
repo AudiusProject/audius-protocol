@@ -366,10 +366,6 @@ def populate_user_metadata(
             user["wallet"], None
         )
 
-        # this data is fetch in frontend via trpc.
-        # this field can probably be removed...
-        user[response_name_constants.does_follow_current_user] = False
-
     return users
 
 
