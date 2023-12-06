@@ -5,6 +5,10 @@ from typing import Any, Optional, TypedDict
 from sqlalchemy.orm.session import Session
 
 from src.api.v1.helpers import extend_track, format_limit, format_offset, to_dict
+from src.gated_content.gated_content_constants import (
+    SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
+    SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+)
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.social.repost import RepostType
 from src.models.social.save import SaveType
@@ -12,10 +16,6 @@ from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
-from src.premium_content.premium_content_constants import (
-    SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
-    SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
-)
 from src.queries.generate_unpopulated_trending_tracks import (
     TRENDING_TRACKS_LIMIT,
     TRENDING_TRACKS_TTL_SEC,
@@ -184,7 +184,7 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
         track_scoring_data = get_scorable_track_data(session, redis_instance, strategy)
 
         # If SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS is true, then filter out track ids
-        # belonging to premium tracks before applying the limit.
+        # belonging to gated tracks before applying the limit.
         if SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS:
             track_scoring_data = list(
                 filter(lambda item: not item["is_premium"], track_scoring_data)

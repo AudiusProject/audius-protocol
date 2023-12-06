@@ -5,12 +5,12 @@ from sqlalchemy import desc, text
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.elements import not_, or_
 
-from src.models.tracks.track import Track
-from src.models.tracks.track_trending_score import TrackTrendingScore
-from src.premium_content.premium_content_constants import (
+from src.gated_content.gated_content_constants import (
     SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
     SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
 )
+from src.models.tracks.track import Track
+from src.models.tracks.track_trending_score import TrackTrendingScore
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.tasks.generate_trending import generate_trending
 from src.trending_strategies.base_trending_strategy import BaseTrendingStrategy
@@ -49,7 +49,7 @@ def generate_unpopulated_trending(
     limit=TRENDING_TRACKS_LIMIT,
 ):
     # We use limit * 2 here to apply a soft limit so that
-    # when we later filter out premium or collectible gated tracks,
+    # when we later filter out gated tracks,
     # we will probabilistically satisfy the given limit.
     trending_tracks = generate_trending(
         session, time_range, genre, limit * 2, 0, strategy.version
@@ -81,7 +81,7 @@ def generate_unpopulated_trending(
             filter(lambda t: t["track_id"] in usdc_purchase_track_id_set, track_scores)
         )
     # If exclude_premium is true, then filter out track ids
-    # belonging to premium tracks before applying the limit.
+    # belonging to gated tracks before applying the limit.
     elif exclude_premium:
         ids = [track["track_id"] for track in track_scores]
         non_premium_track_ids = (
@@ -197,7 +197,7 @@ def generate_unpopulated_trending_from_mat_views(
             .all()
         )
     # If exclude_premium is true, then filter out track ids belonging to
-    # premium tracks before applying the limit.
+    # gated tracks before applying the limit.
     elif exclude_premium:
         trending_track_ids_subquery = trending_track_ids_query.subquery()
         trending_track_ids = (

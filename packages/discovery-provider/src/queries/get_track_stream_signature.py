@@ -2,11 +2,9 @@ import json
 import urllib.parse
 from typing import Dict, Optional, TypedDict
 
+from src.gated_content.gated_content_access_checker import gated_content_access_checker
+from src.gated_content.signature import get_gated_content_signature
 from src.models.tracks.track import Track
-from src.premium_content.premium_content_access_checker import (
-    premium_content_access_checker,
-)
-from src.premium_content.signature import get_premium_content_signature
 from src.queries.get_authed_user import get_authed_user
 from src.utils import db_session
 
@@ -48,7 +46,7 @@ def get_track_stream_signature(args: Dict):
         or (is_stream and not is_premium)
         or (is_download and not is_download_gated)
     ):
-        return get_premium_content_signature(
+        return get_gated_content_signature(
             {
                 "track_id": track["track_id"],
                 "cid": cid,
@@ -63,7 +61,7 @@ def get_track_stream_signature(args: Dict):
 
     premium_content_signature = args["premium_content_signature"]
     if premium_content_signature:
-        # check that authed user is the same as user for whom the premium content signature was signed
+        # check that authed user is the same as user for whom the gated content signature was signed
         premium_content_signature_obj = json.loads(
             urllib.parse.unquote(premium_content_signature)
         )
@@ -88,7 +86,7 @@ def get_track_stream_signature(args: Dict):
         )
         db = db_session.get_db_read_replica()
         with db.scoped_session() as session:
-            access = premium_content_access_checker.check_access(
+            access = gated_content_access_checker.check_access(
                 session=session,
                 user_id=authed_user["user_id"],
                 premium_content_id=track_entity.track_id,
@@ -99,7 +97,7 @@ def get_track_stream_signature(args: Dict):
             if not access["does_user_have_access"]:
                 return None
 
-    return get_premium_content_signature(
+    return get_gated_content_signature(
         {
             "track_id": track["track_id"],
             "cid": cid,

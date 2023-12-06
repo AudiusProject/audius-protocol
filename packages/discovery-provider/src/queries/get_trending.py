@@ -1,7 +1,7 @@
 import logging
 
 from src.api.v1.helpers import extend_track, format_limit, format_offset
-from src.premium_content.premium_content_constants import (
+from src.gated_content.gated_content_constants import (
     SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
 )
 from src.queries.generate_unpopulated_trending_tracks import TRENDING_TRACKS_LIMIT

@@ -11,7 +11,7 @@ has_current_user_saved = "has_current_user_saved"
 followee_reposts = "followee_reposts"
 # array - followees of current user that have saved given track/playlist
 followee_saves = "followee_saves"
-# string - signature required to access premium content
+# string - signature required to access gated content
 premium_content_signature = "premium_content_signature"
 
 # remix track specific
