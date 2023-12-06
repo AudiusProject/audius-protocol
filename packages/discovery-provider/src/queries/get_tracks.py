@@ -125,7 +125,7 @@ def _get_tracks(session, args):
         if filter_deleted:
             base_query = base_query.filter(TrackWithAggregates.is_delete == False)
 
-    # Allow filtering of premium tracks
+    # Allow filtering of gated tracks
     if args.get("exclude_premium", False):
         base_query = base_query.filter(TrackWithAggregates.is_premium == False)
 

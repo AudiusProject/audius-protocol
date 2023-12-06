@@ -134,7 +134,7 @@ def validate_playlist_tx(params: ManageEntityParameters):
         )
     )
     if premium_tracks:
-        raise IndexingValidationError("Cannot add premium tracks to playlist")
+        raise IndexingValidationError("Cannot add gated tracks to playlist")
 
     if params.action == Action.CREATE:
         if playlist_id in params.existing_records["Playlist"]:

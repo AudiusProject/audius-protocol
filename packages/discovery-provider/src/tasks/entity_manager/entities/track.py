@@ -8,17 +8,17 @@ from sqlalchemy.sql import null
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import IndexingValidationError
+from src.gated_content.gated_content_access_checker import (
+    GatedContentAccessBatchArgs,
+    gated_content_access_checker,
+)
+from src.gated_content.gated_content_constants import USDC_PURCHASE_KEY
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
-from src.premium_content.premium_content_access_checker import (
-    GatedContentAccessBatchArgs,
-    premium_content_access_checker,
-)
-from src.premium_content.premium_content_constants import USDC_PURCHASE_KEY
 from src.tasks.entity_manager.utils import (
     CHARACTER_LIMIT_DESCRIPTION,
     TRACK_ID_OFFSET,
@@ -101,11 +101,11 @@ def update_track_price_history(
                     new_record.total_price_cents = price
                 else:
                     raise IndexingValidationError(
-                        "Invalid type of usdc_purchase premium conditions 'price'"
+                        "Invalid type of usdc_purchase gated conditions 'price'"
                     )
             else:
                 raise IndexingValidationError(
-                    "Price missing from usdc_purchase premium conditions"
+                    "Price missing from usdc_purchase gated conditions"
                 )
 
             if "splits" in usdc_purchase:
@@ -115,11 +115,11 @@ def update_track_price_history(
                     new_record.splits = splits
                 else:
                     raise IndexingValidationError(
-                        "Invalid type of usdc_purchase premium conditions 'splits'"
+                        "Invalid type of usdc_purchase gated conditions 'splits'"
                     )
             else:
                 raise IndexingValidationError(
-                    "Splits missing from usdc_purchase premium conditions"
+                    "Splits missing from usdc_purchase gated conditions"
                 )
     if new_record:
         old_record: Union[TrackPriceHistory, None] = (
@@ -530,7 +530,7 @@ def validate_remixability(params: ManageEntityParameters):
         )
     )
     premium_content_batch_access = (
-        premium_content_access_checker.check_access_for_batch(session, args)
+        gated_content_access_checker.check_access_for_batch(session, args)
     )
     if "track" not in premium_content_batch_access:
         return
@@ -541,7 +541,7 @@ def validate_remixability(params: ManageEntityParameters):
         access = premium_content_batch_access["track"][user_id][track_id]
         if not access["does_user_have_access"]:
             raise IndexingValidationError(
-                f"User {user_id} does not have access to premium track {track_id}"
+                f"User {user_id} does not have access to gated track {track_id}"
             )
 
 

@@ -14,13 +14,13 @@ from solders.pubkey import Pubkey
 from sqlalchemy.orm.session import Session
 from web3 import Web3
 
+from src.gated_content.gated_content_access_checker import (
+    GatedContentAccessBatchArgs,
+    gated_content_access_checker,
+)
+from src.gated_content.signature import get_gated_content_signature_for_user
 from src.models.tracks.track import Track
 from src.models.users.user import User
-from src.premium_content.premium_content_access_checker import (
-    GatedContentAccessBatchArgs,
-    premium_content_access_checker,
-)
-from src.premium_content.signature import get_premium_content_signature_for_user
 from src.queries.get_associated_user_wallet import get_associated_user_wallet
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import METADATA_PROGRAM_ID_PK
@@ -98,7 +98,7 @@ def _get_tracks(track_ids: List[int], session: Session):
     )
 
 
-# Returns premium tracks from given track ids with an nft collection as the premium conditions.
+# Returns gated tracks from given track ids with an nft collection as the gated conditions.
 def _get_nft_gated_tracks(track_ids: List[int], session: Session):
     return list(
         filter(
@@ -133,7 +133,7 @@ def _get_eth_nft_gated_track_signatures(
     )
 
     # Build a map of ERC721 collection address -> track ids
-    # so that only one chain call will be made for premium tracks
+    # so that only one chain call will be made for gated tracks
     # that share the same nft collection gate.
     erc721_collection_track_map = defaultdict(list)
     for track in erc721_gated_tracks:
@@ -152,7 +152,7 @@ def _get_eth_nft_gated_track_signatures(
     )
 
     # Build a map of ERC1155 collection address -> track ids
-    # so that only one chain call will be made for premium tracks
+    # so that only one chain call will be made for gated tracks
     # that share the same nft collection gate.
     # Also build a map of ERC1155 collection address -> nft token ids
     # so that the balanceOf contract function can be used to check
@@ -184,14 +184,14 @@ def _get_eth_nft_gated_track_signatures(
         ):
             contract_address = future_to_erc721_contract_address_map[future]
             try:
-                # Generate premium content signatures for tracks whose
+                # Generate gated content signatures for tracks whose
                 # nft collection is owned by the user.
                 if future.result():
                     for track_cid in erc721_collection_track_map[contract_address]:
                         track_id = track_cid_to_id_map[track_cid]
                         track_signature_map[
                             track_id
-                        ] = get_premium_content_signature_for_user(
+                        ] = get_gated_content_signature_for_user(
                             {
                                 "track_id": track_id,
                                 "track_cid": track_cid,
@@ -222,14 +222,14 @@ def _get_eth_nft_gated_track_signatures(
         ):
             contract_address = future_to_erc1155_contract_address_map[future]
             try:
-                # Generate premium content signatures for tracks whose
+                # Generate gated content signatures for tracks whose
                 # nft collection is owned by the user.
                 if future.result():
                     for track_cid in erc1155_collection_track_map[contract_address]:
                         track_id = track_cid_to_id_map[track_cid]
                         track_signature_map[
                             track_id
-                        ] = get_premium_content_signature_for_user(
+                        ] = get_gated_content_signature_for_user(
                             {
                                 "track_id": track_id,
                                 "track_cid": track_cid,
@@ -395,7 +395,7 @@ def _get_sol_nft_gated_track_signatures(
     track_cid_to_id_map = {}
 
     # Build a map of collection mint address -> track ids
-    # so that only one chain call will be made for premium tracks
+    # so that only one chain call will be made for gated tracks
     # that share the same nft collection gate.
     collection_track_map = defaultdict(list)
     for track in tracks:
@@ -419,14 +419,14 @@ def _get_sol_nft_gated_track_signatures(
         ):
             collection_mint_address = future_to_collection_mint_address_map[future]
             try:
-                # Generate premium content signatures for tracks whose
+                # Generate gated content signatures for tracks whose
                 # nft collection is owned by the user.
                 if future.result():
                     for track_cid in collection_track_map[collection_mint_address]:
                         track_id = track_cid_to_id_map[track_cid]
                         track_signature_map[
                             track_id
-                        ] = get_premium_content_signature_for_user(
+                        ] = get_gated_content_signature_for_user(
                             {
                                 "track_id": track_id,
                                 "track_cid": cast(str, track_cid),
@@ -444,8 +444,8 @@ def _get_sol_nft_gated_track_signatures(
     return track_signature_map
 
 
-# Generates a premium content signature for each of the nft-gated tracks.
-# Return a map of premium track id -> premium content signature.
+# Generates a gated content signature for each of the nft-gated tracks.
+# Return a map of gated track id -> gated content signature.
 def get_nft_gated_premium_track_signatures(
     user_id: int, track_token_id_map: Dict[int, List[str]]
 ):
@@ -499,8 +499,8 @@ def get_nft_gated_premium_track_signatures(
         return result
 
 
-# Generates a premium content signature for each of the premium tracks.
-# Return a map of premium track id -> premium content signature.
+# Generates a gated content signature for each of the gated tracks.
+# Return a map of gated track id -> gated content signature.
 def get_premium_track_signatures(user_id: int, track_ids: List[int]):
     db = db_session.get_db_read_replica()
     with db.scoped_session() as session:
@@ -525,7 +525,7 @@ def get_premium_track_signatures(user_id: int, track_ids: List[int]):
             )
         )
         premium_track_batch_access = (
-            premium_content_access_checker.check_access_for_batch(session, args)
+            gated_content_access_checker.check_access_for_batch(session, args)
         )
 
         if (
@@ -545,7 +545,7 @@ def get_premium_track_signatures(user_id: int, track_ids: List[int]):
 
         track_signature_map = {}
         for track_id in track_ids_with_access:
-            track_signature_map[track_id] = get_premium_content_signature_for_user(
+            track_signature_map[track_id] = get_gated_content_signature_for_user(
                 {
                     "track_id": tracks_map[track_id].track_id,
                     "track_cid": tracks_map[track_id].track_cid,

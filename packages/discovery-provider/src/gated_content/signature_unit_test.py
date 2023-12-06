@@ -2,9 +2,9 @@ import json
 from datetime import datetime
 
 from src.api_helpers import recover_wallet
-from src.premium_content.signature import (
-    get_premium_content_signature,
-    get_premium_content_signature_for_user,
+from src.gated_content.signature import (
+    get_gated_content_signature,
+    get_gated_content_signature_for_user,
 )
 from src.utils.config import shared_config
 
@@ -15,8 +15,8 @@ def test_signature():
     premium_content_type = "track"
     before_ms = int(datetime.utcnow().timestamp() * 1000)
 
-    # for a non-premium track
-    result = get_premium_content_signature(
+    # for a non-gated track
+    result = get_gated_content_signature(
         {
             "track_id": track_id,
             "cid": track_cid,
@@ -42,8 +42,8 @@ def test_signature():
 
     assert discovery_node_wallet == shared_config["delegate"]["owner_wallet"]
 
-    # make sure that "shouldCache" is not included in the signature for a premium track
-    result = get_premium_content_signature(
+    # make sure that "shouldCache" is not included in the signature for a gated track
+    result = get_gated_content_signature(
         {
             "track_id": track_id,
             "cid": track_cid,
@@ -66,8 +66,8 @@ def test_signature_for_user():
     )
     before_ms = int(datetime.utcnow().timestamp() * 1000)
 
-    # for a non-premium track
-    result = get_premium_content_signature_for_user(
+    # for a non-gated track
+    result = get_gated_content_signature_for_user(
         {
             "track_id": track_id,
             "track_cid": track_cid,
@@ -95,8 +95,8 @@ def test_signature_for_user():
 
     assert discovery_node_wallet == shared_config["delegate"]["owner_wallet"]
 
-    # make sure that "shouldCache" is not included in the signature for a premium track
-    result = get_premium_content_signature_for_user(
+    # make sure that "shouldCache" is not included in the signature for a gated track
+    result = get_gated_content_signature_for_user(
         {
             "track_id": track_id,
             "track_cid": track_cid,
@@ -121,8 +121,8 @@ def test_signature_for_user_with_user_id():
     user_id = 1
     before_ms = int(datetime.utcnow().timestamp() * 1000)
 
-    # for a non-premium track
-    result = get_premium_content_signature_for_user(
+    # for a non-gated track
+    result = get_gated_content_signature_for_user(
         {
             "track_id": track_id,
             "track_cid": track_cid,
@@ -152,8 +152,8 @@ def test_signature_for_user_with_user_id():
 
     assert discovery_node_wallet == shared_config["delegate"]["owner_wallet"]
 
-    # make sure that "shouldCache" is not included in the signature for a premium track
-    result = get_premium_content_signature_for_user(
+    # make sure that "shouldCache" is not included in the signature for a gated track
+    result = get_gated_content_signature_for_user(
         {
             "track_id": track_id,
             "track_cid": track_cid,

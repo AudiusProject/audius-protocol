@@ -3,10 +3,10 @@ from typing import Dict, Union
 
 from sqlalchemy.orm.session import Session
 
+from src.gated_content.gated_content_types import GatedContentType
 from src.models.social.follow import Follow
 from src.models.users.aggregate_user_tips import AggregateUserTip
 from src.models.users.usdc_purchase import USDCPurchase
-from src.premium_content.premium_content_types import PremiumContentType
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ def does_user_have_nft_collection(
     session: Session,
     user_id: int,
     content_id: int,
-    content_type: PremiumContentType,
+    content_type: GatedContentType,
     condition_options: Union[Dict, int],
 ):
     # Return False here as we want to avoid this check here, in favor of
@@ -28,7 +28,7 @@ def does_user_follow_artist(
     session: Session,
     user_id: int,
     content_id: int,
-    content_type: PremiumContentType,
+    content_type: GatedContentType,
     condition_options: Union[Dict, int],
 ):
     follow_user_id = condition_options
@@ -47,7 +47,7 @@ def does_user_support_artist(
     session: Session,
     user_id: int,
     content_id: int,
-    content_type: PremiumContentType,
+    content_type: GatedContentType,
     condition_options: Union[Dict, int],
 ):
     supporting_user_id = condition_options
@@ -65,7 +65,7 @@ def has_user_purchased_content(
     session: Session,
     user_id: int,
     content_id: int,
-    content_type: PremiumContentType,
+    content_type: GatedContentType,
     condition_options: Union[Dict, int],
 ):
     result = (

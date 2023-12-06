@@ -20,7 +20,7 @@ def get_playlist_tracks(session, args):
         "playlist_ids": string[]
         "current_user_id": int
         "populate_tracks": boolean # whether to add users & metadata to tracks
-        "exclude_premium": boolean # whether to filter out premium tracks
+        "exclude_premium": boolean # whether to filter out gated tracks
     }
 
     Returns: {

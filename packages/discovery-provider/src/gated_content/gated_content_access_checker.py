@@ -5,17 +5,17 @@ from typing import Dict, List, Optional, TypedDict, Union, cast
 from sqlalchemy.orm.session import Session
 from typing_extensions import Protocol
 
-from src.models.tracks.track import Track
-from src.premium_content.helpers import (
+from src.gated_content.gated_content_types import (
+    GatedContentConditions,
+    GatedContentType,
+)
+from src.gated_content.helpers import (
     does_user_follow_artist,
     does_user_have_nft_collection,
     does_user_support_artist,
     has_user_purchased_content,
 )
-from src.premium_content.premium_content_types import (
-    PremiumContentConditions,
-    PremiumContentType,
-)
+from src.models.tracks.track import Track
 from src.utils import helpers
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 class GatedContentAccessBatchArgs(TypedDict):
     user_id: int
     premium_content_id: int
-    premium_content_type: PremiumContentType
+    premium_content_type: GatedContentType
 
 
 class GatedContentAccess(TypedDict):
@@ -46,7 +46,7 @@ class GatedContentAccessHandler(Protocol):
         session: Session,
         user_id: int,
         content_id: int,
-        content_type: PremiumContentType,
+        content_type: GatedContentType,
         condition_options: Union[Dict, int],
     ) -> bool:
         pass
@@ -56,7 +56,7 @@ handler: GatedContentAccessHandler = has_user_purchased_content
 
 
 GATED_CONDITION_TO_HANDLER_MAP: Dict[
-    PremiumContentConditions, GatedContentAccessHandler
+    GatedContentConditions, GatedContentAccessHandler
 ] = {
     "nft_collection": does_user_have_nft_collection,
     "follow_user_id": does_user_follow_artist,
@@ -65,7 +65,7 @@ GATED_CONDITION_TO_HANDLER_MAP: Dict[
 }
 
 
-class PremiumContentAccessChecker:
+class GatedContentAccessChecker:
     # Given a user id, gated content id, and gated content type, and gated content entity,
     # this method checks for access to the gated contents by the users.
     #
@@ -79,13 +79,13 @@ class PremiumContentAccessChecker:
         session: Session,
         user_id: int,
         premium_content_id: int,
-        premium_content_type: PremiumContentType,
+        premium_content_type: GatedContentType,
         premium_content_entity: Track,
         is_download: Optional[bool] = False,
     ) -> GatedContentAccess:
         if premium_content_type != "track":
             logger.warn(
-                f"premium_content_access_checker | check_access | premium content type {premium_content_type} is not supported."
+                f"gated_content_access_checker | check_access | gated content type {premium_content_type} is not supported."
             )
             return {"is_premium": False, "does_user_have_access": True}
 
@@ -105,7 +105,7 @@ class PremiumContentAccessChecker:
             # no sense to have a non-gated track with gating conditions
             if conditions:
                 logger.warn(
-                    f"premium_content_access_checker.py | check_access | non-gated content with id {premium_content_id} and type {premium_content_type} has gated conditions."
+                    f"gated_content_access_checker.py | check_access | non-gated content with id {premium_content_id} and type {premium_content_type} has gated conditions."
                 )
             return {"is_premium": False, "does_user_have_access": True}
 
@@ -114,7 +114,7 @@ class PremiumContentAccessChecker:
         # to have a gated track with no conditions
         if conditions is None:
             logger.warn(
-                f"premium_content_access_checker.py | check_access | gated content with id {premium_content_id} and type {premium_content_type} has no gated conditions."
+                f"gated_content_access_checker.py | check_access | gated content with id {premium_content_id} and type {premium_content_type} has no gated conditions."
             )
             return {
                 "is_premium": True,
@@ -189,7 +189,7 @@ class PremiumContentAccessChecker:
                 # no sense to have a non-gated track with conditions
                 if conditions:
                     logger.warn(
-                        f"premium_content_access_checker.py | check_access_for_batch | non-gated content with id {track_id} and type 'track' has gated conditions."
+                        f"gated_content_access_checker.py | check_access_for_batch | non-gated content with id {track_id} and type 'track' has gated conditions."
                     )
                 track_access_result[user_id][track_id] = {
                     "is_premium": False,
@@ -201,14 +201,14 @@ class PremiumContentAccessChecker:
             # to have a gated track with no conditions
             elif conditions is None:
                 logger.warn(
-                    f"premium_content_access_checker.py | check_access_for_batch | gated content with id {track_id} and type 'track' has no gated conditions."
+                    f"gated_content_access_checker.py | check_access_for_batch | gated content with id {track_id} and type 'track' has no gated conditions."
                 )
                 track_access_result[user_id][track_id] = {
                     "is_premium": True,
                     "does_user_have_access": True,
                 }
 
-            # track owner has access to own premium track
+            # track owner has access to their own gated track
             elif content_owner_id == user_id:
                 track_access_result[user_id][track_id] = {
                     "is_premium": True,
@@ -258,12 +258,12 @@ class PremiumContentAccessChecker:
         session: Session,
         user_id: int,
         content_id: int,
-        content_type: PremiumContentType,
+        content_type: GatedContentType,
         conditions: Dict,
     ):
         if len(conditions) != 1:
             logging.info(
-                f"premium_content_access_checker.py | _evaluate_conditions | invalid number of conditions: {json.dumps(conditions)}"
+                f"gated_content_access_checker.py | _evaluate_conditions | invalid number of conditions: {json.dumps(conditions)}"
             )
             return False
 
@@ -272,7 +272,7 @@ class PremiumContentAccessChecker:
         condition, condition_options = list(conditions.items())[0]
         if condition not in set(GATED_CONDITION_TO_HANDLER_MAP.keys()):
             logging.info(
-                f"premium_content_access_checker.py | _evaluate_conditions | invalid condition: {json.dumps(conditions)}"
+                f"gated_content_access_checker.py | _evaluate_conditions | invalid condition: {json.dumps(conditions)}"
             )
             return False
 
@@ -285,4 +285,4 @@ class PremiumContentAccessChecker:
         )
 
 
-premium_content_access_checker = PremiumContentAccessChecker()
+gated_content_access_checker = GatedContentAccessChecker()
