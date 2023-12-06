@@ -443,15 +443,10 @@ function* signUp() {
             yield put(signOnActions.setTwitterProfileError(error))
           }
         }
-        if (
-          !signOn.useMetaMask &&
-          signOn.instagramId &&
-          handle.toLowerCase() ===
-            (signOn.instagramScreenName || '').toLowerCase()
-        ) {
+        if (!signOn.useMetaMask && signOn.instagramId) {
           const { error } = yield call(
             audiusBackendInstance.associateInstagramAccount,
-            handle.toLowerCase(),
+            signOn.instagramId,
             userId,
             handle
           )
