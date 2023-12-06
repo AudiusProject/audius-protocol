@@ -16,7 +16,6 @@
   background-color: var(--harmony-bg-surface-1);
   transition: border ease-in-out 0.1s;
   box-sizing: border-box;
-  height: 60px !important;
 
   & svg path {
     fill: var(--harmony-text-subdued);

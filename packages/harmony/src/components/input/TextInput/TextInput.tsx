@@ -145,6 +145,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
     )
 
     const isLabelElevated = hasValue || isFocused
+
     return (
       <Flex
         className={cn(styles.root, className)}
