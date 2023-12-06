@@ -191,7 +191,7 @@ export const GiantTrackTile = ({
   const showPlay = isUSDCPurchaseGated ? doesUserHaveAccess : true
 
   let isScheduledRelease = false
-  if (!isPublishing && moment(released).isAfter(moment())) {
+  if (!isPublishing && moment.utc(released).isAfter(moment())) {
     isScheduledRelease = true
   }
 

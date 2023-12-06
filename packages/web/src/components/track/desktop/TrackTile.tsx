@@ -15,7 +15,6 @@ import {
 } from '@audius/common'
 import { IconCheck, IconCrown, IconHidden, ProgressBar } from '@audius/stems'
 import cn from 'classnames'
-import moment from 'moment'
 import { useSelector } from 'react-redux'
 
 import IconStar from 'assets/img/iconStar.svg'
@@ -250,9 +249,7 @@ const TrackTile = ({
         </div>
       )
     }
-    if (releaseDate && moment(releaseDate).isAfter(moment.now())) {
-      scheduledReleaseLabel = <ScheduledReleaseLabel released={releaseDate} />
-    }
+    scheduledReleaseLabel = <ScheduledReleaseLabel released={releaseDate} />
   }
 
   return (

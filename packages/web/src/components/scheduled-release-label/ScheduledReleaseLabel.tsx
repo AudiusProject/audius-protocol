@@ -8,12 +8,15 @@ import premiumContentLabelStyles from '../track/PremiumContentLabel.module.css'
 import styles from './ScheduledReleaseLabel.module.css'
 
 export type ScheduledReleaseLabelProps = {
-  released?: string
+  released?: string | null
 }
 
 export const ScheduledReleaseLabel = ({
   released
 }: ScheduledReleaseLabelProps) => {
+  if (!released || moment.utc(released).isBefore(moment())) {
+    return <></>
+  }
   return (
     <div
       className={cn(
@@ -30,6 +33,10 @@ export const ScheduledReleaseLabel = ({
 export const ScheduledReleaseGiantLabel = ({
   released
 }: ScheduledReleaseLabelProps) => {
+  if (!released || moment.utc(released).isBefore(moment())) {
+    return <></>
+  }
+
   return (
     <div
       className={cn(
