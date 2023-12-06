@@ -1,27 +1,10 @@
-import {
-  SetStateAction,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import { truncate } from 'fs'
-import { release } from 'os'
-
-import Info, { IconInfo } from '@audius/harmony'
-import {
-  IconCalendar,
-  RadioButtonGroup,
-  RadioGroupContext,
-  ModalContent
-} from '@audius/stems'
-import Select from 'antd/lib/select'
+import { IconInfo } from '@audius/harmony'
+import { IconCalendar, RadioButtonGroup, ModalContent } from '@audius/stems'
 import cn from 'classnames'
-import { useField, useFormikContext } from 'formik'
+import { useField } from 'formik'
 import moment from 'moment'
-import { select } from 'typed-redux-saga'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
@@ -29,7 +12,7 @@ import {
   ContextualMenu,
   SelectedValue
 } from 'components/data-entry/ContextualMenu'
-import { DropdownField, DropdownFieldProps } from 'components/form-fields'
+import { DropdownField } from 'components/form-fields'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import { HelpCallout } from 'components/help-callout/HelpCallout'
 import layoutStyles from 'components/layout/layout.module.css'
@@ -39,7 +22,6 @@ import { Text } from 'components/typography'
 import { useTrackField } from '../hooks'
 import { SingleTrackEditValues } from '../types'
 
-import { AVAILABILITY_TYPE } from './AccessAndSaleField'
 import { DatePickerField } from './DatePickerField'
 import styles from './ReleaseDateField.module.css'
 
@@ -102,8 +84,11 @@ const timeValidationSchema = z.object({
     })
 })
 
-const getScheduledReleaseLabelMessage = (releaseDate, prefixMessage = '') => {
-  const formatReleaseMessage = (releaseDate, base) => {
+const getScheduledReleaseLabelMessage = (
+  releaseDate: string,
+  prefixMessage = ''
+) => {
+  const formatReleaseMessage = (releaseDate: string, base: string) => {
     const isFutureRelease = moment(releaseDate ?? undefined).isAfter(
       moment.now()
     )
@@ -113,7 +98,7 @@ const getScheduledReleaseLabelMessage = (releaseDate, prefixMessage = '') => {
     return message
   }
 
-  return moment(releaseDate ?? undefined).calendar(null, {
+  return moment(releaseDate ?? undefined).calendar(undefined, {
     sameDay: formatReleaseMessage(releaseDate, '[Today]'),
     nextDay: formatReleaseMessage(releaseDate, '[Tomorrow]'),
     nextWeek: formatReleaseMessage(releaseDate, 'dddd'),
@@ -130,27 +115,10 @@ export const ReleaseDateField = () => {
     useTrackField<ReleaseDateValue>(RELEASE_DATE)
   const trackReleaseDate = trackReleaseDateField.value
 
-  const [releaseDateTypeField, , { setValue: setReleaseDateType }] =
-    useField(RELEASE_DATE_TYPE)
+  const [releaseDateTypeField, ,] = useField(RELEASE_DATE_TYPE)
   const releaseDateType = releaseDateTypeField.value
-
-  const [, , { setValue: setReleaseDateMeridian }] = useField(
-    RELEASE_DATE_MERIDIAN
-  )
-
   const roundUpHour = moment().add(1, 'hours').minutes(0).seconds(0)
   const initialValues = useMemo(() => {
-  // let releaseDateHour
-
-    // console.log('asdf initing :', trackReleaseDate, releaseDate, releaseDateType, releaseDateHour, releaseDateMeridian)
-    // if (trackReleaseDate) {
-    //   releaseDateHour = moment(trackReleaseDate).format('h:mm')
-    // } else if (!releaseDate) {
-    //   releaseDateHour = roundUpHour.format('h:mm')
-    // } else {
-    //   releaseDateHour = '12:00'
-    // }
-
     return {
       [RELEASE_DATE]: trackReleaseDate ?? undefined,
       [RELEASE_DATE_HOUR]: trackReleaseDate
@@ -237,19 +205,13 @@ export const ReleaseDateField = () => {
 }
 
 const RadioItems = (props: any) => {
-  const [releaseDateTypeField, , { setValue: setReleaseDateType }] =
-    useField(RELEASE_DATE_TYPE)
-  const releaseDateType = releaseDateTypeField.value
-  const [{ value: releaseDateHour }, , { setValue: setReleaseDateHour }] =
-    useField(RELEASE_DATE_HOUR)
+  const [releaseDateTypeField, ,] = useField(RELEASE_DATE_TYPE)
+  const [, , { setValue: setReleaseDateHour }] = useField(RELEASE_DATE_HOUR)
 
-  const [
-    { value: releaseDateMeridian },
-    ,
-    { setValue: setReleaseDateMeridian }
-  ] = useField(RELEASE_DATE_MERIDIAN)
+  const [, , { setValue: setReleaseDateMeridian }] = useField(
+    RELEASE_DATE_MERIDIAN
+  )
 
-  console.log('asdf radioItems props: ', props)
   const [releaseDateField, ,] = useField(RELEASE_DATE)
 
   const [timePeriod, setTimePeriod] = useState(TimePeriodType.PRESENT)
@@ -259,14 +221,12 @@ const RadioItems = (props: any) => {
       return
     }
     const truncatedReleaseDate = moment(releaseDateField.value).startOf('day')
-    console.log('asdf reseting: ', truncatedReleaseDate, timePeriod)
 
     const today = moment().startOf('day')
 
     if (moment(truncatedReleaseDate).isBefore(today)) {
       setTimePeriod(TimePeriodType.PAST)
     } else if (moment(truncatedReleaseDate).isAfter(today)) {
-      console.log('asdf setting future')
       setTimePeriod(TimePeriodType.FUTURE)
       setReleaseDateHour('12:00')
       setReleaseDateMeridian(ReleaseDateMeridian.AM)
@@ -344,21 +304,8 @@ const RadioItems = (props: any) => {
     </>
   )
 }
-const menu = {
-  items: [ReleaseDateMeridian.AM, ReleaseDateMeridian.PM].map((meridian) => {
-    const el = <p>{meridian}</p>
-    return { el, text: meridian, value: meridian }
-  })
-}
 
 export const SelectMeridianField = () => {
-  const [
-    { value: releaseDateMeridian },
-    ,
-    { setValue: setReleaseDateMeridian }
-  ] = useField(RELEASE_DATE_MERIDIAN)
-
-  console.log('asdf re-render meridian: ', releaseDateMeridian)
   return (
     <DropdownField
       aria-label={'label'}

@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 
 import type { Nullable } from '@audius/common'
-import { FeatureFlags, Theme } from '@audius/common'
+import { Theme } from '@audius/common'
 import { useField } from 'formik'
 import moment from 'moment'
 import { TouchableOpacity } from 'react-native-gesture-handler'
@@ -12,7 +12,6 @@ import type {
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
 
 import { Button, Pill, Text } from 'app/components/core'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { useThemeColors, useThemeVariant } from 'app/utils/theme'
 
@@ -74,9 +73,6 @@ export const ReleaseDateField = () => {
   const [isOpen, setIsOpen] = useState(false)
   const { primary } = useThemeColors()
   const theme = useThemeVariant()
-  const { isEnabled: isScheduledReleasesEnabled } = useFeatureFlag(
-    FeatureFlags.SCHEDULED_RELEASES
-  )
   const maximumDate = useRef(new Date())
 
   const releaseDate = useMemo(
@@ -129,9 +125,7 @@ export const ReleaseDateField = () => {
         themeVariant={theme === Theme.DEFAULT ? 'light' : 'dark'}
         isDarkModeEnabled={theme !== Theme.DEFAULT}
         accentColor={primary}
-        maximumDate={
-          isScheduledReleasesEnabled ? undefined : maximumDate.current
-        }
+        maximumDate={maximumDate.current}
         modalStyleIOS={styles.datePickerModal}
         customConfirmButtonIOS={ConfirmDateButton}
         customCancelButtonIOS={CancelDateButton}

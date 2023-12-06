@@ -29,7 +29,6 @@ export const getDogEarType = ({
   isUnlisted,
   premiumConditions
 }: GetDogEarTypeArgs) => {
-
   // Show premium variants for track owners or if user does not yet have access
   if (
     (isOwner || !doesUserHaveAccess) &&

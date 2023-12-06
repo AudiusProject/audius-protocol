@@ -1,9 +1,8 @@
 import 'react-dates/initialize'
 import 'react-dates/lib/css/_datepicker.css'
 
-import { SetStateAction, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-import { FeatureFlags } from '@audius/common'
 import { Popup } from '@audius/stems'
 import cn from 'classnames'
 import { useField } from 'formik'
@@ -12,10 +11,8 @@ import {
   isInclusivelyBeforeDay,
   DayPickerSingleDateController
 } from 'react-dates'
-import { should } from 'vitest'
 
 import IconCalendar from 'assets/img/iconCalendar.svg'
-import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from './DatePickerField.module.css'
 

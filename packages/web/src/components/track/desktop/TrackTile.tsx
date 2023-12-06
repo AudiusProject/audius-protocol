@@ -1,7 +1,5 @@
 import { memo } from 'react'
 
-import { release } from 'os'
-
 import {
   formatCount,
   accountSelectors,

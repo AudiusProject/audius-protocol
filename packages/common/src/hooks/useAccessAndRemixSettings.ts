@@ -83,8 +83,7 @@ export const useAccessAndRemixSettings = ({
     isInitiallySpecialAccess ||
     hasNoCollectibles
   const noCollectibleGateFields =
-    noCollectibleGate ||
-    (!isUpload && !isInitiallyHidden)
+    noCollectibleGate || (!isUpload && !isInitiallyHidden)
 
   const noHidden = !isUpload && !isInitiallyUnlisted
 

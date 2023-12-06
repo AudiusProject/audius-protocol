@@ -38,8 +38,7 @@ export const getTrackWithFallback = (track: Track | null) => {
         '480x480': '',
         '1000x1000': '',
         OVERRIDE: ''
-      },
-      release_date: ''
+      }
     }
   )
 }

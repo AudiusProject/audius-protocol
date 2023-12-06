@@ -15,7 +15,6 @@ import {
   getDogEarType,
   isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
-import { Text } from '@audius/harmony'
 import {
   Button,
   ButtonType,
@@ -23,8 +22,7 @@ import {
   IconRocket,
   IconRepost,
   IconHeart,
-  IconKebabHorizontal,
-  IconCalendar
+  IconKebabHorizontal
 } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
@@ -36,10 +34,7 @@ import { UserLink } from 'components/link'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
-import {
-  ScheduledReleaseGiantLabel,
-  ScheduledReleaseLabel
-} from 'components/scheduled-release-label/ScheduledReleaseLabel'
+import { ScheduledReleaseGiantLabel } from 'components/scheduled-release-label/ScheduledReleaseLabel'
 import { SearchTag } from 'components/search/SearchTag'
 import Skeleton from 'components/skeleton/Skeleton'
 import { Tile } from 'components/tile'
