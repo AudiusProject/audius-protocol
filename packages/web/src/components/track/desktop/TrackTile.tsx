@@ -249,7 +249,7 @@ const TrackTile = ({
         </div>
       )
     }
-    scheduledReleaseLabel = <ScheduledReleaseLabel released={releaseDate} />
+    scheduledReleaseLabel = <ScheduledReleaseLabel released={releaseDate} isUnlisted={isUnlisted} />
   }
 
   return (

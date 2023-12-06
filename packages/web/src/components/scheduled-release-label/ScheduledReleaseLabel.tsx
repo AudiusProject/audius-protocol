@@ -9,12 +9,13 @@ import styles from './ScheduledReleaseLabel.module.css'
 
 export type ScheduledReleaseLabelProps = {
   released?: string | null
+  isUnlisted?: boolean
 }
 
 export const ScheduledReleaseLabel = ({
-  released
+  released, isUnlisted
 }: ScheduledReleaseLabelProps) => {
-  if (!released || moment.utc(released).isBefore(moment())) {
+  if (!released || !isUnlisted) {
     return <></>
   }
   return (
@@ -25,15 +26,15 @@ export const ScheduledReleaseLabel = ({
       )}
     >
       <IconCalendar className={premiumContentLabelStyles.icon} />
-      Releases on {moment(released).calendar()}
+      Releases {moment(released).format('M/D/YY [@] h:mm A')} 
     </div>
   )
 }
 
 export const ScheduledReleaseGiantLabel = ({
-  released
+  released, isUnlisted
 }: ScheduledReleaseLabelProps) => {
-  if (!released || moment.utc(released).isBefore(moment())) {
+  if (!released || !isUnlisted) {
     return <></>
   }
 
@@ -46,7 +47,7 @@ export const ScheduledReleaseGiantLabel = ({
     >
       <IconCalendar />
       <Text color='accent' variant='title'>
-        Releases on {released}
+        Releases {moment(released).format('M/D/YY [@] h:mm A')} 
       </Text>
     </div>
   )
