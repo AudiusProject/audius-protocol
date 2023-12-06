@@ -1,3 +1,4 @@
+import { imageBlank } from '@audius/common'
 import {
   Genre,
   HashId,
@@ -125,10 +126,14 @@ const createCollectionSchema = (collectionType: 'playlist' | 'album') =>
         url: z.string()
       })
       .nullable()
-
-      .refine((artwork) => artwork !== null, {
-        message: messages.artworkRequiredError
-      }),
+      .refine(
+        (artwork) => {
+          return artwork !== null && artwork.url !== imageBlank
+        },
+        {
+          message: messages.artworkRequiredError
+        }
+      ),
     playlist_name: z.string({
       required_error: messages[collectionType].nameRequiredError
     }),
