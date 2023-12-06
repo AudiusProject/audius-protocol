@@ -26,7 +26,7 @@ export const ScheduledReleaseLabel = ({
       )}
     >
       <IconCalendar className={premiumContentLabelStyles.icon} />
-      Releases {moment(released).format('M/D/YY [@] h:mm A')} 
+      Releases {moment.utc(released).local().format('M/D/YY [@] h:mm A')} 
     </div>
   )
 }
@@ -47,7 +47,7 @@ export const ScheduledReleaseGiantLabel = ({
     >
       <IconCalendar />
       <Text color='accent' variant='title'>
-        Releases {moment(released).format('M/D/YY [@] h:mm A')} 
+        Releases {moment.utc(released).local().format('M/D/YY [@] h:mm A')} 
       </Text>
     </div>
   )
