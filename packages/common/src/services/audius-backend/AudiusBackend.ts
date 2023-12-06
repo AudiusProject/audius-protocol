@@ -190,6 +190,7 @@ type AudiusBackendSolanaConfig = Partial<{
   rewardsManagerProgramId: string
   rewardsManagerProgramPda: string
   rewardsManagerTokenPda: string
+  paymentRouterProgramId: string
   solanaClusterEndpoint: string
   solanaFeePayerAddress: string
   solanaTokenAddress: string
@@ -311,6 +312,7 @@ export const audiusBackend = ({
     rewardsManagerProgramId,
     rewardsManagerProgramPda,
     rewardsManagerTokenPda,
+    paymentRouterProgramId,
     solanaClusterEndpoint,
     solanaFeePayerAddress,
     solanaTokenAddress,
@@ -776,7 +778,8 @@ export const audiusBackend = ({
       !claimableTokenProgramAddress ||
       !rewardsManagerProgramId ||
       !rewardsManagerProgramPda ||
-      !rewardsManagerTokenPda
+      !rewardsManagerTokenPda ||
+      !paymentRouterProgramId
     ) {
       return {
         error: true
@@ -795,6 +798,7 @@ export const audiusBackend = ({
         rewardsManagerProgramId,
         rewardsManagerProgramPDA: rewardsManagerProgramPda,
         rewardsManagerTokenPDA: rewardsManagerTokenPda,
+        paymentRouterProgramId,
         useRelay: true
       })
     }
