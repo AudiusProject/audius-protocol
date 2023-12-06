@@ -1,9 +1,9 @@
 import { css } from '@emotion/native'
 import { View } from 'react-native'
 
-import { Box, Flex, type NativeFlexProps } from '@audius/harmony-native'
+import { Box, Flex, type FlexProps } from '@audius/harmony-native'
 
-type DividerProps = NativeFlexProps
+type DividerProps = FlexProps
 
 // TODO: temporary component until harmony divider exists
 export const Divider = (props: DividerProps) => {
