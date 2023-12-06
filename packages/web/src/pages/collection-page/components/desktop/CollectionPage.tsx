@@ -11,7 +11,6 @@ import {
   CollectionPageTrackRecord,
   CollectionsPageType,
   DogEarType,
-  useFeatureFlag,
   FeatureFlags
 } from '@audius/common'
 
