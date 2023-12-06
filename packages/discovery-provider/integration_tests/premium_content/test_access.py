@@ -81,7 +81,7 @@ def test_access(app):
 
         premium_content_access_checker = PremiumContentAccessChecker()
 
-        # test non-premium content
+        # test non-gated content
         with db.scoped_session() as session:
             result = premium_content_access_checker.check_access(
                 session=session,
@@ -92,7 +92,7 @@ def test_access(app):
             )
             assert not result["is_premium"] and result["does_user_have_access"]
 
-            # test premium content with user who has no access
+            # test gated content with user who has no access
             result = premium_content_access_checker.check_access(
                 session=session,
                 user_id=2,
@@ -102,7 +102,7 @@ def test_access(app):
             )
             assert result["is_premium"] and not result["does_user_have_access"]
 
-            # test premium content with user who owns the track
+            # test gated content with user who owns the track
             result = premium_content_access_checker.check_access(
                 session=session,
                 user_id=2,
@@ -112,7 +112,7 @@ def test_access(app):
             )
             assert result["is_premium"] and result["does_user_have_access"]
 
-            # test premium content with user who has access
+            # test gated content with user who has access
             result = premium_content_access_checker.check_access(
                 session=session,
                 user_id=2,

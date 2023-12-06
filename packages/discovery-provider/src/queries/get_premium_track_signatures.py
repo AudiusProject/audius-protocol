@@ -17,7 +17,7 @@ from web3 import Web3
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.premium_content.premium_content_access_checker import (
-    PremiumContentAccessBatchArgs,
+    GatedContentAccessBatchArgs,
     premium_content_access_checker,
 )
 from src.premium_content.signature import get_premium_content_signature_for_user
@@ -514,7 +514,7 @@ def get_premium_track_signatures(user_id: int, track_ids: List[int]):
         tracks = _get_tracks(track_ids, session)
         tracks_map = {track.track_id: track for track in tracks}
 
-        args: List[PremiumContentAccessBatchArgs] = list(
+        args: List[GatedContentAccessBatchArgs] = list(
             map(
                 lambda track_id: {
                     "user_id": user_id,

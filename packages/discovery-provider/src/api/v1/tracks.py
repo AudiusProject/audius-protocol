@@ -463,30 +463,35 @@ class TrackStream(Resource):
         This endpoint accepts the Range header for streaming.
         https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
         """
-        args = stream_parser.parse_args()
-        stream_preview = args.get("preview")
+        request_args = stream_parser.parse_args()
+        is_preview = request_args.get("preview")
+        filename = request_args.get("filename")
         decoded_id = decode_with_abort(track_id, ns)
         info = get_track_stream_info(decoded_id)
 
         track = info.get("track")
         cid = track.get("track_cid")
-        if stream_preview:
+        if is_preview:
             cid = track.get("preview_cid")
+        elif filename:
+            cid = track.get("orig_file_cid")
+
         if not track or not cid:
             logger.error(
-                f"tracks.py | stream | Track with id {track_id} may not exist or has no {'preview' if stream_preview else 'track'}_cid. Please investigate."
+                f"tracks.py | stream | Track with id {track_id} may not exist or has no {'preview' if is_preview else 'track'}_cid. Please investigate."
             )
             abort_not_found(track_id, ns)
 
         cid = cid.strip()
         redis = redis_connection.get_redis()
-        request_args = stream_parser.parse_args()
 
         # signature for the track to be included as a query param in the redirect to CN
         signature = get_track_stream_signature(
             {
                 "track": track,
-                "stream_preview": stream_preview,
+                "cid": cid,
+                "is_preview": is_preview,
+                "is_download": filename is not None,
                 "user_data": request_args.get("user_data"),
                 "user_signature": request_args.get("user_signature"),
                 "premium_content_signature": request_args.get(
@@ -501,7 +506,6 @@ class TrackStream(Resource):
         skip_play_count = request_args.get("skip_play_count", False)
         if skip_play_count:
             params["skip_play_count"] = skip_play_count
-        filename = request_args.get("filename")
         if filename:
             params["filename"] = filename
 
