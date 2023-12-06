@@ -2,7 +2,7 @@ import {
   themes as harmonyThemes,
   primitiveTheme as harmonyPrimitiveTheme
 } from '@audius/harmony'
-import { mapValues } from 'lodash'
+import { mapValues, merge } from 'lodash'
 
 // linear-gradient at 315deg
 const baseLinearGradient = {
@@ -33,30 +33,6 @@ const primitiveOverrides = {
         ...baseLinearGradient,
         colors: ['#7652CC', '#B05CE6']
       }
-    }
-  }
-}
-
-export const primitiveTheme = {
-  day: {
-    ...harmonyPrimitiveTheme.day,
-    special: {
-      ...harmonyPrimitiveTheme.day.special,
-      ...primitiveOverrides.day.special
-    }
-  },
-  dark: {
-    ...harmonyPrimitiveTheme.dark,
-    special: {
-      ...harmonyPrimitiveTheme.dark.special,
-      ...primitiveOverrides.dark.special
-    }
-  },
-  matrix: {
-    ...harmonyPrimitiveTheme.matrix,
-    special: {
-      ...harmonyPrimitiveTheme.matrix.special,
-      ...primitiveOverrides.matrix.special
     }
   }
 }
@@ -233,3 +209,10 @@ export const theme = {
 }
 
 export type HarmonyNativeTheme = typeof theme['dark']
+
+// Only used for story
+export const primitiveTheme = merge(
+  {},
+  harmonyPrimitiveTheme,
+  primitiveOverrides
+)
