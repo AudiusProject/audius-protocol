@@ -1,15 +1,18 @@
 import type { ReactNode } from 'react'
-import { Children } from 'react'
 
-import type { FlexProps, BoxProps } from '@audius/harmony-native'
-import { Flex, Text } from '@audius/harmony-native'
+import { css } from '@emotion/native'
+import { Dimensions } from 'react-native'
+
+import type { FlexProps, BoxProps, PaperProps } from '@audius/harmony-native'
+import { Box, Flex, Paper, Text } from '@audius/harmony-native'
+import { Button, type ButtonProps } from 'app/components/core'
 
 type PageProps = FlexProps & {
   centered?: boolean
 }
 
 // Horizontal gutter size
-const gutterSize: NativeFlexProps['p'] = 'l'
+const gutterSize: FlexProps['p'] = 'l'
 
 export const Page = (props: PageProps) => {
   const { children, style, ...other } = props
@@ -36,7 +39,7 @@ type PageFooterProps = {
   buttonProps?: Partial<ButtonProps>
   centered?: boolean
   onSubmit?: () => void
-} & Omit<NativePaperProps & NativeBoxProps, 'prefix'>
+} & Omit<PaperProps & BoxProps, 'prefix'>
 
 export const PageFooter = (props: PageFooterProps) => {
   const { prefix, postfix, buttonProps, onSubmit, ...other } = props
@@ -70,7 +73,7 @@ export const PageFooter = (props: PageFooterProps) => {
           fullWidth
           {...buttonProps}
           title='Continue'
-          onPress={() => onSubmit()}
+          onPress={() => onSubmit?.()}
         />
         {/* postfixes live insde the paper */}
         {postfix}
