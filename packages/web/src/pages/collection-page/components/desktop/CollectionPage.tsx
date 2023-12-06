@@ -261,10 +261,7 @@ const CollectionPage = ({
               onReorderTracks={onReorderTracks}
               onSortTracks={onSortTracks}
               isReorderable={
-                userId !== null &&
-                userId === playlistOwnerId &&
-                allowReordering &&
-                !isAlbum
+                userId !== null && userId === playlistOwnerId && allowReordering
               }
               removeText={`${messages.remove} ${
                 isAlbum ? messages.type.album : messages.type.playlist

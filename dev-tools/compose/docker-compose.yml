@@ -81,19 +81,19 @@ services:
 
   # Healthz
 
-  healthz:
-    extends:
-      file: docker-compose.healthz.yml
-      service: healthz
-    <<: *common
+  # healthz:
+  #   extends:
+  #     file: docker-compose.healthz.yml
+  #     service: healthz
+  #   <<: *common
 
   # Protocol dashboard
 
-  dashboard:
-    extends:
-      file: docker-compose.protocol-dashboard.yml
-      service: dashboard
-    <<: *common
+  # dashboard:
+  #   extends:
+  #     file: docker-compose.protocol-dashboard.yml
+  #     service: dashboard
+  #   <<: *common
 
   # Uptime (standalone container used by Discovery and Content)
 
@@ -177,12 +177,12 @@ services:
 
   # Storage (content node)
 
-  mediorum:
-    extends:
-      file: docker-compose.storage.${MEDIORUM_ENV_TYPE:-${DOCKERCOMPOSE_ENV_TYPE:-dev}}.yml
-      service: storage
-    container_name: audius-protocol-mediorum
-    <<: *common
+  # mediorum:
+  #   extends:
+  #     file: docker-compose.storage.${MEDIORUM_ENV_TYPE:-${DOCKERCOMPOSE_ENV_TYPE:-dev}}.yml
+  #     service: storage
+  #   container_name: audius-protocol-mediorum
+  #   <<: *common
 
   # Blockchain
 
