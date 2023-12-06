@@ -1,11 +1,9 @@
 import { Children } from 'react'
 
-import { type NativeBoxProps } from '@audius/harmony-native'
-import { Flex } from 'app/harmony-native/components/layout/Flex/Flex'
-import type { NativeFlexProps } from 'app/harmony-native/components/layout/Flex/types'
-import { Text } from 'app/harmony-native/foundations/typography/Text'
+import type { FlexProps, BoxProps } from '@audius/harmony-native'
+import { Flex, Text } from '@audius/harmony-native'
 
-type PageProps = NativeFlexProps & {
+type PageProps = FlexProps & {
   centered?: boolean
 }
 
@@ -15,7 +13,7 @@ export const Page = (props: PageProps) => {
   const childrenArray = Children.toArray(children)
   const footer = childrenArray.pop()
 
-  const layoutProps: NativeFlexProps = {
+  const layoutProps: FlexProps = {
     direction: 'column',
     h: '100%',
     gap: '2xl',
@@ -47,7 +45,7 @@ type HeadingProps = {
   heading: any
   description?: any
   centered?: boolean
-} & Omit<NativeFlexProps & NativeBoxProps, 'prefix'>
+} & Omit<FlexProps & BoxProps, 'prefix'>
 
 export const Heading = (props: HeadingProps) => {
   const { prefix, heading, description, postfix, centered, ...other } = props

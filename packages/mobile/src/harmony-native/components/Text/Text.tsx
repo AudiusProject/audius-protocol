@@ -11,7 +11,7 @@ import { css } from '@emotion/native'
 import type { TextProps as TextPropsBase, TextStyle } from 'react-native'
 import { Text as TextBase } from 'react-native'
 
-import { useTheme } from '../theme'
+import { useTheme } from '../../foundations/theme'
 
 export type TextProps = TextPropsBase & {
   variant?: TextVariant
@@ -34,7 +34,7 @@ export const Text = (props: TextProps) => {
   const color =
     colorProp === 'heading'
       ? theme.color.secondary.secondary
-      : theme.color.textIcon[colorProp]
+      : theme.color.text[colorProp]
 
   const variantStyles = variantStylesMap[variant]
 
