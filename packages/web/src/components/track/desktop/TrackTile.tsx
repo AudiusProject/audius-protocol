@@ -250,7 +250,7 @@ const TrackTile = ({
         </div>
       )
     }
-    if (moment(releaseDate).isAfter(moment.now())) {
+    if (releaseDate && moment(releaseDate).isAfter(moment.now())) {
       scheduledReleaseLabel = <ScheduledReleaseLabel released={releaseDate} />
     }
   }

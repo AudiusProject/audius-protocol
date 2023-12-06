@@ -7,10 +7,13 @@ import premiumContentLabelStyles from '../track/PremiumContentLabel.module.css'
 
 import styles from './ScheduledReleaseLabel.module.css'
 
-/** Renders a label indicating a premium content type. If the user does
- * not yet have access or is the owner, the label will be in an accented color.
- */
-export const ScheduledReleaseLabel = ({ released }) => {
+export type ScheduledReleaseLabelProps = {
+  released?: string
+}
+
+export const ScheduledReleaseLabel = ({
+  released
+}: ScheduledReleaseLabelProps) => {
   return (
     <div
       className={cn(
@@ -24,7 +27,9 @@ export const ScheduledReleaseLabel = ({ released }) => {
   )
 }
 
-export const ScheduledReleaseGiantLabel = ({ released }) => {
+export const ScheduledReleaseGiantLabel = ({
+  released
+}: ScheduledReleaseLabelProps) => {
   return (
     <div
       className={cn(

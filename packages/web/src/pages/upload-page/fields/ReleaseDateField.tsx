@@ -55,9 +55,9 @@ const RELEASE_DATE_TYPE = 'release_date_type'
 
 export type ReleaseDateFormValues = {
   [RELEASE_DATE]: string | undefined
-  [RELEASE_DATE_HOUR]: string | undefined
-  [RELEASE_DATE_MERIDIAN]: string | undefined
-  [RELEASE_DATE_TYPE]: string | undefined
+  [RELEASE_DATE_HOUR]: string
+  [RELEASE_DATE_MERIDIAN]: string
+  [RELEASE_DATE_TYPE]: string
 }
 
 export enum ReleaseDateType {
@@ -85,9 +85,12 @@ const timeValidationSchema = z.object({
 })
 
 const getScheduledReleaseLabelMessage = (
-  releaseDate: string,
+  releaseDate: string | null,
   prefixMessage = ''
 ) => {
+  if (!releaseDate) {
+    return 'Today'
+  }
   const formatReleaseMessage = (releaseDate: string, base: string) => {
     const isFutureRelease = moment(releaseDate ?? undefined).isAfter(
       moment.now()
@@ -140,7 +143,7 @@ export const ReleaseDateField = () => {
         return
       }
       const releaseDateValue = values[RELEASE_DATE]
-      const releaseDateHour = parseInt(values[RELEASE_DATE_HOUR]?.split(':')[0])
+      const releaseDateHour = parseInt(values[RELEASE_DATE_HOUR].split(':')[0])
       const releaseDateMeridian = values[RELEASE_DATE_MERIDIAN]
 
       const truncatedReleaseDate = moment(releaseDateValue).startOf('day')

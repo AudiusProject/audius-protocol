@@ -104,6 +104,7 @@ const ConnectedTrackTile = ({
   isActive,
   variant,
   containerClassName,
+  releaseDate,
   isFeed = false
 }: ConnectedTrackTileProps) => {
   const trackWithFallback = getTrackWithFallback(track)

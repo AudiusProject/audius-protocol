@@ -134,7 +134,7 @@ const ConnectedTrackTile = ({
     _cover_art_sizes,
     play_count,
     duration,
-    release_date
+    release_date: releaseDate
   } = trackWithFallback
 
   const {
@@ -395,7 +395,7 @@ const ConnectedTrackTile = ({
       permalink={permalink}
       trackId={trackId}
       isTrack
-      releaseDate={release_date}
+      releaseDate={releaseDate}
     />
   )
 
