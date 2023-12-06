@@ -1,4 +1,4 @@
-import { wallets, web3 } from ".";
+import { config, wallets, web3 } from ".";
 import { internalError } from "./error";
 import { logger } from "./logger";
 import { confirm } from "./web3";
@@ -42,6 +42,7 @@ export const relayTransaction = async (
   // query chain until tx is mined
   try {
     const receipt = await confirm(submit.hash);
+    receipt.blockNumber += config.finalPoaBlock
     res.send({ receipt });
   } catch (e) {
     internalError(next, e as string);

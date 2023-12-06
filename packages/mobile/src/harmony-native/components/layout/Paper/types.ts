@@ -1,5 +1,5 @@
 import type { BasePaperProps } from '@audius/harmony'
 
-import type { NativeFlexProps } from '../Flex/types'
+import type { FlexProps } from '../Flex/types'
 
-export type NativePaperProps = BasePaperProps & NativeFlexProps
+export type PaperProps = BasePaperProps & FlexProps

@@ -1,28 +1,23 @@
 import type { ReactNode } from 'react'
-import { Children } from 'react'
 
 import { css } from '@emotion/native'
 import { Dimensions } from 'react-native'
 
-import type { NativePaperProps } from '@audius/harmony-native'
-import { Box, Paper, type NativeBoxProps } from '@audius/harmony-native'
-import type { ButtonProps } from 'app/components/core'
-import { Button } from 'app/components/core'
-import { Flex } from 'app/harmony-native/components/layout/Flex/Flex'
-import type { NativeFlexProps } from 'app/harmony-native/components/layout/Flex/types'
-import { Text } from 'app/harmony-native/foundations/typography/Text'
+import type { FlexProps, BoxProps, PaperProps } from '@audius/harmony-native'
+import { Box, Flex, Paper, Text } from '@audius/harmony-native'
+import { Button, type ButtonProps } from 'app/components/core'
 
-type PageProps = NativeFlexProps & {
+type PageProps = FlexProps & {
   centered?: boolean
 }
 
 // Horizontal gutter size
-const gutterSize: NativeFlexProps['p'] = 'l'
+const gutterSize: FlexProps['p'] = 'l'
 
 export const Page = (props: PageProps) => {
   const { children, style, ...other } = props
 
-  const layoutProps: NativeFlexProps = {
+  const layoutProps: FlexProps = {
     direction: 'column',
     h: '100%',
     gap: '2xl',
@@ -44,7 +39,7 @@ type PageFooterProps = {
   buttonProps?: Partial<ButtonProps>
   centered?: boolean
   onSubmit?: () => void
-} & Omit<NativePaperProps & NativeBoxProps, 'prefix'>
+} & Omit<PaperProps & BoxProps, 'prefix'>
 
 export const PageFooter = (props: PageFooterProps) => {
   const { prefix, postfix, buttonProps, onSubmit, ...other } = props
@@ -78,7 +73,7 @@ export const PageFooter = (props: PageFooterProps) => {
           fullWidth
           {...buttonProps}
           title='Continue'
-          onPress={() => onSubmit()}
+          onPress={() => onSubmit?.()}
         />
         {/* postfixes live insde the paper */}
         {postfix}
@@ -93,7 +88,7 @@ type HeadingProps = {
   heading: any
   description?: any
   centered?: boolean
-} & Omit<NativeFlexProps & NativeBoxProps, 'prefix'>
+} & Omit<FlexProps & BoxProps, 'prefix'>
 
 export const Heading = (props: HeadingProps) => {
   const { prefix, heading, description, postfix, centered, ...other } = props
