@@ -15,7 +15,7 @@ from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.premium_content.premium_content_access_checker import (
-    PremiumContentAccessBatchArgs,
+    GatedContentAccessBatchArgs,
     premium_content_access_checker,
 )
 from src.premium_content.premium_content_constants import USDC_PURCHASE_KEY
@@ -518,7 +518,7 @@ def validate_remixability(params: ManageEntityParameters):
     if not parent_track_ids:
         return
 
-    args: List[PremiumContentAccessBatchArgs] = list(
+    args: List[GatedContentAccessBatchArgs] = list(
         map(
             lambda track_id: {
                 "user_id": user_id,
