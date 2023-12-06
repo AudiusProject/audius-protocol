@@ -1,8 +1,8 @@
 import styled from '@emotion/native'
 
-import type { NativeBoxProps } from './types'
+import type { BoxProps } from './types'
 
-export const Box = styled.View<NativeBoxProps>(
+export const Box = styled.View<BoxProps>(
   ({
     h,
     w,
@@ -52,7 +52,7 @@ export const Box = styled.View<NativeBoxProps>(
       height: h,
       width: w,
       ...(shadow && {
-        ...shadows.native[shadow],
+        ...shadows[shadow],
         // In order for shadows to work on iOS they need a background color
         // Using white as a default here, but can be overridden
         backgroundColor: color.background.white

@@ -18,7 +18,9 @@ jobs:
           ignore: /(^main|^release.*)$/
 
   - mobile-build-upload-staging-ios:
-      context: Audius Mobile Client
+      context:
+        - Audius Mobile Client
+        - slack-secrets
       requires:
         - mobile-init
       filters:
@@ -26,7 +28,9 @@ jobs:
           only: /^main$/
 
   - mobile-build-upload-releasecandidate-ios:
-      context: Audius Mobile Client
+      context:
+        - Audius Mobile Client
+        - slack-secrets
       requires:
         - mobile-init
       filters:
@@ -34,7 +38,9 @@ jobs:
           only: /(^release.*)$/
 
   - mobile-build-upload-staging-releasecandidate-ios:
-      context: Audius Mobile Client
+      context:
+        - Audius Mobile Client
+        - slack-secrets
       requires:
         - mobile-init
       filters:
@@ -50,7 +56,9 @@ jobs:
   #         only: /^main$/
 
   - mobile-build-upload-production-ios-if-full-release:
-      context: Audius Mobile Client
+      context:
+        - Audius Mobile Client
+        - slack-secrets
       requires:
         - mobile-init
       filters:
@@ -84,7 +92,9 @@ jobs:
           ignore: /(^main|^release.*)$/
 
   - mobile-build-upload-staging-android:
-      context: Audius Mobile Client
+      context:
+        - Audius Mobile Client
+        - slack-secrets
       requires:
         - mobile-init
       filters:
@@ -92,7 +102,9 @@ jobs:
           only: /^main$/
 
   - mobile-build-upload-releasecandidate-android:
-      context: Audius Mobile Client
+      context:
+        - Audius Mobile Client
+        - slack-secrets
       requires:
         - mobile-init
       filters:
@@ -100,7 +112,9 @@ jobs:
           only: /(^release.*)$/
 
   - mobile-build-upload-staging-releasecandidate-android:
-      context: Audius Mobile Client
+      context:
+        - Audius Mobile Client
+        - slack-secrets
       requires:
         - mobile-init
       filters:
@@ -116,7 +130,9 @@ jobs:
   #         only: /^main$/
 
   - mobile-build-upload-production-android-if-full-release:
-      context: Audius Mobile Client
+      context:
+        - Audius Mobile Client
+        - slack-secrets
       requires:
         - mobile-init
       filters:
