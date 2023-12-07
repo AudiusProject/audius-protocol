@@ -19,7 +19,7 @@ const ${variables.componentName} = (${variables.props}) => {
   } = props
 
   const height = heightProp ?? theme.iconSizes[sizeH ?? size ?? 'l']
-  const width = heightProp ?? theme.iconSizes[sizeW ?? size ?? 'l']
+  const width = widthProp ?? theme.iconSizes[sizeW ?? size ?? 'l']
   const fill = fillProp ?? theme.color.icon[color] ?? 'red'
 
   props = {...other, height, width, fill}
