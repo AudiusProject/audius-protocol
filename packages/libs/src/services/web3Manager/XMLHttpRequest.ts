@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-
-let XMLHttpRequestRef: typeof window.XMLHttpRequest
-
-if (typeof window === 'undefined' || window === null) {
-  XMLHttpRequestRef = require('xmlhttprequest').XMLHttpRequest
-} else {
-  XMLHttpRequestRef = window.XMLHttpRequest
+export type XMLHttpRequest = typeof window.XMLHttpRequest
+export const getXMLHttpRequest = async (): Promise<
+  typeof window.XMLHttpRequest
+> => {
+  if (typeof window === 'undefined' || window === null) {
+    // @ts-ignore
+    return (await import('xmlhttprequest')).XMLHttpRequest
+  } else {
+    return window.XMLHttpRequest
+  }
 }
-
-export { XMLHttpRequestRef as XMLHttpRequest }
