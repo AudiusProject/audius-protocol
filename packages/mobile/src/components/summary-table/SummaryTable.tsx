@@ -59,7 +59,8 @@ export type SummaryTableProps = {
   secondaryTitle?: ReactNode
   summaryLabelColor?: keyof ThemeColors
   summaryValueColor?: keyof ThemeColors
-  renderContent?: (items: SummaryTableItem[]) => ReactNode
+  renderBody?: (items: SummaryTableItem[]) => ReactNode
+  /** Enables an expand/collapse interaction. Only the title shows when collapsed. */
   collapsible?: boolean
 }
 
@@ -85,7 +86,7 @@ export const SummaryTable = ({
   secondaryTitle,
   summaryLabelColor,
   summaryValueColor = 'secondary',
-  renderContent: renderContentProp,
+  renderBody: renderBodyProp,
   collapsible = false
 }: SummaryTableProps) => {
   const styles = useStyles()
@@ -142,26 +143,6 @@ export const SummaryTable = ({
     )
   }
 
-  const renderContent = () => {
-    if (renderContentProp) {
-      return renderContentProp(items)
-    }
-    return nonNullItems.map(({ id, label, value }, index) => (
-      <View
-        key={id}
-        style={[
-          styles.row,
-          summaryItem === undefined && index === nonNullItems.length - 1
-            ? styles.lastRow
-            : null
-        ]}
-      >
-        <Text>{label}</Text>
-        <Text>{value}</Text>
-      </View>
-    ))
-  }
-
   const renderSummaryItem = () => {
     if (summaryItem === undefined) return null
     return (
@@ -186,11 +167,34 @@ export const SummaryTable = ({
     )
   }
 
+  const renderContent = () => {
+    return (
+      <>
+        {renderBodyProp
+          ? renderBodyProp(items)
+          : nonNullItems.map(({ id, label, value }, index) => (
+              <View
+                key={id}
+                style={[
+                  styles.row,
+                  summaryItem === undefined && index === nonNullItems.length - 1
+                    ? styles.lastRow
+                    : null
+                ]}
+              >
+                <Text>{label}</Text>
+                <Text>{value}</Text>
+              </View>
+            ))}
+        {renderSummaryItem()}
+      </>
+    )
+  }
+
   return (
     <View style={styles.container}>
       {renderHeader()}
       {!collapsible || isExpanded ? renderContent() : null}
-      {renderSummaryItem()}
     </View>
   )
 }
