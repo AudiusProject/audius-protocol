@@ -26,6 +26,7 @@ import {
   TagField,
   SubmenuList,
   RemixSettingsField,
+  ReleaseDateField,
   AdvancedOptionsField,
   AccessAndSaleField
 } from './fields'
@@ -139,6 +140,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
               <DescriptionField />
               <SubmenuList removeBottomDivider>
                 <AccessAndSaleField />
+                <ReleaseDateField />
                 <RemixSettingsField />
                 <AdvancedOptionsField />
               </SubmenuList>

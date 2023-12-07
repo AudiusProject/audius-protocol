@@ -11,9 +11,13 @@ import type {
 } from 'react-native-modal-datetime-picker'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
 
-import { Button, Pill, Text } from 'app/components/core'
+import { Button, ContextualMenu, Pill, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors, useThemeVariant } from 'app/utils/theme'
+import { RemixTrackPill } from '../components/RemixTrackPill'
+import { View } from 'react-native'
+import { useSelector } from 'react-redux'
+import { getTrack } from '@audius/common/dist/store/cache/tracks/selectors'
 
 const isToday = (date: Date) => moment(date).isSame(moment(), 'day')
 
@@ -67,7 +71,7 @@ const CancelDateButton = (props: CustomCancelButtonPropTypes) => {
   )
 }
 
-export const ReleaseDateField = () => {
+export const ReleaseDateField = (props) => {
   const styles = useStyles()
   const [{ value, onChange }] = useField<Nullable<string>>('release_date')
   const [isOpen, setIsOpen] = useState(false)
@@ -101,35 +105,24 @@ export const ReleaseDateField = () => {
     [onChange, handleClose]
   )
 
-  return (
-    <>
-      <TouchableOpacity style={styles.root} onPress={handlePress}>
-        <Text fontSize='large' weight='demiBold'>
-          {messages.label}
+
+  const renderValue = () => {
+    return (
+      <View >
+        <Text fontSize='small' weight='demiBold'>
+          {messages.label}:
         </Text>
-        <Pill>
-          <Text fontSize='small' weight='demiBold' style={styles.dateText}>
-            {isToday(releaseDate)
-              ? messages.today
-              : moment(releaseDate).format('MM/DD/YY')}
-          </Text>
-        </Pill>
-      </TouchableOpacity>
-      <DateTimePickerModal
-        isVisible={isOpen}
-        date={releaseDate}
-        mode='date'
-        onConfirm={handleChange}
-        onCancel={handleClose}
-        display='inline'
-        themeVariant={theme === Theme.DEFAULT ? 'light' : 'dark'}
-        isDarkModeEnabled={theme !== Theme.DEFAULT}
-        accentColor={primary}
-        maximumDate={maximumDate.current}
-        modalStyleIOS={styles.datePickerModal}
-        customConfirmButtonIOS={ConfirmDateButton}
-        customCancelButtonIOS={CancelDateButton}
-      />
-    </>
+      </View>
+    )
+  }
+
+  return (
+    <ContextualMenu
+      menuScreenName='ReleaseDate'
+      label={messages.label}
+      value={value}
+      renderValue={renderValue}
+      {...props}
+    />
   )
 }

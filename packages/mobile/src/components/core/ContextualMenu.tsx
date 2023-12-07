@@ -89,7 +89,7 @@ export const ContextualMenu = (props: ContextualMenuProps) => {
               weight='demiBold'
               style={styles.optionPillText}
             >
-              {value}
+              {value} 
             </Text>
           </Pill>
         ))}

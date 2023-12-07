@@ -23,7 +23,7 @@ export const AdvancedOptionsScreen = () => {
       variant='white'
     >
       <View>
-        <ReleaseDateField />
+        {/* <ReleaseDateField /> */}
         <SubmenuList>
           <IsrcField />
           <LicenseTypeField />

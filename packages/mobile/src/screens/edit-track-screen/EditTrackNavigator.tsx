@@ -5,7 +5,8 @@ import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
 import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 
 import { EditTrackForm } from './EditTrackForm'
-import { accessAndSaleScreenName } from './fields'
+import { accessAndSaleScreenName, ReleaseDateField } from './fields'
+
 import {
   AccessAndSaleScreen,
   AdvancedOptionsScreen,
@@ -13,7 +14,8 @@ import {
   LicenseTypeScreen,
   RemixSettingsScreen,
   SelectGenreScreen,
-  SelectMoodScreen
+  SelectMoodScreen,
+  ReleaseDateScreen
 } from './screens'
 import { NFTCollectionsScreen } from './screens/NFTCollectionsScreen'
 import type { EditTrackFormProps } from './types'
@@ -36,6 +38,9 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
         <Stack.Screen name='SelectGenre' component={SelectGenreScreen} />
         <Stack.Screen name='SelectMood' component={SelectMoodScreen} />
         <Stack.Screen name='RemixSettings' component={RemixSettingsScreen} />
+        <Stack.Screen name='ReleaseDate' component={ReleaseDateScreen} />
+
+
         <Stack.Screen
           name='AdvancedOptions'
           component={AdvancedOptionsScreen}
