@@ -12,6 +12,7 @@ import { StorageNodeSelector } from '../../services/StorageNodeSelector'
 import { Configuration } from '../generated/default'
 
 import { UsersApi } from './UsersApi'
+import { Solana } from '../../services'
 
 const pngFile = fs.readFileSync(
   path.resolve(__dirname, '../../test/png-file.png')
@@ -62,7 +63,8 @@ describe('UsersApi', () => {
       new Storage({ storageNodeSelector, logger: new Logger() }),
       new EntityManager({ discoveryNodeSelector: new DiscoveryNodeSelector() }),
       auth,
-      new Logger()
+      new Logger(),
+      new Solana()
     )
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'info').mockImplementation(() => {})

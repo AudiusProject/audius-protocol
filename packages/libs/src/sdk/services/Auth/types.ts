@@ -10,7 +10,7 @@ export type AuthService = {
   /**
    * Sign some data, used for Chats
    */
-  sign: (data: string) => Promise<[Uint8Array, number]>
+  sign: (data: string | Uint8Array) => Promise<[Uint8Array, number]>
   /**
    * Hash and sign some data
    */

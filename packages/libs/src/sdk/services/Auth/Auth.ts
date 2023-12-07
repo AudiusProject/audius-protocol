@@ -9,7 +9,7 @@ export class Auth implements AuthService {
       throw new Error(NOT_INITIALIZED)
     }
 
-  sign: (data: string) => Promise<[Uint8Array, number]> = () => {
+  sign: (data: string | Uint8Array) => Promise<[Uint8Array, number]> = () => {
     throw new Error(NOT_INITIALIZED)
   }
 

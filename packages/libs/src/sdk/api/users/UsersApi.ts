@@ -3,6 +3,7 @@ import snakecaseKeys from 'snakecase-keys'
 import type {
   AuthService,
   DiscoveryNodeSelectorService,
+  SolanaService,
   StorageService
 } from '../../services'
 import {
@@ -34,7 +35,9 @@ import {
   UnfollowUserSchema,
   UnsubscribeFromUserRequest,
   UnsubscribeFromUserSchema,
-  UpdateProfileSchema
+  UpdateProfileSchema,
+  SendTipRequest,
+  SendTipSchema
 } from './types'
 
 export class UsersApi extends GeneratedUsersApi {
@@ -44,7 +47,8 @@ export class UsersApi extends GeneratedUsersApi {
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
     private readonly auth: AuthService,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
+    private readonly solana: SolanaService
   ) {
     super(configuration)
     this.logger = logger.createPrefixedLogger('[users-api]')
@@ -415,5 +419,54 @@ export class UsersApi extends GeneratedUsersApi {
       headers: headerParameters
     })
     return response.blob()
+  }
+
+  async sendTip(request: SendTipRequest) {
+    const { amount } = await parseParams('sendTip', SendTipSchema)(request)
+
+    const getWalletAndUserBank = async (id: string) => {
+      const res = await this.getUser({ id })
+      const ethWallet = res.data?.ercWallet
+      if (!ethWallet) {
+        return { ethWallet: null, userBank: null }
+      }
+      const { userBank } =
+        await this.solana.ClaimableTokens.getOrCreateUserBank({
+          ethWallet,
+          mint: 'wAUDIO'
+        })
+      return { ethWallet, userBank }
+    }
+
+    const { ethWallet } = await getWalletAndUserBank(request.senderUserId)
+    const { ethWallet: receiverEthWallet, userBank: destination } =
+      await getWalletAndUserBank(request.receiverUserId)
+
+    if (!ethWallet) {
+      throw new Error('Invalid sender: No Ethereum wallet found.')
+    }
+    if (!receiverEthWallet) {
+      throw new Error('Invalid recipient: No Ethereum wallet found.')
+    }
+    if (!destination) {
+      throw new Error('Invalid recipient: No user bank found.')
+    }
+
+    const transfer =
+      await this.solana.ClaimableTokens.createTransferInstruction({
+        ethWallet,
+        destination,
+        mint: 'wAUDIO'
+      })
+    const secp =
+      await this.solana.ClaimableTokens.createTransferSecpInstruction({
+        ethWallet,
+        destination,
+        amount,
+        mint: 'wAUDIO',
+        auth: this.auth
+      })
+
+    return await this.solana.relay({ instructions: [secp, transfer] })
   }
 }
