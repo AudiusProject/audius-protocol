@@ -113,8 +113,8 @@ export const SelectablePill = (props: SelectablePillProps) => {
 
       return (
         <label css={rootCss}>
-          <InputRoot {...rest} checked={checked ?? isSelected} />
           {pillContent}
+          <InputRoot {...rest} checked={checked ?? isSelected} />
         </label>
       )
     }

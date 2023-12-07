@@ -99,10 +99,15 @@
 
 /* Change font size of the input based on size */
 .input.small {
+  /* overflowing the height to improve password-manager icon size */
+  height: 34px;
   font-size: var(--harmony-font-s);
 }
 
 .input.default {
+  /* margin-top + padding-top needed for password-manager positioning */
+  margin-top: calc(var(--harmony-spacing-xl) * -1);
+  padding-top: var(--harmony-spacing-xl);
   font-size: var(--harmony-font-l);
 }
 

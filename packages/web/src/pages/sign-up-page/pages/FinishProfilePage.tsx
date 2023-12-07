@@ -94,6 +94,7 @@ export const FinishProfilePage = () => {
           as={Form}
           centered
           transition={isMobile ? 'horizontal' : 'vertical'}
+          transitionBack='horizontal'
         >
           <Heading
             prefix={
@@ -114,6 +115,7 @@ export const FinishProfilePage = () => {
               label={messages.displayName}
               placeholder={messages.inputPlaceholder}
               required
+              autoFocus
               maxLength={32}
               css={(theme) => ({
                 padding: theme.spacing.l,
