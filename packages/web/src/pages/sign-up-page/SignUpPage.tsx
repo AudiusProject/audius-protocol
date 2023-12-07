@@ -6,6 +6,7 @@ import { NavHeader } from 'pages/sign-up-page/components/NavHeader'
 import { determineAllowedRoute } from 'pages/sign-up-page/utils/determineAllowedRoutes'
 import { useSelector } from 'utils/reducer'
 import {
+  SIGN_UP_APP_CTA_PAGE,
   SIGN_UP_ARTISTS_PAGE,
   SIGN_UP_CREATE_LOGIN_DETAILS,
   SIGN_UP_EMAIL_PAGE,
@@ -21,6 +22,7 @@ import { CreateEmailPage } from './pages/CreateEmailPage'
 import { CreateLoginDetailsPage } from './pages/CreateLoginDetails'
 import { CreatePasswordPage } from './pages/CreatePasswordPage'
 import { FinishProfilePage } from './pages/FinishProfilePage'
+import { MobileAppCtaPage } from './pages/MobileAppCtaPage'
 import { PickHandlePage } from './pages/PickHandlePage'
 import { ReviewHandlePage } from './pages/ReviewHandlePage'
 import { SelectArtistsPage } from './pages/SelectArtistsPage'
@@ -91,6 +93,9 @@ export const SignUpPage = () => {
         </SignUpRoute>
         <SignUpRoute exact path={SIGN_UP_ARTISTS_PAGE}>
           <SelectArtistsPage />
+        </SignUpRoute>
+        <SignUpRoute exact path={SIGN_UP_APP_CTA_PAGE}>
+          <MobileAppCtaPage />
         </SignUpRoute>
       </Switch>
     </RouteContextProvider>
