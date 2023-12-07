@@ -5,9 +5,9 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "DEBUG=audius:* tsx watch src/index.ts",
+    "dev": "DEBUG=audius:* tsx watch src/server.ts",
     "db:gen": "tsx ./tools/db-gen.ts",
-    "start": "tsx src/index.ts",
+    "start": "tsx src/server.ts",
     "test": "vitest"
   },
   "dependencies": {
