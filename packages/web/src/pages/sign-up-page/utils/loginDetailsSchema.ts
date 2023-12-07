@@ -1,8 +1,8 @@
+import { emailSchema } from '@audius/common'
 import { z } from 'zod'
 
+import { audiusQueryContext } from 'app/AudiusQueryProvider'
 import { isNotCommonPassword } from 'utils/commonPasswordCheck'
-
-import { emailSchema } from './emailSchema'
 
 // Due to issue with zod merge, manually rewriting
 // https://github.com/colinhacks/zod/issues/454
@@ -15,7 +15,7 @@ export const loginDetailsSchema = z
       .refine(isNotCommonPassword, { message: 'notCommon' }),
     confirmPassword: z.string()
   })
-  .merge(emailSchema)
+  .merge(emailSchema(audiusQueryContext))
   .refine((data) => data.password === data.confirmPassword, {
     message: 'matches',
     path: ['confirmPassword']

@@ -79,8 +79,6 @@ func (u *Uptime) Start() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
 
-	e.Static("/d", "/app/node-ui/dist")
-
 	e.GET("/d_api/uptime", u.handleUptime)
 	e.GET("/d_api/env", u.handleGetEnv)
 

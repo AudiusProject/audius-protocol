@@ -33,7 +33,7 @@ export const usePosition = (
   }, [])
 
   useEffect(() => {
-    let currentTimeout: number
+    let currentTimeout: NodeJS.Timeout
 
     const updatePosition = () => {
       const timeout = setTimeout(async () => {

@@ -1,5 +1,6 @@
 import { useCallback, useContext } from 'react'
 
+import { socialMediaMessages } from '@audius/common'
 import { TextLink } from '@audius/harmony'
 import { useField } from 'formik'
 
@@ -10,7 +11,6 @@ import {
 import { ToastContext } from 'components/toast/ToastContext'
 
 import { errorMessages } from '../utils/handleSchema'
-import { socialMediaMessages } from '../utils/socialMediaMessages'
 
 import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'

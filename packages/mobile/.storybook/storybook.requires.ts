@@ -50,7 +50,7 @@ try {
 
 const getStories = () => {
   return {
-    '../src/harmony-native/color.stories.tsx': require('../src/harmony-native/foundations/color/color.stories.tsx'),
+    '../src/harmony-native/Color.stories.tsx': require('../src/harmony-native/foundations/color/Color.stories.tsx'),
     '../src/harmony-native/Shadows.stories.tsx': require('../src/harmony-native/foundations/shadows/Shadows.stories.tsx'),
     '../src/harmony-native/Typography.stories.tsx': require('../src/harmony-native/foundations/typography/Typography.stories.tsx'),
     '../src/harmony-native/Link.stories.tsx': require('../src/harmony-native/components/Link/Link.stories.tsx'),
