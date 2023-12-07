@@ -8,7 +8,8 @@ import {
     remixSettingsActions,
     remixSettingsSelectors,
     Status,
-    usePremiumContentAccess
+    usePremiumContentAccess,
+    removeNullable,
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { useField } from 'formik'
@@ -31,6 +32,12 @@ import { getTrackRoute } from 'app/utils/routes'
 
 import { FormScreen, RemixTrackPill } from '../components'
 import type { RemixOfField } from '../types'
+import { ListSelectionData, ListSelectionScreen } from './ListSelectionScreen'
+import { release } from 'os'
+export enum ReleaseDateType {
+    RELEASE_NOW = 'RELEASE_NOW',
+    SCHEDULED_RELEASE = 'SCHEDULED_RELEASE'
+}
 
 const { getTrack, getUser, getStatus } = remixSettingsSelectors
 const { fetchTrack, fetchTrackSucceeded, reset } = remixSettingsActions
@@ -98,16 +105,73 @@ const descriptionProps: TextProps = {
     weight: 'medium'
 }
 
+const data: ListSelectionData[] = [
+    {
+        label: ReleaseDateType.RELEASE_NOW,
+        value: ReleaseDateType.RELEASE_NOW,
+        disabled: false
+    },
+    {
+        label: ReleaseDateType.SCHEDULED_RELEASE,
+        value: ReleaseDateType.SCHEDULED_RELEASE,
+        disabled: false
+    }
+].filter(removeNullable)
+
+export const ReleaseNowRadioField = () => {
+
+    return (
+        <View>
+            <Text weight='bold'>Release immediately</Text>
+        </View>
+    )
+}
+
+export const ScheduledReleaseRadioField = () => {
+
+    return (
+        <View>
+            <Text weight='bold'>Schedule a release date</Text>
+        </View>
+    )
+}
+
+const items = {
+    [ReleaseDateType.RELEASE_NOW]: (
+        <ReleaseNowRadioField />
+    ),
+    [ReleaseDateType.SCHEDULED_RELEASE]: (
+        <ScheduledReleaseRadioField />
+    ),
+
+}
+
 export const ReleaseDateScreen = () => {
 
     return (
-        <FormScreen
-            title={messages.screenTitle}
+        <>
+            <ListSelectionScreen
+                data={data}
+                renderItem={({ item }) => items[item.label]}
+                screenTitle={"Release Date"}
             icon={IconRemix}
-            variant='white'
-        >
-            <View>
-            </View>
-        </FormScreen>
+                value={'value'}
+                onChange={() => { }}
+                disableSearch
+                allowDeselect={false}
+                hideSelectionLabel
+                bottomSection={
+                    <Button
+                        variant='primary'
+                        size='large'
+                        fullWidth
+                        title={messages.done}
+                        onPress={() => { }}
+                        disabled={false}
+                    />
+                }
+            />
+        </>
+
     )
 }
