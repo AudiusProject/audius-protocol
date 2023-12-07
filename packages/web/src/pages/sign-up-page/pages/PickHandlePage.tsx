@@ -146,7 +146,7 @@ export const PickHandlePage = () => {
       onSubmit={handleSubmit}
       validateOnChange={false}
     >
-      <Page as={Form} centered={!isMobile}>
+      <Page as={Form} centered={!isMobile} transitionBack='vertical'>
         <Heading
           prefix={isMobile ? null : <OutOfText numerator={1} denominator={2} />}
           heading={messages.title}

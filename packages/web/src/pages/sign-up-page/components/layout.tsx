@@ -35,17 +35,27 @@ type PageProps = FlexProps & {
   as?: ComponentType<any>
   centered?: boolean
   transition?: 'horizontal' | 'vertical'
+  transitionBack?: 'horizontal' | 'vertical'
+}
+
+const transitionAxisConfig = {
+  horizontal: 'X',
+  vertical: 'Y'
 }
 
 const AnimatedFlex = animated(Flex)
 
 export const Page = (props: PageProps) => {
-  const { centered, children, as, transition, ...other } = props
+  const { centered, children, as, transition, transitionBack, ...other } = props
   const { isMobile } = useMedia()
   const { isGoBack } = useContext(RouteContext)
 
+  const translateAxis =
+    transitionAxisConfig[
+      (isGoBack ? transitionBack ?? transition : transition) ?? 'horizontal'
+    ]
+
   const translateStart = isGoBack ? '-100%' : '100%'
-  const translateAxis = transition === 'vertical' ? 'Y' : 'X'
   const shouldTransition = transition || isGoBack
 
   const fromTransform = shouldTransition
@@ -72,7 +82,6 @@ export const Page = (props: PageProps) => {
 
   const layoutProps: FlexProps = {
     direction: 'column',
-    h: '100%',
     gap: '2xl',
     ph: isMobile ? 'l' : '2xl',
     pv: 'xl'
@@ -98,6 +107,7 @@ export const Page = (props: PageProps) => {
   return (
     <AnimatedFlex
       as={as}
+      h='100%'
       {...layoutProps}
       {...other}
       css={

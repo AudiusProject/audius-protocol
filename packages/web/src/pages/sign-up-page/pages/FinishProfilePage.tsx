@@ -94,6 +94,7 @@ export const FinishProfilePage = () => {
           as={Form}
           centered
           transition={isMobile ? 'horizontal' : 'vertical'}
+          transitionBack='horizontal'
         >
           <Heading
             prefix={

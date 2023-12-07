@@ -67,8 +67,8 @@ const DesktopSignOnRoot = (props: RootProps) => {
         css={{
           zIndex: 1,
           position: 'absolute',
-          left: spacing['2xl'],
-          top: spacing['2xl']
+          left: spacing.xl,
+          top: spacing.xl
         }}
       >
         <IconCloseAlt color='staticWhite' />

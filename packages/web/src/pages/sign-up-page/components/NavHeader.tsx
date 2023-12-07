@@ -58,11 +58,11 @@ const HeaderRoot = (props: HeaderRootProps) => {
   return (
     <Flex
       ph='xl'
-      pv='l'
       w='100%'
       borderBottom={isBackAllowed ? 'default' : undefined}
       alignItems='center'
-      css={{ minHeight: spacing['3xl'] }}
+      backgroundColor='white'
+      css={{ minHeight: spacing['3xl'], zIndex: 1 }}
       {...other}
     >
       {children}
@@ -85,7 +85,7 @@ export const NavHeader = () => {
   return (
     <Switch>
       <Route path={[SIGN_UP_PAGE, SIGN_UP_EMAIL_PAGE]} exact>
-        <HeaderRoot>
+        <HeaderRoot pv='l'>
           {isMobile ? (
             <PlainButton
               size={PlainButtonSize.LARGE}
@@ -106,7 +106,7 @@ export const NavHeader = () => {
             SIGN_UP_ARTISTS_PAGE
           ]}
         >
-          <HeaderRoot justifyContent='center' pv={undefined} pt='l'>
+          <HeaderRoot justifyContent='center' pt='l'>
             <Box css={{ position: 'absolute', top: 20, left: 24 }}>
               {audiusLogo}
             </Box>
@@ -115,7 +115,7 @@ export const NavHeader = () => {
         </Route>
       ) : null}
       <Route path='*'>
-        <HeaderRoot justifyContent='space-between'>
+        <HeaderRoot justifyContent='space-between' pv='l'>
           {isBackAllowed ? (
             <>
               <PlainButton

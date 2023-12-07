@@ -217,6 +217,7 @@ export const SelectArtistsPage = () => {
               </SelectArtistsPreviewContextProvider>
             </AnimatedFlex>
             <PageFooter
+              centered
               sticky
               buttonProps={{
                 disabled: !dirty || !isValid || isSubmitting,
