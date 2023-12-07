@@ -170,7 +170,9 @@ export const FollowButton = (props: FollowButtonProps) => {
       >
         {text}
       </Text>
-      <InputRoot {...inputProps} checked={isFollowing} />
+      {type === 'checkbox' ? (
+        <InputRoot {...inputProps} checked={isFollowing} />
+      ) : null}
     </Flex>
   )
 }
