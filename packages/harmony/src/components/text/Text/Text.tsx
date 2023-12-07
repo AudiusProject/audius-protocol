@@ -22,6 +22,7 @@ export const Text = forwardRef(
       shadow,
       tag,
       asChild,
+      textAlign,
       ...other
     } = props
 
@@ -53,7 +54,8 @@ export const Text = forwardRef(
         ...('css' in variantConfig && variantConfig.css),
         ...(shadow && {
           textShadow: '0px 1px 5px rgba(0, 0, 0, 0.50)'
-        })
+        }),
+        textAlign
       })
     }
 
