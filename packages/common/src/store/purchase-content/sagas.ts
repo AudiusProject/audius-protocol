@@ -269,7 +269,13 @@ function* purchaseWithCoinflow({
     .serialize({ requireAllSignatures: false, verifySignatures: false })
     .toString('base64')
   const amount = balanceNeededCents / 100.0
-  yield* put(coinflowOnrampModalActions.open({ amount, serializedTransaction }))
+  yield* put(
+    coinflowOnrampModalActions.open({
+      amount,
+      serializedTransaction,
+      contentId
+    })
+  )
 
   const result = yield* race({
     succeeded: take(transactionSucceeded),
