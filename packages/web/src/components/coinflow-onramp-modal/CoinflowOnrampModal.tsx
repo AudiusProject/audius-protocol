@@ -15,7 +15,8 @@ import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 
 import styles from './CoinflowOnrampModal.module.css'
 
-const MERCHANT_ID = 'audius'
+const MERCHANT_ID = process.env.VITE_COINFLOW_MERCHANT_ID
+const IS_PRODUCTION = process.env.VITE_ENVIRONMENT === 'production'
 
 type CoinflowAdapter = {
   wallet: CoinflowSolanaPurchaseProps['wallet']
@@ -103,7 +104,7 @@ export const CoinflowOnrampModal = () => {
           wallet={adapter.wallet}
           connection={adapter.connection}
           merchantId={MERCHANT_ID}
-          env='sandbox'
+          env={IS_PRODUCTION ? 'prod' : 'sandbox'}
           blockchain='solana'
           amount={amount}
         />
