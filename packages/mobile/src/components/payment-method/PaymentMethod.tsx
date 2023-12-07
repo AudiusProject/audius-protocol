@@ -22,8 +22,8 @@ import type { SummaryTableItem } from '../summary-table/SummaryTable'
 const messages = {
   title: 'Payment Method',
   existingBalance: 'Existing balance',
-  withCard: 'Checkout with card',
-  withCrypto: 'Add funds with crypto transfer'
+  withCard: 'Pay with card',
+  withCrypto: 'Add via crypto transfer'
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
@@ -58,8 +58,6 @@ type PaymentMethodProps = {
   balance?: Nullable<BNUSDC>
   isExistingBalanceDisabled?: boolean
   showExistingBalance?: boolean
-  cardMessage?: string
-  cryptoMessage?: string
 }
 
 export const PaymentMethod = ({
@@ -67,9 +65,7 @@ export const PaymentMethod = ({
   setSelectedType,
   balance,
   isExistingBalanceDisabled,
-  showExistingBalance,
-  cardMessage,
-  cryptoMessage
+  showExistingBalance
 }: PaymentMethodProps) => {
   const styles = useStyles()
   const neutral = useColor('neutral')
@@ -85,7 +81,7 @@ export const PaymentMethod = ({
       value: PurchaseMethod.CARD,
       label: (
         <Text fontSize='medium' weight='medium'>
-          {cardMessage || messages.withCard}
+          {messages.withCard}
         </Text>
       ),
       icon: IconCreditCard
@@ -95,7 +91,7 @@ export const PaymentMethod = ({
       value: PurchaseMethod.CRYPTO,
       label: (
         <Text fontSize='medium' weight='medium'>
-          {cryptoMessage || messages.withCrypto}
+          {messages.withCrypto}
         </Text>
       ),
       icon: IconTransaction

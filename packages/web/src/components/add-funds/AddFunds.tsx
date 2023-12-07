@@ -26,8 +26,6 @@ import styles from './AddFunds.module.css'
 
 const messages = {
   usdcBalance: 'USDC Balance',
-  withCard: 'Pay with card',
-  withCrypto: 'Add via crypto transfer',
   continue: 'Continue'
 }
 
@@ -77,8 +75,6 @@ export const AddFunds = ({
           <PaymentMethod
             selectedType={selectedPurchaseMethod}
             setSelectedType={setSelectedPurchaseMethod}
-            cardMessage={messages.withCard}
-            cryptoMessage={messages.withCrypto}
           />
           <Button
             variant={ButtonType.PRIMARY}

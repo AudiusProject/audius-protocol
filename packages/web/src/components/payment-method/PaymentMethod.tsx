@@ -28,8 +28,8 @@ import zIndex from 'utils/zIndex'
 const messages = {
   paymentMethod: 'Payment Method',
   withExistingBalance: 'Existing balance',
-  withCard: 'Checkout with card',
-  withCrypto: 'Add funds with crypto transfer'
+  withCard: 'Pay with card',
+  withCrypto: 'Add via crypto transfer'
 }
 
 type PaymentMethodProps = {
@@ -38,8 +38,6 @@ type PaymentMethodProps = {
   balance?: Nullable<BNUSDC>
   isExistingBalanceDisabled?: boolean
   showExistingBalance?: boolean
-  cardMessage?: string
-  cryptoMessage?: string
 }
 
 export const PaymentMethod = ({
@@ -47,9 +45,7 @@ export const PaymentMethod = ({
   setSelectedType,
   balance,
   isExistingBalanceDisabled,
-  showExistingBalance,
-  cardMessage,
-  cryptoMessage
+  showExistingBalance
 }: PaymentMethodProps) => {
   const mobile = isMobile()
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
@@ -82,7 +78,7 @@ export const PaymentMethod = ({
       : null,
     {
       id: PurchaseMethod.CARD,
-      label: cardMessage || messages.withCard,
+      label: messages.withCard,
       icon: IconCreditCard,
       value:
         vendorOptions.length > 1 ? (
@@ -105,7 +101,7 @@ export const PaymentMethod = ({
     },
     {
       id: PurchaseMethod.CRYPTO,
-      label: cryptoMessage || messages.withCrypto,
+      label: messages.withCrypto,
       icon: IconTransaction
     }
   ].filter(Boolean) as SummaryTableItem[]
