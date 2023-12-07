@@ -10,6 +10,7 @@ import {
 } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
+// import { IconPlay } from '@audius/harmony-native'
 import IconFeed from 'app/assets/images/iconFeed.svg'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import { FeedTipTile } from 'app/components/feed-tip-tile'
@@ -55,6 +56,7 @@ export const FeedScreen = () => {
         </OnlineOnly>
       </ScreenHeader>
       <ScreenContent>
+        {/* <IconPlay color={} /> */}
         <Lineup
           pullToRefresh
           delineate

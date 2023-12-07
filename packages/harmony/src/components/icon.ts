@@ -13,13 +13,15 @@ export const iconSizes = {
 
 type IconSize = keyof typeof iconSizes
 
-type BaseIconProps = SVGProps<SVGSVGElement>
+type SVGBaseProps = SVGProps<SVGSVGElement>
 
-type IconProps = BaseIconProps & {
+export type IconProps = {
   color?: IconColors
   size?: IconSize
   sizeW?: IconSize
   sizeH?: IconSize
 }
 
-export type IconComponent = ComponentType<BaseIconProps | IconProps>
+type SVGIconProps = SVGBaseProps & IconProps
+
+export type IconComponent = ComponentType<SVGBaseProps | SVGIconProps>
