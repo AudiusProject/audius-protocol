@@ -4,7 +4,6 @@ import {
   useAddFundsModal,
   useUSDCManualTransferModal,
   buyUSDCActions,
-  USDCOnRampProvider,
   PurchaseMethod,
   PurchaseVendor,
   DEFAULT_PURCHASE_AMOUNT_CENTS
@@ -56,7 +55,7 @@ export const AddFundsDrawer = () => {
       case PurchaseVendor.STRIPE:
         dispatch(
           buyUSDCActions.onrampOpened({
-            provider: USDCOnRampProvider.STRIPE,
+            vendor: PurchaseVendor.STRIPE,
             purchaseInfo: {
               desiredAmount: DEFAULT_PURCHASE_AMOUNT_CENTS
             }

@@ -1656,34 +1656,34 @@ type BuyAudioRecoveryFailure = {
 // Buy USDC
 type BuyUSDCOnRampOpened = {
   eventName: Name.BUY_USDC_ON_RAMP_OPENED
-  provider: string
+  vendor: string
 }
 
 type BuyUSDCOnRampCanceled = {
   eventName: Name.BUY_USDC_ON_RAMP_CANCELED
-  provider: string
+  vendor: string
 }
 
 type BuyUSDCOnRampFailed = {
   eventName: Name.BUY_USDC_ON_RAMP_FAILURE
   error: string
-  provider: string
+  vendor: string
 }
 
 type BuyUSDCOnRampSuccess = {
   eventName: Name.BUY_USDC_ON_RAMP_SUCCESS
-  provider: string
+  vendor: string
 }
 
 type BuyUSDCSuccess = {
   eventName: Name.BUY_USDC_SUCCESS
-  provider: string
+  vendor: string
   requestedAmount: number
 }
 
 type BuyUSDCFailure = {
   eventName: Name.BUY_USDC_FAILURE
-  provider: string
+  vendor: string
   requestedAmount: number
   error: string
 }

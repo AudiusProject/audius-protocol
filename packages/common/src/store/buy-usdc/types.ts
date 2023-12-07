@@ -1,9 +1,3 @@
-export enum USDCOnRampProvider {
-  COINBASE = 'coinbase',
-  STRIPE = 'stripe',
-  UNKNOWN = 'unknown'
-}
-
 export type PurchaseInfo = {
   /**
    * Desired amount of USDC in *cents*

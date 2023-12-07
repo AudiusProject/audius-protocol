@@ -1,9 +1,11 @@
 import { useCallback, useState } from 'react'
 
 import {
+  FeatureFlags,
   PurchaseMethod,
   PurchaseVendor,
   useCreateUserbankIfNeeded,
+  useFeatureFlag,
   useUSDCBalance
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
@@ -42,8 +44,15 @@ const messages = {
 export const AddFunds = ({
   onContinue
 }: {
-  onContinue: (purchaseMethod: PurchaseMethod) => void
+  onContinue: (
+    purchaseMethod: PurchaseMethod,
+    purchaseVendor?: PurchaseVendor
+  ) => void
 }) => {
+  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
+    FeatureFlags.BUY_WITH_COINFLOW
+  )
+
   useCreateUserbankIfNeeded({
     recordAnalytics: track,
     audiusBackendInstance,
@@ -51,11 +60,18 @@ export const AddFunds = ({
   })
   const [selectedPurchaseMethod, setSelectedPurchaseMethod] =
     useState<PurchaseMethod>(PurchaseMethod.CARD)
+  const [selectedPurchaseVendor, setSelectedPurchaseVendor] = useState<
+    PurchaseVendor | undefined
+  >(undefined)
+
   const mobile = isMobile()
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
   const balance = USDC(balanceBN ?? new BN(0)).value
 
-  const vendorOptions = [{ label: PurchaseVendor.STRIPE }]
+  const vendorOptions = [
+    ...(isCoinflowEnabled ? [{ label: PurchaseVendor.COINFLOW }] : []),
+    { label: PurchaseVendor.STRIPE }
+  ]
 
   const items: SummaryTableItem[] = [
     {
@@ -67,7 +83,7 @@ export const AddFunds = ({
           mobile ? (
             <MobileFilterButton
               onSelect={(vendor: string) => {
-                console.info(vendor)
+                setSelectedPurchaseVendor(vendor as PurchaseVendor)
               }}
               options={vendorOptions}
               zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
@@ -75,7 +91,7 @@ export const AddFunds = ({
           ) : (
             <FilterButton
               onSelect={(vendor: string) => {
-                console.info(vendor)
+                setSelectedPurchaseVendor(vendor as PurchaseVendor)
               }}
               initialSelectionIndex={0}
               variant={FilterButtonType.REPLACE_LABEL}
@@ -136,7 +152,9 @@ export const AddFunds = ({
           <Button
             variant={ButtonType.PRIMARY}
             fullWidth
-            onClick={() => onContinue(selectedPurchaseMethod)}
+            onClick={() =>
+              onContinue(selectedPurchaseMethod, selectedPurchaseVendor)
+            }
           >
             {messages.continue}
           </Button>

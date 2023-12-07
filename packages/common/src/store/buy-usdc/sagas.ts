@@ -5,7 +5,9 @@ import { call, put, race, select, take, takeLeading } from 'typed-redux-saga'
 
 import { Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
+import { PurchaseVendor } from 'models/PurchaseContent'
 import {
+  createFundAccountAndPurchaseTransaction,
   createTransferToUserBankTransaction,
   findAssociatedTokenAddress,
   getRecentBlockhash,
@@ -17,6 +19,12 @@ import {
 import { getAccountUser } from 'store/account/selectors'
 import { getContext } from 'store/effects'
 import { getFeePayer } from 'store/solana/selectors'
+import {
+  transactionCanceled as coinflowTransactionCanceled,
+  transactionFailed as coinflowTransactionFailed,
+  transactionSucceeded as coinflowTransactionSucceeded
+} from 'store/ui/coinflow-modal/slice'
+import { coinflowOnrampModalActions } from 'store/ui/modals/coinflow-onramp-modal'
 import { setVisibility } from 'store/ui/modals/parentSlice'
 import { initializeStripeModal } from 'store/ui/stripe-modal/slice'
 import { waitForValue } from 'utils'
@@ -32,13 +40,13 @@ import {
   startRecoveryIfNecessary,
   recoveryStatusChanged
 } from './slice'
-import { BuyUSDCError, BuyUSDCErrorCode, USDCOnRampProvider } from './types'
+import { BuyUSDCError, BuyUSDCErrorCode } from './types'
 import { getBuyUSDCRemoteConfig, getUSDCUserBank } from './utils'
 
 type PurchaseStepParams = {
   desiredAmount: number
   wallet: PublicKey
-  provider: USDCOnRampProvider
+  vendor: PurchaseVendor
   retryDelayMs?: number
   maxRetryCount?: number
 }
@@ -46,7 +54,7 @@ type PurchaseStepParams = {
 function* purchaseStep({
   desiredAmount,
   wallet,
-  provider,
+  vendor,
   retryDelayMs,
   maxRetryCount
 }: PurchaseStepParams) {
@@ -82,7 +90,7 @@ function* purchaseStep({
   if (result.canceled) {
     yield* call(
       track,
-      make({ eventName: Name.BUY_USDC_ON_RAMP_CANCELED, provider })
+      make({ eventName: Name.BUY_USDC_ON_RAMP_CANCELED, vendor })
     )
     return {}
   } else if (result.failure) {
@@ -94,7 +102,7 @@ function* purchaseStep({
       track,
       make({
         eventName: Name.BUY_USDC_ON_RAMP_FAILURE,
-        provider,
+        vendor,
         error: errorString
       })
     )
@@ -107,10 +115,7 @@ function* purchaseStep({
     }
     throw new BuyUSDCError(BuyUSDCErrorCode.OnrampError, errorString)
   }
-  yield* call(
-    track,
-    make({ eventName: Name.BUY_USDC_ON_RAMP_SUCCESS, provider })
-  )
+  yield* call(track, make({ eventName: Name.BUY_USDC_ON_RAMP_SUCCESS, vendor }))
 
   // Wait for the funds to come through
   const newBalance = yield* call(
@@ -209,7 +214,7 @@ function* transferStep({
 
 function* doBuyUSDC({
   payload: {
-    provider,
+    vendor,
     purchaseInfo: { desiredAmount }
   }
 }: ReturnType<typeof onrampOpened>) {
@@ -222,13 +227,6 @@ function* doBuyUSDC({
   const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
   try {
-    if (provider !== USDCOnRampProvider.STRIPE) {
-      throw new BuyUSDCError(
-        BuyUSDCErrorCode.OnrampError,
-        'USDC Purchase is only supported via Stripe'
-      )
-    }
-
     if (desiredAmount < config.minUSDCPurchaseAmountCents) {
       throw new BuyUSDCError(
         BuyUSDCErrorCode.MinAmountNotMet,
@@ -242,52 +240,119 @@ function* doBuyUSDC({
         `Maximum USDC purchase amount is ${config.maxUSDCPurchaseAmountCents} cents`
       )
     }
+    switch (vendor) {
+      case PurchaseVendor.STRIPE: {
+        yield* put(
+          initializeStripeModal({
+            // stripe expects amount in dollars, not cents
+            amount: (desiredAmount / 100).toString(),
+            destinationCurrency: 'usdc',
+            destinationWallet: rootAccount.publicKey.toString(),
+            onrampCanceled,
+            onrampFailed,
+            onrampSucceeded
+          })
+        )
 
-    yield* put(
-      initializeStripeModal({
-        // stripe expects amount in dollars, not cents
-        amount: (desiredAmount / 100).toString(),
-        destinationCurrency: 'usdc',
-        destinationWallet: rootAccount.publicKey.toString(),
-        onrampCanceled,
-        onrampFailed,
-        onrampSucceeded
-      })
-    )
+        yield* put(setVisibility({ modal: 'StripeOnRamp', visible: true }))
 
-    yield* put(setVisibility({ modal: 'StripeOnRamp', visible: true }))
+        // Record start
+        yield* call(
+          track,
+          make({ eventName: Name.BUY_USDC_ON_RAMP_OPENED, vendor })
+        )
 
-    // Record start
-    yield* call(
-      track,
-      make({ eventName: Name.BUY_USDC_ON_RAMP_OPENED, provider })
-    )
+        // Get config
+        const { retryDelayMs, maxRetryCount } = yield* call(
+          getBuyUSDCRemoteConfig
+        )
 
-    // Get config
-    const { retryDelayMs, maxRetryCount } = yield* call(getBuyUSDCRemoteConfig)
+        // Wait for purchase
+        // Have to do some typescript finangling here due to the "race" effect in purchaseStep
+        // See https://github.com/agiledigital/typed-redux-saga/issues/43
+        const { newBalance } = (yield* call(purchaseStep, {
+          vendor,
+          desiredAmount,
+          wallet: rootAccount.publicKey,
+          retryDelayMs,
+          maxRetryCount
+        }) as unknown as ReturnType<typeof purchaseStep>)!
 
-    // Wait for purchase
-    // Have to do some typescript finangling here due to the "race" effect in purchaseStep
-    // See https://github.com/agiledigital/typed-redux-saga/issues/43
-    const { newBalance } = (yield* call(purchaseStep, {
-      provider,
-      desiredAmount,
-      wallet: rootAccount.publicKey,
-      retryDelayMs,
-      maxRetryCount
-    }) as unknown as ReturnType<typeof purchaseStep>)!
+        // If the user canceled the purchase, stop the flow
+        if (newBalance === undefined) {
+          return
+        }
 
-    // If the user canceled the purchase, stop the flow
-    if (newBalance === undefined) {
-      return
+        // Transfer from the root wallet to the userbank
+        yield* call(transferStep, {
+          wallet: rootAccount,
+          userBank,
+          amount: newBalance
+        })
+        break
+      }
+      case PurchaseVendor.COINFLOW: {
+        const feePayerAddress = yield* select(getFeePayer)
+        if (!feePayerAddress) {
+          throw new Error('Missing feePayer unexpectedly')
+        }
+        const feePayer = new PublicKey(feePayerAddress)
+        const recentBlockhash = yield* call(
+          getRecentBlockhash,
+          audiusBackendInstance
+        )
+        const rootAccount = yield* call(
+          getRootSolanaAccount,
+          audiusBackendInstance
+        )
+
+        // TODO: Currently does not work at all. See PAY-2221 for support.
+        const coinflowTransaction = yield* call(
+          createFundAccountAndPurchaseTransaction,
+          audiusBackendInstance,
+          {
+            blocknumber: 0,
+            recentBlockhash,
+            splits: { sp38CXGL9FoWPp9Avo4fevewEX4UqNkTSTFUPpQFRry: 0 },
+            id: -1,
+            type: 'track',
+            wallet: rootAccount,
+            feePayer
+          }
+        )
+
+        const serializedTransaction = coinflowTransaction
+          .serialize({ requireAllSignatures: false, verifySignatures: false })
+          .toString('base64')
+        const amount = desiredAmount / 100.0
+        yield* put(
+          coinflowOnrampModalActions.open({
+            amount,
+            serializedTransaction
+          })
+        )
+
+        const result = yield* race({
+          succeeded: take(coinflowTransactionSucceeded),
+          failed: take(coinflowTransactionFailed),
+          canceled: take(coinflowTransactionCanceled)
+        })
+
+        // Return early for failure or cancellation
+        if (result.canceled) {
+          throw new Error('Canceled Coinflow purchase')
+        }
+        if (result.failed) {
+          throw new Error('Coinflow transaction failed')
+        }
+        break
+      }
+      default:
+        throw new BuyUSDCError(
+          BuyUSDCErrorCode.OnrampError,
+          'Unsupported vendor'
+        )
     }
-
-    // Transfer from the root wallet to the userbank
-    yield* call(transferStep, {
-      wallet: rootAccount,
-      userBank,
-      amount: newBalance
-    })
 
     yield* put(buyUSDCFlowSucceeded())
 
@@ -296,7 +361,7 @@ function* doBuyUSDC({
       track,
       make({
         eventName: Name.BUY_USDC_SUCCESS,
-        provider,
+        vendor,
         requestedAmount: desiredAmount
       })
     )
@@ -315,7 +380,7 @@ function* doBuyUSDC({
       track,
       make({
         eventName: Name.BUY_USDC_FAILURE,
-        provider,
+        vendor,
         requestedAmount: desiredAmount,
         error: error.message
       })

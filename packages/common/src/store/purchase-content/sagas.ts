@@ -31,7 +31,7 @@ import {
   onrampOpened,
   onrampCanceled
 } from 'store/buy-usdc/slice'
-import { BuyUSDCError, USDCOnRampProvider } from 'store/buy-usdc/types'
+import { BuyUSDCError } from 'store/buy-usdc/types'
 import { getBuyUSDCRemoteConfig, getUSDCUserBank } from 'store/buy-usdc/utils'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUser } from 'store/cache/users/selectors'
@@ -173,61 +173,6 @@ function* pollForPurchaseConfirmation({
   })
 }
 
-/** Attempts to purchase the requested amount of USDC, will throw on cancellation or failure */
-function* purchaseUSDC({ amount }: { amount: BNUSDC }) {
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const isBuyUSDCViaSolEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.BUY_USDC_VIA_SOL
-  )
-  const roundedAmount = ceilingBNUSDCToNearestCent(amount)
-    .div(BN_USDC_CENT_WEI)
-    .toNumber()
-
-  let result: RaceStatusResult | null = null
-  if (isBuyUSDCViaSolEnabled) {
-    yield* put(
-      buyCryptoViaSol({
-        // expects "friendly" amount, so dollars
-        amount: roundedAmount / 100.0,
-        mint: 'usdc',
-        provider: OnRampProvider.STRIPE
-      })
-    )
-    result = yield* race({
-      succeeded: take(buyCryptoSucceeded),
-      failed: take(buyCryptoFailed),
-      canceled: take(buyCryptoCanceled)
-    })
-  } else {
-    yield* put(
-      onrampOpened({
-        provider: USDCOnRampProvider.STRIPE,
-        purchaseInfo: {
-          desiredAmount: roundedAmount
-        }
-      })
-    )
-
-    result = yield* race({
-      succeeded: take(buyUSDCFlowSucceeded),
-      canceled: take(onrampCanceled),
-      failed: take(buyUSDCFlowFailed)
-    })
-  }
-  // Return early for cancellation
-  if (result.canceled) {
-    throw new PurchaseContentError(
-      PurchaseErrorCode.Canceled,
-      'User canceled onramp'
-    )
-  }
-  // throw errors out to the shared handler below
-  if (result.failed) {
-    throw result.failed.payload.error
-  }
-}
-
 function* purchaseWithCoinflow({
   blocknumber,
   extraAmount,
@@ -303,7 +248,57 @@ function* purchaseWithCoinflow({
 
 function* purchaseUSDCWithStripe({ balanceNeeded }: { balanceNeeded: BNUSDC }) {
   yield* put(buyUSDC())
-  yield* call(purchaseUSDC, { amount: balanceNeeded })
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const isBuyUSDCViaSolEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.BUY_USDC_VIA_SOL
+  )
+  const roundedAmount = ceilingBNUSDCToNearestCent(balanceNeeded)
+    .div(BN_USDC_CENT_WEI)
+    .toNumber()
+
+  let result: RaceStatusResult | null = null
+  if (isBuyUSDCViaSolEnabled) {
+    yield* put(
+      buyCryptoViaSol({
+        // expects "friendly" amount, so dollars
+        amount: roundedAmount / 100.0,
+        mint: 'usdc',
+        provider: OnRampProvider.STRIPE
+      })
+    )
+    result = yield* race({
+      succeeded: take(buyCryptoSucceeded),
+      failed: take(buyCryptoFailed),
+      canceled: take(buyCryptoCanceled)
+    })
+  } else {
+    yield* put(
+      onrampOpened({
+        vendor: PurchaseVendor.STRIPE,
+        purchaseInfo: {
+          desiredAmount: roundedAmount
+        }
+      })
+    )
+
+    result = yield* race({
+      succeeded: take(buyUSDCFlowSucceeded),
+      canceled: take(onrampCanceled),
+      failed: take(buyUSDCFlowFailed)
+    })
+  }
+  // Return early for cancellation
+  if (result.canceled) {
+    throw new PurchaseContentError(
+      PurchaseErrorCode.Canceled,
+      'User canceled onramp'
+    )
+  }
+  // throw errors out to the shared handler below
+  if (result.failed) {
+    throw result.failed.payload.error
+  }
   yield* put(usdcBalanceSufficient())
 }
 

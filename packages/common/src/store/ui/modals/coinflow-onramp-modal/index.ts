@@ -6,7 +6,7 @@ import { createModal } from '../createModal'
 
 export type CoinflowOnrampModalState = {
   amount: number
-  contentId: ID | null
+  contentId?: ID
   serializedTransaction: string
   onrampSucceeded?: Action
   onrampCanceled?: Action
@@ -16,7 +16,7 @@ export type CoinflowOnrampModalState = {
 const coinflowOnrampModal = createModal<CoinflowOnrampModalState>({
   reducerPath: 'CoinflowOnramp',
   initialState: {
-    contentId: null,
+    contentId: undefined,
     isOpen: false,
     amount: -1,
     serializedTransaction: ''
