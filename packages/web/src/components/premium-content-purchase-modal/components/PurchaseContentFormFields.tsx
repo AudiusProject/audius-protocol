@@ -68,21 +68,25 @@ export const PurchaseContentFormFields = ({
 
   return (
     <>
-      <PayExtraFormSection
-        amountPresets={payExtraAmountPresetValues}
-        disabled={isUnlocking}
-      />
+      {isUnlocking || isPurchased ? null : (
+        <PayExtraFormSection
+          amountPresets={payExtraAmountPresetValues}
+          disabled={isUnlocking}
+        />
+      )}
       <PurchaseSummaryTable
         {...purchaseSummaryValues}
         totalPriceInCents={totalPriceInCents}
       />
-      <PaymentMethod
-        selectedType={purchaseMethod}
-        setSelectedType={setPurchaseMethod}
-        balance={balanceBN}
-        isExistingBalanceDisabled={isExistingBalanceDisabled}
-        showExistingBalance
-      />
+      {isUnlocking || isPurchased ? null : (
+        <PaymentMethod
+          selectedType={purchaseMethod}
+          setSelectedType={setPurchaseMethod}
+          balance={balanceBN}
+          isExistingBalanceDisabled={isExistingBalanceDisabled}
+          showExistingBalance
+        />
+      )}
       {isUnlocking ? null : <PayToUnlockInfo />}
     </>
   )

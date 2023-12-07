@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback } from 'react'
+import { CSSProperties, ChangeEvent, useCallback } from 'react'
 
 import {
   BNUSDC,
@@ -118,6 +118,22 @@ export const PaymentMethod = ({
   )
 
   const renderBody = () => {
+    const getFlexProps = (id: PurchaseMethod) => {
+      if (mobile && id === PurchaseMethod.CARD) {
+        return {
+          direction: 'column' as CSSProperties['flexDirection'],
+          justifyContent: 'center',
+          justifySelf: 'stretch',
+          alignItems: 'flex-start'
+        }
+      }
+      return {
+        direction: 'row' as CSSProperties['flexDirection'],
+        alignItems: 'center',
+        alignSelf: 'stretch',
+        justifyContent: 'space-between'
+      }
+    }
     return (
       <RadioButtonGroup
         name={`summaryTable-label-${messages.paymentMethod}`}
@@ -128,9 +144,7 @@ export const PaymentMethod = ({
         {options.map(({ id, label, icon: Icon, value, disabled }) => (
           <Flex
             key={id}
-            alignItems='center'
-            alignSelf='stretch'
-            justifyContent='space-between'
+            {...getFlexProps(id as PurchaseMethod)}
             pv='m'
             ph='xl'
             css={{ opacity: disabled ? 0.5 : 1 }}
@@ -151,7 +165,13 @@ export const PaymentMethod = ({
               ) : null}
               <Text>{label}</Text>
             </Flex>
-            <Text>{value}</Text>
+            <Text
+              css={{
+                width: mobile && id === PurchaseMethod.CARD ? '100%' : 'auto'
+              }}
+            >
+              {value}
+            </Text>
           </Flex>
         ))}
       </RadioButtonGroup>
