@@ -4,7 +4,7 @@ import * as secp from '@noble/secp256k1'
 import { audiusLibs, waitForLibsInit } from '../libs'
 
 export const auth = {
-  sign: async (data: string) => {
+  sign: async (data: string | Uint8Array) => {
     await waitForLibsInit()
     return await secp.sign(
       keccak_256(data),
