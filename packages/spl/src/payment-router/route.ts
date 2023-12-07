@@ -1,4 +1,4 @@
-import { BN, Program } from '@coral-xyz/anchor'
+import { BN, Program, Provider } from '@coral-xyz/anchor'
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token'
 import { PublicKey } from '@solana/web3.js'
 
@@ -15,7 +15,7 @@ export const route = async (
   tokenProgramId: PublicKey = TOKEN_PROGRAM_ID,
   programId: PublicKey = PAYMENT_ROUTER_PROGRAM_ID
 ) => {
-  const program = new Program(IDL, programId)
+  const program = new Program(IDL, programId, {} as Provider)
   return await program.methods
     .route(
       paymentRouterPdaBump,

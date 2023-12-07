@@ -31,7 +31,7 @@ import { TransactionHandler } from './transactionHandler'
 import { createTransferInstructions, transferWAudioBalance } from './transfer'
 import { getBankAccountAddress, createUserBankFrom } from './userBank'
 import { wAudioFromWeiAudio } from './wAudio'
-import { createPaymentRouterBalancePda, route } from '@audius/spl'
+import { route } from '@audius/spl'
 
 type EvaluateChallengeAttestationsConfig = {
   challengeId: string
@@ -628,31 +628,28 @@ export class SolanaWeb3Manager {
         [Buffer.from('payment_router')],
         this.paymentRouterProgramId
       )
-    // Create the payment router balance PDA
-    // const createInstructions = await createPaymentRouterBalancePda(
-    //   paymentRouterPda,
-    //   this.feePayerKey
-    // )
-    // await this.transactionHandler.handleTransaction({
-    //   instructions: [createInstructions],
-    //   skipPreflight: true,
-    //   feePayerOverride: this.feePayerKey
-    // })
 
     // Associated token account owned by the PDA
-    const paymentRouterTokenAccount = await this.getTokenAccountInfo(
-      paymentRouterPda.toString()
+    const paymentRouterTokenAccount = await this.findAssociatedTokenAddress(
+      paymentRouterPda.toString(),
+      'usdc'
     )
-    if (paymentRouterTokenAccount === null) {
-      throw new Error('Payment Router balance PDA ATA does not exist')
+    const paymentRouterTokenAccountInfo = this.getTokenAccountInfo(
+      paymentRouterTokenAccount.toString()
+    )
+    if (paymentRouterTokenAccountInfo === null) {
+      throw new Error('Payment Router balance PDA token account does not exist')
     }
-    const pdaAtaKey = new PublicKey(paymentRouterTokenAccount.address)
 
-    const senderTokenAccount = await this.getTokenAccountInfo(
+    const senderTokenAccount = await this.findAssociatedTokenAddress(
+      senderAccount.toString(),
+      'usdc'
+    )
+    const senderTokenAccountInfo = await this.getTokenAccountInfo(
       senderAccount.toString()
     )
-    if (senderTokenAccount === null) {
-      throw new Error('Sender token account does not exist')
+    if (senderTokenAccountInfo === null) {
+      throw new Error('Sender token account ATA does not exist')
     }
 
     const amounts = Object.values(recipientAmounts)
@@ -662,20 +659,20 @@ export class SolanaWeb3Manager {
     )
 
     const transferInstruction = this.splToken.createTransferCheckedInstruction(
-      senderAccount,
+      senderTokenAccount,
       this.mints.usdc,
-      pdaAtaKey,
+      paymentRouterTokenAccount,
       this.splToken.TOKEN_PROGRAM_ID, // TODO: OWNER, differentiate between SPL and claimable-tokens
       Number(totalAmount),
       AUDIO_DECIMALS
     )
 
     const paymentRouterInstruction = await route(
-      new PublicKey(senderTokenAccount.address),
+      senderTokenAccount,
       senderAccount,
       paymentRouterPdaBump,
       Object.keys(recipientAmounts).map((key) => new PublicKey(key)), // recipients
-      amounts, // amounts
+      amounts,
       totalAmount
     )
 
