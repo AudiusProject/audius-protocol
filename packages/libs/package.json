@@ -24,7 +24,7 @@
   },
   "react-native": "./dist/index.native.js",
   "scripts": {
-    "test:sdk": "./node_modules/.bin/jest --coverage=false",
+    "test:sdk": "node --experimental-vm-modules ./node_modules/.bin/jest --runInBand --coverage=false",
     "test:sdk:browser": "./node_modules/.bin/jest --env jsdom",
     "test": "./scripts/test.sh",
     "test:unit": "ts-mocha 'src/**/*.test.{js,ts}' --ignore 'src/sdk/**/*.test.{js,ts}' --exit",
