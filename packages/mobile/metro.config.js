@@ -1,6 +1,6 @@
 const path = require('path')
 
-const { getDefaultConfig } = require('metro-config')
+const { getDefaultConfig } = require('@react-native/metro-config')
 
 const clientPath = path.resolve(__dirname, '../web')
 const commonPath = path.resolve(__dirname, '../../packages/common')

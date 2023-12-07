@@ -3,7 +3,7 @@ module.exports = {
   env: {
     es6: true
   },
-  extends: ['audius'],
+  extends: ['audius', '@react-native'],
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly'
