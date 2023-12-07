@@ -67,6 +67,8 @@ export default interface SignOnPageState {
   isMobileSignOnVisible: boolean
   routeOnCompletion: boolean
   startedSignUpProcess: boolean
+  finishedPhase1: boolean
+  /** @deprecated */
   finishedSignUpProcess: boolean
   routeOnExit: boolean
   page: number

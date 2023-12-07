@@ -36,12 +36,16 @@ export const SIGN_IN_FAILED = 'SIGN_ON/SIGN_IN_FAILED'
 
 export const SIGN_UP = 'SIGN_ON/SIGN_UP'
 export const START_SIGN_UP = 'SIGN_ON/START_SIGN_UP'
+
+/** @deprecated */
 export const FINISH_SIGN_UP = 'SIGN_ON/FINISH_SIGN_UP'
+
 export const SIGN_UP_SUCCEEDED = 'SIGN_ON/SIGN_UP_SUCCEEDED'
 export const SIGN_UP_SUCCEEDED_WITH_ID = 'SIGN_ON/SIGN_UP_SUCCEEDED_WITH_ID'
 export const SIGN_UP_FAILED = 'SIGN_ON/SIGN_UP_FAILED'
 export const SIGN_UP_TIMEOUT = 'SIGN_ON/SIGN_UP_TIMEOUT'
 
+export const SET_FINISHED_PHASE_1 = 'SIGN_ON/SET_FINISHED_PHASE_1'
 export const SET_LINKED_SOCIAL_ON_FIRST_PAGE =
   'SIGN_ON/SET_LINKED_SOCIAL_ON_FIRST_PAGE'
 export const SET_TWITTER_PROFILE = 'SIGN_ON/SET_TWITTER_PROFILE'
@@ -50,6 +54,7 @@ export const SET_INSTAGRAM_PROFILE = 'SIGN_ON/SET_INSTAGRAM_PROFILE'
 export const SET_INSTAGRAM_PROFILE_ERROR = 'SIGN_ON/SET_INSTAGRAM_PROFILE_ERROR'
 export const SET_TIKTOK_PROFILE = 'SIGN_ON/SET_TIKTOK_PROFILE'
 export const SET_TIKTOK_PROFILE_ERROR = 'SIGN_ON/SET_TIKTOK_PROFILE_ERROR'
+export const UNSET_SOCIAL_PROFILE = 'SIGN_ON/UNSET_SOCIAL_PROFILE'
 
 export const SET_STATUS = 'SIGN_ON/SET_STATUS'
 export const CONFIGURE_META_MASK = 'SIGN_ON/CONFIGURE_META_MASK'
@@ -297,6 +302,19 @@ export function setLinkedSocialOnFirstPage(linkedSocialOnFirstPage: boolean) {
   return {
     type: SET_LINKED_SOCIAL_ON_FIRST_PAGE,
     linkedSocialOnFirstPage
+  }
+}
+
+export function unsetSocialProfile() {
+  return {
+    type: UNSET_SOCIAL_PROFILE
+  }
+}
+
+export function setFinishedPhase1(finished: boolean) {
+  return {
+    type: SET_FINISHED_PHASE_1,
+    finishedPhase1: finished
   }
 }
 

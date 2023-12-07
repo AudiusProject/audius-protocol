@@ -27,14 +27,16 @@ export const determineAllowedRoute = (
 
     if (signUpState.password.value || signUpState.useMetaMask) {
       // Already have password
-      allowedRoutes.push(SignUpPath.pickHandle)
+      if (!signUpState.linkedSocialOnFirstPage) {
+        allowedRoutes.push(SignUpPath.pickHandle)
+      }
 
       if (signUpState.handle.value) {
         // Already have handle or it needs review
         allowedRoutes.push(SignUpPath.reviewHandle)
         allowedRoutes.push(SignUpPath.finishProfile)
 
-        if (signUpState.name.value) {
+        if (signUpState.finishedPhase1) {
           // Already have display name
 
           // At this point the account is fully created & logged in; now user can't back to account creation steps

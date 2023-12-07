@@ -9,6 +9,7 @@ import { TikTokAuth } from 'components/tiktok-auth/TikTokAuthButton'
 import { useSetProfileFromTikTok } from '../hooks/socialMediaLogin'
 
 type SignupFlowTikTokAuthProps = {
+  onStart: () => void
   onFailure: (e: unknown) => void
   onSuccess: (info: {
     requiresReview: boolean
@@ -19,6 +20,7 @@ type SignupFlowTikTokAuthProps = {
 }
 
 export const SignupFlowTikTokAuth = ({
+  onStart,
   onFailure,
   onSuccess,
   children
@@ -56,6 +58,7 @@ export const SignupFlowTikTokAuth = ({
   return (
     <TikTokAuth
       onClick={() => {
+        onStart()
         dispatch(make(Name.CREATE_ACCOUNT_START_INSTAGRAM, {}))
       }}
       onFailure={handleError}

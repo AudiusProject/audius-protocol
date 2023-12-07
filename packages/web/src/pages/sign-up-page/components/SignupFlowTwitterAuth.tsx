@@ -16,12 +16,14 @@ type SignupFlowTwitterAuthProps = PropsWithChildren<{
     handle: string
     platform: 'twitter'
   }) => void
+  onStart: () => void
 }>
 
 export const SignupFlowTwitterAuth = ({
   className,
   onFailure,
   onSuccess,
+  onStart,
   children
 }: SignupFlowTwitterAuthProps) => {
   const dispatch = useDispatch()
@@ -56,6 +58,7 @@ export const SignupFlowTwitterAuth = ({
       className={className}
       forceLogin
       onClick={() => {
+        onStart()
         dispatch(make(Name.CREATE_ACCOUNT_START_TWITTER, {}))
       }}
       onFailure={handleError}

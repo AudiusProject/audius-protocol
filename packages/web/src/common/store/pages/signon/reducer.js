@@ -20,6 +20,7 @@ import {
   OPEN_SIGN_ON,
   NEXT_PAGE,
   PREVIOUS_PAGE,
+  UNSET_SOCIAL_PROFILE,
   GO_TO_PAGE,
   SET_STATUS,
   SIGN_UP,
@@ -37,7 +38,8 @@ import {
   ADD_FOLLOW_ARTISTS,
   REMOVE_FOLLOW_ARTISTS,
   SET_REFERRER,
-  SET_LINKED_SOCIAL_ON_FIRST_PAGE
+  SET_LINKED_SOCIAL_ON_FIRST_PAGE,
+  SET_FINISHED_PHASE_1
 } from './actions'
 import { Pages, FollowArtistsCategory } from './types'
 
@@ -73,7 +75,10 @@ const initialState = {
   toastText: null,
   page: Pages.EMAIL,
   startedSignUpProcess: false,
+  /** @deprecated */
   finishedSignUpProcess: false,
+  /** Whether user finished the main part of the flow (before 'Select Genres'), upon which their account gets created */
+  finishedPhase1: false,
   followArtists: {
     selectedCategory: FollowArtistsCategory.FEATURED,
     categories: {},
@@ -196,6 +201,12 @@ const actionsMap = {
       }
     }
   },
+  [SET_FINISHED_PHASE_1](state, action) {
+    return {
+      ...state,
+      finishedPhase1: action.finishedPhase1
+    }
+  },
   [SET_LINKED_SOCIAL_ON_FIRST_PAGE](state, action) {
     return {
       ...state,
@@ -256,6 +267,23 @@ const actionsMap = {
       tikTokScreenName: action.profile.display_name,
       profileImage: action.profileImage || null,
       verified: action.profile.is_verified
+    }
+  },
+  [UNSET_SOCIAL_PROFILE](state) {
+    return {
+      ...state,
+      tikTokId: initialState.tikTokId,
+      tikTokProfile: initialState.tikTokProfile,
+      tikTokScreenName: initialState.tikTokScreenName,
+      instagramId: initialState.instagramId,
+      instagramScreenName: initialState.instagramScreenName,
+      twitterId: initialState.twitterId,
+      coverPhoto: initialState.coverPhoto,
+      twitterScreenName: initialState.twitterScreenName,
+      name: initialState.name,
+      handle: initialState.handle,
+      profileImage: initialState.profileImage,
+      verified: initialState.verified
     }
   },
   [VALIDATE_EMAIL](state, action) {
