@@ -10,7 +10,7 @@ import { useTheme } from '../../foundations/theme'
 
 export type TextProps = NativeTextProps &
   Omit<BaseTextProps, 'textAlign'> & {
-    textAlign: TextStyle['textAlign']
+    textAlign?: TextStyle['textAlign']
   }
 
 export const Text = (props: TextProps) => {
