@@ -90,7 +90,6 @@ export const CreateLoginDetailsPage = () => {
                     ) : null}
                   </Flex>
                 }
-                p
               />
               <HarmonyTextField
                 name='email'
