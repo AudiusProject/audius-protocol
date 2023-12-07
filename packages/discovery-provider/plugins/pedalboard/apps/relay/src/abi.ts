@@ -184,7 +184,7 @@ export const decodeAbi = (data: string): ManageEntityParameters => {
     entityType,
     entityId,
     action,
-    metadata: JSON.parse(metadata),
+    metadata,
     nonce,
     subjectSig,
   };
