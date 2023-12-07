@@ -225,7 +225,8 @@ export const outputConfigs = {
         format: 'iife',
         esModule: false,
         sourcemap: true,
-        plugins: [terser()]
+        plugins: [terser()],
+        inlineDynamicImports: true
       }
     ],
     plugins: [
@@ -249,8 +250,6 @@ export const outputConfigs = {
     ],
     external: ['web3']
   },
-
-  // TODO: are we recreating TS declarations for every bundle?
 
   /**
    * Libs Web Package
