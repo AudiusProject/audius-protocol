@@ -5,15 +5,17 @@ import {
   SPL_AUDIO_DECIMALS,
   SPL_AUDIO_TOKEN_ADDRESS,
   SPL_USDC_DECIMALS,
-  SPL_USDC_TOKEN_ADDRESS
+  SPL_USDC_TOKEN_ADDRESS,
+  MEMO_PROGRAM_ADDRESS
 } from './constants'
 import {
   TOKEN_PROGRAM_ID,
   createTransferCheckedInstruction,
   getOrCreateAssociatedTokenAccount
 } from '@solana/spl-token'
+import { bs58 } from '@coral-xyz/anchor/dist/cjs/utils/bytes'
 import { assert } from 'chai'
-import { TransactionMessage, VersionedTransaction } from '@solana/web3.js'
+import { TransactionInstruction, TransactionMessage, VersionedTransaction } from '@solana/web3.js'
 
 const { Connection, Keypair, PublicKey, SystemProgram } = anchor.web3
 
@@ -26,6 +28,7 @@ const feePayerPublicKey = feePayerKeypair.publicKey
 
 const SPL_AUDIO_TOKEN_ADDRESS_KEY = new PublicKey(SPL_AUDIO_TOKEN_ADDRESS)
 const SPL_USDC_TOKEN_ADDRESS_KEY = new PublicKey(SPL_USDC_TOKEN_ADDRESS)
+const MEMO_PROGRAM_ADDRESS_KEY = new PublicKey(MEMO_PROGRAM_ADDRESS)
 
 const endpoint = 'https://api.mainnet-beta.solana.com'
 // Use this endpoint for local testing
@@ -172,13 +175,12 @@ describe('payment-router', () => {
     }).compileToV0Message()
     const tx = new VersionedTransaction(message)
     tx.sign([feePayerKeypair])
-    await connection.sendTransaction(tx)
 
     const rawTransaction = tx.serialize()
     await connection.sendRawTransaction(rawTransaction)
     console.log(
       'Your transaction signature',
-      Buffer.from(tx.signatures[0]).toString('hex')
+      bs58.encode(tx.signatures[0])
     )
 
     audioTokenAccount = await getOrCreateAssociatedTokenAccount(
@@ -244,6 +246,11 @@ describe('payment-router', () => {
       new anchor.BN(0)
     )
 
+    const type = 'track'
+    const id = 1
+    const blocknumber = 1
+    const purchaserUserId = 1
+    const data = `${type}:${id}:${blocknumber}:${purchaserUserId}`
     const recentBlockhash = (await connection.getLatestBlockhash()).blockhash
     const instructions = [
       createTransferCheckedInstruction(
@@ -254,6 +261,11 @@ describe('payment-router', () => {
         totalAmount.toNumber(),
         SPL_USDC_DECIMALS
       ),
+      new TransactionInstruction({
+        keys: [{ pubkey: feePayerPublicKey, isSigner: true, isWritable: true }],
+        data: Buffer.from(data),
+        programId: MEMO_PROGRAM_ADDRESS_KEY
+      }),
       await program.methods
         .route(paymentRouterPdaBump, amounts, totalAmount)
         .accounts({
@@ -277,13 +289,12 @@ describe('payment-router', () => {
     }).compileToV0Message()
     const tx = new VersionedTransaction(message)
     tx.sign([feePayerKeypair])
-    await connection.sendTransaction(tx)
 
     const rawTransaction = tx.serialize()
     await connection.sendRawTransaction(rawTransaction)
     console.log(
       'Your transaction signature',
-      Buffer.from(tx.signatures[0]).toString('hex')
+      bs58.encode(tx.signatures[0])
     )
 
     usdcTokenAccount = await getOrCreateAssociatedTokenAccount(
