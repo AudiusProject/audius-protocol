@@ -5,7 +5,11 @@
   "description": "A data structure to represent fixed precision decimals",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
-  "exports": "./dist/esm/index.js",
+  "exports": {
+    "import": "./dist/esm/index.js",
+    "require": "./dist/cjs/index.js",
+    "types": "./dist/types/index.d.ts"
+  },
   "types": "./dist/types/index.d.ts",
   "scripts": {
     "start": "tsc --build --verbose --watch tsconfig.build.json",
