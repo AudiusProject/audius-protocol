@@ -316,22 +316,6 @@ def index_purchase(
     )
     session.add(usdc_purchase)
 
-    # TODO: Index a transfer for the sender if it was a userbank
-    # usdc_tx_sent = USDCTransactionsHistory(
-    #     user_bank=sender_account,
-    #     slot=slot,
-    #     signature=tx_sig,
-    #     transaction_type=USDCTransactionType.purchase_content,
-    #     method=USDCTransactionMethod.send,
-    #     transaction_created_at=timestamp,
-    #     change=Decimal(balance_changes[sender_account]["change"]),
-    #     balance=Decimal(balance_changes[sender_account]["post_balance"]),
-    #     tx_metadata=str(receiver_user_id),
-    # )
-    # logger.debug(
-    #     f"index_payment_router.py | Creating usdc_tx_history send tx for purchase {usdc_tx_sent}"
-    # )
-    # session.add(usdc_tx_sent)
     for user_account in receiver_user_accounts:
         balance_change = balance_changes[user_account["user_bank_account"]]
         usdc_tx_received = USDCTransactionsHistory(
@@ -477,8 +461,8 @@ def process_route_instruction(
 
     # TODO: Adapt this to detecting external transfers via payment router. It would require that
     # we have already parsed the sender of the TransferChecked instruction _before_ the Route
-    # instruction and have passed that into this function. Then we could create a TranscationType.Transfer w/
-    # the external addresess listed.
+    # instruction and have passed that into this function. Then we could create a
+    # TranscationType.Transfer w/ the external addresess listed.
 
     if is_audio:
         logger.warning(
@@ -727,6 +711,8 @@ def process_payment_router_txs() -> None:
             # Note: while it's possible (even likely) to have multiple tx in the same slot,
             # these transactions can't be dependent on one another, so we don't care which order
             # we process them.
+            # TODO: Consider sorting by _some_ deterministic key to make sure all nodes
+            # are processing transactions in the same order.
             tx_infos.sort(key=lambda info: info[0].value.slot if info[0].value else 0)
 
             for tx_info, tx_sig in tx_infos:
