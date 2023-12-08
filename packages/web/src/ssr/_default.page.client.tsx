@@ -13,7 +13,7 @@ const HYDRATE_CLIENT = true
 export async function render(
   pageContext: PageContextClient & { pageProps: { track: FullSdk.TrackFull } }
 ) {
-  const { Page, pageProps, urlPathname } = pageContext
+  const { pageProps, urlPathname } = pageContext
 
   if (HYDRATE_CLIENT) {
     hydrateRoot(
