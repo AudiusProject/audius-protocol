@@ -36,11 +36,11 @@ export class Solana extends BaseAPI {
       })
     )
     this.config = mergeConfigWithDefaults(config, defaultSolanaConfig)
-    this.ClaimableTokens = new ClaimableTokens(this)
     this.connection = new Connection(
       this.config.rpcEndpoint,
       this.config.rpcConfig
     )
+    this.ClaimableTokens = new ClaimableTokens(this)
   }
 
   async getFeePayer(
