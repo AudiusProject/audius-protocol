@@ -69,7 +69,7 @@ export const ForgotPasswordHelper = ({
       bodyClassName={styles.modal}
     >
       <Flex direction='column' gap='xl' m='xl'>
-        <Text variant='body' strength='strong' css={{ textAlign: 'center' }}>
+        <Text variant='body' strength='strong' textAlign='center'>
           {messages.restoreAccess}
         </Text>
         <Flex gap='m' pv='m' ph='xl' border='strong' borderRadius='m'>

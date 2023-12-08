@@ -6,7 +6,8 @@ import {
 import { useField } from 'formik'
 import { useAsync } from 'react-use'
 
-import { Flex, Text } from '@audius/harmony-native'
+import { Flex } from '@audius/harmony-native'
+import { StatusMessage } from 'app/components/status-message'
 
 const messages: Record<CompletionChecklistType, string> =
   createPasswordPageMessages.completionChecklist
@@ -49,29 +50,39 @@ export const PasswordCompletionChecklist = () => {
         const isTouched =
           path === 'password' ? passwordMeta.touched : confirmMeta.touched
 
+        // TODO: uncomment when we use harmony CompletionChecklist
+        // const status =
+        //   !password || (!isTouched && error)
+        //     ? 'incomplete'
+        //     : error
+        //     ? 'error'
+        //     : 'complete'
+
+        // These statuses match the legacy sign up StatusMessage component
         const status =
           !password || (!isTouched && error)
-            ? 'incomplete'
+            ? 'default'
             : error
             ? 'error'
-            : 'complete'
+            : 'valid'
 
         return (
           <Flex key={type} direction='row' alignItems='center' gap='m'>
-            <Text>
-              {/* Temporary until CompletionCheck harmony component exists */}
-              {status === 'complete' && '✅'}
-              {status === 'error' && '😡'}
-              {status === 'incomplete' && '🔘'}
-            </Text>
-            <Text
+            {/* TODO: Temporary until CompletionCheck harmony component exists */}
+            <StatusMessage
+              label={messages[type]}
+              status={status}
+              style={{ margin: 0 }}
+            />
+            {/* TODO: uncomment when removing StatusMessage */}
+            {/* <Text
               variant='body'
               strength='default'
               size='s'
               color={status === 'error' ? 'danger' : 'default'}
             >
               {messages[type]}
-            </Text>
+            </Text> */}
           </Flex>
         )
       })}
