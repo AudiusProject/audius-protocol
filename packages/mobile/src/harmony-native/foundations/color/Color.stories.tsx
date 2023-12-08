@@ -6,8 +6,7 @@ import { Divider, SegmentedControl, Text, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeVariant } from 'app/utils/theme'
 
-import type { PrimitiveColors } from './primitive'
-import { primitiveTheme } from './primitive'
+import { primitiveTheme } from '../theme'
 
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
@@ -122,7 +121,7 @@ function ColorSwatch(props: ColorSwatchProps) {
 
 type ColorRowProps = {
   description: string
-  colors: PrimitiveColors[keyof PrimitiveColors]
+  colors: any
 }
 
 function ColorRow(props: ColorRowProps) {

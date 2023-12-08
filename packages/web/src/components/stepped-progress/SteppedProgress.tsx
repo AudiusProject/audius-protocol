@@ -95,7 +95,7 @@ export const SteppedProgress = ({
       </Flex>
       <span
         className={styles.underline}
-        style={{ left: stepUnderlineLeft, width: stepUnderlineWidth }}
+        css={{ left: stepUnderlineLeft, width: stepUnderlineWidth, zIndex: 1 }}
       />
     </Box>
   )

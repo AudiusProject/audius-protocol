@@ -1,11 +1,12 @@
-import splToken from '@solana/spl-token'
-import solanaWeb3, {
+import * as splToken from '@solana/spl-token'
+import {
   Connection,
   Keypair,
   PublicKey,
   LAMPORTS_PER_SOL,
   TransactionInstruction
 } from '@solana/web3.js'
+import * as solanaWeb3 from '@solana/web3.js'
 import BN from 'bn.js'
 
 import { AUDIO_DECIMALS, WAUDIO_DECIMALS } from '../../constants'

@@ -20,7 +20,7 @@ import type { DiscoveryProvider } from '../discoveryProvider'
 import type { IdentityService } from '../identity'
 
 import type { Web3Config } from './Web3Config'
-import { XMLHttpRequest } from './XMLHttpRequest'
+import { getXMLHttpRequest, XMLHttpRequest } from './XMLHttpRequest'
 
 const DEFAULT_GAS_LIMIT = 2000000
 
@@ -44,6 +44,7 @@ export class Web3Manager {
   // Need to maintain the user's provided handle for anti-abuse measures on relay
   userSuppliedHandle?: string
   discoveryProvider: Nullable<DiscoveryProvider>
+  XMLHttpRequest: Nullable<XMLHttpRequest>
 
   constructor({
     web3Config,
@@ -59,11 +60,14 @@ export class Web3Manager {
     this.discoveryProvider = null
     this.hedgehog = hedgehog
     this.AudiusABIDecoder = AudiusABIDecoder
+    this.XMLHttpRequest = null
   }
 
   async init() {
     const web3Config = this.web3Config
     if (!web3Config) throw new Error('Failed to initialize Web3Manager')
+
+    this.XMLHttpRequest = await getXMLHttpRequest()
 
     if (
       // External Web3

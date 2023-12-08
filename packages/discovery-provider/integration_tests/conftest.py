@@ -44,33 +44,51 @@ TEST_CONFIG_OVERRIDE = {
 }
 
 
+template_db_ready = False
+
+
 def pg_migrate_sh():
-    subprocess.run(
-        "./pg_migrate.sh",
-        shell=True,
-        cwd=os.getcwd() + "/ddl",
-        env=os.environ,
-        check=True,
-    )
+    template_db_url = DB_URL + "_template"
+
+    global template_db_ready
+    if not template_db_ready:
+        # Drop DB, ensuring migration performed at start
+        if database_exists(template_db_url):
+            drop_database(template_db_url)
+        create_database(template_db_url)
+
+        subprocess.run(
+            "./pg_migrate.sh",
+            shell=True,
+            cwd=os.getcwd() + "/ddl",
+            env={
+                **os.environ,
+                "DB_URL": template_db_url,
+                "PG_MIGRATE_TEST_MODE": "true",
+            },
+            check=True,
+        )
+
+        template_db_ready = True
+
+    # recreate database from template for each test
+    if database_exists(DB_URL):
+        drop_database(DB_URL)
+
+    tempalte_name = template_db_url[template_db_url.rindex("/") + 1 :]
+    create_database(DB_URL, template=tempalte_name)
 
 
 @contextmanager
 def app_impl():
-    # Drop DB, ensuring migration performed at start
-    if database_exists(DB_URL):
-        drop_database(DB_URL)
-
-    create_database(DB_URL)
-
-    # Drop redis
-    redis = get_redis()
-    redis.flushall()
+    pg_migrate_sh()
 
     # Clear any existing logging config
     helpers.reset_logging()
 
-    # Run db migrations because the db gets dropped at the start of the tests
-    pg_migrate_sh()
+    # Drop redis
+    redis = get_redis()
+    redis.flushall()
 
     # Create application for testing
     discovery_provider_app = create_app(TEST_CONFIG_OVERRIDE)
@@ -120,10 +138,7 @@ def celery_app():
     you will run into mysterious errors as some task context may be stale!
     """
     # Drop DB, ensuring migration performed at start
-    if database_exists(DB_URL):
-        drop_database(DB_URL)
-
-    create_database(DB_URL)
+    pg_migrate_sh()
 
     # Drop redis
     redis = get_redis()
@@ -131,9 +146,6 @@ def celery_app():
 
     # Clear any existing logging config
     helpers.reset_logging()
-
-    # Run db migrations because the db gets dropped at the start of the tests
-    pg_migrate_sh()
 
     # Call to create_celery returns an object containing the following:
     # 'Celery' - base Celery application
