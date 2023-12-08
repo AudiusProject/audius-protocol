@@ -97,6 +97,7 @@ export default defineConfig(({ mode }) => {
         store: '/src/store',
         workers: '/src/workers',
         utils: '/src/utils',
+        ssr: '/src/ssr',
 
         os: require.resolve('os-browserify'),
         path: require.resolve('path-browserify'),

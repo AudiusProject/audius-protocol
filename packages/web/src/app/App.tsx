@@ -18,8 +18,6 @@ import { AppErrorBoundary } from './AppErrorBoundary'
 import { AppProviders } from './AppProviders'
 import WebPlayer from './web-player/WebPlayer'
 
-import '../services/webVitals'
-
 const SignOnPage = lazy(() => import('pages/sign-on-page'))
 const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 const OAuthLoginPage = lazy(() => import('pages/oauth-login-page'))

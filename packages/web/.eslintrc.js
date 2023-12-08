@@ -26,7 +26,8 @@ module.exports = {
           ['utils', './src/utils'],
           ['workers', './src/workers'],
           ['pages', './src/pages'],
-          ['ssr', './src/ssr']
+          ['ssr', './src/ssr'],
+          ['app', './src/app']
         ],
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.json']
       }

@@ -35,6 +35,7 @@ import { DownloadAppBanner } from 'components/banner/DownloadAppBanner'
 import { UpdateAppBanner } from 'components/banner/UpdateAppBanner'
 import { Web3ErrorBanner } from 'components/banner/Web3ErrorBanner'
 import { ChatListener } from 'components/chat-listener/ChatListener'
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import CookieBanner from 'components/cookie-banner/CookieBanner'
 import { DevModeMananger } from 'components/dev-mode-manager/DevModeManager'
 import { HeaderContextConsumer } from 'components/header/mobile/HeaderContextProvider'
@@ -182,8 +183,6 @@ import {
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
 import styles from './WebPlayer.module.css'
-
-import { ClientOnly } from 'components/client-only/ClientOnly'
 
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
