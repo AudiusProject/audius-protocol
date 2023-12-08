@@ -1,12 +1,9 @@
 import concurrent.futures
-import json
-import re
 import time
 from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional, Tuple, TypedDict, Union, cast
 
-import base58
 from src.models.users.payment_router import PaymentRouterTx
 from redis import Redis
 from solders.instruction import CompiledInstruction
@@ -24,11 +21,6 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import SolanaTransactionFetchError
 from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track import Track
-from src.models.users.audio_transactions_history import (
-    AudioTransactionsHistory,
-    TransactionMethod,
-    TransactionType,
-)
 from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
 from src.models.users.usdc_transactions_history import (
     USDCTransactionMethod,
@@ -47,14 +39,7 @@ from src.solana.constants import (
 )
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_helpers import (
-    SPL_TOKEN_ID_PK,
-    get_address_pair,
     get_base_address,
-)
-from src.solana.solana_parser import (
-    InstructionFormat,
-    SolanaInstructionType,
-    parse_instruction_data,
 )
 from src.tasks.celery_app import celery
 from src.utils.cache_solana_program import (
@@ -85,42 +70,30 @@ logger = StructuredLogger(__name__)
 # moved to a common place.
 #
 
-# Populate values used in UserBank indexing from config
+# Populate values used in indexing from config
 PAYMENT_ROUTER_ADDRESS = shared_config["solana"]["payment_router_program_address"]
 WAUDIO_MINT = shared_config["solana"]["waudio_mint"]
 USDC_MINT = shared_config["solana"]["usdc_mint"]
-PAYMENT_ROUTER_KEY = (
+
+PAYMENT_ROUTER_PUBKEY = (
     Pubkey.from_string(PAYMENT_ROUTER_ADDRESS) if PAYMENT_ROUTER_ADDRESS else None
 )
 WAUDIO_MINT_PUBKEY = Pubkey.from_string(WAUDIO_MINT) if WAUDIO_MINT else None
 USDC_MINT_PUBKEY = Pubkey.from_string(USDC_MINT) if USDC_MINT else None
 
-# Transfer instructions don't have a mint acc arg but do have userbank authority.
-# So re-derive the claimable token PDAs for each mint here to help us determine mint later.
-PAYMENT_ROUTER_WAUDIO_PDA, _ = get_base_address(WAUDIO_MINT_PUBKEY, PAYMENT_ROUTER_KEY)
-# PAYMENT_ROUTER_USDC_PDA, _ = get_base_address("payment_router", USDC_MINT_PUBKEY)
-
-# Used to limit tx history if needed
-MIN_SLOT = int(shared_config["solana"]["payment_router_min_slot"])
-INITIAL_FETCH_SIZE = 10
-
-# Used to find the correct accounts for sender/receiver in the transaction and the PaymentRouterPDA
-
-TRANSFER_INSTRUCTION_SENDER_ACCOUNT_INDEX = 0
-TRANSFER_INSTRUCTION_MINT_ACCOUNT_INDEX = 1
-TRANSFER_INSTRUCTION_RECEIVER_ACCOUNT_INDEX = 2  # Should be the PaymentRouterPDA
-
-
-ROUTE_INSTRUCTION_SENDER_INDEX = 0
-ROUTE_INSTRUCTION_PAYMENT_ROUTER_PDA_INDEX = (
-    1  # This should be an account owned by the PaymentRouterPDA
+# Transfer instructions don't have a mint address in their account list. But the
+# source account will be an ATA for either USDC or WAUDIO which is owned by the
+# payment router PDA. We can derive the payment router PDA and then use it to
+# derive the expected ATA addresses for each mint.
+PAYMENT_ROUTER_PDA_PUBKEY, _ = get_base_address(
+    "payment_router".encode("UTF-8"), PAYMENT_ROUTER_PUBKEY
 )
-ROUTE_INSTRUCTION_SPL_TOKEN_PROGRAM_INDEX = 2
-# Everything after this index is a receiver account
-ROUTE_INSTRUCTION_RECEIVER_ACCOUNTS_START_INDEX = 3
-
-# Used to find the memo instruction
-TRANSFER_MEMO_INSTRUCTION_INDEX = 2
+PAYMENT_ROUTER_USDC_ATA_ADDRESS = str(
+    get_associated_token_address(PAYMENT_ROUTER_PDA_PUBKEY, USDC_MINT_PUBKEY)
+)
+PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS = str(
+    get_associated_token_address(PAYMENT_ROUTER_PDA_PUBKEY, WAUDIO_MINT_PUBKEY)
+)
 
 # The amount of USDC that represents one USD cent
 USDC_PER_USD_CENT = 10000
@@ -158,6 +131,46 @@ def get_sol_tx_info(
         return None
 
 
+def get_track_owner_id(session: Session, track_id: int) -> Optional[int]:
+    """Gets the owner of a track"""
+    track_owner_id = (
+        session.query(Track.owner_id).filter(Track.track_id == track_id).first()
+    )
+    if track_owner_id is not None:
+        return track_owner_id[0]
+    else:
+        return None
+
+
+### END TODO for common code migration ###
+
+# Used to limit tx history if needed
+MIN_SLOT = int(shared_config["solana"]["payment_router_min_slot"])
+INITIAL_FETCH_SIZE = 10
+
+# Used to find the correct accounts for sender/receiver in the transaction and the PaymentRouterPDA
+TRANSFER_INSTRUCTION_SENDER_ACCOUNT_INDEX = 0
+TRANSFER_INSTRUCTION_MINT_ACCOUNT_INDEX = 1
+TRANSFER_INSTRUCTION_RECEIVER_ACCOUNT_INDEX = 2  # Should be the PaymentRouterPDA
+
+ROUTE_INSTRUCTION_SENDER_INDEX = 0
+# This should be an account owned by the PaymentRouterPDA
+ROUTE_INSTRUCTION_PAYMENT_ROUTER_PDA_INDEX = 1
+ROUTE_INSTRUCTION_SPL_TOKEN_PROGRAM_INDEX = 2
+# Everything after this index is a receiver account
+ROUTE_INSTRUCTION_RECEIVER_ACCOUNTS_START_INDEX = 3
+
+
+def check_config():
+    if not all([WAUDIO_MINT_PUBKEY, USDC_MINT_PUBKEY, PAYMENT_ROUTER_PUBKEY]):
+        logger.error(
+            f"index_payment_router.py | Missing required configuration"
+            f"WAUDIO_MINT_PUBKEY: {WAUDIO_MINT_PUBKEY} USDC_MINT_PUBKEY: {USDC_MINT_PUBKEY} PAYMENT_ROUTER_PUBKEY: {PAYMENT_ROUTER_PUBKEY}- exiting."
+        )
+        return False
+    return True
+
+
 class ReceiverUserAccount(TypedDict):
     user_id: int
     user_bank_account: str
@@ -172,26 +185,7 @@ class PurchaseMetadataDict(TypedDict):
     content_owner_id: int
 
 
-def get_track_owner_id(session: Session, track_id: int) -> Optional[int]:
-    """Gets the owner of a track"""
-    track_owner_id = (
-        session.query(Track.owner_id).filter(Track.track_id == track_id).first()
-    )
-    if track_owner_id is not None:
-        return track_owner_id[0]
-    else:
-        return None
-
-
-#
-#
-# ### END TODO for common code migration
-#
-#
-#
-
-
-# Return highest user bank slot that has been processed
+# Return highest payment router slot that has been processed
 def get_highest_payment_router_tx_slot(session: Session):
     slot = MIN_SLOT
     tx_query = (
@@ -383,7 +377,7 @@ def index_purchase(
         )
 
 
-def validate_and_index_purchase(
+def validate_and_index_usdc_transfers(
     session: Session,
     sender_account: str,
     receiver_user_accounts: [ReceiverUserAccount],
@@ -447,9 +441,9 @@ def process_route_instruction(
     challenge_event_bus: ChallengeEventBus,
     timestamp: datetime,
 ):
-    solana_client_manager: SolanaClientManager = (
-        index_payment_router.solana_client_manager
-    )
+    # solana_client_manager: SolanaClientManager = (
+    #     index_payment_router.solana_client_manager
+    # )
 
     # Route instructions have a varying number of receiver accounts but they are always
     # at the end
@@ -466,30 +460,23 @@ def process_route_instruction(
         get_account_index(instruction, ROUTE_INSTRUCTION_SENDER_INDEX)
     ]
 
-    usdc_ata_address = str(
-        get_associated_token_address(
-            Pubkey.from_string(sender_pda_account), USDC_MINT_PUBKEY
-        )
-    )
-    audio_ata_address = str(
-        get_associated_token_address(
-            Pubkey.from_string(sender_pda_account), WAUDIO_MINT_PUBKEY
-        )
-    )
-    is_audio = sender_address == audio_ata_address
-    is_usdc = sender_address == usdc_ata_address
+    is_audio = sender_address == PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS
+    is_usdc = sender_address == PAYMENT_ROUTER_USDC_ATA_ADDRESS
 
     user_id_accounts = []
 
     if is_audio:
         # Accounts to refresh balance
-        logger.info(
-            f"index_payment_router.py | Balance refresh accounts: {receiver_accounts}"
-        )
-        user_id_accounts = refresh_user_balances(session, redis, receiver_accounts)
+        # logger.info(
+        #     f"index_payment_router.py | Balance refresh accounts: {receiver_accounts}"
+        # )
+        # user_id_accounts = refresh_user_balances(session, redis, receiver_accounts)
         # Payment Router recipients may not be Audius user banks
-        if not user_id_accounts:
-            logger.info("index_payment_router.py | No receiver accounts are user banks")
+        # if not user_id_accounts:
+        #     logger.info("index_payment_router.py | No receiver accounts are user banks")
+        logger.info(
+            "index_payment_router.py | $AUDIO payment router transactions are not yet indexed. Skipping balance refresh"
+        )
     elif is_usdc:
         user_id_accounts = (
             session.query(User.user_id, USDCUserBankAccount.bank_account)
@@ -510,7 +497,7 @@ def process_route_instruction(
             )
     else:
         logger.error(
-            f"index_payment_router.py | Unrecognized source ATA {sender_address}. Expected AUDIO={audio_ata_address} or USDC={usdc_ata_address}"
+            f"index_payment_router.py | Unrecognized source ATA {sender_address}. Expected AUDIO={PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS} or USDC={PAYMENT_ROUTER_USDC_ATA_ADDRESS}"
         )
         return
 
@@ -528,63 +515,21 @@ def process_route_instruction(
         account_keys=account_keys, meta=meta
     )
 
-    # TODO: Adapt this to detecting external transfers to payment router? Would require that
+    # TODO: Adapt this to detecting external transfers via payment router. It would require that
     # we have already parsed the sender of the TransferChecked instruction _before_ the Route
-    # instruction and have passed that into this function
-
-    # If there was only 1 user bank, index as a send external transfer
-    # Cannot index receive external transfers this way as those use the spl-token program,
-    # not the claimable tokens program, so we will always have a sender_user_id
-    # if receiver_user_id is None:
-    #     receiver_account_pubkey = Pubkey.from_string(receiver_account)
-    #     receiver_account_info = solana_client_manager.get_account_info_json_parsed(
-    #         receiver_account_pubkey
-    #     )
-    #     if receiver_account_info:
-    #         receiver_account_owner = receiver_account_info.data.parsed["info"]["owner"]
-    #     else:
-    #         receiver_account_owner = receiver_account
-    #     TransactionHistoryModel = (
-    #         AudioTransactionsHistory if is_audio else USDCTransactionsHistory
-    #     )
-    #     transfer_sent = TransactionHistoryModel(
-    #         user_bank=sender_account,
-    #         slot=slot,
-    #         signature=tx_sig,
-    #         transaction_type=TransactionType.transfer,
-    #         method=TransactionMethod.send,
-    #         transaction_created_at=timestamp,
-    #         change=Decimal(balance_changes[sender_account]["change"]),
-    #         balance=Decimal(balance_changes[sender_account]["post_balance"]),
-    #         tx_metadata=str(receiver_account_owner),
-    #     )
-    #     logger.debug(
-    #         f"index_payment_router.py | Creating transfer sent {transfer_sent}"
-    #     )
-    #     session.add(transfer_sent)
+    # instruction and have passed that into this function. Then we could create a TranscationType.Transfer w/
+    # the external addresess listed.
 
     if is_audio:
         logger.warning(
-            "index_payment_router.py | $AUDIO payment router transactions are not yet indexed. Skipping transaction {tx_sig}"
+            "index_payment_router.py | $AUDIO payment router transactions are not yet indexed. Skipping instruction indexing."
         )
-        # index_user_tip(
-        #     session=session,
-        #     receiver_user_id=receiver_user_id,
-        #     receiver_account=receiver_account,
-        #     sender_user_id=sender_user_id,
-        #     sender_account=sender_account,
-        #     balance_changes=balance_changes,
-        #     slot=slot,
-        #     timestamp=timestamp,
-        #     tx_sig=tx_sig,
-        # )
-        # challenge_event_bus.dispatch(ChallengeEvent.send_tip, slot, sender_user_id)
     elif is_usdc:
         # Index as a purchase of some content
         purchase_metadata = get_purchase_metadata_from_memo(
             session=session, memos=memos, timestamp=timestamp
         )
-        validate_and_index_purchase(
+        validate_and_index_usdc_transfers(
             session=session,
             sender_account=sender_pda_account,
             receiver_user_accounts=receiver_user_accounts,
@@ -595,11 +540,14 @@ def process_route_instruction(
             timestamp=timestamp,
             tx_sig=tx_sig,
         )
+
+        # We can have a USDC payment router transfer with no purchase attached
         if purchase_metadata is None:
-            logger.error(
-                "index_payment_router.py | Found purchase event but purchase_metadata is None"
+            logger.info(
+                "index_payment_router.py | No purchase metadata found on {tx_sig}"
             )
             return
+
         sender_user_id = purchase_metadata["purchaser_user_id"]
         amount = int(round(purchase_metadata["price"]) / 10**USDC_DECIMALS)
         challenge_event_bus.dispatch(
@@ -661,10 +609,9 @@ def process_payment_router_tx_details(
         logger.error(f"index_payment_router.py | {tx_sig} No Valid instruction found")
         return
 
-    # TODO: It might be helpful for parsing the route instruction if we can parse
-    # any existing TransferChecked instruction first to get the address which sent
+    # TODO: Parse existing TransferChecked instruction first to get the address which sent
     # money _into_ the payment router. This will be necessary to correctly index
-    # external transfers to Payment Router from a userbank.
+    # external transfers via Payment Router from a userbank.
 
     if has_route_instruction:
         process_route_instruction(
@@ -691,11 +638,7 @@ def process_payment_router_txs() -> None:
     logger.info("index_payment_router.py | Acquired lock")
 
     # Exit if required configs are not found
-    if not WAUDIO_MINT_PUBKEY or not USDC_MINT_PUBKEY or not PAYMENT_ROUTER_KEY:
-        logger.error(
-            f"index_payment_router.py | Missing required configuration"
-            f"WAUDIO_PROGRAM_PUBKEY: {WAUDIO_MINT_PUBKEY} USDC_PROGRAM_PUBKEY: {USDC_MINT_PUBKEY} PAYMENT_ROUTER_KEY: {PAYMENT_ROUTER_KEY}- exiting."
-        )
+    if not check_config():
         return
 
     # List of signatures that will be populated as we traverse recent operations
