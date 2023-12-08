@@ -26,7 +26,7 @@ export class TrackUploadHelper extends BaseAPI {
     // This supports both track/playlist uploads and edits
     TrackMetadata extends Pick<
       PlaylistTrackMetadata,
-      'isPremium' | 'isUnlisted' | 'fieldVisibility'
+      'isPremium' | 'premiumConditions' | 'isUnlisted' | 'fieldVisibility'
     >
   >(inputMetadata: TrackMetadata, userId: number) {
     const metadata = {
@@ -35,10 +35,11 @@ export class TrackUploadHelper extends BaseAPI {
     }
 
     const isPremium = metadata.isPremium
+    const isUsdcGated = 'usdc_purchase' in (metadata.premiumConditions ?? {})
     const isUnlisted = metadata.isUnlisted
 
-    // If track is premium, set remixes to false
-    if (isPremium && metadata.fieldVisibility) {
+    // If track is premium and not usdc purchase gated, set remixes to false
+    if (isPremium && !isUsdcGated && metadata.fieldVisibility) {
       metadata.fieldVisibility.remixes = false
     }
 
