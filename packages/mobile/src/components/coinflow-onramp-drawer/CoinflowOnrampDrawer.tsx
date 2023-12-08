@@ -9,15 +9,62 @@ import type { CoinflowSolanaPurchaseProps } from '@coinflowlabs/react'
 import { CoinflowPurchase } from '@coinflowlabs/react-native'
 import type { Connection } from '@solana/web3.js'
 import { Transaction } from '@solana/web3.js'
+import { TouchableOpacity, View } from 'react-native'
+import Config from 'react-native-config'
 
-import Drawer from 'app/components/drawer'
+import IconCloseAlt from 'app/assets/images/iconCloseAlt.svg'
+import { AppDrawer } from 'app/components/drawer'
+import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
+import { useThemeColors } from 'app/utils/theme'
+import { zIndex } from 'app/utils/zIndex'
 
-const MERCHANT_ID = process.env.VITE_COINFLOW_MERCHANT_ID
-const IS_PRODUCTION = process.env.VITE_ENVIRONMENT === 'production'
+const MODAL_NAME = 'CoinflowOnramp'
 
+const { COINFLOW_MERCHANT_ID, ENVIRONMENT } = Config
+const IS_PRODUCTION = ENVIRONMENT === 'production'
+
+console.log({ COINFLOW_MERCHANT_ID, ENVIRONMENT })
 type CoinflowAdapter = {
   wallet: CoinflowSolanaPurchaseProps['wallet']
   connection: Connection
+}
+
+const useStyles = makeStyles(({ spacing, palette }) => ({
+  headerContainer: {
+    borderBottomWidth: 1,
+    borderBottomColor: palette.neutralLight8,
+    height: spacing(12),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingHorizontal: spacing(4)
+  },
+  contentContainer: {
+    paddingTop: spacing(6),
+    flex: 1
+  },
+  exitContainer: {
+    justifyContent: 'flex-start',
+    paddingHorizontal: spacing(4),
+    paddingVertical: spacing(2)
+  }
+}))
+
+const CoinflowOnrampDrawerHeader = ({ onClose }: { onClose: () => void }) => {
+  const styles = useStyles()
+  const { neutralLight4 } = useThemeColors()
+  return (
+    <View style={styles.headerContainer}>
+      <TouchableOpacity activeOpacity={0.7} onPress={onClose}>
+        <IconCloseAlt
+          width={spacing(6)}
+          height={spacing(6)}
+          fill={neutralLight4}
+        />
+      </TouchableOpacity>
+    </View>
+  )
 }
 
 const useCoinflowAdapter = () => {
@@ -57,8 +104,7 @@ export const CoinflowOnrampDrawer = () => {
   const {
     data: { amount, serializedTransaction },
     isOpen,
-    onClose,
-    onClosed
+    onClose
   } = useCoinflowOnrampModal()
   const [transaction, setTransaction] = useState<Transaction | null>(null)
 
@@ -88,18 +134,26 @@ export const CoinflowOnrampDrawer = () => {
   */
 
   return (
-    <Drawer isOpen={isOpen} onClose={onClose} onClosed={onClosed}>
+    <AppDrawer
+      blockClose={false}
+      drawerHeader={CoinflowOnrampDrawerHeader}
+      zIndex={zIndex.COINFLOW_ONRAMP_DRAWER}
+      modalName={MODAL_NAME}
+      isGestureSupported={false}
+      isFullscreen
+      onClose={onClose}
+    >
       {showContent ? (
         <CoinflowPurchase
           transaction={transaction}
           wallet={adapter.wallet}
           connection={adapter.connection}
-          merchantId={MERCHANT_ID || ''}
+          merchantId={COINFLOW_MERCHANT_ID || ''}
           env={IS_PRODUCTION ? 'prod' : 'sandbox'}
           blockchain='solana'
           amount={amount}
         />
       ) : null}
-    </Drawer>
+    </AppDrawer>
   )
 }
