@@ -255,6 +255,7 @@ export class AudiusLibs {
     rewardsManagerProgramId,
     rewardsManagerProgramPDA,
     rewardsManagerTokenPDA,
+    paymentRouterProgramId,
     useRelay,
     feePayerSecretKeys,
     confirmationTimeout
@@ -269,6 +270,7 @@ export class AudiusLibs {
       rewardsManagerProgramId,
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
+      paymentRouterProgramId,
       useRelay,
       feePayerKeypairs: feePayerSecretKeys?.map((key) =>
         Keypair.fromSecretKey(key)

@@ -73,8 +73,6 @@ COPY requirements.txt requirements.txt
 RUN --mount=type=cache,target=/root/.cache \
   python3 -m pip install -r requirements.txt --no-cache-dir
 
-COPY . .
-
 COPY nginx_conf /usr/local/openresty/conf/
 
 # ARGs can be optionally defined with --build-arg while doing docker build eg in CI and then set to env vars
