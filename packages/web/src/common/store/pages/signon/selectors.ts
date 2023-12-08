@@ -24,6 +24,12 @@ export const getToastText = (state: AppState) => state.signOn.toastText
 export const getRouteOnCompletion = (state: AppState) =>
   state.signOn.routeOnCompletion
 export const getRouteOnExit = (state: AppState) => state.signOn.routeOnExit
+export const getLinkedSocialOnFirstPage = (state: AppState) =>
+  state.signOn.linkedSocialOnFirstPage
+export const getIsSocialConnected = (state: AppState) =>
+  !!state.signOn.twitterId ||
+  !!state.signOn.tikTokId ||
+  !!state.signOn.instagramId
 export const getAccountReady = (state: AppState) => state.signOn.accountReady
 export const getStartedSignUpProcess = (state: AppState) =>
   state.signOn.startedSignUpProcess

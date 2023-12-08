@@ -123,13 +123,15 @@ export const RemixSettingsScreen = () => {
   useEffect(() => {
     if (isPremium) {
       setRemixOf(null)
+    }
+    if (isPremium && !isUsdcGated) {
       setRemixesVisible(false)
     } else {
       setRemixesVisible(true)
     }
     // adding the useField setters cause infinite rendering
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPremium])
+  }, [isPremium, isUsdcGated])
 
   const handleFetchParentTrack = useMemo(
     () =>
@@ -288,7 +290,7 @@ export const RemixSettingsScreen = () => {
             <Switch
               value={!remixesVisible}
               onValueChange={(value) => setRemixesVisible(!value)}
-              isDisabled={isPremium}
+              isDisabled={isPremium && !isUsdcGated}
             />
           </View>
           <Text {...descriptionProps}>{messages.hideRemixesDescription}</Text>

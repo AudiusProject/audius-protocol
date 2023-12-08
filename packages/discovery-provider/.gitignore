@@ -48,7 +48,6 @@ compose/env/tmp*/
 .python-version
 
 *.tsbuildinfo
-es-indexer/.env
 
 # plugins
 plugins/verified-uploads/.env

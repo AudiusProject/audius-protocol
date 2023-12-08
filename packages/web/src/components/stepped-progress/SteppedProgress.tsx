@@ -1,6 +1,6 @@
-import { forwardRef, useEffect, useRef, useState } from 'react'
+import { Fragment, forwardRef, useEffect, useRef, useState } from 'react'
 
-import { Flex, IconComponent, Text } from '@audius/harmony'
+import { Box, Flex, IconComponent, Text } from '@audius/harmony'
 
 import { Divider } from 'components/divider'
 
@@ -73,10 +73,10 @@ export const SteppedProgress = ({
     return () => window.removeEventListener('resize', setTabPosition)
   }, [activeStep, steps])
   return (
-    <>
+    <Box>
       <Flex alignItems='center' gap='s'>
         {steps.map((s, i) => (
-          <>
+          <Fragment key={s.key}>
             <Step
               ref={(el) => {
                 if (el) {
@@ -86,18 +86,17 @@ export const SteppedProgress = ({
               icon={s.icon}
               label={s.label}
               isActive={activeStep === s.key}
-              key={s.key}
             />
             {i !== steps.length - 1 ? (
               <Divider className={styles.connector} variant='default' />
             ) : null}
-          </>
+          </Fragment>
         ))}
       </Flex>
       <span
         className={styles.underline}
-        style={{ left: stepUnderlineLeft, width: stepUnderlineWidth }}
+        css={{ left: stepUnderlineLeft, width: stepUnderlineWidth, zIndex: 1 }}
       />
-    </>
+    </Box>
   )
 }

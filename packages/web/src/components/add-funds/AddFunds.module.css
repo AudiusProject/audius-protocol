@@ -13,3 +13,12 @@
 .buttonContainer.mobile {
   flex-direction: column;
 }
+
+.summaryTableRow {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.summaryTableRowValue {
+  width: 100%;
+}

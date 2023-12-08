@@ -42,8 +42,11 @@ export const formatTwitterProfile = async (
   // If the user is verifed, they won't be able to claim the status if
   // the handle doesn't match, so just pass through.
   let requiresUserReview = false
+  let handleTooLong = false
+
   if (twitterProfile.screen_name.length > MAX_HANDLE_LENGTH) {
     requiresUserReview = true
+    handleTooLong = true
     if (!twitterProfile.verified) {
       twitterProfile.screen_name = twitterProfile.screen_name.slice(
         0,
@@ -60,7 +63,8 @@ export const formatTwitterProfile = async (
     profile: twitterProfile,
     profileImage: { url, file },
     profileBanner: bannerUrl ? { url: bannerUrl, file: bannerFile } : undefined,
-    requiresUserReview
+    requiresUserReview,
+    handleTooLong
   }
 }
 
@@ -95,8 +99,10 @@ export const formatInstagramProfile = async (
   // If the user is verifed, they won't be able to claim the status if
   // the handle doesn't match, so just pass through.
   let requiresUserReview = false
+  let handleTooLong = false
   if (instagramProfile.username.length > MAX_HANDLE_LENGTH) {
     requiresUserReview = true
+    handleTooLong = true
     if (!instagramProfile.is_verified) {
       instagramProfile.username = instagramProfile.username.slice(
         0,
@@ -120,7 +126,8 @@ export const formatInstagramProfile = async (
   return {
     profile: instagramProfile,
     profileImage,
-    requiresUserReview
+    requiresUserReview,
+    handleTooLong
   }
 }
 
@@ -159,8 +166,10 @@ export const formatTikTokProfile = async (
   // If the user is verifed, they won't be able to claim the status if
   // the handle doesn't match, so just pass through.
   let requiresUserReview = false
+  let handleTooLong = false
   if (tikTokProfile.username.length > MAX_HANDLE_LENGTH) {
     requiresUserReview = true
+    handleTooLong = true
     if (!tikTokProfile.is_verified) {
       tikTokProfile.username = tikTokProfile.username.slice(
         0,
@@ -173,6 +182,7 @@ export const formatTikTokProfile = async (
     profile: tikTokProfile,
     profileImage: profilePicture,
     profileBanner: undefined,
-    requiresUserReview
+    requiresUserReview,
+    handleTooLong
   }
 }

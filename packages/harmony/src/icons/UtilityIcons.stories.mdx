@@ -25,28 +25,26 @@ Utility icons are simple, single-color glyphs that identify labels and actions a
 <Heading>
 ## Usage
 
-Recommended sizes for utility icons: 14px | 16px | 20px | 24px | 30px | 32px
-
 </Heading>
 
 <Flex direction='column' gap='m'>
+  Sizes
   <Flex alignItems='center' gap='2xl'>
     {Object.keys(iconSizes).map((size) => (
-      <Icons.IconNote key={size} size={size} />
-    ))}
-  </Flex>
-  <Flex alignItems='center' gap='2xl'>
-    {Object.keys(iconSizes).map((size) => (
-      <Flex
-        key={size}
-        alignItems='center'
-        justifyContent='center'
-        h={iconSizes[size]}
-        w={iconSizes[size]}
-        css={{ background: 'rgba(255, 0, 0, 0.10)' }}
-      >
+      <Flex direction='column' alignItems='center' gap='s' key={size}>
+        <Icons.IconNote size={size} />
         <Text css={{ color: '#F00 !important', fontSize: '10px !important' }}>
-          {iconSizes[size]}
+          {size}
+        </Text>
+        <Flex
+          alignItems='center'
+          justifyContent='center'
+          h={iconSizes[size]}
+          w={iconSizes[size]}
+          css={{ background: 'rgba(255, 0, 0, 0.10)' }}
+        />
+        <Text css={{ color: '#F00 !important', fontSize: '10px !important' }}>
+          {`${iconSizes[size]}px`}
         </Text>
       </Flex>
     ))}

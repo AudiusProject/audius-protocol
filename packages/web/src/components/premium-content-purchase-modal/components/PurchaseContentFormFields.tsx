@@ -1,16 +1,20 @@
 import {
   PurchaseContentStage,
   usePayExtraPresets,
-  useUSDCManualTransferModal
+  useUSDCBalance,
+  PURCHASE_METHOD,
+  usePurchaseMethod
 } from '@audius/common'
-import { PlainButton } from '@audius/harmony'
+import { Flex } from '@audius/harmony'
 import { IconCheck } from '@audius/stems'
+import { useField } from 'formik'
 
 import { Icon } from 'components/Icon'
+import { PaymentMethod } from 'components/payment-method/PaymentMethod'
 import { Text } from 'components/typography'
-import { useRemoteVar } from 'hooks/useRemoteConfig'
 
 import { PurchaseContentFormState } from '../hooks/usePurchaseContentFormState'
+import { usePurchaseSummaryValues } from '../hooks/usePurchaseSummaryValues'
 
 import { PayExtraFormSection } from './PayExtraFormSection'
 import { PayToUnlockInfo } from './PayToUnlockInfo'
@@ -18,65 +22,71 @@ import styles from './PurchaseContentFormFields.module.css'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
 
 const messages = {
-  purchaseSuccessful: 'Your Purchase Was Successful!',
-  manualTransfer: '(Advanced) Manual Crypto Transfer'
+  purchaseSuccessful: 'Your Purchase Was Successful!'
 }
 
 type PurchaseContentFormFieldsProps = Pick<
   PurchaseContentFormState,
   'purchaseSummaryValues' | 'stage' | 'isUnlocking'
->
+> & { price: number }
 
 export const PurchaseContentFormFields = ({
+  price,
   purchaseSummaryValues,
   stage,
   isUnlocking
 }: PurchaseContentFormFieldsProps) => {
-  const { onOpen: openUsdcManualTransferModal } = useUSDCManualTransferModal()
-  const payExtraAmountPresetValues = usePayExtraPresets(useRemoteVar)
+  const payExtraAmountPresetValues = usePayExtraPresets()
+  const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
+    useField(PURCHASE_METHOD)
   const isPurchased = stage === PurchaseContentStage.FINISH
+
+  const { data: balanceBN } = useUSDCBalance({ isPolling: true })
+  const { extraAmount } = usePurchaseSummaryValues({
+    price,
+    currentBalance: balanceBN
+  })
+  const { isExistingBalanceDisabled, totalPriceInCents } = usePurchaseMethod({
+    price,
+    extraAmount,
+    method: purchaseMethod,
+    setMethod: setPurchaseMethod
+  })
 
   if (isPurchased) {
     return (
-      <>
-        <PurchaseSummaryTable
-          {...purchaseSummaryValues}
-          isPurchased={isPurchased}
-        />
-        <div className={styles.purchaseSuccessfulContainer}>
-          <div className={styles.completionCheck}>
-            <Icon icon={IconCheck} size='xxSmall' color='white' />
-          </div>
-          <Text variant='heading' size='small'>
-            {messages.purchaseSuccessful}
-          </Text>
+      <Flex alignItems='center' justifyContent='center' gap='m' p='m'>
+        <div className={styles.completionCheck}>
+          <Icon icon={IconCheck} size='xxSmall' color='white' />
         </div>
-      </>
+        <Text variant='heading' size='small'>
+          {messages.purchaseSuccessful}
+        </Text>
+      </Flex>
     )
   }
 
   return (
     <>
-      <PayExtraFormSection
-        amountPresets={payExtraAmountPresetValues}
-        disabled={isUnlocking}
-      />
-      <div className={styles.tableContainer}>
-        <PurchaseSummaryTable
-          {...purchaseSummaryValues}
-          isPurchased={isPurchased}
+      {isUnlocking || isPurchased ? null : (
+        <PayExtraFormSection
+          amountPresets={payExtraAmountPresetValues}
+          disabled={isUnlocking}
         />
-        {isUnlocking || isPurchased ? null : (
-          <Text
-            as={PlainButton}
-            onClick={() => openUsdcManualTransferModal()}
-            color='primary'
-            className={styles.manualTransfer}
-          >
-            {messages.manualTransfer}
-          </Text>
-        )}
-      </div>
+      )}
+      <PurchaseSummaryTable
+        {...purchaseSummaryValues}
+        totalPriceInCents={totalPriceInCents}
+      />
+      {isUnlocking || isPurchased ? null : (
+        <PaymentMethod
+          selectedType={purchaseMethod}
+          setSelectedType={setPurchaseMethod}
+          balance={balanceBN}
+          isExistingBalanceDisabled={isExistingBalanceDisabled}
+          showExistingBalance
+        />
+      )}
       {isUnlocking ? null : <PayToUnlockInfo />}
     </>
   )

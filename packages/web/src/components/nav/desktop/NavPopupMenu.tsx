@@ -22,9 +22,9 @@ import { useDispatch } from 'react-redux'
 import IconKebabHorizontal from 'assets/img/iconKebabHorizontalAlt.svg'
 import { make } from 'common/store/analytics/actions'
 import { Icon } from 'components/Icon'
-import { AudioBalancePill } from 'components/audio-balance-pill/AudioBalancePill'
+import { AudioBalancePill } from 'components/audio-balance-pill/AUDIOBalancePill'
 import { NotificationDot } from 'components/notification-dot'
-import { UsdcBalancePill } from 'components/usdc-balance-pill/UsdcBalancePill'
+import { USDCBalancePill } from 'components/usdc-balance-pill/USDCBalancePill'
 import { useIsUSDCEnabled } from 'hooks/useIsUSDCEnabled'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
@@ -88,7 +88,7 @@ const NavPopupMenu = () => {
         text: (
           <div className={styles.popupItemText}>
             <span>{messages.payAndEarn}</span>
-            <UsdcBalancePill className={styles.usdcPill} />
+            <USDCBalancePill className={styles.usdcPill} />
           </div>
         ),
         onClick: () => navigate(PAYMENTS_PAGE),
@@ -150,6 +150,7 @@ const NavPopupMenu = () => {
       <PopupMenu
         items={menuItems}
         position={PopupPosition.BOTTOM_RIGHT}
+        className={styles.popupMenu}
         renderTrigger={(anchorRef, triggerPopup) => {
           return (
             <div className={styles.container}>

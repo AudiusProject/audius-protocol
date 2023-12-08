@@ -8,10 +8,10 @@ import {
   IconArrowRight,
   Text,
   IconCloudUpload,
-  Avatar
+  Avatar,
+  Box
 } from '@audius/harmony'
 import { Modal } from '@audius/stems'
-import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -21,7 +21,9 @@ import {
 } from 'common/store/pages/signon/selectors'
 import Drawer from 'components/drawer/Drawer'
 import { useMedia } from 'hooks/useMedia'
-import { TRENDING_PAGE, UPLOAD_PAGE } from 'utils/route'
+import { CoverPhotoBanner } from 'pages/sign-up-page/components/CoverPhotoBanner'
+import { useSelector } from 'utils/reducer'
+import { UPLOAD_PAGE } from 'utils/route'
 
 const messages = {
   welcome: 'Welcome to Audius%0! 🎉',
@@ -34,7 +36,7 @@ const messages = {
 export const WelcomeModal = () => {
   const { isMobile } = useMedia()
   const { value: userName } = useSelector(getNameField)
-  const profileImage = useSelector(getProfileImageField)
+  const { value: profileImage } = { ...useSelector(getProfileImageField) }
   const [isOpen, setIsOpen] = useModalState('Welcome')
 
   const Root = isMobile ? Drawer : Modal
@@ -43,36 +45,31 @@ export const WelcomeModal = () => {
   }, [setIsOpen])
 
   return (
-    <Root isOpen={isOpen} onClose={onClose} size='small'>
-      <Flex
-        h={96}
-        justifyContent='center'
-        css={({ color }) => ({
-          zIndex: 1,
-          backgroundColor: color.background.default,
-          background: `url("${profileImage?.url}")`,
-          ...(!isMobile && {
-            '::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              height: '100%',
-              width: '100%',
-              backdropFilter: 'blur(25px)'
-            }
-          })
-        })}
-      >
-        <Avatar
-          variant='strong'
-          src={profileImage?.url}
-          css={{ position: 'absolute', top: 40, height: 96, width: 96 }}
-        />
+    <Root
+      isOpen={isOpen}
+      onClose={onClose}
+      size='small'
+      aria-labelledby='welcome-title'
+    >
+      <Flex w='100%' h={96} css={{ zIndex: 1 }}>
+        <CoverPhotoBanner />
       </Flex>
+      <Box
+        w={96}
+        h={96}
+        css={{
+          position: 'absolute',
+          top: 40,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 2
+        }}
+      >
+        <Avatar variant='strong' src={profileImage?.url} />
+      </Box>
       <Flex direction='column' p='xl' pt='3xl' gap='xl'>
         <Flex direction='column' css={{ textAlign: 'center' }} gap='l'>
-          <Text variant='label' size='xl' strength='strong'>
+          <Text variant='label' size='xl' strength='strong' id='welcome-title'>
             {fillString(messages.welcome, userName ? `, ${userName}` : '')}
           </Text>
           <Text variant='body' size='l'>
@@ -80,8 +77,8 @@ export const WelcomeModal = () => {
           </Text>
         </Flex>
         <Flex direction='column' gap='s'>
-          <Button iconRight={IconArrowRight} onClick={onClose} asChild>
-            <Link to={TRENDING_PAGE}>{messages.startListening}</Link>
+          <Button iconRight={IconArrowRight} onClick={onClose}>
+            {messages.startListening}
           </Button>
           <Button
             variant={ButtonType.SECONDARY}

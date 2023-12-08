@@ -412,6 +412,10 @@ describe('FixedDecimal', function () {
       expect(new FixedDecimal('0.00000').toShorthand()).toBe('0')
     })
 
+    it('shows values between zero and one correctly', function () {
+      expect(new FixedDecimal('0.042').toShorthand()).toBe('0.04')
+    })
+
     it('shows whole numbers correctly', function () {
       expect(new FixedDecimal('1234').toShorthand()).toBe('1234')
     })
@@ -595,6 +599,16 @@ describe('FixedDecimal', function () {
       expect(
         new FixedDecimal('123456789.123456789').toLocaleString('en-IN')
       ).toBe('12,34,56,789.123456789')
+    })
+
+    it('formats zero correctly', function () {
+      expect(
+        new FixedDecimal(0, 6).toLocaleString('en-US', {
+          maximumFractionDigits: 2,
+          minimumFractionDigits: 2,
+          trailingZeroDisplay: 'stripIfInteger'
+        })
+      ).toBe('0')
     })
   })
 })

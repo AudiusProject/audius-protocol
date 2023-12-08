@@ -1,10 +1,4 @@
-import {
-  useState,
-  useContext,
-  useCallback,
-  useEffect,
-  useMemo
-} from 'react'
+import { useState, useContext, useCallback, useEffect, useMemo } from 'react'
 
 import usePlayback from '../../hooks/usePlayback'
 import { useRecordListens } from '../../hooks/useRecordListens'
@@ -55,17 +49,19 @@ const TrackPlayerContainer = ({
   } = usePlayback(track.id, onTrackEnd)
 
   const trackInfoForPlayback = useMemo(() => {
+    const isPurchaseable =
+      track.premiumConditions && 'usdc_purchase' in track.premiumConditions
     return {
-      segments: track.trackSegments,
       gateways: formatGateways(track.user.creatorNodeEndpoint),
       title: track.title,
       artistName: track.user.name,
-      mp3StreamUrl: getTrackStreamEndpoint(track.id)
+      mp3StreamUrl: getTrackStreamEndpoint(track.id, isPurchaseable),
+      isPurchaseable
     }
   }, [
     track.id,
     track.title,
-    track.trackSegments,
+    track.premiumConditions,
     track.user.creatorNodeEndpoint,
     track.user.name
   ])
@@ -150,6 +146,7 @@ const TrackPlayerContainer = ({
     trackURL: stripLeadingSlash(track.permalink),
     backgroundColor,
     isTwitter,
+    premiumConditions: track.premiumConditions,
     did404
   }
 

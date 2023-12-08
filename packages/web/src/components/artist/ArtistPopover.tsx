@@ -12,7 +12,7 @@ import cn from 'classnames'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { MountPlacement } from 'components/types'
-import { useOnUserCoverPhoto } from 'hooks/useUserCoverPhoto'
+import { useOnUserCoverPhoto } from 'hooks/useCoverPhoto'
 import { useOnUserProfilePicture } from 'hooks/useUserProfilePicture'
 
 import { ArtistCard } from './ArtistCard'

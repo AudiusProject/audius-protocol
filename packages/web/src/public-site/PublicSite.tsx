@@ -90,15 +90,14 @@ export const PublicSite = (props: PublicSiteProps) => {
         </h2>
       </div>
 
-      <NavScreen
-        closeNavScreen={closeNavScreen}
-        isOpen={isNavScreenOpen}
-        setRenderPublicSite={setRenderPublicSite}
-      />
-
       <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
         <AppContextProvider>
           <Router basename={BASENAME}>
+            <NavScreen
+              closeNavScreen={closeNavScreen}
+              isOpen={isNavScreenOpen}
+              setRenderPublicSite={setRenderPublicSite}
+            />
             <Route
               exact
               path={'/legal/terms-of-use'}

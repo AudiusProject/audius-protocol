@@ -1,4 +1,3 @@
-
 import IconVerified from '../../assets/img/iconVerified.svg'
 import { getCopyableLink } from '../../util/shareUtil'
 

@@ -1,4 +1,6 @@
+import { Flex, Text, useTheme } from '@audius/harmony'
 import { Modal } from '@audius/stems'
+import { CSSObject } from '@emotion/styled'
 
 import IconQuestionMark from 'assets/img/iconQuestionMark.svg'
 import Toast from 'components/toast/Toast'
@@ -29,12 +31,14 @@ export const ForgotPasswordHelper = ({
   isOpen,
   onClose
 }: ForgotPasswordHelperProps) => {
+  const { color } = useTheme()
+
   const renderTitle = () => {
     return (
-      <>
-        <IconQuestionMark className={styles.questionButtonIcon} />
-        <div className={styles.headerText}>{messages.forgotPassword}</div>
-      </>
+      <Flex gap='s' alignItems='center'>
+        <IconQuestionMark />
+        <Text>{messages.forgotPassword}</Text>
+      </Flex>
     )
   }
 
@@ -46,6 +50,13 @@ export const ForgotPasswordHelper = ({
     copyToClipboard(messages.subject)
   }
 
+  const linkCss: CSSObject = {
+    cursor: 'pointer',
+    ':hover': {
+      color: color.secondary.secondary
+    }
+  }
+
   return (
     <Modal
       isOpen={isOpen}
@@ -55,16 +66,23 @@ export const ForgotPasswordHelper = ({
       title={renderTitle()}
       allowScroll={false}
       dismissOnClickOutside={true}
-      bodyClassName={styles.modalWidth}
+      bodyClassName={styles.modal}
     >
-      <div className={styles.modalBody}>
-        <div className={styles.restoreAccessText}>{messages.restoreAccess}</div>
-        <div className={styles.emailContainer}>
-          <div className={styles.emailSubheadings}>
-            <div>{messages.fromHeader}</div>
-            <div>{messages.subjectHeader}</div>
-          </div>
-          <div className={styles.emailText}>
+      <Flex direction='column' gap='xl' m='xl'>
+        <Text variant='body' strength='strong' textAlign='center'>
+          {messages.restoreAccess}
+        </Text>
+        <Flex gap='m' pv='m' ph='xl' border='strong' borderRadius='m'>
+          <Flex
+            w={64}
+            direction='column'
+            gap='m'
+            css={{ color: color.neutral.n400 }}
+          >
+            <Text variant='title'>{messages.fromHeader}</Text>
+            <Text variant='title'>{messages.subjectHeader}</Text>
+          </Flex>
+          <Flex direction='column' gap='m' flex='1'>
             <Toast
               text={messages.copied}
               fillParent={false}
@@ -73,9 +91,14 @@ export const ForgotPasswordHelper = ({
               requireAccount={false}
               delay={TOOLTIP_DELAY}
             >
-              <div onClick={onCopyFrom} className={styles.emailBody}>
+              <Text
+                variant='title'
+                strength='weak'
+                onClick={onCopyFrom}
+                css={linkCss}
+              >
                 {messages.from}
-              </div>
+              </Text>
             </Toast>
             <Toast
               text={messages.copied}
@@ -85,13 +108,18 @@ export const ForgotPasswordHelper = ({
               requireAccount={false}
               delay={TOOLTIP_DELAY}
             >
-              <div onClick={onCopySubject} className={styles.emailBody}>
+              <Text
+                variant='title'
+                strength='weak'
+                onClick={onCopySubject}
+                css={linkCss}
+              >
                 {messages.subject}
-              </div>
+              </Text>
             </Toast>
-          </div>
-        </div>
-      </div>
+          </Flex>
+        </Flex>
+      </Flex>
     </Modal>
   )
 }

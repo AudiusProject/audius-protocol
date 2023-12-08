@@ -1,48 +1,67 @@
-import type { Nullable, SquareSizes, User } from '@audius/common'
+import type { ID } from '@audius/common'
+import {
+  cacheUsersSelectors,
+  type Nullable,
+  type SquareSizes
+} from '@audius/common'
+import { useSelector } from 'react-redux'
 
 import profilePicEmpty from 'app/assets/images/imageProfilePicEmpty2X.png'
+import type { ContentNodeImageSource } from 'app/hooks/useContentNodeImage'
 import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
 
 import type { FastImageProps } from './FastImage'
 import { FastImage } from './FastImage'
 
+const { getUser } = cacheUsersSelectors
+
 type UseUserImageOptions = {
-  user: Nullable<
-    Pick<
-      User,
-      | 'profile_picture_sizes'
-      | 'profile_picture_cids'
-      | 'profile_picture'
-      | 'updatedProfilePicture'
-    >
-  >
+  userId: Nullable<ID>
   size: SquareSizes
 }
 
-export const useUserImage = ({ user, size }: UseUserImageOptions) => {
-  const cid = user ? user.profile_picture_sizes || user.profile_picture : null
+export const useProfilePicture = (
+  userId: Nullable<number>,
+  size: SquareSizes
+): ContentNodeImageSource => {
+  const cid = useSelector((state) => {
+    const user = getUser(state, { id: userId })
+    if (!user) return null
+    const { profile_picture_sizes, profile_picture } = user
+    return profile_picture_sizes || profile_picture
+  })
 
-  const contentNodeImage = useContentNodeImage({
+  const cidMap = useSelector(
+    (state) => getUser(state, { id: userId })?.profile_picture_cids
+  )
+
+  const updatedSource = useSelector((state) => {
+    const user = getUser(state, { id: userId })
+    if (!user) return null
+    const { updatedProfilePicture } = user
+    if (!updatedProfilePicture) return null
+    return {
+      source: { uri: updatedProfilePicture.url },
+      handleError: () => {},
+      isFallbackImage: false
+    }
+  })
+
+  const imageSource = useContentNodeImage({
     cid,
     size,
     fallbackImageSource: profilePicEmpty,
-    cidMap: user?.profile_picture_cids
+    cidMap
   })
 
-  if (user?.updatedProfilePicture) {
-    return {
-      source: { uri: user.updatedProfilePicture.url },
-      handleError: () => {}
-    }
-  }
-  return contentNodeImage
+  return updatedSource ?? imageSource
 }
 
 export type UserImageProps = UseUserImageOptions & Partial<FastImageProps>
 
 export const UserImage = (props: UserImageProps) => {
-  const { user, size, ...imageProps } = props
-  const { source, handleError } = useUserImage({ user, size })
+  const { userId, size, ...imageProps } = props
+  const { source, handleError } = useProfilePicture(userId, size)
 
   return <FastImage {...imageProps} source={source} onError={handleError} />
 }

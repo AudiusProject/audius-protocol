@@ -41,6 +41,11 @@ jobs:
       service: comms
       notify_slack_on_failure: true
   - push-docker-image:
+      name: push-es-indexer
+      context: [Vercel, dockerhub, slack-secrets]
+      service: es-indexer
+      notify_slack_on_failure: true
+  - push-docker-image:
       name: push-trpc
       context: [Vercel, dockerhub, slack-secrets]
       service: trpc
@@ -128,6 +133,13 @@ jobs:
       service: mediorum
       requires:
         - push-mediorum
+  - push-arm-image:
+      name: push-uptime-arm
+      context: [Vercel, dockerhub]
+      service: uptime
+      requires:
+        - push-uptime
+
 
 
 
@@ -168,6 +180,7 @@ jobs:
         - push-trpc
         - push-healthz
         - push-protocol-dashboard
+        - push-uptime
         # uncomment these when arm builds are stable
         # - push-identity-service-arm
         # - push-mediorum-arm

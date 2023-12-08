@@ -9,7 +9,8 @@ import {
   Lineup,
   Status,
   LineupBaseActions,
-  tippingSelectors
+  tippingSelectors,
+  playerSelectors
 } from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -34,6 +35,7 @@ import styles from './Lineup.module.css'
 import { delineateByTime, delineateByFeatured } from './delineate'
 import { LineupVariant } from './types'
 const { getShowTip } = tippingSelectors
+const { getPlaying, getUid } = playerSelectors
 
 // The max number of tiles to load
 const MAX_TILES_COUNT = 1000
@@ -792,7 +794,9 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
 function mapStateToProps(state: AppState) {
   return {
     isMobile: isMobile(),
-    showTip: getShowTip(state)
+    showTip: getShowTip(state),
+    playing: getPlaying(state),
+    playingUid: getUid(state)
   }
 }
 

@@ -1,5 +1,6 @@
-import cn from 'classnames'
 import { useState, useEffect, useRef } from 'react'
+
+import cn from 'classnames'
 
 import audiusLogo from '../../assets/img/logoEmbedPlayer.png'
 import { logError } from '../../util/logError'

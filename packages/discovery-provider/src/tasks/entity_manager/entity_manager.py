@@ -464,6 +464,8 @@ def collect_entities_to_fetch(update_task, entity_manager_txs):
                 entities_to_fetch[EntityType.USER].add(user_id)
             if signer:
                 entities_to_fetch[EntityType.GRANT].add((signer.lower(), user_id))
+                entities_to_fetch[EntityType.DEVELOPER_APP].add(signer.lower())
+
             if entity_type == EntityType.DEVELOPER_APP:
                 try:
                     json_metadata = json.loads(metadata)

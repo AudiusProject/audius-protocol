@@ -35,6 +35,7 @@ describe('formatUtil', function () {
   it('can format currency balance', function () {
     const testCases = [
       { input: 0, expected: '0' },
+      { input: 0.042, expected: '0.04' },
       { input: 410.1545, expected: '410.15' },
       // { input: 123456789.12345, expected: '123456K' } // note: existing method can't handle this size!
       { input: 452, expected: '452' },

@@ -5,51 +5,8 @@ import { Slot } from '@radix-ui/react-slot'
 
 import { typography } from 'foundations'
 
+import { variantStylesMap, variantTagMap } from './constants'
 import type { TextProps } from './types'
-
-const variantTagMap = {
-  display: {
-    xl: 'h1',
-    l: 'h1',
-    m: 'h1',
-    s: 'h1'
-  },
-  heading: {
-    xl: 'h1',
-    l: 'h2',
-    m: 'h3',
-    s: 'h4'
-  }
-}
-
-export const variantStylesMap = {
-  display: {
-    fontSize: { s: '6xl', m: '7xl', l: '8xl', xl: '9xl' },
-    lineHeight: { s: '3xl', m: '4xl', l: '5xl', xl: '6xl' },
-    fontWeight: { default: 'bold', strong: 'heavy' }
-  },
-  heading: {
-    fontSize: { s: 'xl', m: '2xl', l: '3xl', xl: '5xl' },
-    lineHeight: { s: 'l', m: 'xl', l: 'xl', xl: '2xl' },
-    fontWeight: { default: 'bold', strong: 'heavy' }
-  },
-  title: {
-    fontSize: { xs: 'xs', s: 's', m: 'm', l: 'l' },
-    lineHeight: { xs: 's', s: 's', m: 'm', l: 'l' },
-    fontWeight: { weak: 'demiBold', default: 'bold', strong: 'heavy' }
-  },
-  label: {
-    fontSize: { xs: '2xs', s: 'xs', m: 's', l: 'm', xl: 'xl' },
-    lineHeight: { xs: 'xs', s: 'xs', m: 's', l: 's', xl: 'l' },
-    fontWeight: { default: 'bold', strong: 'heavy' },
-    css: { textTransform: 'uppercase' as const, letterSpacing: 0.5 }
-  },
-  body: {
-    fontSize: { xs: 'xs', s: 's', m: 'm', l: 'l' },
-    lineHeight: { xs: 's', s: 'm', m: 'm', l: 'l' },
-    fontWeight: { default: 'medium', strong: 'demiBold' }
-  }
-}
 
 export const Text = forwardRef(
   <TextComponentType extends ElementType = 'p'>(
@@ -65,6 +22,7 @@ export const Text = forwardRef(
       shadow,
       tag,
       asChild,
+      textAlign,
       ...other
     } = props
 
@@ -96,7 +54,8 @@ export const Text = forwardRef(
         ...('css' in variantConfig && variantConfig.css),
         ...(shadow && {
           textShadow: '0px 1px 5px rgba(0, 0, 0, 0.50)'
-        })
+        }),
+        textAlign
       })
     }
 

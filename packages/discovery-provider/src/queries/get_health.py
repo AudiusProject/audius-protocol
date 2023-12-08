@@ -178,7 +178,7 @@ class GetHealthArgs(TypedDict):
     # Number of seconds rewards manager txs are allowed to drift
     rewards_manager_max_drift: Optional[int]
     # Number of seconds user bank txs are allowed to drift
-    user_bank_max_drift: Optional[int]
+    user_bank_max_slot_diff: Optional[int]
     # Number of seconds user bank txs are allowed to drift
     spl_audio_max_drift: Optional[int]
 
@@ -200,7 +200,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     reactions_max_last_reaction_drift = args.get("reactions_max_last_reaction_drift")
     plays_count_max_drift = args.get("plays_count_max_drift")
     rewards_manager_max_drift = args.get("rewards_manager_max_drift")
-    user_bank_max_drift = args.get("user_bank_max_drift")
+    user_bank_max_slot_diff = args.get("user_bank_max_slot_diff")
     spl_audio_max_drift = args.get("spl_audio_max_drift")
 
     errors = []
@@ -259,7 +259,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     rewards_manager_health_info = get_rewards_manager_health_info(
         redis, rewards_manager_max_drift
     )
-    user_bank_health_info = get_user_bank_health_info(redis, user_bank_max_drift)
+    user_bank_health_info = get_user_bank_health_info(redis, user_bank_max_slot_diff)
     spl_audio_info = get_spl_audio_info(redis, spl_audio_max_drift)
     reactions_health_info = get_reactions_health_info(
         redis,
@@ -448,6 +448,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         errors.append("unhealthy plays")
     if reactions_health_info["is_unhealthy"]:
         errors.append("unhealthy reactions")
+    if user_bank_health_info["is_unhealthy"]:
+        errors.append("unhealthy user bank")
 
     delist_statuses_ok = get_delist_statuses_ok()
     if not delist_statuses_ok:
@@ -467,6 +469,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         or unhealthy_challenges
         or play_health_info["is_unhealthy"]
         or reactions_health_info["is_unhealthy"]
+        or user_bank_health_info["is_unhealthy"]
         or not delist_statuses_ok
     )
 
@@ -610,7 +613,7 @@ def get_play_health_info(
 
 
 def get_user_bank_health_info(
-    redis: Redis, max_drift: Optional[int] = None
+    redis: Redis, max_slot_diff: Optional[int] = None
 ) -> SolHealthInfo:
     if redis is None:
         raise Exception("Invalid arguments for get_user_bank_health_info")
@@ -619,7 +622,7 @@ def get_user_bank_health_info(
 
     tx_health_info = get_sol_user_bank_health_info(redis, current_time_utc)
     # If user bank indexing max drift provided, perform comparison
-    is_unhealthy = bool(max_drift and max_drift < tx_health_info["time_diff"])
+    is_unhealthy = bool(max_slot_diff and max_slot_diff < tx_health_info["slot_diff"])
 
     return {
         "is_unhealthy": is_unhealthy,

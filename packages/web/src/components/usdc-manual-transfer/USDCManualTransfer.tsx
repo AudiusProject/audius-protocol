@@ -1,10 +1,19 @@
 import { useCallback, useContext } from 'react'
 
-import { Name, useCreateUserbankIfNeeded } from '@audius/common'
-import { Button, ButtonType } from '@audius/harmony'
-import { IconError, LogoUSDC } from '@audius/stems'
+import {
+  Name,
+  isContentPurchaseInProgress,
+  purchaseContentSelectors,
+  useCreateUserbankIfNeeded,
+  useUSDCBalance
+} from '@audius/common'
+import { USDC } from '@audius/fixed-decimal'
+import { Button, ButtonType, Flex, IconLogoCircleUSDC } from '@audius/harmony'
+import { IconError } from '@audius/stems'
+import BN from 'bn.js'
 import cn from 'classnames'
 import QRCode from 'react-qr-code'
+import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { Icon } from 'components/Icon'
@@ -12,7 +21,7 @@ import { AddressTile } from 'components/address-tile'
 import { ToastContext } from 'components/toast/ToastContext'
 import { Text } from 'components/typography'
 import { Hint } from 'components/withdraw-usdc-modal/components/Hint'
-import { track, make } from 'services/analytics'
+import { track as trackAnalytics, make } from 'services/analytics'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { getUSDCUserBank } from 'services/solana/solana'
 import { isMobile } from 'utils/clientUtil'
@@ -20,24 +29,40 @@ import { copyToClipboard } from 'utils/clipboardUtil'
 
 import styles from './USDCManualTransfer.module.css'
 
+const { getPurchaseContentFlowStage, getPurchaseContentError } =
+  purchaseContentSelectors
+
 const USDCLearnMore =
   'https://support.audius.co/help/Understanding-USDC-on-Audius'
 
 const messages = {
-  explainer1:
-    'You can add funds manually by transferring USDC tokens to your Audius Wallet.',
-  explainer2: 'Use caution to avoid errors and lost funds.',
-  disclaimer:
-    'You can only send Solana based (SPL) USDC tokens to this address.',
+  explainer:
+    'Add funds by sending Solana based (SPL) USDC to your Audius account.',
+  disclaimer: 'Use caution to avoid errors and lost funds.',
   learnMore: 'Learn More',
   copy: 'Copy Wallet Address',
   goBack: 'Go Back',
-  copied: 'Copied to Clipboard!'
+  copied: 'Copied to Clipboard!',
+  buy: (amount: string) => `Buy $${amount}`
 }
 
-export const USDCManualTransfer = ({ onClose }: { onClose: () => void }) => {
+export const USDCManualTransfer = ({
+  onClose,
+  amountInCents
+}: {
+  onClose: () => void
+  amountInCents?: number
+}) => {
+  const stage = useSelector(getPurchaseContentFlowStage)
+  const error = useSelector(getPurchaseContentError)
+  const isUnlocking = !error && isContentPurchaseInProgress(stage)
+  const { data: balanceBN } = useUSDCBalance()
+  const balance = USDC(balanceBN ?? new BN(0)).value
+  const amount = USDC((amountInCents ?? 0) / 100).value
+  const isBuyButtonDisabled = isUnlocking || balance < amount
+
   useCreateUserbankIfNeeded({
-    recordAnalytics: track,
+    recordAnalytics: trackAnalytics,
     audiusBackendInstance,
     mint: 'usdc'
   })
@@ -52,7 +77,7 @@ export const USDCManualTransfer = ({ onClose }: { onClose: () => void }) => {
   const handleCopy = useCallback(() => {
     copyToClipboard(USDCUserBank ?? '')
     toast(messages.copied)
-    track(
+    trackAnalytics(
       make({
         eventName: Name.PURCHASE_CONTENT_USDC_USER_BANK_COPIED,
         address: USDCUserBank ?? ''
@@ -61,37 +86,68 @@ export const USDCManualTransfer = ({ onClose }: { onClose: () => void }) => {
   }, [USDCUserBank, toast])
 
   return (
-    <div className={styles.root}>
-      <Text>{messages.explainer1}</Text>
-      <Text>{messages.explainer2}</Text>
-      <div className={cn(styles.columns, { [styles.mobile]: mobile })}>
+    <Flex direction='column' gap='xl' p='xl'>
+      <Flex gap='l' alignItems='center' direction={mobile ? 'column' : 'row'}>
+        {mobile ? <Text>{messages.explainer}</Text> : null}
         <div className={styles.qr}>
           {USDCUserBank ? <QRCode value={USDCUserBank} /> : null}
         </div>
-        <div className={styles.data}>
-          <AddressTile address={USDCUserBank ?? ''} left={<LogoUSDC />} />
+        <Flex direction='column' gap='xl'>
+          {!mobile ? <Text>{messages.explainer}</Text> : null}
           <Hint
             text={messages.disclaimer}
             link={USDCLearnMore}
             icon={() => <Icon icon={IconError} size='large' fill='neutral' />}
             linkText={messages.learnMore}
           />
-        </div>
-      </div>
+        </Flex>
+      </Flex>
+      <AddressTile address={USDCUserBank ?? ''} iconLeft={IconLogoCircleUSDC} />
       <div
         className={cn(styles.buttonContainer, {
           [styles.mobile]: mobile
         })}
       >
-        <Button variant={ButtonType.PRIMARY} fullWidth onClick={handleCopy}>
-          {messages.copy}
-        </Button>
-        {mobile ? null : (
-          <Button variant={ButtonType.TERTIARY} fullWidth onClick={onClose}>
-            {messages.goBack}
-          </Button>
+        {amountInCents === undefined ? (
+          <>
+            <Button variant={ButtonType.PRIMARY} fullWidth onClick={handleCopy}>
+              {messages.copy}
+            </Button>
+            {mobile ? null : (
+              <Button variant={ButtonType.TERTIARY} fullWidth onClick={onClose}>
+                {messages.goBack}
+              </Button>
+            )}
+          </>
+        ) : (
+          <>
+            {mobile ? null : (
+              <Button
+                variant={ButtonType.SECONDARY}
+                fullWidth
+                onClick={onClose}
+              >
+                {messages.goBack}
+              </Button>
+            )}
+            <Button
+              variant={ButtonType.PRIMARY}
+              fullWidth
+              color='lightGreen'
+              disabled={isBuyButtonDisabled}
+              type='submit'
+            >
+              {messages.buy(
+                USDC(amount).toLocaleString('en-us', {
+                  roundingMode: 'ceil',
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })
+              )}
+            </Button>
+          </>
         )}
       </div>
-    </div>
+    </Flex>
   )
 }

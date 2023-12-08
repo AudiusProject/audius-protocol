@@ -23,7 +23,7 @@
   align-items: center;
   margin-left: var(--unit-7);
   margin-right: var(--unit-4);
-  color: var(--neutral);
+  color: var(--neutral-light-4);
 }
 
 .titleContainer.noDismissButton {
@@ -35,6 +35,8 @@
   display: inline;
   font-size: var(--font-xl);
   font-weight: var(--font-bold);
+  color: var(--neutral-light-4);
+  text-transform: uppercase;
 }
 
 .subtitleContainer {
@@ -53,4 +55,8 @@
 .icon {
   display: inline;
   margin-right: 10px;
+}
+
+.icon path {
+  fill: var(--neutral-light-4);
 }

@@ -66,6 +66,7 @@ from src.utils.helpers import (
     has_log,
 )
 from src.utils.prometheus_metric import save_duration_metric
+from src.utils.redis_cache import get_solana_transaction_key
 from src.utils.redis_constants import (
     latest_sol_user_bank_db_tx_key,
     latest_sol_user_bank_program_tx_key,
@@ -241,6 +242,7 @@ class PurchaseMetadataDict(TypedDict):
     splits: dict[str, int]
     type: PurchaseType
     id: int
+    purchaser_user_id: Optional[int]
 
 
 def get_purchase_metadata_from_memo(
@@ -252,57 +254,76 @@ def get_purchase_metadata_from_memo(
             content_metadata = memo.split(":")
             if len(content_metadata) == 3:
                 type_str, id_str, blocknumber_str = content_metadata
-                type = PurchaseType[type_str.lower()]
-                id = int(id_str)
-                blocknumber = int(blocknumber_str)
-
-                # TODO: Wait for blocknumber to be indexed by ACDC
-                logger.debug(
-                    f"index_user_bank.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber}"
-                )
-                price = None
-                splits = None
-                if type == PurchaseType.track:
-                    env = shared_config["discprov"]["env"]
-                    query = session.query(TrackPriceHistory)
-                    if env != "dev":
-                        # In local stack, the blocktime of solana-test-validator is offset.
-                        # The start time of the validator is baked into the prebuilt container.
-                        # So if the container was built on 7/15, but you upped the container on 7/22, the blocktimes will still say 7/15 and be way behind.
-                        # To remedy this locally would require getting the start time of the solana-test-validator container and getting its offset compared to when
-                        # the the validator thinks the beginning of time is, and that's just too much work so I'm just not adding the blocktime filter in local dev
-                        query.filter(TrackPriceHistory.block_timestamp < timestamp)
-                    result = (
-                        query.filter(
-                            TrackPriceHistory.track_id == id,
-                        )
-                        .order_by(desc(TrackPriceHistory.block_timestamp))
-                        .first()
-                    )
-                    if result is not None:
-                        price = result.total_price_cents
-                        splits = result.splits
-                else:
-                    logger.error(f"index_user_bank.py | Unknown content type {type}")
-                if (
-                    price is not None
-                    and splits is not None
-                    and isinstance(splits, dict)
-                ):
-                    return {
-                        "type": type,
-                        "id": id,
-                        "price": price * USDC_PER_USD_CENT,
-                        "splits": splits,
-                    }
-                else:
-                    logger.error(
-                        f"index_user_bank.py | Couldn't find relevant price for {content_metadata}"
-                    )
+                purchaser_user_id_str = None
+            elif len(content_metadata) == 4:
+                (
+                    type_str,
+                    id_str,
+                    blocknumber_str,
+                    purchaser_user_id_str,
+                ) = content_metadata
             else:
                 logger.debug(
                     f"index_user_bank.py | Ignoring memo, no content metadata found: {memo}"
                 )
+                continue
+
+            type = PurchaseType[type_str.lower()]
+            id = int(id_str)
+            blocknumber = int(blocknumber_str)
+            purchaser_user_id = (
+                int(purchaser_user_id_str) if purchaser_user_id_str else None
+            )
+
+            # TODO: Wait for blocknumber to be indexed by ACDC
+            logger.debug(
+                f"index_user_bank.py | Found content_metadata in memo: type={type}, id={id}, blocknumber={blocknumber}, purchaser_user_id={purchaser_user_id}"
+            )
+
+            price = None
+            splits = None
+            if type == PurchaseType.track:
+                env = shared_config["discprov"]["env"]
+                query = session.query(TrackPriceHistory)
+                if env != "dev":
+                    # In local stack, the blocktime of solana-test-validator is offset.
+                    # The start time of the validator is baked into the prebuilt container.
+                    # So if the container was built on 7/15, but you upped the container on 7/22, the blocktimes will still say 7/15 and be way behind.
+                    # To remedy this locally would require getting the start time of the solana-test-validator container and getting its offset compared to when
+                    # the the validator thinks the beginning of time is, and that's just too much work so I'm just not adding the blocktime filter in local dev
+                    query.filter(TrackPriceHistory.block_timestamp < timestamp)
+                result = (
+                    query.filter(
+                        TrackPriceHistory.track_id == id,
+                    )
+                    .order_by(desc(TrackPriceHistory.block_timestamp))
+                    .first()
+                )
+                if result is not None:
+                    price = result.total_price_cents
+                    splits = result.splits
+            else:
+                logger.error(f"index_user_bank.py | Unknown content type {type}")
+                continue
+
+            if price is not None and splits is not None and isinstance(splits, dict):
+                purchase_metadata: PurchaseMetadataDict = {
+                    "type": type,
+                    "id": id,
+                    "price": price * USDC_PER_USD_CENT,
+                    "splits": splits,
+                    "purchaser_user_id": purchaser_user_id,
+                }
+                logger.error(
+                    f"index_user_bank.py | Got purchase metadata {content_metadata}"
+                )
+                return purchase_metadata
+            else:
+                logger.error(
+                    f"index_user_bank.py | Couldn't find relevant price for {content_metadata}"
+                )
+                continue
+
         except (ValueError, KeyError) as e:
             logger.debug(
                 f"index_user_bank.py | Ignoring memo, failed to parse content metadata: {memo}, Error: {e}"
@@ -605,8 +626,13 @@ def process_transfer_instruction(
     # not the claimable tokens program, so we will always have a sender_user_id
     if receiver_user_id is None:
         receiver_account_pubkey = Pubkey.from_string(receiver_account)
-        receiver_account_info = solana_client_manager.get_account_info_json_parsed(receiver_account_pubkey)
-        receiver_account_owner = receiver_account_info.data.parsed["info"]["owner"]
+        receiver_account_info = solana_client_manager.get_account_info_json_parsed(
+            receiver_account_pubkey
+        )
+        if receiver_account_info:
+            receiver_account_owner = receiver_account_info.data.parsed["info"]["owner"]
+        else:
+            receiver_account_owner = receiver_account
         TransactionHistoryModel = (
             AudioTransactionsHistory if is_audio else USDCTransactionsHistory
         )
@@ -767,10 +793,15 @@ def process_user_bank_tx_details(
 
 
 def get_sol_tx_info(
-    solana_client_manager: SolanaClientManager,
-    tx_sig: str,
+    solana_client_manager: SolanaClientManager, tx_sig: str, redis: Redis
 ):
     try:
+        existing_tx = redis.get(get_solana_transaction_key(tx_sig))
+        if existing_tx is not None and existing_tx != "":
+            logger.info(f"index_user_bank.py | Cache hit: {tx_sig}")
+            tx_info = GetTransactionResp.from_json(existing_tx.decode("utf-8"))
+            return (tx_info, tx_sig)
+        logger.info(f"index_user_bank.py | Cache miss: {tx_sig}")
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
         return (tx_info, tx_sig)
     except SolanaTransactionFetchError:
@@ -893,9 +924,7 @@ def process_user_bank_txs() -> None:
             with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
                 parse_sol_tx_futures = {
                     executor.submit(
-                        get_sol_tx_info,
-                        solana_client_manager,
-                        str(tx_sig),
+                        get_sol_tx_info, solana_client_manager, str(tx_sig), redis
                     ): tx_sig
                     for tx_sig in tx_sig_batch
                 }

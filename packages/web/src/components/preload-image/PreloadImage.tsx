@@ -18,7 +18,7 @@ const PreloadImage = ({
   alt?: string
   asBackground?: boolean
   preloaded?: boolean
-  className: string
+  className?: string
 }) => {
   const [isLoaded, setIsLoaded] = useState(preloaded)
   useEffect(() => {

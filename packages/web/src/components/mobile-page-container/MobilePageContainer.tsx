@@ -31,6 +31,7 @@ type OwnProps = {
   // Defaults to false.
   fullHeight?: boolean
 
+  className?: string
   // If full height specified, optionally pass in a classname for the
   // background div.
   backgroundClassName?: string
@@ -56,6 +57,7 @@ const PLAY_BAR_HEIGHT = 48
 const safeAreaBottom = getSafeArea(SafeAreaDirection.BOTTOM)
 
 const MobilePageContainer = ({
+  className,
   title,
   description,
   canonicalUrl,
@@ -124,11 +126,10 @@ const MobilePageContainer = ({
         )}
       </Helmet>
       <div
-        className={cn(styles.container, {
-          [containerClassName!]: !!containerClassName,
+        className={cn(styles.container, className, containerClassName, {
           [styles.hasDefaultHeader]: hasDefaultHeader
         })}
-        style={style}
+        style={fullHeight ? undefined : style}
       >
         {children}
       </div>

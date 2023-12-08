@@ -1,9 +1,11 @@
-import cn from 'classnames'
 import { useCallback, useEffect, useRef, useState } from 'react'
+
+import cn from 'classnames'
 
 import AudiusLogoGlyph from '../../assets/img/audiusLogoGlyph.svg'
 import { getCopyableLink } from '../../util/shareUtil'
 import PlayButton, { PlayingState } from '../playbutton/PlayButton'
+import { Preview } from '../preview/Preview'
 import BedtimeScrubber from '../scrubber/BedtimeScrubber'
 
 import styles from './TrackPlayerTiny.module.css'
@@ -20,7 +22,8 @@ const TrackPlayerTiny = ({
   position,
   duration,
   seekTo,
-  onTogglePlay
+  onTogglePlay,
+  premiumConditions
 }) => {
   const info = `${title} • ${artistName}`
 
@@ -70,6 +73,9 @@ const TrackPlayerTiny = ({
     infoStyle['--info-width'] = `${infoWidth + MARQUEE_SPACING}px`
   }
 
+  const isPurchaseable =
+    premiumConditions && 'usdc_purchase' in premiumConditions
+
   return (
     <div className={styles.wrapper}>
       <PlayButton
@@ -78,6 +84,7 @@ const TrackPlayerTiny = ({
         className={styles.playButton}
       />
       <div className={styles.container} onClick={onClick} ref={containerRef}>
+        {isPurchaseable ? <Preview size='s' /> : null}
         <div className={styles.playContainer} />
         <div className={styles.infoContainer}>
           <h1

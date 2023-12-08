@@ -96,7 +96,6 @@ const CollectionPlayerCard = ({
       isTwitter={isTwitter}
       backgroundColor={backgroundColor}
       twitterURL={permalink}
-      fillContainer
     >
       <div className={styles.padding}>
         <div className={styles.topRow}>

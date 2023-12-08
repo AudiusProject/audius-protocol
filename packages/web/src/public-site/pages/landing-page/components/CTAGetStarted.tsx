@@ -11,7 +11,7 @@ import capshunBg2 from 'assets/img/publicSite/CapshunBG@2x.webp'
 import capshunBg3 from 'assets/img/publicSite/CapshunBG@3x.webp'
 import capshunBg4 from 'assets/img/publicSite/CapshunBG@4x.webp'
 import { handleClickRoute } from 'public-site/components/handleClickRoute'
-import { AUDIUS_LISTENING_LINK } from 'utils/route'
+import { TRENDING_PAGE } from 'utils/route'
 import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 
 import styles from './CTAGetStarted.module.css'
@@ -90,10 +90,7 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
         <div className={styles.textContent}>
           <div className={styles.title}>{messages.title}</div>
           <button
-            onClick={handleClickRoute(
-              AUDIUS_LISTENING_LINK,
-              props.setRenderPublicSite
-            )}
+            onClick={handleClickRoute(TRENDING_PAGE, props.setRenderPublicSite)}
             className={styles.ctaButton}
           >
             {messages.cta}
@@ -134,10 +131,7 @@ const CTAGetStarted = (props: CTAGetStartedProps) => {
             </h3>
           </div>
           <button
-            onClick={handleClickRoute(
-              AUDIUS_LISTENING_LINK,
-              props.setRenderPublicSite
-            )}
+            onClick={handleClickRoute(TRENDING_PAGE, props.setRenderPublicSite)}
             className={styles.ctaButton}
           >
             {messages.cta}

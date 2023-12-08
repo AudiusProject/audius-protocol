@@ -11,8 +11,6 @@ import { Formik } from 'formik'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { useRemoteVar } from 'app/hooks/useRemoteConfig'
-
 import { EditTrackNavigator } from './EditTrackNavigator'
 import { TRACK_PREVIEW } from './fields/AccessAndSaleField/PremiumRadioField/TrackPreviewField'
 import { TRACK_PRICE } from './fields/AccessAndSaleField/PremiumRadioField/TrackPriceField'
@@ -31,8 +29,7 @@ const errorMessages = {
 }
 
 const useEditTrackSchema = () => {
-  const { minContentPriceCents, maxContentPriceCents } =
-    useUSDCPurchaseConfig(useRemoteVar)
+  const { minContentPriceCents, maxContentPriceCents } = useUSDCPurchaseConfig()
   return useMemo(
     /**
      * The refine functions only get executed if the original object definition (before refine) validation passes.

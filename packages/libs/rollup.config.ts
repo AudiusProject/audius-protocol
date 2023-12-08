@@ -17,7 +17,8 @@ const external = [
   ...Object.keys(pkg.devDependencies),
   'ethers/lib/utils',
   'ethers/lib/index',
-  'hashids/cjs'
+  'hashids/cjs',
+  'readable-stream'
 ]
 
 const pluginTypescript = typescript({ tsconfig: './tsconfig.json' })
@@ -64,7 +65,14 @@ export const outputConfigs = {
    */
   sdkConfigCjs: {
     input: 'src/index.ts',
-    output: [{ file: pkg.main, format: 'cjs', sourcemap: true }],
+    output: [
+      {
+        dir: 'dist',
+        format: 'cjs',
+        sourcemap: true,
+        entryFileNames: '[name].cjs.js'
+      }
+    ],
     plugins: [
       resolve({ extensions, preferBuiltins: true }),
       commonjs({ extensions }),
@@ -83,7 +91,14 @@ export const outputConfigs = {
    */
   sdkConfigEs: {
     input: 'src/index.ts',
-    output: [{ file: pkg.module, format: 'es', sourcemap: true }],
+    output: [
+      {
+        dir: 'dist',
+        format: 'es',
+        sourcemap: true,
+        entryFileNames: '[name].esm.js'
+      }
+    ],
     plugins: [
       resolve({ extensions, preferBuiltins: true }),
       commonjs({ extensions }),
@@ -100,7 +115,14 @@ export const outputConfigs = {
    */
   sdkConfigReactNative: {
     input: 'src/sdk/index.ts',
-    output: [{ file: pkg['react-native'], format: 'es', sourcemap: true }],
+    output: [
+      {
+        dir: 'dist',
+        format: 'es',
+        sourcemap: true,
+        entryFileNames: '[name].native.js'
+      }
+    ],
     plugins: [
       ignore(['web3', 'graceful-fs', 'node-localstorage']),
       resolve({ extensions, preferBuiltins: true }),
@@ -125,7 +147,12 @@ export const outputConfigs = {
   sdkBrowserConfigCjs: {
     input: 'src/sdk/index.ts',
     output: [
-      { file: 'dist/index.browser.cjs.js', format: 'cjs', sourcemap: true }
+      {
+        dir: 'dist',
+        format: 'cjs',
+        sourcemap: true,
+        entryFileNames: '[name].browser.cjs.js'
+      }
     ],
     plugins: [
       ignore(['web3', 'graceful-fs', 'node-localstorage']),
@@ -156,7 +183,12 @@ export const outputConfigs = {
   sdkBrowserConfigEs: {
     input: 'src/sdk/index.ts',
     output: [
-      { file: 'dist/index.browser.esm.js', format: 'es', sourcemap: true }
+      {
+        dir: 'dist',
+        format: 'es',
+        sourcemap: true,
+        entryFileNames: '[name].browser.esm.js'
+      }
     ],
     plugins: [
       ignore(['web3', 'graceful-fs', 'node-localstorage']),
@@ -193,7 +225,8 @@ export const outputConfigs = {
         format: 'iife',
         esModule: false,
         sourcemap: true,
-        plugins: [terser()]
+        plugins: [terser()],
+        inlineDynamicImports: true
       }
     ],
     plugins: [
@@ -219,33 +252,18 @@ export const outputConfigs = {
   },
 
   /**
-   * Libs Legacy Browser Package
-   * Used by the Audius Web Client and by extension the Desktop Client
-   */
-  legacyBrowserConfig: {
-    input: 'src/legacy.ts',
-    output: [{ file: 'dist/legacy.js', format: 'cjs', sourcemap: true }],
-    plugins: [
-      ignore(['web3', 'graceful-fs', 'node-localstorage']),
-      resolve({ extensions, preferBuiltins: true }),
-      commonjs({ extensions }),
-      alias({
-        entries: [{ find: 'stream', replacement: 'stream-browserify' }]
-      }),
-      babel({ babelHelpers: 'bundled', extensions }),
-      json(),
-      pluginTypescript
-    ],
-    external
-  },
-
-  /**
    * Libs Web Package
    * Used by the Audius Web Client as a more performant/smaller bundle
    */
   webConfig: {
     input: 'src/web-libs.ts',
-    output: [{ file: 'dist/web-libs.js', format: 'cjs', sourcemap: true }],
+    output: [
+      {
+        dir: 'dist',
+        format: 'es',
+        sourcemap: true
+      }
+    ],
     plugins: [
       ignore(['web3', 'graceful-fs', 'node-localstorage']),
       resolve({ extensions, preferBuiltins: true }),
@@ -267,7 +285,7 @@ export const outputConfigs = {
    */
   legacyReactNativeConfig: {
     input: 'src/native-libs.ts',
-    output: [{ file: 'dist/native-libs.js', format: 'es', sourcemap: true }],
+    output: [{ dir: 'dist', format: 'es', sourcemap: true }],
     plugins: [
       ignore(['web3', 'graceful-fs', 'node-localstorage']),
       resolve({ extensions, preferBuiltins: true }),
@@ -288,7 +306,7 @@ export const outputConfigs = {
    */
   coreConfig: {
     input: 'src/core.ts',
-    output: [{ file: 'dist/core.js', format: 'es', sourcemap: true }],
+    output: [{ dir: 'dist', format: 'es', sourcemap: true }],
     plugins: [
       resolve({ extensions, preferBuiltins: true }),
       commonjs({ extensions }),

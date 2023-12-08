@@ -1,4 +1,4 @@
-import { createContext } from 'react'
+import { createContext, useContext } from 'react'
 
 import type { AudiusSdk } from '@audius/sdk'
 import type { Dispatch } from 'redux'
@@ -22,3 +22,15 @@ export type AudiusQueryContextType = {
 export const AudiusQueryContext = createContext<AudiusQueryContextType | null>(
   null
 )
+
+export const useAudiusQueryContext = () => {
+  const audiusQueryContext = useContext(AudiusQueryContext)
+
+  if (!audiusQueryContext) {
+    throw new Error(
+      'useAudiusQueryContext has to be used within <AudiusQueryContext.Provider>'
+    )
+  }
+
+  return audiusQueryContext
+}

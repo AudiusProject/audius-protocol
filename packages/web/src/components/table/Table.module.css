@@ -37,6 +37,7 @@
   position: relative;
   overflow: hidden;
   min-width: 0px !important;
+  background-color: var(--white);
 }
 
 .cellSection {
@@ -196,12 +197,15 @@
   position: relative;
   flex: 1 1 0;
   overflow: hidden;
-  background: var(--white);
+  background-color: var(--white);
   min-width: 0px !important;
   color: var(--neutral);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+}
+.tableRow > .tableCell {
+  background-color: var(--white);
 }
 
 .tableRow.active {
@@ -209,8 +213,8 @@
 }
 
 .tableRow:hover:not(.skeletonRow),
-.tableRow:hover > td {
-  z-index: 1;
+.tableRow:hover > .tableCell {
+  z-index: 3;
   box-shadow: 0 1px 0 0 var(--neutral-light-8),
     0 -1px 0 0 var(--neutral-light-8);
   transition: all 0.07s ease-in-out;
@@ -236,7 +240,7 @@
   justify-content: center;
   height: 64px;
   padding: 20px 12px;
-  background: transparent;
+  background-color: transparent;
   user-select: none;
   transition: all 0.05s ease-in-out;
 }
@@ -300,8 +304,8 @@
 .cellSectionEnd {
   position: sticky !important;
   right: 0;
-  z-index: 2;
-  background-color: var(--white);
+  /* z-index: 3; */
+  /* background-color: inherit; */
 }
 
 .cellSectionEnd.menu {

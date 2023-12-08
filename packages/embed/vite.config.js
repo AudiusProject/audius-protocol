@@ -1,15 +1,12 @@
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill'
 import react from '@vitejs/plugin-react'
 import process from 'process/browser'
-import { visualizer } from 'rollup-plugin-visualizer'
 import { defineConfig, loadEnv } from 'vite'
-import glslify from 'vite-plugin-glslify'
 import svgr from 'vite-plugin-svgr'
 
 export default defineConfig(({ command, mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_')
   const port = parseInt(env.VITE_PORT ?? '3000')
-  const analyze = env.VITE_BUNDLE_ANALYZE === 'true'
 
   const base = command === 'build' ? '/embed/' : '/'
   return {
@@ -56,7 +53,12 @@ export default defineConfig(({ command, mode }) => {
           }
         }
       },
-      react(),
+      react({
+        jsxImportSource: '@emotion/react',
+        babel: {
+          plugins: ['@emotion/babel-plugin']
+        }
+      })
     ],
     resolve: {
       alias: {

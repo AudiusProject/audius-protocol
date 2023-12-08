@@ -3,8 +3,8 @@ import { ID, SquareSizes, WidthSizes } from '@audius/common'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { Text } from 'components/typography'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { useCoverPhoto } from 'hooks/useUserCoverPhoto'
 import { useProfilePicture } from 'hooks/useUserProfilePicture'
 import { profilePage } from 'utils/route'
 
@@ -18,7 +18,10 @@ type ArtistCardProps = {
 
 export const ArtistCard = ({ userId, handle, name }: ArtistCardProps) => {
   const profilePicture = useProfilePicture(userId, SquareSizes.SIZE_150_BY_150)
-  const coverPhoto = useCoverPhoto(userId, WidthSizes.SIZE_2000)
+  const { source: coverPhoto, shouldBlur } = useCoverPhoto(
+    userId,
+    WidthSizes.SIZE_2000
+  )
   const navigate = useNavigateToPage()
 
   return (
@@ -27,6 +30,7 @@ export const ArtistCard = ({ userId, handle, name }: ArtistCardProps) => {
         className={styles.coverPhoto}
         wrapperClassName={styles.coverPhotoWrapper}
         image={coverPhoto}
+        useBlur={shouldBlur}
       />
       <div className={styles.details}>
         <DynamicImage

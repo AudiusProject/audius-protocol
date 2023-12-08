@@ -1,5 +1,7 @@
 import type BN from 'bn.js'
 
+import { NoBrand } from './utilityTypes'
+
 /**
  * Parses a string into the constructor args for a {@link FixedDecimal}.
  *
@@ -9,23 +11,23 @@ import type BN from 'bn.js'
  * @param decimalPlaces The number of decimal places the result should have.
  * @returns
  */
-const parseFixedDecimalString = (
+const parseFixedDecimalString = <T extends bigint>(
   value: string,
   decimalPlaces?: number
-): FixedDecimalCtorArgs => {
+): FixedDecimalCtorArgs<T> => {
   let [whole, decimal] = value.split('.')
   decimal = decimal ?? ''
   if (decimalPlaces !== undefined) {
     decimal = decimal.padEnd(decimalPlaces, '0').substring(0, decimalPlaces)
   }
   return {
-    value: BigInt(`${whole}${decimal}`),
+    value: BigInt(`${whole}${decimal}`) as T,
     decimalPlaces: decimalPlaces ?? decimal.length
   }
 }
 
-type FixedDecimalCtorArgs = {
-  value: bigint
+type FixedDecimalCtorArgs<T extends bigint> = {
+  value: T
   decimalPlaces: number
 }
 
@@ -152,8 +154,11 @@ const defaultFormatOptions = (value: FixedDecimal) =>
  * // Represent fractional dollars and round to cents
  * new FixedDecimal(1.32542).toFixed(2) // '1.33'
  */
-export class FixedDecimal {
-  public value: bigint
+export class FixedDecimal<
+  BigIntBrand extends bigint = bigint,
+  BNBrand extends BN = BN
+> {
+  public value: BigIntBrand
   public decimalPlaces: number
 
   /**
@@ -168,7 +173,14 @@ export class FixedDecimal {
    * @param decimalPlaces The number of decimal places the value has.
    */
   constructor(
-    value: FixedDecimalCtorArgs | bigint | number | string | BN,
+    value:
+      | FixedDecimalCtorArgs<bigint>
+      | BigIntBrand
+      | NoBrand<bigint>
+      | number
+      | string
+      | BNBrand
+      | NoBrand<BN>,
     decimalPlaces?: number
   ) {
     switch (typeof value) {
@@ -179,40 +191,46 @@ export class FixedDecimal {
         if (value.toString() === value.toExponential()) {
           throw new Error('Number must not be in scientific notation')
         }
-        const parsed = parseFixedDecimalString(value.toString(), decimalPlaces)
+        const parsed = parseFixedDecimalString<BigIntBrand>(
+          value.toString(),
+          decimalPlaces
+        )
         this.value = parsed.value
         this.decimalPlaces = parsed.decimalPlaces
         break
       }
       case 'string': {
-        const parsed = parseFixedDecimalString(value, decimalPlaces)
+        const parsed = parseFixedDecimalString<BigIntBrand>(
+          value,
+          decimalPlaces
+        )
         this.value = parsed.value
         this.decimalPlaces = parsed.decimalPlaces
         break
       }
       case 'object': {
         if (value instanceof FixedDecimal) {
-          const parsed = parseFixedDecimalString(
+          const parsed = parseFixedDecimalString<BigIntBrand>(
             value.toString(),
             decimalPlaces
           )
           this.value = parsed.value
           this.decimalPlaces = parsed.decimalPlaces
         } else if ('value' in value) {
-          this.value = value.value
+          this.value = value.value as BigIntBrand
           this.decimalPlaces = value.decimalPlaces
         } else {
           // Construct from BN.
           // Can't do `value instanceof BN` as the condition because BN is just
           // a type, instead get BN by elimination. Technically any object works
           // here that has a toString() that's a valid BigInt() arg.
-          this.value = BigInt(value.toString())
+          this.value = BigInt(value.toString()) as BigIntBrand
           this.decimalPlaces = decimalPlaces ?? 0
         }
         break
       }
       default:
-        this.value = value
+        this.value = value as BigIntBrand
         this.decimalPlaces = decimalPlaces ?? 0
     }
   }
@@ -233,8 +251,8 @@ export class FixedDecimal {
     }
     const divisor = BigInt(10 ** digitsToRemove)
     const bump = this.value % divisor > 0 ? BigInt(1) : BigInt(0)
-    return new FixedDecimal({
-      value: (this.value / divisor + bump) * divisor,
+    return new FixedDecimal<BigIntBrand, BNBrand>({
+      value: ((this.value / divisor + bump) * divisor) as BigIntBrand,
       decimalPlaces: this.decimalPlaces
     })
   }
@@ -258,8 +276,8 @@ export class FixedDecimal {
       this.value < 0 && digitsToRemove > 0
         ? BigInt(-1 * 10 ** digitsToRemove)
         : BigInt(0)
-    return new FixedDecimal({
-      value: (this.value / divisor) * divisor + signOffset,
+    return new FixedDecimal<BigIntBrand, BNBrand>({
+      value: ((this.value / divisor) * divisor + signOffset) as BigIntBrand,
       decimalPlaces: this.decimalPlaces
     })
   }
@@ -279,8 +297,8 @@ export class FixedDecimal {
       throw new RangeError('Digits must be non-negative')
     }
     const divisor = BigInt(10 ** digitsToRemove)
-    return new FixedDecimal({
-      value: (this.value / divisor) * divisor,
+    return new FixedDecimal<BigIntBrand, BNBrand>({
+      value: ((this.value / divisor) * divisor) as BigIntBrand,
       decimalPlaces: this.decimalPlaces
     })
   }
@@ -308,7 +326,10 @@ export class FixedDecimal {
     // Divide by 10 to remove the rounding test digit
     quotient /= BigInt(10)
     // Multiply by the original divisor and 10 to get the number of digits back
-    return new FixedDecimal(quotient * divisor * BigInt(10), this.decimalPlaces)
+    return new FixedDecimal<BigIntBrand, BNBrand>(
+      (quotient * divisor * BigInt(10)) as BigIntBrand,
+      this.decimalPlaces
+    )
   }
 
   /**
@@ -375,24 +396,24 @@ export class FixedDecimal {
    */
   public toLocaleString(locale?: string, options?: FixedDecimalFormatOptions) {
     // Apply defaults
-    options = {
+    const mergedOptions = {
       ...defaultFormatOptions(this),
       ...options
     }
     // Apply rounding method
     let str = ''
-    switch (options.roundingMode) {
+    switch (mergedOptions.roundingMode) {
       case 'ceil':
-        str = this.ceil(options.maximumFractionDigits).toString()
+        str = this.ceil(mergedOptions.maximumFractionDigits).toString()
         break
       case 'floor':
-        str = this.floor(options.maximumFractionDigits).toString()
+        str = this.floor(mergedOptions.maximumFractionDigits).toString()
         break
       case 'trunc':
-        str = this.trunc(options.maximumFractionDigits).toString()
+        str = this.trunc(mergedOptions.maximumFractionDigits).toString()
         break
       case 'halfExpand':
-        str = this.round(options.maximumFractionDigits).toString()
+        str = this.round(mergedOptions.maximumFractionDigits).toString()
         break
     }
 
@@ -401,29 +422,30 @@ export class FixedDecimal {
     // Strip trailing zeros
     decimal = (decimal ?? '').replace(/0+$/, '')
 
-    if (options.minimumFractionDigits !== undefined) {
+    if (mergedOptions.minimumFractionDigits !== undefined) {
       if (
-        options.trailingZeroDisplay !== 'stripIfInteger' ||
+        mergedOptions.trailingZeroDisplay !== 'stripIfInteger' ||
         BigInt(decimal) !== BigInt(0)
       ) {
-        decimal = decimal.padEnd(options.minimumFractionDigits, '0')
+        decimal = decimal.padEnd(mergedOptions.minimumFractionDigits, '0')
       }
     }
 
     // Localize with a decimal to extract the separator
     const wholeInt = BigInt(whole)
-    const wholeWithDecimal = wholeInt.toLocaleString(locale, {
+    whole = wholeInt.toLocaleString(locale, {
       ...options,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    })
+
+    // Annoyingly, React Native doesn't respect minimumFractionDigits for
+    // bigint formatting. Instead, get the decimalSeparator from a Number.
+    const decimalSeparator = Number(0).toLocaleString(locale, {
       minimumFractionDigits: 1,
       maximumFractionDigits: 1
-    })
-    // Get the separator character
-    const decimalSeparator = wholeWithDecimal.substring(
-      wholeWithDecimal.length - 2,
-      wholeWithDecimal.length - 1
-    )
-    // Remove the decimal
-    whole = wholeWithDecimal.substring(0, wholeWithDecimal.length - 2)
+    })[1]
+
     return decimal.length > 0 ? `${whole}${decimalSeparator}${decimal}` : whole
   }
 
@@ -458,7 +480,9 @@ export class FixedDecimal {
     } else if (this.value % divisor === BigInt(0)) {
       return quotient.toString()
     } else {
-      const amountString = this.value.toString()
+      const amountString = this.value
+        .toString()
+        .padStart(this.decimalPlaces, '0')
       const decimalStart = amountString.length - this.decimalPlaces
       // Get the first two decimals (truncated)
       const decimal = amountString.substring(decimalStart, decimalStart + 2)

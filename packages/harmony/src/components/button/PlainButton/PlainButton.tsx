@@ -53,6 +53,9 @@ export const PlainButton = forwardRef<HTMLButtonElement, PlainButtonProps>(
       background: 'transparent',
       border: 'none',
       color: 'var(--text-color)',
+      '& svg': {
+        fill: 'var(--text-color)'
+      },
       fontWeight: typography.weight.bold,
 
       ...(size === PlainButtonSize.LARGE ? largeStyles : defaultStyles),

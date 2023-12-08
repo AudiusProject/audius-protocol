@@ -1,7 +1,7 @@
 import importWorkerScript from './importWorkerScript'
 
 const importWorkScriptCode = importWorkerScript.toString()
-const basename = process.env.VITE_PUBLIC_URL;
+const basename = process.env.VITE_PUBLIC_URL
 
 export default class WebWorker {
   /**

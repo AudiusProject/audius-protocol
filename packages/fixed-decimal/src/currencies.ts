@@ -1,67 +1,86 @@
+import type BN from 'bn.js'
+
 import { FixedDecimal } from './FixedDecimal'
+import { Brand } from './utilityTypes'
 
 /**
  * Creates a {@link FixedDecimal} constructor for a currency.
  * @param decimalPlaces the number of decimal places for the currency
  */
 const createTokenConstructor =
-  <T extends FixedDecimal>(
-    decimalPlaces: ConstructorParameters<typeof FixedDecimal>[1]
+  <T extends bigint, K extends BN = BN>(
+    decimalPlaces: ConstructorParameters<typeof FixedDecimal<T, K>>[1]
   ) =>
-  (value: ConstructorParameters<typeof FixedDecimal>[0]): T =>
-    new FixedDecimal(value, decimalPlaces) as T
+  (value: ConstructorParameters<typeof FixedDecimal<T, K>>[0]) =>
+    new FixedDecimal<T, K>(value, decimalPlaces)
 
 /**
- * A {@link FixedDecimal} representing an amount of Ethereum ERC-20
- * AUDIO tokens, which have 18 decimal places.
- *
- * Used on the protocol dashboard and in the governance and staking systems.
- * Also used for balance totals after adding linked wallets on the Rewards page.
+ * A `bigint` representing an amount of Ethereum ERC-20 AUDIO tokens, which have
+ * 18 decimal places, as a count of the smallest possible denomination of AUDIO.
  */
-type AudioTokens = FixedDecimal & { _brand: 'AUDIO' }
+export type AudioWei = Brand<bigint, 'AUDIO'>
 /**
- * Constructs an amount of {@link AudioTokens} from a fixed decimal string,
- * decimal number, or a bigint or BN in the smallest denomination.
+ * Same as @audius/common BNWei.
+ * For backwards compatibility without circular dependency.
  */
-export const AUDIO = createTokenConstructor<AudioTokens>(18)
+export type BNWei = Brand<BN, 'BNWei'>
+/**
+ * Constructs an amount of {@link AudioWei} from a fixed decimal string,
+ * decimal number, or a bigint or BN in the smallest denomination of AUDIO.
+ *
+ * AUDIO is used on the protocol dashboard and in the governance and staking
+ * systems. Also used for calculating the balance totals of all connected
+ * wallets and the Hedgehog wallet on the Rewards page.
+ */
+export const AUDIO = createTokenConstructor<AudioWei, BNWei>(18)
 
 /**
- * A {@link FixedDecimal} representing an amount of Solana SPL AUDIO
- * tokens, which have 8 decimal places.
- *
- * Used for in-app experiences, like tipping and rewards.
+ * A `bigint` representing an amount of Solana SPL AUDIO tokens, which have
+ * 8 decimal places, as a count of the smallest possible denomination of wAUDIO.
  */
-type wAudioTokens = FixedDecimal & { _brand: 'wAUDIO' }
+export type wAudioWei = bigint & { _brand: 'wAUDIO' }
 /**
- * Constructs an amount of {@link wAudioTokens} from a fixed decimal string,
- * decimal number, or a bigint or BN in the smallest denomination.
+ * Same as @audius/common BNAudio.
+ * For backwards compatibility without circular dependency.
  */
-export const wAUDIO = createTokenConstructor<wAudioTokens>(8)
+export type BNAudio = Brand<BN, 'BNAudio'>
+/**
+ * Constructs an amount of {@link wAudioWei} from a fixed decimal string,
+ * decimal number, or a bigint or BN in the smallest denomination of wAUDIO.
+ *
+ * wAUDIO is used for in-app experiences, like tipping and rewards.
+ */
+export const wAUDIO = createTokenConstructor<wAudioWei, BNAudio>(8)
 
 /**
- * A {@link FixedDecimal} representing an amount of Solana native SOL
- * tokens, which have 9 decimal places.
- *
- * Used as an intermediary token for purchasing wAUDIO and for paying for fees
- * of Solana transactions on the platform.
+ * A `bigint` representing an amount of Solana native SOL tokens, which have
+ * 9 decimal places, as a count of the smallest possible denomination of SOL.
  */
-type SolTokens = FixedDecimal & { _brand: 'SOL' }
+export type SolWei = bigint & { _brand: 'SOL' }
 /**
- * Constructs an amount of {@link SolTokens} from a fixed decimal string,
- * decimal number, or a bigint or BN in the smallest denomination.
+ * Constructs an amount of {@link SolWei} from a fixed decimal string,
+ * decimal number, or a bigint or BN in the smallest denomination of SOL.
+ *
+ * SOL is used as an intermediary token for purchasing wAUDIO and for paying
+ * for fees of Solana transactions on the platform.
  */
-export const SOL = createTokenConstructor<SolTokens>(9)
+export const SOL = createTokenConstructor<SolWei>(9)
 
 /**
- * A {@link FixedDecimal} representing an amount of Solana SPL USDC
- * tokens, which have 6 decimal places.
- *
- * Used for purchasing content in-app, and getting "USD" prices via Jupiter
- * for the wAUDIO token and SOL.
+ * A `bigint` representing an amount of Solana SPL USDC tokens, which have
+ * 6 decimal places, as a count of the smallest possible denomination of USDC.
  */
-type UsdcTokens = FixedDecimal & { _brand: 'USDC' }
+export type UsdcWei = bigint & { _brand: 'USDC' }
 /**
- * Constructs an amount of {@link UsdcTokens} from a fixed decimal string,
- * decimal number, or a bigint or BN in the smallest denomination.
+ * Same as @audius/common BNUSDC.
+ * For backwards compatibility without circular dependency.
  */
-export const USDC = createTokenConstructor<UsdcTokens>(6)
+export type BNUSDC = Brand<BN, 'BNUSDC'>
+/**
+ * Constructs an amount of {@link UsdcWei} from a fixed decimal string,
+ * decimal number, or a bigint or BN in the smallest denomination of USDC.
+ *
+ * USDC is used for purchasing content in-app, and getting "USD" prices via
+ * Jupiter for the wAUDIO token and SOL.
+ */
+export const USDC = createTokenConstructor<UsdcWei, BNUSDC>(6)

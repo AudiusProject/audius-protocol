@@ -47,7 +47,10 @@
 }
 
 .scrubber {
-  margin-top: 20px;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .playButton {

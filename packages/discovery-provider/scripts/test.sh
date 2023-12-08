@@ -21,8 +21,6 @@ python3.9 -m pip install -r requirements.txt
 sleep 5
 set +e
 
-cd es-indexer && npm i && cd -
-
 if [ -n "${VERBOSE}" ]; then
   set -x
 fi
@@ -71,7 +69,7 @@ docker compose \
 
 # Create prometheus data test dir which is defined
 # for tests in the pytest.ini file
-mkdir -p $PROMETHEUS_MULTIPROC_DIR
+mkdir -p "$PROMETHEUS_MULTIPROC_DIR"
 
 if [ -z ${SKIP_TESTS+x} ]; then
   # Unit tests

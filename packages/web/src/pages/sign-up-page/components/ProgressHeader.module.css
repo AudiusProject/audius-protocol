@@ -2,6 +2,7 @@
   height: var(--harmony-spacing-4xl);
   position: relative;
   border-bottom: solid 1px var(--harmony-border-default);
+  z-index: 2;
 }
 
 .logoContainer {

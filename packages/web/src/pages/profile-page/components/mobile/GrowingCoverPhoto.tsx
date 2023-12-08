@@ -36,7 +36,8 @@ const GrowingCoverPhoto = ({
   image,
   imageStyle,
   wrapperClassName,
-  children
+  children,
+  ...rest
 }: DynamicImageProps) => {
   const [getShouldTrackScroll, setShouldTrackScroll] = useInstanceVar(false)
   const [springProps, setSpringProps] = useSpring(() => ({
@@ -120,6 +121,7 @@ const GrowingCoverPhoto = ({
         image={image}
         imageStyle={imageStyle}
         wrapperClassName={wrapperClassName}
+        {...rest}
       >
         {children}
       </DynamicImage>

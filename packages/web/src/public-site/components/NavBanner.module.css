@@ -228,6 +228,7 @@
 .signUp:hover {
   transform: scale3d(1.03, 1.03, 1.03);
   background-color: #f7f7f7;
+  color: #7e1bcc;
   box-shadow: 0 10px 20px -1px rgba(25, 0, 96, 0.5);
 }
 

@@ -9,7 +9,8 @@ import {
   FeatureFlags,
   removeNullable,
   isPremiumContentUSDCPurchaseGated,
-  useAccessAndRemixSettings
+  useAccessAndRemixSettings,
+  useFeatureFlag
 } from '@audius/common'
 import { useField, useFormikContext } from 'formik'
 import moment from 'moment'
@@ -19,7 +20,6 @@ import IconCart from 'app/assets/images/iconCart.svg'
 import { Button } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { TopBarIconButton } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
 

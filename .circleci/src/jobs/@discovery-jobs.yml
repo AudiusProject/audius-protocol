@@ -5,6 +5,16 @@ lint-discovery-provider:
   steps:
     - checkout
 
+    - attach_workspace:
+        at: ./
+
+    - create_concatenated_patch_file:
+        filename: combined-patch-file.txt
+
+    - restore_cache:
+        keys:
+          - cache-{{ checksum "package-lock.json" }}-{{ checksum "combined-patch-file.txt" }}
+
     - restore_cache:
         key: python-requirements-{{ checksum "packages/discovery-provider/requirements.txt" }}
 
@@ -34,6 +44,11 @@ lint-discovery-provider:
         command: |
           cd packages/discovery-provider
           mypy .
+
+    - persist_to_workspace:
+        root: ./
+        paths:
+          - node_modules
 
 test-discovery-api:
   working_directory: ~/audius-protocol

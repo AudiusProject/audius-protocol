@@ -77,10 +77,7 @@ export const DashboardPage = () => {
   const listenData = useSelector(getDashboardListenData)
   const dashboardStatus = useSelector(getDashboardStatus)
   const theme = useSelector(getTheme)
-  const { data: balance, balanceStatus } = useUSDCBalance({
-    isPolling: true,
-    pollingInterval: 3000
-  })
+  const { data: balance, balanceStatus } = useUSDCBalance()
   const statuses = [dashboardStatus]
   if (balance === null) {
     statuses.push(balanceStatus)

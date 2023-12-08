@@ -5,7 +5,6 @@
   background: var(--white);
   overflow: hidden;
   box-shadow: var(--table-shadow) 0px 16px 20px 0px;
-  min-width: 400px;
 }
 
 .backgroundBlueGradient {

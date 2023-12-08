@@ -1,10 +1,11 @@
 {
   "name": "root",
-  "version": "1.5.51",
+  "version": "1.5.54",
   "workspaces": [
     "packages/*",
     "packages/discovery-provider/plugins/pedalboard/apps/*",
-    "packages/discovery-provider/plugins/pedalboard/packages/*"
+    "packages/discovery-provider/plugins/pedalboard/packages/*",
+    "packages/es-indexer"
   ],
   "cacheBust": 1,
   "private": true,
@@ -40,6 +41,10 @@
     "ios:prod": "npm run ios:prod -w audius-mobile-client",
     "ios:stage": "npm run ios:stage -w audius-mobile-client",
     "mobile": "npm run start -w audius-mobile-client",
+    "EMBED======================================": "",
+    "embed:prod": "npm run start:prod -w embed",
+    "embed:stage": "npm run start:stage -w embed",
+    "embed:dev": "npm run start:dev -w embed",
     "COMMON=====================================": "",
     "common": "turbo run start --filter=@audius/common",
     "STEMS======================================": "",

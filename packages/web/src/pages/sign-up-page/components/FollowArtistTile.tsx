@@ -1,41 +1,134 @@
-import { HTMLProps } from 'react'
+import { HTMLProps, useContext } from 'react'
 
-import { UserMetadata } from '@audius/common'
+import { UserMetadata, WidthSizes } from '@audius/common'
 import {
-  Avatar,
   Box,
   Divider,
   Flex,
+  FollowButton,
   IconNote,
+  IconPause,
+  IconPlay,
+  IconSoundwave,
   IconUser,
-  IconUserFollow,
   IconVerified,
   Paper,
-  Text
+  Text,
+  useTheme
 } from '@audius/harmony'
+import { useField } from 'formik'
+import { useHover } from 'react-use'
 
-import audiusCoverPhoto from 'assets/img/4-Conductor-16-9.jpg'
-import audiusProfilePic from 'assets/img/appIcon240.png'
+import { Avatar } from 'components/avatar/Avatar'
+import Skeleton from 'components/skeleton/Skeleton'
+import { useCoverPhoto } from 'hooks/useCoverPhoto'
+import { useMedia } from 'hooks/useMedia'
+
+import { SelectArtistsPreviewContext } from '../utils/selectArtistsPreviewContext'
 
 type FollowArtistTileProps = {
   user: UserMetadata
 } & HTMLProps<HTMLInputElement>
 
-const FollowArtistTile = (props: FollowArtistTileProps) => {
+export const FollowArtistTile = (props: FollowArtistTileProps) => {
   const {
-    user: { name, user_id, is_verified, track_count, follower_count },
-    onChange
+    user: { name, user_id, is_verified, track_count, follower_count }
   } = props
+  const { isMobile } = useMedia()
+  const { source: coverPhoto, shouldBlur } = useCoverPhoto(
+    user_id,
+    WidthSizes.SIZE_640
+  )
+  const [followField] = useField({ name: 'selectedArtists', type: 'checkbox' })
+  const { spacing, color } = useTheme()
+
+  const {
+    togglePreview,
+    nowPlayingArtistId,
+    isPlaying: isPreviewPlaying
+  } = useContext(SelectArtistsPreviewContext)
+
+  const isPlaying = isPreviewPlaying && nowPlayingArtistId === user_id
+
+  const [avatar] = useHover((isHovered) => (
+    <Box w={72} h={72} css={{ position: 'absolute', top: 34 }}>
+      <Flex
+        h={74}
+        w={74}
+        justifyContent='center'
+        alignItems='center'
+        css={{
+          visibility: isHovered || isPlaying ? 'visible' : 'hidden',
+          pointerEvents: 'none',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          borderRadius: 100,
+          opacity: 0.75,
+          background:
+            'radial-gradient(50% 50% at 50% 50%, rgba(0, 0, 0, 0.50) 0%, rgba(0, 0, 0, 0.10) 100%)',
+          zIndex: 2
+        }}
+      >
+        {isPlaying ? (
+          <IconPause size='l' color='staticWhite' />
+        ) : (
+          <Box pl='xs'>
+            <IconPlay size='l' color='staticWhite' />
+          </Box>
+        )}
+      </Flex>
+      <Avatar
+        variant='strong'
+        userId={user_id}
+        onClick={() => {
+          togglePreview(user_id)
+        }}
+      />
+    </Box>
+  ))
+
   return (
-    <Paper w={235} h={220}>
+    <Paper h={220} w={isMobile ? 'calc(50% - 4px)' : 235}>
       <Flex w='100%' direction='column' alignItems='center'>
-        <Box w={72} h={72} css={{ position: 'absolute', top: 34 }}>
-          <Avatar variant='strong' src={audiusProfilePic} />
-        </Box>
+        {isPlaying ? (
+          <IconSoundwave
+            css={{
+              opacity: '60%',
+              position: 'absolute',
+              right: spacing.s,
+              top: spacing.s,
+              zIndex: 1,
+              'g path': {
+                fill: color.icon.staticWhite
+              }
+            }}
+          />
+        ) : null}
+        {avatar}
         <Box
           w='100%'
           h={68}
-          css={{ backgroundImage: `url(${audiusCoverPhoto})` }}
+          css={{
+            backgroundImage: `url(${coverPhoto})`,
+            backgroundSize: 'cover',
+            '&:before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              height: '100%',
+              width: '100%',
+              borderRadius: '8px',
+              overflow: 'hidden',
+              ...(shouldBlur
+                ? {
+                    backdropFilter: 'blur(25px)'
+                  }
+                : undefined)
+            },
+            overflow: 'hidden'
+          }}
         />
         <Flex
           direction='column'
@@ -71,8 +164,7 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
                   {track_count}
                 </Text>
               </Flex>
-              {/* TODO: Divider height not working */}
-              <Divider />
+              <Divider orientation='vertical' />
               <Flex direction='row' gap='xs' alignItems='center'>
                 <IconUser width={16} height={16} color='subdued' />
                 <Text variant='body' size='s' strength='strong'>
@@ -81,22 +173,53 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
               </Flex>
             </Flex>
           </Flex>
-          {/* TODO: Use Harmony FollowButton */}
-          <label key={user_id}>
-            <Flex alignItems='center' gap='xs'>
-              <input
-                type='checkbox'
-                name={String(user_id)}
-                onChange={onChange}
-              />
-              <IconUserFollow color='subdued' />
-              Follow
-            </Flex>
-          </label>
+          <FollowButton
+            variant='pill'
+            type='checkbox'
+            size={isMobile ? 'small' : 'default'}
+            {...followField}
+            isFollowing={followField.value.includes(user_id.toString())}
+            value={user_id}
+          />
         </Flex>
       </Flex>
     </Paper>
   )
 }
 
-export default FollowArtistTile
+export const FollowArtistTileSkeleton = () => {
+  const { isMobile } = useMedia()
+
+  return (
+    <Paper
+      h={220}
+      w={isMobile ? 'calc(50% - 4px)' : 235}
+      direction='column'
+      ph='m'
+      pb='l'
+    >
+      <Flex
+        direction='column'
+        gap='s'
+        css={{ marginTop: 34 }}
+        alignItems='center'
+        flex={1}
+      >
+        <Skeleton
+          height='72px'
+          width='72px'
+          css={{
+            borderRadius: '36px !important'
+          }}
+        />
+        <Skeleton height='16px' width='150px' />
+        <Skeleton height='20px' width='100px' />
+      </Flex>
+      <Skeleton
+        height='32px'
+        width='100%'
+        css={{ borderRadius: '16px !important' }}
+      />
+    </Paper>
+  )
+}

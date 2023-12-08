@@ -10,14 +10,14 @@ import type { TextLinkProps } from './types'
  */
 export const TextLink = (props: TextLinkProps) => {
   const {
-    _isHovered = false,
     asChild = false,
     children,
     variant = 'default',
     isExternal = false,
     onClick,
     textVariant,
-    ...passthroughProps
+    showUnderline,
+    ...other
   } = props
 
   const { color } = useTheme()
@@ -48,10 +48,10 @@ export const TextLink = (props: TextLinkProps) => {
         color: variantColors[variant],
         textDecoration: 'none',
         ':hover': hoverStyles,
-        ...(_isHovered && hoverStyles)
+        ...(showUnderline && hoverStyles)
       }}
       variant={textVariant}
-      {...passthroughProps}
+      {...other}
     >
       {asChild ? (
         <Slot>{children}</Slot>

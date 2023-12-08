@@ -54,6 +54,10 @@ export type BaseButtonProps = {
   iconRight?: IconComponent
 
   /**
+   * When true, do not override icon's fill colors
+   */
+  isStaticIcon?: boolean
+  /**
    * Show a spinning loading state instead of the left icon
    */
   isLoading?: boolean
@@ -222,4 +226,9 @@ export type FilterButtonProps = {
    * Popup portal location passed to the inner popup
    */
   popupPortalLocation?: HTMLElement
+
+  /**
+   * zIndex applied to the inner Popup component
+   */
+  popupZIndex?: number
 }

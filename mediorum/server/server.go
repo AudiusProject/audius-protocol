@@ -65,7 +65,6 @@ type MediorumConfig struct {
 	WalletIsRegistered   bool
 	StoreAll             bool
 	VersionJson          VersionJson
-	MigrateQmCidIters    int
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -357,10 +356,12 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// WIP internal: metrics
 	internalApi.GET("/metrics", ss.getMetrics)
+	internalApi.GET("/metrics/blobs-served/:timeRange", ss.getBlobsServedMetrics)
 	internalApi.GET("/logs/partition-ops", ss.getPartitionOpsLog)
 	internalApi.GET("/logs/reaper", ss.getReaperLog)
 	internalApi.GET("/logs/repair", ss.serveRepairLog)
 	internalApi.GET("/logs/storageAndDb", ss.serveStorageAndDbLogs)
+	internalApi.GET("/logs/pg-upgrade", ss.getPgUpgradeLog)
 
 	// internal: testing
 	internalApi.GET("/proxy_health_check", ss.proxyHealthCheck)

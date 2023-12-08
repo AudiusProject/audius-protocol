@@ -2,15 +2,12 @@ import { AudiusLibs } from '@audius/sdk'
 import { Account, createTransferCheckedInstruction } from '@solana/spl-token'
 import {
   AddressLookupTableAccount,
-  GetVersionedTransactionConfig,
   Keypair,
   PublicKey,
   Transaction,
   TransactionInstruction,
   TransactionMessage,
-  TransactionResponse,
-  VersionedTransaction,
-  VersionedTransactionResponse
+  VersionedTransaction
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
@@ -551,73 +548,5 @@ export const createVersionedTransaction = async (
   return {
     transaction: new VersionedTransaction(message),
     addressLookupTableAccounts
-  }
-}
-
-/**
- * Sometimes fetching a transaction can turn up empty if the transaction
- * hasn't been finalized and indexed by the RPC yet. This method polls the
- * transaction a few times before it gives up and returns null.
- */
-export const pollForTransaction = async (
-  audiusBackendInstance: AudiusBackend,
-  transactionSignature: string,
-  config: GetVersionedTransactionConfig,
-  options?: { maxRetryCount: number; retryDelayMs: number }
-) => {
-  let retryCount = 0
-  const maxRetryCount = options?.maxRetryCount ?? 20
-  const retryDelayMs = options?.retryDelayMs ?? 1000
-  let transaction: VersionedTransactionResponse | TransactionResponse | null =
-    null
-  const connection = await getSolanaConnection(audiusBackendInstance)
-  do {
-    console.debug(
-      `Fetching transaction ${transactionSignature}: attempt ${retryCount} of ${maxRetryCount}`
-    )
-    transaction = await connection.getTransaction(transactionSignature, config)
-    await delay(retryDelayMs)
-  } while (transaction === null && retryCount++ < maxRetryCount)
-  return transaction
-}
-
-/**
- * Maps both the wallet and token balance changes into a map keyed by the
- * public key address of each account.
- */
-export const getBalanceChanges = (
-  transaction: VersionedTransactionResponse | TransactionResponse
-) => {
-  const balanceChanges: Record<string, number> = {}
-  const preTokenBalances: Record<string, bigint> = {}
-  const tokenBalanceChanges: Record<string, bigint> = {}
-
-  const staticAccountKeys = transaction.transaction.message.staticAccountKeys
-  for (let i = 0; i < staticAccountKeys.length; i++) {
-    const pubkey = transaction.transaction.message.staticAccountKeys[i]
-    balanceChanges[pubkey.toBase58()] =
-      (transaction.meta?.postBalances[i] ?? 0) -
-      (transaction.meta?.preBalances[i] ?? 0)
-  }
-  for (const tokenBalance of transaction.meta?.preTokenBalances ?? []) {
-    const account = staticAccountKeys[tokenBalance.accountIndex]
-    if (account) {
-      preTokenBalances[account.toBase58()] = BigInt(
-        tokenBalance.uiTokenAmount.amount
-      )
-    }
-  }
-  for (const tokenBalance of transaction.meta?.postTokenBalances ?? []) {
-    const account = staticAccountKeys[tokenBalance.accountIndex]
-    if (account) {
-      const preTokenBalance = preTokenBalances[account.toBase58()] ?? BigInt(0)
-      const postTokenBalance = BigInt(tokenBalance.uiTokenAmount.amount)
-      const change = postTokenBalance - preTokenBalance
-      tokenBalanceChanges[account.toBase58()] = change
-    }
-  }
-  return {
-    balanceChanges,
-    tokenBalanceChanges
   }
 }

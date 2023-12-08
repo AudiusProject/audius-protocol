@@ -111,6 +111,7 @@ type PageProps = {
   variant?: 'insert' | 'flush'
   size?: 'medium' | 'large'
   containerRef?: MutableRefObject<any>
+  className?: string
   contentClassName?: string
   containerClassName?: string
   fromOpacity?: number
@@ -160,9 +161,11 @@ export const Page = (props: PageProps) => {
         <div
           ref={containerRef}
           style={animProps}
-          className={cn(styles.pageContainer, {
-            [containerClassName ?? '']: !!containerClassName
-          })}
+          className={cn(
+            styles.pageContainer,
+            props.containerClassName,
+            props.className
+          )}
         >
           <Helmet encodeSpecialCharacters={false}>
             {title ? (

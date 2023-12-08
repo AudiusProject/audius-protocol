@@ -21,8 +21,17 @@ export const Box = styled.div<BoxProps>(
     ml,
     mr,
     mb,
+    backgroundColor,
     border,
+    borderTop,
+    borderRight,
+    borderBottom,
+    borderLeft,
     borderRadius,
+    borderTopRightRadius,
+    borderBottomRightRadius,
+    borderBottomLeftRadius,
+    borderTopLeftRadius,
     shadow,
     flex,
     alignSelf,
@@ -53,8 +62,22 @@ export const Box = styled.div<BoxProps>(
       marginLeft: marginL && spacing[marginL],
       marginRight: marginR && spacing[marginR],
       marginBottom: marginB && spacing[marginB],
+      backgroundColor:
+        backgroundColor && theme.color.background[backgroundColor],
       border: border && `1px solid ${color.border[border]}`,
+      borderTop: borderTop && `1px solid ${color.border[borderTop]}`,
+      borderRight: borderRight && `1px solid ${color.border[borderRight]}`,
+      borderBottom: borderBottom && `1px solid ${color.border[borderBottom]}`,
+      borderLeft: borderLeft && `1px solid ${color.border[borderLeft]}`,
       borderRadius: borderRadius && cornerRadius[borderRadius],
+      borderTopRightRadius:
+        borderTopRightRadius && cornerRadius[borderTopRightRadius],
+      borderBottomRightRadius:
+        borderBottomRightRadius && cornerRadius[borderBottomRightRadius],
+      borderBottomLeftRadius:
+        borderBottomLeftRadius && cornerRadius[borderBottomLeftRadius],
+      borderTopLeftRadius:
+        borderTopLeftRadius && cornerRadius[borderTopLeftRadius],
       flex,
       alignSelf
     }

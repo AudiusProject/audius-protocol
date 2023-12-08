@@ -25,3 +25,5 @@ export type USDCPurchaseConfig = {
   minUSDCPurchaseAmountCents: number
   maxUSDCPurchaseAmountCents: number
 }
+
+export type PurchasePage = 'purchase' | 'crypto-transfer'

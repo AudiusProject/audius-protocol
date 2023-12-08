@@ -1,6 +1,5 @@
 import {
   AudiusQueryContextType,
-  HandleCheckStatus,
   MAX_HANDLE_LENGTH,
   signUpFetch
 } from '@audius/common'
@@ -19,69 +18,73 @@ export const errorMessages = {
   missingHandleError: 'Please enter a handle.'
 }
 
-export const generateHandleSchema = (
+export const generateHandleSchema = ({
+  audiusQueryContext,
+  skipReservedHandleCheck = false
+}: {
   audiusQueryContext: AudiusQueryContextType
-) => {
+  skipReservedHandleCheck?: boolean
+}) => {
   return z.object({
     handle: z
       .string()
       .max(MAX_HANDLE_LENGTH)
       .regex(/^[a-zA-Z0-9_.]*$/, errorMessages.badCharacterError)
       .refine(
-        (h) => !restrictedHandles.has(h.toLowerCase()),
+        (handle) => !restrictedHandles.has(handle.toLowerCase()),
         errorMessages.handleTakenError
       )
-      .superRefine(async (h, context) => {
-        let isHandleInUse: boolean
+      .superRefine(async (handle, context) => {
         try {
-          isHandleInUse = await signUpFetch.isHandleInUse(
-            { handle: h },
+          const isHandleInUse = await signUpFetch.isHandleInUse(
+            { handle },
             audiusQueryContext
           )
+
+          if (isHandleInUse) {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: errorMessages.handleTakenError,
+              fatal: true
+            })
+            return z.NEVER
+          }
         } catch {
           context.addIssue({
             code: z.ZodIssueCode.custom,
             message: errorMessages.unknownError
           })
-          return
-        }
-        if (isHandleInUse) {
-          context.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: errorMessages.handleTakenError,
-            fatal: true
-          })
-          return z.NEVER
         }
       })
-      .superRefine(async (h, context) => {
-        let handleReservedStatus: HandleCheckStatus
+      .superRefine(async (handle, context) => {
+        if (skipReservedHandleCheck) return
         try {
-          handleReservedStatus = await signUpFetch.getHandleReservedStatus(
-            { handle: h },
-            audiusQueryContext
-          )
+          const handleReservedStatus =
+            await signUpFetch.getHandleReservedStatus(
+              { handle },
+              audiusQueryContext
+            )
+
+          if (handleReservedStatus === 'twitterReserved') {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: errorMessages.twitterReservedError
+            })
+          } else if (handleReservedStatus === 'instagramReserved') {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: errorMessages.instagramReservedError
+            })
+          } else if (handleReservedStatus === 'tikTokReserved') {
+            context.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: errorMessages.tiktokReservedError
+            })
+          }
         } catch {
           context.addIssue({
             code: z.ZodIssueCode.custom,
             message: errorMessages.unknownError
-          })
-          return
-        }
-        if (handleReservedStatus === 'twitterReserved') {
-          context.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: errorMessages.twitterReservedError
-          })
-        } else if (handleReservedStatus === 'instagramReserved') {
-          context.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: errorMessages.instagramReservedError
-          })
-        } else if (handleReservedStatus === 'tikTokReserved') {
-          context.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: errorMessages.tiktokReservedError
           })
         }
       })

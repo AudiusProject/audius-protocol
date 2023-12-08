@@ -1,6 +1,4 @@
-import { FeatureFlags } from '@audius/common'
-
-import { useFlag } from './useRemoteConfig'
+import { useFeatureFlag, FeatureFlags } from '@audius/common'
 
 export const useIsUSDCEnabled = () =>
-  useFlag(FeatureFlags.USDC_PURCHASES).isEnabled
+  useFeatureFlag(FeatureFlags.USDC_PURCHASES).isEnabled

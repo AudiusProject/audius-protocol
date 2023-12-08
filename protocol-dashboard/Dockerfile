@@ -20,6 +20,7 @@ ADD src ./src
 ADD public ./public
 ADD scripts ./scripts
 ADD types ./types
+RUN chmod +x ./scripts/docker-entrypoint.sh
 
 ENV DASHBOARD_BASE_URL="/dashboard/"
 RUN npm install --legacy-peer-deps

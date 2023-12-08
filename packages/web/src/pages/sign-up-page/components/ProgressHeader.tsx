@@ -1,7 +1,4 @@
 import {
-  Box,
-  Flex,
-  IconAudiusLogoHorizontal,
   IconComponent,
   IconNote,
   IconUser,
@@ -16,8 +13,6 @@ import {
   SIGN_UP_GENRES_PAGE,
   SIGN_UP_HANDLE_PAGE
 } from 'utils/route'
-
-import styles from './ProgressHeader.module.css'
 
 type ProgressHeaderStep = 'customize' | 'genres' | 'artists'
 
@@ -56,19 +51,5 @@ export const ProgressHeader = () => {
       activeStep = 'customize'
   }
 
-  return (
-    <Flex
-      alignItems='center'
-      justifyContent='center'
-      ph='xl'
-      className={styles.container}
-    >
-      <div className={styles.logoContainer}>
-        <IconAudiusLogoHorizontal height={24} width={100} color='subdued' />
-      </div>
-      <Box alignSelf='flex-end'>
-        <SteppedProgress steps={STEPS} activeStep={activeStep} />
-      </Box>
-    </Flex>
-  )
+  return <SteppedProgress steps={STEPS} activeStep={activeStep} />
 }

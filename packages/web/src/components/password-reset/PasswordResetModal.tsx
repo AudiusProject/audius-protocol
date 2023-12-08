@@ -1,17 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Status, accountSelectors } from '@audius/common'
+import { Flex, Text } from '@audius/harmony'
 import { Modal } from '@audius/stems'
-import { connect } from 'react-redux'
-import { Dispatch } from 'redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import EnterPassword from 'components/sign-on/EnterPassword'
-import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
 
 import styles from './PasswordResetModal.module.css'
 import { changePassword } from './store/actions'
 import { getStatus } from './store/selectors'
+
 const { getNeedsAccountRecovery } = accountSelectors
 
 const RESET_REQUIRED_KEY = 'password-reset-required'
@@ -23,17 +22,17 @@ const messages = {
     'Create a password that is secure and easy to remember. Write it down or use a password manager.'
 }
 
-type PasswordResetModalProps = ReturnType<typeof mapStateToProps> &
-  ReturnType<typeof mapDispatchToProps>
-
-const PasswordResetModal = ({
-  isMobile,
-  needsAccountRecovery,
-  status,
-  onChangePassword
-}: PasswordResetModalProps) => {
+export const PasswordResetModal = () => {
+  const dispatch = useDispatch()
+  const needsAccountRecovery = useSelector(getNeedsAccountRecovery)
   const [showModal, setShowModal] = useState(needsAccountRecovery)
   const [isLoading, setIsLoading] = useState(false)
+  const status = useSelector(getStatus)
+
+  const onChangePassword = (email: string, password: string) => {
+    dispatch(changePassword(email, password))
+  }
+
   // When the component mounts, show the modal if the reset key exists
   useEffect(() => {
     const resetRequiredEmail = window.localStorage.getItem(RESET_REQUIRED_KEY)
@@ -87,32 +86,16 @@ const PasswordResetModal = ({
       headerContainerClassName={styles.modalHeader}
       titleClassName={styles.modalTitle}
     >
-      <div className={styles.content}>
-        <div className={styles.helpText}>{messages.helpText}</div>
+      <Flex direction='column' gap='xl' p='l'>
+        <Text variant='body' strength='weak' textAlign='center'>
+          {messages.helpText}
+        </Text>
         <EnterPassword
           continueLabel={messages.continueLabel}
           onSubmit={onSubmit}
-          isMobile={isMobile}
           isLoading={isLoading}
         />
-      </div>
+      </Flex>
     </Modal>
   )
 }
-
-function mapStateToProps(state: AppState) {
-  return {
-    needsAccountRecovery: getNeedsAccountRecovery(state),
-    isMobile: isMobile(),
-    status: getStatus(state)
-  }
-}
-
-function mapDispatchToProps(dispatch: Dispatch) {
-  return {
-    onChangePassword: (email: string, password: string) =>
-      dispatch(changePassword(email, password))
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(PasswordResetModal)

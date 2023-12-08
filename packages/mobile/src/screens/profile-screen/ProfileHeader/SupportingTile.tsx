@@ -10,7 +10,7 @@ import { useSelector } from 'react-redux'
 
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
 import { Text, Tile } from 'app/components/core'
-import { useUserCoverImage } from 'app/components/image/UserCoverImage'
+import { useCoverPhoto } from 'app/components/image/CoverPhoto'
 import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -90,12 +90,12 @@ export const SupportingTile = (props: SupportingTileProps) => {
   const user = useSelector((state) => {
     return getUser(state, { id: supporting.receiver_id })
   })
-  const { handle, name } = user || {}
+  const { user_id, handle, name } = user || {}
   const isTopRank =
     supporting.rank >= 1 && supporting.rank <= TIPPING_TOP_RANK_THRESHOLD
 
   const { source: coverPhotoSource, handleError: handleCoverPhotoError } =
-    useUserCoverImage(user)
+    useCoverPhoto(user_id)
 
   const handlePress = useCallback(() => {
     if (handle) {

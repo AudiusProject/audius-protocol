@@ -6,6 +6,9 @@ export const getPurchaseContentId = (state: CommonState) =>
 export const getPurchaseContentType = (state: CommonState) =>
   state.purchaseContent.contentType
 
+export const getPurchaseContentPage = (state: CommonState) =>
+  state.purchaseContent.page
+
 export const getPurchaseContentFlowStage = (state: CommonState) =>
   state.purchaseContent.stage
 

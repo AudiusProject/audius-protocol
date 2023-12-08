@@ -43,6 +43,13 @@ jobs:
         branches:
           only: main
   - push-docker-image:
+      name: push-es-indexer
+      context: [Vercel, dockerhub]
+      service: es-indexer
+      filters:
+        branches:
+          only: main
+  - push-docker-image:
       name: push-trpc
       context: [Vercel, dockerhub]
       service: trpc
@@ -177,6 +184,17 @@ jobs:
       requires:
         - push-healthz
 
+  - push-arm-image:
+      name: push-uptime-arm
+      context: [Vercel, dockerhub]
+      service: uptime
+      filters:
+        branches:
+          only: main
+      requires:
+        - push-uptime
+
+
   # Deploy audius-protocol `main` branch (stage)
   - deploy-stage-nodes:
       name: deploy-stage-discovery-provider
@@ -192,6 +210,7 @@ jobs:
         - push-comms
         - push-trpc
         - push-protocol-dashboard
+        - push-uptime
         - push-healthz
         # uncomment when arm builds are stable
         # - push-discovery-provider-arm
@@ -203,6 +222,7 @@ jobs:
         # - push-trpc-arm
         # - push-protocol-dashboard-arm
         # - push-healthz-arm
+        # - push-uptime-arm
 
       filters:
         branches:

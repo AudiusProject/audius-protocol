@@ -30,7 +30,6 @@ import { set, get } from 'lodash'
 import { useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { defaultFieldVisibility } from 'pages/track-page/utils'
 import {
   AVAILABILITY_TYPE,
@@ -134,7 +133,7 @@ export const AccessAndSaleTriggerLegacy = (
     [accountUserId, savedPremiumConditions]
   )
 
-  const usdcPurchaseConfig = useUSDCPurchaseConfig(useRemoteVar)
+  const usdcPurchaseConfig = useUSDCPurchaseConfig()
 
   const initialValues: AccessAndSaleFormValues = useMemo(() => {
     const isUsdcGated = isPremiumContentUSDCPurchaseGated(

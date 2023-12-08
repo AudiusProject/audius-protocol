@@ -12,22 +12,23 @@ import {
   PopupMenuItem
 } from '@audius/stems'
 import cn from 'classnames'
+import { Link } from 'react-router-dom'
 
 import HorizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
+import { UnstyledButton } from 'components/unstyled-button/UnstyledButton'
 import {
   AUDIUS_BLOG_LINK,
   AUDIUS_HELP_LINK,
-  AUDIUS_LISTENING_LINK,
+  TRENDING_PAGE,
   AUDIUS_MERCH_LINK,
   AUDIUS_ORG,
-  AUDIUS_SIGN_UP_LINK,
+  SIGN_UP_PAGE,
   DOWNLOAD_LINK
 } from 'utils/route'
 import { useMatchesBreakpoint } from 'utils/useMatchesBreakpoint'
 import zIndex from 'utils/zIndex'
 
 import styles from './NavBanner.module.css'
-import { handleClickRoute } from './handleClickRoute'
 
 const DESKTOP_NAV_BANNER_MIN_WIDTH = 1170
 const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia(
@@ -68,15 +69,6 @@ const NavBanner = (props: NavBannerProps) => {
     const isScrolling = scrollTop > 20
     setIsScrolling(isScrolling)
   }, [])
-
-  const onClickHome = handleClickRoute(
-    AUDIUS_LISTENING_LINK,
-    props.setRenderPublicSite
-  )
-  const onClickSignUp = handleClickRoute(
-    AUDIUS_SIGN_UP_LINK,
-    props.setRenderPublicSite
-  )
 
   useEffect(() => {
     setScrolling()
@@ -141,10 +133,13 @@ const NavBanner = (props: NavBannerProps) => {
             alt='Audius Logo'
           />
         </div>
-        <IconKebabHorizontal
-          className={styles.kebabMenu}
+        <UnstyledButton
           onClick={props.openNavScreen}
-        />
+          data-testid='mobileKebabMenuButton'
+          aria-label='Open Nav Menu'
+        >
+          <IconKebabHorizontal className={styles.kebabMenu} />
+        </UnstyledButton>
       </div>
     )
   }
@@ -158,12 +153,13 @@ const NavBanner = (props: NavBannerProps) => {
     >
       <div className={styles.contentContainer}>
         <div className={styles.leftLogo}>
-          <img
-            alt='Audius Logo'
-            src={HorizontalLogo}
-            className={styles.horizontalLogo}
-            onClick={onClickHome}
-          />
+          <Link to={TRENDING_PAGE}>
+            <img
+              alt='Audius Logo'
+              src={HorizontalLogo}
+              className={styles.horizontalLogo}
+            />
+          </Link>
         </div>
         <div className={styles.linkContainer}>
           <PopupMenu
@@ -209,9 +205,15 @@ const NavBanner = (props: NavBannerProps) => {
             className={styles.popup}
             dismissOnMouseLeave
           />
-          <div onClick={onClickSignUp} className={styles.signUp}>
+          <Link
+            to={SIGN_UP_PAGE}
+            className={styles.signUp}
+            onClick={() => {
+              props.setRenderPublicSite(false)
+            }}
+          >
             {messages.signUp}
-          </div>
+          </Link>
         </div>
       </div>
     </div>

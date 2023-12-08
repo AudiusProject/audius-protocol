@@ -5,13 +5,13 @@ import {
   Name,
   PremiumConditions,
   TrackAvailabilityType,
-  useAccessAndRemixSettings
+  useAccessAndRemixSettings,
+  useFeatureFlag
 } from '@audius/common'
 import { IconCart, IconStars } from '@audius/stems'
 
 import { ExternalLink } from 'components/link'
 import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
-import { useFlag } from 'hooks/useRemoteConfig'
 import { make, track } from 'services/analytics'
 
 import { UsdcPurchaseFields } from './UsdcPurchaseFields'
@@ -52,7 +52,7 @@ export const UsdcPurchaseGatedRadioField = (
     track(make({ eventName: Name.TRACK_UPLOAD_CLICK_USDC_WAITLIST_LINK }))
   }, [])
 
-  const { isEnabled: isUsdcUploadEnabled } = useFlag(
+  const { isEnabled: isUsdcUploadEnabled } = useFeatureFlag(
     FeatureFlags.USDC_PURCHASES_UPLOAD
   )
 

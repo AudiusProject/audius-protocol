@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { GENRES, Genre, convertGenreLabelToValue } from '@audius/common'
-import { Button, Flex, IconArrowRight, Text } from '@audius/harmony'
+import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
 
@@ -12,7 +12,7 @@ import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { SIGN_UP_ARTISTS_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
-import { ContinueFooter } from '../components/ContinueFooter'
+import { Heading, Page, PageFooter, ScrollView } from '../components/layout'
 
 const messages = {
   header: 'Select Your Genres',
@@ -47,75 +47,49 @@ export const SelectGenrePage = () => {
   const { isMobile } = useMedia()
 
   return (
-    <Flex direction='column' h='100%' gap={isMobile ? '2xl' : '4xl'}>
-      <AccountHeader />
-      <Flex flex={1} direction='column' gap={isMobile ? 'xl' : '2xl'}>
-        <Flex direction='column' gap={isMobile ? 's' : 'l'} ph='l'>
-          <Text
-            variant='heading'
-            size={isMobile ? 'm' : 'l'}
-            color='heading'
-            css={{ textAlign: isMobile ? 'left' : 'center' }}
-            id='genre-header'
+    <ScrollView gap={isMobile ? '2xl' : '3xl'}>
+      <AccountHeader mode='viewing' />
+      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+        {({ values }) => (
+          <Page
+            as={Form}
+            centered
+            css={{ paddingTop: 0 }}
+            transition='horizontal'
           >
-            {messages.header}
-          </Text>
-          <Text
-            variant='body'
-            size={isMobile ? 'm' : 'l'}
-            css={{ textAlign: isMobile ? 'left' : 'center' }}
-          >
-            {messages.description}
-          </Text>
-        </Flex>
-
-        <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-          {({ values }) => (
+            <Heading
+              heading={messages.header}
+              description={messages.description}
+              alignItems={!isMobile ? 'center' : undefined}
+            />
             <Flex
-              as={Form}
-              alignItems={isMobile ? 'flex-start' : 'center'}
-              direction='column'
-              flex={1}
-              justifyContent='space-between'
+              justifyContent={isMobile ? 'flex-start' : 'center'}
+              alignItems='flex-start'
+              gap='s'
+              wrap='wrap'
             >
-              <Flex
-                role='group'
-                aria-labelledby='genre-header'
-                css={{ maxWidth: 608 }}
-                justifyContent={isMobile ? 'flex-start' : 'center'}
-                alignItems='flex-start'
-                gap='s'
-                wrap='wrap'
-                mb='4xl'
-                ph='l'
-              >
-                {genres.map((genre) => {
-                  const { label, value } = genre
-                  return (
-                    <SelectablePillField
-                      key={label}
-                      name='genres'
-                      label={label}
-                      value={value}
-                      size='large'
-                      type='checkbox'
-                    />
-                  )
-                })}
-              </Flex>
-              <ContinueFooter>
-                <Button
-                  type='submit'
-                  iconRight={IconArrowRight}
-                  disabled={values.genres.length === 0}
-                >
-                  {messages.continue}
-                </Button>
-              </ContinueFooter>
+              {genres.map((genre) => {
+                const { label, value } = genre
+                return (
+                  <SelectablePillField
+                    key={label}
+                    name='genres'
+                    label={label}
+                    value={value}
+                    size='large'
+                    type='checkbox'
+                  />
+                )
+              })}
             </Flex>
-          )}
-        </Formik>
-      </Flex>
-    </Flex>
+            <PageFooter
+              centered
+              sticky
+              buttonProps={{ disabled: values.genres.length === 0 }}
+            />
+          </Page>
+        )}
+      </Formik>
+    </ScrollView>
   )
 }

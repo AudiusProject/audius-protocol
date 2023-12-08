@@ -1,14 +1,15 @@
-import splToken from '@solana/spl-token'
-import solanaWeb3, {
+import * as splToken from '@solana/spl-token'
+import {
   Connection,
   Keypair,
   PublicKey,
   LAMPORTS_PER_SOL,
   TransactionInstruction
 } from '@solana/web3.js'
+import * as solanaWeb3 from '@solana/web3.js'
 import BN from 'bn.js'
 
-import { AUDIO_DECMIALS, WAUDIO_DECMIALS } from '../../constants'
+import { AUDIO_DECIMALS, WAUDIO_DECIMALS } from '../../constants'
 import { Logger, Nullable, Utils } from '../../utils'
 import type { IdentityService } from '../identity'
 import type { Web3Manager } from '../web3Manager'
@@ -355,14 +356,14 @@ export class SolanaWeb3Manager {
     ethAddress?: string
     mint?: MintName
   } = {}) {
-    if (!this.web3Manager) {
+    if (!ethAddress && !this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
       )
     }
 
     const derivationSourceAddress =
-      ethAddress ?? this.web3Manager.getWalletAddress()
+      ethAddress ?? this.web3Manager!.getWalletAddress()
 
     const bank = await getBankAccountAddress(
       derivationSourceAddress,
@@ -409,7 +410,7 @@ export class SolanaWeb3Manager {
       }
 
       // Multiply by 10^10 to maintain same decimals as eth $AUDIO
-      const decimals = AUDIO_DECMIALS - WAUDIO_DECMIALS
+      const decimals = AUDIO_DECIMALS - WAUDIO_DECIMALS
       return tokenAccount.amount * BigInt('1'.padEnd(decimals + 1, '0'))
     } catch (e) {
       return null

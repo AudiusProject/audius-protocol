@@ -1,10 +1,12 @@
-import cn from 'classnames'
 import { useCallback, useEffect, useState, useRef } from 'react'
+
+import { ThemeProvider } from '@audius/harmony'
+import cn from 'classnames'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { CSSTransition } from 'react-transition-group'
-import { useParams } from 'react-router-dom'
-import { useSearchParams } from "react-router-dom"
 
 import '@audius/stems/dist/stems.css'
+import '@audius/harmony/dist/avenir.css'
 import '@audius/harmony/dist/harmony.css'
 
 import {
@@ -158,7 +160,6 @@ const App = (props) => {
   const searchParams = useSearchParams()
   const [didError, setDidError] = useState(false) // General errors
   const [did404, setDid404] = useState(false) // 404s indicate content was deleted
-  const [isBlocked, setIsBlocked] = useState(false) // Whether or not the content was blocked
   const [requestState, setRequestState] = useState(null) // Parsed request state
   const [isRetrying, setIsRetrying] = useState(false) // Currently retrying?
 
@@ -181,8 +182,7 @@ const App = (props) => {
   }, [])
 
   // TODO: pull these out into separate functions?
-  // Request metadata from GA, computing
-  // dominant color on success.
+  // Request metadata, compute dominant color on success.
   const requestMetadata = useCallback(async (request) => {
     onGoingRequest.current = true
 
@@ -314,7 +314,8 @@ const App = (props) => {
   useEffect(() => {
     const request = getRequestDataFromURL({
       path: props.path,
-      type: params.type,
+      // Type comes from the url if present, otherwise pull from the component props
+      type: params.type || props.type,
       flavor: searchParams[0]?.get('flavor') ?? undefined,
       matches: params
     })
@@ -356,7 +357,7 @@ const App = (props) => {
   const mobileWebTwitter = isMobileWebTwitter(requestState?.isTwitter)
 
   // The idea is to show nothing (null) until either we
-  // get metadata back from GA, or we pass the loading threshold
+  // get metadata back or we pass the loading threshold
   // and display the loading screen.
   const renderPlayerContainer = () => {
     if (didError) {
@@ -365,12 +366,7 @@ const App = (props) => {
 
     // Tiny variant renders its own deleted content
     if (did404) {
-      return (
-        <DeletedContent
-          flavor={requestState.playerFlavor}
-          isBlocked={isBlocked}
-        />
-      )
+      return <DeletedContent flavor={requestState.playerFlavor} />
     }
 
     if (showLoadingAnimation && !isTiny) {
@@ -395,31 +391,31 @@ const App = (props) => {
           timeout={1000}
         >
           <>
-          {!tracksResponse ? null : (
-            <TrackPlayerContainer
-              track={tracksResponse}
-              flavor={requestState.playerFlavor}
-              isTwitter={requestState.isTwitter}
-              backgroundColor={dominantColor.primary}
-            />
-          )}
-          {!collectionsResponse ? null : (
-            <CollectionPlayerContainer
-              collection={collectionsResponse}
-              flavor={requestState.playerFlavor}
-              isTwitter={requestState.isTwitter}
-              backgroundColor={dominantColor.primary}
-              rowBackgroundColor={dominantColor.secondary}
-            />
-          )}
-          {collectiblesResponse && (
-            <CollectiblesPlayerContainer
-              collectiblesInfo={collectiblesResponse}
-              flavor={requestState.playerFlavor}
-              isTwitter={requestState.isTwitter}
-              backgroundColor={dominantColor.primary}
-            />
-          )}
+            {!tracksResponse ? null : (
+              <TrackPlayerContainer
+                track={tracksResponse}
+                flavor={requestState.playerFlavor}
+                isTwitter={requestState.isTwitter}
+                backgroundColor={dominantColor.primary}
+              />
+            )}
+            {!collectionsResponse ? null : (
+              <CollectionPlayerContainer
+                collection={collectionsResponse}
+                flavor={requestState.playerFlavor}
+                isTwitter={requestState.isTwitter}
+                backgroundColor={dominantColor.primary}
+                rowBackgroundColor={dominantColor.secondary}
+              />
+            )}
+            {collectiblesResponse && (
+              <CollectiblesPlayerContainer
+                collectiblesInfo={collectiblesResponse}
+                flavor={requestState.playerFlavor}
+                isTwitter={requestState.isTwitter}
+                backgroundColor={dominantColor.primary}
+              />
+            )}
           </>
         </CSSTransition>
       )
@@ -452,6 +448,7 @@ const App = (props) => {
         listenOnAudiusURL={listenOnAudiusURL}
         flavor={flavor}
         isMobileWebTwitter={mobileWebTwitter}
+        premiumConditions={tracksResponse?.premiumConditions}
       />
     )
   }
@@ -474,14 +471,16 @@ const App = (props) => {
         }
       )}
     >
-      <ToastContextProvider>
-        <PauseContextProvider>
-          <CardContextProvider>
-            {renderPausePopover()}
-            {renderPlayerContainer()}
-          </CardContextProvider>
-        </PauseContextProvider>
-      </ToastContextProvider>
+      <ThemeProvider theme='day'>
+        <ToastContextProvider>
+          <PauseContextProvider>
+            <CardContextProvider>
+              {renderPausePopover()}
+              {renderPlayerContainer()}
+            </CardContextProvider>
+          </PauseContextProvider>
+        </ToastContextProvider>
+      </ThemeProvider>
     </div>
   )
 }

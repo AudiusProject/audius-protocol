@@ -28,10 +28,10 @@ export type TextLinkProps = TextLinkTextProps &
     textVariant?: TextProps['variant']
 
     /**
-     * If true, prevent the click event from being propagated to other elements.
-     * @default true
+     * When true, always show the link underline. This can help emphasize that
+     * a text-link is present when next to other text.
      */
-    stopPropagation?: boolean
+    showUnderline?: boolean
 
     /**
      * Mark as true if the link destination is outside of the app. Causes the
@@ -39,11 +39,4 @@ export type TextLinkProps = TextLinkTextProps &
      * @default false
      */
     isExternal?: boolean
-
-    // Internal props
-
-    /**
-     * @ignore: This prop is for internal use only
-     */
-    _isHovered?: boolean
   }

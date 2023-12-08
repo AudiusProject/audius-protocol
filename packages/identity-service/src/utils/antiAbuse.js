@@ -6,7 +6,7 @@ const models = require('../models')
 const aaoEndpoint =
   config.get('aaoEndpoint') || 'https://antiabuseoracle.audius.co'
 
-const allowRules = new Set([14, 17])
+const allowRules = new Set([-17, -18])
 const blockRelayAbuseErrorCodes = new Set([0, 8, 10, 13, 15, 18])
 const blockNotificationsErrorCodes = new Set([7, 9])
 const blockEmailsErrorCodes = new Set([0, 1, 2, 3, 4, 8, 10, 13, 15])

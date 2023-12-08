@@ -101,6 +101,7 @@ const BasicForm = (props) => {
             imageProcessingError={props.imageProcessingError}
             onOpenPopup={props.onOpenArtworkPopup}
             onClosePopup={props.onCloseArtworkPopup}
+            size='large'
           />
         </div>
         <div className={styles.form}>

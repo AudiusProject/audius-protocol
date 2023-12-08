@@ -8,7 +8,8 @@ import {
   WidthSizes,
   SquareSizes,
   formatCount,
-  imageCoverPhotoBlank
+  imageCoverPhotoBlank,
+  imageProfilePicEmpty
 } from '@audius/common'
 import {
   Button,
@@ -34,7 +35,7 @@ import FollowsYouBadge from 'components/user-badges/FollowsYouBadge'
 import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import UserBadges from 'components/user-badges/UserBadges'
 import { UserGeneratedText } from 'components/user-generated-text'
-import { useUserCoverPhoto } from 'hooks/useUserCoverPhoto'
+import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { FOLLOWING_USERS_ROUTE, FOLLOWERS_USERS_ROUTE } from 'utils/route'
 
@@ -196,11 +197,11 @@ const ProfileHeader = ({
     }
   }, [website, donation, hasEllipsis, setHasEllipsis])
 
-  const coverPhoto = useUserCoverPhoto(
+  let { source: coverPhoto, shouldBlur } = useCoverPhoto(
     userId,
-    isDeactivated ? null : coverPhotoSizes,
     WidthSizes.SIZE_2000
   )
+  coverPhoto = isDeactivated ? imageProfilePicEmpty : coverPhoto
   let coverPhotoStyle = {}
   if (coverPhoto === imageCoverPhotoBlank) {
     coverPhotoStyle = {
@@ -298,6 +299,7 @@ const ProfileHeader = ({
         wrapperClassName={cn(styles.coverPhoto, {
           [styles.isEditing]: isEditing
         })}
+        useBlur={shouldBlur}
       >
         {isArtist && !isEditing && !isDeactivated ? (
           <BadgeArtist className={styles.badgeArtist} />

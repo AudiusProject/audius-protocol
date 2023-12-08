@@ -1,10 +1,12 @@
-import BN from "bn.js"
-import { BNWei } from "models/Wallet"
-import { useMemo } from "react"
-import { useSelector } from "react-redux"
-import { getAccountUser } from "store/account/selectors"
-import { getAccountTotalBalance } from "store/wallet/selectors"
-import { isNullOrUndefined } from "utils/typeUtils"
+import { useMemo } from 'react'
+
+import BN from 'bn.js'
+import { useSelector } from 'react-redux'
+
+import { BNWei } from 'models/Wallet'
+import { getAccountUser } from 'store/account/selectors'
+import { getAccountTotalBalance } from 'store/wallet/selectors'
+import { isNullOrUndefined } from 'utils/typeUtils'
 
 /**
  * Pulls balances from account and wallet selectors. Will prefer the wallet

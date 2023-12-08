@@ -5,6 +5,7 @@ import { call, put, race, select, take } from 'typed-redux-saga'
 import { FavoriteSource, Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { ID } from 'models/Identifiers'
+import { PurchaseMethod } from 'models/PurchaseContent'
 import { isPremiumContentUSDCPurchaseGated } from 'models/Track'
 import { BNUSDC } from 'models/Wallet'
 import {
@@ -13,7 +14,6 @@ import {
 } from 'services/audius-backend/solana'
 import { FeatureFlags } from 'services/remote-config/feature-flags'
 import { accountSelectors } from 'store/account'
-import { getAccountUser } from 'store/account/selectors'
 import {
   buyCryptoCanceled,
   buyCryptoFailed,
@@ -162,29 +162,74 @@ function* pollForPurchaseConfirmation({
   })
 }
 
-function* doStartPurchaseContentFlow({
-  payload: {
-    extraAmount,
-    extraAmountPreset,
-    contentId,
-    contentType = ContentType.TRACK
-  }
-}: ReturnType<typeof startPurchaseContentFlow>) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+/** Attempts to purchase the requested amount of USDC, will throw on cancellation or failure */
+function* purchaseUSDC({ amount }: { amount: BNUSDC }) {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isBuyUSDCViaSolEnabled = yield* call(
     getFeatureEnabled,
     FeatureFlags.BUY_USDC_VIA_SOL
   )
-  const usdcConfig = yield* call(getBuyUSDCRemoteConfig)
-  const reportToSentry = yield* getContext('reportToSentry')
-  const { track, make, identify } = yield* getContext('analytics')
-  const user = yield* select(getAccountUser)
-  if (user) {
-    yield* call(identify, user.handle, {
-      isBuyUSDCViaSolEnabled
+  const roundedAmount = ceilingBNUSDCToNearestCent(amount)
+    .div(BN_USDC_CENT_WEI)
+    .toNumber()
+
+  let result: RaceStatusResult | null = null
+  if (isBuyUSDCViaSolEnabled) {
+    yield* put(
+      buyCryptoViaSol({
+        // expects "friendly" amount, so dollars
+        amount: roundedAmount / 100.0,
+        mint: 'usdc',
+        provider: OnRampProvider.STRIPE
+      })
+    )
+    result = yield* race({
+      succeeded: take(buyCryptoSucceeded),
+      failed: take(buyCryptoFailed),
+      canceled: take(buyCryptoCanceled)
+    })
+  } else {
+    yield* put(
+      onrampOpened({
+        provider: USDCOnRampProvider.STRIPE,
+        purchaseInfo: {
+          desiredAmount: roundedAmount
+        }
+      })
+    )
+
+    result = yield* race({
+      succeeded: take(buyUSDCFlowSucceeded),
+      canceled: take(onrampCanceled),
+      failed: take(buyUSDCFlowFailed)
     })
   }
+  // Return early for cancellation
+  if (result.canceled) {
+    throw new PurchaseContentError(
+      PurchaseErrorCode.Canceled,
+      'User canceled onramp'
+    )
+  }
+  // throw errors out to the shared handler below
+  if (result.failed) {
+    throw result.failed.payload.error
+  }
+}
+
+function* doStartPurchaseContentFlow({
+  payload: {
+    extraAmount,
+    extraAmountPreset,
+    purchaseMethod,
+    contentId,
+    contentType = ContentType.TRACK
+  }
+}: ReturnType<typeof startPurchaseContentFlow>) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const usdcConfig = yield* call(getBuyUSDCRemoteConfig)
+  const reportToSentry = yield* getContext('reportToSentry')
+  const { track, make } = yield* getContext('analytics')
 
   const { price, title, artistInfo } = yield* call(getContentInfo, {
     contentId,
@@ -195,6 +240,7 @@ function* doStartPurchaseContentFlow({
     price: price / 100,
     contentId,
     contentType,
+    purchaseMethod,
     contentName: title,
     artistHandle: artistInfo.handle,
     isVerifiedArtist: artistInfo.is_verified,
@@ -234,62 +280,29 @@ function* doStartPurchaseContentFlow({
     const extraAmountBN = new BN(extraAmount ?? 0).mul(BN_USDC_CENT_WEI)
     const totalAmountDueCentsBN = priceBN.add(extraAmountBN) as BNUSDC
 
-    const balanceNeeded = getBalanceNeeded(
-      totalAmountDueCentsBN,
-      new BN(initialBalance.toString()) as BNUSDC,
-      usdcConfig.minUSDCPurchaseAmountCents
-    )
-
-    // buy USDC if necessary
-    if (balanceNeeded.gtn(0)) {
-      const balanceNeededCents = ceilingBNUSDCToNearestCent(balanceNeeded)
-        .div(BN_USDC_CENT_WEI)
-        .toNumber()
+    if (purchaseMethod === PurchaseMethod.CARD) {
+      // Transition to 'buying USDC' stage
       yield* put(buyUSDC())
-      let result: RaceStatusResult | null = null
-      if (isBuyUSDCViaSolEnabled) {
-        yield* put(
-          buyCryptoViaSol({
-            // expects "friendly" amount, so dollars
-            amount: balanceNeededCents / 100.0,
-            mint: 'usdc',
-            provider: OnRampProvider.STRIPE
-          })
+      yield* call(purchaseUSDC, { amount: totalAmountDueCentsBN })
+    }
+    // Manual transfer is a special case of existing balance. We expect the
+    // transfer to have occurred before this saga is invoked
+    else {
+      // No work needed here other than to check that the balance is sufficient
+      const balanceNeeded = getBalanceNeeded(
+        totalAmountDueCentsBN,
+        new BN(initialBalance.toString()) as BNUSDC,
+        usdcConfig.minUSDCPurchaseAmountCents
+      )
+      if (balanceNeeded.gtn(0)) {
+        throw new PurchaseContentError(
+          PurchaseErrorCode.InsufficientBalance,
+          'Unexpected insufficient balance to complete purchase'
         )
-        result = yield* race({
-          succeeded: take(buyCryptoSucceeded),
-          failed: take(buyCryptoFailed),
-          canceled: take(buyCryptoCanceled)
-        })
-      } else {
-        yield* put(
-          onrampOpened({
-            provider: USDCOnRampProvider.STRIPE,
-            purchaseInfo: {
-              desiredAmount: balanceNeededCents
-            }
-          })
-        )
-
-        result = yield* race({
-          succeeded: take(buyUSDCFlowSucceeded),
-          canceled: take(onrampCanceled),
-          failed: take(buyUSDCFlowFailed)
-        })
-      }
-      // Return early for failure or cancellation
-      if (result.canceled) {
-        yield* put(purchaseCanceled())
-        return
-      }
-      if (result.failed) {
-        yield* put(
-          purchaseContentFlowFailed({ error: result.failed.payload.error })
-        )
-        return
       }
     }
 
+    // Transition to 'purchasing' stage
     yield* put(usdcBalanceSufficient())
 
     const { blocknumber, splits } = yield* getPurchaseConfig({
@@ -341,6 +354,14 @@ function* doStartPurchaseContentFlow({
       e instanceof BuyCryptoError
         ? e
         : new PurchaseContentError(PurchaseErrorCode.Unknown, `${e}`)
+
+    // Nested sagas will throw for cancellation, but we don't need to log that as
+    // an error, just return early
+    if (error.code === PurchaseErrorCode.Canceled) {
+      yield* put(purchaseCanceled())
+      return
+    }
+
     yield* call(reportToSentry, {
       level: ErrorLevel.Error,
       error,

@@ -49,6 +49,7 @@ import { RewardClaimedToast } from 'components/reward-claimed-toast/RewardClaime
 import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
+import { USDCBalanceFetcher } from 'components/usdc-balance-fetcher/USDCBalanceFetcher'
 import {
   MainContentContext,
   MainContentContextProvider,
@@ -75,6 +76,7 @@ import HistoryPage from 'pages/history-page/HistoryPage'
 import NotFoundPage from 'pages/not-found-page/NotFoundPage'
 import NotificationUsersPage from 'pages/notification-users-page/NotificationUsersPage'
 import { PayAndEarnPage } from 'pages/pay-and-earn-page/PayAndEarnPage'
+import { TableType } from 'pages/pay-and-earn-page/types'
 import { PremiumTracksPage } from 'pages/premium-tracks-page/PremiumTracksPage'
 import ProfilePage from 'pages/profile-page/ProfilePage'
 import RemixesPage from 'pages/remixes-page/RemixesPage'
@@ -84,8 +86,6 @@ import SavedPage from 'pages/saved-page/SavedPage'
 import SearchPage from 'pages/search-page/SearchPage'
 import SettingsPage from 'pages/settings-page/SettingsPage'
 import { SubPage } from 'pages/settings-page/components/mobile/SettingsPage'
-import { SignInPage } from 'pages/sign-in-page'
-import { SignUpRootPage } from 'pages/sign-up-page'
 import SmartCollectionPage from 'pages/smart-collection/SmartCollectionPage'
 import SupportingPage from 'pages/supporting-page/SupportingPage'
 import TopSupportersPage from 'pages/top-supporters-page/TopSupportersPage'
@@ -138,8 +138,6 @@ import {
   TRACK_PAGE,
   TRACK_REMIXES_PAGE,
   PROFILE_PAGE,
-  SIGN_IN_PAGE,
-  SIGN_UP_PAGE,
   authenticatedRoutes,
   EMPTY_PAGE,
   REPOSTING_USERS_ROUTE,
@@ -176,8 +174,10 @@ import {
   CHAT_PAGE,
   PROFILE_PAGE_AI_ATTRIBUTED_TRACKS,
   EXPLORE_PREMIUM_TRACKS_PAGE,
-  SIGN_UP_START_PAGE,
-  PAYMENTS_PAGE
+  PAYMENTS_PAGE,
+  WITHDRAWALS_PAGE,
+  PURCHASES_PAGE,
+  SALES_PAGE
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
@@ -190,11 +190,6 @@ const { getTheme } = themeSelectors
 
 const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
   accountSelectors
-
-const ConnectedMusicConfetti = lazy(() =>
-  import('components/music-confetti/ConnectedMusicConfetti')
-)
-const SignOn = lazy(() => import('pages/sign-on/SignOn'))
 
 const UploadPage = lazy(() => import('pages/upload-page'))
 const Modals = lazy(() => import('pages/modals/Modals'))
@@ -418,13 +413,7 @@ class WebPlayer extends Component {
   }
 
   render() {
-    const {
-      theme,
-      incrementScroll,
-      decrementScroll,
-      userHandle,
-      isSignInRedesignEnabled
-    } = this.props
+    const { theme, incrementScroll, decrementScroll, userHandle } = this.props
 
     const {
       showWebUpdateBanner,
@@ -478,6 +467,7 @@ class WebPlayer extends Component {
           ) : null}
         </AppBannerWrapper>
         {this.props.isChatEnabled ? <ChatListener /> : null}
+        <USDCBalanceFetcher />
         <div className={cn(styles.app, { [styles.mobileApp]: isMobileClient })}>
           {this.props.showCookieBanner ? <CookieBanner /> : null}
           <Notice />
@@ -512,26 +502,6 @@ class WebPlayer extends Component {
                   path={'/fb/share'}
                   render={(props) => <FbSharePage />}
                 />
-
-                <Route exact path={SIGN_IN_PAGE} isMobile={isMobileClient}>
-                  {isSignInRedesignEnabled ? (
-                    <SignInPage />
-                  ) : (
-                    <SignOn signIn initialPage={initialPage} />
-                  )}
-                </Route>
-                <Route exact path={SIGN_UP_PAGE} isMobile={isMobileClient}>
-                  {isSignInRedesignEnabled ? (
-                    <Redirect to={SIGN_UP_START_PAGE} />
-                  ) : (
-                    <SignOn signIn={false} initialPage={initialPage} />
-                  )}
-                </Route>
-                {isSignInRedesignEnabled ? (
-                  <Route path={SIGN_UP_PAGE} isMobile={isMobileClient}>
-                    <SignUpRootPage />
-                  </Route>
-                ) : null}
                 <Route
                   exact
                   path={FEED_PAGE}
@@ -742,6 +712,36 @@ class WebPlayer extends Component {
                   path={DASHBOARD_PAGE}
                   isMobile={isMobileClient}
                   component={DashboardPage}
+                />
+                <Route
+                  exact
+                  path={WITHDRAWALS_PAGE}
+                  isMobile={isMobileClient}
+                  render={(props) => (
+                    <PayAndEarnPage
+                      {...props}
+                      tableView={TableType.WITHDRAWALS}
+                    />
+                  )}
+                />
+                <Route
+                  exact
+                  path={PURCHASES_PAGE}
+                  isMobile={isMobileClient}
+                  render={(props) => (
+                    <PayAndEarnPage
+                      {...props}
+                      tableView={TableType.PURCHASES}
+                    />
+                  )}
+                />
+                <Route
+                  exact
+                  path={SALES_PAGE}
+                  isMobile={isMobileClient}
+                  render={(props) => (
+                    <PayAndEarnPage {...props} tableView={TableType.SALES} />
+                  )}
                 />
                 <Route
                   exact
@@ -1000,8 +1000,7 @@ const mapStateToProps = (state) => ({
   signOnStatus: getSignOnStatus(state),
   theme: getTheme(state),
   showCookieBanner: getShowCookieBanner(state),
-  isChatEnabled: getFeatureEnabled(FeatureFlags.CHAT_ENABLED),
-  isSignInRedesignEnabled: getFeatureEnabled(FeatureFlags.SIGN_UP_REDESIGN)
+  isChatEnabled: getFeatureEnabled(FeatureFlags.CHAT_ENABLED)
 })
 
 const mapDispatchToProps = (dispatch) => ({

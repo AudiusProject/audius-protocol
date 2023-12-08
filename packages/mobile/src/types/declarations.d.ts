@@ -1,16 +1,13 @@
 /// <reference types="@testing-library/jest-native" />
+
 /* eslint-disable import/order, import/no-duplicates */
 
 declare module 'fxa-common-password-list'
 declare module 'react-native-static-server'
 
 declare module '*.svg' {
-  import type { SvgProps } from 'react-native-svg'
-  const content: React.FC<
-    SvgProps & {
-      fillSecondary?: string
-    }
-  >
+  import type { Icon } from '@audius/harmony-native'
+  const content: Icon
   export default content
 }
 
@@ -21,6 +18,12 @@ declare module '*.png' {
 }
 
 declare module '*.jpg' {
+  import type { ImageSourcePropType } from 'react-native'
+  const value: ImageSourcePropType
+  export default value
+}
+
+declare module '*.jpeg' {
   import type { ImageSourcePropType } from 'react-native'
   const value: ImageSourcePropType
   export default value

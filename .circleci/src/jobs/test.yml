@@ -1,12 +1,14 @@
 parameters:
   service:
-    description: "Service to test"
+    description: 'Service to test'
     type: string
 machine: true
 resource_class: audiusproject/gcp-n2-standard-4
+working_directory: ~/audius-protocol
 steps:
-  - checkout:
-      path: '~/audius-protocol'
+  - checkout
+  - attach_workspace:
+      at: ./
   - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
   - run:
       name: test run "<< parameters.service >>"

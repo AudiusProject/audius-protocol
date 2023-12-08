@@ -108,7 +108,7 @@ If you still run into issues, you may execute a `docker system prune` to free ad
 
 ## Docker services
 
-- Every Docker service is defined in one of the audius-protocol root-level .yml files (e.g., `docker-compose.discovery.yml` for services related to Discovery Node), and then it's imported into `docker-compose.yml` using [extends](https://docs.docker.com/compose/extends/#understand-the-extends-configuration) syntax
+- Every Docker service is defined in one of the audius-protocol root-level .yml files (e.g., `docker-compose.discovery.prod.yml` for services related to Discovery Node), and then it's imported into `docker-compose.yml` using [extends](https://docs.docker.com/compose/extends/#understand-the-extends-configuration) syntax
   - This pattern prevents the top-level `docker-compose.yml` file from growing too large and allows every service to have standardized logging, `extra_hosts` (allows the containers to talk to each other), and memory limits (makes `docker stats` more readable) by using the `<<: *common` property. This property is YAML's "merge key" syntax which essentially adds every field from the `common` variable defined at the top of the file
   - `docker-compose.test.yml` also imports `docker-compose.yml` services for building images and testing in CI
 
@@ -122,8 +122,8 @@ If you still run into issues, you may execute a `docker system prune` to free ad
 
 ## Adding a service
 
-1. Configure the service in its own .yml file, either using an existing one (e.g., use `docker-compose.discovery.yml` if it's a Discovery-related service) or by creating a new one
-   - The typical pattern here is to have a `Dockerfile` in the service's directory, and then when configuring the service (e.g., in top-level `docker-compose.discovery.yml`) use:
+1. Configure the service in its own .yml file, either using an existing one (e.g., use `docker-compose.discovery.prod.yml` if it's a Discovery-related service) or by creating a new one
+   - The typical pattern here is to have a `Dockerfile` in the service's directory, and then when configuring the service (e.g., in top-level `docker-compose.discovery.prod.yml`) use:
      ```
      service-name:
        build:

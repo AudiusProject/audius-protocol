@@ -1,192 +1,179 @@
-import { useCallback, useContext, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 
-import { AudiusQueryContext, useDebouncedCallback } from '@audius/common'
-import {
-  Box,
-  Button,
-  Flex,
-  IconArrowRight,
-  PlainButton,
-  PlainButtonType,
-  Text
-} from '@audius/harmony'
-import { Form, Formik, FormikProps, useFormikContext } from 'formik'
-import { isEmpty } from 'lodash'
+import { useAudiusQueryContext, socialMediaMessages } from '@audius/common'
+import { Divider, Flex, IconVerified, Paper, Text } from '@audius/harmony'
+import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
-import TwitterLogin from 'react-twitter-auth'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { setValueField } from 'common/store/pages/signon/actions'
-import { getHandleField } from 'common/store/pages/signon/selectors'
-import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
-import { useNavigateToPage } from 'hooks/useNavigateToPage'
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-import { SIGN_UP_FINISH_PROFILE_PAGE, SIGN_UP_PASSWORD_PAGE } from 'utils/route'
-
-import { ContinueFooter } from '../components/ContinueFooter'
 import {
-  generateHandleSchema,
-  errorMessages as handleErrorMessages
-} from '../utils/handleSchema'
+  getHandleField,
+  getLinkedSocialOnFirstPage
+} from 'common/store/pages/signon/selectors'
+import { ToastContext } from 'components/toast/ToastContext'
+import { useMedia } from 'hooks/useMedia'
+import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import {
+  SIGN_UP_CREATE_LOGIN_DETAILS,
+  SIGN_UP_FINISH_PROFILE_PAGE,
+  SIGN_UP_REVIEW_HANDLE_PAGE
+} from 'utils/route'
 
-import styles from './PickHandlePage.module.css'
+import { HandleField } from '../components/HandleField'
+import { OutOfText } from '../components/OutOfText'
+import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
+import { Heading, Page, PageFooter } from '../components/layout'
+import { generateHandleSchema } from '../utils/handleSchema'
 
 const messages = {
-  pickYourHandle: 'Pick Your Handle',
-  outOf: 'of',
-  handleDescription:
+  title: 'Pick Your Handle',
+  description:
     'This is how others find and tag you. It is totally unique to you & cannot be changed later.',
   handle: 'Handle',
-  continue: 'Continue',
-  linkToClaim: 'Link to claim.',
-  goBack: 'Go Back',
-  ...handleErrorMessages
+  or: 'or',
+  claimHandleHeaderPrefix: 'Claim Your Verified',
+  claimHandleDescription:
+    'Verify your Audius account by linking a verified social media account.',
+  claimHandleHeadsUp:
+    'Heads up! 👋 Picking a handle that doesn’t match your verified account cannot be undone later.'
 }
 
 type PickHandleValues = {
   handle: string
 }
 
-const HandleField = () => {
-  const {
-    values,
-    validateForm,
-    errors: { handle: error }
-  } = useFormikContext<PickHandleValues>()
-  const debouncedValidate = useDebouncedCallback(
-    validateForm,
-    [validateForm],
-    1000
-  )
-  useEffect(() => {
-    debouncedValidate(values)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedValidate, values.handle])
+type SocialMediaSectionProps = {
+  onCompleteSocialMediaLogin: (info: {
+    requiresReview: boolean
+    handle: string
+    platform: 'twitter' | 'instagram' | 'tiktok'
+  }) => void
+}
 
-  let helperText: React.ReactNode = error
-
-  // TODO: Finish this + other social linking:
-  if (error === messages.twitterReservedError) {
-    helperText = (
-      <>
-        {messages.twitterReservedError}
-        <TwitterLogin
-          onFailure={() => {}}
-          onSuccess={() => {}}
-          requestTokenUrl={`${audiusBackendInstance.identityServiceUrl}/twitter`}
-          loginUrl={`${audiusBackendInstance.identityServiceUrl}/twitter/callback`}
-          // @ts-expect-error
-          className={styles.hideTwitterButton}
-        >
-          {messages.linkToClaim}
-        </TwitterLogin>
-      </>
-    )
-  }
-
+const SocialMediaSection = ({
+  onCompleteSocialMediaLogin
+}: SocialMediaSectionProps) => {
+  const { isMobile } = useMedia()
   return (
-    <HarmonyTextField
-      name='handle'
-      label={messages.handle}
-      error={!!error && !isEmpty(values.handle)}
-      helperText={!!error && !isEmpty(values.handle) ? helperText : undefined}
-      startAdornmentText='@'
-      placeholder={messages.handle}
-      transformValue={(value) => value.replace(/\s/g, '')}
-    />
+    <Paper direction='column' backgroundColor='surface2' p='l' gap='l'>
+      <Flex direction='column' gap='s'>
+        <Text
+          variant={isMobile ? 'title' : 'heading'}
+          size={isMobile ? 'm' : 's'}
+        >
+          {messages.claimHandleHeaderPrefix}{' '}
+          <Text color='accent' tag='span'>
+            @{messages.handle}
+          </Text>{' '}
+          <IconVerified
+            size={isMobile ? 's' : 'm'}
+            css={{ verticalAlign: 'sub' }}
+          />
+        </Text>
+        <Text variant='body' size={isMobile ? 'm' : 'l'}>
+          {messages.claimHandleDescription}
+        </Text>
+      </Flex>
+      <SocialMediaLoginOptions
+        onCompleteSocialMediaLogin={onCompleteSocialMediaLogin}
+      />
+      <Text variant='body' size={isMobile ? 'm' : 'l'}>
+        {messages.claimHandleHeadsUp}
+      </Text>
+    </Paper>
   )
 }
 
 export const PickHandlePage = () => {
-  const formikRef = useRef<FormikProps<PickHandleValues>>(null)
+  const { isMobile } = useMedia()
+
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
-  const queryContext = useContext(AudiusQueryContext)
+  const { toast } = useContext(ToastContext)
+  const audiusQueryContext = useAudiusQueryContext()
   const validationSchema = useMemo(() => {
-    if (queryContext != null) {
-      return toFormikValidationSchema(generateHandleSchema(queryContext))
-    }
-    return undefined
-  }, [queryContext])
+    return toFormikValidationSchema(
+      generateHandleSchema({ audiusQueryContext })
+    )
+  }, [audiusQueryContext])
 
-  const { value } = useSelector(getHandleField)
-
-  const handleClickBackIcon = useCallback(() => {
-    navigate(SIGN_UP_PASSWORD_PAGE)
-  }, [navigate])
+  const { value: handle } = useSelector(getHandleField)
+  const isLinkingSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
 
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
       const { handle } = values
       dispatch(setValueField('handle', handle))
-      navigate(SIGN_UP_FINISH_PROFILE_PAGE)
+      navigate(
+        isLinkingSocialOnFirstPage
+          ? SIGN_UP_CREATE_LOGIN_DETAILS
+          : SIGN_UP_FINISH_PROFILE_PAGE
+      )
     },
-    [dispatch, navigate]
+    [dispatch, navigate, isLinkingSocialOnFirstPage]
+  )
+
+  const handleCompleteSocialMediaLogin = useCallback(
+    ({
+      requiresReview,
+      handle,
+      platform
+    }: {
+      requiresReview: boolean
+      handle: string
+      platform: 'twitter' | 'instagram' | 'tiktok'
+    }) => {
+      dispatch(setValueField('handle', handle))
+      if (!requiresReview) {
+        navigate(SIGN_UP_FINISH_PROFILE_PAGE)
+      } else {
+        navigate(SIGN_UP_REVIEW_HANDLE_PAGE)
+      }
+      toast(socialMediaMessages.socialMediaLoginSucess(platform))
+    },
+    [dispatch, navigate, toast]
   )
 
   const initialValues = {
-    handle: value || ''
+    handle
   }
 
   return (
     <Formik
-      innerRef={formikRef}
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={handleSubmit}
       validateOnChange={false}
     >
-      {({ isSubmitting, isValid, isValidating }) => (
-        <Flex direction='column' justifyContent='space-between' h='100%'>
-          <Box pv='3xl' className={styles.contentContainer}>
-            <Form>
-              <Box>
-                <Flex gap='l' direction='column'>
-                  <Box>
-                    <Text size='s' variant='label' color='subdued'>
-                      1 {messages.outOf} 2
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Text
-                      color='heading'
-                      size='l'
-                      strength='default'
-                      variant='heading'
-                    >
-                      {messages.pickYourHandle}
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Text size='l' variant='body'>
-                      {messages.handleDescription}
-                    </Text>
-                  </Box>
-                </Flex>
-                <Box mt='2xl'>
-                  <HandleField />
-                </Box>
-              </Box>
-            </Form>
-          </Box>
-          <ContinueFooter>
-            <Button
-              type='submit'
-              disabled={!isValid || isSubmitting}
-              isLoading={isSubmitting || isValidating}
-              iconRight={IconArrowRight}
+      <Page as={Form} centered={!isMobile} transitionBack='vertical'>
+        <Heading
+          prefix={isMobile ? null : <OutOfText numerator={1} denominator={2} />}
+          heading={messages.title}
+          description={messages.description}
+          centered={!isMobile}
+        />
+        <Flex direction='column' gap={isMobile ? 'l' : 'xl'}>
+          <HandleField
+            autoFocus
+            onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
+          />
+          <Divider>
+            <Text
+              variant='body'
+              color='subdued'
+              size='s'
+              css={{ textTransform: 'uppercase' }}
             >
-              {messages.continue}
-            </Button>
-            <PlainButton
-              onClick={handleClickBackIcon}
-              variant={PlainButtonType.SUBDUED}
-            >
-              {messages.goBack}
-            </PlainButton>
-          </ContinueFooter>
+              {messages.or}
+            </Text>
+          </Divider>
+          <SocialMediaSection
+            onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
+          />
         </Flex>
-      )}
+        <PageFooter centered />
+      </Page>
     </Formik>
   )
 }

@@ -2,7 +2,9 @@
 seeds = false
 skip-lint = false
 [programs.mainnet]
-payment_router = "6pca6uGGV5GYKY8W9aGfJbWPx4pe5mW8wLaP9c3LUNpp"
+payment_router = "paytYpX3LPN98TAeen6bFFeraGSuWnomZmCXjAsoqPa"
+[programs.localnet]
+payment_router = "apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa"
 
 [registry]
 url = "https://api.apr.dev"
@@ -11,7 +13,13 @@ url = "https://api.apr.dev"
 cluster = "mainnet"
 wallet = "id.json"
 
+# Uncomment to run against local cluster
+# [provider]
+# cluster = "localnet"
+# wallet = "~/.config/solana/solana_owner.json"
+
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
 test-create-payment-router-balance-pda= "yarn run ts-mocha -g 'pda' -p ./tsconfig.json -t 1000000 tests/**/*.ts"
-test-route= "yarn run ts-mocha -g 'routes' -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test-route-audio= "yarn run ts-mocha -g 'routes AUDIO' -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test-route-usdc= "yarn run ts-mocha -g 'routes USDC' -p ./tsconfig.json -t 1000000 tests/**/*.ts"

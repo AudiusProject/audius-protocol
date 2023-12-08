@@ -47,7 +47,7 @@ const CollectiblesHeader = ({
   backButtonVisible = false,
   onBackButtonClick = () => {}
 }) => {
-  const { name, handle, isVerified, total_balance } = user
+  const { name, handle, isVerified, totalBalance } = user
   const onClick = () =>
     window.open(getCopyableLink(`${handle}/collectibles`), '_blank')
 
@@ -72,7 +72,7 @@ const CollectiblesHeader = ({
         <div className={styles.userInfo}>
           <h2>{name}</h2>
           {isVerified && <IconVerified />}
-          {getTierIcon(total_balance)}
+          {getTierIcon(totalBalance)}
         </div>
       </div>
       <div className={styles.logo}>

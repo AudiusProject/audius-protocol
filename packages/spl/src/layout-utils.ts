@@ -36,7 +36,7 @@ export class EthereumAddress extends Layout<string> {
    * proxies the encoding to the underlying Blob.
    * @override
    * */
-  encode(src: string, b: Uint8Array, offset: number): number {
+  encode(src: string, b: Uint8Array, offset = 0): number {
     const strippedEthAddress = src.replace('0x', '')
     // Need to pad the array to length 20 - otherwise, hex eth keys starting with '0' would
     // result in truncated arrays, while eth spec is always 20 bytes

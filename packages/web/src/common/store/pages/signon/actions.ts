@@ -42,6 +42,8 @@ export const SIGN_UP_SUCCEEDED_WITH_ID = 'SIGN_ON/SIGN_UP_SUCCEEDED_WITH_ID'
 export const SIGN_UP_FAILED = 'SIGN_ON/SIGN_UP_FAILED'
 export const SIGN_UP_TIMEOUT = 'SIGN_ON/SIGN_UP_TIMEOUT'
 
+export const SET_LINKED_SOCIAL_ON_FIRST_PAGE =
+  'SIGN_ON/SET_LINKED_SOCIAL_ON_FIRST_PAGE'
 export const SET_TWITTER_PROFILE = 'SIGN_ON/SET_TWITTER_PROFILE'
 export const SET_TWITTER_PROFILE_ERROR = 'SIGN_ON/SET_TWITTER_PROFILE_ERROR'
 export const SET_INSTAGRAM_PROFILE = 'SIGN_ON/SET_INSTAGRAM_PROFILE'
@@ -289,6 +291,13 @@ export function setFollowAristsCategory(category: FollowArtistsCategory) {
  */
 export function fetchFollowArtistsFailed(error: string) {
   return { type: FETCH_FOLLOW_ARTISTS_FAILED, error }
+}
+
+export function setLinkedSocialOnFirstPage(linkedSocialOnFirstPage: boolean) {
+  return {
+    type: SET_LINKED_SOCIAL_ON_FIRST_PAGE,
+    linkedSocialOnFirstPage
+  }
 }
 
 export function setTwitterProfile(

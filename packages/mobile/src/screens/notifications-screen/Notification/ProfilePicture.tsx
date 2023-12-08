@@ -1,8 +1,8 @@
 import { useCallback } from 'react'
 
+import type { ID } from '@audius/common'
 import { TouchableOpacity } from 'react-native'
 
-import type { UserImageProps } from 'app/components/image/UserImage'
 import type { ProfilePictureProps as ProfilePictureBaseProps } from 'app/components/user'
 import { ProfilePicture as ProfilePictureBase } from 'app/components/user'
 import { useNavigation } from 'app/hooks/useNavigation'
@@ -24,7 +24,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 }))
 
 type ProfilePictureProps = ProfilePictureBaseProps & {
-  profile: UserImageProps['user'] & { handle: string }
+  profile: { user_id: ID; handle: string }
   navigationType?: 'push' | 'navigate'
   interactive?: boolean
 }

@@ -1,4 +1,4 @@
-import { Button, ButtonType, IconCheck } from '@audius/stems'
+import { Button, ButtonType, IconCheck } from '@audius/harmony'
 
 import styles from './FormActions.module.css'
 
@@ -33,30 +33,32 @@ export const EditActions = ({
     <div className={styles.editActionsContainer}>
       <div>
         <Button
-          text={deleteText}
-          type={disabled ? ButtonType.DISABLED : ButtonType.DESTRUCTIVE}
+          variant={ButtonType.DESTRUCTIVE}
           disabled={disabled}
           onClick={onDelete}
           className={styles.deleteButton}
-          textClassName={styles.deleteButtonText}
-          buttonType='button'
-        />
+          type='button'
+        >
+          {deleteText}
+        </Button>
       </div>
       <div className={styles.buttonsRight}>
         <Button
-          text={cancelText}
-          type={disabled ? ButtonType.DISABLED : ButtonType.COMMON_ALT}
+          variant={ButtonType.SECONDARY}
           disabled={disabled}
           onClick={onCancel}
-          buttonType='button'
-        />
+          type='button'
+        >
+          {cancelText}
+        </Button>
         <Button
-          text={saveText}
-          type={disabled ? ButtonType.DISABLED : ButtonType.PRIMARY}
+          variant={ButtonType.PRIMARY}
           disabled={disabled}
           onClick={onSave}
-          buttonType={isForm ? 'submit' : 'button'}
-        />
+          type={isForm ? 'submit' : 'button'}
+        >
+          {saveText}
+        </Button>
       </div>
     </div>
   )
@@ -78,13 +80,14 @@ export const CreateActions = ({
   return (
     <div className={styles.createActionsContainer}>
       <Button
-        text={saveText}
-        type={disabled ? ButtonType.DISABLED : ButtonType.PRIMARY}
+        variant={ButtonType.PRIMARY}
         disabled={disabled}
         onClick={onSave}
-        buttonType={isForm ? 'submit' : 'button'}
-        rightIcon={<IconCheck />}
-      />
+        type={isForm ? 'submit' : 'button'}
+        iconRight={IconCheck}
+      >
+        {saveText}
+      </Button>
     </div>
   )
 }

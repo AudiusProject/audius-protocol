@@ -14,6 +14,7 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 import ReactDOM from 'react-dom'
+import { Link } from 'react-router-dom'
 
 import HorizontalLogo from 'assets/img/Horizontal-Logo-Full-Color.png'
 import HeroBackground from 'assets/img/publicSite/HeroBG@2x.webp'
@@ -24,7 +25,7 @@ import {
   AUDIUS_INSTAGRAM_LINK,
   AUDIUS_MERCH_LINK,
   AUDIUS_ORG,
-  AUDIUS_SIGN_UP_LINK,
+  SIGN_UP_PAGE,
   AUDIUS_TELEGRAM_LINK,
   AUDIUS_TWITTER_LINK,
   DOWNLOAD_START_LINK
@@ -124,11 +125,6 @@ const useModalRoot = () => {
 }
 
 const NavOverlay = (props: NavOverlayProps) => {
-  const onSignUp = () => {
-    props.closeNavScreen()
-    handleClickRoute(AUDIUS_SIGN_UP_LINK, props.setRenderPublicSite)()
-  }
-
   const modalRoot = useModalRoot()
 
   return (
@@ -138,6 +134,7 @@ const NavOverlay = (props: NavOverlayProps) => {
         className={cn(styles.container, {
           [styles.hide]: !props.isOpen
         })}
+        aria-hidden={!props.isOpen}
       >
         <div
           className={cn(styles.backgroundContainer)}
@@ -188,9 +185,15 @@ const NavOverlay = (props: NavOverlayProps) => {
             ))}
           </div>
           <div className={styles.signUpButtonContainer}>
-            <button className={styles.signUpButton} onClick={onSignUp}>
+            <Link
+              className={styles.signUpButton}
+              to={SIGN_UP_PAGE}
+              onClick={() => {
+                props.setRenderPublicSite(false)
+              }}
+            >
               {messages.signUp}
-            </button>
+            </Link>
           </div>
         </div>
       </div>,

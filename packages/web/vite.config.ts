@@ -21,7 +21,8 @@ export default defineConfig(({ mode }) => {
       outDir: 'build',
       sourcemap: true,
       commonjsOptions: {
-        include: [/libs\/dist\/web-libs/, /node_modules/]
+        include: [/node_modules/],
+        transformMixedEsModules: true
       }
     },
     define: {
@@ -30,7 +31,6 @@ export default defineConfig(({ mode }) => {
       'process.env': env
     },
     optimizeDeps: {
-      include: ['@audius/sdk/dist/web-libs'],
       esbuildOptions: {
         define: {
           global: 'globalThis'
@@ -86,6 +86,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         // Should be able to use vite-tsconfig-paths instead
+        app: '/src/app',
         assets: '/src/assets',
         common: '/src/common',
         components: '/src/components',

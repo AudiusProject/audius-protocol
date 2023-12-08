@@ -1,10 +1,13 @@
-import { Button, ButtonSize, ButtonType, IconCart } from '@audius/harmony'
+import {
+  Button,
+  ButtonSize,
+  ButtonType,
+  IconCart,
+  Flex,
+  Text
+} from '@audius/harmony'
 
 import { Icon } from 'components/Icon'
-import { Tile } from 'components/tile'
-import { Text } from 'components/typography'
-
-import styles from './NoTransactionsContent.module.css'
 
 export type NoTransactionsContentProps = {
   headerText: string
@@ -20,16 +23,27 @@ export const NoTransactionsContent = ({
   onCTAClicked
 }: NoTransactionsContentProps) => {
   return (
-    <Tile elevation='far' size='large' className={styles.tileContainer}>
-      <div className={styles.contentContainer}>
+    <Flex
+      alignItems='center'
+      gap='2xl'
+      justifyContent='center'
+      p='unit10'
+      direction='column'
+    >
+      <Flex
+        alignItems='center'
+        gap='s'
+        justifyContent='center'
+        direction='column'
+      >
         <Icon icon={IconCart} color='neutralLight4' size='xxxLarge' />
-        <Text variant='heading' size='small'>
+        <Text variant='heading' size='s'>
           {headerText}
         </Text>
-        <Text variant='body' size='large'>
+        <Text variant='body' size='l'>
           {bodyText}
         </Text>
-      </div>
+      </Flex>
       <Button
         variant={ButtonType.SECONDARY}
         size={ButtonSize.SMALL}
@@ -37,6 +51,6 @@ export const NoTransactionsContent = ({
       >
         {ctaText}
       </Button>
-    </Tile>
+    </Flex>
   )
 }

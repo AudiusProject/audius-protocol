@@ -209,11 +209,7 @@ const TrackPage = ({
       fromOpacity={1}
     >
       <div className={styles.headerWrapper}>
-        <CoverPhoto
-          loading={loading}
-          userId={user ? user.user_id : null}
-          coverPhotoSizes={user ? user._cover_photo_sizes : null}
-        />
+        <CoverPhoto loading={loading} userId={user ? user.user_id : null} />
         <StatBanner isEmpty />
         <NavBanner empty />
       </div>

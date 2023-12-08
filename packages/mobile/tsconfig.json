@@ -16,7 +16,8 @@
       "schemas": ["../../node_modules/audius-client/src/common/schemas"],
       "services/*": ["../../node_modules/audius-client/src/services/*"],
       "store/*": ["../../node_modules/audius-client/src/store/*"],
-      "utils/*": ["../../node_modules/audius-client/src/utils/*"]
+      "utils/*": ["../../node_modules/audius-client/src/utils/*"],
+      "workers/*": ["../../node_modules/audius-client/src/workers/*"]
     },
     "strictNullChecks": true,
     "types": ["vite/client", "jest"],

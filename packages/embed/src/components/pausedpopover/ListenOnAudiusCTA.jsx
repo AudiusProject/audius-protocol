@@ -1,26 +1,37 @@
+import { USDC } from '@audius/fixed-decimal'
+import { Button, Text } from '@audius/harmony'
 
-import AudiusLogo from '../../assets/img/audiusLogoHorizontal.svg'
 import { getCopyableLink } from '../../util/shareUtil'
-import Button from '../button/Button'
-
-import styles from './ListenOnAudiusCTA.module.css'
 
 const messages = {
-  label: 'Listen on'
+  listen: 'Listen on Audius',
+  buy: 'Buy'
 }
 
-const ListenOnAudiusCTA = ({ audiusURL }) => {
+const ListenOnAudiusCTA = ({ audiusURL, premiumConditions }) => {
   const onClick = () => {
     window.open(getCopyableLink(audiusURL), '_blank')
   }
+  const isPurchaseable =
+    premiumConditions && 'usdc_purchase' in premiumConditions
 
   return (
     <Button
+      color={isPurchaseable ? 'lightGreen' : undefined}
+      fullWidth
       onClick={onClick}
-      className={styles.container}
-      icon={<AudiusLogo />}
-      label={messages.label}
-    />
+    >
+      <Text variant='title' size='l'>
+        {isPurchaseable
+          ? `${messages.buy} $${USDC(
+              premiumConditions.usdc_purchase.price / 100
+            ).toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })}`
+          : messages.listen}
+      </Text>
+    </Button>
   )
 }
 

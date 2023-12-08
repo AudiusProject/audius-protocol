@@ -25,6 +25,8 @@ type PurchaseSummaryValues = {
   basePrice: number
   /** The extra amount requested by the user */
   extraAmount?: number
+  /** Total price for display on the Buy button */
+  totalPrice: number
 }
 
 type GetPurchaseSummaryValuesArgs = {
@@ -76,7 +78,13 @@ export const getPurchaseSummaryValues = ({
     }
   }
 
-  return { amountDue, existingBalance, basePrice: price, extraAmount }
+  return {
+    amountDue,
+    existingBalance,
+    basePrice: price,
+    extraAmount,
+    totalPrice: price + (extraAmount ?? 0)
+  }
 }
 
 /** Used by sagas to calculate balance needed to complete a USDC transaction. Enforces the given minimum purchase amount and will ignore existing balance if applying it would cause the transaction to fall below that amount. */

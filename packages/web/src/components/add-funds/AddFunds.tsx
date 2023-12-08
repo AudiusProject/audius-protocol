@@ -1,28 +1,23 @@
-import { ChangeEvent, useCallback, useState } from 'react'
+import { useState } from 'react'
 
 import {
-  BNUSDC,
-  decimalIntegerToHumanReadable,
-  formatUSDCWeiToFloorCentsNumber,
+  PurchaseMethod,
   useCreateUserbankIfNeeded,
   useUSDCBalance
 } from '@audius/common'
+import { USDC } from '@audius/fixed-decimal'
 import {
   Box,
   Button,
   ButtonType,
   Flex,
   Text,
-  IconLogoCircleUSDC,
-  IconCreditCard,
-  IconTransaction,
-  FilterButton,
-  FilterButtonType
+  IconLogoCircleUSDC
 } from '@audius/harmony'
 import { BN } from 'bn.js'
 import cn from 'classnames'
 
-import { SummaryTable, SummaryTableItem } from 'components/summary-table'
+import { PaymentMethod } from 'components/payment-method/PaymentMethod'
 import { track } from 'services/analytics'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { isMobile } from 'utils/clientUtil'
@@ -31,58 +26,24 @@ import styles from './AddFunds.module.css'
 
 const messages = {
   usdcBalance: 'USDC Balance',
-  paymentMethod: 'Payment Method',
-  withCard: 'Add funds with Card',
-  withCrypto: 'Add funds with crypto transfer',
   continue: 'Continue'
 }
-
-export type Method = 'card' | 'crypto'
 
 export const AddFunds = ({
   onContinue
 }: {
-  onContinue: (method: Method) => void
+  onContinue: (purchaseMethod: PurchaseMethod) => void
 }) => {
   useCreateUserbankIfNeeded({
     recordAnalytics: track,
     audiusBackendInstance,
     mint: 'usdc'
   })
-  const [selectedMethod, setSelectedMethod] = useState<Method>('card')
+  const [selectedPurchaseMethod, setSelectedPurchaseMethod] =
+    useState<PurchaseMethod>(PurchaseMethod.CARD)
   const mobile = isMobile()
-  const { data: balance } = useUSDCBalance()
-  const balanceNumber = formatUSDCWeiToFloorCentsNumber(
-    (balance ?? new BN(0)) as BNUSDC
-  )
-  const balanceFormatted = decimalIntegerToHumanReadable(balanceNumber)
-
-  const items: SummaryTableItem[] = [
-    {
-      id: 'card',
-      label: messages.withCard,
-      icon: IconCreditCard,
-      value: (
-        <FilterButton
-          initialSelectionIndex={0}
-          variant={FilterButtonType.REPLACE_LABEL}
-          options={[{ label: 'Stripe' }]}
-        />
-      )
-    },
-    {
-      id: 'crypto',
-      label: messages.withCrypto,
-      icon: IconTransaction
-    }
-  ]
-
-  const handleChangeOption = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      setSelectedMethod(e.target.value as Method)
-    },
-    [setSelectedMethod]
-  )
+  const { data: balanceBN } = useUSDCBalance({ isPolling: true })
+  const balance = USDC(balanceBN ?? new BN(0)).value
 
   return (
     <div className={styles.root}>
@@ -91,8 +52,8 @@ export const AddFunds = ({
           [styles.mobile]: mobile
         })}
       >
-        <Flex direction='column' w='100%' gap='xl'>
-          <Box h='unit6' border='strong' p='m'>
+        <Flex direction='column' w='100%' gap='xl' p='xl'>
+          <Box h='unit6' border='strong' p='m' borderRadius='s'>
             <Flex alignItems='center' justifyContent='space-between'>
               <Flex alignItems='center'>
                 <IconLogoCircleUSDC />
@@ -103,21 +64,22 @@ export const AddFunds = ({
                 </Box>
               </Flex>
               <Text variant='title' size='l' strength='strong'>
-                {`$${balanceFormatted}`}
+                {`$${USDC(balance).toLocaleString('en-us', {
+                  roundingMode: 'floor',
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })}`}
               </Text>
             </Flex>
           </Box>
-          <SummaryTable
-            title={messages.paymentMethod}
-            items={items}
-            withRadioOptions
-            onRadioChange={handleChangeOption}
-            selectedRadioOption={selectedMethod}
+          <PaymentMethod
+            selectedType={selectedPurchaseMethod}
+            setSelectedType={setSelectedPurchaseMethod}
           />
           <Button
             variant={ButtonType.PRIMARY}
             fullWidth
-            onClick={() => onContinue(selectedMethod)}
+            onClick={() => onContinue(selectedPurchaseMethod)}
           >
             {messages.continue}
           </Button>

@@ -1,3 +1,4 @@
+import type { ComponentType } from 'react'
 import { useEffect, useState } from 'react'
 
 import { accountSelectors } from '@audius/common'
@@ -91,5 +92,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
   }
 }
 
-// @ts-ignore
-export default withRouter(connect(mapStateToProps, mapDispatchToProps)(SignOn))
+export default withRouter(
+  // @ts-ignore
+  connect(mapStateToProps, mapDispatchToProps)(SignOn)
+) as unknown as ComponentType<{ signIn: boolean }>

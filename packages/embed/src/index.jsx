@@ -1,4 +1,5 @@
-import React from "react"
+import React from 'react'
+
 import { createRoot } from 'react-dom/client'
 import { Route, Routes, BrowserRouter } from 'react-router-dom'
 
@@ -21,81 +22,43 @@ const Index = () => (
       <Route
         exact
         path={AUDIO_NFT_PLAYLIST_ROUTE}
-        element={
-          <App
-            path={AUDIO_NFT_PLAYLIST_ROUTE}
-            type='collectibles'
-          />
-        }
+        element={<App path={AUDIO_NFT_PLAYLIST_ROUTE} type='collectibles' />}
       />
       <Route
         exact
         path={AUDIO_NFT_PLAYLIST_DISCORD_ROUTE}
         element={
-          <App
-            path={AUDIO_NFT_PLAYLIST_DISCORD_ROUTE}
-            type='collectibles'
-          />
+          <App path={AUDIO_NFT_PLAYLIST_DISCORD_ROUTE} type='collectibles' />
         }
       />
       <Route
         exact
         path={COLLECTIBLES_ROUTE}
-        element={
-          <App
-            path={COLLECTIBLES_ROUTE}
-            type='collectibles'
-          />
-        }
+        element={<App path={COLLECTIBLES_ROUTE} type='collectibles' />}
       />
       <Route
         exact
         path={COLLECTIBLE_ID_ROUTE}
-        element={
-          <App
-            path={COLLECTIBLE_ID_ROUTE}
-            type='collectibles'
-          />
-        }
+        element={<App path={COLLECTIBLE_ID_ROUTE} type='collectibles' />}
       />
       <Route
         exact
         path={COLLECTIBLES_DISCORD_ROUTE}
-        element={
-          <App
-            path={COLLECTIBLES_DISCORD_ROUTE}
-            type='collectibles'
-          />
-        }
+        element={<App path={COLLECTIBLES_DISCORD_ROUTE} type='collectibles' />}
       />
       <Route
         exact
         path={COLLECTIBLE_ID_DISCORD_ROUTE}
         element={
-          <App
-            path={COLLECTIBLE_ID_DISCORD_ROUTE}
-            type='collectibles'
-          />
+          <App path={COLLECTIBLE_ID_DISCORD_ROUTE} type='collectibles' />
         }
       />
 
-      <Route
-        exact
-        path={ID_ROUTE}
-        element={
-          <App
-            path={ID_ROUTE}
-          />
-        }
-      />
+      <Route exact path={ID_ROUTE} element={<App path={ID_ROUTE} />} />
       <Route
         exact
         path={HASH_ID_ROUTE}
-        element={
-          <App
-            path={HASH_ID_ROUTE}
-          />
-        }
+        element={<App path={HASH_ID_ROUTE} />}
       />
     </Routes>
   </BrowserRouter>

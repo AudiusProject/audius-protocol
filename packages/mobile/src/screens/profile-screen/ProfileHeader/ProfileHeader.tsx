@@ -11,7 +11,7 @@ import { OnlineOnly } from 'app/components/offline-placeholder/OnlineOnly'
 import { makeStyles } from 'app/styles'
 
 import { ArtistRecommendations } from '../ArtistRecommendations'
-import { CoverPhoto } from '../CoverPhoto'
+import { ProfileCoverPhoto } from '../ProfileCoverPhoto'
 import { ProfileInfo } from '../ProfileInfo'
 import { ProfileMetrics } from '../ProfileMetrics'
 import { ProfilePicture } from '../ProfilePicture'
@@ -119,7 +119,7 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
 
   return (
     <>
-      <CoverPhoto scrollY={scrollY} />
+      <ProfileCoverPhoto scrollY={scrollY} />
       <ProfilePicture style={styles.profilePicture} />
       <View pointerEvents='box-none' style={styles.header}>
         <ProfileInfo onFollow={handleFollow} />

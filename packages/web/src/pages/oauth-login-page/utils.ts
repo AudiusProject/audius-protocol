@@ -27,7 +27,7 @@ export const getIsRedirectValid = ({
     // IMPORTANT: If this validation is not done, users can
     // use the redirect_uri to execute arbitrary code on the host
     // domain (e.g. audius.co).
-    if (protocol !== 'http' && protocol !== 'https') {
+    if (protocol !== 'http:' && protocol !== 'https:') {
       return false
     }
     if (hash || username || password) {

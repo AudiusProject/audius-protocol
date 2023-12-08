@@ -65,6 +65,7 @@ const pinFromFs = async (cid) => {
   try {
     const result = await pinata.pinFromFS(sourcePath, options)
     console.log(result)
+    return result
   } catch (e) {
     console.log(e)
   }
@@ -74,8 +75,8 @@ const run = async () => {
   try {
     await updateGABuild()
     const cid = await pinGABuild()
-    await pinFromFs(cid)
-    fs.writeFileSync(`./build_cid.txt`, cid.IpfsHash)
+    const { IpfsHash } = await pinFromFs(cid)
+    fs.writeFileSync(`./build_cid.txt`, IpfsHash)
     process.exit()
   } catch (err) {
     console.log(err)
