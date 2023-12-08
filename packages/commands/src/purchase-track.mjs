@@ -12,12 +12,7 @@ program
     '-e, --extra-amount [amount]',
     'Extra amount to pay in addition to the track price (in cents)'
   )
-  .option(
-    '-l, --use-legacy]',
-    'Use legacy purchase method (user bank transfer) instead of payment router',
-    false
-  )
-  .action(async (trackId, { from, extraAmount: extraAmountCents, useLegacy }) => {
+  .action(async (trackId, { from, extraAmount: extraAmountCents }) => {
     const audiusLibs = await initializeAudiusLibs(from)
     const track = (await audiusLibs.Track.getTracks(100, 0, [trackId]))[0]
     if (!track.premium_conditions || !track.is_premium) {
@@ -47,55 +42,11 @@ program
       if (response.error) {
         program.error(chalk.red(response.error))
       }
-
-      let extraAmount
-      if (extraAmountCents) {
-        const parsedExtraAmount = Number.parseInt(extraAmountCents)
-        if (!Number.isFinite(parsedExtraAmount) || parsedExtraAmount <= 0) {
-          program.error(`Invalid extra amount: ${extraAmountCents}`)
-        }
-        extraAmount = parsedExtraAmount * 10 ** 4
-      }
-
-      try {
-        let response
-        console.log(chalk.yellow('useLegacy:', useLegacy))
-        if (useLegacy) {
-          response = await audiusLibs.solanaWeb3Manager.purchaseContent({
-            id: trackId,
-            extraAmount,
-            type: 'track',
-            blocknumber: track.blocknumber,
-            splits: track.premium_conditions.usdc_purchase.splits,
-            purchaserUserId: user.user_id
-          })
-        } else {
-          const { userbank } =
-            await audiusLibs.solanaWeb3Manager.createUserBankIfNeeded({
-              mint: 'usdc'
-            })
-          response =
-            await audiusLibs.solanaWeb3Manager.purchaseContentWithPaymentRouter(
-              {
-                id: trackId,
-                extraAmount,
-                type: 'track',
-                blocknumber: track.blocknumber,
-                splits: track.premium_conditions.usdc_purchase.splits,
-                purchaserUserId: user.user_id,
-                senderAccount: userbank
-              }
-            )
-        }
-        if (response.error) {
-          program.error(chalk.red(response.error))
-        }
-        console.log(chalk.green('Successfully purchased track'))
-        console.log(chalk.yellow('Transaction Signature:'), response.res)
-      } catch (err) {
-        program.error(err.message)
-      }
-
-      process.exit(0)
+      console.log(chalk.green('Successfully purchased track'))
+      console.log(chalk.yellow('Transaction Signature:'), response.res)
+    } catch (err) {
+      program.error(err.message)
     }
-  )
+
+    process.exit(0)
+  })
