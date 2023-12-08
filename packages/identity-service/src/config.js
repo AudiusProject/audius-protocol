@@ -695,6 +695,12 @@ const config = convict({
     default: '',
     env: 'solanaRewardsManagerTokenPDA'
   },
+  solanaPaymentRouterProgramId: {
+    doc: 'The address of our Payment Router program',
+    format: String,
+    default: '',
+    env: 'solanaPaymentRouterProgramId'
+  },
   solanaConfirmationTimeout: {
     doc: 'The timeout used to send solana transactions through solanaWeb3 connection in ms',
     format: Number,

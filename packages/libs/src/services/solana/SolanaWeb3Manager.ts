@@ -4,12 +4,13 @@ import {
   Keypair,
   PublicKey,
   LAMPORTS_PER_SOL,
-  TransactionInstruction
+  TransactionInstruction,
+  Transaction
 } from '@solana/web3.js'
 import * as solanaWeb3 from '@solana/web3.js'
 import BN from 'bn.js'
 
-import { AUDIO_DECIMALS, WAUDIO_DECIMALS } from '../../constants'
+import { AUDIO_DECIMALS, USDC_DECIMALS, WAUDIO_DECIMALS } from '../../constants'
 import { Logger, Nullable, Utils } from '../../utils'
 import type { IdentityService } from '../identity'
 import type { Web3Manager } from '../web3Manager'
@@ -33,6 +34,10 @@ import { createTransferInstructions, transferWAudioBalance } from './transfer'
 import { getBankAccountAddress, createUserBankFrom } from './userBank'
 import { wAudioFromWeiAudio } from './wAudio'
 import { route } from '@audius/spl'
+import {
+  TOKEN_PROGRAM_ID,
+  createTransferCheckedInstruction
+} from '@solana/spl-token'
 
 type EvaluateChallengeAttestationsConfig = {
   challengeId: string
@@ -647,7 +652,7 @@ export class SolanaWeb3Manager {
       'usdc'
     )
     const senderTokenAccountInfo = await this.getTokenAccountInfo(
-      senderAccount.toString()
+      senderTokenAccount.toString()
     )
     if (senderTokenAccountInfo === null) {
       throw new Error('Sender token account ATA does not exist')
@@ -659,23 +664,23 @@ export class SolanaWeb3Manager {
       BigInt(0)
     )
 
-    const transferInstruction = this.splToken.createTransferCheckedInstruction(
+    const transferInstruction = createTransferCheckedInstruction(
       senderTokenAccount,
       this.mints.usdc,
       paymentRouterTokenAccount,
-      this.splToken.TOKEN_PROGRAM_ID, // TODO: OWNER, differentiate between SPL and claimable-tokens
+      senderAccount,
       Number(totalAmount),
-      AUDIO_DECIMALS
+      USDC_DECIMALS
     )
 
     const paymentRouterInstruction = await route(
-      senderTokenAccount,
-      senderAccount,
+      paymentRouterTokenAccount,
+      paymentRouterPda,
       paymentRouterPdaBump,
       Object.keys(recipientAmounts).map((key) => new PublicKey(key)), // recipients
       amounts,
       totalAmount,
-      this.splToken.TOKEN_PROGRAM_ID,
+      TOKEN_PROGRAM_ID,
       this.paymentRouterProgramId
     )
 
@@ -710,7 +715,7 @@ export class SolanaWeb3Manager {
     extraAmount = 0,
     splits,
     purchaserUserId,
-    senderAccount
+    senderKeypair
   }: {
     id: number
     type: 'track'
@@ -718,7 +723,7 @@ export class SolanaWeb3Manager {
     extraAmount?: number | BN
     blocknumber: number
     purchaserUserId?: number
-    senderAccount: PublicKey
+    senderKeypair: Keypair
   }) {
     const instructions =
       await this.getPurchaseContentWithPaymentRouterInstructions({
@@ -728,13 +733,29 @@ export class SolanaWeb3Manager {
         extraAmount,
         splits,
         purchaserUserId,
-        senderAccount
+        senderAccount: senderKeypair.publicKey
       })
+    const recentBlockhash = (await this.connection.getLatestBlockhash())
+      .blockhash
+
+    const transaction = new Transaction({
+      feePayer: this.feePayerKey,
+      recentBlockhash: recentBlockhash
+    }).add(...instructions)
+    transaction.partialSign(senderKeypair)
+    const signatures = transaction.signatures
+      .filter((s) => s.signature !== null)
+      .map((s) => ({
+        signature: s.signature!, // safe from filter
+        publicKey: s.publicKey.toString()
+      }))
 
     return await this.transactionHandler.handleTransaction({
       instructions,
       skipPreflight: true,
-      feePayerOverride: this.feePayerKey
+      feePayerOverride: this.feePayerKey,
+      signatures,
+      recentBlockhash
     })
   }
 

@@ -74,6 +74,7 @@ services:
       solanaRewardsManagerProgramId: '${SOLANA_REWARD_MANAGER_PUBLIC_KEY}'
       solanaRewardsManagerProgramPDA: '${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}'
       solanaRewardsManagerTokenPDA: '${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}'
+      solanaPaymentRouterProgramId: '${SOLANA_PAYMENT_ROUTER_PUBLIC_KEY}'
       solanaAudiusAnchorDataProgramId: '${SOLANA_AUDIUS_DATA_PUBLIC_KEY}'
     depends_on:
       db:
