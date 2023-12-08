@@ -673,7 +673,9 @@ export class SolanaWeb3Manager {
       paymentRouterPdaBump,
       Object.keys(recipientAmounts).map((key) => new PublicKey(key)), // recipients
       amounts,
-      totalAmount
+      totalAmount,
+      this.splToken.TOKEN_PROGRAM_ID,
+      this.paymentRouterProgramId
     )
 
     const data = purchaserUserId
@@ -727,6 +729,7 @@ export class SolanaWeb3Manager {
         purchaserUserId,
         senderAccount
       })
+
     return await this.transactionHandler.handleTransaction({
       instructions,
       skipPreflight: true,
