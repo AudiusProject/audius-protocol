@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux'
 import IconUser from 'app/assets/images/iconUser.svg'
 import { Text } from 'app/components/core'
 import {
-  FollowButton2,
+  FollowButton,
   FollowsYouChip,
   ProfilePicture
 } from 'app/components/user'
@@ -124,7 +124,7 @@ export const UserListItem = (props: UserListItemProps) => {
           </View>
         </View>
         {currentUserId !== user_id ? (
-          <FollowButton2
+          <FollowButton
             userId={user.user_id}
             followSource={FollowSource.USER_LIST}
             fullWidth
