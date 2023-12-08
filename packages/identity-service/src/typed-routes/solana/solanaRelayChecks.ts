@@ -149,12 +149,12 @@ const assertAllowedTokenProgramInstruction = async (
 ) => {
   const decodedInstruction = decodeInstruction(instruction)
   if (isTransferCheckedInstruction(decodedInstruction)) {
-    // if (!wallet) {
-    //   throw new InvalidRelayInstructionError(
-    //     instructionIndex,
-    //     `Transfer Checked requires authentication`
-    //   )
-    // }
+    if (!wallet) {
+      throw new InvalidRelayInstructionError(
+        instructionIndex,
+        `Transfer Checked requires authentication`
+      )
+    }
     const destination = decodedInstruction.keys.destination.pubkey
     const userbank = await (
       await audiusLibsWrapper.getAudiusLibsAsync()
