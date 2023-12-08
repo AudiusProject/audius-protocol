@@ -1,6 +1,6 @@
 import fs from 'fs'
 import { Stream } from 'stream'
-import { promisify } from 'util'
+import * as util from 'util'
 
 import type { Blockstore, Options } from 'interface-blockstore'
 import type {
@@ -35,6 +35,8 @@ export interface HashedImage {
   cid: string
   size: number
 }
+
+const { promisify } = util
 
 const block: Blockstore = {
   get: async (key: CID, _options?: Options) => {

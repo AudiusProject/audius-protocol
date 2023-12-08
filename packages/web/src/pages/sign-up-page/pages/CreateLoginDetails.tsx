@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { Flex, IconVerified, useTheme } from '@audius/harmony'
 import { Form, Formik } from 'formik'
@@ -20,6 +20,7 @@ import { CompletionChecklist } from '../components/CompletionChecklist'
 import { SignUpAgreementText } from '../components/SignUpPolicyText'
 import { Heading, Page, PageFooter, ReadOnlyField } from '../components/layout'
 import { loginDetailsSchema } from '../utils/loginDetailsSchema'
+import { useAudiusQueryContext } from '@audius/common'
 
 const messages = {
   title: 'Create Login Details',
@@ -36,8 +37,6 @@ export type CreateLoginDetailsValues = {
   confirmPassword: string
 }
 
-const loginDetailsFormikSchema = toFormikValidationSchema(loginDetailsSchema)
-
 export const CreateLoginDetailsPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
@@ -53,6 +52,12 @@ export const CreateLoginDetailsPage = () => {
     password: '',
     confirmPassword: ''
   }
+  const audiusQueryContext = useAudiusQueryContext()
+
+  const loginDetailsFormikSchema = useMemo(
+    () => toFormikValidationSchema(loginDetailsSchema(audiusQueryContext)),
+    [audiusQueryContext]
+  )
 
   const handleSubmit = useCallback(
     (values: CreateLoginDetailsValues) => {

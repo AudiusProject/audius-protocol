@@ -193,6 +193,9 @@ const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
 
 const UploadPage = lazy(() => import('pages/upload-page'))
 const Modals = lazy(() => import('pages/modals/Modals'))
+const ConnectedMusicConfetti = lazy(() =>
+  import('components/music-confetti/ConnectedMusicConfetti')
+)
 
 const includeSearch = (search) => {
   return search.includes('oauth_token') || search.includes('code')
