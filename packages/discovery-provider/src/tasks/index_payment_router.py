@@ -29,7 +29,6 @@ from src.models.users.usdc_transactions_history import (
 )
 from src.models.users.user import User
 from src.models.users.user_bank import USDCUserBankAccount, UserBankAccount
-from src.models.users.user_tip import UserTip
 from src.queries.get_balances import enqueue_immediate_balance_refresh
 from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
@@ -64,11 +63,6 @@ from src.utils.redis_constants import (
 from src.utils.structured_logger import StructuredLogger
 
 logger = StructuredLogger(__name__)
-
-#
-# #### TODO: Decide what items from here to the next big comment block need to be
-# moved to a common place.
-#
 
 # Populate values used in indexing from config
 PAYMENT_ROUTER_ADDRESS = shared_config["solana"]["payment_router_program_address"]
@@ -141,8 +135,6 @@ def get_track_owner_id(session: Session, track_id: int) -> Optional[int]:
     else:
         return None
 
-
-### END TODO for common code migration ###
 
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["payment_router_min_slot"])
