@@ -82,11 +82,15 @@ USDC_MINT_PUBKEY = Pubkey.from_string(USDC_MINT) if USDC_MINT else None
 PAYMENT_ROUTER_PDA_PUBKEY, _ = get_base_address(
     "payment_router".encode("UTF-8"), PAYMENT_ROUTER_PUBKEY
 )
-PAYMENT_ROUTER_USDC_ATA_ADDRESS = str(
-    get_associated_token_address(PAYMENT_ROUTER_PDA_PUBKEY, USDC_MINT_PUBKEY)
+PAYMENT_ROUTER_USDC_ATA_ADDRESS = (
+    str(get_associated_token_address(PAYMENT_ROUTER_PDA_PUBKEY, USDC_MINT_PUBKEY))
+    if PAYMENT_ROUTER_PDA_PUBKEY and USDC_MINT_PUBKEY
+    else None
 )
-PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS = str(
-    get_associated_token_address(PAYMENT_ROUTER_PDA_PUBKEY, WAUDIO_MINT_PUBKEY)
+PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS = (
+    str(get_associated_token_address(PAYMENT_ROUTER_PDA_PUBKEY, WAUDIO_MINT_PUBKEY))
+    if PAYMENT_ROUTER_PDA_PUBKEY and WAUDIO_MINT_PUBKEY
+    else None
 )
 
 # The amount of USDC that represents one USD cent
@@ -229,6 +233,7 @@ def get_purchase_metadata_from_memo(
                 )
                 price = None
                 splits = None
+                content_owner_id = None
                 if type == PurchaseType.track:
                     env = shared_config["discprov"]["env"]
                     content_owner_id = get_track_owner_id(session, id)
@@ -263,6 +268,7 @@ def get_purchase_metadata_from_memo(
                     price is not None
                     and splits is not None
                     and isinstance(splits, dict)
+                    and content_owner_id is not None
                 ):
                     return {
                         "type": type,
@@ -305,8 +311,8 @@ def validate_purchase(
 
 def index_purchase(
     session: Session,
-    receiver_user_accounts: [ReceiverUserAccount],
-    receiver_accounts: [str],
+    receiver_user_accounts: List[ReceiverUserAccount],
+    receiver_accounts: List[str],
     balance_changes: dict[str, BalanceChange],
     purchase_metadata: PurchaseMetadataDict,
     slot: int,
@@ -372,8 +378,8 @@ def index_purchase(
 def validate_and_index_usdc_transfers(
     session: Session,
     sender_account: str,
-    receiver_user_accounts: [ReceiverUserAccount],
-    receiver_accounts: [str],
+    receiver_user_accounts: List[ReceiverUserAccount],
+    receiver_accounts: List[str],
     balance_changes: dict[str, BalanceChange],
     purchase_metadata: Union[PurchaseMetadataDict, None],
     slot: int,
@@ -493,7 +499,7 @@ def process_route_instruction(
         )
         return
 
-    receiver_user_accounts: [ReceiverUserAccount] = []
+    receiver_user_accounts: List[ReceiverUserAccount] = []
     for user_id_account in user_id_accounts:
         if user_id_account[1] in receiver_accounts:
             receiver_user_accounts.append(
@@ -590,8 +596,8 @@ def process_payment_router_tx_details(
         )
         return
 
-    account_keys = list(map(lambda x: str(x), transaction.message.account_keys))
     tx_message = cast(Message, transaction.message)
+    account_keys = list(map(lambda x: str(x), transaction.message.account_keys))
 
     # Check for valid instruction
     has_route_instruction = has_log(meta, "Program log: Instruction: Route")
@@ -637,6 +643,7 @@ def process_payment_router_txs() -> None:
     transaction_signatures = []
 
     last_tx_signature = None
+    latest_global_slot = None
 
     # Loop exit condition
     intersection_found = False
