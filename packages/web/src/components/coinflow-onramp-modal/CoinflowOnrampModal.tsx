@@ -86,7 +86,7 @@ export const CoinflowOnrampModal = () => {
   const showContent = isOpen && adapter && transaction
 
   /*
-  TODO:
+  TODO(coinflow):
   - Create Transaction
   - Implement sendTransaction()
   */
