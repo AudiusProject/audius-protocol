@@ -7,6 +7,7 @@ import {
   formatTwitterProfile,
   InstagramProfile,
   Name,
+  pickHandleSchema,
   TikTokProfile,
   TwitterProfile
 } from '@audius/common'
@@ -19,8 +20,7 @@ import {
   setTwitterProfile
 } from 'common/store/pages/signon/actions'
 import { resizeImage } from 'utils/imageProcessingUtil'
-
-import { generateHandleSchema } from '../utils/handleSchema'
+import { restrictedHandles } from 'utils/restrictedHandles'
 
 const GENERAL_ADMISSION = process.env.VITE_GENERAL_ADMISSION ?? ''
 
@@ -38,9 +38,10 @@ export const useSetProfileFromTwitter = () => {
     const profileData = await formatTwitterProfile(twitterProfile, resizeImage)
 
     const { profile, profileImage, profileBanner, handleTooLong } = profileData
-    const handleSchema = generateHandleSchema({
+    const handleSchema = pickHandleSchema({
       audiusQueryContext: queryContext!,
-      skipReservedHandleCheck: profile.verified
+      skipReservedHandleCheck: profile.verified,
+      restrictedHandles
     })
 
     const validationResult = await handleSchema.safeParseAsync(
@@ -77,9 +78,10 @@ export const useSetProfileFromInstagram = () => {
     )
 
     const { profile, profileImage, handleTooLong } = profileData
-    const handleSchema = generateHandleSchema({
+    const handleSchema = pickHandleSchema({
       audiusQueryContext: queryContext!,
-      skipReservedHandleCheck: profile.is_verified
+      skipReservedHandleCheck: profile.is_verified,
+      restrictedHandles
     })
 
     const validationResult = await handleSchema.safeParseAsync(profile.username)
@@ -110,9 +112,10 @@ export const useSetProfileFromTikTok = () => {
     const profileData = await formatTikTokProfile(tikTokProfile, resizeImage)
 
     const { profile, profileImage, handleTooLong } = profileData
-    const handleSchema = generateHandleSchema({
+    const handleSchema = pickHandleSchema({
       audiusQueryContext: queryContext!,
-      skipReservedHandleCheck: profile.is_verified
+      skipReservedHandleCheck: profile.is_verified,
+      restrictedHandles
     })
 
     const validationResult = await handleSchema.safeParseAsync(profile.username)

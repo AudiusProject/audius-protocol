@@ -1,9 +1,9 @@
 import { DropdownField, DropdownFieldProps } from 'components/form-fields'
 import { moodMap } from 'utils/Moods'
 
-const MOODS = Object.keys(moodMap).map((k) => ({
+const MOODS = Object.entries(moodMap).map(([k, el]) => ({
   text: k,
-  el: moodMap[k]
+  el
 }))
 
 const menu = { items: MOODS }

@@ -13,7 +13,8 @@ import {
   PremiumConditions,
   FieldVisibility,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated
+  isPremiumContentUSDCPurchaseGated,
+  Mood
 } from '@audius/common'
 import {
   Button,
@@ -324,7 +325,7 @@ export const GiantTrackTile = ({
         <InfoLabel
           className={styles.infoLabelPlacement}
           labelName='mood'
-          labelValue={mood in moodMap ? moodMap[mood] : mood}
+          labelValue={mood in moodMap ? moodMap[mood as Mood] : mood}
         />
       )
     )
