@@ -92,7 +92,7 @@ const readConfig = () => {
     rewardsManagerProgramId: env.audius_solana_rewards_manager_program_address,
     rewardsManagerAccountAddress: env.audius_solana_rewards_manager_account,
     claimableTokenProgramId: env.audius_solana_user_bank_program_address,
-    paymentrouterProgramId: env.audius_solana_payment_router_program_address,
+    paymentRouterProgramId: env.audius_solana_payment_router_program_address,
     trackListenCountProgramId: env.audius_solana_track_listen_count_address,
     usdcMintAddress: env.audius_solana_usdc_mint,
     waudioMintAddress: env.audius_solana_waudio_mint,
