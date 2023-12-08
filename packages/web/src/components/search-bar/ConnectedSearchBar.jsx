@@ -24,8 +24,10 @@ import Bar from 'components/search/SearchBar'
 import { collectionPage, profilePage, getPathname } from 'utils/route'
 
 import styles from './ConnectedSearchBar.module.css'
+import { HistoryContext } from 'app/HistoryProvider'
 
 class ConnectedSearchBar extends Component {
+  static contextType = HistoryContext
   state = {
     value: ''
   }
@@ -35,7 +37,7 @@ class ConnectedSearchBar extends Component {
 
     // Clear search when navigating away from the search results page.
     history.listen((location, action) => {
-      const match = matchPath(getPathname(), {
+      const match = matchPath(getPathname(this.context.history.location), {
         path: '/search/:query'
       })
       if (!match) {
@@ -44,7 +46,7 @@ class ConnectedSearchBar extends Component {
     })
 
     // Set the initial search bar value if we loaded into a search page.
-    const match = matchPath(getPathname(), {
+    const match = matchPath(getPathname(this.context.history.location), {
       path: '/search/:query'
     })
     if (has(match, 'params.query')) {

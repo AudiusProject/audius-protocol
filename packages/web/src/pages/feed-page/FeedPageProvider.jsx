@@ -16,6 +16,7 @@ import {
 } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter, matchPath } from 'react-router-dom'
+import { HistoryContext } from 'app/HistoryProvider'
 
 import { make } from 'common/store/analytics/actions'
 import { openSignOn } from 'common/store/pages/signon/actions'
@@ -39,6 +40,8 @@ const messages = {
  *  children as `FeedPageContentProps`.
  */
 class FeedPageProvider extends PureComponent {
+  static contextType = HistoryContext
+
   goToTrending = () => {
     this.props.history.push({
       pathname: TRENDING_PAGE
@@ -50,7 +53,7 @@ class FeedPageProvider extends PureComponent {
   }
 
   matchesRoute = (route) => {
-    return matchPath(getPathname(), {
+    return matchPath(getPathname(this.context.history.location), {
       path: route
     })
   }

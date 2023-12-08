@@ -26,6 +26,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 
 import { make } from 'common/store/analytics/actions'
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import PlayButton from 'components/play-bar/PlayButton'
 import VolumeBar from 'components/play-bar/VolumeBar'
 import NextButtonProvider from 'components/play-bar/next-button/NextButtonProvider'
@@ -360,99 +361,101 @@ class PlayBar extends Component {
     return (
       <div className={styles.playBar}>
         <div className={styles.playBarContentWrapper}>
-          <div className={styles.playBarPlayingInfo}>
-            <PlayingTrackInfo
-              profilePictureSizes={profilePictureSizes}
-              trackId={trackId}
-              isOwner={isOwner}
-              trackTitle={trackTitle}
-              trackPermalink={trackPermalink}
-              artistName={artistName}
-              artistHandle={artistHandle}
-              artistUserId={artistUserId}
-              isVerified={isVerified}
-              isTrackUnlisted={isTrackUnlisted}
-              isPremium={isPremium}
-              onClickTrackTitle={this.goToTrackPage}
-              onClickArtistName={this.goToArtistPage}
-              hasShadow={false}
-            />
-          </div>
-
-          <div className={styles.playBarControls}>
-            <div className={styles.timeControls}>
-              <Scrubber
-                mediaKey={`${uid}${mediaKey}`}
-                isPlaying={isPlaying && !isBuffering}
-                isDisabled={!uid && !collectible}
-                includeTimestamps
-                playbackRate={
-                  isLongFormContent ? playbackRateValueMap[playbackRate] : 1
-                }
-                elapsedSeconds={audioPlayer?.getPosition()}
-                totalSeconds={duration}
-                style={{
-                  railListenedColor: 'var(--track-slider-rail)',
-                  handleColor: 'var(--track-slider-handle)'
-                }}
-                onScrubRelease={this.props.seek}
+          <ClientOnly>
+            <div className={styles.playBarPlayingInfo}>
+              <PlayingTrackInfo
+                profilePictureSizes={profilePictureSizes}
+                trackId={trackId}
+                isOwner={isOwner}
+                trackTitle={trackTitle}
+                trackPermalink={trackPermalink}
+                artistName={artistName}
+                artistHandle={artistHandle}
+                artistUserId={artistUserId}
+                isVerified={isVerified}
+                isTrackUnlisted={isTrackUnlisted}
+                isPremium={isPremium}
+                onClickTrackTitle={this.goToTrackPage}
+                onClickArtistName={this.goToArtistPage}
+                hasShadow={false}
               />
             </div>
 
-            <div className={styles.buttonControls}>
-              <div className={styles.shuffleButton}>
-                {isLongFormContent && isNewPodcastControlsEnabled ? null : (
-                  <ShuffleButtonProvider
-                    isMatrix={matrix}
-                    darkMode={shouldShowDark(theme)}
-                    onShuffleOn={this.shuffleOn}
-                    onShuffleOff={this.shuffleOff}
-                  />
-                )}
-              </div>
-              <div className={styles.previousButton}>
-                <PreviousButtonProvider onClick={this.onPrevious} />
-              </div>
-              <div className={styles.playButton}>
-                <PlayButton
-                  playable={this.playable()}
-                  status={playButtonStatus}
-                  onClick={this.togglePlay}
+            <div className={styles.playBarControls}>
+              <div className={styles.timeControls}>
+                <Scrubber
+                  mediaKey={`${uid}${mediaKey}`}
+                  isPlaying={isPlaying && !isBuffering}
+                  isDisabled={!uid && !collectible}
+                  includeTimestamps
+                  playbackRate={
+                    isLongFormContent ? playbackRateValueMap[playbackRate] : 1
+                  }
+                  elapsedSeconds={audioPlayer?.getPosition()}
+                  totalSeconds={duration}
+                  style={{
+                    railListenedColor: 'var(--track-slider-rail)',
+                    handleColor: 'var(--track-slider-handle)'
+                  }}
+                  onScrubRelease={this.props.seek}
                 />
               </div>
-              <div className={styles.nextButton}>
-                <NextButtonProvider onClick={this.onNext} />
-              </div>
-              <div className={styles.repeatButton}>
-                {isLongFormContent && isNewPodcastControlsEnabled ? (
-                  <PlaybackRateButton />
-                ) : (
-                  <RepeatButtonProvider
-                    isMatrix={matrix}
-                    darkMode={shouldShowDark(theme)}
-                    onRepeatOff={this.repeatOff}
-                    onRepeatAll={this.repeatAll}
-                    onRepeatSingle={this.repeatSingle}
+
+              <div className={styles.buttonControls}>
+                <div className={styles.shuffleButton}>
+                  {isLongFormContent && isNewPodcastControlsEnabled ? null : (
+                    <ShuffleButtonProvider
+                      isMatrix={matrix}
+                      darkMode={shouldShowDark(theme)}
+                      onShuffleOn={this.shuffleOn}
+                      onShuffleOff={this.shuffleOff}
+                    />
+                  )}
+                </div>
+                <div className={styles.previousButton}>
+                  <PreviousButtonProvider onClick={this.onPrevious} />
+                </div>
+                <div className={styles.playButton}>
+                  <PlayButton
+                    playable={this.playable()}
+                    status={playButtonStatus}
+                    onClick={this.togglePlay}
                   />
-                )}
+                </div>
+                <div className={styles.nextButton}>
+                  <NextButtonProvider onClick={this.onNext} />
+                </div>
+                <div className={styles.repeatButton}>
+                  {isLongFormContent && isNewPodcastControlsEnabled ? (
+                    <PlaybackRateButton />
+                  ) : (
+                    <RepeatButtonProvider
+                      isMatrix={matrix}
+                      darkMode={shouldShowDark(theme)}
+                      onRepeatOff={this.repeatOff}
+                      onRepeatAll={this.repeatAll}
+                      onRepeatSingle={this.repeatSingle}
+                    />
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className={styles.optionsRight}>
-            <VolumeBar
-              defaultValue={100}
-              granularity={VOLUME_GRANULARITY}
-              onChange={this.updateVolume}
-            />
-            <SocialActions
-              trackId={trackId}
-              uid={uid}
-              isOwner={isOwner}
-              onToggleRepost={this.onToggleRepost}
-              onToggleFavorite={this.onToggleFavorite}
-            />
-          </div>
+            <div className={styles.optionsRight}>
+              <VolumeBar
+                defaultValue={100}
+                granularity={VOLUME_GRANULARITY}
+                onChange={this.updateVolume}
+              />
+              <SocialActions
+                trackId={trackId}
+                uid={uid}
+                isOwner={isOwner}
+                onToggleRepost={this.onToggleRepost}
+                onToggleFavorite={this.onToggleFavorite}
+              />
+            </div>
+          </ClientOnly>
         </div>
       </div>
     )

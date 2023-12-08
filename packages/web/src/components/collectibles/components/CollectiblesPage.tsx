@@ -60,6 +60,7 @@ import {
 import zIndex from 'utils/zIndex'
 
 import styles from './CollectiblesPage.module.css'
+import { useHistoryContext } from 'app/HistoryProvider'
 const { getCollectible } = collectibleDetailsUISelectors
 const { setCollectible } = collectibleDetailsUIActions
 
@@ -132,6 +133,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
   const solanaCollectibleList = useMemo(() => {
     return profile?.solanaCollectibleList ?? null
   }, [profile])
+  const { history } = useHistoryContext()
 
   const collectibleList = useMemo(() => {
     return ethCollectibleList || solanaCollectibleList
@@ -489,7 +491,10 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
 
   // Handle rendering details modal based on route
   useEffect(() => {
-    const match = doesMatchRoute(PROFILE_PAGE_COLLECTIBLE_DETAILS)
+    const match = doesMatchRoute(
+      history.location,
+      PROFILE_PAGE_COLLECTIBLE_DETAILS
+    )
     if (match) {
       // Ignore needed bc typescript doesn't think that match.params has collectibleId property
       // @ts-ignore

@@ -4,7 +4,7 @@ import { Provider } from 'react-redux'
 import { describe, it, vitest } from 'vitest'
 
 import { store } from 'store/configureStore'
-import history from 'utils/history'
+import { createHistory } from 'utils/history'
 
 import WebPlayer from './WebPlayer'
 
@@ -28,6 +28,7 @@ vitest.mock('services/solana-client/SolanaClient', () => ({
 
 describe('smoke test', () => {
   it('renders without crashing', () => {
+    const history = createHistory()
     const rootNode = document.createElement('div')
     ReactDOM.render(
       <Provider store={store}>

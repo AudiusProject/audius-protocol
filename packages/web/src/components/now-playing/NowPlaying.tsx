@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { Location } from 'history'
 import {
   ID,
   FavoriteSource,
@@ -62,6 +63,7 @@ import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './NowPlaying.module.css'
 import ActionsBar from './components/ActionsBar'
+import { useHistoryContext } from 'app/HistoryProvider'
 const { makeGetCurrent } = queueSelectors
 const { getBuffering, getCounter, getPlaying, getPlaybackRate } =
   playerSelectors
@@ -134,6 +136,7 @@ const NowPlaying = g(
     dominantColors
   }) => {
     const { uid, track, user, collectible } = currentQueueItem
+    const { history } = useHistoryContext
 
     // Keep a ref for the artwork and dynamically resize the width of the
     // image as the height changes (which is flexed).
@@ -281,15 +284,18 @@ const NowPlaying = g(
     const goToTrackPage = () => {
       onClose()
       if (track) {
-        goToRoute(track.permalink)
+        goToRoute(history.location, track.permalink)
       } else {
-        goToRoute(collectibleDetailsPage(user.handle, collectible?.id ?? ''))
+        goToRoute(
+          history.location,
+          collectibleDetailsPage(user.handle, collectible?.id ?? '')
+        )
       }
     }
 
     const goToProfilePage = () => {
       onClose()
-      goToRoute(profilePage(handle))
+      goToRoute(history.location, profilePage(handle))
     }
 
     const onClickOverflow = useCallback(() => {
@@ -640,7 +646,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
           overflowActionCallbacks: callbacks
         })
       ),
-    goToRoute: (route: string) => dispatch(pushRoute(route))
+    goToRoute: (location: Location, route: string) =>
+      dispatch(pushRoute(location, route))
   }
 }
 

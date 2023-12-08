@@ -45,6 +45,8 @@ import {
 
 import TokenHoverTooltip from './TokenHoverTooltip'
 import styles from './WalletManagementTile.module.css'
+import { useHistory } from 'react-router-dom'
+import { useHistoryContext } from 'app/HistoryProvider'
 const { getHasAssociatedWallets } = tokenDashboardPageSelectors
 const { pressReceive, pressSend, pressConnectWallets } =
   tokenDashboardPageActions
@@ -190,17 +192,19 @@ const OnRampTooltipButton = ({
   bannedState
 }: OnRampTooltipButtonProps) => {
   const dispatch = useDispatch()
+  const { history } = useHistoryContext()
+
   const onClick = useCallback(() => {
     dispatch(
       startBuyAudioFlow({
         provider,
         onSuccess: {
-          action: pushUniqueRoute(TRENDING_PAGE),
+          action: pushUniqueRoute(history.location, TRENDING_PAGE),
           message: messages.findArtists
         }
       })
     )
-  }, [dispatch, provider])
+  }, [dispatch, provider, history])
   const bannedRegionText =
     provider === OnRampProvider.COINBASE
       ? messages.coinbasePayRegionNotSupported

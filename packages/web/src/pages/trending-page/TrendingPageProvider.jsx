@@ -18,6 +18,7 @@ import {
 } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { matchPath, withRouter } from 'react-router-dom'
+import { HistoryContext } from 'app/HistoryProvider'
 
 import { make } from 'common/store/analytics/actions'
 import { openSignOn } from 'common/store/pages/signon/actions'
@@ -68,6 +69,7 @@ const callLineupAction = (timeRange, action, ...args) => {
  *  children as `TrendingPageContentProps`.
  */
 class TrendingPageProvider extends PureComponent {
+  static contextType = HistoryContext
   goToSignUp = () => {
     this.props.openSignOn(false)
   }
@@ -77,7 +79,7 @@ class TrendingPageProvider extends PureComponent {
   }
 
   matchesRoute = (route) => {
-    return matchPath(getPathname(), {
+    return matchPath(getPathname(this.context.history.location), {
       path: route
     })
   }

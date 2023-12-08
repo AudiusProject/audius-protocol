@@ -43,6 +43,7 @@ import {
 } from 'utils/route'
 
 import styles from './SearchPageContent.module.css'
+import { useHistoryContext } from 'app/HistoryProvider'
 
 export type SearchPageContentProps = {
   tracks: LineupState<{}>
@@ -130,6 +131,7 @@ const TracksSearchPage = ({
   containerRef,
   isTagSearch
 }: SearchPageContentProps) => {
+  const { history } = useHistoryContext()
   const numTracks = Object.keys(tracks.entries).length
   const loadingStatus = (() => {
     // We need to account for the odd case where search.status === success but
@@ -169,7 +171,7 @@ const TracksSearchPage = ({
             loadMore={(offset: number, limit: number) =>
               dispatch(
                 tracksActions.fetchLineupMetadatas(offset, limit, false, {
-                  category: getCategory(),
+                  category: getCategory(history.location.pathname),
                   query: trimToAlphaNumeric(searchText),
                   isTagSearch
                 })

@@ -8,17 +8,14 @@ import { Route, Switch } from 'react-router-dom'
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
 
-// TODO: turn into a component to utilize SsrContext
-// import '../services/webVitals'
-
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
 
 import { AppErrorBoundary } from './AppErrorBoundary'
 import { AppProviders } from './AppProviders'
 import WebPlayer from './web-player/WebPlayer'
-
-import '../services/webVitals'
+import { useHistoryContext } from './HistoryProvider'
+import { initWebVitals } from 'services/webVitals'
 
 const SignOnPage = lazy(() => import('pages/sign-on-page'))
 const SignOn = lazy(() => import('pages/sign-on/SignOn'))
@@ -26,6 +23,12 @@ const OAuthLoginPage = lazy(() => import('pages/oauth-login-page'))
 const DemoTrpcPage = lazy(() => import('pages/demo-trpc/DemoTrpcPage'))
 
 export const AppInner = () => {
+  const { history } = useHistoryContext()
+
+  useEffect(() => {
+    initWebVitals(history.location)
+  }, [history])
+
   const { isEnabled: isSignInRedesignEnabled, isLoaded } = useFeatureFlag(
     FeatureFlags.SIGN_UP_REDESIGN
   )

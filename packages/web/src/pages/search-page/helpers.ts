@@ -26,12 +26,12 @@ export const isTagSearch = () => {
   return !!window.location.hash
 }
 
-export const getCategory = () => {
+export const getCategory = (pathname: string) => {
   let category
   if (isTagSearch()) {
     category = window.location.hash.slice(1).split('/')[1]
   } else {
-    const categoryMatch = matchPath(getPathname(), {
+    const categoryMatch = matchPath(pathname, {
       path: '/search/:query/:category',
       exact: true
     }) as match
@@ -55,17 +55,16 @@ export const getCategory = () => {
   return SearchKind.ALL
 }
 
-export const getSearchTag = () => {
+export const getSearchTag = (pathname: string) => {
   // Trim off the leading '#' and remove any other paths (e.g. category)
   if (USE_HASH_ROUTING) {
-    const pathname = getPathname()
     return pathname.split('#')[1].split('/')[0]
   }
   return window.location.hash.slice(1).split('/')[0]
 }
 
-export const getSearchText = () => {
-  const match = matchPath(getPathname(), {
+export const getSearchText = (pathname: string) => {
+  const match = matchPath(pathname, {
     path: '/search/:query'
   }) as match
   if (!match) return ''
@@ -83,8 +82,8 @@ export const getSearchText = () => {
 
 // Returns a full query (e.g. `#rap` or `rap`), as opposed to
 // `getSearchTag` which strips leading # from tags
-export const getQuery = () =>
-  isTagSearch() ? `#${getSearchTag()}` : getSearchText()
+export const getQuery = (pathname: string) =>
+  isTagSearch() ? `#${getSearchTag(pathname)}` : getSearchText(pathname)
 
 export const getResultsLimit = (isMobile: boolean, category: SearchKind) => {
   return isMobile

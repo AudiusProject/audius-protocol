@@ -43,6 +43,7 @@ import { AudioMatchSection } from './components/AudioMatchSection'
 import { PurchaseContentFormFields } from './components/PurchaseContentFormFields'
 import { PurchaseContentFormFooter } from './components/PurchaseContentFormFooter'
 import { usePurchaseContentFormState } from './hooks/usePurchaseContentFormState'
+import { useHistoryContext } from 'app/HistoryProvider'
 
 const { startRecoveryIfNecessary, cleanup: cleanupUSDCRecovery } =
   buyUSDCActions
@@ -85,6 +86,7 @@ const RenderForm = ({
   const currentPageIndex = pageToPageIndex(page)
 
   const { resetForm } = useFormikContext()
+  const { history } = useHistoryContext()
 
   // Reset form on track change
   useEffect(() => resetForm, [track.track_id, resetForm])
@@ -92,9 +94,9 @@ const RenderForm = ({
   // Navigate to track on successful purchase behind the modal
   useEffect(() => {
     if (stage === PurchaseContentStage.FINISH && permalink) {
-      dispatch(pushUniqueRoute(permalink))
+      dispatch(pushUniqueRoute(history.location, permalink))
     }
-  }, [stage, permalink, dispatch])
+  }, [stage, permalink, dispatch, history])
 
   const handleClose = useCallback(() => {
     dispatch(setPurchasePage({ page: PurchaseContentPage.PURCHASE }))

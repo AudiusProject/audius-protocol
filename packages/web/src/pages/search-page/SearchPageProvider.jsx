@@ -23,6 +23,7 @@ import {
   SEARCH_PAGE,
   doesMatchRoute
 } from 'utils/route'
+import { HistoryContext } from 'app/HistoryProvider'
 
 import * as helpers from './helpers'
 const { makeGetCurrent } = queueSelectors
@@ -38,9 +39,13 @@ const { makeGetLineupMetadatas } = lineupSelectors
 const getUserId = accountSelectors.getUserId
 
 class SearchPageProvider extends Component {
+  static contextType = HistoryContext
+
   constructor(props) {
     super(props)
-    const searchResultsCategory = helpers.getCategory()
+    const searchResultsCategory = helpers.getCategory(
+      this.context.history.location
+    )
 
     this.state = {
       searchResultsCategory
@@ -54,13 +59,15 @@ class SearchPageProvider extends Component {
       // Make sure the serach bar shows on every search-navigation
       if (window.scrollTo) window.scrollTo(0, 0)
       const isTagSearch = helpers.isTagSearch()
-      const searchMatch = helpers.getSearchText()
+      const searchMatch = helpers.getSearchText(this.context.history.location)
 
-      const category = helpers.getCategory()
+      const category = helpers.getCategory(this.context.history.location)
       this.setState({ searchResultsCategory: category })
 
       if (!!searchMatch || isTagSearch) {
-        const query = isTagSearch ? helpers.getSearchTag() : searchMatch
+        const query = isTagSearch
+          ? helpers.getSearchTag(this.context.history.location)
+          : searchMatch
         this.props.dispatch(tracksActions.reset())
         if (category !== SearchKind.TRACKS) {
           const limit = helpers.getResultsLimit(this.props.isMobile, category)
@@ -72,8 +79,10 @@ class SearchPageProvider extends Component {
     })
 
     const isTagSearch = helpers.isTagSearch()
-    const query = isTagSearch ? helpers.getSearchTag() : helpers.getSearchText()
-    const category = helpers.getCategory()
+    const query = isTagSearch
+      ? helpers.getSearchTag(this.context.history.location)
+      : helpers.getSearchText(this.context.history.location)
+    const category = helpers.getCategory(this.context.history.location)
     if (category !== SearchKind.TRACKS) {
       const limit = helpers.getResultsLimit(this.props.isMobile, category)
       query && this.search(isTagSearch, query, category, limit)
@@ -107,9 +116,13 @@ class SearchPageProvider extends Component {
   handleViewMoreResults = (category) => {
     return () => {
       const { history } = this.props
-      const query = helpers.getQuery()
+      const query = helpers.getQuery(this.context.history.location)
       history.push(`/search/${query}/${category}`)
-      this.setState({ searchResultsCategory: helpers.getCategory() })
+      this.setState({
+        searchResultsCategory: helpers.getCategory(
+          this.context.history.location
+        )
+      })
       this.props.recordMoreResults(query, category)
     }
   }
@@ -122,10 +135,11 @@ class SearchPageProvider extends Component {
     // Note that if the user navigates and the page route does not match the
     // search page, then we should not redirect & allow react router to render
     // the correct page.
-    const query = helpers.getQuery()
+    const query = helpers.getQuery(this.context.history.location)
     if (
       !query &&
-      (doesMatchRoute(SEARCH_CATEGORY_PAGE) || doesMatchRoute(SEARCH_PAGE))
+      (doesMatchRoute(this.context.history.location, SEARCH_CATEGORY_PAGE) ||
+        doesMatchRoute(this.context.history.location, SEARCH_PAGE))
     ) {
       return <Redirect to={NOT_FOUND_PAGE} />
     }
@@ -133,7 +147,7 @@ class SearchPageProvider extends Component {
     const ContentClass = this.props.children
     const injectedProps = {
       ...this.props,
-      searchText: helpers.getQuery(),
+      searchText: helpers.getQuery(this.context.history.location),
       handleViewMoreResults: this.handleViewMoreResults,
       searchResultsCategory: this.state.searchResultsCategory,
       isTagSearch: helpers.isTagSearch()
