@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 
 import { socialMediaMessages, useAudiusQueryContext } from '@audius/common'
 import { Divider, Flex, IconVerified, Paper, Text } from '@audius/harmony'
