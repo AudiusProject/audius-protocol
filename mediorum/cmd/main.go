@@ -10,8 +10,6 @@ import (
 	"strconv"
 
 	"github.com/AudiusProject/audius-protocol/mediorum/cmd/loadtest"
-	"github.com/AudiusProject/audius-protocol/mediorum/cmd/reaper"
-	"github.com/AudiusProject/audius-protocol/mediorum/cmd/segments"
 	"github.com/AudiusProject/audius-protocol/mediorum/registrar"
 	"github.com/AudiusProject/audius-protocol/mediorum/server"
 )
@@ -74,19 +72,7 @@ func main() {
 		metricsCmd.Parse(os.Args[2:])
 		testClient := initClient()
 		loadtest.RunM(testClient)
-	case "segments":
-		segmentsCmd := flag.NewFlagSet("segments", flag.ExitOnError)
-		segmentsCmdDelete := segmentsCmd.Bool("delete", false, "Delete files and corresponding database rows if set to true")
-		segmentsCmd.Parse(os.Args[2:])
-
-		c := &segments.MediorumClientConfig{
-			Delete: *segmentsCmdDelete,
-		}
-
-		segments.Run(c)
-	case "reaper":
-		reaper.Run()
 	default:
-		log.Fatal("usage `$ mediorum-cmd <test [num]|metrics|segments|reaper>`")
+		log.Fatal("usage `$ mediorum-cmd <test [num]|metrics>`")
 	}
 }

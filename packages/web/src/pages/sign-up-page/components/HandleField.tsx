@@ -1,8 +1,8 @@
-import { useCallback, useContext, useEffect } from 'react'
+import { useCallback, useContext } from 'react'
 
-import { useDebouncedCallback } from '@audius/common'
+import { socialMediaMessages } from '@audius/common'
 import { TextLink } from '@audius/harmony'
-import { useField, useFormikContext } from 'formik'
+import { useField } from 'formik'
 
 import {
   HarmonyTextField,
@@ -11,7 +11,6 @@ import {
 import { ToastContext } from 'components/toast/ToastContext'
 
 import { errorMessages } from '../utils/handleSchema'
-import { socialMediaMessages } from '../utils/socialMediaMessages'
 
 import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
@@ -28,10 +27,6 @@ const handleAuthMap = {
   [errorMessages.tiktokReservedError]: SignupFlowTikTokAuth
 }
 
-type HandleValues = {
-  handle: string
-}
-
 type HandleFieldProps = Partial<HarmonyTextFieldProps> & {
   onCompleteSocialMediaLogin?: (info: {
     requiresReview: boolean
@@ -43,20 +38,8 @@ type HandleFieldProps = Partial<HarmonyTextFieldProps> & {
 export const HandleField = (props: HandleFieldProps) => {
   const { onCompleteSocialMediaLogin, ...other } = props
   const [{ value: handle }, { error }, { setError }] = useField('handle')
-  const { validateForm } = useFormikContext<HandleValues>()
 
   const { toast } = useContext(ToastContext)
-
-  const debouncedValidate = useDebouncedCallback(
-    validateForm,
-    [validateForm],
-    1000
-  )
-
-  useEffect(() => {
-    debouncedValidate({ handle })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedValidate, handle])
 
   const handleVerifyHandleError = useCallback(() => {
     setError(socialMediaMessages.verificationError)
@@ -84,21 +67,22 @@ export const HandleField = (props: HandleFieldProps) => {
 
   const AuthComponent = error ? handleAuthMap[error] : undefined
 
-  const helperText = error ? (
-    <>
-      {error}{' '}
-      {onCompleteSocialMediaLogin && AuthComponent ? (
-        <TextLink variant='visible' asChild>
-          <AuthComponent
-            onFailure={handleVerifyHandleError}
-            onSuccess={handleLoginSuccess}
-          >
-            <span>{messages.linkToClaim}</span>
-          </AuthComponent>
-        </TextLink>
-      ) : null}
-    </>
-  ) : null
+  const helperText =
+    handle && error ? (
+      <>
+        {error}{' '}
+        {onCompleteSocialMediaLogin && AuthComponent ? (
+          <TextLink variant='visible' asChild>
+            <AuthComponent
+              onFailure={handleVerifyHandleError}
+              onSuccess={handleLoginSuccess}
+            >
+              <span>{messages.linkToClaim}</span>
+            </AuthComponent>
+          </TextLink>
+        ) : null}
+      </>
+    ) : null
 
   return (
     <HarmonyTextField
@@ -109,6 +93,7 @@ export const HandleField = (props: HandleFieldProps) => {
       startAdornmentText='@'
       placeholder={messages.handle}
       transformValue={(value) => value.replace(/\s/g, '')}
+      debouncedValidationMs={1000}
       {...other}
     />
   )

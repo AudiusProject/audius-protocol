@@ -29,6 +29,7 @@ import bs58 from 'bs58'
 const MEMO_PROGRAM_ID = 'Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo'
 const CLAIMABLE_TOKEN_PROGRAM_ID = config.claimableTokenProgramId
 const REWARDS_MANAGER_PROGRAM_ID = config.rewardsManagerProgramId
+const TRACK_LISTEN_COUNT_PROGRAM_ID = config.trackListenCountProgramId
 const JUPITER_AGGREGATOR_V6_PROGRAM_ID =
   'JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4'
 
@@ -387,6 +388,7 @@ export const assertRelayAllowedInstructions = async (
         break
       case Secp256k1Program.programId.toBase58():
       case MEMO_PROGRAM_ID:
+      case TRACK_LISTEN_COUNT_PROGRAM_ID:
         // All instructions of these programs are allowed
         break
       default:

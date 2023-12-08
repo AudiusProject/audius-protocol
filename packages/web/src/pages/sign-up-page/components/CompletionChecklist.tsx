@@ -1,23 +1,16 @@
+import {
+  passwordSchema,
+  createPasswordPageMessages,
+  type CompletionChecklistType
+} from '@audius/common'
 import { CompletionCheck, Flex, Text } from '@audius/harmony'
 import { useField } from 'formik'
 import { useAsync } from 'react-use'
 
 import { useMedia } from 'hooks/useMedia'
 
-import { passwordSchema } from '../utils/passwordSchema'
-
-export type CompletionChecklistType =
-  | 'hasNumber'
-  | 'minLength'
-  | 'notCommon'
-  | 'matches'
-
-const messages: Record<CompletionChecklistType, string> = {
-  hasNumber: 'Must contain numbers',
-  minLength: 'At least 8 characters',
-  matches: 'Passwords match',
-  notCommon: 'Hard to guess'
-}
+const messages: Record<CompletionChecklistType, string> =
+  createPasswordPageMessages.completionChecklist
 
 type ChecklistItem = { type: CompletionChecklistType; path: string }
 

@@ -20,7 +20,7 @@ bp = Blueprint("root", __name__, url_prefix="/")
 @bp.route("", methods=["GET"])
 def redirect_protocol_dashboard():
     base_url = request.base_url
-    if base_url.endswith('/'):
+    if base_url.endswith("/"):
         base_url = base_url[:-1]
     proto_dash = f"/dashboard/#/services/discovery-node?endpoint={base_url}"
     return redirect(proto_dash, code=302)

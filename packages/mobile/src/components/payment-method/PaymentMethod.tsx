@@ -159,7 +159,7 @@ export const PaymentMethod = ({
     <SummaryTable
       title={messages.title}
       items={items}
-      renderContent={(items: SummaryTableItem[]) => (
+      renderBody={(items: SummaryTableItem[]) => (
         <FlatList
           renderItem={renderItem}
           ItemSeparatorComponent={Divider}

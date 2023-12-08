@@ -7,7 +7,7 @@ import BN from 'bn.js'
 import keccak256 from 'keccak256'
 import secp256k1 from 'secp256k1'
 
-import { WAUDIO_DECMIALS } from '../../constants'
+import { WAUDIO_DECIMALS } from '../../constants'
 
 import { padBNToUint8Array } from './padBNToUint8Array'
 
@@ -84,7 +84,7 @@ export class SolanaUtils {
    * Converts "UI" wAudio (i.e. 5) into properly denominated BN representation - (i.e. 5 * 10 ^ 8)
    */
   static uiAudioToBNWaudio(amount: number) {
-    return new BN(amount * 10 ** WAUDIO_DECMIALS)
+    return new BN(amount * 10 ** WAUDIO_DECIMALS)
   }
 
   /**

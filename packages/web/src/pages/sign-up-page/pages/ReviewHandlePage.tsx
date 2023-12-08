@@ -79,7 +79,7 @@ export const ReviewHandlePage = () => {
       validateOnMount
     >
       {({ isValid }) => (
-        <Page as={Form}>
+        <Page as={Form} transition='horizontal'>
           <Heading
             heading={messages.heading}
             description={messages.description}
@@ -87,7 +87,7 @@ export const ReviewHandlePage = () => {
           {hasImages ? (
             <Paper gap='xl' direction='column'>
               <AccountHeader mode='viewing' size='small' />
-              <HandleField css={{ padding: spacing.l }} />
+              <HandleField autoFocus css={{ padding: spacing.l }} />
             </Paper>
           ) : (
             <HandleField />

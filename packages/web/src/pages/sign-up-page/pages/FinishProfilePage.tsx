@@ -90,7 +90,12 @@ export const FinishProfilePage = () => {
       validateOnChange
     >
       {({ isValid, values }) => (
-        <Page as={Form} centered>
+        <Page
+          as={Form}
+          centered
+          transition={isMobile ? 'horizontal' : 'vertical'}
+          transitionBack='horizontal'
+        >
           <Heading
             prefix={
               isMobile ? null : <OutOfText numerator={2} denominator={2} />
@@ -110,6 +115,7 @@ export const FinishProfilePage = () => {
               label={messages.displayName}
               placeholder={messages.inputPlaceholder}
               required
+              autoFocus
               maxLength={32}
               css={(theme) => ({
                 padding: theme.spacing.l,

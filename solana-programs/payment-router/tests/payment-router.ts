@@ -1,21 +1,21 @@
 import * as anchor from '@coral-xyz/anchor'
 import { Program } from '@coral-xyz/anchor'
 import { PaymentRouter } from '../target/types/payment_router'
-import { SPL_AUDIO_DECIMALS, SPL_AUDIO_TOKEN_ADDRESS, SPL_USDC_DECIMALS, SPL_USDC_TOKEN_ADDRESS } from './constants'
+import {
+  SPL_AUDIO_DECIMALS,
+  SPL_AUDIO_TOKEN_ADDRESS,
+  SPL_USDC_DECIMALS,
+  SPL_USDC_TOKEN_ADDRESS
+} from './constants'
 import {
   TOKEN_PROGRAM_ID,
   createTransferCheckedInstruction,
-  getOrCreateAssociatedTokenAccount,
+  getOrCreateAssociatedTokenAccount
 } from '@solana/spl-token'
 import { assert } from 'chai'
 import { TransactionMessage, VersionedTransaction } from '@solana/web3.js'
 
-const {
-  Connection,
-  Keypair,
-  PublicKey,
-  SystemProgram,
-} = anchor.web3
+const { Connection, Keypair, PublicKey, SystemProgram } = anchor.web3
 
 // Read in fee payer from the environment variable
 const FEE_PAYER_SECRET = process.env.feePayerSecret
@@ -28,6 +28,8 @@ const SPL_AUDIO_TOKEN_ADDRESS_KEY = new PublicKey(SPL_AUDIO_TOKEN_ADDRESS)
 const SPL_USDC_TOKEN_ADDRESS_KEY = new PublicKey(SPL_USDC_TOKEN_ADDRESS)
 
 const endpoint = 'https://api.mainnet-beta.solana.com'
+// Use this endpoint for local testing
+// const endpoint = 'http://localhost:8899'
 const connection = new Connection(endpoint, 'finalized')
 
 async function signTransaction(transaction) {
@@ -47,15 +49,18 @@ describe('payment-router', () => {
     signTransaction,
     signAllTransactions
   }
-  const provider = new anchor.AnchorProvider(connection, wallet, { skipPreflight: true })
+  const provider = new anchor.AnchorProvider(connection, wallet, {
+    skipPreflight: true
+  })
   anchor.setProvider(provider)
 
   const program = anchor.workspace.PaymentRouter as Program<PaymentRouter>
 
-  const [paymentRouterPda, paymentRouterPdaBump] = PublicKey.findProgramAddressSync(
-    [Buffer.from('payment_router')],
-    program.programId
-  )
+  const [paymentRouterPda, paymentRouterPdaBump] =
+    PublicKey.findProgramAddressSync(
+      [Buffer.from('payment_router')],
+      program.programId
+    )
 
   it('creates the payment router pda', async () => {
     try {
@@ -64,7 +69,7 @@ describe('payment-router', () => {
         .accounts({
           paymentRouterPda,
           payer: feePayerPublicKey,
-          systemProgram: SystemProgram.programId,
+          systemProgram: SystemProgram.programId
         })
         .signers([feePayerKeypair])
         .rpc()
@@ -72,10 +77,15 @@ describe('payment-router', () => {
     } catch (e) {
       const timeoutError = 'TransactionExpiredTimeoutError'
       if (e.toString().includes(timeoutError)) {
-        assert.fail(`The transaction timed out, but the PDA may have been created.\nError: ${e}`)
+        assert.fail(
+          `The transaction timed out, but the PDA may have been created.\nError: ${e}`
+        )
       }
       const error = `{"err":{"InstructionError":[0,{"Custom":0}]}}`
-      assert.ok(e.toString().includes(error), `Error message not expected: ${e.toString()}`)
+      assert.ok(
+        e.toString().includes(error),
+        `Error message not expected: ${e.toString()}`
+      )
       console.log('Payment Router balance PDA already exists')
     }
   })
@@ -92,16 +102,16 @@ describe('payment-router', () => {
       '6gY2Yy8cEFz74E1ZW4VmyLxDQDbPfM6S3iqbAbiZd15o',
       '98ASG9DEKBcojqeMN3KiqNvtmExMERq2uL5ZLUCRo1iq',
       'Aunpp6mQonYuKcmFPqhHsfRjrnF8MznHbVti2iVDp4MN',
-      'CXeY4Yea4s78LDkXqwkvBmY65aMt4WTmeVeSaUgdz8Cf',
+      'CXeY4Yea4s78LDkXqwkvBmY65aMt4WTmeVeSaUgdz8Cf'
     ]
     const amount = 0.00001
-    const recipientAmounts: Record<string, number> = recipients
-      .reduce((acc, recipient) => {
+    const recipientAmounts: Record<string, number> = recipients.reduce(
+      (acc, recipient) => {
         acc[recipient] = amount
         return acc
       },
-        {}
-      )
+      {}
+    )
 
     // Associated token account owned by the PDA
     let audioTokenAccount = await getOrCreateAssociatedTokenAccount(
@@ -121,10 +131,13 @@ describe('payment-router', () => {
     const pdaAtaKey = audioTokenAccount.address
     const audioAmountBeforeTransfer = Number(audioTokenAccount.amount)
 
-    const amounts = Object.values(recipientAmounts)
-      .map(amount => new anchor.BN(amount * 10 ** SPL_AUDIO_DECIMALS))
-    const totalAmount = amounts
-      .reduce((a: anchor.BN, b: anchor.BN) => a.add(b), new anchor.BN(0))
+    const amounts = Object.values(recipientAmounts).map(
+      (amount) => new anchor.BN(amount * 10 ** SPL_AUDIO_DECIMALS)
+    )
+    const totalAmount = amounts.reduce(
+      (a: anchor.BN, b: anchor.BN) => a.add(b),
+      new anchor.BN(0)
+    )
 
     const recentBlockhash = (await connection.getLatestBlockhash()).blockhash
     const instructions = [
@@ -137,23 +150,18 @@ describe('payment-router', () => {
         SPL_AUDIO_DECIMALS
       ),
       await program.methods
-        .route(
-          paymentRouterPdaBump,
-          amounts,
-          totalAmount,
-        )
+        .route(paymentRouterPdaBump, amounts, totalAmount)
         .accounts({
           sender: pdaAtaKey,
           senderOwner: paymentRouterPda,
-          splToken: TOKEN_PROGRAM_ID,
+          splToken: TOKEN_PROGRAM_ID
         })
         .remainingAccounts(
-          recipients
-            .map(recipient => ({
-              pubkey: new PublicKey(recipient),
-              isSigner: false,
-              isWritable: true
-            }))
+          recipients.map((recipient) => ({
+            pubkey: new PublicKey(recipient),
+            isSigner: false,
+            isWritable: true
+          }))
         )
         .instruction()
     ]
@@ -199,16 +207,16 @@ describe('payment-router', () => {
       '3jnV4Xz7G6vLTNNScr86evmPdTSypP2uYGHtTzaHwGY2',
       'A6Txt94EB7vPkT5YVAqQbkKFfXpLggkEMYLRtQrzkM13',
       '2kasfxzRdYq7GC96ZFRdvp31JAc8MREG21mxEVhEDzot',
-      '6mGfojkDcTHzhZ68pwDgntqn32EYYNDw7otZfT1GCQYH',
+      '6mGfojkDcTHzhZ68pwDgntqn32EYYNDw7otZfT1GCQYH'
     ]
     const amount = 0.00001
-    const recipientAmounts: Record<string, number> = recipients
-      .reduce((acc, recipient) => {
+    const recipientAmounts: Record<string, number> = recipients.reduce(
+      (acc, recipient) => {
         acc[recipient] = amount
         return acc
       },
-        {}
-      )
+      {}
+    )
 
     // Associated token account owned by the PDA
     let usdcTokenAccount = await getOrCreateAssociatedTokenAccount(
@@ -228,10 +236,13 @@ describe('payment-router', () => {
     const pdaAtaKey = usdcTokenAccount.address
     const usdcAmountBeforeTransfer = Number(usdcTokenAccount.amount)
 
-    const amounts = Object.values(recipientAmounts)
-      .map(amount => new anchor.BN(amount * 10 ** SPL_AUDIO_DECIMALS))
-    const totalAmount = amounts
-      .reduce((a: anchor.BN, b: anchor.BN) => a.add(b), new anchor.BN(0))
+    const amounts = Object.values(recipientAmounts).map(
+      (amount) => new anchor.BN(amount * 10 ** SPL_AUDIO_DECIMALS)
+    )
+    const totalAmount = amounts.reduce(
+      (a: anchor.BN, b: anchor.BN) => a.add(b),
+      new anchor.BN(0)
+    )
 
     const recentBlockhash = (await connection.getLatestBlockhash()).blockhash
     const instructions = [
@@ -244,23 +255,18 @@ describe('payment-router', () => {
         SPL_USDC_DECIMALS
       ),
       await program.methods
-        .route(
-          paymentRouterPdaBump,
-          amounts,
-          totalAmount,
-        )
+        .route(paymentRouterPdaBump, amounts, totalAmount)
         .accounts({
           sender: pdaAtaKey,
           senderOwner: paymentRouterPda,
-          splToken: TOKEN_PROGRAM_ID,
+          splToken: TOKEN_PROGRAM_ID
         })
         .remainingAccounts(
-          recipients
-            .map(recipient => ({
-              pubkey: new PublicKey(recipient),
-              isSigner: false,
-              isWritable: true
-            }))
+          recipients.map((recipient) => ({
+            pubkey: new PublicKey(recipient),
+            isSigner: false,
+            isWritable: true
+          }))
         )
         .instruction()
     ]

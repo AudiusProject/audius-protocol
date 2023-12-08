@@ -59,7 +59,7 @@ export const CreateLoginDetailsPage = () => {
       validationSchema={loginDetailsFormikSchema}
     >
       {({ isValid, dirty }) => (
-        <Page as={Form}>
+        <Page as={Form} transition='horizontal'>
           <Heading
             heading={messages.title}
             description={messages.description}
@@ -70,6 +70,7 @@ export const CreateLoginDetailsPage = () => {
                 name='email'
                 autoComplete='email'
                 label={messages.emailLabel}
+                autoFocus
               />
               <PasswordField name='password' label={messages.passwordLabel} />
               <PasswordField

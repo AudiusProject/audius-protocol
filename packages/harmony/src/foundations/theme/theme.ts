@@ -9,13 +9,23 @@ import type { Typography } from '../typography'
 
 import type { Theme } from './types'
 
+const iconSizes = {
+  xs: 14,
+  s: 16,
+  m: 20,
+  l: 24,
+  xl: 30,
+  '2xl': 32
+}
+
 const commonFoundations = {
   shadows,
   typography,
   cornerRadius,
   spacing,
   motion,
-  spring
+  spring,
+  iconSizes
 }
 
 export type HarmonyTheme = {
@@ -27,6 +37,7 @@ export type HarmonyTheme = {
   spacing: Spacing
   motion: Motion
   spring: Spring
+  iconSizes: typeof iconSizes
 }
 
 export const dayTheme: HarmonyTheme = {

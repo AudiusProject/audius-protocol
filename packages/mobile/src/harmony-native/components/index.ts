@@ -1,3 +1,4 @@
 export * from './Link'
-export * from './layout/Box/Box'
-export * from './layout/Flex/Flex'
+export * from './Text/Text'
+export * from './layout'
+export * from './Avatar/Avatar'

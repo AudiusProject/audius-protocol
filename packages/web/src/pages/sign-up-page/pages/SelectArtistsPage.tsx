@@ -9,7 +9,9 @@ import {
   useGetTopArtistsInGenre
 } from '@audius/common'
 import { Flex, Text, SelectablePill, Paper, useTheme } from '@audius/harmony'
+import { useSpring, animated } from '@react-spring/web'
 import { Form, Formik } from 'formik'
+import { range } from 'lodash'
 import { useDispatch } from 'react-redux'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -17,14 +19,16 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 import { useModalState } from 'common/hooks/useModalState'
 import { addFollowArtists } from 'common/store/pages/signon/actions'
 import { getGenres } from 'common/store/pages/signon/selectors'
-import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
 import { useSelector } from 'utils/reducer'
-import { TRENDING_PAGE } from 'utils/route'
+import { SIGN_UP_APP_CTA_PAGE, TRENDING_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
-import FollowArtistTile from '../components/FollowArtistTile'
+import {
+  FollowArtistTile,
+  FollowArtistTileSkeleton
+} from '../components/FollowArtistTile'
 import { PreviewArtistToast } from '../components/PreviewArtistToast'
 import {
   Heading,
@@ -33,6 +37,8 @@ import {
   ScrollView
 } from '../components/layout'
 import { SelectArtistsPreviewContextProvider } from '../utils/selectArtistsPreviewContext'
+
+const AnimatedFlex = animated(Flex)
 
 const messages = {
   header: 'Follow At Least 3 Artists',
@@ -63,6 +69,7 @@ export const SelectArtistsPage = () => {
   const navigate = useNavigateToPage()
   const { color } = useTheme()
   const headerContainerRef = useRef<HTMLDivElement | null>(null)
+  const { isMobile } = useMedia()
 
   const handleChangeGenre = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setCurrentGenre(e.target.value)
@@ -72,10 +79,14 @@ export const SelectArtistsPage = () => {
     (values: SelectArtistsValues) => {
       const { selectedArtists } = values
       dispatch(addFollowArtists([...selectedArtists]))
-      navigate(TRENDING_PAGE)
-      setIsWelcomeModalOpen(true)
+      if (isMobile) {
+        navigate(TRENDING_PAGE)
+        setIsWelcomeModalOpen(true)
+      } else {
+        navigate(SIGN_UP_APP_CTA_PAGE)
+      }
     },
-    [dispatch, navigate, setIsWelcomeModalOpen]
+    [dispatch, isMobile, navigate, setIsWelcomeModalOpen]
   )
 
   const isFeaturedArtists = currentGenre === 'Featured'
@@ -86,7 +97,6 @@ export const SelectArtistsPage = () => {
       { disabled: isFeaturedArtists }
     )
 
-  const { isMobile } = useMedia()
   const { data: featuredArtists, status: featuredArtistsStatus } =
     useGetFeaturedArtists(undefined, {
       disabled: !isFeaturedArtists
@@ -94,10 +104,21 @@ export const SelectArtistsPage = () => {
 
   const artists = isFeaturedArtists ? featuredArtists : topArtists
   const isLoading =
-    (isFeaturedArtists ? topArtistsStatus : featuredArtistsStatus) ===
+    (isFeaturedArtists ? featuredArtistsStatus : topArtistsStatus) ===
     Status.LOADING
 
   const ArtistsList = isMobile ? Flex : Paper
+
+  const styles = useSpring({
+    from: {
+      opacity: 0,
+      transform: 'translateX(100%)'
+    },
+    to: {
+      opacity: 1,
+      transform: 'translateX(0%)'
+    }
+  })
 
   return (
     <Formik
@@ -110,10 +131,11 @@ export const SelectArtistsPage = () => {
         return (
           <ScrollView as={Form} gap={isMobile ? undefined : '3xl'}>
             <AccountHeader mode='viewing' />
-            <Flex
+            <AnimatedFlex
               direction='column'
               mh={isMobile ? undefined : '5xl'}
               mb={isMobile ? undefined : 'xl'}
+              style={styles}
             >
               <Flex
                 direction='column'
@@ -183,18 +205,19 @@ export const SelectArtistsPage = () => {
                     wrap='wrap'
                     justifyContent='center'
                   >
-                    {isLoading ? (
-                      <LoadingSpinner />
-                    ) : (
-                      artists?.map((user) => (
-                        <FollowArtistTile key={user.user_id} user={user} />
-                      ))
-                    )}
+                    {isLoading
+                      ? range(9).map((index) => (
+                          <FollowArtistTileSkeleton key={index} />
+                        ))
+                      : artists?.map((user) => (
+                          <FollowArtistTile key={user.user_id} user={user} />
+                        ))}
                   </Flex>
                 </ArtistsList>
               </SelectArtistsPreviewContextProvider>
-            </Flex>
+            </AnimatedFlex>
             <PageFooter
+              centered
               sticky
               buttonProps={{
                 disabled: !dirty || !isValid || isSubmitting,
