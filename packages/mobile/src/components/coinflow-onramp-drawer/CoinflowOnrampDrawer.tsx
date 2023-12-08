@@ -24,7 +24,6 @@ const MODAL_NAME = 'CoinflowOnramp'
 const { COINFLOW_MERCHANT_ID, ENVIRONMENT } = Config
 const IS_PRODUCTION = ENVIRONMENT === 'production'
 
-console.log({ COINFLOW_MERCHANT_ID, ENVIRONMENT })
 type CoinflowAdapter = {
   wallet: CoinflowSolanaPurchaseProps['wallet']
   connection: Connection
