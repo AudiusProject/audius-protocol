@@ -1,11 +1,6 @@
 import * as fileType from 'file-type'
 import { z } from 'zod'
 
-let fileTypeBrowser: any
-if (typeof window !== 'undefined' && window) {
-  fileTypeBrowser = require('file-type/browser')
-}
-
 /**
  * Type representing a file in Node environment
  */
@@ -54,6 +49,11 @@ export const ALLOWED_AUDIO_MIME_TYPES = [
 ]
 
 const getFileType = async (file: CrossPlatformFile) => {
+  let fileTypeBrowser: any
+  if (typeof window !== 'undefined' && window) {
+    fileTypeBrowser = await import('file-type/browser')
+  }
+
   return isNodeFile(file)
     ? await fileType.fromBuffer(file.buffer)
     : await fileTypeBrowser.fromBlob(file)
