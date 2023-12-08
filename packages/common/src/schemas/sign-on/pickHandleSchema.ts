@@ -5,7 +5,7 @@ import { MAX_HANDLE_LENGTH } from 'services/oauth'
 import { signUpFetch } from 'src/api'
 import { restrictedHandles as commonRestrictedHandles } from 'utils/restrictedHandles'
 
-export const errorMessages = {
+export const pickHandleErrorMessages = {
   badCharacterError: 'Please only use A-Z, 0-9, . and _',
   twitterReservedError: 'This verified Twitter handle is reserved.',
   instagramReservedError: 'This verified Instagram handle is reserved.',
@@ -33,10 +33,10 @@ export const pickHandleSchema = ({
     handle: z
       .string()
       .max(MAX_HANDLE_LENGTH)
-      .regex(/^[a-zA-Z0-9_.]*$/, errorMessages.badCharacterError)
+      .regex(/^[a-zA-Z0-9_.]*$/, pickHandleErrorMessages.badCharacterError)
       .refine(
         (handle) => !restrictedHandles.has(handle.toLowerCase()),
-        errorMessages.handleTakenError
+        pickHandleErrorMessages.handleTakenError
       )
       .superRefine(async (handle, context) => {
         try {
@@ -48,7 +48,7 @@ export const pickHandleSchema = ({
           if (isHandleInUse) {
             context.addIssue({
               code: z.ZodIssueCode.custom,
-              message: errorMessages.handleTakenError,
+              message: pickHandleErrorMessages.handleTakenError,
               fatal: true
             })
             return z.NEVER
@@ -56,7 +56,7 @@ export const pickHandleSchema = ({
         } catch {
           context.addIssue({
             code: z.ZodIssueCode.custom,
-            message: errorMessages.unknownError
+            message: pickHandleErrorMessages.unknownError
           })
           return z.NEVER
         }
@@ -74,23 +74,23 @@ export const pickHandleSchema = ({
           if (handleReservedStatus === 'twitterReserved') {
             context.addIssue({
               code: z.ZodIssueCode.custom,
-              message: errorMessages.twitterReservedError
+              message: pickHandleErrorMessages.twitterReservedError
             })
           } else if (handleReservedStatus === 'instagramReserved') {
             context.addIssue({
               code: z.ZodIssueCode.custom,
-              message: errorMessages.instagramReservedError
+              message: pickHandleErrorMessages.instagramReservedError
             })
           } else if (handleReservedStatus === 'tikTokReserved') {
             context.addIssue({
               code: z.ZodIssueCode.custom,
-              message: errorMessages.tiktokReservedError
+              message: pickHandleErrorMessages.tiktokReservedError
             })
           }
         } catch {
           context.addIssue({
             code: z.ZodIssueCode.custom,
-            message: errorMessages.unknownError
+            message: pickHandleErrorMessages.unknownError
           })
         }
       })
