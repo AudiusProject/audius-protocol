@@ -598,7 +598,7 @@ def process_payment_router_txs() -> None:
     try:
         latest_global_slot = solana_client_manager.get_slot()
     except Exception as e:
-        logger.error("index_payment_router.py | Failed to get block height | {e}")
+        logger.error(f"index_payment_router.py | Failed to get block height | {e}")
         return
 
     # Query for solana transactions until an intersection is found
