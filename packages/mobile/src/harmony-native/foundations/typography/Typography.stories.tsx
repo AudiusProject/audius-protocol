@@ -1,7 +1,7 @@
 import type { StoryObj } from '@storybook/react-native'
 
-import type { TextProps } from './Text'
-import { Text } from './Text'
+import type { TextProps } from '../../components/Text/Text'
+import { Text } from '../../components/Text/Text'
 
 const TypographyMeta = {
   title: 'Foundation/Typography',

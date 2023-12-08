@@ -406,7 +406,7 @@ def correct_delist_discrepancies(session: Session, redis: Redis):
         for row in track_delist_discrepancies:
             track_id = row["track_id"]
             delisted = row["delisted"]
-            tracks_to_update = query_tracks_by_track_ids(session, [track_id])
+            tracks_to_update = query_tracks_by_track_ids(session, set([track_id]))
             for track_to_update in tracks_to_update:
                 if delisted:
                     # Delist available tracks that have been delisted
@@ -437,7 +437,7 @@ def correct_delist_discrepancies(session: Session, redis: Redis):
         for row in user_delist_discrepancies:
             user_id = row["user_id"]
             delisted = row["delisted"]
-            users_to_update = query_users_by_user_ids(session, [user_id])
+            users_to_update = query_users_by_user_ids(session, set([user_id]))
             for user_to_update in users_to_update:
                 if delisted:
                     logger.info(

@@ -1,8 +1,9 @@
-import { useCallback } from 'react'
+import { ReactNode, useCallback } from 'react'
 
 import {
   Box,
   Flex,
+  FlexProps,
   IconAudiusLogoHorizontal,
   IconCaretLeft,
   IconCloseAlt,
@@ -45,6 +46,30 @@ export const useIsBackAllowed = () => {
   return false
 }
 
+type HeaderRootProps = FlexProps & {
+  children: ReactNode
+}
+
+const HeaderRoot = (props: HeaderRootProps) => {
+  const { children, ...other } = props
+  const isBackAllowed = useIsBackAllowed()
+  const { spacing } = useTheme()
+
+  return (
+    <Flex
+      ph='xl'
+      w='100%'
+      borderBottom={isBackAllowed ? 'default' : undefined}
+      alignItems='center'
+      backgroundColor='white'
+      css={{ minHeight: spacing['3xl'], zIndex: 1 }}
+      {...other}
+    >
+      {children}
+    </Flex>
+  )
+}
+
 export const NavHeader = () => {
   const isBackAllowed = useIsBackAllowed()
   const history = useHistory()
@@ -57,33 +82,10 @@ export const NavHeader = () => {
 
   const audiusLogo = <IconAudiusLogoHorizontal color='subdued' sizeH='l' />
 
-  const header = isBackAllowed ? (
-    <>
-      <PlainButton
-        size={PlainButtonSize.LARGE}
-        css={{ padding: 0 }}
-        onClick={history.goBack}
-        iconLeft={IconCaretLeft}
-        variant={PlainButtonType.SUBDUED}
-      />
-      {audiusLogo}
-      <Box css={{ width: iconSizes.m }} />
-    </>
-  ) : (
-    audiusLogo
-  )
-
   return (
-    <Flex
-      ph='xl'
-      pv='l'
-      w='100%'
-      borderBottom={isBackAllowed ? 'default' : undefined}
-      alignItems='center'
-      justifyContent='space-between'
-    >
-      <Switch>
-        <Route path={[SIGN_UP_PAGE, SIGN_UP_EMAIL_PAGE]} exact>
+    <Switch>
+      <Route path={[SIGN_UP_PAGE, SIGN_UP_EMAIL_PAGE]} exact>
+        <HeaderRoot pv='l'>
           {isMobile ? (
             <PlainButton
               size={PlainButtonSize.LARGE}
@@ -93,23 +95,44 @@ export const NavHeader = () => {
               variant={PlainButtonType.SUBDUED}
             />
           ) : null}
-        </Route>
-        {!isMobile ? (
-          <Route
-            path={[
-              SIGN_UP_HANDLE_PAGE,
-              SIGN_UP_FINISH_PROFILE_PAGE,
-              SIGN_UP_GENRES_PAGE,
-              SIGN_UP_ARTISTS_PAGE
-            ]}
-          >
-            {audiusLogo}
+        </HeaderRoot>
+      </Route>
+      {!isMobile ? (
+        <Route
+          path={[
+            SIGN_UP_HANDLE_PAGE,
+            SIGN_UP_FINISH_PROFILE_PAGE,
+            SIGN_UP_GENRES_PAGE,
+            SIGN_UP_ARTISTS_PAGE
+          ]}
+        >
+          <HeaderRoot justifyContent='center' pt='l'>
+            <Box css={{ position: 'absolute', top: 20, left: 24 }}>
+              {audiusLogo}
+            </Box>
             <ProgressHeader />
-            <Box w={200} />
-          </Route>
-        ) : null}
-        <Route path='*'>{header}</Route>
-      </Switch>
-    </Flex>
+          </HeaderRoot>
+        </Route>
+      ) : null}
+      <Route path='*'>
+        <HeaderRoot justifyContent='space-between' pv='l'>
+          {isBackAllowed ? (
+            <>
+              <PlainButton
+                size={PlainButtonSize.LARGE}
+                css={{ padding: 0 }}
+                onClick={history.goBack}
+                iconLeft={IconCaretLeft}
+                variant={PlainButtonType.SUBDUED}
+              />
+              {audiusLogo}
+              <Box css={{ width: iconSizes.m }} />
+            </>
+          ) : (
+            audiusLogo
+          )}
+        </HeaderRoot>
+      </Route>
+    </Switch>
   )
 }

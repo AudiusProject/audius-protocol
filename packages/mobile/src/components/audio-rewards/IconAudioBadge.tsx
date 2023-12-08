@@ -1,8 +1,8 @@
 import type { BadgeTier } from '@audius/common'
 import type { ImageStyle } from 'react-native'
 import { Image } from 'react-native'
-import type { SvgProps } from 'react-native-svg'
 
+import type { IconProps } from '@audius/harmony-native'
 import IconBronzeBadge from 'app/assets/images/IconBronzeBadge.svg'
 import IconGoldBadge from 'app/assets/images/IconGoldBadge.svg'
 import IconPlatinumBadge from 'app/assets/images/IconPlatinumBadge.svg'
@@ -17,7 +17,7 @@ const audioTierMap = {
   platinum: IconPlatinumBadge
 }
 
-type IconBadgeProps = SvgProps & {
+type IconBadgeProps = IconProps & {
   tier: BadgeTier
   showNoTier?: boolean
 }

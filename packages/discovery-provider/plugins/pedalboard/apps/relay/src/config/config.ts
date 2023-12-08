@@ -21,6 +21,7 @@ export type Config = {
   aao: AntiAbuseConfig;
   rateLimitAllowList: string[];
   rateLimitBlockList: string[];
+  finalPoaBlock: number;
 };
 
 // reads .env file based on environment
@@ -46,6 +47,7 @@ export const readConfig = (): Config => {
     audius_use_aao: bool({ default: false }),
     relay_server_host: str({ default: "0.0.0.0" }),
     relay_server_port: num({ default: 6001 }),
+    audius_final_poa_block: num({ default: 0 })
   });
   return {
     environment: env.audius_discprov_env,
@@ -59,5 +61,6 @@ export const readConfig = (): Config => {
     aao: newAntiAbuseConfig(env.audius_aao_endpoint, env.audius_use_aao),
     rateLimitAllowList: allowListPublicKeys(),
     rateLimitBlockList: blockListPublicKeys(),
+    finalPoaBlock: env.audius_final_poa_block
   };
 };

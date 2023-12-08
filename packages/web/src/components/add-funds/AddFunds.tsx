@@ -1,11 +1,9 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 
 import {
-  FeatureFlags,
   PurchaseMethod,
   PurchaseVendor,
   useCreateUserbankIfNeeded,
-  useFeatureFlag,
   useUSDCBalance
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
@@ -15,29 +13,20 @@ import {
   ButtonType,
   Flex,
   Text,
-  IconLogoCircleUSDC,
-  IconCreditCard,
-  IconTransaction,
-  FilterButton,
-  FilterButtonType
+  IconLogoCircleUSDC
 } from '@audius/harmony'
 import { BN } from 'bn.js'
 import cn from 'classnames'
 
-import { MobileFilterButton } from 'components/mobile-filter-button/MobileFilterButton'
-import { SummaryTable, SummaryTableItem } from 'components/summary-table'
+import { PaymentMethod } from 'components/payment-method/PaymentMethod'
 import { track } from 'services/analytics'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { isMobile } from 'utils/clientUtil'
-import { zIndex } from 'utils/zIndex'
 
 import styles from './AddFunds.module.css'
 
 const messages = {
   usdcBalance: 'USDC Balance',
-  paymentMethod: 'Payment Method',
-  withCard: 'Add funds with Card',
-  withCrypto: 'Add funds with crypto transfer',
   continue: 'Continue'
 }
 
@@ -49,10 +38,6 @@ export const AddFunds = ({
     purchaseVendor?: PurchaseVendor
   ) => void
 }) => {
-  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
-    FeatureFlags.BUY_WITH_COINFLOW
-  )
-
   useCreateUserbankIfNeeded({
     recordAnalytics: track,
     audiusBackendInstance,
@@ -67,53 +52,6 @@ export const AddFunds = ({
   const mobile = isMobile()
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
   const balance = USDC(balanceBN ?? new BN(0)).value
-
-  const vendorOptions = [
-    ...(isCoinflowEnabled ? [{ label: PurchaseVendor.COINFLOW }] : []),
-    { label: PurchaseVendor.STRIPE }
-  ]
-
-  const items: SummaryTableItem[] = [
-    {
-      id: PurchaseMethod.CARD,
-      label: messages.withCard,
-      icon: IconCreditCard,
-      value:
-        vendorOptions.length > 1 ? (
-          mobile ? (
-            <MobileFilterButton
-              onSelect={(vendor: string) => {
-                setSelectedPurchaseVendor(vendor as PurchaseVendor)
-              }}
-              options={vendorOptions}
-              zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
-            />
-          ) : (
-            <FilterButton
-              onSelect={(vendor: string) => {
-                setSelectedPurchaseVendor(vendor as PurchaseVendor)
-              }}
-              initialSelectionIndex={0}
-              variant={FilterButtonType.REPLACE_LABEL}
-              options={vendorOptions}
-              popupZIndex={zIndex.USDC_ADD_FUNDS_FILTER_BUTTON_POPUP}
-            />
-          )
-        ) : null
-    },
-    {
-      id: PurchaseMethod.CRYPTO,
-      label: messages.withCrypto,
-      icon: IconTransaction
-    }
-  ]
-
-  const handleChangeOption = useCallback(
-    (method: string) => {
-      setSelectedPurchaseMethod(method as PurchaseMethod)
-    },
-    [setSelectedPurchaseMethod]
-  )
 
   return (
     <div className={styles.root}>
@@ -142,12 +80,10 @@ export const AddFunds = ({
               </Text>
             </Flex>
           </Box>
-          <SummaryTable
-            title={messages.paymentMethod}
-            items={items}
-            withRadioOptions
-            onRadioChange={handleChangeOption}
-            selectedRadioOption={selectedPurchaseMethod}
+          <PaymentMethod
+            selectedMethod={selectedPurchaseMethod}
+            setSelectedMethod={setSelectedPurchaseMethod}
+            setSelectedVendor={setSelectedPurchaseVendor}
           />
           <Button
             variant={ButtonType.PRIMARY}

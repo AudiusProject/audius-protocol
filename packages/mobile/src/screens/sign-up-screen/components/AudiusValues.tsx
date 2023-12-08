@@ -1,6 +1,6 @@
 import type { SvgProps } from 'react-native-svg'
 
-import type { NativeFlexProps } from '@audius/harmony-native'
+import type { FlexProps } from '@audius/harmony-native'
 import { Flex, Text } from '@audius/harmony-native'
 
 import IconCloudUpload from './temp-harmony/iconCloudArrowUp.svg'
@@ -43,7 +43,7 @@ const AudiusValue = (props: AudiusValueProps) => {
 
 type AudiusValuesProps = {
   className?: string
-} & NativeFlexProps
+} & FlexProps
 
 export const AudiusValues = (props: AudiusValuesProps) => {
   return (

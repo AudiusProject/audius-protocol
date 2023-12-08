@@ -130,6 +130,7 @@ export const CreateEmailPage = () => {
               autoComplete='email'
               label={messages.emailLabel}
               debouncedValidationMs={500}
+              autoFocus
               helperText={null}
             />
             <ErrorMessage name='email'>
@@ -162,7 +163,7 @@ export const CreateEmailPage = () => {
             <Text
               variant='body'
               size={isMobile ? 'm' : 'l'}
-              css={{ textAlign: isMobile ? 'center' : undefined }}
+              textAlign={isMobile ? 'center' : undefined}
             >
               {messages.haveAccount} {signInLink}
             </Text>

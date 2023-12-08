@@ -15,3 +15,24 @@ export const createEmailPageMessages = {
   signUpMetamask: 'Sign Up With MetaMask',
   learnMore: 'Learn More'
 }
+
+export type CompletionChecklistType =
+  | 'hasNumber'
+  | 'minLength'
+  | 'notCommon'
+  | 'matches'
+
+export const createPasswordPageMessages = {
+  createYourPassword: 'Create Your Password',
+  description:
+    'Create a password that’s secure and easy to remember! We can’t reset your password, so write it down or use a password manager.',
+  yourEmail: 'Your Email',
+  passwordLabel: 'Password',
+  confirmPasswordLabel: 'Confirm Password',
+  completionChecklist: {
+    hasNumber: 'Must contain numbers',
+    minLength: 'At least 8 characters',
+    matches: 'Passwords match',
+    notCommon: 'Hard to guess'
+  }
+}

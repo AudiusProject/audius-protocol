@@ -3,10 +3,10 @@ import type { PropsWithChildren } from 'react'
 import { css } from '@emotion/native'
 import { useTheme } from '@emotion/react'
 
-import type { NativeFlexProps } from '@audius/harmony-native'
+import type { FlexProps } from '@audius/harmony-native'
 import { Box, Flex } from '@audius/harmony-native'
 
-export type HintProps = PropsWithChildren<{ icon?: any }> & NativeFlexProps
+export type HintProps = PropsWithChildren<{ icon?: any }> & FlexProps
 
 export const Hint = ({ icon: Icon, children, ...rest }: HintProps) => {
   const { color } = useTheme()

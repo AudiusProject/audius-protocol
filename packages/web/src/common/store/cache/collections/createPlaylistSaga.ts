@@ -10,6 +10,7 @@ import {
   Track,
   accountActions,
   accountSelectors,
+  cacheUsersSelectors,
   cacheActions,
   cacheCollectionsActions,
   cacheCollectionsSelectors,
@@ -34,6 +35,7 @@ import { waitForWrite } from 'utils/sagaHelpers'
 
 import { getUnclaimedPlaylistId } from './utils/getUnclaimedPlaylistId'
 const { addLocalCollection } = savedPageActions
+const { getUser } = cacheUsersSelectors
 
 const { requestConfirmation } = confirmerActions
 const { getAccountUser } = accountSelectors
@@ -91,6 +93,8 @@ function* optimisticallySavePlaylist(
     ...formFields
   }
 
+  const initTrackOwner = yield* select(getUser, { id: initTrack?.owner_id })
+
   playlist.playlist_owner_id = user_id
   playlist.is_private = true
   playlist.is_album = false
@@ -99,6 +103,14 @@ function* optimisticallySavePlaylist(
       ? [{ time: initTrack?.duration, track: initTrack.track_id }]
       : []
   }
+  playlist.tracks = initTrack
+    ? [
+        {
+          ...initTrack,
+          user: initTrackOwner!
+        }
+      ]
+    : []
   playlist.track_count = initTrack ? 1 : 0
   playlist.permalink = collectionPage(
     handle,
