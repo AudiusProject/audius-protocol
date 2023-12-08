@@ -174,14 +174,17 @@ def is_valid_tx(account_keys):
 def get_sol_tx_info(
     solana_client_manager: SolanaClientManager, tx_sig: str, redis: Redis
 ):
-    existing_tx = redis.get(get_solana_transaction_key(tx_sig))
-    if existing_tx is not None and existing_tx != "":
-        logger.info(f"index_solana_plays.py | Cache hit: {tx_sig}")
-        tx_info = GetTransactionResp.from_json(existing_tx.decode("utf-8"))
+    try:
+        existing_tx = redis.get(get_solana_transaction_key(tx_sig))
+        if existing_tx is not None and existing_tx != "":
+            logger.info(f"index_solana_plays.py | Cache hit: {tx_sig}")
+            tx_info = GetTransactionResp.from_json(existing_tx.decode("utf-8"))
+            return tx_info
+        logger.info(f"index_solana_plays.py | Cache miss: {tx_sig}")
+        tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
         return tx_info
-    logger.info(f"index_solana_plays.py | Cache miss: {tx_sig}")
-    tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
-    return tx_info
+    except SolanaTransactionFetchError:
+        return None
 
 
 def parse_sol_play_transaction(
