@@ -260,7 +260,7 @@ def test_fetch_and_parse_sol_rewards_transfer_instruction(app):  # pylint: disab
     first_tx_sig = "tx_sig_one"
     second_tx_sig = "tx_sig_two"
     parsed_tx = fetch_and_parse_sol_rewards_transfer_instruction(
-        solana_client_manager_mock, first_tx_sig
+        solana_client_manager_mock, first_tx_sig, redis
     )
     assert (
         parsed_tx["transfer_instruction"]["amount"]  # pylint: disable=E1136

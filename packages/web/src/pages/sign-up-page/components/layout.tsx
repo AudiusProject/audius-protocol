@@ -218,7 +218,7 @@ export const PageFooter = (props: PageFooterProps) => {
 
 type ReadOnlyFieldProps = {
   label: string
-  value: string
+  value: string | ReactNode
 }
 
 export const ReadOnlyField = (props: ReadOnlyFieldProps) => {

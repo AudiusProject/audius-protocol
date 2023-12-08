@@ -1,15 +1,16 @@
 import { useCallback } from 'react'
 
-import type { FollowSource, User } from '@audius/common'
-import { usersSocialActions } from '@audius/common'
+import type { FollowSource, ID } from '@audius/common'
+import { cacheUsersSelectors, usersSocialActions } from '@audius/common'
 import type { GestureResponderEvent, StyleProp, ViewStyle } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconFollow from 'app/assets/images/iconFollow.svg'
 import IconFollowing from 'app/assets/images/iconFollowing.svg'
 import type { ButtonProps } from 'app/components/core'
 import { Button } from 'app/components/core'
 const { followUser, unfollowUser } = usersSocialActions
+const { getUser } = cacheUsersSelectors
 
 const messages = {
   follow: 'follow',
@@ -17,16 +18,18 @@ const messages = {
 }
 
 type FollowButtonsProps = Partial<ButtonProps> & {
-  profile: Pick<User, 'does_current_user_follow' | 'user_id'>
+  userId: ID
   noIcon?: boolean
   style?: StyleProp<ViewStyle>
   followSource: FollowSource
 }
 
 export const FollowButton = (props: FollowButtonsProps) => {
-  const { profile, noIcon, style, onPress, followSource, ...other } = props
-  const { does_current_user_follow, user_id } = profile
-  const isFollowing = does_current_user_follow
+  const { userId, noIcon, style, onPress, followSource, ...other } = props
+
+  const isFollowing = useSelector(
+    (state) => getUser(state, { id: userId })?.does_current_user_follow
+  )
   const dispatch = useDispatch()
 
   const Icon = isFollowing ? IconFollowing : IconFollow
@@ -36,13 +39,13 @@ export const FollowButton = (props: FollowButtonsProps) => {
   const handlePress = useCallback(
     (event: GestureResponderEvent) => {
       onPress?.(event)
-      if (does_current_user_follow) {
-        dispatch(unfollowUser(user_id, followSource))
+      if (isFollowing) {
+        dispatch(unfollowUser(userId, followSource))
       } else {
-        dispatch(followUser(user_id, followSource))
+        dispatch(followUser(userId, followSource))
       }
     },
-    [onPress, dispatch, does_current_user_follow, user_id, followSource]
+    [onPress, dispatch, isFollowing, userId, followSource]
   )
 
   return (

@@ -3,6 +3,7 @@ import { ReactNode, forwardRef, useId } from 'react'
 import cn from 'classnames'
 
 import { Text, TextSize } from 'components/text'
+import type { TextColors } from 'foundations'
 
 import { Flex } from '../../layout'
 import { useFocusState } from '../useFocusState'
@@ -90,8 +91,15 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       maxLength &&
       characterCount >= showMaxLengthThreshold * maxLength
     // Turn the maxlength text to the warning color whenever we hit a certain threshold (default 90%)
-    const showMaxlengthWarningColor =
-      maxLength && characterCount >= maxLengthWarningThreshold * maxLength
+    let maxLengthTextColor: TextColors = 'default'
+    if (maxLength && characterCount > maxLength) {
+      maxLengthTextColor = 'danger'
+    } else if (
+      maxLength &&
+      characterCount >= maxLengthWarningThreshold * maxLength
+    ) {
+      maxLengthTextColor = 'warning'
+    }
 
     // Styles for the root of the input
     const inputRootStyle = {
@@ -195,7 +203,7 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
                     variant='body'
                     size='xs'
                     tag='span'
-                    color={showMaxlengthWarningColor ? 'warning' : 'default'}
+                    color={maxLengthTextColor}
                   >
                     {characterCount}/{maxLength}
                   </Text>
