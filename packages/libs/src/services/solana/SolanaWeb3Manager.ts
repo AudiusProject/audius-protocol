@@ -598,7 +598,7 @@ export class SolanaWeb3Manager {
     id,
     type,
     blocknumber,
-    // extraAmount = 0, TODO:
+    extraAmount = 0,
     splits,
     purchaserUserId,
     senderAccount
@@ -608,7 +608,7 @@ export class SolanaWeb3Manager {
     splits: Record<string, number | BN>
     extraAmount?: number | BN
     blocknumber: number
-    purchaserUserId?: number
+    purchaserUserId: number
     senderAccount: PublicKey
   }) {
     if (!this.web3Manager) {
@@ -622,10 +622,15 @@ export class SolanaWeb3Manager {
       )
     }
 
+    // TODO: PAY-2252 split extra amount amongst all recipients correctly
     const recipientAmounts: Record<string, bigint> = Object.entries(
       splits
     ).reduce((acc, [key, value]) => {
-      acc[key] = value instanceof BN ? BigInt(value.toString()) : BigInt(value)
+      acc[key] =
+        (value instanceof BN ? BigInt(value.toString()) : BigInt(value)) +
+        (extraAmount instanceof BN
+          ? BigInt(extraAmount.toString())
+          : BigInt(extraAmount))
       return acc
     }, {} as Record<string, bigint>)
 
@@ -684,9 +689,7 @@ export class SolanaWeb3Manager {
       this.paymentRouterProgramId
     )
 
-    const data = purchaserUserId
-      ? `${type}:${id}:${blocknumber}:${purchaserUserId}`
-      : `${type}:${id}:${blocknumber}`
+    const data = `${type}:${id}:${blocknumber}:${purchaserUserId}`
 
     const memoInstruction = new TransactionInstruction({
       keys: [
@@ -722,7 +725,7 @@ export class SolanaWeb3Manager {
     splits: Record<string, number | BN>
     extraAmount?: number | BN
     blocknumber: number
-    purchaserUserId?: number
+    purchaserUserId: number
     senderKeypair: Keypair
   }) {
     const instructions =
