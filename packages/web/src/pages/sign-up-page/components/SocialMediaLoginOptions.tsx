@@ -1,12 +1,10 @@
 import { useContext } from 'react'
 
-import { BooleanKeys } from '@audius/common'
+import { BooleanKeys, socialMediaMessages } from '@audius/common'
 import { Box, Flex, SocialButton } from '@audius/harmony'
 
 import { ToastContext } from 'components/toast/ToastContext'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
-
-import { socialMediaMessages } from '../utils/socialMediaMessages'
 
 import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'

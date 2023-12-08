@@ -20,6 +20,7 @@ import { useField } from 'formik'
 import { useHover } from 'react-use'
 
 import { Avatar } from 'components/avatar/Avatar'
+import Skeleton from 'components/skeleton/Skeleton'
 import { useCoverPhoto } from 'hooks/useCoverPhoto'
 import { useMedia } from 'hooks/useMedia'
 
@@ -29,7 +30,7 @@ type FollowArtistTileProps = {
   user: UserMetadata
 } & HTMLProps<HTMLInputElement>
 
-const FollowArtistTile = (props: FollowArtistTileProps) => {
+export const FollowArtistTile = (props: FollowArtistTileProps) => {
   const {
     user: { name, user_id, is_verified, track_count, follower_count }
   } = props
@@ -186,4 +187,39 @@ const FollowArtistTile = (props: FollowArtistTileProps) => {
   )
 }
 
-export default FollowArtistTile
+export const FollowArtistTileSkeleton = () => {
+  const { isMobile } = useMedia()
+
+  return (
+    <Paper
+      h={220}
+      w={isMobile ? 'calc(50% - 4px)' : 235}
+      direction='column'
+      ph='m'
+      pb='l'
+    >
+      <Flex
+        direction='column'
+        gap='s'
+        css={{ marginTop: 34 }}
+        alignItems='center'
+        flex={1}
+      >
+        <Skeleton
+          height='72px'
+          width='72px'
+          css={{
+            borderRadius: '36px !important'
+          }}
+        />
+        <Skeleton height='16px' width='150px' />
+        <Skeleton height='20px' width='100px' />
+      </Flex>
+      <Skeleton
+        height='32px'
+        width='100%'
+        css={{ borderRadius: '16px !important' }}
+      />
+    </Paper>
+  )
+}

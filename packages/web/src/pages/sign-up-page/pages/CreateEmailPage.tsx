@@ -1,6 +1,9 @@
 import { useCallback } from 'react'
 
-import {} from '@audius/common'
+import {
+  emailSchema,
+  createEmailPageMessages as messages
+} from '@audius/common'
 import {
   Box,
   Button,
@@ -19,6 +22,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { audiusQueryContext } from 'app/AudiusQueryProvider'
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import {
   setLinkedSocialOnFirstPage,
@@ -39,28 +43,8 @@ import {
 
 import { SignUpWithMetaMaskButton } from '../components/SignUpWithMetaMaskButton'
 import { Heading, Page } from '../components/layout'
-import { emailSchema } from '../utils/emailSchema'
 
-const EmailSchema = toFormikValidationSchema(emailSchema)
-
-export const messages = {
-  title: 'Sign Up For Audius',
-  emailLabel: 'Email',
-  signUp: 'Sign Up Free',
-  haveAccount: 'Already have an account?',
-  signIn: 'Sign In',
-  subHeader: (
-    <>
-      Join the revolution in music streaming! <br /> Discover, connect, and
-      create on Audius.
-    </>
-  ),
-  socialsDividerText: 'Or, get started with one of your socials',
-  unknownError: 'Unknown error occurred.',
-  metaMaskNotRecommended: 'Signing up with MetaMask is not recommended.',
-  signUpMetamask: 'Sign Up With MetaMask',
-  learnMore: 'Learn More'
-}
+const EmailSchema = toFormikValidationSchema(emailSchema(audiusQueryContext))
 
 export type SignUpEmailValues = {
   email: string
@@ -131,7 +115,12 @@ export const CreateEmailPage = () => {
           </Box>
           <Heading
             heading={messages.title}
-            description={messages.subHeader}
+            description={
+              <>
+                {messages.subHeader.line1}
+                <br /> {messages.subHeader.line2}
+              </>
+            }
             tag='h1'
             centered={isMobile}
           />
@@ -141,6 +130,7 @@ export const CreateEmailPage = () => {
               autoComplete='email'
               label={messages.emailLabel}
               debouncedValidationMs={500}
+              autoFocus
               helperText={null}
             />
             <ErrorMessage name='email'>
@@ -173,7 +163,7 @@ export const CreateEmailPage = () => {
             <Text
               variant='body'
               size={isMobile ? 'm' : 'l'}
-              css={{ textAlign: isMobile ? 'center' : undefined }}
+              textAlign={isMobile ? 'center' : undefined}
             >
               {messages.haveAccount} {signInLink}
             </Text>

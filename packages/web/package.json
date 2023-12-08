@@ -103,7 +103,6 @@
     "electron-updater": "4.3.5",
     "exif-parser": "0.1.12",
     "formik": "2.4.1",
-    "fxa-common-password-list": "0.0.2",
     "gl-audio-analyser": "1.0.3",
     "gl-buffer": "2.1.2",
     "gl-mat4": "1.2.0",

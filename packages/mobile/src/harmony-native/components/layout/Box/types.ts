@@ -1,7 +1,7 @@
 import type { BaseBoxProps } from '@audius/harmony'
 import type { ViewProps, ViewStyle } from 'react-native'
 
-export type NativeBoxProps = Omit<BaseBoxProps, 'flex' | 'alignSelf'> & {
+export type BoxProps = Omit<BaseBoxProps, 'flex' | 'alignSelf'> & {
   /* Per emotion/native docs:
     Note that the flex property works like CSS shorthand, 
     and not the legacy flex property in React Native. 

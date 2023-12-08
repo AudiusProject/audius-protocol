@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import {
+  Box,
   Flex,
   IconCloseAlt,
   Paper,
@@ -13,6 +14,7 @@ import { useEffectOnce, useMeasure } from 'react-use'
 
 import djBackground from 'assets/img/2-DJ-4-3.jpg'
 import djPortrait from 'assets/img/DJportrait.jpg'
+import imagePhone from 'assets/img/imagePhone.png'
 import BackgroundWaves from 'components/background-animations/BackgroundWaves'
 import { useMedia } from 'hooks/useMedia'
 import { SignInPage } from 'pages/sign-in-page/SignInPage'
@@ -21,6 +23,7 @@ import SignUpPage from 'pages/sign-up-page'
 import { ScrollView } from 'pages/sign-up-page/components/layout'
 import {
   SIGN_IN_PAGE,
+  SIGN_UP_APP_CTA_PAGE,
   SIGN_UP_CREATE_LOGIN_DETAILS,
   SIGN_UP_EMAIL_PAGE,
   SIGN_UP_PAGE,
@@ -49,7 +52,8 @@ const DesktopSignOnRoot = (props: RootProps) => {
       SIGN_UP_EMAIL_PAGE,
       SIGN_UP_PASSWORD_PAGE,
       SIGN_UP_REVIEW_HANDLE_PAGE,
-      SIGN_UP_CREATE_LOGIN_DETAILS
+      SIGN_UP_CREATE_LOGIN_DETAILS,
+      SIGN_UP_APP_CTA_PAGE
     ],
     exact: true
   })
@@ -63,8 +67,8 @@ const DesktopSignOnRoot = (props: RootProps) => {
         css={{
           zIndex: 1,
           position: 'absolute',
-          left: spacing['2xl'],
-          top: spacing['2xl']
+          left: spacing.xl,
+          top: spacing.xl
         }}
       >
         <IconCloseAlt color='staticWhite' />
@@ -107,7 +111,15 @@ const DesktopSignOnRoot = (props: RootProps) => {
             backgroundPosition: 'center'
           }}
         >
-          {isExpanded ? null : <AudiusValues />}
+          <Switch>
+            <Route exact path={SIGN_UP_APP_CTA_PAGE}>
+              {/* @ts-ignore box type incorrect */}
+              <Box as='img' w='100%' src={imagePhone} />
+            </Route>
+            <Route path={[SIGN_IN_PAGE, SIGN_UP_PAGE]}>
+              {isExpanded ? null : <AudiusValues />}
+            </Route>
+          </Switch>
         </Flex>
       </Paper>
     </Flex>

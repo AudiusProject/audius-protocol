@@ -1,11 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react-native'
 
-import { Text } from 'app/harmony-native/foundations'
+import { Text, Paper } from '@audius/harmony-native'
 
-import { Paper } from './Paper'
-import type { NativePaperProps } from './types'
+import type { PaperProps } from './types'
 
-const meta: Meta<NativePaperProps> = {
+const meta: Meta<PaperProps> = {
   title: 'Layout/Paper',
   component: Paper,
   parameters: {
@@ -22,7 +21,7 @@ const meta: Meta<NativePaperProps> = {
 
 export default meta
 
-type Story = StoryObj<NativePaperProps>
+type Story = StoryObj<PaperProps>
 
 export const Default: Story = {
   args: {

@@ -1,8 +1,13 @@
-import type { ComponentProps, ElementType, ReactNode } from 'react'
+import type {
+  CSSProperties,
+  ComponentProps,
+  ElementType,
+  ReactNode
+} from 'react'
 
 import type { TextColors } from 'foundations'
 
-export type TextOwnProps<TextComponentType extends ElementType = 'p'> = {
+export type BaseTextProps<TextComponentType extends ElementType = 'p'> = {
   tag?: TextComponentType
   className?: string
   children?: ReactNode
@@ -12,11 +17,12 @@ export type TextOwnProps<TextComponentType extends ElementType = 'p'> = {
   color?: TextColors
   shadow?: TextShadow
   asChild?: boolean
+  textAlign?: CSSProperties['textAlign']
 }
 
 export type TextProps<TextComponentType extends ElementType = 'p'> =
-  TextOwnProps<TextComponentType> &
-    Omit<ComponentProps<TextComponentType>, keyof TextOwnProps | 'ref'>
+  BaseTextProps<TextComponentType> &
+    Omit<ComponentProps<TextComponentType>, keyof BaseTextProps | 'ref'>
 
 export type TextStrength = 'weak' | 'default' | 'strong'
 

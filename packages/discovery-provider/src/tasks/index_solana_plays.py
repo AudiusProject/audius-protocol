@@ -8,12 +8,16 @@ from typing import Dict, Tuple, TypedDict, Union, cast
 import base58
 from redis import Redis
 from solders.pubkey import Pubkey
-from solders.rpc.responses import RpcConfirmedTransactionStatusWithSignature
+from solders.rpc.responses import (
+    GetTransactionResp,
+    RpcConfirmedTransactionStatusWithSignature,
+)
 from solders.transaction import Transaction
 from sqlalchemy import desc
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.exceptions import SolanaTransactionFetchError
 from src.models.social.play import Play
 from src.solana.constants import FETCH_TX_SIGNATURES_BATCH_SIZE
 from src.solana.solana_client_manager import SolanaClientManager
@@ -26,6 +30,7 @@ from src.utils.cache_solana_program import (
 from src.utils.config import shared_config
 from src.utils.helpers import split_list
 from src.utils.prometheus_metric import save_duration_metric
+from src.utils.redis_cache import get_solana_transaction_key
 from src.utils.redis_constants import (
     latest_sol_play_db_tx_key,
     latest_sol_play_program_tx_key,
@@ -166,16 +171,34 @@ def is_valid_tx(account_keys):
     return False
 
 
-def parse_sol_play_transaction(solana_client_manager: SolanaClientManager, tx_sig: str):
+def get_sol_tx_info(
+    solana_client_manager: SolanaClientManager, tx_sig: str, redis: Redis
+):
+    try:
+        existing_tx = redis.get(get_solana_transaction_key(tx_sig))
+        if existing_tx is not None and existing_tx != "":
+            logger.info(f"index_solana_plays.py | Cache hit: {tx_sig}")
+            tx_info = GetTransactionResp.from_json(existing_tx.decode("utf-8"))
+            return tx_info
+        logger.info(f"index_solana_plays.py | Cache miss: {tx_sig}")
+        tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
+        return tx_info
+    except SolanaTransactionFetchError:
+        return None
+
+
+def parse_sol_play_transaction(
+    solana_client_manager: SolanaClientManager, tx_sig: str, redis: Redis
+):
     try:
         fetch_start_time = time.time()
-        tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
+        tx_info = get_sol_tx_info(solana_client_manager, tx_sig, redis)
         fetch_completion_time = time.time()
         fetch_time = fetch_completion_time - fetch_start_time
         logger.info(
             f"index_solana_plays.py | Got transaction: {tx_sig} in {fetch_time}"
         )
-        if not tx_info.value:
+        if not tx_info or not tx_info.value:
             return None
         transaction = tx_info.value.transaction
         if not transaction:
@@ -377,9 +400,7 @@ def parse_sol_tx_batch(
     with concurrent.futures.ThreadPoolExecutor() as executor:
         parse_sol_tx_futures = {
             executor.submit(
-                parse_sol_play_transaction,
-                solana_client_manager,
-                tx_sig,
+                parse_sol_play_transaction, solana_client_manager, tx_sig, redis
             ): tx_sig
             for tx_sig in tx_sig_batch_records
         }

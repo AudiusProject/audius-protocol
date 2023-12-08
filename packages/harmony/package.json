@@ -71,7 +71,6 @@
     "react-dom": "18.2.0",
     "react-lottie": "1.2.3",
     "react-merge-refs": "2.0.1",
-    "@types/react-native": "0.71.8",
     "react-perfect-scrollbar": "1.5.8",
     "react-use": "15.3.8",
     "react-use-measure": "2.1.1",
