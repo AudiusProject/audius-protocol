@@ -64,6 +64,13 @@ export const PaymentMethod = ({
     { label: PurchaseVendor.STRIPE }
   ]
 
+  const handleSelectVendor = useCallback(
+    (label: string) => {
+      setSelectedVendor(label as PurchaseVendor)
+    },
+    [setSelectedVendor]
+  )
+
   const options = [
     showExistingBalance
       ? {
@@ -94,18 +101,14 @@ export const PaymentMethod = ({
         vendorOptions.length > 1 ? (
           mobile ? (
             <MobileFilterButton
-              onSelect={(vendor: string) => {
-                setSelectedVendor(vendor as PurchaseVendor)
-              }}
+              onSelect={handleSelectVendor}
               initialSelectionIndex={0}
               options={vendorOptions}
               zIndex={zIndex.ADD_FUNDS_VENDOR_SELECTION_DRAWER}
             />
           ) : (
             <FilterButton
-              onSelect={(vendor: string) => {
-                setSelectedVendor(vendor as PurchaseVendor)
-              }}
+              onSelect={handleSelectVendor}
               initialSelectionIndex={0}
               variant={FilterButtonType.REPLACE_LABEL}
               options={vendorOptions}

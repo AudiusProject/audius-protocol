@@ -12,6 +12,7 @@ import {
 import { Connection, Transaction } from '@solana/web3.js'
 
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
+import zIndex from 'utils/zIndex'
 
 import styles from './CoinflowOnrampModal.module.css'
 
@@ -92,8 +93,10 @@ export const CoinflowOnrampModal = () => {
 
   return (
     <ModalDrawer
-      bodyClassName={styles.modalWrapper}
-      zIndex={1000000}
+      bodyClassName={styles.modalBody}
+      wrapperClassName={styles.modalWrapper}
+      zIndex={zIndex.COINFLOW_ONRAMP_MODAL}
+      isFullscreen
       isOpen={isOpen}
       onClose={onClose}
       onClosed={onClosed}
@@ -103,7 +106,7 @@ export const CoinflowOnrampModal = () => {
           transaction={transaction}
           wallet={adapter.wallet}
           connection={adapter.connection}
-          merchantId={MERCHANT_ID}
+          merchantId={MERCHANT_ID || ''}
           env={IS_PRODUCTION ? 'prod' : 'sandbox'}
           blockchain='solana'
           amount={amount}

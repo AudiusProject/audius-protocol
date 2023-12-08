@@ -43,10 +43,10 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
     )
 
     useEffect(() => {
-      if (onSelect && selection) {
+      if (onSelect && selection?.label) {
         onSelect(selection.label)
       }
-    }, [selection, onSelect])
+    }, [selection?.label, onSelect])
 
     const [isOpen, setIsOpen] = useState(false)
 

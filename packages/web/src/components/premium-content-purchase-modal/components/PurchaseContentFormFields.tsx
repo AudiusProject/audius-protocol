@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import {
   PurchaseContentStage,
@@ -7,9 +7,8 @@ import {
   PURCHASE_METHOD,
   PurchaseVendor,
   PURCHASE_VENDOR,
-  useFeatureFlag,
-  FeatureFlags,
-  usePurchaseMethod
+  usePurchaseMethod,
+  PurchaseMethod
 } from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { IconCheck } from '@audius/stems'
@@ -43,9 +42,6 @@ export const PurchaseContentFormFields = ({
   isUnlocking
 }: PurchaseContentFormFieldsProps) => {
   const payExtraAmountPresetValues = usePayExtraPresets()
-  const { isEnabled: isCoinflowEnabled } = useFeatureFlag(
-    FeatureFlags.BUY_WITH_COINFLOW
-  )
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
   const [, , { setValue: setPurchaseVendor }] = useField(PURCHASE_VENDOR)
@@ -105,11 +101,11 @@ export const PurchaseContentFormFields = ({
       {isUnlocking || isPurchased ? null : (
         <PaymentMethod
           selectedMethod={purchaseMethod}
-          setSelectedMethod={setPurchaseMethod}
-          setSelectedVendor={setPurchaseVendor}
+          setSelectedMethod={handleChangeMethod}
+          setSelectedVendor={handleChangeVendor}
           balance={balanceBN}
           isExistingBalanceDisabled={isExistingBalanceDisabled}
-          showExistingBalance
+          showExistingBalance={!balanceBN?.isZero()}
         />
       )}
       {isUnlocking ? null : <PayToUnlockInfo />}

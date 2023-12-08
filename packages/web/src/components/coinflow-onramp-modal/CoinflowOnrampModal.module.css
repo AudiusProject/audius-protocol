@@ -1,4 +1,9 @@
 .modalWrapper {
+  height: 100%;
+}
+
+.modalBody {
+  height: 100%;
   max-width: 720px;
   max-height: 720px;
 }
