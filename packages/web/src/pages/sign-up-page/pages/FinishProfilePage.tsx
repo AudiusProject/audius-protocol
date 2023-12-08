@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import { MAX_DISPLAY_NAME_LENGTH } from '@audius/common'
 import { Paper, PlainButton, PlainButtonType } from '@audius/harmony'
 import { Formik, Form } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -7,9 +8,15 @@ import { useHistory } from 'react-router-dom'
 import { z } from 'zod'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { setField, setValueField } from 'common/store/pages/signon/actions'
+import {
+  setField,
+  setValueField,
+  setFinishedPhase1
+} from 'common/store/pages/signon/actions'
 import {
   getCoverPhotoField,
+  getIsSocialConnected,
+  getLinkedSocialOnFirstPage,
   getNameField,
   getProfileImageField
 } from 'common/store/pages/signon/selectors'
@@ -40,7 +47,7 @@ export type FinishProfileValues = {
 
 const formSchema = toFormikValidationSchema(
   z.object({
-    displayName: z.string(),
+    displayName: z.string().max(MAX_DISPLAY_NAME_LENGTH, ''),
     profileImage: z.object({
       url: z.string()
     }),
@@ -59,6 +66,8 @@ export const FinishProfilePage = () => {
   const navigate = useNavigateToPage()
 
   const { value: savedDisplayName } = useSelector(getNameField)
+  const isSocialConnected = useSelector(getIsSocialConnected)
+  const linkedSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
   const { value: savedCoverPhoto } = useSelector(getCoverPhotoField) ?? {}
   const { value: savedProfileImage } = useSelector(getProfileImageField) ?? {}
 
@@ -76,6 +85,7 @@ export const FinishProfilePage = () => {
       if (coverPhoto) {
         dispatch(setField('coverPhoto', { value: coverPhoto }))
       }
+      dispatch(setFinishedPhase1(true))
       navigate(SIGN_UP_GENRES_PAGE)
     },
     [navigate, dispatch]
@@ -98,7 +108,9 @@ export const FinishProfilePage = () => {
         >
           <Heading
             prefix={
-              isMobile ? null : <OutOfText numerator={2} denominator={2} />
+              isMobile || linkedSocialOnFirstPage ? null : (
+                <OutOfText numerator={2} denominator={2} />
+              )
             }
             heading={messages.header}
             description={messages.description}
@@ -127,7 +139,7 @@ export const FinishProfilePage = () => {
             centered
             buttonProps={{ disabled: !isValid }}
             postfix={
-              isMobile ? null : (
+              isMobile || isSocialConnected ? null : (
                 <PlainButton
                   variant={PlainButtonType.SUBDUED}
                   onClick={history.goBack}

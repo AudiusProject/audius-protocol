@@ -1,14 +1,18 @@
 import { useCallback, useContext, useMemo } from 'react'
 
-import { useAudiusQueryContext, socialMediaMessages } from '@audius/common'
+import { socialMediaMessages, useAudiusQueryContext } from '@audius/common'
 import { Divider, Flex, IconVerified, Paper, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { setValueField } from 'common/store/pages/signon/actions'
+import {
+  setValueField,
+  unsetSocialProfile
+} from 'common/store/pages/signon/actions'
 import {
   getHandleField,
+  getIsSocialConnected,
   getLinkedSocialOnFirstPage
 } from 'common/store/pages/signon/selectors'
 import { ToastContext } from 'components/toast/ToastContext'
@@ -22,8 +26,10 @@ import {
 
 import { HandleField } from '../components/HandleField'
 import { OutOfText } from '../components/OutOfText'
+import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
 import { Heading, Page, PageFooter } from '../components/layout'
+import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
 import { generateHandleSchema } from '../utils/handleSchema'
 
 const messages = {
@@ -49,12 +55,17 @@ type SocialMediaSectionProps = {
     handle: string
     platform: 'twitter' | 'instagram' | 'tiktok'
   }) => void
+  onStart: () => void
+  onError: () => void
 }
 
 const SocialMediaSection = ({
-  onCompleteSocialMediaLogin
+  onCompleteSocialMediaLogin,
+  onStart,
+  onError
 }: SocialMediaSectionProps) => {
   const { isMobile } = useMedia()
+
   return (
     <Paper direction='column' backgroundColor='surface2' p='l' gap='l'>
       <Flex direction='column' gap='s'>
@@ -76,6 +87,8 @@ const SocialMediaSection = ({
         </Text>
       </Flex>
       <SocialMediaLoginOptions
+        onStart={onStart}
+        onError={onError}
         onCompleteSocialMediaLogin={onCompleteSocialMediaLogin}
       />
       <Text variant='body' size={isMobile ? 'm' : 'l'}>
@@ -89,6 +102,17 @@ export const PickHandlePage = () => {
   const { isMobile } = useMedia()
 
   const dispatch = useDispatch()
+
+  const alreadyLinkedSocial = useSelector(getIsSocialConnected)
+  const {
+    isWaitingForSocialLogin,
+    handleStartSocialMediaLogin,
+    handleErrorSocialMediaLogin
+  } = useSocialMediaLoader({
+    resetAction: unsetSocialProfile,
+    linkedSocialOnThisPagePreviously: alreadyLinkedSocial
+  })
+
   const navigate = useNavigateToPage()
   const { toast } = useContext(ToastContext)
   const audiusQueryContext = useAudiusQueryContext()
@@ -136,7 +160,7 @@ export const PickHandlePage = () => {
   )
 
   const initialValues = {
-    handle
+    handle: alreadyLinkedSocial ? '' : handle
   }
 
   return (
@@ -147,32 +171,44 @@ export const PickHandlePage = () => {
       validateOnChange={false}
     >
       <Page as={Form} centered={!isMobile} transitionBack='vertical'>
-        <Heading
-          prefix={isMobile ? null : <OutOfText numerator={1} denominator={2} />}
-          heading={messages.title}
-          description={messages.description}
-          centered={!isMobile}
-        />
-        <Flex direction='column' gap={isMobile ? 'l' : 'xl'}>
-          <HandleField
-            autoFocus
-            onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
-          />
-          <Divider>
-            <Text
-              variant='body'
-              color='subdued'
-              size='s'
-              css={{ textTransform: 'uppercase' }}
-            >
-              {messages.or}
-            </Text>
-          </Divider>
-          <SocialMediaSection
-            onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
-          />
-        </Flex>
-        <PageFooter centered />
+        {isWaitingForSocialLogin ? (
+          <SocialMediaLoading />
+        ) : (
+          <>
+            <Heading
+              prefix={
+                isMobile ? null : <OutOfText numerator={1} denominator={2} />
+              }
+              heading={messages.title}
+              description={messages.description}
+              centered={!isMobile}
+            />
+            <Flex direction='column' gap={isMobile ? 'l' : 'xl'}>
+              <HandleField
+                autoFocus
+                onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
+                onStartSocialMediaLogin={handleStartSocialMediaLogin}
+                onErrorSocialMediaLogin={handleErrorSocialMediaLogin}
+              />
+              <Divider>
+                <Text
+                  variant='body'
+                  color='subdued'
+                  size='s'
+                  css={{ textTransform: 'uppercase' }}
+                >
+                  {messages.or}
+                </Text>
+              </Divider>
+              <SocialMediaSection
+                onStart={handleStartSocialMediaLogin}
+                onError={handleErrorSocialMediaLogin}
+                onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
+              />
+            </Flex>
+            <PageFooter centered />
+          </>
+        )}
       </Page>
     </Formik>
   )
