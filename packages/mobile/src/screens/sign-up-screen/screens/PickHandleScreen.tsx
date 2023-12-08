@@ -11,7 +11,13 @@ import { Formik } from 'formik'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Flex, Paper, Text } from '@audius/harmony-native'
+import {
+  Flex,
+  IconVerified,
+  Paper,
+  Text,
+  useTheme
+} from '@audius/harmony-native'
 import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
@@ -40,13 +46,14 @@ type SocialMediaSectionProps = {
 const SocialMediaSection = ({
   onCompleteSocialMediaLogin
 }: SocialMediaSectionProps) => {
+  const { spacing } = useTheme()
   return (
     <Paper direction='column' backgroundColor='surface2' p='l' gap='l'>
       <Flex direction='column' gap='s'>
         <Text variant='title' size='m'>
           {messages.claimHandleHeaderPrefix}{' '}
-          <Text color='accent'>@{messages.handle}</Text> {/* TODO: add icon */}
-          {/* <IconVerified size='s' style={css={{ verticalAlign: 'sub' }} /> */}
+          <Text color='accent'>@{messages.handle}</Text>
+          <IconVerified size='s' style={{ marginLeft: spacing.xs }} />
         </Text>
         <Text variant='body' size='m'>
           {messages.claimHandleDescription}
