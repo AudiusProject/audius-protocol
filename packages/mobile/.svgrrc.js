@@ -1,8 +1,7 @@
 module.exports = {
   template: require('../../svgr-template'),
-  dimensions: false,
   replaceAttrValues: {
-    '#FF0000': '{props.fill}',
+    '#FF0000': '{props.fillColor}',
     '#000': '{props.fill}',
     '#f00': '{props.fillSecondary}'
   }
