@@ -15,6 +15,7 @@ export const errorMessages = {
   genericReservedError: 'This verified handle is reserved.',
   unknownError: 'An unknown error occurred.',
   handleTakenError: 'That handle has already been taken.',
+  handleTooLong: 'That handle is too long.',
   missingHandleError: 'Please enter a handle.'
 }
 
@@ -28,7 +29,7 @@ export const generateHandleSchema = ({
   return z.object({
     handle: z
       .string()
-      .max(MAX_HANDLE_LENGTH)
+      .max(MAX_HANDLE_LENGTH, errorMessages.handleTooLong)
       .regex(/^[a-zA-Z0-9_.]*$/, errorMessages.badCharacterError)
       .refine(
         (handle) => !restrictedHandles.has(handle.toLowerCase()),
