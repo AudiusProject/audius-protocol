@@ -1,40 +1,83 @@
-import { Children } from 'react'
+import type { ReactNode } from 'react'
 
-import type { FlexProps, BoxProps } from '@audius/harmony-native'
-import { Flex, Text } from '@audius/harmony-native'
+import { css } from '@emotion/native'
+import { Dimensions } from 'react-native'
+
+import type { FlexProps, BoxProps, PaperProps } from '@audius/harmony-native'
+import { Box, Flex, Paper, Text } from '@audius/harmony-native'
+import { Button, type ButtonProps } from 'app/components/core'
 
 type PageProps = FlexProps & {
   centered?: boolean
 }
 
-export const Page = (props: PageProps) => {
-  const { centered, children, ...other } = props
+// Horizontal gutter size
+const gutterSize: FlexProps['p'] = 'l'
 
-  const childrenArray = Children.toArray(children)
-  const footer = childrenArray.pop()
+export const Page = (props: PageProps) => {
+  const { children, style, ...other } = props
 
   const layoutProps: FlexProps = {
     direction: 'column',
     h: '100%',
     gap: '2xl',
-    ph: 'l',
-    pv: '2xl'
-  }
-
-  if (centered) {
-    return (
-      <Flex h='100%' direction='column' alignItems='center' {...other}>
-        <Flex {...layoutProps} alignSelf='center'>
-          {childrenArray}
-        </Flex>
-        {footer}
-      </Flex>
-    )
+    ph: gutterSize,
+    pv: '2xl',
+    backgroundColor: 'white'
   }
 
   return (
-    <Flex {...layoutProps} {...other}>
+    <Flex {...layoutProps} style={[style]} {...other}>
       {children}
+    </Flex>
+  )
+}
+
+type PageFooterProps = {
+  prefix?: ReactNode
+  postfix?: ReactNode
+  buttonProps?: Partial<ButtonProps>
+  centered?: boolean
+  onSubmit?: () => void
+} & Omit<PaperProps & BoxProps, 'prefix'>
+
+export const PageFooter = (props: PageFooterProps) => {
+  const { prefix, postfix, buttonProps, onSubmit, ...other } = props
+
+  return (
+    <Flex
+      gap='xl'
+      // Have to escape the pre-existing Page padding
+      w={Dimensions.get('window').width}
+      style={css({
+        position: 'absolute',
+        bottom: 0,
+        left: 0
+      })}
+    >
+      {/* Prefixes float above the shadowed paper container  */}
+      <Flex ph={gutterSize}>{prefix}</Flex>
+      <Paper
+        p='l'
+        justifyContent='center'
+        gap='l'
+        alignItems='center'
+        direction='column'
+        shadow='midInverted'
+        style={css({
+          borderRadius: 0
+        })}
+        {...other}
+      >
+        <Button
+          fullWidth
+          {...buttonProps}
+          title='Continue'
+          onPress={() => onSubmit?.()}
+        />
+        {/* postfixes live insde the paper */}
+        {postfix}
+      </Paper>
     </Flex>
   )
 }
@@ -68,5 +111,25 @@ export const Heading = (props: HeadingProps) => {
       ) : undefined}
       {postfix}
     </Flex>
+  )
+}
+
+type ReadOnlyFieldProps = {
+  label: string
+  value: string
+}
+
+export const ReadOnlyField = (props: ReadOnlyFieldProps) => {
+  const { label, value } = props
+
+  return (
+    <Box>
+      <Text variant='label' size='xs'>
+        {label}
+      </Text>
+      <Text variant='body' size='m'>
+        {value}
+      </Text>
+    </Box>
   )
 }
