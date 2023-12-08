@@ -28,8 +28,7 @@ from src.models.users.usdc_transactions_history import (
     USDCTransactionType,
 )
 from src.models.users.user import User
-from src.models.users.user_bank import USDCUserBankAccount, UserBankAccount
-from src.queries.get_balances import enqueue_immediate_balance_refresh
+from src.models.users.user_bank import USDCUserBankAccount
 from src.solana.constants import (
     FETCH_TX_SIGNATURES_BATCH_SIZE,
     TX_SIGNATURES_MAX_BATCHES,
@@ -96,26 +95,45 @@ PAYMENT_ROUTER_WAUDIO_ATA_ADDRESS = (
 # The amount of USDC that represents one USD cent
 USDC_PER_USD_CENT = 10000
 
+# Used to limit tx history if needed
+MIN_SLOT = int(shared_config["solana"]["payment_router_min_slot"])
+INITIAL_FETCH_SIZE = 10
 
-def refresh_user_balances(session: Session, redis: Redis, accts=List[str]):
-    results = (
-        session.query(User.user_id, UserBankAccount.bank_account)
-        .join(
-            UserBankAccount,
-            and_(
-                UserBankAccount.bank_account.in_(accts),
-                UserBankAccount.ethereum_address == User.wallet,
-            ),
+# Used to find the correct accounts for sender/receiver in the transaction and the PaymentRouterPDA
+TRANSFER_INSTRUCTION_SENDER_ACCOUNT_INDEX = 0
+TRANSFER_INSTRUCTION_MINT_ACCOUNT_INDEX = 1
+TRANSFER_INSTRUCTION_RECEIVER_ACCOUNT_INDEX = 2  # Should be the PaymentRouterPDA
+
+ROUTE_INSTRUCTION_SENDER_INDEX = 0
+# This should be an account owned by the PaymentRouterPDA
+ROUTE_INSTRUCTION_PAYMENT_ROUTER_PDA_INDEX = 1
+ROUTE_INSTRUCTION_SPL_TOKEN_PROGRAM_INDEX = 2
+# Everything after this index is a receiver account
+ROUTE_INSTRUCTION_RECEIVER_ACCOUNTS_START_INDEX = 3
+
+
+class ReceiverUserAccount(TypedDict):
+    user_id: int
+    user_bank_account: str
+
+
+class PurchaseMetadataDict(TypedDict):
+    price: int
+    splits: dict[str, int]
+    type: PurchaseType
+    id: int
+    purchaser_user_id: int
+    content_owner_id: int
+
+
+def check_config():
+    if not all([WAUDIO_MINT_PUBKEY, USDC_MINT_PUBKEY, PAYMENT_ROUTER_PUBKEY]):
+        logger.error(
+            f"index_payment_router.py | Missing required configuration"
+            f"WAUDIO_MINT_PUBKEY: {WAUDIO_MINT_PUBKEY} USDC_MINT_PUBKEY: {USDC_MINT_PUBKEY} PAYMENT_ROUTER_PUBKEY: {PAYMENT_ROUTER_PUBKEY}- exiting."
         )
-        .filter(User.is_current == True)
-        .all()
-    )
-    # Only refresh if this is a known account within audius
-    if results:
-        user_ids = [user_id[0] for user_id in results]
-        logger.info(f"index_payment_router.py | Refresh user_ids = {user_ids}")
-        enqueue_immediate_balance_refresh(redis, user_ids)
-    return results
+        return False
+    return True
 
 
 def get_sol_tx_info(
@@ -138,47 +156,6 @@ def get_track_owner_id(session: Session, track_id: int) -> Optional[int]:
         return track_owner_id[0]
     else:
         return None
-
-
-# Used to limit tx history if needed
-MIN_SLOT = int(shared_config["solana"]["payment_router_min_slot"])
-INITIAL_FETCH_SIZE = 10
-
-# Used to find the correct accounts for sender/receiver in the transaction and the PaymentRouterPDA
-TRANSFER_INSTRUCTION_SENDER_ACCOUNT_INDEX = 0
-TRANSFER_INSTRUCTION_MINT_ACCOUNT_INDEX = 1
-TRANSFER_INSTRUCTION_RECEIVER_ACCOUNT_INDEX = 2  # Should be the PaymentRouterPDA
-
-ROUTE_INSTRUCTION_SENDER_INDEX = 0
-# This should be an account owned by the PaymentRouterPDA
-ROUTE_INSTRUCTION_PAYMENT_ROUTER_PDA_INDEX = 1
-ROUTE_INSTRUCTION_SPL_TOKEN_PROGRAM_INDEX = 2
-# Everything after this index is a receiver account
-ROUTE_INSTRUCTION_RECEIVER_ACCOUNTS_START_INDEX = 3
-
-
-def check_config():
-    if not all([WAUDIO_MINT_PUBKEY, USDC_MINT_PUBKEY, PAYMENT_ROUTER_PUBKEY]):
-        logger.error(
-            f"index_payment_router.py | Missing required configuration"
-            f"WAUDIO_MINT_PUBKEY: {WAUDIO_MINT_PUBKEY} USDC_MINT_PUBKEY: {USDC_MINT_PUBKEY} PAYMENT_ROUTER_PUBKEY: {PAYMENT_ROUTER_PUBKEY}- exiting."
-        )
-        return False
-    return True
-
-
-class ReceiverUserAccount(TypedDict):
-    user_id: int
-    user_bank_account: str
-
-
-class PurchaseMetadataDict(TypedDict):
-    price: int
-    splits: dict[str, int]
-    type: PurchaseType
-    id: int
-    purchaser_user_id: int
-    content_owner_id: int
 
 
 # Return highest payment router slot that has been processed
@@ -298,15 +275,14 @@ def validate_purchase(
     purchase_metadata: PurchaseMetadataDict, balance_changes: dict[str, BalanceChange]
 ):
     """Validates the user has correctly constructed the transaction in order to create the purchase, including validating they paid the full price at the time of the purchase, and that payments were appropriately split"""
-    is_valid = True
     # Check that the recipients all got the correct split
     for account, split in purchase_metadata["splits"].items():
         if account not in balance_changes or balance_changes[account]["change"] < split:
             logger.error(
                 f"index_payment_router.py | Incorrect split given to account={account} amount={balance_changes[account]['change']} expected={split}"
             )
-            is_valid = False
-    return is_valid
+            return False
+    return True
 
 
 def index_purchase(
@@ -429,7 +405,6 @@ def validate_and_index_usdc_transfers(
 
 def process_route_instruction(
     session: Session,
-    redis: Redis,
     instruction: CompiledInstruction,
     memos: List[str],
     account_keys: List[str],
@@ -439,10 +414,6 @@ def process_route_instruction(
     challenge_event_bus: ChallengeEventBus,
     timestamp: datetime,
 ):
-    # solana_client_manager: SolanaClientManager = (
-    #     index_payment_router.solana_client_manager
-    # )
-
     # Route instructions have a varying number of receiver accounts but they are always
     # at the end
     receiver_accounts = [
@@ -464,14 +435,6 @@ def process_route_instruction(
     user_id_accounts = []
 
     if is_audio:
-        # Accounts to refresh balance
-        # logger.info(
-        #     f"index_payment_router.py | Balance refresh accounts: {receiver_accounts}"
-        # )
-        # user_id_accounts = refresh_user_balances(session, redis, receiver_accounts)
-        # Payment Router recipients may not be Audius user banks
-        # if not user_id_accounts:
-        #     logger.info("index_payment_router.py | No receiver accounts are user banks")
         logger.info(
             "index_payment_router.py | $AUDIO payment router transactions are not yet indexed. Skipping balance refresh"
         )
@@ -485,7 +448,6 @@ def process_route_instruction(
                     USDCUserBankAccount.ethereum_address == User.wallet,
                 ),
             )
-            .filter(User.is_current == True)
             .all()
         )
         # Payment Router recipients may not be Audius user banks
@@ -614,7 +576,6 @@ def process_payment_router_tx_details(
     if has_route_instruction:
         process_route_instruction(
             session=session,
-            redis=redis,
             instruction=instruction,
             memos=decode_all_solana_memos(tx_message=tx_message),
             account_keys=account_keys,
@@ -649,11 +610,12 @@ def process_payment_router_txs() -> None:
     intersection_found = False
     is_initial_fetch = True
 
-    # Get the latests slot available globally before fetching txs to keep track of indexing progress
+    # Get the latest slot available globally before fetching txs to keep track of indexing progress
     try:
         latest_global_slot = solana_client_manager.get_slot()
-    except:
-        logger.error("index_payment_router.py | Failed to get block height")
+    except Exception as e:
+        logger.error("index_payment_router.py | Failed to get block height | {e}")
+        return
 
     # Query for solana transactions until an intersection is found
     with db.scoped_session() as session:
