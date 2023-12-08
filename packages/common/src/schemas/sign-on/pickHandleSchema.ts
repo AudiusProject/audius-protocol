@@ -1,11 +1,9 @@
 import { z } from 'zod'
 
-import {
-  AudiusQueryContextType,
-  MAX_HANDLE_LENGTH,
-  signUpFetch
-} from '@audius/common'
-import restrictedHandles from 'utils/restrictedHandles'
+import { AudiusQueryContextType } from 'audius-query'
+import { MAX_HANDLE_LENGTH } from 'services/oauth'
+import { signUpFetch } from 'src/api'
+import { restrictedHandles as commonRestrictedHandles } from 'utils/restrictedHandles'
 
 export const errorMessages = {
   badCharacterError: 'Please only use A-Z, 0-9, . and _',
@@ -18,12 +16,18 @@ export const errorMessages = {
   missingHandleError: 'Please enter a handle.'
 }
 
+/**
+ * Restricted handles set includes route paths which are defined at the client level and passed in
+ * @param restrictedHandles
+ */
 export const pickHandleSchema = ({
   audiusQueryContext,
-  skipReservedHandleCheck = false
+  skipReservedHandleCheck = false,
+  restrictedHandles = commonRestrictedHandles
 }: {
   audiusQueryContext: AudiusQueryContextType
   skipReservedHandleCheck?: boolean
+  restrictedHandles?: Set<string>
 }) => {
   return z.object({
     handle: z

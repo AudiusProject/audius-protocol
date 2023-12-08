@@ -19,6 +19,7 @@ import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
 import { Heading, Page, PageFooter } from '../components/layout'
 import { Divider } from '../components/temp-harmony/Divider'
 import type { SignUpScreenParamList } from '../types'
+import { restrictedHandles } from '../utils/restrictedHandles'
 
 const initialValues = {
   handle: ''
@@ -67,7 +68,9 @@ export const PickHandleScreen = () => {
 
   const audiusQueryContext = useAudiusQueryContext()
   const validationSchema = useMemo(() => {
-    return toFormikValidationSchema(pickHandleSchema({ audiusQueryContext }))
+    return toFormikValidationSchema(
+      pickHandleSchema({ audiusQueryContext, restrictedHandles })
+    )
   }, [audiusQueryContext])
 
   const handleSubmit = useCallback(
@@ -90,6 +93,7 @@ export const PickHandleScreen = () => {
       platform: 'twitter' | 'instagram' | 'tiktok'
     }) => {
       dispatch(setValueField('handle', handle))
+      // TODO: social media handle impl
       if (!requiresReview) {
         // navigate(SIGN_UP_FINISH_PROFILE_PAGE)
       } else {

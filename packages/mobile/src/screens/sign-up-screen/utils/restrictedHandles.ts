@@ -1,6 +1,5 @@
 import { restrictedHandles as commonRestrictedHandles } from '@audius/common'
-
-import { orderedRoutes } from 'utils/route'
+import { orderedRoutes } from 'audius-client/src/utils/route'
 
 const restrictedRoutes = orderedRoutes
   .filter((routePath) => (routePath.match(/\//g) || []).length === 1)

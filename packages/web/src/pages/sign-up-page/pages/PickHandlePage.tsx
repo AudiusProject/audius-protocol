@@ -19,6 +19,7 @@ import {
 import { ToastContext } from 'components/toast/ToastContext'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { restrictedHandles } from 'utils/restrictedHandles'
 import {
   SIGN_UP_CREATE_LOGIN_DETAILS,
   SIGN_UP_FINISH_PROFILE_PAGE,
@@ -29,7 +30,6 @@ import { HandleField } from '../components/HandleField'
 import { OutOfText } from '../components/OutOfText'
 import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
 import { Heading, Page, PageFooter } from '../components/layout'
-
 type PickHandleValues = {
   handle: string
 }
@@ -84,7 +84,9 @@ export const PickHandlePage = () => {
   const { toast } = useContext(ToastContext)
   const audiusQueryContext = useAudiusQueryContext()
   const validationSchema = useMemo(() => {
-    return toFormikValidationSchema(pickHandleSchema({ audiusQueryContext }))
+    return toFormikValidationSchema(
+      pickHandleSchema({ audiusQueryContext, restrictedHandles })
+    )
   }, [audiusQueryContext])
 
   const { value: handle } = useSelector(getHandleField)

@@ -57,10 +57,8 @@ export const restrictedHandles = new Set(
     '404',
 
     // ===== Moods =====
-    ...MOODS.map((mood) => mood.toLowerCase()),
+    ...MOODS,
     // ===== Genre =====
     ...filteredGenres
   ].map((h) => h.toLowerCase())
 )
-
-export default restrictedHandles
