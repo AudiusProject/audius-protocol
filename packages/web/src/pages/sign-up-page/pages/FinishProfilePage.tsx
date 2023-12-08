@@ -16,6 +16,7 @@ import {
 import {
   getCoverPhotoField,
   getIsSocialConnected,
+  getLinkedSocialOnFirstPage,
   getNameField,
   getProfileImageField
 } from 'common/store/pages/signon/selectors'
@@ -66,6 +67,7 @@ export const FinishProfilePage = () => {
 
   const { value: savedDisplayName } = useSelector(getNameField)
   const isSocialConnected = useSelector(getIsSocialConnected)
+  const linkedSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
   const { value: savedCoverPhoto } = useSelector(getCoverPhotoField) ?? {}
   const { value: savedProfileImage } = useSelector(getProfileImageField) ?? {}
 
@@ -106,7 +108,9 @@ export const FinishProfilePage = () => {
         >
           <Heading
             prefix={
-              isMobile ? null : <OutOfText numerator={2} denominator={2} />
+              isMobile || linkedSocialOnFirstPage ? null : (
+                <OutOfText numerator={2} denominator={2} />
+              )
             }
             heading={messages.header}
             description={messages.description}

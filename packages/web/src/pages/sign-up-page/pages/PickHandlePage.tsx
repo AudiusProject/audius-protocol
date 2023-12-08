@@ -29,6 +29,7 @@ import { OutOfText } from '../components/OutOfText'
 import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
 import { Heading, Page, PageFooter } from '../components/layout'
+import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
 import { generateHandleSchema } from '../utils/handleSchema'
 
 const messages = {
@@ -101,14 +102,17 @@ export const PickHandlePage = () => {
   const { isMobile } = useMedia()
 
   const dispatch = useDispatch()
-  useEffect(() => {
-    // If the user goes back to this page in the middle of the flow after they linked
-    // their social on this page previously, clear the social media state.
-    if (alreadyLinkedSocial) {
-      dispatch(unsetSocialProfile())
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch])
+
+  const alreadyLinkedSocial = useSelector(getIsSocialConnected)
+  const {
+    isWaitingForSocialLogin,
+    handleStartSocialMediaLogin,
+    handleErrorSocialMediaLogin
+  } = useSocialMediaLoader({
+    resetAction: unsetSocialProfile,
+    linkedSocialOnThisPagePreviously: alreadyLinkedSocial
+  })
+
   const navigate = useNavigateToPage()
   const { toast } = useContext(ToastContext)
   const audiusQueryContext = useAudiusQueryContext()
@@ -117,19 +121,9 @@ export const PickHandlePage = () => {
       generateHandleSchema({ audiusQueryContext })
     )
   }, [audiusQueryContext])
-  const [isWaitingForSocialLogin, setIsWaitingForSocialLogin] = useState(false)
-  const alreadyLinkedSocial = useSelector(getIsSocialConnected)
 
   const { value: handle } = useSelector(getHandleField)
   const isLinkingSocialOnFirstPage = useSelector(getLinkedSocialOnFirstPage)
-
-  const handleStartSocialMediaLogin = useCallback(() => {
-    setIsWaitingForSocialLogin(true)
-  }, [])
-
-  const handleErrorSocialMediaLogin = useCallback(() => {
-    setIsWaitingForSocialLogin(false)
-  }, [])
 
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
