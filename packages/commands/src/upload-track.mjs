@@ -60,6 +60,32 @@ const getPremiumConditions = async ({
   return null
 }
 
+const getDownloadConditions = async ({
+  downloadConditions,
+  downloadPrice: downloadPriceString,
+  audiusLibs
+}) => {
+  if (downloadPriceString) {
+    const price = Number.parseInt(downloadPriceString)
+    if (!Number.isFinite(price) || price <= 0) {
+      throw new Error(`Invalid price "${downloadPriceString}"`)
+    }
+    const { userbank } =
+      await audiusLibs.solanaWeb3Manager.createUserBankIfNeeded({
+        mint: 'usdc'
+      })
+    return {
+      usdc_purchase: {
+        price,
+        splits: { [userbank.toString()]: price * 10 ** 4 }
+      }
+    }
+  } else if (downloadConditions) {
+    return JSON.parse(downloadConditions)
+  }
+  return null
+}
+
 program
   .command('upload-track')
   .description('Upload a new track')
@@ -101,6 +127,15 @@ program
     'Manually set a premium conditions object. Cannot be used with -u',
     ''
   )
+  .option(
+    '-dp, --download-price <download price>',
+    'Generate a download conditions object with the given price in cents. Cannot be used with -dc'
+  )
+  .option(
+    '-dc, --download-conditions <download conditions>',
+    'Manually set a download conditions object. Cannot be used with -dp',
+    ''
+  )
   .action(
     async (
       track,
@@ -114,7 +149,9 @@ program
         price,
         license,
         from,
-        premiumConditions
+        premiumConditions,
+        downloadPrice,
+        downloadConditions
       }
     ) => {
       const audiusLibs = await initializeAudiusLibs(from)
@@ -149,6 +186,12 @@ program
           audiusLibs
         })
 
+        const parsedDownloadConditions = await getDownloadConditions({
+          downloadConditions,
+          downloadPrice,
+          audiusLibs
+        })
+
         const trackTitle = title || `title ${rand}`
         const response = await audiusLibs.Track.uploadTrackV2AndWriteToChain(
           trackStream,
@@ -176,6 +219,8 @@ program
             track_segments: [],
             is_premium: parsedPremiumConditions != null,
             premium_conditions: parsedPremiumConditions,
+            is_download_gated: parsedDownloadConditions != null,
+            download_conditions: parsedDownloadConditions,
             ai_attribution_user_id: null,
             preview_start_seconds: previewStartSeconds
               ? parseInt(previewStartSeconds)
