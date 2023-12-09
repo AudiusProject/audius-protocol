@@ -28,7 +28,8 @@ import styles from './AddToCollectionModal.module.css'
 const { getCollectionType, getTrackId, getTrackTitle, getTrackIsUnlisted } =
   addToCollectionUISelectors
 const { getCollectionId } = collectionPageSelectors
-const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
+const { addTrackToPlaylist, createAlbum, createPlaylist } =
+  cacheCollectionsActions
 const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 const { requestOpen: openDuplicateAddConfirmation } =
   duplicateAddConfirmationModalUIActions
@@ -78,21 +79,21 @@ const AddToCollectionModal = () => {
     searchValue
   ])
 
-  const playlistTrackIdMap = filteredCollections.reduce<
+  const collectionTrackIdMap = filteredCollections.reduce<
     Record<number, number[]>
-  >((acc, playlist) => {
-    const trackIds = playlist.playlist_contents.track_ids.map((t) => t.track)
-    acc[playlist.playlist_id] = trackIds
+  >((acc, collection) => {
+    const trackIds = collection.playlist_contents.track_ids.map((t) => t.track)
+    acc[collection.playlist_id] = trackIds
     return acc
   }, {})
 
-  const handlePlaylistClick = (playlist: Collection) => {
+  const handleCollectionClick = (playlist: Collection) => {
     if (!trackId) return
 
-    const doesPlaylistContainTrack =
-      playlistTrackIdMap[playlist.playlist_id]?.includes(trackId)
+    const doesCollectionContainTrack =
+      collectionTrackIdMap[playlist.playlist_id]?.includes(trackId)
 
-    if (doesPlaylistContainTrack) {
+    if (doesCollectionContainTrack) {
       dispatch(
         openDuplicateAddConfirmation({
           playlistId: playlist.playlist_id,
@@ -123,12 +124,11 @@ const AddToCollectionModal = () => {
     toast({ content: messages.hiddenAdd })
   }
 
-  // TODO: Support Create Album
-  const handleCreatePlaylist = () => {
+  const handleCreateCollection = () => {
     if (!trackTitle) return
     const metadata = { playlist_name: trackTitle }
     dispatch(
-      createPlaylist(
+      (collectionType === 'album' ? createAlbum : createPlaylist)(
         metadata,
         CreatePlaylistSource.FROM_TRACK,
         trackId,
@@ -162,7 +162,7 @@ const AddToCollectionModal = () => {
       />
       <Scrollbar>
         <div className={styles.listContent}>
-          <div className={cn(styles.listItem)} onClick={handleCreatePlaylist}>
+          <div className={cn(styles.listItem)} onClick={handleCreateCollection}>
             <IconMultiselectAdd className={styles.add} />
             <span>{messages.newCollection}</span>
           </div>
@@ -176,7 +176,7 @@ const AddToCollectionModal = () => {
                   handleClick={
                     isTrackUnlisted && !collection.is_private
                       ? handleDisabledPlaylistClick
-                      : handlePlaylistClick
+                      : handleCollectionClick
                   }
                 />
               </div>
