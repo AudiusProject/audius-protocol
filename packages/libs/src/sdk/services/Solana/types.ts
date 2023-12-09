@@ -1,8 +1,4 @@
 import {
-  DurableNonceTransactionConfirmationStrategy,
-  BaseTransactionConfirmationStrategy,
-  BlockhashWithExpiryBlockHeight,
-  Commitment,
   PublicKey,
   TransactionInstruction,
   VersionedTransaction,
@@ -12,30 +8,29 @@ import {
 } from '@solana/web3.js'
 import type * as runtime from '../../api/generated/default/runtime'
 import { z } from 'zod'
-import type { AuthService } from '../Auth'
 import type { Prettify } from '../../utils/prettify'
 import type { Solana } from './Solana'
 
-export type RelayRequestBody = {
-  transaction: string
-  confirmationOptions?: {
-    confirmationStrategy?: Prettify<
-      | Omit<
-          DurableNonceTransactionConfirmationStrategy,
-          keyof BaseTransactionConfirmationStrategy
-        >
-      | BlockhashWithExpiryBlockHeight
-    >
-    commitment?: Commitment
-  }
-  sendOptions?: SendOptions
-}
-
 export type SolanaConfigInternal = {
+  /**
+   * Middleware for HTTP requests to the Solana relay service.
+   */
   middleware?: runtime.Middleware[]
+  /**
+   * Map from token mint name to public key address.
+   */
   mints: Record<Mint, PublicKey>
+  /**
+   * Map from program name to program ID public key address.
+   */
   programIds: Record<Program, PublicKey>
+  /**
+   * The endpoint to use for the RPC.
+   */
   rpcEndpoint: string
+  /**
+   * Configuration to use for the RPC connection.
+   */
   rpcConfig?: ConnectionConfig
 }
 
@@ -72,20 +67,67 @@ export const RelaySchema = z
     transaction: z.custom<VersionedTransaction>(
       (tx) => tx instanceof VersionedTransaction
     ),
+    /**
+     * Confirmation options used when sending the transaction on the server.
+     * @see {@link https://solana-labs.github.io/solana-web3.js/classes/Connection.html#confirmTransaction confirmTransaction}
+     */
     confirmationOptions: z
       .object({
-        confirmationStrategy: z
-          .object({
-            blockhash: z.string(),
-            lastValidBlockHeight: z.number()
-          })
+        /**
+         * The confirmation strategy to use when confirming.
+         * @see {@link https://solana-labs.github.io/solana-web3.js/types/TransactionConfirmationStrategy.html ConfirmationStrategy}
+         * @see {@link https://solana-labs.github.io/solana-web3.js/types/DurableNonceTransactionConfirmationStrategy.html DurableNonceTransactionConfirmationStrategy}
+         * @see {@link https://solana-labs.github.io/solana-web3.js/types/BlockheightBasedTransactionConfirmationStrategy.html BlockhashBasedTransactionConfirmationStrategy}
+         */
+        strategy: z
+          .union([
+            z.object({
+              blockhash: z.string(),
+              lastValidBlockHeight: z.number()
+            }),
+            z.object({
+              minContextSlot: z.number(),
+              nonceAccountPubkey: PublicKeySchema,
+              nonceValue: z.string()
+            })
+          ])
+          .optional(),
+        /**
+         * The commitment the server should confirm before responding.
+         * Leave unset to have the server respond immediately after sending.
+         * @see {@link https://solana-labs.github.io/solana-web3.js/types/Commitment.html Commitment}
+         */
+        commitment: z
+          .enum([
+            'processed',
+            'confirmed',
+            'finalized',
+            'recent',
+            'single',
+            'singleGossip',
+            'root',
+            'max'
+          ])
           .optional()
       })
-      .optional()
+      .optional(),
+    /**
+     * Custom send options used when sending the transaction on the relay.
+     * @see {@link https://solana-labs.github.io/solana-web3.js/types/SendOptions.html SendOptions}
+     */
+    sendOptions: z.custom<SendOptions>().optional()
   })
   .strict()
 
 export type RelayRequest = z.infer<typeof RelaySchema>
+export type RelayRequestBody = Prettify<
+  Omit<RelayRequest, 'transaction'> & {
+    /**
+     * Base64 encoded serialized VersionedTransaction object.
+     */
+    transaction: string
+  }
+>
 
 export const BuildTransactionSchema = z
   .object({
@@ -98,6 +140,9 @@ export const BuildTransactionSchema = z
       .min(1),
     recentBlockhash: z.string().optional(),
     feePayer: PublicKeySchema.optional(),
+    /**
+     * Either the public keys or actual account data for related address lookup tables.
+     */
     addressLookupTables: z
       .union([
         z.array(PublicKeySchema).default([]),
@@ -114,46 +159,3 @@ export const BuildTransactionSchema = z
   .strict()
 
 export type BuildTransactionRequest = z.infer<typeof BuildTransactionSchema>
-
-export const GetOrCreateUserBankSchema = z
-  .object({
-    ethWallet: z.string(),
-    mint: MintSchema,
-    feePayer: PublicKeySchema.optional()
-  })
-  .strict()
-
-export type GetOrCreateUserBankRequest = z.infer<
-  typeof GetOrCreateUserBankSchema
->
-
-export const DeriveUserBankSchema = z
-  .object({
-    ethWallet: z.string(),
-    mint: MintSchema
-  })
-  .strict()
-
-export type DeriveUserBankRequest = z.infer<typeof DeriveUserBankSchema>
-
-export const CreateTransferSchema = z.object({
-  feePayer: PublicKeySchema.optional(),
-  ethWallet: z.string(),
-  mint: MintSchema,
-  destination: PublicKeySchema
-})
-
-export type CreateTransferRequest = z.infer<typeof CreateTransferSchema>
-
-export const CreateSecpSchema = z
-  .object({
-    ethWallet: z.string(),
-    destination: PublicKeySchema,
-    amount: z.union([z.bigint(), z.number()]),
-    mint: MintSchema,
-    instructionIndex: z.number().optional(),
-    auth: z.custom<AuthService>()
-  })
-  .strict()
-
-export type CreateSecpRequest = z.infer<typeof CreateSecpSchema>
