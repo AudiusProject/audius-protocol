@@ -123,6 +123,7 @@ const AddToCollectionModal = () => {
     toast({ content: messages.hiddenAdd })
   }
 
+  // TODO: Support Create Album
   const handleCreatePlaylist = () => {
     if (!trackTitle) return
     const metadata = { playlist_name: trackTitle }

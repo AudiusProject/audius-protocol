@@ -476,7 +476,7 @@ export const GiantTrackTile = ({
       isArtistPick,
       includeEmbed: !(isUnlisted || isPremium),
       includeArtistPick: !isUnlisted,
-      includeAddToCollection: !(isUnlisted || isPremium),
+      includeAddToPlaylist: !(isUnlisted || isPremium),
       extraMenuItems: overflowMenuExtraItems
     }
   }

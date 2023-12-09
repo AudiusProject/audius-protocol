@@ -197,7 +197,7 @@ const ConnectedTrackTile = ({
     const menu: Omit<TrackMenuProps, 'children'> = {
       extraMenuItems: [],
       handle,
-      includeAddToCollection: !isPremium,
+      includeAddToPlaylist: !isPremium,
       includeArtistPick: handle === userHandle && !isUnlisted,
       includeEdit: handle === userHandle,
       includeEmbed: !isPremium,

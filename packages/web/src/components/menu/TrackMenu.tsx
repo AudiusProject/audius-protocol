@@ -39,7 +39,6 @@ const { clearTrackPosition, setTrackPosition } = playbackPositionActions
 const { getUserTrackPositions } = playbackPositionSelectors
 
 const messages = {
-  addToNewPlaylist: 'Add to New Playlist',
   addToAlbum: 'Add to Album',
   addToCollection: 'Add to Playlist',
   copiedToClipboard: 'Copied To Clipboard!',
@@ -67,7 +66,7 @@ export type OwnProps = {
   extraMenuItems?: PopupMenuItem[]
   handle: string
   includeAddToAlbum?: boolean
-  includeAddToCollection?: boolean
+  includeAddToPlaylist?: boolean
   includeArtistPick?: boolean
   includeEdit?: boolean
   includeEmbed?: boolean
@@ -102,6 +101,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+  const { isEnabled: isEditAlbumsEnabled } = useFlag(FeatureFlags.EDIT_ALBUMS)
 
   const trackPlaybackPositions = useSelector((state: CommonState) =>
     getUserTrackPositions(state, { userId: currentUserId })
@@ -113,7 +113,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       goToRoute,
       handle,
       includeAddToAlbum,
-      includeAddToCollection: includeAddToPlaylist,
+      includeAddToPlaylist,
       includeArtistPick,
       includeEdit,
       includeEmbed,
@@ -268,7 +268,7 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (includeFavorite && !isOwner && (!isDeleted || isFavorited)) {
       menu.items.push(favoriteMenuItem)
     }
-    if (includeAddToAlbum && !isDeleted && isOwner) {
+    if (isEditAlbumsEnabled && includeAddToAlbum && !isDeleted && isOwner) {
       menu.items.push(addToAlbumMenuItem)
     }
     if (includeAddToPlaylist && !isDeleted) {
@@ -360,7 +360,7 @@ TrackMenu.defaultProps = {
   includeFavorite: true,
   includeTrackPage: true,
   includeAddToAlbum: true,
-  includeAddToCollection: true,
+  includeAddToPlaylist: true,
   includeArtistPick: true,
   extraMenuItems: []
 }
