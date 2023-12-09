@@ -33,6 +33,19 @@ export enum ClaimableTokensInstruction {
   Transfer = 1
 }
 
+/**
+ * The Claimable Tokens Program is responsible for the creation and control of
+ * "user banks", which are accounts that are owned by the program itself but
+ * controlled by users' Ethereum wallet addresses.
+ *
+ * Unlike normal Associated Token Accounts, the user bank accounts are owned
+ * by the program, not a user's wallet. The only way for a user to transfer
+ * tokens out of their user bank is by using this program method paired with
+ * a signed Secp256k1 instruction from their Ethereum wallet specifying the
+ * destination and amount.
+ *
+ * A user can have multiple user banks, one for each token mint.
+ */
 export class ClaimableTokensProgram {
   static programId = new PublicKey(
     'Ewkv3JahEFRKkcJmpoKB7pXbnUHwjAyXiwEo4ZY2rezQ'

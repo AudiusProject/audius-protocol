@@ -19,14 +19,31 @@ import {
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { defaultSolanaConfig } from './constants'
 import fetch from 'cross-fetch'
-import { ClaimableTokens } from './ClaimableTokens'
+import { ClaimableTokens } from './programs/ClaimableTokens'
 
 const isPublicKeyArray = (arr: any[]): arr is PublicKey[] =>
   arr.every((a) => a instanceof PublicKey)
+
 export class Solana extends BaseAPI {
+  /**
+   * Nested service for interacting with the ClaimableTokensProgram.
+   */
   public readonly ClaimableTokens: ClaimableTokens
-  public readonly connection: Connection
-  public readonly config: SolanaConfigInternal
+
+  /**
+   * Connection to interact with the Solana RPC.
+   */
+  private readonly connection: Connection
+
+  /**
+   * Configuration passed in by consumer (with defaults).
+   */
+  private readonly config: SolanaConfigInternal
+
+  /**
+   * Public key of the currently selected transaction fee payer
+   * from the selected Discovery Node.
+   */
   private feePayer: PublicKey | null = null
 
   constructor(config?: SolanaConfig) {
@@ -43,9 +60,22 @@ export class Solana extends BaseAPI {
       this.config.rpcEndpoint,
       this.config.rpcConfig
     )
-    this.ClaimableTokens = new ClaimableTokens(this)
+    this.ClaimableTokens = new ClaimableTokens(
+      {
+        programId: this.config.programIds.claimableTokens,
+        connection: this.connection,
+        mints: this.config.mints
+      },
+      this
+    )
   }
 
+  /**
+   * Gets a random fee payer public key from the selected discovery node's
+   * Solana relay plugin.
+   *
+   * Used when relay transactions don't specify a fee payer override.
+   */
   async getFeePayer(
     initOverrides?: RequestInit | runtime.InitOverrideFunction
   ) {
@@ -76,11 +106,14 @@ export class Solana extends BaseAPI {
     return this.feePayer
   }
 
+  /**
+   * Relays a transaction to the selected discovery node's Solana relay plugin.
+   */
   async relay(
     params: RelayRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction
   ) {
-    const { transaction, confirmationOptions } = await parseParams(
+    const { transaction, confirmationOptions, sendOptions } = await parseParams(
       'relay',
       RelaySchema
     )(params)
@@ -88,7 +121,8 @@ export class Solana extends BaseAPI {
     const headerParameters: runtime.HTTPHeaders = {}
     const body: RelayRequestBody = {
       transaction: Buffer.from(transaction.serialize()).toString('base64'),
-      confirmationOptions
+      confirmationOptions,
+      sendOptions
     }
 
     const response = await this.request(
@@ -108,6 +142,12 @@ export class Solana extends BaseAPI {
     })).value()
   }
 
+  /**
+   * Convenience helper to construct v0 transactions.
+   *
+   * Handles fetching a recent blockhash, getting lookup table accounts,
+   * and assigning a fee payer.
+   */
   async buildTransaction(params: BuildTransactionRequest) {
     let {
       instructions,

@@ -7,7 +7,9 @@ import {
   PublicKey,
   Connection
 } from '@solana/web3.js'
-import { parseParams } from '../../utils/parseParams'
+import { parseParams } from '../../../utils/parseParams'
+import type { Mint, SolanaService } from '../types'
+
 import {
   type GetOrCreateUserBankRequest,
   GetOrCreateUserBankSchema,
@@ -16,38 +18,50 @@ import {
   CreateTransferSchema,
   type CreateSecpRequest,
   CreateSecpSchema,
-  Mint,
-  SolanaConfigInternal
+  ClaimableTokensConfigInternal
 } from './types'
 
-import * as runtime from '../../api/generated/default/runtime'
-import type { Solana } from './Solana'
+import * as runtime from '../../../api/generated/default/runtime'
 
 export class ClaimableTokens {
-  public readonly connection: Connection
-  public readonly config: SolanaConfigInternal
-  private claimableTokensAuthorities: Record<Mint, PublicKey>
-  constructor(private solanaApi: Solana) {
-    this.config = this.solanaApi.config
-    this.connection = this.solanaApi.connection
-    this.claimableTokensAuthorities = {
+  /** The program ID of the ClaimableTokensProgram instance. */
+  private readonly programId: PublicKey
+  /** Connection to interact with the Solana RPC. */
+  private readonly connection: Connection
+  /** Map from token mint name to public key address. */
+  private readonly mints: Record<Mint, PublicKey>
+  /** Map from token mint name to derived user bank authority. */
+  private readonly authorities: Record<Mint, PublicKey>
+
+  constructor(
+    config: ClaimableTokensConfigInternal,
+    private solana: SolanaService
+  ) {
+    this.programId = config.programId
+    this.connection = config.connection
+    this.mints = config.mints
+    this.authorities = {
       wAUDIO: ClaimableTokensProgram.deriveAuthority({
-        programId: this.solanaApi.config.programIds.claimableTokens,
-        mint: this.solanaApi.config.mints.wAUDIO
+        programId: config.programId,
+        mint: config.mints.wAUDIO
       }),
       USDC: ClaimableTokensProgram.deriveAuthority({
-        programId: this.solanaApi.config.programIds.claimableTokens,
-        mint: this.solanaApi.config.mints.wAUDIO
+        programId: config.programId,
+        mint: config.mints.wAUDIO
       })
     }
   }
+
+  /**
+   * Creates a user bank or returns the existing user bank for a user.
+   */
   async getOrCreateUserBank(params: GetOrCreateUserBankRequest) {
     const args = await parseParams(
       'getOrCreateUserBank',
       GetOrCreateUserBankSchema
     )(params)
     const { ethWallet, mint, feePayer: feePayerOverride } = args
-    const feePayer = feePayerOverride ?? (await this.solanaApi.getFeePayer())
+    const feePayer = feePayerOverride ?? (await this.solana.getFeePayer())
     if (!feePayer) {
       throw new runtime.RequiredError(
         'feePayer',
@@ -61,10 +75,10 @@ export class ClaimableTokens {
         ClaimableTokensProgram.createAccountInstruction({
           ethAddress: ethWallet,
           payer: feePayer,
-          mint: this.config.mints[mint],
-          authority: this.claimableTokensAuthorities[mint],
+          mint: this.mints[mint],
+          authority: this.authorities[mint],
           userBank,
-          programId: this.config.programIds.claimableTokens
+          programId: this.programId
         })
       const { blockhash, lastValidBlockHeight } =
         await this.connection.getLatestBlockhash()
@@ -74,10 +88,10 @@ export class ClaimableTokens {
         instructions: [createUserBankInstruction]
       }).compileToLegacyMessage()
       const transaction = new VersionedTransaction(message)
-      await this.solanaApi.relay({
+      await this.solana.relay({
         transaction,
         confirmationOptions: {
-          confirmationStrategy: {
+          strategy: {
             blockhash,
             lastValidBlockHeight
           }
@@ -88,17 +102,13 @@ export class ClaimableTokens {
     return { userBank, didExist: true }
   }
 
-  async deriveUserBank(params: DeriveUserBankRequest) {
-    const { ethWallet, mint } = await parseParams(
-      'deriveUserBank',
-      GetOrCreateUserBankSchema
-    )(params)
-    return ClaimableTokensProgram.deriveUserBank({
-      ethAddress: ethWallet,
-      claimableTokensPDA: this.claimableTokensAuthorities[mint]
-    })
-  }
-
+  /**
+   * Creates a claimable tokens program transfer instruction using configured
+   * program ID, mint addresses, derived nonce, and derived authorities.
+   *
+   * Must be paired with a matching Secp256k1 instruction.
+   * @see {@link createTransferSecpInstruction}
+   */
   async createTransferInstruction(params: CreateTransferRequest) {
     const {
       feePayer: feePayerOverride,
@@ -109,12 +119,12 @@ export class ClaimableTokens {
       'createTransferInstruction',
       CreateTransferSchema
     )(params)
-    const feePayer = feePayerOverride ?? (await this.solanaApi.getFeePayer())
+    const feePayer = feePayerOverride ?? (await this.solana.getFeePayer())
     const source = await this.deriveUserBank({ ethWallet, mint })
     const nonceKey = ClaimableTokensProgram.deriveNonce({
       ethAddress: ethWallet,
-      authority: this.claimableTokensAuthorities[mint],
-      programId: this.config.programIds.claimableTokens
+      authority: this.authorities[mint],
+      programId: this.programId
     })
     return ClaimableTokensProgram.createTransferInstruction({
       payer: feePayer,
@@ -122,11 +132,17 @@ export class ClaimableTokens {
       sourceUserBank: source,
       destination,
       nonceAccount: nonceKey,
-      authority: this.claimableTokensAuthorities[mint],
-      programId: this.config.programIds.claimableTokens
+      authority: this.authorities[mint],
+      programId: this.programId
     })
   }
 
+  /**
+   * Creates a signed Secp256k1 instruction for a claimable tokens transfer
+   * using configured program ID, derived nonce, and derived authorities.
+   *
+   * @see {@link createTransferInstruction}
+   */
   async createTransferSecpInstruction(params: CreateSecpRequest) {
     const { ethWallet, destination, amount, mint, instructionIndex, auth } =
       await parseParams('createSecpInstruction', CreateSecpSchema)(params)
@@ -134,8 +150,8 @@ export class ClaimableTokens {
     let nonce = BigInt(0)
     const nonceKey = ClaimableTokensProgram.deriveNonce({
       ethAddress: ethWallet,
-      authority: this.claimableTokensAuthorities[mint],
-      programId: this.config.programIds.claimableTokens
+      authority: this.authorities[mint],
+      programId: this.programId
     })
     const nonceAccount = await this.connection.getAccountInfo(nonceKey)
     const encodedNonceData = nonceAccount?.data
@@ -156,6 +172,20 @@ export class ClaimableTokens {
       signature,
       recoveryId,
       instructionIndex
+    })
+  }
+
+  /**
+   * Derives the user bank of a user from their Ethereum wallet and the token mint.
+   */
+  private async deriveUserBank(params: DeriveUserBankRequest) {
+    const { ethWallet, mint } = await parseParams(
+      'deriveUserBank',
+      GetOrCreateUserBankSchema
+    )(params)
+    return ClaimableTokensProgram.deriveUserBank({
+      ethAddress: ethWallet,
+      claimableTokensPDA: this.authorities[mint]
     })
   }
 }

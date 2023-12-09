@@ -75,9 +75,12 @@ export const relay = async (
   next: NextFunction
 ) => {
   try {
-    const { transaction: encodedTransaction, confirmationOptions } = req.body
-    const { confirmationStrategy: strategy, commitment } =
-      confirmationOptions ?? {}
+    const {
+      transaction: encodedTransaction,
+      confirmationOptions,
+      sendOptions
+    } = req.body
+    const { strategy, commitment } = confirmationOptions ?? {}
     const confirmationStrategy =
       strategy ?? (await connection.getLatestBlockhash())
     const decoded = Buffer.from(encodedTransaction, 'base64')
@@ -103,7 +106,10 @@ export const relay = async (
     logger.info('Sending transaction...')
     const serializedTx = transaction.serialize()
 
-    const signature = await connection.sendRawTransaction(serializedTx)
+    const signature = await connection.sendRawTransaction(
+      serializedTx,
+      sendOptions
+    )
     if (commitment) {
       logger.info(`Waiting for transaction to be ${commitment}...`)
       await connection.confirmTransaction(
