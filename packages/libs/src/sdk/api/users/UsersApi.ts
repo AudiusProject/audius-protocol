@@ -428,23 +428,9 @@ export class UsersApi extends GeneratedUsersApi {
   async sendTip(request: SendTipRequest) {
     const { amount } = await parseParams('sendTip', SendTipSchema)(request)
 
-    const getWalletAndUserBank = async (id: string) => {
-      const res = await this.getUser({ id })
-      const ethWallet = res.data?.ercWallet
-      if (!ethWallet) {
-        return { ethWallet: null, userBank: null }
-      }
-      const { userBank } =
-        await this.solana.ClaimableTokens.getOrCreateUserBank({
-          ethWallet,
-          mint: 'wAUDIO'
-        })
-      return { ethWallet, userBank }
-    }
-
-    const { ethWallet } = await getWalletAndUserBank(request.senderUserId)
+    const { ethWallet } = await this.getWalletAndUserBank(request.senderUserId)
     const { ethWallet: receiverEthWallet, userBank: destination } =
-      await getWalletAndUserBank(request.receiverUserId)
+      await this.getWalletAndUserBank(request.receiverUserId)
 
     if (!ethWallet) {
       throw new Error('Invalid sender: No Ethereum wallet found.')
@@ -475,5 +461,22 @@ export class UsersApi extends GeneratedUsersApi {
       instructions: [secp, transfer]
     })
     return await this.solana.relay({ transaction })
+  }
+
+  /**
+   * Helper function for sendTip that gets the user wallet and creates
+   * or gets the wAUDIO user bank for given user ID.
+   */
+  private async getWalletAndUserBank(id: string) {
+    const res = await this.getUser({ id })
+    const ethWallet = res.data?.ercWallet
+    if (!ethWallet) {
+      return { ethWallet: null, userBank: null }
+    }
+    const { userBank } = await this.solana.ClaimableTokens.getOrCreateUserBank({
+      ethWallet,
+      mint: 'wAUDIO'
+    })
+    return { ethWallet, userBank }
   }
 }
