@@ -17,7 +17,6 @@ from sqlalchemy import desc
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.exceptions import SolanaTransactionFetchError
 from src.models.social.play import Play
 from src.solana.constants import FETCH_TX_SIGNATURES_BATCH_SIZE
 from src.solana.solana_client_manager import SolanaClientManager
@@ -174,17 +173,14 @@ def is_valid_tx(account_keys):
 def get_sol_tx_info(
     solana_client_manager: SolanaClientManager, tx_sig: str, redis: Redis
 ):
-    try:
-        existing_tx = redis.get(get_solana_transaction_key(tx_sig))
-        if existing_tx is not None and existing_tx != "":
-            logger.info(f"index_solana_plays.py | Cache hit: {tx_sig}")
-            tx_info = GetTransactionResp.from_json(existing_tx.decode("utf-8"))
-            return tx_info
-        logger.info(f"index_solana_plays.py | Cache miss: {tx_sig}")
-        tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
+    existing_tx = redis.get(get_solana_transaction_key(tx_sig))
+    if existing_tx is not None and existing_tx != "":
+        logger.info(f"index_solana_plays.py | Cache hit: {tx_sig}")
+        tx_info = GetTransactionResp.from_json(existing_tx.decode("utf-8"))
         return tx_info
-    except SolanaTransactionFetchError:
-        return None
+    logger.info(f"index_solana_plays.py | Cache miss: {tx_sig}")
+    tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
+    return tx_info
 
 
 def parse_sol_play_transaction(
