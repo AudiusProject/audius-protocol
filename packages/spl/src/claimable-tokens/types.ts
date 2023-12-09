@@ -29,19 +29,26 @@ export type CreateClaimableTokensAccountInstructionData = {
 export type DecodedCreateClaimableTokensAccountInstruction = {
   programId: PublicKey
   keys: {
+    /** The account used to pay for the user bank creation. */
     payer: AccountMeta
+    /** The token mint of user bank. */
     mint: AccountMeta
+    /** The PDA owner of all user banks for the given mint and program ID. */
     authority: AccountMeta
+    /** The user bank account to create. */
     userBank: AccountMeta
+    /** The rent sysvar account. */
     rent: AccountMeta
+    /** The programId of the SPL Token Program. */
     tokenProgramId: AccountMeta
+    /** The programId of System Program. */
     systemProgramId: AccountMeta
   }
   data: CreateClaimableTokensAccountInstructionData
 }
 
 export type TransferClaimableTokensParams = {
-  /** The account used to pay for the user bank creation. */
+  /** The account used to pay for the transfer. */
   payer: PublicKey
   /** The sending user's Ethereum wallet address. */
   sourceEthAddress: string
@@ -75,14 +82,23 @@ export type TransferClaimableTokensSignedInstructionData = {
 export type DecodedTransferClaimableTokensInstruction = {
   programId: PublicKey
   keys: {
+    /** The account used to pay for the transfer. */
     payer: AccountMeta
+    /** The sending user's user bank account. */
     sourceUserBank: AccountMeta
+    /** The destination token account. */
     destination: AccountMeta
+    /** The nonce account, used to prevent double spends. */
     nonceAccount: AccountMeta
+    /** The PDA owner of all user banks for the given mint and program ID */
     authority: AccountMeta
+    /** The rent sysvar account. */
     rent: AccountMeta
+    /** The instructions sysvar account. */
     sysvarInstructions: AccountMeta
+    /** The programId of System Program. */
     systemProgramId: AccountMeta
+    /** The programId of the SPL Token Program. */
     tokenProgramId: AccountMeta
   }
   data: TransferClaimableTokensUnsignedInstructionData
