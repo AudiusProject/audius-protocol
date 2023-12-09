@@ -5,16 +5,19 @@ import { Formik } from 'formik'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { Link } from '@audius/harmony-native'
+import { Text } from '@audius/harmony-native'
 import IconArrow from 'app/assets/images/iconArrow.svg'
-import { Button, Text } from 'app/components/core'
+import { Button } from 'app/components/core'
 import { TextField } from 'app/components/fields'
+
+import type { SignOnScreenProps } from './types'
 
 const messages = {
   header: 'Sign into Audius',
   emailLabel: 'Email',
   passwordLabel: 'Password',
-  signIn: 'Sign In'
+  signIn: 'Sign In',
+  forgotPassword: 'Forgot password?'
 }
 
 type SignInValues = {
@@ -22,13 +25,14 @@ type SignInValues = {
   password: string
 }
 
-const initialValues = {
-  email: '',
-  password: ''
-}
-
-export const SignInScreen = () => {
+export const SignInScreen = (props: SignOnScreenProps) => {
+  const { email, onChangeEmail } = props
   const dispatch = useDispatch()
+
+  const initialValues = {
+    email,
+    password: ''
+  }
 
   const handleSubmit = useCallback(
     (values: SignInValues) => {
@@ -39,24 +43,26 @@ export const SignInScreen = () => {
   )
 
   return (
-    <View>
-      <Text role='heading'>{messages.header}</Text>
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        {({ handleSubmit }) => (
+    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+      {({ handleSubmit }) => (
+        <>
+          <Text role='heading'>{messages.header}</Text>
           <View>
-            <TextField name='email' label={messages.emailLabel} />
+            <TextField
+              name='email'
+              label={messages.emailLabel}
+              onChangeText={onChangeEmail}
+            />
             <TextField name='password' label={messages.passwordLabel} />
             <Button
               title={messages.signIn}
               icon={IconArrow}
               onPress={() => handleSubmit()}
             />
-            <Link to={{ screen: 'SignUp' }} color='accentPurple'>
-              Create Account
-            </Link>
+            <Text color='accent'>{messages.forgotPassword}</Text>
           </View>
-        )}
-      </Formik>
-    </View>
+        </>
+      )}
+    </Formik>
   )
 }

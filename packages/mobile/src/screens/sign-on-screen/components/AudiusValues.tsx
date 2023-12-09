@@ -1,6 +1,4 @@
-import type { SvgProps } from 'react-native-svg'
-
-import type { FlexProps } from '@audius/harmony-native'
+import type { Icon } from '@audius/harmony-native'
 import { Flex, Text } from '@audius/harmony-native'
 
 import IconCloudUpload from './temp-harmony/iconCloudArrowUp.svg'
@@ -14,13 +12,7 @@ const messages = {
   adFree: 'Ad-Free, Offline Listening'
 }
 
-type IconComponent = React.FC<
-  SvgProps & {
-    fillSecondary?: string | undefined
-  }
->
-
-type AudiusValueProps = { icon: IconComponent; text: string }
+type AudiusValueProps = { icon: Icon; text: string }
 
 /**
  * Each individual audius value text + icon row
@@ -29,7 +21,7 @@ const AudiusValue = (props: AudiusValueProps) => {
   const { icon: Icon, text } = props
   return (
     <Flex alignItems='center' justifyContent='center' gap='m' direction='row'>
-      <Icon color='white' height={24} width={24} />
+      <Icon color='staticWhite' size='l' />
       <Text variant='title' size='l' strength='weak' color='staticWhite'>
         {text}
       </Text>
@@ -40,14 +32,15 @@ const AudiusValue = (props: AudiusValueProps) => {
 /**
  * Renders all the audius values
  */
-
-type AudiusValuesProps = {
-  className?: string
-} & FlexProps
-
-export const AudiusValues = (props: AudiusValuesProps) => {
+export const AudiusValues = () => {
   return (
-    <Flex direction='column' gap='l' alignItems='center' {...props}>
+    <Flex
+      direction='column'
+      gap='l'
+      alignItems='center'
+      justifyContent='center'
+      style={{ flexGrow: 1 }}
+    >
       <AudiusValue icon={IconCloudUpload} text={messages.unlimitedStreaming} />
       <AudiusValue icon={IconMessage} text={messages.directMessages} />
       <AudiusValue icon={IconHeadphones} text={messages.adFree} />
