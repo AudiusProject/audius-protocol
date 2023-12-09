@@ -421,6 +421,10 @@ export class UsersApi extends GeneratedUsersApi {
     return response.blob()
   }
 
+  /**
+   * Sends a wAUDIO tip from one user to another.
+   * @hidden subject to change
+   */
   async sendTip(request: SendTipRequest) {
     const { amount } = await parseParams('sendTip', SendTipSchema)(request)
 
