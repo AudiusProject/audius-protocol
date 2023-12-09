@@ -77,9 +77,7 @@ export const TrackerChart: React.FC<TrackerProps> = ({
   )
 }
 
-export const TrackerMini: React.FC<TrackerProps> = ({
-  data,
-}: TrackerProps) => {
+export const TrackerMini: React.FC<TrackerProps> = ({ data }: TrackerProps) => {
   return (
     <div className={styles.chartMini}>
       {data && data.length >= 2 ? (
