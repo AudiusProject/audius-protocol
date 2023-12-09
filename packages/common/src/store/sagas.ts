@@ -74,7 +74,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   // once AudiusBackend and dependencies are migrated
   // ./pages/explore/exploreCollections/sagas.ts
   // ./pages/explore/sagas.ts
-  // components/add-to-playlist/store/sagas.ts
+  // components/add-to-collection/store/sagas.ts
   // components/share-sound-to-tiktok-modal/store/sagas.ts
   // store/social/tracks/sagas.ts
   // store/social/users/sagas.ts

@@ -389,11 +389,11 @@ export const TrackScreenDetailsTile = ({
   const handlePressOverflow = () => {
     const isLongFormContent =
       genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
-    const addToPlaylistAction = !isPremium
+    const addToCollectionAction = !isPremium
       ? OverflowAction.ADD_TO_PLAYLIST
       : null
     const overflowActions = [
-      addToPlaylistAction,
+      addToCollectionAction,
       isOwner
         ? null
         : user.does_current_user_follow

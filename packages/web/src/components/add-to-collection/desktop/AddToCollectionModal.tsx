@@ -7,12 +7,13 @@ import {
   accountSelectors,
   cacheCollectionsActions,
   collectionPageSelectors,
-  addToPlaylistUISelectors,
+  addToCollectionUISelectors,
   duplicateAddConfirmationModalUIActions,
   toastActions
 } from '@audius/common'
 import { Modal, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
+import { capitalize } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconMultiselectAdd from 'assets/img/iconMultiselectAdd.svg'
@@ -21,63 +22,69 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import SearchBar from 'components/search-bar/SearchBar'
 import { Tooltip } from 'components/tooltip'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
-import { AppState } from 'store/types'
 import { collectionPage } from 'utils/route'
 
-import styles from './AddToPlaylistModal.module.css'
-const { getTrackId, getTrackTitle, getTrackIsUnlisted } =
-  addToPlaylistUISelectors
+import styles from './AddToCollectionModal.module.css'
+const { getCollectionType, getTrackId, getTrackTitle, getTrackIsUnlisted } =
+  addToCollectionUISelectors
 const { getCollectionId } = collectionPageSelectors
 const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
-const getAccountWithOwnPlaylists = accountSelectors.getAccountWithOwnPlaylists
+const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 const { requestOpen: openDuplicateAddConfirmation } =
   duplicateAddConfirmationModalUIActions
 const { toast } = toastActions
 
-const messages = {
-  title: 'Add to Playlist',
-  newPlaylist: 'New Playlist',
-  searchPlaceholder: 'Find one of your playlists',
-  addedToast: 'Added To Playlist!',
-  createdToast: 'Playlist Created!',
-  view: 'View',
-  hiddenAdd: 'You cannot add hidden tracks to a public playlist.'
-}
+const getMessages = (collectionType: 'album' | 'playlist') => ({
+  title: `Add to ${capitalize(collectionType)}`,
+  newCollection: `New ${capitalize(collectionType)}`,
+  searchPlaceholder: `Find one of your ${collectionType}s`,
+  addedToast: `Added To ${capitalize(collectionType)}!`,
+  createdToast: `${capitalize(collectionType)} Created!`,
+  view: `View`,
+  hiddenAdd: `You cannot add hidden tracks to a public ${collectionType}.`
+})
 
-const AddToPlaylistModal = () => {
+const AddToCollectionModal = () => {
   const dispatch = useDispatch()
 
-  const [isOpen, setIsOpen] = useModalState('AddToPlaylist')
+  const [isOpen, setIsOpen] = useModalState('AddToCollection')
+  const collectionType = useSelector(getCollectionType)
   const trackId = useSelector(getTrackId)
   const trackTitle = useSelector(getTrackTitle)
   const isTrackUnlisted = useSelector(getTrackIsUnlisted)
   const currentCollectionId = useSelector(getCollectionId)
-  const account = useSelector((state: AppState) =>
-    getAccountWithOwnPlaylists(state)
-  )
+  const isAlbumType = collectionType === 'album'
+  const account = useSelector(getAccountWithNameSortedPlaylistsAndAlbums)
   const [searchValue, setSearchValue] = useState('')
 
-  const filteredPlaylists = useMemo(() => {
-    return (account?.playlists ?? []).filter(
-      (playlist: Collection) =>
-        // Don't allow adding to this playlist if already on this playlist's page.
-        playlist.playlist_id !== currentCollectionId &&
+  const messages = getMessages(collectionType)
+
+  const filteredCollections = useMemo(() => {
+    return ((isAlbumType ? account?.albums : account?.playlists) ?? []).filter(
+      (collection: Collection) =>
+        // Don't allow adding to this collection if already on this collection's page.
+        collection.playlist_id !== currentCollectionId &&
         (searchValue
-          ? playlist.playlist_name
+          ? collection.playlist_name
               .toLowerCase()
               .includes(searchValue.toLowerCase())
           : true)
     )
-  }, [searchValue, account, currentCollectionId])
+  }, [
+    isAlbumType,
+    account?.albums,
+    account?.playlists,
+    currentCollectionId,
+    searchValue
+  ])
 
-  const playlistTrackIdMap = filteredPlaylists.reduce<Record<number, number[]>>(
-    (acc, playlist) => {
-      const trackIds = playlist.playlist_contents.track_ids.map((t) => t.track)
-      acc[playlist.playlist_id] = trackIds
-      return acc
-    },
-    {}
-  )
+  const playlistTrackIdMap = filteredCollections.reduce<
+    Record<number, number[]>
+  >((acc, playlist) => {
+    const trackIds = playlist.playlist_contents.track_ids.map((t) => t.track)
+    acc[playlist.playlist_id] = trackIds
+    return acc
+  }, {})
 
   const handlePlaylistClick = (playlist: Collection) => {
     if (!trackId) return
@@ -156,16 +163,17 @@ const AddToPlaylistModal = () => {
         <div className={styles.listContent}>
           <div className={cn(styles.listItem)} onClick={handleCreatePlaylist}>
             <IconMultiselectAdd className={styles.add} />
-            <span>{messages.newPlaylist}</span>
+            <span>{messages.newCollection}</span>
           </div>
           <div className={styles.list}>
-            {filteredPlaylists.map((playlist) => (
-              <div key={`${playlist.playlist_id}`}>
-                <PlaylistItem
-                  disabled={isTrackUnlisted && !playlist.is_private}
-                  playlist={playlist}
+            {filteredCollections.map((collection) => (
+              <div key={`${collection.playlist_id}`}>
+                <CollectionItem
+                  collectionType={collectionType}
+                  disabled={isTrackUnlisted && !collection.is_private}
+                  collection={collection}
                   handleClick={
-                    isTrackUnlisted && !playlist.is_private
+                    isTrackUnlisted && !collection.is_private
                       ? handleDisabledPlaylistClick
                       : handlePlaylistClick
                   }
@@ -179,27 +187,30 @@ const AddToPlaylistModal = () => {
   )
 }
 
-type PlaylistItemProps = {
+type CollectionItemProps = {
+  collectionType: 'album' | 'playlist'
   handleClick: (playlist: Collection) => void
-  playlist: Collection
+  collection: Collection
   disabled?: boolean
 }
 
-const PlaylistItem = ({
+const CollectionItem = ({
   disabled = false,
   handleClick,
-  playlist
-}: PlaylistItemProps) => {
+  collection,
+  collectionType
+}: CollectionItemProps) => {
   const image = useCollectionCoverArt(
-    playlist.playlist_id,
-    playlist._cover_art_sizes,
+    collection.playlist_id,
+    collection._cover_art_sizes,
     SquareSizes.SIZE_150_BY_150
   )
 
+  const messages = getMessages(collectionType)
   return (
     <div
       className={cn(styles.listItem, [{ [styles.disabled]: disabled }])}
-      onClick={() => handleClick(playlist)}
+      onClick={() => handleClick(collection)}
     >
       <DynamicImage
         className={styles.image}
@@ -208,13 +219,15 @@ const PlaylistItem = ({
       />
       {disabled ? (
         <Tooltip text={messages.hiddenAdd} placement='right'>
-          <span className={styles.playlistName}>{playlist.playlist_name}</span>
+          <span className={styles.playlistName}>
+            {collection.playlist_name}
+          </span>
         </Tooltip>
       ) : (
-        <span className={styles.playlistName}>{playlist.playlist_name}</span>
+        <span className={styles.playlistName}>{collection.playlist_name}</span>
       )}
     </div>
   )
 }
 
-export default AddToPlaylistModal
+export default AddToCollectionModal

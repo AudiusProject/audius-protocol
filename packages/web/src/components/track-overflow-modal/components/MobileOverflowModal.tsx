@@ -14,7 +14,7 @@ type MobileOverflowModalProps = {
   onFavorite?: () => void
   onUnfavorite?: () => void
   onShare?: () => void
-  onAddToPlaylist?: () => void
+  onAddToCollection?: () => void
   onEditPlaylist?: () => void
   onDeletePlaylist?: () => void
   onPublishPlaylist?: () => void
@@ -65,7 +65,7 @@ const MobileOverflowModal = ({
   onFavorite,
   onUnfavorite,
   onShare,
-  onAddToPlaylist,
+  onAddToCollection,
   onEditPlaylist,
   onDeletePlaylist,
   onPublishPlaylist,
@@ -83,7 +83,7 @@ const MobileOverflowModal = ({
     [OverflowAction.FAVORITE]: onFavorite,
     [OverflowAction.UNFAVORITE]: onUnfavorite,
     [OverflowAction.SHARE]: onShare,
-    [OverflowAction.ADD_TO_PLAYLIST]: onAddToPlaylist,
+    [OverflowAction.ADD_TO_PLAYLIST]: onAddToCollection,
     [OverflowAction.EDIT_PLAYLIST]: onEditPlaylist,
     [OverflowAction.DELETE_PLAYLIST]: onDeletePlaylist,
     [OverflowAction.PUBLISH_PLAYLIST]: onPublishPlaylist,
@@ -112,7 +112,7 @@ const MobileOverflowModal = ({
     if (callbacks && callbacks[action]) {
       callbacks[action]!()
     }
-    // Eventually: will need some special casing for onAddToPlaylist, which returns
+    // Eventually: will need some special casing for onAddToCollection, which returns
     // a function accepting playlistId
     callback()
     onClose()

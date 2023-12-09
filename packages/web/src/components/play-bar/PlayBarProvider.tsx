@@ -24,7 +24,7 @@ const PlayBarProvider = ({
   isMobile,
   playingUid,
   collectible,
-  addToPlaylistOpen
+  addToCollectionOpen
 }: PlayBarProviderProps) => {
   return (
     <div
@@ -35,7 +35,7 @@ const PlayBarProvider = ({
       {isMobile ? (
         <NowPlayingDrawer
           isPlaying={!!playingUid || !!collectible}
-          shouldClose={addToPlaylistOpen === true}
+          shouldClose={addToCollectionOpen === true}
         />
       ) : (
         <>
@@ -52,7 +52,7 @@ function mapStateToProps(state: AppState) {
     playingUid: getPlayingUid(state),
     collectible: getCollectible(state),
     isMobile: isMobile(),
-    addToPlaylistOpen: getModalVisibility(state, 'AddToPlaylist')
+    addToCollectionOpen: getModalVisibility(state, 'AddToCollection')
   }
 }
 

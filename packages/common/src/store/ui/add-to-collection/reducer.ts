@@ -4,22 +4,24 @@ import { ID } from '../../../models/Identifiers'
 
 import * as actions from './actions'
 
-type AddToPlaylistActions = ActionType<typeof actions>
+type AddToCollectionActions = ActionType<typeof actions>
 
-export type AddToPlaylistState = {
+export type AddToCollectionState = {
   trackId: ID | null
   trackTitle: string | null
   isUnlisted: boolean
+  collectionType: 'album' | 'playlist'
 }
 
 const initialState = {
   isOpen: false,
   trackId: null,
   trackTitle: null,
-  isUnlisted: false
+  isUnlisted: false,
+  collectionType: 'playlist' as const
 }
 
-const reducer = createReducer<AddToPlaylistState, AddToPlaylistActions>(
+const reducer = createReducer<AddToCollectionState, AddToCollectionActions>(
   initialState,
   {
     [actions.OPEN](state, action) {
@@ -27,7 +29,8 @@ const reducer = createReducer<AddToPlaylistState, AddToPlaylistActions>(
         ...state,
         trackId: action.trackId,
         trackTitle: action.trackTitle,
-        isUnlisted: action.isUnlisted ?? false
+        isUnlisted: action.isUnlisted ?? false,
+        collectionType: action.collectionType
       }
     },
     [actions.CLOSE](state, _action) {

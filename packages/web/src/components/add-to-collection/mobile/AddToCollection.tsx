@@ -6,8 +6,8 @@ import {
   Collection,
   accountSelectors,
   cacheCollectionsActions,
-  addToPlaylistUIActions,
-  addToPlaylistUISelectors
+  addToCollectionUIActions,
+  addToCollectionUISelectors
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -24,9 +24,9 @@ import NewPlaylistButton from 'pages/saved-page/components/mobile/NewPlaylistBut
 import { AppState } from 'store/types'
 import { withNullGuard } from 'utils/withNullGuard'
 
-import styles from './AddToPlaylist.module.css'
-const { getTrackId, getTrackTitle } = addToPlaylistUISelectors
-const { close } = addToPlaylistUIActions
+import styles from './AddToCollection.module.css'
+const { getTrackId, getTrackTitle } = addToCollectionUISelectors
+const { close } = addToCollectionUIActions
 const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
 const { getAccountWithOwnPlaylists } = accountSelectors
 
@@ -36,10 +36,10 @@ const messages = {
   createdToast: 'Playlist Created!'
 }
 
-export type AddToPlaylistProps = ReturnType<typeof mapStateToProps> &
+export type AddToCollectionProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps>
 
-const g = withNullGuard((props: AddToPlaylistProps) => {
+const g = withNullGuard((props: AddToCollectionProps) => {
   const { account, trackTitle } = props
   if (account && trackTitle) {
     return {
@@ -50,7 +50,7 @@ const g = withNullGuard((props: AddToPlaylistProps) => {
   }
 })
 
-const AddToPlaylist = g(
+const AddToCollection = g(
   ({
     account,
     trackId,
@@ -135,4 +135,4 @@ function mapDispatchToProps(dispatch: Dispatch) {
   }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(AddToPlaylist)
+export default connect(mapStateToProps, mapDispatchToProps)(AddToCollection)

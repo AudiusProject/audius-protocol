@@ -1,7 +1,9 @@
 import { CommonState } from 'store/commonStore'
 
-const getBaseState = (state: CommonState) => state.ui.addToPlaylist
+const getBaseState = (state: CommonState) => state.ui.addToCollection
 
+export const getCollectionType = (state: CommonState) =>
+  getBaseState(state).collectionType
 export const getTrackId = (state: CommonState) => getBaseState(state).trackId
 export const getTrackTitle = (state: CommonState) =>
   getBaseState(state).trackTitle

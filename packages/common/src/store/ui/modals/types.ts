@@ -38,7 +38,7 @@ export type Modals =
   | 'EditTrack'
   | 'SignOutConfirmation'
   | 'Overflow'
-  | 'AddToPlaylist'
+  | 'AddToCollection'
   | 'DeletePlaylistConfirmation'
   | 'FeatureFlagOverride'
   | 'BuyAudio'

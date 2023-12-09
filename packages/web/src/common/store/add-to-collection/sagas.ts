@@ -1,7 +1,7 @@
 import {
   accountActions,
   modalsActions,
-  addToPlaylistUIActions as actions
+  addToCollectionUIActions as actions
 } from '@audius/common'
 import { takeEvery, put } from 'redux-saga/effects'
 
@@ -12,8 +12,15 @@ const fetchSavedPlaylists = accountActions.fetchSavedPlaylists
 
 function* handleRequestOpen(action: ReturnType<typeof actions.requestOpen>) {
   yield put(fetchSavedPlaylists())
-  yield put(actions.open(action.trackId, action.trackTitle, action.isUnlisted))
-  yield put(setVisibility({ modal: 'AddToPlaylist', visible: true }))
+  yield put(
+    actions.open(
+      action.collectionType,
+      action.trackId,
+      action.trackTitle,
+      action.isUnlisted
+    )
+  )
+  yield put(setVisibility({ modal: 'AddToCollection', visible: true }))
 }
 
 function* watchHandleRequestOpen() {
