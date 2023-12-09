@@ -2,8 +2,7 @@ import {
   Connection,
   PublicKey,
   TransactionMessage,
-  VersionedTransaction,
-  TransactionInstruction
+  VersionedTransaction
 } from '@solana/web3.js'
 import { BaseAPI } from '../../api/generated/default'
 import * as runtime from '../../api/generated/default/runtime'
@@ -13,13 +12,17 @@ import {
   type SolanaConfig,
   type SolanaConfigInternal,
   RelayRequest,
-  RelaySchema
+  RelaySchema,
+  BuildTransactionRequest,
+  BuildTransactionSchema
 } from './types'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import { defaultSolanaConfig } from './constants'
 import fetch from 'cross-fetch'
 import { ClaimableTokens } from './ClaimableTokens'
 
+const isPublicKeyArray = (arr: any[]): arr is PublicKey[] =>
+  arr.every((a) => a instanceof PublicKey)
 export class Solana extends BaseAPI {
   public readonly ClaimableTokens: ClaimableTokens
   public readonly connection: Connection
@@ -77,35 +80,10 @@ export class Solana extends BaseAPI {
     params: RelayRequest,
     initOverrides?: RequestInit | runtime.InitOverrideFunction
   ) {
-    const args = await parseParams('relay', RelaySchema)(params)
-    const { confirmationOptions } = args
-
-    const buildTransaction = async (
-      instructions: TransactionInstruction[],
-      feePayer?: PublicKey,
-      blockhash?: string
-    ) => {
-      let recentBlockhash = blockhash
-      if (!recentBlockhash) {
-        const res = await this.connection.getLatestBlockhash()
-        recentBlockhash = res.blockhash
-      }
-      const message = new TransactionMessage({
-        payerKey: feePayer ?? (await this.getFeePayer()),
-        recentBlockhash,
-        instructions
-      }).compileToLegacyMessage()
-      return new VersionedTransaction(message)
-    }
-
-    const transaction =
-      'transaction' in args
-        ? args.transaction
-        : await buildTransaction(
-            args.instructions,
-            args.feePayer,
-            confirmationOptions?.confirmationStrategy?.blockhash
-          )
+    const { transaction, confirmationOptions } = await parseParams(
+      'relay',
+      RelaySchema
+    )(params)
 
     const headerParameters: runtime.HTTPHeaders = {}
     const body: RelayRequestBody = {
@@ -128,5 +106,43 @@ export class Solana extends BaseAPI {
         ? undefined
         : (json['signature'] as string)
     })).value()
+  }
+
+  async buildTransaction(params: BuildTransactionRequest) {
+    let {
+      instructions,
+      feePayer,
+      recentBlockhash,
+      addressLookupTables = []
+    } = await parseParams('buildTransaction', BuildTransactionSchema)(params)
+
+    if (!recentBlockhash) {
+      const res = await this.connection.getLatestBlockhash()
+      recentBlockhash = res.blockhash
+    }
+
+    let addressLookupTableAccounts = !isPublicKeyArray(addressLookupTables)
+      ? addressLookupTables
+      : await this.getLookupTableAccounts(addressLookupTables)
+
+    const message = new TransactionMessage({
+      payerKey: feePayer ?? (await this.getFeePayer()),
+      recentBlockhash,
+      instructions
+    }).compileToV0Message(addressLookupTableAccounts)
+
+    return new VersionedTransaction(message)
+  }
+
+  private async getLookupTableAccounts(lookupTableKeys: PublicKey[]) {
+    return await Promise.all(
+      lookupTableKeys.map(async (accountKey) => {
+        const res = await this.connection.getAddressLookupTable(accountKey)
+        if (res.value === null) {
+          throw new Error(`Lookup table not found: ${accountKey.toBase58()}`)
+        }
+        return res.value
+      })
+    )
   }
 }

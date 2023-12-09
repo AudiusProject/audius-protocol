@@ -452,12 +452,6 @@ export class UsersApi extends GeneratedUsersApi {
       throw new Error('Invalid recipient: No user bank found.')
     }
 
-    const transfer =
-      await this.solana.ClaimableTokens.createTransferInstruction({
-        ethWallet,
-        destination,
-        mint: 'wAUDIO'
-      })
     const secp =
       await this.solana.ClaimableTokens.createTransferSecpInstruction({
         ethWallet,
@@ -466,7 +460,16 @@ export class UsersApi extends GeneratedUsersApi {
         mint: 'wAUDIO',
         auth: this.auth
       })
+    const transfer =
+      await this.solana.ClaimableTokens.createTransferInstruction({
+        ethWallet,
+        destination,
+        mint: 'wAUDIO'
+      })
 
-    return await this.solana.relay({ instructions: [secp, transfer] })
+    const transaction = await this.solana.buildTransaction({
+      instructions: [secp, transfer]
+    })
+    return await this.solana.relay({ transaction })
   }
 }

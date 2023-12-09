@@ -5,10 +5,10 @@ import {
   Commitment,
   PublicKey,
   TransactionInstruction,
-  Transaction,
   VersionedTransaction,
   ConnectionConfig,
-  SendOptions
+  SendOptions,
+  AddressLookupTableAccount
 } from '@solana/web3.js'
 import type * as runtime from '../../api/generated/default/runtime'
 import { z } from 'zod'
@@ -67,47 +67,53 @@ export const PublicKeySchema = z.custom<PublicKey>((data) => {
   }
 })
 
-const RelaySchemaBase = z.object({
-  confirmationOptions: z
-    .object({
-      confirmationStrategy: z
-        .object({
-          blockhash: z.string(),
-          lastValidBlockHeight: z.number()
-        })
-        .optional()
-    })
-    .optional()
-})
-
-const RelaySchemaInstructions = z.object({
-  instructions: z
-    .array(
-      z.custom<TransactionInstruction>(
-        (instr) => instr instanceof TransactionInstruction
-      )
-    )
-    .min(1),
-  feePayer: PublicKeySchema.optional()
-})
-
-const RelaySchemaLegacy = z.object({
-  transaction: z.custom<Transaction>((tx) => tx instanceof Transaction)
-})
-
-const RelaySchemaVersioned = z.object({
-  transaction: z.custom<VersionedTransaction>(
-    (tx) => tx instanceof VersionedTransaction
-  )
-})
-
-export const RelaySchema = z.union([
-  RelaySchemaBase.merge(RelaySchemaInstructions),
-  RelaySchemaBase.merge(RelaySchemaLegacy),
-  RelaySchemaBase.merge(RelaySchemaVersioned)
-])
+export const RelaySchema = z
+  .object({
+    transaction: z.custom<VersionedTransaction>(
+      (tx) => tx instanceof VersionedTransaction
+    ),
+    confirmationOptions: z
+      .object({
+        confirmationStrategy: z
+          .object({
+            blockhash: z.string(),
+            lastValidBlockHeight: z.number()
+          })
+          .optional()
+      })
+      .optional()
+  })
+  .strict()
 
 export type RelayRequest = z.infer<typeof RelaySchema>
+
+export const BuildTransactionSchema = z
+  .object({
+    instructions: z
+      .array(
+        z.custom<TransactionInstruction>(
+          (instr) => instr instanceof TransactionInstruction
+        )
+      )
+      .min(1),
+    recentBlockhash: z.string().optional(),
+    feePayer: PublicKeySchema.optional(),
+    addressLookupTables: z
+      .union([
+        z.array(PublicKeySchema).default([]),
+        z
+          .array(
+            z.custom<AddressLookupTableAccount>(
+              (arg) => arg instanceof AddressLookupTableAccount
+            )
+          )
+          .default([])
+      ])
+      .optional()
+  })
+  .strict()
+
+export type BuildTransactionRequest = z.infer<typeof BuildTransactionSchema>
 
 export const GetOrCreateUserBankSchema = z
   .object({
