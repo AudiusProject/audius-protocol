@@ -1,8 +1,8 @@
-import TrackerChart from 'components/TrackerChart'
+import { TrackerChart } from 'components/TrackerChart'
 import React from 'react'
 import { useIndividualNodeUptime } from 'store/cache/analytics/hooks'
 import { Bucket, MetricError } from 'store/cache/analytics/slice'
-import { DataObject } from 'components/TrackerChart'
+import type { DataObject } from 'components/TrackerChart'
 
 type OwnProps = {
   node: string

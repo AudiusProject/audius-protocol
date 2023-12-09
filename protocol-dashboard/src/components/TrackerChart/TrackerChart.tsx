@@ -10,25 +10,25 @@ import mobileStyles from './TrackerChartMobile.module.css'
 const styles = createStyles({ desktopStyles, mobileStyles })
 
 type OwnProps = {
-  title: string
+  title?: string
   subtitle?: string
   data: DataObject[] | null
   error?: boolean
 }
 
-type TrackerChartProps = OwnProps
+type TrackerProps = OwnProps
 
 export type DataObject = {
   color: string
-  tooltip: string
+  tooltip?: string
 }
 
-const TrackerChart: React.FC<TrackerChartProps> = ({
+export const TrackerChart: React.FC<TrackerProps> = ({
   title,
   subtitle,
   data,
   error
-}) => {
+}: TrackerProps) => {
   const [tooltipText, setTooltipText] = React.useState('')
   const [showTooltip, setShowTooltip] = React.useState(false)
 
@@ -77,4 +77,26 @@ const TrackerChart: React.FC<TrackerChartProps> = ({
   )
 }
 
-export default TrackerChart
+export const TrackerMini: React.FC<TrackerProps> = ({
+  data,
+}: TrackerProps) => {
+  return (
+    <div className={styles.chartMini}>
+      {data && data.length >= 2 ? (
+        <div className={styles.trackerContainerMini}>
+          <div className={styles.trackerCellsMini}>
+            {data.map((item, index) => (
+              <div
+                key={index}
+                className={styles.trackerCell}
+                style={{ backgroundColor: item.color }}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <Loading className={styles.loading} />
+      )}
+    </div>
+  )
+}

@@ -1,1 +1,2 @@
-export { default } from './TrackerChart'
+export { TrackerChart, TrackerMini } from './TrackerChart'
+export type { DataObject } from './TrackerChart'
