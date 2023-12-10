@@ -11,7 +11,7 @@ from sqlalchemy.sql.expression import or_
 from src import exceptions
 from src.api.v1 import helpers as v1Helpers
 from src.gated_content.gated_content_access_checker import gated_content_access_checker
-from src.gated_content.signature import get_gated_content_signature_for_user
+from src.gated_content.signature import get_gated_content_signature_for_user_wallet
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
@@ -601,7 +601,7 @@ def _populate_premium_track_metadata(session, tracks, current_user_id):
         if does_user_have_track_access:
             track[
                 response_name_constants.premium_content_signature
-            ] = get_gated_content_signature_for_user(
+            ] = get_gated_content_signature_for_user_wallet(
                 {
                     "track_id": track_id,
                     "track_cid": track_cid,

@@ -14,11 +14,7 @@ from solders.pubkey import Pubkey
 from sqlalchemy.orm.session import Session
 from web3 import Web3
 
-from src.gated_content.gated_content_access_checker import (
-    GatedContentAccessBatchArgs,
-    gated_content_access_checker,
-)
-from src.gated_content.signature import get_gated_content_signature_for_user
+from src.gated_content.signature import get_gated_content_signature_for_user_wallet
 from src.models.tracks.track import Track
 from src.models.users.user import User
 from src.queries.get_associated_user_wallet import get_associated_user_wallet
@@ -191,7 +187,7 @@ def _get_eth_nft_gated_track_signatures(
                         track_id = track_cid_to_id_map[track_cid]
                         track_signature_map[
                             track_id
-                        ] = get_gated_content_signature_for_user(
+                        ] = get_gated_content_signature_for_user_wallet(
                             {
                                 "track_id": track_id,
                                 "track_cid": track_cid,
@@ -229,7 +225,7 @@ def _get_eth_nft_gated_track_signatures(
                         track_id = track_cid_to_id_map[track_cid]
                         track_signature_map[
                             track_id
-                        ] = get_gated_content_signature_for_user(
+                        ] = get_gated_content_signature_for_user_wallet(
                             {
                                 "track_id": track_id,
                                 "track_cid": track_cid,
@@ -427,7 +423,7 @@ def _get_sol_nft_gated_track_signatures(
                         track_id = track_cid_to_id_map[track_cid]
                         track_signature_map[
                             track_id
-                        ] = get_gated_content_signature_for_user(
+                        ] = get_gated_content_signature_for_user_wallet(
                             {
                                 "track_id": track_id,
                                 "track_cid": cast(str, track_cid),

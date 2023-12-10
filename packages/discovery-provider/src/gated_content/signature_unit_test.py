@@ -4,7 +4,7 @@ from datetime import datetime
 from src.api_helpers import recover_wallet
 from src.gated_content.signature import (
     get_gated_content_signature,
-    get_gated_content_signature_for_user,
+    get_gated_content_signature_for_user_wallet,
 )
 from src.utils.config import shared_config
 
@@ -57,7 +57,7 @@ def test_signature():
     assert "shouldCache" not in signature_data_obj
 
 
-def test_signature_for_user():
+def test_signature_for_user_wallet():
     track_id = 1
     track_cid = "some-track-cid"
     premium_content_type = "track"
@@ -67,7 +67,7 @@ def test_signature_for_user():
     before_ms = int(datetime.utcnow().timestamp() * 1000)
 
     # for a non-gated track
-    result = get_gated_content_signature_for_user(
+    result = get_gated_content_signature_for_user_wallet(
         {
             "track_id": track_id,
             "track_cid": track_cid,
@@ -96,7 +96,7 @@ def test_signature_for_user():
     assert discovery_node_wallet == shared_config["delegate"]["owner_wallet"]
 
     # make sure that "shouldCache" is not included in the signature for a gated track
-    result = get_gated_content_signature_for_user(
+    result = get_gated_content_signature_for_user_wallet(
         {
             "track_id": track_id,
             "track_cid": track_cid,
@@ -111,7 +111,7 @@ def test_signature_for_user():
     assert "shouldCache" not in signature_data_obj
 
 
-def test_signature_for_user_with_user_id():
+def test_signature_for_user_wallet_with_user_id():
     track_id = 1
     track_cid = "some-track-cid"
     premium_content_type = "track"
@@ -122,7 +122,7 @@ def test_signature_for_user_with_user_id():
     before_ms = int(datetime.utcnow().timestamp() * 1000)
 
     # for a non-gated track
-    result = get_gated_content_signature_for_user(
+    result = get_gated_content_signature_for_user_wallet(
         {
             "track_id": track_id,
             "track_cid": track_cid,
@@ -153,7 +153,7 @@ def test_signature_for_user_with_user_id():
     assert discovery_node_wallet == shared_config["delegate"]["owner_wallet"]
 
     # make sure that "shouldCache" is not included in the signature for a gated track
-    result = get_gated_content_signature_for_user(
+    result = get_gated_content_signature_for_user_wallet(
         {
             "track_id": track_id,
             "track_cid": track_cid,

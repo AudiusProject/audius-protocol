@@ -70,7 +70,11 @@ def get_gated_content_signature(
     return None
 
 
-def get_gated_content_signature_for_user(
+# This is a similar signature generation function, whose data includes the user's wallet.
+# This is used for the case where the user passes in an existing gated content signature
+# (e.g. from track request or nft request) when requesting to stream or download,
+# in which case we make sure the requesting user has the wallet as the user wallet in the signature.
+def get_gated_content_signature_for_user_wallet(
     args: PremiumContentSignatureForUserArgs,
 ) -> Optional[PremiumContentSignature]:
     if args["type"] == "track":
