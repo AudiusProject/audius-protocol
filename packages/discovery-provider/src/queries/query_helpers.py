@@ -607,6 +607,7 @@ def _populate_premium_track_metadata(session, tracks, current_user_id):
                     "track_cid": track_cid,
                     "type": "track",
                     "user_wallet": current_user_wallet[0],
+                    "user_id": current_user_id,
                     "is_premium": True,
                 }
             )
