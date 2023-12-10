@@ -51,6 +51,15 @@ export const PremiumConditionsTipUserId = z
   })
   .strict()
 
+export const PremiumConditionsUSDCPurchase = z
+  .object({
+    usdcPurchase: z.object({
+      price: z.number(),
+      splits: z.any()
+    })
+  })
+  .strict()
+
 export const createUploadTrackMetadataSchema = () =>
   z.object({
     aiAttributionUserId: z.optional(HashId),
@@ -93,7 +102,8 @@ export const createUploadTrackMetadataSchema = () =>
       z.union([
         PremiumConditionsNFTCollection,
         PremiumConditionsFollowUserId,
-        PremiumConditionsTipUserId
+        PremiumConditionsTipUserId,
+        PremiumConditionsUSDCPurchase
       ])
     ),
     releaseDate: z.optional(

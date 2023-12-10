@@ -86,6 +86,24 @@ const getDownloadConditions = async ({
   return null
 }
 
+const getDownloadMetadata = (downloadConditions) => {
+  if (downloadConditions) {
+    return {
+      is_download_gated: true,
+      download_conditions: downloadConditions,
+      download: {
+        cid: '',
+        is_downloadable: true,
+        requires_follow: false
+      }
+    }
+  }
+  return {
+    is_download_gated: false,
+    download_conditions: null
+  }
+}
+
 program
   .command('upload-track')
   .description('Upload a new track')
@@ -186,11 +204,13 @@ program
           audiusLibs
         })
 
-        const parsedDownloadConditions = await getDownloadConditions({
-          downloadConditions,
-          downloadPrice,
-          audiusLibs
-        })
+        const downloadMetadata = getDownloadMetadata(
+          await getDownloadConditions({
+            downloadConditions,
+            downloadPrice,
+            audiusLibs
+          })
+        )
 
         const trackTitle = title || `title ${rand}`
         const response = await audiusLibs.Track.uploadTrackV2AndWriteToChain(
@@ -219,8 +239,7 @@ program
             track_segments: [],
             is_premium: parsedPremiumConditions != null,
             premium_conditions: parsedPremiumConditions,
-            is_download_gated: parsedDownloadConditions != null,
-            download_conditions: parsedDownloadConditions,
+            ...downloadMetadata,
             ai_attribution_user_id: null,
             preview_start_seconds: previewStartSeconds
               ? parseInt(previewStartSeconds)

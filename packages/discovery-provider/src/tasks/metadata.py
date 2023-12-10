@@ -108,6 +108,8 @@ track_metadata_format: TrackMetadata = {
     "stem_of": None,
     "is_premium": False,
     "premium_conditions": None,
+    "is_download_gated": False,
+    "download_conditions": None,
     "is_playlist_upload": False,
     "ai_attribution_user_id": None,
 }
