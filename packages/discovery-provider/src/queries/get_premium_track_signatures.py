@@ -235,6 +235,7 @@ def _get_eth_nft_gated_track_signatures(
                                 "track_cid": track_cid,
                                 "type": "track",
                                 "user_wallet": user_wallet,
+                                "user_id": user_id,
                                 "is_premium": True,
                             }
                         )
