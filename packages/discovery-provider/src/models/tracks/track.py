@@ -80,6 +80,8 @@ class Track(Base, RepresentableMixin):
     is_available = Column(Boolean, nullable=False, server_default=text("true"))
     is_premium = Column(Boolean, nullable=False, server_default=text("false"))
     premium_conditions = Column(JSONB(True))
+    is_download_gated = Column(Boolean, nullable=False, server_default=text("false"))
+    download_conditions = Column(JSONB(True))
     is_playlist_upload = Column(Boolean, nullable=False, server_default=text("false"))
     ai_attribution_user_id = Column(Integer, nullable=True)
 
