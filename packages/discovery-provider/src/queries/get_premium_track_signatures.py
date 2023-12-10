@@ -500,65 +500,6 @@ def get_nft_gated_premium_track_signatures(
         return result
 
 
-# Generates a gated content signature for each of the gated tracks.
-# Return a map of gated track id -> gated content signature.
-def get_premium_track_signatures(user_id: int, track_ids: List[int]):
-    db = db_session.get_db_read_replica()
-    with db.scoped_session() as session:
-        user_wallet = _get_user_wallet(user_id, session)
-        if not user_wallet:
-            logger.warn(
-                f"get_premium_track_signatures.py | get_premium_track_signatures | no wallet for user_id {user_id}"
-            )
-            return {}
-
-        tracks = _get_tracks(track_ids, session)
-        tracks_map = {track.track_id: track for track in tracks}
-
-        args: List[GatedContentAccessBatchArgs] = list(
-            map(
-                lambda track_id: {
-                    "user_id": user_id,
-                    "premium_content_id": track_id,
-                    "premium_content_type": "track",
-                },
-                track_ids,
-            )
-        )
-        premium_track_batch_access = (
-            gated_content_access_checker.check_access_for_batch(session, args)
-        )
-
-        if (
-            "track" not in premium_track_batch_access
-            or user_id not in premium_track_batch_access["track"]
-        ):
-            return []
-
-        track_access_for_user = premium_track_batch_access["track"][user_id]
-        track_ids_with_access = []
-        premium_track_ids = set()
-        for track_id in track_access_for_user.keys():
-            if track_access_for_user[track_id]["does_user_have_access"]:
-                track_ids_with_access.append(track_id)
-            if track_access_for_user[track_id]["is_premium"]:
-                premium_track_ids.add(track_id)
-
-        track_signature_map = {}
-        for track_id in track_ids_with_access:
-            track_signature_map[track_id] = get_gated_content_signature_for_user(
-                {
-                    "track_id": tracks_map[track_id].track_id,
-                    "track_cid": tracks_map[track_id].track_cid,
-                    "type": "track",
-                    "user_wallet": user_wallet,
-                    "user_id": user_id,
-                    "is_premium": track_id in premium_track_ids,
-                }
-            )
-        return track_signature_map
-
-
 def _load_abis():
     global erc721_abi
     global erc1155_abi
