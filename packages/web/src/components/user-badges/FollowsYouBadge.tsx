@@ -1,4 +1,5 @@
-import { ID, accountSelectors, trpc } from '@audius/common'
+import { ID, accountSelectors } from '@audius/common'
+import { trpc } from 'utils/trpcClientWeb'
 import { useSelector } from 'react-redux'
 
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'

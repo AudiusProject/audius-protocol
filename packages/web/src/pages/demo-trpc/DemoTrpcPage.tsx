@@ -1,6 +1,7 @@
 import { CSSProperties, Suspense, useMemo, useState } from 'react'
 
-import { accountSelectors, trpc } from '@audius/common'
+import { accountSelectors } from '@audius/common'
+import { trpc } from 'utils/trpcClientWeb'
 import { RouterInput } from '@audius/trpc-server'
 import { useSelector } from 'react-redux'
 import { create } from 'zustand'

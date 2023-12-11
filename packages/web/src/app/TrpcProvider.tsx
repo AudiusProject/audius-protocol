@@ -1,6 +1,7 @@
 import { ReactNode, useMemo, useState } from 'react'
 
-import { accountSelectors, createAudiusTrpcClient, trpc } from '@audius/common'
+import { accountSelectors } from '@audius/common'
+import { createAudiusTrpcClient, trpc } from '../utils/trpcClientWeb'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 
