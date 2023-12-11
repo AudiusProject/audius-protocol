@@ -145,7 +145,10 @@ export class ClaimableTokens {
    */
   async createTransferSecpInstruction(params: CreateSecpRequest) {
     const { ethWallet, destination, amount, mint, instructionIndex, auth } =
-      await parseParams('createSecpInstruction', CreateSecpSchema)(params)
+      await parseParams(
+        'createTransferSecpInstruction',
+        CreateSecpSchema
+      )(params)
 
     let nonce = BigInt(0)
     const nonceKey = ClaimableTokensProgram.deriveNonce({
@@ -177,8 +180,10 @@ export class ClaimableTokens {
 
   /**
    * Derives the user bank of a user from their Ethereum wallet and the token mint.
+   *
+   * Use {@link getOrCreateUserBank} instead if you want to ensure the userBank exists.
    */
-  private async deriveUserBank(params: DeriveUserBankRequest) {
+  public async deriveUserBank(params: DeriveUserBankRequest) {
     const { ethWallet, mint } = await parseParams(
       'deriveUserBank',
       GetOrCreateUserBankSchema

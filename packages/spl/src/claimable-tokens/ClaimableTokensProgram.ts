@@ -28,10 +28,12 @@ const TRANSFER_NONCE_PREFIX = 'N_'
 const TRANSFER_NONCE_PREFIX_BYTES = new TextEncoder().encode(
   TRANSFER_NONCE_PREFIX
 )
-export enum ClaimableTokensInstruction {
+enum ClaimableTokensInstruction {
   Create = 0,
   Transfer = 1
 }
+/** @see {@link https://github.com/solana-labs/solana-web3.js/blob/974193946d5e6fade11b96d141f21ebe8f3ff5e2/packages/library-legacy/src/programs/secp256k1.ts#L47C11-L47C11 SECP256K1_INSTRUCTION_LAYOUT} */
+const SECP256K1_INSTRUCTION_MESSAGE_DATA_START = 97
 
 /**
  * The Claimable Tokens Program is responsible for the creation and control of
@@ -245,6 +247,16 @@ export class ClaimableTokensProgram {
       data
     )
     return data
+  }
+
+  static decodeSignedTransferInstructionData(
+    instruction: TransactionInstruction
+  ) {
+    return ClaimableTokensProgram.layouts.signedTransferInstructionData.decode(
+      Uint8Array.from(instruction.data).slice(
+        SECP256K1_INSTRUCTION_MESSAGE_DATA_START
+      )
+    )
   }
 
   static deriveNonce({
