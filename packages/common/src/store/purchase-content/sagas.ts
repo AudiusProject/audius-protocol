@@ -259,9 +259,13 @@ function* doStartPurchaseContentFlow({
   )
 
   try {
-    // get user bank
-    const userBank = yield* call(getUSDCUserBank)
+    // get user & user bank
+    const purchaserUserId = yield* select(getUserId)
+    if (!purchaserUserId) {
+      throw new Error('Failed to fetch purchasing user id')
+    }
 
+    const userBank = yield* call(getUSDCUserBank)
     const tokenAccountInfo = yield* call(
       getTokenAccountInfo,
       audiusBackendInstance,
@@ -316,7 +320,8 @@ function* doStartPurchaseContentFlow({
       blocknumber,
       extraAmount: extraAmountBN,
       splits,
-      type: 'track'
+      type: 'track',
+      purchaserUserId
     })
     yield* put(purchaseSucceeded())
 
