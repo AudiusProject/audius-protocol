@@ -1,7 +1,4 @@
-import { useContext } from 'react'
-
 import {
-  AudiusQueryContext,
   formatInstagramProfile,
   formatTikTokProfile,
   formatTwitterProfile,
