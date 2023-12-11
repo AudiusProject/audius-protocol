@@ -1,24 +1,19 @@
 import { useCallback } from 'react'
 
+import { signInPageMessages as messages } from '@audius/common'
 import { signIn } from 'common/store/pages/signon/actions'
 import { Formik } from 'formik'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { Text } from '@audius/harmony-native'
+import { Flex, Text } from '@audius/harmony-native'
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import { Button } from 'app/components/core'
 import { TextField } from 'app/components/fields'
 
-import type { SignOnScreenProps } from './types'
+import { Heading } from '../components/layout'
 
-const messages = {
-  header: 'Sign into Audius',
-  emailLabel: 'Email',
-  passwordLabel: 'Password',
-  signIn: 'Sign In',
-  forgotPassword: 'Forgot password?'
-}
+import type { SignOnScreenProps } from './types'
 
 type SignInValues = {
   email: string
@@ -46,7 +41,7 @@ export const SignInScreen = (props: SignOnScreenProps) => {
     <Formik initialValues={initialValues} onSubmit={handleSubmit}>
       {({ handleSubmit }) => (
         <>
-          <Text role='heading'>{messages.header}</Text>
+          <Heading heading={messages.title} centered />
           <View>
             <TextField
               name='email'
@@ -54,13 +49,19 @@ export const SignInScreen = (props: SignOnScreenProps) => {
               onChangeText={onChangeEmail}
             />
             <TextField name='password' label={messages.passwordLabel} />
+          </View>
+          <Flex gap='l'>
             <Button
+              size='large'
+              fullWidth
               title={messages.signIn}
               icon={IconArrow}
               onPress={() => handleSubmit()}
             />
-            <Text color='accent'>{messages.forgotPassword}</Text>
-          </View>
+            <Text color='accent' textAlign='center'>
+              {messages.forgotPassword}
+            </Text>
+          </Flex>
         </>
       )}
     </Formik>

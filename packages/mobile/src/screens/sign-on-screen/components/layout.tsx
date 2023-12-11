@@ -22,8 +22,8 @@ export const Page = (props: PageProps) => {
     h: '100%',
     gap: '2xl',
     ph: gutterSize,
-    pv: '2xl'
-    // backgroundColor: 'white'
+    pv: '2xl',
+    backgroundColor: 'white'
   }
 
   return (
