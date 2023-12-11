@@ -45,12 +45,9 @@ const useCoinflowAdapter = () => {
           publicKey: wallet.publicKey,
           sendTransaction: async (transaction: Transaction) => {
             transaction.partialSign(wallet)
-            console.log({ transaction })
             const res = await relayTransaction(audiusBackend, {
-              transaction,
-              skipPreflight: false
+              transaction
             })
-            console.log({ res })
             return res
           }
         }
