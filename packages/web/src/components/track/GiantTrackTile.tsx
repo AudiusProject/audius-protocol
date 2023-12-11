@@ -13,9 +13,9 @@ import {
   PremiumConditions,
   FieldVisibility,
   getDogEarType,
-  isPremiumContentUSDCPurchaseGated,
-  Mood
+  isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
+import { Mood } from '@audius/sdk'
 import {
   Button,
   ButtonType,

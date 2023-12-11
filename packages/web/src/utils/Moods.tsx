@@ -1,4 +1,4 @@
-import { Mood } from '@audius/common'
+import { Mood } from '@audius/sdk'
 
 export const moodMap: Record<Mood, JSX.Element> = {
   Peaceful: (

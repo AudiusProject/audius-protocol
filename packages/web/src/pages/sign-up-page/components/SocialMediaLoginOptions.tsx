@@ -16,13 +16,19 @@ type SocialMediaLoginOptionsProps = {
     handle: string
     platform: 'twitter' | 'instagram' | 'tiktok'
   }) => void
+  onError: () => void
+  onStart: () => void
 }
 
 export const SocialMediaLoginOptions = ({
-  onCompleteSocialMediaLogin
+  onCompleteSocialMediaLogin,
+  onError,
+  onStart
 }: SocialMediaLoginOptionsProps) => {
   const { toast } = useContext(ToastContext)
+
   const handleFailure = () => {
+    onError()
     toast(socialMediaMessages.verificationError)
   }
 
@@ -56,6 +62,7 @@ export const SocialMediaLoginOptions = ({
       {isTwitterEnabled ? (
         <SignupFlowTwitterAuth
           css={{ flex: 1 }}
+          onStart={onStart}
           onFailure={handleFailure}
           onSuccess={handleSuccess}
         >
@@ -70,6 +77,7 @@ export const SocialMediaLoginOptions = ({
       {isInstagramEnabled ? (
         <SignupFlowInstagramAuth
           css={{ flex: 1 }}
+          onStart={onStart}
           onFailure={handleFailure}
           onSuccess={handleSuccess}
         >
@@ -85,6 +93,7 @@ export const SocialMediaLoginOptions = ({
       {isTikTokEnabled ? (
         <Box css={{ flex: 1 }}>
           <SignupFlowTikTokAuth
+            onStart={onStart}
             onFailure={handleFailure}
             onSuccess={handleSuccess}
           >

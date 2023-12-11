@@ -1,6 +1,10 @@
 import { useCallback, useContext } from 'react'
 
-import { socialMediaMessages, pickHandleErrorMessages } from '@audius/common'
+import {
+  MAX_HANDLE_LENGTH,
+  socialMediaMessages,
+  pickHandleErrorMessages
+} from '@audius/common'
 import { TextLink } from '@audius/harmony'
 import { useField } from 'formik'
 
@@ -31,17 +35,25 @@ type HandleFieldProps = Partial<HarmonyTextFieldProps> & {
     handle: string
     platform: 'twitter' | 'instagram' | 'tiktok'
   }) => void
+  onStartSocialMediaLogin?: () => void
+  onErrorSocialMediaLogin?: () => void
 }
 
 export const HandleField = (props: HandleFieldProps) => {
-  const { onCompleteSocialMediaLogin, ...other } = props
-  const [{ value: handle }, { error }, { setError }] = useField('handle')
+  const {
+    onCompleteSocialMediaLogin,
+    onErrorSocialMediaLogin,
+    onStartSocialMediaLogin,
+    ...other
+  } = props
+  const [{ value: handle }, { error }] = useField('handle')
 
   const { toast } = useContext(ToastContext)
 
   const handleVerifyHandleError = useCallback(() => {
-    setError(socialMediaMessages.verificationError)
-  }, [setError])
+    toast(socialMediaMessages.verificationError)
+    onErrorSocialMediaLogin?.()
+  }, [onErrorSocialMediaLogin, toast])
 
   const handleLoginSuccess = useCallback(
     ({
@@ -69,9 +81,13 @@ export const HandleField = (props: HandleFieldProps) => {
     handle && error ? (
       <>
         {error}{' '}
-        {onCompleteSocialMediaLogin && AuthComponent ? (
+        {onCompleteSocialMediaLogin &&
+        onStartSocialMediaLogin &&
+        onErrorSocialMediaLogin &&
+        AuthComponent ? (
           <TextLink variant='visible' asChild>
             <AuthComponent
+              onStart={onStartSocialMediaLogin}
               onFailure={handleVerifyHandleError}
               onSuccess={handleLoginSuccess}
             >
@@ -88,6 +104,7 @@ export const HandleField = (props: HandleFieldProps) => {
       label={messages.handle}
       error={error && handle}
       helperText={helperText}
+      maxLength={MAX_HANDLE_LENGTH}
       startAdornmentText='@'
       placeholder={messages.handle}
       transformValue={(value) => value.replace(/\s/g, '')}

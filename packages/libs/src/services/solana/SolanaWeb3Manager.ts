@@ -1,14 +1,16 @@
-import splToken from '@solana/spl-token'
-import solanaWeb3, {
+import * as splToken from '@solana/spl-token'
+import {
   Connection,
   Keypair,
   PublicKey,
   LAMPORTS_PER_SOL,
-  TransactionInstruction
+  TransactionInstruction,
+  Transaction
 } from '@solana/web3.js'
+import * as solanaWeb3 from '@solana/web3.js'
 import BN from 'bn.js'
 
-import { AUDIO_DECIMALS, WAUDIO_DECIMALS } from '../../constants'
+import { AUDIO_DECIMALS, USDC_DECIMALS, WAUDIO_DECIMALS } from '../../constants'
 import { Logger, Nullable, Utils } from '../../utils'
 import type { IdentityService } from '../identity'
 import type { Web3Manager } from '../web3Manager'
@@ -31,6 +33,11 @@ import { TransactionHandler } from './transactionHandler'
 import { createTransferInstructions, transferWAudioBalance } from './transfer'
 import { getBankAccountAddress, createUserBankFrom } from './userBank'
 import { wAudioFromWeiAudio } from './wAudio'
+import { route } from '@audius/spl'
+import {
+  TOKEN_PROGRAM_ID,
+  createTransferCheckedInstruction
+} from '@solana/spl-token'
 
 type EvaluateChallengeAttestationsConfig = {
   challengeId: string
@@ -95,6 +102,8 @@ export type SolanaWeb3Config = {
   rewardsManagerProgramPDA: string
   // The PDA of the rewards manager funds holder account
   rewardsManagerTokenPDA: string
+  // address for the payment router program
+  paymentRouterProgramId: string
   // Whether to use identity as a relay or submit transactions locally
   useRelay: boolean
   // fee payer secret keys, if client wants to switch between different fee payers during relay
@@ -132,6 +141,7 @@ export class SolanaWeb3Manager {
   rewardManagerProgramId!: PublicKey
   rewardManagerProgramPDA!: PublicKey
   rewardManagerTokenPDA!: PublicKey
+  paymentRouterProgramId!: PublicKey
 
   constructor(
     solanaWeb3Config: SolanaWeb3Config,
@@ -157,6 +167,7 @@ export class SolanaWeb3Manager {
       rewardsManagerProgramId,
       rewardsManagerProgramPDA,
       rewardsManagerTokenPDA,
+      paymentRouterProgramId,
       useRelay,
       feePayerKeypairs,
       confirmationTimeout
@@ -229,6 +240,9 @@ export class SolanaWeb3Manager {
     )
     this.rewardManagerTokenPDA = SolanaUtils.newPublicKeyNullable(
       rewardsManagerTokenPDA
+    )
+    this.paymentRouterProgramId = SolanaUtils.newPublicKeyNullable(
+      paymentRouterProgramId
     )
   }
 
@@ -566,6 +580,185 @@ export class SolanaWeb3Manager {
       instructions: [...instructions, memoInstruction],
       skipPreflight: true,
       feePayerOverride: this.feePayerKey
+    })
+  }
+
+  /**
+   * Purchases USDC gated content
+   * @param params.id the id of the content, eg. the track ID
+   * @param params.type the type of the content, eg. "track"
+   * @param params.blocknumber the blocknumber the content was last updated
+   * @param params.splits map of address to USDC amount, used to split the price amoung several stakeholders
+   * @param params.extraAmount Extra amount in USDC wei to be distributed to the stakeholders
+   * @param params.purchaserUserId Id of the user that is purchasing the track
+   * @param params.senderAccount Should either be root solana account or user bank.
+   * @returns the transaction signature and/or an error
+   */
+  async getPurchaseContentWithPaymentRouterInstructions({
+    id,
+    type,
+    blocknumber,
+    extraAmount = 0,
+    splits,
+    purchaserUserId,
+    senderAccount
+  }: {
+    id: number
+    type: 'track'
+    splits: Record<string, number | BN>
+    extraAmount?: number | BN
+    blocknumber: number
+    purchaserUserId: number
+    senderAccount: PublicKey
+  }) {
+    if (!this.web3Manager) {
+      throw new Error(
+        'A web3Manager is required for this solanaWeb3Manager method'
+      )
+    }
+    if (Object.values(splits).length !== 1) {
+      throw new Error(
+        'Purchasing content only supports a single split. Specifying more splits coming soon!'
+      )
+    }
+
+    // TODO: PAY-2252 split extra amount amongst all recipients correctly
+    const recipientAmounts: Record<string, bigint> = Object.entries(
+      splits
+    ).reduce((acc, [key, value]) => {
+      acc[key] =
+        (value instanceof BN ? BigInt(value.toString()) : BigInt(value)) +
+        (extraAmount instanceof BN
+          ? BigInt(extraAmount.toString())
+          : BigInt(extraAmount))
+      return acc
+    }, {} as Record<string, bigint>)
+
+    const [paymentRouterPda, paymentRouterPdaBump] =
+      PublicKey.findProgramAddressSync(
+        [Buffer.from('payment_router')],
+        this.paymentRouterProgramId
+      )
+
+    // Associated token account owned by the PDA
+    const paymentRouterTokenAccount = await this.findAssociatedTokenAddress(
+      paymentRouterPda.toString(),
+      'usdc'
+    )
+    const paymentRouterTokenAccountInfo = this.getTokenAccountInfo(
+      paymentRouterTokenAccount.toString()
+    )
+    if (paymentRouterTokenAccountInfo === null) {
+      throw new Error('Payment Router balance PDA token account does not exist')
+    }
+
+    const senderTokenAccount = await this.findAssociatedTokenAddress(
+      senderAccount.toString(),
+      'usdc'
+    )
+    const senderTokenAccountInfo = await this.getTokenAccountInfo(
+      senderTokenAccount.toString()
+    )
+    if (senderTokenAccountInfo === null) {
+      throw new Error('Sender token account ATA does not exist')
+    }
+
+    const amounts = Object.values(recipientAmounts)
+    const totalAmount = amounts.reduce(
+      (acc, current) => acc + current,
+      BigInt(0)
+    )
+
+    const transferInstruction = createTransferCheckedInstruction(
+      senderTokenAccount,
+      this.mints.usdc,
+      paymentRouterTokenAccount,
+      senderAccount,
+      Number(totalAmount),
+      USDC_DECIMALS
+    )
+
+    const paymentRouterInstruction = await route(
+      paymentRouterTokenAccount,
+      paymentRouterPda,
+      paymentRouterPdaBump,
+      Object.keys(recipientAmounts).map((key) => new PublicKey(key)), // recipients
+      amounts,
+      totalAmount,
+      TOKEN_PROGRAM_ID,
+      this.paymentRouterProgramId
+    )
+
+    const data = `${type}:${id}:${blocknumber}:${purchaserUserId}`
+
+    const memoInstruction = new TransactionInstruction({
+      keys: [
+        {
+          pubkey: new PublicKey(this.feePayerKey),
+          isSigner: true,
+          isWritable: true
+        }
+      ],
+      programId: MEMO_PROGRAM_ID,
+      data: Buffer.from(data)
+    })
+
+    const instructions = [
+      transferInstruction,
+      paymentRouterInstruction,
+      memoInstruction
+    ]
+    return instructions
+  }
+
+  async purchaseContentWithPaymentRouter({
+    id,
+    type,
+    blocknumber,
+    extraAmount = 0,
+    splits,
+    purchaserUserId,
+    senderKeypair
+  }: {
+    id: number
+    type: 'track'
+    splits: Record<string, number | BN>
+    extraAmount?: number | BN
+    blocknumber: number
+    purchaserUserId: number
+    senderKeypair: Keypair
+  }) {
+    const instructions =
+      await this.getPurchaseContentWithPaymentRouterInstructions({
+        id,
+        type,
+        blocknumber,
+        extraAmount,
+        splits,
+        purchaserUserId,
+        senderAccount: senderKeypair.publicKey
+      })
+    const recentBlockhash = (await this.connection.getLatestBlockhash())
+      .blockhash
+
+    const transaction = new Transaction({
+      feePayer: this.feePayerKey,
+      recentBlockhash: recentBlockhash
+    }).add(...instructions)
+    transaction.partialSign(senderKeypair)
+    const signatures = transaction.signatures
+      .filter((s) => s.signature !== null)
+      .map((s) => ({
+        signature: s.signature!, // safe from filter
+        publicKey: s.publicKey.toString()
+      }))
+
+    return await this.transactionHandler.handleTransaction({
+      instructions,
+      skipPreflight: true,
+      feePayerOverride: this.feePayerKey,
+      signatures,
+      recentBlockhash
     })
   }
 
