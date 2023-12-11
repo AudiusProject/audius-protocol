@@ -1,13 +1,19 @@
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 
 import type { Icon } from '@audius/harmony-native'
-import { Flex, Text } from '@audius/harmony-native'
+import {
+  Flex,
+  Text,
+  IconCloudUpload,
+  IconHeadphones,
+  IconMessage
+} from '@audius/harmony-native'
 
 import { PANEL_EXPAND_DELAY } from '../constants'
 
-import IconCloudUpload from './temp-harmony/iconCloudArrowUp.svg'
-import IconHeadphones from './temp-harmony/iconHeadphones.svg'
-import IconMessage from './temp-harmony/iconMessages.svg'
+// import IconCloudUpload from './temp-harmony/iconCloudArrowUp.svg'
+// import IconHeadphones from './temp-harmony/iconHeadphones.svg'
+// import IconMessage from './temp-harmony/iconMessages.svg'
 
 const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 

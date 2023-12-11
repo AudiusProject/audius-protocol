@@ -1,7 +1,6 @@
 export const signInPageMessages = {
   metaTitle: 'Sign In • Audius',
   metaDescription: 'Sign into your Audius account',
-
   title: 'Sign Into Audius',
   emailLabel: 'Email',
   passwordLabel: 'Password',
