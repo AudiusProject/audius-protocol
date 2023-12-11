@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react'
 import {
   pickHandlePageMessages as messages,
   pickHandleSchema,
-  useAudiusQueryContext
+  audiusQueryContext
 } from '@audius/common'
 import { css } from '@emotion/native'
 import { setValueField } from 'common/store/pages/signon/actions'
@@ -69,16 +69,13 @@ const SocialMediaSection = ({
   )
 }
 
+const validationSchema = toFormikValidationSchema(
+  pickHandleSchema({ audiusQueryContext, restrictedHandles })
+)
+
 export const PickHandleScreen = () => {
   const navigation = useNavigation<SignUpScreenParamList>()
   const dispatch = useDispatch()
-
-  const audiusQueryContext = useAudiusQueryContext()
-  const validationSchema = useMemo(() => {
-    return toFormikValidationSchema(
-      pickHandleSchema({ audiusQueryContext, restrictedHandles })
-    )
-  }, [audiusQueryContext])
 
   const handleSubmit = useCallback(
     (values: PickHandleValues) => {
@@ -124,6 +121,7 @@ export const PickHandleScreen = () => {
             description={messages.description}
           />
           <Flex direction='column' gap='l'>
+            {/* TODO: add verification flow error message to the handle field component */}
             <TextField name='handle' label={messages.handle} noGutter />
             <Divider>
               <Text

@@ -1,5 +1,6 @@
+import { Mood } from '@audius/sdk'
+
 import { GENRES } from './genres'
-import { MOODS } from './moods'
 
 const filteredGenres = GENRES.reduce((acc, genre: string) => {
   acc = acc.concat(genre.split('/'))
@@ -57,7 +58,7 @@ export const restrictedHandles = new Set(
     '404',
 
     // ===== Moods =====
-    ...MOODS,
+    ...Object.keys(Mood),
     // ===== Genre =====
     ...filteredGenres
   ].map((h) => h.toLowerCase())

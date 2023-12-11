@@ -13,6 +13,7 @@ import {
 } from '@audius/common'
 import { useDispatch } from 'react-redux'
 
+import { audiusQueryContext } from 'app/AudiusQueryProvider'
 import { make } from 'common/store/analytics/actions'
 import {
   setInstagramProfile,
@@ -25,7 +26,6 @@ import { restrictedHandles } from 'utils/restrictedHandles'
 const GENERAL_ADMISSION = process.env.VITE_GENERAL_ADMISSION ?? ''
 
 export const useSetProfileFromTwitter = () => {
-  const queryContext = useContext(AudiusQueryContext)
   const dispatch = useDispatch()
 
   return async ({
@@ -39,7 +39,7 @@ export const useSetProfileFromTwitter = () => {
 
     const { profile, profileImage, profileBanner, handleTooLong } = profileData
     const handleSchema = pickHandleSchema({
-      audiusQueryContext: queryContext!,
+      audiusQueryContext: audiusQueryContext!,
       skipReservedHandleCheck: profile.verified,
       restrictedHandles
     })
@@ -61,7 +61,6 @@ export const useSetProfileFromTwitter = () => {
 }
 
 export const useSetProfileFromInstagram = () => {
-  const queryContext = useContext(AudiusQueryContext)
   const dispatch = useDispatch()
 
   return async ({
@@ -79,7 +78,7 @@ export const useSetProfileFromInstagram = () => {
 
     const { profile, profileImage, handleTooLong } = profileData
     const handleSchema = pickHandleSchema({
-      audiusQueryContext: queryContext!,
+      audiusQueryContext: audiusQueryContext!,
       skipReservedHandleCheck: profile.is_verified,
       restrictedHandles
     })
@@ -99,7 +98,6 @@ export const useSetProfileFromInstagram = () => {
 }
 
 export const useSetProfileFromTikTok = () => {
-  const queryContext = useContext(AudiusQueryContext)
   const dispatch = useDispatch()
 
   return async ({
@@ -113,7 +111,7 @@ export const useSetProfileFromTikTok = () => {
 
     const { profile, profileImage, handleTooLong } = profileData
     const handleSchema = pickHandleSchema({
-      audiusQueryContext: queryContext!,
+      audiusQueryContext: audiusQueryContext!,
       skipReservedHandleCheck: profile.is_verified,
       restrictedHandles
     })
