@@ -4,7 +4,13 @@ import { useState } from 'react'
 import { css } from '@emotion/native'
 import { Dimensions, ImageBackground, SafeAreaView } from 'react-native'
 import RadialGradient from 'react-native-radial-gradient'
-import Animated, { CurvedTransition, SlideInUp } from 'react-native-reanimated'
+import Animated, {
+  CurvedTransition,
+  FadeIn,
+  FadeOut,
+  SlideInUp
+} from 'react-native-reanimated'
+import { usePrevious } from 'react-use'
 
 import type { TextProps } from '@audius/harmony-native'
 import {
@@ -16,67 +22,47 @@ import {
 import DJBackground from 'app/assets/images/DJportrait.jpg'
 
 import { AudiusValues } from '../components/AudiusValues'
+import { PANEL_EXPAND_DELAY } from '../constants'
 
 import { CreateEmailScreen } from './CreateEmailScreen'
 import { SignInScreen } from './SignInScreen'
 import type { SignOnScreenType } from './types'
 
+const messages = {
+  newToAudius: 'New to Audius?',
+  createAccount: 'Create an Account'
+}
+
 const AnimatedPaper = Animated.createAnimatedComponent(Paper)
+const AnimatedFlex = Animated.createAnimatedComponent(Flex)
 
-/*
- * Mangaes the container for sign-up and sign-in flow
- * Not using navigation for this due to transition between sign-in and sign-up
- */
-export const SignOnScreen = () => {
-  const [email, setEmail] = useState('')
-  const [screen, setScreen] = useState<SignOnScreenType>('sign-up')
-
-  const screenProps = {
-    email,
-    onChangeEmail: setEmail,
-    onChangeScreen: setScreen
-  }
-
+const CreateAccountLink = (props: TextProps) => {
+  const { onPress } = props
   return (
-    <>
-      <Background />
-      <Flex flex={1} style={css({ flexGrow: 1 })} h='100%'>
-        <ExpandablePanel>
-          <IconAudiusLogoHorizontalColor style={css({ alignSelf: 'center' })} />
-          {screen === 'sign-up' ? (
-            <CreateEmailScreen {...screenProps} />
-          ) : (
-            <SignInScreen {...screenProps} />
-          )}
-        </ExpandablePanel>
-        {screen === 'sign-up' ? (
-          <AudiusValues />
-        ) : (
-          <CreateAccountLink onPress={() => setScreen('sign-up')} />
-        )}
-      </Flex>
-    </>
-  )
-}
-
-type ExpandablePanelProps = {
-  children: ReactNode
-}
-
-const ExpandablePanel = (props: ExpandablePanelProps) => {
-  const { children } = props
-  return (
-    <AnimatedPaper
-      entering={SlideInUp.duration(880).delay(3000)}
-      layout={CurvedTransition}
-      borderRadius='3xl'
+    <AnimatedFlex
+      alignItems='center'
+      justifyContent='flex-end'
+      style={css({ flexGrow: 1 })}
+      entering={FadeIn}
+      exiting={FadeOut}
     >
       <SafeAreaView>
-        <Flex gap='2xl' ph='l' pv='2xl'>
-          {children}
-        </Flex>
+        <Text
+          textAlign='center'
+          color='staticWhite'
+          style={{ justifyContent: 'flex-end' }}
+        >
+          {messages.newToAudius}{' '}
+          <Text
+            color='staticWhite'
+            style={css({ textDecorationLine: 'underline' })}
+            onPress={onPress}
+          >
+            {messages.createAccount}
+          </Text>
+        </Text>
       </SafeAreaView>
-    </AnimatedPaper>
+    </AnimatedFlex>
   )
 }
 
@@ -124,35 +110,60 @@ const Background = () => {
   )
 }
 
-const messages = {
-  newToAudius: 'New to Audius?',
-  createAccount: 'Create an Account'
+type ExpandablePanelProps = {
+  children: ReactNode
 }
 
-const CreateAccountLink = (props: TextProps) => {
-  const { onPress } = props
+const ExpandablePanel = (props: ExpandablePanelProps) => {
+  const { children } = props
   return (
-    <Flex
-      alignItems='center'
-      justifyContent='flex-end'
-      style={css({ flexGrow: 1 })}
+    <AnimatedPaper
+      entering={SlideInUp.duration(880).delay(PANEL_EXPAND_DELAY)}
+      layout={CurvedTransition}
+      borderRadius='3xl'
     >
       <SafeAreaView>
-        <Text
-          textAlign='center'
-          color='staticWhite'
-          style={{ justifyContent: 'flex-end' }}
-        >
-          {messages.newToAudius}{' '}
-          <Text
-            color='staticWhite'
-            style={css({ textDecorationLine: 'underline' })}
-            onPress={onPress}
-          >
-            {messages.createAccount}
-          </Text>
-        </Text>
+        <Flex gap='2xl' ph='l' pv='2xl'>
+          {children}
+        </Flex>
       </SafeAreaView>
-    </Flex>
+    </AnimatedPaper>
+  )
+}
+
+/*
+ * Mangaes the container for sign-up and sign-in flow
+ * Not using navigation for this due to transition between sign-in and sign-up
+ */
+export const SignOnScreen = () => {
+  const [email, setEmail] = useState('')
+  const [screen, setScreen] = useState<SignOnScreenType>('sign-up')
+  const previousScreen = usePrevious(screen)
+
+  const screenProps = {
+    email,
+    onChangeEmail: setEmail,
+    onChangeScreen: setScreen
+  }
+
+  return (
+    <>
+      <Background />
+      <Flex flex={1} style={css({ flexGrow: 1 })} h='100%'>
+        <ExpandablePanel>
+          <IconAudiusLogoHorizontalColor style={css({ alignSelf: 'center' })} />
+          {screen === 'sign-up' ? (
+            <CreateEmailScreen {...screenProps} />
+          ) : (
+            <SignInScreen {...screenProps} />
+          )}
+        </ExpandablePanel>
+        {screen === 'sign-up' ? (
+          <AudiusValues isPanelExpanded={!!previousScreen} />
+        ) : (
+          <CreateAccountLink onPress={() => setScreen('sign-up')} />
+        )}
+      </Flex>
+    </>
   )
 }
