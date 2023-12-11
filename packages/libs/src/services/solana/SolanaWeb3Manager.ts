@@ -693,7 +693,7 @@ export class SolanaWeb3Manager {
     const memoInstruction = new TransactionInstruction({
       keys: [
         {
-          pubkey: new PublicKey(this.feePayerKey),
+          pubkey: senderAccount,
           isSigner: true,
           isWritable: true
         }
@@ -726,7 +726,7 @@ export class SolanaWeb3Manager {
     extraAmount?: number | BN
     blocknumber: number
     purchaserUserId: number
-    senderKeypair: Keypair,
+    senderKeypair: Keypair
     skipSendAndReturnTransaction?: boolean
   }) {
     const instructions =
