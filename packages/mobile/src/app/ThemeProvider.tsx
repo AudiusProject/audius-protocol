@@ -8,13 +8,13 @@ import {
   themeActions,
   themeSelectors
 } from '@audius/common'
-import { ThemeProvider as HarmonyThemeProvider } from '@audius/harmony'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useAppState } from '@react-native-community/hooks'
 import { useDarkMode } from 'react-native-dynamic'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
+import { ThemeProvider as HarmonyThemeProvider } from '@audius/harmony-native'
 import { THEME_STORAGE_KEY } from 'app/constants/storage-keys'
 import type { AppState } from 'app/store'
 
@@ -78,5 +78,7 @@ export const ThemeProvider = (props: ThemeProviderProps) => {
     }
   }, [isDarkMode, dispatch, appState])
 
-  return <HarmonyThemeProvider theme={theme}>{children}</HarmonyThemeProvider>
+  return (
+    <HarmonyThemeProvider themeName={theme}>{children}</HarmonyThemeProvider>
+  )
 }

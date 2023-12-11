@@ -49,7 +49,6 @@ lint-discovery-provider:
         root: ./
         paths:
           - node_modules
-          - packages/discovery-provider/es-indexer/node_modules
 
 test-discovery-api:
   working_directory: ~/audius-protocol

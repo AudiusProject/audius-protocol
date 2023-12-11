@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@audius/spl",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "The core Typescript mappings to the Audius Solana Programs",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/AudiusProject/audius-protocol/tree/main/packages/spl",
   "dependencies": {
+    "@coral-xyz/anchor": "0.29.0",
     "@solana/buffer-layout": "4.0.1",
     "@solana/buffer-layout-utils": "0.2.0",
     "@solana/spl-token": "0.3.8",

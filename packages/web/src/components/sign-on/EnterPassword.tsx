@@ -1,3 +1,4 @@
+import { passwordSchema } from '@audius/common'
 import {
   Button,
   ButtonType,
@@ -11,7 +12,6 @@ import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { EnterPasswordSection } from 'pages/sign-up-page/components/EnterPasswordSection'
-import { passwordSchema } from 'pages/sign-up-page/utils/passwordSchema'
 
 const initialValues = {
   password: '',

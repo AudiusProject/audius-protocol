@@ -1,4 +1,9 @@
-import { Collection, CollectionMetadata, SquareSizes } from '@audius/common'
+import {
+  Collection,
+  CollectionMetadata,
+  Nullable,
+  SquareSizes
+} from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -25,13 +30,13 @@ const messages = {
   createPlaylistButtonText: 'Create Playlist'
 }
 
-export type EditPlaylistValuess = Collection & {
-  artwork: {
+export type EditPlaylistValues = Omit<Collection, 'artwork'> & {
+  artwork: Nullable<{
     file?: Blob
     url?: string
     source?: 'unsplash' | 'original' | 'generated'
     error?: string
-  }
+  }>
 }
 
 type PlaylistFormProps = {
@@ -65,10 +70,11 @@ const PlaylistForm = ({
   )
 
   return (
-    <Formik<EditPlaylistValuess>
+    <Formik<EditPlaylistValues>
       initialValues={{
         ...metadata,
-        artwork: { url: coverArtUrl }
+        artwork: coverArtUrl ? { url: coverArtUrl } : null,
+        description: metadata.description ?? ''
       }}
       onSubmit={onSave}
       validationSchema={toFormikValidationSchema(playlistFormSchema)}

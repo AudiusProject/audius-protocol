@@ -207,7 +207,7 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
     if (twitterInfo) {
       dispatch(
         signOnActions.setTwitterProfile(
-          twitterInfo.twitterId,
+          twitterInfo.uuid,
           twitterInfo.profile,
           twitterInfo.profile.profile_image_url_https
             ? {
@@ -232,7 +232,7 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
     } else if (instagramInfo) {
       dispatch(
         signOnActions.setInstagramProfile(
-          instagramInfo.instagramId,
+          instagramInfo.uuid,
           instagramInfo.profile,
           instagramInfo.profile.profile_pic_url_hd
             ? {

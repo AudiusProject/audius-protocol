@@ -10,6 +10,7 @@ from redis import Redis
 from solders.instruction import CompiledInstruction
 from solders.message import Message
 from solders.pubkey import Pubkey
+from solders.rpc.responses import GetTransactionResp
 from solders.transaction import Transaction
 from solders.transaction_status import UiTransactionStatusMeta
 from sqlalchemy import desc
@@ -47,6 +48,7 @@ from src.utils.cache_solana_program import (
 from src.utils.config import shared_config
 from src.utils.helpers import get_solana_tx_token_balance_changes
 from src.utils.prometheus_metric import save_duration_metric
+from src.utils.redis_cache import get_solana_transaction_key
 from src.utils.redis_constants import (
     latest_sol_rewards_manager_db_tx_key,
     latest_sol_rewards_manager_program_tx_key,
@@ -213,8 +215,21 @@ def get_valid_instruction(
         return None
 
 
+def get_sol_tx_info(
+    solana_client_manager: SolanaClientManager, tx_sig: str, redis: Redis
+):
+    existing_tx = redis.get(get_solana_transaction_key(tx_sig))
+    if existing_tx is not None and existing_tx != "":
+        logger.info(f"index_rewards_manager.py | Cache hit: {tx_sig}")
+        tx_info = GetTransactionResp.from_json(existing_tx.decode("utf-8"))
+        return tx_info
+    logger.info(f"index_rewards_manager.py | Cache miss: {tx_sig}")
+    tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
+    return tx_info
+
+
 def fetch_and_parse_sol_rewards_transfer_instruction(
-    solana_client_manager: SolanaClientManager, tx_sig: str
+    solana_client_manager: SolanaClientManager, tx_sig: str, redis: Redis
 ) -> Optional[RewardManagerTransactionInfo]:
     """Fetches metadata for rewards transfer transactions and parses data
 
@@ -224,11 +239,11 @@ def fetch_and_parse_sol_rewards_transfer_instruction(
     Validates the metadata fields
     """
     try:
-        tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
-        result = tx_info.value
-        if not result:
+        tx_info = get_sol_tx_info(solana_client_manager, tx_sig, redis)
+        if not tx_info or not tx_info.value:
             raise Exception("Missing txinfo")
         # Create transaction metadata
+        result = tx_info.value
         tx_metadata: RewardManagerTransactionInfo = {
             "tx_sig": tx_sig,
             "slot": result.slot,
@@ -560,6 +575,7 @@ def process_transaction_signatures(
                     fetch_and_parse_sol_rewards_transfer_instruction,
                     solana_client_manager,
                     tx_sig,
+                    redis,
                 ): tx_sig
                 for tx_sig in tx_sig_batch
             }

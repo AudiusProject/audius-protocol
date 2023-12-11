@@ -12,7 +12,7 @@ const messages = {
 export const EnterPasswordSection = () => {
   return (
     <Flex direction='column' gap='l'>
-      <PasswordField name='password' label={messages.passwordLabel} />
+      <PasswordField name='password' label={messages.passwordLabel} autoFocus />
       <PasswordField
         name='confirmPassword'
         label={messages.confirmPasswordLabel}

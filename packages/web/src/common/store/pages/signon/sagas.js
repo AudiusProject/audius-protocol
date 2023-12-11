@@ -19,7 +19,8 @@ import {
   confirmerActions,
   confirmTransaction,
   IntKeys,
-  parseHandleReservedStatusFromSocial
+  parseHandleReservedStatusFromSocial,
+  isValidEmailString
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { isEmpty } from 'lodash'
@@ -43,7 +44,6 @@ import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
 import { UiErrorCode } from 'store/errors/actions'
 import { setHasRequestedBrowserPermission } from 'utils/browserNotifications'
-import { isValidEmailString } from 'utils/email'
 import { restrictedHandles } from 'utils/restrictedHandles'
 import { FEED_PAGE, SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
@@ -352,6 +352,7 @@ function* validateEmail(action) {
 function* signUp() {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const { waitForRemoteConfig } = yield getContext('remoteConfigInstance')
+  const isNativeMobile = yield getContext('isNativeMobile')
   const getFeatureEnabled = yield getContext('getFeatureEnabled')
 
   yield call(waitForWrite)
@@ -361,8 +362,12 @@ function* signUp() {
   const createUserMetadata = {
     name: signOn.name.value.trim(),
     handle: signOn.handle.value,
-    profilePicture: (signOn.profileImage && signOn.profileImage.file) || null,
-    coverPhoto: (signOn.coverPhoto && signOn.coverPhoto.file) || null,
+    profilePicture: isNativeMobile
+      ? signOn.profileImage
+      : (signOn.profileImage && signOn.profileImage.file) || null,
+    coverPhoto: isNativeMobile
+      ? signOn.coverPhoto
+      : (signOn.coverPhoto && signOn.coverPhoto.file) || null,
     isVerified: signOn.verified,
     location
   }
@@ -438,15 +443,10 @@ function* signUp() {
             yield put(signOnActions.setTwitterProfileError(error))
           }
         }
-        if (
-          !signOn.useMetaMask &&
-          signOn.instagramId &&
-          handle.toLowerCase() ===
-            (signOn.instagramScreenName || '').toLowerCase()
-        ) {
+        if (!signOn.useMetaMask && signOn.instagramId) {
           const { error } = yield call(
             audiusBackendInstance.associateInstagramAccount,
-            handle.toLowerCase(),
+            signOn.instagramId,
             userId,
             handle
           )

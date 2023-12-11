@@ -17,6 +17,10 @@ services:
       file: docker-compose.discovery.prod.yml
       service: comms
 
+  es-indexer:
+    extends:
+      file: docker-compose.discovery.prod.yml
+      service: es-indexer
   trpc:
     extends:
       file: docker-compose.discovery.prod.yml

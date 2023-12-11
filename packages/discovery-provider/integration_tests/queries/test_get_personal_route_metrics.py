@@ -45,8 +45,12 @@ def test_get_personal_route_metrics_week(app):
                 AggregateDailyTotalUsersMetrics(
                     count=4, personal_count=4, timestamp=yesterday - timedelta(days=1)
                 ),
-                AggregateDailyTotalUsersMetrics(count=6, personal_count=5, timestamp=yesterday),
-                AggregateDailyTotalUsersMetrics(count=8, personal_count=8, timestamp=today),
+                AggregateDailyTotalUsersMetrics(
+                    count=6, personal_count=5, timestamp=yesterday
+                ),
+                AggregateDailyTotalUsersMetrics(
+                    count=8, personal_count=8, timestamp=today
+                ),
             ]
         )
 
@@ -84,8 +88,12 @@ def test_get_personal_route_metrics_month_daily_bucket(app):
                 AggregateDailyTotalUsersMetrics(
                     count=4, personal_count=3, timestamp=today - timedelta(days=8)
                 ),
-                AggregateDailyTotalUsersMetrics(count=6, personal_count=6, timestamp=yesterday),
-                AggregateDailyTotalUsersMetrics(count=8, personal_count=5, timestamp=today),
+                AggregateDailyTotalUsersMetrics(
+                    count=6, personal_count=6, timestamp=yesterday
+                ),
+                AggregateDailyTotalUsersMetrics(
+                    count=8, personal_count=5, timestamp=today
+                ),
             ]
         )
 
@@ -123,8 +131,12 @@ def test_get_personal_route_metrics_month_weekly_bucket(app):
                 AggregateDailyTotalUsersMetrics(
                     count=4, personal_count=3, timestamp=today - timedelta(days=8)
                 ),
-                AggregateDailyTotalUsersMetrics(count=6, personal_count=6, timestamp=yesterday),
-                AggregateDailyTotalUsersMetrics(count=8, personal_count=7, timestamp=today),
+                AggregateDailyTotalUsersMetrics(
+                    count=6, personal_count=6, timestamp=yesterday
+                ),
+                AggregateDailyTotalUsersMetrics(
+                    count=8, personal_count=7, timestamp=today
+                ),
             ]
         )
 
@@ -159,7 +171,9 @@ def test_get_personal_route_metrics_all_time_monthly_bucket(app):
                 AggregateMonthlyTotalUsersMetric(
                     count=4, personal_count=3, timestamp=today - timedelta(days=100)
                 ),
-                AggregateMonthlyTotalUsersMetric(count=6, personal_count=4, timestamp=today),
+                AggregateMonthlyTotalUsersMetric(
+                    count=6, personal_count=4, timestamp=today
+                ),
             ]
         )
 
@@ -191,8 +205,12 @@ def test_get_personal_route_metrics_all_time_weekly_bucket(app):
                 AggregateDailyTotalUsersMetrics(
                     count=2, personal_count=1, timestamp=today - timedelta(days=367)
                 ),
-                AggregateDailyTotalUsersMetrics(count=4, personal_count=3, timestamp=yesterday),
-                AggregateDailyTotalUsersMetrics(count=6, personal_count=6, timestamp=today),
+                AggregateDailyTotalUsersMetrics(
+                    count=4, personal_count=3, timestamp=yesterday
+                ),
+                AggregateDailyTotalUsersMetrics(
+                    count=6, personal_count=6, timestamp=today
+                ),
             ]
         )
 

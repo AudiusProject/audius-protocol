@@ -6,6 +6,7 @@ import { NavHeader } from 'pages/sign-up-page/components/NavHeader'
 import { determineAllowedRoute } from 'pages/sign-up-page/utils/determineAllowedRoutes'
 import { useSelector } from 'utils/reducer'
 import {
+  SIGN_UP_APP_CTA_PAGE,
   SIGN_UP_ARTISTS_PAGE,
   SIGN_UP_CREATE_LOGIN_DETAILS,
   SIGN_UP_EMAIL_PAGE,
@@ -21,10 +22,12 @@ import { CreateEmailPage } from './pages/CreateEmailPage'
 import { CreateLoginDetailsPage } from './pages/CreateLoginDetails'
 import { CreatePasswordPage } from './pages/CreatePasswordPage'
 import { FinishProfilePage } from './pages/FinishProfilePage'
+import { MobileAppCtaPage } from './pages/MobileAppCtaPage'
 import { PickHandlePage } from './pages/PickHandlePage'
 import { ReviewHandlePage } from './pages/ReviewHandlePage'
 import { SelectArtistsPage } from './pages/SelectArtistsPage'
 import { SelectGenrePage } from './pages/SelectGenrePage'
+import { RouteContextProvider } from './utils/RouteContext'
 
 const messages = {
   metaTitle: 'Sign Up • Audius',
@@ -36,6 +39,7 @@ const messages = {
  */
 export function SignUpRoute({ children, ...rest }: RouteProps) {
   const signUpState = useSelector(getSignOn)
+
   return (
     <Route
       {...rest}
@@ -45,6 +49,7 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
           signUpState,
           location.pathname
         )
+
         return isAllowedRoute ? (
           <>{children}</>
         ) : (
@@ -57,16 +62,17 @@ export function SignUpRoute({ children, ...rest }: RouteProps) {
 
 export const SignUpPage = () => {
   return (
-    <>
+    <RouteContextProvider>
       <Helmet>
         <title>{messages.metaTitle}</title>
         <meta name='description' content={messages.metaDescription} />
       </Helmet>
       <NavHeader />
       <Switch>
-        <Route exact path={[SIGN_UP_PAGE, SIGN_UP_EMAIL_PAGE]}>
+        <SignUpRoute exact path={SIGN_UP_PAGE} />
+        <SignUpRoute exact path={SIGN_UP_EMAIL_PAGE}>
           <CreateEmailPage />
-        </Route>
+        </SignUpRoute>
         <SignUpRoute exact path={SIGN_UP_PASSWORD_PAGE}>
           <CreatePasswordPage />
         </SignUpRoute>
@@ -88,7 +94,10 @@ export const SignUpPage = () => {
         <SignUpRoute exact path={SIGN_UP_ARTISTS_PAGE}>
           <SelectArtistsPage />
         </SignUpRoute>
+        <SignUpRoute exact path={SIGN_UP_APP_CTA_PAGE}>
+          <MobileAppCtaPage />
+        </SignUpRoute>
       </Switch>
-    </>
+    </RouteContextProvider>
   )
 }

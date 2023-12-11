@@ -1,6 +1,9 @@
 import { useCallback } from 'react'
 
-import {} from '@audius/common'
+import {
+  emailSchema,
+  createEmailPageMessages as messages
+} from '@audius/common'
 import {
   Box,
   Button,
@@ -19,12 +22,17 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
+import { audiusQueryContext } from 'app/AudiusQueryProvider'
 import audiusLogoColored from 'assets/img/audiusLogoColored.png'
 import {
+  resetSignOn,
   setLinkedSocialOnFirstPage,
   setValueField
 } from 'common/store/pages/signon/actions'
-import { getEmailField } from 'common/store/pages/signon/selectors'
+import {
+  getEmailField,
+  getLinkedSocialOnFirstPage
+} from 'common/store/pages/signon/selectors'
 import { HarmonyTextField } from 'components/form-fields/HarmonyTextField'
 import PreloadImage from 'components/preload-image/PreloadImage'
 import { useMedia } from 'hooks/useMedia'
@@ -38,29 +46,11 @@ import {
 } from 'utils/route'
 
 import { SignUpWithMetaMaskButton } from '../components/SignUpWithMetaMaskButton'
+import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { Heading, Page } from '../components/layout'
-import { emailSchema } from '../utils/emailSchema'
+import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
 
-const EmailSchema = toFormikValidationSchema(emailSchema)
-
-export const messages = {
-  title: 'Sign Up For Audius',
-  emailLabel: 'Email',
-  signUp: 'Sign Up Free',
-  haveAccount: 'Already have an account?',
-  signIn: 'Sign In',
-  subHeader: (
-    <>
-      Join the revolution in music streaming! <br /> Discover, connect, and
-      create on Audius.
-    </>
-  ),
-  socialsDividerText: 'Or, get started with one of your socials',
-  unknownError: 'Unknown error occurred.',
-  metaMaskNotRecommended: 'Signing up with MetaMask is not recommended.',
-  signUpMetamask: 'Sign Up With MetaMask',
-  learnMore: 'Learn More'
-}
+const EmailSchema = toFormikValidationSchema(emailSchema(audiusQueryContext))
 
 export type SignUpEmailValues = {
   email: string
@@ -71,10 +61,20 @@ export const CreateEmailPage = () => {
   const dispatch = useDispatch()
   const navigate = useNavigateToPage()
   const existingEmailValue = useSelector(getEmailField)
+  const alreadyLinkedSocial = useSelector(getLinkedSocialOnFirstPage)
 
   const initialValues = {
     email: existingEmailValue.value ?? ''
   }
+
+  const {
+    isWaitingForSocialLogin,
+    handleStartSocialMediaLogin,
+    handleErrorSocialMediaLogin
+  } = useSocialMediaLoader({
+    resetAction: resetSignOn,
+    linkedSocialOnThisPagePreviously: alreadyLinkedSocial
+  })
 
   const handleCompleteSocialMediaLogin = useCallback(
     (result: { requiresReview: boolean; handle: string }) => {
@@ -105,14 +105,16 @@ export const CreateEmailPage = () => {
     </TextLink>
   )
 
-  return (
+  return isWaitingForSocialLogin ? (
+    <SocialMediaLoading />
+  ) : (
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
       validationSchema={EmailSchema}
       validateOnChange={false}
     >
-      {({ isSubmitting }) => (
+      {({ dirty, isSubmitting }) => (
         <Page as={Form}>
           <Box alignSelf='center'>
             {isMobile ? (
@@ -131,7 +133,12 @@ export const CreateEmailPage = () => {
           </Box>
           <Heading
             heading={messages.title}
-            description={messages.subHeader}
+            description={
+              <>
+                {messages.subHeader.line1}
+                <br /> {messages.subHeader.line2}
+              </>
+            }
             tag='h1'
             centered={isMobile}
           />
@@ -141,14 +148,17 @@ export const CreateEmailPage = () => {
               autoComplete='email'
               label={messages.emailLabel}
               debouncedValidationMs={500}
+              autoFocus
               helperText={null}
             />
             <ErrorMessage name='email'>
-              {(errorMessage) => (
-                <Hint icon={IconError}>
-                  {errorMessage} {signInLink}
-                </Hint>
-              )}
+              {(errorMessage) =>
+                dirty ? (
+                  <Hint icon={IconError}>
+                    {errorMessage} {signInLink}
+                  </Hint>
+                ) : null
+              }
             </ErrorMessage>
             <Divider>
               <Text variant='body' size={isMobile ? 's' : 'm'} color='subdued'>
@@ -156,6 +166,8 @@ export const CreateEmailPage = () => {
               </Text>
             </Divider>
             <SocialMediaLoginOptions
+              onError={handleErrorSocialMediaLogin}
+              onStart={handleStartSocialMediaLogin}
               onCompleteSocialMediaLogin={handleCompleteSocialMediaLogin}
             />
           </Flex>
@@ -173,7 +185,7 @@ export const CreateEmailPage = () => {
             <Text
               variant='body'
               size={isMobile ? 'm' : 'l'}
-              css={{ textAlign: isMobile ? 'center' : undefined }}
+              textAlign={isMobile ? 'center' : undefined}
             >
               {messages.haveAccount} {signInLink}
             </Text>

@@ -5,8 +5,7 @@ import {
   formatCurrencyBalance
 } from '@audius/common'
 import BN from 'bn.js'
-import { FlatList, View } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { FlatList, View, TouchableOpacity } from 'react-native'
 
 import IconCreditCard from 'app/assets/images/iconCreditCard.svg'
 import IconDonate from 'app/assets/images/iconDonate.svg'
@@ -159,7 +158,7 @@ export const PaymentMethod = ({
     <SummaryTable
       title={messages.title}
       items={items}
-      renderContent={(items: SummaryTableItem[]) => (
+      renderBody={(items: SummaryTableItem[]) => (
         <FlatList
           renderItem={renderItem}
           ItemSeparatorComponent={Divider}

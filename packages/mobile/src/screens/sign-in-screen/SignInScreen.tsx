@@ -5,6 +5,7 @@ import { Formik } from 'formik'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
+import { Link } from '@audius/harmony-native'
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import { Button, Text } from 'app/components/core'
 import { TextField } from 'app/components/fields'
@@ -50,6 +51,9 @@ export const SignInScreen = () => {
               icon={IconArrow}
               onPress={() => handleSubmit()}
             />
+            <Link to={{ screen: 'SignUp' }} color='accentPurple'>
+              Create Account
+            </Link>
           </View>
         )}
       </Formik>
