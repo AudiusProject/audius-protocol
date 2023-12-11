@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Button, Text } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
+import { Heading, Page, PageFooter } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
 
 const messages = {
@@ -52,18 +53,14 @@ export const SelectGenreScreen = () => {
   )
 
   return (
-    <ScrollView testID='genreScrollView'>
-      <View>
-        <Text>{displayName}</Text>
-        <Text>{handle}</Text>
-      </View>
-      <View>
-        <Text>{messages.header}</Text>
-        <Text>{messages.description}</Text>
-      </View>
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        {({ values, setValues, handleSubmit }) => (
-          <View>
+    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+      {({ values, setValues, handleSubmit: triggerSubmit, dirty, isValid }) => (
+        <Page>
+          <Heading
+            heading={messages.header}
+            description={messages.description}
+          />
+          <ScrollView testID='genreScrollView'>
             {genres.map((genre) => {
               const { label, value } = genre
               const checked = !!values[value]
@@ -89,10 +86,13 @@ export const SelectGenreScreen = () => {
                 </Pressable>
               )
             })}
-            <Button title={messages.continue} onPress={() => handleSubmit()} />
-          </View>
-        )}
-      </Formik>
-    </ScrollView>
+          </ScrollView>
+          <PageFooter
+            buttonProps={{ disabled: !(dirty && isValid) }}
+            onSubmit={triggerSubmit}
+          />
+        </Page>
+      )}
+    </Formik>
   )
 }
