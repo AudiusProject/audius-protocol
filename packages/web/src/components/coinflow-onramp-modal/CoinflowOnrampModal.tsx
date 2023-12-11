@@ -4,8 +4,7 @@ import {
   getRootSolanaAccount,
   useAppContext,
   useCoinflowOnrampModal,
-  coinflowModalUIActions,
-  relayTransaction
+  coinflowModalUIActions
 } from '@audius/common'
 import {
   CoinflowPurchase,
@@ -44,19 +43,7 @@ const useCoinflowAdapter = () => {
         wallet: {
           publicKey: wallet.publicKey,
           sendTransaction: async (transaction: Transaction) => {
-            console.log('hook', {
-              wallet: wallet.publicKey.toBase58(),
-              signatures: transaction.signatures.map((s) => ({
-                publicKey: s.publicKey.toBase58(),
-                signature: s.signature
-              }))
-            })
             transaction.partialSign(wallet)
-            // const res = await relayTransaction(audiusBackend, {
-            //   transaction
-            // })
-            console.log({ transaction })
-            console.log('rpc', connection.rpcEndpoint)
             const res = await connection.sendRawTransaction(
               transaction.serialize()
             )

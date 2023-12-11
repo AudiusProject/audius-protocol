@@ -661,12 +661,6 @@ export class SolanaWeb3Manager {
       senderAccount.toString(),
       'usdc'
     )
-    const senderTokenAccountInfo = await this.getTokenAccountInfo(
-      senderTokenAccount.toString()
-    )
-    if (senderTokenAccountInfo === null) {
-      throw new Error('Sender token account ATA does not exist')
-    }
 
     const amounts = Object.values(recipientAmounts)
     const totalAmount = amounts.reduce(
