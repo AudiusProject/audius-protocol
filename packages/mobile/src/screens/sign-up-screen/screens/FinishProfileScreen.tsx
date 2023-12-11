@@ -1,25 +1,25 @@
 import { useCallback } from 'react'
 
+import {
+  finishProfileSchema,
+  finishProfilePageMessages as messages
+} from '@audius/common'
+import { css } from '@emotion/native'
 import { setValueField } from 'common/store/pages/signon/actions'
 import { Formik } from 'formik'
-import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Button, Text } from 'app/components/core'
+import { Paper, useTheme } from '@audius/harmony-native'
 import { TextField } from 'app/components/fields'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { CoverPhotoField } from '../components/CoverPhotoField'
 import { ProfilePictureField } from '../components/ProfilePictureField'
+import { Heading, Page, PageFooter } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
 
-const messages = {
-  header: 'Finish Your Profile',
-  description:
-    'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
-  displayName: 'Display Name',
-  continue: 'Continue'
-}
+const finishProfileFormikSchema = toFormikValidationSchema(finishProfileSchema)
 
 const initialValues = {
   profile_picture: null,
@@ -34,6 +34,7 @@ type FinishProfileValues = {
 export const FinishProfileScreen = () => {
   const navigation = useNavigation<SignUpScreenParamList>()
   const dispatch = useDispatch()
+  const { spacing } = useTheme()
 
   const handleSubmit = useCallback(
     (values: FinishProfileValues) => {
@@ -45,20 +46,32 @@ export const FinishProfileScreen = () => {
   )
 
   return (
-    <View>
-      <Text>{messages.header}</Text>
-      <Text>{messages.description}</Text>
-
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        {({ handleSubmit }) => (
-          <View>
+    <Formik
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+      validationSchema={finishProfileFormikSchema}
+    >
+      {({ handleSubmit }) => (
+        <Page>
+          <Heading
+            heading={messages.header}
+            description={messages.description}
+          />
+          <Paper>
             <CoverPhotoField />
             <ProfilePictureField />
-            <TextField name='displayName' label={messages.displayName} />
-            <Button title={messages.continue} onPress={() => handleSubmit()} />
-          </View>
-        )}
-      </Formik>
-    </View>
+            <TextField
+              name='displayName'
+              label={messages.displayName}
+              style={css({
+                padding: spacing.l,
+                paddingTop: spacing.unit10
+              })}
+            />
+          </Paper>
+          <PageFooter onSubmit={handleSubmit} />
+        </Page>
+      )}
+    </Formik>
   )
 }

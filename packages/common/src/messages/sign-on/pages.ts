@@ -36,3 +36,12 @@ export const createPasswordPageMessages = {
     notCommon: 'Hard to guess'
   }
 }
+
+export const finishProfilePageMessages = {
+  header: 'Finish Your Profile',
+  description:
+    'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
+  displayName: 'Display Name',
+  inputPlaceholder: 'express yourself 💫',
+  goBack: 'Go back'
+}
