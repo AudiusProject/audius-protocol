@@ -1,8 +1,8 @@
 import { ID, accountSelectors } from '@audius/common'
-import { trpc } from 'utils/trpcClientWeb'
 import { useSelector } from 'react-redux'
 
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
+import { trpc } from 'utils/trpcClientWeb'
 
 import styles from './FollowsYouBadge.module.css'
 
