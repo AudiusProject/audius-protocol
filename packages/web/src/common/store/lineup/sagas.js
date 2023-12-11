@@ -59,8 +59,9 @@ function* filterDeletes(tracksMetadata, removeDeleted, lineupPrefix) {
   const isUSDCGatedContentEnabled = yield getFeatureEnabled(
     FeatureFlags.USDC_PURCHASES
   )
-  const allowedHandles = remoteConfig
-    .getRemoteVar(StringKeys.EXPLORE_PREMIUM_ALLOWED_USERS)
+
+  const deniedHandles = remoteConfig
+    .getRemoteVar(StringKeys.EXPLORE_PREMIUM_DENIED_USERS)
     ?.split(',')
 
   return tracksMetadata
@@ -88,7 +89,7 @@ function* filterDeletes(tracksMetadata, removeDeleted, lineupPrefix) {
         lineupPrefix === premiumTracksPageLineupActions.prefix &&
         metadata.is_premium &&
         isPremiumContentUSDCPurchaseGated(metadata.premium_conditions) &&
-        !allowedHandles.includes(users[metadata.owner_id].handle)
+        deniedHandles.includes(users[metadata.owner_id].handle)
       ) {
         return null
       }
