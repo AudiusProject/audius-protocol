@@ -1,20 +1,25 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
-  deriveUserBankPubkey,
+  getRootSolanaAccount,
   useAppContext,
-  useCoinflowOnrampModal
+  useCoinflowOnrampModal,
+  coinflowModalUIActions,
+  relayTransaction
 } from '@audius/common'
 import {
   CoinflowPurchase,
   CoinflowSolanaPurchaseProps
 } from '@coinflowlabs/react'
 import { Connection, Transaction } from '@solana/web3.js'
+import { useDispatch } from 'react-redux'
 
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 import zIndex from 'utils/zIndex'
 
 import styles from './CoinflowOnrampModal.module.css'
+
+const { transactionSucceeded } = coinflowModalUIActions
 
 const MERCHANT_ID = process.env.VITE_COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = process.env.VITE_ENVIRONMENT === 'production'
@@ -33,20 +38,20 @@ const useCoinflowAdapter = () => {
       const libs = await audiusBackend.getAudiusLibsTyped()
       if (!libs.solanaWeb3Manager) return
       const { connection } = libs.solanaWeb3Manager
-      const publicKey = await deriveUserBankPubkey(audiusBackend, {
-        mint: 'usdc'
-      })
+      const wallet = await getRootSolanaAccount(audiusBackend)
       setAdapter({
         connection,
         wallet: {
-          publicKey,
-          sendTransaction: async (
-            transaction: any,
-            connection: any,
-            options: any
-          ) => {
-            console.debug('Sending transaction', transaction)
-            return ''
+          publicKey: wallet.publicKey,
+          sendTransaction: async (transaction: Transaction) => {
+            transaction.partialSign(wallet)
+            console.log({ transaction })
+            const res = await relayTransaction(audiusBackend, {
+              transaction,
+              skipPreflight: false
+            })
+            console.log({ res })
+            return res
           }
         }
       })
@@ -64,7 +69,10 @@ export const CoinflowOnrampModal = () => {
     onClose,
     onClosed
   } = useCoinflowOnrampModal()
-  const [transaction, setTransaction] = useState<Transaction | null>(null)
+  const dispatch = useDispatch()
+  const [transaction, setTransaction] = useState<Transaction | undefined>(
+    undefined
+  )
 
   const adapter = useCoinflowAdapter()
 
@@ -78,18 +86,14 @@ export const CoinflowOnrampModal = () => {
       } catch (e) {
         console.error(e)
       }
-    } else {
-      setTransaction(null)
     }
   }, [serializedTransaction])
 
-  const showContent = isOpen && adapter && transaction
+  const handleSuccess = useCallback(() => {
+    dispatch(transactionSucceeded({}))
+  }, [dispatch])
 
-  /*
-  TODO(coinflow):
-  - Create Transaction
-  - Implement sendTransaction()
-  */
+  const showContent = isOpen && adapter
 
   return (
     <ModalDrawer
@@ -106,6 +110,7 @@ export const CoinflowOnrampModal = () => {
           transaction={transaction}
           wallet={adapter.wallet}
           connection={adapter.connection}
+          onSuccess={handleSuccess}
           merchantId={MERCHANT_ID || ''}
           env={IS_PRODUCTION ? 'prod' : 'sandbox'}
           blockchain='solana'

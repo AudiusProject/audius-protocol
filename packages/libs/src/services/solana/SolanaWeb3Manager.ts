@@ -723,7 +723,8 @@ export class SolanaWeb3Manager {
     extraAmount = 0,
     splits,
     purchaserUserId,
-    senderKeypair
+    senderKeypair,
+    skipSendAndReturnTransaction
   }: {
     id: number
     type: 'track'
@@ -731,7 +732,8 @@ export class SolanaWeb3Manager {
     extraAmount?: number | BN
     blocknumber: number
     purchaserUserId: number
-    senderKeypair: Keypair
+    senderKeypair: Keypair,
+    skipSendAndReturnTransaction?: boolean
   }) {
     const instructions =
       await this.getPurchaseContentWithPaymentRouterInstructions({
@@ -751,6 +753,9 @@ export class SolanaWeb3Manager {
       recentBlockhash: recentBlockhash
     }).add(...instructions)
     transaction.partialSign(senderKeypair)
+    if (skipSendAndReturnTransaction) {
+      return transaction
+    }
     const signatures = transaction.signatures
       .filter((s) => s.signature !== null)
       .map((s) => ({

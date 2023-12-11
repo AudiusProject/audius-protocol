@@ -1,4 +1,3 @@
-import { PublicKey } from '@solana/web3.js'
 import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take } from 'typed-redux-saga'
@@ -10,11 +9,11 @@ import { PurchaseMethod, PurchaseVendor } from 'models/PurchaseContent'
 import { isPremiumContentUSDCPurchaseGated } from 'models/Track'
 import { BNUSDC } from 'models/Wallet'
 import {
-  createFundAccountAndPurchaseTransaction,
   getRecentBlockhash,
   getRootSolanaAccount,
   getTokenAccountInfo,
-  purchaseContent
+  purchaseContent,
+  purchaseContentWithPaymentRouter
 } from 'services/audius-backend/solana'
 import { FeatureFlags } from 'services/remote-config/feature-flags'
 import { accountSelectors } from 'store/account'
@@ -178,12 +177,14 @@ function* purchaseWithCoinflow({
   extraAmount,
   splits,
   contentId,
+  purchaserUserId,
   balanceNeededCents
 }: {
   blocknumber: number
   extraAmount?: number
   splits: Record<number, number>
   contentId: ID
+  purchaserUserId: ID
   balanceNeededCents: number
 }) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -191,22 +192,22 @@ function* purchaseWithCoinflow({
   if (!feePayerAddress) {
     throw new Error('Missing feePayer unexpectedly')
   }
-  const feePayer = new PublicKey(feePayerAddress)
+  // const feePayer = new PublicKey(feePayerAddress)
   const recentBlockhash = yield* call(getRecentBlockhash, audiusBackendInstance)
   const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
   const coinflowTransaction = yield* call(
-    createFundAccountAndPurchaseTransaction,
+    purchaseContentWithPaymentRouter,
     audiusBackendInstance,
     {
-      blocknumber,
-      recentBlockhash,
-      extraAmount,
-      splits,
       id: contentId,
       type: 'track',
-      wallet: rootAccount,
-      feePayer
+      splits,
+      extraAmount,
+      blocknumber,
+      recentBlockhash,
+      purchaserUserId,
+      wallet: rootAccount
     }
   )
 
@@ -413,6 +414,7 @@ function* doStartPurchaseContentFlow({
             extraAmount,
             splits,
             contentId,
+            purchaserUserId,
             balanceNeededCents
           })
           break
