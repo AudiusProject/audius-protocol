@@ -488,7 +488,7 @@ def process_route_instruction(
         # We can have a USDC payment router transfer with no purchase attached
         if purchase_metadata is None:
             logger.info(
-                "index_payment_router.py | No purchase metadata found on {tx_sig}"
+                f"index_payment_router.py | No purchase metadata found on {tx_sig}"
             )
             return
 
