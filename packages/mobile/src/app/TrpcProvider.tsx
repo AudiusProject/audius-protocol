@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from 'react'
 
-import { accountSelectors, createAudiusTrpcClient, trpc } from '@audius/common'
+import { accountSelectors } from '@audius/common'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
+
+import { createAudiusTrpcClient, trpc } from 'app/services/trpc-client-mobile'
 
 export const AudiusTrpcProvider = ({
   children
