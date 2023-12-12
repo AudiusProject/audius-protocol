@@ -1,5 +1,3 @@
-import { useMemo } from 'react'
-
 import type { BaseTextProps } from '@audius/harmony'
 import { variantStylesMap } from '@audius/harmony'
 import { css } from '@emotion/native'
@@ -21,6 +19,7 @@ export const Text = (props: TextProps) => {
     style: styleProp,
     color: colorProp = 'default',
     textAlign,
+    shadow,
     ...other
   } = props
   const theme = useTheme()
@@ -31,19 +30,21 @@ export const Text = (props: TextProps) => {
       : theme.color.text[colorProp]
 
   const variantStyles = variantStylesMap[variant]
+  const t = theme.typography
 
-  const textStyles = useMemo((): TextStyle => {
-    const t = theme.typography
-    return css({
-      fontSize: t.size[variantStyles.fontSize[size]],
-      lineHeight: t.lineHeight[variantStyles.lineHeight[size]],
-      fontWeight: t.weight[variantStyles.fontWeight[strength]],
-      fontFamily: t.fontByWeight[variantStyles.fontWeight[strength]],
-      ...('css' in variantStyles ? variantStyles.css : {}),
-      ...(color && { color }),
-      textAlign
-    })
-  }, [color, size, strength, theme.typography, variantStyles, textAlign])
+  const textStyles: TextStyle = css({
+    fontSize: t.size[variantStyles.fontSize[size]],
+    lineHeight: t.lineHeight[variantStyles.lineHeight[size]],
+    fontWeight: t.weight[variantStyles.fontWeight[strength]],
+    fontFamily: t.fontByWeight[variantStyles.fontWeight[strength]],
+    ...('css' in variantStyles ? variantStyles.css : {}),
+    ...(color && { color }),
+    ...(shadow && {
+      // TODO: do this correctly
+      textShadow: '0px 1px 5px rgba(0, 0, 0, 0.50)'
+    }),
+    textAlign
+  })
 
   const isHeading = variant === 'display' || variant === 'heading'
 
