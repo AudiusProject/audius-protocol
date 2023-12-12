@@ -405,6 +405,39 @@ export const purchaseContentWithPaymentRouter = async (
   return tx
 }
 
+export type PurchaseContentWithPaymentRouterUserBankArgs = {
+  id: number
+  type: 'track'
+  splits: Record<string, number>
+  extraAmount?: number
+  blocknumber: number
+  recentBlockhash?: string
+  purchaserUserId: ID
+}
+
+export const purchaseContentWithPaymentRouterUserBank = async (
+  audiusBackendInstance: AudiusBackend,
+  {
+    id,
+    type,
+    blocknumber,
+    extraAmount = 0,
+    purchaserUserId,
+    splits
+  }: PurchaseContentWithPaymentRouterUserBankArgs
+) => {
+  const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibs())
+    .solanaWeb3Manager!
+  await solanaWeb3Manager.purchaseContentWithPaymentRouterUserBank({
+    id,
+    type,
+    blocknumber,
+    extraAmount,
+    splits,
+    purchaserUserId
+  })
+}
+
 export const findAssociatedTokenAddress = async (
   audiusBackendInstance: AudiusBackend,
   { solanaAddress, mint }: { solanaAddress: string; mint: MintName }
