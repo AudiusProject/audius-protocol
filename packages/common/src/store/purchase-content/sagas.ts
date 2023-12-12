@@ -12,8 +12,8 @@ import {
   getRecentBlockhash,
   getRootSolanaAccount,
   getTokenAccountInfo,
-  purchaseContent,
-  purchaseContentWithPaymentRouter
+  purchaseContentWithPaymentRouter,
+  purchaseContentWithPaymentRouterUserBank
 } from 'services/audius-backend/solana'
 import { FeatureFlags } from 'services/remote-config/feature-flags'
 import { accountSelectors } from 'store/account'
@@ -383,14 +383,18 @@ function* doStartPurchaseContentFlow({
 
     if (balanceNeeded.lten(0)) {
       // No balance needed, perform the purchase right away
-      yield* call(purchaseContent, audiusBackendInstance, {
-        id: contentId,
-        blocknumber,
-        extraAmount: extraAmountBN,
-        splits,
-        type: 'track',
-        purchaserUserId
-      })
+      yield* call(
+        purchaseContentWithPaymentRouterUserBank,
+        audiusBackendInstance,
+        {
+          id: contentId,
+          blocknumber,
+          extraAmount,
+          splits,
+          type: 'track',
+          purchaserUserId
+        }
+      )
     } else {
       // We need to acquire USDC before the purchase can continue
 
@@ -420,14 +424,18 @@ function* doStartPurchaseContentFlow({
         case PurchaseVendor.STRIPE:
           // Buy USDC with Stripe. Once funded, continue with purchase.
           yield* call(purchaseUSDCWithStripe, { balanceNeeded })
-          yield* call(purchaseContent, audiusBackendInstance, {
-            id: contentId,
-            blocknumber,
-            extraAmount: extraAmountBN,
-            splits,
-            type: 'track',
-            purchaserUserId
-          })
+          yield* call(
+            purchaseContentWithPaymentRouterUserBank,
+            audiusBackendInstance,
+            {
+              id: contentId,
+              blocknumber,
+              extraAmount,
+              splits,
+              type: 'track',
+              purchaserUserId
+            }
+          )
           break
       }
     }
