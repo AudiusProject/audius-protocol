@@ -130,12 +130,16 @@ module.exports = function (app) {
               txProps.contractRegistryKey,
               txProps.encodedABI
             )
+            const args = {}
+            for (const p of decodedABI.params) {
+              args[p.name] = p.value
+            }
             const isDeactivation =
               !user.is_deactivated &&
-              decodedABI.name === 'ManageEntity' &&
-              decodedABI.args._entityType === 'User' &&
-              decodedABI.args._action === 'Update' &&
-              JSON.parse(decodedABI.args._metadata).data.is_deactivated
+              decodedABI.name === 'manageEntity' &&
+              args._entityType === 'User' &&
+              args._action === 'Update' &&
+              JSON.parse(args._metadata).data.is_deactivated
             if (!isDeactivation) {
               return errorResponseForbidden(`Forbidden ${user.appliedRules}`)
             }
