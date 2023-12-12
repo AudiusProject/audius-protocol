@@ -2,22 +2,23 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 
 import type { Nullable } from '@audius/common'
 import { Theme } from '@audius/common'
+import { getTrack } from '@audius/common/dist/store/cache/tracks/selectors'
 import { useField } from 'formik'
 import moment from 'moment'
+import { View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import type {
   CustomCancelButtonPropTypes,
   CustomConfirmButtonPropTypes
 } from 'react-native-modal-datetime-picker'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
+import { useSelector } from 'react-redux'
 
 import { Button, ContextualMenu, Pill, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemeColors, useThemeVariant } from 'app/utils/theme'
+
 import { RemixTrackPill } from '../components/RemixTrackPill'
-import { View } from 'react-native'
-import { useSelector } from 'react-redux'
-import { getTrack } from '@audius/common/dist/store/cache/tracks/selectors'
 
 const isToday = (date: Date) => moment(date).isSame(moment(), 'day')
 
@@ -105,15 +106,8 @@ export const ReleaseDateField = (props) => {
     [onChange, handleClose]
   )
 
-
-  const renderValue = () => {
-    return (
-      <View >
-        <Text fontSize='small' weight='demiBold'>
-          {messages.label}:
-        </Text>
-      </View>
-    )
+  const renderValue = (releaseDateValue) => {
+    return <Text>{releaseDateValue}</Text>
   }
 
   return (
@@ -121,7 +115,7 @@ export const ReleaseDateField = (props) => {
       menuScreenName='ReleaseDate'
       label={messages.label}
       value={value}
-      renderValue={renderValue}
+      pillValue={value ? moment(value).format('M/D/YY @ h:mmA') : null}
       {...props}
     />
   )

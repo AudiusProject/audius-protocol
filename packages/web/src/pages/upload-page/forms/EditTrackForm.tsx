@@ -87,7 +87,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     }),
     [tracks]
   )
-
+  console.log('asdf tracks: ', tracks)
   const onSubmit = useCallback(
     (values: TrackEditFormValues) => {
       const tracksForUpload = tracks.map((track, i) => {

@@ -59,6 +59,7 @@ export const UploadingTracksScreen = () => {
   const { neutralLight4 } = useThemeColors()
   const navigation = useNavigation()
   const dispatch = useDispatch()
+  console.log('asdf tracks: ', tracks)
 
   useEffectOnce(() => {
     dispatch(uploadTracks(tracks, undefined, UploadType.INDIVIDUAL_TRACK))

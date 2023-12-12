@@ -20,6 +20,7 @@ import { Button, Text } from 'app/components/core'
 import { TextField } from 'app/components/fields'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { staleTrackWorker } from 'app/store/offline-downloads/sagas/offlineQueueSagas/workers/staleTrackWorker'
 import { makeStyles } from 'app/styles'
 import { useThemeColors, useThemeVariant } from 'app/utils/theme'
 
@@ -116,14 +117,6 @@ const data: ListSelectionData[] = [
   }
 ].filter(removeNullable)
 
-export const ReleaseNowRadioField = (selected) => {
-  return (
-    <View>
-      <Text weight='bold'>Release immediately</Text>
-    </View>
-  )
-}
-
 export const ScheduledReleaseRadioField = (props) => {
   const { selected } = props
   console.log('asdf selected: ', selected)
@@ -131,12 +124,18 @@ export const ScheduledReleaseRadioField = (props) => {
     useField<Nullable<string>>('release_date')
   const releaseDateMoment = moment(releaseDateValue)
   const { initialValues } = useFormikContext<FormValues>()
-
-  console.log('asdf initialValues: ', initialValues)
+  const [{ value: releaseDayDayValue }, ,] = useField('release_date_day')
+  console.log('asdf releaseDayDayValue: ', releaseDayDayValue)
 
   const theme = useThemeVariant()
   const { primary } = useThemeColors()
-  const [isDateOpen, setIsDateOpen] = useState(false)
+
+  let initIsDateOpen = false
+  if (!releaseDateValue && selected) {
+    initIsDateOpen = true
+  }
+
+  const [isDateOpen, setIsDateOpen] = useState(initIsDateOpen)
   const [isTimeOpen, setIsTimeOpen] = useState(false)
 
   const handleDateChange = useCallback(
@@ -144,8 +143,7 @@ export const ScheduledReleaseRadioField = (props) => {
       // This must be called first to prevent android date-picker
       // from showing up twice
       // handleClose()
-      console.log('asdf value on change: ', selectedDate)
-      const newReleaseDate = moment(selectedDate)
+      const newReleaseDate = moment(selectedDate).hour(0).minute(0).second(0)
       setReleaseDateValue(newReleaseDate.toString())
       setIsDateOpen(false)
     },
@@ -167,25 +165,48 @@ export const ScheduledReleaseRadioField = (props) => {
     },
     [setReleaseDateValue, setIsTimeOpen]
   )
-
-  const styles = useStyles()
-  console.log('asdf isTimeOpen: ', isTimeOpen)
-  console.log('asdf isOpen: ', isDateOpen)
+  console.log(
+    'asdf sameday or after: ',
+    moment(releaseDateValue),
+    moment().startOf('day'),
+    moment(releaseDateValue).isAfter(moment().startOf('day'))
+  )
 
   return (
     <>
       <View>
         <Text weight='bold'>Schedule a release date</Text>
-        <TextField
-          name={'release_date_day'}
-          label={'Release Date'}
-          onFocus={() => setIsDateOpen(true)}
-        />
-        {releaseDateMoment.isAfter(moment.now()) ? (
+        {selected ? (
+          <TextField
+            name={'release_date_day'}
+            label={'Release Date'}
+            onFocus={() => setIsDateOpen(true)}
+            Icon={IconCalendarMonth}
+            value={
+              releaseDateValue
+                ? moment(releaseDateValue).calendar(null, {
+                    sameDay: '[Today]',
+                    nextDay: '[Tomorrow]',
+                    nextWeek: 'dddd',
+                    lastDay: '[Yesterday]',
+                    lastWeek: '[Last] dddd',
+                    sameElse: 'M/D/YY' // This is where you format dates that don't fit in the above categories
+                  })
+                : undefined
+            }
+          />
+        ) : null}
+        {releaseDateValue &&
+        moment(releaseDateValue).isSameOrAfter(moment().startOf('day')) ? (
           <TextField
             name={'release_date_time'}
             label={'Time'}
             onFocus={() => setIsTimeOpen(true)}
+            value={
+              releaseDateValue
+                ? moment(releaseDateValue).format('h:mm A')
+                : undefined
+            }
           />
         ) : null}
         <Text>{releaseDateValue}</Text>
@@ -208,13 +229,15 @@ export const ScheduledReleaseRadioField = (props) => {
           onCancel={() => setIsTimeOpen(false)}
           accentColor={primary}
         />
-        <HelpCallout
-          content={
-            moment(releaseDateValue).isAfter(moment())
-              ? messages.futureReleaseHint
-              : messages.pastReleaseHint
-          }
-        />
+        {releaseDateValue ? (
+          <HelpCallout
+            content={
+              moment(releaseDateValue).isAfter(moment())
+                ? messages.futureReleaseHint
+                : messages.pastReleaseHint
+            }
+          />
+        ) : null}
       </View>
     </>
   )
@@ -224,6 +247,30 @@ export const ReleaseDateScreen = (selected) => {
   const [releaseDateType, setReleaseDateType] = useState<ReleaseDateType>(
     ReleaseDateType.RELEASE_NOW
   )
+
+  const useStyles = makeStyles(({ palette, spacing, typography }) => ({
+    newPill: {
+      borderRadius: 10,
+      backgroundColor: palette.secondary,
+      paddingHorizontal: 6,
+      paddingVertical: 2
+    }
+  }))
+  const styles = useStyles()
+
+  const ReleaseNowRadioField = (selected) => {
+    return (
+      <View>
+        <Text weight='bold'>Release immediately</Text>
+        {selected ? (
+          <View style={styles.newPill}>
+            <IconCalendarMonth />
+            <Text>Today</Text>
+          </View>
+        ) : null}
+      </View>
+    )
+  }
 
   const items = {
     [ReleaseDateType.RELEASE_NOW]: (
@@ -254,6 +301,12 @@ export const ReleaseDateScreen = (selected) => {
         renderItem={({ item }) => items[item.label]}
         screenTitle={'Release Date'}
         icon={IconCalendarMonth}
+        header={
+          <Text>
+            Specify a release date for your music or schedule it to be released
+            in the future.
+          </Text>
+        }
         value={releaseDateType}
         onChange={setReleaseDateType}
         disableSearch
