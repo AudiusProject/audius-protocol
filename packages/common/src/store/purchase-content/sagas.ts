@@ -13,7 +13,7 @@ import {
   getRootSolanaAccount,
   getTokenAccountInfo,
   purchaseContent,
-  purchaseContentWithPaymentRouter
+  getPurchaseContentWithPaymentRouterTransaction
 } from 'services/audius-backend/solana'
 import { FeatureFlags } from 'services/remote-config/feature-flags'
 import { accountSelectors } from 'store/account'
@@ -196,7 +196,7 @@ function* purchaseWithCoinflow({
   const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 
   const coinflowTransaction = yield* call(
-    purchaseContentWithPaymentRouter,
+    getPurchaseContentWithPaymentRouterTransaction,
     audiusBackendInstance,
     {
       id: contentId,

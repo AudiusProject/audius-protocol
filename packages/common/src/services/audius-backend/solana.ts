@@ -378,7 +378,7 @@ export type PurchaseContentWithPaymentRouterArgs = {
   wallet: Keypair
 }
 
-export const purchaseContentWithPaymentRouter = async (
+export const getPurchaseContentWithPaymentRouterTransaction = async (
   audiusBackendInstance: AudiusBackend,
   {
     id,
@@ -392,17 +392,18 @@ export const purchaseContentWithPaymentRouter = async (
 ) => {
   const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibs())
     .solanaWeb3Manager!
-  const tx = await solanaWeb3Manager.purchaseContentWithPaymentRouter({
-    id,
-    type,
-    blocknumber,
-    extraAmount,
-    splits,
-    purchaserUserId,
-    senderKeypair: wallet,
-    skipSendAndReturnTransaction: true
-  })
-  return tx
+  return await solanaWeb3Manager.getPurchaseContentWithPaymentRouterTransaction(
+    {
+      id,
+      type,
+      blocknumber,
+      extraAmount,
+      splits,
+      purchaserUserId,
+      senderAccount: wallet.publicKey,
+      senderKeypair: wallet
+    }
+  )
 }
 
 export const findAssociatedTokenAddress = async (
