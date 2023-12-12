@@ -8,14 +8,14 @@ import {
 } from '@audius/common'
 import { setField } from 'common/store/pages/signon/actions'
 import { Formik, useFormikContext } from 'formik'
-import { Pressable, ScrollView, View } from 'react-native'
+import { ScrollView, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Text } from 'app/components/core'
+import { Flex, SelectablePill } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
-import { AccountHeader } from '../components/AccountHeader'
+import { ReadOnlyAccountHeader } from '../components/AccountHeader'
 import { Heading, Page, PageFooter } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
 
@@ -31,38 +31,34 @@ const initialValues = { genres: [] }
 const ClickableGenres = () => {
   const { values, setValues } = useFormikContext<SelectGenreValues>()
 
+  const handleChange = (value) => {
+    const newValues = { genres: [...values.genres] }
+    const valueIndex = values.genres.indexOf(value)
+
+    if (valueIndex > -1) {
+      // Already checked
+      newValues.genres.splice(valueIndex, 1)
+    } else {
+      // Unchecked
+      newValues.genres.push(value)
+    }
+    setValues(newValues)
+  }
+
   return (
-    <>
-      {genres.map((genre) => {
-        const { label, value } = genre
-        const valueIndex = values.genres.indexOf(value)
-        const checked = valueIndex > -1
-
-        const handleChange = () => {
-          const newValues = { genres: [...values.genres] }
-          if (checked) {
-            newValues.genres.splice(valueIndex, 1)
-          } else {
-            newValues.genres.push(value)
-          }
-          setValues(newValues)
-        }
-
-        return (
-          <Pressable
-            key={value}
-            testID={label}
-            accessibilityRole='checkbox'
-            accessibilityState={{ checked }}
-            accessibilityLiveRegion='polite'
-            onPress={handleChange}
-            style={{ backgroundColor: checked ? 'purple' : undefined }}
-          >
-            <Text>{label}</Text>
-          </Pressable>
-        )
-      })}
-    </>
+    <ScrollView testID='genreScrollView'>
+      <Flex gap='s' direction='row' wrap='wrap'>
+        {genres.map((genre) => (
+          <SelectablePill
+            label={genre.label}
+            key={genre.value}
+            onPress={() => handleChange(genre.value)}
+            isSelected={values.genres.includes(genre.value)}
+            size='large'
+          />
+        ))}
+      </Flex>
+    </ScrollView>
   )
 }
 
@@ -89,15 +85,13 @@ export const SelectGenreScreen = () => {
     >
       {({ handleSubmit: triggerSubmit, dirty, isValid }) => (
         <View>
-          <AccountHeader />
+          <ReadOnlyAccountHeader />
           <Page offsetHeaderHeight>
             <Heading
               heading={messages.header}
               description={messages.description}
             />
-            <ScrollView testID='genreScrollView'>
-              <ClickableGenres />
-            </ScrollView>
+            <ClickableGenres />
             <PageFooter
               buttonProps={{ disabled: !(dirty && isValid) }}
               onSubmit={triggerSubmit}

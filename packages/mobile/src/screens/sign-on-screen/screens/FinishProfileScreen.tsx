@@ -10,7 +10,7 @@ import {
   getHandleField,
   getIsVerified
 } from 'audius-client/src/common/store/pages/signon/selectors'
-import { setValueField } from 'common/store/pages/signon/actions'
+import { setField, setValueField } from 'common/store/pages/signon/actions'
 import { Formik, useField } from 'formik'
 import type { ImageURISource } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -28,13 +28,15 @@ import type { SignUpScreenParamList } from '../types'
 const finishProfileFormikSchema = toFormikValidationSchema(finishProfileSchema)
 
 const initialValues = {
-  profile_picture: null,
-  cover_photo: null,
+  profileImage: null,
+  coverPhoto: null,
   displayName: ''
 }
 
 type FinishProfileValues = {
   displayName: string
+  profileImage: ImageURISource | null
+  coverPhoto?: ImageURISource | null
 }
 
 export const FinishProfileScreen = () => {
@@ -44,8 +46,12 @@ export const FinishProfileScreen = () => {
 
   const handleSubmit = useCallback(
     (values: FinishProfileValues) => {
-      const { displayName } = values
+      const { displayName, profileImage, coverPhoto } = values
       dispatch(setValueField('name', displayName))
+      dispatch(setField('profileImage', { value: profileImage }))
+      if (coverPhoto) {
+        dispatch(setField('coverPhoto', { value: coverPhoto }))
+      }
       navigation.navigate('SelectGenre')
     },
     [dispatch, navigation]

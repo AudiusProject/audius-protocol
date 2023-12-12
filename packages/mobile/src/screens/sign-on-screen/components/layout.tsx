@@ -29,7 +29,8 @@ export const Page = (props: PageProps) => {
   }
 
   return (
-    <Flex {...layoutProps} style={style} {...other}>
+    // 1 zIndex is to appear below AccountHeader
+    <Flex {...layoutProps} style={[css({ zIndex: 1 }), style]} {...other}>
       {children}
     </Flex>
   )
