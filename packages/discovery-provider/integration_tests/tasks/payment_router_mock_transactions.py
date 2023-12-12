@@ -45,7 +45,8 @@ mock_valid_track_purchase_single_recipient_tx = GetTransactionResp.from_json(
                             {
                                 "programIdIndex": 6,
                                 "accounts": [0],
-                                "data": "Gjpmi526ZE4nS52PckpNTXM56deSPaKx9a9vA",
+                                # "track:1:1:2"
+                                "data": "VsoUab4LQ4yax8R",
                                 "stackHeight": None,
                             },
                             {

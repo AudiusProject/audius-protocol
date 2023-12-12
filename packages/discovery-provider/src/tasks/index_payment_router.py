@@ -515,7 +515,7 @@ def process_route_instruction(
 def process_payment_router_tx_details(
     session: Session,
     tx_info: GetTransactionResp,
-    tx_sig,
+    tx_sig: str,
     timestamp,
     challenge_event_bus: ChallengeEventBus,
 ):
