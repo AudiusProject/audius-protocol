@@ -58,6 +58,7 @@
     "@audius/stems": "*",
     "@audius/trpc-server": "*",
     "@coinbase/cbpay-js": "1.2.0",
+    "@coinflowlabs/react": "2.7.0",
     "@emotion/css": "^11.11.2",
     "@emotion/styled": "^11.11.0",
     "@fingerprintjs/fingerprintjs-pro": "3.5.6",

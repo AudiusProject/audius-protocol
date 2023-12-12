@@ -1,6 +1,6 @@
 import { CommonState } from 'store/reducers'
 
-export const getBuyUSDCProvider = (state: CommonState) => state.buyUSDC.provider
+export const getBuyUSDCVendor = (state: CommonState) => state.buyUSDC.vendor
 
 export const getBuyUSDCFlowStage = (state: CommonState) => state.buyUSDC.stage
 

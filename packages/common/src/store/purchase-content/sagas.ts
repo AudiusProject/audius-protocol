@@ -5,12 +5,15 @@ import { call, put, race, select, take } from 'typed-redux-saga'
 import { FavoriteSource, Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { ID } from 'models/Identifiers'
-import { PurchaseMethod } from 'models/PurchaseContent'
+import { PurchaseMethod, PurchaseVendor } from 'models/PurchaseContent'
 import { isPremiumContentUSDCPurchaseGated } from 'models/Track'
 import { BNUSDC } from 'models/Wallet'
 import {
+  getRecentBlockhash,
+  getRootSolanaAccount,
   getTokenAccountInfo,
-  purchaseContent
+  purchaseContent,
+  purchaseContentWithPaymentRouter
 } from 'services/audius-backend/solana'
 import { FeatureFlags } from 'services/remote-config/feature-flags'
 import { accountSelectors } from 'store/account'
@@ -27,7 +30,7 @@ import {
   onrampOpened,
   onrampCanceled
 } from 'store/buy-usdc/slice'
-import { BuyUSDCError, USDCOnRampProvider } from 'store/buy-usdc/types'
+import { BuyUSDCError } from 'store/buy-usdc/types'
 import { getBuyUSDCRemoteConfig, getUSDCUserBank } from 'store/buy-usdc/utils'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getUser } from 'store/cache/users/selectors'
@@ -35,7 +38,14 @@ import { getContext } from 'store/effects'
 import { getPreviewing, getTrackId } from 'store/player/selectors'
 import { stop } from 'store/player/slice'
 import { saveTrack } from 'store/social/tracks/actions'
+import { getFeePayer } from 'store/solana/selectors'
 import { OnRampProvider } from 'store/ui/buy-audio/types'
+import {
+  transactionCanceled,
+  transactionFailed,
+  transactionSucceeded
+} from 'store/ui/coinflow-modal/slice'
+import { coinflowOnrampModalActions } from 'store/ui/modals/coinflow-onramp-modal'
 import { BN_USDC_CENT_WEI, ceilingBNUSDCToNearestCent } from 'utils/wallet'
 
 import { pollPremiumTrack } from '../premium-content/sagas'
@@ -162,14 +172,88 @@ function* pollForPurchaseConfirmation({
   })
 }
 
-/** Attempts to purchase the requested amount of USDC, will throw on cancellation or failure */
-function* purchaseUSDC({ amount }: { amount: BNUSDC }) {
+function* purchaseWithCoinflow({
+  blocknumber,
+  extraAmount,
+  splits,
+  contentId,
+  purchaserUserId,
+  balanceNeededCents
+}: {
+  blocknumber: number
+  extraAmount?: number
+  splits: Record<number, number>
+  contentId: ID
+  purchaserUserId: ID
+  balanceNeededCents: number
+}) {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  const feePayerAddress = yield* select(getFeePayer)
+  if (!feePayerAddress) {
+    throw new Error('Missing feePayer unexpectedly')
+  }
+  const recentBlockhash = yield* call(getRecentBlockhash, audiusBackendInstance)
+  const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
+
+  const coinflowTransaction = yield* call(
+    purchaseContentWithPaymentRouter,
+    audiusBackendInstance,
+    {
+      id: contentId,
+      type: 'track',
+      splits,
+      extraAmount,
+      blocknumber,
+      recentBlockhash,
+      purchaserUserId,
+      wallet: rootAccount
+    }
+  )
+
+  const serializedTransaction = coinflowTransaction
+    .serialize({ requireAllSignatures: false, verifySignatures: false })
+    .toString('base64')
+  const amount = balanceNeededCents / 100.0
+  yield* put(
+    coinflowOnrampModalActions.open({
+      amount,
+      serializedTransaction,
+      contentId
+    })
+  )
+
+  const result = yield* race({
+    succeeded: take(transactionSucceeded),
+    failed: take(transactionFailed),
+    canceled: take(transactionCanceled)
+  })
+
+  // Return early for failure or cancellation
+  if (result.canceled) {
+    yield* put(purchaseCanceled())
+    return
+  }
+  if (result.failed) {
+    yield* put(
+      // TODO: better error
+      purchaseContentFlowFailed({
+        error: new PurchaseContentError(
+          PurchaseErrorCode.Unknown,
+          'Coinflow transaction failed'
+        )
+      })
+    )
+  }
+}
+
+function* purchaseUSDCWithStripe({ balanceNeeded }: { balanceNeeded: BNUSDC }) {
+  yield* put(buyUSDC())
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isBuyUSDCViaSolEnabled = yield* call(
     getFeatureEnabled,
     FeatureFlags.BUY_USDC_VIA_SOL
   )
-  const roundedAmount = ceilingBNUSDCToNearestCent(amount)
+  const roundedAmount = ceilingBNUSDCToNearestCent(balanceNeeded)
     .div(BN_USDC_CENT_WEI)
     .toNumber()
 
@@ -191,7 +275,7 @@ function* purchaseUSDC({ amount }: { amount: BNUSDC }) {
   } else {
     yield* put(
       onrampOpened({
-        provider: USDCOnRampProvider.STRIPE,
+        vendor: PurchaseVendor.STRIPE,
         purchaseInfo: {
           desiredAmount: roundedAmount
         }
@@ -215,6 +299,7 @@ function* purchaseUSDC({ amount }: { amount: BNUSDC }) {
   if (result.failed) {
     throw result.failed.payload.error
   }
+  yield* put(usdcBalanceSufficient())
 }
 
 function* doStartPurchaseContentFlow({
@@ -222,6 +307,7 @@ function* doStartPurchaseContentFlow({
     extraAmount,
     extraAmountPreset,
     purchaseMethod,
+    purchaseVendor,
     contentId,
     contentType = ContentType.TRACK
   }
@@ -241,6 +327,7 @@ function* doStartPurchaseContentFlow({
     contentId,
     contentType,
     purchaseMethod,
+    purchaseVendor,
     contentName: title,
     artistHandle: artistInfo.handle,
     isVerifiedArtist: artistInfo.is_verified,
@@ -284,51 +371,74 @@ function* doStartPurchaseContentFlow({
     const extraAmountBN = new BN(extraAmount ?? 0).mul(BN_USDC_CENT_WEI)
     const totalAmountDueCentsBN = priceBN.add(extraAmountBN) as BNUSDC
 
-    if (purchaseMethod === PurchaseMethod.CARD) {
-      // Transition to 'buying USDC' stage
-      yield* put(buyUSDC())
-      yield* call(purchaseUSDC, { amount: totalAmountDueCentsBN })
-    }
-    // Manual transfer is a special case of existing balance. We expect the
-    // transfer to have occurred before this saga is invoked
-    else {
-      // No work needed here other than to check that the balance is sufficient
-      const balanceNeeded = getBalanceNeeded(
-        totalAmountDueCentsBN,
-        new BN(initialBalance.toString()) as BNUSDC,
-        usdcConfig.minUSDCPurchaseAmountCents
-      )
-      if (balanceNeeded.gtn(0)) {
+    const { blocknumber, splits } = yield* getPurchaseConfig({
+      contentId,
+      contentType
+    })
+    const balanceNeeded = getBalanceNeeded(
+      totalAmountDueCentsBN,
+      new BN(initialBalance.toString()) as BNUSDC,
+      usdcConfig.minUSDCPurchaseAmountCents
+    )
+
+    if (balanceNeeded.lten(0)) {
+      // No balance needed, perform the purchase right away
+      yield* call(purchaseContent, audiusBackendInstance, {
+        id: contentId,
+        blocknumber,
+        extraAmount: extraAmountBN,
+        splits,
+        type: 'track',
+        purchaserUserId
+      })
+    } else {
+      // We need to acquire USDC before the purchase can continue
+
+      // Invariant: The user must be checking out with a card
+      if (purchaseMethod !== PurchaseMethod.CARD) {
         throw new PurchaseContentError(
           PurchaseErrorCode.InsufficientBalance,
           'Unexpected insufficient balance to complete purchase'
         )
       }
+      const balanceNeededCents = ceilingBNUSDCToNearestCent(balanceNeeded)
+        .div(BN_USDC_CENT_WEI)
+        .toNumber()
+
+      switch (purchaseVendor) {
+        case PurchaseVendor.COINFLOW:
+          // Purchase with coinflow, funding and completing the purchase in one step.
+          yield* call(purchaseWithCoinflow, {
+            blocknumber,
+            extraAmount,
+            splits,
+            contentId,
+            purchaserUserId,
+            balanceNeededCents
+          })
+          break
+        case PurchaseVendor.STRIPE:
+          // Buy USDC with Stripe. Once funded, continue with purchase.
+          yield* call(purchaseUSDCWithStripe, { balanceNeeded })
+          yield* call(purchaseContent, audiusBackendInstance, {
+            id: contentId,
+            blocknumber,
+            extraAmount: extraAmountBN,
+            splits,
+            type: 'track',
+            purchaserUserId
+          })
+          break
+      }
     }
 
-    // Transition to 'purchasing' stage
-    yield* put(usdcBalanceSufficient())
-
-    const { blocknumber, splits } = yield* getPurchaseConfig({
-      contentId,
-      contentType
-    })
-
-    // purchase content
-    yield* call(purchaseContent, audiusBackendInstance, {
-      id: contentId,
-      blocknumber,
-      extraAmount: extraAmountBN,
-      splits,
-      type: 'track',
-      purchaserUserId
-    })
+    // Mark the purchase as successful
     yield* put(purchaseSucceeded())
 
-    // confirm purchase
+    // Poll to confirm purchase (waiting for a signature)
     yield* pollForPurchaseConfirmation({ contentId, contentType })
 
-    // auto-favorite the purchased item
+    // Auto-favorite the purchased item
     if (contentType === ContentType.TRACK) {
       yield* put(saveTrack(contentId, FavoriteSource.IMPLICIT))
     }
@@ -340,7 +450,7 @@ function* doStartPurchaseContentFlow({
       yield* put(stop({}))
     }
 
-    // finish
+    // Finish
     yield* put(purchaseConfirmed({ contentId, contentType }))
 
     yield* call(
