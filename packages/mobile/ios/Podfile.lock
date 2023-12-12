@@ -485,7 +485,7 @@ PODS:
     - react-native-flipper-performance-plugin/FBDefines (= 0.3.1)
   - react-native-flipper-performance-plugin/FBDefines (0.3.1):
     - React-Core
-  - react-native-get-random-values (1.8.0):
+  - react-native-get-random-values (1.10.0):
     - React-Core
   - react-native-google-cast (4.6.0):
     - React
@@ -1157,7 +1157,7 @@ SPEC CHECKSUMS:
   react-native-fast-crypto: 5943c42466b86ad70be60d3a5f64bd22251e5d9e
   react-native-flipper: fd500c92e89502a8a0e5a87b4bfe8da751ccd435
   react-native-flipper-performance-plugin: 2b873b68da3e368afeaf29c9c7a8c2b0ff908c4f
-  react-native-get-random-values: a6ea6a8a65dc93e96e24a11105b1a9c8cfe1d72a
+  react-native-get-random-values: 384787fd76976f5aec9465aff6fa9e9129af1e74
   react-native-google-cast: bbbdbeae552d0b55b59031ed7e12ae832e8c5a53
   react-native-image-picker: bf34f3f516d139ed3e24c5f5a381a91819e349ea
   react-native-in-app-review: a073f67c5f3392af6ea7fb383217cdb1aa2aa726

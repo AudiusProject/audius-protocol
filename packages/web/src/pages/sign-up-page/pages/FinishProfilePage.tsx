@@ -1,6 +1,9 @@
 import { useCallback } from 'react'
 
-import { MAX_DISPLAY_NAME_LENGTH } from '@audius/common'
+import {
+  MAX_DISPLAY_NAME_LENGTH,
+  finishProfilePageMessages as messages
+} from '@audius/common'
 import { Paper, PlainButton, PlainButtonType } from '@audius/harmony'
 import { Formik, Form } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -29,15 +32,6 @@ import { AccountHeader } from '../components/AccountHeader'
 import { ImageFieldValue } from '../components/ImageField'
 import { OutOfText } from '../components/OutOfText'
 import { Heading, Page, PageFooter } from '../components/layout'
-
-const messages = {
-  header: 'Finish Your Profile',
-  description:
-    'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
-  displayName: 'Display Name',
-  inputPlaceholder: 'express yourself 💫',
-  goBack: 'Go back'
-}
 
 export type FinishProfileValues = {
   profileImage: ImageFieldValue

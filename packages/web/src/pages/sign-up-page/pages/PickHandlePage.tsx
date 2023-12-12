@@ -1,6 +1,11 @@
 import { useCallback, useContext, useMemo } from 'react'
 
-import { socialMediaMessages, useAudiusQueryContext } from '@audius/common'
+import {
+  useAudiusQueryContext,
+  socialMediaMessages,
+  pickHandlePageMessages as messages,
+  pickHandleSchema
+} from '@audius/common'
 import { Divider, Flex, IconVerified, Paper, Text } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch, useSelector } from 'react-redux'
@@ -18,6 +23,7 @@ import {
 import { ToastContext } from 'components/toast/ToastContext'
 import { useMedia } from 'hooks/useMedia'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { restrictedHandles } from 'utils/restrictedHandles'
 import {
   SIGN_UP_CREATE_LOGIN_DETAILS,
   SIGN_UP_FINISH_PROFILE_PAGE,
@@ -30,20 +36,6 @@ import { SocialMediaLoading } from '../components/SocialMediaLoading'
 import { SocialMediaLoginOptions } from '../components/SocialMediaLoginOptions'
 import { Heading, Page, PageFooter } from '../components/layout'
 import { useSocialMediaLoader } from '../hooks/useSocialMediaLoader'
-import { generateHandleSchema } from '../utils/handleSchema'
-
-const messages = {
-  title: 'Pick Your Handle',
-  description:
-    'This is how others find and tag you. It is totally unique to you & cannot be changed later.',
-  handle: 'Handle',
-  or: 'or',
-  claimHandleHeaderPrefix: 'Claim Your Verified',
-  claimHandleDescription:
-    'Verify your Audius account by linking a verified social media account.',
-  claimHandleHeadsUp:
-    'Heads up! 👋 Picking a handle that doesn’t match your verified account cannot be undone later.'
-}
 
 type PickHandleValues = {
   handle: string
@@ -118,7 +110,7 @@ export const PickHandlePage = () => {
   const audiusQueryContext = useAudiusQueryContext()
   const validationSchema = useMemo(() => {
     return toFormikValidationSchema(
-      generateHandleSchema({ audiusQueryContext })
+      pickHandleSchema({ audiusQueryContext, restrictedHandles })
     )
   }, [audiusQueryContext])
 

@@ -1,9 +1,14 @@
+import { useCallback } from 'react'
+
 import {
   PurchaseContentStage,
   usePayExtraPresets,
   useUSDCBalance,
   PURCHASE_METHOD,
-  usePurchaseMethod
+  PurchaseVendor,
+  PURCHASE_VENDOR,
+  usePurchaseMethod,
+  PurchaseMethod
 } from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { IconCheck } from '@audius/stems'
@@ -39,6 +44,7 @@ export const PurchaseContentFormFields = ({
   const payExtraAmountPresetValues = usePayExtraPresets()
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
+  const [, , { setValue: setPurchaseVendor }] = useField(PURCHASE_VENDOR)
   const isPurchased = stage === PurchaseContentStage.FINISH
 
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
@@ -52,6 +58,20 @@ export const PurchaseContentFormFields = ({
     method: purchaseMethod,
     setMethod: setPurchaseMethod
   })
+
+  const handleChangeMethod = useCallback(
+    (method: string) => {
+      setPurchaseMethod(method as PurchaseMethod)
+    },
+    [setPurchaseMethod]
+  )
+
+  const handleChangeVendor = useCallback(
+    (vendor: string) => {
+      setPurchaseVendor(vendor as PurchaseVendor)
+    },
+    [setPurchaseVendor]
+  )
 
   if (isPurchased) {
     return (
@@ -80,11 +100,12 @@ export const PurchaseContentFormFields = ({
       />
       {isUnlocking || isPurchased ? null : (
         <PaymentMethod
-          selectedType={purchaseMethod}
-          setSelectedType={setPurchaseMethod}
+          selectedMethod={purchaseMethod}
+          setSelectedMethod={handleChangeMethod}
+          setSelectedVendor={handleChangeVendor}
           balance={balanceBN}
           isExistingBalanceDisabled={isExistingBalanceDisabled}
-          showExistingBalance
+          showExistingBalance={!balanceBN?.isZero()}
         />
       )}
       {isUnlocking ? null : <PayToUnlockInfo />}

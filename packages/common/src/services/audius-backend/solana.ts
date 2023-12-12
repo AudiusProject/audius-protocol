@@ -11,7 +11,7 @@ import {
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
-import { AnalyticsEvent, Name, SolanaWalletAddress } from '../../models'
+import { AnalyticsEvent, ID, Name, SolanaWalletAddress } from '../../models'
 
 import { AudiusBackend } from './AudiusBackend'
 
@@ -351,11 +351,12 @@ export const pollForBalanceChange = async (
 }
 
 export type PurchaseContentArgs = {
-  id: number
+  id: ID
   blocknumber: number
   extraAmount?: number | BN
   type: 'track'
   splits: Record<string, number | BN>
+  purchaserUserId: ID
 }
 export const purchaseContent = async (
   audiusBackendInstance: AudiusBackend,
@@ -364,6 +365,44 @@ export const purchaseContent = async (
   return (
     await audiusBackendInstance.getAudiusLibs()
   ).solanaWeb3Manager!.purchaseContent(config)
+}
+
+export type PurchaseContentWithPaymentRouterArgs = {
+  id: number
+  type: 'track'
+  splits: Record<string, number>
+  extraAmount?: number
+  blocknumber: number
+  recentBlockhash?: string
+  purchaserUserId: ID
+  wallet: Keypair
+}
+
+export const purchaseContentWithPaymentRouter = async (
+  audiusBackendInstance: AudiusBackend,
+  {
+    id,
+    type,
+    blocknumber,
+    extraAmount = 0,
+    purchaserUserId,
+    splits,
+    wallet
+  }: PurchaseContentWithPaymentRouterArgs
+) => {
+  const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibs())
+    .solanaWeb3Manager!
+  const tx = await solanaWeb3Manager.purchaseContentWithPaymentRouter({
+    id,
+    type,
+    blocknumber,
+    extraAmount,
+    splits,
+    purchaserUserId,
+    senderKeypair: wallet,
+    skipSendAndReturnTransaction: true
+  })
+  return tx
 }
 
 export const findAssociatedTokenAddress = async (

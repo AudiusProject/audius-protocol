@@ -313,8 +313,8 @@ const RenderForm = ({
                 />
                 {isIOSDisabled || isUnlocking || isPurchaseSuccessful ? null : (
                   <PaymentMethod
-                    selectedType={purchaseMethod}
-                    setSelectedType={setPurchaseMethod}
+                    selectedMethod={purchaseMethod}
+                    setSelectedMethod={setPurchaseMethod}
                     balance={balance}
                     isExistingBalanceDisabled={isExistingBalanceDisabled}
                     showExistingBalance

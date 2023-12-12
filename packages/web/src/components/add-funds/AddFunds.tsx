@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import {
   PurchaseMethod,
+  PurchaseVendor,
   useCreateUserbankIfNeeded,
   useUSDCBalance
 } from '@audius/common'
@@ -32,7 +33,10 @@ const messages = {
 export const AddFunds = ({
   onContinue
 }: {
-  onContinue: (purchaseMethod: PurchaseMethod) => void
+  onContinue: (
+    purchaseMethod: PurchaseMethod,
+    purchaseVendor?: PurchaseVendor
+  ) => void
 }) => {
   useCreateUserbankIfNeeded({
     recordAnalytics: track,
@@ -41,6 +45,10 @@ export const AddFunds = ({
   })
   const [selectedPurchaseMethod, setSelectedPurchaseMethod] =
     useState<PurchaseMethod>(PurchaseMethod.CARD)
+  const [selectedPurchaseVendor, setSelectedPurchaseVendor] = useState<
+    PurchaseVendor | undefined
+  >(undefined)
+
   const mobile = isMobile()
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
   const balance = USDC(balanceBN ?? new BN(0)).value
@@ -73,13 +81,16 @@ export const AddFunds = ({
             </Flex>
           </Box>
           <PaymentMethod
-            selectedType={selectedPurchaseMethod}
-            setSelectedType={setSelectedPurchaseMethod}
+            selectedMethod={selectedPurchaseMethod}
+            setSelectedMethod={setSelectedPurchaseMethod}
+            setSelectedVendor={setSelectedPurchaseVendor}
           />
           <Button
             variant={ButtonType.PRIMARY}
             fullWidth
-            onClick={() => onContinue(selectedPurchaseMethod)}
+            onClick={() =>
+              onContinue(selectedPurchaseMethod, selectedPurchaseVendor)
+            }
           >
             {messages.continue}
           </Button>

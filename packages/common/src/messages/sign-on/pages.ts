@@ -1,3 +1,15 @@
+export const signInPageMessages = {
+  metaTitle: 'Sign In • Audius',
+  metaDescription: 'Sign into your Audius account',
+  title: 'Sign Into Audius',
+  emailLabel: 'Email',
+  passwordLabel: 'Password',
+  signIn: 'Sign In',
+  newToAudius: 'New to Audius?',
+  createAccount: 'Create an Account',
+  forgotPassword: 'Forgot password?'
+}
+
 export const createEmailPageMessages = {
   title: 'Sign Up For Audius',
   emailLabel: 'Email',
@@ -37,8 +49,30 @@ export const createPasswordPageMessages = {
   }
 }
 
+export const pickHandlePageMessages = {
+  title: 'Pick Your Handle',
+  description:
+    'This is how others find and tag you. It is totally unique to you & cannot be changed later.',
+  handle: 'Handle',
+  or: 'or',
+  claimHandleHeaderPrefix: 'Claim Your Verified',
+  claimHandleDescription:
+    'Verify your Audius account by linking a verified social media account.',
+  claimHandleHeadsUp:
+    'Heads up! 👋 Picking a handle that doesn’t match your verified account cannot be undone later.'
+}
+
+export const finishProfilePageMessages = {
+  header: 'Finish Your Profile',
+  description:
+    'Your photos & display name is how others see you. Customize with special character, spaces, emojis, whatever!',
+  displayName: 'Display Name',
+  inputPlaceholder: 'express yourself 💫',
+  goBack: 'Go back'
+}
+
 export const selectGenresPageMessages = {
-  header: 'Select Your Genres',
-  description: 'Start by picking some of your favorite genres.',
-  continue: 'Continue'
+    header: 'Select Your Genres',
+    description: 'Start by picking some of your favorite genres.',
+    continue: 'Continue'
 }

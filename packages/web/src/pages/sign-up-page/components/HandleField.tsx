@@ -1,6 +1,10 @@
 import { useCallback, useContext } from 'react'
 
-import { MAX_HANDLE_LENGTH, socialMediaMessages } from '@audius/common'
+import {
+  MAX_HANDLE_LENGTH,
+  socialMediaMessages,
+  pickHandleErrorMessages
+} from '@audius/common'
 import { TextLink } from '@audius/harmony'
 import { useField } from 'formik'
 
@@ -9,8 +13,6 @@ import {
   HarmonyTextFieldProps
 } from 'components/form-fields/HarmonyTextField'
 import { ToastContext } from 'components/toast/ToastContext'
-
-import { errorMessages } from '../utils/handleSchema'
 
 import { SignupFlowInstagramAuth } from './SignupFlowInstagramAuth'
 import { SignupFlowTikTokAuth } from './SignupFlowTikTokAuth'
@@ -22,9 +24,9 @@ const messages = {
 }
 
 const handleAuthMap = {
-  [errorMessages.twitterReservedError]: SignupFlowTwitterAuth,
-  [errorMessages.instagramReservedError]: SignupFlowInstagramAuth,
-  [errorMessages.tiktokReservedError]: SignupFlowTikTokAuth
+  [pickHandleErrorMessages.twitterReservedError]: SignupFlowTwitterAuth,
+  [pickHandleErrorMessages.instagramReservedError]: SignupFlowInstagramAuth,
+  [pickHandleErrorMessages.tiktokReservedError]: SignupFlowTikTokAuth
 }
 
 type HandleFieldProps = Partial<HarmonyTextFieldProps> & {
