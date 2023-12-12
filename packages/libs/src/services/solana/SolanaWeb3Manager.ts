@@ -512,6 +512,7 @@ export class SolanaWeb3Manager {
    * @param params.blocknumber the blocknumber the content was last updated
    * @param params.splits map of address to USDC amount, used to split the price amoung several stakeholders
    * @param params.extraAmount Extra amount in USDC wei to be distributed to the stakeholders
+   * @param params.purchaserUserId Id of the user that is purchasing the track
    * @returns the transaction signature and/or an error
    */
   async purchaseContent({
@@ -519,13 +520,15 @@ export class SolanaWeb3Manager {
     type,
     blocknumber,
     extraAmount = 0,
-    splits
+    splits,
+    purchaserUserId
   }: {
     id: number
     type: 'track'
     splits: Record<string, number | BN>
     extraAmount?: number | BN
     blocknumber: number
+    purchaserUserId: number
   }) {
     if (!this.web3Manager) {
       throw new Error(
@@ -565,6 +568,8 @@ export class SolanaWeb3Manager {
       mintKey: this.mints.usdc
     })
 
+    const data = `${type}:${id}:${blocknumber}:${purchaserUserId}`
+
     const memoInstruction = new TransactionInstruction({
       keys: [
         {
@@ -574,7 +579,7 @@ export class SolanaWeb3Manager {
         }
       ],
       programId: MEMO_PROGRAM_ID,
-      data: Buffer.from(`${type}:${id}:${blocknumber}`)
+      data: Buffer.from(data)
     })
     return await this.transactionHandler.handleTransaction({
       instructions: [...instructions, memoInstruction],
@@ -656,12 +661,6 @@ export class SolanaWeb3Manager {
       senderAccount.toString(),
       'usdc'
     )
-    const senderTokenAccountInfo = await this.getTokenAccountInfo(
-      senderTokenAccount.toString()
-    )
-    if (senderTokenAccountInfo === null) {
-      throw new Error('Sender token account ATA does not exist')
-    }
 
     const amounts = Object.values(recipientAmounts)
     const totalAmount = amounts.reduce(
@@ -694,7 +693,7 @@ export class SolanaWeb3Manager {
     const memoInstruction = new TransactionInstruction({
       keys: [
         {
-          pubkey: new PublicKey(this.feePayerKey),
+          pubkey: senderAccount,
           isSigner: true,
           isWritable: true
         }
@@ -718,7 +717,8 @@ export class SolanaWeb3Manager {
     extraAmount = 0,
     splits,
     purchaserUserId,
-    senderKeypair
+    senderKeypair,
+    skipSendAndReturnTransaction
   }: {
     id: number
     type: 'track'
@@ -727,6 +727,7 @@ export class SolanaWeb3Manager {
     blocknumber: number
     purchaserUserId: number
     senderKeypair: Keypair
+    skipSendAndReturnTransaction?: boolean
   }) {
     const instructions =
       await this.getPurchaseContentWithPaymentRouterInstructions({
@@ -746,6 +747,9 @@ export class SolanaWeb3Manager {
       recentBlockhash: recentBlockhash
     }).add(...instructions)
     transaction.partialSign(senderKeypair)
+    if (skipSendAndReturnTransaction) {
+      return transaction
+    }
     const signatures = transaction.signatures
       .filter((s) => s.signature !== null)
       .map((s) => ({

@@ -331,6 +331,7 @@ const interpolateBorderRadius = (r: number) => {
 const FullscreenDrawer = ({
   children,
   isOpen,
+  zIndex,
   onClose,
   onClosed,
   'aria-labelledby': ariaLabelledBy
@@ -391,7 +392,8 @@ const FullscreenDrawer = ({
                 borderRadius: props.borderRadius?.interpolate(
                   // @ts-ignore
                   interpolateBorderRadius
-                )
+                ),
+                zIndex
               }}
             >
               <div className={styles.dismissContainer} onClick={onClose}>

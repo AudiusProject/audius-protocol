@@ -43,6 +43,9 @@ latest_sol_user_bank_backfill_program_tx_key = (
 )
 latest_sol_user_bank_backfill_db_tx_key = "latest_sol_program_tx:user_bank_backfill:db"
 
+latest_sol_payment_router_program_tx_key = "latest_sol_program_tx:payment_router:chain"
+latest_sol_payment_router_db_tx_key = "latest_sol_program_tx:payment_router:db"
+
 latest_sol_spl_token_program_tx_key = "latest_sol_program_tx:spl_token:chain"
 latest_sol_spl_token_db_key = "latest_sol_program_tx:spl_token:db"
 
@@ -50,6 +53,7 @@ latest_sol_spl_token_db_key = "latest_sol_program_tx:spl_token:db"
 # Used to get the latest processed slot of each indexing task, using the global slots instead of the per-program slots
 latest_sol_user_bank_slot_key = "latest_sol_slot:user_bank"
 latest_sol_user_bank_backfill_slot_key = "latest_sol_slot:user_bank_backfill"
+latest_sol_payment_router_slot_key = "latest_sol_slot:payment_router"
 latest_sol_aggregate_tips_slot_key = "latest_sol_slot:aggregate_tips"
 latest_sol_plays_slot_key = "latest_sol_slot:plays"
 latest_sol_rewards_manager_slot_key = "latest_sol_slot:rewards_manager"

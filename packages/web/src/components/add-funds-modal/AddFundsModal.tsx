@@ -3,9 +3,9 @@ import { useCallback, useState } from 'react'
 import {
   useAddFundsModal,
   buyUSDCActions,
-  USDCOnRampProvider,
   PurchaseMethod,
-  DEFAULT_PURCHASE_AMOUNT_CENTS
+  DEFAULT_PURCHASE_AMOUNT_CENTS,
+  PurchaseVendor
 } from '@audius/common'
 import { ModalContent, ModalHeader } from '@audius/stems'
 import cn from 'classnames'
@@ -39,18 +39,24 @@ export const AddFundsModal = () => {
   }, [setPage])
 
   const handleContinue = useCallback(
-    (purchaseMethod: PurchaseMethod) => {
-      if (purchaseMethod === PurchaseMethod.CRYPTO) {
-        setPage('crypto-transfer')
-      } else {
-        dispatch(
-          buyUSDCActions.onrampOpened({
-            provider: USDCOnRampProvider.STRIPE,
-            purchaseInfo: {
-              desiredAmount: DEFAULT_PURCHASE_AMOUNT_CENTS
-            }
-          })
-        )
+    (purchaseMethod: PurchaseMethod, purchaseVendor?: PurchaseVendor) => {
+      switch (purchaseMethod) {
+        case PurchaseMethod.CRYPTO:
+          setPage('crypto-transfer')
+          break
+        case PurchaseMethod.CARD: {
+          dispatch(
+            buyUSDCActions.onrampOpened({
+              vendor: purchaseVendor || PurchaseVendor.STRIPE,
+              purchaseInfo: {
+                desiredAmount: DEFAULT_PURCHASE_AMOUNT_CENTS
+              }
+            })
+          )
+          break
+        }
+        case PurchaseMethod.BALANCE:
+          throw new Error('Add funds not supported with existing balance')
       }
     },
     [setPage, dispatch]

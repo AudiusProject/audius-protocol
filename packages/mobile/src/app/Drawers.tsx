@@ -10,6 +10,7 @@ import { TiersExplainerDrawer } from 'app/components/audio-rewards'
 import { BlockMessagesDrawer } from 'app/components/block-messages-drawer'
 import { ChallengeRewardsDrawer } from 'app/components/challenge-rewards-drawer'
 import { ChatActionsDrawer } from 'app/components/chat-actions-drawer'
+import { CoinflowOnrampDrawer } from 'app/components/coinflow-onramp-drawer/CoinflowOnrampDrawer'
 import { CollectibleDetailsDrawer } from 'app/components/collectible-details-drawer'
 import { CreateChatActionsDrawer } from 'app/components/create-chat-actions-drawer'
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer'
@@ -117,6 +118,7 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   // to avoid zIndex issues.
   PremiumContentPurchaseModal: PremiumTrackPurchaseDrawer,
   AddFundsModal: AddFundsDrawer,
+  CoinflowOnramp: CoinflowOnrampDrawer,
   PurchaseVendor: PurchaseVendorDrawer,
   USDCManualTransferModal: USDCManualTransferDrawer,
   StripeOnRamp: StripeOnrampDrawer,

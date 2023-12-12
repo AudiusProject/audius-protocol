@@ -48,3 +48,16 @@ export const createPasswordPageMessages = {
     notCommon: 'Hard to guess'
   }
 }
+
+export const pickHandlePageMessages = {
+  title: 'Pick Your Handle',
+  description:
+    'This is how others find and tag you. It is totally unique to you & cannot be changed later.',
+  handle: 'Handle',
+  or: 'or',
+  claimHandleHeaderPrefix: 'Claim Your Verified',
+  claimHandleDescription:
+    'Verify your Audius account by linking a verified social media account.',
+  claimHandleHeadsUp:
+    'Heads up! 👋 Picking a handle that doesn’t match your verified account cannot be undone later.'
+}

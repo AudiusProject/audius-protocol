@@ -1,18 +1,13 @@
-import { GENRES } from '@audius/common'
+import { Mood } from '@audius/sdk'
 
-import { moodMap } from 'utils/Moods'
-import { orderedRoutes } from 'utils/route'
+import { GENRES } from './genres'
 
-const restrictedRoutes = orderedRoutes
-  .filter((routePath) => (routePath.match(/\//g) || []).length === 1)
-  .filter((routePath) => !routePath.includes(':'))
-  .map((routePath) => routePath.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())
-  .filter((routePath) => routePath !== '')
-
-const filteredGenres = GENRES.reduce((acc, genre) => {
+const filteredGenres = GENRES.reduce((acc, genre: string) => {
   acc = acc.concat(genre.split('/'))
   return acc
-}, []).map((genre) => genre.replace(/[^a-zA-Z0-9]/g, '').toLowerCase())
+}, [] as string[]).map((genre) =>
+  genre.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
+)
 
 export const restrictedHandles = new Set(
   [
@@ -62,13 +57,9 @@ export const restrictedHandles = new Set(
     '400',
     '404',
 
-    // ===== Current Routes =====
-    ...restrictedRoutes,
     // ===== Moods =====
-    ...Object.keys(moodMap).map((mood) => mood.toLowerCase()),
+    ...Object.keys(Mood),
     // ===== Genre =====
     ...filteredGenres
   ].map((h) => h.toLowerCase())
 )
-
-export default restrictedHandles
