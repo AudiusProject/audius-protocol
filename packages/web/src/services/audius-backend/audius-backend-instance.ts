@@ -111,6 +111,7 @@ export const audiusBackendInstance = audiusBackend({
     rewardsManagerProgramId: process.env.VITE_REWARDS_MANAGER_PROGRAM_ID,
     rewardsManagerProgramPda: process.env.VITE_REWARDS_MANAGER_PROGRAM_PDA,
     rewardsManagerTokenPda: process.env.VITE_REWARDS_MANAGER_TOKEN_PDA,
+    paymentRouterProgramId: process.env.VITE_PAYMENT_ROUTER_PROGRAM_ID,
     solanaClusterEndpoint: process.env.VITE_SOLANA_CLUSTER_ENDPOINT,
     solanaFeePayerAddress: process.env.VITE_SOLANA_FEE_PAYER_ADDRESS,
     solanaTokenAddress: process.env.VITE_SOLANA_TOKEN_PROGRAM_ADDRESS,

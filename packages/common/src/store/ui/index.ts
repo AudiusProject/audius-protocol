@@ -80,6 +80,11 @@ export * as stripeModalUISelectors from './stripe-modal/selectors'
 export { default as stripeModalUISagas } from './stripe-modal/sagas'
 
 export {
+  default as coinflowModalUIReducer,
+  actions as coinflowModalUIActions
+} from './coinflow-modal/slice'
+
+export {
   default as vipDiscordModalReducer,
   actions as vipDiscordModalActions
 } from './vip-discord-modal/slice'

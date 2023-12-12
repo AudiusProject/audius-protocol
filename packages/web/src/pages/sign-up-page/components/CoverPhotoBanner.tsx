@@ -6,19 +6,22 @@ import {
 } from 'common/store/pages/signon/selectors'
 import { useSelector } from 'utils/reducer'
 
-export const CoverPhotoBanner = ({
-  coverPhotoUrl: propsCoverPhotoUrl,
-  profileImageUrl: propsProfileImageUrl,
-  showPhotoIcon
-}: {
+type CoverPhotoBannerProps = {
   coverPhotoUrl?: string
   profileImageUrl?: string
-  showPhotoIcon?: boolean
-}) => {
-  const { value: coverPhoto } = { ...useSelector(getCoverPhotoField) }
-  const { value: profileImage } = { ...useSelector(getProfileImageField) }
+  isEditing?: boolean
+}
 
-  const { color } = useTheme()
+export const CoverPhotoBanner = (props: CoverPhotoBannerProps) => {
+  const {
+    coverPhotoUrl: propsCoverPhotoUrl,
+    profileImageUrl: propsProfileImageUrl,
+    isEditing
+  } = props
+  const { value: coverPhoto } = useSelector(getCoverPhotoField) ?? {}
+  const { value: profileImage } = useSelector(getProfileImageField) ?? {}
+
+  const { color, spacing, cornerRadius } = useTheme()
   const coverPhotoUrl = propsCoverPhotoUrl ?? coverPhoto?.url
   const profileImageUrl = propsProfileImageUrl ?? profileImage?.url
   const hasImage = coverPhotoUrl || profileImageUrl
@@ -26,6 +29,7 @@ export const CoverPhotoBanner = ({
     <Box
       h='100%'
       w='100%'
+      borderRadius={isEditing ? 'm' : undefined}
       css={{
         '&:before': {
           content: '""',
@@ -42,9 +46,13 @@ export const CoverPhotoBanner = ({
             ? {
                 backdropFilter: 'blur(25px)'
               }
-            : undefined)
+            : undefined),
+          ...(isEditing && {
+            overflow: 'hidden',
+            borderTopLeftRadius: cornerRadius.m,
+            borderTopRightRadius: cornerRadius.m
+          })
         },
-        overflow: 'hidden',
         ...(hasImage
           ? {
               backgroundImage: `url(${coverPhotoUrl ?? profileImageUrl})`,
@@ -55,9 +63,13 @@ export const CoverPhotoBanner = ({
           : { backgroundColor: color.neutral.n400 })
       }}
     >
-      {showPhotoIcon ? (
+      {isEditing ? (
         <IconImage
-          css={{ position: 'absolute', right: '16px', top: '16px' }}
+          css={{
+            position: 'absolute',
+            right: spacing.l,
+            top: spacing.l
+          }}
           color='staticWhite'
         />
       ) : null}

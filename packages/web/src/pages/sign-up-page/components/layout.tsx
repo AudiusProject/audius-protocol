@@ -7,6 +7,7 @@ import {
   useContext
 } from 'react'
 
+import { Maybe } from '@audius/common'
 import {
   Box,
   BoxProps,
@@ -19,7 +20,7 @@ import {
   PaperProps,
   Text
 } from '@audius/harmony'
-import styled from '@emotion/styled'
+import styled, { CSSObject } from '@emotion/styled'
 import { animated, useSpring } from '@react-spring/web'
 
 import { useMedia } from 'hooks/useMedia'
@@ -34,17 +35,27 @@ type PageProps = FlexProps & {
   as?: ComponentType<any>
   centered?: boolean
   transition?: 'horizontal' | 'vertical'
+  transitionBack?: 'horizontal' | 'vertical'
+}
+
+const transitionAxisConfig = {
+  horizontal: 'X',
+  vertical: 'Y'
 }
 
 const AnimatedFlex = animated(Flex)
 
 export const Page = (props: PageProps) => {
-  const { centered, children, as, transition, ...other } = props
+  const { centered, children, as, transition, transitionBack, ...other } = props
   const { isMobile } = useMedia()
   const { isGoBack } = useContext(RouteContext)
 
+  const translateAxis =
+    transitionAxisConfig[
+      (isGoBack ? transitionBack ?? transition : transition) ?? 'horizontal'
+    ]
+
   const translateStart = isGoBack ? '-100%' : '100%'
-  const translateAxis = transition === 'vertical' ? 'Y' : 'X'
   const shouldTransition = transition || isGoBack
 
   const fromTransform = shouldTransition
@@ -71,7 +82,6 @@ export const Page = (props: PageProps) => {
 
   const layoutProps: FlexProps = {
     direction: 'column',
-    h: '100%',
     gap: '2xl',
     ph: isMobile ? 'l' : '2xl',
     pv: 'xl'
@@ -97,6 +107,7 @@ export const Page = (props: PageProps) => {
   return (
     <AnimatedFlex
       as={as}
+      h='100%'
       {...layoutProps}
       {...other}
       css={
@@ -123,6 +134,11 @@ export const Heading = forwardRef<HTMLDivElement, HeadingProps>(
     const { prefix, heading, description, postfix, centered, tag, ...other } =
       props
     const { isMobile } = useMedia()
+
+    const textCss: Maybe<CSSObject> = centered
+      ? { textAlign: 'center' }
+      : undefined
+
     return (
       <Flex
         ref={ref}
@@ -137,11 +153,12 @@ export const Heading = forwardRef<HTMLDivElement, HeadingProps>(
           color='accent'
           size={isMobile ? 'm' : 'l'}
           tag={tag}
+          css={textCss}
         >
           {heading}
         </Text>
         {description ? (
-          <Text size={isMobile ? 'm' : 'l'} variant='body'>
+          <Text size={isMobile ? 'm' : 'l'} variant='body' css={textCss}>
             {description}
           </Text>
         ) : null}
@@ -201,7 +218,7 @@ export const PageFooter = (props: PageFooterProps) => {
 
 type ReadOnlyFieldProps = {
   label: string
-  value: string
+  value: string | ReactNode
 }
 
 export const ReadOnlyField = (props: ReadOnlyFieldProps) => {

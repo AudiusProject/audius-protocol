@@ -308,6 +308,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_solana_plays",
             "src.tasks.index_challenges",
             "src.tasks.index_user_bank",
+            "src.tasks.index_payment_router",
             "src.tasks.index_eth",
             "src.tasks.index_oracles",
             "src.tasks.index_rewards_manager",
@@ -368,6 +369,10 @@ def configure_celery(celery, test_config=None):
             },
             "index_user_bank": {
                 "task": "index_user_bank",
+                "schedule": timedelta(seconds=5),
+            },
+            "index_payment_router": {
+                "task": "index_payment_router",
                 "schedule": timedelta(seconds=5),
             },
             "index_challenges": {
@@ -481,6 +486,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("solana_plays_lock")
     redis_inst.delete("index_challenges_lock")
     redis_inst.delete("user_bank_lock")
+    redis_inst.delete("payment_router_lock")
     redis_inst.delete("index_eth_lock")
     redis_inst.delete("index_oracles_lock")
     redis_inst.delete("solana_rewards_manager_lock")

@@ -4,18 +4,22 @@ import {
   cacheActions,
   collectionPageActions as collectionActions,
   collectionPageLineupActions as tracksActions,
-  collectionPageSelectors
+  collectionPageSelectors,
+  reachabilitySelectors
 } from '@audius/common'
+import { push as pushRoute } from 'connected-react-router'
 import { call, put, select, takeLatest, takeEvery } from 'redux-saga/effects'
 
 import {
   retrieveCollections,
   retrieveCollectionByPermalink
 } from 'common/store/cache/collections/utils'
+import { NOT_FOUND_PAGE } from 'utils/route'
 
 import tracksSagas from './lineups/sagas'
 const { getCollectionUid, getUserUid } = collectionPageSelectors
 const { fetchCollectionSucceeded, fetchCollectionFailed } = collectionActions
+const { getIsReachable } = reachabilitySelectors
 
 function* watchFetchCollection() {
   yield takeLatest(collectionActions.FETCH_COLLECTION, function* (action) {
@@ -39,9 +43,12 @@ function* watchFetchCollection() {
 
     const { collections, uids: collectionUids } = retrievedCollections
 
+    const isReachable = yield select(getIsReachable)
     if (Object.values(collections).length === 0) {
-      yield put(fetchCollectionFailed())
-      return
+      if (isReachable) {
+        yield put(pushRoute(NOT_FOUND_PAGE))
+        return
+      }
     }
     const identifier = collectionId || permalink
     const collection = collections[identifier]
@@ -66,7 +73,7 @@ function* watchFetchCollection() {
         yield put(tracksActions.fetchLineupMetadatas(0, 200, false, undefined))
       }
     } else {
-      yield put(collectionActions.fetchCollectionFailed(userUid))
+      yield put(fetchCollectionFailed(userUid))
     }
   })
 }

@@ -5,19 +5,22 @@ import {
   formatCurrencyBalance
 } from '@audius/common'
 import BN from 'bn.js'
-import { FlatList, View } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { FlatList, View, TouchableOpacity } from 'react-native'
+import { useSelector } from 'react-redux'
 
 import IconCreditCard from 'app/assets/images/iconCreditCard.svg'
 import IconDonate from 'app/assets/images/iconDonate.svg'
 import IconTransaction from 'app/assets/images/iconTransaction.svg'
 import { Divider, RadioButton, Text } from 'app/components/core'
+import { getPurchaseVendor } from 'app/store/purchase-vendor/selectors'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useColor } from 'app/utils/theme'
 
 import { SummaryTable } from '../summary-table'
 import type { SummaryTableItem } from '../summary-table/SummaryTable'
+
+import { CardSelectionButton } from './CardSelectionButton'
 
 const messages = {
   title: 'Payment Method',
@@ -53,16 +56,16 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 type PaymentMethodProps = {
-  selectedType: Nullable<PurchaseMethod>
-  setSelectedType: (method: PurchaseMethod) => void
+  selectedMethod: Nullable<PurchaseMethod>
+  setSelectedMethod: (method: PurchaseMethod) => void
   balance?: Nullable<BNUSDC>
   isExistingBalanceDisabled?: boolean
   showExistingBalance?: boolean
 }
 
 export const PaymentMethod = ({
-  selectedType,
-  setSelectedType,
+  selectedMethod,
+  setSelectedMethod,
   balance,
   isExistingBalanceDisabled,
   showExistingBalance
@@ -74,6 +77,7 @@ export const PaymentMethod = ({
     (balance ?? new BN(0)) as BNUSDC
   )
   const balanceFormatted = formatCurrencyBalance(balanceCents / 100)
+  const purchaseVendor = useSelector(getPurchaseVendor)
 
   const items: SummaryTableItem[] = [
     {
@@ -84,7 +88,8 @@ export const PaymentMethod = ({
           {messages.withCard}
         </Text>
       ),
-      icon: IconCreditCard
+      icon: IconCreditCard,
+      content: <CardSelectionButton selectedVendor={purchaseVendor} />
     },
     {
       id: PurchaseMethod.CRYPTO,
@@ -113,7 +118,9 @@ export const PaymentMethod = ({
             fontSize='medium'
             weight='bold'
             color={
-              selectedType === PurchaseMethod.BALANCE ? 'secondary' : 'neutral'
+              selectedMethod === PurchaseMethod.BALANCE
+                ? 'secondary'
+                : 'neutral'
             }
           >
             ${balanceFormatted}
@@ -134,12 +141,12 @@ export const PaymentMethod = ({
 
   const renderItem = ({ item }) => {
     const { label, value, icon: Icon, content, disabled } = item
-    const isSelected = value === selectedType
+    const isSelected = value === selectedMethod
     return (
       <TouchableOpacity
         style={styles.row}
         disabled={disabled}
-        onPress={() => setSelectedType(value)}
+        onPress={() => setSelectedMethod(value)}
       >
         <View style={styles.rowTitle}>
           <RadioButton checked={isSelected} disabled={disabled} />
@@ -159,7 +166,7 @@ export const PaymentMethod = ({
     <SummaryTable
       title={messages.title}
       items={items}
-      renderContent={(items: SummaryTableItem[]) => (
+      renderBody={(items: SummaryTableItem[]) => (
         <FlatList
           renderItem={renderItem}
           ItemSeparatorComponent={Divider}

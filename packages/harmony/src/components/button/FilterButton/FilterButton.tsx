@@ -1,4 +1,11 @@
-import { forwardRef, RefObject, useRef, useState, useCallback } from 'react'
+import {
+  forwardRef,
+  RefObject,
+  useRef,
+  useState,
+  useCallback,
+  useEffect
+} from 'react'
 
 import { CSSObject, useTheme } from '@emotion/react'
 
@@ -34,6 +41,13 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
         ? options[initialSelectionIndex]
         : null
     )
+
+    useEffect(() => {
+      if (onSelect && selection?.label) {
+        onSelect(selection.label)
+      }
+    }, [selection?.label, onSelect])
+
     const [isOpen, setIsOpen] = useState(false)
 
     // Size Styles
@@ -148,13 +162,9 @@ export const FilterButton = forwardRef<HTMLButtonElement, FilterButtonProps>(
       }
     }, [selection, variant, setIsOpen, setSelection])
 
-    const handleOptionSelect = useCallback(
-      (option: FilterButtonOption) => {
-        setSelection(option)
-        onSelect?.(option)
-      },
-      [onSelect]
-    )
+    const handleOptionSelect = useCallback((option: FilterButtonOption) => {
+      setSelection(option)
+    }, [])
 
     const anchorRef = useRef<HTMLButtonElement>(null)
 

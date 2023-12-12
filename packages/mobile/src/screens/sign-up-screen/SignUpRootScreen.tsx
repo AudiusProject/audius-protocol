@@ -12,7 +12,10 @@ const screenOptions = { animationTypeForReplace: 'pop' as const }
 
 export const SignUpRootScreen = () => {
   return (
-    <Stack.Navigator initialRouteName='SignUp' screenOptions={screenOptions}>
+    <Stack.Navigator
+      initialRouteName='CreateEmail'
+      screenOptions={screenOptions}
+    >
       <Stack.Screen name='CreateEmail' component={CreateEmailScreen} />
       <Stack.Screen name='CreatePassword' component={CreatePasswordScreen} />
       <Stack.Screen name='PickHandle' component={PickHandleScreen} />

@@ -66,6 +66,7 @@ from src.utils.helpers import (
     has_log,
 )
 from src.utils.prometheus_metric import save_duration_metric
+from src.utils.redis_cache import get_solana_transaction_key
 from src.utils.redis_constants import (
     latest_sol_user_bank_db_tx_key,
     latest_sol_user_bank_program_tx_key,
@@ -792,10 +793,15 @@ def process_user_bank_tx_details(
 
 
 def get_sol_tx_info(
-    solana_client_manager: SolanaClientManager,
-    tx_sig: str,
+    solana_client_manager: SolanaClientManager, tx_sig: str, redis: Redis
 ):
     try:
+        existing_tx = redis.get(get_solana_transaction_key(tx_sig))
+        if existing_tx is not None and existing_tx != "":
+            logger.info(f"index_user_bank.py | Cache hit: {tx_sig}")
+            tx_info = GetTransactionResp.from_json(existing_tx.decode("utf-8"))
+            return (tx_info, tx_sig)
+        logger.info(f"index_user_bank.py | Cache miss: {tx_sig}")
         tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
         return (tx_info, tx_sig)
     except SolanaTransactionFetchError:
@@ -918,9 +924,7 @@ def process_user_bank_txs() -> None:
             with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
                 parse_sol_tx_futures = {
                     executor.submit(
-                        get_sol_tx_info,
-                        solana_client_manager,
-                        str(tx_sig),
+                        get_sol_tx_info, solana_client_manager, str(tx_sig), redis
                     ): tx_sig
                     for tx_sig in tx_sig_batch
                 }
