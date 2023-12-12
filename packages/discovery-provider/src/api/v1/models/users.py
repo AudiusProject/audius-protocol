@@ -33,7 +33,6 @@ user_model = ns.model(
         "cover_photo": fields.Nested(cover_photo, allow_null=True),
         "followee_count": fields.Integer(required=True),
         "follower_count": fields.Integer(required=True),
-        "does_follow_current_user": fields.Boolean,
         "handle": fields.String(required=True),
         "id": fields.String(required=True),
         "is_verified": fields.Boolean(required=True),

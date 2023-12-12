@@ -91,12 +91,6 @@ def test_populate_user_metadata(app):
         users = populate_user_metadata(session, user_ids, users, 3)
         assert len(users) == 5
 
-        assert users[0]["does_follow_current_user"] == True
-        assert users[1]["does_follow_current_user"] == True
-        assert users[2]["does_follow_current_user"] == False
-        assert users[3]["does_follow_current_user"] == False
-        assert users[4]["does_follow_current_user"] == False
-
         assert users[0]["user_id"] == 1
         assert users[0][response_name_constants.track_count] == 2
         assert users[0][response_name_constants.playlist_count] == 2

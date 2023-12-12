@@ -55,16 +55,13 @@ def populate_user_metadata_es(user, current_user):
     user["current_user_followee_follow_count"] = None
 
     if current_user:
-        user_following = user.get("following_ids", [])
         current_user_following = current_user.get("following_ids", [])
         user["does_current_user_follow"] = user["user_id"] in current_user_following
-        user["does_follow_current_user"] = current_user["user_id"] in user_following
 
         current_user_subscribed = current_user.get("subscribed_ids", [])
         user["does_current_user_subscribe"] = user["user_id"] in current_user_subscribed
     else:
         user["does_current_user_follow"] = False
-        user["does_follow_current_user"] = False
     return omit_indexed_fields(user)
 
 
