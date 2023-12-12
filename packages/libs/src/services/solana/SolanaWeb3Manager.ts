@@ -661,12 +661,6 @@ export class SolanaWeb3Manager {
       senderAccount.toString(),
       'usdc'
     )
-    const senderTokenAccountInfo = await this.getTokenAccountInfo(
-      senderTokenAccount.toString()
-    )
-    if (senderTokenAccountInfo === null) {
-      throw new Error('Sender token account ATA does not exist')
-    }
 
     const amounts = Object.values(recipientAmounts)
     const totalAmount = amounts.reduce(
@@ -699,7 +693,7 @@ export class SolanaWeb3Manager {
     const memoInstruction = new TransactionInstruction({
       keys: [
         {
-          pubkey: new PublicKey(this.feePayerKey),
+          pubkey: senderAccount,
           isSigner: true,
           isWritable: true
         }
@@ -723,7 +717,8 @@ export class SolanaWeb3Manager {
     extraAmount = 0,
     splits,
     purchaserUserId,
-    senderKeypair
+    senderKeypair,
+    skipSendAndReturnTransaction
   }: {
     id: number
     type: 'track'
@@ -732,6 +727,7 @@ export class SolanaWeb3Manager {
     blocknumber: number
     purchaserUserId: number
     senderKeypair: Keypair
+    skipSendAndReturnTransaction?: boolean
   }) {
     const instructions =
       await this.getPurchaseContentWithPaymentRouterInstructions({
@@ -751,6 +747,9 @@ export class SolanaWeb3Manager {
       recentBlockhash: recentBlockhash
     }).add(...instructions)
     transaction.partialSign(senderKeypair)
+    if (skipSendAndReturnTransaction) {
+      return transaction
+    }
     const signatures = transaction.signatures
       .filter((s) => s.signature !== null)
       .map((s) => ({

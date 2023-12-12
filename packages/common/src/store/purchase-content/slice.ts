@@ -1,7 +1,7 @@
 import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { ID } from 'models/Identifiers'
-import { PurchaseMethod } from 'models/PurchaseContent'
+import { PurchaseMethod, PurchaseVendor } from 'models/PurchaseContent'
 
 import {
   ContentType,
@@ -27,6 +27,7 @@ type PurchaseContentState = {
   error?: PurchaseContentError
   onSuccess?: OnSuccess
   purchaseMethod: PurchaseMethod
+  purchaseVendor?: PurchaseVendor
 }
 
 const initialState: PurchaseContentState = {
@@ -37,7 +38,8 @@ const initialState: PurchaseContentState = {
   extraAmountPreset: undefined,
   error: undefined,
   stage: PurchaseContentStage.START,
-  purchaseMethod: PurchaseMethod.BALANCE
+  purchaseMethod: PurchaseMethod.BALANCE,
+  purchaseVendor: undefined
 }
 
 const slice = createSlice({
@@ -50,6 +52,7 @@ const slice = createSlice({
         extraAmount?: number
         extraAmountPreset?: string
         purchaseMethod: PurchaseMethod
+        purchaseVendor?: PurchaseVendor
         contentId: ID
         contentType?: ContentType
         onSuccess?: OnSuccess
@@ -63,6 +66,8 @@ const slice = createSlice({
       state.contentId = action.payload.contentId
       state.contentType = action.payload.contentType ?? ContentType.TRACK
       state.onSuccess = action.payload.onSuccess
+      state.purchaseMethod = action.payload.purchaseMethod
+      state.purchaseVendor = action.payload.purchaseVendor
     },
     buyUSDC: (state) => {
       state.stage = PurchaseContentStage.BUY_USDC
@@ -70,6 +75,9 @@ const slice = createSlice({
     usdcBalanceSufficient: (state) => {
       state.stage = PurchaseContentStage.PURCHASING
     },
+    coinflowPurchaseSucceeded: (_state) => {},
+    coinflowPurchaseFailed: (_state) => {},
+    coinflowPurchaseCanceled: (_state) => {},
     purchaseCanceled: (state) => {
       state.stage = PurchaseContentStage.CANCELED
     },
