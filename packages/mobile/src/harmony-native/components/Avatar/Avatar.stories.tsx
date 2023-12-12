@@ -10,7 +10,7 @@ const meta: Meta<AvatarProps> = {
   title: 'Components/Avatar',
   component: Avatar,
   argTypes: {
-    src: {
+    source: {
       description: 'Image Source',
       control: { type: 'text' }
     },
@@ -31,7 +31,7 @@ const meta: Meta<AvatarProps> = {
     }
   },
   args: {
-    src: img,
+    source: img,
     size: 'large'
   },
   render: (props) => (
