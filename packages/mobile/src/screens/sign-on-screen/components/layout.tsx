@@ -27,7 +27,7 @@ export const Page = (props: PageProps) => {
   }
 
   return (
-    <Flex {...layoutProps} style={[style]} {...other}>
+    <Flex {...layoutProps} style={style} {...other}>
       {children}
     </Flex>
   )
