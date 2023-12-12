@@ -7,7 +7,6 @@ import { Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { PurchaseVendor } from 'models/PurchaseContent'
 import {
-  createFundAccountAndPurchaseTransaction,
   createTransferToUserBankTransaction,
   findAssociatedTokenAddress,
   getRecentBlockhash,
@@ -19,12 +18,6 @@ import {
 import { getAccountUser } from 'store/account/selectors'
 import { getContext } from 'store/effects'
 import { getFeePayer } from 'store/solana/selectors'
-import {
-  transactionCanceled as coinflowTransactionCanceled,
-  transactionFailed as coinflowTransactionFailed,
-  transactionSucceeded as coinflowTransactionSucceeded
-} from 'store/ui/coinflow-modal/slice'
-import { coinflowOnrampModalActions } from 'store/ui/modals/coinflow-onramp-modal'
 import { setVisibility } from 'store/ui/modals/parentSlice'
 import { initializeStripeModal } from 'store/ui/stripe-modal/slice'
 import { waitForValue } from 'utils'
@@ -291,62 +284,7 @@ function* doBuyUSDC({
         })
         break
       }
-      case PurchaseVendor.COINFLOW: {
-        const feePayerAddress = yield* select(getFeePayer)
-        if (!feePayerAddress) {
-          throw new Error('Missing feePayer unexpectedly')
-        }
-        const feePayer = new PublicKey(feePayerAddress)
-        const recentBlockhash = yield* call(
-          getRecentBlockhash,
-          audiusBackendInstance
-        )
-        const rootAccount = yield* call(
-          getRootSolanaAccount,
-          audiusBackendInstance
-        )
-
-        // TODO: Currently does not work at all. See PAY-2221 for support.
-        const coinflowTransaction = yield* call(
-          createFundAccountAndPurchaseTransaction,
-          audiusBackendInstance,
-          {
-            blocknumber: 0,
-            recentBlockhash,
-            splits: { sp38CXGL9FoWPp9Avo4fevewEX4UqNkTSTFUPpQFRry: 0 },
-            id: -1,
-            type: 'track',
-            wallet: rootAccount,
-            feePayer
-          }
-        )
-
-        const serializedTransaction = coinflowTransaction
-          .serialize({ requireAllSignatures: false, verifySignatures: false })
-          .toString('base64')
-        const amount = desiredAmount / 100.0
-        yield* put(
-          coinflowOnrampModalActions.open({
-            amount,
-            serializedTransaction
-          })
-        )
-
-        const result = yield* race({
-          succeeded: take(coinflowTransactionSucceeded),
-          failed: take(coinflowTransactionFailed),
-          canceled: take(coinflowTransactionCanceled)
-        })
-
-        // Return early for failure or cancellation
-        if (result.canceled) {
-          throw new Error('Canceled Coinflow purchase')
-        }
-        if (result.failed) {
-          throw new Error('Coinflow transaction failed')
-        }
-        break
-      }
+      case PurchaseVendor.COINFLOW:
       default:
         throw new BuyUSDCError(
           BuyUSDCErrorCode.OnrampError,

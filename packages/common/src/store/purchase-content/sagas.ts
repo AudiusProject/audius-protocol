@@ -192,7 +192,6 @@ function* purchaseWithCoinflow({
   if (!feePayerAddress) {
     throw new Error('Missing feePayer unexpectedly')
   }
-  // const feePayer = new PublicKey(feePayerAddress)
   const recentBlockhash = yield* call(getRecentBlockhash, audiusBackendInstance)
   const rootAccount = yield* call(getRootSolanaAccount, audiusBackendInstance)
 

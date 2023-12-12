@@ -375,7 +375,6 @@ export type PurchaseContentWithPaymentRouterArgs = {
   blocknumber: number
   recentBlockhash?: string
   purchaserUserId: ID
-  // feePayer: PublicKey
   wallet: Keypair
 }
 
@@ -386,7 +385,6 @@ export const purchaseContentWithPaymentRouter = async (
     type,
     blocknumber,
     extraAmount = 0,
-    // feePayer,
     purchaserUserId,
     splits,
     wallet
@@ -469,92 +467,6 @@ export const createTransferToUserBankTransaction = async (
   tx.add(memoInstruction)
   tx.add(transferInstruction)
   return tx
-}
-
-export const createFundAccountAndPurchaseTransaction = async (
-  audiusBackendInstance: AudiusBackend,
-  {
-    id,
-    type,
-    blocknumber,
-    recentBlockhash,
-    extraAmount = 0,
-    feePayer,
-    splits,
-    wallet
-  }: {
-    id: number
-    type: 'track'
-    splits: Record<string, number>
-    extraAmount?: number
-    blocknumber: number
-    recentBlockhash?: string
-    feePayer: PublicKey
-    wallet: Keypair
-  }
-) => {
-  if (Object.values(splits).length !== 1) {
-    throw new Error(
-      'Purchasing content only supports a single split. Specifying more splits coming soon!'
-    )
-  }
-
-  const mint = 'usdc'
-
-  const libs = await audiusBackendInstance.getAudiusLibsTyped()
-  const { solanaWeb3Manager } = libs
-  if (!solanaWeb3Manager) {
-    throw new Error('Solana web3 manager not initialized')
-  }
-
-  const totalAmount = Object.values(splits).reduce<bigint>(
-    (sum, split) => sum + BigInt(split),
-    BigInt(extraAmount)
-  )
-
-  const sourceMintUserbank = await solanaWeb3Manager.deriveUserBank({ mint })
-
-  // Create transaction with initial instructions to fund userbank
-  const transaction = await createTransferToUserBankTransaction(
-    audiusBackendInstance,
-    {
-      userBank: sourceMintUserbank,
-      wallet,
-      amount: totalAmount,
-      memo: `Fund account for purchase of ${id} ${type}`,
-      recentBlockhash,
-      feePayer,
-      mint
-    }
-  )
-
-  // createTransferInstructionsFromCurrentUser() -> artist user bank
-  const purchaseInstructions =
-    await solanaWeb3Manager.createTransferInstructionsFromCurrentUser({
-      amount: new BN(totalAmount.toString()),
-      feePayerKey: feePayer,
-      senderSolanaAddress: sourceMintUserbank,
-      recipientSolanaAddress: Object.keys(splits)[0]!,
-      instructionIndex: 3,
-      mint
-    })
-  transaction.add(...purchaseInstructions)
-  // add memo instruction
-  transaction.add(
-    new TransactionInstruction({
-      keys: [
-        {
-          pubkey: new PublicKey(feePayer),
-          isSigner: true,
-          isWritable: true
-        }
-      ],
-      programId: MEMO_PROGRAM_ID,
-      data: Buffer.from(`${type}:${id}:${blocknumber}`)
-    })
-  )
-
-  return transaction
 }
 
 /**
