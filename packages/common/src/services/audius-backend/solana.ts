@@ -492,7 +492,7 @@ export const createPaymentRouterRouteTransaction = async (
       id: 0, // ignored
       type: 'track', // ignored
       blocknumber: 0, // ignored
-      splits, // Pay self whole amount
+      splits,
       purchaserUserId: 0, // ignored
       senderAccount: sender
     })
