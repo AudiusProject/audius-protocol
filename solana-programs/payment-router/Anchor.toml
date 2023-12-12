@@ -2,7 +2,7 @@
 seeds = false
 skip-lint = false
 [programs.mainnet]
-payment_router = "paytYpX3LPN98TAeen6bFFeraGSuWnomZmCXjAsoqPa"
+payment_router = "sp38CXGL9FoWPp9Avo4fevewEX4UqNkTSTFUPpQFRry"
 [programs.localnet]
 payment_router = "apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa"
 

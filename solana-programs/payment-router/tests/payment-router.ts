@@ -200,18 +200,18 @@ describe('payment-router', () => {
   it('routes USDC amounts to the recipients', async () => {
     // List of 10 recipient testing $USDC token accounts.
     const recipients = [
-      '8q8MSG4cdyDLoDXRGBLQugA6oHtQmbCtVVV1aEuPdYTj',
-      'FMcMbnqupTbWmmyWJb8DhX2f1DHyHEqFf1rD87fRupaP',
-      '4hbyJjqpWAbarjCQhY8YSeptZz1WYSS88DGqG4BteE3v',
       'C4DohgB7tKRrArNzofi5wkEaGWSWeifK4EruaWnA77D4',
-      'isZMQA3Ury9FkZXBn4Gt51hTLxc8dYsQD7bWz4Ek46E',
-      'DST1gMcKvrDrxmP4UhQkbJ8X6psL8WyuWnS3KWmqLRcu',
-      '3jnV4Xz7G6vLTNNScr86evmPdTSypP2uYGHtTzaHwGY2',
-      'A6Txt94EB7vPkT5YVAqQbkKFfXpLggkEMYLRtQrzkM13',
-      '2kasfxzRdYq7GC96ZFRdvp31JAc8MREG21mxEVhEDzot',
-      '6mGfojkDcTHzhZ68pwDgntqn32EYYNDw7otZfT1GCQYH'
+      // 'FMcMbnqupTbWmmyWJb8DhX2f1DHyHEqFf1rD87fRupaP',
+      // '4hbyJjqpWAbarjCQhY8YSeptZz1WYSS88DGqG4BteE3v',
+      // 'C4DohgB7tKRrArNzofi5wkEaGWSWeifK4EruaWnA77D4',
+      // 'isZMQA3Ury9FkZXBn4Gt51hTLxc8dYsQD7bWz4Ek46E',
+      // 'DST1gMcKvrDrxmP4UhQkbJ8X6psL8WyuWnS3KWmqLRcu',
+      // '3jnV4Xz7G6vLTNNScr86evmPdTSypP2uYGHtTzaHwGY2',
+      // 'A6Txt94EB7vPkT5YVAqQbkKFfXpLggkEMYLRtQrzkM13',
+      // '2kasfxzRdYq7GC96ZFRdvp31JAc8MREG21mxEVhEDzot',
+      // '6mGfojkDcTHzhZ68pwDgntqn32EYYNDw7otZfT1GCQYH'
     ]
-    const amount = 0.00001
+    const amount = 2
     const recipientAmounts: Record<string, number> = recipients.reduce(
       (acc, recipient) => {
         acc[recipient] = amount
@@ -239,17 +239,18 @@ describe('payment-router', () => {
     const usdcAmountBeforeTransfer = Number(usdcTokenAccount.amount)
 
     const amounts = Object.values(recipientAmounts).map(
-      (amount) => new anchor.BN(amount * 10 ** SPL_AUDIO_DECIMALS)
+      (amount) => new anchor.BN(amount * 10 ** SPL_USDC_DECIMALS)
     )
     const totalAmount = amounts.reduce(
       (a: anchor.BN, b: anchor.BN) => a.add(b),
       new anchor.BN(0)
     )
+    console.log({totalAmount, s: totalAmount.toString()})
 
     const type = 'track'
-    const id = 1
-    const blocknumber = 1
-    const purchaserUserId = 1
+    const id = 1666277701
+    const blocknumber = 57655594
+    const purchaserUserId = 5476
     const data = `${type}:${id}:${blocknumber}:${purchaserUserId}`
     const recentBlockhash = (await connection.getLatestBlockhash()).blockhash
     const instructions = [
