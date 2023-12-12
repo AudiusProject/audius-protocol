@@ -74,6 +74,7 @@ def get_track_stream_signature(args: Dict):
             or signature_data.get("shouldCache", False)
         ):
             return None
+        return premium_content_signature_obj
     else:
         # build a track instance from the track dict
         track_entity = Track(
