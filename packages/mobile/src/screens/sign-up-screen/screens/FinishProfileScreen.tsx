@@ -57,6 +57,7 @@ export const FinishProfileScreen = () => {
             heading={messages.header}
             description={messages.description}
           />
+
           <Paper>
             <CoverPhotoField />
             <ProfilePictureField />
