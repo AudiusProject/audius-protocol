@@ -6,7 +6,6 @@ import { FormScreen } from '../components'
 import {
   IsrcField,
   LicenseTypeField,
-  ReleaseDateField,
   SubmenuList
 } from '../fields'
 

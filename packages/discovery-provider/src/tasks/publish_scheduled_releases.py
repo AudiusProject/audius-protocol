@@ -37,10 +37,12 @@ def _publish_scheduled_releases(session, redis):
             release_date_day = candidate_track.release_date
         except Exception:
             continue
-        candidate_created_at_day = candidate_track.created_at.date()
+        logger.info(f"asdf release_date_day.timestamp() {release_date_day.timestamp()}")
+        logger.info(f"asdf candidate_track.created_at.timestamp() {candidate_track.created_at.timestamp()}")
+
         if (
             current_timestamp >= release_date_day.timestamp()
-            and release_date_day > candidate_created_at_day
+            and release_date_day.timestamp() > candidate_track.created_at.timestamp() + 60
         ):
             candidate_track.is_unlisted = False
 
