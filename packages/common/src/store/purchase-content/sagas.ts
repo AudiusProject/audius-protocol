@@ -381,7 +381,7 @@ function* doStartPurchaseContentFlow({
       usdcConfig.minUSDCPurchaseAmountCents
     )
 
-    if (balanceNeeded.lten(0)) {
+    if (purchaseMethod === PurchaseMethod.BALANCE && balanceNeeded.lten(0)) {
       // No balance needed, perform the purchase right away
       yield* call(purchaseContent, audiusBackendInstance, {
         id: contentId,
@@ -393,7 +393,6 @@ function* doStartPurchaseContentFlow({
       })
     } else {
       // We need to acquire USDC before the purchase can continue
-
       // Invariant: The user must be checking out with a card
       if (purchaseMethod !== PurchaseMethod.CARD) {
         throw new PurchaseContentError(
