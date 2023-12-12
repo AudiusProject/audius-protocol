@@ -1,8 +1,43 @@
 import styled from '@emotion/native'
+import { View } from 'react-native'
 
 import type { BoxProps } from './types'
 
-export const Box = styled.View<BoxProps>(
+const invalidProps = [
+  'h',
+  'w',
+  'p',
+  'ph',
+  'pv',
+  'pt',
+  'pl',
+  'pr',
+  'pb',
+  'm',
+  'mh',
+  'mv',
+  'mt',
+  'ml',
+  'mr',
+  'mb',
+  'border',
+  'borderTop',
+  'borderRight',
+  'borderBottom',
+  'borderLeft',
+  'borderRadius',
+  'borderTopRightRadius',
+  'borderBottomRightRadius',
+  'borderBottomLeftRadius',
+  'borderTopLeftRadius',
+  'shadow',
+  'alignSelf',
+  'flex'
+]
+
+export const Box = styled(View, {
+  shouldForwardProp: (prop) => !invalidProps.includes(prop)
+})<BoxProps>(
   ({
     h,
     w,

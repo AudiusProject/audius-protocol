@@ -1,3 +1,15 @@
+export const signInPageMessages = {
+  metaTitle: 'Sign In • Audius',
+  metaDescription: 'Sign into your Audius account',
+  title: 'Sign Into Audius',
+  emailLabel: 'Email',
+  passwordLabel: 'Password',
+  signIn: 'Sign In',
+  newToAudius: 'New to Audius?',
+  createAccount: 'Create an Account',
+  forgotPassword: 'Forgot password?'
+}
+
 export const createEmailPageMessages = {
   title: 'Sign Up For Audius',
   emailLabel: 'Email',
