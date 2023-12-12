@@ -15,8 +15,8 @@ import {
 } from '@audius/harmony-native'
 
 type AccountHeaderProps = {
-  onChangeCoverPhoto: () => void
-  onChangeProfilePicture: () => void
+  onSelectCoverPhoto: () => void
+  onSelectProfilePicture: () => void
   profilePicture?: ImageURISource
   coverPhoto?: ImageURISource
   displayName?: string
@@ -26,8 +26,8 @@ type AccountHeaderProps = {
 
 export const AccountHeader = (props: AccountHeaderProps) => {
   const {
-    onChangeCoverPhoto,
-    onChangeProfilePicture,
+    onSelectCoverPhoto,
+    onSelectProfilePicture,
     profilePicture,
     coverPhoto,
     displayName,
@@ -40,7 +40,7 @@ export const AccountHeader = (props: AccountHeaderProps) => {
   return (
     <Flex>
       <CoverPhoto
-        onChangeCoverPhoto={onChangeCoverPhoto}
+        onSelectCoverPhoto={onSelectCoverPhoto}
         profilePicture={profilePicture}
         coverPhoto={coverPhoto}
       />
@@ -56,7 +56,7 @@ export const AccountHeader = (props: AccountHeaderProps) => {
       >
         <ProfilePicture
           profilePicture={profilePicture}
-          onChangeProfilePicture={onChangeProfilePicture}
+          onSelectProfilePicture={onSelectProfilePicture}
         />
         <AccountDetails
           displayName={displayName}
@@ -70,15 +70,15 @@ export const AccountHeader = (props: AccountHeaderProps) => {
 }
 
 type CoverPhotoProps = {
-  onChangeCoverPhoto?: () => void
+  onSelectCoverPhoto?: () => void
   profilePicture?: ImageURISource
   coverPhoto?: ImageURISource
 }
 
 const CoverPhoto = (props: CoverPhotoProps) => {
-  const { onChangeCoverPhoto, profilePicture, coverPhoto } = props
+  const { onSelectCoverPhoto, profilePicture, coverPhoto } = props
   const { color, cornerRadius, spacing } = useTheme()
-  const isEdit = onChangeCoverPhoto
+  const isEdit = onSelectCoverPhoto
 
   const borderRadiusStyle = css({
     borderTopLeftRadius: cornerRadius.m,
@@ -113,11 +113,11 @@ const CoverPhoto = (props: CoverPhotoProps) => {
           />
         </View>
       ) : null}
-      {onChangeCoverPhoto ? (
+      {onSelectCoverPhoto ? (
         <IconImage
           style={{ position: 'absolute', top: spacing.m, right: spacing.m }}
           color='staticWhite'
-          onPress={onChangeCoverPhoto}
+          onPress={onSelectCoverPhoto}
         />
       ) : null}
     </ImageBackground>
@@ -126,11 +126,11 @@ const CoverPhoto = (props: CoverPhotoProps) => {
 
 type ProfilePictureProps = {
   profilePicture?: ImageURISource
-  onChangeProfilePicture?: () => void
+  onSelectProfilePicture?: () => void
 }
 
 export const ProfilePicture = (props: ProfilePictureProps) => {
-  const { profilePicture, onChangeProfilePicture } = props
+  const { profilePicture, onSelectProfilePicture } = props
 
   return (
     <Avatar
@@ -139,11 +139,11 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
       variant='strong'
       source={profilePicture ?? { uri: '' }}
     >
-      {onChangeProfilePicture ? (
+      {onSelectProfilePicture ? (
         <IconCamera
           size='2xl'
           color='staticWhite'
-          onPress={onChangeProfilePicture}
+          onPress={onSelectProfilePicture}
         />
       ) : null}
     </Avatar>

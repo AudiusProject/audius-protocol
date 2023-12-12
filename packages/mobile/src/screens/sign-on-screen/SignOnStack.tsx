@@ -15,10 +15,7 @@ const screenOptionsOverrides = { animationTypeForReplace: 'pop' as const }
 export const SignOnStack = () => {
   const screenOptions = useScreenOptions(screenOptionsOverrides)
   return (
-    <Stack.Navigator
-      initialRouteName='FinishProfile'
-      screenOptions={screenOptions}
-    >
+    <Stack.Navigator initialRouteName='SignOn' screenOptions={screenOptions}>
       <Stack.Screen
         name='SignOn'
         component={SignOnScreen}

@@ -40,8 +40,9 @@ export const Text = (props: TextProps) => {
     ...('css' in variantStyles ? variantStyles.css : {}),
     ...(color && { color }),
     ...(shadow && {
-      // TODO: do this correctly
-      textShadow: '0px 1px 5px rgba(0, 0, 0, 0.50)'
+      textShadowColor: 'rgba(0, 0, 0, 0.50)',
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 5
     }),
     textAlign
   })

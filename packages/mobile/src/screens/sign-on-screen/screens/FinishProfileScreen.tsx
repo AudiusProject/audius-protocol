@@ -119,8 +119,8 @@ const AccountHeaderField = () => {
     <AccountHeader
       profilePicture={profileImage}
       coverPhoto={coverPhoto}
-      onChangeProfilePicture={handleSelectProfilePicture}
-      onChangeCoverPhoto={handleSelectCoverPhoto}
+      onSelectProfilePicture={handleSelectProfilePicture}
+      onSelectCoverPhoto={handleSelectCoverPhoto}
       displayName={displayName}
       handle={handle}
       isVerified={isVerified}
