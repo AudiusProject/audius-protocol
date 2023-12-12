@@ -54,7 +54,7 @@ export const PremiumConditionsTipUserId = z
 export const PremiumConditionsUSDCPurchase = z
   .object({
     usdcPurchase: z.object({
-      price: z.number(),
+      price: z.number().positive(),
       splits: z.any()
     })
   })
