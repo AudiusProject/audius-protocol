@@ -9,17 +9,19 @@ import { Button, type ButtonProps } from 'app/components/core'
 
 type PageProps = FlexProps & {
   centered?: boolean
+  offsetHeaderHeight?: boolean
 }
 
 // Horizontal gutter size
 const gutterSize: FlexProps['p'] = 'l'
 
 export const Page = (props: PageProps) => {
-  const { children, style, ...other } = props
+  const { children, style, offsetHeaderHeight, ...other } = props
 
   const layoutProps: FlexProps = {
     direction: 'column',
-    h: '100%',
+    // 196 = -96 (account header) + -100 (navigation height)
+    h: offsetHeaderHeight ? Dimensions.get('window').height - 196 : '100%',
     gap: '2xl',
     ph: gutterSize,
     pv: '2xl',

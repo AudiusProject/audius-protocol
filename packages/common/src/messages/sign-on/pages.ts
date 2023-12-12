@@ -36,3 +36,9 @@ export const createPasswordPageMessages = {
     notCommon: 'Hard to guess'
   }
 }
+
+export const selectGenresPageMessages = {
+  header: 'Select Your Genres',
+  description: 'Start by picking some of your favorite genres.',
+  continue: 'Continue'
+}
