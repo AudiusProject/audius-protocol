@@ -7,7 +7,7 @@ import { Route, Switch } from 'react-router-dom'
 
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
-import { SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
+import { SIGN_IN_PAGE, SIGN_ON_ALIASES, SIGN_UP_PAGE } from 'utils/route'
 
 import { AppErrorBoundary } from './AppErrorBoundary'
 import { AppProviders } from './AppProviders'
@@ -30,7 +30,7 @@ export const AppInner = () => {
       <SomethingWrong />
       <Suspense fallback={null}>
         <Switch>
-          <Route path={[SIGN_IN_PAGE, SIGN_UP_PAGE]}>
+          <Route path={[SIGN_IN_PAGE, SIGN_UP_PAGE, ...SIGN_ON_ALIASES]}>
             {({ location }) => {
               if (!isLoaded) return null
               if (isSignInRedesignEnabled) return <SignOnPage />
