@@ -82,12 +82,12 @@ export const FinishProfileScreen = () => {
 }
 
 const AccountHeaderField = () => {
-  const [{ value: profileImage }, , { setValue: setProfilieImage }] =
+  const [{ value: profileImage }, , { setValue: setProfileImage }] =
     useField<ImageURISource>('profileImage')
 
   const handleSelectProfilePicture = useCallback(() => {
     const handleImageSelected = (image: Image) => {
-      setProfilieImage(image)
+      setProfileImage(image)
     }
 
     launchSelectImageActionSheet(
@@ -95,7 +95,7 @@ const AccountHeaderField = () => {
       { height: 1000, width: 1000, cropperCircleOverlay: true },
       'profilePicture'
     )
-  }, [setProfilieImage])
+  }, [setProfileImage])
 
   const [{ value: coverPhoto }, , { setValue: setCoverPhoto }] =
     useField<ImageURISource>('coverPhoto')

@@ -15,8 +15,8 @@ import {
 } from '@audius/harmony-native'
 
 type AccountHeaderProps = {
-  onSelectCoverPhoto: () => void
-  onSelectProfilePicture: () => void
+  onSelectCoverPhoto?: () => void
+  onSelectProfilePicture?: () => void
   profilePicture?: ImageURISource
   coverPhoto?: ImageURISource
   displayName?: string
