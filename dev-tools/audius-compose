@@ -265,6 +265,7 @@ def push(ctx, services, prod):
 
     # this is building w/o cache every time
     ctx.invoke(build, services=services, prod=prod)
+    print(f"raymont {ctx} {services} {prod}")
 
     try:
         for service in services:
@@ -450,7 +451,7 @@ def up(
     AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))
 
     # Mediorum's Dockerfile.prod doesn't support multiple mediorum instances, so always use dev
-    os.environ['MEDIORUM_ENV_TYPE'] = 'dev'
+    os.environ["MEDIORUM_ENV_TYPE"] = "dev"
 
     ctx.invoke(pull)
     sys.exit(
