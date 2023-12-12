@@ -5,8 +5,7 @@ import {
   formatCurrencyBalance
 } from '@audius/common'
 import BN from 'bn.js'
-import { FlatList, View } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { FlatList, View, TouchableOpacity } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconCreditCard from 'app/assets/images/iconCreditCard.svg'
