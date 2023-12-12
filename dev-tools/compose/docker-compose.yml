@@ -143,6 +143,13 @@ services:
       service: trpc
     <<: *common
 
+  es-indexer:
+    # Used for pushing to docker hub in CI
+    extends:
+      file: docker-compose.discovery.${DOCKERCOMPOSE_ENV_TYPE:-dev}.yml
+      service: es-indexer
+    <<: *common
+
   # Pedalboard (plugins)
   trending-challenge-rewards:
     extends:

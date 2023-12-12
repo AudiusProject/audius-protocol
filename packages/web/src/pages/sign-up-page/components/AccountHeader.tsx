@@ -73,7 +73,7 @@ export const AccountHeader = (props: AccountHeaderProps) => {
   const isSmallSize = isEditing || isMobile || size === 'small'
 
   return (
-    <Box w='100%' css={{ zIndex: 4 }}>
+    <Box w='100%'>
       <Box h={isSmallSize ? 96 : 168} css={{ overflow: 'hidden' }} w='100%'>
         {isEditing ? (
           <ImageField name='coverPhoto' imageResizeOptions={{ square: false }}>
@@ -81,7 +81,7 @@ export const AccountHeader = (props: AccountHeaderProps) => {
               <CoverPhotoBanner
                 coverPhotoUrl={uploadedImage?.url}
                 profileImageUrl={formProfileImage?.url}
-                showPhotoIcon
+                isEditing
               />
             )}
           </ImageField>

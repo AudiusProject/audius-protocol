@@ -389,8 +389,8 @@ export enum StringKeys {
   /** Preset amounts for the Pay Extra feature in USDC purchases, specified in cents */
   PAY_EXTRA_PRESET_CENT_AMOUNTS = 'PAY_EXTRA_PRESET_CENT_AMOUNTS',
 
-  /** Allowlist of user ids for explore premium tracks page */
-  EXPLORE_PREMIUM_ALLOWED_USERS = 'EXPLORE_PREMIUM_ALLOWED_USERS'
+  /** Denylist of user ids for explore premium tracks page */
+  EXPLORE_PREMIUM_DENIED_USERS = 'EXPLORE_PREMIUM_DENIED_USERS'
 }
 
 export type AllRemoteConfigKeys =

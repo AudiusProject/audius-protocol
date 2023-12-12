@@ -1,8 +1,43 @@
 import styled from '@emotion/native'
+import { View } from 'react-native'
 
-import type { NativeBoxProps } from './types'
+import type { BoxProps } from './types'
 
-export const Box = styled.View<NativeBoxProps>(
+const invalidProps = [
+  'h',
+  'w',
+  'p',
+  'ph',
+  'pv',
+  'pt',
+  'pl',
+  'pr',
+  'pb',
+  'm',
+  'mh',
+  'mv',
+  'mt',
+  'ml',
+  'mr',
+  'mb',
+  'border',
+  'borderTop',
+  'borderRight',
+  'borderBottom',
+  'borderLeft',
+  'borderRadius',
+  'borderTopRightRadius',
+  'borderBottomRightRadius',
+  'borderBottomLeftRadius',
+  'borderTopLeftRadius',
+  'shadow',
+  'alignSelf',
+  'flex'
+]
+
+export const Box = styled(View, {
+  shouldForwardProp: (prop) => !invalidProps.includes(prop)
+})<BoxProps>(
   ({
     h,
     w,
@@ -52,7 +87,7 @@ export const Box = styled.View<NativeBoxProps>(
       height: h,
       width: w,
       ...(shadow && {
-        ...shadows.native[shadow],
+        ...shadows[shadow],
         // In order for shadows to work on iOS they need a background color
         // Using white as a default here, but can be overridden
         backgroundColor: color.background.white

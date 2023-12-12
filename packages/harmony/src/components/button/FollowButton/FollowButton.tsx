@@ -133,14 +133,32 @@ export const FollowButton = (props: FollowButtonProps) => {
     return undefined
   }, [isPressing, handleMouseUp])
 
-  const content = (
+  const rootProps = {
+    onMouseEnter: handleMouseEnter,
+    onMouseLeave: handleMouseLeave,
+    onMouseDown: handleMouseDown,
+    onMouseUp: handleMouseUp,
+    onTouchStart: handlePressIn,
+    onTouchEnd: handlePressOut
+  }
+
+  const buttonProps = type === 'checkbox' ? undefined : other
+  const inputProps = type === 'checkbox' ? other : undefined
+
+  return (
     <Flex
+      as={type === 'checkbox' ? 'label' : 'button'}
       h={size === 'small' ? 28 : 32}
       direction='row'
       alignItems='center'
       justifyContent='center'
       gap='xs'
       pv='s'
+      css={rootCss}
+      // @ts-ignore flex not smart enough
+      onClick={handleClick}
+      {...buttonProps}
+      {...rootProps}
     >
       {/* TODO: use theme icon colors (confirm w/design) */}
       <Icon height={18} width={18} css={{ path: { fill: textColor } }} />
@@ -152,36 +170,9 @@ export const FollowButton = (props: FollowButtonProps) => {
       >
         {text}
       </Text>
+      {type === 'checkbox' ? (
+        <InputRoot {...inputProps} checked={isFollowing} />
+      ) : null}
     </Flex>
   )
-
-  const rootProps = {
-    css: rootCss,
-    onMouseEnter: handleMouseEnter,
-    onMouseLeave: handleMouseLeave,
-    onMouseDown: handleMouseDown,
-    onMouseUp: handleMouseUp,
-    onTouchStart: handlePressIn,
-    onTouchEnd: handlePressOut
-  }
-
-  switch (type) {
-    case 'checkbox': {
-      const { checked: checkedIgnored, ...rest } = other
-      return (
-        <div {...rootProps}>
-          {content}
-          <InputRoot {...rest} checked={isFollowing} />
-        </div>
-      )
-    }
-    case 'button':
-    default: {
-      return (
-        <button {...rootProps} {...other} onClick={handleClick}>
-          {content}
-        </button>
-      )
-    }
-  }
 }

@@ -62,6 +62,15 @@ services:
       db:
         condition: service_healthy
 
+  es-indexer:
+    build:
+      context: ${PROJECT_ROOT}/packages/es-indexer
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+
   discovery-provider-elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
     environment:
@@ -109,6 +118,7 @@ services:
       audius_solana_track_listen_count_address: '${SOLANA_TRACK_LISTEN_COUNT_PUBLIC_KEY}'
       audius_solana_signer_group_address: '${SOLANA_SIGNER_GROUP_PUBLIC_KEY}'
       audius_solana_user_bank_program_address: '${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}'
+      audius_solana_payment_router_program_address: '${SOLANA_PAYMENT_ROUTER_PUBLIC_KEY}'
       audius_solana_waudio_mint: '${SOLANA_TOKEN_MINT_PUBLIC_KEY}'
       audius_solana_usdc_mint: '${SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY}'
       audius_solana_rewards_manager_program_address: '${SOLANA_REWARD_MANAGER_PUBLIC_KEY}'

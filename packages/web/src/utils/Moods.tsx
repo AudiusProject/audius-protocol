@@ -1,4 +1,6 @@
-export const moodMap: Record<string, JSX.Element> = {
+import { Mood } from '@audius/sdk'
+
+export const moodMap: Record<Mood, JSX.Element> = {
   Peaceful: (
     <div>
       Peaceful <i className='emoji dove-of-peace' />

@@ -7,8 +7,7 @@ import {
   IconMessage,
   Text
 } from '@audius/harmony'
-
-import { useMedia } from 'hooks/useMedia'
+import { useMedia as useMediaQuery } from 'react-use'
 
 const messages = {
   heading: 'Your Music, Your Way',
@@ -17,21 +16,22 @@ const messages = {
   adFree: 'Ad-Free, Offline Listening'
 }
 
-type AudiusValueProps = { icon: IconComponent; text: string }
+type AudiusValueProps = { icon: IconComponent; text: string; dynamic?: boolean }
 
 /**
  * Each individual audius value text + icon row
  */
 const AudiusValue = (props: AudiusValueProps) => {
   const { icon: Icon, text } = props
-  const { isDesktop } = useMedia()
+  const isSmallDesktop = useMediaQuery('(min-width: 1363px)')
+
   return (
     <Flex alignItems='center' justifyContent='center' gap='m'>
-      <Icon color='staticWhite' size={isDesktop ? '2xl' : 'l'} />
+      <Icon color='staticWhite' size={isSmallDesktop ? '2xl' : 'l'} />
       <Text
-        variant={isDesktop ? 'heading' : 'title'}
-        size={isDesktop ? 'xl' : 'l'}
-        strength={isDesktop ? 'default' : 'weak'}
+        variant={isSmallDesktop ? 'heading' : 'title'}
+        size={isSmallDesktop ? 'xl' : 'l'}
+        strength={isSmallDesktop ? 'default' : 'weak'}
         color='staticWhite'
         shadow='emphasis'
       >
@@ -50,15 +50,17 @@ type AudiusValuesProps = {
 }
 
 export const AudiusValues = (props: AudiusValuesProps) => {
-  const { isDesktop } = useMedia()
+  const isSmallDesktop = useMediaQuery('(min-width: 1363px)')
+
   return (
     <Flex
       direction='column'
-      gap={isDesktop ? 'xl' : 'l'}
+      gap={isSmallDesktop ? 'xl' : 'l'}
       alignItems='center'
+      p='xl'
       {...props}
     >
-      {isDesktop ? (
+      {isSmallDesktop ? (
         <Box pb='l'>
           <Text
             variant='display'

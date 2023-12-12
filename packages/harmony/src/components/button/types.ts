@@ -208,7 +208,7 @@ export type FilterButtonProps = {
   /**
    * What to do when an option is selected
    */
-  onSelect?: (option: FilterButtonOption) => void
+  onSelect?: (label: string) => void
 
   /**
    * Popup anchor origin

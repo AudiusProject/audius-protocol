@@ -1,0 +1,1 @@
+export const PANEL_EXPAND_DELAY = 3000

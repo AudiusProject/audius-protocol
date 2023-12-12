@@ -224,7 +224,9 @@ class SolanaClientManager:
             "solana_client_manager.py | get_account_info | All requests failed to fetch",
         )
 
-    def get_account_info_json_parsed(self, account: Pubkey, retries=DEFAULT_MAX_RETRIES):
+    def get_account_info_json_parsed(
+        self, account: Pubkey, retries=DEFAULT_MAX_RETRIES
+    ):
         def _get_account_info_json_parsed(client: Client, index):
             endpoint = self.endpoints[index]
             num_retries = retries
