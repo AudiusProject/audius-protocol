@@ -1,50 +1,76 @@
 import { useCallback } from 'react'
 
-import { GENRES, convertGenreLabelToValue } from '@audius/common'
-import { setField } from 'common/store/pages/signon/actions'
 import {
-  getHandleField,
-  getNameField
-} from 'common/store/pages/signon/selectors'
-import { Formik } from 'formik'
-import { Pressable, ScrollView, View } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+  GENRES,
+  convertGenreLabelToValue,
+  selectGenresPageMessages as messages,
+  selectGenresSchema
+} from '@audius/common'
+import { setField } from 'common/store/pages/signon/actions'
+import { Formik, useField } from 'formik'
+import { ScrollView, View } from 'react-native'
+import { useDispatch } from 'react-redux'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
-import { Button, Text } from 'app/components/core'
+import { Flex, SelectablePill } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
+import { ReadOnlyAccountHeader } from '../components/AccountHeader'
+import { Heading, Page, PageFooter, gutterSize } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
-
-const messages = {
-  header: 'Select Your Genres',
-  description: 'Start by picking some of your favorite genres.',
-  continue: 'Continue'
-}
 
 const genres = GENRES.map((genre) => ({
   value: genre,
   label: convertGenreLabelToValue(genre)
 }))
 
-type SelectGenreValues = Record<string, boolean>
+type SelectGenreValues = { genres: typeof GENRES }
 
-const initialValues = genres.reduce(
-  (acc, genre) => ({
-    ...acc,
-    [genre.value]: false
-  }),
-  {} as SelectGenreValues
-)
+const initialValues = { genres: [] }
+
+const SelectGenreFieldArray = () => {
+  const [, meta, helpers] = useField({ name: 'genres', type: 'checkbox' })
+  const { value: values } = meta
+  const { setValue } = helpers
+
+  const handleChange = (value) => {
+    const newValues = [...values]
+    const valueIndex = values.indexOf(value)
+
+    if (valueIndex > -1) {
+      // Already checked
+      newValues.splice(valueIndex, 1)
+    } else {
+      // Unchecked
+      newValues.push(value)
+    }
+    setValue(newValues)
+  }
+
+  return (
+    <ScrollView testID='genreScrollView'>
+      <Flex gap='s' direction='row' wrap='wrap'>
+        {genres.map((genre) => (
+          <SelectablePill
+            label={genre.label}
+            key={genre.value}
+            onPress={() => handleChange(genre.value)}
+            isSelected={values.includes(genre.value)}
+            size='large'
+          />
+        ))}
+      </Flex>
+    </ScrollView>
+  )
+}
 
 export const SelectGenreScreen = () => {
-  const { value: displayName } = useSelector(getNameField)
-  const { value: handle } = useSelector(getHandleField)
   const dispatch = useDispatch()
   const navigation = useNavigation<SignUpScreenParamList>()
 
   const handleSubmit = useCallback(
     (values: SelectGenreValues) => {
-      const genres = Object.keys(values).filter((genre) => values[genre])
+      const genres = values.genres
       dispatch(setField('genres', genres))
       navigation.navigate('SelectArtists')
     },
@@ -52,47 +78,31 @@ export const SelectGenreScreen = () => {
   )
 
   return (
-    <ScrollView testID='genreScrollView'>
-      <View>
-        <Text>{displayName}</Text>
-        <Text>{handle}</Text>
-      </View>
-      <View>
-        <Text>{messages.header}</Text>
-        <Text>{messages.description}</Text>
-      </View>
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        {({ values, setValues, handleSubmit }) => (
-          <View>
-            {genres.map((genre) => {
-              const { label, value } = genre
-              const checked = !!values[value]
-
-              const handleChange = () => {
-                setValues({
-                  ...values,
-                  [value]: !checked
-                })
-              }
-
-              return (
-                <Pressable
-                  key={value}
-                  testID={label}
-                  accessibilityRole='checkbox'
-                  accessibilityState={{ checked }}
-                  accessibilityLiveRegion='polite'
-                  onPress={handleChange}
-                  style={{ backgroundColor: checked ? 'purple' : undefined }}
-                >
-                  <Text>{label}</Text>
-                </Pressable>
-              )
-            })}
-            <Button title={messages.continue} onPress={() => handleSubmit()} />
-          </View>
-        )}
-      </Formik>
-    </ScrollView>
+    <Formik
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+      validationSchema={toFormikValidationSchema(selectGenresSchema)}
+      validateOnBlur
+      validateOnChange
+    >
+      {({ handleSubmit: triggerSubmit, dirty, isValid }) => (
+        <View>
+          <Page noGutter>
+            <ReadOnlyAccountHeader />
+            <Flex ph={gutterSize} gap='2xl'>
+              <Heading
+                heading={messages.header}
+                description={messages.description}
+              />
+              <SelectGenreFieldArray />
+            </Flex>
+            <PageFooter
+              buttonProps={{ disabled: !(dirty && isValid) }}
+              onSubmit={triggerSubmit}
+            />
+          </Page>
+        </View>
+      )}
+    </Formik>
   )
 }

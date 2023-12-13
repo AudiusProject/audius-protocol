@@ -70,3 +70,9 @@ export const finishProfilePageMessages = {
   inputPlaceholder: 'express yourself 💫',
   goBack: 'Go back'
 }
+
+export const selectGenresPageMessages = {
+    header: 'Select Your Genres',
+    description: 'Start by picking some of your favorite genres.',
+    continue: 'Continue'
+}
