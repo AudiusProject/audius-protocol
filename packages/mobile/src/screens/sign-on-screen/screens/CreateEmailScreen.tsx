@@ -48,13 +48,17 @@ export const CreateEmailScreen = (props: SignOnScreenProps) => {
     (values: SignUpEmailValues) => {
       const { email } = values
       dispatch(setValueField('email', email))
-      navigation.navigate('FinishProfile', { email })
+      navigation.navigate('CreatePassword', { email })
     },
     [dispatch, navigation]
   )
 
   return (
-    <Formik initialValues={initialValues} onSubmit={handleSubmit}>
+    <Formik
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+      validationSchema={emailFormikSchema}
+    >
       {({ handleSubmit, errors }) => (
         <>
           <Heading
