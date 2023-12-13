@@ -560,34 +560,39 @@ export const GiantTrackTile = ({
             {renderStatsRow()}
           </div>
 
-          <div
-            className={cn(styles.actionButtons, fadeIn)}
-            role='group'
-            aria-label={messages.actionGroupLabel}
-          >
-            {renderShareButton()}
-            {renderMakePublicButton()}
-            {doesUserHaveAccess && renderRepostButton()}
-            {doesUserHaveAccess && renderFavoriteButton()}
-            <span>
-              {/* prop types for overflow menu don't work correctly
+          <ClientOnly>
+            <div
+              className={cn(styles.actionButtons, fadeIn)}
+              role='group'
+              aria-label={messages.actionGroupLabel}
+            >
+              {renderShareButton()}
+              {renderMakePublicButton()}
+              {doesUserHaveAccess && renderRepostButton()}
+              {doesUserHaveAccess && renderFavoriteButton()}
+              <span>
+                {/* prop types for overflow menu don't work correctly
               so we need to cast here */}
-              <Menu {...(overflowMenu as any)}>
-                {(ref, triggerPopup) => (
-                  <div className={cn(styles.menuKebabContainer)} ref={ref}>
-                    <Button
-                      className={cn(styles.buttonFormatting, styles.moreButton)}
-                      leftIcon={<IconKebabHorizontal />}
-                      onClick={() => triggerPopup()}
-                      text={null}
-                      textClassName={styles.buttonTextFormatting}
-                      type={ButtonType.COMMON}
-                    />
-                  </div>
-                )}
-              </Menu>
-            </span>
-          </div>
+                <Menu {...(overflowMenu as any)}>
+                  {(ref, triggerPopup) => (
+                    <div className={cn(styles.menuKebabContainer)} ref={ref}>
+                      <Button
+                        className={cn(
+                          styles.buttonFormatting,
+                          styles.moreButton
+                        )}
+                        leftIcon={<IconKebabHorizontal />}
+                        onClick={() => triggerPopup()}
+                        text={null}
+                        textClassName={styles.buttonTextFormatting}
+                        type={ButtonType.COMMON}
+                      />
+                    </div>
+                  )}
+                </Menu>
+              </span>
+            </div>
+          </ClientOnly>
         </div>
         <div className={styles.badges}>
           {aiAttributionUserId ? (

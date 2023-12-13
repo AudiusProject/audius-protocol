@@ -125,72 +125,76 @@ const LeftNav = (props: NavColumnProps) => {
     <nav id='leftNav' className={styles.leftNav}>
       {isElectron ? <RouteNav /> : null}
       <NavHeader />
-      <div
-        ref={navBodyContainerMeasureRef}
-        className={cn(styles.leftNavContent, {
-          [styles.show]: navLoaded,
-          [styles.dragScrollingUp]: dragScrollingDirection === 'up',
-          [styles.dragScrollingDown]: dragScrollingDirection === 'down'
-        })}
-      >
-        <Scrollbar
-          containerRef={(el: HTMLElement) => {
-            scrollbarRef.current = el
-          }}
-          className={styles.scrollable}
+      <ClientOnly>
+        <div
+          ref={navBodyContainerMeasureRef}
+          className={cn(styles.leftNavContent, {
+            [styles.show]: navLoaded,
+            [styles.dragScrollingUp]: dragScrollingDirection === 'up',
+            [styles.dragScrollingDown]: dragScrollingDirection === 'down'
+          })}
         >
-          <DragAutoscroller
-            containerBoundaries={navBodyContainerBoundaries}
-            updateScrollTopPosition={updateScrollTopPosition}
-            onChangeDragScrollingDirection={handleChangeDragScrollingDirection}
+          <Scrollbar
+            containerRef={(el: HTMLElement) => {
+              scrollbarRef.current = el
+            }}
+            className={styles.scrollable}
           >
-            <AccountDetails />
-            <div className={styles.links}>
-              <div className={styles.linkGroup}>
-                <GroupHeader>{messages.discover}</GroupHeader>
-                <LeftNavLink
-                  to={FEED_PAGE}
-                  disabled={!account}
-                  onClick={onClickNavLinkWithAccount}
-                >
-                  Feed
-                </LeftNavLink>
-                <LeftNavLink to={TRENDING_PAGE}>Trending</LeftNavLink>
-                <LeftNavLink to={EXPLORE_PAGE} exact>
-                  Explore
-                </LeftNavLink>
-              </div>
-              <div className={styles.linkGroup}>
-                <GroupHeader>{messages.library}</GroupHeader>
-                <LeftNavDroppable
-                  disabled={!account}
-                  acceptedKinds={['track', 'album']}
-                  acceptOwner={false}
-                  onDrop={draggingKind === 'album' ? saveCollection : saveTrack}
-                >
+            <DragAutoscroller
+              containerBoundaries={navBodyContainerBoundaries}
+              updateScrollTopPosition={updateScrollTopPosition}
+              onChangeDragScrollingDirection={
+                handleChangeDragScrollingDirection
+              }
+            >
+              <AccountDetails />
+              <div className={styles.links}>
+                <div className={styles.linkGroup}>
+                  <GroupHeader>{messages.discover}</GroupHeader>
                   <LeftNavLink
-                    to={LIBRARY_PAGE}
+                    to={FEED_PAGE}
+                    disabled={!account}
                     onClick={onClickNavLinkWithAccount}
                   >
-                    Library
+                    Feed
                   </LeftNavLink>
-                </LeftNavDroppable>
-                <LeftNavLink
-                  to={HISTORY_PAGE}
-                  onClick={onClickNavLinkWithAccount}
-                  disabled={!account}
-                >
-                  History
-                </LeftNavLink>
+                  <LeftNavLink to={TRENDING_PAGE}>Trending</LeftNavLink>
+                  <LeftNavLink to={EXPLORE_PAGE} exact>
+                    Explore
+                  </LeftNavLink>
+                </div>
+                <div className={styles.linkGroup}>
+                  <GroupHeader>{messages.library}</GroupHeader>
+                  <LeftNavDroppable
+                    disabled={!account}
+                    acceptedKinds={['track', 'album']}
+                    acceptOwner={false}
+                    onDrop={
+                      draggingKind === 'album' ? saveCollection : saveTrack
+                    }
+                  >
+                    <LeftNavLink
+                      to={LIBRARY_PAGE}
+                      onClick={onClickNavLinkWithAccount}
+                    >
+                      Library
+                    </LeftNavLink>
+                  </LeftNavDroppable>
+                  <LeftNavLink
+                    to={HISTORY_PAGE}
+                    onClick={onClickNavLinkWithAccount}
+                    disabled={!account}
+                  >
+                    History
+                  </LeftNavLink>
+                </div>
+                <div className={styles.linkGroup}>
+                  <PlaylistLibrary scrollbarRef={scrollbarRef} />
+                </div>
               </div>
-              <div className={styles.linkGroup}>
-                <PlaylistLibrary scrollbarRef={scrollbarRef} />
-              </div>
-            </div>
-          </DragAutoscroller>
-        </Scrollbar>
-      </div>
-      <ClientOnly>
+            </DragAutoscroller>
+          </Scrollbar>
+        </div>
         <div className={styles.navAnchor}>
           {profileCompletionMeter}
           <NavButton />

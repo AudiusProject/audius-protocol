@@ -16,6 +16,7 @@ import { Spring } from 'react-spring/renderprops.cjs'
 // @ts-ignore
 import calcScrollbarWidth from 'scrollbar-width'
 
+import { ClientOnly } from 'components/client-only/ClientOnly'
 import SearchBar from 'components/search-bar/ConnectedSearchBar'
 
 import styles from './Page.module.css'
@@ -217,11 +218,13 @@ export const Page = (props: PageProps) => {
               {children}
             </div>
           </div>
-          {scrollableSearch && (
-            <div className={styles.searchWrapper}>
-              <SearchBar />
-            </div>
-          )}
+          <ClientOnly>
+            {scrollableSearch && (
+              <div className={styles.searchWrapper}>
+                <SearchBar />
+              </div>
+            )}
+          </ClientOnly>
         </div>
       )}
     </Spring>
