@@ -16,10 +16,12 @@ type SignupFlowInstagramAuthProps = PropsWithChildren<{
     handle: string
     platform: 'instagram'
   }) => void
+  onStart: () => void
 }>
 
 export const SignupFlowInstagramAuth = ({
   className,
+  onStart,
   onFailure,
   onSuccess,
   children
@@ -58,6 +60,7 @@ export const SignupFlowInstagramAuth = ({
     <InstagramAuth
       className={className}
       onClick={() => {
+        onStart()
         dispatch(make(Name.CREATE_ACCOUNT_START_INSTAGRAM, {}))
       }}
       onFailure={handleError}

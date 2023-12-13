@@ -1,9 +1,16 @@
 import { useCallback } from 'react'
 
-import { GENRES, Genre, convertGenreLabelToValue } from '@audius/common'
+import {
+  GENRES,
+  Genre,
+  convertGenreLabelToValue,
+  selectGenresPageMessages as messages,
+  selectGenresSchema
+} from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { Form, Formik } from 'formik'
 import { useDispatch } from 'react-redux'
+import { toFormikValidationSchema } from 'zod-formik-adapter'
 
 import { setField } from 'common/store/pages/signon/actions'
 import { SelectablePillField } from 'components/form-fields/SelectablePillField'
@@ -13,12 +20,6 @@ import { SIGN_UP_ARTISTS_PAGE } from 'utils/route'
 
 import { AccountHeader } from '../components/AccountHeader'
 import { Heading, Page, PageFooter, ScrollView } from '../components/layout'
-
-const messages = {
-  header: 'Select Your Genres',
-  description: 'Start by picking some of your favorite genres.',
-  continue: 'Continue'
-}
 
 const genres = GENRES.map((genre) => ({
   value: genre,
@@ -49,8 +50,12 @@ export const SelectGenrePage = () => {
   return (
     <ScrollView gap={isMobile ? '2xl' : '3xl'}>
       <AccountHeader mode='viewing' />
-      <Formik initialValues={initialValues} onSubmit={handleSubmit}>
-        {({ values }) => (
+      <Formik
+        initialValues={initialValues}
+        onSubmit={handleSubmit}
+        validationSchema={toFormikValidationSchema(selectGenresSchema)}
+      >
+        {({ isValid, dirty }) => (
           <Page
             as={Form}
             centered
@@ -85,7 +90,7 @@ export const SelectGenrePage = () => {
             <PageFooter
               centered
               sticky
-              buttonProps={{ disabled: values.genres.length === 0 }}
+              buttonProps={{ disabled: !(dirty && isValid) }}
             />
           </Page>
         )}

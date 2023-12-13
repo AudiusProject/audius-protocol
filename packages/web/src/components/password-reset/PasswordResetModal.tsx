@@ -87,7 +87,7 @@ export const PasswordResetModal = () => {
       titleClassName={styles.modalTitle}
     >
       <Flex direction='column' gap='xl' p='l'>
-        <Text variant='body' strength='weak' css={{ textAlign: 'center' }}>
+        <Text variant='body' strength='weak' textAlign='center'>
           {messages.helpText}
         </Text>
         <EnterPassword

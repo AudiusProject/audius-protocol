@@ -22,7 +22,8 @@ import {
   usePurchaseContentErrorMessage,
   usePurchaseContentFormConfiguration,
   usePurchaseMethod,
-  useUSDCBalance
+  useUSDCBalance,
+  PURCHASE_VENDOR
 } from '@audius/common'
 import { Formik, useField, useFormikContext } from 'formik'
 import {
@@ -44,6 +45,7 @@ import { useIsUSDCEnabled } from 'app/hooks/useIsUSDCEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as trackEvent } from 'app/services/analytics'
+import { getPurchaseVendor } from 'app/store/purchase-vendor/selectors'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -252,6 +254,12 @@ const RenderForm = ({
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
 
+  const [, , { setValue: setPurchaseVendor }] = useField(PURCHASE_VENDOR)
+  const purchaseVendor = useSelector(getPurchaseVendor)
+  useEffect(() => {
+    setPurchaseVendor(purchaseVendor)
+  }, [purchaseVendor, setPurchaseVendor])
+
   const { data: balance } = useUSDCBalance({ isPolling: true })
   const { extraAmount } = usePurchaseSummaryValues({
     price,
@@ -313,11 +321,11 @@ const RenderForm = ({
                 />
                 {isIOSDisabled || isUnlocking || isPurchaseSuccessful ? null : (
                   <PaymentMethod
-                    selectedType={purchaseMethod}
-                    setSelectedType={setPurchaseMethod}
+                    selectedMethod={purchaseMethod}
+                    setSelectedMethod={setPurchaseMethod}
                     balance={balance}
                     isExistingBalanceDisabled={isExistingBalanceDisabled}
-                    showExistingBalance
+                    showExistingBalance={!balance?.isZero}
                   />
                 )}
               </View>

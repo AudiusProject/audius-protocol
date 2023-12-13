@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 import { USDC } from '@audius/fixed-decimal'
 import BN from 'bn.js'
 
@@ -28,13 +30,18 @@ export const usePurchaseMethod = ({
   const isExistingBalanceDisabled =
     USDC(totalPriceInCents / 100).value > balanceUSDC
 
-  if (balance) {
-    if (!isExistingBalanceDisabled && !method) {
-      setMethod(PurchaseMethod.BALANCE)
-    } else if (isExistingBalanceDisabled && method === PurchaseMethod.BALANCE) {
-      setMethod(PurchaseMethod.CARD)
+  useEffect(() => {
+    if (balance) {
+      if (!isExistingBalanceDisabled && !method) {
+        setMethod(PurchaseMethod.BALANCE)
+      } else if (
+        isExistingBalanceDisabled &&
+        method === PurchaseMethod.BALANCE
+      ) {
+        setMethod(PurchaseMethod.CARD)
+      }
     }
-  }
+  }, [balance, isExistingBalanceDisabled, method, setMethod])
 
   return { isExistingBalanceDisabled, totalPriceInCents }
 }

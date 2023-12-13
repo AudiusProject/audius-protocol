@@ -51,6 +51,29 @@
   height: 128px;
 }
 
+.chartMini {
+  flex-grow: 1;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.trackerContainerMini {
+  display: flex;
+  flex-direction: column;
+  width: 64px;
+}
+
+.trackerCellsMini {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  width: 100%;
+  justify-content: space-evenly;
+  height: 30px;
+}
+
 .trackerCell {
   flex: 1 1 0;
   border-radius: 100px;

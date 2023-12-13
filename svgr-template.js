@@ -2,30 +2,38 @@ const template = (variables, { tpl }) => {
   return tpl`
 ${variables.imports};
 import {useTheme} from '@emotion/react'
+import {forwardRef} from 'react'
 
 ${variables.interfaces};
 
-const ${variables.componentName} = (${variables.props}) => {
+const ${variables.componentName} = forwardRef((${variables.props}, ref) => {
   const theme = useTheme()
-  const {
+  let {
     color,
     size,
     sizeH,
     sizeW,
     height: heightProp,
     width: widthProp,
-    fill: fillProp,
     ...other
   } = props
 
-  const height = heightProp ?? theme.iconSizes[sizeH ?? size ?? 'l']
-  const width = widthProp ?? theme.iconSizes[sizeW ?? size ?? 'l']
-  const fill = fillProp ?? theme.color.icon[color] ?? 'red'
+  const height = heightProp ?? theme.iconSizes[sizeH ?? size]
+  if (height) {
+    other.height = height 
+  }
 
-  props = {...other, height, width, fill}
+  const width = widthProp ?? theme.iconSizes[sizeW ?? size]
+  if (width) {
+    other.width = width
+  }
+
+  const fillColor = other.fill ?? theme.color.icon[color] ?? 'red'
+
+  props = {...other, ref, fillColor}
 
   return (${variables.jsx})
-};
+});
 
 ${variables.exports};
 `

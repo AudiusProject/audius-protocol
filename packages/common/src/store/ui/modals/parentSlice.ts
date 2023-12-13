@@ -56,6 +56,7 @@ export const initialState: BasicModalsState = {
   USDCPurchaseDetailsModal: { isOpen: false },
   USDCTransactionDetailsModal: { isOpen: false },
   USDCManualTransferModal: { isOpen: false },
+  CoinflowOnramp: { isOpen: false },
   AddFundsModal: { isOpen: false },
   Welcome: { isOpen: false }
 }

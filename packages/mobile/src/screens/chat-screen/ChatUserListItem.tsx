@@ -7,8 +7,7 @@ import {
   ChatPermissionAction,
   cacheUsersSelectors,
   formatCount,
-  useInboxUnavailableModal,
-  trpc
+  useInboxUnavailableModal
 } from '@audius/common'
 import { useSelector } from 'audius-client/src/common/hooks/useSelector'
 import { View, TouchableOpacity, Keyboard } from 'react-native'
@@ -20,6 +19,7 @@ import IconUser from 'app/assets/images/iconUser.svg'
 import { Text } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
 import { UserBadges } from 'app/components/user-badges'
+import { trpc } from 'app/services/trpc-client-mobile'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 

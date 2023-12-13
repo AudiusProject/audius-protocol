@@ -1,6 +1,7 @@
 import { ModalSource } from 'models/Analytics'
 
 import { AddFundsModalState } from './add-funds-modal'
+import { CoinflowOnrampModalState } from './coinflow-onramp-modal'
 import { CreateChatModalState } from './create-chat-modal'
 import { BaseModalState } from './createModal'
 import { EditPlaylistModalState } from './edit-playlist-modal'
@@ -46,6 +47,7 @@ export type Modals =
   | 'TransactionDetails'
   | 'VipDiscord'
   | 'StripeOnRamp'
+  | 'CoinflowOnramp'
   | 'InboxSettings'
   | 'LockedContent'
   | 'PlaybackRate'
@@ -70,6 +72,7 @@ export type BasicModalsState = {
 }
 
 export type StatefulModalsState = {
+  CoinflowOnramp: CoinflowOnrampModalState
   CreateChatModal: CreateChatModalState
   EditPlaylist: EditPlaylistModalState
   EditTrack: EditTrackModalState

@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react'
 
+import { commonPasswordCheck } from '@audius/common'
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
 import Input from 'components/data-entry/Input'
 import { StatusMessage } from 'components/status-message/StatusMessage'
-import { commonPasswordCheck } from 'utils/commonPasswordCheck'
 import { TERMS_OF_SERVICE, PRIVACY_POLICY } from 'utils/route'
 
 import styles from './PasswordPage.module.css'

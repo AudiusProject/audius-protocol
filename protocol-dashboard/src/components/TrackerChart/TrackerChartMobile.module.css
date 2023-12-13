@@ -1,3 +1,9 @@
 .header {
   margin-bottom: 32px;
 }
+
+.trackerContainerMini {
+  display: flex;
+  flex-direction: column;
+  width: 48px;
+}
