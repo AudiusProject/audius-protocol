@@ -194,7 +194,7 @@ def _get_eth_nft_gated_track_signatures(
                                 "type": "track",
                                 "user_wallet": user_wallet,
                                 "user_id": user_id,
-                                "is_stream_gated": True,
+                                "is_gated": True,
                             }
                         )
             except Exception as e:
@@ -232,7 +232,7 @@ def _get_eth_nft_gated_track_signatures(
                                 "type": "track",
                                 "user_wallet": user_wallet,
                                 "user_id": user_id,
-                                "is_stream_gated": True,
+                                "is_gated": True,
                             }
                         )
             except Exception as e:
@@ -430,7 +430,7 @@ def _get_sol_nft_gated_track_signatures(
                                 "type": "track",
                                 "user_wallet": user_wallet,
                                 "user_id": user_id,
-                                "is_stream_gated": True,
+                                "is_gated": True,
                             }
                         )
             except Exception as e:

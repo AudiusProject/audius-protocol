@@ -28,7 +28,7 @@ class GatedContentAccessBatchArgs(TypedDict):
 
 
 class GatedContentAccess(TypedDict):
-    is_stream_gated: bool
+    is_gated: bool
     does_user_have_access: bool
 
 
@@ -71,7 +71,7 @@ class GatedContentAccessChecker:
     #
     # Returns:
     # {
-    #   "is_stream_gated": bool,
+    #   "is_gated": bool,
     #   "does_user_have_access": bool
     # }
     def check_access(
@@ -87,7 +87,7 @@ class GatedContentAccessChecker:
             logger.warn(
                 f"gated_content_access_checker | check_access | gated content type {premium_content_type} is not supported."
             )
-            return {"is_stream_gated": False, "does_user_have_access": True}
+            return {"is_gated": False, "does_user_have_access": True}
 
         is_gated = False
         conditions = None
@@ -107,7 +107,7 @@ class GatedContentAccessChecker:
                 logger.warn(
                     f"gated_content_access_checker.py | check_access | non-gated content with id {premium_content_id} and type {premium_content_type} has gated conditions."
                 )
-            return {"is_stream_gated": False, "does_user_have_access": True}
+            return {"is_gated": False, "does_user_have_access": True}
 
         # conditions should always be true here because we know
         # that content is gated if we get here and it makes no sense
@@ -117,19 +117,19 @@ class GatedContentAccessChecker:
                 f"gated_content_access_checker.py | check_access | gated content with id {premium_content_id} and type {premium_content_type} has no gated conditions."
             )
             return {
-                "is_stream_gated": True,
+                "is_gated": True,
                 "does_user_have_access": True,
             }
 
         # track owner has access to their own gated track
         if content_owner_id == user_id:
             return {
-                "is_stream_gated": True,
+                "is_gated": True,
                 "does_user_have_access": True,
             }
 
         return {
-            "is_stream_gated": True,
+            "is_gated": True,
             "does_user_have_access": self._evaluate_conditions(
                 session=session,
                 user_id=user_id,
@@ -147,14 +147,14 @@ class GatedContentAccessChecker:
     #   <gated-content-type>: {
     #     <user-id>: {
     #       <track-id>: {
-    #         "is_stream_gated": bool,
+    #         "is_gated": bool,
     #         "does_user_have_access": bool
     #       }
     #     }
     #   }
     # }
     def check_access_for_batch(
-        self, session: Session, args: List[GatedContentAccessBatchArgs]
+        self, session: Session, args: List[GatedContentAccessBatchArgs], is_download: Optional[bool] = False
     ) -> GatedContentAccessBatchResponse:
         # for now, we only allow tracks to be gated; gated playlists will come later
         valid_args = list(
@@ -179,10 +179,16 @@ class GatedContentAccessChecker:
             if user_id not in track_access_result:
                 track_access_result[user_id] = {}
 
-            # checking batch access only makes sense for streams, not downloads
-            is_gated = data["is_stream_gated"]
-            conditions = data["stream_conditions"]
+            is_gated = False
+            conditions = None
             content_owner_id = data["content_owner_id"]
+
+            if is_download:
+                is_gated = data["is_download_gated"]
+                conditions = data["download_conditions"]
+            else:
+                is_gated = data["is_stream_gated"]
+                conditions = data["stream_conditions"]
 
             if not is_gated:
                 # conditions should always be null here as it makes
@@ -192,7 +198,7 @@ class GatedContentAccessChecker:
                         f"gated_content_access_checker.py | check_access_for_batch | non-gated content with id {track_id} and type 'track' has gated conditions."
                     )
                 track_access_result[user_id][track_id] = {
-                    "is_stream_gated": False,
+                    "is_gated": False,
                     "does_user_have_access": True,
                 }
 
@@ -204,20 +210,20 @@ class GatedContentAccessChecker:
                     f"gated_content_access_checker.py | check_access_for_batch | gated content with id {track_id} and type 'track' has no gated conditions."
                 )
                 track_access_result[user_id][track_id] = {
-                    "is_stream_gated": True,
+                    "is_gated": True,
                     "does_user_have_access": True,
                 }
 
             # track owner has access to their own gated track
             elif content_owner_id == user_id:
                 track_access_result[user_id][track_id] = {
-                    "is_stream_gated": True,
+                    "is_gated": True,
                     "does_user_have_access": True,
                 }
 
             else:
                 track_access_result[user_id][track_id] = {
-                    "is_stream_gated": True,
+                    "is_gated": True,
                     "does_user_have_access": self._evaluate_conditions(
                         session=session,
                         user_id=user_id,
@@ -245,6 +251,8 @@ class GatedContentAccessChecker:
             track["track_id"]: {  # type: ignore
                 "is_stream_gated": track["is_stream_gated"],  # type: ignore
                 "stream_conditions": track["stream_conditions"],  # type: ignore
+                "is_download_gated": track["is_download_gated"],  # type: ignore
+                "download_conditions": track["download_conditions"],  # type: ignore
                 "content_owner_id": track["owner_id"],  # type: ignore
             }
             for track in tracks

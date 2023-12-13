@@ -1,4 +1,4 @@
-from src.queries.query_helpers import _populate_premium_track_metadata, get_users_ids
+from src.queries.query_helpers import _populate_gated_track_metadata, get_users_ids
 from src.utils.db_session import get_db_read_replica
 from src.utils.elasticdsl import (
     ES_PLAYLISTS,
@@ -254,7 +254,7 @@ def get_feed_es(args, limit=10, offset=0):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         track_items = list(filter(lambda item: "track_id" in item, sorted_feed))
-        _populate_premium_track_metadata(session, track_items, current_user["user_id"])
+        _populate_gated_track_metadata(session, track_items, current_user["user_id"])
 
     # populate metadata + remove extra fields from items
     sorted_feed = [

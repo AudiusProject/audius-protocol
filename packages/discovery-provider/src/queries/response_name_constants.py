@@ -13,6 +13,8 @@ followee_reposts = "followee_reposts"
 followee_saves = "followee_saves"
 # string - signature required to access gated content
 stream_signature = "stream_signature"
+# json - determines stream and download access for current user
+access = "access"
 
 # remix track specific
 remix_of = "remix_of"  # dictionary - contains an array of parent track ids

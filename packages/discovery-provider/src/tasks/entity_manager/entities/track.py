@@ -568,11 +568,12 @@ def get_remix_parent_track_ids(track_metadata):
 
 def validate_downloadability(params: ManageEntityParameters):
     track_metadata = params.metadata
-    is_downloadable = track_metadata.get("download", {}).get("is_downloadable")
+    download = track_metadata.get("download")
+    is_downloadable = download.get("is_downloadable") if download else False
     is_download_gated = track_metadata.get("is_download_gated")
-    download_conditions = track_metadata.get("download_conditions", {})
-    stream_conditions = track_metadata.get("stream_conditions", {})
-    is_stream_usdc_purchase_gated = USDC_PURCHASE_KEY in stream_conditions
+    download_conditions = track_metadata.get("download_conditions")
+    stream_conditions = track_metadata.get("stream_conditions")
+    is_stream_usdc_purchase_gated = stream_conditions and (USDC_PURCHASE_KEY in stream_conditions)
 
     # if stream gated on usdc purchase, must also be download gated
     if is_stream_usdc_purchase_gated and not is_download_gated:

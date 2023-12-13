@@ -13,16 +13,16 @@ class PremiumContentSignatureArgs(TypedDict):
     track_id: int
     cid: str
     type: GatedContentType
-    is_stream_gated: bool
+    is_gated: bool
 
 
-class PremiumContentSignatureForUserArgs(TypedDict):
+class PremiumContentSignatureForUserWalletArgs(TypedDict):
     user_id: NotRequired[int]
     user_wallet: str
     track_id: int
     track_cid: str
     type: GatedContentType
-    is_stream_gated: bool
+    is_gated: bool
 
 
 class PremiumContentSignature(TypedDict):
@@ -34,10 +34,10 @@ def _get_current_utc_timestamp_ms():
     return int(datetime.utcnow().timestamp() * 1000)
 
 
-def get_gated_track_signature(
+def _get_gated_track_signature(
     track_id: int,
     cid: str,
-    is_stream_gated: bool,
+    is_gated: bool,
     user_wallet: Optional[str],
     user_id: Optional[int],
 ) -> PremiumContentSignature:
@@ -50,7 +50,7 @@ def get_gated_track_signature(
         data["user_wallet"] = user_wallet
     if user_id:
         data["userId"] = user_id
-    if not is_stream_gated:
+    if not is_gated:
         data["shouldCache"] = 1
     signature = generate_signature(data)
     return {"data": json.dumps(data), "signature": signature}
@@ -60,10 +60,10 @@ def get_gated_content_signature(
     args: PremiumContentSignatureArgs,
 ) -> Optional[PremiumContentSignature]:
     if args["type"] == "track":
-        return get_gated_track_signature(
+        return _get_gated_track_signature(
             track_id=args["track_id"],
             cid=args["cid"],
-            is_stream_gated=args["is_stream_gated"],
+            is_gated=args["is_gated"],
             user_wallet=None,
             user_id=args.get("user_id"),
         )
@@ -75,13 +75,13 @@ def get_gated_content_signature(
 # (e.g. from track request or nft request) when requesting to stream or download,
 # in which case we make sure the requesting user has the wallet as the user wallet in the signature.
 def get_gated_content_signature_for_user_wallet(
-    args: PremiumContentSignatureForUserArgs,
+    args: PremiumContentSignatureForUserWalletArgs,
 ) -> Optional[PremiumContentSignature]:
     if args["type"] == "track":
-        return get_gated_track_signature(
+        return _get_gated_track_signature(
             track_id=args["track_id"],
             cid=args["track_cid"],
-            is_stream_gated=args["is_stream_gated"],
+            is_gated=args["is_gated"],
             user_wallet=args["user_wallet"],
             user_id=args.get("user_id"),
         )

@@ -63,6 +63,8 @@ def test_index_valid_track(app, mocker):
             "is_unlisted": True,
             "is_stream_gated": False,
             "stream_conditions": None,
+            "is_download_gated": False,
+            "download_conditions": None,
             "field_visibility": {
                 "mood": True,
                 "tags": True,
@@ -108,6 +110,8 @@ def test_index_valid_track(app, mocker):
             "is_unlisted": False,
             "is_stream_gated": False,
             "stream_conditions": None,
+            "is_download_gated": False,
+            "download_conditions": None,
             "field_visibility": {
                 "genre": True,
                 "mood": True,
@@ -147,6 +151,8 @@ def test_index_valid_track(app, mocker):
             "is_unlisted": False,
             "is_stream_gated": False,
             "stream_conditions": None,
+            "is_download_gated": False,
+            "download_conditions": None,
             "field_visibility": {
                 "genre": True,
                 "mood": True,
@@ -185,6 +191,8 @@ def test_index_valid_track(app, mocker):
             "is_unlisted": False,
             "is_stream_gated": False,
             "stream_conditions": None,
+            "is_download_gated": False,
+            "download_conditions": None,
             "field_visibility": {
                 "genre": True,
                 "mood": True,
@@ -488,6 +496,8 @@ def test_index_invalid_tracks(app, mocker):
             "is_unlisted": False,
             "is_stream_gated": False,
             "stream_conditions": None,
+            "is_download_gated": False,
+            "download_conditions": None,
             "field_visibility": {
                 "mood": True,
                 "tags": True,
@@ -931,6 +941,8 @@ def test_invalid_track_description(app, mocker):
             "is_unlisted": False,
             "is_stream_gated": False,
             "stream_conditions": None,
+            "is_download_gated": False,
+            "download_conditions": None,
             "field_visibility": {
                 "mood": True,
                 "tags": True,

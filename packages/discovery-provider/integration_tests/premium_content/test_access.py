@@ -88,7 +88,7 @@ def test_access(app):
                 premium_content_type="track",
                 premium_content_entity=tracks[0],
             )
-            assert not result["is_stream_gated"] and result["does_user_have_access"]
+            assert not result["is_gated"] and result["does_user_have_access"]
 
             # test gated content with user who has no access
             result = gated_content_access_checker.check_access(
@@ -98,7 +98,7 @@ def test_access(app):
                 premium_content_type="track",
                 premium_content_entity=tracks[1],
             )
-            assert result["is_stream_gated"] and not result["does_user_have_access"]
+            assert result["is_gated"] and not result["does_user_have_access"]
 
             # test gated content with user who owns the track
             result = gated_content_access_checker.check_access(
@@ -108,7 +108,7 @@ def test_access(app):
                 premium_content_type="track",
                 premium_content_entity=tracks[2],
             )
-            assert result["is_stream_gated"] and result["does_user_have_access"]
+            assert result["is_gated"] and result["does_user_have_access"]
 
             # test gated content with user who has access
             result = gated_content_access_checker.check_access(
@@ -118,7 +118,7 @@ def test_access(app):
                 premium_content_type="track",
                 premium_content_entity=tracks[3],
             )
-            assert result["is_stream_gated"] and result["does_user_have_access"]
+            assert result["is_gated"] and result["does_user_have_access"]
 
 
 def test_batch_access(app):
@@ -234,7 +234,7 @@ def test_batch_access(app):
                 user_entity_2["user_id"]
             ][non_premium_track_entity["track_id"]]
             assert (
-                not user_2_non_premium_track_access_result["is_stream_gated"]
+                not user_2_non_premium_track_access_result["is_gated"]
                 and user_2_non_premium_track_access_result["does_user_have_access"]
             )
 
@@ -243,7 +243,7 @@ def test_batch_access(app):
                 user_entity_2["user_id"]
             ][premium_track_entity_1["track_id"]]
             assert (
-                user_2_premium_track_access_result["is_stream_gated"]
+                user_2_premium_track_access_result["is_gated"]
                 and not user_2_premium_track_access_result["does_user_have_access"]
             )
 
@@ -252,7 +252,7 @@ def test_batch_access(app):
                 user_entity_3["user_id"]
             ][premium_track_entity_2["track_id"]]
             assert (
-                user_3_premium_track_access_result["is_stream_gated"]
+                user_3_premium_track_access_result["is_gated"]
                 and user_3_premium_track_access_result["does_user_have_access"]
             )
 
@@ -261,6 +261,6 @@ def test_batch_access(app):
                 user_entity_2["user_id"]
             ][premium_track_entity_3["track_id"]]
             assert (
-                user_2_premium_track_access_result_2["is_stream_gated"]
+                user_2_premium_track_access_result_2["is_gated"]
                 and user_2_premium_track_access_result_2["does_user_have_access"]
             )

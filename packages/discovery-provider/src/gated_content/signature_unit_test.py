@@ -21,7 +21,7 @@ def test_signature():
             "track_id": track_id,
             "cid": track_cid,
             "type": premium_content_type,
-            "is_stream_gated": False,
+            "is_gated": False,
         }
     )
     signature = result["signature"]
@@ -48,7 +48,7 @@ def test_signature():
             "track_id": track_id,
             "cid": track_cid,
             "type": premium_content_type,
-            "is_stream_gated": True,
+            "is_gated": True,
         }
     )
     signature_data = result["data"]
@@ -73,7 +73,7 @@ def test_signature_for_user_wallet():
             "track_cid": track_cid,
             "type": premium_content_type,
             "user_wallet": user_wallet,
-            "is_stream_gated": False,
+            "is_gated": False,
         }
     )
     signature = result["signature"]
@@ -102,7 +102,7 @@ def test_signature_for_user_wallet():
             "track_cid": track_cid,
             "type": premium_content_type,
             "user_wallet": user_wallet,
-            "is_stream_gated": True,
+            "is_gated": True,
         }
     )
     signature_data = result["data"]
@@ -129,7 +129,7 @@ def test_signature_for_user_wallet_with_user_id():
             "type": premium_content_type,
             "user_wallet": user_wallet,
             "user_id": user_id,
-            "is_stream_gated": False,
+            "is_gated": False,
         }
     )
     signature = result["signature"]
@@ -160,7 +160,7 @@ def test_signature_for_user_wallet_with_user_id():
             "type": premium_content_type,
             "user_wallet": user_wallet,
             "user_id": user_id,
-            "is_stream_gated": True,
+            "is_gated": True,
         }
     )
     signature_data = result["data"]

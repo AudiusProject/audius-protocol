@@ -76,6 +76,11 @@ stream_signature = ns.model(
     {"data": fields.String, "signature": fields.String},
 )
 
+access = ns.model(
+    "access",
+    {"stream": fields.Boolean, "download": fields.Boolean},
+)
+
 track = ns.model(
     "Track",
     {
@@ -88,7 +93,7 @@ track = ns.model(
         "orig_file_cid": fields.String(allow_null=True), # remove nullability after backfill
         "orig_filename": fields.String(allow_null=True), # remove nullability after backfill
         "mood": fields.String,
-        "release_date": fields.String,g
+        "release_date": fields.String,
         "remix_of": fields.Nested(remix_parent),
         "repost_count": fields.Integer(required=True),
         "favorite_count": fields.Integer(required=True),
@@ -148,6 +153,7 @@ track_full = ns.clone(
         ),
         "is_download_gated": fields.Boolean,
         "download_conditions": fields.Raw(allow_null=True),
+        "access": fields.Nested(access),
         "ai_attribution_user_id": fields.Integer(allow_null=True),
         "audio_upload_id": fields.String,
         "preview_start_seconds": fields.Float,

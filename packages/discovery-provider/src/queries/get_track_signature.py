@@ -51,7 +51,7 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
                 "cid": cid,
                 "type": "track",
                 "user_id": authed_user_id,
-                "is_stream_gated": False,
+                "is_gated": False,
             }
         )
         return { "signature": signature, "cid": cid }
@@ -101,7 +101,7 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
             "track_id": track["track_id"],
             "cid": cid,
             "type": "track",
-            "is_stream_gated": True,
+            "is_gated": True,
             "user_id": authed_user["user_id"],
         }
     )
@@ -138,7 +138,7 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
                 "cid": cid,
                 "type": "track",
                 "user_id": authed_user_id,
-                "is_stream_gated": False,
+                "is_gated": False,
             }
         )
         return { "signature": signature, "cid": cid, "filename": filename }
@@ -173,7 +173,7 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
             "track_id": track["track_id"],
             "cid": cid,
             "type": "track",
-            "is_stream_gated": True,
+            "is_gated": True,
             "user_id": authed_user["user_id"],
         }
     )
