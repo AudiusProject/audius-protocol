@@ -1,76 +1,55 @@
 from datetime import datetime
-import json
-from unittest.mock import create_autospec, patch
-import base58
-
-from solders.rpc.responses import (
-    GetTransactionResp,
-    RpcConfirmedTransactionStatusWithSignature,
-)
-from solders.signature import Signature
+from unittest.mock import call, create_autospec
 
 from payment_router_mock_transactions import (
     mock_valid_track_purchase_single_recipient_tx,
+    mock_valid_track_purchase_single_recipient_pay_extra_tx,
+    mock_valid_track_purchase_multi_recipient_tx,
+    mock_valid_track_purchase_multi_recipient_pay_extra_tx,
+    mock_invalid_track_purchase_insufficient_split_tx,
+    mock_valid_transfer_without_purchase_single_recipient_tx,
+    mock_valid_transfer_without_purchase_multi_recipient_tx,
+    mock_failed_track_purchase_single_recipient_tx,
+    mock_non_route_transfer_purchase_single_recipient_tx,
+    mock_invalid_track_purchase_bad_PDA_account_single_recipient_tx,
 )
 
 from integration_tests.utils import populate_mock_db
+from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
-from src.models.indexing.spl_token_transaction import SPLTokenTransaction
-from src.models.users.audio_transactions_history import (
-    AudioTransactionsHistory,
-    TransactionMethod,
-    TransactionType,
+from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
+from src.models.users.usdc_transactions_history import (
+    USDCTransactionMethod,
+    USDCTransactionType,
+    USDCTransactionsHistory,
 )
-from src.models.users.usdc_purchase import USDCPurchase
-from src.solana.solana_client_manager import SolanaClientManager
-from src.tasks.cache_user_balance import get_immediate_refresh_user_ids
-from src.tasks.index_spl_token import (
-    decode_memo_and_extract_vendor,
-    parse_memo_instruction,
-    parse_sol_tx_batch,
-    parse_spl_token_transaction,
-)
-from src.tasks.index_payment_router import (
-    process_payment_router_tx_details,
-    process_payment_router_txs,
-)
-from src.utils.config import shared_config
+
+from src.tasks.index_payment_router import process_payment_router_tx_details
 from src.utils.db_session import get_db
-from src.utils.redis_connection import get_redis
-from src.utils.solana_indexing_logger import SolanaIndexingLogger
 
-
-# TODO:
-# 1. Get transactions into mock files
-# 2. Make sure we override the PDA, mint, root account for tests
-# 3. Make sure test db is set up with the 2 test users, test track, and user banks
-# 4. tests:
-#   - Transaction routing to 1 user with no memo (1 transfer transaction)
-#   - Transaction routing to 2 users with no memo (2 transfer transactions)
-#   - Transaction routing to 1 user with memo - valid purchase (1 transfer transaction, 1 purchase record)
-#   - Transaction routing to 1 user with memo - has splits but not enough (1 transfer transaction, no purchase records)
-#   - Transcation routing to 1 user with memo and pay extra - valid purchase (1 transfer transaction, 1 purchase record with pay extra field indicating the difference)
-#   - Transactions with errors should be skipped
-
-
-PAYMENT_ROUTER_PROGRAM = shared_config["solana"]["payment_router_program_address"]
-USDC_MINT = shared_config["solana"]["usdc_mint"]
-
+trackOwnerId = 1
+trackOwnerUserBank = "7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy"
+trackBuyerId = 2
+trackBuyerUserBank = "38YSndmPWVF3UdzczbB3UMYUgPQtZrgvvPVHa3M4yQVX"
+thirdPartyId = 3
+thirdPartyUserBank = "7dw7W4Yv7F1uWb9dVH1CFPm39mePyypuCji2zxcFA556"
+# Used as the source wallet for all the mock transactions
+transactionSenderAddress = "G231EZsMoCNBiQKP5quEeAM3oG516Zspirjnh7ywP71i"
 
 test_entries = {
     "users": [
         {
-            "user_id": 1,
+            "user_id": trackOwnerId,
             "handle": "trackOwner",
             "wallet": "0xbe21befeada45e089031429d8ddd52765e996133",
         },
         {
-            "user_id": 2,
+            "user_id": trackBuyerId,
             "handle": "trackBuyer",
             "wallet": "0xe769dcccbfd4df3eb3758e6f4bf6043132906df8",
         },
         {
-            "user_id": 3,
+            "user_id": thirdPartyId,
             "handle": "thirdParty",
             "wallet": "0x7d12457bd24ce79b62e66e915dbc0a469a6b59ba",
         },
@@ -79,39 +58,47 @@ test_entries = {
         {  # trackOwner
             "signature": "unused1",
             "ethereum_address": "0xbe21befeada45e089031429d8ddd52765e996133",
-            "bank_account": "7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy",
+            "bank_account": trackOwnerUserBank,
         },
         {  # trackBuyer
             "signature": "unused2",
             "ethereum_address": "0xe769dcccbfd4df3eb3758e6f4bf6043132906df8",
-            "bank_account": "38YSndmPWVF3UdzczbB3UMYUgPQtZrgvvPVHa3M4yQVX",
+            "bank_account": trackBuyerUserBank,
         },
         {  # thirdParty
             "signature": "unused3",
             "ethereum_address": "0x7d12457bd24ce79b62e66e915dbc0a469a6b59ba",
-            "bank_account": "7dw7W4Yv7F1uWb9dVH1CFPm39mePyypuCji2zxcFA556",
+            "bank_account": thirdPartyUserBank,
         },
     ],
     "tracks": [
         {"track_id": 1, "title": "track 1", "owner_id": 1},
+        {"track_id": 2, "title": "track 2", "owner_id": 1},
     ],
     "track_price_history": [
         {  # pay full price to trackOwner
             "track_id": 1,
             "splits": {"7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy": 1000000},
             "total_price_cents": 100,
-        }
+        },
+        {  # pay $1 each to track owner and third party
+            "track_id": 2,
+            "splits": {
+                "7gfRGGdp89N9g3mCsZjaGmDDRdcTnZh9u3vYyBab2tRy": 1000000,
+                "7dw7W4Yv7F1uWb9dVH1CFPm39mePyypuCji2zxcFA556": 1000000,
+            },
+            "total_price_cents": 200,
+        },
     ],
 }
 
 
 def test_process_payment_router_tx_details_valid_purchase(app):
+    tx_response = mock_valid_track_purchase_single_recipient_tx
     with app.app_context():
         db = get_db()
 
-    transaction = (
-        mock_valid_track_purchase_single_recipient_tx.value.transaction.transaction
-    )
+    transaction = tx_response.value.transaction.transaction
 
     tx_sig_str = str(transaction.signatures[0])
 
@@ -122,7 +109,7 @@ def test_process_payment_router_tx_details_valid_purchase(app):
     with db.scoped_session() as session:
         process_payment_router_tx_details(
             session=session,
-            tx_info=mock_valid_track_purchase_single_recipient_tx,
+            tx_info=tx_response,
             tx_sig=tx_sig_str,
             timestamp=datetime.now(),
             challenge_event_bus=challenge_event_bus,
@@ -134,53 +121,550 @@ def test_process_payment_router_tx_details_valid_purchase(app):
             .first()
         )
         assert purchase is not None
+        assert purchase.seller_user_id == 1
+        assert purchase.buyer_user_id == 2
+        assert purchase.amount == 1000000
+        assert purchase.extra_amount == 0
+        assert purchase.content_type == PurchaseType.track
+        assert purchase.content_id == 1
 
-    # TODO Expect a purchase and transfer record (recipient only)
-
-
-def test_process_payment_router_tx_details_valid_purchase_with_pay_extra():
-    # TODO Expect a purchase record (w/ pay extra) and transfer record (recipient only)
-    return
-
-
-def test_process_payment_router_tx_details_valid_purchase_multiple_recipients():
-    # TODO: Expect a purchase record and multiple transfer records (one for each recipient)
-    return
-
-
-def test_process_payment_router_tx_details_valid_purchase_multiple_recipients_pay_extra():
-    # TODO: Expect a purchase record (w/ pay extra) and multiple transfer records (one for each recipient)
-    return
-
-
-def test_process_payment_router_tx_details_invalid_purchase_bad_splits():
-    # TODO: Still expect transfer records, just not as a purchase
-    return
+        transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .first()
+        )
+        assert transaction_record is not None
+        assert transaction_record.user_bank == trackOwnerUserBank
+        assert (
+            transaction_record.transaction_type == USDCTransactionType.purchase_content
+        )
+        assert transaction_record.method == USDCTransactionMethod.receive
+        assert transaction_record.change == 1000000
+        assert transaction_record.tx_metadata == str(trackBuyerId)
 
 
-def test_process_payment_router_tx_details_transfer_multiple_users_without_purchase():
-    # TODO: Expect a transaction_type=transfer, method=receive for the recipients
-    return
+def test_process_payment_router_tx_details_transfer_transfer_without_purchase(
+    app,
+):
+    tx_response = mock_valid_transfer_without_purchase_single_recipient_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        # Expect no purchase record
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is None
+
+        # We do still expect the transfers to get indexed, but as regular transfers
+        transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .first()
+        )
+        assert transaction_record is not None
+        assert transaction_record.user_bank == trackOwnerUserBank
+        # Regular transfer, not a purchase
+        assert transaction_record.transaction_type == USDCTransactionType.transfer
+        assert transaction_record.method == USDCTransactionMethod.receive
+        assert transaction_record.change == 1000000
+        # For transfers, the metadata is the source address
+        assert transaction_record.tx_metadata == transactionSenderAddress
 
 
-def test_process_payment_router_txs_details_create_challenge_events_for_purchase():
-    # TODO Expect a challenge event for the content owner and purchaser_user_id
-    return
+def test_process_payment_router_tx_details_valid_purchase_with_pay_extra(app):
+    tx_response = mock_valid_track_purchase_single_recipient_pay_extra_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is not None
+        assert purchase.seller_user_id == 1
+        assert purchase.buyer_user_id == 2
+        assert purchase.amount == 1000000
+        assert purchase.extra_amount == 1500000
+        assert purchase.content_type == PurchaseType.track
+        assert purchase.content_id == 1
+
+        transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .first()
+        )
+        assert transaction_record is not None
+        assert transaction_record.user_bank == trackOwnerUserBank
+        assert (
+            transaction_record.transaction_type == USDCTransactionType.purchase_content
+        )
+        assert transaction_record.method == USDCTransactionMethod.receive
+        assert transaction_record.change == 2500000
+        assert transaction_record.tx_metadata == str(trackBuyerId)
 
 
-def test_process_payment_router_tx_details_skip_errors():
-    # TODO
-    return
+def test_process_payment_router_tx_details_valid_purchase_multiple_recipients(app):
+    tx_response = mock_valid_track_purchase_multi_recipient_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is not None
+        assert purchase.seller_user_id == 1
+        assert purchase.buyer_user_id == 2
+        assert purchase.amount == 2000000
+        assert purchase.extra_amount == 0
+        assert purchase.content_type == PurchaseType.track
+        assert purchase.content_id == 2
+
+        owner_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .first()
+        )
+        assert owner_transaction_record is not None
+        assert owner_transaction_record.user_bank == trackOwnerUserBank
+        assert (
+            owner_transaction_record.transaction_type
+            == USDCTransactionType.purchase_content
+        )
+        assert owner_transaction_record.method == USDCTransactionMethod.receive
+        assert owner_transaction_record.change == 1000000
+        assert owner_transaction_record.tx_metadata == str(trackBuyerId)
+
+        third_party_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == thirdPartyUserBank)
+            .first()
+        )
+        assert third_party_transaction_record is not None
+        assert (
+            third_party_transaction_record.transaction_type
+            == USDCTransactionType.purchase_content
+        )
+        assert third_party_transaction_record.method == USDCTransactionMethod.receive
+        assert third_party_transaction_record.change == 1000000
+        assert third_party_transaction_record.tx_metadata == str(trackBuyerId)
+
+
+def test_process_payment_router_tx_details_valid_purchase_multiple_recipients_pay_extra(
+    app,
+):
+    tx_response = mock_valid_track_purchase_multi_recipient_pay_extra_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is not None
+        assert purchase.seller_user_id == 1
+        assert purchase.buyer_user_id == 2
+        assert purchase.amount == 2000000
+        assert purchase.extra_amount == 1500000
+        assert purchase.content_type == PurchaseType.track
+        assert purchase.content_id == 2
+
+        owner_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .first()
+        )
+        assert owner_transaction_record is not None
+        assert owner_transaction_record.user_bank == trackOwnerUserBank
+        assert (
+            owner_transaction_record.transaction_type
+            == USDCTransactionType.purchase_content
+        )
+        assert owner_transaction_record.method == USDCTransactionMethod.receive
+        assert owner_transaction_record.change == 1500000
+        assert owner_transaction_record.tx_metadata == str(trackBuyerId)
+
+        third_party_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == thirdPartyUserBank)
+            .first()
+        )
+        assert third_party_transaction_record is not None
+        assert (
+            third_party_transaction_record.transaction_type
+            == USDCTransactionType.purchase_content
+        )
+        assert third_party_transaction_record.method == USDCTransactionMethod.receive
+        assert third_party_transaction_record.change == 2000000
+        assert third_party_transaction_record.tx_metadata == str(trackBuyerId)
+
+
+def test_process_payment_router_tx_details_invalid_purchase_bad_splits(app):
+    tx_response = mock_invalid_track_purchase_insufficient_split_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        # Expect no purchase record
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is None
+
+        # We do still expect the transfers to get indexed, but as regular transfers
+        owner_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .first()
+        )
+        assert owner_transaction_record is not None
+        assert owner_transaction_record.user_bank == trackOwnerUserBank
+        # Regular transfer, not a purchase
+        assert owner_transaction_record.transaction_type == USDCTransactionType.transfer
+        assert owner_transaction_record.method == USDCTransactionMethod.receive
+        assert owner_transaction_record.change == 1000000
+        # For transfers, the metadata is the source address
+        assert owner_transaction_record.tx_metadata == transactionSenderAddress
+
+        third_party_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == thirdPartyUserBank)
+            .first()
+        )
+        assert third_party_transaction_record is not None
+        # Regular transfer, not a purchase
+        assert (
+            third_party_transaction_record.transaction_type
+            == USDCTransactionType.transfer
+        )
+        assert third_party_transaction_record.method == USDCTransactionMethod.receive
+        assert third_party_transaction_record.change == 500000
+        # For transfers, the metadata is the source address
+        assert third_party_transaction_record.tx_metadata == transactionSenderAddress
+
+
+def test_process_payment_router_tx_details_transfer_multiple_users_without_purchase(
+    app,
+):
+    tx_response = mock_valid_transfer_without_purchase_multi_recipient_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+
+        # Expect no purchase record
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is None
+
+        # We do still expect the transfers to get indexed, but as regular transfers
+        owner_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == trackOwnerUserBank)
+            .first()
+        )
+        assert owner_transaction_record is not None
+        assert owner_transaction_record.user_bank == trackOwnerUserBank
+        # Regular transfer, not a purchase
+        assert owner_transaction_record.transaction_type == USDCTransactionType.transfer
+        assert owner_transaction_record.method == USDCTransactionMethod.receive
+        assert owner_transaction_record.change == 1000000
+        # For transfers, the metadata is the source address
+        assert owner_transaction_record.tx_metadata == transactionSenderAddress
+
+        third_party_transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .filter(USDCTransactionsHistory.user_bank == thirdPartyUserBank)
+            .first()
+        )
+        assert third_party_transaction_record is not None
+        # Regular transfer, not a purchase
+        assert (
+            third_party_transaction_record.transaction_type
+            == USDCTransactionType.transfer
+        )
+        assert third_party_transaction_record.method == USDCTransactionMethod.receive
+        assert third_party_transaction_record.change == 1000000
+        # For transfers, the metadata is the source address
+        assert third_party_transaction_record.tx_metadata == transactionSenderAddress
+
+
+def test_process_payment_router_txs_details_create_challenge_events_for_purchase(app):
+    tx_response = mock_valid_track_purchase_single_recipient_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+    # Note: Challenge amounts are 1 per dollar of USDC
+    calls = [
+        call(
+            ChallengeEvent.audio_matching_buyer,
+            tx_response.value.slot,
+            trackBuyerId,
+            {"track_id": 1, "amount": 1},
+        ),
+        call(
+            ChallengeEvent.audio_matching_seller,
+            tx_response.value.slot,
+            trackOwnerId,
+            {"track_id": 1, "sender_user_id": trackBuyerId, "amount": 1},
+        ),
+    ]
+    challenge_event_bus.dispatch.assert_has_calls(
+        calls,
+        any_order=True,
+    )
+
+
+def test_process_payment_router_tx_details_skip_errors(app):
+    tx_response = mock_failed_track_purchase_single_recipient_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+        # Expect no purchase record
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is None
+
+        # Expect no transfer record
+        transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .first()
+        )
+        assert transaction_record is None
 
 
 # Don't process any transactions that aren't Route or TransferChecked transactions
-def test_process_payment_router_txs_details_skip_unknown_instructions():
-    # TODO: Create a transaction that uses an unknown instruction with a balance change
-    return
+def test_process_payment_router_txs_details_skip_unknown_instructions(app):
+    # This transaction does everything a payment router transaction would for
+    # a purchase, but uses a different program to do the routing. We ignore it.
+    tx_response = mock_non_route_transfer_purchase_single_recipient_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+        # Expect no purchase record
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is None
+
+        # Expect no transfer record
+        transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .first()
+        )
+        assert transaction_record is None
 
 
 # Source accounts for Route intructions must belong to Payment Router PDA
-def test_process_payment_router_txs_details_skip_unknown_PDA_ATAs():
-    # TODO Create Route instruction with a PDA that doesn't match the Payment Router PDA
-    # (Is this test useful? The program itself won't allow this to happen)
-    return
+def test_process_payment_router_txs_details_skip_unknown_PDA_ATAs(app):
+    # This transaction does everything a payment router transaction would for
+    # a purchase, but uses an ATA that we don't recognize as the source.
+    tx_response = mock_invalid_track_purchase_bad_PDA_account_single_recipient_tx
+    with app.app_context():
+        db = get_db()
+
+    transaction = tx_response.value.transaction.transaction
+
+    tx_sig_str = str(transaction.signatures[0])
+
+    challenge_event_bus = create_autospec(ChallengeEventBus)
+
+    populate_mock_db(db, test_entries)
+
+    with db.scoped_session() as session:
+        process_payment_router_tx_details(
+            session=session,
+            tx_info=tx_response,
+            tx_sig=tx_sig_str,
+            timestamp=datetime.now(),
+            challenge_event_bus=challenge_event_bus,
+        )
+        # Expect no purchase record
+        purchase = (
+            session.query(USDCPurchase)
+            .filter(USDCPurchase.signature == tx_sig_str)
+            .first()
+        )
+        assert purchase is None
+
+        # Expect no transfer record
+        transaction_record = (
+            session.query(USDCTransactionsHistory)
+            .filter(USDCTransactionsHistory.signature == tx_sig_str)
+            .first()
+        )
+        assert transaction_record is None
