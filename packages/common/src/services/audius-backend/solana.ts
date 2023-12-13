@@ -488,10 +488,9 @@ export const createPaymentRouterRouteTransaction = async (
 ) => {
   const solanaWeb3Manager = (await audiusBackendInstance.getAudiusLibsTyped())
     .solanaWeb3Manager!
-  const { blockhash } = await solanaWeb3Manager.connection.getLatestBlockhash()
-  const [transfer, route] =
+  const transaction =
     // All the memo related parameters are ignored
-    await solanaWeb3Manager.getPurchaseContentWithPaymentRouterInstructions({
+    await solanaWeb3Manager.getPurchaseContentWithPaymentRouterTransaction({
       id: 0, // ignored
       type: 'track', // ignored
       blocknumber: 0, // ignored
@@ -499,10 +498,7 @@ export const createPaymentRouterRouteTransaction = async (
       purchaserUserId: 0, // ignored
       senderAccount: sender
     })
-  return new Transaction({
-    recentBlockhash: blockhash,
-    feePayer: sender
-  }).add(transfer, route)
+  return transaction
 }
 
 /**
