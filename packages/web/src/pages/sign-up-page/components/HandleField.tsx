@@ -108,7 +108,7 @@ export const HandleField = (props: HandleFieldProps) => {
       helperText={helperText}
       startAdornmentText='@'
       placeholder={messages.handle}
-      transformValue={(value) => value.replace(/\s/g, '')}
+      transformValueOnChange={(value) => value.replace(/\s/g, '')}
       {...other}
     />
   )

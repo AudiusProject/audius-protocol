@@ -112,7 +112,9 @@ export const ReleaseDateField = () => {
       } else if (releaseDateMeridian === 'AM' && releaseDateHour === 12) {
         adjustedHours = 0
       }
-      const combinedDateTime = truncatedReleaseDate.add(adjustedHours, 'hours')
+      const combinedDateTime = truncatedReleaseDate
+        .add(adjustedHours, 'hours')
+        .add(values[RELEASE_DATE_HOUR].split(':')[1], 'minutes')
 
       setTrackReleaseDate(combinedDateTime.toString() ?? null)
     },
@@ -232,7 +234,7 @@ const RadioItems = (props: any) => {
                 placeholder={'12:00'}
                 hideLabel={false}
                 inputRootClassName={styles.hourInput}
-                transformBlurValue={(value) => {
+                transformValueOnBlur={(value) => {
                   if (value.includes(':')) {
                     return value
                   }

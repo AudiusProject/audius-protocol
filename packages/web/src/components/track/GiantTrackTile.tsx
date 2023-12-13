@@ -466,7 +466,8 @@ export const GiantTrackTile = ({
     ? undefined
     : getDogEarType({
         premiumConditions,
-        isUnlisted
+        isUnlisted:
+          isUnlisted && (!released || moment(released).isBefore(moment()))
       })
 
   const overflowMenuExtraItems = []

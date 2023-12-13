@@ -60,7 +60,7 @@
   background-color: var(--neutral-light-10);
   border: 1px solid var(--neutral-light-9);
   border-radius: 4px;
-  width: 200%;
+  width: 100%;
   padding: var(--unit-3) var(--unit-4);
   transition: border ease-in-out 0.1s;
 }
@@ -80,7 +80,7 @@
   font-weight: var(--font-medium);
   font-size: var(--font-l);
   line-height: 18px;
-  width: 200px;
+  width: 100%;
   padding: 0;
 }
 
