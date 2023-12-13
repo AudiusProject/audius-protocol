@@ -86,10 +86,10 @@ def update_track_price_history(
 ):
     """Adds an entry in the track price history table to record the price change of a track or change of splits if necessary."""
     new_record = None
-    if track_metadata.get("premium_conditions", None) is not None:
-        premium_conditions = track_metadata["premium_conditions"]
-        if USDC_PURCHASE_KEY in premium_conditions:
-            usdc_purchase = premium_conditions[USDC_PURCHASE_KEY]
+    if track_metadata.get("stream_conditions", None) is not None:
+        stream_conditions = track_metadata["stream_conditions"]
+        if USDC_PURCHASE_KEY in stream_conditions:
+            usdc_purchase = stream_conditions[USDC_PURCHASE_KEY]
             new_record = TrackPriceHistory()
             new_record.track_id = track_record.track_id
             new_record.block_timestamp = timestamp
@@ -245,12 +245,12 @@ def populate_track_record_metadata(track_record: Track, track_metadata, handle, 
     track_record_attributes = track_record.get_attributes_dict()
     for key, _ in track_record_attributes.items():
         # For certain fields, update track_record under certain conditions
-        if key == "premium_conditions":
-            if "premium_conditions" in track_metadata and (
-                is_valid_json_field(track_metadata, "premium_conditions")
-                or track_metadata.get("premium_conditions") is None
+        if key == "stream_conditions":
+            if "stream_conditions" in track_metadata and (
+                is_valid_json_field(track_metadata, "stream_conditions")
+                or track_metadata.get("stream_conditions") is None
             ):
-                track_record.premium_conditions = track_metadata["premium_conditions"]
+                track_record.stream_conditions = track_metadata["stream_conditions"]
 
         elif key == "download_conditions":
             if "download_conditions" in track_metadata and (

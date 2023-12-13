@@ -53,7 +53,7 @@ def get_playlist_tracks(session, args):
                 session.query(Track)
                 .filter(
                     Track.is_current == True,
-                    Track.is_premium == False,
+                    Track.is_stream_gated == False,
                     Track.track_id.in_(list(track_ids_set)),
                 )
                 .all()

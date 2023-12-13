@@ -54,9 +54,9 @@ def test_populate_track_metadata(app):
     with db.scoped_session() as session:
         track_ids = [1, 2, 3]
         tracks = [
-            {"track_id": 1, "is_premium": False},
-            {"track_id": 2, "is_premium": False},
-            {"track_id": 3, "is_premium": False},
+            {"track_id": 1, "is_stream_gated": False},
+            {"track_id": 2, "is_stream_gated": False},
+            {"track_id": 3, "is_stream_gated": False},
         ]
 
         tracks = populate_track_metadata(session, track_ids, tracks, None)
@@ -79,9 +79,9 @@ def test_populate_track_metadata(app):
 
         curr_track_ids = [1, 2, 3]
         curr_tracks = [
-            {"track_id": 1, "is_premium": False},
-            {"track_id": 2, "is_premium": False},
-            {"track_id": 3, "is_premium": False},
+            {"track_id": 1, "is_stream_gated": False},
+            {"track_id": 2, "is_stream_gated": False},
+            {"track_id": 3, "is_stream_gated": False},
         ]
 
         tracks = populate_track_metadata(session, curr_track_ids, curr_tracks, 1)

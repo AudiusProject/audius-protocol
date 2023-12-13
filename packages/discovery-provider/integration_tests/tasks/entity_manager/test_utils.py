@@ -173,8 +173,8 @@ def test_valid_parse_metadata(app):
                     "remixes": True,
                 },
                 "stem_of": None,
-                "is_premium": False,
-                "premium_conditions": None,
+                "is_stream_gated": False,
+                "stream_conditions": None,
                 "is_playlist_upload": True,
                 "ai_attribution_user_id": None,
                 "preview_cid": None,
@@ -199,7 +199,7 @@ def test_valid_parse_metadata(app):
         user1_json = json.dumps(user1_tx_metadata)
 
         track1_tx_metadata = expected_metadata["QmCreateTrack1"].copy()
-        track1_tx_metadata.pop("premium_conditions")
+        track1_tx_metadata.pop("stream_conditions")
         track1_tx_metadata["incorrect_key"] = True
         track1_json = json.dumps(track1_tx_metadata)
 
@@ -308,8 +308,8 @@ def test_invalid_parse_metadata(app):
                 "remixes": True,
             },
             "stem_of": None,
-            "is_premium": False,
-            "premium_conditions": None,
+            "is_stream_gated": False,
+            "stream_conditions": None,
             "is_playlist_upload": True,
             "ai_attribution_user_id": None,
         }

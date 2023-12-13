@@ -63,7 +63,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
         "karma": number
         "listens": number
         "owner_verified": boolean
-        "is_premium": boolean
+        "is_stream_gated": boolean
     }
     """
 
@@ -90,8 +90,8 @@ def get_scorable_track_data(session, redis_instance, strategy):
             AggregatePlay.count,
             Track.created_at,
             User.is_verified,
-            Track.is_premium,
-            Track.premium_conditions,
+            Track.is_stream_gated,
+            Track.stream_conditions,
         )
         .join(Track, Track.track_id == AggregatePlay.play_item_id)
         .join(User, Track.owner_id == User.user_id)
@@ -123,8 +123,8 @@ def get_scorable_track_data(session, redis_instance, strategy):
             "karma": 1,
             "listens": record[3],
             "owner_verified": record[5],
-            "is_premium": record[6],
-            "premium_conditions": record[7],
+            "is_stream_gated": record[6],
+            "stream_conditions": record[7],
         }
         for record in base_query
     }
@@ -187,15 +187,15 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
         # belonging to gated tracks before applying the limit.
         if SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS:
             track_scoring_data = list(
-                filter(lambda item: not item["is_premium"], track_scoring_data)
+                filter(lambda item: not item["is_stream_gated"], track_scoring_data)
             )
         # If SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS is true, then filter out track ids
         # belonging to collectible gated tracks before applying the limit.
         elif SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS:
             track_scoring_data = list(
                 filter(
-                    lambda item: (item["premium_conditions"] is None)
-                    or ("nft_collection" not in item["premium_conditions"]),
+                    lambda item: (item["stream_conditions"] is None)
+                    or ("nft_collection" not in item["stream_conditions"]),
                     track_scoring_data,
                 )
             )

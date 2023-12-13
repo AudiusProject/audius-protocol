@@ -129,7 +129,7 @@ def validate_playlist_tx(params: ManageEntityParameters):
 
     premium_tracks = list(
         filter(
-            lambda track: track.is_premium,
+            lambda track: track.is_stream_gated,
             params.existing_records["Track"].values(),
         )
     )

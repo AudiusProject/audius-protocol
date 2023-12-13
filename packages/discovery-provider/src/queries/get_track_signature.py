@@ -28,7 +28,7 @@ class GetTrackDownloadSignature(TypedDict):
 # Returns None otherwise
 def get_track_stream_signature(args: GetTrackStreamSignature):
     track = args["track"]
-    is_premium = track["is_premium"]
+    is_stream_gated = track["is_stream_gated"]
     is_preview = args.get("is_preview", False)
     user_data = args["user_data"]
     user_signature = args["user_signature"]
@@ -44,14 +44,14 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
         authed_user_id = authed_user.get("user_id") if authed_user else None
 
     # all track previews and non-stream-gated tracks should be publicly available
-    if is_preview or not is_premium:
+    if is_preview or not is_stream_gated:
         signature = get_gated_content_signature(
             {
                 "track_id": track["track_id"],
                 "cid": cid,
                 "type": "track",
                 "user_id": authed_user_id,
-                "is_premium": False,
+                "is_stream_gated": False,
             }
         )
         return { "signature": signature, "cid": cid }
@@ -78,8 +78,8 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
     # build a track instance from the track dict
     track_entity = Track(
         track_id=track["track_id"],
-        is_premium=is_premium,
-        premium_conditions=track["premium_conditions"],
+        is_stream_gated=is_stream_gated,
+        stream_conditions=track["stream_conditions"],
         owner_id=track["owner_id"],
     )
 
@@ -101,7 +101,7 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
             "track_id": track["track_id"],
             "cid": cid,
             "type": "track",
-            "is_premium": True,
+            "is_stream_gated": True,
             "user_id": authed_user["user_id"],
         }
     )
@@ -138,7 +138,7 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
                 "cid": cid,
                 "type": "track",
                 "user_id": authed_user_id,
-                "is_premium": False,
+                "is_stream_gated": False,
             }
         )
         return { "signature": signature, "cid": cid, "filename": filename }
@@ -173,7 +173,7 @@ def get_track_download_signature(args: GetTrackDownloadSignature):
             "track_id": track["track_id"],
             "cid": cid,
             "type": "track",
-            "is_premium": True,
+            "is_stream_gated": True,
             "user_id": authed_user["user_id"],
         }
     )

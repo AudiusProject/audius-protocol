@@ -186,11 +186,11 @@
           "$ref": "#/definitions/RemixOf",
           "default": null
         },
-        "is_premium": {
+        "is_stream_gated": {
           "type": "boolean",
           "default": false
         },
-        "premium_conditions": {
+        "stream_conditions": {
           "type": [
             "object",
             "null"
@@ -266,8 +266,8 @@
         "tags",
         "title",
         "track_segments",
-        "is_premium",
-        "premium_conditions",
+        "is_stream_gated",
+        "stream_conditions",
         "is_download_gated",
         "download_conditions"
       ],

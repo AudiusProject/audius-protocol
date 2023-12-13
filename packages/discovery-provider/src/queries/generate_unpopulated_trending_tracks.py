@@ -71,8 +71,8 @@ def generate_unpopulated_trending(
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.stem_of == None,
-                Track.is_premium == True,
-                text("CAST(premium_conditions AS TEXT) LIKE '%usdc_purchase%'"),
+                Track.is_stream_gated == True,
+                text("CAST(stream_conditions AS TEXT) LIKE '%usdc_purchase%'"),
             )
             .all()
         )
@@ -91,7 +91,7 @@ def generate_unpopulated_trending(
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.stem_of == None,
-                Track.is_premium == False,
+                Track.is_stream_gated == False,
             )
             .all()
         )
@@ -109,9 +109,9 @@ def generate_unpopulated_trending(
                 Track.is_delete == False,
                 Track.stem_of == None,
                 or_(
-                    Track.is_premium == False,
+                    Track.is_stream_gated == False,
                     not_(
-                        text("CAST(premium_conditions AS TEXT) LIKE '%nft_collection%'")
+                        text("CAST(stream_conditions AS TEXT) LIKE '%nft_collection%'")
                     ),
                 ),
             )
@@ -186,8 +186,8 @@ def generate_unpopulated_trending_from_mat_views(
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.stem_of == None,
-                Track.is_premium == True,
-                text("CAST(premium_conditions AS TEXT) LIKE '%usdc_purchase%'"),
+                Track.is_stream_gated == True,
+                text("CAST(stream_conditions AS TEXT) LIKE '%usdc_purchase%'"),
             )
             .order_by(
                 desc(trending_track_ids_subquery.c.score),
@@ -214,7 +214,7 @@ def generate_unpopulated_trending_from_mat_views(
                 Track.is_current == True,
                 Track.is_delete == False,
                 Track.stem_of == None,
-                Track.is_premium == False,
+                Track.is_stream_gated == False,
             )
             .order_by(
                 desc(trending_track_ids_subquery.c.score),
@@ -240,9 +240,9 @@ def generate_unpopulated_trending_from_mat_views(
                 Track.is_delete == False,
                 Track.stem_of == None,
                 or_(
-                    Track.is_premium == False,
+                    Track.is_stream_gated == False,
                     not_(
-                        text("CAST(premium_conditions AS TEXT) LIKE '%nft_collection%'")
+                        text("CAST(stream_conditions AS TEXT) LIKE '%nft_collection%'")
                     ),
                 ),
             )

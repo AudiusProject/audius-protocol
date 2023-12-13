@@ -139,8 +139,8 @@ track_full = ns.clone(
         "cover_art": fields.String,
         "remix_of": fields.Nested(full_remix_parent),
         "is_available": fields.Boolean,
-        "is_premium": fields.Boolean,
-        "premium_conditions": fields.Raw(allow_null=True),
+        "is_stream_gated": fields.Boolean,
+        "stream_conditions": fields.Raw(allow_null=True),
         "premium_content_signature": fields.Nested(
             premium_content_signature, allow_null=True
         ),

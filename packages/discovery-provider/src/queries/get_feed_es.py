@@ -185,9 +185,9 @@ def get_feed_es(args, limit=10, offset=0):
                 or s.get("is_private")
                 or s.get("is_unlisted")
                 or s.get("stem_of")
-                or s.get("is_premium")
+                or s.get("is_stream_gated")
             ):
-                # MISSING: skip reposts for delete, private, unlisted, stem_of, is_premium
+                # MISSING: skip reposts for delete, private, unlisted, stem_of, is_stream_gated
                 # this is why we took soft limit above
                 continue
             keyed_reposts[s["item_key"]] = s
@@ -241,10 +241,10 @@ def get_feed_es(args, limit=10, offset=0):
     # and still be able to probabilistically satisfy the given limit later below.
     sorted_feed = list(
         filter(
-            lambda item: ("premium_conditions" not in item)  # not a track
-            or (item["premium_conditions"] is None)  # not a gated track
+            lambda item: ("stream_conditions" not in item)  # not a track
+            or (item["stream_conditions"] is None)  # not a gated track
             or (
-                "nft_collection" not in item["premium_conditions"]
+                "nft_collection" not in item["stream_conditions"]
             ),  # not a collectible gated track
             sorted_feed,
         )

@@ -556,7 +556,7 @@ def populate_track_metadata(
 
 
 def _populate_premium_track_metadata(session, tracks, current_user_id):
-    premium_tracks = list(filter(lambda track: track["is_premium"], tracks))
+    premium_tracks = list(filter(lambda track: track["is_stream_gated"], tracks))
     if not premium_tracks:
         return
 
@@ -608,7 +608,7 @@ def _populate_premium_track_metadata(session, tracks, current_user_id):
                     "type": "track",
                     "user_wallet": current_user_wallet[0],
                     "user_id": current_user_id,
-                    "is_premium": True,
+                    "is_stream_gated": True,
                 }
             )
 

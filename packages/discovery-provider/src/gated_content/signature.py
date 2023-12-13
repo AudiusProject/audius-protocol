@@ -13,7 +13,7 @@ class PremiumContentSignatureArgs(TypedDict):
     track_id: int
     cid: str
     type: GatedContentType
-    is_premium: bool
+    is_stream_gated: bool
 
 
 class PremiumContentSignatureForUserArgs(TypedDict):
@@ -22,7 +22,7 @@ class PremiumContentSignatureForUserArgs(TypedDict):
     track_id: int
     track_cid: str
     type: GatedContentType
-    is_premium: bool
+    is_stream_gated: bool
 
 
 class PremiumContentSignature(TypedDict):
@@ -37,7 +37,7 @@ def _get_current_utc_timestamp_ms():
 def get_gated_track_signature(
     track_id: int,
     cid: str,
-    is_premium: bool,
+    is_stream_gated: bool,
     user_wallet: Optional[str],
     user_id: Optional[int],
 ) -> PremiumContentSignature:
@@ -50,7 +50,7 @@ def get_gated_track_signature(
         data["user_wallet"] = user_wallet
     if user_id:
         data["userId"] = user_id
-    if not is_premium:
+    if not is_stream_gated:
         data["shouldCache"] = 1
     signature = generate_signature(data)
     return {"data": json.dumps(data), "signature": signature}
@@ -63,7 +63,7 @@ def get_gated_content_signature(
         return get_gated_track_signature(
             track_id=args["track_id"],
             cid=args["cid"],
-            is_premium=args["is_premium"],
+            is_stream_gated=args["is_stream_gated"],
             user_wallet=None,
             user_id=args.get("user_id"),
         )
@@ -81,7 +81,7 @@ def get_gated_content_signature_for_user_wallet(
         return get_gated_track_signature(
             track_id=args["track_id"],
             cid=args["track_cid"],
-            is_premium=args["is_premium"],
+            is_stream_gated=args["is_stream_gated"],
             user_wallet=args["user_wallet"],
             user_id=args.get("user_id"),
         )
