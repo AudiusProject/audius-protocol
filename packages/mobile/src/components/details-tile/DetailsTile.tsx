@@ -12,9 +12,11 @@ import {
   getDogEarType,
   isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
+import moment from 'moment'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
+import { Text as HarmonyText, IconCalendarMonth } from '@audius/harmony-native'
 import IconPause from 'app/assets/images/iconPause.svg'
 import IconPlay from 'app/assets/images/iconPlay.svg'
 import IconRepeat from 'app/assets/images/iconRepeatOff.svg'
@@ -401,6 +403,19 @@ export const DetailsTile = ({
                   />
                 ) : null}
                 {showPreviewButton ? <PreviewButton /> : null}
+                {track?.release_date ? (
+                  <>
+                    <IconCalendarMonth />
+                    <HarmonyText
+                      color='accent'
+                      strength='strong'
+                      variant='body'
+                    >
+                      Releases on{' '}
+                      {moment(track.release_date).format('M/D/YY @ h:mm A')}
+                    </HarmonyText>
+                  </>
+                ) : null}
                 <DetailsTileActionButtons
                   hasReposted={!!hasReposted}
                   hasSaved={!!hasSaved}

@@ -170,3 +170,142 @@ type DetailsTileHasAccessProps = {
   style?: ViewStyle
   trackArtist?: Pick<User, 'user_id' | 'name' | 'is_verified' | 'handle'>
 }
+
+export const DetailsTileHasAccess = ({
+  premiumConditions,
+  isOwner,
+  style,
+  trackArtist
+}: DetailsTileHasAccessProps) => {
+  const styles = useStyles()
+  const navigation = useNavigation()
+
+  const { nftCollection, collectionLink, followee, tippedUser } =
+    usePremiumConditionsEntity(premiumConditions)
+
+  const { onPress: handlePressCollection } = useLink(collectionLink)
+
+  const handlePressArtistName = useCallback(
+    (handle: string) => () => {
+      navigation.push('Profile', { handle })
+    },
+    [navigation]
+  )
+
+  const renderUnlockedSpecialAccessDescription = useCallback(
+    (args: {
+      entity: Pick<User, 'user_id' | 'name' | 'is_verified' | 'handle'>
+      prefix: string
+      suffix: string
+    }) => {
+      const { entity, prefix, suffix } = args
+      return (
+        <View style={styles.descriptionContainer}>
+          <Text>
+            <Text style={styles.description}>{prefix}</Text>
+            <Text
+              style={[styles.description, styles.name]}
+              onPress={handlePressArtistName(entity.handle)}
+            >
+              {entity.name}
+            </Text>
+            <UserBadges
+              badgeSize={16}
+              user={entity}
+              nameStyle={styles.description}
+              hideName
+            />
+            <Text style={styles.description}>{suffix}</Text>
+          </Text>
+        </View>
+      )
+    },
+    [styles, handlePressArtistName]
+  )
+
+  const renderUnlockedDescription = useCallback(() => {
+    if (isPremiumContentCollectibleGated(premiumConditions)) {
+      if (!nftCollection) return null
+      return (
+        <View style={styles.descriptionContainer}>
+          <Text>
+            <Text style={styles.description}>
+              {messages.unlockedCollectibleGatedPrefix}
+            </Text>
+            <Text
+              style={[styles.description, styles.name]}
+              onPress={handlePressCollection}
+            >
+              {nftCollection.name}
+            </Text>
+            <Text style={styles.description}>
+              {messages.unlockedCollectibleGatedSuffix}
+            </Text>
+          </Text>
+        </View>
+      )
+    }
+    if (isPremiumContentFollowGated(premiumConditions)) {
+      if (!followee) return null
+      return renderUnlockedSpecialAccessDescription({
+        entity: followee,
+        prefix: messages.unlockedFollowGatedPrefix,
+        suffix: messages.unlockedFollowGatedSuffix
+      })
+    }
+    if (isPremiumContentTipGated(premiumConditions)) {
+      if (!tippedUser) return null
+      return renderUnlockedSpecialAccessDescription({
+        entity: tippedUser,
+        prefix: messages.unlockedTipGatedPrefix,
+        suffix: messages.unlockedTipGatedSuffix
+      })
+    }
+    if (isPremiumContentUSDCPurchaseGated(premiumConditions)) {
+      if (!trackArtist) return null
+      return renderUnlockedSpecialAccessDescription({
+        entity: trackArtist,
+        prefix: messages.unlockedUSDCPurchasePrefix,
+        suffix: messages.unlockedUSDCPurchaseSuffix
+      })
+    }
+    return null
+  }, [
+    premiumConditions,
+    nftCollection,
+    styles.descriptionContainer,
+    styles.description,
+    styles.name,
+    handlePressCollection,
+    followee,
+    renderUnlockedSpecialAccessDescription,
+    tippedUser,
+    trackArtist
+  ])
+
+  if (isOwner) {
+    return (
+      <DetailsTileOwnerSection
+        premiumConditions={premiumConditions}
+        handlePressCollection={handlePressCollection}
+      />
+    )
+  }
+
+  return (
+    <View style={[styles.root, style]}>
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>{messages.unlocked}</Text>
+        <LockedStatusBadge
+          locked={false}
+          variant={
+            isPremiumContentUSDCPurchaseGated(premiumConditions)
+              ? 'purchase'
+              : 'gated'
+          }
+        />
+      </View>
+      {renderUnlockedDescription()}
+    </View>
+  )
+}
