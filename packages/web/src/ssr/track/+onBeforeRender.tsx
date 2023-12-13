@@ -32,7 +32,15 @@ export async function onBeforeRender(pageContext: PageContextServer) {
       }
     }
   } catch (e) {
-    console.error('sdk error', handle, slug, e)
+    console.error(
+      'Error fetching track for track page SSR',
+      'handle',
+      handle,
+      'slug',
+      slug,
+      'error',
+      e
+    )
     return {
       pageContext: {
         pageProps: {}

@@ -8,7 +8,7 @@ export async function handleSsr(url) {
 
   const { httpResponse } = pageContext
   if (!httpResponse) {
-    return null
+    return new Response(pageContext.errorWhileRendering, { status: 500 })
   } else {
     const { body, statusCode: status, headers } = httpResponse
     return new Response(body, { headers, status })
