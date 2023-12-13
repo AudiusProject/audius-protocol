@@ -304,15 +304,20 @@ def delete_playlist(params: ManageEntityParameters):
     params.add_record(params.entity_id, deleted_playlist)
 
 
-def process_playlist_contents(playlist_record, playlist_metadata, block_integer_time, existing_track_records):
+def process_playlist_contents(
+    playlist_record, playlist_metadata, block_integer_time, existing_track_records
+):
     updated_tracks = []
     for track in playlist_metadata["playlist_contents"]["track_ids"]:
         track_id = track["track"]
         metadata_time = track["time"]
         index_time = block_integer_time  # default to current block for new tracks
-        
+
         track_metadata = existing_track_records.get(track_id)
-        if playlist_record.is_album and (not track_metadata or (track_metadata.owner_id != playlist_record.playlist_owner_id)):
+        if playlist_record.is_album and (
+            not track_metadata
+            or (track_metadata.owner_id != playlist_record.playlist_owner_id)
+        ):
             continue
 
         previous_playlist_tracks = playlist_record.playlist_contents["track_ids"]
@@ -353,7 +358,10 @@ def process_playlist_data_event(
             if not playlist_metadata.get(key):
                 continue
             playlist_record.playlist_contents = process_playlist_contents(
-                playlist_record, playlist_metadata, block_integer_time, params.existing_records[EntityType.TRACK]
+                playlist_record,
+                playlist_metadata,
+                block_integer_time,
+                params.existing_records[EntityType.TRACK],
             )
         elif key in playlist_metadata:
             if key in immutable_playlist_fields and params.action == Action.UPDATE:

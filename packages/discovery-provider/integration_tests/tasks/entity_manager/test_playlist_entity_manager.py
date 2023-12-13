@@ -962,7 +962,9 @@ def test_index_invalid_playlists(app, mocker):
         )
         assert current_album.is_current == True
         assert current_album.is_album == True
-        assert current_album.playlist_contents == {'track_ids': [{'metadata_time': 1, 'time': 1585336422, 'track': 1}]}
+        assert current_album.playlist_contents == {
+            "track_ids": [{"metadata_time": 1, "time": 1585336422, "track": 1}]
+        }
 
 
 def test_invalid_playlist_description(app, mocker):
@@ -1048,15 +1050,27 @@ def test_index_add_tracks_to_collections(app, mocker):
 
     test_metadata = {
         "AlbumTracklistUpdate": {
-            "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}, {"time": 1660927554, "track": 2}]}
+            "playlist_contents": {
+                "track_ids": [
+                    {"time": 1660927554, "track": 1},
+                    {"time": 1660927554, "track": 2},
+                ]
+            }
         },
         "PlaylistTracklistUpdate": {
-            "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}, {"time": 1660927554, "track": 2}]}
+            "playlist_contents": {
+                "track_ids": [
+                    {"time": 1660927554, "track": 1},
+                    {"time": 1660927554, "track": 2},
+                ]
+            }
         },
     }
 
     album_tracklist_update_json = json.dumps(test_metadata["AlbumTracklistUpdate"])
-    playlist_tracklist_update_json = json.dumps(test_metadata["PlaylistTracklistUpdate"])
+    playlist_tracklist_update_json = json.dumps(
+        test_metadata["PlaylistTracklistUpdate"]
+    )
 
     tx_receipts = {
         "UpdateAlbumTracklistUpdate": [
@@ -1142,23 +1156,24 @@ def test_index_add_tracks_to_collections(app, mocker):
 
         album: Playlist = (
             session.query(Playlist)
-            .filter(
-                Playlist.playlist_id == PLAYLIST_ID_OFFSET
-            )
+            .filter(Playlist.playlist_id == PLAYLIST_ID_OFFSET)
             .first()
         )
         assert album.is_album == True
-        assert len(album.playlist_contents['track_ids']) == 1
-        assert album.playlist_contents['track_ids'] <= [{'time': 1585336422, 'track': 1, 'metadata_time': 1660927554}]
+        assert len(album.playlist_contents["track_ids"]) == 1
+        assert album.playlist_contents["track_ids"] <= [
+            {"time": 1585336422, "track": 1, "metadata_time": 1660927554}
+        ]
 
         # Validate playlist got both tracks
         playlist: Playlist = (
             session.query(Playlist)
-            .filter(
-                Playlist.playlist_id == PLAYLIST_ID_OFFSET + 1
-            )
+            .filter(Playlist.playlist_id == PLAYLIST_ID_OFFSET + 1)
             .first()
         )
         assert playlist.is_album == False
-        assert len(playlist.playlist_contents['track_ids']) == 2
-        assert playlist.playlist_contents['track_ids'] <= [{'metadata_time': 1660927554, 'time': 1585336422, 'track': 1}, {'metadata_time': 1660927554, 'time': 1585336422, 'track': 2}]
+        assert len(playlist.playlist_contents["track_ids"]) == 2
+        assert playlist.playlist_contents["track_ids"] <= [
+            {"metadata_time": 1660927554, "time": 1585336422, "track": 1},
+            {"metadata_time": 1660927554, "time": 1585336422, "track": 2},
+        ]
