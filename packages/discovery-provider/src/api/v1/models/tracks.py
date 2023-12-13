@@ -83,8 +83,10 @@ track = ns.model(
         "description": fields.String,
         "genre": fields.String,
         "id": fields.String(required=True),
-        "track_cid": fields.String(allow_null=True),
+        "track_cid": fields.String(allow_null=True), # remove nullability after backfill
         "preview_cid": fields.String(allow_null=True),
+        "orig_file_cid": fields.String(allow_null=True), # remove nullability after backfill
+        "orig_filename": fields.String(allow_null=True), # remove nullability after backfill
         "mood": fields.String,
         "release_date": fields.String,
         "remix_of": fields.Nested(remix_parent),
