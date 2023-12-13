@@ -6,7 +6,7 @@ from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 
 
-def get_track_stream_info(track_id: int):
+def get_track_access_info(track_id: int):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         info = (

@@ -62,8 +62,11 @@ from src.queries.get_stems_of import get_stems_of
 from src.queries.get_subsequent_tracks import get_subsequent_tracks
 from src.queries.get_top_followee_saves import get_top_followee_saves
 from src.queries.get_top_followee_windowed import get_top_followee_windowed
-from src.queries.get_track_stream_info import get_track_stream_info
-from src.queries.get_track_stream_signature import get_track_stream_signature
+from src.queries.get_track_access_info import get_track_access_info
+from src.queries.get_track_signature import (
+    get_track_download_signature,
+    get_track_stream_signature,
+)
 from src.queries.get_tracks import RouteArgs, get_tracks
 from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
 from src.queries.get_trending import get_trending
@@ -409,12 +412,6 @@ stream_parser.add_argument(
     type=str,
 )
 stream_parser.add_argument(
-    "filename",
-    description="""Optional - Filename in case user is trying to download track.
-        This is needed by the CN in order to set the Content-Disposition response header.""",
-    type=str,
-)
-stream_parser.add_argument(
     "skip_play_count",
     description="""Optional - boolean that disables tracking of play counts.""",
     type=bool,
@@ -465,33 +462,24 @@ class TrackStream(Resource):
         """
         request_args = stream_parser.parse_args()
         is_preview = request_args.get("preview")
-        filename = request_args.get("filename")
         decoded_id = decode_with_abort(track_id, ns)
-        info = get_track_stream_info(decoded_id)
+        info = get_track_access_info(decoded_id)
 
         track = info.get("track")
-        cid = track.get("track_cid")
-        if is_preview:
-            cid = track.get("preview_cid")
-        elif filename:
-            cid = track.get("orig_file_cid")
 
-        if not track or not cid:
+        if not track:
             logger.error(
-                f"tracks.py | stream | Track with id {track_id} may not exist or has no {'preview' if is_preview else 'track'}_cid. Please investigate."
+                f"tracks.py | stream | Track with id {track_id} may not exist. Please investigate."
             )
             abort_not_found(track_id, ns)
 
-        cid = cid.strip()
         redis = redis_connection.get_redis()
 
         # signature for the track to be included as a query param in the redirect to CN
-        signature = get_track_stream_signature(
+        stream_signature = get_track_stream_signature(
             {
                 "track": track,
-                "cid": cid,
                 "is_preview": is_preview,
-                "is_download": filename is not None,
                 "user_data": request_args.get("user_data"),
                 "user_signature": request_args.get("user_signature"),
                 "premium_content_signature": request_args.get(
@@ -499,16 +487,124 @@ class TrackStream(Resource):
                 ),
             }
         )
-        if not signature:
+        if not stream_signature:
             abort_not_found(track_id, ns)
 
+        signature = stream_signature["signature"]
+        cid = stream_signature["cid"]
         params = {"signature": json.dumps(signature)}
         skip_play_count = request_args.get("skip_play_count", False)
         if skip_play_count:
             params["skip_play_count"] = skip_play_count
-        if filename:
-            params["filename"] = filename
 
+        base_path = f"tracks/cidstream/{cid}"
+        query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
+        path = f"{base_path}?{query_string}"
+
+        # we cache track cid -> content node so we can avoid
+        # checking multiple content nodes for a track
+        # if we already know where to look
+        redis_key = f"track_cid:{cid}"
+        cached_content_node = redis.get(redis_key)
+        stream_url = None
+        if cached_content_node:
+            cached_content_node = cached_content_node.decode("utf-8")
+            stream_url = get_stream_url_from_content_node(cached_content_node, path)
+            if stream_url:
+                return stream_url
+
+        healthy_nodes = get_all_healthy_content_nodes_cached(redis)
+        if not healthy_nodes:
+            logger.error(
+                f"tracks.py | stream | No healthy Content Nodes found when streaming track ID {track_id}. Please investigate."
+            )
+            abort_not_found(track_id, ns)
+
+        rendezvous = RendezvousHash(
+            *[re.sub("/$", "", node["endpoint"].lower()) for node in healthy_nodes]
+        )
+
+        content_nodes = rendezvous.get_n(9999999, cid)
+        for content_node in content_nodes:
+            stream_url = get_stream_url_from_content_node(content_node, path)
+            if stream_url:
+                redis.set(redis_key, content_node)
+                redis.expire(redis_key, 60 * 30)  # 30 min ttl
+                return stream_url
+        abort_not_found(track_id, ns)
+
+
+# download
+
+download_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+download_parser.add_argument(
+    "user_signature",
+    description="""Optional - signature from the requesting user's wallet.
+        This is needed to authenticate the user and verify access in case the track is gated.""",
+    type=str,
+)
+download_parser.add_argument(
+    "user_data",
+    description="""Optional - data which was used to generate the optional signature argument.""",
+    type=str,
+)
+download_parser.add_argument(
+    "original",
+    description="""Optional - true if downloading original file""",
+    type=inputs.boolean,
+    required=False,
+    default=False,
+)
+
+@ns.route("/<string:track_id>/download")
+class TrackDownload(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Download Track""",
+        params={"track_id": "A Track ID"},
+        responses={
+            200: "Success",
+            216: "Partial content",
+            400: "Bad request",
+            416: "Content range invalid",
+            500: "Server error",
+        },
+    )
+    @ns.expect(download_parser)
+    @cache(ttl_sec=5, transform=tranform_stream_cache)
+    def get(self, track_id):
+        """
+        Download the original or MP3 file of a track.
+        """
+        request_args = download_parser.parse_args()
+        is_original = request_args.get("original")
+        decoded_id = decode_with_abort(track_id, ns)
+        info = get_track_access_info(decoded_id)
+        track = info.get("track")
+        if not track:
+            logger.error(
+                f"tracks.py | download | Track with id {track_id} may not exist. Please investigate."
+            )
+            abort_not_found(track_id, ns)
+
+        redis = redis_connection.get_redis()
+
+        # signature for the track to be included as a query param in the redirect to CN
+        download_signature = get_track_download_signature(
+            {
+                "track": track,
+                "is_original": is_original,
+                "user_data": request_args.get("user_data"),
+                "user_signature": request_args.get("user_signature"),
+            }
+        )
+        if not download_signature:
+            abort_not_found(track_id, ns)
+
+        signature = download_signature["signature"]
+        cid = download_signature["cid"]
+        filename = download_signature["filename"]
+        params = {"signature": json.dumps(signature), "filename": filename}
         base_path = f"tracks/cidstream/{cid}"
         query_string = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
         path = f"{base_path}?{query_string}"
