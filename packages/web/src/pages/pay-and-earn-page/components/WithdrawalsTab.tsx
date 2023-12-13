@@ -13,8 +13,6 @@ import {
   useUSDCTransactionDetailsModal
 } from '@audius/common'
 import { full } from '@audius/sdk'
-import { push as pushRoute } from 'connected-react-router'
-import { useDispatch } from 'react-redux'
 
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { MainContentContext } from 'pages/MainContentContext'
@@ -23,7 +21,6 @@ import { audiusSdk } from 'services/audius-sdk'
 import { isMobile } from 'utils/clientUtil'
 import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
-import { DASHBOARD_PAGE } from 'utils/route'
 
 import styles from '../PayAndEarnPage.module.css'
 
