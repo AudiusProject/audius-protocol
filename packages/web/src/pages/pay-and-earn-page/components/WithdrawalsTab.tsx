@@ -66,17 +66,10 @@ const DEFAULT_SORT_METHOD = full.GetUSDCTransactionsSortMethodEnum.Date
 const DEFAULT_SORT_DIRECTION = full.GetUSDCTransactionsSortDirectionEnum.Desc
 
 const NoWithdrawals = () => {
-  const dispatch = useDispatch()
-  const handleClickBackToDashboard = useCallback(() => {
-    dispatch(pushRoute(DASHBOARD_PAGE))
-  }, [dispatch])
-
   return (
     <NoTransactionsContent
       headerText={messages.noWithdrawalsHeader}
       bodyText={messages.noWithdrawalsBody}
-      ctaText={messages.backToDashboard}
-      onCTAClicked={handleClickBackToDashboard}
     />
   )
 }
