@@ -1,9 +1,9 @@
-// By default, don't do any server side rendering
-// Just serve the static HTML
+// For all routes except the explicitly defined ones (Track)
+// simply render the SPA without SSR
 
 import { escapeInject, dangerouslySkipEscape } from 'vike/server'
 
-import indexHtml from '../index.html?raw'
+import indexHtml from '../../../index.html?raw'
 
 export function render() {
   const pattern = /%(\S+?)%/g

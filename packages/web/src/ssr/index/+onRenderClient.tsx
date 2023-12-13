@@ -1,13 +1,15 @@
-// By default, simply render the SPA without SSR
+// For all routes except the explicitly defined ones (Track)
+// simply render the SPA without SSR
 
 import 'setimmediate'
 import { Buffer } from 'buffer'
 
 import processBrowser from 'process/browser'
 import { createRoot } from 'react-dom/client'
-import { Root } from '../src/Root'
 
-import '../src/index.css'
+import { Root } from '../../Root'
+
+import '../../index.css'
 
 window.global ||= window
 window.Buffer = Buffer

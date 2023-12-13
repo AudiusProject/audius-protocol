@@ -1,3 +1,4 @@
-// All routes exported here will skip SSR
+// All routes skip SSR
+// Except the explicitly defined routes (Track)
 
 export default '/*'
