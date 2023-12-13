@@ -240,7 +240,7 @@ def populate_user_metadata(
             )
             .all()
         )
-        for following_id in current_user_follow_rows:
+        for [following_id] in current_user_follow_rows:
             current_user_followed_user_ids[following_id] = True
 
         # collect all outgoing subscription edges for current user
