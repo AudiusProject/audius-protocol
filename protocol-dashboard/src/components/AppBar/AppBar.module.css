@@ -74,7 +74,6 @@
   text-shadow: 0px 16px 20px rgba(36, 36, 56, 0.15);
 }
 
-
 /* Right Nav */
 
 .userAccountSnippetContainer {
@@ -141,14 +140,13 @@
   font-size: 16px;
 }
 
-
 .appBar .launchAppBtn {
   height: 41px !important;
-  width: 167px !important;
-  padding: 0px !important;
   justify-content: center !important;
   align-items: center !important;
   background: var(--static-white) !important;
+  padding-right: var(--unit-3);
+  padding-left: var(--unit-3);
   box-shadow: 0px 16px 20px rgba(36, 36, 56, 0.15);
   border-radius: 8px;
   transform: perspective(1px) scale3d(1, 1, 1) !important;
@@ -170,12 +168,16 @@
   font-weight: var(--font-bold) !important;
   font-size: var(--font-s) !important;
   text-align: center;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-
-  color: #9147CC !important;
+  color: var(--secondary) !important;
 }
 
+.launchAppBtnIcon {
+  margin-right: var(--unit-1) !important;
+}
+
+.launchAppBtnIcon path {
+  fill: var(--secondary) !important;
+}
 
 /* MetaMask */
 .connectMetaMaskContainer {
@@ -194,7 +196,7 @@
   height: 14px;
   border-radius: 50%;
   margin-right: 8px;
-  background: #F15064;
+  background: #f15064;
   border: 2px solid rgba(255, 255, 255, 0.5);
 }
 
