@@ -32,10 +32,6 @@
   padding: var(--unit-4) 0;
 }
 
-.ctaBanner.isMobile .content {
-  gap: var(--unit-2);
-}
-
 .ctaBanner .contentSelection {
   display: flex;
   align-items: center;
@@ -62,14 +58,6 @@
   font-weight: var(--font-bold);
   line-height: 130%;
   text-align: center;
-}
-
-.text.small {
-  font-size: var(--font-s);
-}
-
-.isMobile .text {
-  font-size: var(--font-s);
 }
 
 .pill {
