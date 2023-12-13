@@ -605,6 +605,7 @@ export class SolanaWeb3Manager {
     id,
     type,
     blocknumber,
+    recentBlockhash,
     extraAmount = 0,
     splits,
     purchaserUserId,
@@ -617,6 +618,7 @@ export class SolanaWeb3Manager {
     splits: Record<string, number | BN>
     extraAmount?: number | BN
     blocknumber: number
+    recentBlockhash?: string
     purchaserUserId: number
     senderAccount: PublicKey
     senderKeypair?: Keypair
@@ -709,24 +711,18 @@ export class SolanaWeb3Manager {
 
     const data = `${type}:${id}:${blocknumber}:${purchaserUserId}`
     const memoInstruction = new TransactionInstruction({
-      keys: [
-        {
-          pubkey: isSenderUserBank ? this.feePayerKey : senderAccount,
-          isSigner: true,
-          isWritable: true
-        }
-      ],
+      keys: [],
       programId: MEMO_PROGRAM_ID,
       data: Buffer.from(data)
     })
 
     instructions.push(paymentRouterInstruction, memoInstruction)
 
-    const recentBlockhash = (await this.connection.getLatestBlockhash())
-      .blockhash
     const transaction = new Transaction({
       feePayer: this.feePayerKey,
-      recentBlockhash: recentBlockhash
+      recentBlockhash:
+        recentBlockhash ??
+        (await this.connection.getLatestBlockhash()).blockhash
     }).add(...instructions)
     if (!isSenderUserBank && senderKeypair) {
       transaction.partialSign(senderKeypair)
