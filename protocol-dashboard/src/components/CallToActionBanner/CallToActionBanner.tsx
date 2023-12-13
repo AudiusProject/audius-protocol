@@ -7,7 +7,6 @@ export type CallToActionBannerProps = PropsWithChildren<{
   href: string
   text: ReactNode
   pillText: ReactNode
-  size?: 'small' | 'large'
 }>
 
 type PillProps = PropsWithChildren<{}>
@@ -17,15 +16,7 @@ const Pill = ({ children }: PillProps) => {
 
 type BannerProps = PropsWithChildren<{}>
 const Banner = ({ children }: BannerProps) => {
-  return (
-    <div
-      className={cn(styles.banner, {
-        [styles.isMobile]: false
-      })}
-    >
-      {children}
-    </div>
-  )
+  return <div className={cn(styles.banner)}>{children}</div>
 }
 
 export const CallToActionBanner = ({
@@ -36,9 +27,7 @@ export const CallToActionBanner = ({
   return (
     <Banner>
       <a
-        className={cn(styles.ctaBanner, {
-          [styles.isMobile]: false
-        })}
+        className={cn(styles.ctaBanner)}
         href={href}
         rel="noreferrer"
         target="_blank"
@@ -46,13 +35,7 @@ export const CallToActionBanner = ({
         <div className={styles.content}>
           <Pill>{pillText}</Pill>
           <div className={styles.contentSelection}>
-            <div
-              className={cn(styles.text, {
-                // [styles.small]: size === 'small'
-              })}
-            >
-              {text}
-            </div>
+            <div className={styles.text}>{text}</div>
           </div>
         </div>
       </a>
