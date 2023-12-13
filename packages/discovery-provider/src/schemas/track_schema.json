@@ -11,7 +11,28 @@
           "type": "string",
           "default": null
         },
+        "track_cid": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
         "preview_cid": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "orig_file_cid": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "orig_filename": {
           "type": [
             "string",
             "null"
