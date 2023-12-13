@@ -7,7 +7,7 @@ import {
   selectGenresSchema
 } from '@audius/common'
 import { setField } from 'common/store/pages/signon/actions'
-import { Formik, useFormikContext } from 'formik'
+import { Formik, useField } from 'formik'
 import { ScrollView, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 import { toFormikValidationSchema } from 'zod-formik-adapter'
@@ -16,7 +16,7 @@ import { Flex, SelectablePill } from '@audius/harmony-native'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import { ReadOnlyAccountHeader } from '../components/AccountHeader'
-import { Heading, Page, PageFooter } from '../components/layout'
+import { Heading, Page, PageFooter, gutterSize } from '../components/layout'
 import type { SignUpScreenParamList } from '../types'
 
 const genres = GENRES.map((genre) => ({
@@ -28,21 +28,23 @@ type SelectGenreValues = { genres: typeof GENRES }
 
 const initialValues = { genres: [] }
 
-const ClickableGenres = () => {
-  const { values, setValues } = useFormikContext<SelectGenreValues>()
+const SelectGenreFieldArray = () => {
+  const [, meta, helpers] = useField({ name: 'genres', type: 'checkbox' })
+  const { value: values } = meta
+  const { setValue } = helpers
 
   const handleChange = (value) => {
-    const newValues = { genres: [...values.genres] }
-    const valueIndex = values.genres.indexOf(value)
+    const newValues = [...values]
+    const valueIndex = values.indexOf(value)
 
     if (valueIndex > -1) {
       // Already checked
-      newValues.genres.splice(valueIndex, 1)
+      newValues.splice(valueIndex, 1)
     } else {
       // Unchecked
-      newValues.genres.push(value)
+      newValues.push(value)
     }
-    setValues(newValues)
+    setValue(newValues)
   }
 
   return (
@@ -53,7 +55,7 @@ const ClickableGenres = () => {
             label={genre.label}
             key={genre.value}
             onPress={() => handleChange(genre.value)}
-            isSelected={values.genres.includes(genre.value)}
+            isSelected={values.includes(genre.value)}
             size='large'
           />
         ))}
@@ -85,13 +87,15 @@ export const SelectGenreScreen = () => {
     >
       {({ handleSubmit: triggerSubmit, dirty, isValid }) => (
         <View>
-          <ReadOnlyAccountHeader />
-          <Page offsetHeaderHeight>
-            <Heading
-              heading={messages.header}
-              description={messages.description}
-            />
-            <ClickableGenres />
+          <Page noGutter>
+            <ReadOnlyAccountHeader />
+            <Flex ph={gutterSize} gap='2xl'>
+              <Heading
+                heading={messages.header}
+                description={messages.description}
+              />
+              <SelectGenreFieldArray />
+            </Flex>
             <PageFooter
               buttonProps={{ disabled: !(dirty && isValid) }}
               onSubmit={triggerSubmit}

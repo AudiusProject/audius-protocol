@@ -9,27 +9,26 @@ import { Button, type ButtonProps } from 'app/components/core'
 
 type PageProps = FlexProps & {
   centered?: boolean
-  offsetHeaderHeight?: boolean
+  noGutter?: boolean
 }
 
 // Horizontal gutter size
-const gutterSize: FlexProps['p'] = 'l'
+export const gutterSize: FlexProps['p'] = 'l'
 
 export const Page = (props: PageProps) => {
-  const { children, style, offsetHeaderHeight, ...other } = props
+  const { children, style, noGutter, ...other } = props
 
   const layoutProps: FlexProps = {
     direction: 'column',
-    // 196 = -96 (account header) + -100 (navigation height)
-    h: offsetHeaderHeight ? Dimensions.get('window').height - 196 : '100%',
+    h: '100%',
     gap: '2xl',
-    ph: gutterSize,
+    ph: noGutter ? undefined : gutterSize,
     pv: '2xl',
     backgroundColor: 'white'
   }
 
   return (
-    // 1 zIndex is to appear below AccountHeader
+    // 1 zIndex is to appear below
     <Flex {...layoutProps} style={[css({ zIndex: 1 }), style]} {...other}>
       {children}
     </Flex>

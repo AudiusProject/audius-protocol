@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
 
 import {
+  Genre,
   ID,
   Status,
   convertGenreLabelToValue,
@@ -178,7 +179,7 @@ export const SelectArtistsPage = () => {
                       key={genre}
                       type='radio'
                       name='genre'
-                      label={convertGenreLabelToValue(genre)}
+                      label={convertGenreLabelToValue(genre as Genre)}
                       size={isMobile ? 'small' : 'large'}
                       value={genre}
                       isSelected={currentGenre === genre}
