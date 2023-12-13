@@ -68,6 +68,8 @@ class TrackMetadata(TypedDict):
     stem_of: Optional[TrackStem]
     is_premium: Optional[bool]
     premium_conditions: Optional[Any]
+    is_download_gated: Optional[bool]
+    download_conditions: Optional[Any]
     is_playlist_upload: Optional[bool]
     ai_attribution_user_id: Optional[int]
 
