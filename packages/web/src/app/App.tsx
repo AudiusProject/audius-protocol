@@ -3,11 +3,11 @@
 import { Suspense, lazy } from 'react'
 
 import { FeatureFlags, useFeatureFlag } from '@audius/common'
-import { Route, Switch } from 'react-router-dom'
+import { Redirect, Route, Switch } from 'react-router-dom'
 
 import { CoinbasePayButtonProvider } from 'components/coinbase-pay-button'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
-import { SIGN_IN_PAGE, SIGN_UP_PAGE } from 'utils/route'
+import { SIGN_IN_PAGE, SIGN_ON_ALIASES, SIGN_UP_PAGE } from 'utils/route'
 
 import { AppErrorBoundary } from './AppErrorBoundary'
 import { AppProviders } from './AppProviders'
@@ -30,6 +30,9 @@ export const AppInner = () => {
       <SomethingWrong />
       <Suspense fallback={null}>
         <Switch>
+          {SIGN_ON_ALIASES.map((a) => (
+            <Redirect key={a} from={a} to={SIGN_IN_PAGE} />
+          ))}
           <Route path={[SIGN_IN_PAGE, SIGN_UP_PAGE]}>
             {({ location }) => {
               if (!isLoaded) return null

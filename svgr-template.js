@@ -2,10 +2,11 @@ const template = (variables, { tpl }) => {
   return tpl`
 ${variables.imports};
 import {useTheme} from '@emotion/react'
+import {forwardRef} from 'react'
 
 ${variables.interfaces};
 
-const ${variables.componentName} = (${variables.props}) => {
+const ${variables.componentName} = forwardRef((${variables.props}, ref) => {
   const theme = useTheme()
   let {
     color,
@@ -29,10 +30,10 @@ const ${variables.componentName} = (${variables.props}) => {
 
   const fillColor = other.fill ?? theme.color.icon[color] ?? 'red'
 
-  props = {...other, fillColor}
+  props = {...other, ref, fillColor}
 
   return (${variables.jsx})
-};
+});
 
 ${variables.exports};
 `

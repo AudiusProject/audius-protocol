@@ -62,11 +62,6 @@ module.exports = function (app) {
           const reqIP = getIP(req)
           detectAbuse(user, reqIP) // fired & forgotten
         }
-
-        // Only reject relay for users explicitly blocked from relay
-        if (user.isBlockedFromRelay) {
-          return errorResponseForbidden(`Forbidden ${user.appliedRules}`)
-        }
       }
 
       let txProps
@@ -126,6 +121,27 @@ module.exports = function (app) {
               throw new Error(
                 'Cannot relay UserReplicaSetManager transactions when EntityManager is enabled'
               )
+            }
+          }
+
+          // Only reject relay for users explicitly blocked from relay and not for deactivations
+          if (blockAbuseOnRelay && user && user.isBlockedFromRelay) {
+            const decodedABI = libs.AudiusABIDecoder.decodeMethod(
+              txProps.contractRegistryKey,
+              txProps.encodedABI
+            )
+            const args = {}
+            for (const p of decodedABI.params) {
+              args[p.name] = p.value
+            }
+            const isDeactivation =
+              !user.is_deactivated &&
+              decodedABI.name === 'manageEntity' &&
+              args._entityType === 'User' &&
+              args._action === 'Update' &&
+              JSON.parse(args._metadata).data.is_deactivated
+            if (!isDeactivation) {
+              return errorResponseForbidden(`Forbidden ${user.appliedRules}`)
             }
           }
           receipt = await txRelay.sendTransaction(

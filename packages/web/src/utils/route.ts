@@ -68,6 +68,12 @@ export const HOME_PAGE = '/'
 export const NOT_FOUND_PAGE = '/404'
 export const SIGN_IN_PAGE = '/signin'
 export const SIGN_UP_PAGE = '/signup'
+export const SIGN_ON_ALIASES = Object.freeze([
+  '/login',
+  '/join',
+  '/signon',
+  '/register'
+])
 export const OAUTH_LOGIN_PAGE = '/oauth/auth'
 export const NOTIFICATION_PAGE = '/notifications'
 export const APP_REDIRECT = '/app-redirect'
@@ -209,6 +215,7 @@ export const publicSiteRoutes = [
 export const orderedRoutes = [
   SIGN_IN_PAGE,
   SIGN_UP_PAGE,
+  ...SIGN_ON_ALIASES,
   SIGN_UP_EMAIL_PAGE,
   SIGN_UP_PASSWORD_PAGE,
   SIGN_UP_HANDLE_PAGE,
