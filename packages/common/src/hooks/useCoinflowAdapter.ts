@@ -30,7 +30,10 @@ export const useCoinflowAdapter = () => {
           sendTransaction: async (transaction: Transaction) => {
             transaction.partialSign(wallet)
             const res = await connection.sendRawTransaction(
-              transaction.serialize()
+              transaction.serialize(),
+              // Skip preflight as this causes indeterminism between coinflow's
+              // RPC and our provided RPC.
+              { skipPreflight: true }
             )
             return res
           }
