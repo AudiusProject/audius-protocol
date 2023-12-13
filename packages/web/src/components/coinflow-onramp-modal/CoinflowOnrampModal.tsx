@@ -1,16 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import {
-  getRootSolanaAccount,
-  useAppContext,
   useCoinflowOnrampModal,
-  coinflowModalUIActions
+  coinflowModalUIActions,
+  useCoinflowAdapter
 } from '@audius/common'
-import {
-  CoinflowPurchase,
-  CoinflowSolanaPurchaseProps
-} from '@coinflowlabs/react'
-import { Connection, Transaction } from '@solana/web3.js'
+import { CoinflowPurchase } from '@coinflowlabs/react'
+import { Transaction } from '@solana/web3.js'
 import { useDispatch } from 'react-redux'
 
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
@@ -22,41 +18,6 @@ const { transactionSucceeded } = coinflowModalUIActions
 
 const MERCHANT_ID = process.env.VITE_COINFLOW_MERCHANT_ID
 const IS_PRODUCTION = process.env.VITE_ENVIRONMENT === 'production'
-
-type CoinflowAdapter = {
-  wallet: CoinflowSolanaPurchaseProps['wallet']
-  connection: Connection
-}
-
-const useCoinflowAdapter = () => {
-  const { audiusBackend } = useAppContext()
-  const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
-
-  useEffect(() => {
-    const initWallet = async () => {
-      const libs = await audiusBackend.getAudiusLibsTyped()
-      if (!libs.solanaWeb3Manager) return
-      const { connection } = libs.solanaWeb3Manager
-      const wallet = await getRootSolanaAccount(audiusBackend)
-      setAdapter({
-        connection,
-        wallet: {
-          publicKey: wallet.publicKey,
-          sendTransaction: async (transaction: Transaction) => {
-            transaction.partialSign(wallet)
-            const res = await connection.sendRawTransaction(
-              transaction.serialize()
-            )
-            return res
-          }
-        }
-      })
-    }
-    initWallet()
-  }, [audiusBackend])
-
-  return adapter
-}
 
 export const CoinflowOnrampModal = () => {
   const {
@@ -87,7 +48,8 @@ export const CoinflowOnrampModal = () => {
 
   const handleSuccess = useCallback(() => {
     dispatch(transactionSucceeded({}))
-  }, [dispatch])
+    onClose()
+  }, [dispatch, onClose])
 
   const showContent = isOpen && adapter
 

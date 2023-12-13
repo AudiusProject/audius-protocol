@@ -46,7 +46,7 @@ import {
   transactionSucceeded
 } from 'store/ui/coinflow-modal/slice'
 import { coinflowOnrampModalActions } from 'store/ui/modals/coinflow-onramp-modal'
-import { BN_USDC_CENT_WEI, ceilingBNUSDCToNearestCent } from 'utils/wallet'
+import { BN_USDC_CENT_WEI } from 'utils/wallet'
 
 import { pollPremiumTrack } from '../premium-content/sagas'
 import { updatePremiumTrackStatus } from '../premium-content/slice'
@@ -172,21 +172,24 @@ function* pollForPurchaseConfirmation({
   })
 }
 
+type PurchaseWithCoinflowArgs = {
+  blocknumber: number
+  extraAmount?: number
+  splits: Record<number, number>
+  contentId: ID
+  purchaserUserId: ID
+  /** USDC in dollars */
+  price: number
+}
+
 function* purchaseWithCoinflow({
   blocknumber,
   extraAmount,
   splits,
   contentId,
   purchaserUserId,
-  balanceNeededCents
-}: {
-  blocknumber: number
-  extraAmount?: number
-  splits: Record<number, number>
-  contentId: ID
-  purchaserUserId: ID
-  balanceNeededCents: number
-}) {
+  price
+}: PurchaseWithCoinflowArgs) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const feePayerAddress = yield* select(getFeePayer)
   if (!feePayerAddress) {
@@ -213,10 +216,9 @@ function* purchaseWithCoinflow({
   const serializedTransaction = coinflowTransaction
     .serialize({ requireAllSignatures: false, verifySignatures: false })
     .toString('base64')
-  const amount = balanceNeededCents / 100.0
   yield* put(
     coinflowOnrampModalActions.open({
-      amount,
+      amount: price,
       serializedTransaction,
       contentId
     })
@@ -245,24 +247,25 @@ function* purchaseWithCoinflow({
     )
   }
 }
-
-function* purchaseUSDCWithStripe({ balanceNeeded }: { balanceNeeded: BNUSDC }) {
+type PurchaseUSDCWithStripeArgs = {
+  /** Amount of USDC to purchase, as dollars */
+  amount: number
+}
+function* purchaseUSDCWithStripe({ amount }: PurchaseUSDCWithStripeArgs) {
   yield* put(buyUSDC())
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isBuyUSDCViaSolEnabled = yield* call(
     getFeatureEnabled,
     FeatureFlags.BUY_USDC_VIA_SOL
   )
-  const roundedAmount = ceilingBNUSDCToNearestCent(balanceNeeded)
-    .div(BN_USDC_CENT_WEI)
-    .toNumber()
+  const cents = Math.ceil(amount * 100)
 
   let result: RaceStatusResult | null = null
   if (isBuyUSDCViaSolEnabled) {
     yield* put(
       buyCryptoViaSol({
         // expects "friendly" amount, so dollars
-        amount: roundedAmount / 100.0,
+        amount: cents / 100.0,
         mint: 'usdc',
         provider: OnRampProvider.STRIPE
       })
@@ -277,7 +280,7 @@ function* purchaseUSDCWithStripe({ balanceNeeded }: { balanceNeeded: BNUSDC }) {
       onrampOpened({
         vendor: PurchaseVendor.STRIPE,
         purchaseInfo: {
-          desiredAmount: roundedAmount
+          desiredAmount: cents
         }
       })
     )
@@ -381,7 +384,7 @@ function* doStartPurchaseContentFlow({
       usdcConfig.minUSDCPurchaseAmountCents
     )
 
-    if (balanceNeeded.lten(0)) {
+    if (purchaseMethod === PurchaseMethod.BALANCE && balanceNeeded.lten(0)) {
       // No balance needed, perform the purchase right away
       yield* call(purchaseContent, audiusBackendInstance, {
         id: contentId,
@@ -393,7 +396,6 @@ function* doStartPurchaseContentFlow({
       })
     } else {
       // We need to acquire USDC before the purchase can continue
-
       // Invariant: The user must be checking out with a card
       if (purchaseMethod !== PurchaseMethod.CARD) {
         throw new PurchaseContentError(
@@ -401,9 +403,6 @@ function* doStartPurchaseContentFlow({
           'Unexpected insufficient balance to complete purchase'
         )
       }
-      const balanceNeededCents = ceilingBNUSDCToNearestCent(balanceNeeded)
-        .div(BN_USDC_CENT_WEI)
-        .toNumber()
 
       switch (purchaseVendor) {
         case PurchaseVendor.COINFLOW:
@@ -414,12 +413,12 @@ function* doStartPurchaseContentFlow({
             splits,
             contentId,
             purchaserUserId,
-            balanceNeededCents
+            price: price / 100.0
           })
           break
         case PurchaseVendor.STRIPE:
           // Buy USDC with Stripe. Once funded, continue with purchase.
-          yield* call(purchaseUSDCWithStripe, { balanceNeeded })
+          yield* call(purchaseUSDCWithStripe, { amount: price / 100.0 })
           yield* call(purchaseContent, audiusBackendInstance, {
             id: contentId,
             blocknumber,

@@ -1,5 +1,7 @@
+import { USDC } from '@audius/fixed-decimal'
 import { Keypair, PublicKey } from '@solana/web3.js'
 import retry from 'async-retry'
+import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take, takeLeading } from 'typed-redux-saga'
 
@@ -7,6 +9,7 @@ import { Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { PurchaseVendor } from 'models/PurchaseContent'
 import {
+  createPaymentRouterRouteTransaction,
   createTransferToUserBankTransaction,
   findAssociatedTokenAddress,
   getRecentBlockhash,
@@ -18,6 +21,12 @@ import {
 import { getAccountUser } from 'store/account/selectors'
 import { getContext } from 'store/effects'
 import { getFeePayer } from 'store/solana/selectors'
+import {
+  transactionCanceled as coinflowTransactionCanceled,
+  transactionFailed as coinflowTransactionFailed,
+  transactionSucceeded as coinflowTransactionSucceeded
+} from 'store/ui/coinflow-modal/slice'
+import { coinflowOnrampModalActions } from 'store/ui/modals/coinflow-onramp-modal'
 import { setVisibility } from 'store/ui/modals/parentSlice'
 import { initializeStripeModal } from 'store/ui/stripe-modal/slice'
 import { waitForValue } from 'utils'
@@ -284,7 +293,55 @@ function* doBuyUSDC({
         })
         break
       }
-      case PurchaseVendor.COINFLOW:
+      case PurchaseVendor.COINFLOW: {
+        const feePayerAddress = yield* select(getFeePayer)
+        if (!feePayerAddress) {
+          throw new Error('Missing feePayer unexpectedly')
+        }
+        const rootAccount = yield* call(
+          getRootSolanaAccount,
+          audiusBackendInstance
+        )
+
+        const amount = desiredAmount / 100.0
+        // Send the USDC through the payment router, sans purchase memo, and
+        // route everything to the user's user bank.
+        // Required as only the payment router program is allowed via coinflow.
+        const coinflowTransaction = yield* call(
+          createPaymentRouterRouteTransaction,
+          audiusBackendInstance,
+          {
+            sender: rootAccount.publicKey,
+            splits: {
+              [userBank.toBase58()]: new BN(USDC(amount).value.toString())
+            }
+          }
+        )
+        const serializedTransaction = coinflowTransaction
+          .serialize({ requireAllSignatures: false, verifySignatures: false })
+          .toString('base64')
+        yield* put(
+          coinflowOnrampModalActions.open({
+            amount,
+            serializedTransaction
+          })
+        )
+
+        const result = yield* race({
+          succeeded: take(coinflowTransactionSucceeded),
+          failed: take(coinflowTransactionFailed),
+          canceled: take(coinflowTransactionCanceled)
+        })
+
+        // Return early for failure or cancellation
+        if (result.canceled) {
+          throw new Error('Canceled Coinflow purchase')
+        }
+        if (result.failed) {
+          throw new Error('Coinflow transaction failed')
+        }
+        break
+      }
       default:
         throw new BuyUSDCError(
           BuyUSDCErrorCode.OnrampError,

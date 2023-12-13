@@ -1,16 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
-  deriveUserBankPubkey,
-  useAppContext,
-  useCoinflowOnrampModal
+  useCoinflowAdapter,
+  useCoinflowOnrampModal,
+  coinflowModalUIActions
 } from '@audius/common'
-import type { CoinflowSolanaPurchaseProps } from '@coinflowlabs/react'
 import { CoinflowPurchase } from '@coinflowlabs/react-native'
-import type { Connection } from '@solana/web3.js'
 import { Transaction } from '@solana/web3.js'
 import { TouchableOpacity, View } from 'react-native'
 import Config from 'react-native-config'
+import { useDispatch } from 'react-redux'
 
 import IconCloseAlt from 'app/assets/images/iconCloseAlt.svg'
 import { AppDrawer } from 'app/components/drawer'
@@ -23,11 +22,6 @@ const MODAL_NAME = 'CoinflowOnramp'
 
 const { COINFLOW_MERCHANT_ID, ENVIRONMENT } = Config
 const IS_PRODUCTION = ENVIRONMENT === 'production'
-
-type CoinflowAdapter = {
-  wallet: CoinflowSolanaPurchaseProps['wallet']
-  connection: Connection
-}
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   headerContainer: {
@@ -50,6 +44,8 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   }
 }))
 
+const { transactionSucceeded } = coinflowModalUIActions
+
 const CoinflowOnrampDrawerHeader = ({ onClose }: { onClose: () => void }) => {
   const styles = useStyles()
   const { neutralLight4 } = useThemeColors()
@@ -66,46 +62,16 @@ const CoinflowOnrampDrawerHeader = ({ onClose }: { onClose: () => void }) => {
   )
 }
 
-const useCoinflowAdapter = () => {
-  const { audiusBackend } = useAppContext()
-  const [adapter, setAdapter] = useState<CoinflowAdapter | null>(null)
-
-  useEffect(() => {
-    const initWallet = async () => {
-      const libs = await audiusBackend.getAudiusLibsTyped()
-      if (!libs.solanaWeb3Manager) return
-      const { connection } = libs.solanaWeb3Manager
-      const publicKey = await deriveUserBankPubkey(audiusBackend, {
-        mint: 'usdc'
-      })
-      setAdapter({
-        connection,
-        wallet: {
-          publicKey,
-          sendTransaction: async (
-            transaction: any,
-            connection: any,
-            options: any
-          ) => {
-            console.debug('Sending transaction', transaction)
-            return ''
-          }
-        }
-      })
-    }
-    initWallet()
-  }, [audiusBackend])
-
-  return adapter
-}
-
 export const CoinflowOnrampDrawer = () => {
   const {
     data: { amount, serializedTransaction },
     isOpen,
     onClose
   } = useCoinflowOnrampModal()
-  const [transaction, setTransaction] = useState<Transaction | null>(null)
+  const dispatch = useDispatch()
+  const [transaction, setTransaction] = useState<Transaction | undefined>(
+    undefined
+  )
 
   const adapter = useCoinflowAdapter()
 
@@ -119,18 +85,15 @@ export const CoinflowOnrampDrawer = () => {
       } catch (e) {
         console.error(e)
       }
-    } else {
-      setTransaction(null)
     }
   }, [serializedTransaction])
 
-  const showContent = isOpen && adapter && transaction
+  const handleSuccess = useCallback(() => {
+    dispatch(transactionSucceeded({}))
+    onClose()
+  }, [dispatch, onClose])
 
-  /*
-  TODO(coinflow):
-  - Create Transaction
-  - Implement sendTransaction()
-  */
+  const showContent = isOpen && adapter
 
   return (
     <AppDrawer
@@ -147,6 +110,7 @@ export const CoinflowOnrampDrawer = () => {
           transaction={transaction}
           wallet={adapter.wallet}
           connection={adapter.connection}
+          onSuccess={handleSuccess}
           merchantId={COINFLOW_MERCHANT_ID || ''}
           env={IS_PRODUCTION ? 'prod' : 'sandbox'}
           blockchain='solana'

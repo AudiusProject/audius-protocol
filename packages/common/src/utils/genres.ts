@@ -56,7 +56,9 @@ export enum Genre {
 
 export const ELECTRONIC_PREFIX = 'Electronic - '
 
-export const ELECTRONIC_SUBGENRES: { [key in Genre]?: string } = {
+export const ELECTRONIC_SUBGENRES: Partial<
+  Record<Genre, `${typeof ELECTRONIC_PREFIX}${Genre}`>
+> = {
   [Genre.TECHNO]: `${ELECTRONIC_PREFIX}${Genre.TECHNO}`,
   [Genre.TRAP]: `${ELECTRONIC_PREFIX}${Genre.TRAP}`,
   [Genre.HOUSE]: `${ELECTRONIC_PREFIX}${Genre.HOUSE}`,

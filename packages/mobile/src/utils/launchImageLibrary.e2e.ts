@@ -14,9 +14,9 @@ export function openPicker(options: Options, callback: Function) {
   // eslint-disable-next-line n/no-callback-literal
   callback({
     assets: [
-      testID === 'cover_photo'
+      testID === 'coverPhoto'
         ? coverPhoto
-        : testID === 'profile_picture'
+        : testID === 'profileImage'
         ? profilePicture
         : null
     ]

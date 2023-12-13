@@ -4,7 +4,14 @@ import { Box } from '../Box/Box'
 
 import type { FlexProps } from './types'
 
-const invalidProps = ['alignItems', 'direction', 'wrap']
+const invalidProps = [
+  'alignItems',
+  'direction',
+  'wrap',
+  'gap',
+  'rowGap',
+  'columnGap'
+]
 
 /** Layout component used to group child elements in one-deminsional arrangements. */
 export const Flex = styled(Box, {

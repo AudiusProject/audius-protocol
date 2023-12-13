@@ -9,25 +9,27 @@ import { Button, type ButtonProps } from 'app/components/core'
 
 type PageProps = FlexProps & {
   centered?: boolean
+  noGutter?: boolean
 }
 
 // Horizontal gutter size
-const gutterSize: FlexProps['p'] = 'l'
+export const gutterSize: FlexProps['p'] = 'l'
 
 export const Page = (props: PageProps) => {
-  const { children, style, ...other } = props
+  const { children, style, noGutter, ...other } = props
 
   const layoutProps: FlexProps = {
     direction: 'column',
     h: '100%',
     gap: '2xl',
-    ph: gutterSize,
+    ph: noGutter ? undefined : gutterSize,
     pv: '2xl',
     backgroundColor: 'white'
   }
 
   return (
-    <Flex {...layoutProps} style={[style]} {...other}>
+    // 1 zIndex is to appear below
+    <Flex {...layoutProps} style={[css({ zIndex: 1 }), style]} {...other}>
       {children}
     </Flex>
   )

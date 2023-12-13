@@ -58,7 +58,8 @@ const getStories = () => {
     '../src/harmony-native/Flex.stories.tsx': require('../src/harmony-native/components/layout/Flex/Flex.stories.tsx'),
     '../src/harmony-native/Paper.stories.tsx': require('../src/harmony-native/components/layout/Paper/Paper.stories.tsx'),
     '../src/harmony-native/Avatar.stories.tsx': require('../src/harmony-native/components/Avatar/Avatar.stories.tsx'),
-    '../src/harmony-native/Hint.stories.tsx': require('../src/harmony-native/components/Hint/Hint.stories.tsx')
+    '../src/harmony-native/Hint.stories.tsx': require('../src/harmony-native/components/Hint/Hint.stories.tsx'),
+    '../src/harmony-native/SelectablePill.stories.tsx': require('../src/harmony-native/components/input/SelectablePill/SelectablePill.stories.tsx'),
   }
 }
 
