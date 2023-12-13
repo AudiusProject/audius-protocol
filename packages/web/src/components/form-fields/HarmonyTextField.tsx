@@ -13,7 +13,8 @@ export type HarmonyTextFieldProps = TextInputProps & {
   clearErrorOnChange?: boolean
   /** Function to transform the input value upon `onChange`.
    * E.g. a function to trim whitespace */
-  transformValue?: (value: string) => string
+  transformValueOnChange?: (value: string) => string
+  transformValueOnBlur?: (value: string) => string
   debouncedValidationMs?: number
 }
 
@@ -22,7 +23,8 @@ export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
   const {
     name,
     clearErrorOnChange = true,
-    transformValue,
+    transformValueOnChange,
+    transformValueOnBlur,
     debouncedValidationMs,
     ...other
   } = props
@@ -53,10 +55,20 @@ export const HarmonyTextField = (props: HarmonyTextFieldProps) => {
         if (clearErrorOnChange) {
           setError(undefined)
         }
-        if (transformValue) {
-          e.target.value = transformValue(e.target.value)
+        if (transformValueOnChange) {
+          e.target.value = transformValueOnChange(e.target.value)
         }
         field.onChange(e)
+      }}
+      onBlur={(e) => {
+        if (clearErrorOnChange) {
+          setError(undefined)
+        }
+        if (transformValueOnBlur) {
+          e.target.value = transformValueOnBlur(e.target.value)
+        }
+        field.onChange(e)
+        field.onBlur(e)
       }}
       {...other}
     />
