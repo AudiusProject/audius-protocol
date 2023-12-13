@@ -711,7 +711,7 @@ export class SolanaWeb3Manager {
     const memoInstruction = new TransactionInstruction({
       keys: [
         {
-          pubkey: this.feePayerKey,
+          pubkey: isSenderUserBank ? this.feePayerKey : senderAccount,
           isSigner: true,
           isWritable: true
         }
