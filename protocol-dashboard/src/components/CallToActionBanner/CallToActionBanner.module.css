@@ -1,0 +1,92 @@
+.banner {
+  min-height: 56px;
+  width: 100%;
+  background: linear-gradient(315deg, #7652cc 0%, #b05ce6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--unit-10);
+}
+
+.banner g path {
+  fill: var(--static-white);
+}
+
+.ctaBanner {
+  all: unset;
+  display: block;
+  text-decoration: none !important;
+  user-select: none;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+}
+
+.ctaBanner .content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--unit-4);
+  padding: var(--unit-4) 0;
+}
+
+.ctaBanner.isMobile .content {
+  gap: var(--unit-2);
+}
+
+.ctaBanner .contentSelection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all ease-in-out 0.07s;
+  border-bottom: 1px solid rgba(0, 0, 0, 0);
+  gap: var(--unit-2);
+}
+
+.pill {
+  pointer-events: none;
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.pill .pillText {
+  padding-top: 1px;
+  text-transform: uppercase;
+  color: var(--static-white);
+}
+
+.text {
+  color: var(--static-white);
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+  line-height: 130%;
+  text-align: center;
+}
+
+.text.small {
+  font-size: var(--font-s);
+}
+
+.isMobile .text {
+  font-size: var(--font-s);
+}
+
+.pill {
+  border: unset;
+  text-transform: uppercase;
+  padding-left: var(--unit-1);
+  padding-right: var(--unit-1);
+  height: calc(var(--unit-1) * 4.5);
+  border-radius: 100px;
+  background-color: rgba(247, 247, 249, 0.3);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 100%;
+  color: var(--static-white);
+  font-size: var(--font-xs);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.5px;
+}
