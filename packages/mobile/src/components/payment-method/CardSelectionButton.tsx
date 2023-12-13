@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import type { PurchaseVendor } from '@audius/common'
 import { modalsActions } from '@audius/common'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import IconCaretDown from 'app/assets/images/iconCaretDown.svg'
@@ -41,6 +41,7 @@ export const CardSelectionButton = ({
           }
         }}
         fullWidth
+        onPress={handlePress}
       />
     </TouchableOpacity>
   )
