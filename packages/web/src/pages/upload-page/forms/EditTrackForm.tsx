@@ -32,8 +32,6 @@ import { TrackMetadataFormSchema } from '../validation'
 
 import styles from './EditTrackForm.module.css'
 
-// const isScheduledReleasesEnabled = true
-
 const messages = {
   multiTrackCount: (index: number, total: number) =>
     `TRACK ${index} of ${total}`,

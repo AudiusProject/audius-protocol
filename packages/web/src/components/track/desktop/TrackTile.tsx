@@ -352,7 +352,7 @@ const TrackTile = ({
               <>
                 {specialContentLabel}
                 {scheduledReleaseLabel}
-                {!isUnlisted && stats}
+                {isUnlisted ? null : stats}
               </>
             )}
           </div>

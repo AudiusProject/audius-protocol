@@ -1,5 +1,4 @@
-import { Text } from '@audius/harmony'
-import { IconCalendar } from '@audius/stems'
+import { Text, IconCalendarMonth } from '@audius/harmony'
 import cn from 'classnames'
 import moment from 'moment'
 
@@ -17,7 +16,7 @@ export const ScheduledReleaseLabel = ({
   isUnlisted
 }: ScheduledReleaseLabelProps) => {
   if (!released || !isUnlisted) {
-    return <></>
+    return null
   }
   return (
     <div
@@ -26,8 +25,10 @@ export const ScheduledReleaseLabel = ({
         styles.scheduledReleaseLabel
       )}
     >
-      <IconCalendar className={premiumContentLabelStyles.icon} />
-      Releases {moment.utc(released).local().format('M/D/YY [@] h:mm A')}
+      <IconCalendarMonth className={premiumContentLabelStyles.icon} />
+      <Text>
+        Releases {moment.utc(released).local().format('M/D/YY [@] h:mm A')}
+      </Text>
     </div>
   )
 }
@@ -37,7 +38,7 @@ export const ScheduledReleaseGiantLabel = ({
   isUnlisted
 }: ScheduledReleaseLabelProps) => {
   if (!released || !isUnlisted) {
-    return <></>
+    return null
   }
 
   return (
@@ -47,7 +48,7 @@ export const ScheduledReleaseGiantLabel = ({
         styles.scheduledReleaseLabel
       )}
     >
-      <IconCalendar />
+      <IconCalendarMonth />
       <Text color='accent' variant='title'>
         Releases {moment.utc(released).local().format('M/D/YY [@] h:mm A')}
       </Text>
