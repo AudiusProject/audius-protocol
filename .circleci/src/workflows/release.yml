@@ -41,6 +41,11 @@ jobs:
       service: comms
       notify_slack_on_failure: true
   - push-docker-image:
+      name: push-es-indexer
+      context: [Vercel, dockerhub, slack-secrets]
+      service: es-indexer
+      notify_slack_on_failure: true
+  - push-docker-image:
       name: push-trpc
       context: [Vercel, dockerhub, slack-secrets]
       service: trpc

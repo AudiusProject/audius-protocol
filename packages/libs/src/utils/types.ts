@@ -63,7 +63,6 @@ export type UserMetadata = {
   secondary_ids: number[]
 
   // Only present on the "current" account
-  does_follow_current_user?: boolean
   track_save_count?: number
   twitter_handle?: string
   instagram_handle?: string

@@ -1,24 +1,20 @@
 import type { ReactNode } from 'react'
-import { createContext } from 'react'
 
-import type { Theme } from '../types'
+import type { Theme } from '@audius/harmony'
+import { ThemeProvider as EmotionThemeProvider } from '@emotion/react'
 
-type ThemeContextType = {
-  theme: Theme
-}
-
-export const ThemeContext = createContext<ThemeContextType>({
-  theme: 'day'
-})
+import { theme } from './theme'
 
 type ThemeProviderProps = {
-  theme: Theme
+  themeName: Theme
   children: ReactNode
 }
 
 export const ThemeProvider = (props: ThemeProviderProps) => {
-  const { children, theme } = props
+  const { children, themeName } = props
   return (
-    <ThemeContext.Provider value={{ theme }}>{children}</ThemeContext.Provider>
+    <EmotionThemeProvider theme={theme[themeName]}>
+      {children}
+    </EmotionThemeProvider>
   )
 }

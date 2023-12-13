@@ -34,6 +34,9 @@ const readConfig = () => {
     audius_solana_endpoint: str({
       default: 'http://solana-test-validator:8899'
     }),
+    audius_solana_track_listen_count_address: str({
+      default: 'testEjzEibm3nq77VQcqCCmSMx6m3KdJHuepBH1rnue'
+    }),
     audius_solana_waudio_mint: str({
       default: '37RCjhgV1qGV2Q54EHFScdxZ22ydRMdKMtVgod47fDP3'
     }),
@@ -42,6 +45,9 @@ const readConfig = () => {
     }),
     audius_solana_user_bank_program_address: str({
       default: 'testHKV1B56fbvop4w6f2cTGEub9dRQ2Euta5VmqdX9'
+    }),
+    audius_solana_payment_router_program_address: str({
+      default: 'apaySbqV1XAmuiGszeN4NyWrXkkMrnuJVoNhzmS1AMa'
     }),
     audius_solana_rewards_manager_program_address: str({
       default: 'testLsJKtyABc9UXJF8JWFKf1YH4LmqCWBC42c6akPb'
@@ -86,6 +92,8 @@ const readConfig = () => {
     rewardsManagerProgramId: env.audius_solana_rewards_manager_program_address,
     rewardsManagerAccountAddress: env.audius_solana_rewards_manager_account,
     claimableTokenProgramId: env.audius_solana_user_bank_program_address,
+    paymentRouterProgramId: env.audius_solana_payment_router_program_address,
+    trackListenCountProgramId: env.audius_solana_track_listen_count_address,
     usdcMintAddress: env.audius_solana_usdc_mint,
     waudioMintAddress: env.audius_solana_waudio_mint,
     solanaFeePayerWallets,

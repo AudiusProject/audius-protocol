@@ -1,1 +1,6 @@
 export * from './Link'
+export * from './Text/Text'
+export * from './layout'
+export * from './Avatar/Avatar'
+export * from './Hint/Hint'
+export * from './input/SelectablePill/SelectablePill'

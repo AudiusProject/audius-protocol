@@ -7,7 +7,7 @@ export type PurchaseVendorState = {
 }
 
 const initialState: PurchaseVendorState = {
-  card: PurchaseVendor.STRIPE
+  card: PurchaseVendor.COINFLOW
 }
 
 const slice = createSlice({

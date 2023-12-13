@@ -1,9 +1,10 @@
 import type { ID } from '@audius/common'
-import { accountSelectors, trpc } from '@audius/common'
+import { accountSelectors } from '@audius/common'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { Text } from 'app/components/core'
+import { trpc } from 'app/services/trpc-client-mobile'
 import { makeStyles } from 'app/styles'
 
 const messages = {

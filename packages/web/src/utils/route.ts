@@ -68,6 +68,12 @@ export const HOME_PAGE = '/'
 export const NOT_FOUND_PAGE = '/404'
 export const SIGN_IN_PAGE = '/signin'
 export const SIGN_UP_PAGE = '/signup'
+export const SIGN_ON_ALIASES = Object.freeze([
+  '/login',
+  '/join',
+  '/signon',
+  '/register'
+])
 export const OAUTH_LOGIN_PAGE = '/oauth/auth'
 export const NOTIFICATION_PAGE = '/notifications'
 export const APP_REDIRECT = '/app-redirect'
@@ -89,7 +95,8 @@ export enum SignUpPath {
   reviewHandle = 'review-handle',
   finishProfile = 'finish-profile',
   selectGenres = 'select-genres',
-  selectArtists = 'select-artists'
+  selectArtists = 'select-artists',
+  appCta = 'app-cta'
 }
 export const SIGN_UP_EMAIL_PAGE = `/signup/${SignUpPath.createEmail}`
 export const SIGN_UP_START_PAGE = SIGN_UP_EMAIL_PAGE // entry point for sign up if needing to redirect to the beginning
@@ -100,6 +107,7 @@ export const SIGN_UP_REVIEW_HANDLE_PAGE = `/signup/${SignUpPath.reviewHandle}`
 export const SIGN_UP_FINISH_PROFILE_PAGE = `/signup/${SignUpPath.finishProfile}`
 export const SIGN_UP_GENRES_PAGE = `/signup/${SignUpPath.selectGenres}`
 export const SIGN_UP_ARTISTS_PAGE = `/signup/${SignUpPath.selectArtists}`
+export const SIGN_UP_APP_CTA_PAGE = `/signup/${SignUpPath.appCta}`
 
 // Param routes.
 export const NOTIFICATION_USERS_PAGE = '/notification/:notificationId/users'
@@ -207,6 +215,7 @@ export const publicSiteRoutes = [
 export const orderedRoutes = [
   SIGN_IN_PAGE,
   SIGN_UP_PAGE,
+  ...SIGN_ON_ALIASES,
   SIGN_UP_EMAIL_PAGE,
   SIGN_UP_PASSWORD_PAGE,
   SIGN_UP_HANDLE_PAGE,

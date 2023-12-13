@@ -1,8 +1,6 @@
 from datetime import datetime
-from datetime import datetime
 
 from src.models.tracks.track import Track
-
 from src.tasks.celery_app import celery
 from src.utils.structured_logger import StructuredLogger, log_duration
 from src.utils.web3_provider import get_eth_web3
@@ -39,10 +37,9 @@ def _publish_scheduled_releases(session, redis):
             release_date_day = candidate_track.release_date
         except Exception:
             continue
-        candidate_created_at_day = candidate_track.created_at.date()
         if (
             current_timestamp >= release_date_day.timestamp()
-            and release_date_day > candidate_created_at_day
+            and release_date_day.timestamp() > candidate_track.created_at.timestamp()
         ):
             candidate_track.is_unlisted = False
 

@@ -2,14 +2,21 @@ import styled from '@emotion/native'
 
 import { Box } from '../Box/Box'
 
-import type { NativeFlexProps } from './types'
+import type { FlexProps } from './types'
 
-const invalidProps = ['alignItems', 'direction', 'wrap']
+const invalidProps = [
+  'alignItems',
+  'direction',
+  'wrap',
+  'gap',
+  'rowGap',
+  'columnGap'
+]
 
 /** Layout component used to group child elements in one-deminsional arrangements. */
 export const Flex = styled(Box, {
   shouldForwardProp: (prop) => !invalidProps.includes(prop)
-})<NativeFlexProps>((props) => {
+})<FlexProps>((props) => {
   const {
     theme,
     direction,

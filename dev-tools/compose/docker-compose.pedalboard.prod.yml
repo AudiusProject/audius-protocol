@@ -52,6 +52,7 @@ services:
       audius_solana_rewards_manager_program_address: '${SOLANA_REWARD_MANAGER_PUBLIC_KEY}'
       audius_solana_rewards_manager_account: '${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}'
       audius_solana_user_bank_program_address: '${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}'
+      audius_solana_payment_router_program_address: '${SOLANA_PAYMENT_ROUTER_PUBLIC_KEY}'
       audius_solana_waudio_mint: '${SOLANA_TOKEN_MINT_PUBLIC_KEY}'
       audius_solana_usdc_mint: '${SOLANA_USDC_TOKEN_MINT_PUBLIC_KEY}'
       audius_solana_fee_payer_wallets: '[{"privateKey":${SOLANA_FEEPAYER_SECRET_KEY}}]'

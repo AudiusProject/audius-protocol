@@ -46,17 +46,21 @@ if (parameters) {
 
 try {
   argsEnhancers.forEach((enhancer) => addArgsEnhancer(enhancer))
-} catch {}
+} catch { }
 
 const getStories = () => {
   return {
-    '../src/harmony-native/color.stories.tsx': require('../src/harmony-native/foundations/color/color.stories.tsx'),
+    '../src/harmony-native/Color.stories.tsx': require('../src/harmony-native/foundations/color/Color.stories.tsx'),
     '../src/harmony-native/Shadows.stories.tsx': require('../src/harmony-native/foundations/shadows/Shadows.stories.tsx'),
     '../src/harmony-native/Typography.stories.tsx': require('../src/harmony-native/foundations/typography/Typography.stories.tsx'),
     '../src/harmony-native/Link.stories.tsx': require('../src/harmony-native/components/Link/Link.stories.tsx'),
     '../src/harmony-native/Box.stories.tsx': require('../src/harmony-native/components/layout/Box/Box.stories.tsx'),
     '../src/harmony-native/Flex.stories.tsx': require('../src/harmony-native/components/layout/Flex/Flex.stories.tsx'),
-    '../src/harmony-native/Paper.stories.tsx': require('../src/harmony-native/components/layout/Paper/Paper.stories.tsx')
+    '../src/harmony-native/Paper.stories.tsx': require('../src/harmony-native/components/layout/Paper/Paper.stories.tsx'),
+    '../src/harmony-native/Avatar.stories.tsx': require('../src/harmony-native/components/Avatar/Avatar.stories.tsx'),
+    '../src/harmony-native/Hint.stories.tsx': require('../src/harmony-native/components/Hint/Hint.stories.tsx'),
+    '../src/harmony-native/SelectablePill.stories.tsx': require('../src/harmony-native/components/input/SelectablePill/SelectablePill.stories.tsx'),
+    '../src/harmony-native/FollowButton.stories.tsx': require('../src/harmony-native/components/Button/FollowButton/FollowButton.stories.tsx'),
   }
 }
 

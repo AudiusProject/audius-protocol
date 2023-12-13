@@ -1,14 +1,7 @@
+import { signUpPolicyMessages as messages } from '@audius/common'
 import { Text, TextLink } from '@audius/harmony'
 
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from 'utils/route'
-
-const messages = {
-  agreeTo:
-    "By clicking continue, you state you have read and agree to Audius' ",
-  termsOfService: 'Terms of Service',
-  and: ' and ',
-  privacyPolicy: 'Privacy Policy.'
-}
 
 export const SignUpAgreementText = () => {
   return (

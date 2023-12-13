@@ -1,29 +1,34 @@
 import { useCallback, useContext, useState } from 'react'
 
 import {
+  BNUSDC,
   Id,
+  Name,
   Status,
   USDCTransactionDetails,
+  WithdrawUSDCModalPages,
   accountSelectors,
   combineStatuses,
+  formatUSDCWeiToFloorCentsNumber,
   statusIsNotFinalized,
   useAllPaginatedQuery,
   useGetUSDCTransactions,
   useGetUSDCTransactionsCount,
-  useUSDCTransactionDetailsModal
+  useUSDCBalance,
+  useUSDCTransactionDetailsModal,
+  useWithdrawUSDCModal
 } from '@audius/common'
 import { full } from '@audius/sdk'
-import { push as pushRoute } from 'connected-react-router'
-import { useDispatch } from 'react-redux'
+import BN from 'bn.js'
 
 import { useErrorPageOnFailedStatus } from 'hooks/useErrorPageOnFailedStatus'
 import { MainContentContext } from 'pages/MainContentContext'
+import { make, track } from 'services/analytics'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { audiusSdk } from 'services/audius-sdk'
 import { isMobile } from 'utils/clientUtil'
 import { formatToday } from 'utils/dateUtils'
 import { useSelector } from 'utils/reducer'
-import { DASHBOARD_PAGE } from 'utils/route'
 
 import styles from '../PayAndEarnPage.module.css'
 
@@ -42,6 +47,7 @@ const messages = {
   pageDescription: 'View your withdrawal history',
   noWithdrawalsHeader: `You haven't made any withdrawals yet.`,
   noWithdrawalsBody: 'Once you complete a withdrawal, it will show up here.',
+  noWithdrawalsCTA: 'Withdraw Funds',
   backToDashboard: 'Back To Your Dashboard',
   headerText: 'Withdrawal History',
   downloadCSV: 'Download CSV'
@@ -66,17 +72,30 @@ const DEFAULT_SORT_METHOD = full.GetUSDCTransactionsSortMethodEnum.Date
 const DEFAULT_SORT_DIRECTION = full.GetUSDCTransactionsSortDirectionEnum.Desc
 
 const NoWithdrawals = () => {
-  const dispatch = useDispatch()
-  const handleClickBackToDashboard = useCallback(() => {
-    dispatch(pushRoute(DASHBOARD_PAGE))
-  }, [dispatch])
+  const { onOpen: openWithdrawUSDCModal } = useWithdrawUSDCModal()
+  const { data: balance } = useUSDCBalance()
+  const balanceCents = formatUSDCWeiToFloorCentsNumber(
+    (balance ?? new BN(0)) as BNUSDC
+  )
+
+  const handleWithdraw = () => {
+    openWithdrawUSDCModal({
+      page: WithdrawUSDCModalPages.ENTER_TRANSFER_DETAILS
+    })
+    track(
+      make({
+        eventName: Name.WITHDRAW_USDC_MODAL_OPENED,
+        currentBalance: balanceCents / 100
+      })
+    )
+  }
 
   return (
     <NoTransactionsContent
       headerText={messages.noWithdrawalsHeader}
       bodyText={messages.noWithdrawalsBody}
-      ctaText={messages.backToDashboard}
-      onCTAClicked={handleClickBackToDashboard}
+      ctaText={messages.noWithdrawalsCTA}
+      onCTAClicked={handleWithdraw}
     />
   )
 }

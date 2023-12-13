@@ -1,11 +1,8 @@
 import type { Meta } from '@storybook/react-native'
 import { ImageBackground } from 'react-native'
 
-import { Flex } from 'app/harmony-native/components/layout/Flex/Flex'
-import { Paper } from 'app/harmony-native/components/layout/Paper/Paper'
+import { Text, Flex, Paper } from '@audius/harmony-native'
 import shadowBackground from 'app/harmony-native/storybook/assets/shadowBackground.jpg'
-
-import { Text } from '../typography'
 
 const meta: Meta = {
   title: 'Foundation/Shadows',

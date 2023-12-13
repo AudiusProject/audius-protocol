@@ -16,7 +16,7 @@ import {
   PurchaseContentPage
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
-import { Flex } from '@audius/harmony'
+import { Box, Flex } from '@audius/harmony'
 import {
   IconCart,
   ModalContentPages,
@@ -103,53 +103,55 @@ const RenderForm = ({
   const mobile = isMobile()
 
   return (
-    <ModalForm>
-      <ModalHeader
-        className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
-        onClose={onClose}
-        showDismissButton={!mobile}
-      >
-        <Text
-          variant='label'
-          color='neutralLight2'
-          size='xLarge'
-          strength='strong'
-          className={styles.title}
+    <ModalForm className={styles.root}>
+      <Box>
+        <ModalHeader
+          className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
+          onClose={onClose}
+          showDismissButton={!mobile}
         >
-          <Icon size='large' icon={IconCart} />
-          {messages.completePurchase}
-        </Text>
-      </ModalHeader>
-      <ModalContentPages
-        contentClassName={styles.content}
-        className={styles.content}
-        currentPage={currentPageIndex}
-      >
-        <>
-          {stage !== PurchaseContentStage.FINISH ? (
-            <AudioMatchSection
-              amount={USDC(price / 100)
-                .round()
-                .toShorthand()}
-            />
-          ) : null}
-          <Flex p={mobile ? 'l' : 'xl'}>
-            <Flex direction='column' gap='xl' w='100%'>
-              <LockedTrackDetailsTile
-                track={track as unknown as Track}
-                owner={track.user}
+          <Text
+            variant='label'
+            color='neutralLight2'
+            size='xLarge'
+            strength='strong'
+            className={styles.title}
+          >
+            <Icon size='large' icon={IconCart} />
+            {messages.completePurchase}
+          </Text>
+        </ModalHeader>
+        <ModalContentPages
+          contentClassName={styles.content}
+          className={styles.content}
+          currentPage={currentPageIndex}
+        >
+          <>
+            {stage !== PurchaseContentStage.FINISH ? (
+              <AudioMatchSection
+                amount={USDC(price / 100)
+                  .round()
+                  .toShorthand()}
               />
-              <PurchaseContentFormFields
-                stage={stage}
-                purchaseSummaryValues={purchaseSummaryValues}
-                isUnlocking={isUnlocking}
-                price={price}
-              />
+            ) : null}
+            <Flex p={mobile ? 'l' : 'xl'}>
+              <Flex direction='column' gap='xl' w='100%'>
+                <LockedTrackDetailsTile
+                  track={track as unknown as Track}
+                  owner={track.user}
+                />
+                <PurchaseContentFormFields
+                  stage={stage}
+                  purchaseSummaryValues={purchaseSummaryValues}
+                  isUnlocking={isUnlocking}
+                  price={price}
+                />
+              </Flex>
             </Flex>
-          </Flex>
-        </>
-        <USDCManualTransfer onClose={handleClose} amountInCents={price} />
-      </ModalContentPages>
+          </>
+          <USDCManualTransfer onClose={handleClose} amountInCents={price} />
+        </ModalContentPages>
+      </Box>
       <ModalFooter className={styles.footer}>
         {page === PurchaseContentPage.PURCHASE ? (
           <PurchaseContentFormFooter

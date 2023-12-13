@@ -125,7 +125,7 @@ export const UserListItem = (props: UserListItemProps) => {
         </View>
         {currentUserId !== user_id ? (
           <FollowButton
-            profile={user}
+            userId={user.user_id}
             followSource={FollowSource.USER_LIST}
             fullWidth
             corners='pill'
