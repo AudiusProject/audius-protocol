@@ -12,8 +12,8 @@ import { Icon } from 'components/Icon'
 export type NoTransactionsContentProps = {
   headerText: string
   bodyText: string
-  ctaText?: string
-  onCTAClicked?: () => void
+  ctaText: string
+  onCTAClicked: () => void
 }
 
 export const NoTransactionsContent = ({
@@ -44,15 +44,13 @@ export const NoTransactionsContent = ({
           {bodyText}
         </Text>
       </Flex>
-      {ctaText ? (
-        <Button
-          variant={ButtonType.SECONDARY}
-          size={ButtonSize.SMALL}
-          onClick={onCTAClicked}
-        >
-          {ctaText}
-        </Button>
-      ) : null}
+      <Button
+        variant={ButtonType.SECONDARY}
+        size={ButtonSize.SMALL}
+        onClick={onCTAClicked}
+      >
+        {ctaText}
+      </Button>
     </Flex>
   )
 }
