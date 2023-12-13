@@ -353,7 +353,7 @@ def process_playlist_data_event(
             if not playlist_metadata.get(key):
                 continue
             playlist_record.playlist_contents = process_playlist_contents(
-                playlist_record, playlist_metadata, block_integer_time, params.existing_records["Track"]
+                playlist_record, playlist_metadata, block_integer_time, params.existing_records[EntityType.TRACK]
             )
         elif key in playlist_metadata:
             if key in immutable_playlist_fields and params.action == Action.UPDATE:
