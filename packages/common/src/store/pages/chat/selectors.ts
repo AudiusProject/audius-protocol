@@ -303,20 +303,12 @@ export const getCanCreateChat = createSelector(
     if (!canCreateChat) {
       if (!userPermissions) {
         action = ChatPermissionAction.WAIT
-      } else if (
-        userPermissions.permits === ChatPermission.NONE ||
-        blockers.includes(user.user_id)
-      ) {
-        action = ChatPermissionAction.NONE
-      } else if (
-        userPermissions.permits === ChatPermission.FOLLOWEES &&
-        !user?.does_follow_current_user
-      ) {
-        action = ChatPermissionAction.NONE
       } else if (blockees.includes(user.user_id)) {
         action = ChatPermissionAction.UNBLOCK
       } else if (userPermissions.permits === ChatPermission.TIPPERS) {
         action = ChatPermissionAction.TIP
+      } else {
+        action = ChatPermissionAction.NONE
       }
     }
     return {
