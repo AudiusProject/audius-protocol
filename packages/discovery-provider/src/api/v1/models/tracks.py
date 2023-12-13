@@ -144,6 +144,8 @@ track_full = ns.clone(
         "premium_content_signature": fields.Nested(
             premium_content_signature, allow_null=True
         ),
+        "is_download_gated": fields.Boolean,
+        "download_conditions": fields.Raw(allow_null=True),
         "ai_attribution_user_id": fields.Integer(allow_null=True),
         "audio_upload_id": fields.String,
         "preview_start_seconds": fields.Float,
