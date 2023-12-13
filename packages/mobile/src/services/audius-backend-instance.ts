@@ -79,7 +79,7 @@ export const audiusBackendInstance = audiusBackend({
     rewardsManagerProgramId: Config.REWARDS_MANAGER_PROGRAM_ID,
     rewardsManagerProgramPda: Config.REWARDS_MANAGER_PROGRAM_PDA,
     rewardsManagerTokenPda: Config.REWARDS_MANAGER_TOKEN_PDA,
-    paymentRouterProgramId: Config.PAYMENT_ROUTER_PROGRAM_ID,
+    paymentRouterProgramId: env.PAYMENT_ROUTER_PROGRAM_ID,
     solanaClusterEndpoint: Config.SOLANA_CLUSTER_ENDPOINT,
     solanaFeePayerAddress: Config.SOLANA_FEE_PAYER_ADDRESS,
     solanaTokenAddress: Config.SOLANA_TOKEN_PROGRAM_ADDRESS,

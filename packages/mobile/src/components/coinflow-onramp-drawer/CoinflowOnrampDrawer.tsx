@@ -13,6 +13,7 @@ import { useDispatch } from 'react-redux'
 
 import IconCloseAlt from 'app/assets/images/iconCloseAlt.svg'
 import { AppDrawer } from 'app/components/drawer'
+import { env } from 'app/services/env'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
@@ -20,7 +21,7 @@ import { zIndex } from 'app/utils/zIndex'
 
 const MODAL_NAME = 'CoinflowOnramp'
 
-const { COINFLOW_MERCHANT_ID, ENVIRONMENT } = Config
+const { ENVIRONMENT } = Config
 const IS_PRODUCTION = ENVIRONMENT === 'production'
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
@@ -111,7 +112,7 @@ export const CoinflowOnrampDrawer = () => {
           wallet={adapter.wallet}
           connection={adapter.connection}
           onSuccess={handleSuccess}
-          merchantId={COINFLOW_MERCHANT_ID || ''}
+          merchantId={env.COINFLOW_MERCHANT_ID || ''}
           env={IS_PRODUCTION ? 'prod' : 'sandbox'}
           blockchain='solana'
           amount={amount}
