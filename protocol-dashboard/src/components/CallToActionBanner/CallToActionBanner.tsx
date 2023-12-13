@@ -3,10 +3,6 @@ import { PropsWithChildren, ReactNode } from 'react'
 
 import styles from './CallToActionBanner.module.css'
 
-const messages = {
-  audiusMusic: 'Audius Music'
-}
-
 export type CallToActionBannerProps = PropsWithChildren<{
   href: string
   text: ReactNode

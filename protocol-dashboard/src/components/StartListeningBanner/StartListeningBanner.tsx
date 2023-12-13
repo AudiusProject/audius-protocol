@@ -4,15 +4,20 @@ import { IconNote } from '@audius/stems'
 import { CallToActionBanner } from 'components/CallToActionBanner/CallToActionBanner'
 import { AUDIUS_DAPP_URL } from 'utils/routes'
 
+const messages = {
+  audiusMusic: 'Audius Music',
+  startListening: 'Start Listening Now!'
+}
+
 export const StartListeningBanner = () => {
   return (
     <div className={styles.root}>
       <CallToActionBanner
         href={AUDIUS_DAPP_URL}
-        pillText="Audius Music"
+        pillText={messages.audiusMusic}
         text={
           <div className={styles.textContainer}>
-            Start Listening Now!
+            {messages.startListening}
             <IconNote />
           </div>
         }
