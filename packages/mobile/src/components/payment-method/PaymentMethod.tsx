@@ -1,18 +1,24 @@
+import { useEffect } from 'react'
+
 import type { Nullable, BNUSDC } from '@audius/common'
 import {
   PurchaseMethod,
   formatUSDCWeiToFloorCentsNumber,
-  formatCurrencyBalance
+  formatCurrencyBalance,
+  FeatureFlags,
+  useFeatureFlag,
+  PurchaseVendor
 } from '@audius/common'
 import BN from 'bn.js'
 import { FlatList, View, TouchableOpacity } from 'react-native'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import IconCreditCard from 'app/assets/images/iconCreditCard.svg'
 import IconDonate from 'app/assets/images/iconDonate.svg'
 import IconTransaction from 'app/assets/images/iconTransaction.svg'
 import { Divider, RadioButton, Text } from 'app/components/core'
 import { getPurchaseVendor } from 'app/store/purchase-vendor/selectors'
+import { setPurchaseVendor } from 'app/store/purchase-vendor/slice'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useColor } from 'app/utils/theme'
@@ -72,12 +78,22 @@ export const PaymentMethod = ({
 }: PaymentMethodProps) => {
   const styles = useStyles()
   const neutral = useColor('neutral')
+  const dispatch = useDispatch()
 
   const balanceCents = formatUSDCWeiToFloorCentsNumber(
     (balance ?? new BN(0)) as BNUSDC
   )
   const balanceFormatted = formatCurrencyBalance(balanceCents / 100)
   const purchaseVendor = useSelector(getPurchaseVendor)
+  const { isEnabled: isCoinflowEnabled, isLoaded: isCoinflowEnabledLoaded } =
+    useFeatureFlag(FeatureFlags.BUY_WITH_COINFLOW)
+
+  // Initial state is coinflow by default, but set to stripe if coinflow is disabled.
+  useEffect(() => {
+    if (isCoinflowEnabledLoaded && !isCoinflowEnabled) {
+      dispatch(setPurchaseVendor(PurchaseVendor.STRIPE))
+    }
+  }, [dispatch, isCoinflowEnabledLoaded, isCoinflowEnabled])
 
   const items: SummaryTableItem[] = [
     {
