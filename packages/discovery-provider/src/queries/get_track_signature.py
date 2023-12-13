@@ -14,7 +14,7 @@ class GetTrackStreamSignature(TypedDict):
     is_preview: Optional[bool]
     user_data: Optional[str]
     user_signature: Optional[str]
-    premium_content_signature: Optional[str]
+    stream_signature: Optional[str]
 
 
 class GetTrackDownloadSignature(TypedDict):
@@ -32,7 +32,7 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
     is_preview = args.get("is_preview", False)
     user_data = args["user_data"]
     user_signature = args["user_signature"]
-    premium_content_signature = args["premium_content_signature"]
+    stream_signature = args["stream_signature"]
     cid = track.get("preview_cid") if is_preview else track.get("track_cid")
     if not cid:
         return None
@@ -59,12 +59,12 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
     if not authed_user_id:
         return None
 
-    if premium_content_signature:
+    if stream_signature:
         # check that authed user is the same as user for whom the gated content signature was signed
-        premium_content_signature_obj = json.loads(
-            urllib.parse.unquote(premium_content_signature)
+        stream_signature_obj = json.loads(
+            urllib.parse.unquote(stream_signature)
         )
-        signature_data = json.loads(premium_content_signature_obj["data"])
+        signature_data = json.loads(stream_signature_obj["data"])
 
         if (
             signature_data.get("user_wallet", False)
@@ -73,7 +73,7 @@ def get_track_stream_signature(args: GetTrackStreamSignature):
             or signature_data.get("shouldCache", False)
         ):
             return None
-        return { "signature": premium_content_signature_obj, "cid": cid }
+        return { "signature": stream_signature_obj, "cid": cid }
 
     # build a track instance from the track dict
     track_entity = Track(

@@ -71,8 +71,8 @@ field_visibility = ns.model(
     },
 )
 
-premium_content_signature = ns.model(
-    "premium_content_signature",
+stream_signature = ns.model(
+    "stream_signature",
     {"data": fields.String, "signature": fields.String},
 )
 
@@ -88,7 +88,7 @@ track = ns.model(
         "orig_file_cid": fields.String(allow_null=True), # remove nullability after backfill
         "orig_filename": fields.String(allow_null=True), # remove nullability after backfill
         "mood": fields.String,
-        "release_date": fields.String,
+        "release_date": fields.String,g
         "remix_of": fields.Nested(remix_parent),
         "repost_count": fields.Integer(required=True),
         "favorite_count": fields.Integer(required=True),
@@ -143,8 +143,8 @@ track_full = ns.clone(
         "is_available": fields.Boolean,
         "is_stream_gated": fields.Boolean,
         "stream_conditions": fields.Raw(allow_null=True),
-        "premium_content_signature": fields.Nested(
-            premium_content_signature, allow_null=True
+        "stream_signature": fields.Nested(
+            stream_signature, allow_null=True
         ),
         "is_download_gated": fields.Boolean,
         "download_conditions": fields.Raw(allow_null=True),
