@@ -13,7 +13,7 @@ import {
   favoritesUserListActions,
   isPremiumContentUSDCPurchaseGated
 } from '@audius/common'
-import { View, TouchableOpacity } from 'react-native'
+import { View, TouchableOpacity, Text as HarmonyText } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'
@@ -32,6 +32,7 @@ import { LineupTilePremiumContentTypeTag } from './LineupTilePremiumContentTypeT
 import { LineupTileRankIcon } from './LineupTileRankIcon'
 import { useStyles as useTrackTileStyles } from './styles'
 import type { LineupItemVariant } from './types'
+import moment from 'moment'
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 
@@ -108,6 +109,7 @@ type Props = {
   isOwner: boolean
   isArtistPick?: boolean
   showArtistPick?: boolean
+  releaseDate?: string
 }
 
 export const LineupTileStats = ({
@@ -128,7 +130,8 @@ export const LineupTileStats = ({
   premiumConditions,
   isOwner,
   isArtistPick,
-  showArtistPick
+  showArtistPick,
+  releaseDate
 }: Props) => {
   const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
@@ -193,6 +196,7 @@ export const LineupTileStats = ({
             </Text>
           </View>
         ) : null}
+        {isUnlisted && releaseDate && moment(releaseDate).isAfter(moment()) ? <HarmonyText>hi</HarmonyText>}
         <View style={styles.leftStats}>
           {hasEngagement && !isUnlisted ? (
             <>
