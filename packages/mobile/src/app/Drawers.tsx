@@ -118,10 +118,10 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   // to avoid zIndex issues.
   PremiumContentPurchaseModal: PremiumTrackPurchaseDrawer,
   AddFundsModal: AddFundsDrawer,
-  CoinflowOnramp: CoinflowOnrampDrawer,
   PurchaseVendor: PurchaseVendorDrawer,
   USDCManualTransferModal: USDCManualTransferDrawer,
   StripeOnRamp: StripeOnrampDrawer,
+  CoinflowOnramp: CoinflowOnrampDrawer,
   InboxUnavailableModal: InboxUnavailableDrawer,
   LeavingAudiusModal: LeavingAudiusDrawer
 }
