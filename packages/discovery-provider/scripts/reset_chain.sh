@@ -108,10 +108,10 @@ function deploy_entity_manager {
     ./node_modules/.bin/truffle migrate --f 6 --to 6 --network nethermind --skip-dry-run
 }
 
-# kill_indexer
-# set_identity_config
-# poll_identity_final_block
-# kill_old_chain
-# start_new_chain
-# poll_chain_health
+kill_indexer
+set_identity_config
+poll_identity_final_block
+kill_old_chain
+start_new_chain
+poll_chain_health
 deploy_entity_manager
