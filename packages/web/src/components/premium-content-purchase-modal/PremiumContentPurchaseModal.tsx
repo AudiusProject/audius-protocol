@@ -16,7 +16,7 @@ import {
   PurchaseContentPage
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
-import { Flex } from '@audius/harmony'
+import { Box, Flex } from '@audius/harmony'
 import {
   IconCart,
   ModalContentPages,
