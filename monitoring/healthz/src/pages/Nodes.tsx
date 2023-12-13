@@ -155,6 +155,7 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
   const isBehind = health.block_difference > 5 ? 'is-unhealthy' : ''
   const dbSize =
     bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
+  const isDbLocalhost = health.database_is_localhost || health.isDbLocalhost
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
   const getPeers = (str: string | undefined) => {
@@ -283,7 +284,7 @@ function HealthRow({ isContent, sp, isStaging }: { isContent: boolean; sp: SP, i
         </td>
       )}
       {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{`${relayStatus || "down"}`}</td>}
-      <td className="whitespace-nowrap px-3 py-5 text-sm">{`${dbSize} GB`}</td>
+      <td className="whitespace-nowrap px-3 py-5 text-sm">{isDbLocalhost && <span>{'\u2713'} </span>}{`${dbSize} GB`}</td>
       <td className="whitespace-nowrap px-3 py-5 text-sm">{`${yourIp}`}</td>
       {!isContent && (<td className="whitespace-nowrap px-3 py-5 text-sm">{health.chain_health?.status}</td>)}
       {!isContent && <td className="whitespace-nowrap px-3 py-5 text-sm">{isSigner(data?.signer, health.chain_health?.signers)}</td>}
