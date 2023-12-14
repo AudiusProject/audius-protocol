@@ -404,7 +404,7 @@ function* doStartPurchaseContentFlow({
         )
       }
 
-      const purchaseAmount = price / 100.0 + (extraAmount || 0) / 100.0
+      const purchaseAmount = (price + (extraAmount ?? 0)) / 100.0
       switch (purchaseVendor) {
         case PurchaseVendor.COINFLOW:
           // Purchase with coinflow, funding and completing the purchase in one step.
