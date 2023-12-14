@@ -597,25 +597,33 @@ export class SolanaWeb3Manager {
    * @param params.extraAmount Extra amount in USDC wei to be distributed to the stakeholders
    * @param params.purchaserUserId Id of the user that is purchasing the track
    * @param params.senderAccount Should either be root solana account or user bank.
+   * @param params.senderKeypair If provided and senderAccount is root solana account, will be used to sign the transaction.
+   * @param params.isSenderUserBank If true, senderAccount is user bank.
    * @returns the transaction signature and/or an error
    */
-  async getPurchaseContentWithPaymentRouterInstructions({
+  async getPurchaseContentWithPaymentRouterTransaction({
     id,
     type,
     blocknumber,
+    recentBlockhash,
     extraAmount = 0,
     splits,
     purchaserUserId,
-    senderAccount
+    senderAccount,
+    senderKeypair,
+    isSenderUserBank
   }: {
     id: number
     type: 'track'
     splits: Record<string, number | BN>
     extraAmount?: number | BN
     blocknumber: number
+    recentBlockhash?: string
     purchaserUserId: number
     senderAccount: PublicKey
-  }) {
+    senderKeypair?: Keypair
+    isSenderUserBank?: boolean
+  }): Promise<Transaction> {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
@@ -657,25 +665,38 @@ export class SolanaWeb3Manager {
       throw new Error('Payment Router balance PDA token account does not exist')
     }
 
-    const senderTokenAccount = await this.findAssociatedTokenAddress(
-      senderAccount.toString(),
-      'usdc'
-    )
-
     const amounts = Object.values(recipientAmounts)
     const totalAmount = amounts.reduce(
       (acc, current) => acc + current,
       BigInt(0)
     )
 
-    const transferInstruction = createTransferCheckedInstruction(
-      senderTokenAccount,
-      this.mints.usdc,
-      paymentRouterTokenAccount,
-      senderAccount,
-      Number(totalAmount),
-      USDC_DECIMALS
-    )
+    const instructions = []
+    if (isSenderUserBank) {
+      const transferInstructions =
+        await this.createTransferInstructionsFromCurrentUser({
+          senderSolanaAddress: senderAccount,
+          feePayerKey: this.feePayerKey,
+          recipientSolanaAddress: paymentRouterTokenAccount.toString(),
+          amount: new BN(totalAmount.toString()),
+          mint: 'usdc'
+        })
+      instructions.push(...transferInstructions)
+    } else {
+      const senderTokenAccount = await this.findAssociatedTokenAddress(
+        senderAccount.toString(),
+        'usdc'
+      )
+      const transferInstruction = createTransferCheckedInstruction(
+        senderTokenAccount,
+        this.mints.usdc,
+        paymentRouterTokenAccount,
+        senderAccount,
+        Number(totalAmount),
+        USDC_DECIMALS
+      )
+      instructions.push(transferInstruction)
+    }
 
     const paymentRouterInstruction = await route(
       paymentRouterTokenAccount,
@@ -689,36 +710,34 @@ export class SolanaWeb3Manager {
     )
 
     const data = `${type}:${id}:${blocknumber}:${purchaserUserId}`
-
     const memoInstruction = new TransactionInstruction({
-      keys: [
-        {
-          pubkey: senderAccount,
-          isSigner: true,
-          isWritable: true
-        }
-      ],
+      keys: [],
       programId: MEMO_PROGRAM_ID,
       data: Buffer.from(data)
     })
 
-    const instructions = [
-      transferInstruction,
-      paymentRouterInstruction,
-      memoInstruction
-    ]
-    return instructions
+    instructions.push(paymentRouterInstruction, memoInstruction)
+
+    const transaction = new Transaction({
+      feePayer: this.feePayerKey,
+      recentBlockhash:
+        recentBlockhash ??
+        (await this.connection.getLatestBlockhash()).blockhash
+    }).add(...instructions)
+    if (!isSenderUserBank && senderKeypair) {
+      transaction.partialSign(senderKeypair)
+    }
+    return transaction
   }
 
-  async purchaseContentWithPaymentRouter({
+  async purchaseContentWithPaymentRouterFromSolanaRootAccount({
     id,
     type,
     blocknumber,
     extraAmount = 0,
     splits,
     purchaserUserId,
-    senderKeypair,
-    skipSendAndReturnTransaction
+    senderKeypair
   }: {
     id: number
     type: 'track'
@@ -727,30 +746,24 @@ export class SolanaWeb3Manager {
     blocknumber: number
     purchaserUserId: number
     senderKeypair: Keypair
-    skipSendAndReturnTransaction?: boolean
   }) {
-    const instructions =
-      await this.getPurchaseContentWithPaymentRouterInstructions({
-        id,
-        type,
-        blocknumber,
-        extraAmount,
-        splits,
-        purchaserUserId,
-        senderAccount: senderKeypair.publicKey
-      })
-    const recentBlockhash = (await this.connection.getLatestBlockhash())
-      .blockhash
+    const {
+      instructions,
+      recentBlockhash,
+      signatures: transactionSignatures
+    } = await this.getPurchaseContentWithPaymentRouterTransaction({
+      id,
+      type,
+      blocknumber,
+      extraAmount,
+      splits,
+      purchaserUserId,
+      senderAccount: senderKeypair.publicKey,
+      senderKeypair,
+      isSenderUserBank: false
+    })
 
-    const transaction = new Transaction({
-      feePayer: this.feePayerKey,
-      recentBlockhash: recentBlockhash
-    }).add(...instructions)
-    transaction.partialSign(senderKeypair)
-    if (skipSendAndReturnTransaction) {
-      return transaction
-    }
-    const signatures = transaction.signatures
+    const signatures = transactionSignatures
       .filter((s) => s.signature !== null)
       .map((s) => ({
         signature: s.signature!, // safe from filter
@@ -758,10 +771,46 @@ export class SolanaWeb3Manager {
       }))
 
     return await this.transactionHandler.handleTransaction({
-      instructions,
+      instructions: instructions,
       skipPreflight: true,
       feePayerOverride: this.feePayerKey,
       signatures,
+      recentBlockhash: recentBlockhash
+    })
+  }
+
+  async purchaseContentWithPaymentRouterFromUserBank({
+    id,
+    type,
+    blocknumber,
+    extraAmount = 0,
+    splits,
+    purchaserUserId
+  }: {
+    id: number
+    type: 'track'
+    splits: Record<string, number | BN>
+    extraAmount?: number | BN
+    blocknumber: number
+    purchaserUserId: number
+  }) {
+    const userBank = await this.deriveUserBank({ mint: 'usdc' })
+    const { instructions, recentBlockhash } =
+      await this.getPurchaseContentWithPaymentRouterTransaction({
+        id,
+        type,
+        blocknumber,
+        extraAmount,
+        splits,
+        purchaserUserId,
+        senderAccount: userBank,
+        isSenderUserBank: true
+      })
+
+    return await this.transactionHandler.handleTransaction({
+      instructions,
+      skipPreflight: true,
+      feePayerOverride: this.feePayerKey,
       recentBlockhash
     })
   }
