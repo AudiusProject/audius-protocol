@@ -404,6 +404,7 @@ function* doStartPurchaseContentFlow({
         )
       }
 
+      const purchaseAmount = price / 100.0 + (extraAmount || 0) / 100.0
       switch (purchaseVendor) {
         case PurchaseVendor.COINFLOW:
           // Purchase with coinflow, funding and completing the purchase in one step.
@@ -413,12 +414,12 @@ function* doStartPurchaseContentFlow({
             splits,
             contentId,
             purchaserUserId,
-            price: price / 100.0
+            price: purchaseAmount
           })
           break
         case PurchaseVendor.STRIPE:
           // Buy USDC with Stripe. Once funded, continue with purchase.
-          yield* call(purchaseUSDCWithStripe, { amount: price / 100.0 })
+          yield* call(purchaseUSDCWithStripe, { amount: purchaseAmount })
           yield* call(purchaseContent, audiusBackendInstance, {
             id: contentId,
             blocknumber,
