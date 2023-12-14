@@ -1,3 +1,5 @@
+import { forwardRef } from 'react'
+
 import type { BaseTextProps } from '@audius/harmony'
 import { variantStylesMap } from '@audius/harmony'
 import { css } from '@emotion/native'
@@ -11,7 +13,7 @@ export type TextProps = NativeTextProps &
     textAlign?: TextStyle['textAlign']
   }
 
-export const Text = (props: TextProps) => {
+export const Text = forwardRef<TextBase, TextProps>((props, ref) => {
   const {
     variant = 'body',
     size = 'm',
@@ -51,9 +53,10 @@ export const Text = (props: TextProps) => {
 
   return (
     <TextBase
+      ref={ref}
       style={[styleProp, textStyles]}
       role={isHeading ? 'heading' : undefined}
       {...other}
     />
   )
-}
+})

@@ -29,6 +29,7 @@ from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
 from src.models.tracks.track import Track
+from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
@@ -153,6 +154,7 @@ def populate_mock_db(db, entities, block_offset=None):
         usdc_purchases = entities.get("usdc_purchases", [])
         cid_datas = entities.get("cid_datas", [])
         usdc_transactions_history = entities.get("usdc_transactions_history", [])
+        track_price_history = entities.get("track_price_history", [])
 
         num_blocks = max(
             len(tracks),
@@ -224,6 +226,17 @@ def populate_mock_db(db, entities, block_offset=None):
                 ai_attribution_user_id=track_meta.get("ai_attribution_user_id", None),
             )
             session.add(track)
+        for i, track_price_history_meta in enumerate(track_price_history):
+            track_price_history = TrackPriceHistory(
+                blocknumber=i + block_offset,
+                track_id=track_price_history_meta.get("track_id", i),
+                splits=track_price_history_meta.get("splits", {}),
+                block_timestamp=track_price_history_meta.get(
+                    "block_timestamp", datetime.now()
+                ),
+                total_price_cents=track_price_history_meta.get("total_price_cents", 0),
+            )
+            session.add(track_price_history)
         for i, playlist_meta in enumerate(playlists):
             playlist_created_at = datetime.now()
             playlist = Playlist(

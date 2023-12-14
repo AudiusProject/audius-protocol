@@ -11,6 +11,8 @@ import {
 } from '@solana/web3.js'
 import BN from 'bn.js'
 
+import { BN_USDC_CENT_WEI } from 'utils/wallet'
+
 import { AnalyticsEvent, ID, Name, SolanaWalletAddress } from '../../models'
 
 import { AudiusBackend } from './AudiusBackend'
@@ -396,7 +398,7 @@ export const purchaseContentWithPaymentRouter = async (
     id,
     type,
     blocknumber,
-    extraAmount,
+    extraAmount: new BN(extraAmount).mul(BN_USDC_CENT_WEI),
     splits,
     purchaserUserId,
     senderKeypair: wallet,

@@ -3,6 +3,7 @@ import { PortalProvider, PortalHost } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
 import { Platform, UIManager } from 'react-native'
 import Config from 'react-native-config'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import {
   SafeAreaProvider,
   initialWindowMetrics
@@ -100,22 +101,24 @@ const App = () => {
               <PersistGate loading={null} persistor={persistor}>
                 <ThemeProvider>
                   <WalletConnectProvider>
-                    <PortalProvider>
-                      <ErrorBoundary>
-                        <NavigationContainer>
-                          <Toasts />
-                          <Airplay />
-                          <RootScreen />
-                          <Drawers />
-                          <Modals />
-                          <Audio />
-                          <OAuth />
-                          <NotificationReminder />
-                          <RateCtaReminder />
-                          <PortalHost name='ChatReactionsPortal' />
-                        </NavigationContainer>
-                      </ErrorBoundary>
-                    </PortalProvider>
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                      <PortalProvider>
+                        <ErrorBoundary>
+                          <NavigationContainer>
+                            <Toasts />
+                            <Airplay />
+                            <RootScreen />
+                            <Drawers />
+                            <Modals />
+                            <Audio />
+                            <OAuth />
+                            <NotificationReminder />
+                            <RateCtaReminder />
+                            <PortalHost name='ChatReactionsPortal' />
+                          </NavigationContainer>
+                        </ErrorBoundary>
+                      </PortalProvider>
+                    </GestureHandlerRootView>
                   </WalletConnectProvider>
                 </ThemeProvider>
               </PersistGate>
