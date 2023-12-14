@@ -32,8 +32,6 @@ import { TrackMetadataFormSchema } from '../validation'
 
 import styles from './EditTrackForm.module.css'
 
-// const isScheduledReleasesEnabled = true
-
 const messages = {
   multiTrackCount: (index: number, total: number) =>
     `TRACK ${index} of ${total}`,
@@ -87,7 +85,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
     }),
     [tracks]
   )
-  console.log('asdf tracks: ', tracks)
+
   const onSubmit = useCallback(
     (values: TrackEditFormValues) => {
       const tracksForUpload = tracks.map((track, i) => {

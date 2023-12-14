@@ -142,7 +142,7 @@ export const LineupTile = ({
           isOwner={isOwner}
           isArtistPick={isArtistPick}
           showArtistPick={showArtistPick}
-          releaseDate={item?.release_date}
+          releaseDate={item?.release_date ? item.release_date : undefined}
         />
       </View>
       {children}

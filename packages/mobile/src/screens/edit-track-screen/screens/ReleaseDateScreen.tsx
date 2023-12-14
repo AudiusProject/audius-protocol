@@ -1,28 +1,20 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import type { Nullable } from '@audius/common'
-import {
-  remixSettingsActions,
-  remixSettingsSelectors,
-  removeNullable
-} from '@audius/common'
-import { TextInput } from '@audius/harmony'
-import { useField, useFormikContext } from 'formik'
+import { remixSettingsActions, removeNullable } from '@audius/common'
+import { useField } from 'formik'
 import moment from 'moment'
 import { Dimensions, View } from 'react-native'
 import DateTimePickerModal from 'react-native-modal-datetime-picker'
 import { useDispatch } from 'react-redux'
 
 import { IconCalendarMonth, Text } from '@audius/harmony-native'
-import type { TextProps } from 'app/components/core'
 import { Button } from 'app/components/core'
 import { TextField } from 'app/components/fields'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
-import { useThemeColors, useThemeVariant } from 'app/utils/theme'
-
-import type { FormValues } from '../types'
+import { useThemeColors } from 'app/utils/theme'
 
 import type { ListSelectionData } from './ListSelectionScreen'
 import { ListSelectionScreen } from './ListSelectionScreen'
@@ -32,30 +24,13 @@ export enum ReleaseDateType {
   SCHEDULED_RELEASE = 'SCHEDULED_RELEASE'
 }
 
-const { getTrack, getUser, getStatus } = remixSettingsSelectors
-const { fetchTrack, fetchTrackSucceeded, reset } = remixSettingsActions
+const { reset } = remixSettingsActions
 
-const remixLinkInputDebounceMs = 1000
 const screenWidth = Dimensions.get('screen').width
 
 const messages = {
   screenTitle: 'Release Date',
-  markRemix: 'Mark This Track as a Remix',
-  isRemixLinkDescription: 'Paste the link to the Audius track you’ve remixed.',
-  hideRemixesDescription:
-    'Enabling this option will prevent other user’s remixes from appearing on your track page.',
-  hideRemixes: 'Hide Remixes of this Track',
   done: 'Done',
-  invalidRemixUrl: 'Please paste a valid Audius track URL',
-  missingRemixUrl: 'Must include a link to the original track',
-  remixAccessError: 'Must have access to the original track',
-  enterLink: 'Enter an Audius Link',
-  changeAvailbilityPrefix: 'Availablity is set to',
-  changeAvailbilitySuffix:
-    'To enable these options, change availability to Public.',
-  premium: 'Premium (Pay-To-Unlock). ',
-  collectibleGated: 'Collectible Gated. ',
-  specialAccess: 'Special Access. ',
   futureReleaseHint:
     'Your scheduled track will become live on Audius on the date and time you’ve chosen above in your time zone (CST).',
   pastReleaseHint:
@@ -105,7 +80,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     gap: spacing(4)
   },
   description: {
-    marginHorizontal: spacing(4),
+    marginHorizontal: spacing(6),
     marginTop: spacing(8),
     marginBottom: spacing(1)
   },
@@ -122,16 +97,6 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   }
 }))
 
-const labelProps: TextProps = {
-  fontSize: 'large',
-  weight: 'demiBold'
-}
-
-const descriptionProps: TextProps = {
-  fontSize: 'large',
-  weight: 'medium'
-}
-
 const data: ListSelectionData[] = [
   {
     label: ReleaseDateType.RELEASE_NOW,
@@ -147,11 +112,11 @@ const data: ListSelectionData[] = [
 
 export const ScheduledReleaseRadioField = (props) => {
   const { selected } = props
-  const [{ value: releaseDateValue }, , { setValue: setReleaseDateValue }] =
-    useField<Nullable<string>>('release_date')
-
   const { primary } = useThemeColors()
   const styles = useStyles()
+
+  const [{ value: releaseDateValue }, , { setValue: setReleaseDateValue }] =
+    useField<Nullable<string>>('release_date')
 
   let initIsDateOpen = false
   if (!releaseDateValue && selected) {
@@ -163,9 +128,6 @@ export const ScheduledReleaseRadioField = (props) => {
 
   const handleDateChange = useCallback(
     (selectedDate: Date) => {
-      // This must be called first to prevent android date-picker
-      // from showing up twice
-      // handleClose()
       const newReleaseDate = moment(selectedDate).hour(0).minute(0).second(0)
       setReleaseDateValue(newReleaseDate.toString())
       setIsDateOpen(false)
@@ -268,32 +230,41 @@ export const ScheduledReleaseRadioField = (props) => {
   )
 }
 
+export const ReleaseNowRadioField = (props) => {
+  const { selected } = props
+  const [{ value: releaseDateValue }, , { setValue: setReleaseDateValue }] =
+    useField<Nullable<string>>('release_date')
+  const styles = useStyles()
+
+  useEffect(() => {
+    if (selected) {
+      setReleaseDateValue(null)
+    }
+  }, [selected, releaseDateValue, setReleaseDateValue])
+
+  return (
+    <View style={styles.releaseNowContainer}>
+      <Text size='l' strength='strong' variant='body'>
+        Release immediately
+      </Text>
+      {selected ? (
+        <View style={styles.releaseNowPill}>
+          <IconCalendarMonth color='staticWhite' />
+          <Text color='staticWhite'>Today</Text>
+        </View>
+      ) : null}
+    </View>
+  )
+}
+
 export const ReleaseDateScreen = () => {
-  const [{ value, onChange }] = useField<Nullable<string>>('release_date')
+  const [{ value }] = useField<Nullable<string>>('release_date')
 
   const [releaseDateType, setReleaseDateType] = useState<ReleaseDateType>(
     value ? ReleaseDateType.SCHEDULED_RELEASE : ReleaseDateType.RELEASE_NOW
   )
 
   const styles = useStyles()
-
-  const ReleaseNowRadioField = (props) => {
-    const { selected } = props
-    console.log('asdf ReleaseNowRadioField selected', selected)
-    return (
-      <View style={styles.releaseNowContainer}>
-        <Text size='l' strength='strong' variant='body'>
-          Release immediately
-        </Text>
-        {selected ? (
-          <View style={styles.releaseNowPill}>
-            <IconCalendarMonth color='staticWhite' />
-            <Text color='staticWhite'>Today</Text>
-          </View>
-        ) : null}
-      </View>
-    )
-  }
 
   const items = {
     [ReleaseDateType.RELEASE_NOW]: (
@@ -307,7 +278,6 @@ export const ReleaseDateScreen = () => {
       />
     )
   }
-  console.log('asdf value: ', value)
   const navigation = useNavigation()
   const dispatch = useDispatch()
 
@@ -317,36 +287,34 @@ export const ReleaseDateScreen = () => {
   }, [navigation, dispatch])
 
   return (
-    <>
-      <ListSelectionScreen
-        data={data}
-        renderItem={({ item }) => items[item.label]}
-        screenTitle={'Release Date'}
-        icon={IconCalendarMonth}
-        header={
-          <View style={styles.description}>
-            <Text size='l'>
-              Specify a release date for your music or schedule it to be
-              released in the future.
-            </Text>
-          </View>
-        }
-        value={releaseDateType}
-        onChange={setReleaseDateType}
-        disableSearch
-        allowDeselect={false}
-        hideSelectionLabel
-        bottomSection={
-          <Button
-            variant='primary'
-            size='large'
-            fullWidth
-            title={messages.done}
-            onPress={handleSubmit}
-            disabled={false}
-          />
-        }
-      />
-    </>
+    <ListSelectionScreen
+      data={data}
+      renderItem={({ item }) => items[item.label]}
+      screenTitle={'Release Date'}
+      icon={IconCalendarMonth}
+      header={
+        <View style={styles.description}>
+          <Text size='l'>
+            Specify a release date for your music or schedule it to be released
+            in the future.
+          </Text>
+        </View>
+      }
+      value={releaseDateType}
+      onChange={setReleaseDateType}
+      disableSearch
+      allowDeselect={false}
+      hideSelectionLabel
+      bottomSection={
+        <Button
+          variant='primary'
+          size='large'
+          fullWidth
+          title={messages.done}
+          onPress={handleSubmit}
+          disabled={false}
+        />
+      }
+    />
   )
 }

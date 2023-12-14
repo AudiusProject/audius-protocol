@@ -411,7 +411,7 @@ export const DetailsTile = ({
                   />
                 ) : null}
                 {showPreviewButton ? <PreviewButton /> : null}
-                {track?.release_date ? (
+                {isScheduledRelease && track?.release_date ? (
                   <View style={styles.releaseContainer}>
                     <IconCalendarMonth color='accent' size='m' />
                     <HarmonyText color='accent' strength='strong' size='l'>

@@ -36,7 +36,6 @@ export const SecondaryScreenTitle = (props: SecondaryScreenTitleProps) => {
     <View style={styles.root}>
       {Icon ? (
         <Icon
-          color={"accent"}
           style={styles.icon}
           fill={neutralLight4}
           height={spacing(6)}

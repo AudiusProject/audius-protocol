@@ -3,7 +3,6 @@ import { useCallback } from 'react'
 import { useField } from 'formik'
 import { Platform, View } from 'react-native'
 
-import { IconCalendarMonth } from '@audius/harmony-native'
 import type { TextInputProps } from 'app/components/core'
 import { TextInput, InputErrorMessage } from 'app/components/core'
 import { makeStyles } from 'app/styles'
@@ -46,7 +45,6 @@ export const TextField = (props: TextFieldProps) => {
     onChangeText,
     ...other
   } = props
-  console.log('asdf noGutter: ', noGutter)
 
   const styles = useStyles()
   const [{ value, onChange, onBlur }, { touched, error }] = useField(name)

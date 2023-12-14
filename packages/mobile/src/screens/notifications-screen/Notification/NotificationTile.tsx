@@ -63,7 +63,7 @@ export const NotificationTile = (props: NotificationTileProps) => {
         <Text style={styles.timestamp}>{timeLabel}</Text>
         {isViewed ? null : (
           <View style={styles.newPill}>
-            <Text style={styles.newPillText}>{messages.new + 'a'}</Text>
+            <Text style={styles.newPillText}>{messages.new}</Text>
           </View>
         )}
       </View>

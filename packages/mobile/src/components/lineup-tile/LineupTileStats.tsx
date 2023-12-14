@@ -1,7 +1,5 @@
 import { useCallback } from 'react'
 
-import { release } from 'os'
-
 import type {
   ID,
   FavoriteType,
@@ -19,7 +17,7 @@ import moment from 'moment'
 import { View, TouchableOpacity } from 'react-native'
 import { useDispatch } from 'react-redux'
 
-import { Text as HarmonyText, IconCalendarMonth } from '@audius/harmony-native'
+import { IconCalendarMonth } from '@audius/harmony-native'
 import IconHeart from 'app/assets/images/iconHeart.svg'
 import IconHidden from 'app/assets/images/iconHidden.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
