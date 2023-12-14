@@ -13,7 +13,6 @@ import ReactDOM from 'react-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useTransition, animated } from 'react-spring'
 
-import { ClientOnly } from 'components/ClientOnly'
 import { IconButton } from 'components/IconButton'
 import { IconRemove } from 'components/Icons'
 import { useClickOutside } from 'hooks/useClickOutside'
@@ -260,6 +259,8 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     zIndex,
     containerRef
   } = props
+  const [isClientSide, setIsClientSide] = useState(false)
+
   const handleClose = useCallback(() => {
     onClose()
     setTimeout(() => {
@@ -417,54 +418,59 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     }
   }, [dismissOnMouseLeave, onClose])
 
+  // useEffect only runs on the client
+  useEffect(() => {
+    setIsClientSide(true)
+  }, [])
+
   // Portal the popup out of the dom structure so that it has a separate stacking context
   return (
-    <ClientOnly>
-      {() =>
-        ReactDOM.createPortal(
-          <div
-            ref={wrapperRef}
-            className={cn(styles.wrapper, wrapperClassName)}
-            style={wrapperStyle}
-            onMouseLeave={handleMouseLeave}
-          >
-            {transitions.map(({ item, key, props }) =>
-              item ? (
-                <animated.div
-                  className={cn(styles.popup, className)}
-                  ref={popupRef}
-                  key={key}
-                  style={{
-                    ...props,
-                    transformOrigin: `${computedTransformOrigin.horizontal} ${computedTransformOrigin.vertical}`
-                  }}
-                >
-                  {showHeader && (
-                    <div
-                      className={cn(styles.header, {
-                        [styles.noAfter]: hideCloseButton
-                      })}
-                    >
-                      {hideCloseButton ? null : (
-                        <IconButton
-                          aria-label={messages.close}
-                          onClick={handleClose}
-                          icon={<IconRemove className={styles.iconRemove} />}
-                        />
-                      )}
-                      <div className={cn(styles.title, titleClassName)}>
-                        {title}
+    <>
+      {isClientSide
+        ? ReactDOM.createPortal(
+            <div
+              ref={wrapperRef}
+              className={cn(styles.wrapper, wrapperClassName)}
+              style={wrapperStyle}
+              onMouseLeave={handleMouseLeave}
+            >
+              {transitions.map(({ item, key, props }) =>
+                item ? (
+                  <animated.div
+                    className={cn(styles.popup, className)}
+                    ref={popupRef}
+                    key={key}
+                    style={{
+                      ...props,
+                      transformOrigin: `${computedTransformOrigin.horizontal} ${computedTransformOrigin.vertical}`
+                    }}
+                  >
+                    {showHeader && (
+                      <div
+                        className={cn(styles.header, {
+                          [styles.noAfter]: hideCloseButton
+                        })}
+                      >
+                        {hideCloseButton ? null : (
+                          <IconButton
+                            aria-label={messages.close}
+                            onClick={handleClose}
+                            icon={<IconRemove className={styles.iconRemove} />}
+                          />
+                        )}
+                        <div className={cn(styles.title, titleClassName)}>
+                          {title}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  {children}
-                </animated.div>
-              ) : null
-            )}
-          </div>,
-          document.body
-        )
-      }
-    </ClientOnly>
+                    )}
+                    {children}
+                  </animated.div>
+                ) : null
+              )}
+            </div>,
+            document.body
+          )
+        : null}
+    </>
   )
 })
