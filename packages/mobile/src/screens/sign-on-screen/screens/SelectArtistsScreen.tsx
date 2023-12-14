@@ -13,6 +13,8 @@ import { Pressable, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Button, Text } from 'app/components/core'
+import { useDrawerState } from 'app/components/drawer'
+import { setVisibility } from 'app/store/drawers/slice'
 
 import { ArtistTile } from '../components/ArtistTile'
 
@@ -41,6 +43,13 @@ export const SelectArtistsScreen = () => {
     (values: SelectArtistsValues) => {
       const { artists } = values
       dispatch(addFollowArtists(artists))
+      // TODO: set hasAccount to true and navigate to trending
+      dispatch(
+        setVisibility({
+          drawer: 'Welcome',
+          visible: true
+        })
+      )
     },
     [dispatch]
   )

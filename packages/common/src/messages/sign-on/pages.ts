@@ -72,7 +72,15 @@ export const finishProfilePageMessages = {
 }
 
 export const selectGenresPageMessages = {
-    header: 'Select Your Genres',
-    description: 'Start by picking some of your favorite genres.',
-    continue: 'Continue'
+  header: 'Select Your Genres',
+  description: 'Start by picking some of your favorite genres.',
+  continue: 'Continue'
+}
+
+export const welcomeModalMessages = {
+  welcome: 'Welcome to Audius! 🎉',
+  startListening: 'Start Listening',
+  upload: 'Upload',
+  youreIn:
+    'You’re in! Discover music from our talented DJs, producers, and artists.'
 }
