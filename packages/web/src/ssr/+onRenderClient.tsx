@@ -1,4 +1,8 @@
+import { Buffer } from 'buffer'
+
+import 'setimmediate'
 import { full as FullSdk } from '@audius/sdk'
+import processBrowser from 'process/browser'
 import { hydrateRoot } from 'react-dom/client'
 import { PageContextClient } from 'vike/types'
 
@@ -8,17 +12,13 @@ import { SsrContextProvider } from './SsrContext'
 
 import '../index.css'
 
-import { Buffer } from 'buffer'
-
-import processBrowser from 'process/browser'
-
 window.global ||= window
 window.Buffer = Buffer
 window.process = { ...processBrowser, env: process.env }
 
 // Set this to false to turn off client hydration
 // Useful for testing the SSR output
-const HYDRATE_CLIENT = false
+const HYDRATE_CLIENT = true
 
 export default async function render(
   pageContext: PageContextClient & { pageProps: { track: FullSdk.TrackFull } }
