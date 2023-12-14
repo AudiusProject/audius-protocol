@@ -2,6 +2,7 @@ import BN from 'bn.js'
 import { takeLatest } from 'redux-saga/effects'
 import { call, put, race, select, take } from 'typed-redux-saga'
 
+import { CENTS_TO_USDC_MULTIPLIER } from 'hooks/purchaseContent'
 import { FavoriteSource, Name } from 'models/Analytics'
 import { ErrorLevel } from 'models/ErrorReporting'
 import { ID } from 'models/Identifiers'
@@ -184,7 +185,7 @@ type PurchaseWithCoinflowArgs = {
 
 function* purchaseWithCoinflow({
   blocknumber,
-  extraAmount,
+  extraAmount = 0,
   splits,
   contentId,
   purchaserUserId,
@@ -205,7 +206,7 @@ function* purchaseWithCoinflow({
       id: contentId,
       type: 'track',
       splits,
-      extraAmount,
+      extraAmount: extraAmount * CENTS_TO_USDC_MULTIPLIER,
       blocknumber,
       recentBlockhash,
       purchaserUserId,
@@ -218,7 +219,7 @@ function* purchaseWithCoinflow({
     .toString('base64')
   yield* put(
     coinflowOnrampModalActions.open({
-      amount: price,
+      amount: price + (extraAmount ?? 0) / 100.0,
       serializedTransaction,
       contentId
     })
@@ -418,7 +419,9 @@ function* doStartPurchaseContentFlow({
           break
         case PurchaseVendor.STRIPE:
           // Buy USDC with Stripe. Once funded, continue with purchase.
-          yield* call(purchaseUSDCWithStripe, { amount: price / 100.0 })
+          yield* call(purchaseUSDCWithStripe, {
+            amount: (price + (extraAmount ?? 0)) / 100.0
+          })
           yield* call(purchaseContent, audiusBackendInstance, {
             id: contentId,
             blocknumber,
