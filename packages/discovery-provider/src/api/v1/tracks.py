@@ -43,9 +43,7 @@ from src.queries.generate_unpopulated_trending_tracks import (
 )
 from src.queries.get_feed import get_feed
 from src.queries.get_latest_entities import get_latest_entities
-from src.queries.get_premium_track_signatures import (
-    get_nft_gated_premium_track_signatures,
-)
+from src.queries.get_nft_gated_track_signatures import get_nft_gated_track_signatures
 from src.queries.get_premium_tracks import get_usdc_purchase_tracks
 from src.queries.get_random_tracks import get_random_tracks
 from src.queries.get_recommended_tracks import (
@@ -1515,10 +1513,10 @@ class NFTGatedPremiumTrackSignatures(Resource):
                 token_ids[i].split("-") if token_ids[i] else []
             )
 
-        premium_track_signatures = get_nft_gated_premium_track_signatures(
+        signatures = get_nft_gated_track_signatures(
             decoded_user_id, track_token_id_map
         )
-        return success_response(premium_track_signatures)
+        return success_response(signatures)
 
 
 @ns.route("/latest", doc=False)

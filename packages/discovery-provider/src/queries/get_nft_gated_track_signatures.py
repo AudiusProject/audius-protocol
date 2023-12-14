@@ -443,7 +443,7 @@ def _get_sol_nft_gated_track_signatures(
 
 # Generates a gated content signature for each of the nft-gated tracks.
 # Return a map of gated track id -> gated content signature.
-def get_nft_gated_premium_track_signatures(
+def get_nft_gated_track_signatures(
     user_id: int, track_token_id_map: Dict[int, List[str]]
 ):
     db = db_session.get_db_read_replica()
