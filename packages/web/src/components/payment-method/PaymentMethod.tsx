@@ -1,4 +1,4 @@
-import { CSSProperties, ChangeEvent, useCallback, useState } from 'react'
+import { CSSProperties, ChangeEvent, useCallback } from 'react'
 
 import {
   BNUSDC,
@@ -11,7 +11,6 @@ import {
   useFeatureFlag,
   usePayExtraPresets,
   StringKeys,
-  PayExtraPreset,
   AMOUNT_PRESET
 } from '@audius/common'
 import {

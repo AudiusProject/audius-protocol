@@ -10,8 +10,7 @@ import {
   usePurchaseMethod,
   PurchaseMethod,
   StringKeys,
-  AMOUNT_PRESET,
-  CUSTOM_AMOUNT
+  AMOUNT_PRESET
 } from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { IconCheck } from '@audius/stems'
@@ -50,13 +49,7 @@ export const PurchaseContentFormFields = ({
   )
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
-  const [{ value: preset }, , { setValue: setPreset }] = useField(AMOUNT_PRESET)
   const [, , { setValue: setPurchaseVendor }] = useField(PURCHASE_VENDOR)
-  const [
-    { value: customAmount },
-    ,
-    { setValue: setCustomAmount, setTouched: setCustomAmountTouched }
-  ] = useField<number>(CUSTOM_AMOUNT)
   const isPurchased = stage === PurchaseContentStage.FINISH
 
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
