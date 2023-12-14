@@ -4,7 +4,9 @@ import {
   PurchaseMethod,
   PurchaseVendor,
   useCreateUserbankIfNeeded,
-  useUSDCBalance
+  useUSDCBalance,
+  PayExtraPreset,
+  CUSTOM_AMOUNT
 } from '@audius/common'
 import { USDC } from '@audius/fixed-decimal'
 import {
@@ -17,7 +19,9 @@ import {
 } from '@audius/harmony'
 import { BN } from 'bn.js'
 import cn from 'classnames'
+import { useField } from 'formik'
 
+import { AMOUNT_PRESET } from 'components/add-funds-modal/constants'
 import { PaymentMethod } from 'components/payment-method/PaymentMethod'
 import { track } from 'services/analytics'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
@@ -33,10 +37,17 @@ const messages = {
 export const AddFunds = ({
   onContinue
 }: {
-  onContinue: (
-    purchaseMethod: PurchaseMethod,
+  onContinue: ({
+    purchaseMethod,
+    purchaseVendor,
+    amountPreset,
+    customAmount
+  }: {
+    purchaseMethod: PurchaseMethod
     purchaseVendor?: PurchaseVendor
-  ) => void
+    amountPreset?: PayExtraPreset
+    customAmount?: number
+  }) => void
 }) => {
   useCreateUserbankIfNeeded({
     recordAnalytics: track,
@@ -48,6 +59,10 @@ export const AddFunds = ({
   const [selectedPurchaseVendor, setSelectedPurchaseVendor] = useState<
     PurchaseVendor | undefined
   >(undefined)
+  const [{ value: amountPreset }, , { setValue: setAmountPreset }] =
+    useField(AMOUNT_PRESET)
+  const [{ value: customAmount }, , { setValue: setCustomAmount }] =
+    useField<number>(CUSTOM_AMOUNT)
 
   const mobile = isMobile()
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
@@ -82,14 +97,25 @@ export const AddFunds = ({
           </Box>
           <PaymentMethod
             selectedMethod={selectedPurchaseMethod}
+            selectedVendor={selectedPurchaseVendor}
+            preset={amountPreset}
+            setPreset={setAmountPreset}
+            customAmount={customAmount}
+            setCustomAmount={setCustomAmount}
             setSelectedMethod={setSelectedPurchaseMethod}
             setSelectedVendor={setSelectedPurchaseVendor}
+            showCoinflowAmounts={true}
           />
           <Button
             variant={ButtonType.PRIMARY}
             fullWidth
             onClick={() =>
-              onContinue(selectedPurchaseMethod, selectedPurchaseVendor)
+              onContinue({
+                purchaseMethod: selectedPurchaseMethod,
+                purchaseVendor: selectedPurchaseVendor,
+                amountPreset,
+                customAmount
+              })
             }
           >
             {messages.continue}

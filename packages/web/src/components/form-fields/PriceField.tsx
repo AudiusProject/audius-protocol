@@ -12,7 +12,6 @@ import {
   filterDecimalString,
   padDecimalValue
 } from '@audius/common'
-import { useField } from 'formik'
 
 import { TextField, TextFieldProps } from './TextField'
 
@@ -25,10 +24,14 @@ const messages = {
   dollars: '$'
 }
 
-export const PriceField = (props: TextFieldProps) => {
-  const [{ value }, , { setValue: setPrice, setTouched }] = useField<number>(
-    props.name
-  )
+type PriceFieldProps = TextFieldProps & {
+  value: number
+  setPrice: (value: number, shouldValidate?: boolean) => void
+  setTouched?: (touched: boolean, shouldValidate?: boolean) => void
+}
+
+export const PriceField = (props: PriceFieldProps) => {
+  const { value, setPrice, setTouched } = props
   const [humanizedValue, setHumanizedValue] = useState(
     value ? decimalIntegerToHumanReadable(value) : null
   )
@@ -47,7 +50,7 @@ export const PriceField = (props: TextFieldProps) => {
       const { human, value } = filterDecimalString(e.target.value)
       setHumanizedValue(human)
       setPrice(value)
-      setTouched(true, false)
+      setTouched?.(true, false)
     },
     [setPrice, setHumanizedValue, setTouched]
   )

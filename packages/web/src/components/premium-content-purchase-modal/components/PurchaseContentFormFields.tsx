@@ -8,7 +8,10 @@ import {
   PurchaseVendor,
   PURCHASE_VENDOR,
   usePurchaseMethod,
-  PurchaseMethod
+  PurchaseMethod,
+  StringKeys,
+  AMOUNT_PRESET,
+  CUSTOM_AMOUNT
 } from '@audius/common'
 import { Flex } from '@audius/harmony'
 import { IconCheck } from '@audius/stems'
@@ -27,6 +30,7 @@ import styles from './PurchaseContentFormFields.module.css'
 import { PurchaseSummaryTable } from './PurchaseSummaryTable'
 
 const messages = {
+  payExtraTitle: 'Pay Extra',
   purchaseSuccessful: 'Your Purchase Was Successful!'
 }
 
@@ -41,10 +45,18 @@ export const PurchaseContentFormFields = ({
   stage,
   isUnlocking
 }: PurchaseContentFormFieldsProps) => {
-  const payExtraAmountPresetValues = usePayExtraPresets()
+  const payExtraAmountPresetValues = usePayExtraPresets(
+    StringKeys.PAY_EXTRA_PRESET_CENT_AMOUNTS
+  )
   const [{ value: purchaseMethod }, , { setValue: setPurchaseMethod }] =
     useField(PURCHASE_METHOD)
+  const [{ value: preset }, , { setValue: setPreset }] = useField(AMOUNT_PRESET)
   const [, , { setValue: setPurchaseVendor }] = useField(PURCHASE_VENDOR)
+  const [
+    { value: customAmount },
+    ,
+    { setValue: setCustomAmount, setTouched: setCustomAmountTouched }
+  ] = useField<number>(CUSTOM_AMOUNT)
   const isPurchased = stage === PurchaseContentStage.FINISH
 
   const { data: balanceBN } = useUSDCBalance({ isPolling: true })
@@ -90,7 +102,13 @@ export const PurchaseContentFormFields = ({
     <>
       {isUnlocking || isPurchased ? null : (
         <PayExtraFormSection
+          title={messages.payExtraTitle}
           amountPresets={payExtraAmountPresetValues}
+          preset={preset}
+          setPreset={setPreset}
+          customAmount={customAmount}
+          setCustomAmount={setCustomAmount}
+          setCustomAmountTouched={setCustomAmountTouched}
           disabled={isUnlocking}
         />
       )}

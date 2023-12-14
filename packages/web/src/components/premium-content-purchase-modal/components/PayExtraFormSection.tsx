@@ -1,18 +1,15 @@
 import {
-  AMOUNT_PRESET,
   CUSTOM_AMOUNT,
   PayExtraAmountPresetValues,
   PayExtraPreset
 } from '@audius/common'
 import { Text, Flex, SelectablePill } from '@audius/harmony'
-import { useField } from 'formik'
 
 import { PriceField } from 'components/form-fields/PriceField'
 
 import styles from './PayExtraFormSection.module.css'
 
 const messages = {
-  payExtra: 'Pay Extra',
   customAmount: 'Custom Amount',
   other: 'Other',
   placeholder: 'Enter a value'
@@ -21,29 +18,39 @@ const messages = {
 const formatPillAmount = (val: number) => `$${Math.floor(val / 100)}`
 
 export type PayExtraFormSectionProps = {
+  title: string
   amountPresets: PayExtraAmountPresetValues
+  preset: PayExtraPreset
+  setPreset: (preset: PayExtraPreset) => void
+  customAmount: number
+  setCustomAmount: (value: number, shouldValidate?: boolean) => void
+  setCustomAmountTouched?: (touched: boolean, shouldValidate?: boolean) => void
   disabled?: boolean
 }
 
 export const PayExtraFormSection = ({
+  title,
   amountPresets,
+  preset,
+  setPreset,
+  customAmount,
+  setCustomAmount,
+  setCustomAmountTouched,
   disabled
 }: PayExtraFormSectionProps) => {
-  const [{ value: preset }, , { setValue: setPreset }] = useField(AMOUNT_PRESET)
-
   const handleClickPreset = (newPreset: PayExtraPreset) => {
     setPreset(newPreset === preset ? PayExtraPreset.NONE : newPreset)
   }
 
   return (
-    <Flex gap='s' direction='column'>
+    <Flex gap='s' direction='column' w='100%'>
       <Text
         variant='label'
         strength='strong'
         color='subdued'
         className={styles.title}
       >
-        {messages.payExtra}
+        {title}
       </Text>
       <Flex gap='s' w='100%'>
         <SelectablePill
@@ -89,6 +96,9 @@ export const PayExtraFormSection = ({
           label={messages.customAmount}
           name={CUSTOM_AMOUNT}
           disabled={disabled}
+          value={customAmount}
+          setPrice={setCustomAmount}
+          setTouched={setCustomAmountTouched}
         />
       ) : null}
     </Flex>
