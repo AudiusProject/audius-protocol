@@ -4,23 +4,22 @@ from datetime import datetime
 from decimal import Decimal
 from typing import List, Optional, Tuple, TypedDict, Union, cast
 
-from src.models.users.payment_router import PaymentRouterTx
 from redis import Redis
 from solders.instruction import CompiledInstruction
 from solders.message import Message
 from solders.pubkey import Pubkey
-from solders.token.associated import get_associated_token_address
 from solders.rpc.responses import GetTransactionResp
+from solders.token.associated import get_associated_token_address
 from solders.transaction_status import UiTransactionStatusMeta
-
 from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
 
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.exceptions import SolanaTransactionFetchError
-from src.models.tracks.track_price_history import TrackPriceHistory
 from src.models.tracks.track import Track
+from src.models.tracks.track_price_history import TrackPriceHistory
+from src.models.users.payment_router import PaymentRouterTx
 from src.models.users.usdc_purchase import PurchaseType, USDCPurchase
 from src.models.users.usdc_transactions_history import (
     USDCTransactionMethod,
@@ -36,9 +35,7 @@ from src.solana.constants import (
     USDC_DECIMALS,
 )
 from src.solana.solana_client_manager import SolanaClientManager
-from src.solana.solana_helpers import (
-    get_base_address,
-)
+from src.solana.solana_helpers import get_base_address
 from src.tasks.celery_app import celery
 from src.utils.cache_solana_program import (
     cache_latest_sol_db_tx,
