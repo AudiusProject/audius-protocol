@@ -103,55 +103,53 @@ const RenderForm = ({
   const mobile = isMobile()
 
   return (
-    <ModalForm className={styles.root}>
-      <Box>
-        <ModalHeader
-          className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
-          onClose={onClose}
-          showDismissButton={!mobile}
+    <ModalForm>
+      <ModalHeader
+        className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
+        onClose={onClose}
+        showDismissButton={!mobile}
+      >
+        <Text
+          variant='label'
+          color='neutralLight2'
+          size='xLarge'
+          strength='strong'
+          className={styles.title}
         >
-          <Text
-            variant='label'
-            color='neutralLight2'
-            size='xLarge'
-            strength='strong'
-            className={styles.title}
-          >
-            <Icon size='large' icon={IconCart} />
-            {messages.completePurchase}
-          </Text>
-        </ModalHeader>
-        <ModalContentPages
-          contentClassName={styles.content}
-          className={styles.content}
-          currentPage={currentPageIndex}
-        >
-          <>
-            {stage !== PurchaseContentStage.FINISH ? (
-              <AudioMatchSection
-                amount={USDC(price / 100)
-                  .round()
-                  .toShorthand()}
+          <Icon size='large' icon={IconCart} />
+          {messages.completePurchase}
+        </Text>
+      </ModalHeader>
+      <ModalContentPages
+        contentClassName={styles.content}
+        className={styles.content}
+        currentPage={currentPageIndex}
+      >
+        <>
+          {stage !== PurchaseContentStage.FINISH ? (
+            <AudioMatchSection
+              amount={USDC(price / 100)
+                .round()
+                .toShorthand()}
+            />
+          ) : null}
+          <Flex p={mobile ? 'l' : 'xl'}>
+            <Flex direction='column' gap='xl' w='100%'>
+              <LockedTrackDetailsTile
+                track={track as unknown as Track}
+                owner={track.user}
               />
-            ) : null}
-            <Flex p={mobile ? 'l' : 'xl'}>
-              <Flex direction='column' gap='xl' w='100%'>
-                <LockedTrackDetailsTile
-                  track={track as unknown as Track}
-                  owner={track.user}
-                />
-                <PurchaseContentFormFields
-                  stage={stage}
-                  purchaseSummaryValues={purchaseSummaryValues}
-                  isUnlocking={isUnlocking}
-                  price={price}
-                />
-              </Flex>
+              <PurchaseContentFormFields
+                stage={stage}
+                purchaseSummaryValues={purchaseSummaryValues}
+                isUnlocking={isUnlocking}
+                price={price}
+              />
             </Flex>
-          </>
-          <USDCManualTransfer onClose={handleClose} amountInCents={price} />
-        </ModalContentPages>
-      </Box>
+          </Flex>
+        </>
+        <USDCManualTransfer onClose={handleClose} amountInCents={price} />
+      </ModalContentPages>
       <ModalFooter className={styles.footer}>
         {page === PurchaseContentPage.PURCHASE ? (
           <PurchaseContentFormFooter
