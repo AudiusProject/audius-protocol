@@ -134,6 +134,11 @@ const shadowOverrides = {
     shadowColor: '#565776',
     // Android
     elevation: 6
+  },
+  flat: {
+    elevation: 0,
+    shadowRadius: 0,
+    shadowOffset: { width: 0, height: 0 }
   }
 }
 

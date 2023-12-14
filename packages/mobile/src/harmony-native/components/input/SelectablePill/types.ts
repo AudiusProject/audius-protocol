@@ -1,4 +1,4 @@
-import type { PressableProps } from 'react-native/types'
+import type { PressableProps, ViewProps } from 'react-native'
 
 import type { Icon } from 'app/harmony-native/icons'
 
@@ -7,4 +7,5 @@ export type SelectablePillProps = {
   isSelected?: boolean
   label: string
   icon?: Icon
-} & Pick<PressableProps, 'disabled' | 'onPress'>
+} & Pick<PressableProps, 'disabled' | 'onPress'> &
+  ViewProps

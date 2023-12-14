@@ -84,8 +84,8 @@ export const Box = styled(View, {
     return {
       position: 'relative',
       boxSizing: 'border-box',
-      height: h,
-      width: w,
+      height: h ? spacing[h] ?? h : h,
+      width: w ? spacing[w] ?? w : w,
       ...(shadow && {
         ...shadows[shadow],
         // In order for shadows to work on iOS they need a background color
